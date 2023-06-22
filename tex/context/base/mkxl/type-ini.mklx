@@ -165,7 +165,7 @@
 
 \def\font_typescripts_use_display
   {\processcommacommand[\typescriptfiles]\font_typescripts_load_file
-   \the\c_font_typescripts_document}
+   \expand\c_font_typescripts_document}
 
 \let\font_typescripts_use_inline\font_typescripts_use_display
 
@@ -228,7 +228,7 @@
    \ifrelax\t_font_typescripts
      \font_typescript_process_typescript_store_indeed
    \fi
-   \the\t_font_typescripts}
+   \expand\t_font_typescripts}
 
 \def\font_typescript_process_typescript_store_indeed
   {\newtoks\t_font_typescripts % is \relaxed elsewhere
@@ -506,7 +506,7 @@
    \push_macro_fontclassstyle
    \setcurrentfontclass{#name}%
    \savefontclassparameters{#style}\m_ts_rscale\m_ts_features\m_ts_fallbacks\m_ts_goodies\m_ts_designsize\m_ts_direction
-   \the\everybeforedefinetypeface}
+   \expand\everybeforedefinetypeface}
 
 \permanent\def\tsvar#key#default% undocumented and unofficial
   {\expandafter\ifempty\csname\??ts#key\endcsname
@@ -516,7 +516,7 @@
    \fi}
 
 \def\font_typefaces_defining_stop
-  {\the\everyafterdefinetypeface
+  {\expand\everyafterdefinetypeface
    \pop_macro_fontclassstyle
    \pop_macro_fontclass}
 

@@ -115,7 +115,7 @@
    \setupcurrentmetanodes[#1]%
    \edef\p_meta_option{\metanodesparameter\c!option}%
    \edef\p_meta_alternative{\metanodesparameter\c!alternative}%
-   \the\t_every_meta_nodes
+   \expand\t_every_meta_nodes
    \c_meta_nodes_n\zerocount
    \t_meta_nodes\emptytoks
    #2\removeunwantedspaces

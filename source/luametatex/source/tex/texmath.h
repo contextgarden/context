@@ -288,7 +288,7 @@ typedef enum math_atom_font_options {
     math_atom_math_font_option = 2,
 } math_atom_font_options;
 
-inline static int math_parameter_value_type(int n)
+static inline int math_parameter_value_type(int n)
 {
     if (n < last_math_parameter) {
         return lmt_interface.math_parameter_values[n].type;

@@ -338,7 +338,7 @@ function collections.prepare(name) -- we can do this in lua now .. todo
     end
     local properties = propdata[current]
     local mathsize   = properties.mathsize
-    if mathsize == 1 or mathsize == 2 or mathsize == 3 then
+    if mathsize == 1 or mathsize == 2 or mathsize == 3 or properties.math_is_scaled or properties.mathisscaled then
         return
     end
     local d = definitions[name]

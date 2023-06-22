@@ -29,6 +29,7 @@ static const char *callbacklib_names[total_callbacks] = {
     "start_run",
     "stop_run",
     "define_font",
+    "quality_font",
     "pre_output_filter",
     "buildpage_filter",
     "hpack_filter",
@@ -75,6 +76,8 @@ static const char *callbacklib_names[total_callbacks] = {
     "handle_overload",
     "missing_character",
     "process_character",
+    "linebreak_quality",
+    "paragraph_pass",
 };
 
 /*tex

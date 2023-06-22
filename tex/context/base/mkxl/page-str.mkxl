@@ -46,7 +46,7 @@
 
 \permanent\protected\def\enableoutputstream[#1]% could be \startoutputsubstream
   {\initializeoutputstreams
-   \the\everyenableoutputstream
+   \expand\everyenableoutputstream
    \inoutputstreamtrue
    \xdef\currentoutputstream{#1}%
    \clf_enablestream{#1}
@@ -60,7 +60,7 @@
 \permanent\protected\def\startoutputstream[#1]%
   {\begingroup
    \initializeoutputstreams
-   \the\everyenableoutputstream
+   \expand\everyenableoutputstream
    \inoutputstreamtrue
    \xdef\currentoutputstream{#1}%
    \clf_startstream{#1}}

@@ -277,10 +277,10 @@
 
 \def\strc_lists_place_indeed#tag#list#settings%
   {\begingroup
-   \the\t_lists_every_renderingcleanup % \lettonothing\currentlistentrylocation
+   \expand\t_lists_every_renderingcleanup % \lettonothing\currentlistentrylocation
    \cdef\currentlist{#tag}%
    \setupcurrentlist[#settings]%
-   \the\everystructurelist
+   \expand\everystructurelist
  % \doif{\listparameter\c!coupling}\v!on{\startlistreferences{#tag}}%
    \strc_lists_place_current % maybe inline
      {#list}%
@@ -942,7 +942,7 @@
 \lettonothing\m_strc_list_alternative % combined
 
 \protected\def\strc_lists_apply_renderingsetup
-  {\the\t_lists_every_renderingsetup
+  {\expand\t_lists_every_renderingsetup
    % now we group
    \begingroup
    \ifempty\m_strc_list_alternative
@@ -953,7 +953,7 @@
    \directsetup{\listalternativeparameter\c!renderingsetup}\relax
    \endgroup
    % till here, where we reset locals
-   \the\t_lists_every_renderingcleanup}
+   \expand\t_lists_every_renderingcleanup}
 
 % todo: provide packager via attributes
 
@@ -966,7 +966,7 @@
 \stopsetups
 
 \permanent\protected\def\currentlistentrytitlesynchronize
-  {\the\t_lists_every_renderingsynchronize}
+  {\expand\t_lists_every_renderingsynchronize}
 
 \permanent\protected\def\currentlistentrytitlerendered
   {\currentlistentrytitlesynchronize\currentlistentrytitle}
@@ -1012,8 +1012,8 @@
                 \fi
                 \hbox \strc_lists_get_reference_attribute\v!text {
                     \strc_lists_set_style_color\c!textstyle\c!textcolor\v!text
-                    \the\t_lists_every_renderingtext
-                    \the\t_lists_every_renderingsynchronize
+                    \expand\t_lists_every_renderingtext
+                    \expand\t_lists_every_renderingsynchronize
                     \listparameter\c!textcommand\currentlistentrytitle
                 }
                 \ifconditional\c_lists_show_page
@@ -1140,8 +1140,8 @@
                 \begingroup
                 \strc_lists_set_reference_attribute\v!text
                 \strc_lists_set_style_color\c!textstyle\c!textcolor\v!text
-                \the\t_lists_every_renderingtext
-                \the\t_lists_every_renderingsynchronize
+                \expand\t_lists_every_renderingtext
+                \expand\t_lists_every_renderingsynchronize
                 \setstrut % needs checking, new here
                 \begstrut
                 \strc_lists_limitated_text\currentlistentrytitle
@@ -1222,8 +1222,8 @@
     \begingroup
     \strc_lists_set_reference_attribute\v!text
     \strc_lists_set_style_color\c!textstyle\c!textcolor\v!text
-    \the\t_lists_every_renderingtext
-    \the\t_lists_every_renderingsynchronize
+    \expand\t_lists_every_renderingtext
+    \expand\t_lists_every_renderingsynchronize
     \setstrut % needs checking, new here
     \begstrut
     \strc_lists_limitated_text\currentlistentrytitle
@@ -1262,8 +1262,8 @@
         \inheritedlistframed {
             \letinteractionparameter\c!strut\v!no % still needed?
             \strc_lists_set_style_color\c!style\c!color\v!all
-            \the\t_lists_every_renderingtext
-            \the\t_lists_every_renderingsynchronize
+            \expand\t_lists_every_renderingtext
+            \expand\t_lists_every_renderingsynchronize
             \setstrut
             \begstrut
             \strc_lists_limitated_text\currentlistentrytitle
@@ -1282,8 +1282,8 @@
         \dosetraggedhbox{\listparameter\c!align}%
         \raggedbox {
             \strc_lists_set_style_color\c!style\c!color\v!all
-            \the\t_lists_every_renderingtext
-            \the\t_lists_every_renderingsynchronize
+            \expand\t_lists_every_renderingtext
+            \expand\t_lists_every_renderingsynchronize
             \setstrut
             \begstrut
             \strc_lists_limitated_text\currentlistentrytitle
@@ -1301,8 +1301,8 @@
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \midaligned {
             \strc_lists_set_style_color\c!style\c!color\v!all
-            \the\t_lists_every_renderingtext
-            \the\t_lists_every_renderingsynchronize
+            \expand\t_lists_every_renderingtext
+            \expand\t_lists_every_renderingsynchronize
             \setstrut
             \begstrut
             \strc_lists_limitated_text\currentlistentrytitle
@@ -1448,8 +1448,8 @@
 \letcsname\??listinteractions\v!yes          \endcsname\v!all
 
 \permanent\def\listboxproperties       {\strc_lists_get_reference_attribute}
-\permanent\def\listrenderingsetup      {\the\t_lists_every_renderingtext}
-\permanent\def\listrenderingsynchronize{\the\t_lists_every_renderingsynchronize}
+\permanent\def\listrenderingsetup      {\expand\t_lists_every_renderingtext}
+\permanent\def\listrenderingsynchronize{\expand\t_lists_every_renderingsynchronize}
 
 \protected\def\strc_lists_interaction_check
   {\iflocation

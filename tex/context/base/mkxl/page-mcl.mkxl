@@ -458,7 +458,7 @@
    \appendtoks
      \topskip1\topskip % best a switch
    \to \everybodyfont
-   \the\everybodyfont  % ugly here
+   \expand\everybodyfont  % ugly here
    \saveinterlinespace % ugly here
    %
    \initializecolumns\nofcolumns

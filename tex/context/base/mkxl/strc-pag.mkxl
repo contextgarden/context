@@ -40,7 +40,7 @@
 \newtoks\everyinitializepagecounters
 
 \permanent\protected\def\initializepagecounters
-  {\the\everyinitializepagecounters}
+  {\expand\everyinitializepagecounters}
 
 \appendtoks
     \initializepagecounters
@@ -91,9 +91,9 @@
 
 \def\strc_pagenumbers_save_state#1{\edef\m_strc_pagenumbers_state_old{\namedcounterparameter#1\c!state}}
 
-\permanent\tolerant\protected\def\setuprealpagenumber[#1]{\strc_pagenumbers_save_state\s!realpage\setupcounter[\s!realpage][#1]\the\everysetuprealpagenumber}
-\permanent\tolerant\protected\def\setupuserpagenumber[#1]{\strc_pagenumbers_save_state\s!userpage\setupcounter[\s!userpage][#1]\the\everysetupuserpagenumber}
-\permanent\tolerant\protected\def\setupsubpagenumber [#1]{\strc_pagenumbers_save_state\s!subpage \setupcounter[\s!subpage ][#1]\the\everysetupsubpagenumber }
+\permanent\tolerant\protected\def\setuprealpagenumber[#1]{\strc_pagenumbers_save_state\s!realpage\setupcounter[\s!realpage][#1]\expand\everysetuprealpagenumber}
+\permanent\tolerant\protected\def\setupuserpagenumber[#1]{\strc_pagenumbers_save_state\s!userpage\setupcounter[\s!userpage][#1]\expand\everysetupuserpagenumber}
+\permanent\tolerant\protected\def\setupsubpagenumber [#1]{\strc_pagenumbers_save_state\s!subpage \setupcounter[\s!subpage ][#1]\expand\everysetupsubpagenumber }
 
 \permanent\protected\def\resetrealpagenumber {} % not permitted
 \permanent\protected\def\resetuserpagenumber {\strc_counters_reset\s!userpage}
@@ -320,7 +320,7 @@
      [\directpagenumberingparameter\c!alternative]%
      [ \v!singlesided=>\setsystemmode\v!singlesided\singlesidedtrue\settrue\layoutissinglesided,
        \v!doublesided=>\setsystemmode\v!doublesided\doublesidedtrue\settrue\layoutisdoublesided]%
-   \the\everysidedswitch
+   \expand\everysidedswitch
    \pageduplexmode
      \ifsinglesided
        \ifdoublesided\plustwo\else\zerocount\fi

@@ -887,8 +887,8 @@
 %D This is only used when we load \CONTEXT. Nesting is not supported here.
 
 \permanent\def\pushoverloadmode
-  {\enforced\permanent\protected\edef\popoverloadmode{\overloadmode\the\overloadmode\enforced\let\popoverloadmode\relax}%
-   \overloadmode\zerocount}
+  {\enforced\permanent\protected\edef\popoverloadmode{\normaloverloadmode\the\normaloverloadmode\enforced\let\popoverloadmode\relax}%
+   \normaloverloadmode\zerocount}
 
 \aliased\let\popoverloadmode\relax
 

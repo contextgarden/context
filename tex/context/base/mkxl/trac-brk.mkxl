@@ -1,0 +1,47 @@
+%D \module
+%D   [       file=trac-brk,
+%D        version=2023.05.23,
+%D          title=\CONTEXT\ Tracing Macros,
+%D       subtitle=Linebreaks,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\ifdefined\showbreakpoints \endinput \fi
+
+\writestatus{loading}{ConTeXt Tracing Macros / Breakpoints}
+
+\registerctxluafile{trac-brk}{}
+
+\unprotect
+
+\permanent\tolerant\protected\gdef\startshowbreakpoints[#1]%
+  {\begingroup
+   \getdummyparameters[\c!option=,\c!list=,\c!offset=\zeropoint,#1]%
+   \ctxlua{tracers.breakpoints.start {
+        option = "\dummyparameter\c!option",
+        list   = "\dummyparameter\c!list",
+        offset = \number\dimexpr\dummyparameter\c!offset\relax,
+    }}%
+   \endgroup}
+
+\permanent\protected\gdef\stopshowbreakpoints
+  {\par
+   \ctxlua{tracers.breakpoints.stop()}}
+
+\permanent\tolerant\protected\gdef\showbreakpoints[#1]%
+  {\begingroup
+   \switchtobodyfont[7pt]%
+   \dorecurse{\cldcontext{tracers.breakpoints.nofresults()}} {
+     \startcolumns[n=3,notes=no,#1]%
+       \ctxlua{tracers.breakpoints.typesetresult(##1)}%
+     \stopcolumns
+   }%
+   \ctxlua{tracers.breakpoints.reset()}%
+   \endgroup}
+
+\protect \endinput

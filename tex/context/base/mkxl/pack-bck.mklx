@@ -65,15 +65,15 @@
 \setnewconstant\backgroundsplitmode\plusthree
 
 \appendtoks
-    \frozen\setuevalue{\e!start\currentbackground}{\pack_backgrounds_start [\currentbackground]}%
-    \frozen\setuevalue{\e!stop \currentbackground}{\pack_backgrounds_stop                      }%
-    \frozen\setuevalue        {\currentbackground}{\pack_backgrounds_direct[\currentbackground]}%
+    \frozen\protected\instance\defcsname\e!start\currentbackground\endcsname{\pack_backgrounds_start [\currentbackground]}%
+    \frozen\protected\instance\defcsname\e!stop \currentbackground\endcsname{\pack_backgrounds_stop                      }%
+    \frozen\protected\instance\defcsname        \currentbackground\endcsname{\pack_backgrounds_direct[\currentbackground]}%
 \to \everydefinebackground
 
 \protected\def\pack_backgrounds_start[#tag]%
   {\endgraf
    \begingroup
-   \def\currentbackground{#tag}%
+   \cdef\currentbackground{#tag}%
    \doifelse{\backgroundparameter\c!state}\v!start
      \pack_backgrounds_start_indeed
      \pack_backgrounds_start_ignore}
@@ -182,7 +182,7 @@
 
 \protected\def\pack_backgrounds_direct[#tag]%
   {\begingroup
-   \def\currentbackground{#tag}%
+   \cdef\currentbackground{#tag}%
    \doifelse{\backgroundparameter\c!state}\c!start
      \pack_backgrounds_direct_indeed
      \pack_backgrounds_direct_ignore}

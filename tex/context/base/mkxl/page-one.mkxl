@@ -13,8 +13,10 @@
 
 \writestatus{loading}{ConTeXt Page Macros / Default Routine}
 
-%D This is just the good old \CONTEXT\ output routine, which
-%D has been there right from the start.
+%D This is just the good old \CONTEXT\ output routine, which has been there right
+%D from the start.
+
+% todo: flush page figures without header and footer
 
 \unprotect
 

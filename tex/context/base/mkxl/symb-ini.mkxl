@@ -131,7 +131,7 @@
 
 \def\symb_place_normal
   {\setfalse\c_symb_found
-   \the\t_symb_setups
+   \expand\t_symb_setups
    \ifconditional\c_symb_found \else
      \symb_place_retry\currentsymbol % hm, isn't this redundant?
    \fi}
@@ -139,7 +139,7 @@
 \def\symb_place_indeed#1% \relax's prevent lookahead problems
   {\settrue\c_symb_found
    \begingroup
-   \the\everysymbol
+   \expand\everysymbol
    \csname\??symbol#1\endcsname\relax
    \endgroup}
 
@@ -165,7 +165,7 @@
 \def\symb_place_named#1% \relax's prevent lookahead problems
   {\begingroup
    \setbox\scratchbox\hbox\bgroup
-     \the\everysymbol
+     \expand\everysymbol
      \getglyphstyled
        {\csname\??symboldefault#1\endcsname}%
        {\tochar{n:\currentsymbol}}%
@@ -183,7 +183,7 @@
 \protected\def\symb_place_named_indeed#1#2% \relax's prevent lookahead problems
   {\settrue\c_symb_found
    \begingroup
-   \the\everysymbol
+   \expand\everysymbol
    \getglyphstyled
      {\csname\??symboldefault#1\endcsname}%
      {\tochar{n:#2}}%
@@ -243,7 +243,7 @@
    \edef\currentsymbol{#1}%
    \let\symb_fetch\symb_fetch_first
    \setfalse\c_symb_found
-   \the\t_symb_setups
+   \expand\t_symb_setups
    \ifconditional\c_symb_found
      \endgroup\expandafter\firstoftwoarguments
    \else
@@ -310,7 +310,7 @@
    \fi}
 
 \def\symb_setup_symbol_set
-  {\normalexpanded{\t_symb_setups{\symb_fetch{\currentsymbolset}\the\t_symb_setups}}%
+  {\normalexpanded{\t_symb_setups{\symb_fetch{\currentsymbolset}\expand\t_symb_setups}}%
    \letcsname\??symbolsets\currentsymbolset\endcsname\empty} % speedup
 
 \permanent\protected\def\resetsymbolset

@@ -28,8 +28,12 @@ extern void       tex_set_local_right_width       (halfword p, scaled width);
 
 extern halfword   tex_get_local_interline_penalty (halfword p);
 extern halfword   tex_get_local_broken_penalty    (halfword p);
+extern halfword   tex_get_local_tolerance         (halfword p);
+extern halfword   tex_get_local_pre_tolerance     (halfword p);
 
 extern void       tex_set_local_interline_penalty (halfword p, halfword penalty);
 extern void       tex_set_local_broken_penalty    (halfword p, halfword penalty);
+extern void       tex_set_local_tolerance         (halfword p, halfword penalty);
+extern void       tex_set_local_pre_tolerance     (halfword p, halfword penalty);
 
 # endif

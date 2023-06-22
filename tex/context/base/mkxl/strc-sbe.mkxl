@@ -91,12 +91,12 @@
    \relax
   %\csname #1true\endcsname % obsolete
    \setsystemmode\currentsectionblock
-   \the\everybeforesectionblock\relax
+   \expand\everybeforesectionblock\relax
    \showmessage\m!structures1\currentsectionblock}
 
 \permanent\protected\def\stopsectionblock
   {\showmessage\m!structures2\currentsectionblock
-   \the\everyaftersectionblock\relax
+   \expand\everyaftersectionblock\relax
    \clf_popsectionblock
    \endgroup}
 

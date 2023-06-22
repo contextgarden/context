@@ -281,7 +281,7 @@
 %    %
 %    \forgetall
 %    %
-%    \the\everycombination
+%    \expand\everycombination
 %    %
 %    \enforced\let\startcontent\pack_common_content_start
 %    \enforced\let\stopcontent \pack_common_content_stop
@@ -374,7 +374,7 @@
    %
    \forgetall
    %
-   \the\everycombination
+   \expand\everycombination
    %
    \enforced\let\startcontent\pack_common_content_start
    \enforced\let\stopcontent \pack_common_content_stop

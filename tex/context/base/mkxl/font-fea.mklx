@@ -172,7 +172,7 @@
    \edef\m_font_feature_list{\m_font_feature_list+\m_font_feature_asked}% also + at the lua end
    \c_font_feature_state\plusone
    \let\currentfeature\m_font_feature_asked
-   \the\everyfontfeatureswitch}
+   \expand\everyfontfeatureswitch}
 
 \protected\def\font_feature_subtract
   {\ifnum\c_font_feature_state=\minusone
@@ -188,7 +188,7 @@
    \edef\m_font_feature_list{\m_font_feature_list-\m_font_feature_asked}% also - at the lua end
    \c_font_feature_state\minusone
    \let\currentfeature\m_font_feature_asked
-   \the\everyfontfeatureswitch}
+   \expand\everyfontfeatureswitch}
 
 \protected\def\font_feature_replace
   {\ifzero\c_font_feature_state
@@ -204,7 +204,7 @@
    \edef\m_font_feature_list{\m_font_feature_list=\m_font_feature_asked}% also = at the lua end
    \c_font_feature_state\zerocount
    \let\currentfeature\m_font_feature_asked
-   \the\everyfontfeatureswitch}
+   \expand\everyfontfeatureswitch}
 
 \permanent\protected\def\resetfeature
   {\ifx\currentfeature\s!current \else
@@ -239,7 +239,7 @@
    \edef\m_font_feature_list{\s!current+\m_font_feature_asked}% also + at the lua end
    \c_font_feature_state\plusone
    \let\currentfeature\m_font_feature_asked
-   \the\everyfontfeatureswitch}
+   \expand\everyfontfeatureswitch}
 
 \installcorenamespace{featureshortcut}
 

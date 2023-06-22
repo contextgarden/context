@@ -334,12 +334,22 @@ local show    = false  trackers.register("builders.hpack.overflow",function(v) s
 function hpackbuilders.report(how,detail,n,first,last,filename) -- no return value
     local str = (report or collect) and listtoutf(getlist(n),"",true,nil,true)
     if report then
+        local overfull = how == "overfull"
         if last <= 0 then
-            report_quality("%s hbox: %s (%p)",how,str,detail)
+            report_quality(
+                overfull and "%s hbox: %s (%p)" or "%s hbox: %s (badness %i)",
+                how,str,detail
+            )
         elseif first > 0 and first < last then
-            report_quality("%s hbox at line %i - %i in file %a: %s (%p)",how,first,last,filename or "?",str,detail)
+            report_quality(
+                overfull and "%s hbox at line %i - %i in file %a: %s (%p)" or "%s hbox at line %i - %i in file %a: %s (badness %i)",
+                how,first,last,filename or "?",str,detail
+            )
         else
-            report_quality("%s hbox at line %i in file %a: %s (%p)",how,last,filename or "?",str,detail)
+            report_quality(
+                overfull and "%s hbox at line %i in file %a: %s (%p)" or "%s hbox at line %i in file %a: %s (badness %i)",
+                how,last,filename or "?",str,detail
+            )
         end
     end
     if collect then
@@ -433,8 +443,14 @@ statistics.register("quality reports", function()
         end
         logs.startfilelogging(report_quality)
         for i=1,n do
-            local l = list[i]
-            report_quality("%-" .. fw .. "s [%04i - %04i] : %-" .. hw .. "s %s : %s (%p)",file.basename(l[3]),l[4],l[5],l[2],l[1],l[6],l[7])
+            local l   = list[i]
+            local how = l[2]
+            report_quality(
+                how == "overfull"
+                    and "%-" .. fw .. "s [%04i - %04i] : %-" .. hw .. "s %s : %s (%p)"
+                     or "%-" .. fw .. "s [%04i - %04i] : %-" .. hw .. "s %s : %s (%badness %i)",
+                file.basename(l[3]),l[4],l[5],how,l[1],l[6],l[7]
+            )
         end
         logs.stopfilelogging()
         report_quality()

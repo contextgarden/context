@@ -80,7 +80,7 @@ return {
         "widowpenaltyfrozenparcode", "displaypenaltyfrozenparcode", "brokenpenaltyfrozenparcode",
         "demeritsfrozenparcode", "shapefrozenparcode", "linefrozenparcode", "hyphenationfrozenparcode",
         "shapingpenaltyfrozenparcode", "orphanpenaltyfrozenparcode", "allfrozenparcode",
-        "mathpenaltyfrozenparcode",
+        "emergencyfrozenparcode", "parpassesfrozenparcode",
         --
         "activemathcharcode",
         --
@@ -153,7 +153,7 @@ return {
         "startdocument", "stopdocument", "documentvariable", "unexpandeddocumentvariable", "setupdocument", "presetdocument",
         "doifelsedocumentvariable", "doifdocumentvariableelse", "doifdocumentvariable", "doifnotdocumentvariable",
         "startmodule", "stopmodule", "usemodule", "usetexmodule", "useluamodule","setupmodule","currentmoduleparameter","moduleparameter",
-        "everystarttext", "everystoptext",
+        "everystarttext", "everystoptext", "everyforgetall",
         --
         "startTEXpage", "stopTEXpage",
     --  "startMPpage", "stopMPpage", -- already catched by nested lexer
@@ -227,6 +227,11 @@ return {
         "noexpansionglyphoptioncode", "noprotrusionglyphoptioncode", "noitaliccorrectionglyphoptioncode",
         -- extras:
         "nokerningcode", "noligaturingcode",
+        --
+        "indecentparpassclasses", "looseparpassclasses", "tightparpassclasses",
+        "verylooseparpassclass", "looseparpassclass", "semilooseparpassclass",
+        "decentparpassclass", "almostdecentparpassclasses",
+        "semitightparpassclass", "tightparpassclass",
         --
         "frozenflagcode", "tolerantflagcode", "protectedflagcode", "primitiveflagcode", "permanentflagcode", "noalignedflagcode", "immutableflagcode",
         "mutableflagcode", "globalflagcode", "overloadedflagcode", "immediateflagcode", "conditionalflagcode", "valueflagcode", "instanceflagcode",
@@ -600,6 +605,7 @@ return {
         "freezeparagraphproperties", "defrostparagraphproperties",
         "setparagraphfreezing", "forgetparagraphfreezing",
         "updateparagraphproperties", "updateparagraphpenalties", "updateparagraphdemerits", "updateparagraphshapes", "updateparagraphlines",
+        "updateparagraphpasses",
         --
         "lastlinewidth",
         --

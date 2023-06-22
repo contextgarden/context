@@ -315,13 +315,94 @@ void tex_expand_current_token(void)
                                 }
                             case expand_code:
                                 {
+                                    /*tex 
+                                        These can be used instead of |\the<tok register [ref]>| but 
+                                        that next token is not expanded so it doesn't accept |\if|. 
+                                    */
                                     tex_get_token();
-                                    if (cur_cmd >= first_call_cmd && cur_cmd <= last_call_cmd) {
-                                        tex_aux_macro_call(cur_cs, cur_cmd, cur_chr);
-                                    } else {
-                                        /* Use expand_current_token so that protected lua call are dealt with too? */
-                                        tex_back_input(cur_tok);
-                                    }
+                                    switch (cur_cmd) { 
+                                        case call_cmd:
+                                        case protected_call_cmd:               
+                                        case semi_protected_call_cmd:
+                                        case constant_call_cmd:
+                                        case tolerant_call_cmd:
+                                        case tolerant_protected_call_cmd:
+                                        case tolerant_semi_protected_call_cmd:
+                                            tex_aux_macro_call(cur_cs, cur_cmd, cur_chr);
+                                            break;
+                                        case internal_toks_reference_cmd:
+                                        case register_toks_reference_cmd:
+                                            if (cur_chr) {
+                                                tex_begin_token_list(cur_chr, token_text);
+                                            }
+                                            break;
+                                        case register_cmd:
+                                            if (cur_chr == tok_val_level) {
+                                                halfword n = tex_scan_toks_register_number();
+                                                halfword p = eq_value(register_toks_location(n));
+                                                if (p) {
+                                                    tex_begin_token_list(p, token_text);
+                                                }
+                                            } else { 
+                                                tex_back_input(cur_tok);
+                                            }
+                                            break;
+                                        case internal_toks_cmd:
+                                        case register_toks_cmd:
+                                            { 
+                                                halfword p = eq_value(cur_chr);   
+                                                if (p) {
+                                                    tex_begin_token_list(p, token_text);
+                                                }
+                                            }
+                                            break;
+                                        default: 
+                                            /* Use expand_current_token so that protected lua call are dealt with too? */
+                                            tex_back_input(cur_tok);
+                                            break;
+                                    }                                            
+                                    break;
+                                }
+                            case expand_toks_code:
+                                {
+                                    /*tex 
+                                        These can be used instead of |\the<tok register [ref]>| and 
+                                        contrary to above here the next token is expanded so it works 
+                                        with a following |\if|. 
+                                    */
+                                    tex_get_x_token();
+                                    switch (cur_cmd) { 
+                                        case internal_toks_reference_cmd:
+                                        case register_toks_reference_cmd:
+                                            if (cur_chr) {
+                                                tex_begin_token_list(cur_chr, token_text);
+                                            }
+                                            break;
+                                        case register_cmd:
+                                            if (cur_chr == tok_val_level) {
+                                                halfword n = tex_scan_toks_register_number();
+                                                halfword p = eq_value(register_toks_location(n));
+                                                if (p) {
+                                                    tex_begin_token_list(p, token_text);
+                                                }
+                                            } else { 
+                                                tex_back_input(cur_tok);
+                                            }
+                                            break;
+                                        case internal_toks_cmd:
+                                        case register_toks_cmd:
+                                            { 
+                                                halfword p = eq_value(cur_chr);   
+                                                if (p) {
+                                                    tex_begin_token_list(p, token_text);
+                                                }
+                                            }
+                                            break;
+                                        default: 
+                                            /* Issue an error message? */
+                                            tex_back_input(cur_tok);
+                                            break;
+                                    }                                            
                                     break;
                                 }
                             case expand_active_code:
@@ -644,17 +725,20 @@ static int tex_aux_collect_cs_tokens(halfword *p, int *n)
                   halfword h = token_link(cur_chr);
                   if (h) { 
                       if (token_link(h)) { 
-                          *p = tex_store_new_token(*p, token_val(deep_frozen_keep_constant_cmd, cur_chr));
+                          if (cur_chr > max_data_value) {
+                               while (h) {
+                                   *p = tex_store_new_token(*p, token_info(h));
+                                   *n += 1;
+                                   h = token_link(h);
+                               }
+                          } else {
+                              *p = tex_store_new_token(*p, token_val(deep_frozen_keep_constant_cmd, cur_chr));
+                          }
                       } else { 
                           *p = tex_store_new_token(*p, token_info(h));
                       }
                       *n += 1;
                   }
-              //  while (h) {
-              //      *p = tex_store_new_token(*p, token_info(h));
-              //      *n += 1;
-              //      h = token_link(h);
-              //  }
                 }
                 break;
             case end_cs_name_cmd:

@@ -420,7 +420,7 @@
 % see top: \newinteger\c_anch_positions_paragraph
 
 \permanent\protected\def\tracepositions
-  {\the\t_anch_positions_tracers}
+  {\expand\t_anch_positions_tracers}
 
 \permanent\protected\def\enableparpositions % global
   {\enforced\aliased\glet\registerparoptions\doregisterparoptions

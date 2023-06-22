@@ -1,0 +1,247 @@
+%D \module
+%D   [       file=spac-imp-tests,
+%D        version=2023.06.10,
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Test Passes,
+%D         author=Hans Hagen & Mikael Sundqvist,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Eventually we will have a set of useable (realistic) presets and definitions
+%D here. So, all be low can change dependin gon what users feed back to us.
+
+% \writestatus{loading}{ConTeXt Spacing Macros / Test Passes}
+
+\unprotect
+
+\startsetups align:pass:decent
+    \pretolerance 50
+    \tolerance    150
+    \parpasses    2
+        identifier           \parpassidentifier{decent}
+        threshold            0.05pt
+        tolerance            200
+      next
+        threshold            0.05pt
+        tolerance            500
+        adjustspacing          3
+        adjustspacingstep      1
+        adjustspacingshrink   20
+        adjustspacingstretch  40
+    \relax
+%     \linebreakpasses\plusone
+\stopsetups
+
+\startsetups align:pass:quality
+    \pretolerance 50
+    \tolerance    150
+    \parpasses    4
+        identifier           \parpassidentifier{quality}
+        threshold            0.025pt
+        tolerance            175
+      next
+        threshold            0.025pt
+        tolerance            200
+      next
+        threshold            0.025pt
+        tolerance            250
+      next
+        threshold            0.025pt
+        tolerance            250
+        adjustspacing          3
+        adjustspacingstep      1
+        adjustspacingshrink   20
+        adjustspacingstretch  40
+    \relax
+%     \linebreakpasses\plusone
+\stopsetups
+
+% the test set:
+
+% \startsetups align:pass:test1
+%     \pretolerance 100
+%     \tolerance    200
+%     \parpasses      2
+%         classes              \indecentparpassclasses
+%         tolerance            400
+%       next
+%         classes              \indecentparpassclasses
+%         tolerance            400
+%         adjustspacing          3
+%         adjustspacingstep      1
+%         adjustspacingshrink   15
+%         adjustspacingstretch  30
+%         emergencystretch     .25\bodyfontsize
+%     \relax
+%     \linebreakpasses\plusone
+% \stopsetups
+
+\startsetups align:pass:test1
+    \pretolerance 100
+    \tolerance    200
+    \parpasses    1
+        classes              \almostdecentparpassclasses
+        tolerance            300
+        adjustspacing          3
+        adjustspacingstep      1
+        adjustspacingshrink   15
+        adjustspacingstretch  30
+        emergencystretch     .25\bodyfontsize
+    \relax
+%     \linebreakpasses\plusone
+\stopsetups
+
+% This one works quite well About 300 hits, almost all but a handful caught by the
+% the first one.
+
+\startsetups align:pass:test2
+    \pretolerance 100
+    \tolerance    200
+    \parpasses      3
+        classes              \indecentparpassclasses
+        threshold            0.025pt
+        tolerance            250
+        extrahyphenpenalty    50
+      next
+        threshold            0.025pt
+        tolerance            300
+        adjustspacing          3
+        adjustspacingstep      1
+        adjustspacingshrink   10
+        adjustspacingstretch  15
+      next
+        threshold            0.025pt
+        tolerance            350
+        adjustspacing          3
+        adjustspacingstep      1
+        adjustspacingshrink   20
+        adjustspacingstretch  40
+        emergencystretch     .25\bodyfontsize
+    \relax
+%     \linebreakpasses\plusone
+\stopsetups
+
+% This one works quite well. About 500 hits, all but about 10 caught by the the
+% first one
+
+\startsetups align:pass:test3
+    \pretolerance  50
+    \tolerance    100
+    \parpasses      2
+        classes              \indecentparpassclasses
+        threshold            0.025pt
+        tolerance            200
+        extrahyphenpenalty    50
+      next
+        threshold            0.025pt
+        tolerance            200
+        extrahyphenpenalty    25
+        adjustspacing          3
+        adjustspacingstep      1
+        adjustspacingshrink   20
+        adjustspacingstretch  40
+        emergencystretch     .25\bodyfontsize
+    \relax
+%     \linebreakpasses\plusone
+\stopsetups
+
+% We increase expansion stepwise Here most (about 300) end up in the fourth run,
+% only a handful in the first ones No overfull hboxes present, many large changes.
+
+\startsetups align:pass:test4
+    \pretolerance 100
+    \tolerance    200
+    \parpasses      4
+        classes              \indecentparpassclasses
+        threshold            0.025pt
+        adjustspacing         3
+        adjustspacingstep     1
+        adjustspacingshrink   5
+        adjustspacingstretch 10
+      next
+        classes              \indecentparpassclasses
+        threshold            0.025pt
+        adjustspacing         3
+        adjustspacingstep     1
+        adjustspacingshrink  10
+        adjustspacingstretch 20
+      next
+        classes              \indecentparpassclasses
+        threshold            0.025pt
+        adjustspacing         3
+        adjustspacingstep     1
+        adjustspacingshrink  20
+        adjustspacingstretch 40
+      next
+        classes              \indecentparpassclasses
+        threshold            0.025pt
+        adjustspacing         3
+        adjustspacingstep     1
+        adjustspacingshrink  40
+        adjustspacingstretch 80
+    \relax
+%     \linebreakpasses\plusone
+\stopsetups
+
+% Start with low tolerance and hopefully no hyphens. increase tolerance and
+% decrease extrahyphenpenalty Last one has a larger threshold, so only kicks in for
+% lines that stick out "much" 31-1-4-0 (but two slightly overfull hboxes)
+
+\startsetups align:pass:test5
+    \pretolerance  50
+    \tolerance    100
+    \parpasses      4
+        threshold          0.025pt
+        tolerance          200
+        extrahyphenpenalty 100
+      next
+        threshold          0.025pt
+        tolerance          400
+        extrahyphenpenalty  50
+      next
+        threshold          0.025pt
+        tolerance          500
+        extrahyphenpenalty  25
+        emergencystretch   .25\bodyfontsize
+      next
+        threshold          1pt
+        tolerance          1000
+        extrahyphenpenalty 0
+        emergencystretch   .5\bodyfontsize
+    \relax
+%     \linebreakpasses\plusone
+\stopsetups
+
+% another temporary test
+
+\permanent\protected\def\optional#1#2%
+  {\optionalboundary#1\wordboundary#2\wordboundary\optionalboundary\zerocount}
+
+\startsetups align:pass:optional1
+    \pretolerance  75
+    \tolerance    150
+    \parpasses      3
+        classes              \indecentparpassclasses
+        linebreakoptional    0
+        tolerance            150
+    next
+%         callback             \parpasscallback{experiment}
+        classes              \indecentparpassclasses
+        tolerance            200
+        linebreakoptional    0
+        emergencystretch     .25\bodyfontsize
+    next
+%         threshold            0.025pt
+        classes              \indecentparpassclasses
+        tolerance            200
+        linebreakoptional    0
+        emergencystretch     .5\bodyfontsize
+    \relax
+%     \linebreakpasses\plusone
+\stopsetups
+
+\protect \endinput

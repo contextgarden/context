@@ -95,27 +95,27 @@
 
 \protected\def\page_floats_flush#1#2%
   {\clf_flushfloat{#1}#2\relax
-   \the\everyfloatscheck}
+   \expand\everyfloatscheck}
 
 \protected\def\page_floats_flush_by_label#1#2%
   {\clf_flushlabeledfloat{#1}{#2}\relax
-   \the\everyfloatscheck}
+   \expand\everyfloatscheck}
 
 \protected\def\page_floats_save#1%
   {\clf_savefloat{#1}\relax
-   \the\everyfloatscheck}
+   \expand\everyfloatscheck}
 
 \protected\def\page_floats_resave#1%
   {\clf_resavefloat{#1}\relax
-   \the\everyfloatscheck}
+   \expand\everyfloatscheck}
 
 \protected\def\page_floats_push_saved
   {\clf_pushfloat
-   \the\everyfloatscheck}
+   \expand\everyfloatscheck}
 
 \protected\def\page_floats_pop_saved
   {\clf_popfloat
-   \the\everyfloatscheck}
+   \expand\everyfloatscheck}
 
 \protected\def\page_floats_get_info#1%
   {\clf_consultfloat{#1}}
@@ -161,7 +161,7 @@
       \ifvoid\floatbox
         \exitloop
       \else
-        \def\currentfloat{#1}%
+        \cdef\currentfloat{#1}%
         \blank[\rootfloatparameter\c!spacebefore]%
         \box\floatbox
         \blank[\rootfloatparameter\c!spaceafter]%
@@ -191,7 +191,7 @@
 
 \permanent\tolerant\protected\def\placesavedfloat[#1]#*[#2]#*[#3]% experiment for Alan B
   {\clf_flushlabeledfloat\s!somewhere{#2}\relax
-  %\def\currentfloat{#1}%
+  %\cdef\currentfloat{#1}%
    \setbox\b_strc_float_saved\vpack{\box\floatbox}%
    \startplacefloat[#1][\c!location=\v!none,#3]%
      \box\b_strc_float_saved
@@ -304,7 +304,7 @@
 % \def\page_floats_flush_page_floats_indeed#1% future releases can do more clever things
 %   {\page_floats_flush{#1}\plusone
 %    \edef\floatspecification{\clf_getfloatvariable{specification}}% Is this okay?
-%    \the\everybeforeflushedpagefloat
+%    \expand\everybeforeflushedpagefloat
 %    \vpack to \textheight
 %      {\doifnotinset\v!high\floatspecification\vfill
 %       \box\floatbox
@@ -324,7 +324,7 @@
 \def\page_floats_flush_page_floats_inject#1% future releases can do more clever things
   {\page_floats_flush{#1}\plusone
    \edef\floatspecification{\clf_getfloatvariable{specification}}% Is this okay?
-   \the\everybeforeflushedpagefloat
+   \expand\everybeforeflushedpagefloat
    \vpack to \textheight
      {\doifnotinset\v!high\floatspecification\vfill
       \box\floatbox

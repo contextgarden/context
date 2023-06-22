@@ -136,11 +136,11 @@
 \to \everybeforeoutput
 
 \appendtoks
-    \the\everybackendshipout
+    \expand\everybackendshipout
 \to \everyshipout
 
 \prependtoks
-    \the\everylastbackendshipout
+    \expand\everylastbackendshipout
 \to \everylastshipout
 
 \prependtoks

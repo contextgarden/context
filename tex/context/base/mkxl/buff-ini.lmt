@@ -677,7 +677,9 @@ local function runbuffer(name,encapsulate,runnername,suffixes)
         content = "empty buffer"
     end
     if encapsulate then
-        content = formatters["\\starttext\n%s\n\\stoptext\n"](content)
+        if not find(content,"\\starttext") then
+            content = formatters["\\starttext\n%s\n\\stoptext\n"](content)
+        end
     end
     --
     local hash = md5hex(content)

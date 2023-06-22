@@ -278,7 +278,7 @@
    \cdef\currentexternalfigure{\the\c_grph_include_nesting}%
    \checkexternalfigureparent % each inherits from the root
    %
-   \the\everyexternalfigureresets
+   \expand\everyexternalfigureresets
    %
    \edef\p_grph_include_label{#1}%
    \let\p_grph_include_name\p_grph_include_label
@@ -297,9 +297,9 @@
      \setupcurrentexternalfigure[#3]%
    \fi
    %
-   \the\everyexternalfigurechecks
+   \expand\everyexternalfigurechecks
    %
-   \the\t_grph_include_local_settings
+   \expand\t_grph_include_local_settings
    %
    \edef\p_width    {\externalfigureparameter\c!width}%
    \edef\p_height   {\externalfigureparameter\c!height}%
@@ -683,7 +683,7 @@
           \orelse\ifcase\figurestatus
             % nothing
           \else
-            \the\externalfigurepostprocessors
+            \expand\externalfigurepostprocessors
             \box\foundexternalfigure
           \fi
         \else
@@ -698,7 +698,7 @@
           \orelse\ifcase\figurestatus
             \grph_include_replacement\figurelabel\figurefileoriginal{unknown}%
           \else
-            \the\externalfigurepostprocessors
+            \expand\externalfigurepostprocessors
             \edef\p_reset{\externalfigureparameter\c!reset}%
             \ifx\p_reset\v!yes
               \wd\foundexternalfigure\figurewidth
@@ -714,7 +714,7 @@
           \fi
         \fi
       \else
-        % maybe also \the\externalfigurepostprocessors
+        % maybe also \expand\externalfigurepostprocessors
         \iftrialtypesetting \else \feedbackexternalfigure \fi
       \fi}}
 

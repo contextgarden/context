@@ -454,13 +454,13 @@
           {\normalexpanded{\definelist[\currenthead][\currentheadparent][\c!prefix=\v!no]}}%
     \fi
     \presetlabeltext[\currenthead=]%
-    \the\everysetuphead
+    \expand\everysetuphead
 \to \everydefinehead
 
 \newtoks\everyredefinehead
 
 \appendtoks
-    \the\everyredefinehead
+    \expand\everyredefinehead
 \to \everydefinehead
 
 \appendtoks
@@ -508,7 +508,7 @@
    \push_macro_currentheadparent
    \cdef\currenthead{#1}%
    \edef\currentheadparent{#2}%
-   \the\everyredefinehead\relax
+   \expand\everyredefinehead\relax
    \pop_macro_currentheadparent
    \pop_macro_currenthead}
 
@@ -574,7 +574,7 @@
      \edefcsname\??headlevel#1\endcsname{\the\maxstructuredepth}%
      \setstructurelevel{#1}{\sectionlevel{#1}}%
      \normalexpanded{\setheadparameter{\s!parent}{\??head\lastsectionname}}% TO BE CHECKED, WE HAVE A HELPER
-     \the\everydefinesection
+     \expand\everydefinesection
      % so far for these default inheritances
      \definemarking[#1]%
      \ifnum\maxstructuredepth>\plusone
@@ -659,7 +659,7 @@
    \xdef\currenthead{#1}%
    \setsystemmode\currenthead % new, also here now
    \headparameter\c!beforesection % beware, no users vars set yet
-   \the\everybeforehead
+   \expand\everybeforehead
    \strc_sectioning_handle{#1}{#2}{#3}% name -- -- -- userdata (we might move the tagged to here)
    % potential: \bgroup (can be optional: grouped = yes)
    \headparameter\c!insidesection}
@@ -671,7 +671,7 @@
   %\globalpopmacro\currenthead % so we do a hard recover
    \xdef\currenthead{#1}% recover
    \headparameter\c!aftersection
-   \the\everyafterhead
+   \expand\everyafterhead
    \resetsystemmode\currenthead
    \pop_macro_currentstructurereferenceprefix
    \pop_macro_currentnamedsection} % new, also here now
@@ -794,7 +794,7 @@
 
 \permanent\protected\def\theheadsynchronization % public
   {% no, interferes: \signalcharacter
-   \the\everyheadsynchronization
+   \expand\everyheadsynchronization
    % new, this might move to a better place, e.g. first in the box
    \currentstructureextradata
    \lettonothing\currentstructureextradata
@@ -907,7 +907,7 @@
    \strc_sectioning_initialize_placement
    \strc_sectioning_initialize_number
    %
-   \the\everybeforesectionheadhandle
+   \expand\everybeforesectionheadhandle
    %
    % todo: also mark (for header)
    %
@@ -994,7 +994,7 @@
      \fi
    \fi
    %
-   \the\everyaftersectionheadhandle
+   \expand\everyaftersectionheadhandle
    %
    \setfalse\c_strc_sectioning_ignore_page
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
@@ -1097,7 +1097,7 @@
 \permanent\protected\def\repeathead[#1]%
   {\begingroup
    \setupinteraction[\c!state=\v!stop]%
-   \def\currenthead{#1}
+   \cdef\currenthead{#1}
    \strc_sectioning_initialize_placement
    \strc_sectioning_initialize_number
    \dostarttagged\t!sectioncaption\empty

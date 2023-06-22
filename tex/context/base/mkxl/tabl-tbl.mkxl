@@ -519,9 +519,9 @@
                 \bgroup
                 \tabl_tabulate_hook_G
                 \tabl_tabulate_entry_before
-\tabl_tabulate_hook_box_begin % might move
+                \tabl_tabulate_hook_box_begin % might move
                 \aligncontent
-\tabl_tabulate_hook_box_end   % might move
+                \tabl_tabulate_hook_box_end   % might move
                 \tabl_tabulate_entry_after
                 \egroup
                 \noexpand\ifnum\noexpand\c_tabl_tabulate_type=\plusone\noexpand\else
@@ -1446,7 +1446,7 @@
    \postponenotes % new, to be tested / will be configurable
    \widowpenalty\zerocount % otherwise lines are not broken
    \clubpenalty \zerocount % but overlap in funny ways
-   \the\everytabulate
+   \expand\everytabulate
    \tabulationparameter\c!inner
    \d_tabl_tabulate_indent\dimexpr\leftskip+\hangindent\ifx\p_indenting\v!yes+\parindent\fi\relax
    \global\c_tabl_tabulate_column\zerocount
@@ -1871,7 +1871,7 @@
       \advanceby\hsize\d_tabl_tabulate_indent
       % this is indeed rather messy and took a few hours
       % to dis/uncover
-      \the\t_tabl_tabulate_every_row
+      \expand\t_tabl_tabulate_every_row
       \hss}}
 
 \def\tabl_tabulate_flush_indent
@@ -2115,7 +2115,7 @@
 %    \tabl_tabulate_pheight_reset
 %    \unskip\unskip\crcr\tabl_tabulate_flush_collected
 %    % can we omit the next one in the first run? probably
-%    \noalign{\the\t_tabl_tabulate_every_after_row#2}}
+%    \noalign{\expand\t_tabl_tabulate_every_after_row#2}}
 
 % test case for ignorepar error
 %
@@ -2138,7 +2138,7 @@
    \unskip\unskip\crcr\tabl_tabulate_flush_collected
    % can we omit the next one in the first run? probably
    % todo: move \ignorepars ourside so no alignment error then
-   \noalign{\the\t_tabl_tabulate_every_after_row#2\ignorepars}}
+   \noalign{\expand\t_tabl_tabulate_every_after_row#2\ignorepars}}
 
 \def\tabl_tabulate_check_penalties
   {\ifconditional\c_tabl_tabulate_tolerant_break\else
@@ -2223,7 +2223,7 @@
 % \protected\def\tabl_tabulate_flush_second_step
 %   {\ifvoid\b_tabl_tabulate_current\fastloopindex
 %    \else
-%      \gdef\tabl_tabulate_flush_collected_indeed{\the\t_tabl_tabulate_dummy}%
+%      \gdef\tabl_tabulate_flush_collected_indeed{\expand\t_tabl_tabulate_dummy}%
 %      \ifvoid\b_tabl_tabulate_current\fastloopindex \else
 %        \global\settrue\c_tabl_tabulate_split_done % new 27/12/2022
 %      \fi
@@ -2245,7 +2245,7 @@
 \protected\def\tabl_tabulate_flush_second_step
   {\ifvoid\b_tabl_tabulate_current\currentloopiterator
    \else
-     \gdef\tabl_tabulate_flush_collected_indeed{\the\t_tabl_tabulate_dummy}%
+     \gdef\tabl_tabulate_flush_collected_indeed{\expand\t_tabl_tabulate_dummy}%
      \ifvoid\b_tabl_tabulate_current\currentloopiterator \else
        \global\settrue\c_tabl_tabulate_split_done % new 27/12/2022
      \fi
@@ -2511,7 +2511,7 @@
        \zerocount
      \fi
    %
-   \the\t_tabl_tabulate_initializers_first % collect more here
+   \expand\t_tabl_tabulate_initializers_first % collect more here
    %
    \glettonothing\tabl_tabulate_flush_collected
    \ifdim\d_tabl_tabulate_margin>\zeropoint
@@ -2601,7 +2601,7 @@
    \global\c_tabl_tabulate_noflines\zerocount
    %
    \c_tabl_tabulate_pass\plustwo % final pass
-   \the\t_tabl_tabulate_initializers_second % collect more here
+   \expand\t_tabl_tabulate_initializers_second % collect more here
    %
    \ifx\p_line\v!line
      \enforced\let\HL\HR
@@ -2623,7 +2623,6 @@
    \dostarttaggedchained\t!tabulate\empty\??tabulation
    \dostarttagged\t!tabulaterow\empty
    \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
-%  % \everycr\expandafter{\the\everycr\noalign{\the\t_tabl_tabulate_every_real_row}\dostoptagged\dostarttagged\t!tabulaterow\empty}%
    \toksapp\everycr{\noalign{\the\t_tabl_tabulate_every_real_row\dostoptagged\dostarttagged\t!tabulaterow\empty}}%
    \halign
      \ifconditional\c_tabl_sparse_skips \s!noskips\fi

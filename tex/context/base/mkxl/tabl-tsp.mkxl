@@ -89,7 +89,7 @@
    \global\noffloatssplits\zerocount
    \let\floatcaptionsuffix\page_split_float_suffix
    \edef\extrasplitfloatlines{\floatsplittingparameter\c!lines}%
-   \the\everysplitfloatsetup
+   \expand\everysplitfloatsetup
    \def\splitfloatcommand{#2}%
    \global\settrue \onlyonesplitofffloat
    \global\setfalse\somenextsplitofffloat
@@ -254,7 +254,7 @@
 \mutable\let\postprocesstsplit\donothing
 
 \permanent\protected\def\resettsplit
-  {\the\everyresettsplit}
+  {\expand\everyresettsplit}
 
 \resettsplit
 
@@ -266,12 +266,14 @@
    \testpagesync % new, sync, but still tricky
      [\number\c_split_minimum_free_lines]
      [\dimexpr\d_split_minimum_free_space+\extrasplitfloatlines\lineheight\relax]%
-   \setbox\scratchbox\vbox{\the\t_split_inbetween}%
+   \setbox\scratchbox\vbox{\expand\t_split_inbetween}%
    \d_split_inbetween_height\htdp\scratchbox
    \setfalse\c_tabl_split_done
    \doloop\tabl_split_loop_body
    \global\setfalse\usesamefloatnumber % new, prevent next increment
    \global\setfalse\splitfloatfirstdone} % we can use this one for tests
+
+\newbox\b_split_result_saved
 
 \def\tabl_split_loop_body
   {\ifinsidecolumns
@@ -303,8 +305,8 @@
    \setbox\b_split_result\vbox
      {\ifdim\ht\b_split_head>\zeropoint
         \unvcopy\b_split_head
-        \the\t_split_section
-        \the\t_split_inbetween
+        \expand\t_split_section
+        \expand\t_split_inbetween
       \fi}%
    \ifconditional\c_tabl_split_done \else
      \ifdim\ht\b_split_next>\zeropoint
@@ -318,6 +320,11 @@
      \setfalse\c_tabl_split_head % no tablehead
    \fi
    \splittopskip\zeropoint
+   \ifvoid\b_split_result_saved\else
+     \setbox\b_split_result\box\b_split_result_saved
+     \settrue\c_tabl_split_head % no tablehead
+     \global\setfalse\tabl_split_forced_page
+   \fi
    \doloop % inner loop
      {\setbox\scratchbox\vsplit\b_split_content to \onepoint % \lineheight
       \setbox\scratchbox\vbox % \vpack
@@ -332,31 +339,31 @@
         \global\setfalse\tabl_split_forced_page
         \setbox\b_split_result\vbox
           {\unvbox\b_split_result
-           \the\t_split_inbetween
+           \expand\t_split_inbetween
            \unvbox\scratchbox}%
         \exitloop
       \orelse\ifdim\dimexpr\d_split_available_height-\htdp\scratchbox-\htdp\b_split_result\relax>\zeropoint
         \setbox\b_split_result\vbox
           {\unvbox\b_split_result
-           \the\t_split_inbetween
+           \expand\t_split_inbetween
            \unvbox\scratchbox}%
         \ifvoid\b_split_content \exitloop \fi
       \orelse\ifconditional\c_tabl_split_head
         % we only have a tablehead so far
-        \setbox\b_split_result\vbox{\unvbox\b_split_result\unvbox\scratchbox}% \vpack
+        \global\setbox\b_split_result_saved\vbox{\unvbox\b_split_result\unvbox\scratchbox}% \vpack
         \exitloop
       \orelse\ifconditional\c_tabl_split_full
         % we have text height available, but the (one) cell is too
         % large to fit, so, in order to avoid loops/deadcycles we do:
         \setbox\b_split_result\vbox
           {\unvbox\b_split_result
-           \the\t_split_inbetween
+           \expand\t_split_inbetween
            \unvbox\scratchbox}%
         \exitloop
       \else
         \setbox\b_split_content\vbox
           {\unvbox\scratchbox
-           \the\t_split_inbetween
+           \expand\t_split_inbetween
            \ifvoid\b_split_content\else\unvbox\b_split_content\fi}%
         \exitloop
       \fi
@@ -367,10 +374,10 @@
    \ifvoid\b_split_content
      \setbox\b_split_result\vbox
        {\unvbox\b_split_result
-        \the\t_split_inbetween
+        \expand\t_split_inbetween
         \unvcopy\b_split_tail}%
-     \page_split_float_process{\the\t_split_before_result\box\b_split_result\the\t_split_after_result}%
-     \doifnotinsidesplitfloat{\the\t_split_after}%
+     \page_split_float_process{\expand\t_split_before_result\box\b_split_result\expand\t_split_after_result}%
+     \doifnotinsidesplitfloat{\expand\t_split_after}%
      \endgraf
      \exitloop
    \else
@@ -382,10 +389,10 @@
      \ifdim\ht\b_split_result>\zeropoint
        \setbox\b_split_result\vbox
          {\unvbox\b_split_result
-          \the\t_split_inbetween
+          \expand\t_split_inbetween
           \unvcopy\b_split_tail}%
-       \page_split_float_process{\the\t_split_before_result\box\b_split_result\the\t_split_after_result}%
-       \doifnotinsidesplitfloat{\the\t_split_after}%
+       \page_split_float_process{\expand\t_split_before_result\box\b_split_result\expand\t_split_after_result}%
+       \doifnotinsidesplitfloat{\expand\t_split_after}%
        \endgraf
        \global\settrue\usesamefloatnumber % new, prevent next increment
      \fi
@@ -437,7 +444,7 @@
      \ifdim\pagegoal<\maxdimen
        \pagegoal\dimexpr\pagegoal+\lineheight\relax % etex
      \fi
-     \page_split_float_process{\the\t_split_before_result\box\b_split_result\the\t_split_after_result}%
+     \page_split_float_process{\expand\t_split_before_result\box\b_split_result\expand\t_split_after_result}%
      \global\settrue\usesamefloatnumber % new, prevent next increment
      \endgraf
      \ifconditional\somenextsplitofffloat

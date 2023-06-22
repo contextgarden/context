@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2023-06-04 18:54
+-- merge date  : 2023-06-22 14:07
 
 do -- begin closure to overcome local limits and interference
 
@@ -33575,6 +33575,12 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
   local last=getnext(stop)
   while current~=last do 
    local next=getnext(current)
+   if current==subpos then
+    subnotafterbase=current
+   end
+   if current==postpos then
+    postnotafterbase=current
+   end
    if consonant[getchar(current)] then
     if not (current~=stop and next~=stop and halant[getchar(next)] and getchar(getnext(next))==c_zwj) then
      if not firstcons then
@@ -33583,6 +33589,12 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
      local a=getstate(current)
      if not (a==s_blwf or a==s_pstf or (a~=s_rphf and a~=s_blwf and ra[getchar(current)])) then
       base=current
+      if subnotafterbase then
+       subpos=base
+      end
+      if postnotafterbase then
+       postpos=base
+      end
      end
     end
    end
@@ -33635,7 +33647,7 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
    end
   end
    if not moved[current] and dependent_vowel[char] then
-   if pre_mark[char] then
+   if pre_mark[char] then 
     moved[current]=true
     local prev,next=getboth(current)
     setlink(prev,next)
@@ -33677,14 +33689,11 @@ local function reorder_two(head,start,stop,font,attr,nbspaces)
      logprocess("reorder two, handle pre mark")
     end
    elseif above_mark[char] then
-    target=basepos
-    if subpos==basepos then
-     subpos=current
-    end
-    if postpos==basepos then
+    target=subpos
+    if postpos==subpos then
      postpos=current
     end
-    basepos=current
+    subpos=current
    elseif below_mark[char] then
     target=subpos
     if postpos==subpos then
@@ -33904,11 +33913,7 @@ local function analyze_next_chars_one(c,font,variant)
    if pre_mark[v] and not already_pre_mark then
     already_pre_mark=true
    elseif post_mark[v] and not already_post_mark then
-    if devanagarihash[font].conjuncts=="mixed" then
-     return c
-    else
      already_post_mark=true
-    end
    elseif below_mark[v] and not already_below_mark then
     already_below_mark=true
    elseif above_mark[v] and not already_above_mark then
@@ -34109,11 +34114,7 @@ local function analyze_next_chars_two(c,font)
     if pre_mark[v] and not already_pre_mark then
      already_pre_mark=true
     elseif post_mark[v] and not already_post_mark then
-       if devanagarihash[font].conjuncts=="mixed" then
-        return c
-       else
         already_post_mark=true
-       end
     elseif below_mark[v] and not already_below_mark then
      already_below_mark=true
     elseif above_mark[v] and not already_above_mark then

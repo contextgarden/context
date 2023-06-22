@@ -251,7 +251,7 @@
 \def\meta_start_current_graphic
   {\begingroup
    \meta_enable_include
-   \the\everyMPgraphic
+   \expand\everyMPgraphic
    \edef\p_initializations{\MPinstanceparameter\s!initializations}%
    \ifx\p_initializations\v!yes
      \settrue \c_meta_include_initializations

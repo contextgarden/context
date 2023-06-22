@@ -356,11 +356,11 @@ typedef enum tex_modes {
     inline_mmode     = -3,
 } tex_modes;
 
-inline int is_v_mode(halfword mode) { return mode == vmode || mode == internal_vmode; }
-inline int is_h_mode(halfword mode) { return mode == hmode || mode == restricted_hmode; }
-inline int is_m_mode(halfword mode) { return mode == mmode || mode == inline_mmode; }
+static inline int is_v_mode(halfword mode) { return mode == vmode || mode == internal_vmode; }
+static inline int is_h_mode(halfword mode) { return mode == hmode || mode == restricted_hmode; }
+static inline int is_m_mode(halfword mode) { return mode == mmode || mode == inline_mmode; }
 
-inline int tex_normalized_mode(halfword mode) 
+static inline int tex_normalized_mode(halfword mode) 
 {
     switch (mode) { 
         case internal_vmode  : return vmode;
@@ -771,6 +771,7 @@ typedef enum expand_after_codes {
     expand_token_code,
     expand_cs_token_code,
     expand_code,
+    expand_toks_code,
     expand_active_code,
     semi_expand_code,
     expand_after_toks_code,
@@ -1115,7 +1116,7 @@ typedef enum math_styles {
 # define are_valid_math_styles(n) (n >= all_display_styles && n <= all_cramped_styles)
 # define visible_math_styles(n)   (n >= display_style      && n <= all_cramped_styles)
 
-inline static halfword tex_math_style_to_size(halfword s)
+static inline halfword tex_math_style_to_size(halfword s)
 {
     if (s == script_style || s == cramped_script_style) {
         return script_size;

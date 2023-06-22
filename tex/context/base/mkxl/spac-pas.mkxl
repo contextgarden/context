@@ -1,0 +1,134 @@
+%D \module
+%D   [       file=spac-pas,
+%D        version=2023.06.10,
+%D          title=\CONTEXT\ Spacing Macros,
+%D       subtitle=Passes,
+%D         author=Hans Hagen & Mikael Sundqvist,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Spacing Macros / Passes}
+
+\registerctxluafile{spac-pas}{autosuffix}
+
+%D Here we set up some nano typography features. We have moved the penalties
+%D that deal with par building here. We also separated them from the page
+%D builder related ones.
+
+\unprotect
+
+\immutable\integerdef\defaultdoublehyphendemerits    10000
+\immutable\integerdef\defaultfinalhyphendemerits      5000
+\immutable\integerdef\defaultadjdemerits             10000
+\immutable\integerdef\defaultorphanpenalty               0
+\immutable\integerdef\defaultlinebreakcriterion          0 % 12 12 12 99 : 0C0C0C63
+
+\immutable\integerdef\granularadjdemerits              5000
+\immutable\integerdef\granularlinebreakcriterion  "020C2A63  %  2 12 42 99
+
+\frozen\doublehyphendemerits\defaultdoublehyphendemerits
+\frozen\finalhyphendemerits \defaultfinalhyphendemerits
+\frozen\adjdemerits         \defaultadjdemerits
+\frozen\linebreakcriterion  \defaultlinebreakcriterion
+\frozen\orphanpenalty       \defaultorphanpenalty
+
+% better but incompatible:
+%
+% \frozen\adjdemerits         \optimaladjdemerits
+% \frozen\linebreakcriterion  \optimallinebreakcriterion
+
+\defcsname\??aligncommand\v!granular\endcsname % no way to reset it .. todo: \everyresetalign
+  {\toksapp\t_spac_align_collected{%
+     \adjdemerits       \granularadjdemerits
+     \linebreakcriterion\granularlinebreakcriterion
+   }}
+
+% \resetpenalties\orphanpenalties
+
+\integerdef\indecentparpassclasses\numexpr
+      \verylooseparpassclass
+    + \looseparpassclass
+    + \semilooseparpassclass
+    % \decentparpassclass
+    + \semitightparpassclass
+    + \tightparpassclass
+\relax
+
+\integerdef\almostdecentparpassclasses\numexpr
+      \verylooseparpassclass
+    + \looseparpassclass
+    % \semilooseparpassclass
+    % \decentparpassclass
+    % \semitightparpassclass % yes or no
+    + \tightparpassclass
+\relax
+
+\integerdef\looseparpassclasses\numexpr
+      \verylooseparpassclass
+    + \looseparpassclass
+    + \semilooseparpassclass
+\relax
+
+\integerdef\tightparpassclasses\numexpr
+      \semitightparpassclass
+    + \tightparpassclass
+\relax
+
+\appendtoks
+    \ifcase\linebreakpasses\else
+        \linebreakpasses\zerocount
+        \pretolerance   \plushundred
+        \tolerance      \plustwohundred
+    \fi
+\to \everyforgetall
+
+\startsetups align:pass:none
+    \pretolerance   \plushundred
+    \tolerance      \plustwohundred
+    \parpasses      \zerocount
+    \linebreakpasses\zerocount
+  % \lettonothing\currentalignpass
+\stopsetups
+
+% see spac-pas-imp-tests.mkxl
+
+\lettonothing\currentalignpass
+
+\permanent\protected\def\setupalignpass[#1]%
+  {\cdef\tempstring{align:pass:#1}%
+   \ifx\tempstring\currentalignpass\else
+     \linebreakpasses\plusone % none will reset this
+     \let\currentalignpass\tempstring
+     \fastsetup\currentalignpass
+     \relax % to be sure
+   \fi}
+
+\appendtoks
+    \ifcase\linebreakpasses\else
+      \fastsetup\currentalignpass
+    \fi
+\to \everybodyfont
+
+%D This sort of belongs here:
+
+\permanent\protected\def\optionalword#1%
+  {\removeunwantedspaces\wordboundary\discretionary{}{}{#1}}
+
+%D \starttyping
+%D \dostepwiserecurse{80}{100}{1}{\hsize #1mm
+%D     Many readers will skim over formulas on their first reading
+%D     of your exposition. Therefore, your sentences should flow
+%D     smoothly when all but the simplest formulas are replaced by
+%D     \quotation {blah} or some other \optionalword {grunting }noise.
+%D     \page
+%D }
+%D \stoptyping
+
+% Musical timestamp: Archive's Call to Arms & Angels (and Super8) in loop mode
+% (June 2023, weirdly I had missed those releases in 2022).
+
+\protect

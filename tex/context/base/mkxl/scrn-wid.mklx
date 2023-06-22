@@ -103,7 +103,7 @@
 \permanent\tolerant\protected\def\registerattachment[#tag]#spacer[#settings]% we save (globally) at the lua end
   {\ifarguments\else
      \begingroup
-     \def\currentattachment{_}%
+     \cdef\currentattachment{_}%
      \setupcurrentattachment[#settings,\s!parent=\??attachment]%
      \clf_registerattachment
         tag        {#tag}%

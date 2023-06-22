@@ -78,7 +78,7 @@ typedef enum direction_codes {
 
 /* will become texgeometry.h|c and dir also in geometry */
 
-inline static void tex_check_box_geometry(halfword n)
+static inline void tex_check_box_geometry(halfword n)
 {
     if (box_x_offset(n) || box_y_offset(n)) {
         tex_set_box_geometry(n, offset_geometry);
@@ -97,7 +97,7 @@ inline static void tex_check_box_geometry(halfword n)
     }
 }
 
-inline static void tex_set_box_direction(halfword b, halfword v)
+static inline void tex_set_box_direction(halfword b, halfword v)
 {
     box_dir(b) = (singleword) checked_direction_value(v);
 }

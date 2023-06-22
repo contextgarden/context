@@ -76,7 +76,7 @@ extern string_pool_info lmt_string_pool_state;
 
 /*tex Forget the last character in the pool. */
 
-inline static void  tex_flush_char(void)       { --lmt_string_pool_state.string_temp_top; }
+static inline void  tex_flush_char(void)       { --lmt_string_pool_state.string_temp_top; }
                    
 extern strnumber  tex_make_string            (void);
 extern strnumber  tex_push_string            (const unsigned char *s, int l);
@@ -105,6 +105,6 @@ extern void       tex_compact_string_pool    (void);
 /*     void       tex_increment_pool_string  (int n); */
 /*     void       tex_decrement_pool_string  (int n); */
                                    
-inline static const char *tex_to_cstring (int s) { return str_length(s) > 0 ? (char *) str_string(s) : ""; }
+static inline const char *tex_to_cstring (int s) { return str_length(s) > 0 ? (char *) str_string(s) : ""; }
 
 # endif

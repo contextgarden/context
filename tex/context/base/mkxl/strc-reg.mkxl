@@ -414,7 +414,7 @@
 \aliased\let\dotagregisterlocation\relax % experiment
 
 \tolerant\protected\def\strc_registers_insert_entry[#1]#*[#2]%
-  {\def\currentregister{#1}%
+  {\cdef\currentregister{#1}%
    \edef\p_ownnumber{\registerparameter\c!ownnumber}%
    \ifx\p_ownnumber\v!yes
      \expandafter\strc_registers_insert_entry_yes
@@ -668,7 +668,7 @@
     %\forgetall
      \setupregister[#1][#2]% can be a list
      \cdef\currentregister{\firstinset{#1}}%
-     \the\everyplaceregister
+     \expand\everyplaceregister
      \ifnum\namedmixedcolumnsparameter\currentregister\c!n>\plusone
        \startmixedcolumns[\currentregister]%
          \strc_registers_place_indeed{#1}%

@@ -248,7 +248,7 @@
    \dostarttaggedchained\t!table\empty\??xtable
    \tabl_x_set_checked{#settings}%
    \tabl_x_check_textwidth
-   \the\everypreparextable
+   \expand\everypreparextable
    }% else whitespace mess
 
 \def\tabl_x_get_buffer
@@ -345,7 +345,7 @@
    \dostoptagged
    \resetbuffer[\tabl_x_current_buffer]%
    \resetcharacteralign
-   \the\t_table_x_cleanup
+   \expand\t_table_x_cleanup
    \egroup}
 
 % text flow split modes
@@ -536,7 +536,7 @@
 \to \t_tabl_x_every_cell
 
 \protected\def\tabl_x_begin_of_cell
-  {\the\t_tabl_x_every_cell
+  {\expand\t_tabl_x_every_cell
    \everypar{\delayedbegstrut}}
 
 \protected\def\tabl_x_end_of_cell

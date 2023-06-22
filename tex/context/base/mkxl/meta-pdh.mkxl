@@ -170,7 +170,7 @@
    \fi}
 
 \def\setMPPDFobject#1#2% resources boxnumber
-  {\ifdefined\everyPDFxform\the\everyPDFxform\fi
+  {\ifdefined\everyPDFxform\expand\everyPDFxform\fi
    \immediate\saveboxresource resources{#1}#2%
    \edef\getMPPDFobject{\noexpand\useboxresource\the\lastsavedboxresourceindex}}
 
@@ -259,7 +259,7 @@
 % \to \MPstopresources
 
 \appendtoksonce
-   \the\everyPDFxform
+   \expand\everyPDFxform
 \to \MPstopresources
 
 %D Special number~1 is dedicated to \CMYK\ support. If you

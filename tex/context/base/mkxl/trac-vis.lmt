@@ -1658,7 +1658,7 @@ local ruledmath do
     }
 
     local getoptions = nuts.getoptions
-    local shortmath  = tex.mathoptioncodes.shortmath
+    local shortmath  = tex.mathoptioncodes.short
 
     ruledmath = function(head,current)
         local what  = getsubtype(current)

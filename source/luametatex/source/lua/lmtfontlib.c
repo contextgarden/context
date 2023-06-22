@@ -268,9 +268,15 @@ static void fontlib_aux_font_char_from_lua(lua_State *L, halfword f, int i, int 
         set_numeric_field_by_index(target, compression, target);
         set_charinfo_compression(co, target);
         set_numeric_field_by_index(target, leftprotrusion, 0);
-        set_charinfo_leftprotrusion(co, target);
+        if (target) { 
+            set_font_text_control(f, text_control_left_protrusion);
+            set_charinfo_leftprotrusion(co, target);
+        }
         set_numeric_field_by_index(target, rightprotrusion, 0);
-        set_charinfo_rightprotrusion(co, target);
+        if (target) { 
+            set_font_text_control(f, text_control_right_protrusion);
+            set_charinfo_rightprotrusion(co, target);
+        }
         if (has_math) {
             tex_char_malloc_mathinfo(co);
             set_numeric_field_by_index(target, smaller, 0);
@@ -657,6 +663,7 @@ static int lmt_font_from_lua(lua_State *L, int f)
                     set_font_step(f, fstep);
                     set_font_max_stretch(f, fstretch);
                     set_font_max_shrink(f, fshrink);
+                    set_font_text_control(f, text_control_expansion);
                 }
             } else {
                 tex_formatted_warning("font", "lua-loaded font '%d' with name '%s' has no characters", f, font_name(f));
@@ -737,6 +744,48 @@ static int lmt_characters_from_lua(lua_State *L, int f)
     return 1;
 }
 
+static int lmt_quality_from_lua(lua_State *L, int f)
+{
+    lua_push_key(characters);
+    if (lua_rawget(L, -2) == LUA_TTABLE) {
+        int first = font_first_character(f);
+        int last = font_last_character(f);
+        lua_pushnil(L);
+        while (lua_next(L, -2)) {
+            if (lua_type(L, -2) == LUA_TNUMBER) {
+                int i = lmt_tointeger(L, -2);
+                if ((i >= first && i <= last) && tex_char_exists(f, i) && lua_istable(L, -1)) {
+                    int target; 
+                    charinfo *co = tex_get_charinfo(f, i);
+                    if (! has_charinfo_tag(co, expansion_tag)) {
+                        set_numeric_field_by_index(target, expansion, scaling_factor);
+                        set_charinfo_expansion(co, target);
+                        set_numeric_field_by_index(target, compression, target);
+                        set_charinfo_compression(co, target);
+                        set_charinfo_tag(co, expansion_tag);
+                    }
+                    if (! has_charinfo_tag(co, protrusion_tag)) {
+                        set_numeric_field_by_index(target, leftprotrusion, 0);
+                        if (target) { 
+                            set_font_text_control(f, text_control_left_protrusion);
+                            set_charinfo_leftprotrusion(co, target);
+                        }
+                        set_numeric_field_by_index(target, rightprotrusion, 0);
+                        if (target) { 
+                            set_font_text_control(f, text_control_right_protrusion);
+                            set_charinfo_rightprotrusion(co, target);
+                        }
+                        set_charinfo_tag(co, protrusion_tag);
+                    }
+                }
+            }
+            lua_pop(L, 1);
+        }
+        lua_pop(L, 1);
+    }
+    return 1;
+}
+
 /*tex
 
    The font library has helpers for defining the font and setting or getting the current font.
@@ -788,6 +837,24 @@ static int fontlib_addcharacters(lua_State *L)
         if (tex_is_valid_font(i)) {
             lua_settop(L, 2);
             lmt_characters_from_lua(L, i);
+        } else {
+            return luaL_error(L, "invalid font id %d passed", i);
+        }
+    }
+    return 0;
+}
+
+static int fontlib_addquality(lua_State *L)
+{
+    int i = lmt_checkinteger(L, 1);
+    if (i) {
+        if (tex_is_valid_font(i)) {
+            if (! has_font_text_control(i, text_control_quality_set)) {
+                luaL_checktype(L, 2, LUA_TTABLE);
+                lua_settop(L, 2);
+                lmt_quality_from_lua(L, i);
+                set_font_text_control(i, text_control_quality_set);
+            }
         } else {
             return luaL_error(L, "invalid font id %d passed", i);
         }
@@ -963,6 +1030,7 @@ static const struct luaL_Reg fontlib_function_list[] = {
     { "max",           fontlib_max           },
     { "setfont",       fontlib_setfont       },
     { "addcharacters", fontlib_addcharacters },
+    { "addquality",    fontlib_addquality    },
     { "define",        fontlib_define        },
     { "nextid",        fontlib_nextid        },
     { "id",            fontlib_id            },

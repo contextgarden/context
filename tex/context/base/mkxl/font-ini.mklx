@@ -324,13 +324,13 @@
 \newtoks\t_font_tracers_definitions
 
 \permanent\protected\def\tracefontdefinitions
-  {\the\t_font_tracers_definitions}
+  {\expand\t_font_tracers_definitions}
 
 %D Some housekeeping macros:
 
 \permanent\protected\def\setfontparameters
   {\setfalse\c_font_synchronize
-   \the\everybodyfont
+   \expand\everybodyfont
    \settrue\c_font_synchronize}
 
 \mutable\lettonothing\savedfont
@@ -374,7 +374,7 @@
       \font_basics_define_font_without_parameters{thedefinedfont}{#specification}%
    \fi
    \thedefinedfont
-   \the\everydefinedfont}
+   \expand\everydefinedfont}
 
 %D \macros{startfont}
 
@@ -591,9 +591,9 @@
 \setnewmacro\m_font_size_command       \gobbleoneargument
 \setnewmacro\m_font_alternative_command\gobbleoneargument
 
-\def\font_helpers_process_style_list      #command{\def\m_font_style_command      {#command}\the\t_font_style_commands}
-\def\font_helpers_process_size_list       #command{\def\m_font_size_command       {#command}\the\t_font_size_commands}
-\def\font_helpers_process_alternative_list#command{\def\m_font_alternative_command{#command}\the\t_font_alternative_commands}
+\def\font_helpers_process_style_list      #command{\def\m_font_style_command      {#command}\expand\t_font_style_commands}
+\def\font_helpers_process_size_list       #command{\def\m_font_size_command       {#command}\expand\t_font_size_commands}
+\def\font_helpers_process_alternative_list#command{\def\m_font_alternative_command{#command}\expand\t_font_alternative_commands}
 
 \def\font_helpers_register_style            #style{\letcsname\??fontstyleknown            #style\endcsname\empty}
 \def\font_helpers_register_size              #size{\letcsname\??fontsizeknown              #size\endcsname\empty}
@@ -867,7 +867,7 @@
    \else
      \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks)
      \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
-     \the\everydefinefont
+     \expand\everydefinefont
    \fi
    \c_font_feature_inheritance_mode\c_font_feature_inheritance_default}
 
@@ -1019,7 +1019,7 @@
        \relax
        \mutable\ifempty\fontclass\letcsname\else\gletcsname\fi#csname\endcsname\lastrawfontcall
       %
-       \the\everydefinefont
+       \expand\everydefinefont
      \fi
    \fi
    \c_font_feature_inheritance_mode\c_font_feature_inheritance_default}
@@ -1097,7 +1097,7 @@
 \ifdefined\everyfont       \else \newtoks\everyfont       \fi
 \ifdefined\everyfontswitch \else \newtoks\everyfontswitch \fi
 
-\permanent\def\setfontcharacteristics{\the\everyfont}
+\permanent\def\setfontcharacteristics{\expand\everyfont}
 
 % \appendtoks
 %     \ifcase\c_fonts_auto_language
@@ -1193,8 +1193,8 @@
    \font_helpers_low_level_define{#2}\v_font_identifier_basic
    \csname\v_font_identifier_basic\endcsname
    \setfalse\c_font_auto_size
-   \the\everyfont % \setfontcharacteristics
-   \the\everyfontswitch
+   \expand\everyfont % \setfontcharacteristics
+   \expand\everyfontswitch
    \let\v_font_identifier_basic\v_font_identifier_basic_saved}
 
 \protected\def\font_helpers_trigger#identifier% make a traced variant
@@ -1214,8 +1214,8 @@
    \csname\v_font_identifier_class\endcsname
    \setfalse\c_font_auto_size
    \ifskipfontcharacteristics \else
-     \the\everyfont % \setfontcharacteristics
-     \the\everyfontswitch
+     \expand\everyfont % \setfontcharacteristics
+     \expand\everyfontswitch
    \fi
    \let\v_font_identifier_class\v_font_identifier_class_saved}
 
@@ -1223,8 +1223,8 @@
   {\csname\v_font_identifier_class\endcsname
    \setfalse\c_font_auto_size
    \ifskipfontcharacteristics \else
-     \the\everyfont % \setfontcharacteristics
-     \the\everyfontswitch
+     \expand\everyfont % \setfontcharacteristics
+     \expand\everyfontswitch
    \fi
    \let\v_font_identifier_class\v_font_identifier_class_saved}
 
@@ -1877,7 +1877,7 @@
      \lastnamedcs
      \cdef\fontstyle{#style}%
      \ifmmode\mr\fi % in order to be compatible with \rm in math mode
-     % \the\everybodyfont % cleaner, in setting size as well as style
+     % \expand\everybodyfont % cleaner, in setting size as well as style
    \else
      \showmessage\m!fonts5{#style}%
    \fi}
@@ -2050,8 +2050,8 @@
    \fi
    \setfalse\c_font_auto_size
    \ifskipfontcharacteristics
-     \the\everyfont % \setfontcharacteristics
-     \the\everyfontswitch
+     \expand\everyfont % \setfontcharacteristics
+     \expand\everyfontswitch
    \fi}
 
 %D This is the resolver for special cases (sizes) and in practice it is not called
@@ -2260,8 +2260,8 @@
      \font_scale_inherit_normal\??fontscalex
    \fi
    \ifskipfontcharacteristics
-     \the\everyfont % \setfontcharacteristics
-     \the\everyfontswitch
+     \expand\everyfont % \setfontcharacteristics
+     \expand\everyfontswitch
    \fi}
 
 \def\font_scale_inherit_normal_xx
@@ -2271,8 +2271,8 @@
      \font_scale_inherit_normal\??fontscalexx
    \fi
    \ifskipfontcharacteristics
-     \the\everyfont % \setfontcharacteristics
-     \the\everyfontswitch
+     \expand\everyfont % \setfontcharacteristics
+     \expand\everyfontswitch
    \fi}
 
 \def\font_scale_inherit_compact#1%
@@ -2322,8 +2322,8 @@
      \font_scale_inherit_compact\??fontscalex
    \fi
    \ifskipfontcharacteristics
-     \the\everyfont % \setfontcharacteristics
-     \the\everyfontswitch
+     \expand\everyfont % \setfontcharacteristics
+     \expand\everyfontswitch
    \fi}
 
 \def\font_scale_inherit_compact_xx
@@ -2333,8 +2333,8 @@
      \font_scale_inherit_compact\??fontscalexx
    \fi
    \ifskipfontcharacteristics
-     \the\everyfont % \setfontcharacteristics
-     \the\everyfontswitch
+     \expand\everyfont % \setfontcharacteristics
+     \expand\everyfontswitch
    \fi}
 
 \def\font_scale_defined_x
@@ -2539,11 +2539,11 @@
       \normalizebodyfontsize\normalizedglobalbodyfontsize\globalbodyfontsize
       \let\globalfontstyle\fontstyle
       \ifproductionrun
-        \the\everybodyfont
-        \the\everyglobalbodyfont
+        \expand\everybodyfont
+        \expand\everyglobalbodyfont
         \saveinterlinespace
       \fi
-      \the\everysetupbodyfont}}
+      \expand\everysetupbodyfont}}
 
 \protected\def\font_basics_switchtobodyfont#specification%
   {\edef\m_font_step{\font_bodyfontvariable{#specification}}%
@@ -2552,8 +2552,8 @@
    \else
      \font_helpers_switch_bodyfont_step % so we have a fast [small] switch
    \fi
-   \the\everybodyfont
-   \the\everyswitchtobodyfont}
+   \expand\everybodyfont
+   \expand\everyswitchtobodyfont}
 
 \permanent\protected\def\switchtobodyfont[#specification]% could become an ifx
   {\doifsomething{#specification}{\font_basics_switchtobodyfont{#specification}}}
@@ -2580,7 +2580,7 @@
      \fi
    \fi
    \csname\??fontstyle\fontstyle\endcsname
-   \the\everybodyfont}
+   \expand\everybodyfont}
 
 %D \starttyping
 %D $\cases{& \ccaron}$ $x=\hbox{\ccaron $x=\hbox{\ccaron}$}$
@@ -2656,11 +2656,11 @@
 
 \def\font_basics_switch_style_only_arg#name% stupid version
   {\font_helpers_set_current_font_style{\csname\??fontshortstyle\checkedstrippedcsname#name\endcsname}%
-   \the\everybodyfont} % needed ?
+   \expand\everybodyfont} % needed ?
 
 \def\font_basics_switch_style_only_opt[#name]% todo : check
   {\font_helpers_set_current_font_style{\csname\??fontshortstyle#name\endcsname}%
-   \the\everybodyfont} % needed ?
+   \expand\everybodyfont} % needed ?
 
 %D \macros
 %D   {definebodyfontswitch}
@@ -2692,14 +2692,14 @@
    \font_basics_switch_points\m_font_step
    \font_basics_switch_style \fontstyle}
 
-\permanent\protected\def\setsmallbodyfont{\font_helpers_set_bodyfont_step\v!small\the\everybodyfont}
-\permanent\protected\def\setbigbodyfont  {\font_helpers_set_bodyfont_step\v!big  \the\everybodyfont}
+\permanent\protected\def\setsmallbodyfont{\font_helpers_set_bodyfont_step\v!small\expand\everybodyfont}
+\permanent\protected\def\setbigbodyfont  {\font_helpers_set_bodyfont_step\v!big  \expand\everybodyfont}
 
 \permanent\protected\def\setmainbodyfont
   {\font_basics_switch_points\normalizedbodyfontsize
    \font_basics_switch_style\fontstyle
-   \the\everybodyfont
-   \the\everyglobalbodyfont
+   \expand\everybodyfont
+   \expand\everyglobalbodyfont
    \saveinterlinespace}
 
 %D \macros
@@ -2727,8 +2727,8 @@
    \font_basics_switch_style\globalfontstyle
    \redoconvertfont % just in case a pagebreak occurs
    \tf
-   \the\everybodyfont
-   \the\everyglobalbodyfont
+   \expand\everybodyfont
+   \expand\everyglobalbodyfont
    \saveinterlinespace}
 
 \permanent\protected\def\partialrestoreglobalbodyfont
@@ -2738,8 +2738,8 @@
    \currentxfontsize\zerocount
    \redoconvertfont
    \tf
-   \the\everybodyfont % indeed needed
-   \the\everyglobalbodyfont % indeed needed
+   \expand\everybodyfont % indeed needed
+   \expand\everyglobalbodyfont % indeed needed
    \saveinterlinespace}
 
 \permanent\protected\def\restoreglobalbodyfont % ook style etc

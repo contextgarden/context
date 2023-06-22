@@ -303,7 +303,7 @@
        \fi
      \fi
    \fi
-   \the\beforeeverylinenumbering
+   \expand\beforeeverylinenumbering
    %\global\settrue\c_page_lines_enabled           %
    \global\settrue\page_postprocessors_needed_box % see core-rul.mkiv
    \ifcase\c_page_lines_mode\relax
@@ -316,7 +316,7 @@
 \permanent\protected\def\stoplinenumbering
   {\ifconditional\c_pages_lines_nesting=\plusone
      \c_attr_linenumber\attributeunsetvalue
-     \the\aftereverylinenumbering
+     \expand\aftereverylinenumbering
      \ifconditional\c_page_lines_auto_narrow\par\fi
    \fi
    \endgroup}
@@ -450,7 +450,7 @@
         #distance+\d_page_lines_distance
         \ifconditional\c_page_lines_dir_left_to_right\else+\d_page_lines_line_width\fi
       \relax
-      \the\everylinenumber
+      \expand\everylinenumber
       \hss
       \dostoptagged}%
    \dostoptagged}
@@ -466,7 +466,7 @@
       \dostoptagged
       \page_lines_number_inject#align#width%
       \dostarttagged\t!ignore\empty
-      \the\everylinenumber
+      \expand\everylinenumber
       \hss
       \dostoptagged}%
    \dostoptagged}
@@ -519,7 +519,7 @@
   {\rlap
      {\kern\d_page_lines_distance
       \page_lines_number_inject#align\zeropoint
-      \the\everylinenumber}}
+      \expand\everylinenumber}}
 
 \def\page_line_handle_end#align%
   {\rlap
@@ -527,7 +527,7 @@
       \llap
         {\page_lines_number_inject#align\zeropoint
          \kern\d_page_lines_distance
-         \the\everylinenumber}}}
+         \expand\everylinenumber}}}
 
 \protected\defcsname\??linenumberinghandler\v!begin\endcsname{\page_line_handle_begin\p_align}
 \protected\defcsname\??linenumberinghandler\v!end  \endcsname{\page_line_handle_end  \p_align}

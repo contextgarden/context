@@ -53,34 +53,34 @@ typedef posit32_t *posit;
 # define posit_ge_zero(a) (a.v >= 0)         
 # define posit_ne_zero(a) (a.v != 0)         
 
-inline static posit_t posit_neg(posit_t a) { posit_t p ; p.v = -a.v & 0xFFFFFFFF; return p; } 
-inline static posit_t posit_abs(posit_t a) { posit_t p ; int mask = a.v >> 31; p.v = ((a.v + mask) ^ mask) & 0xFFFFFFFF; return p; }
+static inline posit_t posit_neg(posit_t a) { posit_t p ; p.v = -a.v & 0xFFFFFFFF; return p; } 
+static inline posit_t posit_abs(posit_t a) { posit_t p ; int mask = a.v >> 31; p.v = ((a.v + mask) ^ mask) & 0xFFFFFFFF; return p; }
 
 //     static posit_t posit_neg     (posit_t v)            { return posit_mul(v, integer_to_posit(-1)) ; }
-inline static posit_t posit_fabs    (posit_t v)            { return double_to_posit(fabs (posit_to_double(v))); }
-inline static posit_t posit_exp     (posit_t v)            { return double_to_posit(exp  (posit_to_double(v))); }
-inline static posit_t posit_log     (posit_t v)            { return double_to_posit(log  (posit_to_double(v))); }   
-inline static posit_t posit_sin     (posit_t v)            { return double_to_posit(sin  (posit_to_double(v))); }   
-inline static posit_t posit_cos     (posit_t v)            { return double_to_posit(cos  (posit_to_double(v))); }   
-inline static posit_t posit_tan     (posit_t v)            { return double_to_posit(tan  (posit_to_double(v))); }   
-inline static posit_t posit_asin    (posit_t v)            { return double_to_posit(asin (posit_to_double(v))); }   
-inline static posit_t posit_acos    (posit_t v)            { return double_to_posit(acos (posit_to_double(v))); }   
-inline static posit_t posit_atan    (posit_t v)            { return double_to_posit(atan (posit_to_double(v))); }   
-inline static posit_t posit_atan2   (posit_t v, posit_t w) { return double_to_posit(atan2(posit_to_double(v),posit_to_double(w))); }   
-inline static posit_t posit_pow     (posit_t v, posit_t w) { return double_to_posit(pow  (posit_to_double(v),posit_to_double(w))); }   
-inline static posit_t posit_round   (posit_t v)            { return posit_round_to_integer(v); }   
-inline static posit_t posit_floor   (posit_t v)            { return double_to_posit(floor(posit_to_double(v))); }   
-inline static posit_t posit_modf    (posit_t v)            { double d; return double_to_posit(modf(posit_to_double(v), &d)); }   
+static inline posit_t posit_fabs    (posit_t v)            { return double_to_posit(fabs (posit_to_double(v))); }
+static inline posit_t posit_exp     (posit_t v)            { return double_to_posit(exp  (posit_to_double(v))); }
+static inline posit_t posit_log     (posit_t v)            { return double_to_posit(log  (posit_to_double(v))); }   
+static inline posit_t posit_sin     (posit_t v)            { return double_to_posit(sin  (posit_to_double(v))); }   
+static inline posit_t posit_cos     (posit_t v)            { return double_to_posit(cos  (posit_to_double(v))); }   
+static inline posit_t posit_tan     (posit_t v)            { return double_to_posit(tan  (posit_to_double(v))); }   
+static inline posit_t posit_asin    (posit_t v)            { return double_to_posit(asin (posit_to_double(v))); }   
+static inline posit_t posit_acos    (posit_t v)            { return double_to_posit(acos (posit_to_double(v))); }   
+static inline posit_t posit_atan    (posit_t v)            { return double_to_posit(atan (posit_to_double(v))); }   
+static inline posit_t posit_atan2   (posit_t v, posit_t w) { return double_to_posit(atan2(posit_to_double(v),posit_to_double(w))); }   
+static inline posit_t posit_pow     (posit_t v, posit_t w) { return double_to_posit(pow  (posit_to_double(v),posit_to_double(w))); }   
+static inline posit_t posit_round   (posit_t v)            { return posit_round_to_integer(v); }   
+static inline posit_t posit_floor   (posit_t v)            { return double_to_posit(floor(posit_to_double(v))); }   
+static inline posit_t posit_modf    (posit_t v)            { double d; return double_to_posit(modf(posit_to_double(v), &d)); }   
    
-inline static posit_t posit_d_log   (double v)             { return double_to_posit(log  (v)); }   
-inline static posit_t posit_d_sin   (double v)             { return double_to_posit(sin  (v)); }   
-inline static posit_t posit_d_cos   (double v)             { return double_to_posit(cos  (v)); }   
-inline static posit_t posit_d_asin  (double v)             { return double_to_posit(asin (v)); }   
-inline static posit_t posit_d_acos  (double v)             { return double_to_posit(acos (v)); }   
-inline static posit_t posit_d_atan  (double v)             { return double_to_posit(atan (v)); }   
-inline static posit_t posit_d_atan2 (double v, double w)   { return double_to_posit(atan2(v,w)); }   
+static inline posit_t posit_d_log   (double v)             { return double_to_posit(log  (v)); }   
+static inline posit_t posit_d_sin   (double v)             { return double_to_posit(sin  (v)); }   
+static inline posit_t posit_d_cos   (double v)             { return double_to_posit(cos  (v)); }   
+static inline posit_t posit_d_asin  (double v)             { return double_to_posit(asin (v)); }   
+static inline posit_t posit_d_acos  (double v)             { return double_to_posit(acos (v)); }   
+static inline posit_t posit_d_atan  (double v)             { return double_to_posit(atan (v)); }   
+static inline posit_t posit_d_atan2 (double v, double w)   { return double_to_posit(atan2(v,w)); }   
                                                               
-inline static int     posit_i_round (posit_t v)            { return posit_to_integer(v); }   
+static inline int     posit_i_round (posit_t v)            { return posit_to_integer(v); }   
    
 /*tex 
 
@@ -131,26 +131,26 @@ typedef posit32_t tex_posit;
 # define tex_posit_ge_zero(p)           posit_ge_zero((tex_posit) { .v = (uint32_t) p })
 # define tex_posit_ne_zero(p)           posit_ne_zero((tex_posit) { .v = (uint32_t) p })
 
-inline static halfword tex_posit_neg(halfword a) 
+static inline halfword tex_posit_neg(halfword a) 
 { 
     posit32_t p ; 
     p.v = -a & 0xFFFFFFFF; 
     return p.v; 
 } 
 
-inline static halfword tex_posit_abs(halfword a) { 
+static inline halfword tex_posit_abs(halfword a) { 
     posit32_t p ; 
     int mask = a >> 31; 
     p.v = ((a + mask) ^ mask) & 0xFFFFFFFF; 
     return p.v; 
 }
 
-inline static tex_posit tex_dimension_to_posit(halfword p) 
+static inline tex_posit tex_dimension_to_posit(halfword p) 
 {
     return p32_div(ui32_to_p32(p), ui32_to_p32(65536));
 }
 
-inline static halfword tex_posit_to_dimension(halfword p) 
+static inline halfword tex_posit_to_dimension(halfword p) 
 {
     posit32_t x; 
     x.v = (uint32_t) p; 

@@ -28,7 +28,7 @@
 \let\page_info_add_to_box\gobbleoneargument
 
 \permanent\tolerant\protected\def\setupversion[#1]%
-  {\the\everyresetversion
+  {\expand\everyresetversion
    \ifhastok={#1}%
      \getdummyparameters[\c!alternative=,\c!text=,#1]%
      \edef\currentversioninfo{\dummyparameter\c!alternative}%
@@ -43,7 +43,7 @@
      \lettonothing\currentversioninfo
      \let\page_info_add_to_box\gobbleoneargument
    \fi
-   \the\everysetupversion}
+   \expand\everysetupversion}
 
 \aliased\let\version\setupversion
 

@@ -60,7 +60,7 @@
    % \enforced\let~\fixedspace
      \enforced\letcharcode\tildeasciicode\fixedspace % why
      \inhibitblank % \blank[\v!disable]% % added
-     \the\everytableparbox}
+     \expand\everytableparbox}
 
 \protected\def\tabl_table_end_par_box
   {\removelastskip                                     % itemize or so
@@ -830,7 +830,7 @@
    \let\!ttRightGlue\relax
    \everycr\emptytoks
    \ifnum\!taRecursionLevel=\plusone
-     \the\everytable
+     \expand\everytable
    \fi}
 
 \bgroup \catcode\tildeasciicode\activecatcode

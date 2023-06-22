@@ -623,7 +623,7 @@
    \setcounterparameter      \c!numberstopper{#2\c!numberstopper}%
    \setcounterparameter     \c!numbersegments{#2\c!numbersegments}%
    %
-   \the\everysetupcounter}
+   \expand\everysetupcounter}
 
 \protected\def\mult_interfaces_counter_association#1#2#3#4#5#6#7% tag current setup parameter list sync register
   {\strc_counter_preset_using_parameter#3\rootcounterparameter
@@ -667,11 +667,11 @@
 %         \the#5%
 %       \else
 %         \lettonothing\currentcounter
-%         \the\everysetupcounter
+%         \expand\everysetupcounter
 %       \fi
 %       \strc_counter_setup_pop}%
 %    \protected\def#7##1% register
-%       {\normalexpanded{#5{\the#5\edef\noexpand\currentcounter{##1}\noexpand\the\everysetupcounter}}}}
+%       {\normalexpanded{#5{\the#5\edef\noexpand\currentcounter{##1}\noexpand\expand\everysetupcounter}}}}
 
 %D For good old times (easier to explain in manuals):
 %D

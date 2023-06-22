@@ -33,7 +33,9 @@
     \else\ifnum\currentbtxinternal=\zerocount
         #content
     \else\ifconditional\btxinteractive
-        \goto {#content} [\s!internal(\currentbtxinternal)]
+        \goto
+            {#content}
+            [\s!internal(\currentbtxinternal)]
     \else
         #content
     \fi\fi\fi

@@ -125,7 +125,7 @@
 
 \protected\def\pack_anchors_flush_all_indeed
   {\donefalse
-   \the\t_pack_anchors_flush
+   \expand\t_pack_anchors_flush
    \ifdone\else
       \global\t_pack_anchors_flush\emptytoks
       \glet\pack_anchors_flush_all\relax

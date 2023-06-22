@@ -50,7 +50,7 @@
      \frozen\instance\setuevalue        {\currentnote}{\strc_linenotes_direct{\currentnote}}%
      \frozen\instance\setuevalue{\e!start\currentnote}{\strc_linenotes_start {\currentnote}}%
      \frozen\instance\setuevalue{\e!stop \currentnote}{\strc_linenotes_stop                }%
-     \the\everydefinelinenote
+     \expand\everydefinelinenote
      \popmacro\currentnote
    \fi}
 

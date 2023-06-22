@@ -141,7 +141,7 @@
    \let\currentmakeup\m_page_makeup_name
    \setupcurrentmakeup[#settings]%
    \setsystemmode\v!makeup
-   \the\t_page_makeup_every_setup
+   \expand\t_page_makeup_every_setup
    \makeupparameter\c!commands % hm, what is this one doing here ?
    \forgetall % else indented flush
    \dontcomplain
@@ -169,7 +169,7 @@
      \dontleavehmode
      \usereferenceparameter\makeupparameter
      \box\b_page_makeup % could be whole box being destination
-     \the\t_page_makeup_every_setup
+     \expand\t_page_makeup_every_setup
      \page
    \endgroup
    \makeupparameter\c!after\relax
@@ -189,7 +189,7 @@
    \page}
 
 \defcsname\??makeupdoublesided\v!empty\endcsname
-  {\the\t_page_makeup_every_setup
+  {\expand\t_page_makeup_every_setup
   % == \page[\v!dummy]
    \page[\v!blank]%
    \emptyhbox

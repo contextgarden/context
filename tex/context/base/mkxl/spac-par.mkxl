@@ -62,6 +62,12 @@
     \hyphenationfrozenparcode
 \relax
 
+\setnewconstant\paragraphpassescodes\numexpr
+    \parpassesfrozenparcode
+\relax
+
+% \linefrozenparcode % lineskip
+
 \setnewconstant\frozenparagraphdefault\numexpr
    \hsizefrozenparcode            % \hsize
  + \skipfrozenparcode             % \leftskip \rightskip
@@ -85,6 +91,9 @@
  + \hyphenationfrozenparcode      % \hyphenationmode
  + \shapingpenaltyfrozenparcode   % \shapingpenaltymode
  + \orphanpenaltyfrozenparcode
+ % \mathpenaltyfrozenparcode
+ + \emergencyfrozenparcode
+ + \parpassesfrozenparcode
 \relax
 
 \permanent\protected\def\freezeparagraphproperties {\snapshotpar\frozenparagraphdefault}
@@ -95,6 +104,7 @@
 \permanent\protected\def\updateparagraphdemerits  {\ifhmode\snapshotpar\paragraphdemeritcodes\fi}
 \permanent\protected\def\updateparagraphshapes    {\ifhmode\snapshotpar\paragraphshapecodes  \fi}
 \permanent\protected\def\updateparagraphlines     {\ifhmode\snapshotpar\paragraphlinecodes   \fi}
+\permanent\protected\def\updateparagraphpasses    {\ifhmode\snapshotpar\paragraphpassescodes \fi}
 
 % so far
 
@@ -352,9 +362,9 @@
        \ifconditional\c_spac_paragraphs_intro_first
          \global\setfalse\c_spac_paragraphs_intro_first
          \global\t_spac_paragraphs_intro_first\emptytoks
-         \the\t_spac_paragraphs_intro_first
+         \expand\t_spac_paragraphs_intro_first
        \fi
-       \the\t_spac_paragraphs_intro_each
+       \expand\t_spac_paragraphs_intro_each
      \else
        \ifconditional\c_spac_paragraphs_intro_next
          \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_next
@@ -362,7 +372,7 @@
        \ifconditional\c_spac_paragraphs_intro_first
          \global\setfalse\c_spac_paragraphs_intro_first
          \global\t_spac_paragraphs_intro_first\emptytoks
-         \the\t_spac_paragraphs_intro_first
+         \expand\t_spac_paragraphs_intro_first
        \fi
      \fi}}
 
@@ -372,15 +382,15 @@
      \global\t_spac_paragraphs_intro_next\emptytoks
      \ifconditional\c_spac_paragraphs_intro_each
        \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_each
-       \the\t_spac_paragraphs_intro_next
-       \the\t_spac_paragraphs_intro_each
+       \expand\t_spac_paragraphs_intro_next
+       \expand\t_spac_paragraphs_intro_each
      \else
        \glettonothing\spac_paragraphs_flush_intro
-       \the\t_spac_paragraphs_intro_next
+       \expand\t_spac_paragraphs_intro_next
      \fi}}
 
 \protected\def\spac_paragraphs_flush_intro_each
-  {\the\t_spac_paragraphs_intro_each}
+  {\expand\t_spac_paragraphs_intro_each}
 
 %D \macros
 %D   {flushatnextpar}
@@ -421,7 +431,7 @@
 
 \permanent\protected\def\flushatnextpar
   {\begingroup
-   \the\everyflushatnextpar
+   \expand\everyflushatnextpar
    \enforced\glet\flushpostponednodedata\spac_postponed_data_flush
    \dowithnextboxcs\spac_postponed_data_finish\hpack}
 
@@ -465,5 +475,56 @@
    \else
      \expandafter\firstofoneargument
    \fi}
+
+%D Experiment:
+%D
+%D \starttyping
+%D \startcombination[4*1]
+%D     {\vtop{           \hsize #1 \setupalign[tolerant]                             \samplefile{ward}}} {tolerant}
+%D     {\vtop{\darkblue  \hsize #1 \setupalign[tolerant,stretch]                     \samplefile{ward}}} {tolerant,stretch}
+%D     {\vtop{\darkgreen \hsize #1 \setupalign[tolerant]        \optimize[flushleft] \samplefile{ward}}} {tolerant,fuzzy}
+%D     {\vtop{\darkred   \hsize #1 \setupalign[tolerant]        \optimize[normal]    \samplefile{ward}}} {tolerant,lessfuzzy}
+%D \stopcombination
+%D \stoptyping
+
+\installcorenamespace {optimize}
+
+\installcommandhandler \??optimize {optimize} \??optimize
+
+\setupoptimize
+  [\c!lines=\zerocount,
+   \c!left=\zeropoint,
+   \c!right=\zeropoint,
+   \c!distance=\zeropoint]
+
+\permanent\protected\def\optimize[#1]%
+  {\begingroup
+   \ifhastok={#1}%
+     \setupcurrentoptimize[#1]%
+   \else
+     \cdef\currentoptimize{#1}%
+   \fi
+   \scratchdimenone  \optimizeparameter\c!left \relax
+   \scratchdimentwo  \optimizeparameter\c!right\relax
+   \scratchcounterone\optimizeparameter\c!lines\relax
+   \scratchdistance  \optimizeparameter\c!distance\relax
+   \normalexpanded
+     {\endgroup
+      \looseness\the\scratchcounterone\relax
+      \emergencyextrastretch\the\scratchdistance\relax
+      \ifzerodim\scratchdimenone\else
+        \emergencyleftskip \zeropoint \s!plus \the\scratchdimenone\relax
+      \fi
+      \ifzerodim\scratchdimentwo\else
+        \emergencyrightskip\zeropoint \s!plus \the\scratchdimentwo\relax
+      \fi}%
+   \ignorespaces}
+
+\defineoptimize[+\v!line][\c!lines=\plusone]
+\defineoptimize[-\v!line][\c!lines=\minusone]
+
+\defineoptimize[\v!flushleft ][\c!right=2\bodyfontsize]
+\defineoptimize[\v!flushright][\c!left=2\bodyfontsize]
+\defineoptimize[\v!normal    ][\c!right=2\bodyfontsize,\c!distance=\bodyfontsize]
 
 \protect \endinput

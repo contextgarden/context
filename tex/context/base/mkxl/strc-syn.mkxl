@@ -224,7 +224,7 @@
 \protected\defcsname\??constructiontexthandler\v!simplelist\endcsname
   {\begingroup
    \useconstructionstyleandcolor\c!headstyle\c!headcolor
-   \the\everyconstruction
+   \expand\everyconstruction
    \constructionparameter\c!headcommand
      {\strut
       \currentsimplelistentry}%

@@ -49,6 +49,7 @@ local setwhd            = nuts.setwhd
 local setkern           = nuts.setkern
 local setoffsets        = nuts.setoffsets
 local setglyphdata      = nuts.setglyphdata
+local getparstate       = nuts.getparstate
 
 local hpack_nodes       = nuts.hpack
 
@@ -74,6 +75,7 @@ local v_margin          = variables.margin
 local v_auto            = variables.auto
 local v_first           = variables.first
 local v_keep            = variables.keep
+local v_yes             = variables.yes
 local v_last            = variables.last
 
 local texget            = tex.get
@@ -87,7 +89,9 @@ local kern_code         = nodecodes.kern
 local par_code          = nodecodes.par
 
 local actions           = { }
+local busyactions       = { }
 initials.actions        = actions
+initials.busyactions    = actions
 
 local a_initial         = attributes.private("initial")
 
@@ -113,6 +117,7 @@ interfaces.implement {
             { "location" },
             { "enabled", "boolean" },
             { "method" },
+            { "continue" },
             { "distance" ,"dimen" },
             { "hoffset" ,"dimen" },
             { "voffset" ,"dimen" },
@@ -131,8 +136,9 @@ interfaces.implement {
 -- todo: prevent linebreak .. but normally a initial ends up at the top of
 -- a page so this has a low priority
 
-actions[v_default] = function(head,setting)
+actions[v_default] = function(head,settings)
     local skip = false
+    local busy = false
     -- begin of par
     local first  = getnext(head)
     local indent = false
@@ -146,21 +152,21 @@ actions[v_default] = function(head,setting)
         first = getnext(first)
     end
     if first and getid(first) == glyph_code then
-        local ma        = setting.ma or 0
-        local ca        = setting.ca
-        local ta        = setting.ta
+        local ma        = settings.ma or 0
+        local ca        = settings.ca
+        local ta        = settings.ta
         local last      = first
-        local distance  = setting.distance or 0
-        local voffset   = setting.voffset or 0
-        local hoffset   = setting.hoffset or 0
+        local distance  = settings.distance or 0
+        local voffset   = settings.voffset or 0
+        local hoffset   = settings.hoffset or 0
         local parindent = texget("parindent")
         local baseline  = texget("baselineskip",false)
-        local lines     = tonumber(setting.n) or 0
-        local dynamic   = setting.dynamic
-        local font      = setting.font
-        local scale     = setting.glyphscale
-        local method    = settings_to_hash(setting.method)
-        local length    = tonumber(setting.m) or 1
+        local lines     = tonumber(settings.n) or 0
+        local dynamic   = settings.dynamic
+        local font      = settings.font
+        local scale     = settings.glyphscale
+        local method    = settings_to_hash(settings.method)
+        local length    = tonumber(settings.m) or 1
         --
         -- 1 char | n chars | skip first quote | ignore punct | keep punct
         --
@@ -311,7 +317,7 @@ actions[v_default] = function(head,setting)
         --
         first = dropper
         --
-        if setting.location == v_margin then
+        if settings.location == v_margin then
             -- okay
         else
             if lines == 0 then -- safeguard, not too precise
@@ -323,6 +329,28 @@ actions[v_default] = function(head,setting)
             local hangindent = width + distance
             if trace_initials then
                 report_initials("setting hangafter to %i and hangindent to %p",hangafter,hangindent)
+            end
+            if settings.continue == v_yes then
+                local state = {
+                    lines      = lines,
+                    hangindent = hangindent,
+                    parindent  = indent and parindent,
+                }
+                busy = function(head)
+                    local lines = state.lines
+                    local done  = getparstate(head,true).prevgraf or lines
+                    if done < lines then
+                        texset("hangafter",-(lines - done),true)
+                        texset("hangindent",state.hangindent,true)
+                        if state.parindent then
+                            insertafter(first,first,new_kern(-state.parindent))
+                        end
+                        state.lines =  lines - done
+                        return busy
+                    else
+                        return false
+                    end
+                end
             end
             texset("hangafter",hangafter,true)
             texset("hangindent",hangindent,true)
@@ -340,25 +368,56 @@ actions[v_default] = function(head,setting)
             insertafter(first,first,new_kern(-parindent))
         end
     end
-    return head
+    return head, busy
 end
 
 -- we can count ... when all done, we can disable ...
 
+-- function initials.handler(head,groupcode)
+--     if getid(head) == par_code and startofpar(head) then
+--         local settings = getprop(head,a_initial)
+--         if settings then
+--             disableaction("processors","typesetters.initials.handler")
+--             local alternative = settings.alternative or v_default
+--             local action = actions[alternative] or actions[v_default]
+--             if action then
+--                 if trace_initials then
+--                     report_initials("processing initials, alternative %a",alternative)
+--                 end
+--                 return action(head,settings)
+--             end
+--         end
+--     end
+--     return head
+-- end
+
+-- doesn't work well nested but no sane user will do that
+
+local busy = false
+
 function initials.handler(head,groupcode)
     if getid(head) == par_code and startofpar(head) then
-        local settings = getprop(head,a_initial)
-        if settings then
-            disableaction("processors","typesetters.initials.handler")
-            local alternative = settings.alternative or v_default
-            local action = actions[alternative] or actions[v_default]
-            if action then
-                if trace_initials then
-                    report_initials("processing initials, alternative %a",alternative)
+        if busy then
+            busy = busy(head)
+        end
+        if not busy then
+            local settings = getprop(head,a_initial)
+            if not settings or settings.continue ~= v_yes then
+                disableaction("processors","typesetters.initials.handler")
+            end
+            if settings then
+                local alternative = settings.alternative or v_default
+                local action = actions[alternative] or actions[v_default]
+                if action then
+                    if trace_initials then
+                        report_initials("processing initials, alternative %a",alternative)
+                    end
+                    head, busy = action(head,settings)
+                    return head
                 end
-                return action(head,settings)
             end
         end
     end
     return head
 end
+

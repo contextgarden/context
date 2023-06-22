@@ -19270,6 +19270,9 @@ return {
    ["pe"]="تغییر",
    ["ro"]="toggle",
   },
+  ["granular"]={
+   ["en"]="granular",
+  },
   ["tolerant"]={
    ["cs"]="tolerantni",
    ["de"]="tolerant",

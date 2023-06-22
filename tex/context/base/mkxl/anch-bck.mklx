@@ -129,7 +129,7 @@
   {\begingroup
    \global\advanceby\c_anch_backgrounds_text_count\plusone
    \advanceby\c_anch_backgrounds_text_level\plusone
-   \def\currenttextbackground{#tag}%
+   \cdef\currenttextbackground{#tag}%
    \anch_backgrounds_text_initialize_next
    \ifparameter#settings\or
      \setupcurrenttextbackground[#settings]%

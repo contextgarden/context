@@ -691,7 +691,7 @@ void tex_build_page(void)
                         goto CONTRIBUTE;
                     }
                 default:
-                    tex_formatted_error("pagebuilder", "invalid node of type %d in vertical mode", node_type(current));
+                    tex_formatted_error("pagebuilder", "invalid node of type %d in vertical mode", type);
                     break;
             }
             /*tex
@@ -704,7 +704,7 @@ void tex_build_page(void)
                     Compute the badness, |b|, of the current page, using |awful_bad| if the box is
                     too full. The |c| variable holds the costs.
                 */
-                halfword badness, criterion;
+                halfword badness, costs;
                 /*tex
                     This could actually be a callback but not now. First we will experiment a lot
                     with this yet undocumented trick.
@@ -712,7 +712,17 @@ void tex_build_page(void)
                 lmt_page_builder_state.last_extra_used = 0;
                 badness = tex_aux_page_badness(page_goal);
                 if (page_extra_goal_par) {
-                    if (badness >= awful_bad && page_total >= (page_goal + page_extra_goal_par)) {
+// if (badness >= awful_bad) {
+//     printf("%f %f %f\n",page_total/65536.0,page_goal/65536.0,page_extra_goal_par/65536.0);
+//     printf("0 > %i\n",type);
+//     if (node_next(current)) { 
+//         printf("1 > %i\n",node_type(node_next(current)));
+//         if (node_next(node_next(current))) { 
+//             printf("2 > %i\n",node_type(node_next(node_next(current))));
+//         }
+//     }
+// }
+                    if (badness >= awful_bad && page_total >= (page_goal + page_extra_goal_par)) { // <= 
                         halfword extrabadness = tex_aux_page_badness(page_goal + page_extra_goal_par);
                         if (tracing_pages_par > 0) {
                             tex_begin_diagnostic();
@@ -728,29 +738,29 @@ void tex_build_page(void)
                     }
                 }
                 if (badness >= awful_bad) {
-                    criterion = badness; /* trigger fireup */
+                    costs = badness; /* trigger fireup */
                 } else if (penalty <= eject_penalty) {
-                    criterion = penalty; /* trigger fireup */
+                    costs = penalty; /* trigger fireup */
                 } else if (badness < infinite_bad) {
-                    criterion = badness + penalty + lmt_page_builder_state.insert_penalties;
+                    costs = badness + penalty + lmt_page_builder_state.insert_penalties;
                 } else {
-                    criterion = deplorable;
+                    costs = deplorable;
                 }
                 if (lmt_page_builder_state.insert_penalties >= infinite_penalty) {
-                    criterion = awful_bad;
+                    costs = awful_bad;
                 }
                 {
-                    int moveon = criterion <= lmt_page_builder_state.least_cost;
-                    int fireup = criterion == awful_bad || penalty <= eject_penalty;
+                    int moveon = costs <= lmt_page_builder_state.least_cost;
+                    int fireup = costs == awful_bad || penalty <= eject_penalty;
                     if (tracing_pages_par > 0) {
-                        tex_aux_display_page_break_cost(badness, penalty, criterion, moveon, fireup);
+                        tex_aux_display_page_break_cost(badness, penalty, costs, moveon, fireup);
                     }
                     if (moveon) {
                         halfword insert = node_next(page_insert_head);
                         lmt_page_builder_state.best_break = current;
                         lmt_page_builder_state.best_size = page_goal;
                         lmt_page_builder_state.insert_penalties = 0;
-                        lmt_page_builder_state.least_cost = criterion;
+                        lmt_page_builder_state.least_cost = costs;
                         while (insert != page_insert_head) {
                             split_best_insert(insert) = split_last_insert(insert);
                             insert = node_next(insert);

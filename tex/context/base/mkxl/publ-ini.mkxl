@@ -23,7 +23,7 @@
 % todo: \v!cite => \s!cite
 % todo: interface with (ml)bibtex (export -> call -> import)
 % todo: check if 'all' etc are ok ... either use list or use other criterium
-% todo: \the\everysetupbtxciteplacement probably too often
+% todo: \expand\everysetupbtxciteplacement probably too often
 
 % \definecolor[btx:field]   [darkred]
 % \definecolor[btx:crossref][darkblue]
@@ -844,7 +844,7 @@
      \fi
    \fi
    \setbtxparameterset\currentbtxspecification\s!list
-   \the\everybtxlistrendering
+   \expand\everybtxlistrendering
    \ifconditional#1\relax
      \edef\currentbtxrenderingtitle{\btxrenderingparameter\c!title}%
      \ifempty\currentbtxrenderingtitle
@@ -859,8 +859,8 @@
    \edef\currentbtxdataset{\btxrenderingparameter\c!dataset}%
    \uselanguageparameter\btxdatasetparameter % new
    \setbtxlist
-   \the\everystructurelist
-   \the\everysetupbtxlistplacement
+   \expand\everystructurelist
+   \expand\everysetupbtxlistplacement
    % why not pass this with collect .. todo
    % here we just collect items
    \clf_btxcollectlistentries
@@ -1059,7 +1059,7 @@
 \newtoks\everybtxlistentry
 
 \permanent\protected\def\btxlistsetup#1% used for the reference in the list
-  {\the\everybtxlistentry
+  {\expand\everybtxlistentry
    \everybtxlistentry\emptytoks % so only once per entry to be sure
    \publ_fast_setup\plusfour\s!list{#1}}
 
@@ -1399,7 +1399,7 @@
    \edef\currentbtxcitealternative{\btxparameter\c!alternative}%
    \setbtxparameterset\s!cite\currentbtxcitealternative
    \edef\currentbtxcitetag{#1}%
-   \the\everysetupbtxciteplacement
+   \expand\everysetupbtxciteplacement
    \publ_cite_variant
    \endgroup}
 
@@ -1443,7 +1443,7 @@
    \edef\p_publ_cite_lefttext {\dummyparameter\c!lefttext}%
    \edef\p_publ_cite_righttext{\dummyparameter\c!righttext}%
    %
-   \the\everysetupbtxciteplacement
+   \expand\everysetupbtxciteplacement
    \publ_cite_variant
    \endgroup}
 
@@ -1452,7 +1452,7 @@
    \edef\currentbtxcitealternative{#1}%
    \edef\currentbtxcitetag{#2}%
    \setbtxparameterset\s!cite\currentbtxcitealternative
-   \the\everysetupbtxciteplacement
+   \expand\everysetupbtxciteplacement
    \publ_cite_variant
    \endgroup}
 
@@ -1468,7 +1468,7 @@
   {\begingroup
    \edef\currentbtxcitealternative{#1}%
    \setbtxparameterset\s!cite\currentbtxcitealternative
-   \the\everysetupbtxciteplacement
+   \expand\everysetupbtxciteplacement
    \publ_cite_handle_variant_indeed}
 
 \permanent\protected\def\publ_cite_handle_variant_blob
@@ -1615,7 +1615,7 @@
 
 \protected\def\publ_fast_btx_setup_chain_yes#1#2%
   {\dontleavehmode\begingroup
-   \let\:\publ_fast_btx_setup_colon_inbetween
+   \enforced\let\:\publ_fast_btx_setup_colon_inbetween
    \infofont
    \ifcase\btxsetuptype\darkred\or\darkblue\or\darkgreen\or\darkcyan\or\darkmagenta\else\darkred\fi
    [\prewordbreak
@@ -1637,7 +1637,7 @@
 
 \protected\def\publ_fast_btx_setup_chain_nop#1#2%
   {\dontleavehmode\begingroup
-   \let\:\publ_fast_btx_setup_colon_inbetween
+   \enforced\let\:\publ_fast_btx_setup_colon_inbetween
    \infofont
    \darkred
    [\prewordbreak
@@ -1690,12 +1690,12 @@
 \to \everybtxciteentry
 
 \permanent\protected\def\btxcitesetup#1%
-  {\the\everybtxciteentry
+  {\expand\everybtxciteentry
    \everybtxciteentry\emptytoks % tricky maybe not when subcites
    \publ_fast_setup\plusone\s!cite{#1}}    % no \btxcitereset as we loose dataset and such
 
 \permanent\protected\def\btxsubcitesetup#1%
-  {\the\everybtxciteentry
+  {\expand\everybtxciteentry
    \everybtxciteentry\emptytoks % tricky maybe not when subcites
    \publ_fast_setup\plustwo\s!cite{#1}}    % no \btxcitereset as we loose dataset and such
 
@@ -1872,7 +1872,7 @@
       \edef\currentbtxcitealternative{invertedshort}% maybe we need some default here too?
    \fi
    %let\currentbtxlistvariant\currentbtxcitealternative % we inherit
-   \the\everysetupbtxciteplacement
+   \expand\everysetupbtxciteplacement
    \def\currentbtxvons       {#2}%
    \def\currentbtxsurnames   {#3}%
    \def\currentbtxinitials   {#4}%

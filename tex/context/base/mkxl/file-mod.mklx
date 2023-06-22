@@ -96,7 +96,7 @@
   {\global\advanceby\c_syst_modules_nesting\plusone
    \push_macro_currentmodule
    \push_macro_currentmoduleparameters
-   \def\currentmodule{#1#2}}
+   \cdef\currentmodule{#1#2}}
 
 \permanent\protected\def\stopmodule
   {\ifcase\c_syst_modules_nesting
@@ -122,7 +122,7 @@
    \or
      \getparameters[\??module#name:][#parameters]% internal (defaults)
    \fi
-   \the\everysetupmodule}
+   \expand\everysetupmodule}
 
 \tolerant\def\syst_modules_setup_yes[#name]#spacer[#parameters]%
   {\scratchtoks\expandafter{\currentmoduleparameters}%
@@ -140,7 +140,7 @@
      \normalexpanded{\getparameters[\??module#name:][\the\scratchtoks]}% loadtime (user)
    \fi
    \lettonothing\currentmoduleparameters
-   \the\everysetupmodule}
+   \expand\everysetupmodule}
 
 \permanent\def\moduleparameter#name#parameter% should have been \namedmoduleparameter
   {\begincsname\??module#name:#parameter\endcsname}

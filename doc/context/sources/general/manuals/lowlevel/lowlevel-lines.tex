@@ -1,0 +1,795 @@
+% language=us runpath=texruns:manuals/lowlevel
+
+\environment lowlevel-style
+
+\startdocument
+  [title=lines,
+   coauthor=Mikael Sundqvist,
+   color=middleorange]
+
+\startsectionlevel[title=Introduction]
+
+There is no doubt that \TEX\ does an amazing job of \quotation {breaking
+paragraphs into lines} where a paragraph is a sequence of words in the input
+separated by spaces or its equivalents (single line endings turned space). The
+best descriptions of how that is done can be found in Don Knuths \quotation {The
+\TEX\ Book}, \quotation {\TEX\ The Program} and \quotation {Digital Typography}.
+Reading and rereading the relevant portions of those texts is a good exercise in
+humility.
+
+That said, whatever follows here builds upon what Knuth gave us and in no way we
+pretend to do better than that. It started out as a side track of improving
+rendering math in combination with more control over breaking inline math. It
+pretty much about having fun with the par builder but in the end can also help
+make your results look better. This is especially true for proze.
+
+Trying to describe the inner working of the par builder makes no sense. Not only
+is it kind of complex, riddled with magic constants and heuristics, but there is
+a good chance for us to talk nonsense thanks to misunderstanding. However, some
+curious aspects will be brought up. Consider what follows a somewhat naive
+approach and whatever goes wrong, blame the authors, not \TEX.
+
+If you're one of those reader who love to complain about the bad manuals, you can
+stop reading here. There is plenty said in the mentioned books but you can also
+consult Viktor Eijkhouts excellent \quotation {\TEX\ by Topic} (just search the
+web for how the get these books). If you're curious and in for some adventure,
+keep reading.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Warning]
+
+This is a first version. What is described here will stay but is still
+experimental and how it evolves also depends on what demands we get from the
+users. We have defined some experimental setups in \CONTEXT. We wil try to
+improve the explanations in ways that (we hope) makes clear what happens deep
+down but that takes time. These might change depending on feedback. We assume
+that we're in granular mode:
+
+\starttyping
+\setupalign[granular]
+\stoptyping
+
+We will explain below what that means, but let us already now make clear that
+this will likely become the default! As far as we can see, due to the larger
+solution space, the inter-word spacing is more even but that also means that some
+paragraphs can become one line less or more.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Constructing paragraphs]
+
+There are several concepts at work when \TEX\ breaks a paragraph into lines. Here
+we assume that we talk about text: words separated by spaces. We also assume that
+the text starts at the left edge and nicely runs till the right edge, with the
+exception of the last line.
+
+\startitemize
+\startitem
+    The spaces between words can stretch or shrink. We don't want that to be too
+    inconsistent (visible) between two lines. This is where the terms loose and
+    tight come into play.
+\stopitem
+\startitem
+    Words can be hyphenated but we don't want that to happen too often. We also
+    discourage neighboring lines to have hyphens. Hyphenating the (pre) final line
+    is also sort of bad.
+\stopitem
+\startitem
+    We definitely don't want words to stick out in the margin. If we have to choose,
+    stretching is preferred over shrinking. If spaces become too small words,
+    start to blur.
+\stopitem
+\startitem
+    If needed glyphs can stretch or shrink a little in order to get rid of
+    excessive spacing. But we really want to keep it minimal, and avoid it when
+    possible. Usually we permit more stretch than shrink. Not all scripts (and
+    fonts for that matter) might work well with this feature.
+\stopitem
+\startitem
+    As a last resort we can stretch spaces so that we get rid of any still
+    sticking out word. When \TEX\ reports an overfull box (often a line) you have
+    to pay attention!
+\stopitem
+\stopitemize
+
+When \TEX\ decides where to break and when to finish doing so it uses a system of
+penalties and demerits and at some point makes decisions with regards to how bad
+a breakpoint (and eventually a paragraph) is. The penalties are normally
+relatively small unless we really want to penalize. When \TEX\ is in the process
+of breaking a paragraph it calculates badness values for each line. This can be
+seen as a measure on how bad looking a line is; a badness of zero is good, but
+the larger the badness becomes, the worse the line is.
+
+Here we shortly summarize the parameters that play a role in calculating what
+\TEX\ calls the costs of breaking a line at some point: it's a combination of
+weighting penalties as well as over- or undershooting the line with, where the
+amount (dimension) and kind of (fillers) stretch and shrink determien the final
+verdict.
+
+\startbuffer
+\ruledhbox to 20 ts{left \hss right}
+\ruledhbox to 40 ts{left \hss right}
+\ruledhbox to  5 ts{left \hss right}
+\ruledhbox to  5 ts{left      right}
+\ruledhbox to  5 es{%
+    left
+    \hskip 1ts plus 0.5ts\relax
+    middle
+    \hskip 1ts plus 1.5ts\relax
+    right%
+}
+\stopbuffer
+
+\typebuffer
+
+These boxes show a bit what happens with spacing that can stretch of shrink. The
+first three cases are not bad because it's what we ask for with the wildcard
+\type {\hss}. \footnote {We use this opportunity to promote the new \type {ts} and
+\type {es} units.}
+
+\startlines \getbuffer \stoplines
+
+\TEX\ will run over each paragraph at most three times. On each such run, it will
+choose different breakpoints, calculate badness of each possible line, combine
+that with eventual penalties, and calculate a certain demerit value for each
+possible paragraph. It creats a set of solutions as it progresses, discards the
+worse cases so far and eventually ends of what it thinks is best.
+
+The process is primarily controlled by these parameters:
+
+\startitemize
+\startitem
+    \type {\pretolerance}: This number determines the success of the first, not
+    hyphenated pass. Often the value is set to the plain \TEX\ value of 100.
+    If \TEX\ finds a possible division of a paragraph such that no line has
+    a badness higher than \type {\pretolerance}, the algorithm quits here and
+    that line is chosen.
+\stopitem
+\startitem
+    \type {\tolerance}: This number determines the success of the second,
+    hyphenated pass. Often the value is set to the plain \TEX\ value of 200.
+\stopitem
+\startitem
+    \type {\emergencystretch}: This dimension kicks in when the second pass is
+    not successful. In \CONTEXT\ we often set it to \type {2\bodyfontsize}.
+\stopitem
+\stopitemize
+
+When we are (in \CONTEXT\ speak) \type {tolerant}, we have a value of 3000, while
+\type {verytolerant} bumps it to 4500. These are pretty large values compared to
+the default 100 and 200 that seem to cover most cases well, especially when we
+have short words, a reasonable width and lots of opportunities for hyphenation.
+Keep in mind that a macro package has to default to values that make sense for
+the average case.
+
+We now come to the other relevant parameters. You need to keep in mind that the
+demerits are made from penalty values that get squared which is why parameters
+with demerits in their name have high values: a penalty of $50$ squared has to
+relate to a demerit of $5000$, so we might have $2500 + 5000$ at some point.
+
+The formula (most often) used to calculate the demerits \im{d} is
+
+\startformula
+    d = (l + b + p)^2 + e
+\stopformula
+
+Here \im {l} is the \type {\linepenalty}, set to \im {10} in plain, \im {b} is the
+badness of the line, and \im {p} is the penalty of the current break (for example,
+added by hyphenation, or by breaking an inline formula). The \im {e} stands for
+extra non-local demerits, that do not depend on only the current line, like
+the \type {\doublehyphendemerits} that is added if two lines in a row are
+hyphenated.
+
+The badness reflects how the natural linewidth relates to the target width and
+uses a cubic function. A badness of zero is of course optimal, but a badness of
+99 is pretty bad. A magic threshold is 12 (around that value a line is considered
+decent). If you look at the formula above you can now understand why the line
+penalty defaults to the low value of 10.
+
+\startitemize
+\startitem
+    \type {\hyphenpenalty}: When a breakpoint occurs at a discretionary this one
+    gets added. In \LUAMETATEX\ we store penalties in the discretionary nodes but
+    user defined \typ {\discretionary}'s can carry dedicated penalties. This
+    value is set to 50, which is not that much. Large values reduce the solution
+    space so best keep this one reasonable.
+\stopitem
+\startitem
+    \type {\linepenalty}: Normally this is set to 10 and it is the baseline for a
+    breakpoint. This is again a small value compared to for instance the
+    penalties that you find in inline math. There we need some breakpoints and
+    after binary and relation symbols such an opportunity is created. The
+    specific penalties are normally 500 and 700. One has to keep in mind, as
+    shown in the formula above, that the penalties are not acting on a linear
+    scale when the demerits are calculated. Math spacing and penalty control is
+    discussed in the (upcoming) math manual.
+\stopitem
+\startitem
+    \type {\doublehyphendemerits}: Because it is considered bad to have two
+    hyphens in a row this is often set pretty high, many thousands. These are
+    treated as demerits (so outside of the squared part of the above formula).
+\stopitem
+\startitem
+    \type {\finalhyphendemerits}: The final (pre last) line having a hyphen is
+    also considered bad. The last line is handled differently anyway, just
+    because it gets normally flushed left.
+\stopitem
+\startitem
+    \type {\adjdemerits}: lines get rated in terms of being loose, decent, tight,
+    etc. When two lines have a different rating we bump the total demerits.
+\stopitem
+\startitem
+    \type {\looseness}: it is possible to force less or more lines but to what
+    extend this request is honored depends on for instance the possible
+    (emergency) stretch in the spaces (or any glue for that matter). `
+    % Needs an explanation
+\stopitem
+\stopitemize
+
+It is worth noticing that you can set \typ {\lastlinefit} such that the spaces in
+the last line will be comparable to those in the preceding line. This is a
+feature that \ETEX\ brought us. Anyways, keep in mind normally penalties are
+either small, or when we want to be tough, pretty high. Demerits are often
+relatively large.
+
+The next one is a flag that triggers expansion (or compression) of glyphs to kick
+in. Those get added to the available stretch and/or shrink of a line:
+
+\startitemize[continue]
+\startitem
+    \type {\adjustspacing}: Its value determines if expansion kicks in: glyphs
+    basically get a stretch and shrink value, something that helps filling our
+    lines. We only have zero, two and three (and not the \PDFTEX\ value of two):
+    three means \quote {only glyphs} and two means \quote {font kerns and
+    glyphs}.
+\stopitem
+\stopitemize
+
+In \LUAMETATEX\ we also have:
+
+\startitemize
+\startitem
+    \type {\linebreakcriterion}: The normal distinction between loose, decent and
+    tight in \TEX\ uses 12 for 0.5 and 99 for about 1.0, but because we have more
+    granularity (.25) we can set four values instead. The default of zero (\type
+    {"0C0C0C63}) then becomes \type {"020C2A63}. When set that way the default
+    \type {\adjdemerits} has to be halved 5000 so that we compare the more
+    granular distances. Don't worry if you \quote {don't get it}, hardly any user
+    will change these values. One can think of the 100 squared becomes a 10000
+    (at least this helps relating these numbers) and 10000 is pretty bad in \TEX s
+    perception.
+\stopitem
+\startitem
+    \type {\adjustspacingstep}: When set this one is are used instead of the font
+    bound value which permits local control without defining a new font instance.
+\stopitem
+\startitem
+    \type {\adjustspacingstretch}: idem.
+\stopitem
+\startitem
+    \type {\adjustspacingshrink}: idem.
+\stopitem
+% \startitem
+%     \type {\extrahyphenpenalty}:
+% \stopitem
+\startitem
+    \type {\orphanpenalty}: This penalty will be injected before the last word of a paragraph.
+\stopitem
+\startitem
+    \type {\orphanpenalties}: Alternatively a series of penalties can be defined.
+    This primitive expects a count followed by that number of penalties. These
+    will be injected starting from the end.
+\stopitem
+\stopitemize
+
+The shape of a paragraph is determined by \typ {\hangindent}, \type {\hangafter},
+\typ {\parshape} and \typ {\parindent}. The width is controlled by \typ {\hsize},
+\typ {\leftskip}, \typ {\rightskip}. In addition there are \typ
+{\parinitleftskip}, \typ {\parinitrightskip}, \typ {\parfillleftskip} and \typ
+{\parfillrightskip} that control first and last lines.
+
+We also have these:
+
+\startitemize
+\startitem
+    \type {\linebreakpasses}: When set to one, the currently set \type {\parpasses}
+    will be applied.
+\stopitem
+\startitem
+    \type {\parpasses}: This primitive defined a set of sub passes that kick in
+    when the second pass is finished. This basically opens up the par builder. It
+    is still experimental and will be improved based upon user feedback. Although
+    it is a side effect of improving the breaking of extensive mixes of math and
+    text, it is also quite useful for text only (think novels).
+\stopitem
+\stopitemize
+
+In the next sections we will explain how these can improve the look and feel of
+what you typeset.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Subpasses]
+
+In \LUATEX\ and therefore also in \LUAMETATEX\ a paragraph is constructed in steps:
+
+\startitemize
+\startitem
+    The list of nodes that makes the paragraph is hyphenated: words become a
+    mixture of glyphs and discretionaries.
+\stopitem
+\startitem
+    That list is processed by a font handler that can remove, add or change glyphs
+    depending on how glyphs interact. This depends on the language and scripts used.
+\stopitem
+\startitem
+    The result is fed into the parbuilder that applies upto three passes as mentioned
+    before.
+\stopitem
+\stopitemize
+
+In traditional \TEX\ these three actions are combined into one and the overhead
+is shared. In the split case the processing time gets distributed and in practice
+the last action is not the one that takes most time. This is why the mechanism
+that we discuss next has little impact on the run: calling the par builder a few
+times more seldom results in more runtime. This is why in we support so called
+sub passes between the second and third one.
+
+Here is an example of a setup. We set a low tolerance for the first pass and second
+pass. We can do that because we don't  need to play safe nor need to compromise.
+
+\starttyping
+\pretolerance  75
+\tolerance    150
+\parpasses      3
+    threshold            0.025pt
+    classes              \indecentparpassclasses
+    tolerance            150
+  next
+    threshold            0.025pt
+    classes              \indecentparpassclasses
+    tolerance            200
+    emergencystretch     .25\bodyfontsize
+  next
+    threshold            0.025pt
+    classes              \indecentparpassclasses
+    tolerance            200
+    optional             1
+    emergencystretch     .5\bodyfontsize
+\relax
+\linebreakpasses 1
+\stoptyping
+
+Because we want to retain performance we need to test efficiently if we really
+need the (here upto three) additional passes, so let's see how it is done. When a
+pass list is defined, and line break passes are enabled, the engine will check {\em after}
+the second pass if some more work is needed. For that it will do a quick analysis and
+calculate four values:
+
+\startitemize[packed]
+\startitem overflow   : the maximum value found, this is something really bad. \stopitem
+\startitem underflow  : the maximum value found, this is something we can live with. \stopitem
+\startitem verdict    : what is the worst badness of lines in this paragraph. \stopitem
+\startitem classified : what classes are assigned to lines, think looseness, decent and tight. \stopitem
+\stopitemize
+
+There are two cases where the engine will continue with the applying passes:
+there is an overflow or there is a verdict (max badness) larger than zero. When we
+tested this on some large documents we noticed that this is nearly always true,
+but by checking we save a few unnecessary passes.
+
+Next we test if a pass is really needed, and if not we check the next pass. When
+a pass is done, we pick up where we left, but we test for the overflow or badness
+every sub pass. The next checks make us run a pass:
+
+\startitemize[packed]
+\startitem overfull   exceeds  threshold \stopitem
+\startitem verdict    exceeds  badness   \stopitem
+\startitem classified overlaps classes   \stopitem
+\stopitemize
+
+Here \typ {threshold}, \typ {badness} and \typ {classes} are options in a pass
+section. Which test makes sense depends a bit on how \TEX\ sees the result.
+Internally \TEX\ uses numbers for its classification (0..5) but we map that onto
+a bitset because we want an overview:
+
+\starttabulate[|r|l|c|c|c|c|]
+\NC      \NC             \BC indecent \BC almostdecent \BC loose \BC tight \NC \NR
+\NC   1  \BC  veryloose  \NC    +     \NC      +       \NC   +   \NC       \NC \NR
+\NC   2  \BC  loose      \NC    +     \NC      +       \NC   +   \NC       \NC \NR
+\NC   4  \BC  semiloose  \NC    +     \NC              \NC   +   \NC       \NC \NR
+\NC   8  \BC  decent     \NC          \NC              \NC       \NC       \NC \NR
+\NC  16  \BC  semitight  \NC    +     \NC              \NC       \NC   +   \NC \NR
+\NC  32  \BC  tight      \NC    +     \NC      +       \NC       \NC   +   \NC \NR
+\stoptabulate
+
+The semiloose and semitight values are something \LUAMETATEX. In \CONTEXT\ we
+have these four variants predefined as \typ {\indecentparpassclasses} and such.
+
+The sections in a par pass setup are separated by \type {next}. For testing
+purposes you can add \type {skip} and \type {quit}. The \type {threshold} tests
+against the overfull value, the \type {badness} against the verdict and \type
+{classes} checks for overlap with encountered classes, the classification.
+
+You can specify an \typ {identifier} in the first segment that then will be used
+in tracing but it is also passed to callbacks that relate to this feature.
+Discussing these callback is outside the scope fo this wrapup.
+
+You need to keep in mind that parameters are not reset to their original values
+between two subpasses of a paragraph.
+We have \typ {tolerance} and \typ {emergencystretch} which are handy for simple
+setups. When we start with a small tolerance we often need to bump that one. The
+stretch is likely a last resort. The usual demerits can be set too: \typ
+{doublehyphendemerits}, \typ {finalhyphendemerits} and \typ {adjdemerits}. We
+have \typ {extrahyphenpenalty} that gets added to the penalty in a discretionary.
+You can also set \typ {linepenalty} to a different value than it normally gets.
+
+The \typ {looseness} can be set but keep in mind that this only makes sense in
+very special cases. It's hard to be loose when there is not much stretch or shrink
+available. The \typ {linebreakcriterion} parameter can best be left untouched and is
+mostly there for testing purposes.
+
+The \LUAMETATEX\ specific \typ {orphanpenalty} gets injected before the last word
+in a paragraph. High values can lead to overfull boxes but when used in text that
+hyphenate well or with languages that have short words it might work out well.
+
+The next four are related to expansion: \typ {adjustspacing}, \typ
+{adjustspacingstep}, \typ {adjustspacingshrink} and \typ {adjustspacingstretch}.
+Here we have several scenarios.
+
+\startitemize
+\startitem
+    Fonts are set up for expansion (in \CONTEXT\ for instance with the quality
+    specifier). When \type {hz} is then enabled it will always kick in.
+\stopitem
+\startitem
+    When we don't enable it, the par pass can do it by setting \typ {adjustspacing} (to 3).
+\stopitem
+\startitem
+    When the other parameters are set these will overload the ones in the font,
+    but used with the factors in there, so different characters get scaled
+    differently. You can set the step to one to get more granular results.
+\stopitem
+\startitem
+    When expansion is {\em not} set on the font, setting the options in a pass will activate
+    expansion but with the factors set to 1000. This means all characters are treated equal,
+    which is less subtle.
+\stopitem
+\stopitemize
+
+When a font is not set up to use expansion, you can do something like this:
+
+\starttyping
+\parpasses    6
+    classes              \indecentparpassclasses
+    threshold            0.025pt
+    tolerance             250
+    extrahyphenpenalty     50
+    orphanpenalty        5000
+  % font driven
+  next ifadjustspacing
+    threshold            0.025pt
+    classes              \tightparpassclasses
+    tolerance             300
+    adjustspacing           3
+    orphanpenalty        5000
+  next ifadjustspacing
+    threshold            0.025pt
+    tolerance            350
+    adjustspacing           3
+    adjustspacingstep       1
+    adjustspacingshrink    20
+    adjustspacingstretch   40
+    orphanpenalty        5000
+    emergencystretch     .25\bodyfontsize
+  % otherwise, factors 1000
+  next
+    threshold            0.025pt
+    classes              \tightparpassclasses
+    tolerance             300
+    adjustspacing           3
+    adjustspacingstep       1
+    adjustspacingshrink    10
+    adjustspacingstretch   15
+    orphanpenalty        5000
+  next
+    threshold            0.025pt
+    tolerance             350
+    adjustspacing           3
+    adjustspacingstep       1
+    adjustspacingshrink    20
+    adjustspacingstretch   40
+    orphanpenalty        5000
+    emergencystretch     .25\bodyfontsize
+  % whatever
+  next
+    threshold            0.025pt
+    tolerance            3000
+    orphanpenalty        5000
+    emergencystretch     .25\bodyfontsize
+\relax
+\stoptyping
+
+With \typ {ifadjustspacing} you ignore steps that expect the font to be setup, so
+you don't waste time if that is not the case.
+
+There is also a \typ {callback} parameter but that one is experimental and used
+for special purposes and testing. We don't expect users to mess with that.
+
+A really special feature is optional content. Here we use as example a quote from
+Digital Typography:
+
+\starttyping[paragraph=yes,align=flushleft]
+Many readers will skim over formulas on their first reading
+of your exposition. Therefore, your sentences should flow
+smoothly when all but the simplest formulas are replaced by
+\quotation {blah} or some other \optionalword {1} {grunting }noise.
+\stoptyping
+
+Here the \type {grunting} (with embedded space) is considered optional. When you
+set \typ {\linebreakoptional} to~1 this word will be typeset. However, when you
+set the pass parameter \typ {linebreakoptional} to~0 it will be skipped. There
+can be multiple optional words with different numbers. The numbers are actually
+bits in a bit set so plenty is possible. However, normally these two values are
+enough, if used at all.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Definitions]
+
+The description above is rather low level and in practice users will use a bit
+higher level interface. Also, in practice only a subset of the parameters makes
+sense in general usage. It is not that easy to decide on what parameter subset
+will work out well but it can be fun to play with variants. After all, this is
+also what \TEX\ is about: look, feel and fun.
+
+Some users praise the ability of recent \TEX\ engines to provide expansion and
+protrusion. This feature is a bit demanding because not only does it add to
+runtime (although in \LUAMETATEX\ that normally can be neglected), it also makes
+the output files larger. Some find it hard to admit, but it even can result in
+bad looking documents when applied with extremes.
+
+The traditional (\MKIV) way to set up expansion is to add this to the top of the
+document, or at least before fonts get loaded.
+
+\startbuffer[pass-a]
+\definefontfeature
+  [default]
+  [default]
+  [expansion=quality,protrusion=quality]
+\stopbuffer
+
+\typebuffer[a]
+
+and later on to enable it with:
+
+\starttyping
+\setupalign[hz]
+\stoptyping
+
+However, par passes make it possible to be more selective. Take the following two
+definitions:
+
+\startbuffer[pass-b]
+\startsetups align:pass:quality:1
+    \pretolerance 50
+    \tolerance    150
+    \parpasses    6
+        identifier           \parpassidentifier{quality:1}
+        threshold            0.025pt
+        tolerance            175
+      next
+        threshold            0.025pt
+        tolerance            200
+      next
+        threshold            0.025pt
+        tolerance            250
+      next
+        classes              \almostdecentparpassclasses
+        tolerance            300
+        emergencystretch     .25\bodyfontsize
+      next ifadjustspacing
+        classes              \indecentparpassclasses
+        tolerance            300
+        adjustspacing          3
+        emergencystretch     .25\bodyfontsize
+      next
+        threshold            0.025pt
+        tolerance            3000
+        emergencystretch     2\bodyfontsize
+    \relax
+\stopsetups
+
+\startsetups align:pass:quality:2
+    \pretolerance 50
+    \tolerance    150
+    \parpasses    5
+        identifier           \parpassidentifier{quality:2}
+        threshold            0.025pt
+        tolerance            175
+      next
+        threshold            0.025pt
+        tolerance            200
+      next
+        threshold            0.025pt
+        tolerance            250
+      next ifadjustspacing
+        classes              \indecentparpassclasses
+        tolerance            300
+        adjustspacing          3
+        emergencystretch     .25\bodyfontsize
+      next
+        threshold            0.025pt
+        tolerance            3000
+        emergencystretch     2\bodyfontsize
+    \relax
+\stopsetups
+\stopbuffer
+
+\typebuffer[pass-b]
+
+You can now enable one of these:
+
+\starttyping
+\setupalignpass[quality:1]
+\stoptyping
+
+\startbuffer[pass-c]
+\starttext
+    \showmakeup[expansion,space]
+    \startTEXpage[offset=1ts]
+        \startcombination[3*3]
+            {\vtop{\hsize 8cm\setupalignpass[none]     \samplefile{tufte}}} {none}
+            {\vtop{\hsize 9cm\setupalignpass[none]     \samplefile{tufte}}} {none}
+            {\vtop{\hsize12cm\setupalignpass[none]     \samplefile{tufte}}} {none}
+            {\vtop{\hsize 8cm\setupalignpass[quality:1]\samplefile{tufte}}} {quality:1}
+            {\vtop{\hsize 9cm\setupalignpass[quality:1]\samplefile{tufte}}} {quality:1}
+            {\vtop{\hsize12cm\setupalignpass[quality:1]\samplefile{tufte}}} {quality:1}
+            {\vtop{\hsize 8cm\setupalignpass[quality:2]\samplefile{tufte}}} {quality:2}
+            {\vtop{\hsize 9cm\setupalignpass[quality:2]\samplefile{tufte}}} {quality:2}
+            {\vtop{\hsize12cm\setupalignpass[quality:2]\samplefile{tufte}}} {quality:2}
+        \stopcombination
+    \stopTEXpage
+\stoptext
+\stopbuffer
+
+The result is shown in \in {figure} [fig:passes:expansion] where you can see that
+expansion is applied selectively; you have to zoom in to see where.
+
+\startplacefigure[location=page,reference=fig:passes:expansion,title={Two different passes applied to \type {tufte.tex}.}]
+    \typesetbuffer[pass-a,pass-b,pass-c][width=\textwidth]
+\stopplacefigure
+
+\stopsectionlevel
+
+\startsectionlevel[title=Tracing]
+
+There are several ways to see what goes on. The engine has a tracing option that
+is set with \type {\tracingpasses}. Setting it to \type {1} reports the passes on
+the console, and a value of \type {2} also gives some details.
+
+There is a also a tracker, \type {paragraphs.passes} that can be enabled. This gives
+a bit more information:
+
+\starttyping
+\enabletrackers[paragraphs.passes]
+\enabletrackers[paragraphs.passes=summary]
+\enabletrackers[paragraphs.passes=details]
+\stoptyping
+
+If you want to see where expansion kicks in, you can use:
+
+\starttyping
+\showmakeup[expansion]
+\stoptyping
+
+This is just one of the options, \type {spaces}, \type {penalties}, \type {glue}
+are are useful when you play with passes, but if you are really into the low level
+details, this is what you want:
+
+\startbuffer
+\startnarrower[5*right]
+\startshowbreakpoints[option=margin,offset=\dimexpr{.5\emwidth-\rightskip}]
+\samplefile{tufte}
+\stopshowbreakpoints
+\stopnarrower
+\stopbuffer
+
+\typebuffer \getbuffer
+
+You can see the chosen solutions with
+
+\startbuffer
+\showbreakpoints[n=1]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+When we started playing with the par builder in the perspective of
+math, we side tracked and ended up with a feature that can ge used
+in controlled situations. Currently we only have a low level
+\CONTEXT\ interface for this (see \in {figure} [fig:passes:lousiness]).
+
+\startbuffer[lousiness]
+  \startTEXpage[offset=1ts]
+    \startcombination[3*1]
+        \bgroup \vtop\bgroup
+            \hsize8cm
+            \setupalign[verytolerant]
+            \tracinglousiness 1
+            \lousiness 0
+            \samplefile{ward}
+        \egroup \egroup
+        {\type {\tracinglousiness 1}
+         \type {\lousiness 0}}
+        \bgroup \vtop\bgroup
+            \hsize8cm
+            \setupalign[verytolerant]
+            \lousiness 1 11 0
+            \samplefile{ward}
+        \egroup \egroup
+        {\type {\lousiness 1 11 0}}
+        \bgroup \vtop\bgroup
+            \hsize8cm
+            \setupalign[verytolerant]
+            \silliness 11
+            \samplefile{ward}
+        \egroup \egroup
+        {\type {\silliness 11}}
+    \stopcombination
+\stopTEXpage
+\stopbuffer
+
+\startplacefigure[location=here,reference=fig:passes:lousiness,title={Influencing the way \TEX\ breaks lines applied to \type {ward.tex}.}]
+    \typesetbuffer[lousiness][width=\textwidth]
+\stopplacefigure
+
+\stopsectionlevel
+
+\startsectionlevel[title=Examples]
+
+\start \em
+    The \CONTEXT\ distribution comes with a few test setups: \typ
+    {spac-imp-tests.mkxl}. Once we have found a suitable set of values and sample
+    texts we might discuss them here.
+\stop
+
+\stopsectionlevel
+
+\page % colofon after flushed page float
+
+\stopdocument
+
+% \showmakeup[glue]
+
+% \startsetups align:pass:whatever
+%     \pretolerance 75
+%     \tolerance    150
+%     \parpasses    3
+%         threshold            0.025pt
+%         classes              \indecentparpassclasses
+%         tolerance            150
+%     next
+%         threshold            0.025pt
+%         classes              \indecentparpassclasses
+%         tolerance            200
+%         emergencystretch     .25\bodyfontsize
+%     next
+%         threshold            0.025pt
+%         classes              \indecentparpassclasses
+%         tolerance            200
+%         optional             1
+%         emergencystretch     .5\bodyfontsize
+%     \relax
+%     \linebreakpasses\plusone
+% \stopsetups
+
+
+% \dostepwiserecurse{80}{120}{2} {
+%     \start
+%         \hsize#1mm \getbuffer \getbuffer \blank
+%         \hsize#1mm \setupalignpass[whatever] \getbuffer \getbuffer \page
+%     \stop
+% }
+

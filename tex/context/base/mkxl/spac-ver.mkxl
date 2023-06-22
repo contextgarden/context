@@ -200,13 +200,13 @@
 
 \def\spac_linespacing_setup_specified_or_relative[#1]%
   {\doifelseassignment{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%
-   \the\iflocalinterlinespace\everysetuplocalinterlinespace\else\everysetupglobalinterlinespace\fi}
+   \expandtoks\iflocalinterlinespace\everysetuplocalinterlinespace\else\everysetupglobalinterlinespace\fi}
 
 \def\spac_linespacing_synchronize_local % adapts to the font
   {\localinterlinespacetrue
    \setfontparameters
    \updateraggedskips % funny one here
-   \the\everysetuplocalinterlinespace
+   \expandtoks\everysetuplocalinterlinespace
    \localinterlinespacefalse}
 
 \permanent\protected\def\dosetupcheckedinterlinespace#1% often a chain
@@ -218,10 +218,10 @@
      \let\currentinterlinespace\p_spac_checked_interlinespace
      \spac_linespacing_setup_specified_interline_space % \dosetupspecifiedinterlinespaceindeed
      \iflocalinterlinespace
-       \the\everysetuplocalinterlinespace
+       \expandtoks\everysetuplocalinterlinespace
      \else
        \localinterlinespacetrue
-       \the\everysetuplocalinterlinespace
+       \expandtoks\everysetuplocalinterlinespace
        \localinterlinespacefalse
      \fi
      \pop_macro_currentinterlinespace
@@ -229,10 +229,10 @@
      \normalexpanded{\noexpand\doifelseassignment{\p_spac_checked_interlinespace}%
        \setupspecifiedinterlinespace\setuprelativeinterlinespace[\p_spac_checked_interlinespace]}%
      \iflocalinterlinespace
-       \the\everysetuplocalinterlinespace
+       \expandtoks\everysetuplocalinterlinespace
      \else
        \localinterlinespacetrue
-       \the\everysetuplocalinterlinespace
+       \expandtoks\everysetuplocalinterlinespace
        \localinterlinespacefalse
      \fi
    \fi}
@@ -1080,7 +1080,7 @@
 \newtoks\everysetnostrut
 
 \permanent\protected\def\setnostrut
-  {\the\everysetnostrut}
+  {\expandtoks\everysetnostrut}
 
 \appendtoks
  %  \setbox\strutbox\copy\nostrutbox
@@ -1172,7 +1172,7 @@
    \setstrut}
 
 \ifdefined\setfontparameters \else
-    \def\setfontparameters{\the\everybodyfont}
+    \def\setfontparameters{\expandtoks\everybodyfont}
 \fi
 
 %D Keyword based strutting:
@@ -1310,29 +1310,26 @@
      \global\enforced\let\restoreinterlinepenalty\spac_penalties_restore
    \fi}
 
-\immutable\integerdef\defaultdisplaywidowpenalty         50
-\immutable\integerdef\defaultwidowpenalty              2000 % was: 1000
-\immutable\integerdef\defaultclubpenalty               2000 % was:  800
-\immutable\integerdef\defaultbrokenpenalty              100
-\immutable\integerdef\defaultdoublehyphendemerits     10000
-\immutable\integerdef\defaultfinalhyphendemerits       5000
-\immutable\integerdef\defaultadjdemerits              10000
+%D Here now only deal with penalties that relate to vertical breaking; the
+%D horizontal ones have been moved to spac-pas.
 
-\immutable\integerdef\defaultgriddisplaywidowpenalty      0
-\immutable\integerdef\defaultgridwidowpenalty             0
-\immutable\integerdef\defaultgridclubpenalty              0
-\immutable\integerdef\defaultgridbrokenpenalty            0
-\immutable\integerdef\defaultgriddoublehyphendemerits 10000 % always was so
-\immutable\integerdef\defaultgridfinalhyphendemerits   5000 % always was so
-\immutable\integerdef\defaultgridadjdemerits          10000 % always was so
+\immutable\integerdef\defaultdisplaywidowpenalty       50
+\immutable\integerdef\defaultwidowpenalty            2000 % was: 1000
+\immutable\integerdef\defaultclubpenalty             2000 % was:  800
+\immutable\integerdef\defaultbrokenpenalty            100
+
+\immutable\integerdef\defaultgriddisplaywidowpenalty \zerocount
+\immutable\integerdef\defaultgridwidowpenalty        \zerocount
+\immutable\integerdef\defaultgridclubpenalty         \zerocount
+\immutable\integerdef\defaultgridbrokenpenalty       \zerocount
+
+% \linebreakcriterion\optimallinebreakcriterion
+% \divide \adjdemerits \plustwo
 
 \permanent\protected\def\nopenalties
-  {\frozen\widowpenalty        \zerocount
-   \frozen\clubpenalty         \zerocount
-   \frozen\brokenpenalty       \zerocount
-   \frozen\doublehyphendemerits\zerocount
-   \frozen\finalhyphendemerits \zerocount
-   \frozen\adjdemerits         \zerocount}
+  {\frozen\widowpenalty \zerocount
+   \frozen\clubpenalty  \zerocount
+   \frozen\brokenpenalty\zerocount}
 
 \permanent\protected\def\setdefaultpenalties
   {\directsetup{\systemsetupsprefix\s!default}}
@@ -1341,7 +1338,6 @@
     \resetpenalties\widowpenalties
     \resetpenalties\clubpenalties
     \resetpenalties\interlinepenalties
-    \resetpenalties\orphanpenalties
 \stopsetups
 
 %D We use \directsetup because it's faster and we know there is no csl:
@@ -1354,9 +1350,6 @@
     \frozen\clubpenalty         \defaultclubpenalty
     \frozen\displaywidowpenalty \defaultdisplaywidowpenalty
     \frozen\brokenpenalty       \defaultbrokenpenalty
-    \frozen\doublehyphendemerits\defaultdoublehyphendemerits
-    \frozen\finalhyphendemerits \defaultfinalhyphendemerits
-    \frozen\adjdemerits         \defaultadjdemerits
 
 \stopsetups
 
@@ -1368,9 +1361,6 @@
     \frozen\clubpenalty         \defaultgridclubpenalty
     \frozen\displaywidowpenalty \defaultgriddisplaywidowpenalty
     \frozen\brokenpenalty       \defaultgridbrokenpenalty
-    \frozen\doublehyphendemerits\defaultgriddoublehyphendemerits
-    \frozen\finalhyphendemerits \defaultgridfinalhyphendemerits
-    \frozen\adjdemerits         \defaultgridadjdemerits
 
 \stopsetups
 
@@ -1384,13 +1374,8 @@
     \setpenalties \clubpenalties       \plustwo  \maxdimen
     \setpenalties \orphanpenalties     \zerocount
           \frozen \brokenpenalty                 \maxdimen
-          \frozen \doublehyphendemerits          \defaultdoublehyphendemerits
-          \frozen \finalhyphendemerits           \defaultfinalhyphendemerits
-          \frozen \adjdemerits                   \defaultadjdemerits
 
 \stopsetups
-
-\setdefaultpenalties % will happen later in \setuplayout
 
 %D To be checked:
 

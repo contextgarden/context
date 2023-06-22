@@ -162,7 +162,7 @@ extern halfword tex_badness(
 
 # define max_infinity                      0x7FFFFFFF /*tex the largest positive value that \TEX\ knows */
 # define min_infinity                     -0x7FFFFFFF
- # define awful_bad                        0x3FFFFFFF /*tex more than a billion demerits |07777777777| */ 
+# define awful_bad                        0x3FFFFFFF /*tex more than a billion demerits |07777777777| */ 
 # define infinite_bad                           10000 /*tex infinitely bad value */
 # define infinite_penalty                infinite_bad /*tex infinite penalty value */
 # define eject_penalty              -infinite_penalty /*tex negatively infinite penalty value */
@@ -201,12 +201,13 @@ extern halfword tex_badness(
 # define unused_math_style                       0xFF
 # define unused_math_family                      0xFF
 
-# define preset_rule_thickness           010000000000 /*tex denotes |unset_rule_thickness|: |0x40000000|. */
+# define preset_rule_thickness             0x40000000 /*tex denotes |unset_rule_thickness|: |010000000000|. */
 
 # define max_char_code                             15 /*tex largest catcode for individual characters */
 # define min_space_factor                           0 /*tex watch out: |\spacefactor| cannot be zero but the sf code can!*/
-# define max_space_factor                      077777
+# define max_space_factor                      0x7FFF /*tex |077777| */
 # define default_space_factor                    1000
+# define space_factor_threshold                  2000
 # define default_tolerance                      10000
 # define default_hangafter                          1
 # define default_deadcycles                        25
@@ -737,11 +738,12 @@ typedef struct line_break_properties {
     halfword parfill_right_skip;
     halfword parinit_left_skip;
     halfword parinit_right_skip;
-    halfword par_left_skip;
-    halfword par_right_skip;
+    halfword emergency_left_skip;
+    halfword emergency_right_skip;
     halfword pretolerance;
     halfword tolerance;
     halfword emergency_stretch;
+    halfword emergency_extra_stretch;
     halfword looseness;
     halfword adjust_spacing;
     halfword protrude_chars;
@@ -776,7 +778,12 @@ typedef struct line_break_properties {
     halfword hyphenation_mode;
     halfword shaping_penalties_mode;
     halfword shaping_penalty;
-    halfword padding;
+    halfword par_passes;
+    halfword tracing_passes;
+    halfword line_break_criterion;
+    halfword extra_hyphen_penalty; 
+    halfword line_break_optional;
+    halfword optional_found;
 } line_break_properties;
 
 # endif

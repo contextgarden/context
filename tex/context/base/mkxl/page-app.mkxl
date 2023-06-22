@@ -54,7 +54,7 @@
    \autostarttext
    \bgroup % resulting in a zero height page; test fig-make !
    \setupinterlinespace[\v!top=0]% no topskip
-   \def\currentfittingpage{#1}%
+   \cdef\currentfittingpage{#1}%
    \dontcomplain
    % runs under current page regime, i.e. page variables passed to mp
    \setupcurrentfittingpage[\c!paper=,#2]% auto or size or nothing

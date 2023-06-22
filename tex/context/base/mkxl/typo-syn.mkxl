@@ -153,7 +153,7 @@
 \tolerant\protected\def\typo_synchronize#1#*[#2]#:#3#4%
   {\dontleavehmode
    \begingroup
-   \def\currentsynchronize{#1}%
+   \cdef\currentsynchronize{#1}%
    \setupcurrentsynchronize[#2]%
    \scratchdistance\synchronizeparameter\c!distance
    \dontcomplain
@@ -234,7 +234,7 @@
 \tolerant\protected\def\placesynchronize[#1]#*[#2]%
   {\dontleavehmode
    \begingroup
-   \def\currentsynchronize{#1}%
+   \cdef\currentsynchronize{#1}%
    \setupcurrentsynchronize[#2]%
    \scratchdistance\synchronizeparameter\c!distance
    \clf_synchronizesteps

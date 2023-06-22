@@ -71,7 +71,7 @@
 \installcorenamespace{language}
 \installcorenamespace{languagelinked}
 
-\mutable\def\currentusedlanguage{\currentlanguage}
+\mutable\def\currentusedlanguage{\currentlanguage} % no \cdef
 
 \permanent\def\defaultlanguage#1%
   {\ifcsname\??language#1\s!default\endcsname
@@ -202,7 +202,7 @@
         \lang_basics_install_indeed{#1}{#1}}%
      \cdef\currentsetuplanguage{#1}%
      \clf_definelanguage{#1}{\specificlanguageparameter{#1}\s!default}%
-     \the\everysetuplanguage
+     \expand\everysetuplanguage
    \else
      \defcsname\??languagelinked#1\endcsname{#2}%
      \clf_setlanguagesynonym{#1}{#2}%
@@ -250,12 +250,12 @@
    \or
      \let\currentsetuplanguage\currentlanguage
      \getparameters[\??language\currentsetuplanguage][#1]%
-     \the\everysetuplanguage
+     \expand\everysetuplanguage
    \or
      \push_macro_currentlanguage % can be default
      \cdef\currentsetuplanguage{\reallanguagetag{#1}}%
      \getparameters[\??language\currentsetuplanguage][#2]%
-     \the\everysetuplanguage
+     \expand\everysetuplanguage
      \pop_macro_currentlanguage
     %\doif\currentsetuplanguage\currentlanguage we can have influenced inheritance (default)
    \fi
@@ -392,7 +392,7 @@
      \fi
    \endcsname
    \relax
-   \the\everylanguage
+   \expand\everylanguage
    \relax}
 
 \newinteger\hyphenstate

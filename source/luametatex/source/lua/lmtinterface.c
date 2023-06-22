@@ -214,7 +214,7 @@ void lmt_initialize_interface(void)
     set_par_mode_value(vmode_par_par_subtype, vmodepar);
     set_par_mode_value(local_box_par_subtype, localbox);
     set_par_mode_value(hmode_par_par_subtype, hmodepar);
-    set_par_mode_value(penalty_par_subtype,   penalty);
+    set_par_mode_value(parameter_par_subtype, parameter);
     set_par_mode_value(math_par_subtype,      math);
 
     lmt_interface.math_style_name_values = lmt_aux_allocate_value_info(cramped_script_script_style);

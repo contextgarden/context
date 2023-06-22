@@ -87,7 +87,7 @@
 %   {\popmacro\currentinteraction}
 %
 % \protected\def\setinteraction[#1]%
-%   {\def\currentinteraction{#1}}
+%   {\cdef\currentinteraction{#1}}
 %
 % \defineinteraction[\v!interaction]
 
@@ -99,7 +99,7 @@
   {\popmacro\currentinteraction}
 
 \permanent\protected\def\setinteraction[#1]%
-  {\def\currentinteraction{#1}}
+  {\cdef\currentinteraction{#1}}
 
 \defineinteraction % keep it simple
   [\v!hidden]

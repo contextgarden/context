@@ -84,7 +84,7 @@
   {\par % else no vertical penalties, always before group so that we clear hangs etc (as in side floats)
    \ifvmode % extra check
      \begingroup
-     \the\everybeforepagebreak
+     \expand\everybeforepagebreak
      \c_page_breaks_prevpage\realpageno
      \ifcase\pageornamentstate \or
        % disable reset after shipout
@@ -100,7 +100,7 @@
      \ifnum\c_page_breaks_prevpage<\realpageno
        \global\pageornamentstate\zerocount
      \fi
-     \the\everyafterpagebreak
+     \expand\everyafterpagebreak
      \endgroup
    \fi}
 
@@ -322,17 +322,17 @@
 \permanent\tolerant\protected\def\columnbreak[#1]%
   {\par % else no vertical penalties
    \begingroup
-   \the\everybeforecolumnbreak
+   \expand\everybeforecolumnbreak
    \ifparameter#1\or
      \page_breaks_columns_handle{#1}%
    \else
      \page_breaks_columns_handle_direct\v!yes
    \fi
    \relax
-   \the\everyaftercolumnbreak
+   \expand\everyaftercolumnbreak
    \endgroup
    % outside group e.g. setting hsize
-   \the\everysynchronizecolumn}
+   \expand\everysynchronizecolumn}
 
 \aliased\let\column\columnbreak
 

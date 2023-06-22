@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2023.06.04 18:54}
+\immutable\edef\contextversion{2023.06.22 14:07}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -278,6 +278,9 @@
 \loadmkxlfile{spac-def}
 \loadmklxfile{spac-prf}
 \loadmkxlfile{spac-grd}
+\loadmkxlfile{spac-pas}
+
+\loadmkxlfile{spac-imp-tests}
 
 \loadmklxfile{scrn-ini}
 \loadmklxfile{scrn-ref}
@@ -636,13 +639,7 @@
     \ctxlua{statistics.savefmtstatus("\jobname","\contextversion","context.mkxl","\contextbanner")}% can become automatic
 \to \everydump
 
-% maybe some day (but also inhibits):
-%
-% \prependtoks
-%     \overloadmode 255
-% \to \everyjob
-
-\overloadmode\zerocount % for now
+% \overloadmode\zerocount % for now
 
 \errorstopmode \dump \endinput
 

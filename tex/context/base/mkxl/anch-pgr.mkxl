@@ -68,8 +68,8 @@
   {\begingroup
    \setbox\scratchbox\hbox % \hpack
      {\anch_positions_trace_action_yes
-      \the\everyinsertpositionaction
-      \the\everypositionaction
+      \expand\everyinsertpositionaction
+      \expand\everypositionaction
       \begincsname\??positionaction\currentpositionaction\endcsname
       \anch_positions_cleanup_action}%
    \smashedbox\scratchbox % smashing is really needed else we get problems with too big overlays
@@ -96,7 +96,7 @@
 
 \def\anch_positions_cleanup_action % not in trialtypesetting
   {\ifcsname\??positioncleanup\currentpositionaction\endcsname
-     \the\everycleanpositionaction
+     \expand\everycleanpositionaction
      \xdefcsname\??positioncleanup\currentpositionaction\endcsname{\csname\??positioncleanup\currentpositionaction\endcsname}%
    \fi}
 
@@ -239,7 +239,7 @@
       \edef\MPanchorid{\currentpositionoverlay::\MPanchoridentifier:\MPanchornumber}% realpageno
     % \edef\MPanchor##1{\MPpos\MPanchorid}%
       \enforced\let\MPanchor\MPoverlayanchor % no need to fetch it already, seldom used
-      \the\everyinsertpositionaction
+      \expand\everyinsertpositionaction
       \copyposition{\currentpositionoverlay::\MPanchoridentifier}\MPanchorid
       \setbox\scratchbox\hbox to \d_overlay_width % \hpack
         {\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
@@ -271,7 +271,7 @@
   {\vpack to \d_overlay_height
      {\let\MPanchorid\currentpositionregion
       \enforced\let\MPanchor\MPoverlayanchor % no need to fetch it already, seldom used
-      \the\everyinsertpositionaction
+      \expand\everyinsertpositionaction
       \copyposition{\currentpositionoverlay::\MPanchoridentifier}\MPanchorid
       \setbox\scratchbox\hbox to \d_overlay_width % \hpack
         {\dopositionaction{\currentpositionoverlay::\MPanchoridentifier}\hss}%
@@ -385,7 +385,7 @@
 
 \def\anch_positions_meta_graphic_insert#1#2#3% pos tag setups
   {\ifnum\MPp{#1}=\realpageno\relax % extra saveguard
-     \def\currentposition{#1}\MPpositiongraphic{#2}{#3}%
+     \cdef\currentposition{#1}\MPpositiongraphic{#2}{#3}%
    \fi}
 
 \let\anch_positions_meta_graphic_handle_indeed\relax
@@ -417,7 +417,7 @@
 
 \def\anch_positions_meta_graphic_insert_range#1#2#3#4% pos pos tag setups
   {\clf_doifelserangeonpage{#1}{#2}\realpageno
-     {\def\currentposition{#1}%
+     {\cdef\currentposition{#1}%
       \MPpositiongraphic{#3}{#4}}%
      {}}
 

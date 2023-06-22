@@ -199,7 +199,7 @@
 \protected\def\syst_startstop_start#1%
   {\namedstartstopparameter{#1}\c!before\relax
    \bgroup
-   \def\currentstartstop{#1}%
+   \cdef\currentstartstop{#1}%
    % we will keep this for a while:
    \startstopparameter\c!commands\relax % obsolete
    % this is the new method:
@@ -215,12 +215,12 @@
 
 \protected\def\syst_startstop_indeed#1%
   {\groupedcommand
-     {\def\currentstartstop{#1}%
+     {\cdef\currentstartstop{#1}%
       \startstopparameter\c!commands\relax % better: setups so that will show op soon
       \dostarttagged\t!construct\currentstartstop
       \usestartstopstyleandcolor\c!style\c!color
       \startstopparameter\c!left\relax}
-     {\def\currentstartstop{#1}% safeguard, not really needed
+     {\cdef\currentstartstop{#1}% safeguard, not really needed
       \startstopparameter\c!right\relax
       \dostoptagged
       \startstopparameter\c!inbetween\relax}}
@@ -266,7 +266,7 @@
 
 \permanent\protected\def\typo_highlights_indeed#1% inline style/color switch
   {\dontleavehmode\groupedcommand % otherwise wrong par number in tags
-     {\def\currenthighlight{#1}%
+     {\cdef\currenthighlight{#1}%
       \dostarttagged\t!highlight\currenthighlight
       \usehighlightstyleandcolor\c!style\c!color
     % \usehighlightstyleandcolor\c!style\c!color
@@ -279,7 +279,7 @@
 
 \permanent\protected\def\starthighlight[#1]%
   {\begingroup
-   \def\currenthighlight{#1}%
+   \cdef\currenthighlight{#1}%
    \dostarttagged\t!highlight\currenthighlight
    \usehighlightstyleandcolor\c!style\c!color
  % \usehighlightstyleandcolor\c!style\c!color

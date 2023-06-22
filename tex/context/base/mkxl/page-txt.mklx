@@ -241,6 +241,7 @@
 
 \protected\def\page_layouts_process_element_indeed#style#color#width%
   {\begingroup
+   \lefttoright % new
    \uselayoutelementstyleandcolor#style#color%
    \begincsname\??layouttextstrut\layoutelementparameter\c!strut\endcsname
    \ignorecrlf
@@ -891,7 +892,7 @@
       \vkern\dimexpr-\textdistance-\textheight\relax
       \the\texttextcontent
       \vkern\textheight
-      \the\everyendoftextbody
+      \expand\everyendoftextbody
       \vkern\footerdistance
       \the\footertextcontent
       \vkern\dimexpr\footerheight+\bottomdistance\relax

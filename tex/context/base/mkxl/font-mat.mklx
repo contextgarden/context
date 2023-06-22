@@ -70,7 +70,7 @@
 \newconditional\c_font_synchronize_math_fonts \settrue\c_font_synchronize_math_fonts
 
 \protected\def\font_helpers_synchronize_math % math stuff in mmode
-  {\ifconditional\c_font_synchronize_math_fonts\the\t_font_math_strategies\fi}
+  {\ifconditional\c_font_synchronize_math_fonts\expand\t_font_math_strategies\fi}
 
 \permanent\protected\def\textonly{\setfalse\c_font_synchronize_math_fonts} % document this
 
@@ -129,6 +129,8 @@
 
 \def\font_helpers_set_math_family_indeed_normal#mrtag#family% \fontface etc are also used later on
   {\let\savedfontbody\fontbody
+   \let\savedfontstyle\fontstyle
+   \let\fontstyle\s!mm
    \let\fontfamily#family%
 \c_math_last_family_used\zerocount
    % the order is important as we depend on known id's when completing fonts
@@ -148,6 +150,7 @@
    \font_helpers_set_math_family_a\textfont        #mrtag\font % enables / still needed ?
    \lettonothing\mathsizesuffix
    \let\fontface\!!zerocount
+   \let\fontstyle\savedfontstyle
    \let\fontbody\savedfontbody
    \setfalse\c_font_auto_size}
 
@@ -165,6 +168,8 @@
 
 \def\font_helpers_set_math_family_indeed_compact#mrtag#family% \fontface etc are also used later on
   {\let\savedfontbody\fontbody
+   \let\savedfontstyle\fontstyle
+   \let\fontstyle\s!mm
    \let\fontfamily#family%
 \c_math_last_family_used\zerocount
    \font_helpers_set_math_family_set_scales_compact
@@ -178,6 +183,7 @@
                                   \scriptscriptfont#mrtag\font % reuses
    \lettonothing\mathsizesuffix
    \let\fontface\!!zerocount
+   \let\fontstyle\savedfontstyle
    \let\fontbody\savedfontbody
    \setfalse\c_font_auto_size}
 
@@ -192,6 +198,8 @@
   {\let\savedfontclass\defaultfontclass
    \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
    \let\savedfontbody\fontbody
+   \let\savedfontstyle\fontstyle
+   \let\fontstyle\s!mm
    \let\fontfamily#familytag%
 \c_math_last_family_used\zerocount
    \font_helpers_set_math_family_set_scales_normal
@@ -209,6 +217,7 @@
    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% enables / still needed ?
    \lettonothing\mathsizesuffix
    \let\fontface\!!zerocount
+   \let\fontstyle\savedfontstyle
    \let\fontbody\savedfontbody
    \let\defaultfontclass\savedfontclass
    \setfalse\c_font_auto_size}
@@ -217,6 +226,8 @@
   {\let\savedfontclass\defaultfontclass
    \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
    \let\savedfontbody\fontbody
+   \let\savedfontstyle\fontstyle
+   \let\fontstyle\s!mm
    \let\fontfamily#familytag%
 \c_math_last_family_used\zerocount
    \let\mathsizesuffix\mathtextsuffix
@@ -227,6 +238,7 @@
                                        \scriptscriptfont#mbfam\textfont#mbfam% reuses
    \lettonothing\mathsizesuffix
    \let\fontface\!!zerocount
+   \let\fontstyle\savedfontstyle
    \let\fontbody\savedfontbody
    \let\defaultfontclass\savedfontclass
    \setfalse\c_font_auto_size}

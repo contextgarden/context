@@ -523,14 +523,14 @@
    \mixedcolumnsparameter\c!after\relax
    \pop_macro_currentmixedcolumnsmethod
    \pop_macro_currentmixedcolumns
-   \the\t_page_mix_at_the_end\global\t_page_mix_at_the_end\emptytoks}
+   \expand\t_page_mix_at_the_end\global\t_page_mix_at_the_end\emptytoks}
 
 \protected\def\page_mix_columns_stop_nop
   {\page_mix_finalize_columns
    \endgroup
    \pop_macro_currentmixedcolumnsmethod
    \pop_macro_currentmixedcolumns
-   \the\t_page_mix_at_the_end\global\t_page_mix_at_the_end\emptytoks}
+   \expand\t_page_mix_at_the_end\global\t_page_mix_at_the_end\emptytoks}
 
 % \protected\def\page_mix_columns_stop_yes
 %   {\begincsname\??mixedcolumnsstop \currentmixedcolumnsmethod\endcsname % no \relax

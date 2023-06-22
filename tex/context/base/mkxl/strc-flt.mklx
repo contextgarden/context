@@ -681,12 +681,12 @@
    %
    \setfloatmethodvariables\floatlocation}
 
-\newtoks\c_floats_every_table_float
+\newtoks\t_floats_every_table_float
 
 \appendtoks
     \edef\floatlocation{\v!force,\v!always,\floatlocation}%
     \setupfloat[\c!spacebefore=\v!none,\c!spaceafter=\v!none]%
-\to \c_floats_every_table_float
+\to \t_floats_every_table_float
 
 \ifdefined\dotagregisterfloat \else \aliased\let\dotagregisterfloat\gobbletwoarguments \fi
 
@@ -700,7 +700,7 @@
      \let\floatlocation\floatlocationdefault % beware of a clash between alignment locations
    \fi
    \ifintable
-     \the\c_floats_every_table_float
+     \expand\t_floats_every_table_float
    \fi
    \strc_floats_analyze_location
    % todo: use \lets
@@ -870,7 +870,7 @@
    \global\insidefloattrue
    \dostarttaggedchained\t!float\currentfloat\??float
    \page_margin_strc_floats_set_hsize % todo: each float handler gets a set_hsize
-   \the\everyinsidefloat
+   \expand\everyinsidefloat
    \strc_floats_analyze_variables_one
    \dostarttagged\t!floatcontent\empty
    \dowithnextboxcontent

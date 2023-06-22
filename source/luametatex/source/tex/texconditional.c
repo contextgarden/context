@@ -1338,9 +1338,7 @@ void tex_conditional_fi_or_else(void)
         tex_get_next_non_spacer();
     } else if (cur_chr > lmt_condition_state.if_limit) {
         if (lmt_condition_state.if_limit == if_code) {
-            /*tex
-                The condition is not yet evaluated.
-            */
+            /*tex The condition is not yet evaluated. */
             tex_insert_relax_and_cur_cs();
         } else {
             tex_handle_error(normal_error_type,
@@ -1441,7 +1439,7 @@ void tex_conditional_unless(void)
 void tex_show_ifs(void)
 {
     if (lmt_condition_state.cond_ptr) {
-        /*tex First we determine the of |\if ... \fi| nesting. */
+        /*tex First we determine the |\if ... \fi| nesting. */
         int n = 0;
         {
             /*tex We start at the tail of a token list to show. */

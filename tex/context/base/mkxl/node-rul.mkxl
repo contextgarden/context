@@ -366,7 +366,7 @@
 \to \everydefineshift
 
 \protected\def\node_shifts_set#1% todo: check parent ! todo: move attr etc to lua
-  {\def\currentshift{#1}%
+  {\cdef\currentshift{#1}%
    \useshiftstyleandcolor\c!style\c!color
    \dosetupisolatedalign{\shiftparameter\c!align}% a weird feature that i probably needed once
    \clf_setshift
@@ -437,7 +437,7 @@
 \aliased\let\setuplinefillers\setuplinefiller
 
 \protected\def\node_linefiller_set#1% todo: check parent ! todo: move attr etc to lua
-  {\def\currentlinefiller{#1}%
+  {\cdef\currentlinefiller{#1}%
    \edef\p_node_color{\linefillerparameter\c!color}%
    \clf_setlinefiller
       %method         \linefillerparameter\c!method
@@ -457,7 +457,7 @@
 \permanent\tolerant\protected\def\startlinefiller[#1]#*[#2]%
   {\begingroup
    \par
-   \def\currentlinefiller{#1}%
+   \cdef\currentlinefiller{#1}%
    \ifparameter#2\or
      % we need to update settings
      \setuplinefiller[#1][#2]% no \setupcurrentlinefiller as we need to update settings

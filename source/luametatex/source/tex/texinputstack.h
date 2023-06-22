@@ -68,12 +68,12 @@ typedef struct input_file_state_info {
 
 extern input_file_state_info input_file_state;
 
-inline static int input_file_value(void)
+static inline int input_file_value(void)
 {
     return input_file_state.forced_file ? input_file_state.forced_file : lmt_input_state.cur_input.state_file;
 }
 
-inline static int input_line_value(void)
+static inline int input_line_value(void)
 {
     return input_file_state.forced_line ? input_file_state.forced_line : (input_file_state.line ? input_file_state.line : lmt_input_state.input_line);
 }
@@ -414,6 +414,7 @@ typedef enum token_types {
     every_eof_text,        /*tex |\everyeof| */
     end_of_group_text,
     mark_text,             /*tex |\topmark|, etc. */
+    token_text, 
     loop_text,
     end_paragraph_text,    /*tex |\everyendpar| */
     write_text,            /*tex |\write| */

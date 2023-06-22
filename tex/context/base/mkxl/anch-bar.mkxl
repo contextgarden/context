@@ -94,7 +94,7 @@
      \checksidebarparent
      \setupcurrentsidebar[#1]%
    \else
-     \def\currentsidebar{#1}%
+     \cdef\currentsidebar{#1}%
      \setupcurrentsidebar[#2]%
    \fi
    \scratchdistance\sidebarparameter\c!distance\relax

@@ -88,8 +88,8 @@ typedef struct linebreak_state_info {
     halfword internal_penalty_broken;
     halfword internal_left_box;
     scaled   internal_left_box_width;
-    halfword init_internal_left_box;
-    scaled   init_internal_left_box_width;
+    halfword internal_left_box_init;
+    scaled   internal_left_box_width_init;
     halfword internal_right_box;
     scaled   internal_right_box_width;
     scaled   internal_middle_box;
@@ -110,9 +110,20 @@ typedef struct linebreak_state_info {
     halfword dir_ptr;
     halfword warned;
     halfword calling_back;
+    int      saved_threshold; 
+    int      checked_expansion; 
+    int      line_break_dir;
 } linebreak_state_info;
 
 extern linebreak_state_info lmt_linebreak_state;
+
+typedef enum linebreak_quality { 
+    par_has_glyph    = 0x0001, 
+    par_has_disc     = 0x0002, 
+    par_has_space    = 0x0004,
+    par_is_overfull  = 0x0010,
+    par_is_underfull = 0x0020,
+} linebreak_quality;
 
 void tex_line_break_prepare (
     halfword par, 
@@ -153,22 +164,22 @@ extern halfword tex_wipe_margin_kerns(
 
 */
 
-inline static int tex_zero_box_dimensions(halfword a)
+static inline int tex_zero_box_dimensions(halfword a)
 {
     return box_width(a) == 0 && box_height(a) == 0 && box_depth(a) == 0;
 }
 
-inline static int tex_zero_rule_dimensions(halfword a)
+static inline int tex_zero_rule_dimensions(halfword a)
 {
     return rule_width(a) == 0 && rule_height(a) == 0 && rule_depth(a) == 0;
 }
 
-inline static int tex_empty_disc(halfword a)
+static inline int tex_empty_disc(halfword a)
 {
     return (! disc_pre_break_head(a)) && (! disc_post_break_head(a)) && (! disc_no_break_head(a));
 }
 
-inline static int tex_protrusion_skipable(halfword a)
+static inline int tex_protrusion_skipable(halfword a)
 {
     if (a) {
         switch (node_type(a)) {
@@ -200,7 +211,7 @@ inline static int tex_protrusion_skipable(halfword a)
     return 0;
  }
 
-inline static void tex_append_list(halfword head, halfword tail)
+static inline void tex_append_list(halfword head, halfword tail)
 {
     tex_couple_nodes(cur_list.tail, node_next(head));
     cur_list.tail = tail;

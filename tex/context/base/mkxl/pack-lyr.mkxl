@@ -703,7 +703,7 @@
 
 \permanent\protected\def\tightlayer[#1]%
   {\hpack
-     {\def\currentlayer{#1}% todo: left/right
+     {\cdef\currentlayer{#1}% todo: left/right
       \setbox\nextbox\emptybox
       \d_overlay_width \layerparameter\c!width
       \d_overlay_height\layerparameter\c!height

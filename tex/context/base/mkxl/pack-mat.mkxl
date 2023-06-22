@@ -306,7 +306,7 @@
        \setbox\scratchbox\hbox\bgroup
          \Ustartmath
          \triggermathstyle\c_framed_mstyle
-         \the\t_pack_framed_mathframed
+         \expand\t_pack_framed_mathframed
          \mathatom \mathunspacedcode\bgroup
            #3%
          \egroup

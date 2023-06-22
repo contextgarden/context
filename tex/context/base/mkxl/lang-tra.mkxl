@@ -37,7 +37,7 @@
   {\usetransliterationstyleandcolor\c!style\c!color
    \uselanguageparameter\transliterationparameter
    \clf_settransliteration{\currenttransliteration}{\transliterationparameter\c!vector}%
-   \the\everytransliterations}
+   \expand\everytransliterations}
 
 \permanent\tolerant\protected\def\settransliteration[#1]#;#2%
   {\cdef\currenttransliteration{#1#2}%

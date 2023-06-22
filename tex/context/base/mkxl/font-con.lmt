@@ -464,6 +464,9 @@ function constructors.scale(tfmdata,specification)
     local targetquad         = (parameters.quad         or parameters[6] or 0) * hdelta
     local targetextraspace   = (parameters.extraspace   or parameters[7] or 0) * hdelta
     --
+    targetparameters.expansion    = parameters.expansion
+    targetparameters.protrusion   = parameters.protrusion
+    --
     targetparameters.slant        = targetslant -- slantperpoint
     targetparameters.space        = targetspace
     targetparameters.spacestretch = targetspacestretch

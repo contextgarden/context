@@ -77,7 +77,7 @@
    \fi}
 
 \permanent\protected\def\pickupattributes
-  {\the\t_attr_list_pickup\relax}
+  {\expand\t_attr_list_pickup\relax}
 
 \permanent\protected\def\newattribute#1%
   {\attr_basics_define_indeed[\s!public][\csstring#1][]%
@@ -92,8 +92,8 @@
 
 \aliased\let\dompattribute\gobbletwoarguments
 
-\permanent\protected\def\resetglobalattributes{\the\t_attr_list_global\glyphdatafield\zerocount\glyphscriptfield\zerocount}
-\permanent\protected\def\resetlocalattributes {\the\t_attr_list_local \glyphdatafield\zerocount\glyphscriptfield\zerocount}
+\permanent\protected\def\resetglobalattributes{\expand\t_attr_list_global\glyphdatafield\zerocount\glyphscriptfield\zerocount}
+\permanent\protected\def\resetlocalattributes {\expand\t_attr_list_local \glyphdatafield\zerocount\glyphscriptfield\zerocount}
 
 \aliased\let\resetallattributes\resetlocalattributes
 

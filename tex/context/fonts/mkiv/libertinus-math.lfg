@@ -111,6 +111,12 @@ return {
                 -- We now copy these to the not wide slots so that we can set these to stretch as well,
                 -- if only because it is less confusing and more consistent.
                 {
+                    tweak = "dimensions",
+                    list  = {
+                        [0x305] = { height = .8, yoffset = -.2  }, -- widehat
+                    },
+                },
+                {
                     tweak = "copyaccents",
                 },
                 -- So far for the accents.
@@ -137,9 +143,9 @@ return {
                 {
                     tweak = "accentdimensions",
                 },
-                {
-                    tweak = "addrules",
-                },
+             -- {
+             --     tweak = "addrules",
+             -- },
                 {
                     tweak   = "addbars",
                     advance = 0.5,

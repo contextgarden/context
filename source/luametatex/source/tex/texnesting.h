@@ -29,6 +29,8 @@ typedef struct list_state_record {
     halfword math_begin;           // singleword 
     halfword math_end;             // singleword 
     halfword math_mode;            // singleword 
+    halfword tolerance;
+    halfword pretolerance;
 } list_state_record;
 
 typedef struct nest_state_info {

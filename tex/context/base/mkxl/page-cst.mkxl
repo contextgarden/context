@@ -134,7 +134,7 @@
        \lettonothing\currentpagegrid
        \setupcurrentpagegrid[#1]%
      \else
-       \def\currentpagegrid{#1}%
+       \cdef\currentpagegrid{#1}%
      \fi
    \or
      \cdef\currentpagegrid{#1}%

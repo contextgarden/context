@@ -87,7 +87,7 @@
 \installcommandhandler \??expansion {expansion} \??expansion
 
 \appendtoks
-    \setuevalue{\??expansion:\currentexpansion}%
+    \protected\instance\edefcsname\??expansion:\currentexpansion\endcsname
       {\adjustspacingstep   \expansionparameter\c!step\relax
        \adjustspacingstretch\expansionparameter\c!stretch\relax
        \adjustspacingshrink \expansionparameter\c!shrink\relax}%

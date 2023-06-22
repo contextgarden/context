@@ -85,7 +85,7 @@
    \doprocessinsert\currentinsertionnumber} % old method
 
 \permanent\protected\def\processinsertions
-  {\the\t_page_inserts_list}
+  {\expand\t_page_inserts_list}
 
 % \permanent\protected\def\synchronizeinsertions
 %   {\let\doprocessinsert\page_inserts_synchronize

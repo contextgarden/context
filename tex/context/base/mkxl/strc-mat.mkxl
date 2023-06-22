@@ -1510,7 +1510,7 @@
    \strc_math_set_number_location
    \strc_formulas_set_paragraph
    \let\strc_formulas_start_formula\strc_formulas_start_formula_nested
-   \the\everybeforedisplayformula
+   \expand\everybeforedisplayformula
    \strc_math_setup_align
    \ifcstok{\formulaparameter\c!strut}\v!yes
      \let\strc_formulas_begstrut\begstrut
@@ -1552,7 +1552,7 @@
    \hangafter\minusone   % added for side floats
    \hangindent\zeropoint % added for side floats
    \setfalse\c_strc_formulas_handle_number
-   \the\everyresetformulas
+   \expand\everyresetformulas
    \dorechecknextindentation} % here ?
 
 % experiment:
@@ -1649,7 +1649,7 @@
 \permanent\protected\def\stopsubformulas
   {\nonoindentation
    \useindentnextparameter\subformulaparameter
-   \the\everyresetformulas % to be checked
+   \expand\everyresetformulas % to be checked
    \global\setfalse\c_strc_formulas_inside_formulas_sub
    \dorechecknextindentation} % here ?
 
@@ -1722,7 +1722,7 @@
    \global\setfalse\c_strc_formulas_inside_formulas
    \dostoptagged
    \stopformula
-   \the\everyresetformulas
+   \expand\everyresetformulas
    \hangafter\minusone    % added for side floats
    \hangindent\zeropoint} % added for side floats
 

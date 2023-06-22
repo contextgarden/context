@@ -174,11 +174,11 @@ end
 local function validate(n)
     return not (
            find(n,"latex")
-     -- or find(n,"lualatex")
+        or find(n,"lualatex")
         or find(n,"plain")
         or find(n,"optex")
-        or find(n,"luatex")
-        or find(n,"pdftex")
+     -- or find(n,"luatex")
+     -- or find(n,"pdftex")
     )
 end
 
@@ -242,6 +242,7 @@ local function install(list,wipe)
                     local t = dir.glob(s)
                     report("wiping %i files in %a",#t,s)
                     for i=1,#t do
+-- report("wiping %a",t[i])
                         os.remove(t[i])
                     end
                 end

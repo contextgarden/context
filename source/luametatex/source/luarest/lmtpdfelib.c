@@ -74,8 +74,10 @@ static pdfe_document *pdfelib_aux_check_isdocument(lua_State *L, int n)
     pdfe_document *p = (pdfe_document *) lua_touserdata(L, n);
     if (p && lua_getmetatable(L, n)) {
         lua_get_metatablelua(pdfe_instance);
-        if (! lua_rawequal(L, -1, -2)) {
-            p = NULL;
+        if (! p->document) { 
+            p = NULL; // todo: invalid document
+        } else if (! lua_rawequal(L, -1, -2)) {
+            p = NULL; // todo: no document 
         }
         lua_pop(L, 2);
         if (p) {
@@ -861,25 +863,29 @@ static int pdfelib_test(lua_State *L)
 }
 */
 
-static void aux_pdfelib_open(lua_State *L, FILE *f)
+static int aux_pdfelib_open(lua_State *L, FILE *f)
 {
-    pdfe_document *p = (pdfe_document *) lua_newuserdatauv(L, sizeof(pdfe_document), 0);
     ppdoc *d = ppdoc_filehandle(f, 1);
- // luaL_getmetatable(L, PDFE_METATABLE_INSTANCE);
-    lua_get_metatablelua(pdfe_instance);
-    lua_setmetatable(L, -2);
-    p->document = d;
-    p->open = 1;
-    p->isfile = 1;
-    p->memstream = NULL;
+    if (d) {
+        pdfe_document *p = (pdfe_document *) lua_newuserdatauv(L, sizeof(pdfe_document), 0);
+     // luaL_getmetatable(L, PDFE_METATABLE_INSTANCE);
+        lua_get_metatablelua(pdfe_instance);
+        lua_setmetatable(L, -2);
+        p->document = d;
+        p->open = 1;
+        p->isfile = 1;
+        p->memstream = NULL;
+        return 1;
+    } else { 
+        return 0;
+    }
 }
 
 static int pdfelib_open(lua_State *L)
 {
     const char *filename = luaL_checkstring(L, 1);
     FILE *f = aux_utf8_fopen(filename, "rb");
-    if (f) {
-        aux_pdfelib_open(L, f);
+    if (f && aux_pdfelib_open(L, f)) {
         return 1;
     } else {
         tex_formatted_warning("pdfe lib", "no valid pdf file '%s'", filename);
@@ -891,8 +897,7 @@ static int pdfelib_openfile(lua_State *L)
 {
     luaL_Stream *fs = ((luaL_Stream *) luaL_checkudata(L, 1, LUA_FILEHANDLE));
     FILE *f = (fs->closef) ? fs->f : NULL;
-    if (f) {
-        aux_pdfelib_open(L, f);
+    if (f && aux_pdfelib_open(L, f)) {
         /*tex We trick \LUA\ in believing the file is closed. */
         fs->closef = NULL;
         return 1;

@@ -32,7 +32,7 @@
 \aliased\let\stoptextdata\relax
 
 \def\page_shipouts_flush_text_data_indeed
-  {\vsmashed{\the\t_page_text_data}%
+  {\vsmashed{\expand\t_page_text_data}%
    \global\t_page_text_data\emptytoks
    \glet\page_shipouts_flush_text_data\relax}
 
@@ -136,7 +136,7 @@
    \ifcase\c_page_boxes_flush_n\else
      \page_boxes_flush_before
    \fi
-   \the\everybeforeshipout
+   \expand\everybeforeshipout
    \ifcase\shipoutfinalizemethod % not nice ... needs thinking
      \page_shipouts_handle{#1}%
    \else
@@ -147,7 +147,7 @@
         \box\shipoutscratchbox}%
    \fi
    \setnextrealpageno       % so this comes before \everyaftershipout so in fact:
-   \the\everyaftershipout   % at this point we're already on the next realpage
+   \expand\everyaftershipout   % at this point we're already on the next realpage
    \ifcase\c_page_boxes_flush_n\else
      \page_boxes_flush_after
    \fi}
@@ -168,14 +168,14 @@
    \setbox\scratchbox\hpack
      {% before the main one !
       \ifcase\realfolio \or
-        \the\everyfirstshipout
+        \expand\everyfirstshipout
         \global\everyfirstshipout\emptytoks
       \fi
       % the main one
-      \the\everyshipout\relax
+      \expand\everyshipout\relax
       % always last (and after the main one)
       \ifnum\realpageno=\lastpage\relax
-        \the\everylastshipout
+        \expand\everylastshipout
         \global\everylastshipout\emptytoks
       \fi}%
    \smashbox\scratchbox

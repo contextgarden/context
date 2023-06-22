@@ -131,6 +131,7 @@
                 local s = file.suffix(filename)
                 local b = file.basename(filename)
                 if s ~= "lua" and s ~= "lmt" then
+-- todo: newfloat etc
                     local d = io.loaddata(filename)
                     -- we could make a nice lpeg
                     for m in gmatch(d,"\n[\\a-z]*[exg]*def\\([a-zA-Z_]+)") do

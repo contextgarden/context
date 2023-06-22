@@ -70,15 +70,15 @@
 
 \def\page_apply_postprocessors_box#1%
   {\b_page_postprocessor#1\relax
-   \the\t_page_postprocessors_box}
+   \expand\t_page_postprocessors_box}
 
 \def\page_apply_postprocessors_page#1%
   {\b_page_postprocessor#1\relax
-   \the\t_page_postprocessors_page}
+   \expand\t_page_postprocessors_page}
 
 \def\page_apply_postprocessors_column#1%
   {\b_page_postprocessor#1\relax
-   \the\t_page_postprocessors_column}
+   \expand\t_page_postprocessors_column}
 
 %D Floats.
 
@@ -313,20 +313,20 @@
 
 \def\page_boxes_constructed_page#1#2%
   {\vpack\bgroup % intercept spurious spaces
-     \the\everybeforepagebody
+     \expand\everybeforepagebody
      \starttextproperties
      \checkmarginblocks
-     \the\beforeeverypage
-     \normalexpanded{\global\beforepage\emptytoks\the\beforepage}%
+     \expand\beforeeverypage
+     \normalexpanded{\global\beforepage\emptytoks\expand\beforepage}%
      \inpagebodytrue
      \pagebodymode\plusone % todo: \plustwo when spread
      \page_boxes_constructed_page_body#1#2%
-     \normalexpanded{\global\afterpage \emptytoks\the\afterpage }%
-     \the\aftereverypage
+     \normalexpanded{\global\afterpage \emptytoks\expand\afterpage }%
+     \expand\aftereverypage
      \resetpagebreak
      \resetlayouttextlines % will go to \aftereverypage
      \stoptextproperties
-     \the\everyafterpagebody
+     \expand\everyafterpagebody
    \egroup}
 
 \permanent\def\doifelsetopofpage

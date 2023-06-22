@@ -528,7 +528,7 @@
 \permanent\protected\def\executedefinedoverlay#1#2% we can share the definitions
   {\bgroup % redundant grouping
    \setlayoutcomponentattribute{\v!overlay:#1}%
-   \setbox\scratchbox\hbox \layoutcomponentboxattribute{\the\everyoverlay#2}%
+   \setbox\scratchbox\hbox \layoutcomponentboxattribute{\expand\everyoverlay#2}%
    \boxxoffset\scratchbox-.5\dimexpr\wd\scratchbox-\d_framed_target_wd\relax % was \d_overlay_width
    \boxyoffset\scratchbox-.5\dimexpr\ht\scratchbox-\d_framed_target_ht+\d_framed_target_dp\relax % not \d_overlay_height !
    \wd\scratchbox\d_framed_target_wd
@@ -645,7 +645,7 @@
       \fi
       \enforced\let\foregroundbox\pack_framed_background_box_content
       \hpack \layoutcomponentboxattribute to \framedbackgroundwidth\bgroup % width in case 'foreground' is used as overlay
-         \the\everybackgroundbox % moved
+         \expand\everybackgroundbox % moved
          \expandafter\pack_framed_process_backgrounds\p_framed_background,\s!unknown,\relax % hm, messy .. look into it
          \box\b_framed_normal
          \hss
@@ -3118,12 +3118,12 @@
 %D Fast enough for most cases (we could do a massive \type {\ifhastok} instead):
 
 \permanent\protected\def\doifelseframed#1%
-         {\iftok{#1\c!frame      }{\v!on}\expandafter\firstoftwoarguments
-   \orelse\iftok{#1\c!topframe   }{\v!on}\expandafter\firstoftwoarguments
-   \orelse\iftok{#1\c!bottomframe}{\v!on}\expandafter\firstoftwoarguments
-   \orelse\iftok{#1\c!leftframe  }{\v!on}\expandafter\firstoftwoarguments
-   \orelse\iftok{#1\c!rightframe }{\v!on}\expandafter\firstoftwoarguments
-   \orelse\iftok{#1\c!background }     {}\expandafter\secondoftwoarguments
-     \else                               \expandafter\firstoftwoarguments\fi}
+         {\ifcstok{#1\c!frame      }\v!on     \expandafter\firstoftwoarguments
+   \orelse\ifcstok{#1\c!topframe   }\v!on     \expandafter\firstoftwoarguments
+   \orelse\ifcstok{#1\c!bottomframe}\v!on     \expandafter\firstoftwoarguments
+   \orelse\ifcstok{#1\c!leftframe  }\v!on     \expandafter\firstoftwoarguments
+   \orelse\ifcstok{#1\c!rightframe }\v!on     \expandafter\firstoftwoarguments
+   \orelse\ifcstok{#1\c!background }\emptytoks\expandafter\secondoftwoarguments
+     \else                                    \expandafter\firstoftwoarguments\fi}
 
 \protect \endinput

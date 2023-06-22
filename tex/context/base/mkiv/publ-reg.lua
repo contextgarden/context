@@ -90,7 +90,8 @@ local function btxtoregister(dataset,tag)
         local dset = step.dataset
         if dset == v_all or dset == dataset then
             local done = step.done
-            if not done[tag] then
+--             if not done[tag] then
+if not step.once or not done[tag] then
                 local value, field, kind = getcasted(current,tag,step.field,specifications[step.specification])
                 if value then
                     flushers[kind](step,field,value)
@@ -178,24 +179,6 @@ function flushers.keyword(step,field,value)
 end
 
 -- publications.registerflushers = flushers
-
-local function btxtoregister(dataset,tag)
-    local current = datasets[dataset]
-    for i=1,#sequence do
-        local step = sequence[i]
-        local dset = step.dataset
-        if dset == v_all or dset == dataset then
-            local done = step.done
-            if not done[tag] then
-                local value, field, kind = getcasted(current,tag,step.field,specifications[step.specification])
-                if value then
-                    flushers[kind](step,field,value)
-                end
-                done[tag] = true
-            end
-        end
-    end
-end
 
 local function authortoregister(dataset,hash)
     local author = publications.authorcache[hash]

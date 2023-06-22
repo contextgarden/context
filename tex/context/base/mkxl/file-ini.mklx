@@ -96,7 +96,7 @@
 
 \permanent\protected\def\startreadingfile% beter een every en \setnormalcatcodes
   {\global\advanceby\readingfilelevel\plusone
-   \the\everystartreadingfile
+   \expand\everystartreadingfile
    \pushcatcodetable       % saveguard
    \setcatcodetable\ctxcatcodes
    \pushregime}% temporarily this way
@@ -104,7 +104,7 @@
 \permanent\protected\def\stopreadingfile
   {\popcatcodetable % saveguard
    \popregime % temporarily this way
-   \the\everystopreadingfile
+   \expand\everystopreadingfile
    \global\advanceby\readingfilelevel\minusone}
 
 %D \macros

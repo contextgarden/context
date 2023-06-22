@@ -1750,6 +1750,8 @@ do
     local privateslot    = fonts.helpers.privateslot
     local newprivateslot = fonts.helpers.newprivateslot
 
+    -- no checking for present extensibles
+
     function mathtweaks.addrules(target,original,parameters)
         local characters = target.characters
         local thickness  = target.mathparameters.OverbarRuleThickness
@@ -2698,7 +2700,10 @@ end
                 local d = chardata[data.unicode or unicode]
                 local c = d and d.category
                 if c == "mn" or c == "sk" or c == "lm" then -- we can probably can go
-                    local b = target.descriptions[unicode].boundingbox
+                    local b = target.descriptions[unicode]
+                    if b then
+                        b = b.boundingbox
+                    end
                     if b then
                         local topanchor = data.topanchor or 0
                         local llx       = b[1] * factor
@@ -3922,6 +3927,7 @@ do
         local fallbacks = target.specification.fallbacks
         if fallbacks then
             local definitions = fonts.collections.definitions[fallbacks]
+-- print(">>",fallbacks)
             if definitions then
                 local list = { }
                 for i=1,#definitions do

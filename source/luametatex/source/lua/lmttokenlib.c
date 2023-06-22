@@ -3137,7 +3137,7 @@ static int tokenlib_get_meaning(lua_State *L)
 
 */
 
-static void tokenlib_aux_expand_macros_in_tokenlist(halfword p)
+static halfword tokenlib_aux_expand_macros_in_tokenlist(halfword p)
 {
     halfword old_mode;
     halfword q = tex_get_available_token(right_brace_token + '}');
@@ -3171,6 +3171,7 @@ static void tokenlib_aux_expand_macros_in_tokenlist(halfword p)
     cur_list.mode = old_mode;
     /*tex Conserve stack space. */
     tex_end_token_list();
+    return lmt_input_state.def_ref;
 }
 
 /* token.getmacro(t[,true][,true] : [also preamble] [only preamble] */
@@ -3186,8 +3187,8 @@ static int tokenlib_get_macro(lua_State *L)
             halfword chr = eq_value(cs);
             char *str = NULL;
             if (lua_toboolean(L, 2)) {
-                tokenlib_aux_expand_macros_in_tokenlist(chr); // todo: use return value instead of def_ref
-                str = tex_tokenlist_to_tstring(lmt_input_state.def_ref, 1, NULL, 0, 0, 0, 1);
+                chr = tokenlib_aux_expand_macros_in_tokenlist(chr);
+                str = tex_tokenlist_to_tstring(chr, 1, NULL, 0, 0, 0, 1);
             } else {
                 str = tex_tokenlist_to_tstring(chr, 1, NULL, lua_toboolean(L, 3) ? 2 : 1, 0, 0, 0);
             }
@@ -3244,10 +3245,11 @@ static int tokenlib_pop_macro(lua_State *L)
 char *lmt_get_expansion(halfword head, int *len)
 {
     char *str = NULL;
+    halfword t; 
     halfword ref = get_reference_token();
     set_token_link(ref, head);
-    tokenlib_aux_expand_macros_in_tokenlist(ref); // todo: use return value instead of def_ref
-    str = tex_tokenlist_to_tstring(lmt_input_state.def_ref, 1, len, 0, 0, 0, 1);
+    t = tokenlib_aux_expand_macros_in_tokenlist(ref); 
+    str = tex_tokenlist_to_tstring(t, 1, len, 0, 0, 0, 1);
     tex_flush_token_list(ref);
     return str;
 }
@@ -3268,8 +3270,8 @@ static int tokenlib_get_expansion(lua_State* L)
         char *s;
         int l;
         tex_parse_str_to_tok(h, &t, ct, str, len, 2); /* ignore unknown */
-        tokenlib_aux_expand_macros_in_tokenlist(h); // todo: use return value instead of def_ref
-        s = tex_tokenlist_to_tstring(lmt_input_state.def_ref, 1, &l, 0, 0, 0, 1);
+        t = tokenlib_aux_expand_macros_in_tokenlist(h); 
+        s = tex_tokenlist_to_tstring(t, 1, &l, 0, 0, 0, 1);
         tex_flush_token_list(h);
         if (l > 0) {
             lua_pushlstring(L, (const char *) s, (size_t) l);
@@ -3616,10 +3618,8 @@ static int tokenlib_serialize(lua_State *L)
 {
     lua_token *n = tokenlib_aux_maybe_istoken(L, 1);
     if (n) {
-        halfword t = n->token;
-        char *s;
-        tokenlib_aux_expand_macros_in_tokenlist(t); // todo: use return value instead of def_ref
-        s = tex_tokenlist_to_tstring(lmt_input_state.def_ref, 1, NULL, 0, 0, 0, 1);
+        halfword t = tokenlib_aux_expand_macros_in_tokenlist(n->token);
+        char *s = tex_tokenlist_to_tstring(t, 1, NULL, 0, 0, 0, 1);
         lua_pushstring(L, s ? s : "");
     } else {
         lua_pushnil(L);
@@ -4024,6 +4024,10 @@ int lmt_push_specification(lua_State *L, halfword ptr, int onlycount)
                         }
                     }
                     return 1;
+                }
+            case par_passes_code:
+                {
+                    return 0;
                 }
             case inter_line_penalties_code:
             case club_penalties_code:

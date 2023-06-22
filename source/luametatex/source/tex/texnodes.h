@@ -426,14 +426,15 @@ typedef enum attribute_subtypes {
 # define penalty_amount(a)  vlink(a,2)
 # define penalty_options(a) vinfo(a,2)
 
-inline static void tex_add_penalty_option    (halfword a, halfword r) { penalty_options(a) |= r; }
-inline static void tex_remove_penalty_option (halfword a, halfword r) { penalty_options(a) &= ~(r | penalty_options(a)); }
-inline static int  tex_has_penalty_option    (halfword a, halfword r) { return (penalty_options(a) & r) == r; }
+static inline void tex_add_penalty_option    (halfword a, halfword r) { penalty_options(a) |= r; }
+static inline void tex_remove_penalty_option (halfword a, halfword r) { penalty_options(a) &= ~(r | penalty_options(a)); }
+static inline int  tex_has_penalty_option    (halfword a, halfword r) { return (penalty_options(a) & r) == r; }
 
 typedef enum penalty_option_codes {
     penalty_option_normal        = 0x0000,
     penalty_option_math_forward  = 0x0001,
     penalty_option_math_backward = 0x0002,
+    penalty_option_orphaned      = 0x0004,
 } penalty_option_codes; 
 
 typedef enum penalty_subtypes {
@@ -524,16 +525,15 @@ typedef enum skip_glue_codes_alias {
 # define glue_options(a)       vinfo(a,6) /* not in spec */ /* for now only internal */
 # define glue_unused(a)        vlink(a,6) /* not in spec */
 
-inline static void tex_add_glue_option    (halfword a, halfword r) { glue_options(a) |= r; }
-inline static void tex_remove_glue_option (halfword a, halfword r) { glue_options(a) &= ~(r | glue_options(a)); }
-inline static int  tex_has_glue_option    (halfword a, halfword r) { return (glue_options(a) & r) == r; }
+static inline void tex_add_glue_option    (halfword a, halfword r) { glue_options(a) |= r; }
+static inline void tex_remove_glue_option (halfword a, halfword r) { glue_options(a) &= ~(r | glue_options(a)); }
+static inline int  tex_has_glue_option    (halfword a, halfword r) { return (glue_options(a) & r) == r; }
 
 typedef enum glue_option_codes {
     glue_option_normal        = 0x0000,
- // glue_force_auto_break     = 0x0001,
- // glue_originates_in_math   = 0x0002,
     glue_option_no_auto_break = 0x0001,
-    glue_option_short_math    = 0x0002,
+    glue_option_has_factor    = 0x0002,
+    glue_option_is_limited    = 0x0004,
 } glue_option_codes; 
 
 typedef enum math_subtypes {
@@ -547,7 +547,7 @@ typedef enum math_subtypes {
     Math nodes (currently) partially overlap with glue because they also have a glue property.
 */
 
-# define math_node_size        6
+# define math_node_size        7
 # define math_surround(a)      vinfo(a,2)
 # define math_amount(a)        vlink(a,2)
 # define math_shrink(a)        vinfo(a,3)
@@ -556,24 +556,32 @@ typedef enum math_subtypes {
 # define math_shrink_order(a)  vlink(a,4)
 # define math_penalty(a)       vinfo(a,5)
 # define math_options(a)       vlink(a,5) 
+# define math_tolerance(a)     vinfo(a,6) 
+# define math_pre_tolerance(a) vlink(a,6) 
 
-inline static void tex_add_math_option    (halfword a, halfword r) { math_options(a) |= r; }
-inline static void tex_remove_math_option (halfword a, halfword r) { math_options(a) &= ~(r | math_options(a)); }
-inline static int  tex_has_math_option    (halfword a, halfword r) { return (math_options(a) & r) == r; }
+static inline void tex_add_math_option    (halfword a, halfword r) { math_options(a) |= r; }
+static inline void tex_remove_math_option (halfword a, halfword r) { math_options(a) &= ~(r | math_options(a)); }
+static inline int  tex_has_math_option    (halfword a, halfword r) { return (math_options(a) & r) == r; }
+
+typedef enum math_option_codes {
+    math_option_normal   = 0x0000,
+    math_option_short    = 0x0001,
+    math_option_orphaned = 0x0002,
+} math_option_codes; 
 
 /*tex Here are some (inline) helpers. We need specific ones for math glue. */
 
-inline static int tex_glue_is_zero(halfword g)
+static inline int tex_glue_is_zero(halfword g)
 {
     return (! g) || ((glue_amount(g) == 0) && (glue_stretch(g) == 0) && (glue_shrink(g) == 0));
 }
 
-inline static int tex_math_glue_is_zero(halfword g)
+static inline int tex_math_glue_is_zero(halfword g)
 {
     return (! g) || ((math_amount(g) == 0) && (math_stretch(g) == 0) && (math_shrink(g) == 0));
 }
 
-inline static int tex_same_glue(halfword a, halfword b)
+static inline int tex_same_glue(halfword a, halfword b)
 {
     return
         (a == b) /* same glue specs or both zero */
@@ -586,7 +594,7 @@ inline static int tex_same_glue(halfword a, halfword b)
     ;
 }
 
-inline static void tex_reset_glue_to_zero(halfword target)
+static inline void tex_reset_glue_to_zero(halfword target)
 {
     if (target) {
         glue_amount(target) = 0;
@@ -597,7 +605,7 @@ inline static void tex_reset_glue_to_zero(halfword target)
     }
 }
 
-inline static void tex_reset_math_glue_to_zero(halfword target)
+static inline void tex_reset_math_glue_to_zero(halfword target)
 {
     if (target) {
         math_amount(target) = 0;
@@ -608,7 +616,7 @@ inline static void tex_reset_math_glue_to_zero(halfword target)
     }
 }
 
-inline static void tex_copy_glue_values(halfword target, halfword source)
+static inline void tex_copy_glue_values(halfword target, halfword source)
 {
     if (source) {
         glue_amount(target) = glue_amount(source);
@@ -625,7 +633,7 @@ inline static void tex_copy_glue_values(halfword target, halfword source)
     }
 }
 
-inline static int tex_is_par_init_glue(halfword n)
+static inline int tex_is_par_init_glue(halfword n)
 {
     switch (node_subtype(n)) {
         case indent_skip_glue:
@@ -725,9 +733,10 @@ typedef enum discretionary_subtypes {
 # define last_discretionary_code    automatic_discretionary_code
 
 typedef enum disc_options {
-    disc_option_normal_word = 0x0,
-    disc_option_pre_word    = 0x1,
-    disc_option_post_word   = 0x2,
+    disc_option_normal_word = 0x0000,
+    disc_option_pre_word    = 0x0001,
+    disc_option_post_word   = 0x0002,
+    disc_option_orphaned    = 0x0004,
 } disc_options;
 
 # define disc_node_size       13
@@ -740,7 +749,7 @@ typedef enum disc_options {
 # define disc_penalty(a)      vinfo(a,11)
 # define disc_options(a)      vlink(a,11)
 # define disc_class(a)        vinfo(a,12)
-# define disc_unused(a)       vlink(a,12)
+# define disc_orphaned(a)     vlink(a,12)
 
 # define set_disc_penalty(a,b) disc_penalty(a) = b
 # define set_disc_class(a,b)   disc_class(a) = b
@@ -750,6 +759,10 @@ typedef enum disc_options {
 # define has_disc_option(a,b) ((disc_options(a) & b) == b)
 
 # define unset_disc_class -1
+
+static inline void tex_add_disc_option    (halfword a, halfword r) { disc_options(a) |= r; }
+static inline void tex_remove_disc_option (halfword a, halfword r) { disc_options(a) &= ~(r | disc_options(a)); }
+static inline int  tex_has_disc_option    (halfword a, halfword r) { return (disc_options(a) & r) == r; }
 
 /*tex
     These are pseudo nodes inside a node. We used to reference them by |*_break_head| but now call
@@ -903,11 +916,11 @@ typedef enum list_geometries {
 
 # define box_total(a) (box_height(a) + box_depth(a)) /* Here we add, with glyphs we maximize. */ 
 
-inline static void tex_set_box_geometry   (halfword b, halfword g) { box_geometry(b) |= (singleword) (g); }
+static inline void tex_set_box_geometry   (halfword b, halfword g) { box_geometry(b) |= (singleword) (g); }
 /*     static void tex_unset_box_geometry (halfword b, halfword g) { box_geometry(b) &= (singleword) ~((singleword) (g) | box_geometry(b)); } */
-inline static void tex_unset_box_geometry (halfword b, halfword g) { box_geometry(b) &= (singleword) (~g); }
-inline static int  tex_has_geometry       (halfword g, halfword f) { return ((singleword) (g) & (singleword) (f)) == (singleword) (f); }
-inline static int  tex_has_box_geometry   (halfword b, halfword g) { return (box_geometry(b) & (singleword) (g)) == (singleword) (g); }
+static inline void tex_unset_box_geometry (halfword b, halfword g) { box_geometry(b) &= (singleword) (~g); }
+static inline int  tex_has_geometry       (halfword g, halfword f) { return ((singleword) (g) & (singleword) (f)) == (singleword) (f); }
+static inline int  tex_has_box_geometry   (halfword b, halfword g) { return (box_geometry(b) & (singleword) (g)) == (singleword) (g); }
 
 typedef enum package_states {
     unknown_package_state = 0x00,
@@ -1057,9 +1070,9 @@ typedef enum rule_codes {
     We used to have this:
 
     \starttyping
-    inline static void protect_glyph      (halfword a) { quarterword s = node_subtype(a) ; if (s <= 256) { node_subtype(a) = s == 1 ? 256 : 256 + s; } }
-    inline static void unprotect_glyph    (halfword a) { quarterword s = node_subtype(a) ; if (s >  256) { node_subtype(a) = s - 256; } }
-    inline static int  is_protected_glyph (halfword a) { return node_subtype(a) >= 256; }
+    static inline void protect_glyph      (halfword a) { quarterword s = node_subtype(a) ; if (s <= 256) { node_subtype(a) = s == 1 ? 256 : 256 + s; } }
+    static inline void unprotect_glyph    (halfword a) { quarterword s = node_subtype(a) ; if (s >  256) { node_subtype(a) = s - 256; } }
+    static inline int  is_protected_glyph (halfword a) { return node_subtype(a) >= 256; }
     \stoptyping
 
     These were also dropped:
@@ -1222,9 +1235,9 @@ typedef enum auto_discretionary_codes {
     auto_discretionary_italic = 0x0002, /* also include italic correcxtion when present */
 } auto_discretionary_codes;
 
-inline static void tex_add_glyph_option    (halfword a, halfword r) { glyph_options(a) |= r; }
-inline static void tex_remove_glyph_option (halfword a, halfword r) { glyph_options(a) &= ~(r | glyph_options(a)); }
-inline static int  tex_has_glyph_option    (halfword a, halfword r) { return (glyph_options(a) & r) == r; }
+static inline void tex_add_glyph_option    (halfword a, halfword r) { glyph_options(a) |= r; }
+static inline void tex_remove_glyph_option (halfword a, halfword r) { glyph_options(a) &= ~(r | glyph_options(a)); }
+static inline int  tex_has_glyph_option    (halfword a, halfword r) { return (glyph_options(a) & r) == r; }
 
 /*tex
     As we have a small field available for protection we no longer need to pack the protection
@@ -1232,10 +1245,10 @@ inline static int  tex_has_glyph_option    (halfword a, halfword r) { return (gl
     stays within the range |0x0000-0xFFFF|.
 */
 
-/* inline static void tex_protect_glyph      (halfword a) {        node_subtype(a) |= (quarterword) 0x8000; } */
-/* inline static void tex_unprotect_glyph    (halfword a) {        node_subtype(a) &= (quarterword) 0x7FFF; } */
-/* inline static int  tex_is_protected_glyph (halfword a) { return node_subtype(a) >= (quarterword) 0x8000; } */
-/* inline static int  tex_subtype_of_glyph   (halfword a) { return node_subtype(a) &  (quarterword) 0x7FFF; } */
+/* static inline void tex_protect_glyph      (halfword a) {        node_subtype(a) |= (quarterword) 0x8000; } */
+/* static inline void tex_unprotect_glyph    (halfword a) {        node_subtype(a) &= (quarterword) 0x7FFF; } */
+/* static inline int  tex_is_protected_glyph (halfword a) { return node_subtype(a) >= (quarterword) 0x8000; } */
+/* static inline int  tex_subtype_of_glyph   (halfword a) { return node_subtype(a) &  (quarterword) 0x7FFF; } */
 
 typedef enum glyph_protection_codes {
     glyph_unprotected_code    = 0x0,
@@ -1340,12 +1353,12 @@ typedef enum split_subtypes {
 # define precedes_dir(a)    ((node_type(a) == dir_node) && normalize_line_mode_permitted(normalize_line_mode_par,break_after_dir_mode))
 # define non_discardable(a) (node_type(a) <= last_non_discardable_node)
 
-inline static int tex_nodetype_is_complex     (halfword t) { return t <= last_complex_node; }
-inline static int tex_nodetype_has_attributes (halfword t) { return t <= last_node_with_attributes; }
-inline static int tex_nodetype_has_subtype    (halfword t) { return t != glue_spec_node && t != math_spec_node && t != font_spec_node; }
-inline static int tex_nodetype_has_prev       (halfword t) { return t != glue_spec_node && t != math_spec_node && t != font_spec_node && t != attribute_node; }
-inline static int tex_nodetype_has_next       (halfword t) { return t != glue_spec_node && t != math_spec_node && t != font_spec_node; }
-inline static int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && (t <= max_node_type) && lmt_interface.node_data[t].visible; }
+static inline int tex_nodetype_is_complex     (halfword t) { return t <= last_complex_node; }
+static inline int tex_nodetype_has_attributes (halfword t) { return t <= last_node_with_attributes; }
+static inline int tex_nodetype_has_subtype    (halfword t) { return t != glue_spec_node && t != math_spec_node && t != font_spec_node; }
+static inline int tex_nodetype_has_prev       (halfword t) { return t != glue_spec_node && t != math_spec_node && t != font_spec_node && t != attribute_node; }
+static inline int tex_nodetype_has_next       (halfword t) { return t != glue_spec_node && t != math_spec_node && t != font_spec_node; }
+static inline int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && (t <= max_node_type) && lmt_interface.node_data[t].visible; }
 
 /*tex
     This is a bit weird place to define them but anyway. In the meantime in \LUAMETATEX\ we no
@@ -1395,7 +1408,7 @@ inline static int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && 
 # define font_spec_x_scale(a)    vinfo(a,3)
 # define font_spec_y_scale(a)    vlink(a,3)
 
-inline static int tex_same_fontspec(halfword a, halfword b)
+static inline int tex_same_fontspec(halfword a, halfword b)
 {
     return
         (a == b)
@@ -1422,7 +1435,7 @@ inline static int tex_same_fontspec(halfword a, halfword b)
 
 # define math_spec_value(a)     (((math_spec_class(a) & 0x3F) << 12) + ((math_spec_family(a) & 0x3F) << 8) + (math_spec_character(a) & 0xFF))
 
-inline static int tex_same_mathspec(halfword a, halfword b)
+static inline int tex_same_mathspec(halfword a, halfword b)
 {
     return
         (a == b)
@@ -1509,7 +1522,7 @@ inline static int tex_same_mathspec(halfword a, halfword b)
 # define specification_pointer(a) (mvalue(a,2))
 
 typedef enum specification_options {
-    specification_option_repeat = 0x01,
+    specification_option_repeat = 0x0001,
 } specifications_options;
 
 # define specification_index(a,n) ((memoryword *) specification_pointer(a))[n - 1]
@@ -1520,7 +1533,7 @@ typedef enum specification_options {
 
 /* interesting: 1Kb smaller bin: */
 
-// inline static halfword specification_n(halfword a, halfword n) { return specification_repeat(a) ? ((n - 1) % specification_count(a) + 1) : (n > specification_count(a) ? specification_count(a) : n); }
+// static inline halfword specification_n(halfword a, halfword n) { return specification_repeat(a) ? ((n - 1) % specification_count(a) + 1) : (n > specification_count(a) ? specification_count(a) : n); }
 
 extern void            tex_null_specification_list     (halfword a);
 extern void            tex_new_specification_list      (halfword a, halfword n, halfword o);
@@ -1528,14 +1541,84 @@ extern void            tex_dispose_specification_list  (halfword a);
 extern void            tex_copy_specification_list     (halfword a, halfword b);
 extern void            tex_shift_specification_list    (halfword a, int n, int rotate);
 
-inline static int      tex_get_specification_count     (halfword a)                         { return specification_count(a); }
-inline static halfword tex_get_specification_indent    (halfword a, halfword n)             { return specification_index(a,specification_n(a,n)).half0; }
-inline static halfword tex_get_specification_width     (halfword a, halfword n)             { return specification_index(a,specification_n(a,n)).half1; }
-inline static halfword tex_get_specification_penalty   (halfword a, halfword n)             { return specification_index(a,specification_n(a,n)).half0; }
-inline static void     tex_set_specification_indent    (halfword a, halfword n, halfword v) { specification_index(a,n).half0 = v; }
-inline static void     tex_set_specification_width     (halfword a, halfword n, halfword v) { specification_index(a,n).half1 = v; }
-inline static void     tex_set_specification_penalty   (halfword a, halfword n, halfword v) { specification_index(a,n).half0 = v; }
-inline static void     tex_set_specification_option    (halfword a, int o)                  { specification_options(a) |= o; }
+static inline int      tex_get_specification_count     (halfword a)                         { return a ? specification_count(a) : 0; }
+static inline void     tex_set_specification_option    (halfword a, int o)                  { specification_options(a) |= o; }
+
+static inline halfword tex_get_specification_indent    (halfword a, halfword n)             { return specification_index(a,specification_n(a,n)).half0; }
+static inline halfword tex_get_specification_width     (halfword a, halfword n)             { return specification_index(a,specification_n(a,n)).half1; }
+static inline halfword tex_get_specification_penalty   (halfword a, halfword n)             { return specification_index(a,specification_n(a,n)).half0; }
+
+static inline void     tex_set_specification_indent    (halfword a, halfword n, halfword v) { specification_index(a,n).half0 = v; }
+static inline void     tex_set_specification_width     (halfword a, halfword n, halfword v) { specification_index(a,n).half1 = v; }
+static inline void     tex_set_specification_penalty   (halfword a, halfword n, halfword v) { specification_index(a,n).half0 = v; }
+
+# define par_passes_size 10
+
+# define par_passes_slot(n,m) ((n-1)*par_passes_size+m)
+
+typedef enum passes_features { 
+    passes_quit_pass          = 0x0001,
+    passes_skip_pass          = 0x0002,
+    passes_optional_set       = 0x0004,
+    passes_callback_set       = 0x0008,
+    passes_orphan_penalty_set = 0x0010,
+    passes_if_adjust_spacing  = 0x0020,
+} passes_features;
+
+typedef enum passes_classes { 
+    very_loose_class     = 0x0001,
+    loose_fit_class      = 0x0002,     
+    semi_loose_fit_class = 0x0004,
+    decent_fit_class     = 0x0008,    
+    semi_tight_fit_class = 0x0010,
+    tight_fit_class      = 0x0020,     
+} passes_classes;
+
+// todo: optimize order 
+
+static inline void     tex_set_passes_threshold            (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 1)).half0 = v; }
+static inline void     tex_set_passes_badness              (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 1)).half1 = v; }
+static inline void     tex_set_passes_features             (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 2)).quart00 |= (v & 0xFFFF); }
+static inline void     tex_set_passes_classes              (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 2)).quart01 |= (v & 0xFFFF); }
+static inline void     tex_set_passes_tolerance            (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 2)).half1 = v; }
+static inline void     tex_set_passes_linepenalty          (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 3)).half0 = v; }
+static inline void     tex_set_passes_extrahyphenpenalty   (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 3)).half1 = v; }
+static inline void     tex_set_passes_doublehyphendemerits (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 4)).half0 = v; }
+static inline void     tex_set_passes_finalhyphendemerits  (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 4)).half1 = v; }
+static inline void     tex_set_passes_adjdemerits          (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 5)).half0 = v; }
+static inline void     tex_set_passes_linebreakcriterion   (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 5)).half1 = v; }
+static inline void     tex_set_passes_emergencystretch     (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 6)).half0 = v; }
+static inline void     tex_set_passes_looseness            (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 6)).half1 = v; }
+static inline void     tex_set_passes_adjustspacingstep    (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 7)).half0 = v; }
+static inline void     tex_set_passes_adjustspacingshrink  (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 7)).half1 = v; }
+static inline void     tex_set_passes_adjustspacingstretch (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 8)).half0 = v; }
+static inline void     tex_set_passes_adjustspacing        (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 8)).half1 = v; }
+static inline void     tex_set_passes_identifier           (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 9)).half0 = v; }
+static inline void     tex_set_passes_optional             (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n, 9)).half1 = v; }
+static inline void     tex_set_passes_callback             (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n,10)).half0 = v; }
+static inline void     tex_set_passes_orphanpenalty        (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n,10)).half1 = v; }
+
+static inline halfword tex_get_passes_threshold            (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 1)).half0; }
+static inline halfword tex_get_passes_badness              (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 1)).half1; }
+static inline halfword tex_get_passes_features             (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 2)).quart00; }
+static inline halfword tex_get_passes_classes              (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 2)).quart01; }
+static inline halfword tex_get_passes_tolerance            (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 2)).half1; }
+static inline halfword tex_get_passes_linepenalty          (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 3)).half0; }
+static inline halfword tex_get_passes_extrahyphenpenalty   (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 3)).half1; }
+static inline halfword tex_get_passes_doublehyphendemerits (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 4)).half0; }
+static inline halfword tex_get_passes_finalhyphendemerits  (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 4)).half1; }
+static inline halfword tex_get_passes_adjdemerits          (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 5)).half0; }
+static inline halfword tex_get_passes_linebreakcriterion   (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 5)).half1; }
+static inline halfword tex_get_passes_emergencystretch     (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 6)).half0; }
+static inline halfword tex_get_passes_looseness            (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 6)).half1; }
+static inline halfword tex_get_passes_adjustspacingstep    (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 7)).half0; }
+static inline halfword tex_get_passes_adjustspacingshrink  (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 7)).half1; }
+static inline halfword tex_get_passes_adjustspacingstretch (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 8)).half0; }
+static inline halfword tex_get_passes_adjustspacing        (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 8)).half1; }
+static inline halfword tex_get_passes_identifier           (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 9)).half0; }
+static inline halfword tex_get_passes_optional             (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 9)).half1; }
+static inline halfword tex_get_passes_callback             (halfword a, halfword n) { return specification_index(a,par_passes_slot(n,10)).half0; }
+static inline halfword tex_get_passes_orphanpenalty        (halfword a, halfword n) { return specification_index(a,par_passes_slot(n,10)).half1; }
 
 extern        halfword tex_new_specification_node      (halfword n, quarterword s, halfword options);
 extern        void     tex_dispose_specification_nodes (void);
@@ -1822,11 +1905,11 @@ typedef enum noad_options {
 # define has_option(a,b)     (((a) & (b)) == (b))
 # define unset_option(a,b)   ((a) & ~(b))
 
-inline static void tex_add_noad_option    (halfword a, uint64_t r) { noad_options(a) |= r; }
-inline static void tex_remove_noad_option (halfword a, uint64_t r) { noad_options(a) &= ~(r | noad_options(a)); }
-inline static int  tex_has_noad_option    (halfword a, uint64_t r) { return (noad_options(a) & r) == r; }
+static inline void tex_add_noad_option    (halfword a, uint64_t r) { noad_options(a) |= r; }
+static inline void tex_remove_noad_option (halfword a, uint64_t r) { noad_options(a) &= ~(r | noad_options(a)); }
+static inline int  tex_has_noad_option    (halfword a, uint64_t r) { return (noad_options(a) & r) == r; }
 
-inline static int has_noad_no_script_option(halfword n, halfword option)
+static inline int has_noad_no_script_option(halfword n, halfword option)
 {
     switch (node_type(n)) {
         case simple_noad:
@@ -2149,11 +2232,12 @@ typedef enum boundary_subtypes {
     word_boundary,
     page_boundary,
     math_boundary,
+    optional_boundary,
     par_boundary,
 } boundary_subtypes;
 
 # define last_boundary_subtype word_boundary
-# define last_boundary_code    math_boundary
+# define last_boundary_code    optional_boundary
 
 # define boundary_node_size   3
 # define boundary_data(a)     vinfo(a,2)
@@ -2201,6 +2285,8 @@ typedef enum par_codes {
     par_par_fill_right_skip_code,
     par_par_init_left_skip_code,
     par_par_init_right_skip_code,
+    par_emergency_left_skip_code,
+    par_emergency_right_skip_code,
     par_adjust_spacing_code,
     par_protrude_chars_code,
     par_pre_tolerance_code,
@@ -2233,6 +2319,8 @@ typedef enum par_codes {
     par_hyphenation_mode_code,
     par_shaping_penalties_mode_code,
     par_shaping_penalty_code,
+    par_emergency_extra_stretch_code,
+    par_par_passes_code,
 } par_codes;
 
 typedef enum par_categories {
@@ -2259,6 +2347,8 @@ typedef enum par_categories {
     par_hyphenation_category     = 0x00080000, // \Hyphenationmode
     par_shaping_penalty_category = 0x00100000, // \shapingpenaltiesmode
     par_orphan_penalty_category  = 0x00200000, // \orphanpenalties
+    par_emergency_category       = 0x00400000, // \emergencyleftskip \emergencyrightskip \emergencyextrastretch
+    par_par_passes_category      = 0x00800000,
     par_all_category             = 0x7FFFFFFF, //
 } par_categories;
 
@@ -2274,6 +2364,8 @@ static int par_category_to_codes[] = {
     par_par_fill_category,        // par_par_fill_left_skip_code
     par_par_fill_category,        // par_par_init_skip_code
     par_par_fill_category,        // par_par_init_skip_code
+    par_emergency_category,       // par_par_emergency_left_skip
+    par_emergency_category,       // par_par_emergency_right_skip
     par_adjust_category,          // par_adjust_spacing_code
     par_protrude_category,        // par_protrude_chars_code
     par_tolerance_category,       // par_pre_tolerance_code
@@ -2306,31 +2398,29 @@ static int par_category_to_codes[] = {
     par_hyphenation_category,     // par_hyphenation_mode_code
     par_shaping_penalty_category, // par_shaping_penalties_mode_code
     par_shaping_penalty_category, // par_shaping_penalty_code
+    par_emergency_category,
+    par_emergency_category,
+    par_par_passes_category,
 };
 
-/*tex
-    Todo: make the fields 6+ into a par_state node so that local box ones can be
-    small. Also, penalty and broken fields now are duplicate. Do we need to keep
-    these? 
-*/
-
-# define par_node_size                  28
-# define par_penalty_interline(a)       vinfo(a,2) /*tex These come from \OMEGA. */
-# define par_penalty_broken(a)          vlink(a,2) /*tex These come from \OMEGA. */
-# define par_box_left(a)                vinfo(a,3)
-# define par_box_left_width(a)          vlink(a,3)
-# define par_box_right(a)               vinfo(a,4)
-# define par_box_right_width(a)         vlink(a,4)
-# define par_box_middle(a)              vinfo(a,5) /* no width here */
-# define par_dir(a)                     vlink(a,5)
-# define par_state(a)                   vinfo(a,6)
-# define par_hsize(a)                   vlink(a,6)
-# define par_left_skip(a)               vinfo(a,7)
-# define par_right_skip(a)              vlink(a,7)
-# define par_hang_indent(a)             vinfo(a,8)
-# define par_hang_after(a)              vlink(a,8)
-# define par_par_indent(a)              vinfo(a,9)
-# define par_par_fill_left_skip(a)      vlink(a,9)
+# define par_node_size                  30
+# define par_penalty_interline(a)       vinfo(a, 2) /*tex These come from \OMEGA. */ /* these can go, now we use the other fields */
+//define par_penalty_broken(a)          vlink(a, 2) /*tex These come from \OMEGA. */ /* these can go, now we use the other fields */
+# define par_prev_graf(a)               vlink(a, 2) /* joke */
+# define par_box_left(a)                vinfo(a, 3)
+# define par_box_left_width(a)          vlink(a, 3)
+# define par_box_right(a)               vinfo(a, 4)
+# define par_box_right_width(a)         vlink(a, 4)
+# define par_box_middle(a)              vinfo(a, 5) /* no width here */
+# define par_dir(a)                     vlink(a, 5)
+# define par_state(a)                   vinfo(a, 6)
+# define par_hsize(a)                   vlink(a, 6)
+# define par_left_skip(a)               vinfo(a, 7)
+# define par_right_skip(a)              vlink(a, 7)
+# define par_hang_indent(a)             vinfo(a, 8)
+# define par_hang_after(a)              vlink(a, 8)
+# define par_par_indent(a)              vinfo(a, 9)
+# define par_par_fill_left_skip(a)      vlink(a, 9)
 # define par_par_fill_right_skip(a)     vinfo(a,10)
 # define par_adjust_spacing(a)          vlink(a,10)
 # define par_protrude_chars(a)          vinfo(a,11)
@@ -2367,6 +2457,10 @@ static int par_category_to_codes[] = {
 # define par_shaping_penalty(a)         vlink(a,26)
 # define par_par_init_left_skip(a)      vlink(a,27)
 # define par_par_init_right_skip(a)     vinfo(a,27) 
+# define par_emergency_left_skip(a)     vlink(a,28)
+# define par_emergency_right_skip(a)    vinfo(a,28) 
+# define par_emergency_extra_stretch(a) vlink(a,29) 
+# define par_par_passes(a)              vinfo(a,29) 
 
 /*
     At some point we will have this (array with double values), depends on the outcome of an  
@@ -2380,13 +2474,13 @@ typedef enum par_subtypes {
     vmode_par_par_subtype,
     local_box_par_subtype,
     hmode_par_par_subtype,
-    penalty_par_subtype,
-    math_par_subtype,
+    parameter_par_subtype,
+    math_par_subtype,       /* not used yet */
 } par_subtypes;
 
 # define last_par_subtype math_par_subtype
 
-inline static int tex_is_start_of_par_node(halfword n)
+static inline int tex_is_start_of_par_node(halfword n)
 {
     return ( n && (node_type(n) == par_node) && (node_subtype(n) == vmode_par_par_subtype || node_subtype(n) == hmode_par_par_subtype) );
 }
@@ -2398,9 +2492,9 @@ extern halfword    tex_find_par_par         (halfword head);
 /*     halfword    tex_internal_to_par_code (halfword cmd, halfword index); */
 extern void        tex_update_par_par       (halfword cmd, halfword index);
 
-inline static int  tex_par_state_is_set     (halfword p, halfword what)     { return (par_state(p) & par_category_to_codes[what]) == par_category_to_codes[what]; }
-inline static void tex_set_par_state        (halfword p, halfword what)     { par_state(p) |= par_category_to_codes[what]; }
-inline static int  tex_par_to_be_set        (halfword state, halfword what) { return (state & par_category_to_codes[what]) == par_category_to_codes[what]; }
+static inline int  tex_par_state_is_set     (halfword p, halfword what)     { return (par_state(p) & par_category_to_codes[what]) == par_category_to_codes[what]; }
+static inline void tex_set_par_state        (halfword p, halfword what)     { par_state(p) |= par_category_to_codes[what]; }
+static inline int  tex_par_to_be_set        (halfword state, halfword what) { return (state & par_category_to_codes[what]) == par_category_to_codes[what]; }
 
 /*tex
     Because whatsits are used by the backend (or callbacks in the frontend) we do provide this node.
@@ -2444,16 +2538,20 @@ inline static int  tex_par_to_be_set        (halfword state, halfword what) { re
     it explicitly because now that happens in the allocator.
 */
 
-# define active_node_size                  4            /*tex |hyphenated_node| or |unhyphenated_node| */
+# define active_node_size                  6            /*tex |hyphenated_node| or |unhyphenated_node| */
 # define active_fitness                    node_subtype /*tex |very_loose_fit..tight_fit| on final line for this break */
 # define active_break_node(a)              vlink(a,1)   /*tex pointer to the corresponding passive node */
 # define active_line_number(a)             vinfo(a,1)   /*tex line that begins at this breakpoint */
 # define active_total_demerits(a)          vlink(a,2)   /*tex the quantity that \TEX\ minimizes */
-# define active_reserved(a)                vinfo(a,2)
+# define active_line_width(a)              vinfo(a,2)
 # define active_glue(a)                    vlink(a,3)   /*tex corresponding glue stretch or shrink */
 # define active_short(a)                   vinfo(a,3)   /*tex |shortfall| of this line */
+# define active_quality(a)                 vlink(a,4)   /* probably we can use the passive one */
+# define active_deficiency(a)              vinfo(a,4)   /* probably we can use the passive one */
+# define active_badness(a)                 vlink(a,5)   /* probably we can use the passive one */
+# define active_unused(a)                  vinfo(a,5)   /* probably we can use the passive one */
 
-# define passive_node_size                 7
+# define passive_node_size                 9 
 # define passive_cur_break(a)              vlink(a,1)   /*tex in passive node, points to position of this breakpoint */
 # define passive_prev_break(a)             vinfo(a,1)   /*tex points to passive node that should precede this one */
 # define passive_pen_inter(a)              vinfo(a,2)
@@ -2466,6 +2564,10 @@ inline static int  tex_par_to_be_set        (halfword state, halfword what) { re
 # define passive_right_box_width(a)        vinfo(a,5)
 # define passive_serial(a)                 vlink(a,6)   /*tex serial number for symbolic identification (pass) */
 # define passive_middle_box(a)             vinfo(a,6)
+# define passive_quality(a)                vlink(a,7) 
+# define passive_deficiency(a)             vinfo(a,7)
+# define passive_badness(a)                vlink(a,8) 
+# define passive_unused(a)                 vinfo(a,8) 
 
 # define delta_node_size                   6
 # define delta_field_total_glue(d)         vinfo(d,1)
@@ -2482,13 +2584,13 @@ inline static int  tex_par_to_be_set        (halfword state, halfword what) { re
     Again we now have some helpers. We have a double linked list so here we go:
 */
 
-inline static void tex_couple_nodes(int a, int b)
+static inline void tex_couple_nodes(int a, int b)
 {
     node_next(a) = b;
     node_prev(b) = a;
 }
 
-inline static void tex_try_couple_nodes(int a, int b)
+static inline void tex_try_couple_nodes(int a, int b)
 {
     if (b) {
         if (a) {
@@ -2500,13 +2602,13 @@ inline static void tex_try_couple_nodes(int a, int b)
    }
 }
 
-inline static void tex_uncouple_node(int a)
+static inline void tex_uncouple_node(int a)
 {
     node_next(a) = null;
     node_prev(a) = null;
 }
 
-inline static halfword tex_head_of_node_list(halfword n)
+static inline halfword tex_head_of_node_list(halfword n)
 {
     while (node_prev(n)) {
         n = node_prev(n);
@@ -2514,7 +2616,7 @@ inline static halfword tex_head_of_node_list(halfword n)
     return n;
 }
 
-inline static halfword tex_tail_of_node_list(halfword n)
+static inline halfword tex_tail_of_node_list(halfword n)
 {
     while (node_next(n)) {
         n = node_next(n);
@@ -2567,7 +2669,7 @@ extern void     tex_reset_node_properties      (halfword target);
 } while (0)
 
 /*
-inline static void remove_attribute_list(halfword target)
+static inline void remove_attribute_list(halfword target)
 {
     halfword a_old = node_attr(target);
     if (a_old && a_old != attribute_cache_disabled) {
@@ -2592,7 +2694,7 @@ typedef enum saved_attribute_items {
     saved_attribute_n_of_items = 1,
 } saved_attribute_items;
 
-inline static void tex_attach_attribute_list_copy(halfword target, halfword source)
+static inline void tex_attach_attribute_list_copy(halfword target, halfword source)
 {
     halfword a_new = node_attr(source);
     halfword a_old = node_attr(target);
@@ -2601,7 +2703,7 @@ inline static void tex_attach_attribute_list_copy(halfword target, halfword sour
     delete_attribute_reference(a_old);
 }
 
-inline static void tex_attach_attribute_list_attribute(halfword target, halfword a_new)
+static inline void tex_attach_attribute_list_attribute(halfword target, halfword a_new)
 {
     halfword a_old = node_attr(target);
     if (a_old != a_new) {
@@ -2701,7 +2803,7 @@ typedef enum glue_orders {
 
 typedef enum glue_amounts {
     /* we waste slot zero, we padd anyway */
-    total_glue_amount    = 1, // 1 //
+    total_advance_amount = 1, // 1 //
     total_stretch_amount = 2, // 3 //
     total_fi_amount      = 3, // 4 //
     total_fil_amount     = 4, // 5 //
@@ -2731,8 +2833,8 @@ typedef enum glue_signs {
 
 # define normal_glue_multiplier 0.0
 
-inline static halfword tex_checked_glue_sign  (halfword sign)  { return ((sign  < min_glue_sign ) || (sign  > max_glue_sign )) ? normal_glue_sign  : sign ; }
-inline static halfword tex_checked_glue_order (halfword order) { return ((order < min_glue_order) || (order > max_glue_order)) ? normal_glue_order : order; }
+static inline halfword tex_checked_glue_sign  (halfword sign)  { return ((sign  < min_glue_sign ) || (sign  > max_glue_sign )) ? normal_glue_sign  : sign ; }
+static inline halfword tex_checked_glue_order (halfword order) { return ((order < min_glue_order) || (order > max_glue_order)) ? normal_glue_order : order; }
 
 /*tex
     These are reserved nodes that sit at the start of main memory. We could actually just allocate
@@ -2812,14 +2914,14 @@ extern int       tex_n_of_used_nodes      (int counts[]);
 
 # define _valid_node_(p) ((p > lmt_node_memory_state.reserved) && (p < lmt_node_memory_state.nodes_data.allocated) && (lmt_node_memory_state.nodesizes[p] > 0))
 
-inline static int tex_valid_node(halfword n)
+static inline int tex_valid_node(halfword n)
 {
     return n && _valid_node_(n) ? n : null;
 }
 
 /*tex This is a bit strange place but better than a macro elsewhere: */
 
-inline static int tex_math_skip_boundary(halfword n)
+static inline int tex_math_skip_boundary(halfword n)
 {
     return (n && node_type(n) == glue_node
               && (node_subtype(n) == space_skip_glue  ||

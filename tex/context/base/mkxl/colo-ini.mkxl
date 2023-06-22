@@ -336,7 +336,7 @@
 % \def\colo_force_colormodel#1#2%
 %   {\setcolorsparameter\c!rgb {#1}%
 %    \setcolorsparameter\c!cmyk{#2}%
-%    \the\everysetupcolors}
+%    \expand\everysetupcolors}
 
 %D We provide stacking independent of grouping.
 
@@ -600,7 +600,7 @@
      \lettonothing\currentcolorprefix
     %\t_colo_prefix\emptytoks
    \fi
-   \the\everysetuppalet
+   \expand\everysetuppalet
    \colo_helpers_initialize_maintextcolor}
 
 %D \macros

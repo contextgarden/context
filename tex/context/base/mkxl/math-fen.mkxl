@@ -481,7 +481,7 @@
 
 \permanent\tolerant\protected\def\startmathfenced[#1]#*[#2]%
   {\begingroup
-   \def\currentmathfence{#1}%
+   \cdef\currentmathfence{#1}%
    \setupcurrentmathfence[#2]%
    \math_fenced_fenced_start{#1}}
 

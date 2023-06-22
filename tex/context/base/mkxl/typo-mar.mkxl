@@ -209,7 +209,7 @@
      \dotagmargintext\c_typo_margins_n
      \ifcsname\currentmarginframedhash\s!parent\endcsname
        \setbox\nextbox\naturalhbox \currentmarginreference \bgroup
-         \the\everymargindatacontent
+         \expand\everymargindatacontent
          \usemargindatastyleandcolor\c!style\c!color
          \setupcurrentmarginframed[\c!location=\v!normal,#textparameters]%
          \typo_margins_data_synchronize
@@ -229,7 +229,7 @@
        \ifempty\currentmargindatawidth
          \setbox\nextbox\naturalhbox \currentmarginreference \bgroup
            \typo_margins_data_synchronize
-           \the\everymargindatacontent
+           \expand\everymargindatacontent
            \usemargindatastyleandcolor\c!style\c!color
            \ifempty\currentmargindatastrut \else
              \synchronizestrut\currentmargindatastrut
@@ -245,7 +245,7 @@
            \typo_margins_data_synchronize
            \dosetraggedcommand{\margindataparameter\c!align}%
            \vtop \bgroup
-             \the\everymargindatacontent
+             \expand\everymargindatacontent
              \usemargindatastyleandcolor\c!style\c!color
              \hsize\currentmargindatawidth
              \raggedcommand

@@ -327,9 +327,15 @@ typedef enum text_control_codes {
     text_control_base_ligaturing  = 0x00002,
     text_control_base_kerning     = 0x00004,
     text_control_none_protected   = 0x00008,
+    /* these are private */
+    text_control_quality_set      = 0x00010,
+    text_control_expansion        = 0x00020,
+    text_control_left_protrusion  = 0x00040,
+    text_control_right_protrusion = 0x00080,
 } text_control_codes;
 
 # define has_font_text_control(f,c)  ((font_textcontrol(f) & c) == c)
+# define set_font_text_control(f,c)  font_textcontrol(f) |= (c)
 
 /*tex
     These are special codes that are used in the traditional ligature builder. In \OPENTYPE\
@@ -462,6 +468,15 @@ extern int       tex_get_math_char    (halfword f, int c, int size, scaled *scal
     Not all are needed but at least we now can keep some state. We can actually use them to something
     if we really want to (like when we runt tests). However, that is a rather drastic measure for 
     shared fonts. Tracing is another application and at some point it will be used for this. 
+
+    Todo, a compact mode only feature: 
+
+      expansion_checked_tag   = 0x40000, 
+      protrusion_checked_tag  = 0x80000, 
+
+    when not yet checked, we call out to lua and get the values. That way we don't need to initialize 
+    the fonts at load time. 
+
 */
 
 typedef enum char_tag_codes {
@@ -483,6 +498,8 @@ typedef enum char_tag_codes {
     radical_tag      = 0x08000, 
     punctuation_tag  = 0x10000, 
     keep_base_tag    = 0x20000, 
+    expansion_tag    = 0x40000,
+    protrusion_tag   = 0x80000,
 } char_tag_codes;
 
 /*tex
@@ -502,7 +519,7 @@ typedef enum char_tag_codes {
 # define set_charinfo_tag(ci,val)                          ci->tag |= val;
 # define set_charinfo_next(ci,val)                         if (ci->math) { ci->math->next = val; }
 
-# define has_charinfo_tag(ci,p)                            (ci->tag) & (p) == (p)) 
+# define has_charinfo_tag(ci,p)                            (((ci->tag) & (p)) == (p)) 
 # define get_charinfo_tag(ci)                              ci->tag
 
 # define set_charinfo_ligatures(ci,val)                    { lmt_memory_free(ci->ligatures); ci->ligatures = val; }
@@ -661,9 +678,9 @@ typedef enum math_extension_modes {
 
 typedef enum adjust_spacing_modes {
     adjust_spacing_off,
-    adjust_spacing_unused,
-    adjust_spacing_full,
-    adjust_spacing_font,
+    adjust_spacing_unused, 
+    adjust_spacing_full,   /* glyphs and kerns */
+    adjust_spacing_font,   /* glyphs */
 } adjust_spacing_modes;
 
 typedef enum protrude_chars_modes {

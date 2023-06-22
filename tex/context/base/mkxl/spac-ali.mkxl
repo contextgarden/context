@@ -202,7 +202,10 @@
 \ifdefined\nohyphens   \else \let\nohyphens  \relax \fi
 \ifdefined\dohyphens   \else \let\dohyphens  \relax \fi
 
-\newconstant\c_spac_tolerance_default  \c_spac_tolerance_default 1500 % shouldn't that be 200
+% \pretolerance 100
+% \tolerance    200
+
+\newconstant\c_spac_tolerance_default  \c_spac_tolerance_default  200
 \newconstant\c_spac_tolerance_minimum  \c_spac_tolerance_minimum 1500
 \newconstant\c_spac_tolerance_normal   \c_spac_tolerance_normal  3000
 \newconstant\c_spac_tolerance_extreme  \c_spac_tolerance_extreme 4500
@@ -622,7 +625,7 @@
  %
  % \normalexpanded{\t_spac_align_collected
  %   {\setfalse\raggedonelinerstate % bad
- %    \the\t_spac_align_collected
+ %    \expand\t_spac_align_collected
  %    \spac_align_flush_horizontal
  %    \spac_align_flush_vertical
  %    \spac_align_flush_direction
@@ -641,14 +644,14 @@
  %
     \etoks\t_spac_align_collected
       {\setfalse\raggedonelinerstate % bad
-       \the\t_spac_align_collected
+       \expand\t_spac_align_collected
        \spac_align_flush_horizontal
        \spac_align_flush_vertical
        \spac_align_flush_direction
        \spac_align_flush_page
        \spac_align_flush_parfill}%
  %
-   \enforced\permanent\protected\edef\raggedcommand    {\the\t_spac_align_collected }%
+   \enforced\permanent\protected\edef\raggedcommand    {\expand\t_spac_align_collected }%
    \enforced\permanent\protected\edef\updateraggedskips{\spac_align_flush_horizontal}%
    \enforced\aliased\gletcsname\??alignmentnormalcache\m_spac_align_named\endcsname\raggedcommand
    \enforced\aliased\gletcsname\??alignmentraggedcache\m_spac_align_named\endcsname\updateraggedskips}
@@ -820,9 +823,6 @@
 
 \defcsname\??aligncommand          \v!fit\endcsname{\toksapp\t_spac_align_collected{\lastlinefit\plusthousand}}
 
-%defcsname\??aligncommand ...\endcsname{\toksapp\t_spac_align_collected{\nopenalties}}
-%defcsname\??aligncommand ...\endcsname{\toksapp\t_spac_align_collected{\setdefaultpenalties}}
-
 % experiment
 
 \defcsname\??aligncommand \v!flushforward\endcsname{\c_spac_align_state_horizontal\ifconditional\inlinelefttoright\plustwo\else\plusthree\fi}
@@ -860,7 +860,7 @@
 \to \t_spac_every_swap_align
 
 \permanent\protected\def\enablereversealignment
-  {\the\t_spac_every_swap_align
+  {\expand\t_spac_every_swap_align
    \t_spac_every_swap_align\emptytoks}
 
 % Visible commands:
@@ -987,7 +987,9 @@
 
 \def\spac_show_par_data#1%
   {\ifrelax#1\else
-     \hbox{\string#1: \the#1}\endgraf
+     \ifzero#1\else
+       \hbox{\string#1: \the#1}\endgraf
+     \fi
      \expandafter\spac_show_par_data
    \fi}
 
@@ -999,10 +1001,11 @@
        \hsize     \vsize
        \leftskip  \rightskip
        \spaceskip \xspaceskip
-       \parindent \parfillrightskip
+       \parindent \parfillleftskip \parinitrightskip \parinitleftskip \parfillrightskip
        \hyphenpenalty \exhyphenpenalty \automatichyphenpenalty \explicithyphenpenalty
        \displaywidowpenalty \widowpenalty \clubpenalty \brokenpenalty
-       \doublehyphendemerits \finalhyphendemerits \adjdemerits
+       \doublehyphendemerits \finalhyphendemerits \adjdemerits \orphanpenalty
+       \linebreakcriterion
    \relax}}}}}
 
 \permanent\protected\def\startshowpardata
@@ -1049,9 +1052,9 @@
    \dowithnextbox
      {\hbox to \localhsize
         {\ifcase\alignstrutmode\or\strut\fi
-         \the\everyleftofalignedline
+         \expand\everyleftofalignedline
          #1\unhbox\nextbox#2\relax
-         \the\everyrightofalignedline}%
+         \expand\everyrightofalignedline}%
       \endgroup}
      \hbox}
 
@@ -1124,10 +1127,10 @@
      {\hbox to \localhsize
         {#1\hskip\ifdone#2\else#3\fi#4%
          \hbox to \localhsize
-           {\the\everyleftofalignedline
+           {\expand\everyleftofalignedline
             \ifcase\alignstrutmode\or\strut\fi
             \ifdone#5\unhbox\nextbox#6\else#6\unhbox\nextbox#5\fi
-            \the\everyrightofalignedline}%
+            \expand\everyrightofalignedline}%
          \hss}%
         \endgroup}
      \hbox}

@@ -71,7 +71,7 @@
 \permanent\protected\def\startcatcodetable#1#2\stopcatcodetable
   {\begingroup
    \catcodetable\inicatcodes
-   \the\everysetdefaultcatcodes
+   \expand\everysetdefaultcatcodes
    #2%
    \savecatcodetable#1\relax
    \endgroup}

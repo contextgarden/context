@@ -164,7 +164,7 @@
   {\ifarguments\orelse\ifcstok{\namedmarkingparameter{#1}\c!state}\v!start
      \begingroup
      \setsystemmode\v!marking
-     \the\everymarking
+     \expand\everymarking
      \ifparameter#3\or
        \ifcstok{#2}\v!page
          \markingcommand{#1}{\csname\??markingfilter#3\endcsname{#1}}%

@@ -93,7 +93,7 @@ extern void        tex_show_box               (halfword p);
 extern void        tex_short_display          (halfword p);                    /*tex prints highlights of list |p| */                                            
 extern void        tex_print_message          (const char *s);
 
-inline static int tex_single_letter(strnumber s)
+static inline int tex_single_letter(strnumber s)
 {
     return (
           (str_length(s) == 1)
@@ -103,7 +103,7 @@ inline static int tex_single_letter(strnumber s)
     );
 }
 
-inline static int tex_is_active_cs(strnumber s)
+static inline int tex_is_active_cs(strnumber s)
 {
     if (s && str_length(s) > 3) {
         const unsigned char *ss = str_string(s); // or signed and active_character ... 

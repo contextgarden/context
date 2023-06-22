@@ -66,9 +66,9 @@
 
 \newconditional\simplifyingcommands % public
 
-\permanent\protected\def\forgetall       {\the\everyforgetall}
-\permanent\protected\def\cleanupfeatures {\the\everycleanupfeatures}
-\permanent\protected\def\simplifycommands{\the\everysimplifycommands}
+\permanent\protected\def\forgetall       {\expand\everyforgetall}
+\permanent\protected\def\cleanupfeatures {\expand\everycleanupfeatures}
+\permanent\protected\def\simplifycommands{\expand\everysimplifycommands}
 
 \appendtoks
     \settrue\simplifyingcommands
@@ -104,8 +104,8 @@
 \newtoks \everyendofpar
 %newtoks \everyparflush
 
-\protected\def\bpar{\the\everybeginofpar\ignorespaces}                  % may interfere with \everypar
-\protected\def\epar{\ifhmode\removeunwantedspaces\the\everyendofpar\fi} % test prevents problems with \bpar\epar
+\protected\def\bpar{\expand\everybeginofpar\ignorespaces}                  % may interfere with \everypar
+\protected\def\epar{\ifhmode\removeunwantedspaces\expand\everyendofpar\fi} % test prevents problems with \bpar\epar
 
 %D Lists:
 
@@ -133,8 +133,8 @@
 \newtoks \everybeforedisplayformula
 \newtoks \everymathematics
 
-\prependtoks \the\everymathematics \to \everymath
-\prependtoks \the\everymathematics \to \everydisplay
+\prependtoks \expand\everymathematics \to \everymath
+\prependtoks \expand\everymathematics \to \everydisplay
 
 %D Tables:
 
@@ -145,8 +145,8 @@
 \newtoks\everystarttextproperties
 \newtoks\everystoptextproperties
 
-\permanent\protected\def\starttextproperties{\the\everystarttextproperties}
-\permanent\protected\def\stoptextproperties {\the\everystoptextproperties}
+\permanent\protected\def\starttextproperties{\expand\everystarttextproperties}
+\permanent\protected\def\stoptextproperties {\expand\everystoptextproperties}
 
 %D \macros
 %D   {trialtypesetting}
@@ -204,7 +204,7 @@
     \boxedcontenttrue
 \to \everyboxedcontent
 
-\permanent\protected\def\startboxedcontent{\bgroup\the\everyboxedcontent}
+\permanent\protected\def\startboxedcontent{\bgroup\expand\everyboxedcontent}
 
 \aliased\let\stopboxedcontent\egroup
 

@@ -305,7 +305,7 @@
       \setsystemmode\v!export
       \exportingtrue
       \writestatus\m!backend\empty % so messages will stand out a bit
-      \the\everyinitializeexport
+      \expand\everyinitializeexport
       \writestatus\m!backend\empty % so messages will stand out a bit
       \enforced\glet\doinitializeexport\relax
    \fi}

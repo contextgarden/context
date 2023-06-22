@@ -101,7 +101,7 @@
 \permanent\protected\def\hyphenatedurl#1%
   {\dontleavehmode
    \begingroup
-   \the\everyhyphenatedurl
+   \expand\everyhyphenatedurl
    \normallanguage\zerocount % \nohyphens in mkiv
    \scratchskipone\zeropoint\s!plus\dimexpr\emwidth/12\s!minus\dimexpr\emwidth/24\relax % 1.00pt @ 12pt
    \scratchskiptwo\zeropoint\s!plus\dimexpr\emwidth/48\s!minus\dimexpr\emwidth/96\relax % 0.25pt @ 12pt

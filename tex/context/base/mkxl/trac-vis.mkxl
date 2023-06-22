@@ -95,7 +95,7 @@
     \global\t_syst_visualizers_optimize\emptytoks
 \to \t_syst_visualizers_optimize
 
-\def\syst_visualizers_speedup{\the\t_syst_visualizers_optimize}
+\def\syst_visualizers_speedup{\expand\t_syst_visualizers_optimize}
 
 % \appendtoks
 %     \enforced\global\protected\edef\ruledhbox   {\syst_visualizers_hbox    attr \visualattribute \number\clf_getvisual{simplehbox} }

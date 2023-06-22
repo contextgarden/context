@@ -1052,16 +1052,28 @@ static void tex_aux_set_cur_val_by_auxiliary_cmd(int chr)
 
 static void tex_aux_set_cur_val_by_specification_cmd(int chr)
 {
-    if (chr == internal_specification_location(par_shape_code)) {
-        cur_val = (par_shape_par) ? specification_count(par_shape_par) : 0;
-    } else {
-        halfword v = tex_scan_int(0, NULL); /* hm */
-        halfword e = eq_value(chr);
-        if ((! e) || (v < 0)) {
-            cur_val = 0;
-        } else {
-            cur_val = tex_get_specification_penalty(e, v > specification_count(e) ? specification_count(e) : v);
-        }
+    switch (chr) { 
+        case internal_specification_location(par_shape_code):
+            {
+                cur_val = tex_get_specification_count(par_shape_par);
+                break;
+            }
+        case internal_specification_location(par_passes_code):
+            {
+                cur_val = tex_get_specification_count(par_passes_par);
+                break;
+            }
+        default:
+            {
+                halfword v = tex_scan_int(0, NULL); /* hm */
+                halfword e = eq_value(chr);
+                if ((! e) || (v < 0)) {
+                    cur_val = 0;
+                } else {
+                    cur_val = tex_get_specification_penalty(e, v > specification_count(e) ? specification_count(e) : v);
+                }
+                break;
+            }
     }
     cur_val_level = int_val_level;
 }

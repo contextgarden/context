@@ -2,6 +2,8 @@
     See license.txt in the root of this project.
 */
 
+/*tex TODO: update |[get|set]field| for added node entries */
+
 /*tex
 
     This module is one of the backbones on \LUAMETATEX. It has gradually been extended based on
@@ -3681,50 +3683,63 @@ static int nodelib_direct_getparstate(lua_State *L)
     if (p && node_type(p) == par_node) {
         int limited = lua_toboolean(L, 2);
         lua_createtable(L, 0, 24);
-        if (p && node_type(p) == par_node) {
-            /* todo: optional: all skip components */
-            lua_push_integer_at_key(L, hsize,                            tex_get_par_par(p, par_hsize_code));
-            lua_push_integer_at_key(L, leftskip,             glue_amount(tex_get_par_par(p, par_left_skip_code)));
-            lua_push_integer_at_key(L, rightskip,            glue_amount(tex_get_par_par(p, par_right_skip_code)));
-            lua_push_integer_at_key(L, hangindent,                       tex_get_par_par(p, par_hang_indent_code));
-            lua_push_integer_at_key(L, hangafter,                        tex_get_par_par(p, par_hang_after_code));
-            lua_push_integer_at_key(L, parindent,                        tex_get_par_par(p, par_par_indent_code));
-            if (! limited) {
-                lua_push_integer_at_key(L, parfillleftskip,  glue_amount(tex_get_par_par(p, par_par_fill_left_skip_code)));
-                lua_push_integer_at_key(L, parfillskip,      glue_amount(tex_get_par_par(p, par_par_fill_right_skip_code)));
-                lua_push_integer_at_key(L, parinitleftskip,  glue_amount(tex_get_par_par(p, par_par_init_left_skip_code)));
-                lua_push_integer_at_key(L, parinitrightskip, glue_amount(tex_get_par_par(p, par_par_init_right_skip_code)));
-                lua_push_integer_at_key(L, adjustspacing,                tex_get_par_par(p, par_adjust_spacing_code));
-                lua_push_integer_at_key(L, protrudechars,                tex_get_par_par(p, par_protrude_chars_code));
-                lua_push_integer_at_key(L, pretolerance,                 tex_get_par_par(p, par_pre_tolerance_code));
-                lua_push_integer_at_key(L, tolerance,                    tex_get_par_par(p, par_tolerance_code));
-                lua_push_integer_at_key(L, emergencystretch,             tex_get_par_par(p, par_emergency_stretch_code));
-                lua_push_integer_at_key(L, looseness,                    tex_get_par_par(p, par_looseness_code));
-                lua_push_integer_at_key(L, lastlinefit,                  tex_get_par_par(p, par_last_line_fit_code));
-                lua_push_integer_at_key(L, linepenalty,                  tex_get_par_par(p, par_line_penalty_code));
-                lua_push_integer_at_key(L, interlinepenalty,             tex_get_par_par(p, par_inter_line_penalty_code));
-                lua_push_integer_at_key(L, clubpenalty,                  tex_get_par_par(p, par_club_penalty_code));
-                lua_push_integer_at_key(L, widowpenalty,                 tex_get_par_par(p, par_widow_penalty_code));
-                lua_push_integer_at_key(L, displaywidowpenalty,          tex_get_par_par(p, par_display_widow_penalty_code));
-                lua_push_integer_at_key(L, orphanpenalty,                tex_get_par_par(p, par_orphan_penalty_code));
-                lua_push_integer_at_key(L, brokenpenalty,                tex_get_par_par(p, par_broken_penalty_code));
-                lua_push_integer_at_key(L, adjdemerits,                  tex_get_par_par(p, par_adj_demerits_code));
-                lua_push_integer_at_key(L, doublehyphendemerits,         tex_get_par_par(p, par_double_hyphen_demerits_code));
-                lua_push_integer_at_key(L, finalhyphendemerits,          tex_get_par_par(p, par_final_hyphen_demerits_code));
-                lua_push_integer_at_key(L, baselineskip,     glue_amount(tex_get_par_par(p, par_baseline_skip_code)));
-                lua_push_integer_at_key(L, lineskip,         glue_amount(tex_get_par_par(p, par_line_skip_code)));
-                lua_push_integer_at_key(L, lineskiplimit,                tex_get_par_par(p, par_line_skip_limit_code));
-                lua_push_integer_at_key(L, shapingpenaltiesmode,         tex_get_par_par(p, par_shaping_penalties_mode_code));
-                lua_push_integer_at_key(L, shapingpenalty,               tex_get_par_par(p, par_shaping_penalty_code));
-            }
-            lua_push_specification_at_key(L, parshape,                   tex_get_par_par(p, par_par_shape_code));
-            if (! limited) {
-                lua_push_specification_at_key(L, interlinepenalties,     tex_get_par_par(p, par_inter_line_penalties_code));
-                lua_push_specification_at_key(L, clubpenalties,          tex_get_par_par(p, par_club_penalties_code));
-                lua_push_specification_at_key(L, widowpenalties,         tex_get_par_par(p, par_widow_penalties_code));
-                lua_push_specification_at_key(L, displaywidowpenalties,  tex_get_par_par(p, par_display_widow_penalties_code));
-                lua_push_specification_at_key(L, orphanpenalties,        tex_get_par_par(p, par_orphan_penalties_code));
-            }
+        switch (node_subtype(p)) { 
+            case vmode_par_par_subtype:
+            case hmode_par_par_subtype:
+                {
+                    /* todo: optional: all skip components */
+                    lua_push_integer_at_key(L, hsize,                              tex_get_par_par(p, par_hsize_code));
+                    lua_push_integer_at_key(L, leftskip,               glue_amount(tex_get_par_par(p, par_left_skip_code)));
+                    lua_push_integer_at_key(L, rightskip,              glue_amount(tex_get_par_par(p, par_right_skip_code)));
+                    lua_push_integer_at_key(L, hangindent,                         tex_get_par_par(p, par_hang_indent_code));
+                    lua_push_integer_at_key(L, hangafter,                          tex_get_par_par(p, par_hang_after_code));
+                    lua_push_integer_at_key(L, parindent,                          tex_get_par_par(p, par_par_indent_code));
+                    lua_push_integer_at_key(L, prevgraf,                           par_prev_graf(p));
+                    if (! limited) {                                   
+                        lua_push_integer_at_key(L, parfillleftskip,    glue_amount(tex_get_par_par(p, par_par_fill_left_skip_code)));
+                        lua_push_integer_at_key(L, parfillskip,        glue_amount(tex_get_par_par(p, par_par_fill_right_skip_code)));
+                        lua_push_integer_at_key(L, parinitleftskip,    glue_amount(tex_get_par_par(p, par_par_init_left_skip_code)));
+                        lua_push_integer_at_key(L, parinitrightskip,   glue_amount(tex_get_par_par(p, par_par_init_right_skip_code)));
+                        lua_push_integer_at_key(L, emergencyleftskip,  glue_amount(tex_get_par_par(p, emergency_left_skip_code)));
+                        lua_push_integer_at_key(L, emergencyrightskip, glue_amount(tex_get_par_par(p, emergency_right_skip_code)));
+                        lua_push_integer_at_key(L, adjustspacing,                  tex_get_par_par(p, par_adjust_spacing_code));
+                        lua_push_integer_at_key(L, protrudechars,                  tex_get_par_par(p, par_protrude_chars_code));
+                        lua_push_integer_at_key(L, pretolerance,                   tex_get_par_par(p, par_pre_tolerance_code));
+                        lua_push_integer_at_key(L, tolerance,                      tex_get_par_par(p, par_tolerance_code));
+                        lua_push_integer_at_key(L, emergencystretch,               tex_get_par_par(p, par_emergency_stretch_code));
+                        lua_push_integer_at_key(L, looseness,                      tex_get_par_par(p, par_looseness_code));
+                        lua_push_integer_at_key(L, lastlinefit,                    tex_get_par_par(p, par_last_line_fit_code));
+                        lua_push_integer_at_key(L, linepenalty,                    tex_get_par_par(p, par_line_penalty_code));
+                        lua_push_integer_at_key(L, interlinepenalty,               tex_get_par_par(p, par_inter_line_penalty_code));
+                        lua_push_integer_at_key(L, clubpenalty,                    tex_get_par_par(p, par_club_penalty_code));
+                        lua_push_integer_at_key(L, widowpenalty,                   tex_get_par_par(p, par_widow_penalty_code));
+                        lua_push_integer_at_key(L, displaywidowpenalty,            tex_get_par_par(p, par_display_widow_penalty_code));
+                        lua_push_integer_at_key(L, orphanpenalty,                  tex_get_par_par(p, par_orphan_penalty_code));
+                        lua_push_integer_at_key(L, brokenpenalty,                  tex_get_par_par(p, par_broken_penalty_code));
+                        lua_push_integer_at_key(L, adjdemerits,                    tex_get_par_par(p, par_adj_demerits_code));
+                        lua_push_integer_at_key(L, doublehyphendemerits,           tex_get_par_par(p, par_double_hyphen_demerits_code));
+                        lua_push_integer_at_key(L, finalhyphendemerits,            tex_get_par_par(p, par_final_hyphen_demerits_code));
+                        lua_push_integer_at_key(L, baselineskip,       glue_amount(tex_get_par_par(p, par_baseline_skip_code)));
+                        lua_push_integer_at_key(L, lineskip,           glue_amount(tex_get_par_par(p, par_line_skip_code)));
+                        lua_push_integer_at_key(L, lineskiplimit,                  tex_get_par_par(p, par_line_skip_limit_code));
+                        lua_push_integer_at_key(L, shapingpenaltiesmode,           tex_get_par_par(p, par_shaping_penalties_mode_code));
+                        lua_push_integer_at_key(L, shapingpenalty,                 tex_get_par_par(p, par_shaping_penalty_code));
+                        lua_push_integer_at_key(L, emergencyextrastretch,          tex_get_par_par(p, par_emergency_extra_stretch_code));
+                    }                                                            
+                    lua_push_specification_at_key(L, parshape,                     tex_get_par_par(p, par_par_shape_code));
+                    if (! limited) {                                             
+                        lua_push_specification_at_key(L, interlinepenalties,       tex_get_par_par(p, par_inter_line_penalties_code));
+                        lua_push_specification_at_key(L, clubpenalties,            tex_get_par_par(p, par_club_penalties_code));
+                        lua_push_specification_at_key(L, widowpenalties,           tex_get_par_par(p, par_widow_penalties_code));
+                        lua_push_specification_at_key(L, displaywidowpenalties,    tex_get_par_par(p, par_display_widow_penalties_code));
+                        lua_push_specification_at_key(L, orphanpenalties,          tex_get_par_par(p, par_orphan_penalties_code));
+                        lua_push_specification_at_key(L, parpasses,                tex_get_par_par(p, par_par_passes_code));
+                    }
+                    break;
+                }
+         // case local_box_par_subtype:
+         // case penalty_par_subtype:
+         // case math_par_subtype:
         }
         return 1;
     } else {
@@ -6601,6 +6616,8 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                 lua_pushinteger(L, glue_font(n));
                             } else if (lua_key_eq(s, data)) {
                                 lua_pushinteger(L, glue_data(n));
+                            } else if (lua_key_eq(s, options)) {
+                                lua_pushinteger(L, glue_options(n));
                             } else {
                                 lua_pushnil(L);
                             }
@@ -6617,6 +6634,8 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                         case penalty_node:
                             if (lua_key_eq(s, penalty)) {
                                 lua_pushinteger(L, penalty_amount(n));
+                            } else if (lua_key_eq(s, options)) {
+                                lua_pushinteger(L, penalty_options(n));
                             } else {
                                 lua_pushnil(L);
                             }
@@ -6748,6 +6767,8 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                 lua_pushinteger(L, math_shrink_order(n));
                             } else if (lua_key_eq(s, penalty)) {
                                 lua_pushinteger(L, math_penalty(n));
+                            } else if (lua_key_eq(s, options)) {
+                                lua_pushinteger(L, math_options(n));
                             } else {
                                 lua_pushnil(L);
                             }
@@ -7168,9 +7189,9 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                 set_glyph_uchyph(n, lmt_tohalfword(L, 3));
                             } else if (lua_key_eq(s, hyphenate)) {
                                 set_glyph_hyphenate(n, lmt_tohalfword(L, 3));
-                             } else if (lua_key_eq(s, options)) {
+                            } else if (lua_key_eq(s, options)) {
                                 set_glyph_options(n, lmt_tohalfword(L, 3));
-                             } else if (lua_key_eq(s, discpart)) {
+                            } else if (lua_key_eq(s, discpart)) {
                                 set_glyph_discpart(n, lmt_tohalfword(L, 3));
                             } else if (lua_key_eq(s, protected)) {
                                 glyph_protected(n) = lmt_tosingleword(L, 3);
@@ -7285,6 +7306,8 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                 glue_font(n) = tex_checked_font(lmt_tohalfword(L, 3));
                             } else if (lua_key_eq(s, data)) {
                                 glue_data(n) = (halfword) lmt_roundnumber(L, 3);
+                            } else if (lua_key_eq(s, options)) {
+                                glue_options(n) |= lmt_tohalfword(L, 3);
                             } else {
                                 goto CANTSET;
                             }
@@ -7301,6 +7324,8 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                         case penalty_node:
                             if (lua_key_eq(s, penalty)) {
                                 penalty_amount(n) = lmt_tohalfword(L, 3);
+                            } else if (lua_key_eq(s, options)) {
+                                penalty_options(n) |= lmt_tohalfword(L, 3);
                             } else {
                                 goto CANTSET;
                             }
@@ -7429,6 +7454,8 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                 math_shrink_order(n) = tex_checked_glue_order(lmt_tohalfword(L, 3));
                             } else if (lua_key_eq(s, penalty)) {
                                 math_penalty(n) = lmt_tohalfword(L, 3);
+                            } else if (lua_key_eq(s, options)) {
+                                math_options(n) |= lmt_tohalfword(L, 3);
                             } else {
                                 goto CANTSET;
                             }
@@ -10545,4 +10572,146 @@ halfword lmt_vpack_filter_callback(
         }
     }
     return head;
+}
+
+/* watch the -3 here, we skip over the repeat boolean  */
+
+# define get_dimen_par(P,A,B) \
+    lua_push_key(A); \
+    P = (lua_rawget(L, -3) == LUA_TNUMBER) ? lmt_roundnumber(L, -1) : B; \
+    lua_pop(L, 1);
+
+# define get_integer_par(P,A,B) \
+    lua_push_key(A); \
+    P = (lua_rawget(L, -3) == LUA_TNUMBER) ? lmt_tohalfword(L, -1) : B; \
+    lua_pop(L, 1);
+
+int lmt_par_pass_callback(
+    halfword               head,
+    line_break_properties *properties, 
+    halfword               identifier, 
+    halfword               callback, 
+    halfword               features, 
+    scaled                 overfull, 
+    scaled                 underfull, 
+    halfword               verdict, 
+    halfword               classified,
+    scaled                 threshold, 
+    halfword               badness, 
+    halfword               classes,
+    int                   *repeat
+)
+{
+ // if (head) {
+        int callback_id = lmt_callback_defined(paragraph_pass_callback);
+        if (callback_id > 0) {
+            lua_State *L = lmt_lua_state.lua_instance;
+            int top = 0;
+            int result = 0;
+            if (lmt_callback_okay(L, callback_id, &top)) {
+                int i;
+                lmt_node_list_to_lua(L, head);
+                lua_push_integer(L, identifier);
+                lua_push_integer(L, callback);
+                lua_push_integer(L, overfull);
+                lua_push_integer(L, underfull);
+                lua_push_integer(L, verdict);
+                lua_push_integer(L, classified);
+                lua_push_integer(L, threshold);
+                lua_push_integer(L, badness);
+                lua_push_integer(L, classes);
+                i = lmt_callback_call(L, 10, 2, top);
+                if (i) {
+                    lmt_callback_error(L, top, i);
+                } else {
+                    switch (lua_type(L, -2)) { 
+                        case LUA_TBOOLEAN:
+                            {
+                                result = lua_toboolean(L, -2);
+                                break;
+                            }
+                        case LUA_TTABLE:
+                            {
+                                halfword v; 
+                                get_integer_par(v, tolerance, 0);
+                                if (v) { 
+                                    lmt_linebreak_state.threshold = v;
+                                    properties->tolerance = v;
+                                }
+                                get_integer_par(v, linepenalty, 0);
+                                if (v) {
+                                    properties->line_penalty = v;
+                                }
+                                get_integer_par(v, orphanpenalty, 0);
+                                if (v) {
+                                    properties->orphan_penalty = v;
+                                }
+                                get_integer_par(v, extrahyphenpenalty, 0);
+                                if (v) { 
+                                    properties->extra_hyphen_penalty = v;
+                                }
+                                get_integer_par(v, doublehyphendemerits, 0);
+                                if (v) { 
+                                    properties->double_hyphen_demerits = v;
+                                }
+                                get_integer_par(v, finalhyphendemerits, 0);
+                                if (v) { 
+                                    properties->final_hyphen_demerits = v;
+                                }
+                                get_integer_par(v, adjdemerits, 0);
+                                if (v) { 
+                                    properties->adj_demerits = v;
+                                }
+                                get_integer_par(v, linebreakcriterion, 0);
+                                if (v) {
+                                    properties->line_break_criterion = v;
+                                }
+                                get_dimen_par(v, emergencystretch, 0);
+                                if (v) {
+                                    properties->emergency_stretch = v; // emergency_extra_stretch
+                                }
+                                get_integer_par(v, looseness, 0);
+                                if (v) {
+                                    properties->looseness = v;
+                                }
+                                get_integer_par(v, adjustspacingstep, 0);
+                                if (v) {
+                                    properties->adjust_spacing_step = v;
+                                }
+                                get_integer_par(v, adjustspacingshrink, 0);
+                                if (v) {
+                                    properties->adjust_spacing_shrink = v;
+                                }
+                                get_integer_par(v, adjustspacingstretch, 0);
+                                if (v) {
+                                    properties->adjust_spacing_stretch = v;
+                                }
+                                get_integer_par(v, adjustspacing, 0);
+                                if (v) {
+                                    properties->adjust_spacing = v;
+                                }
+                                if (features & passes_optional_set) {           
+                                    get_integer_par(v, optional, 0);
+                                    properties->line_break_optional = v;
+                                }
+                                /* */
+                                result = 1;
+                                break;
+                            }
+                        default: 
+                            {
+                                /* just quit */
+                                break;
+                            }
+                    }
+                    if (lua_type(L, -1) == LUA_TBOOLEAN) {
+                        *repeat = lua_toboolean(L, -1);
+                    }
+                }
+            }
+            lmt_callback_wrapup(L, top);
+            return result;
+        }
+ // }
+    return 0;
 }

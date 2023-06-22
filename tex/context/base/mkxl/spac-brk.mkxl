@@ -24,6 +24,10 @@
 %D This is a very experimental feature and a by product of improving inline math
 %D crossing lines. As it might evolve: use with care.
 
+\fetchmodulecommand \startshowbreakpoints {trac-brk} % {s-lines-show.mkxl}
+%fetchmodulecommand \stopshowbreakpoints  {trac-brk} % {s-lines-show.mkxl} % start needed anyway
+%fetchmodulecommand \showbreakpoints      {trac-brk} % {s-lines-show.mkxl} % idem, loops otherwise
+
 % \starttext
 %     \setupalign[verytolerant]
 %     \tracinglousiness1

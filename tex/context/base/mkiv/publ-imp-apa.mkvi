@@ -1,4 +1,4 @@
-%D \module
+%D \modul
 %D   [       file=publ-imp-apa,
 %D        version=2013.12.12,
 %D          title=APA bibliography style,
@@ -34,11 +34,13 @@
   [\c!default=default,
    \c!specification=apa,
    \c!otherstext={\btxspace\btxlabeltext{others}},
-   %c!journalconversion=\v!normal,
+  %\c!journalconversion=\v!normal,
    \c!monthconversion=\v!month,
-   \c!stopper:initials={. }, % with a (breakable) space
+  %\c!separator:firstnames={\btxnobreakspace}, % ?
+   \c!stopper:initials={\btxperiod}, % TODO: nobreak between multiple initials
+   \c!separator:invertedinitials={\btxcomma\btxnobreakspace},
    \c!separator:names:2={\btxcomma}, % aka namesep - in this namespace
-   \c!separator:names:3={\btxcomma\btxnobreakspace\textampersand\space}, % comma separated list
+   \c!separator:names:3={\btxcomma\btxnobreakspace\textampersand\space},
    \c!separator:names:4={\btxnobreakspace\textampersand\space}] % last of two, no comma!
 
 % First, define list and rendering parameters
@@ -181,7 +183,7 @@
   [apa:\s!list]
   [\c!style=\v!italic,
    \c!command=\Word,
-   \c!translate=\v!yes]
+  ] %\c!translate=\v!yes]
 
 \definebtx
   [apa:\s!list:title:article]
@@ -319,7 +321,8 @@
    \c!etaldisplay=1, % TODO: when 2-4, show all first time, etaldisplay subsequently...
    \c!authorconversion=\v!name,
    \c!sorttype=normal, % \v!normal ?
-   \c!style=,
+   \c!style=, % hyjacked below:
+   \c!style={\texdefinition{btx:apa:setlanguage}{\mainbtxlanguage}},
    \c!compress=\v!yes, % note that cite sorts only work with compress=yes.
    \c!separator:names:3={\btxcomma\btxlabeltext{and}\space}, % not \textampersand
    \c!separator:names:4={\btxspace\btxlabeltext{and}\space}] % not \textampersand
@@ -402,13 +405,17 @@
 \definebtx
   [apa:\s!cite:author:year] % todo
   [apa:\s!cite]
+  [\c!separator:2={\btxcomma},
+   \c!separator:3={\btxcomma}]
 
 \definebtx
   [apa:\s!cite:author:years] % todo
   [apa:\s!cite:authoryears]
   [\c!inbetween=,
    \c!left={\btxspace(},
-   \c!right={)}]
+   \c!right={)},
+   \c!separator:2={\btxcomma},
+   \c!separator:3={\btxcomma}]
 
 \definebtx
   [apa:\s!cite:lefttext]
@@ -435,7 +442,6 @@
   [\c!separator:2={\btxcomma}, % :0 and :1 - between items of a list
    \c!separator:3={\btxcomma\btxlabeltext{and}\space}, % not \textampersand
    \c!separator:4={\btxspace\btxlabeltext{and}\space}, % not \textampersand
-   \c!command={\language[\currentbtxlanguage]}, % BAH
    \c!sorttype=none,
    \c!style=\v!italic]
 
@@ -560,9 +566,9 @@
   [\c!left=,
    \c!right=,
    \c!inbetween={\btxspace},
-   \c!separator:2={\btxsemicolon},
-   \c!separator:3=\btxparameter{\c!separator:2},
-   \c!separator:4=\btxparameter{\c!separator:2}]
+   \c!separator:2={\btxcomma},
+   \c!separator:3={\btxsemicolon},
+   \c!separator:4={\btxsemicolon}]
 
 % Now we setup for the details of the renderings
 
@@ -860,6 +866,16 @@
 %D returned. In lua syntax, it can be understood as
 %D author or editor or publisher or title or ""
 
+\starttexdefinition mutable protected btx:apa:setlanguage #language
+    \language[#language]
+    \doifelse{#language}{french}
+        {\setcharacterspacing[frenchpunctuation]}
+        {\doifelse{#language}{fr}
+          {\setcharacterspacing[frenchpunctuation]}
+          {\setcharacterspacing[nofrenchpunctuation]}
+        }
+\stoptexdefinition
+
 % #title can be title or booktitle
 
 \starttexdefinition mutable protected btx:apa:translated-title #title
@@ -869,13 +885,14 @@
         % no need for an extra
     \else
         \btxdoif {#title:\mainbtxlanguage} {
-            \begingroup
-                \language[\mainbtxlanguage]
+            \begingroup % does this limit scope?
+                \texdefinition{btx:apa:setlanguage}{\mainbtxlanguage}
                 \btxleftbracket
                 \btxusecommand [apa:\s!list:#title:\currentbtxcategory] {
                     \btxflush{#title:\mainbtxlanguage}
                 }
                 \btxrightbracket
+                \texdefinition{btx:apa:setlanguage}{\currentbtxlanguage}
             \endgroup
         }
     \fi\fi
@@ -884,7 +901,7 @@
 \starttexdefinition mutable protected btx:apa:composed-title #title
     \btxstartstyleandcolor[apa:\s!list:#title:\currentbtxcategory]
         \begingroup
-            \language[\currentbtxlanguage]
+            \texdefinition{btx:apa:setlanguage}{\currentbtxlanguage}
             \btxusecommand [apa:\s!list:#title:\currentbtxcategory] {
                 \btxflush{#title}
                 \btxdoif {sub#title} {
@@ -892,6 +909,7 @@
                     \btxflush{sub#title}
                 }
             }
+            \texdefinition{btx:apa:setlanguage}{\mainbtxlanguage}
         \endgroup
         % which namespace?
         %\doif{\btxparameter{translate}}\v!yes {
@@ -1176,7 +1194,7 @@
     \doifnotmode {btx:apa:editionset-is-empty} {
         \btxrightparenthesis
     }
-    \btxperiod   
+    \btxperiod
 \stoptexdefinition
 
 \starttexdefinition mutable protected btx:apa:journal
@@ -1272,7 +1290,8 @@
 
 % use \btxentry here?
 
-\sethyphenatedurlafter{:./-_} % question of taste
+% Alan's editor does not want lines to begin with these characters:
+\sethyphenatedurlafter{:./-_}
 
 \starttexdefinition mutable protected btx:apa:url
     \texdefinition {btx:format:goto} {

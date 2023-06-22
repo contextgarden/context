@@ -271,7 +271,7 @@
 \protected\defcsname\??constructiontexthandler\v!construction\endcsname
   {\begingroup
    \useconstructionstyleandcolor\c!headstyle\c!headcolor % move to \currentconstructiontext
-   \the\everyconstruction
+   \expand\everyconstruction
    \constructionparameter\c!headcommand
      {\strut
       \constructionparameter\c!text

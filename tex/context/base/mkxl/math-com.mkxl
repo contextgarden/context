@@ -79,7 +79,7 @@
    \global\setfalse\c_strc_formulas_inside_formulas
    \dostoptagged
    \stopformula
-   \the\everyresetformulas}
+   \expand\everyresetformulas}
 
 \definecombination[\v!formula][method=formula,width=\hsize]
 

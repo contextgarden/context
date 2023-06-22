@@ -156,7 +156,7 @@
        \cdef\currentchemical{#1}%
      \fi
    \fi
-   \the\everystructurechemical
+   \expand\everystructurechemical
    \setbox\b_chem_result\hpack\bgroup
    \clf_startchemical
      width         {\chemicalparameter\c!width}%
@@ -184,7 +184,7 @@
    \d_chem_width \wd\b_chem_result
    \d_chem_height\ht\b_chem_result
    \d_chem_depth \dp\b_chem_result
-   \the\t_chem_every_box
+   \expand\t_chem_every_box
    \doifelsenothing{\chemicalparameter\c!frame}\chem_framed_nop\chem_framed_yes
    \egroup}
 
@@ -488,7 +488,7 @@
 % Should these also be defined in lower case, so as to be case independent?
 
 \appendtoks
-    \the\everychemical
+    \expand\everychemical
 \to \everystructurechemical
 
 % inline
@@ -512,7 +512,7 @@
 %    \endgroup}
 
 \permanent\tolerant\protected\def\displaychemical#=#=#=%
-  {\the\everychemical
+  {\expand\everychemical
    \everychemical\emptytoks
    \quad
    \vcenter\bgroup
@@ -574,7 +574,7 @@
   {\mathortext\vcenter\vbox\bgroup
    \forgetall
    \inchemicalformulatrue
-   \the\everychemical
+   \expand\everychemical
    \everychemical\emptytoks
    \t_chem_top\emptytoks % not needed
    \t_chem_mid\emptytoks % not needed
@@ -588,15 +588,15 @@
    \nointerlineskip
    \ifconditional\c_chem_has_top
      \ifconditional\c_chem_has_bot
-       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\the\t_chem_top\cr\the\t_chem_mid\cr\the\t_chem_bot\cr}%
+       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\expand\t_chem_top\cr\expand\t_chem_mid\cr\expand\t_chem_bot\cr}%
      \else
-       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\the\t_chem_top\cr\the\t_chem_mid\cr}%
+       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\expand\t_chem_top\cr\expand\t_chem_mid\cr}%
      \fi
    \else
      \ifconditional\c_chem_has_bot
-       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\the\t_chem_mid\cr\the\t_chem_bot\cr}%
+       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\expand\t_chem_mid\cr\expand\t_chem_bot\cr}%
      \else
-       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\the\t_chem_mid\cr}%
+       \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\expand\t_chem_mid\cr}%
      \fi
    \fi
    \egroup}

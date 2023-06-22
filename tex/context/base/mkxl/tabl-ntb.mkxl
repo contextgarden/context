@@ -114,7 +114,7 @@
 \protected\def\tabl_ntb_cell_stop
   {\font_styles_math_stop
    \ifhmode
-     \the\t_tabl_ntb_cell_stop
+     \expand\t_tabl_ntb_cell_stop
      \par % added 13/4/2006
    \orelse\ifdim\prevdepth<\zeropoint % =-1000pt ?
      % not sure yet:\naturaltablelocalparameter\c!right
@@ -127,7 +127,7 @@
 %
 % \protected\def\tabl_ntb_cell_stop
 %   {\ifhmode
-%      \the\t_tabl_ntb_cell_stop
+%      \expand\t_tabl_ntb_cell_stop
 %      \par % added 13/4/2006
 %    \else
 %      % not sure yet:\naturaltablelocalparameter\c!right
@@ -628,8 +628,6 @@
   {\tabl_ntb_setup_section % already forgotten
    \edef\m_tabl_ntb_positive_row{\number#1}%
    \edef\m_tabl_ntb_positive_col{\number#2}%
-%    \edef\m_tabl_ntb_negative_row{\the\numexpr-\c_tabl_ntb_maximum_row+#1+\minusone\relax}%
-%    \edef\m_tabl_ntb_negative_col{\the\numexpr-\c_tabl_ntb_maximum_col+#2+\minusone\relax}%
    \edef\m_tabl_ntb_negative_row{\number\numexpr-\c_tabl_ntb_maximum_row+#1+\minusone}%
    \edef\m_tabl_ntb_negative_col{\number\numexpr-\c_tabl_ntb_maximum_col+#2+\minusone}%
    % saves tokens (no speed gain)
@@ -1107,10 +1105,10 @@
    % head
    \doifelsesometoks\t_tabl_ntb_head % slow, better a flag \iftok
      {\c_tabl_ntb_head\numexpr\c_tabl_ntb_maximum_row+\plusone\relax
-      \the\t_tabl_ntb_head
+      \expand\t_tabl_ntb_head
       \c_tabl_ntb_n_of_head_lines\c_tabl_ntb_maximum_row\relax
       \doifelsesometoks\t_tabl_ntb_next
-        {\the\t_tabl_ntb_next
+        {\expand\t_tabl_ntb_next
          \c_tabl_ntb_n_of_next_lines\numexpr\c_tabl_ntb_maximum_row-\c_tabl_ntb_n_of_head_lines\relax}%
         {\c_tabl_ntb_n_of_next_lines\zerocount}% was 1
       \c_tabl_ntb_n_of_hdnx_lines\c_tabl_ntb_maximum_row}
@@ -1120,11 +1118,11 @@
       \c_tabl_ntb_n_of_hdnx_lines\zerocount}%
    % body
    \c_tabl_ntb_body\numexpr\c_tabl_ntb_maximum_row+\plusone\relax
-   \the\t_tabl_ntb_body
+   \expand\t_tabl_ntb_body
    % foot
    \doifelsesometoks\t_tabl_ntb_foot
      {\c_tabl_ntb_foot\numexpr\c_tabl_ntb_maximum_row+\plusone\relax
-      \the\t_tabl_ntb_foot}%
+      \expand\t_tabl_ntb_foot}%
      {\c_tabl_ntb_foot\zerocount}%
    % done
    \removeunwantedspaces % only if hmode
@@ -1257,7 +1255,7 @@
 \newinteger\c_tabl_prelocated_rows % \prelocateTBLrows{1000} may speed up large tables
 
 % \def\tabl_ntb_row_start{\t_tabl_ntb_row\emptytoks}
-% \def\tabl_ntb_row_stop {\normalexpanded{\t_tabl_ntb{\the\t_tabl_ntb\noexpand\tabl_ntb_row_align_start\the\t_tabl_ntb_row\tabl_ntb_row_align_stop}}}
+% \def\tabl_ntb_row_stop {\normalexpanded{\t_tabl_ntb{\expand\t_tabl_ntb\noexpand\tabl_ntb_row_align_start\expand\t_tabl_ntb_row\tabl_ntb_row_align_stop}}}
 
 \def\tabl_ntb_row_start
   {\t_tabl_ntb_row\emptytoks}
@@ -1474,7 +1472,7 @@
    \global\advanceby\c_tabl_ntb_row\minusone
    \dostarttaggedchained\t!table\empty\??naturaltable
   %\registerparoptions % (*) triggers max hsize
-   \the\t_tabl_ntb
+   \expand\t_tabl_ntb
    \dostoptagged}
 
 \protected\def\tabl_ntb_span#1%

@@ -535,45 +535,45 @@
 \def\syst_setups_start_tex_two#1#2#+\stopsetups     {\endgroup\dodoglobal\instance\defcsname\??setup#1:#2\endcsname##1{#3}}
 
 \tolerant\def\syst_setups_start_lua_yes[#1]#*[#2]%
-  {\the\t_syst_setups_lua
+  {\expand\t_syst_setups_lua
    \ifarguments\expandafter\syst_setups_start_lua_one
    \or         \expandafter\syst_setups_start_lua_one
    \else       \expandafter\syst_setups_start_lua_two
    \fi{#1}{#2}}
 
 \tolerant\def\syst_setups_start_xml_yes[#1]#*[#2]%
-  {\the\t_syst_setups_xml
+  {\expand\t_syst_setups_xml
    \ifarguments\expandafter\syst_setups_start_xml_one
    \or         \expandafter\syst_setups_start_xml_one
    \else       \expandafter\syst_setups_start_xml_two
    \fi{#1}{#2}}
 
 \tolerant\def\syst_setups_start_raw_yes[#1]#*[#2]%
-  {\the\t_syst_setups_raw
+  {\expand\t_syst_setups_raw
    \ifarguments\expandafter\syst_setups_start_raw_one
    \or         \expandafter\syst_setups_start_raw_one
    \else       \expandafter\syst_setups_start_raw_two
    \fi{#1}{#2}}
 
 \tolerant\def\syst_setups_start_loc_yes[#1]#*[#2]%
-  {\the\t_syst_setups_loc
+  {\expand\t_syst_setups_loc
    \ifarguments\expandafter\syst_setups_start_loc_one
    \or         \expandafter\syst_setups_start_loc_one
    \else       \expandafter\syst_setups_start_loc_two
    \fi{#1}{#2}}
 
 \tolerant\def\syst_setups_start_tex_yes[#1]#*[#2]%
-  {\the\t_syst_setups_tex
+  {\expand\t_syst_setups_tex
    \ifarguments\expandafter\syst_setups_start_tex_one
    \or         \expandafter\syst_setups_start_tex_one
    \else       \expandafter\syst_setups_start_tex_two
    \fi{#1}{#2}}
 
-\def\syst_setups_start_lua_nop#1 {\the\t_syst_setups_lua\syst_setups_start_lua_two{}{#1}} % space delimited
-\def\syst_setups_start_xml_nop#1 {\the\t_syst_setups_xml\syst_setups_start_xml_two{}{#1}} % space delimited
-\def\syst_setups_start_raw_nop#1 {\the\t_syst_setups_raw\syst_setups_start_raw_two{}{#1}} % space delimited
-\def\syst_setups_start_loc_nop#1 {\the\t_syst_setups_loc\syst_setups_start_loc_two{}{#1}} % space delimited
-\def\syst_setups_start_tex_nop#1 {\the\t_syst_setups_tex\syst_setups_start_tex_two{}{#1}} % space delimited
+\def\syst_setups_start_lua_nop#1 {\expand\t_syst_setups_lua\syst_setups_start_lua_two{}{#1}} % space delimited
+\def\syst_setups_start_xml_nop#1 {\expand\t_syst_setups_xml\syst_setups_start_xml_two{}{#1}} % space delimited
+\def\syst_setups_start_raw_nop#1 {\expand\t_syst_setups_raw\syst_setups_start_raw_two{}{#1}} % space delimited
+\def\syst_setups_start_loc_nop#1 {\expand\t_syst_setups_loc\syst_setups_start_loc_two{}{#1}} % space delimited
+\def\syst_setups_start_tex_nop#1 {\expand\t_syst_setups_tex\syst_setups_start_tex_two{}{#1}} % space delimited
 
 \def\syst_setups_start_lua_one#1#2{\syst_setups_start_lua_two{}{#1}} % [..]
 \def\syst_setups_start_xml_one#1#2{\syst_setups_start_xml_two{}{#1}} % [..]
@@ -629,7 +629,7 @@
   {\doifelse{#2}\currentvariableclass
      {#1[\??variables#2:][#3]}%
      {\pushmacro\currentvariableclass
-      \def\currentvariableclass{#2}%
+      \cdef\currentvariableclass{#2}%
       \getvariable{#2}\s!reset
       #1[\??variables#2:][#3]%
       \getvariable{#2}\s!set

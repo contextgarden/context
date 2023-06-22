@@ -249,7 +249,7 @@
 
 \protected\def\font_styles_apply_grouped#name% assumes that the next is { or \bgroup
   {\bgroup % \beginsimplegroup
-   \def\currentstyle{\font_styles_use_defined{#name}}%
+   \cdef\currentstyle{\font_styles_use_defined{#name}}%
    \afterassignment\currentstyle
    \let\nexttoken}
 

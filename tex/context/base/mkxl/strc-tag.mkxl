@@ -355,7 +355,7 @@
 \to \everydisableelements
 
 \appendtoks
-   \doifelse{\taggingparameter\c!state}\v!start{\the\everyenableelements}{\the\everydisableelements}%
+   \doifelse{\taggingparameter\c!state}\v!start{\expand\everyenableelements}{\expand\everydisableelements}%
 \to \everysetuptagging
 
 \permanent\protected\def\forgettagging

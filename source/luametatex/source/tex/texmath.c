@@ -1397,7 +1397,7 @@ static void tex_aux_enter_display_math(halfword cmd)
         /*tex
             Deal with |\noindent$$| or |$${ }$$| or the 2nd of |$${ }$$| |$${ }$$|.
         */
-        if (cur_list.head == cur_list.tail || (node_next(cur_list.head) == cur_list.tail && node_type(cur_list.tail) == par_node && ! node_next(cur_list.tail))) {
+        if (cur_list.head == cur_list.tail || (node_next(cur_list.head) == cur_list.tail && node_type(cur_list.tail) == par_node && ! node_next(cur_list.tail))) { /* todo: subtype check */
             if (node_next(cur_list.head) == cur_list.tail) {
                 /*tex
                     |resume_after_display| inserts a |par_node|, but if there is another display
@@ -4460,7 +4460,7 @@ static void tex_aux_resume_after_display(void)
             cur_list.mode = hmode;
             cur_list.space_factor = default_space_factor;
             /*tex This needs to be intercepted in the display math start! Todo! */
-            tex_tail_append(tex_new_par_node(penalty_par_subtype));
+            tex_tail_append(tex_new_par_node(parameter_par_subtype));
             tex_get_x_token();
             if (cur_cmd != spacer_cmd) {
                 tex_back_input(cur_tok);
@@ -5018,12 +5018,16 @@ void tex_run_math_shift(void)
                         if (post_short_inline_penalty_par != max_integer) {
                             math_penalty(endmath) = post_short_inline_penalty_par;
                         }
-                        tex_add_math_option(beginmath, glue_option_short_math);
-                        tex_add_math_option(endmath, glue_option_short_math);
+                        tex_add_math_option(beginmath, math_option_short);
+                        tex_add_math_option(endmath, math_option_short);
                     }
                     cur_list.space_factor = default_space_factor;
                     mathleft = cur_list.math_begin;
                     mathright = cur_list.math_end;
+                    math_tolerance(beginmath) = math_tolerance_par;
+                    math_pre_tolerance(beginmath) = math_pre_tolerance_par;
+                    math_tolerance(endmath) = tolerance_par;
+                    math_pre_tolerance(endmath) = pre_tolerance_par;
                     tex_aux_unsave_math();
                 } else {
                     if (! eqnumber) {

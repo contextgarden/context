@@ -235,7 +235,7 @@
 \newtoks\extralayoutcalculations
 
 \def\page_layouts_calculate_extras
-  {\the\extralayoutcalculations}
+  {\expand\extralayoutcalculations}
 
 \newtoks\everyswapmargins % watch the order !
 
@@ -459,7 +459,7 @@
    \letlayouttargetparameter\c!paper\printpapersize}
 
 \protected\def\page_paper_setup_size_settings_by_name[#1][#2]%
-  {\def\currentlayouttarget{\page_paper_the_paper_size{#1}}%
+  {\cdef\currentlayouttarget{\page_paper_the_paper_size{#1}}%
    \setuplayouttarget[#2]}
 
 \protected\def\page_paper_setup_size_change_size[#1][#2]%
@@ -1328,7 +1328,7 @@
 \protected\def\page_layouts_swap_margins_indeed#1%
   {\let\page_layouts_swap_margins\gobbleoneargument % to prevent local swapping
   %\writestatus\m!layouts{swapping margins for #1}%
-   \the\everyswapmargins}
+   \expand\everyswapmargins}
 
 \permanent\protected\def\swapmargindimensions
   {\page_layouts_swap_margins\v!page}

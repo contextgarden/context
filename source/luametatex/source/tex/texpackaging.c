@@ -181,9 +181,44 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
             case 'd': case 'D':
                 switch (tex_scan_character("eiEI", 0, 0, 0)) {
                     case 'i': case 'I':
+                        /*tex 
+                            For the sake of third party code that assumes \LUATEX's old directives 
+                            we can support |dir TRT| and |dirTLT|; only these. But \unknown\ that 
+                            would also mean we have to deal with |\textdir| and such. 
+                        */
+# if (0) 
                         if (tex_scan_mandate_keyword("direction", 2)) {
                             spec_direction = tex_scan_direction(0);
                         }
+# else 
+                        if (tex_scan_keyword("rection")) {
+                            spec_direction = tex_scan_direction(0);
+                        } else if (tex_scan_character("rR", 0, 0, 0)) {
+                            /*tex This is undocumented. */
+                            if (tex_scan_character("tT", 0, 1, 0)) {
+                                switch (tex_scan_character("lLrR", 0, 0, 0)) {
+                                    case 'l': case 'L': 
+                                        spec_direction = 0;
+                                        break;
+                                    case 'r': case 'R': 
+                                        spec_direction = 1;
+                                        break;
+                                    default: 
+                                        goto BADDIR;
+                                }
+                                if (! tex_scan_character("tT", 0, 0, 0)) {
+                                    goto BADDIR;
+                                }
+                            } else { 
+                              BADDIR:
+                                tex_aux_show_keyword_error("tlt|trt");
+                                goto DONE;
+                            }
+                        } else {
+                            tex_aux_show_keyword_error("direction|dir");
+                            goto DONE;
+                        }
+# endif 
                         break;
                     case 'e': case 'E':
                         if (tex_scan_mandate_keyword("delay", 2)) {
@@ -1062,49 +1097,39 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
     box_dir(r) = hpack_dir;
     lmt_packaging_state.last_badness = 0;
     lmt_packaging_state.last_overshoot = 0;
- // if (! p) {
- //     box_width(r) = w;
- //     return r;
- // }
-    if (m == packing_linebreak) {
-        m = packing_expanded;
-        adjust_spacing = tex_checked_font_adjust(
-            lmt_linebreak_state.adjust_spacing,
-            lmt_linebreak_state.adjust_spacing_step,
-            lmt_linebreak_state.adjust_spacing_shrink,
-            lmt_linebreak_state.adjust_spacing_stretch
-       );
-    } else {
-        adjust_spacing = tex_checked_font_adjust(
-            adjust_spacing_par,
-            adjust_spacing_step_par,
-            adjust_spacing_shrink_par,
-            adjust_spacing_stretch_par
-       );
+    switch(m) { 
+        case packing_linebreak:
+            m = packing_expanded;
+            /* fall through, later we'll come back here: */
+        case packing_substitute:
+            adjust_spacing = tex_checked_font_adjust(
+                lmt_linebreak_state.adjust_spacing,
+                lmt_linebreak_state.adjust_spacing_step,
+                lmt_linebreak_state.adjust_spacing_shrink,
+                lmt_linebreak_state.adjust_spacing_stretch
+            );
+            break;
+        default:
+            adjust_spacing = tex_checked_font_adjust(
+                adjust_spacing_par,
+                adjust_spacing_step_par,
+                adjust_spacing_shrink_par,
+                adjust_spacing_stretch_par
+            );
+            break;
     }
-    /*tex
-
-        A potential optimization, saves a little but neglectable in practice (not that many empty
-        boxes are used):
-
-        \starttyping
-        if (! p) {
-            box_width(r) = w;
-            return r;
-        }
-        \stoptyping
-
-    */
     box_list(r) = p;
-    if (m == packing_expanded) {
-        /*tex Why not always: */
-        lmt_packaging_state.previous_char_ptr = null;
-    } else if (m == packing_adapted) { 
-        if (w > scaling_factor) { 
-            w = scaling_factor;
-        } else if (w  < -scaling_factor) { 
-            w = -scaling_factor;
-        }
+    switch (m) { 
+        case packing_expanded:
+            /*tex Why not always: */
+            lmt_packaging_state.previous_char_ptr = null;
+            break;
+        case packing_adapted:
+            if (w > scaling_factor) { 
+                w = scaling_factor;
+            } else if (w  < -scaling_factor) { 
+                w = -scaling_factor;
+            }
     }
     for (int i = normal_glue_order; i <= filll_glue_order; i++) {
         lmt_packaging_state.total_stretch[i] = 0;
@@ -1446,7 +1471,7 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
                     if (q) { 
                         halfword rule = null;
                         lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "SdNddS->N",
-                            lmt_packaging_state.last_badness > 100  ? "underfull" : "loose",
+                            lmt_packaging_state.last_badness > 100  ? "underfull" : "loose", // beware, this needs to be adapted to the configureable 99 
                             lmt_packaging_state.last_badness,
                             r,
                             abs(lmt_packaging_state.pack_begin_line),
@@ -2936,7 +2961,7 @@ halfword tex_prune_page_top(halfword p, int s)
 */
 
 /*       cur_height lmt_packaging_state.active_height[total_glue_amount] */
-# define cur_height active_height[total_glue_amount]
+# define cur_height active_height[total_advance_amount]
 
 halfword tex_vert_break(halfword p, scaled h, scaled d)
 {

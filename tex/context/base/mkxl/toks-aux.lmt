@@ -198,6 +198,7 @@ tex.automigrationcodes    = getthem(tex.getautomigrationvalues,    "automigratio
 tex.parcontextcodes       = getthem(tex.getparcontextvalues,       "parcontextcode")
 tex.textcontrolcodes      = getthem(tex.gettextcontrolvalues       )
 tex.fitnesscodes          = getthem(tex.getfitnessvalues           )
+tex.parpassclasscodes     = getthem(tex.getparpassclassvalues,     "parpassclass" )
 tex.listanchorcodes       = getthem(tex.getlistanchorvalues,       "listanchorcode")
 tex.listsigncodes         = getthem(tex.getlistsignvalues,         "listsigncode")
 tex.classoptioncodes      = getthem(tex.getmathclassoptionvalues,  "classoptioncode")

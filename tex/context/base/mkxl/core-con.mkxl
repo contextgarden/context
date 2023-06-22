@@ -434,7 +434,7 @@
 \permanent\tolerant\protected\def\currentdate[#1]%
   {\dontleavehmode
    \begingroup
-   \the\everycurrentdate
+   \expand\everycurrentdate
    \edef\m_syst_converters_date{#1}%
    \syst_converters_check_date_specification\m_syst_converters_date
    \syst_converters_check_date_specification\currentdatespecification
@@ -459,7 +459,7 @@
   {\dontleavehmode
    \begingroup
    \setdate[#1]% sets the date !
-   \the\everycurrentdate
+   \expand\everycurrentdate
    \edef\m_syst_converters_date{#2}%
    \syst_converters_check_date_specification\m_syst_converters_date
    \syst_converters_check_date_specification\currentdatespecification

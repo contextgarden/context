@@ -419,7 +419,6 @@
         \doifelseinsertion\currentnote
           \donothing
           {\defineinsertion[\currentnote]% could be an option
-%            \normalexpanded{\t_strc_notes{\the\t_strc_notes\noexpand\strc_notes_process_list{\currentnote}}}}%
            \xtoksapp\t_strc_notes{\noexpand\strc_notes_process_list{\currentnote}}}%
         \letnoteparameter\s!insert\currentnote
         \definenotation[\currentnote][\c!type=\v!note]%
@@ -843,7 +842,7 @@
 
 \protected\def\strc_notes_process#action% argument is a \macro that uses \currentnote
   {\def\strc_notes_process_list##1{\cdef\currentnote{##1}\let\currentdescription\currentnote#action}%
-   \the\t_strc_notes}
+   \expand\t_strc_notes}
 
 \newtoks\everychecknote       % just before a note is typeset
 \newtoks\everysynchronizenote % after a general setup has happened
@@ -855,14 +854,14 @@
 \to \everysynchronizenote
 
 \def\strc_notes_synchronize
-  {\the\everysynchronizenote} % we can speed this one up if needed by avoiding the commalist
+  {\expand\everysynchronizenote} % we can speed this one up if needed by avoiding the commalist
 
 \appendtoks
     \strc_notes_process\strc_notes_synchronize
 \to \everysetupnoteroot
 
 \appendtoks
-    \the\everysynchronizenote
+    \expand\everysynchronizenote
 \to \everydefinenote
 
 % \starttext
@@ -1263,9 +1262,9 @@
    \cdef\currentnote{#tag}%
    \strc_constructions_initialize{#tag}%
    \strc_notes_synchronize
-   \the\everybeforenoteinsert
+   \expand\everybeforenoteinsert
    \insert\currentnoteinsertionnumber\bgroup
-     \the\everyinsidenoteinsert\relax
+     \expand\everyinsidenoteinsert\relax
      \usesetupsparameter\noteparameter % experimental
      \useinterlinespaceparameter\noteparameter
      \doifelse{\noteparameter\c!paragraph}\v!yes
@@ -1278,7 +1277,7 @@
          \stopvboxtohbox}
         {\handlenoteitself{#tag}{#id}}%
    \egroup
-   \the\everyafternoteinsert
+   \expand\everyafternoteinsert
    \endgroup}
 
 \permanent\protected\def\betweennoteitself#tag% used ?
@@ -1663,13 +1662,13 @@
 \def\strc_notes_local_place_indeed#settings#tag%
   {\begingroup
    \cdef\currentnote{#tag}% is already set?
-   \the\everyplacelocalnotes
+   \expand\everyplacelocalnotes
    % beware, we cannot trust setting \currentnote here
    \setupcurrentnote[#settings]% later we set height etc for framed
    \strc_notes_place_local_alternative
    \strc_notes_set_properties % restore globals (if needed)
    \endgroup
-  }% TODO: just restore properties \the\everychecknote} % we need to restore the old state
+  }% TODO: just restore properties \expand\everychecknote} % we need to restore the old state
 
 %D These commands can be used like:
 %D
@@ -1723,7 +1722,7 @@
    \setupnote[#tag][#settings]%
    \strc_notes_place_inserts
    \endgroup
-   \the\everysetupnote} % to be checked .. synchronize
+   \expand\everysetupnote} % to be checked .. synchronize
 
 %D Placement
 

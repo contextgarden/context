@@ -616,6 +616,9 @@ make_lua_key(L, displaywidowpenalty);\
 make_lua_key(L, doffset);\
 make_lua_key(L, doublehyphendemerits);\
 make_lua_key(L, doublesuperscript);\
+make_lua_key(L, emergencyleftskip);\
+make_lua_key(L, emergencyrightskip);\
+make_lua_key(L, emergencyextrastretch);\
 make_lua_key(L, emergencystretch);\
 make_lua_key(L, empty);\
 make_lua_key(L, end);\
@@ -656,6 +659,7 @@ make_lua_key(L, extrasuperprescriptshift);\
 make_lua_key(L, extrasuperprescriptspace);\
 make_lua_key(L, extrasuperscriptshift);\
 make_lua_key(L, extrasuperscriptspace);\
+make_lua_key(L, extrahyphenpenalty);\
 make_lua_key(L, fam);\
 make_lua_key(L, feedbackcompound);\
 make_lua_key(L, fence);\
@@ -844,7 +848,9 @@ make_lua_key(L, limitbelowkern);\
 make_lua_key(L, limitbelowvgap);\
 make_lua_key(L, limits);\
 make_lua_key(L, line);\
+make_lua_key(L, linebreakcriterion);\
 make_lua_key(L, linebreakpenalty);\
+make_lua_key(L, linebreakoptional);\
 make_lua_key(L, linepenalty);\
 make_lua_key(L, lineskip);\
 make_lua_key(L, lineskiplimit);\
@@ -965,6 +971,7 @@ make_lua_key(L, openupdepth);\
 make_lua_key(L, openupheight);\
 make_lua_key(L, operator);\
 make_lua_key(L, operatorsize);\
+make_lua_key(L, optional);\
 make_lua_key(L, options);\
 make_lua_key(L, ordinary);\
 make_lua_key(L, orientation);\
@@ -1007,6 +1014,7 @@ make_lua_key(L, parindent);\
 make_lua_key(L, parinitleftskip);\
 make_lua_key(L, parinitrightskip);\
 make_lua_key(L, parshape);\
+make_lua_key(L, parpasses);\
 make_lua_key(L, parskip);\
 make_lua_key(L, passive);\
 make_lua_key(L, parts);\
@@ -1312,6 +1320,7 @@ make_lua_key(L, topright);\
 make_lua_key(L, topskip);\
 make_lua_key(L, total);\
 make_lua_key(L, tracingparagraphs);\
+make_lua_key(L, tracingpasses);\
 make_lua_key(L, Trailer);\
 make_lua_key(L, trailer);\
 make_lua_key(L, type);\
@@ -1588,31 +1597,31 @@ extern lmt_keys_info lmt_keys;
 # undef lround
 # include <math.h>
 
-inline static int lmt_roundnumber(lua_State *L, int i)
+static inline int lmt_roundnumber(lua_State *L, int i)
 {
     double n = lua_tonumber(L, i);
     return n == 0.0 ? 0 : lround(n);
 }
 
-inline static unsigned int lmt_uroundnumber(lua_State *L, int i)
+static inline unsigned int lmt_uroundnumber(lua_State *L, int i)
 {
     double n = lua_tonumber(L, i);
     return n == 0.0 ? 0 : (unsigned int) lround(n);
 }
 
-inline static int lmt_optroundnumber(lua_State *L, int i, int dflt)
+static inline int lmt_optroundnumber(lua_State *L, int i, int dflt)
 {
     double n = luaL_optnumber(L, i, dflt);
     return n == 0.0 ? 0 : lround(n);
 }
 
-inline static int lmt_opturoundnumber(lua_State *L, int i, int dflt)
+static inline int lmt_opturoundnumber(lua_State *L, int i, int dflt)
 {
     double n = luaL_optnumber(L, i, dflt);
     return n == 0.0 ? 0 : (unsigned int) lround(n);
 }
 
-inline static double lmt_number_from_table(lua_State *L, int i, int j, lua_Number d)
+static inline double lmt_number_from_table(lua_State *L, int i, int j, lua_Number d)
 {
     double n;
     lua_rawgeti(L, i, j);
@@ -1626,65 +1635,65 @@ extern void lmt_initialize_interface(void);
 # define lmt_toroundnumber  lmt_roundnumber
 # define lmt_touroundnumber lmt_uroundnumber
 
-inline static void lua_set_string_by_key(lua_State *L, const char *a, const char *b)
+static inline void lua_set_string_by_key(lua_State *L, const char *a, const char *b)
 {
     lua_pushstring(L, b ? b : "");
     lua_setfield(L, -2, a);
 }
 
-inline static void lua_set_string_by_index(lua_State *L, lua_Integer a, const char *b)
+static inline void lua_set_string_by_index(lua_State *L, lua_Integer a, const char *b)
 {
     lua_pushstring(L, b ? b : "");
     lua_rawseti(L, -2, a);
 }
 
-inline static void lua_set_integer_by_key(lua_State *L, const char *a, int b)
+static inline void lua_set_integer_by_key(lua_State *L, const char *a, int b)
 {
     lua_pushinteger(L, b);
     lua_setfield(L, -2, a);
 }
 
-inline static void lua_set_integer_by_index(lua_State *L, int a, int b)
+static inline void lua_set_integer_by_index(lua_State *L, int a, int b)
 {
     lua_pushinteger(L, b);
     lua_rawseti(L, -2, a);
 }
 
-inline static void lua_set_cardinal_by_key(lua_State *L, const char *a, unsigned b)
+static inline void lua_set_cardinal_by_key(lua_State *L, const char *a, unsigned b)
 {
     lua_pushinteger(L, b);
     lua_setfield(L, -2, a);
 }
 
-inline static void lua_set_cardinal_by_index(lua_State *L, int a, unsigned b)
+static inline void lua_set_cardinal_by_index(lua_State *L, int a, unsigned b)
 {
     lua_pushinteger(L, b);
     lua_rawseti(L, -2, a);
 }
 
-inline static void lua_set_boolean_by_key(lua_State *L, const char *a, int b)
+static inline void lua_set_boolean_by_key(lua_State *L, const char *a, int b)
 {
     lua_pushboolean(L, b);
     lua_setfield(L, -2, a);
 }
 
-inline static void lua_set_boolean_by_index(lua_State *L, int a, int b)
+static inline void lua_set_boolean_by_index(lua_State *L, int a, int b)
 {
     lua_pushboolean(L, b);
     lua_rawseti(L, -2, a);
 }
 
-inline void lmt_string_to_buffer(const char *str)
+static inline void lmt_string_to_buffer(const char *str)
 {
     luaL_addstring(lmt_lua_state.used_buffer, str);
 }
 
-inline void lmt_char_to_buffer(char c)
+static inline void lmt_char_to_buffer(char c)
 {
     luaL_addchar(lmt_lua_state.used_buffer, c);
 }
 
-inline void lmt_newline_to_buffer(void)
+static inline void lmt_newline_to_buffer(void)
 {
     luaL_addchar(lmt_lua_state.used_buffer, '\n');
 }

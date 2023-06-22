@@ -1774,24 +1774,46 @@ scaledwhd tex_char_whd_from_font(halfword f, halfword c)
     };
 }
 
+static charinfo *tex_aux_quality_char_info(halfword f, int c)
+{
+    if (f > lmt_font_state.font_data.ptr) {
+        return NULL;
+    } else if (proper_char_index(f, c)) {
+        if (! has_font_text_control(f, text_control_quality_set)) { 
+            int callback_id = lmt_callback_defined(quality_font_callback);
+            if (callback_id > 0) {
+                lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "d->", f);
+                set_font_text_control(f, text_control_quality_set);
+            }
+        }
+        return &(lmt_font_state.fonts[f]->chardata[(int) aux_find_charinfo_id(f, c)]);
+    } else {
+        return NULL;
+    }
+}
+
 scaled tex_char_ef_from_font(halfword f, halfword c)
 {
-    return tex_aux_char_info(f, c)->expansion;
+    charinfo *co = tex_aux_quality_char_info(f, c); 
+    return co ? co->expansion : 0;
 }
 
 scaled tex_char_cf_from_font(halfword f, halfword c)
 {
-    return tex_aux_char_info(f, c)->compression;
+    charinfo *co = tex_aux_quality_char_info(f, c); 
+    return co ? co->compression : 0;
 }
 
 scaled tex_char_lp_from_font(halfword f, halfword c)
 {
-    return tex_aux_char_info(f, c)->leftprotrusion;
+    charinfo *co = tex_aux_quality_char_info(f, c); 
+    return co ? co->leftprotrusion : 0;
 }
 
 scaled tex_char_rp_from_font(halfword f, halfword c)
 {
-    return tex_aux_char_info(f, c)->rightprotrusion;
+    charinfo *co = tex_aux_quality_char_info(f, c); 
+    return co ? co->rightprotrusion : 0;
 }
 
 halfword tex_char_has_tag_from_font(halfword f, halfword c, halfword tag)

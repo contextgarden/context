@@ -22,7 +22,7 @@
 \newevery\everytopofpage\relax
 
 \appendtoks
-    \the\everytopofpage
+    \expand\everytopofpage
 \to \everystarttext
 
 \appendtoks
@@ -79,7 +79,7 @@
      \savepagecontent
    \fi
    \pagetotal\zeropoint        % here? still needed? (was after flush pagefloats)
-   \the\everytopofpage\relax
+   \expand\everytopofpage\relax
   %\flushrestfloats
    \page_floats_flush_page_floats
    \setnormalcatcodes                 % postponing in verbatim

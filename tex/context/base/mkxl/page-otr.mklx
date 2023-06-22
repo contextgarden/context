@@ -45,7 +45,7 @@
 
 \appendtoks
     \let\page_otr_commands_process\page_otr_specifics_preset
-    \the\t_page_otr_commands
+    \expand\t_page_otr_commands
     \let\page_otr_commands_process\gobbleoneargument
 \to \everyswitchoutputroutine
 
@@ -80,7 +80,7 @@
 \let\page_otr_specifics_preset\page_otr_specifics_preset_normal
 
 \permanent\protected\def\traceoutputroutines
-  {\the\t_page_otr_tracers}
+  {\expand\t_page_otr_tracers}
 
 \appendtoks
     \let\page_otr_specifics_preset\page_otr_specifics_preset_traced
@@ -171,9 +171,9 @@
 \def\page_otr_set_engine_output_routine#content%
   {\global\output
      {\inotrtrue
-      \the\everybeforeoutput
+      \expand\everybeforeoutput
       #content\relax
-      \the\everyafteroutput}}
+      \expand\everyafteroutput}}
 
 \page_otr_set_engine_output_routine\page_otr_triggered_output_routine
 

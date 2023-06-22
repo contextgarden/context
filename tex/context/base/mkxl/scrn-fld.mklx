@@ -660,7 +660,7 @@
 \to \everydefinetooltip
 
 \protected\def\scrn_tooltip_direct#tag%
-  {\def\currenttooltip{#tag}%
+  {\cdef\currenttooltip{#tag}%
    \iflocation
      \expandafter\scrn_tooltip_indeed
    \else

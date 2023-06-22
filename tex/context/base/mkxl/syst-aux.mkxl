@@ -3666,7 +3666,7 @@
 \newtoks \neverypar
 
 \permanent\protected\def\forgeteverypar
-  {\everypar{\the\neverypar}}
+  {\everypar{\expand\neverypar}}
 
 %D Which we're going to use indeed! When the second argument equals \type {\relax},
 %D the first token list is created unless it is already defined.
@@ -5891,8 +5891,8 @@
 \newtoks\everysettrialtypesetting
 \newtoks\everyresettrialtypesetting
 
-\permanent\protected\def\settrialtypesetting  {\the\everysettrialtypesetting  } % obeys grouping so
-\permanent\protected\def\resettrialtypesetting{\the\everyresettrialtypesetting} % this one is seldom needed
+\permanent\protected\def\settrialtypesetting  {\expand\everysettrialtypesetting  } % obeys grouping so
+\permanent\protected\def\resettrialtypesetting{\expand\everyresettrialtypesetting} % this one is seldom needed
 
 \aliased\let\iftrialtypesetting\iffalse % so we have no \trialtypesettingtrue|false in mkiv !
 

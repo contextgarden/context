@@ -14,6 +14,7 @@
   [document]
   [title=No Title,
    author=No Author,
+   coauthor=,
    color=NoColor]
 
 \setupbodyfont
@@ -124,7 +125,9 @@
 \startsectionlevel[title=Colofon,number=no,saveinlist=no]
 
     \starttabulate
-        \NC Author      \NC Hans Hagen         \NC \NR
+        \NC Author      \NC Hans Hagen
+                           \doifdocumentvariable{coauthor}{ & \documentvariable{coauthor}}
+                                               \NC \NR
         \NC \CONTEXT    \NC \contextversion    \NC \NR
         \NC \LUAMETATEX \NC \texengineversion  \NC \NR
         \NC Support     \NC www.pragma-ade.com \NC \NR

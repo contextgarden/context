@@ -894,7 +894,7 @@
 \permanent\tolerant\protected\def\startitemgroup[#category]#spacer[#options]#spacer[#settings]%
   {\begingroup % (1)
    \nofarguments\lastarguments
-   \def\currentitemgroup{#category}% no nested mixing of itemgroups
+   \cdef\currentitemgroup{#category}% no nested mixing of itemgroups
    \let\currentparentitemgroup\currentitemgroup
    \global\advanceby\c_strc_itemgroups_nesting\plusone
    \def\currentitemlevel{\number\c_strc_itemgroups_nesting}%

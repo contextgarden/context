@@ -517,19 +517,19 @@
         {\def\page_backgrounds_setup_step_nested####1{\page_backgrounds_setup_and_check{##1####1}{#3}}%
          \processcommacommand[#2]\page_backgrounds_setup_step_nested}}%
    \processcommacommand[#1]\page_backgrounds_setup_step
-   \the\everybackgroundssetup}
+   \expand\everybackgroundssetup}
 
 \protected\def\page_backgrounds_setup_single[#1][#2][#-]%
   {\global\settrue\c_page_backgrounds_some
    \doifelsecommon{#1}\v_page_backgrounds_single_set
      {\def\page_backgrounds_setup_step##1{\page_backgrounds_setup_and_check{##1}{#2}}%
       \processcommacommand[#1]\page_backgrounds_setup_step
-      \the\everybackgroundssetup}%
+      \expand\everybackgroundssetup}%
      {\page_backgrounds_setup_double[#1][\v_page_backgrounds_common_set][#2]}}
 
 \protected\def\page_backgrounds_setup_basics[#1][#-][#-]%
   {\setupframed[\??layoutbackgrounds][#1]%
-   \the\everybackgroundssetup}
+   \expand\everybackgroundssetup}
 
 \protected\def\page_backgrounds_setup_and_check#1#2% tag settings
   {\cdef\currentotrbackground{\??layoutbackgrounds#1}%

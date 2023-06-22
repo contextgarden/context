@@ -262,7 +262,7 @@
    \endgroup}
 
 \protected\def\strc_enumerations_text
-  {\the\everyenumeration % will become obsolete
+  {\expand\everyenumeration % will become obsolete
    \ifconditional\c_strc_constructions_number_state
      \ifx\currentconstructionreference\!!plustoken
        \strc_enumerations_full_number_symbol

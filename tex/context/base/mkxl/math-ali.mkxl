@@ -550,7 +550,7 @@
      \setfalse\c_math_align_reformat_mode
    \fi
    \math_alignment_snap_start
-   \the\everymathalignment
+   \expand\everymathalignment
    \c_math_eqalign_row   \zerocount
    \c_math_eqalign_column\zerocount
    \edef\p_math_alignment_number{\mathalignmentparameter\c!number}%
@@ -583,7 +583,7 @@
   {\crcr\egroup\egroup
    \dostoptagged
    \dostoptagged
-   \the\everymathalignmentdone
+   \expand\everymathalignmentdone
    \math_alignment_snap_stop
    \endgroup}
 
@@ -1729,7 +1729,7 @@
   %\tabskip.5\d_math_eqalign_distance
    \tabskip\zeropoint
    \math_matrix_pickup
-   \the\everymathmatrix
+   \expand\everymathmatrix
    %
    \setbox\nextbox\vbox\bgroup
    \math_matrix_start_table

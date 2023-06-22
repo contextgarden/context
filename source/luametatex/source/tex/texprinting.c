@@ -633,6 +633,7 @@ void tex_print_qhex(long long n)
 void tex_print_uhex(long long n)
 {
     tex_print_str("U+");
+    /* todo: loop */
     if (n < 16) {
         tex_print_char('0');
     }
@@ -640,6 +641,34 @@ void tex_print_uhex(long long n)
         tex_print_char('0');
     }
     if (n < 4096) {
+        tex_print_char('0');
+    }
+    tex_print_hex(n);
+}
+
+void tex_print_xhex(long long n)
+{
+    tex_print_char('"');
+    /* todo: loop */
+    if (n < 0xF) {
+        tex_print_char('0');
+    }
+    if (n < 0xFF) {
+        tex_print_char('0');
+    }
+    if (n < 0xFFF) {
+        tex_print_char('0');
+    }
+    if (n < 0xFFFF) {
+        tex_print_char('0');
+    }
+    if (n < 0xFFFFF) {
+        tex_print_char('0');
+    }
+    if (n < 0xFFFFFF) {
+        tex_print_char('0');
+    }
+    if (n < 0xFFFFFFF) {
         tex_print_char('0');
     }
     tex_print_hex(n);
@@ -1316,6 +1345,12 @@ const char *tex_print_format_args(const char *format, va_list args)
                                 tex_print_uhex(c);
                                 break;
                             }
+                        case 'X':
+                            { 
+                                halfword x = va_arg(args, int);
+                                tex_print_xhex(x);
+                                break;
+                            }
                         case '2':
                             {
                                 halfword c = va_arg(args, int);
@@ -1342,6 +1377,10 @@ const char *tex_print_format_args(const char *format, va_list args)
                             break;
                     }
                 }
+                break;
+            case '\n':
+            case '\r':
+                tex_print_nlp();
                 break;
             default:
                 tex_print_char(chr); /* todo: utf */

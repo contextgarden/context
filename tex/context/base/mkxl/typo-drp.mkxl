@@ -58,6 +58,7 @@
    \c!n=3,
    \c!m=1,
    \c!method=\v!none,
+   \c!continue=\v!no, % yes will handle single line cases
  % \c!font=Bold sa 4,
  % \c!font=Bold ht \measure{initial:n},
    \c!font=Bold cp \measure{initial:n},
@@ -118,6 +119,7 @@
         n          \scratchcounter
         m          \numexpr\initialparameter\c!m\relax
         method     {\initialparameter\c!method}%
+        continue   {\initialparameter\c!continue}%
         distance   \dimexpr\initialparameter\c!distance\relax
         hoffset    \dimexpr\initialparameter\c!hoffset\relax
         voffset    \scratchvoffset

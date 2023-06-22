@@ -230,7 +230,7 @@ typedef enum box_flags {
 extern void tex_begin_box        (int boxcontext, scaled shift, halfword slot);
 extern int  tex_ignore_math_skip (halfword p);
 
-inline static scaled tex_aux_checked_dimen1(halfword v)
+static inline scaled tex_aux_checked_dimen1(halfword v)
 {
     if (v > max_dimen) {
         return max_dimen;
@@ -241,7 +241,7 @@ inline static scaled tex_aux_checked_dimen1(halfword v)
     }
 }
 
-inline static scaled tex_aux_checked_dimen2(halfword v)
+static inline scaled tex_aux_checked_dimen2(halfword v)
 {
     if (v > max_dimen) {
         return max_dimen;

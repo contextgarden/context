@@ -932,7 +932,7 @@
   {\setbox\oldshapebox\vbox
      \bgroup
      \reshapingboxtrue
-     \the\everyshapebox
+     \expand\everyshapebox
      \insertshapesignal}
 
 \permanent\protected\def\endofshapebox
@@ -2740,7 +2740,7 @@
 \appendtoks
     \permanent\def\prerolltostring
       {\beginlocalcontrol\begingroup
-       \the\everypreroll
+       \expand\everypreroll
        \dowithnextboxcs\syst_boxes_contenttostring\hbox}
 \to \everydump
 

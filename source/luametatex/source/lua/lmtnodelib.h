@@ -111,4 +111,20 @@ extern void lmt_append_line_filter_callback(
     halfword index
 );
 
+extern int lmt_par_pass_callback(
+    halfword               head,
+    line_break_properties *properties, 
+    halfword               identifier, 
+    halfword               callback, 
+    halfword               features, 
+    scaled                 overfull, 
+    scaled                 underfull, 
+    halfword               verdict, 
+    halfword               classified,
+    scaled                 threshold, 
+    halfword               badness, 
+    halfword               classes,
+    int                   *repeat
+);
+
 # endif

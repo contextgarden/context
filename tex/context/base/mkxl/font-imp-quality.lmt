@@ -145,43 +145,45 @@ local function initialize(tfmdata,value)
                     shrink  = 10 * shrink,
                     step    = 10 * step,
                     factor  = factor,
+                    class   = class,
+                    vector  = vector,
                 }
-                local data = characters and characters.data
-                for i, chr in next, tfmdata.characters do -- todo unicode
-                    local v = vector[i]
-                    if data and not v then -- we could move the data test outside (needed for plain)
-                        local d = data[i]
-                        if d then
-                            local s = d.shcode
-                            if not s then
-                                -- sorry
-                            elseif type(s) == "table" then
-                                v = ((vector[s[1]] or 0) + (vector[s[#s]] or 0)) / 2
-                            else
-                                v = vector[s] or 0
-                            end
-                        end
-                    end
-                    -- So, factor influences all shapes but we now obey zero when set!
-                    if v then
-                        if type(v) == "table" then
-                            local e = v[1]
-                            local c = v[2] or 0
-                            if e ~= 0 then
-                                chr.expansion = e*factor
-                            end
-                            if c ~= 0 then
-                                chr.compression = c*factor
-                            end
-                        elseif v == 0 then
-                         -- chr.expansion = 0
-                        else
-                            chr.expansion = v*factor
-                        end
-                    elseif factor ~= 1 then -- test is new
-                        chr.expansion = factor
-                    end
-                end
+--                 local data = characters and characters.data
+--                 for i, chr in next, tfmdata.characters do -- todo unicode
+--                     local v = vector[i]
+--                     if data and not v then -- we could move the data test outside (needed for plain)
+--                         local d = data[i]
+--                         if d then
+--                             local s = d.shcode
+--                             if not s then
+--                                 -- sorry
+--                             elseif type(s) == "table" then
+--                                 v = ((vector[s[1]] or 0) + (vector[s[#s]] or 0)) / 2
+--                             else
+--                                 v = vector[s] or 0
+--                             end
+--                         end
+--                     end
+--                     -- So, factor influences all shapes but we now obey zero when set!
+--                     if v then
+--                         if type(v) == "table" then
+--                             local e = v[1]
+--                             local c = v[2] or 0
+--                             if e ~= 0 then
+--                                 chr.expansion = e*factor
+--                             end
+--                             if c ~= 0 then
+--                                 chr.compression = c*factor
+--                             end
+--                         elseif v == 0 then
+--                          -- chr.expansion = 0
+--                         else
+--                             chr.expansion = v*factor
+--                         end
+--                     elseif factor ~= 1 then -- test is new
+--                         chr.expansion = factor
+--                     end
+--                 end
             elseif trace_expansion then
                 report_expansions("unknown vector %a in class %a",class.vector,value)
             end
@@ -570,49 +572,51 @@ local function initialize(tfmdata,value)
                         factor = factor,
                         left   = left,
                         right  = right,
+                        class  = class,
+                        vector = vector,
                     }
-                    for i, chr in next, tfmdata.characters do
-                        local v  = vector[i]
-                        local pl = nil
-                        local pr = nil
-                        if v then
-                            pl = v[1]
-                            pr = v[2]
-                        else
-                            local d = data[i]
-                            if d then
-                                local s = d.shcode
-                                if not s then
-                                    -- sorry
-                                elseif type(s) == "table" then
-                                    local vl = vector[s[1]]
-                                    local vr = vector[s[#s]]
-                                    if vl then pl = vl[1] end
-                                    if vr then pr = vr[2] end
-                                else
-                                    v = vector[s]
-                                    if v then
-                                        pl = v[1]
-                                        pr = v[2]
-                                    end
-                                end
-                            end
-                        end
-                        if pl and pl ~= 0 then
-                            local p = pl * lfactor
-                            chr.leftprotrusion  = p
-                            if trace_protrusion then
-                                report_protrusions("left  -> %0.3F %C ",p,i)
-                            end
-                        end
-                        if pr and pr ~= 0 then
-                            local p = pr * rfactor
-                            chr.rightprotrusion = p
-                            if trace_protrusion then
-                                report_protrusions("right -> %0.3F %C",p,i)
-                            end
-                        end
-                    end
+--                     for i, chr in next, tfmdata.characters do
+--                         local v  = vector[i]
+--                         local pl = nil
+--                         local pr = nil
+--                         if v then
+--                             pl = v[1]
+--                             pr = v[2]
+--                         else
+--                             local d = data[i]
+--                             if d then
+--                                 local s = d.shcode
+--                                 if not s then
+--                                     -- sorry
+--                                 elseif type(s) == "table" then
+--                                     local vl = vector[s[1]]
+--                                     local vr = vector[s[#s]]
+--                                     if vl then pl = vl[1] end
+--                                     if vr then pr = vr[2] end
+--                                 else
+--                                     v = vector[s]
+--                                     if v then
+--                                         pl = v[1]
+--                                         pr = v[2]
+--                                     end
+--                                 end
+--                             end
+--                         end
+--                         if pl and pl ~= 0 then
+--                             local p = pl * lfactor
+--                             chr.leftprotrusion  = p
+--                             if trace_protrusion then
+--                                 report_protrusions("left  -> %0.3F %C ",p,i)
+--                             end
+--                         end
+--                         if pr and pr ~= 0 then
+--                             local p = pr * rfactor
+--                             chr.rightprotrusion = p
+--                             if trace_protrusion then
+--                                 report_protrusions("right -> %0.3F %C",p,i)
+--                             end
+--                         end
+--                     end
                 elseif trace_protrusion then
                     report_protrusions("unknown vector %a in class %a",class.vector,value)
                 end
@@ -674,3 +678,120 @@ local specification = {
 
 registerotffeature(specification)
 registerafmfeature(specification)
+
+--
+
+local function addquality(id)
+    local tfmdata = fonts.hashes.identifiers[id]
+    if tfmdata then
+        local expansion = tfmdata.parameters.expansion
+        if expansion then
+            local class  = expansion.class
+            local vector = expansion.vector
+            if class and vector then
+                local stretch = class.stretch or 0
+                local shrink  = class.shrink  or 0
+                local step    = class.step    or 0
+                local factor  = class.factor  or 1
+                local data    = characters and characters.data
+                for i, chr in next, tfmdata.characters do -- todo unicode
+                    local v = vector[i]
+                    if data and not v then -- we could move the data test outside (needed for plain)
+                        local d = data[i]
+                        if d then
+                            local s = d.shcode
+                            if not s then
+                                -- sorry
+                            elseif type(s) == "table" then
+                                v = ((vector[s[1]] or 0) + (vector[s[#s]] or 0)) / 2
+                            else
+                                v = vector[s] or 0
+                            end
+                        end
+                    end
+                    -- So, factor influences all shapes but we now obey zero when set!
+                    if v then
+                        if type(v) == "table" then
+                            local e = v[1]
+                            local c = v[2] or 0
+                            if e ~= 0 then
+                                chr.expansion = e * factor * 1000
+                            end
+                            if c ~= 0 then
+                                chr.compression = c * factor * 1000
+                            end
+                        elseif v == 0 then
+                         -- chr.expansion = 0
+                        else
+                            chr.expansion = v * factor * 1000
+                        end
+                    elseif factor ~= 1 then -- test is new
+                        chr.expansion = factor * 1000
+                    end
+                end
+            end
+        end
+        --
+        local protrusion = tfmdata.parameters.protrusion
+        if protrusion then
+            local class  = protrusion.class
+            local vector = protrusion.vector
+            if class and vector then
+                local factor  = class.factor or 1
+                local left    = class.left   or 1
+                local right   = class.right  or 1
+                local data    = characters.data
+                local lfactor = left  * factor
+                local rfactor = right * factor
+                for i, chr in next, tfmdata.characters do
+                    local v  = vector[i]
+                    local pl = nil
+                    local pr = nil
+                    if v then
+                        pl = v[1]
+                        pr = v[2]
+                    else
+                        local d = data[i]
+                        if d then
+                            local s = d.shcode
+                            if not s then
+                                -- sorry
+                            elseif type(s) == "table" then
+                                local vl = vector[s[1]]
+                                local vr = vector[s[#s]]
+                                if vl then pl = vl[1] end
+                                if vr then pr = vr[2] end
+                            else
+                                v = vector[s]
+                                if v then
+                                    pl = v[1]
+                                    pr = v[2]
+                                end
+                            end
+                        end
+                    end
+                    if pl and pl ~= 0 then
+                        pl = pl * lfactor * chr.width
+                        if trace_protrusion then
+                            report_protrusions("left  -> %0.3F %C ",pl,i)
+                        end
+                        chr.leftprotrusion = pl
+                    end
+                    if pr and pr ~= 0 then
+                        pr = pr * rfactor * chr.width
+                        chr.rightprotrusion = pr
+                        if trace_protrusion then
+                            report_protrusions("right -> %0.3F %C",pr,i)
+                        end
+                    end
+                end
+            end
+        end
+        --
+        if expansion or protrusion then
+            font.addquality(id,tfmdata)
+        end
+    end
+end
+
+callback.register("quality_font",addquality)

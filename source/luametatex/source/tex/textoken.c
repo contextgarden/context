@@ -310,16 +310,21 @@ halfword tex_store_new_token(halfword p, halfword t)
 void tex_flush_token_list(halfword head)
 {
     if (head) {
-        halfword current = head;
-        halfword tail;
-        int i = 0;
-        do {
-            ++i;
-            tail = current;
-            current = token_link(tail);
-        } while (current);
-        lmt_token_memory_state.tokens_data.ptr -= i;
-        token_link(tail) = lmt_token_memory_state.available;
+        if (! token_link(head)) {
+            token_link(head) = lmt_token_memory_state.available;
+            --lmt_token_memory_state.tokens_data.ptr;
+        } else {
+            halfword current = head;
+            halfword tail;
+            int i = 0;
+            do {
+                ++i;
+                tail = current;
+                current = token_link(tail);
+            } while (current);
+            token_link(tail) = lmt_token_memory_state.available;
+            lmt_token_memory_state.tokens_data.ptr -= i;
+        }
         lmt_token_memory_state.available = head;
     }
 }
@@ -359,7 +364,7 @@ void tex_delete_token_reference(halfword p)
         halfword r = get_token_reference(p);
         if (! r) {
             tex_flush_token_list(p);
-        } if (r < max_token_reference) {
+        } else if (r < max_token_reference) {
             sub_token_reference(p);
         }
     }
@@ -589,7 +594,7 @@ static const char *tex_aux_special_cmd_string(halfword cmd, halfword chr, const 
         case end_local_cmd          : return "[[special cmd: end local call]]";
      // case prefix_cmd             : return "[[special cmd: enforced]]";
         case prefix_cmd             : return "\\always ";
-        default                     : printf("[[unknown cmd: (%i,%i)]\n", cmd, chr); return unknown;
+        default                     : printf("[[unknown cmd: (%i,%i)]]\n", cmd, chr); return unknown;
     }
 }
 
@@ -3351,14 +3356,14 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                     tex_aux_append_str_to_buffer(error_string_clobbered(31));
                     break;
                 } else {
-                    int infop = token_info(p);
-                    if (infop < 0) {
+                    int info = token_info(p);
+                    if (info < 0) {
                         /*tex Unlikely, will go after checking (maybe \LUA\ user mess up). */
                         tex_aux_append_str_to_buffer(error_string_bad(32));
-                    } else if (infop < cs_token_flag) {
+                    } else if (info < cs_token_flag) {
                         /*tex We nearly always end up here because otherwise we have an error. */
-                        int cmd = token_cmd(infop);
-                        int chr = token_chr(infop);
+                        int cmd = token_cmd(info);
+                        int chr = token_chr(info);
                         switch (cmd) {
                             case left_brace_cmd:
                             case right_brace_cmd:
@@ -3447,8 +3452,8 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                                 tex_aux_append_str_to_buffer(tex_aux_special_cmd_string(cmd, chr, error_string_bad(33)));
                                 break;
                         }
-                    } else if (! (inhibit_par && infop == lmt_token_state.par_token)) {
-                        int q = infop - cs_token_flag;
+                    } else if (! (inhibit_par && info == lmt_token_state.par_token)) {
+                        int q = info - cs_token_flag;
                         if (q < hash_base) {
                             if (q == null_cs) {
                                 tex_aux_append_esc_to_buffer("csname");

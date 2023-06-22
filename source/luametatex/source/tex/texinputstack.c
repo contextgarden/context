@@ -377,6 +377,9 @@ static void tex_aux_print_current_input_state(void)
             case mark_text:
                 tex_print_str("mark");
                 break;
+            case token_text:
+                tex_print_str("token");
+                break;
             case loop_text:
                 tex_print_str("loop");
                 break;
@@ -694,6 +697,9 @@ void tex_begin_token_list(halfword t, quarterword kind)
                 case mark_text:
                     tex_print_str("mark");
                     break;
+                case token_text:
+                    tex_print_str("token");
+                    break;
                 case loop_text:
                     tex_print_str("loop");
                     break;
@@ -859,23 +865,17 @@ void tex_cleanup_input_state(void)
                     int ptr, start;
                     /*tex Using a simple version for no arguments has no gain. */
                     tex_delete_token_reference(lmt_input_state.cur_input.start);
-                    /*tex Parameters must be flushed: */
-                    ptr = lmt_input_state.parameter_stack_data.ptr;
-                    start = lmt_input_state.cur_input.parameter_start;
-                    while (ptr > start) {
-                        if (lmt_input_state.parameter_stack[--ptr]) {
-                            tex_flush_token_list(lmt_input_state.parameter_stack[ptr]);
+                    if (get_token_preamble(lmt_input_state.cur_input.start)) {
+                        /*tex Parameters must be flushed: */
+                        ptr = lmt_input_state.parameter_stack_data.ptr;
+                        start = lmt_input_state.cur_input.parameter_start;
+                        while (ptr > start) {
+                            if (lmt_input_state.parameter_stack[--ptr]) {
+                                tex_flush_token_list(lmt_input_state.parameter_stack[ptr]);
+                            }
                         }
-                     // halfword p = lmt_input_state.parameter_stack[--ptr];
-                     // if (p) {
-                     //     if (! token_link(p)) {
-                     //         tex_put_available_token(p); /* very little gain on average */
-                     //     } else { 
-                     //         tex_flush_token_list(p);
-                     //     }
-                     // }
+                        lmt_input_state.parameter_stack_data.ptr = start;
                     }
-                    lmt_input_state.parameter_stack_data.ptr = start;
                     break;
                 }
             default:

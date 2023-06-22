@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['meta-tex'] = {
 }
 
 local tostring, tonumber = tostring, tonumber
-local format = string.format
+local format, find, gsub = string.format, string.find, string.gsub
 local formatters = string.formatters
 local P, S, R, C, Cs, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cs, lpeg.match
 
@@ -51,11 +51,21 @@ do
         end
         local number = tonumber(num)
         if number then
-            local base, exponent = lpegmatch(enumber,formatters[lpegmatch(cleaner,fmt)](number))
-            if base and exponent then
-                context.MPexponent(base,exponent)
+            if find(fmt,"[mMfFgG]$") then
+                local clean = gsub(fmt,"@","%%")
+                context(formatters[clean](number))
+            elseif find(fmt,"[dD]$") then
+                local clean = gsub(fmt,"[dD]$","")
+                clean = gsub(clean,"@","%%")
+                context.digits(formatters[clean](number))
             else
-                context(number)
+                local clean = lpegmatch(cleaner,fmt)
+                local base, exponent = lpegmatch(enumber,formatters[clean](number))
+                if base and exponent then
+                    context.MPexponent(base,exponent)
+                else
+                    context(number)
+                end
             end
         else
             context(tostring(num))
@@ -126,7 +136,7 @@ do
         arguments = "2 strings",
     }
 
-    utilities.strings.formatters.add(formatters,"texexp", [[texexp(...)]],      { texexp = metapost.texexp })
+    utilities.strings.formatters.add(formatters,"texexp", [[texexp(...)]], { texexp = metapost.texexp })
 
     local f_textext = formatters[ [[textext("%s")]] ]
     local f_mthtext = formatters[ [[textext("\mathematics{%s}")]] ]

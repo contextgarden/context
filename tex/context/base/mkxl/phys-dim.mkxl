@@ -437,7 +437,7 @@
 
 \protected\def\phys_units_direct#1%
   {\begingroup
-   \the\everyunits
+   \expand\everyunits\relax
    \ifdim\lastskip>\zeropoint
      \settrue\c_phys_units_dospace
      \removelastskip

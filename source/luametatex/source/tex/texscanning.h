@@ -59,7 +59,7 @@ typedef struct full_scanner_status {
     halfword save_warning_index;
 } full_scanner_status;
 
-inline static full_scanner_status tex_save_full_scanner_status(void)
+static inline full_scanner_status tex_save_full_scanner_status(void)
 {
     full_scanner_status a;
     a.save_scanner_status = lmt_input_state.scanner_status;
@@ -68,7 +68,7 @@ inline static full_scanner_status tex_save_full_scanner_status(void)
     return a;
 }
 
-inline static void tex_unsave_full_scanner_status(full_scanner_status a)
+static inline void tex_unsave_full_scanner_status(full_scanner_status a)
 {
     lmt_input_state.warning_index  = a.save_warning_index;
     lmt_input_state.def_ref        = a.save_def_ref;
@@ -165,12 +165,12 @@ extern halfword    tex_scan_attribute                 (halfword attrlist);
 # define token_is_seperator(t)   ((t == period_token) || (t == comma_token))
 */
 
-inline static int tex_token_is_digit(halfword t)
+static inline int tex_token_is_digit(halfword t)
 {
     return (t >= zero_token) && (t <= nine_token);
 }
 
-inline static int tex_token_is_xdigit(halfword t) {
+static inline int tex_token_is_xdigit(halfword t) {
     return ((t >= zero_token) && (t <= nine_token))
         || ((t >= a_token_l ) && (t <= f_token_l))
         || ((t >= A_token_l ) && (t <= F_token_l))
@@ -178,33 +178,33 @@ inline static int tex_token_is_xdigit(halfword t) {
         || ((t >= A_token_o ) && (t <= F_token_o));
 }
 
-inline static int tex_token_is_exponent(halfword t)
+static inline int tex_token_is_exponent(halfword t)
 {
     return (t == E_token_l) || (t == e_token_l)
         || (t == E_token_o) || (t == e_token_o);
 }
 
-inline static int tex_token_is_xexponent(halfword t)
+static inline int tex_token_is_xexponent(halfword t)
 {
     return (t == P_token_l) || (t == p_token_l)
         || (t == P_token_o) || (t == p_token_o);
 }
 
- inline static int tex_token_is_hexadecimal(halfword t)
+ static inline int tex_token_is_hexadecimal(halfword t)
 {
     return (t == X_token_l) || (t == x_token_l)
         || (t == X_token_o) || (t == x_token_o);
 }
 
-inline static int tex_token_is_sign(halfword t) {
+static inline int tex_token_is_sign(halfword t) {
     return (t == minus_token) || (t == plus_token);
 }
 
-inline static int tex_token_is_seperator(halfword t) {
+static inline int tex_token_is_seperator(halfword t) {
     return (t == period_token) || (t == comma_token);
 }
 
-inline static int tex_token_is_operator(halfword t) {
+static inline int tex_token_is_operator(halfword t) {
     return (t == plus_token) || (t == minus_token) || (t == asterisk_token) || (t == slash_token) || (t == colon_token);
 }
 

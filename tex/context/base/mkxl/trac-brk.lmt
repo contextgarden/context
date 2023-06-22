@@ -1,0 +1,425 @@
+local next, tonumber, tostring, type = next, tonumber, tostring, type
+local round, abs = math.round, math.abs
+
+local settings_to_array = utilities.parsers.settings_to_array
+local settings_to_hash  = utilities.parsers.settings_to_hash
+
+local nuts              = nodes.nuts
+local tonut             = nodes.tonut
+
+local newrule           = nuts.pool.virtualrule
+local insertbefore      = nuts.insertbefore
+local insertafter       = nuts.insertafter
+local hpack_string      = nuts.typesetters.tohpack
+local getwidth          = nuts.getwidth
+local getid             = nuts.getid
+local getprev           = nuts.getprev
+local getnext           = nuts.getnext
+local setwhd            = nuts.setwhd
+local getglue           = nuts.getglue
+local getlist           = nuts.getlist
+local setoffsets        = nuts.setoffsets
+
+local setcolor          = nodes.tracers.colors.set
+local settransparency   = nodes.tracers.transparencies.set
+
+local texgetnest        = tex.getnest
+
+local nodecodes         = nodes.nodecodes
+local fitnesscodes      = tex.fitnesscodes
+
+local penalty_code      = nodecodes.penalty
+local glue_code         = nodecodes.glue
+local disc_code         = nodecodes.disc
+local kern_code         = nodecodes.kern
+local math_code         = nodecodes.math
+
+local getnormalizedline = nuts.getnormalizedline
+local getdimensions     = nuts.dimensions
+local getnaturalhsize   = nuts.naturalhsize
+local setruledimensions = nuts.setruledimensions
+local getruledimensions = nuts.getruledimensions
+
+local breakpoints   = tracers.breakpoints or { }
+tracers.breakpoints = breakpoints
+
+local width      =      65536 / 2
+local height     =  9 * 65536
+local depth      =  3 * 65536
+local xoffset    =  1 * 65536
+local yoffset    = -3 * 65536
+
+local serials     = false
+local serial      = false
+local results     = false
+local usedfont    = false
+local nestlevel   = false
+local overloads   = false
+local overload    = false
+local breakpass   = 0
+local linenumber  = 0
+
+local report      = logs.reporter("linebreaks")
+
+local breakcodes  = tex.breakcodes
+
+local f_status    = string.formatters["[% 2i] b=%i d=%p p=%0.3f r=%0.3f (dt=%i) (%p)"]
+
+local maxbadness <const> = tex.magicconstants.maxcalculatedbadness
+local marginoffset       = 0
+local showdetails        = false
+
+local actions = {
+    [breakcodes.initialize] = function()
+        if texgetnest("ptr") == nestlevel then
+            report("start registering")
+            usedfont = nodes.visualizers.getusedfont()
+        end
+    end,
+    [breakcodes.start] = function(pass)
+        if texgetnest("ptr") == nestlevel then
+            report("tracing pass %i",pass)
+            if breakpass ~= pass then
+                breakpass  = pass
+                linenumber = 0
+                serials    = { }
+                results    = { }
+            end
+            serial  = { }
+            serials[#serials+1] = serial
+            if overloads then
+                overload = overloads[#serials]
+            end
+        end
+    end,
+    [breakcodes.report] = function(pass,currentserial,previousserial,line,kind,class,demerits,breakpoint,short,glue,width)
+        if texgetnest("ptr") == nestlevel then
+            if breakpoint then
+                local s = {
+                    serial     = currentserial,
+                    previous   = previousserial,
+                    line       = line,
+                    kind       = kind,
+                    class      = class,
+                    demerits   = demerits,
+                    breakpoint = breakpoint,
+                    short      = short,
+                    width      = width,
+                    spillover  = 0,
+                }
+                if short < 0 then
+                    short = -short
+                    if short > glue then
+                        local spillover = short - glue
+                        report("pass %i, line %i, %s by %p",pass,line,"overfull",spillover)
+                        s.spillover = splillover
+                    end
+                elseif short > 0 then
+                    if short > glue then
+                        local spillover = short - glue
+                        report("pass %i, line %i, %s by %p",pass,line,"underfull",spillover)
+                        s.spillover = splillover
+                    end
+                end
+                serial[currentserial] = s
+                local found = overload and overload[currentserial]
+                if found then
+                    report("pass %i, overloading serial %i demerits from %i to %i",breakpass,currentserial,demerits,found)
+                    s.overload = found
+                    return found
+                end
+            end
+        end
+        return demerits
+    end,
+    [breakcodes.stop] = function()
+        if texgetnest("ptr") == nestlevel then
+            report("stop registering")
+        end
+    end,
+    [breakcodes.collect] = function()
+        if texgetnest("ptr") == nestlevel then
+            report("collecting")
+            for currentserial=1,#serial do
+                local data       = serial[currentserial]
+                local breakpoint = data.breakpoint
+                local current    = tonut(breakpoint)
+                local trigger    = getid(current)
+                while current do
+                    local id = getid(current)
+                    if id == penalty_code or id == glue_code or id == kern_code or id == math_code then
+                        current = getprev(current)
+                    else
+                        break
+                    end
+                end
+                if current then
+                    local rule   = newrule(width,height,depth,currentserial)
+                    data.rule    = rule
+                    data.trigger = trigger
+                    insertafter(current,current,rule)
+                end
+            end
+        end
+    end,
+    [breakcodes.line] = function(line,badness,overshoot,shrink,stretch)
+        if showdetails and texgetnest("ptr") == nestlevel then
+            linenumber = linenumber + 1
+            line = tonut(line)
+            local linedata   = getnormalizedline(line,true) -- get more details
+            local natural    = linedata.size
+            local linewd     = linedata.width
+            local deltawd    = linewd - natural
+            local splillover = linedata.spillover or 0
+            local ratiob     = 0
+            local ratio, order, sign
+                             = getglue(line)
+            local yoffset    = 2*xoffset
+            local xoffset    = 5*xoffset + linedata.right + marginoffset
+            if order == 0 then
+                if deltawd ~= 0 and ratio == 0 and sign == 0 then
+                    xoffset = xoffset + deltawd
+                    ratiob = 10000
+                elseif deltawd < 0 and ratio == 1 then
+                    ratiob = 1000000
+                else -- or test for ratio as maxbadness is 8189
+                    ratiob = round(100*abs(ratio)^3)
+                    if ratiob > maxbadness then
+                        ratiob = 10000
+                    end
+                end
+            end
+            -- Here ratiob is the value from Digital Typography and a difference
+            -- indicates a sensitive area. It is just a playground for MS and HH.
+            local text     = hpack_string(f_status(linenumber,badness,deltawd,100*deltawd/linewd,ratio,ratiob),usedfont,spillover)
+            local location = linedata.last
+            local head     = linedata.head
+            setwhd(text,0,0,0)
+            setoffsets(text,xoffset,yoffset)
+            insertbefore(head,location,text)
+            deltawd = deltawd - linedata.parinitrightskip - linedata.parfillrightskip
+            local rule = newrule(deltawd < 0 and - deltawd or deltawd,0,depth)
+            setoffsets(rule,deltawd > 0 and -deltawd or 0,yoffset+depth)
+            setcolor(rule,"trace:dy")
+            settransparency(rule,"trace:dy")
+            insertbefore(head,location,rule)
+        end
+    end,
+    [breakcodes.list] = function(currentserial)
+        if texgetnest("ptr") == nestlevel then
+            local s = serial[currentserial]
+            if s then
+                s.final = true
+            end
+        end
+    end,
+    [breakcodes.delete] = function(currentserial)
+        -- eventually most are pruned
+        if texgetnest("ptr") == nestlevel then
+            local s = serial[currentserial]
+            if s then
+                s.deleted = true
+            end
+        end
+    end,
+    [breakcodes.wrapup] = function()
+        if texgetnest("ptr") == nestlevel then
+            report("wrapping up")
+            if serial then
+                local result = { }
+                results[#results+1] = result
+                for currentserial=1,#serial do
+                    local data = serial[currentserial]
+                    local rule = data.rule
+                    if rule then
+                        local text    = hpack_string(tostring(currentserial),usedfont)
+                        local size    = getwidth(text)
+                        local trigger = data.trigger
+                        local final   = data.final
+                        local class   = data.class
+                        local color   = "trace:ds"
+                        if trigger == penalty_code then
+                            color = "trace:dr"
+                        elseif trigger == glue_code then
+                            color = "trace:dg"
+                        elseif trigger == disc_code then
+                            color = "trace:db"
+                        end
+                        if final then
+                            local width, height, depth = getruledimensions(rule)
+                            setruledimensions(rule,2*width,height,depth)
+                        end
+                        setcolor(rule,color)
+                        setwhd(text,0,0,0)
+                        setoffsets(text,-size-xoffset,yoffset)
+                        insertafter(rule,rule,text)
+                        result[#result+1] = data
+                        data.trigger = nodecodes[trigger]
+                        data.class   = fitnesscodes[class]
+                        data.color   = color
+                    end
+                end
+                --
+                -- we could limit to the last line only
+                --
+                local finals = { }
+                for currentserial=#serial,1,-1 do
+                    if serial[currentserial].final then
+                        for finalserial=currentserial-1,currentserial+1 do
+                            local data = serial[finalserial]
+                            if data then
+                                local line = data.line
+                                local list = { }
+                                local done = {
+                                    serial = finalserial,
+                                    line   = line,
+                                    list   = list,
+                                    final  = data.final,
+                                    color  = data.color
+                                }
+                                finals[#finals+1] = done
+                                while true do
+                                    local previous = data.previous
+                                    if previous == 0 then
+                                        break
+                                    else
+                                        list[#list+1] = previous
+                                        data = serial[previous]
+                                    end
+                                end
+                            end
+                        end
+                        break
+                    end
+                end
+
+                result.finals = finals
+                --
+                serial = false
+            end
+        end
+    end,
+}
+
+-- -- --
+
+function breakpoints.start(specification)
+    callback.register("show_break", function(what,...)
+        return actions[what](...)
+    end)
+    --
+    local list   = specification.list
+    local option = specification.option
+    --
+    breakpass    = 0
+    linenumber   = 0
+    showdetails  = false
+    serials      = { }
+    results      = { }
+    nestlevel    = texgetnest("ptr")
+    marginoffset = specification.offset or 0
+    --
+    if option then
+        option = type(options) == "table" and option or settings_to_hash(option or "")
+        if option.margin then
+            showdetails = true
+        end
+    end
+    if list then
+        overloads = type(list) == "table" and list or settings_to_array(list or "")
+        for i=1,#overloads do
+            local s = overloads[i]
+            local t = settings_to_hash(s)
+            local o = { }
+            for k, v in next, t do
+                o[tonumber(k)] = tonumber(v) or -1
+            end
+            overloads[i] = o
+        end
+    end
+end
+
+function breakpoints.stop()
+    callback.register("show_break")
+end
+
+function breakpoints.reset()
+    serials    = false
+    serial     = false
+    results    = false
+    nestlevel  = false
+    breakpass  = 0
+    linenumber = 0
+end
+
+function breakpoints.getresults()
+   return results or { }
+end
+
+function breakpoints.nofresults()
+   return results and #results or 0
+end
+
+function breakpoints.typesetresult(n)
+    local context, ctx_NC, ctx_NR, ctx_color = context, context.NC, context.NR, context.color
+
+    local function typeset(result)
+        if result then
+            local lastline = 0
+         -- context.starttabulate { "|r|c|r|r|r|l|l|c|" }
+            context.starttabulate { "|r|r|r|r|l|l|c|" }
+            for i=1,#result do
+                local r        = result[i]
+                local serial   = r.serial
+                local previous = r.previous
+                local line     = r.line
+                local final    = r.final
+             -- local deleted  = r.deleted
+                local overload = r.overload
+                local demerits = overload or r.demerits
+                local trigger  = r.trigger
+                local class    = r.class
+                local short    = r.short
+                local color    = { r.color } -- cache
+                ctx_NC() if line ~= lastline then context(line) lastline = line end
+             -- ctx_NC() if deleted then context.textminus() end
+                ctx_NC() if final then ctx_color(color,serial) else context(serial) end
+                ctx_NC() context(previous)
+                ctx_NC() if final then ctx_color(color,demerits) else context(demerits) end
+                ctx_NC() if final then ctx_color(color,class) else context(class) end
+                ctx_NC() ctx_color(color,trigger)
+                ctx_NC() if overload then if final then ctx_color(color,"!") else context("!") end end
+                ctx_NC() ctx_NR()
+            end
+            context.stoptabulate()
+            --
+            local finals = result.finals
+            if finals then
+                context.starttabulate { "|r|l|" }
+                for i=1,#finals do
+                    local data   = finals[i]
+                    local final  = data.final
+                    local serial = data.serial
+                    local path   = table.concat(data.list," ")
+                    local color  = final and data.color
+                    if color then
+                        color = { color }
+                    end
+                    ctx_NC() if color then ctx_color(color,serial) else context(serial) end
+                    ctx_NC() if color then ctx_color(color,path) else context(path) end
+                    ctx_NC() ctx_NR()
+                end
+                context.stoptabulate()
+            end
+        end
+    end
+
+    local results = breakpoints.getresults()
+    if n then
+        typeset(results[n])
+    else
+        for i=1,#results do
+            typeset(results[i])
+        end
+    end
+end

@@ -750,7 +750,7 @@
 
 \appendtoks
     \ifconditional\c_math_discretionaries
-        \the\everymathdiscretionaries
+        \expand\everymathdiscretionaries
     \fi
 \to \everymathematics
 
@@ -935,11 +935,11 @@
 \permanent\protected\tolerant\def\startmathematics[#1]% no grouping, if ever then also an optional second
   {\push_macro_currentmathematics
    \cdef\currentmathematics{#1}% check for valid
-   \the\everyswitchmathematics}
+   \expand\everyswitchmathematics}
 
 \permanent\protected\def\stopmathematics
   {\pop_macro_currentmathematics
-   \the\everyswitchmathematics} % only needed at level zero
+   \expand\everyswitchmathematics} % only needed at level zero
 
 \definemathematics[\v!default] % not needed, but nicer when nesting back to normal
 
@@ -980,7 +980,7 @@
 
 \def\math_m_yes_text_openedup#1%
   {\setbox\scratchbox\hbox\bgroup
-      \the\everyswitchmathematics\relax
+      \expand\everyswitchmathematics\relax
       \normalstartimath
       #1%
       \normalstopimath
@@ -997,7 +997,7 @@
    \endgroup}
 
 \def\math_m_yes_text_normal#1%
-  {\the\everyswitchmathematics\relax
+  {\expand\everyswitchmathematics\relax
    \normalstartimath
    \begingroup#1\endgroup % grouping permits aftergroups trickery
    \normalstopimath
@@ -2357,14 +2357,14 @@
 % \def\nonknuthmode
 %   {\pushcatcodetable
 %    \setcatcodetable\ctxcatcodes
-%    \the\everynonknuthmode
+%    \expand\everynonknuthmode
 %    \let\nonknuthmode\relax
 %    \popcatcodetable}
 %
 % \def\donknuthmode
 %   {\pushcatcodetable
 %    \setcatcodetable\ctxcatcodes
-%    \the\everydonknuthmode
+%    \expand\everydonknuthmode
 %    \popcatcodetable}
 %
 % \bgroup
@@ -3871,7 +3871,7 @@
    \fi
    \font_basics_switchtobodyfont\m_math_text_choice_face
    \usemathtextstyleandcolor\c!style\c!color
-   \the\everymathtext\relax
+   \expand\everymathtext\relax
    \let\next}
 
 \protected\def\math_text_handle#1%
@@ -4737,8 +4737,8 @@
 % \newtoks \everystartimath
 % \newtoks \everystopimath
 %
-% \protected\def\startimath{\Ustartmath\the\everystartimath}
-% \protected\def\stopimath {\the\everystopimath\Ustopmath}
+% \protected\def\startimath{\Ustartmath\expand\everystartimath}
+% \protected\def\stopimath {\expand\everystopimath\Ustopmath}
 %
 % \protected\def\m%
 %   {\relax

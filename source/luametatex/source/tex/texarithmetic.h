@@ -25,7 +25,7 @@ extern scaled tex_divide_scaled_n   (double s, double m, double d);
 extern scaled tex_ext_xn_over_d     (scaled, scaled, scaled);
 extern scaled tex_round_xn_over_d   (scaled x, int n, unsigned int d);
 
-inline static scaled tex_round_decimals_digits(const unsigned char *digits, unsigned k)
+static inline scaled tex_round_decimals_digits(const unsigned char *digits, unsigned k)
 {
      int a = 0;
      while (k-- > 0) {
@@ -34,7 +34,7 @@ inline static scaled tex_round_decimals_digits(const unsigned char *digits, unsi
      return (a + 1) / 2;
 }
 
-inline static int tex_half_scaled(int x)
+static inline int tex_half_scaled(int x)
 {
     return odd(x) ? ((x + 1) / 2) : (x / 2);
 }

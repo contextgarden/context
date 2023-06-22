@@ -376,12 +376,12 @@
 %normalexpanded{\permanent\defcsname\e!start\v!interactionmenu\endcsname[#tag]#content\expandafter\noexpand\csname\e!stop\v!interactionmenu\endcsname}%
 % \normalexpanded{\permanent\expandafter\def\expandafter\noexpand\csname\e!start\v!interactionmenu\endcsname[#tag]#content\expandafter\noexpand\csname\e!stop\v!interactionmenu\endcsname}%
 \normalexpanded{\permanent\expandafter\def\expandafter\noexpand\csname\e!start\v!interactionmenu\endcsname[#tag]#content\csname\e!stop\v!interactionmenu\endcsname}%
-  {\def\currentinteractionmenu{#tag}%
+  {\cdef\currentinteractionmenu{#tag}%
    \expandafter\settrue\csname\??menustate\interactionmenuparameter\c!category\endcsname
    \setinteractionmenuparameter\c!menu{#content}}
 
 \permanent\protected\def\resetinteractionmenu[#tag]%
-  {\def\currentinteractionmenu{#tag}%
+  {\cdef\currentinteractionmenu{#tag}%
    \resetinteractionmenuparameter\c!menu}
 
 %D Placement of menus:
@@ -514,7 +514,7 @@
      \forgetall
      \global\d_scrn_menu_next_distance\zeropoint
      \let\scrn_menu_action\scrn_menu_package_indeed
-     \the\everysetmenucommands
+     \expand\everysetmenucommands
      \csname\??menupacker\namedinteractionmenuparameter\currentinteractionmenulocation\c!alternative\endcsname
    \fi
    \endgroup}
@@ -620,7 +620,7 @@
      \MPpos{\currentinteractionmenulocation:\number\c_scrn_menu_position}%
    );}
 
-\permanent\def\MPmenubuttons#1{\the\t_scrn_menu_meta_data}
+\permanent\def\MPmenubuttons#1{\expand\t_scrn_menu_meta_data}
 
 \appendtoks
     \global\t_scrn_menu_meta_data\emptytoks

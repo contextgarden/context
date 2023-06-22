@@ -136,7 +136,7 @@
 
 \permanent\protected\def\obeyluatokens
   {\setcatcodetable\luacatcodes
-   \the\everyluacode}
+   \expand\everyluacode}
 
 \immutable\edef\luamajorversion{\ctxwrite{LUAMINORVERSION}}
 \immutable\edef\luaminorversion{\ctxwrite{LUAMAJORVERSION}}
