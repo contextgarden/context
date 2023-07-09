@@ -47,10 +47,10 @@
 \permanent\protected\def\shownextnodes{\afterassignment\node_tracers_show_next\c_node_tracers_show_box}
 \permanent\protected\def\showflatnodes{\afterassignment\node_tracers_show_flat\c_node_tracers_show_box}
 
-\def\node_tracers_show_next{\ctxlua{texio.write_nl('log',nodes.serializebox(\number\c_node_tracers_show_box,false,true))}}
-\def\node_tracers_show_flat{\ctxlua{texio.write_nl('log',nodes.serializebox(\number\c_node_tracers_show_box,true, true))}}
+\def\node_tracers_show_next{\ctxlua{texio.write_nl('log',nodes.serializebox(\the\c_node_tracers_show_box,false,true))}}
+\def\node_tracers_show_flat{\ctxlua{texio.write_nl('log',nodes.serializebox(\the\c_node_tracers_show_box,true, true))}}
 
-\permanent\protected\def\visualizenextnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,false,true)}}}
-\permanent\protected\def\visualizeflatnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\number\nextbox,true,true)}}}
+\permanent\protected\def\visualizenextnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\the\nextbox,false,true)}}}
+\permanent\protected\def\visualizeflatnodes{\dowithnextbox{\ctxlua{nodes.visualizebox(\the\nextbox,true,true)}}}
 
 \protect \endinput

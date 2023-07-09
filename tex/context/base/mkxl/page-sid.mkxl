@@ -479,8 +479,8 @@
 \def\page_sides_flush_floats_reset
   {\global\d_page_sides_vsize\d_page_sides_vsize_reset
    % also here if used at all \global\holdinginserts\zerocount
-   \global\setfalse\c_page_sides_short
-   \global\setfalse\c_page_sides_flag
+   \global\c_page_sides_short\conditionalfalse
+   \global\c_page_sides_flag\conditionalfalse
    \global\c_page_sides_checks_done\zerocount}
 
 \def\page_sides_flush_floats_after_none % we force a flush
@@ -553,11 +553,11 @@
       \fi}%
    \forgetall
    \offinterlineskip
-   \doloop
+   \localcontrolledrepeating
      {\scratchdimen\d_page_sides_flush_criterium
       \ifdim\scratchdimen>\onepoint      % good enough, can become configurable
-        \ifnum\recurselevel>\plushundred % safeguard, sort of deadcycles
-          \exitloop
+        \ifnum\currentloopiterator>\plushundred % safeguard, sort of deadcycles
+          \quitloop
         \orelse\iftracesidefloats
           \page_sides_flush_floats_tracer\par
         \else
@@ -565,7 +565,7 @@
         \fi
       \else
         \page_sides_force_depth
-        \exitloop
+        \quitloop
       \fi}%
    \endgroup}
 
@@ -646,8 +646,8 @@
   {\global\d_page_sides_vsize\d_page_sides_vsize_reset
    \global\c_page_sides_n_of_lines\zerocount
    % also here if used at all \global\holdinginserts\zerocount
-   \global\setfalse\c_page_sides_short
-   \global\setfalse\c_page_sides_flag}
+   \global\c_page_sides_short\conditionalfalse
+   \global\c_page_sides_flag\conditionalfalse}
 
 %D Here comes the output routine. We either go the fast route or we use the
 %D normal one (stored in \type {\page_otr_command_side_float_output}. We no
@@ -657,7 +657,7 @@
 \def\page_sides_output_routine
   {\page_otr_command_side_float_output
    \ifconditional\c_page_sides_short
-     \global\setfalse\c_page_sides_short
+     \global\c_page_sides_short\conditionalfalse
    \else
      \global\d_page_sides_vsize\d_page_sides_vsize_reset
      \global\c_page_sides_n_of_lines\zerocount
@@ -777,7 +777,7 @@
 %   {\d_page_sides_progress\d_page_sides_vsize
 %    \ifconditional\c_page_sides_flag
 %      \advanceby\d_page_sides_progress-\d_page_sides_page_total
-%      \global\setfalse\c_page_sides_flag
+%      \global\c_page_sides_flag\conditionalfalse
 %    \else
 %      \advanceby\d_page_sides_progress-\pagetotal
 %    \fi}
@@ -801,7 +801,7 @@
    \d_page_sides_progress\d_page_sides_vsize
    \ifconditional\c_page_sides_flag
      \advanceby\d_page_sides_progress-\d_page_sides_page_total
-     \global\setfalse\c_page_sides_flag
+     \global\c_page_sides_flag\conditionalfalse
    \else
      \ifdim\dimexpr\d_page_sides_progress+\d_page_sides_bottomtotal\relax>\pagegoal
        % we adapt pagegoal because we can already have placed something with
@@ -812,7 +812,7 @@
    \fi}
 
 \def\page_sides_analyse_space_stage_one
-  {\global\settrue\c_page_sides_flag
+  {\global\c_page_sides_flag\conditionaltrue
 % \ifdim\pagegoal=\maxdimen
 %     \pagegoal\textheight % maybe
 % \fi
@@ -855,17 +855,17 @@
 \def\page_sides_analyse_space_stage_two
   {% how about \pagedepth
    \ifdim\scratchdimenone>\scratchdimentwo
-     \global\setfalse\c_page_floats_room
+     \global\c_page_floats_room\conditionalfalse
    \else
      \ifdim\dimexpr\pagegoal-\d_page_sides_vsize\relax<\d_page_sides_bottomtotal
       % just weird: \global\advanceby\d_page_sides_vsize \scratchdimenone
-       \global\settrue\c_page_sides_short
+       \global\c_page_sides_short\conditionaltrue
        % why was this \global\holdinginserts\plusone
      \else
        \global\advanceby\d_page_sides_vsize \d_page_sides_bottomtotal % wins over inbetween
-       \global\setfalse\c_page_sides_short
+       \global\c_page_sides_short\conditionalfalse
      \fi
-     \global\settrue\c_page_floats_room
+     \global\c_page_floats_room\conditionaltrue
    \fi}
 
 \def\page_sides_analyse_space
@@ -884,7 +884,7 @@
 %    \fi
    \page_sides_analyse_space_stage_two
    \ifconditional\c_page_sides_shape_down
-     \global\settrue\c_page_floats_room
+     \global\c_page_floats_room\conditionaltrue
    \fi}
 
 %D As we have no clear end of one or more paragraphs we only have pre float
@@ -911,10 +911,10 @@
 %    \page_sides_apply_vertical_shift
 %    \page_sides_analyse_space
 %    \ifconditional\c_page_floats_room
-%      \global\setfalse\c_page_sides_delayed
+%      \global\c_page_sides_delayed\conditionalfalse
 %      % we're ok
 %    \else
-%      \global\settrue\c_page_sides_delayed
+%      \global\c_page_sides_delayed\conditionaltrue
 %      \global\c_page_sides_m_of_lines\c_page_sides_n_of_lines
 %      \ifcase\c_page_sides_page_method
 %        \page_otr_fill_and_eject_page
@@ -929,7 +929,7 @@
 %      \page_sides_inject_dummy_lines
 %    \fi
 %    \page_sides_place_float
-%    \global\setfalse\c_page_sides_delayed
+%    \global\c_page_sides_delayed\conditionalfalse
 %    \page_sides_check_floats_reset
 %    \page_sides_wrapup}
 
@@ -945,20 +945,20 @@
    \page_sides_apply_vertical_shift
    \page_sides_analyse_space
    \ifconditional\c_page_floats_room
-     \global\setfalse\c_page_sides_delayed
+     \global\c_page_sides_delayed\conditionalfalse
      % we're ok
    \else
      \ifconditional\c_page_sides_keep_together
        \clf_interceptsamepagecontent\b_page_sides_spill_over
      \fi
-     \global\settrue\c_page_sides_delayed
+     \global\c_page_sides_delayed\conditionaltrue
      \global\c_page_sides_m_of_lines\c_page_sides_n_of_lines
      \ifcase\c_page_sides_page_method
-     \page_otr_fill_and_eject_page
+       \page_otr_fill_and_eject_page
      \or
-     \page_otr_force_new_page_one
+       \page_otr_force_new_page_one
      \else
-     \page_otr_fill_and_eject_page
+       \page_otr_fill_and_eject_page
      \fi
      \ifvoid\b_page_sides_spill_over\else
        \box\b_page_sides_spill_over
@@ -968,7 +968,7 @@
      \page_sides_inject_dummy_lines
    \fi
    \page_sides_place_float
-   \global\setfalse\c_page_sides_delayed
+   \global\c_page_sides_delayed\conditionalfalse
    \page_sides_check_floats_reset
    \page_sides_wrapup}
 
@@ -1155,7 +1155,7 @@
   {\page_sides_analyse_progress
    \ifdim\d_page_sides_progress>\zeropoint \relax
      \ifconditional\c_page_sides_short
-       \global\setfalse\c_page_sides_short
+       \global\c_page_sides_short\conditionalfalse
        \page_otr_fill_and_eject_page
      \else
        \kern\d_page_sides_progress

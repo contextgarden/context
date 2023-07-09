@@ -36,7 +36,7 @@
 \newdimension\d_spac_indentation_par
 \parindent   \d_spac_indentation_par % for the show
 
-\newconditional\c_spac_indentation_indent_first \settrue\c_spac_indentation_indent_first
+\newconditional\c_spac_indentation_indent_first \c_spac_indentation_indent_first\conditionaltrue
 \newconstant   \c_spac_indentation_toggle_state
 
 %D After a blank or comparable situation (left side floats) we
@@ -65,7 +65,7 @@
    \fi}
 
 \def\spac_indentation_setup_indeed
-  {% not here: \settrue\c_spac_indentation_indent_first
+  {% not here: \c_spac_indentation_indent_first\conditionaltrue
    % not here: \parindent\d_spac_indentation_par
    % not here: \c_spac_indentation_toggle_state\zerocount
    \processcommacommand[\m_spac_indentation_options]\spac_indentation_apply_step_one % catch small, medium, etc
@@ -140,8 +140,8 @@
 \installindentingmethod \v!no    {\parindent\zeropoint}
 \installindentingmethod \v!not   {\parindent\zeropoint}
 
-\installindentingmethod \v!first {\settrue\c_spac_indentation_indent_first}
-\installindentingmethod \v!next  {\setfalse\c_spac_indentation_indent_first}
+\installindentingmethod \v!first {\c_spac_indentation_indent_first\conditionaltrue}
+\installindentingmethod \v!next  {\c_spac_indentation_indent_first\conditionalfalse}
 
 \installindentingmethod \v!yes   {\parindent\d_spac_indentation_par\relax} % not \indent !
 \installindentingmethod \v!always{\parindent\d_spac_indentation_par\relax} % not \indent !
@@ -157,7 +157,7 @@
                                     \spac_indentation_setup_size
                                   \fi}
 
-\installindentingmethod \v!reset {\settrue\c_spac_indentation_indent_first
+\installindentingmethod \v!reset {\c_spac_indentation_indent_first\conditionaltrue
                                   \parindent\zeropoint
                                   \c_spac_indentation_toggle_state\zerocount}
 
@@ -341,7 +341,7 @@
 % maybe an everyforgetparindent
 
 \permanent\protected\def\forgetparindent
-  {\settrue\c_spac_indentation_indent_first % recently added
+  {\c_spac_indentation_indent_first\conditionaltrue % recently added
    \d_spac_indentation_par\zeropoint
    \parindent\zeropoint
    \let\v_spac_indentation_current\v!none}
@@ -758,11 +758,11 @@
      \ifconditional\s_spac_narrower_last_swap
        \frozen\leftskip \s_spac_narrower_right_last
        \frozen\rightskip\s_spac_narrower_left_last
-       \setfalse\s_spac_narrower_last_swap
+       \s_spac_narrower_last_swap\conditionalfalse
      \else
        \frozen\leftskip \s_spac_narrower_left_last
        \frozen\rightskip\s_spac_narrower_right_last
-       \settrue\s_spac_narrower_last_swap
+       \s_spac_narrower_last_swap\conditionaltrue
      \fi
    \else
      \normalexpanded{\processcommalistwithparameters[\scratchstringone]}\spac_narrower_initialize
@@ -778,9 +778,9 @@
       \s_spac_narrower_left_last \the\leftskip \relax
       \s_spac_narrower_right_last\the\rightskip\relax
       \ifconditional\s_spac_narrower_last_swap
-        \setfalse\s_spac_narrower_last_swap
+        \s_spac_narrower_last_swap\conditionalfalse
       \else
-        \settrue\s_spac_narrower_last_swap
+        \s_spac_narrower_last_swap\conditionaltrue
       \fi
    }}
 
@@ -921,9 +921,11 @@
 
 \permanent\tolerant\protected\def\setuptolerance[#1]%
   {\ifarguments\or
-     \doifelseinset\v!vertical{#1}%
-       {\processcommacommand[#1]\spac_tolerances_step_vertical  }
-       {\processcommacommand[#1]\spac_tolerances_step_horizontal}%
+     \ifinset\v!vertical{#1}%
+       \processcommacommand[#1]\spac_tolerances_step_vertical
+     \else
+       \processcommacommand[#1]\spac_tolerances_step_horizontal
+     \fi
    \fi}
 
 % %D \macros

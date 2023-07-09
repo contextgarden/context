@@ -62,7 +62,7 @@
 %D Here we need to keep the groupedcommand solution as it is used as modifier.
 
 \appendtoks
-  \frozen\instance\setuevalue{\currentcharacterkerning}%
+  \frozen\instance\protected\edefcsname\currentcharacterkerning\endcsname
     {\doifelsenextoptional
        {\typo_kerning_apply_yes{\currentcharacterkerning}}%
        {\typo_kerning_apply_nop{\currentcharacterkerning}}}%

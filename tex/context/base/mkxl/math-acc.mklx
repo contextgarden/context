@@ -192,7 +192,7 @@
 
 %D Relative new:
 
-% \newconditional\c_math_accent_auto_dotless \settrue\c_math_accent_auto_dotless % cf opentype math
+% \newconditional\c_math_accent_auto_dotless \c_math_accent_auto_dotless\conditionaltrue % cf opentype math
 
 % \aliased\let\normalgrave\grave
 % \aliased\let\normalddot \ddot

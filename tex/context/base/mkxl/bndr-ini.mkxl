@@ -23,13 +23,15 @@
 \immutable\def\??boundaryprefix{c_bndr_}
 
 \permanent\tolerant\protected\def\defineboundary[#1]#*[#2]% nicer for users
-  {\doifelseinset\s!public{#2}%
-     {\ifcsname#1\endcsname\else
-        \global\permanent\expandafter\integerdef\csname#1\endcsname\clf_defineboundary{#1}\relax
-      \fi}
-     {\ifcsname\??boundaryprefix#1\endcsname\else
-        \global\permanent\expandafter\integerdef\csname\??boundaryprefix#1\endcsname\clf_defineboundary{#1}\relax
-      \fi}}
+  {\ifinset\s!public{#2}%
+     \ifcsname#1\endcsname\else
+       \global\permanent\expandafter\integerdef\csname#1\endcsname\clf_defineboundary{#1}\relax
+     \fi
+  \else
+    \ifcsname\??boundaryprefix#1\endcsname\else
+      \global\permanent\expandafter\integerdef\csname\??boundaryprefix#1\endcsname\clf_defineboundary{#1}\relax
+    \fi
+  \fi}
 
 \permanent\protected\def\newboundary#1% nicer for lowlevel
   {\ifdefined#1\else

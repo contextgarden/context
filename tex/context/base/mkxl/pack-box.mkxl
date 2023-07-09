@@ -104,12 +104,12 @@
 
 \protected\def\pack_anchors_register#1#2%
   {\global\advanceby\c_pack_anchors_n\plusone
-   \pagereference[\v!layer:\v!anchor:\number\c_pack_anchors_n]%
-   \putboxincache\v!anchor{\number\c_pack_anchors_n}\b_pack_anchors
-%    \xtoksapp\t_pack_anchors_flush{\pack_anchors_flush{\number\c_pack_anchors_n}{#1}{#2}}%
-   \doglobal\appendetoks
-     \pack_anchors_flush{\number\c_pack_anchors_n}{#1}{#2}%
-   \to \t_pack_anchors_flush
+   \pagereference[\v!layer:\v!anchor:\the\c_pack_anchors_n]%
+   \putboxincache\v!anchor{\the\c_pack_anchors_n}\b_pack_anchors
+   \xtoksapp\t_pack_anchors_flush{\pack_anchors_flush{\the\c_pack_anchors_n}{#1}{#2}}%
+ % \doglobal\appendetoks
+ %   \pack_anchors_flush{\the\c_pack_anchors_n}{#1}{#2}%
+ % \to \t_pack_anchors_flush
    \glet\pack_anchors_flush_all\pack_anchors_flush_all_indeed}
 
 \protected\def\pack_anchors_flush#1#2#3%
@@ -202,10 +202,10 @@
 \def\pack_boxes_collector_check_box#1%
   {\edef\currentcollector{#1}%
    \ifcsname\??collectorbox\currentcollector\endcsname
-     \settrue\c_pack_boxes_collector_valid_box
+     \c_pack_boxes_collector_valid_box\conditionaltrue
      \expandafter\let\expandafter\b_pack_boxes_collector\lastnamedcs
    \else
-     \setfalse\c_pack_boxes_collector_valid_box
+     \c_pack_boxes_collector_valid_box\conditionalfalse
      \writestatus{collector}{unknown collector \currentcollector}%
    \fi}
 
@@ -431,7 +431,7 @@
       \setlayer
         [\??layeredtextlayer]%
         [#2]%
-        {\setfalse\fontattributeisset
+        {\fontattributeisset\conditionalfalse
          \uselayeredtextstyleparameter\c!style
          \ifconditional\fontattributeisset
            \setupinterlinespace
@@ -468,10 +468,11 @@
    \doifelseassignment{#1}%
      {\letdummyparameter\c!alternative\v!a
       \getdummyparameters[#1]%
-      \doifelse{\directdummyparameter\c!alternative}\v!a
-        {\egroup\collectedtext}%
-        {\egroup\layeredtext  }%
-      [#1][#2]}%
+      \ifcstok{\directdummyparameter\c!alternative}\v!a
+        \egroup\expandafter\collectedtext
+      \else
+        \egroup\expandafter\layeredtext
+      \fi[#1][#2]}%
      {\egroup\csname#1\endcsname}}
 
 \permanent\tolerant\protected\def\defineornament[#1]#*[#2]#*[#3]%
@@ -535,18 +536,18 @@
 
 \installcorenamespace{bleedinglocation}
 
-\defcsname\??bleedinglocation  t\endcsname{\settrue\c_pack_boxes_t\scratchhoffset\zeropoint}
-\defcsname\??bleedinglocation  b\endcsname{\settrue\c_pack_boxes_b\scratchhoffset\zeropoint}
-\defcsname\??bleedinglocation  l\endcsname{\settrue\c_pack_boxes_l\scratchvoffset\zeropoint}
-\defcsname\??bleedinglocation  r\endcsname{\settrue\c_pack_boxes_r\scratchvoffset\zeropoint}
-\defcsname\??bleedinglocation bl\endcsname{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_b}
-\defcsname\??bleedinglocation lb\endcsname{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_b}
-\defcsname\??bleedinglocation br\endcsname{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_b}
-\defcsname\??bleedinglocation rb\endcsname{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_b}
-\defcsname\??bleedinglocation tl\endcsname{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_t}
-\defcsname\??bleedinglocation lt\endcsname{\settrue\c_pack_boxes_l\settrue\c_pack_boxes_t}
-\defcsname\??bleedinglocation tr\endcsname{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_t}
-\defcsname\??bleedinglocation rt\endcsname{\settrue\c_pack_boxes_r\settrue\c_pack_boxes_t}
+\defcsname\??bleedinglocation  t\endcsname{\c_pack_boxes_t\conditionaltrue\scratchhoffset\zeropoint}
+\defcsname\??bleedinglocation  b\endcsname{\c_pack_boxes_b\conditionaltrue\scratchhoffset\zeropoint}
+\defcsname\??bleedinglocation  l\endcsname{\c_pack_boxes_l\conditionaltrue\scratchvoffset\zeropoint}
+\defcsname\??bleedinglocation  r\endcsname{\c_pack_boxes_r\conditionaltrue\scratchvoffset\zeropoint}
+\defcsname\??bleedinglocation bl\endcsname{\c_pack_boxes_l\conditionaltrue\c_pack_boxes_b\conditionaltrue}
+\defcsname\??bleedinglocation lb\endcsname{\c_pack_boxes_l\conditionaltrue\c_pack_boxes_b\conditionaltrue}
+\defcsname\??bleedinglocation br\endcsname{\c_pack_boxes_r\conditionaltrue\c_pack_boxes_b\conditionaltrue}
+\defcsname\??bleedinglocation rb\endcsname{\c_pack_boxes_r\conditionaltrue\c_pack_boxes_b\conditionaltrue}
+\defcsname\??bleedinglocation tl\endcsname{\c_pack_boxes_l\conditionaltrue\c_pack_boxes_t\conditionaltrue}
+\defcsname\??bleedinglocation lt\endcsname{\c_pack_boxes_l\conditionaltrue\c_pack_boxes_t\conditionaltrue}
+\defcsname\??bleedinglocation tr\endcsname{\c_pack_boxes_r\conditionaltrue\c_pack_boxes_t\conditionaltrue}
+\defcsname\??bleedinglocation rt\endcsname{\c_pack_boxes_r\conditionaltrue\c_pack_boxes_t\conditionaltrue}
 
 \mutable\lettonothing\currentbleedposition
 \mutable\lettonothing\currentpageposition
@@ -558,7 +559,7 @@
    \enforced\permanent\xdef\bleedwidth {\the\hsize}%
    \enforced\permanent\xdef\bleedheight{\the\vsize}%
    %
-   \edef\currentbleedposition{bleed:\number\c_pack_boxes_bleeds}%
+   \edef\currentbleedposition{bleed:\the\c_pack_boxes_bleeds}%
    \edef\currentpageposition {page:0}% todo: per page
    %
    \setupcurrentbleeding[#1]%
@@ -569,14 +570,18 @@
    \scratchhoffset\bleedingparameter\c!hoffset
    \scratchvoffset\bleedingparameter\c!voffset
    %
-   \setfalse\c_pack_boxes_l % left
-   \setfalse\c_pack_boxes_r % right
-   \setfalse\c_pack_boxes_t % top
-   \setfalse\c_pack_boxes_b % bottom
+   \c_pack_boxes_l\conditionalfalse % left
+   \c_pack_boxes_r\conditionalfalse % right
+   \c_pack_boxes_t\conditionalfalse % top
+   \c_pack_boxes_b\conditionalfalse % bottom
    %
    \csname\??bleedinglocation\bleedingparameter\c!location\endcsname
    %
-   \doifelse{\bleedingparameter\c!stretch}\v!yes\donetrue\donefalse
+   \ifcstok{\bleedingparameter\c!stretch}\v!yes
+     \donetrue
+   \else
+     \donefalse
+   \fi
    %
    \enforced\permanent\xdef\bleedwidth{\the\dimexpr
      \ifdone
@@ -611,8 +616,9 @@
    \vsize\bleedheight}
 
 \def\pack_boxes_bleed_finish
-  {\doif{\bleedingparameter\c!page}\v!yes
-     {\setbox\nextbox\topskippedbox{\box\nextbox}}%
+  {\ifcstok{\bleedingparameter\c!page}\v!yes
+     \setbox\nextbox\topskippedbox{\box\nextbox}%
+   \fi
    \setbox\nextbox\hpack to \scratchwidth
      {\ifconditional\c_pack_boxes_l\hss\fi
       \box\nextbox
@@ -881,8 +887,7 @@
    \ifzeropt\scratchtopoffset   \else\donetrue\fi
    \ifzeropt\scratchbottomoffset\else\donetrue\fi
    \ifdone
-     \edef\p_method{\offsetboxparameter\c!method}%
-     \ifx\p_method\v!fixed % new
+     \ifcstok{\offsetboxparameter\c!method}\v!fixed % new
        \ifzeropt\scratchleftoffset
          \ifzeropt\scratchrightoffset \else
            \scratchxposition-\scratchrightoffset
@@ -1035,12 +1040,12 @@
      % to be considered: methods
      \ifcase\scratchcounter
      \or % x and y
-       \setbox\nextbox\hpack{\dorecurse\scratchnx{\copy\nextbox}}%
-       \setbox\nextbox\vpack{\dorecurse\scratchny{\copy\nextbox\endgraf}}%
+       \setbox\nextbox\hpack{\localcontrolledrepeat\scratchnx{\copy\nextbox}}%
+       \setbox\nextbox\vpack{\localcontrolledrepeat\scratchny{\copy\nextbox\endgraf}}%
      \or % x
-       \setbox\nextbox\hpack{\dorecurse\scratchnx{\copy\nextbox}}%
+       \setbox\nextbox\hpack{\localcontrolledrepeat\scratchnx{\copy\nextbox}}%
      \or % y
-       \setbox\nextbox\vpack{\dorecurse\scratchny{\copy\nextbox\endgraf}}%
+       \setbox\nextbox\vpack{\localcontrolledrepeat\scratchny{\copy\nextbox\endgraf}}%
      \fi
    \fi
    \ifdim\wd\nextbox>\scratchwidth

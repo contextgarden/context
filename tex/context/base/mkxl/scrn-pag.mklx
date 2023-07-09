@@ -117,7 +117,7 @@
      \global\canvasheight\currentinteractionscreenheight
    \fi
    \ifconditional\c_page_layouts_location_is_set
-     \global\setfalse\c_scrn_canvas_tight_page
+     \global\c_scrn_canvas_tight_page\conditionalfalse
    \fi
    \ifconditional\c_scrn_canvas_tight_page
      \global\canvasmaxwidth \paperwidth
@@ -256,11 +256,11 @@
     \begingroup
     \edef\p_option{\interactionscreenparameter\c!option}%
     \ifx\p_option\v!max
-      \global\settrue \c_scrn_canvas_tight_page
+      \global\c_scrn_canvas_tight_page\conditionaltrue
     \orelse\ifx\p_option\v!fit
-      \global\settrue \c_scrn_canvas_tight_page
+      \global\c_scrn_canvas_tight_page\conditionaltrue
     \else
-      \global\setfalse\c_scrn_canvas_tight_page
+      \global\c_scrn_canvas_tight_page\conditionalfalse
     \fi
     \endgroup
 \to \everysetupinteractionscreen

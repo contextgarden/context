@@ -385,344 +385,119 @@ context.secondoftwoarguments   = ctx_secondoftwoarguments
 context.firstofoneargument     = ctx_firstofoneargument
 context.gobbleoneargument      = ctx_gobbleoneargument
 
-local ctx_iftrue  = context.iftrue
-local ctx_iffalse = context.iffalse
+local boolean_value <const> = tokens.values.boolean
 
 local hash = utilities.parsers.hashes.settings_to_set
 
-local function doifelsecommon(a,b)
-    if a == b then
-        setmacro("commalistelement",a)
-        if a == "" then
-            ctx_secondoftwoarguments()
-        else
-            ctx_firstoftwoarguments()
+implement {
+    name      = "if_common",
+    usage     = "condition",
+    arguments = "2 arguments",
+    actions   = function(a,b)
+        if a == b then
+            setmacro("commalistelement",a)
+            return boolean_value, a ~= ""
         end
-        return
-    end
-    local ba = find(a,",",1,true)
-    local bb = find(b,",",1,true)
-    if ba and bb then
-        local ha = hash[a]
-        local hb = hash[b]
-     -- local ha = settings_to_set(a)
-     -- local hb = settings_to_set(b)
-        for k in next, ha do
-            if hb[k] then
-                setmacro("commalistelement",k)
-                ctx_firstoftwoarguments()
-                return
+        local ba = find(a,",",1,true)
+        local bb = find(b,",",1,true)
+        if ba and bb then
+            local ha = hash[a]
+            local hb = hash[b]
+            for k in next, ha do
+                if hb[k] then
+                    setmacro("commalistelement",k)
+                    return boolean_value, true
+                end
+            end
+        elseif ba then
+            if hash[a][b] then
+                setmacro("commalistelement",b)
+                return boolean_value, true
+            end
+        elseif bb then
+            if hash[b][a] then
+                setmacro("commalistelement",a)
+                return boolean_value, true
             end
         end
-    elseif ba then
-        if hash[a][b] then
-     -- if settings_to_set(a)[b] then
-            setmacro("commalistelement",b)
-            ctx_firstoftwoarguments()
-            return
-        end
-    elseif bb then
-        if hash[b][a] then
-     -- if settings_to_set(b)[a] then
-            setmacro("commalistelement",a)
-            ctx_firstoftwoarguments()
-            return
-        end
+        setmacro("commalistelement","")
+        return boolean_value, false
     end
-    setmacro("commalistelement","")
-    ctx_secondoftwoarguments()
-end
+}
 
-local function doifcommon(a,b)
-    if a == b then
-        setmacro("commalistelement",a)
-        if a == "" then
-            ctx_gobbleoneargument()
-        else
-            ctx_firstofoneargument()
+implement {
+    name      = "ifcommon",
+    public    = true,
+    usage     = "condition",
+    arguments = "2 arguments",
+    actions   = function(a,b)
+        if a == b then
+            return boolean_value, a ~= ""
         end
-        return
-    end
-    local ba = find(a,",",1,true)
-    local bb = find(b,",",1,true)
-    if ba and bb then
-        local ha = hash[a]
-        local hb = hash[b]
-     -- local ha = settings_to_set(a)
-     -- local hb = settings_to_set(b)
-        for k in next, ha do
-            if hb[k] then
-                setmacro("commalistelement",k)
-                ctx_firstofoneargument()
-                return
+        local ba = find(a,",",1,true)
+        local bb = find(b,",",1,true)
+        if ba and bb then
+            local ha = hash[a]
+            local hb = hash[b]
+            for k in next, ha do
+                if hb[k] then
+                    return boolean_value, true
+                end
+            end
+        elseif ba then
+            if hash[a][b] then
+                return boolean_value, true
+            end
+        elseif bb then
+            if hash[b][a] then
+                return boolean_value, true
             end
         end
-    elseif ba then
-        if hash[a][b] then
-     -- if settings_to_set(a)[b] then
-            setmacro("commalistelement",b)
-            ctx_firstofoneargument()
-            return
-        end
-    elseif bb then
-        if hash[b][a] then
-     -- if settings_to_set(b)[a] then
-            setmacro("commalistelement",a)
-            ctx_firstofoneargument()
-            return
-        end
+        return boolean_value, false
     end
-    setmacro("commalistelement","")
-    ctx_gobbleoneargument()
-end
+}
 
-local function doifnotcommon(a,b)
-    if a == b then
-        setmacro("commalistelement",a)
-        if a == "" then
-            ctx_firstofoneargument()
-        else
-            ctx_gobbleoneargument()
-        end
-        return
-    end
-    local ba = find(a,",",1,true)
-    local bb = find(b,",",1,true)
-    if ba and bb then
-        local ha = hash[a]
-        local hb = hash[b]
-     -- local ha = settings_to_set(a)
-     -- local hb = settings_to_set(b)
-        for k in next, ha do
-            if hb[k] then
-                setmacro("commalistelement",k)
-                ctx_gobbleoneargument()
-                return
-            end
-        end
-    elseif ba then
-        if hash[a][b] then
-     -- if settings_to_set(a)[b] then
-            setmacro("commalistelement",b)
-            ctx_gobbleoneargument()
-            return
-        end
-    elseif bb then
-        if hash[b][a] then
-     -- if settings_to_set(b)[a] then
-            setmacro("commalistelement",a)
-            ctx_gobbleoneargument()
-            return
-        end
-    end
-    setmacro("commalistelement","")
-    ctx_firstofoneargument()
-end
-
--- local function hascommonargumentcondition(a,b)
---     if a == b then
---         setmacro("commalistelement",a)
---         if a == "" then
---             ctx_iffalse()
---         else
---             ctx_iftrue()
+-- -- This one slower than the tex based one:
+--
+-- implement {
+--     name      = "if_inset",
+--     usage     = "condition",
+--     arguments = "2 arguments",
+--     actions   = function(a,b)
+--         if a == b then
+--             setmacro("commalistelement",a)
+--             return boolean_value, a ~= ""
 --         end
---         return
---     end
---     local ba = find(a,",",1,true)
---     local bb = find(b,",",1,true)
---     if ba and bb then
---         local ha = hash[a]
---         local hb = hash[b]
---         for k in next, ha do
---             if hb[k] then
---                 setmacro("commalistelement",k)
---                 ctx_iftrue()
---                 return
+--         local bb = find(b,",",1,true)
+--         if bb then
+--             if hash[b][a] then
+--                 setmacro("commalistelement",a)
+--                 return boolean_value, true
 --             end
 --         end
---     elseif ba then
---         if hash[a][b] then
---             setmacro("commalistelement",b)
---             ctx_iftrue()
---             return
---         end
---     elseif bb then
---         if hash[b][a] then
---             setmacro("commalistelement",a)
---             ctx_iftrue()
---             return
---         end
---     end
---     setmacro("commalistelement","")
---     ctx_iffalse()
--- end
-
-local function doifelseinset(a,b)
-    if a == b then
-        setmacro("commalistelement",a)
-        if a == "" then
-            ctx_secondoftwoarguments()
-        else
-            ctx_firstoftwoarguments()
-        end
-        return
-    end
-    local bb = find(b,",",1,true)
-    if bb then
-        if hash[b][a] then
-     -- if settings_to_set(b)[a] then
-            setmacro("commalistelement",a)
-            ctx_firstoftwoarguments()
-            return
-        end
-    end
-    setmacro("commalistelement","")
-    ctx_secondoftwoarguments()
-end
-
-local function doifinset(a,b)
-    if a == b then
-        setmacro("commalistelement",a)
-        if a == "" then
-            ctx_gobbleoneargument()
-        else
-            ctx_firstofoneargument()
-        end
-        return
-    end
-    local bb = find(b,",",1,true)
-    if bb then
-       if hash[b][a] then
-    -- if settings_to_set(b)[a] then
-            setmacro("commalistelement",a)
-            ctx_firstofoneargument()
-            return
-        end
-    end
-    setmacro("commalistelement","")
-    ctx_gobbleoneargument()
-end
-
-local function doifnotinset(a,b)
-    if a == b then
-        setmacro("commalistelement",a)
-        if a == "" then
-            ctx_firstofoneargument()
-        else
-            ctx_gobbleoneargument()
-        end
-        return
-    end
-    local bb = find(b,",",1,true)
-    if bb then
-        if hash[b][a] then
-     -- if settings_to_set(b)[a] then
-            setmacro("commalistelement",a)
-            ctx_gobbleoneargument()
-            return
-        end
-    end
-    setmacro("commalistelement","")
-    ctx_firstofoneargument()
-end
-
-implement {
-    name      = "doifelsecommon",
-    actions   = doifelsecommon,
-    arguments = "2 strings",
-}
-
-implement {
-    name      = "doifcommon",
-    actions   = doifcommon,
-    arguments = "2 strings",
-}
-
-implement {
-    name      = "doifnotcommon",
-    actions   = doifnotcommon,
-    arguments = "2 strings",
-}
-
--- implement {
---     name      = "hascommonargumentcondition",
---     actions   = hascommonargumentcondition,
---     arguments = "2 strings",
---     arguments = "2 arguments",
--- }
-
-implement {
-    name      = "doifelseinset",
-    actions   = doifelseinset,
-    arguments = "2 strings",
---  arguments = "2 arguments",
-}
-
-implement {
-    name      = "doifinset",
-    actions   = doifinset,
-    arguments = "2 strings",
-}
-
-implement {
-    name      = "doifnotinset",
-    actions   = doifnotinset,
-    arguments = "2 strings",
-}
-
--- done elsewhere:
---
--- local function firstinset(a)
---     local aa = hash[a]
---     context(aa and aa[1] or a)
--- end
---
--- implement {
---     name      = "firstinset",
---     actions   = firstinset,
---     arguments = "string",
---     private   = false,
--- }
-
--- implement {
---     name      = "stringcompare",
---     arguments = "2 strings",
---     actions   = function(a,b)
---         context((a == b and 0) or (a > b and 1) or -1)
---     end
--- }
---
--- implement {
---     name      = "doifelsestringafter",
---     arguments = "2 strings",
---     actions   = function(a,b)
---         ctx_doifelse((a == b and 0) or (a > b and 1) or -1)
---     end
--- }
---
--- implement {
---     name      = "doifelsestringbefore",
---     arguments = "2 strings",
---     actions   = function(a,b)
---         ctx_doifelse((a == b and 0) or (a < b and -1) or 1)
+--         setmacro("commalistelement","")
+--         return boolean_value, false
 --     end
 -- }
 
--- implement { -- not faster than addtocommalist
---     name      = "additemtolist", -- unique
---     arguments = "2 strings",
---     actions   = function(l,s)
---         if l == "" or s == l then
---          -- s = s
---         elseif find("," .. l .. ",","," .. s .. ",") then
---             s = l
---         else
---             s = l .. "," .. s
---         end
---         context(s)
---     end
--- }
+implement {
+    name      = "ifinset",
+    public    = true,
+    usage     = "condition",
+    arguments = "2 arguments",
+    actions   = function(a,b)
+        if a == b then
+            return boolean_value, a ~= ""
+        end
+        local bb = find(b,",",1,true)
+        if bb then
+            if hash[b][a] then
+                return boolean_value, true
+            end
+        end
+        return boolean_value, false
+    end
+}
 
 local bp = number.dimenfactors.bp
 
@@ -782,6 +557,8 @@ implement {
     actions = function() getshape("widowpenalties") end,
 }
 
+-- These have beem replaced by loop primitives:
+
 implement {
     name      = "loopcs",
     public    = true,
@@ -795,6 +572,7 @@ implement {
        end
     end
 }
+
 implement {
     name      = "loopcsn",
     public    = true,

@@ -64,6 +64,7 @@ typedef enum callback_callback_types {
     process_character_callback,
     linebreak_quality_callback,
     paragraph_pass_callback,
+    handle_uleader_callback,
     total_callbacks,
 } callback_callback_types;
 

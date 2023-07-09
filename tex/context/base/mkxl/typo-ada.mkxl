@@ -108,6 +108,7 @@
        \edef\p_stretch{\adaptiveparameter\c!stretch}%
        \edef\p_shrink {\adaptiveparameter\c!shrink}%
        \uleaders
+callback \numexpr \adaptiveattribute \relax
          \ifcase#1%
            \hbox
              \s!spread \scratchdimen
@@ -128,6 +129,16 @@
            \s!minus \ifempty\p_shrink \scratchdimen\else\p_shrink \fi
          \endgroup}%
     \ifcase#1\hbox\else\vbox\fi}
+
+%D \startbuffer
+%D y\adaptive\hbox to5cm{x\rightarrowfill x}y\par
+%D y\adaptive\hbox to5cm{x\leftarrowfill  x}y\par
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection\getbuffer\stoplinecorrection
+
+\permanent\protected\def\adaptive
+  {\dowithnextbox{\adaptivecheckbox\nextbox\box\nextbox}}
 
 %D Here is a test case, expect more:
 %D
@@ -191,6 +202,14 @@
 %D           [cow.pdf]
 %D           [width=\usedadaptivewidth,
 %D            height=\dimexpr\usedadaptiveheight+\usedadaptivedepth\relax]%
+%D    \egroup
+%D \stopsetups
+%D
+%D \startsetups adaptive:test
+%D     \setbox\usedadaptivebox\hbox to \usedadaptivewidth yoffset .25ex \bgroup
+%D         \startMPcode
+%D             drawarrow ((0,0) -- (\the\usedadaptivewidth,0)) randomized (ExHeight/2);
+%D         \stopMPcode
 %D    \egroup
 %D \stopsetups
 %D

@@ -136,7 +136,7 @@
    \c!align=\margindataparameter\c!align]
 
 \appendtoks
-    \frozen\instance\setuevalue\currentmargindata{\margindata[\currentmargindata]}%
+    \frozen\instance\protected\edefcsname\currentmargindata\endcsname{\margindata[\currentmargindata]}%
 \to \everydefinemargindata
 
 \newconditional\inhibitmargindata      % This one is used at the Lua end!
@@ -148,7 +148,7 @@
 \mutable\lettonothing\currentmarginreference
 
 \appendtoks
-    \settrue\inhibitmargindata
+    \inhibitmargindata\conditionaltrue
 \to \everyforgetall
 
 \appendtoks
@@ -187,16 +187,14 @@
   {}
 
 \permanent\tolerant\protected\def\typo_margins_data_yes[#name]#spacer[#dataparameters]#spacer[#textparameters]#:#content%
-  {\setfalse\inhibitmargindata % flushing afterwards
+  {\inhibitmargindata\conditionalfalse % flushing afterwards
    \begingroup
-  %\settrue\inhibitmargindata  % no flushing in here
+  %\inhibitmargindata\conditionaltrue  % no flushing in here
    \def\currentmargindata{#name}%
    \let\currentmarginframed\currentmargindata
    \ifparameter#dataparameters\or
      \setupcurrentmargindata[#dataparameters]%
    \fi
- % \doifelsenothing{#content}\donefalse\donetrue
- % \doifelsetext{#content}\donetrue\donefalse
    \ifparameter#content\donefalse\or\donetrue\else\donefalse\fi
    \global\advanceby\c_typo_margins_n\plusone
    \ifdone

@@ -1,0 +1,46 @@
+%D \module
+%D   [       file=core-ali,
+%D        version=2023.06.15,
+%D          title=\CONTEXT\ Table Macros,
+%D       subtitle=Text Simple Alignment,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Table Macros / Alignment}
+
+%D This module is for Bruce Horrocks (and a follow up on a chat session). Watch out,
+%D when a shift results in a newline we get oscillation!
+
+\unprotect
+
+\newinteger  \c_align_point_index
+\newdimension\d_align_point_delta
+
+\registerctxluafile{tabl-ali}{autosuffix}
+
+\permanent\protected\def\ap[#1]%
+  {\ifchknum#1\or
+     \dontleavehmode
+     \global\advance\c_align_point_index\plusone
+     \d_align_point_delta\clf_align_point_delta
+       \numexpr#1\relax
+       \c_align_point_index
+     \relax
+     \xypos{ap::\number#1:\the\c_align_point_index}%
+     \hkern\d_align_point_delta
+  \fi}
+
+\protect \endinput
+
+% \starttext
+%     \dostepwiserecurse{10}{10000}{10}{
+%                    \ap[1]{\bf\darkred 1} test       test \ap[2]{\bf\darkblue 2} test #1.#1 \ap[3]{\bf \darkgreen 3} test       \par
+%         test #1.#1 \ap[1]{\bf\darkred 1} test #1.#1 test \ap[2]{\bf\darkblue 2} test       \ap[3]{\bf \darkgreen 3} test #1.#1 \par
+%     }
+% \stoptext
+

@@ -130,7 +130,7 @@
 % with push/pop (also at definition time)
 
 \protected\def\strc_define_commands_enumeration#tag#level#parent%
-  {\iftok{#parent}\emptytoks
+  {\ifempty{#parent}%
      \normalexpanded{\defineconstruction[#tag][\s!handler=\v!enumeration,\c!level=#level]}%
      \edefcsname\??enumeration#tag:\s!parent\endcsname{\??enumeration}%
    \else
@@ -182,9 +182,6 @@
   %\strc_enumerations_setup_counter\currentenumeration
 \to \everydefineenumeration
 
-\lettonothing\p_strc_constructions_title
-\lettonothing\p_strc_constructions_number
-
 \protected\defcsname\??constructioninitializer\v!enumeration\endcsname
   {\let         \currentenumeration              \currentconstruction
    \enforced\let\constructionparameter           \enumerationparameter
@@ -193,21 +190,19 @@
    \enforced\let\letconstructionparameter        \letenumerationparameter
    \enforced\let\useconstructionstyleandcolor    \useenumerationstyleandcolor
    \enforced\let\setupcurrentconstruction        \setupcurrentenumeration
-   \edef\p_strc_constructions_number{\constructionparameter\c!number}%
-   \ifx\p_strc_constructions_number\v!yes
-     \settrue\c_strc_constructions_number_state
+   \ifcstok{\constructionparameter\c!number}\v!yes
+     \c_strc_constructions_number_state\conditionaltrue
      \iftrialtypesetting
        \strc_counters_save\currentconstructionnumber
      \fi
      \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
    \else
-     \setfalse\c_strc_constructions_number_state
+     \c_strc_constructions_number_state\conditionalfalse
    \fi
-   \edef\p_strc_constructions_title{\constructionparameter\c!title}%
-   \ifx\p_strc_constructions_title\v!yes
-     \settrue\c_strc_constructions_title_state
+   \ifcstok{\constructionparameter\c!title}\v!yes
+     \c_strc_constructions_title_state\conditionaltrue
    \else
-     \setfalse\c_strc_constructions_title_state
+     \c_strc_constructions_title_state\conditionalfalse
    \fi}
 
 \protected\defcsname\??constructionfinalizer\v!enumeration\endcsname

@@ -47,7 +47,7 @@
    \global\csname\??pagestatecounter\currentpagestate\endcsname\scratchcounter
    \clf_setpagestate
       name  {\currentpagestate}%
-      tag   {\ifparameter#2\or#2\else\number\scratchcounter\fi}%
+      tag   {\ifparameter#2\or#2\else\the\scratchcounter\fi}%
       delay {\pagestateparameter\c!delay}%
    \relax
    \endgroup}

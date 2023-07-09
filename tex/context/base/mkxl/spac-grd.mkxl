@@ -33,15 +33,15 @@
      \fi
    \endcsname}
 
-\defcsname\??lastnodepusher\number\kernnodecode\endcsname
+\defcsname\??lastnodepusher\the\kernnodecode\endcsname
   {\enforced\permanent\protected\edef\poplastnode{\kern\the\lastkern\relax}%
    \kern-\lastkern}
 
-\defcsname\??lastnodepusher\number\gluenodecode\endcsname
+\defcsname\??lastnodepusher\the\gluenodecode\endcsname
   {\enforced\permanent\protected\edef\poplastnode{\vskip\the\lastskip\relax}%
    \vskip-\lastskip}
 
-\defcsname\??lastnodepusher\number\penaltynodecode\endcsname
+\defcsname\??lastnodepusher\the\penaltynodecode\endcsname
   {\enforced\permanent\protected\edef\poplastnode{\penalty\the\lastpenalty\relax}%
    \nobreak}
 

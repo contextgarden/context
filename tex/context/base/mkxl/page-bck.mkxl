@@ -44,10 +44,10 @@
 \to \everybeforepagebody
 
 \permanent\protected\def\initializepagebackgrounds
-  {\setfalse\c_page_backgrounds_new
-   \setfalse\c_page_backgrounds_new_right
-   \setfalse\c_page_backgrounds_new_left
-   \setfalse\c_page_backgrounds_some}
+  {\c_page_backgrounds_new\conditionalfalse
+   \c_page_backgrounds_new_right\conditionalfalse
+   \c_page_backgrounds_new_left\conditionalfalse
+   \c_page_backgrounds_some\conditionalfalse}
 
 %D We keep calculations and checks to a minimum and also try to minimize
 %D the amount of tracing due to expansion.
@@ -57,80 +57,134 @@
 %D This is the only spot where we have a low level dependency on the way
 %D parent chains are defined but we want the speed.
 
+% \protected\def\page_backgrounds_check_background
+%   {\ifcsname\??framed\currentotrbackground:\c!background\endcsname
+%     %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!background\endcsname}%
+%      \edef\page_background_temp{\lastnamedcs}%
+%      \ifempty\page_background_temp
+%        \expandafter\expandafter\expandafter\page_backgrounds_check_frame
+%      \else
+%        \page_backgrounds_set_yes
+%      \fi
+%    \else
+%      \expandafter\page_backgrounds_check_frame
+%    \fi}
+%
+% \def\page_backgrounds_check_frame
+%   {\ifcsname\??framed\currentotrbackground:\c!frame\endcsname
+%     %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!frame\endcsname}%
+%      \edef\page_background_temp{\lastnamedcs}%
+%      \ifx\page_background_temp\v!on
+%        \page_backgrounds_set_yes
+%      \else
+%        \expandafter\expandafter\expandafter\page_backgrounds_check_leftframe
+%      \fi
+%    \else
+%      \expandafter\page_backgrounds_check_leftframe
+%    \fi}
+%
+% \def\page_backgrounds_check_leftframe
+%   {\ifcsname\??framed\currentotrbackground:\c!leftframe\endcsname
+%     %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!leftframe\endcsname}%
+%      \edef\page_background_temp{\lastnamedcs}%
+%      \ifx\page_background_temp\v!on
+%        \page_backgrounds_set_yes
+%      \else
+%        \expandafter\expandafter\expandafter\page_backgrounds_check_rightframe
+%      \fi
+%    \else
+%      \expandafter\page_backgrounds_check_rightframe
+%    \fi}
+%
+% \def\page_backgrounds_check_rightframe
+%   {\ifcsname\??framed\currentotrbackground:\c!rightframe\endcsname
+%     %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!rightframe\endcsname}%
+%      \edef\page_background_temp{\lastnamedcs}%
+%      \ifx\page_background_temp\v!on
+%        \page_backgrounds_set_yes
+%      \else
+%        \expandafter\expandafter\expandafter\page_backgrounds_check_topframe
+%      \fi
+%    \else
+%      \expandafter\page_backgrounds_check_topframe
+%    \fi}
+%
+% \def\page_backgrounds_check_topframe
+%   {\ifcsname\??framed\currentotrbackground:\c!topframe\endcsname
+%     %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!topframe\endcsname}%
+%      \edef\page_background_temp{\lastnamedcs}%
+%      \ifx\page_background_temp\v!on
+%        \page_backgrounds_set_yes
+%      \else
+%        \expandafter\expandafter\expandafter\page_backgrounds_check_bottomframe
+%      \fi
+%    \else
+%      \expandafter\page_backgrounds_check_bottomframe
+%    \fi}
+%
+% \def\page_backgrounds_check_bottomframe
+%   {\ifcsname\??framed\currentotrbackground:\c!bottomframe\endcsname
+%     %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!bottomframe\endcsname}%
+%      \edef\page_background_temp{\lastnamedcs}%
+%      \ifx\page_background_temp\v!on
+%        \page_backgrounds_set_yes
+%      \else
+%        \page_backgrounds_set_nop
+%      \fi
+%    \else
+%      \page_backgrounds_set_nop
+%    \fi}
+
 \protected\def\page_backgrounds_check_background
-  {\ifcsname\??framed\currentotrbackground:\c!background\endcsname
-    %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!background\endcsname}%
-     \edef\page_background_temp{\lastnamedcs}%
-     \ifempty\page_background_temp
-       \expandafter\expandafter\expandafter\page_backgrounds_check_frame
-     \else
-       \page_backgrounds_set_yes
-     \fi
+  {\unless\ifcsname\??framed\currentotrbackground:\c!background\endcsname
+     \page_backgrounds_check_frame
+   \orelse\ifempty\lastnamedcs
+     \page_backgrounds_check_frame
    \else
-     \expandafter\page_backgrounds_check_frame
+     \page_backgrounds_set_yes
    \fi}
 
 \def\page_backgrounds_check_frame
-  {\ifcsname\??framed\currentotrbackground:\c!frame\endcsname
-    %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!frame\endcsname}%
-     \edef\page_background_temp{\lastnamedcs}%
-     \ifx\page_background_temp\v!on
-       \page_backgrounds_set_yes
-     \else
-       \expandafter\expandafter\expandafter\page_backgrounds_check_leftframe
-     \fi
+  {\unless\ifcsname\??framed\currentotrbackground:\c!frame\endcsname
+     \page_backgrounds_check_leftframe
+   \orelse\ifcstok\lastnamedcs\v!on
+     \page_backgrounds_set_yes
    \else
-     \expandafter\page_backgrounds_check_leftframe
+     \page_backgrounds_check_leftframe
    \fi}
 
 \def\page_backgrounds_check_leftframe
-  {\ifcsname\??framed\currentotrbackground:\c!leftframe\endcsname
-    %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!leftframe\endcsname}%
-     \edef\page_background_temp{\lastnamedcs}%
-     \ifx\page_background_temp\v!on
-       \page_backgrounds_set_yes
-     \else
-       \expandafter\expandafter\expandafter\page_backgrounds_check_rightframe
-     \fi
+  {\unless\ifcsname\??framed\currentotrbackground:\c!leftframe\endcsname
+     \page_backgrounds_check_rightframe
+   \orelse\ifcstok\lastnamedcs\v!on
+     \page_backgrounds_set_yes
    \else
-     \expandafter\page_backgrounds_check_rightframe
+     \page_backgrounds_check_rightframe
    \fi}
 
 \def\page_backgrounds_check_rightframe
-  {\ifcsname\??framed\currentotrbackground:\c!rightframe\endcsname
-    %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!rightframe\endcsname}%
-     \edef\page_background_temp{\lastnamedcs}%
-     \ifx\page_background_temp\v!on
-       \page_backgrounds_set_yes
-     \else
-       \expandafter\expandafter\expandafter\page_backgrounds_check_topframe
-     \fi
+  {\unless\ifcsname\??framed\currentotrbackground:\c!rightframe\endcsname
+     \page_backgrounds_check_topframe
+   \orelse\ifcstok\lastnamedcs\v!on
+     \page_backgrounds_set_yes
    \else
-     \expandafter\page_backgrounds_check_topframe
+     \page_backgrounds_check_topframe
    \fi}
 
 \def\page_backgrounds_check_topframe
-  {\ifcsname\??framed\currentotrbackground:\c!topframe\endcsname
-    %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!topframe\endcsname}%
-     \edef\page_background_temp{\lastnamedcs}%
-     \ifx\page_background_temp\v!on
-       \page_backgrounds_set_yes
-     \else
-       \expandafter\expandafter\expandafter\page_backgrounds_check_bottomframe
-     \fi
+  {\unless\ifcsname\??framed\currentotrbackground:\c!topframe\endcsname
+     \page_backgrounds_check_bottomframe
+   \orelse\ifcstok\lastnamedcs\v!on
+     \page_backgrounds_set_yes
    \else
-     \expandafter\page_backgrounds_check_bottomframe
+     \page_backgrounds_check_bottomframe
    \fi}
 
 \def\page_backgrounds_check_bottomframe
-  {\ifcsname\??framed\currentotrbackground:\c!bottomframe\endcsname
-    %\edef\page_background_temp{\csname\??framed\currentotrbackground:\c!bottomframe\endcsname}%
-     \edef\page_background_temp{\lastnamedcs}%
-     \ifx\page_background_temp\v!on
-       \page_backgrounds_set_yes
-     \else
-       \page_backgrounds_set_nop
-     \fi
+  {\unless\ifcsname\??framed\currentotrbackground:\c!bottomframe\endcsname
+     \page_backgrounds_set_nop
+   \orelse\ifcstok\lastnamedcs\v!on
+     \page_backgrounds_set_yes
    \else
      \page_backgrounds_set_nop
    \fi}
@@ -240,7 +294,7 @@
 %D Calculation is delayed till the page anyway so the state is known.
 
 \def\page_backgrounds_recalculate
-  {\global\settrue\c_page_backgrounds_new}
+  {\global\c_page_backgrounds_new\conditionaltrue}
 
 \def\page_backgrounds_set_boxes
   {\ifconditional\c_page_backgrounds_new
@@ -251,12 +305,12 @@
      \page_backgrounds_set_boxes_b
      \page_backgrounds_set_boxes_c
    \ifx\p_page_backgrounds_state\v!repeat\else
-     \global\setfalse\c_page_backgrounds_new
+     \global\c_page_backgrounds_new\conditionalfalse
    \fi}
 
 \def\page_backgrounds_set_boxes_r
-  {\global\settrue\c_page_backgrounds_new_right
-   \global\settrue\c_page_backgrounds_new_left
+  {\global\c_page_backgrounds_new_right\conditionaltrue
+   \global\c_page_backgrounds_new_left\conditionaltrue
    \global\setbox\leftbackground\emptybox
    \global\setbox\rightbackground\emptybox}
 
@@ -264,22 +318,22 @@
   {\ifconditional\c_page_backgrounds_new_left
      % \showmessage\m!layouts8\empty
      \page_backgrounds_set_box\leftbackground % \conditionalfalse
-     \global\setfalse\c_page_backgrounds_new_left
-     \global\setfalse\c_page_backgrounds_new_right
+     \global\c_page_backgrounds_new_left\conditionalfalse
+     \global\c_page_backgrounds_new_right\conditionalfalse
    \fi}
 
 \def\page_backgrounds_set_boxes_b
   {\ifconditional\c_page_backgrounds_new_left
      % \showmessage\m!layouts8\empty
      \page_backgrounds_set_box\leftbackground
-     \global\setfalse\c_page_backgrounds_new_left
+     \global\c_page_backgrounds_new_left\conditionalfalse
    \fi}
 
 \def\page_backgrounds_set_boxes_c
   {\ifconditional\c_page_backgrounds_new_right
      % \showmessage\m!layouts8\empty
      \page_backgrounds_set_box\rightbackground
-     \global\setfalse\c_page_backgrounds_new_right
+     \global\c_page_backgrounds_new_right\conditionalfalse
    \fi}
 
 \def\page_backgrounds_add_to_main#1% todo: dimension spec
@@ -346,7 +400,7 @@
     \page_backgrounds_set_offsets
 \to \everybeforepagebody
 
-\newconditional\swapbackgroundmargins \settrue\swapbackgroundmargins
+\newconditional\swapbackgroundmargins \swapbackgroundmargins\conditionaltrue
 
 %D The swapping here is pretty nasty! Maybe we should find another way some day but
 %D for now we tweak.
@@ -497,9 +551,9 @@
    \global\pagebackgroundoffset\d_page_backgrounds_offset\relax
    \global\pagebackgrounddepth \d_page_backgrounds_depth \relax
    \ifx\p_page_backgrounds_state\v!stop
-     \global\setfalse\c_page_backgrounds_new
+     \global\c_page_backgrounds_new\conditionalfalse
    \else
-     \global\settrue \c_page_backgrounds_new
+     \global\c_page_backgrounds_new\conditionaltrue
    \fi
 \to \everybackgroundssetup
 
@@ -510,22 +564,26 @@
 \let\page_backgrounds_setup_step_nested\relax
 
 \protected\def\page_backgrounds_setup_double[#1][#2][#3]% if needed we can speed this up
-  {\global\settrue\c_page_backgrounds_some
+  {\global\c_page_backgrounds_some\conditionaltrue
    \def\page_backgrounds_setup_step##1%
-     {\doifelseinset{##1}\v_page_backgrounds_double_set
-        {\page_backgrounds_setup_and_check{##1}{#3}}
-        {\def\page_backgrounds_setup_step_nested####1{\page_backgrounds_setup_and_check{##1####1}{#3}}%
-         \processcommacommand[#2]\page_backgrounds_setup_step_nested}}%
+     {\ifinset{##1}\v_page_backgrounds_double_set
+        \page_backgrounds_setup_and_check{##1}{#3}%
+      \else
+        \def\page_backgrounds_setup_step_nested####1{\page_backgrounds_setup_and_check{##1####1}{#3}}%
+        \processcommacommand[#2]\page_backgrounds_setup_step_nested
+      \fi}%
    \processcommacommand[#1]\page_backgrounds_setup_step
    \expand\everybackgroundssetup}
 
 \protected\def\page_backgrounds_setup_single[#1][#2][#-]%
-  {\global\settrue\c_page_backgrounds_some
-   \doifelsecommon{#1}\v_page_backgrounds_single_set
-     {\def\page_backgrounds_setup_step##1{\page_backgrounds_setup_and_check{##1}{#2}}%
-      \processcommacommand[#1]\page_backgrounds_setup_step
-      \expand\everybackgroundssetup}%
-     {\page_backgrounds_setup_double[#1][\v_page_backgrounds_common_set][#2]}}
+  {\global\c_page_backgrounds_some\conditionaltrue
+   \ifcommon{#1}\v_page_backgrounds_single_set
+     \def\page_backgrounds_setup_step##1{\page_backgrounds_setup_and_check{##1}{#2}}%
+     \processcommacommand[#1]\page_backgrounds_setup_step
+     \expand\everybackgroundssetup
+   \else
+     \page_backgrounds_setup_double[#1][\v_page_backgrounds_common_set][#2]%
+   \fi}
 
 \protected\def\page_backgrounds_setup_basics[#1][#-][#-]%
   {\setupframed[\??layoutbackgrounds][#1]%
@@ -594,12 +652,12 @@
 %      spread-2 .. spread+2 achter spread -> spread (repeat 2 times)
 
 \permanent\protected\def\enablehiddenbackground
-  {\global\settrue\c_page_backgrounds_hidden_enabled
-   \global\settrue\c_page_backgrounds_some
+  {\global\c_page_backgrounds_hidden_enabled\conditionaltrue
+   \global\c_page_backgrounds_some\conditionaltrue
    \page_backgrounds_recalculate}
 
 \permanent\protected\def\disablehiddenbackground
-  {\global\setfalse\c_page_backgrounds_hidden_enabled}
+  {\global\c_page_backgrounds_hidden_enabled\conditionalfalse}
 
 \immutable\def\hiddenbackgroundlist
   {\v!text-2,\v!text-1,\v!foreground,\v!text+1,\v!text+2}
@@ -619,7 +677,7 @@
 %D Because we haven't really set up backgrounds yet, we set the main efficiency
 %D switch to false.
 
-\setfalse\c_page_backgrounds_some
+\c_page_backgrounds_some\conditionalfalse
 
 %D Sometimes you have a document wide (page) background but need to overload it
 %D locally. In such case (at least in my experience) the only values that get set

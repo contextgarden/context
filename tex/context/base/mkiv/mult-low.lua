@@ -239,6 +239,7 @@ return {
         "ordmathflattencode", "binmathflattencode", "relmathflattencode", "punctmathflattencode", "innermathflattencode",
         --
         "normalworddiscoptioncode", "preworddiscoptioncode", "postworddiscoptioncode",
+        "preferbreakdiscoptioncode", "prefernobreakdiscoptioncode",
         --
         "continueifinputfile", "continuewhenlmtxmode", "continuewhenmkivmode",
     },
@@ -412,7 +413,7 @@ return {
         "doifinstring", "doifnotinstring", "doifelseinstring", "doifinstringelse",
         "doifelseassignment", "doifassignmentelse", "docheckassignment", "doifelseassignmentcs", "doifassignmentelsecs",
         "validassignment", "novalidassignment",
-        "doiftext", "doifelsetext", "doiftextelse", "doifnottext",
+        "doiftext", "doifelsetext", "doiftextelse", "doifnottext", "validtext",
         --
         "quitcondition", "truecondition", "falsecondition",
         --
@@ -677,6 +678,8 @@ return {
         "newlocalwrite", "newlocalread",
         "setnewlocalcount", "setnewlocaldimen", "setnewlocalskip", "setnewlocalmuskip", "setnewlocaltoks", "setnewlocalbox",
         --
-        "ifexpression"
+        "ifexpression",
+        --
+        "localcontrolledrepeating", "expandedrepeating", "unexpandedrepeating",
     }
 }

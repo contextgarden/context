@@ -21,10 +21,10 @@
 
 \gdef\module_fonts_show_prepare#1%
   {\iftok{#1}\emptytoks
-      \edef\m_module_fonts_show_title{\the\bodyfontsize}%
+     \edef\m_module_fonts_show_title{\the\bodyfontsize}%
    \else
-      \switchtobodyfont[#1]%
-      \edef\m_module_fonts_show_title{#1}%
+     \switchtobodyfont[#1]%
+     \edef\m_module_fonts_show_title{#1}%
    \fi
    \ifempty\fontclass
      \edef\m_module_fonts_show_title{[\m_module_fonts_show_title]}%
@@ -97,23 +97,25 @@
      \fi
    \fi
    \integerdef\c_module_fonts_font_id\fontid\font
-   \doifelsenothing{#2}
-     {\module_fonts_show_font_indeed{#1}\zerocount}
-     {\doifelse{#2}\v!all
-        {\dostepwiserecurse\zerocount{255}\plusone
-           {\scratchcounterone  \recurselevel
-            \scratchcountertwo  \numexpr\scratchcounterone*256\relax
-            \scratchcounterthree\numexpr\scratchcountertwo+255\relax
-            \doloop
-              {\iffontchar\font\scratchcountertwo
-                 \module_fonts_show_font_indeed{#1}\scratchcounterone
-                 \exitloop
-               \orelse\ifnum\scratchcountertwo=\scratchcounterthree
-                 \exitloop
-               \else
-                 \advanceby\scratchcountertwo\plusone
-               \fi}}}
-        {\processcommalist[#2]{\module_fonts_show_font_indeed{#1}}}}%
+   \ifempty{#2}%
+     \module_fonts_show_font_indeed{#1}\zerocount
+   \orelse\ifcstok{#2}\v!all
+     \dostepwiserecurse\zerocount{255}\plusone
+       {\scratchcounterone  \recurselevel
+        \scratchcountertwo  \numexpr\scratchcounterone*256\relax
+        \scratchcounterthree\numexpr\scratchcountertwo+255\relax
+        \doloop
+          {\iffontchar\font\scratchcountertwo
+             \module_fonts_show_font_indeed{#1}\scratchcounterone
+             \exitloop
+           \orelse\ifnum\scratchcountertwo=\scratchcounterthree
+             \exitloop
+           \else
+             \advanceby\scratchcountertwo\plusone
+           \fi}}%
+   \else
+     \processcommalist[#2]{\module_fonts_show_font_indeed{#1}}%
+   \fi
    \egroup}
 
 \gdef\module_fonts_show_font_indeed#1#2% made some 50% faster but still slow
@@ -131,7 +133,7 @@
          \setstrut
          \setfontid\c_module_fonts_font_id
          \offinterlineskip
-         \unexpanded\def\wrapbox##1%
+         \protected\def\wrapbox##1%
            {\vpack to \scratchdimenone
               {\vss
                \hpack to \scratchdimenone
@@ -147,12 +149,12 @@
                   \fi
                   \hss\copy##1\hss}
                \vss}}%
-         \unexpanded\def\textbox##1%
+         \protected\def\textbox##1%
            {\vpack to \scratchdimentwo
               {\hsize\scratchdimenthree
                ##1%
                \par}}%
-         \unexpanded\def\scratchnum
+         \protected\def\scratchnum
            {\blue
             \tinyfont
             \hfill
@@ -224,11 +226,14 @@
    \protected\def\dodocommand##1##2%
      {\starttextrule{\tttf #1 ##1 ##2}
       \nobreak\getvalue{##2}%
-      \doifelsenothing{#4}
-        {\dododocommand\zerocount}
-        {\doifelse{#4}\v!all
-           {\dostepwiserecurse\zerocount{255}\plusone{\normalexpanded{\dododocommand{\recurselevel}}}}
-           {\processcommalist[#4]{\dododocommand}}}%
+      \ifempty{#4}%
+        \dododocommand\zerocount
+      \orelse\ifcstok{#4}\v!all
+        \dostepwiserecurse\zerocount{255}\plusone
+          {\normalexpanded{\dododocommand{\recurselevel}}}%
+      \else
+        \processcommalist[#4]{\dododocommand}%
+      \fi
       \par \nobreak
       \stoptextrule}
    \protected\def\docommand##1%
@@ -243,7 +248,9 @@
 \permanent\protected\tolerant\gdef\showligatures[#1]% we keep it around for compatibility reasons
   {\bgroup
    \def\module_fonts_show_ligature##1{\hbox{\showglyphs##1}}%
-   \doifsomething{#1}{\definedfont[#1*default]}%
+   \ifempty{#1}\else
+     \definedfont[#1*default]%
+   \fi
    \starttabulate[|*{7}{c|}]
      \NC\type{ff}
      \NC\type{fi}
@@ -292,7 +299,7 @@
      \NC \type {\extraspace}       \NC \the\fontextraspace      \font \NC\NR
    \stoptabulate}
 
-\unexpanded\gdef\module_fonts_show_minimal_baseline#1% to be used in a 10 column tabulate
+\protected\gdef\module_fonts_show_minimal_baseline#1% to be used in a 10 column tabulate
   {\setbox\scratchbox\ruledhbox{#1}%
    \normalexpanded {
      \NC \ruledhbox{#1}%
@@ -366,7 +373,7 @@
 
 \permanent\protected\gdef\otfstepcharcommand#1#2#3% font char class
   {\otfstepspace
-   \doif{#3}{mark}{\underbar}{U+\hexnumber{#2}}:%
+   \iftok{#3}{mark}\expandafter\underbar\fi{U+\hexnumber{#2}}:%
    \setbox\scratchbox\hbox{\ctxlua{nodes.tracers.fontchar(#1,#2)}}%
    \ifzeropt\wd\scratchbox
      \scratchwidth.125\onepoint
@@ -394,7 +401,7 @@
    \hangindent\emwidth
    \hangafter\plusone
    \dontleavehmode\detokenize{#1}\removeunwantedspaces
-   \doifsomething{#2}{,\space\detokenize{#2}}\endgraf
+   \ifempty{#2}\else,\space\detokenize{#2}\fi\endgraf
    \endgroup
    \blank}
 

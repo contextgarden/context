@@ -74,9 +74,11 @@
   {\endgraf
    \begingroup
    \cdef\currentbackground{#tag}%
-   \doifelse{\backgroundparameter\c!state}\v!start
-     \pack_backgrounds_start_indeed
-     \pack_backgrounds_start_ignore}
+   \ifcstok{\backgroundparameter\c!state}\v!start
+     \expandafter\pack_backgrounds_start_indeed
+   \else
+     \expandafter\pack_backgrounds_start_ignore
+   \fi}
 
 \tolerant\def\pack_backgrounds_start_indeed[#settings]%
   {\setupcurrentbackground[#settings,\c!state=\v!start,\c!offset=\v!overlay]%
@@ -183,9 +185,11 @@
 \protected\def\pack_backgrounds_direct[#tag]%
   {\begingroup
    \cdef\currentbackground{#tag}%
-   \doifelse{\backgroundparameter\c!state}\c!start
-     \pack_backgrounds_direct_indeed
-     \pack_backgrounds_direct_ignore}
+   \ifcstok{\backgroundparameter\c!state}\c!start
+     \expandafter\pack_backgrounds_direct_indeed
+   \else
+     \expandafter\pack_backgrounds_direct_ignore
+   \fi}
 
 \def\pack_backgrounds_direct_indeed
   {\dowithnextboxcs\pack_backgrounds_direct_finish\vbox}

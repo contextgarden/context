@@ -31,7 +31,7 @@
    \letdummyparameter\c!height \v!auto
    \letdummyparameter\c!hoffset\zeropoint
    \letdummyparameter\c!voffset\zeropoint
-   \unless\iftok{#2}\emptytoks
+   \unless\ifempty{#2}%
      \setdummyparameter\c!name{#1}%
      \getdummyparameters[#2]%
    \orelse\ifhastok={#1}%
@@ -68,7 +68,7 @@
    \letdummyparameter\c!name  \s!dummy
    \letdummyparameter\c!width \zeropoint
    \letdummyparameter\c!height\zeropoint
-   \unless\iftok{#2}\emptytoks
+   \unless\ifempty{#2}%
      \setdummyparameter\c!name{#1}%
      \getdummyparameters[#2]%
    \orelse\ifhastok={#1}%

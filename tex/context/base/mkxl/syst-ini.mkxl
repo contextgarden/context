@@ -933,7 +933,7 @@
 %D \type{\setfalse}:
 %D
 %D \starttyping
-%D \settrue\doublesided
+%D \doublesided\conditionaltrue
 %D \setfalse
 %D \stoptyping
 %D while testing is accomplished by:
@@ -1248,7 +1248,7 @@
 
 \newcount\c_syst_helpers_n_of_namespaces \c_syst_helpers_n_of_namespaces\pluseight % 1-8 reserved for catcodes
 
-\def\v_interfaces_prefix_template_system{\number    \c_syst_helpers_n_of_namespaces>>}
+\def\v_interfaces_prefix_template_system{\the       \c_syst_helpers_n_of_namespaces>>}
 %def\v_interfaces_prefix_template_system{\characters\c_syst_helpers_n_of_namespaces>>} % no \characters yet
 
 \protected\def\installsystemnamespace#1% will be redefined
@@ -1507,5 +1507,16 @@
 
 \ifdefined\linebreakcriterion   \aliased\let\linebreakcriterium  \linebreakcriterion   \fi
 \ifdefined\ignoredepthcriterion \aliased\let\ignoredepthcriterium\ignoredepthcriterion \fi
+
+%D Special purpose:
+
+\permanent\protected\def\if_false{\iffalse}
+\permanent\protected\def\if_true {\iftrue}
+
+%D Pseudo primitives:
+
+\permanent\untraced\def\localcontrolledrepeating{\localcontrolledrepeat\maxcount}
+\permanent\untraced\def\expandedrepeating       {\expandedrepeat       \maxcount}
+\permanent\untraced\def\unexpandedrepeating     {\unexpandedrepeat     \maxcount}
 
 \protect \endinput

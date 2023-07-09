@@ -295,7 +295,7 @@
 
 \protected\def\strc_tags_enable
   {% once enable one is toast
-   \global\settrue\c_strc_tags_enabled
+   \global\c_strc_tags_enabled\conditionaltrue
    % and gets:
    \strc_tags_enable_indeed}
 
@@ -345,7 +345,11 @@
 \appendtoks
     \strc_tags_enable_elements
     \strc_tags_enable_properties
-    \doifelse{\taggingparameter\c!method}\v!auto\strc_tags_enable\strc_tags_disable
+    \ifcstok{\taggingparameter\c!method}\v!auto
+      \strc_tags_enable
+    \else
+      \strc_tags_disable
+    \fi
 \to \everyenableelements
 
 \appendtoks
@@ -355,7 +359,11 @@
 \to \everydisableelements
 
 \appendtoks
-   \doifelse{\taggingparameter\c!state}\v!start{\expand\everyenableelements}{\expand\everydisableelements}%
+   \ifcstok{\taggingparameter\c!state}\v!start
+     \expand\everyenableelements
+   \else
+     \expand\everydisableelements
+   \fi
 \to \everysetuptagging
 
 \permanent\protected\def\forgettagging

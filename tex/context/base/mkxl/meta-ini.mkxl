@@ -254,9 +254,9 @@
    \expand\everyMPgraphic
    \edef\p_initializations{\MPinstanceparameter\s!initializations}%
    \ifx\p_initializations\v!yes
-     \settrue \c_meta_include_initializations
+     \c_meta_include_initializations\conditionaltrue
    \else
-     \setfalse\c_meta_include_initializations
+     \c_meta_include_initializations\conditionalfalse
    \fi
    \edef\p_setups{\MPinstanceparameter\c!setups}%
    \ifempty\p_setups \else
@@ -394,9 +394,12 @@
   {\relax
    \bgroup
    \meta_enable_include
-   \doifelse{#1}{-}
-     {\xdef\MPdrawingdata{\MPdrawingdata\detokenize{#2}}}%
-     {\xdef\MPdrawingdata{\MPdrawingdata#2}}%
+   % can be a one liner:
+   \iftok{#1}{-}%
+     \xdef\MPdrawingdata{\MPdrawingdata\detokenize{#2}}%
+   \else
+     \xdef\MPdrawingdata{\MPdrawingdata#2}%
+   \fi
    \egroup}
 
 \permanent\protected\lettonothing\stopMPdrawing
@@ -520,7 +523,7 @@
    \orelse\ifchkdim\m_meta_current_variable\or
      \todimension\m_meta_current_variable\space\space
  % \orelse\ifchknum\m_meta_current_variable\or % we need to catch 1>2
-   \orunless\iftok{\ifchknum\m_meta_current_variable\or\tointeger\m_meta_current_variable\fi}\emptytoks
+   \orunless\ifempty{\ifchknum\m_meta_current_variable\or\tointeger\m_meta_current_variable\fi}%
      \tointeger\m_meta_current_variable\space\space
    \orelse\ifcsname\??colorattribute\currentcolorprefix\m_meta_current_variable\endcsname
      \MPcolor\m_meta_current_variable\space
@@ -539,7 +542,7 @@
    \orelse\ifchkdim\m_meta_current_variable\or
      \todimension\m_meta_current_variable\space\space
  % \orelse\ifchknum\m_meta_current_variable\or % we need to catch 1>2
-   \orunless\iftok{\ifchknum\m_meta_current_variable\or\tointeger\m_meta_current_variable\fi}\emptytoks
+   \orunless\ifempty{\ifchknum\m_meta_current_variable\or\tointeger\m_meta_current_variable\fi}%
      \tointeger\m_meta_current_variable\space\space
    \orelse\ifcsname\??colorattribute\currentcolorprefix\m_meta_current_variable\endcsname
      \MPcolor\m_meta_current_variable\space
@@ -650,8 +653,8 @@
    \else
      \meta_enable_include % redundant
      \global\advanceby\c_meta_object_counter\plusone
-     \meta_use_box{\number\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
-     \xdefcsname\??mpgraphic\overlaystamp:#1\endcsname{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
+     \meta_use_box{\the\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
+     \xdefcsname\??mpgraphic\overlaystamp:#1\endcsname{\meta_reuse_box{\the\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
      \csname\??mpgraphic\overlaystamp:#1\endcsname\empty
    \fi
    \endgroup}
@@ -735,8 +738,8 @@
  % \currentmpcategory already set
    \meta_enable_include % redundant
    \global\advanceby\c_meta_object_counter\plusone
-   \meta_use_box{\number\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
-   \xdefcsname\??mpgraphic#1\endcsname{\meta_reuse_box{\number\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
+   \meta_use_box{\the\c_meta_object_counter}\hpack{\meta_process_graphic{#3}}% was vbox, graphic must end up as hbox
+   \xdefcsname\??mpgraphic#1\endcsname{\meta_reuse_box{\the\c_meta_object_counter}{\the\MPllx}{\the\MPlly}{\the\MPurx}{\the\MPury}}%
    \csname\??mpgraphic#1\endcsname\empty
    \endgroup}
 
@@ -750,24 +753,6 @@
 
 \protected\def\meta_start_reusable_graphic_indeed#1#2#3\stopreusableMPgraphic
   {\gdefcsname\??mpgraphic#1\endcsname{\meta_handle_reusable_graphic{#1}{#2}{#3}}}
-
-% \permanent\tolerant\protected\def\useMPgraphic#=#*#=%
-%   {\meta_begin_graphic_group{#1}%
-%    \ifcsname\??mpgraphic#1\endcsname
-%      \cdef\currentmpcategory{#1}%
-%    \orelse\ifcsname\??mpgraphic\currentMPgraphicname\endcsname
-%      \let\currentmpcategory\currentMPgraphicname
-%    \else
-%      \lettonothing\currentmpcategory
-%    \fi
-%    \ifempty\currentmpcategory
-%      % message
-%    \else
-%      \checkmpcategoryparent
-%      \doifsomething{#2}{\setupcurrentmpcategory[#2]}%
-%      \csname\??mpgraphic\currentmpcategory\endcsname
-%    \fi
-%    \meta_end_graphic_group}
 
 \permanent\tolerant\protected\def\useMPgraphic
   {\futureexpandis[\meta_usempgraphic_yes\meta_usempgraphic_nop}
@@ -808,7 +793,9 @@
      % message
    \else
      \checkmpcategoryparent
-     \doifsomething{#2}{\setupcurrentmpcategory[#2]}%
+     \ifempty{#2}\else
+       \setupcurrentmpcategory[#2]%
+     \fi
      \csname\??mpgraphic\currentmpcategory\endcsname
    \fi
    \meta_end_graphic_group}
@@ -1050,11 +1037,11 @@
 \permanent\protected\def\useMPrun#1#2% name n
   {\begingroup
    \def\MPaskedfigure{#2}%
-   \normalexpanded{\useMPgraphic{\iftok{#1}\emptytoks mprun\else#1\fi}}%
+   \normalexpanded{\useMPgraphic{\ifempty{#1}mprun\else#1\fi}}%
    \endgroup}
 
 \permanent\tolerant\protected\def\startMPrun#=#:#2\stopMPrun
-  {\normalexpanded{\startuseMPgraphic{\iftok{#1}\emptytoks mprun\else#1\fi}}#2\stopuseMPgraphic}
+  {\normalexpanded{\startuseMPgraphic{\ifempty{#1}mprun\else#1\fi}}#2\stopuseMPgraphic}
 
 \permanent\protected\lettonothing\stopMPrun
 
@@ -1096,7 +1083,7 @@
 
 \installcorenamespace{mptext}
 
-\permanent\protected\def\setMPtext#1#2{\dodoglobal\edefcsname\??mptext#1\endcsname{\detokenize{#2}}}
+\permanent\protected\def\setMPtext#1#2{\edefcsname\??mptext#1\endcsname{\detokenize{#2}}} % \global will work here
 \permanent          \def\MPtext     #1{\begincsname\??mptext#1\endcsname\empty}
 \permanent          \def\MPstring   #1{"\begincsname\??mptext#1\endcsname\empty"}
 \permanent          \def\MPbetex    #1{btex \begincsname\??mptext#1\endcsname\space etex}
@@ -1391,7 +1378,7 @@
 %D grouped in order not to make other graphics behave in unexpected ways.
 
 \appendtoks
-    \doifelse{\directMPgraphicsparameter\c!color}\v!global{\MPcolormethod\plusone}{\MPcolormethod\zerocount}%
+    \MPcolormethod\ifcstok{\directMPgraphicsparameter\c!color}\v!global\plusone\else\zerocount\fi
 \to \everysetupMPgraphics
 
 \setupMPgraphics

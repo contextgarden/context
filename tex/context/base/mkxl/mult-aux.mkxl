@@ -892,7 +892,7 @@
 \newinteger\c_mult_interfaces_n_of_namespaces
 
 % \def\v_interfaces_prefix_template
-%   {\number\c_mult_interfaces_n_of_namespaces>}
+%   {\the\c_mult_interfaces_n_of_namespaces>}
 
 \def\v_interfaces_prefix_template
   {\tohexadecimal\c_mult_interfaces_n_of_namespaces>}

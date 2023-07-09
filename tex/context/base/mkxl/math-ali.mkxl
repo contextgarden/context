@@ -107,7 +107,7 @@
    \toksapp\scratchtoks\t_math_align_a
    \toksapp\scratchtoks{\global\c_math_eqalign_repeat\zerocount}%
    \scratchcounter\plusone
-   \dorecurse{\numexpr\scratchcounterone*\scratchcountertwo-\plusone\relax}
+   \localcontrolledrepeat \numexpr\scratchcounterone*\scratchcountertwo-\plusone\relax
      {\ifnum\scratchcounter=\scratchcountertwo
         \scratchcounter\plusone
         % preamble expansion hell ...
@@ -190,9 +190,9 @@
 % \stopformula
 % \stopplaceformula
 
-\newconditional\c_math_align_overflow_mode     \settrue\c_math_align_overflow_mode
-\newconditional\c_math_align_reformat_mode     \settrue\c_math_align_reformat_mode
-\newconditional\c_strc_formulas_overlay_number \settrue\c_strc_formulas_overlay_number
+\newconditional\c_math_align_overflow_mode     \c_math_align_overflow_mode\conditionaltrue
+\newconditional\c_math_align_reformat_mode     \c_math_align_reformat_mode\conditionaltrue
+\newconditional\c_strc_formulas_overlay_number \c_strc_formulas_overlay_number\conditionaltrue
 
 \protected\def\math_text_in_align
   {\scratchcounter\numexpr\c_math_eqalign_row+\plusone\relax
@@ -435,7 +435,7 @@
    \dostoptagged % finish cell
    \strc_formulas_place_number_nested{#1}{#2}%
    \math_number_right_of_eqalign
-   \global\settrue\c_math_eqalign_first
+   \global\c_math_eqalign_first\conditionaltrue
    \crcr
    \noalign{\dostoptagged}} % finish row
 
@@ -445,7 +445,7 @@
      \ifx\p_math_alignment_number\v!auto
        \strc_formulas_place_number_nested{+}{}%
      \fi
-     \global\setfalse\c_math_eqalign_first
+     \global\c_math_eqalign_first\conditionalfalse
    \fi
    \math_number_left_of_eqalign
    \aligntab}
@@ -475,7 +475,7 @@
     \enforced\let\EQ\math_alignment_EQ
     \enforced\let\NR\math_alignment_NR
     \enforced\let\TB\math_common_TB
-    \global\settrue\c_math_eqalign_first
+    \global\c_math_eqalign_first\conditionaltrue
     \global\s_strc_math_alignment_inbetween\zeroskip
 \to \everymathalignment
 
@@ -545,9 +545,9 @@
      \setupmathalignment[#1][#2]%
    \fi
    \ifcstok{\mathalignmentparameter\c!adaptive}\v!yes
-     \settrue\c_math_align_reformat_mode
+     \c_math_align_reformat_mode\conditionaltrue
    \else
-     \setfalse\c_math_align_reformat_mode
+     \c_math_align_reformat_mode\conditionalfalse
    \fi
    \math_alignment_snap_start
    \expand\everymathalignment
@@ -682,20 +682,20 @@
    \dostarttagged\t!mtablecell\empty}
 
 \def\math_left_of_eqalign
-  {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
+  {\ifcsname\??mathalignmentvariant\the\c_math_eqalign_column\endcsname
      \ifcase\lastnamedcs \or \relax \or \hfill \or \hfill \fi
-   \orelse\ifcsname\??mathalignmentvariant\number\zerocount\endcsname
+   \orelse\ifcsname\??mathalignmentvariant\the\zerocount\endcsname
      \ifcase\lastnamedcs \or \relax \or \hfill \or \hfill \fi
-   \orelse\ifcsname\??mathalignmentvariant\number\numexpr\c_math_eqalign_column-\c_math_eqalign_repeat\relax\endcsname
+   \orelse\ifcsname\??mathalignmentvariant\the\numexpr\c_math_eqalign_column-\c_math_eqalign_repeat\relax\endcsname
      \ifcase\lastnamedcs \or \relax \or \hfill \or \hfill \fi
    \fi}
 
 \def\math_right_of_eqalign
-  {\ifcsname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
+  {\ifcsname\??mathalignmentvariant\the\c_math_eqalign_column\endcsname
      \ifcase\lastnamedcs \or \hfill \or \relax \or \hfill \fi
-   \orelse\ifcsname\??mathalignmentvariant\number\zerocount\endcsname
+   \orelse\ifcsname\??mathalignmentvariant\the\zerocount\endcsname
      \ifcase\lastnamedcs \or \hfill \or \relax \or \hfill \fi
-   \orelse\ifcsname\??mathalignmentvariant\number\numexpr\c_math_eqalign_column-\c_math_eqalign_repeat\relax\endcsname
+   \orelse\ifcsname\??mathalignmentvariant\the\numexpr\c_math_eqalign_column-\c_math_eqalign_repeat\relax\endcsname
      \ifcase\lastnamedcs \or \hfill \or \relax \or \hfill \fi
    \fi}
 
@@ -722,14 +722,14 @@
    \fi}
 
 \protected\def\math_eqalign_set_column_indeed[#1:#2:#3]% we don't really check for all (so * will do too) ... yet
-  {\ifcstok{#2}\emptytoks
+  {\ifempty{#2}%
      % current counter
    \orelse\ifchknum#1\or
      \c_math_eqalign_column#1\relax
    \else
      \c_math_eqalign_column\zerocount
    \fi
-   \expandafter\integerdef\csname\??mathalignmentvariant\number\c_math_eqalign_column\endcsname
+   \expandafter\integerdef\csname\??mathalignmentvariant\the\c_math_eqalign_column\endcsname
      \ifcsname\??mathalignmentvariant#2\endcsname\lastnamedcs\else\zerocount\fi\relax}
 
 \def\math_eqalign_set_column#1%
@@ -1349,8 +1349,8 @@
      \expandafter\math_matrix_NC_nop
    \fi}
 
-\permanent\protected\def\math_matrix_pickup{\global\settrue \c_math_matrix_first}
-\permanent\protected\def\math_matrix_NC_yes{\global\setfalse\c_math_matrix_first}
+\permanent\protected\def\math_matrix_pickup{\global\c_math_matrix_first\conditionaltrue}
+\permanent\protected\def\math_matrix_NC_yes{\global\c_math_matrix_first\conditionalfalse}
 \permanent\protected\def\math_matrix_NC_nop{\aligntab\aligntab} % avoids lookahead
 
 \def\math_matrix_check_rule_step#1%
@@ -1366,7 +1366,7 @@
   {\d_math_eqalign_rulethickness\mathmatrixparameter\c!rulethickness\relax
    \scratchdimen\d_math_eqalign_rulethickness
    \edef\p_rulecolor{\mathmatrixparameter\c!rulecolor}%
-   \iftok{#1}\emptytoks\else
+   \ifempty{#1}\else
      \rawprocesscommalist[#1]\math_matrix_check_rule_step
    \fi
    \ifempty\p_rulecolor\else
@@ -1511,8 +1511,8 @@
 
 \protected\def\math_matrix_horizontal_rule_indeed#1#2%
   {\math_matrix_check_rule[#2]%
-   \global\setfalse\c_math_matrix_first
-   \global\settrue \c_math_matrix_sl_seen
+   \global\c_math_matrix_first\conditionalfalse
+   \global\c_math_matrix_sl_seen\conditionaltrue
    \enablematrixrules
    \leaders#1%
       \s!attr   \mathalignmenthruleattribute\plusone
@@ -1577,7 +1577,7 @@
 %    \fi
 %    \math_matrix_vertical_rule_yes{#1}%
 %    \kern.5\d_math_eqalign_distance
-%    \global\setfalse\c_math_matrix_first
+%    \global\c_math_matrix_first\conditionalfalse
 %    \aligntab
 %    \boundary\c_math_matrix_vl_boundary
 %    \enforced\let\NR\math_matrix_NL_NR
@@ -1593,7 +1593,7 @@
      {\kern.125\d_math_eqalign_distance
       \math_matrix_vertical_rule_yes{#2}}%
    \kern.5\d_math_eqalign_distance
-   \global\setfalse\c_math_matrix_first
+   \global\c_math_matrix_first\conditionalfalse
    \aligntab
    \boundary\c_math_matrix_vl_boundary
    \enforced\let\NR\math_matrix_NL_NR
@@ -1609,7 +1609,7 @@
    \fi
    \math_matrix_vertical_rule_nop{#1}%
    \kern.5\d_math_eqalign_distance
-   \global\setfalse\c_math_matrix_first
+   \global\c_math_matrix_first\conditionalfalse
    \aligntab
    \boundary\c_math_matrix_vl_boundary
    \enforced\let\NR\math_matrix_NL_NR}
@@ -1630,7 +1630,7 @@
 
 \appendtoks
    \enforced\let\NL\math_matrix_NL
-   \global\setfalse\c_math_matrix_sl_seen
+   \global\c_math_matrix_sl_seen\conditionalfalse
 \to \everymathmatrix
 
 \permanent\tolerant\protected\def\math_matrix_VC[#1]#*%
@@ -1691,7 +1691,7 @@
 \def\math_matrix_ornaments#1#2%
   {\NC
    \enablematrixornaments
-   \global\settrue\c_math_matrix_text
+   \global\c_math_matrix_text\conditionaltrue
    \global\settrue#1%
    \boundary#2%
    \ignorespaces}
@@ -1702,11 +1702,11 @@
 \permanent\protected\def\math_matrix_BT{\math_matrix_ornaments\c_math_matrix_text_b\c_math_matrix_ornament_b}
 
 \appendtoks
-   \global\setfalse\c_math_matrix_text
-   \global\setfalse\c_math_matrix_text_l
-   \global\setfalse\c_math_matrix_text_r
-   \global\setfalse\c_math_matrix_text_t
-   \global\setfalse\c_math_matrix_text_b
+   \global\c_math_matrix_text\conditionalfalse
+   \global\c_math_matrix_text_l\conditionalfalse
+   \global\c_math_matrix_text_r\conditionalfalse
+   \global\c_math_matrix_text_t\conditionalfalse
+   \global\c_math_matrix_text_b\conditionalfalse
    \enforced\let\LT\math_matrix_LT
    \enforced\let\RT\math_matrix_RT
    \enforced\let\TT\math_matrix_TT
@@ -1839,7 +1839,7 @@
      \normalstopimath
    \egroup
    \ifconditional\c_math_matrix_text
-     \ifcstok{\mathmatrixparameter\c!left\mathmatrixparameter\c!right\mathmatrixparameter\c!fences}\emptytoks\else
+     \ifempty{\mathmatrixparameter\c!left\mathmatrixparameter\c!right\mathmatrixparameter\c!fences}\else
        \scratchdistance\dimexpr(\wd\scratchbox-\scratchwidth)/\plustwo\relax
        \advanceby\d_math_matrix_margin_l\scratchdistance
        \advanceby\d_math_matrix_margin_r\scratchdistance
@@ -2324,7 +2324,7 @@
      \fi
    \fi}
 
-% \settrue\c_strc_math_ignore_number
+% \c_strc_math_ignore_number\conditionaltrue
 
 % cleanup timestamp: tales of time, joe bonamassa (live blu-ray in loop mode, 2023)
 
@@ -2360,11 +2360,11 @@
 
 \def\strc_math_flush_v_box_bottom
   {\ifdone
-     \global\c_strc_math_positioning\number\plusfour2\relax
+     \global\c_strc_math_positioning42\relax
      \unvbox\b_strc_math_display
      \strc_math_flush_number_box
    \else
-     \global\c_strc_math_positioning\number\plusfour3\relax
+     \global\c_strc_math_positioning43\relax
      \unvbox\b_strc_math_display
      \nointerlineskip
      \ht\b_strc_formulas_number\zeropoint
@@ -2376,13 +2376,13 @@
 
 \def\strc_math_flush_v_box_top
   {\ifdone
-     \global\c_strc_math_positioning\number\plusfour5\relax
+     \global\c_strc_math_positioning45\relax
      \dontleavehmode
      \strc_math_flush_number_box
      \unvbox\b_strc_math_display
    \else
      \scratchdepth\dp\b_strc_formulas_number
-     \global\c_strc_math_positioning\number\plusfour6\relax
+     \global\c_strc_math_positioning46\relax
      \ht\b_strc_formulas_number\strutht
      \dp\b_strc_formulas_number\strutdp
      \dontleavehmode
@@ -2397,7 +2397,7 @@
    \fi
    \strc_formulas_start_side_box
    \ifzeropt\d_strc_formulas_number
-     \global\c_strc_math_positioning\number\plusfour1\relax
+     \global\c_strc_math_positioning41\relax
      \unvbox\b_strc_math_display
    \else
      % better verbose than compact so some overlap in code here
@@ -2433,7 +2433,7 @@
    \fi
    \strc_formulas_start_side_box
    \ifzeropt\d_strc_formulas_number
-     \global\c_strc_math_positioning\number\plusfour4\relax
+     \global\c_strc_math_positioning44\relax
      \unvbox\b_strc_math_display
    \else
      % better verbose than compact so some overlap in code here
@@ -2681,25 +2681,25 @@
   {\d_strc_math_display_width\wd\b_strc_math_display
    \ifconditional\c_strc_formulas_tight
      \ifdim\d_strc_math_total_display_width>\displaywidth
-       \settrue\c_strc_math_display_overflow
+       \c_strc_math_display_overflow\conditionaltrue
      \else
        \displaywidth\d_strc_math_total_display_width
-       \setfalse\c_strc_math_display_overflow
+       \c_strc_math_display_overflow\conditionalfalse
      \fi
    \else
      \ifdim\dimexpr\d_strc_math_total_display_width+\formulaparameter\c!numberthreshold\relax>\displaywidth
-       \settrue\c_strc_math_display_overflow
+       \c_strc_math_display_overflow\conditionaltrue
      \else
-       \setfalse\c_strc_math_display_overflow
+       \c_strc_math_display_overflow\conditionalfalse
      \fi
    \fi}
 
 \def\strc_math_number_check_outside
   {\d_strc_math_display_width\naturalwd\b_strc_math_display
    \ifdim\dimexpr\d_strc_math_total_display_width+\d_framed_locator_lo+\d_framed_locator_ro\relax>\displaywidth
-     \settrue\c_strc_math_display_overflow
+     \c_strc_math_display_overflow\conditionaltrue
    \else
-     \setfalse\c_strc_math_display_overflow
+     \c_strc_math_display_overflow\conditionalfalse
    \fi
    % still ok?
    \ifnum\c_strc_math_ragged_status=\plustwo
@@ -2951,7 +2951,7 @@
    \beforedisplayspace
    % subset of \everydisplay:
    \c_attr_mathmode\plusone
-   \settrue \indisplaymath
+   \indisplaymath\conditionaltrue
    % end of subset
    \informulatrue}
 
@@ -3125,7 +3125,7 @@
 \permanent\protected\def\mstack#1% todo: make it configurable
    {\begingroup
     \scratchtoks\emptytoks \setcharstrut(\relax
-    \processcommalist[#1]{\iftok\scratchtoks\emptytoks\else\toksapp\scratchtoks{\mathstrut\NR}\fi\toksapp\scratchtoks}%
+    \processcommalist[#1]{\ifempty\scratchtoks\else\toksapp\scratchtoks{\mathstrut\NR}\fi\toksapp\scratchtoks}%
     \expandafter\startsubstack\the\scratchtoks\mathstrut\stopsubstack
     \endgroup}
 

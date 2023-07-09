@@ -129,7 +129,7 @@
          \hsize\paperwidth
          \ifconditional\c_page_comment_enabled
            \getbuffer[\v!pagecomment]%
-           \global\setfalse\c_page_comment_enabled
+           \global\c_page_comment_enabled\conditionalfalse
          \fi}%
       \hfill
       \ifx\p_page_commands_location\v!bottom
@@ -153,7 +153,7 @@
          \hsize\d_page_comments_width
          \ifconditional\c_page_comment_enabled
            \getbuffer[\v!pagecomment]%
-           \global\setfalse\c_page_comment_enabled
+           \global\c_page_comment_enabled\conditionalfalse
          \fi
          \vss}%
       \ifx\p_page_commands_location\v!right
@@ -164,7 +164,7 @@
       \fi}}
 
 \permanent\protected\defcsname\e!start\v!pagecomment\endcsname
-  {\global\settrue\c_page_comment_enabled
+  {\global\c_page_comment_enabled\conditionaltrue
    \grabbufferdatadirect\v!pagecomment{\e!start\v!pagecomment}{\e!stop\v!pagecomment}}
 
 \aliased\letcsname\e!stop\v!pagecomment\endcsname\relax

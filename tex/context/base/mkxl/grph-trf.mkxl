@@ -51,7 +51,7 @@
 
 \newconditional\c_grph_scale_done
 \newconditional\c_grph_scale_scaling_done
-\newconditional\c_grph_scale_limit_factors \settrue\c_grph_scale_limit_factors
+\newconditional\c_grph_scale_limit_factors \c_grph_scale_limit_factors\conditionaltrue
 
 \newconditional\c_grph_scale_swap_factor
 
@@ -169,7 +169,7 @@
    \forgetall
    \dontcomplain
    %
-   \setfalse\c_grph_scale_done
+   \c_grph_scale_done\conditionalfalse
    \grph_scale_calculate
    \ifconditional\c_grph_scale_done
      \grph_scale_apply
@@ -239,7 +239,7 @@
   {\thewithoutunit\dimexpr#1\points*100+32768\scaledpoint\relax}
 
 \def\grph_scale_calculations_nop
-  {\settrue\c_grph_scale_done
+  {\c_grph_scale_done\conditionaltrue
    \xdef\finalscaleboxwidth {\the\dimexpr\p_sx\d_grph_scale_wd\relax}%
    \xdef\finalscaleboxheight{\the\dimexpr\p_sy\d_grph_scale_ht\relax}%
    \glet\finalscaleboxxscale\p_sx
@@ -250,7 +250,7 @@
 \let\grph_scale_calculations_report\relax
 
 \def\grph_scale_calculations_yes
-  {\settrue\c_grph_scale_done
+  {\c_grph_scale_done\conditionaltrue
    % initial values
    \d_grph_scale_x_offset\zeropoint
    \d_grph_scale_y_offset\zeropoint
@@ -264,7 +264,7 @@
    \let\m_grph_scale_used_x_scale   \!!plusone
    \let\m_grph_scale_used_y_scale   \!!plusone
    % preparations
-   \setfalse\c_grph_scale_scaling_done
+   \c_grph_scale_scaling_done\conditionalfalse
    \grph_scale_check_parameters
    % calculators
    % beware, they operate in sequence, and calculate missing dimensions / messy
@@ -320,13 +320,15 @@
 \def\m_grph_scale_factor_set{\v!min,\v!max,\v!fit,\v!broad,\v!auto} % can be an \edef
 
 \def\grph_scale_by_factor
-  {\doifelseinset\p_factor\m_grph_scale_factor_set
+  {\ifinset\p_factor\m_grph_scale_factor_set
      \grph_scale_by_factor_a
-     {\doifelseinset\p_hfactor\m_grph_scale_factor_set
-        \grph_scale_by_factor_b
-        {\doifelseinset\p_wfactor\m_grph_scale_factor_set
-           \grph_scale_by_factor_c
-           \grph_scale_by_factor_d}}}
+   \orelse\ifinset\p_hfactor\m_grph_scale_factor_set
+     \grph_scale_by_factor_b
+   \orelse\ifinset\p_wfactor\m_grph_scale_factor_set
+     \grph_scale_by_factor_c
+   \else
+     \grph_scale_by_factor_d
+   \fi}
 
 \def\grph_scale_by_factor_a
   {\grph_scale_apply_size
@@ -362,7 +364,7 @@
 
 \def\grph_scale_by_factor_indeed
   {\grph_scale_calculate_fact\p_factor
-   \settrue\c_grph_scale_scaling_done
+   \c_grph_scale_scaling_done\conditionaltrue
    \ifconditional\c_grph_scale_limit_factors
      \ifdim\d_grph_scale_used_x_size\ifconditional\c_grph_scale_swap_factor<\else>\fi\d_grph_scale_h_size
        \global\d_grph_scale_used_y_size\zeropoint
@@ -474,8 +476,8 @@
 \defcsname\??scalenorm\empty    \endcsname#1#-#2#-#-{\ifempty#2\else\global#1#2\fi}
 \defcsname\??scalenorm\s!default\endcsname#1#-#2#-#-{\ifempty#2\else\global#1#2\fi}
 
-\defcsname\??scalefact\v!min    \endcsname{\global\settrue \c_grph_scale_swap_factor}
-\defcsname\??scalefact\s!unknown\endcsname{\global\setfalse\c_grph_scale_swap_factor}
+\defcsname\??scalefact\v!min    \endcsname{\global\c_grph_scale_swap_factor\conditionaltrue}
+\defcsname\??scalefact\s!unknown\endcsname{\global\c_grph_scale_swap_factor\conditionalfalse}
 
 \defcsname\??scalenorm\v!min\endcsname#-#-#-#-#-% an ugly hack
   {\d_grph_scale_used_x_size\hsize
@@ -637,9 +639,11 @@
    \dowithnextboxcs\grph_clip_finish\hbox}
 
 \def\grph_clip_finish
-  {\doifelse{\clippingparameter\c!state}\v!start
+  {\ifcstok{\clippingparameter\c!state}\v!start
      \grph_clip_yes_finish
-     \grph_clip_nop_finish}
+   \else
+     \grph_clip_nop_finish
+   \fi}
 
 \def\grph_clip_yes_finish
   {\ifdim\clippingparameter\c!width>\zeropoint
@@ -837,41 +841,41 @@
    \egroup}
 
 \def\grph_rotate_default
-  {\setfalse\c_grph_rotate_not_fit
-   \setfalse\c_grph_rotate_center
-   \settrue \c_grph_rotate_obey_depth
+  {\c_grph_rotate_not_fit\conditionalfalse
+   \c_grph_rotate_center\conditionalfalse
+   \c_grph_rotate_obey_depth\conditionaltrue
    \grph_rotate_framed}
 
 \letcsname\??rotatelocation\v!default\endcsname\grph_rotate_default
 
 \defcsname\??rotatelocation\v!depth\endcsname
-  {\setfalse\c_grph_rotate_not_fit
-   \setfalse\c_grph_rotate_center
-   \settrue \c_grph_rotate_obey_depth
+  {\c_grph_rotate_not_fit\conditionalfalse
+   \c_grph_rotate_center\conditionalfalse
+   \c_grph_rotate_obey_depth\conditionaltrue
    \grph_rotate_normal}
 
 \defcsname\??rotatelocation\v!fit\endcsname
-  {\settrue \c_grph_rotate_not_fit
-   \setfalse\c_grph_rotate_center
-   \settrue \c_grph_rotate_obey_depth
+  {\c_grph_rotate_not_fit\conditionaltrue
+   \c_grph_rotate_center\conditionalfalse
+   \c_grph_rotate_obey_depth\conditionaltrue
    \grph_rotate_normal}
 
 \defcsname\??rotatelocation\v!broad\endcsname
-  {\setfalse\c_grph_rotate_not_fit
-   \setfalse\c_grph_rotate_center
-   \setfalse\c_grph_rotate_obey_depth
+  {\c_grph_rotate_not_fit\conditionalfalse
+   \c_grph_rotate_center\conditionalfalse
+   \c_grph_rotate_obey_depth\conditionalfalse
    \grph_rotate_normal}
 
 \defcsname\??rotatelocation\v!high\endcsname
-  {\setfalse\c_grph_rotate_not_fit
-   \setfalse\c_grph_rotate_center
-   \setfalse\c_grph_rotate_obey_depth
+  {\c_grph_rotate_not_fit\conditionalfalse
+   \c_grph_rotate_center\conditionalfalse
+   \c_grph_rotate_obey_depth\conditionalfalse
    \grph_rotate_framed}
 
 \defcsname\??rotatelocation\v!middle\endcsname
-  {\setfalse\c_grph_rotate_not_fit
-   \settrue \c_grph_rotate_center
-   \setfalse\c_grph_rotate_obey_depth  % hm, depth ?
+  {\c_grph_rotate_not_fit\conditionalfalse
+   \c_grph_rotate_center\conditionaltrue
+   \c_grph_rotate_obey_depth\conditionalfalse  % hm, depth ?
    \grph_rotate_normal}
 
 \permanent\protected\def\dorotatebox#1% {angle} \hbox/\vbox/\vtop % a fast low level one
@@ -888,9 +892,9 @@
      \dowithnextboxcs\grph_rotate_finish_box}
 
 \def\grph_rotate_finish_box
-  {\setfalse\c_grph_rotate_not_fit      % this is the same as broad but
-   \setfalse\c_grph_rotate_center       % without the following grab as
-   \setfalse\c_grph_rotate_obey_depth   % we call finish directly
+  {\c_grph_rotate_not_fit\conditionalfalse      % this is the same as broad but
+   \c_grph_rotate_center\conditionalfalse       % without the following grab as
+   \c_grph_rotate_obey_depth\conditionalfalse   % we call finish directly
    \grph_rotate_finish_indeed
    \egroup
    \egroup}

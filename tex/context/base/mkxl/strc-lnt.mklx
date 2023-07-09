@@ -47,9 +47,9 @@
      \pushmacro\currentnote
      \cdef\currentnote{#1}
      \letcsname\??linenote\currentnote\expandafter\endcsname\csname\currentnote\endcsname % use copy command
-     \frozen\instance\setuevalue        {\currentnote}{\strc_linenotes_direct{\currentnote}}%
-     \frozen\instance\setuevalue{\e!start\currentnote}{\strc_linenotes_start {\currentnote}}%
-     \frozen\instance\setuevalue{\e!stop \currentnote}{\strc_linenotes_stop                }%
+     \frozen\instance\protected\edefcsname        \currentnote\endcsname{\strc_linenotes_direct{\currentnote}}%
+     \frozen\instance\protected\edefcsname\e!start\currentnote\endcsname{\strc_linenotes_start {\currentnote}}%
+     \frozen\instance\protected\edefcsname\e!stop \currentnote\endcsname{\strc_linenotes_stop                }%
      \expand\everydefinelinenote
      \popmacro\currentnote
    \fi}
@@ -93,10 +93,14 @@
 \def\page_lines_in_to  {\in[lr:e:\currentlinenotereference]}
 
 \protected\def\strc_linenotes_range_normal#1% order
-  {\doifelsereferencefound{lr:b:\currentlinenotereference}\settrue\setfalse\c_page_lines_current_from
+  {\doifelsereferencefound{lr:b:\currentlinenotereference}%
+     {\c_page_lines_current_from\conditionaltrue}%
+     {\c_page_lines_current_from\conditionalfalse}%
    \ifconditional\c_page_lines_current_from
       \xdef\m_page_lines_current_from{\currentreferencelinenumber}%
-      \doifelsereferencefound{lr:e:\currentlinenotereference}\settrue\setfalse\c_page_lines_current_to
+      \doifelsereferencefound{lr:e:\currentlinenotereference}%
+        {\c_page_lines_current_to\conditionaltrue}%
+        {\c_page_lines_current_to\conditionalfalse}%
       \ifconditional\c_page_lines_current_to
         \xdef\m_page_lines_current_to{\currentreferencelinenumber}%
         \page_lines_in_from
@@ -112,10 +116,14 @@
    \fi}
 
 \protected\def\strc_linenotes_range_sparse#1% order
-  {\doifelsereferencefound{lr:b:\currentlinenotereference}\settrue\setfalse\c_page_lines_current_from
+  {\doifelsereferencefound{lr:b:\currentlinenotereference}%
+     {\c_page_lines_current_from\conditionaltrue}%
+     {\c_page_lines_current_from\conditionalfalse}%
    \ifconditional\c_page_lines_current_from
      \xdef\m_page_lines_current_from{\currentreferencelinenumber}%
-     \doifelsereferencefound{lr:e:\currentlinenotereference}\settrue\setfalse\c_page_lines_current_to
+     \doifelsereferencefound{lr:e:\currentlinenotereference}%
+       {\c_page_lines_current_to\conditionaltrue}%
+       {\c_page_lines_current_to\conditionalfalse}%
      \ifconditional\c_page_lines_current_to
        \xdef\m_page_lines_current_to{\currentreferencelinenumber}%
        \ifx\m_page_lines_previous_from\m_page_lines_current_from
@@ -188,9 +196,8 @@
   {\hskip\noteparameter\c!compressdistance\relax}
 
 \def\strc_linenotes_check_compression
-  {\edef\p_linenotes_compress      {\noteparameter\c!compress}%
-   \edef\p_linenotes_compressmethod{\noteparameter\c!compressmethod}%
-   \ifx\p_linenotes_compress\v!yes
+  {\edef\p_linenotes_compressmethod{\noteparameter\c!compressmethod}%
+   \ifcstok{\noteparameter\c!compress}\v!yes
      \let\linenotelinenumber\strc_linenotes_range_sparse
    \else
      \let\linenotelinenumber\strc_linenotes_range_normal

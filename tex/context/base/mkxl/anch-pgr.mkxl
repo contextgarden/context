@@ -318,10 +318,10 @@
 \permanent\protected\lettonothing\stopMPpositiongraphic
 
 \def\anch_positions_meta_graphic_prepare
-  {\iftok{\mpcategoryparameter{self}}\emptytoks
+  {\ifempty{\mpcategoryparameter{self}}%
      \letmpcategoryparameter{self}\currentposition
    \fi
-   \iftok{\mpcategoryparameter{from}}\emptytoks
+   \ifempty{\mpcategoryparameter{from}}%
      \letmpcategoryparameter{from}\currentposition
    \fi}
 

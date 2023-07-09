@@ -20,9 +20,9 @@
 
 \unprotect
 
-\settrue \xmllshowbuffertoo
-\setfalse\xmllshowtitletoo
-\settrue \xmllshowwarningtoo
+\newconditional\xmllshowbuffertoo  \xmllshowbuffertoo\conditionaltrue
+\newconditional\xmllshowtitletoo   \xmllshowtitletoo\conditionalfalse
+\newconditional\xmllshowwarningtoo \xmllshowwarningtoo\conditionaltrue
 
 \definehead
   [lshowtitle]

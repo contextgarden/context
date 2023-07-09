@@ -71,7 +71,7 @@
 \permanent\protected\def\simplifycommands{\expand\everysimplifycommands}
 
 \appendtoks
-    \settrue\simplifyingcommands
+    \simplifyingcommands\conditionaltrue
 \to \everysimplifycommands
 
 \appendtoks

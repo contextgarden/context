@@ -176,8 +176,8 @@
 
 \installtextracker
   {graphics.inheritance}
-  {\settrue \c_grph_include_trace_inheritance}
-  {\setfalse\c_grph_include_trace_inheritance}
+  {\c_grph_include_trace_inheritance\conditionaltrue}
+  {\c_grph_include_trace_inheritance\conditionalfalse}
 
 \installcorenamespace{externalfiguredefinition}
 
@@ -188,15 +188,15 @@
 % label file parent
 
 \permanent\tolerant\protected\def\useexternalfigure[#1]#*[#2]#*[#3]#*[#4]%
-  {\iftok{#1}\emptytoks
-     \iftok{#2}\emptytoks\else
+  {\ifempty{#1}%
+     \ifempty{#2}\else
        \ifhastok={#3}%
          \grph_include_use_indeed{#2}{#2}{#3}{#4}%
        \else
          \grph_include_use_indeed{#2}{#2}\empty{#4}%
        \fi
      \fi
-   \orelse\iftok{#2}\emptytoks
+   \orelse\ifempty{#2}%
      \ifhastok={#3}%
        \grph_include_use_indeed{#1}{#1}\empty{#3}%
      \else
@@ -561,8 +561,8 @@
 
 \newconditional\c_grph_include_skip
 \newconditional\c_grph_include_test_only
-\newconditional\c_grph_include_level      \setfalse\c_grph_include_level  % true=background false=normal
-\newconditional\c_grph_include_flush      \settrue \c_grph_include_flush  % true=place      false=ignore
+\newconditional\c_grph_include_level      \c_grph_include_level\conditionalfalse  % true=background false=normal
+\newconditional\c_grph_include_flush      \c_grph_include_flush\conditionaltrue  % true=place      false=ignore
 
 \newsystemmode\v!figure
 
@@ -587,13 +587,13 @@
 \appendtoks
     \edef\p_option{\externalfigureparameter\c!option}%
     \ifx\p_option\v!frame
-      \setfalse\c_grph_include_skip
+      \c_grph_include_skip\conditionalfalse
       \letexternalfigureparameter\c!frame\v!on
     \orelse\ifx\p_option\v!empty
-      \settrue\c_grph_include_skip
+      \c_grph_include_skip\conditionaltrue
       \letexternalfigureparameter\c!frame\v!off
     \else
-      \setfalse\c_grph_include_skip
+      \c_grph_include_skip\conditionalfalse
     \fi
     % fake color in gray bitmaps, assumes that
     % a transparent color is used
@@ -667,8 +667,8 @@
    \stopfoundexternalfigure}
 
 % \doifmodeelse{*\v!last}
-%   {\settrue \c_grph_include_flush}
-%   {\setfalse\c_grph_include_flush}%
+%   {\c_grph_include_flush\conditionaltrue}
+%   {\c_grph_include_flush\conditionalfalse}%
 
 \def\grph_include_finalize
   {\global\setbox\foundexternalfigure\vbox
@@ -688,7 +688,7 @@
           \fi
         \else
           \iftrialtypesetting \else \feedbackexternalfigure \fi
-          \settrue\c_grph_include_level
+          \c_grph_include_level\conditionaltrue
           \ifconditional\c_grph_include_skip
             \ifcase\figurestatus
               \grph_include_replacement\figurelabel\figurefileoriginal{unknown}%
@@ -722,7 +722,7 @@
 
 \permanent\tolerant\protected\def\getfiguredimensions[#1]#*[#2]%
   {\startnointerference % we can use \nospaces\plusone
-     \settrue\c_grph_include_test_only
+     \c_grph_include_test_only\conditionaltrue
      \externalfigure[#1][#2,\c!display=,\c!mask=,\c!object=\v!no]%
    \stopnointerference}
 
@@ -741,7 +741,7 @@
 \permanent\tolerant\protected\def\registerexternalfigure[#1]#*[#2]#*[#3]%
   {\startnointerference
      \c_grph_include_test_only
-     \setfalse\c_grph_include_flush % == test ?
+     \c_grph_include_flush\conditionalfalse % == test ?
      \externalfigure[#1][#2][#3]% or
      \externalfigure[#1][#2,\c!display=,\c!mask=,\c!object=\v!no]%
    \stopnointerference}
@@ -795,9 +795,9 @@
 
 \def\grph_include_analyze_collection[#1][#2]%
   {\ifconditional\c_grph_include_in_collection
-      \setfalse\c_grph_include_in_collection
+      \c_grph_include_in_collection\conditionalfalse
       \getfiguredimensions[#1][#2]%
-      \settrue\c_grph_include_in_collection
+      \c_grph_include_in_collection\conditionaltrue
       \scratchdimen\naturalfigurewidth
       \ifdim\scratchdimen>\d_grph_include_collection_maxwidth  \d_grph_include_collection_maxwidth \scratchdimen \fi
       \ifdim\scratchdimen<\d_grph_include_collection_minwidth  \d_grph_include_collection_minwidth \scratchdimen \fi
@@ -811,7 +811,7 @@
 \permanent\protected\def\startexternalfigurecollection[#1]%
   {\begingroup
    \cdef\currentexternalfigurecollection{#1}%
-   \settrue\c_grph_include_in_collection
+   \c_grph_include_in_collection\conditionaltrue
    \d_grph_include_collection_minwidth \maxdimen
    \d_grph_include_collection_maxwidth \zeropoint
    \d_grph_include_collection_minheight\maxdimen

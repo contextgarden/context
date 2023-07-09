@@ -1745,18 +1745,36 @@ static int tokenlib_scan_delimited(lua_State *L)
                 }
               DONEEXPANDING:
                 tex_x_token();
+             // if (cur_tok == right) {
+             //     break;
+             // } else if (cur_tok < right_brace_limit) {
+             //  /* if (cur_cmd < right_brace_cmd) { */
+             //     if (cur_cmd == left_brace_cmd) { // } || cur_cmd == relax_cmd) {
+             //         ++unbalance;
+             //     } else if (unbalance) {
+             //         --unbalance;
+             //     } else {
+             //         goto FINALYDONE;
+             //     }
+             // }
+
                 if (cur_tok == right) {
                     break;
-                } else if (cur_tok < right_brace_limit) {
-                 /* if (cur_cmd < right_brace_cmd) { */
-                    if (cur_cmd == left_brace_cmd || cur_cmd == relax_cmd) {
-                        ++unbalance;
-                    } else if (unbalance) {
-                        --unbalance;
-                    } else {
-                        goto FINALYDONE;
+                } else if (! cur_cs) { 
+                    switch (cur_cmd) {
+                        case left_brace_cmd:
+                            ++unbalance;
+                            break;
+                        case right_brace_cmd:
+                            if (unbalance) {
+                                --unbalance;
+                                break;
+                            } else {
+                                goto FINALYDONE;
+                            }
                     }
                 }
+
               APPENDTOKEN:
                 p = tex_store_new_token(p, cur_tok);
             }
@@ -1768,18 +1786,36 @@ static int tokenlib_scan_delimited(lua_State *L)
             while (1) {
                 tex_get_token();
               INITIAL2:
+             // if (cur_tok == right) {
+             //     break;
+             // } else if (cur_tok < right_brace_limit) {
+             //  /* if (cur_cmd < right_brace_cmd) { */
+             //     if (cur_cmd == left_brace_cmd) { // } || cur_cmd == relax_cmd) {
+             //         ++unbalance;
+             //     } else if (unbalance) {
+             //         --unbalance;
+             //     } else {
+             //         break;
+             //     }
+             // }
+
                 if (cur_tok == right) {
                     break;
-                } else if (cur_tok < right_brace_limit) {
-                 /* if (cur_cmd < right_brace_cmd) { */
-                    if (cur_cmd == left_brace_cmd || cur_cmd == relax_cmd) {
-                        ++unbalance;
-                    } else if (unbalance) {
-                        --unbalance;
-                    } else {
-                        break;
+                } else if (! cur_cs) { 
+                    switch (cur_cmd) {
+                        case left_brace_cmd:
+                            ++unbalance;
+                            break;
+                        case right_brace_cmd:
+                            if (unbalance) {
+                                --unbalance;
+                                break;
+                            } else { 
+                                goto FINALYDONE;
+                            }
                     }
                 }
+
                 p = tex_store_new_token(p, cur_tok);
             }
         }
@@ -3145,16 +3181,13 @@ static halfword tokenlib_aux_expand_macros_in_tokenlist(halfword p)
     token_link(q) = r;
     tex_begin_inserted_list(q);
     tex_begin_token_list(p, write_text);
-    q = tex_get_available_token(left_brace_token + '{'); /* not needed when we expand with first arg == 1 */
-    tex_begin_inserted_list(q);
     /*tex Now we're ready to scan |{<token list>}| |\endwrite|. */
     old_mode = cur_list.mode;
     cur_list.mode = 0;
     /*tex Disable |\prevdepth|, |\spacefactor|, |\lastskip|, |\prevgraf|. */
     cur_cs = 0; /* was write_loc i.e. eq of \write */
     /*tex Expand macros, etc. */
-    tex_scan_toks_expand(0, NULL, 0); /* could be 1 and no left brace above */
- //   tex_scan_toks_expand(1, NULL); /* could be 1 and no left brace above */
+    tex_scan_toks_expand(1, NULL, 0);
     tex_get_token();
     if (cur_tok != deep_frozen_end_write_token) {
         /*tex Recover from an unbalanced write command */
@@ -3324,7 +3357,7 @@ static int tokenlib_set_lua(lua_State *L)
                     tex_define(flags, cs, lua_value_cmd, funct);
                 } else if (is_conditional(flags)) {
                     tex_define(flags, cs, if_test_cmd, last_if_test_code + funct);
-                /* with some effort we could combine these two an dise the flag */
+                /* with some effort we could combine these two and use the flag */
                 } else if (is_protected(flags)) {
                     tex_define(flags, cs, lua_protected_call_cmd, funct);
                 } else {
@@ -3948,33 +3981,25 @@ int lmt_function_call_by_category(int slot, int property, halfword *value)
                         break;
                     }
                 case lua_value_float_code:
-                    {
-                        *value = tex_double_to_posit(lua_tonumber(L, -1)).v;
-                        break;
-                    }
+                    *value = tex_double_to_posit(lua_tonumber(L, -1)).v;
+                    break;
                 case lua_value_string_code:
-                    {
-                        category = lua_value_none_code;
-                        break;
-                    }
+                    category = lua_value_none_code;
+                    break;
                 case lua_value_boolean_code:
-                    {
-                        *value = lua_toboolean(L, -1);
-                        break;
-                    }
+                    *value = lua_toboolean(L, -1);
+                    break;
                 case lua_value_node_code:
-                    {
-                        *value = lmt_check_isnode(L, -1);
-                        break;
-                    }
+                    *value = lmt_check_isnode(L, -1);
+                    break;
                 case lua_value_direct_code:
-                        *value = lmt_check_isdirect(L, -1);
-                        break;
+                    *value = lmt_check_isdirect(L, -1);
+                    break;
+                case lua_value_conditional_code:
+                    break;
                 default:
-                    {
-                        category = lua_value_none_code;
-                        break;
-                    }
+                    category = lua_value_none_code;
+                    break;
             }
         }
     }

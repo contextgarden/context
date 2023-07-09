@@ -34,15 +34,15 @@
 
 \protected\def\math_toy_define_symbol_traced#1#2%
   {\normalexpanded{\discretionary class #1 %
-     {$\Ustyle\number\mathstyle \darkred   #2$}%
-     {$\Ustyle\number\mathstyle \darkblue  #2$}%
-     {$\Ustyle\number\mathstyle \darkgreen #2$}}}
+     {$\Ustyle\the\mathstyle \darkred   #2$}%
+     {$\Ustyle\the\mathstyle \darkblue  #2$}%
+     {$\Ustyle\the\mathstyle \darkgreen #2$}}}
 
 \protected\def\math_toy_define_symbol_normal#1#2%
   {\normalexpanded{\discretionary class #1 %
-     {$\Ustyle\number\mathstyle #2$}%
-     {$\Ustyle\number\mathstyle #2$}%
-     {$\Ustyle\number\mathstyle #2$}}}
+     {$\Ustyle\the\mathstyle #2$}%
+     {$\Ustyle\the\mathstyle #2$}%
+     {$\Ustyle\the\mathstyle #2$}}}
 
 \installtextracker
   {math.toysymbol}

@@ -531,6 +531,16 @@
 %D \doiftext     {data} {then branch}
 %D \stoptyping
 
+% performance:
+%
+% \ifcondition\validtext {...}T\else F\fi   4.47
+% \doifelsetext          {...}{T}{F}        4.91
+% \iftext                {...}T\else F\fi   5.01
+%
+% \ifcondition\validtext {}T\else F\fi      0.22
+% \doifelsetext          {}{T}{F}           1.02
+% \iftext                {}T\else F\fi      0.39
+
 \permanent\protected\def\doifelsetext#1%
   {\begingroup
    \setbox\scratchbox\hbox % no \hpack because we can have fallbacks
@@ -553,9 +563,23 @@
      \endgroup\expandafter\firstofoneargument
    \fi}
 
-% more efficient but maybe fragile:
-%
-%       \nospacing#1}%
+\permanent\protected\def\validtext#1%
+  {\ifparameter#1\or
+     \begingroup
+     \setbox\scratchbox\hbox % no \hpack because we can have fallbacks
+       {\settrialtypesetting
+        \ignorespaces#1\removeunwantedspaces}%
+     \normalexpanded{\endgroup\noexpand\expandafter\ifzeropt\wd\scratchbox\if_false\else\if_true\fi}%
+   \else
+     \expandafter\if_false
+   \fi}
+
+% \iftext{xx}     YES\else NOP\fi
+% \iftext{}       YES\else NOP\fi
+% \iftext{\strut} YES\else NOP\fi
+% \iftext{ }      YES\else NOP\fi
+
+% more efficient but maybe fragile: \nospacing#1
 
 \aliased\let\doiftextelse\doifelsetext
 
@@ -860,8 +884,8 @@
 \newbox      \newshapebox
 \newbox      \oldshapebox
 \newbox      \tmpshapebox
-\newinteger \shapecounter
-\newevery   \everyshapebox \relax
+\newinteger  \shapecounter
+\newevery    \everyshapebox \relax
 
 \permanent\dimensiondef\shapesignal.12345678pt % or 12345sp
 
@@ -2446,18 +2470,18 @@
 
 \protected\def\syst_boxes_stack_allocate
   {\newbox\b_syst_boxes_stack
-   \letcsname\??boxstack\number\c_syst_boxes_stack\endcsname\b_syst_boxes_stack}
+   \letcsname\??boxstack\the\c_syst_boxes_stack\endcsname\b_syst_boxes_stack}
 
 \protected\def\syst_boxes_push#1#2%
   {\global\advanceby\c_syst_boxes_stack\plusone
-   \expandafter\let\expandafter\b_syst_boxes_stack\csname\??boxstack\number\c_syst_boxes_stack\endcsname
+   \expandafter\let\expandafter\b_syst_boxes_stack\csname\??boxstack\the\c_syst_boxes_stack\endcsname
    \ifrelax\b_syst_boxes_stack % cheaper then csname check as in most cases it's defined
       \syst_boxes_stack_allocate
    \fi
    #1\setbox\b_syst_boxes_stack\box#2\relax}
 
 \protected\def\syst_boxes_pop#1#2%
-  {#1\setbox#2\box\csname\??boxstack\number\c_syst_boxes_stack\endcsname
+  {#1\setbox#2\box\csname\??boxstack\the\c_syst_boxes_stack\endcsname
    \global\advanceby\c_syst_boxes_stack\minusone}
 
 \permanent\protected\def\localpushbox {\syst_boxes_push\relax}
@@ -2944,6 +2968,18 @@
 %         \namedboxanchor{#1}%
 %         \ifcstok{#2}\v!before\minusone\else\plusone\fi
 %         \box\nextbox}}
+
+%D \macros{doifelseindented}
+%D
+%D This test macro is defined at the \LUA\ end:
+%D
+%D \startbuffer
+%D test \doifelseindented{yes}{nop} test\par
+%D \setupindenting[3em] \indenting[yes]
+%D test \doifelseindented{yes}{nop} test\par
+%D \stopbuffer
+%D
+%D \typebuffer \blank \startpacked \getbuffer \stoppacked \blank
 
 \protect \endinput
 

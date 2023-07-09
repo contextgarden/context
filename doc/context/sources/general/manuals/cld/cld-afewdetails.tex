@@ -187,7 +187,7 @@ context.copy(false,0)
 but this works as well:
 
 \startbuffer
-context(node.copy_list(tex.box[0]))
+context(node.copylist(tex.box[0]))
 \stopbuffer
 
 \typebuffer
@@ -226,7 +226,7 @@ function userdata.processmystuff(head)
     if enabled then
         local color = "mynesting:" .. (count % 3)
      -- for n in node.traverse(head) do
-        for n in node.traverse_id(nodes.nodecodes.glyph,head) do
+        for n in node.traverseid(nodes.nodecodes.glyph,head) do
             setcolor(n,color)
         end
         count = count + 1
@@ -297,7 +297,7 @@ local setcolor = nodes.tracers.colors.set
 function userdata.processmystuff(head)
     count = count + 1
     local color = "mynesting:" .. (count % 3)
-    for n in node.traverse_id(nodes.nodecodes.glyph,head) do
+    for n in node.traverseid(nodes.nodecodes.glyph,head) do
         setcolor(n,color)
     end
     return head, true
@@ -340,13 +340,13 @@ The \LUA\ code like similar to the code presented before:
 
 \startbuffer
 \startluacode
-local setcolor    = nodes.tracers.colors.setlist
-local getmarker   = nodes.markers.get
-local hlist_code  = nodes.nodecodes.hlist
-local traverse_id = node.traverse_id
+local setcolor   = nodes.tracers.colors.setlist
+local getmarker  = nodes.markers.get
+local hlist_code = nodes.nodecodes.hlist
+local traverseid = node.traverseid
 
 function userdata.processmystuff(head)
-    for n in traverse_id(hlist_code,head) do
+    for n in traverseid(hlist_code,head) do
         local m = getmarker(n,"mymarker")
         if m then
             setcolor(n.list,"mymarker:" .. m)

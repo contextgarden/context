@@ -197,10 +197,10 @@
 \newconditional  \c_tabl_tabulate_no_blank_in_paragraphs % can become always on
 \newconditional  \c_tabl_tabulate_no_interline_space
 
-\settrue         \c_tabl_tabulate_split
-\settrue         \c_tabl_tabulate_handlepbreak
-\settrue         \c_tabl_tabulate_autorulespacing
-\settrue         \c_tabl_tabulate_no_blank_in_paragraphs
+\c_tabl_tabulate_split\conditionaltrue
+\c_tabl_tabulate_handlepbreak\conditionaltrue
+\c_tabl_tabulate_autorulespacing\conditionaltrue
+\c_tabl_tabulate_no_blank_in_paragraphs\conditionaltrue
 
 \newdimension    \d_tabl_tabulate_width_p
 \newdimension    \d_tabl_tabulate_width_w
@@ -243,9 +243,9 @@
 \newtoks         \everytabulatepar           % where used ?
 \newtoks         \everytabulate              % public ?
 
-\permanent\protected\def\tolerantTABLEbreaktrue{\settrue\c_tabl_tabulate_tolerant_break} % used in styles !
+\permanent\protected\def\tolerantTABLEbreaktrue{\c_tabl_tabulate_tolerant_break\conditionaltrue} % used in styles !
 
-\permanent\def\noftabulaterows{\number\c_tabl_tabulate_noflines} % handy for testing if a table is empty
+\permanent\def\noftabulaterows{\the\c_tabl_tabulate_noflines} % handy for testing if a table is empty
 
 \installcorenamespace{tabulatebox}
 \installcorenamespace{tabulatesetup}
@@ -439,11 +439,11 @@
 \newconditional\c_tabl_use_size
 \newconditional\c_tabl_sparse_skips
 
-\settrue\c_tabl_use_size     % default per 2022-08-25
-\settrue\c_tabl_sparse_skips % default per 2022-08-25
+\c_tabl_use_size\conditionaltrue     % default per 2022-08-25
+\c_tabl_sparse_skips\conditionaltrue % default per 2022-08-25
 
-\installtexdirective {tabulateusesize}     {\settrue\c_tabl_use_size}     {\setfalse\c_tabl_use_size}
-\installtexdirective {tabulatesparseskips} {\settrue\c_tabl_sparse_skips} {\setfalse\c_tabl_sparse_skips}
+\installtexdirective {tabulateusesize}     {\c_tabl_use_size\conditionaltrue}     {\c_tabl_use_size\conditionalfalse}
+\installtexdirective {tabulatesparseskips} {\c_tabl_sparse_skips\conditionaltrue} {\c_tabl_sparse_skips\conditionalfalse}
 
 \def\tabl_tabulate_set_preamble_step#1#2% only makes sense for many tabulates
   {\etoksapp\t_tabl_tabulate_preamble{%
@@ -474,7 +474,7 @@
         \tabl_tabulate_hook_check   % unexpandable
         \ifzeropt\d_tabl_tabulate_width
             \ifcase\c_tabl_tabulate_modus\else
-               \settrue\c_tabl_tabulate_automode
+               \c_tabl_tabulate_automode\conditionaltrue
             \fi
         \else
             \ifcase\c_tabl_tabulate_modus
@@ -559,7 +559,7 @@
   %\let\gettabulateexit\dogettabulateexit % still needed ?
    \d_tabl_tabulate_width\zeropoint
    %setfalse\c_tabl_pre_is_set
-   \setfalse\c_tabl_post_is_set}
+   \c_tabl_post_is_set\conditionalfalse}
 
 \permanent\protected\def\installtabulatepreambleoption#1#2%
   {\defcsname\??tabulatepreamble\string#1\endcsname{#2}}%
@@ -598,7 +598,7 @@
 \installtabulatepreambleoption{i}{\tabl_tabulate_set_preskip}
 \installtabulatepreambleoption{j}{\tabl_tabulate_set_posskip}
 \installtabulatepreambleoption{k}{\tabl_tabulate_set_preposskip}
-\installtabulatepreambleoption{e}{\toksapp\t_tabl_tabulate_settings{\global\settrue\c_tabl_tabulate_equal}%
+\installtabulatepreambleoption{e}{\toksapp\t_tabl_tabulate_settings{\global\c_tabl_tabulate_equal\conditionaltrue}%
                                   \tabl_tabulate_set_preamble}
 \installtabulatepreambleoption{g}{\tabl_tabulate_set_align}
 \installtabulatepreambleoption{G}{\tabl_tabulate_set_align_new}
@@ -646,14 +646,14 @@
      {\s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
 
 \def\tabl_tabulate_set_posskip#1%
-  {\settrue\c_tabl_post_is_set
+  {\c_tabl_post_is_set\conditionaltrue
    \doifelsenumber{#1}%
      {\s_tabl_tabulate_post#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }%
      {\s_tabl_tabulate_post.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
 
 \def\tabl_tabulate_set_preposskip#1%
   {%settrue\c_tabl_pre_is_set
-   \settrue\c_tabl_post_is_set
+   \c_tabl_post_is_set\conditionaltrue
    \doifelsenumber{#1}%
      {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble  }%
      {\s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble#1}}
@@ -686,13 +686,13 @@
    \fi}
 
 \def\tabl_tabulate_set_align#1%
-  {\global\settrue\c_tabl_auto_align_mode
+  {\global\c_tabl_auto_align_mode\conditionaltrue
    \setcharacteralign\c_tabl_tabulate_columns{#1}%
    \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_align_new#1%
-  {\global\settrue\c_tabl_auto_align_mode_new
-   \iftok{#1}\emptytoks\else\setalignmentcharacter{#1}\fi% todo: check for number or char or ... in lua
+  {\global\c_tabl_auto_align_mode_new\conditionaltrue
+   \ifempty{#1}\else\setalignmentcharacter{#1}\fi% todo: check for number or char or ... in lua
    \tabl_tabulate_set_preamble}
 
 % end of character align plugin
@@ -713,7 +713,7 @@
   {\doifelsenextparenthesis\tabl_tabulate_set_width_indeed\tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_width
-  {\setfalse\c_tabl_tabulate_pwidth_set
+  {\c_tabl_tabulate_pwidth_set\conditionalfalse
    \c_tabl_tabulate_modus\zerocount
    \tabl_tabulate_pickup_width}
 
@@ -725,10 +725,10 @@
 \def\tabl_tabulate_set_paragraph
   {\doifelsenextparenthesis
      {\c_tabl_tabulate_modus\plusone
-      \settrue\c_tabl_tabulate_pwidth_set
+      \c_tabl_tabulate_pwidth_set\conditionaltrue
       \tabl_tabulate_pickup_width}
      {\c_tabl_tabulate_modus\plustwo
-      \setfalse\c_tabl_tabulate_pwidth_set
+      \c_tabl_tabulate_pwidth_set\conditionalfalse
       \tabl_tabulate_set_preamble}}
 
 % \startbuffer
@@ -783,13 +783,13 @@
 
 \defcsname\??tabulatewidth\v!fixed\endcsname
   {\c_tabl_tabulate_modus\plusthree
-   \settrue\c_tabl_tabulate_nopbreak}
+   \c_tabl_tabulate_nopbreak\conditionaltrue}
 
 \defcsname\??tabulatewidth\v!packed\endcsname
-  {\settrue\c_tabl_tabulate_no_interline_space}
+  {\c_tabl_tabulate_no_interline_space\conditionaltrue}
 
 \defcsname\??tabulatewidth\v!auto\endcsname
-  {\c_tabl_tabulate_modus\plusthree\settrue\c_tabl_tabulate_reshape}
+  {\c_tabl_tabulate_modus\plusthree\c_tabl_tabulate_reshape\conditionaltrue}
 
 \lettonothing\tabl_tabulate_hook_box
 \lettonothing\tabl_tabulate_hook_box_begin
@@ -879,10 +879,10 @@
 \permanent\protected\def\tabl_tabulate_set_entry#1#2% rulespec template
   {\c_tabl_tabulate_align\v_tabl_tabulate_align
    \c_tabl_tabulate_modus\zerocount
-   \setfalse\c_tabl_tabulate_pwidth_set
-   \setfalse\c_tabl_tabulate_reshape
+   \c_tabl_tabulate_pwidth_set\conditionalfalse
+   \c_tabl_tabulate_reshape\conditionalfalse
    %setfalse\c_tabl_pre_is_set
-   \setfalse\c_tabl_post_is_set
+   \c_tabl_post_is_set\conditionalfalse
    \t_tabl_tabulate_before\emptytoks
    \t_tabl_tabulate_after\emptytoks
    \t_tabl_tabulate_bmath\emptytoks
@@ -895,13 +895,13 @@
    \glettonothing\m_tabl_tabulate_vrule_color
    \glettonothing\tabl_tabulate_hook_box
    \global\c_tabl_tabulate_colorspan\zerocount
-   \global\setfalse\c_tabl_auto_align_mode
-   \global\setfalse\c_tabl_auto_align_mode_new
+   \global\c_tabl_auto_align_mode\conditionalfalse
+   \global\c_tabl_auto_align_mode_new\conditionalfalse
    \resetalignmentcharacter
  % \attribute\aligncharacterattribute\attributeunsetvalue
    \global\advanceby\c_tabl_tabulate_columns\plusone
    \letcsname\??tabulatesetup\the\c_tabl_tabulate_columns\endcsname\donothing % here ?
-   \iftok{#1}\emptytoks
+   \ifempty{#1}%
      \global\d_tabl_tabulate_vrulethickness\zeropoint
    \else
      \global\d_tabl_tabulate_vrulethickness\d_tabl_tabulate_vrulethickness_default
@@ -922,7 +922,7 @@
 \permanent\protected\def\tabl_tabulate_set_last_entry#1% rulespec
   {\glettonothing\m_tabl_tabulate_color
    \glettonothing\m_tabl_tabulate_vrule_color
-   \iftok{#1}\emptytoks
+   \ifempty{#1}%
      \global\d_tabl_tabulate_vrulethickness\zeropoint
    \else
      \global\d_tabl_tabulate_vrulethickness\d_tabl_tabulate_vrulethickness_default
@@ -1169,14 +1169,14 @@
 \lettonothing\tabl_tabulate_insert_foot
 
 \def\tabl_tabulate_insert_head_content
-  {\noalign{\global\settrue\c_tabl_tabulate_someamble}%
+  {\noalign{\global\c_tabl_tabulate_someamble\conditionaltrue}%
    \begincsname\??tabulatehead\currenttabulation\endcsname
-   \noalign{\global\setfalse\c_tabl_tabulate_someamble}}%
+   \noalign{\global\c_tabl_tabulate_someamble\conditionalfalse}}%
 
 \def\tabl_tabulate_insert_foot_content
-  {\noalign{\global\settrue\c_tabl_tabulate_someamble}%
+  {\noalign{\global\c_tabl_tabulate_someamble\conditionaltrue}%
    \begincsname\??tabulatefoot\currenttabulation\endcsname
-   \noalign{\global\setfalse\c_tabl_tabulate_someamble}}%
+   \noalign{\global\c_tabl_tabulate_someamble\conditionalfalse}}%
 
 \def\tabl_tabulate_check_full_content % - needed, else confusion with \c!header
   {\ifcsname\??tabulatehead\currenttabulation\endcsname
@@ -1273,17 +1273,17 @@
 
 \tolerant\protected\def\tabl_start_regular[#1]#*[#2]% [format] | [settings] | [format] [settings] | [settings] [format]
   {\let\currenttabulation\currenttabulationparent
-   \iftok{#1}\emptytoks
+   \ifempty{#1}%
      \ifhaschar={#2}\relax
        \setupcurrenttabulation[#2]%
      \fi
    \orelse\ifhaschar={#1}\relax
-     \iftok{#2}\emptytoks\else
+     \ifempty{#2}\else
         \settabulationparameter\c!format{#2}%
      \fi
      \setupcurrenttabulation[#1]%
    \else
-     \iftok{#1}\emptytoks\else
+     \ifempty{#1}\else
        \settabulationparameter\c!format{#1}%
      \fi
      \ifhaschar={#2}\relax
@@ -1298,16 +1298,16 @@
 
 \permanent\protected\def\tabl_tabulate_start_ignore % todo when we go frozen
   {\em Nested tabulate is not (yet) supported.\relax
-   \expandafter\gobbleuntil\csname\ifconditional\c_tabl_generic stoptabulate\else\e!stop\v!tabulate\fi\endcsname}
+   \expandafter\ignoreupto\csname\ifconditional\c_tabl_generic stoptabulate\else\e!stop\v!tabulate\fi\endcsname}
 
 \appendtoks
     \enforced\letcsname\e!start\v!tabulate\endcsname\tabl_tabulate_start_ignore % only the main one
 \to \everytabulate
 
-\defcsname\??tabulatesplit\v!yes   \endcsname{\settrue\c_tabl_tabulate_split}
-\defcsname\??tabulatesplit\v!repeat\endcsname{\settrue\c_tabl_tabulate_split}
-\defcsname\??tabulatesplit\v!no    \endcsname{\setfalse\c_tabl_tabulate_split}
-\defcsname\??tabulatesplit\v!auto  \endcsname{\ifinsidefloat\ifinsidesplitfloat\else\setfalse\c_tabl_tabulate_split\fi\fi}
+\defcsname\??tabulatesplit\v!yes   \endcsname{\c_tabl_tabulate_split\conditionaltrue}
+\defcsname\??tabulatesplit\v!repeat\endcsname{\c_tabl_tabulate_split\conditionaltrue}
+\defcsname\??tabulatesplit\v!no    \endcsname{\c_tabl_tabulate_split\conditionalfalse}
+\defcsname\??tabulatesplit\v!auto  \endcsname{\ifinsidefloat\ifinsidesplitfloat\else\c_tabl_tabulate_split\conditionalfalse\fi\fi}
 
 % todo: spacing around tabulate when bodyfont is set
 
@@ -1378,14 +1378,14 @@
   {\tabulationparameter\c!after}
 
 \def\tabl_tabulate_outside_inbetween_indeed
-  {\ifcstok{\tabulationparameter\c!after}\emptytoks\else
+  {\ifempty{\tabulationparameter\c!after}\else
      \vskip\strutdp
      \verticalstrut
      \vskip-\struttotal
    \fi}
 
 \def\tabl_tabulate_inside_inbetween % needs checking
-  {\ifcstok{\tabulationparameter\c!after}\emptytoks\else
+  {\ifempty{\tabulationparameter\c!after}\else
      \vskip\strutdp
      \verticalstrut
      \vskip-\struttotal
@@ -1411,25 +1411,23 @@
    \edef\p_rulethickness {\tabulationparameter\c!rulethickness}%
    \edef\p_bodyfont      {\tabulationparameter\c!bodyfont}%
    \edef\p_indenting     {\tabulationparameter\c!indenting}%
-   \edef\p_keeptogether  {\tabulationparameter\c!keeptogether}%
    \edef\p_blank         {\tabulationparameter\c!blank}%
-   \edef\p_interlinespace{\tabulationparameter\c!interlinespace}%
    %
-   \ifx\p_keeptogether\v!no
-     \settrue \c_tabl_tabulate_tolerant_break
-    %\setfalse\c_tabl_tabulate_handlepbreak
+   \ifcstok{\tabulationparameter\c!keeptogether}\v!no
+     \c_tabl_tabulate_tolerant_break\conditionaltrue
+    %\c_tabl_tabulate_handlepbreak\conditionalfalse
    \else
-     \setfalse\c_tabl_tabulate_tolerant_break
-    %\settrue \c_tabl_tabulate_handlepbreak
+     \c_tabl_tabulate_tolerant_break\conditionalfalse
+    %\c_tabl_tabulate_handlepbreak\conditionaltrue
    \fi
    %
-   \ifx\p_interlinespace\v!no
-     \settrue\c_tabl_tabulate_no_interline_space
+   \ifcstok{\tabulationparameter\c!interlinespace}\v!no
+     \c_tabl_tabulate_no_interline_space\conditionaltrue
    \else
-     \setfalse\c_tabl_tabulate_no_interline_space
+     \c_tabl_tabulate_no_interline_space\conditionalfalse
    \fi
    %
-   \settrue\c_tabl_tabulate_split
+   \c_tabl_tabulate_split\conditionaltrue
    \begincsname\??tabulatesplit\tabulationparameter\c!split\endcsname
    %
    \let\m_tabl_tabulate_blank_default\p_blank
@@ -1463,7 +1461,7 @@
      \dostoptagged
      \dostoptagged
    \fi
-   \global\setfalse\c_tabl_tabulate_equal}
+   \global\c_tabl_tabulate_equal\conditionalfalse}
 
 % The next ones will be token registers
 
@@ -1712,7 +1710,7 @@
 \def\tabl_tabulate_hrule_preset[#1]%
   {\glet\m_tabl_tabulate_hrule_color\m_tabl_tabulate_hrule_color_default
    \global\d_tabl_tabulate_hrulethickness_local\d_tabl_tabulate_hrulethickness_default
-   \iftok{#1}\emptytoks\else\rawprocesscommalist[#1]\tabl_tabulate_hrule_preset_step\fi}
+   \ifempty{#1}\else\rawprocesscommalist[#1]\tabl_tabulate_hrule_preset_step\fi}
 
 \def\tabl_tabulate_hrule_inject_normal
   {\autorule
@@ -2106,8 +2104,8 @@
 
 % \permanent\protected\def\tabl_tabulate_NR_common#1#2%
 %   {\global\advanceby\c_tabl_tabulate_noflines\plusone
-%    \global\setfalse\c_tabl_tabulate_firstflushed
-%    \global\setfalse\c_tabl_tabulate_equal
+%    \global\c_tabl_tabulate_firstflushed\conditionalfalse
+%    \global\c_tabl_tabulate_equal\conditionalfalse
 %    \global\c_tabl_tabulate_column\zerocount
 %    \ifconditional#1\relax
 %      \tabl_tabulate_break_state_reset
@@ -2128,8 +2126,8 @@
 
 \permanent\tolerant\protected\def\tabl_tabulate_NR_common#1#2% #. gobbles pars and spaces
   {\global\advanceby\c_tabl_tabulate_noflines\plusone
-   \global\setfalse\c_tabl_tabulate_firstflushed
-   \global\setfalse\c_tabl_tabulate_equal
+   \global\c_tabl_tabulate_firstflushed\conditionalfalse
+   \global\c_tabl_tabulate_equal\conditionalfalse
    \global\c_tabl_tabulate_column\zerocount
    \ifconditional#1\relax
      \tabl_tabulate_break_state_reset
@@ -2161,7 +2159,7 @@
        \fi
      \fi
    \fi
-   \global\setfalse\c_tabl_tabulate_firstflushed
+   \global\c_tabl_tabulate_firstflushed\conditionalfalse
    \ifconditional\c_tabl_tabulate_no_interline_space
      \nointerlineskip
      \injectzerobaselineskip
@@ -2213,19 +2211,19 @@
 %   {\glettonothing\tabl_tabulate_flush_collected_indeed
 %    \global\c_tabl_tabulate_column\zerocount
 %    \tabl_tabulate_pbreak_check
-%    \global\setfalse\c_tabl_tabulate_split_done % new 27/12/2022
+%    \global\c_tabl_tabulate_split_done\conditionalfalse % new 27/12/2022
 %    \dofastloopcs\c_tabl_tabulate_columns\tabl_tabulate_flush_second_step
 %    \ifconditional\c_tabl_tabulate_split_done\else
 %      \glet\tabl_tabulate_tm\s!reset % new 27/12/2022
 %    \fi
-%    \global\settrue\c_tabl_tabulate_firstflushed}
+%    \global\c_tabl_tabulate_firstflushed\conditionaltrue}
 
 % \protected\def\tabl_tabulate_flush_second_step
 %   {\ifvoid\b_tabl_tabulate_current\fastloopindex
 %    \else
 %      \gdef\tabl_tabulate_flush_collected_indeed{\expand\t_tabl_tabulate_dummy}%
 %      \ifvoid\b_tabl_tabulate_current\fastloopindex \else
-%        \global\settrue\c_tabl_tabulate_split_done % new 27/12/2022
+%        \global\c_tabl_tabulate_split_done\conditionaltrue % new 27/12/2022
 %      \fi
 %    \fi}
 
@@ -2235,19 +2233,19 @@
   {\glettonothing\tabl_tabulate_flush_collected_indeed
    \global\c_tabl_tabulate_column\zerocount
    \tabl_tabulate_pbreak_check
-   \global\setfalse\c_tabl_tabulate_split_done % new 27/12/2022
+   \global\c_tabl_tabulate_split_done\conditionalfalse % new 27/12/2022
    \localcontrolledloop\plusone\c_tabl_tabulate_columns\plusone{\tabl_tabulate_flush_second_step}%
    \ifconditional\c_tabl_tabulate_split_done\else
      \glet\tabl_tabulate_tm\s!reset % new 27/12/2022
    \fi
-   \global\settrue\c_tabl_tabulate_firstflushed}
+   \global\c_tabl_tabulate_firstflushed\conditionaltrue}
 
 \protected\def\tabl_tabulate_flush_second_step
   {\ifvoid\b_tabl_tabulate_current\currentloopiterator
    \else
      \gdef\tabl_tabulate_flush_collected_indeed{\expand\t_tabl_tabulate_dummy}%
      \ifvoid\b_tabl_tabulate_current\currentloopiterator \else
-       \global\settrue\c_tabl_tabulate_split_done % new 27/12/2022
+       \global\c_tabl_tabulate_split_done\conditionaltrue % new 27/12/2022
      \fi
    \fi}
 
@@ -2299,7 +2297,7 @@
 \permanent\tolerant\noaligned\protected\def\tabl_tabulate_BL_second[#1]{\noalign{\tabl_tabulate_hrule_preset[#1]\tabl_tabulate_BL_second_indeed}}
 
 \protected\def\tabl_tabulate_FL_second_indeed
-  {\ifinsidefloat\orelse\ifcstok{\tabulationparameter\c!before}\emptytoks
+  {\ifinsidefloat\orelse\ifempty{\tabulationparameter\c!before}%%
      \tabl_tabulate_baselinecorrection
    \fi
    \tabl_tabulate_hrule_inject
@@ -2452,8 +2450,8 @@
 % \stoptabulate
 
 \protected\def\tabl_tabulate_anchor_indeed
-  {\edef\xanchor{\number\c_tabl_tabulate_column}%
-   \edef\yanchor{\number\c_tabl_tabulate_nofrealrows}%
+  {\edef\xanchor{\the\c_tabl_tabulate_column}%
+   \edef\yanchor{\the\c_tabl_tabulate_nofrealrows}%
    \markanchor{matrix}{\c_tabl_tabulate_column}{\c_tabl_tabulate_nofrealrows}}
 
 \def\tabl_tabulate_anchor_setup % a bit of a cheat but good enough for a lightweight experiment
@@ -2482,7 +2480,7 @@
    \s_tabl_tabulate_pre\zeropoint
    \s_tabl_tabulate_post\zeropoint
    %setfalse\c_tabl_pre_is_set
-   \setfalse\c_tabl_post_is_set
+   \c_tabl_post_is_set\conditionalfalse
    \global\c_tabl_tabulate_columns\zerocount
    \global\c_tabl_tabulate_nofauto\zerocount
    \global\c_tabl_tabulate_noflines\zerocount
@@ -2490,7 +2488,7 @@
    \c_tabl_tabulate_minusnoflines\zerocount
    \global\d_tabl_tabulate_width_p\zeropoint
    \global\d_tabl_tabulate_width_w\zeropoint
-   \global\setfalse\c_tabl_tabulate_equal
+   \global\c_tabl_tabulate_equal\conditionalfalse
    \tabl_tabulate_pheight_reset
    \tabskip\zeropoint
    \ifinsidesplitfloat
@@ -2581,7 +2579,7 @@
         \expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}}%
       \anch_backgrounds_text_level_stop
       \ifcase\c_anch_backgrounds_text_state\else
-        \global\settrue\tablehaspositions
+        \global\tablehaspositions\conditionaltrue
       \fi
    \ifnum\c_tabl_tabulate_nofauto>\zerocount
      % so, even if the natural size is larger, in the final run, we force the calculated width
@@ -2622,7 +2620,7 @@
    %
    \dostarttaggedchained\t!tabulate\empty\??tabulation
    \dostarttagged\t!tabulaterow\empty
-   \setfalse\inhibitmargindata % new per 2012.06.13 ... really needed
+   \inhibitmargindata\conditionalfalse % new per 2012.06.13 ... really needed
    \toksapp\everycr{\noalign{\the\t_tabl_tabulate_every_real_row\dostoptagged\dostarttagged\t!tabulaterow\empty}}%
    \halign
      \ifconditional\c_tabl_sparse_skips \s!noskips\fi
@@ -2723,7 +2721,7 @@
 
 \permanent\tolerant\noaligned\protected\def\tabl_tabulate_TB_yes[#1]%
   {\noalign\bgroup
-     \unless\iftok{#1}\emptytoks
+     \unless\ifempty{#1}%
        \blank[#1]
      \orelse\ifempty\m_tabl_tabulate_blank_default
        \blank
@@ -2766,7 +2764,7 @@
 %D Some new trickery:
 %D
 %D \startbuffer
-%D \settrue\c_tabl_tabulate_splitoff_whitespace
+%D \c_tabl_tabulate_splitoff_whitespace\conditionaltrue
 %D
 %D \starttabulate[|p(2cm)|p(2cm)|p(2cm)|]
 %D     \NC test 1a \NC test 2a \NC test 3a
@@ -2914,7 +2912,7 @@
 
 \permanent\protected\defcsname starttabulate\endcsname
   {\bgroup % whole thing
-   \settrue\c_tabl_generic
+   \c_tabl_generic\conditionaltrue
    \lettonothing\currenttabulationparent
    \tabl_start_regular}
 
@@ -3198,10 +3196,10 @@
 
 \permanent\protected\def\tabl_tabulate_A_first
   {\global\advanceby\c_tabl_tabulate_autocolor\plusone
-   \edef\m_table_current_row_background_auto{\tabulateparameter{\c!backgroundcolor:\number\c_tabl_tabulate_autocolor}}%
+   \edef\m_table_current_row_background_auto{\tabulateparameter{\c!backgroundcolor:\the\c_tabl_tabulate_autocolor}}%
    \ifempty\m_table_current_row_background_auto
      \global\c_tabl_tabulate_autocolor\plusone
-     \edef\m_table_current_row_background_auto{\tabulateparameter{\c!backgroundcolor:\number\c_tabl_tabulate_autocolor}}%
+     \edef\m_table_current_row_background_auto{\tabulateparameter{\c!backgroundcolor:\the\c_tabl_tabulate_autocolor}}%
    \fi
    \ifempty\m_table_current_row_background_auto
      \lettonothing\m_table_current_row_background_auto % \m_table_current_row_background_default

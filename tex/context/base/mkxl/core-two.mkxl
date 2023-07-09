@@ -88,7 +88,7 @@
 %
 % % temp hack: needs a proper \starteverytimeluacode
 %
-% \setfalse\twopassdatafound
+% \newconditional\twopassdatafound
 %
 % \mutable\lettonothing\twopassdata
 % \mutable\lettonothing\twopassdatalist
@@ -97,9 +97,9 @@
 %
 % \def\syst_twopass_check % can be delegated to lua once obsolete is gone
 %   {\ifempty\twopassdata
-%      \setfalse\twopassdatafound
+%      \twopassdatafound\conditionalfalse
 %    \else
-%      \settrue\twopassdatafound
+%      \twopassdatafound\conditionaltrue
 %    \fi}
 %
 % \permanent\protected\def\definetwopasslist        #1{\clf_definetwopasslist{#1}}

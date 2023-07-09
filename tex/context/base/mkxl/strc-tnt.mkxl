@@ -56,7 +56,7 @@
    \c!n=10] % * will use the real space
 
 \appendtoks
-    \frozen\instance\setuevalue{\currenttextnote}{\educ_textnote[\currenttextnote]}%
+    \frozen\instance\protected\edefcsname\currenttextnote\endcsname{\educ_textnote[\currenttextnote]}%
 \to \everydefinetextnote
 
 \tolerant\protected\def\educ_textnote[#1]#*[#2]#:#3%

@@ -169,23 +169,23 @@
 
 \newconditional\c_strc_registers_defining
 \setnewconstant\c_strc_registers_maxlevel \plusfive
-\newconditional\c_strc_registers_vertical \settrue\c_strc_registers_vertical
+\newconditional\c_strc_registers_vertical \c_strc_registers_vertical\conditionaltrue
 
 \ifdefined\Word \else \protected\def\Word#1{#1} \fi
 
 \appendtoks
     \ifconditional\c_strc_registers_defining \else % todo: dosingle ...
-      \settrue\c_strc_registers_defining
+      \c_strc_registers_defining\conditionaltrue
       \definemixedcolumns[\currentregister][\v!register]% first as otherwise it overloads start/stop
       \clf_defineregister{\currentregister}{\registerparameter\c!referencemethod}%
       \normalexpanded{\presetheadtext[\currentregister=\Word{\currentregister}]}%
-      \frozen\instance\setuevalue{\currentregister}{\strc_registers_insert_entry[\currentregister]}%
-      \frozen\instance\setuevalue{\e!see\currentregister}{\strc_registers_insert_see[\currentregister]}%
-      %frozen\instance\setuevalue{\e!coupled\currentregister}{\dolinkedregister{\currentregister}}%
+      \frozen\instance\protected\edefcsname\currentregister\endcsname{\strc_registers_insert_entry[\currentregister]}%
+      \frozen\instance\protected\edefcsname\e!see\currentregister\endcsname{\strc_registers_insert_see[\currentregister]}%
+      %frozen\instance\protected\edefcsname\e!coupled\currentregister\endcsname{\dolinkedregister{\currentregister}}%
       % historic ballast
-      \frozen\instance\setuevalue{\e!place\currentregister}{\placeregister[\currentregister]}%
-      \frozen\instance\setuevalue{\e!complete\currentregister}{\completeregister[\currentregister]}%
-      \frozen\instance\setuevalue{\e!setup\currentregister\e!endsetup}{\setupregister[\currentregister]}%
+      \frozen\instance\protected\edefcsname\e!place\currentregister\endcsname{\placeregister[\currentregister]}%
+      \frozen\instance\protected\edefcsname\e!complete\currentregister\endcsname{\completeregister[\currentregister]}%
+      \frozen\instance\protected\edefcsname\e!setup\currentregister\e!endsetup\endcsname{\setupregister[\currentregister]}%
       \dorecurse\c_strc_registers_maxlevel{% weird, expanded should not be needed
         \normalexpanded{\defineregister[\currentregister:\recurselevel][\currentregister]}%
        %\defineregister[\currentregister:\recurselevel][\currentregister]%
@@ -193,7 +193,7 @@
         \resetregisterparameter{\c!keys   :\recurselevel}% avoid it, but it's faster too)
       }%
       %
-      \setfalse\c_strc_registers_defining
+      \c_strc_registers_defining\conditionalfalse
     \fi
 \to \everydefineregister
 
@@ -415,8 +415,7 @@
 
 \tolerant\protected\def\strc_registers_insert_entry[#1]#*[#2]%
   {\cdef\currentregister{#1}%
-   \edef\p_ownnumber{\registerparameter\c!ownnumber}%
-   \ifx\p_ownnumber\v!yes
+   \ifcstok{\registerparameter\c!ownnumber}\v!yes
      \expandafter\strc_registers_insert_entry_yes
    \else
      \expandafter\strc_registers_insert_entry_nop
@@ -680,8 +679,11 @@
    \fi}
 
 \def\strc_registers_place_indeed#1%
-  {\doifelse{\registerparameter\c!interaction}\v!text
-     \settrue\setfalse\c_strc_registers_text_interaction
+  {\ifcstok{\registerparameter\c!interaction}\v!text
+     \c_strc_registers_text_interaction\conditionaltrue
+   \else
+     \c_strc_registers_text_interaction\conditionalfalse
+   \fi
    \clf_processregister
      {#1}%
      {%
@@ -822,13 +824,10 @@
      % skip
    \orelse\ifx\currentregistercharacter\s!unknown
      % skip
+   \orelse\ifcstok{\registerparameter\c!indicator}\v!yes
+     \strc_registers_place_character_yes
    \else
-     \edef\p_indicator{\registerparameter\c!indicator}%
-     \ifx\p_indicator\v!yes
-       \strc_registers_place_character_yes
-     \else
-       \strc_registers_place_character_nop
-     \fi
+     \strc_registers_place_character_nop
    \fi}
 
 \def\strc_registers_place_character_yes
@@ -950,7 +949,7 @@
 %    \dostarttagged\t!registerentries\empty
 %  % \let\savedcurrentregister\currentregister
 %    \pushmacro\currentregister
-%    \cdef\currentregister{\currentregister:\number\c_strc_register_level}%
+%    \cdef\currentregister{\currentregister:\the\c_strc_register_level}%
 %    \usenestedregisterstyleandcolor\c!textstyle\c!textcolor
 %    \ifnum\c_strc_register_level>\plusone
 %      \advanceby\leftskip\d_strc_registers_distance\relax
@@ -991,8 +990,11 @@
 %D \stoptyping
 
 \appendtoks
-    \doifelse{\registerparameter\c!textalternative}\v!horizontal
-      \setfalse\settrue\c_strc_registers_vertical
+    \ifcstok{\registerparameter\c!textalternative}\v!horizontal
+      \c_strc_registers_vertical\conditionalfalse
+    \else
+      \c_strc_registers_vertical\conditionaltrue
+    \fi
 \to \everysetupregister
 
 \mutable\lettonothing\currentnestedregister
@@ -1015,7 +1017,7 @@
    \c_strc_register_level\ifnum#1>\c_strc_registers_maxlevel\c_strc_registers_maxlevel\else#1\fi\relax
    \dostarttagged\t!registerentries\empty
    \pushmacro\currentregister % bah
-   \cdef\currentregister{\currentregister:\number\c_strc_register_level}%
+   \cdef\currentregister{\currentregister:\the\c_strc_register_level}%
    \let\currentnestedregister\currentregister
    \usenestedregisterstyleandcolor\c!textstyle\c!textcolor
    \ifnum\c_strc_register_level>\plusone
@@ -1182,8 +1184,7 @@
 \permanent\protected\def\registeronepage#1#2#3#4#5% #1:class #2:processor content
   {\pushcurrentregister{#1}%
    \strc_registers_update_page_properties
-   \edef\p_pagenumber{\registerparameter\c!pagenumber}%
-   \ifx\p_pagenumber\v!no\else
+   \ifcstok{\registerparameter\c!pagenumber}\v!no\else
      \registerpageseparator
      \global\setconstant\c_strc_registers_page_state\plusone
      \dostarttagged\t!registerpage\empty
@@ -1197,18 +1198,17 @@
 \appendtoks
     \edef\p_compress{\registerparameter\c!compress}%
     \ifx\p_compress\v!text
-      \settrue\c_strc_registers_following
+      \c_strc_registers_following\conditionaltrue
       \letregisterparameter\c!compress\v!yes
     \else
-      \setfalse\c_strc_registers_following
+      \c_strc_registers_following\conditionalfalse
     \fi
 \to \everyplaceregister
 
 \permanent\protected\def\registerpagerange#1#2#3#4#5#6#7#8% #1:class #2:processor  content, content todo: -- configurable
   {\pushcurrentregister{#1}%
    \strc_registers_update_page_properties
-   \edef\p_pagenumber{\registerparameter\c!pagenumber}%
-   \ifx\p_pagenumber\v!no\else
+   \ifcstok{\registerparameter\c!pagenumber}\v!no\else
      \registerpageseparator
      \global\setconstant\c_strc_registers_page_state\plusone
      \dostarttagged\t!registerpagerange\empty
@@ -1276,7 +1276,7 @@
 %    \global\setconstant\c_strc_registers_page_state\plustwo
 %    \def\currentregisterpageindex{#5}%
 %    \dostarttagged\t!registersee\empty
-%    \settrue\c_strc_registers_page_done
+%    \c_strc_registers_page_done\conditionaltrue
 %    \iflocation
 %      \def\currentregisterseeindex{#6}%
 %    \else
@@ -1301,7 +1301,7 @@
    \def\currentregisterpageindex{#5}%
    \def\currentregisterseeindex{#6}%
    \dostarttagged\t!registersee\empty
-   \settrue\c_strc_registers_page_done
+   \c_strc_registers_page_done\conditionaltrue
    \ifchknum\currentregisterseeindex\or
      \lettonothing\currentregisterpageprefix
    \else
@@ -1344,7 +1344,7 @@
    \global\setconstant\c_strc_registers_page_state\plustwo
    \def\currentregisterpageindex{#5}%
    \dostarttagged\t!registersection\empty
-   \settrue\c_strc_registers_page_done
+   \c_strc_registers_page_done\conditionaltrue
    \iflocation
      \def\currentregistersectionindex{#6}%
    \else
@@ -1437,9 +1437,11 @@
    \enforced\frozen\def\registerpagerange{\registerpagebuttonsymbol\gobbleeightarguments}}
 
 \protected\def\strc_registers_set_page_rendering
-  {\doifelse{\registerparameter\c!pagenumber}\v!no
-     {\enforced\frozen\let \currentregisterpagesymbol\v!none}
-     {\enforced\frozen\edef\currentregisterpagesymbol{\registerparameter\c!symbol}}%
+  {\ifcstok{\registerparameter\c!pagenumber}\v!no
+     \enforced\frozen\let\currentregisterpagesymbol\v!none
+   \else
+     \enforced\frozen\edef\currentregisterpagesymbol{\registerparameter\c!symbol}%
+   \fi
    \ifempty\currentregisterpagesymbol
      \csname\??registersymbol n\endcsname
    \orelse\ifcsname\??registersymbol\currentregisterpagesymbol\endcsname
@@ -1548,7 +1550,7 @@
 % %     \fi}%
 %
 % \def\injectregistervalues#1#2%
-%   {\iftok{\registerparameter{#1:\the\numexpr#2}}\emptytoks\else
+%   {\ifempty{\registerparameter{#1:\the\numexpr#2}}\else
 %       \expandafter{\lastnamedcs}%
 %       \injectregistervalues#1{#2+1}%
 %     \fi}%

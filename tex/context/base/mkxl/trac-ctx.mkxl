@@ -49,9 +49,9 @@
 % \newconditional\c_math_virtual_px
 % \newconditional\c_math_virtual_lm
 %
-% \installtexdirective {fonts.math.virtual.tx} {\settrue \c_math_virtual_tx} {\setfalse\c_math_virtual_tx}
-% \installtexdirective {fonts.math.virtual.px} {\settrue \c_math_virtual_px} {\setfalse\c_math_virtual_px}
-% \installtexdirective {fonts.math.virtual.lm} {\settrue \c_math_virtual_lm} {\setfalse\c_math_virtual_lm}
+% \installtexdirective {fonts.math.virtual.tx} {\c_math_virtual_tx\conditionaltrue} {\c_math_virtual_tx\conditionalfalse}
+% \installtexdirective {fonts.math.virtual.px} {\c_math_virtual_px\conditionaltrue} {\c_math_virtual_px\conditionalfalse}
+% \installtexdirective {fonts.math.virtual.lm} {\c_math_virtual_lm\conditionaltrue} {\c_math_virtual_lm\conditionalfalse}
 %
 % but as it makes the typescript look ugly we wil use:
 %

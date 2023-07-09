@@ -455,9 +455,7 @@
   {\doifelseassignment{#1}
      {\setupcurrentperiods[#1]%
       \scratchcounter\periodsparameter\c!n}
-     {\doifelsenothing{#1}
-        {\scratchcounter\periodsparameter\c!n}%
-        {\scratchcounter#1}}%
+     {\scratchcounter\ifempty{#1}\periodsparameter\c!n\else#1\fi}%
    \enco_periods_finish}
 
 \protected\def\enco_periods_nop

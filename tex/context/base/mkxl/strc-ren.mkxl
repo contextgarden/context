@@ -39,25 +39,25 @@
    \edef\p_strc_rendering_interlinespace{\headparameter\c!interlinespace}%
    \ifempty\p_strc_rendering_interlinespace
      % here the interline space is only set when style sets no space
-     \setfalse\fontattributeisset % use the currentfontparameter state instead
-     \setfalse\interlinespaceisset
+     \fontattributeisset\conditionalfalse % use the currentfontparameter state instead
+     \interlinespaceisset\conditionalfalse
      \useheadstyleandcolor\c!style\c!color\relax
      \ifconditional\fontattributeisset \ifconditional\interlinespaceisset \else
        \setupinterlinespace
      \fi \fi
-     \setfalse\fontattributeisset
+     \fontattributeisset\conditionalfalse
      \useheadstyleandcolor#1#2\relax
      \ifconditional\fontattributeisset \ifconditional\interlinespaceisset \else
        \setupinterlinespace
      \fi \fi
    \else
      % here the set interline space overloads any other set space in the style
-     \setfalse\fontattributeisset
+     \fontattributeisset\conditionalfalse
      \useheadstyleandcolor\c!style\c!color\relax
      \ifconditional\fontattributeisset
        \dosetupcheckedinterlinespace\p_strc_rendering_interlinespace
      \fi
-     \setfalse\fontattributeisset
+     \fontattributeisset\conditionalfalse
      \useheadstyleandcolor#1#2\relax
      \ifconditional\fontattributeisset
        \dosetupcheckedinterlinespace\p_strc_rendering_interlinespace
@@ -66,12 +66,12 @@
 
 \protected\def\strc_rendering_initialize_style_and_color_inline#1#2%
    {\dontconvertfont
-    \setfalse\fontattributeisset
+    \fontattributeisset\conditionalfalse
     \useheadstyleandcolor\c!style\c!color\relax
     \ifconditional\fontattributeisset
       \updateraggedskips % \setupspacing
     \fi
-    \setfalse\fontattributeisset
+    \fontattributeisset\conditionalfalse
     \useheadstyleandcolor#1#2\relax
     \ifconditional\fontattributeisset
       \updateraggedskips % \setupspacing
@@ -134,9 +134,11 @@
 \protected\def\strc_rendering_place_head_number_and_text
   {\strc_rendering_start_placement
    \setheadmarking
-   \doifelsetext\getheadnumber
+   \iftext\getheadnumber
      \strc_sectioning_set_head_number_content
+   \else
      \strc_sectioning_reset_head_number_content
+   \fi
    \ifconditional\c_strc_sectioning_empty
      \setbox\b_strc_rendering_head\hpack \headreferenceattributes to \zeropoint{\strut}%
    \else % = needed
@@ -214,7 +216,7 @@
    \else
      \strc_rendering_initialize_hsize_global
    \fi
-   \setfalse\inhibitmargindata % brrrr is set in forgetall
+   \inhibitmargindata\conditionalfalse % brrrr is set in forgetall
    \dontcomplain
    \postponenotes
    \strc_rendering_initialize_interaction
@@ -487,14 +489,14 @@
      \let\currentheadrenderingalternative\v!vertical
    \fi
    \ifx\currentheadrenderingalternative\v!horizontal
-     \global\setfalse\headisdisplay   % global
-     \global\setfalse\headissomewhere % global
+     \global\headisdisplay\conditionalfalse   % global
+     \global\headissomewhere\conditionalfalse % global
    \orelse\ifx\currentheadrenderingalternative\v!somewhere
-     \global\setfalse\headisdisplay   % global
-     \global\settrue \headissomewhere % global
+     \global\headisdisplay\conditionalfalse   % global
+     \global\headissomewhere\conditionaltrue % global
    \else
-     \global\settrue \headisdisplay   % global
-     \global\setfalse\headissomewhere % global
+     \global\headisdisplay\conditionaltrue   % global
+     \global\headissomewhere\conditionalfalse % global
    \fi}
 
 \protected\def\strc_rendering_initialize_dimensions
@@ -660,12 +662,7 @@
         \dontleavehmode % in case there is no strut, else side effects with llap
         \begstrut % use one \strut here!
         \ifconditional\headshownumber
-            \doifelsesomething {\headparameter\c!location} {
-                % kind of new
-                \margindata [\headparameter\c!location] {
-                    \headnumbercontent
-                }
-            } {
+            \ifempty {\headparameter\c!location}
                 % normal backward compatible variant
                 \llap {
                     \signalrightpage
@@ -680,7 +677,12 @@
                         \hskip\dimexpr\d_strc_rendering_local_leftoffset+\scratchdistance\relax
                     }
                 }
-            }
+            \else
+                % kind of new
+                \margindata [\headparameter\c!location] {
+                    \headnumbercontent
+                }
+            \fi
         \else
             \fakeheadnumbercontent % will also be done in the other ones (force consistency with numbered)
         \fi
@@ -708,7 +710,7 @@
         \headsetupspacing
         \noindent
         \begstrut
-        \setfalse\headisdisplay % so a kind of mix
+        \headisdisplay\conditionalfalse % so a kind of mix
         \headtextcontent
         \ifconditional\headshownumber
             \kern\headnumberdistance

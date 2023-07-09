@@ -301,6 +301,16 @@
                                                                      \Udelimiter\zerocount\fam\scratchcounterthree
                                                                      \s!noaxis \space
                                                                      \s!hfactor \numexpr\mathfractionparameter\c!hfactor\relax}
+\defcsname\??fractionmethods\v!center              \v!none\endcsname{\Uskewed
+                                                                     \Udelimiter\zerocount\fam\scratchcounterthree
+                                                                     \s!noaxis \space \s!center
+                                                                     \s!hfactor \numexpr\mathfractionparameter\c!hfactor\relax}
+\defcsname\??fractionmethods\v!center                     \endcsname{\Uskewedwithdelims
+                                                                     \Udelimiter\zerocount\fam\scratchcounterone
+                                                                     \Udelimiter\zerocount\fam\scratchcountertwo
+                                                                     \Udelimiter\zerocount\fam\scratchcounterthree
+                                                                     \s!noaxis \space \s!center
+                                                                     \s!hfactor \numexpr\mathfractionparameter\c!hfactor\relax}
 
 \setupmathfractions % we now inherit !
   [\c!topcolor=\mathfractionparameter\c!color,
@@ -318,6 +328,8 @@
         \mathfractionparameter\c!middle
       \orelse\ifx\p_method\v!line
         \mathfractionparameter\c!middle
+      \orelse\ifx\p_method\v!center
+        \mathfractionparameter\c!middle
       \else
         \mathfractionparameter\c!symbol
       \fi
@@ -327,6 +339,7 @@
       \p_method
       \ifx\p_method\v!horizontal
       \orelse\ifx\p_method\v!line
+      \orelse\ifx\p_method\v!center
       \orelse\ifcsname\??fractionmethods\p_method\p_rule\endcsname % \v!vertical
         \p_rule
       \else
@@ -573,9 +586,11 @@
 % \permanent\protected\def\amsfrac{\csname\inlineordisplaymath id:ams:frac\endcsname}
 %
 % \appendtoks
-%     \doifelse{\mathematicsparameter\c!fractions}{ams}%
-%       {\enforced\let\frac\amsfrac}%
-%       {\enforced\let\frac\ctxfrac}%
+%     \iftok{\mathematicsparameter\c!fractions}{ams}
+%         \enforced\let\frac\amsfrac
+%     \else
+%         \enforced\let\frac\ctxfrac
+%     \fi
 % \to \everysetupmathematics
 
 % % Also gone:
@@ -754,8 +769,14 @@
 \definemathfraction
   [\s!vfrac]
   [\v!horizontal]
-  [\c!hfactor=20,
-   \c!vfactor=10]
+  [\c!hfactor=20, % quite small, as we have 1000 as default
+   \c!vfactor=10] % quite small, as we have 1000 as default
+
+\definemathfraction
+  [hfrac]
+  [\c!method=\v!center,
+   \c!hfactor=\zerocount,
+   \c!vfactor=\zerocount]
 
 %D And a cheat (for Mikael):
 

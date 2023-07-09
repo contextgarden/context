@@ -48,7 +48,8 @@ posit32_t
      uint_fast32_t uiA, uint_fast32_t uiB, uint_fast32_t uiC, uint_fast32_t op ){
 
 	union ui32_p32 uZ;
-	uint_fast32_t regA, regZ, fracA, fracZ, regime, tmp;
+ // uint_fast32_t regA, regZ, fracA, fracZ, regime, tmp; // HH
+	uint_fast32_t regZ, fracA, fracZ=0, regime, tmp;
 	bool signA, signB, signC, signZ, regSA, regSB, regSC, regSZ, bitNPlusOne=0, bitsMore=0, rcarry;
 	int_fast32_t expA, expC, expZ;
 	int_fast16_t kA=0, kC=0, kZ=0, shiftRight;

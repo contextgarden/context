@@ -1059,12 +1059,11 @@
 
 \unexpanded\def\scrn_rollbutton_symbol_indeed#getparameter#inheritedframed#setparameter#usestyleandcolor#what#text%
   {\definecolor[rollover][rollover:#what]%
-   \doifelse{#what}{n}% ?
-     {\doifelse{#getparameter\c!alternative}\v!hidden\phantom\hbox}\hbox
-        {#setparameter\c!framecolor     {rollover}%
-         #setparameter\c!backgroundcolor{rollover}%
-         #setparameter\c!color          {rollover}%
-         #inheritedframed{#usestyleandcolor\c!style\c!color{#text}}}}
+   \doifelse{#getparameter\c!alternative}\v!hidden\phantom\hbox
+     {#setparameter\c!framecolor     {rollover}%
+      #setparameter\c!backgroundcolor{rollover}%
+      #setparameter\c!color          {rollover}%
+      #inheritedframed{#usestyleandcolor\c!style\c!color{#text}}}}
 
 %D We plug into the menu system
 

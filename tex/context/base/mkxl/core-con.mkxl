@@ -451,9 +451,9 @@
    \getdummyparameters[#1]%
    \normalexpanded
      {\endgroup
-      \iftok{\directdummyparameter\c!d}\emptytoks\else\normalday  \number\directdummyparameter\c!d\relax\fi
-      \iftok{\directdummyparameter\c!m}\emptytoks\else\normalmonth\number\directdummyparameter\c!m\relax\fi
-      \iftok{\directdummyparameter\c!y}\emptytoks\else\normalyear \number\directdummyparameter\c!y\relax\fi}}
+      \ifempty{\directdummyparameter\c!d}\else\normalday  \number\directdummyparameter\c!d\relax\fi
+      \ifempty{\directdummyparameter\c!m}\else\normalmonth\number\directdummyparameter\c!m\relax\fi
+      \ifempty{\directdummyparameter\c!y}\else\normalyear \number\directdummyparameter\c!y\relax\fi}}
 
 \permanent\tolerant\protected\def\date[#1]#,[#2]% sets the date !
   {\dontleavehmode
@@ -1009,7 +1009,7 @@
 %D \stoptext
 %D \stoptyping
 
-\permanent\def\zeronumberconversion#1{\number\numexpr#1-\plusone\relax}
+\permanent\def\zeronumberconversion#1{\the\numexpr#1-\plusone\relax}
 
 \defineconversion [zero] [\zeronumberconversion]
 

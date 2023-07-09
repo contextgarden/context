@@ -22,15 +22,17 @@
 %D Version checking:
 
 \permanent\protected\def\newcontextversion#1%
-  {\doifelse{#1}\contextversion
-      {\aliased\let\newcontextversion\gobbleoneargument}
-      {\writeline
-       \writestatus{Fatal    Error}{Your format does not match the base files!}%
-       \writeline
-       \writestatus{Format Version}{\contextversion\space\contextmark}%
-       \writestatus{Files  Version}{#1}%
-       \batchmode
-       \normalend}}
+  {\ifcstok{#1}\contextversion
+     \aliased\let\newcontextversion\gobbleoneargument
+   \else
+     \writeline
+     \writestatus{Fatal    Error}{Your format does not match the base files!}%
+     \writeline
+     \writestatus{Format Version}{\contextversion\space\contextmark}%
+     \writestatus{Files  Version}{#1}%
+     \batchmode
+     \normalend
+   \fi}
 
 %D End of lines to the output. \TEX\ will map this onto the platform specific
 %D line ending. I hate this mess.
@@ -89,9 +91,11 @@
 \permanent\def\jobfullname{\jobfilename.\jobfilesuffix}
 
 \permanent\protected\def\setjobfullname#1% #1 = default if not given
-  {\doifelsenothing\jobfilename
-     {\lettonothing\jobfullname}
-     {\doif\jobfilesuffix\c!tex{\edef\jobfullname{\jobfilename.#1}}}}
+  {\ifempty\jobfilename
+     \lettonothing\jobfullname
+   \orelse\ifcstok\jobfilesuffix\c!tex
+     \edef\jobfullname{\jobfilename.#1}%
+   \fi}
 
 %D There are a couple of system states avaiable:
 %D
@@ -123,21 +127,22 @@
 %D \stoptyping
 
 \permanent\protected\def\setuprandomize[#1]%
-  {\doifsomething{#1}
-     {\begingroup
-      % tex's time is in minutes
-      \scratchcounter\normaltime
-      \processaction
-        [#1]
-        [  \v!small=>\divideby\scratchcounter 15, %  900,
-          \v!medium=>\divideby\scratchcounter 30, % 1800,
-             \v!big=>\divideby\scratchcounter 60, % 3600,
-          \v!normal=>\scratchcounter\newrandomseed,
-         \s!default=>\scratchcounter\newrandomseed,
-         \s!unknown=>\scratchcounter#1]%
-      \setrandomseed\scratchcounter
-    % \writestatus\m!system{randomseed: \the\scratchcounter}%
-      \endgroup}}
+  {\ifempty{#1}\else
+     \begingroup
+     % tex's time is in minutes
+     \scratchcounter\normaltime
+     \processaction
+       [#1]
+       [  \v!small=>\divideby\scratchcounter 15, %  900,
+         \v!medium=>\divideby\scratchcounter 30, % 1800,
+            \v!big=>\divideby\scratchcounter 60, % 3600,
+         \v!normal=>\scratchcounter\newrandomseed,
+        \s!default=>\scratchcounter\newrandomseed,
+        \s!unknown=>\scratchcounter#1]%
+     \setrandomseed\scratchcounter
+    %\writestatus\m!system{randomseed: \the\scratchcounter}%
+     \endgroup
+   \fi}
 
 \setupsystem
   [\c!directory=,
@@ -189,9 +194,9 @@
 \installcommandhandler \??startstop {startstop} \??startstop
 
 \appendtoks
-    \frozen\setuevalue{\e!start\currentstartstop}{\syst_startstop_start {\currentstartstop}}%
-    \frozen\setuevalue{\e!stop \currentstartstop}{\syst_startstop_stop  {\currentstartstop}}%
-    \frozen\setuevalue        {\currentstartstop}{\syst_startstop_indeed{\currentstartstop}}%
+    \frozen\instance\protected\edefcsname        \currentstartstop\endcsname{\syst_startstop_indeed{\currentstartstop}}%
+    \frozen\instance\protected\edefcsname\e!start\currentstartstop\endcsname{\syst_startstop_start {\currentstartstop}}%
+    \frozen\instance\protected\edefcsname\e!stop \currentstartstop\endcsname{\syst_startstop_stop  {\currentstartstop}}%
 \to \everydefinestartstop
 
 \ifdefined\dotagconstruct \else \aliased\let\dotagconstruct\relax \fi
@@ -229,7 +234,7 @@
 
 % \protected\def\ignorestartstop[#1]%
 %   {\protected\defcsname\e!start#1\expandafter\endcsname\expandafter
-%      {\expandafter\gobbleuntil\csname\e!stop#1\endcsname}}
+%      {\expandafter\ignoreupto\csname\e!stop#1\endcsname}}
 %
 % \ignorestartstop[bagger]
 

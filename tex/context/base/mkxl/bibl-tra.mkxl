@@ -1148,15 +1148,17 @@
         \bibalternative{otherstext}\else\bibalternative{andtext}#2\fi}%
       \fi}}
 
-%D This is not the one Hans made for me, because I need a global
-%D edef, and the \type {\robustdoifinsetelse} doesn't listen to
-%D \type {\doglobal}.
+%D This is not the one Hans made for me, because I need a global edef, and the \type
+%D {\robustdoifinsetelse} doesn't listen to \type {\doglobal}.
 
 \pushoverloadmode
 
+%     \protected\def\robustaddtocommalist#1#2% {item} \cs
+%       {\robustdoifelseinset{#1}#2\resetglobal
+%          {\dodoglobal\xdef#2{\ifempty#2\else#2,\fi#1}}}
+
     \protected\def\robustaddtocommalist#1#2% {item} \cs
-      {\robustdoifelseinset{#1}#2\resetglobal
-         {\dodoglobal\xdef#2{\ifempty#2\else#2,\fi#1}}}
+      {\robustdoifelseinset{#1}#2\donothing{\xdef#2{\ifempty#2\else#2,\fi#1}}}
 
 \popoverloadmode
 
@@ -1325,11 +1327,11 @@
 \newconditional\firstbibrefsep
 
 \protected\def\bibresetrefsep
-  {\settrue\firstbibrefsep}
+  {\firstbibrefsep\conditionaltrue}
 
 \protected\def\bibinsertrefsep
   {\ifconditional\firstbibrefsep
-     \setfalse\firstbibrefsep
+     \firstbibrefsep\conditionalfalse
    \else
      \bibalternative\c!pubsep
    \fi}

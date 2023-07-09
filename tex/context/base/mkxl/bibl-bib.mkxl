@@ -117,10 +117,10 @@
 %D
 %D \typebuffer
 
-\newtoks  \everydefinebibtexsession
-\newtoks  \everypreparebibtexsession
-\newtoks  \everysetupbibtexsession
-\setfalse \tracebibtexformat
+\newtoks       \everydefinebibtexsession
+\newtoks       \everypreparebibtexsession
+\newtoks       \everysetupbibtexsession
+\newconditional\tracebibtexformat
 
 \protected\def\definebibtexsession {\dosingleargument\dodefinebibtexsession}
           \def\preparebibtexsession{\dodoubleempty   \dopreparebibtexsession}
@@ -832,11 +832,11 @@
 \newconditional\firstbibtexrefsep
 
 \def\bibtexresetrefsep
-  {\settrue\firstbibtexrefsep}
+  {\firstbibtexrefsep\conditionaltrue}
 
 \def\bibtexinsertrefsep
   {\ifconditional\firstbibtexrefsep
-     \setfalse\firstbibtexrefsep
+     \firstbibtexrefsep\conditionalfalse
    \else
      \bibtexcitationparameter\c!pubsep
    \fi}

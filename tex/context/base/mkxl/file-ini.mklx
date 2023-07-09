@@ -75,11 +75,11 @@
 
 \permanent\protected\def\pushendofline
   {\advanceby\c_system_files_eol_level\plusone
-   \expandafter\chardef\csname\??eolstack\number\c_system_files_eol_level\endcsname\catcode\endoflineasciicode
+   \expandafter\chardef\csname\??eolstack\the\c_system_files_eol_level\endcsname\catcode\endoflineasciicode
    \catcode\endoflineasciicode\commentcatcode}
 
 \permanent\protected\def\popendofline
-  {\catcode\endoflineasciicode\csname\??eolstack\number\c_system_files_eol_level\endcsname
+  {\catcode\endoflineasciicode\csname\??eolstack\the\c_system_files_eol_level\endcsname
    \advanceby\c_system_files_eol_level\minusone}
 
 \permanent\protected\def\restoreendofline

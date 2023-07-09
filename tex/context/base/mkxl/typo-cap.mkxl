@@ -149,8 +149,8 @@
 
 \newconditional\c_typo_capitals_pseudo
 
-\permanent\protected\def\usepseudocaps{\settrue \c_typo_capitals_pseudo}
-\permanent\protected\def\userealcaps  {\setfalse\c_typo_capitals_pseudo}
+\permanent\protected\def\usepseudocaps{\c_typo_capitals_pseudo\conditionaltrue}
+\permanent\protected\def\userealcaps  {\c_typo_capitals_pseudo\conditionalfalse}
 
 \usepseudocaps
 
@@ -231,14 +231,18 @@
 
 \appendtoks
     \ifempty\currentcapitals
-      \doifelse{\directcapitalsparameter\c!title}\v!yes
-        {\definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalsmallcapped]%
-         \definealternativestyle[\v!smallcaps][\setsmallcaps][\setsmallcaps]}
-        {\definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalWORD]%
-         \definealternativestyle[\v!smallcaps][\setsmallcaps][\font_style_normalWORD]}%
-      \doifelse{\directcapitalsparameter\s!sc}\v!yes
+      \ifcstok{\directcapitalsparameter\c!title}\v!yes
+        \definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalsmallcapped]%
+        \definealternativestyle[\v!smallcaps][\setsmallcaps][\setsmallcaps]%
+      \else
+        \definealternativestyle[\v!capital  ][\font_style_normalsmallcapped][\font_style_normalWORD]%
+        \definealternativestyle[\v!smallcaps][\setsmallcaps][\font_style_normalWORD]%
+      \fi
+      \ifcstok{\directcapitalsparameter\s!sc}\v!yes
         \userealcaps
+      \else
         \usepseudocaps
+      \fi
     \fi
 \to \everysetupcapitals
 

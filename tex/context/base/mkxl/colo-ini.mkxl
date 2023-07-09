@@ -55,7 +55,7 @@
 \newconditional\c_colo_rgb_supported
 \newconditional\c_colo_cmyk_supported
 \newconditional\c_colo_spot_supported   % backend driven
-\newconditional\c_colo_convert_gray     \settrue\c_colo_convert_gray
+\newconditional\c_colo_convert_gray     \c_colo_convert_gray\conditionaltrue
 \newconditional\c_colo_enabled
 \newconditional\c_colo_expanded
 
@@ -241,7 +241,7 @@
 \permanent\protected\def\getcolorattributevalue#1#2% obsolete, use \thecolorattribute instead ...
   {\begingroup
    \colo_helpers_activate{#1}%
-   \normalexpanded{\endgroup\edef\noexpand#2{\ifnum\c_attr_color=\attributeunsetvalue\else\number\c_attr_color\fi}}}
+   \normalexpanded{\endgroup\edef\noexpand#2{\ifnum\c_attr_color=\attributeunsetvalue\else\the\c_attr_color\fi}}}
 
 % \aliased\let\grey\graycolor % these macros are only used in tracing
 
@@ -289,20 +289,20 @@
 \let\v_colo_freeze_state\s!false
 
 \defcsname\??colorconversions\v!yes\endcsname
-  {\settrue \c_colo_convert_gray}
+  {\c_colo_convert_gray\conditionaltrue}
 
 \defcsname\??colorconversions\v!always\endcsname
-  {\settrue \c_colo_convert_gray
-   \setfalse\c_colo_rgb_supported
-   \setfalse\c_colo_cmyk_supported}
+  {\c_colo_convert_gray\conditionaltrue
+   \c_colo_rgb_supported\conditionalfalse
+   \c_colo_cmyk_supported\conditionalfalse}
 
 \appendtoks
    %
-   \doifelse{\directcolorsparameter\c!spot     }\v!yes  \settrue \setfalse\c_colo_spot_supported
-   \doifelse{\directcolorsparameter\c!expansion}\v!yes  \settrue \setfalse\c_colo_expanded
-   \doifelse{\directcolorsparameter\c!rgb      }\v!yes  \settrue \setfalse\c_colo_rgb_supported
-   \doifelse{\directcolorsparameter\c!cmyk     }\v!yes  \settrue \setfalse\c_colo_cmyk_supported
-   \doifelse{\directcolorsparameter\c!state    }\v!start\settrue \setfalse\c_colo_enabled
+   \ifcstok{\directcolorsparameter\c!spot     }\v!yes  \c_colo_spot_supported\conditionaltrue\else\c_colo_spot_supported\conditionalfalse\fi
+   \ifcstok{\directcolorsparameter\c!expansion}\v!yes  \c_colo_expanded\conditionaltrue      \else\c_colo_expanded\conditionalfalse      \fi
+   \ifcstok{\directcolorsparameter\c!rgb      }\v!yes  \c_colo_rgb_supported\conditionaltrue \else\c_colo_rgb_supported\conditionalfalse \fi
+   \ifcstok{\directcolorsparameter\c!cmyk     }\v!yes  \c_colo_cmyk_supported\conditionaltrue\else\c_colo_cmyk_supported\conditionalfalse\fi
+   \ifcstok{\directcolorsparameter\c!state    }\v!start\c_colo_enabled\conditionaltrue       \else\c_colo_enabled\conditionalfalse       \fi
    %
    \edef\m_colo_weight_gray{\directcolorsparameter\c!factor}%
    %
@@ -312,7 +312,7 @@
      \let\v_colo_freeze_state\s!false
    \fi
    %
-   \setfalse\c_colo_convert_gray
+   \c_colo_convert_gray\conditionalfalse
    \begincsname\??colorconversions\directcolorsparameter\c!conversion\endcsname
    % too often:
    \ifconditional\c_colo_rgb_supported \colo_helpers_show_message\m!colors{10}\v!rgb \fi
@@ -346,7 +346,7 @@
 %
 % \permanent\protected\def\pushcolor[#1]%
 %   {\global\advanceby\c_colo_nesting\plusone
-%    \edefcsname\??colorstack\number\c_colo_nesting\endcsname
+%    \edefcsname\??colorstack\the\c_colo_nesting\endcsname
 %      {\c_attr_colormodel  \the\c_attr_colormodel
 %       \c_attr_color       \the\c_attr_color
 %       \c_attr_transparency\the\c_attr_transparency
@@ -354,7 +354,7 @@
 %    \colo_helpers_activate{#1}}
 %
 % \permanent\protected\def\popcolor
-%   {\csname\??colorstack\number\c_colo_nesting\endcsname
+%   {\csname\??colorstack\the\c_colo_nesting\endcsname
 %    \global\advanceby\c_colo_nesting\minusone}
 %
 % more efficient:
@@ -517,7 +517,7 @@
 
 \protected\def\colo_palets_define_a#1#2#3%
   {\colo_palet_prepare{#1}%
-   \ifcondition\validassignment{#2}%
+   \ifhastok={#2}%
      \edefcsname\??colorpaletspecification#1\endcsname{#2}%
      \processcommalist[#2]{\colo_palets_define_one{#1}}%
    \orelse\ifcsname\??colorpaletspecification#2\endcsname
@@ -537,7 +537,7 @@
 %    \or
 %    \or
 %      \colo_palet_prepare{#1}%
-%      \ifcondition\validassignment{#2}%
+%      \ifhastok={#2}%
 %        \edefcsname\??colorpaletspecification#1\endcsname{#2}%
 %        \processcommalist[#2]{\colo_palets_define_one{#1}}%
 %      \orelse\ifcsname\??colorpaletspecification#2\endcsname
@@ -551,7 +551,7 @@
 %   \fi}
 
 \def\colo_palets_define_one#1#2% get rid of { }
-  {\ifcondition\validassignment{#2}% catch empty entries
+  {\ifhastok={#2}% catch empty entries
      \colo_palets_define_two{#1}[#2]%
    \else
      \colo_palets_define_three{#1}{#2}%
@@ -1152,7 +1152,9 @@
    \clf_registermaintextcolor\thecolorattribute\maintextcolor\relax}
 
 \permanent\protected\def\starttextcolor[#1]%
-  {\doifsomething{#1}{\colo_helpers_switch_to_maintextcolor{#1}}}
+  {\ifempty{#1}\else
+     \colo_helpers_switch_to_maintextcolor{#1}%
+   \fi}
 
 \permanent\protected\lettonothing\stoptextcolor
 
@@ -1189,7 +1191,7 @@
 \to \everysetupcolors
 
 \def\colo_palets_define_set#1#2#3%
-  {\ifcondition\validassignment{#3}% \definepalet[test][xx={y=.4}]
+  {\ifhastok={#3}% \definepalet[test][xx={y=.4}]
      \expandafter\colo_palets_define_assign
    \orelse\ifcsname\??colorsetter#3\endcsname
      % \definepalet[test][xx=green]

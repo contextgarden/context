@@ -541,6 +541,7 @@
 		<cd:variable name='speech' value='speech'/>
 		<cd:variable name='split' value='split'/>
 		<cd:variable name='spot' value='spot'/>
+		<cd:variable name='spread' value='spread'/>
 		<cd:variable name='standard' value='standardni'/>
 		<cd:variable name='start' value='start'/>
 		<cd:variable name='starter' value='starter'/>
@@ -631,6 +632,7 @@
 		<cd:variable name='verytolerant' value='velmitolerantni'/>
 		<cd:variable name='vfenced' value='vfenced'/>
 		<cd:variable name='vulgarfraction' value='vulgarfraction'/>
+		<cd:variable name='vz' value='vz'/>
 		<cd:variable name='weak' value='weak'/>
 		<cd:variable name='wednesday' value='streda'/>
 		<cd:variable name='week' value='tyden'/>
@@ -918,6 +920,7 @@
 		<cd:constant name='horoffset' value='horoffset'/>
 		<cd:constant name='hyphen' value='hyphen'/>
 		<cd:constant name='hyphens' value='hyphens'/>
+		<cd:constant name='hz' value='hz'/>
 		<cd:constant name='icommand' value='iprikaz'/>
 		<cd:constant name='ignore' value='ignore'/>
 		<cd:constant name='in' value='v'/>
@@ -1104,6 +1107,7 @@
 		<cd:constant name='orientation' value='orientation'/>
 		<cd:constant name='otherstext' value='otherstext'/>
 		<cd:constant name='outermargin' value='outermargin'/>
+		<cd:constant name='overflow' value='overflow'/>
 		<cd:constant name='overprint' value='overprint'/>
 		<cd:constant name='ownerpassword' value='ownerpassword'/>
 		<cd:constant name='ownnumber' value='vlastnicislo'/>
@@ -1377,6 +1381,7 @@
 		<cd:constant name='viewerprefix' value='viewerprefix'/>
 		<cd:constant name='voffset' value='voffset'/>
 		<cd:constant name='vonsep' value='vonsep'/>
+		<cd:constant name='vz' value='vz'/>
 		<cd:constant name='way' value='zpusob'/>
 		<cd:constant name='wfactor' value='sfaktor'/>
 		<cd:constant name='white' value='bily'/>

@@ -197,7 +197,7 @@
 % implementation
 
 \protected\def\strc_formulas_store_number#1#2#3#4#5#6% ref, todo:str, \sync % todo: title etc (like float)
-  {\settrue\c_strc_formulas_handle_number
+  {\c_strc_formulas_handle_number\conditionaltrue
    \strc_counters_register_component
      {formula}%
      \setupcurrentformula \formulaparameter \detokenizedformulaparameter
@@ -297,15 +297,17 @@
 \newconditional\c_strc_formulas_referenced
 
 \appendtoks
-    \global\setfalse\c_strc_formulas_inside_place
-    \global\setfalse\c_strc_formulas_inside_place_sub
+    \global\c_strc_formulas_inside_place\conditionalfalse
+    \global\c_strc_formulas_inside_place_sub\conditionalfalse
 \to \everyresetformulas
 
 \def\strc_formulas_place_number_noneed
-  {\doif{\formulaparameter\c!numberstrut}\v!always\strut}
+  {\ifcstok{\formulaparameter\c!numberstrut}\v!always
+     \strut
+   \fi}
 
 \def\strc_formulas_place_numbering % place formula
-  {\settrue\c_strc_formulas_handle_number
+  {\c_strc_formulas_handle_number\conditionaltrue
    \strc_formulas_check_reference\c_strc_formulas_place_number_mode\currentplaceformulareference
    \ifnum\c_strc_formulas_place_number_mode=\plustwo
      \glet\strc_formulas_place_number\strc_formulas_place_number_noneed
@@ -465,7 +467,7 @@
        \currentplaceformulasynchronize
        \glet\currentplaceformulasynchronize\relax
        \theformuladestinationattribute\currentplaceformulaattribute
-       \global\settrue\c_strc_formulas_referenced
+       \global\c_strc_formulas_referenced\conditionaltrue
      \fi
    \fi
    \ifnum\c_strc_formulas_number_mode=\plusthree
@@ -499,22 +501,24 @@
 
 \def\strc_formulas_handle_numbering_indeed
   {\ifempty\namedformulaentry
-     \doifelsetext\currentnestedformulasuffix
-       {\ifconditional\c_strc_formulas_incremented\else
-          \strc_counters_increment\v!formula
-        \fi
-        \global\settrue\c_strc_formulas_incremented
-        \ifcstok{+}\currentnestedformulasuffix
-          \strc_counters_increment_sub\v!formula\plustwo
-        \else
-          \strc_counters_setown_sub\v!formula\plustwo\currentnestedformulasuffix
-        \fi}%
-       {\ifempty\currentplaceformulasuffix\else
-          \let\currentnestedformulasuffix   \currentplaceformulasuffix
-          \let\currentnestedformulareference\currentplaceformulareference
-          \strc_formulas_place_number_nested_check
-        \fi
-        \strc_counters_increment\v!formula}%
+     \iftext\currentnestedformulasuffix
+       \ifconditional\c_strc_formulas_incremented\else
+         \strc_counters_increment\v!formula
+       \fi
+       \global\c_strc_formulas_incremented\conditionaltrue
+       \ifcstok{+}\currentnestedformulasuffix
+         \strc_counters_increment_sub\v!formula\plustwo
+       \else
+         \strc_counters_setown_sub\v!formula\plustwo\currentnestedformulasuffix
+       \fi
+     \else
+       \ifempty\currentplaceformulasuffix\else
+         \let\currentnestedformulasuffix   \currentplaceformulasuffix
+         \let\currentnestedformulareference\currentplaceformulareference
+         \strc_formulas_place_number_nested_check
+       \fi
+       \strc_counters_increment\v!formula
+     \fi
    \fi
    \glettonothing\currentplaceformulasuffix
    \glettonothing\currentnestedformulasuffix
@@ -531,9 +535,11 @@
 
 \def\strc_formulas_handle_sub_numbering_indeed
   {\let\strc_formulas_handle_sub_numbering\relax % else error: see math/numbering-001.tex
-   \doifelsetext\currentnestedformulasuffix
-     {\strc_counters_setown_sub\v!formula\plustwo\currentnestedformulasuffix}%
-     {\strc_counters_increment_sub\v!formula\plustwo}%
+   \iftext\currentnestedformulasuffix
+     \strc_counters_setown_sub\v!formula\plustwo\currentnestedformulasuffix
+   \else
+     \strc_counters_increment_sub\v!formula\plustwo
+   \fi
    \glettonothing\currentplaceformulasuffix
    \glettonothing\currentnestedformulasuffix
    \placecurrentformulanumber}
@@ -749,7 +755,7 @@
    \ifvmode
      \ifinner
        \strc_formulas_display_space_before_normal
-       \setfalse\c_strc_formulas_depth
+       \c_strc_formulas_depth\conditionalfalse
      \else
        \forcestrutdepth
        \nointerlineskip
@@ -800,7 +806,7 @@
      \else
        \edef\p_spacebefore{\formulaparameter\c!spacebefore}%
      \fi
-   % \begincsname\??mathdisplayspacemodel\v!before:\number\c_strc_formulas_space_model\endcsname
+   % \begincsname\??mathdisplayspacemodel\v!before:\the\c_strc_formulas_space_model\endcsname
      \strc_formulas_display_space_before
    \fi
    \ifhmode
@@ -818,7 +824,7 @@
      \else
        \edef\p_spaceafter{\formulaparameter\c!spaceafter}%
      \fi
-   % \begincsname\??mathdisplayspacemodel\v!after:\number\c_strc_formulas_space_model\endcsname
+   % \begincsname\??mathdisplayspacemodel\v!after:\the\c_strc_formulas_space_model\endcsname
      \strc_formulas_display_space_after
    \fi
    \ifhmode
@@ -882,16 +888,16 @@
 \let\strc_formulas_add_distance \strc_formulas_add_distance_normal
 
 \defcsname\??formulaoption\v!packed\endcsname
-  {\settrue\c_strc_formulas_packed}
+  {\c_strc_formulas_packed\conditionaltrue}
 
 \defcsname\??formulaoption\v!tight\endcsname
-  {\settrue\c_strc_formulas_tight}
+  {\c_strc_formulas_tight\conditionaltrue}
 
 \defcsname\??formulaoption\v!middle\endcsname
   {}
 
 \defcsname\??formulaoption\v!depth\endcsname
-  {\settrue\c_strc_formulas_depth}
+  {\c_strc_formulas_depth\conditionaltrue}
 
 \defcsname\??formulaoption\v!line\endcsname
   {\ifgridsnapping
@@ -957,14 +963,14 @@
 
 \def\strc_math_set_number_location
   {\ifcstok{\formulaparameter\c!numberlocation}\v!overlay
-     \settrue\c_strc_formulas_overlay_number
+     \c_strc_formulas_overlay_number\conditionaltrue
    \else
-     \setfalse\c_strc_formulas_overlay_number
+     \c_strc_formulas_overlay_number\conditionalfalse
    \fi
    \ifcstok{\formulaparameter\c!numbermethod}\v!down
-     \settrue\c_math_align_overflow_mode
+     \c_math_align_overflow_mode\conditionaltrue
    \else
-     \setfalse\c_math_align_overflow_mode
+     \c_math_align_overflow_mode\conditionalfalse
    \fi}
 
 \setupformula
@@ -1004,8 +1010,8 @@
 
 \installtextracker
   {math.autohang}
-  {\settrue\c_strc_math_trace_hang}
-  {\setfalse\c_strc_math_trace_hang}
+  {\c_strc_math_trace_hang\conditionaltrue}
+  {\c_strc_math_trace_hang\conditionalfalse}
 
 \newconditional\c_strc_math_aligned_here
 
@@ -1014,7 +1020,7 @@
 
 \protected\def\strc_math_align_here
   {\ifmmode
-     \global\settrue\c_strc_math_aligned_here
+     \global\c_strc_math_aligned_here\conditionaltrue
      % we can have a more dedicated value, and also maybe store the class so that we can
      % pick it up at the engine end (second pass)
      \ifconditional\c_strc_math_trace_hang
@@ -1201,13 +1207,14 @@
     \enforced\let\breakhere\strc_math_break_here
     \enforced\let\skiphere \strc_math_skip_here
     \enforced\let\texthere \strc_math_text_here
-  % \global\setfalse\c_strc_math_aligned_here
+  % \global\c_strc_math_aligned_here\conditionalfalse
 \to \everymathematics
 
 \installcorenamespace{mathtextalign}
 
-\newconstant\c_strc_math_ragged_status
-\newconstant\c_strc_math_split_status
+\newconstant   \c_strc_math_ragged_status
+\newconstant   \c_strc_math_split_status
+\newconditional\c_strc_math_number_swapped
 
 \prependtoks
     \c_strc_math_ragged_status\plustwo   % middle
@@ -1223,21 +1230,21 @@
   {\raggedright
    \mathgluemode\plustwo
    \c_strc_math_ragged_status\plusone
-   \setfalse\c_strc_math_number_swapped
+   \c_strc_math_number_swapped\conditionalfalse
    \updateparagraphproperties} % not needed
 
 \defcsname\??mathtextalign\v!middle\endcsname
   {\raggedcenter
    \mathgluemode\plustwo
    \c_strc_math_ragged_status\plustwo
-   \setfalse\c_strc_math_number_swapped
+   \c_strc_math_number_swapped\conditionalfalse
    \updateparagraphproperties} % not needed
 
 \defcsname\??mathtextalign\v!flushright\endcsname
   {\raggedleft
    \mathgluemode\plustwo
    \c_strc_math_ragged_status\plusthree
-   \setfalse\c_strc_math_number_swapped
+   \c_strc_math_number_swapped\conditionalfalse
    \updateparagraphproperties} % not needed
 
 \defcsname\??mathtextalign\v!slanted\endcsname % maybe move bottom to number location
@@ -1361,7 +1368,7 @@
    \s_strc_formulas_margin_right\rightskip
    \edef\p_interlinespace{\formulaparameter\c!interlinespace}%
    \ifempty\p_interlinespace\else\baselineskip\p_interlinespace\fi
-   \global\setfalse\c_strc_math_aligned_here
+   \global\c_strc_math_aligned_here\conditionalfalse
    \hsize\d_strc_formulas_display_width
    \displaywidth\hsize
    \displayindent\zeropoint}
@@ -1440,10 +1447,10 @@
 %D Till here.
 
 \def\strc_math_set_options#1%
-  {\setfalse\c_strc_formulas_tight
-   \setfalse\c_strc_formulas_packed
-   \setfalse\c_strc_formulas_depth
-   \iftok{#1}\emptytoks
+  {\c_strc_formulas_tight\conditionalfalse
+   \c_strc_formulas_packed\conditionalfalse
+   \c_strc_formulas_depth\conditionalfalse
+   \ifempty{#1}%
      \edef\p_option{\formulaparameter\c!option}%
    \orelse\ifhastok={#1}% this is new, so that we can also set the grid
      \setupcurrentformula[#1]%
@@ -1551,7 +1558,7 @@
    \egroup
    \hangafter\minusone   % added for side floats
    \hangindent\zeropoint % added for side floats
-   \setfalse\c_strc_formulas_handle_number
+   \c_strc_formulas_handle_number\conditionalfalse
    \expand\everyresetformulas
    \dorechecknextindentation} % here ?
 
@@ -1643,14 +1650,14 @@
 
 \tolerant\permanent\protected\def\startsubformulas[#1]%
   {\edef\currentsubformulasreference{#1}%
-   \global\settrue\c_strc_formulas_inside_formulas_sub
+   \global\c_strc_formulas_inside_formulas_sub\conditionaltrue
    \strc_formulas_handle_sub_number}
 
 \permanent\protected\def\stopsubformulas
   {\nonoindentation
    \useindentnextparameter\subformulaparameter
    \expand\everyresetformulas % to be checked
-   \global\setfalse\c_strc_formulas_inside_formulas_sub
+   \global\c_strc_formulas_inside_formulas_sub\conditionalfalse
    \dorechecknextindentation} % here ?
 
 %D Named subformulas (to be redone)
@@ -1700,14 +1707,14 @@
 \normalexpanded{\tolerant\def\noexpand\strc_formulas_start_formulas[#1]#:#2\csname\e!stop\v!formulas\endcsname}%
   {\startformula
    \dostarttagged\t!formulaset\empty
-   \global\settrue\c_strc_formulas_inside_formulas
+   \global\c_strc_formulas_inside_formulas\conditionaltrue
    \edef\currentformulasreference{#1}%
    \strc_formulas_handle_number
    \lettonothing\currentformula
  % \strc_formulas_forget_display_skips
    \enforced\protected\def\startformula
      {\advanceby\scratchcounter\plusone
-      \expandafter\gobbleuntil\csname\e!stop\v!formula\endcsname}%
+      \expandafter\ignoreupto\csname\e!stop\v!formula\endcsname}%
    \scratchcounter\zerocount
    #2% preroll
    \hbox to \d_strc_formulas_display_width \bgroup
@@ -1719,7 +1726,7 @@
      \enforced\let\stopformula \strc_formulas_nested_formula_stop
      #2%
    \egroup
-   \global\setfalse\c_strc_formulas_inside_formulas
+   \global\c_strc_formulas_inside_formulas\conditionalfalse
    \dostoptagged
    \stopformula
    \expand\everyresetformulas
@@ -1748,16 +1755,16 @@
   {\def\currentformulareference{#1}%
    \strc_formulas_place_number_in_box}
 
-\permanent\protected\def\placeformula   {\global\settrue\c_strc_formulas_inside_place    \strc_formulas_place}
-\permanent\protected\def\placesubformula{\global\settrue\c_strc_formulas_inside_place_sub\strc_formulas_place}
+\permanent\protected\def\placeformula   {\global\c_strc_formulas_inside_place\conditionaltrue    \strc_formulas_place}
+\permanent\protected\def\placesubformula{\global\c_strc_formulas_inside_place_sub\conditionaltrue\strc_formulas_place}
 
 \tolerant\protected\def\strc_formulas_place[#1]%
   {\xdef\currentplaceformulareference{#1}%
    \glettonothing\currentplaceformulasuffix
    \glettonothing\currentnestedformulasuffix
-   \global\setfalse\c_strc_formulas_incremented
-   \global\setfalse\c_strc_formulas_referenced
-   \global\settrue\c_strc_formulas_inside_place
+   \global\c_strc_formulas_incremented\conditionalfalse
+   \global\c_strc_formulas_referenced\conditionalfalse
+   \global\c_strc_formulas_inside_place\conditionaltrue
    \doifelsenextbgroup\strc_formulas_place_yes\strc_formulas_place_nop} % [ref]{}
 
 \protected\def\strc_formulas_place_yes#1%
@@ -1795,9 +1802,9 @@
 
 \permanent\tolerant\protected\def\startplaceformula[#1]%
   {\begingroup
-   \global\setfalse\c_strc_formulas_incremented
-   \global\setfalse\c_strc_formulas_referenced
-   \global\settrue\c_strc_formulas_inside_place
+   \global\c_strc_formulas_incremented\conditionalfalse
+   \global\c_strc_formulas_referenced\conditionalfalse
+   \global\c_strc_formulas_inside_place\conditionaltrue
    \ifparameter#1\or
      \expandafter\strc_formulas_start_place_yes
    \else

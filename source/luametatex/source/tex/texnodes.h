@@ -146,6 +146,8 @@ typedef enum node_types {
     passive_node,
 } node_types;
 
+ /*tex The largest node is now |par_node| which need 30 slots. */
+
 # define max_chain_size  32
 
 # define unknown_node_type    -1
@@ -435,6 +437,8 @@ typedef enum penalty_option_codes {
     penalty_option_math_forward  = 0x0001,
     penalty_option_math_backward = 0x0002,
     penalty_option_orphaned      = 0x0004,
+    penalty_option_widowed       = 0x0008,
+    penalty_option_clubbed       = 0x0010,
 } penalty_option_codes; 
 
 typedef enum penalty_subtypes {
@@ -523,7 +527,7 @@ typedef enum skip_glue_codes_alias {
 # define glue_font(a)          vinfo(a,5) /* not in spec */ /* when inter_math_skip_glue: parameter */
 # define glue_leader_ptr(a)    vlink(a,5) /* not in spec */
 # define glue_options(a)       vinfo(a,6) /* not in spec */ /* for now only internal */
-# define glue_unused(a)        vlink(a,6) /* not in spec */
+# define glue_callback(a)      vlink(a,6) /* not in spec */
 
 static inline void tex_add_glue_option    (halfword a, halfword r) { glue_options(a) |= r; }
 static inline void tex_remove_glue_option (halfword a, halfword r) { glue_options(a) &= ~(r | glue_options(a)); }
@@ -733,11 +737,16 @@ typedef enum discretionary_subtypes {
 # define last_discretionary_code    automatic_discretionary_code
 
 typedef enum disc_options {
-    disc_option_normal_word = 0x0000,
-    disc_option_pre_word    = 0x0001,
-    disc_option_post_word   = 0x0002,
-    disc_option_orphaned    = 0x0004,
+    disc_option_normal_word    = 0x0000,
+    disc_option_pre_word       = 0x0001,
+    disc_option_post_word      = 0x0002,
+    disc_option_orphaned       = 0x0004,
+    disc_option_prefer_break   = 0x0010,
+    disc_option_prefer_nobreak = 0x0020,
 } disc_options;
+
+# define first_disc_option disc_option_prefer_break
+# define last_disc_option  disc_option_prefer_nobreak
 
 # define disc_node_size       13
 # define disc_no_break(a)     vlink(a,2) /* beware: vinfo is used for type/subtype */
@@ -785,7 +794,7 @@ extern void     tex_set_disc_field          (halfword target, halfword location,
 extern void     tex_check_disc_field        (halfword target);
 extern void     tex_set_discpart            (halfword d, halfword h, halfword t, halfword code);
 extern halfword tex_flatten_discretionaries (halfword head, int *count, int nest);
-extern void     tex_flatten_leaders         (halfword box, int *count);
+extern int      tex_flatten_leaders         (halfword box, int grp, int just_pack);
 extern void     tex_soften_hyphens          (halfword head, int *found, int *replaced);
 extern halfword tex_harden_spaces           (halfword head, halfword tolerance, int *count);
 
@@ -926,20 +935,21 @@ typedef enum package_states {
     unknown_package_state = 0x00,
     hbox_package_state    = 0x01,
     vbox_package_state    = 0x02,
-    vtop_package_state    = 0x03,
+    vtop_package_state    = 0x03,/* == 0x01 + 0x02 */
     dbox_package_state    = 0x04,
     /* maybe vcenter */
 } package_states;
 
 typedef enum package_dimension_states {
     package_dimension_not_set  = 0x00,
-    package_dimension_size_set = 0x10,
+    package_dimension_size_set = 0x10, /* used in in alignments */
 } package_dimension_states;
 
 typedef enum package_leader_states {
     package_u_leader_not_set  = 0x00,
     package_u_leader_set      = 0x20,
     package_u_leader_delayed  = 0x40,
+    package_u_leader_found    = 0x80,
 } package_leader_states;
 
 # define set_box_package_state(p,s) box_package_state(p) |= s
@@ -1232,7 +1242,7 @@ typedef enum glyph_option_codes {
 
 typedef enum auto_discretionary_codes {
     auto_discretionary_normal = 0x0001, /* turn glyphs into discretionary with three similar components */
-    auto_discretionary_italic = 0x0002, /* also include italic correcxtion when present */
+    auto_discretionary_italic = 0x0002, /* also include italic correction when present */
 } auto_discretionary_codes;
 
 static inline void tex_add_glyph_option    (halfword a, halfword r) { glyph_options(a) |= r; }
@@ -2403,10 +2413,10 @@ static int par_category_to_codes[] = {
     par_par_passes_category,
 };
 
-# define par_node_size                  30
+# define par_node_size                  30          /*tex Make sure thet |max_chain_size| is large enough! */
 # define par_penalty_interline(a)       vinfo(a, 2) /*tex These come from \OMEGA. */ /* these can go, now we use the other fields */
-//define par_penalty_broken(a)          vlink(a, 2) /*tex These come from \OMEGA. */ /* these can go, now we use the other fields */
-# define par_prev_graf(a)               vlink(a, 2) /* joke */
+//define par_penalty_broken(a)          vlink(a, 2) /*tex idem */
+# define par_prev_graf(a)               vlink(a, 2) /*tex A bit of a joke but maybe handy indeed. */
 # define par_box_left(a)                vinfo(a, 3)
 # define par_box_left_width(a)          vlink(a, 3)
 # define par_box_right(a)               vinfo(a, 4)
@@ -2846,7 +2856,7 @@ static inline halfword tex_checked_glue_order (halfword order) { return ((order 
     reserved nodes the memory used for whatever nodes are needed takes off.
 
     Changing this to real nodes makes sense but is also tricky due to initializations ... some day
-    (we need to store stuff in teh states then and these are not saved!).
+    (we need to store stuff in the states then and these are not saved!).
 
 */
 

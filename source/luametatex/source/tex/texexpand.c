@@ -97,13 +97,16 @@ inline static void tex_aux_expand_after(void)
 inline static void tex_aux_expand_toks_after(void)
 {
     halfword t1 = tex_scan_toks_normal(0, NULL);
-    halfword t2 = tex_get_token();
-    if (cur_cmd > max_command_cmd) {
-        tex_expand_current_token();
-    } else {
-        tex_back_input(t2);
+    halfword l1 = token_link(t1);
+    if (l1) {
+        halfword t2 = tex_get_token();
+        if (cur_cmd > max_command_cmd) {
+            tex_expand_current_token();
+        } else {
+            tex_back_input(t2);
+        }
+        tex_begin_backed_up_list(l1);
     }
-    tex_begin_backed_up_list(token_link(t1));
     tex_put_available_token(t1);
 }
 
@@ -435,10 +438,10 @@ void tex_expand_current_token(void)
                                     tex_aux_expand_toks_after();
                                     break;
                                 }
-                            /*
-                            case expand_after_fi:
+                            /* keep as reference */ /*
+                            case expand_after_fi_code:
                                 {
-                                    conditional_after_fi();
+                                    tex_conditional_after_fi();
                                     break;
                                 }
                             */
@@ -648,7 +651,8 @@ void tex_expand_current_token(void)
                 below; the |frozen_end_template| at the end of the template has passed the
                 |check_outer_validity| test, so its mission of error detection has been accomplished.)
             */
-            tex_back_input(deep_frozen_end_template_2_token);
+         // tex_back_input(deep_frozen_end_template_2_token); /* we never come here */
+            tex_back_input(deep_frozen_end_template_token); /* we never come here */
         }
         cur_val = saved_cur_val;
         cur_val_level = saved_cur_val_level;
@@ -762,24 +766,10 @@ int tex_is_valid_csname(void)
     halfword p = h;
     lmt_expand_state.cs_name_level += 1;
     if (! tex_aux_collect_cs_tokens(&p, &n)) {
+        /*tex We seldom end up here so there is no gain in optimizing. */
         do {
             tex_get_x_or_protected(); /* we skip unprotected ! */
         } while (cur_cmd != end_cs_name_cmd);
-        goto FINISH;
-        /* no real gain as we hardly ever end up here */
-     // while (1) {
-     //     tex_get_token();
-     //     if (cur_cmd == end_cs_name_cmd) {
-     //         goto FINISH;
-     //     } else if (cur_cmd <= max_command_cmd || is_protected_cmd(cur_cmd)) {
-     //       /* go on */
-     //     } else {
-     //         tex_expand_current_token();
-     //         if (cur_cmd != end_cs_name_cmd) {
-     //             goto FINISH;
-     //         }
-     //     }
-     // }
     } else if (n) {
         /*tex Look up the characters of list |n| in the hash table, and set |cur_cs|. */
         int f = lmt_fileio_state.io_first;
@@ -802,7 +792,6 @@ int tex_is_valid_csname(void)
             b = (cs != undefined_control_sequence) && (eq_type(cs) != undefined_cs_cmd);
         }
     }
-  FINISH:
     tex_flush_token_list_head_tail(h, p, n + 1);
     lmt_scanner_state.last_cs_name = cs;
     lmt_expand_state.cs_name_level -= 1;
@@ -909,7 +898,8 @@ halfword tex_get_x_token(void)
         } else if (cur_cmd <= last_call_cmd) {
             tex_aux_macro_call(cur_cs, cur_cmd, cur_chr);
         } else {
-            cur_cs = deep_frozen_cs_end_template_2_code;
+         // cur_cs = deep_frozen_cs_end_template_2_code;
+            cur_cs = deep_frozen_cs_end_template_code;
             cur_cmd = end_template_cmd;
             /*tex Now |cur_chr = token_state.null_list|. */
             break;
@@ -1333,8 +1323,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                                     matchtoken = token_info(matchpointer);
                                     goto CONTINUE;
                                 }
-                            }
-                            if (token_info(u) != token_info(v)) {
+                            } else if (token_info(u) != token_info(v)) {
                                 break;
                             } else {
                                 u = token_link(u);
@@ -1359,6 +1348,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                 }
             }
           GROUPED:
+            /*tex We could check |cur_cmd| instead but then we also have to check |cur_cs| later on. */
             if (cur_tok < left_brace_limit) {
                 /*tex Contribute an entire group to the current parameter. */
                 int unbalance = 0;

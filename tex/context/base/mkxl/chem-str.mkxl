@@ -126,7 +126,6 @@
 
 \newtoks       \everychemical
 \newtoks       \everystructurechemical
-%newconditional\indisplaychemical
 
 \newtoks       \t_chem_every_box
 \newbox        \b_chem_result
@@ -140,7 +139,6 @@
    \bgroup
    \synchronizestrut{\chemicalparameter\c!strut}%
    \dontcomplain
-  %\settrue\indisplaychemical
    \forgetall
    \ifparameter#2\or
      \ifhastok={#1}%
@@ -185,7 +183,11 @@
    \d_chem_height\ht\b_chem_result
    \d_chem_depth \dp\b_chem_result
    \expand\t_chem_every_box
-   \doifelsenothing{\chemicalparameter\c!frame}\chem_framed_nop\chem_framed_yes
+   \ifempty{\chemicalparameter\c!frame}%
+     \chem_framed_nop
+   \else
+     \chem_framed_yes
+   \fi
    \egroup}
 
 \protected\def\chem_framed_yes
@@ -252,9 +254,9 @@
 % \to \everystructurechemical
 \to \everychemical
 
-\permanent\protected\def\chemicaltoptext#1{\global\settrue\c_chem_some_text\gdef\m_chem_top_text{#1}\ignorespaces}
-\permanent\protected\def\chemicalbottext#1{\global\settrue\c_chem_some_text\gdef\m_chem_bot_text{#1}\ignorespaces}
-\permanent\protected\def\chemicalmidtext#1{\global\settrue\c_chem_some_text\gdef\m_chem_mid_text{#1}\ignorespaces}
+\permanent\protected\def\chemicaltoptext#1{\global\c_chem_some_text\conditionaltrue\gdef\m_chem_top_text{#1}\ignorespaces}
+\permanent\protected\def\chemicalbottext#1{\global\c_chem_some_text\conditionaltrue\gdef\m_chem_bot_text{#1}\ignorespaces}
+\permanent\protected\def\chemicalmidtext#1{\global\c_chem_some_text\conditionaltrue\gdef\m_chem_mid_text{#1}\ignorespaces}
 
 \mutable\lettonothing\toptext
 \mutable\lettonothing\bottext
@@ -264,7 +266,7 @@
     \let\toptext\chemicaltoptext \glettonothing\m_chem_top_text
     \let\bottext\chemicalbottext \glettonothing\m_chem_bot_text
     \let\midtext\chemicalmidtext \glettonothing\m_chem_mid_text
-    \global\setfalse\c_chem_some_text
+    \global\c_chem_some_text\conditionalfalse
 \to \everystructurechemical
 
 \def\chem_add_texts
@@ -580,8 +582,8 @@
    \t_chem_mid\emptytoks % not needed
    \t_chem_bot\emptytoks % not needed
    \enforced\let\chemical\formulachemical
-   \setfalse\c_chem_has_top
-   \setfalse\c_chem_has_bot}
+   \c_chem_has_top\conditionalfalse
+   \c_chem_has_bot\conditionalfalse}
 
 \permanent\protected\def\stopchemicalformula
   {\tabskip\emwidth\relax
@@ -639,10 +641,10 @@
      \chem_formula_bot_nop
    \or
      \chem_formula_top_nop
-     \doifelsenothing{#2}\chem_formula_bot_nop{\chem_formula_bot_yes{#2}}%
+     \ifempty{#2}\chem_formula_bot_nop\else\chem_formula_bot_yes{#2}\fi
    \or
-     \doifelsenothing{#2}\chem_formula_top_nop{\chem_formula_top_yes{#2}}%
-     \doifelsenothing{#3}\chem_formula_bot_nop{\chem_formula_bot_yes{#3}}%
+     \ifempty{#2}\chem_formula_top_nop\else\chem_formula_top_yes{#2}\fi
+     \ifempty{#3}\chem_formula_bot_nop\else\chem_formula_bot_yes{#3}\fi
    \fi
    \ifcsname\??chemicalsymbol d:\detokenize{#1}\endcsname
      \toksapp\t_chem_mid{\chemicalsymbol[d:#1]\aligntab}%
@@ -655,8 +657,8 @@
 
 \def\chem_formula_top_nop  {\toksapp\t_chem_top{\aligntab}}
 \def\chem_formula_bot_nop  {\toksapp\t_chem_bot{\aligntab}}
-\def\chem_formula_top_yes#1{\toksapp\t_chem_top{\chem_formula_top_indeed{#1}\aligntab}\settrue\c_chem_has_top}
-\def\chem_formula_bot_yes#1{\toksapp\t_chem_bot{\chem_formula_bot_indeed{#1}\aligntab}\settrue\c_chem_has_bot}
+\def\chem_formula_top_yes#1{\toksapp\t_chem_top{\chem_formula_top_indeed{#1}\aligntab}\c_chem_has_top\conditionaltrue}
+\def\chem_formula_bot_yes#1{\toksapp\t_chem_bot{\chem_formula_bot_indeed{#1}\aligntab}\c_chem_has_bot\conditionaltrue}
 
 \def\chem_formula_top_indeed#1{\strut#1}
 \def\chem_formula_bot_indeed#1{\strut#1}

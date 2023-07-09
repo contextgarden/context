@@ -303,7 +303,6 @@ static int statslib_getconstants(lua_State *L)
     lua_set_integer_by_key(L, "preset_rule_thickness",          preset_rule_thickness);
     lua_set_integer_by_key(L, "running_rule",                   null_flag);
                                                                 
-    lua_set_integer_by_key(L, "max_char_code",                  max_char_code);
     lua_set_integer_by_key(L, "min_space_factor",               min_space_factor);
     lua_set_integer_by_key(L, "max_space_factor",               max_space_factor);
     lua_set_integer_by_key(L, "default_space_factor",           default_space_factor);

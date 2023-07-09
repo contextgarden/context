@@ -182,8 +182,15 @@ extern token_state_info lmt_token_state;
 # define match_token             token_val(19, 0) /* token_val(match_cmd,         0) */
 # define end_match_token         token_val(20, 0) /* token_val(end_match_cmd,     0) */
 
-# define left_brace_limit  right_brace_token
-# define right_brace_limit math_shift_token
+/*tex 
+    Testing for |left_brace_limit| and |right_brace_limit| is convenient because then we don't
+    need to check |cur_cmd| as well as |cur_cs| when we check for balanced |{}|. However, as
+    soon as we need to check |cur_cmd| anyway it becomes nicer to check for |cur_cs| afterwards. 
+    Using a |switch| is then a bit more efficient too. 
+*/
+
+# define left_brace_limit  right_brace_token      
+# define right_brace_limit math_shift_token       
 
 # define octal_token             (other_token  + '\'') /*tex apostrophe, indicates an octal constant */
 # define hex_token               (other_token  + '"')  /*tex double quote, indicates a hex constant */

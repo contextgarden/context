@@ -42,8 +42,8 @@
 \newconditional\c_page_one_set_vsize_tmp
 
 \installtextracker{otr.insertheights}
-  {\settrue\c_page_one_set_vsize_tmp}
-  {\setfalse\c_page_one_set_vsize_tmp}
+  {\c_page_one_set_vsize_tmp\conditionaltrue}
+  {\c_page_one_set_vsize_tmp\conditionalfalse}
 
 \def\page_one_command_set_vsize_tmp
   {\settotalinsertionheight
@@ -335,14 +335,14 @@
 %D Insertions
 
 \newconditional\c_page_one_top_of_insert
-\newconditional\c_page_one_correct_top_insert  \settrue\c_page_one_correct_top_insert % false moves up (tight)
+\newconditional\c_page_one_correct_top_insert  \c_page_one_correct_top_insert\conditionaltrue % false moves up (tight)
 \newgluespec   \s_page_one_between_top_insert
 
 \def\page_one_prepare_top_float
   {\ifzeropt\d_page_floats_inserted_top
-     \settrue\c_page_one_top_of_insert
+     \c_page_one_top_of_insert\conditionaltrue
    \else
-     \setfalse\c_page_one_top_of_insert
+     \c_page_one_top_of_insert\conditionalfalse
    \fi
    \s_page_one_between_top_insert\ifdim\d_strc_floats_top>\d_strc_floats_bottom\d_strc_floats_top\else\d_strc_floats_bottom\fi\relax
    \global\advanceby\d_page_floats_inserted_top\dimexpr\ht\floatbox+\dp\floatbox+\s_page_one_between_top_insert\relax}
@@ -443,7 +443,7 @@
        \page_floats_resave\s!text
        \noffloatinserts\c_page_floats_n_of_bottom\relax
      \fi
-     \global\settrue\c_page_floats_not_permitted % vgl topfloats s!
+     \global\c_page_floats_not_permitted\conditionaltrue % vgl topfloats s!
    \else
      \ifconditional\c_page_floats_some_waiting
        \showmessage\m!floatblocks7{\the\c_page_floats_n_of_bottom}%
@@ -489,7 +489,7 @@
      \page_one_command_flush_bottom_insertions_indeed
    \fi
    \global\d_page_floats_inserted_bottom\zeropoint
-   \global\setfalse\c_page_floats_not_permitted}
+   \global\c_page_floats_not_permitted\conditionalfalse}
 
 \def\page_one_command_flush_bottom_insertions_indeed
   {\ifgridsnapping
@@ -503,7 +503,7 @@
    \fi}
 
 \protected\def\page_one_command_flush_floats
-  {\global\settrue\c_page_floats_flushing
+  {\global\c_page_floats_flushing\conditionaltrue
    \ifconditional\c_page_floats_some_waiting
      \par
      % if kept, then option and definitely off in gridmode ! ! ! !
@@ -511,8 +511,8 @@
      \page_one_command_flush_floats_indeed
    \fi
    \global\savednoffloats\zerocount
-   \global\setfalse\c_page_floats_some_waiting
-   \global\setfalse\c_page_floats_flushing}
+   \global\c_page_floats_some_waiting\conditionalfalse
+   \global\c_page_floats_flushing\conditionalfalse}
 
 \protected\def\page_one_command_flush_float_box
   {\ifconditional\c_page_floats_center_box \ifdim\wd\floatbox<\hsize
@@ -521,7 +521,7 @@
    \snaptogrid\hpack{\box\floatbox}} % was copy
 
 \def\page_one_command_floats_get_compressed
-  {\setfalse\c_page_floats_center_box % not needed as we do call directly
+  {\c_page_floats_center_box\conditionalfalse % not needed as we do call directly
    %% no longer (interferes with footnotes):
    %%
    %% \page_one_command_set_vsize % test 2011.06.24.001
@@ -569,7 +569,7 @@
      \fi
      \page_otr_command_next_page % \page
      \ifvoid\b_page_margin_blocks
-       \global\setfalse\c_page_margin_blocks_present
+       \global\c_page_margin_blocks_present\conditionalfalse
      \else
        \doubleexpandafter\page_one_command_flush_margin_blocks
      \fi
@@ -577,7 +577,7 @@
 
 \protected\def\page_one_command_check_if_float_fits
   {\ifconditional\c_page_floats_not_permitted
-     \global\setfalse\c_page_floats_room
+     \global\c_page_floats_room\conditionalfalse
    \else
      % new per 31/5/2004, should be an option, only one column mode
      \begingroup
@@ -608,9 +608,9 @@
      \fi
      \relax % really needed ! ! ! !
      \ifdim\scratchdimenone>\scratchdimentwo
-       \global\setfalse\c_page_floats_room
+       \global\c_page_floats_room\conditionalfalse
      \else
-       \global\settrue\c_page_floats_room
+       \global\c_page_floats_room\conditionaltrue
      \fi
    \fi}
 
@@ -621,7 +621,9 @@
      \page_one_command_set_top_insertions
      \page_one_command_set_bottom_insertions
      \ifconditional\c_page_floats_some_waiting
-        \doif{\rootfloatparameter\c!cache}\v!no\page_one_command_flush_floats % could be _otr_
+       \ifcstok{\rootfloatparameter\c!cache}\v!no
+         \page_one_command_flush_floats % could be _otr_
+       \fi
      \orelse\ifconditional\c_page_margin_blocks_present
        \page_one_command_flush_floats
      \fi
@@ -668,7 +670,9 @@
   {\setbox\floatbox\vpack{\box\floatbox}% ? can go
    \wd\floatbox\floatwidth
    #1{\box\floatbox}%
-   \doifinset\v!tall\floatlocationmethod\page_sides_flush_floats_after_par}
+   \ifinset\v!tall\floatlocationmethod
+     \page_sides_flush_floats_after_par
+   \fi}
 
 \def\page_one_place_float_left
   {\page_one_place_float_side_indeed
@@ -734,50 +738,37 @@
    \nonoindentation} % new, due to popular request
 
 \def\page_one_place_float_otherwise
-  {\doifelseinset\v!here\floatlocationmethod
+  {\ifinset\v!here\floatlocationmethod
      \page_one_place_float_otherwise_here
-     \page_one_place_float_otherwise_else}
+   \else
+     \page_one_place_float_otherwise_else
+   \fi}
 
 \def\page_one_place_float_otherwise_here
-  {\doifelseinset\v!always\floatlocationmethod
-     {\page[\v!preference]%
-      \page_otr_command_check_if_float_fits
-      \ifconditional\c_page_floats_room
-        \page_one_place_float_here_indeed
-      \else
-        \showmessage\m!floatblocks9\empty
-        \page_floats_resave\s!text
-      \fi}
-     {\ifconditional\c_page_floats_some_waiting
-        \page_floats_save\s!text
-        \nonoindentation
-      \else
-        \page[\v!preference]%
-        \page_otr_command_check_if_float_fits
-        \ifconditional\c_page_floats_room
-          \page_one_place_float_here_indeed
-        \else
-          \page_floats_save\s!text
-          \nonoindentation
-        \fi
-      \fi}}
-
-% \def\page_one_place_float_otherwise_else
-%   {\doifelseinset\v!always\floatlocationmethod
-%      {\page_otr_command_check_if_float_fits
-%       \ifconditional\c_page_floats_room
-%         \page_one_place_float_auto_top_bottom
-%       \else
-%         \showmessage\m!floatblocks9\empty
-%         \page_floats_resave\s!text
-%       \fi}
-%      {\page_otr_command_check_if_float_fits
-%       \ifconditional\c_page_floats_room
-%         \page_one_place_float_auto_top_bottom
-%       \else
-%         \page_floats_save\s!text
-%         \nonoindentation
-%       \fi}}
+  {\ifinset\v!always\floatlocationmethod
+     \page[\v!preference]%
+     \page_otr_command_check_if_float_fits
+     \ifconditional\c_page_floats_room
+       \page_one_place_float_here_indeed
+     \else
+       \showmessage\m!floatblocks9\empty
+       \page_floats_resave\s!text
+     \fi
+   \else
+     \ifconditional\c_page_floats_some_waiting
+       \page_floats_save\s!text
+       \nonoindentation
+     \else
+       \page[\v!preference]%
+       \page_otr_command_check_if_float_fits
+       \ifconditional\c_page_floats_room
+         \page_one_place_float_here_indeed
+       \else
+         \page_floats_save\s!text
+         \nonoindentation
+       \fi
+     \fi
+   \fi}
 
 % Some new always top/bottom trickery.
 %
@@ -786,25 +777,29 @@
 % Harrison level creativity.
 
 \def\page_one_place_float_otherwise_else
-   {\doifelseinset\v!always\floatlocationmethod
-      {\page_otr_command_check_if_float_fits
-       \ifconditional\c_page_floats_room
-         \page_one_place_float_auto_top_bottom
-       \else
-         \showmessage\m!floatblocks9\empty
-         \doifelseinset\v!top\floatlocationmethod
-           {\page_floats_save\s!top}
-           {\doifelseinset\v!bottom\floatlocationmethod
-              {\page_floats_save\s!bottom}
-              {\page_floats_resave\s!text}}%
-       \fi}
-      {\page_otr_command_check_if_float_fits
-       \ifconditional\c_page_floats_room
-         \page_one_place_float_auto_top_bottom
-       \else
-         \page_floats_save\s!text
-         \nonoindentation
-       \fi}}
+   {\ifinset\v!always\floatlocationmethod
+      \page_otr_command_check_if_float_fits
+      \ifconditional\c_page_floats_room
+        \page_one_place_float_auto_top_bottom
+      \else
+        \showmessage\m!floatblocks9\empty
+        \ifinset\v!top\floatlocationmethod
+          \page_floats_save\s!top
+        \orelse\ifinset\v!bottom\floatlocationmethod
+          \page_floats_save\s!bottom
+        \else
+          \page_floats_resave\s!text
+        \fi
+      \fi
+    \else
+      \page_otr_command_check_if_float_fits
+      \ifconditional\c_page_floats_room
+        \page_one_place_float_auto_top_bottom
+      \else
+        \page_floats_save\s!text
+        \nonoindentation
+      \fi
+    \fi}
 
 \protected\def\page_one_command_set_always_insertions_bottom_indeed
   {\page_floats_flush\s!bottom\plusone

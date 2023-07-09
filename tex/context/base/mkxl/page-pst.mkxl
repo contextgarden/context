@@ -74,7 +74,7 @@
 \protected\def\page_postponed_blocks_flush_indeed
   {\begingroup
    \setsystemmode\v!postponing
-   \settrue\c_page_postponed_busy
+   \c_page_postponed_busy\conditionaltrue
    \ifnum\c_page_postponed_mode=\plusone
      \savepagecontent
    \fi

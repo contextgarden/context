@@ -58,9 +58,11 @@
    \dontcomplain
    % runs under current page regime, i.e. page variables passed to mp
    \setupcurrentfittingpage[\c!paper=,#2]% auto or size or nothing
-   \doifelsenothing{\fittingpageparameter\c!command}
-     \page_fitting_start_normal
-     \page_fitting_start_command}
+   \ifempty{\fittingpageparameter\c!command}%
+     \expandafter\page_fitting_start_normal
+   \else
+     \expandafter\page_fitting_start_command
+   \fi}
 
 \def\page_fitting_start_command
   {\grabuntil{\e!stop\currentfittingpage}\page_fitting_stop_command}
@@ -83,19 +85,21 @@
    \egroup
    \egroup
    % finalize
-   \doif{\fittingpageparameter\c!margin}\v!page
-     {\setbox\b_page_fitting\hpack\bgroup
-        \offsetbox
-          [\c!leftoffset=\backspace,
-           \c!rightoffset=\cutspace,
-           \c!topoffset=\topspace,
-           \c!bottomoffset=\bottomspace]
-          {\box\b_page_fitting}%
-       \egroup}%
-   \doifsomething{\fittingpageparameter\c!scale}
-     {\setbox\b_page_fitting\hpack\bgroup
-        \scale[\c!scale=\fittingpageparameter\c!scale]{\box\b_page_fitting}%
-      \egroup}%
+   \ifcstok{\fittingpageparameter\c!margin}\v!page
+     \setbox\b_page_fitting\hpack\bgroup
+       \offsetbox
+         [\c!leftoffset=\backspace,
+          \c!rightoffset=\cutspace,
+          \c!topoffset=\topspace,
+          \c!bottomoffset=\bottomspace]
+         {\box\b_page_fitting}%
+     \egroup
+   \fi
+   \ifempty{\fittingpageparameter\c!scale}\else
+     \setbox\b_page_fitting\hpack\bgroup
+       \scale[\c!scale=\fittingpageparameter\c!scale]{\box\b_page_fitting}%
+     \egroup
+   \fi
    \ifzeropt\ht\b_page_fitting
      \ht\b_page_fitting\onepoint
    \fi

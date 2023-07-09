@@ -152,7 +152,7 @@
 % \def\beforesubsentence{\removeunwantedspaces}
 % \def\aftersubsentence {\ignorespaces}
 
-\newconditional\c_typo_subsentence_cleanup  \settrue\c_typo_subsentence_cleanup
+\newconditional\c_typo_subsentence_cleanup  \c_typo_subsentence_cleanup\conditionaltrue
 
 \def\typo_subsentence_cleanup_start
   {\ifconditional\c_typo_subsentence_cleanup
@@ -362,7 +362,7 @@
    \fi
    \let\currentparentdelimitedtext\currentdelimitedtext
    \global\advanceby\c_typo_delimited_nesting\plusone
-   \edef\delimitedtextlevel{\number\c_typo_delimited_nesting}%
+   \edef\delimitedtextlevel{\the\c_typo_delimited_nesting}%
    \normalexpanded{\chaintocurrentdelimitedtext{\currentparentdelimitedtext:\delimitedtextlevel}}%
    \cdef\currentdelimitedtext{\currentparentdelimitedtext:\delimitedtextlevel}}
 
@@ -440,7 +440,7 @@
    \else
      \lettonothing\typo_delimited_repeat
    \fi
-   \setfalse\c_typo_delimited_repeating
+   \c_typo_delimited_repeating\conditionalfalse
    \edef\p_delimited_location{\delimitedtextparameter\c!location}%
    \ifx\p_delimited_location\v!paragraph
      \expandafter\typo_delimited_start_par
@@ -736,7 +736,7 @@
      \fi
      \endgroup
    \else
-     \settrue\c_typo_delimited_repeating
+     \c_typo_delimited_repeating\conditionaltrue
    \fi}
 
 \def\typo_delimited_handle_left#1%

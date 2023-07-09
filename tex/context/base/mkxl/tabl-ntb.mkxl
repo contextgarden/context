@@ -428,12 +428,13 @@
 %                                \expandafter\firstoftwoarguments  % a span
 %                              \fi}
 
-\def\tabl_ntb_set_spn     #1{\letcsname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname\plusone}
-\def\tabl_ntb_spn_doifelse#1{\ifcsname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname
-                               \expandafter\firstoftwoarguments  % a span
-                             \else
-                               \expandafter\secondoftwoarguments % unset
-                             \fi}
+\def\tabl_ntb_set_spn      #1{\letcsname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname\plusone}
+%def\tabl_ntb_spn_doifelse #1{\ifcsname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname
+%                               \expandafter\firstoftwoarguments  % a span
+%                             \else
+%                               \expandafter\secondoftwoarguments % unset
+%                             \fi}
+\def\tabl_ntb_spn_condition#1{\ifcsname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname}
 
 \protected\def\tabl_ntb_set_txt_process#1#2#3#4#5#6%
   {\defcsname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\endcsname
@@ -462,8 +463,8 @@
 
 \installtextracker
   {tables.natural.widths}
-  {\settrue \c_tabl_ntb_trace_widths}
-  {\setfalse\c_tabl_ntb_trace_widths}
+  {\c_tabl_ntb_trace_widths\conditionaltrue}
+  {\c_tabl_ntb_trace_widths\conditionalfalse}
 
 % so far
 
@@ -628,8 +629,8 @@
   {\tabl_ntb_setup_section % already forgotten
    \edef\m_tabl_ntb_positive_row{\number#1}%
    \edef\m_tabl_ntb_positive_col{\number#2}%
-   \edef\m_tabl_ntb_negative_row{\number\numexpr-\c_tabl_ntb_maximum_row+#1+\minusone}%
-   \edef\m_tabl_ntb_negative_col{\number\numexpr-\c_tabl_ntb_maximum_col+#2+\minusone}%
+   \edef\m_tabl_ntb_negative_row{\the\numexpr-\c_tabl_ntb_maximum_row+#1+\minusone}%
+   \edef\m_tabl_ntb_negative_col{\the\numexpr-\c_tabl_ntb_maximum_col+#2+\minusone}%
    % saves tokens (no speed gain)
    \edef\m_tabl_ntb_prefix{\??naturaltableset\m_tabl_tbl_level:}% can move to \tabl_ntb_next_level etc
    % each each
@@ -1075,8 +1076,8 @@
 
 \def\tabl_ntb_current_row   {\m_tabl_ntb_positive_row}
 \def\tabl_ntb_current_column{\m_tabl_ntb_positive_col}
-\def\tabl_ntb_n_of_rows     {\number\c_tabl_ntb_maximum_row}
-\def\tabl_ntb_n_of_columns  {\number\c_tabl_ntb_maximum_col}
+\def\tabl_ntb_n_of_rows     {\the\c_tabl_ntb_maximum_row}
+\def\tabl_ntb_n_of_columns  {\the\c_tabl_ntb_maximum_col}
 
 \mutable\let\currentTABLErow   \!!zerocount
 \mutable\let\currentTABLEcolumn\!!zerocount
@@ -1101,29 +1102,35 @@
 
 \permanent\protected\def\eTABLE % beware, we need to get rid of spurious spaces when in hmode
   {% tricky and dirty order -)
-   \setfalse\c_tabl_ntb_okay
+   \c_tabl_ntb_okay\conditionalfalse
    % head
-   \doifelsesometoks\t_tabl_ntb_head % slow, better a flag \iftok
-     {\c_tabl_ntb_head\numexpr\c_tabl_ntb_maximum_row+\plusone\relax
-      \expand\t_tabl_ntb_head
-      \c_tabl_ntb_n_of_head_lines\c_tabl_ntb_maximum_row\relax
-      \doifelsesometoks\t_tabl_ntb_next
-        {\expand\t_tabl_ntb_next
-         \c_tabl_ntb_n_of_next_lines\numexpr\c_tabl_ntb_maximum_row-\c_tabl_ntb_n_of_head_lines\relax}%
-        {\c_tabl_ntb_n_of_next_lines\zerocount}% was 1
-      \c_tabl_ntb_n_of_hdnx_lines\c_tabl_ntb_maximum_row}
-     {\c_tabl_ntb_head\zerocount
-      \c_tabl_ntb_n_of_head_lines\zerocount % was 1
-      \c_tabl_ntb_n_of_next_lines\zerocount
-      \c_tabl_ntb_n_of_hdnx_lines\zerocount}%
+   \ifempty\t_tabl_ntb_head
+     \c_tabl_ntb_head\zerocount
+     \c_tabl_ntb_n_of_head_lines\zerocount % was 1
+     \c_tabl_ntb_n_of_next_lines\zerocount
+     \c_tabl_ntb_n_of_hdnx_lines\zerocount
+   \else
+     \c_tabl_ntb_head\numexpr\c_tabl_ntb_maximum_row+\plusone\relax
+     \expand\t_tabl_ntb_head
+     \c_tabl_ntb_n_of_head_lines\c_tabl_ntb_maximum_row\relax
+     \ifempty\t_tabl_ntb_next
+       \c_tabl_ntb_n_of_next_lines\zerocount % was 1
+     \else
+       \expand\t_tabl_ntb_next
+       \c_tabl_ntb_n_of_next_lines\numexpr\c_tabl_ntb_maximum_row-\c_tabl_ntb_n_of_head_lines\relax
+     \fi
+     \c_tabl_ntb_n_of_hdnx_lines\c_tabl_ntb_maximum_row
+   \fi
    % body
    \c_tabl_ntb_body\numexpr\c_tabl_ntb_maximum_row+\plusone\relax
    \expand\t_tabl_ntb_body
    % foot
-   \doifelsesometoks\t_tabl_ntb_foot
-     {\c_tabl_ntb_foot\numexpr\c_tabl_ntb_maximum_row+\plusone\relax
-      \expand\t_tabl_ntb_foot}%
-     {\c_tabl_ntb_foot\zerocount}%
+   \ifempty\t_tabl_ntb_foot
+     \c_tabl_ntb_foot\zerocount
+   \else
+     \c_tabl_ntb_foot\numexpr\c_tabl_ntb_maximum_row+\plusone\relax
+     \expand\t_tabl_ntb_foot
+   \fi
    % done
    \removeunwantedspaces % only if hmode
    % finish cells
@@ -1348,21 +1355,21 @@
      \ifconditional\c_tabl_ntb_okay
        \dostoptagged
      \else
-       \settrue\c_tabl_ntb_okay
+       \c_tabl_ntb_okay\conditionaltrue
      \fi
      \dostarttagged\t!tablehead\empty
    \orelse\ifnum\scratchcounter=\c_tabl_ntb_body
      \ifconditional\c_tabl_ntb_okay
        \dostoptagged
      \else
-       \settrue\c_tabl_ntb_okay
+       \c_tabl_ntb_okay\conditionaltrue
      \fi
      \dostarttagged\t!tablebody\empty
    \orelse\ifnum\scratchcounter=\c_tabl_ntb_foot
      \ifconditional\c_tabl_ntb_okay
        \dostoptagged
      \else
-       \settrue\c_tabl_ntb_okay
+       \c_tabl_ntb_okay\conditionaltrue
      \fi
      \dostarttagged\t!tablefoot\empty
    \fi
@@ -1374,13 +1381,13 @@
      \scratchcounter\numexpr\c_tabl_ntb_row+\plustwo\relax
      \ifnum\scratchcounter=\c_tabl_ntb_body
        \dostoptagged
-       \setfalse\c_tabl_ntb_okay
+       \c_tabl_ntb_okay\conditionalfalse
      \orelse\ifnum\scratchcounter=\c_tabl_ntb_foot
        \dostoptagged
-       \setfalse\c_tabl_ntb_okay
+       \c_tabl_ntb_okay\conditionalfalse
      \orelse\ifnum\scratchcounter>\c_tabl_ntb_maximum_row
        \dostoptagged
-       \setfalse\c_tabl_ntb_okay
+       \c_tabl_ntb_okay\conditionalfalse
      \fi
    \fi}
 
@@ -1713,7 +1720,7 @@
        % added jan 2002 because nx=* did no longer work
        \ifnum\c_tabl_ntb_encountered_max<\c_tabl_ntb_maximum_col
          % added jun 2014 because someone had less columns than nx .. sigh / see *nx*
-         \writestatus\m!TABLE{missing\space\number\numexpr\c_tabl_ntb_maximum_col-\c_tabl_ntb_encountered_max\relax\space column(s), guessing widths}%
+         \writestatus\m!TABLE{missing\space\the\numexpr\c_tabl_ntb_maximum_col-\c_tabl_ntb_encountered_max\relax\space column(s), guessing widths}%
        \fi
        \d_tabl_ntb_saved_hsize\hsize
      % \hsize\wd\scratchbox\relax % new per 17/04/2006
@@ -2058,9 +2065,14 @@
      \ifsqueezeTBLspan
        \tabl_ntb_cell_process_a_check_span_one
      \fi
-     \tabl_ntb_spn_doifelse\c_tabl_ntb_col
+    %\tabl_ntb_spn_doifelse\c_tabl_ntb_col
+    %  \tabl_ntb_cell_process_a_check_span_two_yes
+    %  \tabl_ntb_cell_process_a_check_span_two_nop
+     \ifcondition\tabl_ntb_spn_condition\c_tabl_ntb_col
        \tabl_ntb_cell_process_a_check_span_two_yes
+     \else
        \tabl_ntb_cell_process_a_check_span_two_nop
+     \fi
    \fi
    \scratchcounter\numexpr\c_tabl_ntb_row+\plusone\relax
    \scratchdimen\tabl_ntb_get_hei\scratchcounter\relax
@@ -2269,7 +2281,7 @@
 % \eTABLE
 % \egroup
 
-\newconditional\resetTABLEmode \settrue\resetTABLEmode
+\newconditional\resetTABLEmode \resetTABLEmode\conditionaltrue
 
 \def\tabl_ntb_parameters_reset % we can use setters instead
   {\ifnum\m_tabl_tbl_level>\plusone % in ieder geval
@@ -2384,7 +2396,7 @@
    \tabl_ntb_section_disable}
 
 \tolerant\permanent\protected\def\bTABLEsection[#1]%
-  {\iftok{#1}\emptytoks
+  {\ifempty{#1}%
      \global\c_tabl_ntb_section_repeat\zerocount
    \else
      \letdummyparameter\c!repeat\zerocount

@@ -65,7 +65,7 @@
 \appendtoks
     \global\advanceby\c_typo_localboxes\plusone
     \global\expandafter\integerdef\csname\??localboxesattribute\currentlocalboxes\endcsname\c_typo_localboxes
-    \gletcsname\??localboxesnamespace\number\c_typo_localboxes\endcsname\currentlocalboxes
+    \gletcsname\??localboxesnamespace\the\c_typo_localboxes\endcsname\currentlocalboxes
 \to \everydefinelocalboxes
 
 %D The optional argument forces setting the \quote {whole} paragraph properties (which is needed

@@ -43,7 +43,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "internals.h"
 
 posit32_t softposit_addMagsP32( uint_fast32_t uiA, uint_fast32_t uiB ) {
-	uint_fast16_t regA, regB;
+ // int_fast16_t regA, regB; // HH
+	uint_fast16_t regA;
 	uint_fast64_t frac64A=0, frac64B=0;
 	uint_fast32_t fracA=0, regime, tmp;
 	bool sign, regSA, regSB, rcarry=0, bitNPlusOne=0, bitsMore=0;

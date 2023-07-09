@@ -329,11 +329,11 @@
 
 \def\page_mix_enable_grid_snapping
   {\edef\p_grid{\mixedcolumnsparameter\c!grid}%
-   \setfalse\c_page_mix_grid_snapping
+   \c_page_mix_grid_snapping\conditionalfalse
    \ifempty\p_grid
      % just follow the default grid settings
    \else
-     \ifgridsnapping\settrue\c_page_mix_grid_snapping\fi
+     \ifgridsnapping\c_page_mix_grid_snapping\conditionaltrue\fi
      \gridsnappingtrue
      \setsystemmode\v!grid
      \spac_grids_snap_value_set\p_grid
@@ -587,9 +587,9 @@
    \rightskip\zeropoint
    %
    \ifcstok{\mixedcolumnsparameter\c!notes}\v!yes
-     \settrue \c_page_mix_process_notes
+     \c_page_mix_process_notes\conditionaltrue
    \else
-     \setfalse\c_page_mix_process_notes
+     \c_page_mix_process_notes\conditionalfalse
    \fi
    \ifconditional\c_page_mix_process_notes \else
      \startpostponingnotes
@@ -684,9 +684,11 @@
 \defcsname\??mixedcolumnsstop\s!otr\endcsname
   {\par
    \ifcase\c_page_mix_otr_nesting\or
-     \doifelse{\mixedcolumnsparameter\c!balance}\v!yes
-       {\c_page_mix_routine\c_page_mix_routine_balance}%
-       {\penalty-\plustenthousand}% weird hack, we need to trigger the otr sometimes (new per 20140306, see balancing-001.tex)
+     \ifcstok{\mixedcolumnsparameter\c!balance}\v!yes
+       \c_page_mix_routine\c_page_mix_routine_balance
+     \else
+       \penalty-\plustenthousand % weird hack, we need to trigger the otr sometimes (new per 20140306, see balancing-001.tex)
+     \fi
      \page_otr_trigger_output_routine
      \ifvoid\b_page_mix_preceding \else
         % empty columns so we need to make sure pending content is flushed
@@ -776,8 +778,7 @@
      \page_mix_hbox to \d_page_mix_max_width \bgroup
        \edef\p_separator{\mixedcolumnsparameter\c!separator}%
        \mixedcolumnseparatorwidth\d_page_mix_distance % \mixedcolumnsparameter\c!rulethickness\relax
-       \edef\p_direction{\mixedcolumnsparameter\c!direction}%
-       \ifx\p_direction\v!reverse
+       \ifcstok{\mixedcolumnsparameter\c!direction}\v!reverse
          \dostepwiserecurse\c_page_mix_n_of_columns\plusone\minusone
             {\page_mix_routine_package_step
              \ifnum\recurselevel>\plusone
@@ -995,9 +996,9 @@
 
 \protected\def\page_mix_command_check_if_float_fits
   {\ifpostponecolumnfloats
-     \global\setfalse\c_page_floats_room
+     \global\c_page_floats_room\conditionalfalse
    \orelse\ifconditional\c_page_floats_not_permitted
-     \global\setfalse\c_page_floats_room
+     \global\c_page_floats_room\conditionalfalse
    \else
 %        \bgroup
 %        \getcolumnstatus{\count255}{\dimen0}{\dimen2}%
@@ -1007,13 +1008,13 @@
 %           \snaptogrid\vbox{\vskip\floatheight}}% copy?
 %        \advanceby\dimen0\dimexpr\ht\scratchbox+2\openlineheight+.5\lineheight\relax\relax % needed because goal a bit higher
 %        \ifdim\dimen0>\dimen2
-%          \global\setfalse\c_page_floats_room
+%          \global\c_page_floats_room\conditionalfalse
 %    \else
-      \global\settrue\c_page_floats_room
+      \global\c_page_floats_room\conditionaltrue
    \fi
    \ifdim\floatwidth>\hsize
      \showmessage\m!columns{11}\empty
-     \global\setfalse\c_page_floats_room
+     \global\c_page_floats_room\conditionalfalse
    \fi}
 
 \protected\def\page_mix_command_flush_floats

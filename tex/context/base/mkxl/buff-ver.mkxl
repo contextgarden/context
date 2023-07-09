@@ -23,7 +23,7 @@
 
 \definesystemattribute[verbatimline][public]
 
-\appendtoksonce
+\appendtoks
     \c_attr_verbatimline\attributeunsetvalue
 \to \everyforgetall
 
@@ -468,22 +468,20 @@
    \normalexpanded{\buff_verbatim_type_block{\e!start\currenttypingwrapper}{\e!stop \currenttypingwrapper}}}
 
 \protected\def\buff_verbatim_setup_keep_together
-  {\edef\p_keeptogether{\typingparameter\c!keeptogether}%
-   \ifx\p_keeptogether\v!yes
-     \settrue \c_buff_optimize_linebreaks
+  {\ifcstok{\typingparameter\c!keeptogether}\v!yes
+     \c_buff_optimize_linebreaks\conditionaltrue
    \else
-     \setfalse\c_buff_optimize_linebreaks
+     \c_buff_optimize_linebreaks\conditionalfalse
    \fi}
 
 \protected\def\buff_verbatim_type_block#1#2%
-  {\edef\p_strip{\typingparameter\c!strip}%
-   \normalexpanded{\buff_pickup
+  {\normalexpanded{\buff_pickup
      {_typing_}%
      {#1}%
      {#2}%
      {}%
      {\buff_verbatim_type_block_verbatim_indeed{#1}{#2}}%
-     \ifx\p_strip\v!no\zerocount\else\plusone\fi}}
+     \ifcstok{\typingparameter\c!strip}\v!no\zerocount\else\plusone\fi}}
 
 \protected\def\buff_verbatim_type_block_verbatim_indeed#1#2%
   {\buff_verbatim_initialize_typing_two
@@ -659,11 +657,11 @@
      \edef\p_numbering{\typingparameter\c!numbering}%
      \ifx\p_numbering\v!file
        \setuplinenumbering[\currenttyping][\c!method=\v!file]%
-       \settrue\verbatimnumberinglines
+       \verbatimnumberinglines\conditionaltrue
      \orelse\ifx\p_numbering\v!line
-       \settrue\verbatimnumberinglines
+       \verbatimnumberinglines\conditionaltrue
      \else
-       \setfalse\verbatimnumberinglines
+       \verbatimnumberinglines\conditionalfalse
      \fi
      \ifconditional\verbatimnumberinglines
        \enforced\let\beginofverbatimlines\beginofverbatimlinenumbering
@@ -877,7 +875,6 @@
    \ifarguments
      \buff_verbatim_process_indeed\v!buffer\empty% []
    \or
-    %\ifcondition\validassignment{#1}%
      \ifhastok={#1}%
        \setuptyping[\v!buffer][#1]%
        \buff_verbatim_process_indeed\v!buffer\empty% [settings]
@@ -986,7 +983,7 @@
 % \installcommandhandler \??visualizer {visualizer} \??visualizer
 %
 % \appendtoks
-%     \frozen\instance\setuevalue{\currentvisualizer}{\buff_verbatim_visualize{\currentvisualizer}}%
+%     \frozen\instanceprotected\edefcsname\currentvisualizer\endcsname{\buff_verbatim_visualize{\currentvisualizer}}%
 % \to \everydefinevisualizer
 %
 % \protected\def\buff_verbatim_visualize#1%

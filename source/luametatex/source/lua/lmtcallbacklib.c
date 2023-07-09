@@ -78,6 +78,7 @@ static const char *callbacklib_names[total_callbacks] = {
     "process_character",
     "linebreak_quality",
     "paragraph_pass",
+    "handle_uleader",
 };
 
 /*tex

@@ -124,24 +124,6 @@ static void tex_aux_fixup_math_and_unsave(void)
 
 /*tex
 
-    If the user says, e.g., |\global \global|, the redundancy is silently accepted. The different
-    types of code values have different legal ranges; the following program is careful to check
-    each case properly.
-
-*/
-
-static void tex_aux_out_of_range_error(halfword val, halfword max)
-{
-    tex_handle_error(
-        normal_error_type,
-        "Invalid code (%i), should be in the range %i..%i",
-        val, 0, max,
-        "I'm going to use 0 instead of that illegal code value."
-    );
-}
-
-/*tex
-
     The |run_| functions hook in the main control handler. Some immediately do something, others
     trigger a follow up scan, driven by the cmd code. Here come some forward declarations; there
     are more that the following |run_| functions. Some runners are defined in other modules. Some
@@ -526,6 +508,14 @@ static void tex_aux_run_ignore_something(void) {
         case ignore_argument_code:
             /*tex There is nothing to show here. */
             break;
+        case ignore_upto_code:
+            {
+                halfword token = tex_get_token();
+                do {
+                    tex_get_token();
+                } while (cur_tok != token);
+                break;
+            }
         default:
             break;
     }
@@ -668,7 +658,7 @@ static void tex_aux_run_end_group(void) {
 
  */
 
-static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, halfword slot)
+static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, halfword slot, halfword callback)
 {
     /*tex Get the next non-blank non-relax... and optionally skip an equal sign */
     while (1) {
@@ -686,7 +676,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
     switch (cur_cmd) {
         case make_box_cmd:
             {
-                tex_begin_box(boxcontext, shift, slot);
+                tex_begin_box(boxcontext, shift, slot, callback);
                 return;
             }
         case vcenter_cmd:
@@ -711,22 +701,23 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
                                 case vlist_node:
                                 case rule_node:
                                 case glyph_node:
-                                    tex_box_end(boxcontext, boxnode, shift, unset_noad_class, slot);
+                                    tex_box_end(boxcontext, boxnode, shift, unset_noad_class, slot, callback);
                                     return;
                             }
                         }
                     }
                     tex_formatted_error("lua", "invalid function call, proper leader content expected");
                     return;
+                } else {
+                    break;
                 }
-                break;
             }
         case lua_value_cmd:
             {
                 halfword v = tex_scan_lua_value(cur_chr);
                 switch (v) {
                     case no_val_level:
-                        tex_box_end(boxcontext, null, shift, unset_noad_class, slot);
+                        tex_box_end(boxcontext, null, shift, unset_noad_class, slot, callback);
                         return;
                     case list_val_level:
                         if (box_leaders_flag(boxcontext)) {
@@ -735,14 +726,14 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
                                 case vlist_node:
                                 case rule_node:
                              // case glyph_node:
-                                    tex_box_end(boxcontext, cur_val, shift, unset_noad_class, slot);
+                                    tex_box_end(boxcontext, cur_val, shift, unset_noad_class, slot, callback);
                                     return;
                             }
                         } else {
                             switch (node_type(cur_val)) {
                                 case hlist_node:
                                 case vlist_node:
-                                    tex_box_end(boxcontext, cur_val, shift, unset_noad_class, slot);
+                                    tex_box_end(boxcontext, cur_val, shift, unset_noad_class, slot, callback);
                                     return;
                             }
                         }
@@ -755,7 +746,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
             {
                 if (box_leaders_flag(boxcontext)) {
                     halfword rulenode = tex_aux_scan_rule_spec(cur_cmd == hrule_cmd ? h_rule_type : (cur_cmd == vrule_cmd ? v_rule_type : m_rule_type), cur_chr);
-                    tex_box_end(boxcontext, rulenode, shift, unset_noad_class, slot);
+                    tex_box_end(boxcontext, rulenode, shift, unset_noad_class, slot, callback);
                     return;
                 } else {
                     break;
@@ -768,7 +759,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
                     halfword boxnode = null;
                     tex_aux_run_text_char_number();
                     boxnode = tex_pop_tail();
-                    tex_box_end(boxcontext, boxnode, shift, unset_noad_class, slot);
+                    tex_box_end(boxcontext, boxnode, shift, unset_noad_class, slot, callback);
                     return;
                 } else {
                     break;
@@ -782,8 +773,8 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
         "that. So you might find something missing in your output. But keep trying; you\n"
         "can fix this later."
     );
-    if (boxcontext == lua_scan_flag) { /* hm */
-        tex_box_end(boxcontext, null, shift, unset_noad_class, slot);
+    if (boxcontext == lua_scan_flag) { /* hm, why after error */
+        tex_box_end(boxcontext, null, shift, unset_noad_class, slot, callback);
     }
 }
 
@@ -797,7 +788,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
 static void tex_aux_run_move(void) {
     int code = cur_chr;
     halfword val = tex_scan_dimen(0, 0, 0, 0, NULL);
-    tex_aux_scan_box(direct_box_flag, 0, code == move_forward_code ? val : - val, -1);
+    tex_aux_scan_box(direct_box_flag, 0, code == move_forward_code ? val : - val, -1, 0);
 }
 
 /*tex
@@ -909,13 +900,15 @@ static int leader_flags[] = {
 };
 
 static void tex_aux_run_leader(void) {
-    tex_aux_scan_box(leader_flags[cur_chr], 0, null_flag, -1);
+    int code = cur_chr; 
+    int callback = (code == u_leaders_code && tex_scan_keyword("callback")) ? tex_scan_int(0, NULL) : 0;
+    tex_aux_scan_box(leader_flags[code], 0, null_flag, -1, callback);
 }
 
 static void tex_aux_run_legacy(void) {
     switch (cur_chr) {
         case shipout_code:
-            tex_aux_scan_box(shipout_flag, 0, null_flag, -1);
+            tex_aux_scan_box(shipout_flag, 0, null_flag, -1, 0);
             break;
         default:
             /* cant_happen */
@@ -928,7 +921,7 @@ static void tex_aux_run_local_box(void) {
 }
 
 static void tex_aux_run_make_box(void) {
-    tex_begin_box(direct_box_flag, null_flag, -1);
+    tex_begin_box(direct_box_flag, null_flag, -1, 0);
 }
 
 /*tex
@@ -1759,15 +1752,23 @@ void tex_begin_local_control(void)
 
             We support a leading optional equal sign because that can help make robust macros that
             get |\the \dimexpr 1pt| etc fed which can lead to \TEX\ seeing one huge number.
+
+            The repeat variants are just there for convenience: it saves entering the initial value 
+            and step. 
+
         */
         case local_control_loop_code:
         case expanded_loop_code:
         case unexpanded_loop_code:
+        case local_control_repeat_code:
+        case expanded_repeat_code:
+        case unexpanded_repeat_code:
             {
                 halfword tail;
-                halfword first = tex_scan_int(1, NULL);
+                int looping = code >= local_control_loop_code && code <= unexpanded_loop_code;
+                halfword first = looping ? tex_scan_int(1, NULL) : 1;
                 halfword last = tex_scan_int(1, NULL);
-                halfword step = tex_scan_int(1, NULL);
+                halfword step = looping ? tex_scan_int(1, NULL) : 1;
                 halfword head = tex_scan_toks_normal(0, &tail);
                 if (token_link(head) && step) {
                     int savedloop = lmt_main_control_state.loop_iterator;
@@ -1775,6 +1776,7 @@ void tex_begin_local_control(void)
                     ++lmt_main_control_state.loop_nesting;
                     switch (code) {
                         case local_control_loop_code:
+                        case local_control_repeat_code:
                             {
                                 /*tex:
                                     Appending to tail gives issues at the outer level, for instance
@@ -1800,6 +1802,7 @@ void tex_begin_local_control(void)
                                 break;
                             }
                         case expanded_loop_code:
+                        case expanded_repeat_code:
                             {
                                 halfword h = null;
                                 halfword t = null;
@@ -1834,6 +1837,7 @@ void tex_begin_local_control(void)
                                 break;
                             }
                         case unexpanded_loop_code:
+                        case unexpanded_repeat_code:
                             {
                                 /*
                                     A |\currentloopiterator| will not adapt itself in this kind of
@@ -1932,7 +1936,7 @@ halfword tex_local_scan_box(void)
     int old_mode = cur_list.mode;
     int old_level = lmt_main_control_state.local_level;
     cur_list.mode = restricted_hmode;
-    tex_aux_scan_box(lua_scan_flag, 0, null_flag, -1);
+    tex_aux_scan_box(lua_scan_flag, 0, null_flag, -1, 0);
     if (lmt_main_control_state.local_level == old_level) {
         /*tex |\directlua{print(token.scan_list())}\hbox{!}| (n n) */
         if (tracing_nesting_par > 2) {
@@ -2247,7 +2251,7 @@ static void tex_aux_run_discretionary(void)
                 halfword d = tex_new_disc_node(normal_discretionary_code);
                 tex_tail_append(d);
                 while (1) {
-                    switch (tex_scan_character("pocPOC", 0, 1, 0)) {
+                    switch (tex_scan_character("pocbnPOCBN", 0, 1, 0)) {
                         case 0:
                             goto DONE;
                         case 'p': case 'P':
@@ -2270,6 +2274,16 @@ static void tex_aux_run_discretionary(void)
                                 default:
                                     tex_aux_show_keyword_error("penalty|postword|preword");
                                     goto DONE;
+                            }
+                            break;
+                        case 'b': case 'B':
+                            if (tex_scan_mandate_keyword("break", 1)) {
+                                set_disc_option(d, disc_option_prefer_break);
+                            }
+                            break;
+                        case 'n': case 'N':
+                            if (tex_scan_mandate_keyword("nobreak", 1)) {
+                                set_disc_option(d, disc_option_prefer_nobreak);
                             }
                             break;
                         case 'o': case 'O':
@@ -2742,7 +2756,7 @@ void tex_normal_paragraph(int context)
 
 */
 
-static void tex_aux_wrapup_leader_box(halfword boxcontext, halfword boxnode)
+static void tex_aux_wrapup_leader_box(halfword boxcontext, halfword boxnode, halfword callback)
 {
     /*tex Append a new leader node that uses |box| and get the next non-blank non-relax. */
     do {
@@ -2769,6 +2783,7 @@ static void tex_aux_wrapup_leader_box(halfword boxcontext, halfword boxnode)
                         if (cur_mode != vmode) {
                             node_subtype(cur_list.tail) = u_leaders;
                             glue_amount(cur_list.tail) += box_width(boxnode);
+                            glue_callback(cur_list.tail) = callback;
                         } else {
                             node_subtype(cur_list.tail) = a_leaders;
                         }
@@ -2777,6 +2792,7 @@ static void tex_aux_wrapup_leader_box(halfword boxcontext, halfword boxnode)
                         if (cur_mode == vmode) {
                             node_subtype(cur_list.tail) = u_leaders;
                             glue_amount(cur_list.tail) += box_total(boxnode);
+                            glue_callback(cur_list.tail) = callback;
                         } else {
                             node_subtype(cur_list.tail) = a_leaders;
                         }
@@ -2800,7 +2816,7 @@ static void tex_aux_wrapup_leader_box(halfword boxcontext, halfword boxnode)
     }
 }
 
-void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword mainclass, halfword slot)
+void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword mainclass, halfword slot, halfword callback)
 {
     cur_box = boxnode;
     switch (boxcontext) {
@@ -2911,7 +2927,7 @@ void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword maincl
         case x_leaders_flag:
         case g_leaders_flag:
         case u_leaders_flag:
-            tex_aux_wrapup_leader_box(boxcontext, boxnode);
+            tex_aux_wrapup_leader_box(boxcontext, boxnode, callback);
             break;
         default:
             /* fatal error */
@@ -3017,8 +3033,15 @@ static void tex_aux_run_head_for_vmode(void)
             we just continue.
         */
         tex_insert_paragraph_token();
+        /* 
+            An old cheat: we need to allocate a token which is what back_input does, but then we 
+            mark it as inserted. 
+        */
         tex_back_input(cur_tok);
         lmt_input_state.cur_input.token_type = inserted_text;
+        /* 
+            tex_insert_input(tex_get_available_token(cur_tok)); // cleaner 
+        */
     } else if (cur_cmd != hrule_cmd) {
         tex_off_save();
     } else {
@@ -3974,9 +3997,21 @@ static void tex_aux_set_page_property(void)
             break;
         case page_total_code:
             lmt_page_builder_state.total = tex_scan_dimen(0, 0, 0, 1, NULL);
+            /*tex Otherwise we have to also set that at the \TEX\ end: */
+            lmt_page_builder_state.last_height = lmt_page_builder_state.total;
+            /*tex So when setting total and depth first total needs to be set! */
+            lmt_page_builder_state.last_depth = 0;
             break;
         case page_depth_code:
             lmt_page_builder_state.depth = tex_scan_dimen(0, 0, 0, 1, NULL);
+            /*tex Otherwise we have to also set that at the \TEX\ end: */
+            lmt_page_builder_state.last_depth = lmt_page_builder_state.depth;
+            break;
+        case page_last_height_code:
+            lmt_page_builder_state.last_height = tex_scan_dimen(0, 0, 0, 1, NULL);
+            break;
+        case page_last_depth_code:
+            lmt_page_builder_state.last_depth = tex_scan_dimen(0, 0, 0, 1, NULL);
             break;
         case dead_cycles_code:
             lmt_page_builder_state.dead_cycles = tex_scan_int(1, NULL);
@@ -4066,17 +4101,7 @@ static void tex_aux_set_auxiliary(int a)
     switch (cur_chr) {
         case space_factor_code:
             if (cur_mode == hmode) {
-                halfword v = tex_scan_int(1, NULL);
-                if ((v <= min_space_factor) || (v > max_space_factor)) {
-                    tex_handle_error(
-                        normal_error_type,
-                        "Bad space factor (%i). I allow only values in the range %i..%i here.",
-                        v, min_space_factor + 1, max_space_factor,
-                        NULL
-                    );
-                } else {
-                    cur_list.space_factor = v;
-                }
+                cur_list.space_factor = tex_scan_space_factor(1);
             } else {
                 tex_aux_run_illegal_case();
             }
@@ -4090,17 +4115,7 @@ static void tex_aux_set_auxiliary(int a)
             break;
         case prev_graf_code:
             {
-                halfword v = tex_scan_int(1, NULL);
-                if (v >= 0) {
-                    lmt_nest_state.nest[tex_vmode_nest_index()].prev_graf = v;
-                } else {
-                    tex_handle_error(
-                        normal_error_type,
-                        "Bad \\prevgraf (%i)",
-                        v,
-                        "I allow only nonnegative values here."
-                    );
-                }
+                lmt_nest_state.nest[tex_vmode_nest_index()].prev_graf = tex_scan_positive_number(1);
                 break;
             }
         case interaction_mode_code:
@@ -4318,7 +4333,7 @@ static void tex_aux_set_box(int a)
 {
     halfword slot = tex_scan_box_register_number();
     if (lmt_error_state.set_box_allowed) {
-        tex_aux_scan_box(is_global(a) ? global_box_flag : box_flag, 1, null_flag, slot);
+        tex_aux_scan_box(is_global(a) ? global_box_flag : box_flag, 1, null_flag, slot, 0);
     } else {
         tex_handle_error(
             normal_error_type,
@@ -4508,7 +4523,7 @@ static void tex_aux_set_specification(int a)
                     break;
                 }
                 /*tex 
-                    This scanner is a bit over the top but makign a different one doesnot make sense not does simple 
+                    This scanner is a bit over the top but making a different one doesnot make sense not does simple 
                     scan_keyword and plenty pushback. We just have these long keywords. On a test that scans al keywords 
                     the tree based variant is more than three times faster than the sequential push back one. 
                 */
@@ -4942,7 +4957,7 @@ static void tex_aux_set_define_font(int a)
     different in \LUAMETATEX.
 */
 
-static void tex_aux_set_def(int a, int force)
+static void tex_aux_set_def(int flags, int force)
 {
     int expand = 0;
     switch (cur_chr) {
@@ -4955,7 +4970,7 @@ static void tex_aux_set_def(int a, int force)
             expand = 1;
             // fall through
         case global_def_code:
-            a = add_global_flag(a);
+            flags = add_global_flag(flags);
             break;
         case expanded_def_csname_code:
             expand = 1;
@@ -4968,49 +4983,47 @@ static void tex_aux_set_def(int a, int force)
             // fall through
         case global_def_csname_code:
             cur_cs = tex_create_csname();
-            a = add_global_flag(a);
+            flags = add_global_flag(flags);
             goto DONE;
         case constant_def_code:
             expand = 2;
-            a = add_constant_flag(a);
+            flags = add_constant_flag(flags);
             break;
         case constant_def_csname_code:
             expand = 2;
             cur_cs = tex_create_csname();
-            a = add_constant_flag(a);
+            flags = add_constant_flag(flags);
             goto DONE;
     }
     tex_get_r_token();
   DONE:
-    if (global_defs_par > 0) {
-        a = add_global_flag(a);
+    if (global_defs_par) {
+        flags = global_defs_par > 0 ? add_global_flag(flags) : remove_global_flag(flags);
     }
-    if (force || tex_define_permitted(cur_cs, a)) {
+    if (force || tex_define_permitted(cur_cs, flags)) {
         halfword p = cur_cs;
         halfword t = expand == 2 ? tex_scan_toks_expand(0, null, 1) : (expand ? tex_scan_macro_expand() : tex_scan_macro_normal());
-        tex_define(a, p, tex_flags_to_cmd(a), t);
+        tex_define(flags, p, tex_flags_to_cmd(flags), t);
     }
 }
 
-static void tex_aux_set_let(int a, int force)
+static void tex_aux_set_let(int flags, int force)
 {
     halfword code = cur_chr;
-    halfword p = null;
-    halfword q = null;
+    halfword cs = null;
     switch (code) {
         case global_let_code:
             /*tex |\glet| */
             if (global_defs_par >= 0) {
-                a = add_global_flag(a);
+                flags = add_global_flag(flags);
             }
             // fall through
         case let_code:
             /*tex |\let| */
-      // LET:
             tex_get_r_token();
-         LETINDEED:
-            if (force || tex_define_permitted(cur_cs, a)) {
-                p = cur_cs;
+          LETINDEED:
+            if (force || tex_define_permitted(cur_cs, flags)) {
+                cs = cur_cs;
                 do {
                     tex_get_token();
                 } while (cur_cmd == spacer_cmd);
@@ -5029,22 +5042,23 @@ static void tex_aux_set_let(int a, int force)
             /*tex
                 Checking for a frozen macro here is tricky but not doing it would be kind of weird.
             */
-             if (force || tex_define_permitted(cur_cs, a)) {
-                p = cur_cs;
-                q = tex_get_token();
-                tex_back_input(tex_get_token());
-                /*tex
-                    We look ahead and then back up. Note that |back_input| doesn't affect |cur_cmd|,
-                    |cur_chr|.
-                */
-                tex_back_input(q);
-                if (code == future_def_code) {
-                    halfword result = get_reference_token();
-                    halfword r = result;
-                    r = tex_store_new_token(r, cur_tok);
-                    cur_cmd = tex_flags_to_cmd(a);
-                    cur_chr = result;
-                }
+             if (force || tex_define_permitted(cur_cs, flags)) {
+                 halfword q;
+                 cs = cur_cs;
+                 q = tex_get_token();
+                 tex_back_input(tex_get_token());
+                 /*tex
+                     We look ahead and then back up. Note that |back_input| doesn't affect |cur_cmd|,
+                     |cur_chr|.
+                 */
+                 tex_back_input(q);
+                 if (code == future_def_code) {
+                     halfword result = get_reference_token();
+                     halfword r = result;
+                     r = tex_store_new_token(r, cur_tok);
+                     cur_cmd = tex_flags_to_cmd(flags);
+                     cur_chr = result;
+                 }
             }
             break;
         case let_charcode_code:
@@ -5052,7 +5066,7 @@ static void tex_aux_set_let(int a, int force)
             {
                 halfword character = tex_scan_int(0, NULL);
                 if (character > 0) {
-                    p = tex_active_to_cs(character, 1);
+                    cs = tex_active_to_cs(character, 1);
                     do {
                         tex_get_token();
                     } while (cur_cmd == spacer_cmd);
@@ -5063,7 +5077,6 @@ static void tex_aux_set_let(int a, int force)
                         }
                     }
                 } else {
-                    p = null;
                     tex_handle_error(
                         normal_error_type,
                         "invalid number for \\letcharcode",
@@ -5086,12 +5099,12 @@ static void tex_aux_set_let(int a, int force)
                 s1 = cur_cs;
                 tex_get_r_token();
                 s2 = cur_cs;
-                tex_define_swapped(a, s1, s2, force);
+                tex_define_swapped(flags, s1, s2, force);
                 return;
             }
         case let_protected_code:
             tex_get_r_token();
-            if (force || tex_define_permitted(cur_cs, a)) {
+            if (force || tex_define_permitted(cur_cs, flags)) {
                 switch (cur_cmd) {
                     case call_cmd:
                     case semi_protected_call_cmd:
@@ -5106,7 +5119,7 @@ static void tex_aux_set_let(int a, int force)
             return;
         case unlet_protected_code:
             tex_get_r_token();
-            if (force || tex_define_permitted(cur_cs, a)) {
+            if (force || tex_define_permitted(cur_cs, flags)) {
                 switch (cur_cmd) {
                     case protected_call_cmd:
                     case semi_protected_call_cmd:
@@ -5121,33 +5134,33 @@ static void tex_aux_set_let(int a, int force)
             return;
         case let_frozen_code:
             tex_get_r_token();
-            if (is_call_cmd(cur_cmd) && (force || tex_define_permitted(cur_cs, a))) {
+            if (is_call_cmd(cur_cmd) && (force || tex_define_permitted(cur_cs, flags))) {
                 set_eq_flag(cur_cs, add_frozen_flag(eq_flag(cur_cs)));
             }
             return;
         case unlet_frozen_code:
             tex_get_r_token();
-            if (is_call_cmd(cur_cmd) && (force || tex_define_permitted(cur_cs, a))) {
+            if (is_call_cmd(cur_cmd) && (force || tex_define_permitted(cur_cs, flags))) {
                 set_eq_flag(cur_cs, remove_frozen_flag(eq_flag(cur_cs)));
             }
             return;
         case global_let_csname_code:
             if (global_defs_par >= 0) {
-                a = add_global_flag(a);
+                flags = add_global_flag(flags);
             }
             // fall through
         case let_csname_code:
             cur_cs = tex_create_csname();
             goto LETINDEED;
         case global_let_to_nothing_code:
-            a = add_global_flag(a);
+            if (global_defs_par >= 0) {
+                flags = add_global_flag(flags);
+            }
             // fall through
         case let_to_nothing_code:
             tex_get_r_token();
-            if (global_defs_par > 0) {
-                a = add_global_flag(a);
-            }
-            if (force || tex_define_permitted(cur_cs, a)) {
+         LETTONOTHING:
+            if (force || tex_define_permitted(cur_cs, flags)) {
              // /*tex 
              //     The commented line permits plenty empty definitions, a |\let| can run out of 
              //     ref count so maybe some day \unknown 
@@ -5155,12 +5168,35 @@ static void tex_aux_set_let(int a, int force)
              // halfword empty = get_reference_token();
              // tex_add_token_reference(empty);
                 halfword empty = lmt_token_state.empty;
-                tex_define(a, cur_cs, tex_flags_to_cmd(a), empty);
+                tex_define(flags, cur_cs, tex_flags_to_cmd(flags), empty);
             }
             return;
+        case let_to_last_named_cs_code:
+            /*tex 
+                There is no real reason for this primitive but it might be more intuitive to see 
+                |\lettolastcsname \foo| than |\edef \foo {\lastnamedcs}. The gain in performance is 
+                irrelevant here, it's more about readability and the amount of extra code can be 
+                neglected. 
+            */
+            if (lmt_scanner_state.last_cs_name == null_cs) {
+                tex_get_r_token();
+                goto LETTONOTHING;
+            } else {
+                /*tex 
+                    Do we need to bump the ref count already? We anyway need to save the current
+                    value. Let's assume sane usage which is somewhat hard to imagine with primitives
+                    like |\lastnamedcs|. 
+                */
+                halfword lastcs = lmt_scanner_state.last_cs_name;
+                tex_get_r_token();
+                cs = cur_cs;
+                cur_cs = lastcs;
+                cur_cmd = eq_type(lastcs); 
+                cur_chr = eq_value(lastcs);
+                break;
+            }
         default:
             /*tex We please the compiler. */
-            p = null;
             tex_confusion("let");
             break;
     }
@@ -5169,12 +5205,12 @@ static void tex_aux_set_let(int a, int force)
     } else if (is_nodebased_cmd(cur_cmd)) {
         cur_chr = tex_copy_node(cur_chr);
     }
- // if (p && cur_cmd >= relax_cmd) {
-    if (p && cur_cmd >= 0) {
+ // if (cs && cur_cmd >= relax_cmd) {
+    if (cs && cur_cmd >= 0) {
         singleword oldf = eq_flag(cur_cs);
         singleword newf = 0;
         singleword cmd = (singleword) cur_cmd;
-        if (is_aliased(a)) {
+        if (is_aliased(flags)) {
             /*tex 
                 Aliases only work for non constants: else make a |\def| of it or we need some 
                 pointer to the original but as the meaning can change. Too tricky. 
@@ -5182,9 +5218,9 @@ static void tex_aux_set_let(int a, int force)
             newf = oldf;
         } else {
             oldf = remove_overload_flags(oldf);
-            newf = oldf | make_eq_flag_bits(a);
+            newf = oldf | make_eq_flag_bits(flags);
         }
-        if (is_protected(a)) {
+        if (is_protected(flags)) {
             switch (cmd) {
                 case call_cmd:
                     cmd = protected_call_cmd;
@@ -5194,9 +5230,9 @@ static void tex_aux_set_let(int a, int force)
                     break;
             }
         }
-        tex_define_inherit(a, p, (singleword) newf, (singleword) cmd, cur_chr);
+        tex_define_inherit(flags, cs, (singleword) newf, (singleword) cmd, cur_chr);
     } else {
-        tex_define(a, p, (singleword) cur_cmd, cur_chr); 
+        tex_define(flags, cs, (singleword) cur_cmd, cur_chr); 
     }
 }
 
@@ -5286,40 +5322,28 @@ static void tex_aux_set_define_char_code(int a) /* maybe make |a| already a bool
         case catcode_charcode:
             {
                 halfword chr = tex_scan_char_number(0);
-                halfword val = tex_scan_int(1, NULL);
-                if (val < 0 || val > max_char_code) {
-                   tex_aux_out_of_range_error(val, max_char_code);
-                }
+                halfword val = tex_scan_category_code(1);
                 tex_set_cat_code(cat_code_table_par, chr, val, global_or_local(a));
             }
             break;
         case lccode_charcode:
             {
                 halfword chr = tex_scan_char_number(0);
-                halfword val = tex_scan_int(1, NULL);
-                if (val < 0 || val > max_character_code) {
-                   tex_aux_out_of_range_error(val, max_character_code);
-                }
+                halfword val = tex_scan_char_number(1);
                 tex_set_lc_code(chr, val, global_or_local(a));
             }
             break;
         case uccode_charcode:
             {
                 halfword chr = tex_scan_char_number(0);
-                halfword val = tex_scan_int(1, NULL);
-                if (val < 0 || val > max_character_code) {
-                   tex_aux_out_of_range_error(val, max_character_code);
-                }
+                halfword val = tex_scan_char_number(1);
                 tex_set_uc_code(chr, val, global_or_local(a));
             }
             break;
         case sfcode_charcode:
             {
                 halfword chr = tex_scan_char_number(0);
-                halfword val = tex_scan_int(1, NULL);
-                if (val < min_space_factor || val > max_space_factor) {
-                   tex_aux_out_of_range_error(val, max_space_factor);
-                }
+                halfword val = tex_scan_space_factor(1);
                 tex_set_sf_code(chr, val, global_or_local(a));
             }
             break;
@@ -5345,16 +5369,16 @@ static void tex_aux_set_define_char_code(int a) /* maybe make |a| already a bool
             }
             break;
         case mathcode_charcode:
-            tex_scan_extdef_math_code((is_global(a)) ? level_one: cur_level, tex_mathcode);
+            tex_scan_extdef_math_code(global_or_local(a), tex_mathcode);
             break;
         case extmathcode_charcode:
-            tex_scan_extdef_math_code((is_global(a)) ? level_one : cur_level, umath_mathcode);
+            tex_scan_extdef_math_code(global_or_local(a), umath_mathcode);
             break;
         case delcode_charcode:
-            tex_scan_extdef_del_code((is_global(a)) ? level_one : cur_level, tex_mathcode);
+            tex_scan_extdef_del_code(global_or_local(a), tex_mathcode);
             break;
         case extdelcode_charcode:
-            tex_scan_extdef_del_code((is_global(a)) ? level_one : cur_level, umath_mathcode);
+            tex_scan_extdef_del_code(global_or_local(a), umath_mathcode);
             break;
         default:
             break;
@@ -5948,7 +5972,8 @@ static void tex_run_prefixed_command(void)
     /*tex: Here we can quit when we have a constant! */
 
     /*tex
-        Adjust for the setting of |\globaldefs|.
+        Adjust for the setting of |\globaldefs|. A negative value removed global, also for the 
+        |g*| and |x*| primitives. 
     */
     if (global_defs_par) {
         flags = global_defs_par > 0 ? add_global_flag(flags) : remove_global_flag(flags);
@@ -6361,6 +6386,13 @@ void tex_assign_internal_int_value(int a, halfword p, int val)
             }
             tex_word_define(a, p, val);
             break;
+        case discretionary_options_code:
+            if (val < first_disc_option || val > last_disc_option) {
+                /*tex For now we only accept |check_final| as the others are tags. */
+                val = disc_option_normal_word;
+            }
+            tex_word_define(a, p, val);
+            break;
         case overload_mode_code:
          // if (overload_mode_par != 255) {
                 tex_word_define(a, p, val);
@@ -6436,7 +6468,17 @@ void tex_assign_internal_dimen_value(int a, halfword p, int val)
 
 void tex_assign_internal_skip_value(int a, halfword p, int val)
 {
-    tex_define(a, p, internal_glue_reference_cmd, val);
+    switch (internal_glue_number(p)) {
+        case additional_page_skip_code:
+            tex_define(a & global_flag_bit, p, internal_glue_reference_cmd, val);
+            if (cur_mode == vmode) {
+                tex_additional_page_skip();
+            }
+            break;
+        default:
+            tex_define(a, p, internal_glue_reference_cmd, val);
+            break;
+    }
     if (is_frozen(a) && cur_mode == hmode) {
         tex_update_par_par(internal_glue_cmd, internal_glue_number(p));
     }
@@ -6573,7 +6615,9 @@ static void tex_aux_run_case_shift(void)
         }
         p = token_link(p);
     }
-    tex_begin_backed_up_list(token_link(l));
+    if (token_link(l)) {
+        tex_begin_backed_up_list(token_link(l));
+    }
     tex_put_available_token(l);
 }
 

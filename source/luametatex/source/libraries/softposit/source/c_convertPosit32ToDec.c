@@ -189,7 +189,8 @@ double convertP32ToDouble(posit32_t pA){
 	uint_fast32_t uiA, tmp=0;
 	uint_fast64_t expA=0, uiZ, fracA=0;
 	bool signA=0, regSA;
-	int_fast32_t scale, kA=0;
+ // int_fast32_t scale, kA=0; // HH
+	int_fast32_t kA=0;
 
 	uA.p = pA;
 	uiA = uA.ui;

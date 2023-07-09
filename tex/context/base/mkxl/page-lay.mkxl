@@ -131,7 +131,9 @@
 \popoverloadmode
 
 \appendtoks
-    \doifnothing{\directlayoutparameter\c!state}{\letlayoutparameter\c!state\v!start}%
+    \ifempty{\directlayoutparameter\c!state}%
+      \letlayoutparameter\c!state\v!start
+    \fi
 \to \everydefinelayout
 
 \newinteger\c_page_layouts_changed
@@ -243,9 +245,9 @@
 
 \appendtoks
     \ifconditional\marginsareswapped
-       \setfalse\marginsareswapped
+       \marginsareswapped\conditionalfalse
     \else
-       \settrue\marginsareswapped
+       \marginsareswapped\conditionaltrue
     \fi
     %
     \enforced\swapcsvalues\leftmargindistance\rightmargindistance
@@ -463,9 +465,11 @@
    \setuplayouttarget[#2]}
 
 \protected\def\page_paper_setup_size_change_size[#1][#2]%
-  {\doifelsenothing{#2}
-     {\page_paper_set_current[#1][#1]}
-     {\page_paper_set_current[#1][#2]}}
+  {\ifempty{#2}%
+     \page_paper_set_current[#1][#1]%
+   \else
+     \page_paper_set_current[#1][#2]%
+   \fi}
 
 \permanent\let\setuppaper\page_paper_setup_size_settings
 
@@ -487,16 +491,16 @@
      [\page_paper_the_print_size{#2}]}}
 
 \protected\def\page_paper_reset_paper
-  {\global\setfalse\c_page_target_paper_landscape
-   \global\setfalse\c_page_target_paper_mirror
-   \global\setfalse\c_page_target_paper_negate
+  {\global\c_page_target_paper_landscape\conditionalfalse
+   \global\c_page_target_paper_mirror\conditionalfalse
+   \global\c_page_target_paper_negate\conditionalfalse
    \global\c_page_target_paper_orientation\uprotationangle
    \global\c_page_target_paper_reverse    \uprotationangle}
 
 \protected\def\page_paper_reset_print
-  {\global\setfalse\c_page_target_print_landscape
-   \global\setfalse\c_page_target_print_mirror
-   \global\setfalse\c_page_target_print_negate
+  {\global\c_page_target_print_landscape\conditionalfalse
+   \global\c_page_target_print_mirror\conditionalfalse
+   \global\c_page_target_print_negate\conditionalfalse
    \global\c_page_target_print_orientation\uprotationangle
    \global\c_page_target_print_reverse    \uprotationangle}
 
@@ -504,52 +508,52 @@
 \letcsname\??layoutprint\v!reset\endcsname\page_paper_reset_print
 
 \defcsname\??layoutpaper\v!landscape\endcsname
-  {\global\settrue\c_page_target_paper_landscape}
+  {\global\c_page_target_paper_landscape\conditionaltrue}
 
 \defcsname\??layoutpaper\v!mirrored\endcsname
-  {\global\settrue\c_page_target_paper_mirror}
+  {\global\c_page_target_paper_mirror\conditionaltrue}
 
 \defcsname\??layoutpaper\v!negative\endcsname
-  {\global\settrue\c_page_target_paper_negate}
+  {\global\c_page_target_paper_negate\conditionaltrue}
 
 \defcsname\??layoutpaper\v!rotated\endcsname
   {\global\c_page_target_paper_orientation\rightrotationangle
    \global\c_page_target_paper_reverse    \leftrotationangle}
 
-\defcsname\??layoutpaper\number\rightrotationangle\endcsname
+\defcsname\??layoutpaper\the\rightrotationangle\endcsname
   {\global\c_page_target_paper_orientation\rightrotationangle
    \global\c_page_target_paper_reverse    \leftrotationangle}
 
-\defcsname\??layoutpaper\number\downrotationangle\endcsname
+\defcsname\??layoutpaper\the\downrotationangle\endcsname
   {\global\c_page_target_paper_orientation\downrotationangle
    \global\c_page_target_paper_reverse    \zerocount}
 
-\defcsname\??layoutpaper\number\leftrotationangle\endcsname
+\defcsname\??layoutpaper\the\leftrotationangle\endcsname
   {\global\c_page_target_paper_orientation\leftrotationangle
    \global\c_page_target_paper_reverse    \rightrotationangle}
 
 \defcsname\??layoutprint\v!landscape\endcsname
-  {\global\settrue\c_page_target_print_landscape}
+  {\global\c_page_target_print_landscape\conditionaltrue}
 
 \defcsname\??layoutprint\v!mirrored\endcsname
-  {\global\settrue\c_page_target_print_mirror}
+  {\global\c_page_target_print_mirror\conditionaltrue}
 
 \defcsname\??layoutprint\v!negative\endcsname
-  {\global\settrue\c_page_target_print_negate}
+  {\global\c_page_target_print_negate\conditionaltrue}
 
 \defcsname\??layoutprint\v!rotated\endcsname
   {\global\c_page_target_print_orientation\rightrotationangle
    \global\c_page_target_print_reverse    \leftrotationangle}
 
-\defcsname\??layoutprint\number\rightrotationangle\endcsname
+\defcsname\??layoutprint\the\rightrotationangle\endcsname
   {\global\c_page_target_print_orientation\rightrotationangle
    \global\c_page_target_print_reverse    \leftrotationangle}
 
-\defcsname\??layoutprint\number\downrotationangle \endcsname
+\defcsname\??layoutprint\the\downrotationangle \endcsname
   {\global\c_page_target_print_orientation\downrotationangle
    \global\c_page_target_print_reverse    \zerocount}
 
-\defcsname\??layoutprint\number\leftrotationangle \endcsname
+\defcsname\??layoutprint\the\leftrotationangle \endcsname
   {\global\c_page_target_print_orientation\leftrotationangle
    \global\c_page_target_print_reverse    \rightrotationangle}
 
@@ -782,8 +786,7 @@
    \page_backgrounds_recalculate}
 
 \def\page_layouts_check_direction
-  {\edef\p_direction{\layoutparameter\c!direction}%
-   \ifx\p_direction\v!reverse
+  {\ifcstok{\layoutparameter\c!direction}\v!reverse
      \enforced\global\swapcsvalues\naturalleftedgedistance  \naturalrightedgedistance
      \enforced\global\swapcsvalues\naturalleftmargindistance\naturalrightmargindistance
      \enforced\global\swapcsvalues\leftmargindistance       \rightmargindistance
@@ -987,62 +990,62 @@
 \newconditional\c_page_layouts_location_is_middle
 
 \def\page_layouts_location_reset % we start in the left top and mirror right pages
-  {\setfalse\c_page_layouts_location_is_set
-   \setfalse\c_page_layouts_location_is_middle
+  {\c_page_layouts_location_is_set\conditionalfalse
+   \c_page_layouts_location_is_middle\conditionalfalse
    \let\v_page_target_left_fill  \relax
    \let\v_page_target_right_fill \hss  % ? \relax
    \let\v_page_target_top_fill   \relax
    \let\v_page_target_bottom_fill\vss} % \relax}
 
 \defcsname\??layoutlocation\v!right\endcsname
-  {\settrue\c_page_layouts_location_is_set
-   \setfalse\c_page_layouts_location_is_middle
+  {\c_page_layouts_location_is_set\conditionaltrue
+   \c_page_layouts_location_is_middle\conditionalfalse
    \let\v_page_target_left_fill \hss
    \let\v_page_target_right_fill\relax}
 
 \defcsname\??layoutlocation\v!left\endcsname
-  {\settrue\c_page_layouts_location_is_set
-   \setfalse\c_page_layouts_location_is_middle
+  {\c_page_layouts_location_is_set\conditionaltrue
+   \c_page_layouts_location_is_middle\conditionalfalse
    \let\v_page_target_left_fill \relax
    \let\v_page_target_right_fill\hss}
 
 \defcsname\??layoutlocation\v!bottom\endcsname
-  {\settrue\c_page_layouts_location_is_set
-   \setfalse\c_page_layouts_location_is_middle
+  {\c_page_layouts_location_is_set\conditionaltrue
+   \c_page_layouts_location_is_middle\conditionalfalse
    \let\v_page_target_top_fill   \vss
    \let\v_page_target_bottom_fill\relax}
 
 \defcsname\??layoutlocation\v!top\endcsname
-  {\settrue\c_page_layouts_location_is_set
-   \setfalse\c_page_layouts_location_is_middle
+  {\c_page_layouts_location_is_set\conditionaltrue
+   \c_page_layouts_location_is_middle\conditionalfalse
    \let\v_page_target_top_fill    \relax
    \let\v_page_target_bottom_fill\vss}
 
 \defcsname\??layoutlocation\v!middle\endcsname
-  {\settrue\c_page_layouts_location_is_set
-   \settrue\c_page_layouts_location_is_middle
+  {\c_page_layouts_location_is_set\conditionaltrue
+   \c_page_layouts_location_is_middle\conditionaltrue
    \let\v_page_target_left_fill  \hss
    \let\v_page_target_right_fill \hss
    \let\v_page_target_top_fill   \vss
    \let\v_page_target_bottom_fill\vss}
 
 \defcsname\??layoutlocation\empty\endcsname
-  {\setfalse\c_page_layouts_location_is_set % default also signal to scrn_
-   \setfalse\c_page_layouts_location_is_middle
+  {\c_page_layouts_location_is_set\conditionalfalse % default also signal to scrn_
+   \c_page_layouts_location_is_middle\conditionalfalse
    \let\v_page_target_right_fill \hss
    \let\v_page_target_bottom_fill\hss}
 
 \defcsname\??layoutlocation\v!doublesided\endcsname
-  {\settrue\c_page_target_print_doublesided}
+  {\c_page_target_print_doublesided\conditionaltrue}
 
 \defcsname\??layoutlocation\v!singlesided\endcsname
-  {\setfalse\c_page_target_print_doublesided}
+  {\c_page_target_print_doublesided\conditionalfalse}
 
 \def\page_target_check_centering_indeed#1%
   {\begincsname\??layoutlocation#1\endcsname}
 
 \protected\def\page_target_check_centering
-  {\setfalse\c_page_target_print_doublesided
+  {\c_page_target_print_doublesided\conditionalfalse
    \page_layouts_location_reset
    \processcommacommand[\layoutparameter\c!location]\page_target_check_centering_indeed}
 
@@ -1231,7 +1234,7 @@
 \newdimension\innermakeupwidth  % special purpose
 \newdimension\innermakeupmargin % special purpose
 
-\newconditional\innermakeupcompensation \settrue\innermakeupcompensation
+\newconditional\innermakeupcompensation \innermakeupcompensation\conditionaltrue
 
 \permanent\def\compensatedinnermakeupmargin
   {\dimexpr\ifconditional\innermakeupcompensation+\innermakeupmargin\else\zeropoint\fi\relax}

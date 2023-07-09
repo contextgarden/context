@@ -97,7 +97,11 @@
    \global\everybye\emptytoks
    \expand\everygoodbye
    \global\everygoodbye\emptytoks
-   \doifelsesometoks\everynotabene{\writeline\the\everynotabene\writeline}\donothing
+   \ifempty\everynotabene\else
+     \writeline
+     \expand\everynotabene
+     \writeline
+   \fi
    % tex's \end:
    \normalend}
 

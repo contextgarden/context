@@ -121,6 +121,7 @@ typedef enum linebreak_quality {
     par_has_glyph    = 0x0001, 
     par_has_disc     = 0x0002, 
     par_has_space    = 0x0004,
+    par_has_uleader  = 0x0008,
     par_is_overfull  = 0x0010,
     par_is_underfull = 0x0020,
 } linebreak_quality;

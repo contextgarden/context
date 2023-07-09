@@ -26,7 +26,7 @@
 % \setuplayout[width=middle,backspace=3cm]
 %
 % \appendtoks
-%     \settrue\inhibitmargindata
+%     \inhibitmargindata\conditionaltrue
 % \to \everyinsidefloat
 %
 % \starttext
@@ -184,8 +184,14 @@
    \c!offset=\v!overlay,
    \c!strut=\v!no]
 
+\newconditional\c_page_floats_pack_flushed
+
 \appendtoks
-    \doifelse{\floatparameter\c!compress}\v!yes\settrue\setfalse\c_page_floats_pack_flushed
+    \ifcstok{\floatparameter\c!compress}\v!yes
+      \c_page_floats_pack_flushed\conditionaltrue
+    \else
+      \c_page_floats_pack_flushed\conditionalfalse
+    \fi
     \d_page_floats_compress_distance\floatparameter\c!compressdistance\relax
 \to \everysetupfloat
 
@@ -296,10 +302,11 @@
 \installstructurelistprocessor\s!float{\usestructurelistprocessor{number+title}}
 
 \permanent\protected\def\thecurrentfloatnumbersuffix
-  {\doifsomething{\floatcaptionparameter\c!suffix}
-     {\floatcaptionparameter\c!suffixseparator
-      \floatcaptionparameter\c!suffix
-      \floatcaptionparameter\c!suffixstopper}}
+  {\ifempty{\floatcaptionparameter\c!suffix}\else
+     \floatcaptionparameter\c!suffixseparator
+     \floatcaptionparameter\c!suffix
+     \floatcaptionparameter\c!suffixstopper
+   \fi}
 
 \permanent\protected\def\thecurrentfloatnumber
   {\ifnofloatcaption \orelse \ifnofloatnumber \orelse \ifrelax\currentfloatnumber \else
@@ -381,9 +388,11 @@
      \setupcurrentfloatcaption[#settings]%
      \edef\currentfloatcounter{\namedcounterparameter\currentfloat\s!name}%
      \iftrialtypesetting\strc_counters_save\currentfloatcounter\fi
-     \doifelse{\floatcaptionparameter\c!number}\v!yes
-       {\global\nofloatnumberfalse}%
-       {\global\nofloatnumbertrue}%
+     \ifcstok{\floatcaptionparameter\c!number}\v!yes
+       \global\nofloatnumberfalse
+     \else
+       \global\nofloatnumbertrue
+     \fi
      \ifnofloatnumber\else
        \strc_counters_increment\currentfloatcounter
      \fi
@@ -424,7 +433,9 @@
 \lettonothing\m_strc_floats_last_caption_tag
 
 \def\strc_floats_make_complete_caption
-  {\doifsomething{\floatcaptionparameter\c!spacebefore}{\blank[\floatcaptionparameter\c!spacebefore]}%
+  {\ifempty{\floatcaptionparameter\c!spacebefore}\else
+     \blank[\floatcaptionparameter\c!spacebefore]%
+   \fi
    \strc_floats_make_complete_caption_before
    \synchronizedisplaydirection % temp hack, till we have a proper model
    \noindent
@@ -442,20 +453,24 @@
          \ifemptyfloatcaption
            \hbox{\usefloatcaptionstyleandcolor\c!headstyle\c!headcolor\thecurrentfloatnumber}%
          \else
-           \doifelsenothing{\floatcaptionparameter\c!spaceinbetween}
-             {\scratchskip\floatcaptionparameter\c!distance\relax
-              \setbox\scratchbox\hbox
-                {\usefloatcaptionstyleandcolor\c!headstyle\c!headcolor
-                 \thecurrentfloatnumber
-                 \floatcaptionparameter\c!headseparator
-                 \dotfskip\scratchskip}%
-              \doifelse{\floatcaptionparameter\c!hang}\v!yes
-                 {\leftskip\wd\scratchbox
-                  \llap{\box\scratchbox}}
-                 {\unhbox\scratchbox}%
-               \emergencystretch.5\scratchskip}
-             {\hbox{\usefloatcaptionstyleandcolor\c!headstyle\c!headcolor\thecurrentfloatnumber}%
-              \blank[\floatcaptionparameter\c!spaceinbetween]}%
+           \ifempty{\floatcaptionparameter\c!spaceinbetween}%
+             \scratchskip\floatcaptionparameter\c!distance\relax
+             \setbox\scratchbox\hbox
+               {\usefloatcaptionstyleandcolor\c!headstyle\c!headcolor
+                \thecurrentfloatnumber
+                \floatcaptionparameter\c!headseparator
+                \dotfskip\scratchskip}%
+             \ifcstok{\floatcaptionparameter\c!hang}\v!yes
+               \leftskip\wd\scratchbox
+               \llap{\box\scratchbox}%
+             \else
+               \unhbox\scratchbox
+             \fi
+             \emergencystretch.5\scratchskip
+           \else
+             \hbox{\usefloatcaptionstyleandcolor\c!headstyle\c!headcolor\thecurrentfloatnumber}%
+             \blank[\floatcaptionparameter\c!spaceinbetween]%
+           \fi
          \fi
        \fi
        \usefloatcaptionstyleandcolor\c!textstyle\c!textcolor
@@ -465,7 +480,9 @@
      \fi
    \endgroup
    \strc_floats_make_complete_caption_after
-   \doifsomething{\floatcaptionparameter\c!spaceafter}{\blank[\floatcaptionparameter\c!spaceafter]}}
+   \ifempty{\floatcaptionparameter\c!spaceafter}\else
+     \blank[\floatcaptionparameter\c!spaceafter]%
+   \fi}
 
 %let\strc_floats_make_complete_caption_before\relax
 \let\strc_floats_make_complete_caption_after \relax
@@ -531,9 +548,9 @@
 
 \def\strc_floats_apply_caption_command
   {\setbox\b_strc_floats_caption\hbox\bgroup
-    %\unless\iftok{\floatcaptionparameter\c!command}\emptytoks
+    %\unless\ifempty{\floatcaptionparameter\c!command}
        \floatcaptionparameter\c!command{\box\b_strc_floats_caption}%
-    %\orunless\iftok{\floatcaptionparameter\c!deeptextcommand}\emptytoks
+    %\orunless\ifempty{\floatcaptionparameter\c!deeptextcommand}%
     %  \floatcaptionparameter\c!deeptextcommand{\unvbox\b_strc_floats_caption}%
     %\else
     %  \box\b_strc_floats_caption
@@ -586,11 +603,11 @@
 %D \let\strc_float_realpage\realpageno
 %D
 %D \def\strc_float_save_data
-%D   {\setdataset[\s!float][\number\c_strc_floats_n][]}
+%D   {\setdataset[\s!float][\the\c_strc_floats_n][]}
 %D
 %D \def\strc_float_load_data % precedes save !
 %D   {\global\advanceby\c_strc_floats_n\plusone
-%D    \xdef\strc_float_realpage{\datasetvariable\s!float{\number\c_strc_floats_n}\s!page}%
+%D    \xdef\strc_float_realpage{\datasetvariable\s!float{\the\c_strc_floats_n}\s!page}%
 %D    \ifempty\strc_float_realpage
 %D      \glet\strc_float_realpage\realpageno % \realfolio
 %D    \fi}
@@ -605,11 +622,11 @@
 \let\strc_float_realpage\realpageno
 
 \def\strc_float_save_data
-  {\setpagestate[\s!float][\number\c_strc_floats_n]}
+  {\setpagestate[\s!float][\the\c_strc_floats_n]}
 
 \def\strc_float_load_data % precedes save !
   {\global\advanceby\c_strc_floats_n\plusone
-   \xdef\strc_float_realpage{\pagestaterealpage\s!float{\number\c_strc_floats_n}}%
+   \xdef\strc_float_realpage{\pagestaterealpage\s!float{\the\c_strc_floats_n}}%
    \ifempty\strc_float_realpage
      \glet\strc_float_realpage\realpageno % \realfolio
    \fi}
@@ -705,7 +722,11 @@
    \strc_floats_analyze_location
    % todo: use \lets
    \setupcurrentfloatcaption[\c!reference={#reference},\c!title={#caption},\c!marking=,\c!list=,\c!bookmark=,\c!referencetext=]%
-   \doifelseinset\v!split\floatlocation\strc_floats_place_next_box_split\strc_floats_place_next_box_normal}
+   \ifinset\v!split\floatlocation
+     \expandafter\strc_floats_place_next_box_split
+   \else
+     \expandafter\strc_floats_place_next_box_normal
+   \fi}
 
 \permanent\protected\def\placefloat
   {\flushnotes
@@ -781,7 +802,11 @@
    \letfloatcaptionparameter\c!freeregion  \p_freeregion
    %
    \strc_floats_analyze_location
-   \doifelseinset\v!split\floatlocation\strc_floats_place_next_box_split\strc_floats_place_next_box_normal
+   \ifinset\v!split\floatlocation
+     \expandafter\strc_floats_place_next_box_split
+   \else
+     \expandafter\strc_floats_place_next_box_normal
+   \fi
    \bgroup
    \ignorespaces}
 
@@ -853,17 +878,29 @@
    \v!innermargin,\v!outermargin,\v!inneredge,\v!outeredge,%
    \v!text,\v!opposite}% \v!page
 
+% \protected\def\strc_floats_place_next_box_split
+%   {\let\splitfloatfinalizer\strc_floats_end_split_group
+%    \let\strc_floats_end_group\relax
+%    \splitfloat{\strc_floats_place_next_box_normal}}
+
 \protected\def\strc_floats_place_next_box_split
   {\let\splitfloatfinalizer\strc_floats_end_split_group
    \let\strc_floats_end_group\relax
+  %\ifnumexpression \c_strc_floats_rotation=90 or \c_strc_floats_rotation=270 \relax
+   \ifnumexpression (\c_strc_floats_rotation=90) or (\c_strc_floats_rotation=270) \relax
+     \splitfloatfixedheight\conditionaltrue
+     \def\splitfloatheight{\textwidth}%
+   \fi
    \splitfloat{\strc_floats_place_next_box_normal}}
 
 \protected\def\strc_floats_place_next_box_normal
   {\ifconditional\c_page_floats_some_waiting
      % this was \checkwaitingfloats spread all over
-     \doifelseinset\v!always\floatlocation
-       {\showmessage\m!floatblocks5\empty}
-       {\doifelsecommon\floatlocation\flushfloatslist\page_otr_command_flush_floats\donothing}%
+     \ifinset\v!always\floatlocation
+       \showmessage\m!floatblocks5\empty
+     \orelse\ifcommon\floatlocation\flushfloatslist
+       \page_otr_command_flush_floats
+     \fi
      % but which should be done before using box \floatbox
    \fi
    \page_margin_strc_floats_before % todo: each float handler gets a before
@@ -910,21 +947,22 @@
 %D \stoptyping
 
 \def\strc_floats_finish_placement
-  {\doifsomething{\floatparameter\c!criterium}
-     {\ifdim\wd\nextbox>\floatparameter\c!criterium\relax
-        \edef\forcedfloatmethod{\floatparameter\c!fallback}%
-        \ifempty\forcedfloatmethod \else
-          \doifelsecommandhandler\??float\forcedfloatmethod
-            {\let\currentfloat\forcedfloatmethod
-             \edef\floatlocationdefault{\floatparameter\c!default}%
-             \let\floatlocation\floatlocationdefault
-             \let\forcedfloatmethod\floatlocationdefault}
-            \donothing
-        \fi
-        \ifempty\forcedfloatmethod
-          \let\forcedfloatmethod\v!here
-        \fi
-      \fi}%
+  {\ifempty{\floatparameter\c!criterium}\else
+     \ifdim\wd\nextbox>\floatparameter\c!criterium\relax
+       \edef\forcedfloatmethod{\floatparameter\c!fallback}%
+       \ifempty\forcedfloatmethod \else
+         \doifelsecommandhandler\??float\forcedfloatmethod
+           {\let\currentfloat\forcedfloatmethod
+            \edef\floatlocationdefault{\floatparameter\c!default}%
+            \let\floatlocation\floatlocationdefault
+            \let\forcedfloatmethod\floatlocationdefault}
+           \donothing
+       \fi
+       \ifempty\forcedfloatmethod
+         \let\forcedfloatmethod\v!here
+       \fi
+     \fi
+   \fi
    \strc_floats_check_extra_actions
    \strc_floats_analyze_variables_two
    \strc_floats_place_packaged_boxes
@@ -934,7 +972,9 @@
    \global\d_page_sides_downshift \zeropoint
    \global\d_page_sides_extrashift\zeropoint
    \ifconditional\c_strc_floats_par_float
-     \doifinset\v!reset\floatlocation\page_sides_forget_floats
+     \ifinset\v!reset\floatlocation
+       \page_sides_forget_floats
+     \fi
      \doinhibitblank
    \fi
    \strc_floats_end_group}
@@ -970,11 +1010,11 @@
 
 \def\strc_floats_analyze_variables_two
   {\ifinsidecolumns
-     \global\setfalse\c_strc_floats_par_float
+     \global\c_strc_floats_par_float\conditionalfalse
+   \orelse\ifcommon\floatlocation\flushfloatslist
+     \global\c_strc_floats_par_float\conditionaltrue
    \else
-     \doifelsecommon\floatlocation\flushfloatslist
-       {\global\settrue \c_strc_floats_par_float}%
-       {\global\setfalse\c_strc_floats_par_float}%
+     \global\c_strc_floats_par_float\conditionalfalse
    \fi
    % variable initializations
    \global\d_page_sides_shift       \zeropoint
@@ -993,7 +1033,7 @@
    \global\c_page_floats_n_of_top   \rootfloatparameter\c!ntop
    \global\c_page_floats_n_of_bottom\rootfloatparameter\c!nbottom
    \global\d_strc_floats_overflow   \zeropoint
-   \global\setfalse\c_page_sides_shape_down
+   \global\c_page_sides_shape_down\conditionalfalse
    \ifconditional\c_strc_floats_par_float
      \global\d_strc_floats_top        \zeropoint
      \global\d_strc_floats_bottom     \zeropoint
@@ -1018,17 +1058,17 @@
           \v!grid=>\global\c_page_sides_align\plusfour ,%
       \v!halfline=>\global\c_page_sides_align\plusfive ]%
      \ifcase\c_page_sides_align\relax % todo: optie v!lokaal => \else
-       \doifinset\v!height  \floatlocation{\global\c_page_sides_align\plusone  }%
-       \doifinset\v!line    \floatlocation{\global\c_page_sides_align\plustwo  }%
-       \doifinset\v!depth   \floatlocation{\global\c_page_sides_align\plusthree}%
-       \doifinset\v!grid    \floatlocation{\global\c_page_sides_align\plusfour }%
-       \doifinset\v!halfline\floatlocation{\global\c_page_sides_align\plusfive }% meant for 'none'
+       \ifinset\v!height  \floatlocation\global\c_page_sides_align\plusone  \fi
+       \ifinset\v!line    \floatlocation\global\c_page_sides_align\plustwo  \fi
+       \ifinset\v!depth   \floatlocation\global\c_page_sides_align\plusthree\fi
+       \ifinset\v!grid    \floatlocation\global\c_page_sides_align\plusfour \fi
+       \ifinset\v!halfline\floatlocation\global\c_page_sides_align\plusfive \fi % meant for 'none'
      \fi
-     \doifinset\v!high        \floatlocation{\global\c_page_sides_skipmode \plusone  }%
-     \doifinset\v!low         \floatlocation{\global\c_page_sides_skipmode \plustwo  }%
-     \doifinset\v!fit         \floatlocation{\global\c_page_sides_skipmode \plusthree}%
-     \doifinset\v!tolerant    \floatlocation{\global\c_page_sides_tolerance\plusone  }%
-     \doifinset\v!verytolerant\floatlocation{\global\c_page_sides_tolerance\plustwo  }%
+     \ifinset\v!high        \floatlocation\global\c_page_sides_skipmode \plusone  \fi
+     \ifinset\v!low         \floatlocation\global\c_page_sides_skipmode \plustwo  \fi
+     \ifinset\v!fit         \floatlocation\global\c_page_sides_skipmode \plusthree\fi
+     \ifinset\v!tolerant    \floatlocation\global\c_page_sides_tolerance\plusone  \fi
+     \ifinset\v!verytolerant\floatlocation\global\c_page_sides_tolerance\plustwo  \fi
    \else
      \processallactionsinset
        [\floatlocation]%
@@ -1036,27 +1076,37 @@
         180=>\global\c_strc_floats_rotation\commalistelement\relax,%
         270=>\global\c_strc_floats_rotation\commalistelement\relax]%
    \fi
-   \doifelseinset\v!force\floatlocation
-     {\global\settrue\c_page_sides_shape_down}
-     {\global\setfalse\c_page_sides_shape_down}%
-   \doifelseinset\v!keeptogether\floatlocation
-     {\global\settrue\c_page_sides_keep_together}
-     {\global\setfalse\c_page_sides_keep_together}%
-   \doifelseinset\v!nonumber\floatlocation
-     {\global\nofloatnumbertrue}%
-     {\doifelse{\floatcaptionparameter\c!number}\v!yes
-        {\global\nofloatnumberfalse}%
-        {\global\nofloatnumbertrue}}%
-   \doifelseinset\v!none\floatlocation
-     {\global\nofloatcaptiontrue}%
-     {\global\nofloatcaptionfalse}%
-   \doif{\floatcaptionparameter\c!number}\v!none % new
-     {\global\nofloatcaptiontrue}%
-   \doifinset\v!effective\floatlocation
-     {\letfloatparameter       \c!leftmargin \effectiveleftskip
-      \letfloatparameter       \c!rightmargin\effectiverightskip
-      \letfloatcaptionparameter\c!leftmargin \effectiveleftskip
-      \letfloatcaptionparameter\c!rightmargin\effectiverightskip}%
+   \ifinset\v!force\floatlocation
+     \global\c_page_sides_shape_down\conditionaltrue
+   \else
+     \global\c_page_sides_shape_down\conditionalfalse
+   \fi
+   \ifinset\v!keeptogether\floatlocation
+     \global\c_page_sides_keep_together\conditionaltrue
+   \else
+     \global\c_page_sides_keep_together\conditionalfalse
+   \fi
+   \ifinset\v!nonumber\floatlocation
+     \global\nofloatnumbertrue
+   \orelse\ifcstok{\floatcaptionparameter\c!number}\v!yes
+     \global\nofloatnumberfalse
+   \else
+     \global\nofloatnumbertrue
+   \fi
+   \ifinset\v!none\floatlocation
+     \global\nofloatcaptiontrue
+   \else
+     \global\nofloatcaptionfalse
+   \fi
+   \ifcstok{\floatcaptionparameter\c!number}\v!none % new
+     \global\nofloatcaptiontrue
+   \fi
+   \ifinset\v!effective\floatlocation
+     \letfloatparameter       \c!leftmargin \effectiveleftskip
+     \letfloatparameter       \c!rightmargin\effectiverightskip
+     \letfloatcaptionparameter\c!leftmargin \effectiveleftskip
+     \letfloatcaptionparameter\c!rightmargin\effectiverightskip
+   \fi
    \ifemptyfloatcaption \ifnofloatnumber
      \global\nofloatcaptiontrue
    \fi \fi}
@@ -1064,17 +1114,29 @@
 % documenteren in details
 
 \def\strc_floats_analyze_variables_one
-  {\doifelse{\floatparameter\c!local}\v!yes\settrue\setfalse\c_page_floats_center_box_global % fout keyword
-   \ifconditional\c_page_floats_center_box_global
-     \settrue\c_page_floats_center_box_local
+  {\ifcstok{\floatparameter\c!local}\v!yes % fout keyword
+     \c_page_floats_center_box_global\conditionaltrue
    \else
-     \doifelseinset\v!local\floatlocation\settrue\setfalse\c_page_floats_center_box_local
+     \c_page_floats_center_box_global\conditionalfalse
    \fi
-   \doifelse{\floatparameter\c!freeregion}\v!yes
-     \settrue\setfalse\c_strc_floats_mark_as_free
-   \doifnotcommon{\v!always,\v!here,\v!force}\floatlocation % ! ! ! ! ! !
-     {\setfalse\c_page_floats_center_box_global
-      \setfalse\c_page_floats_center_box_local}}
+   \ifconditional\c_page_floats_center_box_global
+     \c_page_floats_center_box_local\conditionaltrue
+   \orelse\ifinset\v!local\floatlocation
+     \c_page_floats_center_box_local\conditionaltrue
+   \else
+     \c_page_floats_center_box_local\conditionalfalse
+   \fi
+   \ifcstok{\floatparameter\c!freeregion}\v!yes
+     \c_strc_floats_mark_as_free\conditionaltrue
+   \else
+     \c_strc_floats_mark_as_free\conditionalfalse
+   \fi
+   \ifcommon{\v!always,\v!here,\v!force}\floatlocation
+     % ! ! ! ! ! !
+   \else
+     \c_page_floats_center_box_global\conditionalfalse
+     \c_page_floats_center_box_local\conditionalfalse
+   \fi}
 
 \permanent\def\naturalfloatheight{\the\naturalfloatwd}
 \permanent\def\naturalfloatwidth {\the\naturalfloatht}
@@ -1242,7 +1304,7 @@
      \glet\currentfloatsynchronize      \m_strc_counters_last_registered_synchronize
    \fi
    %
-   \iftrialtypesetting\else\global\setfalse\usesamefloatnumber\fi % one shot
+   \iftrialtypesetting\else\global\usesamefloatnumber\conditionalfalse\fi % one shot
    % check float box
    \strc_floats_set_natural_dimensions\nextbox
    \global\setbox\floatbox\vbox{\floatparameter\c!command{\box\nextbox}}% can be anything so no pack
@@ -1276,9 +1338,8 @@
      % also available check here?
      \seteffectivehsize
      \hsize\localhsize
-   \else
-     \doifinset\v!margin\floatlocation % brr, really needed! see wm will be redone
-       {\hsize\namedmarginblockparameter\empty\c!width}%
+   \orelse\ifinset\v!margin\floatlocation % brr, really needed! see wm will be redone
+     \hsize\namedmarginblockparameter\empty\c!width
    \fi
    \edef\p_availablewidth {\floatparameter\c!availablewidth }%
    \edef\p_availableheight{\floatparameter\c!availableheight}%
@@ -1409,15 +1470,16 @@
 \defcsname\??extrafloataction    \s!unknown\endcsname#1{\movedownsidefloat[#1]}
 
 \def\strc_floats_check_extra_actions % less tracingthis way ....
-  {\doifnotinset\v!text\floatlocation % fuzzy, text overloads left, since then it's a directive
-     {\lettonothing\extrafloatlocation
-      % \d_page_sides_downshift will be reset afterwards, and can
-      % already be set at this point
-      \processcommacommand[\floatlocation]\strc_floats_check_extra_actions_step
-      \ifempty\extrafloatlocation \else
-        \edef\floatlocation{\extrafloatlocation,\floatlocation}%
-        \setfloatmethodvariables\floatlocation
-      \fi}}
+  {\ifinset\v!text\floatlocation\else % fuzzy, text overloads left, since then it's a directive
+     \lettonothing\extrafloatlocation
+     % \d_page_sides_downshift will be reset afterwards, and can
+     % already be set at this point
+     \processcommacommand[\floatlocation]\strc_floats_check_extra_actions_step
+     \ifempty\extrafloatlocation\else
+       \edef\floatlocation{\extrafloatlocation,\floatlocation}%
+       \setfloatmethodvariables\floatlocation
+     \fi
+   \fi}
 
 \def\strc_floats_check_extra_actions_step#step%
   {\csname\??extrafloataction
@@ -1445,37 +1507,43 @@
      \fi
    \fi
    % we can also support edges .. in that case no common but a fast loop
-   \doifelseinset\v!hanging\floatlocation
-     {\doifelsecommon{\v!inleft,\v!leftmargin}\floatlocation
-        {\let\p_maxwidth\leftmarginwidth}%
-        {\doifelsecommon{\v!inright,\v!rightmargin}\floatlocation
-           {\let\p_maxwidth\rightmarginwidth}%
-           {\edef\p_maxwidth{\floatparameter\c!maxwidth}}}}%
-     {\edef\p_maxwidth{\floatparameter\c!maxwidth}}%
+   \ifinset\v!hanging\floatlocation
+     \ifcommon{\v!inleft,\v!leftmargin}\floatlocation
+       \let\p_maxwidth\leftmarginwidth
+     \orelse\ifcommon{\v!inright,\v!rightmargin}\floatlocation
+       \let\p_maxwidth\rightmarginwidth
+     \else
+       \edef\p_maxwidth{\floatparameter\c!maxwidth}%
+     \fi
+   \else
+     \edef\p_maxwidth{\floatparameter\c!maxwidth}%
+   \fi
    \ifempty\p_maxwidth
      % nothing
    \else
      \scratchwidth\p_maxwidth\relax
      \ifdim\wd\floatbox>\scratchwidth
-       \doifelsecommon{\v!inright,\v!rightmargin,\v!rightedge,\v!inleft,\v!leftmargin,\v!leftedge}\floatlocation
-         {\global\d_page_sides_maximum\scratchwidth}
-         {\doifelsecommon{\v!right,\v!left}\floatlocation
-            \strc_floats_realign_floatbox_horizontal_one
-            \strc_floats_realign_floatbox_horizontal_two}%
+       \ifcommon{\v!inright,\v!rightmargin,\v!rightedge,\v!inleft,\v!leftmargin,\v!leftedge}\floatlocation
+         \global\d_page_sides_maximum\scratchwidth
+       \orelse\ifcommon{\v!right,\v!left}\floatlocation
+         \strc_floats_realign_floatbox_horizontal_one
+       \else
+         \strc_floats_realign_floatbox_horizontal_two
+       \fi
      \fi
    \fi}
 
 \def\strc_floats_realign_floatbox_horizontal_one
   {\global\setbox\floatbox\hpack to \scratchwidth
-     {\doifnotinset\v!right\floatlocation\hss
+     {\ifinset\v!right\floatlocation\else\hss\fi
       \box\floatbox
-      \doifnotinset\v!left\floatlocation\hss}}
+      \ifinset\v!left\floatlocation\else\hss\fi}}
 
 \def\strc_floats_realign_floatbox_horizontal_two % why is this
   {\global\setbox\floatbox\hpack to \scratchwidth
-     {\doifnot{\floatparameter\c!location}\v!left\hss
+     {\ifcstok{\floatparameter\c!location}\v!left\else\hss\fi
       \box\floatbox
-      \doifnot{\floatparameter\c!location}\v!right\hss}}
+      \ifcstok{\floatparameter\c!location}\v!right\else\hss\fi}}
 
 \permanent\protected\def\placefloats
   {\page_otr_command_flush_floats}
@@ -1537,17 +1605,19 @@
    \global\floatheight   \ht\floatbox % forget about the depth
    \global\floattextwidth\dimexpr\hsize-\floatwidth-\rootfloatparameter\c!margin\relax
    \edef\floatlocation{\floatlocationmethod}% to be sure .. why
-   \doifelseinset\v!tall\floatlocationmethod
-     {\floattextheight\dimexpr\pagegoal-\pagetotal-\bigskipamount\relax % ugly, this bigskip
-      \ifdim\floattextheight>\textheight
-        \floattextheight\textheight
-      \fi
-      \boxmaxdepth\zeropoint\relax            % toegevoegd
-      \ifdim\floattextheight<\floatheight
-        \floattextheight\floatheight
-      \fi
-      \setbox\floattext\vbox to \floattextheight}
-     {\setbox\floattext\vbox}%
+   \ifinset\v!tall\floatlocationmethod
+     \floattextheight\dimexpr\pagegoal-\pagetotal-\bigskipamount\relax % ugly, this bigskip
+     \ifdim\floattextheight>\textheight
+       \floattextheight\textheight
+     \fi
+     \boxmaxdepth\zeropoint\relax            % toegevoegd
+     \ifdim\floattextheight<\floatheight
+       \floattextheight\floatheight
+     \fi
+     \setbox\floattext\vbox to \floattextheight
+   \else
+     \setbox\floattext\vbox
+   \fi
    \bgroup
    \forgetall
    \setupblank
@@ -1558,44 +1628,54 @@
 
 \def\strc_floats_stop_text_indeed % todo
   {\egroup
-   \doifnotinset\v!tall\floatlocation
-     {\floattextheight\ifdim\ht\floattext<\floatheight\floatheight\else\ht\floattext\fi}%
+   \ifinset\v!tall\floatlocation\else
+     \floattextheight\ifdim\ht\floattext<\floatheight\floatheight\else\ht\floattext\fi
+   \fi
    \setbox\floatbox\vpack to \floattextheight
      {\hsize\floatwidth
-      \doifelseinset\v!both\floatlocation
-        {\doifelseinset\v!low\floatlocation
-           {\vfill\box\floatbox}
-           {\doifelseinset\v!middle\floatlocation
-              {\vfill\box\floatbox\vfill}
-              {\box\floatbox\vfill}}}
-        {\box\floatbox\vfill}}%
+      \ifinset\v!both\floatlocation
+        \ifinset\v!low\floatlocation
+          \vfill\box\floatbox
+        \orelse\ifinset\v!middle\floatlocation
+          \vfill\box\floatbox\vfill
+        \else
+          \box\floatbox\vfill
+        \fi
+      \else
+        \box\floatbox\vfill
+      \fi}%
     \setbox\floattext\vpack to \floattextheight
-     {\hsize\floattextwidth
-      \doifelseinset\v!low\floatlocation
-        {\vfill
+      {\hsize\floattextwidth
+       \ifinset\v!low\floatlocation
+         \vfill
          \box\floattext
-         \doifinset\c!offset\floatlocation{\whitespace\blank}}
-        {\doifelseinset\v!middle\floatlocation
-           {\vfill
-            \box\floattext
-            \vfill}
-           {\doifinset\v!offset\floatlocation{\whitespace\blank}%
-            \box\floattext
-            \vfill}}}%
-   \doifelseinset\v!right\floatlocation
-     {\setbox\floatbox\hpack to \hsize
-        {\box\floattext
-         \hfill
-         \box\floatbox}}
-     {\setbox\floatbox\hpack to \hsize
-        {\box\floatbox
-         \hfill
-         \box\floattext}}%
+         \ifinset\c!offset\floatlocation\whitespace\blank\fi
+       \orelse\ifinset\v!middle\floatlocation
+         \vfill
+         \box\floattext
+         \vfill
+       \else
+         \ifinset\v!offset\floatlocation\whitespace\blank\fi
+         \box\floattext
+         \vfill
+       \fi}%
+   \ifinset\v!right\floatlocation
+     \setbox\floatbox\hpack to \hsize
+       {\box\floattext
+        \hfill
+        \box\floatbox}%
+   \else
+     \setbox\floatbox\hpack to \hsize
+       {\box\floatbox
+        \hfill
+        \box\floattext}%
+   \fi
    \baselinecorrection
    \whitespace
    \blank[\rootfloatparameter\c!spacebefore]%
-   \doifnotinset\v!tall\floatlocation
-     {\dp\floatbox\openstrutdepth}% \strutdp % toegevoegd
+   \ifinset\v!tall\floatlocation\else
+     \dp\floatbox\openstrutdepth% \strutdp % toegevoegd
+   \fi
    \box\floatbox
    \dostoptagged
    \blank[\rootfloatparameter\c!spaceafter]%
@@ -1649,8 +1729,9 @@
 \def\strc_floats_align_content_indeed
   {\alignstrutmode\zerocount
    \ifx\forcedfloatmethod\v!local \else
-     \doifnotcommon\floatcaptionlocation{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}
-       {\strc_floats_shift_indeed\floatparameter}%
+     \ifcommon\floatcaptionlocation{\v!outermargin,\v!innermargin,\v!leftmargin,\v!rightmargin}\else
+       \strc_floats_shift_indeed\floatparameter
+     \fi
      \expandafter\strc_floats_align_indeed
    \fi}
 
@@ -1724,10 +1805,10 @@
        \strc_floats_prepare_no_caption
        \strc_floats_set_caption_dimensions\voidbox
       %\page_backgrounds_add_local_to_box\floatbox % was \doglobal but not needed
-\ifx\forcedfloatmethod\v!local
-    % we need \ifinfloatcombination
-    \strc_floats_build_box
-\fi
+       \ifx\forcedfloatmethod\v!local
+         % we need \ifinfloatcombination
+         \strc_floats_build_box
+       \fi
      \else
        % todo: installable maken, variant/method=auto vs macro
        \strc_floats_prepare_page_caption
@@ -1744,15 +1825,16 @@
      % manual
    \fi
    \ifconditional\c_floats_store_minimal_package
-      % nothing
+     % nothing
    \orelse\ifcase\c_strc_floats_rotation
-     \doifnotinset\v!margin\floatlocation % brr, really needed! see wm
-       {\postcenterfloatbox\d_strc_floats_content
-        \strc_floats_mark_pag_as_free}%
-       % mark as free not done here
+     \ifinset\v!margin\floatlocation\else % brr, really needed! see wm
+       \postcenterfloatbox\d_strc_floats_content
+       \strc_floats_mark_pag_as_free
+     \fi
+     % mark as free not done here
    \else
      \global\setbox\floatbox\vpack
-       {\rotate[\c!rotation=\number\c_strc_floats_rotation]{\box\floatbox}}%
+       {\rotate[\c!rotation=\the\c_strc_floats_rotation]{\box\floatbox}}%
      \strc_floats_mark_pag_as_free
    \fi
    \egroup}
@@ -1769,15 +1851,15 @@
    \edef\p_strc_floats_caption_minwidth{\floatcaptionparameter\c!minwidth}%
    \edef\p_strc_floats_caption_align   {\floatcaptionparameter\c!align}%
    \dostarttagged\t!floatcaption\empty
-   \doifcommonelse\floatcaptionlocation{\v!top,\v!bottom}
-      {\strc_floats_prepare_page_caption_top_bottom}
-      {\ifx\p_strc_floats_caption_width\v!fit
-         \strc_floats_prepare_side_auto_caption
-       \orelse\ifx\p_strc_floats_caption_width\v!max
-         \strc_floats_prepare_side_auto_caption
-       \else
-         \strc_floats_prepare_side_width_caption
-       \fi}%
+   \ifcommon{\v!top,\v!bottom}\floatcaptionlocation
+     \strc_floats_prepare_page_caption_top_bottom
+   \orelse\ifx\p_strc_floats_caption_width\v!fit
+     \strc_floats_prepare_side_auto_caption
+   \orelse\ifx\p_strc_floats_caption_width\v!max
+     \strc_floats_prepare_side_auto_caption
+   \else
+     \strc_floats_prepare_side_width_caption
+   \fi
    \dostoptagged}
 
 \def\strc_floats_prepare_page_caption_top_bottom
@@ -1806,9 +1888,9 @@
 
 \def\strc_floats_caption_set_align
   {\edef\m_align{\v!reset\ifempty\p_strc_floats_caption_align\else,\fi\p_strc_floats_caption_align}%
-   \doifinset\v!tolerant    \floatcaptionlocation{\edef\m_align{\m_align,\v!tolerant}}%
-   \doifinset\v!verytolerant\floatcaptionlocation{\edef\m_align{\m_align,\v!verytolerant}}%
-   \doifinset\v!stretch     \floatcaptionlocation{\edef\m_align{\m_align,\v!stretch}}%
+   \ifinset\v!tolerant    \floatcaptionlocation\edef\m_align{\m_align,\v!tolerant    }\fi
+   \ifinset\v!verytolerant\floatcaptionlocation\edef\m_align{\m_align,\v!verytolerant}\fi
+   \ifinset\v!stretch     \floatcaptionlocation\edef\m_align{\m_align,\v!stretch     }\fi
    \setupalign[\m_align]}
 
 \def\strc_floats_prepare_side_auto_caption
@@ -1857,8 +1939,13 @@
       \strc_floats_make_complete_caption}}
 
 \def\strc_floats_prepare_stack_caption_auto
-  {\ifempty\p_strc_floats_caption_align \else
-     \doifnotinset\v!middle\p_strc_floats_caption_align{\d_strc_floats_caption_overshoot\zeropoint}%
+%   {\ifempty\p_strc_floats_caption_align
+%    \orelse\ifinset\v!middle\p_strc_floats_caption_align
+%    \else
+%      \d_strc_floats_caption_overshoot\zeropoint
+%    \fi
+  {\ifinset\v!middle\p_strc_floats_caption_align\else
+     \d_strc_floats_caption_overshoot\zeropoint
    \fi
    \d_strc_floats_caption_hsize\wd\b_strc_floats_content
    \scratchwidth\floatcaptionparameter\c!maxwidth\relax
@@ -1940,16 +2027,18 @@
   {\ifconditional\c_strc_floats_par_float \hpack \else \expandafter \strc_floats_align_content \fi % skip, no pack
      {\d_strc_float_temp_height\ht\b_strc_floats_content
       \box\b_strc_floats_content
-      \doifnotinset\v!hang\floatcaptionlocation
-        {\dotfskip{\floatcaptionparameter\c!distance}}%
+      \ifinset\v!hang\floatcaptionlocation\else
+        \dotfskip{\floatcaptionparameter\c!distance}%
+      \fi
       \vbox to\d_strc_float_temp_height{#1}}}
 
 \def\strc_floats_build_box_next_left#1%
   {\ifconditional\c_strc_floats_par_float \hpack \else \expandafter \strc_floats_align_content \fi % skip, no pack
      {\d_strc_float_temp_height\ht\b_strc_floats_content
       \vbox to\d_strc_float_temp_height{#1}%
-      \doifnotinset\v!hang\floatcaptionlocation
-        {\dotfskip{\floatcaptionparameter\c!distance}}%
+      \ifinset\v!hang\floatcaptionlocation\else
+        \dotfskip{\floatcaptionparameter\c!distance}%
+      \fi
       \box\b_strc_floats_content}}
 
 \def\strc_floats_build_box_next_outer
@@ -2060,17 +2149,23 @@
   {\hsmash{\llap{\box\b_strc_floats_caption\dotfskip{\floatcaptionparameter\c!distance}}}}
 
 \def\strc_floats_flush_caption_hang
-  {\doifelseinset\v!righthanging\floatcaptionlocation
-     {\strc_floats_flush_right_caption_hang}
-     {\doifelseinset\v!lefthanging\floatcaptionlocation
-        {\strc_floats_flush_left_caption_hang}
-        {\doifelseinset\v!hang\floatcaptionlocation
-           {\doifelseinset\v!outer\floatcaptionlocation
-              {\doifelserightpagefloat{\strc_floats_flush_right_caption_hang}{\strc_floats_flush_left_caption_hang}}
-              {\doifelseinset\v!right\floatcaptiondirectives
-                 {\strc_floats_flush_right_caption_hang}
-                 {\strc_floats_flush_left_caption_hang}}}
-        {\box\b_strc_floats_caption}}}} % is this ok
+  {\ifinset\v!righthanging\floatcaptionlocation
+     \strc_floats_flush_right_caption_hang
+   \orelse\ifinset\v!lefthanging\floatcaptionlocation
+     \strc_floats_flush_left_caption_hang
+   \orelse\ifinset\v!hang\floatcaptionlocation
+     \ifinset\v!outer\floatcaptionlocation
+       \doifelserightpagefloat
+         {\strc_floats_flush_right_caption_hang}
+         {\strc_floats_flush_left_caption_hang}%
+     \orelse\ifinset\v!right\floatcaptiondirectives
+       \strc_floats_flush_right_caption_hang
+     \else
+       \strc_floats_flush_left_caption_hang
+     \fi
+   \else
+     \box\b_strc_floats_caption
+   \fi} % is this ok
 
 \def\strc_floats_build_box_high
   {\strc_floats_build_box_next{\strc_floats_between_stack\strc_floats_flush_caption_hang\vfill}}
@@ -2140,27 +2235,22 @@
    \hpack{\box\b_strc_floats_caption}}
 
 \def\strc_floats_build_box_top_stack_normal
-  {\doifelseinset\v!overlay{\floatcaptionparameter\c!location}
+  {\ifinset\v!overlay{\floatcaptionparameter\c!location}%
      \strc_floats_build_box_top_stack_normal_overlay
-  {\doifelseinset\v!tight{\floatlocation}
+   \orelse\ifinset\v!tight{\floatlocation}%
      \strc_floats_build_box_top_stack_normal_tight
-     \strc_floats_build_box_top_stack_normal_content}}
+   \else
+     \strc_floats_build_box_top_stack_normal_content
+   \fi}
 
 \def\strc_floats_build_box_bottom_stack_normal
-  {\doifelseinset\v!overlay{\floatcaptionparameter\c!location}
+  {\ifinset\v!overlay{\floatcaptionparameter\c!location}%
      \strc_floats_build_box_bottom_stack_normal_overlay
-  {\doifelseinset\v!tight{\floatlocation}
+   \orelse\ifinset\v!tight{\floatlocation}%
      \strc_floats_build_box_bottom_stack_normal_tight
-     \strc_floats_build_box_bottom_stack_normal_content}}
-
-% \def\strc_floats_build_box_bottom_stack_normal
-%   {\ifhasxtoks{,\v!overlay,}{,\floatcaptionparameter\c!location,}%
-%      \strc_floats_build_box_bottom_stack_normal_overlay
-%    \orelse\ifhasxtoks{,\v!tight,}{,\floatlocation,}%
-%      \strc_floats_build_box_bottom_stack_normal_tight
-%    \else
-%      \strc_floats_build_box_bottom_stack_normal_content
-%    \fi}
+   \else
+     \strc_floats_build_box_bottom_stack_normal_content
+   \fi}
 
 \def\strc_floats_build_box_top_stack_grid
   {\dp\b_strc_floats_caption\strutdepth
@@ -2324,8 +2414,8 @@
 \newbox\b_strc_floats_separate_caption
 
 \def\strc_floats_build_box_separate_set
-  {\settrue\c_floats_adapt_to_caption_width
-   \settrue\c_floats_store_minimal_package}
+  {\c_floats_adapt_to_caption_width\conditionaltrue
+   \c_floats_store_minimal_package\conditionaltrue}
 
 % \def\strc_floats_build_box_separate_make
 %   {\offinterlineskip
@@ -2337,8 +2427,8 @@
 %D list and we no longer have just a box (but inserts and lines again).
 
 \def\strc_floats_build_box_separate_make
-  {\savebox\??localfloatstack{\number\numexpr\c_strc_localfloats_n+1\relax:a}{\box\b_strc_floats_content}%
-   \savebox\??localfloatstack{\number\numexpr\c_strc_localfloats_n+1\relax:b}{\box\b_strc_floats_caption}}
+  {\savebox\??localfloatstack{\the\numexpr\c_strc_localfloats_n+1\relax:a}{\box\b_strc_floats_content}%
+   \savebox\??localfloatstack{\the\numexpr\c_strc_localfloats_n+1\relax:b}{\box\b_strc_floats_caption}}
 
 \protected\def\strc_floats_build_box_separate_split#1%
   {\global\setbox\b_strc_floats_separate_content\vpack{\foundbox\??localfloatstack{\number#1:a}}%
@@ -2557,10 +2647,11 @@
      \global\floatheight\htdp\floatbox
      \global\floatwidth\wd\floatbox
      \ifconditional\c_floats_store_minimal_package \else
-       \doifnotinset\v!margin\floatlocation % gaat namelijk nog fout
-         {\setbox\floatbox\vpack
-            {\parindent\zeropoint
-             \box\floatbox}}%
+       \ifinset\v!margin\floatlocation\else % gaat namelijk nog fout
+         \setbox\floatbox\vpack
+           {\parindent\zeropoint
+            \box\floatbox}%
+       \fi
      \fi
      \wd\floatbox\floatwidth
      \ifdim\dimexpr\floatheight+\lineheight\relax<\textheight \else
@@ -2724,7 +2815,7 @@
 
 \permanent\protected\def\somelocalfloat
   {\global\advanceby\c_strc_localfloats_n\plusone
-   \savebox\??localfloatstack{\number\c_strc_localfloats_n}{\box\floatbox}}
+   \savebox\??localfloatstack{\the\c_strc_localfloats_n}{\box\floatbox}}
 
 \permanent\protected\def\getlocalfloats
   {\dorecurse\c_strc_localfloats_n

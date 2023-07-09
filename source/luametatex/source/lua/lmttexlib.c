@@ -1245,11 +1245,13 @@ inline static int texlib_aux_checked_register(lua_State *L, int cmd, int base, i
 typedef void     (*setfunc) (int, halfword, int, int);
 typedef halfword (*getfunc) (int, int);
 
+/*tex We no longer listen to |\globaldefs| here. */
+
 int lmt_check_for_flags(lua_State *L, int slot, int *flags, int prefixes, int numeric)
 {
-    if (global_defs_par) {
-        *flags = add_global_flag(*flags);
-    }
+ // if (global_defs_par) {
+ //     *flags = add_global_flag(*flags);
+ // }
     if (prefixes) {
         while (1) {
             switch (lua_type(L, slot)) {
@@ -2475,24 +2477,24 @@ static int texlib_getdelcodes(lua_State* L)
 static halfword texlib_aux_getdimension(lua_State* L, int index)
 {
     switch (lua_type(L, index)) {
-    case LUA_TNUMBER:
-        return lmt_toroundnumber(L, index);
-    case LUA_TSTRING:
-        return texlib_aux_dimen_to_number(L, lua_tostring(L, index));
-    default:
-        luaL_error(L, "string or number expected (dimension)");
-        return 0;
+        case LUA_TNUMBER:
+            return lmt_toroundnumber(L, index);
+        case LUA_TSTRING:
+            return texlib_aux_dimen_to_number(L, lua_tostring(L, index));
+        default:
+            luaL_error(L, "string or number expected (dimension)");
+            return 0;
     }
 }
 
 static halfword texlib_aux_getinteger(lua_State* L, int index)
 {
     switch (lua_type(L, index)) {
-    case LUA_TNUMBER:
-        return lmt_toroundnumber(L, index);
-    default:
-        luaL_error(L, "number expected (integer)");
-        return 0;
+        case LUA_TNUMBER:
+            return lmt_toroundnumber(L, index);
+        default:
+            luaL_error(L, "number expected (integer)");
+            return 0;
     }
 }
 
@@ -2696,6 +2698,8 @@ static int texlib_set_item(lua_State* L, int index, int prefixes)
                      // case page_goal_code:
                      // case page_total_code:
                      // case page_vsize_code:
+                     // case page_last_height_code:
+                     // case page_last_depth_code:
                         case page_depth_code:
                             lmt_page_builder_state.depth = texlib_aux_getdimension(L, slot);
                             break;
@@ -4449,6 +4453,8 @@ static int texlib_expandasvalue(lua_State *L) /* mostly like the mp one */
                         break;
                     }
                 }
+            case lua_value_conditional_code:
+                /* for now */
             default:
               JUSTINCASE:
                 {
@@ -4855,25 +4861,40 @@ static int texlib_aux_getvalue(lua_State *L, halfword level, halfword cs)
 
 static int texlib_getintegervalue(lua_State *L) /* todo, now has duplicate in tokenlib */
 {
-    if (lua_type(L, 1) == LUA_TSTRING) {
-        size_t len;
-        const char *str = lua_tolstring(L, 1, &len);
-        if (len > 0) {
-            int cs = tex_string_locate_only(str, len);
-            switch (eq_type(cs)) {
-                case integer_cmd:
-                    lua_pushinteger(L, eq_value(cs));
-                    return 1;
-                case call_cmd:
-                case protected_call_cmd:
-                case semi_protected_call_cmd:
-                case constant_call_cmd:
-                    return texlib_aux_getvalue(L, int_val_level, cs);
-                default:
-                    /* twice a lookup but fast enough for now */
-                    return texlib_getcount(L);
+    switch (lua_type(L, 1)) {
+        case LUA_TSTRING: 
+            {
+                size_t len;
+                const char *str = lua_tolstring(L, 1, &len);
+                if (len > 0) {
+                    int cs = tex_string_locate_only(str, len);
+                    switch (eq_type(cs)) {
+                        case integer_cmd:
+                            lua_pushinteger(L, eq_value(cs));
+                            return 1;
+                        case call_cmd:
+                        case protected_call_cmd:
+                        case semi_protected_call_cmd:
+                        case constant_call_cmd:
+                            return texlib_aux_getvalue(L, int_val_level, cs);
+                        default:
+                            /* twice a lookup but fast enough for now */
+                            return texlib_getcount(L);
+                    }
+                } else { 
+                    break;
+                }
             }
-        }
+        case LUA_TNUMBER:
+            {
+                halfword i = lua_tointeger(L, 1) -0xFFFF;
+                if (i < (eqtb_size + lmt_hash_state.hash_data.ptr + 1) && eq_type(i) == integer_cmd) {
+                    lua_pushinteger(L, eq_value(i));
+                    return 1;
+                } else { 
+                    break;
+                }
+            }   
     }
     lua_pushnil(L);
     return 1;
@@ -4907,28 +4928,43 @@ static int texlib_getfloatvalue(lua_State *L) /* todo, now has duplicate in toke
 
 static int texlib_getdimensionvalue(lua_State *L) /* todo, now has duplicate in tokenlib */
 {
-    if (lua_type(L, 1) == LUA_TSTRING) {
-        size_t len;
-        const char *str = lua_tolstring(L, 1, &len);
-        if (len > 0) {
-            int cs = tex_string_locate_only(str, len);
-            switch (eq_type(cs)) {
-                case dimension_cmd:
-                    lua_pushinteger(L, eq_value(cs));
-                    return 1;
-                case posit_cmd:
-                    lua_pushinteger(L, tex_posit_to_dimension(eq_value(cs)));
-                    return 1;
-                case call_cmd:
-                case protected_call_cmd:
-                case semi_protected_call_cmd:
-                case constant_call_cmd:
-                    return texlib_aux_getvalue(L, dimen_val_level, cs);
-                default:
-                    /* twice a lookup but fast enough for now */
-                    return texlib_getdimen(L);
+    switch (lua_type(L, 1)) {
+        case LUA_TSTRING: 
+            {
+                size_t len;
+                const char *str = lua_tolstring(L, 1, &len);
+                if (len > 0) {
+                    int cs = tex_string_locate_only(str, len);
+                    switch (eq_type(cs)) {
+                        case dimension_cmd:
+                            lua_pushinteger(L, eq_value(cs));
+                            return 1;
+                        case posit_cmd:
+                            lua_pushinteger(L, tex_posit_to_dimension(eq_value(cs)));
+                            return 1;
+                        case call_cmd:
+                        case protected_call_cmd:
+                        case semi_protected_call_cmd:
+                        case constant_call_cmd:
+                            return texlib_aux_getvalue(L, dimen_val_level, cs);
+                        default:
+                            /* twice a lookup but fast enough for now */
+                            return texlib_getdimen(L);
+                    }
+                } else { 
+                    break;
+                }
             }
-        }
+        case LUA_TNUMBER:
+            {
+                halfword i = lua_tointeger(L, 1) -0xFFFF;
+                if (i < (eqtb_size + lmt_hash_state.hash_data.ptr + 1) && eq_type(i) == dimension_cmd) {
+                    lua_pushinteger(L, eq_value(i));
+                    return 1;
+                } else { 
+                    break;
+                }
+            }   
     }
     lua_pushnil(L);
     return 1;
@@ -5109,10 +5145,12 @@ static int texlib_getnoadoptionvalues(lua_State *L)
 
 static int texlib_getdiscoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 1);
-    lua_set_string_by_index(L, disc_option_normal_word, "normalword");
-    lua_set_string_by_index(L, disc_option_pre_word,    "preword");
-    lua_set_string_by_index(L, disc_option_post_word,   "postword");
+    lua_createtable(L, 2, 3);
+    lua_set_string_by_index(L, disc_option_normal_word,    "normalword");
+    lua_set_string_by_index(L, disc_option_pre_word,       "preword");
+    lua_set_string_by_index(L, disc_option_post_word,      "postword");
+    lua_set_string_by_index(L, disc_option_prefer_break,   "preferbreak");
+    lua_set_string_by_index(L, disc_option_prefer_nobreak, "prefernobreak");
     return 1;
 }
 
@@ -5678,6 +5716,59 @@ static int texlib_popsavelevel(lua_State *L)
     return 0;
 }
 
+/*tex 
+    Experiment. We could enhance page_builder_state_info with a few state fields. 
+*/
+
+// typedef struct page_builder_state {
+//     halfword                saved_page_head;  
+//     halfword                saved_page_insert_head;  
+//     halfword                saved_contribute_head;   
+//     halfword                saved_hold_head;         
+//     page_builder_state_info saved_page_builder_state;
+// } page_builder_state;
+// 
+// page_builder_state page_builder_states[8];
+// 
+// static int texlib_savepagestate(lua_State *L)
+// {
+//     int n = lua_tointeger(L, 1);
+//     if (n >= 1 && n <= 8) {
+//         page_builder_states[n-1].saved_page_head          = node_next(page_head);  
+//         page_builder_states[n-1].saved_page_insert_head   = node_next(page_insert_head);  
+//         page_builder_states[n-1].saved_contribute_head    = node_next(contribute_head);   
+//         page_builder_states[n-1].saved_hold_head          = node_next(hold_head);         
+//         page_builder_states[n-1].saved_page_builder_state = lmt_page_builder_state;
+//     }
+//     return 0;
+// }
+// 
+// static int texlib_restorepagestate(lua_State *L)
+// {
+//     int n = lua_tointeger(L, 1);
+//     if (n >= 1 && n <= 8) {
+//         node_next(page_head)        = page_builder_states[n-1].saved_page_head;  
+//         node_next(page_insert_head) = page_builder_states[n-1].saved_page_insert_head;  
+//         node_next(contribute_head)  = page_builder_states[n-1].saved_contribute_head;   
+//         node_next(hold_head)        = page_builder_states[n-1].saved_hold_head;         
+//         lmt_page_builder_state      = page_builder_states[n-1].saved_page_builder_state;
+//     }
+//     return 0;
+// }
+// 
+// static void texlib_initializepagestates(void)
+// {
+//     tex_initialize_pagestate();
+//     for (int i=0; i < 8; i++) {
+//         page_builder_states[i].saved_page_head          = null;
+//         page_builder_states[i].saved_page_insert_head   = null; 
+//         page_builder_states[i].saved_contribute_head    = null; 
+//         page_builder_states[i].saved_page_head          = null; 
+//         page_builder_states[i].saved_hold_head          = null; 
+//         page_builder_states[i].saved_page_builder_state = lmt_page_builder_state;
+//     }
+// }
+
 /*tex
     When testing all these math finetuning options we needed to typeset the box contents and
     instead of filtering from the log or piping the log to a file, this more ssd friendly
@@ -5906,6 +5997,9 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "pushsavelevel",              texlib_pushsavelevel              },
     { "popsavelevel",               texlib_popsavelevel               },
     /* */
+ // { "savepagestate",              texlib_savepagestate              },
+ // { "restorepagestate",           texlib_restorepagestate           },
+    /* */
     { NULL,                         NULL                              },
 };
 
@@ -5942,6 +6036,8 @@ defineindexers(nest)
 
 int luaopen_tex(lua_State *L)
 {
+ // texlib_initializepagestates();
+    /* */
     texlib_aux_initialize();
     /* */
     lua_newtable(L);

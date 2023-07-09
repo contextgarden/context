@@ -9354,6 +9354,12 @@ return {
    ["en"]="hyphens",
    ["fr"]="traitsdunion",
   },
+  ["hz"]={
+   ["en"]="hz",
+  },
+  ["vz"]={
+   ["en"]="vz",
+  },
   ["icommand"]={
    ["cs"]="iprikaz",
    ["de"]="ibefehl",
@@ -10721,6 +10727,9 @@ return {
    ["nl"]="buitenmarge",
    ["pe"]="حاشیه‌خارجی",
    ["ro"]="outermargin",
+  },
+  ["overflow"]={
+   ["en"]="overflow",
   },
   ["overprint"]={
    ["cs"]="overprint",
@@ -15737,6 +15746,10 @@ return {
    ["pe"]="ثابت",
    ["ro"]="fixat",
   },
+  ["spread"]={
+    ["en"]="spread",
+    ["nl"]="gespreid",
+  },
   ["flexible"]={
    ["cs"]="prizpusobive",
    ["de"]="flexibel",
@@ -16194,14 +16207,10 @@ return {
    ["ro"]="despsilabe",
   },
   ["hz"]={
-   ["cs"]="hz",
-   ["de"]="hz",
    ["en"]="hz",
-   ["fr"]="hz",
-   ["it"]="hz",
-   ["nl"]="hz",
-   ["pe"]="hz",
-   ["ro"]="hz",
+  },
+  ["vz"]={
+   ["en"]="vz",
   },
   ["inbetween"]={
    ["cs"]="mezi",

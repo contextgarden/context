@@ -18,14 +18,22 @@
 \unprotect
 
 \appendtoks
-    \doifsomething{\interactionparameter\c!calculate}%
-        {\clf_setfieldcalculationset{\interactionparameter\c!calculate}}%
-    \doifelse{\interactionparameter\c!click}\v!yes
-        \settrue\setfalse\highlighthyperlinks
-    \doifelse{\interactionparameter\c!display}\v!new
-        \settrue\setfalse\gotonewwindow
-    \doifnot{\interactionparameter\c!page}\v!no
+    \ifempty{\interactionparameter\c!calculate}\else
+        \clf_setfieldcalculationset{\interactionparameter\c!calculate}%
+    \fi
+    \ifcstok{\interactionparameter\c!click}\v!yes
+        \highlighthyperlinks\conditionaltrue
+    \else
+        \highlighthyperlinks\conditionalfalse
+    \fi
+    \ifcstok{\interactionparameter\c!display}\v!new
+        \gotonewwindow\conditionaltrue
+    \else
+        \gotonewwindow\conditionalfalse
+    \fi
+    \ifcstok{\interactionparameter\c!page}\v!no\else
         \scrn_reference_enable_page_destinations
+    \fi
 \to \everysetupinteraction
 
 \def\scrn_reference_enable_page_destinations % no reset

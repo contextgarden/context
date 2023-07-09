@@ -83,9 +83,16 @@
     # include <direct.h>
     # include <windows.h>
     # include <io.h>
+    # include <fileapi.h>
     # include <sys/locking.h>
     # include <sys/utime.h>
     # include <fcntl.h>
+
+    /* 
+        Todo MS Windows: By default, the name is limited to MAX_PATH characters. To extend this 
+        limit to 32,767 wide characters, prepend "\\?\" to the path. For more information, see 
+        Naming Files, Paths, and Namespaces.
+    */
 
     # define MY_MAXPATHLEN MAX_PATH
 

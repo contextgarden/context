@@ -193,7 +193,7 @@
    \setbox\scratchbox\vbox\bgroup
       \page_col_command_package_contents_one\unvbox\normalpagebox
    \egroup
-   \putboxincache\s!pagecolumn{\number\c_page_col_current}\scratchbox
+   \putboxincache\s!pagecolumn{\the\c_page_col_current}\scratchbox
    \ifnum\c_page_col_current=\c_page_col_n_of_columns
      \page_col_routine_package
      \page_otr_construct_and_shipout\box\normalpagebox\plusone
@@ -243,8 +243,7 @@
   {\global\setbox\normalpagebox\hbox to \makeupwidth\bgroup
      \edef\p_separator{\pagecolumnsparameter\c!separator}%
      \pagecolumnseparatorwidth\d_page_col_distance
-     \edef\p_direction{\pagecolumnsparameter\c!direction}%
-     \ifx\p_direction\v!reverse
+     \ifcstok{\pagecolumnsparameter\c!direction}\v!reverse
        \dostepwiserecurse\c_page_col_n_of_columns\plusone\minusone
          {\page_col_routine_package_step
           \ifnum\recurselevel>\plusone
@@ -264,12 +263,12 @@
 
 % \protected\def\page_col_command_check_if_float_fits
 %   {\ifconditional\c_page_floats_not_permitted
-%      \global\setfalse\c_page_floats_room
+%      \global\c_page_floats_room\conditionalfalse
 %   %\orelse\ifabsdim\dimexpr\d_page_col_available-\naturalfloatwd\relax<\onepoint
 %    \orelse\ifdim\dimexpr\d_page_col_available-\naturalfloatwd\relax>-\onepoint
-%      \global\settrue\c_page_floats_room
+%      \global\c_page_floats_room\conditionaltrue
 %    \else
-%      \global\setfalse\c_page_floats_room
+%      \global\c_page_floats_room\conditionalfalse
 %    \fi
 %    \ifconditional\c_page_floats_room
 %      \begingroup
@@ -277,9 +276,9 @@
 %      \ifdim\scratchdimen>\pagegoal
 %        \goodbreak
 %        \ifdim\dimexpr\d_page_col_available-\naturalfloatwd\relax>\onepoint
-%          \global\setfalse\c_page_floats_room
+%          \global\c_page_floats_room\conditionalfalse
 %        \else
-%          \global\settrue\c_page_floats_room
+%          \global\c_page_floats_room\conditionaltrue
 %        \fi
 %      \fi
 %      \endgroup
@@ -300,7 +299,7 @@
 %        \fi
 %        \relax % really needed ! ! ! !
 %        \ifdim\scratchdimenone>\scratchdimentwo
-%          \global\setfalse\c_page_floats_room
+%          \global\c_page_floats_room\conditionalfalse
 %        \fi
 %      \fi
 %      \ifconditional\c_page_floats_room
@@ -311,14 +310,14 @@
 \protected\def\page_col_command_check_if_float_fits
   {\ifconditional\c_page_floats_not_permitted
      % forget about it anyway
-     \global\setfalse\c_page_floats_room
+     \global\c_page_floats_room\conditionalfalse
    \else
      % first we check the current column
 %      \ifdim\dimexpr\d_page_col_width-\naturalfloatwd\relax>-\onepoint
      \ifdim\dimexpr\hsize-\naturalfloatwd\relax>-\onepoint
-       \global\settrue\c_page_floats_room
+       \global\c_page_floats_room\conditionaltrue
      \else
-       \global\setfalse\c_page_floats_room
+       \global\c_page_floats_room\conditionalfalse
      \fi
      \ifconditional\c_page_floats_room
        % we fit in the column but do we have room
@@ -342,7 +341,7 @@
          \relax % really needed ! ! ! !
          \ifdim\scratchdimenone>\scratchdimentwo
            % there is no room, give up
-           \global\setfalse\c_page_floats_room
+           \global\c_page_floats_room\conditionalfalse
            % now we can decide on a top float
 %          \fi
          \else
@@ -366,15 +365,15 @@
    \hsize\d_page_col_available}
 
 \protected\def\page_col_command_flush_floats
-  {\global\settrue\c_page_floats_flushing
+  {\global\c_page_floats_flushing\conditionaltrue
    \ifconditional\c_page_floats_some_waiting
      \par
      \page_col_set_float_pack_hsize
      \page_col_command_flush_floats_indeed
    \fi
    \global\savednoffloats\zerocount
-   \global\setfalse\c_page_floats_some_waiting
-   \global\setfalse\c_page_floats_flushing}
+   \global\c_page_floats_some_waiting\conditionalfalse
+   \global\c_page_floats_flushing\conditionalfalse}
 
 \def\page_floats_show_pack_state_indeed#1%
   {\llap{\smash{\backgroundline[black]{\strut\smallinfofont\white#1\space\the\nofcollectedfloats\space of\space\the\savednoffloats:\the\hsize}}\hkern.25\emwidth}}
@@ -389,7 +388,7 @@
 \def\page_col_command_flush_floats_indeed % much in common with OTRSET
   {\ifconditional\c_page_floats_some_waiting
      \ifconditional\c_page_floats_compress_flushed
-       \setfalse\c_page_floats_center_box % not needed as we do call directly
+       \c_page_floats_center_box\conditionalfalse % not needed as we do call directly
        \page_floats_collect\s!text\hsize\d_page_floats_compress_distance
        %
        \ifnum\nofcollectedfloats=\plusone
@@ -443,7 +442,9 @@
      \page_col_command_set_top_insertions
      \page_col_command_set_bottom_insertions
      \ifconditional\c_page_floats_some_waiting
-        \doif{\rootfloatparameter\c!cache}\v!no\page_col_command_flush_floats % could be _otr_
+        \ifcstok{\rootfloatparameter\c!cache}\v!no
+          \page_col_command_flush_floats % could be _otr_
+        \fi
      \orelse\ifconditional\c_page_margin_blocks_present
        \page_col_command_flush_floats
      \fi
@@ -610,7 +611,7 @@
 %   %\page_col_column
 %    \column % \page
 %    % why was this \global\holdinginserts\zerocount
-%    \global\setfalse\c_page_sides_short}
+%    \global\c_page_sides_short\conditionalfalse}
 
 \let\page_col_command_flush_all_floats\relax
 
@@ -775,8 +776,8 @@
      \fi
    \fi}
 
-\def\page_col_notes_delay {\setfalse\c_page_col_notes_lastcolumn\ifcstok{\noteparameter\c!location}\v!lastcolumn\settrue\c_page_col_notes_lastcolumn\insertstorage\currentnoteinsertionnumber\plusone  \fi}
-\def\page_col_notes_inject{\setfalse\c_page_col_notes_lastcolumn\ifcstok{\noteparameter\c!location}\v!lastcolumn\settrue\c_page_col_notes_lastcolumn\insertstorage\currentnoteinsertionnumber\zerocount\fi}
+\def\page_col_notes_delay {\c_page_col_notes_lastcolumn\conditionalfalse\ifcstok{\noteparameter\c!location}\v!lastcolumn\c_page_col_notes_lastcolumn\conditionaltrue\insertstorage\currentnoteinsertionnumber\plusone  \fi}
+\def\page_col_notes_inject{\c_page_col_notes_lastcolumn\conditionalfalse\ifcstok{\noteparameter\c!location}\v!lastcolumn\c_page_col_notes_lastcolumn\conditionaltrue\insertstorage\currentnoteinsertionnumber\zerocount\fi}
 
 \def\page_col_notes_initialize {\insertstoring\zerocount\strc_notes_process\page_col_notes_delay}
 \def\page_col_notes_reset      {\insertstoring\zerocount\strc_notes_process\page_col_notes_inject}
@@ -793,11 +794,11 @@
      {\cdef\currentpagecolumns{#1}}%
    \edef\p_page{\pagecolumnsparameter\c!page}%
    \ifempty\p_page
-     \setfalse\c_page_col_page
+     \c_page_col_page\conditionalfalse
    \orelse\ifx\p_page\v!no
-     \setfalse\c_page_col_page
+     \c_page_col_page\conditionalfalse
    \else
-     \settrue\c_page_col_page
+     \c_page_col_page\conditionaltrue
      \page[\p_page]%
    \fi
    \c_page_col_n_of_columns\pagecolumnsparameter\c!n\relax

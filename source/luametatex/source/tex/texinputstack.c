@@ -694,6 +694,9 @@ void tex_begin_token_list(halfword t, quarterword kind)
         if (tracing_macros_par > 0) {
             tex_begin_diagnostic();
             switch (kind) {
+                case end_of_group_text:
+                    tex_print_str("endgroup");
+                    break;                    
                 case mark_text:
                     tex_print_str("mark");
                     break;
@@ -703,6 +706,9 @@ void tex_begin_token_list(halfword t, quarterword kind)
                 case loop_text:
                     tex_print_str("loop");
                     break;
+                case end_paragraph_text:
+                    tex_print_str("endpar");
+                    break;
                 case write_text:
                     tex_print_str("write");
                     break;
@@ -711,9 +717,6 @@ void tex_begin_token_list(halfword t, quarterword kind)
                     break;
                 case local_loop_text:
                     tex_print_str("localloop");
-                    break;
-                case end_paragraph_text:
-                    tex_print_str("endpar");
                     break;
                 default:
                     /* messy offsets */
@@ -727,57 +730,62 @@ void tex_begin_token_list(halfword t, quarterword kind)
     }
 }
 
+/*tex Testing for |t == null| happens before calling the following functions. */
+
 void tex_begin_parameter_list(halfword t)
 {
-    if (t) {
+    tex_aux_push_input();
+    lmt_input_state.cur_input.state = token_list_state;
+    lmt_input_state.cur_input.start = t;
+    lmt_input_state.cur_input.loc = t;
+    lmt_input_state.cur_input.token_type = parameter_text;
+}
+
+/*
+void tex_begin_backed_up_list_checked(halfword t)
+{
+    if (lmt_input_state.cur_input.state == token_list_state && lmt_input_state.cur_input.start == lmt_input_state.cur_input.loc && lmt_input_state.cur_input.token_type == backed_up_text) {
+        halfword c = t ; 
+        while (token_link(c)) {
+            c = token_link(c);
+        }
+        token_link(c) = lmt_input_state.cur_input.start;
+    } else { 
         tex_aux_push_input();
         lmt_input_state.cur_input.state = token_list_state;
-        lmt_input_state.cur_input.start = t;
-        lmt_input_state.cur_input.loc = t;
-        lmt_input_state.cur_input.token_type = parameter_text;
-    } else {
-        // can happen 
+        lmt_input_state.cur_input.token_type = backed_up_text;
     }
+    lmt_input_state.cur_input.start = t;
+    lmt_input_state.cur_input.loc = t;
 }
+*/
 
 void tex_begin_backed_up_list(halfword t)
 {
-    if (t) {
-        tex_aux_push_input();
-        lmt_input_state.cur_input.state = token_list_state;
-        lmt_input_state.cur_input.start = t;
-        lmt_input_state.cur_input.loc = t;
-        lmt_input_state.cur_input.token_type = backed_up_text;
-    } else {
-        // can happen 
-    }
+    tex_aux_push_input();
+    lmt_input_state.cur_input.state = token_list_state;
+    lmt_input_state.cur_input.start = t;
+    lmt_input_state.cur_input.loc = t;
+    lmt_input_state.cur_input.token_type = backed_up_text;
 }
 
 void tex_begin_inserted_list(halfword t)
 {
- // if (t) {
-        tex_aux_push_input();
-        lmt_input_state.cur_input.state = token_list_state;
-        lmt_input_state.cur_input.start = t;
-        lmt_input_state.cur_input.loc = t;
-        lmt_input_state.cur_input.token_type = inserted_text;
- // } else {
- //     // never happens
- // }
+    tex_aux_push_input();
+    lmt_input_state.cur_input.state = token_list_state;
+    lmt_input_state.cur_input.start = t;
+    lmt_input_state.cur_input.loc = t;
+    lmt_input_state.cur_input.token_type = inserted_text;
 }
 
 void tex_begin_macro_list(halfword t)
 {
- // if (t) {
-        tex_aux_push_input();
-        lmt_input_state.cur_input.state = token_list_state;
-        lmt_input_state.cur_input.start = t;
-        tex_add_token_reference(t);
-        lmt_input_state.cur_input.token_type = macro_text;
-        lmt_input_state.cur_input.parameter_start = lmt_input_state.parameter_stack_data.ptr;
- // } else {
- //     // never happens
- // }
+    tex_aux_push_input();
+    lmt_input_state.cur_input.state = token_list_state;
+    lmt_input_state.cur_input.start = t;
+    tex_add_token_reference(t);
+    lmt_input_state.cur_input.token_type = macro_text;
+    lmt_input_state.cur_input.parameter_start = lmt_input_state.parameter_stack_data.ptr;
 }
 
 /*tex
@@ -805,7 +813,7 @@ void tex_end_token_list(void)
             break;
         case backed_up_text:
         case inserted_text:
-        case end_of_group_text:
+//        case end_of_group_text:
      /* case local_text: */
             tex_flush_token_list(lmt_input_state.cur_input.start);
             break;
@@ -856,19 +864,18 @@ void tex_cleanup_input_state(void)
                 break;
             case backed_up_text:
             case inserted_text:
-            case end_of_group_text:
+         /* case end_of_group_text: */
          /* case local_text: */
                 tex_flush_token_list(lmt_input_state.cur_input.start);
                 break;
             case macro_text:
                 {
-                    int ptr, start;
                     /*tex Using a simple version for no arguments has no gain. */
                     tex_delete_token_reference(lmt_input_state.cur_input.start);
                     if (get_token_preamble(lmt_input_state.cur_input.start)) {
                         /*tex Parameters must be flushed: */
-                        ptr = lmt_input_state.parameter_stack_data.ptr;
-                        start = lmt_input_state.cur_input.parameter_start;
+                        int ptr = lmt_input_state.parameter_stack_data.ptr;
+                        int start = lmt_input_state.cur_input.parameter_start;
                         while (ptr > start) {
                             if (lmt_input_state.parameter_stack[--ptr]) {
                                 tex_flush_token_list(lmt_input_state.parameter_stack[ptr]);
@@ -914,20 +921,15 @@ void tex_back_input(halfword t)
                 ++lmt_input_state.align_state;
             }
         }
-        /*
-        if (token_type == backed_up_text && istate == token_list_state && istart == iloc) {
-            token_link(p) = istart;
-            istart = p;
-            iloc = p;
+        if (lmt_input_state.cur_input.state == token_list_state && lmt_input_state.cur_input.start == lmt_input_state.cur_input.loc && lmt_input_state.cur_input.token_type == backed_up_text) {
+            token_link(p) = lmt_input_state.cur_input.start;
         } else {
-        */
-        tex_aux_push_input();
-        /*tex This is |back_list(p)|, without procedure overhead: */
+            tex_aux_push_input();
+            lmt_input_state.cur_input.state = token_list_state;
+            lmt_input_state.cur_input.token_type = backed_up_text;
+        }
         lmt_input_state.cur_input.start = p;
         lmt_input_state.cur_input.loc = p;
-        lmt_input_state.cur_input.state = token_list_state;
-        lmt_input_state.cur_input.token_type = backed_up_text;
-        /* } */
     }
 }
 
@@ -968,6 +970,20 @@ void tex_insert_input(halfword h)
         lmt_input_state.cur_input.loc = h;
         lmt_input_state.cur_input.state = token_list_state;
         lmt_input_state.cur_input.token_type = inserted_text;
+        /* 
+            This happens seldom, so we don't save much on pushing / popping the input: 
+        */ 
+        /*
+        if (lmt_input_state.cur_input.state == token_list_state && lmt_input_state.cur_input.start == lmt_input_state.cur_input.loc && lmt_input_state.cur_input.token_type == inserted_text) {
+            token_link(h) = lmt_input_state.cur_input.start;
+        } else {
+            tex_aux_push_input();
+            lmt_input_state.cur_input.state = token_list_state;
+            lmt_input_state.cur_input.token_type = inserted_text;
+        }
+        lmt_input_state.cur_input.start = h;
+        lmt_input_state.cur_input.loc = h;
+        */
     }
 }
 

@@ -115,12 +115,12 @@
       \unskip}}
 
 \def\page_boxes_apply_orientate_paper#box%
-  {\ifnum\number\c_page_target_paper_orientation\number\c_page_target_paper_reverse>\zerocount
+  {\ifnum\the\c_page_target_paper_orientation\the\c_page_target_paper_reverse>\zerocount
      \page_boxes_apply_orientate_indeed\c_page_target_paper_orientation\c_page_target_paper_reverse{#box}%
    \fi}
 
 \def\page_boxes_apply_orientate_print#box%
-  {\ifnum\number\c_page_target_print_orientation\number\c_page_target_print_reverse>\zerocount
+  {\ifnum\the\c_page_target_print_orientation\the\c_page_target_print_reverse>\zerocount
      \page_boxes_apply_orientate_indeed\c_page_target_print_orientation\c_page_target_print_reverse{#box}%
    \fi}
 
@@ -183,7 +183,7 @@
 
 % best use private variables
 
-\newconditional\c_page_boxes_clip_print \settrue\c_page_boxes_clip_print
+\newconditional\c_page_boxes_clip_print \c_page_boxes_clip_print\conditionaltrue
 
 \def\page_boxes_apply_clip_print_left  % box
   {\ifconditional\c_page_boxes_clip_print
@@ -293,7 +293,7 @@
 \newbox        \b_page_areas_registered
 
 \permanent\protected\def\enabletextarearegistration
-  {\global\settrue\c_page_areas_enabled}
+  {\global\c_page_areas_enabled\conditionaltrue}
 
 \def\page_areas_registered_box
   {\ifconditional\c_page_areas_enabled

@@ -45,7 +45,7 @@
 \definesystemattribute[linenumber]   [public]
 \definesystemattribute[linereference][public]
 
-\appendtoksonce
+\appendtoks
     \c_attr_linenumber\attributeunsetvalue
 \to \everyforgetall
 
@@ -63,8 +63,8 @@
 
 \installtextracker
   {lines.numbers.show}
-  {\settrue \tracelinenumbering}
-  {\setfalse\tracelinenumbering}
+  {\tracelinenumbering\conditionaltrue}
+  {\tracelinenumbering\conditionalfalse}
 
 % id nr shift width leftskip dir
 
@@ -227,21 +227,21 @@
      \c_page_lines_mode\zerocount
      \lettonothing\currentlinenumbering
    \else
-     \c_page_lines_mode\plusone
      \ifx\m_argument\v!empty
        \lettonothing\currentlinenumbering
      \orelse\ifhastok={#1}%
        \lettonothing\currentlinenumbering
        \setupcurrentlinenumbering[#1]%
+     \orelse\ifchknum\m_argument\or
+       \lettonothing\currentlinenumbering
+       \letlinenumberingparameter\c!start\m_argument
      \else
-       \doifelsenumber\m_argument
-         {\lettonothing\currentlinenumbering
-          \letlinenumberingparameter\c!start\m_argument}
-         {\let\currentlinenumbering\m_argument}%
+       \let\currentlinenumbering\m_argument
      \fi
-     \edef\p_continue{\linenumberingparameter\c!continue}%
-     \ifx\p_continue\v!yes
+     \ifcstok{\linenumberingparameter\c!continue}\v!yes
        \c_page_lines_mode\zerocount
+     \else
+       \c_page_lines_mode\plusone
      \fi
    \fi
    \page_lines_start_followup}
@@ -252,16 +252,17 @@
    \ifx\m_argument\v!continue
      \c_page_lines_mode\zerocount
    \else
-     \c_page_lines_mode\plusone
      \ifx\m_argument\v!empty \else
-       \doifelseassignment{#2}
-         {\setupcurrentlinenumbering[#2]}
-         {\doifnumber\m_argument
-            {\letlinenumberingparameter\c!start\m_argument}}%
+       \ifhastok={#2}%
+         \setupcurrentlinenumbering[#2]%
+       \orelse\ifchknum\m_argument\or
+         \letlinenumberingparameter\c!start\m_argument
+       \fi
      \fi
-     \edef\p_continue{\linenumberingparameter\c!continue}%
-     \ifx\p_continue\v!yes
+     \ifcstok{\linenumberingparameter\c!continue}\v!yes
        \c_page_lines_mode\zerocount
+     \else
+       \c_page_lines_mode\plusone
      \fi
    \fi
    \page_lines_start_followup}
@@ -284,28 +285,28 @@
 \def\page_lines_start_followup
   {\numberinglinestrue
    \edef\p_location{\linenumberingparameter\c!location}%
-   \setfalse\c_page_lines_auto_narrow
+   \c_page_lines_auto_narrow\conditionalfalse
    \ifhmode \else
      \ifx\p_location\v!text
        \ifdim\leftskip>\zeropoint \else
          \advanceby\leftskip\linenumberingparameter\c!margin
-         \settrue\c_page_lines_auto_narrow
+         \c_page_lines_auto_narrow\conditionaltrue
        \fi
      \orelse\ifx\p_location\v!begin
        \ifdim\leftskip>\zeropoint \else
          \advanceby\leftskip\linenumberingparameter\c!margin
-         \settrue\c_page_lines_auto_narrow
+         \c_page_lines_auto_narrow\conditionaltrue
        \fi
      \orelse\ifx\p_location\v!end
        \ifdim\leftskip>\zeropoint \else
          \advanceby\rightskip\linenumberingparameter\c!margin
-         \settrue\c_page_lines_auto_narrow
+         \c_page_lines_auto_narrow\conditionaltrue
        \fi
      \fi
    \fi
    \expand\beforeeverylinenumbering
-   %\global\settrue\c_page_lines_enabled           %
-   \global\settrue\page_postprocessors_needed_box % see core-rul.mkiv
+   %\global\c_page_lines_enabled\conditionaltrue           %
+   \global\page_postprocessors_needed_box\conditionaltrue % see core-rul.mkiv
    \ifcase\c_page_lines_mode\relax
      \page_lines_start_update % continue
    \or
@@ -328,7 +329,7 @@
 \newconstant   \c_page_lines_column
 \newconstant   \c_page_lines_last_column
 \newdimen      \d_page_lines_line_width
-\settrue       \c_page_lines_dir_left_to_right
+\newconditional\c_page_lines_dir_left_to_right     \c_page_lines_dir_left_to_right\conditionaltrue
 
 \installcorenamespace{linenumberinghandler}
 
@@ -371,23 +372,23 @@
      \edef\p_align{\linenumberingparameter\c!align}%
      \edef\p_location{\linenumberingparameter\c!location}%
      \ifcase#dir\relax
-       \settrue \c_page_lines_dir_left_to_right
+       \c_page_lines_dir_left_to_right\conditionaltrue
      \else
-       \setfalse\c_page_lines_dir_left_to_right
+       \c_page_lines_dir_left_to_right\conditionalfalse
      \fi
      %
      % maybe we also need an option to ignore columns, so that we renumber
      % once but on the other hand this assumes aligned lines
      %
      \ifcase\c_page_lines_last_column\relax
-       \settrue \c_page_lines_fake_number % why
+       \c_page_lines_fake_number\conditionaltrue % why
      \or
        % one column
      \or
        % two columns
        \ifx\p_location\v!default % or just margin
          \ifcase\c_page_lines_column\relax
-           \settrue \c_page_lines_fake_number % why
+           \c_page_lines_fake_number\conditionaltrue % why
          \or
            \let\p_location\v!left % one
          \else
@@ -593,13 +594,15 @@
 \aliased\let\doifsamelinereferenceelse\doifelsesamelinereference
 
 \permanent\protected\def\inline#1[#2]%
-  {\doifelsenothing{#1}%
-     {\doifelsesamelinereference{#2}%
-        {\in{\leftlabeltext\v!line}{\rightlabeltext\v!line}[lr:b:#2]}%
-        {\in{\leftlabeltext\v!lines}{}[lr:b:#2]--\in{}{\rightlabeltext\v!lines}[lr:e:#2]}}%
-     {\doifelsesamelinereference{#2}%
-        {\in{#1}[lr:b:#2]}%
-        {\in{#1}[lr:b:#2]--\in[lr:e:#2]}}}
+  {\ifempty{#1}%
+     \doifelsesamelinereference{#2}%
+       {\in{\leftlabeltext\v!line}{\rightlabeltext\v!line}[lr:b:#2]}%
+       {\in{\leftlabeltext\v!lines}{}[lr:b:#2]--\in{}{\rightlabeltext\v!lines}[lr:e:#2]}%
+   \else
+     \doifelsesamelinereference{#2}%
+       {\in{#1}[lr:b:#2]}%
+       {\in{#1}[lr:b:#2]--\in[lr:e:#2]}%
+   \fi}
 
 \permanent\protected\def\inlinerange[#1]%
   {\doifelsesamelinereference{#1}%

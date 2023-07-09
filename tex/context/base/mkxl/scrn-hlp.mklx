@@ -80,7 +80,7 @@
 \protected\def\scrn_help_argument#category%
   {\cdef\currenthelp{#category}%
    \global\advanceby\c_scrn_help_n\plusone
-   \edef\currenthelpname{help:\number\c_scrn_help_n}%
+   \edef\currenthelpname{help:\the\c_scrn_help_n}%
    \doifelselocation\scrn_help_argument_indeed\scrn_help_argument_ignore}
 
 \tolerant\def\scrn_help_argument_indeed[#reference]#:#text#target%
@@ -91,8 +91,8 @@
      \scrn_help_register{#target}%
    \egroup % can be usernode instead
    \goto
-     {\helpsignal{\number\c_scrn_help_n}#target}%
-     [\helpaction{\number\c_scrn_help_n}]}
+     {\helpsignal{\the\c_scrn_help_n}#target}%
+     [\helpaction{\the\c_scrn_help_n}]}
 
 \tolerant\def\scrn_help_argument_ignore[#reference]#:#text#target%
   {#target}
@@ -101,7 +101,7 @@
   {\global\advanceby\c_scrn_help_n\plusone
    \cdef\currenthelp{#category}%
    \edef\currenthelpreference{#reference}%
-   \edef\currenthelpname{help:\number\c_scrn_help_n}%
+   \edef\currenthelpname{help:\the\c_scrn_help_n}%
    \grabbufferdatadirect\currenthelp{\e!start\currenthelp}{\e!stop\currenthelp}}
 
 \protected\def\scrn_help_stop

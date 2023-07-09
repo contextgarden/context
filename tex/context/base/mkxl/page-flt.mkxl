@@ -52,10 +52,10 @@
 \newconditional\c_page_floats_some_waiting
 \newconditional\c_page_floats_not_permitted
 \newconditional\c_page_floats_flushing
-\newconditional\c_page_floats_center_box          \settrue\c_page_floats_center_box
+\newconditional\c_page_floats_center_box          \c_page_floats_center_box\conditionaltrue
 \newconditional\c_page_floats_center_box_local
 \newconditional\c_page_floats_center_box_global
-\newconditional\c_page_floats_compress_flushed    \settrue\c_page_floats_compress_flushed
+\newconditional\c_page_floats_compress_flushed    \c_page_floats_compress_flushed\conditionaltrue
 
 \newdimension  \d_page_floats_compress_distance
 
@@ -87,9 +87,9 @@
 
 \appendtoks
    \ifcase\savednoffloats
-     \global\setfalse\c_page_floats_some_waiting
+     \global\c_page_floats_some_waiting\conditionalfalse
    \else
-     \global\settrue\c_page_floats_some_waiting
+     \global\c_page_floats_some_waiting\conditionaltrue
    \fi
 \to \everyfloatscheck
 
@@ -301,39 +301,19 @@
 
 \newconditional\c_page_floats_flushed
 
-% \def\page_floats_flush_page_floats_indeed#1% future releases can do more clever things
-%   {\page_floats_flush{#1}\plusone
-%    \edef\floatspecification{\clf_getfloatvariable{specification}}% Is this okay?
-%    \expand\everybeforeflushedpagefloat
-%    \vpack to \textheight
-%      {\doifnotinset\v!high\floatspecification\vfill
-%       \box\floatbox
-%       \doifnotinset\v!low\floatspecification\vfill}%
-%    \page_otr_fill_and_eject_page}
-
-% \protected\def\page_floats_flush_page_floats % used in postpone
-%   {\edef\m_page_otr_checked_page_float{\clf_checkedpagefloat}%
-%    \ifempty\m_page_otr_checked_page_float
-%      % nothing
-%    \orelse\ifx\m_page_otr_checked_page_float\v!empty
-%       \emptyhbox \page_otr_fill_and_eject_page % why not dummy_page
-%    \else
-%       \page_floats_flush_page_floats_indeed\m_page_otr_checked_page_float
-%    \fi}
-
 \def\page_floats_flush_page_floats_inject#1% future releases can do more clever things
   {\page_floats_flush{#1}\plusone
    \edef\floatspecification{\clf_getfloatvariable{specification}}% Is this okay?
    \expand\everybeforeflushedpagefloat
    \vpack to \textheight
-     {\doifnotinset\v!high\floatspecification\vfill
+     {\ifinset\v!high\floatspecification\else\vfill\fi
       \box\floatbox
-      \doifnotinset\v!low\floatspecification\vfill}%
+      \ifinset\v!low \floatspecification\else\vfill\fi}%
    \page_otr_fill_and_eject_page % needed
-   \global\settrue\c_page_floats_flushed}
+   \global\c_page_floats_flushed\conditionaltrue}
 
 \protected\def\page_floats_flush_page_floats % used in postpone
-  {\global\setfalse\c_page_floats_flushed
+  {\global\c_page_floats_flushed\conditionalfalse
    \page_floats_flush_page_floats_indeed
    \ifconditional\c_page_floats_flushed
      \page_otr_fill_and_eject_page

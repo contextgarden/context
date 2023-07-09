@@ -13,11 +13,13 @@ local setmacro        = tokens.setters.macro
 local expandmacro     = token.expandmacro
 
 local nuts            = nodes.nuts
+local tonut           = nodes.tonut
 local getid           = nuts.getid
 local getlist         = nuts.getlist
 local getwhd          = nuts.getwhd
 local getattr         = nuts.getattr
 local getwidth        = nuts.getwidth
+local getleader       = nuts.getleader
 local setlist         = nuts.setlist
 local setlink         = nuts.setlink
 local setstate        = nuts.setstate
@@ -46,21 +48,12 @@ local adaptive        = nodes.adaptive or { }
 nodes.adaptive        = adaptive
 local enabled         = false
 
-local enableaction    = nodes.tasks.enableaction
+----- enableaction    = nodes.tasks.enableaction
 
 local d_adaptive_width  = isdimen("d_adaptive_width")
 local d_adaptive_height = isdimen("d_adaptive_height")
 local d_adaptive_depth  = isdimen("d_adaptive_depth")
 local d_adaptive_line   = isdimen("d_adaptive_line")
-
-function adaptive.set(settings)
-    if not enabled then
-        enableaction("vboxbuilders","nodes.adaptive.handlehorizontal")
-        enableaction("vboxhandlers","nodes.adaptive.handlevertical")
-        enabled = true
-    end
-    texsetattribute(a_adaptive,registervalue(a_adaptive,settings))
-end
 
 local function setadaptive(w,h,d,l,c,a)
     setdimen(d_adaptive_width,w)
@@ -87,9 +80,54 @@ local methods = {
     end
 }
 
+local function handleuleader(n,grp,index)
+    local m = tonut(n)
+    local a = getattr(m,a_adaptive) or index -- index will become a selector
+    if a then
+        local settings = getvalue(a_adaptive,a) -- index triggers ...
+        if settings then
+            setstate(m,0)
+            local action = methods[settings.method or 1]
+            if action then
+                action(settings,m,getlist(m))
+            end
+        end
+    end
+    return n
+end
+
+-- callback.register("handle_uleader", handleuleader) -- will be frozen
+
+function adaptive.set(settings)
+    if not enabled then
+     -- enableaction("vboxbuilders","nodes.adaptive.handlehorizontal")
+     -- enableaction("vboxhandlers","nodes.adaptive.handlevertical")
+        callback.register("handle_uleader", handleuleader) -- will be frozen
+        enabled = true
+    end
+    texsetattribute(a_adaptive,registervalue(a_adaptive,settings))
+end
+
+interfaces.implement {
+    name      = "setadaptive",
+    actions   = adaptive.set,
+    arguments = {
+        {
+            { "setups", "string" },
+            { "method", "integer" },
+            { "mp", "string" },
+            { "color", "string" },
+            { "rulethickness", "dimension" },
+            { "alternative", "string" },
+        }
+    }
+}
+
 -- The hlist leaders get done before we enter vpacking, so that is where the
 -- first call kicks in. Then we do a vpack (so one can indeed also adapt the
 -- ht/dp). After packing we know the glue and do the vlist leaders.
+
+-- This is now done via a callback but it is still experimental!
 
 local function handlehorizontal(n)
     if hasvalues(a_adaptive) then
@@ -117,7 +155,7 @@ end
 local function handlevertical(n)
     if hasvalues(a_adaptive) then
         -- not a list just a node
-        for nn, t, _, l in traverselist(n) do
+        for _, t, _, l in traverselist(n) do
             if t == vlist_code then
                 for m, _, _, ll in traverseleader(l) do
                     local a = getattr(m,a_adaptive)
@@ -140,21 +178,6 @@ end
 
 adaptive.handlehorizontal = handlehorizontal
 adaptive.handlevertical   = handlevertical
-
-interfaces.implement {
-    name      = "setadaptive",
-    actions   = adaptive.set,
-    arguments = {
-        {
-            { "setups", "string" },
-            { "method", "integer" },
-            { "mp", "string" },
-            { "color", "string" },
-            { "rulethickness", "dimension" },
-            { "alternative", "string" },
-        }
-    }
-}
 
 interfaces.implement {
     name      = "adaptivecheckbox",

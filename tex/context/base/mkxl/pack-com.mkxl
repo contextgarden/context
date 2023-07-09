@@ -101,7 +101,7 @@
 \initializeboxstack{\??combination captions}
 \initializeboxstack{\??combination temp}
 
-\setfalse\c_strc_constructions_define_commands
+\c_strc_constructions_define_commands\conditionalfalse
 
 \def\pack_combinations_push
   {\advanceby\c_pack_combinations_nesting\plusone
@@ -138,7 +138,7 @@
   [\c!numberconversion=\v!character,
    \c!text=]
 
-\settrue\c_strc_constructions_define_commands
+\c_strc_constructions_define_commands\conditionaltrue
 
 \setupcombination
   [\c!width=\v!fit,
@@ -160,13 +160,13 @@
 \installcorenamespace{combinationalternative}
 
 \appendtoks
-    \setfalse\c_strc_constructions_define_commands
+    \c_strc_constructions_define_commands\conditionalfalse
     \normalexpanded
       {\definelabel
          [\v!combination:\currentcombination]%
          [\v!combination\ifempty\currentcombinationparent\else:\currentcombinationparent\fi]}%
          [\s!counter=\currentcombination,\c!levels=1]%
-    \settrue\c_strc_constructions_define_commands
+    \c_strc_constructions_define_commands\conditionaltrue
 \to \everydefinecombination
 
 \defcsname\??combinationlocation\v!left  \endcsname{\let\m_pack_combinations_leftfiller \relax}
@@ -227,87 +227,6 @@
 
 \lettonothing\p_nx_ny
 
-% \permanent\tolerant\protected\def\startcombination[#1]#*[#2]% can be simplified
-%   {\bgroup % so we can grab a group
-%    \pack_combinations_push
-%    \cdef\currentcombination{#1}%
-%    \edef\p_nx_ny{#2}%
-%    %
-%    \ifempty\p_nx_ny
-%      \ifcondition\validassignment{#1}%
-%        \lettonothing\currentcombination
-%        \setupcurrentcombination[#1]%
-%        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
-%      \else
-%        \doifelseinstring{*}\currentcombination
-%          {\edef\p_nx_ny{\currentcombination*\plusone*}%
-%           \lettonothing\currentcombination}
-%          {\doifelsenumber\currentcombination
-%             {\edef\p_nx_ny{\currentcombination*\plusone*}%
-%              \lettonothing\currentcombination}
-%             {\edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}%
-%      \fi
-%    \else
-%      \ifcondition\validassignment{#2}%
-%        \setupcurrentcombination[#2]%
-%        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
-%      \else
-%        \edef\p_nx_ny{\p_nx_ny*\plusone*}%
-%      \fi
-%    \fi
-%    %
-% % test first:
-% %
-% %    \ifempty\p_nx_ny
-% %      \ifhastok={#1}%
-% %        \lettonothing\currentcombination
-% %        \setupcurrentcombination[#1]%
-% %        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
-% %      \orelse\ifhastok*{\currentcombination}%
-% %        \edef\p_nx_ny{\currentcombination*\plusone*}%
-% %        \lettonothing\currentcombination
-% %      \orelse\ifchknum\currentcombination\or
-% %        \edef\p_nx_ny{\currentcombination*\plusone*}%
-% %        \lettonothing\currentcombination
-% %      \else
-% %        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
-% %      \fi
-% %    \orelse\ifhastok={#2}%
-% %      \setupcurrentcombination[#2]%
-% %      \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
-% %    \else
-% %      \edef\p_nx_ny{\p_nx_ny*\plusone*}%
-% %    \fi
-%    %
-%    \forgetall
-%    %
-%    \expand\everycombination
-%    %
-%    \enforced\let\startcontent\pack_common_content_start
-%    \enforced\let\stopcontent \pack_common_content_stop
-%    \enforced\let\startcaption\pack_common_caption_start
-%    \enforced\let\stopcaption \pack_common_caption_stop
-%    %
-%    \edef\p_height  {\combinationparameter\c!height}%
-%    \edef\p_width   {\combinationparameter\c!width}%
-%    \edef\p_location{\combinationparameter\c!location}%
-%    \edef\p_distance{\combinationparameter\c!distance}%
-%    %
-%    \pack_combinations_location_reset
-%    \rawprocesscommacommand[\p_location]\pack_combinations_location_step
-%    %
-%    \dostarttaggedchained\t!combination\currentcombination\??combination
-%    \vbox \ifx\p_height\v!fit\else to \p_height \fi \bgroup
-%    \enforced\lettonothing\combination % permits \combination{}{} handy for cld
-%    \normalexpanded{\pack_combinations_start_indeed[\p_nx_ny]}}
-%
-% \permanent\protected\def\stopcombination
-%   {\bgroup\normalexpanded{\egroup{}\ntimes{{}{}}\c_pack_combinations_y}% brr
-%    \dostoptagged
-%    \egroup
-%    \pack_combinations_pop
-%    \egroup}
-
 \installcorenamespace{combinationmethod}
 
 % \defcsname\??combinationmethod:\v!start\endcsname
@@ -326,26 +245,24 @@
    \edef\p_nx_ny{#2}%
    %
    \ifempty\p_nx_ny
-     \ifcondition\validassignment{#1}%
+     \ifhastok={#1}%
        \lettonothing\currentcombination
        \setupcurrentcombination[#1]%
        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+     \orelse\ifhastok*\currentcombination
+       \edef\p_nx_ny{\currentcombination*\plusone*}%
+       \lettonothing\currentcombination
+     \orelse\ifchknum\currentcombination\or
+       \edef\p_nx_ny{\currentcombination*\plusone*}%
+       \lettonothing\currentcombination
      \else
-       \doifelseinstring{*}\currentcombination
-         {\edef\p_nx_ny{\currentcombination*\plusone*}%
-          \lettonothing\currentcombination}
-         {\doifelsenumber\currentcombination
-            {\edef\p_nx_ny{\currentcombination*\plusone*}%
-             \lettonothing\currentcombination}
-            {\edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}}}%
-     \fi
-   \else
-     \ifcondition\validassignment{#2}%
-       \setupcurrentcombination[#2]%
        \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
-     \else
-       \edef\p_nx_ny{\p_nx_ny*\plusone*}%
      \fi
+   \orelse\ifhastok={#2}%
+     \setupcurrentcombination[#2]%
+     \edef\p_nx_ny{\combinationparameter\c!nx*\combinationparameter\c!ny*}%
+   \else
+     \edef\p_nx_ny{\p_nx_ny*\plusone*}%
    \fi
    \begincsname\??combinationmethod\combinationparameter\c!method:\v!start\endcsname
    %
@@ -482,8 +399,7 @@
 \appendtoks
     \edef\p_pack_combinations_alternative{\combinationparameter\c!alternative}%
     \ifx\p_pack_combinations_alternative\v!label
-      \edef\p_continue{\combinationparameter\c!continue}%
-      \ifx\p_continue\v!yes \else
+      \ifcstok{\combinationparameter\c!continue}\v!yes\else
         \normalexpanded{\strc_labels_reset{\v!combination\ifempty\currentcombination\else:\currentcombination\fi}{1}}%
      \fi
     \fi
@@ -572,7 +488,7 @@
   {\ifdim\htdp\b_pack_combinations_caption>\d_pack_combinations_ht
      \global\d_pack_combinations_ht\htdp\b_pack_combinations_caption
    \fi
-   \savebox{\??combinationcaption:\number\c_pack_combinations_nesting}{\number\c_pack_combinations_x}{\box\b_pack_combinations_caption}}
+   \savebox{\??combinationcaption:\the\c_pack_combinations_nesting}{\the\c_pack_combinations_x}{\box\b_pack_combinations_caption}}
 
 \let\pack_combinations_flush_captions_indeed\relax
 
@@ -591,7 +507,7 @@
 
 \def\pack_combinations_flush_captions_yes
   {\vpack to \d_pack_combinations_ht\bgroup
-     \foundbox{\??combinationcaption:\number\c_pack_combinations_nesting}{\number\c_pack_combinations_x}%
+     \foundbox{\??combinationcaption:\the\c_pack_combinations_nesting}{\the\c_pack_combinations_x}%
      \vss
    \egroup
    \global\advanceby\c_pack_combinations_x\minusone
@@ -873,7 +789,7 @@
    \pairedboxparameter\c!after
    \egroup}
 
-\newconditional\c_pack_pairedboxes_horizontal \settrue\c_pack_pairedboxes_horizontal
+\newconditional\c_pack_pairedboxes_horizontal \c_pack_pairedboxes_horizontal\conditionaltrue
 
 \installcorenamespace{pairedboxnature}
 \installcorenamespace{pairedboxalign}
@@ -883,21 +799,21 @@
 \let\pack_pairedboxes_fill_bottom\relax
 
 \defcsname\??pairedboxnature\v!left\endcsname
-  {\settrue\c_pack_pairedboxes_horizontal
+  {\c_pack_pairedboxes_horizontal\conditionaltrue
    \let\pack_pairedboxes_flush\pack_pairedboxes_flush_left}
 
 \defcsname\??pairedboxnature\v!right\endcsname
-  {\settrue\c_pack_pairedboxes_horizontal
+  {\c_pack_pairedboxes_horizontal\conditionaltrue
    \let\pack_pairedboxes_flush\pack_pairedboxes_flush_right}
 
 \defcsname\??pairedboxnature\v!top\endcsname
-  {\setfalse\c_pack_pairedboxes_horizontal
+  {\c_pack_pairedboxes_horizontal\conditionalfalse
    \let\pack_pairedboxes_fill_top\relax
    \let\pack_pairedboxes_fill_bottom\vss
    \let\pack_pairedboxes_flush\pack_pairedboxes_flush_top}
 
 \defcsname\??pairedboxnature\v!bottom\endcsname
-  {\setfalse\c_pack_pairedboxes_horizontal
+  {\c_pack_pairedboxes_horizontal\conditionalfalse
    \let\pack_pairedboxes_fill_top\vss
    \let\pack_pairedboxes_fill_bottom\relax
    \let\pack_pairedboxes_flush\pack_pairedboxes_flush_bottom}

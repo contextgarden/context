@@ -81,9 +81,10 @@
 
 \permanent\protected\def\stoppositioning
   {\removeunwantedspaces
-   \doifnot{\positioningparameter\c!offset}\v!yes
-     {\global\d_pack_positioning_x_offset\zeropoint
-      \global\d_pack_positioning_y_offset\zeropoint}%
+   \ifcstok{\positioningparameter\c!offset}\v!yes\else
+     \global\d_pack_positioning_x_offset\zeropoint
+     \global\d_pack_positioning_y_offset\zeropoint
+   \fi
    \global\advanceby\d_pack_positioning_x_dimension\d_pack_positioning_x_offset
    \global\advanceby\d_pack_positioning_y_dimension\d_pack_positioning_y_offset
    \egroup
@@ -102,14 +103,16 @@
    \scratchdimen\positioningparameter#9\scratchdimen
    \advanceby\scratchdimen\positioningparameter#4\relax
    % == \scratchdimen\dimexpr#8\dimexpr#9\scratchdimen\relax+#4\relax
-   \doif{\positioningparameter#2}\v!relative
-     {\advanceby\scratchdimen#3%
-      \letpositioningparameter#4\zeropoint}%
+   \ifcstok{\positioningparameter#2}\v!relative
+     \advanceby\scratchdimen#3%
+     \letpositioningparameter#4\zeropoint
+   \fi
    #3\scratchdimen
-   \doifnot{\positioningparameter\c!state}\v!overlay
-     {\scratchdimen\dimexpr#5\nextbox+#3\relax
-      \ifdim           #3<-#7\relax \global#7-#3\relax    \fi
-      \ifdim\scratchdimen> #6\relax \global#6\scratchdimen\fi}}
+   \ifcstok{\positioningparameter\c!state}\v!overlay\else
+     \scratchdimen\dimexpr#5\nextbox+#3\relax
+     \ifdim           #3<-#7\relax \global#7-#3\relax    \fi
+     \ifdim\scratchdimen> #6\relax \global#6\scratchdimen\fi
+  \fi}
 
 \permanent\tolerant\protected\def\position[#1]#:(#2,#3)%
   {\bgroup

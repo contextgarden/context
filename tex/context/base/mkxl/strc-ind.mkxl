@@ -75,8 +75,9 @@
    \c_strc_indentedtexts_nesting#2\relax
    \indentedtextparameter\c!before
    \d_strc_indentedtexts_distance\indentedtextparameter\c!distance\relax
-   \doifnothing{\indentedtextparameter\c!sample}
-     {\setindentedtextparameter\c!sample{\indentedtextparameter\c!text}}%
+   \ifempty{\indentedtextparameter\c!sample}%
+     \setindentedtextparameter\c!sample{\indentedtextparameter\c!text}%
+   \fi
    \assignwidth
      {\indentedtextparameter\c!width}
      {\d_strc_indentedtexts_width}

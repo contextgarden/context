@@ -134,32 +134,6 @@
    \bgroup
    \ignorespaces}
 
-% \permanent\protected\def\startframedrow
-%   {\advanceby\c_tabl_framed_r\plusone
-%    \c_tabl_framed_c\zerocount
-%    \d_tabl_framed_h\zeropoint
-%    \bgroup
-%    \cdef\currentframed{\number\c_tabl_framed_r}%
-%    \cdef\currentframed
-%      {\??framedtablerow\currentframedtable
-%       \ifcsname\??framedtablerow\currentframedtable:\currentframed\endcsname
-%         :\currentframed
-%       \orelse\ifcsname\??framedtablerow\currentframedtable:\v!each\endcsname
-%         :\v!each
-%       \fi}%
-%    \pack_framed_start_framed_whatever}
-%
-% \permanent\protected\def\stopframedrow
-%   {\dofastloopcs\c_tabl_framed_c\tabl_framed_flush_row
-%    \stopframed
-%    \nointerlineskip
-%    \vskip\zeropoint\relax
-%    \framedparameter\c!inbetween}
-
-\protected\def\tabl_framed_flush_row
-  {\vpack to \d_tabl_framed_h{\flushbox\??framedtable{\number\fastloopindex}\vfill}%
-   \ifzeropt\d_tabl_framed_d\else\kern\d_tabl_framed_d\fi}
-
 \newinteger\c_tabl_framed_pass
 
 \permanent\let\stopframedrow\relax
@@ -183,7 +157,7 @@
   {\bgroup
    \c_tabl_framed_c\zerocount
    \c_tabl_framed_pass\plustwo
-   \cdef\currentframed{\number\c_tabl_framed_r}%
+   \cdef\currentframed{\the\c_tabl_framed_r}%
    \cdef\currentframed
      {\??framedtablerow\currentframedtable
       \ifcsname\??framedtablerow\currentframedtable:\currentframed\endcsname
@@ -194,21 +168,21 @@
    \pack_framed_start_framed_whatever}
 
 \protected\def\stopframedrow_two
-  {\dofastloopcs\c_tabl_framed_c\tabl_framed_flush_row
+  {\localcontrolledloop\plusone\c_tabl_framed_c\plusone{\tabl_framed_flush_row_two}%
    \stopframed
    \nointerlineskip
    \vskip\zeropoint\relax
    \framedparameter\c!inbetween}
 
 \protected\def\tabl_framed_flush_row_two
-  {\vpack to \d_tabl_framed_h{\flushbox\??framedtable{\number\fastloopindex}\vfill}%
+  {\vpack to \d_tabl_framed_h{\flushbox\??framedtable{\the\currentloopiterator}\vfill}%
    \ifzeropt\d_tabl_framed_d\else\kern\d_tabl_framed_d\fi}
 
 \permanent\protected\def\startframedcell
   {\advanceby\c_tabl_framed_c\plusone
    \setbox\b_tabl_framed\hpack\bgroup
   %\bgroup
-   \cdef\currentframed{\number\c_tabl_framed_c}%
+   \cdef\currentframed{\the\c_tabl_framed_c}%
    \cdef\currentframed
      {\??framedtablecolumn\currentframedtable
       \ifcsname\??framedtablecolumn\currentframedtable:\currentframed\endcsname
@@ -234,7 +208,7 @@
        \d_tabl_framed_h\ht\b_tabl_framed
      \fi
    \else
-     \savebox\??framedtable{\number\c_tabl_framed_c}{\box\b_tabl_framed}%
+     \savebox\??framedtable{\the\c_tabl_framed_c}{\box\b_tabl_framed}%
    \fi}
 
 \protect \endinput

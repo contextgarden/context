@@ -1277,6 +1277,14 @@ const char *tex_print_format_args(const char *format, va_list args)
                                 }
                                 break;
                             }
+                        case 'N':
+                            {
+                                halfword node = va_arg(args, int);
+                                if (node) {
+                                    tex_print_str(lmt_interface.node_data[node_type(node)].name);
+                                }
+                                break;
+                            }
                         case 'M':
                             {
                                 halfword mode = va_arg(args, int);

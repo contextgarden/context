@@ -39,7 +39,7 @@
 
 \def\anch_backgrounds_text_initialize_next
   {\global\advanceby\c_anch_backgrounds_text_n\plusone
-   \edef\v_anch_backgrounds_text_current{tbg:\number\c_anch_backgrounds_text_n}}
+   \edef\v_anch_backgrounds_text_current{tbg:\the\c_anch_backgrounds_text_n}}
 
 % The first position can be used in the middle of a paragraph in which case we're
 % too late with initializing par positions. Therefore we check if positions are
@@ -62,7 +62,7 @@
 \permanent\def\MPself     {\MPvar{self}}
 \permanent\def\MPbself    {b:\MPvar{self}}
 \permanent\def\MPeself    {e:\MPvar{self}}
-\permanent\def\MPparanchor{p:\number\MPparcounter}
+\permanent\def\MPparanchor{p:\number\MPparcounter} % \the
 
 % \carryoverpar is needed for left/right floats
 
@@ -398,8 +398,8 @@
 \newdimension  \d_free_offset_bottom
 
 \installtextracker{floats.freeregion}
-  {\settrue \c_strc_floats_trace_free}
-  {\setfalse\c_strc_floats_trace_free}
+  {\c_strc_floats_trace_free\conditionaltrue}
+  {\c_strc_floats_trace_free\conditionalfalse}
 
 \def\strc_floats_mark_as_free#1#2#3#4#5%
   {\c_free_offset_kind  #1%

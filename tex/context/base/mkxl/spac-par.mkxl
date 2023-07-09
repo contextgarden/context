@@ -284,26 +284,26 @@
 \letcsname\??paragraphintro\empty\endcsname\gobbleoneargument
 
 \defcsname\??paragraphintro\v!reset\endcsname#1%
-  {\global\setfalse\c_spac_paragraphs_intro_first
-   \global\setfalse\c_spac_paragraphs_intro_next
-   \global\setfalse\c_spac_paragraphs_intro_each
+  {\global\c_spac_paragraphs_intro_first\conditionalfalse
+   \global\c_spac_paragraphs_intro_next\conditionalfalse
+   \global\c_spac_paragraphs_intro_each\conditionalfalse
    \global\t_spac_paragraphs_intro_first\emptytoks
    \global\t_spac_paragraphs_intro_next \emptytoks
    \global\t_spac_paragraphs_intro_each \emptytoks
    \glettonothing\spac_paragraphs_flush_intro}
 
 \defcsname\??paragraphintro\v!first\endcsname#1%
-  {\global\settrue\c_spac_paragraphs_intro_first
+  {\global\c_spac_paragraphs_intro_first\conditionaltrue
    \gtoksapp\t_spac_paragraphs_intro_first{#1}%
    \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_indeed}
 
 \defcsname\??paragraphintro\v!next\endcsname#1%
-  {\global\settrue\c_spac_paragraphs_intro_next
+  {\global\c_spac_paragraphs_intro_next\conditionaltrue
    \gtoksapp\t_spac_paragraphs_intro_next{#1}%
    \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_indeed}
 
 \defcsname\??paragraphintro\v!each\endcsname#1%
-  {\global\settrue\c_spac_paragraphs_intro_each
+  {\global\c_spac_paragraphs_intro_each\conditionaltrue
    \gtoksapp\t_spac_paragraphs_intro_each{#1}%
    \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_indeed}
 
@@ -360,7 +360,7 @@
          \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_each
        \fi
        \ifconditional\c_spac_paragraphs_intro_first
-         \global\setfalse\c_spac_paragraphs_intro_first
+         \global\c_spac_paragraphs_intro_first\conditionalfalse
          \global\t_spac_paragraphs_intro_first\emptytoks
          \expand\t_spac_paragraphs_intro_first
        \fi
@@ -370,7 +370,7 @@
          \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_next
        \fi
        \ifconditional\c_spac_paragraphs_intro_first
-         \global\setfalse\c_spac_paragraphs_intro_first
+         \global\c_spac_paragraphs_intro_first\conditionalfalse
          \global\t_spac_paragraphs_intro_first\emptytoks
          \expand\t_spac_paragraphs_intro_first
        \fi
@@ -378,7 +378,7 @@
 
 \protected\def\spac_paragraphs_flush_intro_next
   {\normalexpanded{%
-     \global\setfalse\c_spac_paragraphs_intro_next
+     \global\c_spac_paragraphs_intro_next\conditionalfalse
      \global\t_spac_paragraphs_intro_next\emptytoks
      \ifconditional\c_spac_paragraphs_intro_each
        \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_each

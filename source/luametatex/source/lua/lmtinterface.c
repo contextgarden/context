@@ -244,20 +244,21 @@ void lmt_initialize_interface(void)
     set_math_style_variant_value(math_denominator_style_variant,  denominator);
     set_math_style_variant_value(math_double_superscript_variant, doublesuperscript);
 
-    lmt_interface.lua_function_values = lmt_aux_allocate_value_info(lua_value_direct_code);
+    lmt_interface.lua_function_values = lmt_aux_allocate_value_info(lua_value_conditional_code);
 
     # define set_lua_function_value(n,k) lmt_interface.lua_function_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }
 
-    set_lua_function_value(lua_value_none_code,      none);
-    set_lua_function_value(lua_value_integer_code,   integer);
-    set_lua_function_value(lua_value_cardinal_code,  cardinal);
-    set_lua_function_value(lua_value_dimension_code, dimension);
-    set_lua_function_value(lua_value_skip_code,      skip);
-    set_lua_function_value(lua_value_boolean_code,   boolean);
-    set_lua_function_value(lua_value_float_code,     float);
-    set_lua_function_value(lua_value_string_code,    string);
-    set_lua_function_value(lua_value_node_code,      node);
-    set_lua_function_value(lua_value_direct_code,    direct);
+    set_lua_function_value(lua_value_none_code,        none);
+    set_lua_function_value(lua_value_integer_code,     integer);
+    set_lua_function_value(lua_value_cardinal_code,    cardinal);
+    set_lua_function_value(lua_value_dimension_code,   dimension);
+    set_lua_function_value(lua_value_skip_code,        skip);
+    set_lua_function_value(lua_value_boolean_code,     boolean);
+    set_lua_function_value(lua_value_float_code,       float);
+    set_lua_function_value(lua_value_string_code,      string);
+    set_lua_function_value(lua_value_node_code,        node);
+    set_lua_function_value(lua_value_direct_code,      direct);
+    set_lua_function_value(lua_value_conditional_code, conditional);
 
     lmt_interface.direction_values = lmt_aux_allocate_value_info(dir_righttoleft);
 

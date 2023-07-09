@@ -55,7 +55,7 @@
 
 \permanent\protected\def\newcatcodetable#1% we could move the cctdefcounter to lua
   {\global\advanceby\c_syst_catcodes_n\plusone
-   \gdefcsname\??catcodetablen\number\c_syst_catcodes_n\endcsname{\string#1}% logging
+   \gdefcsname\??catcodetablen\the\c_syst_catcodes_n\endcsname{\string#1}% logging
    \immutable\integerdef#1\c_syst_catcodes_n
    \ctxlua{catcodes.register("\expandafter\gobbleoneargument\string#1",\number#1)}}
 
@@ -78,12 +78,20 @@
 
 \permanent\let\stopcatcodetable\relax
 
+% \permanent\protected\def\startextendcatcodetable#1#2\stopextendcatcodetable
+%   {\begingroup
+%    \catcodetable#1\relax
+%    \globaldefs\plusone   % a bit hackish
+%    #2%
+%    \globaldefs\zerocount
+%    \endgroup}
+
 \permanent\protected\def\startextendcatcodetable#1#2\stopextendcatcodetable
   {\begingroup
+   \scratchcounter\catcodetable
    \catcodetable#1\relax
-   \globaldefs\plusone
    #2%
-   \globaldefs\zerocount
+   \catcodetable\scratchcounter
    \endgroup}
 
 \permanent\let\stopextendcatcodetable\relax
@@ -95,15 +103,6 @@
 
 \newconstant\defaultcatcodetable
 
-% ==
-%
-% \protected\def\startextendcatcodetable#1#2\stopextendcatcodetable
-%   {\bgroup
-%    \scratchcounter\the\catcodetable
-%    \catcodetable #1 #2
-%    \catcodetable\scratchcounter
-%    \egroup}
-
 %D The next command can be defined in a cleaner way in the MkIV way but we want
 %D to have a fast one with a minimal chance for interference. Do we still need
 %D this complex mechanism? Probably not. Future versions of \MKIV\ might only use
@@ -112,7 +111,7 @@
 
 % %D Once a catcode is assigned, the next assignments will happen faster. However,
 % %D redefinitions probably happen seldom so it's sort of overkill. We also need to
-% %D take care of the initial (shared between catcode regfimes) binding.
+% %D take care of the initial (shared between catcode regimes) binding.
 %
 % \permanent\protected\def\letcatcodecommand{\afterassignment\syst_catcodes_let_a\c_syst_catcodes_a}
 % \permanent\protected\def\defcatcodecommand{\afterassignment\syst_catcodes_def_a\c_syst_catcodes_a} % obsolete
@@ -125,45 +124,45 @@
 % % The two step definition is used because we need to fetch the third argument.
 %
 % \def\syst_catcodes_let_b % each time
-%   {\ifcsname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
+%   {\ifcsname\??catcodelet\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\endcsname
 %      \expandafter\lastnamedcs
 %    \else
 %      \expandafter\syst_catcodes_let_c
 %    \fi}
 %
 % \def\syst_catcodes_def_b % each time
-%   {\ifcsname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
+%   {\ifcsname\??catcodedef\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\endcsname
 %      \expandafter\lastnamedcs
 %    \else
 %      \expandafter\syst_catcodes_def_c
 %    \fi}
 %
 % \def\syst_catcodes_ued_b % each time
-%   {\ifcsname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname
+%   {\ifcsname\??catcodeued\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\endcsname
 %      \expandafter\lastnamedcs
 %    \else
 %      \expandafter\syst_catcodes_ued_c
 %    \fi}
 %
 % \def\syst_catcodes_let_c % only first time
-%   {\frozen\enforced\gdefcsname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname\expandafter
-%      {\expandafter\enforced\letcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}%
+%   {\frozen\enforced\gdefcsname\??catcodelet\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\expandafter\endcsname\expandafter
+%      {\expandafter\enforced\letcsname\??catcodeget\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\endcsname}%
 %    \syst_catcodes_reinstate_unexpanded
-%    \csname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
+%    \csname\??catcodelet\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\endcsname}
 %
 % \def\syst_catcodes_def_c % only first time (we could use \normalexpanded here)
-%   {\frozen\enforced\gdefcsname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
+%   {\frozen\enforced\gdefcsname\??catcodedef\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\expandafter\endcsname
 %      \expandafter##\expandafter1\expandafter
-%        {\expandafter\frozen\expandafter\enforced\defcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname{##1}}%
+%        {\expandafter\frozen\expandafter\enforced\defcsname\??catcodeget\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\endcsname{##1}}%
 %    \syst_catcodes_reinstate_normal
-%    \csname\??catcodedef\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
+%    \csname\??catcodedef\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\endcsname}
 %
 % \def\syst_catcodes_ued_c % only first time
-%   {\frozen\enforced\gdefcsname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\expandafter\endcsname
+%   {\frozen\enforced\gdefcsname\??catcodeued\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\expandafter\endcsname
 %      \expandafter##\expandafter1\expandafter
-%        {\expandafter\frozen\expandafter\enforced\expandafter\protected\defcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname{##1}}%
+%        {\expandafter\frozen\expandafter\enforced\expandafter\protected\defcsname\??catcodeget\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\endcsname{##1}}%
 %    \syst_catcodes_reinstate_unexpanded
-%    \csname\??catcodeued\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}
+%    \csname\??catcodeued\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\endcsname}
 %
 % %D We can simplify this a bit (not that critical):
 %
@@ -171,8 +170,8 @@
 %   {\afterassignment\syst_catcodes_let_c\let\m_syst_catcodes_temp}
 %
 % \def\syst_catcodes_let_c
-%   {\enforced\letcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname\m_syst_catcodes_temp
-%    \protected\edef\m_syst_catcodes_temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+%   {\enforced\letcsname\??catcodeget\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\endcsname\m_syst_catcodes_temp
+%    \protected\edef\m_syst_catcodes_temp{\noexpand\catcodecommand{\the\c_syst_catcodes_b}}%
 %    \letcharcode\c_syst_catcodes_b\m_syst_catcodes_temp}
 %
 % \def\syst_catcodes_let_c
@@ -181,9 +180,9 @@
 % % not that much gain:
 %
 % \def\syst_catcodes_let_c % only first time
-%   {\expandafter\integerdef\csname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname\c_syst_catcodes_b
-%    \letcsname\??catcodeget\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname\m_syst_catcodes_temp
-%    \protected\edef\m_syst_catcodes_temp{\noexpand\catcodecommand\csname\??catcodelet\number\c_syst_catcodes_a:\number\c_syst_catcodes_b\endcsname}%
+%   {\expandafter\integerdef\csname\??catcodelet\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\endcsname\c_syst_catcodes_b
+%    \letcsname\??catcodeget\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\endcsname\m_syst_catcodes_temp
+%    \protected\edef\m_syst_catcodes_temp{\noexpand\catcodecommand\csname\??catcodelet\the\c_syst_catcodes_a:\the\c_syst_catcodes_b\endcsname}%
 %    \letcharcode\c_syst_catcodes_b\m_syst_catcodes_temp}
 
 %D This can be used when a direct definition has been done and the selector has been
@@ -194,11 +193,11 @@
 % \let\m_syst_catcodes_temp\relax
 %
 % \def\syst_catcodes_reinstate_normal
-%   {\edef\m_syst_catcodes_temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+%   {\edef\m_syst_catcodes_temp{\noexpand\catcodecommand{\the\c_syst_catcodes_b}}%
 %    \letcharcode\c_syst_catcodes_b\m_syst_catcodes_temp}
 %
 % \def\syst_catcodes_reinstate_unexpanded
-%   {\protected\edef\m_syst_catcodes_temp{\noexpand\catcodecommand{\number\c_syst_catcodes_b}}%
+%   {\protected\edef\m_syst_catcodes_temp{\noexpand\catcodecommand{\the\c_syst_catcodes_b}}%
 %    \letcharcode\c_syst_catcodes_b\m_syst_catcodes_temp}
 %
 % \permanent\def\catcodecommand#1%
@@ -269,25 +268,25 @@
 \permanent\protected\def\pushcatcodetable
   {\advanceby\c_syst_catcodes_level\plusone
    \syst_catcodes_trace_push
-   \expandafter\integerdef\csname\??catcodetablet\number\c_syst_catcodes_level\endcsname\currentcatcodetable}
+   \expandafter\integerdef\csname\??catcodetablet\the\c_syst_catcodes_level\endcsname\currentcatcodetable}
 
 \permanent\protected\def\popcatcodetable
   {\ifcase\c_syst_catcodes_level
      \syst_catcodes_trace_nesting_error
    \else
-     \catcodetable\csname\??catcodetablet\number\c_syst_catcodes_level\endcsname
+     \catcodetable\csname\??catcodetablet\the\c_syst_catcodes_level\endcsname
      \syst_catcodes_trace_pop
      \advanceby\c_syst_catcodes_level\minusone
    \fi}
 
 \protected\def\syst_catcodes_trace_nesting_error
   {\immediate\write\statuswrite{}%
-   \immediate\write\statuswrite{Fatal error: catcode push/pop mismatch. Fix this! (restore level: \number\c_syst_catcodes_level)}\wait\end
+   \immediate\write\statuswrite{Fatal error: catcode push/pop mismatch. Fix this! (restore level: \the\c_syst_catcodes_level)}\wait\end
    \immediate\write\statuswrite{}}
 
 \permanent\protected\def\restorecatcodes % takes previous level
   {\ifnum\c_syst_catcodes_level>\plusone
-     \catcodetable\csname\??catcodetablet\number\numexpr\c_syst_catcodes_level-1\relax\endcsname
+     \catcodetable\csname\??catcodetablet\the\numexpr\c_syst_catcodes_level-1\relax\endcsname
    \fi}
 
 \permanent\protected\def\setcatcodetable#1%
@@ -301,15 +300,15 @@
 %D \stoptyping
 
 \permanent\protected\def\tracecatcodetables
-  {\def\syst_catcodes_trace_set {\syst_catcodes_trace{set  \catcodetablename\space                                at \number\c_syst_catcodes_level}}%
-   \def\syst_catcodes_trace_push{\syst_catcodes_trace{push \catcodetablename\space from \syst_catcodes_prev\space at \number\c_syst_catcodes_level}}%
-   \def\syst_catcodes_trace_pop {\syst_catcodes_trace{pop  \catcodetablename\space to   \syst_catcodes_prev\space at \number\c_syst_catcodes_level}}}
+  {\def\syst_catcodes_trace_set {\syst_catcodes_trace{set  \catcodetablename\space                                at \the\c_syst_catcodes_level}}%
+   \def\syst_catcodes_trace_push{\syst_catcodes_trace{push \catcodetablename\space from \syst_catcodes_prev\space at \the\c_syst_catcodes_level}}%
+   \def\syst_catcodes_trace_pop {\syst_catcodes_trace{pop  \catcodetablename\space to   \syst_catcodes_prev\space at \the\c_syst_catcodes_level}}}
 
 \def\syst_catcodes_trace#1{\immediate\write\statuswrite{[#1]}}
 
 \def\syst_catcodes_prev
   {\ifnum\numexpr\c_syst_catcodes_level-1\relax>\zerocount
-     \csname\??catcodetablen\number\csname\??catcodetablet\number\numexpr\c_syst_catcodes_level-1\relax\endcsname\endcsname
+     \csname\??catcodetablen\number\csname\??catcodetablet\the\numexpr\c_syst_catcodes_level-1\relax\endcsname\endcsname
    \else
      -%
    \fi}

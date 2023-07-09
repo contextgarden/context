@@ -77,7 +77,9 @@
      \parfillskip \scratchdimen\s!plus \plusone\s!fil\relax
    \fi
    \filler[#1]%
-   \doifsomething{#2}{\hbox{#2}}%
+   \ifempty{#2}\else
+     \hbox{#2}%
+   \fi
    \par
    \endgroup
    \ignorespaces}

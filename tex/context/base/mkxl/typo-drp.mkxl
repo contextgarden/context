@@ -106,9 +106,11 @@
    \cdef\currentinitial{#1}%
    \setupcurrentinitial[#2]%
    \resetfontfeature % might be needed in more places
-   \doifelsenothing{\initialparameter\c!style}
-     {\definedfont[\initialparameter\c!font]}
-     {\useinitialstyleparameter\c!style}%
+   \ifempty{\initialparameter\c!style}%
+     \definedfont[\initialparameter\c!font]%
+   \else
+     \useinitialstyleparameter\c!style
+   \fi
    \useinitialcolorparameter\c!color
    \edef\p_voffset{\initialparameter\c!voffset}%
    \scratchcounter \initialparameter\c!n\relax
@@ -173,8 +175,8 @@
 
 \installtexexperiment
    {autoforgetinitials}
-   {\settrue \c_initial_synchronize}
-   {\setfalse\c_initial_synchronize}
+   {\c_initial_synchronize\conditionaltrue}
+   {\c_initial_synchronize\conditionalfalse}
 
 % \setupbodyfont[dejavu,9pt]
 %

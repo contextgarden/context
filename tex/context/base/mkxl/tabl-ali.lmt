@@ -1,0 +1,82 @@
+if not modules then modules = { } end modules ['tabl-ali'] = {
+    version   = 1.001,
+    comment   = "companion to tabl-ali.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local next, tonumber = next, tonumber
+local find, match = string.find, string.match
+
+local data = false
+local user = false
+
+local dimension_code = tokens.values.dimension
+
+local function align_point_delta(n,m)
+
+    -- better use the official position interface
+
+    if not data then
+        user = (job.positions.collected or { }).user or { }
+        data = { }
+     -- for k, v in table.sortedhash(user) do
+        for k, v in next, user do
+            if find(k,"^ap::") then
+                local p = v.p
+                local n = tonumber(match(k,"ap::(%d+):"))
+                if n then
+                    local dn = data[n]
+                    if not dn then
+                        dn = { }
+                        data[n] = dn
+                    end
+                    local dp = dn[p]
+                    if not dp then
+                        dp = { }
+                        dn[p] = dp
+                    end
+                    dp[#dp+1] = v.x
+                end
+            end
+        end
+
+        for k, v in next, data do
+            local max = false
+            for kk, vv in next, v do
+                for i=1,#vv do
+                    local x = vv[i]
+                    if not max or x > max then
+                        max = x
+                    end
+                end
+                v[kk] = max
+            end
+        end
+
+    end
+
+    local d = data[n]
+
+    if d then
+        local u = user["ap::"..n..":"..m]
+        if u then
+            -- we could clean up previous pages but it's not worth the trouble
+            local x = u.x
+            local p = u.p
+            local m = d[p]
+            if m and m > x then
+                return dimension_code, m - x
+            end
+        end
+    end
+    return dimension_code, 0
+end
+
+interfaces.implement {
+    name      = "align_point_delta",
+    arguments = "2 integers",
+    usage     = "value",
+    actions   = align_point_delta
+}

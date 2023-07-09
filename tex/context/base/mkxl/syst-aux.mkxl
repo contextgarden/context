@@ -32,6 +32,10 @@
 %D
 %D Of course I couldn't do this without Wolfgang looking over my shoulder. Changing
 %D core code is kind of tricky.
+%D
+%D There are quite some helpers here that are effectively obsolete (read: there is no
+%D need for them). Examples are \type {setflag} and \type {\uppercasestring} and their
+%D relatives. We keep them around as illustration and possible usage in old styles.
 
 \unprotect
 
@@ -82,7 +86,7 @@
 
     \newinteger\c_syst_helpers_n_of_namespaces \c_syst_helpers_n_of_namespaces\pluseight % 1-8 reserved for catcodes
 
-    \def\v_interfaces_prefix_template_system{\number    \c_syst_helpers_n_of_namespaces>>}
+    \def\v_interfaces_prefix_template_system{\the       \c_syst_helpers_n_of_namespaces>>}
     %def\v_interfaces_prefix_template_system{\characters\c_syst_helpers_n_of_namespaces>>} % no \characters yet
 
 \fi
@@ -587,7 +591,7 @@
 % or (test this):
 %
 % \permanent\protected\def\processallactionsinset[#1]%
-%   {\iftok{#1}\emptytoks
+%   {\ifempty{#1}%
 %      \expandafter\processaction
 %    \else
 %      \expandafter\syst_helpers_process_all_actions_in_set_indeed
@@ -743,9 +747,13 @@
 % !9yes=\doifcommonelse{,a,}{,,,a,}{yes}{nop}
 % !9yes=\doifcommonelse{,,a,}{,,,a,}{yes}{nop}
 
-\permanent\protected\def\doifelsecommon#1#2{\clf_doifelsecommon{#1}{#2}} % todo: define in lua
-\permanent\protected\def\doifcommon    #1#2{\clf_doifcommon    {#1}{#2}} % todo: define in lua
-\permanent\protected\def\doifnotcommon #1#2{\clf_doifnotcommon {#1}{#2}} % todo: define in lua
+% \permanent\protected\def\doifelsecommon#1#2{\clf_doifelsecommon{#1}{#2}} % todo: define in lua
+% \permanent\protected\def\doifcommon    #1#2{\clf_doifcommon    {#1}{#2}} % todo: define in lua
+% \permanent\protected\def\doifnotcommon #1#2{\clf_doifnotcommon {#1}{#2}} % todo: define in lua
+
+\permanent\protected\def\doifelsecommon#1#2{\clf_if_common{#1}{#2}\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+\permanent\protected\def\doifcommon    #1#2{\clf_if_common{#1}{#2}\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
+\permanent\protected\def\doifnotcommon #1#2{\clf_if_common{#1}{#2}\expandafter\gobbleoneargument  \else\expandafter\firstofoneargument  \fi}
 
 \aliased\let\doifcommonelse\doifelsecommon
 
@@ -1352,7 +1360,7 @@
 
 \permanent\protected\def\makerawcommalist[#1]#2% use \processnext ... here
   {\scratchtoks\emptytoks
-   \def\syst_helpers_do_make_raw_comma_list##1{\iftok\scratchtoks\emptytoks\scratchtoks{##1}\else\toksapp\scratchtoks{,##1}\fi}%
+   \def\syst_helpers_do_make_raw_comma_list##1{\ifempty\scratchtoks\scratchtoks{##1}\else\toksapp\scratchtoks{,##1}\fi}%
    \processcommalist[#1]\syst_helpers_do_make_raw_comma_list
    \edef#2{\the\scratchtoks}}
 
@@ -1741,9 +1749,10 @@
 \let\syst_helpers_copy_parameter\relax
 
 \permanent\protected\def\copyparameters[#1]#*[#2]#*[#3]%
-  {\doifnot{#1}{#2}
-     {\def\syst_helpers_copy_parameter{\docopyvalue{#1}{#2}}% ##1
-      \processcommalist[#3]\syst_helpers_copy_parameter}}
+  {\iftok{#1}{#2}\else
+     \def\syst_helpers_copy_parameter{\docopyvalue{#1}{#2}}% ##1
+     \processcommalist[#3]\syst_helpers_copy_parameter
+   \fi}
 
 % %D \macros
 % %D   {ifparameters,checkparameters}
@@ -2541,8 +2550,8 @@
 
 \newconditional\c_syst_helpers_permit_spaces_between_groups
 
-\permanent\protected\def    \permitspacesbetweengroups{\settrue \c_syst_helpers_permit_spaces_between_groups}
-\permanent\protected\def\dontpermitspacesbetweengroups{\setfalse\c_syst_helpers_permit_spaces_between_groups}
+\permanent\protected\def    \permitspacesbetweengroups{\c_syst_helpers_permit_spaces_between_groups\conditionaltrue}
+\permanent\protected\def\dontpermitspacesbetweengroups{\c_syst_helpers_permit_spaces_between_groups\conditionalfalse}
 
 \dontpermitspacesbetweengroups
 
@@ -3437,14 +3446,14 @@
 %%    \globalpushmacro\recurselevel
 %%    \protected\gdef\recurseaction##1##2{#4}%
 %%    \normalexpanded{\ifcmpnum#3\zerocount
-%%      \ifnum#1<#2\relax\relax % so we catch \number\numexpr xx without \relax's
+%%      \ifnum#1<#2\relax\relax % so we catch \the\numexpr xx without \relax's
 %%        \doubleexpandafter\gobbletwoarguments
 %%      \else
 %%        \tripleexpandafter\syst_helpers_stepwise_reverse
 %%      \fi
 %%    \or
 %%      \doubleexpandafter\gobbletwoarguments
-%%    \orelse\ifnum#2<#1\relax\relax % so we catch \number\numexpr xx without \relax's
+%%    \orelse\ifnum#2<#1\relax\relax % so we catch \the\numexpr xx without \relax's
 %%      \doubleexpandafter\gobbletwoarguments
 %%    \else
 %%      \doubleexpandafter\syst_helpers_stepwise_recurse
@@ -3516,7 +3525,7 @@
    \push_macro_recurselevel
    \push_macro_recursedepth
    \protected\gdef\recurseaction##1##2{#2}%
-   \localcontrolledloop=\plusone=#1=\plusone
+   \localcontrolledrepeat=#1%
      {\edef\recurselevel{\the\currentloopiterator}%
       \edef\recursedepth{\the\currentloopnesting}%
       \normalexpanded{\recurseaction{\recurselevel}{\recursedepth}}}%
@@ -3536,7 +3545,7 @@
    \push_macro_m_expanded_recursed
    \def\m_expanded_recursed##1{#2}%
    \endlocalcontrol
-   \expandedloop\plusone#1\plusone{\expandafter\m_expanded_recursed\expandafter{\the\currentloopiterator}}%
+   \expandedrepeat#1{\expandafter\m_expanded_recursed\expandafter{\the\currentloopiterator}}%
    \beginlocalcontrol
    \pop_macro_m_expanded_recursed
    \endlocalcontrol}
@@ -3909,7 +3918,7 @@
 %D We don't explicitly test if the macro is defined.
 
 \permanent\protected\def\assignifempty#1#2%
-  {\iftok{#1}\emptytoks \def#1{#2}\fi}
+  {\ifempty{#1}\def#1{#2}\fi}
 
 %D \macros
 %D   {gobbleuntil,grabuntil,gobbleuntilrelax,
@@ -4529,9 +4538,17 @@
    \fi}
 
 \permanent\protected\def\prependtoksonce#1\to#2%
-  {\ifhasxtoks{#1}{#2}\m_syst_helpers_scratch\else
+  {\ifhasxtoks{#1}#2\else
      \prependtoks#1\to#2%
    \fi}
+
+% Soon (check usage):
+%
+% \permanent\protected\def\appendtoks #1\to#2{\toksapp#2{#1}}
+% \permanent\protected\def\prependtoks#1\to#2{\tokspre#2{#1}}
+%
+% \permanent\protected\def\appendtoksonce #1\to#2{\ifhasxtoks{#1}#2\else\toksapp#1{#1}\fi}
+% \permanent\protected\def\prependtoksonce#1\to#2{\ifhasxtoks{#1}#2\else\tokspre#2{#1}\fi}
 
 %D The test macro:
 
@@ -5152,49 +5169,49 @@
    \fi}
 
 \permanent\protected\def\doifnothing#1%
-  {\iftok{#1}\emptytoks
+  {\ifempty{#1}%
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
 \permanent\protected\def\doifsomething#1%
-  {\iftok{#1}\emptytoks
+  {\ifempty{#1}%
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}
 
 \permanent\protected\def\doifelsenothing#1%
-  {\iftok{#1}\emptytoks
+  {\ifempty{#1}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
 
 \permanent\protected\def\doifelsesomething#1%
-  {\iftok{#1}\emptytoks
+  {\ifempty{#1}%
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
    \fi}
 
 \permanent\protected\def\doifvaluenothing#1%
-  {\iftok{\csname#1\endcsname}\emptytoks
+  {\ifempty{\csname#1\endcsname}%
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
 \permanent\protected\def\doifvaluesomething#1%
-  {\iftok{\csname#1\endcsname}\emptytoks
+  {\ifempty{\csname#1\endcsname}%
      \expandafter\gobbleoneargument
    \else
      \expandafter\firstofoneargument
    \fi}
 
 \permanent\protected\def\doifelsevaluenothing#1%
-  {\iftok{\csname#1\endcsname}\emptytoks
+  {\ifempty{\csname#1\endcsname}%
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
@@ -5243,7 +5260,7 @@
 
 \def\syst_helpers_do_if_all_common_else#1#2#3#4% slow
   {\def\syst_helpers_do_common_check_all##1%
-     {\doifnotinset{##1}{#4}\donefalse
+     {\ifinset{##1}{#4}\else\donefalse\fi
       \ifdone\else\expandafter\quitcommalist\fi}%
    \donetrue
    \processcommalist[#3]\syst_helpers_do_common_check_all
@@ -5339,14 +5356,16 @@
 \let\syst_helpers_with_set_step\relax % maybe push pop
 
 \permanent\tolerant\protected\def\dodoubleemptywithset#1#*[#2]#*[#3]%
-  {\doifsomething{#2}%
-     {\def\syst_helpers_with_set_step##1{#1[##1][#3]}%
-      \processcommalist[#2]\syst_helpers_with_set_step}}
+  {\ifempty{#2}\else
+     \def\syst_helpers_with_set_step##1{#1[##1][#3]}%
+     \processcommalist[#2]\syst_helpers_with_set_step
+   \fi}
 
 \permanent\tolerant\protected\def\dotripleemptywithset#1#*[#2]#*[#3]#*[#4]%
-  {\doifsomething{#2}%
-     {\def\syst_helpers_with_set_step##1{#1[##1][#3][#4]}%
-      \processcommalist[#2]\syst_helpers_with_set_step}}
+  {\ifempty{#2}\else
+     \def\syst_helpers_with_set_step##1{#1[##1][#3][#4]}%
+     \processcommalist[#2]\syst_helpers_with_set_step
+   \fi}
 
 \aliased\let\dodoubleargumentwithset\dodoubleemptywithset
 \aliased\let\dotripleargumentwithset\dotripleemptywithset
@@ -5582,19 +5601,12 @@
 %D This command can be integrated in \type {\getparameters}, but we decided best not
 %D to do so.
 
-% \protected\def\processassignlist#1[#2]#3%
-%   {\def\syst_helpers_process_assign_list_assign[##1=##2=##3]%
-%      {\doif{##3}\relax{#3{##1}}}%
-%    \def\syst_helpers_process_assign_list_step##1%
-%      {\syst_helpers_process_assign_list_assign[##1==\relax]}%
-%    \processcommalist[#2]\syst_helpers_process_assign_list_step}
-
 \let\syst_helpers_process_assign_list_assign\gobbleoneoptional
 \let\syst_helpers_process_assign_list_step  \gobbleoneargument
 
 \permanent\protected\def\processassignlist#1[#2]#3%
   {\def\syst_helpers_process_assign_list_assign[##1=##-=##2]%
-     {\doif{##2}\relax{#3{##1}}}%
+     {\iftok{##2}{\relax}#3{##1}\fi}%
    \def\syst_helpers_process_assign_list_step##1%
      {\syst_helpers_process_assign_list_assign[##1==\relax]}%
    \processcommalist[#2]\syst_helpers_process_assign_list_step}
@@ -6417,11 +6429,11 @@
 \let\syst_helpers_test_feature_yes\relax
 \let\syst_helpers_test_feature_nop\relax
 
-\permanent\def\currentfeaturetest{\number\c_syst_helpers_test_feature_n}
+\permanent\def\currentfeaturetest{\the\c_syst_helpers_test_feature_n}
 
 \permanent\protected\def\testfeature#1#2%
   {\c_syst_helpers_test_feature_m\ifparameter#1\or#1\else\maxiterator\fi\relax
-   \enforced\xdef\elapsedsteps{\number\c_syst_helpers_test_feature_m}%
+   \enforced\xdef\elapsedsteps{\the\c_syst_helpers_test_feature_m}%
    \def\syst_helpers_test_feature_yes
      {\advanceby\c_syst_helpers_test_feature_n\plusone
       \ifnum\c_syst_helpers_test_feature_n>\c_syst_helpers_test_feature_m\else
@@ -6443,12 +6455,12 @@
    \clf_benchmarktimer
    \writestatus\m!system
      {starting feature test: %
-      \number\c_syst_helpers_test_feature_m\space steps}%
+      \the\c_syst_helpers_test_feature_m\space steps}%
    \c_syst_helpers_test_feature_n\zerocount
    \syst_helpers_test_feature_yes
    \writestatus\m!system
      {feature test done: %
-      \number\c_syst_helpers_test_feature_m\space steps, %
+      \the\c_syst_helpers_test_feature_m\space steps, %
       \clf_elapsedtime\space seconds, %
       \clf_elapsedsteptime\elapsedsteps\space\space per step}%
    \egroup}

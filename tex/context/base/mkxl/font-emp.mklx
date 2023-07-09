@@ -157,9 +157,9 @@
 \permanent\protected\def\em
   {\relax
    \ifdim\slantperpoint>\zeropoint
-     \settrue\c_font_emphasis_needed
+     \c_font_emphasis_needed\conditionaltrue
    \else
-     \setfalse\c_font_emphasis_needed
+     \c_font_emphasis_needed\conditionalfalse
    \fi
    \font_emphasis_set_emphasis_boldface % new
    \ifx\fontalternative\s!it

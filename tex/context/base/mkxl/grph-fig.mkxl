@@ -50,7 +50,9 @@
    \fi}
 
 \def\grph_buffers_typeset_indeed#1#2% we could use the via files
-  {\doifnot{#1}{*}{\xdef\lasttypesetbuffer{\clf_typesetbuffer{#1}}}%
+  {\iftok{#1}{*}\else
+     \xdef\lasttypesetbuffer{\clf_typesetbuffer{#1}}%
+   \fi
    \ifcase\c_grph_buffers_mode
      % typesetonly
    \or
@@ -184,10 +186,12 @@
    \endgraf}
 
 \permanent\protected\def\startfigure[#1]#*[#2]#*[#3]#:#4\stopfigure
-  {\doifelse{\externalfigureparameter\c!option}\v!test
-     {\grph_steps_test_figure{#1}{#2}{#3}{#4}%
-      \letexternalfigureparameter\c!frames\v!on}%
-     {\letexternalfigureparameter\c!frames\v!off}%
+  {\ifcstok{\externalfigureparameter\c!option}\v!test
+     \grph_steps_test_figure{#1}{#2}{#3}{#4}%
+     \letexternalfigureparameter\c!frames\v!on
+   \else
+     \letexternalfigureparameter\c!frames\v!off
+   \fi
    \tolerant\defcsname\??externalfigureinstance#1\endcsname[##1]%
      {\grph_steps_place_figure{#1}{#2}{#3}{#4}{##1}%
      % this is a dirty hack but ok for an old macro
@@ -244,7 +248,7 @@
      \setbox\scratchboxtwo\vbox % \vpack ?
        {\forgetall
         \begingroup
-        \tfa\doifelsenothing{#1}{#2}{#1}%
+        \tfa\ifempty{#1}#1\else#2\fi
         \endgroup
         \blank
         \tfxx#4%

@@ -59,21 +59,26 @@
      \global\permanent\expandafter\attributedef\csname\??attributeprefix#2\endcsname\scratchcounter %           \foo = 123
      \global\permanent\expandafter\integerdef  \csname\??attributeid    #2\endcsname\scratchcounter % \attribute\foo = 123
      % some attributes are always global
-     \doifelseinset\s!global{#3}%
-       {\xtoksapp\t_attr_list_global{\csname\??attributeprefix#2\endcsname\attributeunsetvalue}}% \c_attr_foo
-       {\xtoksapp\t_attr_list_local {\csname\??attributeprefix#2\endcsname\attributeunsetvalue}}%
-     \doifinset\s!nomath{#3}%
-       {\xtoksapp\t_attr_list_nomath{\csname\??attributeprefix#2\endcsname\attributeunsetvalue}}%
-     \doifinset\s!public{#3}%
-       {\aliased\gletcsname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname}% \attribute\fooattribute
+     \ifinset\s!global{#3}%
+       \xtoksapp\t_attr_list_global{\csname\??attributeprefix#2\endcsname\attributeunsetvalue}% \c_attr_foo
+     \else
+       \xtoksapp\t_attr_list_local {\csname\??attributeprefix#2\endcsname\attributeunsetvalue}%
+     \fi
+     \ifinset\s!nomath{#3}%
+       \xtoksapp\t_attr_list_nomath{\csname\??attributeprefix#2\endcsname\attributeunsetvalue}%
+     \fi
+     \ifinset\s!public{#3}%
+       \aliased\gletcsname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname% \attribute\fooattribute
+     \fi
      % used to sync in the page builder .. used for directions and scripts ... i start forgetting these details .. (seldom used)
-     \doifinset\s!pickup{#3}%
-       {\global\expandafter\integerdef\csname\??attributepickup#2\endcsname\attributeunsetvalue
-        \xtoksapp\t_attr_list_pickup{\csname\??attributeprefix#2\endcsname\csname\??attributepickup#2\endcsname}%
-        \ifcsname#2\s!attribute\endcsname
-          \permanent\xdefcsname\s!pickup#2\s!attribute\endcsname{\expandafter\integerdef\csname\??attributepickup#2\endcsname\csname\??attributeprefix#2\endcsname}%
-          \permanent\xdefcsname\s!forget#2\s!attribute\endcsname{\expandafter\integerdef\csname\??attributepickup#2\endcsname\attributeunsetvalue}%
-        \fi}%
+     \ifinset\s!pickup{#3}%
+       \global\expandafter\integerdef\csname\??attributepickup#2\endcsname\attributeunsetvalue
+       \xtoksapp\t_attr_list_pickup{\csname\??attributeprefix#2\endcsname\csname\??attributepickup#2\endcsname}%
+       \ifcsname#2\s!attribute\endcsname
+         \permanent\xdefcsname\s!pickup#2\s!attribute\endcsname{\expandafter\integerdef\csname\??attributepickup#2\endcsname\csname\??attributeprefix#2\endcsname}%
+         \permanent\xdefcsname\s!forget#2\s!attribute\endcsname{\expandafter\integerdef\csname\??attributepickup#2\endcsname\attributeunsetvalue}%
+       \fi
+     \fi
    \fi}
 
 \permanent\protected\def\pickupattributes

@@ -496,10 +496,12 @@
 % compatible but better
 
 \appendtoks
-    \ifempty\currenthead \else
-      \doifelse{\headparameter\c!ownnumber}\v!yes
-        {\instance\protected\edefcsname\currenthead\endcsname{\strc_sectioning_handle_own[\currenthead]}}
-        {\instance\protected\edefcsname\currenthead\endcsname{\strc_sectioning_handle_nop[\currenthead]}}%
+    \ifempty\currenthead
+      % top level
+    \orelse\ifcstok{\headparameter\c!ownnumber}\v!yes
+      \instance\protected\edefcsname\currenthead\endcsname{\strc_sectioning_handle_own[\currenthead]}
+    \else
+      \instance\protected\edefcsname\currenthead\endcsname{\strc_sectioning_handle_nop[\currenthead]}%
     \fi
 \to \everysetuphead
 
@@ -630,12 +632,12 @@
 \newtoks\everyafterhead  % hook, todo: before/after keys
 
 \permanent\tolerant\protected\def\strc_sectioning_handle_own[#1]#*[#2]#:#*#=#*#=% [ref] {nr} {title}
-  {\settrue\currentstructureown
+  {\currentstructureown\conditionaltrue
    \triggerautostructurelevel
    \strc_sectioning_handle{#1}{\c!reference={#2},\c!ownnumber={#3},\c!title={#4}}{}} % name ref nr title --
 
 \permanent\tolerant\protected\def\strc_sectioning_handle_nop[#1]#*[#2]%  [ref] {title} / for taco: [key=value] variant
-  {\setfalse\currentstructureown
+  {\currentstructureown\conditionalfalse
    \triggerautostructurelevel
    \ifhastok={#2}%
      \expandafter\strc_sectioning_handle_nop_indeed_yes
@@ -654,7 +656,7 @@
   {\push_macro_currentnamedsection
    \push_macro_currentstructurereferenceprefix
    \edef\currentnamedsection{#1}%
-   \setfalse\currentstructureown
+   \currentstructureown\conditionalfalse
   %\globalpushmacro\currenthead % this does not work out well
    \xdef\currenthead{#1}%
    \setsystemmode\currenthead % new, also here now
@@ -700,58 +702,58 @@
 \newconditional\headisdisplay   % public
 \newconditional\headissomewhere % public
 
-\defcsname\??headincrement\v!yes  \endcsname{\settrue \c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list}
-\defcsname\??headincrement\v!no   \endcsname{\setfalse\c_strc_sectioning_increment\setfalse\c_strc_sectioning_to_list}
-\defcsname\??headincrement\v!list \endcsname{\setfalse\c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list}
-\defcsname\??headincrement\s!empty\endcsname{\settrue \c_strc_sectioning_increment\settrue \c_strc_sectioning_to_list}
+\defcsname\??headincrement\v!yes  \endcsname{\c_strc_sectioning_increment\conditionaltrue\c_strc_sectioning_to_list\conditionaltrue}
+\defcsname\??headincrement\v!no   \endcsname{\c_strc_sectioning_increment\conditionalfalse\c_strc_sectioning_to_list\conditionalfalse}
+\defcsname\??headincrement\v!list \endcsname{\c_strc_sectioning_increment\conditionalfalse\c_strc_sectioning_to_list\conditionaltrue}
+\defcsname\??headincrement\s!empty\endcsname{\c_strc_sectioning_increment\conditionaltrue\c_strc_sectioning_to_list\conditionaltrue}
 
 \protected\def\strc_sectioning_initialize_increment
   {\edef\currentheadincrement{\headparameter\c!incrementnumber}%
    \ifcsname\??headincrement\currentheadincrement\endcsname
      \lastnamedcs
    \else
-     \settrue\c_strc_sectioning_increment
-     \settrue\c_strc_sectioning_to_list
+     \c_strc_sectioning_increment\conditionaltrue
+     \c_strc_sectioning_to_list\conditionaltrue
      % \filterheadnumber
    \fi}
 
 \permanent\protected\def\filterheadnumber
-  {\settrue\c_strc_sectioning_increment
-   \settrue\c_strc_sectioning_to_list
+  {\c_strc_sectioning_increment\conditionaltrue
+   \c_strc_sectioning_to_list\conditionaltrue
    \ifempty\currentproduct
      % todo : filter from other toc (number, file, title)
      % use  : \currentheadincrement as spec
    \fi}
 
 \defcsname\??headplace\v!yes\endcsname
-  {\setfalse\c_strc_sectioning_empty
-   \settrue \c_strc_sectioning_place
-   \setfalse\c_strc_sectioning_hidden
-   \setfalse\c_strc_sectioning_section}
+  {\c_strc_sectioning_empty\conditionalfalse
+   \c_strc_sectioning_place\conditionaltrue
+   \c_strc_sectioning_hidden\conditionalfalse
+   \c_strc_sectioning_section\conditionalfalse}
 
 \defcsname\??headplace\v!empty\endcsname
-  {\settrue \c_strc_sectioning_empty
-   \settrue \c_strc_sectioning_place
-   \setfalse\c_strc_sectioning_hidden
-   \setfalse\c_strc_sectioning_section}
+  {\c_strc_sectioning_empty\conditionaltrue
+   \c_strc_sectioning_place\conditionaltrue
+   \c_strc_sectioning_hidden\conditionalfalse
+   \c_strc_sectioning_section\conditionalfalse}
 
 \defcsname\??headplace\v!no\endcsname
-  {\settrue \c_strc_sectioning_empty
-   \setfalse\c_strc_sectioning_place
-   \setfalse\c_strc_sectioning_hidden
-   \setfalse\c_strc_sectioning_section}
+  {\c_strc_sectioning_empty\conditionaltrue
+   \c_strc_sectioning_place\conditionalfalse
+   \c_strc_sectioning_hidden\conditionalfalse
+   \c_strc_sectioning_section\conditionalfalse}
 
 \defcsname\??headplace\v!hidden\endcsname
-  {\settrue \c_strc_sectioning_empty
-   \setfalse\c_strc_sectioning_place
-   \settrue \c_strc_sectioning_hidden
-   \setfalse\c_strc_sectioning_section}
+  {\c_strc_sectioning_empty\conditionaltrue
+   \c_strc_sectioning_place\conditionalfalse
+   \c_strc_sectioning_hidden\conditionaltrue
+   \c_strc_sectioning_section\conditionalfalse}
 
 \defcsname\??headplace\v!section\endcsname
-  {\settrue \c_strc_sectioning_empty
-   \setfalse\c_strc_sectioning_place
-   \settrue \c_strc_sectioning_hidden
-   \settrue \c_strc_sectioning_section}
+  {\c_strc_sectioning_empty\conditionaltrue
+   \c_strc_sectioning_place\conditionalfalse
+   \c_strc_sectioning_hidden\conditionaltrue
+   \c_strc_sectioning_section\conditionaltrue}
 
 \protected\def\strc_sectioning_initialize_placement
   {\expandnamespaceparameter\??headplace\headparameter\c!placehead\v!yes}
@@ -760,23 +762,21 @@
 
 \def\strc_sectioning_set_head_number_content   % was: \dosetstructureheadnumbercontent
   {\setsystemmode\v!sectionnumber
-   \settrue\headshownumber} % why ?
+   \headshownumber\conditionaltrue} % why ?
 
 \def\strc_sectioning_reset_head_number_content % was: \doresetstructureheadnumbercontent
   {\resetsystemmode\v!sectionnumber
-   \setfalse\headshownumber} % why ?
+   \headshownumber\conditionalfalse} % why ?
 
 \protected\def\strc_sectioning_initialize_number
-  {\edef\p_number{\sectionblockparameter\c!number}%
-   \ifx\p_number\v!yes
-      \edef\p_number{\headparameter\c!number}%
-      \ifx\p_number\v!yes
-        \settrue\headshownumber
+  {\ifcstok{\sectionblockparameter\c!number}\v!yes
+      \ifcstok{\headparameter\c!number}\v!yes
+        \headshownumber\conditionaltrue
       \else
-        \setfalse\headshownumber
+        \headshownumber\conditionalfalse
       \fi
    \else
-     \setfalse\headshownumber
+     \headshownumber\conditionalfalse
    \fi}
 
 % Beware, we do need some node for anchoring marks and normally a zwnj will
@@ -866,7 +866,7 @@
   {\dontleavehmode
    \begingroup
    \enforced\permanent\protected\def\\{\space}% messy here, but the default (and needs to be grouped)
-   \global\settrue\headisdisplay % triggers interlinespace checking
+   \global\headisdisplay\conditionaltrue % triggers interlinespace checking
    \cdef\currenthead{#1}% maybe only when #1 is given
    \strc_rendering_initialize_style_and_color\c!textstyle\c!textcolor
    \relax
@@ -877,7 +877,7 @@
 \permanent\tolerant\protected\def\placeheadnumber[#1]%
   {\dontleavehmode
    \begingroup
-   \global\settrue\headisdisplay % triggers interlinespace checking
+   \global\headisdisplay\conditionaltrue % triggers interlinespace checking
    \cdef\currenthead{#1}% maybe only when #1 is given
    \strc_rendering_initialize_style_and_color\c!numberstyle\c!numbercolor
    \relax
@@ -996,7 +996,7 @@
    %
    \expand\everyaftersectionheadhandle
    %
-   \setfalse\c_strc_sectioning_ignore_page
+   \c_strc_sectioning_ignore_page\conditionalfalse
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
    \dostarttagged\t!sectioncontent\empty
    \unless\ifempty\currentstructureplaceholder
@@ -1163,7 +1163,7 @@
    \fi}
 
 \newinteger    \c_strc_sectioning_preceding_level     \c_strc_sectioning_preceding_level\plusone
-\newconditional\c_strc_sectioning_auto_break          \settrue\c_strc_sectioning_auto_break
+\newconditional\c_strc_sectioning_auto_break          \c_strc_sectioning_auto_break\conditionaltrue
 \newconditional\c_strc_sectioning_ignore_page
 \newboundary   \c_strc_sectioning_boundary
 
@@ -1205,19 +1205,19 @@
      \ifnum\lastboundary=\c_strc_sectioning_boundary
        % no page break
        \ifconditional\c_strc_sectioning_ignore_page
-         \setfalse\c_strc_sectioning_ignore_page
+         \c_strc_sectioning_ignore_page\conditionalfalse
        \else
          \global\c_strc_sectioning_preceding_level\currentheadlevel
          \nobreak
        \fi
-     % \global\settrue\c_strc_rendering_continuous
+     % \global\c_strc_rendering_continuous\conditionaltrue
      \else
        \penalty\scratchcounter
-     % \global\setfalse\c_strc_rendering_continuous
+     % \global\c_strc_rendering_continuous\conditionalfalse
        #1%
      \fi
    \else
-   % \global\setfalse\c_strc_rendering_continuous
+   % \global\c_strc_rendering_continuous\conditionalfalse
      #1%
    \fi}
 
@@ -1231,16 +1231,13 @@
 \mutable\lettonothing\previoushead
 
 \def\strc_sectioning_handle_page_nop
-  {\edef\p_continue{\headparameter\c!continue}%
-   \ifx\p_continue\v!yes
-     \ifx\currenthead\previoushead % not really needed
-        \strc_sectioning_check_layout
-     \orelse\ifnum\previoussectioncountervalue=\zerocount
-        \strc_sectioning_check_layout
-     \orelse\ifnum\currentsectioncountervalue>\zerocount
-        \strc_sectioning_check_layout
-     \fi
-   \else
+  {\unless\ifcstok{\headparameter\c!continue}\v!yes
+     \strc_sectioning_check_layout
+   \orelse\ifx\currenthead\previoushead % not really needed
+     \strc_sectioning_check_layout
+   \orelse\ifnum\previoussectioncountervalue=\zerocount
+     \strc_sectioning_check_layout
+   \orelse\ifnum\currentsectioncountervalue>\zerocount
      \strc_sectioning_check_layout
    \fi
    \glet\previoushead\currenthead}
@@ -1248,23 +1245,22 @@
 
 \def\strc_sectioning_handle_page_yes
   {\ifconditional\c_strc_sectioning_ignore_page
-     \setfalse\c_strc_sectioning_ignore_page
+     \c_strc_sectioning_ignore_page\conditionalfalse
    \else
      % beware, these numbers are not yet know here
      \strc_sectioning_handle_page_nop
-     \edef\p_aligntitle{\headparameter\c!aligntitle}%
-     \ifx\p_aligntitle\v!float
-         \ifconditional\c_strc_sectioning_auto_break
-           \spac_vspacing_same_page\currentheadlevel\zerocount
-         \fi
-         \headparameter\c!before\relax
-         \indent % hm, not a clever one?
+     \ifcstok{\headparameter\c!aligntitle}\v!float
+       \ifconditional\c_strc_sectioning_auto_break
+         \spac_vspacing_same_page\currentheadlevel\zerocount
+       \fi
+       \headparameter\c!before\relax
+       \indent % hm, not a clever one?
      \else
-         \page_otr_command_flush_side_floats
-         \ifconditional\c_strc_sectioning_auto_break
-           \spac_vspacing_same_page\currentheadlevel\zerocount
-         \fi
-         \headparameter\c!before\relax
+       \page_otr_command_flush_side_floats
+       \ifconditional\c_strc_sectioning_auto_break
+         \spac_vspacing_same_page\currentheadlevel\zerocount
+       \fi
+       \headparameter\c!before\relax
      \fi
      \global\c_strc_sectioning_preceding_level\currentheadlevel
    \fi
@@ -1272,8 +1268,7 @@
 
 \def\strc_sectioning_depth_correction
   {\ifvmode
-     \edef\p_depthcorrection{\headparameter\c!depthcorrection}%
-     \ifx\p_depthcorrection\v!strut
+     \ifcstok{\headparameter\c!depthcorrection}\v!strut
        \prevdepth\strutdepth
      \fi
    \fi}
@@ -1334,17 +1329,17 @@
 \newconditional\c_strc_sectioning_auto_levels
 
 \appendtoks
-    \settrue\c_strc_sectioning_auto_levels
+    \c_strc_sectioning_auto_levels\conditionaltrue
 \to \everyenableelements
 
 \protected\def\strc_sectioning_initialize_autolevel
   {\ifconditional\c_strc_sectioning_auto_levels
      \clf_autonextstructurelevel\currentheadlevel\relax
-     \global\setfalse\c_strc_sectioning_auto_levels
+     \global\c_strc_sectioning_auto_levels\conditionalfalse
    \fi}
 
 \permanent\protected\def\triggerautostructurelevel
-  {\global\settrue\c_strc_sectioning_auto_levels}
+  {\global\c_strc_sectioning_auto_levels\conditionaltrue}
 
 \permanent\protected\def\finalizeautostructurelevels
   {\clf_autofinishstructurelevels}

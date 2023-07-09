@@ -318,17 +318,19 @@
    \setbox\b_page_grd_collected\hpack\bgroup
      \clf_preparecolumnsetflush{\currentpagegrid}%
      \letpagegridparameter\c!region\currentpagegrid
-     \doifelse{\pagegridparameter\c!direction}\v!reverse
-       {\dostepwiserecurse\c_page_grd_last_column\c_page_grd_first_column\minusone
-          {\page_grd_command_flush_page_column{##1}%
-           \ifnum##1>\plusone
-             \kern\namedpagegridparameter{\currentpagegrid:##1}\c!distance\relax
-           \fi}}%
-       {\dostepwiserecurse\c_page_grd_first_column\c_page_grd_last_column\plusone
-          {\page_grd_command_flush_page_column{##1}%
-           \ifnum##1<\c_page_grd_last_column
-             \kern\namedpagegridparameter{\currentpagegrid:##1}\c!distance\relax
-           \fi}}%
+     \ifcstok{\pagegridparameter\c!direction}\v!reverse
+       \dostepwiserecurse\c_page_grd_last_column\c_page_grd_first_column\minusone
+         {\page_grd_command_flush_page_column{##1}%
+          \ifnum##1>\plusone
+            \kern\namedpagegridparameter{\currentpagegrid:##1}\c!distance\relax
+          \fi}%
+     \else
+       \dostepwiserecurse\c_page_grd_first_column\c_page_grd_last_column\plusone
+         {\page_grd_command_flush_page_column{##1}%
+          \ifnum##1<\c_page_grd_last_column
+            \kern\namedpagegridparameter{\currentpagegrid:##1}\c!distance\relax
+          \fi}%
+     \fi
      \clf_finishcolumnsetflush{\currentpagegrid}%
    \egroup
    \page_otr_construct_and_shipout\box\b_page_grd_collected\zerocount % three arguments
@@ -393,14 +395,14 @@
 % needs checking
 
 \protected\def\page_grd_command_flush_floats
-  {\wait\global\settrue\c_page_floats_flushing
+  {\wait\global\c_page_floats_flushing\conditionaltrue
    \ifconditional\c_page_floats_some_waiting
      \par
      \page_grd_command_flush_floats_indeed
    \fi
    \global\savednoffloats\zerocount
-   \global\setfalse\c_page_floats_some_waiting
-   \global\setfalse\c_page_floats_flushing}
+   \global\c_page_floats_some_waiting\conditionalfalse
+   \global\c_page_floats_flushing\conditionalfalse}
 
 \def\page_grd_command_flush_floats_indeed % much in common with OTRSET
   {\ifconditional\c_page_floats_some_waiting
@@ -411,7 +413,7 @@
      % \or
      %   \page_floats_get
        \else
-         \setfalse\c_page_floats_center_box % not needed as we do call directly
+         \c_page_floats_center_box\conditionalfalse % not needed as we do call directly
          \global\setbox\floatbox\hbox to \hsize
            {\hfil
             \dorecurse\nofcollectedfloats
@@ -448,9 +450,9 @@
      box    \floatbox
    }%
    \ifcase\c_page_grd_reserved_state
-     \global\settrue\c_page_floats_room
+     \global\c_page_floats_room\conditionaltrue
    \else
-     \global\setfalse\c_page_floats_room
+     \global\c_page_floats_room\conditionalfalse
    \fi}
 
 \protected\def\page_grd_place_float_here_indeed

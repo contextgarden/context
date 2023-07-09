@@ -444,7 +444,7 @@
      {\hss
       \startcolor[blue]%
       \hpack \s!yoffset -2\onepoint to \zeropoint
-        {\hss\infofont\number\c_anch_positions_paragraph\hskip2\onepoint}%
+        {\hss\infofont\the\c_anch_positions_paragraph\hskip2\onepoint}%
       \vrule
         \s!width 4\onepoint
         \s!height2\onepoint

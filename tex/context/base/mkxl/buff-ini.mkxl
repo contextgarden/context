@@ -40,14 +40,13 @@
   {\buff_start_indeed{}{#1}{\e!start\v!buffer}{\e!stop\v!buffer}}
 
 \def\buff_start_indeed#1#2#3#4%
-  {\edef\p_strip{\namedbufferparameter{#1}\c!strip}% for aditya
-   \normalexpanded{\buff_pickup
+  {\normalexpanded{\buff_pickup
      {#2}%
      {#3}%
      {#4}%
      {}%
      {\buff_stop{#4}}%
-     \ifx\p_strip\v!no\zerocount\else\plusone\fi}}
+     \ifcstok{\namedbufferparameter{#1}\c!strip}\v!no\zerocount\else\plusone\fi}}
 
 \permanent\protected\def\grabbufferdatadirect % name start stop
   {\begingroup % (6)
@@ -126,8 +125,8 @@
 
 \appendtoks
     \global\advanceby\c_buff_n_of_defined\plusone
-    \setexpandedbufferparameter\c!number{\number\c_buff_n_of_defined}%
-    \cdef\currentdefinedbuffer{def-\number\c_buff_n_of_defined}%
+    \setexpandedbufferparameter\c!number{\the\c_buff_n_of_defined}%
+    \cdef\currentdefinedbuffer{def-\the\c_buff_n_of_defined}%
     \ifcstok{\bufferparameter\c!define}\v!yes
       \frozen\instance\protected\edefcsname\e!start\currentbuffer\endcsname
         {\buff_start_defined{\currentbuffer}{\currentdefinedbuffer}{\e!start\currentbuffer}{\e!stop\currentbuffer}}%
@@ -164,9 +163,11 @@
 % We had this:
 %
 % \permanent\tolerant\protected\def\inlinebuffer[#1]% [name]
-%   {\doifelsenothing{#1}
-%      {\buff_get_stored_inline_indeed\empty}
-%      {\processcommalist[#1]\buff_get_stored_inline_indeed}}
+%   {\ifempty{#1}
+%      \buff_get_stored_inline_indeed\empty
+%    \else
+%      \processcommalist[#1]\buff_get_stored_inline_indeed
+%    \fi}
 %
 % \protected\def\buff_get_stored_inline_indeed#1%
 %   {\ignorespaces\clf_getbuffer{#1}\removeunwantedspaces}

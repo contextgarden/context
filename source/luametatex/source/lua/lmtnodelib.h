@@ -127,4 +127,10 @@ extern int lmt_par_pass_callback(
     int                   *repeat
 );
 
+extern halfword lmt_uleader_callback(
+    halfword head,
+    halfword index, 
+    int      context
+);
+
 # endif

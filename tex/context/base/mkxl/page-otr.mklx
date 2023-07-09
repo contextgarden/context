@@ -114,14 +114,15 @@
 \protected\def\page_otr_message_s#sign#what%
   {\writestatus
     \currentoutputroutine
-    {#sign\space          \space
-     #what\space          \space
-     p:\the\outputpenalty,\space
-     r:\the\realpageno   ,\space
-     c:\number\mofcolumns,\space
-     v:\the\vsize        ,\space
-     g:\the\pagegoal     ,\space
-     t:\the\pagetotal    ,\space
+    {#sign\space           \space
+     #what\space           \space
+     p:\the\outputpenalty ,\space
+     r:\the\realpageno    ,\space
+     c:\number\mofcolumns ,\space
+     v:\the\vsize         ,\space
+     g:\the\pagegoal      ,\space
+     t:\the\pagetotal     ,\space
+     h:\the\pagelastheight,\space
      i:\the\insertheights
      \ifdim\pagetotal>\pagegoal
        ,\space
@@ -136,8 +137,8 @@
 
 \permanent\protected\def\installoutputroutine#invoke#action% \invoke \action
   {\global\advanceby\c_page_otr_trigger_penalty\minusone
-   \frozen\protected\edef#invoke{\page_otr_trigger{\number\c_page_otr_trigger_penalty}}%
-   \setvalue{\??otrtriggers\number\c_page_otr_trigger_penalty}{#action}}
+   \frozen\protected\edef#invoke{\page_otr_trigger{\the\c_page_otr_trigger_penalty}}%
+   \defcsname\??otrtriggers\the\c_page_otr_trigger_penalty\endcsname{#action}}
 
 \protected\def\page_otr_triggered_output_routine_traced
   {\ifcsname\??otrtriggers\the\outputpenalty\endcsname

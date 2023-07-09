@@ -227,7 +227,7 @@
 
 \permanent\protected\def\svg_normal_font#1#2#3%#4%
   {\hbox\bgroup
-   \iftok{#2}\emptytoks\else
+   \ifempty{#2}\else
       \edef\p_font{\ifcsname\??svgfamily#1\endcsname\lastnamedcs\else#1\fi-#2-#3}%
       \ifcsname svg:\p_font\endcsname
         \lastnamedcs

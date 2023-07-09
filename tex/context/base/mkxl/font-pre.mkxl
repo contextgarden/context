@@ -950,7 +950,7 @@
 % experiment:
 
 \startsetups experiment:fonts:compact
-    \settrue\c_font_compact
+    \c_font_compact\conditionaltrue
 %     \definefontfeature[virtualmath]          [mathematics]    [compactmath=yes]
 %     \definefontfeature[virtualmath-l2r]      [mathematics-l2r][compactmath=yes]
 %     \definefontfeature[virtualmath-r2l]      [mathematics-r2l][compactmath=yes]

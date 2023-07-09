@@ -2221,10 +2221,15 @@ do
         end
     end
 
-    -- ugly code: we get partial lists (check if this stack is still okay) ... and we run
-    -- into temp nodes (sigh)
-
-    -- this really need a rework
+    -- This really need a rework. although, it has now been stable for 15 years so why
+    -- mess with it. We get sequences like these where penalties come from the par
+    -- builder:
+    --
+    -- glue
+    -- glue hlist
+    -- glue hlist penalty glue hlist penalty glue hlist
+    --
+    -- and in context we never use penalties other than spacing related
 
     local forceflush = false
 
@@ -2233,6 +2238,8 @@ do
             local newtail = find_node_tail(newhead) -- best pass that tail, known anyway
             local flush = false
             stackhack = true -- todo: only when grid snapping once enabled
+
+-- local t = { } for n, id in nextnode, newhead do t[#t+1] = nodecodes[id] end report_vspacing("page handler: % t",t)
 
             for n, id, subtype in nextnode, newhead do
                 if id ~= glue_code then

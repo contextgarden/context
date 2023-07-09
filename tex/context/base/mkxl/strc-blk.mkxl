@@ -129,9 +129,9 @@
    \let\strc_blocks_setup\relax
    \edef\p_alternative{\blockparameter\c!alternative}%
    \ifx\p_alternative\v!text
-      \setfalse\c_strc_blocks_display
+      \c_strc_blocks_display\conditionalfalse
    \else
-      \settrue\c_strc_blocks_display
+      \c_strc_blocks_display\conditionaltrue
    \fi
    \ifconditional\c_strc_blocks_display
       \blockparameter\c!before

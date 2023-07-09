@@ -29,9 +29,10 @@ local penalty_code  = nodecodes.penalty
 local glyph_code    = nodecodes.glyph
 local par_code      = nodecodes.par
 
-local indent_code   = nodes.listcodes.indent
-local topskip_code  = nodes.gluecodes.topskip
-local line_code     = nodes.listcodes.line
+local indentlist_code = nodes.listcodes.indent
+local topskip_code    = nodes.gluecodes.topskip
+local indentskip_code = nodes.gluecodes.indentskip
+local line_code       = nodes.listcodes.line
 
 local hmode_code    = tex.modelevels.horizontal
 
@@ -80,7 +81,7 @@ local getdimensions = nuts.dimensions
 local hpack         = nuts.hpack
 local vpack         = nuts.vpack
 local traverseid    = nuts.traverseid
-local traverse      = nuts.traverse
+----- traverse      = nuts.traverse
 local free          = nuts.free
 local findtail      = nuts.tail
 local reverse       = nuts.reverse
@@ -89,6 +90,9 @@ local effectiveglue = nuts.effectiveglue
 local nextdisc      = nuts.traversers.disc
 local nextdir       = nuts.traversers.dir
 local nexthlist     = nuts.traversers.hlist
+
+local countnodes    = nuts.count
+----- traverselist  = nuts.traverselist
 
 local listtoutf     = nodes.listtoutf
 
@@ -104,6 +108,12 @@ local texgetbox     = tex.getbox
 local texisdimen    = tex.isdimen
 local texsetdimen   = tex.setdimen
 local texgetnest    = tex.getnest
+
+local values                    = tokens.values
+local dimension_value   <const> = values.dimension
+local cardinal_value    <const> = values.cardinal
+local direct_value      <const> = values.direct
+local conditional_value <const> = values.conditional
 
 local d_lastnaturalboxwd = texisdimen("lastnaturalboxwd")
 local d_lastnaturalboxht = texisdimen("lastnaturalboxht")
@@ -407,9 +417,6 @@ do
 
     -- we can now move this to the tex end
 
-    local values          = tokens.values
-    local dimension_value = values.dimension
-
     local function getnaturaldimensions(n)
         local w = 0
         local h = 0
@@ -524,10 +531,6 @@ do
     local getwhd          = nuts.getwhd
     local setbox          = nuts.setbox
     local new_hlist       = nuts.pool.hlist
-
-    local values          = tokens.values
-    local dimension_value = values.dimension
-    local cardinal_value  = values.cardinal
 
     local boxes           = { }
     nodes.boxes           = boxes
@@ -1027,22 +1030,21 @@ implement {
 
 -- only in lmtx:
 
-implement {
-    name      = "widthuptohere",
-    public    = true,
-    usage     = "value",
-    actions   = function()
-        local n = texgetnest()
-        local w = 0
-        if n.mode == hmode_code then
-            local h = hpack(getnext(tonut(n.head)))
-            w = getwidth(h)
-            setlist(h)
-            free(h)
-        end
-        return tokens.values.dimension, w
-    end,
-}
+do
+
+    local naturalhsize = nuts.naturalhsize
+
+    implement {
+        name      = "widthuptohere",
+        public    = true,
+        usage     = "value",
+        actions   = function()
+            local n = texgetnest()
+            return dimension_value, n.mode == hmode_code and naturalhsize(getnext(tonut(n.head))) or 0
+        end,
+    }
+
+end
 
 implement {
     name      = "doifelseindented",
@@ -1058,12 +1060,19 @@ implement {
                 n = getnext(n)
                 if n then
                     local id = getid(n)
-                    if id == hlist_code then
-                        if getsubtype(n) == indent_code then
+                    if id == glue_code then
+                        if getsubtype(n) == indentskip_code then
                             b = getwidth(n) > 0
                             break
                         end
-                    elseif id ~= par_code then
+                    elseif id == hlist_code then
+                        if getsubtype(n) == indentlist_code then
+                            b = getwidth(n) > 0
+                        end
+                        break
+                    elseif id == par_code then
+                        -- okay
+                    else
                         break
                     end
                 end
@@ -1084,11 +1093,17 @@ implement {
         if b then
             b = getlist(b)
             if b then
-                for n, id in traverse(b) do
-                    if id == hlist_code or id == vlist_code then
-                        c = c + 1
-                    end
-                end
+             -- for n, id in traverse(b) do -- traverse_list
+             --     if id == hlist_code or id == vlist_code then
+             --         c = c + 1
+             --     end
+             -- end
+             --
+             -- for n in traverselist(b) do
+             --     c = c + 1
+             -- end
+             --
+             c = countnodes(hlist_code,b) + countnodes(vlist_code,b)
             end
         end
         context(c)
@@ -1147,11 +1162,6 @@ do
     local line_code          = listcodes.line
     local equation_code      = listcodes.equation
     local unknown_code       = listcodes.unknown
-
-    local values             = tokens.values
-    local dimension_value    = values.dimension
-    local cardinal_value     = values.cardinal
-    local direct_value       = values.direct
 
     -- todo: make helper that formats
 
@@ -1543,3 +1553,18 @@ do
     }
 end
 
+do
+
+    local ctx_validtext = context.core.validtext
+
+    implement {
+        name    = "iftext",
+        public  = true,
+        usage   = "condition",
+        actions = function()
+            ctx_validtext()
+            return conditional_value
+        end
+    }
+
+end

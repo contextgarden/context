@@ -166,11 +166,13 @@
 % because we have lots of setups we provide a checker for sloppy users
 
 \protected\def\btx_check_chain#1#2#3%
-  {\doifelsesomething{#3}
-     {\writestatus{btx #1}{defining\space"#2"\space as\space descendant\space of\space"#3"}% we're in definition regime (no space)
-      \definebtx[#2][#3]}
-     {\writestatus{btx #1}{defining\space"#2"}%
-      \definebtx[#2]}}
+  {\ifempty{#3}%
+     \writestatus{btx #1}{defining\space"#2"}%
+     \definebtx[#2]%
+   \else
+     \writestatus{btx #1}{defining\space"#2"\space as\space descendant\space of\space"#3"}% we're in definition regime (no space)
+     \definebtx[#2][#3]%
+   \fi}
 
 % \protected\def\btxcheckdefine#1#2{\doifelsecommandhandler\??btx{#1}\donothing{\btx_check_chain{define}{#1}{#2}}}
 % \protected\def\btxchecksetup #1#2{\doifelsecommandhandler\??btx{#1}\donothing{\btx_check_chain {setup}{#1}{#2}}}
@@ -577,8 +579,8 @@
 
 \installtextracker
   {btxrendering}
-  {\settrue \c_btx_trace}
-  {\setfalse\c_btx_trace}
+  {\c_btx_trace\conditionaltrue}
+  {\c_btx_trace\conditionalfalse}
 
 %D Rendering lists and citations.
 
@@ -635,15 +637,21 @@
 \newconditional\c_btx_list_texts
 
 \appendtoks
-    \doifelse{\btxrenderingparameter\c!textstate}\v!start
-      \settrue\setfalse\c_btx_list_texts
+    \ifcstok{\btxrenderingparameter\c!textstate}\v!start
+        \c_btx_list_texts\conditionaltrue
+    \else
+        \c_btx_list_texts\conditionalfalse
+    \fi
 \to \everysetupbtxlistplacement
 
 \newconditional\c_btx_list_pages
 
 \appendtoks
-    \doifelse{\btxrenderingparameter\c!pagestate}\v!start
-      \settrue\setfalse\c_btx_list_pages
+    \ifcstok{\btxrenderingparameter\c!pagestate}\v!start
+        \c_btx_list_pages\conditionaltrue
+    \else
+        \c_btx_list_pages\conditionalfalse
+    \fi
 \to \everysetupbtxlistplacement
 
 \protected\def\btx_entry_inject_pages % for the moment only normal
@@ -909,7 +917,11 @@
            \letlistparameter\c!width\d_publ_number_width % no need for _reference here, frozen
          \fi
        \fi
-       \doifelse{\listparameter\c!prefix}\v!yes\settrue\setfalse\c_publ_prefixed
+       \ifcstok{\listparameter\c!prefix}\v!yes
+         \c_publ_prefixed\conditionaltrue
+       \else
+         \c_publ_prefixed\conditionalfalse
+       \fi
        % this actually typesets them, we loop here as otherwise the whole
        % bunch gets flushed at once
        \dorecurse\nofbtxlistentries
@@ -1125,13 +1137,13 @@
       {\ifx\currentbtxdataset\v!default\else\s!btxset=\currentbtxdataset,\fi%
        \s!btxref=\currentbtxtag,%
        \s!btxspc=\currentbtxspecification,%
-       \s!btxlst=\number\c_btx_list_reference,% check if needed
+       \s!btxlst=\the\c_btx_list_reference,% check if needed
       %\ifempty\currentbtxcombis  \else\s!btxcom={\currentbtxcombis},\fi%
        \ifempty\currentbtxbefore  \else\s!btxbtx={\currentbtxbefore},\fi%
        \ifempty\currentbtxafter   \else\s!btxatx={\currentbtxafter },\fi%
        \ifempty\currentbtxbacklink\else\s!btxint=\number\currentbtxbacklink\fi
       }%
-      {\s!btx::\v!list::\number\c_btx_list_reference}%
+      {\s!btx::\v!list::\the\c_btx_list_reference}%
       {\currentbtxnumber}}
 
 \newconditional\c_btx_cite_reference_injected
@@ -1144,7 +1156,7 @@
          % can be made empty when combining author / year
        \orelse\ifnum\currentbtxbacklink>\zerocount
          \btx_cite_reference_inject_indeed
-         \settrue\c_btx_cite_reference_injected
+         \c_btx_cite_reference_injected\conditionaltrue
        \fi
      \fi
   \fi}
@@ -1308,12 +1320,12 @@
 
 \installcorenamespace{btxinteraction}
 
-\defcsname\??btxinteraction\v!number\endcsname{\settrue\btxinteractivenumber}
-\defcsname\??btxinteraction\v!text  \endcsname{\settrue\btxinteractivetext}
-\defcsname\??btxinteraction\v!page  \endcsname{\settrue\btxinteractivepage}
-\defcsname\??btxinteraction\v!all   \endcsname{\settrue\btxinteractivenumber
-                                               \settrue\btxinteractivetext
-                                               \settrue\btxinteractivepage}
+\defcsname\??btxinteraction\v!number\endcsname{\btxinteractivenumber\conditionaltrue}
+\defcsname\??btxinteraction\v!text  \endcsname{\btxinteractivetext\conditionaltrue}
+\defcsname\??btxinteraction\v!page  \endcsname{\btxinteractivepage\conditionaltrue}
+\defcsname\??btxinteraction\v!all   \endcsname{\btxinteractivenumber\conditionaltrue
+                                               \btxinteractivetext\conditionaltrue
+                                               \btxinteractivepage\conditionaltrue}
 
 % \setupbtx[interaction=page] % or text or number or all
 % \setupbtxrendering[pagestate=start]
@@ -1322,14 +1334,14 @@
     \iflocation
         \edef\currentbtxinteraction{\btxparameter\c!interaction}%
         \ifx\currentbtxinteraction\v!stop
-            \setfalse\btxinteractive
+            \btxinteractive\conditionalfalse
         \else
             \enforced\lettonothing\structurelistlocation
-            \settrue\btxinteractive
+            \btxinteractive\conditionaltrue
             \begincsname\??btxinteraction\currentbtxinteraction\endcsname
         \fi
     \else
-        \setfalse\btxinteractive
+        \btxinteractive\conditionalfalse
     \fi
 \to \everysetupbtxlistplacement
 
@@ -1337,12 +1349,12 @@
     \iflocation
         \edef\currentbtxinteraction{\btxparameter\c!interaction}%
         \ifx\currentbtxinteraction\v!stop
-            \setfalse\btxinteractive
+            \btxinteractive\conditionalfalse
         \else
-            \settrue\btxinteractive
+            \btxinteractive\conditionaltrue
         \fi
     \else
-        \setfalse\btxinteractive
+        \btxinteractive\conditionalfalse
     \fi
 \to \everysetupbtxciteplacement
 
@@ -1686,7 +1698,7 @@
 \newtoks\everybtxciteentry
 
 \prependtoks
-    \setfalse\c_btx_cite_reference_injected
+    \c_btx_cite_reference_injected\conditionalfalse
 \to \everybtxciteentry
 
 \permanent\protected\def\btxcitesetup#1%

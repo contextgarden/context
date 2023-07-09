@@ -127,7 +127,7 @@
 \mutable\lettonothing\currentconstructiontitle
 \mutable\lettonothing\currentconstructionxmlsetup
 
-\settrue\c_strc_constructions_define_commands % use with care, might become a proper key
+\newconditional\c_strc_constructions_define_commands \c_strc_constructions_define_commands\conditionaltrue % use with care, might become a proper key
 
 \appendtoks
     \ifempty\currentconstructionparent
@@ -139,6 +139,7 @@
     \fi
     \edefcsname\??constructionlevel\currentconstruction\endcsname{\number\constructionparameter\c!level}%
     \edefcsname\??constructionclass\currentconstruction\endcsname{\constructionparameter\s!handler}%
+    \expandafter\newconditional\csname\??constructionclosesymbol\currentconstruction\endcsname
 \to \everydefineconstruction
 
 % todo: inhibit this when we have a different handle .. current we cannot do \frozen
@@ -195,8 +196,8 @@
 \newconditional\c_strc_constructions_title_state
 
 \protected\defcsname\??constructioninitializer\v!construction\endcsname
-  {\setfalse\c_strc_constructions_number_state
-   \setfalse\c_strc_constructions_title_state}
+  {\c_strc_constructions_number_state\conditionalfalse
+   \c_strc_constructions_title_state\conditionalfalse}
 
 \protected\defcsname\??constructionfinalizer\v!construction\endcsname
   {}
@@ -327,7 +328,7 @@
   {\constructionsheaddistance\zeropoint
    \constructionsheadwidth   \zeropoint
    % we also need to make sure that no stretch creeps in (new per 2015-02-02, for Alan)
-   \settrue\c_strc_constructions_distance_none}
+   \c_strc_constructions_distance_none\conditionaltrue}
 
 \protected\defcsname\??constructionstarthandler\v!construction\endcsname % this will be redone (reorganized) .. too much boxing
   {\dostarttaggedchained\t!construction\currentconstruction\currentconstructionhash
@@ -353,10 +354,10 @@
    \edef\p_strc_constructions_distance{\constructionalternativeparameter\c!distance}%
    \edef\p_strc_constructions_width{\constructionalternativeparameter\c!width}%
    \ifx\p_strc_constructions_distance\v!none
-     \settrue\c_strc_constructions_distance_none
+     \c_strc_constructions_distance_none\conditionaltrue
      \constructionsheaddistance\zeropoint
    \else
-     \setfalse\c_strc_constructions_distance_none
+     \c_strc_constructions_distance_none\conditionalfalse
      \constructionsheaddistance\p_strc_constructions_distance\relax
      \ifdim\constructionsheaddistance=\zeropoint
        \ifx\p_strc_constructions_width\v!broad
@@ -402,7 +403,9 @@
       \forgetall
       \dontcomplain
       % new and under testing
-      \doif{\constructionparameter\c!headindenting}\v!yes{\hskip\scratchskip}%
+      \ifcstok{\constructionparameter\c!headindenting}\v!yes
+        \hskip\scratchskip
+      \fi
       %
       \ifx\currentconstructionalternative\v!serried % brrr, hack, will change
         \csname\??constructionmainhandler\currentconstructionhandler\endcsname\currentconstructiontext
@@ -445,7 +448,9 @@
 
 \protected\defcsname\??constructionstophandler\v!construction\endcsname
   {\strc_constructions_close_symbol_place
-   \doifnot{\constructionparameter\c!display}\v!no\par
+   \ifcstok{\constructionparameter\c!display}\v!no\else
+     \par
+   \fi
    \dostoptagged % content
    \dostoptagged % construction
    \endgroup
@@ -456,13 +461,15 @@
    \dorechecknextindentation}
 
 \permanent\protected\def\boxedconstructionhead#1%
-  {\doifelse{\constructionalternativeparameter\c!alignbottom}{\v!yes}\vbox\vtop
-     {\hsize\constructionsheadwidth
-      \edef\p_strc_constructions_headalign{\constructionparameter\c!headalign}%
-      \ifempty\p_strc_constructions_headalign \else
-        \setupalign[\p_strc_constructions_headalign]% \use...
-      \fi
-      #1}}
+  {\ifcstok{\constructionalternativeparameter\c!alignbottom}\v!yes \vbox \else \vtop \fi
+     \bgroup
+       \hsize\constructionsheadwidth
+       \edef\p_strc_constructions_headalign{\constructionparameter\c!headalign}%
+       \ifempty\p_strc_constructions_headalign \else
+         \setupalign[\p_strc_constructions_headalign]% \use...
+       \fi
+       #1%
+     \egroup}
 
 \installcorenamespace{constructionalternative}
 \installcorenamespace{constructionrenderings}
@@ -981,13 +988,13 @@
 \mutable\let\qed             \donothing
 
 \def\strc_constructions_close_symbol_reset % no need for global
-  {\global\expandafter\settrue\csname\??constructionclosesymbol\currentconstruction\endcsname
+  {\global\csname\??constructionclosesymbol\currentconstruction\endcsname\conditionaltrue
    \let\placeclosesymbol\strc_constructions_close_symbol_place
    \let\qed             \strc_constructions_close_symbol_place}
 
 \protected\def\strc_constructions_close_symbol_place
   {\ifconditional\csname\??constructionclosesymbol\currentconstruction\endcsname
-     \global\expandafter\setfalse\csname\??constructionclosesymbol\currentconstruction\endcsname
+     \global\csname\??constructionclosesymbol\currentconstruction\endcsname\conditionalfalse
      \edef\p_strc_constructions_closesymbol{\constructionparameter\c!closesymbol}%
      \ifempty\p_strc_constructions_closesymbol \else
        \constructionparameter\c!closecommand{\p_strc_constructions_closesymbol}% hm why {} maybe because box expected

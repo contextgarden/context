@@ -245,6 +245,11 @@ function viewerlayers.define(settings)
     end
 end
 
+function viewerlayers.setup(settings)
+    -- fragile
+    codeinjections.setupviewerlayer(settings)
+end
+
 function viewerlayers.definedlayoutcomponent(tag)
     viewerlayers.define {
         tag       = tag,
@@ -266,10 +271,8 @@ implement {
     actions   = viewerlayers.cleanup
 }
 
-implement {
-    name      = "defineviewerlayer",
-    actions   = viewerlayers.define,
-    arguments = {
+do
+    local t = {
         {
             { "tag" },
             { "title" },
@@ -278,10 +281,22 @@ implement {
             { "export" },
             { "printable" },
             { "scope" },
-        },
-        true
+        }
     }
-}
+
+    implement {
+        name      = "defineviewerlayer",
+        actions   = viewerlayers.define,
+        arguments = t
+    }
+
+    implement {
+        name      = "setupviewerlayer",
+        actions   = viewerlayers.setup,
+        arguments = t
+    }
+
+end
 
 implement {
     name      = "definedlayoutcomponent",

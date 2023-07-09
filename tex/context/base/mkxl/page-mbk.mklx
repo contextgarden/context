@@ -50,8 +50,11 @@
 \newbox        \b_page_margin_blocks_prepared
 
 \appendtoks
-   \doifelse{\rootmarginblockparameter\c!state}\v!start
-     \settrue\setfalse\c_page_margin_blocks_enabled
+   \ifcstok{\rootmarginblockparameter\c!state}\v!start
+     \c_page_margin_blocks_enabled\conditionaltrue
+   \else
+     \c_page_margin_blocks_enabled\conditionalfalse
+   \fi
 \to \everysetupmarginblock
 
 \setupmarginblocks
@@ -73,7 +76,7 @@
 
 \resetboxesincache \s!marginblock \s!marginblock
 
-\setfalse\c_page_margin_blocks_enabled
+\c_page_margin_blocks_enabled\conditionalfalse
 
 \let\page_margin_blocks_stop_block\relax
 
@@ -92,7 +95,7 @@
 
 \def\page_margin_blocks_start_block_yes
   {%\showmessage\m!layouts4\empty
-   \global\settrue\c_page_margin_blocks_enabled
+   \global\c_page_margin_blocks_enabled\conditionaltrue
    \dowithnextboxcs
      \page_margin_blocks_start_block_save
      \vbox\bgroup
@@ -149,8 +152,8 @@
              \marginblockparameter\c!inbetween
            \fi
            \setbox\scratchbox\emptyvbox
-           \ht\scratchbox\getboxhtfromcache\s!marginblock{\number\currentloopiterator}%
-           \dp\scratchbox\getboxdpfromcache\s!marginblock{\number\currentloopiterator}%
+           \ht\scratchbox\getboxhtfromcache\s!marginblock{\the\currentloopiterator}%
+           \dp\scratchbox\getboxdpfromcache\s!marginblock{\the\currentloopiterator}%
            \box\scratchbox
            \marginblockparameter\c!after}%
        \marginblockparameter\c!bottom
@@ -171,14 +174,14 @@
           \else
             \marginblockparameter\c!inbetween
           \fi
-          \getboxfromcache\s!marginblock{\number\currentloopiterator}\scratchbox
+          \getboxfromcache\s!marginblock{\the\currentloopiterator}\scratchbox
           \box\scratchbox
           \marginblockparameter\c!after}%
        \marginblockparameter\c!bottom
     \egroup
     \pruneboxesincache\s!marginblock
     \ifcase\getboxcountfromcache\s!marginblock\relax
-      \global\settrue\c_page_margin_blocks_enabled
+      \global\c_page_margin_blocks_enabled\conditionaltrue
     \fi
   \fi
   \endgroup}
@@ -228,12 +231,14 @@
 % margin floats (keyword 'margin' in option list)
 
 \protected\def\page_margin_blocks_process_float
-  {\doifelse{\marginblockparameter\c!state}\v!start
+  {\ifcstok{\marginblockparameter\c!state}\v!start
      \page_margin_blocks_process_float_yes
-     \page_margin_blocks_process_float_nop}
+   \else
+     \page_margin_blocks_process_float_nop
+   \fi}
 
 \def\page_margin_blocks_process_float_yes
-  {\global\settrue\c_page_margin_blocks_enabled
+  {\global\c_page_margin_blocks_enabled\conditionaltrue
    \putboxincache\s!marginblock{+}\floatbox}
 
 \def\page_margin_blocks_process_float_nop
@@ -262,7 +267,7 @@
          \else
            \marginblockparameter\c!inbetween
          \fi
-         \getboxfromcache\s!marginblock{\number\currentloopiterator}\scratchbox
+         \getboxfromcache\s!marginblock{\the\currentloopiterator}\scratchbox
          \box\scratchbox
          \marginblockparameter\c!after}%
       \pruneboxesincache\s!marginblock

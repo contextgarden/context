@@ -75,7 +75,7 @@
 
 \permanent\protected\def\tabl_nte_start_nr
   {\eTR
-   \setfalse\c_tabl_nte_in_nc}
+   \c_tabl_nte_in_nc\conditionalfalse}
 
 \permanent\protected\def\tabl_nte_start_nc
   {\futurelet\nexttoken\tabl_nte_start_nc_indeed}
@@ -87,7 +87,7 @@
 
 \def\tabl_nte_start_nc_finish#1\NC
   {\ifconditional\c_tabl_nte_in_nc \else
-     \settrue\c_tabl_nte_in_nc
+     \c_tabl_nte_in_nc\conditionaltrue
      \tabl_ntb_bTR[]%
    \fi
    \tabl_ntb_bTD#1\eTD\NC}

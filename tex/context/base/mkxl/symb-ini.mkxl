@@ -51,8 +51,11 @@
 \installsetuphandler    \??symbols {symbols}
 
 \appendtoks
-   \doifelse{\symbolsparameter\c!stylealternative}\v!math
-     \settrue\setfalse\prefermathovertextchar
+    \ifcstok{\symbolsparameter\c!stylealternative}\v!math
+      \prefermathovertextchar\conditionaltrue
+    \else
+      \prefermathovertextchar\conditionalfalse
+    \fi
 \to \everysetupsymbols
 
 \setupsymbols
@@ -75,7 +78,7 @@
 \permanent\tolerant\protected\def\definesymbol[#1]#*[#2]#*[#3]%
   {\ifparameter#3\or
      \defcsname\??symbol#1:#2\endcsname{#3}%
-     \doifsomething{#1}{\addvalue{\??symbolset#1}{#2}}%
+     \ifempty{#1}\else\addvalue{\??symbolset#1}{#2}\fi
    \else
      \defcsname\??symbol\m_symb_current_set:#1\endcsname{#2}%
      \addvalue{\??symbolset\m_symb_current_set}{#1}%
@@ -130,14 +133,14 @@
    \fi}
 
 \def\symb_place_normal
-  {\setfalse\c_symb_found
+  {\c_symb_found\conditionalfalse
    \expand\t_symb_setups
    \ifconditional\c_symb_found \else
      \symb_place_retry\currentsymbol % hm, isn't this redundant?
    \fi}
 
 \def\symb_place_indeed#1% \relax's prevent lookahead problems
-  {\settrue\c_symb_found
+  {\c_symb_found\conditionaltrue
    \begingroup
    \expand\everysymbol
    \csname\??symbol#1\endcsname\relax
@@ -175,13 +178,13 @@
      \unhbox\scratchbox
      \endgroup
      \xdefcsname\??symbol#1:\currentsymbol\endcsname{\symb_place_named_indeed{#1}{\currentsymbol}}%
-     \settrue\c_symb_found
+     \c_symb_found\conditionaltrue
    \else
      \endgroup
    \fi}
 
 \protected\def\symb_place_named_indeed#1#2% \relax's prevent lookahead problems
-  {\settrue\c_symb_found
+  {\c_symb_found\conditionaltrue
    \begingroup
    \expand\everysymbol
    \getglyphstyled
@@ -233,16 +236,16 @@
    \fi}
 
 \def\symb_fetch_first_indeed#1%
-  {\doifinsymbolset{#1}\currentsymbol{\settrue\c_symb_found}}
+  {\doifinsymbolset{#1}\currentsymbol{\c_symb_found\conditionaltrue}}
 
 \def\symb_fetch_second#1%
-  {\doifinsymbolset\empty\currentsymbol{\settrue\c_symb_found}}
+  {\doifinsymbolset\empty\currentsymbol{\c_symb_found\conditionaltrue}}
 
 \permanent\protected\def\doifelsesymboldefined#1%
   {\begingroup
    \edef\currentsymbol{#1}%
    \let\symb_fetch\symb_fetch_first
-   \setfalse\c_symb_found
+   \c_symb_found\conditionalfalse
    \expand\t_symb_setups
    \ifconditional\c_symb_found
      \endgroup\expandafter\firstoftwoarguments

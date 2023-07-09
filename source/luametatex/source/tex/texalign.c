@@ -1024,7 +1024,7 @@ void tex_run_alignment_initialize(void)
                 box_width(record) = null_flag;
             }
             /*tex Put |\endtemplate| at the end: */
-            current = tex_store_new_token(current, deep_frozen_end_template_1_token);
+            current = tex_store_new_token(current, deep_frozen_end_template_token);
             align_record_post_part(lmt_alignment_state.cur_align) = token_link(lmt_alignment_state.hold_token_head);
         }
     }
@@ -2042,7 +2042,7 @@ static void tex_aux_finish_align(void)
 void tex_initialize_alignments(void)
 {
     lmt_alignment_state.hold_token_head = tex_get_available_token(null);
-    lmt_alignment_state.omit_template = tex_get_available_token(deep_frozen_end_template_1_token);
+    lmt_alignment_state.omit_template = tex_get_available_token(deep_frozen_end_template_token);
     span_span(end_span) = max_quarterword + 1;
     align_record_span_ptr(end_span) = null;
 }
@@ -2086,7 +2086,7 @@ void tex_run_alignment_end_template(void)
         && (  lmt_input_state.input_stack[lmt_input_state.base_ptr].state == token_list_state)) {
         --lmt_input_state.base_ptr;
     }
-    if (lmt_input_state.input_stack[lmt_input_state.base_ptr].index != template_post_text ) {
+    if (lmt_input_state.input_stack[lmt_input_state.base_ptr].index != template_post_text) {
         tex_alignment_interwoven_error(2);
     } else if (lmt_input_state.input_stack[lmt_input_state.base_ptr].loc)  {
         tex_alignment_interwoven_error(3);

@@ -266,8 +266,7 @@ typedef enum deep_frozen_cs_codes {
     deep_frozen_cs_fi_code,                                   /*tex permanent |\fi| */
     deep_frozen_cs_no_if_code,                                /*tex hidden |\noif| */
     deep_frozen_cs_always_code,                               /*tex hidden internalized |\enforces| */
-    deep_frozen_cs_end_template_1_code,                       /*tex permanent |\endtemplate| */
-    deep_frozen_cs_end_template_2_code,                       /*tex second permanent |\endtemplate| */
+    deep_frozen_cs_end_template_code,                         /*tex permanent |\endtemplate| */
     deep_frozen_cs_relax_code,                                /*tex permanent |\relax| */
     deep_frozen_cs_end_write_code,                            /*tex permanent |\endwrite| */
     deep_frozen_cs_dont_expand_code,                          /*tex permanent |\notexpanded:| */
@@ -299,7 +298,9 @@ typedef enum glue_codes {
     par_init_left_skip_code,
     par_init_right_skip_code,
     emergency_left_skip_code, 
-    emergency_right_skip_code, 
+    emergency_right_skip_code,
+    initial_page_skip_code, 
+    additional_page_skip_code, 
  /* indent_skip_code,           */ /*tex internal, might go away here */
  /* left_hang_skip_code,        */ /*tex internal, might go away here */
  /* right_hang_skip_code,       */ /*tex internal, might go away here */
@@ -401,6 +402,8 @@ typedef enum page_property_codes {
     page_vsize_code,
     page_total_code,
     page_depth_code,
+    page_last_height_code, /*tex These might become unsettable */
+    page_last_depth_code,  /*tex These might become unsettable */
     dead_cycles_code,
     insert_penalties_code,
     insert_heights_code,
@@ -414,11 +417,17 @@ typedef enum page_property_codes {
     insert_height_code,
     insert_depth_code,
     insert_width_code,
+    /*tex These can't be set: */
     page_stretch_code,
     page_filstretch_code,
     page_fillstretch_code,
     page_filllstretch_code,
     page_shrink_code,
+    page_last_stretch_code,
+    page_last_filstretch_code,
+    page_last_fillstretch_code,
+    page_last_filllstretch_code,
+    page_last_shrink_code,
 } page_property_codes;
 
 # define first_page_property_code page_goal_code
@@ -527,6 +536,7 @@ typedef enum int_codes {
     glyph_text_scale_code,
     glyph_script_scale_code,
     glyph_scriptscript_scale_code,
+    discretionary_options_code,
  /* glue_data_code, */
     cat_code_table_code,
     output_box_code,
@@ -1351,6 +1361,8 @@ extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword
 # define math_dict_properties_par        count_parameter(math_dict_properties_code)
 # define math_threshold_par              glue_parameter(math_threshold_code)
 # define page_extra_goal_par             dimen_parameter(page_extra_goal_code)
+# define initial_page_skip_par           glue_parameter(initial_page_skip_code)
+# define additional_page_skip_par        glue_parameter(additional_page_skip_code)
 
 # define pre_display_size_par            dimen_parameter(pre_display_size_code)
 # define display_width_par               dimen_parameter(display_width_code)
@@ -1488,6 +1500,7 @@ extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword
 # define glyph_y_scale_par               count_parameter(glyph_y_scale_code)
 # define glyph_x_offset_par              dimen_parameter(glyph_x_offset_code)
 # define glyph_y_offset_par              dimen_parameter(glyph_y_offset_code)
+# define discretionary_options_par       count_parameter(discretionary_options_code)
 # define math_scripts_mode_par           count_parameter(math_scripts_mode_code)
 # define math_limits_mode_par            count_parameter(math_limits_mode_code)
 # define math_nolimits_mode_par          count_parameter(math_nolimits_mode_code)
@@ -1776,18 +1789,17 @@ typedef enum auto_migration_mode_bits {
 */
 
 typedef enum deep_frozen_cs_tokens {
-    deep_frozen_protection_token     = cs_token_flag + deep_frozen_cs_protection_code,
-    deep_frozen_cr_token             = cs_token_flag + deep_frozen_cs_cr_code,
-    deep_frozen_end_group_token      = cs_token_flag + deep_frozen_cs_end_group_code,
-    deep_frozen_right_token          = cs_token_flag + deep_frozen_cs_right_code,
-    deep_frozen_fi_token             = cs_token_flag + deep_frozen_cs_fi_code,
-    deep_frozen_end_template_1_token = cs_token_flag + deep_frozen_cs_end_template_1_code,
-    deep_frozen_end_template_2_token = cs_token_flag + deep_frozen_cs_end_template_2_code,
-    deep_frozen_relax_token          = cs_token_flag + deep_frozen_cs_relax_code,
-    deep_frozen_end_write_token      = cs_token_flag + deep_frozen_cs_end_write_code,
-    deep_frozen_dont_expand_token    = cs_token_flag + deep_frozen_cs_dont_expand_code,
-    deep_frozen_null_font_token      = cs_token_flag + deep_frozen_cs_null_font_code,
-    deep_frozen_undefined_token      = cs_token_flag + deep_frozen_cs_undefined_code,
+    deep_frozen_protection_token   = cs_token_flag + deep_frozen_cs_protection_code,
+    deep_frozen_cr_token           = cs_token_flag + deep_frozen_cs_cr_code,
+    deep_frozen_end_group_token    = cs_token_flag + deep_frozen_cs_end_group_code,
+    deep_frozen_right_token        = cs_token_flag + deep_frozen_cs_right_code,
+    deep_frozen_fi_token           = cs_token_flag + deep_frozen_cs_fi_code,
+    deep_frozen_end_template_token = cs_token_flag + deep_frozen_cs_end_template_code,
+    deep_frozen_relax_token        = cs_token_flag + deep_frozen_cs_relax_code,
+    deep_frozen_end_write_token    = cs_token_flag + deep_frozen_cs_end_write_code,
+    deep_frozen_dont_expand_token  = cs_token_flag + deep_frozen_cs_dont_expand_code,
+    deep_frozen_null_font_token    = cs_token_flag + deep_frozen_cs_null_font_code,
+    deep_frozen_undefined_token    = cs_token_flag + deep_frozen_cs_undefined_code,
 } deep_frozen_cs_tokens;
 
 /*tex
@@ -1883,6 +1895,8 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 
 # define update_tex_emergency_left_skip(v)     tex_eq_define(internal_glue_location(emergency_left_skip_code), internal_glue_reference_cmd, v);
 # define update_tex_emergency_right_skip(v)    tex_eq_define(internal_glue_location(emergency_right_skip_code), internal_glue_reference_cmd, v);
+
+# define update_tex_additional_page_skip(v)    tex_geq_define(internal_glue_location(additional_page_skip_code), internal_glue_reference_cmd, v)
 
 # define update_tex_local_interline_penalty(v) tex_eq_word_define(internal_int_location(local_interline_penalty_code), v);
 # define update_tex_local_broken_penalty(v)    tex_eq_word_define(internal_int_location(local_broken_penalty_code), v);

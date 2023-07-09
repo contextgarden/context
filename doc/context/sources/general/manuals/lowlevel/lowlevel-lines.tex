@@ -250,11 +250,11 @@ In \LUAMETATEX\ we also have:
 
 \startitemize
 \startitem
-    \type {\linebreakcriterion}: The normal distinction between loose, decent and
+    \typ {\linebreakcriterion}: The normal distinction between loose, decent and
     tight in \TEX\ uses 12 for 0.5 and 99 for about 1.0, but because we have more
     granularity (.25) we can set four values instead. The default of zero (\type
     {"0C0C0C63}) then becomes \type {"020C2A63}. When set that way the default
-    \type {\adjdemerits} has to be halved 5000 so that we compare the more
+    \typ {\adjdemerits} has to be halved 5000 so that we compare the more
     granular distances. Don't worry if you \quote {don't get it}, hardly any user
     will change these values. One can think of the 100 squared becomes a 10000
     (at least this helps relating these numbers) and 10000 is pretty bad in \TEX s
@@ -434,7 +434,7 @@ The \LUAMETATEX\ specific \typ {orphanpenalty} gets injected before the last wor
 in a paragraph. High values can lead to overfull boxes but when used in text that
 hyphenate well or with languages that have short words it might work out well.
 
-The next four are related to expansion: \typ {adjustspacing}, \typ
+The next four parameters are related to expansion: \typ {adjustspacing}, \typ
 {adjustspacingstep}, \typ {adjustspacingshrink} and \typ {adjustspacingstretch}.
 Here we have several scenarios.
 
@@ -747,13 +747,360 @@ in controlled situations. Currently we only have a low level
 
 \stopsectionlevel
 
+\startsectionlevel[title=Criterion]
+
+The \type {granular} alignment option will configure the linebreakcriterion to
+work with $0.25$ steps instead of $0.50$ steps which means that successive lines
+can become a bit closer in spacing. There is no real impact on performance
+because testing happens anyway. In \in {figure}[fig:criterion] you see some
+examples, where in some it indeed makes a difference.
+
+\startbuffer[criterion]
+\starttext
+\definecolor[ttest][a=1,t=.5]
+\definecolor[rtest][a=1,t=.5,r=1]
+\dostepwiserecurse{80}{120}{1}{
+    \startTEXpage[offset=1ts]
+        \startcombination[3*1]
+            {\startoverlay
+                {\vtop{\showmakeup[space]\hsize #1mm\ttest                      \samplefile{tufte}}}
+                {\vtop{\showmakeup[space]\hsize #1mm\rtest \setupalign[granular]\samplefile{tufte}}}
+            \stopoverlay} {}
+            {\vtop{\showmakeup[space]\hsize #1mm\ttest                      \samplefile{tufte}}} {}
+            {\vtop{\showmakeup[space]\hsize #1mm\rtest \setupalign[granular]\samplefile{tufte}}} {}
+        \stopcombination
+    \stopTEXpage
+}
+\stoptext
+\stopbuffer
+
+\startplacefigure[location=here,reference=fig:criterion,title={More granular interline criteria.}]
+    \startcombination[1*4]
+        {\typesetbuffer[criterion][width=\textwidth,page=35]} {}
+        {\typesetbuffer[criterion][width=\textwidth,page=36]} {}
+        {\typesetbuffer[criterion][width=\textwidth,page=37]} {}
+        {\typesetbuffer[criterion][width=\textwidth,page=38]} {}
+    \stopcombination
+\stopplacefigure
+
+\stopsectionlevel
+
 \startsectionlevel[title=Examples]
 
 \start \em
+
     The \CONTEXT\ distribution comes with a few test setups: \typ
     {spac-imp-tests.mkxl}. Once we have found a suitable set of values and sample
     texts we might discuss them here.
+
+    Currently we provide the following predefined passes that you can enable with
+    \typ {\setupalignpass}: \type {decent}, \type {quality}, \type {test1}, \type
+    {test2}, \type {test3}, \type {test4}, \type {test5}. We hope that users are
+    willing to test these.
+
 \stop
+
+\stopsectionlevel
+
+\startsectionlevel[title=Pages]
+
+While the par builder does multiple passes, the page builder is a single pass
+progressive routine. Every time something gets added to the (so called) main
+vertical list the page state gets updated and when the page overflows what has
+been collected gets passed to the output routine. It is to a large extend driven
+by glue (with stretch and shrink) and penalties and when content (boxes) is added
+the process is somewhat complicated by inserts as these needs to be taken into
+account too.
+
+You can get pages that run from top to bottom by adding stretch between lines but
+by default in \CONTEXT\ we prefer to fill up the bottom with white space.
+
+It can be hard to make decisions at the \TEX\ end around a potential page break
+because in order to get an idea how much space is left, one needs to trigger the
+page builder which can have side effects.
+
+Penalties play an important role and because these are used to control for
+instance widows and clubs high values can lead to underfull pages so if we want
+to influence that we need to cheat. For this we have three experimental
+mechanisms:
+
+\startitemize[packed]
+\startitem tweaking the page goal: \type {\pageextragoal} \stopitem
+\startitem initializing the state quantities: \type {\initialpageskip} \stopitem
+\startitem adapting the state quantities as we go: \type {\additionalpageskip} \stopitem
+\stopitemize
+
+The first tweak is for me to play with, and when a widow or club is seen the
+extra amount can kick in. This feature is likely to be replaced by a more
+configurable one.
+
+The second tweak lets the empty page start out with some given height, stretch
+and shrink. This variable is persistent over pages. This is not true for the
+third tweak: it kicks in when the page gets initialized {\em or} as we go, but
+after it has been applied the value is reset. That makes it a feature like \type
+{\looseness}. We could combine these into one (because one can set up a
+persistent one in the macro package at well defined spots) but having an initial
+one also nicely can compensate the usual topskip glue hackery with a more natural
+control option.
+
+\startbuffer[pagelooseness-1]
+\starttext
+    \showframe[text]
+    \setuplayout[width=middle,headerdistance=5mm]
+    \setupalign[vertical,height]
+    \dorecurse{10}{
+        \samplefile{tufte}\par
+        \setpagelooseness[lines=2]%
+        \dorecurse{5}{
+            {\red   \samplefile{knuth}}\par
+            {\green \samplefile {ward}}\par
+            {\blue  \samplefile{davis}}\par
+        }
+        \page
+    }
+\stoptext
+\stopbuffer
+
+\startbuffer[pagelooseness-2]
+\starttext
+    \showframe[text]
+    \setuplayout[width=middle,headerdistance=5mm]
+    \setupalign[vertical,height]
+    \dorecurse{10}{
+        \samplefile{tufte}\par
+        \setpagelooseness[-3]%
+        \dorecurse{5}{
+            {\red   \samplefile{knuth}}\par
+            {\green \samplefile {ward}}\par
+            {\blue  \samplefile{davis}}\par
+        }
+        \page
+    }
+\stoptext
+\stopbuffer
+
+Adapting the layout (within the regular text area) is done with \typ
+{\setpagelooseness} an demonstrated in \in {figure} [fig:pagelooseness-1] and \in
+{figure} [fig:pagelooseness-2]. Possible parameters are \type {lines}, \type
+{height}, \type {stretch} and \type {shrink}. You can also directly specify the
+number of lines. The other two features are not (yet) interfaced.
+
+\startplacefigure[location=here,reference=fig:pagelooseness-1,title={Cheating with page dimensions: \type {[lines=2]}.}]
+    \startcombination[4*1]
+        {\typesetbuffer[pagelooseness-1][width=\combinationwidth,page=1,frame=on]} {}
+        {\typesetbuffer[pagelooseness-1][width=\combinationwidth,page=2,frame=on]} {}
+        {\typesetbuffer[pagelooseness-1][width=\combinationwidth,page=3,frame=on]} {}
+        {\typesetbuffer[pagelooseness-1][width=\combinationwidth,page=4,frame=on]} {}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[location=here,reference=fig:pagelooseness-2,title={Cheating with page dimensions: \type {[-3]}.}]
+    \startcombination[4*1]
+        {\typesetbuffer[pagelooseness-2][width=\combinationwidth,page=1,frame=on]} {}
+        {\typesetbuffer[pagelooseness-2][width=\combinationwidth,page=2,frame=on]} {}
+        {\typesetbuffer[pagelooseness-2][width=\combinationwidth,page=3,frame=on]} {}
+        {\typesetbuffer[pagelooseness-2][width=\combinationwidth,page=4,frame=on]} {}
+    \stopcombination
+\stopplacefigure
+
+It is not that trivial to fulfill the wide range of user demands but over time
+the \typ {\setupalign} commands has gotten plenty of features. Getting for
+instance windows and clubs right in the kind of mixed usage that is common in
+\CONTEXT\ is not always easy. One can experiment with scenarios (also to get some
+understanding of matters) but none is probably perfect (unless one does something
+close to manual tweaking). There is also the butterfly effect: a change here
+might trigger na issue there.
+
+The examples in \in {figure} [fig:vz-1], \in [fig:vz-2] and \in [fig:vz-3] scale
+vertically in order ti fill up the text area; the \type {vz} parameter is set
+with \typ {setuplayout}. In the example the widow and club penalties are set to
+$10000$. In these examples we have enabled the \typ {layout.vz} trackers that
+shows a small black rule indicating the amount of stretch.
+
+\startbuffer[vz-1]
+\starttext
+    \showframe[text]
+    \enabletrackers[layout.vz]
+    \setuplayout[width=middle,headerdistance=5mm,vz=no]
+    \clubpenalty  10000
+    \widowpenalty 10000
+    \dostepwiserecurse{0}{30}{1}{
+        \dorecurse{#1}{\strut dummy line ##1\par}
+        \dorecurse{4}{\samplefile{tufte}\par}
+    }
+\stoptext
+\stopbuffer
+
+\startbuffer[vz-2]
+\starttext
+    \showframe[text]
+    \enabletrackers[layout.vz]
+    \setuplayout[width=middle,headerdistance=5mm,vz=yes]
+    \clubpenalty  10000
+    \widowpenalty 10000
+    \dostepwiserecurse{0}{30}{1}{
+        \dorecurse{#1}{\strut dummy line ##1\par}
+        \dorecurse{4}{\samplefile{tufte}\par}
+    }
+\stoptext
+\stopbuffer
+
+\startbuffer[vz-3]
+\starttext
+    \showframe[text]
+    \enabletrackers[layout.vz]
+    \setuplayout[width=middle,headerdistance=5mm,vz=2]
+    \clubpenalty  10000
+    \widowpenalty 10000
+    \dostepwiserecurse{0}{30}{1}{
+        \dorecurse{#1}{\strut dummy line ##1\par}
+        \dorecurse{4}{\samplefile{tufte}\par}
+    }
+\stoptext
+\stopbuffer
+
+\startplacefigure[location=here,reference=fig:vz-1,title={Cheating with vertical expansion: \type {[vz=no]}.}]
+    \startcombination[4*1]
+        {\typesetbuffer[vz-1][width=\combinationwidth,page=1,frame=on]} {}
+        {\typesetbuffer[vz-1][width=\combinationwidth,page=2,frame=on]} {}
+        {\typesetbuffer[vz-1][width=\combinationwidth,page=3,frame=on]} {}
+        {\typesetbuffer[vz-1][width=\combinationwidth,page=4,frame=on]} {}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[location=here,reference=fig:vz-2,title={Cheating with vertical expansion: \type {[vz=yes]}.}]
+    \startcombination[4*1]
+        {\typesetbuffer[vz-2][width=\combinationwidth,page=1,frame=on]} {}
+        {\typesetbuffer[vz-2][width=\combinationwidth,page=2,frame=on]} {}
+        {\typesetbuffer[vz-2][width=\combinationwidth,page=3,frame=on]} {}
+        {\typesetbuffer[vz-2][width=\combinationwidth,page=4,frame=on]} {}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[location=here,reference=fig:vz-3,title={Cheating with vertical expansion: \type {[vz=2]}.}]
+    \startcombination[4*1]
+        {\typesetbuffer[vz-3][width=\combinationwidth,page=1,frame=on]} {}
+        {\typesetbuffer[vz-3][width=\combinationwidth,page=2,frame=on]} {}
+        {\typesetbuffer[vz-3][width=\combinationwidth,page=3,frame=on]} {}
+        {\typesetbuffer[vz-3][width=\combinationwidth,page=4,frame=on]} {}
+    \stopcombination
+\stopplacefigure
+
+There are a few other tweaks but these one can wonder about these. We can add
+stretch and shrink to the baseline skip, something that can also be triggered
+with the \quote {spread} option to \typ {\setupalign}, assuming that also \typ
+{height} is given). An alternative is to permit an extra line and accept a visual
+overflow, assuming that the layout is set up to make sure that the footer line
+doesn't overlap. None of this guarantees that a whole document with plenty of
+graphics and special constructs will come out well, but for text only it might
+work okay. \in {Figures} [fig:extra-1], \in [fig:extra-2] and \in [fig:extra-3]
+show some of this.
+
+\startbuffer[extra-1]
+\starttext
+    \showframe[text]
+    \setuplayout[width=middle,headerdistance=15mm,vz=no]
+    \setupalign[height]
+    \clubpenalty  10000
+    \widowpenalty 10000
+    \dorecurse{10}{
+        \samplefile{tufte}\par
+        \samplefile{knuth}\par
+        \samplefile{ward}\par
+        \samplefile{davis}\par
+    }
+\stoptext
+\stopbuffer
+
+\startbuffer[extra-2]
+\starttext
+    \showframe[text]
+    \setuplayout[width=middle,headerdistance=15mm,vz=no]
+    \setupalign[height]
+    \clubpenalty  10000
+    \widowpenalty 10000
+    \baselineskip 1\baselineskip plus 1pt minus .1pt
+    \dorecurse{10}{
+        \samplefile{tufte}\par
+        \samplefile{knuth}\par
+        \samplefile{ward}\par
+        \samplefile{davis}\par
+    }
+\stoptext
+\stopbuffer
+
+\startbuffer[extra-3]
+\starttext
+    \showframe[text]
+    \setuplayout[width=middle,headerdistance=15mm,vz=no]
+    \setupalign[height]
+    \clubpenalty  10000
+    \widowpenalty 10000
+    \pageextragoal1\lineheight
+    \dorecurse{10}{
+        \samplefile{tufte}\par
+        \samplefile{knuth}\par
+        \samplefile{ward}\par
+        \samplefile{davis}\par
+    }
+\stoptext
+\stopbuffer
+
+\page
+
+\startplacefigure[location=here,reference=fig:extra-1,title={Cheating: just high penalties.}]
+    \startcombination[4*2]
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-1][width=\combinationwidth,page=1,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-1][width=\combinationwidth,page=2,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-1][width=\combinationwidth,page=3,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-1][width=\combinationwidth,page=4,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-1][width=\combinationwidth,page=5,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-1][width=\combinationwidth,page=6,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-1][width=\combinationwidth,page=7,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-1][width=\combinationwidth,page=8,frame=on]}} {}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[location=here,reference=fig:extra-2,title={Cheating: \typ {\baselineskip 1\baselineskip plus 1pt minus .1pt}.}]
+    \startcombination[4*2]
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-2][width=\combinationwidth,page=1,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-2][width=\combinationwidth,page=2,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-2][width=\combinationwidth,page=3,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-2][width=\combinationwidth,page=4,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-2][width=\combinationwidth,page=5,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-2][width=\combinationwidth,page=6,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-2][width=\combinationwidth,page=7,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-2][width=\combinationwidth,page=8,frame=on]}} {}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[location=here,reference=fig:extra-3,title={Cheating: \typ {\pageextragoal \lineheight}.}]
+    \startcombination[4*2]
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-3][width=\combinationwidth,page=1,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-3][width=\combinationwidth,page=2,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-3][width=\combinationwidth,page=3,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-3][width=\combinationwidth,page=4,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-3][width=\combinationwidth,page=5,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-3][width=\combinationwidth,page=6,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-3][width=\combinationwidth,page=7,frame=on]}} {}
+        {\clip[ny=12,sy=1,y=10]{\typesetbuffer[extra-3][width=\combinationwidth,page=8,frame=on]}} {}
+    \stopcombination
+\stopplacefigure
+
+\stopsectionlevel
+
+\startsectionlevel[title=Profiles]
+
+You can have a paragraph with lines that exceed the maximum height and/or depth
+or where spaces end up in a way that create so called rivers. Rivers are more a
+curiosity than an annoyance because any attempt to avoid them is likely to result
+in a worse looking result. The unequal line distances can be annoying too but
+these can be avoided when bringing lines closer together doesn't lead to clashes.
+This can be done without reformatting the paragraph by passing the \type
+{profile} option to \typ {\setupalign}. It comes at the cost of a little more
+runtime and (as far as we observed) it kicks in seldom, for instance when inline
+math is used that has super- or subscripts, radicals, fractions or other slightly
+higher constructs.
 
 \stopsectionlevel
 
@@ -792,4 +1139,40 @@ in controlled situations. Currently we only have a low level
 %         \hsize#1mm \setupalignpass[whatever] \getbuffer \getbuffer \page
 %     \stop
 % }
+
+% discuss the disc options options pre, post orphaned, penalties (or maybe in a new
+% lowlevel-discretionaries)
+
+% \starttext
+%     \showmakeup[line]
+% %     \discretionaryoptions\zerocount
+% %     \discretionaryoptions\prefernobreakdiscoptioncode
+%     \hsize\widthofstring{sciencefiction}
+%     science\discretionary{\red fict-}{\green ion}{\blue fiction}\par
+%     science\discretionary{\red f\kern0ptiction}{}{\blue fiction}\par
+%     science\-fiction\par
+%     science\discretionary{-}{}{\blue fiction}\par
+%     \hyphenation{science-fiction}
+%     sciencefiction\par
+% \stoptext
+
+% optional content example (todo: show break and nobreak keywords):
+
+% \start
+%     \tttf
+%     \hsize\widthofstring{short}
+%     --:\par
+%     \discretionaryoptions\zerocount
+%     \discretionary{before}{after}{short}\par
+%     \discretionary{before}{}{short}\blank
+%     nb:\par
+%     \discretionaryoptions\prefernobreakdiscoptioncode
+%     \discretionary{before}{after}{short}\par
+%     \discretionary{before}{}{short}\blank
+%     br:\par
+%     \discretionaryoptions\preferbreakdiscoptioncode
+%     \discretionary{before}{after}{short}\par
+%     \discretionary{before}{}{short}\blank
+% \stop
+
 

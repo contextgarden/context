@@ -71,9 +71,9 @@
 
 % This will become a more advanced layout controller soon:
 
-\newconditional\layoutlefttoright   \settrue\layoutlefttoright
-\newconditional\displaylefttoright  \settrue\displaylefttoright
-\newconditional\inlinelefttoright   \settrue\inlinelefttoright
+\newconditional\layoutlefttoright   \layoutlefttoright\conditionaltrue
+\newconditional\displaylefttoright  \displaylefttoright\conditionaltrue
+\newconditional\inlinelefttoright   \inlinelefttoright\conditionaltrue
 
 \permanent\protected\def\lefttoright
   {\ifvmode
@@ -90,24 +90,24 @@
    \fi}
 
 \protected\def\spac_directions_lefttoright_vmode
-  {\settrue\displaylefttoright
-   \settrue\inlinelefttoright
+  {\displaylefttoright\conditionaltrue
+   \inlinelefttoright\conditionaltrue
    \textdirection\directionlefttoright
    \pardirection \directionlefttoright}
 
 \protected\def\spac_directions_righttoleft_vmode
-  {\setfalse\displaylefttoright
-   \setfalse\inlinelefttoright
+  {\displaylefttoright\conditionalfalse
+   \inlinelefttoright\conditionalfalse
    \textdirection\directionrighttoleft
    \pardirection \directionrighttoleft}
 
 \protected\def\spac_directions_lefttoright_hmode
   {\linedirection\directionlefttoright % linedir keeps subtype of skip
-   \settrue\inlinelefttoright}
+   \inlinelefttoright\conditionaltrue}
 
 \protected\def\spac_directions_righttoleft_hmode
   {\linedirection\directionrighttoleft % linedir keeps subtype of skip
-   \setfalse\inlinelefttoright}
+   \inlinelefttoright\conditionalfalse}
 
 \permanent\protected\def\synchronizelayoutdirection
   {\ifconditional\layoutlefttoright
@@ -124,12 +124,12 @@
    \fi}
 
 \def\spac_directions_synchronize_lr
-  {\settrue\inlinelefttoright
+  {\inlinelefttoright\conditionaltrue
    \textdirection\directionlefttoright
    \pardirection \directionlefttoright}
 
 \def\spac_directions_synchronize_rl
-  {\setfalse\inlinelefttoright
+  {\inlinelefttoright\conditionalfalse
    \textdirection\directionrighttoleft
    \pardirection \directionrighttoleft}
 
@@ -246,6 +246,7 @@
 % Vertical
 
 \newconstant\c_spac_align_state_vertical
+\newconstant\c_spac_align_state_spread
 
 \protected\def\spac_align_set_vertical_none
   {\enforced\let\raggedtopcommand   \relax
@@ -272,7 +273,13 @@
      \spac_align_set_vertical_low
    \or
      \spac_align_set_vertical_high
-   \fi}
+   \fi
+   \baselineskip
+     1\baselineskip
+     \ifcase\c_spac_align_state_spread\else
+       \s!plus \onepoint
+     \fi
+   \relax}
 
 % Horizontal
 
@@ -281,7 +288,7 @@
 \fi
 
 % \appendtoks
-%     \setfalse\raggedonelinerstate
+%     \raggedonelinerstate\conditionalfalse
 % \to \everyforgetall
 
 \newconstant\raggedstatus % public
@@ -316,7 +323,7 @@
    \parinitrightskip \zeropoint
    \parfillleftskip  \zeropoint
    \parfillrightskip \s_zero_plus_one_fil % new
-   \setfalse         \raggedonelinerstate % now here
+   \raggedonelinerstate\conditionalfalse % now here
    \enforced\aliased\let\updateraggedskips\relax}          % no need for adaption
 
 \permanent\protected\def\spac_align_set_horizontal_left
@@ -612,6 +619,7 @@
    \c_spac_align_state_broad     \zerocount
    \c_spac_align_state_horizontal\zerocount
    \c_spac_align_state_vertical  \zerocount
+   \c_spac_align_state_spread    \zerocount
    \c_spac_align_state_direction \zerocount % what is default ?
    \c_spac_align_state_page      \zerocount
    \c_spac_align_state_par_fill  \zerocount
@@ -624,7 +632,7 @@
  % % kept, nice for tracing
  %
  % \normalexpanded{\t_spac_align_collected
- %   {\setfalse\raggedonelinerstate % bad
+ %   {\raggedonelinerstate\conditionalfalse % bad
  %    \expand\t_spac_align_collected
  %    \spac_align_flush_horizontal
  %    \spac_align_flush_vertical
@@ -640,10 +648,10 @@
  %     \spac_align_flush_page
  %     \spac_align_flush_parfill}%
  %  \etokspre\t_spac_align_collected
- %    {\setfalse\raggedonelinerstate}% bad
+ %    {\raggedonelinerstate\conditionalfalse}% bad
  %
     \etoks\t_spac_align_collected
-      {\setfalse\raggedonelinerstate % bad
+      {\raggedonelinerstate\conditionalfalse % bad
        \expand\t_spac_align_collected
        \spac_align_flush_horizontal
        \spac_align_flush_vertical
@@ -745,11 +753,13 @@
 \defcsname\??aligncommand\v!height         \endcsname{\c_spac_align_state_page      \plustwo  }
 \defcsname\??aligncommand\v!line           \endcsname{\c_spac_align_state_page      \plusthree
                                                       % this will become another keyword (undocumented anyway)
-                                                      \toksapp\t_spac_align_collected{\settrue\raggedonelinerstate}}
+                                                      \toksapp\t_spac_align_collected{\raggedonelinerstate\conditionaltrue}}
 
 \defcsname\??aligncommand\v!high           \endcsname{\c_spac_align_state_vertical  \plusthree}
 \defcsname\??aligncommand\v!low            \endcsname{\c_spac_align_state_vertical  \plustwo  }
 \defcsname\??aligncommand\v!lohi           \endcsname{\c_spac_align_state_vertical  \plusone  }
+
+\defcsname\??aligncommand\v!spread         \endcsname{\c_spac_align_state_spread    \plusone  }
 
 \defcsname\??aligncommand\v!flushright     \endcsname{\c_spac_align_state_horizontal\plusthree}
 \defcsname\??aligncommand\v!flushleft      \endcsname{\c_spac_align_state_horizontal\plustwo  }
@@ -840,7 +850,7 @@
 
 \def\spac_align_flush_parfill
   {\ifcase\c_spac_align_state_par_fill\else
-     \spac_align_flush_parfill_indeed{\number\c_spac_align_state_par_fill}%
+     \spac_align_flush_parfill_indeed{\the\c_spac_align_state_par_fill}%
    \fi}
 
 \protected\def\spac_align_flush_parfill_indeed#1%
@@ -1012,7 +1022,8 @@
   {\begingroup
    \showstruts
    \tracingparagraphs\maxdimen
-   \appendtoksonce\showpardata\to\everypar}
+   \enforced\let\startshowpardata\begingroup
+   \appendtoks\showpardata\to\everypar}
 
 \permanent\protected\def\stopshowpardata
   {\endgraf
@@ -1164,35 +1175,13 @@
 % beware: \wordright{whatever\kern-\rightskip} should work!
 % so, no funny boxing here
 
-%D We need to pick up a box (downward compatible in case \type {\bgroup}
-%D is used (test suite index example).
+%D We need to pick up a box (downward compatible in case \type {\bgroup} is used
+%D (test suite index example).
 
 \permanent\tolerant\protected\def\wordright[#1]%
   {\dowithnextbox
      {\normalexpanded{\spac_word_right_indeed{#1}{\hpack{\thebox\nextbox}}}}
      \hbox}
-
-% \protected\def\spac_word_right_indeed#1#2%
-%   {\registerparwrapper
-%      {\v!word:\v!right}
-%      {\begingroup
-%       \frozen\parfillrightskip   \zeropoint
-%       \frozen\finalhyphendemerits\zerocount
-%       \endgroup}
-%      {\doifelseparwrapper{\v!word:\v!right}%
-%         {\doifelse{#1}\v!right{\kern-\rightskip}{\doifsomething{#1}{\kern-#1}}%
-%          \strut \removeunwantedspaces
-%          \hfill
-%          \allowbreak % changed back from \hskip\zeropoint
-%          \quad}%
-%         {\allowbreak % changed back from \hskip\zeropoint
-%          \break}%
-%       \unregisterparwrapper{\v!word:\v!right}%
-%       \strut
-%       \hfill
-%       \nobreak
-%       #2%
-%       \allowbreak}}
 
 \protected\def\spac_word_right_indeed#1#2%
   {\registerparwrapper
@@ -1203,7 +1192,13 @@
       \endgroup}
      {\doifelseparwrapper{\v!word:\v!right}{\unregisterparwrapper{\v!word:\v!right}}\donothing
       \removeunwantedspaces
-      \doifelse{#1}\v!right{\kern-\rightskip}{\doifsomething{#1}{\kern-#1}}%
+      \ifcstok{#1}\v!right
+        \kern-\rightskip
+      \orelse\ifempty{#1}%
+        % no kern
+      \else
+        \kern-#1%
+      \fi
       \hfilll
       \discretionary{\strut}{\strut}{\strut}% \allowbreak % changed back from \hskip\zeropoint
       \hfilll
@@ -1295,7 +1290,7 @@
      \fi
    \fi}
 
-\newconditional\alignsimplelefttoright \settrue\alignsimplelefttoright
+\newconditional\alignsimplelefttoright \alignsimplelefttoright\conditionaltrue
 
 \permanent\protected\def\simplereversealignedbox#1#2%
   {\hbox \ifdim#1>\zeropoint to #1

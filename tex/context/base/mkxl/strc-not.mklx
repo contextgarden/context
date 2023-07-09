@@ -134,12 +134,14 @@
 % \installcorenamespace{noteclass}
 
 \protected\def\strc_define_commands_notation#tag#level#parent%
-  {\doifelsenothing{#parent}
-     {\normalexpanded{\defineconstruction[#tag][\s!handler=\v!notation,\c!level=#level]}%
-      \edefcsname\??notation#tag:\s!parent\endcsname{\??notation}}%
-     {\normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!notation,\c!level=#level]}%
-      \edefcsname\??note    #tag:\s!parent\endcsname{\??note#parent}% see later for \s!note
-      \edefcsname\??notation#tag:\s!parent\endcsname{\??notation#parent}}%
+  {\ifempty{#parent}%
+     \normalexpanded{\defineconstruction[#tag][\s!handler=\v!notation,\c!level=#level]}%
+     \edefcsname\??notation#tag:\s!parent\endcsname{\??notation}%
+   \else
+     \normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!notation,\c!level=#level]}%
+     \edefcsname\??note    #tag:\s!parent\endcsname{\??note#parent}% see later for \s!note
+     \edefcsname\??notation#tag:\s!parent\endcsname{\??notation#parent}%
+   \fi
    \instance\protected\edefcsname\e!next #tag\endcsname{\strc_notations_next{#tag}{\number#level}}% obsolete
    \instance\protected\edefcsname\c!reset#tag\endcsname{\strc_notations_reset{#tag}{\number#level}}% obsolete
    \instance\protected\edefcsname        #tag\endcsname{\strc_notations_command[#tag]}%
@@ -197,19 +199,19 @@
    \enforced\let\setupcurrentconstruction        \setupcurrentnotation
    \edef\p_strc_constructions_number{\constructionparameter\c!number}%
    \ifx\p_strc_constructions_number\v!yes
-     \settrue\c_strc_constructions_number_state
+     \c_strc_constructions_number_state\conditionaltrue
      \iftrialtypesetting
        \strc_counters_save\currentconstructionnumber
      \fi
     %\strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
    \else
-     \setfalse\c_strc_constructions_number_state
+     \c_strc_constructions_number_state\conditionalfalse
    \fi
    \edef\p_strc_constructions_title{\constructionparameter\c!title}%
    \ifx\p_strc_constructions_title\v!yes
-     \settrue\c_strc_constructions_title_state
+     \c_strc_constructions_title_state\conditionaltrue
    \else
-     \setfalse\c_strc_constructions_title_state
+     \c_strc_constructions_title_state\conditionalfalse
    \fi}
 
 \protected\defcsname\??constructionfinalizer\v!notation\endcsname
@@ -254,9 +256,9 @@
    \strc_notes_synchronize
    \edef\p_next{\noteparameter\c!anchor}%
    \ifx\p_next\v!next % for now only two states
-     \settrue \c_strc_notations_anchored_next
+     \c_strc_notations_anchored_next\conditionaltrue
    \else
-     \setfalse\c_strc_notations_anchored_next
+     \c_strc_notations_anchored_next\conditionalfalse
    \fi
    \ifnotesenabled
      \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
@@ -479,7 +481,7 @@
      \else
        \begingroup
        \edef\currentnotenumber{\clf_storenote{\currentnote}\currentconstructionlistentry}%
-       \settrue\processingnote
+       \processingnote\conditionaltrue
        \ifconditional\c_strc_notes_skip
          \glet\lastnotesymbol\strc_notes_inject_symbol_nop
        \else
@@ -494,9 +496,9 @@
          \fi
        \fi
        \ifconditional\postponingnotes % todo: per note class
-         \global\settrue\postponednote
+         \global\postponednote\conditionaltrue
        \orelse\ifconditional\inlocalnotes % todo: per note class
-         \global\settrue\postponednote
+         \global\postponednote\conditionaltrue
        \orelse\ifconditional\c_strc_notes_flushed
          \handlenoteitself\currentnote\currentnotenumber
        \orelse\ifconditional\c_strc_notes_delayed
@@ -508,7 +510,7 @@
      \fi
    \fi
    \ifconditional\c_strc_notes_skip
-     \global\setfalse\c_strc_notes_skip
+     \global\c_strc_notes_skip\conditionalfalse
    \else
      \boundary\noteboundary
    \fi}
@@ -722,7 +724,9 @@
      \dotagsetnotesymbol
      \noteparameter\c!textcommand{\clf_noteprefixednumber{\currentnote}\currentnotenumber\relax}%
      % the next one can cycle so we need to make sure it has no advance width
-     \doif{\noteparameter\c!indicator}\v!yes\strc_notes_inject_pointer
+     \ifcstok{\noteparameter\c!indicator}\v!yes
+       \strc_notes_inject_pointer
+     \fi
      \dostoptagged
    \egroup
    \endgroup
@@ -960,9 +964,9 @@
 \newconditional\c_strc_notes_delayed
 \newconditional\c_strc_notes_flushed
 
-\protected\def\strc_notes_set_delayed_yes{\settrue \c_strc_notes_delayed\setfalse\c_strc_notes_flushed}
-\protected\def\strc_notes_set_delayed_nop{\setfalse\c_strc_notes_delayed\setfalse\c_strc_notes_flushed}
-\protected\def\strc_notes_set_delayed_lst{\settrue \c_strc_notes_delayed\settrue \c_strc_notes_flushed}
+\protected\def\strc_notes_set_delayed_yes{\c_strc_notes_delayed\conditionaltrue\c_strc_notes_flushed\conditionalfalse}
+\protected\def\strc_notes_set_delayed_nop{\c_strc_notes_delayed\conditionalfalse\c_strc_notes_flushed\conditionalfalse}
+\protected\def\strc_notes_set_delayed_lst{\c_strc_notes_delayed\conditionaltrue\c_strc_notes_flushed\conditionaltrue}
 
 \defcsname\??notelocation\v!page\endcsname
   {\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
@@ -1089,7 +1093,7 @@
    \fi}
 
 \def\strc_notes_set_location_page
-  {\setfalse\c_strc_notes_delayed
+  {\c_strc_notes_delayed\conditionalfalse
    \strc_notes_set_distance
    \strc_notes_set_columns
    \page_inserts_set_location  \currentnoteinsertion\v!page % \setupinsertion[\currentnote][\c!location=\v!page]%
@@ -1098,7 +1102,7 @@
    \page_inserts_set_distance  \currentnoteinsertionnumber\s_strc_notes_distance}
 
 \def\strc_notes_set_location_columns
-  {\setfalse\c_strc_notes_delayed
+  {\c_strc_notes_delayed\conditionalfalse
    \strc_notes_set_distance
    \strc_notes_set_columns
  % \ifnum\currentnofcolumns=\zerocount
@@ -1111,7 +1115,7 @@
    \page_inserts_set_distance  \currentnoteinsertionnumber\s_strc_notes_distance}
 
 \def\strc_notes_set_location_somecolumn#whatcolumn%
-  {\setfalse\c_strc_notes_delayed
+  {\c_strc_notes_delayed\conditionalfalse
    \strc_notes_set_distance
    \strc_notes_set_columns
    \page_inserts_set_location  \currentnoteinsertion#whatcolumn% \setupinsertion[\currentnote][\c!location=#whatcolumn]%
@@ -1123,7 +1127,7 @@
 \def\strc_notes_set_location_lastcolumn {\strc_notes_set_location_somecolumn\v!lastcolumn }
 
 \def\strc_notes_set_location_text % we don't use inserts anyway (e.g. endnotes)
-  {\settrue\c_strc_notes_delayed
+  {\c_strc_notes_delayed\conditionaltrue
    \clf_setnotestate{\currentnote}{store}%
    \page_inserts_set_location  \currentnoteinsertion\v!text % \setupinsertion[\currentnote][\c!location=\v!text]%
    \page_inserts_set_multiplier\currentnoteinsertionnumber\zerocount
@@ -1141,7 +1145,7 @@
 \let\strc_notes_set_position_high\relax
 
 \def\strc_notes_set_position_bottom
-  {\settrue\c_notes_bottom_present}
+  {\c_notes_bottom_present\conditionaltrue}
 
 \appendtoks
     \strc_notes_set_properties
@@ -1165,7 +1169,7 @@
   {\ifconditional\c_notes_bottom_present\else\strc_notes_check_if_bottom_present_indeed\fi}
 
 \def\strc_notes_check_if_bottom_present
-  {\setfalse\c_notes_bottom_present
+  {\c_notes_bottom_present\conditionalfalse
    \strc_notes_process\strc_notes_check_if_bottom_present_step}
 
 % Example of using factor:
@@ -1251,11 +1255,11 @@
 %D to split of the symbol placement. I decided to merge this functionality with the
 %D existing \type {\note} functionality.
 
-\newconditional\c_strc_notes_symbol \settrue\c_strc_notes_symbol % not used
+\newconditional\c_strc_notes_symbol \c_strc_notes_symbol\conditionaltrue % not used
 \newconditional\c_strc_notes_skip
 
 \permanent\protected\def\setnote    [#tag]{\csname#tag\endcsname}
-\permanent\protected\def\setnotetext[#tag]{\global\settrue\c_strc_notes_skip\csname#tag\endcsname}
+\permanent\protected\def\setnotetext[#tag]{\global\c_strc_notes_skip\conditionaltrue\csname#tag\endcsname}
 
 \permanent\protected\def\handlenoteinsert#tag#id%
   {\begingroup
@@ -1267,22 +1271,26 @@
      \expand\everyinsidenoteinsert\relax
      \usesetupsparameter\noteparameter % experimental
      \useinterlinespaceparameter\noteparameter
-     \doifelse{\noteparameter\c!paragraph}\v!yes
-        {\nointerlineskip
-         \startvboxtohboxseparator
-           \noteparameter\c!inbetween
-         \stopvboxtohboxseparator
-         \startvboxtohbox
-           \handlenoteitself{#tag}{#id}%
-         \stopvboxtohbox}
-        {\handlenoteitself{#tag}{#id}}%
+     \ifcstok{\noteparameter\c!paragraph}\v!yes
+       \nointerlineskip
+       \startvboxtohboxseparator
+         \noteparameter\c!inbetween
+       \stopvboxtohboxseparator
+       \startvboxtohbox
+         \handlenoteitself{#tag}{#id}%
+       \stopvboxtohbox
+     \else
+       \handlenoteitself{#tag}{#id}%
+     \fi
    \egroup
    \expand\everyafternoteinsert
    \endgroup}
 
 \permanent\protected\def\betweennoteitself#tag% used ?
   {\cdef\currentnote{#tag}%
-   \doif{\noteparameter\c!paragraph}\v!yes{\noteparameter\c!inbetween}}
+   \ifcstok{\noteparameter\c!paragraph}\v!yes
+     \noteparameter\c!inbetween
+   \fi}
 
 \permanent\protected\def\handlenoteitself#tag#id%
   {\edef\currentnotenumber{#id}%
@@ -1379,7 +1387,7 @@
 % maybe but better use [scope=local] here
 %
 % \appendtoks
-%     \setfalse\inhibitmargindata
+%     \inhibitmargindata\conditionalfalse
 % \to \everyinsidenoteinsert
 
 \setupnotes
@@ -1430,7 +1438,7 @@
 \newconditional\c_strc_notes_first_placed
 
 \permanent\protected\def\placenoteinserts
-  {\setfalse\c_strc_notes_first_placed
+  {\c_strc_notes_first_placed\conditionalfalse
    \strc_notes_process\strc_notes_place_inserts}
 
 \def\strc_notes_place_inserts
@@ -1439,7 +1447,7 @@
 %      \ifdim\ht\currentnoteinsertionnumber>\zeropoint % or a faster delayed test
      \ifcase\page_inserts_get_height\currentnoteinsertionnumber\else
        \strc_notes_place_inserts_indeed
-       \settrue\c_strc_notes_first_placed
+       \c_strc_notes_first_placed\conditionaltrue
      \fi
    \fi}
 
@@ -1521,22 +1529,24 @@
 \def\strc_notes_flush_global
   {\begingroup
    \useinterlinespaceparameter\noteparameter
-   \doifelse{\noteparameter\c!paragraph}\v!yes
-     {\leftorrightvbox % cf mail from ws to list
-        {\starthboxestohbox
-           \iftrialtypesetting
-             \page_inserts_get_uncopied
-           \else
-             \page_inserts_get_unboxed
-           \fi
-           \currentnoteinsertionnumber
-         \stophboxestohbox}}
-     {\iftrialtypesetting
-        \ifvmode\page_inserts_get_uncopied\else\page_inserts_get_copied\fi
-      \else
-        \ifvmode\page_inserts_get_unboxed \else\page_inserts_get_boxed \fi
-      \fi
-      \currentnoteinsertionnumber}%
+   \ifcstok{\noteparameter\c!paragraph}\v!yes
+     \leftorrightvbox % cf mail from ws to list
+       {\starthboxestohbox
+          \iftrialtypesetting
+            \page_inserts_get_uncopied
+          \else
+            \page_inserts_get_unboxed
+          \fi
+          \currentnoteinsertionnumber
+        \stophboxestohbox}%
+   \else
+     \iftrialtypesetting
+       \ifvmode\page_inserts_get_uncopied\else\page_inserts_get_copied\fi
+     \else
+       \ifvmode\page_inserts_get_unboxed \else\page_inserts_get_boxed \fi
+     \fi
+     \currentnoteinsertionnumber
+   \fi
    \endgroup}
 
 %D Supporting end notes is surprisingly easy. Even better, we can combine this
@@ -1570,7 +1580,7 @@
 \permanent\protected\def\postponenotes % will be locally overloaded
   {\ifcase\insertionmigrationmode
      \ifconditional\postponingnotes\else
-       \global\settrue\postponingnotes
+       \global\postponingnotes\conditionaltrue
        \enforced\glet\flushnotes\doflushnotes
        \clf_postponenotes
      \fi
@@ -1582,7 +1592,7 @@
 
 \permanent\protected\def\startpostponingnotes % experimental, page-mix
   {\ifconditional\postponingnotes\else
-     \global\settrue\postponingnotes
+     \global\postponingnotes\conditionaltrue
     %\glet\flushnotes\doflushnotes
      \clf_postponenotes
    \fi}
@@ -1602,8 +1612,8 @@
        \fi
      \fi
      \clf_flushpostponednotes% this also resets the states !
-     \global\setfalse\postponednote
-     \global\setfalse\postponingnotes
+     \global\postponednote\conditionalfalse
+     \global\postponingnotes\conditionalfalse
      \enforced\glettonothing\flushnotes
      \endgroup
    \fi}
@@ -1631,13 +1641,13 @@
 \mutable\lettonothing\localnoteslist
 
 \permanent\tolerant\protected\def\startlocalnotes[#list]% grouping ? (we used to have a second argument ... settings)
-  {\settrue\inlocalnotes
+  {\inlocalnotes\conditionaltrue
    \def\localnoteslist{#list}%
    \processcommacommand[\localnoteslist]\strc_notes_local_start_step}
 
 \permanent\protected\def\stoplocalnotes
   {\processcommacommand[\localnoteslist]\strc_notes_local_stop_step
-   \setfalse\inlocalnotes}
+   \inlocalnotes\conditionalfalse}
 
 \lettonothing\p_strc_notes_continue
 
@@ -1657,7 +1667,9 @@
    \clf_restorenote{#tag}}
 
 \permanent\tolerant\protected\def\placelocalnotes[#tag]#spacer[#settings]%
-  {\doif{\clf_getnotestate{#tag}}{store}{\strc_notes_local_place_indeed{#settings}{#tag}}}
+  {\iftok{\clf_getnotestate{#tag}}{store}%
+     \strc_notes_local_place_indeed{#settings}{#tag}%
+   \fi}
 
 \def\strc_notes_local_place_indeed#settings#tag%
   {\begingroup
@@ -1712,10 +1724,12 @@
 
 \def\strc_notes_place_indeed#settings#tag% settings note
   {\cdef\currentnote{#tag}% grouping ?
-   \doifelse{\clf_getnotestate{#tag}}{store}
-     \strc_notes_local_place_indeed
-     \strc_notes_global_place_indeed
-     {#settings}{#tag}}
+   \iftok{\clf_getnotestate{#tag}}{store}%
+     \expandafter\strc_notes_local_place_indeed
+   \else
+     \expandafter\strc_notes_global_place_indeed
+   \fi
+   {#settings}{#tag}}
 
 \def\strc_notes_global_place_indeed#settings#tag%
   {\begingroup
@@ -1980,7 +1994,7 @@
      \begingroup
      \cdef\currentnote{#tag}%
      \usenotestyleandcolor\c!textstyle\c!textcolor
-     \iftok{#reference}\emptytoks
+     \ifempty{#reference}%
        \noteparameter\c!textcommand\lastnotesymbol % check if command double
      \else
        \unskip
@@ -1990,7 +2004,7 @@
    \fi}
 
 \permanent\tolerant\protected\def\note[#tag]#keepspacer[#reference]%
-  {\iftok{#reference}\emptytoks
+  {\ifempty{#reference}%
      \notesymbol[\v!footnote][#tag]%
    \else
      \notesymbol[#tag][#reference]%

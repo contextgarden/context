@@ -48,8 +48,8 @@
     \resetdigitsmanipulation
 \to \everyresettypesetting
 
-\permanent\protected\def\equaldigits{\groupedcommand{\setdigitsmanipulation[\number\plusone]}{}}
-\permanent\protected\def\dummydigit {\hphantom      {\setdigitsmanipulation[\number\plusone]0}}
+\permanent\protected\def\equaldigits{\groupedcommand{\setdigitsmanipulation[1]}{}}
+\permanent\protected\def\dummydigit {\hphantom      {\setdigitsmanipulation[1]0}}
 
 \appendtoks
     \resetdigitsmanipulation

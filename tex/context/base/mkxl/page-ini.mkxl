@@ -34,7 +34,7 @@
     \global\advanceby\nofshipouts\plusone
 \to \everyaftershipout
 
-\newconditional\c_otr_shipout_enabled \settrue\c_otr_shipout_enabled
+\newconditional\c_otr_shipout_enabled \c_otr_shipout_enabled\conditionaltrue
 
 \protected\def\page_otr_shipout % not used at all
   {\ifconditional\c_otr_shipout_enabled
@@ -231,7 +231,7 @@
 
 % Mark synchronization
 
-\newconditional\c_page_marks_building_successive_pages \settrue\c_page_marks_building_successive_pages
+\newconditional\c_page_marks_building_successive_pages \c_page_marks_building_successive_pages\conditionaltrue
 
 
 \ifdefined\??markingclass

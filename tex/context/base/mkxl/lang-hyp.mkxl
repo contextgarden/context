@@ -75,9 +75,7 @@
    \s!lefthyphenchar=0]  % number
 
 \appendtoks
- % \edef\p_hyphens{\roothyphenationparameter\c!hyphens}%
-   \edef\p_hyphens{\hyphenationparameter\c!hyphens}%
-   \ifx\p_hyphens\v!no
+   \ifcstok{\hyphenationparameter\c!hyphens}\v!no
      \nohyphencollapsing
    \else
      \dohyphencollapsing
@@ -209,6 +207,59 @@
 
 % \sethyphenationfeatures
 %   [default,fences]
+
+%D When we have \OPENTYPE\ fonts with many replacements we can end up with collapsed
+%D discretionaries with relative long snippets. When investigating a buglet in the
+%D font handler (a final discretionary with no trailing glyph got no ligatures) I
+%D got an empty line due to an empty post.
+%D
+%D \startbuffer
+%D \showmakeup[line]
+%D \discretionaryoptions\zerocount
+%D % We need to force an end of line situation:
+%D \hsize\widthofstring{sciencefiction}
+%D % We had no ligatures in the replacement (fixed):
+%D science\discretionary{\red fict-}{\green ion}{\blue fiction}\par
+%D % We got an empty line in the par builder:
+%D science\discretionary{\red f\kern0ptiction}{}{\blue fiction}\par
+%D % Regular cases (with a simple hyphen only pre):
+%D science\-fiction\par
+%D % Just a (par builder criterium) test case:
+%D science\discretionary{-}{}{\blue fiction}\par
+%D \hyphenation{science-fiction}
+%D % Nothing special:
+%D sciencefiction\par
+%D \stopbuffer
+%D
+%D \typebuffer % \startpacked \getbuffer \stoppacked
+%D
+%D Changes are slim that this will happen in real documents (the buglet was more
+%D likely to show up). Anyhow, we now catch the border case in the linebreak
+%D routine:
+
+\discretionaryoptions\prefernobreakdiscoptioncode
+
+%D Here is an example with optional content (at least, the original idea as
+%D we now do it differently:
+%D
+%D \start
+%D     \tttf
+%D     \hsize\widthofstring{short}
+%D     --:\par
+%D     \discretionaryoptions\zerocount
+%D     \discretionary{before}{after}{short}\par
+%D     \discretionary{before}{}{short}\blank
+%D     nb:\par
+%D     \discretionaryoptions\prefernobreakdiscoptioncode
+%D     \discretionary{before}{after}{short}\par
+%D     \discretionary{before}{}{short}\blank
+%D     br:\par
+%D     \discretionaryoptions\preferbreakdiscoptioncode
+%D     \discretionary{before}{after}{short}\par
+%D     \discretionary{before}{}{short}\blank
+%D \stop
+%D
+%D Todo: examples with break and nobreak keywords.
 
 \protect \endinput
 

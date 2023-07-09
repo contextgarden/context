@@ -89,7 +89,7 @@
   {\mathstylehbox to \scratchwidth{\usemathstackerscolorparameter\c!color
      \hss
      \hskip\mathstackersparameter\c!topoffset\relax % for manual italic correction
-   % \ifcsname\??mathextensiblefallbacks\number\scratchunicode\endcsname
+   % \ifcsname\??mathextensiblefallbacks\the\scratchunicode\endcsname
    %   \lastnamedcs
    % \else
        \Umathchar\zerocount\zerocount\scratchunicode
@@ -239,7 +239,7 @@
 \letcsname\??mathstackersalternative\v!default\endcsname\math_stackers_content
 
 \setupmathstackers
-  [\c!mp=math:stacker:\number\scratchunicode,
+  [\c!mp=math:stacker:\the\scratchunicode,
    \c!mpheight=\mathcharht\scratchunicode,
    \c!mpdepth=\mathchardp\scratchunicode,
    \c!mpoffset=.25\mathexheight]
@@ -350,8 +350,7 @@
       \edef\m_math_stackers_text_top   {#toptext}%
       \edef\m_math_stackers_text_bottom{#bottomtext}%
       \ifparameter#bottomtext\or
-        \edef\p_order{\mathstackersparameter\c!order}%
-        \ifx\p_order\v!reverse
+        \ifcstok{\mathstackersparameter\c!order}\v!reverse
           \swapmacros\m_math_stackers_text_top\m_math_stackers_text_bottom
         \fi
       \fi
@@ -527,8 +526,7 @@
 \protected\def\math_stackers_start_group#category%
   {\begingroup
    \cdef\currentmathstackers{#category}%
-   \edef\p_limits{\mathstackersparameter\c!mathlimits}%
-   \ifx\p_limits\v!yes
+   \ifcstok{\mathstackersparameter\c!mathlimits}\v!yes
      \def\math_stackers_stop_group{\egroup\endgroup\ordlimits}%
    % \mathop\bgroup
      \mathaccent\bgroup
@@ -1277,11 +1275,14 @@
     \egroup
 \stopsetups
 
-\def\mathfiller#1%
-  {\begingroup
-   \scratchunicode#1\relax
-   \adaptivebox[mathfiller][\c!alternative=#1]{\hss\strut\hss}%
-   \endgroup}
+% \def\mathfiller#1%
+%   {\begingroup
+%    \scratchunicode#1\relax
+%    \adaptivebox[mathfiller][\c!alternative=#1]{\hss\strut\hss}%
+%    \endgroup}
+
+\permanent\protected\def\mathfiller#1%
+  {\adaptivebox[mathfiller][\c!alternative=#1]{\hss\strut\hss}}
 
 \permanent\tolerant\protected\def\defineextensiblefiller[#1]#*[#2]%
   {\frozen\instance\edefcsname#1\endcsname{\mathfiller{\number#2}}}

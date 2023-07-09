@@ -53,7 +53,8 @@ int_fast64_t p32_to_i64( posit32_t pA ){
     uint_fast64_t mask, tmp;
     int_fast64_t iZ;
     uint_fast32_t scale = 0, uiA;
-    bool bitLast, bitNPlusOne, bitsMore, sign;
+ // bool bitLast, bitNPlusOne, bitsMore, sign; // HH
+    bool bitLast, bitNPlusOne, sign;
 
 	uA.p = pA;
 	uiA = uA.ui;
@@ -67,7 +68,7 @@ int_fast64_t p32_to_i64( posit32_t pA ){
 	else if (uiA < 0x44000000) iZ = 1;		// 1/2 < x < 3/2 rounds to 1.
 	else if (uiA <= 0x4A000000) iZ = 2;		// 3/2 <= x <= 5/2 rounds to 2.
 	//overflow so return max integer value
-	else if(uiA>0x7FFFAFFF) return (sign) ? (-9223372036854775808) : (0x7FFFFFFFFFFFFFFF);
+	else if(uiA>0x7FFFAFFF) return (sign) ? (-9223372036854775808) : (0x7FFFFFFFFFFFFFFF); // -0x7FFFFFFFFFFFFFFF is -9223372036854775807 (so no ..8) // HH
 	else{
 		uiA -= 0x40000000;
 		while (0x20000000 & uiA) {

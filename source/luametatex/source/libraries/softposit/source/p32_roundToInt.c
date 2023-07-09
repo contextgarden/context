@@ -44,7 +44,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 posit32_t p32_roundToInt( posit32_t pA ){
 	union ui32_p32 uA;
-	uint_fast32_t mask = 0x20000000, scale=0, tmp=0, uiA, uiZ;
+ // uint_fast32_t mask = 0x20000000, scale=0, tmp=0, uiA, uiZ; // HH
+	uint_fast32_t mask = 0x20000000, scale=0, tmp=0, uiA;
 	bool bitLast, bitNPlusOne, sign;
 
 	uA.p = pA;

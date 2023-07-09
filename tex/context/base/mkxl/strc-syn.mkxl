@@ -199,14 +199,16 @@
     \s!language=\currentmainlanguage,
 ]
 
+\newconditional\c_strc_constructions_define_commands
+
 \appendtoks
-    \setfalse\c_strc_constructions_define_commands
+    \c_strc_constructions_define_commands\conditionalfalse
     \ifempty\currentsimplelistparent
         \defineconstruction[\currentsimplelist][\s!handler=\v!simplelist,\c!level=1]%
     \else
         \defineconstruction[\currentsimplelist][\currentsimplelistparent][\s!handler=\v!simplelist,\c!level=1]%
     \fi
-    \settrue\c_strc_constructions_define_commands
+    \c_strc_constructions_define_commands\conditionaltrue
 \to \everydefinesimplelist
 
 \protected\defcsname\??constructioninitializer\v!simplelist\endcsname
@@ -282,13 +284,13 @@
    %
   %\checksynonymparent
   %\setupcurrentsynonym[\s!single={#1},\s!multi={#2}]%
-   \setfalse\c_strc_constructions_define_commands
+   \c_strc_constructions_define_commands\conditionalfalse
    \definesimplelist
      [\currentsynonym]%
      [\v!sorting]
      [\s!single={#1},%
       \s!multi={#2}]%
-   \settrue\c_strc_constructions_define_commands
+   \c_strc_constructions_define_commands\conditionaltrue
    \ifparameter#2\or
      %
      \presetheadtext[#2=\Word{#2}]% changes the \if...argument
@@ -562,13 +564,13 @@
      \frozen\instance\protected\defcsname#1\endcsname{\definesort[\v!yes][#1]}%
    \fi
    \cdef\currentsorting{#1}%
-   \setfalse\c_strc_constructions_define_commands
+   \c_strc_constructions_define_commands\conditionalfalse
    \definesimplelist
      [\currentsorting]%
      [\v!sorting]
      [\s!single={#1},%
       \s!multi={#2}]%
-   \settrue\c_strc_constructions_define_commands
+   \c_strc_constructions_define_commands\conditionaltrue
    \ifparameter#2\or
      %
      \presetheadtext[#2=\Word{#2}]% changes the \if...argument

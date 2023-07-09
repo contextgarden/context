@@ -32,10 +32,8 @@
 \let\page_boxes_flush_before\clf_flushpageinjectionsbefore
 \let\page_boxes_flush_after \clf_flushpageinjectionsafter
 
-\lettonothing\p_page_injections_delay
 \lettonothing\p_page_injections_n
 \lettonothing\p_page_injections_page
-\lettonothing\p_page_injections_pagestate
 \lettonothing\p_page_injections_state
 
 \def\page_injections_flush_indeed
@@ -98,9 +96,8 @@
 
 \def\page_injections_direct_indeed% #parameters%
   {\edef\p_page_injections_state{\pageinjectionparameter\c!state}%
-   \edef\p_page_injections_delay{\pageinjectionparameter\c!delay}%
    \edef\p_page_injections_page {\pageinjectionparameter\c!page }%
-   \ifx\p_page_injections_delay\v!yes
+   \ifcstok{\pageinjectionparameter\c!delay}\v!yes
      \expandafter\page_injections_direct_indeed_yes
    \else
      \expandafter\page_injections_direct_indeed_nop
@@ -136,8 +133,7 @@
    \fi}
 
 \def\page_injections_nextpage
-  {\edef\p_page_injections_pagestate{\pageinjectionparameter\c!pagestate}%
-   \ifx\p_page_injections_pagestate\v!stop \else
+  {\ifcstok{\pageinjectionparameter\c!pagestate}\v!stop\else
      \edef\p_page_injections_n{\pageinjectionparameter\c!n}%
      \ifempty\p_page_injections_n
         \let\p_page_injections_n\plusone

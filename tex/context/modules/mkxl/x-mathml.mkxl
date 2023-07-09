@@ -85,8 +85,8 @@
 \xmlmapvalue {mml:math:display} {block}   {\displaymathematics} % before this showed up
 \xmlmapvalue {mml:math:display} {inline}  {\inlinemathematics }
 
-\xmlmapvalue {mml:math:dir}     {ltr}     {\setfalse\c_math_right_to_left\math_basics_synchronize_direction}
-\xmlmapvalue {mml:math:dir}     {rtl}     {\settrue \c_math_right_to_left\math_basics_synchronize_direction}
+\xmlmapvalue {mml:math:dir}     {ltr}     {\c_math_right_to_left\conditionalfalse\math_basics_synchronize_direction}
+\xmlmapvalue {mml:math:dir}     {rtl}     {\c_math_right_to_left\conditionaltrue\math_basics_synchronize_direction}
 
 \edef\mmlconstantone  {1}
 \edef\mmlconstantfalse{false}
@@ -136,7 +136,7 @@
 \stopxmlsetups
 
 
-\setfalse\mmlignoredelimiter % alternatively we could turn it on/off inside the start/stop and ignore \left\right\middle otherwise
+\newconditional\mmlignoredelimiter % alternatively we could turn it on/off inside the start/stop and ignore \left\right\middle otherwise
 
 \let\mmlleftdelimiter       \autofenceopen
 \let\mmlmiddledelimiter     \autofencemiddle
@@ -734,10 +734,10 @@
 
 % inverse
 
-\setfalse\xmlinversefunction
+\newconditional\xmlinversefunction
 
 \startxmlsetups mml:apply:inverse
-    \settrue\xmlinversefunction
+    \xmlinversefunction\conditionaltrue
     \xmlsetup{#1}{mml:\xmlfilter{#1}{/mml:apply/*[2]/tag()}}
 \stopxmlsetups
 
@@ -1341,7 +1341,7 @@
 %         {\mr D}\normalsubscript{
         \DD\normalsubscript{
             \begingroup
-                \setfalse\mmllistdelimiters
+                \mmllistdelimiters\conditionalfalse
                 \xmlall{#1}{/mml:list}
             \endgroup
         }
@@ -1413,13 +1413,13 @@
     \relax % needed
 \stopxmlsetups
 
-\settrue\mmllistdelimiters
+\newconditional\mmllistdelimiters  \mmllistdelimiters\conditionaltrue
 
 \startxmlsetups mml:list
     \begingroup
         \ifconditional\mmllistdelimiters\left [\fi
         \begingroup
-            \settrue\mmllistdelimiters
+            \mmllistdelimiters\conditionaltrue
             \xmlconcat{#1}{/!mml:list}{\MMLseparator,}
         \endgroup
         \ifconditional\mmllistdelimiters\right]\fi
@@ -1615,7 +1615,7 @@
     \endgroup
 \stopxmlsetups
 
-\settrue\MMCdelmatrix % ( ) when true
+\newconditional\MMCdelmatrix  \MMCdelmatrix\conditionaltrue % ( ) when true
 
 \startxmlsetups mml:matrix
     \begingroup
@@ -1623,7 +1623,7 @@
     \ifconditional\MMCdelmatrix
         \left(\matrix{\xmlcommand{#1}{/mml:matrixrow}{mml:matrixrow:do}}\right)
     \else
-        \settrue\MMCdelmatrix
+        \MMCdelmatrix\conditionaltrue
         \matrix{\xmlcommand{#1}{/mml:matrixrow}{mml:matrixrow:do}}
     \fi
     \endgroup
@@ -1642,7 +1642,7 @@
 
 \startxmlsetups mml:determinant
     \begingroup
-    \setfalse\MMCdelmatrix
+    \MMCdelmatrix\conditionalfalse
     \left|\mmlsecond{#1}\right|
     \endgroup
 \stopxmlsetups
@@ -1750,10 +1750,10 @@
 \startxmlsetups mml:function
     \ifempty\MMLpowerelement
         \ifconditional\xmlinversefunction\normalsuperscript{-1}\fi
-        \setfalse\xmlinversefunction
+        \xmlinversefunction\conditionalfalse
     \else
         \normalsuperscript{\ifconditional\xmlinversefunction-\fi\MMLpowerelement}
-        \setfalse\xmlinversefunction
+        \xmlinversefunction\conditionalfalse
         \glettonothing\MMLpowerelement
     \fi
     \xmlsetup{#1}{mml:function:argument}
@@ -1896,9 +1896,9 @@
     \begingroup
         \setmmlmathcolor{#1}
         \ifxmlatt{#1}{maxsize}{1}
-            \settrue\mmlignoredelimiter
+            \mmlignoredelimiter\conditionaltrue
         \orelse\ifxmlatt{#1}{stretchy}{false}
-            \settrue\mmlignoredelimiter
+            \mmlignoredelimiter\conditionaltrue
         \fi
         \ifxmlattempty{#1}{lspace}\else
             \hskip\xmllastatt\relax % todo: check for dimension

@@ -215,15 +215,17 @@
 \permanent\protected\def\stopnicelyfilledbox
   {\egroup
    \vbox to \dummyparameter\c!height \bgroup
-     \doifelse{\dummyparameter\c!strut}\v!yes
-       {\dorecurse{\boxlines\scratchbox}%
-          {\boxlineht\scratchbox\recurselevel\strutht
-           \boxlinedp\scratchbox\recurselevel\strutdp
-           \boxline\scratchbox\recurselevel
-           \vss}}%
-       {\dorecurse{\boxlines\scratchbox}%
-          {\boxline\scratchbox\recurselevel
-           \vss}}%
+     \ifcstok{\dummyparameter\c!strut}\v!yes
+       \dorecurse{\boxlines\scratchbox}%
+         {\boxlineht\scratchbox\recurselevel\strutht
+          \boxlinedp\scratchbox\recurselevel\strutdp
+          \boxline\scratchbox\recurselevel
+          \vss}%
+     \else
+       \dorecurse{\boxlines\scratchbox}%
+         {\boxline\scratchbox\recurselevel
+          \vss}%
+     \fi
      \unskip
    \egroup
    \egroup}

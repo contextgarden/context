@@ -220,9 +220,9 @@
 
 \def\page_mcl_flush_packaged_columns_indeed
   {\ifvoid\b_page_mcl_preceding
-     \setfalse\c_page_mcl_preceding_present % will be set elsewhere
+     \c_page_mcl_preceding_present\conditionalfalse % will be set elsewhere
    \else
-     \settrue\c_page_mcl_preceding_present
+     \c_page_mcl_preceding_present\conditionaltrue
      \page_apply_postprocessors_box\b_page_mcl_preceding
    \fi
    \forgetall
@@ -240,7 +240,7 @@
          \unskip
          \hskip\ifconditional\c_page_mcl_reverse\d_page_mcl_leftskip\else\d_page_mcl_rightskip\fi}}%
    \ifconditional\c_page_mcl_preceding_present
-     \settrue\c_page_mcl_preceding_present
+     \c_page_mcl_preceding_present\conditionaltrue
      \ifgridsnapping
        \page_mcl_flush_preceding_ongrid % obey grid settings, force on grid
      \else
@@ -291,22 +291,22 @@
    \setbox\b_page_mcl_balance_content\vpack{\unvbox\normalpagebox}%
    \ifdim\ht\b_page_mcl_balance_content>\openlineheight % at least one line
      \ifnum\c_page_mcl_balance_minimum<\plustwo % balance anyway
-       \settrue\c_page_mcl_balance_possible
+       \c_page_mcl_balance_possible\conditionaltrue
      \else % check criterium to available lines
        \getnoflines{\ht\b_page_mcl_balance_content}%
        \divideby\noflines \nofcolumns \relax
        \ifnum\noflines<\c_page_mcl_balance_minimum \relax
          \ifdim\dimexpr\ht\b_page_mcl_balance_content+\openlineheight\relax>\makeupheight
-           \settrue\c_page_mcl_balance_possible % column exceeding text height
+           \c_page_mcl_balance_possible\conditionaltrue % column exceeding text height
          \else
-           \setfalse\c_page_mcl_balance_possible % it seems to fit
+           \c_page_mcl_balance_possible\conditionalfalse % it seems to fit
          \fi
        \else
-         \settrue\c_page_mcl_balance_possible % balance indeed
+         \c_page_mcl_balance_possible\conditionaltrue % balance indeed
        \fi
      \fi
    \else
-     \setfalse\c_page_mcl_balance_possible % balancing does not make sense
+     \c_page_mcl_balance_possible\conditionalfalse % balancing does not make sense
    \fi
    \ifconditional\c_page_mcl_balance_possible % start balancing, was: \ifdim\ht\b_page_mcl_balance_content>\openlineheight
      \page_mcl_balance_try_one
@@ -412,18 +412,16 @@
    %
    \d_page_mcl_distance\multicolumnsparameter\c!distance\relax
    %
-   \edef\p_direction{\multicolumnsparameter\c!direction}%
-   \ifx\p_direction\v!right
-       \setfalse\c_page_mcl_reverse
+   \ifcstok{\multicolumnsparameter\c!direction}\v!right
+     \c_page_mcl_reverse\conditionalfalse
    \else
-       \settrue\c_page_mcl_reverse
+     \c_page_mcl_reverse\conditionaltrue
    \fi
    %
-   \edef\p_balance{\multicolumnsparameter\c!balance}%
-   \ifx\p_balance\v!yes
-       \settrue\c_page_mcl_balance
+   \ifcstok{\multicolumnsparameter\c!balance}\v!yes
+     \c_page_mcl_balance\conditionaltrue
    \else
-       \setfalse\c_page_mcl_balance
+     \c_page_mcl_balance\conditionalfalse
    \fi
    %
    \usealignparameter\multicolumnsparameter

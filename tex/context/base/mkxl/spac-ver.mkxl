@@ -185,10 +185,10 @@
 
 \permanent\overloaded\tolerant\protected\def\setupinterlinespace[#1]%
   {\ifarguments
-     \settrue\interlinespaceisset
+     \interlinespaceisset\conditionaltrue
      \spac_linespacing_synchronize_local
    \else
-     \settrue\interlinespaceisset
+     \interlinespaceisset\conditionaltrue
      \ifcsname\namedinterlinespacehash{#1}\s!parent\endcsname
         \cdef\currentinterlinespace{#1}%
         \spac_linespacing_setup_specified_interline_space
@@ -358,7 +358,7 @@
 \installcorenamespace{whitespacemethod}
 
 \newgluespec   \s_spac_whitespace_parskip   \s_spac_whitespace_parskip\zeropoint
-\newconditional\c_spac_whitespace_flexible  \settrue\c_spac_whitespace_flexible
+\newconditional\c_spac_whitespace_flexible  \c_spac_whitespace_flexible\conditionaltrue
 \newconstant   \c_spac_whitespace_grid_mode % option in layout / 1=permit_half_lines
 
 %def\v_spac_whitespace_current{\zeropoint}
@@ -367,7 +367,7 @@
 \permanent\tolerant\protected\def\setupwhitespace[#1]%
   {\ifarguments
      \spac_whitespace_setup_nop
-   \orelse\iftok{#1}\emptytoks
+   \orelse\ifempty{#1}%
      \spac_whitespace_setup_nop
    \else
      \edef\v_spac_whitespace_current{#1}%
@@ -400,7 +400,7 @@
    \fi}
 
 \def\spac_whitespace_setup_grid
-  {\setfalse\c_spac_whitespace_flexible
+  {\c_spac_whitespace_flexible\conditionalfalse
    \ifdim\s_spac_whitespace_parskip>\zeropoint
      \s_spac_whitespace_parskip
        \ifcase\c_spac_whitespace_grid_mode
@@ -420,8 +420,8 @@
   {\defcsname\??whitespacemethod#1\endcsname{#2}}
 
 \installwhitespacemethod \v!fix         {}
-\installwhitespacemethod \v!fixed       {\setfalse\c_spac_whitespace_flexible}
-\installwhitespacemethod \v!flexible    {\settrue \c_spac_whitespace_flexible}
+\installwhitespacemethod \v!fixed       {\c_spac_whitespace_flexible\conditionalfalse}
+\installwhitespacemethod \v!flexible    {\c_spac_whitespace_flexible\conditionaltrue}
 
 \installwhitespacemethod \v!line        {\s_spac_whitespace_parskip   \baselineskip}
 \installwhitespacemethod \v!halfline    {\s_spac_whitespace_parskip .5\baselineskip}
@@ -464,7 +464,7 @@
 
 % todo: when packed blocks blank, we need to enable forced
 
-\newconditional\c_spac_packed_blank \settrue\c_spac_packed_blank
+\newconditional\c_spac_packed_blank \c_spac_packed_blank\conditionaltrue
 \newinteger    \c_spac_packed_level
 
 \permanent\tolerant\protected\def\startpacked[#1]%
@@ -474,7 +474,11 @@
      \begingroup
      \whitespace % not combined
      \directcheckedvspacing\v!disable % \blank[\v!disable]% or \inhibitblank
-     \doifelse{#1}\v!blank\settrue\setfalse\c_spac_packed_blank
+     \ifcstok{#1}\v!blank
+       \c_spac_packed_blank\conditionaltrue
+     \else
+       \c_spac_packed_blank\conditionalfalse
+     \fi
      \setupwhitespace[\v!none]% or \forgetparskip
    \fi \fi}
 
@@ -712,22 +716,48 @@
      \vskip-\openstrutheight
    \fi}
 
+% \permanent\protected\def\settopskip % the extra test is needed for the lbr family
+%   {\topskip
+%      \ifgridsnapping
+%        \zeropoint
+%      \else
+%        \systemtopskipfactor\globalbodyfontsize
+%        \ifcase\bottomraggednessmode % ragged bottom
+%          \s!plus
+%          \ifnum\ntopskipfactor<\zerocount
+%            5\globalbodyfontsize % old hard coded value
+%          \else
+%             \ntopskipfactor\openlineheight
+%          \fi
+%        \fi
+%    \fi
+%    %\relax
+%    \topskipgap\topskip
+%    \advanceby\topskipgap -\openstrutheight\relax
+%    \ifdim\minimumstrutheight>\zeropoint
+%      \ifdim\topskip<\minimumstrutheight
+%        \topskip\minimumstrutheight\relax
+%      \fi
+%    \else
+%      \ifdim\topskip<\strutheightfactor\openlineheight
+%        \topskip\strutheightfactor\openlineheight\relax
+%      \fi
+%    \fi}
+
 \permanent\protected\def\settopskip % the extra test is needed for the lbr family
   {\topskip
      \ifgridsnapping
-       \zeropoint
+       \zeroskip
+       \initialpageskip\zeroskip
      \else
        \systemtopskipfactor\globalbodyfontsize
-       \ifcase\bottomraggednessmode % ragged bottom
-         \s!plus
-         \ifnum\ntopskipfactor<\zerocount
-           5\globalbodyfontsize % old hard coded value
-         \else
-            \ntopskipfactor\openlineheight
+       \relax
+       \initialpageskip\zeropoint
+         \ifcase\bottomraggednessmode % ragged bottom
+           \s!plus \ntopskipfactor\openlineheight
          \fi
-       \fi
+       \relax
    \fi
-   %\relax
    \topskipgap\topskip
    \advanceby\topskipgap -\openstrutheight\relax
    \ifdim\minimumstrutheight>\zeropoint
@@ -752,10 +782,15 @@
    \lineskip     \usedlineskip
    \lineskiplimit\usedlineskiplimit}
 
+% \permanent\protected\def\flexiblebaselines
+%   {\baselineskip  \usedbaselineskip
+%    \lineskip     1\usedlineskip \s!plus 1\s!fill
+%    \lineskiplimit \usedlineskiplimit}
+
 \permanent\protected\def\flexiblebaselines
-  {\baselineskip \usedbaselineskip
-   \lineskip     1\usedlineskip \s!plus 1\s!fill
-   \lineskiplimit\usedlineskiplimit}
+  {\baselineskip 1\usedbaselineskip \s!plus 1\s!fill
+   \lineskip      \usedlineskip
+   \lineskiplimit \usedlineskiplimit}
 
 \permanent\protected\def\setnormalbaselines % used in overload
   {\ifdim\normallineheight>\zeropoint
@@ -1276,15 +1311,8 @@
 
 \permanent\protected\def\setpenalties#1#2#3%
   {\ifdefined#1% space before #3 prevents lookahead problems, needed when #3=text
-     \frozen#1\numexpr#2+\plusone\relax\space\doexpandedrecurse{\the\numexpr#2\relax}{ #3}\zerocount\relax
+     \frozen#1\numexpr#2+\plusone\relax\space\expandedrepeat\numexpr#2\relax{ #3}\zerocount\relax
    \fi}
-
-% to be tested:
-%
-% \permanent\protected\def\setpenalties#1#2#3%
-%   {\ifdefined#1% space before #3 prevents lookahead problems, needed when #3=text
-%      \frozen#1\numexpr#2+\plusone\relax\space\expandedloop\plusone\numexpr#2\relax\plusone{ #3}\zerocount\relax
-%    \fi}
 
 %D \macros
 %D   {keeplinestogether}
@@ -1413,9 +1441,10 @@
 
 \def\spac_grids_set_local_snapping#1%
   {\ifgridsnapping
-     \doifsomething{#1}%
-       {\spac_grids_snap_value_set{#1}%
-        \c_attr_snapvbox\c_attr_snapmethod}%
+     \ifempty{#1}\else
+       \spac_grids_snap_value_set{#1}%
+       \c_attr_snapvbox\c_attr_snapmethod
+     \fi
    \fi}
 
 \def\spac_grids_expand_snapper#1%
@@ -1614,7 +1643,11 @@
   {\ifvbox\nextbox % this will go away
      \clf_vspacingcollapse\nextbox\relax % isn't that already done?
    \fi
-   \doifelsenothing{#1}{\spac_grids_snap_value_set\v!normal}{\spac_grids_snap_value_set{#1}}%
+   \ifempty{#1}%
+     \spac_grids_snap_value_set\v!normal
+   \else
+     \spac_grids_snap_value_set{#1}%
+   \fi
    \clf_vspacingsnap\nextbox\c_attr_snapmethod\relax
    \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}% no pack (?), we snap
    \egroup}
@@ -1762,23 +1795,23 @@
       \gridboxvbox % calculated size
         {\getrawnoflines{#3}% \getnoflines{#3}%
          \scratchdimen\dimexpr#2+\lineheight\relax
-         \dorecurse\noflines
+         \localcontrolledrepeat\noflines
            {\strut
             \hskip-.5\lineheight\relax
             \ifcase\gridboxlinenomode\or
               \rlap
                 {\kern\dimexpr.2\bodyfontsize+\scratchdimen\relax
-                 \infofont\hbox to \emwidth{\hss\recurselevel}}%
+                 \infofont\hbox to \emwidth{\hss\the\currentloopiterator}}%
             \or
               \llap
-                {\infofont\hbox to \emwidth{\hss\recurselevel}%
+                {\infofont\hbox to \emwidth{\hss\the\currentloopiterator}%
                  \kern.2\bodyfontsize}%
             \fi
             \vrule
               \s!height \gridboxwidth
               \s!depth  \gridboxwidth
               \s!width  \scratchdimen
-            \par}}
+            \par}}%
       \vfill}}
 
 %D This has become obsolete:
@@ -1789,17 +1822,19 @@
 %D Helper:
 
 \protected\def\spac_helpers_assign_skip#1#2% ook nog \v!halfline+fuzzysnap
-  {\doifelse{#2}\v!line
-     {#1\ifgridsnapping
-        \bodyfontlineheight
-      \else
-        \openlineheight
-      \fi}
-     {\ifgridsnapping
-        \assigndimension{#2}{#1}{.25\bodyfontlineheight}{.5\bodyfontlineheight}\bodyfontlineheight
-      \else
-        \assigndimension{#2}{#1}\smallskipamount\medskipamount\bigskipamount
-      \fi}%
+  {\ifcstok{#2}\v!line
+     #1\ifgridsnapping
+       \bodyfontlineheight
+     \else
+       \openlineheight
+     \fi
+   \else
+     \ifgridsnapping
+       \assigndimension{#2}{#1}{.25\bodyfontlineheight}{.5\bodyfontlineheight}\bodyfontlineheight
+     \else
+       \assigndimension{#2}{#1}\smallskipamount\medskipamount\bigskipamount
+     \fi
+   \fi
    \relax}
 
 % \start \dosetstretch{.25em} \setuptolerance[tolerant,stretch] \input tufte \endgraf \stop
@@ -1881,9 +1916,9 @@
 %     \c_attr_skippenalty \attributeunsetvalue
 %     \c_attr_skiporder   \attributeunsetvalue
 %     \ifgridsnapping
-%         \settrue\c_space_vspacing_fixed
+%         \c_space_vspacing_fixed\conditionaltrue
 %     \else
-%         \setfalse\c_space_vspacing_fixed
+%         \c_space_vspacing_fixed\conditionalfalse
 %     \fi
 % \to \everybeforeblankhandling
 %
@@ -1930,7 +1965,7 @@
 \def\spac_vspacing_nop_ignore    {\ifmmode\else\par\fi}
 
 \permanent\protected\def\directvspacing#1%
- {\ifmmode\else\par\ifvmode\clf_injectvspacing\ifgridsnapping\plusone\else\zerocount\fi{\iftok{#1}\emptytoks\currentvspacing\else#1\fi}\fi\fi}
+ {\ifmmode\else\par\ifvmode\clf_injectvspacing\ifgridsnapping\plusone\else\zerocount\fi{\ifempty{#1}\currentvspacing\else#1\fi}\fi\fi}
 
 \permanent\protected\def\directdefaultvspacing
   {\ifinpagebody % somewhat weird
@@ -2064,11 +2099,18 @@
    \normalexpanded{\definevspacing[\v!samepage-\number#1-\number#2][penalty:\the\scratchcountertwo]}%
    \endgroup}
 
+% \protected\def\spac_vspacing_define_same_page#1%
+%   {\dostepwiserecurse\c_spac_vspacing_special_done{#1}\plusone
+%      {\spac_vspacing_define_same_step\recurselevel\zerocount % before
+%       \spac_vspacing_define_same_step\recurselevel\plusone   % after
+%       \spac_vspacing_define_same_step\recurselevel\plustwo}% % whatever
+%    \global\c_spac_vspacing_special_done#1\relax}
+
 \protected\def\spac_vspacing_define_same_page#1%
-  {\dostepwiserecurse\c_spac_vspacing_special_done{#1}\plusone
-     {\spac_vspacing_define_same_step\recurselevel\zerocount % before
-      \spac_vspacing_define_same_step\recurselevel\plusone   % after
-      \spac_vspacing_define_same_step\recurselevel\plustwo}% % whatever
+  {\localcontrolledloop\c_spac_vspacing_special_done=#1=\plusone
+     {\spac_vspacing_define_same_step\currentloopiterator\zerocount % before
+      \spac_vspacing_define_same_step\currentloopiterator\plusone   % after
+      \spac_vspacing_define_same_step\currentloopiterator\plustwo}% % whatever
    \global\c_spac_vspacing_special_done#1\relax}
 
 \spac_vspacing_define_same_page{12} % 12 levels should be more than enough as a start
@@ -2382,8 +2424,8 @@
 %D test test test \hfill\break
 %D \stoptyping
 
-\permanent\tolerant\protected\def\blankbefore[#1]{\vadjust pre {\ifcstok{#1}\emptytoks\blank\else\blank[#1]\fi}}
-\permanent\tolerant\protected\def\blankafter [#1]{\vadjust post{\ifcstok{#1}\emptytoks\blank\else\blank[#1]\fi}}
+\permanent\tolerant\protected\def\blankbefore[#1]{\vadjust pre {\ifempty{#1}\blank\else\blank[#1]\fi}}
+\permanent\tolerant\protected\def\blankafter [#1]{\vadjust post{\ifempty{#1}\blank\else\blank[#1]\fi}}
 
 %D Experimental:
 

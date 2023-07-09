@@ -75,7 +75,11 @@
    \fi}
 
 \appendtoks
-    \doifelse{\directoppositeplacingparameter\c!state}\v!start\settrue\setfalse\c_page_facings_busy
+    \ifcstok{\directoppositeplacingparameter\c!state}\v!start
+      \c_page_facings_busy\conditionaltrue
+    \else
+      \c_page_facings_busy\conditionalfalse
+    \fi
 \to \everysetupoppositeplacing
 
 \setupoppositeplacing

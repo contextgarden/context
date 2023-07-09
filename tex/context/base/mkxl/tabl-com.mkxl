@@ -23,8 +23,8 @@
 
 \permanent\protected\def\setalignmentcharacter#1%
   {\enablealignmentcharacter
-   \global\settrue\c_tabl_use_size
-   \global\settrue\c_tabl_sparse_skips
+   \global\c_tabl_use_size\conditionaltrue
+   \global\c_tabl_sparse_skips\conditionaltrue
    \enforced\permanent\protected\gdef\setalignmentcharacter##1%
      {\attribute\aligncharacterattribute`##1\relax}%
    \attribute\aligncharacterattribute`#1\relax}

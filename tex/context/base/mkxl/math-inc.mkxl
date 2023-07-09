@@ -31,12 +31,12 @@
 
 \permanent\protected\def\lxml_add_mml_blob#1#2%
   {\relax
-   \clf_xmlformulatobuffer\number\c_strc_formulas_n{temp-xml-export}%
+   \clf_xmlformulatobuffer\the\c_strc_formulas_n{temp-xml-export}%
    #2%
      [\c!symbol=#1,%
       \c!space=\v!yes,%
       \c!buffer=temp-xml-export,%
-      \c!name={formula-\number\c_strc_formulas_n.xml}]%
+      \c!name={formula-\the\c_strc_formulas_n.xml}]%
    \relax}
 
 \permanent\protected\def\xmlattachmml

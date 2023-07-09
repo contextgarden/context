@@ -80,6 +80,7 @@ extern void        tex_scan_left_brace                (void);
 extern void        tex_scan_optional_equals           (void);
 extern int         tex_scan_cardinal                  (int optional_equal, unsigned *value, int dontbark);
 extern halfword    tex_scan_int                       (int optional_equal, int *radix);
+extern halfword    tex_scan_positive_int              (int optional_equal);
 extern halfword    tex_scan_scale                     (int optional_equal);
 extern halfword    tex_scan_posit                     (int optional_equal);
 extern halfword    tex_scan_dimen                     (int mu, int inf, int shortcut, int optional_equal, halfword *order);
@@ -97,6 +98,7 @@ extern halfword    tex_scan_math_style_identifier     (int tolerant, int styles)
 extern halfword    tex_scan_math_parameter            (void);
 extern halfword    tex_scan_limited_scale             (int optional_equal);
 extern halfword    tex_scan_positive_scale            (int optional_equal);
+extern halfword    tex_scan_positive_number           (int optional_equal);
 
 extern quarterword tex_scan_direction                 (int optional_equal);
 extern halfword    tex_scan_geometry                  (int optional_equal);
@@ -124,6 +126,7 @@ extern halfword    tex_scan_math_group_number         (void);
 extern halfword    tex_scan_math_index_number         (void);
 extern halfword    tex_scan_math_discretionary_number (int optional_equal);
 extern halfword    tex_scan_category_code             (int optional_equal);
+extern halfword    tex_scan_space_factor              (int optional_equal);
 extern singleword  tex_scan_box_index                 (void); /*tex For local boxes: small for now! */
 extern singleword  tex_scan_box_axis                  (void);
 extern halfword    tex_scan_function_reference        (int optional_equal);

@@ -41,7 +41,11 @@
 
 \appendtoks
     \iflocation
-      \doif\figurefiletype{pdf}{\doifnot{\externalfigureparameter\c!interaction}\v!none\grph_epdf_add_overlay}%
+      \iftok{\figurefiletype}{pdf}% a lua call
+        \ifcstok{\externalfigureparameter\c!interaction}\v!none\else
+          \grph_epdf_add_overlay
+        \fi
+      \fi
     \fi
 \to \externalfigurepostprocessors
 

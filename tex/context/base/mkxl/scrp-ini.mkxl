@@ -58,7 +58,7 @@
 % presets are global and are currently defined in lua
 
 % \appendtoks
-%     \setuevalue\currentscript{\setscript[\currentscript]}%
+%     \frozen\instance\protected\edefcsname\currentscript\endcsname{\setscript[\currentscript]}%
 % \to \everydefinescript
 
 \permanent\protected\def\setlocalscript[#1]%
@@ -98,7 +98,11 @@
 
 \appendtoks
     \ifempty\currentscript
-        \doifelse{\scriptparameter\s!features}\v!auto\enableautofontscript\disableautofontscript
+        \ifcstok{\scriptparameter\s!features}\v!auto
+            \enableautofontscript
+        \else
+            \disableautofontscript
+        \fi
     \fi
 \to \everysetupscript
 

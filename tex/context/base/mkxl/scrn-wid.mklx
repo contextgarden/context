@@ -120,9 +120,9 @@
    \fi}
 
 \appendtoks
-    \frozen\instance\setuevalue         \currentattachment {\scrn_attachment_direct[\currentattachment]}%
-    \frozen\instance\setuevalue{\e!start\currentattachment}{\scrn_attachment_start [\currentattachment]}%
-    \frozen\instance\setuevalue{\e!stop \currentattachment}{\scrn_attachment_stop                      }%
+    \frozen\instance\protected\edefcsname        \currentattachment\endcsname{\scrn_attachment_direct[\currentattachment]}%
+    \frozen\instance\protected\edefcsname\e!start\currentattachment\endcsname{\scrn_attachment_start [\currentattachment]}%
+    \frozen\instance\protected\edefcsname\e!stop \currentattachment\endcsname{\scrn_attachment_stop                      }%
 \to \everydefineattachment
 
 \permanent\tolerant\protected\def\scrn_attachment_direct[#tag]#spacer[#registered]#spacer[#settings]%
@@ -130,7 +130,7 @@
      \bgroup
      \cdef\currentattachment{#tag}%
      \ifcstok{\attachmentparameter\c!state}\v!start
-       \iftok{#registered}\emptytoks
+       \ifempty{#registered}%
          \scrn_attachment_inject[\v!auto][]%
        \orelse\ifhastok={#registered}%
           \scrn_attachment_inject[\v!auto][#registered]%
@@ -156,15 +156,17 @@
 
 \def\scrn_attachment_start_indeed[#registered][#settings]%
   {\bgroup
-   \doifelsenothing{#registered}
-     {\def\scrn_attachment_stop{\scrn_attachment_inject[\v!auto][\c!buffer=\v!attachment]\egroup}}%
-     {\doifelseassignment{#registered}
-        {\def\scrn_attachment_stop{\scrn_attachment_inject[\v!auto][\c!buffer=\v!attachment,#registered]\egroup}}%
-        {\def\scrn_attachment_stop{\scrn_attachment_inject[#registered][\c!buffer=\v!attachment,#settings]\egroup}}}%
+   \ifempty{#registered}%
+     \def\scrn_attachment_stop{\scrn_attachment_inject[\v!auto][\c!buffer=\v!attachment]\egroup}%
+   \else
+     \doifelseassignment{#registered}
+       {\def\scrn_attachment_stop{\scrn_attachment_inject[\v!auto][\c!buffer=\v!attachment,#registered]\egroup}}%
+       {\def\scrn_attachment_stop{\scrn_attachment_inject[#registered][\c!buffer=\v!attachment,#settings]\egroup}}%
+   \fi
    \grabbufferdatadirect\v!attachment{\e!start\currentattachment}{\e!stop\currentattachment}}
 
 \def\scrn_attachment_start_ignore
-  {\expandafter\gobbleuntil\csname\e!stop\currentattachment\endcsname}
+  {\expandafter\ignoreupto\csname\e!stop\currentattachment\endcsname}
 
 \def\scrn_attachment_inject[#registered][#settings]%
   {\edef\currentattachmentregistered{#registered}%
@@ -448,7 +450,7 @@
    \grabbufferdatadirect\v!comment{\e!start\currentcomment}{\e!stop\currentcomment}}
 
 \def\scrn_comment_start_ignore
-  {\expandafter\gobbleuntil\csname\e!stop\currentcomment\endcsname}
+  {\expandafter\ignoreupto\csname\e!stop\currentcomment\endcsname}
 
 \protected\def\scrn_comment_stop
   {}

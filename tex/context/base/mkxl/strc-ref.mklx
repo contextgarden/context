@@ -96,8 +96,7 @@
 \newif\ifreferencing \referencingtrue
 
 \appendtoks
-    \edef\p_state{\referencingparameter\c!state}%
-    \ifx\p_state\v!start
+    \ifcstok{\referencingparameter\c!state}\v!start
       \referencingtrue
     \else
       \referencingfalse
@@ -685,7 +684,7 @@
 %D The next switch can be used to make user hyperlinks are not highlighted when
 %D clicked on.
 
-\newconditional\highlighthyperlinks \settrue\highlighthyperlinks
+\newconditional\highlighthyperlinks \highlighthyperlinks\conditionaltrue
 
 %D \macros
 %D   {gotonewwindow}
@@ -694,7 +693,7 @@
 %D one file, it makes sense to force the viewer to open a new window for each file
 %D opened.
 
-\newconditional\gotonewwindow \setfalse\gotonewwindow
+\newconditional\gotonewwindow \gotonewwindow\conditionalfalse
 
 \permanent\def\doifelsereferencefound#label%
   {\clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}}
@@ -887,17 +886,15 @@
 \newconditional\autocrossfilereferences
 
 \appendtoks
-    \edef\p_autofile{\referencingparameter\c!autofile}%
-    \ifx\p_autofile\v!yes
-      \settrue \autocrossfilereferences
+    \ifcstok{\referencingparameter\c!autofile}\v!yes
+      \autocrossfilereferences\conditionaltrue
     \else
-      \setfalse\autocrossfilereferences
+      \autocrossfilereferences\conditionalfalse
     \fi
 \to \everysetupreferencing
 
 \appendtoks
-    \edef\p_export{\referencingparameter\c!export}%
-    \ifx\p_export\v!yes
+    \ifcstok{\referencingparameter\c!export}\v!yes
       \clf_exportreferences
     \fi
 \to \everygoodbye
@@ -1100,7 +1097,11 @@
 \newconditional\pagestatespread
 
 \appendtoks
-    \doifelse{\referencingparameter\c!doublesided}\v!yes\settrue\setfalse\pagestatespread
+    \ifcstok{\referencingparameter\c!doublesided}\v!yes
+        \pagestatespread\conditionaltrue
+    \else
+        \pagestatespread\conditionalfalse
+    \fi
 \to \everysetupreferencing
 
 \setupreferencing
@@ -1190,11 +1191,11 @@
 
 \permanent\protected\def\someplace#preceding#backward#current#foreward#following#dummy[#label]% #dummy gobbles space around #foreward
   {\doifcheckedpagestate{#label}%
-     {\doifelsenothing{#preceding}{\goto{#preceding}[#label]}\ignorespaces}%
-     {\doifelsenothing {#backward}{\goto {#backward}[#label]}\ignorespaces}%
-     {\doifelsenothing  {#current}{\goto  {#current}[#label]}\ignorespaces}%
-     {\doifelsenothing {#foreward}{\goto {#foreward}[#label]}\ignorespaces}%
-     {\doifelsenothing{#following}{\goto{#following}[#label]}\ignorespaces}%
+     {\ifempty{#preceding}\goto{#preceding}[#label]\fi\ignorespaces}%
+     {\ifempty {#backward}\goto {#backward}[#label]\fi\ignorespaces}%
+     {\ifempty  {#current}\goto  {#current}[#label]\fi\ignorespaces}%
+     {\ifempty {#foreward}\goto {#foreward}[#label]\fi\ignorespaces}%
+     {\ifempty{#following}\goto{#following}[#label]\fi\ignorespaces}%
      {#label}}
 
 \permanent\protected\def\atpage[#label]% todo
@@ -1211,11 +1212,11 @@
 %
 % \protected\def\strc_references_conditional#action#text[#condition]#dummy[#label]%
 %   {\doifcheckedpagestate{#label}%
-%      {\doifelse{#condition}\v!precedingpage{#action{#text}[#label]}\ignorespaces}%
-%      {\doifelse{#condition}\v!hencefore    {#action{#text}[#label]}\ignorespaces}%
-%      {\doifelse{#condition}\v!current      {#action{#text}[#label]}\ignorespaces}%
-%      {\doifelse{#condition}\v!hereafter    {#action{#text}[#label]}\ignorespaces}%
-%      {\doifelse{#condition}\v!followingpage{#action{#text}[#label]}\ignorespaces}%
+%      {\ifempty{#condition}\v!precedingpage#action{#text}[#label]\fi\ignorespaces}%
+%      {\ifempty{#condition}\v!hencefore    #action{#text}[#label]\fi\ignorespaces}%
+%      {\ifempty{#condition}\v!current      #action{#text}[#label]\fi\ignorespaces}%
+%      {\ifempty{#condition}\v!hereafter    #action{#text}[#label]\fi\ignorespaces}%
+%      {\ifempty{#condition}\v!followingpage#action{#text}[#label]\fi\ignorespaces}%
 %      {#label}}
 %
 % \protected\def\conditionalat   {\strc_references_conditional\at}
@@ -1249,21 +1250,27 @@
 \installcorenamespace{referencinginteraction}
 
 \def\strc_references_interaction_all
-  {\the\leftreferencetoks
-   \doifelsesometoks\leftreferencetoks \leftofreferencecontent \donothing
-   \leftofreference
-   \doifelsesometoks\leftreferencetoks\onlynonbreakablespace\relax % new, replace space by nonbreakable if present
+  {\ifempty\leftreferencetoks
+     \leftofreference
+   \else
+     \expand\leftreferencetoks
+     \leftofreferencecontent
+     \leftofreference
+     \onlynonbreakablespace\relax % new, replace space by nonbreakable if present
+   \fi
    \currentreferencecontent
    \rightofreference
-   \doifelsesometoks\rightreferencetoks\rightofreferencecontent\donothing
-   \the\rightreferencetoks}
+   \ifempty\rightreferencetoks\else
+     \rightofreferencecontent
+     \expand\rightreferencetoks
+   \fi}
 
 \letcsname\??referencinginteraction\v!all\endcsname\strc_references_interaction_all
 
 \defcsname\??referencinginteraction\v!label\endcsname
   {\leftofreference
-   \the\leftreferencetoks
-   \the\rightreferencetoks
+   \expand\leftreferencetoks
+   \expand\rightreferencetoks
    \rightofreference}
 
 \defcsname\??referencinginteraction\v!text\endcsname
@@ -1377,7 +1384,7 @@
 \installcommandhandler \??referenceformat {referenceformat} \??referenceformat
 
 \appendtoks
-    \setuevalue\currentreferenceformat{\strc_references_apply_format{\currentreferenceformat}}%
+    \frozen\instance\protected\edefcsname\currentreferenceformat\endcsname{\strc_references_apply_format{\currentreferenceformat}}%
 \to \everydefinereferenceformat
 
 \setupreferenceformat
@@ -1475,7 +1482,7 @@
 %     [\goto{state} [file(mk-last-state)]]
 % \stoptext
 
-\newconditional\uselocationstrut \settrue\uselocationstrut
+\newconditional\uselocationstrut \uselocationstrut\conditionaltrue
 
 \permanent\def\extrareferencearguments
   {highlight \luaconditional\highlighthyperlinks\space

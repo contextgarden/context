@@ -152,7 +152,7 @@ return {
                 },
                 {
                     tweak    = "replacerules",
-                    fraction = { height = .254, yoffset = .746 },
+                    fraction = { height = .254, yoffset = .746, leftoffset = .1, rightoffset = .1,  },
                     radical  = { height = .17, leftoffset = .1, rightoffset = .1, yoffset = .485, yscale = .65  },
                     stacker  = { height = .254, yoffset = .746 },
                 },

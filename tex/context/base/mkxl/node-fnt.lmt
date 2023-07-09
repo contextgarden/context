@@ -646,8 +646,17 @@ do
         end
     end
 
+    -- local hasglyph = nuts.hasglyph
+
     function handlers.characters(head,groupcode,direction)
-        -- either next or not, but definitely no already processed list
+
+    -- no gain:
+
+    -- local h = hasglyph(head)
+    -- if not h then
+    --     return head
+    -- end
+
         starttiming(nodes)
 
         usedfonts    = { }

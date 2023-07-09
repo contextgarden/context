@@ -49,7 +49,7 @@
 
 \def\font_fallbacks_prepare_indeed#fallbacks%
   {\begingroup
-     \settrue\c_font_fallbacks_in_progress
+     \c_font_fallbacks_in_progress\conditionaltrue
      \lastrawfontcall % sets current font id
      \font_fallbacks_prepare#fallbacks%
    \endgroup}
@@ -79,13 +79,13 @@
 
 \def\font_fallbacks_clone_unique#specification#scale% kind of dododefinefont
   {\clf_fontcollectionreport{defining #specification (relative scale: #scale)}% brrr
-   \setfalse\c_font_auto_size
+   \c_font_auto_size\conditionalfalse
    \let\lastfontidentifier\s!dummy
    \def\v_font_size_relative{#scale}%
    \let\v_font_size_absolute\fontbody
    \font_helpers_low_level_define{#specification}\v_font_identifier_basic
    \csname\v_font_identifier_basic\endcsname
-   \setfalse\c_font_auto_size} % no \setfontcharacteristics and \the\everyfontswitch needed
+   \c_font_auto_size\conditionalfalse} % no \setfontcharacteristics and \the\everyfontswitch needed
 
 \def\font_fallbacks_clone_inherited#font% also a second argument
   {\font_fallbacks_clone_unique{#font \m_font_fallbacks_spec}}
@@ -96,9 +96,11 @@
 % math (experiment, todo clf_)
 
 % \def\font_fallbacks_register_math#1#2#3#4%
-%   {\doifelsenothing{#3}%
-%       {\definedfont[#2 at #4\scaledpoint]}%
-%       {\definedfont[#2*#3\space at #4\scaledpoint]}%
+%   {\ifempty{#3}%
+%      \definedfont[#2 at #4\scaledpoint]%
+%    \else
+%      \definedfont[#2*#3\space at #4\scaledpoint]%
+%    \fi
 %    \clf_registerfontfallbackid#1\space\fontid\font\space{#2}}
 
 % % % \def\font_fallbacks_register_math#1#2#3#4%

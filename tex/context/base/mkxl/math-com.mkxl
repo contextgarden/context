@@ -60,7 +60,7 @@
 \defcsname\??combinationmethod\v!formula:\v!start\endcsname
   {\startformula
    \dostarttagged\t!formulaset\empty
-   \global\settrue\c_strc_formulas_inside_formulas
+   \global\c_strc_formulas_inside_formulas\conditionaltrue
    \bgroup
    \setupformulas[\c!width=\combinationwidth]%
    \enforced\tolerant\protected\def\startformula[##1]%
@@ -76,7 +76,7 @@
 
 \defcsname\??combinationmethod\v!formula:\v!stop\endcsname
   {\egroup
-   \global\setfalse\c_strc_formulas_inside_formulas
+   \global\c_strc_formulas_inside_formulas\conditionalfalse
    \dostoptagged
    \stopformula
    \expand\everyresetformulas}

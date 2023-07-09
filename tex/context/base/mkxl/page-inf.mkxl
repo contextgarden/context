@@ -76,7 +76,11 @@
      {\infofont
       \getmessage\m!system{27}:\space\currentdate\quad
       \donefalse
-      \doif\currentproject\currentproduct{\doif\currentproduct\currentcomponent\donetrue}%
+      \ifcstok\currentproject\currentproduct
+        \ifcstok\currentproduct\currentcomponent
+          \donetrue
+        \fi
+      \fi
       \ifdone
         \donefalse
       \else

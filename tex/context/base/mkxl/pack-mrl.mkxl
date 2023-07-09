@@ -643,22 +643,25 @@
      {\scratchwidth \directtextrulesparameter\c!rulethickness\relax
       \scratchheight\dimexpr .5\exheight+.5\scratchwidth\relax
       \scratchdepth \dimexpr-.5\exheight+.5\scratchwidth\relax
-      \doifsomething{#1}
-        {\doifelse{\directtextrulesparameter\c!location}\v!inmargin
-           {\llap
-              {\usetextrulesstyleandcolor\c!style\c!color
-               #1%
-               \kern\leftmargindistance}} % hskip
-           {\color[\directtextrulesparameter\c!rulecolor]
-              {\vrule
-                 \s!height\scratchheight
-                 \s!depth \scratchdepth
-                 \s!width \directtextrulesparameter\c!width}%
-            \hbox spread 2\dimexpr\directtextrulesparameter\c!distance\relax
-              {\hss
-               \usetextrulesstyleandcolor\c!style\c!color
-               \strut#1%
-               \hss}}}%
+      \ifempty{#1}%
+        % nothing
+      \orelse\ifcstok{\directtextrulesparameter\c!location}\v!inmargin
+        \llap
+          {\usetextrulesstyleandcolor\c!style\c!color
+           #1%
+           \kern\leftmargindistance}% hskip
+      \else
+        \color[\directtextrulesparameter\c!rulecolor]
+          {\vrule
+             \s!height\scratchheight
+             \s!depth \scratchdepth
+             \s!width \directtextrulesparameter\c!width}%
+        \hbox spread 2\dimexpr\directtextrulesparameter\c!distance\relax
+          {\hss
+           \usetextrulesstyleandcolor\c!style\c!color
+           \strut#1%
+           \hss}%
+      \fi
       \color[\directtextrulesparameter\c!rulecolor]
         {\leaders\hrule
            \s!height\scratchheight
@@ -674,9 +677,11 @@
   {\ifhmode
      \endgraf
    \fi
-   \doifelse{\directtextrulesparameter\c!depthcorrection}\v!on
+   \ifcstok{\directtextrulesparameter\c!depthcorrection}\v!on
      \pack_textrule_correct_depth_yes
+   \else
      \pack_textrule_correct_depth_nop
+   \fi
    \nointerlineskip
    \noindent\naturalvpack % was \dontleavehmode
      {\color[\directtextrulesparameter\c!rulecolor]
@@ -703,10 +708,11 @@
    \relax}
 
 \def\pack_textrule_following#1%
-  {\doifelsenothing{#1}
-     \pack_textrule_with_text_nop
-     \pack_textrule_with_text_yes
-     {#1}%
+  {\ifempty{#1}
+     \expandafter\pack_textrule_with_text_nop
+   \else
+     \expandafter\pack_textrule_with_text_yes
+   \fi{#1}%
    \ifvmode
      \prevdepth\zeropoint
    \fi}
@@ -779,7 +785,7 @@
       \c!after=]%
    \scratchdistance\directfillinrulesparameter\c!distance\relax
    \noindent
-   \iftok{#2}\emptytoks\else
+   \ifempty{#2}\else
      \edef\p_width{\directfillinrulesparameter\c!width}%
      \ifx\p_width\v!fit
        \scratchdistance\zeropoint
@@ -800,7 +806,7 @@
    \setupwhitespace[\v!big]%
    \ignorespaces
    \pack_fillinrules_rule_indeed
-   \iftok{#3}\emptytoks\else
+   \ifempty{#3}\else
      \kern\scratchdistance
      \usefillinrulesstyleandcolor\c!style\c!color
      #3%

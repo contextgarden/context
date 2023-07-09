@@ -193,13 +193,13 @@
 
 \permanent\protected\def\pushbar[#1]%
   {\global\advanceby\c_node_rules_nesting\plusone
-   \edefcsname\??barstack\number\c_node_rules_nesting\endcsname
+   \edefcsname\??barstack\the\c_node_rules_nesting\endcsname
      {\c_node_rules_level\the\c_node_rules_level
       \c_attr_ruled      \the\c_attr_ruled}%
    \node_rules_set{#1}}
 
 \permanent\protected\def\popbar
-  {\csname\??barstack\number\c_node_rules_nesting\endcsname\relax
+  {\csname\??barstack\the\c_node_rules_nesting\endcsname\relax
    \global\advanceby\c_node_rules_nesting\minusone}
 
 \setupbars

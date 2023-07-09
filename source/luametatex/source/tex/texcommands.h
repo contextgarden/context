@@ -342,7 +342,7 @@ typedef enum tex_command_code {
 
 # define is_referenced_cmd(cmd)     (cmd >= call_cmd)
 # define is_nodebased_cmd(cmd)      (cmd >= gluespec_cmd && cmd <= fontspec_cmd)
-# define is_constant_cmd(cmd)       (cmd >= integer_cmd && cmd <= gluespec_cmd)
+# define is_constant_cmd(cmd)       ((cmd >= integer_cmd && cmd <= gluespec_cmd) || cmd == constant_call_cmd)
 
 /*tex Once these were different numbers, no series (see archive): */
 
@@ -457,6 +457,7 @@ typedef enum convert_codes {
     lua_bytecode_code,        /*tex command code for |\luabytecode| */
     expanded_code,            /*tex command code for |\expanded| */
     semi_expanded_code,       /*tex command code for |\constantexpanded| */
+ /* expanded_after_cs_code,   */
     string_code,              /*tex command code for |\string| */
     cs_string_code,           /*tex command code for |\csstring| */
     cs_active_code,           /*tex command code for |\csactive| */
@@ -775,7 +776,7 @@ typedef enum expand_after_codes {
     expand_active_code,
     semi_expand_code,
     expand_after_toks_code,
- /* expand_after_fi, */
+ /* expand_after_fi_code, */ /* keep as reference */
 } expand_after_codes;
 
 # define last_expand_after_code expand_after_toks_code
@@ -813,9 +814,12 @@ typedef enum local_control_codes {
     local_control_loop_code,
     expanded_loop_code,
     unexpanded_loop_code,
+    local_control_repeat_code,
+    expanded_repeat_code,
+    unexpanded_repeat_code,
 } local_control_codes;
 
-# define last_local_control_code unexpanded_loop_code
+# define last_local_control_code unexpanded_repeat_code
 
 /*tex
 
@@ -914,6 +918,7 @@ typedef enum let_codes {
     global_let_csname_code,
     let_to_nothing_code,
     global_let_to_nothing_code,
+    let_to_last_named_cs_code,
 } let_codes;
 
 # define last_let_code global_let_csname_code
@@ -985,6 +990,7 @@ typedef enum lua_value_codes {
     lua_value_string_code,
     lua_value_node_code,
     lua_value_direct_code,
+    lua_value_conditional_code,
     /*tex total number of lua values */
     number_lua_values,
 } lua_value_codes;
@@ -1171,9 +1177,10 @@ typedef enum ignore_something_codes {
     ignore_space_code,
     ignore_par_code,
     ignore_argument_code,
+    ignore_upto_code,
 } ignore_something_codes;
 
-# define last_ignore_something_code ignore_argument_code
+# define last_ignore_something_code ignore_upto_code
 
 typedef enum case_shift_codes {
     lower_case_code,

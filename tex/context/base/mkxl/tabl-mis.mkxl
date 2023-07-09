@@ -40,9 +40,14 @@
       \c!width=\textwidth,\c!height=\textheight,
       \c!n=\lastpage,\c!m=\realpageno,
       #1]%
-   \doifelse{\directdummyparameter\c!alternative}\v!vertical
-     {\typo_kindoftab_indeed\vbox\vskip\c!height}
-     {\typo_kindoftab_indeed\hbox\hskip\c!width }}
+   \ifcstok{\directdummyparameter\c!alternative}\v!vertical
+     \expandafter\typo_kindoftab_indeed_v
+   \else
+     \expandafter\typo_kindoftab_indeed_h
+   \fi}
+
+\def\typo_kindoftab_indeed_v{\typo_kindoftab_indeed\vbox\vskip\c!height}
+\def\typo_kindoftab_indeed_h{\typo_kindoftab_indeed\hbox\hskip\c!width }
 
 \def\typo_kindoftab_indeed#1#2#3#4%
   {#1 to \directdummyparameter#3 \bgroup
@@ -135,11 +140,13 @@
    \or
       \typo_paragraphs_setup_saved[#1][#2]%
    \or
-     \doifelse{#2}\v!each
-       {\dorecurse{\namedparagraphsparameter{#1}\c!n}%
-          {\normalexpanded{\typo_paragraphs_setup_saved[#1:\recurselevel]}[#3]}}%
-       {\def\typo_paragraphs_setup_step##1{\typo_paragraphs_setup_saved[#1:##1][#3]}%
-        \processcommalist[#2]\typo_paragraphs_setup_step}%
+     \ifcstok{#2}\v!each
+       \localcontrolledrepeat \namedparagraphsparameter{#1}\c!n
+         {\normalexpanded{\typo_paragraphs_setup_saved[#1:\the\currentloopiterator]}[#3]}%
+     \else
+       \def\typo_paragraphs_setup_step##1{\typo_paragraphs_setup_saved[#1:##1][#3]}%
+       \processcommalist[#2]\typo_paragraphs_setup_step
+     \fi
    \fi}
 
 \appendtoks
@@ -147,9 +154,11 @@
     \frozen\instance\letcsname\currentparagraphs\endcsname\nextparagraphs
     \frozen\instance\protected\edefcsname\e!start\currentparagraphs\endcsname{\startparagraphs[\currentparagraphs]}%
     \frozen\instance\letcsname\e!stop\currentparagraphs\endcsname\stopparagraphs
-    %frozen\instance\setuevalue{\e!setup\currentparagraph\e!endsetup}{\typo_paragraphs_setup_saved[\currentparagraphs]}%
-    \dorecurse{\paragraphsparameter\c!n}%
-      {\normalexpanded{\typo_paragraphs_setup_saved[\currentparagraphs:\recurselevel][\c!width=,\s!parent=\??paragraphs\currentparagraphs]}}%
+    \localcontrolledrepeat \paragraphsparameter\c!n
+      {\normalexpanded
+         {\typo_paragraphs_setup_saved
+            [\currentparagraphs:\the\currentloopiterator]%
+            [\c!width=,\s!parent=\??paragraphs\currentparagraphs]}}%
     \typo_paragraphs_setup_saved[\currentparagraphs:1][\c!distance=\zeropoint]%
 \to \everydefineparagraphs
 
@@ -175,8 +184,8 @@
    \c_typo_paragraphs_max\paragraphsparameter\c!n\relax
    \d_typo_paragraphs_auto\d_typo_paragraphs_width\relax
    \scratchcounter\zerocount
-   \dorecurse\c_typo_paragraphs_max
-     {\edef\p_width{\namedparagraphsparameter{\currentparagraphs:\recurselevel}\c!width}%
+   \\localcontrolledrepeat \c_typo_paragraphs_max
+     {\edef\p_width{\namedparagraphsparameter{\currentparagraphs:\the\currentloopiterator}\c!width}%
       \ifempty\p_width
         \advanceby\scratchcounter\plusone
       \else
@@ -289,11 +298,12 @@
 
 \def\typo_paragraphs_separator
   {\scratchdistance\paragraphsparameter\c!distance
-   \doif{\paragraphsparameter\c!rule}\v!on
-     {\scratchwidth\paragraphsparameter\c!rulethickness
-      \scratchdistance\dimexpr(\scratchdistance-\scratchwidth)/2\relax
-      \hskip\scratchdistance
-      \color[\paragraphsparameter\c!rulecolor]{\vrule\s!width\scratchwidth}}%
+   \ifcstok{\paragraphsparameter\c!rule}\v!on
+     \scratchwidth\paragraphsparameter\c!rulethickness
+     \scratchdistance\dimexpr(\scratchdistance-\scratchwidth)/2\relax
+     \hskip\scratchdistance
+     \color[\paragraphsparameter\c!rulecolor]{\vrule\s!width\scratchwidth}%
+   \fi
    \hskip\scratchdistance}
 
 \protect \endinput

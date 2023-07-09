@@ -72,7 +72,8 @@ typedef enum saved_full_spec_items {
     saved_full_spec_item_class       = 18,
     saved_full_spec_item_state       = 19,
     saved_full_spec_item_retain      = 20,
-    saved_full_spec_n_of_items       = 21,
+    saved_full_spec_item_callback    = 21,
+    saved_full_spec_n_of_items       = 22,
 } saved_full_spec_items;
 
 // typedef enum saved_align_spec_items {
@@ -227,7 +228,7 @@ typedef enum box_flags {
 
 # define box_leaders_flag(f) (f >= a_leaders_flag && f <= u_leaders_flag)
 
-extern void tex_begin_box        (int boxcontext, scaled shift, halfword slot);
+extern void tex_begin_box        (int boxcontext, scaled shift, halfword slot, halfword callback);
 extern int  tex_ignore_math_skip (halfword p);
 
 static inline scaled tex_aux_checked_dimen1(halfword v)

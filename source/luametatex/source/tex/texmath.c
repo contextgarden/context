@@ -164,7 +164,7 @@ void tex_math_copy_char_data(halfword target, halfword source, int wipelist)
     }
 }
 
-static inline void tex_math_set_scripts_options(halfword n)
+inline static void tex_math_set_scripts_options(halfword n)
 {
     switch (math_scripts_mode_par) { 
         case 1: noad_options(n) |= noad_option_fixed_super_or_sub_script; break;
@@ -3779,11 +3779,23 @@ void tex_run_math_fraction(void)
                             }
                             break;
                         case 'c': case 'C':
-                            if (tex_scan_mandate_keyword("class", 1)) {
-                                halfword c = (quarterword) tex_scan_math_class_number(0);
-                                if (valid_math_class_code(c)) {
-                                    mathclass = c;
-                                }
+                            switch (tex_scan_character("leLE", 0, 0, 0)) {
+                                case 'l': case 'L':
+                                    if (tex_scan_mandate_keyword("class", 2)) {
+                                        halfword c = (quarterword) tex_scan_math_class_number(0);
+                                        if (valid_math_class_code(c)) {
+                                            mathclass = c;
+                                        }
+                                    }
+                                    break;
+                                case 'e': case 'E':
+                                    if (tex_scan_mandate_keyword("center", 2)) {
+                                        options |= noad_option_center;
+                                    }
+                                    break;
+                                default:
+                                    tex_aux_show_keyword_error("class|center");
+                                    goto DONE;
                             }
                             break;
                         case 'e': case 'E':
@@ -4771,11 +4783,13 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
 
 /* make propper mappers (see 5967 in texmlist) */
 
-static inline int tex_aux_class_from_glyph(halfword n) {
+inline static int tex_aux_class_from_glyph(halfword n) 
+{
     return node_subtype(n) - (node_subtype(n) > glyph_math_extra_subtype  ? glyph_math_extra_subtype : glyph_math_ordinary_subtype);
 }
 
-static inline int tex_aux_class_from_list(halfword n) {
+inline static int tex_aux_class_from_list(halfword n) 
+{
     switch (node_subtype(n)) { 
         case math_fraction_list: 
             return fraction_noad_subtype;

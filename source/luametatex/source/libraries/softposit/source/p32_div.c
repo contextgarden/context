@@ -46,7 +46,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 posit32_t p32_div( posit32_t pA, posit32_t pB )
 {
     union ui32_p32 uA, uB, uZ;
-    uint_fast32_t uiA, uiB, fracA, fracB, regA, regime, regB, tmp;
+ // uint_fast32_t uiA, uiB, fracA, fracB, regA, regime, regB, tmp; // HH
+    uint_fast32_t uiA, uiB, fracA, fracB, regA, regime, tmp;
     bool signA, signB, signZ, regSA, regSB, bitNPlusOne=0, bitsMore=0, rcarry;
 	int_fast8_t kA=0;
 	int_fast32_t expA;

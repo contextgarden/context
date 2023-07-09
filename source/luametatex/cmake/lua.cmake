@@ -62,7 +62,7 @@ target_compile_definitions(lua PUBLIC
   # LUA_USE_JUMPTABLE=0
     LPEG_DEBUG
   # LUA_NOCVTS2N
-  # LUA_NOBUILTIN # disable likely usage
+    LUA_NOBUILTIN # disable likely usage
   # LUAI_ASSERT
   # LUA_STRFTIMEOPTIONS="aAbBcCdDeFgGhHIjmMnprRStTuUVwWxXyYzZ%" 
   # MINSTRTABSIZE=65536

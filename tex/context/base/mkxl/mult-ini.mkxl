@@ -242,8 +242,11 @@
         \endlinechar\minusone
         \global\read16 to ##1
         \egroup
-        \doifnothing\currentinterface{\let##1=##2}%
-        \doifundefined{\s!prefix!##1}{\let##1=##2}}%
+        \ifempty\currentinterface
+          \let##1=##2%
+        \orelse\ifcsname\s!prefix!##1\endcsname\else
+          \let##1=##2
+        \fi}%
      \selectinterface\currentinterface\defaultinterface
      \writestatus{interface}{defining \currentinterface\space interface}%
     %\writeline
@@ -272,7 +275,13 @@
 %D \stoptyping
 
 \permanent\protected\def\startinterface #1
-  {\doifnot{#1}{all}{\doifnotinset\currentinterface{#1}{\gobbleuntil\stopinterface}}}
+  {\iftok{#1}{all}%
+     % okay
+   \orelse\ifinset\currentinterface{#1}%
+     % okay
+   \else
+     \expandafter\ignoreupto\expandafter\stopinterface
+   \fi}
 
 \aliased\let\stopinterface\relax
 
@@ -722,15 +731,18 @@
    \fi}
 
 \permanent\protected\def\setinterfacecommand#1#2% \frozen ? \permanent ?
-  {\doifnot{#1}{#2}% todo: let when already defined
-     {\defcsname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}}}
+  {\iftok{#1}{#2}%
+     % todo: maybe let when already defined
+   \else
+     \defcsname#2\expandafter\endcsname\expandafter{\csname#1\endcsname}%
+   \fi}
 
 %D We just ignore these:
 
-\permanent\protected\def\startvariables{\gobbleuntil\stopvariables} \aliased\let\stopvariables\relax
-\permanent\protected\def\startconstants{\gobbleuntil\stopconstants} \aliased\let\stopconstants\relax
-\permanent\protected\def\startelements {\gobbleuntil\stopelements } \aliased\let\stopelements \relax
-\permanent\protected\def\startcommands {\gobbleuntil\stopcommands } \aliased\let\stopcommands \relax
+\permanent\protected\def\startvariables{\ignoreupto\stopvariables} \aliased\let\stopvariables\relax
+\permanent\protected\def\startconstants{\ignoreupto\stopconstants} \aliased\let\stopconstants\relax
+\permanent\protected\def\startelements {\ignoreupto\stopelements } \aliased\let\stopelements \relax
+\permanent\protected\def\startcommands {\ignoreupto\stopcommands } \aliased\let\stopcommands \relax
 
 %D For at the \LUA\ end (experiment):
 

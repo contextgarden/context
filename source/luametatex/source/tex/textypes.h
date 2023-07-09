@@ -162,7 +162,7 @@ extern halfword tex_badness(
 
 # define max_infinity                      0x7FFFFFFF /*tex the largest positive value that \TEX\ knows */
 # define min_infinity                     -0x7FFFFFFF
-# define awful_bad                        0x3FFFFFFF /*tex more than a billion demerits |07777777777| */ 
+# define awful_bad                         0x3FFFFFFF /*tex more than a billion demerits |07777777777| */ 
 # define infinite_bad                           10000 /*tex infinitely bad value */
 # define infinite_penalty                infinite_bad /*tex infinite penalty value */
 # define eject_penalty              -infinite_penalty /*tex negatively infinite penalty value */
@@ -203,7 +203,6 @@ extern halfword tex_badness(
 
 # define preset_rule_thickness             0x40000000 /*tex denotes |unset_rule_thickness|: |010000000000|. */
 
-# define max_char_code                             15 /*tex largest catcode for individual characters */
 # define min_space_factor                           0 /*tex watch out: |\spacefactor| cannot be zero but the sf code can!*/
 # define max_space_factor                      0x7FFF /*tex |077777| */
 # define default_space_factor                    1000

@@ -1982,26 +1982,14 @@ end
 -- but in order to handle that we need more complex code which also slows down even
 -- more. The main loop variant could deal with that: test, collapse, backtrack.
 
-local userkern = nuts.pool and nuts.pool.newkern -- context
-
-do if not userkern then -- generic
-
-    local thekern = nuts.new("kern",1) -- userkern
-    local setkern = nuts.setkern       -- not injections.setkern
-
-    userkern = function(k)
-        local n = copynode(thekern)
-        setkern(n,k)
-        return n
-    end
-
-end end
+local newuserkern = nuts.pool.newkern
+local newboundary = nuts.pool.boundary
 
 local function checked(head)
     local current = head
     while current do
         if getid(current) == glue_code then
-            local kern = userkern(getwidth(current))
+            local kern = newuserkern(getwidth(current))
             if head == current then
                 local next = getnext(current)
                 if next then
@@ -3368,7 +3356,10 @@ local function testrun(disc,t_run,c_run,...)
     local prev, next = getboth(disc)
     if not next then
         -- weird discretionary
-        return
+     -- return
+        -- better, removing it is tricky
+        next = newboundary()
+        setlink(disc,next)
     end
     local pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
     local renewed = false

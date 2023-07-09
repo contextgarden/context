@@ -301,4 +301,35 @@ to that.
 
 \stopsectionlevel
 
+\startsectionlevel[title=\LUA]
+
+We support posits in \LUA\ too. Here we need to create a posit user data
+object. The usual metatable magick kicks in:
+
+\starttyping
+local p = posit.new(123.456)
+local q = posit.new(789.123)
+local r = p + q
+\stoptyping
+
+Here we just mention what is currently interface. The management functions are:
+\typ {new}, \type {copy}, \typ {tostring}, \typ {tonumber}, \typ {integer}, \typ
+{rounded}, \typ {toposit} and \typ {fromposit}. The usual operators are also
+supported: \type{+}, \type{-}, \type{*}, \type{/}, \type{^}, as well as the
+binary \type {|}. \type {&}, \type {~}, \type {<<} and \type {>>}. We can compare
+with \type {==}, \type {>=}, \type {<=} and \type {~=}. The more verbose \type
+{bor}, \type {bxor}, \type {band}, \type {shift}, \type {rotate} are there too.
+
+There is a subset of math provided: \type {min}, \type {max}, \type {abs}, \type
+{conj}, \type {modf}, \type {acos}, \type {asin}, \type {atan}, \type {ceil},
+\type {cos}, \type {exp}, \type {exp2}, \type {floor}, \type {log}, \type
+{log10}, \type {log1p}, \type {log2}, \type {logb}, \type {pow}, \type {round},
+\type {sin}, \type {sqrt} and \type {tan}. Somewhat special are \type {NaN} and
+\type {NaR}.
+
+Currently integer division (\type {//}) and modulo (\type {%}) are not available,
+but that might happen at some time.
+
+\stopsectionlevel
+
 \stopdocument

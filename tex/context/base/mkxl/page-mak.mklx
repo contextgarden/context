@@ -117,6 +117,7 @@
    \ifempty\p_page
      \endgroup
      \page % new, so best not have dangling mess here like references (we could capture then and flush embedded)
+     \relax
    \orelse\ifx\p_page\v!no
      % nothing
      \endgroup
@@ -164,7 +165,9 @@
        \ht\b_page_makeup\vsize % is already set to \textheight (maybe set dp to 0)
      \fi
      \setuppagenumber[\c!state=\makeupparameter\c!pagestate]%
-     \doif{\makeupparameter\c!location}\v!top{\topskip\zeropoint}%
+     \ifcstok{\makeupparameter\c!location}\v!top
+       \topskip\zeropoint
+     \fi
      \edef\p_reference{\makeupparameter\c!reference}%
      \dontleavehmode
      \usereferenceparameter\makeupparameter

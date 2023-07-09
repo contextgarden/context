@@ -38,20 +38,29 @@
    \c!scope=\v!local, % maybe global but needs checking with layout
    \c!method=\v!none]
 
+\permanent\def\attr_layoutcomponent_whatever#1%
+  {#1%
+    tag       {\currentviewerlayer}%
+    title     {\viewerlayerparameter\c!title}%
+    visible   {\viewerlayerparameter\c!state}%
+    editable  {\v!yes}%
+    export    {\viewerlayerparameter\c!export}%
+    printable {\viewerlayerparameter\c!printable}%
+    scope     {\viewerlayerparameter\c!scope}%
+  \relax}
+
 \appendtoks
-  \clf_defineviewerlayer
-       tag       {\currentviewerlayer}%
-       title     {\viewerlayerparameter\c!title}%
-       visible   {\viewerlayerparameter\c!state}%
-       editable  {\v!yes}%
-       export    {\viewerlayerparameter\c!export}%
-       printable {\viewerlayerparameter\c!printable}%
-       scope     {\viewerlayerparameter\c!scope}%
-  \relax
-  \doif{\viewerlayerparameter\c!method}\v!command
-    {\frozen\instance\setuxvalue{\e!start#1}{\startviewerlayer[\currentviewerlayer]}%
-     \frozen\instance\setuxvalue{\e!stop #1}{\stopviewerlayer}}%
+  \attr_layoutcomponent_whatever\clf_defineviewerlayer
+  \ifcstok{\viewerlayerparameter\c!method}\v!command
+    \frozen\protected\instance\xdefcsname\e!start\currentviewerlayer\endcsname{\startviewerlayer[\currentviewerlayer]}%
+  \else
+    \frozen\protected\instance\xdefcsname\e!stop \currentviewerlayer\endcsname{\stopviewerlayer}%
+  \fi
 \to \everydefineviewerlayer
+
+\appendtoks
+  \attr_layoutcomponent_whatever\clf_setupviewerlayer
+\to \everysetupviewerlayer
 
 % \startviewerlayer[#1] % defined at lua end
 % \stopviewerlayer      % defined at lua end

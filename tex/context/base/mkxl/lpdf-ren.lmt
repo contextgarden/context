@@ -78,8 +78,10 @@ local pdf_intent = {
 }
 
 local pdf_export = {
-    [v_yes] = pdf_on,
-    [v_no]  = pdf_off,
+ -- [v_yes] = pdf_on,
+ -- [v_no]  = pdf_off,
+    [v_yes] = pdfdictionary { ExportState = pdf_on },
+    [v_no]  = pdfdictionary { ExportState = pdf_on },
 }
 
 -- We can have references to layers before they are places, for instance from
@@ -108,6 +110,16 @@ function codeinjections.defineviewerlayer(specification)
         local tag = specification.tag
         if not specifications[tag] then
             specifications[tag] = specification
+        end
+    end
+end
+
+function codeinjections.setupviewerlayer(specification)
+    if viewerlayers.supported and textlayers then
+        local tag = specification.tag
+        local set = tag and specifications[tag]
+        if set then
+            for k, v in next, specification do set[k] = v end
         end
     end
 end

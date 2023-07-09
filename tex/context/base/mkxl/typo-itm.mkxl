@@ -182,15 +182,16 @@
       \scratchwidth\d_typo_items_text_width
       \useitemsstyleandcolor\c!textstyle\c!textcolor
       \typo_items_make{\processcommalist[#1]\typo_items_item}}%
-   \ifempty\p_typo_items_symbol
-     \setbox\b_typo_items_symbols\emptyhbox
-   \else
-     \setbox\b_typo_items_symbols\hbox
-       {\c_typo_items_m\zerocount
-        \let\m_typo_items_align\p_typo_items_align
-        \scratchwidth\d_typo_items_symbol_width
-        \useitemsstyleandcolor\c!style\c!color
-        \typo_items_make{\dorecurse\c_typo_items_n{\typo_items_item{\strut\m_typo_items_symbol\recurselevel}}}}%
+   \setbox\b_typo_items_symbols
+     \ifempty\p_typo_items_symbol
+       \emptyhbox
+     \else
+       \hbox
+         {\c_typo_items_m\zerocount
+          \let\m_typo_items_align\p_typo_items_align
+          \scratchwidth\d_typo_items_symbol_width
+          \useitemsstyleandcolor\c!style\c!color
+          \typo_items_make{\dorecurse\c_typo_items_n{\typo_items_item{\strut\m_typo_items_symbol{##1}}}}}%
    \fi}
 
 % alternatives:

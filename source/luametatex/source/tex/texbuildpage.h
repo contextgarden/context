@@ -29,15 +29,28 @@ typedef struct page_builder_state_info {
     scaled   vsize; 
     scaled   total; 
     scaled   depth; 
+    scaled   last_height;
+    scaled   last_depth;
     union { 
         scaled page_so_far[6];    /*tex The height and glue of the current page. */
         struct {
             scaled initial; 
-            scaled stretch;      
-            scaled filstretch;   
-            scaled fillstretch;  
-            scaled filllstretch; 
+            scaled stretch;       // page_stretch_state      normal_glue_order
+            scaled filstretch;    // page_filstretch_state   fil_glue_order
+            scaled fillstretch;   // page_fillstretch_state  fill_glue_order
+            scaled filllstretch;  // page_filllstretch_state filll_glue_order
             scaled shrink;           
+        };
+    };
+    union { 
+        scaled page_last_so_far[6];    /*tex The height and glue of the current page. */
+        struct {
+            scaled last_initial; 
+            scaled last_stretch;       // page_stretch_state      normal_glue_order
+            scaled last_filstretch;    // page_filstretch_state   fil_glue_order
+            scaled last_fillstretch;   // page_fillstretch_state  fill_glue_order
+            scaled last_filllstretch;  // page_filllstretch_state filll_glue_order
+            scaled last_shrink;           
         };
     };
     int      insert_penalties;  /*tex The sum of the penalties for held-over insertions. */
@@ -78,26 +91,40 @@ extern void tex_initialize_buildpage (void);
 extern void tex_initialize_pagestate (void);
 extern void tex_build_page           (void);
 extern void tex_resume_after_output  (void);
+extern void tex_additional_page_skip (void);
 
 /*tex The tail of the contribution list: */
 
 # define contribute_tail lmt_nest_state.nest[0].tail
 
-# define page_goal         lmt_page_builder_state.goal         /*tex The desired height of information on page being built. */
+# define page_goal         lmt_page_builder_state.goal        /*tex The desired height of information on page being built. */
 # define page_vsize        lmt_page_builder_state.vsize
-# define page_total        lmt_page_builder_state.total        /*tex The height of the current page. */
-# define page_depth        lmt_page_builder_state.depth        /*tex The depth of the current page. */
+# define page_total        lmt_page_builder_state.total       /*tex The height of the current page. */
+# define page_depth        lmt_page_builder_state.depth       /*tex The depth of the current page. */
+# define page_last_height  lmt_page_builder_state.last_height /*tex The height so far. */
+# define page_last_depth   lmt_page_builder_state.last_depth  /*tex The depth so far. */
 
-//# define page_stretch      lmt_page_builder_state.page_so_far[page_stretch_state]
-//# define page_filstretch   lmt_page_builder_state.page_so_far[page_filstretch_state]
-//# define page_fillstretch  lmt_page_builder_state.page_so_far[page_fillstretch_state]
-//# define page_filllstretch lmt_page_builder_state.page_so_far[page_filllstretch_state]
-//# define page_shrink       lmt_page_builder_state.page_so_far[page_shrink_state]    
+/*tex We don't have |fi| here so we just map to |fil|. */
+
+//define page_stretch      lmt_page_builder_state.page_so_far[page_stretch_state]
+//define page_fistretch    lmt_page_builder_state.page_so_far[page_filstretch_state]
+//define page_filstretch   lmt_page_builder_state.page_so_far[page_filstretch_state]
+//define page_fillstretch  lmt_page_builder_state.page_so_far[page_fillstretch_state]
+//define page_filllstretch lmt_page_builder_state.page_so_far[page_filllstretch_state]
+//define page_shrink       lmt_page_builder_state.page_so_far[page_shrink_state]    
 
 # define page_stretch      lmt_page_builder_state.stretch
+# define page_fistretch    lmt_page_builder_state.filstretch    
 # define page_filstretch   lmt_page_builder_state.filstretch
 # define page_fillstretch  lmt_page_builder_state.fillstretch
 # define page_filllstretch lmt_page_builder_state.filllstretch
 # define page_shrink       lmt_page_builder_state.shrink    
+
+# define page_last_stretch      lmt_page_builder_state.last_stretch
+# define page_last_fistretch    lmt_page_builder_state.last_filstretch    
+# define page_last_filstretch   lmt_page_builder_state.last_filstretch
+# define page_last_fillstretch  lmt_page_builder_state.last_fillstretch
+# define page_last_filllstretch lmt_page_builder_state.last_filllstretch
+# define page_last_shrink       lmt_page_builder_state.last_shrink    
 
 # endif

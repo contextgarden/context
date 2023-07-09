@@ -73,12 +73,16 @@
       #settings]%
    \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \scratchwidth\directwithpagesparameter\c!width\relax
-   \doifinset0{#emptylist}
-     {\emptyhbox\page}%
+   \ifinset{0}{#emptylist}%
+     \emptyhbox
+     \page
+   \fi
    \dorecurse\c_page_selectors_n
      {\page_selectors_filter_a_page{#filename}\recurselevel
-      \doifinset\recurselevel{#emptylist}
-        {\emptyhbox\page}}%
+      \ifinset{\recurselevel}{#emptylist}%
+        \emptyhbox
+        \page
+      \fi}%
    \egroup}
 
 \let\page_selectors_filter_step_indeed\gobbleoneargument
@@ -151,14 +155,18 @@
      {\vbox to \textheight
         {\hsize\textwidth
          \centeredbox
-           {\doifelse{\directwithpagesparameter\c!marking}\v!on\cuthbox\hpack % only place where cuthbox is used
+           {\ifcstok{\directwithpagesparameter\c!marking}\v!on
+              \expandafter\cuthbox
+            \else
+              \expandafter\hpack % only place where cuthbox is used
+            \fi
               {\ifdim\scratchoffset>\zeropoint\relax
                  \advanceby\vsize -2\scratchoffset
                  \advanceby\hsize -2\scratchoffset
                  \externalfigure[#filename][\c!page=\recurselevel,#figuresettings,\c!scale=,\c!factor=\v!max,\c!offset=\v!overlay]%
                \else
                  \externalfigure[#filename][\c!page=\recurselevel,#figuresettings,\c!offset=\v!overlay]%
-               \fi}}}
+               \fi}}}%
       \page}%
    \egroup}
 
@@ -369,7 +377,7 @@
               \clip
                 [\c!nx=\c_page_selectors_n,\c!ny=\c_page_selectors_n,\c!x=\slicedpagestepx,\c!y=\slicedpagestepy]%
                 {\scale
-                   [\c!scale=\number\c_page_selectors_n000]%
+                   [\c!scale=\the\c_page_selectors_n000]%
                    {\externalfigure[#filename][\c!page=\slicedpagenumber]}}%
               \page}}%
       \else

@@ -160,7 +160,7 @@
     \c!rightmargindistance=\zeropoint,% whole table
 ]
 
-\def         \tabl_x_default_buffer{x_table_\number\c_tabl_x_nesting}
+\def         \tabl_x_default_buffer{x_table_\the\c_tabl_x_nesting}
 \lettonothing\tabl_x_current_buffer
 
 \permanent\protected\def\startxtable{\tabl_x_start_table}
@@ -195,7 +195,7 @@
 \protected\tolerant\def\tabl_x_process_buffer[#settings]%
   {\tabl_x_prepare{#settings}%
    \let\tabl_x_start_table\tabl_x_start_ignore
-   \gobbleuntil\stopxtable} % nested xtables are not supported,
+   \ignoreupto\stopxtable} % nested xtables are not supported,
 
 %D A bonus: you have to use the following construct inside a macro or
 %D direct buffer.
@@ -268,8 +268,11 @@
    \forgetall % moved here
    \dontcomplain % for the moment here till we figure out where we get the overflow
    \usebodyfontparameter\xtableparameter
-   \setbox\scratchbox\vbox
-     {\doifsomething{\xtableparameter\c!spaceinbetween}{\blank[\xtableparameter\c!spaceinbetween]}}%
+   \setbox\scratchbox\vbox\bgroup
+      \ifempty{\xtableparameter\c!spaceinbetween}\else
+        \blank[\xtableparameter\c!spaceinbetween]%
+      \fi
+   \egroup
    \clf_x_table_create
         option              {\xtableparameter\c!option}%
         textwidth           \d_tabl_x_textwidth
@@ -450,9 +453,9 @@
         height \dimexpr#height\relax
       \relax}%
    \ifcase\c_tabl_x_state
-     \global\setfalse\somenextsplitofffloat
+     \global\somenextsplitofffloat\conditionalfalse
    \else
-     \global\settrue \somenextsplitofffloat
+     \global\somenextsplitofffloat\conditionaltrue
    \fi}
 
 % \permanent\protected\def\startxrow
@@ -526,8 +529,7 @@
 % \to \t_tabl_x_every_cell
 
 \appendtoks
-    \edef\p_characteralign{\directxtableparameter\c!aligncharacter}%
-    \ifx\p_characteralign\v!yes
+    \ifcstok{\directxtableparameter\c!aligncharacter}\v!yes
         \ifcase\clf_x_table_r\or
             \tabl_x_setup_character_align
         \fi
@@ -899,15 +901,15 @@
       \stopxrow}}
 
 \def\tabl_x_collect_allocate
-  {\expandafter\newtoks\csname\??xtableswap\number\c_tabl_x_swapped\endcsname
-   \expandafter\let\expandafter\t_tabl_x_swapped\csname\??xtableswap\number\c_tabl_x_swapped\endcsname}
+  {\expandafter\newtoks\csname\??xtableswap\the\c_tabl_x_swapped\endcsname
+   \expandafter\let\expandafter\t_tabl_x_swapped\csname\??xtableswap\the\c_tabl_x_swapped\endcsname}
 
 \def\tabl_x_collect_advance
   {\global\advanceby\c_tabl_x_swapped\plusone
    \ifnum\c_tabl_x_swapped>\c_tabl_x_swapped_max
      \global\c_tabl_x_swapped_max\c_tabl_x_swapped
    \fi
-   \mutable\expandafter\let\expandafter\t_tabl_x_swapped\csname\??xtableswap\number\c_tabl_x_swapped\endcsname
+   \mutable\expandafter\let\expandafter\t_tabl_x_swapped\csname\??xtableswap\the\c_tabl_x_swapped\endcsname
    \ifrelax\t_tabl_x_swapped
      \tabl_x_collect_allocate
    \fi}

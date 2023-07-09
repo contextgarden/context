@@ -72,8 +72,8 @@
    \clf_defineparallel{#name}{#instances}%
    \expandafter\newtoks\csname\??parallelhandler#name\endcsname
    \processcommacommand[#instances]{\buff_parallel_define_instance{#name}}%
-   \frozen\instance\setuevalue{\e!start#name}{\buff_parallel_start{#name}}%
-   \frozen\instance\setuevalue{\e!stop #name}{\buff_parallel_stop}}
+   \frozen\instance\protected\edefcsname\e!start#name\endcsname{\buff_parallel_start{#name}}%
+   \frozen\instance\protected\edefcsname\e!stop #name\endcsname{\buff_parallel_stop}}
 
 \popoverloadmode
 
@@ -86,7 +86,7 @@
    \toksapp
      \csname\??parallelhandler#name\endcsname
      {\edef\currentparallelinstance{#instance}\buff_process_parallel_instance\relax}%
-   \setuevalue{\e!stop#instance}{\buff_parallel_save{#instance}}}
+   \protected\edefcsname\e!stop#instance\edefcsname{\buff_parallel_save{#instance}}}
 
 \pushoverloadmode
 
@@ -173,9 +173,11 @@
     \hbox to 3\emwidth \bgroup
         \hss
         \bf
-        \doifsomething \currentparallellabel {
+        \ifempty\currentparallellabel
+            % bad news
+        \else
             \textreference[\currentparallellabel]{\currentparallelline}
-        }
+        \fi
     \currentparallelline
     \quad
     \egroup

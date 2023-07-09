@@ -297,8 +297,7 @@
 \resetsystemmode\v!export
 
 \permanent\protected\def\doinitializeexport
-  {\edef\p_export{\backendparameter\c!export}%
-   \ifempty\p_export \else
+  {\ifempty{\backendparameter\c!export}\else
       % yes | xml
       \setuptagging[\c!state=\v!start]%
       \clf_initializeexport
@@ -422,7 +421,7 @@
 
 \permanent\tolerant\protected\def\startboxexport[#1]%
   {\begingroup
-   \iftok{#1}\emptytoks
+   \ifempty{#1}%
       \letboxexportparameter\c!buffer\v!yes
    \orelse\ifhastok={#1}\relax
       \setupmathexport[#1]%
@@ -440,7 +439,7 @@
 
 \permanent\tolerant\protected\def\startmathexport[#1]%
   {\begingroup
-   \iftok{#1}\emptytoks
+   \ifempty{#1}%
       \letboxexportparameter\c!buffer\v!yes
    \orelse\ifhastok={#1}\relax
       \setupmathexport[#1]%

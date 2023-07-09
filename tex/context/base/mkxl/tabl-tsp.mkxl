@@ -67,7 +67,7 @@
 \newconditional\splitfloatfirstdone
 \newconditional\somenextsplitofffloat
 \newconditional\splitfloatdone
-\newconditional\onlyonesplitofffloat   \settrue\onlyonesplitofffloat
+\newconditional\onlyonesplitofffloat   \onlyonesplitofffloat\conditionaltrue
 
 \newif   \ifinsidesplitfloat   % will become conditional
 \newcount\noffloatssplits
@@ -81,7 +81,7 @@
 
 \permanent\tolerant\protected\def\splitfloat[#1]#:#2% nog dubbele refs
   {\bgroup
-   \global\setfalse\splitfloatdone
+   \global\splitfloatdone\conditionalfalse
    \aftergroup\page_split_float_check
    \insidefloattrue
    \insidesplitfloattrue
@@ -91,8 +91,8 @@
    \edef\extrasplitfloatlines{\floatsplittingparameter\c!lines}%
    \expand\everysplitfloatsetup
    \def\splitfloatcommand{#2}%
-   \global\settrue \onlyonesplitofffloat
-   \global\setfalse\somenextsplitofffloat
+   \global\onlyonesplitofffloat\conditionaltrue
+   \global\somenextsplitofffloat\conditionalfalse
    \page_floats_push_saved
    \floatsplittingparameter\c!before
    \let\next} % \bgroup
@@ -105,7 +105,7 @@
 
 \protected\def\page_split_float_check
   {\ifconditional\splitfloatdone
-     \splitfloatfinalizer % a weird place (could interfere with flushing)
+    %\splitfloatfinalizer % a weird place (could interfere with flushing)
    \else
      \blank
      \begingroup
@@ -113,7 +113,8 @@
      \endgroup
      \blank
      \showmessage\m!floatblocks{13}\empty
-   \fi}
+   \fi
+   \splitfloatfinalizer} % a weird place (could interfere with flushing)
 
 \def\page_split_float_process % nextbox
   {\ifinsidesplitfloat
@@ -128,7 +129,7 @@
 \def\page_split_float_process_finish
   {\forgetall
    \dontcomplain
-   \global\settrue\splitfloatdone
+   \global\splitfloatdone\conditionaltrue
  % \nodelocationmode\zerocount % bypass auto-renumbering
    \global\advanceby\noffloatssplits\plusone
    \ifcase\noffloatssplits\relax \or
@@ -154,7 +155,7 @@
      \page_floats_pop_saved
      \page_floats_flush_saved
    \fi
-   \global\settrue\splitfloatfirstdone}
+   \global\splitfloatfirstdone\conditionaltrue}
 
 \def\page_split_float_process_nop
   {\dowithnextboxcs\page_split_float_process_nop_finish\vbox}
@@ -163,16 +164,16 @@
   {\forgetall
    \dontcomplain
    \box\nextbox % maybe an option to unvbox
-   \global\settrue\splitfloatfirstdone}
+   \global\splitfloatfirstdone\conditionaltrue}
 
 \def\page_split_float_check_content#1% box
   {\ifinsidesplitfloat
    % \ifdim\ht#1=\zeropoint % funny: \ifcase does not check for overflow
      \ifcase\ht#1\relax
-       \global\setfalse\somenextsplitofffloat
+       \global\somenextsplitofffloat\conditionalfalse
      \else
-       \global\settrue \somenextsplitofffloat
-       \global\setfalse\onlyonesplitofffloat
+       \global\somenextsplitofffloat\conditionaltrue
+       \global\onlyonesplitofffloat\conditionalfalse
      \fi
    \fi}
 
@@ -192,9 +193,9 @@
       \resetlocalfloats
       \advanceby\noflines\minusone % compensate dummy line
       \normalexpanded{\egroup\noexpand\edef\noexpand\extrasplitfloatlines{\the\noflines}}%
-      \global\settrue\usesamefloatnumber
-   \else
-      \doifelsenumber\extrasplitfloatlines\donothing{\def\extrasplitfloatlines{1}}%
+      \global\usesamefloatnumber\conditionaltrue
+   \orelse\ifchknum\extrasplitfloatlines\else
+     \def\extrasplitfloatlines{1}
    \fi}
 
 \permanent\protected\def\doifnotinsidesplitfloat
@@ -262,35 +263,36 @@
 
 \permanent\protected\def\handletsplit
   {\page_split_float_check_caption{\wd\b_split_content}%
-   \global\setfalse\splitfloatfirstdone
+   \global\splitfloatfirstdone\conditionalfalse
    \testpagesync % new, sync, but still tricky
-     [\number\c_split_minimum_free_lines]
+     [\the\c_split_minimum_free_lines]
      [\dimexpr\d_split_minimum_free_space+\extrasplitfloatlines\lineheight\relax]%
    \setbox\scratchbox\vbox{\expand\t_split_inbetween}%
    \d_split_inbetween_height\htdp\scratchbox
-   \setfalse\c_tabl_split_done
-   \doloop\tabl_split_loop_body
-   \global\setfalse\usesamefloatnumber % new, prevent next increment
-   \global\setfalse\splitfloatfirstdone} % we can use this one for tests
+   \c_tabl_split_done\conditionalfalse
+   \localcontrolledrepeating
+     {\tabl_split_loop_body}%
+   \global\usesamefloatnumber\conditionalfalse % new, prevent next increment
+   \global\splitfloatfirstdone\conditionalfalse} % we can use this one for tests
 
 \newbox\b_split_result_saved
 
 \def\tabl_split_loop_body
   {\ifinsidecolumns
      % brrr, assumes empty columns
-     \global\setfalse\splitfloatfirstdone
+     \global\splitfloatfirstdone\conditionalfalse
      \d_split_available_height\textheight
-     \settrue\c_tabl_split_full
+     \c_tabl_split_full\conditionaltrue
    \else
      \ifconditional\splitfloatfirstdone
        \d_split_available_height\textheight
-       \settrue\c_tabl_split_full
+       \c_tabl_split_full\conditionaltrue
      \orelse\ifdim\pagegoal<\maxdimen
        \d_split_available_height\dimexpr\pagegoal-\pagetotal\relax
-       \setfalse\c_tabl_split_full
+       \c_tabl_split_full\conditionalfalse
      \else
        \d_split_available_height\textheight
-       \settrue\c_tabl_split_full
+       \c_tabl_split_full\conditionaltrue
      \fi
    \fi
    \d_split_available_height \dimexpr
@@ -313,19 +315,19 @@
        \setbox\b_split_head\box\b_split_next
      \fi
    \fi
-   \settrue\c_tabl_split_done
+   \c_tabl_split_done\conditionaltrue
    \ifdim\ht\b_split_result>\zeropoint
-     \settrue\c_tabl_split_head  % table head
+     \c_tabl_split_head\conditionaltrue  % table head
    \else
-     \setfalse\c_tabl_split_head % no tablehead
+     \c_tabl_split_head\conditionalfalse % no tablehead
    \fi
    \splittopskip\zeropoint
    \ifvoid\b_split_result_saved\else
      \setbox\b_split_result\box\b_split_result_saved
-     \settrue\c_tabl_split_head % no tablehead
-     \global\setfalse\tabl_split_forced_page
+     \c_tabl_split_head\conditionaltrue % no tablehead
+     \global\tabl_split_forced_page\conditionalfalse
    \fi
-   \doloop % inner loop
+   \localcontrolledrepeating
      {\setbox\scratchbox\vsplit\b_split_content to \onepoint % \lineheight
       \setbox\scratchbox\vbox % \vpack
         {\unvbox\scratchbox
@@ -333,25 +335,27 @@
            {\splitdiscards
             \ifnum\lastpenalty>-\plustenthousand\else
                % so that \bTR[before=\page] works
-               \global\settrue\tabl_split_forced_page
+               \global\tabl_split_forced_page\conditionaltrue
             \fi}}%
       \ifconditional\tabl_split_forced_page
-        \global\setfalse\tabl_split_forced_page
+        \global\tabl_split_forced_page\conditionalfalse
         \setbox\b_split_result\vbox
           {\unvbox\b_split_result
            \expand\t_split_inbetween
            \unvbox\scratchbox}%
-        \exitloop
+        \quitloop
       \orelse\ifdim\dimexpr\d_split_available_height-\htdp\scratchbox-\htdp\b_split_result\relax>\zeropoint
         \setbox\b_split_result\vbox
           {\unvbox\b_split_result
            \expand\t_split_inbetween
            \unvbox\scratchbox}%
-        \ifvoid\b_split_content \exitloop \fi
+        \ifvoid\b_split_content
+          \quitloop
+        \fi
       \orelse\ifconditional\c_tabl_split_head
         % we only have a tablehead so far
         \global\setbox\b_split_result_saved\vbox{\unvbox\b_split_result\unvbox\scratchbox}% \vpack
-        \exitloop
+        \quitloop
       \orelse\ifconditional\c_tabl_split_full
         % we have text height available, but the (one) cell is too
         % large to fit, so, in order to avoid loops/deadcycles we do:
@@ -359,16 +363,16 @@
           {\unvbox\b_split_result
            \expand\t_split_inbetween
            \unvbox\scratchbox}%
-        \exitloop
+        \quitloop
       \else
         \setbox\b_split_content\vbox
           {\unvbox\scratchbox
            \expand\t_split_inbetween
            \ifvoid\b_split_content\else\unvbox\b_split_content\fi}%
-        \exitloop
+        \quitloop
       \fi
-      \setfalse\c_tabl_split_head
-      \setfalse\c_tabl_split_full}%
+      \c_tabl_split_head\conditionalfalse
+      \c_tabl_split_full\conditionalfalse}%
    \postprocesstsplit
    \page_split_float_check_content\b_split_content
    \ifvoid\b_split_content
@@ -379,7 +383,7 @@
      \page_split_float_process{\expand\t_split_before_result\box\b_split_result\expand\t_split_after_result}%
      \doifnotinsidesplitfloat{\expand\t_split_after}%
      \endgraf
-     \exitloop
+     \quitloop
    \else
      % hack
      \ifdim\pagegoal<\maxdimen
@@ -394,7 +398,7 @@
        \page_split_float_process{\expand\t_split_before_result\box\b_split_result\expand\t_split_after_result}%
        \doifnotinsidesplitfloat{\expand\t_split_after}%
        \endgraf
-       \global\settrue\usesamefloatnumber % new, prevent next increment
+       \global\usesamefloatnumber\conditionaltrue % new, prevent next increment
      \fi
      \ifinsidecolumns
        \goodbreak % was \doifnotinsidesplitfloat\goodbreak
@@ -412,17 +416,24 @@
 
 \permanent\protected\def\handledirecttsplit
   {\page_split_float_check_caption{\tsplitdirectwidth}%
-   \global\setfalse\splitfloatfirstdone
+   \global\splitfloatfirstdone\conditionalfalse
    \testpagesync % new, sync, but still tricky
-     [\number\c_split_minimum_free_lines]
+     [\the\c_split_minimum_free_lines]
      [\dimexpr\d_split_minimum_free_space+\extrasplitfloatlines\lineheight\relax]%
-   \doloop\tabl_split_direct_loop_body
-   \global\setfalse\usesamefloatnumber   % new, prevent next increment
-   \global\setfalse\splitfloatfirstdone} % we can use this one for tests
+   \localcontrolledrepeating
+     {\tabl_split_direct_loop_body}%
+   \global\usesamefloatnumber\conditionalfalse   % new, prevent next increment
+   \global\splitfloatfirstdone\conditionalfalse} % we can use this one for tests
+
+\newconditional\splitfloatfixedheight
+
+\def\splitfloatheight{\textheight}
 
 \def\tabl_split_direct_loop_body
-  {\ifinsidecolumns
-     \global\setfalse\splitfloatfirstdone
+  {\ifconditional\splitfloatfixedheight
+     \d_split_available_height\splitfloatheight
+   \orelse\ifinsidecolumns
+     \global\splitfloatfirstdone\conditionalfalse
      \d_split_available_height\textheight
    \orelse\ifconditional\splitfloatfirstdone
      \d_split_available_height\textheight
@@ -439,30 +450,36 @@
    \tsplitdirectsplitter\d_split_available_height % also sets state
    \ifdim\ht\b_split_result>\zeropoint
      \ifconditional\somenextsplitofffloat
-       \global\setfalse\onlyonesplitofffloat
+       \global\onlyonesplitofffloat\conditionalfalse
      \fi
-     \ifdim\pagegoal<\maxdimen
+     \ifconditional\splitfloatfixedheight
+       % not relevant
+     \orelse\ifdim\pagegoal<\maxdimen
        \pagegoal\dimexpr\pagegoal+\lineheight\relax % etex
      \fi
      \page_split_float_process{\expand\t_split_before_result\box\b_split_result\expand\t_split_after_result}%
-     \global\settrue\usesamefloatnumber % new, prevent next increment
+     \global\usesamefloatnumber\conditionaltrue % new, prevent next increment
      \endgraf
      \ifconditional\somenextsplitofffloat
-       \ifinsidecolumns
+       \ifconditional\splitfloatfixedheight
+         \page
+       \orelse\ifinsidecolumns
          \goodbreak
        \else
          \page
        \fi
      \fi
-     \global\settrue\splitfloatfirstdone
+     \global\splitfloatfirstdone\conditionaltrue
    \orelse\ifconditional\somenextsplitofffloat
-     \ifinsidecolumns
+     \ifconditional\splitfloatfixedheight
+       \page
+     \orelse\ifinsidecolumns
        \goodbreak
      \else
        \page % no room
      \fi
    \else
-      \exitloop
+     \quitloop
    \fi}
 
 %D Maybe handy:

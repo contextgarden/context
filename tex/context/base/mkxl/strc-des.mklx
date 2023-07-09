@@ -75,8 +75,6 @@
     \fi
 \to \everydefinedescription
 
-\lettonothing\p_strc_constructions_title
-
 \protected\defcsname\??constructioninitializer\v!description\endcsname
   {\let         \currentdescription              \currentconstruction
    \enforced\let\constructionparameter           \descriptionparameter
@@ -85,11 +83,10 @@
    \enforced\let\letconstructionparameter        \letdescriptionparameter
    \enforced\let\useconstructionstyleandcolor    \usedescriptionstyleandcolor
    \enforced\let\setupcurrentconstruction        \setupcurrentdescription
-   \edef\p_strc_constructions_title{\constructionparameter\c!title}%
-   \ifx\p_strc_constructions_title\v!yes
-     \settrue\c_strc_constructions_title_state
+   \ifcstok{\constructionparameter\c!title}\v!yes
+     \c_strc_constructions_title_state\conditionaltrue
    \else
-     \setfalse\c_strc_constructions_title_state
+     \c_strc_constructions_title_state\conditionalfalse
    \fi}
 
 % We keep the command variant around but rather would move to the

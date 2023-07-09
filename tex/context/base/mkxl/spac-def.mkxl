@@ -60,7 +60,9 @@
    \c!height=.72,
    \c!depth=.28,
    \c!top=1.0,
-   \c!ntop=\minusone,       % >= 0 : times lineheight
+  %\c!ntop=\minusone,       % >= 0 : times lineheight, otherwise 5
+  %\c!ntop=\plusfive,       % long time default
+   \c!ntop=\plustwo,        % more reasonable, if at all
    \c!bottom=0.4,
    \c!distance=\onepoint,   % \dimexpr\openlineheight/10\relax
    \c!line=2.8\exheight,

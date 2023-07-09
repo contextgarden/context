@@ -137,7 +137,11 @@
 \permanent\protected\def\structurelistinject[#tag]%
   {\begingroup
    \cdef\currentlist{#tag}%
-   \doifelse{\listparameter\c!state}\v!start\strc_lists_inject_yes\strc_lists_inject_nop}
+   \ifcstok{\listparameter\c!state}\v!start
+     \expandafter\strc_lists_inject_yes
+   \else
+     \expandafter\strc_lists_inject_nop
+   \fi}
 
 \tolerant\protected\def\strc_lists_inject_nop[#settings]#spacer[#userdata]%
   {\endgroup}
@@ -191,9 +195,11 @@
 \permanent\protected\def\writebetweenlist[#tag]%
   {\begingroup
    \cdef\currentlist{#tag}%
-   \doifelse{\namedlistparameter{#tag}\c!state}\v!start
-     \strc_lists_write_between_yes
-     \strc_lists_write_between_nop}
+   \ifcstok{\namedlistparameter{#tag}\c!state}\v!start
+     \expandafter\strc_lists_write_between_yes
+   \else
+     \expandafter\strc_lists_write_between_nop
+   \fi}
 
 \tolerant\def\strc_lists_write_between_yes[#settings]#:#command%
   {\strc_lists_inject_yes[#settings,\c!type=\s!command][command={#command}]}
@@ -204,9 +210,11 @@
 \permanent\protected\def\writedatatolist[#tag]%
   {\begingroup
    \cdef\currentlist{#tag}%
-   \doifelse{\namedlistparameter{#tag}\c!state}\v!start
-     \strc_lists_write_data_to_yes
-     \strc_lists_write_data_to_nop}
+   \ifcstok{\namedlistparameter{#tag}\c!state}\v!start
+     \expandafter\strc_lists_write_data_to_yes
+   \else
+     \expandafter\strc_lists_write_data_to_nop
+   \fi}
 
 \tolerant\def\strc_lists_write_data_to_yes[#settings]#spacer[#userdata]%
   {\ifparameter#userdata\or % no need to have an extra step ... used seldom
@@ -221,9 +229,11 @@
 \permanent\protected\def\writetolist[#tag]%
   {\begingroup
    \cdef\currentlist{#tag}%
-   \doifelse{\namedlistparameter{#tag}\c!state}\v!start
-     \strc_lists_write_to_yes
-     \strc_lists_write_to_nop}
+   \ifcstok{\namedlistparameter{#tag}\c!state}\v!start
+     \expandafter\strc_lists_write_to_yes
+   \else
+     \expandafter\strc_lists_write_to_nop
+   \fi}
 
 \tolerant\def\strc_lists_write_to_yes[#settings]#:#first#second% no \s!first because we don't expand user settings
   {\strc_lists_inject_yes[\c!location=\v!here,#settings,\c!type=\s!simple][first={#first},second={#second}]}
@@ -281,7 +291,9 @@
    \cdef\currentlist{#tag}%
    \setupcurrentlist[#settings]%
    \expand\everystructurelist
- % \doif{\listparameter\c!coupling}\v!on{\startlistreferences{#tag}}%
+ % \ifcstok{\listparameter\c!coupling}\v!on
+ %   \startlistreferences{#tag}%
+ % \fi
    \strc_lists_place_current % maybe inline
      {#list}%
      {\listparameter\c!criterium}%
@@ -364,9 +376,9 @@
 
 \installcorenamespace {listpagenumber}
 
-\defcsname\??listpagenumber\v!always  \endcsname{\settrue\c_lists_show_page\settrue\c_lists_has_page}
-\defcsname\??listpagenumber\v!yes     \endcsname{\settrue\c_lists_show_page}
-\defcsname\??listpagenumber\s!realpage\endcsname{\settrue\c_lists_show_page\settrue\c_lists_show_realpage}
+\defcsname\??listpagenumber\v!always  \endcsname{\c_lists_show_page\conditionaltrue\c_lists_has_page\conditionaltrue}
+\defcsname\??listpagenumber\v!yes     \endcsname{\c_lists_show_page\conditionaltrue}
+\defcsname\??listpagenumber\s!realpage\endcsname{\c_lists_show_page\conditionaltrue\c_lists_show_realpage\conditionaltrue}
 
 \def\strc_lists_process_pagenumber#1%
   {\begincsname\??listpagenumber#1\endcsname}
@@ -590,7 +602,7 @@
 
 \def\strc_lists_assign_dimen#dimension#key#default%
   {\edef\m_strc_list_dimen{\listparameter#key}%
-   \doifelseinset\m_strc_list_dimen{\v!fit,\v!broad}{#dimension#default}{#dimension\m_strc_list_dimen}\relax}
+   #dimension\ifinset{\m_strc_list_dimen}{\v!fit,\v!broad}#default\else\m_strc_list_dimen\fi\relax}
 
 \definesymbol[\v!list][\v!none   ][\strc_lists_symbol_none]
 \definesymbol[\v!list][\v!one    ][\strc_lists_symbol_one]
@@ -890,32 +902,36 @@
     % in mind that testing for empty fails do to tagging being applied
 %   \edef\p_pagenumber{\listparameter\c!pagenumber}%
 %   \ifx\p_pagenumber\v!always
-%     \settrue\c_lists_has_page
-%     \settrue\c_lists_show_page
+%     \c_lists_has_page\conditionaltrue
+%     \c_lists_show_page\conditionaltrue
 %   \else
-%     \doifelsestructurelisthaspage\settrue\setfalse\c_lists_has_page
+%     \doifelsestructurelisthaspage{\c_lists_has_page\conditionaltrue}{\c_lists_has_page\conditionalfalse}%
 %     \ifx\p_pagenumber\v!yes
-%       \settrue\c_lists_show_page
+%       \c_lists_show_page\conditionaltrue
 %     \else
-%       \setfalse\c_lists_show_page
+%       \c_lists_show_page\conditionalfalse
 %     \fi
 %   \fi
-    \setfalse\c_lists_show_page % necessary?
+    \c_lists_show_page\conditionalfalse % necessary?
     \processcommacommand[\listparameter\c!pagenumber]\strc_lists_process_pagenumber
     \ifconditional\c_lists_has_page \else
-      \doifelsestructurelisthaspage\settrue\setfalse\c_lists_has_page
+      \doifelsestructurelisthaspage
+        {\c_lists_has_page\conditionaltrue}%
+        {\c_lists_has_page\conditionalfalse}%
     \fi
     % always forces number placement (in bib we use a forced number)
     \edef\p_headnumber{\listparameter\c!headnumber}%
     \ifx\p_headnumber\v!always
-      \settrue\c_lists_has_number
-      \settrue\c_lists_show_number
+      \c_lists_has_number\conditionaltrue
+      \c_lists_show_number\conditionaltrue
     \else
-      \doifelsestructurelisthasnumber\settrue\setfalse\c_lists_has_number
+      \doifelsestructurelisthasnumber
+        {\c_lists_has_number\conditionaltrue}%
+        {\c_lists_has_number\conditionalfalse}%
       \ifx\p_headnumber\v!yes
-        \settrue\c_lists_show_number
+        \c_lists_show_number\conditionaltrue
       \else
-        \setfalse\c_lists_show_number
+        \c_lists_show_number\conditionalfalse
       \fi
     \fi
     \strc_lists_interaction_check
@@ -932,11 +948,11 @@
    \lettonothing\currentlistentrynumber
    \lettonothing\currentlistentrytitle
    \lettonothing\currentlistentrypagenumber
-   \setfalse\c_lists_has_page
-   \setfalse\c_lists_has_number
-   \setfalse\c_lists_show_page
-   \setfalse\c_lists_show_realpage
-   \setfalse\c_lists_show_number
+   \c_lists_has_page\conditionalfalse
+   \c_lists_has_number\conditionalfalse
+   \c_lists_show_page\conditionalfalse
+   \c_lists_show_realpage\conditionalfalse
+   \c_lists_show_number\conditionalfalse
 \to \t_lists_every_renderingcleanup
 
 \lettonothing\m_strc_list_alternative % combined
@@ -1498,8 +1514,7 @@
    \ifcsname\??listinteractions\p_interaction_forward\endcsname
     %\expandafter\let\expandafter\p_interaction_forward\csname\??listinteractions\p_interaction_forward\endcsname
      \expandafter\let\expandafter\p_interaction_forward\lastnamedcs
-    %\ifcstok{\structurelistexternal}\emptytoks % luacall
-     \iftok{\structurelistexternal}\emptytoks % luacall
+     \ifempty{\structurelistexternal}% luacall
        \strc_references_get_simple_reference{internal(\currentlistentrylocation)}%
      \else
      % \writestatus{FAR OUT LIST}{\structurelistexternal::page(\number\structurelistrealpagenumber)}%

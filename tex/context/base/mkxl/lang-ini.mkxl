@@ -194,7 +194,7 @@
 \mutable\lettonothing\currentsetuplanguage
 
 \permanent\tolerant\protected\def\installlanguage[#1]#*[#2]%
-  {\ifcondition\validassignment{#2}%
+  {\ifhastok={#2}%
      \doifelselanguage{#1}
        {\getparameters[\??language#1][#2]}
        {\defcsname\??languagelinked#1\endcsname{#1}%
@@ -257,7 +257,6 @@
      \getparameters[\??language\currentsetuplanguage][#2]%
      \expand\everysetuplanguage
      \pop_macro_currentlanguage
-    %\doif\currentsetuplanguage\currentlanguage we can have influenced inheritance (default)
    \fi
    \lang_basics_synchronize}
 
@@ -487,8 +486,7 @@
 \permanent\protected\def\noexplicithyphens{\hyphenationmode\bitwiseflip\hyphenationmode-\explicithyphenationcode}
 
 \permanent\protected\def\usehyphensparameter#1%
-  {\edef\p_hyphens{#1\c!hyphens}%
-   \ifx\p_hyphens\v!no
+  {\ifcstok{#1\c!hyphens}\v!no
      \ifbitwiseand\hyphenationmode\collapsehyphenationcode
        \nohyphens
      \else
@@ -562,8 +560,7 @@
 % this will move to core-spa !
 
 \appendtoks
-    \edef\p_spacing{\languageparameter\c!spacing}%
-    \ifx\p_spacing\v!broad
+    \ifcstok{\languageparameter\c!spacing}\v!broad
       \nonfrenchspacing
     \else
       \frenchspacing
@@ -662,8 +659,14 @@
 
 %D Used at all?
 
-\permanent\def\splitsequence#1#2%
-  {\doifelse{#1}\v!no{#2}{\doifelse{#1}\v!yes{\languageparameter\c!limittext}{#1}}}
+\permanent\def\splitsequence#1#2% append periods etc
+  {\ifcstok{#1}\v!no
+     #2%
+   \orelse\ifcstok{#1}\v!yes
+      \languageparameter\c!limittext
+   \else
+     #1%
+   \fi}
 
 \permanent\def\splitsymbol#1%
   {\splitsequence{#1}{\languageparameter\c!limittext}}

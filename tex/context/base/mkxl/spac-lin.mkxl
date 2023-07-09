@@ -59,8 +59,8 @@
    \c!space=\v!default]
 
 \appendtoks
-   \frozen\instance\setuevalue{\e!start\currentlines}{\spac_lines_start[\currentlines]}%
-   \frozen\instance\letvalue  {\e!stop \currentlines }\spac_lines_stop
+   \frozen\instance\protected\edefcsname\e!start\currentlines\endcsname{\spac_lines_start[\currentlines]}%
+   \frozen\instance\letcsname           \e!stop \currentlines\endcsname \spac_lines_stop
 \to \everydefinelines
 
 \lettonothing\p_lines_option

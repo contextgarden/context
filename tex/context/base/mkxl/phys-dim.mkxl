@@ -224,9 +224,9 @@
 \letcsname\??digitsperiod6\endcsname\normaldigitsperiodsymbol
 \letcsname\??digitsspace 6\endcsname\thickspace
 
-\frozen\protected\def\digitscommasymbol       {\csname\??digitscomma \number\c_phys_digits_method\endcsname}
-\frozen\protected\def\digitsperiodsymbol      {\csname\??digitsperiod\number\c_phys_digits_method\endcsname}
-\frozen\protected\def\digitsseparatorspace    {\csname\??digitsspace \number\c_phys_digits_method\endcsname}
+\frozen\protected\def\digitscommasymbol       {\csname\??digitscomma \the\c_phys_digits_method\endcsname}
+\frozen\protected\def\digitsperiodsymbol      {\csname\??digitsperiod\the\c_phys_digits_method\endcsname}
+\frozen\protected\def\digitsseparatorspace    {\csname\??digitsspace \the\c_phys_digits_method\endcsname}
 
 \frozen\protected\def\digitsfinalcomma        {\digitsperiodsymbol} % more for tracing
 \frozen\protected\def\digitsfinalperiod       {\digitsperiodsymbol} % more for tracing
@@ -240,7 +240,7 @@
    \begingroup
    \ifcase\c_phys_digits_order\expandafter\clf_digits_normal\else\expandafter\clf_digits_reverse\fi{\detokenize{#1}}%
    \endgroup
-   \settrue\c_phys_units_dospace}
+   \c_phys_units_dospace\conditionaltrue}
 
 \permanent\protected\def\digits
   {\doifelsenextbgroup\phys_digits_argument\phys_digits_spaced}
@@ -439,7 +439,7 @@
   {\begingroup
    \expand\everyunits\relax
    \ifdim\lastskip>\zeropoint
-     \settrue\c_phys_units_dospace
+     \c_phys_units_dospace\conditionaltrue
      \removelastskip
    \fi
    \cdef\currentunit{#1}%
@@ -537,9 +537,9 @@
                                           \digitstextbinop{#2}% after
                                         \fi
                                         \c_phys_units_state\zerocount
-                                        \setfalse\c_phys_units_dospace
-                                        \setfalse\c_phys_units_number
-                                        \setfalse\c_phys_units_quantity}
+                                        \c_phys_units_dospace\conditionalfalse
+                                        \c_phys_units_number\conditionalfalse
+                                        \c_phys_units_quantity\conditionalfalse}
 \permanent\protected\def\unitsRPM      {\unitsR\plusone  {±}} % todo: symbols
 \permanent\protected\def\unitsRTO      {\unitsR\plusone  {–}} % todo: symbols
 \permanent\protected\def\unitsRabout   {\unitsR\zerocount{±}} % todo: symbols
@@ -592,15 +592,15 @@
 
 \permanent\protected\def\unitsNstartindeed
   {\ifmmode \else
-     \settrue\c_phys_units_quantity
+     \c_phys_units_quantity\conditionaltrue
      \dostarttagged\t!quantity\empty
-     \settrue\c_phys_units_number
+     \c_phys_units_number\conditionaltrue
      \dostarttagged\t!number\empty
    \fi}
 
 \permanent\protected\def\unitsNstop
   {\ifconditional\c_phys_units_number
-     \setfalse\c_phys_units_number
+     \c_phys_units_number\conditionalfalse
      \dostoptagged
    \fi
    \c_phys_units_state\plusfive}
@@ -636,11 +636,11 @@
 
 \def\phys_units_stop
   {\ifconditional\c_phys_units_number
-     \setfalse\c_phys_units_number
+     \c_phys_units_number\conditionalfalse
      \dostoptagged
    \fi
    \ifconditional\c_phys_units_quantity
-     \setfalse\c_phys_units_quantity
+     \c_phys_units_quantity\conditionalfalse
      \dostoptagged
    \fi
    \dostoptagged
@@ -689,7 +689,7 @@
      \phys_units_space
    \or % 6: symbol (connected)
    \fi
-   \setfalse\c_phys_units_dospace
+   \c_phys_units_dospace\conditionalfalse
    \phys_units_start}
 
 \permanent\protected\def\unitsTIMES % GP: Does this do anything? HH: yes "times"

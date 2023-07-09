@@ -81,9 +81,9 @@ inline static scaled tex_aux_m_and_a(int n, scaled x, scaled y, scaled max_answe
     }
 }
 
-scaled tex_multiply_and_add  (int n, scaled x, scaled y, scaled max_answer) { return tex_aux_m_and_a(n, x, y,   max_answer); }
-scaled tex_nx_plus_y         (int n, scaled x, scaled y)                    { return tex_aux_m_and_a(n, x, y,  07777777777); }
-scaled tex_multiply_integers (int n, scaled x)                              { return tex_aux_m_and_a(n, x, 0, 017777777777); }
+scaled tex_multiply_and_add  (int n, scaled x, scaled y, scaled max_answer) { return tex_aux_m_and_a(n, x, y, max_answer); }
+scaled tex_nx_plus_y         (int n, scaled x, scaled y)                    { return tex_aux_m_and_a(n, x, y, 0x3FFFFFFF); } //  07777777777
+scaled tex_multiply_integers (int n, scaled x)                              { return tex_aux_m_and_a(n, x, 0, 0x7FFFFFFF); } // 017777777777
 
 /*tex We also need to divide scaled dimensions by integers. */
 

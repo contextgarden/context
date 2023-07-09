@@ -52,15 +52,17 @@
    \c!levels=3]
 
 \protected\def\strc_define_commands_label#1#2#3% current level parent
-  {\doifelsenothing{#3}
-     {\normalexpanded{\defineconstruction[#1][\s!handler=\v!label,\c!level=#2]}%
-      \edefcsname\??label#1:\s!parent\endcsname{\??label}}%
-     {\normalexpanded{\defineconstruction[#1][#3][\s!handler=\v!label,\c!level=#2]}%
-      \edefcsname\??label#1:\s!parent\endcsname{\??label#3}}%
+  {\ifempty{#3}%
+     \normalexpanded{\defineconstruction[#1][\s!handler=\v!label,\c!level=#2]}%
+     \edefcsname\??label#1:\s!parent\endcsname{\??label}%
+   \else
+     \normalexpanded{\defineconstruction[#1][#3][\s!handler=\v!label,\c!level=#2]}%
+     \edefcsname\??label#1:\s!parent\endcsname{\??label#3}%
+   \fi
    \ifconditional\c_strc_constructions_define_commands
      \frozen\instance\protected\edefcsname\e!next #1\endcsname{\strc_labels_next {#1}{\number#2}}% obsolete
      \frozen\instance\protected\edefcsname\v!reset#1\endcsname{\strc_labels_reset{#1}{\number#2}}% obsolete % should be \e!reset anyway
-     %frozen\instance\setuevalue{\c!set  #1}{\strc_labels_set  {#1}{\number#2}}% obsolete
+     %frozen\instance\protected\edefcsname\c!set  #1\endcsname{\strc_labels_set  {#1}{\number#2}}% obsolete
      \ifcsname\v!current#1\endcsname
        % we play safe
      \else
@@ -106,9 +108,6 @@
    \letlabelparameter\s!counter\p_counter
 \to \everydefinelabel
 
-\lettonothing\p_strc_constructions_title
-\lettonothing\p_strc_constructions_number
-
 \newconditional\c_strc_constructions_number_keep
 
 \defcsname\??constructioninitializer\v!label\endcsname
@@ -120,9 +119,8 @@
    \enforced\let\useconstructionstyleandcolor    \uselabelstyleandcolor
    \enforced\let\setupcurrentconstruction        \setupcurrentlabel
    % shared with enumerations
-   \edef\p_strc_constructions_number{\constructionparameter\c!number}%
-   \ifx\p_strc_constructions_number\v!yes
-     \settrue\c_strc_constructions_number_state
+   \ifcstok{\constructionparameter\c!number}\v!yes
+     \c_strc_constructions_number_state\conditionaltrue
      \iftrialtypesetting
        \strc_counters_save\currentconstructionnumber
      \fi
@@ -130,13 +128,12 @@
        \strc_counters_increment_sub\currentconstructionnumber\currentconstructionlevel
      \fi
    \else
-     \setfalse\c_strc_constructions_number_state
+     \c_strc_constructions_number_state\conditionalfalse
    \fi
-   \edef\p_strc_constructions_title{\constructionparameter\c!title}%
-   \ifx\p_strc_constructions_title\v!yes
-     \settrue\c_strc_constructions_title_state
+   \ifcstok{\constructionparameter\c!title}\v!yes
+     \c_strc_constructions_title_state\conditionaltrue
    \else
-     \setfalse\c_strc_constructions_title_state
+     \c_strc_constructions_title_state\conditionalfalse
    \fi}
 
 \defcsname\??constructionfinalizer\v!label\endcsname
@@ -148,8 +145,8 @@
 
 %D Interfaces:
 
-\protected\def\strc_labels_command{\setfalse\c_strc_constructions_number_keep\nameddescription}
-\protected\def\strc_labels_current{\settrue \c_strc_constructions_number_keep\nameddescription}
+\protected\def\strc_labels_command{\c_strc_constructions_number_keep\conditionalfalse\nameddescription}
+\protected\def\strc_labels_current{\c_strc_constructions_number_keep\conditionaltrue\nameddescription}
 
 \protected\def\strc_labels_next   {\strc_constructions_next_indeed \namedlabelparameter} % #1#2
 \protected\def\strc_labels_reset  {\strc_constructions_reset_indeed\namedlabelparameter} % #1#2

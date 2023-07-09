@@ -157,11 +157,12 @@
    \lettonothing\currentshapedparagraph
    \setupshapedparagraph[#1]%
    \setlocalhsize
-   \doifsomething{\shapedparagraphparameter\c!text}
-     {\global\setbox\b_spac_shapes\vpack\bgroup
-      \forgetall
-      \shapedparagraphparameter\c!text
-      \egroup}%
+   \ifempty{\shapedparagraphparameter\c!text}\else
+     \global\setbox\b_spac_shapes\vpack\bgroup
+       \forgetall
+       \shapedparagraphparameter\c!text
+     \egroup
+   \fi
    \ifvoid\b_spac_shapes
      \ifnum\shapedparagraphparameter\c!lines>\zerocount
        \spac_shapes_lines

@@ -97,7 +97,7 @@
 
 \newtoks        \t_tabl_lines_head
 
-\newconditional \linetableautoheight  \settrue\linetableautoheight
+\newconditional \linetableautoheight  \linetableautoheight\conditionaltrue
 
 \tabl_lines_initialize_box\zerocount % holds repeater
 
@@ -116,7 +116,7 @@
   {\begincsname\??linetable#1\endcsname}
 
 \permanent\protected\def\doifelselinetablecparameter#1%
-  {\ifcsname\??linetable c:\number\c_tabl_lines_column#1\endcsname
+  {\ifcsname\??linetable c:\the\c_tabl_lines_column#1\endcsname
      \expandafter\firstoftwoarguments
    \orelse\ifcsname\??linetable c:#1\endcsname
      \expandafter\firstoftwoarguments
@@ -129,8 +129,8 @@
 \permanent\def\linetablecparameter#1%
   {\begincsname
      \??linetable
-     \ifcsname\??linetable c:\number\c_tabl_lines_column#1\endcsname
-       c:\number\c_tabl_lines_column
+     \ifcsname\??linetable c:\the\c_tabl_lines_column#1\endcsname
+       c:\the\c_tabl_lines_column
      \orelse\ifcsname\??linetable c:#1\endcsname
        c:%
      \fi
@@ -148,8 +148,8 @@
          r:0%
        \fi
      \else
-       \ifcsname\??linetable r:\number\c_tabl_lines_row#1\endcsname
-         r:\number\c_tabl_lines_row
+       \ifcsname\??linetable r:\the\c_tabl_lines_row#1\endcsname
+         r:\the\c_tabl_lines_row
        \orelse\ifcsname\??linetable r:\v!oddeven\c_tabl_lines_row#1\endcsname
          r:\v!oddeven\c_tabl_lines_row
        \fi
@@ -189,7 +189,7 @@
 \permanent\tolerant\protected\def\startlinetablecell[#1]%
   {\global\setbox\b_tabl_lines_cell\hbox\bgroup
    \ifparameter#1\or
-     \getparameters[\??linetable c:\number\c_tabl_lines_column][#1]%
+     \getparameters[\??linetable c:\the\c_tabl_lines_column][#1]%
    \fi
    \global\c_tabl_lines_step\linetablecparameter\c!nx\relax
    \ifcase\c_tabl_lines_step\or
@@ -327,7 +327,7 @@
        {\ifvoid\b_tabl_lines_current\c_tabl_lines_part\else\unvbox\b_tabl_lines_current\c_tabl_lines_part\fi
         \ifcstok{\linetablerparameter\c!background}\v!color
           \backgroundline[\linetablerparameter\c!backgroundcolor]{\box\scratchbox}%
-        \orelse\iftok{\linetablerparameter\c!type}\emptytoks
+        \orelse\ifempty{\linetablerparameter\c!type}%
           \box\scratchbox
         \else
           \tabl_lines_wrap_up_auto_r
@@ -423,7 +423,7 @@
      %%%%
      \ifdone
        % collecting repeater
-     \orelse\ifnum\c_tabl_lines_column>\csname\??linetablepart\number\c_tabl_lines_part\endcsname\relax
+     \orelse\ifnum\c_tabl_lines_column>\csname\??linetablepart\the\c_tabl_lines_part\endcsname\relax
        \donetrue
      \fi
      \ifdone
@@ -497,10 +497,11 @@
 \permanent\protected\def\startlinetablerun % to do: quit when nested
   {\bgroup
    \dontcomplain
-   \settrue\c_tabl_lines_in_table
+   \c_tabl_lines_in_table\conditionaltrue
    % autowidth
-   \doif{\linetableparameter\c!maxwidth}\v!fit
-     {\setuplinetable[\c!maxwidth=\zeropoint]}%
+   \ifcstok{\linetableparameter\c!maxwidth}\v!fit
+     \setuplinetable[\c!maxwidth=\zeropoint]%
+   \fi
    \processaction
      [\linetableparameter\c!stretch]
      [ \v!no=>{\setuplinetable[\c!stretch=\maxdimen]},% no stretch
@@ -523,7 +524,7 @@
    \def\docommand##1%
      {\global\advanceby\c_tabl_lines_n_of_parts\plusone
       \advanceby\scratchcounter##1%
-      \xdefcsname\??linetablepart\number\c_tabl_lines_n_of_parts\endcsname{\the\scratchcounter}}%
+      \xdefcsname\??linetablepart\the\c_tabl_lines_n_of_parts\endcsname{\the\scratchcounter}}%
    \processcommacommand[\linetableparameter\c!n]\docommand
    \tabl_lines_initialize_boxes\c_tabl_lines_n_of_parts
    \global\c_tabl_lines_part\ifcase\c_tabl_lines_repeat\plusone\else\zerocount\fi % repeater
@@ -628,7 +629,7 @@
 \def\tabl_lines_check_page
   {\global\c_tabl_lines_page\zerocount
    \ifcase\c_tabl_lines_repeat\orelse\ifcase\c_tabl_lines_page
-     \iftok{\linetableparameter\c!repeat}\v!no
+     \ifcstok{\linetableparameter\c!repeat}\v!no
        \global\c_tabl_lines_page\doifelseoddpage\plusone\plustwo
      \fi
    \fi}
@@ -668,7 +669,7 @@
 
 \permanent\protected\def\startlinetableanalysis
   {\bgroup
-   \settrue\c_tabl_lines_preroll
+   \c_tabl_lines_preroll\conditionaltrue
    \settrialtypesetting
    \startlinetablerun}
 

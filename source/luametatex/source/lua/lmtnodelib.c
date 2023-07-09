@@ -9077,7 +9077,7 @@ static int nodelib_direct_makeextensible(lua_State *L)
     return 1;
 }
 
-/*tex experiment */
+/*tex experiment, this might go away */
 
 static int nodelib_direct_flattenleaders(lua_State *L)
 {
@@ -9086,8 +9086,10 @@ static int nodelib_direct_flattenleaders(lua_State *L)
     if (n) {
         switch (node_type(n)) {
             case hlist_node:
+                count = tex_flatten_leaders(n, hbox_group, 0);
+                break;
             case vlist_node:
-                tex_flatten_leaders(n, &count);
+                count = tex_flatten_leaders(n, vbox_group, 0);
                 break;
         }
     }
@@ -10714,4 +10716,33 @@ int lmt_par_pass_callback(
         }
  // }
     return 0;
+}
+
+halfword lmt_uleader_callback(
+    halfword head,
+    halfword index, 
+    int      context
+)
+{
+    if (head) {
+        int callback_id = lmt_callback_defined(handle_uleader_callback);
+        if (callback_id > 0) {
+            lua_State *L = lmt_lua_state.lua_instance;
+            int top = 0;
+            if (lmt_callback_okay(L, callback_id, &top)) {
+                int i;
+                lmt_node_list_to_lua(L, head);
+                lua_pushinteger(L, context);
+                lua_pushinteger(L, index);
+                i = lmt_callback_call(L, 3, 1, top);
+                if (i) {
+                    lmt_callback_error(L, top, i);
+                } else {
+                    head = lmt_node_list_from_lua(L, -1);
+                    lmt_callback_wrapup(L, top);
+                }
+            }
+        }
+    }
+    return head;
 }

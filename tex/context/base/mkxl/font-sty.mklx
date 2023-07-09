@@ -86,9 +86,12 @@
   {\begincsname\??alternativestyle#name\endcsname}
 
 \appendtoks
-    \doifelse{\alternativestylesparameter\c!method}\v!auto
-      {\c_fonts_basics_alternative_style_method\plusone}%
-      {\c_fonts_basics_alternative_style_method\zerocount}%
+    \c_fonts_basics_alternative_style_method
+      \ifcstok{\alternativestylesparameter\c!method}\v!auto
+        \plusone
+      \else
+        \zerocount
+      \fi
 \to \everysetupalternativestyles
 
 %D Maybe too generic, but probably ok is the following. (Maybe one day we will use a
@@ -178,7 +181,7 @@
 
 %D The new one:
 
-\setfalse\fontattributeisset
+\newconditional\fontattributeisset
 
 \mutable\lettonothing\currentdetokenizedstyleparameter
 
@@ -195,7 +198,7 @@
 
 \permanent\protected\def\dousecurrentstyleparameter % empty check outside here
   {\cdef\currentdetokenizedstyleparameter{\detokenize\expandafter{\currentstyleparameter}}%
-   \settrue\fontattributeisset % reset is done elsewhere
+   \fontattributeisset\conditionaltrue % reset is done elsewhere
    \ifcsname\??alternativestyle\currentdetokenizedstyleparameter\endcsname
      \lastnamedcs
    \orelse\ifcsname\currentdetokenizedstyleparameter\endcsname
@@ -232,8 +235,7 @@
 
 \appendtoks
     \letcsname\??stylecheck\currentstyle\endcsname\relax
-    \edef\p_method{\styleparameter\c!method}%
-    \ifx\p_method\v!command
+    \ifcstok{\styleparameter\c!method}\v!command
         \frozen\instance\protected\edefcsname\e!start\currentstyle\endcsname{\font_styles_apply_start{\currentstyle}}%
         \frozen\instance\protected\edefcsname\e!stop \currentstyle\endcsname{\font_styles_apply_stop}%
         \frozen\instance\protected\edefcsname        \currentstyle\endcsname{\font_styles_apply_grouped{\currentstyle}}% no longer groupedcommand here
@@ -296,9 +298,6 @@
 \defcsname\??stylehack\s!math\endcsname% dirty trick
   {\groupedcommandcs\normalstartimath\normalstopimath}
 
-% \def\font_styles_assignment#specification{\groupedcommand{\font_styles_use_generic{#specification}}{}}
-% \def\font_styles_direct    #specification{\groupedcommand{\definedfont[#specification]}{}}
-
 \def\font_styles_assignment#specification{\triggergroupedcommand{\font_styles_use_generic{#specification}}}
 \def\font_styles_direct    #specification{\triggergroupedcommand{\definedfont[#specification]}}
 
@@ -356,7 +355,7 @@
 
 \permanent\tolerant\protected\def\definestylecollection[#name]%
   {\ifarguments\or
-     \setuvalue{#name}{\styleinstance[#name]}%
+     \protected\instance\edefcsname#name\endcsname{\styleinstance[#name]}% \frozen ?
      \def\font_styles_define_style_collection_a#style%
        {\def\font_styles_define_style_collection_b#alternative{\undefinevalue{\??stylecollection#name:#style:#alternative}}%
         \font_helpers_process_alternative_list\font_styles_define_style_collection_b
@@ -426,7 +425,7 @@
 \newconditional\c_font_styles_math
 
 \protected\def\font_styles_math_reset
-  {\setfalse\c_font_styles_math}
+  {\c_font_styles_math\conditionalfalse}
 
 \protected\def\font_styles_math_start
   {\ifconditional\c_font_styles_math
@@ -440,6 +439,6 @@
      \stopimath
    \fi}
 
-\definealternativestyle[\v!math][\settrue\c_font_styles_math]
+\definealternativestyle[\v!math][\c_font_styles_math\conditionaltrue]
 
 \protect \endinput

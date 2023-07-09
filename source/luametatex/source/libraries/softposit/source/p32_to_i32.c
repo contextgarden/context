@@ -52,7 +52,8 @@ int_fast32_t p32_to_i32( posit32_t pA ){
     uint_fast64_t iZ64, mask, tmp;
     int_fast32_t iZ;
     uint_fast32_t scale = 0, uiA;
-    bool bitLast, bitNPlusOne, bitsMore, sign;
+ // bool bitLast, bitNPlusOne, bitsMore, sign; // HH
+    bool bitLast, bitNPlusOne, sign;
 
 	uA.p = pA;
 	uiA = uA.ui;

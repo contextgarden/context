@@ -118,7 +118,9 @@
   {\ifarguments
      % nothing
    \or
-     \doifassignmentelse{#name}{\getparameters[\??module\currentmodule:][#name]}\donothing
+     \ifhastok={#name}%
+       \getparameters[\??module\currentmodule:][#name]%
+     \fi
    \or
      \getparameters[\??module#name:][#parameters]% internal (defaults)
    \fi
@@ -176,12 +178,14 @@
 \permanent\protected\def\startmoduletestsection
   {\begingroup
    \setupmodule % we need to make sure that the vars are set
-   \doifelse{\currentmoduleparameter\v!test}\v!yes
-     {\endgroup
-      \writestatus\currentmodule{loading experimental code}}
-     {\endgroup
-      \writestatus\currentmodule{skipping experimental code}%
-      \gobbleuntil\stopmoduletestsection}}
+   \ifcstok{\currentmoduleparameter\v!test}\v!yes
+     \endgroup
+     \writestatus\currentmodule{loading experimental code}%
+   \else
+     \endgroup
+     \writestatus\currentmodule{skipping experimental code}%
+     \expandafter\ignoreupto\expandafter\stopmoduletestsection
+   \fi}
 
 \aliased\let\stopmoduletestsection\donothing
 

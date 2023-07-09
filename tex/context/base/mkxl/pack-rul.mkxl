@@ -1185,22 +1185,22 @@
 
 \def\spac_framed_push_local_anchors
   {\ifx\p_framed_synchronize\v!yes
-     \settrue\c_pack_resync
-     \settrue\c_pack_reanchor
+     \c_pack_resync\conditionaltrue
+     \c_pack_reanchor\conditionaltrue
      \pushlocalanchors
    % \aftergrouped{\aftergrouped{\poplocalanchors}}%
      \aftergroup\poplocalanchors
    \orelse\ifx\p_framed_synchronize\v!text
-     \settrue\c_pack_resync
+     \c_pack_resync\conditionaltrue
      \pushlocalanchors
      \aftergroup\poplocalanchors
    \orelse\ifx\p_framed_synchronize\v!background
-     \settrue\c_pack_reanchor
+     \c_pack_reanchor\conditionaltrue
      \pushlocalanchors
      \aftergroup\poplocalanchors
    \else
-     \setfalse\c_pack_resync
-     \setfalse\c_pack_reanchor
+     \c_pack_resync\conditionalfalse
+     \c_pack_reanchor\conditionalfalse
    \fi}
 
 \protected\def\pack_framed_process_indeed
@@ -1239,20 +1239,20 @@
    \edef\p_framed_franalyze  {\framedparameter\c!fr!analyze}% experimental option
    %
    \ifempty\p_framed_synchronize
-     \setfalse\c_pack_resync
-     \setfalse\c_pack_reanchor
+     \c_pack_resync\conditionalfalse
+     \c_pack_reanchor\conditionalfalse
 %      \let\spac_framed_pop_local_anchors\relax
    \else
      \spac_framed_push_local_anchors
    \fi
    %
    \ifx\p_framed_frame\v!overlay   % no frame, no offset, no framewidth
-     \setfalse\c_framed_has_frame
+     \c_framed_has_frame\conditionalfalse
      \let\localoffset\v!overlay
    \orelse\ifx\p_framed_frame\v!none % no frame, no framewidth
-     \setfalse\c_framed_has_frame
+     \c_framed_has_frame\conditionalfalse
    \else
-     \settrue\c_framed_has_frame
+     \c_framed_has_frame\conditionaltrue
    \fi
    \ifconditional\c_framed_has_frame
      \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}%
@@ -1270,9 +1270,9 @@
    \forgetall % should happen after \localwidth but before align
    %
    \ifempty\localformat
-     \setfalse\c_framed_has_format
+     \c_framed_has_format\conditionalfalse
    \else
-     \settrue\c_framed_has_format
+     \c_framed_has_format\conditionaltrue
      \dosetraggedcommand\localformat % not that fast
    \fi
    %
@@ -1306,7 +1306,7 @@
      \else
        \d_framed_height\p_framed_lines\lineheight
        \edef\localheight{\the\d_framed_height}%
-       \settrue\c_framed_has_height
+       \c_framed_has_height\conditionaltrue
      \fi
    \fi
    % this is now an option: width=local
@@ -1419,76 +1419,76 @@
 
 \defcsname\??framedwidthalternative\empty\endcsname
   {\ifconditional\c_framed_has_format
-     \settrue\c_framed_has_width
+     \c_framed_has_width\conditionaltrue
      \d_framed_width\hsize
    \else
-     \setfalse\c_framed_has_width
+     \c_framed_has_width\conditionalfalse
      \d_framed_width\zeropoint
    \fi}
 
 \defcsname\??framedwidthalternative\v!fit\endcsname
   {\ifconditional\c_framed_has_format
-     \settrue\c_framed_has_width
+     \c_framed_has_width\conditionaltrue
      \d_framed_width\hsize
    \else
-     \setfalse\c_framed_has_width
+     \c_framed_has_width\conditionalfalse
      \d_framed_width\zeropoint
    \fi}
 
 \defcsname\??framedwidthalternative\v!fixed\endcsname % equals \v!fit but no shapebox
   {\ifconditional\c_framed_has_format
-     \settrue\c_framed_has_width
+     \c_framed_has_width\conditionaltrue
      \d_framed_width\hsize
    \else
-     \setfalse\c_framed_has_width
+     \c_framed_has_width\conditionalfalse
      \d_framed_width\zeropoint
    \fi}
 
 \defcsname\??framedwidthalternative\v!broad\endcsname
-  {\settrue\c_framed_has_width
+  {\c_framed_has_width\conditionaltrue
    \d_framed_width\hsize}
 
 \defcsname\??framedwidthalternative\v!max\endcsname % idem broad
-  {\settrue\c_framed_has_width
+  {\c_framed_has_width\conditionaltrue
    \d_framed_width\hsize}
 
 \defcsname\??framedwidthalternative\v!local\endcsname
-  {\settrue\c_framed_has_width
+  {\c_framed_has_width\conditionaltrue
    %\setlocalhsize
    \d_framed_width\localhsize}
 
 \defcsname\??framedwidthalternative\s!unknown\endcsname
-  {\settrue\c_framed_has_width
+  {\c_framed_has_width\conditionaltrue
    \d_framed_width\localwidth}
 
 \def\framed_width_alternative_unknown
-  {\settrue\c_framed_has_width
+  {\c_framed_has_width\conditionaltrue
    \d_framed_width\localwidth}
 
 % heights
 
 \defcsname\??framedheightalternative\empty\endcsname
-  {\setfalse\c_framed_has_height
+  {\c_framed_has_height\conditionalfalse
    \d_framed_height\zeropoint}
 
 \defcsname\??framedheightalternative\v!fit\endcsname
-  {\setfalse\c_framed_has_height
+  {\c_framed_has_height\conditionalfalse
    \d_framed_height\zeropoint}
 
 \defcsname\??framedheightalternative\v!broad\endcsname
-  {\setfalse\c_framed_has_height
+  {\c_framed_has_height\conditionalfalse
    \d_framed_height\zeropoint}
 
 \defcsname\??framedheightalternative\v!max\endcsname
-  {\settrue\c_framed_has_height
+  {\c_framed_has_height\conditionaltrue
    \d_framed_height\vsize}
 
 \defcsname\??framedheightalternative\s!unknown\endcsname
-  {\settrue\c_framed_has_height
+  {\c_framed_has_height\conditionaltrue
    \d_framed_height\localheight}
 
 \def\framed_height_alternative_unknown
-  {\settrue\c_framed_has_height
+  {\c_framed_has_height\conditionaltrue
    \d_framed_height\localheight}
 
 % struts (use let instead?)
@@ -1517,36 +1517,36 @@
 % offsets
 
 \defcsname\??framedoffsetalternative\v!none\endcsname
-  {\setfalse\c_framed_has_offset
+  {\c_framed_has_offset\conditionalfalse
    \c_framed_has_strut\plusone
-   \setfalse\c_framed_is_overlaid
+   \c_framed_is_overlaid\conditionalfalse
    \d_framed_local_offset\d_framed_linewidth}
 
 \defcsname\??framedoffsetalternative\v!overlay\endcsname
-  {% \ifx\p_framed_frame\v!no \setfalse\c_framed_has_frame \fi % test first
-   \setfalse\c_framed_has_offset
+  {% \ifx\p_framed_frame\v!no \c_framed_has_frame\conditionalfalse \fi % test first
+   \c_framed_has_offset\conditionalfalse
    \c_framed_has_strut\plusone
-   \settrue\c_framed_is_overlaid
+   \c_framed_is_overlaid\conditionaltrue
    \d_framed_local_offset\zeropoint}
 
 % \defcsname\??framedoffsetalternative\v!strut\endcsname
-%   {\setfalse\c_framed_has_offset
+%   {\c_framed_has_offset\conditionalfalse
 %    \c_framed_has_strut\plustwo
-%    \settrue\c_framed_is_overlaid
+%    \c_framed_is_overlaid\conditionaltrue
 %    \d_framed_local_offset\zeropoint}
 
 \defcsname\??framedoffsetalternative\v!default\endcsname % new per 2-6-2000
-  {\settrue \c_framed_has_offset
+  {\c_framed_has_offset\conditionaltrue
    \c_framed_has_strut\plustwo
-   \setfalse\c_framed_is_overlaid
+   \c_framed_is_overlaid\conditionalfalse
    \let\localoffset\defaultframeoffset
    \letframedparameter\c!offset\defaultframeoffset % brrr
    \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
 
 \def\framed_offset_alternative_unknown
-  {\settrue \c_framed_has_offset
+  {\c_framed_has_offset\conditionaltrue
    \c_framed_has_strut\plustwo
-   \setfalse\c_framed_is_overlaid
+   \c_framed_is_overlaid\conditionalfalse
    \let\defaultframeoffset\localoffset
    \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
 
@@ -1647,7 +1647,7 @@
    \else
      \pack_framed_reshape_reset
    \fi
-   \setfalse\c_framed_has_width}
+   \c_framed_has_width\conditionalfalse}
 
 \def\pack_framed_finish_b
   {\ifx\p_framed_franalyze\v!yes
@@ -1655,7 +1655,7 @@
    \else
      \pack_framed_reshape_reset
    \fi
-   \setfalse\c_framed_has_width}
+   \c_framed_has_width\conditionalfalse}
 
 \def\pack_framed_finish_c
   {\ifx\p_framed_franalyze\v!yes
@@ -1669,11 +1669,7 @@
 % on some paper terminal font); scalefactors are in the range -1000..1000.
 
 \protected\def\pack_framed_finish
-  {\edef\p_freeze{\framedparameter\c!freezespacing}%
-   \ifempty\p_freeze
- % \orelse\ifx\p_freeze\v!yes
- %   \boxfreeze\b_framed_normal\zerocount
-   \else
+  {\ifempty{\framedparameter\c!freezespacing}\else
      \boxadapt\b_framed_normal\p_freeze\relax
    \fi
    \pack_framed_locator_before\p_framed_location
@@ -2054,15 +2050,15 @@
 \newdimension\d_framed_boffset
 
 \def\pack_framed_check_extra_offsets % we could check h and v indepently
-  {\setfalse\c_framed_has_extra_offset
+  {\c_framed_has_extra_offset\conditionalfalse
    \d_framed_loffset\framedparameter\c!loffset\relax
    \d_framed_roffset\framedparameter\c!roffset\relax
    \d_framed_toffset\framedparameter\c!toffset\relax
    \d_framed_boffset\framedparameter\c!boffset\relax
-   \ifzeropt\d_framed_loffset\else \advanceby\d_framed_width -\d_framed_loffset \settrue\c_framed_has_extra_offset \fi
-   \ifzeropt\d_framed_roffset\else \advanceby\d_framed_width -\d_framed_roffset \settrue\c_framed_has_extra_offset \fi
-   \ifzeropt\d_framed_toffset\else \advanceby\d_framed_height-\d_framed_toffset \settrue\c_framed_has_extra_offset \fi
-   \ifzeropt\d_framed_boffset\else \advanceby\d_framed_height-\d_framed_boffset \settrue\c_framed_has_extra_offset \fi}
+   \ifzeropt\d_framed_loffset\else \advanceby\d_framed_width -\d_framed_loffset \c_framed_has_extra_offset\conditionaltrue \fi
+   \ifzeropt\d_framed_roffset\else \advanceby\d_framed_width -\d_framed_roffset \c_framed_has_extra_offset\conditionaltrue \fi
+   \ifzeropt\d_framed_toffset\else \advanceby\d_framed_height-\d_framed_toffset \c_framed_has_extra_offset\conditionaltrue \fi
+   \ifzeropt\d_framed_boffset\else \advanceby\d_framed_height-\d_framed_boffset \c_framed_has_extra_offset\conditionaltrue \fi}
 
 \def\pack_framed_apply_extra_offsets
   {\setbox\b_framed_normal\vpack\bgroup
@@ -2752,7 +2748,7 @@
 \defcsname\??framedtextlocation\v!none\endcsname
   {\letframedtextparameter\c!left \relax
    \letframedtextparameter\c!right\relax
-   \settrue\c_framed_text_location_none}
+   \c_framed_text_location_none\conditionaltrue}
 
 \tolerant\protected\def\pack_framed_text_start[#1]#*[#2]#*[#3]% or #1#*[#2]#*[#3]% and pass {#1}
   {\bgroup
@@ -2765,8 +2761,10 @@
 
 \def\pack_framed_text_start_indeed#1#2%
   {\setupframedtexts[\currentframedtext][#2]%
-   \doifsomething{#1}{\setframedtextparameter\c!location{#1}}% does not listen to #3
-   \setfalse\c_framed_text_location_none
+   \ifempty{#1}\else
+     \setframedtextparameter\c!location{#1}% does not listen to #3
+   \fi
+   \c_framed_text_location_none\conditionalfalse
    \begincsname\??framedtextlocation\framedtextparameter\c!location\endcsname
    \resetframedtextparameter\c!location
    \pack_framed_text_check
@@ -2940,7 +2938,7 @@
 \to \everypresetframed
 
 \appendtoks
-    \frozen\instance\setuevalue{\currentframed}{\pack_framed_defined_process[\currentframed]}%
+    \frozen\instance\protected\edefcsname\currentframed\endcsname{\pack_framed_defined_process[\currentframed]}%
 \to \everydefineframed
 
 \newinteger\c_temp_framed_crap
@@ -3077,12 +3075,15 @@
      \egroup
      \kern\scratchrightoffset
    \egroup
-   \doif{\framedcontentparameter\c!width}\v!fit
-     {\letframedcontentparameter\c!width\v!fixed}% no shapebox
+   \ifcstok{\framedcontentparameter\c!width}\v!fit
+     \letframedcontentparameter\c!width\v!fixed% no shapebox
+   \fi
    \ifinsidefloat
      \donefalse
+   \orelse\ifcstok{\framedcontentparameter\c!linecorrection}\v!yes
+     \donetrue
    \else
-     \doifelse{\framedcontentparameter\c!linecorrection}\v!yes\donetrue\donefalse
+     \donefalse
    \fi
    % plaats ?
    \ifdone\startlinecorrection\fi
@@ -3118,12 +3119,12 @@
 %D Fast enough for most cases (we could do a massive \type {\ifhastok} instead):
 
 \permanent\protected\def\doifelseframed#1%
-         {\ifcstok{#1\c!frame      }\v!on     \expandafter\firstoftwoarguments
-   \orelse\ifcstok{#1\c!topframe   }\v!on     \expandafter\firstoftwoarguments
-   \orelse\ifcstok{#1\c!bottomframe}\v!on     \expandafter\firstoftwoarguments
-   \orelse\ifcstok{#1\c!leftframe  }\v!on     \expandafter\firstoftwoarguments
-   \orelse\ifcstok{#1\c!rightframe }\v!on     \expandafter\firstoftwoarguments
-   \orelse\ifcstok{#1\c!background }\emptytoks\expandafter\secondoftwoarguments
-     \else                                    \expandafter\firstoftwoarguments\fi}
+         {\ifcstok{#1\c!frame      }\v!on\expandafter\firstoftwoarguments
+   \orelse\ifcstok{#1\c!topframe   }\v!on\expandafter\firstoftwoarguments
+   \orelse\ifcstok{#1\c!bottomframe}\v!on\expandafter\firstoftwoarguments
+   \orelse\ifcstok{#1\c!leftframe  }\v!on\expandafter\firstoftwoarguments
+   \orelse\ifcstok{#1\c!rightframe }\v!on\expandafter\firstoftwoarguments
+   \orelse\ifempty{#1\c!background }\expandafter\secondoftwoarguments
+     \else                          \expandafter\firstoftwoarguments\fi}
 
 \protect \endinput

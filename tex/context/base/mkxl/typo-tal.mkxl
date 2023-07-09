@@ -249,12 +249,12 @@
   [tnum=yes,
    lnum=no]
 
-\newconditional\c_tabl_ntb_char_align_auto_font \settrue\c_tabl_ntb_char_align_auto_font
+\newconditional\c_tabl_ntb_char_align_auto_font \c_tabl_ntb_char_align_auto_font\conditionaltrue
 
 \installtexdirective % yes or no ?
   {typesetters.characteralign.autofont}
-  {\settrue \c_tabl_ntb_char_align_auto_font}
-  {\setfalse\c_tabl_ntb_char_align_auto_font}
+  {\c_tabl_ntb_char_align_auto_font\conditionaltrue}
+  {\c_tabl_ntb_char_align_auto_font\conditionalfalse}
 
 \def\m_font_feature_auto_tabnum{system:tabnum}
 

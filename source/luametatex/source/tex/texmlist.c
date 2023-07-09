@@ -695,7 +695,7 @@ inline static int tex_aux_has_delimiter(halfword delimiter, halfword size)
     );
 }
 
-static inline int tex_aux_has_extensible(halfword delimiter, halfword size)
+inline static int tex_aux_has_extensible(halfword delimiter, halfword size)
 {
     if (delimiter && delimiter_small_character(delimiter)) {
         halfword curfnt = tex_fam_fnt(delimiter_small_family(delimiter), size);
@@ -1849,11 +1849,11 @@ static halfword tex_aux_math_glue(halfword g, quarterword subtype, halfword deta
 {
     halfword glue = tex_new_glue_node(g, subtype);
     if (! math_glue_stretch_enabled) {
-        glue_stretch_order(glue) = 0;
+        glue_stretch_order(glue) = normal_glue_order;
         glue_stretch(glue) = 0;
     }
     if (! math_glue_shrink_enabled) {
-        glue_shrink_order(glue) = 0;
+        glue_shrink_order(glue) = normal_glue_order;
         glue_shrink(glue) = 0;
     }
     glue_font(glue) = detail;
@@ -1877,13 +1877,13 @@ static void tex_aux_math_glue_to_glue(halfword p, scaled m, int style)
     /*tex convert |mu| to |pt| */
     glue_amount(p) = tex_aux_mu_mult(tex_aux_math_x_scaled(glue_amount(p), style), n, f);
     if (! math_glue_stretch_enabled) {
-        glue_stretch_order(p) = 0;
+        glue_stretch_order(p) = normal_glue_order;
         glue_stretch(p) = 0;
     } else if (glue_stretch_order(p) == normal_glue_order) {
         glue_stretch(p) = tex_aux_mu_mult(tex_aux_math_x_scaled(glue_stretch(p), style), n, f);
     }
     if (! math_glue_shrink_enabled) {
-        glue_shrink_order(p) = 0;
+        glue_shrink_order(p) = normal_glue_order;
         glue_shrink(p) = 0;
     } else if (glue_shrink_order(p) == normal_glue_order) {
         glue_shrink(p) = tex_aux_mu_mult(tex_aux_math_x_scaled(glue_shrink(p), style), n, f);
@@ -2061,7 +2061,7 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
                     }
                     break;
             }
-            if (node_next(temp_head) && math_threshold_par) {
+            if (node_next(temp_head) && ! tex_glue_is_zero(math_threshold_par)) {
                 scaledwhd siz = tex_natural_hsizes(node_next(temp_head), null, 0.0, 0, 0);
                 if  (siz.wd < glue_amount(math_threshold_par)) {
                     halfword box = tex_new_node(hlist_node, unknown_list);
@@ -2077,6 +2077,7 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
                         tex_attach_attribute_list_copy(glue, box);
                         glue_amount(glue) = siz.wd;
                         glue_leader_ptr(glue) = box;
+                     // glue_callback(glue) = math_threshold_callback_par;
                         node_next(temp_head) = glue;
                     } else {
                         node_next(temp_head) = box;
@@ -3629,16 +3630,20 @@ static halfword tex_aux_make_skewed_fraction(halfword target, int style, int siz
     scaled hgap = 0;
     delimiterextremes extremes = { .tfont = null_font, .tchar = 0, .bfont = null_font, .bchar = 0, .height = 0, .depth = 0 };
     scaled tolerance = tex_get_math_y_parameter_default(style, math_parameter_skewed_delimiter_tolerance, 0);
-    scaled shift_up = tex_get_math_y_parameter_checked(style, math_parameter_skewed_fraction_vgap);
-    scaled shift_down = tex_round_xn_over_d(shift_up, fraction_v_factor(target), scaling_factor);
+    scaled shift_up = 0;
+    scaled shift_down = 0;
     (void) kerns;
-    shift_up = shift_down; /*tex The |shift_up| value might change later. */
+if (! has_noad_option_center(target)) { 
+    shift_up = tex_get_math_y_parameter_checked(style, math_parameter_skewed_fraction_vgap);
+    shift_down = tex_round_xn_over_d(shift_up, fraction_v_factor(target), scaling_factor);
+}
     tex_aux_wrap_fraction_parts(target, style, size, &numerator, &denominator, 0);
     /*tex 
         Here we don't share code because we're going horizontal.
     */
     if (! has_noad_option_noaxis(target)) {
         shift_up += tex_half_scaled(tex_aux_math_axis(size));
+shift_down = shift_up;
     }
     /*tex
         Construct a hlist box for the fraction, according to |hgap| and |vgap|.
@@ -3681,6 +3686,9 @@ static halfword tex_aux_make_skewed_fraction(halfword target, int style, int siz
     box_shift_amount(denominator) = shift_down;
     delta = maxheight + maxdepth;
     middle = tex_aux_make_delimiter(target, middle_delimiter, size, delta, 0, style, 1, NULL, NULL, tolerance, has_noad_option_nooverflow(target), &extremes, 0);
+if (has_noad_option_center(target)) { 
+    box_shift_amount(middle) -= box_total(middle) - delta;
+}
     fraction = tex_new_null_box_node(hlist_node, math_fraction_list);
     tex_attach_attribute_list_copy(fraction, target);
     box_width(fraction) = box_width(numerator) + box_width(denominator) + box_width(middle) - hgap;

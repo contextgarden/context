@@ -174,14 +174,23 @@ typedef enum io_codes {
 
 */
 
+/* 
+    We could have |token_array_state| for a packed representation of really permanent macros if we 
+    freeze permanent. If we don't freeze we need an extra bit to flag a macro as using the array 
+    but we don't have a bit left. Packing could happen before we dump and would make the body half 
+    the size. Fetching from an array is a middleground between a token list and a file and could a 
+    bit faster and definitely make for a smaller format file. In the end it might not really pay 
+    off and it is also a bit un-TeX. 
+*/
+
 typedef enum state_codes {
     token_list_state  = 0,
     /*tex when scanning a line of characters */
     mid_line_state    = 1,
     /*tex when ignoring blanks */
-    skip_blanks_state = 2 + max_char_code,
+    skip_blanks_state = 2 + max_category_code,
     /*tex at the start of a line */
-    new_line_state    = 3 + max_char_code + max_char_code,
+    new_line_state    = 3 + max_category_code + max_category_code,
 } state_codes;
 
 /*tex
@@ -393,33 +402,52 @@ extern void tex_show_runaway(void); /*tex This is only used when running out of 
 /* #define param_start input_state.cur_input.param_start */ /*tex base of macro parameters in |param_stack| */
 
 typedef enum token_types {
-    parameter_text,        /*tex parameter */
-    template_pre_text,     /*tex |u_j| template */
-    template_post_text,    /*tex |v_j| template */
+
+    /*tex This one is unreferenced and always flushed at the end of a macro. */
+
+    parameter_text,        /*tex parameter         */ 
+
+    /*tex These are managed by the node handlers and flushed there. */
+
+    template_pre_text,     /*tex |u_j| template    */ 
+    template_post_text,    /*tex |v_j| template    */ 
+
+    /*tex These are unreferenced and always flushed en the end. */
+
     backed_up_text,        /*tex text to be reread */
-    inserted_text,         /*tex inserted texts */
+    inserted_text,         /*tex inserted texts    */
+
+    /*tex This one referenced in the begin call and dereferenced at the end. */
+
     macro_text,            /*tex defined control sequences */
-    output_text,           /*tex output routines */
-    every_par_text,        /*tex |\everypar| */
-    every_math_text,       /*tex |\everymath| */
-    every_display_text,    /*tex |\everydisplay| */
-    every_hbox_text,       /*tex |\everyhbox| */
-    every_vbox_text,       /*tex |\everyvbox| */
-    every_math_atom_text,  /*tex |\everymathatom| */
-    every_job_text,        /*tex |\everyjob| */
-    every_cr_text,         /*tex |\everycr| */
-    every_tab_text,        /*tex |\everytab| */
-    error_help_text,
+
+    /*tex These are referenced in the begin call and dereferenced at the end. */
+
+    output_text,           /*tex output routines   */
+    every_par_text,        /*tex |\everypar|       */
+    every_math_text,       /*tex |\everymath|      */
+    every_display_text,    /*tex |\everydisplay|   */
+    every_hbox_text,       /*tex |\everyhbox|      */
+    every_vbox_text,       /*tex |\everyvbox|      */
+    every_math_atom_text,  /*tex |\everymathatom|  */
+    every_job_text,        /*tex |\everyjob|       */
+    every_cr_text,         /*tex |\everycr|        */
+    every_tab_text,        /*tex |\everytab|       */
+    error_help_text,       /*tex |\errhelp|        */
     every_before_par_text, /*tex |\everybeforeeof| */
-    every_eof_text,        /*tex |\everyeof| */
-    end_of_group_text,
-    mark_text,             /*tex |\topmark|, etc. */
-    token_text, 
-    loop_text,
-    end_paragraph_text,    /*tex |\everyendpar| */
-    write_text,            /*tex |\write| */
-    local_text,
-    local_loop_text,
+    every_eof_text,        /*tex |\everyeof|       */
+
+    /*tex These could be unreferenced and always flush (different begin call). */  
+
+    end_of_group_text,     /*tex |\atendofgroup|   */
+    mark_text,             /*tex |\topmark|, etc.  */ 
+    token_text,            /*tex                   */  
+    loop_text,             /*tex                   */    
+    end_paragraph_text,    /*tex |\everyendpar|    */ 
+    write_text,            /*tex |\write|          */ 
+    local_text,            /*tex                   */ 
+    local_loop_text,       /*tex                   */ 
+
 } token_types;
 
 extern void        tex_initialize_input_state  (void);

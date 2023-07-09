@@ -23,7 +23,7 @@
 %D pseudobold normal=6 l2r=7 r2l=8
 %D
 %D where l2r is just an alias. Because we're now using the mirror lookup (like
-%D we do a smaller lookup) in the engine we not just have:
+%D we do a smaller lookup) in the engine we now just have:
 %D
 %D regular    normal=0
 %D bold       normal=3
@@ -67,12 +67,12 @@
 %D repository pre October 2022.
 
 \newtoks       \t_font_math_strategies
-\newconditional\c_font_synchronize_math_fonts \settrue\c_font_synchronize_math_fonts
+\newconditional\c_font_synchronize_math_fonts \c_font_synchronize_math_fonts\conditionaltrue
 
 \protected\def\font_helpers_synchronize_math % math stuff in mmode
   {\ifconditional\c_font_synchronize_math_fonts\expand\t_font_math_strategies\fi}
 
-\permanent\protected\def\textonly{\setfalse\c_font_synchronize_math_fonts} % document this
+\permanent\protected\def\textonly{\c_font_synchronize_math_fonts\conditionalfalse} % document this
 
 %D The main math font definer. We have removed some optimized code simply because we
 %D now always have a fontclass. We could check for fontclass being default or empty
@@ -88,7 +88,7 @@
 
 % when we are always true we can as well remove this test:
 
-\newconditional\c_font_complete_bold_mathstrategy  \settrue\c_font_complete_bold_mathstrategy
+\newconditional\c_font_complete_bold_mathstrategy  \c_font_complete_bold_mathstrategy\conditionaltrue
 
 \immutable\def\mathtextsuffix        {-text}
 \immutable\def\mathscriptsuffix      {-script}
@@ -98,27 +98,27 @@
 %D some interference here, which is why we use a different method for bold.
 
 \def\font_helpers_set_math_family_a
-  {\ifcsname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
+  {\ifcsname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \c_font_auto_size\conditionalfalse
      \lastnamedcs \orelse
-   \ifcsname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
+   \ifcsname\??fontinstanceready\fontclass       -\fontbody-\s!mm-\fontfamily          \endcsname \c_font_auto_size\conditionaltrue
      \lastnamedcs \else
      \font_helpers_set_math_family_b
    \fi}
 
 \def\font_helpers_set_math_family_b
-  {\ifcsname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
+  {\ifcsname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \c_font_auto_size\conditionalfalse
      \lastnamedcs \orelse
-   \ifcsname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
+   \ifcsname\??fontinstanceready\defaultfontclass-\fontbody-\s!mm-\fontfamily          \endcsname \c_font_auto_size\conditionaltrue
      \lastnamedcs \else
      \font_helpers_set_math_family_c
    \fi}
 
 \def\font_helpers_set_math_family_c
-  {\ifcsname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
+  {\ifcsname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily-\fontsize\endcsname \c_font_auto_size\conditionalfalse
      \lastnamedcs \orelse
-   \ifcsname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
+   \ifcsname\??fontinstanceready                  \fontbody-\s!mm-\fontfamily          \endcsname \c_font_auto_size\conditionaltrue
      \lastnamedcs \else
-                                                                                                  \settrue \c_font_auto_size
+                                                                                                  \c_font_auto_size\conditionaltrue
    \fi}
 
 \mutable\lettonothing\mathsizesuffix
@@ -132,7 +132,7 @@
    \let\savedfontstyle\fontstyle
    \let\fontstyle\s!mm
    \let\fontfamily#family%
-\c_math_last_family_used\zerocount
+   \c_math_last_family_used\zerocount
    % the order is important as we depend on known id's when completing fonts
    % enabling is needed when we have fallbacks which spoils the families; per
    % mid 2022 this is no longer true as we do fallbacks differently
@@ -152,7 +152,7 @@
    \let\fontface\!!zerocount
    \let\fontstyle\savedfontstyle
    \let\fontbody\savedfontbody
-   \setfalse\c_font_auto_size}
+   \c_font_auto_size\conditionalfalse}
 
 \def\font_helpers_set_math_family_set_scales_compact
   {% these are used when no font setting is there, the settings come before setting the parameters
@@ -171,7 +171,7 @@
    \let\savedfontstyle\fontstyle
    \let\fontstyle\s!mm
    \let\fontfamily#family%
-\c_math_last_family_used\zerocount
+   \c_math_last_family_used\zerocount
    \font_helpers_set_math_family_set_scales_compact
    % the order is important as we depend on known id's when completing fonts
    % enabling is needed when we have fallbacks which spoils the families
@@ -185,7 +185,7 @@
    \let\fontface\!!zerocount
    \let\fontstyle\savedfontstyle
    \let\fontbody\savedfontbody
-   \setfalse\c_font_auto_size}
+   \c_font_auto_size\conditionalfalse}
 
 \def\font_helpers_set_math_family_indeed
   {\ifconditional\c_font_compact
@@ -201,7 +201,7 @@
    \let\savedfontstyle\fontstyle
    \let\fontstyle\s!mm
    \let\fontfamily#familytag%
-\c_math_last_family_used\zerocount
+   \c_math_last_family_used\zerocount
    \font_helpers_set_math_family_set_scales_normal
    \let\mathsizesuffix\mathscriptscriptsuffix
    \let\fontface\!!plusthree
@@ -220,7 +220,7 @@
    \let\fontstyle\savedfontstyle
    \let\fontbody\savedfontbody
    \let\defaultfontclass\savedfontclass
-   \setfalse\c_font_auto_size}
+   \c_font_auto_size\conditionalfalse}
 
 \def\font_helpers_set_math_family_bold_indeed_compact#mbfam#familytag#mrfam% \c_font_fam_mb \s!mb \c_font_fam_mr
   {\let\savedfontclass\defaultfontclass
@@ -229,7 +229,7 @@
    \let\savedfontstyle\fontstyle
    \let\fontstyle\s!mm
    \let\fontfamily#familytag%
-\c_math_last_family_used\zerocount
+   \c_math_last_family_used\zerocount
    \let\mathsizesuffix\mathtextsuffix
    \let\fontface\!!plusone
    \font_helpers_set_math_family_bold_a\textfont        #mbfam#mrfam% defines
@@ -241,7 +241,7 @@
    \let\fontstyle\savedfontstyle
    \let\fontbody\savedfontbody
    \let\defaultfontclass\savedfontclass
-   \setfalse\c_font_auto_size}
+   \c_font_auto_size\conditionalfalse}
 
 \def\font_helpers_set_math_family_bold_indeed
   {\ifconditional\c_font_compact
@@ -251,9 +251,9 @@
    \fi}
 
 \def\font_helpers_set_math_family_bold_a#font#mbfam#mrfam%
-  {\ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \setfalse\c_font_auto_size
+  {\ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \c_font_auto_size\conditionalfalse
      \lastnamedcs #font#mbfam\font \orelse
-   \ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily          \endcsname \settrue \c_font_auto_size
+   \ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily          \endcsname \c_font_auto_size\conditionaltrue
      \lastnamedcs #font#mbfam\font \else
      #font#mbfam#font#mrfam%
    \fi}
@@ -265,7 +265,7 @@
 %
 % pitfall: we should reset 'm when a fontclass name is reused
 
-\newconditional\optimizemathfontdefinitions \settrue\optimizemathfontdefinitions
+\newconditional\optimizemathfontdefinitions \optimizemathfontdefinitions\conditionaltrue
 
 \def\font_helpers_set_math_family#mrfam#familytag%
   {\ifconditional\optimizemathfontdefinitions
@@ -435,8 +435,8 @@
 
 \newconditional\c_font_pseudo_bold_math_state
 
-\def\font_helpers_set_math_partial_bold_strategy{\settrue \c_font_pseudo_bold_math_state}
-\def\font_helpers_set_math_full_bold_strategy   {\setfalse\c_font_pseudo_bold_math_state}
+\def\font_helpers_set_math_partial_bold_strategy{\c_font_pseudo_bold_math_state\conditionaltrue}
+\def\font_helpers_set_math_full_bold_strategy   {\c_font_pseudo_bold_math_state\conditionalfalse}
 
 \appendtoks
     \font_helpers_synchronize_math_bold_strategy
@@ -458,7 +458,7 @@
      \font_helpers_set_current_font_alternative\s!mr
    \fi
    \mathdefault
-   \setfalse\c_math_bold}
+   \c_math_bold\conditionalfalse}
 
 \permanent\protected\def\mb % math bold
   {\ifmmode
@@ -467,7 +467,7 @@
      \font_helpers_set_current_font_alternative\s!mb
    \fi
    \mathdefault
-   \settrue\c_math_bold}
+   \c_math_bold\conditionaltrue}
 
 \appendtoks
     \font_helpers_synchronize_math_family % auto bold

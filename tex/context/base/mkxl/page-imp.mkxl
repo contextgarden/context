@@ -68,11 +68,7 @@
    \scratchtoks\emptytoks
    \dostepwiserecurse{#1}{\numexpr#2-\plusone\relax}\plusone{\etoksapp\scratchtoks{##1,}}%
    \xdef\pagestoshipout{\the\scratchtoks,\number#2}%
-   \doglobal\appendtoks
-     \ifnum\realpageno>\numexpr#2+\plusone\relax
-       \global\everypar{\normalend}%
-     \fi
-   \to\everyaftershipout
+   \gtoksapp\everyaftershipout{\ifnum\realpageno>\numexpr#2+\plusone\relax\global\everypar{\normalend}\fi}%
    \endgroup}
 
 \permanent\protected\def\installshipoutmethod#1#2%      % a handler takes one argument: something to be boxed
@@ -218,8 +214,10 @@
      \else
        \donetrue
      \fi
-   \else % testen, aangepast / expanded nodig ?
-     \normalexpanded{\doifelseinset{\the\shippedoutpages}{\pagestoshipout}}\donetrue\donefalse
+   \orelse\ifinset{\the\shippedoutpages}{\pagestoshipout}%
+     \donetrue
+   \else
+     \donefalse
    \fi
    \ifdone
      \setbox\shipoutscratchbox\hpack
@@ -237,7 +235,7 @@
      \page_shipouts_ignore{#1}%
    \fi}
 
-\newconditional\c_page_shipouts_use_objects \settrue\c_page_shipouts_use_objects
+\newconditional\c_page_shipouts_use_objects \c_page_shipouts_use_objects\conditionaltrue
 
 \installcorenamespace {arrangedpage}
 
@@ -302,16 +300,16 @@
   {} % no default and check if empty, we can have ,,,
 
 \doinstallarrangedoption\v!disable
-  {\global\settrue\arrangingdisabledstate}
+  {\global\arrangingdisabledstate\conditionaltrue}
 
 \doinstallarrangedoption\v!mirrored
-  {\global\settrue\arrangedmirrorstate}
+  {\global\arrangedmirrorstate\conditionaltrue}
 
 \doinstallarrangedoption\v!doublesided
-  {\global\settrue\arrangeddoublestate}
+  {\global\arrangeddoublestate\conditionaltrue}
 
 \doinstallarrangedoption\v!negative
-  {\global\settrue\arrangednegatestate}
+  {\global\arrangednegatestate\conditionaltrue}
 
 \doinstallarrangedoption\v!rotated
   {\gdef\arrangedrotationO {90}%
@@ -336,7 +334,7 @@
   {\global\arrangingpagesfalse}
 
 \doinstallarrangedoption\v!background
-  {\global\settrue\arrangedbackgroundstate}
+  {\global\arrangedbackgroundstate\conditionaltrue}
 
 \aliased\let\poparrangedpages  \relax
 \aliased\let\pusharrangedpage  \gobbleoneargument
@@ -344,12 +342,12 @@
 
 \permanent\protected\def\setuparranging[#1]%
   {\ifconditional\arrangingdisabledstate \else
-     %global\setfalse\arrangingdisabledstate
+     %global\arrangingdisabledstate\conditionalfalse
      \global\arrangingpagestrue % will be conditional
-     \global\setfalse\arrangednegatestate
-     \global\setfalse\arrangedmirrorstate
-     \global\setfalse\arrangeddoublestate
-     \global\setfalse\arrangedswapstate
+     \global\arrangednegatestate\conditionalfalse
+     \global\arrangedmirrorstate\conditionalfalse
+     \global\arrangeddoublestate\conditionalfalse
+     \global\arrangedswapstate\conditionalfalse
      \gdef\arrangedrotationO{0}%
      \gdef\arrangedrotationE{180}%
      % if we use --arrange we have an initial "disable" here
@@ -662,14 +660,14 @@
         \box\arrangedpageA
         \page_boxes_apply_clip_print_right\arrangedpageB
         \box\arrangedpageB}%
-     \setfalse\arrangedswapstate
+     \arrangedswapstate\conditionalfalse
    \else
      \global\setbox\arrangedpageA\hpack
        {\page_boxes_apply_clip_print_left \arrangedpageB
         \box\arrangedpageB
         \page_boxes_apply_clip_print_right\arrangedpageA
         \box\arrangedpageA}%
-     \settrue\arrangedswapstate
+     \arrangedswapstate\conditionaltrue
    \fi
    \global\setbox\arrangedpageB\box\scratchbox}
 
@@ -683,20 +681,20 @@
         \vskip\paperheight
         \box\arrangedpageA
         \box\arrangedpageB}%
-     \setfalse\arrangedswapstate
+     \arrangedswapstate\conditionalfalse
    \else
      \global\setbox\arrangedpageA\vpack
        {\offinterlineskip
         \vskip\paperheight
         \box\arrangedpageB
         \box\arrangedpageA}%
-     \settrue\arrangedswapstate
+     \arrangedswapstate\conditionaltrue
    \fi
    \global\setbox\arrangedpageB\box\scratchbox}
 
 \permanent\protected\def\poparrangedpagesTWO
   {\ifnum\arrangedpageN>\zerocount
-     \setfalse\arrangedswapstate
+     \arrangedswapstate\conditionalfalse
      \doloop
        {\handlearrangedpage
         \bgroup
@@ -1420,16 +1418,18 @@
   {\ifarguments\or
      \setuppageshift[\v!page][#1][#1]%
    \or
-     \doifelseinset{#1}{\v!page,\v!paper}
-       {\setuppageshift[#1][#2][#2]}
-       {\setuppageshift[\v!page][#1][#2]}%
+     \ifcommon{#1}{\v!page,\v!paper}%
+       \setuppageshift[#1][#2][#2]%
+     \else
+       \setuppageshift[\v!page][#1][#2]%
+     \fi
    \or
      %edef\page_boxes_h_shifts{\ifcsname\??pageshift\v!horizontal:#2\endcsname\csname\??pageshift\v!horizontal:#2\endcsname\fi}%
      %edef\page_boxes_v_shifts{\ifcsname\??pageshift\v!vertical  :#3\endcsname\csname\??pageshift\v!vertical  :#3\endcsname\fi}%
      \edef\page_boxes_h_shifts{\begincsname\??pageshift\v!horizontal:#2\endcsname}%
      \edef\page_boxes_v_shifts{\begincsname\??pageshift\v!vertical  :#3\endcsname}%
-     \doifelse{#1}\v!page {\let\page_boxes_apply_shift_print\page_boxes_apply_shift}{\let\page_boxes_apply_shift_print\gobbleoneargument}%
-     \doifelse{#1}\v!paper{\let\page_boxes_apply_shift_paper\page_boxes_apply_shift}{\let\page_boxes_apply_shift_paper\gobbleoneargument}%
+     \ifcstok{#1}\v!page \let\page_boxes_apply_shift_print\page_boxes_apply_shift\else\let\page_boxes_apply_shift_print\gobbleoneargument\fi
+     \ifcstok{#1}\v!paper\let\page_boxes_apply_shift_paper\page_boxes_apply_shift\else\let\page_boxes_apply_shift_paper\gobbleoneargument\fi
    \fi}
 
 \protect \endinput

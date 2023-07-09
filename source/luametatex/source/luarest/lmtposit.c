@@ -553,7 +553,7 @@ static const luaL_Reg positlib_function_list[] =
     { "__shr",        positlib_right     },
     /* */                                
     { "NaN",          positlib_NaN       },
-    { "NaN",          positlib_NaR       },
+    { "NaR",          positlib_NaR       },
     /* */                                
     { "bor",          positlib_or        },
     { "bxor",         positlib_xor       },

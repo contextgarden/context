@@ -28,8 +28,7 @@
    \c!alternative=\v!normal]
 
 \appendtoks
-    \edef\p_method{\effectparameter\c!method}%
-    \ifx\p_method\v!command
+    \ifcstok{\effectparameter\c!method}\v!command
         \frozen\protected\xdefcsname\e!start\currenteffect\endcsname{\starteffect[#1]}%
         \frozen\protected\xdefcsname\e!stop \currenteffect\endcsname{\stopeffect}%
     \fi

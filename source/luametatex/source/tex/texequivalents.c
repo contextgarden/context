@@ -451,7 +451,7 @@ void tex_new_save_level(quarterword c)
         tex_set_saved_record(saved_group_line_number, line_number_save_type, 0, lmt_input_state.input_line);
         tex_set_saved_record(saved_group_level_boundary, level_boundary_save_type, cur_group, cur_boundary);
         /*tex eventually we will have bumped |lmt_save_state.save_stack_data.ptr| by |saved_group_n_of_items|! */
-        ++lmt_save_state.save_stack_data.ptr;
+        ++lmt_save_state.save_stack_data.ptr; /* bump one */
         if (cur_level == max_quarterword) {
             tex_overflow_error("grouping levels", max_quarterword - min_quarterword);
         }
@@ -462,12 +462,11 @@ void tex_new_save_level(quarterword c)
             tex_aux_group_trace(0);
         }
         ++cur_level;
-        ++lmt_save_state.save_stack_data.ptr;
+        ++lmt_save_state.save_stack_data.ptr; /* bump two */
         save_attribute_state_after();
         if (end_of_group_par) {
             update_tex_end_of_group(null);
         }
-        /* no_end_group_par = null; */
     }
 }
 
@@ -841,53 +840,42 @@ static int tex_aux_mutation_permitted(halfword cs)
     the other data structures properly. It is important to keep in mind that reference counts in
     |mem| include references from within |save_stack|, so these counts must be handled carefully.
 
-    We don't need to destroy when an assignment has the same node:
-
 */
 
 static void tex_aux_eq_destroy(memoryword w)
 {
-    switch (eq_type_field(w)) {
-        case call_cmd:
-        case protected_call_cmd:
-        case semi_protected_call_cmd:
-        case constant_call_cmd:
-        case tolerant_call_cmd:
-        case tolerant_protected_call_cmd:
-        case tolerant_semi_protected_call_cmd:
-        case register_toks_reference_cmd:
-        case internal_toks_reference_cmd:
-            tex_delete_token_reference(eq_value_field(w));
-            break;
-        case internal_glue_reference_cmd:
-        case register_glue_reference_cmd:
-        case internal_mu_glue_reference_cmd:
-        case register_mu_glue_reference_cmd:
-        case gluespec_cmd:
-        case mugluespec_cmd:
-        case mathspec_cmd:
-        case fontspec_cmd:
-            tex_flush_node(eq_value_field(w));
-            break;
-        case internal_box_reference_cmd:
-        case register_box_reference_cmd:
-            tex_flush_node_list(eq_value_field(w));
-            break;
-        case specification_reference_cmd:
-            {
-                halfword q = eq_value_field(w);
-                if (q) {
-                    /*tex
-                        We need to free a |\parshape| block. Such a block is |2n + 1| words long,
-                        where |n = vinfo(q)|. It happens in the
-                        flush function.
-                    */
-                    tex_flush_node(q);
-                }
-            }
-            break;
-        default:
-            break;
+    halfword p = eq_value_field(w);
+    if (p) { 
+        switch (eq_type_field(w)) {
+            case call_cmd:
+            case protected_call_cmd:
+            case semi_protected_call_cmd:
+            case constant_call_cmd:
+            case tolerant_call_cmd:
+            case tolerant_protected_call_cmd:
+            case tolerant_semi_protected_call_cmd:
+            case register_toks_reference_cmd:
+            case internal_toks_reference_cmd:
+                tex_delete_token_reference(p);
+                break;
+            case internal_glue_reference_cmd:
+            case register_glue_reference_cmd:
+            case internal_mu_glue_reference_cmd:
+            case register_mu_glue_reference_cmd:
+            case gluespec_cmd:
+            case mugluespec_cmd:
+            case mathspec_cmd:
+            case fontspec_cmd:
+            case specification_reference_cmd:
+                tex_flush_node(p);
+                break;
+            case internal_box_reference_cmd:
+            case register_box_reference_cmd:
+                tex_flush_node_list(p);
+                break;
+            default:
+                break;
+        }
     }
 }
 

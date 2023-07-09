@@ -217,14 +217,14 @@
    \fi}
 
 \def\lang_discretionaries_check_after
-  {\setfalse\punctafterdiscretionary
-   \setfalse\spaceafterdiscretionary
-   \ifx\blankspace\nexttoken \settrue \spaceafterdiscretionary \orelse
-   \ifx\space     \nexttoken \settrue \spaceafterdiscretionary \orelse
-   \ifx          .\nexttoken \settrue \punctafterdiscretionary \orelse
-   \ifx          ,\nexttoken \settrue \punctafterdiscretionary \orelse
-   \ifx          :\nexttoken \settrue \punctafterdiscretionary \orelse
-   \ifx          ;\nexttoken \settrue \punctafterdiscretionary \fi}
+  {\punctafterdiscretionary\conditionalfalse
+   \spaceafterdiscretionary\conditionalfalse
+   \ifx\blankspace\nexttoken \spaceafterdiscretionary\conditionaltrue \orelse
+   \ifx\space     \nexttoken \spaceafterdiscretionary\conditionaltrue \orelse
+   \ifx          .\nexttoken \punctafterdiscretionary\conditionaltrue \orelse
+   \ifx          ,\nexttoken \punctafterdiscretionary\conditionaltrue \orelse
+   \ifx          :\nexttoken \punctafterdiscretionary\conditionaltrue \orelse
+   \ifx          ;\nexttoken \punctafterdiscretionary\conditionaltrue \fi}
 
 \edefcsname\??discretionarymode n\endcsname
   {\detokenize{|}}
@@ -422,7 +422,7 @@
 
 \def\lang_compounds_fake_hyphen
   {\enforced\permanent\protected\def##1|%
-     {\doifelsenothing{##1}\compoundhyphen{##1}%
+     {\ifempty{##1}\compoundhyphen\else##1\fi
       \wordboundary % was a signal
       \allowbreak}}
 
@@ -472,17 +472,11 @@
 %D so test\compound{}test can be used instead of test||test
 %D \stoptyping
 
-% \bgroup
-%
-%     \catcode\barasciicode\activecatcode
+\permanent\protected\gdef\compound#1{|#1|}
 
-    \permanent\protected\gdef\compound#1{|#1|}
-
-    \doglobal \appendtoks
-        \enforced\permanent\protected\def|#1|{\ifx#1\empty\empty-\else#1\fi}%
-    \to \everysimplifycommands
-
-% \egroup
+\appendtoks
+    \enforced\permanent\protected\def|#1|{\ifx#1\empty\empty-\else#1\fi}%
+\to \everysimplifycommands
 
 %D Here we hook some code into the clean up mechanism needed for verbatim data.
 

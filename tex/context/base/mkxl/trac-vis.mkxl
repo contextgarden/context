@@ -126,7 +126,7 @@
 
 \permanent\tolerant\protected\def\setvisualizerfont[#1]% somename at 4pt
   {\begingroup
-   \iftok{#1}\emptytoks
+   \ifempty{#1}%
      \definedfont[Mono at 4pt]%
    \else
      \definedfont[#1]%

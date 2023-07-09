@@ -60,7 +60,7 @@
 % for text backgrounds
 
 \appendtoks
-    \settrue\c_anch_backgrounds_pos_no_shape
+    \c_anch_backgrounds_pos_no_shape\conditionaltrue
 \to \everytabulate
 
 %D Beware, the following code is somewhat weird and experimental and might be
@@ -94,7 +94,7 @@
 
 \tolerant\def\anch_table_checked#1[#2]%
   {\iftrialtypesetting
-     \global\settrue\tablehaspositions
+     \global\tablehaspositions\conditionaltrue
      \expandafter\anch_tables_indeed_NC
    \orelse\ifparameter#2\or
      \expandafter#1%
@@ -132,12 +132,12 @@
 \def\anch_tables_process_GSC[#1:#2]%
   {\remappositionframed{#2}{\tbPOSprefix#1}%
    \anch_tabulate_bpos{\tbPOSprefix#1}%
-   \doglobal\appendtoks\expandafter\anch_tabulate_epos\expandafter{\tbPOSprefix#1}\to\posXCtoks}
-%  \xtoksapp\posXCtoks{\anch_tabulate_epos{\tbPOSprefix#1}}}
+%  \doglobal\appendtoks\expandafter\anch_tabulate_epos\expandafter{\tbPOSprefix#1}\to\posXCtoks}
+   \xtoksapp\posXCtoks{\anch_tabulate_epos{\tbPOSprefix#1}}}
 
 \def\anch_tables_indeed_GFC[#1]%
-  {\doglobal\appendtoks\anch_tables_delayed_GFC[#1]\to\posXCtoks\NC}
-% {\gtoksapp\posXCtoks{\anch_tables_delayed_GFC[#1]}\NC}
+% {\doglobal\appendtoks\anch_tables_delayed_GFC[#1]\to\posXCtoks\NC}
+  {\gtoksapp\posXCtoks{\anch_tables_delayed_GFC[#1]}\NC}
 
 \def\anch_tables_delayed_GFC[#1]%
   {\processcommalist[#1]\anch_tables_step_GFC}
@@ -150,12 +150,12 @@
    \anch_tabulate_bpos{\tbPOSprefix#1}}
 
 \def\anch_tables_indeed_GTC[#1]%
-  {\doglobal\appendtoks\anch_tables_delayed_GTC[#1]\to\posXCtoks\NC}
-% {\gtoksapp\posXCtoks{\anch_tables_delayed_GTC[#1]}\NC}
+% {\doglobal\appendtoks\anch_tables_delayed_GTC[#1]\to\posXCtoks\NC}
+  {\gtoksapp\posXCtoks{\anch_tables_delayed_GTC[#1]}\NC}
 
 \def\anch_tables_delayed_GTC[#1]%
-  {\doglobal\appendtoks\anch_tables_process_GTC[#1]\to\posXCtoks}
-% {\gtoksapp\posXCtoks{\anch_tables_process_GTC[#1]}\NC}
+% {\doglobal\appendtoks\anch_tables_process_GTC[#1]\to\posXCtoks}
+  {\gtoksapp\posXCtoks{\anch_tables_process_GTC[#1]}\NC}
 
 \def\anch_tables_process_GTC[#1]%
   {\processcommalist[#1]\anch_tables_step_GTC}
@@ -196,7 +196,7 @@
 
 \appendtoks
     \global\advanceby\noftabpositions\plusone
-    \global\setfalse\tablehaspositions
+    \global\tablehaspositions\conditionalfalse
 \to \everytabulate
 
 % We need to handle paragraphs as well.
@@ -275,7 +275,7 @@
 
 \appendtoks
     \global\advanceby\noftabpositions\plusone
-    \global\setfalse\tablehaspositions
+    \global\tablehaspositions\conditionalfalse
 \to \everytable
 
 %D Since we don't want nameclashes:

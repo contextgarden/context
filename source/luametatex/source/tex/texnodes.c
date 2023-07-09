@@ -1599,7 +1599,7 @@ halfword fix_node_list(halfword head)
 
 halfword tex_get_node(int size)
 {
-    if (size < max_chain_size) {
+    if (size < max_chain_size) { /*tex This test should not be needed! */
         halfword p = lmt_node_memory_state.free_chain[size];
         if (p) {
             lmt_node_memory_state.free_chain[size] = node_next(p);
@@ -3545,6 +3545,7 @@ halfword tex_new_disc_node(quarterword s)
     halfword p = tex_new_node(disc_node, s);
     disc_penalty(p) = hyphen_penalty_par;
     disc_class(p) = unset_disc_class;
+    set_disc_options(p, discretionary_options_par);
     return p;
 }
 
@@ -4754,61 +4755,70 @@ halfword tex_flatten_discretionaries(halfword head, int *count, int nest)
     return head;
 }
 
-void tex_flatten_leaders(halfword box, int *count)
+int tex_flatten_leaders(halfword box, int grp, int just_pack)
 {
     halfword head = box ? box_list(box) : null;
     if (head) {
         halfword current = head;
+        int count = 0;
         while (current) {
             halfword next = node_next(current);
             if (node_type(current) == glue_node && node_subtype(current) == u_leaders) {
-                halfword b = glue_leader_ptr(current);
-                if (b && (node_type(b) == hlist_node || node_type(b) == vlist_node)) {
-                    halfword p = null;
-                    halfword a = glue_amount(current);
-                    double w = (double) a;
+                halfword prev = node_prev(current);
+                halfword leader = glue_leader_ptr(current);
+                if (leader && (node_type(leader) == hlist_node || node_type(leader) == vlist_node)) {
+                    halfword packed = null;
+                    halfword amount = glue_amount(current);
+                    halfword callback = glue_callback(current);
+                    double width = (double) amount;
                     switch (box_glue_sign(box)) {
                         case stretching_glue_sign:
                             if (glue_stretch_order(current) == box_glue_order(box)) {
-                                w += glue_stretch(current) * (double) box_glue_set(box);
+                                width += glue_stretch(current) * (double) box_glue_set(box);
                             }
                             break;
                         case shrinking_glue_sign:
                             if (glue_shrink_order(current) == box_glue_order(box)) {
-                                w -= glue_shrink(current) * (double) box_glue_set(box);
+                                width -= glue_shrink(current) * (double) box_glue_set(box);
                             }
                             break;
                     }
-                    if (node_type(b) == hlist_node) {
-                        p = tex_hpack(box_list(b), scaledround(w), packing_exactly, box_dir(b), holding_none_option);
+                    if (node_type(leader) == hlist_node) {
+                        packed = tex_hpack(box_list(leader), scaledround(width), packing_exactly, box_dir(leader), holding_none_option);
                     } else {
-                        p = tex_vpack(box_list(b), scaledround(w), packing_exactly, 0, box_dir(b), holding_none_option);
+                        packed = tex_vpack(box_list(leader), scaledround(width), packing_exactly, 0, box_dir(leader), holding_none_option);
                     }
-                    box_list(b) = box_list(p);
-                    box_width(b) = box_width(p);
-                    box_height(b) = box_height(p);
-                    box_depth(b) = box_depth(p);
-                    box_glue_order(b) = box_glue_order(p);
-                    box_glue_sign(b) = box_glue_sign(p);
-                    box_glue_set(b) = box_glue_set(p);
-                    set_box_package_state(b, package_u_leader_set);
-                    box_list(p) = null;
-                    tex_flush_node(p);
+                    box_list(leader) = box_list(packed);
+                    box_width(leader) = box_width(packed);
+                    box_height(leader) = box_height(packed);
+                    box_depth(leader) = box_depth(packed);
+                    box_glue_order(leader) = box_glue_order(packed);
+                    box_glue_sign(leader) = box_glue_sign(packed);
+                    box_glue_set(leader) = box_glue_set(packed);
+                    set_box_package_state(leader, package_u_leader_set);
+                    box_list(packed) = null;
+                    tex_flush_node(packed);
                     glue_leader_ptr(current) = null;
                     tex_flush_node(current);
-                    tex_try_couple_nodes(b, next);
+                    if (callback && ! just_pack) {
+                        node_prev(leader) = null;
+                        node_next(leader) = null;
+                        leader = lmt_uleader_callback(leader, grp, callback);
+                    }
+                    tex_try_couple_nodes(leader, next);
                     if (current == head) {
-                        box_list(box) = b;
+                        box_list(box) = leader;
                     } else {
-                        tex_try_couple_nodes(node_prev(current), b);
+                        tex_try_couple_nodes(prev, leader);
                     }
-                    if (count) {
-                        *count += 1;
-                    }
+                    count += 1;
                 }
             }
             current = next;
         }
+        return count;
+    } else { 
+        return 0;
     }
 }
 

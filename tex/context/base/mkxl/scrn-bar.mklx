@@ -71,8 +71,9 @@
        \cdef\currentinteractionbar{#tag}%
        \setupcurrentinteractionbar[#settings]%
      \fi
-     \doif{\interactionbarparameter\c!state}\v!start
-       {\interactionbarparameter\c!command}%
+     \ifcstok{\interactionbarparameter\c!state}\v!start
+       \interactionbarparameter\c!command
+     \fi
      \endgroup
    \fi}
 
@@ -119,8 +120,12 @@
    \ifzeropt\d_scrn_bar_width
      \d_scrn_bar_width1.5\emwidth
    \fi
-   \doifnothing{\interactionbarparameter\c!height}{\letinteractionbarparameter\c!height\v!broad}%
-   \doifnothing{\interactionbarparameter\c!depth }{\letinteractionbarparameter\c!depth\zeropoint}%%%
+   \ifempty{\interactionbarparameter\c!height}%
+     \letinteractionbarparameter\c!height\v!broad
+   \fi
+   \ifempty{\interactionbarparameter\c!depth}%
+     \letinteractionbarparameter\c!depth\zeropoint
+   \fi
    \resetinteractionbarparameter\c!background
    \setbox2\hbox{\inheritedinteractionbarframed{\symbol[\interactionparameter\c!symbolset][\v!previouspage]}}%
    \scratchheight\ht2 % needed because we default to nothing
@@ -200,7 +205,7 @@
        \hskip\zeropoint\s!plus\numexpr\realpageno-\plustwo\relax \s!sp\relax % cm gives overflow
        \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!previouspage)]}%
      \fi
-     \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[page(\number\realpageno)]}% todo: \v!currentpage
+     \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[page(\the\realpageno)]}% todo: \v!currentpage
      \ifnum\realpageno<\lastpage\relax
        \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!nextpage]}%
        \hskip\zeropoint\s!plus\numexpr\lastpage-\realpageno-\plusone\relax \s!sp\relax % cm gives overflow
@@ -253,10 +258,12 @@
 \let\scrn_bar_goto_indeed\relax
 
 \protected\def\scrn_bar_goto_x#command%
-  {\doifelse{\interactionbarparameter\c!symbol}\v!yes
-     {\setupsymbolset[\interactionparameter\c!symbolset]%
-      \let\scrn_bar_goto_indeed\scrn_bar_goto_a}
-     {\let\scrn_bar_goto_indeed\scrn_bar_goto_b}%
+  {\ifcstok{\interactionbarparameter\c!symbol}\v!yes
+     \setupsymbolset[\interactionparameter\c!symbolset]%
+     \let\scrn_bar_goto_indeed\scrn_bar_goto_a
+   \else
+     \let\scrn_bar_goto_indeed\scrn_bar_goto_b
+   \fi
    \dorecurse\nofsubpages
     %{\scratchcounter\numexpr\recurselevel+\firstsubpage+\minusone\relax
      {\scratchcounter\therealsubpageno\recurselevel
@@ -269,102 +276,110 @@
    \unskip}
 
 \def\scrn_bar_alternative_d
-  {\ifnum\nofsubpages>\plusone \doif{\namedcounterparameter\s!subpage\c!state}\v!start{%
-     \d_scrn_bar_width   \interactionbarparameter\c!width
-     \d_scrn_bar_distance\interactionbarparameter\c!distance
-     \d_scrn_bar_height  \interactionbarparameter\c!height
-     \d_scrn_bar_depth   \interactionbarparameter\c!depth
-     \scratchdimenone\d_scrn_bar_width
-     \noindent\hbox{\scrn_bar_goto_x{\hskip\d_scrn_bar_distance}}% \hpack ?
-   }\fi}
+  {\ifnum\nofsubpages>\plusone
+     \ifcstok{\namedcounterparameter\s!subpage\c!state}\v!start
+       \d_scrn_bar_width   \interactionbarparameter\c!width
+       \d_scrn_bar_distance\interactionbarparameter\c!distance
+       \d_scrn_bar_height  \interactionbarparameter\c!height
+       \d_scrn_bar_depth   \interactionbarparameter\c!depth
+       \scratchdimenone\d_scrn_bar_width
+       \noindent\hbox{\scrn_bar_goto_x{\hskip\d_scrn_bar_distance}}% \hpack ?
+     \fi
+   \fi}
 
 \def\scrn_bar_alternative_e
-  {\ifnum\nofsubpages>\plusone \doif{\namedcounterparameter\s!subpage\c!state}\v!start{%
-     \d_scrn_bar_width   \interactionbarparameter\c!width
-     \d_scrn_bar_distance\interactionbarparameter\c!distance
-     \d_scrn_bar_height  \interactionbarparameter\c!height
-     \d_scrn_bar_depth   \interactionbarparameter\c!depth
-     \scratchdimentwo\dimexpr\nofsubpages\d_scrn_bar_distance-\d_scrn_bar_distance\relax % (n-1)
-     \scratchdimenone\dimexpr(\d_scrn_bar_width-\scratchdimentwo)/\nofsubpages\relax
-     \ifdim\scratchdimenone<\d_scrn_bar_distance
-       \scrn_bar_alternative_f
-     \else
-       \noindent\hbox to \d_scrn_bar_width{\scrn_bar_goto_x{\hss}\unskip}% \hpack ?
+  {\ifnum\nofsubpages>\plusone
+     \ifcstok{\namedcounterparameter\s!subpage\c!state}\v!start
+       \d_scrn_bar_width   \interactionbarparameter\c!width
+       \d_scrn_bar_distance\interactionbarparameter\c!distance
+       \d_scrn_bar_height  \interactionbarparameter\c!height
+       \d_scrn_bar_depth   \interactionbarparameter\c!depth
+       \scratchdimentwo\dimexpr\nofsubpages\d_scrn_bar_distance-\d_scrn_bar_distance\relax % (n-1)
+       \scratchdimenone\dimexpr(\d_scrn_bar_width-\scratchdimentwo)/\nofsubpages\relax
+       \ifdim\scratchdimenone<\d_scrn_bar_distance
+         \scrn_bar_alternative_f
+       \else
+         \noindent\hbox to \d_scrn_bar_width{\scrn_bar_goto_x{\hss}\unskip}% \hpack ?
+       \fi
      \fi
-   }\fi}
+   \fi}
 
 \def\scrn_bar_alternative_f
-  {\ifnum\nofsubpages>\plusone \doif{\namedcounterparameter\s!subpage\c!state}\v!start{%
-     \d_scrn_bar_width   \interactionbarparameter\c!width
-     \d_scrn_bar_distance\interactionbarparameter\c!distance
-     \d_scrn_bar_height  \interactionbarparameter\c!height
-     \d_scrn_bar_depth   \interactionbarparameter\c!depth
-     \noindent \hbox to \d_scrn_bar_width \bgroup
-       \doloop
-         {\scratchcounterthree\numexpr(\nofsubpages/\recurselevel)+\plusone\relax % rounding
-          \scratchdimentwo\d_scrn_bar_distance
-          \multiplyby\scratchdimentwo \scratchcounterthree
-          \advanceby\scratchdimentwo -\d_scrn_bar_distance
-          \scratchdimenone\d_scrn_bar_width
-          \advanceby\scratchdimenone -\scratchdimentwo
-          \divideby\scratchdimenone \scratchcounterthree
-          \ifdim\scratchdimenone<\d_scrn_bar_distance\else
-            \scratchcountertwo\recurselevel
-            \exitloop
-          \fi}%
-       \ifnum\scratchcounterthree>\plusone
-         % this is not that well tested
-         \advanceby\scratchcounterthree \minustwo
-         \scratchdimenone-\d_scrn_bar_distance
-         \scratchdimenone\scratchcounterthree\scratchdimenone
-         \advanceby\scratchdimenone \d_scrn_bar_width
-         \advanceby\scratchcounterthree \plusone
-         \divideby\scratchdimenone \scratchcounterthree
-       \fi
-       \doifelse{\interactionbarparameter\c!symbol}\v!yes
-         {\setupsymbolset[\interactionparameter\c!symbolset]%
-          \let\scrn_bar_goto_indeed\scrn_bar_goto_c}%
-         {\let\scrn_bar_goto_indeed\scrn_bar_goto_d}%
-       \scratchcounterthree\numexpr\realpageno-\plustwo\relax
-       \scratchcounterfour\numexpr\realpageno+\plustwo\relax
-       \ifnum\scratchcounterthree<\plusone \scratchcounterthree\plusone \fi
-       \scratchcounterfive\zerocount
-       \dostepwiserecurse\firstsubpage\lastsubpage\plusone
-         {\donefalse
-          \advanceby\scratchcounterfive \plusone
-          \ifnum\recurselevel=\firstsubpage\relax \donetrue \fi
-          \ifnum\recurselevel=\lastsubpage \relax \donetrue \fi
-          \scratchcountersix\therealsubpageno\recurselevel\relax
-          \c_scrn_bar_mode
-            \ifdone
-              \ifnum\scratchcountersix<\realpageno
-                \zerocount
-              \orelse\ifnum\scratchcountersix>\realpageno
-                \plustwo
-              \else
-                \plusfour
-              \fi
-            \else
-              \ifnum\scratchcounterfive=\scratchcountertwo
+  {\ifnum\nofsubpages>\plusone
+     \ifcstok{\namedcounterparameter\s!subpage\c!state}\v!start
+       \d_scrn_bar_width   \interactionbarparameter\c!width
+       \d_scrn_bar_distance\interactionbarparameter\c!distance
+       \d_scrn_bar_height  \interactionbarparameter\c!height
+       \d_scrn_bar_depth   \interactionbarparameter\c!depth
+       \noindent \hbox to \d_scrn_bar_width \bgroup
+         \doloop
+           {\scratchcounterthree\numexpr(\nofsubpages/\recurselevel)+\plusone\relax % rounding
+            \scratchdimentwo\d_scrn_bar_distance
+            \multiplyby\scratchdimentwo \scratchcounterthree
+            \advanceby\scratchdimentwo -\d_scrn_bar_distance
+            \scratchdimenone\d_scrn_bar_width
+            \advanceby\scratchdimenone -\scratchdimentwo
+            \divideby\scratchdimenone \scratchcounterthree
+            \ifdim\scratchdimenone<\d_scrn_bar_distance\else
+              \scratchcountertwo\recurselevel
+              \exitloop
+            \fi}%
+         \ifnum\scratchcounterthree>\plusone
+           % this is not that well tested
+           \advanceby\scratchcounterthree \minustwo
+           \scratchdimenone-\d_scrn_bar_distance
+           \scratchdimenone\scratchcounterthree\scratchdimenone
+           \advanceby\scratchdimenone \d_scrn_bar_width
+           \advanceby\scratchcounterthree \plusone
+           \divideby\scratchdimenone \scratchcounterthree
+         \fi
+         \ifcstok{\interactionbarparameter\c!symbol}\v!yes
+           \setupsymbolset[\interactionparameter\c!symbolset]%
+           \let\scrn_bar_goto_indeed\scrn_bar_goto_c
+         \else
+           \let\scrn_bar_goto_indeed\scrn_bar_goto_d
+         \fi
+         \scratchcounterthree\numexpr\realpageno-\plustwo\relax
+         \scratchcounterfour\numexpr\realpageno+\plustwo\relax
+         \ifnum\scratchcounterthree<\plusone \scratchcounterthree\plusone \fi
+         \scratchcounterfive\zerocount
+         \dostepwiserecurse\firstsubpage\lastsubpage\plusone
+           {\donefalse
+            \advanceby\scratchcounterfive \plusone
+            \ifnum\recurselevel=\firstsubpage\relax \donetrue \fi
+            \ifnum\recurselevel=\lastsubpage \relax \donetrue \fi
+            \scratchcountersix\therealsubpageno\recurselevel\relax
+            \c_scrn_bar_mode
+              \ifdone
                 \ifnum\scratchcountersix<\realpageno
-                  \plusone
+                  \zerocount
                 \orelse\ifnum\scratchcountersix>\realpageno
-                  \plusthree
-                \else
                   \plustwo
+                \else
+                  \plusfour
                 \fi
               \else
-                \minusone
+                \ifnum\scratchcounterfive=\scratchcountertwo
+                  \ifnum\scratchcountersix<\realpageno
+                    \plusone
+                  \orelse\ifnum\scratchcountersix>\realpageno
+                    \plusthree
+                  \else
+                    \plustwo
+                  \fi
+                \else
+                  \minusone
+                \fi
               \fi
-            \fi
-          \ifnum\c_scrn_bar_mode<\zerocount\else
-            \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\scrn_bar_goto_indeed\c_scrn_bar_mode}[realpage(\the\scratchcountersix)]}%
-            \hss
-            \scratchcounterfive\zerocount
-          \fi}%
-       \unskip
-     \egroup
-   }\fi}
+            \ifnum\c_scrn_bar_mode<\zerocount\else
+              \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\scrn_bar_goto_indeed\c_scrn_bar_mode}[realpage(\the\scratchcountersix)]}%
+              \hss
+              \scratchcounterfive\zerocount
+            \fi}%
+         \unskip
+       \egroup
+     \fi
+   \fi}
 
 \def\scrn_bar_alternative_g
   {\ifnum\lastsubpage>\firstsubpage\relax % no test for state?

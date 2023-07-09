@@ -234,7 +234,7 @@
 %D from to n inner_r g b x y radius outer_r g b x y radius
 %D \stoptyping
 
-\newconditional\manyMPspecials \settrue\manyMPspecials
+\newconditional\manyMPspecials \manyMPspecials\conditionaltrue
 
 %D In case of \PDF, we need to prepare resourcs.
 
@@ -253,12 +253,7 @@
   \glet\currentPDFresources\empty % kind of redundant
 \to \MPstartresources
 
-% \appendtoks
-%    \collectPDFresources
-%    \glet\currentPDFresources\collectedPDFresources
-% \to \MPstopresources
-
-\appendtoksonce
+\appendtoks
    \expand\everyPDFxform
 \to \MPstopresources
 
@@ -528,7 +523,7 @@
 %
 % \def\dohandleMPshade#1%
 %   {\revokeMPtransparencyspecial
-%    \settrue\ignoreMPpath
+%    \ignoreMPpath\conditionaltrue
 %    \def\extraMPpathcode{/Sh#1 sh Q}%
 %    \pdfliteral{q /Pattern cs}}
 %
@@ -710,7 +705,7 @@ implementing the special more convenient.
 
 % \def\dohandleMPshade#1%
 %   {\revokeMPtransparencyspecial
-%    \settrue\ignoreMPpath
+%    \ignoreMPpath\conditionaltrue
 %    \def\extraMPpathcode{/#1 sh Q}%
 %    \pdfliteral{q /Pattern cs}}
 
