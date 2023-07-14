@@ -31,7 +31,8 @@ local round = math.round
 
 local context, commands = context, commands
 
-local P, R, S, C, Cc, Cf, Cg, Ct, Cs, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.Cs, lpeg.match
+local P, R, S, C, Cc, Ct, Cs, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cc, lpeg.Ct, lpeg.Cs, lpeg.match
+----- Cf, Cg = lpeg.Cf, lpeg.Cg
 
 local trace_features      = false  trackers.register("fonts.features",   function(v) trace_features   = v end)
 local trace_defining      = false  trackers.register("fonts.defining",   function(v) trace_defining   = v end)
@@ -1043,7 +1044,8 @@ local truevalue  = P("+") * spaces * sometext                           * Cc(tru
 local falsevalue = P("-") * spaces * sometext                           * Cc(false)
 local somevalue  =                   sometext * spaces                  * Cc(true)
 local keyvalue   =                   sometext * spaces * equal * spaces * sometext
-local pattern    = Cf(Ct("") * (space + separator + Cg(falsevalue + truevalue + keyvalue + somevalue))^0, rawset)
+----- pattern    = Cf(Ct("") * (space + separator + Cg(falsevalue + truevalue + keyvalue + somevalue))^0, rawset)
+local pattern    = Ct("") * (space + separator + ((falsevalue + truevalue + keyvalue + somevalue) % rawset))^0
 
 local function colonized(specification)
     specification.features.normal = normalize_features(lpegmatch(pattern,specification.detail))

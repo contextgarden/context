@@ -450,6 +450,7 @@ make_lua_key(L, adapttoleftsize);\
 make_lua_key(L, adapttorightsize);\
 make_lua_key(L, additional);\
 make_lua_key(L, adjdemerits);\
+make_lua_key(L, doubleadjdemerits);\
 make_lua_key(L, adjust);\
 make_lua_key(L, adjustedhbox);\
 make_lua_key(L, adjustspacing);\
@@ -978,6 +979,7 @@ make_lua_key(L, orientation);\
 make_lua_key(L, original);\
 make_lua_key(L, orphanpenalties);\
 make_lua_key(L, orphanpenalty);\
+make_lua_key(L, singlelinepenalty);\
 make_lua_key(L, other_char);\
 make_lua_key(L, outline);\
 make_lua_key(L, output);\
@@ -1656,6 +1658,18 @@ static inline void lua_set_integer_by_key(lua_State *L, const char *a, int b)
 static inline void lua_set_integer_by_index(lua_State *L, int a, int b)
 {
     lua_pushinteger(L, b);
+    lua_rawseti(L, -2, a);
+}
+
+static inline void lua_set_number_by_key(lua_State *L, const char *a, double b)
+{
+    lua_pushnumber(L, b);
+    lua_setfield(L, -2, a);
+}
+
+static inline void lua_set_number_by_index(lua_State *L, int a, double b)
+{
+    lua_pushnumber(L, b);
     lua_rawseti(L, -2, a);
 }
 

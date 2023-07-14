@@ -128,6 +128,7 @@ void tex_initialize_commands(void)
         /*tex counters (we could omit the int_base here as effectively it is subtracted) */
 
         tex_primitive(tex_command,    "adjdemerits",                    internal_int_cmd,       adj_demerits_code,                        internal_int_base);
+        tex_primitive(tex_command,    "doubleadjdemerits",              internal_int_cmd,       double_adj_demerits_code,                 internal_int_base);
         tex_primitive(tex_command,    "binoppenalty",                   internal_int_cmd,       post_binary_penalty_code,                 internal_int_base); /*tex For old times sake. */
         tex_primitive(tex_command,    "brokenpenalty",                  internal_int_cmd,       broken_penalty_code,                      internal_int_base);
         tex_primitive(tex_command,    "clubpenalty",                    internal_int_cmd,       club_penalty_code,                        internal_int_base);
@@ -286,6 +287,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "shapingpenaltiesmode",           internal_int_cmd,       shaping_penalties_mode_code,              internal_int_base);
         tex_primitive(luatex_command, "shapingpenalty",                 internal_int_cmd,       shaping_penalty_code,                     internal_int_base);
         tex_primitive(luatex_command, "orphanpenalty",                  internal_int_cmd,       orphan_penalty_code,                      internal_int_base);
+        tex_primitive(luatex_command, "singlelinepenalty",              internal_int_cmd,       single_line_penalty_code,                 internal_int_base);
      /* tex_primitive(luatex_command, "alignmentcellattr",              internal_int_cmd,       alignment_cell_attribute_code,            internal_int_base); */ /* todo */
         tex_primitive(luatex_command, "alignmentcellsource",            internal_int_cmd,       alignment_cell_source_code,               internal_int_base);
         tex_primitive(luatex_command, "alignmentwrapsource",            internal_int_cmd,       alignment_wrap_source_code,               internal_int_base);
@@ -542,6 +544,7 @@ void tex_initialize_commands(void)
 
         tex_primitive(tex_command,    "pagegoal",                       set_page_property_cmd,  page_goal_code,                           0);
         tex_primitive(tex_command,    "pagetotal",                      set_page_property_cmd,  page_total_code,                          0);
+        tex_primitive(luatex_command, "pageexcess",                     set_page_property_cmd,  page_excess_code,                         0);
         tex_primitive(tex_command,    "pagestretch",                    set_page_property_cmd,  page_stretch_code,                        0);
         tex_primitive(tex_command,    "pagefilstretch",                 set_page_property_cmd,  page_filstretch_code,                     0);
         tex_primitive(tex_command,    "pagefillstretch",                set_page_property_cmd,  page_fillstretch_code,                    0);
@@ -853,10 +856,10 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "moveright",                      hmove_cmd,              move_forward_code,                        0);
         tex_primitive(tex_command,    "moveleft",                       hmove_cmd,              move_backward_code,                       0);
 
-        tex_primitive(tex_command,    "hfil",                           hskip_cmd,              fil_code,                                 0);
-        tex_primitive(tex_command,    "hfill",                          hskip_cmd,              fill_code,                                0);
-        tex_primitive(tex_command,    "hss",                            hskip_cmd,              filll_code,                               0);
-        tex_primitive(tex_command,    "hfilneg",                        hskip_cmd,              fil_neg_code,                             0);
+        tex_primitive(tex_command,    "hfil",                           hskip_cmd,              fi_l_code,                                0);
+        tex_primitive(tex_command,    "hfill",                          hskip_cmd,              fi_ll_code,                               0);
+        tex_primitive(tex_command,    "hss",                            hskip_cmd,              fi_ss_code,                               0);
+        tex_primitive(tex_command,    "hfilneg",                        hskip_cmd,              fi_l_neg_code,                            0);
         tex_primitive(tex_command,    "hskip",                          hskip_cmd,              skip_code,                                0);
 
         tex_primitive(tex_command,    "hyphenation",                    hyphenation_cmd,        hyphenation_code,                         0);
@@ -1118,11 +1121,11 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "raise",                          vmove_cmd,              move_backward_code,                       0);
         tex_primitive(tex_command,    "lower",                          vmove_cmd,              move_forward_code,                        0);
 
-        tex_primitive(tex_command,    "vfil",                           vskip_cmd,              fil_code,                                 0);
-        tex_primitive(tex_command,    "vfill",                          vskip_cmd,              fill_code,                                0);
-        tex_primitive(tex_command,    "vfilneg",                        vskip_cmd,              fil_neg_code,                             0);
+        tex_primitive(tex_command,    "vfil",                           vskip_cmd,              fi_l_code,                                0);
+        tex_primitive(tex_command,    "vfill",                          vskip_cmd,              fi_ll_code,                               0);
+        tex_primitive(tex_command,    "vfilneg",                        vskip_cmd,              fi_l_neg_code,                            0);
         tex_primitive(tex_command,    "vskip",                          vskip_cmd,              skip_code,                                0);
-        tex_primitive(tex_command,    "vss",                            vskip_cmd,              filll_code,                               0);
+        tex_primitive(tex_command,    "vss",                            vskip_cmd,              fi_ss_code,                               0);
 
         tex_primitive(tex_command,    "show",                           xray_cmd,               show_code,                                0);
         tex_primitive(tex_command,    "showbox",                        xray_cmd,               show_box_code,                            0);

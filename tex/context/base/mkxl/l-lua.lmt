@@ -1,0 +1,88 @@
+if not modules then modules = { } end modules ['l-lua'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- compatibility hacks and helpers
+
+LUAMAJORVERSION = status.lua_version_major
+LUAMINORVERSION = status.lua_version_minor
+LUAVERSION      = status.lua_version
+
+if not loadstring      then loadstring      = load              end
+if not table.unpack    then table.unpack    = _G.unpack         end
+if not unpack          then _G.unpack       = table.unpack      end
+if not package.loaders then package.loaders = package.searchers end -- brr, searchers is a special "loadlib function" userdata type
+
+do
+
+    local print, select, tostring, type, next = print, select, tostring, type, next
+
+    local inspectors = { }
+
+    function setinspector(kind,inspector) -- global function
+        inspectors[kind] = inspector
+    end
+
+    function inspect(...) -- global function
+        for s=1,select("#",...) do
+            local value = select(s,...)
+            if value == nil then
+                print("nil")
+            else
+                local done  = false
+                -- type driven (table)
+                local kind      = type(value)
+                local inspector = inspectors[kind]
+                if inspector then
+                    done = inspector(value)
+                    if done then
+                        break
+                    end
+                end
+                -- whatever driven (token, node, ...)
+                for kind, inspector in next, inspectors do
+                    done = inspector(value)
+                    if done then
+                        break
+                    end
+                end
+                if not done then
+                    print(tostring(value))
+                end
+            end
+        end
+    end
+
+end
+
+do
+
+    local xpcall = xpcall
+
+    local dummy = function() end
+
+    function optionalrequire(...)
+        local ok, result = xpcall(require,dummy,...)
+        if ok then
+            return result
+        end
+    end
+
+end
+
+do
+
+    local flush   = io.flush
+    local execute = os.execute
+    local popen   = os.popen
+
+    function os.execute(...) flush() return execute(...) end
+    function io.popen  (...) flush() return popen  (...) end
+
+end
+
+os.setenv("engine",string.lower(status.luatex_engine or "unknown"))

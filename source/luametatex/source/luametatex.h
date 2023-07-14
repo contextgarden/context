@@ -96,8 +96,9 @@
 
 # define luametatex_version          210
 # define luametatex_revision         10
+# define luametatex_release          10
 # define luametatex_version_string   "2.10.10"
-# define luametatex_development_id   20230709
+# define luametatex_development_id   20230713
 
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
@@ -116,13 +117,18 @@
 typedef struct version_state_info {
     int         version;
     int         revision;
+    int         release; 
+    int         developmentid;
     const char *verbose;
     const char *banner;
     const char *compiler;
- // const char *libc;
-    int         developmentid;
-    int         formatid;
     const char *copyright;
+    int         formatid;
+    int         luaversionmajor;
+    int         luaversionminor;
+    int         luaversionrelease;
+    double      luatexversion;
+    double      luaversion;
 } version_state_info;
 
 extern version_state_info lmt_version_state;

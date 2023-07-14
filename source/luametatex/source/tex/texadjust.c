@@ -166,7 +166,7 @@ void tex_finish_vadjust_group(void)
         tex_end_paragraph(vadjust_group, vadjust_par_context);
         tex_unsave();
         lmt_save_state.save_stack_data.ptr -= saved_adjust_n_of_items;
-        box = tex_vpack(node_next(cur_list.head), 0, packing_additional, max_dimen, direction_unknown, holding_none_option);
+        box = tex_vpack(node_next(cur_list.head), 0, packing_additional, max_dimen, direction_unknown, holding_none_option, NULL);
         tex_pop_nest();
         adjust = tex_new_node(adjust_node, (quarterword) saved_value(saved_adjust_item_location));
         target = saved_value(saved_adjust_item_target);

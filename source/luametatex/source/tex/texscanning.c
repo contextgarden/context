@@ -1096,8 +1096,32 @@ static void tex_aux_set_cur_val_by_page_property_cmd(int chr)
             cur_val = page_state_okay ? 0 : lmt_page_builder_state.total;
             cur_val_level = dimen_val_level;
             break;
+        case page_excess_code:
+            cur_val = page_state_okay ? 0 : lmt_page_builder_state.excess;
+            cur_val_level = dimen_val_level;
+            break;
         case page_depth_code:
             cur_val = page_state_okay ? 0 : lmt_page_builder_state.depth;
+            cur_val_level = dimen_val_level;
+            break;
+        case page_stretch_code:                        
+            cur_val = page_state_okay ? 0 : lmt_page_builder_state.stretch;
+            cur_val_level = dimen_val_level;
+            break;
+        case page_filstretch_code:                    
+            cur_val = page_state_okay ? 0 : lmt_page_builder_state.filstretch;
+            cur_val_level = dimen_val_level;
+            break;
+        case page_fillstretch_code:                   
+            cur_val = page_state_okay ? 0 : lmt_page_builder_state.fillstretch;
+            cur_val_level = dimen_val_level;
+            break;
+        case page_filllstretch_code:                  
+            cur_val = page_state_okay ? 0 : lmt_page_builder_state.filllstretch;
+            cur_val_level = dimen_val_level;
+            break;
+        case page_shrink_code:                        
+            cur_val = page_state_okay ? 0 : lmt_page_builder_state.shrink;
             cur_val_level = dimen_val_level;
             break;
         case page_last_height_code:
@@ -1106,6 +1130,26 @@ static void tex_aux_set_cur_val_by_page_property_cmd(int chr)
             break;
         case page_last_depth_code:
             cur_val = page_state_okay ? 0 : lmt_page_builder_state.last_depth;
+            cur_val_level = dimen_val_level;
+            break;
+        case page_last_stretch_code:
+            cur_val = page_state_okay ? 0 : lmt_page_builder_state.last_stretch;
+            cur_val_level = dimen_val_level;
+            break;
+        case page_last_filstretch_code:
+            cur_val = page_state_okay ? 0 : lmt_page_builder_state.last_filstretch;
+            cur_val_level = dimen_val_level;
+            break;
+        case page_last_fillstretch_code:
+            cur_val = page_state_okay ? 0 : lmt_page_builder_state.last_fillstretch;
+            cur_val_level = dimen_val_level;
+            break;
+        case page_last_filllstretch_code:
+            cur_val = page_state_okay ? 0 : lmt_page_builder_state.last_filllstretch;
+            cur_val_level = dimen_val_level;
+            break;
+        case page_last_shrink_code:
+            cur_val = page_state_okay ? 0 : lmt_page_builder_state.last_shrink;
             cur_val_level = dimen_val_level;
             break;
         case dead_cycles_code:
@@ -1161,8 +1205,7 @@ static void tex_aux_set_cur_val_by_page_property_cmd(int chr)
             cur_val_level = dimen_val_level;
             break;
         default:
-            cur_val = page_state_okay ? 0 : lmt_page_builder_state.page_so_far[page_state_offset(chr)];
-            cur_val_level = dimen_val_level;
+            tex_confusion("page property");
             break;
     }
 }
@@ -1437,7 +1480,7 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
             cur_val = eq_value(chr);
             cur_val_level = int_val_level;
             if (level == posit_val_level) {
-                cur_val = tex_posit_to_integer(cur_val);
+                cur_val = (halfword) tex_posit_to_integer(cur_val);
             }
             break;
         case internal_posit_cmd:
@@ -1724,7 +1767,7 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
                     case box_attribute_code:
                         {
                             halfword att = tex_scan_attribute_register_number();
-                            cur_val = b ? tex_has_attribute(b, att, unused_attribute_value) : unused_attribute_value;
+                            cur_val = b ? tex_has_attribute(b, att, unused_attribute_value) : unused_attribute_value; /* always b */
                             cur_val_level = int_val_level;
                             break;
                         }
@@ -3870,7 +3913,7 @@ static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfword *has
                     *hash_brace = cur_tok;
                     *p = tex_store_new_token(*p, cur_tok);
                     *p = tex_store_new_token(*p, end_match_token);
-                    set_token_preamble(h, 1);
+                    set_token_preamble(h, macro_with_preamble);
                     set_token_parameters(h, *counter);
                     return 1;
                 } else if (*counter == 0xF) {
@@ -3956,7 +3999,7 @@ static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfword *has
   DONE:
     if (h != *p) {
         *p = tex_store_new_token(*p, end_match_token);
-        set_token_preamble(h, 1);
+        set_token_preamble(h, macro_with_preamble);
         set_token_parameters(h, *counter);
     }
     if (cur_cmd == right_brace_cmd) {

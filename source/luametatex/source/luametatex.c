@@ -37,15 +37,20 @@
 // # endif
 
 version_state_info lmt_version_state = {
-    .version       = luametatex_version,
-    .revision      = luametatex_revision,
-    .verbose       = luametatex_version_string,
-    .banner        = "This is " luametatex_name_camelcase ", Version " luametatex_version_string,
-    .compiler      = LMT_COMPILER_USED,
- // .libc          = LMT_LIBC_USED,
-    .developmentid = luametatex_development_id,
-    .formatid      = luametatex_format_fingerprint,
-    .copyright     = luametatex_copyright_holder,
+    .version           = luametatex_version,
+    .revision          = luametatex_revision,
+    .release           = luametatex_release,
+    .developmentid     = luametatex_development_id,
+    .verbose           = luametatex_version_string,
+    .banner            = "This is " luametatex_name_camelcase ", Version " luametatex_version_string,
+    .compiler          = LMT_COMPILER_USED,
+    .formatid          = luametatex_format_fingerprint,
+    .copyright         = luametatex_copyright_holder,
+    .luaversionmajor   = LUA_VERSION_MAJOR_N,
+    .luaversionminor   = LUA_VERSION_MINOR_N,	
+    .luaversionrelease = LUA_VERSION_RELEASE_N,
+    .luatexversion     = (double) luametatex_version + (double) luametatex_revision / 10,
+    .luaversion        = (double) LUA_VERSION_MAJOR_N + (double) LUA_VERSION_MINOR_N / 10,
 };
 
 int main(int ac, char* *av)

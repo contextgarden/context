@@ -23,11 +23,11 @@ if not global then
     global  = _G
 end
 
-LUATEXVERSION       = status.luatex_version/100 + tonumber(status.luatex_revision)/10000
+LUATEXVERSION       = status.version
+LUATEXVERBOSE       = status.luatex_verbose
 LUATEXENGINE        = string.lower(status.luatex_engine or "luametatex")
 LUATEXFUNCTIONALITY = status.development_id or 6346
 LUATEXFORMATID      = status.format_id or 0
-JITSUPPORTED        = false
 INITEXMODE          = status.ini_version
 CONTEXTLMTXMODE     = 1
 

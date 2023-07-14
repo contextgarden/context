@@ -29,6 +29,8 @@ typedef struct page_builder_state_info {
     scaled   vsize; 
     scaled   total; 
     scaled   depth; 
+    scaled   excess;
+    scaled   padding; 
     scaled   last_height;
     scaled   last_depth;
     union { 
@@ -101,6 +103,7 @@ extern void tex_additional_page_skip (void);
 # define page_vsize        lmt_page_builder_state.vsize
 # define page_total        lmt_page_builder_state.total       /*tex The height of the current page. */
 # define page_depth        lmt_page_builder_state.depth       /*tex The depth of the current page. */
+# define page_excess       lmt_page_builder_state.excess
 # define page_last_height  lmt_page_builder_state.last_height /*tex The height so far. */
 # define page_last_depth   lmt_page_builder_state.last_depth  /*tex The depth so far. */
 

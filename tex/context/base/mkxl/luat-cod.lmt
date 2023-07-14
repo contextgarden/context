@@ -123,7 +123,11 @@ if LUATEXENGINE == nil then
 end
 
 if LUATEXVERSION == nil then
-    LUATEXVERSION = status.luatex_version/100 + tonumber(status.luatex_revision)/10000
+    LUATEXVERSION = status.version
+end
+
+if LUATEXVERBOSE == nil then
+    LUATEXVERBOSE = status.luatex_verbose
 end
 
 if CONTEXTLMTXMODE == nil then
@@ -138,16 +142,14 @@ if LUATEXFORMATID == nil then
     LUATEXFORMATID = status.format_id or 0
 end
 
-JITSUPPORTED = false
-
 if INITEXMODE == nil then
     INITEXMODE = status.run_state == 0 -- initializing updating production
 end
 
 environment.luatexengine        = LUATEXENGINE
 environment.luatexversion       = LUATEXVERSION
+environment.luatexverbose       = LUATEXVERBOSE
 environment.luatexfunctionality = LUATEXFUNCTIONALITY
-environment.jitsupported        = JITSUPPORTED
 environment.initex              = INITEXMODE
 environment.initexmode          = INITEXMODE
 

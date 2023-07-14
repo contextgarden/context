@@ -243,7 +243,6 @@ local setmetatableindex  = table.setmetatableindex
 local nextnode           = nuts.traversers.node
 
 local nodecodes          = nodes.nodecodes
-local glyphcodes         = nodes.glyphcodes
 
 local glyph_code         = nodecodes.glyph
 local glue_code          = nodecodes.glue

@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Core Macros / Conversion}
 
-\registerctxluafile{core-con}{}
+\registerctxluafile{core-con}{autosuffix}
 
 % todo: iso date ranges (from/to)
 

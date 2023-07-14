@@ -32,6 +32,7 @@
   + \brokenpenaltyfrozenparcode
   + \demeritsfrozenparcode
   + \orphanpenaltyfrozenparcode
+  + \singlelinepenaltyfrozenparcode
 \relax
 
 \setnewconstant\paragraphpenaltycodes\numexpr
@@ -41,6 +42,7 @@
   + \brokenpenaltyfrozenparcode
   + \shapingpenaltyfrozenparcode
   + \orphanpenaltyfrozenparcode
+  + \singlelinepenaltyfrozenparcode
 \relax
 
 \setnewconstant\paragraphdemeritcodes\numexpr
@@ -94,6 +96,7 @@
  % \mathpenaltyfrozenparcode
  + \emergencyfrozenparcode
  + \parpassesfrozenparcode
+ + \singlelinepenaltyfrozenparcode
 \relax
 
 \permanent\protected\def\freezeparagraphproperties {\snapshotpar\frozenparagraphdefault}

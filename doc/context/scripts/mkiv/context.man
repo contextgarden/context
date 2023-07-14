@@ -211,6 +211,12 @@ process file with texexec
 .B --pipe
 do not check for file and enter scroll mode (--dummyfile=whatever.tmp)
 .TP
+.B --parallel
+process multiple files at the same time (you can specify a number of processes, default: 8)
+.TP
+.B --parallellist
+process commands in this file (lines that start with 'context')
+.TP
 .B --sandbox
 process file in a limited environment
 .TP

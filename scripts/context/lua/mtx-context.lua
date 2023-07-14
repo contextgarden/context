@@ -1726,6 +1726,160 @@ function scripts.context.extra()
     end
 end
 
+-- experiment
+
+
+do
+
+    local popen  = io.popen
+    local close  = io.close
+    local read   = io.read
+    local gobble = io.gobble or function(f) f:read("l") end
+    local clock  = os.clock
+
+    local f_runner  = formatters['context %s "%s"']
+    local f_command = formatters['%s %s']
+
+    function scripts.context.parallel()
+        if getargument("pattern") then
+            environment.filenames = dir.glob(getargument("pattern"))
+        end
+        local files = environment.files
+        local total = files and #files or 0
+        local list  = nil
+        if getargument("parallellist") then
+            list = { }
+            for i=1,#files do
+                -- could be an lpeg
+                local name = files[i]
+                local data = string.splitlines(io.loaddata(name) or "")
+                if data then
+                    for i=1,#data do
+                        local line = data[i]
+                        if string.find(line,"^context ") then
+                            list[#list+1] = line
+                        end
+                    end
+                end
+            end
+            files = list
+            total = #list
+        end
+        if not list and total == 1 then
+            -- Beware: "--parallel" and "--terminal" are passed to the single run but this
+            -- is normally harmless.
+            scripts.context.autoctx()
+        elseif total > 0 then
+            local results  = { }
+            local start    = statistics.starttiming("parallel")
+            local terminal = environment.argument("terminal")
+            local runners  = tonumber(environment.argument("parallel")) or 8
+            local process  = { }
+            local count    = 0
+            -- a hack
+            local passthese = environment.arguments_after
+            for i=1,#passthese do
+                local a = passthese[i]
+                if string.find(a,"^%-%-parallel") or string.find(a,"^%-%-terminal") or not find(a,"^%-%-") then
+                    passthese[i] = ""
+                end
+            end
+            passthese = table.unique(passthese)
+            -- end of hack
+            local arguments = environment.reconstructcommandline(passthese)
+            local whattodo  = list and "command" or "filename"
+            while true do
+                local done = false
+                for i=1,runners do
+                    local pi = process[i]
+                    if pi then
+                        local s
+                        if terminal then
+                            s = pi.handle:read("l")
+                            if s then
+                                done = true
+                                report("%02i : %s",i,s)
+                                goto done
+                            end
+                        else
+                            s = gobble(pi.handle)
+                            if s then
+                                done = true
+                                goto done
+                            end
+                        end
+                        if not s then
+                            local r, detail, n = close(pi.handle)
+                            pi.result = (not r or n > 0) and "error" or "done"
+                            pi.time   = clock() - pi.time
+                            pi.handle = nil
+                            if terminal then
+                                report()
+                            end
+                            report("process %02i, index %02i, %s %a, status %a, runtime %0.3f",i,pi.count,whattodo,pi.filename,pi.result,pi.time)
+                            if terminal then
+                                report()
+                            end
+                            process[i] = false
+                            results[pi.count] = pi
+                        end
+                    end
+                    count = count + 1
+                    if count > total then
+                        -- we're done
+                    else
+                        local filename= files[count]
+                        local command = list and f_command(filename,arguments) or f_runner(arguments,filename)
+                        local result  = popen(command)
+                        local status  = nil
+                        if result then
+                            process[i] = {
+                                handle   = result,
+                                result   = "start",
+                                filename = filename,
+                                count    = count,
+                                time     = clock(),
+                            }
+                            status = process[i]
+                        else
+                            status = {
+                                result   = "error",
+                                count    = count,
+                                filename = filename,
+                                time     = 0,
+                            }
+                        end
+                        results[count] = status
+                        if terminal then
+                            report()
+                        end
+                        report("process %02i, index %02i, %s %a, status %a",i,status.count,whattodo,status.filename,status.result)
+                        if terminal then
+                            report()
+                        end
+                        done = true
+                    end
+                  ::done::
+                end
+                if not done then
+                    break
+                end
+            end
+            statistics.stoptiming("parallel")
+            results.runtime = statistics.elapsedtime("parallel")
+            report()
+            report("files: %i, runtime: %s",total,results.runtime)
+            report()
+            for i=1,total do
+                local ri = results[i]
+                report("index %02i, %s %a, status %a, runtime %0.3f ",ri.count,whattodo,ri.filename,ri.result,ri.time)
+            end
+            report()
+        end
+    end
+
+end
+
 -- todo: we need to do a dummy run
 
 local function showsetter()
@@ -1815,7 +1969,9 @@ else
     multipass_forcedruns = tonumber(getargument("forcedruns")) or nil
 end
 
-if getargument("run") then
+if getargument("parallel") or getargument("parallellist") then
+    scripts.context.timed(scripts.context.parallel)
+elseif getargument("run") then
     scripts.context.timed(scripts.context.autoctx)
 elseif getargument("make") then
     scripts.context.timed(function() scripts.context.make() end)

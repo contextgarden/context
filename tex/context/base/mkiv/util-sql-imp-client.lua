@@ -108,6 +108,7 @@ local function splitdata(data) -- todo: hash on first line ... maybe move to cli
             end
         end
         p = Cf(Ct("") * p,rawset) * newline^1
+     -- p = Ct("") * (p % rawset) * newline^1 -- future
         if getserver() == "mssql" then
             p = skipfirst * skipdashes * Ct(p^0)
         else

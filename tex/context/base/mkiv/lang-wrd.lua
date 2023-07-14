@@ -11,7 +11,7 @@ local lower = string.lower
 local utfchar = utf.char
 local concat, setmetatableindex = table.concat, table.setmetatableindex
 local lpegmatch = lpeg.match
-local P, S, Cs, Cf, Cg, Cc, C = lpeg.P, lpeg.S, lpeg.Cs, lpeg.Cf, lpeg.Cg, lpeg.Cc, lpeg.C
+local P, S, Cs, Cc, C = lpeg.P, lpeg.S, lpeg.Cs, lpeg.Cc, lpeg.C
 
 local report_words = logs.reporter("languages","words")
 
@@ -85,7 +85,6 @@ local loaders = {
         local data = io.loaddata(fullname)
         if data and data ~= "" then
             local parser = (spacing + word/function(s) list[s] = true end)^0
-         -- local parser = Cf(Cc(list) * Cg(spacing^0 * word * Cc(true))^1,rawset) -- not better
             lpegmatch(parser,data)
         end
     end,

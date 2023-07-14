@@ -356,6 +356,23 @@ int lmt_get_math_parameter(lua_State *L, int n, int dflt)
 
 */
 
+// void lmt_push_node(lua_State *L)
+// {
+//     halfword n = null;
+//     if (lua_type(L, -1) == LUA_TNUMBER) {
+//         n = lmt_tohalfword(L, -1);
+//     }
+//     lua_pop(L, 1);
+//     if ((! n) || (n > lmt_node_memory_state.nodes_data.allocated)) {
+//         lua_pushnil(L);
+//     } else {
+//         halfword *a = lua_newuserdatauv(L, sizeof(halfword), 0);
+//         *a = n;
+//         lua_get_metatablelua(node_instance);
+//         lua_setmetatable(L, -2);
+//     }
+// }
+
 void lmt_push_node(lua_State *L)
 {
     halfword n = null;
@@ -363,15 +380,14 @@ void lmt_push_node(lua_State *L)
         n = lmt_tohalfword(L, -1);
     }
     lua_pop(L, 1);
-    if ((! n) || (n > lmt_node_memory_state.nodes_data.allocated)) {
-        lua_pushnil(L);
-    } else {
+    if (n && n <= lmt_node_memory_state.nodes_data.allocated) {
         halfword *a = lua_newuserdatauv(L, sizeof(halfword), 0);
         *a = n;
         lua_get_metatablelua(node_instance);
         lua_setmetatable(L, -2);
+    } else {
+        lua_pushnil(L);
     }
-    return;
 }
 
 void lmt_push_node_fast(lua_State *L, halfword n)
@@ -3715,8 +3731,10 @@ static int nodelib_direct_getparstate(lua_State *L)
                         lua_push_integer_at_key(L, widowpenalty,                   tex_get_par_par(p, par_widow_penalty_code));
                         lua_push_integer_at_key(L, displaywidowpenalty,            tex_get_par_par(p, par_display_widow_penalty_code));
                         lua_push_integer_at_key(L, orphanpenalty,                  tex_get_par_par(p, par_orphan_penalty_code));
+                        lua_push_integer_at_key(L, singlelinepenalty,              tex_get_par_par(p, par_single_line_penalty_code));
                         lua_push_integer_at_key(L, brokenpenalty,                  tex_get_par_par(p, par_broken_penalty_code));
                         lua_push_integer_at_key(L, adjdemerits,                    tex_get_par_par(p, par_adj_demerits_code));
+                        lua_push_integer_at_key(L, doubleadjdemerits,              tex_get_par_par(p, par_double_adj_demerits_code));
                         lua_push_integer_at_key(L, doublehyphendemerits,           tex_get_par_par(p, par_double_hyphen_demerits_code));
                         lua_push_integer_at_key(L, finalhyphendemerits,            tex_get_par_par(p, par_final_hyphen_demerits_code));
                         lua_push_integer_at_key(L, baselineskip,       glue_amount(tex_get_par_par(p, par_baseline_skip_code)));
@@ -4642,7 +4660,7 @@ static int nodelib_direct_vpack(lua_State *L)
     } else {
         n = null;
     }
-    p = tex_vpack(n, w, m, max_dimen, d, holding_none_option);
+    p = tex_vpack(n, w, m, max_dimen, d, holding_none_option, NULL);
     lua_pushinteger(L, p);
     lua_pushinteger(L, lmt_packaging_state.last_badness);
     return 2;
@@ -10648,6 +10666,10 @@ int lmt_par_pass_callback(
                                 if (v) {
                                     properties->orphan_penalty = v;
                                 }
+                                get_integer_par(v, singlelinepenalty, 0);
+                                if (v) {
+                                    properties->single_line_penalty = v;
+                                }
                                 get_integer_par(v, extrahyphenpenalty, 0);
                                 if (v) { 
                                     properties->extra_hyphen_penalty = v;
@@ -10663,6 +10685,10 @@ int lmt_par_pass_callback(
                                 get_integer_par(v, adjdemerits, 0);
                                 if (v) { 
                                     properties->adj_demerits = v;
+                                }
+                                get_integer_par(v, doubleadjdemerits, 0);
+                                if (v) { 
+                                    properties->double_adj_demerits = v;
                                 }
                                 get_integer_par(v, linebreakcriterion, 0);
                                 if (v) {

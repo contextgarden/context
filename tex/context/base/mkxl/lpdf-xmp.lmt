@@ -116,7 +116,7 @@ end
 local function pdfgetmetadata()
     if not metadata then
         local contextversion      = environment.version
-        local luatexversion       = format("%1.2f",LUATEXVERSION)
+        local luatexversion       = LUATEXVERBOSE
         local luatexfunctionality = tostring(LUATEXFUNCTIONALITY)
         local jobname             = environment.jobname or tex.jobname or "unknown"
         local documentid          = trailerid and ("uuid:" .. osuuid()) or "no unique document id here"

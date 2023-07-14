@@ -204,11 +204,28 @@
    \fi
    \resetpagebreak}
 
+% \def\page_otr_eject_page
+%   {\par
+%    \ifvmode
+%      \ifdim\pagetotal>\pagegoal \else
+%        \normalvfil
+%      \fi
+%      \penalty\c_page_otr_eject_penalty
+%    \fi
+%    \resetpagebreak}
+
 \def\page_otr_eject_page
   {\par
    \ifvmode
-     \ifdim\pagetotal>\pagegoal \else
-       \normalvfil
+     \ifcase\c_page_scale_lines
+       \ifdim\pagetotal>\pagegoal\else
+     % \ifdim\pagelastheight>\pagegoal\else
+         \normalvfil
+       \fi
+     \else
+       \ifdim\dimexpr\pagelastheight+\c_page_scale_lines\lineheight+\pageexcess\relax>\pagegoal\else
+         \normalvfil
+       \fi
      \fi
      \penalty\c_page_otr_eject_penalty
    \fi

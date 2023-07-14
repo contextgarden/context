@@ -2070,6 +2070,24 @@ do
         end
     end
 
+    function lxml.texatt(id,a,default)
+        local e = getid(id)
+        if e then
+            local at = e.at
+            if at then
+                att = at[a]
+                if att ~= "" then
+--                     context(ctxcatcodes,att)
+                    context(att)
+                end
+            else
+                att = ""
+            end
+        else
+            att = ""
+        end
+    end
+
     function lxml.ifatt(id,a,value)
         local e = getid(id)
         if e then

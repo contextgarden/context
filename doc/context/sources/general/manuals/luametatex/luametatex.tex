@@ -133,7 +133,13 @@
 % \enableexperiments [tabulateusesize]
 % \enableexperiments [tabulatesparseskips]
 
-\ifdefined\linebuffering \linebuffering \fi
+% 2023-07-10: context --make > temp.log (after a few times so with cached files)
+%
+% 1.90 sec including mtxrun
+% 1.65 sec tex only
+% 1.45 sec without saving format
+
+% \ifdefined\linebuffering \linebuffering \fi
 
 \enableexperiments[fonts.compact]
 %disableexperiments[fonts.accurate]

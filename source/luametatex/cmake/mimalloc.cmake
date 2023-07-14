@@ -37,6 +37,7 @@ target_compile_definitions(mimalloc PRIVATE
     MIMALLOC_LARGE_OS_PAGES=1
     MI_DEBUG=0
     MI_SECURE=0
+    NDEBUG=0
 )
 
 if (NOT MSVC)

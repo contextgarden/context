@@ -832,7 +832,7 @@ void tex_end_token_list(void)
                     }
                     lmt_input_state.parameter_stack_data.ptr = start;
                 } else { 
-                    /*tex We have no arguments but we save very little runtime here. */
+                    /*tex We have no arguments so we save very little runtime here. */
                 }
                 break;
             }
@@ -870,7 +870,6 @@ void tex_cleanup_input_state(void)
                 break;
             case macro_text:
                 {
-                    /*tex Using a simple version for no arguments has no gain. */
                     tex_delete_token_reference(lmt_input_state.cur_input.start);
                     if (get_token_preamble(lmt_input_state.cur_input.start)) {
                         /*tex Parameters must be flushed: */

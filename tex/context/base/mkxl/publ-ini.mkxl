@@ -48,9 +48,9 @@
 \registerctxluafile{publ-dat}{}
 \registerctxluafile{publ-ini}{}
 \registerctxluafile{publ-sor}{}
-\registerctxluafile{publ-aut}{}
+\registerctxluafile{publ-aut}{autosuffix}
 \registerctxluafile{publ-usr}{}
-\registerctxluafile{publ-oth}{} % this could become an option
+\registerctxluafile{publ-oth}{autosuffix} % this could become an option
 \registerctxluafile{publ-fnd}{} % new method (for the moment only local)
 \registerctxluafile{publ-jrn}{}
 \registerctxluafile{publ-reg}{}

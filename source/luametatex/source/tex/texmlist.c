@@ -872,7 +872,7 @@ static halfword tex_aux_overbar(halfword box, scaled gap, scaled height, scaled 
         tex_couple_nodes(kern, rule);
         rule = kern;
     }
-    rule = tex_vpack(rule, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option);
+    rule = tex_vpack(rule, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option, NULL);
     tex_attach_attribute_list_attribute(rule, att);
     return rule;
 }
@@ -895,7 +895,7 @@ static halfword tex_aux_underbar(halfword box, scaled gap, scaled height, scaled
         tex_attach_attribute_list_attribute(kern, att);
         tex_couple_nodes(rule, kern);
     }
-    rule = tex_vpack(box, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option);
+    rule = tex_vpack(box, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option, NULL);
     tex_attach_attribute_list_attribute(rule, att);
     /* */
     box_depth(rule) = box_total(rule) + krn - box_height(box);
@@ -1778,8 +1778,8 @@ static halfword tex_aux_rebox(halfword box, scaled width, halfword size)
         box_list(box) = null;
         tex_flush_node(box);
         { 
-            halfword left = tex_new_glue_node(filll_glue, user_skip_glue); /* todo: subtype, correction_skip_glue? */
-            halfword right = tex_new_glue_node(filll_glue, user_skip_glue); /* todo: subtype, correction_skip_glue? */
+            halfword right = tex_new_glue_node(fi_ss_glue, user_skip_glue); /* todo: subtype, correction_skip_glue? */
+            halfword left = tex_new_glue_node(fi_ss_glue, user_skip_glue);  /* todo: subtype, correction_skip_glue? */
             tex_add_glue_option(left, glue_option_no_auto_break);
             tex_add_glue_option(right, glue_option_no_auto_break);
             tex_attach_attribute_list_attribute(left, att);
@@ -3317,7 +3317,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
         tex_couple_nodes(base, accent);
         result = base;
     }
-    result = tex_vpack(result, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option);
+    result = tex_vpack(result, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option, NULL);
     tex_attach_attribute_list_copy(result, target);
     node_subtype(result) = math_accent_list;
     box_width(result) = box_width(base); // basewidth
@@ -5020,7 +5020,7 @@ static halfword tex_aux_shift_to_kern(halfword target, halfword box, scaled shif
         halfword kern = tex_new_kern_node(shift, vertical_math_kern_subtype);
         tex_attach_attribute_list_copy(kern, target);
         tex_couple_nodes(kern, box);
-        result = tex_vpack(kern, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option);
+        result = tex_vpack(kern, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option, NULL);
         tex_attach_attribute_list_copy(result, target);
         node_subtype(result) = math_scripts_list;
         box_shift_amount(result) = shift;
@@ -5447,7 +5447,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
                     tex_attach_attribute_list_copy(kern, target);
                     tex_couple_nodes(postsupdata.box, kern);
                     tex_couple_nodes(kern, postsubdata.box);
-                    result = tex_vpack(postsupdata.box, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option);
+                    result = tex_vpack(postsupdata.box, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option, NULL);
                     tex_attach_attribute_list_copy(result, target);
                     node_subtype(result) = math_scripts_list;
                     box_shift_amount(result) = shift_down;
@@ -5524,7 +5524,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
                 tex_attach_attribute_list_copy(k, target);
                 tex_couple_nodes(presupdata.box, k);
                 tex_couple_nodes(k, presubdata.box);
-                preresult = tex_vpack(presupdata.box, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option);
+                preresult = tex_vpack(presupdata.box, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option, NULL);
                 tex_attach_attribute_list_copy(preresult, target);
                 node_subtype(preresult) = math_scripts_list;
                 box_shift_amount(preresult) = shift_down;

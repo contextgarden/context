@@ -1521,6 +1521,24 @@ int luaopen_sio(lua_State *L) {
 
 */
 
+/* a variant on read_line but with nothing catched */
+
+static int io_gobble(lua_State *L) 
+{
+    FILE *f = lmt_valid_file(L);
+    if (f) {
+        int c;
+        int n = 0;
+        while ((c = getc(f)) != EOF && c != '\n') {
+            n = 1;
+        }
+        lua_pushboolean(L, ((c == '\n') || n));
+    } else { 
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
 # if _WIN32
 
 #   define tolstream(L) ((LStream *)luaL_checkudata(L, 1, LUA_FILEHANDLE))
@@ -1588,6 +1606,7 @@ int luaopen_sio(lua_State *L) {
         lua_getglobal(L, "io");
         lua_pushcfunction(L, io_open);  lua_setfield(L, -2, "open");
         lua_pushcfunction(L, io_popen); lua_setfield(L, -2, "popen");
+        lua_pushcfunction(L, io_gobble); lua_setfield(L, -2, "gobble");
         lua_pop(L, 1);
          /*tex
             Larger doesn't work and limits to 512 but then no amount is okay as there's always more
@@ -1599,9 +1618,17 @@ int luaopen_sio(lua_State *L) {
 
 # else
 
+ // int luaextend_io(lua_State *L)
+ // {
+ //     (void) L;
+ //     return 1;
+ // }
+
     int luaextend_io(lua_State *L)
     {
-        (void) L;
+        lua_getglobal(L, "io");
+        lua_pushcfunction(L, io_gobble); lua_setfield(L, -2, "gobble");
+        lua_pop(L, 1);
         return 1;
     }
 

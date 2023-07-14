@@ -13,7 +13,7 @@
 
 \startmodule [json]
 
-\registerctxluafile{util-jsn}{}
+\registerctxluafile{util-jsn}{autosuffix}
 \registerctxluafile{util-tbs}{}
 
 % \def\u#1#2#3#4{\cldcontext{utf.char(0x#1#2#3#4)}}

@@ -954,12 +954,29 @@
   {\c_page_scale_trace_vz\conditionaltrue}
   {\c_page_scale_trace_vz\conditionalfalse}
 
+\def\page_scale_text_box_trace
+  {\writestatus{vz page \the\realpageno}{%
+      %\s!goal=\the\pagegoal,
+     %\s!total=\the\pagetotal,
+       \s!page=\the\pagegoal,
+       \s!text=\the\textheight,
+     \s!height=\the\pagelastheight,
+      \s!depth=\the\pagelastdepth,
+    \s!stretch=\the\pagelaststretch,
+     \s!shrink=\the\pagelastshrink,
+       \s!fill=(\thewithoutunit\pagelastfilstretch,\thewithoutunit\pagelastfillstretch,\thewithoutunit\pagelastfilllstretch)%
+   }}
+
 \def\page_scale_text_box
-  {\scratchdimen\dimexpr\pagegoal-\pagelastheight\relax
+  {\scratchdimen\dimexpr\textheight-\pagelastheight\relax % not \pagegoal as that includes footnotes
+   \ifconditional\c_page_scale_trace_vz
+     \page_scale_text_box_trace
+   \fi
    \ifabsdim\scratchdimen>\c_page_scale_lines\lineheight
      \expandafter\gobbleoneargument
+   \orelse\ifdim\pagelastshrink>\zeropoint % maybe also stretch
+     \expandafter\gobbleoneargument
    \else
-   % \writestatus{!!!!!}{total=\the\pagetotal,height=\the\pagelastheight,goal=\the\pagegoal}%
      \expandafter\page_scale_text_box_indeed
    \fi}
 
@@ -967,8 +984,7 @@
   {\scratchheight \ht#1%
    \scratchdepth  \dp#1%
    \scratchwidth  \wd#1%
-  %\scratchcounter\numexpr\plusthousand*(\dimexpr\pagegoal\relax)/\pagelastheight\relax
-   \scratchfloat  \floatexpr\pagegoal/\pagelastheight\relax
+   \scratchfloat  \floatexpr\textheight/\pagelastheight\relax % not \pagegoal as that includes footnotes
    \setbox#1\vpack\bgroup
      \hpack\bgroup
        \normalexpanded{\scale

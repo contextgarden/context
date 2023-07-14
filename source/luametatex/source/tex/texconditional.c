@@ -1028,7 +1028,7 @@ void tex_conditional_if(halfword code, int unless)
                         break;
                     case left_brace_cmd:
                         {
-                            halfword h = tex_scan_toks_expand(1, NULL, 1);
+                            halfword h = tex_scan_toks_expand(1, NULL, 0);
                             result = token_link(h) == null; 
                             tex_flush_token_list(h);
                         }

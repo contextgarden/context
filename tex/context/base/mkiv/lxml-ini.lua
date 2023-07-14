@@ -45,6 +45,7 @@ implement { name = "xmlatt",               public = true, actions = lxml.att,   
 implement { name = "xmlattdef",            public = true, actions = lxml.att,               arguments = "3 strings" }
 implement { name = "xmlattribute",         public = true, actions = lxml.attribute,         arguments = "3 strings" }
 implement { name = "xmlattributedef",      public = true, actions = lxml.attribute,         arguments = "4 strings" }
+implement { name = "xmltexatt",            public = true, actions = lxml.texatt,            arguments = "2 strings" }
 implement { name = "xmlbadinclusions",     public = true, actions = lxml.badinclusions,     arguments = "string" }
 implement { name = "xmlchainatt",          public = true, actions = lxml.chainattribute,    arguments = { "string", "'/'", "string" } }
 implement { name = "xmlchainattdef",       public = true, actions = lxml.chainattribute,    arguments = { "string", "'/'", "string", "string"  } }

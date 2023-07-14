@@ -153,9 +153,9 @@ logs.registerfinalactions(function()
                 local b = t.badness
                 local o = t.overfull
                 if b then
-                    report("  file %a, line %i, pass %i, subpass %i of %i, classes 0x%02X, badness %i", filename,t.line,t.pass,t.subpass,t.subpasses,classes,b)
+                    report("  file %a, line %i, pass %i, subpass %i of %i, classes 0x%02X, badness %i", filename,t.line,t.pass,t.subpass,t.subpasses,t.classes,b)
                 elseif o then
-                    report("  file %a, line %i, pass %i, subpass %i of %i, classes 0x%02X, overfull %p",filename,t.line,t.pass,t.subpass,t.subpasses,classes,o)
+                    report("  file %a, line %i, pass %i, subpass %i of %i, classes 0x%02X, overfull %p",filename,t.line,t.pass,t.subpass,t.subpasses,t.classes,o)
                 end
             end
         end

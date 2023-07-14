@@ -135,7 +135,7 @@ extern scaled    tex_left_marginkern      (halfword p);
 extern scaled    tex_right_marginkern     (halfword p);
 
 extern halfword  tex_filtered_hpack       (halfword p, halfword qt, scaled w, int m, int grp, halfword d, int just_pack, halfword attr, int state, int retain);
-extern halfword  tex_filtered_vpack       (halfword p, scaled h, int m, scaled maxdepth, int grp, halfword direction, int just_pack, halfword attr, int state, int retain);
+extern halfword  tex_filtered_vpack       (halfword p, scaled h, int m, scaled maxdepth, int grp, halfword direction, int just_pack, halfword attr, int state, int retain, int *excess);
 
 extern scaledwhd tex_natural_hsizes       (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
 extern scaledwhd tex_natural_vsizes       (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
@@ -144,7 +144,7 @@ extern halfword  tex_natural_hsize        (halfword p, halfword *correction);
 extern halfword  tex_natural_vsize        (halfword p);
 
 extern halfword  tex_hpack                (halfword p, scaled w, int m, singleword d, int retain);
-extern halfword  tex_vpack                (halfword p, scaled h, int m, scaled l, singleword d, int retain);
+extern halfword  tex_vpack                (halfword p, scaled h, int m, scaled l, singleword d, int retain, int *excess);
 
 extern void      tex_repack               (halfword p, scaled w, int m);
 extern void      tex_freeze               (halfword p, int recurse);

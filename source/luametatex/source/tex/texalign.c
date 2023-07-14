@@ -1325,7 +1325,7 @@ static int tex_aux_finish_column(void)
                     lmt_packaging_state.post_migrate_tail = null;
                     lmt_packaging_state.pre_migrate_tail = null;
                 } else {
-                    cell = tex_filtered_vpack(node_next(cur_list.head), size, packing, 0, align_set_group, direction_unknown, 0, null, 0, 0);
+                    cell = tex_filtered_vpack(node_next(cur_list.head), size, packing, 0, align_set_group, direction_unknown, 0, null, 0, 0, NULL);
                     width = box_height(cell);
                 }
                 if (lmt_alignment_state.cell_source) {
@@ -1420,7 +1420,7 @@ static void tex_aux_finish_row(void)
             tex_inject_adjust_list(lmt_alignment_state.cur_post_adjust_head, 0, null, NULL);
         }
     } else {
-        row = tex_filtered_vpack(node_next(cur_list.head), 0, packing_additional, max_depth_par, finish_row_group, direction_unknown, 0, null, 0, 0);
+        row = tex_filtered_vpack(node_next(cur_list.head), 0, packing_additional, max_depth_par, finish_row_group, direction_unknown, 0, null, 0, 0, NULL);
         tex_pop_nest();
         tex_tail_append(row);
         cur_list.space_factor = default_space_factor;
@@ -1739,7 +1739,7 @@ static void tex_aux_finish_align(void)
             unset = node_next(node_next(unset));
         } while (unset);
         /* why filtered here ... */
-        preroll = tex_filtered_vpack(preamble, saved_value(saved_align_specification), saved_extra(saved_align_specification), max_depth_par, preamble_group, direction_unknown, 0, 0, 0, holding_none_option);
+        preroll = tex_filtered_vpack(preamble, saved_value(saved_align_specification), saved_extra(saved_align_specification), max_depth_par, preamble_group, direction_unknown, 0, 0, 0, holding_none_option, NULL);
         /* ... so we'll do this soon instead: */
      /* preroll = tex_vpack(preamble, saved_value(saved_align_specification), saved_extra(saved_align_specification), max_depth_par, direction_unknown, migrate_all_option); */
         unset = node_next(preamble);

@@ -671,22 +671,45 @@ static void tex_aux_complain_missing_csname(void)
     );
 }
 
+// inline static int tex_aux_uni_to_buffer(unsigned char *b, int m, int c)
+// {
+//     if (c <= 0x7F) {
+//         b[m++] = (unsigned char) c;
+//     } else if (c <= 0x7FF) {
+//         b[m++] = (unsigned char) (0xC0 + c / 0x40);
+//         b[m++] = (unsigned char) (0x80 + c % 0x40);
+//     } else if (c <= 0xFFFF) {
+//         b[m++] = (unsigned char) (0xE0 +  c / 0x1000);
+//         b[m++] = (unsigned char) (0x80 + (c % 0x1000) / 0x40);
+//         b[m++] = (unsigned char) (0x80 + (c % 0x1000) % 0x40);
+//     } else {
+//         b[m++] = (unsigned char) (0xF0 +   c / 0x40000);
+//         b[m++] = (unsigned char) (0x80 + ( c % 0x40000) / 0x1000);
+//         b[m++] = (unsigned char) (0x80 + ((c % 0x40000) % 0x1000) / 0x40);
+//         b[m++] = (unsigned char) (0x80 + ((c % 0x40000) % 0x1000) % 0x40);
+//     }
+//     return m;
+// }
+
 inline static int tex_aux_uni_to_buffer(unsigned char *b, int m, int c)
 {
     if (c <= 0x7F) {
         b[m++] = (unsigned char) c;
     } else if (c <= 0x7FF) {
-        b[m++] = (unsigned char) (0xC0 + c / 0x40);
-        b[m++] = (unsigned char) (0x80 + c % 0x40);
+        b[m++] = (unsigned char) (0xC0 | (c >> 6));
+        b[m++] = (unsigned char) (0x80 | (c & 0x3F));
     } else if (c <= 0xFFFF) {
-        b[m++] = (unsigned char) (0xE0 +  c / 0x1000);
-        b[m++] = (unsigned char) (0x80 + (c % 0x1000) / 0x40);
-        b[m++] = (unsigned char) (0x80 + (c % 0x1000) % 0x40);
+        b[m++] = (unsigned char) (0xE0 | (c >> 12));
+        b[m++] = (unsigned char) (0x80 | ((c >> 6) & 0x3F));
+        b[m++] = (unsigned char) (0x80 | (c & 0x3F));
     } else {
-        b[m++] = (unsigned char) (0xF0 +   c / 0x40000);
-        b[m++] = (unsigned char) (0x80 + ( c % 0x40000) / 0x1000);
-        b[m++] = (unsigned char) (0x80 + ((c % 0x40000) % 0x1000) / 0x40);
-        b[m++] = (unsigned char) (0x80 + ((c % 0x40000) % 0x1000) % 0x40);
+        int u; 
+        c -= 0x10000;
+        u = (int) (((c & 0xf0000) >> 16) + 1);
+        b[m++] = (unsigned char) (0xF0 | (u >> 2));
+        b[m++] = (unsigned char) (0x80 | ((u & 3) << 4) | ((c & 0xF000) >> 12));
+        b[m++] = (unsigned char) (0x80 | ((c & 0xFC0) >> 6));;
+        b[m++] = (unsigned char) (0x80 | (c & 0x3F));;
     }
     return m;
 }
@@ -1061,7 +1084,18 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
         }
         tex_end_diagnostic();
     }
-    if (get_token_preamble(chr)) {
+    if (! get_token_preamble(chr)) {
+        /*tex Happens more often (about two times). */
+        tex_cleanup_input_state();
+        if (token_link(chr)) {
+            tex_begin_macro_list(chr);
+            lmt_expand_state.arguments = 0;
+            lmt_input_state.cur_input.name = lmt_input_state.warning_index;
+            lmt_input_state.cur_input.loc = token_link(chr);
+        } else { 
+            /* We ignore empty bodies. */
+        }
+    } else {
         halfword matchpointer = token_link(chr);
         halfword matchtoken = token_info(matchpointer);
         int save_scanner_status = lmt_input_state.scanner_status;
@@ -1532,15 +1566,5 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
         lmt_expand_state.arguments = nofarguments;
         lmt_input_state.scanner_status = save_scanner_status;
         lmt_input_state.warning_index = save_warning_index;
-    } else {
-        tex_cleanup_input_state();
-        if (token_link(chr)) {
-            tex_begin_macro_list(chr);
-            lmt_expand_state.arguments = 0;
-            lmt_input_state.cur_input.name = lmt_input_state.warning_index;
-            lmt_input_state.cur_input.loc = token_link(chr);
-        } else { 
-            /* We ignore empty bodies but it doesn't gain us that much. */
-        }
     }
 }

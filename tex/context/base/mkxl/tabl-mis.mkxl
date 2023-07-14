@@ -184,7 +184,7 @@
    \c_typo_paragraphs_max\paragraphsparameter\c!n\relax
    \d_typo_paragraphs_auto\d_typo_paragraphs_width\relax
    \scratchcounter\zerocount
-   \\localcontrolledrepeat \c_typo_paragraphs_max
+   \localcontrolledrepeat \c_typo_paragraphs_max
      {\edef\p_width{\namedparagraphsparameter{\currentparagraphs:\the\currentloopiterator}\c!width}%
       \ifempty\p_width
         \advanceby\scratchcounter\plusone

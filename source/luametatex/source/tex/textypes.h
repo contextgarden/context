@@ -188,8 +188,8 @@ extern halfword tex_badness(
 
 # define null_flag                        -0x40000000
 # define zero_glue                                  0
-# define unity                                0200000 /*tex $2^{16}$, represents 1.00000 */
-# define two                                  0400000 /*tex $2^{17}$, represents 2.00000 */
+# define unity                                0x10000 /*tex |0200000| or $2^{16}$, represents 1.00000 */
+# define two                                  0x20000 /*tex |0400000| or $2^{17}$, represents 2.00000 */
 # define null                                       0
 # define null_font                                  0
 
@@ -747,6 +747,7 @@ typedef struct line_break_properties {
     halfword adjust_spacing;
     halfword protrude_chars;
     halfword adj_demerits;
+    halfword double_adj_demerits;
     halfword line_penalty;
     halfword last_line_fit;
     halfword double_hyphen_demerits;
@@ -783,6 +784,7 @@ typedef struct line_break_properties {
     halfword extra_hyphen_penalty; 
     halfword line_break_optional;
     halfword optional_found;
+    halfword single_line_penalty;
 } line_break_properties;
 
 # endif

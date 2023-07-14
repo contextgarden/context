@@ -253,6 +253,14 @@
                 </flag>
             </subcategory>
             <subcategory>
+                <flag name="parallel">
+                    <short>process multiple files at the same time (you can specify a number of processes, default: 8)</short>
+                </flag>
+                <flag name="parallellist">
+                    <short>process commands in this file (lines that start with 'context')</short>
+                </flag>
+            </subcategory>
+            <subcategory>
                 <flag name="sandbox">
                     <short>process file in a limited environment</short>
                 </flag>

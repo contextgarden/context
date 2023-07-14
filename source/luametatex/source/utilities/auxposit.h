@@ -9,6 +9,7 @@
 # include <math.h>
 
 typedef posit32_t  posit_t;
+typedef int32_t    posit_t_s; /* get rid of compiler warning */
 typedef posit32_t *posit;
 
 /*tex
@@ -53,7 +54,7 @@ typedef posit32_t *posit;
 # define posit_ge_zero(a) (a.v >= 0)         
 # define posit_ne_zero(a) (a.v != 0)         
 
-static inline posit_t posit_neg(posit_t a) { posit_t p ; p.v = -a.v & 0xFFFFFFFF; return p; } 
+static inline posit_t posit_neg(posit_t a) { posit_t p ; p.v = (- (posit_t_s) a.v) & 0xFFFFFFFF; return p; } 
 static inline posit_t posit_abs(posit_t a) { posit_t p ; int mask = a.v >> 31; p.v = ((a.v + mask) ^ mask) & 0xFFFFFFFF; return p; }
 
 //     static posit_t posit_neg     (posit_t v)            { return posit_mul(v, integer_to_posit(-1)) ; }
@@ -80,7 +81,7 @@ static inline posit_t posit_d_acos  (double v)             { return double_to_po
 static inline posit_t posit_d_atan  (double v)             { return double_to_posit(atan (v)); }   
 static inline posit_t posit_d_atan2 (double v, double w)   { return double_to_posit(atan2(v,w)); }   
                                                               
-static inline int     posit_i_round (posit_t v)            { return posit_to_integer(v); }   
+static inline int     posit_i_round (posit_t v)            { return (int) posit_to_integer(v); }   
    
 /*tex 
 
@@ -154,7 +155,7 @@ static inline halfword tex_posit_to_dimension(halfword p)
 {
     posit32_t x; 
     x.v = (uint32_t) p; 
-    return posit_to_integer(p32_mul(x, i32_to_p32(65536)));     
+    return (halfword) posit_to_integer(p32_mul(x, i32_to_p32(65536)));     
 }
 
 # endif

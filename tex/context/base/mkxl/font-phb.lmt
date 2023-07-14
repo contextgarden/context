@@ -23,7 +23,11 @@ if not modules then modules = { } end modules ['font-phb'] = {
 -- probably strip away even more code. I might pick up this thread when Idris picks
 -- up his font making.
 --
--- Todo: use the new (context) advance and offset features.
+-- Todo: use the new (context) advance and offset features. On the other hand, it is
+-- too much of a moving target and I don't want to keep track of it. It has become
+-- one of the most frequently updated optional components in luatex which then sort
+-- of contradicts long term stability and makes it very dependent too, apart from
+-- possible make complications.
 
 local next, tonumber, pcall, rawget = next, tonumber, pcall, rawget
 

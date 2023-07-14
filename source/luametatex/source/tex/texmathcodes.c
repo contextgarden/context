@@ -263,7 +263,7 @@ int tex_has_del_code(delcodeval d)
 
 delcodeval tex_no_del_code(void)
 {
-    return (delcodeval) { { 0, -1, 0 }, { 0, 0, 0} };
+    return (delcodeval) { { 0, -1, 0 }, { 0, 0, 0 } };
 }
 
 delcodeval tex_get_del_code(int n)

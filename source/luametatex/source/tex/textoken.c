@@ -315,6 +315,7 @@ void tex_flush_token_list(halfword head)
 {
     if (head) {
         if (! token_link(head)) {
+            /* This happens more frequently (6.2M vs 1.7M). */
             token_link(head) = lmt_token_memory_state.available;
             --lmt_token_memory_state.tokens_data.ptr;
         } else {

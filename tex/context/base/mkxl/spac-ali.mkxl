@@ -608,6 +608,8 @@
 % speedup.
 
 \newtoks\t_spac_align_collected
+\newtoks\t_spac_align_applied
+\newtoks\t_spac_align_presets
 
 \aliased\let\raggedcommand    \relax
 \aliased\let\updateraggedskips\relax
@@ -615,6 +617,31 @@
 \def\spac_align_add_to_cache
   {\enforced\let\raggedbox\relax % why
    % we inherit hyphenation and tolerance
+   \expand\t_spac_align_presets
+%    \lastlinefit\zerocount
+   \ifcsname\??aligncommand\m_spac_align_named\endcsname
+     \lastnamedcs
+   \else
+     \rawprocesscommacommand[\m_spac_align_asked]\spac_align_collect
+   \fi
+   \etoks\t_spac_align_collected
+     {\raggedonelinerstate\conditionalfalse % bad
+      \expand\t_spac_align_collected
+      \expand\t_spac_align_applied}%
+   \enforced\permanent\protected\edef\raggedcommand    {\expand\t_spac_align_collected}%
+   \enforced\permanent\protected\edef\updateraggedskips{\spac_align_flush_horizontal}%
+   \enforced\aliased\gletcsname\??alignmentnormalcache\m_spac_align_named\endcsname\raggedcommand
+   \enforced\aliased\gletcsname\??alignmentraggedcache\m_spac_align_named\endcsname\updateraggedskips}
+
+\appendtoks
+  \spac_align_flush_horizontal
+  \spac_align_flush_vertical
+  \spac_align_flush_direction
+  \spac_align_flush_page
+  \spac_align_flush_parfill
+\to \t_spac_align_applied
+
+\appendtoks
    \t_spac_align_collected       \emptytoks
    \c_spac_align_state_broad     \zerocount
    \c_spac_align_state_horizontal\zerocount
@@ -623,46 +650,7 @@
    \c_spac_align_state_direction \zerocount % what is default ?
    \c_spac_align_state_page      \zerocount
    \c_spac_align_state_par_fill  \zerocount
-   \lastlinefit\zerocount
-   \ifcsname\??aligncommand\m_spac_align_named\endcsname
-     \lastnamedcs
-   \else
-     \rawprocesscommacommand[\m_spac_align_asked]\spac_align_collect
-   \fi
- % % kept, nice for tracing
- %
- % \normalexpanded{\t_spac_align_collected
- %   {\raggedonelinerstate\conditionalfalse % bad
- %    \expand\t_spac_align_collected
- %    \spac_align_flush_horizontal
- %    \spac_align_flush_vertical
- %    \spac_align_flush_direction
- %    \spac_align_flush_page
- %    \spac_align_flush_parfill
- %    }}%
- %
- %  \etoksapp\t_spac_align_collected
- %    {\spac_align_flush_horizontal
- %     \spac_align_flush_vertical
- %     \spac_align_flush_direction
- %     \spac_align_flush_page
- %     \spac_align_flush_parfill}%
- %  \etokspre\t_spac_align_collected
- %    {\raggedonelinerstate\conditionalfalse}% bad
- %
-    \etoks\t_spac_align_collected
-      {\raggedonelinerstate\conditionalfalse % bad
-       \expand\t_spac_align_collected
-       \spac_align_flush_horizontal
-       \spac_align_flush_vertical
-       \spac_align_flush_direction
-       \spac_align_flush_page
-       \spac_align_flush_parfill}%
- %
-   \enforced\permanent\protected\edef\raggedcommand    {\expand\t_spac_align_collected }%
-   \enforced\permanent\protected\edef\updateraggedskips{\spac_align_flush_horizontal}%
-   \enforced\aliased\gletcsname\??alignmentnormalcache\m_spac_align_named\endcsname\raggedcommand
-   \enforced\aliased\gletcsname\??alignmentraggedcache\m_spac_align_named\endcsname\updateraggedskips}
+\to \t_spac_align_presets
 
 \mutable\def\m_spac_align_named{\m_spac_align_asked}
 
@@ -831,8 +819,6 @@
 \defcsname\??aligncommand        1*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plusone}}
 \defcsname\??aligncommand        2*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plustwo}}
 
-\defcsname\??aligncommand          \v!fit\endcsname{\toksapp\t_spac_align_collected{\lastlinefit\plusthousand}}
-
 % experiment
 
 \defcsname\??aligncommand \v!flushforward\endcsname{\c_spac_align_state_horizontal\ifconditional\inlinelefttoright\plustwo\else\plusthree\fi}
@@ -845,6 +831,69 @@
 % experiment
 
 \defcsname\??aligncommand\v!profile\endcsname{\toksapp\t_spac_align_collected{\setmainlineprofile}}
+
+% lastlinefit
+
+\newconstant\c_spac_align_state_fit
+
+\defcsname\??aligncommand\v!fit\endcsname
+  {\c_spac_align_state_fit\plusone}
+
+\appendtoks
+   \c_spac_align_state_fit\zerocount
+\to \t_spac_align_presets
+
+\appendtoks
+   \lastlinefit\ifcase\c_spac_align_state_fit\zerocount\else\plusthousand\fi
+\to \t_spac_align_applied
+
+% linebreakcriterion
+
+\immutable\integerdef\defaultdoublehyphendemerits    10000
+\immutable\integerdef\defaultfinalhyphendemerits      5000
+\immutable\integerdef\defaultadjdemerits             10000
+\immutable\integerdef\defaultorphanpenalty               0
+\immutable\integerdef\defaultlinebreakcriterion          0 % 12 12 12 99 : 0C0C0C63
+
+\immutable\integerdef\granularadjdemerits              5000  % maybe 2500
+\immutable\integerdef\granularlinebreakcriterion  "020C2A63  %  2 12 42 99
+
+\frozen\doublehyphendemerits\defaultdoublehyphendemerits
+\frozen\finalhyphendemerits \defaultfinalhyphendemerits
+\frozen\adjdemerits         \defaultadjdemerits
+\frozen\linebreakcriterion  \defaultlinebreakcriterion
+\frozen\orphanpenalty       \defaultorphanpenalty
+
+% better but incompatible:
+%
+% \frozen\adjdemerits         \optimaladjdemerits
+% \frozen\linebreakcriterion  \optimallinebreakcriterion
+
+\newconstant\c_spac_align_state_granular
+
+\defcsname\??aligncommand\v!granular\endcsname % no way to reset it .. todo: \everyresetalign
+  {\c_spac_align_state_granular\plusone}
+
+\appendtoks
+   \c_spac_align_state_granular\zerocount
+\to \t_spac_align_presets
+
+% \doubleadjdemerits: when zero it defaults to \adjdemerits
+
+\appendtoks
+  \ifcase\c_spac_align_state_granular
+     \adjdemerits       \defaultadjdemerits
+     \doubleadjdemerits \defaultadjdemerits
+     \linebreakcriterion\defaultlinebreakcriterion
+   \else
+     \adjdemerits       \granularadjdemerits
+% \doubleadjdemerits 100000
+     \doubleadjdemerits \defaultadjdemerits
+     \linebreakcriterion\granularlinebreakcriterion
+   \fi
+\to \t_spac_align_applied
+
+% end of definitions
 
 \definehspace [\v!final] [\emspaceamount]
 

@@ -51,6 +51,7 @@ page_builder_state_info lmt_page_builder_state = {
     .vsize            = 0,
     .total            = 0,
     .depth            = 0,
+    .excess           = 0,
     .page_so_far      = { 0 },
     .insert_penalties = 0,
     .insert_heights   = 0,
@@ -239,6 +240,7 @@ static void tex_aux_freeze_page_specs(int s)
     page_vsize = vsize_par;
     page_depth = 0;
     page_total = 0;
+    page_excess = 0;
     page_last_depth = 0;
     page_last_height = 0;
     if (initial_page_skip_par) {
@@ -859,7 +861,6 @@ void tex_build_page(void)
                     );
                     tex_end_diagnostic();
                 }
-
                 if (badness >= awful_bad && page_extra_goal_par) {
                     switch (tex_aux_get_penalty_option(lmt_page_builder_state.page_tail)) {
                         case penalty_option_widowed: 
@@ -902,7 +903,6 @@ void tex_build_page(void)
                             break;
                     }
                 }
-
                 {
                     int moveon = costs <= lmt_page_builder_state.least_cost;
                     int fireup = costs == awful_bad || penalty <= eject_penalty;
@@ -1193,7 +1193,7 @@ static void tex_aux_fire_up(halfword c)
                                             the insert node.
                                          */
                                         halfword list = insert_list(current);
-                                        halfword result = tex_vpack(list, 0, packing_additional, max_dimen, direction_unknown, holding_none_option);
+                                        halfword result = tex_vpack(list, 0, packing_additional, max_dimen, direction_unknown, holding_none_option, NULL);
                                         insert_total_height(current) = box_total(result);
                                         box_list(result) = null;
                                         tex_flush_node(result);
@@ -1209,7 +1209,7 @@ static void tex_aux_fire_up(halfword c)
                                     halfword index = insert_index(insert);
                                     halfword content = tex_get_insert_content(index);
                                     halfword list = box_list(content);
-                                    halfword result = tex_vpack(list, 0, packing_additional, max_dimen, dir_lefttoright, holding_none_option);
+                                    halfword result = tex_vpack(list, 0, packing_additional, max_dimen, dir_lefttoright, holding_none_option, NULL);
                                     tex_set_insert_content(index, result);
                                     box_list(content) = null;
                                     tex_flush_node(content);
@@ -1275,7 +1275,7 @@ static void tex_aux_fire_up(halfword c)
         vfuzz_par = max_dimen;
         tex_show_marks();
      // if (1) { 
-            box_register(output_box_par) = tex_filtered_vpack(node_next(page_head), lmt_page_builder_state.best_size, packing_exactly, lmt_page_builder_state.max_depth, output_group, dir_lefttoright, 0, 0, 0, holding_none_option);
+            box_register(output_box_par) = tex_filtered_vpack(node_next(page_head), lmt_page_builder_state.best_size, packing_exactly, lmt_page_builder_state.max_depth, output_group, dir_lefttoright, 0, 0, 0, holding_none_option, &lmt_page_builder_state.excess);
      // } else { 
      //     /* maybe an option one day */
      //     box_register(output_box_par) = tex_filtered_vpack(node_next(page_head), 0, packing_additional, lmt_page_builder_state.max_depth, output_group, dir_lefttoright, 0, 0, 0, holding_none_option));
@@ -1287,7 +1287,8 @@ static void tex_aux_fire_up(halfword c)
         tex_flush_node(lmt_page_builder_state.last_glue);
     }
     /*tex Start a new current page. This sets |last_glue := max_halfword|. */
-    tex_aux_start_new_page();
+    tex_aux_start_new_page(); 
+    /*tex So depth is now forgotten .. hm. */
     if (lastinsert != hold_head) {
         node_next(page_head) = node_next(hold_head);
         lmt_page_builder_state.page_tail = lastinsert;

@@ -11,58 +11,28 @@
 
 */
 
-// unsigned xaux_str2uni(const unsigned char *k)
-// {
-//     const unsigned char *text = k;
-//     int ch = *text++;
-//     if (ch < 0x80) {
-//         return (unsigned) ch;
-//     } else if (ch <= 0xbf) {
-//         return 0xFFFD;
-//     } else if (ch <= 0xdf) {
-//         if (text[0] >= 0x80 && text[0] < 0xc0) {
-//             return (unsigned) (((ch & 0x1f) << 6) | (text[0] & 0x3f));
-//         }
-//     } else if (ch <= 0xef) {
-//         if (text[0] >= 0x80 && text[0] < 0xc0 && text[1] >= 0x80 && text[1] < 0xc0) {
-//             return (unsigned) (((ch & 0xf) << 12) | ((text[0] & 0x3f) << 6) | (text[1] & 0x3f));
-//         }
-//     } else if (ch <= 0xf7) {
-//         if (text[0] <  0x80 || text[1] <  0x80 || text[2] <  0x80 ||
-//             text[0] >= 0xc0 || text[1] >= 0xc0 || text[2] >= 0xc0) {
-//             return 0xFFFD;
-//         } else {
-//             int w1 = (((ch & 0x7) << 2) | ((text[0] & 0x30) >> 4)) - 1;
-//             int w2 = ((text[1] & 0xf) << 6) | (text[2] & 0x3f);
-//             w1 = (w1 << 6) | ((text[0] & 0xf) << 2) | ((text[1] & 0x30) >> 4);
-//             return (unsigned) (w1 * 0x400 + w2 + 0x10000);
-//         }
-//     }
-//     return 0xFFFD;
-// }
-
 unsigned aux_str2uni(const unsigned char *text)
 {
     if (text[0] < 0x80) {
         return (unsigned) text[0];
-    } else if (text[0] <= 0xbf) {
+    } else if (text[0] <= 0xBF) {
         return 0xFFFD;
-    } else if (text[0] <= 0xdf) {
-        if (text[1] >= 0x80 && text[1] < 0xc0) {
-            return (unsigned) (((text[0] & 0x1f) << 6) | (text[1] & 0x3f));
+    } else if (text[0] <= 0xDF) {
+        if (text[1] >= 0x80 && text[1] < 0xC0) {
+            return (unsigned) (((text[0] & 0x1F) << 6) | (text[1] & 0x3F));
         }
-    } else if (text[0] <= 0xef) {
-        if (text[1] >= 0x80 && text[1] < 0xc0 && text[2] >= 0x80 && text[2] < 0xc0) {
-            return (unsigned) (((text[0] & 0xf) << 12) | ((text[1] & 0x3f) << 6) | (text[2] & 0x3f));
+    } else if (text[0] <= 0xEF) {
+        if (text[1] >= 0x80 && text[1] < 0xC0 && text[2] >= 0x80 && text[2] < 0xC0) {
+            return (unsigned) (((text[0] & 0xF) << 12) | ((text[1] & 0x3F) << 6) | (text[2] & 0x3F));
         }
-    } else if (text[0] <= 0xf7) {
+    } else if (text[0] <= 0xF7) {
         if (text[1] <  0x80 || text[2] <  0x80 || text[3] <  0x80 ||
-            text[1] >= 0xc0 || text[2] >= 0xc0 || text[3] >= 0xc0) {
+            text[1] >= 0xC0 || text[2] >= 0xC0 || text[3] >= 0xC0) {
             return 0xFFFD;
         } else {
             int w1 = (((text[0] & 0x7) << 2) | ((text[1] & 0x30) >> 4)) - 1;
-            int w2 = ((text[2] & 0xf) << 6) | (text[3] & 0x3f);
-            w1 = (w1 << 6) | ((text[1] & 0xf) << 2) | ((text[2] & 0x30) >> 4);
+            int w2 = ((text[2] & 0xF) << 6) | (text[3] & 0x3F);
+            w1 = (w1 << 6) | ((text[1] & 0xF) << 2) | ((text[2] & 0x30) >> 4);
             return (unsigned) (w1 * 0x400 + w2 + 0x10000);
         }
     }
@@ -74,29 +44,29 @@ unsigned aux_str2uni_len(const unsigned char *text, int *len)
     if (text[0] < 0x80) {
         *len = 1;
         return (unsigned) text[0];
-    } else if (text[0] <= 0xbf) {
+    } else if (text[0] <= 0xBF) {
         *len = 1;
         return 0xFFFD;
-    } else if (text[0] <= 0xdf) {
-        if (text[1] >= 0x80 && text[1] < 0xc0) {
+    } else if (text[0] <= 0xDF) {
+        if (text[1] >= 0x80 && text[1] < 0xC0) {
             *len = 2;
-            return (unsigned) (((text[0] & 0x1f) << 6) | (text[1] & 0x3f));
+            return (unsigned) (((text[0] & 0x1F) << 6) | (text[1] & 0x3F));
         }
-    } else if (text[0] <= 0xef) {
-        if (text[1] >= 0x80 && text[1] < 0xc0 && text[2] >= 0x80 && text[2] < 0xc0) {
+    } else if (text[0] <= 0xEF) {
+        if (text[1] >= 0x80 && text[1] < 0xC0 && text[2] >= 0x80 && text[2] < 0xC0) {
             *len = 3;
-            return (unsigned) (((text[0] & 0xf) << 12) | ((text[1] & 0x3f) << 6) | (text[2] & 0x3f));
+            return (unsigned) (((text[0] & 0xF) << 12) | ((text[1] & 0x3F) << 6) | (text[2] & 0x3F));
         }
-    } else if (text[0] <= 0xf7) {
+    } else if (text[0] <= 0xF7) {
         if (text[1] <  0x80 || text[2] <  0x80 || text[3] <  0x80 ||
-            text[1] >= 0xc0 || text[2] >= 0xc0 || text[3] >= 0xc0) {
+            text[1] >= 0xC0 || text[2] >= 0xC0 || text[3] >= 0xC0) {
             *len = 4;
             return 0xFFFD;
         } else {
             *len = 4;
             int w1 = (((text[0] & 0x7) << 2) | ((text[1] & 0x30) >> 4)) - 1;
-            int w2 = ((text[2] & 0xf) << 6) | (text[3] & 0x3f);
-            w1 = (w1 << 6) | ((text[1] & 0xf) << 2) | ((text[2] & 0x30) >> 4);
+            int w2 = ((text[2] & 0xF) << 6) | (text[3] & 0x3F);
+            w1 = (w1 << 6) | ((text[1] & 0xF) << 2) | ((text[2] & 0x30) >> 4);
             return (unsigned) (w1 * 0x400 + w2 + 0x10000);
         }
     }
@@ -113,22 +83,22 @@ unsigned char *aux_uni2str(unsigned unic)
             buf[0] = (unsigned char) unic;
             buf[1] = '\0';
         } else if (unic < 0x800) {
-            buf[0] = (unsigned char) (0xc0 | (unic >> 6));
-            buf[1] = (unsigned char) (0x80 | (unic & 0x3f));
+            buf[0] = (unsigned char) (0xC0 | (unic >> 6));
+            buf[1] = (unsigned char) (0x80 | (unic & 0x3F));
             buf[2] = '\0';
         } else if (unic < 0x10000) {
-            buf[0] = (unsigned char) (0xe0 | (unic >> 12));
-            buf[1] = (unsigned char) (0x80 | ((unic >> 6) & 0x3f));
-            buf[2] = (unsigned char) (0x80 | (unic & 0x3f));
+            buf[0] = (unsigned char) (0xE0 | (unic >> 12));
+            buf[1] = (unsigned char) (0x80 | ((unic >> 6) & 0x3F));
+            buf[2] = (unsigned char) (0x80 | (unic & 0x3F));
             buf[3] = '\0';
         } else if (unic < 0x110000) {
             int u; 
             unic -= 0x10000;
-            u = (int) (((unic & 0xf0000) >> 16) + 1);
-            buf[0] = (unsigned char) (0xf0 | (u >> 2));
-            buf[1] = (unsigned char) (0x80 | ((u & 3) << 4) | ((unic & 0x0f000) >> 12));
-            buf[2] = (unsigned char) (0x80 | ((unic & 0x00fc0) >> 6));
-            buf[3] = (unsigned char) (0x80 | (unic & 0x0003f));
+            u = (int) (((unic & 0xF0000) >> 16) + 1);
+            buf[0] = (unsigned char) (0xF0 | (u >> 2));
+            buf[1] = (unsigned char) (0x80 | ((u & 3) << 4) | ((unic & 0xF000) >> 12));
+            buf[2] = (unsigned char) (0x80 | ((unic & 0xFC0) >> 6));
+            buf[3] = (unsigned char) (0x80 | (unic & 0x3F));
             buf[4] = '\0';
         }
     }
@@ -147,23 +117,23 @@ unsigned char *aux_uni2str(unsigned unic)
 char *aux_uni2string(char *utf8_text, unsigned unic)
 {
     /*tex Increment and deposit character: */
-    if (unic <= 0x7f) {
+    if (unic <= 0x7F) {
         *utf8_text++ = (char) unic;
-    } else if (unic <= 0x7ff) {
-        *utf8_text++ = (char) (0xc0 | (unic >> 6));
-        *utf8_text++ = (char) (0x80 | (unic & 0x3f));
-    } else if (unic <= 0xffff) {
+    } else if (unic <= 0x7FF) {
+        *utf8_text++ = (char) (0xC0 | (unic >> 6));
+        *utf8_text++ = (char) (0x80 | (unic & 0x3F));
+    } else if (unic <= 0xFFFF) {
         *utf8_text++ = (char) (0xe0 | (unic >> 12));
-        *utf8_text++ = (char) (0x80 | ((unic >> 6) & 0x3f));
-        *utf8_text++ = (char) (0x80 | (unic & 0x3f));
+        *utf8_text++ = (char) (0x80 | ((unic >> 6) & 0x3F));
+        *utf8_text++ = (char) (0x80 | (unic & 0x3F));
     } else if (unic < 0x110000) {
         unsigned u; 
         unic -= 0x10000;
-        u = ((unic & 0xf0000) >> 16) + 1;
-        *utf8_text++ = (char) (0xf0 | (u >> 2));
-        *utf8_text++ = (char) (0x80 | ((u & 3) << 4) | ((unic & 0x0f000) >> 12));
-        *utf8_text++ = (char) (0x80 | ((unic & 0x00fc0) >> 6));
-        *utf8_text++ = (char) (0x80 | (unic & 0x0003f));
+        u = ((unic & 0xF0000) >> 16) + 1;
+        *utf8_text++ = (char) (0xF0 | (u >> 2));
+        *utf8_text++ = (char) (0x80 | ((u & 3) << 4) | ((unic & 0xF000) >> 12));
+        *utf8_text++ = (char) (0x80 | ((unic & 0xFC0) >> 6));
+        *utf8_text++ = (char) (0x80 | (unic & 0x3F));
     }
     return (utf8_text);
 }
@@ -176,18 +146,18 @@ unsigned aux_splitutf2uni(unsigned int *ubuf, const char *utf8buf)
     const unsigned char *pt = (const unsigned char *) utf8buf;
     const unsigned char *end = pt + len;
     while (pt < end && *pt != '\0' && upt < uend) {
-        if (*pt <= 127) {
+        if (*pt <= 0x7F) {
             *upt = *pt++;
-        } else if (*pt <= 0xdf) {
-            *upt = (unsigned int) (((*pt & 0x1f) << 6) | (pt[1] & 0x3f));
+        } else if (*pt <= 0xDF) {
+            *upt = (unsigned int) (((*pt & 0x1F) << 6) | (pt[1] & 0x3F));
             pt += 2;
-        } else if (*pt <= 0xef) {
-            *upt = (unsigned int) (((*pt & 0xf) << 12) | ((pt[1] & 0x3f) << 6) | (pt[2] & 0x3f));
+        } else if (*pt <= 0xEF) {
+            *upt = (unsigned int) (((*pt & 0xF) << 12) | ((pt[1] & 0x3F) << 6) | (pt[2] & 0x3F));
             pt += 3;
         } else {
             int w1 = (((*pt & 0x7) << 2) | ((pt[1] & 0x30) >> 4)) - 1;
-            int w2 = ((pt[2] & 0xf) << 6) | (pt[3] & 0x3f);
-            w1 = (w1 << 6) | ((pt[1] & 0xf) << 2) | ((pt[2] & 0x30) >> 4);
+            int w2 = ((pt[2] & 0xF) << 6) | (pt[3] & 0x3F);
+            w1 = (w1 << 6) | ((pt[1] & 0xF) << 2) | ((pt[2] & 0x30) >> 4);
             *upt = (unsigned int) (w1 * 0x400 + w2 + 0x10000);
             pt += 4;
         }

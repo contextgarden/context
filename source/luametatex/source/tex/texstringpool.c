@@ -286,13 +286,29 @@ char *tex_take_string(int *len)
 
 */
 
+// int tex_str_eq_buf(strnumber s, int k, int n)
+// {
+//     if (s < cs_offset_value) {
+//         /* very unlikely */
+//         return buffer_to_unichar(k) == (unsigned int) s;
+//     } else {
+//         return memcmp(str_string(s), &lmt_fileio_state.io_buffer[k], n) == 0;
+//     }
+// }
+
+// int tex_str_eq_buf(strnumber s, int k, int n)
+// {
+//     if (s >= cs_offset_value) {
+//         return memcmp(str_string(s), &lmt_fileio_state.io_buffer[k], n) == 0;
+//     } else {
+//         /* very unlikely */
+//         return buffer_to_unichar(k) == (unsigned int) s;
+//     }
+// }
+
 int tex_str_eq_buf(strnumber s, int k, int n)
 {
-    if (s < cs_offset_value) {
-        return buffer_to_unichar(k) == (unsigned int) s;
-    } else {
-        return memcmp(str_string(s), &lmt_fileio_state.io_buffer[k], n) == 0;
-    }
+    return (s >= cs_offset_value) ? (memcmp(str_string(s), &lmt_fileio_state.io_buffer[k], n) == 0) : (buffer_to_unichar(k) == (unsigned int) s);
 }
 
 /*tex

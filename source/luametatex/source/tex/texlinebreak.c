@@ -308,6 +308,7 @@ void tex_line_break(int d, int line_break_context)
                     .adjust_spacing          = tex_get_par_par(par, par_adjust_spacing_code),
                     .protrude_chars          = tex_get_par_par(par, par_protrude_chars_code),
                     .adj_demerits            = tex_get_par_par(par, par_adj_demerits_code),
+                    .double_adj_demerits     = tex_get_par_par(par, par_double_adj_demerits_code),
                     .line_penalty            = tex_get_par_par(par, par_line_penalty_code),
                     .last_line_fit           = tex_get_par_par(par, par_last_line_fit_code),
                     .double_hyphen_demerits  = tex_get_par_par(par, par_double_hyphen_demerits_code),
@@ -330,6 +331,7 @@ void tex_line_break(int d, int line_break_context)
                     .display_widow_penalty   = tex_get_par_par(par, par_display_widow_penalty_code),
                     .display_widow_penalties = tex_get_par_par(par, par_display_widow_penalties_code),
                     .orphan_penalty          = tex_get_par_par(par, par_orphan_penalty_code),
+                    .single_line_penalty     = tex_get_par_par(par, par_single_line_penalty_code),
                     .orphan_penalties        = tex_get_par_par(par, par_orphan_penalties_code),
                     .broken_penalty          = tex_get_par_par(par, par_broken_penalty_code),
                     .baseline_skip           = tex_get_par_par(par, par_baseline_skip_code),
@@ -437,7 +439,7 @@ static void tex_aux_warn_expand_pars(void)
     }
 }
 
-static int tex_aux_check_expand_pars(halfword adjust_spacing, halfword adjust_spacing_step, halfword f)
+static int tex_aux_check_expand_pars(halfword adjust_spacing_step, halfword f)
 {
  // if ((font_step(f) == 0) || ((font_max_stretch(f) == 0) && (font_max_shrink(f) == 0))) {
     if (! has_font_text_control(f, text_control_expansion)) {
@@ -1066,7 +1068,7 @@ static void tex_aux_add_to_widths(halfword s, int adjust_spacing, int adjust_spa
         switch (node_type(s)) {
             case glyph_node:
                 widths[total_advance_amount] += tex_glyph_width(s); 
-                if (adjust_spacing && ! tex_has_glyph_option(s, glyph_option_no_expansion) && tex_aux_check_expand_pars(adjust_spacing, adjust_spacing_step, glyph_font(s))) {
+                if (adjust_spacing && ! tex_has_glyph_option(s, glyph_option_no_expansion) && tex_aux_check_expand_pars(adjust_spacing_step, glyph_font(s))) {
                     lmt_packaging_state.previous_char_ptr = s;
                     widths[font_stretch_amount] += tex_char_stretch(s);
                     widths[font_shrink_amount] += tex_char_shrink(s);
@@ -1119,7 +1121,7 @@ static void tex_aux_sub_from_widths(halfword s, int adjust_spacing, int adjust_s
         switch (node_type(s)) {
             case glyph_node:
                 widths[total_advance_amount] -= tex_glyph_width(s);
-                if (adjust_spacing && ! tex_has_glyph_option(s, glyph_option_no_expansion) && tex_aux_check_expand_pars(adjust_spacing, adjust_spacing_step, glyph_font(s))) {
+                if (adjust_spacing && ! tex_has_glyph_option(s, glyph_option_no_expansion) && tex_aux_check_expand_pars(adjust_spacing_step, glyph_font(s))) {
                     lmt_packaging_state.previous_char_ptr = s;
                     widths[font_stretch_amount] -= tex_char_stretch(s);
                     widths[font_shrink_amount] -= tex_char_shrink(s);
@@ -2085,6 +2087,7 @@ static void tex_aux_try_break(
             demerits = 0;
         } else {
             /*tex Compute the demerits, |d|, from |r| to |cur_p|. */
+            int distance = abs(fit_class - (halfword) active_fitness(current));
             demerits = properties->line_penalty + badness;
             if (abs(demerits) >= infinite_bad) {
                 demerits = extremely_deplorable;
@@ -2111,8 +2114,10 @@ static void tex_aux_try_break(
                 some compilers (versions or whatever) get confused by the type of (unsigned) integer
                 used.
             */
-            if (abs(fit_class - (halfword) active_fitness(current)) > 1) {
-                demerits = demerits + properties->adj_demerits;
+            if (distance > 1) {
+                demerits += properties->double_adj_demerits ? properties->double_adj_demerits : properties->adj_demerits;
+            } else if (distance > 0) {
+                demerits += properties->adj_demerits;
             }
         }
         if (properties->tracing_paragraphs > 0) {
@@ -2802,6 +2807,7 @@ inline static int tex_aux_check_sub_pass(line_break_properties *properties, half
                         tex_print_format("  doublehyphendemerits %i\n", properties->double_hyphen_demerits);
                         tex_print_format("  finalhyphendemerits  %i\n", properties->final_hyphen_demerits);
                         tex_print_format("  adjdemerits          %i\n", properties->adj_demerits);
+                        tex_print_format("  doubleadjdemerits    %i\n", properties->double_adj_demerits);
                         tex_print_format("  emergencystretch     %D\n", properties->emergency_stretch, pt_unit);
                         tex_print_format("  looseness            %i\n", properties->looseness);
                         tex_print_format("  adjustspacing        %i\n", properties->adjust_spacing);
@@ -2931,7 +2937,7 @@ inline static halfword tex_aux_break_list(line_break_properties *properties, hal
             case glyph_node:
                 /* why ex here and not in add/sub disc glyphs */
                 lmt_linebreak_state.active_width[total_advance_amount] += tex_glyph_width(current); 
-                if (properties->adjust_spacing && tex_aux_check_expand_pars(properties->adjust_spacing, properties->adjust_spacing_step, glyph_font(current))) {
+                if (properties->adjust_spacing && tex_aux_check_expand_pars(properties->adjust_spacing_step, glyph_font(current))) {
                     lmt_packaging_state.previous_char_ptr = current;
                     lmt_linebreak_state.active_width[font_stretch_amount] += tex_char_stretch(current);
                     lmt_linebreak_state.active_width[font_shrink_amount] += tex_char_shrink(current);
@@ -4302,6 +4308,15 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
             }
         }
         lmt_packaging_state.pre_migrate_tail = null;
+
+if (cur_line == 1 && lmt_linebreak_state.best_line == 2 && properties->single_line_penalty) {
+// if (cur_line == 1 && lmt_linebreak_state.best_line == 2 && single_line_penalty_par) {
+    halfword r = tex_new_penalty_node(properties->single_line_penalty, single_line_penalty_subtype);
+//  halfword r = tex_new_penalty_node(single_line_penalty_par, single_line_penalty_subtype);
+    tex_couple_nodes(cur_list.tail, r);
+    cur_list.tail = r;
+} 
+
         /* Line content (callback). */
         tex_append_to_vlist(lmt_linebreak_state.just_box, lua_key_index(post_linebreak), properties);
         if (! lmt_page_builder_state.output_active) {

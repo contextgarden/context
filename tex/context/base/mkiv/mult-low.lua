@@ -80,7 +80,7 @@ return {
         "widowpenaltyfrozenparcode", "displaypenaltyfrozenparcode", "brokenpenaltyfrozenparcode",
         "demeritsfrozenparcode", "shapefrozenparcode", "linefrozenparcode", "hyphenationfrozenparcode",
         "shapingpenaltyfrozenparcode", "orphanpenaltyfrozenparcode", "allfrozenparcode",
-        "emergencyfrozenparcode", "parpassesfrozenparcode",
+        "emergencyfrozenparcode", "parpassesfrozenparcode", "singlelinepenaltyfrozenparcode",
         --
         "activemathcharcode",
         --

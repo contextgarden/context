@@ -21,32 +21,6 @@
 
 \unprotect
 
-\immutable\integerdef\defaultdoublehyphendemerits    10000
-\immutable\integerdef\defaultfinalhyphendemerits      5000
-\immutable\integerdef\defaultadjdemerits             10000
-\immutable\integerdef\defaultorphanpenalty               0
-\immutable\integerdef\defaultlinebreakcriterion          0 % 12 12 12 99 : 0C0C0C63
-
-\immutable\integerdef\granularadjdemerits              5000
-\immutable\integerdef\granularlinebreakcriterion  "020C2A63  %  2 12 42 99
-
-\frozen\doublehyphendemerits\defaultdoublehyphendemerits
-\frozen\finalhyphendemerits \defaultfinalhyphendemerits
-\frozen\adjdemerits         \defaultadjdemerits
-\frozen\linebreakcriterion  \defaultlinebreakcriterion
-\frozen\orphanpenalty       \defaultorphanpenalty
-
-% better but incompatible:
-%
-% \frozen\adjdemerits         \optimaladjdemerits
-% \frozen\linebreakcriterion  \optimallinebreakcriterion
-
-\defcsname\??aligncommand\v!granular\endcsname % no way to reset it .. todo: \everyresetalign
-  {\toksapp\t_spac_align_collected{%
-     \adjdemerits       \granularadjdemerits
-     \linebreakcriterion\granularlinebreakcriterion
-   }}
-
 % \resetpenalties\orphanpenalties
 
 \integerdef\indecentparpassclasses\numexpr
@@ -130,5 +104,9 @@
 
 % Musical timestamp: Archive's Call to Arms & Angels (and Super8) in loop mode
 % (June 2023, weirdly I had missed those releases in 2022).
+
+
+% \dorecurse{41}{line #1\par}
+% here \singlelinepenalty20000 \updateparagraphpenalties here here
 
 \protect

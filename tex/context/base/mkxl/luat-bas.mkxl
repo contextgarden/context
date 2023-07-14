@@ -13,9 +13,9 @@
 
 \writestatus{loading}{ConTeXt Lua Macros / Basic Lua Libraries}
 
-\registerctxluafile{l-bit32}   {} % before sandbox
-\registerctxluafile{l-lua}     {} % before sandbox
-\registerctxluafile{l-macro}   {}
+\registerctxluafile{l-bit32}   {autosuffix} % before sandbox
+\registerctxluafile{l-lua}     {autosuffix} % before sandbox
+%registerctxluafile{l-macro}   {}
 \registerctxluafile{l-sandbox} {}
 \registerctxluafile{l-package} {}
 \registerctxluafile{l-lpeg}    {}
@@ -36,7 +36,7 @@
 \registerctxluafile{l-url}     {}
 \registerctxluafile{l-set}     {}
 
-\registerctxluafile{l-macro-imp-optimize}{}
+%registerctxluafile{l-macro-imp-optimize}{}
 
 % \registerctxluafile{socket}{}
 % \registerctxluafile{ltn12} {}

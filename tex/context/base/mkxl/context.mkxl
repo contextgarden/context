@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2023.07.09 19:07}
+\immutable\edef\contextversion{2023.07.14 12:05}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -786,13 +786,13 @@
 % c:/data/develop/context/sources/page-mix.lua
 % c:/data/develop/context/sources/page-pst.lua
 
-% c:/data/develop/context/sources/publ-aut.lua % These files are shared and it makes
+%%c:/data/develop/context/sources/publ-aut.lua % These files are shared and it makes
 % c:/data/develop/context/sources/publ-dat.lua % no sense to make lmtx variants (yet),
 % c:/data/develop/context/sources/publ-fnd.lua %
 % c:/data/develop/context/sources/publ-inc.lua %
 % c:/data/develop/context/sources/publ-ini.lua %
 % c:/data/develop/context/sources/publ-jrn.lua %
-% c:/data/develop/context/sources/publ-oth.lua %
+%%c:/data/develop/context/sources/publ-oth.lua %
 % c:/data/develop/context/sources/publ-reg.lua %
 % c:/data/develop/context/sources/publ-sor.lua %
 % c:/data/develop/context/sources/publ-tra.lua %

@@ -281,21 +281,22 @@ static int texlib_aux_store(lua_State *L, int i, int partial, int cattable, int 
                         We could append to a previous but partial interferes and in practice it then
                         never can be done. How often do we print char by char? 
                     */
-                 // if (append && write_spindle.tail && partial && partial == write_spindle.tail->partial) {
-                 //     if (write_spindle.tail->kind == packed_lua_input && write_spindle.tail->cattable == cattable) {
-                 //         size_t s = write_spindle.tail->tsize;
-                 //         if (tsize + s <= PACKED_SIZE) { 
-                 //             for (unsigned i = 0; i < tsize; i++) {
-                 //                 write_spindle.tail->data.c[s++] = (unsigned char) sttemp[i];
-                 //             }   
-                 //             write_spindle.tail->tsize += tsize;
-                 //          // lmt_token_state.luacstrings++; /* already set */
-                 //          // write_spindle.complete = 0; /* already set */
-                 //             return 1;
-                 //         }
-                 //     }
-                 // }
-                    for (unsigned i = 0; i < tsize; i++) {
+                    (void) append;
+                    if (append && write_spindle.tail && partial && partial == write_spindle.tail->partial) {
+                        if (write_spindle.tail->kind == packed_lua_input && write_spindle.tail->cattable == cattable) {
+                            size_t s = write_spindle.tail->tsize;
+                            if (tsize + s <= PACKED_SIZE) { 
+                                for (unsigned i = 0; i < tsize; i++) {
+                                      write_spindle.tail->data.c[s++] = (unsigned char) sttemp[i];
+                                }   
+                                write_spindle.tail->tsize += tsize;
+                             /* lmt_token_state.luacstrings++; */ /* already set */
+                             /* write_spindle.complete = 0;    */ /* already set */
+                                return 1;
+                            }
+                        }
+                    }
+                    for (unsigned int i = 0; i < tsize; i++) {
                         /*tex When we end up here we often don't have that many bytes. */
                         data.c[i] = (unsigned char) sttemp[i];
                     }
@@ -1741,7 +1742,7 @@ static int texlib_getfloat(lua_State *L)
 {
     int index;
     int state = texlib_aux_check_for_index(L, 1, "float", &index, internal_posit_cmd, register_posit_cmd, internal_posit_base, register_posit_base, max_posit_register_index, posit_cmd);
-    lua_pushnumber(L, tex_posit_to_double(state >= 0 ? (state == 2 ? eq_value(index) : tex_get_tex_posit_register(index, state)) : 0));
+    lua_pushnumber(L, tex_posit_to_double((state >= 0) ? (state == 2 ? eq_value(index) : tex_get_tex_posit_register(index, state)) : 0));
     return 1;
 }
 
@@ -3995,6 +3996,7 @@ static int texlib_linebreak(lua_State *L)
         get_integer_par  (properties.adjust_spacing,          adjustspacing,         tex_get_par_par(par, par_adjust_spacing_code));
         get_integer_par  (properties.protrude_chars,          protrudechars,         tex_get_par_par(par, par_protrude_chars_code));
         get_integer_par  (properties.adj_demerits,            adjdemerits,           tex_get_par_par(par, par_adj_demerits_code));
+        get_integer_par  (properties.double_adj_demerits,     doubleadjdemerits,     tex_get_par_par(par, par_double_adj_demerits_code));
         get_integer_par  (properties.line_penalty,            linepenalty,           tex_get_par_par(par, par_line_penalty_code));
         get_integer_par  (properties.last_line_fit,           lastlinefit,           tex_get_par_par(par, par_last_line_fit_code));
         get_integer_par  (properties.double_hyphen_demerits,  doublehyphendemerits,  tex_get_par_par(par, par_double_hyphen_demerits_code));
@@ -4011,6 +4013,7 @@ static int texlib_linebreak(lua_State *L)
         get_integer_par  (properties.widow_penalty,           widowpenalty,          tex_get_par_par(par, par_widow_penalty_code));
         get_integer_par  (properties.display_widow_penalty,   displaywidowpenalty,   tex_get_par_par(par, par_display_widow_penalty_code));
         get_integer_par  (properties.orphan_penalty,          orphanpenalty,         tex_get_par_par(par, par_orphan_penalty_code));
+        get_integer_par  (properties.single_line_penalty,     singlelinepenalty,     tex_get_par_par(par, par_single_line_penalty_code));
         get_integer_par  (properties.broken_penalty,          brokenpenalty,         tex_get_par_par(par, par_broken_penalty_code));
         get_glue_par     (properties.baseline_skip,           baselineskip,          tex_get_par_par(par, par_baseline_skip_code));
         get_glue_par     (properties.line_skip,               lineskip,              tex_get_par_par(par, par_line_skip_code));
@@ -4785,11 +4788,12 @@ static int texlib_setfloatvalue(lua_State *L)
         lmt_check_for_flags(L, 3, &flags, 1, 0);
         if (tex_define_permitted(cs, flags)) {
             unsigned value = tex_double_to_posit(luaL_optnumber(L, 2, 0)).v;
-            if (value >= min_posit && value <= max_posit) {
+         /* if we check we need to do it on the double or look at somethign else */
+         /* if ((value >= min_posit) && (value <= max_posit)) { */ /* always true */
                 tex_define(flags, cs, (quarterword) posit_cmd, value);
-            } else {
-                tex_formatted_error("lua", "posit only accepts values in the range %i-%i", min_posit, max_posit);
-            }
+         /* } else { */
+         /*     tex_formatted_error("lua", "posit only accepts values in the range %i-%i", min_posit, max_posit); */
+         /* } */
         }
     }
     return 0;
@@ -4805,11 +4809,12 @@ static int texlib_setcardinalvalue(lua_State *L)
         lmt_check_for_flags(L, 3, &flags, 1, 0);
         if (tex_define_permitted(cs, flags)) {
             unsigned value = lmt_opturoundnumber(L, 2, 0);
-            if (value >= min_cardinal && value <= max_cardinal) {
+         /* if we check we need to do it on the double or look at somethign else */
+         /* if ((value >= min_cardinal) && (value <= max_cardinal)) { */ /* always true */
                 tex_define(flags, cs, (quarterword) integer_cmd, value);
-            } else {
-                tex_formatted_error("lua", "cardinal only accepts values in the range %d-%d", min_cardinal, max_cardinal);
-            }
+         /* } else { */
+         /*     tex_formatted_error("lua", "cardinal only accepts values in the range %d-%d", min_cardinal, max_cardinal); */
+         /* } */
         }
     }
     return 0;
@@ -4887,7 +4892,7 @@ static int texlib_getintegervalue(lua_State *L) /* todo, now has duplicate in to
             }
         case LUA_TNUMBER:
             {
-                halfword i = lua_tointeger(L, 1) -0xFFFF;
+                halfword i = lmt_tohalfword(L, 1) - 0xFFFF;
                 if (i < (eqtb_size + lmt_hash_state.hash_data.ptr + 1) && eq_type(i) == integer_cmd) {
                     lua_pushinteger(L, eq_value(i));
                     return 1;
@@ -4957,7 +4962,7 @@ static int texlib_getdimensionvalue(lua_State *L) /* todo, now has duplicate in 
             }
         case LUA_TNUMBER:
             {
-                halfword i = lua_tointeger(L, 1) -0xFFFF;
+                halfword i = lmt_tohalfword(L, 1) - 0xFFFF;
                 if (i < (eqtb_size + lmt_hash_state.hash_data.ptr + 1) && eq_type(i) == dimension_cmd) {
                     lua_pushinteger(L, eq_value(i));
                     return 1;
@@ -5327,32 +5332,33 @@ static int texlib_getiovalues(lua_State *L) /* for reporting so we keep spaces *
 
 static int texlib_getfrozenparvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 21);
-    lua_set_string_by_index(L, par_hsize_category,           "hsize");
-    lua_set_string_by_index(L, par_skip_category,            "skip");
-    lua_set_string_by_index(L, par_hang_category,            "hang");
-    lua_set_string_by_index(L, par_indent_category,          "indent");
-    lua_set_string_by_index(L, par_par_fill_category,        "parfill");
-    lua_set_string_by_index(L, par_adjust_category,          "adjust");
-    lua_set_string_by_index(L, par_protrude_category,        "protrude");
-    lua_set_string_by_index(L, par_tolerance_category,       "tolerance");
-    lua_set_string_by_index(L, par_stretch_category,         "stretch");
-    lua_set_string_by_index(L, par_looseness_category,       "looseness");
-    lua_set_string_by_index(L, par_last_line_category,       "lastline");
-    lua_set_string_by_index(L, par_line_penalty_category,    "linepenalty");
-    lua_set_string_by_index(L, par_club_penalty_category,    "clubpenalty");
-    lua_set_string_by_index(L, par_widow_penalty_category,   "widowpenalty");
-    lua_set_string_by_index(L, par_display_penalty_category, "displaypenalty");
-    lua_set_string_by_index(L, par_broken_penalty_category,  "brokenpenalty");
-    lua_set_string_by_index(L, par_demerits_category,        "demerits");
-    lua_set_string_by_index(L, par_shape_category,           "shape");
-    lua_set_string_by_index(L, par_line_category,            "line");
-    lua_set_string_by_index(L, par_hyphenation_category,     "hyphenation");
-    lua_set_string_by_index(L, par_shaping_penalty_category, "shapingpenalty");
-    lua_set_string_by_index(L, par_orphan_penalty_category,  "orphanpenalty");
-    lua_set_string_by_index(L, par_emergency_category,       "emergency");
-    lua_set_string_by_index(L, par_par_passes_category,      "parpasses");
- /* lua_set_string_by_index(L, par_all_category,             "all"); */
+    lua_createtable(L, 2, 22);
+    lua_set_string_by_index(L, par_hsize_category,                   "hsize");
+    lua_set_string_by_index(L, par_skip_category,                    "skip");
+    lua_set_string_by_index(L, par_hang_category,                    "hang");
+    lua_set_string_by_index(L, par_indent_category,                  "indent");
+    lua_set_string_by_index(L, par_par_fill_category,                "parfill");
+    lua_set_string_by_index(L, par_adjust_category,                  "adjust");
+    lua_set_string_by_index(L, par_protrude_category,                "protrude");
+    lua_set_string_by_index(L, par_tolerance_category,               "tolerance");
+    lua_set_string_by_index(L, par_stretch_category,                 "stretch");
+    lua_set_string_by_index(L, par_looseness_category,               "looseness");
+    lua_set_string_by_index(L, par_last_line_category,               "lastline");
+    lua_set_string_by_index(L, par_line_penalty_category,            "linepenalty");
+    lua_set_string_by_index(L, par_club_penalty_category,            "clubpenalty");
+    lua_set_string_by_index(L, par_widow_penalty_category,           "widowpenalty");
+    lua_set_string_by_index(L, par_display_penalty_category,         "displaypenalty");
+    lua_set_string_by_index(L, par_broken_penalty_category,          "brokenpenalty");
+    lua_set_string_by_index(L, par_demerits_category,                "demerits");
+    lua_set_string_by_index(L, par_shape_category,                   "shape");
+    lua_set_string_by_index(L, par_line_category,                    "line");
+    lua_set_string_by_index(L, par_hyphenation_category,             "hyphenation");
+    lua_set_string_by_index(L, par_shaping_penalty_category,         "shapingpenalty");
+    lua_set_string_by_index(L, par_orphan_penalty_category,          "orphanpenalty");
+    lua_set_string_by_index(L, par_emergency_category,               "emergency");
+    lua_set_string_by_index(L, par_par_passes_category,              "parpasses");
+    lua_set_string_by_index(L, par_par_single_line_penalty_category, "singlelinepenalty");
+ /* lua_set_string_by_index(L, par_all_category,                     "all"); */
     return 1;
 }
 

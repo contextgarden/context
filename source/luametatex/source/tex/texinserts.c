@@ -473,7 +473,7 @@ void tex_finish_insert_group(void)
      // tex_pop_nest();
         p = node_next(cur_list.head);
         tex_pop_nest();
-        p = tex_vpack(p, 0, packing_additional, max_dimen, direction_unknown, holding_none_option);
+        p = tex_vpack(p, 0, packing_additional, max_dimen, direction_unknown, holding_none_option, NULL);
         {
             halfword index = saved_value(saved_insert_item_index);
             halfword insert = tex_new_node(insert_node, 0);

@@ -182,22 +182,22 @@ typedef sa_tree_head *sa_tree;
 
 # endif 
 
-extern void    sa_set_item_1    (sa_tree head, int n, int v, int gl);
-extern void    sa_set_item_2    (sa_tree head, int n, int v, int gl);
-extern void    sa_set_item_4    (sa_tree head, int n, sa_tree_item v, int gl);
-extern void    sa_set_item_8    (sa_tree head, int n, sa_tree_item v1, sa_tree_item v2, int gl);
+extern void    sa_set_item_1    (const sa_tree head, int n, int v, int gl);
+extern void    sa_set_item_2    (const sa_tree head, int n, int v, int gl);
+extern void    sa_set_item_4    (const sa_tree head, int n, sa_tree_item v, int gl);
+extern void    sa_set_item_8    (const sa_tree head, int n, sa_tree_item v1, sa_tree_item v2, int gl);
 extern sa_tree sa_new_tree      (int size, int bytes, sa_tree_item dflt);
-extern sa_tree sa_copy_tree     (sa_tree head);
+extern sa_tree sa_copy_tree     (const sa_tree head);
 extern void    sa_destroy_tree  (sa_tree head);
 extern void    sa_dump_tree     (dumpstream f, sa_tree a);
 extern sa_tree sa_undump_tree   (dumpstream f);
-extern void    sa_restore_stack (sa_tree a, int gl);
-extern void    sa_clear_stack   (sa_tree a);
+extern void    sa_restore_stack (const sa_tree a, int gl);
+extern void    sa_clear_stack   (const sa_tree a);
 
 extern void    sa_set_item_n    (const sa_tree head, int n, int v, int gl);
 extern int     sa_get_item_n    (const sa_tree head, int n);
 
-static inline halfword sa_return_item_1(sa_tree head, halfword n)
+static inline halfword sa_return_item_1(const sa_tree head, halfword n)
 {
  // if (head->tree) {
         int hp = LMT_SA_H_PART(n);
@@ -211,7 +211,7 @@ static inline halfword sa_return_item_1(sa_tree head, halfword n)
     return (halfword) head->dflt.uchar_value[0];
 }
 
-static inline halfword sa_return_item_2(sa_tree head, halfword n)
+static inline halfword sa_return_item_2(const sa_tree head, halfword n)
 {
  // if (head->tree) {
         int hp = LMT_SA_H_PART(n);
@@ -225,7 +225,7 @@ static inline halfword sa_return_item_2(sa_tree head, halfword n)
     return (halfword) head->dflt.ushort_value[0];
 }
 
-static inline halfword sa_return_item_4(sa_tree head, halfword n)
+static inline halfword sa_return_item_4(const sa_tree head, halfword n)
 {
  // if (head->tree) {
         int hp = LMT_SA_H_PART(n);
@@ -239,22 +239,22 @@ static inline halfword sa_return_item_4(sa_tree head, halfword n)
     return (halfword) head->dflt.int_value;
 }
 
-static inline void sa_rawset_item_1(sa_tree head, halfword n, unsigned char v)
+static inline void sa_rawset_item_1(const sa_tree head, halfword n, unsigned char v)
 {
     head->tree[LMT_SA_H_PART(n)][LMT_SA_M_PART(n)][LMT_SA_L_PART(n)/4].uchar_value[n%4] = v;
 }
 
-static inline void sa_rawset_item_2(sa_tree head, halfword n, unsigned short v)
+static inline void sa_rawset_item_2(const sa_tree head, halfword n, unsigned short v)
 {
     head->tree[LMT_SA_H_PART(n)][LMT_SA_M_PART(n)][LMT_SA_L_PART(n)/2].ushort_value[n%2] = v;
 }
 
-static inline void sa_rawset_item_4(sa_tree head, halfword n, sa_tree_item v)
+static inline void sa_rawset_item_4(const sa_tree head, halfword n, sa_tree_item v)
 {
     head->tree[LMT_SA_H_PART(n)][LMT_SA_M_PART(n)][LMT_SA_L_PART(n)] = v;
 }
 
-static inline void sa_rawset_item_8(sa_tree head, halfword n, sa_tree_item v1, sa_tree_item v2)
+static inline void sa_rawset_item_8(const sa_tree head, halfword n, sa_tree_item v1, sa_tree_item v2)
 {
     sa_tree_item *low = head->tree[LMT_SA_H_PART(n)][LMT_SA_M_PART(n)];
     int l = 2*LMT_SA_L_PART(n);

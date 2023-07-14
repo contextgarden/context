@@ -128,6 +128,12 @@ extern token_state_info lmt_token_state;
 
 */
 
+typedef enum macro_preamble_states { 
+    macro_without_preamble = 0x0, 
+    macro_with_preamble    = 0x1, 
+    macro_is_packed        = 0x2, /* not yet, maybe some day array instead of list */
+} macro_preamble_states;
+
 # define max_match_count 15
 # define gap_match_count  7
 

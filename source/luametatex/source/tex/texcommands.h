@@ -1059,15 +1059,15 @@ typedef enum local_box_options {
 } local_box_options;
 
 typedef enum skip_codes {
-    fil_code,     /*tex |\hfil| and |\vfil| */
-    fill_code,    /*tex |\hfill| and |\vfill| */
-    filll_code,   /*tex |\hss| and |\vss|, aka |ss_code| */
-    fil_neg_code, /*tex |\hfilneg| and |\vfilneg| */
-    skip_code,    /*tex |\hskip| and |\vskip| */
-    mskip_code,   /*tex |\mskip| */
+    fi_l_code,     /*tex |\hfil| and |\vfil| */
+    fi_ll_code,    /*tex |\hfill| and |\vfill| */
+    fi_ss_code,    /*tex |\hss| and |\vss|, aka |ss_code| */
+    fi_l_neg_code, /*tex |\hfilneg| and |\vfilneg| */
+    skip_code,     /*tex |\hskip| and |\vskip| */
+    mskip_code,    /*tex |\mskip| */
 } skip_codes;
 
-# define first_skip_code fil_code
+# define first_skip_code fi_l_code
 # define last_skip_code  skip_code
 
 /*tex All kind of character related codes: */

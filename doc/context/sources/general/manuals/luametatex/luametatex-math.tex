@@ -68,14 +68,13 @@ transformed in the font engine later on, just as hyphenation directive can
 be added. Eventually one (normally) gets a mix of glyphs, font kerns from
 a sequence of glyphs
 
-In math mode \type {abc} results in three simple ordinary noads and \type {a
-b c} is equivalent to that: three noads. But \type {a bc} results in two
-ordinary noads where the second one has a sublist of two ordinary noads.
-Because characters have class properties, \type {( a + b = c )} results in a
-simple open noad, a simple ordinary, a simple binary, a simple ordinary, a
-simple relation, a simple ordinary and simple close noad. The next samples show a
-bit of this; in order to see th effects spacing between ordinary atoms set
-to \type {9mu}.
+In math mode \type {abc} results in three simple ordinary noads and \type {a b c}
+is equivalent to that: three noads. But \type {a bc} results in two ordinary
+noads where the second one has a sublist of two ordinary noads. Because
+characters have class properties, \type {( a + b = c )} results in a simple open
+noad, a simple ordinary, a simple binary, a simple ordinary, a simple relation, a
+simple ordinary and simple close noad. The next samples show a bit of this; in
+order to see the effects of spacing between ordinary atoms set it to \type {9mu}.
 
 \startbuffer
 \typebuffer[sample]

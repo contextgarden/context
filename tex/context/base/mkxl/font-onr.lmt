@@ -25,7 +25,8 @@ local match, lower, gsub, strip, find = string.match, string.lower, string.gsub,
 local char, byte, sub = string.char, string.byte, string.sub
 local abs = math.abs
 ----- bxor, rshift = bit32.bxor, bit32.rshift
-local P, S, R, V, Cmt, C, Ct, Cs, Carg, Cf, Cg, Cc = lpeg.P, lpeg.S, lpeg.R, lpeg.V, lpeg.Cmt, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cf, lpeg.Cg, lpeg.Cc
+local P, S, R, V, Cmt, C, Ct, Cs, Carg, Cc = lpeg.P, lpeg.S, lpeg.R, lpeg.V, lpeg.Cmt, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg, lpeg.Cc
+----- Cf, Cg = lpeg.Cf, lpeg.Cg
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 
 local trace_indexing     = false  trackers.register("afm.indexing",   function(v) trace_indexing = v end)
@@ -179,11 +180,15 @@ do
     -- 0 1 255 {1 index exch /.notdef put} for
     -- dup 0 /Foo put
 
+ -- local p_filterencoding =
+ --     (1-encoding)^0 * encoding * spaces * digits * spaces * array * (1-dup)^0
+ --   * Cf(
+ --         Ct("") * Cg(spacing * dup * spaces * cardinal * spaces * name * spaces * put)^1
+ --     ,rawset)
+
     local p_filterencoding =
         (1-encoding)^0 * encoding * spaces * digits * spaces * array * (1-dup)^0
-      * Cf(
-            Ct("") * Cg(spacing * dup * spaces * cardinal * spaces * name * spaces * put)^1
-        ,rawset)
+      * Ct("") * ((spacing * dup * spaces * cardinal * spaces * name * spaces * put) % rawset)^1
 
     -- if one of first 4 not 0-9A-F then binary else hex
 
@@ -275,7 +280,6 @@ do
         end
 
         binary = decrypt(binary,55665,4)
-
         if not encoding then
             encoding = lpegmatch(p_filterencoding,ascii)
         end
