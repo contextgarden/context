@@ -29,7 +29,7 @@
 
 % \doifundefined{RotFont}{\definefont[RotFont][RegularBold*default]}
 %
-% \unexpanded\def\getfollowtoken#1%
+% \protected\def\getfollowtoken#1%
 %  {\hbox\bgroup
 %     \strut
 %     \ctxlua{mp.follow_text(#1)}%

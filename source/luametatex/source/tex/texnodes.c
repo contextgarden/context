@@ -988,10 +988,10 @@ inline static void tex_aux_preset_node(halfword n, quarterword t)
     }
 }
 
-halfword tex_new_node(quarterword i, quarterword j)
+halfword tex_new_node(quarterword type, quarterword subtype)
 {
-    halfword s = get_node_size(i);
-    halfword n = tex_get_node(s);
+    halfword size = get_node_size(type);
+    halfword node = tex_get_node(size);
 
     /*tex
 
@@ -1000,35 +1000,35 @@ halfword tex_new_node(quarterword i, quarterword j)
 
     */
 
-    memset((void *) (lmt_node_memory_state.nodes + n + 1), 0, (sizeof(memoryword) * ((size_t) s - 1)));
+    memset((void *) (lmt_node_memory_state.nodes + node + 1), 0, (sizeof(memoryword) * ((size_t) size - 1)));
 
-    if (tex_nodetype_is_complex(i)) {
-        tex_aux_preset_node(n, i);
+    if (tex_nodetype_is_complex(type)) {
+        tex_aux_preset_node(node, type);
         if (input_file_state.mode > 0) {
             /*tex See table above. */
-            switch (i) {
+            switch (type) {
                 case glyph_node:
                     if (input_file_state.mode > 1) {
-                        glyph_input_file(n) = input_file_value();
-                        glyph_input_line(n) = input_line_value();
+                        glyph_input_file(node) = input_file_value();
+                        glyph_input_line(node) = input_line_value();
                     }
                     break;
                 case hlist_node:
                 case vlist_node:
                 case unset_node:
-                    box_input_file(n) = input_file_value();
-                    box_input_line(n) = input_line_value();
+                    box_input_file(node) = input_file_value();
+                    box_input_line(node) = input_line_value();
                     break;
             }
         }
-        if (tex_nodetype_has_attributes(i)) {
-            attach_current_attribute_list(n);
+        if (tex_nodetype_has_attributes(type)) {
+            attach_current_attribute_list(node);
         }
     }
     /* last */
-    node_type(n) = i;
-    node_subtype(n) = j;
-    return n;
+    node_type(node) = type;
+    node_subtype(node) = subtype;
+    return node;
 }
 
 halfword tex_new_temp_node(void)
@@ -2003,6 +2003,7 @@ void tex_dereference_attribute_list(halfword a)
                     {
                         int u = 0;
                         /* this works (different order) */
+if (0) { /* chains are often short */
                         while (a) {
                             halfword n = node_next(a);
                             lmt_node_memory_state.nodesizes[a] = 0;
@@ -2011,17 +2012,19 @@ void tex_dereference_attribute_list(halfword a)
                             ++u;
                             a = n;
                         }
+} else { 
                         /* this doesn't always (which is weird) */
-                     // halfword h = a;
-                     // halfword t = a;
-                     // while (a) {
-                     //     lmt_node_memory_state.nodesizes[a] = 0;
-                     //     ++u;
-                     //     t = a;
-                     //     a = node_next(a);
-                     // }
-                     // node_next(t) = lmt_node_memory_state.free_chain[attribute_node_size];
-                     // lmt_node_memory_state.free_chain[attribute_node_size] = h;
+                        halfword h = a;
+                        halfword t = a;
+                        while (a) {
+                            lmt_node_memory_state.nodesizes[a] = 0;
+                            ++u;
+                            t = a;
+                            a = node_next(a);
+                        }
+                        node_next(t) = lmt_node_memory_state.free_chain[attribute_node_size];
+                        lmt_node_memory_state.free_chain[attribute_node_size] = h;
+}
                         /* */
                         lmt_node_memory_state.nodes_data.ptr -= u * attribute_node_size;
                     }

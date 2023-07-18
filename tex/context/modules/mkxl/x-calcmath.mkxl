@@ -21,8 +21,8 @@
 
 \unprotect
 
-\unexpanded\def\inlinecalcmath #1{\mathematics{\ctxmodulecalcmath{tex("#1",1)}}}
-\unexpanded\def\displaycalcmath#1{\startformula\ctxmodulecalcmath{tex("#1",2)}\stopformula}
+\protected\def\inlinecalcmath #1{\mathematics{\ctxmodulecalcmath{tex("#1",1)}}}
+\protected\def\displaycalcmath#1{\startformula\ctxmodulecalcmath{tex("#1",2)}\stopformula}
 
 \let\calcmath\inlinecalcmath
 

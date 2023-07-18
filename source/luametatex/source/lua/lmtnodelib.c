@@ -5272,6 +5272,8 @@ static int nodelib_direct_findattributerange(lua_State *L)
 /* node.direct.unsetattribute */
 /* node.direct.findattribute */
 
+/* maybe: getsplitattribute(n,a,24,8) => (v & ~(~0 << 24)) (v & ~(~0 << 8)) */
+
 static int nodelib_direct_getattribute(lua_State *L)
 {
     halfword p = nodelib_valid_direct_from_index(L, 1);
@@ -10655,9 +10657,9 @@ int lmt_par_pass_callback(
                                 halfword v; 
                                 get_integer_par(v, tolerance, 0);
                                 if (v) { 
-                                    lmt_linebreak_state.threshold = v;
                                     properties->tolerance = v;
                                 }
+                                lmt_linebreak_state.threshold = properties->tolerance;
                                 get_integer_par(v, linepenalty, 0);
                                 if (v) {
                                     properties->line_penalty = v;

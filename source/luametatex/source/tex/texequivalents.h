@@ -1131,7 +1131,6 @@ typedef enum tex_alignment_context_codes {
     wrapup_pass_alignment_context,
 } tex_alignment_context_codes;
 
-
 typedef enum tex_breaks_context_codes {
     initialize_show_breaks_context,
     start_show_breaks_context,
@@ -1143,6 +1142,16 @@ typedef enum tex_breaks_context_codes {
     report_show_breaks_context,
     wrapup_show_breaks_context,
 } tex_breaks_context_codes;
+
+typedef enum tex_build_context_codes {
+    initialize_show_build_context,
+    step_show_build_context,
+    check_show_build_context,
+    skip_show_build_context,
+    move_show_build_context,
+    fireup_show_build_context,
+    wrapup_show_build_context,
+} tex_build_context_codes;
 
 typedef enum tex_page_context_codes {
     box_page_context,

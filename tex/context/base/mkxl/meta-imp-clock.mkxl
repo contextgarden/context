@@ -101,7 +101,7 @@
 
 \starttext
 
-\unexpanded\def\MyClock#1#2%
+\protected\def\MyClock#1#2%
   {\begingroup
    \ClockFont
    \iffontchar\font\privatecharactercode{CLOCK:#1:#2}\else

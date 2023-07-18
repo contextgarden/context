@@ -56,6 +56,7 @@ static const char *callbacklib_names[total_callbacks] = {
     "hpack_quality",
     "vpack_quality",
     "show_break",
+    "show_build",
     "insert_par",
     "append_line_filter",
     "build_page_insert",

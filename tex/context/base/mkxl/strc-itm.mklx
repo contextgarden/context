@@ -209,11 +209,13 @@
 % 2 = between (auto)
 
 \newconstant   \c_strc_itemgroups_spacing_mode   \c_strc_itemgroups_spacing_mode\plustwo
-\newconditional\c_strc_itemgroups_optimize       \c_strc_itemgroups_optimize\conditionaltrue
-\newconditional\c_strc_itemgroups_auto_concat    \c_strc_itemgroups_auto_concat\conditionaltrue
+\newconditional\c_strc_itemgroups_auto_concat    \c_strc_itemgroups_auto_concat \conditionaltrue
+
+% 0=loose 1=tight 2=verytight
+
+\newinteger    \c_strc_itemgroups_optimize       \c_strc_itemgroups_optimize\plusone % tight
 
 \newboundary   \c_strc_itemgroups_boundary
-
 \newbox        \b_strc_itemgroups
 
 \newdimension  \d_strc_itemgroups_list_width
@@ -361,17 +363,21 @@
 % These will become keywords. We will also add a feature to keep the while set
 % together.
 
-\definevspacing[\v!item @0]     [penalty:0]     % allow
-\definevspacing[\v!item @10000] [penalty:10000] % no
+\definevspacing[\v!item @\v!no]        [penalty:0]      % allow
+\definevspacing[\v!item @\v!yes]       [penalty:10000]  % never
+\definevspacing[\v!item @\v!tight]     [penalty:500]  % discourage
+\definevspacing[\v!item @\v!verytight] [penalty:5000] % discourage more
+
 \definevspacing[\v!item @-5]    [penalty:-5]
 \definevspacing[\v!item @5]     [penalty:5]
-\definevspacing[\v!item @500]   [penalty:500]   % discourage .. too low, 5000 is better
 
 \def\strc_itemgroups_insert_break_when_needed#break%
-  {\ifconditional\c_strc_itemgroups_optimize
-     \ifconditional\c_strc_itemgroups_text \else
-       #break\relax
-     \fi
+  {\ifcase\c_strc_itemgroups_optimize
+    % loose
+   \orelse\ifconditional\c_strc_itemgroups_text
+    % horizontal
+   \else
+     #break\relax
    \fi}
 
 \def\strc_itemgroups_insert_breakallow{\strc_itemgroups_insert_break_when_needed\strc_itemgroups_insert_breakallow_indeed}
@@ -380,10 +386,10 @@
 \def\strc_itemgroups_insert_nobreak   {\strc_itemgroups_insert_break_when_needed\strc_itemgroups_insert_nobreak_indeed   }
 
 \def\strc_itemgroups_insert_breakallow_indeed
-  {\vspacing[\v!item @0]}
+  {\vspacing[\v!item @\v!no]}
 
 \def\strc_itemgroups_insert_breakno_indeed
-  {\vspacing[\v!item @10000]}
+  {\vspacing[\v!item @\v!yes]}
 
 \def\strc_itemgroups_insert_break_indeed
   {\flushnotes
@@ -393,8 +399,13 @@
   {\flushnotes
    \ifinsidecolumns % todo
      \vspacing[\v!item @5]%
+   \orelse\ifcase\c_strc_itemgroups_optimize
+   \or
+     % tight
+     \vspacing[\v!item @\v!tight]%
    \else
-     \vspacing[\v!item @500]%
+     % verytight
+     \vspacing[\v!item @\v!verytight]%
    \fi}
 
 \protected\def\strc_itemgroups_process_options#options%
@@ -487,7 +498,19 @@
   {\c_strc_itemgroups_inline_head\conditionaltrue}
 
 \defcsname\??itemgroupkeyword\v!loose\endcsname
-  {\c_strc_itemgroups_optimize\conditionalfalse}
+  {\c_strc_itemgroups_optimize\zerocount}
+
+\defcsname\??itemgroupkeyword\v!tight\endcsname % new per 2023-07-16
+  {\c_strc_itemgroups_optimize\plusone}
+
+\defcsname\??itemgroupkeyword\v!verytight\endcsname % new per 2023-07-16
+  {\c_strc_itemgroups_optimize\plustwo}
+
+\defcsname\??itemgroupkeyword\v!tight:\v!first\endcsname % new per 2023-07-16
+  {\c_strc_itemgroups_optimize\plusthree}
+
+\defcsname\??itemgroupkeyword\v!tight:\v!last\endcsname % new per 2023-07-16
+  {\c_strc_itemgroups_optimize\plusfour}
 
 \defcsname\??itemgroupkeyword\v!fit\endcsname
   {\c_strc_itemgroups_fitting\conditionaltrue}
@@ -1437,29 +1460,86 @@
 \letcsname\??itemgroupstart\v!txt \endcsname\strc_itemgroups_start_text
 \letcsname\??itemgroupstart\v!no  \endcsname\strc_itemgroups_start_no_item
 
+\def\strc_itemgroups_optimize_breaks_both
+  {\ifcase\c_strc_itemgroups_max_items
+   \orelse\ifnum\c_strc_itemgroups_max_items=\plusthree
+     \ifnum\c_strc_itemgroups_n_of_items>\plusone
+       \strc_itemgroups_insert_nobreak
+     \fi
+   \orelse\ifnum\c_strc_itemgroups_max_items>\plusthree
+     \ifnum\c_strc_itemgroups_n_of_items=\plustwo
+       \ifconditional\c_strc_itemgroups_intro
+         \strc_itemgroups_insert_breakno
+       \else
+         \strc_itemgroups_insert_nobreak
+       \fi
+     \orelse\ifnum\c_strc_itemgroups_max_items=\c_strc_itemgroups_n_of_items\relax
+       \strc_itemgroups_insert_nobreak
+     \orelse\ifnum\c_strc_itemgroups_n_of_items>\plustwo
+       \strc_itemgroups_insert_break
+     \orelse\ifconditional\c_strc_itemgroups_intro
+     \else
+       \strc_itemgroups_insert_break
+     \fi
+   \fi}
+
+\def\strc_itemgroups_optimize_breaks_first
+  {\ifcase\c_strc_itemgroups_max_items
+   \orelse\ifnum\c_strc_itemgroups_max_items=\plusthree
+     \ifnum\c_strc_itemgroups_n_of_items<\plusthree   % !
+       \strc_itemgroups_insert_nobreak                % !
+     \else                                            % !
+       \strc_itemgroups_insert_break                  % !
+     \fi                                              % !
+   \orelse\ifnum\c_strc_itemgroups_max_items>\plusthree
+     \ifnum\c_strc_itemgroups_n_of_items=\plustwo
+       \ifconditional\c_strc_itemgroups_intro
+         \strc_itemgroups_insert_breakno
+       \else
+         \strc_itemgroups_insert_nobreak
+       \fi
+     \orelse\ifnum\c_strc_itemgroups_max_items=\c_strc_itemgroups_n_of_items\relax
+       \strc_itemgroups_insert_break                  % !
+     \orelse\ifnum\c_strc_itemgroups_n_of_items>\plustwo
+       \strc_itemgroups_insert_break
+     \orelse\ifconditional\c_strc_itemgroups_intro
+     \else
+       \strc_itemgroups_insert_break
+     \fi
+   \fi}
+
+\def\strc_itemgroups_optimize_breaks_last
+  {\ifcase\c_strc_itemgroups_max_items
+   \orelse\ifnum\c_strc_itemgroups_max_items=\plusthree
+     \ifnum\c_strc_itemgroups_n_of_items>\plustwo % !
+       \strc_itemgroups_insert_nobreak            % !
+     \else                                        % !
+       \strc_itemgroups_insert_break              % !
+     \fi                                          % !
+   \orelse\ifnum\c_strc_itemgroups_max_items>\plusthree
+     \ifnum\c_strc_itemgroups_n_of_items=\plustwo
+      \ifconditional\c_strc_itemgroups_intro
+        \strc_itemgroups_insert_breakno
+      \else
+        \strc_itemgroups_insert_break             % !
+      \fi
+     \orelse\ifnum\c_strc_itemgroups_max_items=\c_strc_itemgroups_n_of_items\relax
+       \strc_itemgroups_insert_nobreak
+     \orelse\ifnum\c_strc_itemgroups_n_of_items>\plustwo
+       \strc_itemgroups_insert_break
+     \orelse\ifconditional\c_strc_itemgroups_intro
+     \else
+       \strc_itemgroups_insert_break
+     \fi
+   \fi}
+
 \def\strc_itemgroups_optimize_breaks
   {\ifcase\c_strc_itemgroups_column_depth
-     \ifconditional\c_strc_itemgroups_optimize
-       \ifcase\c_strc_itemgroups_max_items
-       \orelse\ifnum\c_strc_itemgroups_max_items=\plusthree
-         \ifnum\c_strc_itemgroups_n_of_items>\plusone
-           \strc_itemgroups_insert_nobreak
-         \fi
-       \orelse\ifnum\c_strc_itemgroups_max_items>\plusthree
-         \ifnum\c_strc_itemgroups_n_of_items=\plustwo
-           \ifconditional\c_strc_itemgroups_intro
-             \strc_itemgroups_insert_breakno
-           \else
-             \strc_itemgroups_insert_nobreak
-           \fi
-         \orelse\ifnum\c_strc_itemgroups_max_items=\c_strc_itemgroups_n_of_items\relax
-           \strc_itemgroups_insert_nobreak
-         \orelse\ifnum\c_strc_itemgroups_n_of_items>\plustwo
-           \strc_itemgroups_insert_break
-         \else
-           \ifconditional\c_strc_itemgroups_intro\else\strc_itemgroups_insert_break\fi
-         \fi
-       \fi
+     \ifconditional\c_strc_itemgroups_optimize  % loose
+     \or \strc_itemgroups_optimize_breaks_both  % tight
+     \or \strc_itemgroups_optimize_breaks_both  % verytight
+     \or \strc_itemgroups_optimize_breaks_first % tight:first
+     \or \strc_itemgroups_optimize_breaks_last  % tight:last
      \fi
    \fi}
 

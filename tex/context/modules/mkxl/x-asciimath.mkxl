@@ -329,7 +329,7 @@
  %   {\left.{\left\lparent \frac{a}{b} \right\rparent}}
  %   {{\left\lparent \frac{d}{c} \right\rparent}\right.}
 
-% \unexpanded\def\MyAsciiMath#1{\startformula\asciimath{#1}\stopformula}
+% \protected\def\MyAsciiMath#1{\startformula\asciimath{#1}\stopformula}
 %
 % \startlines
 % \MyAsciiMath{x^2 / 10 // z_12^34 / 20}

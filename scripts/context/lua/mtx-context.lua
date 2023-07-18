@@ -33,9 +33,13 @@ local removefile    = os.remove
 local renamefile    = os.rename
 local formatters    = string.formatters
 
+local starttiming   = statistics.starttiming
+local stoptiming    = statistics.stoptiming
+local elapsedtime   = statistics.elapsedtime
+
 local application = logs.application {
     name     = "mtx-context",
-    banner   = "ConTeXt Process Management 1.04",
+    banner   = "ConTeXt Process Management 1.05",
  -- helpinfo = helpinfo, -- table with { category_a = text_1, category_b = text_2 } or helpstring or xml_blob
     helpinfo = "mtx-context.xml",
 }
@@ -470,7 +474,7 @@ end
 local pdfview -- delayed
 
 local function pdf_open(name,method)
-    statistics.starttiming("pdfview")
+    starttiming("pdfview")
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
     report(pdfview.status())
@@ -479,12 +483,12 @@ local function pdf_open(name,method)
         pdfname = name .. ".pdf" -- agressive
     end
     pdfview.open(pdfname)
-    statistics.stoptiming("pdfview")
-    report("pdfview overhead: %s seconds",statistics.elapsedtime("pdfview"))
+    stoptiming("pdfview")
+    report("pdfview overhead: %s seconds",elapsedtime("pdfview"))
 end
 
 local function pdf_close(name,method)
-    statistics.starttiming("pdfview")
+    starttiming("pdfview")
     pdfview = pdfview or dofile(resolvers.findfile("l-pdfview.lua","tex"))
     pdfview.setmethod(method)
     local pdfname = filenewsuffix(name,"pdf")
@@ -493,7 +497,7 @@ local function pdf_close(name,method)
     end
     pdfname = name .. ".pdf" -- agressive
     pdfview.close(pdfname)
-    statistics.stoptiming("pdfview")
+    stoptiming("pdfview")
 end
 
 -- result file handling
@@ -1205,10 +1209,10 @@ do -- more or less copied from mtx-plain.lua:
     local function engine(texengine,texformat)
         local command = string.format('%s --ini --etex --8bit %s \\dump',texengine,fileaddsuffix(texformat,"mkii"))
         if environment.arguments.silent then
-            statistics.starttiming()
+            starttiming()
             local command = format("%s > temp.log",command)
             local result  = os.execute(command)
-            local runtime = statistics.stoptiming()
+            local runtime = stoptiming()
             if result ~= 0 then
                 print(format("%s silent make > fatal error when making format %q",texengine,texformat)) -- we use a basic print
             else
@@ -1731,18 +1735,20 @@ end
 
 do
 
-    local popen  = io.popen
-    local close  = io.close
-    local read   = io.read
-    local gobble = io.gobble or function(f) f:read("l") end
-    local clock  = os.clock
+    local popen   = io.popen
+    local close   = io.close
+    ----- read    = io.read
+    local gobble  = io.gobble or function(f) f:read("l") end
+    ----- clock   = os.clock
+    local ticks   = lua.getpreciseticks
+    local seconds = lua.getpreciseseconds
 
     local f_runner  = formatters['context %s "%s"']
     local f_command = formatters['%s %s']
 
     function scripts.context.parallel()
         if getargument("pattern") then
-            environment.filenames = dir.glob(getargument("pattern"))
+            environment.files = dir.glob(getargument("pattern"))
         end
         local files = environment.files
         local total = files and #files or 0
@@ -1771,7 +1777,7 @@ do
             scripts.context.autoctx()
         elseif total > 0 then
             local results  = { }
-            local start    = statistics.starttiming("parallel")
+            local start    = starttiming("parallel")
             local terminal = environment.argument("terminal")
             local runners  = tonumber(environment.argument("parallel")) or 8
             local process  = { }
@@ -1810,9 +1816,11 @@ do
                         end
                         if not s then
                             local r, detail, n = close(pi.handle)
+                            stoptiming(pi.timer)
                             pi.result = (not r or n > 0) and "error" or "done"
-                            pi.time   = clock() - pi.time
+                            pi.time   = elapsedtime(pi.timer)
                             pi.handle = nil
+                            pi.timer  = nil
                             if terminal then
                                 report()
                             end
@@ -1828,9 +1836,19 @@ do
                     if count > total then
                         -- we're done
                     else
-                        local filename= files[count]
-                        local command = list and f_command(filename,arguments) or f_runner(arguments,filename)
+                        local timer    = "parallel:" .. i
+                        local filename = files[count]
+                        local dirname  = file.dirname(filename)
+                        local basename = file.basename(filename)
+                        if dirname ~= "." and dirname ~= "./" then
+                            dir.push(dirname)
+                        end
+                        local command  = list and f_command(basename,arguments) or f_runner(arguments,basename)
+                        starttiming(timer)
                         local result  = popen(command)
+                        if dirname ~= "." then
+                            dir.pop()
+                        end
                         local status  = nil
                         if result then
                             process[i] = {
@@ -1838,7 +1856,8 @@ do
                                 result   = "start",
                                 filename = filename,
                                 count    = count,
-                                time     = clock(),
+                                time     = 0,
+                                timer    = timer,
                             }
                             status = process[i]
                         else
@@ -1848,6 +1867,7 @@ do
                                 filename = filename,
                                 time     = 0,
                             }
+                            stoptiming(timer)
                         end
                         results[count] = status
                         if terminal then
@@ -1865,14 +1885,28 @@ do
                     break
                 end
             end
-            statistics.stoptiming("parallel")
-            results.runtime = statistics.elapsedtime("parallel")
+            stoptiming("parallel")
+            results.runtime = elapsedtime("parallel")
             report()
             report("files: %i, runtime: %s",total,results.runtime)
             report()
+            local errors = { }
             for i=1,total do
                 local ri = results[i]
-                report("index %02i, %s %a, status %a, runtime %0.3f ",ri.count,whattodo,ri.filename,ri.result,ri.time)
+                local result   = ri.result
+                local filename = ri.filename
+                if result == "error" then
+                    errors[#errors+1] = filename
+                end
+                report("index %02i, %s %a, status %a, runtime %0.3f ",ri.count,whattodo,filename,result,ri.time)
+            end
+            if #errors > 0 then
+                report()
+                report("errors in:")
+                report()
+                for i=1,#errors do
+                    report("  %s",errors[i])
+                end
             end
             report()
         end

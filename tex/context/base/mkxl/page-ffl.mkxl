@@ -161,7 +161,7 @@
 \appendtoks
   \advanceby\c_defining_facing_float\plusone
   \ifcase\c_defining_facing_float\or
-      \expanded{
+      \normalexpanded{
         \definefacingfloat[\currentfacingfloat:\v!left ][\currentfacingfloat]%
         \definefacingfloat[\currentfacingfloat:\v!right][\currentfacingfloat]%
       }%

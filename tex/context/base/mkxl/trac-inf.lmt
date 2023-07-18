@@ -42,11 +42,11 @@ local function resettiming(instance)
     timers[instance or "notimer"] = { timing = 0, loadtime = 0, offset = 0 }
 end
 
-local ticks   = clock
-local seconds = function(n) return n or 0 end
+-- local ticks   = clock
+-- local seconds = function(n) return n or 0 end
 
-ticks   = lua.getpreciseticks
-seconds = lua.getpreciseseconds
+local ticks   = lua.getpreciseticks
+local seconds = lua.getpreciseseconds
 
 local function starttiming(instance,reset)
     local timer = timers[instance or "notimer"]

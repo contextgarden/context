@@ -756,6 +756,7 @@
      % a global lineheight is tricky: should we take the bodyfont interlinespace or the one set
      % independent of the bodyfont (before or after a layout spec); way too fuzzy, so we
      % stick to the current method (after a night of experimenting ...2003/10/13)
+% \layoutlines
      \global\makeupheight\dimexpr
         \layoutparameter\c!lines\lineheight-\strutheight+\topskip+
         \headerdistance+\headerheight+\footerdistance+\footerheight\relax

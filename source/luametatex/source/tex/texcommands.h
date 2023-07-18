@@ -1178,9 +1178,10 @@ typedef enum ignore_something_codes {
     ignore_par_code,
     ignore_argument_code,
     ignore_upto_code,
+    ignore_nested_upto_code,
 } ignore_something_codes;
 
-# define last_ignore_something_code ignore_upto_code
+# define last_ignore_something_code ignore_nested_upto_code
 
 typedef enum case_shift_codes {
     lower_case_code,

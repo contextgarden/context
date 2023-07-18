@@ -435,6 +435,7 @@ function languages.define(tag,parent)
         report_initialization("assigning number %a to %a",noflanguages,tag)
     end
     numbers[noflanguages] = tag
+numbers[tag] = noflanguages
     registered[tag] = {
         tag      = tag,
         parent   = parent or "",

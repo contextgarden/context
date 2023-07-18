@@ -708,7 +708,7 @@
    \fi
    \push_macro_BC
    \push_macro_EC
-   \enforced\permanent\protected\def\BC##1\EC{\appendtoks##1\to\t_tabl_lines_head}%
+   \enforced\permanent\protected\def\BC##1\EC{\toksapp\t_tabl_lines_head{##1}}%
    \enforced\permanent          \let\EC\relax} % signal
 
 \permanent\protected\def\tabl_lines_EH

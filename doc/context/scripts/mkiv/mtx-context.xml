@@ -4,7 +4,7 @@
     <metadata>
         <entry name="name">mtx-context</entry>
         <entry name="detail">ConTeXt Process Management</entry>
-        <entry name="version">1.04</entry>
+        <entry name="version">1.05</entry>
         <entry name="comment">external helpinfo file</entry>
     </metadata>
     <flags>
@@ -179,6 +179,10 @@
                 </flag>
                     <flag name="nofile">
                     <short>use dummy file as jobname</short>
+                </flag>
+                </flag>
+                    <flag name="forceinput">
+                    <short>use this file as input file instead of the given one</short>
                 </flag>
             </subcategory>
         </category>

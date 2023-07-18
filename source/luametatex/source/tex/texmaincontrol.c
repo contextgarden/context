@@ -516,6 +516,21 @@ static void tex_aux_run_ignore_something(void) {
                 } while (cur_tok != token);
                 break;
             }
+        case ignore_nested_upto_code:
+            {
+                halfword starttoken = tex_get_token();
+                halfword stoptoken = tex_get_token();
+                int level = 1;
+                do {
+                    tex_get_token();
+                    if (cur_tok == starttoken) { 
+                        ++level;
+                    } else if (cur_tok == stoptoken) { 
+                        --level;
+                    }
+                } while (level);
+                break;
+            }
         default:
             break;
     }

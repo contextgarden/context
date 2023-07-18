@@ -12,7 +12,7 @@ include(GNUInstallDirs)
 
 # Optionals (maybe have a LMT_*_TOO for each of them). We might start out with only a very few
 # optionals at some time, but for now we enable them (there is not not much code involved). The 
-# idea behind thes eoptionals is that we have very simple (!) interfaces, delegating as much as 
+# idea behind these optionals is that we have very simple (!) interfaces, delegating as much as 
 # possible to Lua. We will *not* add interfaces with many bindings because that will introduce
 # dependencies (and looking at e.g. LuaTeX build updates shows that clearly: a no-go). 
 
@@ -23,6 +23,12 @@ set(LMT_HB_TOO   1) # Maybe handy for Idris' font development (old converted ffi
 # runtime, enabling it makes not much sense:
 
 # set(LMT_OPTIMIZE 1)
+
+# This makes the binary some 135K smaller so it might become the default at some point which is 
+# nice (the smaller as runner the better). After all, we don't load external (Lua) libraries 
+# anyway. 
+
+set(LMT_STRIP 1)
 
 if (MSVC)
 
@@ -153,7 +159,7 @@ if (MSVC)
     #
     # add_definitions(-D__STDC_WANT_LIB_EXT2__=1)
 
-    if (DEFINED LMT_OPTIMIZE)
+    if ((DEFINED LMT_OPTIMIZE) OR (DEFINED LMT_STRIP))
         if (NOT (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
             set(CMAKE_EXE_LINKER_FLAGS "-s")
         endif()

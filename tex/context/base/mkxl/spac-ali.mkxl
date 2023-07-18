@@ -559,7 +559,7 @@
 
 \mutable\def\bottomalignlimit{\plusthree\lineheight}
 
-\newconstant\bottomraggednessmode % 0=ragged 1=normal/align 2=baseline
+\newconstant\bottomraggednessmode % 0=ragged 1=normal/align 2=baseline 3=depth 4=weird-line
 
 \permanent\protected\def\raggedbottom
   {\bottomraggednessmode\zerocount
@@ -571,6 +571,10 @@
 
 \permanent\protected\def\baselinebottom
   {\bottomraggednessmode\plustwo
+   \settopskip}
+
+\permanent\protected\def\depthlinebottom
+  {\bottomraggednessmode\plusthree
    \settopskip}
 
 \aliased\let\normalbottom\alignbottom % downward compatible
@@ -588,6 +592,8 @@
      \alignbottom
    \or
      \baselinebottom
+   \or
+     \depthlinebottom
    \fi}
 
 % Directions
@@ -739,6 +745,7 @@
 
 \defcsname\??aligncommand\v!bottom         \endcsname{\c_spac_align_state_page      \plusone  }
 \defcsname\??aligncommand\v!height         \endcsname{\c_spac_align_state_page      \plustwo  }
+\defcsname\??aligncommand\v!depth          \endcsname{\c_spac_align_state_page      \plusfour }
 \defcsname\??aligncommand\v!line           \endcsname{\c_spac_align_state_page      \plusthree
                                                       % this will become another keyword (undocumented anyway)
                                                       \toksapp\t_spac_align_collected{\raggedonelinerstate\conditionaltrue}}
@@ -1072,7 +1079,7 @@
    \showstruts
    \tracingparagraphs\maxdimen
    \enforced\let\startshowpardata\begingroup
-   \appendtoks\showpardata\to\everypar}
+   \toksapp\everypar{\showpardata}}
 
 \permanent\protected\def\stopshowpardata
   {\endgraf

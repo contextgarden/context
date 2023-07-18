@@ -430,6 +430,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "ignorepars",                     ignore_something_cmd,   ignore_par_code,                          0);
         tex_primitive(luatex_command, "ignorearguments",                ignore_something_cmd,   ignore_argument_code,                     0);
         tex_primitive(luatex_command, "ignoreupto",                     ignore_something_cmd,   ignore_upto_code,                         0);
+        tex_primitive(luatex_command, "ignorenestedupto",               ignore_something_cmd,   ignore_nested_upto_code,                  0);
 
         tex_primitive(tex_command,    "input",                          input_cmd,              normal_input_code,                        0);
         tex_primitive(tex_command,    "endinput",                       input_cmd,              end_of_input_code,                        0);

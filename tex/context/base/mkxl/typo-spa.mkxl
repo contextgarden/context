@@ -32,23 +32,34 @@
 \setup_p_characterspacing
   [\c!left=0,
    \c!right=0,
-   \c!alternative=0]
+   \c!alternative=0,
+   \c!language=0]
 
 \permanent\protected\def\definecharacterspacing[#1]%
   {\clf_definecharacterspacing{#1}}
 
 \permanent\tolerant\protected\def\setupcharacterspacing[#1]#*[#2]#*[#3]% todo: #2 list
   {\begingroup
-   \setupcurrent_p_characterspacing[#3]%
-   \clf_setupcharacterspacing
-      {#1}%
-      \numexpr#2\relax
-      {%
-        left        \direct_p_characterspacingparameter\c!left\space
-        right       \direct_p_characterspacingparameter\c!right\space
-        alternative \direct_p_characterspacingparameter\c!alternative
-      }%
-   \relax
+   \ifchknumber#2\or
+     \setupcurrent_p_characterspacing[#3]%
+     \clf_setupcharacterspacing
+        {#1}%
+        \numexpr#2\relax
+        {%
+          left        \direct_p_characterspacingparameter\c!left\space
+          right       \direct_p_characterspacingparameter\c!right\space
+          alternative \direct_p_characterspacingparameter\c!alternative\space
+        }%
+     \relax
+   \else
+     \setupcurrent_p_characterspacing[#2]%
+     \clf_setupcharacterspacing
+        {#1}%
+        \zerocount
+        {%
+          language {\direct_p_characterspacingparameter\c!language}%
+        }%
+   \fi
    \endgroup}
 
 \permanent\protected\def\setcharacterspacing[#1]% we can store the attribute if we want speed

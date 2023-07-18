@@ -3443,6 +3443,12 @@ static void texlib_aux_init_nest_lib(lua_State *L)
 
 /* getnest(<number>|top|ptr,[fieldname]) */
 
+static int texlib_getnestlevel(lua_State *L)
+{
+    lua_pushinteger(L, lmt_nest_state.nest_data.ptr);
+    return 1;
+}
+
 static int texlib_getnest(lua_State *L)
 {
     int p = -1 ;
@@ -3464,7 +3470,7 @@ static int texlib_getnest(lua_State *L)
                     const char *s = lua_tostring(L, 1);
                     if (lua_key_eq(s, top)) {
                         p = lmt_nest_state.nest_data.ptr;
-                    } else if (lua_key_eq(s, ptr)) {
+                    } else if (lua_key_eq(s, ptr) || lua_key_eq(s, level)) {
                         lua_pushinteger(L, lmt_nest_state.nest_data.ptr);
                         return 1;
                     }
@@ -5497,6 +5503,11 @@ static int texlib_getbreakcontextvalues(lua_State *L)
     return lmt_push_info_values(L, lmt_interface.break_context_values);
 }
 
+static int texlib_getbuildcontextvalues(lua_State *L)
+{
+    return lmt_push_info_values(L, lmt_interface.build_context_values);
+}
+
 static int texlib_getparbeginvalues(lua_State *L)
 {
     return lmt_push_info_values(L, lmt_interface.par_begin_values);
@@ -5840,6 +5851,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getlist",                    texlib_getlist                    },
     { "setnest",                    texlib_setnest                    }, /* only a message */
     { "getnest",                    texlib_getnest                    },
+    { "getnestlevel",               texlib_getnestlevel               },
     { "setcatcode",                 texlib_setcatcode                 },
     { "getcatcode",                 texlib_getcatcode                 },
     { "setdelcode",                 texlib_setdelcode                 },
@@ -5962,6 +5974,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getappendlinecontextvalues", texlib_getappendlinecontextvalues },
     { "getalignmentcontextvalues",  texlib_getalignmentcontextvalues  },
     { "getbreakcontextvalues",      texlib_getbreakcontextvalues      },
+    { "getbuildcontextvalues",      texlib_getbuildcontextvalues      },
     { "getparbeginvalues",          texlib_getparbeginvalues          },
     { "getparmodevalues",           texlib_getparmodevalues           },
     { "getautomigrationvalues",     texlib_getautomigrationvalues     },

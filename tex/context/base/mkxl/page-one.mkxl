@@ -154,74 +154,6 @@
 %
 % we can also have bottom notes on top of bottom insertions
 
-% \protected\def\page_one_command_package_contents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
-%   {\bgroup
-%    \strc_notes_check_if_bottom_present
-%    \d_page_one_natural_depth\dp#2\relax
-%    % we need to set the height as otherwise the shrink will not kick in so the following
-%    % no longer applies:
-%    %
-%    % \setbox\b_page_one_contents\vbox \ifconditional\c_notes_bottom_present to \textheight \fi
-%    %
-%    \setbox\b_page_one_contents\vbox to \textheight % probably no pack
-%      {\page_otr_command_flush_top_insertions
-%       % this is messy ... we will provide a more tight area (no big deal as we can
-%       % do that at the lua end)
-% % \parfillskip\zeropoint
-%       \page_one_registered_text_area_a#1#2% \unvbox <box>
-%       %
-%       \ifgridsnapping
-%         \unskip % new per 2019-06-18, otherwise weird bottom floats
-%         \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
-%         \prevdepth\openstrutdepth
-%         \page_otr_command_flush_bottom_insertions
-%         \vfil
-%       \orelse\ifcase\bottomraggednessmode
-%         % ragged (default)
-%         \unskip % new per 2019-06-18, otherwise weird bottom floats
-%         \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
-%         \prevdepth\openstrutdepth
-%         % these have whitespace before but we can have some more options
-%         % like a \vfill or so
-%         \page_otr_command_flush_bottom_insertions
-%         \vfil
-%       \or
-%         % align (normal)
-%         \page_otr_command_flush_bottom_insertions
-%       \or
-%         % baseline
-%         \unskip % new per 2019-06-18, otherwise weird bottom floats
-%         \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
-%         \page_otr_command_flush_bottom_insertions
-%       \fi
-%       \fakepagenotes}%
-%    \page_one_command_package_show_state
-%    \ifconditional\c_notes_bottom_present
-%      \ifgridsnapping
-%        \ifcase\layoutlines
-%          \getrawnoflines\textheight
-%        \else
-%          \noflines\layoutlines
-%        \fi
-%        \scratchoffset\dimexpr\numexpr\noflines-\plusone\relax\lineheight+\topskip\relax
-%      \else
-%        \scratchoffset\ht\b_page_one_contents
-%      \fi
-%      \setbox\b_page_one_bottom_notes\hpack
-%        {\lower\scratchoffset\vbox{\placebottomnotes\par\kern\zeropoint}}% kerns makes notes sit on bottom % pack ?
-%      \smashbox\b_page_one_bottom_notes
-%      \ht\b_page_one_contents\zeropoint
-%      \page_one_registered_text_area_b
-%        {\vpack to \textheight
-%           {\box\b_page_one_contents
-%            \box\b_page_one_bottom_notes}}%
-%    \else
-%      \ht\b_page_one_contents\textheight
-%      \page_one_registered_text_area_b
-%        {\box\b_page_one_contents}%
-%    \fi
-%    \egroup}
-
 %D \starttyping
 %D \setuplayout[height=middle] \showframe
 %D
@@ -293,6 +225,11 @@
         \unskip % new per 2019-06-18, otherwise weird bottom floats
         \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
       % \srule depth \dimexpr\maxdepth-\d_page_one_natural_depth\relax
+        \page_otr_command_flush_bottom_insertions
+      \or
+        % depth
+        \vkern-\d_page_one_natural_depth
+        \unskip % new per 2019-06-18, otherwise weird bottom floats
         \page_otr_command_flush_bottom_insertions
       \fi
       \fakepagenotes}%

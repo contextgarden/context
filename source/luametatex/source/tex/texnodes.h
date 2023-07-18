@@ -404,6 +404,10 @@ extern void     lmt_nodelib_initialize  (void); /* name ? */
     diagnose issues. It is one of the few nodes now that has fields depending on the subtype
     but these nodes are not really user ones anyway.
 
+    We could move index to the subtype and then have an extra data field but I'll delay that till
+    it's really needed. Chains are often short and using arrays doesn't bring any gain nor does 
+    using some btree approach. 
+
 */
 
 # define attribute_node_size 2

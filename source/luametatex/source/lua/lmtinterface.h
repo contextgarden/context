@@ -342,6 +342,7 @@ typedef struct lmt_interface_info {
     value_info    *append_line_context_values;
     value_info    *alignment_context_values;
     value_info    *break_context_values;
+    value_info    *build_context_values;
     value_info    *par_begin_values;
     value_info    *par_mode_values;
     value_info    *math_style_name_values;
@@ -533,6 +534,7 @@ make_lua_key(L, char_given);\
 make_lua_key(L, char_number);\
 make_lua_key(L, character);\
 make_lua_key(L, characters);\
+make_lua_key(L, check);\
 make_lua_key(L, choice);\
 make_lua_key(L, class);\
 make_lua_key(L, cleaders);\
@@ -673,6 +675,7 @@ make_lua_key(L, filll);\
 make_lua_key(L, finalhyphendemerits);\
 make_lua_key(L, finalpenalty);\
 make_lua_key(L, finishrow);\
+make_lua_key(L, fireup);\
 make_lua_key(L, first);\
 make_lua_key(L, fixedboth);\
 make_lua_key(L, fixedbottom);\
@@ -925,6 +928,7 @@ make_lua_key(L, mkern);\
 make_lua_key(L, mode);\
 make_lua_key(L, modeline);\
 make_lua_key(L, modifier);\
+make_lua_key(L, move);\
 make_lua_key(L, move_tolerance);\
 make_lua_key(L, mrule);\
 make_lua_key(L, mskip);\

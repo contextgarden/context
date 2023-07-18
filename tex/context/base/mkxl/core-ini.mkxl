@@ -133,8 +133,11 @@
 \newtoks \everybeforedisplayformula
 \newtoks \everymathematics
 
-\prependtoks \expand\everymathematics \to \everymath
-\prependtoks \expand\everymathematics \to \everydisplay
+% \prependtoks \expand\everymathematics \to \everymath
+% \prependtoks \expand\everymathematics \to \everydisplay
+
+\tokspre\everymath   {\expand\everymathematics}
+\tokspre\everydisplay{\expand\everymathematics}
 
 %D Tables:
 

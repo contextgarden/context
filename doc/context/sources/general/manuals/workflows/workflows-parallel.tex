@@ -6,9 +6,9 @@
 
 \startchapter[title={Parallel processing}]
 
-% \startsection[title={Introduction}]
+\startsection[title={Introduction}]
 
-% \stopsection
+\stopsection
 
 This is just a small intermezzo. Mid April 2020 Mojca asked on the mailing list how
 to best compile 5000 files, based on a template. The answer depends on the workflow
@@ -114,6 +114,123 @@ context-is-busy.tmp
 This permits a management script to check if a run is done. Before starting a run
 (in a separate process) the script can write that file and by just checking if it
 is still there, the management script can decide when a next run can be started.
+
+\stopsection
+
+\startsection[title={Solution}]
+
+Mid 2023 the test suite had some 1900 files and whenever the engine or \CONTEXT\
+is adapted that collection of files is processed. Although one can test for
+regression the main reason for doing this is to check if any of these documents
+fails, which can happen due to some typo in an upgrade. We also want to see if
+there is a change in performance. However, for a single run it takes some 1350
+seconds (on my current development laptop), when two runs are needed we end up as
+2500 seconds. Of course a modern machine would likely bring that down to some 700
+seconds but there is only so much one can spend on hardware.
+
+Because \TEX\ is a single core process, the question is \quotation{Can we use
+more than one core?} and the answer is \quotation {Of course we can}. Running the
+test suite is managed by a (\LUA) script and one of its tasks is to traverse the
+tree of files and register success or failure so that at the end we get an
+overview. Parallelizing the process can be done in two ways: we divide the whole
+batch in several smaller batches where each batch is processed at the same time.
+Alternatively we can have one process that runs files in different threads (sort
+of).
+
+That second option is what we prefer and the runtime results of that one are as
+follows. We run on a four core mobile Xeon 1505 (with hyperthreading enabled):
+
+\starttabulate[|r|r|]
+\NC  6 \NC 800 \NC \NR
+\BC  8 \BC 700 \NC \NR
+\NC 12 \NC 650 \NC \NR
+\NC 16 \NC 600 \NC \NR
+\stoptabulate
+
+As a comparison, running multiple batches in parallel gives (in seconds):
+
+\starttabulate[|r|r|]
+\NC 4 \NC 550 \NC \NR
+\NC 6 \NC 540 \NC \NR
+\stoptabulate
+
+In the end I settled for the 8 runs in parallel, just because the machine ran
+less hot (and thereby less noisy) and one can still do plenty other things during
+that run. When one pipes the output to the terminal the graphic processor is also
+kept busy (some 50 percent for the built|-|in graphics).
+
+So how does that benefit users? A variant of this feature is now available in the
+\CONTEXT\ runner. Of course you could always do this:
+
+\starttyping
+context test1.tex test2.tex test3.tex test4.tex
+\stoptyping
+
+Here the files are processed in sequence. But you can now get a better
+performance:
+
+\starttyping
+context --parallel test1.tex test2.tex test3.tex test4.tex
+\stoptyping
+
+In case every test file needs different command line arguments you can do this
+instead:
+
+\starttyping
+context --parallellist test.cmd
+\stoptyping
+
+Where (on \MSWINDOWS) that file can look like:
+
+\starttyping
+context test1 --result=test-1
+context test2 --result=test-2
+context test3 --result=test-3
+context test4 --result=test-4
+\stoptyping
+
+Here the runner will just take the lines that start with \type {context} which
+means that you can still run that command file directly.
+
+By default the output is suppressed unless you pass \type {--terminal} as in:
+
+\starttyping
+context --parallel --terminal test1.tex test2.tex test3.tex test4.tex
+\stoptyping
+
+The only drawback in this parallel approach is that when one run stalls its
+output (for instance because some huge graphic is rendered) the others will wait
+a bit, just because we cycle through the runs. It also depends how console
+buffering is set up. In practice this will not have much impact.
+
+If you use the same input file with different output, you can use this setup:
+
+\starttyping
+context test-1 --mode=m-1 --forceinput=test
+context test-2 --mode=m-2 --forceinput=test
+context test-3 --mode=m-3 --forceinput=test
+context test-5 --mode=m-5 --forceinput=test
+context test-5 --mode=m-5 --forceinput=test
+context test-6 --mode=m-6 --forceinput=test
+\stoptyping
+
+Here the so called jobname will be the given filename \type {test-*} while thee
+input will come from \type {test.tex}. Using the same input files with a result
+specification doesn't work here because the multi|-|pass data file(s) and
+intermediate result will clash. Running on dedicated subpath could work out but
+has its own complications (creation, cleanup, moving results) and would therefore
+be more fragile.
+
+An example of running files in a tree, like those in the test suite is:
+
+\starttyping
+context --parallel --pattern=**/whatever*.tex
+\stoptyping
+
+The files will be processed the directory where the file is found. When there is
+an error the filename will be reported at the end of the run.
+
+\stopsection
 
 \stopchapter
 

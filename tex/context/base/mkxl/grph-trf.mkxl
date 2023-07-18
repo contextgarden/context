@@ -53,16 +53,14 @@
 \newconditional\c_grph_scale_scaling_done
 \newconditional\c_grph_scale_limit_factors \c_grph_scale_limit_factors\conditionaltrue
 
-\newconditional\c_grph_scale_swap_factor
-
 \newdimension\d_grph_scale_wd
 \newdimension\d_grph_scale_ht
 \newdimension\d_grph_scale_dp
 
-% global
+\newconditional\c_grph_scale_swap_factor % global
 
-\newdimension\d_grph_scale_used_x_size
-\newdimension\d_grph_scale_used_y_size
+\newdimension\d_grph_scale_used_x_size   % global
+\newdimension\d_grph_scale_used_y_size   % global
 
 \newinteger\c_grph_scale_used_x_scale
 \newinteger\c_grph_scale_used_y_scale
@@ -113,20 +111,51 @@
    \c!maxwidth=\scaleparameter\c!width,
    \c!maxheight=\scaleparameter\c!height]
 
+% \permanent\tolerant\protected\def\scale[#1]#*[#2]%
+%   {\bgroup
+%    % this is quite common so we might make this a helper
+%    \ifarguments
+%      \lettonothing\currentscale
+%    \or
+%      \ifhastok={#1}%
+%        \lettonothing\currentscale
+%        \setupcurrentscale[#1]%
+%      \else
+%        \cdef\currentscale{#1}%
+%      \fi
+%    \or
+%      \cdef\currentscale{#1}%
+%      \setupcurrentscale[#2]%
+%    \fi
+%    %
+%    \dowithnextboxcs\grph_scale_finish\naturalhbox} % intercept direction
+
+\newinteger\c_grph_scale_nesting
+
+\def\grph_scale_set_nesting
+  {\advanceby\c_grph_scale_nesting\plusone
+   \letcsname\??scale>\the\c_grph_scale_nesting:\s!parent\endcsname\??scale
+   \cdef\currentscale{>\the\c_grph_scale_nesting}}
+
 \permanent\tolerant\protected\def\scale[#1]#*[#2]%
   {\bgroup
-   % this is quite common so we might make this a helper
    \ifarguments
-     \lettonothing\currentscale
+     \grph_scale_set_nesting
    \or
      \ifhastok={#1}%
-       \lettonothing\currentscale
+       \grph_scale_set_nesting
        \setupcurrentscale[#1]%
      \else
        \cdef\currentscale{#1}%
+       \ifempty\currentscale
+         \grph_scale_set_nesting
+       \fi
      \fi
    \or
      \cdef\currentscale{#1}%
+     \ifempty\currentscale
+       \grph_scale_set_nesting
+     \fi
      \setupcurrentscale[#2]%
    \fi
    %
@@ -305,7 +334,7 @@
 % \placefigure{none}{\rotate[frame=on,offset=overlay]{\externalfigure[t:/sources/cow.pdf][width-6]}} \page
 % \placefigure{none}{\framed[frame=on,offset=overlay]{\externalfigure[t:/sources/cow.pdf][width-7]}}
 
-%D The \typpe {min} option makes sure that the smallest available space determines
+%D The \type {min} option makes sure that the smallest available space determines
 %D the max size (so we can get a bleed on the other axis):
 %D
 %D \startlinecorrection
@@ -989,7 +1018,7 @@
 % \dostepwiserecurse{0}{360}{10}
 %   {\startlinecorrection[blank]
 %    \hbox
-%      {\expanded{\setuprotate[rotation=\recurselevel]}%
+%      {\setuprotate[rotation=#1]%
 %       \traceboxplacementtrue
 %       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=depth] {\ruledhbox{\bfb  (depth)}}}}%
 %       \hbox to .2\hsize{\hss\ruledhbox{\rotate[location=fit]   {\ruledhbox{\bfb    (fit)}}}}%

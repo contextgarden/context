@@ -4339,7 +4339,7 @@
 \newtoks\AfterPar
 
 \permanent\protected\def\GetPar
-  {\expanded
+  {\normalexpanded
      {\dowithpar
         {\the\BeforePar
          \BeforePar\emptytoks}
@@ -4348,7 +4348,7 @@
          \AfterPar\emptytoks}}}
 
 \permanent\protected\def\GotoPar
-  {\expanded
+  {\normalexpanded
      {\dogotopar
         {\the\BeforePar
          \BeforePar\emptytoks}}}
@@ -4534,12 +4534,12 @@
 
 \permanent\protected\def\appendtoksonce#1\to#2%
   {\ifhasxtoks{#1}#2\else
-     \appendtoks#1\to#2%
+     \toksapp#2{#1}%
    \fi}
 
 \permanent\protected\def\prependtoksonce#1\to#2%
   {\ifhasxtoks{#1}#2\else
-     \prependtoks#1\to#2%
+     \tokspre#2{#1}%
    \fi}
 
 % Soon (check usage):
@@ -6506,12 +6506,14 @@
 %D Maybe ... toksapp should deal with this ...
 
 \permanent\protected\def\appendvalue #1#2%
-  {\defcsname#1\expandafter\expandafter\expandafter\endcsname\expandafter\expandafter\expandafter
-     {\begincsname#1\endcsname#2}}
+  {\edefcsname#1\endcsname{%
+     \normalunexpanded\expandafter\expandafter\expandafter{\begincsname#1\endcsname}%
+     \normalunexpanded{#2}}}
 
 \permanent\protected\def\prependvalue #1#2%
-  {\edefcsname#1\endcsname
-     {\normalunexpanded{#2}\expandafter\expandafter\expandafter\empty\begincsname#1\endcsname}}
+  {\edefcsname#1\endcsname{%
+     \normalunexpanded{#2}%
+     \normalunexpanded\expandafter\expandafter\expandafter{\begincsname#1\endcsname}}}
 
 \permanent\protected\def\appendgvalue #1#2{\global\appendvalue}
 \permanent\protected\def\prependgvalue#1#2{\global\prependvalue}

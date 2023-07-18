@@ -627,17 +627,85 @@ inline static int tex_aux_get_penalty_option(halfword current)
     return 0;
 }
 
+
+static void tex_aux_initialize_show_build_node(int callback_id)
+{
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "d->", initialize_show_build_context);
+}
+
+static void tex_aux_step_show_build_node(int callback_id, halfword current)
+{
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dNdd->", step_show_build_context, 
+        current,
+        page_goal,
+        page_total
+    );
+}
+
+static void tex_aux_check_show_build_node(int callback_id, halfword current, int badness, int costs, int penalty, int *moveon, int *fireup)
+{
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dNbbddd->bb", check_show_build_context, 
+        current,
+        *moveon, 
+        *fireup,
+        badness, 
+        costs, 
+        penalty, 
+        moveon, 
+        fireup
+    );
+}
+
+static void tex_aux_skip_show_build_node(int callback_id, halfword current)
+{
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dN->", skip_show_build_context);
+}
+
+static void tex_aux_move_show_build_node(int callback_id, halfword current)
+{
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dNddddb->", move_show_build_context, 
+        current,
+        page_last_height,
+        page_last_depth,
+        page_last_stretch,
+        page_last_shrink,
+        (page_last_fistretch || page_last_filstretch || page_last_fillstretch || page_last_filllstretch) ? 1 : 0
+    );
+}
+
+static void tex_aux_fireup_show_build_node(int callback_id, halfword current)
+{
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dN->", fireup_show_build_context,
+        current 
+    );
+}
+
+static void tex_aux_wrapup_show_build_node(int callback_id)
+{
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "d->", wrapup_show_build_context);
+}
+
 void tex_build_page(void)
 {
     if (node_next(contribute_head) && ! lmt_page_builder_state.output_active) {
         /*tex The (upcoming) penalty to be added to the badness: */
         halfword penalty = 0;
+        int callback_id = lmt_callback_defined(show_build_callback);
         int tracing = tracing_pages_par;
+        if (callback_id) { 
+           tex_aux_initialize_show_build_node(callback_id);
+        }
         do {
+            /*tex 
+                We update the values of |\lastskip|, |\lastpenalty|, |\lastkern| and 
+                |\lastboundary| as we go.
+            */
             halfword current = node_next(contribute_head);
             halfword type = node_type(current);
             halfword subtype = node_subtype(current);
-            /*tex Update the values of |last_glue|, |last_penalty|, and |last_kern|. */
+            if (callback_id) { 
+               tex_aux_step_show_build_node(callback_id, current);
+            }
             if (lmt_page_builder_state.last_glue != max_halfword) {
                 tex_flush_node(lmt_page_builder_state.last_glue);
                 lmt_page_builder_state.last_glue = max_halfword;
@@ -648,22 +716,6 @@ void tex_build_page(void)
             lmt_page_builder_state.last_node_type = type;
             lmt_page_builder_state.last_node_subtype = subtype;
             lmt_page_builder_state.last_extra_used = 0;
-            switch (type) {
-                case glue_node:
-                    lmt_page_builder_state.last_glue = tex_new_glue_node(current, node_subtype(current));
-                    break;
-                case penalty_node:
-                    lmt_page_builder_state.last_penalty = penalty_amount(current);
-                    break;
-                case kern_node:
-                    lmt_page_builder_state.last_kern = kern_amount(current);
-                    break;
-                case boundary_node:
-                    if (subtype == page_boundary) {
-                        lmt_page_builder_state.last_boundary = boundary_data(current);
-                    }
-                    break;
-            }
             /*tex
 
                 Move node |p| to the current page; if it is time for a page break, put the nodes
@@ -767,9 +819,12 @@ void tex_build_page(void)
                         goto CONTRIBUTE;
                     }
                 case boundary_node:
+                    if (subtype == page_boundary) {
+                        lmt_page_builder_state.last_boundary = boundary_data(current);
+                    }
                     if (lmt_page_builder_state.contents < contribute_box) {
                         goto DISCARD;
-                    } else if (node_subtype(current) == page_boundary) {
+                    } else if (subtype == page_boundary) {
                         /*tex
                             We just triggered the pagebuilder for which we needed a contribution. We fake
                             a zero penalty so that all gets processed. The main rationale is that we get
@@ -793,6 +848,7 @@ void tex_build_page(void)
                 case whatsit_node:
                     goto CONTRIBUTE;
                 case glue_node:
+                    lmt_page_builder_state.last_glue = tex_new_glue_node(current, subtype);
                     if (lmt_page_builder_state.contents < contribute_box) {
                         goto DISCARD;
                     } else if (precedes_break(lmt_page_builder_state.page_tail)) {
@@ -802,6 +858,7 @@ void tex_build_page(void)
                         goto UPDATEHEIGHTS;
                     }
                 case kern_node:
+                    lmt_page_builder_state.last_kern = kern_amount(current);
                     if (lmt_page_builder_state.contents < contribute_box) {
                         goto DISCARD;
                     } else if (! node_next(current)) {
@@ -813,6 +870,7 @@ void tex_build_page(void)
                         goto UPDATEHEIGHTS;
                     }
                 case penalty_node:
+                    lmt_page_builder_state.last_penalty = penalty_amount(current);
                     if (lmt_page_builder_state.contents < contribute_box) {
                         goto DISCARD;
                     } else {
@@ -906,6 +964,9 @@ void tex_build_page(void)
                 {
                     int moveon = costs <= lmt_page_builder_state.least_cost;
                     int fireup = costs == awful_bad || penalty <= eject_penalty;
+                    if (callback_id) { 
+                       tex_aux_check_show_build_node(callback_id, current, badness, lmt_page_builder_state.last_penalty, costs, &moveon, &fireup);
+                    }
                     if (tracing > 0) {
                         tex_aux_display_page_break_cost(badness, penalty, costs, moveon, fireup);
                     }
@@ -920,6 +981,9 @@ void tex_build_page(void)
                             insert = node_next(insert);
                         }
                         tex_aux_save_best_page_specs();
+                        if (callback_id) { 
+                           tex_aux_move_show_build_node(callback_id, current);
+                        }
                     }
                     if (fireup) {
                         if (tracing > 1) {
@@ -927,17 +991,26 @@ void tex_build_page(void)
                             tex_print_format("[page: fireup: %N]", current);
                             tex_end_diagnostic();
                         }
+                        if (callback_id) { 
+                           tex_aux_fireup_show_build_node(callback_id, current);
+                        }
                         /*tex Output the current page at the best place. */
                         tex_aux_fire_up(current);
                         if (lmt_page_builder_state.output_active) {
                             /*tex User's output routine will act. */
+                            if (callback_id) { 
+                               tex_aux_wrapup_show_build_node(callback_id);
+                            }
                             return;
                         } else {
                             /*tex The page has been shipped out by default output routine. */
                             continue;
                         }
                     }
-                 // tex_aux_save_best_page_specs();
+                }
+            } else {
+                if (callback_id) { 
+                    tex_aux_skip_show_build_node(callback_id, current);
                 }
             }
           UPDATEHEIGHTS:

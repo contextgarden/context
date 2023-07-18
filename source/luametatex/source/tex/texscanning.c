@@ -213,58 +213,6 @@ scanner_state_info lmt_scanner_state = {
 inline static void tex_aux_downgrade_cur_val(int level, int succeeded, int negative)
 {
     switch (cur_val_level) {
-        case tok_val_level:
-        case font_val_level:
-        case mathspec_val_level:
-        case fontspec_val_level:
-            /*tex
-                This test pays back as this actually happens, but we also need it for the
-                |none_lua_function| handling. We end up here in |ident_val_level| and |tok_val_level|
-                and they don't downgrade, nor negate which saves a little testing.
-            */
-            break;
-        case int_val_level:
-//            while (cur_val_level > level) {
-//                --cur_val_level;
-//            }
-if (cur_val_level > level) {
-       cur_val_level = level;
-}
-            if (negative) {
-                cur_val = -cur_val;
-            }
-            if (level == posit_val_level) { 
-                cur_val = tex_integer_to_posit(cur_val).v;
-            }
-            break;
-        case attr_val_level:
-//            while (cur_val_level > level) {
-//                --cur_val_level;
-//            }
-if (cur_val_level > level) {
-       cur_val_level = level;
-}
-            if (negative) {
-                cur_val = -cur_val;
-            }
-            if (level == posit_val_level) { 
-                cur_val = tex_integer_to_posit(cur_val).v;
-            }
-            break;
-        case dimen_val_level:
-//            while (cur_val_level > level) {
-//                --cur_val_level;
-//            }
-if (cur_val_level > level) {
-       cur_val_level = level;
-}
-            if (negative) {
-                cur_val = -cur_val;
-            }
-            if (level == posit_val_level) { 
-                cur_val = tex_dimension_to_posit(cur_val).v;
-            }
-            break;
         case posit_val_level:
             switch (cur_val_level) { 
                 case dimen_val_level:
@@ -275,17 +223,48 @@ if (cur_val_level > level) {
                     cur_val = tex_integer_to_posit(cur_val).v;
                     break;
             }
-//            while (cur_val_level > level) {
-//                --cur_val_level;
-//            }
-if (cur_val_level > level) {
-       cur_val_level = level;
-}
+            if (cur_val_level > level) {
+                cur_val_level = level;
+            }
             if (negative) {
                 cur_val = tex_posit_neg(cur_val);
             }
             break;
-        default:
+        case int_val_level:
+            if (cur_val_level > level) {
+                cur_val_level = level;
+            }
+            if (negative) {
+                cur_val = -cur_val;
+            }
+            if (level == posit_val_level) { 
+                cur_val = tex_integer_to_posit(cur_val).v;
+            }
+            break;
+        case attr_val_level:
+            if (cur_val_level > level) {
+                cur_val_level = level;
+            }
+            if (negative) {
+                cur_val = -cur_val;
+            }
+            if (level == posit_val_level) { 
+                cur_val = tex_integer_to_posit(cur_val).v;
+            }
+            break;
+        case dimen_val_level:
+            if (cur_val_level > level) {
+                cur_val_level = level;
+            }
+            if (negative) {
+                cur_val = -cur_val;
+            }
+            if (level == posit_val_level) { 
+                cur_val = tex_dimension_to_posit(cur_val).v;
+            }
+            break;
+        case glue_val_level:
+        case mu_val_level:            
             /*tex There is no real need for it being a loop, a test would do. */
             while (cur_val_level > level) {
                 /*tex Convert |cur_val| to a lower level. */
@@ -313,6 +292,22 @@ if (cur_val_level > level) {
                 cur_val = -cur_val;
             }
             break;
+        case tok_val_level:
+        case font_val_level:
+        case mathspec_val_level:
+        case fontspec_val_level:
+            /*tex
+                This test pays back as this actually happens, but we also need it for the
+                |none_lua_function| handling. We end up here in |ident_val_level| and |tok_val_level|
+                and they don't downgrade, nor negate which saves a little testing.
+            */
+            break;
+     // case specification_val_level:
+     // case list_val_level:
+     // case no_val_level:
+     //     break;
+        default:
+            tex_confusion("downgrade");
      }
 }
 
@@ -406,12 +401,15 @@ static halfword tex_aux_scan_register_index(void)
     switch (cur_cmd) {
         case register_toks_cmd     : return cur_chr - register_toks_base; 
         case register_int_cmd      : return cur_chr - register_int_base; 
-        case register_dimen_cmd    : return cur_chr - register_dimen_base;
         case register_attribute_cmd: return cur_chr - register_attribute_base;
+        case register_posit_cmd    : return cur_chr - register_posit_base;
+        case register_dimen_cmd    : return cur_chr - register_dimen_base;
         case register_glue_cmd     : return cur_chr - register_glue_base; 
         case register_mu_glue_cmd  : return cur_chr - register_mu_glue_base;
         case char_given_cmd        : return cur_chr;
         case integer_cmd           : return cur_chr;
+        case posit_cmd             : return cur_chr;
+        case dimension_cmd         : return cur_chr;
         default                    : return -1; 
     }
 }
@@ -3492,17 +3490,21 @@ halfword tex_scan_general_text(halfword *tail)
     tex_scan_left_brace();
     while (1) {
         tex_get_token();
-        switch (cur_cmd) {
-            case left_brace_cmd:
-                ++unbalance;
-                break;
-            case right_brace_cmd:
-                if (unbalance) {
-                    --unbalance;
+        if (! cur_cs) {
+            switch (cur_cmd) {
+                case left_brace_cmd:
+                    if (! cur_cs) {
+                        ++unbalance;
+                    }
                     break;
-                } else {
-                   goto DONE;
-                }
+                case right_brace_cmd:
+                    if (unbalance) {
+                        --unbalance;
+                        break;
+                    } else {
+                        goto DONE;
+                    }
+            }
         }
         p = tex_store_new_token(p, cur_tok);
     }

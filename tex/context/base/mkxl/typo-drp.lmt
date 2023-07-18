@@ -97,11 +97,15 @@ local a_initial         = attributes.private("initial")
 
 local category          = characters.category
 
+local levels            = { }
+local getlevel          = tex.getnestlevel or function() return tex.getnest("prv") end
+
 local function set(par,specification)
     enableaction("processors","typesetters.initials.handler")
     if trace_initials then
         report_initials("enabling initials")
     end
+    levels[getlevel()] = true
     setprop(par,a_initial,specification)
 end
 
@@ -403,7 +407,13 @@ function initials.handler(head,groupcode)
         if not busy then
             local settings = getprop(head,a_initial)
             if not settings or settings.continue ~= v_yes then
-                disableaction("processors","typesetters.initials.handler")
+                levels[getlevel()] = nil
+                if not next(levels) then
+                    disableaction("processors","typesetters.initials.handler")
+                    if trace_initials then
+                        report_initials("disabling initials")
+                    end
+                end
             end
             if settings then
                 local alternative = settings.alternative or v_default

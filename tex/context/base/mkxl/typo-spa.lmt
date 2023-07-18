@@ -29,6 +29,7 @@ local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getattr            = nuts.getattr
 local isglyph            = nuts.isglyph
+local getlanguage        = nuts.getlanguage
 
 local insertnodebefore   = nuts.insertbefore
 local insertnodeafter    = nuts.insertafter
@@ -75,7 +76,6 @@ end
 function spacings.handler(head)
     local _, start = findattribute(head, a_spacings)
     if start then
-        local done = false
         -- head is always begin of par (whatsit), so we have at least two prev nodes
         -- penalty followed by glue
         while start do
@@ -87,79 +87,82 @@ function spacings.handler(head)
                     if data then
                         local map = data.characters[char]
                         if map then
-                            local font = id
-                            local left = map.left
-                            local right = map.right
-                            local alternative = map.alternative
-                            local quad = quaddata[font]
-                            local prev = getprev(start)
-                            if not chardata[font][char] then
-                                report_spacing("missing character %C in font %i",char,font)
-                            end
-                            if left and left ~= 0 and prev then
-                                local ok = false
-                                local prevprev = getprev(prev)
-                                if alternative == 1 then
-                                    if somespace(prev,true) then
-                                        if somepenalty(prevprev,10000) then
-                                            if trace_spacing then
-                                                report_spacing("removing penalty and space before %C (left)",char)
+                            local language = data.language or 0
+--                             if language == 0 or languages.registered[language].number == getlanguage(start) then
+                            if language == 0 or languages.numbers[language] == getlanguage(start) then
+                                local font = id
+                                local left = map.left
+                                local right = map.right
+                                local alternative = map.alternative
+                                local quad = quaddata[font]
+                                local prev = getprev(start)
+                                if not chardata[font][char] then
+                                    report_spacing("missing character %C in font %i",char,font)
+                                end
+                                if left and left ~= 0 and prev then
+                                    local ok = false
+                                    local prevprev = getprev(prev)
+                                    if alternative == 1 then
+                                        if somespace(prev,true) then
+                                            if somepenalty(prevprev,10000) then
+                                                if trace_spacing then
+                                                    report_spacing("removing penalty and space before %C (left)",char)
+                                                end
+                                                head = remove_node(head,prev,true)
+                                                head = remove_node(head,prevprev,true)
+                                            else
+                                                if trace_spacing then
+                                                    report_spacing("removing space before %C (left)",char)
+                                                end
+                                                head = remove_node(head,prev,true)
                                             end
-                                            head = remove_node(head,prev,true)
-                                            head = remove_node(head,prevprev,true)
-                                        else
-                                            if trace_spacing then
-                                                report_spacing("removing space before %C (left)",char)
-                                            end
-                                            head = remove_node(head,prev,true)
                                         end
+                                        ok = true
+                                    else
+                                        ok = not (somespace(prev,true) and somepenalty(prevprev,true)) or somespace(prev,true)
                                     end
-                                    ok = true
-                                else
-                                    ok = not (somespace(prev,true) and somepenalty(prevprev,true)) or somespace(prev,true)
-                                end
-                                if ok then
-                                    if trace_spacing then
-                                        report_spacing("inserting penalty and space before %C (left)",char)
+                                    if ok then
+                                        if trace_spacing then
+                                            report_spacing("inserting penalty and space before %C (left)",char)
+                                        end
+                                        insertnodebefore(head,start,new_penalty(10000))
+                                        insertnodebefore(head,start,new_glue(left*quad))
                                     end
-                                    insertnodebefore(head,start,new_penalty(10000))
-                                    insertnodebefore(head,start,new_glue(left*quad))
                                 end
-                            end
-                            local next = getnext(start)
-                            if right and right ~= 0 and next then
-                                local ok = false
-                                local nextnext = getnext(next)
-                                if alternative == 1 then
-                                    if somepenalty(next,10000) then
-                                        if somespace(nextnext,true) then
+                                local next = getnext(start)
+                                if right and right ~= 0 and next then
+                                    local ok = false
+                                    local nextnext = getnext(next)
+                                    if alternative == 1 then
+                                        if somepenalty(next,10000) then
+                                            if somespace(nextnext,true) then
+                                                if trace_spacing then
+                                                    report_spacing("removing penalty and space after %C right",char)
+                                                end
+                                                head = remove_node(head,next,true)
+                                                head = remove_node(head,nextnext,true)
+                                            end
+                                        elseif somespace(next,true) then
                                             if trace_spacing then
-                                                report_spacing("removing penalty and space after %C right",char)
+                                                report_spacing("removing space after %C (right)", char)
                                             end
                                             head = remove_node(head,next,true)
-                                            head = remove_node(head,nextnext,true)
                                         end
-                                    elseif somespace(next,true) then
+                                        ok = true
+                                    else
+                                        ok = not (somepenalty(next,10000) and somespace(nextnext,true)) or somespace(next,true)
+                                    end
+                                    if ok then
                                         if trace_spacing then
-                                            report_spacing("removing space after %C (right)", char)
+                                            report_spacing("inserting penalty and space after %C (right)",char)
                                         end
-                                        head = remove_node(head,next,true)
+                                        insertnodeafter(head,start,new_glue(right*quad))
+                                        insertnodeafter(head,start,new_penalty(10000))
                                     end
-                                    ok = true
-                                else
-                                    ok = not (somepenalty(next,10000) and somespace(nextnext,true)) or somespace(next,true)
-                                end
-                                if ok then
-                                    if trace_spacing then
-                                        report_spacing("inserting penalty and space after %C (right)",char)
-                                    end
-                                    insertnodeafter(head,start,new_glue(right*quad))
-                                    insertnodeafter(head,start,new_penalty(10000))
                                 end
                             end
                         end
                     end
-                    done = true
                 end
             elseif id == math_code then
                 start = endofmath(start) -- weird, can return nil .. no math end?
@@ -167,9 +170,6 @@ function spacings.handler(head)
             if start then
                 start = getnext(start)
             end
-        end
-        if done then
-    --         unsetattributes(a_spacings,head)
         end
     end
     return head
@@ -197,8 +197,12 @@ function spacings.setup(name,char,settings)
     local data = numbers[name]
     if not data then
         -- error
-    else
+    elseif char > 0 then
         data.characters[char] = settings
+    else
+        for k, v in next, settings do
+            data[k] = v
+        end
     end
 end
 
@@ -241,6 +245,7 @@ implement {
             { "left",        "number" },
             { "right",       "number" },
             { "alternative", "integer" },
+            { "language",    "string" },
         }
     }
 }

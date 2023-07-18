@@ -399,7 +399,7 @@
 % but it might have a little impact on performance ... something to leave
 % to when we're done with the transition (it's kind of massive)
 
-\protected\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8% why is \expanded still needed in clones
+\protected\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8%
   {\newtoks#5%
    \newtoks#6%
    \frozen\tolerant\protected\def#2[##1]##*[##2]##*[##3]% [child][parent][settings] | [child][settings] | [child][parent] | [child]

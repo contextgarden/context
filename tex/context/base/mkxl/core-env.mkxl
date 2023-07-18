@@ -272,10 +272,15 @@
 \permanent\protected\def\doifallmodes    #1{\ifallmodes{#1}\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
 \permanent\protected\def\doifnotallmodes #1{\ifallmodes{#1}\expandafter\gobbleoneargument  \else\expandafter\firstofoneargument  \fi}
 
-\permanent\protected\def\startmode       [#1]{\ifmodes   {#1}\else\expandafter\ignoreupto\expandafter\stopmode       \fi}
-\permanent\protected\def\startallmodes   [#1]{\ifallmodes{#1}\else\expandafter\ignoreupto\expandafter\stopallmodes   \fi}
-\permanent\protected\def\startnotmode    [#1]{\ifmodes   {#1}\expandafter     \ignoreupto\expandafter\stopnotmode    \fi}
-\permanent\protected\def\startnotallmodes[#1]{\ifallmodes{#1}\expandafter     \ignoreupto\expandafter\stopnotallmodes\fi}
+% \permanent\protected\def\startmode       [#1]{\ifmodes   {#1}\else\expandafter\ignoreupto\expandafter\stopmode       \fi}
+% \permanent\protected\def\startallmodes   [#1]{\ifallmodes{#1}\else\expandafter\ignoreupto\expandafter\stopallmodes   \fi}
+% \permanent\protected\def\startnotmode    [#1]{\ifmodes   {#1}\expandafter     \ignoreupto\expandafter\stopnotmode    \fi}
+% \permanent\protected\def\startnotallmodes[#1]{\ifallmodes{#1}\expandafter     \ignoreupto\expandafter\stopnotallmodes\fi}
+
+\permanent\protected\def\startmode       [#1]{\ifmodes   {#1}\else\expandafter\ignorenestedupto\expandafter\startmode       \expandafter\stopmode       \fi}
+\permanent\protected\def\startallmodes   [#1]{\ifallmodes{#1}\else\expandafter\ignorenestedupto\expandafter\startallmodes   \expandafter\stopallmodes   \fi}
+\permanent\protected\def\startnotmode    [#1]{\ifmodes   {#1}\expandafter     \ignorenestedupto\expandafter\startnotmode    \expandafter\stopnotmode    \fi}
+\permanent\protected\def\startnotallmodes[#1]{\ifallmodes{#1}\expandafter     \ignorenestedupto\expandafter\startnotallmodes\expandafter\stopnotallmodes\fi}
 
 \permanent\protected\def\stopmode       {} % no relax
 \permanent\protected\def\stopnotmode    {} % no relax

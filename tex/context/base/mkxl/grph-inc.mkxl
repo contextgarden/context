@@ -779,9 +779,9 @@
    \setexternalfigureparameter\c!align{\v!middle,\v!lohi}% we default to \v!none
    \inheritedexternalfigureframed
      {\tt\tfxx \nohyphens
-      name:  \expanded{\verbatimstring{#1}}\\%
-      file:  \expanded{\verbatimstring{#2}}\\%
-      state: \expanded{\verbatimstring{#3}}}%
+      name:  \normalexpanded{\detokenize{#1}}\crlf
+      file:  \normalexpanded{\detokenize{#2}}\crlf
+      state: \normalexpanded{\detokenize{#3}}}%
    \egroup}
 
 % maybe setuphandler

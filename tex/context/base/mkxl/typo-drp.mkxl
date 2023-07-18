@@ -77,6 +77,12 @@
 \permanent\tolerant\protected\def\setinitial[#1]#*[#2]%
   {\enforced\edef\typo_initial_handle{\typo_initial_handle_indeed{#1}{#2}}}
 
+%D \starttyping
+%D \framed
+%D   [width=10cm,align=normal,strut=no,toffset=1ex]
+%D   {\placeinitial \flushinitial \samplefile{ward}}
+%D \stoptyping
+
 \permanent\tolerant\protected\def\flushinitial % when used inside a mechanism that forgets
   {\typo_initial_handle}
 

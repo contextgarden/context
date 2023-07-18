@@ -142,7 +142,11 @@
           \page_col_command_flush_bottom_insertions
         \or
           % baseline
-          \kern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
+          \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
+          \page_col_command_flush_bottom_insertions
+        \or
+          % depth
+          \vskip-\d_page_one_natural_depth
           \page_col_command_flush_bottom_insertions
         \fi
         \fakepagenotes}%

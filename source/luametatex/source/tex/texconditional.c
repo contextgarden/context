@@ -119,6 +119,9 @@ static int tex_aux_pass_text_x(int tracing_ifs, int tracing_commands)
         tex_get_next();
         if (cur_cmd == if_test_cmd) {
             switch (cur_chr) {
+                case if_code:
+                   ++level;
+                   break;
                 case fi_code:
                     if (level == 0) {
                         lmt_input_state.scanner_status = status;
@@ -391,6 +394,10 @@ inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head)
             p = expandlist ? tex_scan_toks_expand(1, NULL, 0) : tex_scan_toks_normal(1, NULL);
             *head = p;
             break;
+        case internal_toks_cmd:
+        case register_toks_cmd:
+            p = eq_value(cur_chr);
+            break;
         case register_cmd:
             /* is this okay? probably not as cur_val can be way to large */
             if (cur_chr == tok_val_level) {
@@ -400,19 +407,6 @@ inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head)
             } else {
                 goto DEFAULT;
             }
-        case internal_toks_cmd:
-        case register_toks_cmd:
-            p = eq_value(cur_chr);
-            break;
-        case call_cmd:
-        case protected_call_cmd:
-        case semi_protected_call_cmd:
-        case constant_call_cmd:
-        case tolerant_call_cmd:
-        case tolerant_protected_call_cmd:
-        case tolerant_semi_protected_call_cmd:
-            p = eq_value(cur_cs);
-            break;
         case cs_name_cmd:
             if (cur_chr == last_named_cs_code) {
                 if (lmt_scanner_state.last_cs_name != null_cs) {
@@ -422,6 +416,15 @@ inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head)
             } else { 
                 /* fall through */
             }
+        case call_cmd:
+        case protected_call_cmd:
+        case semi_protected_call_cmd:
+        case constant_call_cmd:
+        case tolerant_call_cmd:
+        case tolerant_protected_call_cmd:
+        case tolerant_semi_protected_call_cmd:
+            p = eq_value(cur_cs);
+            break;
         default:
           DEFAULT:
             {
@@ -587,8 +590,8 @@ void tex_conditional_if(halfword code, int unless)
                 result = code == if_char_code ? (n == cur_chr) : (m == cur_cmd);
             }
             goto RESULT;
-        case if_abs_int_code:
         case if_int_code:
+        case if_abs_int_code:
             {
                 halfword n1 = tex_scan_int(0, NULL);
                 halfword cp = tex_aux_scan_comparison(code);
@@ -625,8 +628,8 @@ void tex_conditional_if(halfword code, int unless)
                 result = result == 0 ? 1 : (result > 0 ? result <= n0 : -result <= n0);
             }
             goto RESULT;
-        case if_abs_posit_code:
         case if_posit_code:
+        case if_abs_posit_code:
             {
                 halfword n1 = tex_scan_posit(0);
                 halfword cp = tex_aux_scan_comparison(code);
@@ -664,8 +667,8 @@ void tex_conditional_if(halfword code, int unless)
                 result = tex_posit_eq_zero(result) ? 1 : (tex_posit_gt_zero(result) ? tex_posit_le(result, n0) : tex_posit_le(tex_posit_neg(result), n0));
             }
             goto RESULT;
-        case if_abs_dim_code:
         case if_dim_code:
+        case if_abs_dim_code:
             {
                 scaled n1 = tex_scan_dimen(0, 0, 0, 0, NULL);
                 halfword cp = tex_aux_scan_comparison(code);

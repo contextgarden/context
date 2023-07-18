@@ -99,9 +99,9 @@
 \permanent\let\stopTABLEbody\relax
 \permanent\let\stopTABLEfoot\relax
 
-\permanent\tolerant\protected\def\startTABLEhead[#1]#:#2\stopTABLEhead{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_head}
-\permanent\tolerant\protected\def\startTABLEnext[#1]#:#2\stopTABLEnext{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_next}
-\permanent\tolerant\protected\def\startTABLEbody[#1]#:#2\stopTABLEbody{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_body}
-\permanent\tolerant\protected\def\startTABLEfoot[#1]#:#2\stopTABLEfoot{\appendtoks\tabl_ntb_section[#1]{#2}\to\t_tabl_ntb_foot}
+\permanent\tolerant\protected\def\startTABLEhead[#1]#:#2\stopTABLEhead{\toksapp\t_tabl_ntb_head{\tabl_ntb_section[#1]{#2}}}
+\permanent\tolerant\protected\def\startTABLEnext[#1]#:#2\stopTABLEnext{\toksapp\t_tabl_ntb_next{\tabl_ntb_section[#1]{#2}}}
+\permanent\tolerant\protected\def\startTABLEbody[#1]#:#2\stopTABLEbody{\toksapp\t_tabl_ntb_body{\tabl_ntb_section[#1]{#2}}}
+\permanent\tolerant\protected\def\startTABLEfoot[#1]#:#2\stopTABLEfoot{\toksapp\t_tabl_ntb_foot{\tabl_ntb_section[#1]{#2}}}
 
 \protect \endinput

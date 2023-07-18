@@ -155,7 +155,7 @@ void tex_line_break_prepare(
     halfword *final_line_penalty
 )
 {
-    /* too much testing of next */
+    /* too much testing of next .. it needs checking anyway */
     if (node_type(par) == par_node) {
         if (tracing_linebreak_lists) {
             tex_begin_diagnostic();
@@ -2716,9 +2716,9 @@ inline static int tex_aux_check_sub_pass(line_break_properties *properties, half
                     if (retry) {
                         halfword v = tex_get_passes_tolerance(passes, subpass);
                         if (v) { 
-                            lmt_linebreak_state.threshold = v;
                             properties->tolerance = v;
                         }
+                        lmt_linebreak_state.threshold = properties->tolerance;
                         v = tex_get_passes_linepenalty(passes, subpass); 
                         if (v) {
                             properties->line_penalty = v;
@@ -4136,9 +4136,13 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
             halfword n = node_next(properties->parinit_left_skip);
             while (n) {
                 if (n == properties->parinit_right_skip) {
+                    /*tex We could check if it the right fill glue. */
+                    halfword rf = node_prev(rs) ? node_prev(rs) : rs;
                     tex_couple_nodes(node_prev(n), node_next(n));
-                    tex_couple_nodes(node_prev(rs), n);
-                    tex_couple_nodes(n, rs);
+                 // tex_couple_nodes(node_prev(rs), n);
+                 // tex_couple_nodes(n, rs);
+                    tex_couple_nodes(node_prev(rf), n);
+                    tex_couple_nodes(n, rf);
                     break;
                 } else {
                     n = node_next(n);

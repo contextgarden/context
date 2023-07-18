@@ -282,7 +282,7 @@
    \!taRightGlue\emptytoks
    \begingroup
    \tabl_table_use_bar
-   \expanded{\endgroup\noexpand\doreadtableformatkeys#1]}}% appear in a \tabl_table_reformat cmd; this is here as a safeguard.
+   \normalexpanded{\endgroup\noexpand\doreadtableformatkeys#1]}}% appear in a \tabl_table_reformat cmd; this is here as a safeguard.
 
 \aliased\let\ReFormat\relax
 
@@ -445,19 +445,19 @@
    \doreadtableformatkeys}
 
 \newtableformatkey c%
-  {\prependtoks\raggedcenter\to\!taDataColumnTemplate
+  {\tokspre\!taDataColumnTemplate\raggedcenter
    \doreadtableformatkeys \LeftGlue\hfil \RightGlue\hfil}
 
 \newtableformatkey l%
-  {\prependtoks\raggedright\to\!taDataColumnTemplate
+  {\tokspre\!taDataColumnTemplate\raggedright
    \doreadtableformatkeys \LeftGlue\empty \RightGlue\hfil}
 
 \newtableformatkey r%
-  {\prependtoks\raggedleft\to\!taDataColumnTemplate
+  {\tokspre\!taDataColumnTemplate\raggedleft
    \doreadtableformatkeys \LeftGlue\hfil \RightGlue\empty}
 
 \newtableformatkey x%
-  {\prependtoks\notragged\to\!taDataColumnTemplate
+  {\tokspre\!taDataColumnTemplate\notragged
    \doreadtableformatkeys \LeftGlue\hfil \RightGlue\empty}
 
 % Key "k": Adds kerns to left and right of "#" This key and the two below use Plain
@@ -1501,7 +1501,7 @@
 %    \global\tableactionstatepermitted\conditionalfalse
 %    \global\hassometablehead\conditionalfalse
 %    \global\hassometabletail\conditionalfalse
-%    \expanded{\doifelseinstring{|}{#1}}
+%    \normalexpanded{\doifelseinstring{|}{#1}}
 %      {\xdef\tabl_table_restart{\noexpand\tabl_table_restart_indeed{\noexpand\tabl_table_third_stage{#1}}}}
 %      {\ifcsname\??tabletemplate#1\endcsname
 %         \gdef\tabl_table_restart{\csname\??tabletemplate#1\endcsname}%

@@ -320,6 +320,9 @@ end
         -- We have a regular tex file so no \starttext yet as we can
         -- load fonts.
      -- context.enabletrackers { "resolvers.*" }
+        if type(arguments.forceinput) == "string" then
+            filename = arguments.forceinput or filename
+        end
         context.input(filename)
      -- context.disabletrackers { "resolvers.*" }
 

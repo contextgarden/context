@@ -2086,7 +2086,6 @@ halfword tex_vpack(halfword p, scaled targetheight, int m, scaled targetdepth, s
     halfword box = tex_new_node(vlist_node, unknown_list);
     (void) retain; /* todo */
     box_dir(box) = pack_direction;
-    node_subtype(box) = min_quarterword;
     box_shift_amount(box) = 0;
     box_list(box) = p;
     lmt_packaging_state.last_badness = 0;

@@ -189,7 +189,7 @@ local actions = {
                     end
                 end
             end
-            -- Here ratiob is the value from Digital Typography and a difference
+            -- Here ratio is the value from Digital Typography and a difference
             -- indicates a sensitive area. It is just a playground for MS and HH.
             local text     = hpack_string(f_status(linenumber,badness,deltawd,100*deltawd/linewd,ratio,ratiob),usedfont,spillover)
             local location = linedata.last

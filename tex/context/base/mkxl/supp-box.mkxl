@@ -1041,7 +1041,7 @@
 %D depth of the line.
 
 \permanent\protected\def\shapedhbox % lines with non strutted dimensions have
-  {\expanded{\dowithnextbox         % interlineskip so if we want the original
+  {\normalexpanded{\dowithnextbox         % interlineskip so if we want the original
      {\ht\nextbox\the\ht\shapebox   % spacing, we need to preserve the original
       \dp\nextbox\the\dp\shapebox   % height and depth which is definitely
       \box\nextbox}}                % needed if we apply struts to the 'new'
@@ -2146,7 +2146,7 @@
       \futurelet\nexttoken\dodocommand}%
    \def\dodocommand
      {\ifx\nexttoken\bgroup
-        \expanded{\egroup#1 to \the\sizeofbox}%
+        \normalexpanded{\egroup#1 to \the\sizeofbox}%
       \else
         \expandafter\afterassignment\expandafter\docommand\expandafter\scratchdimen
       \fi}%

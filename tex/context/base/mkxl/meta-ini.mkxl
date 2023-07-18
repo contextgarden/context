@@ -1340,8 +1340,11 @@
 \permanent\def\MPruntab#1#2{\clf_mpruntab{#1}#2\relax} \aliased\let\mpruntab\MPruntab % #2 is number
 \permanent\def\MPrunset#1#2{\clf_mprunset{#1}{#2}}     \aliased\let\mprunset\MPrunset
 
-\prependtoks \clf_mppushvariables \to \everybeforepagebody
-\appendtoks  \clf_mppopvariables  \to \everyafterpagebody
+% \prependtoks \clf_mppushvariables \to \everybeforepagebody
+% \appendtoks  \clf_mppopvariables  \to \everyafterpagebody
+
+\tokspre\everybeforepagebody{\clf_mppushvariables}
+\toksapp\everyafterpagebody {\clf_mppopvariables }
 
 \aliased\let\MPpushvariables\clf_mppushvariables
 \aliased\let\MPpopvariables \clf_mppopvariables

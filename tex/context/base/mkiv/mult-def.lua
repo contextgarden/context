@@ -19259,6 +19259,10 @@ return {
    ["fr"]="resserre",
    ["nl"]="krap",
   },
+  ["verytight"]={
+   ["en"]="verytight",
+   ["nl"]="heelkrap",
+  },
   ["title"]={
    ["cs"]="titul",
    ["de"]="titel",
