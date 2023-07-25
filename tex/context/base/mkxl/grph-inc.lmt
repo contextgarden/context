@@ -50,12 +50,13 @@ local format, lower, find, match, gsub = string.format, string.lower, string.fin
 local longtostring = string.longtostring
 local contains = table.contains
 local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
-local concat, insert, remove = table.concat, table.insert, table.remove
+local concat, insert, remove, unique = table.concat, table.insert, table.remove, table.unique
 local todimen = string.todimen
 local collapsepath = file.collapsepath
 local formatters = string.formatters
 local odd = math.odd
 local isfile, isdir, modificationtime = lfs.isfile, lfs.isdir, lfs.modification
+local joinfile, is_qualified_path = file.join, file.is_qualified_path
 
 local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.match
 
@@ -539,7 +540,9 @@ function figures.setpaths(locationset,pathlist)
         -- this function can be called each graphic so we provide this optimization
         return
     end
-    local t, h = figure_paths, settings_to_hash(locationset)
+    local t = figure_paths
+    local h = settings_to_hash(locationset)
+    local p = environment.arguments.path
     if last_locationset ~= locationset then
         -- change == reset (actually, a 'reset' would indeed reset
         if h[v_local] then
@@ -549,6 +552,11 @@ function figures.setpaths(locationset,pathlist)
         end
         figures.defaultsearch = h[v_default]
         last_locationset = locationset
+if p then
+    for i=1,#t do
+        t[#t+1] = joinfile(p,t[i])
+    end
+end
     end
     if h[v_global] then
         local list = settings_to_array(pathlist)
@@ -558,11 +566,20 @@ function figures.setpaths(locationset,pathlist)
                 t[#t+1] = s
             end
         end
+if p then
+    for i=1,#t do
+        if not is_qualified_path(t[i]) then
+            t[#t+1] = joinfile(p,t[i])
+        end
+    end
+end
     end
     -- new
-    if environment.arguments.path then
-        table.insert(t,1,environment.arguments.path)
+    if p then
+        insert(t,1,p)
     end
+t = unique(t)
+-- inspect(t)
     --
     figure_paths  = t
     last_pathlist = pathlist

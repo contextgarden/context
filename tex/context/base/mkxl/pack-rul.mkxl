@@ -742,7 +742,7 @@
   {\setbox\scratchbox\vpack \bgroup
    % \normaloffinterlineskip % sets baselineskip, lineskip and lineskiplimit
      \baselineskip-\thousandpoint
-     \lineskip     \zeropoint
+     \lineskip     \zeroskip
      \lineskiplimit\maxdimen
      \csname\??framedtop\p_framed_frame\framedparameter\c!topframe\endcsname
    % \nointerlineskip % new (needed for fences)

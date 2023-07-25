@@ -3000,40 +3000,66 @@ halfword tex_prune_page_top(halfword p, int s)
 
  */
 
-halfword tex_vert_break(halfword p, scaled h, scaled d)
+static halfword tex_aux_vert_badness(scaled goal, scaled active_height[])
+{
+    if (active_height[total_advance_amount] < goal) {
+        if (active_height[total_fi_amount] || active_height[total_fil_amount] || active_height[total_fill_amount] || active_height[total_filll_amount]) {
+            return 0;
+        } else {
+            return tex_badness(goal - active_height[total_advance_amount], active_height[total_stretch_amount]);
+        }
+    } else if (active_height[total_advance_amount] - goal > active_height[total_shrink_amount]) {
+        return awful_bad;
+    } else {
+        return tex_badness(active_height[total_advance_amount] - goal, active_height[total_shrink_amount]);
+    }
+}
+
+static halfword tex_aux_vert_costs(halfword badness, halfword penalty)
+{
+    if (badness >= awful_bad) {
+        return badness; 
+    } else if (penalty <= eject_penalty) {
+        return penalty;
+    } else if (badness < infinite_bad) {
+        return badness + penalty;
+    } else {
+        return deplorable;
+    }
+}
+
+halfword tex_vert_break(halfword current, scaled height, scaled depth)
 {
     /*tex
         If |p| is a glue node, |type(prev_p)| determines whether |p| is a legal breakpoint, an
         initial glue node is not a legal breakpoint.
     */
-    halfword prev_p = p;
-    /*tex penalty value */
-    halfword pi = 0;
-    /*tex the smallest badness plus penalties found so far */
+    halfword previous = current;
+    /*tex The to be checked penalty value: */
+    halfword penalty = 0;
+    /*tex The smallest badness plus penalties found so far: */
     halfword least_cost = awful_bad;
-    /*tex the most recent break that leads to |least_cost| */
+    /*tex The most recent break that leads to |least_cost|: */
     halfword best_place = null;
-    /*tex depth of previous box in the list */
-    scaled prev_dp = 0;
+    /*tex The depth of previous box in the list: */
+    scaled previous_depth = 0;
+    /*tex The various glue components: */
     scaled active_height[10] = { 0 };
     while (1) {
         /*tex
-
             If node |p| is a legal breakpoint, check if this break is the best known, and |goto
             done| if |p| is null or if the page-so-far is already too full to accept more stuff.
 
             A subtle point to be noted here is that the maximum depth~|d| might be negative, so
             |cur_height| and |prev_dp| might need to be corrected even after a glue or kern node.
         */
-        if (p) {
+        if (current) {
             /*tex
-
                 Use node |p| to update the current height and depth measurements; if this node is
                 not a legal breakpoint, |goto not_found| or |update_heights|, otherwise set |pi|
                 to the associated penalty at the break.
-
             */
-            switch (node_type(p)) {
+            switch (node_type(current)) {
                 case hlist_node:
                 case vlist_node:
                     /*tex
@@ -3049,32 +3075,33 @@ halfword tex_vert_break(halfword p, scaled h, scaled d)
                         continue;
                     }
                     */
-                    active_height[total_advance_amount] += prev_dp + box_height(p);
-                    prev_dp = box_depth(p);
+                    active_height[total_advance_amount] += previous_depth + box_height(current);
+                    previous_depth = box_depth(current);
                     goto NOT_FOUND;
                 case rule_node:
-                    active_height[total_advance_amount] += prev_dp + rule_height(p);
-                    prev_dp = rule_depth(p);
+                    active_height[total_advance_amount] += previous_depth + rule_height(current);
+                    previous_depth = rule_depth(current);
                     goto NOT_FOUND;
                 case boundary_node:
                 case whatsit_node:
                     goto NOT_FOUND;
                 case glue_node:
-                    if (precedes_break(prev_p)) {
-                        pi = 0;
+                    if (precedes_break(previous)) {
+                        penalty = 0;
                         break;
                     } else {
                         goto UPDATE_HEIGHTS;
                     }
                 case kern_node:
-                    if (node_next(p) && node_type(node_next(p)) == glue_node) {
-                        pi = 0;
+                    if (node_next(current) && node_type(node_next(current)) == glue_node) {
+                        penalty = 0;
                         break;
                     } else {
                         goto UPDATE_HEIGHTS;
                     }
                 case penalty_node:
-                    pi = penalty_amount(p);
+                    penalty = penalty_amount(current);
+// option: penalty = 0;
                     break;
                 case mark_node:
                 case insert_node:
@@ -3084,73 +3111,48 @@ halfword tex_vert_break(halfword p, scaled h, scaled d)
                     break;
             }
         } else {
-            pi = eject_penalty;
+            penalty = eject_penalty;
         }
         /*tex
-
             Check if node |p| is a new champion breakpoint; then |goto done| if |p| is a forced
             break or if the page-so-far is already too full.
-
         */
-        if (pi < infinite_penalty) {
+        if (penalty < infinite_penalty) {
             /*tex Compute the badness, |b|, using |awful_bad| if the box is too full. */
-            int b;
-            if (active_height[total_advance_amount] < h) {
-                if ((active_height[total_fi_amount]   != 0) || (active_height[total_fil_amount]   != 0) ||
-                    (active_height[total_fill_amount] != 0) || (active_height[total_filll_amount] != 0)) {
-                    b = 0;
-                } else {
-                    b = tex_badness(h - active_height[total_advance_amount], active_height[total_stretch_amount]);
-                }
-            } else if (active_height[total_advance_amount] - h > active_height[total_shrink_amount]) {
-                b = awful_bad;
-            } else {
-                b = tex_badness(active_height[total_advance_amount] - h, active_height[total_shrink_amount]);
-            }
-            if (b < awful_bad) {
-                if (pi <= eject_penalty) {
-                    b = pi;
-                } else if (b < infinite_bad) {
-                    b = b + pi;
-                } else {
-                    b = deplorable;
-                }
-            }
-            if (b <= least_cost) {
-                best_place = p;
-                least_cost = b;
-                lmt_packaging_state.best_height_plus_depth = active_height[total_advance_amount] + prev_dp;
+            int badness = tex_aux_vert_badness(height, active_height);
+            int costs = tex_aux_vert_costs(badness, penalty);
+            if (costs <= least_cost) {
+                best_place = current;
+                least_cost = costs;
+                lmt_packaging_state.best_height_plus_depth = active_height[total_advance_amount] + previous_depth;
                 /*tex 
                     Here's a patch suggested by DEK related to glue in inserts that needs to be taken 
                     into account. That patch is not applied to regular \TEX\ for compatibility reasons.
                 */
-                if (lmt_packaging_state.best_height_plus_depth > (h + prev_dp) && b < awful_bad) { 
-                    lmt_packaging_state.best_height_plus_depth = h + prev_dp;
+                if (lmt_packaging_state.best_height_plus_depth > (height + previous_depth) && costs < awful_bad) { 
+                    lmt_packaging_state.best_height_plus_depth = height + previous_depth;
                 }
             }
-            if ((b == awful_bad) || (pi <= eject_penalty)) {
+            if ((costs == awful_bad) || (penalty <= eject_penalty)) {
                 return best_place;
             }
         }
       UPDATE_HEIGHTS:
         /*tex
-
             Update the current height and depth measurements with respect to a glue or kern node~|p|.
             Vertical lists that are subject to the |vert_break| procedure should not contain infinite
-            shrinkability, since that would permit any amount of information to fit on one page.
-
-            We only end up here for glue and kern nodes.
-
+            shrinkability, since that would permit any amount of information to fit on one page. We 
+            only end up here for glue and kern nodes.
         */
-        switch(node_type(p)) {
+        switch(node_type(current)) {
             case kern_node:
-                active_height[total_advance_amount] += prev_dp + kern_amount(p);
-                prev_dp = 0;
+                active_height[total_advance_amount] += previous_depth + kern_amount(current);
+                previous_depth = 0;
                 goto KEEP_GOING; /* We assume a positive depth. */
             case glue_node:
-                active_height[total_stretch_amount + glue_stretch_order(p)] += glue_stretch(p);
-                active_height[total_shrink_amount] += glue_shrink(p);
-                if ((glue_shrink_order(p) != normal_glue_order) && (glue_shrink(p) != 0)) {
+                active_height[total_stretch_amount + glue_stretch_order(current)] += glue_stretch(current);
+                active_height[total_shrink_amount] += glue_shrink(current);
+                if (glue_shrink_order(current) != normal_glue_order  && glue_shrink(current)) {
                     tex_handle_error(
                         normal_error_type,
                         "Infinite glue shrinkage found in box being split",
@@ -3158,22 +3160,22 @@ halfword tex_vert_break(halfword p, scaled h, scaled d)
                         "'\\vss' or '\\vskip 0pt minus 1fil'. Such glue doesn't belong there; but you can\n"
                         "safely proceed, since the offensive shrinkability has been made finite."
                     );
-                    glue_shrink_order(p) = normal_glue_order;
+                    glue_shrink_order(current) = normal_glue_order;
                 }
-                active_height[total_advance_amount] += prev_dp + glue_amount(p);
-                prev_dp = 0;
+                active_height[total_advance_amount] += previous_depth+ glue_amount(current);
+                previous_depth = 0;
                 goto KEEP_GOING; /* We assume a positive depth. */
         }
       NOT_FOUND:
-        if (prev_dp > d) {
-            active_height[total_advance_amount] += prev_dp - d;
-            prev_dp = d;
+        if (previous_depth > depth) {
+            active_height[total_advance_amount] += previous_depth - depth;
+            previous_depth = depth;
         }
       KEEP_GOING:
-        prev_p = p;
-        p = node_next(prev_p);
+        previous = current;
+        current = node_next(previous);
     }
-    return best_place; /* unreachable */
+    return best_place; /* This location is unreachable but some compilers like it this way. */
 }
 
 /*tex
@@ -3282,8 +3284,7 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot, halfword callbac
         case copy_code:
             {
                 halfword n = tex_scan_box_register_number();
-             /* boxnode = copy_node_list(box_register(n), null); */
-                boxnode = tex_copy_node(box_register(n));
+                boxnode = box_register(n) ? tex_copy_node(box_register(n)) : null;
                 break;
             }
      /* case unpack_code: */
@@ -3339,7 +3340,7 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot, halfword callbac
                 halfword size = 0;
                 halfword attrlist = null;
                 while (1) {
-                    switch (tex_scan_character("adtuvADTUV", 0, 1, 0)) {
+                    switch (tex_scan_character("atuATU", 0, 1, 0)) {
                         case 0:
                             goto DONE;
                         case 'a': case 'A':
@@ -3368,7 +3369,7 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot, halfword callbac
                             }
                             break;
                         default:
-                            tex_aux_show_keyword_error("attr|upto|to|vbox|vtop|dbox");
+                            tex_aux_show_keyword_error("attr|upto|to");
                             goto DONE;
                     }
                 }

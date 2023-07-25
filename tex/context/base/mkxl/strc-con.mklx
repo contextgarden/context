@@ -964,7 +964,7 @@
     \noindent
     \leftskip\leftconstructionskip
     \rightskip\dimexpr\rightconstructionskip+\constructionsheadwidth+\constructionsheaddistance\relax
-    \parfillskip\zeropoint
+    \parfillskip\zeroskip
     \strc_constructions_set_pure_box\v!flushright
     \directparwrapper \relax {%
       \hfilll

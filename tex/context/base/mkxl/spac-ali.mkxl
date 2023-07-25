@@ -317,11 +317,11 @@
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip
    \rightskip        \plusone\rightskip
-   \spaceskip        \zeropoint
-   \xspaceskip       \zeropoint
-   \parinitleftskip  \zeropoint
-   \parinitrightskip \zeropoint
-   \parfillleftskip  \zeropoint
+   \spaceskip        \zeroskip
+   \xspaceskip       \zeroskip
+   \parinitleftskip  \zeroskip
+   \parinitrightskip \zeroskip
+   \parfillleftskip  \zeroskip
    \parfillrightskip \s_zero_plus_one_fil % new
    \raggedonelinerstate\conditionalfalse % now here
    \enforced\aliased\let\updateraggedskips\relax}          % no need for adaption
@@ -334,9 +334,9 @@
    \rightskip        \plusone\rightskip\s!plus\zeropoint
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
-   \parinitleftskip  \zeropoint
-   \parinitrightskip \zeropoint
-   \parfillleftskip  \zeropoint
+   \parinitleftskip  \zeroskip
+   \parinitrightskip \zeroskip
+   \parfillleftskip  \zeroskip
    \parfillrightskip \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
@@ -349,9 +349,9 @@
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_middle
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
-   \parinitleftskip  \zeropoint
-   \parinitrightskip \zeropoint
-   \parfillleftskip  \zeropoint
+   \parinitleftskip  \zeroskip
+   \parinitrightskip \zeroskip
+   \parfillleftskip  \zeroskip
    \parfillrightskip \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
@@ -364,9 +364,9 @@
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_right
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
-   \parinitleftskip  \zeropoint
-   \parinitrightskip \zeropoint
-   \parfillleftskip  \zeropoint
+   \parinitleftskip  \zeroskip
+   \parinitrightskip \zeroskip
+   \parfillleftskip  \zeroskip
    \parfillrightskip \s_zero_plus_one_fil
   %\parindent        \parindent
    \relax}
@@ -378,9 +378,9 @@
    \rightskip        \plusone\rightskip\s!plus\zeropoint
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
-   \parinitleftskip  \zeropoint
-   \parinitrightskip \zeropoint
-   \parfillleftskip  \zeropoint
+   \parinitleftskip  \zeroskip
+   \parinitrightskip \zeroskip
+   \parfillleftskip  \zeroskip
    \parfillrightskip \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
@@ -392,9 +392,9 @@
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
-   \parinitleftskip  \zeropoint
-   \parinitrightskip \zeropoint
-   \parfillleftskip  \zeropoint
+   \parinitleftskip  \zeroskip
+   \parinitrightskip \zeroskip
+   \parfillleftskip  \zeroskip
    \parfillrightskip \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
@@ -406,9 +406,9 @@
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
-   \parinitleftskip  \zeropoint
-   \parinitrightskip \zeropoint
-   \parfillleftskip  \zeropoint
+   \parinitleftskip  \zeroskip
+   \parinitrightskip \zeroskip
+   \parfillleftskip  \zeroskip
    \parfillrightskip \s_zero_plus_zero
   %\parindent        \parindent
    \relax}
@@ -421,9 +421,9 @@
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_half
    \spaceskip        \v_spac_align_space_amount
    \xspaceskip       \v_spac_align_space_amount_x
-   \parinitleftskip  \zeropoint
-   \parinitrightskip \zeropoint
-   \parfillleftskip  \zeropoint
+   \parinitleftskip  \zeroskip
+   \parinitrightskip \zeroskip
+   \parfillleftskip  \zeroskip
    \parfillrightskip \s_zero_plus_zero
    \parindent        \zeropoint
    \relax}
@@ -433,11 +433,11 @@
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
-   \spaceskip        \zeropoint
-   \xspaceskip       \zeropoint
-   \parinitleftskip  \zeropoint
-   \parinitrightskip \zeropoint
-   \parfillleftskip  \zeropoint
+   \spaceskip        \zeroskip
+   \xspaceskip       \zeroskip
+   \parinitleftskip  \zeroskip
+   \parinitrightskip \zeroskip
+   \parfillleftskip  \zeroskip
    \parfillrightskip \zeropoint\s!plus\v_spac_align_fill_amount_double\relax
    \parindent        \zeropoint
    \relax}
@@ -447,12 +447,12 @@
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
-   \spaceskip        \zeropoint
-   \xspaceskip       \zeropoint
-   \parinitleftskip  \zeropoint
-   \parinitrightskip \zeropoint
+   \spaceskip        \zeroskip
+   \xspaceskip       \zeroskip
+   \parinitleftskip  \zeroskip
+   \parinitrightskip \zeroskip
    \parfillleftskip  \zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
-   \parfillrightskip \zeropoint
+   \parfillrightskip \zeroskip
    \parindent        \zeropoint
    \relax}
 
@@ -462,11 +462,11 @@
    \c_attr_alignstate\plusthree
    \leftskip         \plusone\leftskip \s!plus\zeropoint\relax
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_right\relax
-   \spaceskip        \zeropoint
-   \xspaceskip       \zeropoint
-   \parinitleftskip  \zeropoint
-   \parinitrightskip \zeropoint
-   \parfillleftskip  \zeropoint
+   \spaceskip        \zeroskip
+   \xspaceskip       \zeroskip
+   \parinitleftskip  \zeroskip
+   \parinitrightskip \zeroskip
+   \parfillleftskip  \zeroskip
    \parfillrightskip \s_zero_plus_zero
   %\parindent        \parindent
    \relax}
@@ -477,12 +477,12 @@
    \c_attr_alignstate\plustwo
    \leftskip         \plusone\leftskip \s!plus\spac_align_set_raggedness_middle
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_middle
-   \spaceskip        \zeropoint
-   \xspaceskip       \zeropoint
-   \parinitleftskip  \zeropoint
+   \spaceskip        \zeroskip
+   \xspaceskip       \zeroskip
+   \parinitleftskip  \zeroskip
    \parinitrightskip \zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
    \parfillleftskip  \zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
-   \parfillrightskip \zeropoint
+   \parfillrightskip \zeroskip
    \parindent        \zeropoint
    \relax}
 
@@ -535,8 +535,8 @@
      \else
        \spac_align_set_horizontal_very_right
      \fi
-    %\parfillleftskip\zeropoint
-     \parfillrightskip\zeropoint
+    %\parfillleftskip \zeroskip
+     \parfillrightskip\zeroskip
    \or
      % 7 centered last line
      \spac_align_set_horizontal_centered_last_line
@@ -545,8 +545,8 @@
      \spac_align_set_horizontal_flushedright_last_line
    \or
      % 9 paragraph
-    %\parfillleftskip\zeropoint
-     \parfillrightskip\zeropoint
+    %\parfillleftskip \zeroskip
+     \parfillrightskip\zeroskip
    \or
      % 10 slanted
      \spac_align_set_horizontal_slanted
@@ -1243,7 +1243,7 @@
   {\registerparwrapper
      {\v!word:\v!right}
      {\begingroup
-      \frozen\parfillrightskip   \zeropoint % frozen ?
+      \frozen\parfillrightskip   \zeroskip  % frozen ?
       \frozen\finalhyphendemerits\zerocount % frozen ?
       \endgroup}
      {\doifelseparwrapper{\v!word:\v!right}{\unregisterparwrapper{\v!word:\v!right}}\donothing

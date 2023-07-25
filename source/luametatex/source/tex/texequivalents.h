@@ -283,6 +283,7 @@ typedef enum glue_codes {
     additional_page_skip_code, 
     /* normal ones */
     initial_page_skip_code, 
+    initial_top_skip_code, 
     line_skip_code,                /*tex interline glue if |baseline_skip| is infeasible */
     baseline_skip_code,            /*tex desired glue between baselines */
     par_skip_code,                 /*tex extra glue just above a paragraph */
@@ -422,6 +423,7 @@ typedef enum page_property_codes {
     insert_width_code,
     /*tex These can't be set: */
     page_stretch_code,
+    page_fistretch_code,
     page_filstretch_code,
     page_fillstretch_code,
     page_filllstretch_code,
@@ -1415,6 +1417,7 @@ extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword
 # define math_threshold_par              glue_parameter(math_threshold_code)
 # define page_extra_goal_par             dimen_parameter(page_extra_goal_code)
 # define initial_page_skip_par           glue_parameter(initial_page_skip_code)
+# define initial_top_skip_par            glue_parameter(initial_top_skip_code)
 # define additional_page_skip_par        glue_parameter(additional_page_skip_code)
 
 # define pre_display_size_par            dimen_parameter(pre_display_size_code)

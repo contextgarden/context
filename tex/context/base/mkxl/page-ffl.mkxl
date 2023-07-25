@@ -350,7 +350,7 @@
      \egroup
      \scratchdimenone\dimexpr\textheight-\htdp\scratchboxone+\lineheight\relax
      \dontcomplain
-     \splittopskip\zeropoint
+     \splittopskip\zeroskip
      \setbox\scratchbox\vsplit#1 upto \scratchdimenone
      \setsplitlisthtdp\scratchbox\strutht\strutdp
      \setbox\scratchbox\hpack\bgroup

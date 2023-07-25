@@ -166,7 +166,7 @@
      \fi
      \setuppagenumber[\c!state=\makeupparameter\c!pagestate]%
      \ifcstok{\makeupparameter\c!location}\v!top
-       \topskip\zeropoint
+       \topskip\zeroskip
      \fi
      \edef\p_reference{\makeupparameter\c!reference}%
      \dontleavehmode

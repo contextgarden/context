@@ -314,6 +314,7 @@ static void enginelib_show_credits(void)
         "  avl        : Richard (adapted a bit to fit in)\n"
         "  hjn        : Raph Levien (derived from TeX's hyphenator, but adapted again)\n"
         "  softposit  : S. H. Leong (Cerlane)\n"
+        "  potrace    : Peter Selinger\n"
         "\n"
         "The code base contains more names and references. Some libraries are partially adapted or\n"
         "have been replaced. The MetaPost library has additional functionality, some of which is\n"
@@ -404,8 +405,7 @@ static void enginelib_check_option(char **options, int i)
     }
     if (*n == '\0') {
         return;
-    }
-    {
+    } else {
         char *v = strchr(n, '=');
         size_t l = (int) (v ? (v - n) : strlen(n));
         lmt_environment_state.flag = lmt_memory_malloc(l + 1);
@@ -469,8 +469,7 @@ static void enginelib_parse_options(void)
         i++;
         if (! lmt_environment_state.flag) {
             continue;
-        }
-        if (strcmp(lmt_environment_state.flag, "luaonly") == 0) {
+        } else if (strcmp(lmt_environment_state.flag, "luaonly") == 0) {
             lmt_engine_state.lua_only = 1;
             lmt_environment_state.luatex_lua_offset = i;
             lmt_engine_state.lua_init = 1;
@@ -901,6 +900,7 @@ static const luaL_Reg lmt_libs_extra_function_list[] = {
     { "xcomplex", luaopen_xcomplex },
     { "xdecimal", luaopen_xdecimal },
     { "posit",    luaopen_posit    },
+    { "potrace",  luaopen_potrace  },
     { NULL,       NULL             },
 };
 

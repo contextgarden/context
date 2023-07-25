@@ -1356,11 +1356,11 @@
 
 % \normal added else fails in metafun manual (leaders do a hard scan)
 
-% \protected\def\forcecolorhack{\leaders\hrule\hskip\zeropoint\relax} % relax is needed !
+% \protected\def\forcecolorhack{\leaders\hrule\hskip\zeroskip\relax} % relax is needed !
 %
 % I really need to sort this out!
 
-% \permanent\protected\def\normalforcecolorhack{\leaders\hrule\s!height\zeropoint\s!depth\zeropoint\hskip\zeropoint\relax} % relax is needed !
+% \permanent\protected\def\normalforcecolorhack{\leaders\hrule\s!height\zeropoint\s!depth\zeropoint\hskip\zeroskip\relax}
 %
 % \installtexexperiment
 %   {disablecolorhack}

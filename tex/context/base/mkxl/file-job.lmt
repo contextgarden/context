@@ -59,7 +59,7 @@ local jobresolvers      = resolvers.jobs
 
 local registerextrapath = resolvers.registerextrapath
 local resetextrapaths   = resolvers.resetextrapaths
-local getextrapaths     = resolvers.getextrapath
+local getextrapaths     = resolvers.getextrapaths
 local pushextrapath     = resolvers.pushextrapath
 local popextrapath      = resolvers.popextrapath
 

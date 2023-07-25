@@ -53,7 +53,7 @@
    \hsize\localhsize
    \offinterlineskip
    \setuppalet[#1]
-   \tabskip\zeropoint
+   \tabskip\zeroskip
    \def\colo_palets_show_palet##1%
      {\doifelseinset\v!number{#2}{##1\hskip.5\emwidth}{}%
       \aligntab
@@ -75,7 +75,7 @@
       \hsize\localhsize
       \offinterlineskip
       \setuppalet[#1]
-      \tabskip\zeropoint
+      \tabskip\zeroskip
       \scratchwidth\zeropoint
       \doifinset\v!number{#2}
         {\def\colo_palets_show_palet##1%
@@ -163,7 +163,7 @@
       \hsize\localhsize
       \offinterlineskip
       \setuppalet
-      \tabskip\zeropoint
+      \tabskip\zeroskip
       \def\colorformatseparator{\strut\cr}
       \def\colo_groups_show_group##1%
         {\doifcolor{#1:##1}{\vbox
@@ -190,7 +190,7 @@
       \hsize\localhsize
       \offinterlineskip
       \setuppalet
-      \tabskip\zeropoint
+      \tabskip\zeroskip
       \def\colo_groups_show_group##1%
         {\doifcolor{#1:##1}
            {\doifinset\v!number{#2}

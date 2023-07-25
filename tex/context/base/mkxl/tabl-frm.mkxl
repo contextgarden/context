@@ -171,7 +171,7 @@
   {\localcontrolledloop\plusone\c_tabl_framed_c\plusone{\tabl_framed_flush_row_two}%
    \stopframed
    \nointerlineskip
-   \vskip\zeropoint\relax
+   \vskip\zeroskip\relax
    \framedparameter\c!inbetween}
 
 \protected\def\tabl_framed_flush_row_two

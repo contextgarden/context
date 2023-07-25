@@ -523,7 +523,7 @@ do
     logs.registerfinalactions(function()
         root.name = environment.jobname
         --
-        logs.startfilelogging(report,"used files")
+        logs.startfilelogging(report,"used job files")
         log_tree(report,root,"")
         logs.stopfilelogging()
         --

@@ -116,6 +116,71 @@
      {\box\b_page_one_contents}%
    \egroup}
 
+% \protected\def\page_col_command_package_contents_one#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
+%   {\bgroup
+%      \forgetall
+%      % see one for comments as it is similar
+%      \strc_notes_check_if_bottom_present
+%      \d_page_one_natural_depth\dp#2\relax
+%      \setbox\b_page_one_contents\vbox to \textheight
+%        {\page_col_command_flush_top_insertions
+%         \page_one_registered_text_area_a#1#2%
+%         \hsize\d_page_col_column_width
+%         \ifgridsnapping
+%           \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+%           \prevdepth\openstrutdepth
+%           \page_col_command_flush_bottom_insertions
+%           \vfil
+%         \orelse\ifcase\bottomraggednessmode
+%           % ragged (default)
+%           \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+%           \prevdepth\openstrutdepth
+%           \page_col_command_flush_bottom_insertions
+%           \vfil
+%         \or
+%           % align (normal)
+%           \page_col_command_flush_bottom_insertions
+%         \or
+%           % baseline
+%           \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
+%           \page_col_command_flush_bottom_insertions
+%         \or
+%           % depth
+%           \vskip-\d_page_one_natural_depth
+%           \page_col_command_flush_bottom_insertions
+%         \fi
+%         \fakepagenotes}%
+%      \page_one_command_package_show_state
+%      \ifconditional\c_notes_bottom_present
+%        \ifgridsnapping
+%          \ifcase\layoutlines
+%            \getrawnoflines\textheight
+%          \else
+%            \noflines\layoutlines
+%          \fi
+%          \scratchoffset\dimexpr\numexpr\noflines-\plusone\relax\lineheight+\topskip\relax
+%        \else
+%          \scratchoffset\ht\b_page_one_contents
+%        \fi
+%        \setbox\b_page_one_bottom_notes\hpack
+%          {\hsize\d_page_col_column_width
+%           \setupnotes[\c!width=\textwidth]%
+%           \lower\scratchoffset\vbox{\placebottomnotes\par\kern\zeropoint}}%
+%        \ht\b_page_one_contents    \zeropoint
+%        \wd\b_page_one_contents    \zeropoint
+%        \ht\b_page_one_bottom_notes\zeropoint
+%        \wd\b_page_one_bottom_notes\d_page_col_column_width
+%        \page_col_registered_text_area_b
+%          {\vpack to \textheight
+%             {\hpack{\box\b_page_one_contents\box\b_page_one_bottom_notes}}}%
+%      \else
+%        \ht\b_page_one_contents\textheight
+%        \wd\b_page_one_contents\d_page_col_column_width
+%        \page_col_registered_text_area_b
+%          {\box\b_page_one_contents}%
+%      \fi
+%    \egroup}
+
 \protected\def\page_col_command_package_contents_one#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
   {\bgroup
      \forgetall
@@ -165,12 +230,12 @@
        \setbox\b_page_one_bottom_notes\hpack
          {\hsize\d_page_col_column_width
           \setupnotes[\c!width=\textwidth]%
-          \lower\scratchoffset\vbox{\placebottomnotes\par\kern\zeropoint}}%
-      \ht\b_page_one_contents    \zeropoint
-      \wd\b_page_one_contents    \zeropoint
-      \ht\b_page_one_bottom_notes\zeropoint
-      \wd\b_page_one_bottom_notes\zeropoint
-      \wd\b_page_one_bottom_notes\d_page_col_column_width
+          \lower\dimexpr\scratchoffset-\initialpageskip\relax % watch the initialpageskip
+          \vbox{\placebottomnotes\par\kern\zeropoint}}%
+       \ht\b_page_one_contents    \zeropoint
+       \wd\b_page_one_contents    \zeropoint
+       \ht\b_page_one_bottom_notes\zeropoint
+       \wd\b_page_one_bottom_notes\d_page_col_column_width
        \page_col_registered_text_area_b
          {\vpack to \textheight
             {\hpack{\box\b_page_one_contents\box\b_page_one_bottom_notes}}}%
@@ -231,37 +296,80 @@
 
 % use \currentmixedcolumns instead of \recurselevel
 
-\def\page_col_routine_package_step
-  {% needs packaging anyway
-   \mofcolumns\recurselevel % added
-   \getboxfromcache{\s!pagecolumn}{\number\recurselevel}\scratchbox
-   \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_col_n_of_columns\plusone % new
-   \page_marks_synchronize_column\plusone\c_page_col_n_of_columns\recurselevel\scratchbox
-   % backgrounds
-   \anch_mark_column_box\scratchbox\recurselevel
-   \pagecolumnseparatorheight\ht\scratchbox
-   \pagecolumnseparatordepth \dp\scratchbox
-   \inheritedpagecolumnsframedbox\recurselevel\scratchbox}
+% \def\page_col_routine_package
+%   {\global\setbox\normalpagebox\hbox to \makeupwidth\bgroup
+%      \edef\p_separator{\pagecolumnsparameter\c!separator}%
+%      \pagecolumnseparatorwidth\d_page_col_distance
+%      \ifcstok{\pagecolumnsparameter\c!direction}\v!reverse
+%        \dostepwiserecurse\c_page_col_n_of_columns\plusone\minusone
+%          {\page_col_routine_package_step
+%           \ifnum\recurselevel>\plusone
+%             \page_col_routine_package_separate
+%           \fi}%
+%      \else
+%        \dorecurse\c_page_col_n_of_columns
+%          {\page_col_routine_package_step
+%           \ifnum\recurselevel<\c_page_col_n_of_columns
+%             \page_col_routine_package_separate
+%           \fi}%
+%      \fi
+%    \egroup
+%    \resetboxesincache{\s!pagecolumn}}
+
+% \def\page_col_routine_package_step
+%   {% needs packaging anyway
+%    \mofcolumns\recurselevel % added
+%    \getboxfromcache{\s!pagecolumn}{\number\recurselevel}\scratchbox
+%    \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_col_n_of_columns\plusone % new
+%    \page_marks_synchronize_column\plusone\c_page_col_n_of_columns\recurselevel\scratchbox
+%    % backgrounds
+%    \anch_mark_column_box\scratchbox\recurselevel
+%    \pagecolumnseparatorheight\ht\scratchbox
+%    \pagecolumnseparatordepth \dp\scratchbox
+%    \inheritedpagecolumnsframedbox\recurselevel\scratchbox}
 
 \def\page_col_routine_package
   {\global\setbox\normalpagebox\hbox to \makeupwidth\bgroup
      \edef\p_separator{\pagecolumnsparameter\c!separator}%
      \pagecolumnseparatorwidth\d_page_col_distance
      \ifcstok{\pagecolumnsparameter\c!direction}\v!reverse
-       \dostepwiserecurse\c_page_col_n_of_columns\plusone\minusone
-         {\page_col_routine_package_step
-          \ifnum\recurselevel>\plusone
+       \localcontrolledloop\c_page_col_n_of_columns\plusone\minusone
+         {\mofcolumns\currentloopiterator
+          \page_col_routine_package_step
+          \ifnum\mofcolumns>\plusone
             \page_col_routine_package_separate
           \fi}%
      \else
-       \dorecurse\c_page_col_n_of_columns
-         {\page_col_routine_package_step
-          \ifnum\recurselevel<\c_page_col_n_of_columns
+       \localcontrolledloop\plusone\c_page_col_n_of_columns\plusone
+         {\mofcolumns\currentloopiterator
+          \page_col_routine_package_step
+          \ifnum\mofcolumns<\c_page_col_n_of_columns
             \page_col_routine_package_separate
           \fi}%
      \fi
    \egroup
-   \resetboxesincache{\s!pagecolumn}}
+   \resetboxesincache{\s!pagecolumn\s!pagecolumn}%
+   \resetboxesincache{\s!pagecolumn}%
+   \global\initialpageskip\zeroskip
+   \global\initialtopskip \zeroskip}
+
+\def\page_col_routine_package_step
+  {% needs packaging anyway
+    \getboxfromcache{\s!pagecolumn\s!pagecolumn}{\number\mofcolumns}\scratchboxone
+    \getboxfromcache{\s!pagecolumn}{\number\mofcolumns}\scratchboxtwo
+   %\ht\scratchbox\dimexpr\ht\scratchboxtwo-\initialpageskip\relax
+    \ht\scratchboxtwo\dimexpr\ht\scratchboxtwo-\ht\scratchboxone\relax
+    \page_lines_add_numbers_to_box\scratchbox\mofcolumns\c_page_col_n_of_columns\plusone % new
+    \page_marks_synchronize_column\plusone\c_page_col_n_of_columns\mofcolumns\scratchboxtwo
+    % backgrounds
+    \anch_mark_column_box\scratchboxtwo\mofcolumns
+    \pagecolumnseparatorheight\ht\scratchboxtwo
+    \pagecolumnseparatordepth \dp\scratchboxtwo
+    \vpack\bgroup
+      \box\scratchboxone
+      \nointerlineskip\par
+      \inheritedpagecolumnsframedbox\mofcolumns\scratchboxtwo
+   \egroup}
 
 %D \unknown
 
@@ -736,16 +844,42 @@
    \fi
    \endgroup}
 
+% Keep this one as original:
+%
+% \def\page_col_flush_preceding
+%   {\ifvoid\b_page_mix_preceding \else
+%      % this is just one method but ok for now
+%      \begingroup
+%      % we might need more but for now this is ok
+%      \setupfloat[\c!spacebefore=,\c!spaceafter=]%
+%      \startplacefigure[\c!location={\v!top,\v!none}]%
+%        \box\b_page_mix_preceding
+%      \stopplacefigure
+%      \endgroup
+%    \fi}
+
 \def\page_col_flush_preceding
   {\ifvoid\b_page_mix_preceding \else
-     % this is just one method but ok for now
-     \begingroup
-     % we might need more but for now this is ok
-     \setupfloat[\c!spacebefore=,\c!spaceafter=]%
-     \startplacefigure[\c!location={\v!top,\v!none}]%
-       \box\b_page_mix_preceding
-     \stopplacefigure
-     \endgroup
+     \scratchwidth \emwidth
+     \scratchheight\ht\b_page_mix_preceding
+     \scratchdepth \dp\b_page_mix_preceding
+     \global\initialpageskip\htdp\b_page_mix_preceding
+     \global\initialtopskip \strutht
+     \setbox\scratchbox\hbox to \zeropoint
+       \bgroup
+         \box\b_page_mix_preceding
+       \egroup
+     \putboxincache{\s!pagecolumn\s!pagecolumn}{\number\plusone}\scratchbox
+     \dostepwiserecurse\plustwo\c_page_col_n_of_columns\plusone
+       {\setbox\scratchbox\hbox to \zeropoint
+          \bgroup
+            \novrule
+              \s!width \scratchwidth
+              \s!height\scratchheight
+              \s!depth \scratchdepth
+            \hss
+          \egroup
+        \putboxincache{\s!pagecolumn\s!pagecolumn}{\recurselevel}\scratchbox}%
    \fi}
 
 % \let\page_col_notes_initialize \relax
@@ -830,6 +964,9 @@
    %
    \nopenalties
    %
+   \global\initialpageskip\zeroskip
+   \global\initialtopskip \zeroskip
+   %
    % \insidecolumnstrue % NO!
    %
    \enforced\let\column\page_col_column
@@ -877,6 +1014,8 @@
    \page    % beware for empty pages
    \endgroup
  % \setupoutputroutine[\s!singlecolumn]%
+   \global\initialpageskip\zeroskip
+   \global\initialtopskip \zeroskip
    \page_otr_command_set_vsize
    \page_otr_command_set_hsize
    \page

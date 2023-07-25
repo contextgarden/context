@@ -1706,7 +1706,7 @@
 \newdimension\vboxtohboxslack
 \newdimension\hboxestohboxslack
 
-%D Create line and fake height of paragraph by messign with heights: a nice hack by
+%D Create line and fake height of paragraph by messing with heights: a nice hack by
 %D DEK himself.
 
 %\protected\def\setvboxtohbox
@@ -1804,7 +1804,10 @@
 %D   {unhhbox}
 %D
 %D The next macro is used in typesetting inline headings. Let's first look at the
-%D macro and then show an example.
+%D macro and then show an example. As many other helpers here, it is no longer
+%D used in the core and dates from \MKII\ times, but we keep it here just in case
+%D some use style uses it. Eventually we might moev this to a load|-|on|-|demand
+%D module.
 
 \newbox      \unhhedbox
 \newbox      \hhbox

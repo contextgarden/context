@@ -208,7 +208,8 @@
    \setbox\scratchbox\vbox to \dummyparameter\c!height \bgroup
    \hsize\dummyparameter\c!width\relax
    \emergencystretch10\scratchoffset
-   \parfillskip\zeropoint
+   \parfillskip\zeroskip
+   \parfillleftskip\zeroskip
    \leftskip \scratchoffset
    \rightskip\scratchoffset}
 

@@ -197,9 +197,9 @@
 \newconditional  \c_tabl_tabulate_no_blank_in_paragraphs % can become always on
 \newconditional  \c_tabl_tabulate_no_interline_space
 
-\c_tabl_tabulate_split\conditionaltrue
-\c_tabl_tabulate_handlepbreak\conditionaltrue
-\c_tabl_tabulate_autorulespacing\conditionaltrue
+\c_tabl_tabulate_split                 \conditionaltrue
+\c_tabl_tabulate_handlepbreak          \conditionaltrue
+\c_tabl_tabulate_autorulespacing       \conditionaltrue
 \c_tabl_tabulate_no_blank_in_paragraphs\conditionaltrue
 
 \newdimension    \d_tabl_tabulate_width_p
@@ -554,7 +554,7 @@
    \ifnum\c_tabl_tabulate_columns<\numexpr\c_tabl_tabulate_nofcolumns-\plusone\relax
      \s_tabl_tabulate_post\s_tabl_tabulate_pre
    \else
-     \s_tabl_tabulate_post\zeropoint
+     \s_tabl_tabulate_post\zeroskip
    \fi
   %\let\gettabulateexit\dogettabulateexit % still needed ?
    \d_tabl_tabulate_width\zeropoint
@@ -974,15 +974,15 @@
 
 \def\tabl_tabulate_splitoff_box % maybe use the modern splitter
   {\dontcomplain
-   \global\setbox\b_tabl_tabulate\vsplit\b_tabl_tabulate_current\c_tabl_tabulate_column to \lineheight % % % global ? % % %
-   \setbox\b_tabl_tabulate\vbox
-     {\unvbox\b_tabl_tabulate}%
+   \setbox\b_tabl_tabulate\vsplit\b_tabl_tabulate_current\c_tabl_tabulate_column upto \lineheight % % % global ? % % %
    \ifconditional\c_tabl_tabulate_splitoff_whitespace
      \tabl_tabulate_check_whitespace
    \fi
    \tabl_tabulate_color_repeat % needs to end up in a cell
    \setbox\b_tabl_tabulate\hpack to \wd\b_tabl_tabulate
-     {\hss\tabl_tabulate_hook_yes{\box\b_tabl_tabulate}\hss}%
+     {\hss
+      \tabl_tabulate_hook_yes{\box\b_tabl_tabulate}%
+      \hss}%
    \tabl_tabulate_normalize_splitline
    \tabl_tabulate_check_linenumbers
    \box\b_tabl_tabulate}
@@ -1671,8 +1671,8 @@
 \defcsname\??tabulateseparator\v!small \endcsname{\def\m_tabl_tabulate_separator_factor{.25}}
 \defcsname\??tabulateseparator\v!medium\endcsname{\def\m_tabl_tabulate_separator_factor{.5}}
 \defcsname\??tabulateseparator\v!big   \endcsname{}
-\defcsname\??tabulateseparator\v!none  \endcsname{\s_tabl_tabulate_separator\zeropoint\let\m_tabl_tabulate_separator_factor\zerocount}
-\defcsname\??tabulateseparator\v!grid  \endcsname{\s_tabl_tabulate_separator\zeropoint\let\m_tabl_tabulate_separator_factor\zerocount}
+\defcsname\??tabulateseparator\v!none  \endcsname{\s_tabl_tabulate_separator\zeroskip\let\m_tabl_tabulate_separator_factor\zerocount}
+\defcsname\??tabulateseparator\v!grid  \endcsname{\s_tabl_tabulate_separator\zeroskip\let\m_tabl_tabulate_separator_factor\zerocount}
 
 \def\tabl_tabulate_column_rule_separator_step#1%
   {\ifcsname\??tabulateseparator#1\endcsname
@@ -2195,7 +2195,7 @@
    \else
      % successive lines
      \lettonothing\tabl_tabulate_eskip
-     \dontcomplain
+    %\dontcomplain
      \glet\tabl_tabulate_hook\tabl_tabulate_hook_yes
      \expandafter\tabl_tabulate_splitoff_box
    \fi}
@@ -2473,8 +2473,8 @@
    \edef\v_tabl_tabulate_align{\ifcsname\??tabulatealigning\p_align\endcsname\lastnamedcs\else0\fi}%
    \s_tabl_tabulate_first.5\d_tabl_tabulate_unit
    \s_tabl_tabulate_last\s_tabl_tabulate_first
-   \s_tabl_tabulate_pre\zeropoint
-   \s_tabl_tabulate_post\zeropoint
+   \s_tabl_tabulate_pre\zeroskip
+   \s_tabl_tabulate_post\zeroskip
    %setfalse\c_tabl_pre_is_set
    \c_tabl_post_is_set\conditionalfalse
    \global\c_tabl_tabulate_columns\zerocount
@@ -2486,7 +2486,7 @@
    \global\d_tabl_tabulate_width_w\zeropoint
    \global\c_tabl_tabulate_equal\conditionalfalse
    \tabl_tabulate_pheight_reset
-   \tabskip\zeropoint
+   \tabskip\zeroskip
    \ifinsidesplitfloat
      \donetrue
    \orelse\ifinsidefloat
@@ -2529,7 +2529,7 @@
         \aligncontent % \alignmark\alignmark
         \aligntab
         \aligncontent % \alignmark\alignmark
-        \tabskip\zeropoint}%
+        \tabskip\zeroskip}%
    \fi
    \d_tabl_tabulate_width\zeropoint
    % these counters are set at the lua end
@@ -2685,8 +2685,7 @@
    \d_split_minimum_free_space\zeropoint
    \setbox\b_split_content\box#1%
    \ifcase\c_tabl_tabulate_repeathead\or
-     \setbox\b_split_head\vsplit\b_split_content to \lineheight
-     \setbox\b_split_head\vbox{\unvbox\b_split_head}%
+     \setbox\b_split_head\vsplit\b_split_content upto \lineheight
    \or
      \setbox\b_split_head\vbox{\hbox{\strut\tabulationparameter\c!title}}%
    \fi

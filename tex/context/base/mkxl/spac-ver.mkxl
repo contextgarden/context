@@ -357,7 +357,7 @@
 
 \installcorenamespace{whitespacemethod}
 
-\newgluespec   \s_spac_whitespace_parskip   \s_spac_whitespace_parskip\zeropoint
+\newgluespec   \s_spac_whitespace_parskip
 \newconditional\c_spac_whitespace_flexible  \c_spac_whitespace_flexible\conditionaltrue
 \newconstant   \c_spac_whitespace_grid_mode % option in layout / 1=permit_half_lines
 
@@ -426,7 +426,7 @@
 \installwhitespacemethod \v!line        {\s_spac_whitespace_parskip   \baselineskip}
 \installwhitespacemethod \v!halfline    {\s_spac_whitespace_parskip .5\baselineskip}
 \installwhitespacemethod \v!quarterline {\s_spac_whitespace_parskip.25\baselineskip}
-\installwhitespacemethod \v!none        {\s_spac_whitespace_parskip   \zeropoint}
+\installwhitespacemethod \v!none        {\s_spac_whitespace_parskip   \zeroskip}
 \installwhitespacemethod \v!big         {\s_spac_whitespace_parskip   \bigskipamount}
 \installwhitespacemethod \v!medium      {\s_spac_whitespace_parskip   \medskipamount}
 \installwhitespacemethod \v!small       {\s_spac_whitespace_parskip   \smallskipamount}
@@ -441,8 +441,8 @@
    \fi\relax}
 
 \permanent\protected\def\forgetparskip
-  {\s_spac_whitespace_parskip\zeropoint
-   \parskip\zeropoint
+  {\s_spac_whitespace_parskip\zeroskip
+   \parskip\zeroskip
    \let\v_spac_whitespace_current\v!none}
 
 \appendtoks
@@ -1155,7 +1155,7 @@
   %\boundary\plusone
    \penalty\plustenthousand
   %\boundary\plusone
-   \hskip\zeropoint}
+   \hskip\zeroskip}
 
 \permanent\protected\def\endstrut
   {% \ifmmode M\fi
@@ -1175,7 +1175,7 @@
 \def\spac_struts_end
   {\penalty\plustenthousand
   %\boundary\plustwo
-   \hskip\zeropoint
+   \hskip\zeroskip
   %\boundary\plustwo
    \strut
    \boundary\plustwo}
@@ -1233,7 +1233,7 @@
 
 \overloaded\permanent\protected\def\offinterlineskip % later we will overload this with a push pop
   {\baselineskip \ignoredepthcriterion % -\thousandpoint
-   \lineskip     \zeropoint
+   \lineskip     \zeroskip
    \lineskiplimit\maxdimen
    % We also need this here now; thanks to taco for figuring that out!
    \let\minimumlinedistance\zeropoint}
@@ -2015,7 +2015,7 @@
 
 %D The \type {category:4} is default.
 
-\definevspacingamount[\v!none]        [\zeropoint]         [\zeropoint]
+\definevspacingamount[\v!none]        [\zeroskip]          [\zeroskip]
 \definevspacingamount[\v!big]         [\bigskipamount]     [\bodyfontlineheight]
 \definevspacingamount[\v!medium]      [\medskipamount]     [.5\bodyfontlineheight]
 \definevspacingamount[\v!small]       [\smallskipamount]   [.25\bodyfontlineheight]

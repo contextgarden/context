@@ -751,7 +751,7 @@
    % \strut % new, needed below
    % \ifhmode % else funny pagebeaks
    %   \penalty\plustenthousand
-   %   \hskip\zeropoint % == \prewordbreak
+   %   \hskip\zeroskip % == \prewordbreak
    % \fi
      \strut % new, needed below
      \dostarttagged\t!delimitedsymbol\empty
@@ -775,7 +775,7 @@
      \fi
      \ifhmode % else funny pagebeaks
        \penalty\plustenthousand
-       \hskip\zeropoint % == \prewordbreak
+       \hskip\zeroskip % == \prewordbreak
      \fi
      \strut % new, needed below
      \dostarttagged\t!delimitedsymbol\empty

@@ -543,7 +543,7 @@
 \def\page_sides_flush_floats_progress
   {\begingroup
    \page_sides_force_depth
-   \parskip\zeropoint
+   \parskip\zeroskip
    \let\page_sides_flush_floats\relax
    \edef\m_pages_strut
      {\ifcsname\??sidefloatsteps\rootfloatparameter\c!step\endcsname
@@ -703,7 +703,7 @@
 % \def\page_sides_push_float_inline#1%
 %   {\begingroup
 %    \reseteverypar % needed !
-%    \parskip\zeropoint  % needed !
+%    \parskip\zeroskip  % needed !
 %    \nointerlineskip
 %    \page_sides_set_skips
 %    \page_floats_report_total
@@ -761,8 +761,8 @@
      \egroup
    \else
      \begingroup
-     \reseteverypar % needed !
-     \parskip\zeropoint  % needed !
+     \reseteverypar    % needed !
+     \parskip\zeroskip % needed !
      \nointerlineskip
      \page_sides_set_skips
      \page_floats_report_total

@@ -336,7 +336,7 @@
    \global\setbox\b_pack_combinations_captions\emptybox
    \global\c_pack_combinations_max\c_pack_combinations_x
    \multiplyby\c_pack_combinations_y\c_pack_combinations_x
-   \tabskip\zeropoint
+   \tabskip\zeroskip
    \enforced\permanent\protected\edef\combinationwidth % \immutable
      {\the\dimexpr
         (\hsize-\numexpr\c_pack_combinations_x-\plusone\relax\dimexpr\combinationparameter\c!distance\relax)/\c_pack_combinations_x

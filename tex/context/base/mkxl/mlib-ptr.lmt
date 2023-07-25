@@ -1,0 +1,255 @@
+if not modules then modules = { } end modules ['mlib-ptr'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to mlib-ctx.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+-- This is experimental.
+
+local formatters, gsub = string.formatters, string.gsub
+local concat = table.concat
+local byte, gsub = string.byte, string.gsub
+
+do
+
+    local newreader      = io.newreader
+    local openstring     = utilities.streams.openstring
+    local readstring     = utilities.streams.readstring
+    local zlibdecompress = xzip.decompress
+    local pngapplyfilter = pngdecode.applyfilter
+
+    local function newcontent(filename)
+        local found, data = resolvers.loadbinfile(filename)
+        return newreader(data or "", "string")
+    end
+
+    local function decodestrip(s,nx,ny,slice)
+        local input = readstring(s,ny*(nx*slice+1))
+        input = pngapplyfilter(input,nx,ny,slice)
+        return input, false
+    end
+
+    local function simplify(content,threshold)
+        if not threshold then
+            threshold = 127
+        end
+        local thresholds = table.setmetatableindex(function(t,k)
+            local v = byte(k) < threshold and '0' or '1'
+            t[k] = v
+            return v
+        end)
+        return (gsub(content,".",thresholds))
+    end
+
+    function potrace.fromfile(filename,threshold)
+
+        if not filename then
+            return false
+        end
+
+        local specification = figures.getinfo(filename)
+
+        specification = specification and specification.status and specification.status.private
+
+        if not specification then
+            print("no specification")
+            return
+        end
+
+        local colorspace  = specification.colorspace
+        local xsize       = specification.xsize
+        local ysize       = specification.ysize
+        local colordepth  = specification.colordepth or 8
+
+        if colorspace ~= 0 or colordepth ~= 8 then
+            print("unsupported colorspace",colorspace,colordepth)
+            return
+        end
+        if specification.interlace == 1 then
+            print("unsupported interlace")
+            return
+        end
+        local tables = specification.tables
+        if not tables then
+            print("no tables")
+            return
+        end
+        local idat = tables.idat
+        if not idat then
+            print("no data")
+            return
+        end
+        local pngfile = newcontent(filename,method,true)
+        local content = idat[1]
+        if type(content) == "table" then
+            if not pngfile then
+                return
+            end
+            content = idat(pngfile,true)
+        end
+        content = zlibdecompress(content)
+        content = decodestrip(openstring(content),xsize,ysize,1)
+        content = simplify(content,threshold)
+        pngfile:close()
+        return content, xsize, ysize
+    end
+
+end
+
+do
+
+    local luastrings = { }
+
+    function potrace.getstring(name)
+        return luastrings[name] or ""
+    end
+
+    function potrace.setstring(name,str)
+        luastrings[name] = str
+    end
+
+end
+
+do
+
+    local lpegmatch    = lpeg.match
+
+    local sp = lpeg.patterns.space
+    local n  = 0
+    local p  = (lpeg.Cmt((1-sp) * (sp + lpeg.P(-1)), function() n = n + 1 end) + lpeg.P(1))^0
+
+    function potrace.count(s)
+        n = 0
+        lpegmatch(p,s)
+        return n
+    end
+
+    function potrace.stripped(s)
+        s = gsub(s,"%s","")
+        return s
+    end
+
+    -- function potrace.tripple(s) -- can be an option
+    --     s = gsub(s," ","")
+    --     s = gsub(s,".","%1%1%1")
+    --     s = gsub(s,"[^\n]+","%1%1%1")
+    --     s = gsub(s,"%s","")
+    --     return s
+    -- end
+
+end
+
+do
+
+    local getparameter = metapost.getparameter
+    local setparameter = metapost.setparameter
+    local mpprint      = mp.print
+
+    local f_1 = formatters["(%N,%N)"]
+    local f_2 = formatters["--(%N,%N)"]
+    local f_3 = formatters["..controls(%N,%N)and(%N,%N)..(%N,%N)"]
+
+    function potrace.flush(t,draw)
+        if t then
+            local result = { }
+            local r = 0
+            for i=1,#t do
+                local ti = t[i]
+                local ni = #ti
+                if r > 1 then
+                    r = r + 1 ; result[r] = "&&&&"
+                end
+                r = r + 1 ; result[r] = "("
+                r = r + 1 ; result[r] = f_1(ti[1][1],ti[1][2])
+                for i=2,ni do
+                    local ti = ti[i]
+                    local ni = #ti
+                    if ni == 2 then
+                        r = r + 1 ; result[r] = f_2(ti[1],ti[2])
+                    elseif ni == 6 then
+                        r = r + 1 ; result[r] = f_3(ti[3],ti[4],ti[5],ti[6],ti[1],ti[2])
+                    end
+                end
+                r = r + 1 ; result[r] = "&&&&cycle)"
+            end
+            r = r + 1 ; result[r] = "&&&&cycle"
+            if r > 1 then
+                result = concat(result)
+                mpprint(result)
+            else
+                mpprint("origin--cycle")
+            end
+        end
+    end
+
+    local function checked(b,width,height)
+        if b and type(b) == "string" and b ~= "" then
+            local bytes = potrace.stripped(b)
+            if width == 0 then
+                if height == 0 then
+                    height = potrace.count(b)
+                end
+                width = #bytes // height
+            elseif height == 0 then
+                height = #bytes // width
+            end
+            return bytes, width, height
+        else
+            return false, width, height
+        end
+    end
+
+    function mp.lmt_potrace()
+        local bytes  = false
+        local width  = getparameter { "width" } or 0
+        local height = getparameter { "height" } or 0
+        local nx     = getparameter { "nx" } or 1
+        local ny     = getparameter { "ny" } or 1
+        if getparameter { "explode" } then
+            nx = 3
+            ny = 3
+        end
+        if not bytes then
+            local b, w, h = potrace.fromfile(getparameter{ "filename" },getparameter{ "criterium" })
+            if b then
+                bytes, width, height = b, w, h
+            end
+        end
+        if not bytes then
+            local b, w, h = checked(potrace.getstring(getparameter{ "stringname" }),width,height)
+            if b then
+                bytes, width, height = b, w, h
+            end
+        end
+        if not bytes then
+            local b, w, h = checked(getparameter{ "bytes" },width,height)
+            if b then
+                bytes, width, height = b, w, h
+            end
+        end
+        if not bytes then
+            bytes, width, height = checked("010 111 000",width,height)
+        end
+        local result  = potrace.trace {
+            bytes     = bytes,
+            width     = width,
+            height    = height,
+            nx        = nx,
+            ny        = ny,
+            mode      = "metapost",
+            value     = getparameter { "value" },
+            optimize  = getparameter { "optimize" },  -- opticurve
+            threshold = getparameter { "threshold" }, -- alphamax
+            policy    = getparameter { "policy" },    -- turnpolicy
+            tolerance = getparameter { "tolerance" }, -- opttolerance
+            size      = getparameter { "size" },      -- turdsize
+        }
+        setparameter("width",width)
+        setparameter("height",height)
+        potrace.flush(result)
+    end
+
+end

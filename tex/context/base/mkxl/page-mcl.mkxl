@@ -440,8 +440,8 @@
    %
    \d_page_mcl_leftskip \leftskip
    \d_page_mcl_rightskip\rightskip
-   \leftskip            \zeropoint
-   \rightskip           \zeropoint
+   \leftskip            \zeroskip
+   \rightskip           \zeroskip
    \hangafter           \zerocount
    \hangindent          \zeropoint
    %

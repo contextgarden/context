@@ -4104,8 +4104,29 @@ static void tex_aux_set_page_property(void)
                 tex_set_insert_width(index, tex_scan_dimen(0, 0, 0, 1, NULL));
             }
             break;
+//        default:
+//          lmt_page_builder_state.page_so_far[page_state_offset(cur_chr)] = tex_scan_dimen(0, 0, 0, 1, NULL);
+//            break;
+        case page_stretch_code:                        
+            lmt_page_builder_state.stretch = tex_scan_dimen(0, 0, 0, 1, NULL);
+            break;
+        case page_fistretch_code:                    
+            lmt_page_builder_state.fistretch = tex_scan_dimen(0, 0, 0, 1, NULL);
+            break;
+        case page_filstretch_code:                    
+            lmt_page_builder_state.filstretch = tex_scan_dimen(0, 0, 0, 1, NULL);
+            break;
+        case page_fillstretch_code:                   
+            lmt_page_builder_state.fillstretch = tex_scan_dimen(0, 0, 0, 1, NULL);
+            break;
+        case page_filllstretch_code:                  
+            lmt_page_builder_state.filllstretch = tex_scan_dimen(0, 0, 0, 1, NULL);
+            break;
+        case page_shrink_code:                        
+            lmt_page_builder_state.shrink = tex_scan_dimen(0, 0, 0, 1, NULL);
+            break;
         default:
-            lmt_page_builder_state.page_so_far[page_state_offset(cur_chr)] = tex_scan_dimen(0, 0, 0, 1, NULL);
+            tex_confusion("page property");
             break;
     }
 }
@@ -5174,7 +5195,7 @@ static void tex_aux_set_let(int flags, int force)
     if (is_referenced_cmd(cur_cmd)) {
         tex_add_token_reference(cur_chr);
     } else if (is_nodebased_cmd(cur_cmd)) {
-        cur_chr = tex_copy_node(cur_chr);
+        cur_chr = cur_chr ? tex_copy_node(cur_chr) : null;
     }
  // if (cs && cur_cmd >= relax_cmd) {
     if (cs && cur_cmd >= 0) {

@@ -197,7 +197,7 @@
      \scratchskip \linetablecparameter\c!distance
    \else
      \scratchdimen  \zeropoint
-     \scratchskip   \zeropoint
+     \scratchskip   \zeroskip
      \scratchcounter\c_tabl_lines_column
      \dorecurse\c_tabl_lines_step\tabl_lines_step_cell
      \global\c_tabl_lines_column\scratchcounter

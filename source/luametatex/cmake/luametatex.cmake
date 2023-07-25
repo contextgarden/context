@@ -24,6 +24,7 @@ target_link_libraries(luametatex
     pplib
     miniz
     softposit
+    potrace
 )
 
 if (LUAMETATEX_NOLDL) 

@@ -64,7 +64,7 @@ page_builder_state_info lmt_page_builder_state = {
     .last_boundary    = 0,
     .output_active    = 0,
     .dead_cycles      = 0,
-    .current_state    = 0
+    .current_state    = 0 
 };
 
 /*tex
@@ -72,24 +72,7 @@ page_builder_state_info lmt_page_builder_state = {
     although we could decide to support it here too. 
 */
 
-// # define page_stretch_1(order) lmt_page_builder_state.page_so_far[page_initial_state + order] /*  > fi_glue_order */
-// # define page_stretch_2(order) lmt_page_builder_state.page_so_far[page_stretch_state + order] /* <= fi_glue_order */
-// 
-// if (glue_stretch_order(glue) > fi_glue_order) {
-//     page_stretch_1(glue_stretch_order(glue)) += glue_stretch(glue);
-// } else {
-//     page_stretch_2(glue_stretch_order(glue)) += glue_stretch(glue);
-// }
-
-static int normalized_page_stretch_order[] = { 
-    [normal_glue_order] = page_stretch_state,
-    [fi_glue_order    ] = page_filstretch_state,    
-    [fil_glue_order   ] = page_filstretch_state,   
-    [fill_glue_order  ] = page_fillstretch_state,  
-    [filll_glue_order ] = page_filllstretch_state, 
-};
-
-# define page_stretched(order) lmt_page_builder_state.page_so_far[normalized_page_stretch_order[order]] 
+# define page_stretched(order) lmt_page_builder_state.page_so_far[page_stretch_state+order] 
 
 static void tex_aux_fire_up (halfword c);
 
@@ -154,7 +137,7 @@ void tex_initialize_pagestate(void)
     lmt_page_builder_state.vsize = 0;
     lmt_page_builder_state.total = 0;
     lmt_page_builder_state.depth = 0;
-    for (int i = page_stretch_state; i <= page_shrink_state; i++) { 
+    for (int i = page_initial_state; i <= page_shrink_state; i++) { 
         lmt_page_builder_state.page_so_far[i] = 0;
     } 
     lmt_page_builder_state.insert_penalties = 0;
@@ -232,7 +215,7 @@ static void tex_aux_freeze_page_specs(int s)
     lmt_page_builder_state.max_depth = max_depth_par;
     lmt_page_builder_state.least_cost = awful_bad;
  /* page_builder_state.insert_heights = 0; */ /* up to the user */
-    for (int i = page_stretch_state; i <= page_shrink_state; i++) { 
+    for (int i = page_initial_state; i <= page_shrink_state; i++) { 
         lmt_page_builder_state.page_so_far[i] = 0;
         lmt_page_builder_state.page_last_so_far[i] = 0;
     } 
@@ -364,7 +347,7 @@ static void tex_aux_display_page_break_cost(halfword badness, halfword penalty, 
 {
     tex_begin_diagnostic();
     tex_print_format("[page: break, total %P, goal %D, badness %B, penalty %i, cost %B%s, moveon %s, fireup %s]",
-        page_total, page_stretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
+        page_total, page_stretch, page_fistretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
         page_goal, pt_unit, badness, penalty, cost, cost < lmt_page_builder_state.least_cost ? "#" : "",
         moveon ? "yes" : "no", fireup ? "yes" : "no"
     );
@@ -384,7 +367,7 @@ static void tex_aux_display_insertion_split_cost(halfword index, scaled height, 
 static halfword tex_aux_page_badness(scaled goal)
 {
     if (page_total < goal) {
-        if (page_filstretch || page_fillstretch || page_filllstretch) {
+        if (page_fistretch || page_filstretch || page_fillstretch || page_filllstretch) {
             return 0;
         } else {
             return tex_badness(goal - page_total, page_stretch);
@@ -395,24 +378,6 @@ static halfword tex_aux_page_badness(scaled goal)
         return tex_badness(page_total - goal, page_shrink);
     }
 }
-
-// inline static halfword tex_aux_page_costs(halfword badness, halfword penalty)
-// {
-//     halfword costs;
-//     if (badness >= awful_bad) {
-//         costs = badness; /* trigger fireup */
-//     } else if (penalty <= eject_penalty) {
-//         costs = penalty; /* trigger fireup */
-//     } else if (badness < infinite_bad) {
-//         costs = badness + penalty + lmt_page_builder_state.insert_penalties;
-//     } else {
-//         costs = deplorable;
-//     }
-//     if (lmt_page_builder_state.insert_penalties >= infinite_penalty) {
-//         costs = awful_bad;
-//     }
-//     return costs;
-// }
 
 inline static halfword tex_aux_page_costs(halfword badness, halfword penalty)
 {
@@ -437,7 +402,7 @@ static halfword tex_aux_insert_topskip(halfword height, int contribution)
         tex_aux_freeze_page_specs(contribution);
     }
     {
-        halfword glue = tex_new_param_glue_node(top_skip_code, top_skip_glue);
+        halfword glue = tex_new_param_glue_node(tex_glue_is_zero(initial_top_skip_par) ? top_skip_code : initial_top_skip_code, top_skip_glue);
         if (glue_amount(glue) > height) {
             glue_amount(glue) -= height;
         } else {
@@ -685,6 +650,161 @@ static void tex_aux_wrapup_show_build_node(int callback_id)
     lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "d->", wrapup_show_build_context);
 }
 
+static int tex_aux_topskip_restart(halfword current, int where, scaled height, scaled depth, int tracing)
+{
+    if (lmt_page_builder_state.contents < contribute_box) {
+        /*tex
+            Initialize the current page, insert the |\topskip| glue ahead of |p|, and |goto 
+            continue|.
+        */
+        halfword gluenode = tex_aux_insert_topskip(height, where);
+        tex_couple_nodes(gluenode, current);
+        tex_couple_nodes(contribute_head, gluenode);
+        if (tracing > 1) {
+            tex_begin_diagnostic();
+            tex_print_format("[page: initialize, topskip at %s]", where == contribute_box ? "box" : "rule");
+            tex_end_diagnostic();
+        }
+        return 1;
+    } else {
+        /*tex Move a box to the current page, then |goto contribute|. */
+        page_total += page_depth + height;
+        page_depth = depth;
+        return 0;
+    }
+}
+
+static int tex_aux_migrating_restart(halfword current, int tracing)
+{
+    if (auto_migrating_mode_permitted(auto_migration_mode_par, auto_migrate_post)) {
+        halfword head = box_post_migrated(current);
+        if (head) {
+            halfword tail = tex_tail_of_node_list(head);
+            if (tracing > 1 || tracing_adjusts_par > 1) {
+                tex_begin_diagnostic();
+                tex_print_format("[adjust: post, mvl]");
+                tex_print_node_list(head, "post", show_box_depth_par, show_box_breadth_par);
+                tex_end_diagnostic();
+            }   
+            if (node_next(current)) {
+                tex_couple_nodes(tail, node_next(current));
+            } else {
+                contribute_tail = tail;
+            }
+            tex_couple_nodes(current, head);
+            box_post_migrated(current) = null;
+        }
+    }
+    if (auto_migrating_mode_permitted(auto_migration_mode_par, auto_migrate_pre)) {
+        halfword head = box_pre_migrated(current);
+        if (head) {
+            halfword tail = tex_tail_of_node_list(head);
+            if (tracing > 1 || tracing_adjusts_par > 1) {
+                tex_begin_diagnostic();
+                tex_print_format("[adjust: pre, mvl]");
+                tex_print_node_list(head, "pre", show_box_depth_par, show_box_breadth_par);
+                tex_end_diagnostic();
+            }
+            tex_couple_nodes(tail, current);
+            tex_couple_nodes(contribute_head, current);
+            // if (contribute_head == contribute_tail) {
+            //     contribute_tail = tail; 
+            // }
+            box_pre_migrated(current) = null;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static halfword tex_aux_process_boundary(halfword current)
+{
+    /*tex
+        We just triggered the pagebuilder for which we needed a contribution. We fake
+        a zero penalty so that all gets processed. The main rationale is that we get
+        a better indication of what we do. Of course a callback can remove this node
+        so that it is never seen. Triggering from the callback is not doable.
+    */
+    halfword penaltynode = tex_new_node(penalty_node, user_penalty_subtype);
+    /* todo: copy attributes */
+    tex_page_boundary_message("processed as penalty", 0);
+    tex_try_couple_nodes(node_prev(current), penaltynode);
+    tex_try_couple_nodes(penaltynode, node_next(current));
+    tex_flush_node(current);
+    penalty_amount(penaltynode) = boundary_data(current);
+    current = penaltynode;
+    node_next(contribute_head) = current;
+    return current;
+}
+
+static void tex_aux_reconsider_goal(halfword current, halfword *badness, halfword *costs, halfword *penalty, int tracing)
+{
+    if (*badness >= awful_bad && page_extra_goal_par) {
+        switch (tex_aux_get_penalty_option(lmt_page_builder_state.page_tail)) {
+            case penalty_option_widowed: 
+                if (page_total <= (page_goal + page_extra_goal_par)) {
+                    halfword extrabadness = tex_aux_page_badness(page_goal + page_extra_goal_par);
+                    halfword extracosts = tex_aux_page_costs(extrabadness, *penalty);
+                    if (tracing > 0) {
+                        tex_begin_diagnostic();
+                        tex_print_format(
+                            "[page: extra check, total=%P, goal=%D, extragoal=%D, badness=%B, costs=%i, extrabadness=%B, extracosts=%i]",
+                            page_total, page_stretch, page_filstretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
+                            page_goal, pt_unit, page_extra_goal_par, pt_unit, 
+                            *badness, *costs, extrabadness, extracosts
+                        );
+                        tex_end_diagnostic();
+                    }
+                    /* we need to append etc. so an extra loop cycle */
+                    *badness = extrabadness; 
+                    *costs = extracosts;
+                    /* */
+                    lmt_page_builder_state.last_extra_used = 1;
+                    if (tracing > 1) {
+                        tex_begin_diagnostic();
+                        tex_print_format("[page: widowed]");
+                        tex_end_diagnostic();
+                    }
+                }
+                break;
+            case penalty_option_clubbed: 
+                if (page_total >= (page_goal - page_extra_goal_par)) {
+                    /* we force a flush and no extra loop cycle */
+                    *penalty = eject_penalty;
+                    /* */
+                    if (tracing > 1) {
+                        tex_begin_diagnostic();
+                        tex_print_format("[page: clubbed]");
+                        tex_end_diagnostic();
+                    }
+                }
+                break;
+        }
+    }
+}
+
+static void tex_aux_contribute_glue(halfword current)
+{
+    page_stretched(glue_stretch_order(current)) += glue_stretch(current);
+    page_shrink += glue_shrink(current);
+    if (glue_shrink_order(current) != normal_glue_order && glue_shrink(current)) {
+        tex_handle_error(
+            normal_error_type,
+            "Infinite glue shrinkage found on current page",
+            "The page about to be output contains some infinitely shrinkable glue, e.g.,\n"
+            "'\\vss' or '\\vskip 0pt minus 1fil'. Such glue doesn't belong there; but you can\n"
+            "safely proceed, since the offensive shrinkability has been made finite."
+        );
+        tex_reset_glue_to_zero(current);
+        glue_shrink_order(current) = normal_glue_order;
+    }
+}
+
+/*tex
+    Maybe: migrate everything beforehand shich is somewhat nicer when we use the builder for 
+    multicolumns balancing etc. 
+*/
+
 void tex_build_page(void)
 {
     if (node_next(contribute_head) && ! lmt_page_builder_state.output_active) {
@@ -741,81 +861,17 @@ void tex_build_page(void)
             switch (type) {
                 case hlist_node:
                 case vlist_node:
-                    {
-                        if (auto_migrating_mode_permitted(auto_migration_mode_par, auto_migrate_post)) {
-                            halfword head = box_post_migrated(current);
-                            if (head) {
-                                halfword tail = tex_tail_of_node_list(head);
-                                if (tracing > 1 || tracing_adjusts_par > 1) {
-                                    tex_begin_diagnostic();
-                                    tex_print_format("[adjust: post, mvl]");
-                                    tex_print_node_list(head,"post",show_box_depth_par, show_box_breadth_par);
-                                    tex_end_diagnostic();
-                                }   
-                                if (node_next(current)) {
-                                    tex_couple_nodes(tail, node_next(current));
-                                } else {
-                                    contribute_tail = tail;
-                                }
-                                tex_couple_nodes(current, head);
-                                box_post_migrated(current) = null;
-                            }
-                        }
-                        if (auto_migrating_mode_permitted(auto_migration_mode_par, auto_migrate_pre)) {
-                            halfword head = box_pre_migrated(current);
-                            if (head) {
-                                halfword tail = tex_tail_of_node_list(head);
-                                if (tracing > 1 || tracing_adjusts_par > 1) {
-                                    tex_begin_diagnostic();
-                                    tex_print_format("[adjust: pre, mvl]");
-                                    tex_print_node_list(head,"pre",show_box_depth_par, show_box_breadth_par);
-                                    tex_end_diagnostic();
-                                }
-                                tex_couple_nodes(tail, current);
-                                tex_couple_nodes(contribute_head, current);
-                             // if (contribute_head == contribute_tail) {
-                             //     contribute_tail = tail; 
-                             // }
-                                box_pre_migrated(current) = null;
-                                continue;
-                            }
-                        }
-                        if (lmt_page_builder_state.contents < contribute_box) {
-                            /*tex
-                                Initialize the current page, insert the |\topskip| glue ahead of |p|,
-                                and |goto continue|.
-                            */
-                            halfword gluenode = tex_aux_insert_topskip(box_height(current), contribute_box);
-                            tex_couple_nodes(gluenode, current);
-                            tex_couple_nodes(contribute_head, gluenode);
-                            if (tracing > 1) {
-                                tex_begin_diagnostic();
-                                tex_print_format("[page: initialize, topskip at box]", current);
-                                tex_end_diagnostic();
-                            }
-                            continue;
-                        } else {
-                            /*tex Move a box to the current page, then |goto contribute|. */
-                            page_total += page_depth + box_height(current);
-                            page_depth = box_depth(current);
-                            goto CONTRIBUTE;
-                        }
-                    }
-                case rule_node:
-                    /* common with box */
-                    if (lmt_page_builder_state.contents < contribute_box) {
-                        halfword gluenode = tex_aux_insert_topskip(rule_height(current), contribute_rule);
-                        if (tracing > 1) {
-                            tex_begin_diagnostic();
-                            tex_print_format("[page: initialize, topskip at rule]", current);
-                            tex_end_diagnostic();
-                        }
-                        tex_couple_nodes(gluenode, current);
-                        tex_couple_nodes(contribute_head, gluenode);
+                    if (tex_aux_migrating_restart(current, tracing)) {
+                        continue;
+                    } else if (tex_aux_topskip_restart(current, contribute_box, box_height(current), box_depth(current), tracing)) {
                         continue;
                     } else {
-                        page_total += page_depth + rule_height(current);
-                        page_depth = rule_depth(current);
+                        goto CONTRIBUTE;
+                    }
+                case rule_node:
+                    if (tex_aux_topskip_restart(current, contribute_rule, rule_height(current), rule_depth(current), tracing)) {
+                        continue;
+                    } else {
                         goto CONTRIBUTE;
                     }
                 case boundary_node:
@@ -825,21 +881,7 @@ void tex_build_page(void)
                     if (lmt_page_builder_state.contents < contribute_box) {
                         goto DISCARD;
                     } else if (subtype == page_boundary) {
-                        /*tex
-                            We just triggered the pagebuilder for which we needed a contribution. We fake
-                            a zero penalty so that all gets processed. The main rationale is that we get
-                            a better indication of what we do. Of course a callback can remove this node
-                            so that it is never seen. Triggering from the callback is not doable.
-                        */
-                        halfword penaltynode = tex_new_node(penalty_node, user_penalty_subtype);
-                        /* todo: copy attributes */
-                        tex_page_boundary_message("processed as penalty", 0);
-                        tex_try_couple_nodes(node_prev(current), penaltynode);
-                        tex_try_couple_nodes(penaltynode, node_next(current));
-                        tex_flush_node(current);
-                        penalty_amount(penaltynode) = boundary_data(current);
-                        current = penaltynode;
-                        node_next(contribute_head) = current;
+                        current = tex_aux_process_boundary(current);
                         penalty = 0;
                         break;
                     } else {
@@ -901,71 +943,25 @@ void tex_build_page(void)
                     Compute the badness, |b|, of the current page, using |awful_bad| if the box is
                     too full. The |c| variable holds the costs.
                 */
-                halfword badness, costs;
-                /*tex
-                    This could actually be a callback but not now. First we will experiment a lot
-                    with this yet undocumented trick.
-                */
+                halfword badness = tex_aux_page_badness(page_goal);
+                halfword costs = tex_aux_page_costs(badness, penalty);
                 lmt_page_builder_state.last_extra_used = 0;
-                badness = tex_aux_page_badness(page_goal);
-                costs = tex_aux_page_costs(badness, penalty);
                 if (tracing > 1) {
                     tex_begin_diagnostic();
                     tex_print_format("[page: calculate, %N, total=%P, goal=%D, badness=%B, costs=%i]", 
                         current,
-                        page_total, page_stretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
+                        page_total, page_stretch, page_fistretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
                         page_goal, pt_unit, 
                         badness, costs
                     );
                     tex_end_diagnostic();
                 }
-                if (badness >= awful_bad && page_extra_goal_par) {
-                    switch (tex_aux_get_penalty_option(lmt_page_builder_state.page_tail)) {
-                        case penalty_option_widowed: 
-                            if (page_total <= (page_goal + page_extra_goal_par)) {
-                                halfword extrabadness = tex_aux_page_badness(page_goal + page_extra_goal_par);
-                                halfword extracosts = tex_aux_page_costs(extrabadness, penalty);
-                                if (tracing > 0) {
-                                    tex_begin_diagnostic();
-                                    tex_print_format(
-                                        "[page: extra check, total=%P, goal=%D, extragoal=%D, badness=%B, costs=%i, extrabadness=%B, extracosts=%i]",
-                                        page_total, page_stretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
-                                        page_goal, pt_unit, page_extra_goal_par, pt_unit, 
-                                        badness, costs, extrabadness, extracosts
-                                    );
-                                    tex_end_diagnostic();
-                                }
-                                /* we need to append etc. so an extra loop cycle */
-                                badness = extrabadness; 
-                                costs = extracosts;
-                                /* */
-                                lmt_page_builder_state.last_extra_used = 1;
-                                if (tracing > 1) {
-                                    tex_begin_diagnostic();
-                                    tex_print_format("[page: widowed]");
-                                    tex_end_diagnostic();
-                                }
-                            }
-                            break;
-                        case penalty_option_clubbed: 
-                            if (page_total >= (page_goal - page_extra_goal_par)) {
-                                /* we force a flush and no extra loop cycle */
-                                penalty = eject_penalty;
-                                /* */
-                                if (tracing > 1) {
-                                    tex_begin_diagnostic();
-                                    tex_print_format("[page: clubbed]");
-                                    tex_end_diagnostic();
-                                }
-                            }
-                            break;
-                    }
-                }
+                tex_aux_reconsider_goal(current, &badness, &costs, &penalty, tracing);
                 {
                     int moveon = costs <= lmt_page_builder_state.least_cost;
                     int fireup = costs == awful_bad || penalty <= eject_penalty;
                     if (callback_id) { 
-                       tex_aux_check_show_build_node(callback_id, current, badness, lmt_page_builder_state.last_penalty, costs, &moveon, &fireup);
+                        tex_aux_check_show_build_node(callback_id, current, badness, lmt_page_builder_state.last_penalty, costs, &moveon, &fireup);
                     }
                     if (tracing > 0) {
                         tex_aux_display_page_break_cost(badness, penalty, costs, moveon, fireup);
@@ -1029,19 +1025,7 @@ void tex_build_page(void)
                     page_depth = 0;
                     goto APPEND;
                 case glue_node:
-                    page_stretched(glue_stretch_order(current)) += glue_stretch(current);
-                    page_shrink += glue_shrink(current);
-                    if (glue_shrink_order(current) != normal_glue_order && glue_shrink(current)) {
-                        tex_handle_error(
-                            normal_error_type,
-                            "Infinite glue shrinkage found on current page",
-                            "The page about to be output contains some infinitely shrinkable glue, e.g.,\n"
-                            "'\\vss' or '\\vskip 0pt minus 1fil'. Such glue doesn't belong there; but you can\n"
-                            "safely proceed, since the offensive shrinkability has been made finite."
-                        );
-                        tex_reset_glue_to_zero(current);
-                        glue_shrink_order(current) = normal_glue_order;
-                    }
+                    tex_aux_contribute_glue(current);
                     page_total += page_depth + glue_amount(current);
                     page_depth = 0;
                     goto APPEND;

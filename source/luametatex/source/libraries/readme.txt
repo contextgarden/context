@@ -33,5 +33,12 @@ uint64_t ui[8]; // ={0,0,0,0, 0,0,0,0}; // idme
 uint64_t ui[8]; // ={0,0,0,0, 0,0,0,0}; // idem
 uint64_t ui[8]; // ={0,0,0,0, 0,0,0,0}; // idem 
 
+We only include a subset of the potrace files. There is one patch for uint64_t because mingw doesn't like 
+it. It's a playground anyway, and it might eventually go away (become an optional library but then we need
+to figure out how to get windows dll's.) We did add this: 
+
+# if defined(LUAMETATEX_USE_MIMALLOC)
+    # include "libraries/mimalloc/include/mimalloc-override.h"
+# endif 
 
 Hans

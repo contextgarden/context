@@ -187,7 +187,7 @@ end
 local expanded = lpdf.epdf.expanded
 
 local function getfonts(pdffile)
-    local usedfonts = { }
+    local usedfonts  = { }
 
     local function collect(where,tag)
         local resources = where.Resources
@@ -196,6 +196,9 @@ local function getfonts(pdffile)
             if fontlist then
                 for k, v in expanded(fontlist) do
                     usedfonts[tag and (tag .. "." .. k) or k] = v
+                    if v.Subtype == "Type3" then
+                        collect(v,tag and (tag .. "." .. k) or k)
+                    end
                 end
             end
             local objects = resources.XObject
@@ -267,7 +270,7 @@ function scripts.pdf.fonts(filename)
                   indices  = getunicodes(v)
             local codes    = { }
             local chars    = { }
-            local freqs    = { }
+         -- local freqs    = { }
             local names    = { }
             if counts then
                 codes = sortedkeys(counts)
@@ -276,10 +279,10 @@ function scripts.pdf.fonts(filename)
                     if k > 32 then
                         local c = utfchar(k)
                         chars[i] = c
-                        freqs[i] = format("U+%05X  %s  %s",k,counts[k] > 1 and "+" or " ", c)
+                     -- freqs[i] = format("U+%05X  %s  %s",k,counts[k] > 1 and "+" or " ", c)
                     else
                         chars[i] = k == 32 and "SPACE" or format("U+%03X",k)
-                        freqs[i] = format("U+%05X  %s  --",k,counts[k] > 1 and "+" or " ")
+                     -- freqs[i] = format("U+%05X  %s  --",k,counts[k] > 1 and "+" or " ")
                     end
                 end
                 if basefont and unicode then
@@ -302,20 +305,40 @@ function scripts.pdf.fonts(filename)
                     end
                 end
             end
+            if not basefont then
+                local fontdescriptor = v.FontDescriptor
+                if fontdescriptor then
+                    basefont = fontdescriptor.FontName
+                end
+            end
             found[k] = {
                 basefont = basefont or "no basefont",
                 encoding = (d and "custom n=" .. #d) or "no encoding",
                 subtype  = subtype or "no subtype",
-                unicode  = tounicode and "unicode" or "no vector",
+                unicode  = unicode and "unicode" or "no vector",
                 chars    = chars,
                 codes    = codes,
-                freqs    = freqs,
+             -- freqs    = freqs,
                 names    = names,
             }
         end
 
+        local haschar = false
+
+        local list = { }
+        for k, v in next, found do
+            local s = string.gsub(k,"(%d+)",function(s) return string.format("%05i",tonumber(s)) end)
+            list[s] = { k, v }
+            if #v.chars > 0 then
+                haschar = true
+            end
+        end
+
         if details then
             for k, v in sortedhash(found) do
+--             for s, f in sortedhash(list) do
+--                 local k = f[1]
+--                 local v = f[2]
                 report("id         : %s",  k)
                 report("basefont   : %s",  v.basefont)
                 report("encoding   : % t", v.names)
@@ -335,16 +358,17 @@ function scripts.pdf.fonts(filename)
                 report("")
             end
         else
-            local haschar = false
-            for k, v in sortedhash(found) do
-                if #v.chars > 0 then
-                    haschar = true
-                    break
-                end
-            end
             local results = { { "id", "basefont", "encoding", "subtype", "unicode", haschar and "characters" or nil } }
-            for k, v in sortedhash(found) do
-                results[#results+1] = { k, v.basefont, v.encoding, v.subtype, v.unicode, haschar and concat(v.chars," ") or nil }
+            local shared  = { }
+            for s, f in sortedhash(list) do
+                local k = f[1]
+                local v = f[2]
+                local basefont   = v.basefont
+                local characters = shared[basefont] or (haschar and concat(v.chars," ")) or nil
+                results[#results+1] = { k, v.basefont, v.encoding, v.subtype, v.unicode, characters }
+                if not shared[basefont] then
+                    shared[basefont] = "shared with " .. k
+                end
             end
             utilities.formatters.formatcolumns(results)
             report(results[1])

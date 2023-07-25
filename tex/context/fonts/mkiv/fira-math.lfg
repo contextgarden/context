@@ -1,0 +1,23 @@
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
+
+return {
+    name = "fira-math",
+    version = "0.10",
+    comment = "Goodies that complement fira.",
+    author = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        parameters = {
+            PrimeShiftUp                    =  "0.7*SuperscriptShiftUp",
+        },
+        tweaks = {
+            aftercopying = {
+                presets.moveintegrals        { },
+                presets.moveitalics          { correct = true },
+                presets.wipeanchors          { },
+                presets.wipeitalics          { },
+            },
+        },
+    },
+}

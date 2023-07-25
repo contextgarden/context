@@ -551,7 +551,7 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
                 unencrypt(__data__,nil,ownerpassword)
             end
             if getstatus(__data__) < 0 then
-                report_epdf("the document is encrypted, provide proper passwords",getstatus(__data__))
+                report_epdf("the document is encrypted, provide proper passwords")
                 __data__ = false
             end
             if __data__ then
@@ -591,6 +591,9 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
                 document = false
             end
         else
+            if not __data_ then
+                report_epdf("the document is damaged or empty")
+            end
             document = false
         end
         loaded[filename] = document

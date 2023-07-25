@@ -19,8 +19,8 @@ return {
             DelimiterPercent                  =  90,
             DelimiterShortfall                = 400,
             SuperscriptBottomMaxWithSubscript = 325,
-            PrimeShiftUp                      = "1.4*SuperscriptShiftUp",
-            PrimeShiftUpCramped               = "1.4*SuperscriptShiftUp",
+            PrimeShiftUp                      = "1.3*SuperscriptShiftUp",
+            PrimeShiftUpCramped               = "1.3*SuperscriptShiftUp",
             PrimeBaselineDropMax              = "0.5*SuperscriptBaselineDropMax",
         },
         tweaks = {

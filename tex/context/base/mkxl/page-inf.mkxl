@@ -76,8 +76,8 @@
      {\infofont
       \getmessage\m!system{27}:\space\currentdate\quad
       \donefalse
-      \ifcstok\currentproject\currentproduct
-        \ifcstok\currentproduct\currentcomponent
+      \ifcstok{\currentproject}{\currentproduct}%
+        \ifcstok{\currentproduct}{\currentcomponent}%
           \donetrue
         \fi
       \fi

@@ -236,6 +236,7 @@
 		<cd:variable name='frontpart' value='inleiding'/>
 		<cd:variable name='fullhz' value='fullenhz'/>
 		<cd:variable name='global' value='globaal'/>
+		<cd:variable name='granular' value='granular'/>
 		<cd:variable name='graphic' value='grafiek'/>
 		<cd:variable name='graphics' value='grafieken'/>
 		<cd:variable name='gray' value='grijs'/>
@@ -540,6 +541,7 @@
 		<cd:variable name='speech' value='spraak'/>
 		<cd:variable name='split' value='splitsen'/>
 		<cd:variable name='spot' value='spot'/>
+		<cd:variable name='spread' value='gespreid'/>
 		<cd:variable name='standard' value='standaard'/>
 		<cd:variable name='start' value='start'/>
 		<cd:variable name='starter' value='opener'/>
@@ -627,9 +629,11 @@
 		<cd:variable name='vertical' value='vertikaal'/>
 		<cd:variable name='very' value='zeer'/>
 		<cd:variable name='verystrict' value='zeerstreng'/>
+		<cd:variable name='verytight' value='heelkrap'/>
 		<cd:variable name='verytolerant' value='zeersoepel'/>
 		<cd:variable name='vfenced' value='vfenced'/>
 		<cd:variable name='vulgarfraction' value='vulgarfraction'/>
+		<cd:variable name='vz' value='vz'/>
 		<cd:variable name='weak' value='zwak'/>
 		<cd:variable name='wednesday' value='woensdag'/>
 		<cd:variable name='week' value='week'/>
@@ -808,6 +812,7 @@
 		<cd:constant name='direction' value='richting'/>
 		<cd:constant name='directory' value='directory'/>
 		<cd:constant name='display' value='scherm'/>
+		<cd:constant name='displayfactor' value='displayfactor'/>
 		<cd:constant name='displaythreshold' value='displaythreshold'/>
 		<cd:constant name='distance' value='afstand'/>
 		<cd:constant name='domain' value='domain'/>
@@ -916,6 +921,7 @@
 		<cd:constant name='horoffset' value='rugoffset'/>
 		<cd:constant name='hyphen' value='hyphen'/>
 		<cd:constant name='hyphens' value='hyphens'/>
+		<cd:constant name='hz' value='hz'/>
 		<cd:constant name='icommand' value='icommando'/>
 		<cd:constant name='ignore' value='ignore'/>
 		<cd:constant name='in' value='in'/>
@@ -928,6 +934,7 @@
 		<cd:constant name='index' value='index'/>
 		<cd:constant name='indicator' value='aanduiding'/>
 		<cd:constant name='initialsep' value='initialsep'/>
+		<cd:constant name='inlinefactor' value='inlinefactor'/>
 		<cd:constant name='inlinethreshold' value='inlinethreshold'/>
 		<cd:constant name='inner' value='binnen'/>
 		<cd:constant name='innermargin' value='binnenmarge'/>
@@ -1101,6 +1108,7 @@
 		<cd:constant name='orientation' value='orientatie'/>
 		<cd:constant name='otherstext' value='otherstext'/>
 		<cd:constant name='outermargin' value='buitenmarge'/>
+		<cd:constant name='overflow' value='overflow'/>
 		<cd:constant name='overprint' value='overprint'/>
 		<cd:constant name='ownerpassword' value='ownerpassword'/>
 		<cd:constant name='ownnumber' value='eigennummer'/>
@@ -1374,6 +1382,7 @@
 		<cd:constant name='viewerprefix' value='viewerprefix'/>
 		<cd:constant name='voffset' value='voffset'/>
 		<cd:constant name='vonsep' value='vonsep'/>
+		<cd:constant name='vz' value='vz'/>
 		<cd:constant name='way' value='wijze'/>
 		<cd:constant name='wfactor' value='bfactor'/>
 		<cd:constant name='white' value='wit'/>

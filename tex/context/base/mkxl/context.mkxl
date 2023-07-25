@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2023.07.18 22:01}
+\immutable\edef\contextversion{2023.07.25 19:21}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -611,6 +611,8 @@
 \loadmkxlfile{publ-inc} % an experiment
 
 \loadmkxlfile{task-ini}
+
+\loadmkxlfile{tabl-itm} % some late plugins
 
 \loadmkxlfile{syst-cmp} % compatibility stuff moved here
 

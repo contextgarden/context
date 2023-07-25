@@ -142,8 +142,8 @@
 %D compound characters like |-| or || to be separated from the words. \TEX\ hackers
 %D will recognise the next two macro's:
 
-\ifdefined\prewordbreak \else \permanent\protected\def\prewordbreak    {\penalty\plustenthousand\hskip\zeropoint\relax} \fi
-\ifdefined\postwordbreak\else \permanent\protected\def\postwordbreak   {\penalty\zerocount      \hskip\zeropoint\relax} \fi
+\ifdefined\prewordbreak \else \permanent\protected\def\prewordbreak    {\penalty\plustenthousand\hskip\zeroskip\relax} \fi
+\ifdefined\postwordbreak\else \permanent\protected\def\postwordbreak   {\penalty\zerocount      \hskip\zeroskip\relax} \fi
 \ifdefined\hspaceamount \else                     \def\hspaceamount#1#2{.16667\emwidth}                                 \fi % will be overloaded
 
 \permanent\protected\def\permithyphenation{\ifhmode\wordboundary\fi} % doesn't remove spaces

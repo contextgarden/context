@@ -2867,3 +2867,22 @@ do
     -- end
 
 end
+
+do
+
+    local lpegmatch = lpegmatch
+    local unescaper = lpeg.patterns.urlunescaper
+
+    function xmlfinalizers.url(e,a)
+        local u = #e > 0 and e[1].at[a]
+        return u and lpegmatch(unescaper,u)
+    end
+
+    function texfinalizers.url(e,a)
+        local u = #e > 0 and e[1].at[a]
+        if u then
+            context(lpegmatch(unescaper,u))
+        end
+    end
+
+end

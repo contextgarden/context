@@ -95,6 +95,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "emergencyleftskip",              internal_glue_cmd,      emergency_left_skip_code,                 internal_glue_base);
         tex_primitive(luatex_command, "emergencyrightskip",             internal_glue_cmd,      emergency_right_skip_code,                internal_glue_base);
         tex_primitive(luatex_command, "initialpageskip",                internal_glue_cmd,      initial_page_skip_code,                   internal_glue_base);
+        tex_primitive(luatex_command, "initialtopskip",                 internal_glue_cmd,      initial_top_skip_code,                    internal_glue_base);
         tex_primitive(luatex_command, "additionalpageskip",             internal_glue_cmd,      additional_page_skip_code,                internal_glue_base);
         tex_primitive(luatex_command, "mathsurroundskip",               internal_glue_cmd,      math_skip_code,                           internal_glue_base);
         tex_primitive(luatex_command, "maththreshold",                  internal_glue_cmd,      math_threshold_code,                      internal_glue_base);
@@ -547,6 +548,7 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "pagetotal",                      set_page_property_cmd,  page_total_code,                          0);
         tex_primitive(luatex_command, "pageexcess",                     set_page_property_cmd,  page_excess_code,                         0);
         tex_primitive(tex_command,    "pagestretch",                    set_page_property_cmd,  page_stretch_code,                        0);
+        tex_primitive(luatex_command, "pagefistretch",                  set_page_property_cmd,  page_fistretch_code,                      0);
         tex_primitive(tex_command,    "pagefilstretch",                 set_page_property_cmd,  page_filstretch_code,                     0);
         tex_primitive(tex_command,    "pagefillstretch",                set_page_property_cmd,  page_fillstretch_code,                    0);
         tex_primitive(tex_command,    "pagefilllstretch",               set_page_property_cmd,  page_filllstretch_code,                   0);

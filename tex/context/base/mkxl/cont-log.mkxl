@@ -23,14 +23,26 @@
 
 \unprotect
 
+% \frozen\instance\protected\def\TeX
+%   {\dontleavehmode
+%    \begingroup
+%    T%
+%    \setbox\scratchbox\hbox{M}%
+%    \kern-.1667\wd\scratchbox
+%    \lower.5\exheight\hbox{E}%
+%    \kern-.125\wd\scratchbox
+%    X%
+%    \endgroup}
+
 \frozen\instance\protected\def\TeX
   {\dontleavehmode
    \begingroup
+   \scratchdimen\fontcharwd\font`M%
    T%
-   \setbox\scratchbox\hbox{M}%
-   \kern-.1667\wd\scratchbox
-   \lower.5\exheight\hbox{E}%
-   \kern-.125\wd\scratchbox
+   \kern-.1667\scratchdimen
+  %\lower.3183\fontcharht\font`T\hbox{E}% .318316 but no exact match possible anyway
+   \lower.5\exheight\hbox{E}% but on the average this looks better
+   \kern-.125\scratchdimen
    X%
    \endgroup}
 

@@ -861,7 +861,9 @@ void tex_conditional_if(halfword code, int unless)
             {
                 lmt_error_state.intercept = 1; /* maybe ++ and -- so that we can nest */
                 lmt_error_state.last_intercept = 0;
-                lmt_condition_state.chk_num = tex_scan_int(0, NULL); /* value is ignored */
+             // lmt_condition_state.chk_num = tex_scan_int(0, NULL); /* value is ignored */
+                lmt_condition_state.chk_num = 0;
+                tex_scan_int_validate(); 
                 result = lmt_error_state.last_intercept ? check_error : check_okay;
                 if (result == check_okay && code == if_chk_integer_code) { 
                     tex_aux_check_strict(&result);
@@ -892,7 +894,9 @@ void tex_conditional_if(halfword code, int unless)
             {
                 lmt_error_state.intercept = 1;
                 lmt_error_state.last_intercept = 0;
-                lmt_condition_state.chk_dim = tex_scan_dimen(0, 0, 0, 0, NULL); /* value is ignored */
+             // lmt_condition_state.chk_dim = tex_scan_dimen(0, 0, 0, 0, NULL); /* value is ignored */
+                lmt_condition_state.chk_dim = 0;
+                tex_scan_dimen_validate(); 
                 result = lmt_error_state.last_intercept ? check_error : check_okay;
                 if (result == check_okay && code == if_chk_dimension_code) { 
                     tex_aux_check_strict(&result);

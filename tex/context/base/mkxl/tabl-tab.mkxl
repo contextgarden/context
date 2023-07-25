@@ -271,7 +271,7 @@
      \aligntab
      \the\!taPreamble\tabskip\tablerighttabskip
      \aligntab
-     \aligncontent\tabskip\zeropoint\cr}
+     \aligncontent\tabskip\zeroskip\cr}
    \!taBeginFormatfalse
    \!ttDoHalign}
 
@@ -660,10 +660,10 @@
    \ifempty\tempstring
      \!taDimenC\zeropoint
    \else
-     \setbox\scratchbox\hbox{\mathsurround\zeropoint #1.#3#1}%
+     \setbox\scratchbox\hbox{\mathsurround\zeropoint\mathsurroundskip\zeroskip#1.#3#1}%
      \!taDimenC\wd\scratchbox
    \fi
-   \setbox\scratchbox\hbox{\mathsurround\zeropoint #1#2#1}%
+   \setbox\scratchbox\hbox{\mathsurround\zeropoint\mathsurroundskip\zeroskip#1#2#1}%
    \!thToksEdef\!taDataColumnTemplate
      {\noexpand\!tnSetNumericItem{\the\wd\scratchbox}{\the\!taDimenC}{#1}%
       \the\!taDataColumnTemplate}% Might have tabskip glue in here
@@ -676,8 +676,8 @@
 
 \def\!tnSetNumericItemA #1#2#3#4.#5.#6!%
   {\def\tempstring{#6}%
-   \hbox to #1{\hss \mathsurround\zeropoint #3#4#3}%
-   \hbox to #2{\ifempty\tempstring\else\mathsurround\zeropoint #3.#5#3\fi\hss}}
+   \hbox to #1{\hss \mathsurround\zeropoint\mathsurroundskip\zeroskip#3#4#3}%
+   \hbox to #2{\ifempty\tempstring\else\mathsurround\zeropoint\mathsurroundskip\zeroskip#3.#5#3\fi\hss}}
 
 % extensions
 
@@ -733,10 +733,10 @@
    \ifempty\tempstring
      \!taDimenC\zeropoint
    \else
-     \setbox\scratchbox\hbox{\mathsurround\zeropoint #1,#3#1}%
+     \setbox\scratchbox\hbox{\mathsurround\zeropoint\mathsurroundskip\zeroskip#1,#3#1}%
      \!taDimenC\wd\scratchbox
    \fi
-   \setbox\scratchbox\hbox{\mathsurround\zeropoint #1#2#1}%
+   \setbox\scratchbox\hbox{\mathsurround\zeropoint\mathsurroundskip\zeroskip#1#2#1}%
    \!thToksEdef\!taDataColumnTemplate
       {\noexpand\!tqSetQuantityItem{\the\wd\scratchbox}{\the\!taDimenC}{#1}%
        \the\!taDataColumnTemplate}%
@@ -747,8 +747,8 @@
 
 \def\!tqSetQuantityItemA #1#2#3#4,#5,#6!%
   {\def\tempstring{#6}%
-   \hbox to #1{\hss\mathsurround\zeropoint#3#4#3}%
-   \hbox to #2{\ifempty\tempstring\else\mathsurround\zeropoint#3,#5#3\fi\hss}}
+   \hbox to #1{\hss\mathsurround\zeropoint\mathsurroundskip\zeroskip#3#4#3}%
+   \hbox to #2{\ifempty\tempstring\else\mathsurround\zeropoint\mathsurroundskip\zeroskip#3,#5#3\fi\hss}}
 
 % \Enlarge<extra height><extra depth><original>
 % \enlarge<multiple for extra height><multiple for extra depth><original>
@@ -776,7 +776,7 @@
    \!TsFinishEnlarge}
 
 \def\!TsEnlargeMath#1#2%
-  {\setbox\scratchbox\hbox{\normalstartimath\mathsurround\zeropoint#1{#2}\normalstopimath}%
+  {\setbox\scratchbox\hbox{\normalstartimath\mathsurround\zeropoint\mathsurroundskip\zeroskip#1{#2}\normalstopimath}%
    \!TsFinishEnlarge}
 
 \def\!TsFinishEnlarge
@@ -856,10 +856,10 @@
       \lineskip     \the\lineskip
       \tabskip      \the\tabskip
       \relax}%
-   \baselineskip \zeropoint
+   \baselineskip \zeroskip
    \lineskiplimit\zeropoint
-   \lineskip     \zeropoint
-   \tabskip      \zeropoint
+   \lineskip     \zeroskip
+   \tabskip      \zeroskip
    \edef\p_tabl_table_textwidth{\directtablesparameter\c!textwidth}%
    % we are not in sync so:
    \synchronizedisplaydirection
@@ -1056,7 +1056,7 @@
    \!thFinishVCS}
 
 \def\!thDoMathVCS#1#2%
-  {\setbox\zerocount\hbox{\normalstartimath\mathsurround\zeropoint#1{#2}\normalstopimath}%
+  {\setbox\zerocount\hbox{\normalstartimath\mathsurround\zeropoint\mathsurroundskip\zeroskip#1{#2}\normalstopimath}%
    \!thFinishVCS}
 
 \def\!thFinishVCS
@@ -1095,7 +1095,7 @@
    \!thFinishRaise} % From Plain TeX: \ht0=0pt \dp0=0pt \box0
 
 \def\!thDoMathRaise#1#2%
-  {\setbox\zerocount\hbox{\raise \!taDimenA\hbox{\normalstartimath\mathsurround\zeropoint#1{#2}\normalstopimath}}%
+  {\setbox\zerocount\hbox{\raise \!taDimenA\hbox{\normalstartimath\mathsurround\zeropoint\mathsurroundskip\zeroskip#1{#2}\normalstopimath}}%
    \!thFinishRaise}
 
 \def\!thFinishRaise
@@ -1624,12 +1624,10 @@
    \d_split_minimum_free_space\zeropoint
    \setbox\b_split_content\box#1%
    \ifconditional\c_tabl_table_repeat_head \ifconditional\hassometablehead
-     \setbox\b_split_head\vsplit\b_split_content to \lineheight
-     \setbox\b_split_head\vbox{\unvbox\b_split_head}% \vpack ?
+     \setbox\b_split_head\vsplit\b_split_content upto \lineheight
    \fi \fi
    \ifconditional\c_tabl_table_repeat_tail \ifconditional\hassometabletail
-     \setbox\b_split_tail\vsplit\b_split_content to \lineheight
-     \setbox\b_split_tail\vbox{\unvbox\b_split_tail}% \vpack ?
+     \setbox\b_split_tail\vsplit\b_split_content upto \lineheight
    \fi \fi
    \ifinsidefloat\else
      \t_split_before_result{\startbaselinecorrection}%

@@ -78,7 +78,7 @@ do
 
     local flush   = io.flush
     local execute = os.execute
-    local popen   = os.popen
+    local popen   = io.popen
 
     function os.execute(...) flush() return execute(...) end
     function io.popen  (...) flush() return popen  (...) end

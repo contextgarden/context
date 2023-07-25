@@ -191,7 +191,8 @@ end
 -- a registration of arguments so from now on we have 'partial'
 
 function environment.getargument(name,partial)
-    local arguments, sortedflags = environment.arguments, environment.sortedflags
+    local arguments   = environment.arguments
+    local sortedflags = environment.sortedflags
     if arguments[name] then
         return arguments[name]
     elseif partial then

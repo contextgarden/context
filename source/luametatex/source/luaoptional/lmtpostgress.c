@@ -185,7 +185,7 @@ static int postgresslib_open(lua_State * L)
 static int postgresslib_close(lua_State * L)
 {
     if (postgresslib_state.initialized) {
-        postgresslib_data * data = luaL_checkudata(L,1,POSTGRESSLIB_METATABLE);
+        postgresslib_data *data = luaL_checkudata(L, 1, POSTGRESSLIB_METATABLE);
         if (data != NULL) {
             postgresslib_state.PQfinish(data->db);
             data->db = NULL;
@@ -199,7 +199,7 @@ static int postgresslib_close(lua_State * L)
 static int postgresslib_execute(lua_State * L)
 {
     if (postgresslib_state.initialized) {
-        postgresslib_data * data = luaL_checkudata(L, 1, POSTGRESSLIB_METATABLE);
+        postgresslib_data *data = luaL_checkudata(L, 1, POSTGRESSLIB_METATABLE);
         if (data != NULL) {
             size_t length = 0;
             const char *query = lua_tolstring(L, 2, &length);
@@ -249,7 +249,7 @@ static int postgresslib_execute(lua_State * L)
 static int postgresslib_getmessage(lua_State * L)
 {
     if (postgresslib_state.initialized) {
-        postgresslib_data * data = luaL_checkudata(L, 1, POSTGRESSLIB_METATABLE);
+        postgresslib_data *data = luaL_checkudata(L, 1, POSTGRESSLIB_METATABLE);
         if (data != NULL) {
             lua_pushstring(L, postgresslib_state.PQerrorMessage(data->db));
             return 1;
@@ -270,7 +270,7 @@ static int postgresslib_free(lua_State * L)
 static int postgresslib_tostring(lua_State * L)
  {
     if (postgresslib_state.initialized) {
-        postgresslib_data * data = luaL_checkudata(L, 1, POSTGRESSLIB_METATABLE);
+        postgresslib_data *data = luaL_checkudata(L, 1, POSTGRESSLIB_METATABLE);
         if (data != NULL) {
             (void) lua_pushfstring(L, "<postgresslib-instance %p>", data);
         } else {

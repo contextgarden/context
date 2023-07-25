@@ -890,7 +890,7 @@
        \c!height=\scratchheight,
        \c!depth=\scratchheight]}%
    \frozen\advanceby\rightskip \directfillinlinesparameter\c!margin\relax
-   \frozen\parfillskip\zeropoint\relax
+   \frozen\parfillskip\zeroskip\relax
    \endgroup}
 
 \permanent\tolerant\protected\def\fillinline[#1]%

@@ -95,6 +95,7 @@ extern int  luaextend_string    (lua_State *L);
 extern int  luaextend_xcomplex  (lua_State *L);
 
 extern int  luaopen_posit       (lua_State *L);
+extern int  luaopen_potrace     (lua_State *L);
 
 /*tex
 
@@ -1189,6 +1190,7 @@ make_lua_key(L, shiftedsuperscript);\
 make_lua_key(L, shorthand_def);\
 make_lua_key(L, shrink);\
 make_lua_key(L, shrinkorder);\
+make_lua_key(L, sign);\
 make_lua_key(L, simple);\
 make_lua_key(L, size);\
 make_lua_key(L, single);\

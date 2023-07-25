@@ -522,8 +522,8 @@
     \permanent\protected\def\nospacing{\normalnospaces\plusone}
     \permanent\protected\def\dospacing{\normalnospaces\zerocount}
 \else
-    \permanent\protected\def\nospacing{\spaceskip\scaledpoint     \xspaceskip\zeropoint}
-    \permanent\protected\def\dospacing{\spaceskip\currentspaceskip\xspaceskip\zeropoint} % what
+    \permanent\protected\def\nospacing{\spaceskip\scaledpoint     \xspaceskip\zeroskip}
+    \permanent\protected\def\dospacing{\spaceskip\currentspaceskip\xspaceskip\zeroskip} % what
 \fi
 
 \ifdefined\softhyphen \else
@@ -667,10 +667,12 @@
 
 % Bovendien definieren we enkele extra \fill's:
 
+\newgluespec\s_spac_fi         \s_spac_fi        \zeropoint \s!plus 1\s!fi   \relax
 \newgluespec\s_spac_fil        \s_spac_fil       \zeropoint \s!plus 1\s!fil  \relax
 \newgluespec\s_spac_fill       \s_spac_fill      \zeropoint \s!plus 1\s!fill \relax
 \newgluespec\s_spac_filll      \s_spac_filll     \zeropoint \s!plus 1\s!filll\relax
 
+\newgluespec\s_spac_neg_fi     \s_spac_neg_fi    \zeropoint \s!plus-1\s!fi  \relax
 \newgluespec\s_spac_neg_fil    \s_spac_neg_fil   \zeropoint \s!plus-1\s!fil  \relax
 \newgluespec\s_spac_neg_fill   \s_spac_neg_fill  \zeropoint \s!plus-1\s!fill \relax
 \newgluespec\s_spac_neg_filll  \s_spac_neg_filll \zeropoint \s!plus-1\s!filll\relax
@@ -729,9 +731,9 @@
 \installnarrowermethod{-\v!left  }{\global\advanceby\s_spac_narrower_left  -\narrowerparameter\c!left  \relax}
 \installnarrowermethod{-\v!middle}{\global\advanceby\s_spac_narrower_middle-\narrowerparameter\c!middle\relax}
 \installnarrowermethod{-\v!right }{\global\advanceby\s_spac_narrower_right -\narrowerparameter\c!right \relax}
-\installnarrowermethod  \v!reset  {\global        \s_spac_narrower_left   \zeropoint
-                                   \global        \s_spac_narrower_middle \zeropoint
-                                   \global        \s_spac_narrower_right  \zeropoint\relax}
+\installnarrowermethod  \v!reset  {\global          \s_spac_narrower_left   \zeroskip
+                                   \global          \s_spac_narrower_middle \zeroskip
+                                   \global          \s_spac_narrower_right  \zeroskip\relax}
 \installnarrowermethod \v!none    {}
 \installnarrowermethod \v!reverse {} % never seen
 
@@ -750,9 +752,9 @@
 
 \def\spac_narrower_start_apply#1%
   {\narrowerparameter\c!before
-   \global\s_spac_narrower_left  \zeropoint
-   \global\s_spac_narrower_right \zeropoint
-   \global\s_spac_narrower_middle\zeropoint
+   \global\s_spac_narrower_left  \zeroskip
+   \global\s_spac_narrower_right \zeroskip
+   \global\s_spac_narrower_middle\zeroskip
    \edef\scratchstringone{#1}%
    \ifx\scratchstringone\v!reverse
      \ifconditional\s_spac_narrower_last_swap
@@ -855,11 +857,11 @@
 \newgluespec\rightskipadaption
 
 \defcsname\??skipadaptionleft \v!yes\endcsname{\ifzeropt\d_spac_indentation_par\narrowerparameter\c!left\else\d_spac_indentation_par\fi}
-\letcsname\??skipadaptionleft \v!no \endcsname\zeropoint
-\letcsname\??skipadaptionleft \empty\endcsname\zeropoint
+\letcsname\??skipadaptionleft \v!no \endcsname\zeropoint % \zeroskip
+\letcsname\??skipadaptionleft \empty\endcsname\zeropoint % \zeroskip
 \defcsname\??skipadaptionright\v!yes\endcsname{\narrowerparameter\c!right}
-\letcsname\??skipadaptionright\v!no \endcsname\zeropoint
-\letcsname\??skipadaptionright\empty\endcsname\zeropoint
+\letcsname\??skipadaptionright\v!no \endcsname\zeropoint % \zeroskip
+\letcsname\??skipadaptionright\empty\endcsname\zeropoint % \zeroskip
 
 \letcsname\??skipadaptionleft \v!standard\expandafter\endcsname\csname\??skipadaptionleft \v!yes\endcsname
 \letcsname\??skipadaptionright\v!standard\expandafter\endcsname\csname\??skipadaptionright\v!yes\endcsname
@@ -871,8 +873,8 @@
 \permanent\protected\def\doadaptrightskip#1{\normalexpanded{\dosetrightskipadaption{#1}}\frozen\advanceby\rightskip\rightskipadaption}
 
 \permanent\protected\def\forgetbothskips
-  {\leftskip\zeropoint
-   \rightskip\zeropoint
+  {\leftskip \zeroskip
+   \rightskip\zeroskip
    \relax}
 
 \appendtoks
@@ -882,8 +884,8 @@
 % in spac-ver.mkiv
 %
 % \protected\def\forgetparskip
-%   {\s_spac_whitespace_parskip\zeropoint
-%    \parskip\zeropoint
+%   {\s_spac_whitespace_parskip\zeroskip
+%    \parskip\zeroskip
 %    \let\v_spac_whitespace_current\v!none}
 %
 % \appendtoks
@@ -945,7 +947,7 @@
 %      \setbox\b_spac_indentations_b\lastbox       % get \indent generated box
 %      \unskip
 %    \else
-%      \dontleavehmode % was \hskip\zeropoint      % switch to horizontal mode
+%      \dontleavehmode % was \hskip\zeroskip       % switch to horizontal mode
 %      \unskip
 %      \setbox\b_spac_indentations_a\lastbox       % get \indent generated box
 %      \setbox\b_spac_indentations_b\emptybox
@@ -975,7 +977,7 @@
 %D To serve our purpose a bit better, the macro \type {\strut} can be redefined as:
 %D \starttyping
 %D \def\strut
-%D   {\relax\ifmmode\else\hskip0pt\fi\copy\strutbox}
+%D   {\relax\ifmmode\else\hskip\zeroskip\fi\copy\strutbox}
 %D \stoptyping
 %D
 %D Or more compatible:
@@ -1060,7 +1062,7 @@
 \definehspace [\v!big]     [1\emspaceamount]
 \definehspace [\v!normal]  [1\spaceamount]
 \definehspace [\v!default] [\spaceamount]
-\definehspace [\v!none]    [\zeropoint]
+\definehspace [\v!none]    [\zeropoint] % \zeroskip
 
 %D Taken from Taco's math module (cq. \AMS\ macros), but %D adapted to \type
 %D {\hspace}:
@@ -1094,7 +1096,7 @@
 % \protected\def\nobreakskip            {\penalty\plustenthousand\kern\interwordspace}
 % \protected\def\narrownobreakskip      {\penalty\plustenthousand\thinspace}
 % \protected\def\zerowidthnobreakskip   {\penalty\plustenthousand\kern\zeropoint}
-% \protected\def\zerowidthskip          {\hskip\zeropoint}
+% \protected\def\zerowidthskip          {\hskip\zeroskip}
 
 \definehspace[.5][.1250\emwidth] % hair
 \definehspace[1] [.1667\emwidth] % thin

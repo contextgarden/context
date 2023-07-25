@@ -321,7 +321,7 @@
    \else
      \c_tabl_split_head\conditionalfalse % no tablehead
    \fi
-   \splittopskip\zeropoint
+   \splittopskip\zeroskip
    \ifvoid\b_split_result_saved\else
      \setbox\b_split_result\box\b_split_result_saved
      \c_tabl_split_head\conditionaltrue % no tablehead

@@ -195,6 +195,9 @@
 
 \newtoks       \everyTABLEpass    % public
 
+\newtoks       \t_tabl_ntb_initializers_first  % trial
+\newtoks       \t_tabl_ntb_initializers_second % final
+
 \newinteger    \tablecellrows    % public (needs checking)
 \newinteger    \tablecellcolumns % public (needs checking)
 
@@ -1472,7 +1475,7 @@
    \egroup}
 
 \def\tabl_ntb_flush_content
-  {\the\everyTABLEpass
+  {\expand\everyTABLEpass
    \global\c_tabl_ntb_spn\zerocount
    \global\c_tabl_ntb_col\zerocount
    \global\c_tabl_ntb_row\zerocount
@@ -1689,8 +1692,10 @@
    \c_tabl_tbl_pass\plusone
    \let\tabl_ntb_pass\tabl_ntb_pass_one
    \let\tabl_ntb_cell_process\tabl_ntb_cell_process_a
+   \expand\t_tabl_ntb_initializers_first\relax
    \setbox\scratchbox\vbox{\settrialtypesetting \tabl_ntb_flush_content}%
    \ifcase\tabl_ntb_get_gal\or
+      % so \c_tabl_tbl_pass is not really a pass count
     % \c_tabl_tbl_pass\plusone
     % \let\tabl_ntb_pass\tabl_ntb_pass_one
       \let\tabl_ntb_cell_process\tabl_ntb_cell_process_a_extra
@@ -1741,6 +1746,7 @@
    \let\tabl_ntb_cell_process\tabl_ntb_cell_process_e
    \c_tabl_tbl_pass\plusthree
    \let\tabl_ntb_pass\tabl_ntb_pass_three
+   \expand\t_tabl_ntb_initializers_second\relax
    \ifnum\m_tabl_tbl_level>\plusone
      \tabl_ntb_split_nop
    \orelse\ifenableTBLbreak
@@ -1998,7 +2004,7 @@
    \fi}
 
 \def\tabl_ntb_char_align_indeed#1#2% row column
-  {\ifcase\c_tabl_tbl_pass \or
+  {\ifcase\c_tabl_tbl_pass\or
      \setcharacteralign{#2}{\naturaltablelocalparameter\c!alignmentcharacter}% we could store the character in tal
    \fi
    \typo_charalign_adapt_font

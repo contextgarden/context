@@ -266,5 +266,6 @@ include(cmake/luaoptional.cmake)
 include(cmake/pplib.cmake)
 include(cmake/miniz.cmake)
 include(cmake/softposit.cmake)
+include(cmake/potrace.cmake)
 
 include(cmake/luametatex.cmake)

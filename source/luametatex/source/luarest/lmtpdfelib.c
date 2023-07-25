@@ -914,7 +914,7 @@ static int pdfelib_open(lua_State *L)
     if (f && aux_pdfelib_open(L, f)) {
         return 1;
     } else {
-        tex_formatted_warning("pdfe lib", "no valid pdf file '%s'", filename);
+     /* tex_normal_warning("pdfe lib", "no valid file handle"); */ /* the caller should handle it */
         return 0;
     }
 }
@@ -928,7 +928,7 @@ static int pdfelib_openfile(lua_State *L)
         fs->closef = NULL;
         return 1;
     } else {
-        tex_formatted_warning("pdfe lib", "no valid file handle");
+     /* tex_normal_warning("pdfe lib", "no valid file handle"); */ /* the caller should handle it */
         return 0;
     }
 }

@@ -59,7 +59,7 @@ target_compile_definitions(lua PUBLIC
   # LUAI_HASHLIMIT=6 # obsolete
   # LUAI_MAXSHORTLEN=48
     LUAI_MAXCSTACK=6000
-    LUA_UCID
+    LUA_UCID # permits utf8 
   # LUA_USE_JUMPTABLE=0
     LPEG_DEBUG
   # LUA_NOCVTS2N

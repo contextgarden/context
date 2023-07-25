@@ -199,7 +199,7 @@
      {\page_otr_command_flush_top_insertions
       % this is messy ... we will provide a more tight area (no big deal as we can
       % do that at the lua end)
-    % \parfillskip\zeropoint
+    % \parfillskip\zeroskip
       \page_one_registered_text_area_a#1#2% \unvbox <box>
       %
       \ifgridsnapping

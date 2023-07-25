@@ -645,10 +645,10 @@
 
 %D Tricky stuff:
 
-\abovedisplayskip      \zeropoint
-\abovedisplayshortskip \zeropoint % evt. 0pt minus 3pt
-\belowdisplayskip      \zeropoint
-\belowdisplayshortskip \zeropoint % evt. 0pt minus 3pt
+\abovedisplayskip      \zeroskip
+\abovedisplayshortskip \zeroskip % evt. 0pt minus 3pt
+\belowdisplayskip      \zeroskip
+\belowdisplayshortskip \zeroskip % evt. 0pt minus 3pt
 
 \predisplaypenalty     \zerocount
 \postdisplaypenalty    \zerocount % -5000 goes wrong, see penalty at \section
@@ -661,19 +661,19 @@
 
 % \protected\def\strc_formulas_forget_display_skips
 %   {\mathdisplayskipmode  \plusthree
-%    \abovedisplayskip     \zeropoint
-%    \belowdisplayskip     \zeropoint
-%    \abovedisplayshortskip\zeropoint
-%    \belowdisplayshortskip\zeropoint}
+%    \abovedisplayskip     \zeroskip
+%    \belowdisplayskip     \zeroskip
+%    \abovedisplayshortskip\zeroskip
+%    \belowdisplayshortskip\zeroskip}
 
 %D Became this, where setting the mode is now also irrelevant but the engine still
 %D has it, so:
 
 \mathdisplayskipmode  \plusthree
-\abovedisplayskip     \zeropoint
-\belowdisplayskip     \zeropoint
-\abovedisplayshortskip\zeropoint
-\belowdisplayshortskip\zeropoint
+\abovedisplayskip     \zeroskip
+\belowdisplayskip     \zeroskip
+\abovedisplayshortskip\zeroskip
+\belowdisplayshortskip\zeroskip
 
 \newdimension\d_strc_formulas_display_width
 

@@ -18,6 +18,17 @@ typedef enum  contribution_codes {
     contribute_rule,    /*tex A rule has been contributed. */
 } contribution_codes;
 
+typedef enum page_property_states { 
+    page_unused_state,
+    page_initial_state, 
+    page_stretch_state,
+    page_fistretch_state,
+    page_filstretch_state,
+    page_fillstretch_state,
+    page_filllstretch_state,
+    page_shrink_state,
+} page_property_states;
+
 typedef struct page_builder_state_info {
     halfword page_tail;  /*tex The final node on the current page. */
     int      contents;   /*tex What is on the current page so far? */
@@ -34,24 +45,30 @@ typedef struct page_builder_state_info {
     scaled   last_height;
     scaled   last_depth;
     union { 
-        scaled page_so_far[6];    /*tex The height and glue of the current page. */
+        /*tex The upcoming height and glue of the current page. */
+        scaled page_so_far[8];
         struct {
-            scaled initial; 
-            scaled stretch;       // page_stretch_state      normal_glue_order
-            scaled filstretch;    // page_filstretch_state   fil_glue_order
-            scaled fillstretch;   // page_fillstretch_state  fill_glue_order
-            scaled filllstretch;  // page_filllstretch_state filll_glue_order
+            scaled unused; 
+            scaled initial;       
+            scaled stretch;       
+            scaled fistretch;     
+            scaled filstretch;    
+            scaled fillstretch;   
+            scaled filllstretch;  
             scaled shrink;           
         };
     };
     union { 
-        scaled page_last_so_far[6];    /*tex The height and glue of the current page. */
+        /*tex The effective height and glue of the current page. */
+        scaled page_last_so_far[8];    
         struct {
+            scaled last_unused; 
             scaled last_initial; 
-            scaled last_stretch;       // page_stretch_state      normal_glue_order
-            scaled last_filstretch;    // page_filstretch_state   fil_glue_order
-            scaled last_fillstretch;   // page_fillstretch_state  fill_glue_order
-            scaled last_filllstretch;  // page_filllstretch_state filll_glue_order
+            scaled last_stretch;       
+            scaled last_fistretch;     
+            scaled last_filstretch;    
+            scaled last_fillstretch;   
+            scaled last_filllstretch;  
             scaled last_shrink;           
         };
     };
@@ -60,8 +77,8 @@ typedef struct page_builder_state_info {
     halfword last_glue;         /*tex Used to implement |\lastskip|. */
     halfword last_penalty;      /*tex Used to implement |\lastpenalty|. */
     scaled   last_kern;         /*tex Used to implement |\lastkern|. */
-    int      last_extra_used;
     halfword last_boundary;
+    int      last_extra_used;
     int      last_node_type;    /*tex Used to implement |\lastnodetype|. */
     int      last_node_subtype; /*tex Used to implement |\lastnodesubtype|. */
     int      output_active;
@@ -71,23 +88,7 @@ typedef struct page_builder_state_info {
 
 extern page_builder_state_info lmt_page_builder_state;
 
-typedef enum page_property_states { 
-    page_initial_state,    /* we need an offset and are aligned anyway */
-    page_stretch_state,
-    page_filstretch_state,
-    page_fillstretch_state,
-    page_filllstretch_state,
-    page_shrink_state,
-} page_property_states;
-
-# define page_state_offset(c) (c - page_stretch_code + page_stretch_state)
-
-/*tex
-
-    The data structure definitions here use the fact that the |height| field
-    appears in the fourth word of a box node.
-
-*/
+//define page_state_offset(c) (c - page_stretch_code + page_stretch_state)
 
 extern void tex_initialize_buildpage (void);
 extern void tex_initialize_pagestate (void);
@@ -95,36 +96,25 @@ extern void tex_build_page           (void);
 extern void tex_resume_after_output  (void);
 extern void tex_additional_page_skip (void);
 
-/*tex The tail of the contribution list: */
+# define contribute_tail        lmt_nest_state.nest[0].tail        /*tex The tail of the contribution list. */
 
-# define contribute_tail lmt_nest_state.nest[0].tail
-
-# define page_goal         lmt_page_builder_state.goal        /*tex The desired height of information on page being built. */
-# define page_vsize        lmt_page_builder_state.vsize
-# define page_total        lmt_page_builder_state.total       /*tex The height of the current page. */
-# define page_depth        lmt_page_builder_state.depth       /*tex The depth of the current page. */
-# define page_excess       lmt_page_builder_state.excess
-# define page_last_height  lmt_page_builder_state.last_height /*tex The height so far. */
-# define page_last_depth   lmt_page_builder_state.last_depth  /*tex The depth so far. */
-
-/*tex We don't have |fi| here so we just map to |fil|. */
-
-//define page_stretch      lmt_page_builder_state.page_so_far[page_stretch_state]
-//define page_fistretch    lmt_page_builder_state.page_so_far[page_filstretch_state]
-//define page_filstretch   lmt_page_builder_state.page_so_far[page_filstretch_state]
-//define page_fillstretch  lmt_page_builder_state.page_so_far[page_fillstretch_state]
-//define page_filllstretch lmt_page_builder_state.page_so_far[page_filllstretch_state]
-//define page_shrink       lmt_page_builder_state.page_so_far[page_shrink_state]    
-
-# define page_stretch      lmt_page_builder_state.stretch
-# define page_fistretch    lmt_page_builder_state.filstretch    
-# define page_filstretch   lmt_page_builder_state.filstretch
-# define page_fillstretch  lmt_page_builder_state.fillstretch
-# define page_filllstretch lmt_page_builder_state.filllstretch
-# define page_shrink       lmt_page_builder_state.shrink    
+# define page_goal              lmt_page_builder_state.goal        /*tex The desired height of information on page being built. */
+# define page_vsize             lmt_page_builder_state.vsize
+# define page_total             lmt_page_builder_state.total       /*tex The height of the current page. */
+# define page_depth             lmt_page_builder_state.depth       /*tex The depth of the current page. */
+# define page_excess            lmt_page_builder_state.excess
+# define page_last_height       lmt_page_builder_state.last_height /*tex The height so far. */
+# define page_last_depth        lmt_page_builder_state.last_depth  /*tex The depth so far. */
+                                
+# define page_stretch           lmt_page_builder_state.stretch
+# define page_fistretch         lmt_page_builder_state.fistretch    
+# define page_filstretch        lmt_page_builder_state.filstretch
+# define page_fillstretch       lmt_page_builder_state.fillstretch
+# define page_filllstretch      lmt_page_builder_state.filllstretch
+# define page_shrink            lmt_page_builder_state.shrink    
 
 # define page_last_stretch      lmt_page_builder_state.last_stretch
-# define page_last_fistretch    lmt_page_builder_state.last_filstretch    
+# define page_last_fistretch    lmt_page_builder_state.last_fistretch    
 # define page_last_filstretch   lmt_page_builder_state.last_filstretch
 # define page_last_fillstretch  lmt_page_builder_state.last_fillstretch
 # define page_last_filllstretch lmt_page_builder_state.last_filllstretch

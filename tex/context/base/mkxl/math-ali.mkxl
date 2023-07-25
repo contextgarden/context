@@ -125,7 +125,8 @@
 \def\math_eqalign_set_defaults
   {\normalbaselines % hm, spacing ?
    \mathsurround\zeropoint
-   \tabskip\zeropoint
+   \mathsurroundskip\zeroskip
+   \tabskip\zeroskip
    \everycr\emptytoks}
 
 %installcorenamespace{mathbeginclass} % not needed currently
@@ -137,7 +138,7 @@
 \protected\def\math_math_in_eqalign#1%
   {\mathbeginclass\ifcsname\??mathendclass\the\numexpr\c_math_eqalign_column-\plusone\relax\endcsname\lastnamedcs\else\mathunsetcode\fi
    \startforceddisplaymath
-   \tabskip\zeropoint
+   \tabskip\zeroskip
    \everycr\emptytoks
    #1%
    \stopforceddisplaymath
@@ -151,7 +152,7 @@
   {\mathbeginclass\mathordcode
    \mathendclass  \mathordcode
    \startimath
-   \tabskip\zeropoint
+   \tabskip\zeroskip
    \everycr\emptytoks
    #1%
    \stopimath}
@@ -216,7 +217,7 @@
       \math_text_in_align
       \aligncontent % for picking up the number
       \ifnum\c_strc_math_ragged_status=\plusthree
-        \tabskip\zeropoint\relax
+        \tabskip\zeroskip
       \else
         \tabskip\centeringskip
       \fi
@@ -229,7 +230,7 @@
       \span
       \math_math_in_eqalign{\aligncontent}%
       \math_right_of_eqalign
-      \tabskip\zeropoint}%
+      \tabskip\zeroskip}%
    \t_math_align_b
      {\aligntab
       \math_next_in_eqalign
@@ -237,16 +238,16 @@
       \span
       \math_math_in_eqalign{\aligncontent}%
       \math_right_of_eqalign
-      \tabskip\zeropoint}%
+      \tabskip\zeroskip}%
    \ifnum\c_strc_math_ragged_status=\plusthree
      \t_math_align_c
        {\hfil
-        \tabskip\zeropoint
+        \tabskip\zeroskip
         \aligntab
         \span
         \boundary\c_math_align_r_marker
         \math_alignment_rbox{\aligncontent}%
-        \tabskip\zeropoint}%
+        \tabskip\zeroskip}%
    \orelse\ifnum\c_strc_math_ragged_status=\plusone
      \t_math_align_c
        {\hfil
@@ -255,7 +256,7 @@
         \span
         \boundary\c_math_align_r_marker
         \math_alignment_rbox{\aligncontent}%
-        \tabskip\zeropoint}%
+        \tabskip\zeroskip}%
    \else
      \t_math_align_c
        {\hfil
@@ -264,11 +265,11 @@
         \span
         \boundary\c_math_align_r_marker
         \math_alignment_rbox{\aligncontent}%
-        \tabskip\zeropoint}%
+        \tabskip\zeroskip}%
    \fi
    \math_build_eqalign
    \the\mathdisplayaligntweaks
-   \tabskip\zeropoint
+   \tabskip\zeroskip
    \ifnum\c_strc_math_ragged_status=\plusthree
      \tabskip\stretchingfillskip
    \fi}
@@ -290,7 +291,7 @@
       \span
       \math_math_in_eqalign{\aligncontent}%
       \math_right_of_eqalign
-      \tabskip\zeropoint}%
+      \tabskip\zeroskip}%
    \t_math_align_b
      {\aligntab
       \math_next_in_eqalign
@@ -298,7 +299,7 @@
       \span
       \math_math_in_eqalign{\aligncontent}%
       \math_right_of_eqalign
-      \tabskip\zeropoint}%
+      \tabskip\zeroskip}%
    \ifnum\c_strc_math_ragged_status=\plusthree
      \t_math_align_c
        {\hfil
@@ -307,7 +308,7 @@
         \span
         \boundary\c_math_align_r_marker
         \math_alignment_lbox{\aligncontent}%
-        \tabskip\zeropoint}%
+        \tabskip\zeroskip}%
    \orelse\ifnum\c_strc_math_ragged_status=\plusone
      \ifnum\c_strc_math_number_variant=\plusone
        \t_math_align_c
@@ -317,11 +318,11 @@
           \span
           \boundary\c_math_align_r_marker
           \math_alignment_lbox{\aligncontent}%
-          \tabskip\zeropoint}%
+          \tabskip\zeroskip}%
      \else
        \t_math_align_c
          {\hfil
-          \tabskip\zeropoint
+          \tabskip\zeroskip
           \aligntab
           \span
           \boundary\c_math_align_r_marker
@@ -337,11 +338,11 @@
 \hss % for MS to test this
         \boundary\c_math_align_r_marker
         \math_alignment_lbox{\aligncontent}%
-        \tabskip\zeropoint}%
+        \tabskip\zeroskip}%
    \fi
    \math_build_eqalign
    \the\mathdisplayaligntweaks
-   \tabskip\zeropoint}
+   \tabskip\zeroskip}
 
 % \def\math_halign_checked_nop
 %   {\halign
@@ -1727,7 +1728,7 @@
    \global\d_math_matrix_max_left \zeropoint
    \global\d_math_matrix_max_right\zeropoint
   %\tabskip.5\d_math_eqalign_distance
-   \tabskip\zeropoint
+   \tabskip\zeroskip
    \math_matrix_pickup
    \expand\everymathmatrix
    %
@@ -2215,6 +2216,7 @@
    \lineskip\mathstackvgap
    \lineskiplimit\lineskip
    \mathsurround\zeropoint
+   \mathsurroundskip\zeroskip
    \everycr\emptytoks
    \enforced\let\NC\relax
    \enforced\let\MC\relax
@@ -2342,8 +2344,8 @@
 \def\strc_math_flush_wrap_mode
   {\strc_math_setup_align_auto
    \bgroup
-     \leftskip \zeropoint\relax
-     \rightskip\zeropoint\relax
+     \leftskip \zeroskip
+     \rightskip\zeroskip
      \global\c_strc_math_positioning\plustwo
      \dontleavehmode
      \vbox\bgroup
@@ -2402,7 +2404,7 @@
    \else
      % better verbose than compact so some overlap in code here
      \ifcase\c_strc_math_number_variant\or
-       \s_strc_formulas_margin_right\zeropoint
+       \s_strc_formulas_margin_right\zeroskip
      \fi
      \setbox\b_strc_formulas_number\hbox to \displaywidth\bgroup
        \hss
@@ -2438,7 +2440,7 @@
    \else
      % better verbose than compact so some overlap in code here
      \ifcase\c_strc_math_number_variant\or
-       \s_strc_formulas_margin_left\zeropoint
+       \s_strc_formulas_margin_left\zeroskip
      \fi
      \setbox\b_strc_formulas_number\hbox to \displaywidth\bgroup
        \kern\s_strc_formulas_margin_left
@@ -2480,8 +2482,8 @@
 \def\strc_math_flush_text_mode
   {\strc_math_setup_align_auto
    \bgroup
-     \leftskip \zeropoint\relax
-     \rightskip\zeropoint\relax
+     \leftskip \zeroskip
+     \rightskip\zeroskip
      \ifhmode
        % nil the tracing
        \strc_math_flush_h_mode
@@ -2625,7 +2627,7 @@
 \def\strc_math_number_right_overflow_outside
   {\vpack\bgroup
      \strc_math_flush_box_framed_fit_inline
-    %\hskip\zeropoint % nicely breaks the line without introducing funny vertical spacing ... why o why
+    %\hskip\zeroskip % nicely breaks the line without introducing funny vertical spacing ... why o why
      \hpack to \displaywidth\bgroup
        \hss
        \strc_math_flush_number_box
@@ -2638,7 +2640,7 @@
        \strc_math_flush_number_box
        \hss
      \egroup
-     \hskip\zeropoint % nicely breaks the line without introducing funny vertical spacing ... why o why
+     \hskip\zeroskip % nicely breaks the line without introducing funny vertical spacing ... why o why
      \strc_math_flush_box_framed_fit_inline
    \egroup}
 
@@ -2751,7 +2753,7 @@
   {\c_strc_math_number_location\plusone
    \ifzeropt\s_strc_formulas_margin_left
      % this can be a helper as now mixed in math-ali
-     \parinitleftskip\zeropoint
+     \parinitleftskip\zeroskip
    \else
      \c_strc_math_number_variant \plusone
    \fi}
@@ -2760,7 +2762,7 @@
   {\c_strc_math_number_location\plustwo
    \ifzeropt\s_strc_formulas_margin_right
      % this can be a helper as now mixed in math-ali
-     \parfillrightskip\zeropoint
+     \parfillrightskip\zeroskip
    \else
      \c_strc_math_number_variant \plusone
    \fi}
@@ -2922,7 +2924,7 @@
             \ifzeropt\glueshrink\mathsurroundskip
               \mathsurroundmode\plussix
             \else
-              \mathsurroundskip\zeropoint
+              \mathsurroundskip\zeroskip
               \mathsurroundmode\plusfour
             \fi
           \else
@@ -2933,7 +2935,7 @@
         \fi
     \else
       \mathsurroundmode\plusfour
-      \mathsurroundskip\zeropoint
+      \mathsurroundskip\zeroskip
     \fi
 \to \everymathematics
 

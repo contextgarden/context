@@ -211,10 +211,10 @@
   {\dontleavehmode % why this align mess
    \vtop
      {\forgetall
-      \baselineskip\zeropoint
-      \lineskip#1%
+      \baselineskip\zeroskip
+      \lineskip#1\relax
       \everycr\emptytoks
-      \tabskip\zeropoint
+      \tabskip\zeroskip
       \lineskiplimit\zeropoint
       \setbox0\hbox{#4}%
       \halign

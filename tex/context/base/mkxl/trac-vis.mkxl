@@ -213,9 +213,9 @@
 \permanent\protected\def\dontinterfere
   {\reseteverypar
    \parindent\zeropoint
-   \parskip  \zeropoint
-   \leftskip \zeropoint
-   \rightskip\zeropoint
+   \parskip  \zeroskip
+   \leftskip \zeroskip
+   \rightskip\zeroskip
    \relax}
 
 %D We keep these for a while:

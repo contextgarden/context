@@ -18,8 +18,8 @@ return {
             SubscriptShiftDown                = 200, -- 220 in font
             SuperscriptShiftUp                = 400, -- 400 in font
             SubscriptShiftDownWithSuperscript = "1.2*SubscriptShiftDown", -- unclear original value, trial and error
-            PrimeShiftUp                      = "1.1*SuperscriptShiftUp",
-            PrimeShiftUpCramped               = "1.1*SuperscriptShiftUp",
+            PrimeShiftUp                      = "1*SuperscriptShiftUp",
+            PrimeShiftUpCramped               = "1*SuperscriptShiftUp",
             PrimeBaselineDropMax              = "0.5*SuperscriptBaselineDropMax",
         },
         tweaks = {

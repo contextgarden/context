@@ -1457,7 +1457,7 @@
 
 \def\mmlstackedsubscripts#1%
   {\vbox
-     {\baselineskip\zeropoint % hack, taco vragen
+     {\baselineskip\zeroskip
       \halign{\startimath\scriptstyle\hss\alignmark\alignmark\hss\stopimath\cr#1\crcr}}}
 
 % unfinished

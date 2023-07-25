@@ -476,7 +476,10 @@ int tex_normal_error(const char *t, const char *p)
 
 void tex_normal_warning(const char *t, const char *p)
 {
-    if (strcmp(t, "lua") == 0) {
+   if (lmt_engine_state.lua_only) {
+        /*tex Normally ending up here means that we call the wrong error function. */
+        tex_emergency_message(t, p);
+    } else if (strcmp(t, "lua") == 0) {
         int callback_id = lmt_callback_defined(intercept_lua_error_callback);
         int saved_new_line_char = new_line_char_par;
         new_line_char_par = 10;

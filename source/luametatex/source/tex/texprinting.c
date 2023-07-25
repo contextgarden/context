@@ -1293,34 +1293,39 @@ const char *tex_print_format_args(const char *format, va_list args)
                             }
                         case 'P':
                             {
-                                scaled total = va_arg(args, int);
-                                scaled stretch = va_arg(args, int);
-                                scaled filstretch = va_arg(args, int);
-                                scaled fillstretch = va_arg(args, int);
-                                scaled filllstretch = va_arg(args, int);
-                                scaled shrink= va_arg(args, int);
-                                tex_print_dimension(total, pt_unit);
-                                if (stretch) {
-                                    tex_print_str(" plus ");
-                                    tex_print_dimension(stretch, pt_unit);
-                                } else if (filstretch) {
-                                    tex_print_str(" plus ");
-                                    tex_print_dimension(filstretch, no_unit);
-                                    tex_print_str(" fil");
-                                } else if (fillstretch) {
-                                    tex_print_str(" plus ");
-                                    tex_print_dimension(fillstretch, no_unit);
-                                    tex_print_str(" fill");
-                                } else if (filllstretch) {
-                                    tex_print_str(" plus ");
-                                    tex_print_dimension(fillstretch, no_unit);
-                                    tex_print_str(" filll");
-                                }
-                                if (shrink) {
-                                    tex_print_str(" minus ");
-                                    tex_print_dimension(shrink, pt_unit);
-                                }
-                                break;
+                                 scaled total = va_arg(args, int);
+                                 scaled stretch = va_arg(args, int);
+                                 scaled fistretch = va_arg(args, int);
+                                 scaled filstretch = va_arg(args, int);
+                                 scaled fillstretch = va_arg(args, int);
+                                 scaled filllstretch = va_arg(args, int);
+                                 scaled shrink = va_arg(args, int);
+                                 tex_print_dimension(total, pt_unit);
+                                 if (stretch) {
+                                     tex_print_str(" plus ");
+                                     tex_print_dimension(stretch, pt_unit);
+                                 } else if (fistretch) {
+                                     tex_print_str(" plus ");
+                                     tex_print_dimension(fistretch, no_unit);
+                                     tex_print_str(" fi");
+                                 } else if (filstretch) {
+                                     tex_print_str(" plus ");
+                                     tex_print_dimension(filstretch, no_unit);
+                                     tex_print_str(" fil");
+                                 } else if (fillstretch) {
+                                     tex_print_str(" plus ");
+                                     tex_print_dimension(fillstretch, no_unit);
+                                     tex_print_str(" fill");
+                                 } else if (filllstretch) {
+                                     tex_print_str(" plus ");
+                                     tex_print_dimension(fillstretch, no_unit);
+                                     tex_print_str(" filll");
+                                 }
+                                 if (shrink) {
+                                     tex_print_str(" minus ");
+                                     tex_print_dimension(shrink, pt_unit);
+                                 }
+                                 break;
                             }
                         case 'Q':
                             {

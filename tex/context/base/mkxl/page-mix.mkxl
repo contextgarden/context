@@ -583,8 +583,8 @@
    \d_page_mix_leftskip \leftskip
    \d_page_mix_rightskip\rightskip
    % \frozen ?
-   \leftskip \zeropoint
-   \rightskip\zeropoint
+   \leftskip \zeroskip
+   \rightskip\zeroskip
    %
    \ifcstok{\mixedcolumnsparameter\c!notes}\v!yes
      \c_page_mix_process_notes\conditionaltrue
@@ -864,7 +864,8 @@
         %writestatus\m!columns{flush balance}%
         \page_grids_add_to_mix\b_page_mix_collected % no linenumbers here
         \box\b_page_mix_collected
-        \vskip\zeropoint % triggers recalculation of page stuff (weird that this is needed but it *is* needed, see mixed-001.tex)
+        % can't we do this differently now?
+        \vskip\zeroskip % triggers recalculation of page stuff (weird that this is needed but it *is* needed, see mixed-001.tex)
         \par
         \nointerlineskip
         \prevdepth\strutdp

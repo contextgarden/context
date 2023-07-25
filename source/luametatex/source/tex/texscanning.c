@@ -155,61 +155,6 @@ scanner_state_info lmt_scanner_state = {
 
 */
 
-// inline static void tex_aux_downgrade_cur_val(int level, int succeeded, int negative)
-// {
-//     switch (cur_val_level) {
-//         case tok_val_level:
-//         case font_val_level:
-//         case mathspec_val_level:
-//         case fontspec_val_level:
-//             /*tex
-//                 This test pays back as this actually happens, but we also need it for the
-//                 |none_lua_function| handling. We end up here in |ident_val_level| and |tok_val_level|
-//                 and they don't downgrade, nor negate which saves a little testing.
-//             */
-//             break;
-//       case int_val_level:
-//       case attr_val_level:
-//       case dimen_val_level:
-//       case posit_val_level:
-//           while (cur_val_level > level) {
-//               --cur_val_level;
-//           }
-//           if (negative) {
-//               cur_val = -cur_val;
-//           }
-//           break;
-//        default:
-//            /*tex There is no real need for it being a loop, a test would do. */
-//            while (cur_val_level > level) {
-//                /*tex Convert |cur_val| to a lower level. */
-//                switch (cur_val_level) {
-//                    case glue_val_level:
-//                    case mu_val_level :
-//                        cur_val = glue_amount(cur_val);
-//                        break;
-//                 // case mu_val_level :
-//                 //     tex_aux_mu_error(1);
-//                 //     break;
-//                }
-//                --cur_val_level;
-//            }
-//            if (cur_val_level == glue_val_level || cur_val_level == mu_val_level) {
-//                if (succeeded == 1) {
-//                    cur_val = tex_new_glue_spec_node(cur_val);
-//                }
-//                if (negative) {
-//                    glue_amount(cur_val) = -glue_amount(cur_val);
-//                    glue_stretch(cur_val) = -glue_stretch(cur_val);
-//                    glue_shrink(cur_val) = -glue_shrink(cur_val);
-//                }
-//            } else if (negative) {
-//                cur_val = -cur_val;
-//            }
-//            break;
-//     }
-// }
-
 inline static void tex_aux_downgrade_cur_val(int level, int succeeded, int negative)
 {
     switch (cur_val_level) {
@@ -265,21 +210,13 @@ inline static void tex_aux_downgrade_cur_val(int level, int succeeded, int negat
             break;
         case glue_val_level:
         case mu_val_level:            
-            /*tex There is no real need for it being a loop, a test would do. */
-            while (cur_val_level > level) {
-                /*tex Convert |cur_val| to a lower level. */
-                switch (cur_val_level) {
-                    case glue_val_level:
-                    case mu_val_level :
-                        cur_val = glue_amount(cur_val);
-                        break;
-                 // case mu_val_level :
-                 //     tex_aux_mu_error(1);
-                 //     break;
-                }
-                --cur_val_level;
-            }
-            if (cur_val_level == glue_val_level || cur_val_level == mu_val_level) {
+            if (level == posit_val_level) { 
+                cur_val_level = level;
+                cur_val = tex_dimension_to_posit(negative ? - glue_amount(cur_val) : glue_amount(cur_val)).v;
+            } else if (cur_val_level > level) { 
+                cur_val_level = level;
+                cur_val = negative ? - glue_amount(cur_val) : glue_amount(cur_val);
+            } else {
                 if (succeeded == 1) {
                     cur_val = tex_new_glue_spec_node(cur_val);
                 }
@@ -288,8 +225,6 @@ inline static void tex_aux_downgrade_cur_val(int level, int succeeded, int negat
                     glue_stretch(cur_val) = -glue_stretch(cur_val);
                     glue_shrink(cur_val) = -glue_shrink(cur_val);
                 }
-            } else if (negative) {
-                cur_val = -cur_val;
             }
             break;
         case tok_val_level:
@@ -1104,6 +1039,10 @@ static void tex_aux_set_cur_val_by_page_property_cmd(int chr)
             break;
         case page_stretch_code:                        
             cur_val = page_state_okay ? 0 : lmt_page_builder_state.stretch;
+            cur_val_level = dimen_val_level;
+            break;
+        case page_fistretch_code:                    
+            cur_val = page_state_okay ? 0 : lmt_page_builder_state.fistretch;
             cur_val_level = dimen_val_level;
             break;
         case page_filstretch_code:                    
@@ -2321,6 +2260,100 @@ halfword tex_scan_int(int optional_equal, int *radix)
     return cur_val;
 }
 
+void tex_scan_int_validate(void)
+{
+    while (1) {
+        tex_get_x_token();
+        if (cur_cmd == spacer_cmd || cur_tok == minus_token) {
+            continue;
+        } else if (cur_tok != plus_token) {
+            break;
+        }
+    };
+    if (cur_tok == alpha_token) {
+        long long result = 0;
+        tex_get_token();
+        if (cur_tok < cs_token_flag) {
+            result = cur_chr;
+            /* Really when validating? */
+            if (cur_cmd == right_brace_cmd) {
+               ++lmt_input_state.align_state;
+            } else if (cur_cmd == left_brace_cmd || cur_cmd == relax_cmd) {
+               --lmt_input_state.align_state;
+            }
+        } else {
+            strnumber txt = cs_text(cur_tok - cs_token_flag);
+            if (tex_single_letter(txt)) {
+                result = aux_str2uni(str_string(txt));
+            } else if (tex_is_active_cs(txt)) {
+                result = active_cs_value(txt);
+            } else {
+                result = max_character_code + 1;
+            }
+        }
+        if (result > max_character_code) {
+            if (lmt_error_state.intercept) {
+                lmt_error_state.last_intercept = 1;
+                tex_back_input(cur_tok);
+            } else {
+                tex_aux_improper_constant_error();
+            }
+        } else {
+            tex_get_x_token();
+            if (cur_cmd != spacer_cmd) {
+                tex_back_input(cur_tok);
+            }
+        }
+    } else if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
+        tex_aux_scan_something_internal(cur_cmd, cur_chr, int_val_level, 0, 0);
+        if (cur_val_level != int_val_level) {
+            tex_aux_scan_int_no_number();
+        }
+    } else if (cur_cmd == math_style_cmd) {
+        tex_aux_scan_math_style_number(cur_chr);
+    } else if (cur_cmd == hyphenation_cmd) {
+        if (! tex_aux_scan_hyph_data_number(cur_chr, &cur_chr)) {
+            tex_aux_scan_int_no_number();
+        }
+    } else {
+        int vacuous = 1;
+        switch (cur_tok) {
+            case octal_token:
+                while (1) {
+                    tex_get_x_token();
+                    if (! (cur_tok >= zero_token && cur_tok <= seven_token)) {
+                        goto DONE;
+                    }
+                    vacuous = 0;
+                }
+            case hex_token:
+                while (1) {
+                    tex_get_x_token();
+                    if (! ((cur_tok >= zero_token && cur_tok <= nine_token) ||
+                            (cur_tok >= A_token_l  && cur_tok <= F_token_l ) || 
+                            (cur_tok >= A_token_o  && cur_tok <= F_token_o ) )) {
+                        goto DONE;
+                    }
+                    vacuous = 0;
+                }
+            default:
+                while (1) {
+                    if (! (cur_tok >= zero_token && cur_tok <= nine_token)) {
+                        goto DONE;
+                    }
+                    vacuous = 0;
+                    tex_get_x_token();
+                }
+        }
+      DONE:
+        if (vacuous) {
+            tex_aux_scan_int_no_number();
+        } else {
+            tex_push_back(cur_tok, cur_cmd, cur_chr);
+        }
+    }
+}
+
 int tex_scan_cardinal(int optional_equal, unsigned *value, int dontbark)
 {
     long long result = 0;
@@ -2807,6 +2840,8 @@ halfword tex_scan_dimen(int mu, int inf, int shortcut, int optional_equal, halfw
                 }
             }
         }
+    } else { 
+        /* only when we scan for a glue (filler) component */
     }
     if (cur_val < 0) {
         negative = ! negative;
@@ -2817,66 +2852,72 @@ halfword tex_scan_dimen(int mu, int inf, int shortcut, int optional_equal, halfw
         Actually we have cur_tok but it's already pushed back and we also need to skip spaces so
         let's not overdo this.
     */
-    switch (tex_aux_scan_unit(&num, &denom, &v, &cur_order)) {
-        case no_unit_scanned:
-            /* error */
-            if (lmt_error_state.intercept) {
-                lmt_error_state.last_intercept = 1;
-            } else {
-                tex_aux_scan_dimen_unknown_unit_error();
-            }
-            goto ATTACH_FRACTION;
-        case normal_unit_scanned:
-            /* cm mm pt bp dd cc in dk */
-            if (mu) {
-                tex_aux_scan_dimen_unknown_unit_error();
-            } else if (num) {
-                int remainder = 0;
-                cur_val = tex_xn_over_d_r(cur_val, num, denom, &remainder);
-                fraction = (num * fraction + 0200000 * remainder) / denom;
-                cur_val += fraction / 0200000;
-                fraction = fraction % 0200000;
-            }
-            goto ATTACH_FRACTION;
-        case scaled_point_scanned:
-            /* sp */
-            if (mu) {
-                tex_aux_scan_dimen_unknown_unit_error();
-            }
-            goto DONE;
-        case relative_unit_scanned:
-            /* ex em px */
-            if (mu) {
-                tex_aux_scan_dimen_unknown_unit_error();
-            }
-            cur_val = tex_nx_plus_y(save_cur_val, v, tex_xn_over_d(v, fraction, 0200000));
-            goto DONE;
-        case math_unit_scanned:
-            /* mu (slightly different but an error anyway */
-            if (! mu) {
-                tex_aux_scan_dimen_mu_error();
-            }
-            goto ATTACH_FRACTION;
-        case flexible_unit_scanned:
-            /* fi fil fill filll */
-            if (mu) {
-                tex_aux_scan_dimen_unknown_unit_error();
-            } else if (! inf) {
-                tex_aux_scan_dimen_fi_error();
-            }
-            goto ATTACH_FRACTION;
-        case quantitity_unit_scanned:
-            /* internal quantity */
-            cur_val = tex_aux_scan_something_internal(cur_cmd, cur_chr, mu ? mu_val_level : dimen_val_level, 0, 0); /* adapts cur_val_level */
-            if (mu) {
-                cur_val = tex_aux_coerced_glue(cur_val, cur_val_level);
-                if (cur_val_level != mu_val_level) {
-                    tex_aux_mu_error(3);
+    if (! lmt_error_state.last_intercept) {
+        switch (tex_aux_scan_unit(&num, &denom, &v, &cur_order)) {
+            case no_unit_scanned:
+                /* error */
+                if (lmt_error_state.intercept) {
+                    lmt_error_state.last_intercept = 1;
+                } else {
+                    tex_aux_scan_dimen_unknown_unit_error();
                 }
-            }
-            v = cur_val;
-            cur_val = tex_nx_plus_y(save_cur_val, v, tex_xn_over_d(v, fraction, 0200000));
-            goto ATTACH_SIGN;
+                goto ATTACH_FRACTION;
+            case normal_unit_scanned:
+                /* cm mm pt bp dd cc in dk */
+                if (mu) {
+                    tex_aux_scan_dimen_unknown_unit_error();
+                } else if (num) {
+                    int remainder = 0;
+                    cur_val = tex_xn_over_d_r(cur_val, num, denom, &remainder);
+                    fraction = (num * fraction + 0200000 * remainder) / denom;
+                    cur_val += fraction / 0200000;
+                    fraction = fraction % 0200000;
+                }
+                goto ATTACH_FRACTION;
+            case scaled_point_scanned:
+                /* sp */
+                if (mu) {
+                    tex_aux_scan_dimen_unknown_unit_error();
+                }
+                goto DONE;
+            case relative_unit_scanned:
+                /* ex em px */
+                if (mu) {
+                    tex_aux_scan_dimen_unknown_unit_error();
+                }
+                cur_val = tex_nx_plus_y(save_cur_val, v, tex_xn_over_d(v, fraction, 0200000));
+                goto DONE;
+            case math_unit_scanned:
+                /* mu (slightly different but an error anyway */
+                if (! mu) {
+                    tex_aux_scan_dimen_mu_error();
+                }
+                goto ATTACH_FRACTION;
+            case flexible_unit_scanned:
+                /* fi fil fill filll */
+                if (mu) {
+                    tex_aux_scan_dimen_unknown_unit_error();
+                } else if (! inf) {
+                    if (! order && lmt_error_state.intercept) {
+                        lmt_error_state.last_intercept = 1;
+                    } else {
+                        tex_aux_scan_dimen_fi_error();
+                    }
+                }
+                goto ATTACH_FRACTION;
+            case quantitity_unit_scanned:
+                /* internal quantity */
+                cur_val = tex_aux_scan_something_internal(cur_cmd, cur_chr, mu ? mu_val_level : dimen_val_level, 0, 0); /* adapts cur_val_level */
+                if (mu) {
+                    cur_val = tex_aux_coerced_glue(cur_val, cur_val_level);
+                    if (cur_val_level != mu_val_level) {
+                        tex_aux_mu_error(3);
+                    }
+                }
+                v = cur_val;
+                cur_val = tex_nx_plus_y(save_cur_val, v, tex_xn_over_d(v, fraction, 0200000));
+                goto ATTACH_SIGN;
+        }
     }
   ATTACH_FRACTION:
     if (cur_val >= 040000) { // 0x4000
@@ -2904,6 +2945,69 @@ halfword tex_scan_dimen(int mu, int inf, int shortcut, int optional_equal, halfw
         *order = cur_order;
     }
     return cur_val;
+}
+
+
+void tex_scan_dimen_validate(void)
+{
+    lmt_scanner_state.arithmic_error = 0;
+    while (1) {
+        tex_get_x_token();
+        if (cur_cmd == spacer_cmd || cur_tok == minus_token) {
+            continue;
+        } else if (cur_tok != plus_token) {
+            break;
+        }
+    }
+    if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
+        tex_aux_scan_something_internal(cur_cmd, cur_chr, dimen_val_level, 0, 0);
+        if (cur_val_level == dimen_val_level || cur_val_level == posit_val_level) {
+            return;
+        }
+    } else {
+        int has_fraction = tex_token_is_seperator(cur_tok);
+        if (! has_fraction) {
+            int cur_radix;
+            tex_back_input(cur_tok);
+            tex_scan_int(0, &cur_radix);
+            if (cur_radix == 10 && tex_token_is_seperator(cur_tok)) {
+                has_fraction = 1;
+                tex_get_token();
+            }
+        }
+        if (has_fraction) {
+            while (1) {
+                tex_get_x_token();
+                if (cur_tok > nine_token || cur_tok < zero_token) {
+                    break;
+                }
+            }
+            if (cur_cmd != spacer_cmd) {
+                tex_back_input(cur_tok);
+            }
+        }
+    }
+    {
+        int num = 0;
+        int denom = 0;
+        scaled value;
+        switch (tex_aux_scan_unit(&num, &denom, &value, NULL)) {
+            case no_unit_scanned:
+            case flexible_unit_scanned:
+                lmt_error_state.last_intercept = 1;
+                break;
+            case normal_unit_scanned:
+            case scaled_point_scanned:
+            case relative_unit_scanned:
+            case math_unit_scanned:
+                break;
+            case quantitity_unit_scanned:
+                tex_aux_scan_something_internal(cur_cmd, cur_chr, dimen_val_level, 0, 0); 
+                return;
+        }
+    }
+    tex_get_x_token();
+    tex_push_back(cur_tok, cur_cmd, cur_chr);
 }
 
 /*tex
