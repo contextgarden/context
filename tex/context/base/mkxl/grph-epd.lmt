@@ -30,8 +30,8 @@ local function mergegoodies(optionlist)
     if all or yes or options[variables.bookmark] then
         codeinjections.mergebookmarks()
     end
-    if all or options[variables.field] then
-        codeinjections.mergefields()
+    if all or options[variables.field] or options[variables.data] then
+        codeinjections.mergefields(nil,options[variables.data])
     end
     if all or options[variables.layer] then
         codeinjections.mergeviewerlayers()

@@ -176,6 +176,12 @@ extern int  luaopen_potrace     (lua_State *L);
     lua_pushinteger(L, (x)); \
     lua_rawseti(L, -2, i);
 
+# define lua_push_string_at_index(L,i,s) \
+    lua_pushstring(L, s); \
+    lua_rawseti(L, -2, i);
+
+/* why not lua_push_key(k); lua_rawseti(L, -2, i); */
+
 # define lua_push_key_at_index(L,k,i) \
     lua_pushinteger(L, i); \
     lua_push_key(k); \

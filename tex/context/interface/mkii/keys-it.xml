@@ -629,6 +629,7 @@
 		<cd:variable name='vertical' value='verticale'/>
 		<cd:variable name='very' value='molto'/>
 		<cd:variable name='verystrict' value='moltorigido'/>
+		<cd:variable name='verytight' value='verytight'/>
 		<cd:variable name='verytolerant' value='moltotollerante'/>
 		<cd:variable name='vfenced' value='vfenced'/>
 		<cd:variable name='vulgarfraction' value='vulgarfraction'/>

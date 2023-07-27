@@ -2737,32 +2737,67 @@ numeric last_potraced_height ;
 path    last_potraced_bounds ; last_potraced_bounds := origin -- cycle ;
 
 presetparameters "potraced" [
-    bytes      = "",
-    width      = 0,
-    height     = 0,
-    nx         = 1,
-    ny         = 1,
-    explode    = false,
-    value      = "1",
-    optimize   = false,      % opticurve
-    threshold  = 1,          % alphamax
-    policy     = "minority", % turnpolicy
-    tolerance  = 0.2,        % opttolerance
-    size       = 2,          % turdsize
-  % stringname = "",
-  % filename   = "",
-    criterium  = 127,
+    bytes       = "",
+    width       = 0,
+    height      = 0,
+    nx          = 1,
+    ny          = 1,
+    explode     = false,
+    swap        = false,
+    value       = "1",
+    optimize    = false,      % opticurve
+    threshold   = 1,          % alphamax
+    policy      = "minority", % turnpolicy
+    tolerance   = 0.2,        % opttolerance
+    size        = 2,          % turdsize
+  % stringname  = "",
+  % filename    = "",
+    criterium   = 127,
+    alternative = "path", % draw fill -> picture
+    polygon     = false,
 ] ;
+
+numeric n_lmt_potraced ; n_lmt_potraced := 0 ;
 
 def lmt_potraced = applyparameters "potraced" "lmt_do_potraced" enddef ;
 
 vardef lmt_do_potraced =
-    pushparameters "potraced" ;
-    lua.mp.lmt_potrace()
-    hide (
-        last_potraced_width  := getparameter("width") ;
-        last_potraced_height := getparameter("height") ;
-        last_potraced_bounds := unitsquare xscaled last_potraced_width yscaled last_potraced_height ;
+    if n_lmt_potraced = 0 :
+        lmt_do_startpotraced ;
+        lua.mp.lmt_step_potrace()
+        hide (
+            lmt_do_steppotraced ;
+            lmt_do_stoppotraced ;
+        )
+    else :
+        lua.mp.lmt_step_potrace()
+        hide (
+            lmt_do_steppotraced ;
+        )
+    fi
+enddef ;
+
+def lmt_startpotraced = applyparameters "potraced" "lmt_do_startpotraced" enddef ;
+def lmt_stoppotraced  =                             lmt_do_stoppotraced   enddef ;
+
+def lmt_do_startpotraced =
+    if n_lmt_potraced = 0 :
+        n_lmt_potraced := n_lmt_potraced + 1 ;
+        pushparameters "potraced" ;
+        lua.mp.lmt_start_potrace() ;
+    fi
+enddef ;
+
+def lmt_do_stoppotraced =
+    if n_lmt_potraced = 1 :
+        n_lmt_potraced := n_lmt_potraced - 1 ;
+        lua.mp.lmt_stop_potrace() ;
         popparameters ;
-    )
+    fi
+enddef ;
+
+vardef lmt_do_steppotraced =
+    last_potraced_width  := getparameter("width") ;
+    last_potraced_height := getparameter("height") ;
+    last_potraced_bounds := unitsquare xscaled last_potraced_width yscaled last_potraced_height ;
 enddef ;

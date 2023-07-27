@@ -10,6 +10,7 @@
    <subcategory>
     <flag name="info"><short>show some info about the given file</short></flag>
     <flag name="metadata"><short>show metadata xml blob</short></flag>
+    <flag name="formdata"><short>show formdata</short></flag>
     <flag name="pretty"><short>replace newlines in metadata</short></flag>
     <flag name="fonts"><short>show used fonts (<ref name="detail)"/></short></flag>
     <flag name="object"><short>show object"/></short></flag>

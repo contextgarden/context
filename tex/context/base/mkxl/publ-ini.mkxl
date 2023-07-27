@@ -425,6 +425,8 @@
 \permanent\protected\def\btxnbsp                  {\removeunwantedspaces\nbsp}         % the same anyway
 \permanent\protected\def\btxperiod                {\removeunwantedspaces.\space}
 \permanent\protected\def\btxcomma                 {\removeunwantedspaces,\space}
+\permanent\protected\def\btxserialcomma           {\removeunwantedspaces,\space} % (aka Oxford comma) redefine to disable
+\permanent\protected\def\btxellipsis              {\removeunwantedspaces\nobreakspace\textellipsis\space}
 \permanent\protected\def\btxcommabreak            {\removeunwantedspaces,\hskip\zeropoint plus .5\emwidth\relax}
 \permanent\protected\def\btxcolon                 {\removeunwantedspaces:\space}
 \permanent\protected\def\btxsemicolon             {\removeunwantedspaces;\space}

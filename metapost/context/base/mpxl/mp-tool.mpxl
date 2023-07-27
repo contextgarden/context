@@ -676,8 +676,8 @@ vardef mfun_tool_striped_angle(expr option, p, asked_angle, asked_gap) text extr
         maximum := max (xpart llcorner mask, xpart urcorner mask, ypart llcorner mask, ypart urcorner mask) ;
         minimum := min (xpart llcorner mask, xpart urcorner mask, ypart llcorner mask, ypart urcorner mask) ;
         % a hack:
-maximum := maximum + max(xpart urcorner shape, ypart urcorner shape);
-minimum := minimum - max(xpart urcorner shape, ypart urcorner shape);
+        maximum := maximum + max(xpart urcorner shape, ypart urcorner shape);
+        minimum := minimum - max(xpart urcorner shape, ypart urcorner shape);
         %
         pattern := image (
             if isinner :
@@ -1812,33 +1812,44 @@ def drawcontrollines  expr c = path temp_c ; temp_c := c ; mfun_draw_controlline
 def drawpointlabels   expr c = path temp_c ; temp_c := c ; mfun_draw_pointlabels   enddef ;
 
 def mfun_draw_points text t =
-%     for i=0 upto length(temp_c) if cycle temp_c : -1 fi :
-%         normaldraw point i of temp_c mfun_opt_pnt t ;
-%     endfor ;
     for i within temp_c :
         normaldraw pathpoint mfun_opt_pnt t ;
     endfor ;
 enddef;
 
-def mfun_draw_controlpoints text t =
-%     for i=0 upto length(temp_c) :
-%         normaldraw precontrol  i of temp_c mfun_opt_ctr t ;
-%         normaldraw postcontrol i of temp_c mfun_opt_ctr t ;
+% def mfun_draw_controlpoints text t =
+%     for i within temp_c :
+%         normaldraw pathprecontrol  t mfun_opt_ctr t ;
+%         normaldraw pathpostcontrol t mfun_opt_ctr t ;
 %     endfor ;
+% enddef;
+
+% def mfun_draw_controllines text t =
+%     for i within temp_c :
+%         normaldraw pathpoint -- pathprecontrol  t mfun_opt_lin t ;
+%         normaldraw pathpoint -- pathpostcontrol t mfun_opt_lin t ;
+%     endfor ;
+% enddef;
+
+def mfun_draw_controlpoints text t =
     for i within temp_c :
-        normaldraw pathprecontrol  t mfun_opt_ctr t ;
-        normaldraw pathpostcontrol t mfun_opt_ctr t ;
+        if (pathstate == 0) or (pathstate == 2) :
+            normaldraw pathprecontrol  t mfun_opt_ctr t ;
+        fi ;
+        if (pathstate == 0) or (pathstate == 1) :
+            normaldraw pathpostcontrol t mfun_opt_ctr t ;
+        fi ;
     endfor ;
 enddef;
 
 def mfun_draw_controllines text t =
-%     for i=0 upto length(temp_c) :
-%         normaldraw point i of temp_c -- precontrol  i of temp_c mfun_opt_lin t ;
-%         normaldraw point i of temp_c -- postcontrol i of temp_c mfun_opt_lin t ;
-%     endfor ;
     for i within temp_c :
-        normaldraw pathpoint -- pathprecontrol  t mfun_opt_lin t ;
-        normaldraw pathpoint -- pathpostcontrol t mfun_opt_lin t ;
+        if (pathstate == 0) or (pathstate == 2) :
+            normaldraw pathpoint -- pathprecontrol  t mfun_opt_lin t ;
+        fi ;
+        if (pathstate == 0) or (pathstate == 1) :
+            normaldraw pathpoint -- pathpostcontrol t mfun_opt_lin t ;
+        fi ;
     endfor ;
 enddef;
 

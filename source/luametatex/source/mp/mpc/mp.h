@@ -647,6 +647,7 @@ typedef enum mp_name_type_type {
     mp_path_precontrol_operation,
     mp_path_postcontrol_operation,
     mp_path_direction_operation,
+    mp_path_state_operation,
     mp_pen_offset_operation,
     mp_arc_time_operation,
     mp_arc_point_operation,

@@ -25,6 +25,7 @@ local helpinfo = [[
    <subcategory>
     <flag name="info"><short>show some info about the given file</short></flag>
     <flag name="metadata"><short>show metadata xml blob</short></flag>
+    <flag name="formdata"><short>show formdata</short></flag>
     <flag name="pretty"><short>replace newlines in metadata</short></flag>
     <flag name="fonts"><short>show used fonts (<ref name="detail)"/></short></flag>
     <flag name="object"><short>show object"/></short></flag>
@@ -58,6 +59,7 @@ elseif CONTEXTLMTXMODE then
 else
     dofile(resolvers.findfile("lpdf-pde.lua","tex"))
 end
+dofile(resolvers.findfile("util-jsn.lua","tex"))
 
 scripts     = scripts     or { }
 scripts.pdf = scripts.pdf or { }
@@ -82,10 +84,10 @@ end
 function scripts.pdf.info(filename)
     local pdffile = loadpdffile(filename)
     if pdffile then
-        local catalog      = pdffile.Catalog
-        local info         = pdffile.Info
-        local pages        = pdffile.pages
-        local nofpages     = pdffile.nofpages
+        local catalog  = pdffile.Catalog
+        local info     = pdffile.Info
+        local pages    = pdffile.pages
+        local nofpages = pdffile.nofpages
 
         local unset    = "<unset>"
 
@@ -164,6 +166,107 @@ function scripts.pdf.info(filename)
             end
     --  end
 
+    end
+end
+
+local function flagstoset(flag,flags)
+    local t = { }
+    if flags then
+        for k, v in next, flags do
+            if (flag & v) ~= 0 then
+                t[k] = true
+            end
+        end
+    end
+    return t
+end
+
+function scripts.pdf.formdata(filename,save)
+    local pdffile = loadpdffile(filename)
+    if pdffile then
+        local widgets = pdffile.widgets
+        local results = { { "type", "name", "value" } }
+        for i=1,#widgets do
+            local annotation = widgets[i]
+            local parent = annotation.Parent or { }
+            local name   = annotation.T or parent.T
+            local what   = annotation.FT or parent.FT
+            if name and what then
+                local value = annotation.V and tostring(annotation.V) or ""
+                if value and value ~= "" then
+                    local wflags = flagstoset(annotation.Ff or parent.Ff, widgetflags)
+                    if what == "Tx" then
+                        if wflags.MultiLine then
+                            wflags.MultiLine = nil
+                            what = "text"
+                        else
+                            what = "line"
+                        end
+                        local default = annotation.V or ""
+                    elseif what == "Btn" then
+                        if wflags.Radio or wflags.RadiosInUnison then
+                            what = "radio"
+                        elseif wflags.PushButton then
+                            what = "push"
+                        else
+                            what = "check"
+                        end
+                    elseif what == "Ch" then
+                        -- F Ff FT Opt T | AA OC (rest follows)
+                        if wflags.PopUp then
+                            wflags.PopUp = nil
+                            if wflags.Edit then
+                                what = "combo"
+                            else
+                                what = "popup"
+                            end
+                        else
+                            what = "choice"
+                        end
+                    elseif what == "Sig" then
+                        what = "signature"
+                    else
+                        what = nil
+                    end
+                    if what then
+                        results[#results+1] = { what, name, value }
+                    end
+                end
+            end
+        end
+        if save then
+            local values = { }
+            for i=2,#results do
+                local result= results[i]
+                values[#values+1] = {
+                    type  = result[1],
+                    name  = result[2],
+                    value = result[3],
+                }
+            end
+            local data = {
+                filename = filename,
+                values   = values,
+            }
+            local name = file.nameonly(filename) .. "-formdata"
+            if save == "json" then
+                name = file.addsuffix(name,"json")
+                io.savedata(name,utilities.json.tojson(data))
+            elseif save then
+                name = file.addsuffix(name,"lua")
+                table.save(name,data)
+            end
+            report("")
+            report("%i widgets found, %i values saved in %a",#widgets,#results-1,name)
+            report("")
+        end
+        utilities.formatters.formatcolumns(results)
+        report(results[1])
+        report("")
+        for i=2,#results do
+            report(results[i])
+        end
+        report("")
     end
 end
 
@@ -507,6 +610,8 @@ elseif environment.argument("info") then
     scripts.pdf.info(filename)
 elseif environment.argument("metadata") then
     scripts.pdf.metadata(filename,environment.argument("pretty"))
+elseif environment.argument("formdata") then
+    scripts.pdf.formdata(filename,environment.argument("save"))
 elseif environment.argument("fonts") then
     scripts.pdf.fonts(filename)
 elseif environment.argument("object") then

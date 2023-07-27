@@ -76,6 +76,26 @@
 \definesymbol[Draft]               [\epdfstampsymbol{Draft}]
 \definesymbol[ForPublicRelease]    [\epdfstampsymbol{ForPublicRelease}]
 
+%D For team Ramkumar:
+
+\defineframed
+  [epdftextfield]
+  [\c!frame=\v!off,
+   \c!offset=\v!overlay,
+   \c!foregroundstyle=\epdffieldfont,
+   \c!align={\v!middle,\v!lohi}]
+
+\defineframed
+  [epdflinefield]
+  [\c!frame=\v!off,
+   \c!offset=\v!overlay,
+   \c!foregroundstyle=\epdffieldfont,
+   \c!align={\v!middle,\v!lohi}]
+
+\definefont
+  [epdffieldfont]
+  [\directframedparameter{epdf:font}*\s!default\space @ \directframedparameter{epdf:size}]
+
 \protect \endinput
 
 % /Properties << /xxxx 22 0 R >>

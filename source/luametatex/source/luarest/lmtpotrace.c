@@ -23,6 +23,7 @@
 
 # include <luametatex.h>
 # include <potracelib.h>
+# include <curve.h> 
 
 # define POTRACE_METATABLE "potracer"
  
@@ -78,10 +79,11 @@ typedef struct potracer {
     int               width;
     int               height;
     int               mode;
+    int               swap;
     int               nx;
     int               ny;
     unsigned char     value;
-    /* 7 bytes padding */
+    /* 3 bytes padding */
 } potracer;
 
 static potracer *potracelib_aux_maybe_ispotracer(lua_State *L)
@@ -118,29 +120,59 @@ static void potracelib_get_bitmap(potracer *p, const char *bytes)
 
     if (bytes) { 
         unsigned char c = p->value;
-        if (p->nx != 1 || p->ny != 1) { 
-            /* maybe a 3x3 fast one */
-            for (int y = 0; y < p->height; y += p->ny) {
-                int bp = (p->width/p->ny) * (y/p->ny);
+        if (p->swap) { 
+            if (p->nx != 1 || p->ny != 1) { 
+                /* maybe a 3x3 fast one */
                 for (int x = 0; x < p->width; x += p->nx) {
-                    unsigned char b = (unsigned char) bytes[bp++] == c ? 1 : 0;
-                    if (b) { 
-                        int dy = p->height - y - 1;
-                        for (int xn = 0; xn < p->nx; xn++) {
-                            for (int yn = 0; yn < p->ny; yn++) {
-                                BM_PUT(p->bitmap, x + xn, dy - yn, b);
+                    int bp = (p->height/p->nx) * (x/p->nx);
+                    for (int y = 0; y < p->height; y += p->ny) {
+                        unsigned char b = (unsigned char) bytes[bp++] == c ? 1 : 0;
+                        if (b) { 
+                            int dy = p->height - y - 1;
+                            for (int xn = 0; xn < p->nx; xn++) {
+                                for (int yn = 0; yn < p->ny; yn++) {
+                                    BM_PUT(p->bitmap, x + xn, dy - yn, b);
+                                }
                             }
                         }
                     }
                 }
-            }
-        } else { /* fast one */
-            for (int y = 0; y < p->height; y++) {
-                int bp = p->width * y;
+            } else { /* fast one */
                 for (int x = 0; x < p->width; x++) {
-                    unsigned char b = (unsigned char) bytes[bp++] == c ? 1 : 0;
-                    if (b) { 
-                        BM_PUT(p->bitmap, x, p->height - y - 1, b);
+                    int bp = p->height * x;
+                    for (int y = 0; y < p->height; y++) {
+                        unsigned char b = (unsigned char) bytes[bp++] == c ? 1 : 0;
+                        if (b) { 
+                            BM_PUT(p->bitmap, x, p->height - y - 1, b);
+                        }
+                    }
+                }
+            }
+        } else {
+            if (p->nx != 1 || p->ny != 1) { 
+                /* maybe a 3x3 fast one */
+                for (int y = 0; y < p->height; y += p->ny) {
+                    int bp = (p->width/p->ny) * (y/p->ny);
+                    for (int x = 0; x < p->width; x += p->nx) {
+                        unsigned char b = (unsigned char) bytes[bp++] == c ? 1 : 0;
+                        if (b) { 
+                            int dy = p->height - y - 1;
+                            for (int xn = 0; xn < p->nx; xn++) {
+                                for (int yn = 0; yn < p->ny; yn++) {
+                                    BM_PUT(p->bitmap, x + xn, dy - yn, b);
+                                }
+                            }
+                        }
+                    }
+                }
+            } else { /* fast one */
+                for (int y = 0; y < p->height; y++) {
+                    int bp = p->width * y;
+                    for (int x = 0; x < p->width; x++) {
+                        unsigned char b = (unsigned char) bytes[bp++] == c ? 1 : 0;
+                        if (b) { 
+                            BM_PUT(p->bitmap, x, p->height - y - 1, b);
+                        }
                     }
                 }
             }
@@ -167,6 +199,7 @@ static int potracelib_new(lua_State *L)
             .height     = 0,
             .width      = 0,
             .mode       = 0,
+            .swap       = 0, 
             .nx         = 1,
             .ny         = 1,
             .value      = '1',
@@ -175,14 +208,18 @@ static int potracelib_new(lua_State *L)
         size_t length = 0;
         const char *bytes = NULL;
 
-        if (lua_getfield(L, 1, "bytes")   == LUA_TSTRING) { bytes     = lua_tolstring(L, -1, &length); } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "width")   == LUA_TNUMBER) { p.width   = lua_tointeger(L, -1);          } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "height")  == LUA_TNUMBER) { p.height  = lua_tointeger(L, -1);          } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "nx")      == LUA_TNUMBER) { p.nx      = lua_tointeger(L, -1);          } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "ny")      == LUA_TNUMBER) { p.ny      = lua_tointeger(L, -1);          } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "value")   == LUA_TSTRING) { p.value   = lmt_tochar   (L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "bytes")   == LUA_TSTRING)  { bytes     = lua_tolstring(L, -1, &length); } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "width")   == LUA_TNUMBER)  { p.width   = lua_tointeger(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "height")  == LUA_TNUMBER)  { p.height  = lua_tointeger(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "nx")      == LUA_TNUMBER)  { p.nx      = lua_tointeger(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "ny")      == LUA_TNUMBER)  { p.ny      = lua_tointeger(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "swap")    == LUA_TBOOLEAN) { p.swap    = lua_toboolean(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "value")   == LUA_TSTRING)  { p.value   = lmt_tochar   (L, -1);          } lua_pop(L, 1);
                                           
-        if (lua_getfield(L, 1, "mode")    == LUA_TSTRING) { p.mode    = luaL_checkoption(L, -1, "potrace", modes); } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "mode") == LUA_TSTRING) { 
+            p.mode    = luaL_checkoption(L, -1, "potrace", modes); 
+        } 
+        lua_pop(L, 1);
 
         if (! bytes) {
             return 0;
@@ -197,6 +234,15 @@ static int potracelib_new(lua_State *L)
 
         p.width *= p.nx;
         p.height *= p.ny;
+
+        if (p.swap) { 
+            int tmp = p.width; 
+            p.width = p.height;
+            p.height = tmp;
+            tmp = p.nx; 
+            p.nx = p.ny;
+            p.ny = tmp;
+        }
 
         p.bitmap = new_bitmap(p.width, p.height);
         if (! p.bitmap) {
@@ -252,115 +298,177 @@ static int potracelib_free(lua_State *L)
     potracelib_aux_free(potracelib_aux_maybe_ispotracer(L));
     return 0;
 }
-        
+
+static int potracelib_totable_normal(lua_State *L, potracer *p)
+{
+    int entries = 0;
+    int metapost = p->mode == 1;
+    potrace_path_t *entry = p->state->plist;
+    while (entry) {
+        entries++;
+        entry = entry->next;
+    }
+    lua_createtable(L, entries, 0);
+    entry = p->state->plist;
+    entries = 0;
+    while (entry) {
+        int segments = 0;
+        int n = entry->curve.n;
+        int m = n + 1;
+        int *tag = entry->curve.tag;
+        int sign = (entry->next == NULL || entry->next->sign == '+') ? 1 : 0;
+        int area = entry->area ? 1 : 0; 
+        potrace_dpoint_t (*c)[3] =entry->curve.c;
+        if (metapost) { 
+            for (int i = 0; i < n; i++) {
+                if (tag[i] == POTRACE_CORNER) {
+                    m++;
+                }
+            }
+        }
+        lua_createtable(L, m, (sign ? 1 : 0) + (area ? 1 : 0));
+        if (area) {
+            lua_push_integer_at_key(L, size, area);
+        }
+        if (sign) {
+            lua_push_boolean_at_key(L, sign, 1);
+        }
+        /* n == 2 : move */
+        lua_createtable(L, 2, 0);
+        lua_push_number_at_index(L, 1, c[n-1][2].x);
+        lua_push_number_at_index(L, 2, c[n-1][2].y);
+        lua_rawseti(L, -2, ++segments);
+        for (int i = 0; i < n; i++) {
+            switch (tag[i]) {
+                case POTRACE_CORNER:
+                    /* n == 4 : line(s) */
+                    if (metapost) { 
+                        lua_createtable(L, 2, 0);
+                        lua_push_number_at_index(L, 1, c[i][1].x);
+                        lua_push_number_at_index(L, 2, c[i][1].y);
+                        lua_rawseti(L, -2, ++segments);
+                        lua_createtable(L, 2, 0);
+                        lua_push_number_at_index(L, 1, c[i][2].x);
+                        lua_push_number_at_index(L, 2, c[i][2].y);
+                    } else { 
+                        lua_createtable(L, 4, 0);
+                        lua_push_number_at_index(L, 1, c[i][1].x);
+                        lua_push_number_at_index(L, 2, c[i][1].y);
+                        lua_push_number_at_index(L, 3, c[i][2].x);
+                        lua_push_number_at_index(L, 4, c[i][2].y);
+                    }
+                    lua_rawseti(L, -2, ++segments);
+                	break;
+                case POTRACE_CURVETO:
+                    /* n == 6 : curve */
+                    lua_createtable(L, 6, 0);
+                    if (metapost) { 
+                        lua_push_number_at_index(L, 1, c[i][2].x); // point
+                        lua_push_number_at_index(L, 2, c[i][2].y);
+                        lua_push_number_at_index(L, 3, c[i][0].x); // control point 
+                        lua_push_number_at_index(L, 4, c[i][0].y);
+                        lua_push_number_at_index(L, 5, c[i][1].x); // control point 
+                        lua_push_number_at_index(L, 6, c[i][1].y);
+                    } else {
+                        lua_push_number_at_index(L, 1, c[i][0].x); // control point 
+                        lua_push_number_at_index(L, 2, c[i][0].y);
+                        lua_push_number_at_index(L, 3, c[i][1].x); // control point 
+                        lua_push_number_at_index(L, 4, c[i][1].y);
+                        lua_push_number_at_index(L, 5, c[i][2].x); // point 
+                        lua_push_number_at_index(L, 6, c[i][2].y);
+                    }
+                    lua_rawseti(L, -2, ++segments);
+                	break;
+            }
+        }
+        lua_rawseti(L, -2, ++entries);
+        entry = entry->next;
+    }
+    return 1;
+}
+
+/*tex 
+    These intermediate state tables are based on the debugger in |backend_eps.c|. There is no need 
+    to speed them up. 
+*/
+
+static void aux_potracelib_append(lua_State *L, int *index, long x, long y)
+{
+    lua_push_number_at_index(L, ++*index, x);
+    lua_push_number_at_index(L, ++*index, y);
+}
+
+static int potracelib_totable_debug(lua_State *L, potracer *p)
+{
+    potrace_path_t *entry = p->state->plist;
+    int entries = 0;
+    lua_newtable(L);
+    while (entry) { 
+        point_t *pt = entry->priv->pt;
+        int index = 0;
+        lua_newtable(L);
+        if (entry->sign == '+') {
+            point_t cur = pt[entry->priv->len-1];
+            point_t prev = cur; 
+            aux_potracelib_append(L, &index, cur.x, cur.y);
+            for (int i = 0; i < entry->priv->len; i++) {
+                if (pt[i].x != cur.x && pt[i].y != cur.y) {
+                    cur = prev;
+                    aux_potracelib_append(L, &index, cur.x, cur.y);
+                }
+                prev = pt[i];
+            }
+            aux_potracelib_append(L, &index, pt[entry->priv->len-1].x, pt[entry->priv->len-1].y);
+        } else {
+            point_t cur = pt[0];
+            point_t prev = cur; 
+            aux_potracelib_append(L, &index, cur.x, cur.y);
+            for (int i = entry->priv->len - 1; i >= 0; i--) {
+                if (pt[i].x != cur.x && pt[i].y != cur.y) {
+                    cur = prev;
+                    aux_potracelib_append(L, &index, cur.x, cur.y);
+                }
+                prev = pt[i];
+            }
+            aux_potracelib_append(L, &index, pt[0].x, pt[0].y);
+        }
+        lua_rawseti(L, -2, ++entries);
+     // if (! entry->next || entry->next->sign == '+') {
+     //     printf("next\n");
+     // }
+        entry = entry->next;
+    }
+    return 1;
+}
+
 static int potracelib_totable(lua_State *L)
 {
+    int debug = lua_toboolean(L, 2);
+    lua_settop(L, 1);
     potracer *p = potracelib_aux_maybe_ispotracer(L);
     if (p) { 
-        int entries = 0;
-        int metapost = p->mode == 1;
-        potrace_path_t *entry = p->state->plist;
-        while (entry) {
-            entries++;
-            entry = entry->next;
-        }
-        lua_createtable(L, entries, 0);
-        entry = p->state->plist;
-        entries = 0;
-        while (entry) {
-            int segments = 0;
-            int n = entry->curve.n;
-            int m = n + 1;
-            int *tag = entry->curve.tag;
-            int sign = (entry->next == NULL || entry->next->sign == '+') ? 1 : 0;
-            int area = entry->area ? 1 : 0; 
-            potrace_dpoint_t (*c)[3] =entry->curve.c;
-            if (metapost) { 
-                for (int i = 0; i < n; i++) {
-                    if (tag[i] == POTRACE_CORNER) {
-                        m++;
-                    }
-                }
-            }
-            lua_createtable(L, m, (sign ? 1 : 0) + (area ? 1 : 0));
-            if (area) {
-                lua_push_integer_at_key(L, size, area);
-            }
-            if (sign) {
-                lua_push_boolean_at_key(L, sign, 1);
-            }
-            /* n == 2 : move */
-            lua_createtable(L, 2, 0);
-            lua_push_number_at_index(L, 1, c[n-1][2].x);
-            lua_push_number_at_index(L, 2, c[n-1][2].y);
-            lua_rawseti(L, -2, ++segments);
-            for (int i = 0; i < n; i++) {
-                switch (tag[i]) {
-                    case POTRACE_CORNER:
-                        /* n == 4 : line(s) */
-                        if (metapost) { 
-                            lua_createtable(L, 2, 0);
-                            lua_push_number_at_index(L, 1, c[i][1].x);
-                            lua_push_number_at_index(L, 2, c[i][1].y);
-                            lua_rawseti(L, -2, ++segments);
-                            lua_createtable(L, 2, 0);
-                            lua_push_number_at_index(L, 1, c[i][2].x);
-                            lua_push_number_at_index(L, 2, c[i][2].y);
-                        } else { 
-                            lua_createtable(L, 4, 0);
-                            lua_push_number_at_index(L, 1, c[i][1].x);
-                            lua_push_number_at_index(L, 2, c[i][1].y);
-                            lua_push_number_at_index(L, 3, c[i][2].x);
-                            lua_push_number_at_index(L, 4, c[i][2].y);
-                        }
-                        lua_rawseti(L, -2, ++segments);
-                	    break;
-                    case POTRACE_CURVETO:
-                        /* n == 6 : curve */
-                        lua_createtable(L, 6, 0);
-                        if (metapost) { 
-                            lua_push_number_at_index(L, 1, c[i][2].x); // point
-                            lua_push_number_at_index(L, 2, c[i][2].y);
-                            lua_push_number_at_index(L, 3, c[i][0].x); // control point 
-                            lua_push_number_at_index(L, 4, c[i][0].y);
-                            lua_push_number_at_index(L, 5, c[i][1].x); // control point 
-                            lua_push_number_at_index(L, 6, c[i][1].y);
-                        } else {
-                            lua_push_number_at_index(L, 1, c[i][0].x); // control point 
-                            lua_push_number_at_index(L, 2, c[i][0].y);
-                            lua_push_number_at_index(L, 3, c[i][1].x); // control point 
-                            lua_push_number_at_index(L, 4, c[i][1].y);
-                            lua_push_number_at_index(L, 5, c[i][2].x); // point 
-                            lua_push_number_at_index(L, 6, c[i][2].y);
-                        }
-                        lua_rawseti(L, -2, ++segments);
-                	    break;
-                }
-            }
-            lua_rawseti(L, -2, ++entries);
-            entry = entry->next;
-        }
-        return 1;
+        return debug ? potracelib_totable_debug(L, p) : potracelib_totable_normal(L, p);
     } else {
         return 0;
     }
 }
 
+/*
 static int potracelib_trace(lua_State *L)
 {
+    int debug = lua_toboolean(L, 2);
+    lua_settop(L, 1);
     if (potracelib_new(L)) { 
         potracer *p = potracelib_aux_maybe_ispotracer(L);
         if (p) { 
-            if (potracelib_totable(L)) { 
-                potracelib_aux_free(p);
-                return 1; 
-            } else {
-                potracelib_aux_free(p);
-            }
+            int success = debug ? potracelib_totable_debug(L, p) : potracelib_totable_normal(L, p);
+            potracelib_aux_free(p);
+            return success; 
         } 
     }
     return 0;
 }
+*/
 
 static int potracelib_retrace(lua_State *L)
 {
@@ -376,6 +484,7 @@ static int potracelib_retrace(lua_State *L)
     return 1;
 }
 
+/* 
 static int potracelib_tometapost(lua_State *L)
 {
     potracer *p = potracelib_aux_maybe_ispotracer(L);
@@ -383,7 +492,9 @@ static int potracelib_tometapost(lua_State *L)
     }
     return 0;
 }
+*/
 
+/* 
 static int potracelib_totex(lua_State *L)
 {
     potracer *p = potracelib_aux_maybe_ispotracer(L);
@@ -391,6 +502,7 @@ static int potracelib_totex(lua_State *L)
     }
     return 0;
 }
+*/
 
 static int potracelib_tostring(lua_State * L)
  {
@@ -417,10 +529,10 @@ static const luaL_Reg potracelib_function_list[] =
 {
     { "new",        potracelib_new        },
     { "free",       potracelib_free       },
-    { "tometapost", potracelib_tometapost },
     { "totable",    potracelib_totable    },
-    { "totex",      potracelib_totex      },
-    { "trace",      potracelib_trace      },
+ /* { "tometapost", potracelib_tometapost }, */
+ /* { "totex",      potracelib_totex      }, */
+ /* { "trace",      potracelib_trace      }, */
     { "retrace",    potracelib_retrace    },
     /* */
     { NULL,    NULL             },

@@ -1909,6 +1909,7 @@ static const char *mp_op_string (int c)
             case mp_path_precontrol_operation  : return "pathprecontrol";
             case mp_path_postcontrol_operation : return "pathpostcontrol";
             case mp_path_direction_operation   : return "pathdirection";
+            case mp_path_state_operation       : return "pathstate";
             case mp_pen_offset_operation       : return "penoffset";
             case mp_arc_time_operation         : return "arctime";
             case mp_arc_point_operation        : return "arcpoint";
@@ -13769,6 +13770,15 @@ static void push_of_path_result (MP mp, int what, mp_knot p)
                 free_number(y);
             }
             break;
+        case 4:
+            {
+               mp_value expr;
+               memset(&expr, 0, sizeof(mp_value));
+               new_number(expr.data.n);
+               set_number_from_int(expr.data.n, mp_knotstate(p));
+               mp_flush_cur_exp(mp, expr);
+            }
+            break;
     }
 }
 
@@ -13825,6 +13835,7 @@ static void mp_do_nullary (MP mp, int c)
         case mp_path_precontrol_operation:
         case mp_path_postcontrol_operation:
         case mp_path_direction_operation:
+        case mp_path_state_operation:
             if (mp->loop_ptr && mp->loop_ptr->point != NULL) {
                 push_of_path_result(mp, c - mp_path_point_operation, mp->loop_ptr->point);
             } else {
@@ -21960,6 +21971,7 @@ void mp_final_cleanup (MP mp)
     mp_primitive(mp, "pathprecontrol", mp_nullary_command, mp_path_precontrol_operation);
     mp_primitive(mp, "pathpostcontrol", mp_nullary_command, mp_path_postcontrol_operation);
     mp_primitive(mp, "pathdirection", mp_nullary_command, mp_path_direction_operation);
+    mp_primitive(mp, "pathstate", mp_nullary_command, mp_path_state_operation);
     mp_primitive(mp, "penoffset", mp_of_binary_command, mp_pen_offset_operation);
     mp_primitive(mp, "arctime", mp_of_binary_command, mp_arc_time_operation);
     mp_primitive(mp, "arcpoint", mp_of_binary_command, mp_arc_point_operation);

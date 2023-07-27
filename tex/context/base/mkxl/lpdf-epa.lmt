@@ -735,7 +735,7 @@ end
 -- RV : rich
 -- Q  : quadding (0=left 1=middle 2=right)
 
-function codeinjections.mergefields(specification)
+function codeinjections.mergefields(specification,dataonly)
     local specification, fullname, document = validdocument(specification)
     if not document then
         return ""
@@ -784,20 +784,50 @@ function codeinjections.mergefields(specification)
                                     what = "line"
                                 end
                                 -- via context
-                                local fieldspec = {
-                                    width  = w,
-                                    height = h,
-                                    offset = variables.overlay,
-                                    frame  = trace_links and variables.on or variables.off,
-                                    n      = annotation.MaxLen or (parent and parent.MaxLen),
-                                    type   = what,
-                                    option = concat(merged(aflags,wflags),","),
-                                }
-                                context.setlayer (layerspec,locationspec,function()
-                                    context.definefieldbody ( { name } , fieldspec )
-                                    context.fieldbody ( { name } )
-                                end)
-                                --
+                                local default = annotation.V or ""
+                                local frame   = trace_links and variables.on or variables.off
+                                if dataonly then
+                                    if type(default) == "string" and default ~= "" then
+local data = lpdf.epdf.parsecontent(tostring(annotation.DA or "") or "") or { }
+local font = "Normal"
+local size = "10bp"
+for i=1,#data do
+    local d = data[i]
+    if d[3] == "Tf" then
+        font = d[1][2]
+        size = d[2][2] .. "bp"
+        break
+    end
+end
+                                        local fieldspec = {
+                                            width  = w,
+                                            height = h,
+                                            frame  = frame,
+                                            --
+                                            ["epdf:font"] = font,
+                                            ["epdf:size"] = size,
+                                        }
+report_field("field %a, type %a, data %a",name,what,default)
+                                        context.setlayer (layerspec,locationspec,function()
+                                            context["epdf"..what.."field"](fieldspec,default)
+                                        end)
+                                    end
+                                else
+                                    local fieldspec = {
+                                        width   = w,
+                                        height  = h,
+                                        offset  = variables.overlay,
+                                        frame   = frame,
+                                        n       = annotation.MaxLen or (parent and parent.MaxLen),
+                                        type    = what,
+                                        option  = concat(merged(aflags,wflags),","),
+                                        default = default,
+                                    }
+                                    context.setlayer (layerspec,locationspec,function()
+                                        context.definefieldbody ( { name } , fieldspec )
+                                        context.fieldbody ( { name } )
+                                    end)
+                                end
                             elseif what == "Btn" then
                                 if wflags.Radio or wflags.RadiosInUnison then
                                     -- AP AS DA F Ff FT H MK T V | AA OC
@@ -816,30 +846,34 @@ function codeinjections.mergefields(specification)
                                     -- AP AS DA F Ff FT H MK T V | OC AA
                                     what = "check"
                                     -- direct
-                                    local AP = annotation.AP or (parent and parent.AP)
-                                    if AP then
-                                        local a = document.__xrefs__[AP]
-                                        if a and pdfe.copyappearance then
-                                            local o = pdfe.copyappearance(document,a)
-                                            if o then
-                                                AP = pdfreference(o)
+                                    if dataonly then
+                                        report_field("field %a, type %a, todo: render value",name,what)
+                                    else
+                                        local AP = annotation.AP or (parent and parent.AP)
+                                        if AP then
+                                            local a = document.__xrefs__[AP]
+                                            if a and pdfe.copyappearance then
+                                                local o = pdfe.copyappearance(document,a)
+                                                if o then
+                                                    AP = pdfreference(o)
+                                                end
                                             end
                                         end
+                                        local dictionary = pdfdictionary {
+                                            Subtype = pdfconstant("Widget"),
+                                            FT      = pdfconstant("Btn"),
+                                            T       = pdfcopyunicode(annotation.T or parent.T),
+                                            F       = pdfcopyinteger(annotation.F or parent.F),
+                                            Ff      = pdfcopyinteger(annotation.Ff or parent.Ff),
+                                            AS      = pdfcopyconstant(annotation.AS or (parent and parent.AS)),
+                                            AP      = AP and pdfreference(AP),
+                                         -- V       = annotation.V,
+                                        }
+                                        local finalize = dictionary()
+                                        context.setlayer(layerspec,locationspec,function()
+                                            context(hpack_node(nodeinjections.annotation(W/bpfactor,H/bpfactor,0,finalize)))
+                                        end)
                                     end
-                                    local dictionary = pdfdictionary {
-                                        Subtype = pdfconstant("Widget"),
-                                        FT      = pdfconstant("Btn"),
-                                        T       = pdfcopyunicode(annotation.T or parent.T),
-                                        F       = pdfcopyinteger(annotation.F or parent.F),
-                                        Ff      = pdfcopyinteger(annotation.Ff or parent.Ff),
-                                        AS      = pdfcopyconstant(annotation.AS or (parent and parent.AS)),
-                                        AP      = AP and pdfreference(AP),
-                                    }
-                                    local finalize = dictionary()
-                                    context.setlayer(layerspec,locationspec,function()
-                                        context(hpack_node(nodeinjections.annotation(W/bpfactor,H/bpfactor,0,finalize)))
-                                    end)
-                                    --
                                 end
                             elseif what == "Ch" then
                                 -- F Ff FT Opt T | AA OC (rest follows)

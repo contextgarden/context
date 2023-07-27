@@ -45,4 +45,11 @@
 
 \unprotect
 
+\defineframed
+  [potracebitmap]
+  [\c!foregroundstyle=\tttf,
+   \c!offset=\v!overlay,%
+   \c!align=\v!normal,%
+   \c!frame=\v!off]%
+
 \protect \endinput

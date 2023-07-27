@@ -644,7 +644,7 @@ local optspaces = lpegpatterns.whitespace^0
 local comment   = P("%") * (1 - lpegpatterns.newline)^0
 local numchar   = P("\\")/"" * (R("09")^3/function(s) return char(tonumber(s,8)) end)
                 + P("\\") * P(1)
-local key       = P("/") * C(R("AZ","az","09","__")^1)
+local key       = P("/") * C(R("AZ","az","09","__","--")^1)
 local number    = Ct(Cc("number") * (lpegpatterns.number/tonumber))
 local keyword   = Ct(Cc("name") * key)
 local operator  = C((R("AZ","az")+P("*")+P("'")+P('"'))^1)
