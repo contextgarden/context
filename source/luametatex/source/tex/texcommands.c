@@ -665,8 +665,8 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "numexpression",                  some_item_cmd,          numexpression_code,                       0); /* experiment */
         tex_primitive(luatex_command, "dimexpression",                  some_item_cmd,          dimexpression_code,                       0); /* experiment */
      // tex_primitive(luatex_command, "dimentoscale",                   some_item_cmd,          dimen_to_scale_code,                      0);
-        tex_primitive(luatex_command, "lastchknum",                     some_item_cmd,          last_chk_num_code,                        0);
-        tex_primitive(luatex_command, "lastchkdim",                     some_item_cmd,          last_chk_dim_code,                        0);
+        tex_primitive(luatex_command, "lastchknumber",                  some_item_cmd,          last_chk_integer_code,                    0);
+        tex_primitive(luatex_command, "lastchkdimension",               some_item_cmd,          last_chk_dimension_code,                  0);
         tex_primitive(luatex_command, "numericscale",                   some_item_cmd,          numeric_scale_code,                       0);
         tex_primitive(luatex_command, "indexofregister",                some_item_cmd,          index_of_register_code,                   0);
         tex_primitive(luatex_command, "indexofcharacter",               some_item_cmd,          index_of_character_code,                  0);

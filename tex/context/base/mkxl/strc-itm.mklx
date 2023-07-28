@@ -363,10 +363,10 @@
 % These will become keywords. We will also add a feature to keep the while set
 % together.
 
-\definevspacing[\v!item @\v!no]        [penalty:0]      % allow
-\definevspacing[\v!item @\v!yes]       [penalty:10000]  % never
-\definevspacing[\v!item @\v!tight]     [penalty:500]  % discourage
-\definevspacing[\v!item @\v!verytight] [penalty:5000] % discourage more
+\definevspacing[\v!item @\v!no]        [penalty:0]     % allow
+\definevspacing[\v!item @\v!yes]       [penalty:10000] % never
+\definevspacing[\v!item @\v!tight]     [penalty:500]   % discourage
+\definevspacing[\v!item @\v!verytight] [penalty:5000]  % discourage more
 
 \definevspacing[\v!item @-5]    [penalty:-5]
 \definevspacing[\v!item @5]     [penalty:5]
@@ -1436,7 +1436,7 @@
   {\strc_itemgroups_start_edge
      {\localcontrolledloop
         \plusone
-        \ifchknum#1\or#1\else0\itemgroupparameter\c!items\fi
+        \ifchknumber#1\or\lastchknumber\else0\itemgroupparameter\c!items\fi
         \plusone
         {\strc_itemgroups_used_symbol\hss}%
       \unskip}}

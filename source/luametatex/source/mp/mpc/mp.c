@@ -630,7 +630,7 @@ if (mp_post_script(p)) { \
  static void mp_show_transformed_dependency (MP mp, mp_number *v, mp_variable_type t, mp_node p);
  static void mp_known_pair (MP mp);
  static void do_boolean_error (MP mp);
- static void push_of_path_result (MP mp, int what, mp_knot p);
+ static void push_of_path_result (MP mp, int what, mp_knot p, mp_number i, mp_number n);
  static mp_knot mp_simple_knot(MP mp, mp_number *x, mp_number *y);
  static mp_knot mp_complex_knot(MP mp, mp_knot o);
  static int mp_pict_color_type (MP mp, int c);
@@ -1910,6 +1910,11 @@ static const char *mp_op_string (int c)
             case mp_path_postcontrol_operation : return "pathpostcontrol";
             case mp_path_direction_operation   : return "pathdirection";
             case mp_path_state_operation       : return "pathstate";
+            case mp_path_index_operation       : return "pathindex";
+            case mp_path_lastindex_operation   : return "pathlastindex";
+            case mp_path_length_operation      : return "pathlength";
+            case mp_path_first_operation       : return "pathfirst";
+            case mp_path_last_operation        : return "pathlast";
             case mp_pen_offset_operation       : return "penoffset";
             case mp_arc_time_operation         : return "arctime";
             case mp_arc_point_operation        : return "arcpoint";
@@ -12499,12 +12504,12 @@ void mp_resume_iteration (MP mp)
     mp_node p, q;
     p = mp->loop_ptr->type;
     if (p == MP_PROGRESSION_FLAG) {
-        mp_set_cur_exp_value_number(mp, &(mp->loop_ptr->value));
-        if ((number_positive(mp->loop_ptr->step_size) && number_greater(cur_exp_value_number, mp->loop_ptr->final_value))
-         || (number_negative(mp->loop_ptr->step_size) && number_less   (cur_exp_value_number, mp->loop_ptr->final_value))) {
+        if ((number_positive(mp->loop_ptr->step_size) && number_greater(mp->loop_ptr->value, mp->loop_ptr->final_value))
+         || (number_negative(mp->loop_ptr->step_size) && number_less   (mp->loop_ptr->value, mp->loop_ptr->final_value))) {
             mp_stop_iteration(mp);
             return;
         }
+        mp_set_cur_exp_value_number(mp, &(mp->loop_ptr->value));
         mp->cur_exp.type = mp_known_type;
         q = mp_stash_cur_exp(mp);
         number_clone(mp->loop_ptr->old_value, cur_exp_value_number);
@@ -13728,7 +13733,7 @@ static int mp_scan_direction (MP mp)
     return t;
 }
 
-static void push_of_path_result (MP mp, int what, mp_knot p)
+static void push_of_path_result (MP mp, int what, mp_knot p, mp_number i, mp_number n)
 {
     switch (what) {
         case 0:
@@ -13772,11 +13777,47 @@ static void push_of_path_result (MP mp, int what, mp_knot p)
             break;
         case 4:
             {
-               mp_value expr;
-               memset(&expr, 0, sizeof(mp_value));
-               new_number(expr.data.n);
-               set_number_from_int(expr.data.n, mp_knotstate(p));
-               mp_flush_cur_exp(mp, expr);
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                new_number(expr.data.n);
+                set_number_from_int(expr.data.n, mp_knotstate(p));
+                mp_flush_cur_exp(mp, expr);
+            }
+            break;
+        case 5:
+            {
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                set_number_from_subtraction(expr.data.n, i, unity_t);
+                mp_flush_cur_exp(mp, expr);
+            }
+            break;
+        case 6:
+            {
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                number_clone(expr.data.n, n);
+                mp_flush_cur_exp(mp, expr);
+            }
+            break;
+        case 7:
+            {
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                set_number_from_addition(expr.data.n, n, unity_t);
+                mp_flush_cur_exp(mp, expr);
+            }
+            break;
+        case 8:
+            {
+                mp->cur_exp.type = mp_boolean_type;
+                mp_set_cur_exp_value_boolean(mp, number_equal(i, unity_t) ? mp_true_operation : mp_false_operation);
+            }
+            break;
+        case 9:
+            {
+                mp->cur_exp.type = mp_boolean_type;
+                mp_set_cur_exp_value_boolean(mp, number_greater(i, n) ? mp_true_operation : mp_false_operation);
             }
             break;
     }
@@ -13836,8 +13877,13 @@ static void mp_do_nullary (MP mp, int c)
         case mp_path_postcontrol_operation:
         case mp_path_direction_operation:
         case mp_path_state_operation:
+        case mp_path_index_operation:
+        case mp_path_lastindex_operation:
+        case mp_path_length_operation:
+        case mp_path_first_operation:
+        case mp_path_last_operation:
             if (mp->loop_ptr && mp->loop_ptr->point != NULL) {
-                push_of_path_result(mp, c - mp_path_point_operation, mp->loop_ptr->point);
+                push_of_path_result(mp, c - mp_path_point_operation, mp->loop_ptr->point, mp->loop_ptr->value, mp->loop_ptr->final_value);
             } else {
                 mp_pair_value(mp, &zero_t, &zero_t);
             }
@@ -15381,7 +15427,7 @@ static void mp_do_unary (MP mp, int c)
                             p = mp_prev_knot(p);
                         }
                     }
-                    push_of_path_result(mp, c - mp_delta_point_operation, p);
+                    push_of_path_result(mp, c - mp_delta_point_operation, p, mp->loop_ptr->value, mp->loop_ptr->final_value);
                 }
             } else {
                 mp_bad_unary(mp, c);
@@ -16714,7 +16760,7 @@ static void mp_find_point (MP mp, mp_number *v_orig, int c)
         mp_split_cubic(mp, p, &v);
         p = mp_next_knot(p);
     }
-    push_of_path_result(mp, c - mp_point_operation, p);
+    push_of_path_result(mp, c - mp_point_operation, p, zero_t, zero_t);
     free_number(v);
     free_number(n);
 }
@@ -21972,6 +22018,11 @@ void mp_final_cleanup (MP mp)
     mp_primitive(mp, "pathpostcontrol", mp_nullary_command, mp_path_postcontrol_operation);
     mp_primitive(mp, "pathdirection", mp_nullary_command, mp_path_direction_operation);
     mp_primitive(mp, "pathstate", mp_nullary_command, mp_path_state_operation);
+    mp_primitive(mp, "pathindex", mp_nullary_command, mp_path_index_operation);
+    mp_primitive(mp, "pathlastindex", mp_nullary_command, mp_path_lastindex_operation);
+    mp_primitive(mp, "pathlength", mp_nullary_command, mp_path_length_operation);
+    mp_primitive(mp, "pathfirst", mp_nullary_command, mp_path_first_operation);
+    mp_primitive(mp, "pathlast", mp_nullary_command, mp_path_last_operation);
     mp_primitive(mp, "penoffset", mp_of_binary_command, mp_pen_offset_operation);
     mp_primitive(mp, "arctime", mp_of_binary_command, mp_arc_time_operation);
     mp_primitive(mp, "arcpoint", mp_of_binary_command, mp_arc_point_operation);

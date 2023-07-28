@@ -520,11 +520,11 @@
    \endlocalcontrol
    \ifempty\m_meta_current_variable
      \meta_mpvar_default
-   \orelse\ifchkdim\m_meta_current_variable\or
-     \todimension\m_meta_current_variable\space\space
+   \orelse\ifchkdimension\m_meta_current_variable\or
+     \todimension\lastchkdimension\space\space
  % \orelse\ifchknum\m_meta_current_variable\or % we need to catch 1>2
    \orunless\ifempty{\ifchknum\m_meta_current_variable\or\tointeger\m_meta_current_variable\fi}%
-     \tointeger\m_meta_current_variable\space\space
+     \tointeger\m_meta_current_variable\space\space % maybe \lastchkinteger
    \orelse\ifcsname\??colorattribute\currentcolorprefix\m_meta_current_variable\endcsname
      \MPcolor\m_meta_current_variable\space
    \orelse\ifcsname\??colorattribute\m_meta_current_variable\endcsname

@@ -127,8 +127,8 @@ typedef struct condition_state_info {
     int       if_limit;   /*tex upper bound on |fi_or_else| codes */
     int       if_line;    /*tex line where that conditional began */
     int       skip_line;  /*tex skipping began here */
-    halfword  chk_num;
-    scaled    chk_dim;
+    halfword  chk_integer;
+    scaled    chk_dimension;
     halfword  if_nesting;
     halfword  padding;
 } condition_state_info ;

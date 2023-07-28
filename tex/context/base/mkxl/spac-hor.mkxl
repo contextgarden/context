@@ -406,14 +406,6 @@
 
 % test test\fsp. test % beats frenchspacing
 
-% \permanent\protected\def\fsp#1% fixed space puncuation
-%   {\begingroup
-%    \ifchknum`#1\or
-%      \sfcode`#1\plusthousand
-%    \fi
-%    #1%
-%    \endgroup}
-
 \permanent\protected\def\fsp#1% fixed space puncuation
   {#1%
    \ifchknum`#1\or
@@ -657,7 +649,7 @@
   {\dontleavehmode
    \begingroup
   %\scratchcounter\ifparameter#1\or#1\else\plusthree\fi
-   \scratchcounter\ifchknum#1\or#1\else\plusthree\fi
+   \scratchcounter\ifchknumber#1\or\lastchknumber\else\plusthree\fi
    \zwj\dorecurse\scratchcounter{\hskip\emwidth\zwj}%
    \endgroup}
 

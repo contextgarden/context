@@ -2913,8 +2913,8 @@ static int texlib_aux_someitem(lua_State *L, int code)
         case index_of_register_code:
         case index_of_character_code:
             break;
-        case last_chk_num_code:
-        case last_chk_dim_code:
+        case last_chk_integer_code:
+        case last_chk_dimension_code:
             break;
             /* these read a glue or muglue, todo */
         case mu_to_glue_code:

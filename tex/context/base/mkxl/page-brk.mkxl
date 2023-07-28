@@ -492,7 +492,7 @@
   {\begingroup
    \ifchkdimension#1\lineheight\or
      \additionalpageskip
-       #1\lineheight
+       \lastchkdimension
      \relax
    \else
      \letdummyparameter\c!lines  \zerocount

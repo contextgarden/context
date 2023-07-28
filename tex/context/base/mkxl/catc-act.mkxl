@@ -30,16 +30,18 @@
 
 \permanent\protected\def\installactivecharacter#1 %
   {\ifchknum#1\or
-     \scratchcounter #1\edef\scratchmacro{\expandtoken\othercatcode\scratchcounter}%
+     \scratchcounter\lastchknumber
+     \edef\scratchmacro{\expandtoken\othercatcode\scratchcounter}%
    \else
-     \scratchcounter`#1\let \scratchmacro #1%
+     \scratchcounter`#1%
+     \let\scratchmacro#1%
    \fi
    \normalexpanded{\startextendcatcodetable\ctxcatcodes\catcode\the\scratchcounter\activecatcode\stopextendcatcodetable}%
    \letcatcodecommand \ctxcatcodes \scratchcounter \scratchmacro
    \ifnum\currentcatcodetable=\ctxcatcodes \setcatcodetable\ctxcatcodes \fi}
 
 \permanent\protected\def\defineactivecharacter #1 #2%
-  {\ifchknum#1\or\letcharcode#1=#2\relax\else\letcharcode`#1=#2\relax\fi}
+  {\ifchknum#1\or\letcharcode#1=\lastchknumber\relax\else\letcharcode`#1=#2\relax\fi}
 
 \permanent\protected\def\makecharacteractive #1 %
   {\catcode`#1\activecatcode}

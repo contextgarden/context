@@ -1910,8 +1910,7 @@
    \fi}
 
 \def\font_helpers_set_font_check_size#option%
-%   {\ifchknum#option\or % can be n.m
-  {\ifchkdimension#option\or % can be n.m
+  {\ifchkdimension#option\or
      \font_helpers_check_bodyfont_environment{#option}{#option}%
    \fi}
 
@@ -1921,8 +1920,7 @@
    \fi}
 
 \def\font_helpers_set_font_set_font_option#method#option%
-%   {\ifchknum#option\or % can be n.m
-  {\ifchkdimension#option\or % can be n.m
+  {\ifchkdimension#option\or
      \expandafter\font_helpers_set_font_set_font_option_body
    \else
      \expandafter\font_helpers_set_font_set_font_option_keyword

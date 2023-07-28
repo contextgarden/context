@@ -878,13 +878,13 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
             cur_val = tex_aux_scan_character_index();
             cur_val_level = int_val_level;
             return 1;
-        case last_chk_num_code:
+        case last_chk_integer_code:
             cur_val_level = int_val_level;
-            cur_val = lmt_condition_state.chk_num;
+            cur_val = lmt_condition_state.chk_integer;
             return 1;
-        case last_chk_dim_code:
+        case last_chk_dimension_code:
             cur_val_level = dimen_val_level;
-            cur_val = lmt_condition_state.chk_dim;
+            cur_val = lmt_condition_state.chk_dimension;
             return 1;
         case last_left_class_code:
             cur_val_level = int_val_level;

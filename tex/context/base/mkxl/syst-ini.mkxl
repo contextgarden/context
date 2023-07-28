@@ -1519,4 +1519,7 @@
 \permanent\untraced\def\expandedrepeating       {\expandedrepeat       \maxcount}
 \permanent\untraced\def\unexpandedrepeating     {\unexpandedrepeat     \maxcount}
 
+\aliased\let\lastchkinteger\lastchknumber
+\aliased\let\ifchkinteger  \ifchknumber
+
 \protect \endinput

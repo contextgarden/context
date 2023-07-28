@@ -681,5 +681,7 @@ return {
         "ifexpression",
         --
         "localcontrolledrepeating", "expandedrepeating", "unexpandedrepeating",
+        --
+        "lastchkinteger", "ifchkinteger",
     }
 }

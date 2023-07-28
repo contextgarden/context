@@ -1016,7 +1016,7 @@
     \ifx\p_lines\v!yes
         \c_page_scale_lines\plusone
     \orelse\ifchknumber\p_lines\or
-        \c_page_scale_lines\p_lines\relax
+        \c_page_scale_lines\lastchknumber
     \else
         \c_page_scale_lines\zerocount
     \fi

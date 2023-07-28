@@ -731,12 +731,12 @@
 
 \defcsname\??mathalignsimple\v!split:\v!flushleft\endcsname#1%
   {#1%
-   \ifchkdim\mathfractionparameter\c!distance\or\hkern\lastchkdim\fi
+   \ifchkdimension\mathfractionparameter\c!distance\or\hkern\lastchkdimension\fi
    \hfill}
 
 \defcsname\??mathalignsimple\v!split:\v!flushright\endcsname#1%
   {\hfill
-   \ifchkdim\mathfractionparameter\c!distance\or\hkern\lastchkdim\fi
+   \ifchkdimension\mathfractionparameter\c!distance\or\hkern\lastchkdimension\fi
    \mathatom \s!class \mathordcode \s!unroll {}% prevents +/- seen as sign, unroll prevents empty box
    #1}
 

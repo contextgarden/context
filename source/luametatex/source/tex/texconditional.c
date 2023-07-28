@@ -40,18 +40,18 @@
 */
 
 condition_state_info lmt_condition_state = {
-    .cond_ptr   = null,
-    .cur_if     = 0,
-    .cur_unless = 0,
-    .if_step    = 0,
-    .if_unless  = 0,
-    .if_limit   = 0,
-    .if_line    = 0,
-    .skip_line  = 0,
-    .chk_num    = 0,
-    .chk_dim    = 0,
-    .if_nesting = 0,
-    .padding    = 0,
+    .cond_ptr      = null,
+    .cur_if        = 0,
+    .cur_unless    = 0,
+    .if_step       = 0,
+    .if_unless     = 0,
+    .if_limit      = 0,
+    .if_line       = 0,
+    .skip_line     = 0,
+    .chk_integer   = 0,
+    .chk_dimension = 0,
+    .if_nesting    = 0,
+    .padding       = 0,
 };
 
 /*tex
@@ -857,15 +857,23 @@ void tex_conditional_if(halfword code, int unless)
             result = 0;
             goto RESULT;
         case if_chk_int_code:
+            {
+                lmt_error_state.intercept = 1; /* maybe ++ and -- so that we can nest */
+                lmt_error_state.last_intercept = 0;
+                lmt_condition_state.chk_integer = 0;
+                tex_scan_int_validate(); 
+                result = lmt_error_state.last_intercept ? check_error : check_okay;
+                lmt_error_state.intercept = 0;
+                lmt_error_state.last_intercept = 0;
+                goto CASE;
+            }
         case if_chk_integer_code:
             {
                 lmt_error_state.intercept = 1; /* maybe ++ and -- so that we can nest */
                 lmt_error_state.last_intercept = 0;
-             // lmt_condition_state.chk_num = tex_scan_int(0, NULL); /* value is ignored */
-                lmt_condition_state.chk_num = 0;
-                tex_scan_int_validate(); 
+                lmt_condition_state.chk_integer = tex_scan_int(0, NULL); 
                 result = lmt_error_state.last_intercept ? check_error : check_okay;
-                if (result == check_okay && code == if_chk_integer_code) { 
+                if (result == check_okay) { 
                     tex_aux_check_strict(&result);
                 }
                 lmt_error_state.intercept = 0;
@@ -876,8 +884,8 @@ void tex_conditional_if(halfword code, int unless)
             {
                 lmt_error_state.intercept = 1;
                 lmt_error_state.last_intercept = 0;
-                lmt_condition_state.chk_num = tex_scan_int(0, NULL);
-                result = lmt_error_state.last_intercept ? value_error : (lmt_condition_state.chk_num < 0) ? value_less : (lmt_condition_state.chk_num > 0) ? value_greater : value_equal;
+                lmt_condition_state.chk_integer = tex_scan_int(0, NULL);
+                result = lmt_error_state.last_intercept ? value_error : (lmt_condition_state.chk_integer < 0) ? value_less : (lmt_condition_state.chk_integer > 0) ? value_greater : value_equal;
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
                 goto CASE;
@@ -890,15 +898,23 @@ void tex_conditional_if(halfword code, int unless)
                 goto CASE;
             }
         case if_chk_dim_code:
+            {
+                lmt_error_state.intercept = 1;
+                lmt_error_state.last_intercept = 0;
+                lmt_condition_state.chk_dimension = 0;
+                tex_scan_dimen_validate(); 
+                result = lmt_error_state.last_intercept ? check_error : check_okay;
+                lmt_error_state.intercept = 0;
+                lmt_error_state.last_intercept = 0;
+                goto CASE;
+            }
         case if_chk_dimension_code:
             {
                 lmt_error_state.intercept = 1;
                 lmt_error_state.last_intercept = 0;
-             // lmt_condition_state.chk_dim = tex_scan_dimen(0, 0, 0, 0, NULL); /* value is ignored */
-                lmt_condition_state.chk_dim = 0;
-                tex_scan_dimen_validate(); 
+                lmt_condition_state.chk_dimension = tex_scan_dimen(0, 0, 0, 0, NULL); 
                 result = lmt_error_state.last_intercept ? check_error : check_okay;
-                if (result == check_okay && code == if_chk_dimension_code) { 
+                if (result == check_okay) { 
                     tex_aux_check_strict(&result);
                 }
                 lmt_error_state.intercept = 0;
@@ -909,8 +925,8 @@ void tex_conditional_if(halfword code, int unless)
             {
                 lmt_error_state.intercept = 1;
                 lmt_error_state.last_intercept = 0;
-                lmt_condition_state.chk_dim = tex_scan_dimen(0, 0, 0, 0, NULL);
-                result = lmt_error_state.last_intercept ? value_error : (lmt_condition_state.chk_dim < 0) ? value_less : (lmt_condition_state.chk_dim > 0) ? value_greater : value_equal;
+                lmt_condition_state.chk_dimension = tex_scan_dimen(0, 0, 0, 0, NULL);
+                result = lmt_error_state.last_intercept ? value_error : (lmt_condition_state.chk_dimension < 0) ? value_less : (lmt_condition_state.chk_dimension > 0) ? value_greater : value_equal;
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
                 goto CASE;

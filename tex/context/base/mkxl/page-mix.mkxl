@@ -240,7 +240,7 @@
 
 \protected\def\page_mix_command_routine
   {\ifcase\c_page_mix_routine
-     \page_one_command_routine
+     \page_one_command_routine % not ok as we need to also adapt the vsize setter
    \or
      \page_mix_routine_intercept
    \or
@@ -856,8 +856,8 @@
         %writestatus\m!columns{construct balance}%
         \page_mix_routine_construct\v!yes
         \page_mix_routine_package
-        \c_page_mix_routine\c_page_mix_routine_regular
-      % \setupoutputroutine[\s!singlecolumn]%
+      % \c_page_mix_routine\c_page_mix_routine_regular % no, because we also need to set vsize
+        \setupoutputroutine[\s!singlecolumn]%
         \page_otr_command_set_vsize
         \page_otr_command_set_hsize
         \par
@@ -865,8 +865,8 @@
         \page_grids_add_to_mix\b_page_mix_collected % no linenumbers here
         \box\b_page_mix_collected
         % can't we do this differently now?
-        \vskip\zeroskip % triggers recalculation of page stuff (weird that this is needed but it *is* needed, see mixed-001.tex)
-        \par
+%         \vskip\zeroskip % triggers recalculation of page stuff (weird that this is needed but it *is* needed, see mixed-001.tex)
+%         \par
         \nointerlineskip
         \prevdepth\strutdp
         \clf_mixflushrest% rubish

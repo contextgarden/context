@@ -725,8 +725,8 @@
 \protected\def\math_eqalign_set_column_indeed[#1:#2:#3]% we don't really check for all (so * will do too) ... yet
   {\ifempty{#2}%
      % current counter
-   \orelse\ifchknum#1\or
-     \c_math_eqalign_column#1\relax
+   \orelse\ifchknumber#1\or
+     \c_math_eqalign_column\lastchknumber
    \else
      \c_math_eqalign_column\zerocount
    \fi
@@ -1231,7 +1231,7 @@
 \tolerant\permanent\def\math_matrix_HF[#1]#*[#2]% [n] [name] | [name] | [n]
   {\expandedloop
      \plusone
-     \numexpr\ifchknum#1\or#1\else(\c_math_matrix_columns+\minusone)\fi*\plustwo\relax
+     \numexpr\ifchknumber#1\or\lastchknumber\else(\c_math_matrix_columns+\minusone)\fi*\plustwo\relax
      \plusone
    {\omit\span}%
    \normalexpanded{\filler[%
@@ -1531,14 +1531,14 @@
 \def\math_matrix_hrule_progress_rest#1%
   {\expandedloop
      \plusone
-     \numexpr(\ifchknum#1\or#1\else\c_math_matrix_columns\fi)*\plustwo+\minusone\relax
+     \numexpr(\ifchknumber#1\or\lastchknumber\else\c_math_matrix_columns\fi)*\plustwo+\minusone\relax
      \plusone
    {\span\omit}}%
 
 \def\math_matrix_hrule_progress_first#1%
   {\expandedloop
      \plusone
-     \numexpr(\ifchknum#1\or#1\else\c_math_matrix_columns\fi+\minusone)*\plustwo+\plusone\relax
+     \numexpr(\ifchknumber#1\or\lastchknumber\else\c_math_matrix_columns\fi+\minusone)*\plustwo+\plusone\relax
      \plusone
    {\span\omit}}%
 

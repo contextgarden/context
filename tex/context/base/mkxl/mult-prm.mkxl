@@ -40,6 +40,8 @@
         },
         luatex = {
             -- todo: differenced between luatex and luametatex
+            "lastchkinteger",
+            "ifchkinteger",
         },
         pdftex = { -- maybe not complete
             "ifpdfabsdim", "ifpdfabsnum", "ifpdfprimitive", "pdfadjustspacing",

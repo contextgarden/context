@@ -1594,7 +1594,7 @@
 %    \relax}
 %
 % \def\doassigncheckedframeoffset#1#2% could be a fast \csname .. \endcsname
-%   {#1\ifchkdim#2\or#2\else\zeropoint\fi}%
+%   {#1\ifchkdimension#2\or\lastchkdimension\else\zeropoint\fi}%
 
 %D \macros
 %D   {ifreshapeframebox}

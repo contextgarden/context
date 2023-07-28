@@ -2667,6 +2667,11 @@ mp_path_precontrol_operation,   /* operation code for |pathprecontrol| */
 mp_path_postcontrol_operation,  /* operation code for |pathpostcontrol| */
 mp_path_direction_operation,    /* operation code for |pathdirection| */
 mp_path_state_operation,        /* operation code for |pathstate| */
+mp_path_index_operation,        /* operation code for |pathindex| */
+mp_path_lastindex_operation,    /* operation code for |pathlastindex| */
+mp_path_length_operation,       /* operation code for |pathlength| */
+mp_path_first_operation,        /* operation code for |pathfirst| */
+mp_path_last_operation,         /* operation code for |pathlast| */
 mp_pen_offset_operation,        /* operation code for |penoffset| */
 mp_arc_time_operation,          /* operation code for |arctime| */
 mp_arc_point_operation,         /* operation code for |arcpoint| */
@@ -2801,6 +2806,11 @@ static const char *mp_op_string (int c)
             case mp_path_postcontrol_operation : return "pathpostcontrol";
             case mp_path_direction_operation   : return "pathdirection";
             case mp_path_state_operation       : return "pathstate";
+            case mp_path_index_operation       : return "pathindex";
+            case mp_path_lastindex_operation   : return "pathlastindex";
+            case mp_path_length_operation      : return "pathlength";
+            case mp_path_first_operation       : return "pathfirst";
+            case mp_path_last_operation        : return "pathlast";
             case mp_pen_offset_operation       : return "penoffset";
             case mp_arc_time_operation         : return "arctime";
             case mp_arc_point_operation        : return "arcpoint";
@@ -18647,12 +18657,20 @@ void mp_resume_iteration (MP mp)
     mp_node p, q; /* link registers */
     p = mp->loop_ptr->type;
     if (p == MP_PROGRESSION_FLAG) {
+        /*
         mp_set_cur_exp_value_number(mp, &(mp->loop_ptr->value));
         if ((number_positive(mp->loop_ptr->step_size) && number_greater(cur_exp_value_number, mp->loop_ptr->final_value))
          || (number_negative(mp->loop_ptr->step_size) && number_less   (cur_exp_value_number, mp->loop_ptr->final_value))) {
             mp_stop_iteration(mp);
             return;
         }
+        */
+        if ((number_positive(mp->loop_ptr->step_size) && number_greater(mp->loop_ptr->value, mp->loop_ptr->final_value))
+         || (number_negative(mp->loop_ptr->step_size) && number_less   (mp->loop_ptr->value, mp->loop_ptr->final_value))) {
+            mp_stop_iteration(mp);
+            return;
+        }
+        mp_set_cur_exp_value_number(mp, &(mp->loop_ptr->value));
         mp->cur_exp.type = mp_known_type;
         /* make |q| an |expr| argument */
         q = mp_stash_cur_exp(mp);
@@ -22248,6 +22266,16 @@ mp_primitive(mp, "pathdirection", mp_nullary_command, mp_path_direction_operatio
 @:pathdirection_}{|pathdirection| primitive@>
 mp_primitive(mp, "pathstate", mp_nullary_command, mp_path_state_operation);
 @:pathdirection_}{|pathstate| primitive@>
+mp_primitive(mp, "pathindex", mp_nullary_command, mp_path_index_operation);
+@:pathdirection_}{|pathindex| primitive@>
+mp_primitive(mp, "pathlastindex", mp_nullary_command, mp_path_lastindex_operation);
+@:pathdirection_}{|pathlastindex| primitive@>
+mp_primitive(mp, "pathlength", mp_nullary_command, mp_path_length_operation);
+@:pathdirection_}{|pathlength| primitive@>
+mp_primitive(mp, "pathfirst", mp_nullary_command, mp_path_first_operation);
+@:pathdirection_}{|pathfirst| primitive@>
+mp_primitive(mp, "pathlast", mp_nullary_command, mp_path_last_operation);
+@:pathdirection_}{|pathlast| primitive@>
 mp_primitive(mp, "penoffset", mp_of_binary_command, mp_pen_offset_operation);
 @:pen_offset_}{|penoffset| primitive@>
 mp_primitive(mp, "arctime", mp_of_binary_command, mp_arc_time_operation);
@@ -22309,10 +22337,10 @@ case mp_and_command:
     return mp_op_string((int) m);
 
 @ @<Declarations@>=
-static void push_of_path_result (MP mp, int what, mp_knot p);
+static void push_of_path_result (MP mp, int what, mp_knot p, mp_number i, mp_number n);
 
 @ @c
-static void push_of_path_result (MP mp, int what, mp_knot p)
+static void push_of_path_result (MP mp, int what, mp_knot p, mp_number i, mp_number n)
 {
     switch (what) {
         case 0:
@@ -22356,11 +22384,47 @@ static void push_of_path_result (MP mp, int what, mp_knot p)
             break;
         case 4:
             {
-               mp_value expr;
-               memset(&expr, 0, sizeof(mp_value));
-               new_number(expr.data.n);
-               set_number_from_int(expr.data.n, mp_knotstate(p));
-               mp_flush_cur_exp(mp, expr);
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                new_number(expr.data.n);
+                set_number_from_int(expr.data.n, mp_knotstate(p));
+                mp_flush_cur_exp(mp, expr);
+            }
+            break;
+        case 5:
+            {
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                set_number_from_subtraction(expr.data.n, i, unity_t);
+                mp_flush_cur_exp(mp, expr);
+            }
+            break;
+        case 6:
+            {
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                number_clone(expr.data.n, n);
+                mp_flush_cur_exp(mp, expr);
+            }
+            break;
+        case 7:
+            {
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                set_number_from_addition(expr.data.n, n, unity_t);
+                mp_flush_cur_exp(mp, expr);
+            }
+            break;
+        case 8: /* first */
+            {
+                mp->cur_exp.type = mp_boolean_type;
+                mp_set_cur_exp_value_boolean(mp, number_equal(i, unity_t) ? mp_true_operation : mp_false_operation);
+            }
+            break;
+        case 9: /* last */
+            {
+                mp->cur_exp.type = mp_boolean_type;
+                mp_set_cur_exp_value_boolean(mp, number_greater(i, n) ? mp_true_operation : mp_false_operation);
             }
             break;
     }
@@ -22416,8 +22480,13 @@ static void mp_do_nullary (MP mp, int c)
         case mp_path_postcontrol_operation:
         case mp_path_direction_operation:
         case mp_path_state_operation:
+        case mp_path_index_operation:
+        case mp_path_lastindex_operation:
+        case mp_path_length_operation:
+        case mp_path_first_operation:
+        case mp_path_last_operation:
             if (mp->loop_ptr && mp->loop_ptr->point != NULL) {
-                push_of_path_result(mp, c - mp_path_point_operation, mp->loop_ptr->point);
+                push_of_path_result(mp, c - mp_path_point_operation, mp->loop_ptr->point, mp->loop_ptr->value, mp->loop_ptr->final_value);
             } else {
                 mp_pair_value(mp, &zero_t, &zero_t);
             }
@@ -23192,7 +23261,7 @@ static void mp_do_unary (MP mp, int c)
                             p = mp_prev_knot(p);
                         }
                     }
-                    push_of_path_result(mp, c - mp_delta_point_operation, p);
+                    push_of_path_result(mp, c - mp_delta_point_operation, p, mp->loop_ptr->value, mp->loop_ptr->final_value);
                 }
             } else {
                 mp_bad_unary(mp, c);
@@ -26759,7 +26828,7 @@ static void mp_find_point (MP mp, mp_number *v_orig, int c)
         p = mp_next_knot(p);
     }
     /* Set the current expression to the desired path coordinates */
-    push_of_path_result(mp, c - mp_point_operation, p);
+    push_of_path_result(mp, c - mp_point_operation, p, zero_t, zero_t);
     free_number(v);
     free_number(n);
 }

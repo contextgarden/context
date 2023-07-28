@@ -573,8 +573,8 @@ typedef enum some_item_codes {
     muexpr_code,                /*tex |\muexpr| */
     numexpression_code,         /*tex |\numexpression| */
     dimexpression_code,         /*tex |\dimexpression| */
-    last_chk_num_code,          /*tex |\ifchknum| */
-    last_chk_dim_code,          /*tex |\ifchkdim| */
+    last_chk_integer_code,      /*tex |\ifchkinteger| */
+    last_chk_dimension_code,    /*tex |\ifchkdimension| */
  // dimen_to_scale_code,        /*tex |\dimentoscale| */
     numeric_scale_code,         /*tex |\numericscale| */
     index_of_register_code,

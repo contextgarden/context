@@ -241,8 +241,8 @@
      \math_fenced_trace
      \ifx\p_fence\v!none
        \Udelimiter\mathghostcode\fam\zerocount
-     \orelse\ifchknum\p_fence\or
-       \Udelimiter\mathghostcode\fam\p_fence
+     \orelse\ifchknumber\p_fence\or
+       \Udelimiter\mathghostcode\fam\lastchknumber
      \else
        \p_fence
      \fi

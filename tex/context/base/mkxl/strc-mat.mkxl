@@ -1037,8 +1037,8 @@
      \strc_math_trace_okay{darkblue}{S #1}%
    \fi
    \scratchdimen\dimexpr\formulaparameter\c!textmargin\relax
-   \ifchkdim#1\or
-     \d_strc_math_hang_state#1%
+   \ifchkdimension#1\or
+     \d_strc_math_hang_state\lastchkdimension
    \orelse\ifchknum#1\or
      \d_strc_math_hang_state#1\scratchdimen
    \orelse\iftok{#1}{+}%

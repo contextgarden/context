@@ -13,6 +13,8 @@ local formatters, gsub, sub = string.formatters, string.gsub, string.sub
 local concat, setmetatableindex = table.concat, table.setmetatableindex
 local byte, gsub = string.byte, string.gsub
 
+local trace_result = false  trackers.register("potrace.results", function(v) trace_result = v end)
+
 local potracefromfile do -- this will move to another module
 
     local newreader      = io.newreader
@@ -236,7 +238,10 @@ local potraceflush do
         else
             result = "origin--cycle"
         end
-     -- print(result)
+        if trace_result then
+            inspect(t)
+            inspect(result)
+        end
         mpprint(result)
     end
 
@@ -320,7 +325,6 @@ local potraceflush do
             height    = height,
             nx        = nx,
             ny        = ny,
-            mode      = "metapost",
             value     = parameters.value,
             optimize  = parameters.optimize,  -- opticurve
             swap      = parameters.swap,

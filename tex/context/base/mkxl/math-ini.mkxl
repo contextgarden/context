@@ -1618,10 +1618,10 @@
   {\numexpr
      \ifempty{#1}%
        \mathordinarycode
-     \orelse\ifchknum#1\or
-       \lastchknum
-     \orelse\ifchknum\begincsname math#1code\endcsname\or % maybe some day a hash for this
-       \lastchknum
+     \orelse\ifchknumber#1\or
+       \lastchknumber
+     \orelse\ifchknumber\begincsname math#1code\endcsname\or % maybe some day a hash for this
+       \lastchknumber
      \else
        \mathordinarycode
      \fi
@@ -4241,35 +4241,35 @@
 \normalsupmarkmode\plusone % 2 also disable ^[^+] in text mode
 
 \permanent\protected\tolerant\def\supscr[#1]#:#2%
-  {\ifchkdim#1\or\Umathopenupheight#1\relax\fi
+  {\ifchkdimension#1\or\Umathopenupheight\lastchkdimension\fi
    \Usuperscript{#2}}
 
 \permanent\protected\tolerant\def\subscr[#1]#:#2%
-  {\ifchkdim#1\or\Umathopenupdepth #1\relax\fi
+  {\ifchkdimension#1\or\Umathopenupdepth\lastchkdimension\fi
    \Usubscript{#2}}
 
 \permanent\protected\tolerant\def\supsubscr[#1]#:#2#3%
-  {\ifchkdim#1\or\Umathopenupheight#1\relax\Umathopenupdepth#1\relax\fi
+  {\ifchkdimension#1\or\Umathopenupheight\lastchkdimension\Umathopenupdepth\lastchkdimension\relax\fi
    \Usuperscript{#2}\Usubscript{#3}}
 
 \permanent\protected\tolerant\def\subsupscr[#1]#:#*#2#3%
-  {\ifchkdim#1\or\Umathopenupheight#1\relax\Umathopenupdepth#1\relax\fi
+  {\ifchkdimension#1\or\Umathopenupheight\lastchkdimension\Umathopenupdepth\lastchkdimension\relax\fi
    \Usubscript{#2}\Usuperscript{#3}}
 
 \permanent\protected\tolerant\def\supprescr[#1]#:#2%
-  {\ifchkdim#1\or\Umathopenupheight#1\relax\fi
+  {\ifchkdimension#1\or\Umathopenupheight\lastchkdimension\fi
    \Usuperprescript{#2}}
 
 \permanent\protected\tolerant\def\subprescr[#1]#:#2%
-  {\ifchkdim#1\or\Umathopenupdepth #1\relax\fi
+  {\ifchkdimension#1\or\Umathopenupdepth\lastchkdimension\fi
    \Usubprescript{#2}}
 
 \permanent\protected\tolerant\def\supsubprescr[#1]#:#2#3%
-  {\ifchkdim#1\or\Umathopenupheight#1\relax\Umathopenupdepth#1\relax\fi
+  {\ifchkdimension#1\or\Umathopenupheight\lastchkdimension\Umathopenupdepth\lastchkdimension\fi
    \Usuperprescript{#2}\Usubprescript{#3}}
 
 \permanent\protected\tolerant\def\subsupprescr[#1]#:#*#2#3%
-  {\ifchkdim#1\or\Umathopenupheight#1\relax\Umathopenupdepth#1\relax\fi
+  {\ifchkdimension#1\or\Umathopenupheight\lastchkdimension\Umathopenupdepth\lastchkdimension\fi
    \Usubprescript{#2}\Usuperprescript{#3}}
 
 %D For now (needed in asciimath):
@@ -4290,30 +4290,6 @@
 %D \stoptyping
 
 \installcorenamespace{mathspacing}
-
-% \protected\def\math_spacing_set#1#2% maybe some day \allmathstyles
-%   {\relax
-%    #1\displaystyle       #2%
-%    #1\crampeddisplaystyle#2%
-%    #1\textstyle          #2%
-%    #1\scriptstyle        #2%
-%    #1\crampedscriptstyle #2%
-%    #1\scriptstyle        #2%
-%    #1\crampedscriptstyle #2%
-%    \relax}
-%
-% \permanent\tolerant\protected\def\definemathspacing[#1]#*[#2]#*[#3]%
-%   {\ifcstok{#2}\v!horizontal
-%      \edefcsname\??mathspacing#1\endcsname
-%        {\math_spacing_set\Umathxscale{\ifchknum#3\or#3\else\plusthousand\fi\relax}}%
-%    \orelse\ifcstok{#2}\v!vertical
-%      \edefcsname\??mathspacing#1\endcsname
-%        {\math_spacing_set\Umathyscale{\ifchknum#3\or#3\else\plusthousand\fi\relax}}%
-%    \else
-%      \edefcsname\??mathspacing#1\endcsname
-%        {\math_spacing_set\Umathxscale{\ifchknum#2\or\number#2\else\plusthousand\fi\relax}%
-%         \math_spacing_set\Umathyscale{\ifchknum#3\or\number#3\orelse\ifchknum#2\or\number#2\else\plusthousand\fi\relax}}%
-%    \fi}
 
 \permanent\tolerant\protected\def\definemathspacing[#1]#*[#2]#*[#3]%
   {\ifcstok{#2}\v!horizontal

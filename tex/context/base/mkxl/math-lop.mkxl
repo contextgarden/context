@@ -64,9 +64,9 @@
    \Uoperator
      \usedcolorparameterattributes{\mathoperatorparameter\c!color}%
      \begincsname\??mathoperatormethod\mathoperatorparameter\c!method\endcsname
-     \ifchkdim\mathoperatorparameter\c!size\or
-       \s!depth \mathoperatorparameter\c!size
-       \s!height\mathoperatorparameter\c!size
+     \ifchkdimension\mathoperatorparameter\c!size\or
+       \s!depth \lastchkdimension
+       \s!height\lastchkdimension
        \s!axis   % variants
        \s!noaxis % extensibles (assumes also axis)
        \s!exact  % make sure we don't overshoot when there are no variants and extensibles
@@ -140,9 +140,9 @@
 \definemathoperator [barint]                [integrals]  [\c!left="2A0D] % Integral with bar
 \definemathoperator [doublebarint]          [integrals]  [\c!left="2A0E] % Integral with double bar
 \definemathoperator [slashint]              [integrals]  [\c!left="2A0F] % Integral with slash
-\definemathoperator [aodownintc]            [integrals]  [\c!left="2A11] 
+\definemathoperator [aodownintc]            [integrals]  [\c!left="2A11]
 \definemathoperator [rectangularpoleintc]   [integrals]  [\c!left="2A12]
-\definemathoperator [semicirclepoleintc]    [integrals]  [\c!left="2A13] 
+\definemathoperator [semicirclepoleintc]    [integrals]  [\c!left="2A13]
 \definemathoperator [circlepoleoutsideintc] [integrals]  [\c!left="2A14]
 \definemathoperator [circlepoleinsideintc]  [integrals]  [\c!left="2A15]
 \definemathoperator [squareintc]            [integrals]  [\c!left="2A16]

@@ -70,7 +70,6 @@ static void free_bitmap(potrace_bitmap_t *bitmap)
 }
 
 static const char* const policies[] = { "black", "white", "left", "right", "minority", "majority", "random", NULL }; 
-static const char* const modes[]    = { "potrace", "metapost", NULL }; 
 
 typedef struct potracer { 
     potrace_state_t  *state;
@@ -78,12 +77,11 @@ typedef struct potracer {
     potrace_bitmap_t *bitmap;
     int               width;
     int               height;
-    int               mode;
     int               swap;
     int               nx;
     int               ny;
     unsigned char     value;
-    /* 3 bytes padding */
+    /* 7 bytes padding */
 } potracer;
 
 static potracer *potracelib_aux_maybe_ispotracer(lua_State *L)
@@ -198,7 +196,6 @@ static int potracelib_new(lua_State *L)
             .bitmap     = NULL,
             .height     = 0,
             .width      = 0,
-            .mode       = 0,
             .swap       = 0, 
             .nx         = 1,
             .ny         = 1,
@@ -216,11 +213,6 @@ static int potracelib_new(lua_State *L)
         if (lua_getfield(L, 1, "swap")    == LUA_TBOOLEAN) { p.swap    = lua_toboolean(L, -1);          } lua_pop(L, 1);
         if (lua_getfield(L, 1, "value")   == LUA_TSTRING)  { p.value   = lmt_tochar   (L, -1);          } lua_pop(L, 1);
                                           
-        if (lua_getfield(L, 1, "mode") == LUA_TSTRING) { 
-            p.mode    = luaL_checkoption(L, -1, "potrace", modes); 
-        } 
-        lua_pop(L, 1);
-
         if (! bytes) {
             return 0;
         } 
@@ -299,37 +291,35 @@ static int potracelib_free(lua_State *L)
     return 0;
 }
 
+static int aux_potracelib_entries(potrace_path_t *entry)
+{
+    int entries = 0;
+    potrace_path_t *e = entry; 
+    while (e) {
+        entries++;
+        e = e->next;
+    }
+    return entries; 
+}
+
 static int potracelib_totable_normal(lua_State *L, potracer *p)
 {
     int entries = 0;
-    int metapost = p->mode == 1;
     potrace_path_t *entry = p->state->plist;
-    while (entry) {
-        entries++;
-        entry = entry->next;
-    }
-    lua_createtable(L, entries, 0);
-    entry = p->state->plist;
-    entries = 0;
+    lua_createtable(L, aux_potracelib_entries(entry), 0);
     while (entry) {
         int segments = 0;
         int n = entry->curve.n;
         int m = n + 1;
         int *tag = entry->curve.tag;
         int sign = (entry->next == NULL || entry->next->sign == '+') ? 1 : 0;
-        int area = entry->area ? 1 : 0; 
         potrace_dpoint_t (*c)[3] =entry->curve.c;
-        if (metapost) { 
-            for (int i = 0; i < n; i++) {
-                if (tag[i] == POTRACE_CORNER) {
-                    m++;
-                }
-            }
-        }
-        lua_createtable(L, m, (sign ? 1 : 0) + (area ? 1 : 0));
-        if (area) {
-            lua_push_integer_at_key(L, size, area);
-        }
+     // int area = entry->area ? 1 : 0; 
+     // lua_createtable(L, m, (sign ? 1 : 0) + (area ? 1 : 0));
+     // if (area) {
+     //     lua_push_integer_at_key(L, size, area);
+     // }
+        lua_createtable(L, m, sign ? 1 : 0);
         if (sign) {
             lua_push_boolean_at_key(L, sign, 1);
         }
@@ -341,42 +331,23 @@ static int potracelib_totable_normal(lua_State *L, potracer *p)
         for (int i = 0; i < n; i++) {
             switch (tag[i]) {
                 case POTRACE_CORNER:
-                    /* n == 4 : line(s) */
-                    if (metapost) { 
-                        lua_createtable(L, 2, 0);
-                        lua_push_number_at_index(L, 1, c[i][1].x);
-                        lua_push_number_at_index(L, 2, c[i][1].y);
-                        lua_rawseti(L, -2, ++segments);
-                        lua_createtable(L, 2, 0);
-                        lua_push_number_at_index(L, 1, c[i][2].x);
-                        lua_push_number_at_index(L, 2, c[i][2].y);
-                    } else { 
-                        lua_createtable(L, 4, 0);
-                        lua_push_number_at_index(L, 1, c[i][1].x);
-                        lua_push_number_at_index(L, 2, c[i][1].y);
-                        lua_push_number_at_index(L, 3, c[i][2].x);
-                        lua_push_number_at_index(L, 4, c[i][2].y);
-                    }
+                    lua_createtable(L, 2, 0);
+                    lua_push_number_at_index(L, 1, c[i][1].x);
+                    lua_push_number_at_index(L, 2, c[i][1].y);
+                    lua_rawseti(L, -2, ++segments);
+                    lua_createtable(L, 2, 0);
+                    lua_push_number_at_index(L, 1, c[i][2].x);
+                    lua_push_number_at_index(L, 2, c[i][2].y);
                     lua_rawseti(L, -2, ++segments);
                 	break;
                 case POTRACE_CURVETO:
-                    /* n == 6 : curve */
                     lua_createtable(L, 6, 0);
-                    if (metapost) { 
-                        lua_push_number_at_index(L, 1, c[i][2].x); // point
-                        lua_push_number_at_index(L, 2, c[i][2].y);
-                        lua_push_number_at_index(L, 3, c[i][0].x); // control point 
-                        lua_push_number_at_index(L, 4, c[i][0].y);
-                        lua_push_number_at_index(L, 5, c[i][1].x); // control point 
-                        lua_push_number_at_index(L, 6, c[i][1].y);
-                    } else {
-                        lua_push_number_at_index(L, 1, c[i][0].x); // control point 
-                        lua_push_number_at_index(L, 2, c[i][0].y);
-                        lua_push_number_at_index(L, 3, c[i][1].x); // control point 
-                        lua_push_number_at_index(L, 4, c[i][1].y);
-                        lua_push_number_at_index(L, 5, c[i][2].x); // point 
-                        lua_push_number_at_index(L, 6, c[i][2].y);
-                    }
+                    lua_push_number_at_index(L, 1, c[i][2].x);
+                    lua_push_number_at_index(L, 2, c[i][2].y);
+                    lua_push_number_at_index(L, 3, c[i][0].x);
+                    lua_push_number_at_index(L, 4, c[i][0].y);
+                    lua_push_number_at_index(L, 5, c[i][1].x);
+                    lua_push_number_at_index(L, 6, c[i][1].y);
                     lua_rawseti(L, -2, ++segments);
                 	break;
             }
@@ -392,50 +363,41 @@ static int potracelib_totable_normal(lua_State *L, potracer *p)
     to speed them up. 
 */
 
-static void aux_potracelib_append(lua_State *L, int *index, long x, long y)
-{
-    lua_push_number_at_index(L, ++*index, x);
-    lua_push_number_at_index(L, ++*index, y);
-}
-
 static int potracelib_totable_debug(lua_State *L, potracer *p)
 {
     potrace_path_t *entry = p->state->plist;
     int entries = 0;
-    lua_newtable(L);
+    lua_createtable(L, aux_potracelib_entries(entry), 0);
     while (entry) { 
         point_t *pt = entry->priv->pt;
+        point_t cur = pt[entry->priv->len-1];
+        point_t prev = cur; 
         int index = 0;
+        int sign = (entry->next == NULL || entry->next->sign == '+') ? 1 : 0;
         lua_newtable(L);
-        if (entry->sign == '+') {
-            point_t cur = pt[entry->priv->len-1];
-            point_t prev = cur; 
-            aux_potracelib_append(L, &index, cur.x, cur.y);
-            for (int i = 0; i < entry->priv->len; i++) {
-                if (pt[i].x != cur.x && pt[i].y != cur.y) {
-                    cur = prev;
-                    aux_potracelib_append(L, &index, cur.x, cur.y);
-                }
-                prev = pt[i];
-            }
-            aux_potracelib_append(L, &index, pt[entry->priv->len-1].x, pt[entry->priv->len-1].y);
-        } else {
-            point_t cur = pt[0];
-            point_t prev = cur; 
-            aux_potracelib_append(L, &index, cur.x, cur.y);
-            for (int i = entry->priv->len - 1; i >= 0; i--) {
-                if (pt[i].x != cur.x && pt[i].y != cur.y) {
-                    cur = prev;
-                    aux_potracelib_append(L, &index, cur.x, cur.y);
-                }
-                prev = pt[i];
-            }
-            aux_potracelib_append(L, &index, pt[0].x, pt[0].y);
+        if (sign) {
+            lua_push_boolean_at_key(L, sign, 1);
         }
+        /*tex 
+            We can get a redundant point 0 when we go left and come back right on the same line, 
+            but we can simplify that at the receiving end with |p := simplified(p) ;| and we can 
+            then even unspike the path (very unlikely needed). 
+        */
+        lua_push_number_at_index(L, ++index, cur.x);
+        lua_push_number_at_index(L, ++index, cur.y);
+        for (int i = 0; i < entry->priv->len; i++) {
+            if (pt[i].x != cur.x && pt[i].y != cur.y) {
+                cur = prev;
+                lua_push_number_at_index(L, ++index, cur.x);
+                lua_push_number_at_index(L, ++index, cur.y);
+            }
+            prev = pt[i];
+        }
+// if (pt[entry->priv->len-1].x != cur.x && pt[entry->priv->len-1].y != cur.y) {
+        lua_push_number_at_index(L, ++index, pt[entry->priv->len-1].x);
+        lua_push_number_at_index(L, ++index, pt[entry->priv->len-1].y);
+// }
         lua_rawseti(L, -2, ++entries);
-     // if (! entry->next || entry->next->sign == '+') {
-     //     printf("next\n");
-     // }
         entry = entry->next;
     }
     return 1;
