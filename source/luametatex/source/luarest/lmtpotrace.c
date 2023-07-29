@@ -75,6 +75,7 @@ typedef struct potracer {
     potrace_state_t  *state;
     potrace_param_t  *parameters;
     potrace_bitmap_t *bitmap;
+    const char       *bytes;
     int               width;
     int               height;
     int               swap;
@@ -89,12 +90,19 @@ static potracer *potracelib_aux_maybe_ispotracer(lua_State *L)
     return (potracer *) luaL_checkudata(L, 1, POTRACE_METATABLE);
 }
 
+static unsigned char lmt_tochar(lua_State *L, int index)
+{
+    const char *s = lua_tostring(L, index);
+    return s ? (unsigned char) s[0] : '0';
+}
+
 static void potracelib_aux_get_parameters(lua_State *L, int index, potracer *p) 
 {
     if (lua_getfield(L, index, "size")      == LUA_TNUMBER ) { p->parameters->turdsize     = lua_tointeger(L, -1); } lua_pop(L, 1);
     if (lua_getfield(L, index, "threshold") == LUA_TNUMBER ) { p->parameters->alphamax     = lua_tonumber (L, -1); } lua_pop(L, 1);
     if (lua_getfield(L, index, "tolerance") == LUA_TNUMBER ) { p->parameters->opttolerance = lua_tonumber (L, -1); } lua_pop(L, 1);
     if (lua_getfield(L, index, "optimize")  == LUA_TBOOLEAN) { p->parameters->opticurve    = lua_toboolean(L, -1); } lua_pop(L, 1);
+    if (lua_getfield(L, index, "value")     == LUA_TSTRING ) { p->value                    = lmt_tochar   (L, -1); } lua_pop(L, 1);
 
     if (lua_getfield(L, index, "policy") == LUA_TSTRING ) { 
         p->parameters->turnpolicy = luaL_checkoption(L, -1, "minority", policies); 
@@ -102,19 +110,11 @@ static void potracelib_aux_get_parameters(lua_State *L, int index, potracer *p)
     lua_pop(L, 1);
 }
 
-static int potracelib_aux_trace(potracer *p) 
-{
-    p->state = potrace_trace(p->parameters, p->bitmap);
-    if (! p->state || p->state->status != POTRACE_STATUS_OK) {
-        return 0;
-    } else { 
-        return 1; 
-    }
-}
-
-static void potracelib_get_bitmap(potracer *p, const char *bytes) 
+static void potracelib_get_bitmap(potracer *p) 
 {
     /* Kind of suboptimal but it might change anyway so let the compiler worry about it. */
+
+    const char *bytes = p->bytes;
 
     if (bytes) { 
         unsigned char c = p->value;
@@ -178,11 +178,6 @@ static void potracelib_get_bitmap(potracer *p, const char *bytes)
     }
 }
 
-static unsigned char lmt_tochar(lua_State *L, int index)
-{
-    const char *s = lua_tostring(L, index);
-    return s ? (unsigned char) s[0] : '0';
-}
 
 # define max_explode 3
 
@@ -194,6 +189,7 @@ static int potracelib_new(lua_State *L)
             .state      = NULL,
             .parameters = NULL,
             .bitmap     = NULL,
+            .bytes      = NULL,
             .height     = 0,
             .width      = 0,
             .swap       = 0, 
@@ -203,9 +199,8 @@ static int potracelib_new(lua_State *L)
         };
 
         size_t length = 0;
-        const char *bytes = NULL;
 
-        if (lua_getfield(L, 1, "bytes")   == LUA_TSTRING)  { bytes     = lua_tolstring(L, -1, &length); } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "bytes")   == LUA_TSTRING)  { p.bytes   = lua_tolstring(L, -1, &length); } lua_pop(L, 1);
         if (lua_getfield(L, 1, "width")   == LUA_TNUMBER)  { p.width   = lua_tointeger(L, -1);          } lua_pop(L, 1);
         if (lua_getfield(L, 1, "height")  == LUA_TNUMBER)  { p.height  = lua_tointeger(L, -1);          } lua_pop(L, 1);
         if (lua_getfield(L, 1, "nx")      == LUA_TNUMBER)  { p.nx      = lua_tointeger(L, -1);          } lua_pop(L, 1);
@@ -213,7 +208,7 @@ static int potracelib_new(lua_State *L)
         if (lua_getfield(L, 1, "swap")    == LUA_TBOOLEAN) { p.swap    = lua_toboolean(L, -1);          } lua_pop(L, 1);
         if (lua_getfield(L, 1, "value")   == LUA_TSTRING)  { p.value   = lmt_tochar   (L, -1);          } lua_pop(L, 1);
                                           
-        if (! bytes) {
+        if (! p.bytes) {
             return 0;
         } 
 
@@ -236,32 +231,21 @@ static int potracelib_new(lua_State *L)
             p.ny = tmp;
         }
 
-        p.bitmap = new_bitmap(p.width, p.height);
-        if (! p.bitmap) {
-            return 0;
-        }
-
         p.parameters = potrace_param_default();
         if (! p.parameters) {
             free_bitmap(p.bitmap);
             return 0;
         }
 
-        potracelib_get_bitmap(&p, bytes);
-
         potracelib_aux_get_parameters(L, 1, &p); 
 
-        if (! potracelib_aux_trace(&p)) {
-            return 0;
-        } else { 
-            lua_pop(L, 1);
-            potracer *pp = (potracer *) lua_newuserdatauv(L, sizeof(potracer), 0);
-            if (pp) { 
-                *pp = p; 
-                luaL_getmetatable(L, POTRACE_METATABLE);
-                lua_setmetatable(L, -2);
-                return 1;
-            }
+        lua_pop(L, 1);
+        potracer *pp = (potracer *) lua_newuserdatauv(L, sizeof(potracer), 0);
+        if (pp) { 
+            *pp = p; 
+            luaL_getmetatable(L, POTRACE_METATABLE);
+            lua_setmetatable(L, -2);
+            return 1;
         }
     }
     return 0;
@@ -291,22 +275,39 @@ static int potracelib_free(lua_State *L)
     return 0;
 }
 
-static int aux_potracelib_entries(potrace_path_t *entry)
+static int aux_potracelib_entries(potracer *p)
 {
+    potrace_path_t *entry = p->state->plist;
     int entries = 0;
-    potrace_path_t *e = entry; 
-    while (e) {
+    while (entry) {
         entries++;
-        e = e->next;
+        entry = entry->next;
     }
     return entries; 
 }
 
-static int potracelib_totable_normal(lua_State *L, potracer *p)
+static potrace_path_t *aux_potrace_goto_first(potracer *p, int nofentries, int *first, int *last, int *used) {
+    potrace_path_t *entry = p->state->plist;
+    if (*first <= 0) { 
+        *first = 1; 
+    }
+    if ((! *last) || (*last > nofentries)) { 
+        *last = nofentries; 
+    }
+    for (int i = 1; i < *first; i++) {
+        entry = entry->next;
+    }
+    *used = *last - *first + 1; 
+    return entry; 
+}
+
+static int potracelib_totable_normal(lua_State *L, potracer *p, int first, int last)
 {
     int entries = 0;
-    potrace_path_t *entry = p->state->plist;
-    lua_createtable(L, aux_potracelib_entries(entry), 0);
+    int nofentries = aux_potracelib_entries(p);
+    int used = nofentries;
+    potrace_path_t *entry = aux_potrace_goto_first(p, nofentries, &first, &last, &used);
+    lua_createtable(L, used, 0);
     while (entry) {
         int segments = 0;
         int n = entry->curve.n;
@@ -314,16 +315,11 @@ static int potracelib_totable_normal(lua_State *L, potracer *p)
         int *tag = entry->curve.tag;
         int sign = (entry->next == NULL || entry->next->sign == '+') ? 1 : 0;
         potrace_dpoint_t (*c)[3] =entry->curve.c;
-     // int area = entry->area ? 1 : 0; 
-     // lua_createtable(L, m, (sign ? 1 : 0) + (area ? 1 : 0));
-     // if (area) {
-     //     lua_push_integer_at_key(L, size, area);
-     // }
-        lua_createtable(L, m, sign ? 1 : 0);
+        lua_createtable(L, m, sign ? 2 : 1);
         if (sign) {
             lua_push_boolean_at_key(L, sign, 1);
         }
-        /* n == 2 : move */
+        lua_push_integer_at_key(L, index, first + entries); /* for tracing when we select */
         lua_createtable(L, 2, 0);
         lua_push_number_at_index(L, 1, c[n-1][2].x);
         lua_push_number_at_index(L, 2, c[n-1][2].y);
@@ -353,7 +349,11 @@ static int potracelib_totable_normal(lua_State *L, potracer *p)
             }
         }
         lua_rawseti(L, -2, ++entries);
-        entry = entry->next;
+        if (first + entries > last) { 
+            break; 
+        } else {
+            entry = entry->next;
+        }
     }
     return 1;
 }
@@ -363,42 +363,63 @@ static int potracelib_totable_normal(lua_State *L, potracer *p)
     to speed them up. 
 */
 
-static int potracelib_totable_debug(lua_State *L, potracer *p)
+static int potracelib_totable_debug(lua_State *L, potracer *p, int first, int last)
 {
-    potrace_path_t *entry = p->state->plist;
     int entries = 0;
-    lua_createtable(L, aux_potracelib_entries(entry), 0);
+    int nofentries = aux_potracelib_entries(p);
+    int used = nofentries;
+    potrace_path_t *entry = aux_potrace_goto_first(p, nofentries, &first, &last, &used);
+    lua_createtable(L, used, 0);
     while (entry) { 
         point_t *pt = entry->priv->pt;
-        point_t cur = pt[entry->priv->len-1];
-        point_t prev = cur; 
-        int index = 0;
+        int segments = 0;
         int sign = (entry->next == NULL || entry->next->sign == '+') ? 1 : 0;
         lua_newtable(L);
         if (sign) {
             lua_push_boolean_at_key(L, sign, 1);
         }
+        lua_push_integer_at_key(L, index, first + entries); /* for tracing when we select */
         /*tex 
             We can get a redundant point 0 when we go left and come back right on the same line, 
-            but we can simplify that at the receiving end with |p := simplified(p) ;| and we can 
-            then even unspike the path (very unlikely needed). 
+            but we can simplify that at the receiving end. 
         */
-        lua_push_number_at_index(L, ++index, cur.x);
-        lua_push_number_at_index(L, ++index, cur.y);
-        for (int i = 0; i < entry->priv->len; i++) {
-            if (pt[i].x != cur.x && pt[i].y != cur.y) {
-                cur = prev;
-                lua_push_number_at_index(L, ++index, cur.x);
-                lua_push_number_at_index(L, ++index, cur.y);
+     // if (sign)  { 
+            point_t cur = pt[0];
+            point_t prev = cur; 
+            lua_push_number_at_index(L, ++segments, cur.x);
+            lua_push_number_at_index(L, ++segments, cur.y);
+            for (int i = entry->priv->len -1; i >= 0; i--) {
+                if (pt[i].x != cur.x && pt[i].y != cur.y) {
+                    cur = prev;
+                    lua_push_number_at_index(L, ++segments, cur.x);
+                    lua_push_number_at_index(L, ++segments, cur.y);
+                }
+                prev = pt[i];
             }
-            prev = pt[i];
-        }
-// if (pt[entry->priv->len-1].x != cur.x && pt[entry->priv->len-1].y != cur.y) {
-        lua_push_number_at_index(L, ++index, pt[entry->priv->len-1].x);
-        lua_push_number_at_index(L, ++index, pt[entry->priv->len-1].y);
-// }
+            lua_push_number_at_index(L, ++segments, pt[0].x);
+            lua_push_number_at_index(L, ++segments, pt[0].y);
+     // } else {
+     //     point_t cur = pt[entry->priv->len-1];
+     //     point_t prev = cur; 
+     //     lua_push_number_at_index(L, ++segments, cur.x);
+     //     lua_push_number_at_index(L, ++segments, cur.y);
+     //     for (int i = 0; i < entry->priv->len; i++) {
+     //         if (pt[i].x != cur.x && pt[i].y != cur.y) {
+     //             cur = prev;
+     //             lua_push_number_at_index(L, ++segments, cur.x);
+     //             lua_push_number_at_index(L, ++segments, cur.y);
+     //         }
+     //         prev = pt[i];
+     //     }
+     //     lua_push_number_at_index(L, ++segments, pt[entry->priv->len-1].x);
+     //     lua_push_number_at_index(L, ++segments, pt[entry->priv->len-1].y);
+     // }
         lua_rawseti(L, -2, ++entries);
-        entry = entry->next;
+        if (first + entries > last) { 
+            break; 
+        } else {
+            entry = entry->next;
+        }
     }
     return 1;
 }
@@ -406,65 +427,38 @@ static int potracelib_totable_debug(lua_State *L, potracer *p)
 static int potracelib_totable(lua_State *L)
 {
     int debug = lua_toboolean(L, 2);
+    int first = lmt_optinteger(L, 3, 0);
+    int last = lmt_optinteger(L, 4, first);
     lua_settop(L, 1);
     potracer *p = potracelib_aux_maybe_ispotracer(L);
     if (p) { 
-        return debug ? potracelib_totable_debug(L, p) : potracelib_totable_normal(L, p);
+        return debug ? potracelib_totable_debug(L, p, first, last) : potracelib_totable_normal(L, p, first, last);
     } else {
         return 0;
     }
 }
 
-/*
-static int potracelib_trace(lua_State *L)
-{
-    int debug = lua_toboolean(L, 2);
-    lua_settop(L, 1);
-    if (potracelib_new(L)) { 
-        potracer *p = potracelib_aux_maybe_ispotracer(L);
-        if (p) { 
-            int success = debug ? potracelib_totable_debug(L, p) : potracelib_totable_normal(L, p);
-            potracelib_aux_free(p);
-            return success; 
-        } 
-    }
-    return 0;
-}
-*/
-
-static int potracelib_retrace(lua_State *L)
+static int potracelib_process(lua_State *L)
 {
     potracer *p = potracelib_aux_maybe_ispotracer(L);
     if (p) { 
         potracelib_aux_get_parameters(L, 2, p); 
-        if (potracelib_aux_trace(p)) {
-            lua_pushboolean(L, 1);
-            return 1;
+        if (p->bitmap) {
+            free_bitmap(p->bitmap);
+        }
+        p->bitmap = new_bitmap(p->width, p->height);
+        if (p->bitmap) {
+            potracelib_get_bitmap(p);
+            p->state = potrace_trace(p->parameters, p->bitmap);
+            if (p->state && p->state->status == POTRACE_STATUS_OK) {
+                lua_pushboolean(L, 1);
+                return 1;
+            }
         }
     }
     lua_pushboolean(L, 0);
     return 1;
 }
-
-/* 
-static int potracelib_tometapost(lua_State *L)
-{
-    potracer *p = potracelib_aux_maybe_ispotracer(L);
-    if (p) { 
-    }
-    return 0;
-}
-*/
-
-/* 
-static int potracelib_totex(lua_State *L)
-{
-    potracer *p = potracelib_aux_maybe_ispotracer(L);
-    if (p) { 
-    }
-    return 0;
-}
-*/
 
 static int potracelib_tostring(lua_State * L)
  {
@@ -489,13 +483,10 @@ static const struct luaL_Reg potracelib_instance_metatable[] = {
 
 static const luaL_Reg potracelib_function_list[] =
 {
-    { "new",        potracelib_new        },
-    { "free",       potracelib_free       },
-    { "totable",    potracelib_totable    },
- /* { "tometapost", potracelib_tometapost }, */
- /* { "totex",      potracelib_totex      }, */
- /* { "trace",      potracelib_trace      }, */
-    { "retrace",    potracelib_retrace    },
+    { "new",        potracelib_new     },
+    { "free",       potracelib_free    },
+    { "process",    potracelib_process },
+    { "totable",    potracelib_totable },
     /* */
     { NULL,    NULL             },
 };

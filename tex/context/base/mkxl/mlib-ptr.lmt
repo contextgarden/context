@@ -47,7 +47,7 @@ local potracefromfile do -- this will move to another module
         return (gsub(content,".",thresholds))
     end
 
-    potracefromfile = function(filename,threshold)
+    potracefrompng = function(filename,threshold)
 
         if not filename then
             return false
@@ -139,7 +139,7 @@ local potracestripped, potracecount do
 
     local lpegmatch    = lpeg.match
 
-    local sp = lpeg.patterns.space
+    local sp = lpeg.patterns.whitespace^1
     local n  = 0
     local p  = (lpeg.Cmt((1-sp) * (sp + lpeg.P(-1)), function() n = n + 1 end) + lpeg.P(1))^0
 
@@ -161,18 +161,16 @@ local potraceflush do
     local potracenew     = potrace.new
     local potracefree    = potrace.free
     local potracetotable = potrace.totable
-    local potraceretrace = potrace.retrace
+    local potraceprocess = potrace.process
 
     function potrace.trace(t,polygon)
         local p = potracenew(t)
-        if p then
+        if p and potraceprocess(p) then
             local r = potracetotable(p,polygon)
             potracefree(p)
             return r
         end
     end
-
-    local potracetrace = potrace.trace
 
     local getparameterset = metapost.getparameterset
     ----- getparameter    = metapost.getparameter
@@ -220,17 +218,19 @@ local potraceflush do
             if alternative then
                 r = r + 1 ; result[r] = "image(\n"
                 for i=1,#t do
-                    add(alternative,t[i],"&&cycle);\n")
+                    add(alternative,t[i],"&cycle);\n")
                 end
                 r = r + 1 ; result[r] = ")"
             else
                 for i=1,#t do
-                    if r > 1 then
+                    if i > 1 then
                         r = r + 1 ; result[r] = "&&&&\n"
                     end
-                    add("(",t[i],"&&&&cycle)")
+                    add("(",t[i],"&cycle)")
                 end
-                r = r + 1 ; result[r] = "\n&&&&cycle"
+                if #t > 1 then
+                    r = r + 1 ; result[r] = "\n&&&&cycle"
+                end
             end
             result = concat(result)
         elseif alternative then
@@ -263,6 +263,7 @@ local potraceflush do
     end
 
     local instance = false
+
     local bytes    = false
     local width    = 0
     local height   = 0
@@ -284,6 +285,27 @@ local potraceflush do
             ['textext.urt("\\potracebitmap{%t}")xysized(last_potraced_width,last_potraced_height)']
             (b)
         )
+    end
+
+    local function potracefromtxt(filename,threshold)
+        local bytes = io.loaddata(filename)
+        if bytes and bytes ~= 0 then
+            return checked(bytes,0,0)
+        end
+    end
+
+    local filehandles = {
+        png = potracefrompng,
+        txt = potracefromtxt,
+    }
+
+    local function potracefromfile(filename,threshold)
+        if filename and filename ~= "" then
+            local handle = filehandles[file.suffix(filename)]
+            if handle then
+                return handle(filename,threshold)
+            end
+        end
     end
 
     function mp.lmt_start_potrace()
@@ -326,12 +348,12 @@ local potraceflush do
             nx        = nx,
             ny        = ny,
             value     = parameters.value,
+            size      = parameters.size,      -- turdsize
             optimize  = parameters.optimize,  -- opticurve
             swap      = parameters.swap,
             threshold = parameters.threshold, -- alphamax
             policy    = parameters.policy,    -- turnpolicy
             tolerance = parameters.tolerance, -- opttolerance
-            size      = parameters.size,      -- turdsize
         }
         -- we keep bytes for tracing, maybe keep option
         parameters.width  = width *nx
@@ -352,12 +374,30 @@ local potraceflush do
             local result      = false
             local alternative = parameters.alternative
             local polygon     = parameters.polygon or false
+            local index       = parameters.index
+            local first       = index or parameters.first
+            local last        = index or parameters.last
             if alternative == "text" then
                 potracepattern()
             else
-                result = potracetotable(instance,polygon)
-                potraceflush(result,alternative,polygon)
+                -- we can return a count
+                local okay = potraceprocess(instance, {
+                    value     = parameters.value,
+                    size      = parameters.size,
+                    optimize  = parameters.optimize,  -- opticurve
+                    swap      = parameters.swap,
+                    threshold = parameters.threshold, -- alphamax
+                    policy    = parameters.policy,    -- turnpolicy
+                    tolerance = parameters.tolerance, -- opttolerance
+                } )
+                if okay then
+                    result = potracetotable(instance,polygon,first,last)
+                    potraceflush(result,alternative,polygon)
+                end
             end
+            parameters.first = nil
+            parameters.last  = nil
+            parameters.index = nil
         end
     end
 
