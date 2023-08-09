@@ -3011,10 +3011,13 @@ static int texlib_aux_someitem(lua_State *L, int code)
         case luatex_revision_code:
         case current_group_level_code:
         case current_group_type_code:
+        case current_stack_size_code:
         case current_if_level_code:
         case current_if_type_code:
         case current_if_branch_code:
+            // Do more of these directly 
             return texlib_aux_scan_internal(L, some_item_cmd, code, -1);
+            // as we do with: 
         case last_left_class_code:
             lua_pushinteger(L, lmt_math_state.last_left);
             return 1;

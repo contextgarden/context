@@ -1005,8 +1005,9 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
                 } else {
                     return 0;
                 }
-            case dimension_cmd:
             case integer_cmd:
+            case index_cmd:
+            case dimension_cmd:
             case posit_cmd:
                 if (eq_type(p) == cmd && eq_value(p) == chr) {
              // if (eq_type(p) == cmd && eq_value(p) == chr && eq_level(p) == cur_level) {
@@ -1065,7 +1066,7 @@ void tex_eq_define(halfword p, singleword cmd, halfword chr)
 
 */
 
-void tex_eq_word_define(halfword p, int w)
+void tex_eq_word_define(halfword p, int w) /* not used */
 {
     int trace = tracing_assigns_par > 0;
     if (eq_value(p) == w) {
@@ -1095,7 +1096,7 @@ void tex_eq_word_define(halfword p, int w)
 
 */
 
-void tex_geq_define(halfword p, singleword cmd, halfword chr)
+void tex_geq_define(halfword p, singleword cmd, halfword chr) /* not used */
 {
     int trace = tracing_assigns_par > 0;
     if (trace) {
@@ -1111,7 +1112,7 @@ void tex_geq_define(halfword p, singleword cmd, halfword chr)
     }
 }
 
-void tex_geq_word_define(halfword p, int w)
+void tex_geq_word_define(halfword p, int w) /* not used */
 {
     int trace = tracing_assigns_par > 0;
     if (trace) {
@@ -1158,7 +1159,7 @@ void tex_define(int g, halfword p, singleword t, halfword e) /* int g -> singlew
      // }
         tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
         tex_aux_set_eq_data(p, t, e, f, level_one);
-    } else if (tex_aux_equal_eq(p, t, f, e)) {
+    } else if (! is_constrained(g) && tex_aux_equal_eq(p, t, f, e)) {
         /* hm, we tweak the ref ! */
         if (trace) {
             tex_aux_diagnostic_trace(p, "reassigning");
@@ -1170,6 +1171,8 @@ void tex_define(int g, halfword p, singleword t, halfword e) /* int g -> singlew
         }
         if (eq_level(p) == cur_level) {
             tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+        } else if (is_retained(g)) {
+            /* nothing */
         } else if (cur_level > level_one) {
             tex_aux_eq_save(p, eq_level(p));
         }
@@ -1179,6 +1182,11 @@ void tex_define(int g, halfword p, singleword t, halfword e) /* int g -> singlew
         tex_aux_diagnostic_trace(p, "into");
     }
 }
+
+/*tex 
+    Used in |\dimendef| but also |\dimensiondef| and alike. Before it gets calles we already 
+    redefined to |\relax| so we might have saved. 
+*/
 
 void tex_define_again(int g, halfword p, singleword t, halfword e) /* int g -> singleword g */
 {
@@ -1192,13 +1200,15 @@ void tex_define_again(int g, halfword p, singleword t, halfword e) /* int g -> s
          // }
             tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
             tex_aux_set_eq_data(p, t, e, f, level_one);
-        } else if (tex_aux_equal_eq(p, t, f, e)) {
+        } else if (! is_constrained(g) && tex_aux_equal_eq(p, t, f, e)) {
             /* hm, we tweak the ref ! */
             tex_aux_diagnostic_trace(p, "reassigning");
         } else {
-            tex_aux_diagnostic_trace(p, "changing");
+            tex_aux_diagnostic_trace(p, is_retained(g) ? "retained changing": "changing");
             if (eq_level(p) == cur_level) {
                 tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+            } else if (is_retained(g)) { 
+                /* nothing */
             } else if (cur_level > level_one) {
                 tex_aux_eq_save(p, eq_level(p));
             }
@@ -1210,6 +1220,10 @@ void tex_define_again(int g, halfword p, singleword t, halfword e) /* int g -> s
         set_eq_value(p, e);    
     }
 }
+
+/*tex
+    The next one is used when we let something. 
+*/
 
 void tex_define_inherit(int g, halfword p, singleword f, singleword t, halfword e)
 {
@@ -1224,17 +1238,19 @@ void tex_define_inherit(int g, halfword p, singleword f, singleword t, halfword 
      // }
         tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
         tex_aux_set_eq_data(p, t, e, f, level_one);
-    } else if (tex_aux_equal_eq(p, t, f, e)) {
+    } else if (! is_constrained(g) && tex_aux_equal_eq(p, t, f, e)) {
         if (trace) {
             tex_aux_diagnostic_trace(p, "reassigning");
             return;
         }
     } else {
         if (trace) {
-            tex_aux_diagnostic_trace(p, "changing");
+            tex_aux_diagnostic_trace(p, is_retained(g) ? "retained changing" : "changing");
         }
         if (eq_level(p) == cur_level) {
             tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+        } else if (is_retained(g)) {
+            /* nothing */
         } else if (cur_level > level_one) {
             tex_aux_eq_save(p, eq_level(p));
         }
@@ -1245,7 +1261,10 @@ void tex_define_inherit(int g, halfword p, singleword f, singleword t, halfword 
     }
 }
 
-/* beware: when we swap a global vsize with a local ... we can get side effect. */
+/*tex
+    Used in swapping but beware: when we swap a global vsize with a local ... we can get side 
+    effect. No retain here. 
+*/
 
 static void tex_aux_just_define(int g, halfword p, halfword e)
 {
@@ -1255,7 +1274,6 @@ static void tex_aux_just_define(int g, halfword p, halfword e)
             tex_aux_diagnostic_trace(p, "globally changing");
         }
         tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
-        set_eq_value(p, e);
     } else {
         if (trace) {
             tex_aux_diagnostic_trace(p, "changing");
@@ -1266,8 +1284,8 @@ static void tex_aux_just_define(int g, halfword p, halfword e)
             tex_aux_eq_save(p, eq_level(p));
         }
         set_eq_level(p, cur_level);
-        set_eq_value(p, e);
     }
+    set_eq_value(p, e);
     if (trace) {
         tex_aux_diagnostic_trace(p, "into");
     }
@@ -1306,6 +1324,7 @@ void tex_define_swapped(int g, halfword p1, halfword p2, int force)
                 case register_mu_glue_cmd: /* unchecked */
                 case internal_mu_glue_cmd: /* unchecked */
                 case integer_cmd:
+                case index_cmd:
                 case dimension_cmd:
                 case posit_cmd:
                     tex_aux_just_define(g, p1, v2);
@@ -1375,6 +1394,10 @@ void tex_define_swapped(int g, halfword p1, halfword p2, int force)
     );
 }
 
+/*tex 
+    Used in pushing and popping. No retain here. 
+*/
+
 void tex_forced_define(int g, halfword p, singleword f, singleword t, halfword e)
 {
     int trace = tracing_assigns_par > 0;
@@ -1384,9 +1407,6 @@ void tex_forced_define(int g, halfword p, singleword f, singleword t, halfword e
         }
         tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
         set_eq_level(p, level_one);
-        set_eq_type(p, t);
-        set_eq_flag(p, f);
-        set_eq_value(p, e);
     } else {
         if (trace) {
             tex_aux_diagnostic_trace(p, "changing");
@@ -1397,14 +1417,18 @@ void tex_forced_define(int g, halfword p, singleword f, singleword t, halfword e
             tex_aux_eq_save(p, eq_level(p));
         }
         set_eq_level(p, cur_level);
-        set_eq_type(p, t);
-        set_eq_flag(p, f);
-        set_eq_value(p, e);
     }
+    set_eq_type(p, t);
+    set_eq_flag(p, f);
+    set_eq_value(p, e);
     if (trace) {
         tex_aux_diagnostic_trace(p, "into");
     }
 }
+
+/*tex 
+    Registers and other values that are stored directly without reference.
+*/
 
 void tex_word_define(int g, halfword p, halfword w)
 {
@@ -1416,11 +1440,17 @@ void tex_word_define(int g, halfword p, halfword w)
             }
             eq_value(p) = w;
             set_eq_level(p, level_one);
-        } else if (eq_value(p) == w) {
+        } else if (! is_constrained(g) && eq_value(p) == w) {
             if (trace) {
                 tex_aux_diagnostic_trace(p, "reassigning");
                 return;
             }
+        } else if (is_retained(g)) {
+            if (trace) {
+                tex_aux_diagnostic_trace(p, "retained changing");
+set_eq_level(p, cur_level);
+            }
+            eq_value(p) = w;
         } else {
             if (trace) {
                 tex_aux_diagnostic_trace(p, "changing");
@@ -1442,6 +1472,7 @@ void tex_word_define(int g, halfword p, halfword w)
     }
 }
 
+/*
 void tex_forced_word_define(int g, halfword p, singleword f, halfword w)
 {
     if (tex_aux_mutation_permitted(p)) {
@@ -1457,6 +1488,11 @@ void tex_forced_word_define(int g, halfword p, singleword f, halfword w)
                 tex_aux_diagnostic_trace(p, "reassigning");
                 return;
             }
+        } else if (is_retained(g)) {
+            if (trace) {
+                tex_aux_diagnostic_trace(p, "retained changing");
+            }
+            eq_value(p) = w;
         } else {
             if (trace) {
                 tex_aux_diagnostic_trace(p, "changing");
@@ -1473,6 +1509,7 @@ void tex_forced_word_define(int g, halfword p, singleword f, halfword w)
         eq_flag(p) = f;
     }
 }
+*/
 
 /*tex
 

@@ -134,7 +134,7 @@
 \newdimension  \d_chem_height
 \newdimension  \d_chem_depth
 
-\permanent\tolerant\protected\def\startchemical[#1]#*[#2]%
+\permanent\tolerant\protected\def\startchemical[#S#1]#*[#S#2]%
   {\ifmmode\vcenter\else\vbox\fi % vpack ?
    \bgroup
    \synchronizestrut{\chemicalparameter\c!strut}%
@@ -210,7 +210,7 @@
     \enforced\let\chemical\structurechemical
 \to\everystructurechemical
 
-\permanent\tolerant\protected\def\structurechemical[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\structurechemical[#1]#*[#2]#*[#S#3]%
   {\ifparameter#3\or
      \expandafter\strc_chem_indeed_three
    \else
@@ -227,7 +227,7 @@
    \relax
    \ignorespaces}
 
-\def\strc_chem_indeed_two[#1][#2]% why no [#3] here
+\def\strc_chem_indeed_two[#1][#S#2]% why no [#3] here
   {\clf_chemicalcomponent
       {#1}%
       {\detokenize{#2}}%

@@ -482,7 +482,7 @@
 
 \aliased\let\synonymentry\relax
 
-\permanent\tolerant\protected\def\placelistofsynonyms[#1]#*[#2]%
+\permanent\tolerant\protected\def\placelistofsynonyms[#1]#*[#S#2]%
   {\begingroup
    \cdef\currentsimplelist{#1}%
    \doifelsecommandhandler\??simplelist\currentsimplelist
@@ -504,7 +504,7 @@
      {}% todo: message that invalid
    \endgroup}
 
-\permanent\tolerant\protected\def\completelistofsynonyms[#1]#*[#2]%
+\permanent\tolerant\protected\def\completelistofsynonyms[#1]#*[#S#2]%
   {\begingroup
    \cdef\currentsimplelist{#1}%
    \doifelsecommandhandler\??simplelist\currentsimplelist
@@ -686,7 +686,7 @@
 %
 % maybe just 'commandset' and then combine
 
-\permanent\tolerant\protected\def\placelistofsorts[#1]#*[#2]%
+\permanent\tolerant\protected\def\placelistofsorts[#1]#*[#S#2]%
   {\begingroup
    \cdef\currentsimplelist{#1}%
    \strc_constructions_initialize{#1}%
@@ -710,7 +710,7 @@
    \simplelistparameter\c!after}%
    \endgroup}
 
-\permanent\tolerant\protected\def\completelistofsorts[#1]#*[#2]%
+\permanent\tolerant\protected\def\completelistofsorts[#1]#*[#S#2]%
   {\begingroup
    \cdef\currentsimplelist{#1}%
    \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%

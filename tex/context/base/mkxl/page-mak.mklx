@@ -50,7 +50,7 @@
 %D The \type {\start}||\type {\stop} macros are used for both the direct and
 %D indirect way. The parameterless call will build a simple box.
 
-\permanent\tolerant\protected\def\startmakeup[#1]#*[#2]%
+\permanent\tolerant\protected\def\startmakeup[#1]#*[#S#2]%
   {\ifparameters
       \expandafter\page_makeup_start_nop
    \else
@@ -61,7 +61,7 @@
 
 %D The simple case: just a box with text dimensions.
 
-\protected\def\page_makeup_start_nop[#name][#settings]% dummies
+\protected\def\page_makeup_start_nop[#name][#S#settings]% dummies
   {\page
    \setupheader[\c!state=\v!empty]%
    \setupfooter[\c!state=\v!empty]%
@@ -104,7 +104,7 @@
 % \definelayout[whatever][height=2cm]
 % \setuplayout[whatever]
 
-\def\page_makeup_start_indeed[#name][#settings]%
+\def\page_makeup_start_indeed[#name][#S#settings]%
   {% the next grouping hack is somewhat messy:
    \begingroup
    % we need to figure out the current layout

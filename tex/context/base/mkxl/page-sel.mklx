@@ -57,12 +57,12 @@
 
 \newinteger\c_page_selectors_n
 
-\permanent\tolerant\protected\def\insertpages[#filename]#spacer[#emptylist]#spacer[#settings]%
+\permanent\tolerant\protected\def\insertpages[#filename]#spacer[#emptylist]#spacer[#S#settings]%
   {\doifelseassignment{#emptylist}
      {\page_selectors_insert_indeed[#filename][][#emptylist]}
      {\page_selectors_insert_indeed[#filename][#emptylist][#settings]}}
 
-\def\page_selectors_insert_indeed[#filename][#emptylist][#settings]%
+\def\page_selectors_insert_indeed[#filename][#emptylist][#S#settings]%
   {\bgroup
    \dontcomplain
    \getfiguredimensions[#filename]%
@@ -88,7 +88,7 @@
 \let\page_selectors_filter_step_indeed\gobbleoneargument
 \let\page_selectors_filter_step       \gobbleoneargument
 
-\permanent\tolerant\protected\def\filterpages[#filename]#spacer[#selection]#spacer[#settings]% % \noffigurepages not yet supported
+\permanent\tolerant\protected\def\filterpages[#filename]#spacer[#selection]#spacer[#S#settings]% % \noffigurepages not yet supported
   {\bgroup
    \dontcomplain
    \getfiguredimensions[#filename]%
@@ -140,7 +140,7 @@
       \box\scratchbox}%
    \page}%\stoppagemakeup}
 
-\permanent\tolerant\protected\def\copypages[#filename]#spacer[#settings]#spacer[#figuresettings]%
+\permanent\tolerant\protected\def\copypages[#filename]#spacer[#S#settings]#spacer[#S#figuresettings]%
   {\bgroup
    \getfiguredimensions[#filename]%
    \setupcurrentwithpages
@@ -198,7 +198,7 @@
 
 \installcorenamespace{combinepagesalternative}
 
-\permanent\tolerant\protected\def\combinepages[#filename]#spacer[#settings]% a=perpag b=free
+\permanent\tolerant\protected\def\combinepages[#filename]#spacer[#S#settings]% a=perpag b=free
   {\bgroup
    \dontcomplain
    \getfiguredimensions[#filename]%
@@ -327,7 +327,7 @@
 
 % This macro cuts a page into n parts that can be pasted together.
 
-\permanent\tolerant\protected\def\slicepages[#filename]#spacer[#oddsettings]#spacer[#evensettings]%
+\permanent\tolerant\protected\def\slicepages[#filename]#spacer[#S#oddsettings]#spacer[#S#evensettings]%
   {\ifparameter#evensettings\or
      \page_selectors_slice_indeed[#filename][#oddsettings][#evensettings]%
    \else
@@ -338,7 +338,7 @@
 \mutable\let\slicedpagestepx \!!zerocount
 \mutable\let\slicedpagestepy \!!zerocount
 
-\def\page_selectors_slice_indeed[#filename][#oddsettings][#evensettings]%
+\def\page_selectors_slice_indeed[#filename][#S#oddsettings][#S#evensettings]%
   {\bgroup
    \dontcomplain
    \glet\slicedpagenumber\!!zerocount
@@ -397,7 +397,7 @@
 
 % \starttext \slicepages[slice1.pdf][n=3] \stoptext
 
-\permanent\protected\def\trimpages[#1]% was for a over decade in p-pdf-51.tex
+\permanent\protected\def\trimpages[#S#1]% was for a over decade in p-pdf-51.tex
   {\begingroup
    \getdummyparameters
      [\c!file=dummy,%

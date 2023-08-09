@@ -103,7 +103,7 @@
 
 \pushoverloadmode
 
-\permanent\tolerant\protected\def\setuplinetable[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\setuplinetable[#S#1]#*[#S#2]#*[#S#3]%
   {\ifarguments\or
      \getparameters[\??linetable][#1]%
    \or
@@ -186,7 +186,7 @@
    \global\advanceby      \c_tabl_lines_column\plusone
    \advanceby\scratchskip \linetablecparameter\c!distance}
 
-\permanent\tolerant\protected\def\startlinetablecell[#1]%
+\permanent\tolerant\protected\def\startlinetablecell[#S#1]%
   {\global\setbox\b_tabl_lines_cell\hbox\bgroup
    \ifparameter#1\or
      \getparameters[\??linetable c:\the\c_tabl_lines_column][#1]%

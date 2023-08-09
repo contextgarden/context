@@ -1500,7 +1500,7 @@
 
 % End of experiment.
 
-\tolerant\protected\def\strc_formulas_start_formula#1#:#*[#2]% setting leftskip adaption is slow !
+\tolerant\protected\def\strc_formulas_start_formula#1#:#*[#S#2]% setting leftskip adaption is slow !
   {\strc_formulas_check_side_box
    \ifhmode
      \par
@@ -1684,7 +1684,7 @@
 
 \permanent\letcsname\e!stop\v!formulas\endcsname\relax
 
-\tolerant\protected\def\strc_formulas_nested_formula_start[#1]%
+\tolerant\protected\def\strc_formulas_nested_formula_start[#S#1]%
   {\begingroup
    \ifparameter#1\or
       \setupformula[\c!width=\d_strc_formulas_display_width,#1]%
@@ -1800,7 +1800,7 @@
 \mutable\lettonothing\currentplaceformulareference
 \mutable\lettonothing\currentplaceformulasuffix
 
-\permanent\tolerant\protected\def\startplaceformula[#1]%
+\permanent\tolerant\protected\def\startplaceformula[#S#1]%
   {\begingroup
    \global\c_strc_formulas_incremented\conditionalfalse
    \global\c_strc_formulas_referenced\conditionalfalse
@@ -1811,10 +1811,10 @@
      \expandafter\strc_formulas_start_place_nop
    \fi[#1]}
 
-\def\strc_formulas_start_place_yes[#1]% todo
+\def\strc_formulas_start_place_yes[#S#1]% todo
   {\doifassignmentelse{#1}\strc_formulas_start_place_parameters\strc_formulas_start_place_reference[#1]}
 
-\def\strc_formulas_start_place_nop[#1]%
+\def\strc_formulas_start_place_nop[#S#1]%
   {\glettonothing\currentplaceformulareference
    \glettonothing\currentplaceformulasuffix
    \strc_formulas_place_nop}
@@ -1828,7 +1828,7 @@
 \mutable\lettonothing\currentplaceformulabookmark
 \mutable\lettonothing\currentplaceformulalist
 
-\def\strc_formulas_start_place_parameters[#1]% maybe a dedicated setup handler
+\def\strc_formulas_start_place_parameters[#S#1]% maybe a dedicated setup handler
   {\resetdummyparameter\c!title
    \resetdummyparameter\c!reference
    \resetdummyparameter\c!bookmark

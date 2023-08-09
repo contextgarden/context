@@ -60,7 +60,7 @@
 
 \installframedcommandhandler \??interactionbar {interactionbar} \??interactionbar
 
-\permanent\tolerant\protected\def\interactionbar[#tag]#spacer[#settings]% somewhat messy
+\permanent\tolerant\protected\def\interactionbar[#tag]#spacer[#S#settings]% somewhat messy
   {\iflocation
      \begingroup
      \ifhastok={#tag}%
@@ -100,7 +100,7 @@
 %D shortcuts to their four associated buttons. The symbols are derived from the
 %D symbols linked to the entries.
 
-\permanent\tolerant\protected\def\interactionbuttons[#settings]#spacer[#list]%
+\permanent\tolerant\protected\def\interactionbuttons[#S#settings]#spacer[#list]%
   {\iflocation
       \ifcstok{\interactionbarparameter\c!state}\v!start
         \ifparameter#list\or

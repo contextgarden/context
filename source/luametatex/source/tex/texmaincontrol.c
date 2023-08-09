@@ -3678,6 +3678,12 @@ static int tex_aux_valid_arithmic(int cmd, int *index, int *level, int *varcmd, 
             *original = cur_chr;
             *simple = integer_cmd;
             return 1;
+     // case index_cmd:
+     //     *index = cur_cs;
+     //     *level = int_val_level;
+     //     *original = cur_chr;
+     //     *simple = index_cmd;
+     //     return 1;
         case dimension_cmd:
             *index = cur_cs;
             *level = dimen_val_level;
@@ -4492,6 +4498,13 @@ static void tex_aux_set_shorthand_def(int a, int force)
                 {
                     halfword v = tex_scan_int(1, NULL);
                     tex_define_again(a, p, integer_cmd, v);
+                }
+                break;
+            case parameter_def_code:
+         /* case index_def_csname_code: */
+                {
+                    halfword v = tex_get_parameter_index(tex_scan_parameter_index());
+                    tex_define_again(a, p, index_cmd, v);
                 }
                 break;
             case dimension_def_code:
@@ -5942,6 +5955,8 @@ static void tex_run_prefixed_command(void)
             /*tex This one is special */
             case inherited_code:     flags = add_inherited_flag    (flags); break;
             case constant_code:      flags = add_constant_flag     (flags); break;
+            case retained_code:      flags = add_retained_flag     (flags); break;
+            case constrained_code:   flags = add_constrained_flag  (flags); break;
             default:
                 goto PICKUP;
         }
@@ -6085,6 +6100,12 @@ static void tex_run_prefixed_command(void)
         case gluespec_cmd:
         case mugluespec_cmd:
             tex_aux_set_constant_register(cur_cmd, cur_cs, flags);
+            break;
+        /*tex  
+            This one is special because in this usage scenario it is not set but does something. 
+        */
+        case index_cmd: 
+            tex_inject_parameter(cur_chr);            
             break;
         default:
             if (lastprefix < 0) {
@@ -6847,6 +6868,7 @@ inline static void tex_aux_big_switch(int mode, int cmd)
         case shorthand_def_cmd: 
         case lua_value_cmd: 
         case integer_cmd: 
+        case index_cmd: 
         case dimension_cmd: 
         case posit_cmd: 
         case gluespec_cmd: 
@@ -6903,19 +6925,18 @@ inline static void tex_aux_big_switch(int mode, int cmd)
         case subscript_cmd:          
         case superscript_cmd:        
         case math_script_cmd:      mode == mmode ? tex_run_math_script()           : tex_aux_run_insert_dollar_sign(); break;
-
         case equation_number_cmd:  mode == mmode ? tex_run_math_equation_number()  : tex_aux_run_illegal_case();       break;
         case left_brace_cmd:       mode == mmode ? tex_run_math_left_brace()       : tex_aux_run_left_brace();         break;
 
         /* */
 
-        case vadjust_cmd:          mode == vmode ? tex_aux_run_illegal_case()  : tex_run_vadjust();               break;
-        case discretionary_cmd:    mode == vmode ? tex_aux_run_new_paragraph() : tex_aux_run_discretionary();     break;
-        case explicit_space_cmd:   mode == vmode ? tex_aux_run_new_paragraph() : tex_aux_run_space();             break;
-        case hmove_cmd:            mode == vmode ? tex_aux_run_move()          : tex_aux_run_illegal_case();      break;
-        case vmove_cmd:            mode == vmode ? tex_aux_run_illegal_case()  : tex_aux_run_move();              break;    
-        case hskip_cmd:            mode == vmode ? tex_aux_run_new_paragraph() : tex_aux_run_glue();              break;                  
-        case un_hbox_cmd:          mode == vmode ? tex_aux_run_new_paragraph() : tex_run_unpackage();             break;   
+        case vadjust_cmd:          mode == vmode ? tex_aux_run_illegal_case()  : tex_run_vadjust();           break;
+        case discretionary_cmd:    mode == vmode ? tex_aux_run_new_paragraph() : tex_aux_run_discretionary(); break;
+        case explicit_space_cmd:   mode == vmode ? tex_aux_run_new_paragraph() : tex_aux_run_space();         break;
+        case hmove_cmd:            mode == vmode ? tex_aux_run_move()          : tex_aux_run_illegal_case();  break;
+        case vmove_cmd:            mode == vmode ? tex_aux_run_illegal_case()  : tex_aux_run_move();          break;    
+        case hskip_cmd:            mode == vmode ? tex_aux_run_new_paragraph() : tex_aux_run_glue();          break;                  
+        case un_hbox_cmd:          mode == vmode ? tex_aux_run_new_paragraph() : tex_run_unpackage();         break;   
 
         /* */
 
@@ -6941,8 +6962,8 @@ inline static void tex_aux_big_switch(int mode, int cmd)
             } 
             break;
         case char_given_cmd:   
-        case other_char_cmd:   
         case letter_cmd:    
+        case other_char_cmd:   
             switch (mode) { 
                 case vmode: tex_aux_run_new_paragraph(); break;
                 case hmode: tex_aux_run_text_letter();   break;

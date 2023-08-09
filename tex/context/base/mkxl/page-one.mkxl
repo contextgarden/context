@@ -220,6 +220,25 @@
       \or
         % align (normal)
         \page_otr_command_flush_bottom_insertions
+%
+% experiment: see beta1.mkxl
+%
+% \page_scale_text_box_trace
+% %scratchdimen\dimexpr\textheight-\pagelastheight\relax
+% \scratchdimen\dimexpr\pagelastheight-\pagegoal\relax
+% \ifdim\scratchdimen>\zeropoint
+%     \advance\scratchdimen-\pagelaststretch
+%     \ifdim\scratchdimen>\zeropoint
+%       \writestatus{!}{UNDERFULL: \the\scratchdimen}%
+%     %       \vskip\scratchdimen
+%       \vrule
+%         height \scratchdimen
+%         depth  \zeropoint
+%         width  \emwidth
+%       \relax
+%     \fi
+% \fi
+%
       \or
         % baseline
         \unskip % new per 2019-06-18, otherwise weird bottom floats

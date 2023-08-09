@@ -16,7 +16,10 @@ local lower, gsub = string.lower, string.gsub
 local concat = table.concat
 local write_nl = (logs and logs.writer) or (texio and texio.write_nl) or print
 
-local otlversion  = 3.133
+local versions = {
+    otl = 3.133,
+    one = 1.513,
+}
 
 local helpinfo = [[
 <?xml version="1.0"?>
@@ -471,10 +474,22 @@ end
 function scripts.fonts.unpack()
     local name = removesuffix(basename(givenfiles[1] or ""))
     if name and name ~= "" then
-        local cacheid   = getargument("cache") or "otl"
-        local cache     = containers.define("fonts", cacheid, otlversion, true) -- cache is temp
-        local cleanname = containers.cleanname(name)
-        local data = containers.read(cache,cleanname)
+        local cacheid   = false
+        local cache     = false
+        local cleanname = false
+        local data      = false
+        local list = { getargument("cache") or false, "otl", "one" }
+        for i=1,#list do
+            cacheid   = list[i]
+            if cacheid then
+                cache     = containers.define("fonts", cacheid, versions[cacheid], true) -- cache is temp
+                cleanname = containers.cleanname(name)
+                data      = containers.read(cache,cleanname)
+                if data then
+                    break
+                end
+            end
+        end
         if data then
             local savename = addsuffix(cleanname .. "-unpacked","tma")
             report("fontsave, saving data in %s",savename)

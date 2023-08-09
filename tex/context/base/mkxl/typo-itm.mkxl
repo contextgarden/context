@@ -68,7 +68,7 @@
 \newbox      \b_typo_items_symbols
 \newbox      \b_typo_items_texts
 
-\permanent\tolerant\protected\def\items[#1]#:#2%
+\permanent\tolerant\protected\def\items[#S#1]#:#2%
   {\bgroup
    \setupitems[#1]%
    \edef\p_typo_items_alternative{\itemsparameter\c!alternative}%

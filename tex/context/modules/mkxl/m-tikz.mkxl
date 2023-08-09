@@ -89,6 +89,7 @@
 \overloadmode\zerocount
 
 \newtoks\everytikzpicture
+\newtoks\everyinsidetikzpicture
 
 % \appendtoks
 %     \resetcharacterspacing
@@ -115,7 +116,8 @@
    \let\meaning\meaningless
  % \pushoverloadmode
    \ifdefined\PackageError\else \let\PackageError\tikzerrormessage \fi
-   \tikzpicture}
+   \tikzpicture
+   \the\everyinsidetikzpicture}
 
 \permanent\protected\def\stoptikzpicture
   {\endtikzpicture

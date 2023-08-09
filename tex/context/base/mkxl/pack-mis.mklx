@@ -48,7 +48,7 @@
    \cdef\currentplacement{#tag}%
    \doifelsenextoptionalcs\pack_placement_yes\pack_placement_nop}
 
-\def\pack_placement_yes[#settings]%
+\def\pack_placement_yes[#S#settings]%
   {\setupcurrentplacement[#settings]%
    \pack_placement_nop}
 

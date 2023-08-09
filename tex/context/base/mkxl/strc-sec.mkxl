@@ -588,7 +588,7 @@
      \fi
    \fi}
 
-\permanent\tolerant\protected\def\setupsection[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\setupsection[#1]#*[#S#2]#*[#S#3]%
   {\ifparameter#1\else
      \push_macro_currenthead
      \cdef\currenthead{\ifcsname\??headlevel#1\endcsname#1\else\sectionheadsection{#1}\fi}%
@@ -652,7 +652,7 @@
 \def\strc_sectioning_handle_nop_indeed_nop#1#2#3%
   {\strc_sectioning_handle{#1}{\c!reference={#2},\c!title={#3}}{}} % name ref nr title --
 
-\permanent\tolerant\protected\def\strc_sectioning_start[#1]#*[#2]#*[#3]% for the moment no grouping, too annoying with page breaks
+\permanent\tolerant\protected\def\strc_sectioning_start[#1]#*[#S#2]#*[#S#3]% for the moment no grouping, too annoying with page breaks
   {\push_macro_currentnamedsection
    \push_macro_currentstructurereferenceprefix
    \edef\currentnamedsection{#1}%

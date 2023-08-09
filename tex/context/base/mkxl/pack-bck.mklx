@@ -80,7 +80,7 @@
      \expandafter\pack_backgrounds_start_ignore
    \fi}
 
-\tolerant\def\pack_backgrounds_start_indeed[#settings]%
+\tolerant\def\pack_backgrounds_start_indeed[#S#settings]%
   {\setupcurrentbackground[#settings,\c!state=\v!start,\c!offset=\v!overlay]%
    \let\pack_backgrounds_stop\pack_backgrounds_stop_indeed
    \setbox\scratchboxone\vbox\bgroup
@@ -91,7 +91,7 @@
      \leftskip \backgroundparameter\c!leftoffset
      \rightskip\backgroundparameter\c!rightoffset}
 
-\tolerant\def\pack_backgrounds_start_ignore[#settings]%
+\tolerant\def\pack_backgrounds_start_ignore[#S#settings]%
   {\let\pack_backgrounds_stop\pack_backgrounds_stop_ignore}
 
 \let\pack_backgrounds_stop\relax

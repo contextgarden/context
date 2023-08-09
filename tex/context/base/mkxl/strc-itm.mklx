@@ -238,6 +238,7 @@
 
 \mutable\let   \currentitemlevel                 \!!zerocount % public
 \mutable\def   \currentnofitems                  {\the\c_strc_itemgroups_max_items}
+\mutable\def   \currentitemindex                 {\the\c_strc_itemgroups_n_of_items}
 \mutable\def   \currentitemnumber                {\strc_counters_raw_sub\v_strc_itemgroups_counter\currentitemlevel} % public
 
 \newtoks       \itemgroupcommands                % maybe public
@@ -368,8 +369,8 @@
 \definevspacing[\v!item @\v!tight]     [penalty:500]   % discourage
 \definevspacing[\v!item @\v!verytight] [penalty:5000]  % discourage more
 
-\definevspacing[\v!item @-5]    [penalty:-5]
-\definevspacing[\v!item @5]     [penalty:5]
+\definevspacing[\v!item @-5] [penalty:-5]
+\definevspacing[\v!item @5]  [penalty:5]
 
 \def\strc_itemgroups_insert_break_when_needed#break%
   {\ifcase\c_strc_itemgroups_optimize
@@ -701,7 +702,7 @@
 
 \let\strc_itemgroups_normal_setup\setupitemgroup
 
-\permanent\overloaded\tolerant\protected\def\setupitemgroup[#category]#spacer[#levels]#spacer[#options]#spacer[#settings]% category level|each options|settings settings|options
+\permanent\overloaded\tolerant\protected\def\setupitemgroup[#S#category]#spacer[#S#levels]#spacer[#S#options]#spacer[#S#settings]% category level|each options|settings settings|options
   {\ifarguments
      % nothing to set up
    \or
@@ -902,7 +903,7 @@
 \lettonothing\p_itemgroups_options
 \lettonothing\p_itemgroups_extra_options
 
-\permanent\tolerant\protected\def\startitemgroup[#category]#spacer[#options]#spacer[#settings]%
+\permanent\tolerant\protected\def\startitemgroup[#S#category]#spacer[#S#options]#spacer[#S#settings]%
   {\begingroup % (1)
    \nofarguments\lastarguments
    \cdef\currentitemgroup{#category}% no nested mixing of itemgroups
@@ -960,6 +961,9 @@
    \iftrialtypesetting
      \strc_counters_save\v_strc_itemgroups_counter
    \fi
+\globalpushmacro\c_strc_itemgroups_n_of_items
+\global
+   \c_strc_itemgroups_n_of_items\zerocount
    \c_strc_itemgroups_n_of_items\zerocount
    \strc_itemgroups_check_n_of_items
    \ifempty\p_itemgroups_options
@@ -1119,8 +1123,8 @@
     % will be redefined in page-mix
 
     \ifdefined\startcolumns \else
-        \protected\def\startcolumns[#settings]{}
-        \protected\def\stopcolumns            {}
+        \protected\def\startcolumns[#S#settings]{}
+        \protected\def\stopcolumns              {}
     \fi
 
     \def\strc_itemgroups_start_columns
@@ -1176,6 +1180,7 @@
    \iftrialtypesetting
      \strc_counters_restore\v_strc_itemgroups_counter % could happen in LUA
    \fi
+\globalpopmacro\c_strc_itemgroups_n_of_items
    \global\advanceby\c_strc_itemgroups_nesting\minusone
    \xdef\currentitemlevel{\the\c_strc_itemgroups_nesting}%
   %\ifconditional\c_strc_itemgroups_text
@@ -1269,8 +1274,9 @@
 
 \mutable\lettonothing\currentitemreference
 
-\tolerant\permanent\protected\def\startitemgroupitem[#reference]% we can reuse more
-  {\def\currentitemreference{#reference}%
+\noaligned\tolerant\permanent\protected\def\startitemgroupitem[#reference]% we can reuse more
+  {\strc_itemgroups_begin
+   \def\currentitemreference{#reference}%
    \ifconditional\c_strc_itemgroups_text
      % begin of item
    \else
@@ -1307,7 +1313,7 @@
    \boundary\c_strc_itemgroups_boundary % was signal
    \itemgroupparameter\c!command}
 
-\protected\permanent\def\stopitemgroupitem
+\noaligned\protected\permanent\def\stopitemgroupitem
   {\ifhmode
      \endstrut % new per 2017-12-15
    \fi
@@ -1315,7 +1321,11 @@
      % nothing
    \else
      \endgraf
-   \fi}
+   \fi
+   \strc_itemgroups_end}
+
+\lettonothing\strc_itemgroups_begin
+\lettonothing\strc_itemgroups_end
 
 \tolerant\permanent\protected\def\startitemgrouphead[#reference]%
   {\ifconditional\c_strc_itemgroups_first \else
@@ -1682,7 +1692,10 @@
    \else
      \par % done twice?
    \fi
-   \advanceby\c_strc_itemgroups_n_of_items\plusone
+\iftrialtypesetting\else
+\global
+       \advanceby\c_strc_itemgroups_n_of_items\plusone
+\fi
    \strc_itemgroups_optimize_breaks
    \strc_itemgroups_check_indenting
    \dontleavehmode
@@ -2028,6 +2041,87 @@
    \dp\b_strc_itemgroups\strutdepth
    \box\b_strc_itemgroups
    \ignorepars} % \ignorespaces
+
+%D New per 2023-08-01
+
+\newdimension\d_strc_itemgroups_inbetween_table
+\newdimension\d_strc_itemgroups_column_distance
+\newdimension\d_strc_itemgroups_column_width
+
+\def\strc_itemgroups_table_begin
+  {\NC}
+
+\def\strc_itemgroups_table_end_row
+  {\NR
+   \ifzerodim\d_strc_itemgroups_inbetween_table\orelse\ifnum
+     \numexpression
+       \c_strc_itemgroups_n_of_items/\c_strc_itemgroups_columns
+     \relax<\numexpression
+       \c_strc_itemgroups_max_items /\c_strc_itemgroups_columns
+     \relax
+       \TB[\the\d_strc_itemgroups_inbetween_table]%
+   \fi}
+
+\noaligned\def\strc_itemgroups_table_end
+  {\ifcase\numexpression\c_strc_itemgroups_n_of_items mod \c_strc_itemgroups_columns\relax
+     \expandafter\strc_itemgroups_table_end_row
+   \fi}
+
+\def\strc_itemgroups_table_wrapup
+  {\scratchcounter\numexpression\c_strc_itemgroups_n_of_items mod \c_strc_itemgroups_columns\relax
+   \ifcase\scratchcounter\else
+     \unexpandedloop \plusone \scratchcounter \plusone{\NC}\expandafter\NR
+   \fi}
+
+\let\strc_itemgroups_table_pickup\relax
+
+\setupitemgroup[\c!columndistance=\emwidth]
+
+\tolerant\permanent\protected\def\strc_itemgroups_start_table[#1]#*[#S#2]#*[#S#3]%
+  {\startitemgroup[#1][#2][#3]%
+   \edef\m_strc_itemgroups_after{\itemgroupparameter\c!after}%
+   \setbox\scratchbox\vbox{\itemgroupparameter\c!inbetween}%
+   \d_strc_itemgroups_inbetween_table\htdp\scratchbox
+   \itemgroupparameter\c!before
+   \letitemgroupparameter\c!before\relax
+   \letitemgroupparameter\c!after\relax
+   \letitemgroupparameter\c!inbetween\relax
+   \c_strc_itemgroups_columns\itemgroupparameter\c!n
+   \let\strc_itemgroups_begin\strc_itemgroups_table_begin
+   \let\strc_itemgroups_end  \strc_itemgroups_table_end
+   %
+   % horrible ... we have \dividebydsize\textwidth{1em}{3}
+   %
+   \scratchdistance\itemgroupparameter\c!columndistance
+   \d_strc_itemgroups_column_distance\leftskip
+   \d_strc_itemgroups_column_width\hsize
+   \advanceby\d_strc_itemgroups_column_width   -\c_strc_itemgroups_columns\d_strc_itemgroups_column_distance
+   \divideby \d_strc_itemgroups_column_width    \c_strc_itemgroups_columns
+   \advanceby\d_strc_itemgroups_column_distance \scratchdistance
+   \advanceby\d_strc_itemgroups_column_width   -\scratchdistance
+   \advanceby\d_strc_itemgroups_column_width    \dimexpr\scratchdistance/\c_strc_itemgroups_columns\relax
+   %
+   \c_strc_itemgroups_optimize\zerocount % otherwise we inject vertical breaks between struts
+   % inlining confusses the verbose name parser
+   \normalexpanded{\strc_itemgroups_table_bootstrap
+     \csname\e!start#1\v!table\endcsname
+     \csname\e!stop #1\v!table\endcsname % watch the 'l' specification below, maybe a format key
+     {\expandedloop \plusone \c_strc_itemgroups_columns \plusone{|p(\the\d_strc_itemgroups_column_width)l}|}}}
+
+\protected\def\strc_itemgroups_table_bootstrap#1#2#3%
+  {\protected\def\strc_itemgroups_table_pickup##L#1##R#2##1%
+     {\starttabulate[#3][\c!before=,\c!after=,\c!split=\v!no,\c!unit=\the\d_strc_itemgroups_column_distance]%
+        ##1\relax\strc_itemgroups_table_wrapup
+      \stoptabulate
+      \normalexpanded{\stopitemgroup\m_strc_itemgroups_after}}%
+   \strc_itemgroups_table_pickup}
+
+\appendtoks
+    \frozen\instance\protected\edefcsname\e!stop \currentitemgroup\v!table\endcsname
+      {}%\stopitemgrouptable}%
+    \frozen\instance\protected\edefcsname\e!start\currentitemgroup\v!table\endcsname
+      {\strc_itemgroups_start_table[\currentitemgroup]}%
+\to \everydefineitemgroup
 
 %D Done again.
 

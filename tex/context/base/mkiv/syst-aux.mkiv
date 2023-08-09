@@ -573,7 +573,7 @@
 \def\setgvalue    #1{\expandafter\gdef\csname#1\endcsname}
 \def\setevalue    #1{\expandafter\edef\csname#1\endcsname}
 \def\setxvalue    #1{\expandafter\xdef\csname#1\endcsname}
-\def\getvalue     #1{\csname#1\endcsname} % maybe: \begincsname#1\endcsname
+\def\getvalue     #1{\begincsname#1\endcsname}
 \def\letvalue     #1{\expandafter\let \csname#1\endcsname}
 \def\letgvalue    #1{\expandafter\glet\csname#1\endcsname}
 \def\resetvalue   #1{\expandafter\let \csname#1\endcsname\empty}
@@ -585,7 +585,7 @@
 \def\setugvalue   #1{\protected\expandafter\gdef\csname#1\endcsname}
 \def\setuxvalue   #1{\protected\expandafter\xdef\csname#1\endcsname}
 
-\protected\def\getuvalue#1{\csname#1\endcsname}
+\protected\def\getuvalue#1{\begincsname#1\endcsname}
 
 %D \macros
 %D   {globallet,glet}

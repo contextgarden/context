@@ -38,7 +38,7 @@
 \permanent\tolerant\protected\def\definebreakpoints[#1]%
   {\clf_definebreakpoints{#1}} % todo: public implementor
 
-\permanent\tolerant\protected\def\definebreakpoint[#1]#*[#2]#*[#3]% name char settings
+\permanent\tolerant\protected\def\definebreakpoint[#1]#*[#2]#*[#S#3]% name char settings
   {\begingroup
    \getdummyparameters
      [\c!type=\plusone,\c!nleft=\plusthree,\c!nright=\plusthree,%

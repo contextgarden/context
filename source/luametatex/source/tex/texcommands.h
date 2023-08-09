@@ -129,6 +129,7 @@ typedef enum tex_command_code {
     match_cmd,                        /*tex match a macro parameter */
     end_match_cmd,                    /*tex end of parameters to macro */
     parameter_reference_cmd,          /*tex the value passed as parameter */
+ /* parameter_relative_cmd,        */ /*tex discarded experiment: too ugly, reference to parent parameters |#-XX| */
     end_paragraph_cmd,                /*tex end of paragraph (|\par|) */
     end_job_cmd,                      /*tex end of job (|\end|, |\dump|) */
     delimiter_number_cmd,             /*tex specify delimiter numerically (|\delimiter|) */
@@ -226,6 +227,7 @@ typedef enum tex_command_code {
     set_font_cmd,                     /*tex set current font (font identifiers) */
     define_font_cmd,                  /*tex define a font file (|\font|) */
     integer_cmd,                      /*tex the equivalent is a halfword number */
+    index_cmd,
     posit_cmd,                        
     dimension_cmd,                    /*tex the equivalent is a halfword number representing a dimension */
     gluespec_cmd,                     /*tex the equivalent is a halfword reference to glue */
@@ -516,6 +518,7 @@ typedef enum some_item_codes {
     luatex_revision_code,       /*tex |\luatexrevision| */
     current_group_level_code,   /*tex |\currentgrouplevel| */
     current_group_type_code,    /*tex |\currentgrouptype| */
+    current_stack_size_code,    /*tex |\currentstacksize| */
     current_if_level_code,      /*tex |\currentiflevel| */
     current_if_type_code,       /*tex |\currentiftype| */
     current_if_branch_code,     /*tex |\currentifbranch| */
@@ -554,6 +557,7 @@ typedef enum some_item_codes {
     scaled_extra_space_code,
     last_arguments_code,        /*tex |\lastarguments| */
     parameter_count_code,       /*tex |\parametercount| */
+    parameter_index_code,       /*tex |\parametercount| */
  /* lua_value_function_code, */ /*tex |\luavaluefunction| */
     insert_progress_code,       /*tex |\insertprogress| */
     left_margin_kern_code,      /*tex |\leftmarginkern| */
@@ -709,6 +713,7 @@ typedef enum shorthand_def_codes {
     toks_def_code,        /*tex |\toksdef| */
     lua_def_code,         /*tex |\luadef| */
     integer_def_code,
+    parameter_def_code,
     posit_def_code,
     dimension_def_code,
     gluespec_def_code,
@@ -774,12 +779,13 @@ typedef enum expand_after_codes {
     expand_code,
     expand_toks_code,
     expand_active_code,
-    semi_expand_code,
+    expand_semi_code,
     expand_after_toks_code,
+    expand_parameter_code,
  /* expand_after_fi_code, */ /* keep as reference */
 } expand_after_codes;
 
-# define last_expand_after_code expand_after_toks_code
+# define last_expand_after_code expand_parameter_code
 
 typedef enum after_something_codes {
     after_group_code,
@@ -858,6 +864,8 @@ typedef enum prefix_codes {
     always_code,
     inherited_code,
     constant_code,
+    retained_code,
+    constrained_code,
     long_code,
     outer_code,
 } prefix_codes;

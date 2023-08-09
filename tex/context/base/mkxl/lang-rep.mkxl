@@ -72,7 +72,7 @@
 \permanent\protected\def\resetreplacements
   {\c_attr_replacements\attributeunsetvalue}
 
-\permanent\tolerant\protected\def\replaceword[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\replaceword[#1]#*[#S#2]#*[#S#3]%
   {\ifarguments\or\or
      \clf_addreplacementslist{#1}{#2}%
    \or

@@ -1262,27 +1262,29 @@ extern int  tex_located_save_value     (int id);
 
 typedef enum flag_bit {
     /* properties and prefixes */
-    frozen_flag_bit        = 0x00001,
-    permanent_flag_bit     = 0x00002,
-    immutable_flag_bit     = 0x00004,
-    primitive_flag_bit     = 0x00008,
-    mutable_flag_bit       = 0x00010,
-    noaligned_flag_bit     = 0x00020,
-    instance_flag_bit      = 0x00040,
-    untraced_flag_bit      = 0x00080,
+    frozen_flag_bit        = 0x000001,
+    permanent_flag_bit     = 0x000002,
+    immutable_flag_bit     = 0x000004,
+    primitive_flag_bit     = 0x000008,
+    mutable_flag_bit       = 0x000010,
+    noaligned_flag_bit     = 0x000020,
+    instance_flag_bit      = 0x000040,
+    untraced_flag_bit      = 0x000080,
     /* prefixes */
-    global_flag_bit        = 0x00100,
-    tolerant_flag_bit      = 0x00200,
-    protected_flag_bit     = 0x00400,
-    overloaded_flag_bit    = 0x00800,
-    aliased_flag_bit       = 0x01000,
-    immediate_flag_bit     = 0x02000,
-    conditional_flag_bit   = 0x04000,
-    value_flag_bit         = 0x08000,
-    semiprotected_flag_bit = 0x10000,
-    inherited_flag_bit     = 0x20000,
-    constant_flag_bit      = 0x40000,
-    deferred_flag_bit      = 0x80000, /* this might move up */
+    global_flag_bit        = 0x000100,
+    tolerant_flag_bit      = 0x000200,
+    protected_flag_bit     = 0x000400,
+    overloaded_flag_bit    = 0x000800,
+    aliased_flag_bit       = 0x001000,
+    immediate_flag_bit     = 0x002000,
+    conditional_flag_bit   = 0x004000,
+    value_flag_bit         = 0x008000,
+    semiprotected_flag_bit = 0x010000,
+    inherited_flag_bit     = 0x020000,
+    constant_flag_bit      = 0x040000,
+    deferred_flag_bit      = 0x080000, /* this might move up */
+    retained_flag_bit      = 0x100000,
+    constrained_flag_bit   = 0x200000,
 } flag_bits;
 
 /*tex Flags: */
@@ -1310,6 +1312,8 @@ typedef enum flag_bit {
 # define add_value_flag(a)          ((a) | value_flag_bit)
 # define add_inherited_flag(a)      ((a) | inherited_flag_bit)
 # define add_constant_flag(a)       ((a) | constant_flag_bit)
+# define add_retained_flag(a)       ((a) | retained_flag_bit)
+# define add_constrained_flag(a)    ((a) | constrained_flag_bit)
 
 # define remove_flag(a,b)           ((a) & ~(b))
 
@@ -1353,6 +1357,8 @@ typedef enum flag_bit {
 # define is_value(a)                (((a) & value_flag_bit))
 # define is_inherited(a)            (((a) & inherited_flag_bit))
 # define is_constant(a)             (((a) & constant_flag_bit))
+# define is_retained(a)             (((a) & retained_flag_bit))
+# define is_constrained(a)          (((a) & constrained_flag_bit))
 
 # define is_expandable(cmd)         (cmd > max_command_cmd)
 
@@ -1394,7 +1400,7 @@ extern void tex_define_inherit     (int g, halfword p, singleword flag, singlewo
 extern void tex_define_swapped     (int g, halfword p1, halfword p2, int force);
 extern void tex_forced_define      (int g, halfword p, singleword flag, singleword cmd, halfword chr);
 extern void tex_word_define        (int g, halfword p, halfword w);
-extern void tex_forced_word_define (int g, halfword p, singleword flag, halfword w);
+/*     void tex_forced_word_define (int g, halfword p, singleword flag, halfword w); */
 
 /*tex
 

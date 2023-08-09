@@ -49,7 +49,7 @@
     \frozen\instance\protected\edefcsname\e!stop \currentfittingpage\endcsname{\stopfittingpage}%
 \to \everydefinefittingpage
 
-\permanent\tolerant\protected\def\startfittingpage[#1]#*[#2]%
+\permanent\tolerant\protected\def\startfittingpage[#1]#*[#S#2]%
   {\page % this is kind of tricky! there can be preceding page refs
    \autostarttext
    \bgroup % resulting in a zero height page; test fig-make !
@@ -194,7 +194,7 @@
 
 \defineexternalfigure[\v!page:\v!figure][\c!offset=\v!overlay] % we force a parent
 
-\permanent\tolerant\protected\def\startpagefigure[#1]#*[#2]%
+\permanent\tolerant\protected\def\startpagefigure[#1]#*[#S#2]%
   {\bgroup
    \setupexternalfigure[\v!page:\v!figure][\c!offset=\v!overlay,#2]%
    \startTEXpage[\c!offset=\namedexternalfigureparameter{\v!page:\v!figure}\c!offset,\c!align=\v!normal]%
@@ -204,7 +204,7 @@
   {\stopTEXpage
    \egroup}
 
-\permanent\tolerant\protected\def\pagefigure[#1]#*[#2]%
+\permanent\tolerant\protected\def\pagefigure[#1]#*[#S#2]%
   {\startpagefigure[#1][#2]\stoppagefigure}
 
 \protect \endinput

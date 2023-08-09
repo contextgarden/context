@@ -143,13 +143,13 @@
      \expandafter\strc_lists_inject_nop
    \fi}
 
-\tolerant\protected\def\strc_lists_inject_nop[#settings]#spacer[#userdata]%
+\tolerant\protected\def\strc_lists_inject_nop[#S#settings]#spacer[#S#userdata]%
   {\endgroup}
 
 \def\strc_lists_inject_enhance#listindex%
   {\expandafter\clf_deferredenhancelist\number#listindex\relax}
 
-\tolerant\protected\def\strc_lists_inject_yes[#settings]#spacer[#userdata]% can be used directly
+\tolerant\protected\def\strc_lists_inject_yes[#S#settings]#spacer[#S#userdata]% can be used directly
   {\setupcurrentlist[\c!type=userdata,\c!location=\v!none,#settings]% grouped (use \let...
    \edef\p_location{\listparameter\c!location}%
    \setnextinternalreference
@@ -201,10 +201,10 @@
      \expandafter\strc_lists_write_between_nop
    \fi}
 
-\tolerant\def\strc_lists_write_between_yes[#settings]#:#command%
+\tolerant\def\strc_lists_write_between_yes[#S#settings]#:#command%
   {\strc_lists_inject_yes[#settings,\c!type=\s!command][command={#command}]}
 
-\tolerant\def\strc_lists_write_between_nop[#settings]#:#command%
+\tolerant\def\strc_lists_write_between_nop[#S#settings]#:#command%
   {\endgroup}
 
 \permanent\protected\def\writedatatolist[#tag]%
@@ -216,14 +216,14 @@
      \expandafter\strc_lists_write_data_to_nop
    \fi}
 
-\tolerant\def\strc_lists_write_data_to_yes[#settings]#spacer[#userdata]%
+\tolerant\def\strc_lists_write_data_to_yes[#S#settings]#spacer[#userdata]%
   {\ifparameter#userdata\or % no need to have an extra step ... used seldom
      \strc_lists_inject_yes[#settings,\c!type=\s!userdata][#userdata]%
    \else
      \strc_lists_inject_yes[\c!type=\s!userdata][#settings]%
    \fi}
 
-\tolerant\def\strc_lists_write_data_to_nop[#settings]#spacer[#userdata]%
+\tolerant\def\strc_lists_write_data_to_nop[#S#settings]#spacer[#userdata]%
   {\endgroup}
 
 \permanent\protected\def\writetolist[#tag]%
@@ -235,10 +235,10 @@
      \expandafter\strc_lists_write_to_nop
    \fi}
 
-\tolerant\def\strc_lists_write_to_yes[#settings]#:#first#second% no \s!first because we don't expand user settings
+\tolerant\def\strc_lists_write_to_yes[#S#settings]#:#first#second% no \s!first because we don't expand user settings
   {\strc_lists_inject_yes[\c!location=\v!here,#settings,\c!type=\s!simple][first={#first},second={#second}]}
 
-\tolerant\def\strc_lists_write_to_nop[#settings]#:#first#second%
+\tolerant\def\strc_lists_write_to_nop[#S#settings]#:#first#second%
   {\endgroup} % \strc_lists_inject_nop[][]
 
 % \starttyping
@@ -265,7 +265,7 @@
 
 \newtoks\everystructurelist
 
-\permanent\tolerant\protected\def\placelist[#taglist]#spacer[#settings]%
+\permanent\tolerant\protected\def\placelist[#taglist]#spacer[#S#settings]%
   {\begingroup
    \startpacked[\v!blank]%
    \edef\m_list {#taglist}%
@@ -280,7 +280,7 @@
    \stoppacked
    \endgroup}
 
-\permanent\tolerant\protected\def\placerawlist[#tag]#spacer[#settings]% just one list
+\permanent\tolerant\protected\def\placerawlist[#tag]#spacer[#S#settings]% just one list
   {\strc_lists_place_indeed\empty{#tag}{#settings}}
 
 \aliased\let\strc_lists_place\placelist % used in strc-flt
@@ -321,17 +321,17 @@
 \ifdefined\stopnamedsection  \else \let\stopnamedsection \relax \fi
 \ifdefined\headtext          \else \let\headtext         \relax \fi
 
-\permanent\tolerant\protected\def\completelist[#tag]#spacer[#settings]%
+\permanent\tolerant\protected\def\completelist[#tag]#spacer[#S#settings]%
   {\normalexpanded{\startnamedsection[\v!title][\c!title=\headtext{#tag},\c!reference=#tag]}% {} around ref ?
    \strc_lists_place[#tag][#settings]%
    \stopnamedsection}
 
-\permanent\tolerant\protected\def\strc_lists_complete[#singular]#spacer[#plural]#spacer[#settings]% used in strc-flt
+\permanent\tolerant\protected\def\strc_lists_complete[#singular]#spacer[#plural]#spacer[#S#settings]% used in strc-flt
   {\normalexpanded{\startnamedsection[\v!title][\c!title=\headtext{#plural},\c!reference=#singular]}% {} around ref ?
    \strc_lists_place[#singular][#settings]%
    \stopnamedsection}
 
-\permanent\tolerant\def\strc_lists_combined_complete[#tag]#spacer[#settings]%
+\permanent\tolerant\def\strc_lists_combined_complete[#tag]#spacer[#S#settings]%
   {\normalexpanded{\startnamedsection[\v!title][\c!title={\headtext{#tag}},\c!reference=#tag]}%
    \placecombinedlist[#tag][#settings]%
    \stopnamedsection}
@@ -342,7 +342,7 @@
 %D \definecombinedlist[whatever][a,b,c][settings]
 %D \stoptyping
 
-\permanent\tolerant\protected\def\definecombinedlist[#tag]#spacer[#list]#spacer[#settings]%
+\permanent\tolerant\protected\def\definecombinedlist[#tag]#spacer[#list]#spacer[#S#settings]%
   {\definelist[#tag][\c!criterium=\v!local,\c!reference=,\c!alternative=,\c!list={#list},#settings]% inherits from root
    \frozen\instance\defcsname\e!setup#tag\e!endsetup\endcsname{\setupcombinedlist[#tag]}%
    \frozen\instance\defcsname\e!place#tag\endcsname{\placecombinedlist[#tag]}%
@@ -353,7 +353,7 @@
      \setuplist[#tag][#settings]% we don't want to mess up the parent
    \fi}
 
-\permanent\tolerant\protected\def\placecombinedlist[#tag]#spacer[#settings]% i.e. no list set in settings
+\permanent\tolerant\protected\def\placecombinedlist[#tag]#spacer[#S#settings]% i.e. no list set in settings
   {\begingroup
    \cdef\currentlist{#tag}%
    \setupcurrentlist[#settings]%
@@ -1634,7 +1634,7 @@
 
 \mutable\let\listlength\!!zerocount           % also in strc-reg
 
-\permanent\tolerant\protected\def\determinelistcharacteristics[#list]#spacer[#settings]%
+\permanent\tolerant\protected\def\determinelistcharacteristics[#list]#spacer[#S#settings]%
   {\begingroup
    \cdef\currentlist{\firststructureelementinlist{#list}}%
    \ifempty\currentlist

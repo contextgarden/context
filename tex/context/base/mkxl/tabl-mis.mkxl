@@ -33,7 +33,7 @@
 
 \mutable\let\kindoftabposition\!!zerocount
 
-\permanent\tolerant\protected\def\somekindoftab[#1]%
+\permanent\tolerant\protected\def\somekindoftab[#S#1]%
   {\bgroup
    \getdummyparameters
      [\c!alternative=\v!vertical,
@@ -134,7 +134,7 @@
 
 \let\typo_paragraphs_setup_step\gobbleoneargument
 
-\overloaded\permanent\tolerant\protected\def\setupparagraphs[#1]#*[#2]#*[#3]% we are downward compatible with [each] and [1,3]
+\overloaded\permanent\tolerant\protected\def\setupparagraphs[#S#1]#*[#S#2]#*[#S#3]% we are downward compatible with [each] and [1,3]
   {\ifarguments\or
       \typo_paragraphs_setup_saved[#1]%
    \or

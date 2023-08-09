@@ -43,7 +43,7 @@
    \begingroup
    \doifelsenextoptionalcs\pack_black_rule_pickup\pack_black_rule_indeed}
 
-\def\pack_black_rule_pickup[#1]%
+\def\pack_black_rule_pickup[#S#1]%
   {\setupcurrentblackrules[#1]%
    \pack_black_rule_indeed}
 
@@ -148,7 +148,7 @@
 %D We could of course have implemented this macro using \type {\leaders}, but this
 %D would probably have taken more tokens.
 
-\permanent\tolerant\protected\def\blackrules[#1]% probably never used
+\permanent\tolerant\protected\def\blackrules[#S#1]% probably never used
   {\hpack\bgroup % we keep this because breaking into lines breaks compatibility
    \ifarguments\or\setupcurrentblackrules[#1]\fi
    \scratchwidth   \directblackrulesparameter\c!width
@@ -408,7 +408,7 @@
    \thinrule
    \endgraf}
 
-\permanent\tolerant\protected\def\thinrules[#1]%
+\permanent\tolerant\protected\def\thinrules[#S#1]%
   {\bgroup
    \setupcurrentthinrules[#1]%
    \scratchcounter\directthinrulesparameter\c!n\relax
@@ -773,7 +773,7 @@
 
 \def\pack_fillinrules_rule_indeed{\thinrules}
 
-\permanent\tolerant\protected\def\fillinrules[#1]#:#=#*#=%
+\permanent\tolerant\protected\def\fillinrules[#S#1]#:#=#*#=%
   {\endgraf
    \begingroup
    \setupcurrentfillinrules[#1]%
@@ -824,7 +824,7 @@
 %D
 %D \showsetup{fillintext}
 
-\permanent\tolerant\protected\def\fillintext[#1]#:#=#*#=%
+\permanent\tolerant\protected\def\fillintext[#S#1]#:#=#*#=%
   {\endgraf
    \begingroup
    \def\pack_fillinrules_rule_indeed{\unhbox\nextbox\unskip}% hm, needs checking
@@ -893,7 +893,7 @@
    \frozen\parfillskip\zeroskip\relax
    \endgroup}
 
-\permanent\tolerant\protected\def\fillinline[#1]%
+\permanent\tolerant\protected\def\fillinline[#S#1]%
   {\dontleavehmode
    \registerparwrapper
      {fillinline}%

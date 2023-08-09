@@ -154,7 +154,7 @@
 %D Just a basic environment (mostly for testing). We will provide a 'setup' based
 %D plugin once the rest is sorted out.
 
-\tolerant\permanent\protected\def\startnamedconstruction[#1]#*[#2]#*[#3]%
+\tolerant\permanent\protected\def\startnamedconstruction[#1]#*[#S#2]#*[#3]%
   {\begingroup
    \strc_constructions_initialize{#1}%
    \strc_constructions_register[#3][\c!label={\constructionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#2]%
@@ -1014,7 +1014,7 @@
 
 % \def\strc_constructions_register{\strc_constructions_register_yes}
 
-\def\strc_constructions_register_nop[#1][#2]% #1=optional user data #2=interfaced-settings
+\def\strc_constructions_register_nop[#S#1][#S#2]% #1=optional user data #2=interfaced-settings
  %{\writestatus{constructions}{reusing \currentconstruction: \number\currentconstructionlistentry}}
   {}
 
@@ -1028,7 +1028,7 @@
 \let\currentconstructionsynchronize\relax
 \let\currentconstructionattribute  \attributeunsetvalue
 
-\def\strc_constructions_register_yes[#1][#2]% #1=optional user data #2=interfaced-settings
+\def\strc_constructions_register_yes[#S#1][#S#2]% #1=optional user data #2=interfaced-settings
   {\begingroup                              % similar to structure so we might generalize this
    \setupcurrentconstruction[#2]%           % xdef's will become edef's
    \xdef\currentconstructionexpansion      {\constructionparameter\c!expansion}%

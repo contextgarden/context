@@ -895,6 +895,26 @@ local hlist_out, vlist_out  do
                                     end
                                     local total = height + depth
                                     if total > 0 then
+                                     -- -- only when we have a use case:
+                                     --
+                                     -- local xoffset, yoffset, top, bottom = getoffsets(leader)
+                                     -- if pos_r == righttoleft_code then
+                                     --     pos_h   = pos_h - gluewidth
+                                     --     xoffset = - xoffset
+                                     -- end
+                                     -- if not virtual then
+                                     --     if top ~= 0 then
+                                     --      -- height = height - top
+                                     --         total  = total - top
+                                     --     end
+                                     --     if bottom ~= 0 then
+                                     --         depth = depth - bottom
+                                     --         total = total - bottom
+                                     --     end
+                                     -- end
+                                     -- pos_v = pos_v - depth
+                                     -- flushrule(leader,pos_h + xoffset,pos_v + yoffset,pos_r,gluewidth,total,getsubtype(leader))
+                                     --
                                         if pos_r == righttoleft_code then
                                             pos_h = pos_h - gluewidth
                                         end
@@ -1356,6 +1376,23 @@ local hlist_out, vlist_out  do
                                         width = boxwidth
                                     end
                                     if width > 0 then
+                                     -- -- only when i have a use case:
+                                     --
+                                     -- local xoffset, yoffset, left, right = getoffsets(leader)
+                                     -- if not virtual then
+                                     --     if left ~= 0 then
+                                     --         width = width - left
+                                     --         xoffset = left
+                                     --     end
+                                     --     if right ~= 0 then
+                                     --         width = width - right
+                                     --     end
+                                     -- end
+                                     -- if pos_r == righttoleft_code then
+                                     --     xoffset = - xoffset - width
+                                     -- end
+                                     -- flushrule(leader,pos_h + xoffset,pos_v - total - yoffset,pos_r,width,total,getsubtype(leader))
+                                     --
                                         if pos_r == righttoleft_code then
                                             cur_h = cur_h - width
                                         end

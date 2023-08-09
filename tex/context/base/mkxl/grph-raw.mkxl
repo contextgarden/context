@@ -43,7 +43,7 @@
 
 \unprotect
 
-\permanent\protected\def\bitmapimage[#1]#2%
+\permanent\protected\def\bitmapimage[#S#1]#2%
   {\hbox\bgroup
      \getdummyparameters[\c!color=rgb,\c!width=,\c!height=,\c!x=,\c!y=,#1]%
      \clf_bitmapimage
@@ -56,7 +56,7 @@
      \relax
    \egroup}
 
-\permanent\protected\def\startbitmapimage[#1]#2\stopbitmapimage
+\permanent\protected\def\startbitmapimage[#S#1]#2\stopbitmapimage
   {\bitmapimage[#1]{#2}}
 
 \permanent\protected\lettonothing\stopbitmapimage

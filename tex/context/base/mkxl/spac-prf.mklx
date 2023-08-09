@@ -70,7 +70,7 @@
       method    {\profileparameter\c!method}%
    \relax}
 
-\tolerant\protected\def\spac_profile_start#profile#spacer[#settings]%
+\tolerant\protected\def\spac_profile_start#profile#spacer[#S#settings]%
   {\begingroup
    \ifparameter#settings\or
      \cdef\currentprofile{#profile}%
@@ -89,7 +89,7 @@
    \profileparameter\c!after
    \endgroup}
 
-\permanent\protected\def\startprofile[#profile]%
+\permanent\protected\def\startprofile[#S#profile]%
   {\spac_profile_start{#profile}}
 
 \permanent\protected\def\stopprofile
@@ -110,7 +110,7 @@
      \setprofile[\m_spac_profile_asked]%
    \fi}
 
-\permanent\tolerant\protected\def\profiledbox[#profile]#spacer[#settings]%
+\permanent\tolerant\protected\def\profiledbox[#S#profile]#spacer[#S#settings]%
   {\vbox\bgroup
    \ifparameter#settings\or
      \cdef\currentprofile{#profile}%

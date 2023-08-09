@@ -128,7 +128,7 @@
 \defcsname\??mathwhateverstrut\v!yes   \endcsname{\strut}
 %letcsname\??mathwhateverstrut\v!no    \endcsname\relax
 
-\tolerant\protected\def\math_radical_handle#tag#*[#settings]#*[#degree]#:#body%
+\tolerant\protected\def\math_radical_handle#tag#*[#S#settings]#*[#degree]#:#body%
   {\begingroup
    \cdef\currentmathradical{#tag}%
    \ifhastok={#settings}%

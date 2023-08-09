@@ -773,8 +773,8 @@ function codeinjections.mergefields(specification,dataonly)
                                 preset = "leftbottom",
                             }
                             --
-                            local aflags = flagstoset(annotation.F or parent.F, annotationflags)
-                            local wflags = flagstoset(annotation.Ff or parent.Ff, widgetflags)
+                            local aflags = flagstoset(annotation.F  or parent.F  or 0, annotationflags)
+                            local wflags = flagstoset(annotation.Ff or parent.Ff or 0, widgetflags)
                             if what == "Tx" then
                                 -- DA DV F FT MaxLen MK Q T V | AA OC
                                 if wflags.MultiLine then
@@ -783,22 +783,29 @@ function codeinjections.mergefields(specification,dataonly)
                                 else
                                     what = "line"
                                 end
+
                                 -- via context
-                                local default = annotation.V or ""
                                 local frame   = trace_links and variables.on or variables.off
+                                local default = annotation.V or ""
+                                if default == "" then
+                                    local parent = annotation.Parent
+                                    if parent then
+                                        default = parent.V or ""
+                                    end
+                                end
                                 if dataonly then
                                     if type(default) == "string" and default ~= "" then
-local data = lpdf.epdf.parsecontent(tostring(annotation.DA or "") or "") or { }
-local font = "Normal"
-local size = "10bp"
-for i=1,#data do
-    local d = data[i]
-    if d[3] == "Tf" then
-        font = d[1][2]
-        size = d[2][2] .. "bp"
-        break
-    end
-end
+                                        local data = lpdf.epdf.parsecontent(tostring(annotation.DA or "") or "") or { }
+                                        local font = "Normal"
+                                        local size = "10bp"
+                                        for i=1,#data do
+                                            local d = data[i]
+                                            if d[3] == "Tf" then
+                                                font = d[1][2]
+                                                size = d[2][2] .. "bp"
+                                                break
+                                            end
+                                        end
                                         local fieldspec = {
                                             width  = w,
                                             height = h,

@@ -83,7 +83,7 @@
 
 \aliased\let\setupsidebars\setupsidebar
 
-\permanent\tolerant\protected\def\startsidebar[#1]#*[#2]%
+\permanent\tolerant\protected\def\startsidebar[#S#1]#*[#S#2]%
   {\bgroup
    \dontleavehmode
    \advanceby\c_anch_sidebars_level\plusone
@@ -186,7 +186,7 @@
 
 \dorecurse{5}{\definesidebar[\v!margin:#1][\v!margin]} % let's be nice and predefine 5 levels
 
-\permanent\tolerant\protected\def\setupmarginrule[#1]#*[#2]%
+\permanent\tolerant\protected\def\setupmarginrule[#S#1]#*[#S#2]%
   {\ifarguments\or
      \setupsidebar[\v!margin][#1]%
    \or
@@ -195,11 +195,11 @@
 
 \aliased\let\setupmarginrules\setupmarginrule
 
-\permanent\tolerant\protected\def\startmarginrule[#1]% pretty inefficient checking
+\permanent\tolerant\protected\def\startmarginrule[#S#1]% pretty inefficient checking
   {\edef\m_anch_marginrules_kind{#1}%
    \ifempty\m_anch_marginrules_kind
      \startsidebar[\v!margin][]%
-   \orelse\ifhastok={\m_anch_marginrules_kind}%
+   \orelse\ifhastok={#1}%
      \startsidebar[\v!margin][#1]%
    \else
      \anch_marginrules_check{#1}%

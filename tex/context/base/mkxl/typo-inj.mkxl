@@ -51,7 +51,7 @@
 \permanent         \protected\def\checkpreviousinjector        [#1]{\clf_checkinjector{#1}{\v!previous}}
 %permanent         \protected\def\checknextinjector            [#1]{\clf_checknextinjector{#1}}
 %permanent         \protected\def\checkpreviousinjector        [#1]{\clf_checkpreviousinjector{#1}}
-\permanent\tolerant\protected\def\setinjector      [#1]#*[#2]#*[#3]{\clf_setinjector{#1}{#2}{#3}}
+\permanent\tolerant\protected\def\setinjector    [#1]#*[#2]#*[#S#3]{\clf_setinjector{#1}{#2}{#3}}
 \permanent\tolerant\protected\def\showinjector                 [#1]{\clf_showinjector{#1}}
 
 \permanent\protected\def\domarkinjector#1#2% called at the lua end

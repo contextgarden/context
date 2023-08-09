@@ -153,7 +153,7 @@ return {
         "startdocument", "stopdocument", "documentvariable", "unexpandeddocumentvariable", "setupdocument", "presetdocument",
         "doifelsedocumentvariable", "doifdocumentvariableelse", "doifdocumentvariable", "doifnotdocumentvariable",
         "startmodule", "stopmodule", "usemodule", "usetexmodule", "useluamodule","setupmodule","currentmoduleparameter","moduleparameter",
-        "everystarttext", "everystoptext", "everyforgetall",
+        "everystarttext", "everystoptext", "everyforgetall", "luaenvironment",
         --
         "startTEXpage", "stopTEXpage",
     --  "startMPpage", "stopMPpage", -- already catched by nested lexer

@@ -309,8 +309,11 @@
   {\edef\m_syst_name{\csstring#1}%
    \global\protected\expandafter\normalluadef\csname\m_syst_name\endcsname\ctxcommand{ctxscanner("\m_syst_name",\!!bs#2\!!es,true)}\relax}
 
+% \permanent\protected\def\resetctxscanner#1%
+%   {\edef\m_syst_name{\csstring#1}%
+%    \gletcsname\m_syst_name\endcsname\relax} % or better nothing
+
 \permanent\protected\def\resetctxscanner#1%
-  {\edef\m_syst_name{\csstring#1}%
-   \gletcsname\m_syst_name\endcsname\relax}
+  {\global\expandafter\lettonothing\csname\csstring#1\endcsname}
 
 \protect \endinput

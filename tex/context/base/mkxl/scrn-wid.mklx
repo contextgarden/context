@@ -100,7 +100,7 @@
 \mutable\lettonothing\currentattachmentsymbol
 \mutable\lettonothing\currentattachmentwidth
 
-\permanent\tolerant\protected\def\registerattachment[#tag]#spacer[#settings]% we save (globally) at the lua end
+\permanent\tolerant\protected\def\registerattachment[#tag]#spacer[#S#settings]% we save (globally) at the lua end
   {\ifarguments\else
      \begingroup
      \cdef\currentattachment{_}%
@@ -125,7 +125,7 @@
     \frozen\instance\protected\edefcsname\e!stop \currentattachment\endcsname{\scrn_attachment_stop                      }%
 \to \everydefineattachment
 
-\permanent\tolerant\protected\def\scrn_attachment_direct[#tag]#spacer[#registered]#spacer[#settings]%
+\permanent\tolerant\protected\def\scrn_attachment_direct[#tag]#spacer[#registered]#spacer[#S#settings]%
   {\iflocation
      \bgroup
      \cdef\currentattachment{#tag}%
@@ -141,7 +141,7 @@
      \egroup
    \fi}
 
-\tolerant\protected\def\scrn_attachment_start[#tag]#spacer[#registered]#spacer[#settings]%
+\tolerant\protected\def\scrn_attachment_start[#tag]#spacer[#registered]#spacer[#S#settings]%
   {\cdef\currentattachment{#tag}%
    \unless\iflocation
      \expandafter\scrn_attachment_start_ignore
@@ -154,7 +154,7 @@
 \protected\def\scrn_attachment_stop
   {}
 
-\def\scrn_attachment_start_indeed[#registered][#settings]%
+\def\scrn_attachment_start_indeed[#registered][#S#settings]%
   {\bgroup
    \ifempty{#registered}%
      \def\scrn_attachment_stop{\scrn_attachment_inject[\v!auto][\c!buffer=\v!attachment]\egroup}%
@@ -168,7 +168,7 @@
 \def\scrn_attachment_start_ignore
   {\expandafter\ignoreupto\csname\e!stop\currentattachment\endcsname}
 
-\def\scrn_attachment_inject[#registered][#settings]%
+\def\scrn_attachment_inject[#registered][#S#settings]%
   {\edef\currentattachmentregistered{#registered}%
    \setupattachment[\currentattachment][#settings]%
    \expandnamespaceparameter\??attachmentmethod\attachmentparameter\c!method\v!normal}
@@ -416,7 +416,7 @@
     \frozen\protected\instance\edefcsname\e!stop \currentcomment\endcsname{\scrn_comment_stop                     }%
 \to \everydefinecomment
 
-\tolerant\protected\def\scrn_comment_argument[#category]#spacer[#title]#spacer[#settings]#:#text%%
+\tolerant\protected\def\scrn_comment_argument[#category]#spacer[#title]#spacer[#S#settings]#:#text%%
   {\iflocation
      \cdef\currentcomment{#category}%
      \ifcstok{\commentparameter\c!state}\v!start
@@ -431,7 +431,7 @@
    \fi
    \ignorespaces}
 
-\tolerant\protected\def\scrn_comment_start[#category]#spacer[#title]#spacer[#settings]%
+\tolerant\protected\def\scrn_comment_start[#category]#spacer[#title]#spacer[#S#settings]%
   {\cdef\currentcomment{#category}%
    \unless\iflocation
      \expandafter\scrn_comment_start_ignore
@@ -441,7 +441,7 @@
      \expandafter\scrn_comment_start_ignore
    \fi[#title][#settings]}
 
-\def\scrn_comment_start_indeed[#title][#settings]%
+\def\scrn_comment_start_indeed[#title][#S#settings]%
   {\bgroup
    \doifelseassignment{#title}
      {\setupcurrentcomment[#title]}

@@ -15,6 +15,8 @@ local byte, gsub = string.byte, string.gsub
 
 local trace_result = false  trackers.register("potrace.results", function(v) trace_result = v end)
 
+local report = logs.reporter("metapost","potrace")
+
 local potracefromfile do -- this will move to another module
 
     local newreader      = io.newreader
@@ -248,12 +250,12 @@ local potraceflush do
     local function checked(b,width,height)
         if b and type(b) == "string" and b ~= "" then
             local bytes = potracestripped(b)
-            if width == 0 then
-                if height == 0 then
+            if not width or width == 0 then
+                if not height or height == 0 then
                     height = potracecount(b)
                 end
                 width = #bytes // height
-            elseif height == 0 then
+            elseif not height or height == 0 then
                 height = #bytes // width
             end
             return bytes, width, height
@@ -287,8 +289,12 @@ local potraceflush do
         )
     end
 
+    local loaddata   = io.loaddata
+    local filesuffix = file.suffix
+    local getbuffer  = buffers.getcontent
+
     local function potracefromtxt(filename,threshold)
-        local bytes = io.loaddata(filename)
+        local bytes = loaddata(filename)
         if bytes and bytes ~= 0 then
             return checked(bytes,0,0)
         end
@@ -299,11 +305,32 @@ local potraceflush do
         txt = potracefromtxt,
     }
 
-    local function potracefromfile(filename,threshold)
+    local function potracefromfile(parameters)
+        local filename = parameters.filename
         if filename and filename ~= "" then
-            local handle = filehandles[file.suffix(filename)]
+            local handle = filehandles[filesuffix(filename)]
             if handle then
-                return handle(filename,threshold)
+                return handle(filename,parameters.criterium)
+            end
+        end
+    end
+
+    local function potracefrombuffer(parameters,width,height)
+        local buffer = parameters.buffer
+        if buffer and buffer ~= "" then
+            local bytes = getbuffer(buffer)
+            if bytes and bytes ~= "" then
+                return checked(bytes,width,height)
+            end
+        end
+    end
+
+    local function potracefromstring(parameters,width,height)
+        local name = parameters.stringname
+        if name and name ~= "" then
+            local bytes = potracegetbitmap(name)
+            if bytes and #bytes ~= "" then
+                return checked(bytes,width,height)
             end
         end
     end
@@ -321,13 +348,19 @@ local potraceflush do
             ny = 3
         end
         if not bytes then
-            local b, w, h = potracefromfile(parameters.filename,parameters.criterium)
+            local b, w, h = potracefromfile(parameters)
             if b then
                 bytes, width, height = b, w, h
             end
         end
         if not bytes then
-            local b, w, h = checked(potracegetbitmap(parameters.stringname),width,height)
+            local b, w, h = potracefromstring(parameters,width,height)
+            if b then
+                bytes, width, height = b, w, h
+            end
+        end
+        if not bytes then
+            local b, w, h = potracefrombuffer(parameters,width,height)
             if b then
                 bytes, width, height = b, w, h
             end
@@ -341,6 +374,10 @@ local potraceflush do
         if not bytes then
             bytes, width, height = checked("010 111 010",width,height)
         end
+-- report("width : %i",width)
+-- report("height: %i",height)
+-- report("bytes : %i",#bytes)
+-- report("length: %i",width*height)
         instance = potracenew {
             bytes     = bytes,
             width     = width,
@@ -348,6 +385,7 @@ local potraceflush do
             nx        = nx,
             ny        = ny,
             value     = parameters.value,
+            negate    = parameters.negate,
             size      = parameters.size,      -- turdsize
             optimize  = parameters.optimize,  -- opticurve
             swap      = parameters.swap,
@@ -358,6 +396,7 @@ local potraceflush do
         -- we keep bytes for tracing, maybe keep option
         parameters.width  = width *nx
         parameters.height = height*ny
+        parameters.count  = 0
     end
 
     function mp.lmt_stop_potrace()
@@ -375,14 +414,19 @@ local potraceflush do
             local alternative = parameters.alternative
             local polygon     = parameters.polygon or false
             local index       = parameters.index
-            local first       = index or parameters.first
-            local last        = index or parameters.last
+            local first       = parameters.first or 0
+            local last        = parameters.last  or 0
+            if index then
+                first = index
+                last = index
+            end
             if alternative == "text" then
                 potracepattern()
             else
                 -- we can return a count
                 local okay = potraceprocess(instance, {
                     value     = parameters.value,
+                    negate    = parameters.negate,
                     size      = parameters.size,
                     optimize  = parameters.optimize,  -- opticurve
                     swap      = parameters.swap,
@@ -393,6 +437,9 @@ local potraceflush do
                 if okay then
                     result = potracetotable(instance,polygon,first,last)
                     potraceflush(result,alternative,polygon)
+                    parameters.count = #result
+                else
+                    parameters.count = 0
                 end
             end
             parameters.first = nil

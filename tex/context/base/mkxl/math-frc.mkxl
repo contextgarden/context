@@ -207,7 +207,7 @@
 
 \installlocalcurrenthandler\??mathfractions {mathfraction}
 
-\tolerant\protected\def\math_frac#1#*[#2]%%
+\tolerant\protected\def\math_frac#1#*[#S#2]%%
   {\beginmathgroup
    %
    \setlocalmathfractioncurrent{#1}% \edef\currentmathfraction{#1}%

@@ -51,7 +51,7 @@
 
 \mutable\lettonothing\currentmathdelimited
 
-\tolerant\protected\def\math_delimited_handle#tag#*[#settings]#:#body%
+\tolerant\protected\def\math_delimited_handle#tag#*[#S#settings]#:#body%
   {\begingroup
    \cdef\currentmathdelimited{#tag}%
    \setupcurrentmathdelimited[#settings]%

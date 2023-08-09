@@ -1021,13 +1021,13 @@ This gives:
 \inlinebuffer
 \stoppacked
 
-as you probably expect. However the first two checks
-are different from the embedded checks because they can check against the
-parameter reference. When we expand \type {\oof} its argument gets passed to the
-macro as a list and when the scanner collects the next token it will then push
-the parameter content on the input stack. So, then, instead of a reference we get
-the referenced parameter list. Internally that means that in 3 and 4 we check for
-a token and not for the length of the list (as in case 1 & 2). This means that
+as you probably expect. However the first two checks are different from the
+embedded checks because they can check against the parameter reference. When we
+expand \type {\oof} its argument gets passed to the macro as a list and when the
+scanner collects the next token it will then push the parameter content on the
+input stack. So, then, instead of a reference we get the referenced parameter
+list. Internally that means that in 3 and 4 we check for a token and not for the
+length of the list (as in case 1 & 2). This means that
 
 \starttyping
 \iftok{#1}\emptytoks Y\else N\fi
@@ -1039,6 +1039,208 @@ conditionals in that list are okay. In the second case we just look ahead to see
 if there is an \type {\or}, \type {\else} or other condition related command and
 if so we decide that there is no parameter. So, if \type {\ifparameter} is a
 suitable check for empty depends on the need for expansion.
+
+When you define macros that themselves call macros that should operate on the
+arguments of its parent you can easily pass these:
+
+\startbuffer[test-1]
+\def\foo#1#2%
+  {\oof{#1}{#2}{P}%
+   \oof{#1}{#2}{Q}%
+   \oof{#1}{#2}{R}}
+
+\def\oof#1#2#3%
+  {[#1][#1]%
+   #3%
+   [#2][#2]}
+\stopbuffer
+
+\typebuffer[test-1]
+
+Here the nested call to \type {\oof} involved three passed parameters. You can
+avoid that as follows:
+
+\startbuffer[test-2]
+\def\foo#1#2%
+  {\def\MyIndexOne{#1}%
+   \def\MyIndexTwo{#2}%
+   \oof{P}\oof{Q}\oof{R}}
+
+\def\oof#1%
+  {(\MyIndexOne)(\MyIndexOne)%
+   #1%
+   (\MyIndexTwo)(\MyIndexTwo)}
+\stopbuffer
+
+\typebuffer[test-2]
+
+You can also do this:
+
+\startbuffer[test-3]
+\def\foo#1#2%
+  {\def\oof##1%
+     {/#1/#2/%
+     ##1%
+     /#1//#2/}%
+   \oof{P}\oof{Q}\oof{R}}
+\stopbuffer
+
+\typebuffer[test-3]
+
+These parameters indicated by \type {#} in the macro body are in fact references.
+When we call for instance \type {\foo {1}{2}} the two parameters get pushed on a
+parameter stack and the embodied references point to these stack entries. By the
+time that body gets expanded \TEX\ bumps the input level and pushes the parameter
+list onto the input stack. It then continues expansion. The parameter is not
+copied, because it can't be changed anyway. The only penalty in terms of
+performance and memory usage is the pushing and popping of the input. So how does
+that work out for these three cases?
+
+When in the first case the \type {\oof{#1}{#2}{P}} is seen, \TEX\ starts expanding
+the \type {\oof} macro. That one expects three arguments. The \type {#1} reference is
+seen and in this case a copy of that parameter is passed. The same is true for the
+other two. Then, inside \type {\oof} expansion happens on the parameters on the stack
+and no copies have to be made there.
+
+The second case defines two macros so again two copies are made that make the bodies
+of these macros. This comes at the cost of some runtime and memory. However, this
+time with \type {\oof{P}} only one argument gets passed and instead expansion of the
+macros happen in there.
+
+Normally macro arguments are not that large but there can be situations where we
+really want to avoid useless copying. This not only saves memory but also can give a
+bit better performance. In the examples above the second variant is some 10\percent
+faster than the first one. We can gain another 10\percent with the following trick:
+
+\startbuffer[test-4]
+\def\foo#1#2%
+  {\parameterdef\MyIndexOne\plusone % 1
+   \parameterdef\MyIndexTwo\plustwo % 2
+   \oof{P}\oof{Q}\oof{R}\norelax}
+
+\def\oof#1%
+  {<\MyIndexOne><\MyIndexOne>%
+   #1%
+   <\MyIndexTwo><\MyIndexTwo>}
+\stopbuffer
+
+\typebuffer[test-4]
+
+Here we define an explicit parameter reference that we access later on. There is
+the overhead of a definition but it can be neglected. We use that reference
+(abstraction) in \type {\oof}. Actually you can use that reference in any call
+down the chain.
+
+When applied to \type {\foo{1}{2}} the four variants above give us:
+
+\startpacked
+\startlines \tt
+\getbuffer[test-1]\foo{1}{2}
+\getbuffer[test-2]\foo{1}{2}
+\getbuffer[test-3]\foo{1}{2}
+\getbuffer[test-4]\foo{1}{2}
+\stoplines
+\stoppacked
+
+Before we had \type {parameterdef} we had this:
+
+\startbuffer[test-5]
+\def\foo#1#2%
+  {\integerdef\MyIndexOne\parameterindex\plusone % 1
+   \integerdef\MyIndexTwo\paramet\plustwo % 2
+   \oof{P}\oof{Q}\oof{R}\norelax}
+
+\def\oof#1%
+  {<\expandparameter\MyIndexOne><\expandparameter\MyIndexOne>%
+   #1%
+   <\expandparameter\MyIndexTwo><\expandparameter\MyIndexTwo>}
+\stopbuffer
+
+\typebuffer[test-5]
+
+It involves more tokens, is a bit less abstract, but as it is a cheap extension
+we kept it. It actually demonstrates that one can access parameters in the stack
+by index, but it one then needs to keep track of where access takes place. In
+principle one can debug the call chain this way.
+
+To come back to performance and memory usage, when the arguments become larger
+the fourth variant with the \type {\parameterdef} quickly gains over the others.
+But it only shows in exceptional usage. This mechanism is more about abstraction:
+it permits us to efficiently turn arguments into local variables without the
+overhead involved in creating macros.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Nesting]
+
+We also have a few preamble features that relate to nesting. Although we can do
+without (as shown for years in \LMTX) they do have some benefits. They are
+discussed as group here and because they are only useful for low level
+programming we stick to simple examples. The \type {#L} and \type {#R} use the
+following token as delimiters. Here we use \type {[} and \type {]} but they can
+be a \type {\cs} as well. Nested delimiters are handled well.
+
+The \type {#S} grabs the argument till the next final square bracket \type {]}
+but in the process will grab nested with it sees a \type {[}. The \type {#P} does
+the same for parentheses and \type {#X} for angle brackets. In the next examples
+the \type {#*} just gobbles optional spaces but we've seen that one already.
+
+The \type {#G} argument just registers the next token as delimiter but it will
+grab multiple of them. The \type {#M} gobbles more: in addition to the delimiter
+spaces are gobbled.
+
+\startbuffer
+\tolerant\def\fooA               [#1]{(#1)}
+\tolerant\def\fooB          [#L[#R]#1{(#1)}
+\tolerant\def\fooC               #S#1{(#1)}
+\tolerant\def\fooE              #S#1,{(#1)}
+\tolerant\def\fooF         #S#1#*#S#2{(#1/#2)}
+\tolerant\def\fooG [#1]#S[#2]#*#S[#3]{(#1/#2/#3)}
+\tolerant\def\fooH [#1][#S#2]#*[#S#3]{(#1/#2/#3)}
+\tolerant\def\fooI           #1=#2#G,{(#1=#2)}
+\tolerant\def\fooJ           #1=#2#M,{(#1=#2)}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\starttabulate[|T|T|T||]
+\NC \type{\fooA [x]}            \NC \fooA [x]             \NC (x)           \NC \NR
+\NC \type{\fooB [x]}            \NC \fooB [x]             \NC (x)           \NC \NR
+\NC \type{\fooC [1[2]3[4]5]}    \NC \fooC [1[2]3[4]5]     \NC (1[2]3[4]5)   \NC \NR
+\NC \type{\fooE X[,]X,}         \NC \fooE X[,]X,          \NC (X[,]X)       \NC \NR
+\NC \type{\fooF [A] [B]}        \NC \fooF [A] [B]         \NC (A/B)         \NC \NR
+\NC \type{\fooF [] []}          \NC \fooF [] []           \NC (/)           \NC \NR
+\NC \type{\fooG [a][b][c]}      \NC \fooG [a][b][c]       \NC (a/b/c)       \NC \NR
+\NC \type{\fooG [a][b]}         \NC \fooG [a][b]          \NC (a/b/)        \NC \NR
+\NC \type{\fooG [a]}            \NC \fooG [a]             \NC (a//)         \NC \NR
+\NC \type{\fooG [a][x[x]x][c]}  \NC \fooG [a][x[x]x][c]   \NC (a/x[x]x/c)   \NC \NR
+\NC \type{\fooH [a][x[x]x][c]}  \NC \fooH [a][x[x]x][c]   \NC (a/x[x]x/c)   \NC \NR
+\NC \type{\fooI X=X,,,}         \NC \fooI X=X,,,          \NC (X=X)         \NC \NR
+\NC \type{\fooJ X=X, , ,}       \NC \fooJ X=X, , ,        \NC (X=X)         \NC \NR
+\stoptabulate
+
+These features make it possible to support nested setups more efficiently and
+also makes it possible to accept values that contain balanced brackets in setup
+commands without additional overhead. Although it has never been an issue to let
+users specify:
+
+\starttyping
+\defineoverlay[whatever][{some \command[withparameters] here}]
+
+\setupfoo[before={\blank[big]}]
+\stoptyping
+
+it might be less confusing to permit:
+
+\starttyping
+\defineoverlay[whatever][some \command[withparameters] here]
+
+\setupfoo[before=\blank[big]]
+\stoptyping
+
+as well, if only because occasionally users get hit by this.
 
 \stopsectionlevel
 
@@ -1061,3 +1263,15 @@ suitable check for empty depends on the need for expansion.
 % \defcsname
 % \edefcsname
 % \letcsname
+
+% {
+%     \scratchdimenone 10pt \the\currentstacksize\par
+%     \scratchdimentwo 10pt \the\currentstacksize\par
+%     \scratchdimenone 20pt \the\currentstacksize\par
+%     \scratchdimentwo 20pt \the\currentstacksize\par
+%     \scratchdimenone 10pt \the\currentstacksize\par
+%     {
+%         \scratchdimenone 10pt \the\currentstacksize\par
+%         \scratchdimentwo 20pt \the\currentstacksize\par
+%     }
+% }

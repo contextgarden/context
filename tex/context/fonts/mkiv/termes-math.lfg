@@ -116,6 +116,7 @@ return {
                     tweak = "copyaccents",
                 },
                 -- So far for the accents.
+                presets.addmathkerns { },
                 {
                     tweak = "checkspacing",
                 },

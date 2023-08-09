@@ -44,7 +44,7 @@ if not fonts then fonts = { handlers = { tfm = { } } } end
 local handlers = fonts.handlers
 local tfm      = handlers.tfm or { }
 handlers.tfm   = tfm
-tfm.version    = 1.006
+tfm.version    = 1.007
 
 local readers  = tfm.readers or { }
 tfm.readers    = readers
@@ -878,9 +878,19 @@ do
                         if op >= 128 then
                             local kern = allkerns[256 * (op - 128) + rem]
                             if nxt == bchar then
-                                kerns[rightboundary] = kern
+                                local k =  kerns[rightboundary]
+                                if k then
+                                    logs.report("tfm reader","duplicate boundary for index 0x%X: %p -> %p",i,rightboundary,k,kern)
+                                else
+                                    kerns[rightboundary] = kern
+                                end
                             end
-                            kerns[nxt] = kern
+                            local k =  kerns[nxt]
+                            if k then
+                                logs.report("tfm reader","duplicate between index 0x%X and 0x%X: %p -> %p",i,nxt,k,kern)
+                            else
+                                kerns[nxt] = kern
+                            end
                         else
                             local ligature = { type = op * 2 + 1, char = rem }
                             if nxt == bchar then

@@ -528,7 +528,7 @@
 
 \newtoks\everybackgroundssetup
 
-\permanent\tolerant\protected\def\setupbackgrounds[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\setupbackgrounds[#S#1]#*[#S#2]#*[#S#3]%
   {\ifarguments
      \expandafter\gobblethreeoptionals
    \or
@@ -563,7 +563,7 @@
 
 \let\page_backgrounds_setup_step_nested\relax
 
-\protected\def\page_backgrounds_setup_double[#1][#2][#3]% if needed we can speed this up
+\protected\def\page_backgrounds_setup_double[#1][#2][#S#3]% if needed we can speed this up
   {\global\c_page_backgrounds_some\conditionaltrue
    \def\page_backgrounds_setup_step##1%
      {\ifinset{##1}\v_page_backgrounds_double_set
@@ -575,7 +575,7 @@
    \processcommacommand[#1]\page_backgrounds_setup_step
    \expand\everybackgroundssetup}
 
-\protected\def\page_backgrounds_setup_single[#1][#2][#-]%
+\protected\def\page_backgrounds_setup_single[#1][#S#2][#-]%
   {\global\c_page_backgrounds_some\conditionaltrue
    \ifcommon{#1}\v_page_backgrounds_single_set
      \def\page_backgrounds_setup_step##1{\page_backgrounds_setup_and_check{##1}{#2}}%
@@ -585,7 +585,7 @@
      \page_backgrounds_setup_double[#1][\v_page_backgrounds_common_set][#2]%
    \fi}
 
-\protected\def\page_backgrounds_setup_basics[#1][#-][#-]%
+\protected\def\page_backgrounds_setup_basics[#S#1][#-][#-]%
   {\setupframed[\??layoutbackgrounds][#1]%
    \expand\everybackgroundssetup}
 
@@ -764,4 +764,3 @@
 % \placefigure{none}{\starttabulate\NC test\nc test\NC\NR\stoptabulate}
 % \input tufte
 % \stopcolumnset
-

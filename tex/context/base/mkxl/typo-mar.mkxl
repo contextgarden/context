@@ -183,10 +183,10 @@
      \expandafter\typo_margins_data_yes
    \fi}
 
-\permanent\tolerant\protected\def\typo_margins_data_nop[#name]#spacer[#dataparameters]#spacer[#textparameters]#:#content%
+\permanent\tolerant\protected\def\typo_margins_data_nop[#name]#spacer[#S#dataparameters]#spacer[#S#textparameters]#:#content%
   {}
 
-\permanent\tolerant\protected\def\typo_margins_data_yes[#name]#spacer[#dataparameters]#spacer[#textparameters]#:#content%
+\permanent\tolerant\protected\def\typo_margins_data_yes[#name]#spacer[#S#dataparameters]#spacer[#S#textparameters]#:#content%
   {\inhibitmargindata\conditionalfalse % flushing afterwards
    \begingroup
   %\inhibitmargindata\conditionaltrue  % no flushing in here
@@ -407,7 +407,7 @@
 
 % The following sort of works okay but is to be avoided ... it will disappear from lmtx:
 
-\permanent\tolerant\protected\def\defineinmargin[#name]#spacer[#location]#spacer[#align]#spacer[#settings]% not completely compatible
+\permanent\tolerant\protected\def\defineinmargin[#name]#spacer[#location]#spacer[#align]#spacer[#S#settings]% not completely compatible
   {\ifarguments\else
      \definemargindata[#name][\c!location=#location,\c!align=#align,#settings]%
      \definemarginframed[#name][#location][\c!align=#align,#settings]%

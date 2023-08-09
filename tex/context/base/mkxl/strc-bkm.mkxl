@@ -93,7 +93,7 @@
 \lettonothing\m_bookmarks_names
 \lettonothing\m_bookmarks_opened
 
-\tolerant\def\strc_bookmarks_place_yes[#1]#*[#2]#*[#3]%
+\tolerant\def\strc_bookmarks_place_yes[#1]#*[#S#2]#*[#S#3]%
   {\begingroup
    \edef\m_bookmarks_names{#1}%
    \edef\m_bookmarks_opened{#2}%

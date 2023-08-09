@@ -328,6 +328,11 @@
      #1#3##1##2##3##4##5##6##7{#4}\or
      #1#3##1##2##3##4##5##6##7##8{#4}\or
      #1#3##1##2##3##4##5##6##7##8##9{#4}\else
+     #1#3##1##2##3##4##5##6##7##8##9##A{#4}\else
+     #1#3##1##2##3##4##5##6##7##8##9##A##B{#4}\else
+     #1#3##1##2##3##4##5##6##7##8##9##A##B##C{#4}\else
+     #1#3##1##2##3##4##5##6##7##8##9##A##B##C##D{#4}\else
+     #1#3##1##2##3##4##5##6##7##8##9##A##B##C##D##E{#4}\else
      #1#3{#4}\fi
    \catcode\hashasciicode\c_syst_parameter_catcode}
 
@@ -445,15 +450,6 @@
 \permanent\protected\def\macroname#1% brrr
   {\begincsname#1\endcsname}
 
-% %D A weird one that I probably needed once, so it might as well become
-% %D obsolete.
-%
-% \protected\def\usecommands#1%
-%   {\begingroup
-%    \def\docommand##1{\setbox\scratchbox\hbox{\csname\string##1\endcsname##1}}%
-%    \processcommalist[#1]\docommand
-%    \endgroup}
-
 \permanent\protected\def\syst_log_indeed#1#2#3%
   {\ctxcommand{systemlog("#1","#2",\!!bs#3\!!es)}}
 
@@ -472,7 +468,7 @@
   {\ifcase\directsystemparameter\c!n\relax
      \expandafter\syst_log_indeed
    \or
-      \expandafter\gobblethreearguments
+     \expandafter\gobblethreearguments
    \or
      \expandafter\gobblethreearguments
    \or

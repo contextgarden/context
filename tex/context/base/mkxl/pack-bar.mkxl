@@ -51,7 +51,7 @@
    \c!height=\strutheight,
    \c!depth=\strutdepth]
 
-\permanent\protected\def\horizontalpositionbar[#1]%
+\permanent\protected\def\horizontalpositionbar[#S#1]%
   {\hbox to \hsize
      {\setuppositionbar[#1]%
       \usepositionbarstyleandcolor\c!style\c!color
@@ -61,7 +61,7 @@
       \hskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
       \hskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
 
-\permanent\protected\def\verticalpositionbar[#1]%
+\permanent\protected\def\verticalpositionbar[#S#1]%
   {\vbox to \vsize
      {\hsize\positionbarparameter\c!width
       \setuppositionbar[#1]%
@@ -72,7 +72,7 @@
       \vskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
       \vskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
 
-\permanent\protected\def\horizontalgrowingbar[#1]%
+\permanent\protected\def\horizontalgrowingbar[#S#1]%
   {\hpack to \hsize
      {\setuppositionbar[#1]%
       \usepositionbarstyleandcolor\c!style\c!color
@@ -81,7 +81,7 @@
       \hskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
       \hskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
 
-\permanent\protected\def\verticalgrowingbar[#1]%
+\permanent\protected\def\verticalgrowingbar[#S#1]%
   {\vpack to \vsize
      {\hsize\positionbarparameter\c!width
       \setuppositionbar[#1]%

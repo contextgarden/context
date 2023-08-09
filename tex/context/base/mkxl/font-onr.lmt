@@ -39,7 +39,7 @@ local handlers           = fonts.handlers
 
 local afm                = handlers.afm or { }
 handlers.afm             = afm
-afm.version              = 1.513 -- incrementing this number one up will force a re-cache
+afm.version              = 1.514 -- incrementing this number one up will force a re-cache
 
 local pfb                = handlers.pfb or { }
 handlers.pfb             = pfb
@@ -533,10 +533,10 @@ local function read(filename,parser)
     local afmblob = io.loaddata(filename)
     if afmblob then
         local data = {
+            creator = "context mkiv",
             resources = {
                 filename = resolvers.unresolve(filename),
                 version  = afm.version,
-                creator  = "context mkiv",
             },
             properties = {
                 hasitalics = false,

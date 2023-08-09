@@ -2141,7 +2141,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 41758, stripped down to: 22643
+-- original size: 42452, stripped down to: 23025
 
 if not modules then modules={} end modules ['l-table']={
  version=1.001,
@@ -2642,7 +2642,11 @@ local function do_serialize(root,name,depth,level,indexed)
    elseif tv=="number" then
     if tk=="number" then
      if hexify then
-      handle(format("%s [0x%X]=0x%X,",depth,k,v))
+      if accurate then
+       handle(format("%s [0x%X]=%q,",depth,k,v))
+      else
+       handle(format("%s [0x%X]=%s,",depth,k,v))
+      end
      elseif accurate then
       handle(format("%s [%s]=%q,",depth,k,v))
      else
@@ -2650,7 +2654,11 @@ local function do_serialize(root,name,depth,level,indexed)
      end
     elseif tk=="boolean" then
      if hexify then
-      handle(format("%s [%s]=0x%X,",depth,k and "true" or "false",v))
+      if accurate then
+       handle(format("%s [%s]=%q,",depth,k and "true" or "false",v))
+      else
+       handle(format("%s [%s]=%s,",depth,k and "true" or "false",v))
+      end
      elseif accurate then
       handle(format("%s [%s]=%q,",depth,k and "true" or "false",v))
      else
@@ -2659,7 +2667,11 @@ local function do_serialize(root,name,depth,level,indexed)
     elseif tk~="string" then
     elseif noquotes and not reserved[k] and lpegmatch(propername,k) then
      if hexify then
-      handle(format("%s %s=0x%X,",depth,k,v))
+      if accurate then
+       handle(format("%s %s=%q,",depth,k,v))
+      else
+       handle(format("%s %s=%s,",depth,k,v))
+      end
      elseif accurate then
       handle(format("%s %s=%q,",depth,k,v))
      else
@@ -2667,7 +2679,11 @@ local function do_serialize(root,name,depth,level,indexed)
      end
     else
      if hexify then
-      handle(format("%s [%q]=0x%X,",depth,k,v))
+      if accurate then
+       handle(format("%s [%q]=%q,",depth,k,v))
+      else
+       handle(format("%s [%q]=%s,",depth,k,v))
+      end
      elseif accurate then
       handle(format("%s [%q]=%q,",depth,k,v))
      else
@@ -26217,8 +26233,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1047822
--- stripped bytes    : 416432
+-- original bytes    : 1048516
+-- stripped bytes    : 416744
 
 -- end library merge
 

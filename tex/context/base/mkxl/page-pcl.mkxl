@@ -923,13 +923,15 @@
 \protected\def\page_col_command_set_vsize % different !
   {\page_one_command_set_vsize}
 
-\permanent\tolerant\protected\def\startpagecolumns[#1]%
+\permanent\tolerant\protected\def\startpagecolumns[#S#1]%
   {\begingroup
    \begingroup
-   \doifelseassignment{#1}%
-     {\lettonothing\currentpagecolumns
-      \setuppagecolumns[#1]}%
-     {\cdef\currentpagecolumns{#1}}%
+   \ifhastok={#1}%
+     \lettonothing\currentpagecolumns
+     \setuppagecolumns[#1]%
+   \else
+     \cdef\currentpagecolumns{#1}%
+   \fi
    \edef\p_page{\pagecolumnsparameter\c!page}%
    \ifempty\p_page
      \c_page_col_page\conditionalfalse

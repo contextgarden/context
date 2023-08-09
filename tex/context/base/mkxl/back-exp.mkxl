@@ -419,7 +419,7 @@
 % \def\strc_export_box#1%
 %   {\ctxlua{buffers.assign("#1",structures.tags.exportbox(\number\nextbox))}}
 
-\permanent\tolerant\protected\def\startboxexport[#1]%
+\permanent\tolerant\protected\def\startboxexport[#S#1]%
   {\begingroup
    \ifempty{#1}%
       \letboxexportparameter\c!buffer\v!yes
@@ -437,7 +437,7 @@
      {\boxexportparameter\c!buffer}%
    \endgroup}
 
-\permanent\tolerant\protected\def\startmathexport[#1]%
+\permanent\tolerant\protected\def\startmathexport[#S#1]%
   {\begingroup
    \ifempty{#1}%
       \letboxexportparameter\c!buffer\v!yes

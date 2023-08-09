@@ -124,7 +124,7 @@
      {\chaintocurrentpagegrid{\currentpagegrid:#1}}%
 \to \everydefinepagegrid
 
-\permanent\tolerant\protected\def\startpagegrid[#1]#*[#2]%
+\permanent\tolerant\protected\def\startpagegrid[#S#1]#*[#S#2]%
   {\bgroup
    \enforced\let\startpagegrid\page_grd_start_dummy
    \ifarguments
@@ -186,7 +186,7 @@
    %
    }%\begingroup}
 
-\tolerant\def\page_grd_start_dummy[#1]#*[#2]%
+\tolerant\def\page_grd_start_dummy[#S#1]#*[#S#2]%
   {\let\page_grd_stop\egroup}
 
 \permanent\protected\def\stoppagegrid
@@ -204,7 +204,7 @@
    \page_otr_command_set_vsize
    \page_otr_command_set_hsize}
 
-\permanent\protected\def\reservepagegrid[#1]%
+\permanent\protected\def\reservepagegrid[#S#1]%
   {\begingroup
    \letdummyparameter\c!c\plusone
    \letdummyparameter\c!r\plusone
@@ -220,7 +220,7 @@
    }%
    \endgroup}
 
-\permanent\tolerant\protected\def\setpagegrid[#1]%
+\permanent\tolerant\protected\def\setpagegrid[#S#1]%
   {\begingroup
    \letdummyparameter\c!c\zerocount
    \letdummyparameter\c!r\zerocount

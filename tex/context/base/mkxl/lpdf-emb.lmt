@@ -1720,7 +1720,7 @@ do
 
         function lpdf.registerfontmethod(name,f)
             if type(f) == "function" and not methods[name] then
-                report_fonts("registering font method %a, continue on your own risk")
+                report_fonts("registering font method %a, continue on your own risk",name)
                 methods[name] = f
             end
         end

@@ -54,7 +54,7 @@
 \permanent\protected\def\definetextext[#1]%
   {\tolerant\defcsname\??graphictexarguments#1\endcsname}
 
-\permanent\tolerant\def\sometxt[#1]#*[#2]%
+\permanent\tolerant\def\sometxt[#1]#*[#S#2]%
   {\ifarguments
      \expandafter\meta_some_txt_a
    \or

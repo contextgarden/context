@@ -150,7 +150,7 @@
   {\let\typo_sync_rule\vrule}
   {\let\typo_sync_rule\novrule}
 
-\tolerant\protected\def\typo_synchronize#1#*[#2]#:#3#4%
+\tolerant\protected\def\typo_synchronize#1#*[#S#2]#:#3#4%
   {\dontleavehmode
    \begingroup
    \cdef\currentsynchronize{#1}%
@@ -231,7 +231,7 @@
    \endgroup
    \space}
 
-\tolerant\protected\def\placesynchronize[#1]#*[#2]%
+\tolerant\protected\def\placesynchronize[#1]#*[#S#2]%
   {\dontleavehmode
    \begingroup
    \cdef\currentsynchronize{#1}%

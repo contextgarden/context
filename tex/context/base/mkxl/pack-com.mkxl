@@ -238,7 +238,7 @@
 % \defcsname\??combinationmethod:\v!stop\endcsname
 %   {}
 
-\permanent\tolerant\protected\def\startcombination[#1]#*[#2]% can be simplified
+\permanent\tolerant\protected\def\startcombination[#S#1]#*[#S#2]% can be simplified
   {\bgroup % so we can grab a group
    \pack_combinations_push
    \cdef\currentcombination{#1}%
@@ -746,7 +746,7 @@
    \frozen\protected\instance\edefcsname\e!stop\e!place \currentpairedbox   \endcsname{\stopplacepairedbox                    }%
 \to \everydefinepairedbox
 
-\permanent\tolerant\protected\def\startplacepairedbox[#1]#*[#2]%
+\permanent\tolerant\protected\def\startplacepairedbox[#1]#*[#S#2]%
   {\bgroup
    \cdef\currentpairedbox{#1}%
    \setupcurrentpairedbox[#2]%

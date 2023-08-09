@@ -300,7 +300,7 @@
 
 % todo: dostarttagged\t!document
 
-\permanent\tolerant\protected\def\startdocument[#namespace]#spacer[#settings]%
+\permanent\tolerant\protected\def\startdocument[#S#namespace]#spacer[#S#settings]%
   {\pushmacro\currentdocument
    \ifparameters
    \or
@@ -335,7 +335,7 @@
 
 \aliased\let\doifdocumentvariableelse\doifelsedocumentvariable
 
-\permanent\tolerant\protected\def\presetdocument[#namespace]#spacer[#settings]%
+\permanent\tolerant\protected\def\presetdocument[#S#namespace]#spacer[#S#settings]%
   {\pushmacro\currentdocument
    \ifparameters
    \or

@@ -120,7 +120,7 @@
 
 \pushoverloadmode
 
-\enforced\permanent\tolerant\protected\def\stretched[#1]#:#2%
+\enforced\permanent\tolerant\protected\def\stretched[#S#1]#:#2%
   {\begingroup
    \let\currentcharacterkerning\v!stretched
    \ifparameter#1\or

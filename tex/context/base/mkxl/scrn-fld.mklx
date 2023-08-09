@@ -201,7 +201,7 @@
     \fi
 \to \everydefinefieldbody
 
-\permanent\tolerant\protected\def\fieldbody[#tag]#spacer[#settings]%
+\permanent\tolerant\protected\def\fieldbody[#tag]#spacer[#S#settings]%
   {\iflocation
      \hbox\bgroup
        \edef\currentfieldbody{#tag}%
@@ -357,7 +357,7 @@
    \c!offset=\v!overlay,
    \c!align=]
 
-\permanent\tolerant\protected\def\fitfield[#tag]#spacer[#settings]%
+\permanent\tolerant\protected\def\fitfield[#tag]#spacer[#S#settings]%
   {\iflocation
      \begingroup
        \setbox\b_scrn_field_fit_symbol\hbox\bgroup
@@ -421,7 +421,7 @@
 
 % \setupcurrent
 
-\permanent\tolerant\protected\def\setupfield[#tag]#spacer[#variant]#spacer[#totalsettings]#spacer[#labelsettings]#spacer[#fieldsettings]%
+\permanent\tolerant\protected\def\setupfield[#tag]#spacer[#variant]#spacer[#S#totalsettings]#spacer[#S#labelsettings]#spacer[#S#fieldsettings]%
   {\ifarguments\or\or
      \definefieldcategory[#tag][\s!parent=\??fieldcontent#tag,#variant]%
      \setupfieldtotalframed  [#tag][\s!parent=\??fieldtotal]%
@@ -444,7 +444,7 @@
      \setupfieldcontentframed[#tag][\s!parent=\??fieldcontent,#fieldsettings]%
    \fi}
 
-\permanent\tolerant\protected\def\setupfields[#variant]#spacer[#totalsettings]#spacer[#labelsettings]#spacer[#fieldsettings]%
+\permanent\tolerant\protected\def\setupfields[#variant]#spacer[#S#totalsettings]#spacer[#S#labelsettings]#spacer[#S#fieldsettings]%
   {\ifarguments\or
      \setupfieldtotalframed  [#variant]%
    \or
@@ -671,12 +671,12 @@
      \expandafter\scrn_tooltip_ignore
    \fi}
 
-\tolerant\def\scrn_tooltip_ignore[#settings]#:#anchortext#tiptext%
+\tolerant\def\scrn_tooltip_ignore[#S#settings]#:#anchortext#tiptext%
   {#anchortext}
 
 \mutable\lettonothing\currenttooltipname
 
-\tolerant\def\scrn_tooltip_indeed[#settings]#:#anchortext#tiptext% a more modern aproach (push buttons)
+\tolerant\def\scrn_tooltip_indeed[#S#settings]#:#anchortext#tiptext% a more modern aproach (push buttons)
   {\dontleavehmode \hbox \bgroup
      \dontcomplain
      \global\advanceby\c_scrn_tooltip_n\plusone
@@ -748,15 +748,15 @@
 
 \installcorenamespace {fieldstack}
 
-\permanent\tolerant\protected\def\definefieldstack[#tag]#spacer[#symbols]#spacer[#settings]%
+\permanent\tolerant\protected\def\definefieldstack[#tag]#spacer[#symbols]#spacer[#S#settings]%
   {\ifcsname\??fieldstack#tag\endcsname
      % already done
    \else
-     %setgvalue{\??fieldstack#tag}{\scrn_fieldstack_construct[#tag][#symbols][#settings]}%
-     \setxvalue{\??fieldstack#tag}{\scrn_fieldstack_construct[#tag][#symbols][\normalunexpanded{#settings}]}%
+     %xdefcsname\??fieldstack#tag\endcsname{\scrn_fieldstack_construct[#tag][#symbols][#settings]}%
+     \xdefcsname\??fieldstack#tag\endcsname{\scrn_fieldstack_construct[#tag][#symbols][\normalunexpanded{#settings}]}%
    \fi}
 
-\permanent\tolerant\protected\def\fieldstack[#tag]#spacer[#symbols]#spacer[#settings]%
+\permanent\tolerant\protected\def\fieldstack[#tag]#spacer[#symbols]#spacer[#S#settings]%
   {\ifparameter#symbols\or
      \definefieldstack[#tag][#symbols][#settings]%
    \fi
@@ -785,7 +785,7 @@
          \c!depth=\dp\b_scrn_fieldstack_box,
          #settings]}}
 
-\protected\def\scrn_fieldstack_construct[#tag][#symbols][#settings]% start=n, 0 == leeg
+\protected\def\scrn_fieldstack_construct[#tag][#symbols][#S#settings]% start=n, 0 == leeg
   {\iflocation
      \dontleavehmode
      \begingroup
@@ -872,7 +872,7 @@
 
 \newinteger\c_scrn_pushbutton_n
 
-\permanent\tolerant\protected\def\definepushbutton[#tag]#spacer[#settings]%
+\permanent\tolerant\protected\def\definepushbutton[#tag]#spacer[#S#settings]%
   {\scrn_pushbutton_define_variant{#tag}{n}{push}%
    \scrn_pushbutton_define_variant{#tag}{r}{\symbol[pushsymbol:#tag:n]}%
    \scrn_pushbutton_define_variant{#tag}{d}{\symbol[pushsymbol:#tag:r]}%
@@ -979,7 +979,7 @@
      \setbuttonparameter
      \usebuttonstyleandcolor}
 
-\permanent\tolerant\protected\def\rollbutton[#tag]#spacer[#settings]#:#text[#reference]%
+\permanent\tolerant\protected\def\rollbutton[#tag]#spacer[#S#settings]#:#text[#reference]%
   {\dontleavehmode
    \bgroup
    \global\advanceby\c_scrn_rollbutton_n_button\plusone

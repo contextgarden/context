@@ -121,13 +121,13 @@
   {\stopxcell
    \stopxcellgroup}
 
-\permanent\protected\tolerant\def\tabl_x_TABLE_setup[#settings]%
+\permanent\protected\tolerant\def\tabl_x_TABLE_setup[#S#settings]%
   {\ifarguments\or
   %\ifparameter#1\or
      \setupxtable[#settings]%
    \fi}
 
-\permanent\protected\tolerant\def\tabl_x_TABLE_start[#settings]%
+\permanent\protected\tolerant\def\tabl_x_TABLE_start[#S#settings]%
   {\bgroup
    \ifarguments\or
   %\ifparameter#1\or

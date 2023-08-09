@@ -53,13 +53,13 @@
 
 \mutable\lettonothing\currentanchor
 
-\permanent\tolerant\protected\def\defineanchor[#1]#*[#2]#*[#3]#*[#4]% name targetlayer layersetting framedsetting
+\permanent\tolerant\protected\def\defineanchor[#1]#*[#2]#*[#S#3]#*[#S#4]% name targetlayer layersetting framedsetting
   {\defcsname\??anchor#1\endcsname{\pack_anchors_process_defined{#2}{#3}{#4}}}
 
 \let\pack_anchors_process_defined_indeed\gobbletwooptionals
 
 \def\pack_anchors_process_defined#1#2#3% brrr
-  {\tolerant\def\pack_anchors_process_defined_indeed[##1]##*[##2]%
+  {\tolerant\def\pack_anchors_process_defined_indeed[##S##1]##*[##S##2]%
      {\ifarguments
         \def\next{\pack_anchors_process_indeed{#1}{#2}{#3}}%
       \or
@@ -152,7 +152,7 @@
 % \setlayeranchored[text-1][preset=lefttop]{HELLO WORLD} produces a simple (empty) hbox
 % synchronizes per page
 
-\permanent\tolerant\protected\def\setlayeranchored[#1]#*[#2]%
+\permanent\tolerant\protected\def\setlayeranchored[#1]#*[#S#2]%
   {\begingroup
    \ifarguments
      \dowithnextbox
@@ -324,7 +324,7 @@
 \permanent\protected\def\composedcollector#1% no [], handy as argument
   {\flushcollector[#1]}
 
-\permanent\tolerant\protected\def\adaptcollector[#1]#*[#2]% % a typical case where \global\wd looks better in the code
+\permanent\tolerant\protected\def\adaptcollector[#1]#*[#S#2]% % a typical case where \global\wd looks better in the code
   {\begingroup
    \pack_boxes_collector_check_box{#1}%
    \ifconditional\c_pack_boxes_collector_valid_box
@@ -348,10 +348,10 @@
 \definecollector
   [caption]
 
-\permanent\tolerant\protected\def\collectedtext[#1]#*[#2]% for captions
+\permanent\tolerant\protected\def\collectedtext[#1]#*[#S#2]% for captions
   {\pack_boxes_collector_text[#1][#2]}
 
-\def\pack_boxes_collector_text[#1][#2]#3% #3 is mandate so no tolerant here, so still two step
+\def\pack_boxes_collector_text[#1][#S#2]#3% #3 is mandate so no tolerant here, so still two step
   {\bgroup
    \dowithnextbox
      {\setcollector
@@ -419,7 +419,7 @@
    \c!foregroundcolor=\layeredtextparameter\c!color,
    \c!foregroundstyle=\layeredtextparameter\c!style]
 
-\permanent\tolerant\protected\def\placelayeredtext[#1]#*[#2]#*[#3]#4% tag layersettings content(framed)settings content
+\permanent\tolerant\protected\def\placelayeredtext[#1]#*[#S#2]#*[#S#3]#4% tag layersettings content(framed)settings content
   {\bgroup
    \edef\currentlayeredtext{#1}%
    \checklayeredtextparent % bonus
@@ -463,7 +463,7 @@
 %   {gans}
 %   {\externalfigure[koe][width=3cm]}
 
-\permanent\tolerant\protected\def\ornamenttext[#1]#*[#2]% takes another argument
+\permanent\tolerant\protected\def\ornamenttext[#1]#*[#S#2]% takes another argument
   {\bgroup
    \doifelseassignment{#1}%
      {\letdummyparameter\c!alternative\v!a
@@ -675,7 +675,7 @@
 % tricky: offsets apply to both the layer and the framed; it makes sense to
 % only apply the offset to ...
 
-\permanent\tolerant\protected\def\setlayerframed[#1]#*[#2]#*[#3]
+\permanent\tolerant\protected\def\setlayerframed[#1]#*[#S#2]#*[#S#3]
   {\ifarguments
      % error
    \or
@@ -698,7 +698,7 @@
   {\setlayer[#1][#2]%
      \normalframedwithsettings[#3]}
 
-\permanent\tolerant\protected\def\setlayertext[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\setlayertext[#1]#*[#2]#*[#S#3]%
   {\bgroup
    \resetdummyparameter\c!align
    \letdummyparameter  \c!width\hsize
@@ -855,12 +855,12 @@
 
 \aliased\let\setupoffset\setupoffsetbox
 
-\permanent\tolerant\protected\def\offsetbox[#1]%
+\permanent\tolerant\protected\def\offsetbox[#S#1]%
   {\bgroup
    \pack_boxes_offset_check[#1]%
    \dowithnextboxcs\pack_boxes_offsetfinish}
 
-\permanent\tolerant\protected\def\offset[#1]%
+\permanent\tolerant\protected\def\offset[#S#1]%
   {\bgroup
    \pack_boxes_offset_check[#1]%
    \dowithnextboxcs\pack_boxes_offsetfinish\hbox}
@@ -989,7 +989,7 @@
 
 % to be documented
 
-\permanent\protected\def\phantombox[#1]% == \framed[\c!empty=\v!yes,\c!offset=\v!overlay,#1]{}
+\permanent\protected\def\phantombox[#S#1]% == \framed[\c!empty=\v!yes,\c!offset=\v!overlay,#1]{}
   {\hpack\bgroup
    \letdummyparameter\c!width \zeropoint
    \letdummyparameter\c!height\zeropoint
@@ -1172,7 +1172,7 @@
 
 \mutable\lettonothing\currentanchorbox
 
-\permanent\tolerant\protected\def\setanchorbox[#1]#*[#2]%
+\permanent\tolerant\protected\def\setanchorbox[#1]#*[#S#2]%
   {\begingroup
    \dowithnextbox
      {\cdef\currentanchorbox{#1}%
@@ -1295,7 +1295,7 @@
    \c!location=\v!height,
    \c!corner=\v!depth]
 
-\permanent\tolerant\protected\def\setboxanchor[#1]#*[#2]#*[#3]#*% assumes \defineboxanchor[#1]
+\permanent\tolerant\protected\def\setboxanchor[#1]#*[#S#2]#*[#S#3]#*% assumes \defineboxanchor[#1]
   {\begingroup
    \dowithnextbox
      {\ifhastok={#2}%

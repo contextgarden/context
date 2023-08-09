@@ -492,11 +492,14 @@ end
 
 local function dummy() end
 
+local texsetmacro = token.setmacro or token.set_macro
+
 function commands.ctxresetter(name) -- to be checked
     return function()
         if storedscanners[name] then
             rawset(interfacescanners,name,dummy)
-            context.resetctxscanner(privatenamespace .. name)
+         -- context.resetctxscanner(privatenamespace .. name)
+            texsetmacro(privatenamespace .. name,"","global")
         end
     end
 end

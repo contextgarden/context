@@ -30,7 +30,7 @@
 
 \definefont[usedzintfont][dejavusansmono at 10bp]
 
-\permanent\protected\def\barcode[#1]% [alternative=,text=]
+\permanent\protected\def\barcode[#S#1]% [alternative=,text=]
   {\bgroup
    \usedzintfont
    \getdummyparameters

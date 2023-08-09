@@ -82,6 +82,7 @@ typedef struct potracer {
     int               nx;
     int               ny;
     unsigned char     value;
+    unsigned char     match;
     /* 7 bytes padding */
 } potracer;
 
@@ -98,11 +99,12 @@ static unsigned char lmt_tochar(lua_State *L, int index)
 
 static void potracelib_aux_get_parameters(lua_State *L, int index, potracer *p) 
 {
-    if (lua_getfield(L, index, "size")      == LUA_TNUMBER ) { p->parameters->turdsize     = lua_tointeger(L, -1); } lua_pop(L, 1);
-    if (lua_getfield(L, index, "threshold") == LUA_TNUMBER ) { p->parameters->alphamax     = lua_tonumber (L, -1); } lua_pop(L, 1);
-    if (lua_getfield(L, index, "tolerance") == LUA_TNUMBER ) { p->parameters->opttolerance = lua_tonumber (L, -1); } lua_pop(L, 1);
-    if (lua_getfield(L, index, "optimize")  == LUA_TBOOLEAN) { p->parameters->opticurve    = lua_toboolean(L, -1); } lua_pop(L, 1);
-    if (lua_getfield(L, index, "value")     == LUA_TSTRING ) { p->value                    = lmt_tochar   (L, -1); } lua_pop(L, 1);
+    if (lua_getfield(L, index, "size")      == LUA_TNUMBER ) { p->parameters->turdsize     =   lua_tointeger(L, -1); } lua_pop(L, 1);
+    if (lua_getfield(L, index, "threshold") == LUA_TNUMBER ) { p->parameters->alphamax     =   lua_tonumber (L, -1); } lua_pop(L, 1);
+    if (lua_getfield(L, index, "tolerance") == LUA_TNUMBER ) { p->parameters->opttolerance =   lua_tonumber (L, -1); } lua_pop(L, 1);
+    if (lua_getfield(L, index, "optimize")  == LUA_TBOOLEAN) { p->parameters->opticurve    =   lua_toboolean(L, -1); } lua_pop(L, 1);
+    if (lua_getfield(L, index, "value")     == LUA_TSTRING ) { p->value                    =   lmt_tochar   (L, -1); } lua_pop(L, 1);
+    if (lua_getfield(L, index, "negate")    == LUA_TBOOLEAN) { p->match                    = ! lua_toboolean(L, -1); } lua_pop(L, 1);
 
     if (lua_getfield(L, index, "policy") == LUA_TSTRING ) { 
         p->parameters->turnpolicy = luaL_checkoption(L, -1, "minority", policies); 
@@ -110,7 +112,7 @@ static void potracelib_aux_get_parameters(lua_State *L, int index, potracer *p)
     lua_pop(L, 1);
 }
 
-static void potracelib_get_bitmap(potracer *p) 
+static void potracelib_get_bitmap(potracer *p, unsigned char match) 
 {
     /* Kind of suboptimal but it might change anyway so let the compiler worry about it. */
 
@@ -167,7 +169,7 @@ static void potracelib_get_bitmap(potracer *p)
                 for (int y = 0; y < p->height; y++) {
                     int bp = p->width * y;
                     for (int x = 0; x < p->width; x++) {
-                        unsigned char b = (unsigned char) bytes[bp++] == c ? 1 : 0;
+                        unsigned char b = ((unsigned char) bytes[bp++] == c ? 1 : 0) == match;
                         if (b) { 
                             BM_PUT(p->bitmap, x, p->height - y - 1, b);
                         }
@@ -196,17 +198,19 @@ static int potracelib_new(lua_State *L)
             .nx         = 1,
             .ny         = 1,
             .value      = '1',
+            .match      = 1,
         };
 
         size_t length = 0;
 
-        if (lua_getfield(L, 1, "bytes")   == LUA_TSTRING)  { p.bytes   = lua_tolstring(L, -1, &length); } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "width")   == LUA_TNUMBER)  { p.width   = lua_tointeger(L, -1);          } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "height")  == LUA_TNUMBER)  { p.height  = lua_tointeger(L, -1);          } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "nx")      == LUA_TNUMBER)  { p.nx      = lua_tointeger(L, -1);          } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "ny")      == LUA_TNUMBER)  { p.ny      = lua_tointeger(L, -1);          } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "swap")    == LUA_TBOOLEAN) { p.swap    = lua_toboolean(L, -1);          } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "value")   == LUA_TSTRING)  { p.value   = lmt_tochar   (L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "bytes")   == LUA_TSTRING)  { p.bytes   =   lua_tolstring(L, -1, &length); } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "width")   == LUA_TNUMBER)  { p.width   =   lua_tointeger(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "height")  == LUA_TNUMBER)  { p.height  =   lua_tointeger(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "nx")      == LUA_TNUMBER)  { p.nx      =   lua_tointeger(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "ny")      == LUA_TNUMBER)  { p.ny      =   lua_tointeger(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "swap")    == LUA_TBOOLEAN) { p.swap    =   lua_toboolean(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "value")   == LUA_TSTRING)  { p.value   =   lmt_tochar   (L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "negate")  == LUA_TBOOLEAN) { p.match   = ! lua_toboolean(L, -1);          } lua_pop(L, 1);
                                           
         if (! p.bytes) {
             return 0;
@@ -286,13 +290,27 @@ static int aux_potracelib_entries(potracer *p)
     return entries; 
 }
 
+/* maybe also - last*/
+
 static potrace_path_t *aux_potrace_goto_first(potracer *p, int nofentries, int *first, int *last, int *used) {
     potrace_path_t *entry = p->state->plist;
+    if (*first && ! *last) {
+        *last = nofentries; 
+    }
+    if (*last < 0) { 
+        *last = nofentries - *last;
+        if (*last < 0) { 
+            *last = 1; 
+        }
+    }
     if (*first <= 0) { 
         *first = 1; 
     }
     if ((! *last) || (*last > nofentries)) { 
         *last = nofentries; 
+    }
+    if (*first > *last) {
+        *first = *last; 
     }
     for (int i = 1; i < *first; i++) {
         entry = entry->next;
@@ -383,12 +401,27 @@ static int potracelib_totable_debug(lua_State *L, potracer *p, int first, int la
             We can get a redundant point 0 when we go left and come back right on the same line, 
             but we can simplify that at the receiving end. 
         */
-     // if (sign)  { 
+        if (sign)  { 
+            point_t cur = pt[entry->priv->len - 1];
+            point_t prev = cur; 
+            lua_push_number_at_index(L, ++segments, cur.x);
+            lua_push_number_at_index(L, ++segments, cur.y);
+            for (int i = 0; i < entry->priv->len; i++) {
+                if (pt[i].x != cur.x && pt[i].y != cur.y) {
+                    cur = prev;
+                    lua_push_number_at_index(L, ++segments, cur.x);
+                    lua_push_number_at_index(L, ++segments, cur.y);
+                }
+                prev = pt[i];
+            }
+            lua_push_number_at_index(L, ++segments, pt[entry->priv->len-1].x);
+            lua_push_number_at_index(L, ++segments, pt[entry->priv->len-1].y);
+        } else { 
             point_t cur = pt[0];
             point_t prev = cur; 
             lua_push_number_at_index(L, ++segments, cur.x);
             lua_push_number_at_index(L, ++segments, cur.y);
-            for (int i = entry->priv->len -1; i >= 0; i--) {
+            for (int i = entry->priv->len - 1; i >= 0; i--) {
                 if (pt[i].x != cur.x && pt[i].y != cur.y) {
                     cur = prev;
                     lua_push_number_at_index(L, ++segments, cur.x);
@@ -398,22 +431,7 @@ static int potracelib_totable_debug(lua_State *L, potracer *p, int first, int la
             }
             lua_push_number_at_index(L, ++segments, pt[0].x);
             lua_push_number_at_index(L, ++segments, pt[0].y);
-     // } else {
-     //     point_t cur = pt[entry->priv->len-1];
-     //     point_t prev = cur; 
-     //     lua_push_number_at_index(L, ++segments, cur.x);
-     //     lua_push_number_at_index(L, ++segments, cur.y);
-     //     for (int i = 0; i < entry->priv->len; i++) {
-     //         if (pt[i].x != cur.x && pt[i].y != cur.y) {
-     //             cur = prev;
-     //             lua_push_number_at_index(L, ++segments, cur.x);
-     //             lua_push_number_at_index(L, ++segments, cur.y);
-     //         }
-     //         prev = pt[i];
-     //     }
-     //     lua_push_number_at_index(L, ++segments, pt[entry->priv->len-1].x);
-     //     lua_push_number_at_index(L, ++segments, pt[entry->priv->len-1].y);
-     // }
+        }
         lua_rawseti(L, -2, ++entries);
         if (first + entries > last) { 
             break; 
@@ -448,7 +466,7 @@ static int potracelib_process(lua_State *L)
         }
         p->bitmap = new_bitmap(p->width, p->height);
         if (p->bitmap) {
-            potracelib_get_bitmap(p);
+            potracelib_get_bitmap(p, p->match);
             p->state = potrace_trace(p->parameters, p->bitmap);
             if (p->state && p->state->status == POTRACE_STATUS_OK) {
                 lua_pushboolean(L, 1);

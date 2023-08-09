@@ -152,7 +152,7 @@
       \relax
       \pushparagraphtweak{shift}}}
 
-\permanent\protected\tolerant\def\startshapedparagraph[#1]% no grouping
+\permanent\protected\tolerant\def\startshapedparagraph[#S#1]% no grouping
   {\begingroup
    \lettonothing\currentshapedparagraph
    \setupshapedparagraph[#1]%
@@ -182,7 +182,7 @@
 \newbox    \shapetextbox
 \newinteger\shapetextindex
 
-\permanent\protected\def\startshapetext[#1]%
+\permanent\protected\def\startshapetext[#S#1]%
   {\begingroup
    \global\shapetextindex\zerocount
    \global\setbox\shapetextbox\vbox\bgroup

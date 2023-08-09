@@ -125,7 +125,7 @@
 \newinteger \c_anch_backgrounds_text_check
 \newconstant\c_anch_backgrounds_text_state
 
-\permanent\tolerant\protected\def\starttextbackground[#tag]#spacer[#settings]%
+\permanent\tolerant\protected\def\starttextbackground[#tag]#spacer[#S#settings]%
   {\begingroup
    \global\advanceby\c_anch_backgrounds_text_count\plusone
    \advanceby\c_anch_backgrounds_text_level\plusone

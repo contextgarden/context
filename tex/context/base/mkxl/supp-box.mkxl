@@ -2984,6 +2984,8 @@
 %D
 %D \typebuffer \blank \startpacked \getbuffer \stoppacked \blank
 
+% \definedasluacommand\noflinesinbox
+
 \protect \endinput
 
 % a bit of test code:

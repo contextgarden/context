@@ -101,7 +101,7 @@
      \fi
    \fi}
 
-\permanent\protected\def\setupspecifiedinterlinespace[#1]%
+\permanent\protected\def\setupspecifiedinterlinespace[#S#1]%
   {\setupcurrentinterlinespace[#1]%
    \spac_linespacing_setup_specified_interline_space}
 
@@ -183,7 +183,7 @@
 
 \installmacrostack\currentinterlinespace
 
-\permanent\overloaded\tolerant\protected\def\setupinterlinespace[#1]%
+\permanent\overloaded\tolerant\protected\def\setupinterlinespace[#S#1]%
   {\ifarguments
      \interlinespaceisset\conditionaltrue
      \spac_linespacing_synchronize_local
@@ -198,7 +198,7 @@
      \fi
    \fi}
 
-\def\spac_linespacing_setup_specified_or_relative[#1]%
+\def\spac_linespacing_setup_specified_or_relative[#S#1]%
   {\doifelseassignment{#1}\setupspecifiedinterlinespace\setuprelativeinterlinespace[#1]%
    \expandtoks\iflocalinterlinespace\everysetuplocalinterlinespace\else\everysetupglobalinterlinespace\fi}
 
@@ -237,7 +237,7 @@
      \fi
    \fi}
 
-\permanent\protected\def\setuplocalinterlinespace[#1]%
+\permanent\protected\def\setuplocalinterlinespace[#S#1]%
   {\localinterlinespacetrue
    \push_macro_currentinterlinespace
    \setupinterlinespace[#1]%
@@ -2442,7 +2442,7 @@
   [\c!factor=.5,
    \c!after=\textdisplayparameter\c!before]
 
-\tolerant\protected\def\spac_textdisplay_start#1#:[#2]%
+\tolerant\protected\def\spac_textdisplay_start#1#:[#S#2]%
   {\par
    \begingroup
    \whitespace

@@ -406,7 +406,7 @@
 \installmacrostack\currentmixedcolumns
 \installmacrostack\currentmixedcolumnsmethod
 
-\permanent\tolerant\protected\def\startmixedcolumns[#1]#*[#2]%
+\permanent\tolerant\protected\def\startmixedcolumns[#S#1]#*[#S#2]%
   {\push_macro_currentmixedcolumns
    \push_macro_currentmixedcolumnsmethod
    \ifparameters
@@ -433,7 +433,7 @@
      \page_mix_start_columns_a_yes
      \page_mix_start_columns_a_nop}
 
-\def\page_mix_start_columns_a_yes[#1]%
+\def\page_mix_start_columns_a_yes[#S#1]%
   {\mixedcolumnsparameter\c!before\relax
    \begincsname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
    \begingroup
@@ -442,11 +442,11 @@
    \begincsname\??mixedcolumnsstart\currentmixedcolumnsmethod\endcsname
    \enforced\let\stopmixedcolumns\page_mix_columns_stop_yes}
 
-\def\page_mix_start_columns_a_nop[#1]%
+\def\page_mix_start_columns_a_nop[#S#1]%
   {\begingroup
    \enforced\let\stopmixedcolumns\page_mix_columns_stop_nop}
 
-\def\page_mix_start_columns_b[#1][#2]%
+\def\page_mix_start_columns_b[#S#1][#S#2]%
   {\ifhastok={#1}%
      \lettonothing\currentmixedcolumns
      \page_mix_error_b
@@ -456,7 +456,7 @@
      \page_mix_start_columns_checked\page_mix_start_columns_b_yes\page_mix_start_columns_b_nop[#2]%
    \fi}
 
-\def\page_mix_start_columns_b_yes[#1]%
+\def\page_mix_start_columns_b_yes[#S#1]%
   {\mixedcolumnsparameter\c!before\relax % so, it doesn't listen to local settings !
    \begincsname\??mixedcolumnsbefore\currentmixedcolumnsmethod\endcsname\relax
    \begingroup

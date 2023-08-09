@@ -189,7 +189,7 @@
 
 \newbox\b_strc_float_saved
 
-\permanent\tolerant\protected\def\placesavedfloat[#1]#*[#2]#*[#3]% experiment for Alan B
+\permanent\tolerant\protected\def\placesavedfloat[#1]#*[#2]#*[#S#3]% experiment for Alan B
   {\clf_flushlabeledfloat\s!somewhere{#2}\relax
   %\cdef\currentfloat{#1}%
    \setbox\b_strc_float_saved\vpack{\box\floatbox}%
@@ -218,7 +218,7 @@
 
 \aliased\let\placesetupfloat\gobbleoneoptional
 
-\permanent\tolerant\protected\def\placefloatwithsetups[#1]#*[#2]#*[#3]#:#4%
+\permanent\tolerant\protected\def\placefloatwithsetups[#1]#*[#S#2]#*[#S#3]#:#4%
   {\def\floatsetupcaption{#4}%
    \def\floatsetupcontent{\copy\nextbox}%
    \def\floatsetupwidth  {\wd\nextbox}%

@@ -51,7 +51,7 @@
    \lettonothing\m_subblock
    \doifelsenextoptionalcs\strc_blocks_begin_yes\strc_blocks_begin_nop}
 
-\protected\def\strc_blocks_begin_yes[#1]%
+\protected\def\strc_blocks_begin_yes[#S#1]%
   {\doifelseassignmentcs{#1}%
      \strc_blocks_begin_indeed
      \strc_blocks_begin_tagged
@@ -61,7 +61,7 @@
   {\edef\m_subblock{#1}%
    \doifelsenextoptionalcs\strc_blocks_begin_yes_yes\strc_blocks_begin_nop}
 
-\protected\def\strc_blocks_begin_yes_yes[#1]%
+\protected\def\strc_blocks_begin_yes_yes[#S#1]%
   {\strc_blocks_begin_indeed{#1}}
 
 \protected\def\strc_blocks_begin_nop
@@ -164,7 +164,7 @@
 \tolerant\def\strc_blocks_set_state[#1]#*[#2]#*[#3]% state name tag % todo: we could use the lua one directly
   {\clf_setstructureblockstate{#1}{#2}{#3}}
 
-\tolerant\def\strc_blocks_select[#1]#*[#2]#*[#3]#*[#4]% state name tag setups
+\tolerant\def\strc_blocks_select[#1]#*[#2]#*[#S#3]#*[#S#4]% state name tag setups
   {\begingroup
    \ifhastok={#3}%
      \getparameters[\??blocktemp][\c!criterium=\v!text,#3]%

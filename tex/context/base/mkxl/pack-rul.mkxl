@@ -520,7 +520,7 @@
 \protected\def\pack_overlay_define#1#2%
   {\defcsname\??overlay#1\endcsname{\executedefinedoverlay{#1}{#2}}}
 
-\permanent\tolerant\protected\def\defineoverlay[#1]#*[#2]% wil be overloaded
+\permanent\tolerant\protected\def\defineoverlay[#1]#*[#S#2]% wil be overloaded
 % {\def\pack_framed_define_overlay_indeed##1{\defcsname\??overlay##1\endcsname{\executedefinedoverlay{##1}{#2}}}%
   {\def\pack_framed_define_overlay_indeed##1{\pack_overlay_define{##1}{#2}}%
    \processcommalist[#1]\pack_framed_define_overlay_indeed}
@@ -904,7 +904,7 @@
 
 \newinteger\c_pack_framed_nesting
 
-\permanent\tolerant\protected\def\framed[#1]%
+\permanent\tolerant\protected\def\framed[#S#1]%
   {\bgroup
    \advanceby\c_pack_framed_nesting\plusone
    \letcsname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
@@ -914,7 +914,7 @@
    \setupcurrentframed[#1]% here !, seldom no argument so no need to optimize
    \pack_framed_process_indeed}
 
-\permanent\tolerant\protected\def\startframed[#1]#*[#2]%
+\permanent\tolerant\protected\def\startframed[#S#1]#*[#S#2]%
   {\bgroup
    \ifarguments
      \pack_framed_initialize
@@ -948,7 +948,7 @@
   {\removeunwantedspaces
    \egroup}
 
-\permanent\protected\def\normalframedwithsettings[#1]%
+\permanent\protected\def\normalframedwithsettings[#S#1]%
   {\bgroup
    \advanceby\c_pack_framed_nesting\plusone
    \letcsname\??framed>\the\c_pack_framed_nesting:\s!parent\endcsname\??framed
@@ -990,7 +990,7 @@
 
 %% \protected\def\fastlocalframed[#1]#2[#3]#4% 3-4
 
-\permanent\protected\def\fastlocalframed[#1]#*[#2]#3%
+\permanent\protected\def\fastlocalframed[#1]#*[#S#2]#3%
   {\bgroup
    \cdef\currentframed{#1}%
    \pack_framed_initialize
@@ -1138,7 +1138,7 @@
 
 % todo: protect local \framednames
 
-\permanent\tolerant\protected\def\localframed[#1]#*[#2]%
+\permanent\tolerant\protected\def\localframed[#1]#*[#S#2]%
   {\bgroup
    \bgroup
    \cdef\currentframed{#1}%
@@ -2035,7 +2035,7 @@
 %D [height=3cm] {framed} boxes. Such boxes have to be \inframed {aligned} with the
 %D running text.
 
-\permanent\tolerant\protected\def\inframed[#1]{\framed[\c!location=\v!low,#1]}
+\permanent\tolerant\protected\def\inframed[#S#1]{\framed[\c!location=\v!low,#1]}
 
 %D When we set \type{empty} to \type{yes}, we get ourselves a frame and/or background,
 %D but no content, so actually we have a sort of phantom framed box.
@@ -2750,10 +2750,10 @@
    \letframedtextparameter\c!right\relax
    \c_framed_text_location_none\conditionaltrue}
 
-\tolerant\protected\def\pack_framed_text_start[#1]#*[#2]#*[#3]% or #1#*[#2]#*[#3]% and pass {#1}
+\tolerant\protected\def\pack_framed_text_start[#1]#*[#S#2]#*[#S#3]% or #1#*[#2]#*[#3]% and pass {#1}
   {\bgroup
    \cdef\currentframedtext{#1}%
-   \doifelseassignment{#2}
+   \doifelseassignment{#2}%
      {\pack_framed_text_start_indeed\empty{#2}}
      {\pack_framed_text_start_indeed{#2}{#3}}}
 
@@ -2885,7 +2885,7 @@
 
 \let\pack_framed_strut\relax
 
-\tolerant\protected\def\pack_framed_text_direct[#1]#*[#2]%
+\tolerant\protected\def\pack_framed_text_direct[#1]#*[#S#2]%
   {\bgroup
    \cdef\currentframedtext{#1}%
    \usebodyfontparameter\framedtextparameter
@@ -2959,7 +2959,7 @@
 %    \setupcurrentframed[#2]% here !
 %    \pack_framed_process_indeed}
 
-\permanent\tolerant\protected\def\pack_framed_defined_process[#1]#*[#2]% official (not much checking, todo: parent)
+\permanent\tolerant\protected\def\pack_framed_defined_process[#1]#*[#S#2]% official (not much checking, todo: parent)
   {\bgroup
    \ifcsname\??regularframedlevel#1\endcsname
     %\expandafter\let\expandafter\c_pack_framed_temp\csname\??regularframedlevel#1\endcsname

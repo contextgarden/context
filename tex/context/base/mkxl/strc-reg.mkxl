@@ -66,7 +66,7 @@
 
 \let\strc_registers_setup_step\relax
 
-\permanent\tolerant\protected\overloaded\def\setupregister[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\overloaded\def\setupregister[#S#1]#*[#S#2]#*[#S#3]%
   {\ifarguments\or
      \strc_registers_setup_saved[#1]%
    \or
@@ -76,7 +76,7 @@
      \processcommalist[#2]\strc_registers_setup_step
    \fi}
 
-\permanent\tolerant\protected\def\setupregisters[#1]%
+\permanent\tolerant\protected\def\setupregisters[#S#1]%
   {\strc_registers_setup_saved[#1]\relax}
 
 \setupregister
@@ -413,7 +413,7 @@
 
 \aliased\let\dotagregisterlocation\relax % experiment
 
-\tolerant\protected\def\strc_registers_insert_entry[#1]#*[#2]%
+\tolerant\protected\def\strc_registers_insert_entry[#1]#*[#S#2]%
   {\cdef\currentregister{#1}%
    \ifcstok{\registerparameter\c!ownnumber}\v!yes
      \expandafter\strc_registers_insert_entry_yes
@@ -557,10 +557,10 @@
 
 % some overlap with previous
 
-\permanent\tolerant\protected\def\setstructurepageregister[#1]#*[#2]#*[#3]% [register][settings][userdata]
+\permanent\tolerant\protected\def\setstructurepageregister[#1]#*[#2]#*[#S#3]% [register][settings][userdata]
   {\doflushatpar{\strc_registers_register_page_entry{#1}{#2}{#3}}}
 
-\permanent\tolerant\protected\def\startstructurepageregister[#1]#*[#2]#*[#3]#*[#4]% [register][tag][settings][userdata]
+\permanent\tolerant\protected\def\startstructurepageregister[#1]#*[#2]#*[#S#3]#*[#S#4]% [register][tag][settings][userdata]
   {\doflushatpar{\strc_registers_register_page_entry{#1}{\c!label=#2,#3}{#4}}}
 
 \permanent\tolerant\protected\def\stopstructurepageregister[#1]#*[#2]%
@@ -631,7 +631,7 @@
 
 % \mutable\let\listlength\!!zerocount             % also in strc-lst
 
-\permanent\tolerant\protected\def\determineregistercharacteristics[#1]#*[#2]%
+\permanent\tolerant\protected\def\determineregistercharacteristics[#1]#*[#S#2]%
   {\begingroup
    \setupregister[#1][#2]%
    \cdef\currentregister{\firstinset{#1}}%
@@ -661,7 +661,7 @@
 \newconditional\c_strc_registers_text_interaction
 \newconditional\c_strc_registers_page_done
 
-\permanent\tolerant\protected\def\placeregister[#1]#*[#2]%
+\permanent\tolerant\protected\def\placeregister[#1]#*[#S#2]%
   {\ifarguments\else
      \begingroup
     %\forgetall
@@ -730,7 +730,7 @@
     \fi
 \to \everyplaceregister
 
-\permanent\tolerant\protected\def\completeregister[#1]#*[#2]%
+\permanent\tolerant\protected\def\completeregister[#1]#*[#S#2]%
   {\ifarguments\or
      \begingroup
      \cdef\currentregister{\firstinset{#1}}%

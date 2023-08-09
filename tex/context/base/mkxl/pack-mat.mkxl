@@ -40,7 +40,7 @@
 
 \setupframed[\??mathframed][\c!location=\v!middle]
 
-\tolerant\permanent\protected\def\definemathframed[#1]#*[#2]#*[#3]%
+\tolerant\permanent\protected\def\definemathframed[#1]#*[#2]#*[#S#3]%
   {\ifarguments\or
      \defineframed[#1][\??mathframed]%
    \or
@@ -96,7 +96,7 @@
 
 \dimensiondef\d_math_framed_offset\zeropoint
 
-\def\math_framed#1#*[#2]#:#3%
+\def\math_framed#1#*[#S#2]#:#3%
   {\begingroup
    \ifconditional\c_framed_math_framed
      \defineboxanchor[temp]%
@@ -263,7 +263,7 @@
 %D \stopformula
 %D \stoptyping
 
-\permanent\tolerant\protected\def\mparagraph[#1]#*#:#2%
+\permanent\tolerant\protected\def\mparagraph[#S#1]#*#:#2%
   {\vcenter class \mathconstructcode \bgroup % \mathwrappedcode would be like fraction
      \framed[\c!offset=\v!overlay,\c!frame=\v!overlay,\c!align=\v!middle,#1]{#2}%
    \egroup}
@@ -295,7 +295,7 @@
     \frozen\protected\instance\edefcsname\currentmathframed\endcsname{\pack_framed_mathframed[\currentmathframed]}%
 \to \everydefinemathframed
 
-\tolerant\protected\def\pack_framed_mathframed[#1]#*[#2]#:#3% needs testing !
+\tolerant\protected\def\pack_framed_mathframed[#1]#*[#S#2]#:#3% needs testing !
   {\begingroup
    \cdef\currentmathframed{#1}%
    \setupcurrentmathframed[#2]%

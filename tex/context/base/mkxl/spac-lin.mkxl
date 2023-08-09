@@ -111,7 +111,7 @@
    \obeylines
    \spac_lines_start_indeed}
 
-\tolerant\def\spac_lines_start_indeed[#1]% new: optional second argument (WS)
+\tolerant\def\spac_lines_start_indeed[#S#1]% new: optional second argument (WS)
   {\ifarguments\or
      \setupcurrentlines[#1]%
    \fi

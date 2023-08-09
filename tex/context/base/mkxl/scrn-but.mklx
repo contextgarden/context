@@ -73,7 +73,7 @@
 %
 % \button[settings]{}[action] % normally used at the tex end
 
-\tolerant\def\scrn_button_direct_indeed[#settings]#:#text[#action]%
+\tolerant\def\scrn_button_direct_indeed[#S#settings]#:#text[#action]%
   {\setupcurrentbutton[#settings]%
    % no \dontleavehmode as it will force a vbox to \hsize which then
    % spoils a tight box
@@ -88,7 +88,7 @@
    \egroup
    \endgroup}
 
-\tolerant\def\scrn_button_direct_ignore[#settings]#:#text[#destination]%
+\tolerant\def\scrn_button_direct_ignore[#S#settings]#:#text[#destination]%
   {\endgroup}
 
 \definebutton[button] % english
@@ -337,7 +337,7 @@
 
 \pushoverloadmode
 
-\permanent\tolerant\protected\def\defineinteractionmenu[#tag]#spacer[#category]#spacer[#settings]% category reflects location, settings can be parent
+\permanent\tolerant\protected\def\defineinteractionmenu[#tag]#spacer[#category]#spacer[#S#settings]% category reflects location, settings can be parent
   {\ifarguments\or
      \scrn_menu_define_original[#tag]%                                             % root definition
    \or
@@ -817,7 +817,7 @@
 
 %D Direct call (todo):
 
-\permanent\tolerant\protected\def\interactionmenu[#tag]#spacer[#settings]%
+\permanent\tolerant\protected\def\interactionmenu[#tag]#spacer[#S#settings]%
   {\begingroup
    \cdef\currentinteractionmenu{#tag}%
    \setupcurrentinteractionmenu[#settings]%
@@ -990,7 +990,7 @@
      \expandafter\scrn_menu_menu_button_ignore
    \fi}
 
-\tolerant\def\scrn_menu_menu_button_indeed[#menutag]#spacer[#settings]#:#text[#action]%
+\tolerant\def\scrn_menu_menu_button_indeed[#menutag]#spacer[#S#settings]#:#text[#action]%
   {\ifcstok{\interactionmenuparameter\c!state}\v!start
      \ifparameter#settings\or
        \expandafter\scrn_menu_menu_button_a
@@ -1001,7 +1001,7 @@
      \fi{#menutag}{#settings}{#text}{#action}%
    \fi}
 
-\tolerant\def\scrn_menu_menu_button_ignore[#menutag]#spacer[#settings]#:#text[#action]%
+\tolerant\def\scrn_menu_menu_button_ignore[#menutag]#spacer[#S#settings]#:#text[#action]%
   {}
 
 \def\scrn_menu_menu_button_a#tag#settings#text#action%

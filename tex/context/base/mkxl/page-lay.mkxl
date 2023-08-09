@@ -388,7 +388,7 @@
 % \definepapersize[name][A4][A3]
 % \definepapersize[name][settings]
 
-\permanent\tolerant\protected\def\definepapersize[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\definepapersize[#1]#*[#S#2]#*[#S#3]%
   {\cdef\currentlayouttarget{#1}%
    \ifempty\currentlayouttarget
      % invalid target
@@ -420,7 +420,7 @@
 \let\page_paper_reinstate\relax
 \let\page_paper_restore  \relax
 
-\permanent\tolerant\protected\def\setuppapersize[#1]#*[#2]%
+\permanent\tolerant\protected\def\setuppapersize[#S#1]#*[#S#2]%
   {\ifarguments
      \page_paper_restore
    \orelse\ifhastok={#1}%
@@ -431,7 +431,7 @@
      \page_paper_setup_size_change_size[#1][#2]%
    \fi}
 
-\protected\def\page_paper_setup_size_settings[#1]% sometimes used to set paper/print size
+\protected\def\page_paper_setup_size_settings[#S#1]% sometimes used to set paper/print size
   {\lettonothing\currentlayouttarget
    \edef\m_layouttarget_paper_saved{\page_paper_the_paper_size{\layouttargetparameter\c!page }}%
    \edef\m_layouttarget_print_saved{\page_paper_the_print_size{\layouttargetparameter\c!paper}}%
@@ -460,7 +460,7 @@
    \letlayouttargetparameter\c!page \papersize
    \letlayouttargetparameter\c!paper\printpapersize}
 
-\protected\def\page_paper_setup_size_settings_by_name[#1][#2]%
+\protected\def\page_paper_setup_size_settings_by_name[#1][#S#2]%
   {\cdef\currentlayouttarget{\page_paper_the_paper_size{#1}}%
    \setuplayouttarget[#2]}
 
@@ -1092,7 +1092,7 @@
 
 \appendtoks \global\d_page_adapts_delta\zeropoint \to \everyshipout
 
-\permanent\protected\tolerant\def\adaptlayout[#1]#*[#2]%
+\permanent\protected\tolerant\def\adaptlayout[#1]#*[#S#2]%
   {\ifparameter#2\or
      \processcommalist[#1]{\page_adapts_layout_register{#2}}%
      \page_adapts_check
@@ -1176,7 +1176,7 @@
 %D \macros
 %D   {startlayout,stoplayout}
 
-\permanent\protected\def\startlayout[#1]%
+\permanent\protected\def\startlayout[#S#1]%
   {\page
    \globalpushmacro\currentlayout
    \doifelselayoutdefined{#1}{\setuplayout[#1]}\donothing} % {\setuplayout[\currentlayout]}}

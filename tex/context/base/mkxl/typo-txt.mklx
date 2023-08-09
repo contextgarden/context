@@ -196,7 +196,7 @@
 %D This is used in the beginners manual. One needs to set the font size to an
 %D acceptable value for this to work.
 
-\permanent\tolerant\protected\def\startnicelyfilledbox[#1]%
+\permanent\tolerant\protected\def\startnicelyfilledbox[#S#1]%
   {\vbox\bgroup
    \forgetall
    \letdummyparameter\c!width \hsize

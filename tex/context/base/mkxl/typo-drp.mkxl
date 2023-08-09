@@ -74,7 +74,7 @@
    \namedinitialparameter{#1}\c!before
    \enforced\edef\typo_initial_handle{\typo_initial_handle_indeed{#1}{}}}
 
-\permanent\tolerant\protected\def\setinitial[#1]#*[#2]%
+\permanent\tolerant\protected\def\setinitial[#1]#*[#S#2]%
   {\enforced\edef\typo_initial_handle{\typo_initial_handle_indeed{#1}{#2}}}
 
 %D \starttyping

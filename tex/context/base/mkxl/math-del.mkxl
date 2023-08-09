@@ -90,7 +90,7 @@
     \fi
 \to \everydefinemathdelimiter
 
-\permanent\tolerant\protected\def\mathdelimiter[#1]#*[#2]% so not really used (for now)
+\permanent\tolerant\protected\def\mathdelimiter[#1]#*[#S#2]% so not really used (for now)
   {\mathop
      {\cdef\currentmathdelimiter{#1}%
       \ifempty{#2}%

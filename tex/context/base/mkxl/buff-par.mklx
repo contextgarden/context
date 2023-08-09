@@ -115,7 +115,7 @@
      {\thedefinedbuffer{#instance}}%
    \relax}
 
-\permanent\tolerant\protected\def\placeparallel[#name]#spacer[#instance]#spacer[#settings]%
+\permanent\tolerant\protected\def\placeparallel[#name]#spacer[#instance]#spacer[#S#settings]%
   {\begingroup
    \cdef\currentparallel{#name}%
    \setupcurrentparallel[#settings]%

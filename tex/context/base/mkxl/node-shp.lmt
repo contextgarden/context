@@ -49,10 +49,13 @@ do
 
     local report  = logs.reporter("shipout")
 
-    local trace   = false  trackers.register("backend.cleanup", function(v) trace = v end)
-
+    local trace   = false
     local flatten = true -- also done as line option
     local soften  = true -- true by default
+
+    trackers  .register("backend.cleanup",         function(v) trace   = v end)
+    directives.register("backend.cleanup.flatten", function(v) flatten = v end)
+    directives.register("backend.cleanup.soften",  function(v) soften  = v end)
 
     nodes.handlers.cleanuppage = function(head)
      -- local count    = 0

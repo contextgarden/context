@@ -543,7 +543,7 @@
 
 \setupmathstackers[lt=\zeropoint,rt=\zeropoint,lb=\zeropoint,rb=\zeropoint]
 
-\tolerant\protected\def\math_stackers_make_double#top#bottom#category#codepoint#codeextra#spacer[#settings]#:#text%
+\tolerant\protected\def\math_stackers_make_double#top#bottom#category#codepoint#codeextra#spacer[#S#settings]#:#text%
   {\math_stackers_start_group{#category}%
    \c_math_stackers_top      #top\relax
    \c_math_stackers_bottom   #bottom\relax
@@ -693,7 +693,7 @@
 \permanent\tolerant\protected\def\definemathdouble[#category]#spacer[#command]#spacer[#topcode]#spacer[#bottomcode]%
   {\frozen\protected\defcsname#command\endcsname{\math_stackers_handle_direct\plusone\plusone{#category}{#topcode}{#bottomcode}}}
 
-\permanent\tolerant\protected\def\mathover[#category]#spacer[#settings]#:#topcode#text%
+\permanent\tolerant\protected\def\mathover[#category]#spacer[#S#settings]#:#topcode#text%
   {\begingroup
    \cdef\currentmathstackers{\ifparameter#category\or#category\else\v!top\fi}%
    \ifparameter#settings\or
@@ -706,7 +706,7 @@
      {#text}%
    \endgroup}
 
-\permanent\tolerant\protected\def\mathunder[#category]#spacer[#settings]#:#bottomcode#text%
+\permanent\tolerant\protected\def\mathunder[#category]#spacer[#S#settings]#:#bottomcode#text%
   {\begingroup
    \cdef\currentmathstackers{\ifparameter#category\or#category\else\v!bottom\fi}%
    \ifparameter#settings\or

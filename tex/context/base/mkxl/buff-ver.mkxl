@@ -268,7 +268,7 @@
    \enforced\let\specialobeyedspace\specialstretchedspace
    \buff_verbatim_type_indeed}
 
-\tolerant\def\buff_verbatim_type_indeed[#1]%
+\tolerant\def\buff_verbatim_type_indeed[#S#1]%
   {\ifarguments\or\setupcurrenttype[#1]\fi
    \buff_verbatim_left_of_type
    \futureexpand\bgroup\buff_verbatim_type_a\buff_verbatim_type_one}
@@ -446,7 +446,7 @@
    \obeylines
    \futureexpandis[\buff_verbatim_typing_start_yes\buff_verbatim_typing_start_nop}
 
-\def\buff_verbatim_typing_start_yes[#1]%
+\def\buff_verbatim_typing_start_yes[#S#1]%
   {\ifhastok={#1}%
      \setupcurrenttyping[#1]%
    \orelse\ifcstok{#1}\v!continue
@@ -574,7 +574,7 @@
     \frozen\protected\instance\edefcsname\e!type\currenttyping\v!file\endcsname{\typefile[\currenttyping]}%
 \to \everydefinetyping
 
-\permanent\tolerant\protected\def\typefile[#1]#*[#2]#:#3%
+\permanent\tolerant\protected\def\typefile[#S#1]#*[#S#2]#:#3%
   {\begingroup
    \ifparameter#2\or
      \setuptyping[#1][#2]%
@@ -759,9 +759,14 @@
 \permanent\protected\def\typedefinedbuffer[#1]%
   {\buff_verbatim_type_defined_buffer[\v!buffer][\thedefinedbuffer{#1}]}%
 
+% \appendtoks
+%     \frozen\instance\protected\edefcsname\e!type\currentbuffer\endcsname
+%       {\buff_verbatim_type_defined_buffer[\v!buffer][\currentdefinedbuffer]}%
+% \to \everydefinebuffer
+
 \appendtoks
     \frozen\instance\protected\edefcsname\e!type\currentbuffer\endcsname
-      {\buff_verbatim_type_defined_buffer[\v!buffer][\currentdefinedbuffer]}%
+      {\buff_verbatim_type_defined_buffer[\currentbuffer][\currentdefinedbuffer]}%
 \to \everydefinebuffer
 
 \appendtoks % \e!buffer
@@ -769,7 +774,7 @@
       {\buff_verbatim_type_buffer_class{\currenttyping}}%
 \to \everydefinetyping
 
-\tolerant\protected\def\buff_verbatim_type_buffer[#1]#*[#2]%
+\tolerant\protected\def\buff_verbatim_type_buffer[#S#1]#*[#S#2]%
   {\ifarguments
      \buff_verbatim_type_buffer_indeed\currenttyping\empty% []
    \or
@@ -792,12 +797,18 @@
    \cdef\currenttyping{#1}%
    \buff_verbatim_type_buffer}
 
-\tolerant\protected\def\buff_verbatim_type_defined_buffer[#1]#*[#2]#*[#3]% category name settings
+\tolerant\protected\def\buff_verbatim_type_defined_buffer[#1]#*[#2]#*[#S#3]% category name settings
   {\begingroup
-   \ifarguments\or\or\or
-     \setuptyping[#1][#3]%
+   \cdef\currenttyping{\namedbufferparameter{#1}\c!category}%
+   \ifempty\currenttyping
+     \let\currenttyping\v!buffer
    \fi
-   \buff_verbatim_type_buffer_indeed{#1}{#2}%
+   \ifhastok={#3}%
+     \setupcurrenttyping[#3]%
+   \orelse\ifempty{#3}\else
+     \cdef\currenttyping{#3}
+   \fi
+   \buff_verbatim_type_buffer_indeed{\currenttyping}{#2}%
    \useindentnextparameter\typingparameter
    \endgroup
    \dorechecknextindentation}
@@ -829,7 +840,7 @@
    \stoppacked
    \typingparameter\c!after\relax}
 
-\permanent\tolerant\protected\def\typeinlinebuffer[#1]#,[#2]%
+\permanent\tolerant\protected\def\typeinlinebuffer[#S#1]#,[#S#2]%
   {\dontleavehmode
    \begingroup
    \enforced\let\setupcurrenttyping\setupcurrenttype % a terrible hack but it saves code
@@ -869,7 +880,7 @@
 % the next one is obsolete (bad name and used nowhere) so if it stays
 % the name will change
 
-\permanent\tolerant\protected\def\processbuffer[#1]#*[#2]%
+\permanent\tolerant\protected\def\processbuffer[#S#1]#*[#S#2]%
   {\writestatus{nota bene}{\string\processbuffer\space is obsolete}%
    \begingroup
    \ifarguments

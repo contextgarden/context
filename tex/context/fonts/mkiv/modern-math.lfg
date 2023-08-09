@@ -4,6 +4,8 @@
 local common  = fonts.goodies.load("common-math.lfg")
 local presets = common.mathematics.tweaks.presets
 
+local punctuation = mathematics.tweaks.kernsets[".,"]
+
 return {
     name = "latin modern math",
     version = "1.00",
@@ -50,7 +52,6 @@ return {
                 presets.eulertocalligraphic  { },
                 presets.xitsarabic           { rscale  = 0.80 },
                 presets.fallbacks            { },
-                presets.moveitalics          { correct = true },
                 presets.moveitalics          { correct = true, letters = true },
                 presets.moveintegrals        { factor = 1.4, icfactor = 0.8 }, -- the icfactor is due to the very slanted integral.
                 presets.wipeanchors          { },
@@ -138,6 +139,81 @@ return {
                         ["0x7C.variants.5"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
                         ["0x7C.variants.6"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
                         ["0x7C.variants.7"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
+                    },
+                },
+                {
+                    tweak = "kernpairs",
+                    list = {
+                        -- Values taken from lmmi10
+                        [0x1D436] = punctuation[-0.07], -- italic C
+                        [0x1D439] = punctuation[-0.14], -- italic F
+                        [0x1D43B] = punctuation[-0.06], -- italic H
+                        [0x1D43D] = punctuation[-0.17], -- italic J
+                        [0x1D43E] = punctuation[-0.06], -- italic K
+                        [0x1D440] = punctuation[-0.05], -- italic M
+                        [0x1D441] = punctuation[-0.06], -- italic N
+                        [0x1D443] = punctuation[-0.14], -- italic P
+                        [0x1D446] = punctuation[-0.08], -- italic S
+                        [0x1D447] = punctuation[-0.08], -- italic T
+                        [0x1D448] = punctuation[-0.14], -- italic U
+                        [0x1D449] = punctuation[-0.21], -- italic V
+                        [0x1D44A] = punctuation[-0.15], -- italic W
+                        [0x1D44B] = punctuation[-0.06], -- italic X
+                        [0x1D44C] = punctuation[-0.21], -- italic Y
+                        [0x1D44D] = punctuation[-0.07], -- italic Z
+                        [0x1D451] = { -- italic d
+                            [0x1D44C] =  .11, -- italic Y
+                            [0x1D449] = -.11, -- italic Z
+                            [0x1D453] = -.32, -- italic f (DEK)
+                            [0x1D453] = -.22, -- italic f (this one wins here)
+                            [0x1D457] = -.21, -- italic j (DEK)
+                            [0x1D457] = -.11, -- italic j (this one wins here)
+                        },
+                        [0x1D453] = punctuation[-0.09], -- italic f
+                        [0x1D457] = punctuation[-0.12], -- italic j
+                        [0x1D45F] = punctuation[-0.12], -- italic r
+                        [0x00393] = punctuation[-0.15], -- upright Gamma
+                        [0x003A0] = punctuation[-0.06], -- upright Pi
+                        [0x003A5] = punctuation[-0.15], -- upright Ypsilon
+                        [0x003A8] = punctuation[-0.08], -- upright Psi
+                        [0x1D6FF] = punctuation[-0.12], -- italic delta
+                        [0x1D708] = punctuation[-0.10], -- italic nu
+                        [0x1D70E] = punctuation[-0.09], -- italic sigma
+                        [0x1D70F] = punctuation[-0.10], -- italic tau
+                        -- Values taken from lmmib10 (same ratios)
+                        [0x1D46A] = punctuation[-0.07], -- bold italic C
+                        [0x1D46D] = punctuation[-0.15], -- bold italic F
+                        [0x1D46F] = punctuation[-0.06], -- bold italic H
+                        [0x1D471] = punctuation[-0.17], -- bold italic J
+                        [0x1D472] = punctuation[-0.06], -- bold italic K
+                        [0x1D474] = punctuation[-0.05], -- bold italic M
+                        [0x1D475] = punctuation[-0.06], -- bold italic N
+                        [0x1D477] = punctuation[-0.14], -- bold italic P
+                        [0x1D47A] = punctuation[-0.09], -- bold italic S
+                        [0x1D47B] = punctuation[-0.08], -- bold italic T
+                        [0x1D47C] = punctuation[-0.14], -- bold italic U
+                        [0x1D47D] = punctuation[-0.21], -- bold italic V
+                        [0x1D47E] = punctuation[-0.15], -- bold italic W
+                        [0x1D47F] = punctuation[-0.06], -- bold italic X
+                        [0x1D480] = punctuation[-0.21], -- bold italic Y
+                        [0x1D481] = punctuation[-0.08], -- bold italic Z
+                        [0x1D485] = { -- bold italic d
+                            [0x1D480] =  .10, -- italic Y
+                            [0x1D481] = -.10, -- italic Z
+                            [0x1D487] = -.31, -- italic f
+                            [0x1D48B] = -.21, -- italic j
+                        },
+                        [0x1D487] = punctuation[-0.09], -- bold italic f
+                        [0x1D48B] = punctuation[-0.12], -- bold italic j
+                        [0x1D493] = punctuation[-0.11], -- bold italic r
+                        [0x1D6AA] = punctuation[-0.16], -- bold upright Gamma
+                        [0x1D6B7] = punctuation[-0.06], -- bold upright Pi
+                        [0x1D6BC] = punctuation[-0.15], -- bold upright Ypsilon
+                        [0x1D6BF] = punctuation[-0.08], -- bold upright Psi
+                        [0x1D739] = punctuation[-0.11], -- bold italic delta
+                        [0x1D742] = punctuation[-0.10], -- bold italic nu
+                        [0x1D748] = punctuation[-0.09], -- bold italic sigma
+                        [0x1D749] = punctuation[-0.10], -- bold italic tau
                     },
                 },
                 -- Accents are a mess. We migrate the extensibles from the combiners to the base accent
@@ -361,6 +437,7 @@ rightoverlap = 0.023
                     feature = "emulatelmtx",
                     comment = "this is for mkiv",
                 },
+
 -- { tweak = "inspect", slot = 0x2212 },
 -- { tweak = "inspect", slot = 0x003D },
             },

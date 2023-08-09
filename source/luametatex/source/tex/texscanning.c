@@ -343,6 +343,7 @@ static halfword tex_aux_scan_register_index(void)
         case register_mu_glue_cmd  : return cur_chr - register_mu_glue_base;
         case char_given_cmd        : return cur_chr;
         case integer_cmd           : return cur_chr;
+     /* case index_cmd             : return cur_chr; */
         case posit_cmd             : return cur_chr;
         case dimension_cmd         : return cur_chr;
         default                    : return -1; 
@@ -498,6 +499,10 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
             break;
         case current_group_type_code:
             cur_val = cur_group;
+            cur_val_level = int_val_level;
+            break;
+        case current_stack_size_code:
+            cur_val = lmt_save_state.save_stack_data.ptr;
             cur_val_level = int_val_level;
             break;
         case current_if_level_code:
@@ -755,6 +760,12 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
         case parameter_count_code:
             {
                 cur_val = tex_get_parameter_count();
+                cur_val_level = int_val_level;
+                break;
+            }
+        case parameter_index_code:
+            {
+                cur_val = tex_get_parameter_index(tex_scan_parameter_index());
                 cur_val_level = int_val_level;
                 break;
             }
@@ -1836,6 +1847,7 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
                 goto DEFAULT;
             }
         case integer_cmd:
+        case index_cmd:
             cur_val = chr;
             cur_val_level = int_val_level;
             break;
@@ -1987,6 +1999,7 @@ halfword   tex_scan_bytecode_reference        (int optional_equal) { return tex_
 halfword   tex_scan_limited_scale             (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, -max_limited_scale, max_limited_scale, "Limited scale"); }
 halfword   tex_scan_positive_scale            (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, min_limited_scale, max_limited_scale, "Limited scale"); }
 halfword   tex_scan_positive_number           (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_integer, "Positive number"); }
+halfword   tex_scan_parameter_index           (void)               { return tex_aux_scan_limited_int(0, 0, 15, "Parameter index"); }
 
 halfword   tex_scan_math_class_number(int optional_equal) 
 { 
@@ -3870,124 +3883,6 @@ static void tex_aux_illegal_parameter_in_body_error(void)
 
 /* There is no real gain and we get a 1K larger binary: */ /* inline */
 
-// static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfword *hash_brace)
-// {
-//     halfword h = *p;
-//     while (1) {
-//         tex_get_token();
-//         if (cur_tok < right_brace_limit) {
-//             break;
-//         } else if (cur_cmd == parameter_cmd) {
-//             tex_get_token();
-//             /*
-//                 cf. TeX 2021 we not do a more strict testing. Interesting is that wondered why we
-//                 had a more generous test here but just considered that a feature or intended side
-//                 effect but in the end we have to be strict.
-// 
-//                 \starttyping
-//                 \def\cs#1#\bgroup hi#1}       % was weird but okay pre 2021
-//                 \def\cs#1\bgroup{hi#1\bgroup} % but this is better indeed
-//                 \stoptyping
-//             */
-//             if (cur_tok < left_brace_limit) {
-//          /* if (cur_cmd == left_brace_cmd) { */
-//                 /*tex The |\def\foo#{}| case. */
-//                 *hash_brace = cur_tok;
-//                 *p = tex_store_new_token(*p, cur_tok);
-//                 *p = tex_store_new_token(*p, end_match_token);
-//                 set_token_preamble(h, 1);
-//                 set_token_parameters(h, *counter);
-//                 return 1;
-//             } else if (*counter == 0xF) {
-//                 tex_aux_too_many_parameters_error();
-//             } else {
-//                 switch (cur_tok) {
-//                     case zero_token:
-//                         ++*counter;
-//                         cur_tok = match_token;
-//                         break;
-//                     case asterisk_token:
-//                         cur_tok = spacer_match_token;
-//                         break;
-//                     case plus_token:
-//                         ++*counter;
-//                         cur_tok = keep_match_token;
-//                         break;
-//                     case minus_token:
-//                         cur_tok = thrash_match_token;
-//                         break;
-//                     case period_token:
-//                         cur_tok = par_spacer_match_token;
-//                         break;
-//                     case comma_token:
-//                         cur_tok = keep_spacer_match_token;
-//                         break;
-//                     case slash_token:
-//                         ++*counter;
-//                         cur_tok = prune_match_token;
-//                         break;
-//                     case colon_token:
-//                         cur_tok = continue_match_token;
-//                         break;
-//                     case semi_colon_token:
-//                         cur_tok = quit_match_token;
-//                         break;
-//                     case equal_token:
-//                         ++*counter;
-//                         cur_tok = mandate_match_token;
-//                         break;
-//                     case circumflex_token_l:
-//                     case circumflex_token_o:
-//                         ++*counter;
-//                         cur_tok = leading_match_token;
-//                         break;
-//                     case underscore_token_l:
-//                     case underscore_token_o:
-//                         ++*counter;
-//                         cur_tok = mandate_keep_match_token;
-//                         break;
-//                     case at_token_l:
-//                     case at_token_o:
-//                         cur_tok = par_command_match_token;
-//                         break;
-//                     default:
-//                         if (cur_tok >= one_token && cur_tok <= nine_token) {
-//                             ++*counter;
-//                             if ((cur_tok - other_token - '0') == *counter) {
-//                                 cur_tok += match_token - other_token ;
-//                                 break;
-//                             }
-//                         } else if (cur_tok >= A_token_l && cur_tok <= F_token_l) {
-//                             ++*counter;
-//                             if ((cur_tok - A_token_l + 10) == *counter) {
-//                                 cur_tok += match_token - letter_token;
-//                                 break;
-//                             }
-//                         }
-//                         tex_aux_parameters_order_error();
-//                         cur_tok = match_token; /* zero */
-//                         break;
-//                 }
-//             }
-//         } else if (cur_cmd == end_paragraph_cmd && auto_paragraph_mode(auto_paragraph_macro)) {
-//             cur_tok = par_command_match_token;
-//         }
-//         *p = tex_store_new_token(*p, cur_tok);
-//     }
-//     if (h != *p) {
-//         *p = tex_store_new_token(*p, end_match_token);
-//         set_token_preamble(h, 1);
-//         set_token_parameters(h, *counter);
-//     }
-//     if (cur_cmd == right_brace_cmd) {
-//         ++lmt_input_state.align_state;
-//         tex_aux_missing_brace_error();
-//         return 0;
-//     } else {
-//         return 1;
-//     }
-// }
-
 static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfword *hash_brace)
 {
     halfword h = *p;
@@ -4073,6 +3968,34 @@ static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfword *has
                         case at_token_l:
                         case at_token_o:
                             cur_tok = par_command_match_token;
+                            break;
+                        case L_token_l:
+                        case L_token_o:
+                            cur_tok = left_match_token;
+                            break;
+                        case R_token_l:
+                        case R_token_o:
+                            cur_tok = right_match_token;
+                            break;
+                        case G_token_l:
+                        case G_token_o:
+                            cur_tok = gobble_match_token;
+                            break;
+                        case M_token_l:
+                        case M_token_o:
+                            cur_tok = gobble_more_match_token;
+                            break;
+                        case S_token_l:
+                        case S_token_o:
+                            cur_tok = brackets_match_token;
+                            break;
+                        case P_token_l:
+                        case P_token_o:
+                            cur_tok = parentheses_match_token;
+                            break;
+                        case X_token_l:
+                        case X_token_o:
+                            cur_tok = angles_match_token;
                             break;
                         default:
                             if (cur_tok >= one_token && cur_tok <= nine_token) {
@@ -4206,6 +4129,9 @@ halfword tex_scan_macro_expand(void)
                 case call_cmd:
                 case tolerant_call_cmd:
                     tex_expand_current_token();
+                    goto PICKUP;
+                case index_cmd:
+                    tex_inject_parameter(cur_chr);
                     goto PICKUP;
                 case constant_call_cmd:
                     {

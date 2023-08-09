@@ -79,7 +79,7 @@
 \mutable\lettonothing\splitfloatcommand
 \mutable\lettonothing\floatcaptionsuffix
 
-\permanent\tolerant\protected\def\splitfloat[#1]#:#2% nog dubbele refs
+\permanent\tolerant\protected\def\splitfloat[#S#1]#:#2% nog dubbele refs
   {\bgroup
    \global\splitfloatdone\conditionalfalse
    \aftergroup\page_split_float_check

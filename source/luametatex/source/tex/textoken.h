@@ -225,6 +225,10 @@ typedef enum macro_preamble_states {
 # define escape_token            (other_token  + '\\')
 # define left_parent_token       (other_token  + '(')
 # define right_parent_token      (other_token  + ')')
+# define left_bracket_token      (other_token  + '[')
+# define right_bracket_token     (other_token  + ']')
+# define left_angle_token        (other_token  + '<')
+# define right_angle_token       (other_token  + '>')
 # define zero_token              (other_token  + '0')  /*tex zero, the smallest digit */
 # define one_token               (other_token  + '1') 
 # define five_token              (other_token  + '5')
@@ -290,8 +294,26 @@ typedef enum macro_preamble_states {
 # define F_token_l               (letter_token + 'F')  /*tex the largest special hex digit */
 # define F_token_o               (other_token  + 'F')
 
+# define G_token_l               (letter_token + 'G') 
+# define G_token_o               (other_token  + 'G')
+
+# define K_token_l               (letter_token + 'K') 
+# define K_token_o               (other_token  + 'K')
+
+# define L_token_l               (letter_token + 'L') 
+# define L_token_o               (other_token  + 'L')
+
+# define M_token_l               (letter_token + 'M') 
+# define M_token_o               (other_token  + 'M')
+
 # define P_token_l               (letter_token + 'P')  /*tex the largest special hex digit */
 # define P_token_o               (other_token  + 'P')
+
+# define R_token_l               (letter_token + 'R') 
+# define R_token_o               (other_token  + 'R')
+
+# define S_token_l               (letter_token + 'S') 
+# define S_token_o               (other_token  + 'S')
 
 # define X_token_l               (letter_token + 'X')
 # define X_token_o               (other_token  + 'X')
@@ -301,8 +323,8 @@ typedef enum macro_preamble_states {
 
 # define match_visualizer    '#'
 # define match_spacer        '*'  /* ignore spaces */
-# define match_bracekeeper   '+'  /* keep the braces */
-# define match_thrasher      '-'  /* discard and don't count the argument */
+# define match_bracekeeper   '+'  /* keep (honor) the braces */
+# define match_thrasher      '-'  /* discard (wipe) and don't count the argument */
 # define match_par_spacer    '.'  /* ignore pars and spaces */
 # define match_keep_spacer   ','  /* push back space when no match */
 # define match_pruner        '/'  /* remove leading and trailing spaces and pars */
@@ -310,8 +332,15 @@ typedef enum macro_preamble_states {
 # define match_quitter       ';'  /* quit scanning */
 # define match_mandate       '='  /* braces are mandate */
 # define match_spacekeeper   '^'  /* keep leading spaces */
-# define match_mandate_keep  '_'  /* braces are mandate and kept */
+# define match_mandate_keep  '_'  /* braces are mandate and kept (obey) */
 # define match_par_command   '@'  /* par delimiter, only internal */
+# define match_left          'L'  
+# define match_right         'R'  
+# define match_gobble        'G'  
+# define match_gobble_more   'M'  
+# define match_brackets      'S'  /* square brackets */ 
+# define match_angles        'X'  /* angle brackets */ 
+# define match_parentheses   'P'  /* parentheses */ 
 
 # define spacer_match_token        (match_token + match_spacer)
 # define keep_match_token          (match_token + match_bracekeeper)
@@ -325,6 +354,13 @@ typedef enum macro_preamble_states {
 # define leading_match_token       (match_token + match_spacekeeper)
 # define mandate_keep_match_token  (match_token + match_mandate_keep)
 # define par_command_match_token   (match_token + match_par_command)
+# define left_match_token          (match_token + match_left)
+# define right_match_token         (match_token + match_right)
+# define gobble_match_token        (match_token + match_gobble)
+# define gobble_more_match_token   (match_token + match_gobble_more)
+# define brackets_match_token      (match_token + match_brackets)
+# define angles_match_token        (match_token + match_angles)
+# define parentheses_match_token   (match_token + match_parentheses)
 
 # define is_valid_match_ref(r) (r != thrash_match_token && r != spacer_match_token && r != keep_spacer_match_token && r != continue_match_token && r != quit_match_token)
 

@@ -539,7 +539,7 @@
    \fi
    \endgroup}
 
-\permanent\tolerant\protected\def\math_alignment_start[#1]#*[#2]%
+\permanent\tolerant\protected\def\math_alignment_start[#1]#*[#S#2]%
   {\begingroup
    \cdef\currentmathalignment{#1}%
    \ifarguments\or\or
@@ -988,7 +988,7 @@
 
 \installglobalmacrostack\c_math_cases_nc
 
-\permanent\tolerant\protected\def\math_cases_start[#1]#*[#2]%
+\permanent\tolerant\protected\def\math_cases_start[#1]#*[#S#2]%
   {\begingroup
    \cdef\currentmathcases{#1}%
    \ifarguments\or\or
@@ -1783,7 +1783,7 @@
 
 % \installglobalmacrostack\c_math_matrix_first
 
-\tolerant\protected\def\math_matrix_start[#1]#*[#2]%
+\tolerant\protected\def\math_matrix_start[#1]#*[#S#2]%
   {\begingroup
    \globalpushmacro\c_math_matrix_first % hm, does that work?
    \c_math_eqalign_column_saved\c_math_eqalign_column
@@ -1993,7 +1993,7 @@
 
 %D Handy for the \type {m-matrix} module:
 
-\permanent\tolerant\protected\def\startnamedmatrix[#1]#*[#2]%
+\permanent\tolerant\protected\def\startnamedmatrix[#1]#*[#S#2]%
   {\begingroup
    \cdef\currentmathmatrix{#1}%
    \setupcurrentmathmatrix[#2]%
@@ -2028,7 +2028,7 @@
 %D
 %D \typebuffer \getbuffer
 
-\permanent\tolerant\protected\def\math_matrix_simple[#1]#*[#2]#:#3%
+\permanent\tolerant\protected\def\math_matrix_simple[#1]#*[#S#2]#:#3%
   {\begingroup
    \cdef\currentmathmatrix{#1}%
    \setupcurrentmathmatrix[#2]%
@@ -3015,7 +3015,7 @@
 
 \aliased\let\math_align_strut\relax
 
-\permanent\tolerant\protected\def\math_simplealign_start[#1]#*[#2]%
+\permanent\tolerant\protected\def\math_simplealign_start[#1]#*[#S#2]%
   {\begingroup
    \cdef\currentmathsimplealign{#1}%
    \ifarguments\or\or
@@ -3147,7 +3147,7 @@
 %D \stopformula
 %D \stoptyping
 
-\permanent\tolerant\protected\def\math_align_simple[#1]#*[#2]#:#3%
+\permanent\tolerant\protected\def\math_align_simple[#1]#*[#S#2]#:#3%
   {\begingroup
    \cdef\currentmathsimplealign{#1}%
    \setupcurrentmathsimplealign[#2]%

@@ -500,7 +500,7 @@
    \c!right=\zeropoint,
    \c!distance=\zeropoint]
 
-\permanent\protected\def\optimize[#1]%
+\permanent\protected\def\optimize[#S#1]%
   {\begingroup
    \ifhastok={#1}%
      \setupcurrentoptimize[#1]%

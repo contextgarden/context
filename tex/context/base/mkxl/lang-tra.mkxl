@@ -46,7 +46,7 @@
 \permanent\protected\def\transliterationexception[#1]#2#3%
   {\clf_transliterationexception{#1}{#2}{#3}}
 
-\permanent\tolerant\protected\def\starttransliteration[#1]#*[#2]%
+\permanent\tolerant\protected\def\starttransliteration[#1]#*[#S#2]%
   {\begingroup
    \cdef\currenttransliteration{#1}%
    \ifparameter#2\or

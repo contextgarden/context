@@ -227,7 +227,7 @@
 
 \let\strc_floats_define_saved\definefloat
 
-\permanent\tolerant\protected\overloaded\def\definefloat[#1]#*[#2]#*[#3]% name+plural+parent | name+parent+settings
+\permanent\tolerant\protected\overloaded\def\definefloat[#1]#*[#S#2]#*[#S#3]% name+plural+parent | name+parent+settings
   {\ifarguments\or
      \strc_floats_define_c[#1][#1]%
    \or
@@ -372,7 +372,7 @@
 %D
 %D So there you have it:
 
-\permanent\tolerant\protected\def\placefloatcaption[#category]#spacer[#settings]#spacer[#userdata]%
+\permanent\tolerant\protected\def\placefloatcaption[#category]#spacer[#S#settings]#spacer[#S#userdata]%
   {\ifarguments\or\else % >= 2
      % we need at least a category and title
      \dontleavehmode
@@ -752,7 +752,7 @@
 %D Do we need a \setuplayout here (kind of costly) in case we mix multi page text
 %D with a side float and less height.
 
-\permanent\tolerant\protected\def\startplacefloat[#tag]#spacer[#settings]#spacer[#userdata]%
+\permanent\tolerant\protected\def\startplacefloat[#tag]#spacer[#S#settings]#spacer[#S#userdata]%
   {\flushnotes
   %\setuplayout
    \page_otr_command_flush_side_floats % here !
@@ -785,7 +785,16 @@
    \else
      \lettonothing\m_strc_floats_saved_userdata
    \fi
-   % check (see elsewhere
+   \edef\p_mode{\floatcaptionparameter\s!mode}%
+   \doifelsemode{\p_mode}
+     {\let\strc_floats_stop_place\strc_floats_stop_place_yes
+      \strc_floats_start_place_yes}%
+     {\let\strc_floats_stop_place\strc_floats_stop_place_nop
+      \strc_floats_start_place_nop}%
+   }
+
+\def\strc_floats_start_place_yes
+  {% check (see elsewhere
    \edef\floatlocationdefault{\floatparameter\c!default}%
    \edef\floatlocation{\floatcaptionparameter\c!location}%
    \ifempty\floatlocation
@@ -810,9 +819,23 @@
    \bgroup
    \ignorespaces}
 
-\permanent\protected\def\stopplacefloat
+\def\strc_floats_stop_place_yes
   {\removeunwantedspaces
    \egroup}
+
+\def\strc_floats_start_place_nop
+  {\directsetup{\p_mode:\currentfloat:\v!before}%
+   \bgroup
+   \ignorespaces}
+
+\def\strc_floats_stop_place_nop
+  {\removeunwantedspaces
+   \egroup
+   \directsetup{\p_mode:\currentfloat:\v!after}%
+   \strc_floats_end_group}
+
+\permanent\protected\def\stopplacefloat
+  {\strc_floats_stop_place}
 
 % reserve
 
@@ -844,7 +867,7 @@
 
 % reserved text
 
-\tolerant\protected\def\strc_floats_start_reserve_text[#tag]#spacer[#settings]#spacer[#location]#spacer[#reference]#:#caption%%
+\tolerant\protected\def\strc_floats_start_reserve_text[#tag]#spacer[#S#settings]#spacer[#location]#spacer[#reference]#:#caption%%
   {\flushnotes
    \page_otr_command_flush_side_floats
    \strc_floats_begin_text_group
@@ -1383,7 +1406,7 @@
 % new : \place...[leftmargin,-2*line]; we need to catch fxtb:2*3
 % watch out: line alone aligns on the line ! ! !
 
-\permanent\protected\def\movesidefloat[#settings]% (-)n*line|x=,y=
+\permanent\protected\def\movesidefloat[#S#settings]% (-)n*line|x=,y=
   {\global\d_page_sides_downshift \zeropoint
    \global\d_page_sides_extrashift\zeropoint
    \ifhastok={#settings}%
@@ -1433,7 +1456,7 @@
    \fi
    \global\advanceby\c_page_sides_n_of_lines#lines\relax}
 
-\permanent\protected\def\movedownsidefloat[#settings]% already in core
+\permanent\protected\def\movedownsidefloat[#S#settings]% already in core
   {\unless\ifhastok:{#settings}%
      \begingroup
      \scratchconditiononefalse

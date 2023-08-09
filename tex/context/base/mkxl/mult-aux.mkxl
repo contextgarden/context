@@ -176,44 +176,83 @@
 
 \lettonothing\m_mult_interfaces_namespace
 
-\def\mult_interfaces_get_parameters#1[%
-  {\def\m_mult_interfaces_namespace{#1}%
-   \futureexpandis]\gobbleoneargument\mult_interfaces_get_parameters_indeed}
+% \def\mult_interfaces_get_parameters#1[%
+%   {\def\m_mult_interfaces_namespace{#1}%
+%    \futureexpandis]\gobbleoneargument\mult_interfaces_get_parameters_indeed}
+%
+% \def\mult_interfaces_get_parameters_indeed#1]%
+%   {\mult_interfaces_get_parameters_item#1\ignorearguments\ignorearguments}
+%
+% \def\mult_interfaces_get_parameters_item#*#1,%
+%   {\ifarguments
+%    \else
+%      \mult_interfaces_get_parameters_item_okay#1,\ignorearguments
+%      \expandafter\mult_interfaces_get_parameters_item
+%    \fi}
+%
+% \def\mult_interfaces_get_parameters_item_okay#1=#2,%
+%   {\ifarguments
+%      % done
+%    \or
+%      \mult_interfaces_get_parameters_item_error
+%    \else
+%      \mult_interfaces_adef\m_mult_interfaces_namespace{#1}{#2}%
+%    \fi}
+%
+% \def\mult_interfaces_get_parameters_item_error#-#-#-#1#2%
+%   {\if,#2\else\mult_interfaces_get_parameters_error_indeed{#1}{#2}\fi}
+%
+% \startinterface english
+%
+%     \def\mult_interfaces_get_parameters_item_okay#1=#2,%
+%       {\ifarguments
+%          % done
+%        \or
+%          \mult_interfaces_get_parameters_item_error
+%        \else
+%          \defcsname\m_mult_interfaces_namespace#1\endcsname{#2}%
+%        \fi}
+%
+%     \def\mult_interfaces_get_parameters_item_error#-\defcsname#1#2\endcsname#-%
+%       {\if,#2\else\mult_interfaces_get_parameters_error_indeed{#1}{#2}\fi}
+%
+% \stopinterface
 
-\def\mult_interfaces_get_parameters_indeed#1]%
-  {\mult_interfaces_get_parameters_item#1\ignorearguments\ignorearguments}
+\def\mult_interfaces_get_parameters#1[#S#2]%
+  {\cdef\m_mult_interfaces_namespace{#1}%
+   \mult_interfaces_get_parameters_item_okay#2\ignorearguments\ignorearguments}
 
-\def\mult_interfaces_get_parameters_item#*#1,%
-  {\ifarguments \else
-     \mult_interfaces_get_parameters_item_okay#1,\ignorearguments
-     \expandafter\mult_interfaces_get_parameters_item
-   \fi}
-
-\def\mult_interfaces_get_parameters_item_okay#1=#2,%
+\tolerant\def\mult_interfaces_get_parameters_item_okay#*#1=#S#2,#M,%
   {\ifarguments
-     % done
+     \expandafter\gobbleoneargument
    \or
-     \mult_interfaces_get_parameters_item_error
+     \mult_interfaces_get_parameters_error_indeed\m_mult_interfaces_namespace{#1}%
+   \orelse\ifcsname\k!prefix!#1\endcsname
+     \ifparameter#2\or
+       \defcsname\m_mult_interfaces_namespace\lastnamedcs\endcsname{#2}%
+     \else
+       \letcsname\m_mult_interfaces_namespace\lastnamedcs\endcsname\empty
+     \fi
+   \orelse\ifparameter#2\or
+     \defcsname\m_mult_interfaces_namespace#1\endcsname{#2}%
    \else
-     \mult_interfaces_adef\m_mult_interfaces_namespace{#1}{#2}%
-   \fi}
-
-\def\mult_interfaces_get_parameters_item_error#-#-#-#1#2%
-  {\if,#2\else\mult_interfaces_get_parameters_error_indeed{#1}{#2}\fi}
+     \letcsname\m_mult_interfaces_namespace#1\endcsname\empty
+   \fi
+   \mult_interfaces_get_parameters_item_okay}
 
 \startinterface english
 
-    \def\mult_interfaces_get_parameters_item_okay#1=#2,%
-      {\ifarguments
-         % done
-       \or
-         \mult_interfaces_get_parameters_item_error
-       \else
-         \defcsname\m_mult_interfaces_namespace#1\endcsname{#2}%
-       \fi}
-
-    \def\mult_interfaces_get_parameters_item_error#-\defcsname#1#2\endcsname#-%
-      {\if,#2\else\mult_interfaces_get_parameters_error_indeed{#1}{#2}\fi}
+   \tolerant\def\mult_interfaces_get_parameters_item_okay#*#1=#S#2,#M,%
+     {\ifarguments
+        \expandafter\gobbleoneargument
+      \or
+        \mult_interfaces_get_parameters_error_indeed\m_mult_interfaces_namespace{#1}%
+      \orelse\ifparameter#2\or
+        \defcsname\m_mult_interfaces_namespace#1\endcsname{#2}%
+      \else
+        \letcsname\m_mult_interfaces_namespace#1\endcsname\empty
+      \fi
+      \mult_interfaces_get_parameters_item_okay}
 
 \stopinterface
 
@@ -402,7 +441,7 @@
 \protected\def\mult_interfaces_install_define_handler#1#2#3#4#5#6#7#8%
   {\newtoks#5%
    \newtoks#6%
-   \frozen\tolerant\protected\def#2[##1]##*[##2]##*[##3]% [child][parent][settings] | [child][settings] | [child][parent] | [child]
+   \frozen\tolerant\protected\def#2[##1]##*[##S##2]##*[##S##3]% [child][parent][settings] | [child][settings] | [child][parent] | [child]
      {\let#8#4%
       % watch out: no \edef#4{##1} before the ifarguments because #1 can have macros
       \ifarguments
@@ -467,7 +506,7 @@
   {\newtoks#4%
    \newtoks#7%
    \frozen\protected\def#5{\mult_interfaces_get_parameters{#1#3:}}% no every ! don't change it
-   \frozen\tolerant\protected\def#2[##1]##*[##2]% maybe helper
+   \frozen\tolerant\protected\def#2[##S##1]##*[##S##2]% maybe helper
      {\let#6#3%
       \ifnum\lastarguments=\plustwo
         \def#8####1% we will have a simple one as well
@@ -582,7 +621,7 @@
    \newconstant#2%
    \newtoks#8%
    \newtoks#9%
-   \frozen\tolerant\protected\def#4[##1]##*[##2]% maybe helper
+   \frozen\tolerant\protected\def#4[##S##1]##*[##S##2]% maybe helper
      {\ifarguments
         % \setuplayout
         \let#6#3%      % previous becomes current
@@ -652,7 +691,7 @@
 \protected\def\mult_interfaces_install_auto_setup_handler#1#2#3#4#5#6#7#8%
   {\newtoks#4%
    \frozen\protected\def#5{\mult_interfaces_get_parameters{#1#3:}}%
-   \frozen\tolerant\protected\def#2[##1]##*[##2]##*[##3]%
+   \frozen\tolerant\protected\def#2[##S##1]##*[##S##2]##*[##S##3]%
      {\let#7#3%
       \ifarguments
         \lettonothing#3%
@@ -758,8 +797,8 @@
 
 \protected\def\mult_interfaces_install_direct_setup_handler#1#2#3#4%
   {\newtoks#4%
-   \frozen\protected\def#2[##1]{\ifarguments\or\mult_interfaces_get_parameters#1[##1]\fi\expand#4}%
-   \frozen\def#3{\mult_interfaces_get_parameters#1}}
+   \frozen\tolerant\protected\def#2[##S##1]{\mult_interfaces_get_parameters#1[##1]\expand#4}%
+   \frozen\protected\def#3{\mult_interfaces_get_parameters#1}}
 
 \permanent\protected\def\installdirectsetuphandler#1#2%
   {\normalexpanded
@@ -831,7 +870,7 @@
 %D Here is another experiment:
 
 \protected\def\mult_interfaces_install_action_handler#1#2#3%
-  {\frozen\tolerant\protected\defcsname#1\endcsname[##1]##*[##2]%
+  {\frozen\tolerant\protected\defcsname#1\endcsname[##S##1]##*[##S##2]%
      {\begingroup
       \ifarguments
         \lettonothing#2%
@@ -939,13 +978,17 @@
 
 \edef\mult_interfaces_dummy{\??dummy} % nor immutable
 
-\permanent\protected\def\getdummyparameters[#1%
-  {\if\noexpand#1]%
-     \expandafter\gobbleoneargument
-   \else
-     \let\m_mult_interfaces_namespace\mult_interfaces_dummy
-     \expandafter\mult_interfaces_get_parameters_indeed
-   \fi#1}
+% \permanent\protected\def\getdummyparameters[#1%
+%   {\if\noexpand#1]%
+%      \expandafter\gobbleoneargument
+%    \else
+%      \let\m_mult_interfaces_namespace\mult_interfaces_dummy
+%      \expandafter\mult_interfaces_get_parameters_indeed
+%    \fi#1}
+
+\permanent\protected\def\getdummyparameters[#S#1]%
+  {\let\m_mult_interfaces_namespace\mult_interfaces_dummy
+   \mult_interfaces_get_parameters_item_okay#1\ignorearguments\ignorearguments}
 
 \mult_interfaces_install_style_and_color_handler
   \directdummyparameter
@@ -1120,7 +1163,7 @@
   {\let#5#2%
    \frozen\protected\def#2%
      {\ifcase#4\relax\expandafter#5\else\expandafter#6\fi}%
-   \tolerant\protected\def#6[##1]##*[##2]%
+   \tolerant\protected\def#6[##S##1]##*[##S##2]%
      {\ifarguments\or
         #3\toksapp\c_mult_set{#7[##1]}%
       \or
@@ -1272,7 +1315,7 @@
     \protected\def\mult_interfaces_install_native_auto_setup_handler#1#2#3#4#5#6#7#8%
       {\newtoks#4%
        \frozen\protected\def#5{\mult_interfaces_get_parameters{#1#3:}}%
-       \frozen\tolerant\protected\def#2[##1]##*[##2]##*[##3]%
+       \frozen\tolerant\protected\def#2[##S##1]##*[##S##2]##*[##S##3]%
          {\let#7#3%
           \ifarguments
             \lettonothing#3%

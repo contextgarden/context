@@ -57,7 +57,7 @@
 
 % \setupframedtable[foo][...]
 
-\permanent\tolerant\protected\def\setupframedtable[#1]#*[#2]%
+\permanent\tolerant\protected\def\setupframedtable[#S#1]#*[#S#2]%
   {\ifarguments\or
      \setupframed[\??framedtable][#1]%
    \or
@@ -70,7 +70,7 @@
 % \setupframedtable[1][...]
 % \setupframedtable[foo][1][...]
 
-\permanent\tolerant\protected\def\setupframedtablerow[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\setupframedtablerow[#1]#*[#S#2]#*[#S#3]%
   {\ifarguments\or\or
      \ifcsname\??framed:\??framedtablerow:#1\endcsname \else
        \defineframed[\??framedtablerow:#1][\??framedtable]%
@@ -86,7 +86,7 @@
      \setupframed[\??framedtablerow#1:#2][#3]%
    \fi}
 
-\permanent\tolerant\protected\def\setupframedtablecolumn[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\setupframedtablecolumn[#1]#*[#S#2]#*[#S#3]%
   {\ifarguments\or\or
      \ifcsname\??framed:\??framedtablecolumn:#1\endcsname \else
        \defineframed[\??framedtablecolumn:#1][\??framedtable]%
@@ -104,7 +104,7 @@
 
 \mutable\lettonothing\currentframedtable
 
-\permanent\tolerant\protected\def\startframedtable[#1]#*[#2]%
+\permanent\tolerant\protected\def\startframedtable[#S#1]#*[#S#2]%
   {\begingroup
    \forgetall
    \ifhastok={#1}%
@@ -126,7 +126,7 @@
 
 % a two pass variant that deals with the height .. so no catcode changes here
 
-\tolerant\protected\def\pack_framed_start_framed_whatever[#1]%
+\tolerant\protected\def\pack_framed_start_framed_whatever[#S#1]%
   {\pack_framed_initialize % moved up
    \bgroup
    \setupcurrentframed[#1]% here !

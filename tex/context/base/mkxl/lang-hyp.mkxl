@@ -104,7 +104,7 @@
 % \setuphyphenation
 %   [\c!method=\s!traditional] % no translations
 
-\permanent\tolerant\protected\def\definehyphenationfeatures[#1]#*[#2]%
+\permanent\tolerant\protected\def\definehyphenationfeatures[#1]#*[#S#2]%
   {\begingroup % maybe simple handler
    \resetdummyparameter\c!characters                % maybe \s!characters
    \resetdummyparameter\c!hyphens                   % maybe \s!hyphens
@@ -150,16 +150,16 @@
 
 % todo: \start ... \stop too
 
-\permanent\tolerant\protected\def\registerhyphenationpattern[#1]#*[#2]%
+\permanent\tolerant\protected\def\registerhyphenationpattern[#S#1]#*[#S#2]%
   {\clf_registerhyphenationpattern\ifparameter#2\or{#1}{#2}\else{\currentlanguage}{#1}\fi\s!true\relax}
 
-\permanent\tolerant\protected\def\unregisterhyphenationpattern[#1]#*[#2]%
+\permanent\tolerant\protected\def\unregisterhyphenationpattern[#S#1]#*[#S#2]%
   {\clf_registerhyphenationpattern\ifparameter#2\or{#1}{#2}\else{\currentlanguage}{#1}\fi\s!false\relax}
 
-\permanent\tolerant\protected\def\registerhyphenationexception[#1]#*[#2]%
+\permanent\tolerant\protected\def\registerhyphenationexception[#S#1]#*[#S#2]%
   {\clf_registerhyphenationexception\ifparameter#2\or{#1}{#2}\else{\currentlanguage}{#1}\fi\relax}
 
-\permanent\tolerant\protected\def\showhyphenationtrace[#1]#*[#2]%
+\permanent\tolerant\protected\def\showhyphenationtrace[#S#1]#*[#S#2]%
   {\begingroup
    \tt
    \clf_showhyphenationtrace\ifparameter#2\or{#1}{#2}\else{\currentlanguage}{#1}\fi\relax

@@ -194,7 +194,7 @@ function scripts.pdf.formdata(filename,save)
             if name and what then
                 local value = annotation.V and tostring(annotation.V) or ""
                 if value and value ~= "" then
-                    local wflags = flagstoset(annotation.Ff or parent.Ff, widgetflags)
+                    local wflags = flagstoset(annotation.Ff or parent.Ff or 0, widgetflags)
                     if what == "Tx" then
                         if wflags.MultiLine then
                             wflags.MultiLine = nil

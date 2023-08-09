@@ -91,9 +91,9 @@
 
 \def\strc_pagenumbers_save_state#1{\edef\m_strc_pagenumbers_state_old{\namedcounterparameter#1\c!state}}
 
-\permanent\tolerant\protected\def\setuprealpagenumber[#1]{\strc_pagenumbers_save_state\s!realpage\setupcounter[\s!realpage][#1]\expand\everysetuprealpagenumber}
-\permanent\tolerant\protected\def\setupuserpagenumber[#1]{\strc_pagenumbers_save_state\s!userpage\setupcounter[\s!userpage][#1]\expand\everysetupuserpagenumber}
-\permanent\tolerant\protected\def\setupsubpagenumber [#1]{\strc_pagenumbers_save_state\s!subpage \setupcounter[\s!subpage ][#1]\expand\everysetupsubpagenumber }
+\permanent\tolerant\protected\def\setuprealpagenumber[#S#1]{\strc_pagenumbers_save_state\s!realpage\setupcounter[\s!realpage][#1]\expand\everysetuprealpagenumber}
+\permanent\tolerant\protected\def\setupuserpagenumber[#S#1]{\strc_pagenumbers_save_state\s!userpage\setupcounter[\s!userpage][#1]\expand\everysetupuserpagenumber}
+\permanent\tolerant\protected\def\setupsubpagenumber [#S#1]{\strc_pagenumbers_save_state\s!subpage \setupcounter[\s!subpage ][#1]\expand\everysetupsubpagenumber }
 
 \permanent\protected\def\resetrealpagenumber {} % not permitted
 \permanent\protected\def\resetuserpagenumber {\strc_counters_reset\s!userpage}

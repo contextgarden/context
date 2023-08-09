@@ -1456,7 +1456,8 @@
   {\edef\m_font_body{#body}%
    \ifx\m_font_body\s!default
      % these are the last resort within a class
-     \getrawparameters[\??fontenvironments#class\s!default][#settings]%
+    %\getrawparameters[\??fontenvironments#class\s!default][#settings]%
+     \getparameters[\??fontenvironments#class\s!default][#settings]%
    \else
      \normalizebodyfontsize\m_font_body_normalized\m_font_body
      \font_basics_define_body_font_environment_size[#class][\m_font_body_normalized][#settings]%
@@ -1483,7 +1484,8 @@
 \newconditional\c_font_defining_environment_state % controls messages
 
 \def\font_basics_define_body_font_environment_size[#class][#normalizedbody][#settings]% normalized body
-  {\getrawparameters[\??fontenvironments#class#normalizedbody][#settings]%
+  {%getrawparameters[\??fontenvironments#class#normalizedbody][#settings]%
+   \getparameters[\??fontenvironments#class#normalizedbody][#settings]%
    \ifcsname\??fontenvironmentknown#class#normalizedbody\endcsname
      % environment and size already defined
    \orelse\ifproductionrun

@@ -471,18 +471,24 @@
 
 % so far
 
-\protected\def\tabl_ntb_cell_process#1#2[#3]{}
+\protected\def\tabl_ntb_cell_process#1#2[#S#3]{}
 
 \permanent\protected\def\bTC#1\eTC{\bTD#1\eTD} \permanent\protected\lettonothing\eTC
 \permanent\protected\def\bTX#1\eTX{\bTD#1\eTD} \permanent\protected\lettonothing\eTX
 \permanent\protected\def\bTY#1\eTY{\bTR#1\eTR} \permanent\protected\lettonothing\eTY
+
+%D We have an extensive setup mechanism, it's flexible but also comes with
+%D overhead, mainly due to the many possible combinations.
+
+\installcorenamespace{naturaltablesetupthree}
+\installcorenamespace{naturaltablesetuptwo}
 
 \let\tabl_ntb_parameters_get\setupcurrentnaturaltablelocal
 
 \let\tabl_ntb_setup_step     \gobbleoneargument
 \let\tabl_ntb_setup_step_step\gobbleoneargument
 
-\permanent\tolerant\protected\def\setupTABLE[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\setupTABLE[#S#1]#*[#S#2]#*[#S#3]%
   {\ifarguments
      \expandafter\gobblethreeoptionals
    \or
@@ -493,31 +499,28 @@
      \expandafter\tabl_ntb_setup_three
    \fi[#1][#2][#3]}
 
-\def\tabl_ntb_setup_one[#1][#2][#3]%
+\def\tabl_ntb_setup_one[#S#1][#2][#3]%
   {\setupcurrentnaturaltablelocal[#1]}
 
-\def\tabl_ntb_setup_xy[#1][#2][#3]%
+\def\tabl_ntb_setup_xy[#1][#2][#S#3]%
   {\def\tabl_ntb_setup_step##1{\tabl_ntb_parameters_set[#1##1][#3]}%
    \processcommalist[#2]\tabl_ntb_setup_step}
 
-\def\tabl_ntb_setup_un[#1][#2][#3]%
+\def\tabl_ntb_setup_un[#1][#2][#S#3]%
   {\def\tabl_ntb_setup_step##1%
      {\def\tabl_ntb_setup_step_step####1{\tabl_ntb_parameters_set[\c!x##1\c!y####1][#3]}%
       \processcommalist[#2]\tabl_ntb_setup_step_step}%
    \processcommalist[#1]\tabl_ntb_setup_step}
 
-\def\tabl_ntb_setup_each[#1][#2][#3]% ignores #3
+\def\tabl_ntb_setup_each[#1][#S#2][#3]% ignores #3
   {\tabl_ntb_parameters_set[#1\v!each][#2]}
 
-\def\tabl_ntb_setup_ux[#1][#2][#3]% ignores #3
+\def\tabl_ntb_setup_ux[#1][#S#2][#3]% ignores #3
   {\def\tabl_ntb_setup_step##1{\tabl_ntb_parameters_set[\c!x##1][#2]}%
    \processcommalist[#1]\tabl_ntb_setup_step}
 
-\installcorenamespace{naturaltablesetupthree}
-\installcorenamespace{naturaltablesetuptwo}
-
-\def\tabl_ntb_setup_three[#1]{\ifcsname\??naturaltablesetupthree#1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_un\fi[#1]}
-\def\tabl_ntb_setup_two  [#1]{\ifcsname\??naturaltablesetuptwo  #1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_ux\fi[#1]}
+\def\tabl_ntb_setup_three[#S#1]{\ifcsname\??naturaltablesetupthree#1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_un\fi[#1]}
+\def\tabl_ntb_setup_two  [#S#1]{\ifcsname\??naturaltablesetuptwo  #1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_ux\fi[#1]}
 
 \defcsname\??naturaltablesetupthree    \v!row\endcsname[#1]{\tabl_ntb_setup_xy  [\c!y]}
 \defcsname\??naturaltablesetupthree \v!column\endcsname[#1]{\tabl_ntb_setup_xy  [\c!x]}
@@ -552,7 +555,7 @@
 \letcsname\??naturaltablesetuptwo   y\expandafter\endcsname\csname\??naturaltablesetuptwo     \v!row\endcsname
 \letcsname\??naturaltablesetuptwo   x\expandafter\endcsname\csname\??naturaltablesetuptwo  \v!column\endcsname
 
-\def\tabl_ntb_parameters_set[#1][#2]%
+\def\tabl_ntb_parameters_set[#1][#S#2]%
   {\ifappendTBLsetups
      \ifcsname\??naturaltableset\m_tabl_tbl_level:#1\endcsname
        \enforced\def\tabl_ntb_parameters_get[##1]%
@@ -748,7 +751,7 @@
 
 % till here
 
-\tolerant\protected\def\tabl_ntb_tr[#1]%
+\tolerant\protected\def\tabl_ntb_tr[#S#1]%
   {\c_tabl_ntb_running_col\zerocount
    \c_tabl_ntb_encountered_col\zerocount
    %
@@ -758,24 +761,24 @@
    \ifparameter#1\or
      \expandafter\tabl_ntb_tr_yes
    \else
-     \expandafter\gobbleoneoptional
-   \fi[#1]}
+     \expandafter\gobbleoneargument
+   \fi{#1}}
 
-\def\tabl_ntb_tr_yes[#1]%
+\protected\def\tabl_ntb_tr_yes#1%
   {\defcsname\??naturaltableset\m_tabl_tbl_level:\c!y++\the\c_tabl_ntb_maximum_row\endcsname{\setupcurrentnaturaltablelocal[#1]}}
 
 \def\m_tabl_ntb_default_nr{\naturaltableparameter\c!nr}
 \def\m_tabl_ntb_default_nc{\naturaltableparameter\c!nc}
 
-\tolerant\protected\def\tabl_ntb_td[#1]%
+\tolerant\protected\def\tabl_ntb_td[#S#1]%
   {\advanceby\c_tabl_ntb_encountered_col\plusone
    \ifparameter#1\or
      \expandafter\tabl_ntb_td_yes
    \else
      \expandafter\tabl_ntb_td_nop
-   \fi[#1]}
+   \fi{#1}}
 
-\def\tabl_ntb_td_yes[#1]#2\eTD
+\protected\def\tabl_ntb_td_yes#1#2\eTD
   {\letnaturaltableparameter  \c!ny\m_tabl_ntb_default_nr
    \letnaturaltableparameter  \c!nx\m_tabl_ntb_default_nc
    \letnaturaltableparameter  \c!nc\plusone
@@ -835,7 +838,7 @@
      \c_tabl_ntb_encountered_max\c_tabl_ntb_encountered_col
    \fi}
 
-\def\tabl_ntb_td_nop[#1]#2\eTD
+\protected\def\tabl_ntb_td_nop#1#2\eTD
   {\global\advanceby\c_tabl_ntb_spn\plusone\relax
    \localcontrolledloop\plusone\maxcard\plusone
      {\advanceby\c_tabl_ntb_running_col\plusone
@@ -858,10 +861,13 @@
      \c_tabl_ntb_encountered_max\c_tabl_ntb_encountered_col
    \fi}
 
-\def\tabl_ntb_td_pass_n#1%
+\protected\def\tabl_ntb_td_pass_n#1%
   {\scratchcounter\numexpr\m_tabl_ntb_n-\c_tabl_ntb_running_col+\minusone-\c_tabl_ntb_spn\relax
    \ifnum\scratchcounter>\zerocount
      \normalexpanded{\tabl_ntb_td[\c!nx=\the\scratchcounter,\c!n=,\c!m=,*sq=\v!no]}\eTD
+     % could be a faster inline
+     % \advanceby\c_tabl_ntb_encountered_col\plusone
+     % \normalexpanded{\tabl_ntb_td_yes[\c!nx=\the\scratchcounter},\c!n=,\c!m=,*sq=\v!no]\eTD
    \fi
    \letnaturaltableparameter\c!ny\m_tabl_ntb_default_nr
    \letnaturaltableparameter\c!nx\m_tabl_ntb_default_nc
@@ -871,7 +877,7 @@
    \resetnaturaltableparameter\c!n
    \resetnaturaltableparameter\c!m}
 
-\def\tabl_ntb_td_pass_m#1%
+\protected\def\tabl_ntb_td_pass_m#1%
   {\scratchcounter\numexpr\m_tabl_ntb_m-\c_tabl_ntb_running_col+\minusone-\c_tabl_ntb_spn\relax
    \localcontrolledloop\plusone\scratchcounter\plusone{\normalexpanded{\tabl_ntb_td[\c!n=,\c!m=]}\eTD}%
    % can be sped up
@@ -941,10 +947,12 @@
 %D
 %D \typebuffer \getbuffer
 
-\tolerant\def\tabl_ntb_th[#1]#:#2\eTH
+% could be a faster inline: advance and _yes
+
+\tolerant\def\tabl_ntb_th[#S#1]#:#2\eTH
   {\tabl_ntb_td[#1,\c!color=\naturaltablelocalparameter\c!headcolor,\c!style=\naturaltablelocalparameter\c!headstyle,\c!aligncharacter=\v!no]#2\eTD}
 
-\tolerant\def\tabl_ntb_tn[#1]#:#2\eTN
+\tolerant\def\tabl_ntb_tn[#S#1]#:#2\eTN
   {\tabl_ntb_td[#1]\digits#2\relax\eTD}
 
 %D Vit Zyka needed the option to create a distance between columns, so I added
@@ -1013,7 +1021,7 @@
    \begincsname\??naturaltableset\m_tabl_tbl_level:\v!start\v!oddeven\m_tabl_tbl_level\endcsname
    \begincsname\??naturaltableset\m_tabl_tbl_level:\v!start\m_tabl_tbl_level\endcsname}
 
-\permanent\tolerant\protected\def\bTABLE[#1]%
+\permanent\tolerant\protected\def\bTABLE[#S#1]%
   {\tabl_ntb_table_push
    % box not here
    \bgroup
@@ -2017,7 +2025,7 @@
      \expandafter\tabl_ntb_cell_process_a
    \fi{#1}{#2}}
 
-\protected\def\tabl_ntb_cell_process_x#1#2[#3]#4%
+\protected\def\tabl_ntb_cell_process_x#1#2[#S#3]#4%
   {}
 
 % problem: when span doesn't break we can have a span that is the sum of cells but
@@ -2046,7 +2054,7 @@
      \tabl_ntb_set_wid\c_tabl_ntb_col\wd\scratchbox
    \fi}
 
-\protected\def\tabl_ntb_cell_process_a#1#2[#3]#4% grouping added ! ! !
+\protected\def\tabl_ntb_cell_process_a#1#2[#S#3]#4% grouping added ! ! !
   {\begingroup
    \resetnaturaltablelocalparameter\c!option\empty
    \tabl_ntb_setup_cell{#1}{#2}%
@@ -2111,7 +2119,7 @@
    \box\scratchboxone
    \endgroup}
 
-\protected\def\tabl_ntb_cell_process_b_c#1#2#3[#4]#5%
+\protected\def\tabl_ntb_cell_process_b_c#1#2#3[#S#4]#5%
   {\begingroup
    \setbox\scratchbox\hbox
      {\tabl_ntb_setup_cell{#2}{#3}%
@@ -2137,7 +2145,7 @@
    \box\scratchboxone
    \endgroup}
 
-\protected\def\tabl_ntb_cell_process_b#1#2[#3]#4%
+\protected\def\tabl_ntb_cell_process_b#1#2[#S#3]#4%
    {\scratchdimen\tabl_ntb_get_aut\c_tabl_ntb_col\relax
     \ifdim\scratchdimen>\zeropoint\relax
     \else
@@ -2154,7 +2162,7 @@
 \protected\def\tabl_ntb_cell_process_c
   {\tabl_ntb_cell_process_b_c{}}
 
-\protected\def\tabl_ntb_cell_process_d#1#2[#3]#4%
+\protected\def\tabl_ntb_cell_process_d#1#2[#S#3]#4%
   {\tabl_ntb_setup_cell{#1}{#2}%
    \bgroup
    \setupcurrentnaturaltablelocal[#3]%
@@ -2164,7 +2172,7 @@
    \inheritednaturaltablelocalframed{\tabl_ntb_cell_start\tabl_ntb_char_align{#1}{#2}#4\tabl_ntb_cell_stop}%
    \egroup}
 
-\protected\def\tabl_ntb_cell_process_e#1#2[#3]#4%
+\protected\def\tabl_ntb_cell_process_e#1#2[#S#3]#4%
   {\begingroup
    \tabl_ntb_setup_cell{#1}{#2}%
    \setupcurrentnaturaltablelocal[#3]% to get the color right, the way we
@@ -2310,7 +2318,7 @@
 
 \installcorenamespace{naturaltablesetup}
 
-\permanent\tolerant\protected\def\defineTABLEsetup[#1]#*[#2]%
+\permanent\tolerant\protected\def\defineTABLEsetup[#1]#*[#S#2]%
   {\ifarguments\else\defcsname\??naturaltablesetup#1\endcsname{#2}\fi}
 
 \permanent\let\eTDs\relax
@@ -2401,7 +2409,7 @@
    \c_tabl_ntb_section\zerocount
    \tabl_ntb_section_disable}
 
-\tolerant\permanent\protected\def\bTABLEsection[#1]%
+\tolerant\permanent\protected\def\bTABLEsection[#S#1]%
   {\ifempty{#1}%
      \global\c_tabl_ntb_section_repeat\zerocount
    \else

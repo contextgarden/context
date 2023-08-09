@@ -116,6 +116,16 @@ inline static void tex_aux_expand_toks_after(void)
     also uses the mode for determining what to do. We see no reason to change this model.
 */
 
+void tex_inject_parameter(halfword n)
+{
+    if (n >= 0 && n < lmt_input_state.parameter_stack_data.ptr) {
+        halfword p = lmt_input_state.parameter_stack[n];
+        if (p) {
+            tex_begin_parameter_list(p);
+        }
+    }
+}
+
 void tex_expand_current_token(void)
 {
     ++lmt_expand_state.depth;
@@ -359,6 +369,9 @@ void tex_expand_current_token(void)
                                                 }
                                             }
                                             break;
+                                        case index_cmd:
+                                            tex_inject_parameter(cur_chr);
+                                            break;
                                         default: 
                                             /* Use expand_current_token so that protected lua call are dealt with too? */
                                             tex_back_input(cur_tok);
@@ -422,7 +435,7 @@ void tex_expand_current_token(void)
                                     tex_back_input(cur_tok);
                                     break;
                                 }
-                            case semi_expand_code:
+                            case expand_semi_code:
                                 {
                                     tex_get_token();
                                     if (is_semi_protected_cmd(cur_cmd)) {
@@ -436,6 +449,17 @@ void tex_expand_current_token(void)
                             case expand_after_toks_code:
                                 {
                                     tex_aux_expand_toks_after();
+                                    break;
+                                }
+                            case expand_parameter_code:
+                                {
+                                    halfword n = tex_scan_int(0, NULL);
+                                    if (n >= 0 && n < lmt_input_state.parameter_stack_data.ptr) {
+                                        halfword p = lmt_input_state.parameter_stack[n];
+                                        if (p) {
+                                            tex_begin_parameter_list(p);
+                                        }
+                                    }
                                     break;
                                 }
                             /* keep as reference */ /*
@@ -619,6 +643,9 @@ void tex_expand_current_token(void)
                         }
                         break;
                     }
+                case index_cmd: /* not needed here */
+                    tex_inject_parameter(cur_chr); 
+                    break;
                 default:
                     /* Maybe ... or maybe an option */
                  // if (lmt_expand_state.cs_name_level == 0) {
@@ -1051,6 +1078,15 @@ int tex_get_parameter_count(void)
     return n;
 }
 
+int tex_get_parameter_index(int n)
+{
+    n = lmt_input_state.cur_input.parameter_start + n - 1;
+    if (n < lmt_input_state.parameter_stack_data.ptr) {
+        return n; 
+    }
+    return -1;
+}
+
 /*tex 
     We can avoid the copy of parameters to the stack but it complicates the code because we also need 
     to clean up the previous set of parameters etc. It's not worth the effort. However, there are 
@@ -1060,6 +1096,15 @@ int tex_get_parameter_count(void)
     that way we keep looking into ways to gain performance, but not at the cost of dirty hacks (that 
     I tried out of curiosity but rejected in the end). 
 */
+
+// halfword tex_get_token(void)
+// {
+//     lmt_hash_state.no_new_cs = 0;
+//     tex_get_next();
+//     lmt_hash_state.no_new_cs = 1;
+//     cur_tok = cur_cs ? cs_token_flag + cur_cs : token_val(cur_cmd, cur_chr);
+//     return cur_tok;
+// }
 
 static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
 {
@@ -1102,7 +1147,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
         halfword save_warning_index = lmt_input_state.warning_index;
         int nofscanned = 0;
         int nofarguments = 0;
-        halfword pstack[max_match_count]; 
+        halfword pstack[max_match_count] = { null }; 
         /*tex
             Scan the parameters and make |link(r)| point to the macro body; but |return| if an
             illegal |\par| is detected.
@@ -1132,6 +1177,17 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
         /*tex backup pointer for parameter matching */
         halfword s = null;
         int spacer = 0;
+        int nested = 0;
+        int gobblemore = 0;
+        halfword lefttoken = null;
+        halfword righttoken = null;
+        halfword gobbletoken = null;
+        halfword leftparent = null;
+        halfword rightparent = null;
+        halfword leftbracket = null;
+        halfword rightbracket = null;
+        halfword leftangle = null;
+        halfword rightangle = null;
         /*tex
              One day I will check the next code for too many tests, no that much branching that it.
              The numbers in |#n| are match tokens except the last one, which is has a different
@@ -1183,16 +1239,14 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                             count = 0;
                             last = 0;
                             goto GROUPED;
+                        } else if (tolerant) {
+                            last = 0;
+                            nofarguments = nofscanned;
+                            tex_back_input(cur_tok);
+                            goto QUITTING;
                         } else {
-                            if (tolerant) {
-                                last = 0;
-                                nofarguments = nofscanned;
-                                tex_back_input(cur_tok);
-                                goto QUITTING;
-                            } else {
-                                last = 0;
-                                tex_back_input(cur_tok);
-                            }
+                            last = 0;
+                            tex_back_input(cur_tok);
                             s = null;
                             goto BAD;
                         }
@@ -1250,6 +1304,53 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                             tex_get_token();
                         } while (cur_cmd != end_paragraph_cmd);
                         goto DELIMITER;
+                    case left_match_token:
+                        matchpointer = token_link(matchpointer);
+                        lefttoken = token_info(matchpointer);
+                        matchpointer = token_link(matchpointer);
+                        matchtoken = token_info(matchpointer);
+                     // match = match_token;
+                        goto AGAIN;
+                    case right_match_token:
+                        matchpointer = token_link(matchpointer);
+                        righttoken = token_info(matchpointer);
+                        matchpointer = token_link(matchpointer);
+                        matchtoken = token_info(matchpointer);
+                     // match = match_token;
+                        goto AGAIN;
+                    case gobble_more_match_token:
+                        gobblemore = 1;
+                    case gobble_match_token:
+                        matchpointer = token_link(matchpointer);
+                        gobbletoken = token_info(matchpointer);
+                        matchpointer = token_link(matchpointer);
+                        matchtoken = token_info(matchpointer);
+                     // match = match_token;
+                        goto AGAIN;
+                    case brackets_match_token:
+                        leftbracket = left_bracket_token;
+                        rightbracket = right_bracket_token;;
+                        matchpointer = token_link(matchpointer);
+                        matchtoken = token_info(matchpointer);
+                        nested = 1;
+                     // match = match_token;
+                        goto AGAIN;
+                    case parentheses_match_token:
+                        leftparent = left_parent_token;
+                        rightparent = right_parent_token;;
+                        matchpointer = token_link(matchpointer);
+                        matchtoken = token_info(matchpointer);
+                        nested = 1;
+                     // match = match_token;
+                        goto AGAIN;
+                    case angles_match_token:
+                        leftangle= left_angle_token;
+                        rightangle = right_angle_token;;
+                        matchpointer = token_link(matchpointer);
+                        matchtoken = token_info(matchpointer);
+                        nested = 1;
+                     // match = match_token;
+                        goto AGAIN;
                     default:
                         match = matchtoken - match_token;
                         break;
@@ -1259,6 +1360,71 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                 s = matchpointer;
                 p = lmt_expand_state.match_token_head;
                 count = 0;
+            }
+            /*tex 
+                Scan an argument delimited by two tokens that can be nested. The right only case is 
+                basically just a simple delimited variant but a bit faster. 
+            */
+            if (lefttoken && righttoken) { 
+                halfword tail = lmt_expand_state.match_token_head;
+                int unbalance = 0;
+                int nesting = 1;
+                while (1) {
+                    halfword t = tex_get_token();
+                    if (cur_tok < right_brace_limit) {
+                        if (cur_tok < left_brace_limit) {
+                            ++unbalance;
+                        } else if (unbalance) {
+                            --unbalance;
+                        }
+                    } else if (unbalance) {
+                        /* just add */
+                    } else if (t == lefttoken) {
+                        ++nesting;  
+                    } else if (t == righttoken) {
+                        --nesting;
+                        if (! nesting) { 
+                            break;
+                        }
+                    }
+                    if (match) { 
+                        tail = tex_store_new_token(tail, t);
+                    }
+                }
+                lefttoken = null;
+                righttoken = null;
+                if (nested) {
+                    leftparent = null;
+                    rightparent = null;
+                    leftbracket = null;
+                    rightbracket = null;
+                    leftangle = null;
+                    rightangle = null;
+                    nested = 0;
+                }
+             // if (matchtoken >= match_token && matchtoken <= end_match_token) {
+             //     if (cur_tok < left_brace_limit) {
+             //         --lmt_input_state.align_state;
+             //     }
+                    goto FOUND;
+             // } else {
+             //     goto CONTINUE;
+             // }
+            } else if (gobbletoken) { 
+                if (gobblemore) { 
+                    while (1) { 
+                        halfword t = tex_get_token();
+                        if (! (t == gobbletoken || cur_cmd == spacer_cmd)) {
+                            break;
+                        }
+                    }
+                    gobblemore = 0;
+                } else { 
+                    do {
+                    } while (tex_get_token() == gobbletoken);
+                }
+                last = 1; 
+                gobbletoken = null;
             }
             /*tex
                 Scan a parameter until its delimiter string has been found; or, if |s = null|,
@@ -1434,11 +1600,47 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                 if (cur_tok == space_token && matchtoken <= end_match_token && matchtoken >= match_token && matchtoken != leading_match_token) {
                     goto CONTINUE;
                 }
-                if (match) {
-                    p = tex_store_new_token(p, cur_tok);
+                if (nested && (cur_tok == leftbracket || cur_tok == leftparent || cur_tok == leftangle)) {
+                    int unbalance = 0;
+                    int pairing = 1;
+                    if (match) { 
+                        p = tex_store_new_token(p, cur_tok);
+                    }
+                    while (1) {
+                        halfword t = tex_get_token();
+                        if (t < right_brace_limit) {
+                            if (t < left_brace_limit) {
+                                ++unbalance;
+                            } else if (unbalance) {
+                                --unbalance;
+                            }
+                        } else if (unbalance) {
+                            /* just add */
+                        } else if (t == leftbracket || t == leftparent || t == leftangle) {
+                            ++pairing;
+                        } else if (pairing && (t == rightbracket || t == rightparent || t == rightangle)) { 
+                            --pairing;
+                            if (! pairing && ! righttoken) { 
+                                if (match) { 
+                                    p = tex_store_new_token(p, t);
+                                }
+                                break;
+                            }
+                        } else if (t == righttoken) {
+                            break;
+                        }
+                        if (match) {
+                            p = tex_store_new_token(p, t);
+                        }
+                        /* align stuff */
+                    }
+                } else { 
+                    if (match) {
+                        p = tex_store_new_token(p, cur_tok);
+                    }
                 }
             }
-            ++count;
+            ++count; /* why always even when we thrash */
             if (matchtoken > end_match_token || matchtoken < match_token) {
                 goto CONTINUE;
             }
@@ -1450,17 +1652,20 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                     That's why |rightbrace| was introduced. Actually, in most cases |m == 1|.
                 */
                 if (! thrash) {
-                    if (token_info(p) < right_brace_limit && count == 1 && p != lmt_expand_state.match_token_head && match != match_bracekeeper) {
-                        set_token_link(rightbrace, null);
-                        tex_put_available_token(p);
-                        p = token_link(lmt_expand_state.match_token_head);
-                        pstack[nofscanned] = token_link(p);
-                        tex_put_available_token(p);
-                    } else {
-                        pstack[nofscanned] = token_link(lmt_expand_state.match_token_head);
-                    }
-                    if (match == match_pruner) {
-                        pstack[nofscanned] = tex_aux_prune_list(pstack[nofscanned]);
+                    halfword n = token_link(lmt_expand_state.match_token_head);
+                    if (n) {
+                        if (token_info(p) < right_brace_limit && count == 1 && p != lmt_expand_state.match_token_head && match != match_bracekeeper) {
+                            set_token_link(rightbrace, null);
+                            tex_put_available_token(p);
+                            p = n;
+                            pstack[nofscanned] = token_link(p);
+                            tex_put_available_token(p);
+                        } else {
+                            pstack[nofscanned] = n;
+                        }
+                        if (match == match_pruner) {
+                            pstack[nofscanned] = tex_aux_prune_list(pstack[nofscanned]);
+                        }
                     }
                     ++nofscanned;
                     if (tracing) {
@@ -1470,7 +1675,18 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                         tex_end_diagnostic();
                     }
                 } else {
-                    thrash = 0;
+                    thrash = 0; // already 0 
+                }
+                lefttoken = null;
+                righttoken = null;
+                if (nested) { 
+                    leftparent = null;
+                    rightparent = null;
+                    leftbracket = null;
+                    rightbracket = null;
+                    leftangle = null;
+                    rightangle = null;
+                    nested = 0;
                 }
             }
             /*tex
@@ -1493,7 +1709,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                             goto NEXTMATCH;
                         case mandate_match_token:
                         case leading_match_token:
-                            pstack[nofscanned] = null;
+                         /* pstack[nofscanned] = null; */ /* zerood anyway */
                             break;
                         case mandate_keep_match_token:
                             p = tex_store_new_token(null, left_brace_token);
@@ -1514,9 +1730,20 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                             } else {
                                 goto NEXTMATCH;
                             }
+                        case left_match_token:
+                        case right_match_token:
+                        case gobble_match_token:
+                        case gobble_more_match_token:
+                            matchpointer = token_link(matchpointer);
+                            matchtoken = token_info(matchpointer);
+                            goto NEXTMATCH;
+                        case brackets_match_token:
+                        case parentheses_match_token:
+                        case angles_match_token:
+                            goto NEXTMATCH;
                         default:
                             if (matchtoken >= match_token && matchtoken < end_match_token) {
-                                pstack[nofscanned] = null;
+                             /* pstack[nofscanned] = null; */ /* zerood anyway */
                                 break;
                             } else {
                                 goto NEXTMATCH;

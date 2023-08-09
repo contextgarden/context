@@ -306,6 +306,7 @@ extern halfword tex_badness(
 # define max_size_of_word                      1024  /*tex More than enough (esp. since this can end up on the stack. */
 # define min_limited_scale                        0  /*tex Zero is a signal too. */
 # define max_limited_scale                     1000
+# define max_parameter_index                     15
 
 # define max_mark_index         (max_n_of_marks         - 1)
 # define max_insert_index       (max_n_of_inserts       - 1)

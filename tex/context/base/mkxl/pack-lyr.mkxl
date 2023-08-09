@@ -34,7 +34,7 @@
 
 \pushoverloadmode
 
-\permanent\overloaded\tolerant\protected\def\defineoverlay[#1]#*[#2]#*[#3]% overlay [layer] content
+\permanent\overloaded\tolerant\protected\def\defineoverlay[#1]#*[#S#2]#*[#S#3]% overlay [layer] content
   {\ifnum\lastarguments=\plusthree
     %\writestatus{BEWARE}{This (overlay definition) has changed!}% temp
      \def\pack_framed_define_overlay_indeed##1{\defcsname\??overlay##1\endcsname{\setlayer[#2]{\executedefinedoverlay{##1}{#3}}}}%
@@ -203,7 +203,7 @@
 \permanent\def\thelayerwidth #1{\the\ifcsname\??layerbox#1\endcsname\wd\lastnamedcs\else\zeropoint\fi}
 \permanent\def\thelayerheight#1{\the\ifcsname\??layerbox#1\endcsname\ht\lastnamedcs\else\zeropoint\fi}
 
-\permanent\tolerant\protected\def\setlayer[#1]#*[#2]#*[#3]% #4 == box do \fi is ok
+\permanent\tolerant\protected\def\setlayer[#1]#*[#S#2]#*[#S#3]% #4 == box do \fi is ok
   {\bgroup
    \nofarguments\lastarguments
    \checkpositionoverlays % otherwise funny regions
@@ -291,7 +291,7 @@
    \ifinset\v!middle\p_pack_layers_corner\pack_layers_set_middle_positions\fi
    \edef\m_pack_layers_page{\layerparameter\c!page}}
 
-\permanent\tolerant\protected\def\definelayerpreset[#1]#*[#2]%
+\permanent\tolerant\protected\def\definelayerpreset[#1]#*[#S#2]%
   {\ifarguments\or
      \letcsname\??layerpreset#1\endcsname\empty
    \orelse\ifhastok={#2}%
@@ -737,12 +737,12 @@
 \mutable\def\MPlayerwidth {\hsize}
 \mutable\def\MPlayerheight{\vsize}
 
-\permanent\tolerant\protected\def\setMPlayer[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\setMPlayer[#1]#*[#2]#*[S#3]%
   {\edef\MPlayerwidth {\MPw{#2}}%
    \edef\MPlayerheight{\MPh{#2}}%
    \setlayer[#1][\c!x=\MPx{#2},\c!y=\MPy{#2},\c!position=\v!no,#3]}
 
-\permanent\tolerant\protected\def\getMPlayer[#1]#*[#2]%
+\permanent\tolerant\protected\def\getMPlayer[#1]#*[#S#2]%
   {\framed[\c!background={\v!foreground,#1},\c!frame=\v!off,\c!offset=\v!overlay,#2]} % takes argument
 
 %D Watch out, a redefinition:

@@ -454,7 +454,7 @@
        rulethickness  \dimexpr\linefillerparameter\c!rulethickness\relax
    \relax}
 
-\permanent\tolerant\protected\def\startlinefiller[#1]#*[#2]%
+\permanent\tolerant\protected\def\startlinefiller[#1]#*[#S#2]%
   {\begingroup
    \par
    \cdef\currentlinefiller{#1}%

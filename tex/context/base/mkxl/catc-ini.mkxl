@@ -78,21 +78,23 @@
 
 \permanent\let\stopcatcodetable\relax
 
-% \permanent\protected\def\startextendcatcodetable#1#2\stopextendcatcodetable
-%   {\begingroup
-%    \catcodetable#1\relax
-%    \globaldefs\plusone   % a bit hackish
-%    #2%
-%    \globaldefs\zerocount
-%    \endgroup}
-
 \permanent\protected\def\startextendcatcodetable#1#2\stopextendcatcodetable
   {\begingroup
-   \scratchcounter\catcodetable
    \catcodetable#1\relax
+   \globaldefs\plusone   % a bit hackish
    #2%
-   \catcodetable\scratchcounter
+   \globaldefs\zerocount
    \endgroup}
+
+% doesn't work these tables are global anyway
+%
+% \permanent\protected\def\startextendcatcodetable#1#2\stopextendcatcodetable
+%   {\begingroup
+%    \c_syst_catcodes_n\catcodetable
+%    \catcodetable#1\relax
+%    #2%
+%    \catcodetable\c_syst_catcodes_n
+%    \endgroup}
 
 \permanent\let\stopextendcatcodetable\relax
 

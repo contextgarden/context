@@ -885,6 +885,10 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
             tex_print_str("integer ");
             tex_print_int(chr);
             break;
+        case index_cmd:
+            tex_print_str("parameter ");
+            tex_print_int(chr);
+            break;
         case dimension_cmd:
             tex_print_str("dimension ");
             tex_print_dimension(chr, pt_unit);

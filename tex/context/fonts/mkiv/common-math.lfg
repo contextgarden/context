@@ -1,3 +1,18 @@
+
+local kerns = {}
+mathematics.tweaks.kernsets = kerns
+
+local punctuation = table.setmetatableindex(function(t,k)
+    local v = {
+        [0x2C] = k, -- ,
+        [0x2E] = k, -- .
+    }
+    t[k] = v
+    return v
+end)
+
+kerns[".,"] = punctuation
+
 return {
     name        = "common-math",
     version     = "1.00",
@@ -309,6 +324,129 @@ return {
                             ["digitsnormal"] = {
                                 factor = parameters.factor or 0.9,
                             },
+                        },
+                    }
+                end,
+                addmathkerns = function(parameters)
+                    local factor = parameters.factor or 1
+                    return {
+                        tweak = "kernpairs",
+                        list = {
+
+                            [0x1D436] = punctuation[factor * -0.05], -- italic C
+                            [0x1D439] = punctuation[factor * -0.15], -- italic F
+                            [0x1D43B] = punctuation[factor * -0.05], -- italic H
+                            [0x1D43D] = punctuation[factor * -0.15], -- italic J
+                            [0x1D43E] = punctuation[factor * -0.05], -- italic K
+                            [0x1D440] = punctuation[factor * -0.05], -- italic M
+                            [0x1D441] = punctuation[factor * -0.05], -- italic N
+                            [0x1D443] = punctuation[factor * -0.15], -- italic P
+                            [0x1D446] = punctuation[factor * -0.05], -- italic S
+                            [0x1D447] = punctuation[factor * -0.05], -- italic T
+                            [0x1D448] = punctuation[factor * -0.15], -- italic U
+                            [0x1D449] = punctuation[factor * -0.20], -- italic V
+                            [0x1D44A] = punctuation[factor * -0.15], -- italic W
+                            [0x1D44B] = punctuation[factor * -0.05], -- italic X
+                            [0x1D44C] = punctuation[factor * -0.20], -- italic Y
+                            [0x1D44D] = punctuation[factor * -0.05], -- italic Z
+                            [0x1D453] = punctuation[factor * -0.10], -- italic f
+                            [0x1D457] = punctuation[factor * -0.10], -- italic j
+                            [0x1D45F] = punctuation[factor * -0.10], -- italic r
+                            [0x00393] = punctuation[factor * -0.10], -- upright Gamma
+                            [0x003A0] = punctuation[factor * -0.05], -- upright Pi
+                            [0x003A5] = punctuation[factor * -0.15], -- upright Upsilon
+                            [0x003A8] = punctuation[factor * -0.05], -- upright Psi
+                            [0x1D6FF] = punctuation[factor * -0.10], -- italic delta
+                            [0x1D708] = punctuation[factor * -0.10], -- italic nu
+                            [0x1D70E] = punctuation[factor * -0.10], -- italic sigma
+                            [0x1D70F] = punctuation[factor * -0.10], -- italic tau
+                            [0x1D46A] = punctuation[factor * -0.05], -- bold italic C
+                            [0x1D46D] = punctuation[factor * -0.15], -- bold italic F
+                            [0x1D46F] = punctuation[factor * -0.05], -- bold italic H
+                            [0x1D471] = punctuation[factor * -0.15], -- bold italic J
+                            [0x1D472] = punctuation[factor * -0.05], -- bold italic K
+                            [0x1D474] = punctuation[factor * -0.05], -- bold italic M
+                            [0x1D475] = punctuation[factor * -0.05], -- bold italic N
+                            [0x1D477] = punctuation[factor * -0.15], -- bold italic P
+                            [0x1D47A] = punctuation[factor * -0.10], -- bold italic S
+                            [0x1D47B] = punctuation[factor * -0.05], -- bold italic T
+                            [0x1D47C] = punctuation[factor * -0.15], -- bold italic U
+                            [0x1D47D] = punctuation[factor * -0.20], -- bold italic V
+                            [0x1D47E] = punctuation[factor * -0.15], -- bold italic W
+                            [0x1D47F] = punctuation[factor * -0.05], -- bold italic X
+                            [0x1D480] = punctuation[factor * -0.20], -- bold italic Y
+                            [0x1D481] = punctuation[factor * -0.05], -- bold italic Z
+                            [0x1D487] = punctuation[factor * -0.10], -- bold italic f
+                            [0x1D48B] = punctuation[factor * -0.10], -- bold italic j
+                            [0x1D493] = punctuation[factor * -0.10], -- bold italic r
+                            [0x1D6AA] = punctuation[factor * -0.15], -- bold upright Gamma
+                            [0x1D6B7] = punctuation[factor * -0.05], -- bold upright Pi
+                            [0x1D6BC] = punctuation[factor * -0.15], -- bold upright Ypsilon
+                            [0x1D6BF] = punctuation[factor * -0.05], -- bold upright Psi
+                            [0x1D739] = punctuation[factor * -0.10], -- bold italic delta
+                            [0x1D742] = punctuation[factor * -0.10], -- bold italic nu
+                            [0x1D748] = punctuation[factor * -0.10], -- bold italic sigma
+                            [0x1D749] = punctuation[factor * -0.10], -- bold italic tau
+
+                            -- kind of special and font specific
+
+                         -- [0x1D451] = { -- italic d
+                         --     [0x1D44C] =  .11, -- italic Y
+                         --     [0x1D449] = -.11, -- italic Z
+                         --     [0x1D453] = -.32, -- italic f
+                         --     [0x1D457] = -.21, -- italic j
+                         -- },
+                         -- [0x1D485] = { -- bold italic d
+                         --     [0x1D480] =  .10, -- italic Y
+                         --     [0x1D481] = -.10, -- italic Z
+                         --     [0x1D487] = -.31, -- italic f
+                         --     [0x1D48B] = -.21, -- italic j
+                         -- },
+
+                            -- kern character with a slash
+
+                         -- [0x00393] = { [0x2F]=-0.05 }, -- upright Gamma
+                         -- [0x003A0] = { [0x2F]=-0.05 }, -- upright Pi
+                         -- [0x003A5] = { [0x2F]=-0.05 }, -- upright Ypsilon
+                         -- [0x003A8] = { [0x2F]=-0.05 }, -- upright Psi
+                         -- [0x1D436] = { [0x2F]=-0.05 }, -- C (bold) italic C
+                         -- [0x1D439] = { [0x2F]=-0.05 }, -- F (bold) italic F
+                         -- [0x1D43B] = { [0x2F]=-0.05 }, -- H (bold) italic H
+                         -- [0x1D43D] = { [0x2F]=-0.05 }, -- J (bold) italic J
+                         -- [0x1D43E] = { [0x2F]=-0.05 }, -- K (bold) italic K
+                         -- [0x1D440] = { [0x2F]=-0.05 }, -- M (bold) italic M
+                         -- [0x1D441] = { [0x2F]=-0.10 }, -- N (bold) italic N
+                         -- [0x1D443] = { [0x2F]=-0.05 }, -- P (bold) italic P
+                         -- [0x1D446] = { [0x2F]=-0.05 }, -- S (bold) italic S
+                         -- [0x1D447] = { [0x2F]=-0.05 }, -- T (bold) italic T
+                         -- [0x1D448] = { [0x2F]=-0.05 }, -- U (bold) italic U
+                         -- [0x1D449] = { [0x2F]=-0.10 }, -- V (bold) italic V
+                         -- [0x1D44A] = { [0x2F]=-0.10 }, -- W (bold) italic W
+                         -- [0x1D44B] = { [0x2F]=-0.10 }, -- X (bold) italic X
+                         -- [0x1D44C] = { [0x2F]=-0.10 }, -- Y (bold) italic Y
+                         -- [0x1D44D] = { [0x2F]=-0.05 }, -- Z (bold) italic Z
+
+                         -- [0x1D6AA] = { [0x2F]=-0.05 }, -- upright Gamma
+                         -- [0x1D6B7] = { [0x2F]=-0.05 }, -- upright Pi
+                         -- [0x1D6BC] = { [0x2F]=-0.05 }, -- upright Ypsilon
+                         -- [0x1D6BF] = { [0x2F]=-0.05 }, -- upright Psi
+                         -- [0x1D46A] = { [0x2F]=-0.05 }, -- C (bold) italic C
+                         -- [0x1D46D] = { [0x2F]=-0.05 }, -- F (bold) italic F
+                         -- [0x1D46F] = { [0x2F]=-0.05 }, -- H (bold) italic H
+                         -- [0x1D471] = { [0x2F]=-0.05 }, -- J (bold) italic J
+                         -- [0x1D472] = { [0x2F]=-0.05 }, -- K (bold) italic K
+                         -- [0x1D474] = { [0x2F]=-0.05 }, -- M (bold) italic M
+                         -- [0x1D475] = { [0x2F]=-0.10 }, -- N (bold) italic N
+                         -- [0x1D477] = { [0x2F]=-0.05 }, -- P (bold) italic P
+                         -- [0x1D47A] = { [0x2F]=-0.05 }, -- S (bold) italic S
+                         -- [0x1D47B] = { [0x2F]=-0.05 }, -- T (bold) italic T
+                         -- [0x1D47C] = { [0x2F]=-0.05 }, -- U (bold) italic U
+                         -- [0x1D47D] = { [0x2F]=-0.10 }, -- V (bold) italic V
+                         -- [0x1D47E] = { [0x2F]=-0.10 }, -- W (bold) italic W
+                         -- [0x1D47F] = { [0x2F]=-0.10 }, -- X (bold) italic X
+                         -- [0x1D480] = { [0x2F]=-0.10 }, -- Y (bold) italic Y
+                         -- [0x1D481] = { [0x2F]=-0.05 }, -- Z (bold) italic Z
+
                         },
                     }
                 end,

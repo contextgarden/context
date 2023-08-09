@@ -90,10 +90,10 @@
          \m_operator_text
       \fi}}
 
-\tolerant\protected\def\math_operator#1#*[#2]#*#:#=% mandate braces
+\tolerant\protected\def\math_operator#1#*[#S#2]#*#:#=% mandate braces
   {\math_operator_operator{#1}{#2}#3\Uright.}
 
-\tolerant\protected\def\math_operator_start#1#*[#2]%
+\tolerant\protected\def\math_operator_start#1#*[#S#2]%
   {\math_operator_operator{#1}{#2}}
 
 \protected\def\math_operator_stop

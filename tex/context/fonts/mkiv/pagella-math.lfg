@@ -185,6 +185,7 @@ return {
                         ["0x2A0C.parts.bottom"] = { bottomright = -0.05 }, -- iiiint
                     },
                 },
+                presets.addmathkerns { },
                 {
                     tweak = "checkspacing",
                 },

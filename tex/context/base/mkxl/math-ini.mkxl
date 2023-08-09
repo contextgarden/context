@@ -807,7 +807,7 @@
 \def\math_m_yes_math[#1]#2%
   {#2} % grouping permits \mathbf etc
 
-\def\math_m_yes_text[#1]%
+\def\math_m_yes_text[#S#1]%
   {\begingroup
    \ifhastok={#1}%
      \setupcurrentmathematics[#1]%
@@ -1369,7 +1369,7 @@
      \expandafter\setmathfontalternate\lastnamedcs
    \fi}
 
-\permanent\tolerant\protected\def\setupmathrendering[#1]#*[#2]% the name might change
+\permanent\tolerant\protected\def\setupmathrendering[#1]#*[#S#2]% the name might change
   {\ifparameter#2\or
      \getparameters[\??mathstylealternative#1:][#2]%
    \else
@@ -3697,7 +3697,7 @@
 
 \newtoks\everymathtext
 
-\tolerant\protected\def\math_text_handle_indeed#1#*[#2]#:#3#%
+\tolerant\protected\def\math_text_handle_indeed#1#*[#S#2]#:#3#%
   {\begingroup
    \cdef\currentmathtext{#1}%
    \setupcurrentmathtext[#2]%
@@ -4538,7 +4538,7 @@
 \newconstant\c_math_boundary_old
 \newconstant\c_math_boundary_new
 
-\protected\tolerant\def\math_nesting[#1]#*[#2]%
+\protected\tolerant\def\math_nesting[#1]#*[#S#2]%
   {\groupedcommand
      {\cdef\currentmathnesting{#1}%
       \setupcurrentmathnesting[#2]% \ifparameter#2\or...\fi can't work here due to nesting

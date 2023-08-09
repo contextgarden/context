@@ -31,5 +31,7 @@ extern halfword tex_create_csname           (void);
 extern int      tex_is_valid_csname         (void);
 
 extern int      tex_get_parameter_count     (void);
+extern int      tex_get_parameter_index     (halfword n);
+extern void     tex_inject_parameter        (int n);
 
 # endif

@@ -28,7 +28,7 @@
 
 %D This will be replaced by mixed box.
 
-\permanent\tolerant\protected\def\startsimplecolumns[#1]%
+\permanent\tolerant\protected\def\startsimplecolumns[#S#1]%
   {\bgroup
    \setsimplecolumnshsize[#1]%
    \nopenalties
@@ -42,7 +42,7 @@
    \rigidcolumnbalance\scratchbox
    \egroup}
 
-\permanent\protected\def\setsimplecolumnshsize[#1]%
+\permanent\protected\def\setsimplecolumnshsize[#S#1]%
   {\getdummyparameters
      [\c!width=\hsize,
       \c!distance=1.5\bodyfontsize,

@@ -38,7 +38,7 @@
 \permanent\protected\def\definecharacterspacing[#1]%
   {\clf_definecharacterspacing{#1}}
 
-\permanent\tolerant\protected\def\setupcharacterspacing[#1]#*[#2]#*[#3]% todo: #2 list
+\permanent\tolerant\protected\def\setupcharacterspacing[#1]#*[#S#2]#*[#S#3]% todo: #2 list
   {\begingroup
    \ifchknumber#2\or
      \setupcurrent_p_characterspacing[#3]%

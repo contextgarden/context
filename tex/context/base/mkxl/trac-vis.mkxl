@@ -30,6 +30,12 @@
 %D
 %D In due time some special visualzation of math will move here as well.
 
+% special case:
+%
+% \disabledirectives[backend.cleanup.flatten]
+% \bitwiseflip \normalizelinemode -\flattendiscretionariesnormalizecode
+% \showmakeup[discretionary]
+
 \writestatus{loading}{ConTeXt Tracing Macros / Visualization}
 
 \unprotect

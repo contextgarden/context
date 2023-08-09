@@ -24,7 +24,7 @@
 
 \registerctxluafile{grph-pat}{}
 
-\permanent\tolerant\protected\def\registerpattern[#1]#*[#2]%
+\permanent\tolerant\protected\def\registerpattern[#S#1]#*[#S#2]%
   {\begingroup
    \letdummyparameter\c!name   \s!dummy
    \letdummyparameter\c!width  \v!auto
@@ -63,7 +63,7 @@
    \relax
    \endgroup}
 
-\permanent\tolerant\protected\def\applypattern[#1]#*[#2]%
+\permanent\tolerant\protected\def\applypattern[#S#1]#*[#S#2]%
   {\hpack\bgroup
    \letdummyparameter\c!name  \s!dummy
    \letdummyparameter\c!width \zeropoint

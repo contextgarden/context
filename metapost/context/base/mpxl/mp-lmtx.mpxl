@@ -2732,6 +2732,7 @@ enddef ;
 
 % experimental:
 
+numeric last_potraced_count  ;
 numeric last_potraced_width  ;
 numeric last_potraced_height ;
 path    last_potraced_bounds ; last_potraced_bounds := origin -- cycle ;
@@ -2797,6 +2798,7 @@ def lmt_do_stoppotraced =
 enddef ;
 
 vardef lmt_do_steppotraced =
+    last_potraced_count  := getparameter("count") ;
     last_potraced_width  := getparameter("width") ;
     last_potraced_height := getparameter("height") ;
     last_potraced_bounds := unitsquare xscaled last_potraced_width yscaled last_potraced_height ;

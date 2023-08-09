@@ -249,7 +249,7 @@
 \def\strc_notations_finalize_next
   {\endgroup\ignorespaces}
 
-\tolerant\protected\def\strc_notations_command[#1]#*[#2]%
+\tolerant\protected\def\strc_notations_command[#1]#*[#S#2]%
   {\begingroup
    \cdef\currentnote{#1}%
    \strc_constructions_initialize{#1}%
@@ -269,7 +269,7 @@
      \expandafter\strc_notations_command_reference
    \fi[#2]}
 
-\def\strc_notations_command_setups[#1]%
+\def\strc_notations_command_setups[#S#1]%
   {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#1]%
    \strc_notations_wrapup}
 
@@ -295,7 +295,7 @@
       {\strc_notations_start_indeed\stopnamednotation}
 \fi
 
-\tolerant\protected\def\strc_notations_start_indeed#1#*[#2]#*[#3]%
+\tolerant\protected\def\strc_notations_start_indeed#1#*[#2]#*[#S#3]%
   {\begingroup
    \cdef\currentnote{#2}%
    \strc_constructions_initialize{#2}%
@@ -311,15 +311,15 @@
 
 \let\strc_notations_pickup_yes\relax
 
-\protected\def\strc_notations_start_setups#1[#2]%
+\protected\def\strc_notations_start_setups#1[#S#2]%
   {\normalexpanded{\def\noexpand\strc_notations_pickup_yes##/#1{\strc_notations_start_setups_indeed[#2]{##1}}}%
    \strc_notations_pickup_yes}
 
-\protected\def\strc_notations_start_setups_indeed[#1]#*#2%
+\protected\def\strc_notations_start_setups_indeed[#S#1]#*#2%
   {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title={#2},\c!bookmark=,\c!list=,\c!referencetext=,#1]%
    \strc_notations_wrapup}
 
-\protected\def\strc_notations_start_reference#1[#2]%
+\protected\def\strc_notations_start_reference#1[#S#2]%
   {\normalexpanded{\def\noexpand\strc_notations_pickup_yes##/#1{\strc_notations_start_reference_indeed[#2]{##1}}}%
    \strc_notations_pickup_yes}
 
@@ -1666,7 +1666,7 @@
    \fi
    \clf_restorenote{#tag}}
 
-\permanent\tolerant\protected\def\placelocalnotes[#tag]#spacer[#settings]%
+\permanent\tolerant\protected\def\placelocalnotes[#tag]#spacer[#S#settings]%
   {\iftok{\clf_getnotestate{#tag}}{store}%
      \strc_notes_local_place_indeed{#settings}{#tag}%
    \fi}
@@ -1719,7 +1719,7 @@
 \permanent\protected\def\placebottomnotes
   {\strc_notes_process\strc_notes_place_inserts}
 
-\permanent\tolerant\protected\def\placenotes[#list]#spacer[#settings]%
+\permanent\tolerant\protected\def\placenotes[#list]#spacer[#S#settings]%
   {\processcommalist[#list]{\strc_notes_place_indeed{#settings}}}
 
 \def\strc_notes_place_indeed#settings#tag% settings note
@@ -1947,14 +1947,14 @@
 \permanent\protected\def\startlocalfootnotes    {\startlocalnotes                 [\v!footnote]} %  alleen footnote
 \permanent\protected\def\stoplocalfootnotes     {\stoplocalnotes }
 
-\tolerant\def\strc_notes_place_footnotes[#list]#spacer[#settings]%
+\tolerant\def\strc_notes_place_footnotes[#list]#spacer[#S#settings]%
   {\ifarguments\or
      \placenotes[#list][\c!height=\textheight]%
    \or
      \placenotes[#list][#settings,\c!height=\textheight]%
    \fi}
 
-\tolerant\def\strc_notes_place_local_footnotes[#list]#spacer[#settings]%
+\tolerant\def\strc_notes_place_local_footnotes[#list]#spacer[#S#settings]%
   {\ifarguments\or
      \placelocalnotes[#list][\c!height=\textheight]%
    \or

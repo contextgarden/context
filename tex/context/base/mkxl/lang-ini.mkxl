@@ -193,7 +193,7 @@
 
 \mutable\lettonothing\currentsetuplanguage
 
-\permanent\tolerant\protected\def\installlanguage[#1]#*[#2]%
+\permanent\tolerant\protected\def\installlanguage[#1]#*[#S#2]%
   {\ifhastok={#2}%
      \doifelselanguage{#1}
        {\getparameters[\??language#1][#2]}
@@ -244,7 +244,7 @@
 
 \installmacrostack\currentlanguage
 
-\permanent\tolerant\protected\def\setuplanguage[#1]#*[#2]%
+\permanent\tolerant\protected\def\setuplanguage[#S#1]#*[#S#2]%
   {\ifarguments
      % only synchronize
    \or

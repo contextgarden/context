@@ -49,7 +49,7 @@
    \fi
 \to \everysetupspellchecking
 
-\permanent\tolerant\protected\def\loadspellchecklist[#1]#*[#2]% can be public implementor
+\permanent\tolerant\protected\def\loadspellchecklist[#1]#*[#S#2]% can be public implementor
   {\clf_loadspellchecklist{#1}{#2}}
 
 \setupspellchecking

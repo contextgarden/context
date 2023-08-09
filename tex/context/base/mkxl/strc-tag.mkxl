@@ -392,7 +392,7 @@
 
 \ifdefined\dotagparagraph \else \aliased\let\dotagparagraph\gobbleoneargument \fi
 
-\permanent\tolerant\protected\def\startparagraph[#1]#*[#2]%
+\permanent\tolerant\protected\def\startparagraph[#S#1]#*[#S#2]%
   {\endgraf % we end before the group
    \begingroup
    \ifarguments

@@ -101,6 +101,7 @@ extern halfword    tex_scan_math_parameter            (void);
 extern halfword    tex_scan_limited_scale             (int optional_equal);
 extern halfword    tex_scan_positive_scale            (int optional_equal);
 extern halfword    tex_scan_positive_number           (int optional_equal);
+extern halfword    tex_scan_parameter_index           (void);
 
 extern quarterword tex_scan_direction                 (int optional_equal);
 extern halfword    tex_scan_geometry                  (int optional_equal);

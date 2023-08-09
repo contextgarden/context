@@ -380,7 +380,7 @@
   {%\global\setbox\currentcolumnbox\box\currentcolumnbox
    \ht\currentcolumnbox\ht\firstcolumnbox}
 
-\permanent\tolerant\protected\def\startmulticolumns[#1]%
+\permanent\tolerant\protected\def\startmulticolumns[#S#1]%
   {\bgroup
    \ifinsidecolumns
      \page_mcl_start_nop

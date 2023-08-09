@@ -215,10 +215,10 @@
 \mutable\def\defaultsymbolfactor{10}
 \mutable\def\defaultsymbolheight{1.25ex}
 
-\permanent\tolerant\protected\def\figuresymbol[#1]#,[#2]%
+\permanent\tolerant\protected\def\figuresymbol[#1]#,[#S#2]%
   {\externalfigure[#1][\c!reset=\v!yes,\c!symbol=\v!yes,\c!height=\defaultsymbolheight,#2]}
 
-\permanent\tolerant\protected\def\definefiguresymbol[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\definefiguresymbol[#1]#*[#2]#*[#S#3]%
   {\ifarguments\or\else
      \definesymbol[#1][{\figuresymbol[#2][#3]}]%
    \fi}
@@ -292,7 +292,7 @@
 
 \installcorenamespace{symbolsets}
 
-\permanent\tolerant\protected\def\startsymbolset[#1]#*[#2]%
+\permanent\tolerant\protected\def\startsymbolset[#1]#*[#S#2]%
   {\pushmacro\m_symb_current_set
    \def\m_symb_current_set{#1}%
    \ifarguments\or\or
@@ -306,7 +306,7 @@
 \permanent\protected\def\stopsymbolset
   {\popmacro\m_symb_current_set}
 
-\permanent\protected\def\setupsymbolset[#1]%
+\permanent\protected\def\setupsymbolset[#1]% should have been \setsymbolset
   {\cdef\currentsymbolset{#1}%
    \ifcsname\??symbolsets\currentsymbolset\endcsname \else
      \symb_setup_symbol_set

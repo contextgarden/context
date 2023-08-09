@@ -36,7 +36,7 @@
 \permanent\protected\def\typesetbuffer    {\bgroup\setconstant\c_grph_buffers_mode\plusone  \grph_buffers_typeset}
 \permanent\protected\def\typesetbufferonly{\bgroup\setconstant\c_grph_buffers_mode\zerocount\grph_buffers_typeset}
 
-\tolerant\permanent\protected\def\grph_buffers_typeset[#1]#*[#2]%
+\tolerant\permanent\protected\def\grph_buffers_typeset[#1]#*[#S#2]%
   {\ifparameters
      \grph_buffers_typeset_indeed\jobname\empty
    \or
@@ -60,7 +60,7 @@
    \fi
    \egroup}
 
-\tolerant\permanent\protected\def\runbuffer[#1]#*[#2]%
+\tolerant\permanent\protected\def\runbuffer[#1]#*[#S#2]%
   {\xdef\lasttypesetbuffer{\clf_runbuffer{#1}{#2}}}
 
 % For manuals and such:
@@ -79,12 +79,12 @@
 
 \installcorenamespace{typesettingfile}
 
-\tolerant\permanent\protected\def\definetypesetting[#1]#*[#2]#*[#3]% <name> options settings-a
+\tolerant\permanent\protected\def\definetypesetting[#1]#*[#2]#*[#S#3]% <name> options settings-a
   {\ifparameter#1\or
      \frozen\instance\protected\defcsname\??typesettingfile#1\endcsname{\grph_typesetting_process_indeed{#2}{#3}}%
    \fi}
 
-\tolerant\permanent\protected\def\typesetfile[#1]#*[#2]#*[#3]% <name> filename settings-b | filename options settings
+\tolerant\permanent\protected\def\typesetfile[#1]#*[#S#2]#*[#S#3]% <name> filename settings-b | filename options settings
   {\ifcsname\??typesettingfile#1\endcsname
      \lastnamedcs{#2}{#3}%
    \orelse\ifparameter#3\or
@@ -156,10 +156,10 @@
      \ifvoid\b_grph_steps_colorbar\else\box\b_grph_steps_colorbar\fi
    \egroup}
 
-\protected\def\grph_steps_one_referring(#1,#2)#*(#3,#4)#*[#5]%
+\protected\def\grph_steps_one_referring(#1,#2)#*(#3,#4)#*[#S#5]%
   {\position(#1,#2){\grph_steps_goto(#3,#4){\externalfigureparameter\c!frames}[#5]}}
 
-\protected\def\grph_steps_one_marking(#1,#2)#*(#3,#4)#*[#5]%
+\protected\def\grph_steps_one_marking(#1,#2)#*(#3,#4)#*[#S#5]%
   {\position(#1,#2){\grph_steps_this_is(#3,#4){\externalfigureparameter\c!frames}[#5]}}
 
 \protected\def\grph_steps_one_remark   (#-,#-)#*(#-,#-)#*[#-]#*#:#-{}% (x,y)(h,b)[...]{tekst}
@@ -306,7 +306,7 @@
      \d_grph_steps_y\figureheight \divideby\d_grph_steps_y \externalfigureparameter\c!ymax\relax
    \fi}
 
-\tolerant\def\grph_steps_comment#1(#2,#3)#*(#4,#5)#*[#6]#*#:#7% {kader}(x,y)(h,b)[...]{tekst}
+\tolerant\def\grph_steps_comment#1(#2,#3)#*(#4,#5)#*[#S#6]#*#:#7% {kader}(x,y)(h,b)[...]{tekst}
   {\position(#2,#3)%
      {\setnostrut
       \framed[\c!width=#4\d_grph_steps_x,\c!height=#5\d_grph_steps_y,\c!offset=\v!none,\c!frame=#1,#6]{#7}}}

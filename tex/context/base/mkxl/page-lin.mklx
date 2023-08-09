@@ -198,7 +198,7 @@
 % \startlinenumbering[<startvalue>|continue|settings|name]
 % \startlinenumbering[name][<startvalue>|continue|settings]
 
-\permanent\tolerant\protected\def\startlinenumbering[#1]#*[#2]%
+\permanent\tolerant\protected\def\startlinenumbering[#1]#*[#S#2]%
   {\begingroup
    \page_postprocessors_linenumbers_check
    \advanceby\c_pages_lines_nesting\plusone
@@ -221,7 +221,7 @@
    \fi
    \page_lines_start_followup}
 
-\def\page_lines_start_one[#1][#2]% [continue|<number>|settings] % historic
+\def\page_lines_start_one[#S#1][#2]% [continue|<number>|settings] % historic
   {\edef\m_argument{#1}%
    \ifx\m_argument\v!continue
      \c_page_lines_mode\zerocount
@@ -246,7 +246,7 @@
    \fi
    \page_lines_start_followup}
 
-\def\page_lines_start_two[#1][#2]% [tag][continue|<number>|settings]
+\def\page_lines_start_two[#1][#S#2]% [tag][continue|<number>|settings]
   {\cdef\currentlinenumbering{#1}%
    \edef\m_argument{#2}%
    \ifx\m_argument\v!continue

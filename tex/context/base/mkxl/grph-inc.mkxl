@@ -187,7 +187,7 @@
 % label file settings
 % label file parent
 
-\permanent\tolerant\protected\def\useexternalfigure[#1]#*[#2]#*[#3]#*[#4]%
+\permanent\tolerant\protected\def\useexternalfigure[#1]#*[#2]#*[#S#3]#*[#S#4]%
   {\ifempty{#1}%
      \ifempty{#2}\else
        \ifhastok={#3}%
@@ -216,7 +216,7 @@
 
 % inclusion
 
-\permanent\tolerant\protected\def\externalfigure[#1]#,[#2]#,[#3]%
+\permanent\tolerant\protected\def\externalfigure[#1]#,[#2]#,[#S#3]%
   {\ifhastok={#2}%
      \grph_include_place[#1][][#2]%
    \else
@@ -272,7 +272,7 @@
      \grph_include_inherit_from_parent\p_grph_include_label
    \fi}
 
-\def\grph_include_place[#1][#2][#3]% [label][file][settings] | [file][settings] | [file][parent][settings]
+\def\grph_include_place[#1][#S#2][#S#3]% [label][file][settings] | [file][settings] | [file][parent][settings]
   {\bgroup
    \advanceby\c_grph_include_nesting\plusone
    \cdef\currentexternalfigure{\the\c_grph_include_nesting}%
@@ -720,7 +720,7 @@
 
 \mutable\let\feedbackexternalfigure\relax % hook
 
-\permanent\tolerant\protected\def\getfiguredimensions[#1]#*[#2]%
+\permanent\tolerant\protected\def\getfiguredimensions[#1]#*[#S#2]%
   {\startnointerference % we can use \nospaces\plusone
      \c_grph_include_test_only\conditionaltrue
      \externalfigure[#1][#2,\c!display=,\c!mask=,\c!object=\v!no]%
@@ -738,7 +738,7 @@
 
 % No placement, handy for preprocessing:
 
-\permanent\tolerant\protected\def\registerexternalfigure[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\registerexternalfigure[#1]#*[#S#2]#*[#S#3]%
   {\startnointerference
      \c_grph_include_test_only
      \c_grph_include_flush\conditionalfalse % == test ?
@@ -793,7 +793,7 @@
 \newdimension  \d_grph_include_collection_minheight
 \newdimension  \d_grph_include_collection_maxheight
 
-\def\grph_include_analyze_collection[#1][#2]%
+\def\grph_include_analyze_collection[#1][#S#2]%
   {\ifconditional\c_grph_include_in_collection
       \c_grph_include_in_collection\conditionalfalse
       \getfiguredimensions[#1][#2]%
@@ -862,13 +862,13 @@
 
 % Experimental (will become cleaner):
 
-\permanent\tolerant\protected\def\includesvgfile[#1]#*[#2]%
+\permanent\tolerant\protected\def\includesvgfile[#1]#*[#S#2]%
   {\hbox\bgroup % no \dontleavehmode
    \getdummyparameters[\c!offset=\zeropoint,#2]%
    \clf_includesvgfile{#1}\dimexpr\dummyparameter\c!offset\relax
    \egroup}
 
-\permanent\tolerant\protected\def\includesvgbuffer[#1]#*[#2]%
+\permanent\tolerant\protected\def\includesvgbuffer[#1]#*[#S#2]%
   {\hbox\bgroup % no \dontleavehmode
    \getdummyparameters[\c!offset=\zeropoint,#2]%
    \clf_includesvgbuffer{#1}\dimexpr\dummyparameter\c!offset\relax

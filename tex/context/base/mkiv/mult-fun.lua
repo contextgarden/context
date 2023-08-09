@@ -239,5 +239,8 @@ return {
         "xnormalized", "ynormalized", "xynormalized",
         "phantom",
         "scrutinized",
+        --
+        "xshifted",
+        "yshifted",
     },
 }

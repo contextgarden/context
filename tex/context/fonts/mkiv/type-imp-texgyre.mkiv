@@ -39,6 +39,11 @@
     \definetypescriptprefix [f:cursor]  [cursor]
     \definetypescriptprefix [f:chorus]  [chorus]
 
+    \definetypescriptprefix [f:pagella-nt] [pagella]
+    \definetypescriptprefix [f:termes-nt]  [termes]
+    \definetypescriptprefix [f:bonum-nt]   [bonum]
+    \definetypescriptprefix [f:schola-nt]  [schola]
+
     \definetypescriptprefix [f:palatino]   [pagella]
     \definetypescriptprefix [f:times]      [termes]
     \definetypescriptprefix [f:helvetica]  [heros]
@@ -57,6 +62,11 @@
     \definetypescriptprefix [n:cursor]   [TeXGyreCursor]
     \definetypescriptprefix [n:chorus]   [TeXGyreChorus]
 
+    \definetypescriptprefix [n:pagella-nt] [TeXGyrePagella]
+    \definetypescriptprefix [n:termes-nt]  [TeXGyreTermes]
+    \definetypescriptprefix [n:bonum-nt]   [TeXGyreBonum]
+    \definetypescriptprefix [n:schola-nt]  [TeXGyreSchola]
+
     \definetypescriptprefix [n:palatino]   [TeXGyrePagella]
     \definetypescriptprefix [n:times]      [TeXGyreTermes]
     \definetypescriptprefix [n:helvetica]  [TeXGyreHeros]
@@ -66,7 +76,8 @@
     \definetypescriptprefix [n:courier]    [TeXGyreCursor]
     \definetypescriptprefix [n:chancery]   [TeXGyreChorus]
 
-    \starttypescript [\s!serif,\s!sans] [adventor,bonum,bookman,heros,helvetica,pagella,palatino,schola,schoolbook,termes,times]
+    \starttypescript [\s!serif,\s!sans] [adventor,bonum,bookman,heros,helvetica,pagella,palatino,schola,schoolbook,termes,times,%
+                                         pagella-nt,termes-nt,bonum-nt,schola-nt]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Regular]        [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-regular]    [\s!features=\s!default,\s!goodies=texgyre-text]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Italic]         [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-italic]     [\s!features=\s!default,\s!goodies=texgyre-text]
         \definefontsynonym [\typescriptprefix{n:\typescripttwo}-Bold]           [\s!file:texgyre\typescriptprefix{f:\typescripttwo}-bold]       [\s!features=\s!default,\s!goodies=texgyre-text]
@@ -88,7 +99,8 @@
         \definefontsynonym [TeXGyreChorus-MediumItalic] [\s!file:texgyrechorus-mediumitalic] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [\s!serif] [pagella,palatino,termes,times,bonum,bookman,schola,schoolbook] [\s!name]
+    \starttypescript [\s!serif] [pagella,palatino,termes,times,bonum,bookman,schola,schoolbook,%
+                                 pagella-nt,termes-nt,bonum-nt,schola-nt] [\s!name]
         \definefontsynonym [\s!Serif]             [\typescriptprefix{n:\typescripttwo}-Regular]
         \definefontsynonym [\s!SerifItalic]       [\typescriptprefix{n:\typescripttwo}-Italic]
         \definefontsynonym [\s!SerifBold]         [\typescriptprefix{n:\typescripttwo}-Bold]

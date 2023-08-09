@@ -101,13 +101,13 @@
    \lettonothing\currentuserdata
    \doifelsenextoptionalcs\userdata_start_delayed\userdata_start_indeed}
 
-\def\userdata_start_delayed[#1]%
+\def\userdata_start_delayed[#S#1]%
   {\doifelseassignmentcs{#1}%
      \userdata_start_delayed_parameters
      \userdata_start_delayed_name
    [#1]}
 
-\def\userdata_start_delayed_parameters[#1]%
+\def\userdata_start_delayed_parameters[#S#1]%
   {\setupcurrentuserdata[#1]%
    \userdata_start_indeed}
 
@@ -116,7 +116,7 @@
    \checkuserdataparent
    \doifelsenextoptionalcs\userdata_start_delayed_parameters\userdata_start_indeed}
 
-\protected\tolerant\def\userdata_start_instance#1#*[#2]%
+\protected\tolerant\def\userdata_start_instance#1#*[#S#2]%
   {\begingroup
    \cdef\currentuserdata{#1}%
    \setupcurrentuserdata[#2]%

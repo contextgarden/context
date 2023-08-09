@@ -128,10 +128,10 @@
 
 %D These are implemented in a low level form as:
 
-\permanent\tolerant\protected\def\textreference                  [#labels]{\strc_references_set_named_reference\s!text{#labels}{}}
-\permanent\tolerant\protected\def\pagereference                  [#labels]{\strc_references_set_named_reference\s!page{#labels}{}{}}
-\permanent\tolerant\protected\def\reference                      [#labels]{\strc_references_set_named_reference\s!full{#labels}{}}
-\permanent\tolerant\protected\def\setreference [#labels]#spacer[#settings]{\strc_references_set_named_reference\s!user{#labels}{#settings}{}}
+\permanent\tolerant\protected\def\textreference                   [#labels]{\strc_references_set_named_reference\s!text{#labels}{}}
+\permanent\tolerant\protected\def\pagereference                   [#labels]{\strc_references_set_named_reference\s!page{#labels}{}{}}
+\permanent\tolerant\protected\def\reference                       [#labels]{\strc_references_set_named_reference\s!full{#labels}{}}
+\permanent\tolerant\protected\def\setreference [#labels]#spacer[#S#settings]{\strc_references_set_named_reference\s!user{#labels}{#settings}{}}
 
 \permanent\protected\def\dosetdirectpagereference#1{\strc_references_set_named_reference\s!page{#1}{}{}} % low level, maybe use _
 
@@ -481,7 +481,7 @@
 %D
 %D \stoptyping
 
-\permanent\tolerant\protected\def\contentreference[#1]#*[#2]%
+\permanent\tolerant\protected\def\contentreference[#1]#*[#S#2]%
   {\ifarguments
      \expandafter\gobbletwoarguments
    \or
@@ -660,7 +660,7 @@
 %D
 %D We can trace references by setting the next switch to true.
 
-\permanent\tolerant\protected\def\definereference[#name]#spacer[#specification]%
+\permanent\tolerant\protected\def\definereference[#name]#spacer[#S#specification]%
   {\clf_definereference{\referenceprefix}{#name}{\detokenize{#specification}}}
 
 \permanent\protected\def\resetreference[#name]%
@@ -2151,7 +2151,7 @@
         segments      {\referencestructureprefixparameter{#kind}{#name}{#category}\c!numbersegments}%
   }}
 
-\permanent\tolerant\protected\def\setupreferencestructureprefix[#kind]#spacer[#category]#spacer[#settings]%
+\permanent\tolerant\protected\def\setupreferencestructureprefix[#kind]#spacer[#category]#spacer[#S#settings]%
   {\ifarguments\or\or
      \getparameters[\??referencingprefix:#kind][#category]%
    \else

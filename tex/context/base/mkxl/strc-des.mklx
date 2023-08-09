@@ -99,7 +99,7 @@
 
 % A bit over the top, the optional title but mkii has it too.
 
-\tolerant\permanent\protected\def\startnameddescription[#1]#*[#2]%
+\tolerant\permanent\protected\def\startnameddescription[#1]#*[#S#2]%
   {\begingroup
    \strc_constructions_initialize{#1}%
    \ifhastok={#2}%
@@ -118,7 +118,7 @@
 %    \resetdescriptionparameter\c!list
 %    \resetdescriptionparameter\c!referencetext}
 
-\protected\def\strc_descriptions_start_setups[#1]%
+\protected\def\strc_descriptions_start_setups[#S#1]%
   {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#1]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
@@ -136,7 +136,7 @@
 % \description [reference]         text \par
 % \description [reference] {title} text \par
 
-\tolerant\permanent\protected\def\nameddescription[#1]#*[#2]%
+\tolerant\permanent\protected\def\nameddescription[#1]#*[#S#2]%
   {\begingroup
    \strc_constructions_initialize{#1}%
    \ifhastok={#2}%
@@ -147,7 +147,7 @@
      \expandafter\strc_descriptions_command_reference
    \fi[#2]}
 
-\protected\def\strc_descriptions_command_setups[#1]%
+\protected\def\strc_descriptions_command_setups[#S#1]%
   {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#1]%
    \csname\??constructioncommandhandler\currentconstructionhandler\endcsname}
 

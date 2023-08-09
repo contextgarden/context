@@ -38,7 +38,7 @@
 
 \unprotect
 
-\permanent\protected\def\startalternate[#1]% maybe better/also: [text={...}]
+\permanent\protected\def\startalternate[#S#1]% maybe better/also: [text={...}]
   {\begingroup
    \getdummyparameters[\c!text=,#1]%
    \clf_setalternate text {\dummyparameter\c!text}\relax}

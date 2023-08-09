@@ -42,7 +42,7 @@
 \permanent\protected\def\stopsubjectlevel
   {\clf_stopsectionlevel} % we could use public at the lua end
 
-\permanent\tolerant\protected\def\nostarthead[#category]#spacer[#settings]#spacer[#userdata]%
+\permanent\tolerant\protected\def\nostarthead[#category]#spacer[#S#settings]#spacer[#S#userdata]%
   {\blank
    \noindentation{\tttf[start missing section level #category]}
    \blank}

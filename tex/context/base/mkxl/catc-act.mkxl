@@ -29,7 +29,7 @@
 %D not used and not really tested.
 
 \permanent\protected\def\installactivecharacter#1 %
-  {\ifchknum#1\or
+  {\ifchknumber#1\or
      \scratchcounter\lastchknumber
      \edef\scratchmacro{\expandtoken\othercatcode\scratchcounter}%
    \else
@@ -41,7 +41,7 @@
    \ifnum\currentcatcodetable=\ctxcatcodes \setcatcodetable\ctxcatcodes \fi}
 
 \permanent\protected\def\defineactivecharacter #1 #2%
-  {\ifchknum#1\or\letcharcode#1=\lastchknumber\relax\else\letcharcode`#1=#2\relax\fi}
+  {\ifchknumber#1\or\letcharcode\lastchknumber=#2\relax\else\letcharcode`#1=#2\relax\fi}
 
 \permanent\protected\def\makecharacteractive #1 %
   {\catcode`#1\activecatcode}

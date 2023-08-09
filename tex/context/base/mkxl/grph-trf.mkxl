@@ -137,7 +137,7 @@
    \letcsname\??scale>\the\c_grph_scale_nesting:\s!parent\endcsname\??scale
    \cdef\currentscale{>\the\c_grph_scale_nesting}}
 
-\permanent\tolerant\protected\def\scale[#1]#*[#2]%
+\permanent\tolerant\protected\def\scale[#S#1]#*[#S#2]%
   {\bgroup
    \ifarguments
      \grph_scale_set_nesting
@@ -660,7 +660,7 @@
 
 \installdirectcommandhandler \??clipping {clipping}
 
-\permanent\tolerant\protected\def\clip[#1]% nb top->bottom left->right
+\permanent\tolerant\protected\def\clip[#S#1]% nb top->bottom left->right
   {\bgroup
    \ifparameter#1\or
      \setupcurrentclipping[#1]%
@@ -844,7 +844,7 @@
 \lettonothing\p_rotation_location
 \lettonothing\p_rotation_rotation
 
-\permanent\tolerant\protected\def\rotate[#1]% \bgroup: \rotate kan argument zijn
+\permanent\tolerant\protected\def\rotate[#S#1]% \bgroup: \rotate kan argument zijn
   {\bgroup
    \ifparameter#1\or
      \setupcurrentrotate[#1]%

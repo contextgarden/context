@@ -133,7 +133,7 @@
 \def\typo_charalign_pass
   {\hbox\bgroup\signalcharacteralign\plusone\scratchcounter\let\next}
 
-\permanent\tolerant\protected\def\startcharacteralign[#1]%
+\permanent\tolerant\protected\def\startcharacteralign[#S#1]%
   {\doifelseassignment{#1}\typo_charalign_start_one\typo_charalign_start_two{#1}}
 
 \def\typo_charalign_start_one#1#2\stopcharacteralign

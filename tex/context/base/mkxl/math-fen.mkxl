@@ -382,7 +382,7 @@
    \s!source     \numexpr\namedboxanchor{\mathfenceparameter#4}\relax
    \Udelimiter\mathghostcode\fam\p_fence}
 
-\tolerant\protected\def\math_fenced_horizontal#1#*[#2]#:#*#3#4%
+\tolerant\protected\def\math_fenced_horizontal#1#*[#S#2]#:#*#3#4%
   {% \csname math\mathfenceparameter\c!mathclass\endcsname
    \mathord \bgroup % class here
      \setlocalmathfencecurrent{#1}% \cdef\currentmathfence{#1}%
@@ -423,7 +423,7 @@
    \c!define=\v!yes,
    \c!distance=.125\emwidth]
 
-\tolerant\protected\def\math_fenced_vertical#1#*[#2]%
+\tolerant\protected\def\math_fenced_vertical#1#*[#S#2]%
   {\begingroup
  %{\beginmathgroup
    \setlocalmathfencecurrent{#1}% \cdef\currentmathfence{#1}%
@@ -481,7 +481,7 @@
     \enforced\let\fenced\math_fenced_direct
 \to \everymathematics
 
-\permanent\tolerant\protected\def\startmathfenced[#1]#*[#2]%
+\permanent\tolerant\protected\def\startmathfenced[#1]#*[#S#2]%
   {\begingroup
    \cdef\currentmathfence{#1}%
    \setupcurrentmathfence[#2]%

@@ -73,7 +73,7 @@
 
 \aliased\let\adaptivebox\adaptivehbox
 
-\tolerant\def\typo_adaptive_box#1#*[#2]#*[#3]%
+\tolerant\def\typo_adaptive_box#1#*[#S#2]#*[#S#3]%
    {\ifcase#1\dontleavehmode\fi
     \begingroup
     \ifhastok={#2}%

@@ -267,7 +267,7 @@
 
 % so far for the hack
 
-\permanent\tolerant\protected\def\convertedcounter[#1]#*[#2]%
+\permanent\tolerant\protected\def\convertedcounter[#1]#*[#S#2]%
   {\begingroup
    \cdef\currentcounter{#1}%
    \ifparameter#2\or\setupcurrentcounter[#2]\fi

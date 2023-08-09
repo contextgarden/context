@@ -439,10 +439,10 @@
 \newconditional\c_tabl_use_size
 \newconditional\c_tabl_sparse_skips
 
-\c_tabl_use_size\conditionaltrue     % default per 2022-08-25
+\c_tabl_use_size    \conditionaltrue % default per 2022-08-25
 \c_tabl_sparse_skips\conditionaltrue % default per 2022-08-25
 
-\installtexdirective {tabulateusesize}     {\c_tabl_use_size\conditionaltrue}     {\c_tabl_use_size\conditionalfalse}
+\installtexdirective {tabulateusesize}     {\c_tabl_use_size    \conditionaltrue} {\c_tabl_use_size    \conditionalfalse}
 \installtexdirective {tabulatesparseskips} {\c_tabl_sparse_skips\conditionaltrue} {\c_tabl_sparse_skips\conditionalfalse}
 
 \def\tabl_tabulate_set_preamble_step#1#2% only makes sense for many tabulates
@@ -994,20 +994,45 @@
 
 \def\tabl_tabulate_hook_yes{\begincsname\??tabulatehook\the\c_tabl_tabulate_column\endcsname}
 
+% \def\tabl_tabulate_pheight_reset
+%   {\global\c_tabl_tabulate_plines_min\plusone
+%    \ifdim\d_tabl_tabulate_height_p_max>\zeropoint
+%      \getnoflines\d_tabl_tabulate_height_p_max
+%      \global\c_tabl_tabulate_plines_max\noflines
+%    \else
+%      \global\c_tabl_tabulate_plines_max\zerocount
+%    \fi
+%    \global\d_tabl_tabulate_height_p_max\zeropoint}
+
+% \def\tabl_tabulate_pheight_set
+%   {\scratchdimen\ht\b_tabl_tabulate_current\c_tabl_tabulate_column\relax
+%    \ifdim\scratchdimen>\d_tabl_tabulate_height_p_max
+%      \global\d_tabl_tabulate_height_p_max\scratchdimen
+%    \fi}
+
+\newinteger\c_tabl_tabulate_height_p_max_lines
+
 \def\tabl_tabulate_pheight_reset
   {\global\c_tabl_tabulate_plines_min\plusone
-   \ifdim\d_tabl_tabulate_height_p_max>\zeropoint
+   \iftrue
+     \global\c_tabl_tabulate_plines_max\c_tabl_tabulate_height_p_max_lines
+   \orelse\ifdim\d_tabl_tabulate_height_p_max>\zeropoint
      \getnoflines\d_tabl_tabulate_height_p_max
      \global\c_tabl_tabulate_plines_max\noflines
    \else
      \global\c_tabl_tabulate_plines_max\zerocount
    \fi
-   \global\d_tabl_tabulate_height_p_max\zeropoint}
+   \global\d_tabl_tabulate_height_p_max\zeropoint
+   \global\c_tabl_tabulate_height_p_max_lines\zerocount}
 
 \def\tabl_tabulate_pheight_set
   {\scratchdimen\ht\b_tabl_tabulate_current\c_tabl_tabulate_column\relax
    \ifdim\scratchdimen>\d_tabl_tabulate_height_p_max
      \global\d_tabl_tabulate_height_p_max\scratchdimen
+   \fi
+   \scratchcounter\noflinesinbox\b_tabl_tabulate_current\c_tabl_tabulate_column\relax
+   \ifnum\scratchcounter>\c_tabl_tabulate_height_p_max_lines
+     \global\c_tabl_tabulate_height_p_max_lines\scratchcounter
    \fi}
 
 \def\tabl_tabulate_pbreak_inject
@@ -1121,7 +1146,7 @@
   %\c!title=,
    \c!indenting=\v!no]
 
-\permanent\tolerant\protected\def\definetabulate[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\definetabulate[#1]#*[#S#2]#*[#S#3]%
   {\ifarguments
      % ignore
    \or
@@ -1138,7 +1163,7 @@
      \definetabulation[#1:#2][#1][\c!format={#3},\s!check=]%
    \fi}
 
-\permanent\tolerant\protected\def\setuptabulate[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\setuptabulate[#S#1]#*[#S#2]#*[#S#3]%
   {\ifarguments
      % ignore
    \or
@@ -1245,7 +1270,7 @@
      \expandafter\tabl_start_defined_indeed
    \fi}
 
-\tolerant\def\tabl_start_defined_indeed[#1]#*[#2]%
+\tolerant\def\tabl_start_defined_indeed[#S#1]#*[#S#2]%
   {\ifarguments\or
      \ifhastok={#1}%
        \setuptabulation[\currenttabulation][#1]%
@@ -1267,7 +1292,7 @@
    \lettonothing\currenttabulationparent
    \tabl_start_regular}
 
-\tolerant\protected\def\tabl_start_regular[#1]#*[#2]% [format] | [settings] | [format] [settings] | [settings] [format]
+\tolerant\protected\def\tabl_start_regular[#S#1]#*[#S#2]% [format] | [settings] | [format] [settings] | [settings] [format]
   {\let\currenttabulation\currenttabulationparent
    \ifempty{#1}%
      \ifhaschar={#2}\relax
@@ -1387,6 +1412,68 @@
      \vskip-\struttotal
    \fi}
 
+% \protected\def\tabl_tabulate_start_building
+%   {\ifinsidefloat
+%      \tabl_tabulate_inside_before
+%    \else
+%      \tabl_tabulate_outside_before
+%    \fi
+%    \bgroup % settings
+%    %
+%    \t_tabl_tabulate_preamble\emptytoks
+%    \t_tabl_tabulate_dummy   \emptytoks
+%    %
+%    \resetcharacteralign
+%    %
+%    \edef\p_distance      {\tabulationparameter\c!distance}%
+%    \edef\p_align         {\tabulationparameter\c!align}%
+%    \edef\p_line          {\tabulationparameter\c!rule}%
+%    \edef\p_rulecolor     {\tabulationparameter\c!rulecolor}%
+%    \edef\p_rulethickness {\tabulationparameter\c!rulethickness}%
+%    \edef\p_bodyfont      {\tabulationparameter\c!bodyfont}%
+%    \edef\p_indenting     {\tabulationparameter\c!indenting}%
+%    \edef\p_blank         {\tabulationparameter\c!blank}%
+%    %
+%    \ifcstok{\tabulationparameter\c!keeptogether}\v!no
+%      \c_tabl_tabulate_tolerant_break\conditionaltrue
+%     %\c_tabl_tabulate_handlepbreak\conditionalfalse
+%    \else
+%      \c_tabl_tabulate_tolerant_break\conditionalfalse
+%     %\c_tabl_tabulate_handlepbreak\conditionaltrue
+%    \fi
+%    %
+%    \ifcstok{\tabulationparameter\c!interlinespace}\v!no
+%      \c_tabl_tabulate_no_interline_space\conditionaltrue
+%    \else
+%      \c_tabl_tabulate_no_interline_space\conditionalfalse
+%    \fi
+%    %
+%    \c_tabl_tabulate_split\conditionaltrue
+%    \begincsname\??tabulatesplit\tabulationparameter\c!split\endcsname
+%    %
+%    \let\m_tabl_tabulate_blank_default\p_blank
+%    %
+%    \d_tabl_tabulate_unit\tabulationparameter\c!unit
+%    \d_tabl_tabulate_margin\tabulationparameter\c!margin
+%    \let\m_tabl_tabulate_vrule_color_default\p_rulecolor
+%    \let\m_tabl_tabulate_hrule_color_default\p_rulecolor
+%    \d_tabl_tabulate_vrulethickness_default\p_rulethickness
+%    \d_tabl_tabulate_hrulethickness_default\p_rulethickness
+%    \ifempty\p_bodyfont\else
+%      \switchtobodyfont[\p_bodyfont]%
+%    \fi
+%    \postponenotes % new, to be tested / will be configurable
+%    \widowpenalty\zerocount % otherwise lines are not broken
+%    \clubpenalty \zerocount % but overlap in funny ways
+%    \expand\everytabulate
+%    \tabulationparameter\c!inner
+%    \d_tabl_tabulate_indent\dimexpr\leftskip+\hangindent\ifx\p_indenting\v!yes+\parindent\fi\relax
+%    \global\c_tabl_tabulate_column\zerocount
+%    \processcontent % stoptabulate needs to match the frozen one
+%      {\ifconditional\c_tabl_generic stoptabulate\else\e!stop\ifempty\currenttabulationparent\v!tabulate\else\currenttabulationparent\fi\fi}
+%      \tabl_tabulate_insert_body
+%      \tabl_tabulate_process}
+
 \protected\def\tabl_tabulate_start_building
   {\ifinsidefloat
      \tabl_tabulate_inside_before
@@ -1444,10 +1531,43 @@
    \tabulationparameter\c!inner
    \d_tabl_tabulate_indent\dimexpr\leftskip+\hangindent\ifx\p_indenting\v!yes+\parindent\fi\relax
    \global\c_tabl_tabulate_column\zerocount
-   \processcontent % stoptabulate needs to match the frozen one
-     {\ifconditional\c_tabl_generic stoptabulate\else\e!stop\ifempty\currenttabulationparent\v!tabulate\else\currenttabulationparent\fi\fi}
-     \tabl_tabulate_insert_body
-     \tabl_tabulate_process}
+   \begingroup
+   \catcode\hashasciicode\othercatcode
+   \ifconditional\c_tabl_generic
+     \expandafter\tabl_tabulate_pickup_generic
+   \orelse\ifempty\currenttabulationparent
+     \expandafter\tabl_tabulate_pickup_interfaced
+   \else
+     \expandafter\tabl_tabulate_pickup_specific
+   \fi}
+
+\protected\def\tabl_tabulate_pickup_generic
+   #L\starttabulate
+   #R\stoptabulate
+   #1%
+  {\endgroup
+   \def\tabl_tabulate_insert_body{#1}%
+   \tabl_tabulate_process}
+
+\protected\def\tabl_tabulate_pickup_interfaced
+  {\normalexpanded{\protected\def\noexpand\tabl_tabulate_pickup
+      ##L\expandafter\noexpand\csname\e!start\v!tabulate\endcsname
+      ##R\expandafter\noexpand\csname\e!stop \v!tabulate\endcsname
+      ##1}%
+    {\endgroup
+     \def\tabl_tabulate_insert_body{##1}%
+     \tabl_tabulate_process}%
+   \tabl_tabulate_pickup}
+
+\protected\def\tabl_tabulate_pickup_specific
+  {\normalexpanded{\protected\def\noexpand\tabl_tabulate_pickup
+      ##L\expandafter\noexpand\csname\e!start\currenttabulationparent\endcsname
+      ##R\expandafter\noexpand\csname\e!stop \currenttabulationparent\endcsname
+      ##1}%
+    {\endgroup
+     \def\tabl_tabulate_insert_body{##1}%
+     \tabl_tabulate_process}%
+   \tabl_tabulate_pickup}
 
 \permanent\protected\def\tabulateEQ
   {\ifconditional\c_tabl_tabulate_firstflushed\else
@@ -1995,7 +2115,7 @@
    \c!yoffset=\zeropoint,
    \c!orientation=]
 
-\noaligned\permanent\tolerant\protected\def\tabl_tabulate_TM_yes[#1]#*[#2]%
+\noaligned\permanent\tolerant\protected\def\tabl_tabulate_TM_yes[#S#1]#*[#S#2]%
   {\beginlocalcontrol
    \ifhastok={#1}%
      \setupcurrenttabulatemove[#1]%
@@ -2024,7 +2144,7 @@
    \endlocalcontrol
    \noalign\tabl_tabulate_tm{}}
 
-\noaligned\permanent\tolerant\protected\def\tabl_tabulate_TM_nop[#1]#*[#2]%
+\noaligned\permanent\tolerant\protected\def\tabl_tabulate_TM_nop[#S#1]#*[#S#2]%
   {}
 
 \lettonothing\tabl_tabulate_tm % new 27/12/2022
@@ -2251,8 +2371,10 @@
    \tabl_tabulate_flush_collected_indeed}
 
 \protected\def\tabl_tabulate_bskip_second_split_nop
+% {\dbox\bgroup
   {\vtop\bgroup
      \ifconditional\c_tabl_tabulate_automode\hsize\d_tabl_tabulate_width\fi
+\inhibitblank
      % \begstrut % interferes with pre-\pars
      % evt: \appendtoks\begstrut\to\everypar
      \ignorepars} % \ignorespaces

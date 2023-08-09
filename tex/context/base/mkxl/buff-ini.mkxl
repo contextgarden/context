@@ -206,7 +206,7 @@
    \c!directory=,
    \c!prefix=\v!yes]
 
-\permanent\tolerant\protected\def\savebuffer[#1]#*[#2]%
+\permanent\tolerant\protected\def\savebuffer[#S#1]#*[#2]%
   {\begingroup
    \ifhastok={#1}%
      \setupcurrentsavebuffer[#1]%

@@ -367,14 +367,14 @@
    \copyposition{e:#1}{e:#2}%
    \anch_positions_set_action{b:#2}{\dopositionaction{b:#1}}}
 
-\permanent\tolerant\protected\def\definepositionframed[#1]#*[#2]%
+\permanent\tolerant\protected\def\definepositionframed[#1]#*[#S#2]%
   {\anch_positions_set_action{b:#1}{\anch_framed_handle[#1][#2]}}
 
 \protected\def\anch_framed_handle
   {\bgroup
    \positionframed}
 
-\permanent\tolerant\protected\def\positionframed[#1]#*[#2]%
+\permanent\tolerant\protected\def\positionframed[#1]#*[#S#2]%
   {\setbox\scratchbox\hpack
      {\scratchwidth \dimexpr\MPx{e:#1}-\MPx{b:#1}\relax
       \scratchdepth \dimexpr\MPy{b:#1}-\MPy{e:#1}+\MPd{e:#1}\relax

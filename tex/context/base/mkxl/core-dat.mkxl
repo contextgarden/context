@@ -48,7 +48,7 @@
 
 \installcommandhandler \??dataset {dataset} \??dataset
 
-\permanent\tolerant\protected\def\setdataset[#1]#*[#2]#*[#3]%
+\permanent\tolerant\protected\def\setdataset[#1]#*[#S#2]#*[#S#3]%
   {\begingroup
    \cdef\currentdataset{#1}%
    \ifparameters\or\or

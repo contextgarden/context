@@ -49,7 +49,7 @@
 \installmacrostack\currentmodulecategory
 \installmacrostack\currentmoduleparameters
 
-\permanent\tolerant\protected\def\usemodules[#category]#spacer[#name]#spacer[#parameters]% category=t|m|x|p|...
+\permanent\tolerant\protected\def\usemodules[#category]#spacer[#S#name]#spacer[#S#parameters]% category=t|m|x|p|...
   {\push_macro_currentmodule
    \push_macro_currentmodulecategory
    \push_macro_currentmoduleparameters
@@ -114,7 +114,7 @@
       \expandafter\syst_modules_setup_yes
    \fi}
 
-\tolerant\def\syst_modules_setup_nop[#name]#spacer[#parameters]%
+\tolerant\def\syst_modules_setup_nop[#S#name]#spacer[#S#parameters]%
   {\ifarguments
      % nothing
    \or
@@ -126,7 +126,7 @@
    \fi
    \expand\everysetupmodule}
 
-\tolerant\def\syst_modules_setup_yes[#name]#spacer[#parameters]%
+\tolerant\def\syst_modules_setup_yes[#S#name]#spacer[#S#parameters]%
   {\scratchtoks\expandafter{\currentmoduleparameters}%
    \ifparameters
      \normalexpanded{\getparameters[\??module\currentmodule:][\the\scratchtoks]}%
