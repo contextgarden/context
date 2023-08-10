@@ -4132,17 +4132,14 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
 
         */
         first_line = rs && (cur_line == 1) && properties->parinit_left_skip && properties->parinit_right_skip;
+        last_line = ls && (cur_line + 1 == lmt_linebreak_state.best_line) && properties->parfill_left_skip && properties->parfill_right_skip;
         if (first_line) {
             halfword n = node_next(properties->parinit_left_skip);
             while (n) {
                 if (n == properties->parinit_right_skip) {
-                    /*tex We could check if it the right fill glue. */
-                    halfword rf = node_prev(rs) ? node_prev(rs) : rs;
                     tex_couple_nodes(node_prev(n), node_next(n));
-                 // tex_couple_nodes(node_prev(rs), n);
-                 // tex_couple_nodes(n, rs);
-                    tex_couple_nodes(node_prev(rf), n);
-                    tex_couple_nodes(n, rf);
+                    tex_couple_nodes(node_prev(rs), n);
+                    tex_couple_nodes(n, rs);
                     break;
                 } else {
                     n = node_next(n);
@@ -4153,7 +4150,6 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                 tex_normal_warning("tex", "right parinit skip is gone");
             }
         }
-        last_line = ls && (cur_line + 1 == lmt_linebreak_state.best_line) && properties->parfill_left_skip && properties->parfill_right_skip;
         if (last_line) {
             halfword n = node_prev(properties->parfill_right_skip);
             while (n) {
@@ -4169,6 +4165,13 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
             if (! n && normalize_line_mode_par) {
                 /*tex For the moment: */
                 tex_normal_warning("tex", "left parfill skip is gone");
+            }
+            if (first_line && node_next(properties->parfill_right_skip) == properties->parinit_right_skip) {
+                halfword p = node_prev(properties->parfill_right_skip);
+                halfword n = node_next(properties->parinit_right_skip);
+                tex_couple_nodes(p, properties->parinit_right_skip);
+                tex_couple_nodes(properties->parfill_right_skip, n);
+                tex_couple_nodes(properties->parinit_right_skip, properties->parfill_right_skip);
             }
         }
         /*tex Some housekeeping. */
@@ -4312,15 +4315,13 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
             }
         }
         lmt_packaging_state.pre_migrate_tail = null;
-
-if (cur_line == 1 && lmt_linebreak_state.best_line == 2 && properties->single_line_penalty) {
-// if (cur_line == 1 && lmt_linebreak_state.best_line == 2 && single_line_penalty_par) {
-    halfword r = tex_new_penalty_node(properties->single_line_penalty, single_line_penalty_subtype);
-//  halfword r = tex_new_penalty_node(single_line_penalty_par, single_line_penalty_subtype);
-    tex_couple_nodes(cur_list.tail, r);
-    cur_list.tail = r;
-} 
-
+        if (cur_line == 1 && lmt_linebreak_state.best_line == 2 && properties->single_line_penalty) {
+        // if (cur_line == 1 && lmt_linebreak_state.best_line == 2 && single_line_penalty_par) {
+            halfword r = tex_new_penalty_node(properties->single_line_penalty, single_line_penalty_subtype);
+        //  halfword r = tex_new_penalty_node(single_line_penalty_par, single_line_penalty_subtype);
+            tex_couple_nodes(cur_list.tail, r);
+            cur_list.tail = r;
+        } 
         /* Line content (callback). */
         tex_append_to_vlist(lmt_linebreak_state.just_box, lua_key_index(post_linebreak), properties);
         if (! lmt_page_builder_state.output_active) {

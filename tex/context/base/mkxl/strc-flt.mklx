@@ -786,12 +786,16 @@
      \lettonothing\m_strc_floats_saved_userdata
    \fi
    \edef\p_mode{\floatcaptionparameter\s!mode}%
-   \doifelsemode{\p_mode}
-     {\let\strc_floats_stop_place\strc_floats_stop_place_yes
-      \strc_floats_start_place_yes}%
-     {\let\strc_floats_stop_place\strc_floats_stop_place_nop
-      \strc_floats_start_place_nop}%
-   }
+   \ifempty\p_mode
+     \let\strc_floats_stop_place\strc_floats_stop_place_yes
+     \strc_floats_start_place_yes
+   \orelse\ifmode{\p_mode}%
+     \let\strc_floats_stop_place\strc_floats_stop_place_yes
+     \strc_floats_start_place_yes
+   \else
+     \let\strc_floats_stop_place\strc_floats_stop_place_nop
+     \strc_floats_start_place_nop
+   \fi}
 
 \def\strc_floats_start_place_yes
   {% check (see elsewhere

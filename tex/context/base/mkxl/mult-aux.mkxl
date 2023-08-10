@@ -218,41 +218,135 @@
 %
 % \stopinterface
 
+% cheap with no checking
+%
+% \def\mult_interfaces_get_parameters#1[#S#2]%
+%   {\cdef\m_mult_interfaces_namespace{#1}%
+%    \mult_interfaces_get_parameters_item_okay#2\ignorearguments\ignorearguments}
+%
+% \tolerant\def\mult_interfaces_get_parameters_item_okay#*#1=#S#2,#M,%
+%   {\ifparameter#2\or
+%      \ifcsname\k!prefix!#1\endcsname
+%        \defcsname\m_mult_interfaces_namespace\lastnamedcs\endcsname{#2}%
+%      \else
+%        \defcsname\m_mult_interfaces_namespace#1\endcsname{#2}%
+%      \fi
+%    \orelse\ifparameter#1\or
+%      \ifcsname\k!prefix!#1\endcsname
+%        \letcsname\m_mult_interfaces_namespace\lastnamedcs\endcsname\empty
+%      \else
+%        \letcsname\m_mult_interfaces_namespace#1\endcsname\empty
+%      \fi
+%    \else
+%      \expandafter\gobbleoneargument
+%    \fi
+%    \mult_interfaces_get_parameters_item_okay}
+%
+% \startinterface english
+%
+%    \tolerant\def\mult_interfaces_get_parameters_item_okay#*#1=#S#2,#M,%
+%      {\ifparameter#2\or
+%         % k=v
+%         \defcsname\m_mult_interfaces_namespace#1\endcsname{#2}%
+%       \orelse\ifparameter#1\or
+%         % k=
+%         \letcsname\m_mult_interfaces_namespace#1\endcsname\empty
+%       \else
+%         \expandafter\gobbleoneargument
+%       \fi
+%       \mult_interfaces_get_parameters_item_okay}
+%
+% \stopinterface
+
+%D Still not nice
+
+% \def\mult_interfaces_get_parameters#1[%
+%   {\cdef\m_mult_interfaces_namespace{#1}%
+%    \futureexpandis]\gobbleoneargument\mult_interfaces_get_parameters_indeed}
+%
+% \def\mult_interfaces_get_parameters_indeed#S#1]%
+%   {\mult_interfaces_get_parameters_item#1\ignorearguments\ignorearguments}
+
 \def\mult_interfaces_get_parameters#1[#S#2]%
   {\cdef\m_mult_interfaces_namespace{#1}%
-   \mult_interfaces_get_parameters_item_okay#2\ignorearguments\ignorearguments}
+   \mult_interfaces_get_parameters_item#2\ignorearguments\ignorearguments}
 
-\tolerant\def\mult_interfaces_get_parameters_item_okay#*#1=#S#2,#M,%
+% \def\mult_interfaces_get_parameters_item#*#S#1,%
+%   {\ifarguments
+%    \else
+%      \mult_interfaces_get_parameters_item_okay#1,\ignorearguments
+%      \expandafter\mult_interfaces_get_parameters_item
+%    \fi}
+
+\def\mult_interfaces_get_parameters_item#*#S#1,%
   {\ifarguments
      \expandafter\gobbleoneargument
-   \or
-     \mult_interfaces_get_parameters_error_indeed\m_mult_interfaces_namespace{#1}%
-   \orelse\ifcsname\k!prefix!#1\endcsname
-     \ifparameter#2\or
-       \defcsname\m_mult_interfaces_namespace\lastnamedcs\endcsname{#2}%
-     \else
-       \letcsname\m_mult_interfaces_namespace\lastnamedcs\endcsname\empty
-     \fi
-   \orelse\ifparameter#2\or
-     \defcsname\m_mult_interfaces_namespace#1\endcsname{#2}%
    \else
-     \letcsname\m_mult_interfaces_namespace#1\endcsname\empty
+     \mult_interfaces_get_parameters_item_okay#1,\ignorearguments
    \fi
-   \mult_interfaces_get_parameters_item_okay}
+   \mult_interfaces_get_parameters_item}
+
+% \tolerant\def\mult_interfaces_get_parameters_item_okay#1=#S#2,%
+%   {\ifarguments
+%      % done
+%    \or
+%      \mult_interfaces_get_parameters_item_error
+%    \else
+%      \mult_interfaces_adef\m_mult_interfaces_namespace{#1}{#2}%
+%    \fi}
+
+% \tolerant\def\mult_interfaces_get_parameters_item_okay#1=#S#2,%
+%   {\ifarguments
+%      % done
+%    \or
+%      \mult_interfaces_get_parameters_item_error{#1}%
+%    \orelse\ifcsname\k!prefix!#1\endcsname
+%      \defcsname\m_mult_interfaces_namespace\lastnamedcs\endcsname{#2}%
+%    \else
+%      \defcsname\m_mult_interfaces_namespace#1\endcsname{#2}%
+%    \fi}
+
+\tolerant\def\mult_interfaces_get_parameters_item_okay#1=#S#2,%
+  {\ifarguments
+     % done
+   \or
+     \mult_interfaces_get_parameters_item_error{#1}%
+   \or
+     \defcsname
+       \m_mult_interfaces_namespace
+       \ifcsname\k!prefix!#1\endcsname\lastnamedcs\else#1\fi
+     \endcsname{#2}%
+   \fi}
+
+\def\mult_interfaces_get_parameters_item_error#1%
+  {\if,#1\else\mult_interfaces_get_parameters_error_indeed\m_mult_interfaces_namespace{#1}\fi}
 
 \startinterface english
 
-   \tolerant\def\mult_interfaces_get_parameters_item_okay#*#1=#S#2,#M,%
-     {\ifarguments
-        \expandafter\gobbleoneargument
-      \or
-        \mult_interfaces_get_parameters_error_indeed\m_mult_interfaces_namespace{#1}%
-      \orelse\ifparameter#2\or
-        \defcsname\m_mult_interfaces_namespace#1\endcsname{#2}%
-      \else
-        \letcsname\m_mult_interfaces_namespace#1\endcsname\empty
-      \fi
-      \mult_interfaces_get_parameters_item_okay}
+    \def\mult_interfaces_get_parameters_item_okay#1=#S#2,%
+      {\ifarguments
+         % done
+       \or
+         \mult_interfaces_get_parameters_item_error{#1}%
+       % \mult_interfaces_get_parameters_item_error
+       % \if,#1\else\mult_interfaces_get_parameters_item_error\fi
+       \else
+         \defcsname\m_mult_interfaces_namespace#1\endcsname{#2}%
+       \fi}
+
+  % \def\mult_interfaces_get_parameters_item_error#-\defcsname#1#2\endcsname#-%
+  %   {\if,#2\else\mult_interfaces_get_parameters_error_indeed{#1}{#2}\fi}
+
+  % \def\mult_interfaces_get_parameters_item_error#-\defcsname#-#1\endcsname#-%
+  %   {\if,#1\else\mult_interfaces_get_parameters_error_indeed\m_mult_interfaces_namespace{#1}\fi}
+
+    \def\mult_interfaces_get_parameters_item_error#1%
+      {\if,#1\else\mult_interfaces_get_parameters_error_indeed\m_mult_interfaces_namespace{#1}\fi}
+
+  % \def\mult_interfaces_get_parameters_item_error
+  %    {\mult_interfaces_get_parameters_error_indeed
+  %       {\m_mult_interfaces_namespace}
+  %       {\expandparameter\plusthree}}
 
 \stopinterface
 
@@ -978,7 +1072,7 @@
 
 \edef\mult_interfaces_dummy{\??dummy} % nor immutable
 
-% \permanent\protected\def\getdummyparameters[#1%
+% \permanent\protected\def\getdummyparameters[#S#1%
 %   {\if\noexpand#1]%
 %      \expandafter\gobbleoneargument
 %    \else
@@ -986,9 +1080,13 @@
 %      \expandafter\mult_interfaces_get_parameters_indeed
 %    \fi#1}
 
+% \permanent\protected\def\getdummyparameters[#S#1]%
+%   {\let\m_mult_interfaces_namespace\mult_interfaces_dummy
+%    \mult_interfaces_get_parameters_item_okay#1\ignorearguments\ignorearguments}
+
 \permanent\protected\def\getdummyparameters[#S#1]%
   {\let\m_mult_interfaces_namespace\mult_interfaces_dummy
-   \mult_interfaces_get_parameters_item_okay#1\ignorearguments\ignorearguments}
+   \mult_interfaces_get_parameters_item#1\ignorearguments\ignorearguments}
 
 \mult_interfaces_install_style_and_color_handler
   \directdummyparameter

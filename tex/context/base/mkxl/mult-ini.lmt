@@ -345,9 +345,10 @@ implement {
 
 local function showassignerror(namespace,key,line)
  -- if key and key ~= "" and key ~= "," then
-        local ns, instance = match(namespace,"^(%d+)[^%a]+(%a*)")
+     -- local ns, instance = match(namespace,"^(%d+)[^%a]+(%a*)")
+        local ns, instance = match(namespace,"^(.-)>(%a*)")
         if ns then
-            namespace = corenamespaces[tonumber(ns)] or ns
+            namespace = corenamespaces[tonumber(ns,16)] or ns
         end
         -- injected in the stream for timing:
         if instance and instance ~= "" then

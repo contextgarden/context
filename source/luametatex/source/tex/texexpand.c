@@ -1095,6 +1095,8 @@ int tex_get_parameter_index(int n)
     environment where threads fight for memory access and cpu cache. And because \CONTEXT\ is us used 
     that way we keep looking into ways to gain performance, but not at the cost of dirty hacks (that 
     I tried out of curiosity but rejected in the end). 
+
+    The arguments counter is a bit fuzzy and might disappear. 
 */
 
 // halfword tex_get_token(void)
@@ -1640,7 +1642,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                     }
                 }
             }
-            ++count; /* why always even when we thrash */
+            ++count; 
             if (matchtoken > end_match_token || matchtoken < match_token) {
                 goto CONTINUE;
             }

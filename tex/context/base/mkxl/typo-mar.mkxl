@@ -408,7 +408,7 @@
 % The following sort of works okay but is to be avoided ... it will disappear from lmtx:
 
 \permanent\tolerant\protected\def\defineinmargin[#name]#spacer[#location]#spacer[#align]#spacer[#S#settings]% not completely compatible
-  {\ifarguments\else
+  {\ifparameter#1\else
      \definemargindata[#name][\c!location=#location,\c!align=#align,#settings]%
      \definemarginframed[#name][#location][\c!align=#align,#settings]%
    \fi}
