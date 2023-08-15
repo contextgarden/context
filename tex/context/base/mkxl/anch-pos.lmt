@@ -61,6 +61,9 @@ local context           = context
 
 local ctx_latelua       = context.latelua
 
+local ctx_doif          = commands.doif
+local ctx_doifelse      = commands.doifelse
+
 local tex               = tex
 local texgetdimen       = tex.getdimen
 local texgetcount       = tex.getcount
@@ -2205,16 +2208,13 @@ implement {
     end
 }
 
-local doif     = commands.doif
-local doifelse = commands.doifelse
-
 implement {
     name      = "doifelseposition",
     arguments = "argument",
     public    = true,
     protected = true,
     actions   = function(name)
-        doifelse(collected[name])
+        ctx_doifelse(collected[name])
     end
 }
 
@@ -2224,7 +2224,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function(name)
-        doif(collected[name])
+        ctx_doif(collected[name])
     end
 }
 
@@ -2235,7 +2235,7 @@ implement {
     protected = true,
     actions   = function(name,p)
         local c = collected[name]
-        doifelse(c and c.p == p)
+        ctx_doifelse(c and c.p == p)
     end
 }
 
@@ -2245,7 +2245,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function(one,two)
-        doifelse(overlapping(one,two))
+        ctx_doifelse(overlapping(one,two))
     end
 }
 
@@ -2255,7 +2255,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function(list)
-        doifelse(onsamepage(list))
+        ctx_doifelse(onsamepage(list))
     end
 }
 
@@ -2265,7 +2265,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function(list)
-        doifelse(onsamepage(list,tostring(texgetcount(c_realpageno))))
+        ctx_doifelse(onsamepage(list,tostring(texgetcount(c_realpageno))))
     end
 }
 
@@ -2274,7 +2274,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function()
-        doifelse(jobpositions.used())
+        ctx_doifelse(jobpositions.used())
     end
 }
 

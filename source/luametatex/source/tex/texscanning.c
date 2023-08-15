@@ -881,6 +881,15 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
             cur_val_level = int_val_level;
             cur_val = tex_scan_scale(0);
             return 1;
+        case numeric_scaled_code:
+            {
+                scaled n = tex_scan_scale(0);
+                scaled i = tex_scan_int(0, NULL);
+                cur_val_level = int_val_level;
+                cur_val = tex_xn_over_d(i, n, scaling_factor);
+                printf("%i %i %i\n",n,i,cur_val);
+            }
+            return 1;
         case index_of_register_code:
             cur_val = tex_aux_scan_register_index();
             cur_val_level = int_val_level;
@@ -1708,7 +1717,20 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
                         }
                         cur_val_level = dimen_val_level;
                         break;
+                    case box_stretch_code:
+                        cur_val = box_list(b) ? tex_stretch(b) : 0;
+                        cur_val_level = dimen_val_level;
+                        break;
+                    case box_shrink_code:
+                        cur_val = box_list(b) ? tex_shrink(b) : 0;
+                        cur_val_level = dimen_val_level;
+                        break;
                     case box_freeze_code:
+                        cur_val = node_type(b) == hlist_node ? box_width(b) : box_total(b);
+                        cur_val_level = dimen_val_level;
+                        break;
+                    case box_limitate_code:
+                        /* todo: return the delta */
                         cur_val = node_type(b) == hlist_node ? box_width(b) : box_total(b);
                         cur_val_level = dimen_val_level;
                         break;
@@ -1982,6 +2004,7 @@ halfword   tex_scan_glue_register_number      (void)               { return tex_
 halfword   tex_scan_mu_glue_register_number   (void)               { return tex_aux_scan_limited_int(0, 0, max_mu_glue_register_index, "Mu glue register index"); }
 halfword   tex_scan_toks_register_number      (void)               { return tex_aux_scan_limited_int(0, 0, max_toks_register_index, "Toks register index"); }
 halfword   tex_scan_box_register_number       (void)               { return tex_aux_scan_limited_int(0, 0, max_box_register_index, "Box register index"); }
+halfword   tex_scan_unit_register_number      (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_unit_register_index, "Unit register index"); }
 halfword   tex_scan_mark_number               (void)               { return tex_aux_scan_limited_int(0, 0, max_mark_index, "Marks index"); }
 halfword   tex_scan_char_number               (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_character_code, "Character code"); }
 halfword   tex_scan_math_char_number          (void)               { return tex_aux_scan_limited_int(0, 0, max_math_character_code, "Character code"); }
@@ -2612,6 +2635,249 @@ typedef enum scanned_unit {
 
 */
 
+/*tex 
+    We keep this as reference:
+*/
+
+// static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, halfword *order)
+// {
+// //AGAIN: /* only for true */
+//     do {
+//         tex_get_x_token();
+//     } while (cur_cmd == spacer_cmd);
+//     if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
+//         return quantitity_unit_scanned;
+//     } else {
+//         int chrone, chrtwo;
+//         halfword tokone, toktwo;
+//         halfword save_cur_cs = cur_cs;
+//         tokone = cur_tok;
+//         if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
+//             chrone = cur_chr;
+//         } else {
+//             goto BACK_ONE;
+//         }
+//         tex_get_x_token();
+//         toktwo = cur_tok;
+//         if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
+//             chrtwo = cur_chr;
+//         } else {
+//             goto BACK_TWO;
+//         }
+//         cur_cs = save_cur_cs;
+//         switch (chrone) {
+//             case 'p': case 'P':
+//                 switch (chrtwo) {
+//                     case 't': case 'T':
+//                         return normal_unit_scanned;
+//                     case 'c': case 'C':
+//                         *num = 12;
+//                         *denom = 1;
+//                         return normal_unit_scanned;
+//                     case 'x': case 'X':
+//                         *value = px_dimen_par;
+//                         return relative_unit_scanned;
+//                 }
+//                 break;
+//             case 'm': case 'M':
+//                 switch (chrtwo) {
+//                     case 'm': case 'M':
+//                         *num = 7227;
+//                         *denom = 2540;
+//                         return normal_unit_scanned;
+//                     case 'u': case 'U':
+//                         if (order) {
+//                             return math_unit_scanned;
+//                         } else { 
+//                             break;
+//                         }
+//                 }
+//                 break;
+//             case 'c': case 'C':
+//                 switch (chrtwo) {
+//                     case 'm': case 'M':
+//                         *num = 7227;
+//                         *denom = 254;
+//                         return normal_unit_scanned;
+//                     case 'c': case 'C':
+//                         *num = 14856;
+//                         *denom = 1157;
+//                         return normal_unit_scanned;
+//                 }
+//                 break;
+//             case 's': case 'S':
+//                 switch (chrtwo) {
+//                     case 'p': case 'P':
+//                         return scaled_point_scanned;
+//                 }
+//                 break;
+//             case 'b': case 'B':
+//                 switch (chrtwo) {
+//                     case 'p': case 'P':
+//                         *num = 7227;
+//                         *denom = 7200;
+//                         return normal_unit_scanned;
+//                 }
+//                 break;
+//             case 'i': case 'I':
+//                 switch (chrtwo) {
+//                     case 'n': case 'N':
+//                         *num = 7227;
+//                         *denom = 100;
+//                         return normal_unit_scanned;
+//                 }
+//                 break;
+//             case 'd': case 'D':
+//                 switch (chrtwo) {
+//                     case 'd': case 'D':
+//                         *num = 1238;
+//                         *denom = 1157;
+//                         return normal_unit_scanned;
+//                     case 'k': case 'K': /* number: 422042 */
+//                         *num = 49838;  // 152940;
+//                         *denom = 7739; //  23749;
+//                         return normal_unit_scanned;
+//                 }
+//                 break;
+//             case 't': case 'T':
+//                 switch (chrtwo) {
+//                     case 's': case 'S':
+//                         *num = 4588;
+//                         *denom = 645;
+//                         return normal_unit_scanned;
+//                 }
+//              // if (order) {
+//              //     switch (chrtwo) {
+//              //         case 'r': case 'R':
+//              //             if (tex_scan_mandate_keyword("true", 2)) {
+//              //                 /*tex This is now a bogus prefix that might get dropped! */
+//              //                 goto AGAIN;
+//              //             }
+//              //     }
+//              // }
+//                 break;
+//             case 'e': case 'E':
+//                 switch (chrtwo) {
+//                     case 'm': case 'M':
+//                         *value = tex_get_scaled_em_width(cur_font_par);
+//                         return relative_unit_scanned;
+//                     case 'x': case 'X':
+//                         *value = tex_get_scaled_ex_height(cur_font_par);
+//                         return relative_unit_scanned;
+//                     case 's': case 'S':
+//                         *num = 9176;
+//                         *denom = 129;
+//                         return normal_unit_scanned;
+//                     case 'u': case 'U':
+//                         *num = 9176 * eu_factor_par;
+//                         *denom = 129 * 10;
+//                         return normal_unit_scanned;
+//                 }
+//                 break;
+//             case 'f': case 'F':
+//                 if (order) {
+//                     switch (chrtwo) {
+//                         case 'i': case 'I':
+//                             *order = fi_glue_order;
+//                             if (tex_scan_character("lL", 0, 0, 0)) {
+//                                 *order = fil_glue_order;
+//                                 if (tex_scan_character("lL", 0, 0, 0)) {
+//                                     *order = fill_glue_order;
+//                                     if (tex_scan_character("lL", 0, 0, 0)) {
+//                                         *order = filll_glue_order;
+//                                     }
+//                                 }
+//                             }
+//                             return flexible_unit_scanned;
+//                     }
+//                 }
+//                 break;
+//         }
+//         /* only lowercase for now */
+//         { 
+//             int index = unit_parameter_index(chrone, chrtwo);
+//             if (index >= 0) {
+//                 halfword cs = unit_parameter(index);
+//                 if (cs > 0) { 
+//                     halfword cmd = eq_type(cs); 
+//                     halfword chr = eq_value(cs);
+//                     switch (cmd) { 
+//                         case internal_dimen_cmd:
+//                         case register_dimen_cmd:
+//                             *value = eq_value(chr);
+//                             return relative_unit_scanned;
+//                         case dimension_cmd:
+//                             *value = chr;
+//                             return relative_unit_scanned;
+//                     }
+//                 }
+//             }
+//         }
+//       BACK_TWO:
+//         tex_back_input(toktwo);
+//       BACK_ONE:
+//         tex_back_input(tokone);
+//         cur_cs = save_cur_cs;
+//         return no_unit_scanned;
+//     }
+// }
+
+/*tex 
+    This makes the binary some 500 bytes larger but it just looks a bit nicer and we might need 
+    to calculate index anyway. Let the compiler sort it out. 
+*/
+
+# define unit_hashes(a,b,c,d) \
+         unit_parameter_hash(a,c): \
+    case unit_parameter_hash(b,d): \
+    case unit_parameter_hash(a,d): \
+    case unit_parameter_hash(b,c)
+
+int tex_valid_userunit(halfword cmd, halfword chr, halfword cs) 
+{
+    (void) cs;
+    switch (cmd) { 
+        case protected_call_cmd:
+            return chr && ! get_token_preamble(chr);
+        case internal_dimen_cmd:
+        case register_dimen_cmd:
+        case dimension_cmd:
+            return 1;
+        default:
+            return 0;
+    }
+}
+
+int tex_get_userunit(halfword index, scaled *value)
+{ 
+    halfword cs = unit_parameter(index);
+    if (cs > 0) { 
+        halfword cmd = eq_type(cs); 
+        halfword chr = eq_value(cs);
+        switch (cmd) { 
+            case internal_dimen_cmd:
+            case register_dimen_cmd:
+                *value = eq_value(chr);
+                return relative_unit_scanned;
+            case dimension_cmd:
+                *value = chr;
+                return relative_unit_scanned;
+            case protected_call_cmd:
+                if (chr && ! get_token_preamble(chr)) {
+                    halfword list = token_link(chr);
+                    tex_begin_associated_list(list);
+                    tex_aux_scan_expr(dimen_val_level);
+                    if (cur_val_level == dimen_val_level) { 
+                        *value = cur_val;
+                        return 1;
+                    }
+                }
+                break;
+        }
+    }
+    return 0;
+}
+
 static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, halfword *order)
 {
 //AGAIN: /* only for true */
@@ -2621,7 +2887,7 @@ static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, ha
     if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
         return quantitity_unit_scanned;
     } else {
-        int chrone, chrtwo;
+        int chrone, chrtwo, index;
         halfword tokone, toktwo;
         halfword save_cur_cs = cur_cs;
         tokone = cur_tok;
@@ -2638,131 +2904,100 @@ static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, ha
             goto BACK_TWO;
         }
         cur_cs = save_cur_cs;
-        switch (chrone) {
-            case 'p': case 'P':
-                switch (chrtwo) {
-                    case 't': case 'T':
-                        return normal_unit_scanned;
-                    case 'c': case 'C':
-                        *num = 12;
-                        *denom = 1;
-                        return normal_unit_scanned;
-                    case 'x': case 'X':
-                        *value = px_dimen_par;
-                        return relative_unit_scanned;
-                }
-                break;
-            case 'm': case 'M':
-                if (order) {
-                    switch (chrtwo) {
-                        case 'm': case 'M':
-                            *num = 7227;
-                            *denom = 2540;
-                            return normal_unit_scanned;
-                        case 'u': case 'U':
-                            return math_unit_scanned;
-                    }
-                }
-                break;
-            case 'c': case 'C':
-                switch (chrtwo) {
-                    case 'm': case 'M':
-                        *num = 7227;
-                        *denom = 254;
-                        return normal_unit_scanned;
-                    case 'c': case 'C':
-                        *num = 14856;
-                        *denom = 1157;
-                        return normal_unit_scanned;
-                }
-                break;
-            case 's': case 'S':
-                switch (chrtwo) {
-                    case 'p': case 'P':
-                        return scaled_point_scanned;
-                }
-                break;
-            case 'b': case 'B':
-                switch (chrtwo) {
-                    case 'p': case 'P':
-                        *num = 7227;
-                        *denom = 7200;
-                        return normal_unit_scanned;
-                }
-                break;
-            case 'i': case 'I':
-                switch (chrtwo) {
-                    case 'n': case 'N':
-                        *num = 7227;
-                        *denom = 100;
-                        return normal_unit_scanned;
-                }
-                break;
-            case 'd': case 'D':
-                switch (chrtwo) {
-                    case 'd': case 'D':
-                        *num = 1238;
-                        *denom = 1157;
-                        return normal_unit_scanned;
-                    case 'k': case 'K': /* number: 422042 */
-                        *num = 49838;  // 152940;
-                        *denom = 7739; //  23749;
-                        return normal_unit_scanned;
-                }
-                break;
-            case 't': case 'T':
-                switch (chrtwo) {
-                    case 's': case 'S':
-                        *num = 4588;
-                        *denom = 645;
-                        return normal_unit_scanned;
-                }
-             // if (order) {
-             //     switch (chrtwo) {
-             //         case 'r': case 'R':
-             //             if (tex_scan_mandate_keyword("true", 2)) {
-             //                 /*tex This is now a bogus prefix that might get dropped! */
-             //                 goto AGAIN;
-             //             }
-             //     }
-             // }
-                break;
-            case 'e': case 'E':
-                switch (chrtwo) {
-                    case 'm': case 'M':
-                        *value = tex_get_scaled_em_width(cur_font_par);
-                        return relative_unit_scanned;
-                    case 'x': case 'X':
-                        *value = tex_get_scaled_ex_height(cur_font_par);
-                        return relative_unit_scanned;
-                    case 's': case 'S':
-                        *num = 9176;
-                        *denom = 129;
-                        return normal_unit_scanned;
-                    case 'u': case 'U':
-                        *num = 9176 * eu_factor_par;
-                        *denom = 129 * 10;
-                        return normal_unit_scanned;
-                }
-                break;
-            case 'f': case 'F':
-                if (order) {
-                    switch (chrtwo) {
-                        case 'i': case 'I':
-                            *order = fi_glue_order;
+        index = unit_parameter_index(chrone, chrtwo);
+        if (index >= 0) {
+            switch (index) { 
+                case unit_hashes('p','P','t','T'):
+                    return normal_unit_scanned;
+                case unit_hashes('c','C','m','M'):
+                    *num = 7227;
+                    *denom = 254;
+                    return normal_unit_scanned;
+                case unit_hashes('m','M','m','M'):
+                    *num = 7227;
+                    *denom = 2540;
+                    return normal_unit_scanned;
+                case unit_hashes('e','E','m','M'):
+                    *value = tex_get_scaled_em_width(cur_font_par);
+                    return relative_unit_scanned;
+                case unit_hashes('e','E','x','X'):
+                    *value = tex_get_scaled_ex_height(cur_font_par);
+                    return relative_unit_scanned;
+                case unit_hashes('s','S','p','P'):
+                    return scaled_point_scanned;
+                case unit_hashes('b','B','p','P'):
+                    *num = 7227;
+                    *denom = 7200;
+                    return normal_unit_scanned;
+                case unit_hashes('f','F','i','I'):
+                    if (order) {
+                        *order = fi_glue_order;
+                        if (tex_scan_character("lL", 0, 0, 0)) {
+                            *order = fil_glue_order;
                             if (tex_scan_character("lL", 0, 0, 0)) {
-                                *order = fil_glue_order;
+                                *order = fill_glue_order;
                                 if (tex_scan_character("lL", 0, 0, 0)) {
-                                    *order = fill_glue_order;
-                                    if (tex_scan_character("lL", 0, 0, 0)) {
-                                        *order = filll_glue_order;
-                                    }
+                                    *order = filll_glue_order;
                                 }
                             }
-                            return flexible_unit_scanned;
+                        }
+                        return flexible_unit_scanned;
                     }
-                }
-                break;
+                    break;
+                case unit_hashes('t','T','s','S'):
+                    *num = 4588;
+                    *denom = 645;
+                    return normal_unit_scanned;
+                case unit_hashes('e','E','s','S'):
+                    *num = 9176;
+                    *denom = 129;
+                    return normal_unit_scanned;
+                case unit_hashes('e','E','u','U'):
+                    *num = 9176 * eu_factor_par;
+                    *denom = 129 * 10;
+                    return normal_unit_scanned;
+                case unit_hashes('d','D','k','K'): /* number: 422042 */
+                    *num = 49838;  // 152940;
+                    *denom = 7739; //  23749;
+                    return normal_unit_scanned;
+                case unit_hashes('m','M','u','U'):
+                    if (order) {
+                        return math_unit_scanned;
+                    } else { 
+                        break;
+                    }
+                case unit_hashes('d','D','d','D'):
+                    *num = 1238;
+                    *denom = 1157;
+                    return normal_unit_scanned;
+                case unit_hashes('c','C','c','C'):
+                    *num = 14856;
+                    *denom = 1157;
+                    return normal_unit_scanned;
+                case unit_hashes('p','P','c','C'):
+                    *num = 12;
+                    *denom = 1;
+                    return normal_unit_scanned;
+                case unit_hashes('p','P','x','X'):
+                    *value = px_dimen_par;
+                    return relative_unit_scanned;
+                case unit_hashes('i','I','n','N'):
+                    *num = 7227;
+                    *denom = 100;
+                    return normal_unit_scanned;
+             // case unit_hashes('t','T','r','R'):
+             //     if (order) {
+             //        if (tex_scan_mandate_keyword("true", 2)) {
+             //            /*tex This is now a bogus prefix that might get dropped! */
+             //            goto AGAIN;
+             //        }
+             //     }
+             //     break;
+                default: 
+                    if (tex_get_userunit(index, value)) { 
+                        return relative_unit_scanned;
+                    }
+            }
         }
       BACK_TWO:
         tex_back_input(toktwo);
@@ -4018,8 +4253,8 @@ static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfword *has
                 }
                 break;
             case end_paragraph_cmd: 
-                if (auto_paragraph_mode(auto_paragraph_macro)) {
-                    cur_tok = par_command_match_token;
+                if (! auto_paragraph_mode(auto_paragraph_macro)) {
+                   cur_tok = par_command_match_token;
                 }
                 break;
         }

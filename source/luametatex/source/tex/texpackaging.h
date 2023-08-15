@@ -147,7 +147,9 @@ extern halfword  tex_hpack                (halfword p, scaled w, int m, singlewo
 extern halfword  tex_vpack                (halfword p, scaled h, int m, scaled l, singleword d, int retain, int *excess);
 
 extern void      tex_repack               (halfword p, scaled w, int m);
-extern void      tex_freeze               (halfword p, int recurse);
+extern void      tex_freeze               (halfword p, int recurse, int limitate);
+extern scaled    tex_stretch              (halfword p);
+extern scaled    tex_shrink               (halfword p);
 
 extern void      tex_package              (singleword nature);
 extern void      tex_run_unpackage        (void);

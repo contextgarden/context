@@ -126,6 +126,8 @@ newscriptindex mfid_VSize         ; mfid_VSize         := scriptindex "VSize"   
 newscriptindex mfid_EmWidth       ; mfid_EmWidth       := scriptindex "EmWidth"       ; vardef EmWidth       = runscript mfid_EmWidth              enddef ;
 newscriptindex mfid_ExHeight      ; mfid_ExHeight      := scriptindex "ExHeight"      ; vardef ExHeight      = runscript mfid_ExHeight             enddef ;
 
+newscriptindex mfid_uunit         ; mfid_uunit         := scriptindex "uunit"         ; vardef uu            = runscript mfid_uunit                enddef ;
+
 immutable % permanent
     BaseLineSkip, LineHeight, BodyFontSize, TopSkip, StrutHeight, StrutDepth,
     CurrentWidth, CurrentHeight, HSize, VSize, EmWidth, ExHeight ;

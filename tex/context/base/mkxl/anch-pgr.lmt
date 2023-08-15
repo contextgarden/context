@@ -28,8 +28,9 @@ local settings_to_array = utilities.parsers.settings_to_array
 
 local enableaction      = nodes.tasks.enableaction
 
-local commands          = commands
 local context           = context
+
+local ctx_doifelse      = commands.doifelse
 
 local implement         = interfaces.implement
 
@@ -1323,8 +1324,6 @@ end
 
 do
 
-    local doifelse = commands.doifelse
-
     implement {
         name      = "doifelserangeonpage",
         arguments = { "string", "string", "integer" },
@@ -1337,12 +1336,12 @@ do
                     local l = c[last]
                     if l then
                         l = l.p
-                        doifelse(l and l ~= true and page <= l)
+                        ctx_doifelse(l and l ~= true and page <= l)
                         return
                     end
                 end
             end
-            doifelse(false)
+            ctx_doifelse(false)
         end
     }
 

@@ -4598,7 +4598,7 @@ static int nodelib_direct_freeze(lua_State *L)
         switch (node_type(n)) {
             case hlist_node:
             case vlist_node:
-                 tex_freeze(n, lua_toboolean(L, 2));
+                 tex_freeze(n, lua_toboolean(L, 2), lua_toboolean(L, 3) ? node_type(n) : -1);
                  break;
         }
     }

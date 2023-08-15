@@ -1155,7 +1155,12 @@ local function collapsedpage(pages)
         local second_first_last = second_first.references.lastrealpage
         if first_last_last then
             first_last_pn = first_last_last
-            if second_first == second_last and second_first_pn <= first_last_pn then
+            if first_last_pn == second_first_pn then
+                -- 2-3, 3-9 -> 2-9
+                pages[i-1] = { first_first, second_last }
+                remove(pages,i)
+                return true
+            elseif second_first == second_last and second_first_pn <= first_last_pn then
                 -- 2=8, 5 -> 12=8
                 remove(pages,i)
                 return true

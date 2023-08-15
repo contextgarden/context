@@ -665,11 +665,6 @@
 
 \installcorenamespace{variables}
 
-% \permanent\protected\def\setvariables {\syst_variables_set[\getrawparameters ]}
-% \permanent\protected\def\setevariables{\syst_variables_set[\getraweparameters]}
-% \permanent\protected\def\setgvariables{\syst_variables_set[\getrawgparameters]}
-% \permanent\protected\def\setxvariables{\syst_variables_set[\getrawxparameters]}
-
 \permanent\protected\def\setvariables {\syst_variables_set\getparameters }
 \permanent\protected\def\setevariables{\syst_variables_set\geteparameters}
 \permanent\protected\def\setgvariables{\syst_variables_set\getgparameters}
@@ -799,8 +794,8 @@
      \expandafter\firstofoneargument
    \fi}
 
-\permanent\tolerant\protected\def\setupenv[#1]%
-  {\syst_variables_set[\getrawparameters][\s!environment][#1]}
+\permanent\tolerant\protected\def\setupenv
+  {\syst_variables_set\getparameters[\s!environment]}
 
 \permanent\protected\def\doifelseenv{\doifelsevariable  \s!environment}
 \permanent\protected\def\doifenv    {\doifvariable      \s!environment}

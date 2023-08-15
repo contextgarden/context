@@ -265,7 +265,7 @@ extern halfword tex_badness(
     # define max_attribute_register_index 0xFFFF /* 0xFFFF 0x7FFF 0x1FFF */ /* 64 32  8 */
     # define max_glue_register_index      0xFFFF /* 0xFFFF 0x7FFF 0x1FFF */ /* 64 32  8 */
     # define max_mu_glue_register_index   0xFFFF /* 0xFFFF 0x3FFF 0x1FFF */ /* 64 16  8 */
-
+    # define max_unit_register_index       26*26
 # else
 
     # define max_toks_register_index      0x3FFF
@@ -276,6 +276,7 @@ extern halfword tex_badness(
     # define max_attribute_register_index 0x1FFF
     # define max_glue_register_index      0x1FFF
     # define max_mu_glue_register_index   0x1FFF
+    # define max_unit_register_index       26*26
 
 # endif
 
@@ -287,6 +288,7 @@ extern halfword tex_badness(
 # define max_n_of_posit_registers     (max_posit_register_index     + 1)
 # define max_n_of_glue_registers      (max_glue_register_index      + 1)
 # define max_n_of_mu_glue_registers   (max_mu_glue_register_index   + 1)
+# define max_n_of_unit_registers      (max_unit_register_index      + 1)
 
 # define max_n_of_bytecodes                   65536 /* dynamic */
 # define max_n_of_math_families                  64

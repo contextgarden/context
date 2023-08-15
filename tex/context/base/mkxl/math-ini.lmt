@@ -27,7 +27,6 @@ local sortedhash = table.sortedhash
 local toboolean = toboolean
 
 local context               = context
-local commands              = commands
 local implement             = interfaces.implement
 
 local ctx_doifelsesomething = commands.doifelsesomething
@@ -1051,43 +1050,6 @@ function mathematics.big(tfmdata,unicode,n,method)
 end
 
 do -- experimental
-
-    -- local categories = { } -- indexed + hashed
-    --
-    -- local a_mathcategory = attributes.private("mathcategory")
-    --
-    -- local function registercategory(category,tag,data) -- always same data for tag
-    --     local c = categories[category]
-    --     if not c then
-    --         c = { }
-    --         categories[category] = c
-    --     end
-    --     local n = c[tag]
-    --     if not n then
-    --         n = #c + 1
-    --         c[n] = data
-    --         n = n * 1000 + category
-    --         c[tag] = n
-    --     end
-    --     return n
-    -- end
-    --
-    -- function mathematics.getcategory(n)
-    --     local category = n % 1000
-    --     return category, categories[category][floor(n/1000)]
-    -- end
-    --
-    -- mathematics.registercategory = registercategory
-    --
-    -- function commands.taggedmathfunction(tag,label)
-    --     if label then
-    --         texsetattribute(a_mathcategory,registercategory(1,tag,tag))
-    --         context.mathlabeltext(tag)
-    --     else
-    --         texsetattribute(a_mathcategory,1)
-    --         context(tag)
-    --     end
-    -- end
 
     local categories       = { }
     mathematics.categories = categories

@@ -307,10 +307,12 @@ function macros.preprocessed(str,strip)
 end
 
 function macros.convertfile(oldname,newname) -- beware, no testing on oldname == newname
-    local data = loadtexfile(oldname)
+    local data = (loadtexfile or io.loaddata)(oldname)
     data = macros.preprocessed(data) or "" -- interfaces not yet defined
     savedata(newname,data)
 end
+
+-- macros.convertfile("c:/data/develop/context/sources/publ-imp-definitions.mkvi","e:/tmp/temp-macros.mkiv")
 
 function macros.version(data)
     return lpegmatch(checker,data)

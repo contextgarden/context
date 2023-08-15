@@ -180,6 +180,7 @@ typedef enum tex_command_code {
     end_local_cmd,                    /*tex finishes a |local_cmd| */
     lua_function_call_cmd,            /*tex an expandable function call */
     lua_protected_call_cmd,           /*tex a function call that doesn's expand in edef like situations */
+    lua_semi_protected_call_cmd,  
     begin_group_cmd,                  /*tex begin local grouping (|\begingroup|) */
     end_group_cmd,                    /*tex end local grouping (|\endgroup|) */
     explicit_space_cmd,               /*tex explicit space (|\ |) */
@@ -243,6 +244,7 @@ typedef enum tex_command_code {
     prefix_cmd,                       /*tex qualify a definition (|\global|, |\long|, |\outer|) */
     let_cmd,                          /*tex assign a command code (|\let|, |\futurelet|) */
     shorthand_def_cmd,                /*tex code definition (|\chardef|, |\countdef|, etc.) */
+    association_cmd,
     def_cmd,                          /*tex macro definition (|\def|, |\gdef|, |\xdef|, |\edef|) */
     set_box_cmd,                      /*tex set a box (|\setbox|) */
     hyphenation_cmd,                  /*tex hyphenation data (|\hyphenation|, |\patterns|) */
@@ -305,6 +307,7 @@ typedef enum tex_command_code {
     internal_toks_reference_cmd,      /*tex the equivalent points to internal token list */
     register_toks_reference_cmd,      /*tex the equivalent points to register token list */
     specification_reference_cmd,      /*tex the equivalent points to parshape or penalties specification */
+    unit_reference_cmd,              
     /*
         We don't really need these but they are used to flag the registers eq entries properly. They
         are not really references because the values are included but we want to be consistent here.
@@ -581,6 +584,7 @@ typedef enum some_item_codes {
     last_chk_dimension_code,    /*tex |\ifchkdimension| */
  // dimen_to_scale_code,        /*tex |\dimentoscale| */
     numeric_scale_code,         /*tex |\numericscale| */
+    numeric_scaled_code,        /*tex |\numericscaled| */
     index_of_register_code,
     index_of_character_code,
     math_atom_glue_code,
@@ -637,6 +641,9 @@ typedef enum box_property_codes {
     box_adapt_code,
     box_repack_code,
     box_freeze_code,
+    box_limitate_code,
+    box_stretch_code,
+    box_shrink_code,
     /* we actually need set_box_int_cmd, or set_box_property */
     box_attribute_code,
     box_vadjust_code,
@@ -725,6 +732,12 @@ typedef enum shorthand_def_codes {
 } shorthand_def_codes;
 
 # define last_shorthand_def_code fontspec_def_code
+
+typedef enum association_codes { 
+    unit_association_code,
+} association_codes;
+
+# define last_association_code unit_association_code
 
 typedef enum char_number_codes {
     char_number_code,  /*tex |\char| */

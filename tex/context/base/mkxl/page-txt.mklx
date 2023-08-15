@@ -892,7 +892,30 @@
 
 % only for very special controlled cases or experiments:
 
-\newinteger\c_page_scale_lines
+\newinteger  \c_page_scale_lines
+\newdimension\d_page_box_stretch_delta
+\newdimension\d_page_box_stretch_criterium
+
+\appendtoks
+    \edef\p_limitstretch{\layoutparameter\c!limitstretch}%
+    \ifx\p_limitstretch\v!yes
+        \d_page_box_stretch_criterium\maxdimen
+    \orelse\ifchkdimension\p_limitstretch\or
+        \d_page_box_stretch_criterium\p_limitstretch\relax
+    \else
+        \d_page_box_stretch_criterium\zeropoint
+    \fi
+\to \everysetuplayout
+
+\def\page_layouts_check_stretch#1%
+  {\ifcase\bottomraggednessmode
+     \d_page_box_stretch_delta\zeropoint
+   \orelse\ifdim\d_page_box_stretch_criterium>\zeropoint
+     \boxfixstretch\d_page_box_stretch_criterium#1\relax
+     \d_page_box_stretch_delta\boxstretchdelta
+   \else
+     \d_page_box_stretch_delta\zeropoint
+   \fi}
 
 \def\page_insert_body#1#2%
   {\setbox\b_page_layouts_element\vpack
@@ -919,9 +942,6 @@
          \settextpagecontent\b_page_layouts_element{#1}{#2}%
          \page_backgrounds_add_to_text\b_page_layouts_element
          \page_grids_add_to_box\b_page_layouts_element
-         \ifcase\c_page_scale_lines\else
-           \page_scale_text_box\b_page_layouts_element
-         \fi
          \box\b_page_layouts_element
          \begingroup
            \ifdim\rightmarginwidth>\zeropoint
@@ -954,6 +974,8 @@
   {\c_page_scale_trace_vz\conditionaltrue}
   {\c_page_scale_trace_vz\conditionalfalse}
 
+\installcorenamespace{vzdistance}
+
 \def\page_scale_text_box_trace
   {\writestatus{vz page \the\realpageno}{%
       %\s!goal=\the\pagegoal,
@@ -967,24 +989,49 @@
        \s!fill=(\thewithoutunit\pagelastfilstretch,\thewithoutunit\pagelastfillstretch,\thewithoutunit\pagelastfilllstretch)%
    }}
 
-\def\page_scale_text_box
-  {\scratchdimen\dimexpr\textheight-\pagelastheight\relax % not \pagegoal as that includes footnotes
+\def\page_scale_text_box_register_box#1%
+  {\scratchheight\boxrepack#1%
+   \scratchdimen\dimexpr\textheight-\scratchheight\relax
+   \global\expandafter\dimensiondef\csname\??vzdistance\the\mofcolumns\endcsname
+     \ifabsdim\scratchdimen>\c_page_scale_lines\lineheight
+       \zeropoint
+     \else
+       \scratchheight
+     \fi
+   \relax
    \ifconditional\c_page_scale_trace_vz
      \page_scale_text_box_trace
-   \fi
-   \ifabsdim\scratchdimen>\c_page_scale_lines\lineheight
-     \expandafter\gobbleoneargument
-   \orelse\ifdim\pagelastshrink>\zeropoint % maybe also stretch
+   \fi}
+
+\def\page_scale_text_box_register_page
+  {\scratchdimen\dimexpr\textheight-\pagelastheight\relax % not \pagegoal as that includes footnotes
+   \global\expandafter\dimensiondef\csname\??vzdistance\the\mofcolumns\endcsname
+     \ifabsdim\scratchdimen>\c_page_scale_lines\lineheight
+       \zeropoint
+     \orelse\ifdim\pagelastshrink>\zeropoint % maybe also stretch
+       \zeropoint
+     \else
+       \pagelastheight
+     \fi
+   \relax
+   \ifconditional\c_page_scale_trace_vz
+     \page_scale_text_box_trace
+   \fi}
+
+\def\page_scale_text_box
+  {\scratchdistance\ifcsname\??vzdistance\the\mofcolumns\endcsname\lastnamedcs\else\zeropoint\fi
+   \ifzeropt\scratchdistance
      \expandafter\gobbleoneargument
    \else
      \expandafter\page_scale_text_box_indeed
    \fi}
 
 \def\page_scale_text_box_indeed#1%
-  {\scratchheight \ht#1%
-   \scratchdepth  \dp#1%
-   \scratchwidth  \wd#1%
-   \scratchfloat  \floatexpr\textheight/\pagelastheight\relax % not \pagegoal as that includes footnotes
+  {\scratchdimen \dimexpr\textheight-\scratchdistance\relax
+   \scratchheight\ht#1%
+   \scratchdepth \dp#1%
+   \scratchwidth \wd#1%
+   \scratchfloat \floatexpr\textheight/\scratchdistance\relax
    \setbox#1\vpack\bgroup
      \hpack\bgroup
        \normalexpanded{\scale
@@ -1003,7 +1050,9 @@
          \s!yoffset \scratchdimen
          \s!xoffset-2\emwidth
        \bgroup
-         \llap{\infofont\formatone{@0.3f}{\the\scratchfloat}}%
+         \edef\tempstring{\semiexpand\formatone{@0.3f}{\the\scratchfloat}}%
+         \writestatus{vz page \the\realpageno}{scaling \tempstring\space applied}%
+         \llap{\infofont\tempstring}%
        \egroup
      \fi
    \egroup

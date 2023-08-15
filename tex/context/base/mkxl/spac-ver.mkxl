@@ -515,32 +515,20 @@
 
 \let\v_spac_lines_around_action_set\relax
 
-\lettonothing\m_spac_lines_around
+\lettonothing\spac_lines_action_around_before
+\lettonothing\spac_lines_action_around_after
 
 \newconstant\c_spac_lines_correction_mode
 
-\defcsname\??linesaround\v!blank  \endcsname{\blank}
-\letcsname\??linesaround\empty    \endcsname\relax
-\defcsname\??linesaround\s!unknown\endcsname{\directcheckedvspacing\m_spac_lines_around} % \blank[\m_spac_lines_around]}
+\installcorenamespace{linecorrection}
 
-\def\spac_lines_action_around % we used to let this one but it's cleaner this way
-  {\csname\??linesaround      % i.e. do it twice
-     \ifcsname\??linesaround\m_spac_lines_around\endcsname\m_spac_lines_around\else\s!unknown\fi
-   \endcsname}
+\installsetuponlycommandhandler \??linecorrection {linecorrection}
 
-\permanent\tolerant\protected\def\startlinecorrection     [#1]{\spac_lines_start_correction\plusone{#1}}
-\permanent\tolerant\protected\def\startlocallinecorrection[#1]{\spac_lines_start_correction\plustwo{#1}}
+\permanent\tolerant\protected\def\startlinecorrection     [#S#1]{\spac_lines_start_correction\plusone{#1}}
+\permanent\tolerant\protected\def\startlocallinecorrection[#S#1]{\spac_lines_start_correction\plustwo{#1}}
 
-\permanent\protected\def\spac_lines_start_correction#1#2%
-  {\endgraf
-   \begingroup
-   \setconstant\c_spac_lines_correction_mode#1%
-   \edef\m_spac_lines_around{#2}%
-   \spac_lines_action_around
-   \d_spac_prevdepth\prevdepth
-   \spac_lines_initialize_corrections
-   \offbaselinecorrection % ???
-   \setbox\scratchbox\spac_lines_vbox\bgroup
+\permanent\protected\def\spac_lines_start_correction_box
+  {\setbox\scratchbox\spac_lines_vbox\bgroup
      \ifcase\c_spac_lines_correction_mode
        % nothing
      \or
@@ -553,40 +541,65 @@
      \fi
      \ignorespaces}
 
-\permanent\protected\def\spac_lines_stop_correction
+\permanent\protected\def\spac_lines_stop_correction_box
   {\removeunwantedspaces
-   \egroup
+   \egroup}
+
+\permanent\protected\def\spac_lines_start_correction#1#2%
+  {\endgraf
+   \begingroup
+   \c_spac_lines_correction_mode#1%
+   % a bit of history
+   \ifhastok={#2}%
+     \setupcurrentlinecorrection[#2]%
+     \def\spac_lines_action_around_before{\linecorrectionparameter\c!before}%
+     \def\spac_lines_action_around_after {\linecorrectionparameter\c!after}%
+   \orelse\ifempty{#2}%
+     \def\spac_lines_action_around_before{\linecorrectionparameter\c!before}%
+     \def\spac_lines_action_around_after {\linecorrectionparameter\c!after}%
+   \orelse\ifcstok{#2}\v!blank
+     \def\spac_lines_action_around_before{\blank}%
+     \let\spac_lines_action_around_after \spac_lines_action_around_before
+   \else
+     \def\spac_lines_action_around_before{\blank[#2]}%
+     \let\spac_lines_action_around_after \spac_lines_action_around_before
+   \fi
    \ifgridsnapping
+     \spac_lines_start_correction_ongrid
+   \else
+     \spac_lines_start_correction_normal
+   \fi}
+
+\permanent\protected\def\spac_lines_stop_correction
+  {\ifgridsnapping
      \spac_lines_stop_correction_ongrid
    \else
      \spac_lines_stop_correction_normal
    \fi
    \endgroup}
 
-\protected\def\spac_lines_stop_correction_ongrid
-  {\directcheckedvspacing\v!white % \blank[\v!white]%
-   \spac_lines_action_around
-   \snaptogrid\hpack{\box\scratchbox}%
-   \directcheckedvspacing\v!white
-   \spac_lines_action_around}
+\permanent\protected\def\spac_lines_start_correction_normal
+  {\spac_lines_action_around_before
+   \d_spac_prevdepth\prevdepth
+   \spac_lines_initialize_corrections
+   \offbaselinecorrection % ???
+   \spac_lines_start_correction_box}
 
-\protected\def\spac_lines_stop_correction_normal
-  {\directcheckedvspacing\v!nowhite % \blank[\v!nowhite]%
+\permanent\protected\def\spac_lines_stop_correction_normal
+  {\spac_lines_stop_correction_box
+   \directcheckedvspacing\v!nowhite % \blank[\v!nowhite]%
    \ifdim\parskip>\zeropoint
       % too fuzzy otherwise
-   \else
-      % doesn't like whitespace
-     \ifdim\d_spac_prevdepth<\maxdimen
-       \unless\ifdim\d_spac_prevdepth<\zeropoint
-         \ifdim\d_spac_prevdepth<\strutdp \relax
-           \pushlastnode
-           \ifdim\d_spac_prevdepth>\zeropoint
-              \kern-\d_spac_prevdepth
-           \fi
-           \kern\strutdp
-           \prevdepth\strutdp
-           \poplastnode
+   \orelse\ifdim\d_spac_prevdepth<\maxdimen
+     \unless\ifdim\d_spac_prevdepth<\zeropoint
+       \ifdim\d_spac_prevdepth<\strutdp \relax
+         \pushlastnode
+         \ifdim\d_spac_prevdepth>\zeropoint
+            \kern-\d_spac_prevdepth
          \fi
+         \kern\strutdp
+         \prevdepth\strutdp
+         \poplastnode
        \fi
      \fi
    \fi
@@ -614,7 +627,24 @@
    \directcheckedvspacing{\v!white,\the\d_spac_lines_correction_after}% \dobotbaselinecorrection
  % \allowbreak % new, otherwise problems when many in a row
    \prevdepth\strutdp
-   \spac_lines_action_around}
+   \spac_lines_action_around_after}
+
+% this needs checking: a double before .. use lmtx tricks
+
+\permanent\protected\def\spac_lines_start_correction_ongrid
+  {\spac_lines_action_around_before
+   \d_spac_prevdepth\prevdepth
+   \spac_lines_initialize_corrections
+   \offbaselinecorrection % ???
+   \spac_lines_start_correction_box}
+
+\permanent\protected\def\spac_lines_stop_correction_ongrid
+  {\spac_lines_stop_correction_box
+   \directcheckedvspacing\v!white % \blank[\v!white]%
+   \spac_lines_action_around_before
+   \snaptogrid\hpack{\box\scratchbox}%
+   \directcheckedvspacing\v!white
+   \spac_lines_action_around_after}
 
 \aliased\let\stoplinecorrection     \spac_lines_stop_correction
 \aliased\let\stoplocallinecorrection\spac_lines_stop_correction

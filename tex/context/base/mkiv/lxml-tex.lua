@@ -34,6 +34,10 @@ local commands           = commands
 local context            = context
 local contextsprint      = context.sprint             -- with catcodes (here we use fast variants, but with option for tracing)
 
+local ctx_doif           = commands.doif
+local ctx_doifnot        = commands.doifnot
+local ctx_doifelse       = commands.doifelse
+
 local synctex            = luatex.synctex
 
 local implement          = interfaces.implement
@@ -644,7 +648,7 @@ function lxml.include(id,pattern,attribute,options)
         if filename then
             -- preprocessing
             if options.prepare then
-                filename = commands.preparedfile(filename)
+                filename = ctxrunner.preparedfile(filename)
             end
             -- handy if we have a flattened structure
             if options.basename then
@@ -2132,10 +2136,6 @@ do
         contextsprint(notcatcodes,att)
     end
 
-    local ctx_doif     = commands.doif
-    local ctx_doifnot  = commands.doifnot
-    local ctx_doifelse = commands.doifelse
-
     implement {
         name      = "xmldoifatt",
         arguments = "3 strings",
@@ -2346,14 +2346,12 @@ do
 
     local found, empty = xml.found, xml.empty
 
-    local doif, doifnot, doifelse = commands.doif, commands.doifnot, commands.doifelse
-
-    function lxml.doif         (id,pattern) doif    (found(getid(id),pattern)) end
-    function lxml.doifnot      (id,pattern) doifnot (found(getid(id),pattern)) end
-    function lxml.doifelse     (id,pattern) doifelse(found(getid(id),pattern)) end
-    function lxml.doiftext     (id,pattern) doif    (not empty(getid(id),pattern)) end
-    function lxml.doifnottext  (id,pattern) doifnot (not empty(getid(id),pattern)) end
-    function lxml.doifelsetext (id,pattern) doifelse(not empty(getid(id),pattern)) end
+    function lxml.doif         (id,pattern) ctx_doif    (found(getid(id),pattern)) end
+    function lxml.doifnot      (id,pattern) ctx_doifnot (found(getid(id),pattern)) end
+    function lxml.doifelse     (id,pattern) ctx_doifelse(found(getid(id),pattern)) end
+    function lxml.doiftext     (id,pattern) ctx_doif    (not empty(getid(id),pattern)) end
+    function lxml.doifnottext  (id,pattern) ctx_doifnot (not empty(getid(id),pattern)) end
+    function lxml.doifelsetext (id,pattern) ctx_doifelse(not empty(getid(id),pattern)) end
 
     -- special case: "*" and "" -> self else lpath lookup
 
@@ -2370,9 +2368,9 @@ do
 
     xml.checkedempty = checkedempty
 
-    function lxml.doifempty    (id,pattern) doif    (checkedempty(id,pattern)) end
-    function lxml.doifnotempty (id,pattern) doifnot (checkedempty(id,pattern)) end
-    function lxml.doifelseempty(id,pattern) doifelse(checkedempty(id,pattern)) end
+    function lxml.doifempty    (id,pattern) ctx_doif    (checkedempty(id,pattern)) end
+    function lxml.doifnotempty (id,pattern) ctx_doifnot (checkedempty(id,pattern)) end
+    function lxml.doifelseempty(id,pattern) ctx_doifelse(checkedempty(id,pattern)) end
 
 end
 

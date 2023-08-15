@@ -1,0 +1,87 @@
+%D \module
+%D   [       file=trac-riv,
+%D        version=2023.08.15, % follow up
+%D          title=\CONTEXT\ Tracing Macros,
+%D       subtitle=Rivers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Tracing Macros / Rivers}
+
+\registerctxluafile{trac-riv}{autosuffix}
+
+\unprotect
+
+\permanent\tolerant\protected\def\startshowrivers[#1]#*%
+  {\begingroup
+   \letdummyparameter\c!margin\zeropoint
+   \letdummyparameter\c!step\!!twopoint
+   \setdummyparameter\c!height{.2\bodyfontsize}%
+   \setdummyparameter\c!depth {.2\bodyfontsize}%
+   \setdummyparameter\c!spaceinbetween{.1\lineheight}%
+   \letdummyparameter\c!criterium\plusfour
+   \letdummyparameter\c!option\empty
+   \getdummyparameters[#1]%
+   \setbox\scratchboxone\vbox\bgroup}
+
+\permanent\tolerant\protected\def\stopshowrivers
+  {\egroup
+   \clf_getrivers
+      box    \scratchboxone
+      margin \dimexpr\dummyparameter\c!margin\relax
+      skip   \dimexpr\dummyparameter\c!spaceinbetween\relax
+      step   \dimexpr\dummyparameter\c!step\relax
+      height \dimexpr\dummyparameter\c!height\relax
+      depth  \dimexpr\dummyparameter\c!depth\relax
+   \relax
+   \setbox\scratchboxtwo\hbox\bgroup
+     \startMPcode
+        lmt_showrivers (
+           \the\numexpr\dummyparameter\c!criterium\relax,
+           \the\dimexpr\wd  \scratchboxone\relax,
+           \the\dimexpr\htdp\scratchboxone\relax,
+           \ifcstok{\dummyparameter\c!option}\v!test true\else false\fi
+        ) ;
+     \stopMPcode
+   \egroup
+   \startoverlay
+      {\box\scratchboxtwo}
+      {\box\scratchboxone}
+   \stopoverlay
+   \endgroup}
+
+\permanent\tolerant\protected\def\addriverstobox[#1]#2%
+  {\begingroup
+   \letdummyparameter\c!margin\zeropoint
+   \letdummyparameter\c!step\!!twopoint
+   \setdummyparameter\c!height{.2\bodyfontsize}%
+   \setdummyparameter\c!depth {.2\bodyfontsize}%
+   \setdummyparameter\c!spaceinbetween{.1\lineheight}%
+   \getdummyparameters[#1]%
+   \clf_addrivers
+      box    \numexpr#2\relax
+      margin \dimexpr\dummyparameter\c!margin\relax
+      skip   \dimexpr\dummyparameter\c!spaceinbetween\relax
+      step   \dimexpr\dummyparameter\c!step\relax
+      height \dimexpr\dummyparameter\c!height\relax
+      depth  \dimexpr\dummyparameter\c!depth\relax
+   \relax
+   \endgroup}
+
+% \def\page_one_show_rivers#1%
+%   {\addriverstobox{#1}}
+%
+% \installtextracker
+%   {typesetting.rivers}
+%   {\let\page_one_hook_for_checks\page_one_show_rivers}
+%   {\let\page_one_hook_for_checks\gobbleoneargument}
+
+\permanent\tolerant\protected\def\showrivers[#1]%
+  {\def\page_one_hook_for_checks##1{\addriverstobox[#1]{##1}}}
+
+\protect \endinput

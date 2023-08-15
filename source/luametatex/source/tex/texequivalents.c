@@ -977,6 +977,7 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
                     return 0;
                 }
             case specification_reference_cmd:
+            case unit_reference_cmd:
             case internal_box_reference_cmd:
             case register_box_reference_cmd:
                 /*tex These are also references. */
@@ -1968,6 +1969,15 @@ void tex_aux_show_eqtb(halfword n)
                     tex_print_char('0');
                 }
                 break;
+            case unit_reference_cmd:
+                tex_print_cmd_chr(association_cmd, n);
+                tex_print_char('=');
+                if (eq_value(n)) {
+                    tex_print_str("todo");
+                } else {
+                    tex_print_char('0');
+                }
+                break;
             default:
                 tex_print_format("bad token %i, case 2", n);
                 break;
@@ -2042,6 +2052,7 @@ void tex_initialize_equivalents(void)
     tex_aux_set_eq(internal_dimen_base,         level_one,  internal_dimen_reference_cmd,     0,                      number_dimen_pars);
     tex_aux_set_eq(register_dimen_base,         level_one,  register_dimen_reference_cmd,     0,                      max_dimen_register_index);
     tex_aux_set_eq(internal_specification_base, level_one,  specification_reference_cmd,      null,                   number_specification_pars);
+    tex_aux_set_eq(internal_unit_base,          level_one,  unit_reference_cmd,               null,                   max_unit_register_index);
     tex_aux_set_eq(undefined_control_sequence,  level_zero, undefined_cs_cmd,                 null,                   0);
     /*tex why here? */
     cat_code_table_par = 0;

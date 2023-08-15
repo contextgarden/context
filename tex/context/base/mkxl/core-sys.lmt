@@ -86,6 +86,8 @@ implement { name = "outputfilename",      public = true, actions = function() co
 implement {
     name      = "systemlog",
     arguments = "3 strings",
+    public    = true,
+    protected = true,
     actions   = function(whereto,category,text)
         logs.system(whereto,"context",tex.jobname,category,text)
     end,

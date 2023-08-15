@@ -236,6 +236,7 @@
 		<cd:variable name='frontpart' value='پیش‌قسمت'/>
 		<cd:variable name='fullhz' value='fullhz'/>
 		<cd:variable name='global' value='سراسری'/>
+		<cd:variable name='granular' value='granular'/>
 		<cd:variable name='graphic' value='گرافیک'/>
 		<cd:variable name='graphics' value='گرافیکها'/>
 		<cd:variable name='gray' value='خاکستری'/>
@@ -246,6 +247,8 @@
 		<cd:variable name='hang' value='بیاویز'/>
 		<cd:variable name='hanging' value='آویزان'/>
 		<cd:variable name='hangingboth' value='hangingboth'/>
+		<cd:variable name='hangleft' value='hangleft'/>
+		<cd:variable name='hangright' value='hangright'/>
 		<cd:variable name='head' value='سر'/>
 		<cd:variable name='header' value='سربرگ'/>
 		<cd:variable name='headintext' value='headintext'/>
@@ -540,6 +543,7 @@
 		<cd:variable name='speech' value='سخنرانی'/>
 		<cd:variable name='split' value='شکافتن'/>
 		<cd:variable name='spot' value='لکه'/>
+		<cd:variable name='spread' value='spread'/>
 		<cd:variable name='standard' value='استاندارد'/>
 		<cd:variable name='start' value='شروع'/>
 		<cd:variable name='starter' value='starter'/>
@@ -627,9 +631,11 @@
 		<cd:variable name='vertical' value='عمودی'/>
 		<cd:variable name='very' value='خیلی'/>
 		<cd:variable name='verystrict' value='خیلی‌سختگیر'/>
+		<cd:variable name='verytight' value='verytight'/>
 		<cd:variable name='verytolerant' value='خیلی‌بردبار'/>
 		<cd:variable name='vfenced' value='vfenced'/>
 		<cd:variable name='vulgarfraction' value='vulgarfraction'/>
+		<cd:variable name='vz' value='vz'/>
 		<cd:variable name='weak' value='هفته'/>
 		<cd:variable name='wednesday' value='چهارشنبه'/>
 		<cd:variable name='week' value='هفته'/>
@@ -808,6 +814,7 @@
 		<cd:constant name='direction' value='جهت'/>
 		<cd:constant name='directory' value='پوشه'/>
 		<cd:constant name='display' value='نمایش'/>
+		<cd:constant name='displayfactor' value='displayfactor'/>
 		<cd:constant name='displaythreshold' value='displaythreshold'/>
 		<cd:constant name='distance' value='فاصله'/>
 		<cd:constant name='domain' value='domain'/>
@@ -916,6 +923,7 @@
 		<cd:constant name='horoffset' value='آفست‌افق'/>
 		<cd:constant name='hyphen' value='شکستن'/>
 		<cd:constant name='hyphens' value='hyphens'/>
+		<cd:constant name='hz' value='hz'/>
 		<cd:constant name='icommand' value='icommand'/>
 		<cd:constant name='ignore' value='ignore'/>
 		<cd:constant name='in' value='درون'/>
@@ -928,6 +936,7 @@
 		<cd:constant name='index' value='index'/>
 		<cd:constant name='indicator' value='اندیکاتور'/>
 		<cd:constant name='initialsep' value='initialsep'/>
+		<cd:constant name='inlinefactor' value='inlinefactor'/>
 		<cd:constant name='inlinethreshold' value='inlinethreshold'/>
 		<cd:constant name='inner' value='داخلی'/>
 		<cd:constant name='innermargin' value='حاشیه‌داخلی'/>
@@ -989,6 +998,7 @@
 		<cd:constant name='less' value='less'/>
 		<cd:constant name='level' value='مرحله'/>
 		<cd:constant name='levels' value='مرحله‌ها'/>
+		<cd:constant name='limitstretch' value='limitstretch'/>
 		<cd:constant name='limittext' value='مرزمتن'/>
 		<cd:constant name='line' value='خط'/>
 		<cd:constant name='linecorrection' value='تصحیح‌خط'/>
@@ -1101,6 +1111,7 @@
 		<cd:constant name='orientation' value='جهت‌دهی'/>
 		<cd:constant name='otherstext' value='otherstext'/>
 		<cd:constant name='outermargin' value='حاشیه‌خارجی'/>
+		<cd:constant name='overflow' value='overflow'/>
 		<cd:constant name='overprint' value='overprint'/>
 		<cd:constant name='ownerpassword' value='ownerpassword'/>
 		<cd:constant name='ownnumber' value='شماره‌خود'/>
@@ -1374,6 +1385,7 @@
 		<cd:constant name='viewerprefix' value='viewerprefix'/>
 		<cd:constant name='voffset' value='آفست‌ع'/>
 		<cd:constant name='vonsep' value='vonsep'/>
+		<cd:constant name='vz' value='vz'/>
 		<cd:constant name='way' value='راه'/>
 		<cd:constant name='wfactor' value='wfactor'/>
 		<cd:constant name='white' value='سفید'/>

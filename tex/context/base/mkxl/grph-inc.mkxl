@@ -887,17 +887,26 @@
   [\v!inline]
   [\c!height=\lineheight]
 
+\permanent\protected\def\combinationwidth
+  {\dimexpr
+     (\textwidth
+     -\effectiveleftskip
+     -\effectiverightskip
+     -\numexpr\combinationparameter\c!nx-\plusone\relax\dimexpr\combinationparameter\c!distance\relax
+     )/\combinationparameter\c!nx
+   \relax}
+
+\pushoverloadmode
+    \newuserunit \combinationwidth cx % combination width
+\popoverloadmode
+
 \definemeasure
   [\v!combination]
-  [(\textwidth
-    -\effectiveleftskip
-    -\effectiverightskip
-    -\numexpr\combinationparameter\c!nx-\plusone\relax\dimexpr\combinationparameter\c!distance\relax
-   )/\combinationparameter\c!nx]
+  [\combinationwidth]
 
 \defineexternalfigure
   [\v!combination]
-  [\c!width=\measure{\v!combination}]
+  [\c!width=\combinationwidth]
 
 % \startcombination[nx=2,ny=1]
 %     {\externalfigure[dummy][combination]} {}

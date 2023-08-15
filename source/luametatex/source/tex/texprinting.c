@@ -1197,6 +1197,9 @@ const char *tex_print_format_args(const char *format, va_list args)
                         case 'c':
                             tex_print_char(va_arg(args, int));
                             break;
+                        case 'd': /* detail */
+                            tex_print_str(tex_aux_subtype_str(va_arg(args, int)));
+                            break;
                         case 'e':
                             tex_print_str_esc(NULL);
                             break;

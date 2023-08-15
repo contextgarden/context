@@ -450,23 +450,20 @@
 \permanent\protected\def\macroname#1% brrr
   {\begincsname#1\endcsname}
 
-\permanent\protected\def\syst_log_indeed#1#2#3%
-  {\ctxcommand{systemlog("#1","#2",\!!bs#3\!!es)}}
-
-\aliased\let\systemlog\syst_log_indeed
+% \definedasluacommand\systemlog
 
 \permanent\protected\def\systemlogfirst
   {\ifcase\directsystemparameter\c!n\relax
-     \expandafter\syst_log_indeed
+     \expandafter\systemlog
    \or
-     \expandafter\syst_log_indeed
+     \expandafter\systemlog
    \else
      \expandafter\gobblethreearguments
    \fi}
 
 \permanent\protected\def\systemloglast
   {\ifcase\directsystemparameter\c!n\relax
-     \expandafter\syst_log_indeed
+     \expandafter\systemlog
    \or
      \expandafter\gobblethreearguments
    \or
@@ -474,7 +471,7 @@
    \or
      \expandafter\gobblethreearguments
    \or
-     \expandafter\syst_log_indeed
+     \expandafter\systemlog
    \fi}
 
 \protect \endinput

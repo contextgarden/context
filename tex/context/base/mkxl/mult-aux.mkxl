@@ -1370,25 +1370,35 @@
 % never knows when we might need it.
 
 \installcorenamespace{commalistprocessor}
-\installcorenamespace{commalistprocessorwrap}
-\installcorenamespace{commalistprocessorfirst}
-\installcorenamespace{commalistprocessornext}
 \installcorenamespace{commalistprocessoraction}
 
-\permanent\protected\def\installcommalistprocessor#1#2% 5 macro names overhead
-  {\protected\edefcsname\??commalistprocessor#1\endcsname[%
-     {\csname\??commalistprocessorwrap#1\endcsname\relax}% \relax preserves {}
-   \protected\edefcsname\??commalistprocessorwrap#1\endcsname##1]%
-     {\csname\??commalistprocessorfirst#1\endcsname##1,]}
-   \protected\edefcsname\??commalistprocessorfirst#1\endcsname\relax
-     {\csname\??commalistprocessornext#1\endcsname}%
-   \protected\edefcsname\??commalistprocessornext#1\endcsname
-     {\noexpand\futureexpandis]%
-        \noexpand\gobbleoneargument
-        \csname\??commalistprocessoraction#1\endcsname}
-   \protected\edefcsname\??commalistprocessoraction#1\endcsname##1,%
-     {\noexpand#2{##1}%
-      \csname\??commalistprocessornext#1\endcsname}}
+% \installcorenamespace{commalistprocessorwrap}
+% \installcorenamespace{commalistprocessorfirst}
+% \installcorenamespace{commalistprocessornext}
+%
+% \permanent\protected\def\installcommalistprocessor#1#2% 5 macro names overhead
+%   {\protected\edefcsname\??commalistprocessor#1\endcsname[%
+%      {\csname\??commalistprocessorwrap#1\endcsname\relax}% \relax preserves {}
+%    \protected\edefcsname\??commalistprocessorwrap#1\endcsname##1]%
+%      {\csname\??commalistprocessorfirst#1\endcsname##S##1,]}%
+%    \protected\edefcsname\??commalistprocessorfirst#1\endcsname\relax
+%      {\csname\??commalistprocessornext#1\endcsname}%
+%    \protected\edefcsname\??commalistprocessornext#1\endcsname
+%      {\noexpand\futureexpandis]%
+%         \noexpand\gobbleoneargument
+%         \csname\??commalistprocessoraction#1\endcsname}
+%    \protected\edefcsname\??commalistprocessoraction#1\endcsname##1,%
+%      {\noexpand#2{##1}%
+%       \csname\??commalistprocessornext#1\endcsname}}
+
+\permanent\protected\def\installcommalistprocessor#1#2% 2 macro names overhead
+  {\tolerant\protected\edefcsname\??commalistprocessor#1\endcsname[##S##1]%
+     {\csname\??commalistprocessoraction#1\endcsname##1\ignorearguments\ignorearguments}%
+   \tolerant\protected\edefcsname\??commalistprocessoraction#1\endcsname##S##1,%
+     {\noexpand\ifarguments\noexpand\or
+        \noexpand#2{##1}%
+        \noexpand\expandafter\csname\??commalistprocessoraction#1\endcsname
+      \noexpand\fi}}
 
 \permanent\protected\def\installcommalistprocessorcommand#1#2% \processor \action
   {\cdef\p_name{\csstring#2}%

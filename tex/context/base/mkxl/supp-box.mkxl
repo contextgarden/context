@@ -2986,6 +2986,66 @@
 
 % \definedasluacommand\noflinesinbox
 
+%D \macros{boxfixstretch}
+%D
+%D This is relative new one and a wrapper around \typ {\boxlimitate}
+%D but with a criterium.
+%D
+%D \startbuffer
+%D \setbox2\copy0 \boxfixstretch 2 20pt      \box2
+%D \setbox2\copy0 \boxfixstretch 2 30pt      \box2
+%D \setbox2\copy0 \boxfixstretch 2 40pt      \box2
+%D \setbox2\copy0 \boxfixstretch 2  0pt      \box2 % \boxlimitate 2 0pt
+%D \setbox2\copy0 \boxfixstretch 2 \maxdimen \box2
+%D \stopbuffer
+%D
+%D \setbox0\ruledvbox to 2cm \bgroup
+%D     test\vskip10pt plus 10pt minus 5pt\relax test%
+%D \egroup
+%D
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
+%D
+%D \setbox0\ruledhbox to 3cm \bgroup
+%D     test\hskip10pt plus 10pt minus 5pt\relax test%
+%D \egroup \getbuffer
+%D
+%D \startlinecorrection
+%D \getbuffer
+%D \stoplinecorrection
+
+\newconditional\boxstretchfixed
+\newdimension  \boxstretchdelta
+
+\permanent\protected\def\boxfixstretch
+  {\begingroup
+   \afterassignment\syst_boxes_fixstretch_a\scratchdimen}
+
+\permanent\protected\def\syst_boxes_fixstretch_a
+  {\afterassignment\syst_boxes_fixstretch_b\scratchcounter}
+
+\permanent\protected\def\syst_boxes_fixstretch_b
+  {\scratchdimenone  \ifvbox\scratchcounter\ht\else\wd\fi\scratchcounter % current size
+   \scratchdimentwo  \boxrepack\scratchcounter                           % natural
+   \scratchdimenthree\boxstretch\scratchcounter                          % stretch
+   \scratchdistance  \dimexpr\scratchdimenone-\scratchdimentwo\relax
+   % if size - natural > stretch
+   \unless\ifdim\scratchdistance>\scratchdimenthree
+     % we don't stretch beyond what is acceptable
+     \global\boxstretchfixed\conditionalfalse
+     \global\boxstretchdelta\zeropoint
+   \orelse\ifdim\scratchdistance<\scratchdimen
+     % we are below the criterium
+     \boxlimitate\scratchcounter\zerocount
+     \global\boxstretchfixed\conditionaltrue
+     \global\boxstretchdelta\dimexpr\ifvbox\scratchcounter\ht\else\wd\fi\scratchcounter-\boxrepack\scratchcounter\relax
+   \else
+     \global\boxstretchfixed\conditionalfalse
+     \global\boxstretchdelta\zeropoint
+   \fi
+   \endgroup}
+
 \protect \endinput
 
 % a bit of test code:

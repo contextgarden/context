@@ -935,7 +935,7 @@ void tex_build_page(void)
             */
             if (tracing > 1) {
                 tex_begin_diagnostic();
-                tex_print_format("[page: compute: %N, penalty=%i]", current, penalty);
+                tex_print_format("[page: compute: %N, %d, penalty=%i]", current, current, penalty);
                 tex_end_diagnostic();
             }
             if (penalty < infinite_penalty) {
@@ -948,8 +948,8 @@ void tex_build_page(void)
                 lmt_page_builder_state.last_extra_used = 0;
                 if (tracing > 1) {
                     tex_begin_diagnostic();
-                    tex_print_format("[page: calculate, %N, total=%P, goal=%D, badness=%B, costs=%i]", 
-                        current,
+                    tex_print_format("[page: calculate, %N, %d, total=%P, goal=%D, badness=%B, costs=%i]", 
+                        current, current, 
                         page_total, page_stretch, page_fistretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
                         page_goal, pt_unit, 
                         badness, costs
@@ -984,7 +984,7 @@ void tex_build_page(void)
                     if (fireup) {
                         if (tracing > 1) {
                             tex_begin_diagnostic();
-                            tex_print_format("[page: fireup: %N]", current);
+                            tex_print_format("[page: fireup: %N, %d]", current, current);
                             tex_end_diagnostic();
                         }
                         if (callback_id) { 
@@ -1016,7 +1016,7 @@ void tex_build_page(void)
             */
             if (tracing > 1) {
                 tex_begin_diagnostic();
-                tex_print_format("[page: update, %N]", current);
+                tex_print_format("[page: update, %N, %d]", current, current);
                 tex_end_diagnostic();
             }
             switch(node_type(current)) {
@@ -1037,7 +1037,7 @@ void tex_build_page(void)
             */
             if (tracing > 1) {
                 tex_begin_diagnostic();
-                tex_print_format("[page: contribute, %N]", current);
+                tex_print_format("[page: contribute, %N, %d]", current, current);
                 tex_end_diagnostic();
             }
             if (page_depth > lmt_page_builder_state.max_depth) {
@@ -1047,7 +1047,7 @@ void tex_build_page(void)
           APPEND:
             if (tracing > 1) {
                 tex_begin_diagnostic();
-                tex_print_format("[page: append, %N]", current);
+                tex_print_format("[page: append, %N, %d]", current, current);
                 tex_end_diagnostic();
             }
             /*tex Link node |p| into the current page and |goto done|. We assume a positive depth. */
@@ -1059,7 +1059,7 @@ void tex_build_page(void)
           DISCARD:
             if (tracing > 1) {
                 tex_begin_diagnostic();
-                tex_print_format("[page: discard, %N]", current);
+                tex_print_format("[page: discard, %N, %d]", current, current);
                 tex_end_diagnostic();
             }
             /*tex Recycle node |p|. */

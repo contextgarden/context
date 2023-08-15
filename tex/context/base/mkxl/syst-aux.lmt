@@ -120,23 +120,19 @@ implement {
 -- \gdef\setpercentdimen#1#2%
 --   {#1=\ctxcommand{percentageof("#2",\number#1)}\relax}
 
-local space     = P(" ") / ""
-local spaces    = P(" ")^0 / ""
+local space     = P(" ")
+local spaces    = space^0
+local nospaces  = spaces / ""
 local nohash    = 1 - P("#")
 local digit     = R("09")
 local double    = P("##") / "#"
 local single    = P("#")
-local sentinel  = spaces * (nohash^1 / "\\%0")
+local sentinel  = nospaces * (nohash^1 / "\\%0")
 local whatever  = S("+-/*_^=:") + digit
 local sargument = (single * digit)^1
 local dargument = (double * digit)^1
 local swhatever = (single * whatever)^1
 local dwhatever = (double * whatever)^1
-
--- different ones:
-
-local space     = P(" ")
-local spaces    = space^0
 
 -- see syst-aux.lua for historic variants
 
@@ -203,8 +199,8 @@ local pattern = (
     )^0
   * spaces * ( C((1-S(" #["))^1) )
   * spaces *   Cs(
-        (Cs(P("[") * dargument * P("]")) / oldoption + dwhatever)^1 * sentinel^-1 * double^-1
-      + (Cs(P("[") * sargument * P("]")) / oldoption + swhatever)^1 * sentinel^-1 * single^-1
+        (Cs(P("[") * dargument * P("]")) / oldoption + nospaces * dwhatever)^1 * sentinel^-1 * double^-1
+      + (Cs(P("[") * sargument * P("]")) / oldoption + nospaces * swhatever)^1 * sentinel^-1 * single^-1
       + sentinel^-1 * (double+single)^-1
     )
 )

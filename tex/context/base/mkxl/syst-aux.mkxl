@@ -825,15 +825,15 @@
 
 \mutable\lettonothing\commalistcommand
 
-\protected\def\syst_helpers_process_comma_item#+,%
-  {\ifarguments
-     \expandafter\syst_helpers_process_comma_item_gobble
-   \orelse\ifparameter#1\or
-     \commalistcommand{#1}%
-     \expandafter\syst_helpers_process_comma_item_next
-   \else
-     \expandafter\syst_helpers_process_comma_item_gobble
-   \fi}
+% \protected\def\syst_helpers_process_comma_item#+,%
+%   {\ifarguments
+%      \expandafter\syst_helpers_process_comma_item_gobble
+%    \orelse\ifparameter#1\or
+%      \commalistcommand{#1}%
+%      \expandafter\syst_helpers_process_comma_item_next
+%    \else
+%      \expandafter\syst_helpers_process_comma_item_gobble
+%    \fi}
 
 % \def\syst_helpers_process_comma_item_next
 %   {\expandafterspaces\syst_helpers_process_comma_item}
@@ -3072,13 +3072,19 @@
 
 \integerdef\c_syst_parameter_catcode\parametercatcode
 
-\bgroup \obeylines
+% \catcode\endoflineasciicode\activecatcode\letcharcode\endoflineasciicode\par
+
+\bgroup
+
+\catcode\endoflineasciicode\activecatcode%
+\letcharcode\endoflineasciicode\par%
 
 \permanent\protected\gdef\starttexdefinition%
   {\integerdef\c_syst_parameter_catcode\catcode\hashasciicode%
    \catcode\hashasciicode\parametercatcode%
    \bgroup%
-   \obeylines%
+   \catcode\endoflineasciicode\activecatcode%
+   \letcharcode\endoflineasciicode\par%
    \syst_helpers_start_tex_definition}
 
 \gdef\syst_helpers_start_tex_definition#1
@@ -6455,8 +6461,6 @@
 \aliased\let\getraweparameters\geteparameters % obsolete
 \aliased\let\getrawgparameters\getgparameters % obsolete
 \aliased\let\getrawxparameters\getxparameters % obsolete
-
-\aliased\let\globalgetrawparameters\getrawgparameters % obsolete
 
 %D Sort of obsolete:
 

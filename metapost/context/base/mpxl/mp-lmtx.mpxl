@@ -2803,3 +2803,39 @@ vardef lmt_do_steppotraced =
     last_potraced_height := getparameter("height") ;
     last_potraced_bounds := unitsquare xscaled last_potraced_width yscaled last_potraced_height ;
 enddef ;
+
+def lmt_showrivers(expr stepsize, width, height, showpolygon) =
+    picture q ; q := image (
+        lmt_startpotraced [
+            stringname = "profile",
+            threshold  = .5,
+        ] ;
+      % draw lmt_potraced [
+      %     size       = 1,
+      %     index      = 1,
+      % ] withcolor "middleyellow" ;
+      % draw lmt_potraced [
+      %     size       = 1,
+      %     index      = 2,
+      % ] withcolor "middlegray" ;
+        fill lmt_potraced [
+            size       = 1,
+            first      = 3,
+            polygon    = showpolygon,
+        ] withcolor "middlegreen" ;
+        fill lmt_potraced [
+            size       = 3,
+            first      = 3,
+            polygon    = showpolygon,
+        ] withcolor "middleblue" ;
+        fill lmt_potraced [
+            size       = stepsize,
+            first      = 3,
+            polygon    = showpolygon,
+        ] withcolor "middlered" ;
+        lmt_stoppotraced ;
+    ) ;
+
+    setbounds q to last_potraced_bounds enlarged (-2,-2) ;
+    draw q xysized (width,height) ;
+enddef;

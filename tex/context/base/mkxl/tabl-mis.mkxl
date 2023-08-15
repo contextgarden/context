@@ -191,8 +191,8 @@
       \else
         \advanceby\d_typo_paragraphs_auto-\p_width\relax
       \fi
-      \ifnum\recurselevel>\plusone
-        \advanceby\d_typo_paragraphs_auto-\namedparagraphsparameter{\currentparagraphs:\recurselevel}\c!distance\relax
+      \ifnum\currentloopiterator>\plusone
+        \advanceby\d_typo_paragraphs_auto-\namedparagraphsparameter{\currentparagraphs:\number\currentloopiterator}\c!distance\relax
       \fi}%
    \ifnum\scratchcounter>\zerocount
      \divideby\d_typo_paragraphs_auto\scratchcounter

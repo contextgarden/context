@@ -1,0 +1,52 @@
+%D \module
+%D   [       file=trac-brk,
+%D        version=2023.07.14,
+%D          title=\CONTEXT\ Tracing Macros,
+%D       subtitle=Pagebreaks,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\ifdefined\registerforcedbreak \endinput \fi
+
+\writestatus{loading}{ConTeXt Tracing Macros / Buildpoints}
+
+\registerctxluafile{trac-bld}{}
+
+\unprotect
+
+% These are defined at the \LUA\ end:
+%
+% \showpageprogress[yes|all]
+% \registerforcedbreak[locationlist|reset][before|after]
+% \resetforcedbreak
+
+% \showpageprogress % [all]
+% \registerforcedbreak[8][before]
+% %resetforcedbreak
+%
+% \starttext
+%     \dorecurse{10}{\samplefile{tufte}\par}
+% \stoptext
+
+\lettonothing\show_build_page_before_shipout
+\lettonothing\show_build_page_after_shipout
+
+\permanent\tolerant\protected\def\showpageprogress[#1]%
+  {\clf_build_page_setup{\ifempty{#1}\v!yes\else#1\fi}%
+   \let\show_build_page_before_shipout\clf_build_page_before_shipout
+   \let\show_build_page_after_shipout \clf_build_page_after_shipout}
+
+\appendtoks
+    \show_build_page_before_shipout
+\to \everybeforeshipout
+
+\appendtoks
+    \show_build_page_after_shipout
+\to \everyaftershipout
+
+\protect \endinput

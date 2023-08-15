@@ -307,8 +307,9 @@
 \let\v_spac_align_space_amount        \interwordspace
 \def\v_spac_align_space_amount_x          {.5\emwidth}
 
-\newgluespec\s_zero_plus_one_fil \s_zero_plus_one_fil = 0pt plus 1fil
-\newgluespec\s_zero_plus_zero    \s_zero_plus_zero    = 0pt plus 0pt
+\newgluespec\s_zero_plus_one_fil  \s_zero_plus_one_fil  = 0pt plus 1fil
+\newgluespec\s_zero_plus_one_fill \s_zero_plus_one_fill = 0pt plus 1fill
+\newgluespec\s_zero_plus_zero     \s_zero_plus_zero     = 0pt plus 0pt
 
 % \s!plus ... slower than inline
 
@@ -550,6 +551,12 @@
    \or
      % 10 slanted
      \spac_align_set_horizontal_slanted
+   \or
+     % 11 hangleft
+     \spac_align_set_horizontal_hang_left
+   \or
+     % 12 hangright
+     \spac_align_set_horizontal_hang_right
    \fi
    \relax}
 
@@ -557,7 +564,7 @@
 
 \newconstant\c_spac_align_state_page
 
-\mutable\def\bottomalignlimit{\plusthree\lineheight}
+% \mutable\def\bottomalignlimit{\plusthree\lineheight}
 
 \newconstant\bottomraggednessmode % 0=ragged 1=normal/align 2=baseline 3=depth 4=weird-line
 
@@ -825,6 +832,21 @@
 \defcsname\??aligncommand          \v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plusone}}
 \defcsname\??aligncommand        1*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plusone}}
 \defcsname\??aligncommand        2*\v!more\endcsname{\toksapp\t_spac_align_collected{\looseness\plustwo}}
+
+% for verbatim overflow
+
+\defcsname\??aligncommand\v!hangleft      \endcsname{\c_spac_align_state_horizontal\pluseleven}
+\defcsname\??aligncommand\v!hangright     \endcsname{\c_spac_align_state_horizontal\plustwelve}
+
+\permanent\protected\def\spac_align_set_horizontal_hang_right
+  {\spac_align_set_horizontal_very_left
+   \parinitrightskip\s_zero_plus_one_fill
+   \relax}
+
+\permanent\protected\def\spac_align_set_horizontal_hang_left
+  {\spac_align_set_horizontal_very_right
+   \parinitleftskip \s_zero_plus_one_fill
+   \relax}
 
 % experiment
 

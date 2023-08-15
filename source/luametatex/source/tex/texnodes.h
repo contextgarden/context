@@ -412,8 +412,9 @@ extern void     lmt_nodelib_initialize  (void); /* name ? */
 
 # define attribute_node_size 2
 # define attribute_unset(a)  vinfo(a,1)
-# define attribute_index(a)  vinfo(a,1) /*tex actually we need half of this */
-# define attribute_count(a)  vlink(a,1) /*tex the reference count */
+# define attribute_index(a)  vinfo0(a,1) 
+# define attribute_detail(a) vinfo1(a,1) 
+# define attribute_count(a)  vlink(a,1)  /*tex the reference count */
 # define attribute_value(a)  vlink(a,1)
 
 typedef enum attribute_subtypes {

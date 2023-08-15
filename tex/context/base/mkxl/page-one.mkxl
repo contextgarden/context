@@ -169,6 +169,8 @@
 %D \stoptext
 %D \stoptyping
 
+%D This will be replaced by vz
+
 \newinteger\c_page_one_stretch % we use marked pages which actually slow down a little
 
 \def\page_one_check_stretch_contents
@@ -183,6 +185,8 @@
   {\edef\m_lines{\markedpageparameter\v!stretch\v!lines}%
    \ifempty\m_lines\else\c_page_one_stretch\m_lines\fi}
 
+\let\page_one_hook_for_checks\gobbleoneargument
+
 \protected\def\page_one_command_package_contents#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
   {\bgroup
    \strc_notes_check_if_bottom_present
@@ -192,9 +196,11 @@
    %
    % \setbox\b_page_one_contents\vbox \ifconditional\c_notes_bottom_present to \textheight \fi
    %
-   \ifconditional\c_notes_bottom_present\else
-      \doifmarkedpage\v!stretch\page_one_check_stretch_lines
-   \fi
+   \page_layouts_check_stretch#2%
+   %
+%    \ifconditional\c_notes_bottom_present\else
+%       \doifmarkedpage\v!stretch\page_one_check_stretch_lines
+%    \fi
    \setbox\b_page_one_contents\vbox \ifcase\c_page_one_stretch to \textheight\fi % probably no pack
      {\page_otr_command_flush_top_insertions
       % this is messy ... we will provide a more tight area (no big deal as we can
@@ -220,25 +226,6 @@
       \or
         % align (normal)
         \page_otr_command_flush_bottom_insertions
-%
-% experiment: see beta1.mkxl
-%
-% \page_scale_text_box_trace
-% %scratchdimen\dimexpr\textheight-\pagelastheight\relax
-% \scratchdimen\dimexpr\pagelastheight-\pagegoal\relax
-% \ifdim\scratchdimen>\zeropoint
-%     \advance\scratchdimen-\pagelaststretch
-%     \ifdim\scratchdimen>\zeropoint
-%       \writestatus{!}{UNDERFULL: \the\scratchdimen}%
-%     %       \vskip\scratchdimen
-%       \vrule
-%         height \scratchdimen
-%         depth  \zeropoint
-%         width  \emwidth
-%       \relax
-%     \fi
-% \fi
-%
       \or
         % baseline
         \unskip % new per 2019-06-18, otherwise weird bottom floats
@@ -252,6 +239,7 @@
         \page_otr_command_flush_bottom_insertions
       \fi
       \fakepagenotes}%
+   \page_one_hook_for_checks\b_page_one_contents % todo
    \page_one_command_package_show_state
    \ifconditional\c_notes_bottom_present
      \ifgridsnapping
@@ -273,9 +261,18 @@
           {\box\b_page_one_contents
            \box\b_page_one_bottom_notes}}%
    \else
-     \ifcase\c_page_one_stretch\else
-        \page_one_check_stretch_contents
+     \ifcase\c_page_scale_lines
+       % nothing to do: vz not enabled
+     \orelse\ifdim\d_page_box_stretch_delta>\zeropoint
+       \page_scale_text_box_register_box\b_page_one_contents
+       \page_scale_text_box\b_page_one_contents
+     \else
+       \page_scale_text_box_register_page
+       \page_scale_text_box\b_page_one_contents
      \fi
+%      \ifcase\c_page_one_stretch\else
+%         \page_one_check_stretch_contents
+%      \fi
      \ht\b_page_one_contents\textheight
      \page_one_registered_text_area_b
        {\box\b_page_one_contents}%
@@ -419,7 +416,7 @@
      \page_one_command_flush_top_insertions_indeed % less tracing
      \ifcase\bottomraggednessmode\or\else
        % will be an option
-       \vskip\zeropoint plus \openstrutdepth minus \openstrutdepth
+       \vskip\zeropoint\s!plus\openstrutdepth\s!minus\openstrutdepth\relax
      \fi
    \fi
    \global\d_page_floats_inserted_top\zeropoint}
@@ -710,19 +707,17 @@
        \showmessage\m!floatblocks9\empty
        \page_floats_resave\s!text
      \fi
+   \orelse\ifconditional\c_page_floats_some_waiting
+     \page_floats_save\s!text
+     \nonoindentation
    \else
-     \ifconditional\c_page_floats_some_waiting
+     \page[\v!preference]%
+     \page_otr_command_check_if_float_fits
+     \ifconditional\c_page_floats_room
+       \page_one_place_float_here_indeed
+     \else
        \page_floats_save\s!text
        \nonoindentation
-     \else
-       \page[\v!preference]%
-       \page_otr_command_check_if_float_fits
-       \ifconditional\c_page_floats_room
-         \page_one_place_float_here_indeed
-       \else
-         \page_floats_save\s!text
-         \nonoindentation
-       \fi
      \fi
    \fi}
 

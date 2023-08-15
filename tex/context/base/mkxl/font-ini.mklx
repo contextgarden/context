@@ -405,6 +405,10 @@
 \ifdefined\localbodyfontsize  \else \newdimension\localbodyfontsize  \fi \localbodyfontsize =\globalbodyfontsize
 \ifdefined\bodyfontsize       \else \newdimension\bodyfontsize       \fi \bodyfontsize      =\globalbodyfontsize
 
+\pushoverloadmode
+    \newuserunit\globalbodyfontsize fs % normally locas is the same as em
+\popoverloadmode
+
 %D When we assign for instance 12pt to a \DIMENSION\ register the \type {\the}'d
 %D value comes out as 12.0pt, which is often not the way users specify the bodyfont
 %D size. Therefore we use normalized values. They are cached to save overhead in
@@ -1456,7 +1460,6 @@
   {\edef\m_font_body{#body}%
    \ifx\m_font_body\s!default
      % these are the last resort within a class
-    %\getrawparameters[\??fontenvironments#class\s!default][#settings]%
      \getparameters[\??fontenvironments#class\s!default][#settings]%
    \else
      \normalizebodyfontsize\m_font_body_normalized\m_font_body
@@ -1484,8 +1487,7 @@
 \newconditional\c_font_defining_environment_state % controls messages
 
 \def\font_basics_define_body_font_environment_size[#class][#normalizedbody][#settings]% normalized body
-  {%getrawparameters[\??fontenvironments#class#normalizedbody][#settings]%
-   \getparameters[\??fontenvironments#class#normalizedbody][#settings]%
+  {\getparameters[\??fontenvironments#class#normalizedbody][#settings]%
    \ifcsname\??fontenvironmentknown#class#normalizedbody\endcsname
      % environment and size already defined
    \orelse\ifproductionrun

@@ -773,8 +773,39 @@ if not csletters then
         storage.register("characters/csletters", csletters, "characters.csletters")
     end
 
+ -- These can go now:
+ --
+ -- .acute .apostrophe .bar .breve .breveacute .brevedotbelow .brevegrave .brevehook
+ -- .brevetilde .caron .cedilla .circumflex .circumflexacute .circumflexdotbelow
+ -- .circumflexgrave .circumflexhook .circumflextilde .commaaccent .curl .diaeresis
+ -- .diaeresisacute .diaeresiscaron .diaeresisgrave .diaeresismacron .dotaccent
+ -- .dotaccentmacron .dotbelow .dotmiddle .doublegrave .grave .horn .hornacute
+ -- .horndotbelow .horngrave .hornhook .horntilde .hungarumlaut .invertedbreve
+ -- .macron .ogonek .ogonekmacron .ring .ringacute .sharp .stroke .strokeacute .tail
+ -- .tilde .tildemacron
+
+    local pattern = P("greek") + P("arabic") + P("hebrew") + P("cyrillic") + P("roman")
+
+ -- Only keep these:
+ --
+ -- copyright dotlessI dotlessi dotlessJ dotlessj emdash endash exclamdown figuredash
+ -- guilsingleleft guilsingleright periodcentered perthousand questiondown quotedbl
+ -- quotedblbase quotedblleft quotedblright quoteleft quoteright quotesingle
+ -- quotesinglebase registered rightguillemot sectionmark textacute textampersand
+ -- textAngstrom textasciicircum textasciitilde textat textbackslash textbar
+ -- textbottomcomma textbottomdot textbraceleft textbraceright textbreve
+ -- textbrokenbar textbullet textcaron textcedilla textcelsius textcent textcircledP
+ -- textcircumflex textcomma textcontrolspace textcurrency textdag textddag
+ -- textdegree textdiaeresis textdiv textdollar textdong textdotaccent textellipsis
+ -- texteuro textfraction textgrave texthash texthorizontalbar texthungarumlaut
+ -- texthyphen textkelvin textlognot textmacron textmho textminus textmp textmu
+ -- textmultiply textnumero textogonek textohm textounce textpercent textperiod
+ -- textpm textring textslash textsterling texttilde textunderscore textyen
+
     local function setname(category,chr,u,contextname)
-        if is_character[category] then
+        if lpegmatch(pattern,contextname) then
+         -- print("ignored",contextname)
+        elseif is_character[category] then
             if chr.unicodeslot < 128 then
                 if is_letter[category] then
                     texsetmacro(contextname,utfchar(u),"immutable")

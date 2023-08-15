@@ -487,6 +487,7 @@ make_lua_key(L, attr);\
 make_lua_key(L, attribute);\
 make_lua_key(L, attribute_list);\
 make_lua_key(L, attributelist);\
+make_lua_key(L, association);\
 make_lua_key(L, auto);\
 make_lua_key(L, automatic);\
 make_lua_key(L, automaticpenalty);\
@@ -879,6 +880,7 @@ make_lua_key(L, lua_call);\
 make_lua_key(L, lua_function_call);\
 make_lua_key(L, lua_local_call);\
 make_lua_key(L, lua_protected_call);\
+make_lua_key(L, lua_semiprotected_call);\
 make_lua_key(L, lua_value);\
 make_lua_key(L, luatex);\
 make_lua_key(L, macro);\
@@ -1357,6 +1359,7 @@ make_lua_key(L, underdelimitervgap);\
 make_lua_key(L, underlinevariant);\
 make_lua_key(L, unhbox);\
 make_lua_key(L, unhyphenated);\
+make_lua_key(L, unit_reference);\
 make_lua_key(L, unknown);\
 make_lua_key(L, unpacklist);\
 make_lua_key(L, unrolllist);\

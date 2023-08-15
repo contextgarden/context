@@ -481,6 +481,18 @@
         \endgroup
     \fi
 
+    \doif {\getvariable{tugboat}{columns}} {yes} {
+        \doifmodeelse {columnset}  {
+            \stopcolumnset
+        } {
+            \doifmodeelse {pagecolumns} {
+                \stoppagecolumns
+            } {
+                \stopcolumns
+            }
+        }
+    }
+
   \stoptext
 
 \stopsetups

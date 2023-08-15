@@ -808,6 +808,9 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
         case lua_protected_call_cmd:
             tex_aux_show_lua_call("protected luacall", chr);
             break;
+        case lua_semi_protected_call_cmd:
+            tex_aux_show_lua_call("semiprotected luacall", chr);
+            break;
         case lua_value_cmd:
             tex_aux_show_lua_call("luavalue", chr);
             break;

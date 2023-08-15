@@ -312,11 +312,11 @@ end
 
 -- we could move the defs from math-act here
 
-local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap,offset,unicode)
+local function accent_to_extensible(target,newchr,original,oldchr,height,depth,swap,offset,unicode,force)
     local characters = target.characters
     local olddata = characters[oldchr]
     -- brrr ... pagella has only next
-    if olddata and not olddata.commands then -- not: and olddata.width > 0
+    if force or (olddata and not olddata.commands) then -- not: and olddata.width > 0
         local addprivate = fonts.helpers.addprivate
         if swap then
             swap   = characters[swap]
@@ -412,14 +412,14 @@ virtualcharacters[0xFE33E] = function(data)
     local target = data.target
     local height = 0
     local depth  = target.parameters.xheight/4
-    return accent_to_extensible(target,0xFE33E,data.original,0x0305,height,depth,nil,nil,0x203E)
+    return accent_to_extensible(target,0xFE33E,data.original,0x0305,height,depth,nil,nil,0x203E,true)
 end
 
 virtualcharacters[0xFE33F] = function(data)
     local target = data.target
     local height = target.parameters.xheight/8
     local depth  = height
-    return accent_to_extensible(target,0xFE33F,data.original,0x0305,height,depth,nil,nil,0x203E)
+    return accent_to_extensible(target,0xFE33F,data.original,0x0305,height,depth,nil,nil,0x203E,true)
 end
 
 -- spacing (no need for a cache of widths)

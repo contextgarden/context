@@ -520,6 +520,7 @@ void tex_print_meaning(halfword code)
         case lua_call_cmd:
         case lua_local_call_cmd:
         case lua_protected_call_cmd:
+        case lua_semi_protected_call_cmd:
             if (untraced) {
                 tex_print_cs(cur_cs);
                 return;
@@ -589,17 +590,18 @@ void tex_print_meaning(halfword code)
 static const char *tex_aux_special_cmd_string(halfword cmd, halfword chr, const char *unknown)
 {
     switch (cmd) {
-        case node_cmd               : return "[[special cmd: node pointer]]";
-        case lua_protected_call_cmd : return "[[special cmd: lua protected call]]";
-        case lua_value_cmd          : return "[[special cmd: lua value call]]";
-        case iterator_value_cmd     : return "[[special cmd: iterator value]]";
-        case lua_call_cmd           : return "[[special cmd: lua call]]";
-        case lua_local_call_cmd     : return "[[special cmd: lua local call]]";
-        case begin_local_cmd        : return "[[special cmd: begin local call]]";
-        case end_local_cmd          : return "[[special cmd: end local call]]";
-     // case prefix_cmd             : return "[[special cmd: enforced]]";
-        case prefix_cmd             : return "\\always ";
-        default                     : printf("[[unknown cmd: (%i,%i)]]\n", cmd, chr); return unknown;
+        case node_cmd                    : return "[[special cmd: node pointer]]";
+        case lua_protected_call_cmd      : return "[[special cmd: lua protected call]]";
+        case lua_semi_protected_call_cmd : return "[[special cmd: lua semi protected call]]";
+        case lua_value_cmd               : return "[[special cmd: lua value call]]";
+        case iterator_value_cmd          : return "[[special cmd: iterator value]]";
+        case lua_call_cmd                : return "[[special cmd: lua call]]";
+        case lua_local_call_cmd          : return "[[special cmd: lua local call]]";
+        case begin_local_cmd             : return "[[special cmd: begin local call]]";
+        case end_local_cmd               : return "[[special cmd: end local call]]";
+     // case prefix_cmd                  : return "[[special cmd: enforced]]";
+        case prefix_cmd                  : return "\\always ";
+        default                          : printf("[[unknown cmd: (%i,%i)]]\n", cmd, chr); return unknown;
     }
 }
 

@@ -30,6 +30,11 @@
 \newdimension  \columndistance
 \newconstant   \columndirection % 0:lr 1:rl
 
+\pushoverloadmode
+    \newuserunit \columnwidth    cw % column width
+    \newuserunit \columndistance cd % column distance
+\popoverloadmode
+
 \setnewconstant\maxnofcolumns       50
 \setnewconstant\allocatednofcolumns  0
 

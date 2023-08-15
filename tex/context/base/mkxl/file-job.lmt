@@ -77,6 +77,7 @@ local v_global          = variables["global"]
 local e_start           = elements.start
 local e_stop            = elements.stop
 
+
 -- main code .. there is some overlap .. here we have loc://
 
 local function findctxfile(name) -- loc ? any ?
@@ -887,7 +888,7 @@ end
 local scan_delimited = tokens.scanners.delimited
 
 local function getname()
-    return scan_delimited(91,93) or scan_delimited(0,32) -- [name] or name<space>
+    return scan_delimited(91,93) or scan_delimited(0,32) -- [name] or name<space> - use optional
 end
 
 implement { name = "project",        public = true, protected = true, actions = function() process(v_project,    getname()) end }
@@ -899,6 +900,18 @@ implement { name = "useproject",     public = true, protected = true, actions = 
 implement { name = "useenvironment", public = true, protected = true, actions = function(name) process(v_environment,name) end, arguments = "optional" }
 implement { name = "useproduct",     public = true, protected = true, actions = function(name) process(v_product,    name) end, arguments = "optional" } -- will be overloaded
 implement { name = "usecomponent",   public = true, protected = true, actions = function(name) process(v_component,  name) end, arguments = "optional" }
+
+implement {
+    name      = "ignorefile",
+    public    = true,
+    protected = true,
+    arguments = "array",
+    actions = function(s)
+        for i=1,#s do
+            resolvers.ignorelibrary(s[i])
+        end
+    end
+}
 
 -- todo: setsystemmode to currenttype
 -- todo: make start/stop commands at the tex end

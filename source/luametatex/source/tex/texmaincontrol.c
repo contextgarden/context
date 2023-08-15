@@ -352,6 +352,15 @@ static void tex_aux_run_lua_protected_call(void) {
     }
 }
 
+void tex_aux_lua_call(halfword cmd, halfword chr) {
+    (void) cmd;
+    if (chr > 0) {
+        lmt_lua_run(chr, 0);
+    } else {
+        tex_normal_error("luacall", "invalid number");
+    }
+}
+
 static void tex_aux_set_lua_value(int a) {
     if (cur_chr > 0) {
         lmt_lua_run(cur_chr, a);
@@ -701,6 +710,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
             }
         case lua_call_cmd:
         case lua_protected_call_cmd:
+        case lua_semi_protected_call_cmd:
             {
                 if (box_leaders_flag(boxcontext)) {
                     tex_aux_run_lua_protected_call();
@@ -4340,14 +4350,15 @@ static void tex_aux_set_box_property(void)
             }
             break;
         case box_freeze_code:
+        case box_limitate_code:
             {
                 scaled v = tex_scan_int(1, NULL);
                 if (b) {
-                    tex_freeze(b, v);
+                    tex_freeze(b, v, code == box_limitate_code ? node_type(b) : -1);
                 }
             }
             break;
-        case box_attribute_code:
+         case box_attribute_code:
             {
                 halfword att = tex_scan_attribute_register_number();
                 halfword val = tex_scan_int(1, NULL);
@@ -4366,6 +4377,10 @@ static void tex_aux_set_box_property(void)
             } else { 
                 tex_run_vadjust(); /* maybe error */
             }
+            break;
+        case box_stretch_code:
+        case box_shrink_code:
+            /* ignore: maybe apply some factor  */            
             break;
         default:
             break;
@@ -4490,67 +4505,91 @@ static void tex_aux_set_shorthand_def(int a, int force)
             case lua_def_code:
                 {
                     halfword v = tex_scan_function_reference(1);
-                    tex_define_again(a, p, is_protected(a) ? lua_protected_call_cmd : lua_call_cmd, v);
+                    tex_define_again(a, p, is_protected(a) ? lua_protected_call_cmd : (is_semiprotected(a) ? lua_semi_protected_call_cmd : lua_call_cmd), v);
+                    break;
                 }
-                break;
             case integer_def_code:
          /* case integer_def_csname_code: */
                 {
                     halfword v = tex_scan_int(1, NULL);
                     tex_define_again(a, p, integer_cmd, v);
+                    break;
                 }
-                break;
             case parameter_def_code:
          /* case index_def_csname_code: */
                 {
                     halfword v = tex_get_parameter_index(tex_scan_parameter_index());
                     tex_define_again(a, p, index_cmd, v);
+                    break;
                 }
-                break;
             case dimension_def_code:
          /* case dimension_def_csname_code: */
                 {
                     scaled v = tex_scan_dimen(0, 0, 0, 1, NULL);
                     tex_define_again(a, p, dimension_cmd, v);
+                    break;
                 }
-                break;
             case posit_def_code:
          /* case posit_def_csname_code: */
                 {
                     scaled v = tex_scan_posit(1);
                     tex_define_again(a, p, posit_cmd, v);
+                    break;
                 }
-                break;
             case gluespec_def_code:
                 {
                     halfword v = tex_scan_glue(glue_val_level, 1);
                     tex_define_again(a, p, gluespec_cmd, v);
+                    break;
                 }
-                break;
             case mugluespec_def_code:
                 {
                     halfword v = tex_scan_glue(mu_val_level, 1);
                     tex_define_again(a, p, mugluespec_cmd, v);
+                    break;
                 }
-                break;
             /*
             case mathspec_def_code:
                 {
                     halfword v = tex_scan_math_spec(1);
                     tex_define(a, p, mathspec_cmd, v);
+                    break;
                 }
-                break;
             */
             case fontspec_def_code:
                 {
                     halfword v = tex_scan_font(1);
                     tex_define(a, p, fontspec_cmd, v);
+                    break;
                 }
-                break;
             default:
                 tex_confusion("shorthand definition");
                 break;
         }
+    }
+}
+
+static void tex_aux_set_association(int flags, int force)
+{
+    switch (cur_chr) { 
+        case unit_association_code: 
+            { 
+                tex_get_r_token();
+                if (tex_valid_userunit(cur_cmd, cur_chr, cur_cs)) {
+                    halfword cs = cur_cs;
+                    halfword index = tex_scan_unit_register_number(1);
+                    if (force || tex_define_permitted(cs, flags)) {
+                        unit_parameter(index) = cs;
+                        return;
+                    }
+                }
+                tex_handle_error(
+                    normal_error_type,
+                    "Improper \\associateunit",
+                    "Only existing dimension equivalent commands are accepted."
+                );
+                break;
+            }
     }
 }
 
@@ -5997,6 +6036,9 @@ static void tex_run_prefixed_command(void)
         case shorthand_def_cmd:
             tex_aux_set_shorthand_def(flags, force);
             break;
+        case association_cmd:
+            tex_aux_set_association(flags, force);
+            break;
         case internal_toks_cmd:
         case register_toks_cmd:
             tex_aux_set_assign_toks(flags);
@@ -6866,6 +6908,7 @@ inline static void tex_aux_big_switch(int mode, int cmd)
         case set_page_property_cmd: 
         case set_specification_cmd: 
         case shorthand_def_cmd: 
+        case association_cmd: 
         case lua_value_cmd: 
         case integer_cmd: 
         case index_cmd: 
@@ -6874,40 +6917,41 @@ inline static void tex_aux_big_switch(int mode, int cmd)
         case gluespec_cmd: 
         case mugluespec_cmd: 
         case combine_toks_cmd:
-        case some_item_cmd:          tex_run_prefixed_command();       break;
-        case fontspec_cmd:           tex_run_font_spec();              break;
-        case iterator_value_cmd: 
-        case parameter_cmd:          tex_aux_run_illegal_case();       break;
-        case after_something_cmd:    tex_aux_run_after_something();    break;
-        case begin_group_cmd:        tex_aux_run_begin_group();        break;
-        case penalty_cmd:            tex_aux_run_penalty();            break;
-        case case_shift_cmd:         tex_aux_run_case_shift();         break;
-        case catcode_table_cmd:      tex_aux_run_catcode_table();      break;
-        case end_cs_name_cmd:        tex_aux_run_cs_error();           break;
-        case end_group_cmd:          tex_aux_run_end_group();          break;
-        case end_local_cmd:          tex_aux_run_end_local();          break;
-        case ignore_something_cmd:   tex_aux_run_ignore_something();   break;
-        case insert_cmd:             tex_run_insert();                 break;
-        case kern_cmd:               tex_aux_run_kern();               break;
-        case leader_cmd:             tex_aux_run_leader();             break;
-        case legacy_cmd:             tex_aux_run_legacy();             break;
-        case local_box_cmd:          tex_aux_run_local_box();          break;
-        case lua_protected_call_cmd: tex_aux_run_lua_protected_call(); break;
-        case lua_function_call_cmd:  tex_aux_run_lua_function_call();  break;
-        case make_box_cmd:           tex_aux_run_make_box();           break;
-        case set_mark_cmd:           tex_run_mark();                   break;
-        case message_cmd:            tex_aux_run_message();            break;
-        case node_cmd:               tex_aux_run_node();               break;
-        case relax_cmd: 
-        case ignore_cmd:             tex_aux_run_relax();              break;
-        case active_char_cmd:        tex_aux_run_active();             break;
-        case remove_item_cmd:        tex_aux_run_remove_item();        break;
-        case right_brace_cmd:        tex_aux_run_right_brace();        break;
-        case vcenter_cmd:            tex_run_vcenter();                break;
-        case xray_cmd:               tex_aux_run_show_whatever();      break;
-        case alignment_cmd: 
-        case alignment_tab_cmd:      tex_run_alignment_error();        break;
-        case end_template_cmd:       tex_run_alignment_end_template(); break;
+        case some_item_cmd:               tex_run_prefixed_command();       break;
+        case fontspec_cmd:                tex_run_font_spec();              break;
+        case iterator_value_cmd:          
+        case parameter_cmd:               tex_aux_run_illegal_case();       break;
+        case after_something_cmd:         tex_aux_run_after_something();    break;
+        case begin_group_cmd:             tex_aux_run_begin_group();        break;
+        case penalty_cmd:                 tex_aux_run_penalty();            break;
+        case case_shift_cmd:              tex_aux_run_case_shift();         break;
+        case catcode_table_cmd:           tex_aux_run_catcode_table();      break;
+        case end_cs_name_cmd:             tex_aux_run_cs_error();           break;
+        case end_group_cmd:               tex_aux_run_end_group();          break;
+        case end_local_cmd:               tex_aux_run_end_local();          break;
+        case ignore_something_cmd:        tex_aux_run_ignore_something();   break;
+        case insert_cmd:                  tex_run_insert();                 break;
+        case kern_cmd:                    tex_aux_run_kern();               break;
+        case leader_cmd:                  tex_aux_run_leader();             break;
+        case legacy_cmd:                  tex_aux_run_legacy();             break;
+        case local_box_cmd:               tex_aux_run_local_box();          break;
+        case lua_protected_call_cmd:      
+        case lua_semi_protected_call_cmd: tex_aux_run_lua_protected_call(); break;
+        case lua_function_call_cmd:       tex_aux_run_lua_function_call();  break;
+        case make_box_cmd:                tex_aux_run_make_box();           break;
+        case set_mark_cmd:                tex_run_mark();                   break;
+        case message_cmd:                 tex_aux_run_message();            break;
+        case node_cmd:                    tex_aux_run_node();               break;
+        case relax_cmd:                   
+        case ignore_cmd:                  tex_aux_run_relax();              break;
+        case active_char_cmd:             tex_aux_run_active();             break;
+        case remove_item_cmd:             tex_aux_run_remove_item();        break;
+        case right_brace_cmd:             tex_aux_run_right_brace();        break;
+        case vcenter_cmd:                 tex_run_vcenter();                break;
+        case xray_cmd:                    tex_aux_run_show_whatever();      break;
+        case alignment_cmd:               
+        case alignment_tab_cmd:           tex_run_alignment_error();        break;
+        case end_template_cmd:            tex_run_alignment_end_template(); break;
 
         /* */
 

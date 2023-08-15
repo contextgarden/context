@@ -19,6 +19,8 @@ local nodes         = nodes
 
 local implement     = interfaces.implement
 
+local ctx_doifelse  = commands.doifelse
+
 local nodecodes     = nodes.nodecodes
 
 local disc_code     = nodecodes.disc
@@ -484,8 +486,6 @@ do
 
 end
 
-local doifelse = commands.doifelse
-
 do
 
     local directioncodes   = tex.directioncodes
@@ -514,7 +514,7 @@ do
         name      = "doifelserighttoleftinbox",
         arguments = "integer",
         actions   = function(n)
-            doifelse(firstdirinbox(n) == righttoleft_code)
+            ctx_doifelse(firstdirinbox(n) == righttoleft_code)
         end
     }
 
@@ -717,7 +717,7 @@ do
         public    = true,
         protected = true,
         arguments = "2 strings",
-        actions   = { boxes.found, doifelse },
+        actions   = { boxes.found, ctx_doifelse },
     }
 
     implement {
@@ -1078,7 +1078,7 @@ implement {
                 end
             end
         end
-        commands.doifelse(b)
+        ctx_doifelse(b)
     end,
 }
 

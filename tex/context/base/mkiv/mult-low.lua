@@ -242,6 +242,8 @@ return {
         "preferbreakdiscoptioncode", "prefernobreakdiscoptioncode",
         --
         "continueifinputfile", "continuewhenlmtxmode", "continuewhenmkivmode",
+        --
+        "uunit"
     },
     ["helpers"] = {
         --
@@ -268,6 +270,7 @@ return {
         --
         "newcount", "newdimen", "newskip", "newmuskip", "newbox", "newtoks", "newread", "newwrite", "newmarks", "newinsert", "newattribute", "newif", "newfloat",
         "newlanguage", "newfamily", "newfam", "newhelp", -- not used
+        "newuserunit",
         --
         "newinteger", "newdimension", "newgluespec", "newmugluespec", "newposit",
         "aliasinteger", "aliasdimension", "aliasposit",

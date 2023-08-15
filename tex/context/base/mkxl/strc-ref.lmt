@@ -55,6 +55,7 @@ local commands           = commands
 local implement          = interfaces.implement
 
 local ctx_latelua        = context.latelua
+local ctx_doifelse       = commands.doifelse
 
 local texiscount         = tex.iscount
 local texgetcount        = tex.getcount
@@ -785,7 +786,7 @@ end
 
 implement {
     name      = "doifelseurldefined",
-    actions   = { urls.found, commands.doifelse },
+    actions   = { urls.found, ctx_doifelse },
     arguments = "string"
 }
 
@@ -836,7 +837,7 @@ end
 
 implement {
     name      = "doifelsefiledefined",
-    actions   = { files.found, commands.doifelse },
+    actions   = { files.found, ctx_doifelse },
     arguments = "string"
 }
 
@@ -1431,12 +1432,12 @@ implement {
     end
 }
 
-local useproduct = commands.useproduct
+local ctx_useproductuseproduct = commands.useproduct
 
-if useproduct then
+if ctx_useproduct then
 
     local function newuseproduct(product)
-        useproduct(product)
+        ctx_useproduct(product)
         if texconditionals.autocrossfilereferences then
             local component = justacomponent()
             if component then
@@ -2139,7 +2140,7 @@ end
 
 implement {
     name      = "doifelsereference",
-    actions   = { references.valid, commands.doifelse },
+    actions   = { references.valid, ctx_doifelse },
     arguments = {
         "string",
         "string",
@@ -2153,7 +2154,7 @@ implement {
 
 implement {
     name      = "doifelsereferencechecked",
-    actions   = { references.checked, commands.doifelse },
+    actions   = { references.checked, ctx_doifelse },
     arguments = {
         "string",
         "string",

@@ -20,6 +20,7 @@ local concat, insert, remove = table.concat, table.insert, table.remove
 local topattern = string.topattern
 local utfchar = utf.char
 local datetime = os.date
+local sleep = os.sleep
 local openfile = io.open
 
 local write_nl = print

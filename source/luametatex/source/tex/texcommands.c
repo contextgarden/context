@@ -600,6 +600,9 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "boxadapt",                       set_box_property_cmd,   box_adapt_code,                           0);
         tex_primitive(luatex_command, "boxrepack",                      set_box_property_cmd,   box_repack_code,                          0);
         tex_primitive(luatex_command, "boxfreeze",                      set_box_property_cmd,   box_freeze_code,                          0);
+        tex_primitive(luatex_command, "boxlimitate",                    set_box_property_cmd,   box_limitate_code,                        0);
+        tex_primitive(luatex_command, "boxstretch",                     set_box_property_cmd,   box_stretch_code,                         0);
+        tex_primitive(luatex_command, "boxshrink",                      set_box_property_cmd,   box_shrink_code,                          0);
         tex_primitive(luatex_command, "boxattribute",                   set_box_property_cmd,   box_attribute_code,                       0);
         tex_primitive(luatex_command, "boxvadjust",                     set_box_property_cmd,   box_vadjust_code,                         0);
 
@@ -671,6 +674,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "lastchknumber",                  some_item_cmd,          last_chk_integer_code,                    0);
         tex_primitive(luatex_command, "lastchkdimension",               some_item_cmd,          last_chk_dimension_code,                  0);
         tex_primitive(luatex_command, "numericscale",                   some_item_cmd,          numeric_scale_code,                       0);
+        tex_primitive(luatex_command, "numericscaled",                  some_item_cmd,          numeric_scaled_code,                      0);
         tex_primitive(luatex_command, "indexofregister",                some_item_cmd,          index_of_register_code,                   0);
         tex_primitive(luatex_command, "indexofcharacter",               some_item_cmd,          index_of_character_code,                  0);
         tex_primitive(luatex_command, "currentloopiterator",            some_item_cmd,          current_loop_iterator_code,               0);
@@ -1090,6 +1094,8 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "fontspecdef",                    shorthand_def_cmd,      fontspec_def_code,                        0);
      /* tex_primitive(luatex_command, "integerdefcsname",               shorthand_def_cmd,      integer_def_csname_code,                  0); */
      /* tex_primitive(luatex_command, "dimensiondefcsname",             shorthand_def_cmd,      dimension_def_csname_code,                0); */
+
+        tex_primitive(luatex_command, "associateunit",                  association_cmd,        unit_association_code,                    0);
 
         tex_primitive(tex_command,    "noindent",                       begin_paragraph_cmd,    noindent_par_code,                        0);
         tex_primitive(tex_command,    "indent",                         begin_paragraph_cmd,    indent_par_code,                          0);

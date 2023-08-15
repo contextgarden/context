@@ -50,6 +50,8 @@ return {
         "matrixbox", "matrixcell", "matrixspan",
         --
         "pensilcolor", "pensilstep",
+        --
+        "uu"
     },
     commands = {
         "loadfile", "loadimage", "loadmodule",

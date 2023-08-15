@@ -70,11 +70,11 @@ implement { name = "tand", actions = { math.tand, nicenumber, context }, argumen
 function commands.format(fmt,...) context((gsub(fmt,"@","%%")),...) end
 
 implement {
-    name      = "formatone", -- used as such so no name change here
-    public    = true,
-    protected = true,
-    arguments = "2 strings",
-    actions   = function(f,s) context((gsub(f,"@","%%")),s) end,
+    name          = "formatone", -- used as such so no name change here
+    public        = true,
+    semiprotected = true,
+    arguments     = "2 strings",
+    actions       = function(f,s) context((gsub(f,"@","%%")),s) end,
 }
 
 local function tobits(b,w,d)

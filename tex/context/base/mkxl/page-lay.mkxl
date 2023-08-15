@@ -1504,6 +1504,17 @@
                  \c!columns=\plusone,
           \c!columndistance=\zeropoint]
 
+\pushoverloadmode
+    \newuserunit \textwidth  tw
+    \newuserunit \textheight th
+    \newuserunit \hsize      hs % just for fun
+    \newuserunit \vsize      vs % just for fun
+\popoverloadmode
+
+% \appendtoks
+%     \layoutunit\dimexpr\textwidth/100\relax
+% \to \everysetuplayout
+
 %D First we define a whole range of (DIN) papersizes, of which the A-series makes
 %D most sense. We enable checking.
 

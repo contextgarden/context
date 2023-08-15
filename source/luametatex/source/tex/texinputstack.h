@@ -412,6 +412,10 @@ typedef enum token_types {
     template_pre_text,     /*tex |u_j| template    */ 
     template_post_text,    /*tex |v_j| template    */ 
 
+    /*tex This one is rather special too and never flushed. */
+
+    associated_text,       /*tex used in units */
+
     /*tex These are unreferenced and always flushed en the end. */
 
     backed_up_text,        /*tex text to be reread */
@@ -459,10 +463,11 @@ extern void        tex_show_context            (void);
 extern void        tex_show_validity           (void);
 extern void        tex_set_trick_count         (void);
 extern void        tex_begin_token_list        (halfword t, quarterword kind); /* include some tracing */
-extern void        tex_begin_parameter_list    (halfword t);                   /* less inlining code */
-extern void        tex_begin_backed_up_list    (halfword t);                   /* less inlining code */
-extern void        tex_begin_inserted_list     (halfword t);                   /* less inlining code */
-extern void        tex_begin_macro_list        (halfword t);                   /* less inlining code */
+extern void        tex_begin_parameter_list    (halfword t);
+extern void        tex_begin_backed_up_list    (halfword t);
+extern void        tex_begin_inserted_list     (halfword t);
+extern void        tex_begin_associated_list   (halfword t);
+extern void        tex_begin_macro_list        (halfword t);
 extern void        tex_end_token_list          (void);
 extern void        tex_cleanup_input_state     (void);
 extern void        tex_back_input              (halfword t);

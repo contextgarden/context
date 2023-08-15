@@ -9,16 +9,16 @@ if not modules then modules = { } end modules ['file-ini'] = {
 -- It's more convenient to manipulate filenames (paths) in Lua than in TeX. These
 -- methods have counterparts at the TeX end.
 
-local implement         = interfaces.implement
-local setmacro          = interfaces.setmacro
-local setcount          = interfaces.setcount
+local implement       = interfaces.implement
+local setmacro        = interfaces.setmacro
+local setcount        = interfaces.setcount
 
-resolvers.jobs          = resolvers.jobs or { }
+resolvers.jobs        = resolvers.jobs or { }
 
-local filenametotable   = file.nametotable
-local findtexfile       = resolvers.findtexfile
+local filenametotable = file.nametotable
+local findtexfile     = resolvers.findtexfile
 
-local commands_doifelse = commands.doifelse
+local ctx_doifelse    = commands.doifelse
 
 local function splitfilename(full)
     local split = filenametotable(full)
@@ -43,7 +43,7 @@ local function istexfile(name)
     return name ~= "" and name
 end
 
-implement { name = "splitfilename",      actions = splitfilename,                       arguments = "string" }
-implement { name = "doifelseparentfile", actions = { isparentfile, commands_doifelse }, arguments = "string" }
-implement { name = "doifelsepathexist",  actions = { lfs.isdir,    commands_doifelse }, arguments = "string" }
-implement { name = "doifelsefileexist",  actions = { istexfile,    commands_doifelse }, arguments = "string" }
+implement { name = "splitfilename",      actions = splitfilename,                  arguments = "string" }
+implement { name = "doifelseparentfile", actions = { isparentfile, ctx_doifelse }, arguments = "string" }
+implement { name = "doifelsepathexist",  actions = { lfs.isdir,    ctx_doifelse }, arguments = "string" }
+implement { name = "doifelsefileexist",  actions = { istexfile,    ctx_doifelse }, arguments = "string" }

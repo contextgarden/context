@@ -716,7 +716,7 @@ typedef enum dimen_codes {
     emergency_extra_stretch_code,  
     glyph_x_offset_code,
     glyph_y_offset_code,
-    px_dimen_code,
+    px_dimen_code,                 /*tex This is a historic one, not used but we keep it. */  
     tab_size_code,
     page_extra_goal_code,
     ignore_depth_criterion_code,
@@ -737,6 +737,12 @@ typedef enum posit_codes {
     /*tex total number of posit parameters */
     number_posit_pars,
 } posit_codes;
+
+typedef enum unit_codes {
+    /*tex total number of unit parameters */
+    number_unit_pars,
+} unit_codes;
+
 
 // typedef enum special_sequence_codes {
 //  // current_font_sequence_code,
@@ -763,7 +769,7 @@ typedef enum posit_codes {
 # define internal_glue_number(a)        ((a) - internal_glue_base)
 # define register_glue_number(a)        ((a) - register_glue_base)
 
-# define internal_mu_glue_base          (register_glue_base    + max_n_of_glue_registers)
+# define internal_mu_glue_base          (register_glue_base + max_n_of_glue_registers)
 # define register_mu_glue_base          (internal_mu_glue_base + number_mu_glue_pars + 1)
 # define internal_mu_glue_location(a)   (internal_mu_glue_base + (a))
 # define register_mu_glue_location(a)   (register_mu_glue_base + (a))
@@ -771,16 +777,16 @@ typedef enum posit_codes {
 # define register_mu_glue_number(a)     ((a) - register_mu_glue_base)
 
 # define internal_toks_base             (register_mu_glue_base + max_n_of_mu_glue_registers)
-# define register_toks_base             (internal_toks_base    + number_tok_pars + 1)
-# define internal_toks_location(a)      (internal_toks_base    + (a))
-# define register_toks_location(a)      (register_toks_base    + (a))
+# define register_toks_base             (internal_toks_base + number_tok_pars + 1)
+# define internal_toks_location(a)      (internal_toks_base + (a))
+# define register_toks_location(a)      (register_toks_base + (a))
 # define internal_toks_number(a)        ((a) - internal_toks_base)
 # define register_toks_number(a)        ((a) - register_toks_base)
 
 # define internal_box_base              (register_toks_base + max_n_of_toks_registers)
-# define register_box_base              (internal_box_base  + number_box_pars + 1)
-# define internal_box_location(a)       (internal_box_base  + (a))
-# define register_box_location(a)       (register_box_base  + (a))
+# define register_box_base              (internal_box_base + number_box_pars + 1)
+# define internal_box_location(a)       (internal_box_base + (a))
+# define register_box_location(a)       (register_box_base + (a))
 # define internal_box_number(a)         ((a) - internal_box_base)
 # define register_box_number(a)         ((a) - register_box_base)
 
@@ -791,28 +797,32 @@ typedef enum posit_codes {
 # define internal_int_number(a)         ((a) - internal_int_base)
 # define register_int_number(a)         ((a) - register_int_base)
 
-# define internal_attribute_base        (register_int_base  + max_n_of_int_registers)
+# define internal_attribute_base        (register_int_base + max_n_of_int_registers)
 # define register_attribute_base        (internal_attribute_base + number_attribute_pars + 1)
 # define internal_attribute_location(a) (internal_attribute_base + (a))
 # define register_attribute_location(a) (register_attribute_base + (a))
 # define internal_attribute_number(a)   ((a) - internal_attribute_base)
 # define register_attribute_number(a)   ((a) - register_attribute_base)
 
-# define internal_dimen_base            (register_attribute_base  + max_n_of_attribute_registers)
+# define internal_dimen_base            (register_attribute_base + max_n_of_attribute_registers)
 # define register_dimen_base            (internal_dimen_base + number_dimen_pars + 1)
 # define internal_dimen_location(a)     (internal_dimen_base + (a))
 # define register_dimen_location(a)     (register_dimen_base + (a))
 # define internal_dimen_number(a)       ((a) - internal_dimen_base)
 # define register_dimen_number(a)       ((a) - register_dimen_base)
 
-# define internal_posit_base            (register_dimen_base  + max_n_of_dimen_registers)
+# define internal_posit_base            (register_dimen_base + max_n_of_dimen_registers)
 # define register_posit_base            (internal_posit_base + number_posit_pars + 1)
 # define internal_posit_location(a)     (internal_posit_base + (a))
 # define register_posit_location(a)     (register_posit_base + (a))
 # define internal_posit_number(a)       ((a) - internal_posit_base)
 # define register_posit_number(a)       ((a) - register_posit_base)
 
-# define internal_specification_base        (register_posit_base + max_n_of_posit_registers)
+# define internal_unit_base             (register_posit_base + max_n_of_posit_registers)
+# define internal_unit_location(a)      (internal_unit_base + (a))
+# define internal_unit_number(a)        ((a) - internal_unit_base)
+
+# define internal_specification_base        (internal_unit_base + max_n_of_unit_registers)
 # define internal_specification_location(a) (internal_specification_base + (a))
 # define internal_specification_number(a)   ((a) - internal_specification_base)
 
@@ -1043,9 +1053,25 @@ typedef enum save_types {
 # define mu_glue_parameter(A)       eq_value(internal_mu_glue_location(A))
 # define box_parameter(A)           eq_value(internal_box_location(A))
 # define specification_parameter(A) eq_value(internal_specification_location(A))
+# define unit_parameter(A)          eq_value(internal_unit_location(A))
+
+# define unit_parameter_hash(l,r)   (26 * (l - 'a') + (r - 'a'))
+
+inline static int unit_parameter_index(int l, int r) {
+    if (l >= 'a' && l <= 'z' && r >= 'a' && r <= 'z') { 
+        return unit_parameter_hash(l,r);
+    } else { 
+        l |= 0x60;
+        r |= 0x60;
+        if (l >= 'a' && l <= 'z' && r >= 'a' && r <= 'z') { 
+            return unit_parameter_hash(l,r);
+        } else { 
+            return -1;
+        }
+    }
+}
 
 /*tex These come from |\ALEPH| aka |\OMEGA|: */
-
 
 # define is_valid_local_box_code(c) (c >= first_local_box_code && c <= last_local_box_code)
 
@@ -1831,6 +1857,7 @@ typedef enum auto_migration_mode_bits {
 # define mu_skip_register(j)   eq_value(register_mu_glue_location(j))
 # define skip_register(j)      eq_value(register_glue_location(j))
 # define toks_register(j)      eq_value(register_toks_location(j))
+# define unit_register(j)      eq_value(register_unit_location(j))
 
 /*
     Injecting these frozen tokens can for instance happen when we scan for an integer or dimension

@@ -169,6 +169,8 @@ do
     registerdirect("EmWidth",  function() return emwidths [false] * factor end)
     registerdirect("ExHeight", function() return exheights[false] * factor end)
 
+    local d_uunit = isdimen("uunit") registerdirect("uunit", function() return getdimen(d_uunit) * factor end)
+
 end
 
 do

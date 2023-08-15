@@ -331,6 +331,9 @@ static void tex_aux_print_current_input_state(void)
             case template_post_text:
                 tex_print_str("templatepost");
                 break;
+            case associated_text:
+                tex_print_str("associated");
+                break;
             case backed_up_text:
                 tex_print_str(lmt_input_state.cur_input.loc ? "to be read again" : "recently read");
                 break;
@@ -778,6 +781,15 @@ void tex_begin_inserted_list(halfword t)
     lmt_input_state.cur_input.token_type = inserted_text;
 }
 
+void tex_begin_associated_list(halfword t)
+{
+    tex_aux_push_input();
+    lmt_input_state.cur_input.state = token_list_state;
+    lmt_input_state.cur_input.start = t;
+    lmt_input_state.cur_input.loc = t;
+    lmt_input_state.cur_input.token_type = associated_text;
+}
+
 void tex_begin_macro_list(halfword t)
 {
     tex_aux_push_input();
@@ -810,6 +822,7 @@ void tex_end_token_list(void)
             }
             break;
         case template_post_text:
+        case associated_text:
             break;
         case backed_up_text:
         case inserted_text:
@@ -861,6 +874,7 @@ void tex_cleanup_input_state(void)
                 }
                 break;
             case template_post_text:
+            case associated_text:
                 break;
             case backed_up_text:
             case inserted_text:

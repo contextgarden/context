@@ -954,7 +954,7 @@ void tex_repack(halfword p, scaled w, int m)
 //     }
 // } 
 
-void tex_freeze(halfword p, int recurse)
+void tex_freeze(halfword p, int recurse, int limitate)
 {
     if (p) {
         switch (node_type(p)) { 
@@ -971,7 +971,7 @@ void tex_freeze(halfword p, int recurse)
                                     switch (sign) {
                                         case stretching_glue_sign:
                                             if (glue_stretch_order(c) == order) {
-                                                glue_amount(c) += scaledround(glue_stretch(c) * set);
+                                                glue_amount(c) += limitate == hlist_node ? glue_stretch(c) : scaledround(glue_stretch(c) * set);
                                             }
                                             break;
                                         case shrinking_glue_sign:
@@ -988,18 +988,16 @@ void tex_freeze(halfword p, int recurse)
                                 }
                             case hlist_node:
                             case vlist_node:
-                                {
-                                    if (recurse) {
-                                        tex_freeze(c, recurse);
-                                    }
-                                    break;
+                                if (recurse) {
+                                    tex_freeze(c, recurse, limitate);
                                 }
+                                break;
                             case math_node:
                                 if (sign != normal_glue_sign) { 
                                     switch (sign) {
                                         case stretching_glue_sign:
                                             if (math_stretch_order(c) == order) {
-                                                math_amount(c) += scaledround(math_stretch(c) * set);
+                                                math_amount(c) += limitate == hlist_node ? math_stretch(c) : scaledround(math_stretch(c) * set);
                                             }
                                             break;
                                         case shrinking_glue_sign:
@@ -1037,7 +1035,7 @@ void tex_freeze(halfword p, int recurse)
                                     switch (sign) {
                                         case stretching_glue_sign:
                                             if (glue_stretch_order(c) == order) {
-                                                glue_amount(c) += scaledround(glue_stretch(c) * set);
+                                                glue_amount(c) += limitate == vlist_node ? glue_stretch(c) : scaledround(glue_stretch(c) * set);
                                             }
                                             break;
                                         case shrinking_glue_sign:
@@ -1054,12 +1052,10 @@ void tex_freeze(halfword p, int recurse)
                                 break;
                             case hlist_node:
                             case vlist_node:
-                                {
-                                    if (recurse) {
-                                        tex_freeze(c, recurse);
-                                    }
-                                    break;
+                                if (recurse) {
+                                    tex_freeze(c, recurse, limitate);
                                 }
+                                break;
                             default: 
                                 break;
                         }
@@ -1074,6 +1070,70 @@ void tex_freeze(halfword p, int recurse)
                 return;
         }
     }
+}
+
+scaled tex_stretch(halfword p)
+{
+    scaled stretch = 0;
+    if (p) {
+        switch (node_type(p)) { 
+            case hlist_node:
+            case vlist_node:
+                if (box_glue_sign(p) == stretching_glue_sign) { 
+                    halfword c = box_list(p);
+                    halfword order = box_glue_order(p);
+                    while (c) {
+                        switch (node_type(c)) {
+                            case glue_node:
+                                if (glue_stretch_order(c) == order) {
+                                    stretch += glue_stretch(c);
+                                }
+                                break;
+                            case math_node:
+                                if (math_stretch_order(c) == order) {
+                                    stretch += math_stretch(c);
+                                }
+                                break;
+                        }
+                        c = node_next(c);
+                    }
+                }
+                break;
+        }
+    }
+    return stretch;
+}
+
+scaled tex_shrink(halfword p)
+{
+    scaled shrink = 0;
+    if (p) {
+        switch (node_type(p)) { 
+            case hlist_node:
+            case vlist_node:
+                if (box_glue_sign(p) == shrinking_glue_sign) { 
+                    halfword c = box_list(p);
+                    halfword order = box_glue_order(p);
+                    while (c) {
+                        switch (node_type(c)) {
+                            case glue_node:
+                                if (glue_shrink_order(c) == order) {
+                                    shrink += glue_shrink(c);
+                                }
+                                break;
+                            case math_node:
+                                if (math_shrink_order(c) == order) {
+                                    shrink += math_shrink(c);
+                                }
+                                break;
+                        }
+                        c = node_next(c);
+                    }
+                }
+                break;
+        }
+    }
+    return shrink;
 }
 
 halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int retain)

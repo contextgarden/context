@@ -9900,6 +9900,10 @@ return {
    ["pe"]="مرزمتن",
    ["ro"]="limittext",
   },
+  ["limitstretch"]={
+   ["en"]="limitstretch",
+   ["nl"]="limietrek",
+  },
   ["line"]={
    ["cs"]="radek",
    ["de"]="zeile",
@@ -16058,6 +16062,14 @@ return {
    ["nl"]="hang",
    ["pe"]="بیاویز",
    ["ro"]="suspenda",
+  },
+  ["hangleft"]={
+   ["en"]="hangleft",
+   ["nl"]="hanglinks",
+  },
+  ["hangright"]={
+   ["en"]="hangright",
+   ["nl"]="hangrechts",
   },
   ["hanging"]={
    ["cs"]="visici",

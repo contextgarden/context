@@ -116,77 +116,13 @@
      {\box\b_page_one_contents}%
    \egroup}
 
-% \protected\def\page_col_command_package_contents_one#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
-%   {\bgroup
-%      \forgetall
-%      % see one for comments as it is similar
-%      \strc_notes_check_if_bottom_present
-%      \d_page_one_natural_depth\dp#2\relax
-%      \setbox\b_page_one_contents\vbox to \textheight
-%        {\page_col_command_flush_top_insertions
-%         \page_one_registered_text_area_a#1#2%
-%         \hsize\d_page_col_column_width
-%         \ifgridsnapping
-%           \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
-%           \prevdepth\openstrutdepth
-%           \page_col_command_flush_bottom_insertions
-%           \vfil
-%         \orelse\ifcase\bottomraggednessmode
-%           % ragged (default)
-%           \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
-%           \prevdepth\openstrutdepth
-%           \page_col_command_flush_bottom_insertions
-%           \vfil
-%         \or
-%           % align (normal)
-%           \page_col_command_flush_bottom_insertions
-%         \or
-%           % baseline
-%           \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
-%           \page_col_command_flush_bottom_insertions
-%         \or
-%           % depth
-%           \vskip-\d_page_one_natural_depth
-%           \page_col_command_flush_bottom_insertions
-%         \fi
-%         \fakepagenotes}%
-%      \page_one_command_package_show_state
-%      \ifconditional\c_notes_bottom_present
-%        \ifgridsnapping
-%          \ifcase\layoutlines
-%            \getrawnoflines\textheight
-%          \else
-%            \noflines\layoutlines
-%          \fi
-%          \scratchoffset\dimexpr\numexpr\noflines-\plusone\relax\lineheight+\topskip\relax
-%        \else
-%          \scratchoffset\ht\b_page_one_contents
-%        \fi
-%        \setbox\b_page_one_bottom_notes\hpack
-%          {\hsize\d_page_col_column_width
-%           \setupnotes[\c!width=\textwidth]%
-%           \lower\scratchoffset\vbox{\placebottomnotes\par\kern\zeropoint}}%
-%        \ht\b_page_one_contents    \zeropoint
-%        \wd\b_page_one_contents    \zeropoint
-%        \ht\b_page_one_bottom_notes\zeropoint
-%        \wd\b_page_one_bottom_notes\d_page_col_column_width
-%        \page_col_registered_text_area_b
-%          {\vpack to \textheight
-%             {\hpack{\box\b_page_one_contents\box\b_page_one_bottom_notes}}}%
-%      \else
-%        \ht\b_page_one_contents\textheight
-%        \wd\b_page_one_contents\d_page_col_column_width
-%        \page_col_registered_text_area_b
-%          {\box\b_page_one_contents}%
-%      \fi
-%    \egroup}
-
 \protected\def\page_col_command_package_contents_one#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
   {\bgroup
      \forgetall
      % see one for comments as it is similar
      \strc_notes_check_if_bottom_present
      \d_page_one_natural_depth\dp#2\relax
+%      \page_layouts_check_stretch#2%
      \setbox\b_page_one_contents\vbox to \textheight
        {\page_col_command_flush_top_insertions
         \page_one_registered_text_area_a#1#2%
@@ -215,6 +151,7 @@
           \page_col_command_flush_bottom_insertions
         \fi
         \fakepagenotes}%
+     \page_layouts_check_stretch\b_page_one_contents
      \page_one_command_package_show_state
      \ifconditional\c_notes_bottom_present
        \ifgridsnapping
@@ -240,6 +177,15 @@
          {\vpack to \textheight
             {\hpack{\box\b_page_one_contents\box\b_page_one_bottom_notes}}}%
      \else
+       \ifcase\c_page_scale_lines
+         % nothing to do: vz not enabled
+       \orelse\ifdim\d_page_box_stretch_delta>\zeropoint
+         \page_scale_text_box_register_box\b_page_one_contents
+         \page_scale_text_box\b_page_one_contents
+       \else
+         \page_scale_text_box_register_page
+         \page_scale_text_box\b_page_one_contents
+       \fi
        \ht\b_page_one_contents\textheight
        \wd\b_page_one_contents\d_page_col_column_width
        \page_col_registered_text_area_b
@@ -296,38 +242,6 @@
 
 % use \currentmixedcolumns instead of \recurselevel
 
-% \def\page_col_routine_package
-%   {\global\setbox\normalpagebox\hbox to \makeupwidth\bgroup
-%      \edef\p_separator{\pagecolumnsparameter\c!separator}%
-%      \pagecolumnseparatorwidth\d_page_col_distance
-%      \ifcstok{\pagecolumnsparameter\c!direction}\v!reverse
-%        \dostepwiserecurse\c_page_col_n_of_columns\plusone\minusone
-%          {\page_col_routine_package_step
-%           \ifnum\recurselevel>\plusone
-%             \page_col_routine_package_separate
-%           \fi}%
-%      \else
-%        \dorecurse\c_page_col_n_of_columns
-%          {\page_col_routine_package_step
-%           \ifnum\recurselevel<\c_page_col_n_of_columns
-%             \page_col_routine_package_separate
-%           \fi}%
-%      \fi
-%    \egroup
-%    \resetboxesincache{\s!pagecolumn}}
-
-% \def\page_col_routine_package_step
-%   {% needs packaging anyway
-%    \mofcolumns\recurselevel % added
-%    \getboxfromcache{\s!pagecolumn}{\number\recurselevel}\scratchbox
-%    \page_lines_add_numbers_to_box\scratchbox\recurselevel\c_page_col_n_of_columns\plusone % new
-%    \page_marks_synchronize_column\plusone\c_page_col_n_of_columns\recurselevel\scratchbox
-%    % backgrounds
-%    \anch_mark_column_box\scratchbox\recurselevel
-%    \pagecolumnseparatorheight\ht\scratchbox
-%    \pagecolumnseparatordepth \dp\scratchbox
-%    \inheritedpagecolumnsframedbox\recurselevel\scratchbox}
-
 \def\page_col_routine_package
   {\global\setbox\normalpagebox\hbox to \makeupwidth\bgroup
      \edef\p_separator{\pagecolumnsparameter\c!separator}%
@@ -372,52 +286,6 @@
    \egroup}
 
 %D \unknown
-
-% \protected\def\page_col_command_check_if_float_fits
-%   {\ifconditional\c_page_floats_not_permitted
-%      \global\c_page_floats_room\conditionalfalse
-%   %\orelse\ifabsdim\dimexpr\d_page_col_available-\naturalfloatwd\relax<\onepoint
-%    \orelse\ifdim\dimexpr\d_page_col_available-\naturalfloatwd\relax>-\onepoint
-%      \global\c_page_floats_room\conditionaltrue
-%    \else
-%      \global\c_page_floats_room\conditionalfalse
-%    \fi
-%    \ifconditional\c_page_floats_room
-%      \begingroup
-%      \scratchdimen\dimexpr\pagetotal+\lineheight\relax
-%      \ifdim\scratchdimen>\pagegoal
-%        \goodbreak
-%        \ifdim\dimexpr\d_page_col_available-\naturalfloatwd\relax>\onepoint
-%          \global\c_page_floats_room\conditionalfalse
-%        \else
-%          \global\c_page_floats_room\conditionaltrue
-%        \fi
-%      \fi
-%      \endgroup
-%    \fi
-%    \ifconditional\c_page_floats_room
-%      \ifdim\pagetotal>\zeropoint
-%        \scratchdimenone\dimexpr\pagetotal+\floatheight+\d_strc_floats_top-\pageshrink\relax
-%        \scratchdimentwo\pagegoal
-%        \relax % needed
-%        \ifcase\c_page_one_float_method
-%          % method 0 : raw
-%        \or
-%          % method 1 : safe
-%          \advanceby\scratchdimentwo -\strutdp
-%        \or
-%          % method 2 : tight
-%          \advanceby\scratchdimenone -\onepoint
-%        \fi
-%        \relax % really needed ! ! ! !
-%        \ifdim\scratchdimenone>\scratchdimentwo
-%          \global\c_page_floats_room\conditionalfalse
-%        \fi
-%      \fi
-%      \ifconditional\c_page_floats_room
-%        \global\setbox\floatbox\hpack to \d_page_col_available{\hss\box\floatbox\hss}%
-%      \fi
-%    \fi}
 
 \protected\def\page_col_command_check_if_float_fits
   {\ifconditional\c_page_floats_not_permitted

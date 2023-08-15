@@ -1,0 +1,288 @@
+if not modules then modules = { } end modules ['trac-bld'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to trac-bld.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local nuts          = nodes.nuts
+local tonut         = nodes.tonut
+
+local insertafter   = nuts.insertafter
+local hpack_string  = nuts.typesetters.tohpack
+local hpack         = nuts.hpack
+local getheight     = nuts.getheight
+local getid         = nuts.getid
+local setwhd        = nuts.setwhd
+local setoffsets    = nuts.setoffsets
+local setlink       = nuts.setlink
+
+local newrule       = nuts.pool.virtualrule
+
+local nodecodes     = nodes.nodecodes
+
+local hlist_code    = nodecodes.hlist
+local vlist_code    = nodecodes.vlist
+local rule_code     = nodecodes.rule
+
+local setcolor      = nodes.tracers.colors.set
+
+local buildcodes    = tex.buildcodes
+
+local ejectpenalty  = tex.magicconstants.eject_penalty
+
+local report     = logs.reporter("build")
+
+local xoffset    =  4 * 65536
+local yoffset    =  1 * 65536
+local usedfont   = false
+
+local f_status_y = string.formatters["%i : badness=%i costs=%i height=%p depth=%p stretch=%p shrink=%p hasfil=%l"]
+local f_status_n = string.formatters["%i"]
+
+local variables  = interfaces.variables
+local v_after    = variables.after
+local v_before   = variables.before
+local v_reset    = variables.reset
+local v_yes      = variables.yes
+local v_all      = variables.all
+
+local done       = { }
+local last       = false
+local count      = 0
+local forced     = { } -- we can combine forced and ignored but then we can't disable
+local ignored    = { } -- the callback easily
+local detail     = false
+local enabled    = false
+local ejecting   = false
+
+-- use
+
+local function checkedforce(moveon,fireup,penalty)
+    local how = forced[count]
+    ejecting = fireup and penalty == ejectpenalty
+    if how == v_after then
+        report("forcing pagebreak %s %i",how,count)
+        forced[count]  = nil
+        ignored[count] = true
+-- check on moveon
+        return true, true
+    elseif how == v_before then
+        report("forcing pagebreak %s %i",how,count)
+        forced[count]  = nil
+        ignored[count] = true
+        return false, true
+    else
+        return moveon, fireup
+    end
+end
+
+local function check(current,moveon,fireup,badness,costs,penalty)
+    if last then
+        count = count + 1
+    end
+    return checkedforce(moveon,fireup,penalty)
+end
+
+local forceactions = {
+    [buildcodes.step]  = step,
+    [buildcodes.check] = check,
+}
+
+local function handleforce(what,...)
+    local action = forceactions[what]
+    if action then
+        return action(...)
+    end
+end
+
+local function disableforce()
+    count   = 0
+    forced  = { }
+    ignored = { }
+    if enabled and not trace then
+        callback.register("show_build")
+    end
+    enabled = false
+end
+
+local function enableforce()
+    if not enabled and not trace then
+        callback.register("show_build",handleforce)
+    end
+    enabled = true
+end
+
+interfaces.implement {
+    name      = "registerforcedbreak",
+    public    = true,
+    protected = true,
+    arguments = "2 optionals",
+    actions   = function(where,how)
+        if where == v_reset then
+            disableforce()
+        else
+            for n in string.gmatch(where,"%d+") do
+                forced[tonumber(n)] = how
+            end
+            enableforce()
+        end
+    end
+}
+
+interfaces.implement {
+    name      = "resetforcedbreak",
+    public    = true,
+    protected = true,
+    actions   = disableforce,
+}
+
+-- show
+
+local function initialize()
+    usedfont = nodes.visualizers.getusedfont()
+end
+
+local function step(current)
+    current = tonut(current)
+    local id = getid(current)
+    if id == hlist_code or id == vlist_code or id == rule_code then
+        last = current
+    end
+end
+
+local function check(current,moveon,fireup,badness,costs,penalty)
+    if last then
+        count = count + 1
+        done[#done+1] = {
+            count   = count,
+            line    = last,
+            badness = badness,
+            penalty = penalty,
+            costs   = costs,
+            height  = 0,
+            depth   = 0,
+            stretch = 0,
+            shrink  = 0,
+            hasfil  = false,
+        }
+    end
+    return checkedforce(moveon,fireup,penalty)
+end
+
+-- local function skip(current)
+--     if last then
+--         count = count + 1
+--         done[#done+1] = {
+--             count = count,
+--             line  = last,
+--         }
+--     end
+-- end
+
+local function move(current,height,depth,stretch,shrink,hasfil)
+    local d = done[#done]
+    if d then
+        d.height  = height
+        d.depth   = depth
+        d.stretch = stretch
+        d.shrink  = shrink
+        d.hasfil  = hasfil
+    end
+end
+
+-- local function fireup(current)
+-- end
+
+-- local function wrapup()
+-- end
+
+local showactions = {
+    [buildcodes.initialize] = initialize,
+    [buildcodes.step]       = step,
+    [buildcodes.check]      = check,
+ -- [buildcodes.skip]       = skip,
+    [buildcodes.move]       = move,
+ -- [buildcodes.fireup]     = fireup,
+ -- [buildcodes.wrapup]     = wrapup,
+}
+
+interfaces.implement {
+    name    = "build_page_before_shipout",
+    actions = function()
+        if trace then
+            done[#done] = nil
+            if #done > 0 then
+                for i=1,#done do
+                    local data    = done[i]
+                    local line    = data.line
+                    local count   = data.count
+                    if not ignored[count] then
+                        local badness = data.badness
+                        if detail and badness then
+                            data = f_status_y(count,badness,data.costs,data.height,data.depth,data.stretch,data.shrink,data.hasfil)
+                        else
+                            data = f_status_n(count)
+                        end
+                        local text   = hpack_string(data,usedfont)
+                        local height = getheight(text)
+                        local rule   = newrule(height,height,0)
+                        setcolor(rule,"trace:db")
+                        setoffsets(rule,-(height+xoffset),0)
+                        text = hpack(setlink(rule,text))
+                        setwhd(text,0,0,0)
+                        setoffsets(text,0,-(height+yoffset))
+                        insertafter(line,line,text)
+                    end
+                end
+                if ejecting then
+                    count = 0
+                    done = { }
+                end
+            end
+        end
+    end
+}
+
+interfaces.implement {
+    name    = "build_page_after_shipout",
+    actions = function()
+        if trace then
+            done = { }
+        end
+        last = false
+    end
+}
+
+local function build_page_setup(v)
+    if v == "all" or v == v_all then
+        trace  = true
+        detail = true
+    elseif v == true or v == "yes" or v == v_yes then
+        trace  = true
+        detail = false
+    else
+        trace  = false
+        detail = false
+    end
+    if trace then
+        callback.register("show_build", function(what,...)
+            local action = showactions[what]
+            if action then
+                return action(...)
+            end
+        end)
+    elseif not enabled then
+        callback.register("show_build")
+    end
+end
+
+interfaces.implement {
+    name      = "build_page_setup",
+    arguments = "string",
+    actions   = build_page_setup,
+}
+
+trackers.register("builders.page.show", build_page_setup) -- for old times sake, will go

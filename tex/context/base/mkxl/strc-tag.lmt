@@ -607,7 +607,7 @@ implement {
     name      = "doifelseinelement",
     public    = true,
     protected = true,
-    actions   = { structures.atlocation, commands.testcase },
+    actions   = { structures.atlocation, commands.doifelse },
     arguments = "argument",
 }
 

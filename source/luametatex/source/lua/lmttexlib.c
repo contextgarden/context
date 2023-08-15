@@ -942,13 +942,19 @@ static const char *texlib_aux_scan_integer_part(lua_State *L, const char *ss, in
     is given we assume points. When nothing is given we assume zero. Trailing crap is just ignored.
 */
 
+# define unit_hashes(a,b,c,d) \
+         unit_parameter_hash(a,c): \
+    case unit_parameter_hash(b,d): \
+    case unit_parameter_hash(a,d): \
+    case unit_parameter_hash(b,c)
+
 static const char *texlib_aux_scan_dimen_part(lua_State * L, const char *ss, int *ret)
 {
-    int negative = 0;  /*tex should the answer be negated? */
-    int fraction = 0;  /*tex numerator of a fraction whose denominator is $2^{16}$ */
+    int negative = 0; 
+    int fraction = 0; 
     int numerator;
     int denominator;
-    scaled special;    /*tex an internal dimension */
+    scaled special;   
     int result = 0;
     int radix = 0;     
     int remainder = 0; 
@@ -961,7 +967,10 @@ static const char *texlib_aux_scan_dimen_part(lua_State * L, const char *ss, int
         str = texlib_aux_scan_integer_part(L, ss, &result, &radix);
     }
     if (! (char) *str) {
-        /* error, no unit, assume scaled points */
+        /*tex 
+            It is an error to have no unit, but instead of messaging that we just assume that
+            scaled points are wanted. 
+        */
         goto ATTACH_FRACTION;
     }
     if (result < 0) {
@@ -986,97 +995,225 @@ static const char *texlib_aux_scan_dimen_part(lua_State * L, const char *ss, int
             --str;
         }
     }
-    /* the unit can have spaces in front */
-/*UNIT: */
+    /*tex 
+        The unit can have spaces in front that we skip.
+    */
     while ((char) *str == ' ') {
         str++;
     }
-    /* We dropped the |nd| and |nc| units as well as the |true| prefix. */
-    if (! (char) *str) {
-        goto ATTACH_FRACTION;
-    } else if (strncmp(str, "pt", 2) == 0) {
-        str += 2;
-        goto ATTACH_FRACTION;
-    } else if (strncmp(str, "mm", 2) == 0) {
-        str += 2;
-        numerator = 7227;
-        denominator = 2540;
-        goto CONVERSION;
-    } else if (strncmp(str, "cm", 2) == 0) {
-        str += 2;
-        numerator = 7227;
-        denominator = 254;
-        goto CONVERSION;
-    } else if (strncmp(str, "sp", 2) == 0) {
-        str += 2;
-        goto DONE;
-    } else if (strncmp(str, "bp", 2) == 0) {
-        str += 2;
-        numerator = 7227;
-        denominator = 7200;
-        goto CONVERSION;
-    } else if (strncmp(str, "in", 2) == 0) {
-        str += 2;
-        numerator = 7227;
-        denominator = 100;
-        goto CONVERSION;
-    } else if (strncmp(str, "dd", 2) == 0) {
-        str += 2;
-        numerator = 1238;
-        denominator = 1157;
-        goto CONVERSION;
-    } else if (strncmp(str, "cc", 2) == 0) {
-        str += 2;
-        numerator = 14856;
-        denominator = 1157;
-        goto CONVERSION;
-    } else if (strncmp(str, "pc", 2) == 0) {
-        str += 2;
-        numerator = 12;
-        denominator = 1;
-        goto CONVERSION;
-    } else if (strncmp(str, "dk", 2) == 0) {
-        str += 2;
-        numerator = 49838;
-        denominator = 7739;
-        goto CONVERSION;
-    } else if (strncmp(str, "es", 2) == 0) {
-        str += 2;
-        numerator = 9176;
-        denominator = 129;
-        goto CONVERSION;
-    } else if (strncmp(str, "ts", 2) == 0) {
-        str += 2;
-        numerator = 4588;
-        denominator = 645;
-        goto CONVERSION;
-    } else if (strncmp(str, "em", 2) == 0) {
-        str += 2;
-        special = tex_get_font_em_width(cur_font_par);
-        goto SPECIAL;
-    } else if (strncmp(str, "ex", 2) == 0) {
-        str += 2;
-        special = tex_get_font_ex_height(cur_font_par);
-        goto SPECIAL;
-    } else if (strncmp(str, "eu", 2) == 0) {
-        str += 2;
-        numerator = 9176 * eu_factor_par;
-        denominator = 129 * 10;
-        goto CONVERSION;
-    } else if (strncmp(str, "px", 2) == 0) {
-        str += 2;
-        special = px_dimen_par;
-        goto SPECIAL;
-    } else if (strncmp(str, "mu", 2) == 0) {
-        str += 2;
-        goto ATTACH_FRACTION;
- /* } else if (strncmp(s, "true", 4) == 0) { */
- /*     s += 4;                              */
- /*     goto UNIT;                           */
-    } else {
-     /* luaL_error(L, "illegal unit of measure (pt inserted)"); */
-        goto ATTACH_FRACTION;
+    /*tex 
+        We dropped the |nd| and |nc| units as well as the |true| prefix. We could use a similar
+        switch as in the normal scsanner but this one is not really used, so ... 
+    */
+
+ // if (! (char) *str) {
+ //     goto ATTACH_FRACTION;
+ // } else if (strncmp(str, "pt", 2) == 0) {
+ //     str += 2;
+ //     goto ATTACH_FRACTION;
+ // } else if (strncmp(str, "mm", 2) == 0) {
+ //     str += 2;
+ //     numerator = 7227;
+ //     denominator = 2540;
+ //     goto CONVERSION;
+ // } else if (strncmp(str, "cm", 2) == 0) {
+ //     str += 2;
+ //     numerator = 7227;
+ //     denominator = 254;
+ //     goto CONVERSION;
+ // } else if (strncmp(str, "sp", 2) == 0) {
+ //     str += 2;
+ //     goto DONE;
+ // } else if (strncmp(str, "bp", 2) == 0) {
+ //     str += 2;
+ //     numerator = 7227;
+ //     denominator = 7200;
+ //     goto CONVERSION;
+ // } else if (strncmp(str, "em", 2) == 0) {
+ //     str += 2;
+ //     special = tex_get_font_em_width(cur_font_par);
+ //     goto SPECIAL;
+ // } else if (strncmp(str, "ex", 2) == 0) {
+ //     str += 2;
+ //     special = tex_get_font_ex_height(cur_font_par);
+ //     goto SPECIAL;
+ // } else if (strncmp(str, "es", 2) == 0) {
+ //     str += 2;
+ //     numerator = 9176;
+ //     denominator = 129;
+ //     goto CONVERSION;
+ // } else if (strncmp(str, "ts", 2) == 0) {
+ //     str += 2;
+ //     numerator = 4588;
+ //     denominator = 645;
+ //     goto CONVERSION;
+ // } else if (strncmp(str, "eu", 2) == 0) {
+ //     str += 2;
+ //     numerator = 9176 * eu_factor_par;
+ //     denominator = 129 * 10;
+ //     goto CONVERSION;
+ // } else if (strncmp(str, "dk", 2) == 0) {
+ //     str += 2;
+ //     numerator = 49838;
+ //     denominator = 7739;
+ //     goto CONVERSION;
+ // } else if (strncmp(str, "mu", 2) == 0) {
+ //     str += 2;
+ //     goto ATTACH_FRACTION;
+ // } else if (strncmp(str, "cc", 2) == 0) {
+ //     str += 2;
+ //     numerator = 14856;
+ //     denominator = 1157;
+ //     goto CONVERSION;
+ // } else if (strncmp(str, "pc", 2) == 0) {
+ //     str += 2;
+ //     numerator = 12;
+ //     denominator = 1;
+ //     goto CONVERSION;
+ // } else if (strncmp(str, "dd", 2) == 0) {
+ //     str += 2;
+ //     numerator = 1238;
+ //     denominator = 1157;
+ //     goto CONVERSION;
+ // } else if (strncmp(str, "px", 2) == 0) {
+ //     str += 2;
+ //     special = px_dimen_par;
+ //     goto SPECIAL;
+ // } else if (strncmp(str, "in", 2) == 0) {
+ //     str += 2;
+ //     numerator = 7227;
+ //     denominator = 100;
+ //     goto CONVERSION;
+ // } else { 
+ //     int index = unit_parameter_index(str[0], str[1]);
+ //     if (index >= 0) {
+ //         halfword cs = unit_parameter(index);
+ //         if (cs > 0) { 
+ //             halfword cmd = eq_type(cs); 
+ //             halfword chr = eq_value(cs);
+ //             switch (cmd) { 
+ //                 case internal_dimen_cmd:
+ //                 case register_dimen_cmd:
+ //                     str += 2;
+ //                     special = eq_value(chr);
+ //                     goto SPECIAL;
+ //                 case dimension_cmd:
+ //                     str += 2;
+ //                     special = chr;
+ //                     goto SPECIAL;
+ //             }
+ //         }
+ //     }
+ //     goto ATTACH_FRACTION;
+ // }
+
+    if ((char) *str) {
+        int index = unit_parameter_index(str[0], str[1]);
+        if (index >= 0) {
+            switch (index) { 
+                case unit_hashes('p','P','t','T'):
+                    str += 2;
+                    goto ATTACH_FRACTION;
+                case unit_hashes('c','C','m','M'):
+                    str += 2;
+                    numerator = 7227;
+                    denominator = 254;
+                    goto CONVERSION;
+                case unit_hashes('m','M','m','M'):
+                    str += 2;
+                    numerator = 7227;
+                    denominator = 2540;
+                    goto CONVERSION;
+                case unit_hashes('e','E','m','M'):
+                    str += 2;
+                    special = tex_get_font_em_width(cur_font_par);
+                    goto SPECIAL;
+                case unit_hashes('e','E','x','X'):
+                    str += 2;
+                    special = tex_get_font_ex_height(cur_font_par);
+                    goto SPECIAL;
+                case unit_hashes('s','S','p','P'):
+                    str += 2;
+                    goto DONE;
+                case unit_hashes('b','B','p','P'):
+                    str += 2;
+                    numerator = 7227;
+                    denominator = 7200;
+                    goto CONVERSION;
+                case unit_hashes('t','T','s','S'):
+                    str += 2;
+                    numerator = 4588;
+                    denominator = 645;
+                    goto CONVERSION;
+                case unit_hashes('e','E','s','S'):
+                    str += 2;
+                    numerator = 9176;
+                    denominator = 129;
+                    goto CONVERSION;
+                case unit_hashes('e','E','u','U'):
+                    str += 2;
+                    numerator = 9176 * eu_factor_par;
+                    denominator = 129 * 10;
+                    goto CONVERSION;
+                case unit_hashes('d','D','k','K'): /* number: 422042 */
+                    str += 2;
+                    numerator = 49838;
+                    denominator = 7739;
+                    goto CONVERSION;
+                case unit_hashes('m','M','u','U'):
+                    str += 2;
+                    goto ATTACH_FRACTION;
+                case unit_hashes('d','D','d','D'):
+                    str += 2;
+                    numerator = 1238;
+                    denominator = 1157;
+                    goto CONVERSION;
+                case unit_hashes('c','C','c','C'):
+                    str += 2;
+                    numerator = 14856;
+                    denominator = 1157;
+                    goto CONVERSION;
+                case unit_hashes('p','P','c','C'):
+                    str += 2;
+                    numerator = 12;
+                    denominator = 1;
+                    goto CONVERSION;
+                case unit_hashes('p','P','x','X'):
+                    str += 2;
+                    special = px_dimen_par;
+                    goto SPECIAL;
+                case unit_hashes('i','I','n','N'):
+                    str += 2;
+                    numerator = 7227;
+                    denominator = 100;
+                    goto CONVERSION;
+                default: 
+                    if (tex_get_userunit(index, &special)) { 
+                        str += 2;
+                        goto SPECIAL;
+                    }
+                    { 
+                        halfword cs = unit_parameter(index);
+                        if (cs > 0) { 
+                            halfword cmd = eq_type(cs); 
+                            halfword chr = eq_value(cs);
+                            switch (cmd) { 
+                                case internal_dimen_cmd:
+                                case register_dimen_cmd:
+                                    str += 2;
+                                    special = eq_value(chr);
+                                    goto SPECIAL;
+                                case dimension_cmd:
+                                    str += 2;
+                                    special = chr;
+                                    goto SPECIAL;
+                            }
+                        }
+                    }
+            }
+        }
     }
+    goto ATTACH_FRACTION;
   SPECIAL:
     result = tex_nx_plus_y(result, special, tex_xn_over_d_r(special, fraction, 0x10000, &remainder));
     goto DONE;
@@ -1274,6 +1411,9 @@ int lmt_check_for_flags(lua_State *L, int slot, int *flags, int prefixes, int nu
                         } else if (lua_key_eq(str, protected)) {
                             slot += 1;
                             *flags = add_protected_flag(*flags);
+                        } else if (lua_key_eq(str, semiprotected)) {
+                            slot += 1;
+                            *flags = add_semiprotected_flag(*flags);
                         } else if (lua_key_eq(str, untraced)) {
                             slot += 1;
                             *flags = add_untraced_flag(*flags);
@@ -2840,8 +2980,8 @@ static int texlib_aux_scan_internal(lua_State *L, int cmd, int code, int values)
     tex_scan_something_simple(cmd, code);
     switch (cur_val_level) {
         case int_val_level:
-        case dimen_val_level:
         case attr_val_level:
+        case dimen_val_level:
             lua_pushinteger(L, cur_val);
             break;
         case posit_val_level:
@@ -2909,6 +3049,7 @@ static int texlib_aux_someitem(lua_State *L, int code)
             break;
      // case dimen_to_scale_code:
         case numeric_scale_code:
+        case numeric_scaled_code:
             break;
         case index_of_register_code:
         case index_of_character_code:

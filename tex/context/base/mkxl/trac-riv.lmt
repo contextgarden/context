@@ -1,0 +1,320 @@
+if not modules then modules = { } end modules ['trac-riv'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to trac-riv.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local concat = table.concat
+local floor, ceiling = math.floor, math.ceiling
+local newindex = lua.newindex
+
+local nuts              = nodes.nuts
+
+local getbox            = nuts.getbox
+
+local getid             = nuts.getid
+local getsubtype        = nuts.getsubtype
+local getnext           = nuts.getnext
+local getwhd            = nuts.getwhd
+local getwidth          = nuts.getwidth
+local getkern           = nuts.getkern
+local getlist           = nuts.getlist
+local getleader         = nuts.getleader
+local getreplace        = nuts.getreplace
+local getheight         = nuts.getheight
+local getdepth          = nuts.getdepth
+
+local setlink           = nuts.setlink
+local setlist           = nuts.setlist
+local setoffsets        = nuts.setoffsets
+local setkern           = nuts.setkern
+
+local effectiveglue     = nuts.effectiveglue
+
+local setcolor          = nodes.tracers.colors.set
+
+local newrule           = nuts.pool.rule
+local newkern           = nuts.pool.kern
+
+local nextnode          = nuts.traversers.node
+
+local nodecodes         = nodes.nodecodes
+local gluecodes         = nodes.gluecodes
+
+local glyph_code        = nodecodes.glyph
+local disc_code         = nodecodes.disc
+local penalty_code      = nodecodes.penalty
+local kern_code         = nodecodes.kern
+local glue_code         = nodecodes.glue
+local hlist_code        = nodecodes.hlist
+local vlist_code        = nodecodes.vlist
+local math_code         = nodecodes.math
+local rule_code         = nodecodes.rule
+
+local spaceskip_code    = gluecodes.spaceskip
+local xspaceskip_code   = gluecodes.xspaceskip
+local lineskip_code     = gluecodes.lineskip
+local baselineskip_code = gluecodes.baselineskip
+
+local fontkern_code     = nodes.kerncodes.fontkern
+local linelist_code     = nodes.listcodes.line
+
+local unit    = 65536
+local step    =     2 * unit
+local margin  =    -1 * unit
+local skip    =    10 * unit
+local height  =     2 * unit
+local depth   =     2 * unit
+
+local function analyze(line,max)
+
+    local width    = 0
+    local position = 0
+    local profile  = newindex(max+2,0)
+    local wd       = 0
+    local state    = 0
+
+    local function process(current) -- called nested in disc replace
+        for current, id, subtype in nextnode, current do
+            if id == glyph_code then
+             -- wd = getwidth(current)
+                local w, h, d = getwhd(current)
+                wd = w
+                if d <= depth and h <= height then
+                    local n = getnext(current)
+                    if n and getid(n) == glue_code then
+                        local s = getsubtype(n)
+                        if s == spaceskip_code or s == xspaceskip_code then
+                            state = 1
+                        end
+                    end
+                 end
+            elseif id == kern_code then
+                wd = getkern(current)
+                if wd > 0 and subtype ~= fontkern_code then
+                    state = 1
+                end
+            elseif id == disc_code then
+                local replace = getreplace(current)
+                if replace then
+                    process(replace)
+                end
+                goto done
+            elseif id == glue_code then
+                wd = effectiveglue(current,line)
+                if wd > 0 and subtype == spaceskip_code or subtype == xspaceskip_code then
+                    state = 1
+                end
+            elseif id == hlist_code then
+                wd = getwidth(current)
+            elseif id == vlist_code then
+                wd = getwidth(current)
+            elseif id == rule_code then
+                wd = getwidth(current)
+            elseif id == math_code then
+                wd = getkern(current) + getwidth(current) -- surround
+                state = 1
+            else
+                goto done
+            end
+            -- progress
+            position = width
+            width    = position + wd
+            p = floor((position - margin)/step + 0.5)
+            w = floor((width    + margin)/step - 0.5)
+            if p < 0 then
+                p = 0
+            end
+            if w < 0 then
+                w = 0
+            end
+            if p > w then
+                w, p = p, w
+            end
+            if state == 1 then
+                for i=p+1,w+1 do
+                    profile[i] = state
+                end
+                state = 0
+            end
+          ::done::
+        end
+    end
+
+    process(getlist(line))
+
+    return profile
+
+end
+
+function builders.profiling.getrivers(specification)
+    local box  = getbox(specification.box)
+    local head = getlist(box)
+    if head then
+
+        step   = (specification.step          or  2 * unit)
+        margin = (specification.margin        or -1 * unit)
+        skip   = (specification.gluethreshold or 10 * unit)
+        height = (specification.height        or  2 * unit)
+        depth  = (specification.depth         or  2 * unit)
+
+        local profiles = { }
+        local max      = ceiling(getwidth(box)/step) + 1
+
+        local p = 0
+
+        p = p + 1 ; profiles[p] = newindex(max+2,1)
+        p = p + 1 ; profiles[p] = newindex(max+2,0)
+
+        for current, id, subtype in nextnode, head do
+            if id == hlist_code then
+                local amount = getwidth(current)
+                if amount > 0 then
+                    p = p + 1 ; profiles[p] = analyze(current,max)
+                end
+            elseif id == glue_code then
+                if subtype == baselineskip_code or subtype == lineskip_code then
+                    -- okay
+                elseif getwidth(current) > skip then
+                    p = p + 1 ; profiles[p] = newindex(max+2,0)
+                end
+            elseif id == vlist_code then
+                p = p + 1 ; profiles[p] = newindex(max+2,0)
+            end
+        end
+
+        p = p + 1 ; profiles[p] = newindex(max+2,0)
+        p = p + 1 ; profiles[p] = newindex(max+2,1)
+
+        for i=1,p do
+            local pi = profiles[i]
+            pi[0] = 1 ; pi[max ]  = 1
+            pi[1] = 1 ; pi[max+1] = 1
+            profiles[i] = concat(pi,"",0,max+1)
+        end
+        profiles = concat(profiles,"\n")
+        potrace.setbitmap("profile", profiles)
+    end
+end
+
+function builders.profiling.addrivers(specification)
+    local box  = getbox(specification.box)
+    local head = getlist(box)
+    if head then
+
+        step   = (specification.step          or  2 * unit)
+        margin = (specification.margin        or -1 * unit)
+        skip   = (specification.gluethreshold or 10 * unit)
+        height = (specification.height        or  2 * unit)
+        depth  = (specification.depth         or  2 * unit)
+
+        local profiles = { }
+        local max      = ceiling(getwidth(box)/step) + 1
+
+        local previous = false
+        local spacing  = 0
+
+        local topline  = false
+        local botline  = false
+
+        local list     = newindex(max+2,false)
+
+        for current, id, subtype in nextnode, head do
+            if id == hlist_code then
+                local amount = getwidth(current)
+                if amount > 0 then
+                    botline = analyze(current,max)
+                    if topline then
+                        local head = false
+                        local tail = false
+                        for i=1,max do
+                            if topline[i] ~= 0 and botline[i] ~= 0 then
+                                local _, hp, dp = getwhd(previous)
+                                local _, hc, dc = getwhd(previous)
+                                local rule = newrule(step,hp + dp + spacing + hc,dc)
+                                local kern = newkern()
+                                setkern(kern,-step)
+                                setoffsets(rule,i*step,0)
+                                setlink(rule,kern)
+                                if tail then
+                                    setlink(tail,rule)
+                                else
+                                    head = rule
+                                end
+                                tail = kern
+                                local li = list[i]
+                                if li then
+                                    li[#li+1] = rule
+                                    for i=1,#li do
+                                        setcolor(li[i],"darkred")
+                                    end
+                                else
+                                    list[i] = { rule }
+                                    setcolor(rule,"darkblue")
+                                end
+                            else
+                                list[i] = false
+                            end
+                        end
+                        if head then
+                            setlink(tail,getlist(current))
+                            setlist(current,head)
+                        end
+                    end
+                    topline  = botline
+                    botline  = false
+                    previous = current
+                end
+            elseif id == glue_code then
+                local width = getwidth(current)
+                if subtype == baselineskip_code or subtype == lineskip_code then
+                    spacing = width
+                elseif width > skip then
+                    topline = false
+                    botline = false
+                end
+            elseif id == vlist_code then
+                topline = false
+                botline = false
+            end
+        end
+
+    end
+end
+
+interfaces.implement {
+    name      = "getrivers",
+    protected = true,
+    actions   = builders.profiling.getrivers,
+    arguments = {
+        {
+            { "box", "integer" },
+            { "height", "dimension" },
+            { "depth", "dimension" },
+            { "step", "dimension" },
+            { "margin", "dimension" },
+            { "skip", "dimension" },
+        }
+    }
+}
+
+-- can become option
+
+interfaces.implement {
+    name      = "addrivers",
+    protected = true,
+    actions   = builders.profiling.addrivers,
+    arguments = {
+        {
+            { "box", "integer" },
+            { "height", "dimension" },
+            { "depth", "dimension" },
+            { "step", "dimension" },
+            { "margin", "dimension" },
+            { "skip", "dimension" },
+        }
+    }
+}

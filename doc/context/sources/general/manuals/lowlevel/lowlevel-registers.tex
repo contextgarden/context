@@ -282,5 +282,169 @@ macros.
 
 \stopsectionlevel
 
-\stopdocument
+\startsectionlevel[title=Units]
 
+The \LUAMETATEX\ engine supports the following units. The first batch is constant
+with hard coded fine tuned values. The second set is related to the current font.
+The last group is kind of special, the \type {es} is a replacement for the \type
+{in} and has a little sister in \type {ts}. The \type {dk} is dedicated to the
+master and makes a nice offset for so called \TEX\ pages that we use for demos.
+
+\starttabulate[|Tl|Tr|l|]
+\FL
+\NC pt \NC \thewithoutunit\dimexpr1pt \NC point \NC \NR
+\NC bp \NC \thewithoutunit\dimexpr1bp \NC big point (aka postscript point) \NC \NR
+\NC in \NC \thewithoutunit\dimexpr1in \NC inch \NC \NR
+\NC cm \NC \thewithoutunit\dimexpr1cm \NC centimeter \NC \NR
+\NC mm \NC \thewithoutunit\dimexpr1mm \NC milimeter \NC \NR
+\NC dd \NC \thewithoutunit\dimexpr1dd \NC didot \NC \NR
+\NC cc \NC \thewithoutunit\dimexpr1cc \NC cicero \NC \NR
+\NC pc \NC \thewithoutunit\dimexpr1pc \NC pica \NC \NR
+\NC sp \NC \thewithoutunit\dimexpr1sp \NC scaled points \NC \NR
+\NC px \NC \thewithoutunit\dimexpr1sp \NC pixel \NC \NR
+\ML
+\NC ex \NC \thewithoutunit\dimexpr1ex \NC ex height \NC \NR
+\NC em \NC \thewithoutunit\dimexpr1em \NC em width \NC \NR
+\NC mu \NC $\tt\thewithoutunit\onemuskip$ \NC math unit \NC \NR
+\ML
+\NC ts \NC \thewithoutunit\dimexpr1ts \NC tove \NC \NR
+\NC es \NC \thewithoutunit\dimexpr1es \NC edith \NC \NR
+\NC eu \NC \thewithoutunit\dimexpr1eu \NC european unit \NC \NR
+\NC dk \NC \thewithoutunit\dimexpr1dk \NC knuth \NC \NR
+\LL
+\stoptabulate
+
+The \type {fi[lll]} unit is not really a unit but a multiplier for infinite
+stretch and shrink; original \TEX\ doesn't have the simple \type {fi}.
+
+In addition to these we can have many more. In principle a user can define
+additional ones but there's always a danger of clashing. For users we reserve the
+units starting with an \type{u}. Here is how you define your own, we show three
+variants:
+
+\startbuffer
+\newdimension \FooA   \FooA 1.23pt
+\newdimen     \FooB   \FooB 12.3pt
+\protected\def\FooC   {\the\dimexpr\FooA +\FooB\relax}
+
+\pushoverloadmode % just in case
+    \newuserunit\FooA ua
+    \newuserunit\FooB ub
+    \newuserunit\FooC uc
+\popoverloadmode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+And this is how they show up:
+
+\startbuffer
+\the\dimexpr 2 ua \relax\quad
+\the\dimexpr 2 ub \relax\quad
+\the\dimexpr 2 uc \relax
+\stopbuffer
+
+\getbuffer
+
+with
+
+\typebuffer[option=TEX]
+
+The following additional units are predefined (reserved). The values are in
+points and some depend on the current layout and document font.
+
+\starttabulate[|T|Tr|l|]
+\NC pi \NC \thewithoutunit\dimexpr 1pi \NC {\tt\pi} for Mikael        \NC \NR
+\NC ft \NC \thewithoutunit\dimexpr 1ft \NC \type {foot} for Alan      \NC \NR
+\NC fs \NC \thewithoutunit\dimexpr 1fs \NC (global body) font size    \NC \NR
+\NC tw \NC \thewithoutunit\dimexpr 1tw \NC (layout) text width        \NC \NR
+\NC th \NC \thewithoutunit\dimexpr 1th \NC (layout) text height       \NC \NR
+\NC hs \NC \thewithoutunit\dimexpr 1hs \NC (current) hsize            \NC \NR
+\NC vs \NC \thewithoutunit\dimexpr 1vs \NC (current) vsize            \NC \NR
+\NC cd \NC \thewithoutunit\dimexpr 1cd \NC (when set) column distance \NC \NR % todo
+\NC cw \NC \thewithoutunit\dimexpr 1cw \NC (when set) column width    \NC \NR % todo
+\NC cx \NC \thewithoutunit\dimexpr 1cx \NC combination cell width     \NC \NR
+\NC uu \NC \thewithoutunit\dimexpr 1uu \NC user unit (\METAFUN)       \NC \NR
+\stoptabulate
+
+Here is an example of usage:
+
+\startbuffer
+\startcombination[nx=4,ny=1]
+    {\ruledhbox to 1cx{\strut one}}   {1}
+    {\ruledhbox to 1cx{\strut two}}   {2}
+    {\ruledhbox to 1cx{\strut three}} {3}
+    {\ruledhbox to 1cx{\strut four}}  {4}
+\stopcombination
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The \type {uu} can be set by users using the \type {\uunit} dimension variable.
+The default valu sis 1cm. Its current value is also known at the \METAPOST\ end,
+as demonstrated in \in {figure} [userunit].
+
+\startbuffer
+\startcombination[nx=2,ny=1]
+    \startcontent
+        \uunit=1cm
+        \framed[offset=1uu]
+            \bgroup
+                \startMPcode
+                    fill fullcircle scaled 3uu withcolor "red"   ;
+                    fill fullcircle scaled 2cm withcolor "green" ;
+                \stopMPcode
+            \egroup
+    \stopcontent
+    \startcaption
+        \type {\uunit = 1cm}
+    \stopcaption
+    \startcontent
+        \uunit=1cx
+        \framed[offset=.1uu]
+            \bgroup
+                \startMPcode
+                    fill fullcircle scaled .5uu withcolor "red"   ;
+                    fill fullcircle scaled  2cm withcolor "green" ;
+                \stopMPcode
+            \egroup
+    \stopcontent
+    \startcaption
+        \type {\uunit = 1cx}
+    \stopcaption
+\stopcombination
+\stopbuffer
+
+% \framed[offset=1uu]
+%     \bgroup
+%         \startMPcode
+%             save uu ; numeric uu ; uu := 1cm ;
+%             fill fullcircle scaled 3uu withcolor "red"   ;
+%             fill fullcircle scaled 2cm withcolor "green" ;
+%         \stopMPcode
+%     \egroup
+
+\typebuffer[option=TEX]
+
+There is one catch here. If you use your own \type {uu} as numeric, you might
+need this:
+
+\starttyping[option=MP]
+save uu ; numeric uu ; uu := 1cm ;
+\stoptyping
+
+That is: make sure the meaning is restored afterwards and explicitly declare the
+variable. But this is good practice anyway when you generate multiple graphics
+using the same \METAPOST\ instance.
+
+\startplacefigure[reference=userunit,title={Shared user units in \TEX\ and \METAFUN.}]
+    \getbuffer
+\stopplacefigure
+
+\stopsectionlevel
+
+\stopdocument

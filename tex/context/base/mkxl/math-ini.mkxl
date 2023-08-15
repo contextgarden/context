@@ -4476,8 +4476,22 @@
 
 \def\math_axis_inject_indeed#1%
   {\srule
-     \s!height \dimexpr(\scratchdimentwo+\scratchdimenone)*\c_math_m_scaled/\plusthousand\relax
-     \s!depth -\dimexpr(\scratchdimentwo-\scratchdimenone)*\c_math_m_scaled/\plusthousand\relax
+     \s!height
+        \dimexpr (\scratchdimentwo+\scratchdimenone)*%
+            \ifnum\c_math_m_scaled=\plusthousand
+                \glyphscale/\plusthousand
+            \else
+                \c_math_m_scaled*\glyphscale/\plusthousand/\plusthousand
+            \fi
+        \relax
+     \s!depth -
+        \dimexpr (\scratchdimentwo-\scratchdimenone)*%
+            \ifnum\c_math_m_scaled=\plusthousand
+                \glyphscale/\plusthousand
+            \else
+                \c_math_m_scaled*\glyphscale/\plusthousand/\plusthousand
+            \fi
+        \relax
      \s!attr \mathaxisattribute#1%
    \relax}
 

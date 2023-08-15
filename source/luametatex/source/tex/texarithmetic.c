@@ -310,7 +310,7 @@ scaled tex_round_xn_over_d(scaled x, int n, unsigned int d)
         u = (unsigned) (((unsigned) (x) / 0x8000) * (unsigned) n + (t / 0x8000));
         v = (u % d) * 0x8000 + (t % 0x8000);
         if (u / d >= 0x8000) {
-            scanner_state.arithmic_error = 1;
+            lmt_scanner_state.arithmic_error = 1;
         } else {
             u = 0x8000 * (u / d) + (v / d);
         }

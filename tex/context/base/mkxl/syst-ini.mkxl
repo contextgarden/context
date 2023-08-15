@@ -1485,10 +1485,30 @@
 
 \let\ifexpression\ifnumexpression
 
-%D This will be default:
+%D So we register implicit (newline) pars. When we set bit 2 and define a macro
+%D with \type {\par} as delimiter, an explicit \par is expected and newline pars
+%D are then part of the argument.
 
-\autoparagraphmode\plusone  % we need at least 1 in order to be able to switch to 2
-%autoparagraphmode\plustwo  % because we define two \par delimited macros
+% newline :
+%     bit 1: text
+%         set  : <end_paragraph_cmd,new_line_end_paragraph_code>
+%         unset: par_loc
+%     bit 2: macro
+%         set  : par_command_match
+%         unset: use token
+%     bit 3: go on
+%         set  : don't increment loc
+%         unset: increment loc
+%
+%     default:
+%         inject : par_loc
+%         macro  : use token
+%         input  : increment loc
+%
+%     only      bit 1 set: macros work with \par as normal
+%     when also bit 2 set: embedded empty lines grabbed too
+
+\autoparagraphmode\plusone
 
 %D The same values apply as \type {\shownodedetails}. When set the box is shown in
 %D the the log file but that is pretty slow when we have much detail.
@@ -1521,5 +1541,18 @@
 
 \aliased\let\lastchkinteger\lastchknumber
 \aliased\let\ifchkinteger  \ifchknumber
+
+%D Let's be neat:
+
+\permanent\protected\def\newuserunit#1#2#3%
+  {\associateunit#1=\numexpr(`#2-`a)*26+(`#3-`a)\relax}
+
+\newdimension\piunit \piunit 3.1415926535898pt % 205887sp % for Mikael
+\newdimension\ftunit \ftunit 12in              % foot     % for Alan
+\newdimension\uunit  \uunit  1cm
+
+\newuserunit \piunit pi
+\newuserunit \ftunit ft
+\newuserunit \uunit  uu
 
 \protect \endinput

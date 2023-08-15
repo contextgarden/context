@@ -119,6 +119,7 @@ extern halfword    tex_scan_glue_register_number      (void);
 extern halfword    tex_scan_mu_glue_register_number   (void);
 extern halfword    tex_scan_toks_register_number      (void);
 extern halfword    tex_scan_box_register_number       (void);
+extern halfword    tex_scan_unit_register_number      (int optional_equal);
 extern halfword    tex_scan_mark_number               (void);
 extern halfword    tex_scan_char_number               (int optional_equal);
 extern halfword    tex_scan_math_char_number          (void);
@@ -153,6 +154,9 @@ extern halfword    tex_scan_lua_value                 (int index);
 extern int         tex_scan_tex_value                 (halfword level, halfword *value);
 
 extern halfword    tex_scan_attribute                 (halfword attrlist);
+
+extern int         tex_valid_userunit                 (halfword cmd, halfword chr, halfword cs);
+extern int         tex_get_userunit                   (halfword index, scaled *value);
 
 /*
 # define token_is_digit(t)       ((t >= zero_token  ) && (t <= nine_token ))

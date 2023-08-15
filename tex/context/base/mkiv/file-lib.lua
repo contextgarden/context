@@ -33,9 +33,15 @@ local function defaultfailure(name)
     report_files("asked name %a, not found",name)
 end
 
+local ignoredfiles = { }
+
+function resolvers.ignorelibrary(name)
+    ignoredfiles[name] = true
+end
+
 function resolvers.uselibrary(specification) -- todo: reporter
     local name = specification.name
-    if name and name ~= "" then
+    if name and name ~= "" and not ignoredfiles[name] then
         local patterns = specification.patterns or defaultpatterns
         local action   = specification.action   or defaultaction
         local failure  = specification.failure  or defaultfailure
