@@ -73,6 +73,7 @@ return {
         "atsignasciicode", "exclamationmarkasciicode", "questionmarkasciicode",
         "doublequoteasciicode", "singlequoteasciicode", "forwardslashasciicode",
         "primeasciicode", "hyphenasciicode", "percentasciicode", "leftbracketasciicode", "rightbracketasciicode",
+        "zeroasciicode", "nineasciicode", "alowercaseasciicode", "zlowercaseasciicode",
         --
         "hsizefrozenparcode", "skipfrozenparcode", "hangfrozenparcode", "indentfrozenparcode", "parfillfrozenparcode",
         "adjustfrozenparcode", "protrudefrozenparcode", "tolerancefrozenparcode", "stretchfrozenparcode",
@@ -513,6 +514,7 @@ return {
         --
         "strut", "halfstrut", "quarterstrut", "depthstrut", "halflinestrut", "noheightstrut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "strutgap", "begstrut", "endstrut", "lineheight",
         "leftboundary", "rightboundary", "signalcharacter",
+        "ascender", "descender", "capheight",
         --
         "aligncontentleft", "aligncontentmiddle", "aligncontentright",
         --

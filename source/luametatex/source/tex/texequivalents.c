@@ -2052,7 +2052,7 @@ void tex_initialize_equivalents(void)
     tex_aux_set_eq(internal_dimen_base,         level_one,  internal_dimen_reference_cmd,     0,                      number_dimen_pars);
     tex_aux_set_eq(register_dimen_base,         level_one,  register_dimen_reference_cmd,     0,                      max_dimen_register_index);
     tex_aux_set_eq(internal_specification_base, level_one,  specification_reference_cmd,      null,                   number_specification_pars);
-    tex_aux_set_eq(internal_unit_base,          level_one,  unit_reference_cmd,               null,                   max_unit_register_index);
+    tex_aux_set_eq(internal_unit_base,          level_one,  unit_reference_cmd,               unset_unit_class,       max_unit_register_index);
     tex_aux_set_eq(undefined_control_sequence,  level_zero, undefined_cs_cmd,                 null,                   0);
     /*tex why here? */
     cat_code_table_par = 0;

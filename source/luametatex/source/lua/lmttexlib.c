@@ -3168,6 +3168,9 @@ static int texlib_aux_someitem(lua_State *L, int code)
         case last_atom_class_code:
             lua_pushinteger(L, lmt_math_state.last_atom);
             return 1;
+        case previous_loop_iterator_code:
+            lua_pushinteger(L, tex_previous_loop_iterator());
+            return 1;
         case current_loop_iterator_code:
         case last_loop_iterator_code:
             lua_pushinteger(L, lmt_main_control_state.loop_iterator);
@@ -5454,6 +5457,17 @@ static int texlib_getnormalizeparvalues(lua_State *L)
     return 1;
 }
 
+static int texlib_getunitclassvalues(lua_State *L)
+{
+    lua_createtable(L, 4, 1);
+    lua_set_string_by_index(L, unset_unit_class,      "unset"); 
+    lua_set_string_by_index(L, tex_unit_class,        "tex"); 
+    lua_set_string_by_index(L, pdftex_unit_class,     "pdftex"); 
+    lua_set_string_by_index(L, luametatex_unit_class, "luametatex"); 
+    lua_set_string_by_index(L, user_unit_class,       "user"); 
+    return 1;
+}
+
 static int texlib_geterrorvalues(lua_State *L)
 {
     lua_createtable(L, 7, 1);
@@ -6128,6 +6142,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getnormalizeparvalues",      texlib_getnormalizeparvalues      },
     { "getdirectionvalues",         texlib_getdirectionvalues         },
     { "getfillvalues",              texlib_getfillvalues              },
+    { "getunitclassvalues",         texlib_getunitclassvalues         },
     { "geterrorvalues",             texlib_geterrorvalues             },
     { "getiovalues",                texlib_getiovalues                },
     { "getprimitiveorigins",        texlib_getprimitiveorigins        },

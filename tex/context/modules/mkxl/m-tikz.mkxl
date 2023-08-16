@@ -106,7 +106,7 @@
    \popmacro\meaning
    \popoverloadmode}
 
-\permanent\protected\def\starttikzpicture
+\permanent\tolerant\protected\def\starttikzpicture[#S#1]%
   {\dontleavehmode
    \hcontainer\bgroup
    \setcatcodetable\tikzcatcodes
@@ -116,7 +116,7 @@
    \let\meaning\meaningless
  % \pushoverloadmode
    \ifdefined\PackageError\else \let\PackageError\tikzerrormessage \fi
-   \tikzpicture
+   \tikzpicture[#1]%
    \the\everyinsidetikzpicture}
 
 \permanent\protected\def\stoptikzpicture

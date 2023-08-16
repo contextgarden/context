@@ -591,6 +591,7 @@ typedef enum some_item_codes {
     last_left_class_code,
     last_right_class_code,
     last_atom_class_code,
+    previous_loop_iterator_code,
     current_loop_iterator_code,
     current_loop_nesting_code,
     last_loop_iterator_code,

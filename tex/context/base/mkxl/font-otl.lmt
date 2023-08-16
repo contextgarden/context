@@ -516,6 +516,7 @@ local function copytotfm(data,cache_id)
         parameters.maxsize    = (maxsize   /10)*65536
         parameters.ascender   = abs(metadata.ascender  or 0)
         parameters.descender  = abs(metadata.descender or 0)
+        parameters.capheight  = abs(metadata.capheight or 0)
         parameters.units      = units
         parameters.vheight    = metadata.defaultvheight
         --

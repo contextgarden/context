@@ -492,6 +492,10 @@ function constructors.scale(tfmdata,specification)
     if descender then
         targetparameters.descender = delta * descender
     end
+    local capheight = parameters.capheight
+    if capheight then
+        targetparameters.capheight = delta * capheight
+    end
     --
     constructors.enhanceparameters(targetparameters) -- official copies for us, now virtual
     --

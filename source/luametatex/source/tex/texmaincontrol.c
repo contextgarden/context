@@ -62,6 +62,8 @@ main_control_state_info lmt_main_control_state = {
     .loop_iterator    = 0,
     .loop_nesting     = 0,
     .quit_loop        = 0,
+    .loop_stack       = null,
+    .padding          = 0,
 };
 
 inline static void tex_aux_big_switch       (int mode, int cmd);
@@ -1741,6 +1743,39 @@ inline static int tex_aux_is_iterator_value(halfword tokeninfo)
     }
 }
 
+inline static void tex_push_stack_entry(void)
+{
+    halfword state = tex_get_node(loop_state_node_size);
+    node_type(state) = loop_state_node;
+    loop_state_count(state) = 0;
+    if (lmt_main_control_state.loop_stack) { 
+        node_next(state) = lmt_main_control_state.loop_stack;
+    }
+    lmt_main_control_state.loop_stack = state;
+}
+
+inline static void tex_pop_stack_entry(void)
+{
+    halfword state = lmt_main_control_state.loop_stack;
+    lmt_main_control_state.loop_stack = node_next(state);
+    tex_free_node(state, loop_state_node_size);
+}
+
+halfword tex_previous_loop_iterator(void)
+{
+    halfword delta = tex_scan_int(0, NULL);
+    halfword state = lmt_main_control_state.loop_stack;
+    while (delta-- && state) {
+        state = node_next(state);
+    }
+    return state ? loop_state_count(state) : 0;
+}
+
+inline static void tex_update_stack_entry(halfword count)
+{
+    loop_state_count(lmt_main_control_state.loop_stack) = count;
+}
+
 void tex_begin_local_control(void)
 {
     halfword code = cur_chr;
@@ -1799,6 +1834,7 @@ void tex_begin_local_control(void)
                     int savedloop = lmt_main_control_state.loop_iterator;
                     int savedquit = lmt_main_control_state.quit_loop;
                     ++lmt_main_control_state.loop_nesting;
+                    tex_push_stack_entry();
                     switch (code) {
                         case local_control_loop_code:
                         case local_control_repeat_code:
@@ -1811,6 +1847,7 @@ void tex_begin_local_control(void)
                                 /* tex_store_new_token(tail, token_val(end_local_cmd, 0)); */
                                 for (halfword i = first; step > 0 ? i <= last : i >= last; i += step) {
                                     lmt_main_control_state.loop_iterator = i;
+                                    tex_update_stack_entry(i);
                                     lmt_main_control_state.quit_loop = 0;
                                     /*tex But this, so that we get a proper |\end message|: */
                                     tex_begin_inserted_list(tex_get_available_token(token_val(end_local_cmd, 0)));
@@ -1839,6 +1876,7 @@ void tex_begin_local_control(void)
                                     halfword lh = null;
                                     ++lmt_input_state.align_state;
                                     lmt_main_control_state.loop_iterator = i;
+                                    tex_update_stack_entry(i);
                                     tex_begin_token_list(head, loop_text); /* ref counted */
                                     lh = tex_scan_toks_expand(1, &lt, 0);
                                     if (token_link(lh)) {
@@ -1916,6 +1954,7 @@ void tex_begin_local_control(void)
                                 break;
                             }
                     }
+                    tex_pop_stack_entry();
                     --lmt_main_control_state.loop_nesting;
                     lmt_main_control_state.quit_loop = savedquit;
                     lmt_main_control_state.loop_iterator = savedloop;
@@ -4578,16 +4617,22 @@ static void tex_aux_set_association(int flags, int force)
                 if (tex_valid_userunit(cur_cmd, cur_chr, cur_cs)) {
                     halfword cs = cur_cs;
                     halfword index = tex_scan_unit_register_number(1);
-                    if (force || tex_define_permitted(cs, flags)) {
+                    if (tex_get_unit_class(index)) { 
+                        tex_handle_error(
+                            normal_error_type,
+                            "Imvalid \\associateunit, unit %i is already taken", index, 
+                            "Units can only be bound once and not overload built-in ones."
+                        );
+                    } else if (force || tex_define_permitted(cs, flags)) {
                         unit_parameter(index) = cs;
-                        return;
                     }
+                } else { 
+                    tex_handle_error(
+                        normal_error_type,
+                        "Invalid \\associateunit target",
+                        "Only existing dimension equivalent commands are accepted."
+                    );
                 }
-                tex_handle_error(
-                    normal_error_type,
-                    "Improper \\associateunit",
-                    "Only existing dimension equivalent commands are accepted."
-                );
                 break;
             }
     }

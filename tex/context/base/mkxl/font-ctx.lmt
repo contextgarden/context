@@ -3223,3 +3223,37 @@ function fonts.helpers.collectanchors(tfmdata)
     return anchors
 
 end
+
+do
+
+    local dimen_code = tokens.values.dimension
+
+    implement {
+        name      = "ascender",
+        public    = true,
+        protected = true,
+        usage     = "value",
+        actions   = function()
+            return dimen_code, parameters[true].ascender or 0
+        end
+    }
+    implement {
+        name      = "descender",
+        public    = true,
+        protected = true,
+        usage     = "value",
+        actions   = function()
+            return dimen_code, parameters[true].descender or 0
+        end
+    }
+    implement {
+        name      = "capheight",
+        public    = true,
+        protected = true,
+        usage     = "value",
+        actions   = function()
+            return dimen_code, parameters[true].capheight or 0
+        end
+    }
+
+end

@@ -141,6 +141,8 @@
 \immutable\integerdef\hyphenasciicode          45
 \immutable\integerdef\periodasciicode          46
 \immutable\integerdef\forwardslashasciicode    47 % /
+\immutable\integerdef\zeroasciicode            48
+\immutable\integerdef\nineasciicode            57
 \immutable\integerdef\colonasciicode           58
 \immutable\integerdef\semicolonasciicode       59
 \immutable\integerdef\lessthanasciicode        60 % < used as alternative verbatim {
@@ -152,6 +154,8 @@
 \immutable\integerdef\rightbracketasciicode    93
 \immutable\integerdef\circumflexasciicode      94
 \immutable\integerdef\underscoreasciicode      95
+\immutable\integerdef\alowercaseasciicode      97
+\immutable\integerdef\zlowercaseasciicode     122
 \immutable\integerdef\leftbraceasciicode      123 % `\{
 \immutable\integerdef\barasciicode            124 % `\|
 \immutable\integerdef\rightbraceasciicode     125 % `\}
@@ -1545,7 +1549,7 @@
 %D Let's be neat:
 
 \permanent\protected\def\newuserunit#1#2#3%
-  {\associateunit#1=\numexpr(`#2-`a)*26+(`#3-`a)\relax}
+  {\associateunit#1=\numexpr(`#2-\alowercaseasciicode)*26+(`#3-\alowercaseasciicode)\relax}
 
 \newdimension\piunit \piunit 3.1415926535898pt % 205887sp % for Mikael
 \newdimension\ftunit \ftunit 12in              % foot     % for Alan

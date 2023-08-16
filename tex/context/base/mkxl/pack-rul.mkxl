@@ -1172,9 +1172,16 @@
 \mutable\lettonothing\localheight
 \mutable\lettonothing\localformat
 
-\mutable\lettonothing\framedwidth
-\mutable\lettonothing\framedheight
-\mutable\lettonothing\framedoffset
+\mutable\let\framedwidth \zeropoint
+\mutable\let\framedheight\zeropoint
+\mutable\let\framedoffset\zeropoint
+
+\pushoverloadmode
+    \newuserunit\framedwidth  fw % checked \d_framed_width
+    \newuserunit\framedheight fh % checked \d_framed_height
+    \newuserunit\framedoffset fo % checked \d_framed_local_offset
+    \newuserunit\linewidth    lw
+\popoverloadmode
 
 % better a constant:
 

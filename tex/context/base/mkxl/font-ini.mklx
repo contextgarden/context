@@ -405,8 +405,18 @@
 \ifdefined\localbodyfontsize  \else \newdimension\localbodyfontsize  \fi \localbodyfontsize =\globalbodyfontsize
 \ifdefined\bodyfontsize       \else \newdimension\bodyfontsize       \fi \bodyfontsize      =\globalbodyfontsize
 
+\permanent\protected\def\widthofzero{\fontcharwd\font\zeroasciicode}
+
+% \definedatluaend\ascender
+% \definedatluaend\descender
+% \definedatluaend\capheight
+
 \pushoverloadmode
     \newuserunit\globalbodyfontsize fs % normally locas is the same as em
+    \newuserunit\widthofzero        ch % from css
+    \newuserunit\ascender           fa
+    \newuserunit\descender          fd
+    \newuserunit\capheight          fc
 \popoverloadmode
 
 %D When we assign for instance 12pt to a \DIMENSION\ register the \type {\the}'d

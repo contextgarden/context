@@ -103,6 +103,8 @@ extern halfword    tex_scan_positive_scale            (int optional_equal);
 extern halfword    tex_scan_positive_number           (int optional_equal);
 extern halfword    tex_scan_parameter_index           (void);
 
+extern void        tex_initialize_units               (void);
+
 extern quarterword tex_scan_direction                 (int optional_equal);
 extern halfword    tex_scan_geometry                  (int optional_equal);
 extern halfword    tex_scan_orientation               (int optional_equal);
@@ -146,6 +148,8 @@ extern void        tex_set_font_dimen                 (void);
 extern halfword    tex_get_font_dimen                 (void);
 extern void        tex_set_scaled_font_dimen          (void);
 extern halfword    tex_get_scaled_font_dimen          (void);
+
+extern int         tex_get_unit_class                 (halfword index);
 
 extern int         tex_fract                          (int x, int n, int d, int max_answer);
 

@@ -34,6 +34,12 @@
 \newdimension\lastnaturalboxht
 \newdimension\lastnaturalboxdp
 
+\pushoverloadmode
+    \newuserunit\strutht   sh
+    \newuserunit\strutdp   sd
+    \newuserunit\struthtdp st
+\popoverloadmode
+
 \registerctxluafile{supp-box}{autosuffix}
 
 % \fixupboxesmode\plusone % gone: is now the default

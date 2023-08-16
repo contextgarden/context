@@ -304,6 +304,7 @@ void tex_main_body(void)
 
     if (lmt_main_state.run_state == initializing_state) {
         tex_initialize_languages();
+        tex_initialize_units();
     }
 
     lmt_main_state.ready_already = output_enabled_state;

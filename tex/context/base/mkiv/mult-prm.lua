@@ -667,6 +667,7 @@ return {
   "preinlinepenalty",
   "prerelpenalty",
   "preshortinlinepenalty",
+  "previousloopiterator",
   "protrudechars",
   "protrusionboundary",
   "pxdimen",

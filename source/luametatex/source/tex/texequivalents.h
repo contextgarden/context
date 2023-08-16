@@ -1057,6 +1057,14 @@ typedef enum save_types {
 
 # define unit_parameter_hash(l,r)   (26 * (l - 'a') + (r - 'a'))
 
+typedef enum unit_classes {
+    unset_unit_class      = 0, 
+    tex_unit_class        = 1, 
+    pdftex_unit_class     = 2, 
+    luametatex_unit_class = 3, 
+    user_unit_class       = 4, 
+} unit_classes;
+
 inline static int unit_parameter_index(int l, int r) {
     if (l >= 'a' && l <= 'z' && r >= 'a' && r <= 'z') { 
         return unit_parameter_hash(l,r);

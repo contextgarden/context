@@ -130,6 +130,7 @@ typedef enum node_types {
     split_node,
     /*tex The next set of nodes is invisible from the \LUA\ (but nesting nodes can show up). */
     expression_node,
+    loop_state_node,
     math_spec_node,
     font_spec_node,
     nesting_node,
@@ -1404,6 +1405,13 @@ static inline int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && 
 # define expression_expression(a) vlink(a,1)     /*tex saved expression so far */
 # define expression_term(a)       vlink(a,2)     /*tex saved term so far */
 # define expression_numerator(a)  vinfo(a,2)     /*tex saved numerator */
+
+/*tex 
+    Why not. 
+*/
+
+# define loop_state_node_size 2
+# define loop_state_count(a)  vinfo(a,1) 
 
 /*tex
     To be decided: go double 

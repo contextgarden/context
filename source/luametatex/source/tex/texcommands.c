@@ -677,6 +677,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "numericscaled",                  some_item_cmd,          numeric_scaled_code,                      0);
         tex_primitive(luatex_command, "indexofregister",                some_item_cmd,          index_of_register_code,                   0);
         tex_primitive(luatex_command, "indexofcharacter",               some_item_cmd,          index_of_character_code,                  0);
+        tex_primitive(luatex_command, "previousloopiterator",           some_item_cmd,          previous_loop_iterator_code,              0);
         tex_primitive(luatex_command, "currentloopiterator",            some_item_cmd,          current_loop_iterator_code,               0);
         tex_primitive(luatex_command, "currentloopnesting",             some_item_cmd,          current_loop_nesting_code,                0);
         tex_primitive(luatex_command, "lastloopiterator",               some_item_cmd,          last_loop_iterator_code,                  0);

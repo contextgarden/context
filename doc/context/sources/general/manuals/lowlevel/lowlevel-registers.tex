@@ -365,6 +365,17 @@ points and some depend on the current layout and document font.
 \NC cw \NC \thewithoutunit\dimexpr 1cw \NC (when set) column width    \NC \NR % todo
 \NC cx \NC \thewithoutunit\dimexpr 1cx \NC combination cell width     \NC \NR
 \NC uu \NC \thewithoutunit\dimexpr 1uu \NC user unit (\METAFUN)       \NC \NR
+\NC fw \NC \thewithoutunit\dimexpr 1fw \NC framed width               \NC \NR
+\NC fh \NC \thewithoutunit\dimexpr 1fh \NC framed height              \NC \NR
+\NC fo \NC \thewithoutunit\dimexpr 1fo \NC framed offset              \NC \NR
+\NC lw \NC \thewithoutunit\dimexpr 1lw \NC line width                 \NC \NR
+\NC sh \NC \thewithoutunit\dimexpr 1sh \NC strut height               \NC \NR
+\NC sd \NC \thewithoutunit\dimexpr 1sd \NC strut depth                \NC \NR
+\NC st \NC \thewithoutunit\dimexpr 1st \NC strut total                \NC \NR
+\NC ch \NC \thewithoutunit\dimexpr 1ch \NC width of zero (css)        \NC \NR
+\NC fa \NC \thewithoutunit\dimexpr 1fa \NC font ascender              \NC \NR
+\NC fd \NC \thewithoutunit\dimexpr 1fd \NC font descender             \NC \NR
+\NC fc \NC \thewithoutunit\dimexpr 1fc \NC font cap height            \NC \NR
 \stoptabulate
 
 Here is an example of usage:
@@ -378,6 +389,12 @@ Here is an example of usage:
 \stopcombination
 \stopbuffer
 
+\usemodule[system-units]
+
+\startplacefigure[title=A map of available units,reference=fig:unitsmap]
+    \framed[offset=1ex]{\showunitsmap}
+\stopplacefigure
+
 \typebuffer[option=TEX]
 
 \startlinecorrection
@@ -386,7 +403,7 @@ Here is an example of usage:
 
 The \type {uu} can be set by users using the \type {\uunit} dimension variable.
 The default valu sis 1cm. Its current value is also known at the \METAPOST\ end,
-as demonstrated in \in {figure} [userunit].
+as demonstrated in \in {figure} [fig:userunits].
 
 \startbuffer
 \startcombination[nx=2,ny=1]
@@ -395,8 +412,8 @@ as demonstrated in \in {figure} [userunit].
         \framed[offset=1uu]
             \bgroup
                 \startMPcode
-                    fill fullcircle scaled 3uu withcolor "red"   ;
-                    fill fullcircle scaled 2cm withcolor "green" ;
+                    fill fullcircle scaled 3uu withcolor "darkred"   ;
+                    fill fullcircle scaled 2cm withcolor "darkgreen" ;
                 \stopMPcode
             \egroup
     \stopcontent
@@ -408,8 +425,8 @@ as demonstrated in \in {figure} [userunit].
         \framed[offset=.1uu]
             \bgroup
                 \startMPcode
-                    fill fullcircle scaled .5uu withcolor "red"   ;
-                    fill fullcircle scaled  2cm withcolor "green" ;
+                    fill fullcircle scaled .5uu withcolor "darkblue"   ;
+                    fill fullcircle scaled  2cm withcolor "darkyellow" ;
                 \stopMPcode
             \egroup
     \stopcontent
@@ -423,8 +440,8 @@ as demonstrated in \in {figure} [userunit].
 %     \bgroup
 %         \startMPcode
 %             save uu ; numeric uu ; uu := 1cm ;
-%             fill fullcircle scaled 3uu withcolor "red"   ;
-%             fill fullcircle scaled 2cm withcolor "green" ;
+%             fill fullcircle scaled 3uu withcolor "darkcyan"    ;
+%             fill fullcircle scaled 2cm withcolor "darkmagenta" ;
 %         \stopMPcode
 %     \egroup
 
@@ -441,10 +458,12 @@ That is: make sure the meaning is restored afterwards and explicitly declare the
 variable. But this is good practice anyway when you generate multiple graphics
 using the same \METAPOST\ instance.
 
-\startplacefigure[reference=userunit,title={Shared user units in \TEX\ and \METAFUN.}]
+\startplacefigure[reference=fig:userunits,title={Shared user units in \TEX\ and \METAFUN.}]
     \getbuffer
 \stopplacefigure
 
 \stopsectionlevel
+
+\page
 
 \stopdocument

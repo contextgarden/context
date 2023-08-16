@@ -1,0 +1,50 @@
+%D \module
+%D   [      file=s-system-units.mkxl,
+%D        version=2023.08.16,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=System Units,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\permanent\protected\def\showunitsmap
+  {\vpack\bgroup \forgetall
+   \ttxx \setupinterlinespace
+   \hpack to 40\emwidth\bgroup
+     \kern\emwidth
+     \localcontrolledloop\alowercaseasciicode\zlowercaseasciicode \plusone
+       {\hss\char\currentloopiterator\hss}%
+   \egroup
+   \localcontrolledloop\alowercaseasciicode\zlowercaseasciicode\plusone
+     {\hpack to 40\emwidth\bgroup
+      \char\currentloopiterator
+      \bf
+      \hss
+      \localcontrolledloop\alowercaseasciicode\zlowercaseasciicode\plusone
+        {\scratchcounter\associateunit\numexpr
+           (\previousloopiterator\plusone-\alowercaseasciicode)*26+%
+           (\currentloopiterator         -\alowercaseasciicode)%
+         \relax
+         \hss
+         \ifzeronum\scratchcounter
+           \kern\emwidth
+         \else
+           \begingroup
+           \ifcase\scratchcounter\or\darkred\or\darkblue\or\darkgreen\fi
+           \char\previousloopiterator\plusone
+           \char\currentloopiterator
+           \endgroup
+         \fi
+         \hss}%
+      \egroup}%
+   \egroup}
+
+\continueifinputfile{s-system-units.mkxl}
+
+\startTEXpage[offset=1ts]
+    \showunitsmap
+\stopTEXpage

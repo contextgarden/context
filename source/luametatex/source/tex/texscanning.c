@@ -927,6 +927,10 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
                 cur_val = unset_noad_class;
             }
             return 1;
+        case previous_loop_iterator_code:
+            cur_val = tex_previous_loop_iterator();
+            cur_val_level = int_val_level;
+            return 1;
         case current_loop_iterator_code:
         case last_loop_iterator_code:
             cur_val_level = int_val_level;
@@ -1306,6 +1310,16 @@ void tex_scan_something_simple(halfword cmd, halfword chr)
             } else {
                 break;
             }
+        case association_cmd:
+            switch (chr) {
+                case unit_association_code:
+                    cur_val = tex_get_unit_class(tex_scan_unit_register_number(0));
+                    cur_val_level = int_val_level;
+                    break;
+                default: 
+                    return;
+            }
+            break;
         case math_style_cmd:
             tex_aux_set_cur_val_by_math_style_cmd(chr);
             break;
@@ -2181,6 +2195,15 @@ halfword tex_scan_int(int optional_equal, int *radix)
             tex_aux_scan_int_no_number();
             return 0;
         }
+    } else if (cur_cmd == association_cmd) {
+        switch (cur_chr) {
+            case unit_association_code:
+                result = tex_get_unit_class(tex_scan_unit_register_number(0));
+                break;
+            default:
+                tex_aux_scan_int_no_number();
+                return 0;
+        }
     } else {
         /*tex has an error message been issued? */
         int vacuous = 1;
@@ -2837,15 +2860,25 @@ int tex_valid_userunit(halfword cmd, halfword chr, halfword cs)
 {
     (void) cs;
     switch (cmd) { 
+        case call_cmd:
         case protected_call_cmd:
+        case semi_protected_call_cmd:
+        case constant_call_cmd:
             return chr && ! get_token_preamble(chr);
         case internal_dimen_cmd:
         case register_dimen_cmd:
         case dimension_cmd:
+        case lua_value_cmd:
             return 1;
         default:
             return 0;
     }
+}
+
+int tex_get_unit_class(halfword index)
+{
+    halfword class = unit_parameter(index);
+    return class < 0 ? - class : class ? user_unit_class : unset_unit_class;
 }
 
 int tex_get_userunit(halfword index, scaled *value)
@@ -2862,7 +2895,10 @@ int tex_get_userunit(halfword index, scaled *value)
             case dimension_cmd:
                 *value = chr;
                 return relative_unit_scanned;
+            case call_cmd:
             case protected_call_cmd:
+            case semi_protected_call_cmd:
+            case constant_call_cmd:
                 if (chr && ! get_token_preamble(chr)) {
                     halfword list = token_link(chr);
                     tex_begin_associated_list(list);
@@ -2872,10 +2908,42 @@ int tex_get_userunit(halfword index, scaled *value)
                         return 1;
                     }
                 }
-                break;
+                /*tex So we can actually have an empty macro. */
+                *value = 0;
+                return 1;
+            case lua_value_cmd: 
+                tex_aux_set_cur_val_by_lua_value_cmd(chr, 0);
+                if (cur_val_level == dimen_val_level) {
+                    *value = cur_val;
+                    return 1;
+             }
         }
     }
+    /*tex We could go zero but better not. */
+    *value = 0;
     return 0;
+}
+
+void tex_initialize_units(void)
+{
+    unit_parameter(unit_parameter_hash('p','t')) = - tex_unit_class;
+    unit_parameter(unit_parameter_hash('c','m')) = - tex_unit_class;
+    unit_parameter(unit_parameter_hash('m','m')) = - tex_unit_class;
+    unit_parameter(unit_parameter_hash('e','m')) = - tex_unit_class;
+    unit_parameter(unit_parameter_hash('e','x')) = - tex_unit_class;
+    unit_parameter(unit_parameter_hash('s','p')) = - tex_unit_class;
+    unit_parameter(unit_parameter_hash('b','p')) = - tex_unit_class;
+    unit_parameter(unit_parameter_hash('f','i')) = - tex_unit_class;
+    unit_parameter(unit_parameter_hash('t','s')) = - luametatex_unit_class;
+    unit_parameter(unit_parameter_hash('e','s')) = - luametatex_unit_class;
+    unit_parameter(unit_parameter_hash('e','u')) = - luametatex_unit_class;
+    unit_parameter(unit_parameter_hash('d','k')) = - luametatex_unit_class;
+    unit_parameter(unit_parameter_hash('m','u')) = - tex_unit_class;
+    unit_parameter(unit_parameter_hash('d','d')) = - tex_unit_class;
+    unit_parameter(unit_parameter_hash('c','c')) = - tex_unit_class;
+    unit_parameter(unit_parameter_hash('p','c')) = - tex_unit_class;
+    unit_parameter(unit_parameter_hash('p','x')) = - pdftex_unit_class;
+    unit_parameter(unit_parameter_hash('i','n')) = - tex_unit_class;
 }
 
 static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, halfword *order)

@@ -27,6 +27,8 @@ typedef struct main_control_state_info {
     halfword       loop_iterator;
     halfword       loop_nesting;
     halfword       quit_loop;
+    halfword       loop_stack;
+    halfword       padding; 
 } main_control_state_info;
 
 typedef enum saved_discretionary_items {
@@ -74,5 +76,7 @@ extern void     tex_assign_internal_skip_value      (int a, halfword p, int val)
 extern void     tex_assign_internal_unit_value      (int a, halfword p, int val);
 
 extern void     tex_aux_lua_call                    (halfword cmd, halfword chr);
+
+extern halfword tex_previous_loop_iterator          (void);
 
 # endif
