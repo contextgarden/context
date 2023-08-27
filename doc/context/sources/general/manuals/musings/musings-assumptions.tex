@@ -1,0 +1,141 @@
+% language=us runpath=texruns:manuals/musings
+
+\startcomponent musings-assumptions
+
+\environment musings-style
+
+\startchapter[title={Strange assumptions}]
+
+% \startsection[title={Introduction}]
+% \stopsection
+
+Below I will collect some of the questions and remarks|-|turned|-|questions that
+keep popping up and start annoying me, especially when they come from people who
+should know better (being involved in development themselves). I'm always puzzled
+why these things come up, especially by people who are no user and should not
+waste time on commenting on \CONTEXT.
+
+\startsubsubject[title={All these versions, \CONTEXT\ keep changing, so what's next?}]
+
+Sure, we're now at the third version, \MKII, \MKIV\ and \LMTX, but there is is
+some progression in this. The first version evolved from \TEX\ to \ETEX\ to
+\PDFTEX\ (but also could handle \XETEX\ and \ALEPH). But in order to get things
+done better we moved on to \LUATEX\ and because that is a \CONTEXT\ related
+project it made sense to split the code base which made us end up with a frozen
+stable \MKII\ and an evolving|-|with|-|\LUATEX\ \MKIV. Then there was a demand
+for a stable \LUATEX\ for usage otherwise which in turn lead to the \LUAMETATEX\
+project and its related \CONTEXT\ evolution \LMTX. So, yes, this macro package
+keeps changing. And it this bad? Don't other macro packages evolve? And why do
+users of other packages bother anyway? I never heard a \CONTEXT\ user complain
+either. By the way, how do other macro packages actually count and distinguish
+versions?
+
+\stopsubject
+
+\startsubsubject[title={Why is \CONTEXT\ so slow?}]
+
+Because I seldom hear complaints from users about performance, why do users of
+other macro packages find reason to even bother. In \MKII\ we immediately started
+with a high level keyword driven interface so that came with a price. But quite
+some effort was put into making it as fast and efficient as possible. Fortunately
+for \CONTEXT\ users the \MKIV\ version became faster over time, in spite of it
+using a 32 bit engine (which comes at a price). Even better is that \LMTX\ with
+\LUAMETATEX\ has gained a lot over \MKIV. But then, I guess, other macro packages
+that use \LUATEX\ are also fast, so maybe the claims that \CONTEXT\ is much
+slower than other macro packages still hold. I'm not going to check it, and I bet
+\CONTEXT\ users don't care.
+
+\stopsubject
+
+\startsubsubject[title={Why does \CONTEXT\ (even) needs a runner.}]
+
+Indeed, because we don't want users to be bothered with managing runs right from
+the start it came with a program (\MODULA2) and later a script (\PERL\ followed
+up by \RUBY) that checks if an additional run is needed because of some change in
+the table of contents, references, the index, abbreviations, positioning, etc.
+Index sorting was done too so there was no further dependency. We though that
+was actually a good thing. With \LUATEX\ and \LUAMETATEX\ all that became even
+more integrated because \LUA\ was used. The runner(s) also made it possible to
+ship additional scripts without the need for potentially clashing applications in
+the ever growing \TEX\ ecosystem. Interesting is that ridiculing \CONTEXT\ for
+script dependency was never complemented by ridiculing other macro packages that
+nowadays seem to depend on scripts (with some even using \LUATEX\ which
+originates in the \CONTEXT\ domain).
+
+\stopsubject
+
+\startsubsubject[title={Why does \CONTEXT\ organizes files that way?}]
+
+\CONTEXT\ sticks quite well to the \TEX\ Directory Structure, so what is the
+problem here?. Yes, we needed some granularity (e.g.\ for \METAPOST) but later
+that just became normal. And indeed we optionally let users use a flat directory
+structure for fonts but that's normally in the users own local tree. Oh, and in
+\MKIV\ and \LMTX\ we use our own file database (actually also in \MKII\ at some
+point), just because (definitely at that time) it was way faster and we needed
+more features. The same is true for the font database, \UTF\ encoded hyphenation
+patterns, and so on. Can it be that we're often just ahead of the pack?
+
+Let's nor forget to complain about the fact that \MKIV\ and \LMTX\ use a cache
+but so do lots or programs: just think browsers of some scripting language
+ecosystems. And that was introduced right after we started with \MKIV\ and hasn't
+changed much at all. Users expect no less. And other macro packages are free not to
+use the cache (for e.g.\ fonts).
+
+\stopsubject
+
+\startsubsubject[title={The authors of \CONTEXT\ don't care about compatibility, do they?}]
+
+You're joking, right? Surely some features became sort of obsolete when we moved
+to \MKIV, like encodings. But if users like to stick to them, they can. Do you
+really think that user like us to drop compatibility? Maybe it fits some
+narrative to spread that story. Of course, we make things better if we can, and
+the interfaces have always permitted upgrades and extensions. There are
+definitely cases when (maybe due to user demand) something new gets added that
+then evolves towards a stable state, so yes, there can be code in flux. But that
+is natural. Should we just assume that other macro packages don't evolve, never
+have bugs, don't break anything, never fix broken things immediately? Maybe. And
+complaining about \CONTEXT\ evolving is none of its non|-|users business anyway.
+
+\stopsubject
+
+\startsubsubject[title={Is \CONTEXT\ commercial?}]
+
+This is one of the strangest questions (or remarks). We use \CONTEXT\ ourself and
+using it in a job is by definition commercial use. Are all other \TEX ies only
+using \TEX\ macro packages in the free time, as hobby? I'm pretty sure that more
+money is made by competing package users and I'm also sure that most of the time
+involved in creating \CONTEXT\ (and \LUAMETATEX\ for that matter) is not covered
+by income. Using the fact that \CONTEXT\ is developed by a (small) company excuse
+for lack of development elsewhere is about as lame as it can get. Much
+development is done without us needed it, but because we like doing it, because
+of the challenge.
+
+\stopsubject
+
+\startsubsubject[title={Should I use \CONTEXT\ for math?}]
+
+Of course, because that's what \TEX\ is good at. It you are forced to use a
+specific macro package for its math abilities, just do so. If you want to move on
+or want consistent interfaces, maybe \CONTEXT\ is for you. We don't care. Trust
+your eyes more than assumed standards or ways of doing math typesetting.
+
+\stopsubject
+
+\startsubsubject[title={Why is the format file so much larger than for other packages?}]
+
+The answer is simple: we have an integrated system, so we have plenty macros and
+with each token taking 8 bytes (data and link) that adds up. And for \MKIV\ and
+\LMTX\ there also \LUA\ code involved as well as a rather large character
+database. In \LUATEX\ the format file is compressed (and also zipped) and in
+\LUAMETATEX\ is it is a bit more compressed but now zipped; still the \LMTX\
+format file is smaller than the \MKIV\ one. We let those who complain wonder why
+that is. We also let users of other macro packages wonder if loading a ton of
+stuff later on doesn't accumulate to a similar or larger memory footprint. And, as
+with many critics: make sure to check every few years if that other macro package
+hasn't catched up and can be criticized the same way.
+
+\stopsubject
+
+\stopchapter
+
+\stopcomponent

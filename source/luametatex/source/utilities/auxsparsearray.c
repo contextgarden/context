@@ -457,10 +457,11 @@ void sa_restore_stack(const sa_tree head, int gl)
 
 void sa_dump_tree(dumpstream f, sa_tree a)
 {
+    int bytes = a->bytes;
     dump_int(f, a->sa_stack_step);
     dump_int(f, a->dflt.int_value);
  // if (a->tree) {
-        int bytes = a->bytes;
+ //     int bytes = a->bytes;
         /*tex A marker: */
         dump_via_int(f, 1);
         dump_int(f, bytes);

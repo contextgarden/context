@@ -368,7 +368,7 @@ void tex_main_body(void)
             tex_any_string_start(fln); /* experiment, see context lmtx */
         }
         if (ptr) {
-            tex_start_input(ptr);
+            tex_start_input(ptr, null);
         } else if (! fln) {
             tex_emergency_message("startup error", "no input found, quitting");
             tex_emergency_exit();

@@ -419,6 +419,18 @@
     \newuserunit\capheight          fc
 \popoverloadmode
 
+% this would also work
+%
+% \permanent\protected\untraced\def\ascender {\dimexpr1fa\relax}
+% \permanent\protected\untraced\def\descender{\dimexpr1fd\relax}
+% \permanent\protected\untraced\def\capheight{\dimexpr1fc\relax}
+%
+% \pushoverloadmode
+%     \newuserunit\fontproperty       fa % more a proof of concept
+%     \newuserunit\fontproperty       fd
+%     \newuserunit\fontproperty       fc
+% \popoverloadmode
+
 %D When we assign for instance 12pt to a \DIMENSION\ register the \type {\the}'d
 %D value comes out as 12.0pt, which is often not the way users specify the bodyfont
 %D size. Therefore we use normalized values. They are cached to save overhead in

@@ -3038,7 +3038,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
 static halfword tex_aux_get_actual_box_width(halfword r, halfword p, scaled initial_width)
 {
     /*tex calculated |size| */
-    scaled w = -max_dimen;
+    scaled w = -max_dimension;
     /*tex |w| plus possible glue amount */
     scaled v = initial_width;
     while (p) {
@@ -3062,7 +3062,7 @@ static halfword tex_aux_get_actual_box_width(halfword r, halfword p, scaled init
                 /*tex At the end of the line we should actually take the |pre|. */
                 if (disc_no_break(p)) {
                     d = tex_aux_get_actual_box_width(r, disc_no_break_head(p),0);
-                    if (d <= -max_dimen || d >= max_dimen) {
+                    if (d <= -max_dimension || d >= max_dimension) {
                         d = 0;
                     }
                 } else {
@@ -3077,12 +3077,12 @@ static halfword tex_aux_get_actual_box_width(halfword r, halfword p, scaled init
                     switch (box_glue_sign(r)) {
                         case stretching_glue_sign:
                             if ((box_glue_order(r) == math_stretch_order(p)) && math_stretch(p)) {
-                                v = max_dimen;
+                                v = max_dimension;
                             }
                             break;
                         case shrinking_glue_sign:
                             if ((box_glue_order(r) == math_shrink_order(p)) && math_shrink(p)) {
-                                v = max_dimen;
+                                v = max_dimension;
                             }
                             break;
                     }
@@ -3100,11 +3100,11 @@ static halfword tex_aux_get_actual_box_width(halfword r, halfword p, scaled init
                 d = glue_amount(p);
                 if (box_glue_sign(r) == stretching_glue_sign) {
                     if ((box_glue_order(r) == glue_stretch_order(p)) && glue_stretch(p)) {
-                        v = max_dimen;
+                        v = max_dimension;
                     }
                 } else if (box_glue_sign(r) == shrinking_glue_sign) {
                     if ((box_glue_order(r) == glue_shrink_order(p)) && glue_shrink(p)) {
-                        v = max_dimen;
+                        v = max_dimension;
                     }
                 }
                 if (is_leader(p)) {
@@ -3115,16 +3115,16 @@ static halfword tex_aux_get_actual_box_width(halfword r, halfword p, scaled init
                 d = 0;
                 break;
         }
-        if (v < max_dimen) {
+        if (v < max_dimension) {
             v += d;
         }
         goto NOT_FOUND;
       FOUND:
-        if (v < max_dimen) {
+        if (v < max_dimension) {
             v += d;
             w = v;
         } else {
-            w = max_dimen;
+            w = max_dimension;
             break;
         }
       NOT_FOUND:
@@ -3861,7 +3861,7 @@ halfword tex_new_par_node(quarterword subtype)
 
 static halfword tex_aux_internal_to_par_code(halfword cmd, halfword index) {
     switch (cmd) {
-        case internal_int_cmd:
+        case internal_integer_cmd:
             switch (index) {
                 case hang_after_code             : return par_hang_after_code;
                 case adjust_spacing_code         : return par_adjust_spacing_code;
@@ -3886,7 +3886,7 @@ static halfword tex_aux_internal_to_par_code(halfword cmd, halfword index) {
                 case shaping_penalty_code        : return par_shaping_penalty_code;
             }
             break;
-        case internal_dimen_cmd:
+        case internal_dimension_cmd:
             switch (index) {
                 case hsize_code                   : return par_hsize_code;
                 case hang_indent_code             : return par_hang_indent_code;
@@ -4617,7 +4617,7 @@ void tex_new_specification_list(halfword a, halfword n, halfword o)
     specification_options(a) = o;
     if (node_subtype(a) == par_passes_code) { 
         for (int i = 1; i <= n; i++) { 
-            tex_set_passes_threshold(a, i, max_dimen);
+            tex_set_passes_threshold(a, i, max_dimension);
             tex_set_passes_badness(a, i, infinite_bad);        
             tex_set_passes_optional(a, i, 0x1000000);        
         }

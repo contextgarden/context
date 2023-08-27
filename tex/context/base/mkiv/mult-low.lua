@@ -383,6 +383,7 @@ return {
         "scratchnx", "scratchny", "scratchmx", "scratchmy",
         "scratchunicode",
         "scratchmin", "scratchmax",
+        "scratchread", "scratchwrite",
         --
         "pfsin", "pfcos", "pftan", "pfasin", "pfacos", "pfatan", "pfsinh", "pfcosh", "pftanh", "pfasinh", "pfacosh", "pfatanh",
         "pfsqrt", "pflog", "pfexp", "pfceil", "pffloor", "pfround", "pfabs", "pfrad", "pfdeg", "pfatantwo", "pfpow", "pfmod", "pfrem",
@@ -597,7 +598,7 @@ return {
         "ctxlua", "luacode", "lateluacode", "directluacode",
         "registerctxluafile", "ctxloadluafile",
         "luaversion", "luamajorversion", "luaminorversion",
-        "ctxluacode", "luaconditional", "luaexpanded", "ctxluamatch",
+        "ctxluacode", "luaconditional", "luaexpanded", "ctxluamatch", "ctxluamatchfile",
         "startluaparameterset", "stopluaparameterset", "luaparameterset",
         "definenamedlua",
         "obeylualines", "obeyluatokens",
@@ -648,7 +649,7 @@ return {
         --
         "unsupportedcs",
         --
-        "openout", "closeout", "write", "openin", "closein", "read", "readline", "readfromterminal",
+        "openout", "closeout", "write", "openin", "closein", "read", "readline", "readlinedirect", "readfromterminal",
         --
         "boxlines", "boxline", "setboxline", "copyboxline",
         "boxlinewd","boxlineht", "boxlinedp",
@@ -688,5 +689,12 @@ return {
         "localcontrolledrepeating", "expandedrepeating", "unexpandedrepeating",
         --
         "lastchkinteger", "ifchkinteger",
+        --
+     -- "mathopen", "mathclose", "mathinner",
+        "mathordinary", "mathoperator", "mathbinary", "mathrelation", "mathpunctuation", "mathfraction",
+        "mathradical", "mathmiddle", "mathaccent", "mathfenced", "mathghost", "mathvariable", "mathactive",
+        "mathvcenter", "mathimaginary", "mathdifferential", "mathexponential", "mathdigit", "mathdivision",
+        "mathfactorial", "mathwrapped", "mathconstruct", "mathdimension", "mathunary",
+     -- "mathfunction", "mathexplicit", "mathbegin", "mathend",
     }
 }

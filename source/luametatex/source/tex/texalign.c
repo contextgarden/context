@@ -521,10 +521,10 @@ static void tex_aux_get_preamble_token(void)
             } else {
                 break;
             }
-        case internal_dimen_cmd:
-            if (cur_chr == internal_dimen_location(tab_size_code)) {
-                scaled v = tex_scan_dimen(0, 0, 0, 1, NULL);
-                tex_word_define(global_defs_par > 0 ? global_flag_bit : 0, internal_dimen_location(tab_size_code), v);
+        case internal_dimension_cmd:
+            if (cur_chr == internal_dimension_location(tab_size_code)) {
+                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+                tex_word_define(global_defs_par > 0 ? global_flag_bit : 0, internal_dimension_location(tab_size_code), v);
                 goto RESTART;
             } else {
                 break;
@@ -562,7 +562,7 @@ static void tex_aux_scan_align_spec(quarterword c)
     quarterword callback = 0;
     scaled amount = 0;
     halfword attrlist = null;
-    int brace = 0;
+    bool brace = false;
     while (1) {
         cur_val = 0; /* why */
         switch (tex_scan_character("acdnrtsACDNRTS", 1, 1, 1)) {
@@ -571,7 +571,7 @@ static void tex_aux_scan_align_spec(quarterword c)
             case 'a': case 'A':
                 if (tex_scan_mandate_keyword("attr", 1)) {
                     halfword i = tex_scan_attribute_register_number();
-                    halfword v = tex_scan_int(1, NULL);
+                    halfword v = tex_scan_integer(1, NULL);
                     if (eq_value(register_attribute_location(i)) != v) {
                         if (attrlist) {
                             attrlist = tex_patch_attribute_list(attrlist, i, v);
@@ -604,17 +604,17 @@ static void tex_aux_scan_align_spec(quarterword c)
             case 't': case 'T':
                 if (tex_scan_mandate_keyword("to", 1)) {
                     mode = packing_exactly;
-                    amount = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    amount = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case 's': case 'S':
                 if (tex_scan_mandate_keyword("spread", 1)) {
                     mode = packing_additional;
-                    amount = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    amount = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case '{':
-                brace = 1;
+                brace = true;
                 goto DONE;
             default:
                 goto DONE;
@@ -679,7 +679,7 @@ static void tex_aux_run_no_align(void)
                 goto DONE;
             case 't': case 'T':
                 if (tex_scan_mandate_keyword("target", 1)) {
-                    lmt_alignment_state.row_state.target = tex_scan_int(1, NULL);
+                    lmt_alignment_state.row_state.target = tex_scan_integer(1, NULL);
                     done = 1;
                 }
                 break;
@@ -694,7 +694,7 @@ static void tex_aux_run_no_align(void)
                     case 't': case 'T':
                         if (tex_scan_mandate_keyword("attr", 2)) {
                             halfword i = tex_scan_attribute_register_number();
-                            halfword v = tex_scan_int(1, NULL);
+                            halfword v = tex_scan_integer(1, NULL);
                             if (eq_value(register_attribute_location(i)) != v) {
                                 if (lmt_alignment_state.row_state.attrlist) {
                                     lmt_alignment_state.row_state.attrlist = tex_patch_attribute_list(lmt_alignment_state.row_state.attrlist, i, v);
@@ -736,13 +736,13 @@ static void tex_aux_run_no_align(void)
                     case 'h': case 'H':
                         if (tex_scan_mandate_keyword("shift", 2)) {
                             lmt_alignment_state.row_state.shift = (add ? lmt_alignment_state.row_state.shift : 0) 
-                                + tex_scan_dimen(0, 0, 0, 0, NULL);
+                                + tex_scan_dimension(0, 0, 0, 0, NULL);
                             done = 1;
                         }
                         break;
                     case 'o': case 'O':
                         if (tex_scan_mandate_keyword("source", 2)) {
-                            lmt_alignment_state.row_state.source = tex_scan_int(1, NULL);
+                            lmt_alignment_state.row_state.source = tex_scan_integer(1, NULL);
                             done = 1;
                         }
                         break;
@@ -762,14 +762,14 @@ static void tex_aux_run_no_align(void)
                     case 'o': case 'O' :
                         if (tex_scan_mandate_keyword("xoffset", 2)) {
                             lmt_alignment_state.row_state.xoffset = (add ? lmt_alignment_state.row_state.xoffset : 0) 
-                                + tex_scan_dimen(0, 0, 0, 0, NULL);
+                                + tex_scan_dimension(0, 0, 0, 0, NULL);
                             done = 1;
                         }
                         break;
                     case 'm': case 'M' :
                         if (tex_scan_mandate_keyword("xmove", 2)) {
                             lmt_alignment_state.row_state.xmove = (add ? lmt_alignment_state.row_state.xmove : 0) 
-                                + tex_scan_dimen(0, 0, 0, 0, NULL);
+                                + tex_scan_dimension(0, 0, 0, 0, NULL);
                             done = 1;
                         }
                         break;
@@ -783,14 +783,14 @@ static void tex_aux_run_no_align(void)
                     case 'o': case 'O' :
                         if (tex_scan_mandate_keyword("yoffset", 2)) {
                             lmt_alignment_state.row_state.yoffset = (add ? lmt_alignment_state.row_state.yoffset : 0) 
-                                + tex_scan_dimen(0, 0, 0, 0, NULL);
+                                + tex_scan_dimension(0, 0, 0, 0, NULL);
                             done = 1;
                         }
                         break;
                     case 'm': case 'M' :
                         if (tex_scan_mandate_keyword("ymove", 2)) {
                             lmt_alignment_state.row_state.ymove = (add ? lmt_alignment_state.row_state.ymove : 0) 
-                                + tex_scan_dimen(0, 0, 0, 0, NULL);
+                                + tex_scan_dimension(0, 0, 0, 0, NULL);
                             done = 1;
                         }
                         break;
@@ -1470,14 +1470,14 @@ static void tex_aux_finish_row(void)
             scaled ht = box_height(row);
             scaled dp = box_depth(row);
             if (xmove) {
-                xoffset = tex_aux_checked_dimen1(xoffset + xmove);
-                wd = tex_aux_checked_dimen2(wd + xmove);
+                xoffset = tex_aux_checked_dimension1(xoffset + xmove);
+                wd = tex_aux_checked_dimension2(wd + xmove);
                 set_box_package_state(row, package_dimension_size_set); /* safeguard */
             }
             if (ymove) {
-                yoffset = tex_aux_checked_dimen1(yoffset + ymove);
-                ht = tex_aux_checked_dimen2(ht + ymove);
-                dp = tex_aux_checked_dimen2(dp - ymove);
+                yoffset = tex_aux_checked_dimension1(yoffset + ymove);
+                ht = tex_aux_checked_dimension2(ht + ymove);
+                dp = tex_aux_checked_dimension2(dp - ymove);
             }
             box_w_offset(row) = wd;
             box_h_offset(row) = ht;

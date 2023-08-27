@@ -182,8 +182,8 @@
 
 \newbox\b_enco_accent
 
-\permanent\protected\def\buildmathaccent#1%
-  {\mathaccent#1 }
+% \permanent\protected\def\buildmathaccent#1% Don't use this!
+%   {\mathaccent#1 }
 
 \permanent\protected\def\buildtextaccent#1#2% we could do all at the lua end
   {\dontleavehmode\begingroup               % but that's no fun (yet)

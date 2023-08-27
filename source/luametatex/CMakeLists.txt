@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.9)
 project(luametatex VERSION 2.10 LANGUAGES C)
 
 set(CMAKE_C_STANDARD 11)
-# set(CMAKE_CXX_STANDARD 17)
+# set(CMAKE_C_STANDARD 17) # needs 3.21
 
 # https://sourceforge.net/p/predef/wiki/OperatingSystems/
 # https://sourceforge.net/p/predef/wiki/Architectures/
@@ -188,6 +188,10 @@ if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
         -Wno-date-time
         -Wno-format-nonliteral
         -Wno-float-equal
+      # too noisy, we just look at what gcc reports 
+        -Wno-unsafe-buffer-usage
+        -Wno-macro-redefined
+        -Wno-undef
     )
 
 endif()

@@ -687,7 +687,7 @@ static char *mp_string_scaled (MP mp, int s)
             if (delta > unity) {
                 s = s + 0x8000 - (delta / 2);
             }
-            scaled_string[i++] = '0' + (s / unity);
+            scaled_string[i++] = (char) ((s / unity) + '0');
             s = 10 * (s % unity);
             delta = delta * 10;
         } while (s > delta);

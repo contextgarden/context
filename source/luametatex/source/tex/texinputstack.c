@@ -103,7 +103,7 @@ void tex_initialize_input_state(void)
     }
 }
 
-static int tex_aux_room_on_input_stack(void) /* quite similar to save_stack checker so maybe share */
+static bool tex_aux_room_on_input_stack(void) /* quite similar to save_stack checker so maybe share */
 {
     int top = lmt_input_state.input_stack_data.ptr;
     if (top > lmt_input_state.input_stack_data.top) {
@@ -122,14 +122,14 @@ static int tex_aux_room_on_input_stack(void) /* quite similar to save_stack chec
             lmt_run_memory_callback("input", tmp ? 1 : 0);
             if (! tmp) {
                 tex_overflow_error("input", top);
-                return 0;
+                return false;
             }
         }
     }
-    return 1;
+    return true;
 }
 
-static int tex_aux_room_on_in_stack(void) /* quite similar to save_stack checker so maybe share */
+static bool tex_aux_room_on_in_stack(void) /* quite similar to save_stack checker so maybe share */
 {
     int top = lmt_input_state.in_stack_data.ptr;
     if (top > lmt_input_state.in_stack_data.top) {
@@ -148,14 +148,14 @@ static int tex_aux_room_on_in_stack(void) /* quite similar to save_stack checker
             lmt_run_memory_callback("file", tmp ? 1 : 0);
             if (! tmp) {
                 tex_overflow_error("file", top);
-                return 0;
+                return false;
             }
         }
     }
-    return 1;
+    return true;
 }
 
-static int tex_aux_room_on_parameter_stack(void) /* quite similar to save_stack checker so maybe share */
+static bool tex_aux_room_on_parameter_stack(void) /* quite similar to save_stack checker so maybe share */
 {
     int top = lmt_input_state.parameter_stack_data.ptr;
     if (top > lmt_input_state.parameter_stack_data.top) {
@@ -174,11 +174,11 @@ static int tex_aux_room_on_parameter_stack(void) /* quite similar to save_stack 
             lmt_run_memory_callback("parameter", tmp ? 1 : 0);
             if (! tmp) {
                 tex_overflow_error("parameter", top);
-                return 0;
+                return false;
             }
         }
     }
-    return 1;
+    return true;
 }
 
 void tex_copy_to_parameter_stack(halfword *pstack, int n)
@@ -395,6 +395,9 @@ static void tex_aux_print_current_input_state(void)
             case end_paragraph_text:
                 tex_print_str("endpar");
                 break;
+            case end_file_text:
+                tex_print_str("endfile");
+                break;
             case write_text:
                 tex_print_str("write");
                 break;
@@ -515,14 +518,14 @@ static void tex_aux_print_valid_utf8(int q)
 void tex_show_context(void)
 {
     int context_lines = -1; /*tex Number of contexts shown so far, less one: */
-    int bottom_line = 0;    /*tex Have we reached the final context to be shown? */
+    bool bottom_line = false;    /*tex Have we reached the final context to be shown? */
     lmt_input_state.base_ptr = lmt_input_state.input_stack_data.ptr;
     lmt_input_state.input_stack[lmt_input_state.base_ptr] = lmt_input_state.cur_input;
     while (1) {
         /*tex Enter into the context. */
         lmt_input_state.cur_input = lmt_input_state.input_stack[lmt_input_state.base_ptr];
         if ((lmt_input_state.cur_input.state != token_list_state) && (io_file_input(lmt_input_state.cur_input.name) || (lmt_input_state.base_ptr == 0))) {
-            bottom_line = 1;
+            bottom_line = true;
         }
         if ((lmt_input_state.base_ptr == lmt_input_state.input_stack_data.ptr) || bottom_line || (context_lines < error_context_lines_par)) {
             /*tex Display the current context. */
@@ -542,7 +545,7 @@ void tex_show_context(void)
                     for instance a macro, just for consistency. The contexts are separated by
                     newlines.
                 */
-                int skip = 0;
+                bool skip = false;
                 tex_print_nlp();
                 tex_aux_print_current_input_state();
                 /*
@@ -558,7 +561,7 @@ void tex_show_context(void)
                         halfword head = lmt_input_state.cur_input.token_type < macro_text ? lmt_input_state.cur_input.start : token_link(lmt_input_state.cur_input.start);
                         tex_show_token_list_context(head, lmt_input_state.cur_input.loc);
                     } else if (lmt_input_state.cur_input.name == io_lua_input_code) {
-                        skip = 1;
+                        skip = true;
                     } else {
                         /*tex Before we pseudo print the line we determine the effective end. */
                         int j = lmt_input_state.cur_input.limit;
@@ -712,6 +715,9 @@ void tex_begin_token_list(halfword t, quarterword kind)
                 case end_paragraph_text:
                     tex_print_str("endpar");
                     break;
+                case end_file_text:
+                    tex_print_str("endfile");
+                    break;
                 case write_text:
                     tex_print_str("write");
                     break;
@@ -727,6 +733,9 @@ void tex_begin_token_list(halfword t, quarterword kind)
                     break;
             }
             tex_print_str("->");
+            if (kind == loop_text || kind == local_loop_text) { 
+                tex_print_char('{');
+            }
             tex_token_show(t);
             tex_end_diagnostic();
         }
@@ -1033,6 +1042,7 @@ void tex_begin_file_reading(void)
         lmt_input_state.cur_input.index = (short) lmt_input_state.in_stack_data.ptr;
         lmt_input_state.in_stack[lmt_input_state.cur_input.index].full_source_filename = NULL;
         lmt_input_state.in_stack[lmt_input_state.cur_input.index].end_of_file_seen = 0;
+        lmt_input_state.in_stack[lmt_input_state.cur_input.index].at_end_of_file = null;
         lmt_input_state.in_stack[lmt_input_state.cur_input.index].group = cur_boundary;
         lmt_input_state.in_stack[lmt_input_state.cur_input.index].line = lmt_input_state.input_line;
         lmt_input_state.in_stack[lmt_input_state.cur_input.index].if_ptr = lmt_condition_state.cond_ptr;
@@ -1075,6 +1085,10 @@ void tex_end_file_reading(void)
             if (lmt_input_state.in_stack[lmt_input_state.cur_input.index].full_source_filename) {
                 lmt_memory_free(lmt_input_state.in_stack[lmt_input_state.cur_input.index].full_source_filename);
                 lmt_input_state.in_stack[lmt_input_state.cur_input.index].full_source_filename = NULL;
+            }
+            if (lmt_input_state.in_stack[lmt_input_state.cur_input.index].at_end_of_file) {
+                tex_flush_token_list(lmt_input_state.in_stack[lmt_input_state.cur_input.index].at_end_of_file);
+                lmt_input_state.in_stack[lmt_input_state.cur_input.index].at_end_of_file = null;
             }
             break;
     }

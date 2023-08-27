@@ -265,6 +265,17 @@
 \setnewconstant\mathlimopcode \plusone
 \setnewconstant\mathnolopcode \plusone
 
+\pushoverloadmode % so we drop \mathaccent !
+
+\aliased\let\mathordinary   \normalmathord
+\aliased\let\mathoperator   \normalmathop
+\aliased\let\mathbinary     \normalmathbin
+\aliased\let\mathrelation   \normalmathrel
+\aliased\let\mathopen       \normalmathopen
+\aliased\let\mathclose      \normalmathclose
+\aliased\let\mathpunctuation\normalmathpunct
+\aliased\let\mathinner      \normalmathinner
+
 %untraced\protected\def\mathordinary    {\mathatom \s!class \mathordinarycode    } % use \mathord
 %untraced\protected\def\mathoperator    {\mathatom \s!class \mathoperatorcode    } % use \mathop
 %untraced\protected\def\mathbinary      {\mathatom \s!class \mathbinarycode      } % use \mathbin
@@ -275,15 +286,15 @@
 %untraced\protected\def\mathinner       {\mathatom \s!class \mathinnercode       } % primitive
 %untraced\protected\def\mathover        {\mathatom \s!class \mathovercode        } % macro
 %untraced\protected\def\mathunder       {\mathatom \s!class \mathundercode       } % macro
-%untraced\protected\def\mathfraction    {\mathatom \s!class \mathfractioncode    } % use \mathfrac
-%untraced\protected\def\mathradical     {\mathatom \s!class \mathradicalcode     } % use \mathrad
-%untraced\protected\def\mathmiddle      {\mathatom \s!class \mathmiddlecode      } % primitive
-%untraced\protected\def\mathaccent      {\mathatom \s!class \mathaccentcode      } % primitive
-%untraced\protected\def\mathfenced      {\mathatom \s!class \mathfencedcode      } % primitive
-%untraced\protected\def\mathghost       {\mathatom \s!class \mathghostcode       } % primitive
-%untraced\protected\def\mathvariable    {\mathatom \s!class \mathvariablecode    } % useless
-%untraced\protected\def\mathactive      {\mathatom \s!class \mathactivecode      } % useless
-%untraced\protected\def\mathvcenter     {\mathatom \s!class \mathvcentercode     } % useless
+\untraced\protected\def\mathfraction    {\mathatom \s!class \mathfractioncode    } % use \mathfrac
+\untraced\protected\def\mathradical     {\mathatom \s!class \mathradicalcode     } % use \mathrad
+\untraced\protected\def\mathmiddle      {\mathatom \s!class \mathmiddlecode      } % primitive
+\untraced\protected\def\mathaccent      {\mathatom \s!class \mathaccentcode      } % primitive
+\untraced\protected\def\mathfenced      {\mathatom \s!class \mathfencedcode      } % primitive
+\untraced\protected\def\mathghost       {\mathatom \s!class \mathghostcode       } % primitive
+\untraced\protected\def\mathvariable    {\mathatom \s!class \mathvariablecode    } % useless
+\untraced\protected\def\mathactive      {\mathatom \s!class \mathactivecode      } % useless
+\untraced\protected\def\mathvcenter     {\mathatom \s!class \mathvcentercode     } % useless
 \untraced\protected\def\mathimaginary   {\mathatom \s!class \mathimaginarycode   }
 \untraced\protected\def\mathdifferential{\mathatom \s!class \mathdifferentialcode}
 \untraced\protected\def\mathexponential {\mathatom \s!class \mathexponentialcode }
@@ -298,6 +309,8 @@
 %untraced\protected\def\mathbegin       {\mathatom \s!class \mathbegincode       } % dangerous
 %untraced\protected\def\mathend         {\mathatom \s!class \mathendcode         } % dangerous
 \untraced\protected\def\mathunary       {\mathatom \s!class \mathunarycode       }
+
+\popoverloadmode
 
 % obsolete
 

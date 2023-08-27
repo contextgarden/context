@@ -58,7 +58,9 @@ local flushlist      = nuts.flushlist
 local hpack_nodes    = nuts.hpack
 local vpack_nodes    = nuts.vpack
 local unsetattribute = nuts.unsetattribute
-local firstglyph     = nuts.firstglyph
+----- firstglyphnode = nuts.firstglyphnode
+----- firstglyph     = nuts.firstglyph
+----- firstchar      = nuts.firstchar
 local copy_node      = nuts.copy
 local find_tail      = nuts.tail
 local getbox         = nuts.getbox
@@ -181,41 +183,24 @@ local function unsetattributes(head,attr)
     end
 end
 
-function nuts.firstcharacter(n,untagged) -- tagged == subtype > 255
-    if untagged then
-        return firstglyph(n)
-    else
-        for g in nextglyph ,n do
-            return g
-        end
-    end
-end
-
-local function firstcharinbox(n)
-    local l = getlist(getbox(n))
-    if l then
-        for g, c in nextglyph, l do
-            return c
-        end
-    end
-    return 0
-end
-
-nuts .firstcharinbox = firstcharinbox
-nodes.firstcharinbox = firstcharinbox -- hm, ok ?
-nodes.firstcharacter = vianuts(firstcharacter)
-
-interfaces.implement {
-    name      = "buildtextaccent",
-    arguments = "integer",
-    actions   = function(n) -- Is this crap really used? Or was it an experiment?
-        local char = firstcharinbox(n)
-        if char > 0 then
-         -- context.accent(false,char)
-            context([[\accent%s\relax]],char)
-        end
-    end
-}
+-- function nuts.firstcharacter(n,untagged) -- tagged == subtype > 255
+--     if untagged then
+--         return firstchar(n)
+--     else
+--         return firstglyph(n)
+--     end
+-- end
+--
+-- nodes.firstcharacter = vianuts(firstcharacter)
+--
+-- local function firstcharinbox(n,untagged)
+--     local l = getlist(getbox(n))
+--     if l then
+--         return firstglyphnode(l)
+--     end
+-- end
+--
+-- nuts .firstcharinbox = firstcharinbox
 
 -- this depends on fonts, so we have a funny dependency ... will be
 -- sorted out .. we could make tonodes a plugin into this

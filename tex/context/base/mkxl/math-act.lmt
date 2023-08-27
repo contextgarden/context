@@ -3808,15 +3808,20 @@ do
                 fonts[1] = { id = 0, size = size } -- self, will be resolved later
             end
             for i=1,#list do
-                local entry     = list[i]
-                local filename  = entry.filename or parameters.filename
-                local feature   = entry.feature
-                local thesource = entry.source
-                local thetarget = entry.target or thesource
-                local keep      = (entry.keep == true) or (parameters.keep == true)
+                local entry      = list[i]
+                local filename   = entry.filename or parameters.filename
+                local feature    = entry.feature
+                local thesource  = entry.source
+                local thetarget  = entry.target or thesource
+                local theunicode = entry.unicode
+                local keep       = (entry.keep == true) or (parameters.keep == true)
                 if thesource and thetarget then
-                    local sourcerange = type(thesource) == "table" and thesource or blocks[thesource] -- .gaps
-                    local targetrange = type(thetarget) == "table" and thetarget or blocks[thetarget] -- .gaps
+                    local function getrange(t)
+                        return (type(t) == "table" and t) or (type(t) == "string" and blocks[t])  -- .gaps
+                    end
+                    local sourcerange  = getrange(thesource)
+                    local targetrange  = getrange(thetarget)
+                    local unicoderange = getrange(theunicode)
                     if sourcerange and targetrange then
                         local firsttarget  = targetrange.first
                         local firstsource  = sourcerange.first
@@ -3862,9 +3867,6 @@ do
                                             if feature then
                                                 sourceunicode = getsubstitution(dropin,sourceunicode,feature,true,"math","dflt") or sourceunicode
                                             end
---                                          if trace_tweaking then
---                                              report_tweak("copying %s %U from file %a to %s %U",target,original,thesource,sourceunicode,filename,thetarget,targetunicode)
---                                          end
                                             characters[targetunicode] = copiedglyph(target,characters,chars,sourceunicode,index)
                                         end
                                     end
@@ -3892,13 +3894,13 @@ do
                                     local variant       = getsubstitution(original,sourceunicode,feature,true,"math","dflt")
                                     local data          = characters[variant]
                                     if data then
---                                         if trace_tweaking then
---                                             report_tweak("copying %s %U from feature %a to %s %U",target,original,thesource,sourceunicode,feature,thetarget,targetunicode)
---                                         end
                                         characters[targetunicode] = copytable(data)
                                     end
                                 end
                             else
+                                -- this is a hack for stix providing alphabets without proper unicodes
+                                local firstcode    = unicoderange and unicoderange.first
+                                local descriptions = original.descriptions
                                 for s=firstsource,lastsource do
                                     local t = s + offset
                                     local sourceunicode = mathgaps[s] or s
@@ -3906,9 +3908,14 @@ do
                                     if sourceunicode ~= targetunicode then
                                         local data = characters[sourceunicode]
                                         if data then
---                                             if trace_tweaking then
---                                                 report_tweak("copying %s %U to %s %U",target,original,thesource,sourceunicode,thetarget,targetunicode)
---                                             end
+                                            if firstcode then
+                                                local d = descriptions[sourceunicode]
+                                                if d then
+                                                    d.unicode = firstcode -- wins
+                                                end
+                                                data.unicode = firstcode
+                                                firstcode = firstcode + 1
+                                            end
                                             characters[targetunicode] = copytable(data)
                                         end
                                     end
@@ -3927,7 +3934,6 @@ do
         local fallbacks = target.specification.fallbacks
         if fallbacks then
             local definitions = fonts.collections.definitions[fallbacks]
--- print(">>",fallbacks)
             if definitions then
                 local list = { }
                 for i=1,#definitions do

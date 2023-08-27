@@ -41,7 +41,7 @@ typedef enum math_sizes {
 
 # define last_math_size script_script_size
 
-# define undefined_math_parameter max_dimen
+# define undefined_math_parameter max_dimension
 
 typedef enum math_indirect_types {
     indirect_math_unset,
@@ -63,8 +63,8 @@ typedef enum math_indirect_types {
 # define last_math_indirect indirect_math_internal_mugluespec
 
 typedef enum math_parameter_types {
-    math_int_parameter,
-    math_dimen_parameter,
+    math_integer_parameter,
+    math_dimension_parameter,
     math_muglue_parameter,
     math_style_parameter,
     math_pair_parameter,
@@ -230,8 +230,8 @@ typedef enum math_parameters {
 # define math_parameter_rules_left(n)    ((n - math_parameter_atom_rules_first) / max_n_of_math_classes)
 # define math_parameter_rules_right(n)   ((n - math_parameter_atom_rules_first) % max_n_of_math_classes)
 
-# define ignore_math_parameter(n)   (count_parameter(first_math_ignore_code + n))
-# define options_math_parameter(n)  (count_parameter(first_math_options_code + n))
+# define ignore_math_parameter(n)   (integer_parameter(first_math_ignore_code + n))
+# define options_math_parameter(n)  (integer_parameter(first_math_options_code + n))
 
 # define math_all_class    (max_n_of_math_classes - 3)
 # define math_begin_class  (max_n_of_math_classes - 2)

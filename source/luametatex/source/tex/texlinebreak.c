@@ -1576,7 +1576,7 @@ static void tex_check_protrusion_shortfall(halfword breakpoint, halfword first, 
             other = tex_aux_find_protchar_right(left, other);
         }
         if (other && node_type(other) == glyph_node) {
-            shortfall += tex_char_protrusion(other, right_margin_kern_subtype);
+            *shortfall += tex_char_protrusion(other, right_margin_kern_subtype);
         }
         /*tex now the left margin */
         if (left && node_type(left) == disc_node && disc_post_break_head(left)) {
@@ -1586,7 +1586,7 @@ static void tex_check_protrusion_shortfall(halfword breakpoint, halfword first, 
             other = tex_aux_find_protchar_left(left, 1);
         }
         if (other && node_type(other) == glyph_node) {
-            shortfall += tex_char_protrusion(other, left_margin_kern_subtype);
+            *shortfall += tex_char_protrusion(other, left_margin_kern_subtype);
         }
     // }
 }
@@ -1655,7 +1655,7 @@ static void tex_aux_try_break(
     /*tex maximum line number in current equivalence class of lines */
     halfword old_line = 0;
     /*tex have we found a feasible break at |cur_p|? */
-    int no_break_yet = 1;
+    bool no_break_yet = true;
     /*tex should node |r| remain in the active list? */
     int current_stays_active;
     /*tex possible fitness class of test line */
@@ -1727,7 +1727,7 @@ static void tex_aux_try_break(
 
                 */
                 if (no_break_yet) {
-                    no_break_yet = 0;
+                    no_break_yet = false;
                     tex_aux_set_target_to_source(properties->adjust_spacing, lmt_linebreak_state.break_width, lmt_linebreak_state.background);
                     tex_aux_compute_break_width(break_type, properties->adjust_spacing, properties->adjust_spacing_step, cur_p);
                 }
@@ -1959,12 +1959,12 @@ static void tex_aux_try_break(
                             goto NOT_FOUND;
                         }
                         lmt_scanner_state.arithmic_error = 0;
-                        glue = tex_fract(glue, active_short(current), active_glue(current), max_dimen);
+                        glue = tex_fract(glue, active_short(current), active_glue(current), max_dimension);
                         if (properties->last_line_fit < 1000) {
-                            glue = tex_fract(glue, properties->last_line_fit, 1000, max_dimen);
+                            glue = tex_fract(glue, properties->last_line_fit, 1000, max_dimension);
                         }
                         if (lmt_scanner_state.arithmic_error) {
-                            glue = (active_short(current) > 0) ? max_dimen : -max_dimen;
+                            glue = (active_short(current) > 0) ? max_dimension : -max_dimension;
                         }
                         if (glue > 0) {
                             /*tex
@@ -2322,7 +2322,6 @@ static scaled tex_check_linebreak_quality(halfword quality, scaled *overfull, sc
         }
         *verdict = active_badness(q);
         *classified |= classification[node_subtype(q)];
-// printf("a > %i > %i\n",node_subtype(q),active_badness(q));
         /* previous lines */
         q = passive_prev_break(q);
         while (q) {
@@ -2338,7 +2337,6 @@ static scaled tex_check_linebreak_quality(halfword quality, scaled *overfull, sc
                     }
                     break;
             }
-// printf("p > %i > %i\n",node_subtype(q),passive_badness(q));
             *classified |= classification[node_subtype(q)];
             if (passive_badness(q) > *verdict) { 
                 *verdict = passive_badness(q);
@@ -2673,11 +2671,11 @@ inline static int tex_aux_check_sub_pass(line_break_properties *properties, half
                     scaled threshold = tex_get_passes_threshold(passes, subpass);
                     halfword badness = tex_get_passes_badness(passes, subpass);
                     halfword classes = tex_get_passes_classes(passes, subpass);
-                    int tracing = properties->tracing_paragraphs > 0 || properties->tracing_passes > 0;
-                    int details = properties->tracing_passes > 1;
-                    int success = 0;
                     int callback = features & passes_callback_set;
-                    int retry = callback ? 1 : (overfull > threshold || verdict > badness || (classes && (classes & classified) != 0));
+                    bool tracing = properties->tracing_paragraphs > 0 || properties->tracing_passes > 0;
+                    bool details = properties->tracing_passes > 1;
+                    int success = 0;
+                    bool retry = callback ? 1 : (overfull > threshold || verdict > badness || (classes && (classes & classified) != 0));
                     if (tracing) {
                         halfword id = tex_get_passes_identifier(passes, 1);
                         if (callback) { 
@@ -2690,7 +2688,7 @@ inline static int tex_aux_check_sub_pass(line_break_properties *properties, half
                                 id = -id; /* nicer for our purpose */
                             }
                             tex_begin_diagnostic();
-                            if (threshold == max_dimen) { 
+                            if (threshold == max_dimension) { 
                                 if (badness == infinite_bad) { 
                                     tex_print_format("[id %i, subpass: %i of %i, overfull %D, underfull %D, verdict %i, classified %x, %s]\n", 
                                         id, subpass, nofsubpasses, overfull, pt_unit, underfull, pt_unit, verdict, classified, action
@@ -3698,6 +3696,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
     int first_line = 0;
     /*tex the current direction: */
     lmt_linebreak_state.dir_ptr = cur_list.direction_stack;
+    (void) quality;
     /*tex
         Reverse the links of the relevant passive nodes, setting |cur_p| to the first breakpoint.
         The job of reversing links in a list is conveniently regarded as the job of taking items

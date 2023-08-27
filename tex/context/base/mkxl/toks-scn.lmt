@@ -222,6 +222,7 @@ local shortcuts = {
     scanners            = scanners,
     scanstring          = scanstring,
     scanargument        = scanargument,
+    scantokenstring     = scanners.tokenstring,
     scanverbatim        = scanverbatim,
     scantokenlist       = scantokenlist,
     scantoks            = scantoks,

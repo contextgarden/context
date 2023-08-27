@@ -128,7 +128,8 @@ end
 
 local endofmath      = direct.endofmath
 local findattribute  = direct.findattribute
-local firstglyph     = direct.firstglyph
+----- firstglyph     = direct.firstglyph
+----- firstchar      = direct.firstchar
 
 function node.endofmath(n)
     if n then
@@ -150,10 +151,15 @@ function node.findattribute(n,a)
     return nil
 end
 
-function node.firstglyph(first,last)
-    local n = firstglyph(todirect(first), last and todirect(last) or nil)
-    return n and tonode(n) or nil
-end
+-- function node.firstglyph(first,last)
+--     local n = firstglyph(todirect(first), last and todirect(last) or nil)
+--     return n and tonode(n) or nil
+-- end
+--
+-- function node.firstchar(first,last)
+--     local n = firstchar(todirect(first), last and todirect(last) or nil)
+--     return n and tonode(n) or nil
+-- end
 
 local dimensions      = direct.dimensions
 local rangedimensions = direct.rangedimensions

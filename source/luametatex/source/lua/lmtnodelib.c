@@ -4660,7 +4660,7 @@ static int nodelib_direct_vpack(lua_State *L)
     } else {
         n = null;
     }
-    p = tex_vpack(n, w, m, max_dimen, d, holding_none_option, NULL);
+    p = tex_vpack(n, w, m, max_dimension, d, holding_none_option, NULL);
     lua_pushinteger(L, p);
     lua_pushinteger(L, lmt_packaging_state.last_badness);
     return 2;
@@ -7668,7 +7668,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                     return 0;
                                 case attribute_value_subtype:
                                     if (lua_key_eq(s, index) || lua_key_eq(s, number)) {
-                                        attribute_index(n) = lmt_tohalfword(L, 3);
+                                        attribute_index(n) = (quarterword) lmt_tohalfword(L, 3);
                                     } else if (lua_key_eq(s, value)) {
                                         attribute_value(n) = lmt_tohalfword(L, 3);
                                     } else {
@@ -8123,9 +8123,66 @@ static int nodelib_direct_protectglyphs_none(lua_State *L)
     return 0;
 }
 
+/* node.direct.first_glyphnode */
 /* node.direct.first_glyph */
+/* node.direct.first_char */
+
+static int nodelib_direct_firstglyphnode(lua_State *L)
+{
+    halfword h = nodelib_valid_direct_from_index(L, 1);
+    halfword t = nodelib_valid_direct_from_index(L, 2);
+    if (h) {
+        halfword savetail = null;
+        if (t) {
+            savetail = node_next(t);
+            node_next(t) = null;
+        }
+        while (h && node_type(h) != glyph_node) {
+            h = node_next(h);
+        }
+        if (savetail) {
+            node_next(t) = savetail;
+        }
+    }
+    if (h) {
+        lua_pushinteger(L, h);  
+    } else { 
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
 
 static int nodelib_direct_firstglyph(lua_State *L)
+{
+    halfword h = nodelib_valid_direct_from_index(L, 1);
+    halfword t = nodelib_valid_direct_from_index(L, 2);
+    if (h) {
+        halfword savetail = null;
+        if (t) {
+            savetail = node_next(t);
+            node_next(t) = null;
+        }
+        /*tex
+            We go to the first processed character so that is one with a value <= 0xFF and we
+            don't care about what the value is.
+        */
+        while (h && ! (node_type(h) == glyph_node && glyph_protected(h))) {
+            h = node_next(h);
+        }
+        if (savetail) {
+            node_next(t) = savetail;
+        }
+    }
+    if (h) {
+        lua_pushinteger(L, h);  
+    } else { 
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int nodelib_direct_firstchar(lua_State *L)
 {
     halfword h = nodelib_valid_direct_from_index(L, 1);
     halfword t = nodelib_valid_direct_from_index(L, 2);
@@ -8139,14 +8196,16 @@ static int nodelib_direct_firstglyph(lua_State *L)
             We go to the first unprocessed character so that is one with a value <= 0xFF and we
             don't care about what the value is.
         */
-        while (h && (node_type(h) != glyph_node || glyph_protected(h))) {
+        while (h && ! (node_type(h) == glyph_node && ! glyph_protected(h))) {
             h = node_next(h);
         }
         if (savetail) {
             node_next(t) = savetail;
         }
-        lua_pushinteger(L, h);
-    } else {
+    }
+    if (h) {
+        lua_pushinteger(L, h);  
+    } else { 
         lua_pushnil(L);
     }
     return 1;
@@ -8159,11 +8218,11 @@ static int nodelib_direct_findnode(lua_State *L)
 {
     halfword h = nodelib_valid_direct_from_index(L, 1);
     if (h) {
-        halfword t = lmt_tohalfword(L, 2);
+        halfword type = lmt_tohalfword(L, 2);
         if (lua_gettop(L) > 2) {
-            halfword s = lmt_tohalfword(L, 3);
+            halfword subtype = lmt_tohalfword(L, 3);
             while (h) {
-                if (node_type(h) == t && node_subtype(h) == s) {
+                if (node_type(h) == type && node_subtype(h) == subtype) {
                     lua_pushinteger(L, h);
                     return 1;
                 } else {
@@ -8172,7 +8231,7 @@ static int nodelib_direct_findnode(lua_State *L)
             }
         } else {
             while (h) {
-                if (node_type(h) == t) {
+                if (node_type(h) == type) {
                     lua_pushinteger(L, h);
                     lua_pushinteger(L, node_subtype(h));
                     return 2;
@@ -8650,12 +8709,22 @@ static int nodelib_direct_isprevglyph(lua_State *L)
 
 inline static int nodelib_aux_uses_font_disc(lua_State *L, halfword n, halfword font)
 {
-    while (n) {
-        if ((node_type(n) == glyph_node) && (glyph_font(n) == font)) {
-            lua_pushboolean(L, 1);
-            return 1;
+    if (font) { 
+        while (n) {
+            if ((node_type(n) == glyph_node) && (glyph_font(n) == font)) {
+                lua_pushboolean(L, 1);
+                return 1;
+            }
+            n = node_next(n);
         }
-        n = node_next(n);
+    } else { 
+        while (n) {
+            if (node_type(n) == glyph_node) {
+                lua_pushinteger(L, glyph_font(n));
+                return 1;
+            }
+            n = node_next(n);
+        }
     }
     return 0;
 }
@@ -8664,10 +8733,14 @@ static int nodelib_direct_usesfont(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
-        halfword f = lmt_tohalfword(L, 2);
+        halfword f = lmt_opthalfword(L, 2, 0);
         switch (node_type(n)) {
             case glyph_node:
-                lua_pushboolean(L, glyph_font(n) == f);
+                if (f) { 
+                    lua_pushboolean(L, glyph_font(n) == f);
+                } else { 
+                    lua_pushinteger(L, glyph_font(n));
+                }
                 return 1;
             case disc_node:
                 if (nodelib_aux_uses_font_disc(L, disc_pre_break_head(n), f)) {
@@ -9798,7 +9871,9 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "findattribute",           nodelib_direct_findattribute          },
     { "findattributerange",      nodelib_direct_findattributerange     },
     { "findnode",                nodelib_direct_findnode               },
+    { "firstglyphnode",          nodelib_direct_firstglyphnode         },
     { "firstglyph",              nodelib_direct_firstglyph             },
+    { "firstchar",               nodelib_direct_firstchar              },
     { "flattendiscretionaries",  nodelib_direct_flattendiscretionaries },
     { "softenhyphens",           nodelib_direct_softenhyphens          },
     { "flushlist",               nodelib_direct_flushlist              },
@@ -10598,7 +10673,7 @@ halfword lmt_vpack_filter_callback(
 
 /* watch the -3 here, we skip over the repeat boolean  */
 
-# define get_dimen_par(P,A,B) \
+# define get_dimension_par(P,A,B) \
     lua_push_key(A); \
     P = (lua_rawget(L, -3) == LUA_TNUMBER) ? lmt_roundnumber(L, -1) : B; \
     lua_pop(L, 1);
@@ -10696,7 +10771,7 @@ int lmt_par_pass_callback(
                                 if (v) {
                                     properties->line_break_criterion = v;
                                 }
-                                get_dimen_par(v, emergencystretch, 0);
+                                get_dimension_par(v, emergencystretch, 0);
                                 if (v) {
                                     properties->emergency_stretch = v; // emergency_extra_stretch
                                 }

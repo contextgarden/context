@@ -181,7 +181,7 @@ typedef struct mp_posit_info {
     int        initialized;
 } mp_posit_info;
 
-mp_posit_info mp_posit_data = {
+static mp_posit_info mp_posit_data = {
     .initialized = 0,
 };
 

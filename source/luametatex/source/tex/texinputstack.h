@@ -33,7 +33,7 @@ typedef struct input_stack_record {
     halfword  end_of_file_seen;
     halfword  group;
     halfword  if_ptr;
-    halfword  padding;
+    halfword  at_end_of_file;
     char     *full_source_filename;
 } input_stack_record;
 
@@ -448,6 +448,7 @@ typedef enum token_types {
     token_text,            /*tex                   */  
     loop_text,             /*tex                   */    
     end_paragraph_text,    /*tex |\everyendpar|    */ 
+    end_file_text,
     write_text,            /*tex |\write|          */ 
     local_text,            /*tex                   */ 
     local_loop_text,       /*tex                   */ 

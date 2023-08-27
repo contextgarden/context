@@ -150,7 +150,7 @@ typedef struct mp_posit_info {
     posit_t    d180_divided_by_pi_mul_angle;
     int        initialized;
 } mp_posit_info;
-mp_posit_info mp_posit_data = {
+static mp_posit_info mp_posit_data = {
     .initialized = 0,
 };
 inline static posit_t mp_posit_make_fraction (posit_t p, posit_t q) { return posit_mul(posit_div(p,q), mp_posit_data.fraction_multiplier); }

@@ -15,7 +15,7 @@
 # define IS_SPC_OR_EOL(c) ((c) == ' ' || (c) == '\r' || (c) == '\n')
 
 extern void tex_initialize_fileio_state (void);
-extern int  tex_room_in_buffer          (int top);
+extern bool tex_room_in_buffer          (int top);
 extern int  tex_lua_a_open_in           (const char *fn);
 extern void tex_lua_a_close_in          (void);
 extern int  tex_lua_input_ln            (void);
@@ -68,7 +68,7 @@ extern fileio_state_info lmt_fileio_state;
 extern void        tex_terminal_update   (void);
 extern void        tex_open_log_file     (void);
 extern void        tex_close_log_file    (void);
-extern void        tex_start_input       (char *fn);
+extern void        tex_start_input       (char *fn, halfword at_end_of_file);
 extern void        tex_check_fmt_name    (void);
 extern void        tex_check_job_name    (char *fn);
 extern dumpstream  tex_open_fmt_file     (int writemode);

@@ -1328,22 +1328,31 @@ local ruledglue, ruledmathglue do
 
     local g_cache_s = caches["space"]
     local g_cache_x = caches["xspace"]
+    local g_cache_f = caches["fspace"]
+
+    local getoptions = nuts.getoptions
 
     ruledspace = function(head,current,parent)
         local subtype = getsubtype(current)
         local width = effectiveglue(current,parent)
         local info
-        if subtype == spaceskip_code then
-            info = g_cache_s[width]
-            if not info then
-                info = someblob("SP",l_glue,"trace:y",nil,width)
-                g_cache_s[width] = info
-            end
-        else
+        if subtype ~= spaceskip_code then
             info = g_cache_x[width]
             if not info then
                 info = someblob("XS",l_glue,"trace:m",nil,width)
                 g_cache_x[width] = info
+            end
+        elseif (getoptions(current) & 2) == 2 then
+            info = g_cache_f[width]
+            if not info then
+                info = someblob("SF",l_glue,"trace:c",nil,width)
+                g_cache_f[width] = info
+            end
+        else
+            info = g_cache_s[width]
+            if not info then
+                info = someblob("SP",l_glue,"trace:y",nil,width)
+                g_cache_s[width] = info
             end
         end
         info = copylist(info)

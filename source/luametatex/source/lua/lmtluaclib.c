@@ -530,10 +530,10 @@ static void luaclib_aux_print_code(const Proto* f)
             case OP_EXTRAARG:
                 printf("%d", ax);
                 break;
-            default:
-                printf("%d %d %d", a, b, c);
-                printf(COMMENT "not handled");
-                break;
+         // default:
+         //     printf("%d %d %d", a, b, c);
+         //     printf(COMMENT "not handled");
+         //     break;
         }
         printf("\n");
     }

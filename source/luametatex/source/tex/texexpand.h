@@ -8,7 +8,7 @@
 typedef struct expand_state_info {
     limits_data limits;
     int         depth;
-    int         cs_name_level;
+    int         cs_name_level; /*tex Not that useful but for now we keep it. */
     int         arguments;
     halfword    match_token_head;
     int         padding;

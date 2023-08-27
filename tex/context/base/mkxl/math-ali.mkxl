@@ -3186,6 +3186,38 @@
    \c!left={\startmathfenced[sesac]},
    \c!right=\stopmathfenced]
 
+%D There are users who use this so let's for now keep it (I also need to adapt
+%D x-mathml.mkxl):
+
+\newskip \math_old_hideskip   \math_old_hideskip  = -1000pt plus 1fill
+\newskip \math_old_centering  \math_old_centering =     0pt plus 1000pt minus 1000pt
+
+\permanent\protected\def\eqalign#1% rather plain, is this used at all ...
+  {\dontleavehmode
+   \mskip\thinmuskip\vcenter\bgroup % \vcenter \s!class \mathwrappercode \bgroup
+     \mathsurround\zeropoint        % \math_eqalign_set_defaults
+     \everycr\emptytoks
+     \tabskip\zeroskip
+     \enforced\let\hideskip\math_old_hideskip
+     \enforced\let\centering\math_old_centering
+     \enforced\def\hidewidth{\hskip\hideskip} % for alignment entries that can stick out
+     \amcode\ampersandasciicode\alignmentcatcode
+     \halign
+       {\strut
+        \hfil
+        \mathbeginclass\mathordcode
+        \mathendclass  \mathordcode
+        \startforceddisplaymath\aligncontent\stopforceddisplaymath
+        \aligntab
+        \mathbeginclass\mathordcode
+        \mathendclass  \mathordcode
+        \startforceddisplaymath\aligncontent\stopforceddisplaymath
+        \hfil
+        \crcr
+        #1%
+        \crcr}%
+   \egroup\mskip\thinmuskip}        % \egroup
+
 \protect \endinput
 
 % \placeformula \startformula[-] \startmatrix

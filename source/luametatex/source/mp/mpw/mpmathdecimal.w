@@ -221,7 +221,7 @@ typedef struct mp_decimal_info {
     int         initialized;
 } mp_decimal_info;
 
-mp_decimal_info mp_decimal_data = {
+static mp_decimal_info mp_decimal_data = {
     .factorials            = NULL,
     .last_cached_factorial = 0,
     .initialized           = 0,

@@ -3275,8 +3275,11 @@
 \newinteger\outerrecurse
 \newinteger\innerrecurse
 
-\mutable\def\recursedepth{\the\outerrecurse}
-\mutable\def\recurselevel{0}
+% \mutable\def\recursedepth{\the\outerrecurse}
+% \mutable\def\recurselevel{0}
+
+\mutable\untraced\def\recursedepth{\the\outerrecurse}
+\mutable\untraced\def\recurselevel{0}
 
 \mutable\let\recurseaction\relax
 
@@ -3412,39 +3415,57 @@
 %D
 %D When needed, one can call for \type {\looplevel} and \type {\loopdepth}.
 
-\aliased\let\endofloop\donothing % maybe \syst_helpers_loop_end
+% \aliased\let\endofloop\donothing % maybe \syst_helpers_loop_end
+%
+% \permanent\protected\def\doloop#1%
+%   {\global\advanceby\outerrecurse \plusone
+%    \push_macro_recurseaction
+%    \push_macro_recurselevel
+%    \protected\gdef\recurseaction##1##2{#1}%
+%    \enforced\let\endofloop\syst_helpers_loop
+%    \syst_helpers_loop1}% no \plusone else \recurselevel wrong
+%
+% \protected\def\syst_helpers_loop#1%
+%   {\def\recurselevel{#1}%
+%    \expandafter\syst_helpers_loop_yes\expandafter{\the\numexpr\recurselevel+\plusone\relax}}
+%
+% %% \protected\def\syst_helpers_loop_yes
+% %%   {\syst_helpers_recurse_content
+% %%    \endofloop}
+%
+% \protected\def\syst_helpers_loop_yes
+%   {\normalexpanded{\recurseaction{\recurselevel}{\the\outerrecurse}}%
+%    \endofloop}
+%
+% \protected\def\syst_helpers_loop_nop#-%
+%   {\enforced\let\endofloop\syst_helpers_loop
+%    \pop_macro_recurselevel
+%    \pop_macro_recurseaction
+%    \global\advanceby\outerrecurse\minusone}
+%
+% \permanent\protected\def\exitloop                % \exitloop quits at end
+%   {\enforced\let\endofloop\syst_helpers_loop_nop}
+%
+% \permanent\protected\def\exitloopnow#-\endofloop % \exitloopnow quits directly
+%   {\syst_helpers_loop_nop}
 
 \permanent\protected\def\doloop#1%
-  {\global\advanceby\outerrecurse \plusone
-   \globalpushmacro\recurseaction
-   \globalpushmacro\recurselevel
+  {\push_macro_recurseaction
+   \push_macro_recurselevel
+   \push_macro_recursedepth
    \protected\gdef\recurseaction##1##2{#1}%
-   \enforced\let\endofloop\syst_helpers_loop
-   \syst_helpers_loop1}% no \plusone else \recurselevel wrong
+   \untraced\edef\recurselevel{\noexpand\the\nestedloopiterator\the\currentloopnesting\space}%
+   \untraced\edef\recursedepth{\the\numexpr\currentloopnesting+\minusone}%
+   \localcontrolledendless
+     {%\edef\recurselevel{\the\currentloopiterator}%
+      %\edef\recursedepth{\the\currentloopnesting}%
+      \normalexpanded{\recurseaction{\the\currentloopiterator}{\the\currentloopnesting}}}%
+   \pop_macro_recursedepth
+   \pop_macro_recurselevel
+   \pop_macro_recurseaction}
 
-\protected\def\syst_helpers_loop#1%
-  {\def\recurselevel{#1}%
-   \expandafter\syst_helpers_loop_yes\expandafter{\the\numexpr\recurselevel+\plusone\relax}}
-
-%% \protected\def\syst_helpers_loop_yes
-%%   {\syst_helpers_recurse_content
-%%    \endofloop}
-
-\protected\def\syst_helpers_loop_yes
-  {\normalexpanded{\recurseaction{\recurselevel}{\the\outerrecurse}}%
-   \endofloop}
-
-\protected\def\syst_helpers_loop_nop#-%
-  {\enforced\let\endofloop\syst_helpers_loop
-   \globalpopmacro\recurselevel
-   \globalpopmacro\recurseaction
-   \global\advanceby\outerrecurse\minusone}
-
-\permanent\protected\def\exitloop                % \exitloop quits at end
-  {\enforced\let\endofloop\syst_helpers_loop_nop}
-
-\permanent\protected\def\exitloopnow#-\endofloop % \exitloopnow quits directly
-  {\syst_helpers_loop_nop}
+\aliased\let\exitloop   \quitloop
+\aliased\let\exitloopnow\quitloopnow
 
 %D The loop is executed at least once, so beware of situations like:
 %D
@@ -3566,21 +3587,24 @@
    \protected\gdefcsname push_macro_\csstring#1\endcsname{\globalpushmacro#1}%
    \protected\gdefcsname  pop_macro_\csstring#1\endcsname{\globalpopmacro #1}}
 
-% \showmacrostack can be used to see if there are different entries
-
 \installglobalmacrostack \recurseaction
 \installglobalmacrostack \recurselevel
 \installglobalmacrostack \recursedepth
+\installglobalmacrostack \recursestring
+
+% \showmacrostack can be used to see if there are different entries
 
 \permanent\protected\def\dostepwiserecurse#1#2#3#4%
   {\push_macro_recurseaction
    \push_macro_recurselevel
    \push_macro_recursedepth
    \protected\gdef\recurseaction##1##2{#4}%
+   \untraced\edef\recurselevel{\noexpand\the\nestedloopiterator\the\currentloopnesting\space}%
+   \untraced\edef\recursedepth{\the\numexpr\currentloopnesting+\minusone}%
    \localcontrolledloop=#1=#2=#3%
-     {\edef\recurselevel{\the\currentloopiterator}%
-      \edef\recursedepth{\the\currentloopnesting}%
-      \normalexpanded{\recurseaction{\recurselevel}{\recursedepth}}}%
+     {%\edef\recurselevel{\the\currentloopiterator}%
+      %\edef\recursedepth{\the\currentloopnesting}%
+      \normalexpanded{\recurseaction{\the\currentloopiterator}{\the\currentloopnesting}}}%
    \pop_macro_recursedepth
    \pop_macro_recurselevel
    \pop_macro_recurseaction}
@@ -3590,10 +3614,12 @@
    \push_macro_recurselevel
    \push_macro_recursedepth
    \protected\gdef\recurseaction##1##2{#2}%
+   \untraced\edef\recurselevel{\noexpand\the\nestedloopiterator\the\currentloopnesting\space}%
+   \untraced\edef\recursedepth{\the\numexpr\currentloopnesting+\minusone}%
    \localcontrolledrepeat=#1%
-     {\edef\recurselevel{\the\currentloopiterator}%
-      \edef\recursedepth{\the\currentloopnesting}%
-      \normalexpanded{\recurseaction{\recurselevel}{\recursedepth}}}%
+     {%\edef\recurselevel{\the\currentloopiterator}%
+      %\edef\recursedepth{\the\currentloopnesting}%
+      \normalexpanded{\recurseaction{\the\currentloopiterator}{\the\currentloopnesting}}}%
    \pop_macro_recursedepth
    \pop_macro_recurselevel
    \pop_macro_recurseaction}
@@ -3617,9 +3643,9 @@
 
 % Helper:
 
-\permanent\protected\def\resetrecurselevel{\let\recurselevel\!!zerocount}
+% \permanent\protected\def\resetrecurselevel{\let\recurselevel\!!zerocount}
 
-\let\recurselevel\!!zerocount
+\permanent\protected\def\resetrecurselevel{\untraced\let\recurselevel\!!zerocount}
 
 % \appendtoks \resetrecurselevel \to \everydump
 
@@ -3648,12 +3674,16 @@
 
 \permanent\protected\def\doloopoverlist#1#2%
   {\global\advanceby\outerrecurse\plusone
-   \globalpushmacro\recurseaction
-   \globalpushmacro\recursestring
+%    \globalpushmacro\recurseaction
+%    \globalpushmacro\recursestring
+   \push_macro_recurseaction
+   \push_macro_recursestring
    \protected\gdef\recurseaction##1{\edef\recursestring{##1}#2}%
    \processcommacommand[#1]\recurseaction
-   \globalpopmacro\recursestring
-   \globalpopmacro\recurseaction
+%    \globalpopmacro\recursestring
+%    \globalpopmacro\recurseaction
+   \pop_macro_recursestring
+   \pop_macro_recurseaction
    \global\advanceby\outerrecurse\minusone}
 
 %D This is some \LMTX\ experiment:
@@ -3680,19 +3710,33 @@
 
 \permanent\protected\def\doloopovermatch#1#2#3%
   {\pushmacro\matchloopcommand
-   \enforced\def\matchloopcommand##1##2##3##4##5##6##7##8##9{#3}%
+   \enforced\def\matchloopcommand##1##2##3##4##5##6##7##8##9##A##B##C##D##E{#3}%
    \ctxluamatch\matchloopcommand{#1}{#2}%
    \popmacro\matchloopcommand}
 
 \permanent\def\doloopovermatched#1#2#3%
   {\beginlocalcontrol
      \pushmacro\matchloopcommand
-     \enforced\def\matchloopcommand##1##2##3##4##5##6##7##8##9{#3}%
+     \enforced\def\matchloopcommand##1##2##3##4##5##6##7##8##9##A##B##C##D##E{#3}%
    \endlocalcontrol
    \the\ctxluamatch\matchloopcommand{#1}{#2}%
    \beginlocalcontrol
      \popmacro\matchloopcommand
    \endlocalcontrol}
+
+% \defineatluaend\ctxluamatch
+% \defineatluaend\ctxluamatchfile
+
+%D \starttyping
+%D \ctxluamatch
+%D     \Whatever
+%D     {(\letterpercent S+) *(\letterpercent S+) *(\letterpercent S+) *(\letterpercent S+)\letterpercent s*}
+%D     {\cldloadfile{crap.txt}}
+%D \ctxluamatchfile
+%D     \Whatever
+%D     {(\letterpercent S+) *(\letterpercent S+) *(\letterpercent S+) *(\letterpercent S+)\letterpercent s*}
+%D     {crap.txt}
+%D \stoptyping
 
 %D \macros
 %D   {newevery,everyline,EveryLine,EveryPar}

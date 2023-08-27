@@ -1,0 +1,201 @@
+% language=us runpath=texruns:manuals/musings
+
+\startcomponent musings-dontusetex
+
+\environment musings-style
+
+\setupquotation[style=italic]
+
+\startchapter[title={Don't use \TEX !}]
+
+Occasionally I run into a web post that involves \LUATEX\ and it is sometimes
+surprising what nonsense one can read. Now, I normally don't care that much but
+there are cases where I feel that a comment is justified. Partly because I'm one
+of the developers, but also because I'm involved in user groups.
+
+In this particular case the title of a (small) blog post was \quotation {Why I do
+not like luaTeX!} and the website announced itself ambitiously as \quote {DIGITAL
+TYPOGRAPHY NEWS}. Normally I assume that in such a case it is a general site
+about typesetting and that the author has not much experience or insight in the
+already ancient \TEX\ typesetting system. However, the \URL\ is:
+
+\starttyping
+eutypon.gr/e-blog/index.php/2021/02/13/why-i-do-not-like-luatex/
+\stoptyping
+
+which happens to be the Greek User Groups portal. So why do I feel the need to
+reflect on this? Why do I even care? The answer is simple: because user groups
+should inform their (potential) users correctly. Another reason is that I'm
+involved in the program that is disliked, and yet another one is that there is a
+suggestion that language support is bad in \LUATEX, while actually hyphenation
+patterns are very well maintained by Mojca and Arthur who are also actively
+involved in the community around the mentioned engine.
+
+\startplacefigure[location=page,number=no,title={\type {eutypon.gr/e-blog/index.php/2021/02/13/why-i-do-not-like-luatex/}}]
+    \externalfigure
+        [eutypon-gr-e-blog-21-02-13-why-i-do-not-like-luatex.png]
+        [width=\textwidth]
+\stopplacefigure
+
+Let's start with the title. For sure one might not like a specific program, but
+when it involves one of the mainstream \TEX\ engines, it should at least be clear
+that it's a personal opinion. Because no name is mentioned, we can assume that
+this is the opinion of the Greek user group as a whole. The text starts with
+\quotation {Most people speak with good words about luaTeX.} and the \quote {most}
+in that sentence sort of puts the author in a small group, which should trigger
+using a bit more careful title. Now I know a couple of users who use \LUATEX\
+(with \CONTEXT) for typesetting Greek, and we can assume that they are among the
+people who speak those good words: typesetting Greek just works.
+
+More good news is that \quotation {They seem to like things it can do that no
+other TeX derived systrem can do.} This might invite potential users to take a
+closer look at the system, especially because we already know that most people
+are positive. In 2021 one should keep in mind that, although the \LUATEX\ engine
+is around for more than a decade, the level of support can differ per macro
+package which is why \PDFTEX\ is still the most widespread used \TEX\ variant:
+much \TEX\ usage relates to writing (scientific articles) in English so one
+doesn't really need an \UNICODE\ engine. I always say: don't change a good
+working workflow if you have no reason; use what makes you feel comfortable. Only
+use \LUATEX\ if you have a reason. There is plenty of good and positive advice to
+be given.
+
+With \quotation {Personally, I do not care about these features but yesterday a
+friend told me that he wanted to write something in Greek with luaLaTeX.} the
+author steps over his or her personal rejection of the engine and enters the
+help|-|a|-|friend mode. \quotation {And what’s the catch, one may ask. The
+problem is that luaLaTeX does not load any hyphenation patterns but the default
+ones. So one needs to load them.} I'm not sure why this is a catch. It actually
+is a feature. One drawback of the traditional \TEX\ engines is that one needs to
+preload the hyphenation patterns. Before memory was bumped, that often meant
+creating format files for a subset of languages, and when memory became plenty it
+meant preloading dozens of patterns by default. The good news is that in all
+these cases the macro package takes care of that. In the case of \LUATEX\ no
+patterns need to be preloaded so it might even be that \LATEX\ doesn't have any
+preloaded but, not being a user, I didn't check that.
+
+This all makes the next sentence puzzling: \quotation {In TeX one uses a command
+like the follolwing one : \type {\language\l@monogreek}, where \type
+{\l@monogreek} is numerical value assigned to each language contained in the
+format.} Now, I'm no expert on \LATEX\ but I'm pretty sure that the \type {@}
+sign is not a letter by default. I'm also pretty sure that there is some high
+level interface to enable a language, and in the case of \LUATEX\ being used that
+mechanism will load the patterns runtime. I bet it will also deal with making
+sure other language specific properties are set. Therefore the \quotation {This
+is well documented in the TeXbook.} is somewhat weird: original \TEX\ only had
+one language and later versions could deal with more, but plain \TEX\ has no
+\type {\l@monogreek} command. It doesn't sound like the best advice to me.
+
+Just to be sure, I unpacked all the archives in the most recent \TEXLIVE\ \DVD\
+and grepped for that command in \type {tex} and \type {sty} files and surprise:
+in the \LATEX\ specific style file \typ {/tex/xelatex/xgreek/xgreek.sty} there is
+a line \typ {\language \l@monogreek \else \HyphenRules{monogreek}\fi} which to me
+looks way to low level for common users to figure out, let alone that it's a file
+for \XETEX\ so bound to a specific engine. Further grepping for \type {{greek}}
+gave hits for \LATEX's babel an there are Greek files under the \type
+{polyglossia} directory so I bet that Arthur (who once told me he was reponsible
+for languages) deals with Greek there. Even I, as a \CONTEXT\ user who never use
+\LATEX\ and only know some things by rumor (like the fact that there is something
+like polyglossia at all) could help a new user with some suggestions of where to
+look, just by googling for a solution. But explicitly using the \type {\language}
+primitive is not one of them. Okay, in \CONTEXT\ the \type {\language [greek]}
+command does something useful, but we're not talking about that package here, if
+only because it relates to \LUATEX\ development, which as we will see later is a
+kind of inner circle.
+
+So, picking up on the blog post, in an attempt to get Greek working in \LATEX\
+the author got online but \quotation {Now despite the fact that I spent a few
+hours searching for information on how to load specific hyphenation patterns, I
+could not find anything!} It might have helped to search for \type {lualatex
+greek} because that gives plenty of hits. And maybe there are even manuals out
+there that explain which of the packages in the \TEX\ tree to load in order to get
+it working. Maybe searching \CTAN\ or \TEXLIVE\ helps too. Maybe other user
+groups have experts who can help out. No matter what you run into, I don't think
+that the average user expects to find a recipe for installing and invoking
+patterns. Just for the record, the \LUATEX\ manual has a whole chapter on
+language support, but again, users can safely assume that the macro package that
+they use hides those details. Actually, if users were supposed to load patterns
+using a unique id, they are likely to end up in the modern Greek versus ancient
+Greek, as well as Greek mixed with English or other languages situations. That
+demands some more in depth knowledge to deal with, in any macro package and with
+any engine. You can add a bit of \UNICODE\ and \UTF-8\ or encodings in the mix
+too. Suggesting to consult the \TEX book is even a bit dangerous because one then
+also ends up in an eight bit universe where font encodings play a role, while
+\LUATEX\ is an \UNICODE\ engine that expects \UTF\ and uses \OPENTYPE\ fonts.
+And, while languages seem to be a problem for the author and his|/|her friend,
+fonts seem to be an easy deal. In my experience it's more likely that a user runs
+into font issues because modern fonts operate on multiple axis: script, language
+and features.
+
+Maybe the confusion (or at that time accumulated frustration) is best summarized
+by \quotation {Moreover, I could not find any information on how one loads a lua
+package (i.e., some external lua package that is available in the TeX
+installation).} Well, again I'm sure that one can find some information on
+\LATEX\ support sites but as I already said: language support is so basic in a
+macro package that users can use some simple command to enable their favorite
+one. So, when \quotation {People know that they can load a LaTeX package with the
+\type {\usepackage} command but I have no information on how to load lua code.}
+the first part is what matters: \LUA\ files are often part of a package and
+thereby they get loaded by the package, also because often stand|-|alone usage
+makes not much sense.
+
+It is absolutely no problem if someone doesn't like (or maybe even hates)
+\LUATEX, but it's a different matter when we end up in disinformation, and even
+worse in comments that smell like conspiracy: there is an inner circle of
+\LUATEX\ developers and \quotation {Practically, this means that if one is not
+part of the inner circle of luaTeX developers, then she cannot really know what
+is really going on.} Really? Is this how user groups educate their users? There
+are manuals written, plenty of articles published, active mailing lists,
+presentations given, and there is support on platforms like Stack Exchange. And
+most of that (the development of \LUATEX\ included) is done by volunteers in
+their spare time, for free. Of course the groups of core developers are small but
+that is true for any development. History (in the \TEX\ community) has
+demonstrated that this is the only way to make progress at all, simply because
+there are too many different views on matters, and also because the time of
+volunteers is limited. It is the end result what counts and when that is properly
+embedded in the community all is fine. So we have some different engines like
+\TEX, \PDFTEX, \LUATEX, etc., different macro packages, specialized engines like
+those dealing with large \CJK\ fonts, all serving a different audience from the
+same ecosystem. Are these all secretive inner circles with bad intentions to
+confuse users?
+
+The blog post ends with \quotation {And this is exactly the reason why I do not
+like luaTeX.} to which I can only comment that I already long ago decided not to
+waste any time on users who in their comments sound like they were forced to use
+a \TEX\ system (and seem to dislike it, so probably are better off with Microsoft
+Word, but nevertheless like to bark against some specific \TEX\ tree), who
+complain about manuals not realizing that their own contributions might be rather
+minimalistic, maybe even counter productive, or possibly of not much use to
+potential users anyway. I also ignore those who love to brag about the many bugs,
+any small number suits that criterium, without ever mentioning how bugged their
+own stuff is, etc. If your ego grows by disregarding something you don't even
+use, it's fine for me.
+
+So why do I bother writing this? Because I think it is a very bad move and signal
+of a user group to mix personal dislike, whatever the reason is, with informing
+and educating users. If a group is that frustrated with developments, it should
+resolve itself. On the other hand, it fits well in how todays communication
+works: everyone is a specialist, which get confirmed by the fact that many
+publish (also on topics they should stay away from) on the web without fact
+checking, and where likes and page hits are interpreted as a confirmation of
+one's expertise. Even for the \TEX\ community there seems to be no escaping from
+this.
+
+The objectives of \TEX\ user groups shift, simply because users can find
+information and help online instead of at meetings and in journals. The physical
+\TEX\ distributions get replaced by fast downloads but they are definitely under
+control of able packagers. Maybe a new task of user groups is to act as guardian
+against disinformation. Of course one then has to run into these nonsense blogs
+(or comments on forums) and such but that can partly be solved by a mechanism
+where readers can report this. A user group can then try to make its own
+information better. However, we have a problem when user groups themselves are
+the source of disinformation. I see no easy way out of this. We can only hope
+that such a port drowns in the ocean of information that is already out there to
+confuse users. In the end a good and able \TEX\ friend is all you need to get
+going, right? The blog post leaves it open if the Greek text ever got typeset
+well. If not, there's always \CONTEXT\ to consider, but then one eventually ends
+up with \LUAMETATEX\ which might work on the author as another \quotation {\nl
+rode lap op een stier} as we say in Dutch.
+
+\stopchapter
+
+\stoptext

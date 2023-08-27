@@ -36,7 +36,7 @@ to pack a sequence of statements.
 
 In \TEX\ macros (or source code) the following can occur:
 
-\starttyping
+\starttyping[option=TEX]
 \begingroup
     ...
 \endgroup
@@ -44,7 +44,7 @@ In \TEX\ macros (or source code) the following can occur:
 
 as well as:
 
-\starttyping
+\starttyping[option=TEX]
 \bgroup
     ...
 \egroup
@@ -54,7 +54,7 @@ Here we really group in the sense that assignments to variables inside a group
 are forgotten afterwards. All assignments are local to the group unless they are
 explicitly done global:
 
-\starttyping
+\starttyping[option=TEX]
 \scratchcounter=1
 \def\foo{foo}
 \begingroup
@@ -70,7 +70,7 @@ counterpart is now two. The \type {\foo} macro is also changed globally.
 Although you can use both sets of commands to group, you cannot mix them, so this
 will trigger an error:
 
-\starttyping
+\starttyping[option=TEX]
 \bgroup
 \endgroup
 \stoptyping
@@ -86,19 +86,19 @@ of \TEX.
 The \METAPOST\ language also has a concept of grouping but in this case it's more like a
 programming language.
 
-\starttyping
+\starttyping[option=MP]
 begingroup ;
     n := 123 ;
-engroup ;
+endgroup ;
 \stoptyping
 
 In this case the value of \type {n} is 123 after the group is left, unless you do
 this (for numerics there is actually no need to declare them):
 
-\starttyping
+\starttyping[option=MP]
 begingroup ;
     save n ; numeric n ; n := 123 ;
-engroup ;
+endgroup ;
 \stoptyping
 
 Given the use of \METAPOST\ (read: \METAFONT) this makes a lot of sense: often
@@ -116,7 +116,7 @@ saved inside a group.
 
 In \LUA\ all assignments are global unless a variable is defines local:
 
-\starttyping
+\starttyping[option=LUA]
 local x = 1
 local y = 1
 for i = 1, 10 do
@@ -159,7 +159,7 @@ statement end, while in \METAPOST\ it does end a statement (expression).
 
 Explicit grouping is accomplished by the two grouping primitives:
 
-\starttyping
+\starttyping[option=TEX]
 \begingroup
     \sl render slanted here
 \endgroup
@@ -167,7 +167,7 @@ Explicit grouping is accomplished by the two grouping primitives:
 
 However, often you will find this being used:
 
-\starttyping
+\starttyping[option=TEX]
 {\sl render slanted here}
 \stoptyping
 
@@ -175,7 +175,7 @@ This is not only more compact but also avoids the \type {\endgroup} gobbling
 following spaces when used inline. The next code is equivalent but also suffers
 from the gobbling:
 
-\starttyping
+\starttyping[option=TEX]
 \bgroup
     \sl render slanted here
 \egroup
@@ -187,7 +187,7 @@ have so called category codes that signal that they can be used for grouping. Th
 {\em can be} here suggest that there are other purposes and indeed there are, for
 instance in:
 
-\starttyping
+\starttyping[option=TEX]
 \toks 0 = {abs}
 \hbox {def}
 \stoptyping
@@ -195,7 +195,7 @@ instance in:
 In the case of a token list assignment the curly braces fence the assignment, so scanning
 stops when a matching right brace is found. The following are all valid:
 
-\starttyping
+\starttyping[option=TEX]
 \toks 0 = {a{b}s}
 \toks 0 = \bgroup a{b}s}
 \toks 0 = {a{\bgroup b}s}
@@ -213,7 +213,7 @@ check for nested and final braces.
 
 In the case of the box, all these specifications are valid:
 
-\starttyping
+\starttyping[option=TEX]
 \hbox {def}
 \hbox \bgroup def\egroup
 \hbox \bgroup def}
@@ -225,7 +225,7 @@ This is because now the braces and equivalent act as grouping symbols so as long
 as they match we're fine. There is a pitfall here: you cannot mix and match
 different grouping, so the next issues an error:
 
-\starttyping
+\starttyping[option=TEX]
 \bgroup xxx\endgroup   % error
 \begingroup xxx\egroup % error
 \stoptyping
@@ -235,7 +235,7 @@ that is not always obvious to the user. Fortunately it can be hidden in macros
 like the helper \typ {\groupedcommand}. In \LUAMETATEX\ we have a clean way out
 of this dilemma:
 
-\starttyping
+\starttyping[option=TEX]
 \beginsimplegroup xxx\endsimplegroup
 \beginsimplegroup xxx\endgroup
 \beginsimplegroup xxx\egroup
@@ -273,13 +273,12 @@ hooks. They can best be demonstrated with an example:
 \endgroup
 \stopbuffer
 
-\typebuffer
+\typebuffer[option=TEX]
 
 These collectors are accumulative. Watch how the bold is applied to what we
 inject before the group ends.
 
 \getbuffer
-
 
 \stopsectionlevel
 
@@ -306,7 +305,7 @@ Now consider the following example:
 \stoptabulate
 \stopbuffer
 
-\typebuffer  \getbuffer
+\typebuffer[option=TEX]  \getbuffer
 
 The reason why we get the same values is that cells are a group and therefore the
 value gets restored as we move on. We can use the \type {\global} prefix to get
@@ -323,7 +322,7 @@ around this
 \stoptabulate
 \stopbuffer
 
-\typebuffer  \getbuffer
+\typebuffer[option=TEX]  \getbuffer
 
 Instead of using a global assignment and increment we can also use the following
 
@@ -339,7 +338,7 @@ Instead of using a global assignment and increment we can also use the following
 \stoptabulate
 \stopbuffer
 
-\typebuffer  \getbuffer
+\typebuffer[option=TEX]  \getbuffer
 
 So what is the difference with the global approach? Say we have these two buffers:
 
@@ -371,11 +370,13 @@ So what is the difference with the global approach? Say we have these two buffer
 \stopbuffer
 \stopbuffer
 
-\typebuffer \getbuffer
+\typebuffer[option=TEX] \getbuffer
 
 Typesetting the second buffer gives us:
 
+\startlinecorrection
 \getbuffer[two]
+\stoplinecorrection
 
 When we want to have these entities independent and not use different variables,
 the global settings bleeding from one into the other entity is messy. Therefore
@@ -409,11 +410,13 @@ we can use this:
 \stopbuffer
 \stopbuffer
 
-\typebuffer \getbuffer
+\typebuffer[option=TEX] \getbuffer
 
 Now we get this:
 
+\startlinecorrection
 \getbuffer[two]
+\stoplinecorrection
 
 The \type {\constrained} prefix makes sure that we have a stack entry, without
 being clever with respect to the current value. Then the \type {\retained} prefix
@@ -422,6 +425,32 @@ the constrain it gets a bit unpredictable because then it all depends on where
 further up the chain the value was put on the stack. Of course one can argue that
 we should not have the \quotation {save stack redundant entries optimization} but
 that's not going to be removed.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Files]
+
+Although it doesn't really fit in this chapter, here are some hooks into processing
+files:
+
+\starttyping[option=TEX]
+Hello World!\atendoffiled         {\writestatus{FILE}{ATEOF B #1}}\par
+Hello World!\atendoffiled         {\writestatus{FILE}{ATEOF A #1}}\par
+Hello World!\atendoffiled reverse {\writestatus{FILE}{ATEOF C #1}}\par
+Hello World!\begingroup\sl \atendoffiled {\endgroup}\par
+\stoptyping
+
+Inside a file you can register tokens that will be expanded when the file ends.
+You can also do that beforehand using a variant of the \type {\input} primitive:
+
+\starttyping[option=TEX]
+\eofinput {\writestatus{FILE}{DONE}} {thatfile.tex}
+\stoptyping
+
+This feature is mostly there for consistency with the hooks into groups and
+paragraphs but also because \type {\everyeof} is kind of useless given that one
+never knows beforehand if a file loads another file. The hooks mentioned above
+are bound to the current file.
 
 \stopsectionlevel
 

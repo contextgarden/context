@@ -147,10 +147,11 @@ registerotffeature {
 -- following approach permits easier remapping of a-a, A-Z and 0-9 to
 -- fallbacks; symbols is currently mostly greek
 
-local function todigit (n) local t = { } for i=0, 9 do t[0x00030+i] = n+i end return t end
-local function toupper (n) local t = { } for i=0,25 do t[0x00041+i] = n+i end return t end
-local function tolower (n) local t = { } for i=0,25 do t[0x00061+i] = n+i end return t end
-local function tovector(t)                                                    return t end
+local function todigit (n)   local t = { } for i=0, 9 do t[0x00030+i] = n+i end return t end
+local function toupper (n)   local t = { } for i=0,25 do t[0x00041+i] = n+i end return t end
+local function tolower (n)   local t = { } for i=0,25 do t[0x00061+i] = n+i end return t end
+local function torange (n,m) local t = { } for i=0,25 do t[n+i]       = m+i end return t end
+local function tovector(t)                                                      return t end
 
 -- how about 0x2A (ast)    cq. 0x2217
 --           0x2D (hyphen) cq. 0x2212
@@ -166,7 +167,7 @@ local regular_tf = {
         [0x039B]=0x039B, [0x039C]=0x039C, [0x039D]=0x039D, [0x039E]=0x039E, [0x039F]=0x039F,
         [0x03A0]=0x03A0, [0x03A1]=0x03A1, [0x03A3]=0x03A3, [0x03A4]=0x03A4, [0x03A5]=0x03A5,
         [0x03A6]=0x03A6, [0x03A7]=0x03A7, [0x03A8]=0x03A8, [0x03A9]=0x03A9,
-        },
+    },
     lcgreek   = {
         [0x03B1]=0x03B1, [0x03B2]=0x03B2, [0x03B3]=0x03B3, [0x03B4]=0x03B4, [0x03B5]=0x03B5,
         [0x03B6]=0x03B6, [0x03B7]=0x03B7, [0x03B8]=0x03B8, [0x03B9]=0x03B9, [0x03BA]=0x03BA,
@@ -287,8 +288,10 @@ local sansserif_tf = {
     digits    = todigit(0x1D7E2),
     ucletters = toupper(0x1D5A0),
     lcletters = tolower(0x1D5BA),
-    lcgreek   = tovector(regular_tf.lcgreek),
-    ucgreek   = tovector(regular_tf.ucgreek),
+--     lcgreek   = tovector(regular_tf.lcgreek),
+--     ucgreek   = tovector(regular_tf.ucgreek),
+lcgreek   = torange(0x03B1,0x100080),
+ucgreek   = torange(0x0391,0x1000A0),
     symbols   = tovector(regular_tf.symbols),
 }
 
@@ -296,8 +299,10 @@ local sansserif_it = {
     digits    = tovector(regular_tf.digits),
     ucletters = toupper(0x1D608),
     lcletters = tolower(0x1D622),
-    lcgreek   = tovector(regular_tf.lcgreek),
-    ucgreek   = tovector(regular_tf.ucgreek),
+--     lcgreek   = tovector(regular_tf.lcgreek),
+--     ucgreek   = tovector(regular_tf.ucgreek),
+lcgreek   = torange(0x03B1,0x1000C0),
+ucgreek   = torange(0x0391,0x1000E0),
     symbols   = tovector(regular_tf.symbols),
 }
 

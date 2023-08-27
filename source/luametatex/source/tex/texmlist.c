@@ -418,10 +418,10 @@ static halfword tex_aux_math_penalty(int main_style, int pre, halfword cls)
 }
 
 inline static scaled limited_scaled(long l) {
-    if (l > max_dimen) {
-        return max_dimen;
-    } else if (l < -max_dimen) {
-        return -max_dimen;
+    if (l > max_dimension) {
+        return max_dimension;
+    } else if (l < -max_dimension) {
+        return -max_dimension;
     } else {
         return (scaled) l;
     }
@@ -429,10 +429,10 @@ inline static scaled limited_scaled(long l) {
 
 inline static scaled limited_rounded(double d) {
     long l = scaledround(d);
-    if (l > max_dimen) {
-        return max_dimen;
-    } else if (l < -max_dimen) {
-        return -max_dimen;
+    if (l > max_dimension) {
+        return max_dimension;
+    } else if (l < -max_dimension) {
+        return -max_dimension;
     } else {
         return (scaled) l;
     }
@@ -872,7 +872,7 @@ static halfword tex_aux_overbar(halfword box, scaled gap, scaled height, scaled 
         tex_couple_nodes(kern, rule);
         rule = kern;
     }
-    rule = tex_vpack(rule, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option, NULL);
+    rule = tex_vpack(rule, 0, packing_additional, max_dimension, (singleword) math_direction_par, holding_none_option, NULL);
     tex_attach_attribute_list_attribute(rule, att);
     return rule;
 }
@@ -895,7 +895,7 @@ static halfword tex_aux_underbar(halfword box, scaled gap, scaled height, scaled
         tex_attach_attribute_list_attribute(kern, att);
         tex_couple_nodes(rule, kern);
     }
-    rule = tex_vpack(box, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option, NULL);
+    rule = tex_vpack(box, 0, packing_additional, max_dimension, (singleword) math_direction_par, holding_none_option, NULL);
     tex_attach_attribute_list_attribute(rule, att);
     /* */
     box_depth(rule) = box_total(rule) + krn - box_height(box);
@@ -1389,7 +1389,7 @@ halfword tex_make_extensible(halfword fnt, halfword chr, scaled target, scaled m
      //     if (horizontal) {
      //         b = tex_hpack(box_list(box), target, packing_exactly, (singleword) math_direction_par, holding_none_option);
      //     } else {
-     //         b = tex_vpack(box_list(box), target, packing_exactly, max_dimen, (singleword) math_direction_par, holding_none_option);
+     //         b = tex_vpack(box_list(box), target, packing_exactly, max_dimension, (singleword) math_direction_par, holding_none_option);
      //     }
      //     box_glue_order(box) = box_glue_order(b);
      //     box_glue_sign(box) = box_glue_sign(b);
@@ -1807,7 +1807,7 @@ static halfword tex_aux_rebox(halfword box, scaled width, halfword size)
 
 inline static scaled tex_aux_mu_mult(scaled a, scaled n, scaled f)
 {
-    return tex_multiply_and_add(n, a, tex_xn_over_d(a, f, unity), max_dimen);
+    return tex_multiply_and_add(n, a, tex_xn_over_d(a, f, unity), max_dimension);
 }
 
 inline static void tex_aux_calculate_glue(scaled m, scaled *f, scaled *n)
@@ -1861,7 +1861,7 @@ static halfword tex_aux_math_glue(halfword g, quarterword subtype, halfword deta
     return glue;
 }
 
-static halfword tex_aux_math_dimen(halfword g, quarterword subtype, halfword detail)
+static halfword tex_aux_math_dimension(halfword g, quarterword subtype, halfword detail)
 {
     halfword glue = tex_new_glue_node(null, subtype);
     glue_amount(glue) = g;
@@ -3317,7 +3317,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
         tex_couple_nodes(base, accent);
         result = base;
     }
-    result = tex_vpack(result, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option, NULL);
+    result = tex_vpack(result, 0, packing_additional, max_dimension, (singleword) math_direction_par, holding_none_option, NULL);
     tex_attach_attribute_list_copy(result, target);
     node_subtype(result) = math_accent_list;
     box_width(result) = box_width(base); // basewidth
@@ -5020,7 +5020,7 @@ static halfword tex_aux_shift_to_kern(halfword target, halfword box, scaled shif
         halfword kern = tex_new_kern_node(shift, vertical_math_kern_subtype);
         tex_attach_attribute_list_copy(kern, target);
         tex_couple_nodes(kern, box);
-        result = tex_vpack(kern, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option, NULL);
+        result = tex_vpack(kern, 0, packing_additional, max_dimension, (singleword) math_direction_par, holding_none_option, NULL);
         tex_attach_attribute_list_copy(result, target);
         node_subtype(result) = math_scripts_list;
         box_shift_amount(result) = shift;
@@ -5447,7 +5447,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
                     tex_attach_attribute_list_copy(kern, target);
                     tex_couple_nodes(postsupdata.box, kern);
                     tex_couple_nodes(kern, postsubdata.box);
-                    result = tex_vpack(postsupdata.box, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option, NULL);
+                    result = tex_vpack(postsupdata.box, 0, packing_additional, max_dimension, (singleword) math_direction_par, holding_none_option, NULL);
                     tex_attach_attribute_list_copy(result, target);
                     node_subtype(result) = math_scripts_list;
                     box_shift_amount(result) = shift_down;
@@ -5524,7 +5524,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
                 tex_attach_attribute_list_copy(k, target);
                 tex_couple_nodes(presupdata.box, k);
                 tex_couple_nodes(k, presubdata.box);
-                preresult = tex_vpack(presupdata.box, 0, packing_additional, max_dimen, (singleword) math_direction_par, holding_none_option, NULL);
+                preresult = tex_vpack(presupdata.box, 0, packing_additional, max_dimension, (singleword) math_direction_par, holding_none_option, NULL);
                 tex_attach_attribute_list_copy(preresult, target);
                 node_subtype(preresult) = math_scripts_list;
                 box_shift_amount(preresult) = shift_down;
@@ -5837,9 +5837,9 @@ static halfword tex_aux_math_spacing_glue(halfword ltype, halfword rtype, halfwo
                 switch (d) {
                     case no_val_level:
                         break;
-                    case dimen_val_level:
+                    case dimension_val_level:
                         if (x) {
-                            x = tex_aux_math_dimen(x, inter_math_skip_glue, c);
+                            x = tex_aux_math_dimension(x, inter_math_skip_glue, c);
                             if (tracing_math_par >= 2) {
                                 tex_begin_diagnostic();
                                 tex_print_format("[math: inter atom kern, left %n, right %n, resolved %i, amount %D]", ltype, rtype, s, kern_amount(x), pt_unit);
@@ -5859,7 +5859,7 @@ static halfword tex_aux_math_spacing_glue(halfword ltype, halfword rtype, halfwo
                             return x;
                         }
                         goto NONE;
-                    case mu_val_level:
+                    case muglue_val_level:
                         if (! tex_math_glue_is_zero(x)) {
                             x = tex_aux_math_muglue(x, inter_math_skip_glue, mmu, c, style);
                             if (tracing_math_par >= 2) {
@@ -5939,7 +5939,7 @@ static halfword tex_aux_math_spacing_glue(halfword ltype, halfword rtype, halfwo
         if (math_spacing_mode_par == 1 && (ltype == math_begin_class || rtype == math_end_class)) { 
             return null;
         } else {
-            return tex_aux_math_dimen(0, inter_math_skip_glue, c);
+            return tex_aux_math_dimension(0, inter_math_skip_glue, c);
         }
     } else {
         return null;
@@ -6622,7 +6622,7 @@ static void tex_mlist_to_hlist_preroll_radicals(mliststate *state)
                 case rooted_radical_subtype:
                     {
                         halfword body = noad_new_hlist(current);
-                        if (radical_height(current) == max_dimen) {
+                        if (radical_height(current) == max_dimension) {
                             box_height(body) = height;
                         } else if (radical_height(current) < 0) {
                             box_height(body) += radical_height(current);
@@ -6632,7 +6632,7 @@ static void tex_mlist_to_hlist_preroll_radicals(mliststate *state)
                         } else if (radical_height(current)) {
                             box_height(body) = radical_height(current);
                         }
-                        if (radical_depth(current) == max_dimen) {
+                        if (radical_depth(current) == max_dimension) {
                             box_depth(body) = depth;
                         } else if (radical_depth(current) < 0) {
                             box_depth(body) += radical_depth(current);
@@ -7272,7 +7272,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 if (current_subtype >= 0 && tex_math_has_class_option(current_subtype, no_pre_slack_class_option)) {
                     /* */
                 } else if (! glue) {
-                    glue = tex_aux_math_dimen(recent_right_slack, inter_math_skip_glue, -2);
+                    glue = tex_aux_math_dimension(recent_right_slack, inter_math_skip_glue, -2);
                 } else {
                     glue_amount(glue) += recent_right_slack;
                 }
@@ -7306,7 +7306,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 if (recent_subtype >= 0 && tex_math_has_class_option(recent_subtype, no_post_slack_class_option)) {
                     /* */
                 } else if (! glue) {
-                    glue = tex_aux_math_dimen(current_left_slack, inter_math_skip_glue, -1);
+                    glue = tex_aux_math_dimension(current_left_slack, inter_math_skip_glue, -1);
                 } else {
                     glue_amount(glue) += current_left_slack;
                 }

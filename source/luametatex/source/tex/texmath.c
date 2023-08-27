@@ -350,18 +350,18 @@ static void tex_aux_print_parameter(const char *what, halfword style, halfword p
         tex_print_char(' ');
     }
     if (param < math_parameter_last) {
-        tex_print_cmd_chr(set_math_parameter_cmd, param);
+        tex_print_cmd_chr(math_parameter_cmd, param);
     } else {
         tex_print_format("%x %x ", math_parameter_spacing_left(param), math_parameter_spacing_right(param));
     }
     tex_print_cmd_chr(math_style_cmd, style);
     tex_print_char('=');
     switch (math_parameter_value_type(param)) {
-        case math_int_parameter:
+        case math_integer_parameter:
         case math_style_parameter:
             tex_print_int(value);
             break;
-        case math_dimen_parameter:
+        case math_dimension_parameter:
             tex_print_dimension(value, pt_unit);
             break;
         case math_muglue_parameter:
@@ -433,7 +433,7 @@ void tex_def_math_parameter(int style, int param, scaled value, int level, int i
     if (level <= 1) {
         if (math_parameter_value_type(param) == math_muglue_parameter) {
             sa_get_item_8(lmt_math_state.par_head, (param + (math_parameter_max_range * style)), &item1, &item2);
-            if (item2.int_value == indirect_math_regular && item1.int_value > thick_mu_skip_code) {
+            if (item2.int_value == indirect_math_regular && item1.int_value > thick_muskip_code) {
                 if (lmt_node_memory_state.nodesizes[item1.int_value]) {
                     tex_free_node(item1.int_value, glue_spec_size);
                 }
@@ -472,21 +472,21 @@ scaled tex_get_math_parameter(int style, int param, halfword *type)
         /* we stored nothing */
         case indirect_math_regular:
             switch (math_parameter_value_type(param)) {
-                case math_dimen_parameter:
+                case math_dimension_parameter:
                     if (type) {
-                        *type = dimen_val_level;
+                        *type = dimension_val_level;
                     }
                     return value;
                 case math_muglue_parameter:
                     if (type) {
-                        *type = mu_val_level;
+                        *type = muglue_val_level;
                     }
-                    return value <= thick_mu_skip_code ? mu_glue_parameter(value) : value;
-             // case math_int_parameter:
+                    return value <= thick_muskip_code ? muglue_parameter(value) : value;
+             // case math_integer_parameter:
              // case math_style_parameter:
                 default:
                     if (type) {
-                        *type = int_val_level;
+                        *type = integer_val_level;
                     }
                     return value;
             }
@@ -494,12 +494,12 @@ scaled tex_get_math_parameter(int style, int param, halfword *type)
         case indirect_math_integer:
             if (! value) {
                 if (type) {
-                    *type = int_val_level;
+                    *type = integer_val_level;
                 }
                 return value;
             } else if (eq_type(value) == integer_cmd) {
                 if (type) {
-                    *type = int_val_level;
+                    *type = integer_val_level;
                 }
                 return eq_value(value);
             } else {
@@ -508,17 +508,17 @@ scaled tex_get_math_parameter(int style, int param, halfword *type)
         case indirect_math_dimension:
             if (! value) {
                 if (type) {
-                    *type = dimen_val_level;
+                    *type = dimension_val_level;
                 }
                 return value;
             } else if (eq_type(value) == dimension_cmd) {
                 if (type) {
-                    *type = dimen_val_level;
+                    *type = dimension_val_level;
                 }
                 return eq_value(value);
             } else if (eq_type(value) == posit_cmd) {
                 if (type) {
-                    *type = dimen_val_level;
+                    *type = dimension_val_level;
                 }
                 return tex_posit_to_dimension(eq_value(value));
             } else {
@@ -527,14 +527,14 @@ scaled tex_get_math_parameter(int style, int param, halfword *type)
         case indirect_math_mugluespec:
             if (! value) {
                 if (type) {
-                    *type = mu_val_level;
+                    *type = muglue_val_level;
                 }
                 return value;
             } else {
                 switch (eq_type(value)) {
                     case mugluespec_cmd:
                         if (type) {
-                            *type = mu_val_level;
+                            *type = muglue_val_level;
                         }
                         return eq_value(value);
                     default:
@@ -563,12 +563,12 @@ scaled tex_get_math_parameter(int style, int param, halfword *type)
         case indirect_math_register_integer:
             if (! value) {
                 if (type) {
-                    *type = int_val_level;
+                    *type = integer_val_level;
                 }
                 return value;
-            } else if (eq_type(value) == register_int_reference_cmd) {
+            } else if (eq_type(value) == register_integer_reference_cmd) {
                 if (type) {
-                    *type = int_val_level;
+                    *type = integer_val_level;
                 }
                 return eq_value(value);
             } else {
@@ -577,12 +577,12 @@ scaled tex_get_math_parameter(int style, int param, halfword *type)
         case indirect_math_register_dimension:
             if (! value) {
                 if (type) {
-                    *type = dimen_val_level;
+                    *type = dimension_val_level;
                 }
                 return value;
-            } else if (eq_type(value) == register_dimen_reference_cmd) {
+            } else if (eq_type(value) == register_dimension_reference_cmd) {
                 if (type) {
-                    *type = dimen_val_level;
+                    *type = dimension_val_level;
                 }
                 return eq_value(value);
             } else {
@@ -605,12 +605,12 @@ scaled tex_get_math_parameter(int style, int param, halfword *type)
         case indirect_math_register_mugluespec:
             if (! value) {
                 if (type) {
-                    *type = mu_val_level;
+                    *type = muglue_val_level;
                 }
                 return value;
-            } else if (eq_type(value) == register_mu_glue_reference_cmd) {
+            } else if (eq_type(value) == register_muglue_reference_cmd) {
                 if (type) {
-                    *type = mu_val_level;
+                    *type = muglue_val_level;
                 }
                 return eq_value(value);
             } else {
@@ -619,12 +619,12 @@ scaled tex_get_math_parameter(int style, int param, halfword *type)
         case indirect_math_internal_integer:
             if (! value) {
                 if (type) {
-                    *type = int_val_level;
+                    *type = integer_val_level;
                 }
                 return value;
-            } else if (eq_type(value) == internal_int_reference_cmd) {
+            } else if (eq_type(value) == internal_integer_reference_cmd) {
                 if (type) {
-                    *type = int_val_level;
+                    *type = integer_val_level;
                 }
                 return eq_value(value);
             } else {
@@ -633,12 +633,12 @@ scaled tex_get_math_parameter(int style, int param, halfword *type)
         case indirect_math_internal_dimension:
             if (! value) {
                 if (type) {
-                    *type = dimen_val_level;
+                    *type = dimension_val_level;
                 }
                 return value;
-            } else if (eq_type(value) == internal_dimen_reference_cmd) {
+            } else if (eq_type(value) == internal_dimension_reference_cmd) {
                 if (type) {
-                    *type = dimen_val_level;
+                    *type = dimension_val_level;
                 }
                 return eq_value(value);
             } else {
@@ -661,12 +661,12 @@ scaled tex_get_math_parameter(int style, int param, halfword *type)
         case indirect_math_internal_mugluespec:
             if (! value) {
                 if (type) {
-                    *type = mu_val_level;
+                    *type = muglue_val_level;
                 }
                 return value;
-            } else  if (eq_type(value) == internal_mu_glue_reference_cmd) {
+            } else  if (eq_type(value) == internal_muglue_reference_cmd) {
                 if (type) {
-                    *type = mu_val_level;
+                    *type = muglue_val_level;
                 }
                 return eq_value(value);
             } else {
@@ -702,7 +702,7 @@ static void tex_aux_unsave_math_parameter_data(int gl)
                 if (math_parameter_value_type(param) == math_muglue_parameter) {
                     sa_tree_item item1, item2;
                     sa_get_item_8(lmt_math_state.par_head, item.code, &item1, &item2);
-                    if (item2.int_value == indirect_math_regular && item1.int_value > thick_mu_skip_code) {
+                    if (item2.int_value == indirect_math_regular && item1.int_value > thick_muskip_code) {
                      /* if (tex_valid_node(item1.int_value)) { */
                         if (lmt_node_memory_state.nodesizes[item1.int_value]) {
                             // printf("HERE 2.1: %i %i / %i %i / %i\n",item2.int_value,item1.int_value, item.value_1.int_value, item.value_2.int_value, node_type(item1.int_value));
@@ -886,7 +886,7 @@ void tex_run_math_style(void) {
         case scaled_math_style:
             { 
                 halfword noad = tex_new_node(style_node, scaled_math_style);
-                style_scale(noad) = tex_scan_int(0, NULL);
+                style_scale(noad) = tex_scan_integer(0, NULL);
              // style_scale(noad) = tex_scan_positive_scale(0);
                 tex_tail_append(noad);
             }
@@ -1366,7 +1366,7 @@ void tex_run_math_left_brace(void)
 
 static int tex_aux_pre_math_par_direction(void)
 {
-    return tex_located_save_value(internal_int_location(par_direction_code));
+    return tex_located_save_value(internal_integer_location(par_direction_code));
 }
 
 /*tex
@@ -1407,7 +1407,7 @@ static void tex_aux_enter_display_math(halfword cmd)
              /* cur_list.tail = cur_list.head; */ /* probably needed */
             }
             tex_pop_nest();
-            size = - max_dimen;
+            size = - max_dimension;
         } else {
             tex_line_break(1, math_display_group);
          // size = tex_actual_box_width(lmt_linebreak_state.just_box, tex_x_over_n(tex_get_font_em_width(cur_font_par), scaling_factor) * math_pre_display_gap_factor_par);
@@ -1474,7 +1474,7 @@ static delcodeval tex_aux_scan_extdef_del_code(int extcode, int doclass)
         case tex_mathcode:
             /*tex This is the easiest: |\delcode|,*/
             {
-                halfword v = tex_scan_int(0, NULL);
+                halfword v = tex_scan_integer(0, NULL);
                 /*tex |MFCCFCC| or |FCCFCC| */
                 if (doclass) {
                     d.small.class_value = (short) (v / 0x1000000);
@@ -1550,7 +1550,7 @@ mathcodeval tex_scan_mathchar(int extcode)
         case tex_mathcode:
             /*tex |"<4bits><4bits><8bits>| */
             {
-                halfword v = tex_scan_int(0, NULL);
+                halfword v = tex_scan_integer(0, NULL);
                 if (v >= 0) {
                     if (v > 0xFFFF) {
                         v = 0xFFFF;
@@ -1572,10 +1572,10 @@ mathcodeval tex_scan_mathchar(int extcode)
         /*
         case umathnum_mathcode:
             // |"<6bits><6bits><20bits>|: the largest numeric value is $2^32-1$, but the top of bit 21 can't
-            // be used as it contains invalid USV's. Note: |scan_int| won't accept families 128-255
+            // be used as it contains invalid USV's. Note: |scan_integer| won't accept families 128-255
             // because these use bit 32.
             {
-                halfword v = tex_scan_int(0, NULL);
+                halfword v = tex_scan_integer(0, NULL);
                 d.class_value = (short) math_class_part(v);
                 d.family_value = (short) math_family_part(v);
                 d.character_value = math_character_part(v);
@@ -2156,7 +2156,7 @@ int tex_scan_math_cmd_val(mathcodeval *mval, mathdictval *dval)
             {
                 halfword n = 0;
                 tex_back_input(cur_tok);
-                n = tex_scan_int(0, NULL);
+                n = tex_scan_integer(0, NULL);
                 *mval = tex_mathchar_from_integer(n, umath_mathcode);
             }
             break;
@@ -2180,7 +2180,7 @@ int tex_scan_math_code_val(halfword code, mathcodeval *mval, mathdictval *dval)
         case math_class_number_code:
             {
                 halfword family = cur_fam_par;
-                halfword mathclass  = tex_scan_int(0, NULL);
+                halfword mathclass  = tex_scan_integer(0, NULL);
                 tex_scan_math_cmd_val(mval, dval);
                 mval->class_value = (short) mathclass;
                 mval->family_value = (short) family;
@@ -2381,7 +2381,7 @@ static void tex_aux_math_math_component(halfword target, int append)
                                     break;
                                 case 'o': case 'O':
                                     if (tex_scan_mandate_keyword("source", 2)) {
-                                        noad_source(target) = tex_scan_int(0, NULL);
+                                        noad_source(target) = tex_scan_integer(0, NULL);
                                     }
                                     break;
                                 default:
@@ -2422,7 +2422,7 @@ static void tex_aux_math_math_component(halfword target, int append)
                         case 'o': case 'O':
                             /* no names, just numbers, we might also do that with other noads */
                             if (tex_scan_mandate_keyword("options", 1)) {
-                                noad_options(target) = tex_scan_int(0, NULL);
+                                noad_options(target) = tex_scan_integer(0, NULL);
                             }
                             break;
                         case 'v': case 'V':
@@ -2532,15 +2532,15 @@ void tex_run_math_modifier(void)
                         if (tex_scan_keyword("nucleus")) {
                             noad_options(tail) |= noad_option_source_on_nucleus;    
                         }
-                        noad_source(tail) = tex_scan_int(0, NULL);
+                        noad_source(tail) = tex_scan_integer(0, NULL);
                         break;
                     case openup_height_modifier_code:
                         noad_options(tail) |= noad_option_openup_height;
-                        noad_height(tail) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                        noad_height(tail) = tex_scan_dimension(0, 0, 0, 0, NULL);
                         break;
                     case openup_depth_modifier_code:
                         noad_options(tail) |= noad_option_openup_depth;
-                        noad_depth(tail) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                        noad_depth(tail) = tex_scan_dimension(0, 0, 0, 0, NULL);
                         break;
                     case display_limits_modifier_code:
                         noad_options(tail) = unset_option(noad_options(tail), noad_option_limits | noad_option_no_limits);
@@ -2562,7 +2562,7 @@ void tex_run_math_modifier(void)
                                 if (tex_scan_keyword("nucleus")) {
                                     noad_options(tail) |= noad_option_source_on_nucleus;    
                                 }
-                                noad_source(tail) = tex_scan_int(0, NULL);
+                                noad_source(tail) = tex_scan_integer(0, NULL);
                                 break;
                         }
 
@@ -2746,12 +2746,12 @@ void tex_run_math_radical(void)
                         break;
                     case 'o': case 'O':
                         if (tex_scan_mandate_keyword("source", 2)) {
-                            noad_source(radical) = tex_scan_int(0, NULL);
+                            noad_source(radical) = tex_scan_integer(0, NULL);
                         }
                         break;
                     case 'i': case 'I':
                         if (tex_scan_mandate_keyword("size", 2)) {
-                            radical_size(radical) = tex_scan_int(0, NULL);
+                            radical_size(radical) = tex_scan_integer(0, NULL);
                         }
                         break;
                     case 'h': case 'H':
@@ -2766,17 +2766,17 @@ void tex_run_math_radical(void)
                 break;
             case 'w': case 'W':
                 if (tex_scan_mandate_keyword("width", 1)) {
-                    noad_width(radical) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    noad_width(radical) = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case 'd': case 'D':
                 if (tex_scan_mandate_keyword("depth", 1)) {
-                    radical_depth(radical) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    radical_depth(radical) = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case 'h': case 'H':
                 if (tex_scan_mandate_keyword("height", 1)) {
-                    radical_height(radical) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    radical_height(radical) = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case 'l': case 'L':
@@ -3016,7 +3016,7 @@ void tex_run_math_accent(void)
                         switch (tex_scan_character("othOTH", 0, 0, 0)) {
                             case 'o': case 'O':
                                 if (tex_scan_mandate_keyword("source", 2)) {
-                                    noad_source(accent) = tex_scan_int(0, NULL);
+                                    noad_source(accent) = tex_scan_integer(0, NULL);
                                 }
                                 break;
                             case 't': case 'T':
@@ -3038,7 +3038,7 @@ void tex_run_math_accent(void)
                         switch (tex_scan_character("frFR", 0, 0, 0)) {
                             case 'r': case 'R':
                                 if (tex_scan_mandate_keyword("fraction", 2)) {
-                                    accent_fraction(accent) = tex_scan_int(0, NULL);
+                                    accent_fraction(accent) = tex_scan_integer(0, NULL);
                                 }
                                 break;
                             case 'f': case 'F':
@@ -3633,7 +3633,7 @@ void tex_run_math_fraction(void)
             case math_above_delimited_code:
             case math_u_above_code:
             case math_u_above_delimited_code:
-                tex_scan_dimen(0, 0, 0, 0, NULL);
+                tex_scan_dimension(0, 0, 0, 0, NULL);
                 break;
         }
         /*tex This is somewhat weird, this error here. */
@@ -3743,7 +3743,7 @@ void tex_run_math_fraction(void)
             /*tex We can't have keyword here because of compatibility reasons. */
             case math_above_code:
             case math_above_delimited_code:
-                rulethickness = tex_scan_dimen(0, 0, 0, 0, NULL);
+                rulethickness = tex_scan_dimension(0, 0, 0, 0, NULL);
                 break;
             case math_over_code:
             case math_over_delimited_code:
@@ -3833,7 +3833,7 @@ void tex_run_math_fraction(void)
                         case 't': case 'T':
                             if (tex_scan_mandate_keyword("thickness", 1)) {
                                 ruledone = 1;
-                                rulethickness = tex_scan_dimen(0, 0, 0, 0, NULL);
+                                rulethickness = tex_scan_dimension(0, 0, 0, 0, NULL);
                             }
                             break;
                         case 'f': case 'F':
@@ -3856,7 +3856,7 @@ void tex_run_math_fraction(void)
                                     break;
                                 case 'o': case 'O':
                                     if (tex_scan_mandate_keyword("source", 2)) {
-                                        noad_source(fraction) = tex_scan_int(0, NULL);
+                                        noad_source(fraction) = tex_scan_integer(0, NULL);
                                     }
                                     break;
                                 default:
@@ -3866,12 +3866,12 @@ void tex_run_math_fraction(void)
                             break;
                         case 'h': case 'H':
                             if (tex_scan_mandate_keyword("hfactor", 1)) {
-                                fraction_h_factor(fraction) = tex_scan_int(0, NULL);
+                                fraction_h_factor(fraction) = tex_scan_integer(0, NULL);
                             }
                             break;
                         case 'v': case 'V':
                             if (tex_scan_mandate_keyword("vfactor", 1)) {
-                                fraction_v_factor(fraction) = tex_scan_int(0, NULL);
+                                fraction_v_factor(fraction) = tex_scan_integer(0, NULL);
                             }
                             break;
                         default:
@@ -3880,7 +3880,7 @@ void tex_run_math_fraction(void)
                 }
               DONE:
                 if (! ruledone) {
-                    rulethickness = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    rulethickness = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
         }
@@ -4102,7 +4102,7 @@ void tex_run_math_fence(void)
             goto CHECK_PAIRING;
     }
     while (1) {
-           /* todo: break down  */
+        /* todo: break down  */
         switch (tex_scan_character("hdanlevpcrsutbfHDANLEVPCRSUTBF", 0, 1, 0)) {
             case 0:
                 goto CHECK_PAIRING;
@@ -4130,22 +4130,22 @@ void tex_run_math_fence(void)
                 break;
             case 'b': case 'B':
                 if (tex_scan_mandate_keyword("bottom", 1)) {
-                    bottom = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    bottom = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case 'd': case 'D':
                 if (tex_scan_mandate_keyword("depth", 1)) {
-                    dp = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    dp = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case 'f': case 'F':
                 if (tex_scan_mandate_keyword("factor", 1)) {
-                    factor = tex_scan_int(0, NULL);
+                    factor = tex_scan_integer(0, NULL);
                 }
                 break;
             case 'h': case 'H':
                 if (tex_scan_mandate_keyword("height", 1)) {
-                    ht = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    ht = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case 'n': case 'N':
@@ -4242,7 +4242,7 @@ void tex_run_math_fence(void)
                         break;
                     case 'o': case 'O':
                         if (tex_scan_mandate_keyword("source", 2)) {
-                            source = tex_scan_int(0, NULL);
+                            source = tex_scan_integer(0, NULL);
                         }
                         break;
                     default:
@@ -4252,7 +4252,7 @@ void tex_run_math_fence(void)
                 break;
             case 't': case 'T':
                 if (tex_scan_mandate_keyword("top", 1)) {
-                    top = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    top = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             default:
@@ -5513,7 +5513,7 @@ void tex_set_unsplit_styles(halfword code, halfword value, halfword level, halfw
 void tex_reset_all_styles(halfword level)
 {
     for (int code = math_parameter_atom_pairs_first; code <= math_parameter_atom_pairs_last; code++) {
-        tex_set_all_styles(code, zero_mu_skip_code, level, indirect_math_unset);
+        tex_set_all_styles(code, zero_muskip_code, level, indirect_math_unset);
     }
 }
 
@@ -5523,10 +5523,10 @@ inline static halfword tex_aux_math_class_default(halfword mathclass) {
 
 inline static void tex_set_math_class_default(halfword mathclass, halfword parent, halfword options)
 {
-    tex_word_define(0, internal_int_location(first_math_class_code   + mathclass), tex_aux_math_class_default(parent));
-    tex_word_define(0, internal_int_location(first_math_atom_code    + mathclass), tex_aux_math_class_default(mathclass));
-    tex_word_define(0, internal_int_location(first_math_options_code + mathclass), options);
-    tex_word_define(0, internal_int_location(first_math_parent_code  + mathclass), tex_aux_math_class_default(mathclass));
+    tex_word_define(0, internal_integer_location(first_math_class_code   + mathclass), tex_aux_math_class_default(parent));
+    tex_word_define(0, internal_integer_location(first_math_atom_code    + mathclass), tex_aux_math_class_default(mathclass));
+    tex_word_define(0, internal_integer_location(first_math_options_code + mathclass), options);
+    tex_word_define(0, internal_integer_location(first_math_parent_code  + mathclass), tex_aux_math_class_default(mathclass));
 }
 
 static void tex_aux_set_math_atom_rule(halfword left, halfword right, halfword newleft, halfword newright)
@@ -5550,10 +5550,10 @@ void tex_initialize_math_spacing(void)
     for (int mathclass = 0; mathclass <= max_math_class_code; mathclass++) {
         tex_set_math_class_default(mathclass, mathclass, no_class_options);
         /*tex We do this here as there is no real need for yet another initializer. */
-        tex_word_define(0, internal_int_location(first_math_pre_penalty_code  + mathclass), math_default_penalty);
-        tex_word_define(0, internal_int_location(first_math_post_penalty_code + mathclass), math_default_penalty);
-        tex_word_define(0, internal_int_location(first_math_display_pre_penalty_code  + mathclass), math_default_penalty);
-        tex_word_define(0, internal_int_location(first_math_display_post_penalty_code + mathclass), math_default_penalty);
+        tex_word_define(0, internal_integer_location(first_math_pre_penalty_code  + mathclass), math_default_penalty);
+        tex_word_define(0, internal_integer_location(first_math_post_penalty_code + mathclass), math_default_penalty);
+        tex_word_define(0, internal_integer_location(first_math_display_pre_penalty_code  + mathclass), math_default_penalty);
+        tex_word_define(0, internal_integer_location(first_math_display_post_penalty_code + mathclass), math_default_penalty);
     }
 
     tex_reset_all_styles(level_one);
@@ -5618,79 +5618,79 @@ void tex_initialize_math_spacing(void)
 
 //    math_parameter_spacing_pair(ordinary_noad_subtype,ordinary_noad_subtype)
 
-    tex_set_all_styles   (math_parameter_spacing_pair(ordinary_noad_subtype,    operator_noad_subtype),    thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(ordinary_noad_subtype,    binary_noad_subtype),      med_mu_skip_code,   level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(ordinary_noad_subtype,    relation_noad_subtype),    thick_mu_skip_code, level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(ordinary_noad_subtype,    inner_noad_subtype),       thin_mu_skip_code,  level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_spacing_pair(ordinary_noad_subtype,    operator_noad_subtype),    thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(ordinary_noad_subtype,    binary_noad_subtype),      med_muskip_code,   level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(ordinary_noad_subtype,    relation_noad_subtype),    thick_muskip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(ordinary_noad_subtype,    inner_noad_subtype),       thin_muskip_code,  level_one, indirect_math_regular);
 
-    tex_set_all_styles   (math_parameter_spacing_pair(operator_noad_subtype,    ordinary_noad_subtype),    thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_spacing_pair(operator_noad_subtype,    operator_noad_subtype),    thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(operator_noad_subtype,    relation_noad_subtype),    thick_mu_skip_code, level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(operator_noad_subtype,    inner_noad_subtype),       thin_mu_skip_code,  level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_spacing_pair(operator_noad_subtype,    ordinary_noad_subtype),    thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_spacing_pair(operator_noad_subtype,    operator_noad_subtype),    thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(operator_noad_subtype,    relation_noad_subtype),    thick_muskip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(operator_noad_subtype,    inner_noad_subtype),       thin_muskip_code,  level_one, indirect_math_regular);
 
-    tex_set_all_styles   (math_parameter_spacing_pair(operator_noad_subtype,    fraction_noad_subtype),    thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_spacing_pair(operator_noad_subtype,    radical_noad_subtype),     thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_spacing_pair(fraction_noad_subtype,    operator_noad_subtype),    thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_spacing_pair(radical_noad_subtype,     operator_noad_subtype),    thin_mu_skip_code,  level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_spacing_pair(operator_noad_subtype,    fraction_noad_subtype),    thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_spacing_pair(operator_noad_subtype,    radical_noad_subtype),     thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_spacing_pair(fraction_noad_subtype,    operator_noad_subtype),    thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_spacing_pair(radical_noad_subtype,     operator_noad_subtype),    thin_muskip_code,  level_one, indirect_math_regular);
 
-    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      ordinary_noad_subtype),    med_mu_skip_code,   level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      operator_noad_subtype),    med_mu_skip_code,   level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      open_noad_subtype),        med_mu_skip_code,   level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      inner_noad_subtype),       med_mu_skip_code,   level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      ordinary_noad_subtype),    med_muskip_code,   level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      operator_noad_subtype),    med_muskip_code,   level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      open_noad_subtype),        med_muskip_code,   level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      inner_noad_subtype),       med_muskip_code,   level_one, indirect_math_regular);
 
-    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      middle_noad_subtype),      med_mu_skip_code,   level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      fraction_noad_subtype),    med_mu_skip_code,   level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      radical_noad_subtype),     med_mu_skip_code,   level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(middle_noad_subtype,      binary_noad_subtype),      med_mu_skip_code,   level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(fraction_noad_subtype,    binary_noad_subtype),      med_mu_skip_code,   level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(radical_noad_subtype,     binary_noad_subtype),      med_mu_skip_code,   level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      middle_noad_subtype),      med_muskip_code,   level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      fraction_noad_subtype),    med_muskip_code,   level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(binary_noad_subtype,      radical_noad_subtype),     med_muskip_code,   level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(middle_noad_subtype,      binary_noad_subtype),      med_muskip_code,   level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(fraction_noad_subtype,    binary_noad_subtype),      med_muskip_code,   level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(radical_noad_subtype,     binary_noad_subtype),      med_muskip_code,   level_one, indirect_math_regular);
 
-    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    ordinary_noad_subtype),    thick_mu_skip_code, level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    operator_noad_subtype),    thick_mu_skip_code, level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    open_noad_subtype),        thick_mu_skip_code, level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    inner_noad_subtype),       thick_mu_skip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    ordinary_noad_subtype),    thick_muskip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    operator_noad_subtype),    thick_muskip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    open_noad_subtype),        thick_muskip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    inner_noad_subtype),       thick_muskip_code, level_one, indirect_math_regular);
 
-    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    middle_noad_subtype),      thick_mu_skip_code, level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    fraction_noad_subtype),    thick_mu_skip_code, level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    radical_noad_subtype),     thick_mu_skip_code, level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(middle_noad_subtype,      relation_noad_subtype),    thick_mu_skip_code, level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(fraction_noad_subtype,    relation_noad_subtype),    thick_mu_skip_code, level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(radical_noad_subtype,     relation_noad_subtype),    thick_mu_skip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    middle_noad_subtype),      thick_muskip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    fraction_noad_subtype),    thick_muskip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(relation_noad_subtype,    radical_noad_subtype),     thick_muskip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(middle_noad_subtype,      relation_noad_subtype),    thick_muskip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(fraction_noad_subtype,    relation_noad_subtype),    thick_muskip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(radical_noad_subtype,     relation_noad_subtype),    thick_muskip_code, level_one, indirect_math_regular);
 
-    tex_set_all_styles   (math_parameter_spacing_pair(close_noad_subtype,       operator_noad_subtype),    thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(close_noad_subtype,       binary_noad_subtype),      med_mu_skip_code,   level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(close_noad_subtype,       relation_noad_subtype),    thick_mu_skip_code, level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(close_noad_subtype,       inner_noad_subtype),       thin_mu_skip_code,  level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_spacing_pair(close_noad_subtype,       operator_noad_subtype),    thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(close_noad_subtype,       binary_noad_subtype),      med_muskip_code,   level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(close_noad_subtype,       relation_noad_subtype),    thick_muskip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(close_noad_subtype,       inner_noad_subtype),       thin_muskip_code,  level_one, indirect_math_regular);
 
-    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, ordinary_noad_subtype),    thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, operator_noad_subtype),    thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, relation_noad_subtype),    thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, open_noad_subtype),        thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, close_noad_subtype),       thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, punctuation_noad_subtype), thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, inner_noad_subtype),       thin_mu_skip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, ordinary_noad_subtype),    thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, operator_noad_subtype),    thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, relation_noad_subtype),    thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, open_noad_subtype),        thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, close_noad_subtype),       thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, punctuation_noad_subtype), thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, inner_noad_subtype),       thin_muskip_code,  level_one, indirect_math_regular);
 
-    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, fraction_noad_subtype),    thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, middle_noad_subtype),      thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, radical_noad_subtype),     thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(fraction_noad_subtype,    punctuation_noad_subtype), thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(middle_noad_subtype,      punctuation_noad_subtype), thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(radical_noad_subtype,     punctuation_noad_subtype), thin_mu_skip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, fraction_noad_subtype),    thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, middle_noad_subtype),      thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(punctuation_noad_subtype, radical_noad_subtype),     thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(fraction_noad_subtype,    punctuation_noad_subtype), thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(middle_noad_subtype,      punctuation_noad_subtype), thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(radical_noad_subtype,     punctuation_noad_subtype), thin_muskip_code,  level_one, indirect_math_regular);
 
-    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       ordinary_noad_subtype),    thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_spacing_pair(inner_noad_subtype,       operator_noad_subtype),    thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       binary_noad_subtype),      med_mu_skip_code,   level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       relation_noad_subtype),    thick_mu_skip_code, level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       open_noad_subtype),        thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       punctuation_noad_subtype), thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       inner_noad_subtype),       thin_mu_skip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       ordinary_noad_subtype),    thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_spacing_pair(inner_noad_subtype,       operator_noad_subtype),    thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       binary_noad_subtype),      med_muskip_code,   level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       relation_noad_subtype),    thick_muskip_code, level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       open_noad_subtype),        thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       punctuation_noad_subtype), thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       inner_noad_subtype),       thin_muskip_code,  level_one, indirect_math_regular);
 
-    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       middle_noad_subtype),      thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(fraction_noad_subtype,    inner_noad_subtype),       thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(radical_noad_subtype,     inner_noad_subtype),       thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(middle_noad_subtype,      inner_noad_subtype),       thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(fraction_noad_subtype,    inner_noad_subtype),       thin_mu_skip_code,  level_one, indirect_math_regular);
-    tex_set_split_styles (math_parameter_spacing_pair(radical_noad_subtype,     inner_noad_subtype),       thin_mu_skip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(inner_noad_subtype,       middle_noad_subtype),      thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(fraction_noad_subtype,    inner_noad_subtype),       thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(radical_noad_subtype,     inner_noad_subtype),       thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(middle_noad_subtype,      inner_noad_subtype),       thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(fraction_noad_subtype,    inner_noad_subtype),       thin_muskip_code,  level_one, indirect_math_regular);
+    tex_set_split_styles (math_parameter_spacing_pair(radical_noad_subtype,     inner_noad_subtype),       thin_muskip_code,  level_one, indirect_math_regular);
 
     /* */
 

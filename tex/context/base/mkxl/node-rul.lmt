@@ -54,6 +54,7 @@ local setfield           = nuts.setfield
 local getruledata        = nuts.getruledata
 
 local isglyph            = nuts.isglyph
+local firstglyphnode     = nuts.firstglyphnode
 
 local flushlist          = nuts.flushlist
 local effectiveglue      = nuts.effectiveglue
@@ -190,8 +191,6 @@ do
         mathaction(n,h,v,"hruleaction")
     end
 
-    local x
-
     local function useraction(n,h,v)
         local p = properties[n]
         if p then
@@ -264,15 +263,32 @@ do
             -- todo: trace message
             return head
         end
+        -- id == glyph_code
+        -- id == rule_code
+        -- id == hlist_code and getattr(n,a_runningtext)
+        -- id == disc_code
+        -- id == boundary_code
         local font = nil
         local char, id = isglyph(f)
         if char then
             font = id
         elseif id == hlist_code then
             font = getattr(f,a_runningtext)
+        else
+            -- rare case:
+            if id == disc_code then
+                font = usesfont(f)
+            end
+            -- hope for the best
+            if not font then
+                local g = firstglyphnode(f,l)
+                if g then
+                    font = getfont(g)
+                end
+            end
         end
         if not font then
-            -- saveguard ... we need to deal with rules and so (math)
+            -- maybe single rule -- saveguard ... we need to deal with rules and so (math)
             return head
         end
         local r, m
@@ -397,7 +413,6 @@ do
  --or-- local data = getvalues(a_ruled)
         if data then
             head = processwords(a_ruled,data,flush_ruled,head)
-
         end
         return head
     end

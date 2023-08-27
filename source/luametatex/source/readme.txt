@@ -517,6 +517,15 @@ issues, a more complex build, dependencies on assembly generators, etc. which
 is a no-go.
 
 --------------------------------------------------------------------------------
+on the agenda
+--------------------------------------------------------------------------------
+
+I will stepwise adapt some code to C23, like the native boolean types as well as 
+decimal64 instead of the decimal library. This can only happen in detail when 
+all compilers that we support provide these features.  This is mostly a "when I
+see it cq. when I am in the mood I will do it" kind of activity. 
+
+--------------------------------------------------------------------------------
 team / responsibilities
 --------------------------------------------------------------------------------
 

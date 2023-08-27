@@ -57,7 +57,7 @@ local setglyphdata      = nuts.setglyphdata
 
 local isglyph           = nuts.isglyph
 
-local firstglyph        = nuts.firstglyph
+local firstglyphnode    = nuts.firstglyphnode
 
 local nextglyph         = nuts.traversers.glyph
 local nextchar          = nuts.traversers.char
@@ -349,7 +349,7 @@ local function traced_process(head,first,last,process,a)
 end
 
 function scripts.injectors.handler(head)
-    local start = firstglyph(head) -- we already have glyphs here (subtype 1)
+    local start = firstglyphnode(head) -- we already have glyphs here (subtype 1)
     if not start then
         return head
     else

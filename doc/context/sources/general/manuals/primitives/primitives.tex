@@ -1,3 +1,4 @@
+
 % language=us runpath=texruns:manuals/primitives
 
 % The usual time stamp. This written while listening intermized to Fish (just ran
@@ -13,6 +14,7 @@
 %
 % Hans Hagen | j.hagen @ xs4all . nl | ntg-context @ ntg . nl
 
+\usemodule[system-syntax]
 \usemodule[article-basic]
 \usemodule[abbreviations-logos]
 \usemodule[scite]
@@ -53,6 +55,8 @@
 % like this using \type {\foo} makes more sense.
 
 \protected\def\prm#1{\doifmode{*bodypart}{\index{\tex{#1}}}\tex{#1}}
+
+\protected\def\stx#1{\ctxlua{moduledata.engine.specification("#1")}} % only for checking
 
 % This is why we need to tag bodymatter.
 
@@ -119,61 +123,6 @@ subsystems (like math), allocate additional datatypes and resources, deal with
 fonts and languages, manipulate boxes and glyphs, etc.\ are not discussed here.
 In this document we concentrate on the programming aspects.
 
-% \startalign[verytolerant,stretch]
-% To be described here: \typ {enforced}, \typ {immutable}, \typ {instance},
-% \typ {aliased}, \typ {mutable}, \typ {overloaded}, \typ {overloadmode}, \typ
-% {tolerant}, \typ {permanent}, \typ {ifflags}, \typ {ifinsert}, \typ
-% {ifmathparameter}, \typ {ifmathstyle}, \typ {ifparameter}, \typ
-% {ifparameters}, \typ {ignorearguments}, \typ {ignorepars}, \typ
-% {parametercount}, \typ {lastchkdim}, \typ {lastchknum}.
-%
-% Of a different order: \typ {adjustspacing}, \typ {adjustspacingshrink}, \typ
-% {adjustspacingstep}, \typ {adjustspacingstretch}, \typ {attribute}, \typ
-% {attributedef}, \typ {automaticdiscretionary}, \typ {automatichyphenpenalty},
-% \typ {automigrationmode}, \typ {boundary}, \typ {boxattribute}, \typ
-% {boxdirection}, \typ {boxorientation}, \typ {boxtotal}, \typ {boxxmove}, \typ
-% {boxxoffset}, \typ {boxymove}, \typ {boxyoffset}, \typ {catcodetable}, \typ
-% {clearmarks}, \typ {crampeddisplaystyle}, \typ {crampedscriptscriptstyle}, \typ
-% {crampedscriptstyle}, \typ {crampedtextstyle}, \typ {directlua}, \typ {efcode},
-% \typ {everybeforepar}, \typ {everytab}, \typ {exceptionpenalty}, \typ
-% {explicitdiscretionary}, \typ {explicithyphenpenalty}, \typ {firstvalidlanguage},
-% \typ {fontid}, \typ {fontmathcontrol}, \typ {fontspecifiedsize}, \typ
-% {fonttextcontrol}, \typ {formatname}, \typ {gleaders}, \typ {gluespecdef}, \typ
-% {glyphdatafield}, \typ {glyphoptions}, \typ {glyphscale}, \typ
-% {glyphscriptfield}, \typ {glyphscriptscale}, \typ {glyphscriptscriptscale}, \typ
-% {glyphstatefield}, \typ {glyphtextscale}, \typ {glyphxoffset}, \typ
-% {glyphxscale}, \typ {glyphyoffset}, \typ {glyphyscale}, \typ {hccode}, \typ
-% {hjcode}, \typ {hpack}, \typ {hyphenationmin}, \typ {hyphenationmode}, \typ
-% {initcatcodetable}, \typ {insertbox},\typ {insertcopy}, \typ {insertdepth}, \typ
-% {insertdistance}, \typ {insertheight}, \typ {insertheights}, \typ {insertlimit},
-% \typ {insertmode}, \typ {insertmultiplier}, \typ {insertprogress}, \typ
-% {insertunbox}, \typ {insertuncopy}, \typ {insertwidth}, \typ {lastnodesubtype},
-% \typ {leftmarginkern}, \typ {letcharcode}, \typ {linedirection}, \typ {linepar},
-% \typ {localbrokenpenalty}, \typ {localinterlinepenalty}, \typ {lpcode}, \typ
-% {luabytecode}, \typ {luabytecodecall}, \typ {luacopyinputnodes}, \typ {luadef},
-% \typ {luaescapestring}, \typ {luafunction}, \typ {luafunctioncall}, \typ
-% {luatexbanner}, \typ {luatexrevision}, \typ {luatexversion}, \typ
-% {mathcontrolmode}, \typ {mathdelimitersmode}, \typ {mathdirection}, \typ
-% {mathdisplayskipmode}, \typ {matheqnogapstep}, \typ {mathflattenmode}, \typ
-% {mathfontcontrol}, \typ {mathitalicsmode}, \typ {mathnolimitsmode}, \typ
-% {mathpenaltiesmode}, \typ {mathrulesfam}, \typ {mathrulesmode}, \typ
-% {mathrulethicknessmode}, \typ {mathscale}, \typ {mathscriptboxmode}, \typ
-% {mathscriptcharmode}, \typ {mathscriptsmode}, \typ {mathstyle}, \typ
-% {mathsurroundmode}, \typ {mathsurroundskip}, \typ {mugluespecdef}, \typ
-% {noaligned}, \typ {noboundary}, \typ {nohrule}, \typ {normalizelinemode}, \typ
-% {nospaces}, \typ {novrule}, \typ {numericscale}, \typ {numexpression}, \typ
-% {outputbox}, \typ {parattribute}, \typ {pardirection}, \typ {postexhyphenchar},
-% \typ {posthyphenchar}, \typ {prebinoppenalty}, \typ {predisplaygapfactor}, \typ
-% {preexhyphenchar}, \typ {prehyphenchar}, \typ {prerelpenalty}, \typ
-% {protrudechars}, \typ {protrusionboundary}, \typ {pxdimen}, \typ {quitvmode},
-% \typ {retokenize}, \typ {rightmarginkern}, \typ {rpcode}, \typ
-% {savecatcodetable}, \typ {scantextokens}, \typ {semiexpanded}, \typ {setfontid},
-% \typ {snapshotpar}, \typ {supmarkmode}, \typ {textdirection}, \typ
-% {thewithoutunit}, \typ {tpack}, \typ {tracingexpressions}, \typ {tracingfonts},
-% \typ {tracinghyphenation}, \typ {tracingmath}, \typ {undent}, \typ {vpack}, \typ
-% {wordboundary}, \typ {wrapuppar}.
-% \stopalign
-%
 % {\em Some new primitives in this list might be forgotten or already became
 % obsolete. Let me know if you run into one.}
 
@@ -212,12 +161,36 @@ This one reports a bit less than \prm {meaning}.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {meaningles}}]
+
+This one reports a bit less than \prm {meaningless}.
+
+\startbuffer
+\tolerant\permanent\protected\gdef\foo[#1]#*[#2]{(#1)(#2)} \meaningles\foo
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {meaningfull}}]
 
 This one reports a bit more than \prm {meaning}.
 
 \startbuffer
 \tolerant\permanent\protected\gdef\foo[#1]#*[#2]{(#1)(#2)} \meaningfull\foo
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {meaningful}}]
+
+This one reports a bit less than \prm {meaningful}.
+
+\startbuffer
+\tolerant\permanent\protected\gdef\foo[#1]#*[#2]{(#1)(#2)} \meaningful\foo
 \stopbuffer
 
 \typebuffer \getbuffer
@@ -367,6 +340,31 @@ Multiple invocations are accumulated: {\inlinebuffer}.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {atendoffile}}]
+
+The \prm {everyeof} primitive is kind of useless because you don't know if a file
+(which can be a tokenlist processed as pseudo file) itself includes a file, which
+then results in nested application of this token register. One way around this is:
+
+\startbuffer
+\atendoffile\SomeCommand
+\stopbuffer
+
+\typebuffer
+
+This acts on files the same way as \prm {atendofgroup} does. Multiple calls will
+be accumulated and are bound to the current file.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {atendoffiled}}]
+
+This is the multi token variant of \prm {atendoffile}. Multiple invocations are
+accumulated and by default prepended to the existing list. As with grouping this
+permits proper nesting. You can force an append by the optional keyword {reverse}.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {toksapp}}]
 
 One way to append something to a token list is the following:
@@ -453,6 +451,25 @@ This is the global variant of \prm {tokspre}.
 \startnewprimitive[title={\prm {xtokspre}}]
 
 This is the global variant of \prm {etokspre}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {etoks}}]
+
+This assigns an expanded token list to a token register:
+
+\starttyping
+\def\temp{less stuff}
+\etoks\scratchtoks{a bit \temp}
+\stoptyping
+
+The orginal value of the register is lost.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {xtoks}}]
+
+This is the global variant of \prm {etoks}.
 
 \stopnewprimitive
 
@@ -987,7 +1004,7 @@ means that redundant trailing zeros are omitted.
 
 \stopnewprimitive
 
-\startoldprimitive[title={\prm {numericscale}}]
+\startnewprimitive[title={\prm {numericscale}}]
 
 This primitive can best be explained by a few examples:
 
@@ -2257,8 +2274,9 @@ The original \TEX\ primitive \prm {futurelet} can be used to create an alias to 
 push it back into the input and then expand a given token.
 
 \startbuffer
-\let\MySpecialToken[
-\def\DoWhatever{\ifx\NextToken\MySpecialToken YES\else NOP\fi : }
+\let\MySpecialTokenL[
+\let\MySpecialTokenR] % nicer for checker
+\def\DoWhatever{\ifx\NextToken\MySpecialTokenL YES\else NOP\fi : }
 \futurelet\NextToken\DoWhatever [A]\crlf
 \futurelet\NextToken\DoWhatever (A)\par
 \stopbuffer
@@ -2453,6 +2471,8 @@ This is again a trick to avoid too much clutter in a log. Often it doesn't matte
 to users what the meaning of a macro is (if they trace at all). \footnote {An
 earlier variant could also hide the expansion completely but that was just
 confusing.}
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {immediate}}]
 
@@ -2952,6 +2972,81 @@ This is slightly more efficient variant of \prm {divide} that doesn't look for
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {retained}}]
+
+When a value is assigned inside a group \TEX\ pushes the current value on the save
+stack in order to be able to restore the original value after the group has ended. You
+can reach over a group by using the \prm {global} prefix. A mix between local and
+global assignments can be achieved with the \prm {retained} primitive.
+
+\newdimension\MyDim
+
+\startbuffer[one]
+\MyDim 15pt \bgroup \the\MyDim \space
+\bgroup
+    \bgroup
+        \bgroup \advance\MyDim10pt \the\MyDim \egroup\space
+        \bgroup \advance\MyDim10pt \the\MyDim \egroup\space
+    \egroup
+    \bgroup
+        \bgroup \advance\MyDim10pt \the\MyDim \egroup\space
+        \bgroup \advance\MyDim10pt \the\MyDim \egroup\space
+    \egroup
+\egroup
+\egroup \the\MyDim
+\stopbuffer
+
+\startbuffer[two]
+\MyDim 15pt \bgroup \the\MyDim \space
+\bgroup
+    \bgroup
+        \bgroup \global\advance\MyDim10pt \the\MyDim \egroup\space
+        \bgroup \global\advance\MyDim10pt \the\MyDim \egroup\space
+    \egroup
+    \bgroup
+        \bgroup \global\advance\MyDim10pt \the\MyDim \egroup\space
+        \bgroup \global\advance\MyDim10pt \the\MyDim \egroup\space
+    \egroup
+\egroup
+\egroup \the\MyDim
+\stopbuffer
+
+\startbuffer[three]
+\MyDim 15pt \bgroup \the\MyDim \space
+    \constrained\MyDim\zeropoint
+    \bgroup
+        \bgroup \retained\advance\MyDim10pt \the\MyDim \egroup\space
+        \bgroup \retained\advance\MyDim10pt \the\MyDim \egroup\space
+    \egroup
+    \bgroup
+        \bgroup \retained\advance\MyDim10pt \the\MyDim \egroup\space
+        \bgroup \retained\advance\MyDim10pt \the\MyDim \egroup\space
+    \egroup
+\egroup \the\MyDim
+\stopbuffer
+
+\typebuffer[one,two,three]
+
+These lines result in:
+
+\startlines
+\hbox{\getbuffer[one]}
+\hbox{\getbuffer[two]}
+\hbox{\getbuffer[three]}
+\stoplines
+
+Because \LUAMETATEX\ avoids redundant stack entries and reassignments this
+mechanism is a bit fragile but the \type {\constrained} prefix makes sure that we
+do have a stack entry. If it is needed depends on the usage pattern.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {constrained}}]
+
+See previous section about \prm {retained}.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {localcontrolledloop}}]
 
 As with more of the primitives discussed here, there is a manual in the \quote
@@ -2991,6 +3086,22 @@ that indicate the end of sequence of digits.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {localcontrolledrepeat}}]
+
+This one takes one instead three arguments which looks a bit better
+in simple looping.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {localcontrolledendless}}]
+
+As the name indicates this will loop forever. You need to explicitly quit the
+loop with \prm {quitloop} or \prm {quitloopnow}. The first quitter aborts the
+loop at the start of a next iteration, the second one tries to exit immediately,
+but is sensitive for interference with for instance nested conditionals.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {expandedloop}}]
 
 This variant of the previously introduced \prm {localcontrolledloop} doesn't
@@ -3009,7 +3120,19 @@ used inside an expansion context like \prm {edef}.
 
 \start \veryraggedright \tt\tfx \getbuffer \stop \blank
 
-The next section shows a companion primitive.
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {expandedrepeat}}]
+
+This one takes one instead of three arguments which is sometimes more
+convenient.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {expandedendless}}]
+
+This one loops forever but because the loop counter is not set you need to find a
+way to quit it.
 
 \stopnewprimitive
 
@@ -3058,6 +3181,79 @@ Watch how because it is empty \type {\TestA} has become a constant macro because
 that's what deep down empty boils down to.
 
 \stopnewprimitive
+
+\startnewprimitive[title={\prm {unexpandedrepeat}}]
+
+This one takes one instead of three arguments which looks better in simple loops.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {unexpandedendless}}]
+
+This one loops forever so you need to quit explicitly.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {currentloopiterator}}]
+
+Here we show the different expanded loop variants:
+
+\startbuffer
+\edef\testA{\expandedloop  1 10 1{!}}
+\edef\testB{\expandedrepeat  10  {!}}
+\edef\testC{\expandedendless     {\ifnum\currentloopiterator>10 \quitloop\else !\fi}}
+\edef\testD{\expandedendless     {\ifnum#I>10 \quitloop\else !\fi}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+All these give the same result:
+
+\startlines \tt
+\meaningasis\testA
+\meaningasis\testB
+\meaningasis\testC
+\meaningasis\testD
+\stoplines
+
+The \type {#I} is a shortcut to the current loop iterator; other shortcuts are
+\type {#P} for the parent iterator value and \type {#G} for the grand parent.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {previousloopiterator}}]
+
+\startbuffer
+\edef\testA{
+    \expandedrepeat 2 {%
+        \expandedrepeat 3 {%
+            (\the\previousloopiterator1:\the\currentloopiterator)
+        }%
+    }%
+}
+\edef\testB{
+    \expandedrepeat 2 {%
+        \expandedrepeat 3 {%
+            (#P:#I) % #G is two levels up
+        }%
+    }%
+}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+These give the same result:
+
+\startlines \tt
+\meaningasis\testA
+\meaningasis\testB
+\stoplines
+
+The number indicates the number of levels we go up the loop chain.
+
+\stopnewprimitive
+
+\stopsubject
 
 \startsubject[title=Obsolete]
 
@@ -3286,13 +3482,24 @@ that is where it's made for. And this manual might help understand its users why
 where and how the low level code differs between \MKII, \MKIV\ and \LMTX.
 
 Can we expect more new primitives than the ones introduced here? Given the amount
-of time I spend on experimenting and considering what made sense and what not,
+of time I spent on experimenting and considering what made sense and what not,
 the answer probably is \quotation {no}, or at least \quotation {not that much}.
 As in the past no user ever requested the kind of primitives that were added, I
 don't expect users to come up with requests in the future either. Of course,
 those more closely related to \CONTEXT\ development look at it from the other
 end. Because it's there where the low level action really is, demands might still
 evolve.
+
+Basically there are wo areas where the engine can evolve: the programming part
+and the rendering. In this manual we focus on the programming and writing the
+manual sort of influences how details get filled in. Rendering in more complex
+because there heuristics and usage plays a more dominant role. Good examples are
+the math, par and page builder. They were extended and features were added over
+time but improved rendering came later. Not all extensions are critical, some are
+there (and got added) in order to write more readable code but there is only so
+much one can do in that area. Occasionally a feature pops up that is a side
+effect of a challenge. No matter what gets added it might not affect complexity
+too much and definitely not impact performance significantly!
 
 Hans Hagen \crlf Hasselt NL
 
@@ -3372,12 +3579,15 @@ Hans Hagen \crlf Hasselt NL
     end
 \stopluacode
 
-% \startmode[atpragma]
-%     \startluacode
-%         context.page()
-%         document.CheckCompleteness()
-%     \stopluacode
-% \stopmode
+\startmode[atpragma]
+    \startluacode
+        context.page()
+        document.CheckCompleteness()
+    \stopluacode
+
+    Run \type {s-engine-syntax.mkxl} for a complete overview of the \LUAMETATEX\
+    primitives.
+\stopmode
 
 \stopbodymatter
 

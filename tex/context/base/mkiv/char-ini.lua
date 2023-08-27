@@ -586,18 +586,39 @@ local blocks = allocate {
     ["zanabazarsquare"]                             = { first = 0x11A00, last = 0x11A4F,              description = "Zanabazar Square" },
     ["znamennymusicalnotation"]                     = { first = 0x1CF00, last = 0x1CFCF,              description = "Znamenny Musical Notation" },
 
-    -- we need this early on:
+    -- The calligraphic shapes are different from script shapes but don't have a dedicated
+    -- range so we make one. An example of a font that has them is Lucida but we also drop
+    -- them into other fonts.
 
     ["lowercasecalligraphic"]     = { first = 0x100000, last = 0x100019, math = true },
     ["uppercasecalligraphic"]     = { first = 0x100020, last = 0x100039, math = true },
     ["lowercaseboldcalligraphic"] = { first = 0x100040, last = 0x100059, math = true },
     ["uppercaseboldcalligraphic"] = { first = 0x100060, last = 0x100079, math = true },
- -- ["lowercasesansgreek"]        = { first = 0x100040, last = 0x100059, math = true }, -- reserved for future use
- -- ["uppercasesansgreek"]        = { first = 0x100060, last = 0x100079, math = true }, -- reserved for future use
- -- ["lowercaseitalicsansgreek"]  = { first = 0x100080, last = 0x100099, math = true }, -- reserved for future use
- -- ["uppercaseitalicsansgreek"]  = { first = 0x1000A0, last = 0x1000B9, math = true }, -- reserved for future use
- -- ["lowercaseblackboarditalic"] = { first = 0x1000C0, last = 0x1000D9, math = true }, -- reserved for future use
- -- ["uppercaseblackboarditalic"] = { first = 0x1000E0, last = 0x1000F9, math = true }, -- reserved for future use
+
+    -- At the same time we reserve(d) some extra greek alphabets and surprise, a font like
+    -- stixtwo actually has them, so we enable them now.
+
+    ["lowercasesansgreek"]        = { first = 0x100080, last = 0x100099, math = true },
+    ["uppercasesansgreek"]        = { first = 0x1000A0, last = 0x1000B9, math = true },
+    ["lowercaseitalicsansgreek"]  = { first = 0x1000C0, last = 0x1000D9, math = true },
+    ["uppercaseitalicsansgreek"]  = { first = 0x1000E0, last = 0x1000F9, math = true },
+
+    -- Maybe this one also makes sense, although the fact that all these extra alphabets
+    -- were not made part of unicode math (combined with the holes in alphabets) indicates
+    -- that usage was not perceived.
+
+    ["lowercaseblackboarditalic"] = { first = 0x100100, last = 0x100119, math = true },
+    ["uppercaseblackboarditalic"] = { first = 0x100120, last = 0x100139, math = true },
+
+    -- Anyway, all permutations at some point might show up, but it might take decades
+    -- before the tex math dev community catches on. In the end it is upto microsoft to
+    -- take the lead, just as with other unicode math and fonts.
+    --
+    -- Also, it would be a bit pathetic to add more alphabets natively to unicode at
+    -- the one hand while accepting these gaps in existing alphabets and not having a
+    -- native upright greek math alphabet either in order to distringuish from greek
+    -- text. Either we go semantic ore go shapes, but a mix is only confusing.
+
 }
 
 -- moved from math-act.lua to here:

@@ -324,4 +324,95 @@ So:
 
 \stopsectionlevel
 
+\startsectionlevel[title=About quitting]
+
+You can quit a local and expanded loop at the next iteration using \typ
+{\quitloop}. With \typ {\quitloopnow} you immediately leave the loop but you
+need to beware of side effects, like not ending a condition properly. Keep in
+mind that a macro language like \TEX\ is not that friendly towards loops so the
+implementation is a bit hairy.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Simple repeaters]
+
+For simple iterations we have \typ {\localcontrolledrepeat}, \typ
+{\expandedrepeat}, \typ {\unexpandedrepeat}. These take one integer instead of
+three: the final iterator value.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Endless loops]
+
+There are three endless loop primitives: \typ {\localcontrolledendless}, \typ
+{\expandedendless}, \typ {\unexpandedendless}. These will keep running till you
+quit them. The loop counter can overflow the maximum integer value and will then
+start again at 1.
+
+\stopsectionlevel
+
+
+\startsectionlevel[title=Loop variables]
+
+The following example shows how we can access the current, parent and grand parent
+loop iterator values using a parameter like syntax:
+
+\startbuffer
+\localcontrolledloop 1 4 1 {%
+    \localcontrolledloop 1 3 1 {%
+        \localcontrolledloop 1 2 1 {%
+  \edef\foo{[#G,#P,#I]}\foo
+  \def \oof{<#G,#P,#I>}\oof
+            (#G,#P,#I)\space
+        }
+        \par
+    }
+}
+\stopbuffer
+
+\typebuffer  \startpacked\getbuffer\stoppacked
+
+Another way to access a(ny) parent is:
+
+\starttyping
+\localcontrolledloop 1 4 1 {%
+    \localcontrolledloop 1 3 1 {%
+        \localcontrolledloop 1 2 1 {%
+            (\the\previousloopiterator2,%
+             \the\previousloopiterator1,%
+             \the\currentloopiterator)
+        }
+        \par
+    }
+}
+\stoptyping
+
+These methods make that one doesn't have to store the outer loop variables for
+usage inside the inner loop. Watch out with the \type {\edef}:
+
+\startbuffer
+\edef\foo{[#G,#P,#I]}
+\def \oof{<#G,#P,#I>}
+
+\localcontrolledloop 1 4 1 {%
+    \localcontrolledloop 1 3 1 {%
+        \localcontrolledloop 1 2 1 {%
+        %
+        % I iterator    \currentloopiterator
+        % P parent      \previousloopiterator1
+        % G grandparent \previousloopiterator2
+        %
+            \edef\ofo{[#G,#P,#I]}%
+            \foo\oof\ofo(#G,#P,#I)\space
+        %
+        }
+        \par
+    }
+}
+\stopbuffer
+
+\typebuffer \startpacked\getbuffer\stoppacked
+
+\stopsectionlevel
+
 \stopdocument

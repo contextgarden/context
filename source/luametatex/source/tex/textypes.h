@@ -152,8 +152,10 @@ extern halfword tex_badness(
 # define min_integer                      -0x7FFFFFFF /*tex aka |min_infinity| */
 # define max_posit                       max_cardinal 
 # define min_posit                       min_cardinal 
-# define max_dimen                         0x3FFFFFFF
-# define min_dimen                        -0x3FFFFFFF
+# define max_dimension                     0x3FFFFFFF
+# define min_dimension                    -0x3FFFFFFF
+# define max_dimen                      max_dimension
+# define min_dimen                      min_dimension
 # define min_data_value                             0
 # define max_data_value                 cs_offset_max
 # define max_half_value                         32767 /*tex For instance sf codes.*/
@@ -257,37 +259,39 @@ extern halfword tex_badness(
 */
 
 # if 1
+
     # define max_toks_register_index      0xFFFF /* 0xFFFF 0xFFFF 0x7FFF */ /* 64 64 32 */
     # define max_box_register_index       0xFFFF /* 0xFFFF 0xFFFF 0x7FFF */ /* 64 64 32 */
-    # define max_int_register_index       0xFFFF /* 0xFFFF 0xFFFF 0x3FFF */ /* 64 64 16 */
-    # define max_dimen_register_index     0xFFFF /* 0xFFFF 0xFFFF 0x3FFF */ /* 64 64 16 */
+    # define max_integer_register_index   0xFFFF /* 0xFFFF 0xFFFF 0x3FFF */ /* 64 64 16 */
+    # define max_dimension_register_index 0xFFFF /* 0xFFFF 0xFFFF 0x3FFF */ /* 64 64 16 */
     # define max_posit_register_index     0xFFFF /* 0xFFFF 0x7FFF 0x1FFF */ /* 64 32  8 */
     # define max_attribute_register_index 0xFFFF /* 0xFFFF 0x7FFF 0x1FFF */ /* 64 32  8 */
     # define max_glue_register_index      0xFFFF /* 0xFFFF 0x7FFF 0x1FFF */ /* 64 32  8 */
-    # define max_mu_glue_register_index   0xFFFF /* 0xFFFF 0x3FFF 0x1FFF */ /* 64 16  8 */
-    # define max_unit_register_index       26*26
+    # define max_muglue_register_index    0xFFFF /* 0xFFFF 0x3FFF 0x1FFF */ /* 64 16  8 */
+
 # else
 
-    # define max_toks_register_index      0x3FFF
-    # define max_box_register_index       0x7FFF
-    # define max_int_register_index       0x1FFF
-    # define max_dimen_register_index     0x1FFF
-    # define max_posit_register_index     0x1FFF
-    # define max_attribute_register_index 0x1FFF
-    # define max_glue_register_index      0x1FFF
-    # define max_mu_glue_register_index   0x1FFF
-    # define max_unit_register_index       26*26
+    # define max_toks_register_index      0x1FFF //  8K
+    # define max_box_register_index       0x7FFF // 32K
+    # define max_integer_register_index   0x1FFF //  8k
+    # define max_dimension_register_index 0x1FFF //  8k  
+    # define max_posit_register_index     0x1FFF //  8k 
+    # define max_attribute_register_index 0x1FFF //  8k 
+    # define max_glue_register_index      0x0FFF //  4k 
+    # define max_muglue_register_index    0x0FFF //  4k 
 
 # endif
 
+# define max_unit_register_index       26*26
+
 # define max_n_of_toks_registers      (max_toks_register_index      + 1)
 # define max_n_of_box_registers       (max_box_register_index       + 1)
-# define max_n_of_int_registers       (max_int_register_index       + 1)
-# define max_n_of_dimen_registers     (max_dimen_register_index     + 1)
+# define max_n_of_integer_registers   (max_integer_register_index   + 1)
+# define max_n_of_dimension_registers (max_dimension_register_index + 1)
 # define max_n_of_attribute_registers (max_attribute_register_index + 1)
 # define max_n_of_posit_registers     (max_posit_register_index     + 1)
 # define max_n_of_glue_registers      (max_glue_register_index      + 1)
-# define max_n_of_mu_glue_registers   (max_mu_glue_register_index   + 1)
+# define max_n_of_muglue_registers    (max_muglue_register_index    + 1)
 # define max_n_of_unit_registers      (max_unit_register_index      + 1)
 
 # define max_n_of_bytecodes                   65536 /* dynamic */

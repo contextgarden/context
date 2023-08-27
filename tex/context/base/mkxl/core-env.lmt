@@ -46,24 +46,25 @@ local cache = tokens.cache
 local commandcodes  = tokens.commands
 local iftrue        = cache["iftrue"].index
 
-local dimencode     = commandcodes.register_dimen
-local countcode     = commandcodes.register_int
-local tokencode     = commandcodes.register_toks
-local skipcode      = commandcodes.register_glue
-local muskipcode    = commandcodes.register_mu_glue
 local conditioncode = commandcodes.if_test
 local integercode   = commandcodes.integer
 
-local types = {
-    [dimencode]     = "dimen",
-    [countcode]     = "count",
-    [tokencode]     = "token",
-    [skipcode]      = "skip",
-    [muskipcode]    = "muskip",
- -- [attributecode] = "attribute",
-    [conditioncode] = "condition",
-    [integercode]   = "integer",
-}
+-- local dimencode     = commandcodes.register_dimenension
+-- local countcode     = commandcodes.register_integer
+-- local tokencode     = commandcodes.register_toks
+-- local skipcode      = commandcodes.register_glue
+-- local muskipcode    = commandcodes.register_mu_glue
+--
+-- local types = {
+--     [dimencode]     = "dimen",
+--     [countcode]     = "count",
+--     [tokencode]     = "token",
+--     [skipcode]      = "skip",
+--     [muskipcode]    = "muskip",
+--  -- [attributecode] = "attribute",
+--     [conditioncode] = "condition",
+--     [integercode]   = "integer",
+-- }
 
 -- setmetatableindex(texmodes, function(t,k)
 --     local m = modes[k]
@@ -239,9 +240,9 @@ end)
 
 tex.isdefined = isdefined
 
-function tex.type(name)
-    return types[cache[name].command] or "macro"
-end
+-- function tex.type(name)
+--     return types[cache[name].command] or "macro"
+-- end
 
 function context.setconditional(name,value)
     if value then

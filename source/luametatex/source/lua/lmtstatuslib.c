@@ -264,8 +264,10 @@ static int statslib_getconstants(lua_State *L)
     lua_set_cardinal_by_key(L,"min_cardinal",                   min_cardinal);
     lua_set_integer_by_key(L, "max_integer",                    max_integer);
     lua_set_integer_by_key(L, "min_integer",                    min_integer);
-    lua_set_integer_by_key(L, "max_dimen",                      max_dimen);
-    lua_set_integer_by_key(L, "min_dimen",                      min_dimen);
+    lua_set_integer_by_key(L, "max_dimen",                      max_dimension); /* obsolete */
+    lua_set_integer_by_key(L, "min_dimen",                      min_dimension); /* obsolete */
+    lua_set_integer_by_key(L, "max_dimension",                  max_dimension);
+    lua_set_integer_by_key(L, "min_dimension",                  min_dimension);
     lua_set_integer_by_key(L, "min_data_value",                 min_data_value);
     lua_set_integer_by_key(L, "max_data_value",                 max_data_value);
     lua_set_integer_by_key(L, "max_half_value",                 max_half_value);
@@ -333,12 +335,14 @@ static int statslib_getconstants(lua_State *L)
                                                                 
     lua_set_integer_by_key(L, "max_toks_register_index",        max_toks_register_index);
     lua_set_integer_by_key(L, "max_box_register_index",         max_box_register_index);
-    lua_set_integer_by_key(L, "max_int_register_index",         max_int_register_index);
+    lua_set_integer_by_key(L, "max_int_register_index",         max_integer_register_index);   /* obsolete */
+    lua_set_integer_by_key(L, "max_integer_register_index",     max_integer_register_index);
     lua_set_integer_by_key(L, "max_float_register_index",       max_posit_register_index);
-    lua_set_integer_by_key(L, "max_dimen_register_index",       max_dimen_register_index);
+    lua_set_integer_by_key(L, "max_dimension_register_index",   max_dimension_register_index);
+    lua_set_integer_by_key(L, "max_dimen_register_index",       max_dimension_register_index); /* obsolete */
     lua_set_integer_by_key(L, "max_attribute_register_index",   max_attribute_register_index);
     lua_set_integer_by_key(L, "max_glue_register_index",        max_glue_register_index);
-    lua_set_integer_by_key(L, "max_mu_glue_register_index",     max_mu_glue_register_index);
+    lua_set_integer_by_key(L, "max_muglue_register_index",      max_muglue_register_index);
                                                                 
     lua_set_integer_by_key(L, "max_bytecode_index",             max_bytecode_index);
     lua_set_integer_by_key(L, "max_math_family_index",          max_math_family_index);

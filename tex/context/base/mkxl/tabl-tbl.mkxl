@@ -228,7 +228,7 @@
 \newconstant     \c_tabl_tabulate_pass
 \newconstant     \c_tabl_tabulate_type
 \newconstant     \c_tabl_tabulate_kind % 1=strong  2=equals
-\newconstant     \c_tabl_tabulate_splitlinemode    \c_tabl_tabulate_splitlinemode\plusone
+\newconstant     \c_tabl_tabulate_splitlinemode    \c_tabl_tabulate_splitlinemode\plustwo % \plusone
 \newconstant     \c_tabl_tabulate_colorspan
 \newconstant     \c_tabl_tabulate_localcolorspan
 \newconstant     \c_tabl_tabulate_modus
@@ -238,7 +238,7 @@
 
 \lettonothing    \m_tabl_tabulate_separator_factor  % fraction
 
-\aliased\let\tabulatesplitlinemode\c_tabl_tabulate_splitlinemode % temp hack, we need an interface
+\aliasinteger\tabulatesplitlinemode\c_tabl_tabulate_splitlinemode % temp hack, we need an interface
 
 \newtoks         \everytabulatepar           % where used ?
 \newtoks         \everytabulate              % public ?
@@ -1528,7 +1528,8 @@
    \widowpenalty\zerocount % otherwise lines are not broken
    \clubpenalty \zerocount % but overlap in funny ways
    \expand\everytabulate
-   \tabulationparameter\c!inner
+   \usesetupsparameter\tabulationparameter
+   \tabulationparameter\c!inner % use setups now
    \d_tabl_tabulate_indent\dimexpr\leftskip+\hangindent\ifx\p_indenting\v!yes+\parindent\fi\relax
    \global\c_tabl_tabulate_column\zerocount
    \begingroup
@@ -1549,25 +1550,22 @@
    \def\tabl_tabulate_insert_body{#1}%
    \tabl_tabulate_process}
 
-\protected\def\tabl_tabulate_pickup_interfaced
-  {\normalexpanded{\protected\def\noexpand\tabl_tabulate_pickup
-      ##L\expandafter\noexpand\csname\e!start\v!tabulate\endcsname
-      ##R\expandafter\noexpand\csname\e!stop \v!tabulate\endcsname
-      ##1}%
-    {\endgroup
-     \def\tabl_tabulate_insert_body{##1}%
-     \tabl_tabulate_process}%
+\protected\def\tabl_tabulate_pickup_indeed#1#2%
+  {\protected\def\tabl_tabulate_pickup##L#1##R#2##1% indirect needed because otherwise ##L and ##R expand
+     {\endgroup
+      \def\tabl_tabulate_insert_body{##1}%
+      \tabl_tabulate_process}%
    \tabl_tabulate_pickup}
 
+\protected\def\tabl_tabulate_pickup_interfaced
+  {\normalexpanded{\tabl_tabulate_pickup_indeed
+      \expandafter\noexpand\csname\e!start\v!tabulate\endcsname
+      \expandafter\noexpand\csname\e!stop \v!tabulate\endcsname}}
+
 \protected\def\tabl_tabulate_pickup_specific
-  {\normalexpanded{\protected\def\noexpand\tabl_tabulate_pickup
-      ##L\expandafter\noexpand\csname\e!start\currenttabulationparent\endcsname
-      ##R\expandafter\noexpand\csname\e!stop \currenttabulationparent\endcsname
-      ##1}%
-    {\endgroup
-     \def\tabl_tabulate_insert_body{##1}%
-     \tabl_tabulate_process}%
-   \tabl_tabulate_pickup}
+  {\normalexpanded{\tabl_tabulate_pickup_indeed
+      \expandafter\noexpand\csname\e!start\currenttabulationparent\endcsname
+      \expandafter\noexpand\csname\e!stop \currenttabulationparent\endcsname}}
 
 \permanent\protected\def\tabulateEQ
   {\ifconditional\c_tabl_tabulate_firstflushed\else

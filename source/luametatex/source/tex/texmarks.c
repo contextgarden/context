@@ -328,7 +328,7 @@ void tex_run_mark(void)
         switch (code) {
             case set_marks_code:
             case set_mark_code:
-                ptr = tex_scan_toks_expand(0, NULL, 0);
+                ptr = tex_scan_toks_expand(0, NULL, 0, 0);
                 break;
             case clear_marks_code:
                 tex_wipe_mark(index);

@@ -191,7 +191,7 @@ static int tex_aux_pass_text_x(int tracing_ifs, int tracing_commands)
 static void tex_aux_if_warning(void)
 {
     /*tex Do we need a warning? */
-    int warning = 0;
+    bool warning = false;
     int index = lmt_input_state.in_stack_data.ptr;
     lmt_input_state.base_ptr = lmt_input_state.input_stack_data.ptr;
     /*tex Store current state. */
@@ -203,7 +203,7 @@ static void tex_aux_if_warning(void)
                 --lmt_input_state.base_ptr;
             }
             if (lmt_input_state.input_stack[lmt_input_state.base_ptr].name > 17) {
-                warning = 1;
+                warning = true;
             }
         }
         lmt_input_state.in_stack[index].if_ptr = node_next(lmt_condition_state.cond_ptr);
@@ -391,7 +391,7 @@ inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head)
     }
     switch (cur_cmd) {
         case left_brace_cmd:
-            p = expandlist ? tex_scan_toks_expand(1, NULL, 0) : tex_scan_toks_normal(1, NULL);
+            p = expandlist ? tex_scan_toks_expand(1, NULL, 0, 0) : tex_scan_toks_normal(1, NULL);
             *head = p;
             break;
         case internal_toks_cmd:
@@ -400,7 +400,7 @@ inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head)
             break;
         case register_cmd:
             /* is this okay? probably not as cur_val can be way to large */
-            if (cur_chr == tok_val_level) {
+            if (cur_chr == token_val_level) {
                 halfword n = tex_scan_toks_register_number();
                 p = eq_value(register_toks_location(n));
                 break;
@@ -501,7 +501,7 @@ typedef enum parameterstates {
 
 inline static halfword tex_aux_scan_comparison(int code)
 {
-    int negate = 0;
+    bool negate = false;
     while (1) {
         tex_get_x_token();
         switch (cur_cmd) { 
@@ -593,9 +593,9 @@ void tex_conditional_if(halfword code, int unless)
         case if_int_code:
         case if_abs_int_code:
             {
-                halfword n1 = tex_scan_int(0, NULL);
+                halfword n1 = tex_scan_integer(0, NULL);
                 halfword cp = tex_aux_scan_comparison(code);
-                halfword n2 = tex_scan_int(0, NULL);
+                halfword n2 = tex_scan_integer(0, NULL);
                 if (code == if_abs_int_code) {
                     if (n1 < 0) {
                         n1 = -n1;
@@ -617,13 +617,13 @@ void tex_conditional_if(halfword code, int unless)
             }
             goto RESULT;
         case if_zero_int_code:
-            result = tex_scan_int(0, NULL) == 0;
+            result = tex_scan_integer(0, NULL) == 0;
             goto RESULT;
         case if_interval_int_code:
             {
-                scaled n0 = tex_scan_int(0, NULL);
-                scaled n1 = tex_scan_int(0, NULL);
-                scaled n2 = tex_scan_int(0, NULL);
+                scaled n0 = tex_scan_integer(0, NULL);
+                scaled n1 = tex_scan_integer(0, NULL);
+                scaled n2 = tex_scan_integer(0, NULL);
                 result = n1 - n2;
                 result = result == 0 ? 1 : (result > 0 ? result <= n0 : -result <= n0);
             }
@@ -670,9 +670,9 @@ void tex_conditional_if(halfword code, int unless)
         case if_dim_code:
         case if_abs_dim_code:
             {
-                scaled n1 = tex_scan_dimen(0, 0, 0, 0, NULL);
+                scaled n1 = tex_scan_dimension(0, 0, 0, 0, NULL);
                 halfword cp = tex_aux_scan_comparison(code);
-                scaled n2 = tex_scan_dimen(0, 0, 0, 0, NULL);
+                scaled n2 = tex_scan_dimension(0, 0, 0, 0, NULL);
                 if (code == if_abs_dim_code) {
                     if (n1 < 0) {
                         n1 = -n1;
@@ -694,19 +694,19 @@ void tex_conditional_if(halfword code, int unless)
             }
             goto RESULT;
         case if_zero_dim_code:
-            result = tex_scan_dimen(0, 0, 0, 0, NULL) == 0;
+            result = tex_scan_dimension(0, 0, 0, 0, NULL) == 0;
             goto RESULT;
         case if_interval_dim_code:
             {
-                scaled n0 = tex_scan_dimen(0, 0, 0, 0, NULL);
-                scaled n1 = tex_scan_dimen(0, 0, 0, 0, NULL);
-                scaled n2 = tex_scan_dimen(0, 0, 0, 0, NULL);
+                scaled n0 = tex_scan_dimension(0, 0, 0, 0, NULL);
+                scaled n1 = tex_scan_dimension(0, 0, 0, 0, NULL);
+                scaled n2 = tex_scan_dimension(0, 0, 0, 0, NULL);
                 result = n1 - n2;
                 result = result == 0 ? 1 : (result > 0 ? result <= n0 : -result <= n0);
             }
             goto RESULT;
         case if_odd_code:
-            result = odd(tex_scan_int(0, NULL));
+            result = odd(tex_scan_integer(0, NULL));
             goto RESULT;
         case if_vmode_code:
             result = is_v_mode(cur_list.mode);
@@ -861,7 +861,7 @@ void tex_conditional_if(halfword code, int unless)
                 lmt_error_state.intercept = 1; /* maybe ++ and -- so that we can nest */
                 lmt_error_state.last_intercept = 0;
                 lmt_condition_state.chk_integer = 0;
-                tex_scan_int_validate(); 
+                tex_scan_integer_validate(); 
                 result = lmt_error_state.last_intercept ? check_error : check_okay;
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
@@ -871,7 +871,7 @@ void tex_conditional_if(halfword code, int unless)
             {
                 lmt_error_state.intercept = 1; /* maybe ++ and -- so that we can nest */
                 lmt_error_state.last_intercept = 0;
-                lmt_condition_state.chk_integer = tex_scan_int(0, NULL); 
+                lmt_condition_state.chk_integer = tex_scan_integer(0, NULL); 
                 result = lmt_error_state.last_intercept ? check_error : check_okay;
                 if (result == check_okay) { 
                     tex_aux_check_strict(&result);
@@ -884,7 +884,7 @@ void tex_conditional_if(halfword code, int unless)
             {
                 lmt_error_state.intercept = 1;
                 lmt_error_state.last_intercept = 0;
-                lmt_condition_state.chk_integer = tex_scan_int(0, NULL);
+                lmt_condition_state.chk_integer = tex_scan_integer(0, NULL);
                 result = lmt_error_state.last_intercept ? value_error : (lmt_condition_state.chk_integer < 0) ? value_less : (lmt_condition_state.chk_integer > 0) ? value_greater : value_equal;
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
@@ -892,8 +892,8 @@ void tex_conditional_if(halfword code, int unless)
             }
         case if_cmp_int_code:
             {
-                halfword n1 = tex_scan_int(0, NULL);
-                halfword n2 = tex_scan_int(0, NULL);
+                halfword n1 = tex_scan_integer(0, NULL);
+                halfword n2 = tex_scan_integer(0, NULL);
                 result = (n1 < n2) ? 0 : (n1 > n2) ? 2 : 1;
                 goto CASE;
             }
@@ -902,7 +902,7 @@ void tex_conditional_if(halfword code, int unless)
                 lmt_error_state.intercept = 1;
                 lmt_error_state.last_intercept = 0;
                 lmt_condition_state.chk_dimension = 0;
-                tex_scan_dimen_validate(); 
+                tex_scan_dimension_validate(); 
                 result = lmt_error_state.last_intercept ? check_error : check_okay;
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
@@ -912,7 +912,7 @@ void tex_conditional_if(halfword code, int unless)
             {
                 lmt_error_state.intercept = 1;
                 lmt_error_state.last_intercept = 0;
-                lmt_condition_state.chk_dimension = tex_scan_dimen(0, 0, 0, 0, NULL); 
+                lmt_condition_state.chk_dimension = tex_scan_dimension(0, 0, 0, 0, NULL); 
                 result = lmt_error_state.last_intercept ? check_error : check_okay;
                 if (result == check_okay) { 
                     tex_aux_check_strict(&result);
@@ -925,7 +925,7 @@ void tex_conditional_if(halfword code, int unless)
             {
                 lmt_error_state.intercept = 1;
                 lmt_error_state.last_intercept = 0;
-                lmt_condition_state.chk_dimension = tex_scan_dimen(0, 0, 0, 0, NULL);
+                lmt_condition_state.chk_dimension = tex_scan_dimension(0, 0, 0, 0, NULL);
                 result = lmt_error_state.last_intercept ? value_error : (lmt_condition_state.chk_dimension < 0) ? value_less : (lmt_condition_state.chk_dimension > 0) ? value_greater : value_equal;
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
@@ -933,14 +933,14 @@ void tex_conditional_if(halfword code, int unless)
             }
         case if_cmp_dim_code:
             {
-                scaled n1 = tex_scan_dimen(0, 0, 0, 0, NULL);
-                scaled n2 = tex_scan_dimen(0, 0, 0, 0, NULL);
+                scaled n1 = tex_scan_dimension(0, 0, 0, 0, NULL);
+                scaled n2 = tex_scan_dimension(0, 0, 0, 0, NULL);
                 result = (n1 < n2) ? 0 : (n1 > n2) ? 2 : 1;
                 goto CASE;
             }
         case if_case_code:
             /*tex Select the appropriate case and |return| or |goto common_ending|. */
-            result = tex_scan_int(0, NULL);
+            result = tex_scan_integer(0, NULL);
             goto CASE;
         case if_def_code:
             /*tex
@@ -1003,7 +1003,7 @@ void tex_conditional_if(halfword code, int unless)
                 } else {
                     int fl; 
                     tex_back_input(cur_tok);
-                    fl = tex_scan_int(1, NULL); 
+                    fl = tex_scan_integer(1, NULL); 
                     result = (flag & fl) == fl;
                     if (! result) {
                         if (is_protected(fl)) {
@@ -1034,7 +1034,7 @@ void tex_conditional_if(halfword code, int unless)
                         break;
                     case register_cmd:
                         /*tex See |tex_aux_grab_toks|. */
-                        if (cur_chr == tok_val_level) {
+                        if (cur_chr == token_val_level) {
                             halfword n = tex_scan_toks_register_number();
                             halfword p = eq_value(register_toks_location(n));
                             result = ! p || ! token_link(p);
@@ -1051,7 +1051,7 @@ void tex_conditional_if(halfword code, int unless)
                         break;
                     case left_brace_cmd:
                         {
-                            halfword h = tex_scan_toks_expand(1, NULL, 0);
+                            halfword h = tex_scan_toks_expand(1, NULL, 0, 0);
                             result = token_link(h) == null; 
                             tex_flush_token_list(h);
                         }
@@ -1075,13 +1075,13 @@ void tex_conditional_if(halfword code, int unless)
                 goto RESULT;
             }
         case if_boolean_code:
-            result = tex_scan_int(0, NULL) ? 1 : 0;
+            result = tex_scan_integer(0, NULL) ? 1 : 0;
             goto RESULT;
         case if_numexpression_code:
-            result = tex_scanned_expression(int_val_level) ? 1 : 0;
+            result = tex_scanned_expression(integer_val_level) ? 1 : 0;
             goto RESULT;
         case if_dimexpression_code:
-            result = tex_scanned_expression(dimen_val_level) ? 1 : 0;
+            result = tex_scanned_expression(dimension_val_level) ? 1 : 0;
             goto RESULT;
         case if_math_parameter_code:
             /*tex
@@ -1092,11 +1092,11 @@ void tex_conditional_if(halfword code, int unless)
                 do {
                     tex_get_x_token();
                 } while (cur_cmd == spacer_cmd);
-                if (cur_cmd == set_math_parameter_cmd) {
+                if (cur_cmd == math_parameter_cmd) {
                     int code = cur_chr;
                     int style = tex_scan_math_style_identifier(0, 0);
                     result = tex_get_math_parameter(style, code, NULL);
-                    if (result == max_dimen) {
+                    if (result == max_dimension) {
                         result = parameter_unset; 
                     } else if (result) {
                         result = parameter_set;
@@ -1259,13 +1259,13 @@ void tex_conditional_if(halfword code, int unless)
         case if_insert_code:
             {
                 /* beware: it tests */
-                result = ! tex_insert_is_void(tex_scan_int(0, NULL));
+                result = ! tex_insert_is_void(tex_scan_integer(0, NULL));
                 goto RESULT;
             }
      // case if_bitwise_and_code:
      //     {
-     //         halfword n1 = scan_int(0, NULL);
-     //         halfword n2 = scan_int(0, NULL);
+     //         halfword n1 = scan_integer(0, NULL);
+     //         halfword n2 = scan_integer(0, NULL);
      //         result = n1 & n2 ? 1 : 0;
      //         goto RESULT;
      //     }

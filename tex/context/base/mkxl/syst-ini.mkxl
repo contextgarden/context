@@ -318,10 +318,10 @@
 \permanent\countdef\c_syst_min_allocated_attribute = 207 \c_syst_min_allocated_attribute =  1024 % 0-1023 : private
 \permanent\countdef\c_syst_max_allocated_attribute = 208 \c_syst_min_allocated_attribute = \directlua{tex.write(tex.magicconstants.max_attribute_register_index)} % 65535 % no allocator, managed differently
 
-\permanent\countdef\c_syst_max_allocated_count     = 211 \c_syst_max_allocated_count     = \directlua{tex.write(tex.magicconstants.max_int_register_index)}       % 65535 % is adapted later on
-\permanent\countdef\c_syst_max_allocated_dimen     = 212 \c_syst_max_allocated_dimen     = \directlua{tex.write(tex.magicconstants.max_dimen_register_index)}     % idem
+\permanent\countdef\c_syst_max_allocated_count     = 211 \c_syst_max_allocated_count     = \directlua{tex.write(tex.magicconstants.max_integer_register_index)}   % 65535 % is adapted later on
+\permanent\countdef\c_syst_max_allocated_dimen     = 212 \c_syst_max_allocated_dimen     = \directlua{tex.write(tex.magicconstants.max_dimension_register_index)} % idem
 \permanent\countdef\c_syst_max_allocated_skip      = 213 \c_syst_max_allocated_skip      = \directlua{tex.write(tex.magicconstants.max_glue_register_index)}      % idem
-\permanent\countdef\c_syst_max_allocated_muskip    = 214 \c_syst_max_allocated_muskip    = \directlua{tex.write(tex.magicconstants.max_mu_glue_register_index)}   % idem
+\permanent\countdef\c_syst_max_allocated_muskip    = 214 \c_syst_max_allocated_muskip    = \directlua{tex.write(tex.magicconstants.max_muglue_register_index)}    % idem
 \permanent\countdef\c_syst_max_allocated_box       = 215 \c_syst_max_allocated_box       = \directlua{tex.write(tex.magicconstants.max_box_register_index)}       % idem
 \permanent\countdef\c_syst_max_allocated_toks      = 216 \c_syst_max_allocated_toks      = \directlua{tex.write(tex.magicconstants.max_toks_register_index)}      % idem
 \permanent\countdef\c_syst_max_allocated_read      = 217 \c_syst_max_allocated_read      = \c_syst_max_allocated_iohandle
@@ -1558,5 +1558,9 @@
 \newuserunit \piunit pi
 \newuserunit \ftunit ft
 \newuserunit \uunit  uu
+
+%D We enable special escapes:
+
+\parametermode \plusone
 
 \protect \endinput

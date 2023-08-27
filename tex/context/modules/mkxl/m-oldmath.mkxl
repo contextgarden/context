@@ -17,25 +17,29 @@
 
 \mathgroupingmode \zerocount
 
-\permanent\protected\def\eqalign#1% rather plain, is this used at all ...
-  {\dontleavehmode
-   \mskip\thinmuskip\vcenter\bgroup % \vcenter \s!class \mathwrappercode \bgroup
-     \mathsurround\zeropoint        % \math_eqalign_set_defaults
-     \ialign
-       {\strut
-        \hfil
-        \mathbeginclass\mathordcode
-        \mathendclass  \mathordcode
-        \startforceddisplaymath\aligncontent\stopforceddisplaymath
-        \aligntab
-        \mathbeginclass\mathordcode
-        \mathendclass  \mathordcode
-        \startforceddisplaymath\aligncontent\stopforceddisplaymath
-        \hfil
-        \crcr
-        #1%
-        \crcr}%
-   \egroup\mskip\thinmuskip}        % \egroup
+\ifdefined\eqalign \else
+
+    \permanent\protected\def\eqalign#1% rather plain, is this used at all ...
+      {\dontleavehmode
+       \mskip\thinmuskip\vcenter\bgroup % \vcenter \s!class \mathwrappercode \bgroup
+         \mathsurround\zeropoint        % \math_eqalign_set_defaults
+         \ialign
+           {\strut
+            \hfil
+            \mathbeginclass\mathordcode
+            \mathendclass  \mathordcode
+            \startforceddisplaymath\aligncontent\stopforceddisplaymath
+            \aligntab
+            \mathbeginclass\mathordcode
+            \mathendclass  \mathordcode
+            \startforceddisplaymath\aligncontent\stopforceddisplaymath
+            \hfil
+            \crcr
+            #1%
+            \crcr}%
+       \egroup\mskip\thinmuskip}        % \egroup
+
+\fi
 
 %D Obsolete:
 

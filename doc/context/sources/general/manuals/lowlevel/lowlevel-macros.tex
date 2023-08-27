@@ -11,10 +11,10 @@
 % released \quotation {Versions of the Truth} which again a magnificent drumming by
 % Gavin Harrison.
 
-
 % \permanent\tolerant\protected\def\xx[#1]#*#;[#2]#:#3% loops .. todo
 
 \usemodule[system-tokens]
+\usemodule[system-syntax]
 
 \environment lowlevel-style
 
@@ -1241,6 +1241,269 @@ it might be less confusing to permit:
 \stoptyping
 
 as well, if only because occasionally users get hit by this.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Duplicate hashes]
+
+In \TEX\ every character has a so called category code. Most characters are
+classified as \quote {letter} (they make up words) or as \quote {other}. In
+\UNICODE\ we distinguish symbols, punctuation, and more, but in \TEX\ these are
+all of category \quote {other}. In math however we can classify them differently
+but in this perspective we ignore that. The backslash has category \quote
+{escape} and it starts a control sequence. The curly braces are (internally) of
+category \quote {left brace} and \quote {right brace} aka \quote {begin group}
+and \quote {end group} but, no matter what they are called, they begin and end
+something: a group, argument, token list, box, etc. Any character can have those
+categories. Although it would loook strange to a \TEX\ user, this can be made
+valid:
+
+\startbuffer
+!protected !gdef !weird¶1
+B
+    something: ¶1
+E
+!weird BhereE
+\stopbuffer
+
+\typebuffer
+
+In such a setup spaces can be of category \quote {invisible}. The paragraph
+symbol takes the place of the hash as parameter identifier. The next code shows
+how this is done. Here we wrap all in a macro so that we don't get catcode
+interference in the document source.
+
+\startbuffer[demo]
+\def\NotSoTeX
+  {\begingroup
+   \catcode `B \begingroupcatcode
+   \catcode `E \endgroupcatcode
+   \catcode `¶ \parametercatcode
+   \catcode `! \escapecatcode
+   \catcode 32 \ignorecatcode
+   \catcode 13 \ignorecatcode
+   % this buffer has a definition:
+   \getbuffer
+   % which is now known globally
+   \endgroup}
+\NotSoTeX
+\weird{there}
+\stopbuffer
+
+\typebuffer[demo]
+
+This results in:
+
+\startlines
+\getbuffer [demo]
+\stoplines
+
+In the first line the \type {!}, \type {B} and \type {E} are used as escape and
+argument delimiters, in the second one we use the normal characters. When we show
+the \type {\meaningasis} we get:
+
+\startlines \tt
+\meaningasis\weird
+\stoplines
+
+or in more detail:
+
+\start \tt
+\luatokentable\weird
+\stop
+
+So, no matter how we set up the system, in the end we get some generic
+representation. When we see \type {#1} in \quote {print} it can be either two
+tokens, \type {#} (catcode parameter) followed by \type {1} with catcode other,
+or one token referring to parameter \type {1} where the character \type {1} is
+the opcode of an internal \quote {reference command}. In order to distinguish a
+reference from the two token case, parameter hash tokens get shown as doubles.
+
+\start
+
+\catcode `¶=\parametercatcode
+\catcode `§=\parametercatcode
+
+\startbuffer
+\def\test #1{x#1x##1x####1x}
+\def\tset ¶1{x¶1x¶¶1x¶¶¶¶1x}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+And with \type {\meaning} we get, consistent with the input:
+
+\startlines \tt
+\meaning\test
+\meaning\tset
+\stoplines
+
+These are equivalent, apart from the parameter character in the body of the
+definition:
+
+\startlines \tt
+\luatokentable\test
+\luatokentable\tset
+\stoplines
+
+\stop
+
+Watch how every \quote {parameter} is just a character with the \UNICODE\ index
+of the used input character as property. Let us summarize the process. When a
+single parameter character is seen in the input, the next characer determines how
+it will be interpreted. If there is a digit then it becomes a reference to a
+parameter in the preamble, and when followed by another parameter character it
+will be appended to the body of the macro and that second one is dropped. So, two
+parameter characters become one, and four become two. One parameter character
+becomes a reference and from that you can guess what three in a row become.
+However, when \TEX\ is showing the macro definition (using \type {meaning}) the
+hashes get duplicated in order to distinguish parameter references from parameter
+characters that were kept (e.g.\ for nested definitions). One can make an
+argument for \type {\parameterchar} as we also have \type {\escapechar} but by
+now this convention is settled and it doesn't look that bad anyway.
+
+We now come to the more tricky part with respect to the doubling of hashes. When
+\TEX\ was written its application landscape looked a bit different. For instance,
+fonts were limited and therefore it was natural to access special characters by
+name. Using \type {\#} to get a hash in the text was not that problematic, if one
+needed that character at all. The same can be said for the braces, backslash and
+even the dollar (after all \TEX\ is free software).
+
+But what if we have more visualization and|/|or serialization than meanings and
+tracing? When we opened op the internals in \LUATEX\ and even more in
+\LUAMETATEX\ the duplicating of hashes became a bit of a problem. There we don't
+need to distinguish between a parameter reference and a parameter character
+because by that time these references are resolved. All hashes that we encounter
+are just that: hashes. And this is why in \LUAMETATEX\ we disable the duplication
+for those cases where it serves no purpose.
+
+When the engine scans a macro definition it starts with pickin  g up the name of
+the macro. Then it starts scanning the preamble upto the left brace. In the
+preamble of a macro the scanner converts hashes followed by another token into
+single match token. Then when the macro body is scanned single hashes followed by
+a number become a reference, while double hashes become one hash and get
+interpreted at expansion time (possibly triggering an error when not followed by
+a valid specifier like a number). In traditional \TEX\ we basically had this:
+
+\starttyping
+\def\test#1{#1}
+\def\test#1{##}
+\def\test#1{#X}
+\def\test#1{##1}
+\stoptyping
+
+There can be a traling \type {#} in the preamble for special purposes but we
+forget about that now. The first definition is valid, the second definition is
+invalid when the macro is expanded and the third definition triggers an error at
+definition time. The last definition will again trigger an error at expansion
+time.
+
+However, in \LUAMETATEX\ we have an extended preamble where the following
+preamble parameters are handled (some only in tolerant mode):
+
+\starttabulate[|c|||]
+\NC \type{#n} \NC parameter                                   \NC index \type{1} upto \type{E} \NC \NR
+\TB
+\NC \type{#0} \NC throw away parameter                        \NC increment index              \NC \NR
+\NC \type{#-} \NC ignore parameter                            \NC keep index                   \NC \NR
+\TB
+\NC \type{#*} \NC gobble white space                          \NC                              \NC \NR
+\NC \type{#+} \NC keep (honor) the braces                     \NC                              \NC \NR
+\NC \type{#.} \NC ignore pars and spaces                      \NC                              \NC \NR
+\NC \type{#,} \NC push back space when no match               \NC                              \NC \NR
+\NC \type{#/} \NC remove leading and trailing spaces and pars \NC                              \NC \NR
+\NC \type{#=} \NC braces are mandate                          \NC                              \NC \NR
+\NC \type{#^} \NC keep leading spaces                         \NC                              \NC \NR
+\NC \type{#_} \NC braces are mandate and kept (obey)          \NC                              \NC \NR
+\TB
+\NC \type{#@} \NC par delimiter                               \NC only for internal usage      \NC \NR
+\TB
+\NC \type{#:} \NC pick up scanning here                       \NC                              \NC \NR
+\NC \type{#;} \NC quit scanning                               \NC                              \NC \NR
+\TB
+\NC \type{#L} \NC left delimiter token                        \NC followed by token            \NC \NR
+\NC \type{#R} \NC right delimiter token                       \NC followed by token            \NC \NR
+\TB
+\NC \type{#G} \NC gobble token                                \NC followed by token            \NC \NR
+\NC \type{#M} \NC gobble token and spaces                     \NC followed by token            \NC \NR
+\TB
+\NC \type{#S} \NC nest square brackets                        \NC only inner pairs             \NC \NR
+\NC \type{#X} \NC nest angle brackets                         \NC only inner pairs             \NC \NR
+\NC \type{#P} \NC nest parentheses                            \NC only inner pairs             \NC \NR
+\stoptabulate
+
+As mentioned these will become so called match tokens and only when we show the
+meaning the hash will show up again.
+
+\startbuffer
+\def\test[#1]#*[*S#2]{.#1.#2.}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\startlines \tt
+\luatokentable\test
+\stoplines
+
+This means that in the body of a macro you will not see \type {#*} show up. It is
+just a directive that tells the macro parser that spaces are to be skipped. The
+\type {#S} directive makes the parser for the second parameter handle nested
+square bracket. The only hash that we can see end up in the body is the one that
+we entered as double hash (then turned single) followed by (in traditional terms)
+a number that when all gets parsed with then become a reference: the sequence
+\type {##1} internally is \type {#1} and becomes \quote {reference to parameter
+1} assuming that we define a macro in that body. If no number is there, an error
+is issued. This opens up the possibility to add more variants because it will
+only break compatibility with respect to what is seen as error. As with the
+preamble extensions, old documents that have them would have crashed before they
+became available.
+
+So, this means that in the body, and actually anywhere in the document apart from
+preambles, we now support the following general parameter specifiers. Keep in
+mind that they expand in an expansion context which can be tricky when they
+overlap with preamble entries, like for instance \type {#R} in such an expansion.
+Future extensions can add more so {\em any} hashed shortcut is sensitive for
+that.
+
+\starttabulate[|l|||]
+\NC \type{#I} \NC current iterator     \NC \type {\currentloopiterator}    \NC \NR
+\NC \type{#P} \NC parent iterator      \NC \type {\previousloopiterator 1} \NC \NR
+\NC \type{#G} \NC grandparent iterator \NC \type {\previousloopiterator 2} \NC \NR
+\TB
+\NC \type{#H} \NC hash escape          \NC \type {#}  \NC \NR
+\NC \type{#S} \NC space escape         \NC \ruledhbox to  \interwordspace{\novrule height .8\strutht} \NC \NR
+\NC \type{#T} \NC tab escape           \NC \type {\t} \NC \NR
+\NC \type{#L} \NC newline escape       \NC \type {\n} \NC \NR
+\NC \type{#R} \NC return escape        \NC \type {\r} \NC \NR
+\NC \type{#X} \NC backslash escape     \NC \tex  {}   \NC \NR
+\TB
+\NC \type{#N} \NC nbsp \NC \type {U+00A0} (under consideration) \NC \NR
+\NC \type{#Z} \NC zws  \NC \type {U+200B} (under consideration) \NC \NR
+%NC \type{#-} \NC zwnj \NC \type {U+200C} (under consideration) \NC \NR
+%NC \type{#+} \NC zwj  \NC \type {U+200D} (under consideration) \NC \NR
+%NC \type{#>} \NC l2r  \NC \type {U+200E} (under consideration) \NC \NR
+%NC \type{#<} \NC r2l  \NC \type {U+200F} (under consideration) \NC \NR
+\stoptabulate
+
+Some will now argue that we already have \type {^^} escapes in \TEX\ and \type
+{^^^^} and \type {^^^^^^} in \LUATEX\ and that is true. However, these can be
+disabled, and in \CONTEXT\ they are, where we instead enable the prescript,
+postscript, and index features in mathmode and there type {^} and \type {_} are
+used. Even more: in \CONTEXT\ we just let \type {^}, \type {_} and \type {&} be
+what they are. Occasionally I consider \type {$} to be just that but as I don't
+have dollars I will happily leave that for inline math. When users are not
+defining macros or are using the alternative definitions we can consider making
+the \type {#} a hash. An excellent discussion of how \TEX\ reads it's input and
+changes state accordingly can be found in Victor Eijkhouts \quotation {\TEX\ By
+Topic}, section 2.6: when \type {^^} is followed by a character with $v < 128$
+the interpreter will inject a character with code $v - 64$. When followed by two
+(!) lowercase hexadecimal characters, the corresponding character will be
+injected. Anyway, it not only looks kind of ugly, it also is somewhat weird
+because what follows is interpreted mixed way. The substitution happens early on
+(which is okay). But, how about the output? Traditional \TEX\ serializes special
+characters with a similar syntax but that has become optional when eight bit mode
+was added to the engines, it is configurable in \LUATEX\ and has been dropped in
+\LUAMETATEX: we operate in a \UTF\ universum.
 
 \stopsectionlevel
 

@@ -504,6 +504,29 @@ do
         end,
     }
 
+    implement {
+        name      = "readlinedirect",
+        public    = true,
+        untraced  = true,
+        actions   = function(prefix)
+            local n = scaninteger()
+            local c = channels[n]
+            if scankeyword("line") and c then
+                c:gotoline(scaninteger())
+            end
+            local s = c and c:reader()
+            if s then
+                local e = texgetcount("endlinechar") -- we can have tex.endline if needed
+                if e > 0 then -- forget about 0
+                    s = s .. char(e)
+                end
+                context(s)
+            else
+                channels[n] = false
+            end
+        end,
+    }
+
     -- This one uses the special lua condition option which is kind of experimental
     -- but seems to work fine.
 

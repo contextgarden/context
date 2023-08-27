@@ -63,10 +63,10 @@ unsigned aux_str2uni_len(const unsigned char *text, int *len)
             *len = 4;
             return 0xFFFD;
         } else {
-            *len = 4;
             int w1 = (((text[0] & 0x7) << 2) | ((text[1] & 0x30) >> 4)) - 1;
             int w2 = ((text[2] & 0xF) << 6) | (text[3] & 0x3F);
             w1 = (w1 << 6) | ((text[1] & 0xF) << 2) | ((text[2] & 0x30) >> 4);
+            *len = 4;
             return (unsigned) (w1 * 0x400 + w2 + 0x10000);
         }
     }

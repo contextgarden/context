@@ -109,6 +109,7 @@
 \definefilesynonym [type-imp-pagella-with-euler.mkiv]     [type-imp-euler.mkxl]
 \definefilesynonym [type-imp-euleroverpagella.mkiv]       [type-imp-euler.mkxl]
 \definefilesynonym [type-imp-pagellaovereuler.mkiv]       [type-imp-euler.mkxl]
+\definefilesynonym [type-imp-euler.mkiv]                  [type-imp-euler.mkxl]
 
 %definefilesynonym [type-imp-mdbch.mkiv]                  [type-imp-mathdesign.mkiv]
 %definefilesynonym [type-imp-mdugm.mkiv]                  [type-imp-mathdesign.mkiv]

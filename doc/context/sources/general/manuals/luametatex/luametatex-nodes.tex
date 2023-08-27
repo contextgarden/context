@@ -1774,19 +1774,22 @@ If the attribute was actually deleted, returns its old value. Otherwise, returns
 
 \startsubsection[title={Glyph handling}][library=node]
 
-\startsubsubsection[title={\type {firstglyph}}]
+\startsubsubsection[title={\type {firstglyphnode}, \type {firstchar}, \type {firstglyph}}]
 
+\libindex {firstglyphnode}
+\libindex {firstchar}
 \libindex {firstglyph}
 
 \startfunctioncall
-<node> n = node.firstglyph(<node> n)
-<node> n = node.firstglyph(<node> n, <node> m)
+<node> n = node.firstglyphnode(<node> n)
+<node> n = node.firstglyphnode(<node> n, <node> m)
 \stopfunctioncall
 
 Returns the first node in the list starting at \type {n} that is a glyph node
 with a subtype indicating it is a glyph, or \type {nil}. If \type {m} is given,
 processing stops at (but including) that node, otherwise processing stops at the
-end of the list.
+end of the list. The \type {char} and \type {glyph} variants check for the
+protected field being (yet) unset or (already) set.
 
 \stopsubsubsection
 

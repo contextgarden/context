@@ -85,7 +85,8 @@
    \enforced\let\controlspace\specialcontrolspace
    \begincsname\??typinglines\typeparameter\c!lines\endcsname
    \begincsname\??typingspace\typeparameter\c!space\endcsname
-   \relax\expand\everyinitializeverbatim\relax}
+   \relax\expand\everyinitializeverbatim\relax
+   \usesetupsparameter\typeparameter\relax}
 
 \permanent\protected\def\doinitializeverbatim % for use elsewhere .. temp hack (see lxml-ini)
   {\buff_verbatim_initialize_type_one
@@ -123,7 +124,8 @@
    \enforced\let\controlspace\specialcontrolspace
    \begincsname\??typinglines\typingparameter\c!lines\endcsname
    \begincsname\??typingspace\typingparameter\c!space\endcsname
-   \relax\expand\everyinitializeverbatim\relax}
+   \relax\expand\everyinitializeverbatim\relax
+   \usesetupsparameter\typingparameter\relax}
 
 %D \macros
 %D   {definetype,setuptype}

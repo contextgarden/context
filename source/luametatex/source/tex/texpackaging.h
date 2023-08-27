@@ -163,7 +163,7 @@ extern halfword  tex_vsplit               (halfword n, scaled h, int m);
 extern void      tex_finish_vcenter_group (void);
 extern void      tex_run_vcenter          (void);
 
-//# define vpack(A,B,C,D) tex_vpackage(A,B,C,max_dimen,D)
+//# define vpack(A,B,C,D) tex_vpackage(A,B,C,max_dimension,D)
 
 # define first_un_box_code box_code
 # define last_un_box_code  unpack_code
@@ -233,21 +233,21 @@ typedef enum box_flags {
 extern void tex_begin_box        (int boxcontext, scaled shift, halfword slot, halfword callback);
 extern int  tex_ignore_math_skip (halfword p);
 
-static inline scaled tex_aux_checked_dimen1(halfword v)
+static inline scaled tex_aux_checked_dimension1(halfword v)
 {
-    if (v > max_dimen) {
-        return max_dimen;
-    } else if (v < -max_dimen) {
-        return -max_dimen;
+    if (v > max_dimension) {
+        return max_dimension;
+    } else if (v < -max_dimension) {
+        return -max_dimension;
     } else {
         return v;
     }
 }
 
-static inline scaled tex_aux_checked_dimen2(halfword v)
+static inline scaled tex_aux_checked_dimension2(halfword v)
 {
-    if (v > max_dimen) {
-        return max_dimen;
+    if (v > max_dimension) {
+        return max_dimension;
     } else if (v < 0) {
         return 0;
     } else {

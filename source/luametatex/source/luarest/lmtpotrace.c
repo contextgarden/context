@@ -99,7 +99,7 @@ static unsigned char lmt_tochar(lua_State *L, int index)
 
 static void potracelib_aux_get_parameters(lua_State *L, int index, potracer *p) 
 {
-    if (lua_getfield(L, index, "size")      == LUA_TNUMBER ) { p->parameters->turdsize     =   lua_tointeger(L, -1); } lua_pop(L, 1);
+    if (lua_getfield(L, index, "size")      == LUA_TNUMBER ) { p->parameters->turdsize     =   lmt_tointeger(L, -1); } lua_pop(L, 1);
     if (lua_getfield(L, index, "threshold") == LUA_TNUMBER ) { p->parameters->alphamax     =   lua_tonumber (L, -1); } lua_pop(L, 1);
     if (lua_getfield(L, index, "tolerance") == LUA_TNUMBER ) { p->parameters->opttolerance =   lua_tonumber (L, -1); } lua_pop(L, 1);
     if (lua_getfield(L, index, "optimize")  == LUA_TBOOLEAN) { p->parameters->opticurve    =   lua_toboolean(L, -1); } lua_pop(L, 1);
@@ -204,10 +204,10 @@ static int potracelib_new(lua_State *L)
         size_t length = 0;
 
         if (lua_getfield(L, 1, "bytes")   == LUA_TSTRING)  { p.bytes   =   lua_tolstring(L, -1, &length); } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "width")   == LUA_TNUMBER)  { p.width   =   lua_tointeger(L, -1);          } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "height")  == LUA_TNUMBER)  { p.height  =   lua_tointeger(L, -1);          } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "nx")      == LUA_TNUMBER)  { p.nx      =   lua_tointeger(L, -1);          } lua_pop(L, 1);
-        if (lua_getfield(L, 1, "ny")      == LUA_TNUMBER)  { p.ny      =   lua_tointeger(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "width")   == LUA_TNUMBER)  { p.width   =   lmt_tointeger(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "height")  == LUA_TNUMBER)  { p.height  =   lmt_tointeger(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "nx")      == LUA_TNUMBER)  { p.nx      =   lmt_tointeger(L, -1);          } lua_pop(L, 1);
+        if (lua_getfield(L, 1, "ny")      == LUA_TNUMBER)  { p.ny      =   lmt_tointeger(L, -1);          } lua_pop(L, 1);
         if (lua_getfield(L, 1, "swap")    == LUA_TBOOLEAN) { p.swap    =   lua_toboolean(L, -1);          } lua_pop(L, 1);
         if (lua_getfield(L, 1, "value")   == LUA_TSTRING)  { p.value   =   lmt_tochar   (L, -1);          } lua_pop(L, 1);
         if (lua_getfield(L, 1, "negate")  == LUA_TBOOLEAN) { p.match   = ! lua_toboolean(L, -1);          } lua_pop(L, 1);
@@ -216,7 +216,7 @@ static int potracelib_new(lua_State *L)
             return 0;
         } 
 
-        if (p.width * p.height > length) {
+        if ((size_t) (p.width * p.height) > length) {
             return 0;
         }
 
@@ -244,12 +244,15 @@ static int potracelib_new(lua_State *L)
         potracelib_aux_get_parameters(L, 1, &p); 
 
         lua_pop(L, 1);
-        potracer *pp = (potracer *) lua_newuserdatauv(L, sizeof(potracer), 0);
-        if (pp) { 
-            *pp = p; 
-            luaL_getmetatable(L, POTRACE_METATABLE);
-            lua_setmetatable(L, -2);
-            return 1;
+
+        {
+            potracer *pp = (potracer *) lua_newuserdatauv(L, sizeof(potracer), 0);
+            if (pp) { 
+                *pp = p; 
+                luaL_getmetatable(L, POTRACE_METATABLE);
+                lua_setmetatable(L, -2);
+                return 1;
+            }
         }
     }
     return 0;
@@ -448,11 +451,13 @@ static int potracelib_totable(lua_State *L)
     int first = lmt_optinteger(L, 3, 0);
     int last = lmt_optinteger(L, 4, first);
     lua_settop(L, 1);
-    potracer *p = potracelib_aux_maybe_ispotracer(L);
-    if (p) { 
-        return debug ? potracelib_totable_debug(L, p, first, last) : potracelib_totable_normal(L, p, first, last);
-    } else {
-        return 0;
+    {
+        potracer *p = potracelib_aux_maybe_ispotracer(L);
+        if (p) { 
+            return debug ? potracelib_totable_debug(L, p, first, last) : potracelib_totable_normal(L, p, first, last);
+        } else {
+            return 0;
+        }
     }
 }
 

@@ -68,14 +68,41 @@
    \fi
    \endgroup}
 
-% \permanent\def\datasetvariable#1#2#3%
-%   {\clf_datasetvariable{#1}{#2}{#3}}
+\permanent\tolerant\def\datasetvariable[#1]{\clf_datasetvariable{#1}}
+\permanent\tolerant\def\datasetsize    [#1]{\clf_datasetsize    {#1}}
 
-\permanent\tolerant\def\datasetvariable[#1]%
-  {\ifparameter#1\or
-     \expandafter\clf_datasetvariablefromjob{#1\expandafter}%
-   \else
-     \expandafter\clf_datasetvariable
+% \startsetups[dataset:demo]
+%     \datasetvariable{autores}{\recurselevel}{whatever}
+% \stopsetups
+% \dorecurse{\datasetsize{demo}}{
+%   \setups[dataset:demo]
+% }
+
+% \startsetups[dataset:demo]
+%     \datasetvariable{autores}{\datasetindex}{whatever}
+% \stopsetups
+% \processdataset[demo][dataset:demo]
+
+% \startsetups[dataset:demo]
+%     \datasetentry{whatever}
+% \stopsetups
+% \processdataset[demo][dataset:demo]
+
+\mutable\let\datasetindex\!!zerocount
+\mutable\let\datasetentry\gobbleoneargument
+
+\permanent\tolerant\protected\def\processdataset[#1]#*[#2]#*[#3]%
+  {\ifparameters\or
+   \or\system_process_dataset  {}{#1}{#2}%
+   \or\system_process_dataset{#1}{#2}{#3}%
    \fi}
+
+\def\system_process_dataset#1#2#3%
+  {\pushmacro\datasetindex
+   \pushmacro\datasetentry
+   \def\datasetentry{\clf_datasetvariable{#1}{#2}{\datasetindex}}%
+   \dorecurse{\datasetsize[#1]{#2}}{\let\datasetindex\recurselevel\directsetup{#3}}%
+   \popmacro\datasetentry
+   \popmacro\datasetindex}
 
 \protect

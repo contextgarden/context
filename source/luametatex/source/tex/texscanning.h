@@ -7,12 +7,12 @@
 
 typedef enum value_level_code {
     posit_val_level,
-    int_val_level,           /*tex integer values */
-    attr_val_level,          /*tex integer values */
-    dimen_val_level,         /*tex dimension values */
+    integer_val_level,       /*tex integer values */
+    attribute_val_level,     /*tex integer values */
+    dimension_val_level,     /*tex dimension values */
     glue_val_level,          /*tex glue specifications */
-    mu_val_level,            /*tex math glue specifications */
-    tok_val_level,           /*tex token lists */
+    muglue_val_level,        /*tex math glue specifications */
+    token_val_level,         /*tex token lists */
     font_val_level ,         /*tex font identifier */
     mathspec_val_level ,
     fontspec_val_level ,
@@ -21,13 +21,13 @@ typedef enum value_level_code {
     no_val_level,
 } value_level_code;
 
-# define first_value_level int_val_level
-# define last_value_level  mu_val_level
+# define first_value_level integer_val_level
+# define last_value_level  muglue_val_level
 
 typedef struct scanner_state_info {
     int      current_cmd;       /*tex current command set by |get_next| */
     halfword current_chr;       /*tex operand of current command */
-    halfword current_cs;        /*tex control sequence found here, zero if none found */
+    halfword current_cs;        /*tex control sequence found here, zero if none foucan_tond */
  // halfword current_flag;
     halfword current_tok;       /*tex packed representative of |cur_cmd| and |cur_chr| */
     int      current_val;       /*tex value returned by numeric scanners */
@@ -79,19 +79,19 @@ extern void        tex_scan_something_simple          (halfword cmd, halfword co
 extern void        tex_scan_left_brace                (void);
 extern void        tex_scan_optional_equals           (void);
 extern int         tex_scan_cardinal                  (int optional_equal, unsigned *value, int dontbark);
-extern halfword    tex_scan_int                       (int optional_equal, int *radix);
-extern void        tex_scan_int_validate              (void);
-extern halfword    tex_scan_positive_int              (int optional_equal);
+extern halfword    tex_scan_integer                   (int optional_equal, int *radix);
+extern void        tex_scan_integer_validate          (void);
+extern halfword    tex_scan_positive_integer          (int optional_equal);
 extern halfword    tex_scan_scale                     (int optional_equal);
 extern halfword    tex_scan_posit                     (int optional_equal);
-extern halfword    tex_scan_dimen                     (int mu, int inf, int shortcut, int optional_equal, halfword *order);
-extern void        tex_scan_dimen_validate            (void);
+extern halfword    tex_scan_dimension                 (int mu, int inf, int shortcut, int optional_equal, halfword *order);
+extern void        tex_scan_dimension_validate        (void);
 extern halfword    tex_scan_glue                      (int level, int optional_equal);
 extern halfword    tex_scan_font                      (int optional_equal);
 extern halfword    tex_scan_general_text              (halfword *tail);
 /*     halfword    tex_scan_toks                      (int macrodef, int xpand, int left_brace_found); */
 extern halfword    tex_scan_toks_normal               (int left_brace_found, halfword *tail);
-extern halfword    tex_scan_toks_expand               (int left_brace_found, halfword *tail, int expandconstant);
+extern halfword    tex_scan_toks_expand               (int left_brace_found, halfword *tail, int expandconstant, int keepparameters);
 extern halfword    tex_scan_macro_normal              (void); // (int tolerant);
 extern halfword    tex_scan_macro_expand              (void); // (int tolerant);
 extern halfword    tex_scan_font_identifier           (halfword *spec);
@@ -113,12 +113,12 @@ extern halfword    tex_scan_anchors                   (int optional_equal);
 
 extern int         tex_scanned_expression             (int level);
 
-extern halfword    tex_scan_int_register_number       (void);
-extern halfword    tex_scan_dimen_register_number     (void);
+extern halfword    tex_scan_integer_register_number   (void);
+extern halfword    tex_scan_dimension_register_number (void);
 extern halfword    tex_scan_attribute_register_number (void);
 extern halfword    tex_scan_posit_register_number     (void);
 extern halfword    tex_scan_glue_register_number      (void);
-extern halfword    tex_scan_mu_glue_register_number   (void);
+extern halfword    tex_scan_muglue_register_number    (void);
 extern halfword    tex_scan_toks_register_number      (void);
 extern halfword    tex_scan_box_register_number       (void);
 extern halfword    tex_scan_unit_register_number      (int optional_equal);
@@ -144,10 +144,10 @@ extern halfword    tex_the_detokenized_toks           (halfword *tail);
 extern void        tex_detokenize_list                (halfword head);
 extern strnumber   tex_the_scanned_result             (void);
 
-extern void        tex_set_font_dimen                 (void);
-extern halfword    tex_get_font_dimen                 (void);
-extern void        tex_set_scaled_font_dimen          (void);
-extern halfword    tex_get_scaled_font_dimen          (void);
+extern void        tex_set_font_dimension             (void);
+extern halfword    tex_get_font_dimension             (void);
+extern void        tex_set_scaled_font_dimension      (void);
+extern halfword    tex_get_scaled_font_dimension      (void);
 
 extern int         tex_get_unit_class                 (halfword index);
 

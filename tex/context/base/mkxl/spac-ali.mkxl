@@ -850,7 +850,7 @@
 
 % experiment
 
-\defcsname\??aligncommand \v!flushforward\endcsname{\c_spac_align_state_horizontal\ifconditional\inlinelefttoright\plustwo\else\plusthree\fi}
+\defcsname\??aligncommand\v!flushforward \endcsname{\c_spac_align_state_horizontal\ifconditional\inlinelefttoright\plustwo\else\plusthree\fi}
 \defcsname\??aligncommand\v!flushbackward\endcsname{\c_spac_align_state_horizontal\ifconditional\inlinelefttoright\plusthree\else\plustwo\fi}
 
 % experiment

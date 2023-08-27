@@ -135,7 +135,7 @@ typedef enum tex_command_code {
     delimiter_number_cmd,             /*tex specify delimiter numerically (|\delimiter|) */
     char_number_cmd,                  /*tex character specified numerically (|\char|) */
     math_char_number_cmd,             /*tex explicit math code (|mathchar} ) */
-    set_mark_cmd,                     /*tex mark definition (|mark|) */
+    mark_cmd,                         /*tex mark definition (|mark|) */
     node_cmd,                         /*tex a node injected via \LUA */
     xray_cmd,                         /*tex peek inside of \TEX\ (|\show|, |\showbox|, etc.) */
     make_box_cmd,                     /*tex make a box (|\box|, |\copy|, |\hbox|, etc.) */
@@ -203,28 +203,28 @@ typedef enum tex_command_code {
     */
     internal_toks_cmd,                /*tex special token list (|\output|, |\everypar|, etc.) */
     register_toks_cmd,                /*tex user defined token lists */
-    internal_int_cmd,                 /*tex integer (|\tolerance|, |\day|, etc.) */
-    register_int_cmd,                 /*tex user-defined integers */
+    internal_integer_cmd,             /*tex integer (|\tolerance|, |\day|, etc.) */
+    register_integer_cmd,             /*tex user-defined integers */
     internal_attribute_cmd,           /*tex */
     register_attribute_cmd,           /*tex user-defined attributes */
     internal_posit_cmd,    
     register_posit_cmd,    
-    internal_dimen_cmd,               /*tex length (|\hsize|, etc.) */
-    register_dimen_cmd,               /*tex user-defined dimensions */
+    internal_dimension_cmd,           /*tex length (|\hsize|, etc.) */
+    register_dimension_cmd,           /*tex user-defined dimensions */
     internal_glue_cmd,                /*tex glue (|\baselineskip|, etc.) */
     register_glue_cmd,                /*tex user-defined glue */
-    internal_mu_glue_cmd,             /*tex */
-    register_mu_glue_cmd,             /*tex user-defined math glue */
+    internal_muglue_cmd,              /*tex */
+    register_muglue_cmd,              /*tex user-defined math glue */
     lua_value_cmd,                    /*tex reference to a regular lua function */
     iterator_value_cmd,
-    set_font_property_cmd,            /*tex user-defined font integer (|\hyphenchar|, |\skewchar|) or (|\fontdimen|)  */
-    set_auxiliary_cmd,                /*tex state info (|\spacefactor|, |\prevdepth|) */
-    set_page_property_cmd,            /*tex page info (|\pagegoal|, etc.) */
-    set_box_property_cmd,             /*tex change property of box (|\wd|, |\ht|, |\dp|) */
-    set_specification_cmd,            /*tex specifications (|\parshape|, |\interlinepenalties|, etc.) */
+    font_property_cmd,                /*tex user-defined font integer (|\hyphenchar|, |\skewchar|) or (|\fontdimen|)  */
+    auxiliary_cmd,                    /*tex state info (|\spacefactor|, |\prevdepth|) */
+    page_property_cmd,                /*tex page info (|\pagegoal|, etc.) */
+    box_property_cmd,                 /*tex change property of box (|\wd|, |\ht|, |\dp|) */
+    specification_cmd,                /*tex specifications (|\parshape|, |\interlinepenalties|, etc.) */
     define_char_code_cmd,             /*tex define a character code (|\catcode|, etc.) */
     define_family_cmd,                /*tex declare math fonts (|\textfont|, etc.) */
-    set_math_parameter_cmd,           /*tex set math parameters (|\mathquad|, etc.) */
+    math_parameter_cmd,               /*tex set math parameters (|\mathquad|, etc.) */
     set_font_cmd,                     /*tex set current font (font identifiers) */
     define_font_cmd,                  /*tex define a font file (|\font|) */
     integer_cmd,                      /*tex the equivalent is a halfword number */
@@ -248,7 +248,7 @@ typedef enum tex_command_code {
     def_cmd,                          /*tex macro definition (|\def|, |\gdef|, |\xdef|, |\edef|) */
     set_box_cmd,                      /*tex set a box (|\setbox|) */
     hyphenation_cmd,                  /*tex hyphenation data (|\hyphenation|, |\patterns|) */
-    set_interaction_cmd,              /*tex define level of interaction (|\batchmode|, etc.) */
+    interaction_cmd,                  /*tex define level of interaction (|\batchmode|, etc.) */
     /*tex
         Here ends the section that is part of the big switch.  What follows are commands that are
         intercepted when expanding tokens. The |string_cmd| came from a todo list and moved to a
@@ -300,8 +300,8 @@ typedef enum tex_command_code {
     */
     internal_glue_reference_cmd,      /*tex the equivalent points to internal glue specification */
     register_glue_reference_cmd,      /*tex the equivalent points to register glue specification */
-    internal_mu_glue_reference_cmd,   /*tex the equivalent points to internal muglue specification */
-    register_mu_glue_reference_cmd,   /*tex the equivalent points to egister muglue specification */
+    internal_muglue_reference_cmd,    /*tex the equivalent points to internal muglue specification */
+    register_muglue_reference_cmd,    /*tex the equivalent points to egister muglue specification */
     internal_box_reference_cmd,       /*tex the equivalent points to internal box node, or is |null| */
     register_box_reference_cmd,       /*tex the equivalent points to register box node, or is |null| */
     internal_toks_reference_cmd,      /*tex the equivalent points to internal token list */
@@ -312,14 +312,14 @@ typedef enum tex_command_code {
         We don't really need these but they are used to flag the registers eq entries properly. They
         are not really references because the values are included but we want to be consistent here.
     */
-    internal_int_reference_cmd,
-    register_int_reference_cmd,
+    internal_integer_reference_cmd,
+    register_integer_reference_cmd,
     internal_attribute_reference_cmd,
     register_attribute_reference_cmd,
     internal_posit_reference_cmd,
     register_posit_reference_cmd,
-    internal_dimen_reference_cmd,
-    register_dimen_reference_cmd,
+    internal_dimension_reference_cmd,
+    register_dimension_reference_cmd,
     /*tex
         This is how many commands we have:
     */
@@ -330,10 +330,10 @@ typedef enum tex_command_code {
 # define min_internal_cmd     char_given_cmd      /*tex the smallest code that can follow |the| */
 # define max_non_prefixed_cmd some_item_cmd       /*tex largest command code that can't be |global| */
 # define max_internal_cmd     register_cmd        /*tex the largest code that can follow |the| */
-# define max_command_cmd      set_interaction_cmd /*tex the largest command code seen at |big_switch| */
+# define max_command_cmd      interaction_cmd     /*tex the largest command code seen at |big_switch| */
 
 # define first_cmd            escape_cmd
-# define last_cmd             register_dimen_reference_cmd
+# define last_cmd             register_dimension_reference_cmd
 
 # define first_call_cmd       call_cmd
 # define last_call_cmd        tolerant_semi_protected_call_cmd
@@ -497,15 +497,17 @@ typedef enum convert_codes {
 
 typedef enum input_codes {
     normal_input_code,
+    eof_input_code,
     end_of_input_code,
     token_input_code,
     tex_token_input_code,
     tokenized_code,
     retokenized_code,
     quit_loop_code,
+    quit_loop_now_code,
 } input_codes;
 
-# define last_input_code tex_token_input_code
+# define last_input_code tex_token_input_code /* hm */
 
 typedef enum some_item_codes {
     lastpenalty_code,           /*tex |\lastpenalty| */
@@ -567,7 +569,7 @@ typedef enum some_item_codes {
     right_margin_kern_code,     /*tex |\rightmarginkern| */
     par_shape_length_code,      /*tex |\parshapelength| */
     par_shape_indent_code,      /*tex |\parshapeindent| */
-    par_shape_dimen_code,       /*tex |\parshapedimen| */
+    par_shape_dimension_code,   /*tex |\parshapedimen| */
     glue_stretch_code,          /*tex |\gluestretch| */
     glue_shrink_code,           /*tex |\glueshrink| */
     mu_to_glue_code,            /*tex |\mutoglue| */
@@ -591,6 +593,7 @@ typedef enum some_item_codes {
     last_left_class_code,
     last_right_class_code,
     last_atom_class_code,
+    nested_loop_iterator_code,
     previous_loop_iterator_code,
     current_loop_iterator_code,
     current_loop_nesting_code,
@@ -616,11 +619,11 @@ typedef enum font_property_codes {
     font_rp_code,
     font_ef_code,
     font_cf_code,
-    font_dimen_code,
-    scaled_font_dimen_code,
+    font_dimension_code,
+    scaled_font_dimension_code,
 } font_property_codes;
 
-# define last_font_property_code scaled_font_dimen_code
+# define last_font_property_code scaled_font_dimension_code
 
 typedef enum box_property_codes {
     box_width_code,
@@ -717,7 +720,7 @@ typedef enum shorthand_def_codes {
     attribute_def_code,   /*tex |\attributedef| */
     dimen_def_code,       /*tex |\dimendef| */
     skip_def_code,        /*tex |\skipdef| */
-    mu_skip_def_code,     /*tex |\muskipdef| */
+    muskip_def_code,      /*tex |\muskipdef| */
     toks_def_code,        /*tex |\toksdef| */
     lua_def_code,         /*tex |\luadef| */
     integer_def_code,
@@ -781,9 +784,9 @@ typedef enum the_codes {
 typedef enum expand_after_codes {
     expand_after_code,
     expand_unless_code,
-    future_expand_code,
-    future_expand_is_code,      /*tex nicer than: future_expand_ignore_spaces_code */
-    future_expand_is_ap_code,   /*tex nicer than: future_expand_ignore_spaces_and_pars_code */
+    future_expand_code,       /*tex |token,yes,no|: nicer than future_expand_keep_space_when_no_match*/
+    future_expand_is_code,    /*tex |token,yes,no|: nicer than future_expand_ignore_spaces_code */
+    future_expand_is_ap_code, /*tex |token,yes,no|: nicer than future_expand_ignore_spaces_and_pars_code */
  /* expand_after_2_code, */
  /* expand_after_3_code, */
     expand_after_spaces_code,
@@ -803,14 +806,16 @@ typedef enum expand_after_codes {
 
 typedef enum after_something_codes {
     after_group_code,
-    after_assignment_code,
-    at_end_of_group_code,
     after_grouped_code,
+    after_assignment_code,
     after_assigned_code,
+    at_end_of_group_code,
     at_end_of_grouped_code,
+    at_end_of_file_code,
+    at_end_of_filed_code,
 } after_something_codes;
 
-# define last_after_something_code at_end_of_grouped_code
+# define last_after_something_code at_end_of_filed_code
 
 typedef enum begin_group_codes {
     semi_simple_group_code,
@@ -837,9 +842,12 @@ typedef enum local_control_codes {
     local_control_repeat_code,
     expanded_repeat_code,
     unexpanded_repeat_code,
+    local_control_endless_code,
+    expanded_endless_code,
+    unexpanded_endless_code,
 } local_control_codes;
 
-# define last_local_control_code unexpanded_repeat_code
+# define last_local_control_code unexpanded_endless_code
 
 /*tex
 

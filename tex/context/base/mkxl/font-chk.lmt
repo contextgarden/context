@@ -455,6 +455,81 @@ local visualspace_specification = {
 registerotffeature(visualspace_specification)
 registerafmfeature(visualspace_specification)
 
+-- local function adddots(tfmdata,unicode)
+--     if not tfmdata.characters[unicode] then
+--         local period   = tfmdata.characters[0x2E]
+--         local original = period.height
+--         local height   = tfmdata.parameters.xheight/2
+--         tfmdata.characters[unicode] = {
+--             width    = period.width,
+--             height   = height + original,
+--             unicode  = unicode,
+--             commands = { { "offset", 0, height, 0x2E } },
+--         }
+--    end
+-- end
+--
+-- local function addpunctuationdot(tfmdata)
+--     adddots(tfmdata,0x2027) -- hyphenation period : in lucida dejavusans xcharter
+--     adddots(tfmdata,0x2E31) -- word separator middle dot
+-- end
+--
+-- local punctuationdot_specification = {
+--     name        = "extradots",
+--     description = "extra dots",
+--     default     = true,
+--     manipulators = {
+--         base = addpunctuationdot,
+--         node = addpunctuationdot,
+--     }
+-- }
+--
+-- registerotffeature(punctuationdot_specification)
+-- registerafmfeature(punctuationdot_specification)
+
+-- local function fixdot(tfmdata)
+--     if tfmdata.characters[0xB7] then
+--         local period   = tfmdata.characters[0x2E]
+--         local self     = tfmdata.characters[0xB7]
+--         local original = period.height
+--         local height   = tfmdata.parameters.xheight/2
+--         self.advance  = self.width
+--         self.width    = period.width
+--         self.height   = height + original
+--         self.commands = { { "offset", 0, height, 0x2E } }
+--    end
+-- end
+
+local function fixdot(tfmdata)
+    local self   = tfmdata.characters[0xB7]
+    local period = tfmdata.characters[0x2E]
+    local hyphen = tfmdata.characters[0x2D]
+    if self and period and hyphen then
+        local swidth  = self.width
+        local pwidth  = period.width
+        if swidth > pwidth then -- maybe also ht here
+            local sheight = self.height
+            local hheight = hyphen.height
+            self.advance  = swidth
+            self.width    = pwidth
+            self.commands = { { "offset", (pwidth-swidth)/2, (hheight-sheight)/2, 0xB7 } }
+        end
+   end
+end
+
+local dot_specification = {
+    name        = "fixdot",
+    description = "fix dot",
+    default     = true,
+    manipulators = {
+        base = fixdot,
+        node = fixdot,
+    }
+}
+
+registerotffeature(dot_specification)
+registerafmfeature(dot_specification)
+
 do
 
 

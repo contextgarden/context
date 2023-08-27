@@ -6,7 +6,9 @@
 
 \environment musings-style
 
-\definetyping[narrowtyping][style=\ttx]
+\ifdefined\startnarrowtyping \else
+    \definetyping[narrowtyping][style=\ttx]
+\fi
 
 \startchapter[title={About what \CONTEXT\ isn't}]
 
@@ -545,6 +547,13 @@ reason for its existence. Like more assumptions about \CONTEXT\ it demonstrates
 that those coming up with answers and remarks like that probably missed something
 in assessing \CONTEXT. Just let users find out themselves what suits best (and
 for some that actually might be plain \TEX).
+
+Let me make on thing clear. If you look at the documents that describe the
+development of \TEX, \METAFONT\ and the related fonts, you can only awe at what
+was done on hardware that doesn't come close to what we hold now in the palm of
+our hand. And it was done in a relative short time span. The fact that plain
+\TEX\ ran on it the way it did is amazing. Anyone who considers criticizing \TEX\
+and plain \TEX\ should think (more than) twice.
 
 \stopsection
 

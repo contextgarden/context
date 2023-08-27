@@ -4275,8 +4275,8 @@ static mp_node mp_do_get_attribute_head (MP mp, mp_value_node A)
 
 static mp_node mp_do_get_subscr_head (MP mp, mp_value_node A)
 {
-    return A->subscr_head;
     (void) mp;
+    return A->subscr_head;
 }
 
 static void mp_do_set_attribute_head (MP mp, mp_value_node A, mp_node d)
@@ -6179,7 +6179,10 @@ if (mp_right_type(p) >= mp_given_knot) {
     while ((mp_left_type(q) == mp_open_knot) && (mp_right_type(q) == mp_open_knot)) {
         q = mp_next_knot(q);
     }
-    @<Fill in the control information between consecutive breakpoints |p| and |q|@>
+    /*tex Some variables are defined, and we want to avoid compiler warnings. */
+    {
+        @<Fill in the control information between consecutive breakpoints |p| and |q|@>
+    }
 } else if (mp_right_type(p) == mp_endpoint_knot) {
     @<Give reasonable values for the unused control points between |p| and~|q|@>
 }
@@ -7268,8 +7271,8 @@ solving path choices
 
 static int out_of_range (MP mp, double a)
 {
-    (void) mp;
     mp_number t;
+    (void) mp;
     new_number_from_double(mp, t, fabs(a));
     if (number_greaterequal(t, inf_t)) {
         free_number(t);
@@ -11048,13 +11051,13 @@ static void mp_box_ends (MP mp, mp_knot p, mp_knot pp, mp_edge_header_node h)
         mp_number d;        /* a factor for adjusting the length of |(dx,dy)| */
         mp_number z;        /* a coordinate being tested against the bounding box */
         mp_number xx, yy;   /* the extreme pen vertex in the |(dx,dy)| direction */
+        mp_knot q = mp_next_knot(p); /* a knot node adjacent to knot |p| */
         new_fraction(dx);
         new_fraction(dy);
         new_number(xx);
         new_number(yy);
         new_number(z);
         new_number(d);
-        mp_knot q = mp_next_knot(p); /* a knot node adjacent to knot |p| */
         while (1) {
             @<Make |(dx,dy)| the final direction for the path segment from |q| to~|p|; set~|d|@>
             pyth_add(d, dx, dy);
@@ -14020,8 +14023,8 @@ structures have to match.
 @c
 inline static mp_node do_get_dep_info (MP mp, mp_value_node p)
 {
-    (void) mp;
     mp_node d;
+    (void) mp;
     d = p->parent; /* half of the |value| field in a |dependent| variable */
     return d;
 }
@@ -15134,8 +15137,8 @@ static void mp_ring_delete (MP mp, mp_node p);
 @ @c
 void mp_ring_delete (MP mp, mp_node p)
 {
-    (void) mp;
     mp_node q = mp_get_value_node(p);
+    (void) mp;
     if (q != NULL && q != p) {
         while (mp_get_value_node(q) != p) {
             q = mp_get_value_node(q);
@@ -17995,9 +17998,9 @@ static void mp_scan_text_arg (MP mp, mp_sym l_delim, mp_sym r_delim);
 void mp_scan_text_arg (MP mp, mp_sym l_delim, mp_sym r_delim)
 {
     int balance = 1; /* excess of |l_delim| over |r_delim| */
+    mp_node p = mp->hold_head; /* list tail */
     mp->warning_info = l_delim;
     mp->scanner_status = mp_absorbing_state;
-    mp_node p = mp->hold_head; /* list tail */
     mp->hold_head->link = NULL;
     while (1) {
         get_t_next(mp);
@@ -21445,8 +21448,7 @@ static void mp_scan_expression (MP mp)
         if (cur_cmd >= mp_min_expression_command) {
             if ((cur_cmd != mp_equals_command) || (my_var_flag != mp_assignment_command)) {
                 mp_node cc = NULL;
-                mp_sym mac_name;   /* token defined with |tertiarydef| */
-                mac_name = NULL;
+                mp_sym mac_name = NULL;   /* token defined with |tertiarydef| */
                 mp_node p = mp_stash_cur_exp(mp);
                 int d = cur_cmd;
                 int c = cur_mod;
@@ -25295,9 +25297,9 @@ static void mp_do_binary (MP mp, mp_node p, int c)
                 mp_pair_to_path(mp);
             }
             if ((mp->cur_exp.type == mp_path_type) && p->type == mp_pair_type) {
+                mp_node q = mp_get_value_node(p);
                 memset(&new_expr, 0, sizeof(mp_value));
                 new_number(new_expr.data.n);
-                mp_node q = mp_get_value_node(p);
                 mp_get_subarc_length(mp, &new_expr.data.n, cur_exp_knot, &(mp_get_value_number(mp_x_part(q))), &(mp_get_value_number(mp_y_part(q))));
                 mp_flush_cur_exp(mp, new_expr);
             } else {

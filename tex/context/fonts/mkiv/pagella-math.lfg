@@ -58,7 +58,18 @@ return {
                         { source = "uppercasegreekbold",   target = "uppercasegreekbold" },
                         { source = "digitsnormal",         target = "digitsnormal" },
                         --
-                        { source = { first = 0x02100, last = 0x02BFF } }, -- symbols
+                        -- either
+                        --
+                     -- { source = { first = 0x0007B, last = 0x0007D } }, -- { }
+                     -- { source = { first = 0x0005B, last = 0x0005D } }, -- [ ]
+                     -- { source = { first = 0x00028, last = 0x00029 } }, -- ( )
+                     -- { source = { first = 0x02100, last = 0x02BFF } }, -- symbols -- has snippets of {} () []
+                        --
+                        -- or (probably even more)
+                        --
+                        { source = { first = 0x02100, last = 0x0239A } }, -- symbols -- has snippets of {} () []
+                        { source = { first = 0x023B5, last = 0x02BFF } }, -- symbols -- has snippets of {} () []
+                        --
                         { source = { first = 0x1D400, last = 0x1D7FF } }, -- various alphabets
                     },
                 },

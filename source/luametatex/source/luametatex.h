@@ -98,7 +98,7 @@
 # define luametatex_revision         10
 # define luametatex_release          10
 # define luametatex_version_string   "2.10.10"
-# define luametatex_development_id   20230816
+# define luametatex_development_id   20230824
 
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
@@ -154,6 +154,7 @@ extern version_state_info lmt_version_state;
 # include <time.h>
 # include <signal.h>
 # include <sys/stat.h>
+# include <stdbool.h>
 
 # ifdef _WIN32
     # include <windows.h>

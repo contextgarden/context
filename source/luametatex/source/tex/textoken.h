@@ -95,8 +95,8 @@ typedef enum catcode_table_presets {
 */
 
 typedef struct token_state_info {
-    halfword  null_list;         /*tex permanently empty list */
-    int       in_lua_escape;
+    halfword  null_list;     /*tex permanently empty list */
+    int       in_lua_escape; /*tex obsolete, controlled differently */
     int       force_eof;
     int       luacstrings;
     /*tex These are pseudo constants, their value depends on the number of primitives etc. */
@@ -297,6 +297,12 @@ typedef enum macro_preamble_states {
 # define G_token_l               (letter_token + 'G') 
 # define G_token_o               (other_token  + 'G')
 
+# define H_token_l               (letter_token + 'H') 
+# define H_token_o               (other_token  + 'H')
+
+# define I_token_l               (letter_token + 'I') 
+# define I_token_o               (other_token  + 'I')
+
 # define K_token_l               (letter_token + 'K') 
 # define K_token_o               (other_token  + 'K')
 
@@ -305,6 +311,9 @@ typedef enum macro_preamble_states {
 
 # define M_token_l               (letter_token + 'M') 
 # define M_token_o               (other_token  + 'M')
+
+# define N_token_l               (letter_token + 'N') 
+# define N_token_o               (other_token  + 'N')
 
 # define P_token_l               (letter_token + 'P')  /*tex the largest special hex digit */
 # define P_token_o               (other_token  + 'P')
@@ -315,11 +324,27 @@ typedef enum macro_preamble_states {
 # define S_token_l               (letter_token + 'S') 
 # define S_token_o               (other_token  + 'S')
 
+# define T_token_l               (letter_token + 'T') 
+# define T_token_o               (other_token  + 'T')
+
 # define X_token_l               (letter_token + 'X')
 # define X_token_o               (other_token  + 'X')
 
+# define Z_token_l               (letter_token + 'Z')
+# define Z_token_o               (other_token  + 'Z')
+
 # define at_token_l              (letter_token + '@')
 # define at_token_o              (other_token  + '@')
+
+# define hash_token_o            (other_token  + '#')
+# define space_token_o           (other_token  + ' ')
+# define tab_token_o             (other_token  + '\t')
+# define newline_token_o         (other_token  + '\n')
+# define return_token_o          (other_token  + '\r')
+# define backslash_token_o       (other_token  + '\\')
+
+//define nbsp_token_o            (other_token  + 0x202F)
+//define zws_token_o             (other_token  + 0x200B)
 
 # define match_visualizer    '#'
 # define match_spacer        '*'  /* ignore spaces */
@@ -430,20 +455,20 @@ extern void       tex_run_combine_the_toks        (void);
 extern void       tex_run_convert_tokens          (halfword code);
 extern strnumber  tex_the_convert_string          (halfword c, int i);
 extern strnumber  tex_tokens_to_string            (halfword p);
-extern char      *tex_tokenlist_to_tstring        (int p, int inhibit_par, int *siz, int skip, int nospace, int strip, int wipe);
+extern char      *tex_tokenlist_to_tstring        (int p, int inhibit_par, int *siz, int skip, int nospace, int strip, int wipe, int single);
 
-extern halfword   tex_get_tex_dimen_register      (int j, int internal);
+extern halfword   tex_get_tex_dimension_register  (int j, int internal);
 extern halfword   tex_get_tex_skip_register       (int j, int internal);
-extern halfword   tex_get_tex_mu_skip_register    (int j, int internal);
+extern halfword   tex_get_tex_muskip_register     (int j, int internal);
 extern halfword   tex_get_tex_count_register      (int j, int internal);
 extern halfword   tex_get_tex_posit_register      (int j, int internal);
 extern halfword   tex_get_tex_attribute_register  (int j, int internal);
 extern halfword   tex_get_tex_box_register        (int j, int internal);
 extern halfword   tex_get_tex_toks_register       (int j, int internal);
 
-extern void       tex_set_tex_dimen_register      (int j, halfword v, int flags, int internal);
+extern void       tex_set_tex_dimension_register  (int j, halfword v, int flags, int internal);
 extern void       tex_set_tex_skip_register       (int j, halfword v, int flags, int internal);
-extern void       tex_set_tex_mu_skip_register    (int j, halfword v, int flags, int internal);
+extern void       tex_set_tex_muskip_register     (int j, halfword v, int flags, int internal);
 extern void       tex_set_tex_count_register      (int j, halfword v, int flags, int internal);
 extern void       tex_set_tex_posit_register      (int j, halfword v, int flags, int internal);
 extern void       tex_set_tex_attribute_register  (int j, halfword v, int flags, int internal);
@@ -457,6 +482,11 @@ extern halfword   tex_copy_token_list             (halfword h, halfword *t);
 extern halfword   tex_parse_str_to_tok            (halfword head, halfword *tail, halfword ct, const char *str, size_t lstr, int option);
 
 static inline int tex_valid_token                 (int t) { return ((t >= 0) && (t <= (int) lmt_token_memory_state.tokens_data.top)); }
+
+extern halfword   tex_get_at_end_of_file          (void);
+extern void       tex_set_at_end_of_file          (halfword h);
+
+inline halfword   tex_tail_of_token_list          (halfword t) { while (token_link(t)) { t = token_link(t); } return t; }
 
 /*tex 
 

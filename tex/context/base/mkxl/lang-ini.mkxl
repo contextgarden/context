@@ -446,7 +446,8 @@
   + \collapsehyphenationcode          % collapse -- and ---
 \relax
 
-\hccode"002D "002D
+\hccode"002D "002D % hyphen
+\hccode"00B7 "00B7 % centered text period (used in some languages)
 
 \permanent\protected\def\keephyphensequences
   {\hccode"2010 \zerocount

@@ -646,7 +646,7 @@ void tex_print_uhex(long long n)
     tex_print_hex(n);
 }
 
-void tex_print_xhex(long long n)
+static void tex_print_xhex(long long n)
 {
     tex_print_char('"');
     /* todo: loop */
@@ -1042,7 +1042,7 @@ void tex_print_token_list(const char *s, halfword p)
 
 /*tex This prints dimensions of a rule node. */
 
-void tex_print_rule_dimen(scaled d)
+void tex_print_rule_dimension(scaled d)
 {
     if (d == null_flag) {
         tex_print_char('*');
@@ -1340,7 +1340,7 @@ const char *tex_print_format_args(const char *format, va_list args)
                         case 'R':
                             {
                                 halfword d = va_arg(args, int);
-                                tex_print_rule_dimen(d);
+                                tex_print_rule_dimension(d);
                                 break;
                             }
                         case 'S':

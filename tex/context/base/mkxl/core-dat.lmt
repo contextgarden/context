@@ -170,8 +170,8 @@ local cache = table.setmetatableindex(function(t,k)
     return v
 end)
 
-local function datasetvariable(name,tag,key,cache)
-    local t = (cache or collected)[name]
+local function datasetvariable(jobname,name,tag,key)
+    local t = (jobname ~= "" and cache[jobname] or collected)[name]
     if t == nil then
         if trace_datasets then
             report_dataset("error: unknown dataset, name %a, tag %a, not passed to tex",name) -- no tag
@@ -195,8 +195,9 @@ local function datasetvariable(name,tag,key,cache)
     end
 end
 
-local function datasetvariablefromjob(jobnname,name,tag,key)
-    datasetvariable(name,tag,key,cache[jobnname])
+local function datasetsize(jobname,name)
+    local t = (jobname ~= "" and cache[jobname] or collected)[name]
+    context(t and type(t) == "table" and #t or 0)
 end
 
 implement {
@@ -215,11 +216,12 @@ implement {
 implement {
     name      = "datasetvariable",
     actions   = datasetvariable,
-    arguments = "3 strings",
+    arguments = "4 strings",
 }
 
+
 implement {
-    name      = "datasetvariablefromjob",
-    arguments = { "string", "string", "string", "string" },
-    actions   = datasetvariablefromjob
+    name      = "datasetsize",
+    arguments = "2 strings",
+    actions   = datasetsize,
 }

@@ -1341,11 +1341,15 @@ expressions.print = function(...)
     return true
 end
 
-expressions.find      = find
-expressions.upper     = upper
-expressions.lower     = lower
-expressions.number    = tonumber
-expressions.boolean   = toboolean
+expressions.find = function(str,...)
+    return str and find(str,...)
+end
+
+expressions.upper = function(str) return str and upper(str) or "" end -- todo: utf
+expressions.lower = function(str) return str and lower(str) or "" end -- todo: utf
+
+expressions.number  = tonumber
+expressions.boolean = toboolean
 
 function expressions.contains(str,pattern)
     local t = type(str)

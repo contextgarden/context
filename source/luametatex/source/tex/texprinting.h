@@ -82,7 +82,7 @@ extern void        tex_print_font_specifier   (halfword e);                    /
 extern void        tex_print_font             (halfword f);
 extern void        tex_print_char_identifier  (halfword c);
 extern void        tex_print_token_list       (const char *s, halfword p);     /*tex prints token list data in braces */
-extern void        tex_print_rule_dimen       (scaled d);                      /*tex prints dimension in rule node */
+extern void        tex_print_rule_dimension   (scaled d);                      /*tex prints dimension in rule node */
 extern void        tex_print_group            (int e);
 extern void        tex_print_format           (const char *format, ...);       /*tex similar to the one we use for errors */
 extern const char *tex_print_format_args      (const char *format, va_list args);

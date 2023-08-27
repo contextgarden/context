@@ -745,7 +745,7 @@ local function copy_glyph(main,target,original,unicode,slot)
             kerns     = olddata.kerns,
             mathkerns = olddata.mathkerns,
             tounicode = olddata.tounicode,
--- smaller   = olddata.smaller,
+         -- smaller   = olddata.smaller,
             commands  = { slotcommand[slot][unicode] },
         }
         local glyphdata = newdata

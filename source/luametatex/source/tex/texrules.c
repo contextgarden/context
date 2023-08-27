@@ -41,7 +41,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
             case 'a': case 'A':
                 if (tex_scan_mandate_keyword("attr", 1)) {
                     halfword i = tex_scan_attribute_register_number();
-                    halfword v = tex_scan_int(1, NULL);
+                    halfword v = tex_scan_integer(1, NULL);
                     if (eq_value(register_attribute_location(i)) != v) {
                         if (attr) {
                             attr = tex_patch_attribute_list(attr, i, v);
@@ -53,23 +53,23 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                 break;
             case 'w': case 'W':
                 if (tex_scan_mandate_keyword("width", 1)) {
-                    rule_width(rule) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    rule_width(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case 'h': case 'H':
                 if (tex_scan_mandate_keyword("height", 1)) {
-                    rule_height(rule) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    rule_height(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case 'd': case 'D':
                 if (tex_scan_mandate_keyword("depth", 1)) {
-                    rule_depth(rule) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    rule_depth(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case 'l': case 'L':
                 if (node_subtype(rule) != virtual_rule_subtype) { 
                     if (tex_scan_mandate_keyword("left", 1)) {
-                        rule_left(rule) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                        rule_left(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
                     }
                     break;
                 } else {
@@ -78,7 +78,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
             case 'r': case 'R':
                 if (node_subtype(rule) != virtual_rule_subtype) { 
                     if (tex_scan_mandate_keyword("right", 1)) {
-                        rule_right(rule) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                        rule_right(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
                     }
                     break;
                 } else {
@@ -87,7 +87,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
             case 't': case 'T': /* just because it's nicer */
                 if (node_subtype(rule) != virtual_rule_subtype) { 
                     if (tex_scan_mandate_keyword("top", 1)) {
-                        rule_left(rule) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                        rule_left(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
                     }
                     break;
                 } else {
@@ -96,7 +96,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
             case 'b': case 'B': /* just because it's nicer */
                 if (node_subtype(rule) != virtual_rule_subtype) { 
                     if (tex_scan_mandate_keyword("bottom", 1)) {
-                        rule_right(rule) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                        rule_right(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
                     }
                     break;
                 } else {
@@ -104,12 +104,12 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                 }
             case 'x': case 'X':
                 if (tex_scan_mandate_keyword("xoffset", 1)) {
-                    rule_x_offset(rule) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    rule_x_offset(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case 'y': case 'Y':
                 if (tex_scan_mandate_keyword("yoffset", 1)) {
-                    rule_y_offset(rule) = tex_scan_dimen(0, 0, 0, 0, NULL);
+                    rule_y_offset(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case 'f': case 'F':

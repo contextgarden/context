@@ -955,8 +955,32 @@ implement {
         local command = context[scancsname()]
         local pattern = gsub(scanstring(),"\\.",escape)
         local input   = gsub(scanstring(),"\\.",escape)
-        for a, b, c, d, e, f, g, h, i in gmatch(input,pattern) do
-            command(a, b or "", c or "", d or "", e or "", f or "", g or "", h or "", i or "")
+        for a, b, c, d, e, f, g, h, i, j, k, l, m, n in gmatch(input,pattern) do
+            command(
+                a, b or "", c or "", d or "", e or "", f or "", g or "", h or "", i or "", -- #1 .. #9
+                j or "", k or "", l or "", m or "", n or "" -- #A .. #E
+            )
+        end
+        return none_code
+    end,
+}
+
+implement {
+    name    = "ctxluamatchfile",
+    public  = true,
+    usage   = "value",
+    actions = function()
+        local command  = context[scancsname()]
+        local pattern  = gsub(scanstring(),"\\.",escape)
+        local filename = scanstring()
+        if filename ~= "" then
+            local input = gsub(io.loaddata(filename),"\\.",escape)
+            for a, b, c, d, e, f, g, h, i, j, k, l, m, n in gmatch(input,pattern) do
+                command(
+                    a, b or "", c or "", d or "", e or "", f or "", g or "", h or "", i or "", -- #1 .. #9
+                    j or "", k or "", l or "", m or "", n or "" -- #A .. #E
+                )
+            end
         end
         return none_code
     end,

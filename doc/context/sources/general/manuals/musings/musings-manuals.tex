@@ -1,0 +1,236 @@
+% language=us runpath=texruns:manuals/musings
+
+% \showfontkerns
+
+% \setupalign[granular]
+
+\startcomponent musings-manuals
+
+\environment musings-style
+
+\startchapter[title={About manuals}]
+
+\startsection[title={Introduction}]
+
+I'm always puzzled when I read that someone wonders if \CONTEXT\ is still up to
+date or maintained because some manual has a timestamp of a decade ago. I'm also
+puzzled by some rants you can run into when searching the web. In the next few
+paragraphs I'll comment on this.
+
+\stopsection
+
+\startsection[title={Stability}]
+
+Say that you're an enthusiastic user of console commands like \type {ls} (\type
+{dir}), \type {cp} (\type {copy}) or maybe \type {ssh}, \type {rsync}, \type
+{curl}. How often do you consult a manual on how they evolve? And say that you,
+for some reason, do consult a manual, there is a good change that it is
+pretty old. Does that mean that the commands are obsolete? The binaries probably
+get fixed for bugs but the interface stays the same, which is what you expect.
+Every time we generate a zip for the \CONTEXT\ distribution, the related website
+also gets generated, using a bunch of \XML\ files that get transformed to \HTML\
+using \XSLT\ and a pretty ancient version of \type {xsltproc} (why should I
+update). I never check for a new manual as it keeps doing the job. And additional
+manuals and reports get added.
+
+So, once some functionality is stable, and a lot of macro code in \CONTEXT\ is
+just that, there is no need to update a manual! Putting a new time stamp on it is
+basically fake updating. And often the more introductionary kind of manuals don't
+need to be updated at all, apart from maybe cultural changes that demand a
+(political correct) update. Them being a bit old and not being updated is
+actually a good thing as it signals stability.
+
+It is worth mentioning that the \CONTEXT\ distribution is not the only source of
+information. There are manuals written by others and there is the Wiki. All is
+the work of volunteers and updating all that depends on how much time one can
+allocate.
+
+\stopsection
+
+\startsection[title={Excuses}]
+
+It is a fact that \CONTEXT\ evolves. New functionality gets added and some
+mechanism get extended. Often these are described in dedicated manuals or
+articles that end up in collections, and there are plenty of them in the
+distribution. For some reason those complaining about a beginners manual with an
+old time stamp don't check if there is more, and there is quite some more! Don't
+only look at the \CONTEXT\ garden (the wiki) but also keep an eye on what gets
+distributed. Some users are very good in track of what gets added, because
+sometimes I get fixes for typos send within a few hours after uploading a zip.
+
+We appreciate that other users point out that writing manuals takes time and that
+indeed our time is not without limits. If I could sit down and write manuals
+whole day, and it would get paid, I might do it. But it is a fact that
+development of \CONTEXT\ is not paid for at all. I can work on it in company time
+but much happens in spare time. Most development is a gamble on future use or
+done because we want to be complete or because code can be improved. So, writing
+a manual then closely relates to what we like doing: it determines the topics and
+priorities. If something gets explored and ends up in new functionality then that
+gets documented in the process. It is the fun factor that drives it. The same is
+true for \LUATEX\ development.
+
+So, we have as valid excuse that new manuals relate to (new) functionality and
+old ones stay as they are. Don Knuth remarks somewhere that writing a manual as
+part of the development is a good thing. We fully agree with that.
+
+\stopsection
+
+\startsection[title={Cutting edge}]
+
+Does an old manual indicate that nothing happens? Definitely not. Over a decade
+of \LUATEX\ development is closely related to \CONTEXT\ and there is plenty of
+reporting about that. Does that mean that we need to rewrite manuals? No,
+existing functionality remains. And of course users are free to come up with
+more detailed manuals (which they seldom do). Some developments get published
+in user group journals but we don't publish much about specific \CONTEXT\ features
+and usage because it's hard to do that for a diverse audience.
+
+Currently we have what is called \CONTEXT\ \MKXL\ (aka \LMTX), but we also have
+the prelude to that, \MKIV, and the frozen predecessor \MKII. Apart from changes in
+technology (most noticeably fonts and encodings) the functionality is accumulative:
+most old manuals (unless they are specialized into old school fonts for instance)
+apply to the latest greatest version.
+
+It is a misunderstanding that the development of \CONTEXT, \LUATEX\ and
+\LUAMETATEX\ is somehow funded by projects that we do. This is not true. We can
+apply both in projects but as we charge by the hour (or day) no customer ever
+sees development on the bill. Of course during a project we can gain on
+efficiency (so then development pays back) and because we know the system style
+writing is efficient too. In fact, in most cases our customers don't know or care
+what tool we use because tools are expected to be part of the deal. Most projects
+we can (and could) only do because we can use \CONTEXT\ and that is a side effect
+of the fact that we do develop beforehand. We're often the only technically
+and|/|or affordable way out. It's a chicken|-|egg issue: we have a tool and
+therefore get a project. We never get a projects where we can develop a tool. No
+one pays for \TEX\ development or at least no one ever came to us with specific
+\TEX\ related demands. It looks like the world takes it for granted that \TEX\ is
+just there. \footnote {There are a few subcomponents of \CONTEXT\ that were
+partially sponsored by users and we do have some support contracts that permit
+experiments and development.}
+
+The reason for \CONTEXT\ being cutting edge (in terms of \TEX) is that we like
+challenges, that users demand features that are interesting to explore and that
+we've been part of the \TEX\ scenery for a while now. We just like that.
+
+It's good to know that \CONTEXT\ was and is developed as a toolkit. We started
+long ago because we needed a way to quickly create and update reports of meetings
+that we chaired. Next we needed a way to efficiently produce high quality
+education materials (of various kind) and support maintenance of sets of related
+(quality assurance) manuals. We could have used wordstar, wordperfect or msword
+but liked the \TEX\ way much more. As said, most customers didn't even know or
+care what tool was used because the (often highly interactive \PDF) outcome
+mattered most. In fact, we would not be interested in this kind of work if we
+were forced to use clumsy tools, but for sure a lot can be done with those as
+well.
+
+\stopsection
+
+\startsection[title={Continuity}]
+
+Most development happens at \PRAGMA\ by me (Hans) with help from my two
+colleagues (Ton and Kees) and the community (Aditya, Alan, Mikael, Mojca, Luigi,
+Hraban, Taco, Thomas, Tomas, Willi, Wolfgang, and others). \footnote {More names
+could be here as I write this in 2022.} I won't mention those on the mailing list
+who contribute with ideas, testing and support, but they can't be missed. The
+biggest danger for continuity is a polluted code base where everyone just pushed
+code into a repository. So this is closely guarded. A user patch might work well
+for that user but can break something else.
+
+With \TEX\ you need to keep in mind that once a solution works there is no need
+to update code or manuals. As long as there is a working \LUATEX\ (\LUAMETATEX)
+binary you're fine. Maybe if some specific fonts are used, a filename might need
+to be adapted.
+
+An example. When we added a new \XML\ subsystem to \CONTEXT\ \MKIV\ we knew that
+some day we could use it. We now uses it in a few projects and I'm pretty sure
+that we would not do these projects otherwise as it would demand writing quite
+complex \XSLT\ style sheets that then would have to be applied to thousands of
+files per run. To some extend what is available in \CONTEXT\ sort of drives the
+kind of work you look for. That said: if you consider using \CONTEXT\ for simple
+or complex documents, either of not in a collection, either or not using \TEX\ or
+\XML\ input you can be assured that this will work (and might even get better)
+because we use it ourselves.
+
+If you want to get an idea about development, just look at the (five) documents
+that describe the development of \LUATEX\ (\LUAMETATEX). Locating them in the
+distribution is a good opportunity to explore the documents. They will show you
+what happened the last decade(s) and give you some trust in \CONTEXT. Or come to
+a \CONTEXT\ meeting and meet those involved.
+
+\stopsection
+
+% \startsection[title={Stay away}]
+%
+% There are reasons why you won't find us (me) on some social media. First of all
+% we like using the mailing list. It puts some time between what one thinks or
+% wants to ask and actually getting it out in the open. After all, one might regret
+% a too spontaneous complain or even rant, so it sort of protects subscribers.
+%
+% It is not that hard to search the web (say Reddit) and find someone complaining
+% about something \TEX\ (or \CONTEXT) related, including \type {f**ck} kind of
+% wording. If you're in that category, please stay away from \CONTEXT\ or try to
+% constrain yourself. It won't trigger help. Why on earth does one rant about a
+% system that one doesn't like unless maybe one is enforced to use it. We prefer 10
+% out of 10000 \TEX\ users using \CONTEXT\ over 1000 of which 990 are unhappy: use
+% another macro package and be part of the possible unhappy crowd there. We're not
+% selling a product, we're sharing a potential useful tool! Also keep in mind that
+% (as I know a bit about \TEX\ and its ecosystem) it would be very easy for me to
+% counter you if I really wanted that; it might make you look ridiculous.
+%
+% That said, we see no benefit in being on Facebook. I never look for something
+% there myself I'm too unfamiliar with it, I have nothing to share and and don't
+% look forward to keeping something up to date. There is no need for an instant
+% news channel on Whatsapp, Instagram, Telegram, Tiktok or other media that are
+% driven by advertisements and filtering user data. We could post tutorials on
+% YouTube but don't. It is already bad enough that I have to endure advertisements
+% myself, let alone that users get bombarded by unrelated crap. We could have a
+% fancy website and try to sell \CONTEXT\ \quote {professional} or present some
+% \quote {plans}, but we like to keep it simple: the site is generated when we push
+% an update and has been for decades so little work is involved in that. We don't
+% keep statistics, let alone have trackers. I see no benefit in it and I don't
+% like to waste time on that either.
+%
+% We are not on Stack Exchange but other \CONTEXT\ developers post very nice
+% \CONTEXT\ answers there. Personally I just don't like a system with likes, votes,
+% counters and somewhat persistent old (sometimes confusing) stuff. But I'm
+% thankful for others who can deal with it.
+%
+% We could have a Patreon account but that's not how we work here and from seeing
+% how it is used it would make me feel uncomfortable anyway. In a similar fashion
+% we don't see benefits in commercializing the Github repository. Those who need
+% support or and want to support development can find us if they want to.
+%
+% We have always participated in \TEX\ meetings and publish in use group journals
+% about developments and such. We also have always been pretty active in the
+% community and like it there. Just stay away from it when ranting is all you can
+% contribute.
+%
+% \stopsection
+
+\startsection[title={Closing remark}]
+
+So next time someone asks if \CONTEXT\ is maintained because some old manual
+stays around, return the question if frequently updated manuals are a sign of
+stability. Also ask if someone looked a bit in the documentation tree. The oldest
+manual in the \TEX\ world is the \TEX book that describes the oldest stable set
+of macros: plain \TEX. There are happy users out there who love that stability.
+If it were not for the wonderful personality of Don Knuth this program would
+already been forgotten. I think that long term stability and unchanged code and
+manuals are something that we need to cherish and get accustomed to, which is not
+easy in a time when a phone and its operating system are outdated as soon as you
+unbox it. It's also not easy in a time of instant communication, more and more
+confused by what is called artificial intelligent mumbling, but that's for
+another wrapup.
+
+\stopsection
+
+\startlines
+Hans Hagen
+Hasselt NL
+
+(uncorrected so there's something left to complain)
+\stoplines
+
+\stopchapter
+
+\stopcomponent

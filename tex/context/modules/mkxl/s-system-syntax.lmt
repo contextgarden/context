@@ -1,0 +1,2095 @@
+local setmetatableindex, sortedhash, concat = table.setmetatableindex, table.sortedhash, table.concat
+local sub, gsub, count = string.sub, string.gsub, string.count
+local lpegmatch = lpeg.match
+
+local context = context
+
+local moduledata   = moduledata or { }
+moduledata.engine  = moduledata.engine or { }
+
+local primitives   = token.getprimitives()
+local commandnames = tokens.commands
+local origins      = tex.getprimitiveorigins()
+local commandhash  = { }
+local keywords     = setmetatableindex("number")
+
+for i=1,#primitives do
+    local p = primitives[i]
+    commandhash[p[3]] = p
+end
+
+local result = setmetatableindex(function(t,k)
+    local v = setmetatableindex(function(t,k)
+        local v = ""
+        t[k] = v
+        return v
+    end)
+    t[k]= v
+    return v
+end)
+
+local function TODO(t,k)
+    local v = "TODO"
+    t[k] = v
+    return v
+end
+
+local function newsyntax(t)
+    return setmetatableindex(t or { }, TODO)
+end
+
+local function newresult(t)
+    return t or { }
+end
+
+local syntax = setmetatableindex(function(t,k)
+    local v = newsyntax()
+    t[k]= v
+    return v
+end)
+
+local function equals(...)
+    local t = { ... }
+    table.insert(t,#t,"[=]")
+    return concat(t," ")
+end
+
+local function sequence(...)
+    return concat({ ... }," ")
+end
+
+local function optional(s)
+    return "[" .. s .. "]"
+end
+
+local function choice(t,...)
+    return "( " .. concat(type(t) == "table" and t or { t, ... }," | ") .. ")"
+end
+
+local function repeated(...)
+    return "n * ( " .. concat({ ... }," ") .. ")"
+end
+
+local function keyword(s)
+    keywords[s] = keywords[s] + 1
+    return s
+end
+
+local s_dimension     = "dimension"
+local s_integer       = "integer"
+local s_cardinal      = "cardinal"
+local s_index         = "index"
+local s_float         = "float"
+local s_glue          = "glue"
+local s_muglue        = "muglue"
+local s_tokens        = "{tokens}"
+local s_token         = "token"
+local s_toks          = "toks"
+local s_mathstyle     = "mathstyle"
+local s_mathchar      = "mathchar"
+local s_quantity      = "quantity"
+local s_delimiter     = "delimiter"
+local s_nucleus       = "nucleus"
+local s_box           = "box"
+local s_cs            = "cs"
+local s_mathparameter = "mathparameter"
+local s_filler        = "fi[n*l]"
+local s_fontchar      = s_integer
+local s_character     = "character"
+local s_font          = choice("font",s_integer)
+local s_mathtokens    = choice("mathatom",s_tokens)
+local s_filename      = choice("{filename}","filename")
+local s_boxreference  = choice(s_index,s_box)
+local s_number        = choice(s_integer,s_float)
+local s_family        = "family"
+local s_rule          = "rule"
+local s_glyph         = "glyph"
+
+local s_expression    = [==[tokens\relax]==]
+local s_conditional   = [==[\if...]==]
+local s_tokens_or     = [==[tokens\or]==]
+local s_tokens_relax  = [==[tokens\relax]==]
+local s_tokens_endcs  = [==[tokens\endcsname]==]
+local s_tokens_endlc  = [==[tokens\endlocalcontrol]==]
+local s_parameter_or  = [==[parameter\or]==]
+
+local c_tokens        = "tokens"
+
+local r_dimension     = { "", s_dimension }
+local r_glue          = { "", s_glue }
+local r_integer       = { "", s_integer }
+local r_muglue        = { "", s_muglue }
+local r_toks          = { "", s_toks }
+local r_tokens        = { "", c_tokens }
+
+local function setdefaultresult(syntax, value)
+    local default = { }
+    for k in next, syntax do
+        default[k] = value
+    end
+    return default
+end
+
+local function setsyntaxfromresult(t)
+    local s = newsyntax()
+    for k, v in next, t do
+        s[k] = v and concat(v," [=] ") or false
+    end
+    return s
+end
+
+local compares = {
+    [0x003C] = "less",
+    [0x003D] = "equal",
+    [0x003E] = "greater",
+    [0x0021] = "negate next",
+    [0x2208] = "element",
+    [0x2209] = "not element",
+    [0x2260] = "not equal",
+    [0x2264] = "not greater",
+    [0x2265] = "not less",
+    [0x2270] = "not greater",
+    [0x2271] = "not less",
+}
+
+moduledata.engine.compares = compares
+
+local s_comparison = table.sortedkeys(compares) for i=1,#s_comparison do s_comparison[i] = utf.char(s_comparison[i]) end
+
+local o_equal      = optional("=")
+local s_comparison = choice(s_comparison)
+local o_preamble   = optional("preamble")
+
+-- start of syntax specification
+
+syntax.accent = newsyntax {
+    accent = sequence(
+        optional(sequence(keyword("xoffset"),s_dimension)),
+        optional(sequence(keyword("yoffset"),s_dimension)),
+        s_integer,
+        s_character
+    )
+}
+
+syntax.alignmenttab = newsyntax {
+    aligntab = false,
+}
+
+syntax.aftersomething = newsyntax {
+    afterassigned   = s_tokens,
+    afterassignment = s_token,
+    aftergroup      = s_token,
+    aftergrouped    = s_tokens,
+    atendofgroup    = s_token,
+    atendofgrouped  = s_tokens,
+    atendoffile     = s_token,
+    atendoffiled    = sequence(optional(keyword("reverse")),s_tokens),
+}
+
+result.association = newresult {
+    associateunit = { s_cs, s_integer }
+}
+
+syntax.association = setsyntaxfromresult(result.association)
+
+
+syntax.begingroup = newsyntax {
+    begingroup       = false,
+    beginmathgroup   = false,
+    beginsimplegroup = false,
+}
+
+syntax.arithmic = newsyntax {
+    advance    = sequence(s_quantity,optional(keyword("by")),s_quantity),
+    divide     = sequence(s_quantity,optional(keyword("by")),s_quantity),
+    multiply   = sequence(s_quantity,optional(keyword("by")),s_quantity),
+    advanceby  = sequence(s_quantity,s_quantity),
+    divideby   = sequence(s_quantity,s_quantity),
+    multiplyby = sequence(s_quantity,s_quantity),
+}
+
+syntax.beginlocal = newsyntax {
+    beginlocalcontrol      = false,
+    localcontrol           = s_tokens_endlc,
+    localcontrolled        = s_tokens,
+    localcontrolledloop    = sequence(s_integer,s_integer,s_integer,s_tokens),
+    expandedloop           = sequence(s_integer,s_integer,s_integer,s_tokens),
+    unexpandedloop         = sequence(s_integer,s_integer,s_integer,s_tokens),
+    localcontrolledrepeat  = sequence(s_integer,s_tokens),
+    expandedrepeat         = sequence(s_integer,s_tokens),
+    unexpandedrepeat       = sequence(s_integer,s_tokens),
+    localcontrolledendless = s_tokens,
+    expandedendless        = s_tokens,
+    unexpandedendless      = s_tokens,
+}
+
+syntax.beginparagraph = newsyntax {
+    indent       = false,
+    noindent     = false,
+    parattribute = sequence(s_integer,o_equal,s_integer),
+    quitvmode    = false,
+    snapshotpar  = s_cardinal,
+    undent       = false,
+    wrapuppar    = sequence(optional(keyword("reverse")),s_tokens),
+}
+
+result.beginparagraph = newresult {
+    indent       = false,
+    noindent     = false,
+    parattribute = false,
+    quitvmode    = false,
+    snapshotpar  = r_integer,
+    undent       = false,
+    wrapuppar    = false,
+}
+
+syntax.boundary = newsyntax {
+    boundary           = sequence(o_equal,s_integer),
+    noboundary         = false,
+    mathboundary       = sequence(o_equal,s_integer),
+    optionalboundary   = sequence(o_equal,s_integer), -- linebreak optionals
+    pageboundary       = sequence(o_equal,s_integer),
+    protrusionboundary = sequence(o_equal,s_integer),
+    wordboundary       = false,
+}
+
+syntax.caseshift = newsyntax {
+    lowercase = s_tokens,
+    uppercase = s_tokens,
+}
+
+syntax.catcodetable = newsyntax {
+    initcatcodetable = s_integer,
+    savecatcodetable = s_integer,
+}
+
+syntax.charnumber = newsyntax {
+    char  = s_integer,
+    glyph = sequence(
+        optional(sequence(keyword("xoffset"),s_dimension)),
+        optional(sequence(keyword("yoffset"),s_dimension)),
+        optional(sequence(keyword("scale"),s_integer)),
+        optional(sequence(keyword("xscale"),s_integer)),
+        optional(sequence(keyword("yscale"),s_integer)),
+        optional(sequence(keyword("left"),s_dimension)),
+        optional(sequence(keyword("right"),s_dimension)),
+        optional(sequence(keyword("raise"),s_dimension)),
+        optional(sequence(keyword("options"),s_integer)),
+        optional(sequence(keyword("font"),s_integer)),
+        optional(sequence(keyword("id"),s_integer)),
+        s_integer
+    ),
+}
+
+syntax.combinetoks = newsyntax {
+    etoks    = sequence(s_toks,s_tokens),
+    etoksapp = sequence(s_toks,s_tokens),
+    etokspre = sequence(s_toks,s_tokens),
+    gtoksapp = sequence(s_toks,s_tokens),
+    gtokspre = sequence(s_toks,s_tokens),
+    toksapp  = sequence(s_toks,s_tokens),
+    tokspre  = sequence(s_toks,s_tokens),
+    xtoks    = sequence(s_toks,s_tokens),
+    xtoksapp = sequence(s_toks,s_tokens),
+    xtokspre = sequence(s_toks,s_tokens),
+}
+
+result.convert = newresult {
+    Uchar             = { s_integer, c_tokens },
+    csactive          = { s_token, c_tokens },
+    csstring          = { s_token, c_tokens },
+    detokened         = { choice(s_cs,s_tokens,s_toks,s_tok), c_tokens },
+    detokenized       = { s_tokens, c_tokens },
+    directlua         = { s_tokens, c_tokens },
+    expanded          = { s_tokens, c_tokens },
+    fontname          = { s_font, c_tokens },
+    fontspecifiedname = { s_font, c_tokens },
+    formatname        = { "", c_tokens },
+    jobname           = { "", c_tokens },
+    luabytecode       = { s_integer, c_tokens },
+    luaescapestring   = { s_tokens, c_tokens },
+    luafunction       = { s_integer, c_tokens },
+    luatexbanner      = { "", c_tokens },
+    meaning           = { s_token, c_tokens },
+    meaningasis       = { s_token, c_tokens },
+    meaningful        = { s_token, c_tokens },
+    meaningfull       = { s_token, c_tokens },
+    meaningles        = { s_token, c_tokens },
+    meaningless       = { s_token, c_tokens },
+    number            = { s_integer, c_tokens },
+    romannumeral      = { s_integer, c_tokens },
+    semiexpanded      = { s_tokens, c_tokens },
+    string            = { s_token, c_tokens },
+    todimension       = { s_dimension, c_tokens },
+    tohexadecimal     = { s_integer, c_tokens },
+    tointeger         = { s_integer, c_tokens },
+    tomathstyle       = { s_mathstyle, c_tokens },
+    toscaled          = { s_dimension, c_tokens },
+    tosparsedimension = { s_dimension, c_tokens },
+    tosparsescaled    = { s_dimension, c_tokens },
+}
+
+syntax.convert = newsyntax { }  for k in next, result.convert do syntax.convert[k] = "" end
+
+syntax.csname = newsyntax {
+    begincsname  = s_tokens_endcs,
+    csname       = s_tokens_endcs,
+    futurecsname = s_tokens_endcs,
+    lastnamedcs  = false,
+}
+
+syntax.def = newsyntax {
+    cdef       = sequence(s_cs,o_preamble, s_tokens),
+    cdefcsname = sequence(s_tokens_endcs,o_preamble, s_tokens),
+    def        = sequence(s_cs,o_preamble, s_tokens),
+    defcsname  = sequence(s_tokens_endcs,o_preamble, s_tokens),
+    edef       = sequence(s_cs,o_preamble, s_tokens),
+    edefcsname = sequence(s_tokens_endcs,o_preamble, s_tokens),
+    gdef       = sequence(s_cs,o_preamble, s_tokens),
+    gdefcsname = sequence(s_tokens_endcs,o_preamble, s_tokens),
+    xdef       = sequence(s_cs,o_preamble, s_tokens),
+    xdefcsname = sequence(s_tokens_endcs,o_preamble, s_tokens),
+}
+
+result.definecharcode = newresult {
+    Udelcode  = { s_integer, s_integer }, -- todo
+    Umathcode = { s_integer, s_integer }, -- todo
+    amcode    = { s_integer, s_integer },
+    catcode   = { s_integer, s_integer },
+    delcode   = { s_integer, s_integer }, -- todo
+    hccode    = { s_integer, s_integer },
+    hmcode    = { s_integer, s_integer },
+    lccode    = { s_integer, s_integer },
+    mathcode  = { s_integer, s_integer }, -- todo
+    sfcode    = { s_integer, s_integer },
+    uccode    = { s_integer, s_integer },
+}
+
+syntax.definecharcode = setsyntaxfromresult(result.definecharcode)
+
+syntax.definefamily = newsyntax {
+    scriptfont       = sequence(s_family,s_font),
+    scriptscriptfont = sequence(s_family,s_font),
+    textfont         = sequence(s_family,s_font),
+}
+
+result.definefamily = setdefaultresult(syntax.definefamily, { s_family, s_integer })
+
+syntax.definefont = newsyntax {
+    font = sequence(s_cs,s_filename,optional(choice(sequence("at",s_dimension),sequence("scaled",s_integer)))),
+}
+
+result.definefont = newresult {
+    font = r_tokens
+}
+
+syntax.delimiternumber = newsyntax {
+    delimiter  = s_integer,
+    Udelimiter = sequence(s_integer,s_integer,s_integer),
+}
+
+syntax.discretionary = newsyntax {
+    ["-"]                   = false,
+    automaticdiscretionary  = false,
+    discretionary           = sequence(
+        optional(keyword("penalty"),s_integer),
+        optional(keyword("postword")),
+        optional(keyword("preword")),
+        optional(keyword("break")),
+        optional(keyword("nobreak")),
+        optional(keyword("options"),s_integer),
+        optional(keyword("class"),s_integer),
+        sequence(s_tokens,s_tokens,s_tokens)
+    ),
+    explicitdiscretionary   = false,
+}
+
+syntax.endcsname = newsyntax {
+    endcsname = false,
+}
+
+syntax.endgroup = newsyntax {
+    endgroup       = false,
+    endmathgroup   = false,
+    endsimplegroup = false,
+}
+
+syntax.endjob = newsyntax {
+    ["dump"] = false,
+    ["end"]  = false,
+}
+
+syntax.endlocal = newsyntax {
+    endlocalcontrol = false,
+}
+
+syntax.endparagraph = newsyntax {
+    par = false,
+}
+
+syntax.endtemplate = newsyntax {
+    aligncontent = false,
+    cr           = false,
+    crcr         = false,
+    noalign      = s_tokens,
+    omit         = false,
+    span         = false,
+}
+
+syntax.equationnumber = newsyntax {
+    eqno  = s_tokens,
+    leqno = s_tokens,
+}
+
+syntax.expandafter = newsyntax {
+    expand                  = s_token,
+    expandactive            = s_token,
+    expandafter             = sequence(s_token,s_token),
+    expandafterpars         = s_token,
+    expandafterspaces       = s_token,
+    expandcstoken           = s_token,
+    expandedafter           = sequence(s_token,s_tokens),
+    expandparameter         = s_integer,
+    expandtoken             = s_token,
+    expandtoks              = s_tokens,
+    futureexpand            = sequence(s_token,s_token,s_token),
+    futureexpandafterspaces = sequence(s_token,s_token,s_token),
+    futureexpandafterpars   = sequence(s_token,s_token,s_token),
+    semiexpand              = s_token,
+    unless                  = false,
+}
+
+syntax.explicitspace = newsyntax {
+    [" "] = false,
+}
+
+syntax.getmark = newsyntax {
+    botmark         = false,
+    botmarks        = s_integer,
+    currentmarks    = s_integer,
+    firstmark       = false,
+    firstmarks      = s_integer,
+    splitbotmark    = false,
+    splitbotmarks   = s_integer,
+    splitfirstmark  = false,
+    splitfirstmarks = s_integer,
+    topmark         = false,
+    topmarks        = s_integer,
+}
+
+syntax.halign = newsyntax {
+    halign = sequence(
+        optional(sequence(keyword("attr"),s_integer,s_integer)),
+        optional(keyword("callback")),
+        optional(keyword("discard")),
+        optional(keyword("noskips")),
+        optional(keyword("reverse")),
+        optional(sequence(keyword("to"),s_dimension)),
+        optional(sequence(keyword("spread"),s_dimension)),
+        s_tokens
+    ),
+}
+
+syntax.hmove = newsyntax {
+    moveleft  = sequence(s_dimension,s_box),
+    moveright = sequence(s_dimension,s_box),
+}
+
+syntax.hyphenation = newsyntax {
+    hjcode           = sequence(s_integer,o_equal,s_integer),
+    hyphenation      = s_tokens,
+    hyphenationmin   = sequence(o_equal,s_integer),
+    patterns         = s_tokens,
+    postexhyphenchar = sequence(o_equal,s_integer),
+    posthyphenchar   = sequence(o_equal,s_integer),
+    preexhyphenchar  = sequence(o_equal,s_integer),
+    prehyphenchar    = sequence(o_equal,s_integer),
+}
+
+result.hyphenation = newresult {
+    -- TODO
+}
+
+do
+
+    local vrule = sequence(
+        optional(sequence(keyword("attr"),s_integer,o_equal,s_integer)),
+        optional(sequence(keyword("width"),s_dimension)),
+        optional(sequence(keyword("height"),s_dimension)),
+        optional(sequence(keyword("depth"),s_dimension)),
+        optional(sequence(keyword("left"),s_dimension)),
+        optional(sequence(keyword("right"),s_dimension)),
+        optional(sequence(keyword("top"),s_dimension)),
+        optional(sequence(keyword("bottom"),s_dimension)),
+        optional(sequence(keyword("xoffset"),s_dimension)),
+        optional(sequence(keyword("yoffset"),s_dimension))
+    )
+
+    local rule = sequence(vrule,sequence(
+        optional(sequence(keyword("font"),s_integer)),
+        optional(sequence(keyword("fam"),s_integer)),
+        optional(sequence(keyword("char"),s_integer))
+    ))
+
+    syntax.hrule = newsyntax {
+        nohrule      = rule,
+        virtualhrule = vrule,
+        hrule        = rule,
+    }
+
+end
+
+syntax.hskip = newsyntax {
+    hfil    = false,
+    hfill   = false,
+    hfilneg = false,
+    hskip   = sequence(
+        s_dimension,
+        optional(sequence(keyword("plus"),choice(s_dimension,s_filler))),
+        optional(sequence(keyword("minus"),choice(s_dimension,s_filler)))
+    ),
+    hss     = false,
+}
+
+-- needs checking, first version
+
+syntax.iftest = newsyntax {
+    ["else"]        = false,
+    ["fi"]          = false,
+    ["if"]          = false,
+    ifabsdim        = sequence(s_dimension,s_comparison,s_dimension),
+    ifabsfloat      = sequence(s_float,s_comparison,s_float),
+    ifabsnum        = sequence(s_integer,s_comparison,s_integer),
+    ifarguments     = false,
+    ifboolean       = s_integer,
+    ifcase          = s_integer,
+    ifcat           = s_token,
+    ifchkdim        = s_tokens_or,
+    ifchkdimension  = s_tokens_or,
+    ifchknum        = s_tokens_or,
+    ifchknumber     = s_tokens_or,
+    ifcmpdim        = sequence(s_dimension,s_dimension),
+    ifcmpnum        = sequence(s_integer,s_integer),
+    ifcondition     = s_conditional,
+    ifcsname        = s_tokens_endcs,
+    ifcstok         = s_tokens_relax,
+    ifdefined       = s_token,
+    ifdim           = sequence(s_dimension,s_comparison,s_dimension),
+    ifdimexpression = s_tokens_relax,
+    ifdimval        = s_tokens_or,
+    ifempty         = choice(s_token,s_tokens),
+    iffalse         = false,
+    ifflags         = s_cs,
+    iffloat         = sequence(s_float,s_comparison,s_float),
+    iffontchar      = sequence(s_integer,s_integer),
+    ifhaschar       = sequence(s_token,s_tokens),
+    ifhastok        = sequence(s_token,s_tokens),
+    ifhastoks       = s_tokens_relax,
+    ifhasxtoks      = s_tokens_relax,
+    ifhbox          = s_boxreference,
+    ifhmode         = false,
+    ifincsname      = s_tokens_endcs,
+    ifinner         = false,
+    ifinsert        = s_integer,
+    ifintervaldim   = sequence(s_dimension,s_dimension,s_dimension),
+    ifintervalfloat = sequence(s_integer,s_integer,s_integer),
+    ifintervalnum   = sequence(s_float,s_float,s_float),
+    ifmathparameter = s_integer,
+    ifmathstyle     = s_mathstyle,
+    ifmmode         = false,
+    ifnum           = sequence(s_integer,s_comparison,s_integer),
+    ifnumexpression = s_tokens_relax,
+    ifnumval        = s_tokens_or,
+    ifodd           = s_integer,
+    ifparameter     = s_parameter_or,
+    ifparameters    = false,
+    ifrelax         = s_token,
+    iftok           = s_tokens_relax,
+    iftrue          = false,
+    ifvbox          = s_boxreference,
+    ifvmode         = false,
+    ifvoid          = s_boxreference,
+    ifx             = s_token,
+    ifzerodim       = s_dimension,
+    ifzerofloat     = s_float,
+    ifzeronum       = s_integer,
+    ["or"]          = false,
+    ["orelse"]      = false,
+    ["orunless"]    = false,
+}
+
+syntax.ignoresomething = newsyntax {
+    ignorearguments  = false,
+    ignorenestedupto = s_token,
+    ignorepars       = false,
+    ignorespaces     = false,
+    ignoreupto       = s_token,
+}
+
+-- result.ignoresomething = newresult {
+--     -- TODO
+-- }
+
+syntax.input = newsyntax {
+    endinput      = false,
+    input         = s_filename,
+    eofinput      = sequence(s_tokens, s_filename),
+    scantokens    = s_tokens,
+    scantextokens = s_tokens,
+    tokenized     = s_tokens,
+    quitloop      = false,
+    quitloopnow   = false,
+    retokenized   = sequence(optional(keyword("catcodetable")),s_tokens),
+}
+
+syntax.insert = newsyntax {
+    insert = s_integer
+}
+
+result.internaldimension = {
+    boxmaxdepth              = r_dimension,
+    delimitershortfall       = r_dimension,
+    displayindent            = r_dimension,
+    displaywidth             = r_dimension,
+    emergencyextrastretch    = r_dimension,
+    emergencystretch         = r_dimension,
+    glyphxoffset             = r_dimension,
+    glyphyoffset             = r_dimension,
+    hangindent               = r_dimension,
+    hfuzz                    = r_dimension,
+    hsize                    = r_dimension,
+    ignoredepthcriterion     = r_dimension,
+    lineskiplimit            = r_dimension,
+    mathsurround             = r_dimension,
+    maxdepth                 = r_dimension,
+    nulldelimiterspace       = r_dimension,
+    overfullrule             = r_dimension,
+    pageextragoal            = r_dimension,
+    parindent                = r_dimension,
+    predisplaysize           = r_dimension,
+    pxdimen                  = r_dimension,
+    scriptspace              = r_dimension,
+    shortinlinemaththreshold = r_dimension,
+    splitmaxdepth            = r_dimension,
+    tabsize                  = r_dimension,
+    vfuzz                    = r_dimension,
+    vsize                    = r_dimension,
+}
+
+syntax.internaldimension = setsyntaxfromresult(result.internaldimension)
+
+result.internalglue = {
+    abovedisplayshortskip = r_glue,
+    abovedisplayskip      = r_glue,
+    additionalpageskip    = r_glue,
+    baselineskip          = r_glue,
+    belowdisplayshortskip = r_glue,
+    belowdisplayskip      = r_glue,
+    emergencyleftskip     = r_glue,
+    emergencyrightskip    = r_glue,
+    initialpageskip       = r_glue,
+    initialtopskip        = r_glue,
+    leftskip              = r_glue,
+    lineskip              = r_glue,
+    mathsurroundskip      = r_glue,
+    maththreshold         = r_glue,
+    parfillleftskip       = r_glue,
+    parfillrightskip      = r_glue,
+    parfillskip           = r_glue,
+    parinitleftskip       = r_glue,
+    parinitrightskip      = r_glue,
+    parskip               = r_glue,
+    rightskip             = r_glue,
+    spaceskip             = r_glue,
+    splittopskip          = r_glue,
+    tabskip               = r_glue,
+    topskip               = r_glue,
+    xspaceskip            = r_glue,
+}
+
+syntax.internalglue = setsyntaxfromresult(result.internalglue)
+
+result.internalinteger = {
+    adjdemerits              = r_integer,
+    adjustspacing            = r_integer,
+    adjustspacingshrink      = r_integer,
+    adjustspacingstep        = r_integer,
+    adjustspacingstretch     = r_integer,
+    alignmentcellsource      = r_integer,
+    alignmentwrapsource      = r_integer,
+    automatichyphenpenalty   = r_integer,
+    automigrationmode        = r_integer,
+    autoparagraphmode        = r_integer,
+    binoppenalty             = r_integer,
+    brokenpenalty            = r_integer,
+    catcodetable             = r_integer,
+    clubpenalty              = r_integer,
+    day                      = r_integer,
+    defaulthyphenchar        = r_integer,
+    defaultskewchar          = r_integer,
+    delimiterfactor          = r_integer,
+    discretionaryoptions     = r_integer,
+    displaywidowpenalty      = r_integer,
+    doubleadjdemerits        = r_integer,
+    doublehyphendemerits     = r_integer,
+    endlinechar              = r_integer,
+    errorcontextlines        = r_integer,
+    escapechar               = r_integer,
+    eufactor                 = r_integer,
+    exceptionpenalty         = r_integer,
+    exhyphenchar             = r_integer,
+    exhyphenpenalty          = r_integer,
+    explicithyphenpenalty    = r_integer,
+    fam                      = r_integer,
+    finalhyphendemerits      = r_integer,
+    firstvalidlanguage       = r_integer,
+    floatingpenalty          = r_integer,
+    globaldefs               = r_integer,
+    glyphdatafield           = r_integer,
+    glyphoptions             = r_integer,
+    glyphscale               = r_integer,
+    glyphscriptfield         = r_integer,
+    glyphscriptscale         = r_integer,
+    glyphscriptscriptscale   = r_integer,
+    glyphstatefield          = r_integer,
+    glyphtextscale           = r_integer,
+    glyphxscale              = r_integer,
+    glyphyscale              = r_integer,
+    hangafter                = r_integer,
+    hbadness                 = r_integer,
+    holdinginserts           = r_integer,
+    holdingmigrations        = r_integer,
+    hyphenationmode          = r_integer,
+    hyphenpenalty            = r_integer,
+    interlinepenalty         = r_integer,
+    language                 = r_integer,
+    lastlinefit              = r_integer,
+    lefthyphenmin            = r_integer,
+    linebreakcriterion       = r_integer,
+    linebreakoptional        = r_integer,
+    linebreakpasses          = r_integer,
+    linedirection            = r_integer,
+    linepenalty              = r_integer,
+    localbrokenpenalty       = r_integer,
+    localinterlinepenalty    = r_integer,
+    localpretolerance        = r_integer,
+    localtolerance           = r_integer,
+    looseness                = r_integer,
+    luacopyinputnodes        = r_integer,
+    mathbeginclass           = r_integer,
+    mathcheckfencesmode      = r_integer,
+    mathdictgroup            = r_integer,
+    mathdictproperties       = r_integer,
+    mathdirection            = r_integer,
+    mathdisplaymode          = r_integer,
+    mathdisplaypenaltyfactor = r_integer,
+    mathdisplayskipmode      = r_integer,
+    mathdoublescriptmode     = r_integer,
+    mathendclass             = r_integer,
+    matheqnogapstep          = r_integer,
+    mathfontcontrol          = r_integer,
+    mathgluemode             = r_integer,
+    mathgroupingmode         = r_integer,
+    mathinlinepenaltyfactor  = r_integer,
+    mathleftclass            = r_integer,
+    mathlimitsmode           = r_integer,
+    mathnolimitsmode         = r_integer,
+    mathpenaltiesmode        = r_integer,
+    mathpretolerance         = r_integer,
+    mathrightclass           = r_integer,
+    mathrulesfam             = r_integer,
+    mathrulesmode            = r_integer,
+    mathscriptsmode          = r_integer,
+    mathslackmode            = r_integer,
+    mathspacingmode          = r_integer,
+    mathsurroundmode         = r_integer,
+    mathtolerance            = r_integer,
+    maxdeadcycles            = r_integer,
+    month                    = r_integer,
+    newlinechar              = r_integer,
+    normalizelinemode        = r_integer,
+    normalizeparmode         = r_integer,
+    nospaces                 = r_integer,
+    orphanpenalty            = r_integer,
+    outputbox                = r_integer,
+    outputpenalty            = r_integer,
+    overloadmode             = r_integer,
+    pardirection             = r_integer,
+    pausing                  = r_integer,
+    postdisplaypenalty       = r_integer,
+    postinlinepenalty        = r_integer,
+    postshortinlinepenalty   = r_integer,
+    prebinoppenalty          = r_integer,
+    predisplaydirection      = r_integer,
+    predisplaygapfactor      = r_integer,
+    predisplaypenalty        = r_integer,
+    preinlinepenalty         = r_integer,
+    prerelpenalty            = r_integer,
+    preshortinlinepenalty    = r_integer,
+    pretolerance             = r_integer,
+    protrudechars            = r_integer,
+    relpenalty               = r_integer,
+    righthyphenmin           = r_integer,
+    savinghyphcodes          = r_integer,
+    savingvdiscards          = r_integer,
+    setfontid                = r_integer,
+    setlanguage              = r_integer,
+    shapingpenaltiesmode     = r_integer,
+    shapingpenalty           = r_integer,
+    shortinlineorphanpenalty = r_integer,
+    showboxbreadth           = r_integer,
+    showboxdepth             = r_integer,
+    shownodedetails          = r_integer,
+    singlelinepenalty        = r_integer,
+    spacefactormode          = r_integer,
+    spacefactorshrinklimit   = r_integer,
+    spacefactorstretchlimit  = r_integer,
+    supmarkmode              = r_integer,
+    textdirection            = r_integer,
+    time                     = r_integer,
+    tolerance                = r_integer,
+    tracingadjusts           = r_integer,
+    tracingalignments        = r_integer,
+    tracingassigns           = r_integer,
+    tracingcommands          = r_integer,
+    tracingexpressions       = r_integer,
+    tracingfonts             = r_integer,
+    tracingfullboxes         = r_integer,
+    tracinggroups            = r_integer,
+    tracinghyphenation       = r_integer,
+    tracingifs               = r_integer,
+    tracinginserts           = r_integer,
+    tracinglevels            = r_integer,
+    tracinglists             = r_integer,
+    tracinglostchars         = r_integer,
+    tracingmacros            = r_integer,
+    tracingmarks             = r_integer,
+    tracingmath              = r_integer,
+    tracingnesting           = r_integer,
+    tracingnodes             = r_integer,
+    tracingonline            = r_integer,
+    tracingoutput            = r_integer,
+    tracingpages             = r_integer,
+    tracingparagraphs        = r_integer,
+    tracingpasses            = r_integer,
+    tracingpenalties         = r_integer,
+    tracingrestores          = r_integer,
+    tracingstats             = r_integer,
+    uchyph                   = r_integer,
+    variablefam              = r_integer,
+    vbadness                 = r_integer,
+    widowpenalty             = r_integer,
+    year                     = r_integer,
+}
+
+syntax.internalinteger = setsyntaxfromresult(result.internalinteger)
+
+result.internalmuglue = {
+    medmuskip   = r_muglue,
+    pettymuskip = r_muglue,
+    thickmuskip = r_muglue,
+    thinmuskip  = r_muglue,
+    tinymuskip  = r_muglue,
+}
+
+syntax.internalmuglue = setsyntaxfromresult(result.internalmuglue)
+
+result.internaltoks = {
+    errhelp        = r_toks,
+    everybeforepar = r_toks,
+    everycr        = r_toks,
+    everydisplay   = r_toks,
+    everyeof       = r_toks,
+    everyhbox      = r_toks,
+    everyjob       = r_toks,
+    everymath      = r_toks,
+    everymathatom  = r_toks,
+    everypar       = r_toks,
+    everytab       = r_toks,
+    everyvbox      = r_toks,
+    output         = r_toks,
+}
+
+syntax.internaltoks = setsyntaxfromresult(result.internaltoks)
+
+syntax.italiccorrection = newsyntax {
+    ["/"] = false,
+}
+
+syntax.kern = newsyntax {
+    kern  = s_dimension,
+    hkern = s_dimension,
+    vkern = s_dimension,
+}
+
+syntax.leader = newsyntax {
+    cleaders = sequence(choice(s_box,s_rule,s_glyph),s_glue),
+    gleaders = sequence(choice(s_box,s_rule,s_glyph),s_glue),
+    leaders  = sequence(choice(s_box,s_rule,s_glyph),s_glue),
+    uleaders = sequence(optional(sequence(keyword("callback"), s_integer)),choice(s_box,s_rule,s_glyph),s_glue),
+    xleaders = sequence(choice(s_box,s_rule,s_glyph),s_glue),
+}
+
+syntax.legacy = newsyntax {
+    shipout = s_tokens
+}
+
+syntax.let = newsyntax {
+    futuredef        = sequence(s_cs,s_cs),
+    futurelet        = sequence(s_cs,o_equal,s_cs),
+    glet             = s_cs,
+    gletcsname       = s_tokens_endcs,
+    glettonothing    = s_cs,
+    let              = s_cs,
+    letcharcode      = s_cs,
+    letcsname        = s_tokens_endcs,
+    letfrozen        = s_cs,
+    letprotected     = s_cs,
+    lettolastnamedcs = s_cs,
+    lettonothing     = s_cs,
+    swapcsvalues     = sequence(s_cs,s_cs),
+    unletfrozen      = s_cs,
+    unletprotected   = s_cs,
+}
+
+syntax.localbox = newsyntax {
+    localleftbox   = s_box,
+    localmiddlebox = s_box,
+    localrightbox  = s_box,
+}
+
+syntax.luafunctioncall = newsyntax {
+    luabytecodecall = s_integer,
+    luafunctioncall = s_integer,
+}
+
+do
+
+    local split = sequence(
+        optional(keyword("attr"),s_integer,s_integer),
+        optional(keyword("to"),s_dimension),
+        optional(keyword("upto"),s_dimension),
+        s_tokens
+    )
+
+    local make   = sequence(
+        optional(sequence(keyword("target"),s_integer)),
+        optional(sequence(keyword("to"),s_dimension)),
+        optional(sequence(keyword("adapt"),s_scale)),
+        optional(sequence(keyword("attr"),s_integer,s_integer)),
+        optional(sequence(keyword("anchor"),s_integer)),
+        optional(sequence(keyword("axis"),s_integer)),
+        optional(sequence(keyword("shift"),s_dimension)),
+        optional(sequence(keyword("spread"),s_dimension)),
+        optional(sequence(keyword("source"),s_integer)),
+        optional(sequence(keyword("direction"),s_integer)),
+        optional(keyword("delay")),
+        optional(sequence(keyword("orientation"),s_integer)),
+        optional(sequence(keyword("xoffset"),s_dimension)),
+        optional(sequence(keyword("xmove"),s_dimension)),
+        optional(sequence(keyword("yoffset"),s_dimension)),
+        optional(sequence(keyword("ymove"),s_dimension)),
+        optional(keyword("reverse")),
+        optional(keyword("retain")),
+        optional(keyword("container")),
+        optional(sequence(keyword("class"),s_integer)),
+        s_tokens
+    )
+
+    syntax.makebox = newsyntax {
+        box               = s_boxreference,
+        copy              = s_boxreference,
+        dbox              = make,
+        dpack             = make,
+        dsplit            = split,
+        hbox              = make,
+        hpack             = make,
+        insertbox         = s_integer,
+        insertcopy        = s_integer,
+        lastbox           = false,
+        localleftboxbox   = false,
+        localmiddleboxbox = false,
+        localrightboxbox  = false,
+        tpack             = make,
+        tsplit            = split,
+        vbox              = make,
+        vpack             = make,
+        vsplit            = split,
+        vtop              = make,
+    }
+
+end
+
+syntax.mathaccent = newsyntax {
+    mathaccent  = s_tokens, -- overloaded in conetext
+    Umathaccent = sequence(
+        optional(sequence(keyword("attr"),s_integer,s_integer)),
+        optional(keyword("center")),
+        optional(sequence(keyword("class"),s_integer)),
+        optional(keyword("exact")),
+        optional(sequence(keyword("source"),s_integer)),
+        optional(keyword("stretch")),
+        optional(keyword("shrink")),
+        optional(sequence(keyword("fraction"),s_integer)),
+        optional(keyword("fixed")),
+        optional(keyword("keepbase")),
+        optional(keyword("nooverflow")),
+        optional(keyword("base")),
+        choice(
+            sequence(keyword("both"),optional(keyword("fixed")),s_character,optional(keyword("fixed")),s_character),
+            sequence(keyword("bottom"),optional(keyword("fixed")),s_character),
+            sequence(keyword("top"),optional(keyword("fixed")),s_character),
+            sequence(keyword("overlay"),s_character),
+            s_character
+        )
+    ),
+}
+
+syntax.mathcharnumber = newsyntax {
+    Umathchar  = s_integer,
+    Umathclass = s_integer,
+    Umathdict  = sequence(s_integer,s_mathchar),
+    mathchar   = s_integer,
+}
+
+syntax.mathchoice = newsyntax {
+    Umathdiscretionary = sequence(optional(sequence(keyword("class"),s_integer)),s_tokens,s_tokens,s_tokens),
+    Ustack             = s_tokens,
+    mathchoice         = sequence(s_tokens,s_tokens,s_tokens,s_tokens),
+}
+
+syntax.mathcomponent = newsyntax {
+    mathatom  = sequence(
+        optional(sequence(keyword("attr"),s_integer,s_integer)),
+        optional(sequence(keyword("all"),s_integer)),
+        optional(sequence(keyword("leftclass"),s_integer)),
+        optional(keyword("limits")),
+        optional(sequence(keyword("rightclass"),s_integer)),
+        optional(sequence(keyword("class"),s_integer)),
+        optional(keyword("unpack")),
+        optional(keyword("unroll")),
+        optional(keyword("single")),
+        optional(sequence(keyword("source"),s_integer)),
+        optional(keyword("textfont")),
+        optional(keyword("mathfont")),
+        optional(sequence(keyword("options"),s_integer)),
+        optional(keyword("nolimits")),
+        optional(keyword("nooverflow")),
+        optional(keyword("void")),
+        optional(keyword("phantom")),
+        optional(s_integer)
+    ),
+    mathbin   = s_tokens,
+    mathclose = s_tokens,
+    mathinner = s_tokens,
+    mathop    = s_tokens,
+    mathopen  = s_tokens,
+    mathord   = s_tokens,
+    mathpunct = s_tokens,
+    mathrel   = s_tokens,
+    overline  = s_tokens,
+    underline = s_tokens,
+}
+
+do
+
+    local fence = sequence(
+        optional(keyword("auto")),
+        optional(sequence(keyword("attr"),s_integer,s_integer)),
+        optional(keyword("axis")),
+        optional(sequence(keyword("bottom"),s_dimension)),
+        optional(sequence(keyword("depth"),s_dimension)),
+        optional(sequence(keyword("factor"),s_integer)),
+        optional(sequence(keyword("height"),s_dimension)),
+        optional(keyword("noaxis")),
+        optional(keyword("nocheck")),
+        optional(keyword("nolimits")),
+        optional(keyword("nooverflow")),
+        optional(sequence(keyword("leftclass"),s_integer)),
+        optional(keyword("limits")),
+        optional(keyword("exact")),
+        optional(keyword("void")),
+        optional(keyword("phantom")),
+        optional(sequence(keyword("class"),s_integer)),
+        optional(sequence(keyword("rightclass"),s_integer)),
+        optional(keyword("scale")),
+        optional(sequence(keyword("source"),s_integer)),
+        optional(keyword("top")),
+        s_delimiter
+    )
+
+    syntax.mathfence = newsyntax {
+        Uleft        = fence,
+        Umiddle      = fence,
+        Uoperator    = fence,
+        Uright       = fence,
+        Uvextensible = fence,
+        left         = fence,
+        middle       = fence,
+        right        = fence,
+    }
+
+end
+
+do
+
+    local options = sequence(
+        optional(sequence(keyword("attr"),s_integer,s_integer)),
+        optional(sequence(keyword("class"),s_integer)),
+        optional(keyword("center")),
+        optional(keyword("exact")),
+        optional(keyword("proportional")),
+        optional(keyword("noaxis")),
+        optional(keyword("nooverflow")),
+        optional(sequence(keyword("style"),s_mathstyle)),
+        optional(sequence(keyword("source"),s_integer)),
+        optional(sequence(keyword("hfactor"),s_integer)),
+        optional(sequence(keyword("vfactor"),s_integer)),
+        optional(keyword("font")),
+        optional(sequence(keyword("thickness"),s_dimension))
+    )
+
+    -- needs checking
+
+    syntax.mathfraction = newsyntax {
+        Uabove               = sequence(s_dimension,options),
+        Uabovewithdelims     = sequence(s_delimiter,s_delimiter,s_dimension,options),
+        Uatop                = sequence(s_dimension,options),
+        Uatopwithdelims      = sequence(s_delimiter,s_delimiter,s_dimension,options),
+        Uover                = sequence(options),
+        Uoverwithdelims      = sequence(s_delimiter,s_delimiter,options),
+        Uskewed              = sequence(s_delimiter,options),
+        Uskewedwithdelims    = sequence(s_delimiter,s_delimiter,s_delimiter,options),
+        Ustretched           = sequence(s_delimiter,options),
+        Ustretchedwithdelims = sequence(s_delimiter,s_delimiter,s_delimiter,options),
+        above                = s_dimension,
+        abovewithdelims      = sequence(s_delimiter,s_delimiter,s_dimension),
+        atop                 = s_dimension,
+        atopwithdelims       = sequence(s_delimiter,s_delimiter,s_dimension),
+        over                 = false,
+        overwithdelims       = sequence(s_delimiter,s_delimiter),
+    }
+
+end
+
+syntax.mathmodifier = newsyntax {
+    Umathadapttoleft  = false,
+    Umathadapttoright = false,
+    Umathlimits       = false,
+    Umathnoaxis       = false,
+    Umathnolimits     = false,
+    Umathopenupdepth  = s_dimension,
+    Umathopenupheight = s_dimension,
+    Umathphantom      = false,
+    Umathsource       = sequence(optional(s_nucleus),s_integer),
+    Umathuseaxis      = false,
+    Umathvoid         = false,
+    displaylimits     = false,
+    limits            = false,
+    nolimits          = false,
+}
+
+do
+
+    local options = sequence(
+        optional(sequence(keyword("attr"),s_integer,s_integer)),
+        optional(keyword("bottom")),
+        optional(keyword("exact")),
+        optional(keyword("top")),
+        optional(sequence(keyword("style"),s_mathstyle)),
+        optional(sequence(keyword("source"),s_integer)),
+        optional(keyword("stretch")),
+        optional(keyword("shrink")),
+        optional(sequence(keyword("width"),s_dimension)),
+        optional(sequence(keyword("height"),s_dimension)),
+        optional(sequence(keyword("depth"),s_dimension)),
+        optional(keyword("left")),
+        optional(keyword("middle")),
+        optional(keyword("right")),
+        optional(keyword("nooverflow"))
+    )
+
+    syntax.mathradical = newsyntax {
+        Udelimited      = sequence(options,s_delimiter,s_delimiter,optional(s_delimiter),optional(s_delimiter),s_mathtokens),
+        Udelimiterover  = sequence(options,s_delimiter,optional(s_delimiter),optional(s_delimiter),s_mathtokens),
+        Udelimiterunder = sequence(options,s_delimiter,optional(s_delimiter),optional(s_delimiter),s_mathtokens),
+        Uhextensible    = sequence(options,s_delimiter,optional(s_delimiter),optional(s_delimiter),s_mathtokens),
+        Uoverdelimiter  = sequence(options,s_delimiter,optional(s_delimiter),optional(s_delimiter),s_mathtokens),
+        Uradical        = sequence(options,s_delimiter,optional(s_delimiter),optional(s_delimiter),s_mathtokens),
+        Uroot           = sequence(options,s_delimiter,optional(s_delimiter),optional(s_delimiter),s_mathtokens,s_mathtokens),
+        Urooted         = sequence(options,s_delimiter,s_delimiter,optional(s_delimiter),optional(s_delimiter),s_mathtokens,s_mathtokens),
+        Uunderdelimiter = sequence(options,s_delimiter,optional(s_delimiter),optional(s_delimiter),s_mathtokens),
+        radical         = sequence(options,s_delimiter,optional(s_delimiter),optional(s_delimiter),s_mathtokens,s_mathtokens),
+    }
+
+end
+
+syntax.mathscript = newsyntax {
+    Unosubprescript        = false,
+    Unosubscript           = false,
+    Unosuperprescript      = false,
+    Unosuperscript         = false,
+    Uprimescript           = s_mathtokens,
+    Ushiftedsubprescript   = s_mathtokens,
+    Ushiftedsubscript      = s_mathtokens,
+    Ushiftedsuperprescript = s_mathtokens,
+    Ushiftedsuperscript    = s_mathtokens,
+    Usubprescript          = s_mathtokens,
+    Usubscript             = s_mathtokens,
+    Usuperprescript        = s_mathtokens,
+    Usuperscript           = s_mathtokens,
+    noatomruling           = false,
+    nonscript              = false,
+}
+
+syntax.mathshiftcs = newsyntax {
+    Ustartdisplaymath = false,
+    Ustartmath        = false,
+    Ustartmathmode    = false,
+    Ustopdisplaymath  = false,
+    Ustopmath         = false,
+    Ustopmathmode     = false,
+}
+
+syntax.mathstyle = newsyntax {
+    Ustyle                   = s_mathstyle,
+    allcrampedstyles         = false,
+    alldisplaystyles         = false,
+    allmainstyles            = false,
+    allmathstyles            = false,
+    allscriptscriptstyles    = false,
+    allscriptstyles          = false,
+    allsplitstyles           = false,
+    alltextstyles            = false,
+    alluncrampedstyles       = false,
+    allunsplitstyles         = false,
+    crampeddisplaystyle      = false,
+    crampedscriptscriptstyle = false,
+    crampedscriptstyle       = false,
+    crampedtextstyle         = false,
+    displaystyle             = false,
+    scaledmathstyle          = s_integer,
+    scriptscriptstyle        = false,
+    scriptstyle              = false,
+    textstyle                = false,
+}
+
+result.mathstyle = setdefaultresult(result.mathstyle, r_integer)
+
+result.mathstyle.Ustyle          = { s_mathstyle, s_integer }
+result.mathstyle.scaledmathstyle = { s_mathstyle, s_integer }
+
+syntax.message = newsyntax {
+    message    = s_tokens,
+    errmessage = s_tokens,
+}
+
+syntax.mkern = newsyntax {
+    mkern = s_dimension
+}
+
+syntax.mskip = newsyntax {
+    mathatomskip = s_muglue,
+    mskip        = s_muglue,
+}
+
+syntax.noexpand = newsyntax {
+    noexpand = s_token
+}
+
+syntax.parameter = newsyntax {
+    alignmark     = false,
+    parametermark = false,
+}
+
+syntax.penalty = newsyntax {
+    hpenalty = s_integer,
+    penalty  = s_integer,
+    vpenalty = s_integer,
+}
+
+syntax.prefix = newsyntax {
+    aliased       = false,
+    constant      = false,
+    constrained   = false,
+    deferred      = false,
+    enforced      = false,
+    frozen        = false,
+    global        = false,
+    immediate     = false,
+    immutable     = false,
+    inherited     = false,
+    instance      = false,
+    long          = false,
+    mutable       = false,
+    noaligned     = false,
+    outer         = false,
+    overloaded    = false,
+    permanent     = false,
+    protected     = false,
+    retained      = false,
+    semiprotected = false,
+    tolerant      = false,
+    untraced      = false,
+}
+
+syntax.register = newsyntax {
+    count     = sequence(s_boxreference,o_equal,s_integer),
+    attribute = sequence(s_boxreference,o_equal,s_integer),
+    dimen     = sequence(s_boxreference,o_equal,s_dimension),
+    skip      = sequence(s_boxreference,o_equal,s_glue),
+    muskip    = sequence(s_boxreference,o_equal,s_muglue),
+    toks      = sequence(s_boxreference,o_equal,s_tokens),
+    float     = sequence(s_boxreference,o_equal,s_float),
+}
+
+result.register = newresult {
+    count     =  { s_boxreference, s_integer },
+    attribute =  { s_boxreference, s_integer },
+    dimen     =  { s_boxreference, s_dimension },
+    skip      =  { s_boxreference, s_glue },
+    muskip    =  { s_boxreference, s_muglue },
+    toks      =  { s_boxreference, s_tokens },
+    float     =  { s_boxreference, s_float },
+}
+
+syntax.relax = newsyntax {
+    norelax = false,
+    relax   = false,
+}
+
+syntax.removeitem = newsyntax {
+    unboundary = false,
+    unkern     = false,
+    unpenalty  = false,
+    unskip     = false,
+}
+
+syntax.auxiliary = newsyntax {
+    insertmode      = s_integer,
+    interactionmode = s_integer,
+    prevdepth       = s_dimension,
+    prevgraf        = s_integer,
+    spacefactor     = s_integer,
+}
+
+result.auxiliary = newresult {
+    insertmode      = r_integer,
+    interactionmode = r_integer,
+    prevdepth       = r_dimension,
+    prevgraf        = r_integer,
+    spacefactor     = r_integer,
+}
+
+syntax.setbox = newsyntax {
+    setbox = sequence(s_boxreference,o_equal,o_box)
+}
+
+syntax.boxproperty = newsyntax {
+    boxadapt       = sequence(s_boxreference,o_equal,s_integer), -- scaled
+    boxanchor      = sequence(s_boxreference,o_equal,s_integer),
+    boxanchors     = sequence(s_boxreference,o_equal,s_integer,s_integer), -- check
+    boxattribute   = sequence(s_boxreference,s_integer,o_equal,s_integer),
+    boxdirection   = sequence(s_boxreference,o_equal,s_integer),
+    boxfreeze      = s_boxreference,
+    boxgeometry    = sequence(s_boxreference,o_equal,s_integer),
+    boxlimitate    = s_boxreference,
+    boxorientation = sequence(s_boxreference,o_equal,s_integer),
+    boxrepack      = s_boxreference,
+    boxshift       = sequence(s_boxreference,o_equal,s_dimension),
+    boxshrink      = s_boxreference,
+    boxsource      = sequence(s_boxreference,o_equal,s_integer),
+    boxstretch     = s_boxreference,
+    boxtarget      = sequence(s_boxreference,o_equal,s_integer),
+    boxtotal       = s_boxreference,
+    boxvadjust     = sequence(s_boxreference,s_tokens), -- todo: pre/post etc
+    boxxmove       = sequence(s_boxreference,o_equal,s_dimension),
+    boxxoffset     = sequence(s_boxreference,o_equal,s_dimension),
+    boxymove       = sequence(s_boxreference,o_equal,s_dimension),
+    boxyoffset     = sequence(s_boxreference,o_equal,s_dimension),
+    dp             = sequence(s_boxreference,o_equal,s_dimension),
+    ht             = sequence(s_boxreference,o_equal,s_dimension),
+    wd             = sequence(s_boxreference,o_equal,s_dimension),
+}
+
+-- boxadapt   : zero
+-- boxfreeze  : width or total
+-- boxrepack  : width or total
+-- boxvadjust : 0x1 = preadjust 0x2 = postadjust 0x4 = premigrate 0x8 = postmigrate
+
+result.boxproperty = newresult {
+    boxadapt       = { s_boxreference, s_dimension },
+    boxanchor      = { s_boxreference, s_integer },
+    boxanchors     = { s_boxreference, s_integer },
+    boxattribute   = { sequence(s_boxreference,s_integer), s_integer },
+    boxdirection   = { s_boxreference, s_integer },
+    boxfreeze      = { s_boxreference, s_integer },
+    boxgeometry    = { s_boxreference, s_integer },
+    boxlimitate    = { s_boxreference, s_integer },
+    boxorientation = { s_boxreference, s_integer },
+    boxrepack      = { s_boxreference, s_dimension },
+    boxshift       = { s_boxreference, s_dimension },
+    boxshrink      = { s_boxreference, s_dimension },
+    boxsource      = { s_boxreference, s_integer },
+    boxstretch     = { s_boxreference, s_dimension },
+    boxtarget      = { s_boxreference, s_integer },
+    boxtotal       = { s_boxreference, s_dimension },
+    boxvadjust     = { s_boxreference, s_cardinal },
+    boxxmove       = { s_boxreference, s_dimension },
+    boxxoffset     = { s_boxreference, s_dimension },
+    boxymove       = { s_boxreference, s_dimension },
+    boxyoffset     = { s_boxreference, s_dimension },
+    dp             = { s_boxreference, s_dimension },
+    ht             = { s_boxreference, s_dimension },
+    wd             = { s_boxreference, s_dimension },
+}
+
+syntax.setfont = newsyntax {
+    nullfont = false,
+}
+
+result.setresult.setfont = newresult {
+    nullfont = r_tokens,
+}
+
+
+syntax.fontproperty = newsyntax {
+    cfcode          = sequence(s_font,s_integer,o_equal,s_integer),
+    efcode          = sequence(s_font,s_integer,o_equal,s_integer),
+    fontdimen       = sequence(s_font,s_integer,o_equal,s_dimension),
+    hyphenchar      = sequence(s_font,o_equal,s_integer),
+    lpcode          = sequence(s_font,s_integer,o_equal,s_dimension),
+    rpcode          = sequence(s_font,s_integer,o_equal,s_dimension),
+    scaledfontdimen = sequence(s_font,o_equal,s_integer),
+    skewchar        = sequence(s_font,o_equal,s_integer),
+}
+
+result.fontproperty = newresult {
+    cfcode          = { sequence(s_font,s_integer), s_integer },
+    efcode          = { sequence(s_font,s_integer), s_integer },
+    fontdimen       = { sequence(s_font,s_integer), s_dimension },
+    hyphenchar      = { s_font, s_integer },
+    lpcode          = { sequence(s_font,s_integer), s_dimension },
+    rpcode          = { sequence(s_font,s_integer), s_dimension },
+    scaledfontdimen = { s_font, s_integer },
+    skewchar        = { s_font, s_integer },
+}
+
+syntax.interaction = newsyntax {
+    batchmode     = false,
+    errorstopmode = false,
+    nonstopmode   = false,
+    scrollmode    = false,
+}
+
+syntax.mark = newsyntax {
+    clearmarks = s_integer,
+    flushmarks = false,
+    mark       = s_tokens,
+    marks      = sequence(s_integer,s_tokens),
+    setmarks   = s_integer,
+}
+
+
+do
+
+    local dimension = { s_mathstyle, s_dimension }
+    local integer   = { s_mathstyle, s_integer }
+    local variant   = { "", s_mathstyle }
+
+    result.mathparameter = newresult {
+        Umathaccentbasedepth                = dimension,
+        Umathaccentbaseheight               = dimension,
+        Umathaccentbottomovershoot          = dimension,
+        Umathaccentbottomshiftdown          = dimension,
+        Umathaccentextendmargin             = dimension,
+        Umathaccentsuperscriptdrop          = dimension,
+        Umathaccentsuperscriptpercent       = integer,
+        Umathaccenttopovershoot             = dimension,
+        Umathaccenttopshiftup               = dimension,
+        Umathaccentvariant                  = variant,
+        Umathaxis                           = dimension,
+        Umathbottomaccentvariant            = variant,
+        Umathconnectoroverlapmin            = dimension,
+        Umathdegreevariant                  = variant,
+        Umathdelimiterextendmargin          = dimension,
+        Umathdelimiterovervariant           = variant,
+        Umathdelimiterpercent               = integer,
+        Umathdelimitershortfall             = dimension,
+        Umathdelimiterundervariant          = variant,
+        Umathdenominatorvariant             = variant,
+        Umathextrasubpreshift               = dimension,
+        Umathextrasubprespace               = dimension,
+        Umathextrasubshift                  = dimension,
+        Umathextrasubspace                  = dimension,
+        Umathextrasuppreshift               = dimension,
+        Umathextrasupprespace               = dimension,
+        Umathextrasupshift                  = dimension,
+        Umathextrasupspace                  = dimension,
+        Umathflattenedaccentbasedepth       = dimension,
+        Umathflattenedaccentbaseheight      = dimension,
+        Umathflattenedaccentbottomshiftdown = dimension,
+        Umathflattenedaccenttopshiftup      = dimension,
+        Umathfractiondelsize                = dimension,
+        Umathfractiondenomdown              = dimension,
+        Umathfractiondenomvgap              = dimension,
+        Umathfractionnumup                  = dimension,
+        Umathfractionnumvgap                = dimension,
+        Umathfractionrule                   = dimension,
+        Umathfractionvariant                = variant,
+        Umathhextensiblevariant             = variant,
+        Umathlimitabovebgap                 = dimension,
+        Umathlimitabovekern                 = dimension,
+        Umathlimitabovevgap                 = dimension,
+        Umathlimitbelowbgap                 = dimension,
+        Umathlimitbelowkern                 = dimension,
+        Umathlimitbelowvgap                 = dimension,
+        Umathnolimitsubfactor               = integer,
+        Umathnolimitsupfactor               = integer,
+        Umathnumeratorvariant               = variant,
+        Umathoperatorsize                   = dimension,
+        Umathoverbarkern                    = dimension,
+        Umathoverbarrule                    = dimension,
+        Umathoverbarvgap                    = dimension,
+        Umathoverdelimiterbgap              = dimension,
+        Umathoverdelimitervariant           = variant,
+        Umathoverdelimitervgap              = dimension,
+        Umathoverlayaccentvariant           = variant,
+        Umathoverlinevariant                = variant,
+        Umathpresubshiftdistance            = dimension,
+        Umathpresupshiftdistance            = dimension,
+        Umathprimeraise                     = dimension,
+        Umathprimeraisecomposed             = dimension,
+        Umathprimeshiftdrop                 = dimension,
+        Umathprimeshiftup                   = dimension,
+        Umathprimespaceafter                = dimension,
+        Umathprimevariant                   = variant,
+        Umathprimewidth                     = dimension,
+        Umathquad                           = dimension,
+        Umathradicaldegreeafter             = dimension,
+        Umathradicaldegreebefore            = dimension,
+        Umathradicaldegreeraise             = dimension,
+        Umathradicalextensibleafter         = dimension,
+        Umathradicalextensiblebefore        = dimension,
+        Umathradicalkern                    = dimension,
+        Umathradicalrule                    = dimension,
+        Umathradicalvariant                 = variant,
+        Umathradicalvgap                    = dimension,
+        Umathruledepth                      = dimension,
+        Umathruleheight                     = dimension,
+        Umathskeweddelimitertolerance       = dimension,
+        Umathskewedfractionhgap             = dimension,
+        Umathskewedfractionvgap             = dimension,
+        Umathspaceafterscript               = dimension,
+        Umathspacebeforescript              = dimension,
+        Umathstackdenomdown                 = dimension,
+        Umathstacknumup                     = dimension,
+        Umathstackvariant                   = variant,
+        Umathstackvgap                      = dimension,
+        Umathsubscriptvariant               = variant,
+        Umathsubshiftdistance               = dimension,
+        Umathsubshiftdown                   = dimension,
+        Umathsubshiftdrop                   = dimension,
+        Umathsubsupshiftdown                = dimension,
+        Umathsubsupvgap                     = dimension,
+        Umathsubtopmax                      = dimension,
+        Umathsupbottommin                   = dimension,
+        Umathsuperscriptvariant             = dimension,
+        Umathsupshiftdistance               = dimension,
+        Umathsupshiftdrop                   = dimension,
+        Umathsupshiftup                     = dimension,
+        Umathsupsubbottommax                = dimension,
+        Umathtopaccentvariant               = variant,
+        Umathunderbarkern                   = dimension,
+        Umathunderbarrule                   = dimension,
+        Umathunderbarvgap                   = dimension,
+        Umathunderdelimiterbgap             = dimension,
+        Umathunderdelimitervariant          = variant,
+        Umathunderdelimitervgap             = dimension,
+        Umathunderlinevariant               = variant,
+        Umathvextensiblevariant             = variant,
+        Umathxscale                         = integer,
+        Umathyscale                         = integer,
+
+        copymathatomrule                    = false, -- todo
+        copymathparent                      = false, -- todo
+        copymathspacing                     = false, -- todo
+        letmathatomrule                     = false, -- todo
+        letmathparent                       = false, -- todo
+        letmathspacing                      = false, -- todo
+        resetmathspacing                    = false,
+        setdefaultmathcodes                 = false,
+        setmathatomrule                     = false, -- todo
+        setmathdisplaypostpenalty           = false, -- todo
+        setmathdisplayprepenalty            = false, -- todo
+        setmathignore                       = false, -- todo
+        setmathoptions                      = false, -- todo
+        setmathpostpenalty                  = false, -- todo
+        setmathprepenalty                   = false, -- todo
+        setmathspacing                      = false, -- todo
+    }
+
+    local s = setsyntaxfromresult(result.mathparameter)
+
+    s.copymathatomrule          = sequence(s_integer,s_integer)
+    s.copymathparent            = sequence(s_integer,s_integer)
+    s.copymathspacing           = sequence(s_integer,s_integer)
+    s.letmathatomrule           = sequence(s_integer,s_integer,s_integer,s_integer,s_integer)
+    s.letmathparent             = sequence(s_integer,s_integer)
+    s.letmathspacing            = sequence(s_integer,s_integer,s_integer,s_integer,s_integer)
+    s.resetmathspacing          = false
+    s.setdefaultmathcodes       = false
+    s.setmathatomrule           = sequence(s_integer,s_integer,s_mathstyle,s_integer,s_integer)
+    s.setmathdisplaypostpenalty = sequence(s_integer,o_equal,s_integer)
+    s.setmathdisplayprepenalty  = sequence(s_integer,o_equal,s_integer)
+    s.setmathignore             = sequence(s_mathparameter,s_integer)
+    s.setmathoptions            = sequence(s_integer,o_equal,s_integer)
+    s.setmathpostpenalty        = sequence(s_integer,o_equal,s_integer)
+    s.setmathprepenalty         = sequence(s_integer,o_equal,s_integer)
+    s.setmathspacing            = sequence(s_integer,s_integer,s_mathstyle,s_glue)
+
+    syntax.mathparameter = s
+
+end
+
+do
+
+    result.pageproperty = newresult {
+        deadcycles           = r_integer,
+        insertdepth          = { s_integer, s_dimension },
+        insertdistance       = { s_integer, s_dimension },
+        insertheight         = { s_integer, s_dimension },
+        insertheights        = r_dimension,
+        insertlimit          = { s_integer, s_dimension },
+        insertmaxdepth       = { s_integer, s_dimension },
+        insertmultiplier     = { s_integer, s_integer },
+        insertpenalties      = r_integer,
+        insertpenalty        = { s_integer, s_integer },
+        insertstorage        = { s_integer, s_integer },
+        insertstoring        = r_integer,
+        insertwidth          = { s_integer, s_dimension },
+        pagedepth            = r_dimension,
+        pageexcess           = r_dimension,
+        pagefilllstretch     = r_dimension,
+        pagefillstretch      = r_dimension,
+        pagefilstretch       = r_dimension,
+        pagefistretch        = r_dimension,
+        pagegoal             = r_dimension,
+        pagelastdepth        = r_dimension,
+        pagelastfilllstretch = r_dimension,
+        pagelastfillstretch  = r_dimension,
+        pagelastfilstretch   = r_dimension,
+        pagelastheight       = r_dimension,
+        pagelastshrink       = r_dimension,
+        pagelaststretch      = r_dimension,
+        pageshrink           = r_dimension,
+        pagestretch          = r_dimension,
+        pagetotal            = r_dimension,
+        pagevsize            = r_dimension,
+    }
+
+    syntax.pageproperty = setsyntaxfromresult(result.pageproperty)
+
+end
+
+syntax.specification = newsyntax {
+    clubpenalties         = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+    displaywidowpenalties = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+    interlinepenalties    = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+    mathbackwardpenalties = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+    mathforwardpenalties  = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+    orphanpenalties       = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+    parpasses             = sequence(
+                                optional(keyword("options"),s_integer),
+                                repeated(
+                                    optional(sequence(keyword("adjdemerits"),s_integer)),
+                                    optional(sequence(keyword("adjustspacing"),s_integer)),
+                                    optional(sequence(keyword("adjustspacingstep"),s_integer)),
+                                    optional(sequence(keyword("adjustspacingshrink"),s_integer)),
+                                    optional(sequence(keyword("adjustspacingstretch"),s_integer)),
+                                    optional(sequence(keyword("badness"),s_integer)),
+                                    optional(sequence(keyword("classes"),s_integer)),
+                                    optional(sequence(keyword("callback"),s_integer)),
+                                    optional(sequence(keyword("doubleadjdemerits"),s_integer)),
+                                    optional(sequence(keyword("doublehyphendemerits"),s_integer)),
+                                    optional(sequence(keyword("emergencystretch"),s_dimension)),
+                                    optional(sequence(keyword("extrahyphenpenalty"),s_integer)),
+                                    optional(sequence(keyword("finalhyphendemerits"),s_integer)),
+                                    optional(sequence(keyword("identifier"),s_integer)),
+                                    optional(sequence(keyword("ifadjustspacing"),s_integer)),
+                                    optional(sequence(keyword("looseness"),s_integer)),
+                                    optional(sequence(keyword("linebreakcriterium"),s_integer)),
+                                    optional(sequence(keyword("linebreakoptional"),s_integer)),
+                                    optional(sequence(keyword("linepenalty"),s_integer)),
+                                    optional(keyword("next")),
+                                    optional(sequence(keyword("orphanpenalty"),s_integer)),
+                                    optional(keyword("quit")),
+                                    optional(keyword("skip")),
+                                    optional(sequence(keyword("threshold"),s_dimension)),
+                                    optional(sequence(keyword("tolerance"),s_integer))
+                                )
+                            ),
+    parshape              = sequence(optional(keyword("options"),s_integer),s_integer,repeated(sequence(s_dimension,s_dimension))),
+    widowpenalties        = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+}
+
+result.specification = setdefaultresult(syntax.specification, r_integer)
+
+syntax.shorthanddef = newsyntax {
+    Umathchardef  = sequence(s_cs,s_integer),
+    Umathdictdef  = sequence(s_cs,s_integer,s_integer),
+    attributedef  = sequence(s_cs,s_integer),
+    chardef       = sequence(s_cs,s_integer),
+    countdef      = sequence(s_cs,s_integer),
+    dimendef      = sequence(s_cs,s_integer),
+    dimensiondef  = sequence(s_cs,s_integer),
+    floatdef      = sequence(s_cs,s_integer),
+    fontspecdef   = sequence(s_cs,s_font),
+    gluespecdef   = sequence(s_cs,s_integer),
+    integerdef    = sequence(s_cs,s_integer),
+    luadef        = sequence(s_cs,s_integer),
+    mathchardef   = sequence(s_cs,s_integer),
+    mugluespecdef = sequence(s_cs,s_integer),
+    muskipdef     = sequence(s_cs,s_integer),
+    parameterdef  = sequence(s_cs,s_integer),
+    positdef      = sequence(s_cs,s_integer),
+    skipdef       = sequence(s_cs,s_integer),
+    toksdef       = sequence(s_cs,s_integer),
+}
+
+result.someitem = newresult {
+    Umathcharclass         = { s_integer, s_integer },
+    Umathcharfam           = { s_integer, s_integer },
+    Umathcharslot          = { s_integer, s_integer },
+    badness                = { "", s_integer },
+    currentgrouplevel      = { "", s_integer },
+    currentgrouptype       = { "", s_integer },
+    currentifbranch        = { "", s_integer },
+    currentiflevel         = { "", s_integer },
+    currentiftype          = { "", s_integer },
+    currentloopiterator    = { "", s_integer },
+    currentloopnesting     = { "", s_integer },
+    currentstacksize       = { "", s_integer },
+    dimexpr                = { s_expression, s_dimension },
+    dimexpression          = { s_expression, s_dimension },
+    floatexpr              = { s_expression, s_float },
+    fontcharba             = { s_fontchar, s_dimension },
+    fontchardp             = { s_fontchar, s_dimension },
+    fontcharht             = { s_fontchar, s_dimension },
+    fontcharic             = { s_fontchar, s_dimension },
+    fontcharta             = { s_fontchar, s_dimension },
+    fontcharwd             = { s_fontchar, s_dimension },
+    fontid                 = { s_font, s_integer },
+    fontmathcontrol        = { s_font, s_integer },
+    fontspecid             = { s_font, s_integer },
+    fontspecifiedsize      = { s_font, s_integer },
+    fontspecscale          = { s_font, s_integer },
+    fontspecxscale         = { s_font, s_integer },
+    fontspecyscale         = { s_font, s_integer },
+    fonttextcontrol        = { s_font, s_integer },
+    glueexpr               = { s_expression, s_glue },
+    glueshrink             = { s_glue, s_dimension },
+    glueshrinkorder        = { s_glue, s_dimension },
+    gluestretch            = { s_glue, s_integer},
+    gluestretchorder       = { s_glue, s_integer},
+    gluetomu               = { s_glue, s_glue },
+    glyphxscaled           = { "", s_integer },
+    glyphyscaled           = { "", s_integer },
+    indexofcharacter       = { s_integer, s_integer },
+    indexofregister        = { s_integer, s_integer },
+    inputlineno            = { "",s_integer },
+    insertprogress         = { s_integer, s_dimension },-- check
+    lastarguments          = { "", s_integer },
+    lastatomclass          = { "", s_integer },
+    lastboundary           = { "", s_integer },
+    lastchkdimension       = { "", s_dimension },
+    lastchknumber          = { "", s_integer },
+    lastkern               = { "", s_dimension },
+    lastleftclass          = { "", s_integer },
+    lastloopiterator       = { "", s_integer },
+    lastnodesubtype        = { "", s_integer },
+    lastnodetype           = { "", s_integer },
+    lastpageextra          = { "", s_dimension },
+    lastparcontext         = { "", s_integer },
+    lastpenalty            = { "", s_integer },
+    lastrightclass         = { "", s_integer },
+    lastskip               = { "", s_glue },
+    leftmarginkern         = { "", s_dimension }, -- check
+    luatexrevision         = { "", s_tokens },
+    luatexversion          = { "", s_tokens },
+    mathatomglue           = { "", s_glue },
+    mathmainstyle          = { "", s_integer },
+    mathscale              = { "", s_integer },
+    mathstackstyle         = { "", s_integer },
+    mathstyle              = { "", s_integer },
+    mathstylefontid        = { "", s_integer },
+    muexpr                 = { s_expression, s_muglue },
+    mutoglue               = { s_muglue, s_glue },
+    nestedloopiterator     = { "", s_integer },
+    numericscale           = { s_number, s_integer },
+    numericscaled          = { s_number, s_integer },
+    numexpr                = { s_expression, s_integer },
+    numexpression          = { s_expression, s_integer },
+    overshoot              = { "", s_dimension },
+    parametercount         = { "", s_integer },
+    parameterindex         = { "", s_integer },
+    parshapedimen          = { s_integer, s_dimension },
+    parshapeindent         = { s_integer, s_dimension },
+    parshapelength         = { "", s_dimension },
+    previousloopiterator   = { "", s_integer },
+    rightmarginkern        = { "", s_dimension }, -- check
+    scaledemwidth          = { s_font, s_dimension },
+    scaledexheight         = { s_font, s_dimension },
+    scaledextraspace       = { s_font, s_dimension },
+    scaledinterwordshrink  = { s_font, s_dimension },
+    scaledinterwordspace   = { s_font, s_dimension },
+    scaledinterwordstretch = { s_font, s_dimension },
+    scaledslantperpoint    = { s_font, s_dimension },
+}
+
+syntax.someitem = setsyntaxfromresult(result.someitem)
+
+syntax.the = newsyntax {
+    detokenize     = s_tokens,
+    the            = s_dimension,
+    thewithoutunit = s_quantity,
+    unexpanded     = s_tokens,
+}
+
+syntax.unhbox = newsyntax {
+    unhbox  = s_integer,
+    unhcopy = s_integer,
+    unhpack = s_integer,
+}
+
+syntax.unvbox = newsyntax {
+    insertunbox   = s_integer,
+    insertuncopy  = s_integer,
+    pagediscards  = false,
+    splitdiscards = false,
+    unvbox        = s_integer,
+    unvcopy       = s_integer,
+    unvpack       = s_integer,
+}
+
+syntax.vadjust = newsyntax {
+    vadjust = sequence(
+        optional(keyword("pre")),
+        optional(keyword("post")),
+        optional(keyword("baseline")),
+        optional(keyword("before")),
+        optional(sequence(keyword("index"),s_integer)),
+        optional(keyword("after")),
+        optional(sequence(keyword("attr"),s_integer,s_integer)),
+        optional(sequence(keyword("depth"),choice(keyword("after"),keyword("before"),keyword("check"),keyword("last")))),
+        s_tokens
+    )
+}
+
+syntax.valign = newsyntax {
+    valign = syntax.halign.halign
+}
+
+syntax.vcenter = newsyntax {
+    vcenter = syntax.makebox.dbox
+}
+
+syntax.vmove = newsyntax {
+    raise = syntax.hmove.moveleft,
+    lower = syntax.hmove.moveright,
+}
+
+syntax.vrule = newsyntax {
+    novrule      = syntax.hrule.hrule,
+    srule        = syntax.hrule.hrule,
+    virtualvrule = syntax.hrule.virtualhrule,
+    vrule        = syntax.hrule.hrule,
+}
+
+syntax.vskip = newsyntax {
+   vfil    = false,
+   vfill   = false,
+   vfilneg = false,
+   vskip   = syntax.hskip.hskip,
+   vss     = false,
+}
+
+syntax.xray = newsyntax {
+    show       = s_token,
+    showbox    = s_boxreference,
+    showgroups = false,
+    showifs    = false,
+    showlists  = false,
+    showthe    = s_quantity,
+    showtokens = s_tokens,
+}
+
+-- so far
+
+local striplines = utilities.strings.striplines
+
+for cmd, chrs in next, syntax do
+    for chr, str in next, chrs do
+        if not str then
+            chrs[chr] = ""
+        elseif str ~= "" then
+            chrs[chr] = striplines(str,"prune and to space")
+        end
+    end
+end
+
+for cmd, chrs in next, result do
+    for chr, str in next, chrs do
+        if str then
+            local s1 = str[1]
+            local s2 = str[2]
+            if not s1 then
+                str[1] = ""
+            elseif s1 ~= "" then
+                str[1] = striplines(s1,"prune and to space")
+            end
+            if not s2 then
+                str[2] = ""
+            elseif s2 ~= "" then
+                str[2] = striplines(s2,"prune and to space")
+            end
+        end
+    end
+end
+
+-- end of syntax specification
+
+do
+
+    local P   = lpeg.P
+    local R   = lpeg.R
+    local Cmt = lpeg.Cmt
+
+    local space   = lpeg.patterns.whitespace
+    local unspace = lpeg.patterns.whitespace^0
+    local word    = R("az","AZ")^1
+    local utfchar = lpeg.patterns.utf8character
+
+    local p_enhance = (
+                  P("[") * unspace / "" / context.SyntaxLeftBracket
+      + unspace * P("]")           / "" / context.SyntaxRightBracket
+      +           P("{") * unspace / "" / context.SyntaxLeftBrace
+      + unspace * P("}")           / "" / context.SyntaxRightBrace
+      +           P("(") * unspace / "" / context.SyntaxLeftParenthesis
+      + unspace * P(")")           / "" / context.SyntaxRightParenthesis
+      + unspace * P("|") * unspace / "" / context.SyntaxBar
+      + P("character")   / context.SyntaxCharacter
+      + P("token")       / context.SyntaxToken
+      + P("tokens")      / context.SyntaxTokens
+      + P("integer")     / context.SyntaxInteger
+      + P("quantity")    / context.SyntaxQuantity
+      + P("preamble")    / context.SyntaxPreamble
+      + P("dimension")   / context.SyntaxDimension
+      + P("glue")        / context.SyntaxGlue
+      + P("muglue")      / context.SyntaxMuglue
+      + P("float")       / context.SyntaxFloat
+      + P("font")        / context.SyntaxFont
+      + P("mathstyle")   / context.SyntaxMathstyle
+      + P("tokenlist")   / context.SyntaxTokenlist
+      + P("box")         / context.SyntaxBox
+      + P("rule")        / context.SyntaxRule
+      + P("toks")        / context.SyntaxToks
+      + P("float")       / context.SyntaxFloat
+      + P("cs")          / context.SyntaxCs
+      + P("conditional") / context.SyntaxConditional
+      + P("\\") * (word  / context.tex)
+      + space^1          / context.space
+      + utfchar          / context.type
+
+    )^1
+
+    local compact = false
+    local compact = true
+
+    local cmd = setmetatableindex("table")
+    local lst = { }
+
+    for i=1,#primitives do
+        local l = primitives[i]
+        local n = gsub(commandnames[l[1]],"_","")
+        local p = l[3]
+        local t = {
+            syntax[n][p] or false,
+            result[n][p] or false,
+        }
+        cmd[n][p] = t
+        lst[p]    = t
+    end
+    local o = { }
+    for k, v in next, origins do
+        o[k] = sub(v,1,1)
+    end
+
+    local function specification(k,v,done)
+        local s = v[1]
+        local r = v[2]
+        local d = done[s]
+        context.formatted.startPrimitive("%s \\tex{%s}",o[commandhash[k][4]],k)
+        if s and s ~= "" then
+            if d then
+                context(" see \\tex{%s}",done[s])
+                r = false
+            else
+                lpegmatch(p_enhance,s)
+                if compact and count(s," ") > 2 then
+                    done[s] = k
+                end
+            end
+        else
+            context.allowbreak(false)
+        end
+        if r and r ~= "" then
+            if s and s ~= "" then
+                context["break"](false)
+            end
+            context.strut()
+            if r[1] and r[1] ~= "" then
+                context.llap("> ")
+                lpegmatch(p_enhance,r[1])
+                context(" : ")
+            else
+                context.llap(": ")
+            end
+            lpegmatch(p_enhance,r[2])
+        else
+            context.allowbreak(false)
+        end
+        context.stopPrimitive()
+    end
+
+    function moduledata.engine.specification(k)
+        local v = lst[k]
+        if v then
+            context.startpacked()
+            specification(k,v,{})
+            context.stoppacked()
+        else
+            print("no command " .. k)
+        end
+    end
+
+    function moduledata.engine.allspecifications()
+        for k, v in sortedhash(cmd) do
+            local done = { }
+            context.startSyntax { title = k }
+                for k, v in sortedhash(v) do
+                    specification(k,v,done)
+                end
+            context.stopSyntax()
+
+            table.save("s-system-syntax-check.lua",{
+                syntax   = syntax,
+                result   = result,
+                keywords = keywords,
+                compares = compares,
+            })
+
+        end
+    end
+
+end

@@ -213,7 +213,7 @@ halfword tex_prim_lookup(strnumber s)
         halfword p = h + 1;
         while (1) {
          /* When using |halfword text = prim_text(p)| no intellisense warning for first test in: */
-            if ((prim_text(p) > 0) && (str_length(prim_text(p)) == l) && tex_str_eq_str(prim_text(p), s)) {
+            if ((prim_text(p) > 0) && (str_length(prim_text(p)) == (size_t) l) && tex_str_eq_str(prim_text(p), s)) {
                 return p;
             } else if (prim_next(p)) {
                 p = prim_next(p);
@@ -692,7 +692,7 @@ static void tex_aux_prim_cmd_chr(quarterword cmd, halfword chr)
             } else {
                 tex_print_format("[warning: cmd %i, chr %i, no name]", cmd, idx);
             }
-        } else if (cmd == internal_int_cmd && idx < number_int_pars) {
+        } else if (cmd == internal_integer_cmd && idx < number_integer_pars) {
             /* a special case */
             tex_print_format("[integer: chr %i, class specific]", cmd);
         } else {
@@ -838,12 +838,12 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
             tex_print_str_esc("toks");
             tex_print_int(register_toks_number(chr));
             break;
-        case internal_int_cmd:
+        case internal_integer_cmd:
             tex_aux_prim_cmd_chr(cmd, chr);
             break;
-        case register_int_cmd:
+        case register_integer_cmd:
             tex_print_str_esc("count");
-            tex_print_int(register_int_number(chr));
+            tex_print_int(register_integer_number(chr));
             break;
         case internal_attribute_cmd:
             tex_aux_prim_cmd_chr(cmd, chr);
@@ -859,12 +859,12 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
         case internal_posit_cmd:
             tex_aux_prim_cmd_chr(cmd, chr);
             break;
-        case internal_dimen_cmd:
+        case internal_dimension_cmd:
             tex_aux_prim_cmd_chr(cmd, chr);
             break;
-        case register_dimen_cmd:
+        case register_dimension_cmd:
             tex_print_str_esc("dimen");
-            tex_print_int(register_dimen_number(chr));
+            tex_print_int(register_dimension_number(chr));
             break;
         case internal_glue_cmd:
             tex_aux_prim_cmd_chr(cmd, chr);
@@ -873,12 +873,12 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
             tex_print_str_esc("skip");
             tex_print_int(register_glue_number(chr));
             break;
-        case internal_mu_glue_cmd:
+        case internal_muglue_cmd:
             tex_aux_prim_cmd_chr(cmd, chr);
             break;
-        case register_mu_glue_cmd:
+        case register_muglue_cmd:
             tex_print_str_esc("muskip");
-            tex_print_int(register_mu_glue_number(chr));
+            tex_print_int(register_muglue_number(chr));
             break;
         case node_cmd:
             tex_print_str(node_token_flagged(chr) ? "large" : "small");

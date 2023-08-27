@@ -360,7 +360,7 @@ halfword tex_scan_insert_index(void)
             }
             break;
         case class_insert_mode:
-            index = tex_scan_int(0, NULL);
+            index = tex_scan_integer(0, NULL);
             if (! tex_valid_insert_id(index)) {
                 index = 0;
             }
@@ -466,14 +466,14 @@ void tex_finish_insert_group(void)
         f = floating_penalty_par;
         tex_unsave();
         lmt_save_state.save_stack_data.ptr -= saved_insert_n_of_items;
-     // p = tex_vpack(node_next(cur_list.head), 0, packing_additional, max_dimen, direction_unknown);
+     // p = tex_vpack(node_next(cur_list.head), 0, packing_additional, max_dimension, direction_unknown);
      // /* we don't do this: */
-     // /* p = tex_filtered_vpack(node_next(cur_list.head), 0, packing_additional, max_dimen, insert_group, direction_unknown, 0, 0); */
+     // /* p = tex_filtered_vpack(node_next(cur_list.head), 0, packing_additional, max_dimension, insert_group, direction_unknown, 0, 0); */
      // /* because it can induce loops. */
      // tex_pop_nest();
         p = node_next(cur_list.head);
         tex_pop_nest();
-        p = tex_vpack(p, 0, packing_additional, max_dimen, direction_unknown, holding_none_option, NULL);
+        p = tex_vpack(p, 0, packing_additional, max_dimension, direction_unknown, holding_none_option, NULL);
         {
             halfword index = saved_value(saved_insert_item_index);
             halfword insert = tex_new_node(insert_node, 0);

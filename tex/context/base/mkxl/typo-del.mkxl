@@ -758,7 +758,6 @@
      \dotagsetdelimitedsymbol\s!left
      \delimitedtextparameter#1% unhbox\scratchbox
      \dostoptagged
-     \penalty\plustenthousand % new per 2013-03-09 WS mailing list
      \boundary\c_typo_delimited_boundary
    \fi
    \endgroup}

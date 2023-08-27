@@ -17,7 +17,7 @@ local lpegmatch = lpeg.match
 local P, S, C = lpeg.P, lpeg.S, lpeg.C
 local patterns = lpeg.patterns
 local setmetatableindex = table.setmetatableindex
-local formatters, strip = string.formatters, string.strip
+local formatters, strip, collapse = string.formatters, string.strip, utilities.strings.collapse
 
 local tex, xml = tex, xml
 local lowerchars, upperchars, lettered = characters.lower, characters.upper, characters.lettered
@@ -1432,7 +1432,7 @@ local function all(collected)
     end
 end
 
-local function reverse(collected)
+texfinalizers.reverse = function(collected)
     if collected then
         local nc = #collected
         if nc >0 then
@@ -1691,7 +1691,7 @@ local function ctxtext(collected)
     end
 end
 
-local function stripped(collected) -- tricky as we strip in place
+texfinalizers.stripped = function(collected) -- tricky as we strip in place
     if collected then
         local nc = #collected
         if nc > 0 then
@@ -1702,7 +1702,16 @@ local function stripped(collected) -- tricky as we strip in place
     end
 end
 
-local function lower(collected)
+texfinalizers.collapsed = function(collected)
+    if collected and #collected > 0 then
+        local s = xmltext(collected[1])
+        if s ~= "" then
+            sprint(collapse(s))
+        end
+    end
+end
+
+texfinalizers.lower = function(collected)
     if not collected then
         local nc = #collected
         if nc > 0 then
@@ -1713,7 +1722,7 @@ local function lower(collected)
     end
 end
 
-local function upper(collected)
+texfinalizers.upper = function(collected)
     if collected then
         local nc = #collected
         if nc > 0 then
@@ -1782,30 +1791,30 @@ local function depth(collected)
     contextsprint(ctxcatcodes,d)
 end
 
+-- todo just move up as not used local
+
 texfinalizers.first          = first
 texfinalizers.last           = last
 texfinalizers.all            = all
-texfinalizers.reverse        = reverse
 texfinalizers.count          = count
 texfinalizers.command        = command
 texfinalizers.attribute      = attribute
-texfinalizers.param          = parameter
+texfinalizers.param          = parameter            -- obsolete
 texfinalizers.parameter      = parameter
 texfinalizers.text           = text
-texfinalizers.stripped       = stripped
-texfinalizers.lower          = lower
-texfinalizers.upper          = upper
 texfinalizers.ctxtext        = ctxtext
 texfinalizers.context        = ctxtext
 texfinalizers.position       = position
 texfinalizers.match          = match
 texfinalizers.index          = index
 texfinalizers.concat         = concatlist
-texfinalizers.concatrange    = concatrange
+texfinalizers.concatrange    = concatrange         -- used below
 texfinalizers.chainattribute = chainattribute
 texfinalizers.chainpath      = chainpath
 texfinalizers.default        = all -- !!
-texfinalizers.depth          = depth
+texfinalizers.depth          = depth               -- used below
+
+--
 
 function texfinalizers.tag(collected,n)
     if collected then
@@ -2880,6 +2889,25 @@ do
         local u = #e > 0 and e[1].at[a]
         if u then
             context(lpegmatch(unescaper,u))
+        end
+    end
+
+end
+
+if CONTEXTLMTXMODE > 0 then
+
+    local setmacro = tokens.setters.macro
+
+    xmlfinalizers.tomacro = function(collected,macroname,index)
+        if macroname and macroname ~= '' then
+            if index == 'last' then
+                index = #collected
+            elseif index == 'first' then
+                index = 1
+            else
+                index = tonumber(index) or 1
+            end
+            setmacro(tex.nilcatcodes,macroname,collapse(xmltext(collected[index])))
         end
     end
 

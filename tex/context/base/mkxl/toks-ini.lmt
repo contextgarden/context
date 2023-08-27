@@ -57,6 +57,7 @@ local scanluacardinal     = token.scanluacardinal
 local scanintegerargument = token.scanintegerargument
 local scandimenargument   = token.scandimenargument
 local scandetokened       = token.scandetokened
+local scantokenstring     = token.scantokenstring
 
 local scannumber          = token.scannumber
 local scanboolean         = token.scanboolean
@@ -188,6 +189,7 @@ tokens.scanners = { -- these expand
     csname          = scancsname,
     nextchar        = scannextchar,
     detokened       = scandetokened,
+    tokenstring     = scantokenstring,
 
     next            = token.scannext,
     nextexpanded    = token.scannextexpanded,

@@ -144,6 +144,48 @@ typedef struct {
     struct zint_vector    *vector;
 } zint_symbol_212;
 
+/* It looks like we have 2.12's with a different blob: */
+
+// typedef struct {
+//     int                    symbology;
+//     float                  height;
+//     float                  scale;
+//     int                    whitespace_width;
+//     int                    whitespace_height;
+//     int                    border_width;
+//     int                    output_options;
+//     char                   fgcolour[16];
+//     char                   bgcolour[16];
+//     char                  *fgcolor;
+//     char                  *bgcolor;
+//     char                   outfile[256];
+//     char                   primary[128];
+//     int                    option_1;
+//     int                    option_2;
+//     int                    option_3;
+//     int                    show_hrt;
+//     int                    input_mode;
+//     int                    eci;
+//     float                  dpmm;
+//     float                  dot_size;
+//     float                  text_gap;
+//     float                  guard_descent;
+//     struct zint_structapp  structapp;
+//     int                    warn_level;
+//     int                    debug;
+//     unsigned char          text[160];
+//     int                    rows;
+//     int                    width;
+//     unsigned char          encoded_data[200][144];
+//     float                  row_height[200];
+//     char                   errtxt[100];
+//     unsigned char         *bitmap;
+//     int                    bitmap_width;
+//     int                    bitmap_height;
+//     unsigned char         *alphamap;
+//     struct zint_vector    *vector;
+// } zint_symbol_212;
+
 typedef struct zint_rectangle zint_rectangle;
 
 typedef struct {
@@ -434,6 +476,7 @@ static int zintlib_initialize(lua_State * L)
                 zintlib_state.version = zintlib_state.ZBarcode_Version();
             }
             zintlib_state.version = zintlib_state.version / 100;
+         // printf("zint version: %i\n", zintlib_state.version);
             if (zintlib_state.version < 210) {
                 zintlib_state.initialized = 0;
             } else if (zintlib_state.version < 211) {

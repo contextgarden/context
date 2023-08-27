@@ -247,6 +247,8 @@
 		<cd:variable name='hang' value='suspendre'/>
 		<cd:variable name='hanging' value='suspension'/>
 		<cd:variable name='hangingboth' value='suspensionchacun'/>
+		<cd:variable name='hangleft' value='hangleft'/>
+		<cd:variable name='hangright' value='hangright'/>
 		<cd:variable name='head' value='tete'/>
 		<cd:variable name='header' value='entête'/>
 		<cd:variable name='headintext' value='tetedanstexte'/>
@@ -996,6 +998,7 @@
 		<cd:constant name='less' value='moins'/>
 		<cd:constant name='level' value='niveau'/>
 		<cd:constant name='levels' value='niveaux'/>
+		<cd:constant name='limitstretch' value='limitstretch'/>
 		<cd:constant name='limittext' value='textelimite'/>
 		<cd:constant name='line' value='ligne'/>
 		<cd:constant name='linecorrection' value='correctionligne'/>

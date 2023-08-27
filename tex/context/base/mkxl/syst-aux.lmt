@@ -128,7 +128,7 @@ local digit     = R("09")
 local double    = P("##") / "#"
 local single    = P("#")
 local sentinel  = nospaces * (nohash^1 / "\\%0")
-local whatever  = S("+-/*_^=:") + digit
+local whatever  = S("+-/*_^=:") + digit + R("AZ")
 local sargument = (single * digit)^1
 local dargument = (double * digit)^1
 local swhatever = (single * whatever)^1
@@ -219,6 +219,9 @@ local function texdefinition_one(str)
     instance  = false
     frozen    = false
     csname, rest = lpegmatch(pattern,str)
+-- print("str  : " .. str)
+-- print("cs   : " .. csname)
+-- print("rest : " .. rest)
     ctx_dostarttexdefinition()
 end
 
@@ -239,7 +242,7 @@ local function texdefinition_two()
     )
 end
 
-implement { name = "texdefinition_one", actions = texdefinition_one, scope = "private", arguments = "string" }
+implement { name = "texdefinition_one", actions = texdefinition_one, scope = "private", arguments = "tokenstring" }
 implement { name = "texdefinition_two", actions = texdefinition_two, scope = "private" }
 
 do

@@ -76,13 +76,34 @@ return {
                     tweak   = "replacealphabets",
                     list    = {
                         {
-                            source   = "uppercasescript",
-                            target   = "uppercasecalligraphic",
+                            source  = "uppercasescript",
+                            target  = "uppercasecalligraphic",
+                            unicode = "uppercasescript",
                         },
                         {
-                            source   = "uppercasescript",
-                            target   = "uppercasescript",
-                            feature  = "ss01",
+                            source  = "uppercasescript",
+                            target  = "uppercasescript",
+                            feature = "ss01",
+                        },
+                        {
+                            source  = { first = 0xE17D, last = 0xE195 },
+                            target  = "uppercasesansgreek",
+                            unicode = "uppercasegreeknormal",
+                        },
+                        {
+                            source  = { first = 0xE196, last = 0xE1AE }, -- maybe last = E1B3
+                            target  = "lowercasesansgreek",
+                            unicode = "lowercasegreeknormal",
+                        },
+                        {
+                            source  = { first = 0xE1BF, last = 0xE1D7 },
+                            target  = "uppercaseitalicsansgreek",
+                            unicode = "uppercasegreekitalic",
+                        },
+                        {
+                            source  = { first = 0xE1D8, last = 0xE1F0 }, -- maybe last = E1F5
+                            target  = "lowercaseitalicsansgreek",
+                            unicode = "lowercasegreekitalic",
                         },
                     },
                 },

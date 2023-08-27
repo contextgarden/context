@@ -56,14 +56,16 @@
 
     \starttypescript [pagella-with-euler,euleroverpagella]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [pagella]          [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]           [\s!default] [\s!rscale=0.9]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]           [\s!default] [\s!rscale=0.85]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]           [\s!default] [\s!rscale=0.85]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [euleroverpagella] [\s!default]
         \quittypescriptscanning
     \stoptypescript
 
-    \starttypescript [euler-with-pagella,pagellaovereuler]
+    \starttypescript [euler-with-pagella,pagellaovereuler,euler]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [eulernova]        [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]           [\s!default] [\s!rscale=0.9]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]           [\s!default] [\s!rscale=0.85]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]           [\s!default] [\s!rscale=0.85]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [pagellaovereuler] [\s!default]
         \quittypescriptscanning
     \stoptypescript

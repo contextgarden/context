@@ -95,12 +95,12 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                 switch (tex_scan_character("aoAO", 0, 0, 0)) {
                     case 'a': case 'A':
                         if (tex_scan_mandate_keyword("target", 2)) {
-                            target = tex_scan_int(1, NULL);
+                            target = tex_scan_integer(1, NULL);
                         }
                         break;
                     case 'o': case 'O':
                         spec_packing = packing_exactly;
-                        spec_amount = tex_scan_dimen(0, 0, 0, 0, NULL);
+                        spec_amount = tex_scan_dimension(0, 0, 0, 0, NULL);
                         break;
                     default:
                         tex_aux_show_keyword_error("target|to");
@@ -117,8 +117,9 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                         break;
                     case 't': case 'T':
                         if (tex_scan_mandate_keyword("attr", 2)) {
+                         // attrlist = tex_scan_attribute(attrlist);
                             halfword i = tex_scan_attribute_register_number();
-                            halfword v = tex_scan_int(1, NULL);
+                            halfword v = tex_scan_integer(1, NULL);
                             if (eq_value(register_attribute_location(i)) != v) {
                                 if (attrlist) {
                                     attrlist = tex_patch_attribute_list(attrlist, i, v);
@@ -159,18 +160,18 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                             flag field. The keyword overloads an already given |move_cmd|.
                         */
                         if (tex_scan_mandate_keyword("shift", 2)) {
-                            shift = tex_scan_dimen(0, 0, 0, 0, NULL);
+                            shift = tex_scan_dimension(0, 0, 0, 0, NULL);
                         }
                         break;
                     case 'p': case 'P':
                         if (tex_scan_mandate_keyword("spread", 2)) {
                             spec_packing = packing_additional;
-                            spec_amount = tex_scan_dimen(0, 0, 0, 0, NULL);
+                            spec_amount = tex_scan_dimension(0, 0, 0, 0, NULL);
                         }
                         break;
                     case 'o': case 'O':
                         if (tex_scan_mandate_keyword("source", 2)) {
-                            source = tex_scan_int(1, NULL);
+                            source = tex_scan_integer(1, NULL);
                         }
                         break;
                     default:
@@ -239,12 +240,12 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                 switch (tex_scan_character("omOM", 0, 0, 0)) {
                     case 'o': case 'O' :
                         if (tex_scan_mandate_keyword("xoffset", 2)) {
-                            xoffset = tex_scan_dimen(0, 0, 0, 0, NULL);
+                            xoffset = tex_scan_dimension(0, 0, 0, 0, NULL);
                         }
                         break;
                     case 'm': case 'M' :
                         if (tex_scan_mandate_keyword("xmove", 2)) {
-                            xmove = tex_scan_dimen(0, 0, 0, 0, NULL);
+                            xmove = tex_scan_dimension(0, 0, 0, 0, NULL);
                         }
                         break;
                     default:
@@ -256,12 +257,12 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                 switch (tex_scan_character("omOM", 0, 0, 0)) {
                     case 'o': case 'O' :
                         if (tex_scan_mandate_keyword("yoffset", 2)) {
-                             yoffset = tex_scan_dimen(0, 0, 0, 0, NULL);
+                             yoffset = tex_scan_dimension(0, 0, 0, 0, NULL);
                         }
                         break;
                     case 'm': case 'M' :
                         if (tex_scan_mandate_keyword("ymove", 2)) {
-                             ymove = tex_scan_dimen(0, 0, 0, 0, NULL);
+                             ymove = tex_scan_dimension(0, 0, 0, 0, NULL);
                         }
                         break;
                     default:
@@ -279,7 +280,7 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                             break;
                         case 't': case 'T' :
                             if (tex_scan_mandate_keyword("retain", 3)) {
-                                retain = tex_scan_int(0, NULL);
+                                retain = tex_scan_integer(0, NULL);
                             }
                             break;
                         default:
@@ -927,7 +928,7 @@ void tex_repack(halfword p, scaled w, int m)
                 tmp = tex_hpack(box_list(p), w, m, box_dir(p), holding_none_option);
                 break;
             case vlist_node: 
-                tmp = tex_vpack(box_list(p), w, m > packing_additional ? packing_additional : m, max_dimen, box_dir(p), holding_none_option, NULL);
+                tmp = tex_vpack(box_list(p), w, m > packing_additional ? packing_additional : m, max_dimension, box_dir(p), holding_none_option, NULL);
                 break;
             default: 
                 return;
@@ -2128,7 +2129,7 @@ halfword tex_natural_vsize(halfword p)
 /*tex
 
     The |vpack| subroutine is actually a special case of a slightly more general routine called
-    |vpackage|, which has four parameters. The fourth parameter, which is |max_dimen| in the case
+    |vpackage|, which has four parameters. The fourth parameter, which is |max_dimension| in the case
     of |vpack|, specifies the maximum depth of the page box that is constructed. The depth is first
     computed by the normal rules; if it exceeds this limit, the reference point is simply moved
     down until the limiting depth is attained. We actually hav efive parameters because we also
@@ -2598,13 +2599,13 @@ void tex_package(singleword nature)
         scaled ht = box_height(boxnode);
         scaled dp = box_depth(boxnode);
         if (xmove) {
-            xoffset = tex_aux_checked_dimen1(xoffset + xmove);
-            wd = tex_aux_checked_dimen2(wd + xmove);
+            xoffset = tex_aux_checked_dimension1(xoffset + xmove);
+            wd = tex_aux_checked_dimension2(wd + xmove);
         }
         if (ymove) {
-            yoffset = tex_aux_checked_dimen1(yoffset + ymove);
-            ht = tex_aux_checked_dimen2(ht + ymove);
-            dp = tex_aux_checked_dimen2(dp - ymove);
+            yoffset = tex_aux_checked_dimension1(yoffset + ymove);
+            ht = tex_aux_checked_dimension2(ht + ymove);
+            dp = tex_aux_checked_dimension2(dp - ymove);
         }
         box_w_offset(boxnode) = wd;
         box_h_offset(boxnode) = ht;
@@ -2829,7 +2830,7 @@ void tex_run_unpackage(void)
                     stack ifs can get corrupted but I have no clue yet how that happens but temp
                     nodes have the same size so ...
                 */
-                halfword index = tex_scan_int(0, NULL);
+                halfword index = tex_scan_integer(0, NULL);
                 if (tex_valid_insert_id(index)) {
                     halfword boxnode = tex_get_insert_content(index); /* also checks for id */
                     if (boxnode) {
@@ -3405,8 +3406,9 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot, halfword callbac
                             goto DONE;
                         case 'a': case 'A':
                             if (tex_scan_mandate_keyword("attr", 1)) {
+                             // attrlist = tex_scan_attribute(attrlist);
                                 halfword i = tex_scan_attribute_register_number();
-                                halfword v = tex_scan_int(1, NULL);
+                                halfword v = tex_scan_integer(1, NULL);
                                 if (eq_value(register_attribute_location(i)) != v) {
                                     if (attrlist) {
                                         attrlist = tex_patch_attribute_list(attrlist, i, v);
@@ -3419,13 +3421,13 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot, halfword callbac
                         case 't': case 'T':
                             if (tex_scan_mandate_keyword("to", 1)) {
                                 mode = packing_exactly ;
-                                size = tex_scan_dimen(0, 0, 0, 0, NULL);
+                                size = tex_scan_dimension(0, 0, 0, 0, NULL);
                             }
                             break;
                         case 'u': case 'U':
                             if (tex_scan_mandate_keyword("upto", 1)) {
                                 mode = packing_additional;
-                                size = tex_scan_dimen(0, 0, 0, 0, NULL);
+                                size = tex_scan_dimension(0, 0, 0, 0, NULL);
                             }
                             break;
                         default:
@@ -3444,7 +3446,7 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot, halfword callbac
         case insert_box_code:
         case insert_copy_code:
             {
-                halfword index = tex_scan_int(0, NULL);
+                halfword index = tex_scan_integer(0, NULL);
                 if (tex_valid_insert_id(index)) {
                     boxnode = tex_get_insert_content(index);
                     if (boxnode) {

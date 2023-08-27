@@ -40,7 +40,7 @@ return {
             aftercopying = {
                 {
                     tweak    = "version",
-                    expected = "Version 1.958",
+                    expected = "Version 1.959",
                 },
                 {
                     tweak = "addmirrors",

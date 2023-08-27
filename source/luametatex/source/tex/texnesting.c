@@ -402,6 +402,15 @@ int tex_vmode_nest_index(void)
     return p;
 }
 
+void tex_tail_prepend(halfword n) 
+{
+    tex_couple_nodes(node_prev(cur_list.tail), n);
+    tex_couple_nodes(n, cur_list.tail);
+    if (cur_list.tail == cur_list.head) {
+        cur_list.head = n;
+    }
+}
+
 void tex_tail_append(halfword p)
 {
     node_next(cur_list.tail) = p;
@@ -415,3 +424,4 @@ void tex_tail_append_list(halfword p)
     node_prev(p) = cur_list.tail;
     cur_list.tail = tex_tail_of_node_list(p);
 }
+

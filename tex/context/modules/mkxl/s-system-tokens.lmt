@@ -34,16 +34,20 @@ function moduledata.system.tokens.collect()
         local primitives  = tex.primitives()
               collected = { }
 
-        for i=0,#allcommands do
-            local codes = { }
-            local kind, min, max, fixedvalue = getrange(i)
-            if min and whatever[kind] and max >= 0 and max <= 256 then
-                 for i=min,max do
-                     codes[i] = false
-                 end
+        -- 0 and 110 missing
+
+        for k, v in table.sortedhash(allcommands) do
+            if type(k) == "number" then
+                local codes = { }
+                local kind, min, max, fixedvalue = getrange(k)
+                if min and whatever[kind] and max >= 0 and max <= 256 then
+                     for i=min,max do
+                         codes[i] = false
+                     end
+                end
+                collected[k] = codes
+                collected[v] = codes
             end
-            collected[i] = codes
-            collected[allcommands[i]] = codes
         end
 
         for i=1,#primitives do

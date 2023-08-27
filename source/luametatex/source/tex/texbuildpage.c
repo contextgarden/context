@@ -169,7 +169,7 @@ void tex_initialize_buildpage(void)
     An array |page_so_far| records the heights and depths of everything on the current page. This
     array contains six |scaled| numbers, like the similar arrays already considered in |line_break|
     and |vert_break|; and it also contains |page_goal| and |page_depth|, since these values are all
-    accessible to the user via |set_page_dimen| commands. The value of |page_so_far[1]| is also
+    accessible to the user via |set_page_dimension| commands. The value of |page_so_far[1]| is also
     called |page_total|. The stretch and shrink components of the |\skip| corrections for each
     insertion are included in |page_so_far|, but the natural space components of these corrections
     are not, since they have been subtracted from |page_goal|.
@@ -254,8 +254,8 @@ static void update_page_goal(halfword index, scaled total, scaled delta)
 {
     page_goal -= delta;
     lmt_page_builder_state.insert_heights += total;
-    if (lmt_page_builder_state.insert_heights > max_dimen) {
-        lmt_page_builder_state.insert_heights = max_dimen;
+    if (lmt_page_builder_state.insert_heights > max_dimension) {
+        lmt_page_builder_state.insert_heights = max_dimension;
     }
     if (tracing_inserts_par > 0) {
         tex_begin_diagnostic();
@@ -527,7 +527,7 @@ static void tex_aux_append_insert(halfword current)
             scaled height;
             halfword breaknode, penalty;
             if (multiplier <= 0) {
-                height = max_dimen;
+                height = max_dimension;
             } else {
                 height = page_goal - page_total - page_depth;
                 if (multiplier != scaling_factor) {
@@ -589,7 +589,7 @@ inline static int tex_aux_get_penalty_option(halfword current)
             return 0;
         }
     }
-    return 0;
+ // return 0;
 }
 
 
@@ -623,6 +623,7 @@ static void tex_aux_check_show_build_node(int callback_id, halfword current, int
 
 static void tex_aux_skip_show_build_node(int callback_id, halfword current)
 {
+    (void) current;
     lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dN->", skip_show_build_context);
 }
 
@@ -739,6 +740,7 @@ static halfword tex_aux_process_boundary(halfword current)
 
 static void tex_aux_reconsider_goal(halfword current, halfword *badness, halfword *costs, halfword *penalty, int tracing)
 {
+    (void) current;
     if (*badness >= awful_bad && page_extra_goal_par) {
         switch (tex_aux_get_penalty_option(lmt_page_builder_state.page_tail)) {
             case penalty_option_widowed: 
@@ -822,7 +824,7 @@ void tex_build_page(void)
             */
             halfword current = node_next(contribute_head);
             halfword type = node_type(current);
-            halfword subtype = node_subtype(current);
+            quarterword subtype = node_subtype(current);
             if (callback_id) { 
                tex_aux_step_show_build_node(callback_id, current);
             }
@@ -1250,7 +1252,7 @@ static void tex_aux_fire_up(halfword c)
                                             the insert node.
                                          */
                                         halfword list = insert_list(current);
-                                        halfword result = tex_vpack(list, 0, packing_additional, max_dimen, direction_unknown, holding_none_option, NULL);
+                                        halfword result = tex_vpack(list, 0, packing_additional, max_dimension, direction_unknown, holding_none_option, NULL);
                                         insert_total_height(current) = box_total(result);
                                         box_list(result) = null;
                                         tex_flush_node(result);
@@ -1266,7 +1268,7 @@ static void tex_aux_fire_up(halfword c)
                                     halfword index = insert_index(insert);
                                     halfword content = tex_get_insert_content(index);
                                     halfword list = box_list(content);
-                                    halfword result = tex_vpack(list, 0, packing_additional, max_dimen, dir_lefttoright, holding_none_option, NULL);
+                                    halfword result = tex_vpack(list, 0, packing_additional, max_dimension, dir_lefttoright, holding_none_option, NULL);
                                     tex_set_insert_content(index, result);
                                     box_list(content) = null;
                                     tex_flush_node(content);
@@ -1329,7 +1331,7 @@ static void tex_aux_fire_up(halfword c)
         halfword save_vbadness = vbadness_par;
         halfword save_vfuzz = vfuzz_par;
         vbadness_par = infinite_bad;
-        vfuzz_par = max_dimen;
+        vfuzz_par = max_dimension;
         tex_show_marks();
      // if (1) { 
             box_register(output_box_par) = tex_filtered_vpack(node_next(page_head), lmt_page_builder_state.best_size, packing_exactly, lmt_page_builder_state.max_depth, output_group, dir_lefttoright, 0, 0, 0, holding_none_option, &lmt_page_builder_state.excess);

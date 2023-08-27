@@ -1,0 +1,221 @@
+%D \module
+%D   [       file=s-engine-syntax,
+%D        version=2023.8.18,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=\LUAMETATEX\ Syntax,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% \futureexpandis
+% \futureexpandisap
+
+\registerctxluafile{s-system-syntax}{}
+
+\definehead
+  [Syntax]
+  [subsubsubsection]
+  [style=\tta\bf,
+   numberwidth=2fs,
+   after=\blank\startpacked,
+   aftersection=\stoppacked]
+
+\definenarrower[Arguments][left=4fs]
+
+\definedescription
+  [Primitive]
+  [headstyle=\ttbf,
+   width=fit,
+   alternative=top,
+   align={broad,flushleft,verytolerant},
+   inbetween=\startnarrower[2*left],
+   after=\stopnarrower]
+
+\definestartstop [SyntaxToken]       [style=\ttsl]
+\definestartstop [SyntaxTokens]      [style=\ttsl]
+\definestartstop [SyntaxInteger]     [style=\ttsl]
+\definestartstop [SyntaxDimension]   [style=\ttsl]
+\definestartstop [SyntaxGlue]        [style=\ttsl]
+\definestartstop [SyntaxMuglue]      [style=\ttsl]
+\definestartstop [SyntaxFloat]       [style=\ttsl]
+\definestartstop [SyntaxQuantity]    [style=\ttsl]
+\definestartstop [SyntaxPreamble]    [style=\ttsl]
+\definestartstop [SyntaxCharacter]   [style=\ttsl]
+\definestartstop [SyntaxChar]        [style=\ttsl]
+\definestartstop [SyntaxFont]        [style=\ttsl]
+\definestartstop [SyntaxMathstyle]   [style=\ttsl]
+\definestartstop [SyntaxTokenlist]   [style=\ttsl]
+\definestartstop [SyntaxCs]          [style=\tt,left=\texescape]
+\definestartstop [SyntaxBox]         [style=\ttsl]
+\definestartstop [SyntaxRule]        [style=\ttsl]
+\definestartstop [SyntaxToks]        [style=\ttsl]
+\definestartstop [SyntaxConditional] [style=\tt]
+
+\protected\def\SyntaxGlyph#1{{\ttbf\glyph raise -.25ex yscale 1440 #1}}
+
+\protected\def\SyntaxLeftBracket      {\SyntaxGlyph\leftbracketasciicode\thinspace}
+\protected\def\SyntaxLeftBrace        {\SyntaxGlyph\leftbraceasciicode\thinspace}
+\protected\def\SyntaxLeftParenthesis  {\SyntaxGlyph\leftparentasciicode\thinspace}
+\protected\def\SyntaxRightBracket     {\thinspace\SyntaxGlyph\rightbracketasciicode}
+\protected\def\SyntaxRightBrace       {\thinspace\SyntaxGlyph\rightbraceasciicode}
+\protected\def\SyntaxRightParenthesis {\thinspace\SyntaxGlyph\rightparentasciicode}
+\protected\def\SyntaxBar              {\thinspace\SyntaxGlyph\barasciicode\thinspace}
+
+\startbuffer[engine:syntax:preambleparameters]
+\starttabulate[|c|||]
+\NC \type{#n} \NC parameter                                   \NC index \type{1} upto \type{E} \NC \NR
+\TB
+\NC \type{#0} \NC throw away parameter                        \NC increment index              \NC \NR
+\NC \type{#-} \NC ignore parameter                            \NC keep index                   \NC \NR
+\TB
+\NC \type{#*} \NC gobble white space                          \NC                              \NC \NR
+\NC \type{#+} \NC keep (honor) the braces                     \NC                              \NC \NR
+\NC \type{#.} \NC ignore pars and spaces                      \NC                              \NC \NR
+\NC \type{#,} \NC push back space when no match               \NC                              \NC \NR
+\NC \type{#/} \NC remove leading and trailing spaces and pars \NC                              \NC \NR
+\NC \type{#=} \NC braces are mandate                          \NC                              \NC \NR
+\NC \type{#^} \NC keep leading spaces                         \NC                              \NC \NR
+\NC \type{#_} \NC braces are mandate and kept (obey)          \NC                              \NC \NR
+\TB
+\NC \type{#@} \NC par delimiter                               \NC only for internal usage      \NC \NR
+\TB
+\NC \type{#:} \NC pick up scanning here                       \NC                              \NC \NR
+\NC \type{#;} \NC quit scanning                               \NC                              \NC \NR
+\TB
+\NC \type{#L} \NC left delimiter token                        \NC followed by token            \NC \NR
+\NC \type{#R} \NC right delimiter token                       \NC followed by token            \NC \NR
+\TB
+\NC \type{#G} \NC gobble token                                \NC followed by token            \NC \NR
+\NC \type{#M} \NC gobble token and spaces                     \NC followed by token            \NC \NR
+\TB
+\NC \type{#S} \NC nest square brackets                        \NC only inner pairs             \NC \NR
+\NC \type{#X} \NC nest angle brackets                         \NC only inner pairs             \NC \NR
+\NC \type{#P} \NC nest parentheses                            \NC only inner pairs             \NC \NR
+\stoptabulate
+\stopbuffer
+
+\startbuffer[engine:syntax:bodyparameters]
+\starttabulate[|l|||]
+\NC \type{#n} \NC parameter            \NC index \type{1} upto \type{E} in macro body \NC \NR
+\TB
+\NC \type{#I} \NC current iterator     \NC \type {\currentloopiterator}    \NC \NR
+\NC \type{#P} \NC parent iterator      \NC \type {\previousloopiterator 1} \NC \NR
+\NC \type{#G} \NC grandparent iterator \NC \type {\previousloopiterator 2} \NC \NR
+\TB
+\NC \type{#H} \NC hash escape          \NC \type {#}  \NC \NR
+\NC \type{#S} \NC space escape         \NC \ruledhbox to  \interwordspace{\novrule height .8\strutht} \NC \NR
+\NC \type{#T} \NC tab escape           \NC \type {\t} \NC \NR
+\NC \type{#L} \NC newline escape       \NC \type {\n} \NC \NR
+\NC \type{#R} \NC return escape        \NC \type {\r} \NC \NR
+\NC \type{#X} \NC backslash escape     \NC \tex  {}   \NC \NR
+\TB
+\NC \type{#N} \NC nbsp    \NC \type {U+00A0} (under consideration) \NC \NR
+%NC \type{#Z} \NC zwj     \NC \type {U+200B} (under consideration) \NC \NR
+%NC \type{#-} \NC zwnj    \NC \type {U+200C} (under consideration) \NC \NR
+%NC \type{#+} \NC zwj     \NC \type {U+200D} (under consideration) \NC \NR
+%NC \type{#>} \NC l2r     \NC \type {U+200E} (under consideration) \NC \NR
+%NC \type{#<} \NC r2l     \NC \type {U+200F} (under consideration) \NC \NR
+%NC \type{#U} \NC unicode \NC \type {XXXXXX} (under consideration) \NC \NR
+\stoptabulate
+\stopbuffer
+
+\continueifinputfile{s-system-syntax.mkxl}
+
+\usemodule[abbreviations-logos]
+\usemodule[system-tokens]
+
+\setupbodyfont
+  [dejavu,10pt]
+
+\setuplayout
+  [tight]
+
+\starttext
+
+\starttitle[title=Primitives]
+
+This is a preliminary overview of the \LUAMETATEX\ primitives. The presentation
+is mostly for myself and kind of informal. The primitives are describes in more
+detail in the (yet incomplete) \quote {primitives} manual.
+
+\vkern\lineheight % bah, I need to fix this
+
+\startpagecolumns[page=no]
+    \startluacode
+        moduledata.engine.allspecifications()
+    \stopluacode
+\stoppagecolumns
+
+\stoptitle
+
+\starttitle[title=Registers]
+
+Currently we have these upper bounds for the register but they can be lowered
+because we don't need that many.
+
+\starttabulate[||||]
+\NC count      \NC integer   \NC \cldcontext{tex.magicconstants.max_integer_register_index}   \NC \NR
+\NC dimen      \NC dimension \NC \cldcontext{tex.magicconstants.max_dimension_register_index} \NC \NR
+\NC skip       \NC glue      \NC \cldcontext{tex.magicconstants.max_glue_register_index}      \NC \NR
+\NC muskip     \NC glue      \NC \cldcontext{tex.magicconstants.max_muglue_register_index}    \NC \NR
+\NC attribute  \NC integer   \NC \cldcontext{tex.magicconstants.max_attribute_register_index} \NC \NR
+\NC toks       \NC tokenlist \NC \cldcontext{tex.magicconstants.max_toks_register_index}      \NC \NR
+\NC box        \NC box       \NC \cldcontext{tex.magicconstants.max_box_register_index}       \NC \NR
+\NC float      \NC posit     \NC \cldcontext{tex.magicconstants.max_float_register_index}     \NC \NR
+\stoptabulate
+
+\stoptitle
+
+\starttitle[title=Preamble and escapes]
+
+These parameter specifiers can end up in preambles:
+
+\getbuffer[engine:syntax:preambleparameters]
+
+These parameter escapes can end up in bodies and text:
+
+\getbuffer[engine:syntax:bodyparameters]
+
+\stoptitle
+
+\starttitle[title=Comparing values]
+
+The following tokens can be used in a comparison:
+
+\startluacode
+    context.starttabulate { "|c||" }
+    for k, v in table.sortedhash(moduledata.engine.compares) do
+        context.NC() context.formatted.type("%C",k) context.NC() context(v) context.NC() context.NR()
+    end
+    context.stoptabulate()
+\stopluacode
+
+\stoptitle
+
+% test:
+
+\def \foo{test#Itest} \writestatus{I}{\foo} \meaning \foo \par  \showluatokens\foo
+\def \foo{test#Ptest} \writestatus{P}{\foo} \meaning \foo \par  \showluatokens\foo
+\def \foo{test#Gtest} \writestatus{G}{\foo} \meaning \foo \par  \showluatokens\foo
+\def \foo{test#Htest} \writestatus{H}{\foo} \meaning \foo \par  \showluatokens\foo
+\def \foo{test#Stest} \writestatus{S}{\foo} \meaning \foo \par  \showluatokens\foo
+\def \foo{test#Ttest} \writestatus{T}{\foo} \meaning \foo \par  \showluatokens\foo
+\def \foo{test#Ltest} \writestatus{L}{\foo} \meaning \foo \par  \showluatokens\foo
+\def \foo{test#Rtest} \writestatus{R}{\foo} \meaning \foo \par  \showluatokens\foo
+\def \foo{test#Xtest} \writestatus{X}{\foo} \meaning \foo \par  \showluatokens\foo
+
+\edef\foo{test#Itest} \writestatus{I}{\foo} \meaning \foo \par  \showluatokens\foo
+\edef\foo{test#Ptest} \writestatus{P}{\foo} \meaning \foo \par  \showluatokens\foo
+\edef\foo{test#Gtest} \writestatus{G}{\foo} \meaning \foo \par  \showluatokens\foo
+\edef\foo{test#Htest} \writestatus{H}{\foo} \meaning \foo \par  \showluatokens\foo
+\edef\foo{test#Stest} \writestatus{S}{\foo} \meaning \foo \par  \showluatokens\foo
+\edef\foo{test#Ttest} \writestatus{T}{\foo} \meaning \foo \par  \showluatokens\foo
+\edef\foo{test#Ltest} \writestatus{L}{\foo} \meaning \foo \par  \showluatokens\foo
+\edef\foo{test#Rtest} \writestatus{R}{\foo} \meaning \foo \par  \showluatokens\foo
+\edef\foo{test#Xtest} \writestatus{X}{\foo} \meaning \foo \par  \showluatokens\foo
+
+\stoptext

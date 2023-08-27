@@ -125,10 +125,10 @@ local function processwords(nesting,attribute,data,flush,head,parent,skip) -- we
         while n do
             local id = getid(n)
             if id == glyph_code
-                or id == rule_code
-                or (id == hlist_code and getattr(n,a_runningtext))
-                or id == disc_code
-                or id == boundary_code
+                or id == disc_code                                 -- can indeed be a start
+                or id == rule_code                                 -- can be a strut
+                or id == boundary_code                             -- can be between quote and text
+                or (id == hlist_code and getattr(n,a_runningtext)) -- well ...
             then
                 local aa = getattr(n,attribute)
                 -- new approach

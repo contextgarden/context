@@ -1411,7 +1411,7 @@ static inline int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && 
 */
 
 # define loop_state_node_size 2
-# define loop_state_count(a)  vinfo(a,1) 
+# define loop_state_count(a)  vinfo(a,1) /* instead if node_attr */
 
 /*tex
     To be decided: go double 

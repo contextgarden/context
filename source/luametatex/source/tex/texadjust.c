@@ -59,7 +59,7 @@ static void tex_scan_adjust_keys(adjust_properties *properties)
                 break;
             case 'i': case 'I':
                 if (tex_scan_mandate_keyword("index", 1)) {
-                    properties->index = tex_scan_int(0, NULL);
+                    properties->index = tex_scan_integer(0, NULL);
                     if (! tex_valid_adjust_index(properties->index)) {
                         properties->index = 0; /* for now no error */
                     }
@@ -75,7 +75,7 @@ static void tex_scan_adjust_keys(adjust_properties *properties)
                     case 't': case 'T':
                         if (tex_scan_mandate_keyword("attr", 2)) {
                             halfword i = tex_scan_attribute_register_number();
-                            halfword v = tex_scan_int(1, NULL);
+                            halfword v = tex_scan_integer(1, NULL);
                             if (eq_value(register_attribute_location(i)) != v) {
                                 if (properties->attrlist) {
                                     properties->attrlist = tex_patch_attribute_list(properties->attrlist, i, v);
@@ -96,13 +96,13 @@ static void tex_scan_adjust_keys(adjust_properties *properties)
                         case 'a': case 'A':
                             if (tex_scan_mandate_keyword("after", 1)) {
                                 properties->options |= adjust_option_depth_after;
-                                properties->depthafter = tex_scan_dimen(0, 0, 0, 0, NULL);
+                                properties->depthafter = tex_scan_dimension(0, 0, 0, 0, NULL);
                             }
                             break;
                         case 'b': case 'B':
                             if (tex_scan_mandate_keyword("before", 1)) {
                                 properties->options |= adjust_option_depth_before;
-                                properties->depthbefore = tex_scan_dimen(0, 0, 0, 0, NULL);
+                                properties->depthbefore = tex_scan_dimension(0, 0, 0, 0, NULL);
                             }
                             break;
                         case 'c': case 'C':
@@ -166,7 +166,7 @@ void tex_finish_vadjust_group(void)
         tex_end_paragraph(vadjust_group, vadjust_par_context);
         tex_unsave();
         lmt_save_state.save_stack_data.ptr -= saved_adjust_n_of_items;
-        box = tex_vpack(node_next(cur_list.head), 0, packing_additional, max_dimen, direction_unknown, holding_none_option, NULL);
+        box = tex_vpack(node_next(cur_list.head), 0, packing_additional, max_dimension, direction_unknown, holding_none_option, NULL);
         tex_pop_nest();
         adjust = tex_new_node(adjust_node, (quarterword) saved_value(saved_adjust_item_location));
         target = saved_value(saved_adjust_item_target);

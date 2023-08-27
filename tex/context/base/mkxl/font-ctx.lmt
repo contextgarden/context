@@ -3233,7 +3233,7 @@ do
         public    = true,
         protected = true,
         usage     = "value",
-        actions   = function()
+        actions   = function(index)
             return dimen_code, parameters[true].ascender or 0
         end
     }
@@ -3242,7 +3242,7 @@ do
         public    = true,
         protected = true,
         usage     = "value",
-        actions   = function()
+        actions   = function(index)
             return dimen_code, parameters[true].descender or 0
         end
     }
@@ -3251,9 +3251,27 @@ do
         public    = true,
         protected = true,
         usage     = "value",
-        actions   = function()
+        actions   = function(index)
             return dimen_code, parameters[true].capheight or 0
         end
     }
+
+ -- similar performance but then we need to define at the tex end anyway
+ --
+ -- local properties = {
+ --     [130] = "ascender",
+ --     [133] = "descender",
+ --     [132] = "capheight",
+ -- }
+ --
+ -- implement {
+ --     name      = "fontproperty",
+ --     public    = true,
+ --     protected = true,
+ --     usage     = "value",
+ --     actions   = function(index)
+ --         return dimen_code, parameters[true][properties[index]] or 0
+ --     end
+ -- }
 
 end
