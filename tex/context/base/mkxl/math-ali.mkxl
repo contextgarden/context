@@ -87,9 +87,12 @@
 
 \mutable\def\displayopenupvalue{.25\bodyfontsize}
 
+\installcorenamespace{mathalignendclass}   % maybe {complexmathendclass}
+
+\global\expandafter\integerdef\csname\??mathalignendclass\the\zerocount\endcsname\mathendcode
+
 \protected\def\math_eqalign_distance
-  {%global\expandafter\integerdef\csname\??mathbeginclass\the\c_math_eqalign_column\endcsname\mathbegincode
-   \global\expandafter\integerdef\csname\??mathendclass  \the\c_math_eqalign_column\endcsname\mathendcode
+  {\global\expandafter\integerdef\csname\??mathalignendclass\the\c_math_eqalign_column\endcsname\mathendcode
    \mathalignmentparameter\c!separator
    \relax}
 
@@ -129,22 +132,15 @@
    \tabskip\zeroskip
    \everycr\emptytoks}
 
-%installcorenamespace{mathbeginclass} % not needed currently
-\installcorenamespace{mathendclass}
-
-%global\expandafter\integerdef\csname\??mathbeginclass\the\zerocount\endcsname\mathbegincode
-\global\expandafter\integerdef\csname\??mathendclass  \the\zerocount\endcsname\mathendcode
-
 \protected\def\math_math_in_eqalign#1%
-  {\mathbeginclass\ifcsname\??mathendclass\the\numexpr\c_math_eqalign_column-\plusone\relax\endcsname\lastnamedcs\else\mathunsetcode\fi
+  {\mathbeginclass\ifcsname\??mathalignendclass\the\numexpr\c_math_eqalign_column-\plusone\relax\endcsname\lastnamedcs\else\mathunsetcode\fi
    \startforceddisplaymath
    \tabskip\zeroskip
    \everycr\emptytoks
    #1%
    \stopforceddisplaymath
    \ifnum\lastrightclass<\mathunsetcode
-     %global\expandafter\integerdef\csname\??mathbeginclass\the\c_math_eqalign_column\endcsname\lastleftclass
-     \global\expandafter\integerdef\csname\??mathendclass  \the\c_math_eqalign_column\endcsname\lastrightclass
+     \global\expandafter\integerdef\csname\??mathalignendclass\the\c_math_eqalign_column\endcsname\lastrightclass
    \fi
    }
 
@@ -3006,14 +3002,21 @@
 \permanent\protected\def\math_simplealign_NC
   {\aligntab}
 
+% \permanent\protected\def\math_simplealign_EQ
+%   {\aligntab=\aligntab}
+
 \permanent\protected\def\math_simplealign_EQ
-  {\aligntab=\aligntab}
+  {\aligntab=}
 
 \noaligned\tolerant\permanent\protected\def\math_simplealign_NR[#1]#*[#2]%
   {\unskip
    \strc_formulas_place_number_nested{#1}{#2}\crcr}
 
 \aliased\let\math_align_strut\relax
+
+\installcorenamespace{mathsimpleendclass}
+
+\global\expandafter\integerdef\csname\??mathsimpleendclass\the\zerocount\endcsname\mathendcode
 
 \permanent\tolerant\protected\def\math_simplealign_start[#1]#*[#S#2]%
   {\begingroup
@@ -3033,7 +3036,12 @@
    \mathsimplealignparameter\c!left\relax
    \math_fenced_start_wrap{\mathsimplealignparameter\c!fences}%
    \mathatom \s!class \mathconstructcode \bgroup
-   \vcenter\bgroup
+   \ifcsname\??mathalignlocation\mathsimplealignparameter\c!location\endcsname
+     \lastnamedcs % top|bottom|center as suggested by HM
+   \else
+     \vcenter
+   \fi
+   \bgroup
    \enforced\let\MC\math_simplealign_NC
    \enforced\let\NC\math_simplealign_NC
    \enforced\let\NR\math_simplealign_NR
@@ -3059,9 +3067,13 @@
      \math_left_of_eqalign  % \hfil
      \ignorespaces
      \math_align_strut
+     \mathbeginclass\ifcsname\??mathsimpleendclass\the\numexpr\c_math_eqalign_column-\plusone\relax\endcsname\lastnamedcs\else\mathunsetcode\fi
      \startforceddisplaymath
      \aligncontent
      \stopforceddisplaymath
+     \ifnum\lastrightclass<\mathunsetcode
+       \global\expandafter\integerdef\csname\??mathsimpleendclass\the\c_math_eqalign_column\endcsname\lastrightclass
+     \fi
      \removeunwantedspaces
      \math_right_of_eqalign % \hfil
      \aligntab
@@ -3069,8 +3081,7 @@
      \global\advanceby\c_math_eqalign_column\plusone
      \math_left_of_eqalign  % \hfil
      \ifx\m_simplealign_distance\v!math
-       \mathbeginclass\lastrightclass
-     \else
+       \mathbeginclass\ifcsname\??mathsimpleendclass\the\numexpr\c_math_eqalign_column-\plusone\relax\endcsname\lastnamedcs\else\mathunsetcode\fi     \else
        \kern\m_simplealign_distance
      \fi
      \ignorespaces

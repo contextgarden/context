@@ -132,11 +132,7 @@ static void PrintConstant(const Proto* f, int i)
                 break;
             }
         case LUA_VNUMINT:
-# if defined(__MINGW64__) || defined(__MINGW32__)
-            printf("%I64i", ivalue(o)); /* LUA_INTEGER_FMT */
-# else
-            printf("%lli", ivalue(o));  /* LUA_INTEGER_FMT */
-# endif
+            printf("%lli", ivalue(o)); /* LUA_INTEGER_FMT */
             break;
         case LUA_VSHRSTR:
         case LUA_VLNGSTR:

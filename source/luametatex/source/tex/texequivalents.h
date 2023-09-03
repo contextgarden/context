@@ -1576,7 +1576,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define new_line_char_par               integer_parameter(new_line_char_code)
 # define escape_char_par                 integer_parameter(escape_char_code)
 
-# define end_line_char_inactive          ((end_line_char_par < 0) || (end_line_char_par > 127))
+# define end_line_char_inactive          ((end_line_char_par < 0) || (end_line_char_par > max_endline_character))
 
 /*tex
     We keep these as reference but they are no longer equivalent to regular \TEX\ because we have

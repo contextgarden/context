@@ -379,9 +379,9 @@
 \permanent\protected\def\chemicaltopright   #1{\chemicalright{\chemicallefttop    {#1}{}}}
 \permanent\protected\def\chemicalbottomright#1{\chemicalright{\chemicalleftbottom {#1}{}}}
 
-% \protected\def\chemicalcentered     #1{\hbox to \fontcharwd\font`C{\setstrut\strut\hss#1\hss}}
-% \protected\def\chemicalleftcentered #1{\hbox to \fontcharwd\font`C{\setstrut\strut    #1\hss}}
-% \protected\def\chemicalrightcentered#1{\hbox to \fontcharwd\font`C{\setstrut\strut\hss#1}}
+% \protected\def\chemicalcentered     #1{\hbox to \scaledfontcharwd\font`C{\setstrut\strut\hss#1\hss}}
+% \protected\def\chemicalleftcentered #1{\hbox to \scaledfontcharwd\font`C{\setstrut\strut    #1\hss}}
+% \protected\def\chemicalrightcentered#1{\hbox to \scaledfontcharwd\font`C{\setstrut\strut\hss#1}}
 
 % \let\chemicalsmashedmiddle\chemicalcentered
 % \let\chemicalsmashedleft  \chemicalleftcentered
@@ -400,7 +400,7 @@
   {\dontleavehmode
    \begingroup
    \usechemicalstyleandcolor\c!style\c!color
-   \chem_box_visual_yes to \fontcharwd\font`C\bgroup
+   \chem_box_visual_yes to \scaledfontcharwd\font`C\bgroup
      \setstrut\strut
      #1\molecule{#3}#2%
    \egroup
@@ -411,7 +411,7 @@
    \begingroup
    \scratchcounter\normalmathstyle
    \usechemicalstyleandcolor\c!style\c!color
-   \chem_box_visual_yes to \fontcharwd\font`C\bgroup
+   \chem_box_visual_yes to \scaledfontcharwd\font`C\bgroup
      \setstrut\strut
      #1\mathematics{\tf\triggermathstyle\scratchcounter\molecule{#3}}#2%
    \egroup

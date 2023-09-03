@@ -39,7 +39,7 @@ extern void     lmt_local_call                (int slot);
 
 extern char    *lmt_get_expansion             (halfword head, int *len);
 
-extern void     lmt_token_register_to_lua     (lua_State *L, halfword t);
+extern void     lmt_token_register_to_lua     (lua_State *L, halfword t, int originals);
 
 extern void     lmt_tokenlib_initialize       (void);
 

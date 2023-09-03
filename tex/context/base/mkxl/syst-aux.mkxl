@@ -6648,18 +6648,43 @@
 %D
 %D \typebuffer \blank \getbuffer \blank
 
+%D We have a better splitter at the \LUA\ end.
+
+\integerdef\c_helpers_range_min\zerocount
+\integerdef\c_helpers_range_max\zerocount
+
+\lettonothing\m_helpers_range_action
+
 \def\syst_helpers_with_range#1%
   {\splitstring#1\at:\to\m_syst_helpers_range_from\and\m_syst_helpers_range_to
-   \ifempty\m_syst_helpers_range_to\let\m_syst_helpers_range_to\m_syst_helpers_range_from\fi
+   \ifx\m_syst_helpers_range_from\wildcardsymbol
+     \edef\m_syst_helpers_range_from{\number\c_helpers_range_min}%
+   \fi
+   \ifx\m_syst_helpers_range_to\wildcardsymbol
+     \edef\m_syst_helpers_range_to{\number\c_helpers_range_max}%
+   \fi
+   \ifempty\m_syst_helpers_range_to
+     \let\m_syst_helpers_range_to\m_syst_helpers_range_from
+   \fi
    \dostepwiserecurse\m_syst_helpers_range_from\m_syst_helpers_range_to\plusone{\m_helpers_range_action{##1}}}%
 
 \permanent\protected\def\processranges[#1]#2% #1= n:m,p,q:r
   {\def\m_helpers_range_action{#2}%
+   \integerdef\c_helpers_range_min\zerocount
+   \integerdef\c_helpers_range_max\zerocount
    \processcommacommand[#1]\syst_helpers_with_range}
 
-\permanent\protected\def\dowithrange#1#2%
+\permanent\protected\def\dowithrange#1#2% set action
   {\def\m_helpers_range_action{#2}%
+   \integerdef\c_helpers_range_min\zerocount
+   \integerdef\c_helpers_range_max\zerocount
    \processcommacommand[#1]\syst_helpers_with_range}
+
+\permanent\protected\def\dowithminmaxrange#1#2#3#4% min max set action
+  {\def\m_helpers_range_action{#4}%
+   \integerdef\c_helpers_range_min#1\relax
+   \integerdef\c_helpers_range_max#2\relax
+   \processcommacommand[#3]\syst_helpers_with_range}
 
 % \def\DoSomething#1{ [item #1] }
 % \dowithrange[1,4:5]\DoSomething

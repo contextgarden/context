@@ -696,5 +696,7 @@ return {
         "mathvcenter", "mathimaginary", "mathdifferential", "mathexponential", "mathdigit", "mathdivision",
         "mathfactorial", "mathwrapped", "mathconstruct", "mathdimension", "mathunary",
      -- "mathfunction", "mathexplicit", "mathbegin", "mathend",
+        --
+        "filebasename", "filenameonly", "filedirname", "filesuffix",
     }
 }

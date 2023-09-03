@@ -19,7 +19,6 @@ local floor = math.floor
 local context              = context
 
 local formatters           = string.formatters
-local bpfactor             = number.dimenfactors.bp
 local fastcopy             = table.fastcopy
 local sortedkeys           = table.sortedkeys
 local sortedhash           = table.sortedhash

@@ -97,7 +97,7 @@
          \clf_settagtabulatecell\c_tabl_tabulate_align\c_tabl_tabulate_kind
        \fi}%
     \enforced\permanent\protected\def\dotagtabulatesignal
-      {\dontleavehmode\signalcharacter\ignorespaces}%
+      {\dontleavehmode\signalcharacter\ignorespaces\ignorepars}%
 \to \everyenableelements
 
 \appendtoks

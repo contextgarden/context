@@ -590,6 +590,7 @@ do
             --
             fs = 10
             --
+            tmsy = tmsy * sc
             tmrx = tmrx * sc
             tmry = tmry * sc
         else
@@ -605,6 +606,7 @@ do
         end
         f_y_scale = sy
         if f_y_scale ~= 1.0 then
+            tmsy = tmsy * f_y_scale
             tmry = tmry * f_y_scale
         end
         --

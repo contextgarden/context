@@ -73,9 +73,9 @@
    \or
      #2\dimexpr\exheight\relax
    \or
-     #2\fontcharwd\font`#1%
+     #2\scaledfontcharwd\font`#1%
    \or
-     \dimexpr100\fontcharwd\font`#1/\charactertsize\charwidthlanguage\relax % ugly hack
+     \dimexpr100\scaledfontcharwd\font`#1/\charactertsize\charwidthlanguage\relax % ugly hack
    \else
      #2\dimexpr\exheight\relax
    \fi)}

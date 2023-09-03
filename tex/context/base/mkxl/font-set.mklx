@@ -122,7 +122,7 @@
 
 \protected\def\font_preloads_fourth_stage
   {\begingroup
-   %ifzeropt\fontcharwd\font\number`!\relax
+   %ifzeropt\scaledfontcharwd\font\number`!\relax
    \setbox\scratchbox\hpack{\tf c o n t e x t}%
    \ifzeropt\wd\scratchbox
      \writeline

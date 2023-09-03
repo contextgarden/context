@@ -1,5 +1,3 @@
-% engine=luatex
-
 %D \module
 %D   [       file=mtx-context-copy,
 %D        version=2008.11.10, % about that time i started playing with this
@@ -23,14 +21,9 @@
 %
 % end help
 
-\input mtx-context-common.tex
+\continuewhenlmtxmode
 
-\doif {\getdocumentargument{interaction}} {yes} {
-    \setupinteraction
-      [state=start]
-    \setupexternalfigures
-      [interaction=yes]
-}
+\input mtx-context-common.tex
 
 \setupexternalfigures
   [directory=]
@@ -43,16 +36,72 @@
 \setuplayout
   [page]
 
-% this will be an option to \copypages
+\doif {\getdocumentargument{interaction}} {yes} {
+    \setupinteraction
+      [state=start]
+    \setupexternalfigures
+      [interaction=yes]
+}
 
-\unexpanded\def\CopyPages[#1]%
-  {\dorecurse
-     {\noffigurepages}
-     {\startTEXpage
-        \externalfigure[#1][page=\recurselevel]%
-      \stopTEXpage}}
+\starttexdefinition CopyPages #1
+
+    \filterpages[#1][all][alternative=page]
+
+\stoptexdefinition
+
+\starttexdefinition CopyEntry #1#2#3#4
+
+    \doifelsesomething {#4} {
+        \setupinteraction
+          [state=start]
+        \setupexternalfigures
+          [interaction={#4}]
+        \writestatus
+            {filter pages}
+            {file #1, first page #2, last page #3, interaction '#4'}
+
+    } {
+        \setupinteraction
+          [state=stop]
+        \setupexternalfigures
+          [interaction=]
+        \writestatus
+            {filter pages}
+            {file #1, first page #2, last page #3}
+    }
+
+    \filterpages[#1][#2:#3][alternative=page]
+
+\stoptexdefinition
 
 \starttext
+
+% return {
+%     comment = "tugboat 137",
+%     list    = {
+%         {
+%             filename    = "tb137complete",
+%             first       = 1,
+%             last        = 1,
+%             interaction = "all"
+%             pageoffset  = -1,
+%
+%         },
+%         {
+%             filename    = "issue",
+%             first       = 2,
+%             last        = 123,
+%             interaction = "all"
+%         },
+%         {
+%             filename    = "issue",
+%             first       = 124,
+%             last        = 125,
+%             interaction = "all"
+%             pageoffset  = -1,
+%         },
+%     },
+% }
 
 \startluacode
 
@@ -60,6 +109,28 @@
 
     if #document.files == 0 then
         context("no files given")
+    elseif document.arguments.template then
+        local filename = file.addsuffix(document.files[1],"lua")
+        local template = table.load(filename)
+        if template then
+            local list = template.list
+            if type(list) == "table" then
+                for i=1,#list do
+                    local entry       = list[i]
+                    local filename    = entry.filename or ""
+                    local first       = tonumber(entry.first) or 1
+                    local last        = tonumber(entry.last)  or "*"
+                    local interaction = entry.interaction or ""
+                    local pageoffset  = tonumber(entry.pageoffset)
+                    if pageoffset and interaction ~= "" then
+                        interaction = interaction .. ",pageoffset:" .. pageoffset
+                    end
+                    context.CopyEntry(filename,first,last,interaction)
+                end
+            end
+        else
+            logs.report("copy","invalid or missing template file")
+        end
     else
         if document.arguments.pattern then
             document.files = dir.glob(document.arguments.pattern)
@@ -68,12 +139,7 @@
             local filename = document.files[i]
             if not find(filename,"^mtx%-context%-") and not find(filename,"^context%-extra") then
                 logs.report("copy",filename)
-                context.getfiguredimensions
-                    { filename }
-                context.setuppapersize
-                    { "fit" }
-                context.CopyPages
-                    { filename }
+                context.CopyPages(filename)
             end
         end
     end
@@ -81,7 +147,6 @@
 \stopluacode
 
 \stoptext
-
 
 % def copyoutput
 %     copyortrim(false,'copy')

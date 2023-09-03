@@ -35,8 +35,8 @@
    \c!alternative=0,
    \c!language=0]
 
-\permanent\protected\def\definecharacterspacing[#1]%
-  {\clf_definecharacterspacing{#1}}
+\permanent\tolerant\protected\def\definecharacterspacing[#1]#*[#2]%
+  {\clf_definecharacterspacing{#1}{#2}}
 
 \permanent\tolerant\protected\def\setupcharacterspacing[#1]#*[#S#2]#*[#S#3]% todo: #2 list
   {\begingroup
@@ -85,5 +85,10 @@
 \setupcharacterspacing [frenchpunctuation] ["0021] [\c!left =.25,\c!alternative=1] % ! % strip preceding space(char)
 \setupcharacterspacing [frenchpunctuation] ["00AB] [\c!right=.25,\c!alternative=1] % guillemotleft/leftguillemot   % strip following space(char)
 \setupcharacterspacing [frenchpunctuation] ["00BB] [\c!left =.25,\c!alternative=1] % guillemotright/rightguillemot % strip preceding space(char)
+
+% \definecharacterspacing [myspacing][frenchspacing]
+%
+% \setupcharacterspacing [myspacing] ["27E8] [alternative=1,right=0.25]
+% \setupcharacterspacing [myspacing] ["27E9] [alternative=1,left=0.25]
 
 \protect \endinput

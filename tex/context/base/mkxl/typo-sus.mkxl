@@ -18,6 +18,8 @@
 
 \registerctxluafile{typo-sus}{}
 
+\unprotect
+
 \permanent\protected\def\showsuspects{\enabletrackers[typesetters.suspects]}
 
 %D The suspicious spacing will be colored in the text. There can be false
@@ -47,5 +49,5 @@
 %D     \showsample{foo\nobreakspace bar}
 %D \stoptabulate
 
-\endinput
+\protect \endinput
 

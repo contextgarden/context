@@ -351,6 +351,7 @@ static int statslib_getconstants(lua_State *L)
     lua_set_integer_by_key(L, "max_category_code",              max_category_code);
                                                                 
     lua_set_integer_by_key(L, "max_newline_character",          max_newline_character);
+    lua_set_integer_by_key(L, "max_endline_character",          max_endline_character);
                                                                 
     lua_set_integer_by_key(L, "max_size_of_word",               max_size_of_word);
                                                                 

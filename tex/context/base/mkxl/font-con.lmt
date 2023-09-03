@@ -360,6 +360,7 @@ function constructors.scale(tfmdata,specification)
     --
     target.size       = scaledpoints
     --
+    --
     target.subfont    = properties.subfont
     target.cidinfo    = properties.cidinfo
     target.format     = properties.format
@@ -399,6 +400,7 @@ function constructors.scale(tfmdata,specification)
     local slantfactor = parameters.slantfactor or 0
     if slantfactor ~= 0 then
         target.slant = slantfactor * 1000
+     -- italic : new wd = oldwd + slant * ht
     else
         target.slant = 0
     end
@@ -526,9 +528,9 @@ function constructors.scale(tfmdata,specification)
         targetproperties.compactmath = compactmath
         target.compactmath           = compactmath
 
-        local textscale         = parameters.textscale         -- or 1000
-        local scriptscale       = parameters.scriptscale       -- or  700
-        local scriptscriptscale = parameters.scriptscriptscale -- or  500
+        local textscale         = parameters.textscale         -- 1000
+        local scriptscale       = parameters.scriptscale       --  700
+        local scriptscriptscale = parameters.scriptscriptscale --  500
 
         parameters.textscale         = textscale
         parameters.scriptscale       = scriptscale
@@ -719,11 +721,13 @@ function constructors.scale(tfmdata,specification)
             end
             local va = character.topanchor
             if va and va ~= 0 then
-                chr.topanchor = va*vdelta
+             -- chr.topanchor = va*vdelta
+                chr.topanchor = va*hdelta
             end
             va = character.bottomanchor
             if va and va ~= 0 then
-                chr.bottomanchor = va*vdelta
+             -- chr.bottomanchor = va*vdelta
+                chr.bottomanchor = va*hdelta
             end
             --
             local mk = character.mathkerns
@@ -872,6 +876,10 @@ function constructors.scale(tfmdata,specification)
     local vfonts = target.fonts
     if not vfonts or #vfonts == 0 then
         target.fonts = { { id = 0 } }
+    end
+    --
+    if trace_defining then
+        report_defining("font %a, size %N, delta %N",name,scaledpoints,delta)
     end
     --
     return target

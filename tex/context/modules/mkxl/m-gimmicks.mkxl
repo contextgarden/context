@@ -19,9 +19,9 @@
 \protected\def\Mac
   {\dontleavehmode
    \begingroup
-   \scratchwidth   \fontcharwd\font`M\relax
-   \scratchdistance\MacScale\fontcharwd\font`c\relax
-   \scratchoffset  \dimexpr\fontcharht\font`M -\MacScale\fontcharht\font`c\relax
+   \scratchwidth   \scaledfontcharwd\font`M\relax
+   \scratchdistance\MacScale\scaledfontcharwd\font`c\relax
+   \scratchoffset  \dimexpr\scaledfontcharht\font`M -\MacScale\scaledfontcharht\font`c\relax
    \scratchdepth   \MacRule\exheight
    \kern\scratchwidth
    \vrule

@@ -43,7 +43,7 @@
 \to \everyinitializeverbatim
 
 \permanent\protected\def\setverbatimspaceskip % to be checked: must happen after font switch
-  {\spaceskip\fontcharwd\font`x\relax
+  {\spaceskip\scaledfontcharwd\font`x\relax
    \xspaceskip\spaceskip}
 
 \defcsname\??typinglines\v!no        \endcsname{\buff_verbatim_ignore_hyphens}

@@ -405,7 +405,7 @@
 \ifdefined\localbodyfontsize  \else \newdimension\localbodyfontsize  \fi \localbodyfontsize =\globalbodyfontsize
 \ifdefined\bodyfontsize       \else \newdimension\bodyfontsize       \fi \bodyfontsize      =\globalbodyfontsize
 
-\permanent\protected\def\widthofzero{\fontcharwd\font\zeroasciicode}
+\permanent\protected\def\widthofzero{\scaledfontcharwd\font\zeroasciicode}
 
 % \definedatluaend\ascender
 % \definedatluaend\descender
@@ -473,7 +473,6 @@
 %D \definefont[test][Serif mo 5]\test TEST \par
 %D \definefont[test][Serif sa d]\test TEST \par
 %D \definefont[test][Serif at 60pt]\test TEST \par
-%D \definefont[test][Serif scaled 6000]\test TEST \par
 %D \stopbuffer
 %D
 %D \typebuffer
@@ -837,7 +836,7 @@
      \d_font_scaled_font_size\font_basics_set_mapped_fontsize\v_font_size_absolute
      \d_font_scaled_font_size\currentfontbodysize\d_font_scaled_font_size
    \or
-     % scaled, don't use this one as it's unpredictable
+     % scaled, don't use this one as it's unpredictable (we fallback on scaled 1200 -> sa 1.2)
      \d_font_scaled_font_size-\somefontsize\scaledpoint
    \else % ht cp
      % experiment, yet undocumented
@@ -936,7 +935,7 @@
      \d_font_scaled_font_size\font_basics_set_mapped_fontsize\v_font_size_absolute
      \d_font_scaled_font_size\currentfontbodysize\d_font_scaled_font_size
    \or
-     % scaled, don't use this one as it's unpredictable
+     % scaled, don't use this one as it's unpredictable (we fallback on scaled 1200 -> sa 1.2)
      \d_font_scaled_font_size-\somefontsize\scaledpoint
    \else % ht cp
      % experiment, yet undocumented
@@ -1006,7 +1005,9 @@
      \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks) % \the\scaledfontsize
      %
      \glyphscale
-       \ifnum\c_font_scaled_font_mode_saved>\plusfour
+       \ifnum\scaledfontmode=\plusfour
+         \somefontsize % not overloaded at the lua end so still 'scaled'
+       \orelse\ifnum\c_font_scaled_font_mode_saved>\plusfour
          % \c_font_scaled_points is set when we pass the font to the engine
          \numexpr\plusthousand*\dimexpr\d_font_scaled_default\relax/\c_font_scaled_points\relax
        \else
@@ -1144,7 +1145,6 @@
 %D
 %D \starttyping
 %D \definefont[Some][LucidaBright at 100pt]    \Some some
-%D \definefont[More][LucidaBright scaled 3000] \More more
 %D \definefont[Nice][LucidaBright mo 2]        \Nice nice
 %D \definefont[Text][LucidaBright sa 5.4]      \Text last
 %D \stoptyping
@@ -1575,10 +1575,10 @@
 %D    sl=cmsl12,
 %D    bi=cmbxti10 at 12pt,
 %D    bs=cmbxsl10 at 12pt,
-%D   tfa=cmr12    scaled 1.200,
-%D   tfb=cmr12    scaled 1.440,
-%D   tfc=cmr12    scaled 1.728,
-%D   tfd=cmr12    scaled 2.074,
+%D   tfa=cmr12    sa a, % scaled 1.200 dropped from lmtx
+%D   tfb=cmr12    sa b, % scaled 1.440 dropped from lmtx
+%D   tfc=cmr12    sa c, % scaled 1.728 dropped from lmtx
+%D   tfd=cmr12    sa d, % scaled 2.074 dropped from lmtx
 %D    sc=cmcsc10  at 12pt]
 %D
 %D \definebodyfont [12pt,11pt,10pt,9pt,8pt] [rm]
@@ -1588,11 +1588,11 @@
 %D    sl=lbsl sa 1,
 %D    bi=lbdi sa 1,
 %D    bs=lbdi sa 1,
-%D   tfa=lbr  sa 1.200,
-%D   tfb=lbr  sa 1.440,
-%D   tfc=lbr  sa 1.728,
-%D   tfd=lbr  sa 2.074,
-%D    sc=lbr  sa 0.833]
+%D   tfa=lbr  sa a, % scaled 1.200 dropped from lmtx
+%D   tfb=lbr  sa b, % scaled 1.440 dropped from lmtx
+%D   tfc=lbr  sa c, % scaled 1.728 dropped from lmtx
+%D   tfd=lbr  sa d, % scaled 2.074 dropped from lmtx
+%D    sc=lbr  sa x] % scaled 0.833 dropped from lmtx
 %D \stoptyping
 %D
 %D The second example shows that we can define more sizes at once. The main
@@ -2417,12 +2417,10 @@
   {\currentxfontsize\plusone
    \ifmmode
      \scriptstyle
+   \orelse\ifconditional\c_font_compact
+     \font_scale_inherit_compact_x
    \else
-     \ifconditional\c_font_compact
-       \font_scale_inherit_compact_x
-     \else
-       \font_scale_inherit_normal_x
-     \fi
+     \font_scale_inherit_normal_x
    \fi
    \enforced\let\tx\txx
    \enforced\let\sx\sxx}
@@ -2431,12 +2429,10 @@
   {\currentxfontsize\plustwo
    \ifmmode
      \scriptscriptstyle
+   \orelse\ifconditional\c_font_compact
+     \font_scale_inherit_compact_xx
    \else
-     \ifconditional\c_font_compact
-       \font_scale_inherit_compact_xx
-     \else
-       \font_scale_inherit_normal_xx
-     \fi
+     \font_scale_inherit_normal_xx
    \fi
    \enforced\lettonothing\tx
    \enforced\lettonothing\txx

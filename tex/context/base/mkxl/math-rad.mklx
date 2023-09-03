@@ -105,6 +105,8 @@
    \c!height=\zeropoint,
    \c!depth=\zeropoint,
    \c!strut=\v!height,
+ % \c!mindepth=\zeropoint,
+   \c!mindepth=.15\exheight, % a reasonable default for: \im { \sqrt{1+x} + \sqrt{1-x} }
    \c!source=\zerocount,
    \c!left="221A,
    \c!right=\zerocount,
@@ -210,21 +212,27 @@
      \relax
    {\mathstrut#degree}}
 
-\defcsname\??mathradicalalternative\v!default\endcsname %  #body%
-  {\math_radical_common{\currentmathradicaldegree}}   % {#body}}
+\protected\def\math_radical_mindepth
+  {\scratchdepth\mathradicalparameter\c!mindepth\relax
+   \ifzerodim\scratchdepth\else
+     \srule \s!depth\scratchdepth\s!height\zeropoint\s!width\zeropoint\relax
+   \fi}
+
+\defcsname\??mathradicalalternative\v!default\endcsname#body%
+  {\math_radical_common{\currentmathradicaldegree}{\math_radical_mindepth#body}}
 
 \defcsname\??mathradicalalternative\v!normal\endcsname#body%
   {\edef\p_color{\mathradicalparameter\c!color}%
    \ifempty\p_color
-     \math_radical_common{\currentmathradicaldegree}{#body}% {} really needed as \rootradical expands first
+     \math_radical_common{\currentmathradicaldegree}{\math_radical_mindepth#body}% {} really needed as \rootradical expands first
    \orelse\ifempty\currentmathradicaldegree
      \pushcolor[\p_color]%
      \math_radical_common{}%
-     {\popcolor#body}%
+     {\popcolor\math_radical_mindepth#body}%
    \else
      \pushcolor[\p_color]%
      \math_radical_common{\popcolor\currentmathradicaldegree\pushcolor[\p_color]}%
-     {\popcolor#body}%
+     {\popcolor\math_radical_mindepth#body}%
    \fi}
 
 \startMPextensions

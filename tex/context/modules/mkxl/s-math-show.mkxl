@@ -129,6 +129,8 @@
 
 \continueifinputfile{s-math-show.mkxl}
 
+\showmathmargins[all]
+
 \starttext
 
 \startformula

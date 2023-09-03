@@ -1981,7 +1981,7 @@ static int texlib_gettoks(lua_State *L)
     int state = texlib_aux_check_for_index(L, slot++, "toks", &index, internal_toks_cmd, register_toks_cmd, internal_toks_base, register_toks_base, max_toks_register_index, 0);
     if (state >= 0) {
         if (lua_toboolean(L, slot)) {
-            lmt_token_register_to_lua(L, state ? toks_parameter(index) : toks_register(index));
+            lmt_token_register_to_lua(L, state ? toks_parameter(index) : toks_register(index), 0);
         } else {
 
             strnumber value = tex_get_tex_toks_register(index, state);
@@ -3082,6 +3082,12 @@ static int texlib_aux_someitem(lua_State *L, int code)
         case font_char_ic_code:
         case font_char_ta_code:
         case font_char_ba_code:
+        case scaled_font_char_wd_code:
+        case scaled_font_char_ht_code:
+        case scaled_font_char_dp_code:
+        case scaled_font_char_ic_code:
+        case scaled_font_char_ta_code:
+        case scaled_font_char_ba_code:
             /* these read a char, todo */
             break;
         case font_size_code:

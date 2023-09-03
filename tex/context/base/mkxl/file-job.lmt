@@ -1458,3 +1458,33 @@ implement {
                 end,
     arguments = "array",
 }
+
+-- don't we have this already?
+
+implement {
+    name      = "filebasename",
+    public    = true,
+    arguments = "argument",
+    actions  = { basename, context },
+}
+
+implement {
+    name      = "filenameonly",
+    public    = true,
+    arguments = "argument",
+    actions  = { nameonly, context },
+}
+
+implement {
+    name      = "filedirname",
+    public    = true,
+    arguments = "argument",
+    actions  = { dirname, context },
+}
+
+implement {
+    name      = "filesuffix",
+    public    = true,
+    arguments = "argument",
+    actions  = { dirname, context },
+}

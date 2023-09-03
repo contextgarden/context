@@ -614,28 +614,52 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
         case font_char_ic_code:
         case font_char_ta_code:
         case font_char_ba_code:
+        case scaled_font_char_wd_code:
+        case scaled_font_char_ht_code:
+        case scaled_font_char_dp_code:
+        case scaled_font_char_ic_code:
+        case scaled_font_char_ta_code:
+        case scaled_font_char_ba_code:
             {
                 halfword fnt = tex_scan_font_identifier(NULL);
                 halfword chr = tex_scan_char_number(0);
                 if (tex_char_exists(fnt, chr)) {
                     switch (code) {
                         case font_char_wd_code:
+                        case scaled_font_char_wd_code:
                             cur_val = tex_char_width_from_font(fnt, chr);
                             break;
                         case font_char_ht_code:
+                        case scaled_font_char_ht_code:
                             cur_val = tex_char_height_from_font(fnt, chr);
                             break;
                         case font_char_dp_code:
+                        case scaled_font_char_dp_code:
                             cur_val = tex_char_depth_from_font(fnt, chr);
                             break;
                         case font_char_ic_code:
+                        case scaled_font_char_ic_code:
                             cur_val = tex_char_italic_from_font(fnt, chr);
                             break;
                         case font_char_ta_code:
+                        case scaled_font_char_ta_code:
                             cur_val = tex_char_top_anchor_from_font(fnt, chr);
                             break;
                         case font_char_ba_code:
+                        case scaled_font_char_ba_code:
                             cur_val = tex_char_bottom_anchor_from_font(fnt, chr);
+                            break;
+                    }
+                    switch (code) {
+                        case scaled_font_char_wd_code:
+                        case scaled_font_char_ic_code:
+                        case scaled_font_char_ta_code:
+                        case scaled_font_char_ba_code:
+                            cur_val = tex_font_x_scaled(cur_val);
+                            break;
+                        case scaled_font_char_ht_code:
+                        case scaled_font_char_dp_code:
+                            cur_val = tex_font_y_scaled(cur_val);
                             break;
                     }
                 } else {
@@ -4718,39 +4742,51 @@ inline static int tex_aux_add_or_sub(int x, int y, int max_answer, int operation
 
 */
 
-inline static int tex_aux_quotient(int n, int d, int round)
+// inline static int xtex_aux_quotient(int n, int d, int round)
+// {
+//     /*tex The answer: */
+//     if (d == 0) {
+//         lmt_scanner_state.arithmic_error = 1;
+//         return 0;
+//     } else {
+//         /*tex Should the answer be negated? */
+//         bool negative;
+//         int a;
+//         if (d > 0) {
+//             negative = false;
+//         } else {
+//             d = -d;
+//             negative = true;
+//         }
+//         if (n < 0) {
+//             n = -n;
+//             negative = ! negative;
+//         }
+//         a = n / d;
+//         if (round) {
+//             n = n - a * d;
+//             /*tex Avoid certain compiler optimizations! Really? */
+//             d = n - d;
+//             if (d + n >= 0) {
+//                 ++a;
+//             }
+//         }
+//         if (negative) {
+//             a = -a;
+//         }
+//         return a;
+//     }
+// }
+
+inline static int tex_aux_quotient(int n, int d, int rounded)
 {
-    /*tex The answer: */
     if (d == 0) {
         lmt_scanner_state.arithmic_error = 1;
         return 0;
-    } else {
-        /*tex Should the answer be negated? */
-        bool negative;
-        int a;
-        if (d > 0) {
-            negative = false;
-        } else {
-            d = -d;
-            negative = true;
-        }
-        if (n < 0) {
-            n = -n;
-            negative = ! negative;
-        }
-        a = n / d;
-        if (round) {
-            n = n - a * d;
-            /*tex Avoid certain compiler optimizations! Really? */
-            d = n - d;
-            if (d + n >= 0) {
-                ++a;
-            }
-        }
-        if (negative) {
-            a = -a;
-        }
-        return a;
+    } else if (rounded) {
+        return lround((double) n / (double) d);
+    } else { 
+        return n / d;
     }
 }
 
@@ -4762,6 +4798,11 @@ inline static int tex_aux_modulo(int n, int d)
     } else {
         return n % d;
     }
+}
+
+int tex_quotient(int n, int d, int round)
+{
+    return tex_aux_quotient(n, d, round);
 }
 
 /*tex

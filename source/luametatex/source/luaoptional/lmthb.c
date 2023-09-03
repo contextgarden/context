@@ -574,12 +574,13 @@ static int hblib_shape_string(lua_State * L)
                 more natural than having it as argument to the shape function.
 
                 MSVC wants |char**| for the shapers and gcc wants |const char**| i.e.\ doesn't
-                like a cast so we just accept the less annoying  MSVC warning.
+                like a cast so we just accept the less annoying MSVC warning.
             */
-            if (lua_istable(L,5)) {
+            if (lua_istable(L, 5)) {
                 lua_Unsigned n = lua_rawlen(L, 5);
                 if (n > 0) {
-                    shapers = malloc((size_t) (n + 1) * sizeof(char *));
+                 // shapers = malloc((size_t) (n + 1) * sizeof(char *));
+                    shapers = calloc((size_t) (n + 1), sizeof(char *));
                     if (shapers) {
                         for (lua_Unsigned i = 0; i < n; i++) {
                             lua_rawgeti(L, 5, i + 1);
@@ -621,7 +622,7 @@ static int hblib_shape_string(lua_State * L)
                 }
             }
             /* Some preparations (see original ffi variant). */
-            buffer =hblib_state. hb_buffer_create(); /* we could put this in the data blob */
+            buffer = hblib_state.hb_buffer_create(); /* we could put this in the data blob */
             /*
                 When using ffi we used to use utf32 plus some slack because utf8 crashed. It would
                 be more handy if we could pass an array of integers (maybe we can).
@@ -661,9 +662,13 @@ static int hblib_shape_string(lua_State * L)
                     lua_rawseti(L, -2, 5);
                     lua_pushinteger(L, positions[i].y_advance);
                     lua_rawseti(L, -2, 6);
-                    lua_rawseti(L, -2, i + 1);
+                    lua_rawseti(L, -2, (lua_Integer) i + 1);
                }
             }
+            /* 
+                We have a crash after many runs but why ... a printf("!") actually solves it. Do we need to free 
+                something more? SOmethign to so with utf32 (used to be utf8 issue).
+            */
             hblib_state.hb_buffer_destroy(buffer);
             free((void *) shapers); /* we didn't make copies of the lua strings, ms compiler gives warning */
             free((void *) features);

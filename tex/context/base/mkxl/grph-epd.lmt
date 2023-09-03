@@ -15,14 +15,14 @@ local trace  = false  trackers.register("figures.merging", function(v) trace = v
 local report = logs.reporter("backend","merging")
 
 local function mergegoodies(optionlist)
-    local options = settings_to_hash(optionlist)
-    local yes     = options[variables.yes]
-    local all     = options[variables.all]
+    local options  = settings_to_hash(optionlist)
+    local yes      = options[variables.yes]
+    local all      = options[variables.all]
     if next(options) then
         report("% t",table.sortedkeys(options))
     end
     if all or yes or options[variables.reference] then
-        codeinjections.mergereferences()
+        codeinjections.mergereferences(nil,options) -- first can be specification
     end
     if all or options[variables.comment] then
         codeinjections.mergecomments()

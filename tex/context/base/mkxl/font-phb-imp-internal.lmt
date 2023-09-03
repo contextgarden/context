@@ -64,6 +64,10 @@ if not modules then modules = { } end modules ['font-phb-imp-internal'] = {
 --            font plugin > hb > text   : U+00066 U+00069 U+00065 U+00074 U+00073
 --            font plugin > hb > result : U+0FB01 U+00065 U+00074 U+00073
 
+-- In the meantime a single dll is not enough and we need some more which interferes with
+-- the idea of a simple dll in the lib path ... too many dependencies now .. and having
+-- some shared bin path is not what we want in tex so ...
+
 local report = utilities.hb.report or print
 
 local hblib  = optional and (optional.hb or optional.test)
@@ -104,7 +108,7 @@ local shapers = {
     fallback  = { "fallback" },
 }
 
-local mode = 32
+local mode = 8 -- now 32 bit crashes (random, needs checking, probably zero end of string issue)
 
 function utilities.hb.methods.internal(font,data,rlmode,text,leading,trailing)
     if initialized == nil then

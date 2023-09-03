@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['lpdf-epa'] = {
 -- embedded files ... not bound to a page
 
 local type, tonumber, next = type, tonumber, next
-local format, gsub, lower, find = string.format, string.gsub, string.lower, string.find
+local format, gsub, lower, find, match = string.format, string.gsub, string.lower, string.find, string.match
 local formatters = string.formatters
 local concat, merged = table.concat, table.merged
 local abs = math.abs
@@ -200,7 +200,7 @@ local function add_link(x,y,w,h,destination,what)
     )
 end
 
-local function link_goto(x,y,w,h,document,annotation,pagedata,namespace)
+local function link_goto(x,y,w,h,document,annotation,pagedata,namespace,pageoffset)
     local a = annotation.A
     if a then
         local destination = a.D -- [ 18 0 R /Fit ]
@@ -215,7 +215,12 @@ local function link_goto(x,y,w,h,document,annotation,pagedata,namespace)
         if pagedata then
             local destinationpage = pagedata.number
             if destinationpage then
-                add_link(x,y,w,h,namespace .. destinationpage,what)
+                if pageoffset then
+                    destinationpage = "page(" .. (destinationpage+pageoffset) .. ")"
+                else
+                    destinationpage = namespace .. destinationpage
+                end
+                add_link(x,y,w,h,destinationpage,what)
             end
         end
     end
@@ -283,8 +288,21 @@ local function link_file(x,y,w,h,document,annotation)
 end
 
 -- maybe handler per subtype and then one loop but then what about order ...
+--
+-- specification is normally nil
 
-function codeinjections.mergereferences(specification)
+local function getpageoffset(options)
+    if options then
+        for k in next, options do
+            local p = tonumber(match(k,"pageoffset:([%+%-]*%d+)"))
+            if p then
+                return p
+            end
+        end
+    end
+end
+
+function codeinjections.mergereferences(specification,options)
     local specification, fullname, document = validdocument(specification)
     if not document then
         return ""
@@ -294,6 +312,7 @@ function codeinjections.mergereferences(specification)
     local annotations = pagedata and pagedata.Annots
     local namespace   = makenamespace(fullname)
     local reference   = namespace .. pagenumber
+    local pageoffset  = getpageoffset(options)
     if annotations and #annotations > 0 then
         local llx, lly, urx, ury, width, height, xscale, yscale = getmediasize(specification,pagedata,xscale,yscale)
         initializelayer(height,width)
@@ -305,7 +324,7 @@ function codeinjections.mergereferences(specification)
                     if not a then
                         local d = annotation.Dest
                         if d then
-                            annotation.A = { S = "GoTo", D = d } -- no need for a dict
+                            a = { S = "GoTo", D = d } -- no need for a dict
                         end
                     end
                     if not a then
@@ -315,7 +334,7 @@ function codeinjections.mergereferences(specification)
                         if x then
                             local linktype = a.S
                             if linktype == "GoTo" then
-                                link_goto(x,y,w,h,document,annotation,pagedata,namespace)
+                                link_goto(x,y,w,h,document,annotation,pagedata,namespace,pageoffset)
                             elseif linktype == "GoToR" then
                                 link_file(x,y,w,h,document,annotation)
                             elseif linktype == "URI" then

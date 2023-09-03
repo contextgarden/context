@@ -5225,35 +5225,6 @@ static void tex_aux_define_all_math_parameters(int size, int param, scaled value
 # define big_operator_spacing4(A)  mathex(A,12) /*tex minimum baselineskip below displayed op */
 # define big_operator_spacing5(A)  mathex(A,13) /*tex padding above and below displayed limits */
 
-/*tex
-    Somehow a scale > scaling_factor results in extreme values.
-*/
-
-/*
-inline static int tex_aux_get_font_math_parameter(scaled scale, halfword f, int id)
-{
-    scaled v = get_font_math_par(f, id);
-//  return scale == scaling_factor ? v : round_xn_over_d(v, scale, scaling_factor);
-    if (v) {
-        double d = 0.001 * scale * v;
-        return (d < 0.0) ? (int) (d - 0.5) : (int) (d + 0.5);
-    } else {
-        return 0;
-    }
-}
-
-inline static int tex_aux_get_font_math_quantity(scaled scale, halfword v)
-{
-//   return scale == scaling_factor ? v : round_xn_over_d(v, scale, scaling_factor);
-    if (v) {
-        double d = 0.001 * scale * v;
-        return (d < 0.0) ? (int) (d - 0.5) : (int) (d + 0.5);
-    } else {
-        return 0;
-    }
-}
-*/
-
 # define math_parameter(a,b) ((font_math_parameter_count(a) >= b) ? font_math_parameter(a,b) : undefined_math_parameter)
 
 inline static scaled tex_aux_get_font_math_parameter(scaled scale, halfword f, int id)
@@ -5330,27 +5301,45 @@ void tex_fixup_math_parameters(int fam, int size, int f, int level)
     tex_aux_define_all_math_parameters(size, math_parameter_connector_overlap_min,            tex_aux_get_font_math_parameter(scale, f, MinConnectorOverlap),               level); /* engine, default 0 */
     tex_aux_define_all_math_parameters(size, math_parameter_fraction_rule,                    tex_aux_get_font_math_parameter(scale, f, FractionRuleThickness),             level);
 
-    tex_aux_define_all_math_parameters(size, math_parameter_radical_degree_raise,               math_parameter(f, RadicalDegreeBottomRaisePercent), level);
+ // tex_aux_define_all_math_parameters(size, math_parameter_prime_space_after,                  math_parameter(f, PrimeSpaceAfter),                 level); /* engine, default 0 */
+ // tex_aux_define_all_math_parameters(size, math_parameter_skewed_delimiter_tolerance,         math_parameter(f, SkewedDelimiterTolerance),        level); /* engine, default 0 */
+ // tex_aux_define_all_math_parameters(size, math_parameter_accent_top_shift_up,                math_parameter(f, AccentTopShiftUp),                level); /* engine, undefined */
+ // tex_aux_define_all_math_parameters(size, math_parameter_accent_bottom_shift_down,           math_parameter(f, AccentBottomShiftDown),           level); /* engine, undefined */
+ // tex_aux_define_all_math_parameters(size, math_parameter_accent_top_overshoot,               math_parameter(f, AccentTopOvershoot),              level); /* engine, default 0 */
+ // tex_aux_define_all_math_parameters(size, math_parameter_accent_bottom_overshoot,            math_parameter(f, AccentBottomOvershoot),           level); /* engine, default 0 */
+ // tex_aux_define_all_math_parameters(size, math_parameter_accent_superscript_drop,            math_parameter(f, AccentSuperscriptDrop),           level); /* engine, default 0 */
+ // tex_aux_define_all_math_parameters(size, math_parameter_accent_superscript_percent,         math_parameter(f, AccentSuperscriptPercent),        level); /* engine, default 0 */
+ // tex_aux_define_all_math_parameters(size, math_parameter_accent_extend_margin,               math_parameter(f, AccentExtendMargin),              level); /* engine, undefined */
+ // tex_aux_define_all_math_parameters(size, math_parameter_flattened_accent_top_shift_up,      math_parameter(f, FlattenedAccentTopShiftUp),       level); /* engine, undefined */
+ // tex_aux_define_all_math_parameters(size, math_parameter_flattened_accent_bottom_shift_down, math_parameter(f, FlattenedAccentBottomShiftDown),  level); /* engine, undefined */
+ // tex_aux_define_all_math_parameters(size, math_parameter_delimiter_shortfall,                math_parameter(f, DelimiterShortfall),              level); /* engine, undefined */
+ // tex_aux_define_all_math_parameters(size, math_parameter_delimiter_extend_margin,            math_parameter(f, DelimiterExtendMargin),           level); /* engine, undefined */
+ // tex_aux_define_all_math_parameters(size, math_parameter_radical_extensible_after,           math_parameter(f, RadicalKernAfterExtensible),      level); /* engine, undefined */
+ // tex_aux_define_all_math_parameters(size, math_parameter_radical_extensible_before,          math_parameter(f, RadicalKernBeforeExtensible),     level); /* engine, undefined */
+
+    tex_aux_define_all_math_parameters(size, math_parameter_prime_space_after,                  tex_aux_get_font_math_parameter(scale, f, PrimeSpaceAfter),                 level); /* engine, default 0 */
+    tex_aux_define_all_math_parameters(size, math_parameter_skewed_delimiter_tolerance,         tex_aux_get_font_math_parameter(scale, f, SkewedDelimiterTolerance),        level); /* engine, default 0 */
+    tex_aux_define_all_math_parameters(size, math_parameter_accent_top_shift_up,                tex_aux_get_font_math_parameter(scale, f, AccentTopShiftUp),                level); /* engine, undefined */
+    tex_aux_define_all_math_parameters(size, math_parameter_accent_bottom_shift_down,           tex_aux_get_font_math_parameter(scale, f, AccentBottomShiftDown),           level); /* engine, undefined */
+    tex_aux_define_all_math_parameters(size, math_parameter_accent_top_overshoot,               tex_aux_get_font_math_parameter(scale, f, AccentTopOvershoot),              level); /* engine, default 0 */
+    tex_aux_define_all_math_parameters(size, math_parameter_accent_bottom_overshoot,            tex_aux_get_font_math_parameter(scale, f, AccentBottomOvershoot),           level); /* engine, default 0 */
+    tex_aux_define_all_math_parameters(size, math_parameter_accent_superscript_drop,            tex_aux_get_font_math_parameter(scale, f, AccentSuperscriptDrop),           level); /* engine, default 0 */
+    tex_aux_define_all_math_parameters(size, math_parameter_accent_superscript_percent,         tex_aux_get_font_math_parameter(scale, f, AccentSuperscriptPercent),        level); /* engine, default 0 */
+    tex_aux_define_all_math_parameters(size, math_parameter_accent_extend_margin,               tex_aux_get_font_math_parameter(scale, f, AccentExtendMargin),              level); /* engine, undefined */
+    tex_aux_define_all_math_parameters(size, math_parameter_flattened_accent_top_shift_up,      tex_aux_get_font_math_parameter(scale, f, FlattenedAccentTopShiftUp),       level); /* engine, undefined */
+    tex_aux_define_all_math_parameters(size, math_parameter_flattened_accent_bottom_shift_down, tex_aux_get_font_math_parameter(scale, f, FlattenedAccentBottomShiftDown),  level); /* engine, undefined */
+    tex_aux_define_all_math_parameters(size, math_parameter_delimiter_shortfall,                tex_aux_get_font_math_parameter(scale, f, DelimiterShortfall),              level); /* engine, undefined */
+    tex_aux_define_all_math_parameters(size, math_parameter_delimiter_extend_margin,            tex_aux_get_font_math_parameter(scale, f, DelimiterExtendMargin),           level); /* engine, undefined */
+    tex_aux_define_all_math_parameters(size, math_parameter_radical_extensible_after,           tex_aux_get_font_math_parameter(scale, f, RadicalKernAfterExtensible),      level); /* engine, undefined */
+    tex_aux_define_all_math_parameters(size, math_parameter_radical_extensible_before,          tex_aux_get_font_math_parameter(scale, f, RadicalKernBeforeExtensible),     level); /* engine, undefined */
+
+    /*tex Percentages: */
+
+    tex_aux_define_all_math_parameters(size, math_parameter_prime_width,                        math_parameter(f, PrimeWidthPercent),               level); /* engine, default 0 */
     tex_aux_define_all_math_parameters(size, math_parameter_prime_raise,                        math_parameter(f, PrimeRaisePercent),               level); /* engine, default 0 */
     tex_aux_define_all_math_parameters(size, math_parameter_prime_raise_composed,               math_parameter(f, PrimeRaiseComposedPercent),       level); /* engine, default 0 */
-    tex_aux_define_all_math_parameters(size, math_parameter_prime_space_after,                  math_parameter(f, PrimeSpaceAfter),                 level); /* engine, default 0 */
-    tex_aux_define_all_math_parameters(size, math_parameter_prime_width,                        math_parameter(f, PrimeWidthPercent),               level); /* engine, default 0 */
-    tex_aux_define_all_math_parameters(size, math_parameter_skewed_delimiter_tolerance,         math_parameter(f, SkewedDelimiterTolerance),        level); /* engine, default 0 */
-    tex_aux_define_all_math_parameters(size, math_parameter_accent_top_shift_up,                math_parameter(f, AccentTopShiftUp),                level); /* engine, undefined */
-    tex_aux_define_all_math_parameters(size, math_parameter_accent_bottom_shift_down,           math_parameter(f, AccentBottomShiftDown),           level); /* engine, undefined */
-    tex_aux_define_all_math_parameters(size, math_parameter_accent_top_overshoot,               math_parameter(f, AccentTopOvershoot),              level); /* engine, default 0 */
-    tex_aux_define_all_math_parameters(size, math_parameter_accent_bottom_overshoot,            math_parameter(f, AccentBottomOvershoot),           level); /* engine, default 0 */
-    tex_aux_define_all_math_parameters(size, math_parameter_accent_superscript_drop,            math_parameter(f, AccentSuperscriptDrop),           level); /* engine, default 0 */
-    tex_aux_define_all_math_parameters(size, math_parameter_accent_superscript_percent,         math_parameter(f, AccentSuperscriptPercent),        level); /* engine, default 0 */
-    tex_aux_define_all_math_parameters(size, math_parameter_accent_extend_margin,               math_parameter(f, AccentExtendMargin),              level); /* engine, undefined */
-    tex_aux_define_all_math_parameters(size, math_parameter_flattened_accent_top_shift_up,      math_parameter(f, FlattenedAccentTopShiftUp),       level); /* engine, undefined */
-    tex_aux_define_all_math_parameters(size, math_parameter_flattened_accent_bottom_shift_down, math_parameter(f, FlattenedAccentBottomShiftDown),  level); /* engine, undefined */
     tex_aux_define_all_math_parameters(size, math_parameter_delimiter_percent,                  math_parameter(f, DelimiterPercent),                level); /* engine, undefined */
-    tex_aux_define_all_math_parameters(size, math_parameter_delimiter_shortfall,                math_parameter(f, DelimiterShortfall),              level); /* engine, undefined */
-    tex_aux_define_all_math_parameters(size, math_parameter_delimiter_extend_margin,            math_parameter(f, DelimiterExtendMargin),           level); /* engine, undefined */
-
-    tex_aux_define_all_math_parameters(size, math_parameter_radical_extensible_after,           math_parameter(f, RadicalKernAfterExtensible),      level); /* engine, undefined */
-    tex_aux_define_all_math_parameters(size, math_parameter_radical_extensible_before,          math_parameter(f, RadicalKernBeforeExtensible),     level); /* engine, undefined */
+    tex_aux_define_all_math_parameters(size, math_parameter_radical_degree_raise,               math_parameter(f, RadicalDegreeBottomRaisePercent), level);
 
     /*tex Not all are official \OPENTYPE: */
 
@@ -5979,7 +5968,7 @@ scaled tex_get_math_y_parameter_default(int style, int param, scaled dflt)
         scaled value = tex_get_math_parameter(style, param, NULL);
         if (value == undefined_math_parameter) {
             return dflt;
-        } else{
+        } else {
             return value ? scaledround(0.000000001 * glyph_scale_par * glyph_y_scale_par * value * scale) : 0;
         }
     } else {

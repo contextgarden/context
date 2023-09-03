@@ -177,10 +177,10 @@ end
 
 local enabled = false
 
-function spacings.define(name)
+function spacings.define(name,parent)
     local data = numbers[name]
     if data then
-        -- error
+        -- error, already defined
     else
         local number = #mapping + 1
         local data = {
@@ -190,6 +190,10 @@ function spacings.define(name)
         }
         mapping[number] = data
         numbers[name]   = data
+        if parent and parent ~= "" then
+            -- could be dynamic i.e. metatable inheritance but maybe only as option
+            table.merge(data.characters,unpack(utilities.parsers.settings_to_array(parent)))
+        end
     end
 end
 

@@ -1951,10 +1951,9 @@ inline static next_line_retval tex_aux_next_line(void)
                             case token_tex_input:
                                 /*tex token */
                                 {
-                                 // if (result >= cs_token_flag && eq_type(result - cs_token_flag) == input_cmd && eq_value(result - cs_token_flag) == end_of_input_code && lmt_input_state.cur_input.index > 0) {
                                     halfword t = result - cs_token_flag;
                                     if (t >= 0 && eq_type(t) == input_cmd && eq_value(t) == end_of_input_code && lmt_input_state.cur_input.index > 0) {
-                                        tex_end_file_reading();
+                                        tex_end_file_reading(); 
                                     }
                                     tex_back_input(result);
                                     return next_line_restart;
@@ -2978,21 +2977,6 @@ void tex_run_convert_tokens(halfword code)
              can be found in the archive.
         */
         case string_code:
-            {
-                int saved_selector;
-                int saved_scanner_status = lmt_input_state.scanner_status;
-                lmt_input_state.scanner_status = scanner_is_normal;
-                tex_get_token();
-                lmt_input_state.scanner_status = saved_scanner_status;
-                push_selector;
-                if (cur_cs) {
-                    tex_print_cs(cur_cs);
-                } else {
-                    tex_print_tex_str(cur_chr);
-                }
-                pop_selector;
-                break;
-            }
         case cs_string_code:
         case cs_active_code:
             {
@@ -3003,24 +2987,73 @@ void tex_run_convert_tokens(halfword code)
                 lmt_input_state.scanner_status = saved_scanner_status;
                 push_selector;
                 if (code == cs_active_code) {
-                    // tex_print_char(active_first);
-                    // tex_print_char(active_second);
-                    // tex_print_char(active_third);
                     tex_print_str(active_character_namespace);
-                    if (cur_cmd == active_char_cmd) {
-                        tex_print_char(cur_chr);
-                    } else {
-                        /*tex So anything else will just inject the hash (abstraction, saves a command). */
-                        tex_back_input(cur_tok);
+                }
+                if (cur_cs) {
+                    if (code == cs_string_code) {
+                        tex_print_cs_name(cur_cs);
+                    } else { 
+                        tex_print_cs(cur_cs);
                     }
-                } else if (cur_cs) {
-                    tex_print_cs_name(cur_cs);
                 } else {
                     tex_print_tex_str(cur_chr);
                 }
                 pop_selector;
                 break;
             }
+//        case string_code:
+//            {
+//                int saved_selector;
+//                int saved_scanner_status = lmt_input_state.scanner_status;
+//                lmt_input_state.scanner_status = scanner_is_normal;
+//                tex_get_token();
+//                lmt_input_state.scanner_status = saved_scanner_status;
+//                push_selector;
+//                if (cur_cs) {
+//                    tex_print_cs(cur_cs);
+//                } else {
+//                    tex_print_tex_str(cur_chr);
+//                }
+//                pop_selector;
+//                break;
+//            }
+//        case cs_string_code:
+//            {
+//                int saved_selector;
+//                int saved_scanner_status = lmt_input_state.scanner_status;
+//                lmt_input_state.scanner_status = scanner_is_normal;
+//                tex_get_token();
+//                lmt_input_state.scanner_status = saved_scanner_status;
+//                push_selector;
+//                if (cur_cs) {
+//                    tex_print_cs_name(cur_cs);
+//                } else {
+//                    tex_print_tex_str(cur_chr);
+//                }
+//                pop_selector;
+//                break;
+//            }
+//        case cs_active_code:
+//            {
+//                /*tex 
+//                    We cannot pick up the token and see what character it is because it will be
+//                    replaced by its meaning.
+//                */
+//                int saved_selector;
+//                int saved_scanner_status = lmt_input_state.scanner_status;
+//                lmt_input_state.scanner_status = scanner_is_normal;
+//                tex_get_token();
+//                lmt_input_state.scanner_status = saved_scanner_status;
+//                push_selector;
+//                tex_print_str(active_character_namespace);
+//                if (cur_cs) {
+//                    tex_print_cs(cur_cs);
+//                } else {
+//                    tex_print_tex_str(cur_chr);
+//                }
+//                pop_selector;
+//                break;
+//            }
         /*
         case cs_lastname_code:
             if (lmt_scanner_state.last_cs_name != null_cs) {
@@ -3032,7 +3065,7 @@ void tex_run_convert_tokens(halfword code)
             break;
         */
         case detokenized_code:
-            /*tex Sort of like |\meaningles| but without the explanationart text. */
+            /*tex Sort of like |\meaningles| but without the explanationary text. */
             {
                 int saved_selector;
                 int saved_scanner_status = lmt_input_state.scanner_status;
@@ -3064,7 +3097,7 @@ void tex_run_convert_tokens(halfword code)
                     case tolerant_call_cmd:               
                     case tolerant_protected_call_cmd:     
                     case tolerant_semi_protected_call_cmd:
-                       if (cur_chr) {
+                       if (! get_token_preamble(cur_chr)) {
                            /* We only serialize macros with no arguments. */
                            list = token_link(cur_chr);
                            break;

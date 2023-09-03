@@ -999,6 +999,7 @@ void tex_conditional_if(halfword code, int unless)
                         case tolerant_code      : result = is_tolerant_cmd(eq_type(cs)); break;
                         case protected_code     : result = is_protected_cmd(eq_type(cs)); break;
                         case semiprotected_code : result = is_semi_protected_cmd(eq_type(cs)); break;
+                        case constant_code      : result = is_constant_cmd(eq_type(cs)); break;
                     }
                 } else {
                     int fl; 
@@ -1260,6 +1261,11 @@ void tex_conditional_if(halfword code, int unless)
             {
                 /* beware: it tests */
                 result = ! tex_insert_is_void(tex_scan_integer(0, NULL));
+                goto RESULT;
+            }
+        case if_in_alignment_code:
+            {
+                result = tex_in_alignment();
                 goto RESULT;
             }
      // case if_bitwise_and_code:

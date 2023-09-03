@@ -307,10 +307,11 @@ extern halfword tex_badness(
 # define min_iterator_value                -0xFFFFF /* When we decide to generalize it might become 0xFFFF0 with */
 # define max_iterator_value                 0xFFFFF /* 0x0000F being a classifier so that we save cmd's          */
 # define max_category_code                       15
-# define max_newline_character                  127  /*tex Th is is an old constraint but there is no reason to change it. */
+# define max_newline_character                  127 /*tex This is an old constraint but there is no reason to change it. */
+# define max_endline_character                  127 /*tex To keep it simple we stick to the maximum single UTF character. */
 # define max_box_axis                           255
-# define max_size_of_word                      1024  /*tex More than enough (esp. since this can end up on the stack. */
-# define min_limited_scale                        0  /*tex Zero is a signal too. */
+# define max_size_of_word                      1024 /*tex More than enough (esp. since this can end up on the stack. */
+# define min_limited_scale                        0 /*tex Zero is a signal too. */
 # define max_limited_scale                     1000
 # define max_parameter_index                     15
 

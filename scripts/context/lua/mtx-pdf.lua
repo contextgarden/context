@@ -132,7 +132,7 @@ function scripts.pdf.info(filename)
 
      -- if details then
             local annotations = 0
-            for i=1, nofpages do
+            for i=1,nofpages do
                 local page = pages[i]
                 local a    = page.Annots
                 if a then
@@ -509,42 +509,64 @@ function scripts.pdf.links(filename,asked)
 
         local reverse = swapped(pages)
 
+        local function banner(pagenumber)
+            report("")
+            report("annotations @ page %i",pagenumber)
+            report("")
+        end
+
         local function show(pagenumber)
             local page   = pages[pagenumber]
             local annots = page.Annots
             if annots then
-                report("")
-                report("annotations @ page %i",pagenumber)
-                report("")
+                local done = false
                 for i=1,#annots do
-                    local annot = annots[i]
-                    if annot.Subtype == "Link" then
-                        local A = annot.A
-                        if A then
-                            local S = A.S
-                            local D = A.D
-                            if S == "GoTo" then
-                                if D then
+                    local annotation = annots[i]
+                    local a = annotation.A
+                    if not a then
+                        local d = annotation.Dest
+                        if d then
+                            a = { S = "GoTo", D = d } -- no need for a dict
+                        end
+                    end
+                    if a then
+                        local S = a.S
+                        if S == "GoTo" then
+                            local D = a.D
+                            if D then
+                                local D1 = D[1]
+                                local R1 = reverse[D1]
+                                if not done then
+                                    banner(pagenumber)
+                                    done = true
+                                end
+                                if tonumber(R1) then
+                                    report("intern, page % 4i",R1 or 0)
+                                else
+                                    report("intern, name %s",tostring(D1))
+                                end
+                            end
+                        elseif S == "GoToR" then
+                            local D = a.D
+                            if D then
+                                local F = A.F
+                                if F then
                                     local D1 = D[1]
-                                    local R1 = reverse[D1]
-                                    if tonumber(R1) then
-                                        report("intern, page % 4i",R1 or 0)
+                                    if not done then
+                                        banner(pagenumber)
+                                        done = true
+                                    end
+                                    if tonumber(D1) then
+                                        report("extern, page % 4i, file %s",D1 + 1,F)
                                     else
-                                        report("intern, name %s",tostring(D1))
+                                        report("extern, page % 4i, file %s, name %s",0,F,D[1])
                                     end
                                 end
-                            elseif S == "GoToR" then
-                                if D then
-                                    local F = A.F
-                                    if F then
-                                        local D1 = D[1]
-                                        if tonumber(D1) then
-                                            report("extern, page % 4i, file %s",D1 + 1,F)
-                                        else
-                                            report("extern, page % 4i, file %s, name %s",0,F,D[1])
-                                        end
-                                    end
-                                end
+                            end
+                        elseif S == "URI" then
+                            local URI = a.URI
+                            if URI then
+                                report("extern, uri   %a",URI)
                             end
                         end
                     end

@@ -30,9 +30,13 @@ typedef void *lmt_library_function;
         int     padding;
     } lmt_library;
 
+    // 126 : ERROR_MOD_NOT_FOUND
+    // 193 : ERROR_BAD_EXE_FORMAT
+
     # define lmt_library_open_indeed(filename)   LoadLibraryExA(filename, NULL, 0)
     # define lmt_library_close_indeed(lib)       FreeLibrary((HMODULE) lib)
     # define lmt_library_find_indeed(lib,source) (void *) GetProcAddress((HMODULE) lib, source)
+    # define lmt_library_last_error()            GetLastError()
 
 # else
 
@@ -47,6 +51,7 @@ typedef void *lmt_library_function;
     # define lmt_library_open_indeed(filename)   dlopen(filename, RTLD_NOW | RTLD_LOCAL)
     # define lmt_library_close_indeed(lib)       dlclose(lib)
     # define lmt_library_find_indeed(lib,source) (void *) dlsym(lib, source)
+    # define lmt_library_last_error()            0
 
 # endif
 

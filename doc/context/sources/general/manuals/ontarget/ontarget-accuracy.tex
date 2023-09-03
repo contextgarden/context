@@ -1,0 +1,198 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-accuracy
+
+\environment ontarget-style
+
+\startchapter[title={Accuracy}]
+
+One of the virtues of \TEX\ is that it can produce the same output over a long
+period. The original engine only uses integers and although dimensions have
+fractions but these are just a way to present then to the user because internally
+they are scaled points.
+
+\starttabulate[|l|l|]
+\FL
+\NC \type{\dimexpr .4999pt                     : 2 \relax} \NC
+      \the\dimexpr .4999pt                     : 2 \relax
+\NC \NR
+\NC \type{\dimexpr .4999pt                     / 2 \relax} \NC
+      \the\dimexpr .4999pt                     / 2 \relax
+\NC \NR
+\ML
+\NC \type{\scratchdimen.4999pt \divide \scratchdimen 2 \the\scratchdimen} \NC
+          \scratchdimen.4999pt \divide \scratchdimen 2 \the\scratchdimen
+\NC \NR
+\NC \type{\scratchdimen.4999pt \edivide\scratchdimen 2 \the\scratchdimen} \NC
+          \scratchdimen.4999pt \edivide\scratchdimen 2 \the\scratchdimen
+\NC \NR
+\ML
+\NC \type{\scratchdimen4999pt \divide\scratchdimen 2 \the\scratchdimen} \NC
+          \scratchdimen4999pt \divide\scratchdimen 2 \the\scratchdimen
+\NC \NR
+\NC \type{\scratchdimen4999pt \edivide\scratchdimen 2 \the\scratchdimen} \NC
+          \scratchdimen4999pt \edivide\scratchdimen 2 \the\scratchdimen
+\NC \NR
+\NC \type{\scratchdimen4999pt \rdivide\scratchdimen 2 \the\scratchdimen} \NC
+          \scratchdimen4999pt \rdivide\scratchdimen 2 \the\scratchdimen
+\NC \NR
+\ML
+\NC \type{\numexpr   1001                        : 2 \relax} \NC
+      \the\numexpr   1001                        : 2 \relax
+\NC \NR
+\NC \type{\numexpr   1001                        / 2 \relax} \NC
+      \the\numexpr   1001                        / 2 \relax
+\NC \NR
+\ML
+\NC \type{\scratchcounter1001  \divide \scratchcounter 2 \the\scratchcounter} \NC
+          \scratchcounter1001  \divide \scratchcounter 2 \the\scratchcounter
+\NC \NR
+\NC \type{\scratchcounter1001  \edivide\scratchcounter 2 \the\scratchcounter} \NC
+          \scratchcounter1001  \edivide\scratchcounter 2 \the\scratchcounter
+\NC \NR
+\LL
+\stoptabulate
+
+The above table shows what happens when we divide an odd integer or for that
+matter odd fraction. Note the incompatibility between \type {\numexpr} and \type
+{\dimexpr} on the one hand and \type {\divide} on the other. This is why in
+\LUAMETATEX\ we have the \type {:} variant that does the same integer divide (no
+rounding) as \type {\divide} does, and why we have \type {\edivide} that divides
+like an expression using the \type {/}. The \type {\rdivide} only makes sense for
+dimensions and rounds the result.
+
+As soon as one start calculating or comparing accumulated values one can run into
+the values being a few scaled points off. This means that when one tests against
+a criterium it might be that some range comparison is better. The most likely
+place for that to happen is in the output routine and when special constructs
+like floats, tables and images come into play. Just like not every number can be
+represented in a float (double), we saw that dividing an odd integer can give
+some unexpected rounding as part of the integer is considered a fraction. So, in
+practice, even when the calculations are the same, there is a certain
+unpredictable outcome from the user perspective: \quotation {Why does it fit here
+and not there?} Well, we can be a few scaled points off due to some not entirely
+round|-|trip calculation.
+
+When \TEX\ showed up it came with fonts and in those times once a font was
+released it was unlikely to change. But today fonts do change. And changes means
+that a document can render differently after an update. Of course this is an
+argument for keeping a font in the \TEX\ tree but even then updating is kind of
+normal. Take math: the fact that fonts often have issues makes that we need to
+tweak them and some tweaks only get added when we run into some issue. If that
+issue  has been there for a while we are incompatible.
+
+Hyphenation patterns are another source of breaking compatibility but normally
+they change little. And here one can also assume that the user want words to be
+hyphenated properly. Even with such fundamental changes as a syllable being able
+to move to the next line, it is often unlikely that the paragraphs gets less or
+more lines. I bet that users are more worried about the impact on vertical
+rendering that has consequences for page breaks that for lines coming out
+differently (hopefully better).
+
+So, what are other potential areas in addition to slight differences due to
+division, fonts and patterns? We now enter the world of \LUAMETATEX\ and
+\CONTEXT. As soon as one starts to use \LUA\ code, doubles show up. It means that
+we can do calculation with little loss because a double can safely hold the
+maximum dimension (in scaled point). However, mixing 64 bit doubles at the \LUA\
+end with 32 bit integers in the engine can have side effects. As soon as set some
+property at the \TEX\ end using \LUA\ rounding takes place. Of course we can do
+all calculations like \TEX\ does, but that would have too much of an impact on
+performance.
+
+So, going back and forth between \TEX\ and \LUA\ can introduce some inaccuracies
+creeping in but as long as it is consistent, there is no real issue. It mostly
+involves fonts and especially the dimensions of characters: the width, height and
+depth but when one uses the xheight as relative measure there is also some
+influence on for instance interline spacing, offsets and such.
+
+So how can fonts make a difference? In \CONTEXT\ there are two ways to use fonts:
+normal mode and compact mode. In normal mode every size is an instance, where the
+dimension properties of characters are scaled. In compact mode we use one size
+and delegate scaling to the engine which means that we end up with the (usual)
+1000 being scale 1 kind of calculations. In the end a font with design size of
+10bp (most fonts) scaled to 12pt normal is not behaving the same as a 10pt setup
+where a 12pt size is scaled on demand. First there is the scaling from 10bp
+loaded font to the 10pt used font that gets passed to \TEX. Here we have to deal
+with history: defining a font in pt points is quite normal. Then applying a 1200
+scale (later divided by 1000) in the engine again involves some rounding to
+integers because that is what is used internally. I will come back to this later.
+
+The main conclusion to draw is that normal mode and compact mode come close but
+give different results. We can come closer when we a more accurate normal mode.
+In order to limit the number of font instances we normally limit the number of
+digits (also in compact mode but there accuracy comes a little cost). There is a
+pitfall here: While \TEX\ can happily work with any resolution, the backend has
+to make sure that embedded fonts get scaled right and that (in the case of \PDF)
+we compensate for drift in the page stream, because there character widths
+determine the advance and these are in (often rounded) bp (big postscript
+points). Especially when we enable font expansion drift prevention comes with a
+price as there we are dealing with real small difference in dimensions.
+
+As an experiment I played with clipping measures in the engine which boils down
+to rounding the last digit but that didn't work out well. For simple text we can
+get normal and compact mode identical but kick in some math (many parameters
+involved), font expansion and|/|or protrusion, additional inter|-|character
+kerning and so on, and one never get the same output. Keep in mind that we are
+not talking visual differences here, although there can be cases. More think of
+due to a slightly different vertical spacing triggering a different page break,
+for instance when footnotes are involved. In \CONTEXT\ the line height (and
+therefore derived parameters) is defined in terms of the xheight so even a few
+scaled points off makes a difference.
+
+At the user level, currently compact mode is enabled with:
+
+\starttyping
+\enableexperiments[fonts.compact]
+\stoptyping
+
+It works quite okay already for years (writing end 2023) in most scenarios but
+there might be cases where existing code still needs to be adapted, which is no
+big deal. The additional overhead is compensated by loading less font instances
+and a smaller output file. In some cases documents actually process faster and it
+definitely pays of for large fonts (\CJK) and demanding mix size feature
+processing.
+
+A more accurate normal mode is set by:
+
+\starttyping
+\enableexperiments[fonts.accurate]
+\stoptyping
+
+but it doesn't bring much. It was introduced in order for Mikael Sundqvist and me
+to compare and check math tweaks, especially those that depend on precise
+combinations of glyphs. We temporary had some additional control in the engine
+but after experiments and comparing variants the decision was made to remove that
+feature.
+
+We ran experiments with large documents where different versions were overlaid
+and depending on scenarios indeed there can be differences, but when there are
+chapters starting on new pages and when vertical spacing has stretch, there are
+not that many differences. When you compare the so called \type {tuc} files you
+might notice small difference is position tracking but these values are seldom
+used in a way that influences the rendering of text, line and page breaks.
+
+\def\RatioBpPt{( \number \dimexpr 10bp \relax / \number \dimexpr 10pt \relax ) }
+
+To come back to the bp vs pt issue. Among the options considered are moving the
+character and font properties from integers to doubles, but that would impact the
+memory footprint quite a bit. Another idea is that compact mode goes 10bp instead
+of 10pt but that would not help. One bp is \number \dimexpr 10bp \relax \space
+scaled points and one pt is \number \dimexpr 10pt \relax \space sp. The ratio
+between them is \cldcontext { \RatioBpPt }, so a \TEX\ scale 1200 effectively
+becomes \formatted { "\letterpercent .3N", 1200 * \RatioBpPt }, and assuming
+rounding to an integer we then get \cldcontext { math.round ( 1200 * \RatioBpPt
+) }. So in the end we get a less fortunate number instead of 1200 and it's not
+even accurate. Therefore this option was also rejected. For the record: an
+intermediate approach would have been to cheat: use an internal multiplier (the
+shown ratio) and although it is not hard to support, it also means that at the
+\LUA\ end we always need to take this into account, so again a no|-|go.
+
+In the end the only outcome of this bit of \quote {research} has been that we can
+have accurate normal font handling (which is not that useful) and have two
+additional divide related primitives that might be useful and add some
+consistency (and these might actually get used).
+
+\stopchapter
+
+\stopcomponent
+

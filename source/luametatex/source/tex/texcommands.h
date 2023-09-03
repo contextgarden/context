@@ -379,9 +379,13 @@ typedef enum arithmic_codes {
     advance_code,
     multiply_code,
     divide_code,
+    e_divide_code,
+    r_divide_code,
     advance_by_code,
     multiply_by_code,
     divide_by_code,
+    e_divide_by_code,
+    r_divide_by_code,
  /* bitwise_and_code, */
  /* bitwise_xor_code, */
  /* bitwise_or_code,  */
@@ -390,7 +394,7 @@ typedef enum arithmic_codes {
  /* advance_by_minus_one_code, */
 } arithmic_codes;
 
-# define last_arithmic_code divide_code
+# define last_arithmic_code r_divide_code
 
 typedef enum math_script_codes {
     math_no_script_code,
@@ -538,6 +542,12 @@ typedef enum some_item_codes {
     font_char_ic_code,          /*tex |\fontcharic| */
     font_char_ta_code,          /*tex |\fontcharta| */
     font_char_ba_code,          /*tex |\fontcharba| */
+    scaled_font_char_wd_code,   /*tex |\scaledfontcharwd| */
+    scaled_font_char_ht_code,   /*tex |\scaledfontcharht| */
+    scaled_font_char_dp_code,   /*tex |\scaledfontchardp| */
+    scaled_font_char_ic_code,   /*tex |\scaledfontcharic| */
+    scaled_font_char_ta_code,   /*tex |\scaledfontcharta| */
+    scaled_font_char_ba_code,   /*tex |\scaledfontcharba| */
     font_spec_id_code,          /*tex |\fontspecid| */
     font_spec_scale_code,       /*tex |\fontspecscale| */
     font_spec_xscale_code,      /*tex |\fontspecxscale| */

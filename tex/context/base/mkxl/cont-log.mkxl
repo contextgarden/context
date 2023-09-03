@@ -37,10 +37,10 @@
 \frozen\instance\protected\def\TeX
   {\dontleavehmode
    \begingroup
-   \scratchdimen\fontcharwd\font`M%
+   \scratchdimen\scaledfontcharwd\font`M%
    T%
    \kern-.1667\scratchdimen
-  %\lower.3183\fontcharht\font`T\hbox{E}% .318316 but no exact match possible anyway
+  %\lower.3183\scaledfontcharht\font`T\hbox{E}% .318316 but no exact match possible anyway
    \lower.5\exheight\hbox{E}% but on the average this looks better
    \kern-.125\scratchdimen
    X%

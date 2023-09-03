@@ -357,6 +357,10 @@ void tex_initialize_commands(void)
      /* tex_primitive(luatex_command, "advancebyplusone",               arithmic_cmd,           advance_by_plus_one_code,                 0); */
         tex_primitive(tex_command,    "divide",                         arithmic_cmd,           divide_code,                              0);
         tex_primitive(luatex_command, "divideby",                       arithmic_cmd,           divide_by_code,                           0);
+        tex_primitive(luatex_command, "rdivide",                        arithmic_cmd,           r_divide_code,                            0);
+        tex_primitive(luatex_command, "rdivideby",                      arithmic_cmd,           r_divide_by_code,                         0);
+        tex_primitive(luatex_command, "edivide",                        arithmic_cmd,           e_divide_code,                            0);
+        tex_primitive(luatex_command, "edivideby",                      arithmic_cmd,           e_divide_by_code,                         0);
         tex_primitive(tex_command,    "multiply",                       arithmic_cmd,           multiply_code,                            0);
         tex_primitive(luatex_command, "multiplyby",                     arithmic_cmd,           multiply_by_code,                         0);
 
@@ -636,6 +640,12 @@ void tex_initialize_commands(void)
         tex_primitive(etex_command,   "fontcharic",                     some_item_cmd,          font_char_ic_code,                        0);
         tex_primitive(luatex_command, "fontcharta",                     some_item_cmd,          font_char_ta_code,                        0);
         tex_primitive(etex_command,   "fontcharwd",                     some_item_cmd,          font_char_wd_code,                        0);
+        tex_primitive(luatex_command, "scaledfontcharba",               some_item_cmd,          scaled_font_char_ba_code,                 0);
+        tex_primitive(luatex_command, "scaledfontchardp",               some_item_cmd,          scaled_font_char_dp_code,                 0);
+        tex_primitive(luatex_command, "scaledfontcharht",               some_item_cmd,          scaled_font_char_ht_code,                 0);
+        tex_primitive(luatex_command, "scaledfontcharic",               some_item_cmd,          scaled_font_char_ic_code,                 0);
+        tex_primitive(luatex_command, "scaledfontcharta",               some_item_cmd,          scaled_font_char_ta_code,                 0);
+        tex_primitive(luatex_command, "scaledfontcharwd",               some_item_cmd,          scaled_font_char_wd_code,                 0);
         tex_primitive(luatex_command, "fontid",                         some_item_cmd,          font_id_code,                             0);
         tex_primitive(luatex_command, "fontmathcontrol",                some_item_cmd,          font_math_control_code,                   0);
         tex_primitive(luatex_command, "fontspecid",                     some_item_cmd,          font_spec_id_code,                        0);
@@ -784,6 +794,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "ifhasxtoks",                     if_test_cmd,            if_has_xtoks_code,                        0);
         tex_primitive(tex_command,    "ifhbox",                         if_test_cmd,            if_hbox_code,                             0);
         tex_primitive(tex_command,    "ifhmode",                        if_test_cmd,            if_hmode_code,                            0);
+        tex_primitive(luatex_command, "ifinalignment",                  if_test_cmd,            if_in_alignment_code,                     0); 
         tex_primitive(luatex_command, "ifincsname",                     if_test_cmd,            if_in_csname_code,                        0); /* This is obsolete and might be dropped. */
         tex_primitive(tex_command,    "ifinner",                        if_test_cmd,            if_inner_code,                            0);
         tex_primitive(luatex_command, "ifinsert",                       if_test_cmd,            if_insert_code,                           0);

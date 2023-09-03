@@ -155,8 +155,8 @@ local function initializeeffect(tfmdata,value)
     local mode   = effects[effect]
     if not mode then
         report_effect("invalid effect %a",effect)
-    elseif width == 0 and mode == 0 then
-        report_effect("invalid width %a for effect %a",width,effect)
+--     elseif width == 0 and mode == 0 then
+--         report_effect("invalid width %a for effect %a",width,effect)
     else
         local parameters = tfmdata.parameters
         local properties = tfmdata.properties
@@ -215,6 +215,9 @@ end
 --     inspect(fonts.hashes.characters[f][c])
 -- end }
 
+-- hfactor : not used
+-- vfactor : not used
+
 local function manipulateeffect(tfmdata)
     local effect = tfmdata.properties.effect
     if effect then
@@ -261,13 +264,14 @@ local function manipulateeffect(tfmdata)
             local oldtopanchor    = character.topanchor
             local oldbottomanchor = character.bottomanchor
             if oldwidth and oldwidth > 0 then
+                -- how about the advance
                 character.width = oldwidth + wdelta
             end
             if oldheight and oldheight > 0 then
-               character.height = oldheight + hdelta
+                character.height = oldheight + hdelta
             end
             if olddepth and olddepth > 0 then
-               character.depth = olddepth + ddelta
+                character.depth = olddepth + ddelta
             end
             if olditalic or oldtopaccent or oldbottomaccent then
                 local factor = character.width / oldwidth

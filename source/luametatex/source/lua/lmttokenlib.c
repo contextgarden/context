@@ -1382,17 +1382,31 @@ inline static void lmt_token_list_to_lua_tokens(lua_State *L, halfword t)
     }
 }
 
-void lmt_token_register_to_lua(lua_State *L, halfword t)
+void lmt_token_register_to_lua(lua_State *L, halfword h, int originals)
 {
     int i = 1;
     lua_newtable(L);
-    if (t) {
-        t = token_link(t);
+    if (h) {
+        halfword t = token_link(h);
         while (t) {
             halfword m = tex_get_available_token(token_info(t));
             tokenlib_aux_push_token(L, m);
             lua_rawseti(L, -2, i++);
             t = token_link(t);
+        }
+    }
+    if (originals) { 
+        lua_createtable(L, i, 0);
+        if (h) {
+            halfword t = token_link(h);
+            i = 1;
+            while (t) {
+                lua_push_integer(L, t);
+                lua_rawseti(L, -2, i++);
+                t = token_link(t);
+            }
+        } else { 
+            lua_newtable(L);
         }
     }
 }
@@ -3179,7 +3193,11 @@ static int tokenlib_get_meaning(lua_State *L)
                 if (lua_toboolean(L, 3)) {
                     lmt_token_list_to_lua(L, token_link(chr)); /* makes table sub tables */
                 } else {
-                    lmt_token_register_to_lua(L, chr); /* makes table */
+                    int originals = lua_toboolean(L, 4);
+                    lmt_token_register_to_lua(L, chr, originals); /* makes table */
+                    if (originals) {
+                        return 2;
+                    }
                 }
             } else {
                 char *str = tex_tokenlist_to_tstring(chr, 1, NULL, 0, 0, 0, 0, 0); /* double hashes */

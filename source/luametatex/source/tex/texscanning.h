@@ -162,6 +162,8 @@ extern halfword    tex_scan_attribute                 (halfword attrlist);
 extern int         tex_valid_userunit                 (halfword cmd, halfword chr, halfword cs);
 extern int         tex_get_userunit                   (halfword index, scaled *value);
 
+extern int         tex_quotient                       (int n, int d, int round);
+
 /*
 # define token_is_digit(t)       ((t >= zero_token  ) && (t <= nine_token ))
 # define token_is_xdigit(t)     (((t >= zero_token  ) && (t <= nine_token )) || \

@@ -104,7 +104,8 @@ if (MSVC)
 
         # We always optimize ... symbols are not in the binary anyway so there is no advantage
         # (like when accessing Lua api functions). We could have an additional luametatex-lua.dll
-        # but that also creates a dependency (possible conflict).
+        # but that also creates a dependency (possible conflict). So just don't expect using 
+        # Lua libraries in luametatex. 
 
       # if (DEFINED LMT_OPTIMIZE)
             add_compile_options(

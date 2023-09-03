@@ -15,6 +15,8 @@
 %D to be in the core. So, this could become runtime loaded code. Some of
 %D the alternatives need checking.
 
+%D Todo: update to use luametatex features.
+
 \writestatus{loading}{ConTeXt Page Macros / Page Selection}
 
 \unprotect
@@ -58,8 +60,8 @@
 \newinteger\c_page_selectors_n
 
 \permanent\tolerant\protected\def\insertpages[#filename]#spacer[#emptylist]#spacer[#S#settings]%
-  {\doifelseassignment{#emptylist}
-     {\page_selectors_insert_indeed[#filename][][#emptylist]}
+  {\doifelseassignment{#emptylist}%
+     {\page_selectors_insert_indeed[#filename][][#emptylist]}%
      {\page_selectors_insert_indeed[#filename][#emptylist][#settings]}}
 
 \def\page_selectors_insert_indeed[#filename][#emptylist][#S#settings]%
@@ -70,6 +72,7 @@
      [\c!width=\zeropoint,
       \c!n=\noffigurepages,
       \c!category=,
+      \c!alternative=\v!a,
       #settings]%
    \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \scratchwidth\directwithpagesparameter\c!width\relax
@@ -78,7 +81,7 @@
      \page
    \fi
    \dorecurse\c_page_selectors_n
-     {\page_selectors_filter_a_page{#filename}\recurselevel
+     {\page_selectors_filter_alternative{#filename}\recurselevel
       \ifinset{\recurselevel}{#emptylist}%
         \emptyhbox
         \page
@@ -88,7 +91,20 @@
 \let\page_selectors_filter_step_indeed\gobbleoneargument
 \let\page_selectors_filter_step       \gobbleoneargument
 
-\permanent\tolerant\protected\def\filterpages[#filename]#spacer[#selection]#spacer[#S#settings]% % \noffigurepages not yet supported
+\installcorenamespace{filterpagesalternative}
+
+\protected\def\page_selectors_filter_alternative
+  {\expandnamespaceparameter
+     \??filterpagesalternative
+     \directwithpagesparameter\c!alternative
+     \v!a}
+
+\permanent\tolerant\protected\def\filterpages[#filename]#spacer[#selection]#spacer[#S#settings]%
+  {\doifelseassignment{#selection}%
+     {\page_selectors_filter_indeed[#filename][][#selection]}%
+     {\page_selectors_filter_indeed[#filename][#selection][#settings]}}
+
+\def\page_selectors_filter_indeed[#filename][#selection][#S#settings]% % \noffigurepages not yet supported
   {\bgroup
    \dontcomplain
    \getfiguredimensions[#filename]%
@@ -96,41 +112,47 @@
      [\c!width=\zeropoint,
       \c!n=\noffigurepages,
       \c!category=,
+      \c!alternative=\v!a,
       #settings]%
    \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \scratchwidth\directwithpagesparameter\c!width\relax
    \edef\p_selection{#selection}%
-   \ifx\p_selection\v!even
+   \ifempty\p_selection
+     \let\p_selection\v!all
+   \fi
+   \ifx\p_selection\v!all
+     \dorecurse\c_page_selectors_n
+       {\page_selectors_filter_alternative{#filename}\recurselevel}%
+   \orelse\ifx\p_selection\v!even
      \dorecurse\c_page_selectors_n
        {\ifodd\recurselevel\else
-          \page_selectors_filter_a_page{#filename}\recurselevel
+          \page_selectors_filter_alternative{#filename}\recurselevel
         \fi}%
    \orelse\ifx\p_selection\v!odd
      \dorecurse\c_page_selectors_n
        {\ifodd\recurselevel\relax
-          \page_selectors_filter_a_page{#filename}\recurselevel
+          \page_selectors_filter_alternative{#filename}\recurselevel
         \fi}%
    \else
      \def\page_selectors_filter_step_indeed#page%
        {\ifnum#page>\c_page_selectors_n\else
-          \page_selectors_filter_a_page{#filename}{#page}%
+          \page_selectors_filter_alternative{#filename}{#page}%
         \fi}%
      \def\page_selectors_filter_step#step%
-       {\dowithrange{#step}\page_selectors_filter_step_indeed}%
+       {\dowithminmaxrange{1}{\noffigurepages}{#step}\page_selectors_filter_step_indeed}%
      \processcommacommand[\p_selection]\page_selectors_filter_step
    \fi
    \egroup}
 
-\def\page_selectors_filter_a_page#filename#page%
-  {%\startpagemakeup
-   \hpack to \textwidth
+\defcsname\??filterpagesalternative\v!a\endcsname#filename#page%
+  {\hpack to \textwidth
      {\ifdim\scratchwidth>\zeropoint
         \rightorleftpageaction{\scratchwidth\zeropoint}{\hfill}%
       \fi
       \setbox\scratchbox\hpack
         {\hskip-\scratchwidth
          \edef\p_category{\directwithpagesparameter\c!category}% \useexternalfigure[foo][width=\textwidth]
-         \ifempty\p_category
+         \ifx\p_category\empty
            \externalfigure[#filename][\c!page=#page,\c!height=\textheight]%
          \else
            \externalfigure[#filename][\p_category][\c!page=#page]%
@@ -138,7 +160,15 @@
          \hss}%
       \wd\scratchbox\zeropoint
       \box\scratchbox}%
-   \page}%\stoppagemakeup}
+   \page}
+
+\defcsname\??filterpagesalternative\v!b\endcsname#filename#page%
+  {\startTEXpage
+     \externalfigure[#filename][\c!page=#page]%
+   \stopTEXpage}
+
+\letcsname\??filterpagesalternative\v!default\expandafter\endcsname\csname\??filterpagesalternative\v!a\endcsname
+\letcsname\??filterpagesalternative\v!page   \expandafter\endcsname\csname\??filterpagesalternative\v!b\endcsname
 
 \permanent\tolerant\protected\def\copypages[#filename]#spacer[#S#settings]#spacer[#S#figuresettings]%
   {\bgroup

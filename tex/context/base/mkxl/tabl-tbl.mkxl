@@ -445,6 +445,33 @@
 \installtexdirective {tabulateusesize}     {\c_tabl_use_size    \conditionaltrue} {\c_tabl_use_size    \conditionalfalse}
 \installtexdirective {tabulatesparseskips} {\c_tabl_sparse_skips\conditionaltrue} {\c_tabl_sparse_skips\conditionalfalse}
 
+\def\tabl_tabulate_tag_start
+  {\dostarttaggedchained\t!tabulate\empty\??tabulation}
+
+\def\tabl_tabulate_tag_start_row
+  {\dostarttagged\t!tabulaterow\empty}
+
+\def\tabl_tabulate_tag_start_cell
+  {\dostarttagged\t!tabulatecell\empty
+   \dotagtabulatecell}
+
+\def\tabl_tabulate_tag_stop
+  {\dostoptagged}
+
+\def\tabl_tabulate_tag_stop_row
+  {\dostoptagged}
+
+\def\tabl_tabulate_tag_stop_cell
+  {\dostoptagged}
+
+\noaligned\def\tabl_tabulate_disable_tagging
+  {\lettonothing\tabl_tabulate_tag_start
+   \lettonothing\tabl_tabulate_tag_start_row
+   \lettonothing\tabl_tabulate_tag_start_cell
+   \lettonothing\tabl_tabulate_tag_stop
+   \lettonothing\tabl_tabulate_tag_stop_row
+   \lettonothing\tabl_tabulate_tag_stop_cell}
+
 \def\tabl_tabulate_set_preamble_step#1#2% only makes sense for many tabulates
   {\etoksapp\t_tabl_tabulate_preamble{%
         % begin of between/initial part
@@ -496,8 +523,7 @@
                 \ifempty\m_tabl_tabulate_alignment \else
                     \spac_align_use_now{\m_tabl_tabulate_alignment}%
                 \fi
-                \noexpand\dostarttagged\noexpand\t!tabulatecell\noexpand\empty
-                \noexpand\dotagtabulatecell
+                \noexpand\tabl_tabulate_tag_start_cell
                 \noexpand#1%
                 \ifconditional\c_tabl_tabulate_reshape
                     \tabl_tabulate_shaped_par_begin
@@ -542,7 +568,7 @@
           \tabsize\zeropoint
         \fi
         % begin of right part
-        \noexpand\dostoptagged
+        \noexpand\tabl_tabulate_tag_stop_cell
         \tabl_tabulate_inject_post_skip
           {\the\ifconditional\c_tabl_post_is_set\s_tabl_tabulate_post\else\s_tabl_tabulate_last\fi}%
           {\the\s_tabl_tabulate_post}%
@@ -1234,8 +1260,10 @@
 
 \def\tabl_tabulate_remove_funny_line
   {\ifhmode
-     \strut\crcr
-     \noalign{\kern-\lineheight}%
+%      \ifinalignment % needs testing
+       \strut\crcr
+       \noalign{\kern-\lineheight}%
+%      \fi
    \fi}
 
 % todo: make footer synonym to tail
@@ -2734,16 +2762,16 @@
      \global\setbox\b_tabl_tabulate\vbox \bgroup
    \fi
    %
-   \dostarttaggedchained\t!tabulate\empty\??tabulation
-   \dostarttagged\t!tabulaterow\empty
+   \tabl_tabulate_tag_start
+   \tabl_tabulate_tag_start_row
    \inhibitmargindata\conditionalfalse % new per 2012.06.13 ... really needed
-   \toksapp\everycr{\noalign{\the\t_tabl_tabulate_every_real_row\dostoptagged\dostarttagged\t!tabulaterow\empty}}%
+   \toksapp\everycr{\noalign{\the\t_tabl_tabulate_every_real_row\tabl_tabulate_tag_stop_row\tabl_tabulate_tag_start_row\empty}}%
    \halign
      \ifconditional\c_tabl_sparse_skips \s!noskips\fi
      \ifconditional\c_tabl_auto_align_mode_new \alignmentcharactertrigger\fi
      \expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
-   \dostoptagged
-   \dostoptagged
+   \tabl_tabulate_tag_stop_row
+   \tabl_tabulate_tag_stop
    \ifhmode\par\prevdepth\strutdp\fi % nog eens beter, temporary hack
    \ifx\p_distance\v!grid
      \vskip-\strutdp % experimental tm-prikkels

@@ -42,6 +42,12 @@ local function newresult(t)
     return t or { }
 end
 
+local category = setmetatableindex(function(t,k)
+    local v = "unset" -- might go
+    t[k]= v
+    return v
+end)
+
 local syntax = setmetatableindex(function(t,k)
     local v = newsyntax()
     t[k]= v
@@ -1497,6 +1503,7 @@ do
     local integer   = { s_mathstyle, s_integer }
     local variant   = { "", s_mathstyle }
 
+
     result.mathparameter = newresult {
         Umathaccentbasedepth                = dimension,
         Umathaccentbaseheight               = dimension,
@@ -2008,6 +2015,8 @@ do
 
     local cmd = setmetatableindex("table")
     local lst = { }
+    local cat = { }
+    local org = { }
 
     for i=1,#primitives do
         local l = primitives[i]
@@ -2019,17 +2028,26 @@ do
         }
         cmd[n][p] = t
         lst[p]    = t
+        cat[p]    = category[n]
+        org[p]    = l[4]
     end
-    local o = { }
+    local tag = { }
     for k, v in next, origins do
-        o[k] = sub(v,1,1)
+        tag[k] = sub(v,1,1)
     end
+
+    moduledata.engine.data = {
+        cmd = cmd,
+        lst = lst,
+        org = org,
+        cat = cat,
+    }
 
     local function specification(k,v,done)
         local s = v[1]
         local r = v[2]
         local d = done[s]
-        context.formatted.startPrimitive("%s \\tex{%s}",o[commandhash[k][4]],k)
+        context.formatted.startPrimitive("%s \\tex{%s}",tag[commandhash[k][4]],k)
         if s and s ~= "" then
             if d then
                 context(" see \\tex{%s}",done[s])

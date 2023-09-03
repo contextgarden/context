@@ -62,6 +62,7 @@ interfaces.implement {
         local n  = ""
         local w  = ""
         local c  = t.cmdname
+        local tl = nil
         if c == "left_brace" then
             w = "given token list"
             t = token.scantoks(false)
@@ -78,10 +79,11 @@ interfaces.implement {
         else
             n = token.scancsname()
             local r = flags(t)
-            local m = token.getmeaning(n,true)
+            local m, l = token.getmeaning(n,true,false,true) -- last argument: we want original links
             r[#r+1] = "control sequence"
             if type(m) == "table" then
                 t = m
+                tl = l
             else
                 t = { t }
             end
@@ -96,7 +98,8 @@ interfaces.implement {
             local w4 = 3
             for i=1,#t do
                 local ti = t[i]
-                w1 = max(w1,#tostring(ti.id))
+                local li = tl and tl[i]
+                w1 = max(w1,#tostring(li or ti.id))
                 w2 = max(w2,#tostring(ti.command))
                 w3 = max(w3,#tostring(ti.index))
                 w4 = max(w4,#ti.cmdname)
@@ -106,8 +109,9 @@ interfaces.implement {
             local f3 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s  %C"]
             for i=1,#t do
                 local ti = t[i]
+                local li = tl and tl[i]
                 local cs = ti.csname
-                local id = ti.id
+                local id = li or ti.id
                 local ix = ti.index
                 local cd = ti.command
                 local cn = ti.cmdname

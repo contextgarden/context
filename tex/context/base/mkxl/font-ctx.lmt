@@ -189,10 +189,12 @@ constructors.noffontsloaded    = 0
 -- font.getcopy = font.getfont -- we always want the table that context uses
 
 local accuratefactors = false
+local accuratescale   = false
 ----- compactfontmode = false
 
 experiments.register("fonts.accurate", function(v) accuratefactors = v    end)
 experiments.register("fonts.compact",  function()  accuratefactors = true end)
+experiments.register("fonts.rescale",  function()  accuratescale   = true end)
 
 do
 
@@ -1082,7 +1084,8 @@ local sizepattern, splitpattern, specialscale  do
     local scale_at       = (P("at") + P("@")) * Cc(1) * spaces * dimension   -- dimension
     local scale_sa       = P("sa")            * Cc(2) * spaces * dimension_x -- number or string
     local scale_mo       = P("mo")            * Cc(3) * spaces * dimension_x -- number or string
-    local scale_scaled   = P("scaled")        * Cc(4) * spaces * dimension   -- number
+    local scale_scaled   = P("scaled")        * Cc(4) * spaces * dimension   -- number -- unrealiable and will be dropped
+--     local scale_scaled   = P("scaled")        * Cc(2) * spaces * (dimension / function(s) return s / 1000 end) -- cheat, not related to design size
     local scale_ht       = P("ht")            * Cc(5) * spaces * dimension   -- dimension
     local scale_cp       = P("cp")            * Cc(6) * spaces * dimension   -- dimension
     local scale_sx       = P("sx")                    * spaces * scaler      -- scale
@@ -1171,7 +1174,6 @@ do  -- else too many locals
             -- we can also use a count for the size
             if size and size ~= "" then
                 local mode, fontsize, sx, sy = lpegmatch(sizepattern,size)
--- print(size,mode,fontsize,sx,sy)
                 if mode and fontsize and fontsize ~= "" then
                     texsetcount(c_scaledfontmode,mode)
                  -- ctx_setsomefontsize(fontsize)
@@ -1396,7 +1398,9 @@ do  -- else too many locals
                     end
                     -- resolved (when designsize is used):
                     local size = round(tfmdata.parameters.size or 655360)
+if scaledfontmode ~= 4 then
                     setmacro("somefontsize",size.."sp")
+end
                     texsetcount(c_scaledfontsize,size)
                     lastfontid = id
                 else
@@ -1419,7 +1423,9 @@ do  -- else too many locals
              -- texdefinefont(cs,tfmdata,global and "global")
                 -- resolved (when designsize is used):
                 local size = round(fontdata[tfmdata].parameters.size or 0)
+if scaledfontmode ~= 4 then
                 setmacro("somefontsize",size.."sp")
+end
                 texsetcount(c_scaledfontsize,size)
                 lastfontid = tfmdata
             else
@@ -1645,7 +1651,8 @@ function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specificati
             scaledpoints = scaledpoints / height
         end
     end
-    if scaledpoints < 0 then
+    local negative = scaledpoints < 0
+    if negative then
         scaledpoints = (- scaledpoints/1000) * (tfmdata.designsize or parameters.designsize) -- already in sp
     end
     -- a temp hack till we have upgraded all mechanisms
@@ -1655,7 +1662,10 @@ function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specificati
         delta = round(delta)
     end
     texsetcount(c_font_scaled_points,size)
-    --
+    if accuratescale and not negative then
+        size = round(delta * 1000)
+    end
+-- print(size,delta)
     return size, delta
 end
 

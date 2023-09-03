@@ -73,10 +73,29 @@ static int fontlib_aux_count_hash_items(lua_State *L)
 
 */
 
-# define set_numeric_field_by_index(target,name,dflt) \
-    lua_push_key(name); \
-    target = (lua_rawget(L, -2) == LUA_TNUMBER) ? lmt_roundnumber(L, -1) : dflt ; \
-    lua_pop(L, 1);
+# if (1) 
+
+    # define set_numeric_field_by_index(target,name,dflt) \
+        lua_push_key(name); \
+        target = (lua_rawget(L, -2) == LUA_TNUMBER) ? lmt_roundnumber(L, -1) : dflt ; \
+        lua_pop(L, 1);
+
+# else 
+
+    # define set_numeric_field_by_index(target,name,dflt) \
+        lua_push_key(name); \
+        if (lua_rawget(L, -2) == LUA_TNUMBER) { \
+            target = lmt_roundnumber(L, -1); \
+            lua_pop(L, 1); \
+            lua_push_key(name); \
+            lua_push_integer(L, target); \
+            lua_rawset(L, -3); \
+        } else { \
+            target = dflt ; \
+            lua_pop(L, 1); \
+        } 
+
+# endif 
 
 # define set_boolean_field_by_index(target,name,dflt) \
     lua_push_key(name); \
@@ -156,7 +175,14 @@ static void fontlib_aux_read_lua_parameters(lua_State *L, int f)
                             tex_set_font_parameter(f, em_width_code, value);
                         } else if (lua_key_eq(s, extraspace)) {
                             tex_set_font_parameter(f, extra_space_code, value);
+                        } else { 
+                            break;
                         }
+// lua_pop(L, 1);
+// lua_push_string(L, s);
+// lua_push_integer(L, value);
+// lua_rawset(L, -3);
+// return;
                     }
                     break;
                 case LUA_TNUMBER:

@@ -58,7 +58,7 @@
 
 \permanent\protected\def\continuewhenmkivmode
   {\starttext
-   \startTEXpage[\c!offset=2ex,\c!foregroundstyle=\tttf]%
+   \startTEXpage[\c!offset=2\exheight,\c!foregroundstyle=\tttf]%
       This file needs \LuaTeX\ and \ConTeXt\ \MKIV.%
    \stopTEXpage
    \stoptext

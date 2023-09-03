@@ -480,8 +480,6 @@ inline static scaled tex_aux_math_given_x_scaled(scaled v)
     return v;
 }
 
-/* used for math_operator_size */
-
 inline static scaled tex_aux_math_y_scaled(scaled v, int style)
 {
     scaled scale = tex_get_math_parameter(style, math_parameter_y_scale, NULL);
@@ -495,8 +493,8 @@ inline static scaled tex_aux_math_given_y_scaled(scaled v)
 
 inline static scaled tex_aux_math_axis(halfword size)
 {
-    scaled a = tex_math_axis_size(size); /* already scaled to size and x_scale */
-    return a ? limited_rounded(0.000001 * glyph_scale_par * glyph_y_scale_par * a) : 0;
+    scaled v = tex_math_axis_size(size); /* already scaled to size and x_scale */
+    return v ? limited_rounded(0.000001 * glyph_scale_par * glyph_y_scale_par * v) : 0;
 }
 
 inline static scaled tex_aux_math_x_size_scaled(halfword f, scaled v, halfword size)
@@ -658,6 +656,13 @@ static scaled tex_aux_check_rule_thickness(halfword target, int size, halfword *
 }
 
 /*tex Fake character */
+
+// static bool tex_aux_has_fake_nucleus(halfword n)
+// {
+//     return n && node_type(n) == simple_noad 
+//         && noad_nucleus(n) && node_type(noad_nucleus(n)) == math_char_node
+//         && math_kernel_node_has_option(noad_nucleus(n), math_kernel_ignored_character);
+// }
 
 static halfword tex_aux_fake_nucleus(quarterword cls)
 {
@@ -2919,6 +2924,8 @@ static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *skew,
                 halfword chr = null;
                 halfword fnt = null;
                 tex_aux_fetch(noad_nucleus(target), "accent", &fnt, &chr);
+                /* We have an unprocessed character, no glyph yet (in compact mode). */
+                chr = tex_get_math_char(fnt, chr, size, NULL, 0);
                 if (tex_aux_math_engine_control(fnt, math_control_accent_skew_apply)) {
                     /*tex
                         There is no bot_accent so let's assume that the shift also applies
@@ -2976,7 +2983,7 @@ static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *skew,
 
                 */
                 halfword p = kernel_math_list(noad_nucleus(target));
-                if (p && ! node_next(p)) {
+                if (p && (! node_next(p))) { // || tex_aux_has_fake_nucleus(node_next(p))
                     switch (node_type(p)) {
                         case accent_noad:
                             absolute = tex_aux_compute_accent_skew(p, flags, skew, size);
@@ -3029,10 +3036,12 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
     int keep = 0;
     /*tex
         Compute the amount of skew, or set |skew| to an alignment point. This will be true if a
-        top-accent has been determined. This concerns the base! 
+        top-accent has been determined. This concerns the base! Beware, we have not yet processed 
+        the base so the (optional) smaller size is nto yet set. 
     */
     int absolute = tex_aux_compute_accent_skew(target, flags, &skew, size);
     {
+        /*tex Here we can also process the possible compact one. */
         halfword usedstyle;
         if (flags & top_accent_code) {
             usedstyle = tex_math_style_variant(style, math_parameter_top_accent_variant);
@@ -3051,6 +3060,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
         /*tex We always have a base anyway. */
         halfword list = box_list(base);
         if (list && node_type(list) == glyph_node) {
+            /*tex Here we have the possible compact one. */
             basefnt = glyph_font(list);
             basechr = glyph_character(list);
         }
@@ -3226,7 +3236,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
     }
     /*tex The top accents of both characters are aligned. */
     if (flags & overlay_accent_code) {
-        /* We ignore overshoot here, at leats for now. */
+        /* We ignore overshoot here, at least for now. */
         box_shift_amount(accent) = tex_half_scaled(basewidth - box_width(accent));
         box_width(accent) = 0; /* in gyre zero anyway */
     } else {
@@ -3266,12 +3276,12 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
                         anchor = tex_half_scaled(accentwidth);
                     } else {
                         anchor = tex_aux_math_x_size_scaled(accentfnt, anchor, size);
-                    }
+                    } 
                 }
                 if (math_direction_par == dir_righttoleft) {
                    skew += anchor - accentwidth;
                 } else {
-                   skew -= anchor;
+                  skew -= anchor;
                 }
             } else if (accentwidth == 0) {
                 skew += basewidth;

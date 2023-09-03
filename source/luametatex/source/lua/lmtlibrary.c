@@ -44,7 +44,7 @@ lmt_library lmt_library_load(const char *filename)
         lib.lib = lmt_library_open_indeed(filename);
         lib.okay = lib.lib != NULL;
         if (! lib.okay) {
-            tex_formatted_error("lmt library", "unable to load '%s', quitting\n", filename);
+            tex_formatted_error("lmt library", "unable to load '%s', error %i, quitting\n", filename, lmt_library_last_error());
         }
     }
     return lib;

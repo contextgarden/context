@@ -4010,30 +4010,50 @@ static void tex_aux_arithmic_register(int a, int code)
                     }
                 }
             case divide_code:
+            case r_divide_code:
+            case e_divide_code:
                 tex_scan_optional_keyword("by");
             case divide_by_code:
+            case r_divide_by_code:
+            case e_divide_by_code:
                 {
                     halfword amount = tex_scan_integer(0, NULL);
                     if (amount == 1) {
                         return;
                     } else { 
+                        bool rounded = code == r_divide_code || code == r_divide_by_code;
                         lmt_scanner_state.arithmic_error = 0;
                         switch (level) {
+                            case dimension_val_level:
+                                if (rounded) {
+                                    value = tex_quotient(original >> 16, amount, 1) << 16;
+                                    break;
+                                }
                             case integer_val_level:
                             case attribute_val_level:
-                            case dimension_val_level:
-                                value = tex_x_over_n(original, amount);
-                                break;
+                                {
+                                    bool asexpr = code == e_divide_code || code == e_divide_by_code;
+                                    value = tex_quotient(original, amount,  asexpr || rounded);
+                                    break;
+                                }
                             case posit_val_level:
-                                value = tex_posit_div_by(original, amount);
+                                value = tex_posit_div_by(original, amount); /* always rounded */
                                 break;
                             case glue_val_level:
                             case muglue_val_level:
                                 {
                                     halfword newvalue = tex_new_glue_spec_node(original);
-                                    glue_amount(newvalue) = tex_x_over_n(glue_amount(original), amount);
-                                    glue_stretch(newvalue) = tex_x_over_n(glue_stretch(original), amount);
-                                    glue_shrink(newvalue) = tex_x_over_n(glue_shrink(original), amount);
+                                    /* we could shift over 0 when not rounded but .. why bother */
+                                    if (rounded) {
+                                        glue_amount(newvalue) = tex_quotient(glue_amount(original) >> 16, amount, 1) << 16;
+                                        glue_stretch(newvalue) = tex_quotient(glue_stretch(original) >> 16, amount, 1) << 16;
+                                        glue_shrink(newvalue) = tex_quotient(glue_shrink(original) >> 16, amount, 1) << 16;
+                                    } else {
+                                        bool asexpr = code == e_divide_code || code == e_divide_by_code;
+                                        glue_amount(newvalue) = tex_quotient(glue_amount(original), amount, asexpr);
+                                        glue_stretch(newvalue) = tex_quotient(glue_stretch(original), amount, asexpr);
+                                        glue_shrink(newvalue) = tex_quotient(glue_shrink(original), amount, asexpr);
+                                    }
                                     value = newvalue;
                                     break;
                                 }
@@ -6430,14 +6450,14 @@ void tex_assign_internal_integer_value(int a, halfword p, int val)
             }
             break;
         case end_line_char_code:
-            if (val > 127) {
-                tex_handle_error(
-                    normal_error_type,
-                    "Invalid \\endlinechar",
-                    "The value for \\endlinechar has to be no higher than 127."
-                );
-            }
-            else {
+           if (val > max_endline_character) {
+               tex_handle_error(
+                   normal_error_type,
+                   "Invalid \\endlinechar",
+                   "The value for \\endlinechar has to be no higher than " LMT_TOSTRING(max_endline_character) "."
+               );
+           }
+           else {
                 tex_word_define(a, p, val);
             }
             break;

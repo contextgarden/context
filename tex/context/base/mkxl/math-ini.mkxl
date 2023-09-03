@@ -3147,9 +3147,9 @@
 
 %D Handy too:
 
-\permanent\def\mathcharwd{\fontcharwd\mathstylefont\normalmathstyle}
-\permanent\def\mathcharht{\fontcharht\mathstylefont\normalmathstyle}
-\permanent\def\mathchardp{\fontchardp\mathstylefont\normalmathstyle}
+\permanent\def\mathcharwd{\scaledfontcharwd\mathstylefont\normalmathstyle}
+\permanent\def\mathcharht{\scaledfontcharht\mathstylefont\normalmathstyle}
+\permanent\def\mathchardp{\scaledfontchardp\mathstylefont\normalmathstyle}
 
 %D Some dimension fun:
 
