@@ -171,7 +171,7 @@ typedef enum tex_command_code {
     math_component_cmd,               /*tex component of formula (|\mathbin|, etc.) */
     math_modifier_cmd,                /*tex limit conventions (|\displaylimits|, etc.) */
     math_fraction_cmd,                /*tex generalized fraction (|\above|, |\atop|, etc.) */
-    math_style_cmd,                   /*tex style specification (|\displaystyle|, etc.) */
+ // math_style_cmd,                   /*tex style specification (|\displaystyle|, etc.) */
     math_choice_cmd,                  /*tex choice specification (|\mathchoice|) */
     vcenter_cmd,                      /*tex vertically center a vbox (|\vcenter|) */
     case_shift_cmd,                   /*tex force specific case (|\lowercase|, |\uppercase|) */
@@ -219,12 +219,14 @@ typedef enum tex_command_code {
     iterator_value_cmd,
     font_property_cmd,                /*tex user-defined font integer (|\hyphenchar|, |\skewchar|) or (|\fontdimen|)  */
     auxiliary_cmd,                    /*tex state info (|\spacefactor|, |\prevdepth|) */
+    hyphenation_cmd,                  /*tex hyphenation data (|\hyphenation|, |\patterns|) */
     page_property_cmd,                /*tex page info (|\pagegoal|, etc.) */
     box_property_cmd,                 /*tex change property of box (|\wd|, |\ht|, |\dp|) */
     specification_cmd,                /*tex specifications (|\parshape|, |\interlinepenalties|, etc.) */
     define_char_code_cmd,             /*tex define a character code (|\catcode|, etc.) */
     define_family_cmd,                /*tex declare math fonts (|\textfont|, etc.) */
     math_parameter_cmd,               /*tex set math parameters (|\mathquad|, etc.) */
+    math_style_cmd,                   /*tex style specification (|\displaystyle|, etc.) */
     set_font_cmd,                     /*tex set current font (font identifiers) */
     define_font_cmd,                  /*tex define a font file (|\font|) */
     integer_cmd,                      /*tex the equivalent is a halfword number */
@@ -235,19 +237,20 @@ typedef enum tex_command_code {
     mugluespec_cmd,                   /*tex the equivalent is a halfword reference to glue with math units */
     mathspec_cmd,
     fontspec_cmd,
+    association_cmd,
     register_cmd,                     /*tex internal register (|\count|, |\dimen|, etc.) */
-    combine_toks_cmd,                 /*tex the |toksapp| and similar token (list) combiners */
     /*tex
         That was the last command that could follow |\the|.
     */
+    combine_toks_cmd,                 /*tex the |toksapp| and similar token (list) combiners */
     arithmic_cmd,                     /*tex |\advance|, |\multiply|, |\divide|, ... */
     prefix_cmd,                       /*tex qualify a definition (|\global|, |\long|, |\outer|) */
     let_cmd,                          /*tex assign a command code (|\let|, |\futurelet|) */
     shorthand_def_cmd,                /*tex code definition (|\chardef|, |\countdef|, etc.) */
-    association_cmd,
+//  association_cmd,
     def_cmd,                          /*tex macro definition (|\def|, |\gdef|, |\xdef|, |\edef|) */
     set_box_cmd,                      /*tex set a box (|\setbox|) */
-    hyphenation_cmd,                  /*tex hyphenation data (|\hyphenation|, |\patterns|) */
+//  hyphenation_cmd,                  /*tex hyphenation data (|\hyphenation|, |\patterns|) */
     interaction_cmd,                  /*tex define level of interaction (|\batchmode|, etc.) */
     /*tex
         Here ends the section that is part of the big switch.  What follows are commands that are
@@ -511,7 +514,7 @@ typedef enum input_codes {
     quit_loop_now_code,
 } input_codes;
 
-# define last_input_code tex_token_input_code /* hm */
+# define last_input_code quit_loop_now_code /* hm */
 
 typedef enum some_item_codes {
     lastpenalty_code,           /*tex |\lastpenalty| */
@@ -1219,9 +1222,10 @@ typedef enum ignore_something_codes {
     ignore_argument_code,
     ignore_upto_code,
     ignore_nested_upto_code,
+    ignore_rest_code,
 } ignore_something_codes;
 
-# define last_ignore_something_code ignore_nested_upto_code
+# define last_ignore_something_code ignore_rest_code
 
 typedef enum case_shift_codes {
     lower_case_code,

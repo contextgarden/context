@@ -2160,7 +2160,7 @@ static halfword tex_aux_clean_box(halfword n, int main_style, int style, quarter
             mlist = tex_new_node(simple_noad, ordinary_noad_subtype);
             noad_nucleus(mlist) = tex_aux_math_clone(n);
             tex_attach_attribute_list_copy(mlist, n);
-            break;
+             break;
         case sub_box_node:
             list = kernel_math_list(n);
             goto FOUND;
@@ -2178,6 +2178,17 @@ static halfword tex_aux_clean_box(halfword n, int main_style, int style, quarter
     tex_aux_set_current_math_size(style); /* persists after call */
   FOUND:
     if (! list || node_type(list) == glyph_node) {
+
+if (kerns) {
+    /* we assume a single glyph */
+    halfword fnt = glyph_font(list);
+    halfword chr = glyph_character(list);
+    kerns->topright = tex_aux_math_x_size_scaled(fnt, tex_char_top_right_kern_from_font(fnt, chr), main_style);
+    kerns->bottomright = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_right_kern_from_font(fnt, chr), main_style);
+    kerns->topleft = tex_aux_math_x_size_scaled(fnt, tex_char_top_left_kern_from_font(fnt, chr), main_style);
+    kerns->bottomleft = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_left_kern_from_font(fnt, chr), main_style);
+}
+
         result = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option);
         tex_attach_attribute_list_copy(result, list);
     } else if (! node_next(list) && (node_type(list) == hlist_node || node_type(list) == vlist_node) && (box_shift_amount(list) == 0)) {
@@ -3006,7 +3017,7 @@ static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *skew,
     return absolute;
 }
 
-static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, halfword accentchr, int flags, int style, int size, scaled *accenttotal)
+static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, halfword accentchr, int flags, int style, int size, scaled *accenttotal, scaled *leftkern, scaled *rightkern)
 {
     /*tex The width and height (without scripts) of base character: */
     scaled baseheight = 0;
@@ -3043,6 +3054,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
     {
         /*tex Here we can also process the possible compact one. */
         halfword usedstyle;
+        kernset localkerns;
         if (flags & top_accent_code) {
             usedstyle = tex_math_style_variant(style, math_parameter_top_accent_variant);
         } else if (flags & bot_accent_code) {
@@ -3050,8 +3062,24 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
         } else {
             usedstyle = tex_math_style_variant(style, math_parameter_overlay_accent_variant);
         }
+        tex_math_wipe_kerns(&localkerns);
         /*tex Beware: this adds italic correction because it feeds into mlist_to_hlist */
-        base = tex_aux_clean_box(noad_nucleus(target), usedstyle, style, math_nucleus_list, 1, NULL); /* keep italic */
+        base = tex_aux_clean_box(noad_nucleus(target), usedstyle, style, math_nucleus_list, 1, &localkerns); /* keep italic */
+        if (flags & top_accent_code) {
+            if (leftkern) { 
+                *leftkern = localkerns.bottomleft;
+            }
+            if (rightkern) { 
+                *rightkern = localkerns.bottomright;
+            }
+        } else if (flags & bot_accent_code) {
+            if (leftkern) { 
+                *leftkern = localkerns.topleft;
+            }
+            if (rightkern) { 
+                *rightkern = localkerns.topright;
+            }
+        }
         basewidth = box_width(base);
         baseheight = box_height(base);
      // basedepth = box_depth(base);
@@ -3370,21 +3398,27 @@ static void tex_aux_make_accent(halfword target, int style, int size, kernset *k
     */
     if (accent_top_character(target)) {
         if (tex_aux_fetch(accent_top_character(target), "top accent", &fnt, &chr)) {
-            tex_aux_do_make_math_accent(target, fnt, chr, top_accent_code | (topstretch ? stretch_accent_code : 0), style, size, &(kerns->toptotal));
+            tex_aux_do_make_math_accent(target, fnt, chr, top_accent_code | (topstretch ? stretch_accent_code : 0), style, size, &(kerns->toptotal), 
+                tex_math_has_class_option(accent_noad_subtype, left_bottom_kern_class_option)  ? &(kerns->bottomleft)  : NULL,
+                tex_math_has_class_option(accent_noad_subtype, right_bottom_kern_class_option) ? &(kerns->bottomright) : NULL
+            );
         }
         tex_flush_node(accent_top_character(target));
         accent_top_character(target) = null;
     }
     if (accent_bottom_character(target)) {
         if (tex_aux_fetch(accent_bottom_character(target), "bottom accent", &fnt, &chr)) {
-            tex_aux_do_make_math_accent(target, fnt, chr, bot_accent_code | (botstretch ? stretch_accent_code : 0), style, size, &(kerns->bottomtotal));
+            tex_aux_do_make_math_accent(target, fnt, chr, bot_accent_code | (botstretch ? stretch_accent_code : 0), style, size, &(kerns->bottomtotal), 
+                tex_math_has_class_option(accent_noad_subtype, left_bottom_kern_class_option)  ? &(kerns->topleft)  : NULL,
+                tex_math_has_class_option(accent_noad_subtype, right_bottom_kern_class_option) ? &(kerns->topright) : NULL
+            );
         }
         tex_flush_node(accent_bottom_character(target));
         accent_bottom_character(target) = null;
     }
     if (accent_middle_character(target)) {
         if (tex_aux_fetch(accent_middle_character(target), "overlay accent", &fnt, &chr)) {
-            tex_aux_do_make_math_accent(target, fnt, chr, overlay_accent_code | stretch_accent_code, style, size, NULL);
+            tex_aux_do_make_math_accent(target, fnt, chr, overlay_accent_code | stretch_accent_code, style, size, NULL, NULL, NULL);
         }
         tex_flush_node(accent_middle_character(target));
         accent_middle_character(target) = null;

@@ -867,6 +867,17 @@ void tex_end_token_list(void)
  /* check_interrupt(); */
 }
 
+void tex_quit_token_list(void)
+{
+    if (lmt_input_state.cur_input.index > 0) {
+        if (lmt_input_state.cur_input.token_type == backed_up_text) {
+            /* \expandafter \ignorerest */
+            tex_end_token_list();
+        }
+        tex_end_token_list();
+    }
+}
+
 /*tex A special version used in macro expansion. Maybe some day I'll optimize it. */
 
 void tex_cleanup_input_state(void)

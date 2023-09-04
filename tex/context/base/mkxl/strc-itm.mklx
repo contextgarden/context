@@ -956,6 +956,7 @@
    \fi
 \globalpushmacro\c_strc_itemgroups_n_of_items
 \global\c_strc_itemgroups_n_of_items\zerocount
+   \strc_itemgroups_check_n_of_items
    \ifempty\p_itemgroups_options
      \strc_itemgroups_setup_symbol_default
      \strc_itemgroups_reset_continue_state

@@ -470,6 +470,7 @@ extern void        tex_begin_inserted_list     (halfword t);
 extern void        tex_begin_associated_list   (halfword t);
 extern void        tex_begin_macro_list        (halfword t);
 extern void        tex_end_token_list          (void);
+extern void        tex_quit_token_list         (void);
 extern void        tex_cleanup_input_state     (void);
 extern void        tex_back_input              (halfword t);
 extern void        tex_reinsert_token          (halfword t);

@@ -542,6 +542,9 @@ static void tex_aux_run_ignore_something(void) {
                 } while (level);
                 break;
             }
+        case ignore_rest_code:
+            tex_quit_token_list();
+            break;
         default:
             break;
     }

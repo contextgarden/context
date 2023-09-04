@@ -1832,9 +1832,9 @@
 % %D \starttyping
 % %D \checkparameters[argument]
 % %D \stoptyping
-%
+
 % \newif\ifparameters
-%
+
 % \protected\def\checkparameters[#1]%
 %   {\ifhastok={#1}\parameterstrue\else\parametersfalse\fi}
 

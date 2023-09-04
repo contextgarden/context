@@ -1267,115 +1267,6 @@ static void tex_aux_set_cur_val_by_math_style_cmd(halfword code)
     cur_val_level = integer_val_level;
 }
 
-void tex_scan_something_simple(halfword cmd, halfword chr)
-{
-    int succeeded = 1;
-    switch (cmd) {
-        /* begin of tex_aux_short_scan_something_internal */
-        case char_given_cmd:
-            cur_val = chr;
-            cur_val_level = integer_val_level;
-            break;
-        case mathspec_cmd:
-            cur_val = (chr && node_subtype(chr) == tex_mathcode) ? math_spec_value(chr) : 0;
-            cur_val_level = integer_val_level;
-            break;
-        case iterator_value_cmd:
-            cur_val = chr > 0x100000 ? - (chr - 0x100000) : chr;
-            cur_val_level = integer_val_level;
-            break;
-        case some_item_cmd:
-            {
-                /*tex
-                    Because the items in this case directly refer to |cur_chr|, it needs to be saved
-                    and restored.
-                */
-                int save_cur_chr = cur_chr;
-                cur_chr = chr;
-                if (tex_aux_set_cur_val_by_some_cmd(chr)) {
-                    succeeded = 2;
-                } else {
-                    cur_chr = save_cur_chr;
-                }
-                break;
-            }
-        case internal_toks_cmd:
-        case register_toks_cmd:
-            cur_val = eq_value(chr);
-            cur_val_level = token_val_level;
-            break;
-        case internal_integer_cmd:
-        case register_integer_cmd:
-        case internal_attribute_cmd:
-        case register_attribute_cmd:
-            cur_val = eq_value(chr);
-            cur_val_level = integer_val_level;
-            break;
-        case internal_posit_cmd:
-        case register_posit_cmd:
-            cur_val = eq_value(chr);
-            cur_val_level = posit_val_level;
-            break;
-        case internal_dimension_cmd:
-        case register_dimension_cmd:
-            cur_val = eq_value(chr);
-            cur_val_level = dimension_val_level;
-            break;
-        case internal_glue_cmd:
-        case register_glue_cmd:
-            cur_val = eq_value(chr);
-            cur_val_level = glue_val_level;
-            break;
-        case internal_muglue_cmd:
-        case register_muglue_cmd:
-            cur_val = eq_value(chr);
-            cur_val_level = muglue_val_level;
-            break;
-        case lua_value_cmd:
-            tex_aux_set_cur_val_by_lua_value_cmd(chr, 0);
-            if (cur_val_level == no_val_level) {
-                return;
-            } else {
-                break;
-            }
-        case association_cmd:
-            switch (chr) {
-                case unit_association_code:
-                    cur_val = tex_get_unit_class(tex_scan_unit_register_number(0));
-                    cur_val_level = integer_val_level;
-                    break;
-                default: 
-                    return;
-            }
-            break;
-        case math_style_cmd:
-            tex_aux_set_cur_val_by_math_style_cmd(chr);
-            break;
-        case auxiliary_cmd:
-            tex_aux_set_cur_val_by_auxiliary_cmd(chr);
-            break;
-        case page_property_cmd:
-            tex_aux_set_cur_val_by_page_property_cmd(chr);
-            break;
-        case specification_cmd:
-            tex_aux_set_cur_val_by_specification_cmd(chr);
-            break;
-        /* end of tex_aux_short_scan_something_internal */
-        default:
-            /* weird message, this library */
-            tex_handle_error(
-                normal_error_type,
-                "You can't use '%C' as tex library index",
-                cmd, chr,
-                "I'm forgetting what you said and using zero instead."
-            );
-            cur_val = 0;
-            cur_val_level = integer_val_level;
-            break;
-    }
-    tex_aux_downgrade_cur_val(cur_val_level, succeeded, 0);
-}
-
 /*tex
 
     OK, we're ready for |scan_something_internal| itself. A second parameter, |negative|, is set
@@ -1444,7 +1335,6 @@ static int tex_aux_scan_hyph_data_number(halfword code, halfword *target)
 
 static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int level, int negative, halfword property)
 {
-
     int succeeded = 1;
     switch (cmd) {
         /* begin of tex_aux_short_scan_something_internal */
@@ -1975,6 +1865,14 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
             cur_val = tex_get_font_identifier(chr) ? chr : null;
             cur_val_level = fontspec_val_level;
             break;
+        case association_cmd:
+            switch (chr) {
+                case unit_association_code:
+                    cur_val = tex_get_unit_class(tex_scan_unit_register_number(0));
+                    cur_val_level = integer_val_level;
+                    break;
+            }
+            break;
         case begin_paragraph_cmd:
             switch (chr) {
                 case snapshot_par_code:
@@ -2012,6 +1910,17 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
             }
             break;
         */
+
+case parameter_cmd: /* This one is not in the [min_internal_cmd,max_internal_cmd] range! */
+    tex_get_x_token();
+    if (valid_iterator_reference(cur_tok)) { 
+        cur_val = tex_expand_iterator(cur_tok);
+        cur_val_level = integer_val_level;
+        break;
+    } else { 
+        goto DEFAULT;
+    }
+
         default:
           DEFAULT:
             /*tex Complain that |\the| can not do this; give zero result. */
@@ -2027,6 +1936,130 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
     }
     tex_aux_downgrade_cur_val(level, succeeded, negative);
     return cur_val;
+}
+
+// void tex_scan_something_simple(halfword cmd, halfword chr)
+// {
+//     int succeeded = 1;
+//     switch (cmd) {
+//         /* begin of tex_aux_short_scan_something_internal */
+//         case char_given_cmd:
+//             cur_val = chr;
+//             cur_val_level = integer_val_level;
+//             break;
+//         case mathspec_cmd:
+//             cur_val = (chr && node_subtype(chr) == tex_mathcode) ? math_spec_value(chr) : 0;
+//             cur_val_level = integer_val_level;
+//             break;
+//         case iterator_value_cmd:
+//             cur_val = chr > 0x100000 ? - (chr - 0x100000) : chr;
+//             cur_val_level = integer_val_level;
+//             break;
+//         case some_item_cmd:
+//             {
+//                 /*tex
+//                     Because the items in this case directly refer to |cur_chr|, it needs to be saved
+//                     and restored.
+//                 */
+//                 int save_cur_chr = cur_chr;
+//                 cur_chr = chr;
+//                 if (tex_aux_set_cur_val_by_some_cmd(chr)) {
+//                     succeeded = 2;
+//                 } else {
+//                     cur_chr = save_cur_chr;
+//                 }
+//                 break;
+//             }
+//         case internal_toks_cmd:
+//         case register_toks_cmd:
+//             cur_val = eq_value(chr);
+//             cur_val_level = token_val_level;
+//             break;
+//         case internal_integer_cmd:
+//         case register_integer_cmd:
+//         case internal_attribute_cmd:
+//         case register_attribute_cmd:
+//             cur_val = eq_value(chr);
+//             cur_val_level = integer_val_level;
+//             break;
+//         case internal_posit_cmd:
+//         case register_posit_cmd:
+//             cur_val = eq_value(chr);
+//             cur_val_level = posit_val_level;
+//             break;
+//         case internal_dimension_cmd:
+//         case register_dimension_cmd:
+//             cur_val = eq_value(chr);
+//             cur_val_level = dimension_val_level;
+//             break;
+//         case internal_glue_cmd:
+//         case register_glue_cmd:
+//             cur_val = eq_value(chr);
+//             cur_val_level = glue_val_level;
+//             break;
+//         case internal_muglue_cmd:
+//         case register_muglue_cmd:
+//             cur_val = eq_value(chr);
+//             cur_val_level = muglue_val_level;
+//             break;
+//         case lua_value_cmd:
+//             tex_aux_set_cur_val_by_lua_value_cmd(chr, 0);
+//             if (cur_val_level == no_val_level) {
+//                 return;
+//             } else {
+//                 break;
+//             }
+//         case association_cmd:
+//             switch (chr) {
+//                 case unit_association_code:
+//                     cur_val = tex_get_unit_class(tex_scan_unit_register_number(0));
+//                     cur_val_level = integer_val_level;
+//                     break;
+//                 default: 
+//                     return;
+//             }
+//             break;
+//          case math_style_cmd:
+//              tex_aux_set_cur_val_by_math_style_cmd(chr);
+//              break;
+//          case auxiliary_cmd:
+//              tex_aux_set_cur_val_by_auxiliary_cmd(chr);
+//              break;
+//          case page_property_cmd:
+//              tex_aux_set_cur_val_by_page_property_cmd(chr);
+//              break;
+//          case specification_cmd:
+//              tex_aux_set_cur_val_by_specification_cmd(chr);
+//              break;
+//          /* end of tex_aux_short_scan_something_internal */
+//         default:
+//             tex_handle_error(
+//                 normal_error_type,
+//                 "You can't use '%C' as (Lua) tex library index",
+//                 cmd, chr,
+//                 "I'm forgetting what you said and using zero instead."
+//             );
+//             cur_val = 0;
+//             cur_val_level = integer_val_level;
+//             break;
+//     }
+//     tex_aux_downgrade_cur_val(cur_val_level, succeeded, 0);
+// }
+
+void tex_scan_something_simple(halfword cmd, halfword chr)
+{
+    if (cmd >= min_internal_cmd && cmd <= max_internal_cmd) {
+        tex_aux_scan_something_internal(cmd, chr, no_val_level, 0, 0);
+    } else {
+     // tex_handle_error(
+     //     normal_error_type,
+     //     "You can't use '%C' as (Lua) tex library index",
+     //     cmd, chr,
+     //     "I'm forgetting what you said and using zero instead."
+     // );
+        cur_val = 0;
+        cur_val_level = integer_val_level;
+    }
 }
 
 /*tex
@@ -2225,42 +2258,42 @@ halfword tex_scan_integer(int optional_equal, int *radix)
                 tex_back_input(cur_tok);
             }
         }
-    } else if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
+    } else if ((cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) || cur_cmd == parameter_cmd) {
         result = tex_aux_scan_something_internal(cur_cmd, cur_chr, integer_val_level, 0, 0);
         if (cur_val_level != integer_val_level) {
             tex_aux_scan_integer_no_number();
             return 0;
         }
-    } else if (cur_cmd == math_style_cmd) {
-        result = tex_aux_scan_math_style_number(cur_chr);
-    } else if (cur_cmd == hyphenation_cmd) {
-        /* A pity that we need to check this way in |scan_integer|. */
-        if (tex_aux_scan_hyph_data_number(cur_chr, &cur_chr)) {
-            result = cur_chr;
-        } else {
-            tex_aux_scan_integer_no_number();
-            return 0;
-        }
-    } else if (cur_cmd == association_cmd) {
-        switch (cur_chr) {
-            case unit_association_code:
-                result = tex_get_unit_class(tex_scan_unit_register_number(0));
-                break;
-            default:
-                tex_aux_scan_integer_no_number();
-                return 0;
-        }
-    } else if (cur_cmd == parameter_cmd) { // && tex_parameter_escape_mode()) { 
-        halfword t = cur_tok;
-        tex_get_x_token();
-        if (valid_iterator_reference(cur_tok)) { 
-            result = tex_expand_iterator(cur_tok);
-        } else { 
-            tex_back_input(cur_tok);
-            cur_tok = t;
-            tex_aux_scan_integer_no_number();
-            return 0;
-        }
+ // } else if (cur_cmd == math_style_cmd) {
+ //     result = tex_aux_scan_math_style_number(cur_chr);
+ // } else if (cur_cmd == hyphenation_cmd) {
+ //     /* A pity that we need to check this way in |scan_integer|. */
+ //     if (tex_aux_scan_hyph_data_number(cur_chr, &cur_chr)) {
+ //         result = cur_chr;
+ //     } else {
+ //         tex_aux_scan_integer_no_number();
+ //         return 0;
+ //     }
+ // } else if (cur_cmd == association_cmd) {
+ //     switch (cur_chr) {
+ //         case unit_association_code:
+ //             result = tex_get_unit_class(tex_scan_unit_register_number(0));
+ //             break;
+ //         default:
+ //             tex_aux_scan_integer_no_number();
+ //             return 0;
+ //     }
+ // } else if (cur_cmd == parameter_cmd) { // && tex_parameter_escape_mode()) { 
+ //     halfword t = cur_tok;
+ //     tex_get_x_token();
+ //     if (valid_iterator_reference(cur_tok)) { 
+ //         result = tex_expand_iterator(cur_tok);
+ //     } else { 
+ //         tex_back_input(cur_tok);
+ //         cur_tok = t;
+ //         tex_aux_scan_integer_no_number();
+ //         return 0;
+ //     }
     } else {
         /*tex has an error message been issued? */
         bool vacuous = true;
@@ -2418,17 +2451,37 @@ void tex_scan_integer_validate(void)
                 tex_back_input(cur_tok);
             }
         }
-    } else if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
+    } else if ((cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) || cur_cmd == parameter_cmd) {
         tex_aux_scan_something_internal(cur_cmd, cur_chr, integer_val_level, 0, 0);
         if (cur_val_level != integer_val_level) {
             tex_aux_scan_integer_no_number();
         }
-    } else if (cur_cmd == math_style_cmd) {
-        tex_aux_scan_math_style_number(cur_chr);
-    } else if (cur_cmd == hyphenation_cmd) {
-        if (! tex_aux_scan_hyph_data_number(cur_chr, &cur_chr)) {
-            tex_aux_scan_integer_no_number();
-        }
+ // } else if (cur_cmd == math_style_cmd) {
+ //     tex_aux_scan_math_style_number(cur_chr);
+ // } else if (cur_cmd == hyphenation_cmd) {
+ //     if (! tex_aux_scan_hyph_data_number(cur_chr, &cur_chr)) {
+ //         tex_aux_scan_integer_no_number();
+ //     }
+ // } else if (cur_cmd == association_cmd) {
+ //     switch (cur_chr) {
+ //         case unit_association_code:
+ //             tex_get_unit_class(tex_scan_unit_register_number(0));
+ //             if (cur_val_level != dimen_val_level) {
+ //                 tex_aux_scan_integer_no_number();
+ //             }
+ //         default:
+ //             tex_aux_scan_integer_no_number();
+ //     }
+ // } else if (cur_cmd == parameter_cmd) {
+ //     tex_get_x_token();
+ //     if (valid_iterator_reference(cur_tok)) { 
+ //         tex_expand_iterator(cur_tok);
+ //         if (cur_val_level != integer_val_level) {
+ //             tex_aux_scan_integer_no_number();
+ //         }
+ //     } else { 
+ //         tex_aux_missing_number_error();
+ //     }
     } else {
         bool vacuous = true;
         switch (cur_tok) {
@@ -5800,21 +5853,38 @@ static halfword tex_scan_bit_int(int *radix)
             tex_aux_improper_constant_error();
             return 0; 
         }
-    } else if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
+    } else if ((cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) || cur_cmd == parameter_cmd) {
         result = tex_aux_scan_something_internal(cur_cmd, cur_chr, integer_val_level, 0, 0);
         if (cur_val_level != integer_val_level) {
             tex_aux_missing_number_error();
             return 0;
         }
-    } else if (cur_cmd == math_style_cmd) {
-        result = tex_aux_scan_math_style_number(cur_chr);
-    } else if (cur_cmd == hyphenation_cmd) {
-        if (tex_aux_scan_hyph_data_number(cur_chr, &cur_chr)) {
-            result = cur_chr;
-        } else {
-            tex_aux_missing_number_error();
-            return 0;
-        }
+ // } else if (cur_cmd == math_style_cmd) {
+ //     result = tex_aux_scan_math_style_number(cur_chr);
+ // } else if (cur_cmd == hyphenation_cmd) {
+ //     if (tex_aux_scan_hyph_data_number(cur_chr, &cur_chr)) {
+ //         result = cur_chr;
+ //     } else {
+ //         tex_aux_missing_number_error();
+ //         return 0;
+ //     }
+ // } else if (cur_cmd == association_cmd) {
+ //     switch (cur_chr) {
+ //         case unit_association_code:
+ //             result = tex_get_unit_class(tex_scan_unit_register_number(0));
+ //             break;
+ //         default:
+ //             tex_aux_scan_integer_no_number();
+ //             return 0;
+ //     }
+ // } else if (cur_cmd == parameter_cmd) {
+ //     tex_get_x_token();
+ //     if (valid_iterator_reference(cur_tok)) { 
+ //         result = tex_expand_iterator(cur_tok);
+ //     } else { 
+ //         tex_aux_missing_number_error();
+ //         return 0;
+ //     }
     } else {
         bool vacuous = true;
         bool ok_so_far = true;

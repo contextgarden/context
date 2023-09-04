@@ -7,7 +7,8 @@
 % The usual time stamp. This written while listening intermized to Fish (just ran
 % into), Lazulli (some yt videos too, looking forward to a next live act) and
 % because this all is boring checking out Sarah Coopers channel for new DT syncs
-% every few hours.
+% every few hours. (Picking up writing this manual in 2023 makes me realize how
+% time flies.)
 
 % When you feel unhappy about the lack of detail in this manual, just keep in mind
 % that you cannot really demand anything from volunteers: just hope for more (or
@@ -4170,6 +4171,36 @@ indicate a runaway argument which in the times of slower machines and terminals
 was best to catch early. In \LUAMETATEX\ we no longer have long macros and the
 mechanisms that are sensitive can be told to accept \prm {par} tokens (and
 \CONTEXT\ set them such that this is the case).
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {ignorerest}}]
+
+An example shows what this primitive does:
+
+\startbuffer
+\tolerant\def\foo[#1]#*[#2]%
+  {1234
+   \ifparameter#1\or\else
+     \expandafter\ignorerest
+   \fi
+   /#1/
+   \ifparameter#2\or\else
+     \expandafter\ignorerest
+   \fi
+   /#2/ }
+
+\foo test \foo[456] test \foo[456][789] test
+\stopbuffer
+
+\typebuffer
+
+As this likely makes most sense in conditionals you need to make sure the current
+state is properly finished. Because \prm {expandafter} bumps the input state,
+here we actually quit two levels; this is because so called \quote {backed up
+text} is intercepted by this primitive.
+
+\getbuffer
 
 \stopnewprimitive
 

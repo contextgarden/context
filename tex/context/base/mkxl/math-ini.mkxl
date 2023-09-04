@@ -525,6 +525,10 @@
     \defaultmathclassoptions
    +\autoinjectclassoptioncode
    +\shortinlineclassoptioncode
+   +\lefttopkernclassoptioncode
+   +\leftbottomkernclassoptioncode
+   +\righttopkernclassoptioncode
+   +\rightbottomkernclassoptioncode
 \relax
 
 % ord spacing but with support for \m{m^2/x__3}

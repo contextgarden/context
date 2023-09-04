@@ -2972,6 +2972,8 @@ static int texlib_aux_convert(lua_State *L, int cur_code)
     return 1;
 }
 
+/*tex This still kind of incomplete. */
+
 static int texlib_aux_scan_internal(lua_State *L, int cmd, int code, int values)
 {
     int retval = 1 ;
@@ -3321,19 +3323,6 @@ static int texlib_get_internal(lua_State *L, int index, int all)
             lua_pushinteger(L, cur_list.space_factor);
             return 1;
         } else {
-            /*tex
-                We no longer get the info from the primitives hash but use the current
-                primitive meaning.
-            */ /*
-            int ts = maketexlstring(s, l);
-            int cs = prim_lookup(ts);
-            flush_str(ts);
-            if (cs > 0) {
-            int cs = string_locate(s, l, 0);
-            if (cs != undefined_control_sequence &&  has_eq_flag_bits(cs, primitive_flag_bit)) {
-                int cmd = get_prim_eq_type(cs);
-                int code = get_prim_equiv(cs);
-            */
             int cs = tex_string_locate_only(s, l);
             if (cs != undefined_control_sequence && has_eq_flag_bits(cs, primitive_flag_bit)) {
                 int cmd = eq_type(cs);
@@ -3343,40 +3332,52 @@ static int texlib_get_internal(lua_State *L, int index, int all)
                         return texlib_aux_someitem(L, code);
                     case convert_cmd:
                         return texlib_aux_convert(L, code);
-                    case internal_toks_cmd:
-                    case register_toks_cmd:
-                    case internal_integer_cmd:
-                    case register_integer_cmd:
-                    case internal_attribute_cmd:
-                    case register_attribute_cmd:
-                    case internal_posit_cmd:
-                    case register_posit_cmd:
-                    case internal_dimension_cmd:
-                    case register_dimension_cmd:
-                    case lua_value_cmd:
-                    case iterator_value_cmd:
-                    case auxiliary_cmd:
-                    case page_property_cmd:
-                    case char_given_cmd:
-                    case integer_cmd:
-                    case posit_cmd:
-                    case dimension_cmd:
-                    case gluespec_cmd:
-                    case mugluespec_cmd:
-                    case mathspec_cmd:
-                    case fontspec_cmd:
-                        return texlib_aux_scan_internal(L, cmd, code, -1);
-                    case internal_glue_cmd:
-                    case register_glue_cmd:
-                    case internal_muglue_cmd:
-                    case register_muglue_cmd:
-                        return texlib_aux_scan_internal(L, cmd, code, all);
                     case specification_cmd:
                         return lmt_push_specification(L, specification_parameter(internal_specification_number(code)), all); /* all == countonly */
-                    default:
-                     /* tex_formatted_warning("tex.get", "ignoring cmd %i: %s\n", cmd, s); */
-                        break;
+                    case define_family_cmd:
+                    case math_parameter_cmd:
+                    case box_property_cmd:
+                    case font_property_cmd:
+                    case register_cmd:
+                    case hyphenation_cmd:
+                    case association_cmd:
+                        /* 
+                            These scan for more, we could push something into the input if really needed, 
+                            but that is then more a hack and it makes more sense to have dedicated getters. 
+                        */
+                        return 0;
+                 // case internal_toks_cmd:
+                 // case register_toks_cmd:
+                 // case internal_integer_cmd:
+                 // case register_integer_cmd:
+                 // case internal_attribute_cmd:
+                 // case register_attribute_cmd:
+                 // case internal_posit_cmd:
+                 // case register_posit_cmd:
+                 // case internal_dimension_cmd:
+                 // case register_dimension_cmd:
+                 // case lua_value_cmd:
+                 // case iterator_value_cmd:
+                 // case auxiliary_cmd:
+                 // case page_property_cmd:
+                 // case char_given_cmd:
+                 // case integer_cmd:
+                 // case posit_cmd:
+                 // case dimension_cmd:
+                 // case mathspec_cmd:
+                 // case fontspec_cmd:
+                 //     return texlib_aux_scan_internal(L, cmd, code, -1);
+                 // case gluespec_cmd:
+                 // case mugluespec_cmd:
+                 // case internal_glue_cmd:
+                 // case register_glue_cmd:
+                 // case internal_muglue_cmd:
+                 // case register_muglue_cmd:
+                 //     return texlib_aux_scan_internal(L, cmd, code, all);
+                 // default:
+                 //     break;
                 }
+                return texlib_aux_scan_internal(L, cmd, code, all);
             }
         }
     }

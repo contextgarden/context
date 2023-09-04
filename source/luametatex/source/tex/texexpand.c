@@ -597,13 +597,17 @@ void tex_expand_current_token(void)
                             lmt_main_control_state.quit_loop = 1;
                             break;
                         case quit_loop_now_code:
-                            while (1) { 
-                                tex_get_token();
-                                if (cur_cmd == end_local_cmd) {
-                                    lmt_main_control_state.quit_loop = 1;
-                                    tex_back_input(cur_tok);
-                                    break;
+                            if (lmt_main_control_state.loop_nesting) { 
+                                while (1) { 
+                                    tex_get_token();
+                                    if (cur_cmd == end_local_cmd) {
+                                        lmt_main_control_state.quit_loop = 1;
+                                        tex_back_input(cur_tok);
+                                        break;
+                                    }
                                 }
+                            } else { 
+                                /*tex We're not in a loop and end up at some fuzzy error. */
                             }
                             break;
                         case token_input_code:
