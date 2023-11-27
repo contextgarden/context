@@ -110,6 +110,7 @@
 \def\chinesenumerals   #1{\clf_chinesenumerals\numexpr#1\relax{normal}}
 \def\chinesecapnumerals#1{\clf_chinesenumerals\numexpr#1\relax{cap}}
 \def\chineseallnumerals#1{\clf_chinesenumerals\numexpr#1\relax{all}}
+\def\chinesedatenumerals#1{\clf_chinesenumerals\numexpr#1\relax{date}}
 
 %D \macros
 %D   {character,Character}
@@ -779,10 +780,12 @@
 \defineconversion [chinesenumerals]      [\chinesenumerals]
 \defineconversion [chinesecapnumerals]   [\chinesecapnumerals]
 \defineconversion [chineseallnumerals]   [\chineseallnumerals]
+\defineconversion [chinesedatenumerals]  [\chinesedatenumerals]
 
 \defineconversion [cn]                   [\chinesenumerals]
 \defineconversion [cn-c]                 [\chinesecapnumerals]
 \defineconversion [cn-a]                 [\chineseallnumerals]
+\defineconversion [cn-d]                 [\chinesedatenumerals]
 
 %D Moved from lang-def.mkiv:
 %D

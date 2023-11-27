@@ -621,9 +621,22 @@ local vector = {
     }
 }
 
-local function tochinese(n,name) -- normal, caps, all
- -- improved version by Li Yanrui
+local function tochinese(n,name) -- normal, caps, all, date
+ -- improved version by Li Yanrui, Song Yihan
     local result, r = { }, 0
+
+    if name == "date" then
+        local vector = vector.normal
+
+        local dateStr = tostring(n)
+        for i = 1, #dateStr do
+            r = r + 1
+            result[r] = vector[tonumber(dateStr:sub(i, i))]
+        end
+    
+        return concat(result)
+    end
+
     local vector = vector[name] or vector.normal
     while true do
         if n == 0 then
@@ -708,10 +721,13 @@ converters.tochinese = tochinese
 function converters.chinesenumerals   (n,how) return tochinese(n,how or "normal") end
 function converters.chinesecapnumerals(n)     return tochinese(n,"cap") end
 function converters.chineseallnumerals(n)     return tochinese(n,"all") end
+function converters.chinesedatenumerals(n)     return tochinese(n,"date") end
+
 
 converters['cn']   = converters.chinesenumerals
 converters['cn-c'] = converters.chinesecapnumerals
 converters['cn-a'] = converters.chineseallnumerals
+converters['cn-d'] = converters.chinesedatenumerals
 
 implement {
     name      = "chinesenumerals",
