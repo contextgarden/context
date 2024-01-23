@@ -1982,11 +1982,14 @@ local function getinfo(maindata,sub,platformnames,rawfamilynames,metricstoo,inst
             capheight      = metrics.capheight or fontdata.maxy, -- can be missing
             ascender       = metrics.typoascender,
             descender      = metrics.typodescender,
+            ascent         = metrics.winascent,  -- these might be more reliable
+            descent        = metrics.windescent, -- these might be more reliable
             platformnames  = platformnames or nil,
             instancenames  = instancenames or nil,
             tableoffsets   = fontdata.tableoffsets,
             defaultvheight = (verticalheader.ascender or 0) - (verticalheader.descender or 0)
         }
+      -- print(fontname,fontheader.macstyle) : maybe for italic
         if metricstoo then
             local keys = {
                 "version",

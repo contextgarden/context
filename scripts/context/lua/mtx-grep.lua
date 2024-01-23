@@ -23,6 +23,7 @@ local helpinfo = [[
     <flag name="pattern"><short>search for pattern (optional)</short></flag>
     <flag name="count"><short>count matches only</short></flag>
     <flag name="nocomment"><short>skip lines that start with %% or #</short></flag>
+    <flag name="noattic"><short>skip files that hh considers irrelevant</short></flag>
     <flag name="n"><short>show at most n matches</short></flag>
     <flag name="first"><short>only show first match</short></flag>
     <flag name="match"><short>return the match (if it is one)</short></flag>
@@ -81,33 +82,41 @@ function scripts.grep.find(pattern, files, offset)
         local nofmatches, noffiles, nofmatchedfiles = 0, 0, 0
         local n, m, check = 0, 0, nil
         local name = ""
+        local noattic = environment.argument("noattic")
         local count = environment.argument("count")
         local nocomment = environment.argument("nocomment")
         local max = tonumber(environment.argument("n")) or (environment.argument("first") and 1) or false
         local domatch = environment.argument("match")
+        -- for me:
+        local function skip(name)
+            return noattic and (find(name,"attic") or find(name,"backup") or find(name,"old") or find(name,"keep") or find(name,"install") or find(name,"texmf"))
+        end
+        --
         if environment.argument("xml") then
             for i=offset or 1, #files do
                 local globbed = dir.glob(files[i])
                 for i=1,#globbed do
                     name = globbed[i]
-                    local data = xml.load(name)
-                    if data and not data.error then
-                        n, m, noffiles = 0, 0, noffiles + 1
-                        if count then
-                            for c in xml.collected(data,pattern) do
-                                m = m + 1
-                            end
-                            if m > 0 then
-                                nofmatches = nofmatches + m
-                                nofmatchedfiles = nofmatchedfiles + 1
-                                write_nl(format("%5i  %s",m,name))
-                                io.flush()
-                            end
-                        else
-                            for c in xml.collected(data,pattern) do
-                                m = m + 1
-                                if not max or m <= max then
-                                    write_nl(format("%s: %s",name,xml.tostring(c)))
+                    if not skip(name) then
+                        local data = xml.load(name)
+                        if data and not data.error then
+                            n, m, noffiles = 0, 0, noffiles + 1
+                            if count then
+                                for c in xml.collected(data,pattern) do
+                                    m = m + 1
+                                end
+                                if m > 0 then
+                                    nofmatches = nofmatches + m
+                                    nofmatchedfiles = nofmatchedfiles + 1
+                                    write_nl(format("%5i  %s",m,name))
+                                    io.flush()
+                                end
+                            else
+                                for c in xml.collected(data,pattern) do
+                                    m = m + 1
+                                    if not max or m <= max then
+                                        write_nl(format("%s: %s",name,xml.tostring(c)))
+                                    end
                                 end
                             end
                         end
@@ -173,7 +182,7 @@ function scripts.grep.find(pattern, files, offset)
                 local globbed = dir.glob(files[i])
                 for i=1,#globbed do
                     name = globbed[i]
-                    if not find(name,"/%.") then
+                    if not find(name,"/%.") and not skip(name) then
                         local data = io.loaddata(name)
                         if data then
                             n, m, noffiles = 0, 0, noffiles + 1

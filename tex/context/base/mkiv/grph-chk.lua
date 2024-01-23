@@ -109,7 +109,7 @@ function checkers.pdf(data)
                 if trace_pdf then
                     report_pdf("copy page %i from image %a, %i pages copied",page,filename,copied)
                 end
-                local result = copypage(pdfdoc,page,nil,request.compact,request.width,request.height,request.attr)
+                local result = copypage(pdfdoc,page,nil,request.compact,request.width,request.height,request.attr,request.metadata)
                 if pdfdoc.nofcopied >= pdfdoc.nofpages then
                     if trace_pdf then
                         report_pdf("closing image %a, %i pages copied",filename,copied)

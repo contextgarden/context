@@ -34,7 +34,7 @@ function environment.initializefilenames()
     end
 
     local inputfilebase  = basename(inputfilename)
-    local outputfilename = arguments.result or removesuffix(fulljobname)
+    local outputfilename = type(arguments.result) =="string" and arguments.result or removesuffix(fulljobname)
 
 --     local inputfilename  = suffixonly(inputfilename) == "tex" and removesuffix(inputfilename) or inputfilename or ""
 

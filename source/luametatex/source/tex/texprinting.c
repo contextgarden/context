@@ -606,21 +606,31 @@ void tex_print_posit(halfword s)
 
 void tex_print_hex(long long sn)
 {
-    unsigned long long n = (unsigned long long) sn;
-    int k = 0;
-    unsigned char digits[24];
-    do {
-        unsigned char d = (unsigned char) (n % 16);
-        if (d < 10) {
-            digits[k] = '0' + d;
-        } else {
-            digits[k] = 'A' - 10 + d;
+    if (sn == 0) { 
+        tex_print_char('0');
+    } else { 
+        unsigned long long n = 0;
+        int k = 0;
+        unsigned char digits[24];
+        if (sn < 0) { 
+            tex_print_char('-');
+            n = (unsigned long long) -sn;
+        } else { 
+            n = (unsigned long long) sn;
         }
-        n = n / 16;
-        ++k;
-    } while (n != 0);
-    while (k-- > 0) {
-        tex_print_char(digits[k]);
+        do {
+            unsigned char d = (unsigned char) (n % 16);
+            if (d < 10) {
+                digits[k] = '0' + d;
+            } else {
+                digits[k] = 'A' - 10 + d;
+            }
+            n = n / 16;
+            ++k;
+        } while (n != 0);
+        while (k-- > 0) {
+            tex_print_char(digits[k]);
+        }
     }
 }
 
@@ -873,6 +883,14 @@ void tex_print_fontspec(int p)
         tex_print_str(" yscale ");
         tex_print_int(font_spec_y_scale(p));
     }
+    if (font_spec_slant(p)) {
+        tex_print_str(" slant ");
+        tex_print_int(font_spec_slant(p));
+    }
+    if (font_spec_weight(p)) {
+        tex_print_str(" weight ");
+        tex_print_int(font_spec_weight(p));
+    }
 }
 
 /*tex Math characters: */
@@ -974,7 +992,7 @@ void tex_print_font_identifier(halfword f)
      //        break;
      // /* case 6: */
      //    default:
-                tex_print_format("<%i: %s @ %D>", f, font_name(f), font_size(f), pt_unit);
+                tex_print_format("<%i: %s @ %p>", f, font_name(f), font_size(f));
      //         break;
      // }
     } else {
@@ -985,7 +1003,7 @@ void tex_print_font_identifier(halfword f)
 void tex_print_font_specifier(halfword e)
 {
     if (e && tex_is_valid_font(font_spec_identifier(e))) {
-        tex_print_format("<%i: %i %i %i>", font_spec_identifier(e), font_spec_scale(e), font_spec_x_scale(e), font_spec_y_scale(e));
+        tex_print_format("<%i: %i %i %i %i %i>", font_spec_identifier(e), font_spec_scale(e), font_spec_x_scale(e), font_spec_y_scale(e), font_spec_slant(e), font_spec_weight(e));
     } else {
         tex_print_str("<*>");
     }
@@ -1002,7 +1020,7 @@ void tex_print_font(halfword f)
                 Nowadays this check for designsize is rather meaningless so we could as well
                 always enter this branch. We can even make this while blob a callback.
             */
-            tex_print_format(" at %D", font_size(f), pt_unit);
+            tex_print_format(" at %p", font_size(f));
      /* } */
     } else {
         tex_print_str("nofont");
@@ -1033,7 +1051,7 @@ void tex_print_token_list(const char *s, halfword p)
     }
     tex_print_char('{');
     if ((p >= 0) && (p <= (int) lmt_token_memory_state.tokens_data.top)) {
-        tex_show_token_list(p, 0);
+        tex_show_token_list(p, 0, 0);
     } else {
         tex_print_str(error_string_clobbered(21));
     }
@@ -1131,9 +1149,9 @@ void tex_print_levels(void)
     int l0 = tracing_levels_par;
     tex_print_nlp();
     if (l0 > 0) {
-        int l1 = (l0 & 0x01) == tracing_levels_group;
-        int l2 = (l0 & 0x02) == tracing_levels_input;
-        int l4 = (l0 & 0x04) == tracing_levels_catcodes;
+        int l1 = (l0 & tracing_levels_group) == tracing_levels_group;
+        int l2 = (l0 & tracing_levels_input) == tracing_levels_input;
+        int l4 = (l0 & tracing_levels_catcodes) == tracing_levels_catcodes;
         if (l1) {
             tex_print_int(cur_level);
             tex_print_char(':');
@@ -1217,6 +1235,9 @@ const char *tex_print_format_args(const char *format, va_list args)
                             break;
                         case 's':
                             tex_print_str(va_arg(args, char *));
+                            break;
+                        case 'p':
+                            tex_print_dimension(va_arg(args, scaled), pt_unit);
                             break;
                         case 'q':
                             tex_print_char('\'');

@@ -32,6 +32,10 @@ synonyms.tobesaved = tobesaved
 
 local progressions = { } -- false=not_yet_shown  true=shown
 
+local c_realpageno = tex.iscount("realpageno")
+
+local texgetcount  = tex.getcount
+
 local variables    = interfaces.variables
 local v_all        = variables.all
 local v_current    = variables.current
@@ -219,8 +223,7 @@ end
 local ctx_latelua = context.latelua
 
 local function enhance(data)
-    local page = tex.getcount("realpageno")
-    data.pages[page] = true
+    data.pages[texgetcount(c_realpageno)] = true
 end
 
 function synonyms.enhance(class,tag)

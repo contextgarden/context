@@ -529,7 +529,7 @@ static halfword tex_aux_find_protchar_left(halfword l, int d)
                     }
                     run = 0;
                 }
-                if (node_next(l) && node_type(l) == boundary_node && node_subtype(l) == protrusion_boundary && (boundary_data(l) == 1 || boundary_data(l) == 3)) {
+                if (node_next(l) && node_type(l) == boundary_node && node_subtype(l) == protrusion_boundary && (boundary_data(l) == protrusion_skip_next || boundary_data(l) == protrusion_skip_both)) {
                     /*tex Skip next node. */
                     l = node_next(l);
                 }
@@ -601,7 +601,7 @@ static halfword tex_aux_find_protchar_right(halfword l, halfword r)
                     }
                 }
                 if ((r != l) && r) {
-                    if (node_prev(r) && node_type(r) == boundary_node && node_subtype(r) == protrusion_boundary && (boundary_data(r) == 2 || boundary_data(r) == 3)) {
+                    if (node_prev(r) && node_type(r) == boundary_node && node_subtype(r) == protrusion_boundary && (boundary_data(r) == protrusion_skip_previous || boundary_data(r) == protrusion_skip_both)) {
                         /*tex Skip next node. */
                         r = node_prev(r);
                     }
@@ -1238,11 +1238,11 @@ static void tex_aux_compute_break_width(int break_type, int adjust_spacing, int 
             case penalty_node:
                 break;
             case kern_node:
-                if (node_subtype(s) != explicit_kern_subtype && node_subtype(s) != italic_kern_subtype) {
-                    return;
-                } else {
+                if (node_subtype(s) == explicit_kern_subtype || node_subtype(s) == italic_kern_subtype) {
                     lmt_linebreak_state.break_width[total_advance_amount] -= kern_amount(s);
                     break;
+                } else {
+                    return;
                 }
             case math_node:
                 if (tex_math_glue_is_zero(s)) {
@@ -1340,10 +1340,10 @@ static void tex_aux_print_break_node(halfword active, halfword passive)
     if (lmt_linebreak_state.do_last_line_fit) {
         /*tex Print additional data in the new active node. */
         tex_print_format(
-            " short %D, %s %D, ",
-            active_short(active), pt_unit,
+            " short %p, %s %p, ",
+            active_short(active),
             passive_cur_break(passive) ? "glue" : "active",
-            active_glue(active), pt_unit
+            active_glue(active)
         );
     }
     tex_print_format(
@@ -2430,7 +2430,7 @@ static void tex_aux_prepare_orphan_penalties(line_break_properties *properties, 
           INJECT:
             if (properties->orphan_penalties) {
                 /*tex 
-                    Inject specified penalties before spaces. When wwe see a math node with a penalty
+                    Inject specified penalties before spaces. When we see a math node with a penalty
                     set then we take the max and jump over a (preceding) skip. Maybe at some point 
                     the |short_inline_orphan_penalty_par| value will also move into the par state.
                 */
@@ -2531,8 +2531,7 @@ static void tex_aux_prepare_orphan_penalties(line_break_properties *properties, 
                     Short formulas at the end of a line are normally not followed by something other 
                     than punctuation. In practice one can set this penalty to e.g. a relatively low 
                     200 to get the desired effect. We definitely quit on a space and take for granted 
-                    what comes before we see the formula. 
-                    
+                    what comes before we see the formula.                     
                 */
                 while (current) {
                     switch (node_type(current)) { 
@@ -2679,8 +2678,8 @@ inline static int tex_aux_check_sub_pass(line_break_properties *properties, half
                     if (tracing) {
                         halfword id = tex_get_passes_identifier(passes, 1);
                         if (callback) { 
-                            tex_print_format("[id %i, subpass: %i of %i, overfull %D, underfull %D, verdict %i, classified %x, %s]\n", 
-                                id, subpass, nofsubpasses, overfull, pt_unit, underfull, pt_unit, verdict, classified, "callback" 
+                            tex_print_format("[id %i, subpass: %i of %i, overfull %p, underfull %p, verdict %i, classified %x, %s]\n", 
+                                id, subpass, nofsubpasses, overfull, underfull, verdict, classified, "callback" 
                             );
                         } else { 
                             const char *action = retry ? "retry" :  "skipped";
@@ -2690,22 +2689,22 @@ inline static int tex_aux_check_sub_pass(line_break_properties *properties, half
                             tex_begin_diagnostic();
                             if (threshold == max_dimension) { 
                                 if (badness == infinite_bad) { 
-                                    tex_print_format("[id %i, subpass: %i of %i, overfull %D, underfull %D, verdict %i, classified %x, %s]\n", 
-                                        id, subpass, nofsubpasses, overfull, pt_unit, underfull, pt_unit, verdict, classified, action
+                                    tex_print_format("[id %i, subpass: %i of %i, overfull %p, underfull %p, verdict %i, classified %x, %s]\n", 
+                                        id, subpass, nofsubpasses, overfull, underfull, verdict, classified, action
                                     );
                                 } else { 
-                                    tex_print_format("[id %i, subpass: %i of %i, overfull %D, underfull %D, verdict %i, badness %i, classified %x, %s]\n", 
-                                        id, subpass, nofsubpasses, overfull, pt_unit, underfull, pt_unit, verdict, badness, classified, action
+                                    tex_print_format("[id %i, subpass: %i of %i, overfull %p, underfull %p, verdict %i, badness %i, classified %x, %s]\n", 
+                                        id, subpass, nofsubpasses, overfull, underfull, verdict, badness, classified, action
                                     );
                                 }
                             } else { 
                                 if (badness == infinite_bad) { 
-                                    tex_print_format("[id %i, subpass: %i of %i, overfull %D, underfull %D, verdict %i, threshold %D, classified %x, %s]\n", 
-                                        id, subpass, nofsubpasses, overfull, pt_unit, underfull, pt_unit, verdict, threshold, pt_unit, classified, action
+                                    tex_print_format("[id %i, subpass: %i of %i, overfull %p, underfull %p, verdict %i, threshold %p, classified %x, %s]\n", 
+                                        id, subpass, nofsubpasses, overfull, underfull, verdict, threshold, classified, action
                                     );
                                 } else { 
-                                    tex_print_format("[id %i, subpass: %i of %i, overfull %D, underfull %D, verdict %i, threshold %D, badness %i, classified %x, %s]\n", 
-                                        id, subpass, nofsubpasses, overfull, pt_unit, underfull, pt_unit, verdict, threshold, pt_unit, badness, classified, action
+                                    tex_print_format("[id %i, subpass: %i of %i, overfull %p, underfull %p, verdict %i, threshold %p, badness %i, classified %x, %s]\n", 
+                                        id, subpass, nofsubpasses, overfull, underfull, verdict, threshold, badness, classified, action
                                     );
                                 }
                             }
@@ -2806,7 +2805,7 @@ inline static int tex_aux_check_sub_pass(line_break_properties *properties, half
                         tex_print_format("  finalhyphendemerits  %i\n", properties->final_hyphen_demerits);
                         tex_print_format("  adjdemerits          %i\n", properties->adj_demerits);
                         tex_print_format("  doubleadjdemerits    %i\n", properties->double_adj_demerits);
-                        tex_print_format("  emergencystretch     %D\n", properties->emergency_stretch, pt_unit);
+                        tex_print_format("  emergencystretch     %p\n", properties->emergency_stretch);
                         tex_print_format("  looseness            %i\n", properties->looseness);
                         tex_print_format("  adjustspacing        %i\n", properties->adjust_spacing);
                         tex_print_format("  linepenalty          %i\n", properties->line_penalty);
@@ -2877,7 +2876,6 @@ inline static int tex_aux_check_sub_pass(line_break_properties *properties, half
     paragraph; it is therefore unnecessary to check if |vlink (cur_p) = null| when |cur_p| is 
     a character node. (This is no longer true because we've split the hyphenation and font 
     processing steps.) 
-
 
     The code below is in the meantime a mix between good old \TEX, \ETEX\ (last line) , \OMEGA\
     (local boxes but redone), \PDFTEX\ (expansion and protrusion), \LUATEX\ and quite a bit of 
@@ -3016,6 +3014,7 @@ inline static halfword tex_aux_break_list(line_break_properties *properties, hal
                 switch (node_subtype(current)) {
                     case explicit_kern_subtype:
                     case italic_kern_subtype:
+                    case right_correction_kern_subtype:
                         { 
                             /*tex There used to be a |! is_char_node(node_next(cur_p))| test here. */
                             /*tex We catch |\emph{test} $\hat{x}$| aka |test\kern5pt\hskip10pt$\hat{x}$|. */
@@ -3025,6 +3024,8 @@ inline static halfword tex_aux_break_list(line_break_properties *properties, hal
                             }
                         }
                         break;
+                 // case left_correction_kern_subtype:
+                 //     break;
                     case font_kern_subtype:
                         if (properties->adjust_spacing == adjust_spacing_full) {
                             lmt_linebreak_state.active_width[font_stretch_amount] += tex_kern_stretch(current);
@@ -3109,7 +3110,7 @@ inline static halfword tex_aux_break_list(line_break_properties *properties, hal
                                                     if (wpost > 0) { 
                                                         if (properties->tracing_paragraphs > 1) {
                                                             tex_begin_diagnostic();
-                                                            tex_print_format("[linebreak: favour final prepost over replace, widths %D %D]", wpre + wpost, pt_unit, wreplace, pt_unit);
+                                                            tex_print_format("[linebreak: favour final prepost over replace, widths %p %p]", wpre + wpost, wreplace);
                                                             tex_short_display(node_next(temp_head));
                                                             tex_end_diagnostic();
                                                         }
@@ -3120,7 +3121,7 @@ inline static halfword tex_aux_break_list(line_break_properties *properties, hal
                                                     if (wreplace < wpre) {
                                                         if (properties->tracing_paragraphs > 1) {
                                                             tex_begin_diagnostic();
-                                                            tex_print_format("[linebreak: favour final replace over pre, widths %D %D]", wreplace, pt_unit, wpre, pt_unit);
+                                                            tex_print_format("[linebreak: favour final replace over pre, widths %p %p]", wreplace, wpre);
                                                             tex_short_display(node_next(temp_head));
                                                             tex_end_diagnostic();
                                                         }
@@ -3785,10 +3786,10 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                         goto DONE;
                     }
                 case kern_node:
-                    if (node_subtype(q) != explicit_kern_subtype && node_subtype(q) != italic_kern_subtype) {
-                        goto DONE;
-                    } else {
+                    if (node_subtype(q) == explicit_kern_subtype || node_subtype(q) == italic_kern_subtype) {
                         break;
+                    } else {
+                        goto DONE;
                     }
                 case math_node:
                     math_surround(q) = 0;
@@ -3856,7 +3857,9 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                     }
                     break;
                 case kern_node:
-                    kern_amount(r) = 0;
+                    if (node_subtype(r) != right_correction_kern_subtype && node_subtype(r) != left_correction_kern_subtype) {
+                        kern_amount(r) = 0;
+                    }
                     break;
                 case math_node :
                     math_surround(r) = 0;
@@ -4055,9 +4058,9 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
         if (properties->protrude_chars) {
             if (line_break_dir == dir_righttoleft && properties->protrude_chars == protrude_chars_advanced) {
                 halfword p = tex_aux_find_protchar_left(q, 0);
-                halfword w = tex_char_protrusion(p, right_margin_kern_subtype);
+                halfword w = tex_char_protrusion(p, left_margin_kern_subtype);
                 if (w && lmt_packaging_state.last_leftmost_char) {
-                    halfword k = tex_new_kern_node(-w, right_margin_kern_subtype);
+                    halfword k = tex_new_kern_node(-w, left_margin_kern_subtype);
                     tex_attach_attribute_list_copy(k, p);
                     tex_couple_nodes(k, q);
                     q = k;
@@ -4230,7 +4233,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                 }
             }
             shaping = (lefthang || righthang);
-            lmt_linebreak_state.just_box = tex_hpack(head, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_dir, holding_none_option);
+            lmt_linebreak_state.just_box = tex_hpack(head, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_dir, holding_none_option, box_limit_line);
          // attach_attribute_list_copy(linebreak_state.just_box, properties->initial_par);
             if (node_type(tail) != glue_node || node_subtype(tail) != right_skip_glue) {
                 halfword rs = tex_new_glue_node((properties->right_skip ? properties->right_skip : zero_glue), right_skip_glue);
@@ -4286,7 +4289,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
             }
         } else {
             /*tex Here we can have a right skip way to the right due to an overshoot! */
-            lmt_linebreak_state.just_box = tex_hpack(q, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_dir, holding_none_option);
+            lmt_linebreak_state.just_box = tex_hpack(q, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_dir, holding_none_option, box_limit_line);
          // attach_attribute_list_copy(linebreak_state.just_box, properties->initial_par);
             box_shift_amount(lmt_linebreak_state.just_box) = cur_indent;
         }
@@ -4351,7 +4354,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
         */
         if (cur_line + 1 != lmt_linebreak_state.best_line) {
             /*tex 
-                When we end up here we hale multiple lines so we need to add penalties between them 
+                When we end up here we have multiple lines so we need to add penalties between them 
                 according to (several) specifications. 
             */
             halfword pen = 0;
@@ -4519,7 +4522,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                     break; /* if not we leak, so maybe this needs more testing */
                 } else if (non_discardable(q)) {
                     break;
-                } else if (node_type(q) == kern_node && node_subtype(q) != explicit_kern_subtype && node_subtype(q) != italic_kern_subtype) {
+                } else if (node_type(q) == kern_node && ! (node_subtype(q) == explicit_kern_subtype || node_subtype(q) == italic_kern_subtype)) {
                     break;
                 }
                 r = q;

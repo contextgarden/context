@@ -254,6 +254,7 @@ local blocks = allocate {
     ["cjkunifiedideographsextensionf"]              = { first = 0x2CEB0, last = 0x2EBEF,              description = "CJK Unified Ideographs Extension F" },
     ["cjkunifiedideographsextensiong"]              = { first = 0x30000, last = 0x3134F,              description = "CJK Unified Ideographs Extension G" },
     ["cjkunifiedideographsextensionh"]              = { first = 0x31350, last = 0x323AF,              description = "CJK Unified Ideographs Extension H" },
+    ["cjkunifiedideographsextensioni"]              = { first = 0x2EBF0, last = 0x2EE5F,              description = "CJK Unified Ideographs Extension I" },
     ["combiningdiacriticalmarks"]                   = { first = 0x00300, last = 0x0036F,              description = "Combining Diacritical Marks" },
     ["combiningdiacriticalmarksextended"]           = { first = 0x01AB0, last = 0x01AFF,              description = "Combining Diacritical Marks Extended" },
     ["combiningdiacriticalmarksforsymbols"]         = { first = 0x020D0, last = 0x020FF,              description = "Combining Diacritical Marks for Symbols" },
@@ -880,7 +881,14 @@ setmetatableindex(characters.can_have_space, mti)
 -- normative   : BK CR LF CM SG GL CB SP ZW NL WJ JL JV JT H2 H3
 -- informative : XX OP CL CP QU NS EX SY IS PR PO NU AL ID IN HY BB BA SA AI B2 HL CJ RI
 --
--- comments taken from standard:
+-- U+03400..U+04DBF ID
+-- U+04E00..U+09FFF ID
+-- U+0F900..U+0FAFF ID
+-- U+20000..U+2FFFD ID
+-- U+30000..U+3FFFD ID
+-- U+1F000..U+1FAFF ID
+-- U+1FC00..U+1FFFD ID
+-- U+020A0..U+020CF PR
 
 characters.linebreaks = allocate {
 
@@ -927,7 +935,10 @@ characters.linebreaks = allocate {
     -- other characters
 
     ["ai"] = "ambiguous (alphabetic or ideographic)",        -- characters with ambiguous east asian width : act like al when the resolved eaw is n; otherwise, act as id
+    ["ak"] = "aksara",                                       -- Consonants
     ["al"] = "alphabetic",                                   -- alphabets and regular symbols : are alphabetic characters or symbols that are used with alphabetic characters
+    ["ap"] = "aksara pre-pase",                              -- pre-base repha
+    ["as"] = "ksara start",                                  -- independent vowels
     ["cj"] = "conditional japanese starter",                 -- small kana : treat as ns or id for strict or normal breaking.
     ["eb"] = "emoji base",                                   -- all emoji allowing modifiers, do not break from following emoji modifier
     ["em"] = "emoji modifier",                               -- skin tone modifiers, do not break from preceding emoji base
@@ -936,10 +947,12 @@ characters.linebreaks = allocate {
     ["hl"] = "hebrew letter",                                -- hebrew : do not break around a following hyphen; otherwise act as alphabetic
     ["id"] = "ideographic",                                  -- ideographs : break before or after, except in some numeric context
     ["jl"] = "hangul l jamo",                                -- conjoining jamo : form korean syllable blocks
-    ["jv"] = "hangul v jamo",                                -- conjoining jamo : form korean syllable blocks
     ["jt"] = "hangul t jamo",                                -- conjoining jamo : form korean syllable blocks
+    ["jv"] = "hangul v jamo",                                -- conjoining jamo : form korean syllable blocks
     ["ri"] = "regional indicator",                           -- regional indicator symbol letter a .. z : keep together, break before and after from others
     ["sa"] = "complex context dependent (south east asian)", -- south east asian: thai, lao, khmer : provide a line break opportunity contingent on additional, language-specific context analysis
+    ["vf"] = "virama final",                                 -- Viramas for final consonants
+    ["vi"] = "virama",                                       -- Conjoining viramas
     ["xx"] = "unknown",                                      -- most unassigned, private-use : have as yet unknown line breaking behavior or unassigned code positions
 
 }

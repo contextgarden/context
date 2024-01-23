@@ -463,8 +463,8 @@
 
 % maybe a (un)setter for handlers
 
-\permanent\protected\def\dohyphens {\hyphenationmode\completehyphenationcode}
-\permanent\protected\def\nohyphens {\hyphenationmode\partialhyphenationcode}
+\permanent\protected\def\dohyphens{\hyphenationmode\completehyphenationcode}
+\permanent\protected\def\nohyphens{\hyphenationmode\partialhyphenationcode}
 
 % \permanent\protected\def\dohyphens
 %   {\ifbitwiseand\hyphenationmode\collapsehyphenationcode
@@ -859,20 +859,20 @@
 %D {ef{\norightligaturing f}icient ff fi}\par
 %D \stoptyping
 
-\immutable\chardef\nokerningcode   \numexpr\noleftkernglyphoptioncode    +\norightkernglyphoptioncode    \relax
-\immutable\chardef\noligaturingcode\numexpr\noleftligatureglyphoptioncode+\norightligatureglyphoptioncode\relax
+\immutable\integerdef\nokerningcode   \numexpr\noleftkernglyphoptioncode        +\norightkernglyphoptioncode           \relax
+\immutable\integerdef\noligaturingcode\numexpr\noleftligatureglyphoptioncode    +\norightligatureglyphoptioncode       \relax
+\immutable\integerdef\noitalicscode   \numexpr\noitaliccorrectionglyphoptioncode+\nozeroitaliccorrectionglyphoptioncode\relax
 
-\permanent\protected\def\nokerning   {\bitwiseflip\glyphoptions\nokerningcode}
-\permanent\protected\def\noligaturing{\bitwiseflip\glyphoptions\noligaturingcode}
+\permanent\protected\def\nokerning         {\bitwiseflip\glyphoptions\nokerningcode}
+\permanent\protected\def\noligaturing      {\bitwiseflip\glyphoptions\noligaturingcode}
+\permanent\protected\def\noitaliccorrection{\bitwiseflip\glyphoptions\noitalicscode}
 
-\permanent\protected\def\noleftkerning    {\bitwiseflip\glyphoptions\noleftkernglyphoptioncode}
-\permanent\protected\def\noleftligaturing {\bitwiseflip\glyphoptions\noleftligatureglyphoptioncode}
-\permanent\protected\def\norightkerning   {\bitwiseflip\glyphoptions\norightkernglyphoptioncode}
-\permanent\protected\def\norightligaturing{\bitwiseflip\glyphoptions\norightligatureglyphoptioncode}
+\permanent\protected\def\noleftkerning     {\bitwiseflip\glyphoptions\noleftkernglyphoptioncode}
+\permanent\protected\def\noleftligaturing  {\bitwiseflip\glyphoptions\noleftligatureglyphoptioncode}
+\permanent\protected\def\norightkerning    {\bitwiseflip\glyphoptions\norightkernglyphoptioncode}
+\permanent\protected\def\norightligaturing {\bitwiseflip\glyphoptions\norightligatureglyphoptioncode}
 
-% This is not really language related but let's define it here:
-
-\permanent\protected\def\noitaliccorrection{\bitwiseflip\glyphoptions\noitaliccorrectionglyphoptioncode}
+\bitwiseflip\glyphoptions\nozeroitaliccorrectionglyphoptioncode % for the moment default avoid the side effect
 
 %D Also \LMTX:
 

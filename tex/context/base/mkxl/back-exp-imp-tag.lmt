@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['back-exp-imp-tag'] = {
 
 local tonumber = tonumber
 local todimen = number.todimen
-local sortedhash, setmetatableindex, concat, insert = table.sortedhash, table.setmetatableindex, table.concat, table.insert
+local sortedkeys, sortedhash, setmetatableindex, concat, insert = table.sortedkeys, table.sortedhash, table.setmetatableindex, table.concat, table.insert
 local settings_to_hash = utilities.parsers.settings_to_hash
 local lpegmatch = lpeg.match
 local formatters = string.formatters
@@ -844,3 +844,31 @@ do
 
 end
 
+
+do
+
+    local usedcodepoints = { }
+
+    local function checkcodepoint(di,element,n,fulltag)
+        local unicode = usedcodepoints[fulltag]
+        if unicode then
+            setattribute(di,"codepoint",unicode)
+        end
+    end
+
+    local function setcodepoint(tag,unicode)
+        usedcodepoints[locatedtag(tag)] = unicode
+        if not extras[tag] then
+            extras[tag] = checkcodepoint
+        end
+    end
+
+    implement {
+        name      = "settagcodepoint",
+        actions   = setcodepoint,
+        arguments = { "argument", "integer" },
+    }
+
+    structurestags.setcodepoint = setcodepoint
+
+end

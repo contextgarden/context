@@ -254,7 +254,7 @@ typedef struct scriptdata {
     scaled   kern; 
     scaled   slack;
     int      shifted;
-    int      padding;
+    int      whatever;
 } scriptdata;
 
 typedef struct delimiterextremes {
@@ -348,7 +348,8 @@ inline static void tex_aux_make_style(halfword current, halfword *current_style,
                 }
                 tex_aux_set_current_math_size(style);
                 if (current_mu) { 
-                    *current_mu = scaledround((double) tex_get_math_quad_style(style) / 18.0);
+                    *current_mu = scaledround(tex_get_math_parameter(style, math_parameter_quad, NULL) / 18.0);
+                 // *current_mu = scaledround((double) tex_get_math_quad_style(style) / 18.0);
                 }
             }
             break;
@@ -367,7 +368,7 @@ inline static void tex_aux_set_parameter(halfword current, halfword style)
     if (is_valid_math_style(node_subtype(current))) { 
         style = node_subtype(current);
     }
-    tex_def_math_parameter(style, parameter_name(current), parameter_value(current), cur_level + lmt_math_state.level, indirect_math_regular);
+    tex_def_math_parameter(style, parameter_name(current), parameter_value(current), cur_level + lmt_math_state.level, indirect_math_regular, 0);
 }
 
 void tex_set_math_text_font(halfword style, int usetextfont)
@@ -491,6 +492,20 @@ inline static scaled tex_aux_math_given_y_scaled(scaled v)
     return v;
 }
 
+scaled tex_math_parameter_x_scaled(int style, int param)
+{
+    scaled scale = tex_get_math_parameter(style, math_parameter_x_scale, NULL);
+    scaled value = tex_get_math_parameter(style, param, NULL);
+    return value ? limited_rounded(0.000000001 * glyph_scale_par * glyph_x_scale_par * value * scale) : 0;
+}
+
+scaled tex_math_parameter_y_scaled(int style, int param)
+{
+    scaled value = tex_get_math_parameter(style, math_parameter_y_scale, NULL);
+    scaled scale = tex_get_math_parameter(style, param, NULL);
+    return value ? limited_rounded(0.000000001 * glyph_scale_par * glyph_y_scale_par * value * scale) : 0;
+}
+
 inline static scaled tex_aux_math_axis(halfword size)
 {
     scaled v = tex_math_axis_size(size); /* already scaled to size and x_scale */
@@ -536,7 +551,7 @@ static void tex_aux_trace_kerns(halfword kern, const char *what, const char *det
 {
     if (tracing_math_par >= 2) {
         tex_begin_diagnostic();
-        tex_print_format("[math: %s, %s, amount %D]", what, detail, kern_amount(kern), pt_unit);
+        tex_print_format("[math: %s, %s, amount %p]", what, detail, kern_amount(kern));
         tex_end_diagnostic();
     }
 }
@@ -712,7 +727,7 @@ inline static int tex_aux_has_extensible(halfword delimiter, halfword size)
 }
 
 /*tex 
-    A variant on a suggestion on the list based on analysis by Ulrik Vieth it in the mean 
+    A variant on a suggestion on the list based on analysis by Ulrik Vieth is in the mean 
     adapted. We keep these 500 and 2 because then we can use similar values. 
 */
 
@@ -731,9 +746,9 @@ static scaled tex_aux_get_delimiter_height(scaled height, scaled depth, int axis
         /*tex |delta1| is max distance from axis */
         delta1 = delta2;
     }
-    delta3 = scaledround((delta1 / 500.0) * delimiter_factor_par * (percent / 100.0));
-    delta2 = 2 * delta1 - delimiter_shortfall_par - shortfall;
-    return (delta3 < delta2) ? delta2 : delta3;
+    delta3 = scaledround((delta1 / 500.0) * delimiter_factor_par * (percent / 100.0)); /* (total/2) * fraction  */
+    delta2 = 2 * delta1 - delimiter_shortfall_par - shortfall;                         /* (total*2) - shortfall */
+    return (delta3 < delta2) ? delta2 : delta3;                                        /* maximum of these two  */
 }
 
 /*tex
@@ -822,7 +837,7 @@ static halfword tex_aux_fraction_rule(scaled width, scaled height, halfword att,
     if (callback_id > 0) {
         lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "ddddN->N", math_rules_mode_par ? ruletype : normal_rule_subtype, tex_fam_fnt(fam, size), width, height, att, &rule);
         if (rule && node_type(rule) != hlist_node) {
-            rule = tex_hpack(rule, 0, packing_additional, direction_unknown, holding_none_option);
+            rule = tex_hpack(rule, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
             node_subtype(rule) = math_rule_list;
             tex_attach_attribute_list_attribute(rule, att);
          }
@@ -849,19 +864,22 @@ static halfword tex_aux_fraction_rule(scaled width, scaled height, halfword att,
 
 */
 
-static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int size, scaled targetsize, int flat, int style, int shift, int *stack, scaled *delta, scaled tolerance, int nooverflow, delimiterextremes *extremes, scaled move);
+static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int size, scaled targetsize, int flat, int style, int shift, int *stack, scaled *delta, scaled tolerance, int nooverflow, delimiterextremes *extremes, scaled move, halfword attr);
 
 static halfword tex_aux_overbar(halfword box, scaled gap, scaled height, scaled krn, halfword att, quarterword index, halfword size, halfword fam, halfword topdelimiter, halfword style)
 {
-    halfword rule = (topdelimiter && tex_aux_has_extensible(topdelimiter, size))
-        ? tex_aux_make_delimiter(null, topdelimiter, size, box_width(box), 1, style, 0, NULL, NULL, 0, 0, NULL, 0)
+    halfword rule = (topdelimiter  > 0 && tex_aux_has_extensible(topdelimiter, size))
+        ? tex_aux_make_delimiter(null, topdelimiter, size, box_width(box), 1, style, 0, NULL, NULL, 0, 0, NULL, 0, att)
         : tex_aux_fraction_rule(box_width(box), height, att, index, size, fam);
     /*tex Safeguard: */
-    if (topdelimiter && box_width(rule) > box_width(box)) {
+    if (topdelimiter > 0 && box_width(rule) > box_width(box)) {
         halfword delta = (box_width(rule) - box_width(box)) / 2;
         tex_aux_prepend_hkern_to_box_list(box, delta, horizontal_math_kern_subtype, "narrow delimiter");
         tex_aux_append_hkern_to_box_list(box, delta, horizontal_math_kern_subtype, "narrow delimiter");
         box_width(box) = box_width(rule);
+    }
+    if (topdelimiter < 0) {
+        node_subtype(rule) = empty_rule_code;
     }
     if (gap) {
         halfword kern = tex_new_kern_node(gap, vertical_math_kern_subtype);
@@ -885,7 +903,7 @@ static halfword tex_aux_overbar(halfword box, scaled gap, scaled height, scaled 
 static halfword tex_aux_underbar(halfword box, scaled gap, scaled height, scaled krn, halfword att, quarterword index, halfword size, halfword fam, halfword botdelimiter, halfword style)
 {
     halfword rule = (botdelimiter && tex_aux_has_extensible(botdelimiter, size))
-        ? tex_aux_make_delimiter(null, botdelimiter, size, box_width(box), 1, style, 0, NULL, NULL, 0, 0, NULL, 0)
+        ? tex_aux_make_delimiter(null, botdelimiter, size, box_width(box), 1, style, 0, NULL, NULL, 0, 0, NULL, 0, att)
         : tex_aux_fraction_rule(box_width(box), height, att, index, size, fam);
     if (gap) {
         halfword kern = tex_new_kern_node(gap, vertical_math_kern_subtype);
@@ -903,7 +921,8 @@ static halfword tex_aux_underbar(halfword box, scaled gap, scaled height, scaled
     rule = tex_vpack(box, 0, packing_additional, max_dimension, (singleword) math_direction_par, holding_none_option, NULL);
     tex_attach_attribute_list_attribute(rule, att);
     /* */
-    box_depth(rule) = box_total(rule) + krn - box_height(box);
+ // box_depth(rule) = box_total(rule) + krn - box_height(box); // MS needs to test this on the manual 
+    box_depth(rule) = box_total(rule) - box_height(box);
     box_height(rule) = box_height(box);
     /* */
     return rule;
@@ -1408,8 +1427,8 @@ halfword tex_make_extensible(halfword fnt, halfword chr, scaled target, scaled m
             if (delta > max_shrink) {
                 if (tracing_math_par >= 1) {
                     tex_begin_diagnostic();
-                    tex_print_format("[math: extensible clipped, target %D, natural %D, shrink %D, clip %D]",
-                        target, pt_unit, max_natural, pt_unit, max_shrink, pt_unit, delta - max_shrink, pt_unit
+                    tex_print_format("[math: extensible clipped, target %p, natural %p, shrink %p, clip %p]",
+                        target, max_natural, max_shrink, delta - max_shrink
                     );
                     tex_end_diagnostic();
                 }
@@ -1452,12 +1471,12 @@ static halfword register_extensible(halfword fnt, halfword chr, int size, halfwo
     int callback_id = lmt_callback_defined(register_extensible_callback);
     if (callback_id > 0) {
         halfword boxed = null;
-        lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dddN->N", fnt, chr, size, result, &boxed);
+        lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "ddddN->N", fnt, chr, size, att, result, &boxed);
         if (boxed) {
             switch (node_type(boxed)) {
                 case hlist_node:
                 case vlist_node:
-                    tex_attach_attribute_list_attribute(boxed, att); /* yes or no */
+                 // tex_attach_attribute_list_attribute(boxed, att); /* yes or no */
                     return boxed;
                 default:
                     tex_formatted_error("fonts", "invalid extensible character %U registered for font %F, [h|v]list expected", chr, fnt);
@@ -1473,7 +1492,7 @@ static halfword register_extensible(halfword fnt, halfword chr, int size, halfwo
      we can register a composed delimiter which can result in a flush of these nodes. 
 */
 
-static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int size, scaled targetsize, int flat, int style, int shift, int *stack, scaled *delta, scaled tolerance, int nooverflow, delimiterextremes *extremes, scaled move)
+static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int size, scaled targetsize, int flat, int style, int shift, int *stack, scaled *delta, scaled tolerance, int nooverflow, delimiterextremes *extremes, scaled move, halfword attr)
 {
     /*tex the box that will be constructed */
     halfword result = null;
@@ -1531,28 +1550,30 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                   CONTINUE:
                     count++;
                     if (tex_char_exists(curfnt, curchr)) {
-                        scaled total = flat ? tex_aux_math_x_size_scaled(curfnt, tex_char_width_from_font(curfnt, curchr), size): tex_aux_math_y_size_scaled(curfnt, tex_char_total_from_font(curfnt, curchr), size);
-                        if (nooverflow && total >= targetsize) {
-                            if (total > targetsize && prvfnt != null_font) {
-                                fnt = prvfnt;
-                                chr = prvchr;
-                            } else { 
+                        if (! tex_char_has_tag_from_font(curfnt, curchr, force_extensible_tag)) {
+                            scaled total = flat ? tex_aux_math_x_size_scaled(curfnt, tex_char_width_from_font(curfnt, curchr), size): tex_aux_math_y_size_scaled(curfnt, tex_char_total_from_font(curfnt, curchr), size);
+                            if (nooverflow && total >= targetsize) {
+                                if (total > targetsize && prvfnt != null_font) {
+                                    fnt = prvfnt;
+                                    chr = prvchr;
+                                } else { 
+                                    fnt = curfnt;
+                                    chr = curchr;
+                                }
+                                besttarget = total; /* ? */
+                                goto FOUND;
+                            } else if (total >= besttarget) {
+                                prvfnt = curfnt;
+                                prvchr = curchr;
                                 fnt = curfnt;
                                 chr = curchr;
-                            }
-                            besttarget = total;
-                            goto FOUND;
-                        } else if (total >= besttarget) {
-                            prvfnt = curfnt;
-                            prvchr = curchr;
-                            fnt = curfnt;
-                            chr = curchr;
-                            besttarget = total;
-                            if (total >= (targetsize - tolerance)) {
-                                goto FOUND;
-                            }
-                       }
-                       if (tex_char_has_tag_from_font(curfnt, curchr, extensible_tag)) {
+                                besttarget = total;
+                                if (total >= (targetsize - tolerance)) {
+                                    goto FOUND;
+                                }
+                           }
+                        }
+                        if (tex_char_has_tag_from_font(curfnt, curchr, extensible_tag)) {
                             if (tex_char_has_tag_from_font(curfnt, curchr, horizontal_tag) || tex_char_has_tag_from_font(curfnt, curchr, vertical_tag)) {
                                 /*tex We only check when we are explicit. */
                                 if (flat ? tex_char_has_tag_from_font(curfnt, curchr, horizontal_tag) : tex_char_has_tag_from_font(curfnt, curchr, vertical_tag)) {
@@ -1594,6 +1615,9 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
         wipe_attribute_list_only(delimiter);
         tex_flush_node(delimiter);
     }
+ // if (! att) {
+ //     att = get_attribute_list(target); /* needs checking */
+ // }
     if (fnt != null_font) {
         /*tex
             When the following code is executed, |do_parts| will be true if a built-up symbol is
@@ -1602,7 +1626,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
         extinfo *ext = do_parts ? tex_char_extensible_recipe_from_font(fnt, chr) : NULL;
         if (ext) {
             scaled minoverlap = flat ? tex_get_math_x_parameter_default(style, math_parameter_connector_overlap_min, 0) : tex_get_math_y_parameter_default(style, math_parameter_connector_overlap_min, 0);
-            result = tex_aux_get_delimiter_box(fnt, chr, targetsize, minoverlap, flat, att);
+            result = tex_aux_get_delimiter_box(fnt, chr, targetsize, minoverlap, flat, attr ? attr : att);
             if (stretch && flat && (box_width(result) > targetsize)) { // threshold nooverflow
                 tex_flush_node_list(result);
                 do_parts = 0;
@@ -1756,7 +1780,7 @@ static halfword tex_aux_rebox(halfword box, scaled width, halfword size)
         /*tex When the next two are not seen we can wipe att so we reserve by bump! */
         add_attribute_reference(att);
         if (node_type(box) == vlist_node) {
-            box = tex_hpack(box, 0, packing_additional, direction_unknown, holding_none_option);
+            box = tex_hpack(box, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
             node_subtype(box) = subtype;
             tex_attach_attribute_list_attribute(box, att);
             head = box_list(box);
@@ -1791,7 +1815,7 @@ static halfword tex_aux_rebox(halfword box, scaled width, halfword size)
             tex_attach_attribute_list_attribute(right, att);
             tex_couple_nodes(left, head);
             tex_couple_nodes(tex_tail_of_node_list(head), right);
-            box = tex_hpack(left, width, packing_exactly, direction_unknown, holding_none_option);
+            box = tex_hpack(left, width, packing_exactly, direction_unknown, holding_none_option, box_limit_none);
             tex_attach_attribute_list_attribute(box, att);
             node_subtype(box) = subtype;
         }
@@ -1845,6 +1869,9 @@ static halfword tex_aux_math_muglue(halfword g, quarterword subtype, scaled m, h
         glue_shrink_order(glue) = glue_shrink_order(g);
         glue_shrink(glue) = (glue_shrink_order(glue) == normal_glue_order) ? tex_aux_mu_mult(shrink, n, f) : shrink;
     }
+    if (math_glue_limit_enabled) {
+       tex_add_glue_option(glue, glue_option_limit);
+    }
     glue_font(glue) = detail;
     tex_add_glue_option(glue, glue_option_no_auto_break);
     return glue;
@@ -1861,6 +1888,9 @@ static halfword tex_aux_math_glue(halfword g, quarterword subtype, halfword deta
         glue_shrink_order(glue) = normal_glue_order;
         glue_shrink(glue) = 0;
     }
+    if (math_glue_limit_enabled) {
+       tex_add_glue_option(glue, glue_option_limit);
+    }
     glue_font(glue) = detail;
     tex_add_glue_option(glue, glue_option_no_auto_break);
     return glue;
@@ -1872,6 +1902,9 @@ static halfword tex_aux_math_dimension(halfword g, quarterword subtype, halfword
     glue_amount(glue) = g;
     glue_font(glue) = detail;
     tex_add_glue_option(glue, glue_option_no_auto_break);
+    if (math_glue_limit_enabled) {
+       tex_add_glue_option(glue, glue_option_limit);
+    }
     return glue;
 }
 
@@ -1892,6 +1925,9 @@ static void tex_aux_math_glue_to_glue(halfword p, scaled m, int style)
         glue_shrink(p) = 0;
     } else if (glue_shrink_order(p) == normal_glue_order) {
         glue_shrink(p) = tex_aux_mu_mult(tex_aux_math_x_scaled(glue_shrink(p), style), n, f);
+    }
+    if (math_glue_limit_enabled) {
+       tex_add_glue_option(p, glue_option_limit);
     }
     /*tex Okay, we could have had a special subtype but we're stuck with this now. */
     node_subtype(p) = inter_math_skip_glue;
@@ -1967,6 +2003,78 @@ static void tex_aux_make_glue(halfword current, scaled mu, int style)
 inline static int tex_aux_is_math_penalty(halfword n)
 {
     return node_type(n) == penalty_node && (node_subtype(n) == math_pre_penalty_subtype || node_subtype(n) == math_post_penalty_subtype);
+}
+
+static void tex_aux_show_math_list(const char *fmt, halfword list)
+{
+    tex_begin_diagnostic();
+    tex_print_format(fmt, lmt_math_state.level);
+    tex_show_node_list(list, tracing_math_par >= 3 ? max_integer : show_box_depth_par, tracing_math_par >= 3 ? max_integer : show_box_breadth_par);
+    tex_print_ln();
+    tex_end_diagnostic();
+}
+
+/*tex 
+
+    The continuation code is a bit weird but we don't want a linked list of scripts and stay abit close 
+    to the original. So, when we have a sequence of scripts we have an pseudo list marked by option bits:
+
+    \startitemize 
+        \startitem |noad_option_continuation_head| the initial continuation noad \stopitem 
+        \startitem |noad_option_continuation_kernel| the noad determining the class \stopitem 
+        \startitem |noad_option_continuation} follow up noads \stopitem 
+    \stopitem 
+
+    When we move pending pre script up front we do adapt the head but not the kernel. 
+*/
+
+halfword tex_mlist_to_hlist_prepare(halfword mlist)
+{
+    if (mlist) {
+        halfword current = mlist;
+        halfword first = null;
+        if (tracing_math_par >= 2) {
+            tex_aux_show_math_list("[math: prescript reordering pass, level %i]", mlist);
+        }
+        while (current) {
+            halfword next = node_next(current);
+            if (tex_math_scripts_allowed(current)) {
+                if (has_noad_option_continuation_head(current)) {
+                    first = current;
+                } else if (has_noad_option_continuation(current) && has_noad_option_reorder_pre_scripts(current) && (noad_subprescr(current) || noad_supprescr(current))) { 
+                    halfword temp = null;
+                    if (noad_subscr(current) || noad_supscr(current) || noad_prime(current)) {
+                        /* inject new one */
+                        temp = tex_new_math_continuation_atom(null, current);
+                        noad_subprescr(temp) = noad_subprescr(current);
+                        noad_supprescr(temp) = noad_supprescr(current);
+                        noad_subprescr(current) = null;
+                        noad_supprescr(current) = null;
+                    } else { 
+                        /* move current one */
+                        temp = current;
+                        tex_try_couple_nodes(node_prev(current), node_next(current));
+                    }
+                    tex_remove_noad_option(first, noad_option_continuation_head);
+                    tex_add_noad_option(first, noad_option_continuation);
+                    tex_remove_noad_option(temp, noad_option_continuation);
+                    tex_add_noad_option(temp, noad_option_continuation_head);
+                    tex_couple_nodes(node_prev(first), temp);
+                    tex_couple_nodes(temp, first);
+                    if (first == mlist) { 
+                        mlist = temp;
+                    }
+                    first = temp; 
+                } else {
+                    first = null;
+                }
+            } else {
+                first = null;
+            }
+            current = next;
+        }
+    }
+    return mlist;
 }
 
 void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, int beginclass, int endclass)
@@ -2067,7 +2175,7 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
                     break;
             }
             if (node_next(temp_head) && ! tex_glue_is_zero(math_threshold_par)) {
-                scaledwhd siz = tex_natural_hsizes(node_next(temp_head), null, 0.0, 0, 0);
+                scaledwhd siz = tex_natural_msizes(node_next(temp_head), 0);
                 if  (siz.wd < glue_amount(math_threshold_par)) {
                     halfword box = tex_new_node(hlist_node, unknown_list);
                     tex_attach_attribute_list_copy(box, node_next(temp_head));
@@ -2089,9 +2197,9 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
                     }
                     if (tracing_math_par >= 2) {
                         tex_begin_diagnostic();
-                        tex_print_format("[math: boxing inline, threshold %D, width %D, height %D, depth %D]",
-                            glue_amount(math_threshold_par), pt_unit, // todo: stretch and shrink
-                            siz.wd, pt_unit, siz.ht, pt_unit, siz.dp, pt_unit
+                        tex_print_format("[math: boxing inline, threshold %p, width %p, height %p, depth %p]",
+                            glue_amount(math_threshold_par), // todo: stretch and shrink
+                            siz.wd, siz.ht, siz.dp
                         );
                         tex_end_diagnostic();
                     }
@@ -2177,25 +2285,29 @@ static halfword tex_aux_clean_box(halfword n, int main_style, int style, quarter
     /*tex recursive call */
     tex_aux_set_current_math_size(style); /* persists after call */
   FOUND:
+    if (kerns && list) {
+        halfword tail = tex_tail_of_node_list(list);
+        if (node_type(list) == glyph_node) {
+            halfword fnt = glyph_font(list);
+            halfword chr = glyph_character(list);
+            kerns->topleft = tex_aux_math_x_size_scaled(fnt, tex_char_top_left_kern_from_font(fnt, chr), main_style);
+            kerns->bottomleft = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_left_kern_from_font(fnt, chr), main_style);
+        }
+        if (node_type(tail) == glyph_node) {
+            halfword fnt = glyph_font(tail);
+            halfword chr = glyph_character(tail);
+            kerns->topright = tex_aux_math_x_size_scaled(fnt, tex_char_top_right_kern_from_font(fnt, chr), main_style);
+            kerns->bottomright = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_right_kern_from_font(fnt, chr), main_style);
+        }
+    }
     if (! list || node_type(list) == glyph_node) {
-
-if (kerns) {
-    /* we assume a single glyph */
-    halfword fnt = glyph_font(list);
-    halfword chr = glyph_character(list);
-    kerns->topright = tex_aux_math_x_size_scaled(fnt, tex_char_top_right_kern_from_font(fnt, chr), main_style);
-    kerns->bottomright = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_right_kern_from_font(fnt, chr), main_style);
-    kerns->topleft = tex_aux_math_x_size_scaled(fnt, tex_char_top_left_kern_from_font(fnt, chr), main_style);
-    kerns->bottomleft = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_left_kern_from_font(fnt, chr), main_style);
-}
-
-        result = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option);
+        result = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
         tex_attach_attribute_list_copy(result, list);
     } else if (! node_next(list) && (node_type(list) == hlist_node || node_type(list) == vlist_node) && (box_shift_amount(list) == 0)) {
         /*tex It's already clean. */
         result = list;
     } else {
-        result = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option);
+        result = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
         tex_attach_attribute_list_copy(result, list);
     }
     node_subtype(result) = subtype;
@@ -2402,7 +2514,7 @@ static void tex_aux_make_hextension(halfword target, int style, int size)
     int stack = 0;
     scaled radicalwidth = tex_aux_math_given_x_scaled(noad_width(target));
     halfword extensible = radical_left_delimiter(target);
-    halfword delimiter = tex_aux_make_delimiter(target, extensible, size, radicalwidth, 1, style, 1, &stack, NULL, 0, has_noad_option_nooverflow(target), NULL, 0);
+    halfword delimiter = tex_aux_make_delimiter(target, extensible, size, radicalwidth, 1, style, 1, &stack, NULL, 0, has_noad_option_nooverflow(target), NULL, 0, null);
     halfword delimiterwidth = box_width(delimiter);
     if (! stack && radicalwidth && (radicalwidth != delimiterwidth)) {
         if (has_noad_option_middle(target)) {
@@ -2418,9 +2530,9 @@ static void tex_aux_make_hextension(halfword target, int style, int size)
             delimiterwidth = radicalwidth;
         }
     }
-    delimiter = tex_hpack(delimiter, 0, packing_additional, direction_unknown, holding_none_option);
+    delimiter = tex_hpack(delimiter, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
     box_width(delimiter) = delimiterwidth;
-    tex_attach_attribute_list_copy(delimiter, target);
+    tex_attach_attribute_list_copy(delimiter, target); /* yes or no */
     kernel_math_list(noad_nucleus(target)) = delimiter;
     radical_left_delimiter(target) = null;
     radical_right_delimiter(target) = null;
@@ -2449,7 +2561,7 @@ static halfword tex_aux_link_radical(halfword nucleus, halfword delimiter, halfw
 
 static void tex_aux_assign_radical(halfword target, halfword radical)
 {
-    halfword result = tex_hpack(radical, 0, packing_additional, direction_unknown, holding_none_option);
+    halfword result = tex_hpack(radical, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
     node_subtype(result) = math_radical_list;
     tex_attach_attribute_list_copy(result, target);
     kernel_math_list(noad_nucleus(target)) = result;
@@ -2498,6 +2610,7 @@ static void tex_aux_make_root_radical(halfword target, int style, int size, kern
     delimiterextremes extremes = { .tfont = null_font, .tchar = 0, .bfont = null_font, .bchar = 0, .height = 0, .depth = 0 };
     scaled innerx = INT_MIN;
     scaled innery = INT_MIN;
+    int norule = has_noad_option_norule(target);
     noad_new_hlist(target) = null;
     /*tex
         We can take the rule width from the fam/style of the delimiter or use the most recent math
@@ -2515,7 +2628,13 @@ static void tex_aux_make_root_radical(halfword target, int style, int size, kern
             /*tex What do we have here. Why not issue an error */
             theta = tex_get_math_y_parameter_checked(style, math_parameter_fraction_rule); /* a bit weird this one */
         }
-        delimiter = tex_aux_make_delimiter(target, delimiter, size, box_total(nucleus) + clearance + theta, 0, style, 1, NULL, NULL, 0, has_noad_option_nooverflow(target), &extremes, 0);
+        delimiter = tex_aux_make_delimiter(target, delimiter, size, box_total(nucleus) + clearance + theta, 0, style, 1, NULL, NULL, 0, has_noad_option_nooverflow(target), &extremes, 0, null);
+        if (extremes.bfont) { 
+            scaled margin = tex_char_left_margin_from_font(extremes.bfont, extremes.bchar);
+            if (margin && margin != INT_MIN) {
+                tex_aux_prepend_hkern_to_box_list(nucleus, tex_aux_math_y_size_scaled(extremes.bfont, margin, size), horizontal_math_kern_subtype, "bad radical body");
+            }
+        }
         if (radical_degree(target)) { 
             halfword innerf = 0;
             halfword innerc = 0;
@@ -2534,8 +2653,17 @@ static void tex_aux_make_root_radical(halfword target, int style, int size, kern
             }
         }
         if (companion) {
-            /*tex For now we assume symmetry and same height and depth! */
-            companion = tex_aux_make_delimiter(target, companion, size, box_total(nucleus) + clearance + theta, 0, style, 1, NULL, NULL, 0, has_noad_option_nooverflow(target), &extremes, 0);
+            /*tex 
+                For now we assume symmetry and same height and depth! Should we have a dedicated 
+                |extremes| here? 
+            */
+            companion = tex_aux_make_delimiter(target, companion, size, box_total(nucleus) + clearance + theta, 0, style, 1, NULL, NULL, 0, has_noad_option_nooverflow(target), &extremes, 0, null);
+            if (extremes.bfont) { 
+                scaled margin = tex_char_right_margin_from_font(extremes.bfont, extremes.bchar);
+                if (margin && margin != INT_MIN) {
+                    tex_aux_append_hkern_to_box_list(nucleus, tex_aux_math_y_size_scaled(extremes.bfont, margin, size), horizontal_math_kern_subtype, "bad radical body");
+                }
+            }
         }
         if (weird) {
             /*tex
@@ -2557,9 +2685,12 @@ static void tex_aux_make_root_radical(halfword target, int style, int size, kern
             }
         }
     }
-    /* */
+    /*tex 
+        This is tricky: we might need to handle two different extremes here but I first need an 
+        example. 
+    */
     tex_aux_set_radical_kerns(&extremes, kerns, size);
-    /*
+    /*tex
         Radicals in traditional fonts have their shape below the baseline which makes them unuseable
         as stand alone characters but here we compensate for that fact. Opentype fonts derived from
         traditional \TEX\ fonts can also be like that and it goed unnoticed until one accesses the
@@ -2572,9 +2703,16 @@ static void tex_aux_make_root_radical(halfword target, int style, int size, kern
             /*tex increase the actual clearance */
             clearance += tex_half_scaled(delta);
         }
-        box_shift_amount(delimiter) = (box_height(delimiter) - theta) - (box_height(nucleus) + clearance);
-        if (companion) { 
-            box_shift_amount(companion) = (box_height(companion) - theta) - (box_height(nucleus) + clearance);
+        if (has_noad_option_reflected(target)) {
+            box_shift_amount(delimiter) = - ((box_depth(delimiter) - theta) - (box_depth(nucleus) + clearance));
+            if (companion) { 
+                box_shift_amount(companion) = - ((box_depth(companion) - theta) - (box_depth(nucleus) + clearance));
+            }
+        } else {
+            box_shift_amount(delimiter) = (box_height(delimiter) - theta) - (box_height(nucleus) + clearance);
+            if (companion) { 
+                box_shift_amount(companion) = (box_height(companion) - theta) - (box_height(nucleus) + clearance);
+            }
         }
     }
     if (node_type(delimiter) == vlist_node && node_subtype(delimiter) == math_v_delimiter_list) {
@@ -2586,11 +2724,19 @@ static void tex_aux_make_root_radical(halfword target, int style, int size, kern
         tex_aux_append_hkern_to_box_list(nucleus, after, horizontal_math_kern_subtype, "bad delimiter");
     }
     {
+        /* todo bottomdelimiter */
         halfword total = box_total(delimiter);
-        halfword list = tex_aux_overbar(nucleus, clearance, theta, kern, get_attribute_list(delimiter), math_radical_rule_subtype, size, fam, topdelimiter, style);
+        halfword list = (has_noad_option_reflected(target) ? tex_aux_underbar : tex_aux_overbar)
+            (nucleus,clearance,theta,kern,get_attribute_list(delimiter),math_radical_rule_subtype,size,fam,norule ? -1 : topdelimiter,style);
         radical = tex_aux_link_radical(list, delimiter, companion, rightdelimiter);
         if (radical_degree(target)) {
-            halfword degree = tex_aux_clean_box(radical_degree(target), script_script_style, style, math_degree_list, 0, NULL);
+            /*tex
+                This is a bit messy because we handle style at the texmath end already. Anyway, a
+                a degree is always scriptstyle. 
+            */
+            halfword degreestyle = tex_math_style_variant(noad_style(target) == yet_unset_math_style ? noad_style(target) : style, math_parameter_degree_variant);
+         // halfword degreestyle = script_script_style;
+            halfword degree = tex_aux_clean_box(radical_degree(target), degreestyle, style, math_degree_list, 0, NULL);
             scaled width = box_width(degree);
             tex_attach_attribute_list_copy(degree, radical_degree(target));
             if (width) {
@@ -2663,10 +2809,10 @@ static void tex_aux_make_delimited_radical(halfword target, int style, int size,
     } else if (size > script_script_size) {
         size = script_script_size;
     }
-    delimiter = tex_aux_make_delimiter(target, delimiter, size, total, 0, style, 2, NULL, NULL, 0, has_noad_option_nooverflow(target), &extremes, depth);
+    delimiter = tex_aux_make_delimiter(target, delimiter, size, total, 0, style, 2, NULL, NULL, 0, has_noad_option_nooverflow(target), &extremes, depth, null);
     if (companion) {
         /*tex For now we assume symmetry and same height and depth! */
-        companion = tex_aux_make_delimiter(target, companion, size, total, 0, style, 2, NULL, NULL, 0, has_noad_option_nooverflow(target), &extremes, depth);
+        companion = tex_aux_make_delimiter(target, companion, size, total, 0, style, 2, NULL, NULL, 0, has_noad_option_nooverflow(target), &extremes, depth, null);
     }
     tex_aux_set_radical_kerns(&extremes, kerns, size);
     radical = tex_aux_link_radical(nucleus, delimiter, companion, rightdelimiter);
@@ -2716,7 +2862,7 @@ inline static halfword tex_aux_check_radical(halfword target, int stack, halfwor
                 } else {
                     return r;
                 }
-                r = tex_hpack(r, 0, packing_additional, direction_unknown, holding_none_option);
+                r = tex_hpack(r, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
                 box_width(r) = noad_width(target);
                 tex_attach_attribute_list_copy(r, target);
             }
@@ -2761,7 +2907,7 @@ static void tex_aux_make_over_delimiter(halfword target, int style, int size)
     halfword content = tex_aux_clean_box(noad_nucleus(target), tex_math_style_variant(style, math_parameter_over_delimiter_variant), style, math_nucleus_list, 0, NULL);
     scaled width = tex_aux_get_radical_width(target, content);
     halfword over_delimiter = fraction_left_delimiter(target);
-    halfword delimiter = tex_aux_make_delimiter(target, over_delimiter, size, width, 1, style, 1, &stack, NULL, 0, has_noad_option_nooverflow(target), NULL, 0);
+    halfword delimiter = tex_aux_make_delimiter(target, over_delimiter, size, width, 1, style, 1, &stack, NULL, 0, has_noad_option_nooverflow(target), NULL, 0, null);
     fraction_left_delimiter(target) = null;
     delimiter = tex_aux_check_radical(target, stack, delimiter, content);
     tex_aux_fixup_radical_width(target, content, delimiter);
@@ -2789,7 +2935,7 @@ static void tex_aux_make_under_delimiter(halfword target, int style, int size)
     halfword content = tex_aux_clean_box(noad_nucleus(target), tex_math_style_variant(style, math_parameter_under_delimiter_variant), style, math_nucleus_list, 0, NULL);
     scaled width = tex_aux_get_radical_width(target, content);
     halfword under_delimiter = fraction_left_delimiter(target);
-    halfword delimiter = tex_aux_make_delimiter(target, under_delimiter, size, width, 1, style, 1, &stack, NULL, 0, has_noad_option_nooverflow(target), NULL, 0);
+    halfword delimiter = tex_aux_make_delimiter(target, under_delimiter, size, width, 1, style, 1, &stack, NULL, 0, has_noad_option_nooverflow(target), NULL, 0, null);
     fraction_left_delimiter(target) = null;
     delimiter = tex_aux_check_radical(target, stack, delimiter, content);
     tex_aux_fixup_radical_width(target, delimiter, content);
@@ -2817,7 +2963,7 @@ static void tex_aux_make_delimiter_over(halfword target, int style, int size)
     halfword content = tex_aux_clean_box(noad_nucleus(target), tex_math_style_variant(style, math_parameter_delimiter_over_variant), style, math_nucleus_list, 0, NULL);
     scaled width = tex_aux_get_radical_width(target, content);
     halfword over_delimiter = fraction_left_delimiter(target);
-    halfword delimiter = tex_aux_make_delimiter(target, over_delimiter, size + (size == script_script_size ? 0 : 1), width, 1, style, 1, &stack, NULL, 0, has_noad_option_nooverflow(over_delimiter), NULL, 0);
+    halfword delimiter = tex_aux_make_delimiter(target, over_delimiter, size + (size == script_script_size ? 0 : 1), width, 1, style, 1, &stack, NULL, 0, has_noad_option_nooverflow(over_delimiter), NULL, 0, null);
     fraction_left_delimiter(target) = null;
     delimiter = tex_aux_check_radical(target, stack, delimiter, content);
     tex_aux_fixup_radical_width(target, delimiter, content);
@@ -2846,7 +2992,7 @@ static void tex_aux_make_delimiter_under(halfword target, int style, int size)
     halfword content = tex_aux_clean_box(noad_nucleus(target), tex_math_style_variant(style, math_parameter_delimiter_under_variant), style, math_nucleus_list, 0, NULL);
     scaled width = tex_aux_get_radical_width(target, content);
     halfword under_delimiter = fraction_left_delimiter(target);
-    halfword delimiter = tex_aux_make_delimiter(target, under_delimiter, size + (size == script_script_size ? 0 : 1), width, 1, style, 1, &stack, NULL, 0, has_noad_option_nooverflow(under_delimiter), NULL, 0);
+    halfword delimiter = tex_aux_make_delimiter(target, under_delimiter, size + (size == script_script_size ? 0 : 1), width, 1, style, 1, &stack, NULL, 0, has_noad_option_nooverflow(under_delimiter), NULL, 0, null);
     fraction_left_delimiter(target) = null;
     delimiter = tex_aux_check_radical(target, stack, delimiter, content);
     tex_aux_fixup_radical_width(target, content, delimiter);
@@ -2960,7 +3106,7 @@ static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *skew,
                 }
                 if (tracing_math_par >= 2) {
                     tex_begin_diagnostic();
-                    tex_print_format("[math: accent skew, font %i, chr %x, skew %D, absolute %i]", fnt, chr, *skew, pt_unit, absolute);
+                    tex_print_format("[math: accent skew, font %i, chr %x, skew %p, absolute %i]", fnt, chr, *skew, absolute);
                     tex_end_diagnostic();
                 }
                 break;
@@ -3280,7 +3426,8 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
                 halfword kern = tex_new_kern_node(leftkern, horizontal_math_kern_subtype);
                 tex_attach_attribute_list_copy(kern, target);
                 tex_try_couple_nodes(kern, base);
-                base = tex_hpack(kern, 0, packing_additional, direction_unknown, holding_none_option);
+                base = tex_hpack(kern, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+                tex_attach_attribute_list_copy(base, target); /* needs checking */
                 basewidth = accentwidth;
                 box_width(base) = accentwidth;
             }
@@ -3373,6 +3520,13 @@ static void tex_aux_do_make_math_accent(halfword target, halfword accentfnt, hal
         box_shift_amount(result) = - delta;
     }
     box_width(result) += overshoot;
+
+if (node_type(result) == vlist_node) {
+    result = tex_hpack(result, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+    tex_attach_attribute_list_copy(result, target);
+    node_subtype(result) = math_accent_list;
+}
+
     kernel_math_list(nucleus) = result;
     node_type(nucleus) = sub_box_node;
 }
@@ -3488,8 +3642,8 @@ static void tex_aux_wrap_fraction_result(halfword target, int style, int size, h
             delta = tex_aux_get_delimiter_height(box_height(fraction), box_depth(fraction), 1, size, style);
         }
         /*tex Watch out: there can be empty delimiter boxes but with width. */
-        left = tex_aux_make_delimiter(target, left_delimiter, size, delta, 0, style, 1, NULL, NULL, 0, has_noad_option_nooverflow(target), NULL, 0);
-        right = tex_aux_make_delimiter(target, right_delimiter, size, delta, 0, style, 1, NULL, NULL, 0, has_noad_option_nooverflow(target), &extremes, 0);
+        left = tex_aux_make_delimiter(target, left_delimiter, size, delta, 0, style, 1, NULL, NULL, 0, has_noad_option_nooverflow(target), NULL, 0, null);
+        right = tex_aux_make_delimiter(target, right_delimiter, size, delta, 0, style, 1, NULL, NULL, 0, has_noad_option_nooverflow(target), &extremes, 0, null);
         if (kerns && extremes.tfont) { 
             if (tex_math_has_class_option(fraction_noad_subtype, carry_over_left_top_kern_class_option)) {  
                 kerns->topleft = tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_left_kern_from_font(extremes.tfont, extremes.tchar), size);
@@ -3515,7 +3669,8 @@ static void tex_aux_wrap_fraction_result(halfword target, int style, int size, h
         tex_couple_nodes(fraction, right);
         fraction = left;
     }
-    result = tex_hpack(fraction, 0, packing_additional, direction_unknown, holding_none_option);
+    result = tex_hpack(fraction, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+    tex_attach_attribute_list_copy(result, target); /* needs checking */
     /*tex There can also be a nested one: */
     node_subtype(result) = math_fraction_list;
     tex_aux_assign_new_hlist(target, result);
@@ -3677,17 +3832,17 @@ static halfword tex_aux_make_skewed_fraction(halfword target, int style, int siz
     scaled shift_up = 0;
     scaled shift_down = 0;
     (void) kerns;
-if (! has_noad_option_center(target)) { 
-    shift_up = tex_get_math_y_parameter_checked(style, math_parameter_skewed_fraction_vgap);
-    shift_down = tex_round_xn_over_d(shift_up, fraction_v_factor(target), scaling_factor);
-}
+    if (! has_noad_option_center(target)) { 
+        shift_up = tex_get_math_y_parameter_checked(style, math_parameter_skewed_fraction_vgap);
+        shift_down = tex_round_xn_over_d(shift_up, fraction_v_factor(target), scaling_factor);
+    }
     tex_aux_wrap_fraction_parts(target, style, size, &numerator, &denominator, 0);
     /*tex 
         Here we don't share code because we're going horizontal.
     */
     if (! has_noad_option_noaxis(target)) {
         shift_up += tex_half_scaled(tex_aux_math_axis(size));
-shift_down = shift_up;
+        shift_down = shift_up;
     }
     /*tex
         Construct a hlist box for the fraction, according to |hgap| and |vgap|.
@@ -3729,10 +3884,10 @@ shift_down = shift_up;
     box_shift_amount(numerator) = -shift_up;
     box_shift_amount(denominator) = shift_down;
     delta = maxheight + maxdepth;
-    middle = tex_aux_make_delimiter(target, middle_delimiter, size, delta, 0, style, 1, NULL, NULL, tolerance, has_noad_option_nooverflow(target), &extremes, 0);
-if (has_noad_option_center(target)) { 
-    box_shift_amount(middle) -= box_total(middle) - delta;
-}
+    middle = tex_aux_make_delimiter(target, middle_delimiter, size, delta, 0, style, 1, NULL, NULL, tolerance, has_noad_option_nooverflow(target), &extremes, 0, null);
+    if (has_noad_option_center(target)) { 
+       box_shift_amount(middle) -= box_total(middle) - delta;
+    }
     fraction = tex_new_null_box_node(hlist_node, math_fraction_list);
     tex_attach_attribute_list_copy(fraction, target);
     box_width(fraction) = box_width(numerator) + box_width(denominator) + box_width(middle) - hgap;
@@ -3813,7 +3968,7 @@ static halfword tex_aux_make_stretched_fraction(halfword target, int style, int 
         tex_aux_wrap_fraction_parts(target, style, size, &numerator, &denominator, 1);
         tex_aux_calculate_fraction_shifts_normal(target, style, size, numerator, denominator, &shift_up, &shift_down, &delta);
         tex_aux_apply_fraction_shifts(fraction, numerator, denominator, shift_up, shift_down);
-        middle = tex_aux_make_delimiter(target, middle_delimiter, size, box_width(fraction), 1, style, 0, NULL, NULL, 0, 0, NULL, 0);
+        middle = tex_aux_make_delimiter(target, middle_delimiter, size, box_width(fraction), 1, style, 0, NULL, NULL, 0, 0, NULL, 0, node_attr(target));
         if (box_width(middle) < box_width(fraction)) {
             /*tex It's always in the details: */
             scaled delta = (box_width(fraction) - box_width(middle)) / 2;
@@ -3900,7 +4055,8 @@ static void tex_aux_make_scripts (
     scaled    supshift,
     scaled    subshift,
     scaled    supdrop,
-    kernset  *kerns
+    kernset  *kerns,
+    halfword  single    
 );
 
 static halfword tex_aux_check_nucleus_complexity (
@@ -3971,7 +4127,7 @@ static scaled tex_aux_op_no_limits(halfword target, int style, int size, int ita
             italic = 0;
         }
         tex_aux_get_shifts(math_nolimits_mode_par, style, italic, &topshift, &botshift);
-        tex_aux_make_scripts(target, kernel, 0, style, topshift, botshift, 0, &localkerns);
+        tex_aux_make_scripts(target, kernel, 0, style, topshift, botshift, 0, &localkerns, 0);
     } else {
         tex_aux_assign_new_hlist(target, kernel);
     }
@@ -4035,55 +4191,84 @@ static scaled tex_aux_op_do_limits(halfword target, int style, int size, int ita
         scaled boxwidth = box_width(kernel);
         scaled subwidth = box_width(subscript);
         scaled halfitalic = tex_half_scaled(italic);
-        halfword topshift = halfitalic;
-        halfword bottomshift = halfitalic; 
+        scaled topshift = halfitalic;
+        scaled bottomshift = halfitalic; 
+        /* move this into the limits mode */
         if (kerns && ! halfitalic) { 
             halfword fnt = kerns->font;
             halfword chr = kerns->character;
             if (fnt && chr) { 
-                scaled t = tex_aux_math_x_size_scaled(fnt, tex_char_top_anchor_from_font(fnt, chr), size);
-                scaled b = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_anchor_from_font(fnt, chr), size);
-                if (t) { 
-                    topshift = t - boxwidth;
+                scaled topanchor = tex_aux_math_x_size_scaled(fnt, tex_char_top_anchor_from_font(fnt, chr), size);
+                scaled bottomanchor = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_anchor_from_font(fnt, chr), size);
+                /* kind of weird ... see context .. might change in proper anchor */
+                if (topanchor) { 
+                    topshift = topanchor - boxwidth;
                 }
-                if (b) {    
-                    bottomshift = boxwidth - b;
+                if (bottomanchor) {    
+                    bottomshift = boxwidth - bottomanchor;
                 }
             }
         }
-        box_width(result) = boxwidth;
-        if (supwidth > boxwidth) {
-            boxwidth = supwidth;
-        }
-        if (subwidth > boxwidth) {
-            boxwidth = subwidth;
-        }
-        box_width(result) = boxwidth;
-        superscript = tex_aux_rebox(superscript, boxwidth, size);
-        kernel = tex_aux_rebox(kernel, boxwidth, size);
-        subscript = tex_aux_rebox(subscript, boxwidth, size);
-        /*tex This is only (visually) ok for integrals, but other operators have no italic anyway. */
-        box_shift_amount(superscript) = topshift;
-        box_shift_amount(subscript) = -bottomshift;
         if (math_limits_mode_par >= 1) {
             /*tex
                 This option enforces the real dimensions and avoids longer limits to stick out
                 which is a traditional \TEX\ feature. It's handy to have this for testing. Nicer
                 would be to also adapt the width of the wrapped scripts but these are reboxed
-                with centering so we keep that as it is.
+                with centering so we keep that as it is. We rebox anyway to get hboxes.  
             */
-            if (supwidth + topshift > boxwidth) {
-                box_width(result) += supwidth + topshift - boxwidth;
+            halfword savedwidth = boxwidth;
+            halfword overshoot = 0; 
+            superscript = tex_aux_rebox(superscript, supwidth, size);
+            kernel = tex_aux_rebox(kernel, boxwidth, size);
+            subscript = tex_aux_rebox(subscript, subwidth, size);
+            if (supwidth) {
+                halfword shift = savedwidth/2 + topshift - supwidth/2;
+                halfword delta = supwidth + shift - savedwidth;
+                box_shift_amount(superscript) = shift;
+                if (delta > 0) { 
+                    boxwidth = boxwidth + delta;
+                }
+                overshoot = supwidth - boxwidth; 
+                if (overshoot > 0) {
+                    box_shift_amount(superscript) += overshoot;
+                    box_shift_amount(kernel) += overshoot;
+                    boxwidth = boxwidth + overshoot;
+                } else { 
+                    overshoot = 0;
+                }
             }
-            if (subwidth + bottomshift > boxwidth) {
-                box_x_offset(result) = subwidth + bottomshift - boxwidth;
-                box_width(result) += box_x_offset(result);
-                tex_set_box_geometry(result, offset_geometry);
+            if (subwidth) {
+                halfword shift = savedwidth/2 - bottomshift - subwidth/2 + overshoot;
+                box_shift_amount(subscript) = shift;
+                if (shift < 0) {
+                    box_shift_amount(superscript) -= shift;
+                    box_shift_amount(subscript) -= shift;
+                    box_shift_amount(kernel) -= shift;
+                    boxwidth = boxwidth - shift;
+                }
+                overshoot = subwidth - boxwidth; 
+                if (overshoot > 0) {
+                    boxwidth += overshoot;
+                }
             }
-        } else {
+            box_width(kernel) = boxwidth;
+        } else { 
             /*tex We keep the possible left and/or right overshoot of limits. */
+            if (supwidth > boxwidth) {
+                boxwidth = supwidth;
+            }
+            if (subwidth > boxwidth) {
+                boxwidth = subwidth;
+            }
+            superscript = tex_aux_rebox(superscript, boxwidth, size);
+            kernel = tex_aux_rebox(kernel, boxwidth, size);
+            subscript = tex_aux_rebox(subscript, boxwidth, size);
+            /*tex This is only (visually) ok for integrals, but other operators have no italic anyway. */
+            box_shift_amount(superscript) = topshift;
+            box_shift_amount(subscript) = -bottomshift;
         }
         /*tex Here the target |v| is still empty but we do set the height and depth. */
+        box_width(result) = boxwidth;
         box_height(result) = box_height(kernel);
         box_depth(result) = box_depth(kernel);
     } else { 
@@ -4221,7 +4406,7 @@ static scaled tex_aux_op_wrapup(halfword target, int style, int size, int italic
             opsize = tex_aux_math_y_scaled(opsize, style);
             if (autoright) {
                 /*tex We look ahead and preroll, |autoright| is a noad. */
-                scaledwhd siz = tex_natural_hsizes(autoright, null, 0.0, 0, 0);
+                scaledwhd siz = tex_natural_msizes(autoright, 0);
                 scaled total = siz.ht + siz.dp;
                 if (total > opsize) {
                     opsize = total;
@@ -4234,7 +4419,7 @@ static scaled tex_aux_op_wrapup(halfword target, int style, int size, int italic
             /* we need to check for overflow here */
             opsize += limited_scaled(openupheight);
             opsize += openupdepth;
-            box = tex_aux_make_delimiter(target, y, text_size, opsize, 0, style, ! has_noad_option_noaxis(target), NULL, &italic, 0, has_noad_option_nooverflow(target), NULL, 0);
+            box = tex_aux_make_delimiter(target, y, text_size, opsize, 0, style, ! has_noad_option_noaxis(target), NULL, &italic, 0, has_noad_option_nooverflow(target), NULL, 0, null);
         } else {
             /*tex
                 Where was the weird + 1 coming from? It tweaks the comparison. Anyway, because we
@@ -4558,6 +4743,9 @@ static halfword tex_aux_analyze_script(halfword init, scriptdata *data)
                                         goto NOTHING;
                                     }
                                 }
+                            case accent_noad: 
+                                data->whatever = 1;
+                                goto NOTHING;
                             default:
                                 goto NOTHING;
                         }
@@ -4674,7 +4862,7 @@ static halfword tex_aux_combine_script(halfword target, halfword width, halfword
     if (post) {
         tex_couple_nodes(*k2, post);
     }
-    post = tex_hpack(*k1, 0, packing_additional, direction_unknown, holding_none_option);
+    post = tex_hpack(*k1, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
     tex_attach_attribute_list_copy(*k1, target);
     tex_attach_attribute_list_copy(*k2, target);
     tex_attach_attribute_list_copy(post, target);
@@ -4723,14 +4911,14 @@ static halfword tex_aux_combine_script(halfword target, halfword width, halfword
 
 */
 
-static scaled tex_aux_math_kern_at(halfword fnt, int chr, int side, int value)
+static scaled tex_aux_math_kern_at(halfword fnt, int chr, int side, int value, int simple)
 {
     /*tex We know that the character exists. */
     charinfo *ci = tex_get_charinfo(fnt, chr);
     if (ci->math) {
         scaled *kerns_heights;
         int n_of_kerns = tex_get_charinfo_math_kerns(ci, side);
-        if (n_of_kerns == 0) {
+        if (n_of_kerns == 0 || simple) {
             /*tex These are yet unscaled. */
             switch (side) {
                 case top_left_kern:
@@ -4779,6 +4967,18 @@ static scaled tex_aux_math_kern_at(halfword fnt, int chr, int side, int value)
         }
     } else {
         return 0;
+    }
+}
+
+static scaled tex_aux_find_math_kern_simple(halfword f, int c, int cmd, int *found)
+{
+    if (tex_aux_math_engine_control(f, math_control_staircase_kern) && tex_char_exists(f, c)) {
+        /* todo: pre */
+        scaled krn = tex_aux_math_kern_at(f, c, cmd == superscript_cmd ? top_right_kern : bottom_right_kern, 0, 1);
+        *found = 1;
+        return krn ? tex_aux_math_x_size_scaled(f, krn, lmt_math_state.size) : 0;
+    } else {
+        return MATH_KERN_NOT_FOUND;
     }
 }
 
@@ -4892,11 +5092,11 @@ static scaled tex_aux_find_math_kern(halfword l_f, int l_c, halfword r_f, int r_
                 {
                     scaled corr_height_top = tex_char_height_from_font(l_f, l_c);
                     scaled corr_height_bot = -tex_char_depth_from_font(r_f, r_c) + shift;
-                    krn_l = tex_aux_math_kern_at(l_f, l_c, top_right_kern, corr_height_top);
-                    krn_r = tex_aux_math_kern_at(r_f, r_c, bottom_left_kern, corr_height_top);
+                    krn_l = tex_aux_math_kern_at(l_f, l_c, top_right_kern, corr_height_top, 0);
+                    krn_r = tex_aux_math_kern_at(r_f, r_c, bottom_left_kern, corr_height_top, 0);
                     krn = krn_l + krn_r;
-                    krn_l = tex_aux_math_kern_at(l_f, l_c, top_right_kern, corr_height_bot);
-                    krn_r = tex_aux_math_kern_at(r_f, r_c, bottom_left_kern, corr_height_bot);
+                    krn_l = tex_aux_math_kern_at(l_f, l_c, top_right_kern, corr_height_bot, 0);
+                    krn_r = tex_aux_math_kern_at(r_f, r_c, bottom_left_kern, corr_height_bot, 0);
                 }
                 break;
             case subscript_cmd:
@@ -4904,11 +5104,11 @@ static scaled tex_aux_find_math_kern(halfword l_f, int l_c, halfword r_f, int r_
                 {
                     scaled corr_height_top = tex_char_height_from_font(r_f, r_c) - shift;
                     scaled corr_height_bot = -tex_char_depth_from_font(l_f, l_c);
-                    krn_l = tex_aux_math_kern_at(l_f, l_c, bottom_right_kern, corr_height_top);
-                    krn_r = tex_aux_math_kern_at(r_f, r_c, top_left_kern, corr_height_top);
+                    krn_l = tex_aux_math_kern_at(l_f, l_c, bottom_right_kern, corr_height_top, 0);
+                    krn_r = tex_aux_math_kern_at(r_f, r_c, top_left_kern, corr_height_top, 0);
                     krn = krn_l + krn_r;
-                    krn_l = tex_aux_math_kern_at(l_f, l_c, bottom_right_kern, corr_height_bot);
-                    krn_r = tex_aux_math_kern_at(r_f, r_c, top_left_kern, corr_height_bot);
+                    krn_l = tex_aux_math_kern_at(l_f, l_c, bottom_right_kern, corr_height_bot, 0);
+                    krn_r = tex_aux_math_kern_at(r_f, r_c, top_left_kern, corr_height_bot, 0);
                 }
                 break;
             default:
@@ -4924,10 +5124,23 @@ static scaled tex_aux_find_math_kern(halfword l_f, int l_c, halfword r_f, int r_
     }
 }
 
+/* 
+    $\dot{\mathscr{F}}_2         = G$ % handled by corner kerns
+    $\mathscr{F}      _2         = G$ % handled by corner kerns
+    $\mathscr{F}      _{\dot{x}} = G$ % the whatever case 
+    $\dot{\mathscr{F}}_{\dot{x}} = G$ % handled by analyzed kerns 
+*/
+
 static int tex_aux_get_sup_kern(halfword kernel, scriptdata *sup, scaled shift_up, scaled supshift, scaled *supkern, kernset *kerns)
 {
     int found = 0;
     *supkern = MATH_KERN_NOT_FOUND;
+    if (sup->whatever) {
+        *supkern = tex_aux_find_math_kern_simple(glyph_font(kernel), glyph_character(kernel), superscript_cmd, &found);
+        if (found) { 
+            return found;
+        }
+    }
     if (sup->node) {
         *supkern = tex_aux_find_math_kern(glyph_font(kernel), glyph_character(kernel), sup->fnt, sup->chr, superscript_cmd, shift_up, &found);
         if (*supkern == MATH_KERN_NOT_FOUND) {
@@ -4960,6 +5173,12 @@ static int tex_aux_get_sub_kern(halfword kernel, scriptdata *sub, scaled shift_d
 {
     int found = 0;
     *subkern = MATH_KERN_NOT_FOUND;
+    if (sub->whatever) {
+        *subkern = tex_aux_find_math_kern_simple(glyph_font(kernel), glyph_character(kernel), subscript_cmd, &found);
+        if (found) { 
+            return found;
+        }
+    }
     if (sub->node) {
         *subkern = tex_aux_find_math_kern(glyph_font(kernel), glyph_character(kernel), sub->fnt, sub->chr, subscript_cmd, shift_down, &found);
         if (*subkern == MATH_KERN_NOT_FOUND) {
@@ -4978,7 +5197,7 @@ static int tex_aux_get_sub_kern(halfword kernel, scriptdata *sub, scaled shift_d
             *subkern = subshift;
         } else {
             if (*subkern) {
-                tex_aux_trace_kerns(*subkern, "superscript kern", "kernset bottom right");
+                tex_aux_trace_kerns(*subkern, "subscript kern", "kernset bottom right");
             }
             *subkern += subshift;
         }
@@ -5075,7 +5294,23 @@ static halfword tex_aux_shift_to_kern(halfword target, halfword box, scaled shif
     return result;
 }
 
-static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic, int style, scaled supshift, scaled subshift, scaled supdrop, kernset *kerns)
+static int tex_aux_singled(halfword target, scaledwhd kernelsize, int style, halfword single)
+{
+    if (single) {
+        scaled ht = tex_get_math_y_parameter_default(style, math_parameter_superscript_snap, 0);
+        scaled dp = tex_get_math_y_parameter_default(style, math_parameter_subscript_snap, 0);
+        return ht > 0 && dp > 0 && kernelsize.ht <= ht && kernelsize.dp <= dp;       
+    } else {
+        return 0;
+    }
+}
+
+static int tex_aux_math_empty_script(halfword n)
+{
+    return ! n || (node_type(n) == sub_mlist_node && ! kernel_math_list(n));
+}
+
+static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic, int style, scaled supshift, scaled subshift, scaled supdrop, kernset *kerns, halfword single)
 {
     halfword result = null;
     halfword preresult = null;
@@ -5084,11 +5319,11 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     scaled shift_up = 0;
     scaled shift_down = 0;
     scaled prime_up = 0;
-    scriptdata postsubdata = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0 };
-    scriptdata postsupdata = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0 }; 
-    scriptdata presubdata  = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0 };
-    scriptdata presupdata  = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0 };
-    scriptdata primedata   = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0 };
+    scriptdata postsubdata = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0, .whatever = 0 };
+    scriptdata postsupdata = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0, .whatever = 0 }; 
+    scriptdata presubdata  = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0, .whatever = 0 };
+    scriptdata presupdata  = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0, .whatever = 0 };
+    scriptdata primedata   = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0, .whatever = 0 };
     halfword maxleftkern = 0;
  // halfword maxrightkern = 0;
     scaled leftslack = 0;
@@ -5099,6 +5334,8 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     scaled botovershoot = 0;
     int italicmultiplier = 1; /* This was a hard coded 2 so it needs more checking! */
     int splitscripts = 0;
+    halfword primetarget = target;
+    scaled prime_drop = noad_prime(target) ? tex_get_math_y_parameter_default(style, math_parameter_prime_shift_drop, 0) : 0;
     quarterword primestate = prime_unknown_location;
     /*tex 
         This features was added when MS and I found that the Latin Modern (and other) fonts have 
@@ -5115,6 +5352,19 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
         too many kerns. 
 
     */
+
+    if (has_noad_option_ignore_empty_super_script(target) && tex_aux_math_empty_script(noad_supscr(target))) {
+        tex_flush_node(noad_supscr(target));
+        noad_supscr(target) = null;
+    }
+    if (has_noad_option_ignore_empty_sub_script(target) && tex_aux_math_empty_script(noad_subscr(target))) {
+        tex_flush_node(noad_subscr(target));
+        noad_subscr(target) = null;
+    }
+    if (has_noad_option_ignore_empty_prime_script(target) && tex_aux_math_empty_script(noad_prime(target))) {
+        tex_flush_node(noad_prime(target));
+        noad_prime(target) = null;
+    }
     if (node_type(target) == accent_noad) {
         scaled top = tex_get_math_parameter_default(style, math_parameter_accent_top_overshoot, 0);
         scaled bot = tex_get_math_parameter_default(style, math_parameter_accent_bottom_overshoot, 0);
@@ -5150,7 +5400,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
         feature as it is not in \OPENTYPE\ fonts.
     */
     tex_aux_assign_new_hlist(target, kernel);
-    kernelsize = tex_natural_hsizes(kernel, null, 0.0, 0, 0);
+    kernelsize = tex_natural_msizes(kernel, 0);
     if (kerns && kerns->dimensions) { 
         if (tex_aux_math_engine_control(kerns->font, math_control_ignore_kern_dimensions)) {
             /* hack for bad xits fence depth */
@@ -5170,12 +5420,13 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
             primedata.node = tex_aux_analyze_script(noad_prime(target), &primedata);
             maxleftkern = tex_aux_math_left_kern(glyph_font(kernel), glyph_character(kernel));
          // maxrightkern = tex_aux_math_right_kern(glyph_font(kernel), glyph_character(kernel));
+            maxleftkern = tex_aux_math_x_scaled(maxleftkern, style);
             prime_up = 0; 
             shift_up = 0; 
             shift_down = 0;
             break;            
         default:
-            if (has_noad_option_single(target)) {
+            if (has_noad_option_single(target) || tex_aux_singled(target, kernelsize, style, single)) {
                 prime_up = 0; 
                 shift_up = 0; 
                 shift_down = 0;
@@ -5183,11 +5434,40 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
                 /*tex Used for optimizing accents. */
                 kernelsize.ht -= supdrop; 
                 /*tex These parameters are only applied in an assembly (and often some 0.5 .. 1.5 pt on 12pt). */
-                prime_up = kernelsize.ht - tex_get_math_y_parameter_default(style, math_parameter_prime_shift_drop, 0);
                 shift_up = kernelsize.ht - tex_get_math_y_parameter_checked(style, math_parameter_superscript_shift_drop);
                 shift_down = kernelsize.dp + tex_get_math_y_parameter_checked(style, math_parameter_subscript_shift_drop);
+                if (noad_prime(target)) {
+                    prime_up = kernelsize.ht;
+                    if (kernelsize.ht <= 0) {
+                        /*tex 
+                            Otherwise we end up around the baseline. This is somewhat sensitive for
+                            a continuation because e.g. an |a| is just below the drop trigger while 
+                            an |f| is above and so we get inconsistent positioning. By looking at 
+                            the prevous primeshift state we avoid this issue in most cases. 
+                        */
+//                       if (has_noad_option_continuation(target)) { 
+                            halfword prev = node_prev(target);
+                            while (prev) {
+                                if (tex_math_scripts_allowed(prev)) {
+                                    scaledwhd whd = tex_natural_msizes(noad_new_hlist(prev), 1);
+                                    if (noad_primeshift(prev)) {
+                                        prime_up = noad_primeshift(prev) + prime_drop ;
+                                    } else if (whd.ht > prime_up) { 
+                                        prime_up = whd.ht;
+                                    }
+                                    primetarget = prev;
+                                    if (! has_noad_option_continuation(prev)) { 
+                                        break;
+                                    }
+                                }    
+                                prev = node_prev(prev);
+                            }
+//                       }
+                    }
+                } else { 
+                    prime_up = 0;
+                }
             }
-            break;
     }
     /*tex
         Next we're doing some analysis, needed because of all these parameters than control horizontal and vertical
@@ -5195,12 +5475,16 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     */
     if (noad_prime(target)) {
         /* todo extra */
-        scaled shift = tex_get_math_y_parameter_default(style, math_parameter_prime_shift_up, 0);
-        scaled raise = tex_get_math_y_parameter_default(style, tex_aux_raise_prime_composed(target) ? math_parameter_prime_raise_composed : math_parameter_prime_raise, 0);
+        scaled raise = tex_get_math_y_parameter_default(style, tex_aux_raise_prime_composed(primetarget) ? math_parameter_prime_raise_composed : math_parameter_prime_raise, 0);
         scaled distance = tex_get_math_x_parameter_default(style, math_parameter_prime_space_after, 0);
+        if (prime_up) { 
+            prime_up -= prime_drop;
+        } else { 
+            prime_up = tex_get_math_y_parameter_default(style, math_parameter_prime_shift_up, 0);
+        }
      // scaled width = tex_get_math_x_parameter_default(style, math_parameter_prime_width, 0);
-        primedata.box = tex_aux_clean_box(noad_prime(target), (has_noad_option_nosupscript(target) ? style : tex_math_style_variant(style, math_parameter_prime_variant)), style, math_sup_list, 0, NULL);
-        box_shift_amount(primedata.box) -= prime_up ? prime_up : shift;
+        primedata.box = tex_aux_clean_box(noad_prime(target), (has_noad_option_nosupscript(target) ? style : tex_math_style_variant(style, math_parameter_prime_variant)), style, math_prime_list, 0, NULL);
+        box_shift_amount(primedata.box) -= prime_up;
         box_shift_amount(primedata.box) -= scaledround(box_height(primedata.box) * raise / 100.0);
         kernel_math_list(noad_prime(target)) = null;
         tex_flush_node(noad_prime(target));
@@ -5256,7 +5540,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     }
     /*tex 
         Each of the scripts gets treated. Traditionally a super and subscript are looked at and 
-        vercially spaced out together which in turn results in the staricase kerns needing that 
+        vertically spaced out together which in turn results in the staricase kerns needing that 
         information. Prescripts we handle differently: they are always aligned, so there the 
         maximum kern wins. 
     */
@@ -5271,14 +5555,14 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     if (noad_supscr(target)) {
         halfword extra = tex_get_math_y_parameter_checked(style, math_parameter_extra_superscript_shift);
         postsupdata.slack = tex_get_math_x_parameter_checked(style, math_parameter_extra_superscript_space);
-        postsupdata.slack += tex_get_math_x_parameter_checked(style, math_parameter_space_after_script);
+        postsupdata.slack += tex_round_xn_over_d(tex_get_math_x_parameter_default(style, math_parameter_space_after_script, 0), script_space_after_factor_par, scaling_factor);
         postsupdata.box = tex_aux_clean_box(noad_supscr(target), (has_noad_option_nosupscript(target) ? style : tex_math_style_variant(style, math_parameter_superscript_variant)), style, math_sup_list, 0, NULL);
         if (extra) {
             box_height(postsupdata.box) += extra;
             box_shift_amount(postsupdata.box) -= extra;
         }
         if (postsupdata.slack) {
-            tex_aux_append_hkern_to_box_list(postsupdata.box, postsupdata.slack, horizontal_math_kern_subtype, "post sup slack");
+            tex_aux_append_hkern_to_box_list(postsupdata.box, postsupdata.slack, right_math_slack_kern_subtype, "post sup slack");
         }
         kernel_math_list(noad_supscr(target)) = null;
         tex_flush_node(noad_supscr(target));
@@ -5287,14 +5571,14 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     if (noad_subscr(target)) {
         halfword extra = tex_get_math_y_parameter_checked(style, math_parameter_extra_subscript_shift);
         postsubdata.slack = tex_get_math_x_parameter_checked(style, math_parameter_extra_subscript_space);
-        postsubdata.slack += tex_get_math_x_parameter_checked(style, math_parameter_space_after_script);
+        postsubdata.slack += tex_round_xn_over_d(tex_get_math_x_parameter_default(style, math_parameter_space_after_script, 0), script_space_after_factor_par, scaling_factor);
         postsubdata.box = tex_aux_clean_box(noad_subscr(target), (has_noad_option_nosubscript(target) ? style : tex_math_style_variant(style, math_parameter_subscript_variant)), style, math_sub_list, 0, NULL);
         if (extra) {
             box_depth(postsubdata.box) += extra;
             box_shift_amount(postsubdata.box) += extra;
         }
         if (postsubdata.slack) {
-            tex_aux_append_hkern_to_box_list(postsubdata.box, postsubdata.slack, horizontal_math_kern_subtype, "post sub slack");
+            tex_aux_append_hkern_to_box_list(postsubdata.box, postsubdata.slack, right_math_slack_kern_subtype, "post sub slack");
         }
         kernel_math_list(noad_subscr(target)) = null;
         tex_flush_node(noad_subscr(target));
@@ -5303,7 +5587,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     if (noad_supprescr(target)) {
         halfword extra = tex_get_math_y_parameter_checked(style, math_parameter_extra_superprescript_shift);
         presupdata.slack = tex_get_math_x_parameter_checked(style, math_parameter_extra_superprescript_space);
-        presupdata.slack += tex_get_math_x_parameter_default(style, math_parameter_space_before_script, 0);
+        presupdata.slack += tex_round_xn_over_d(tex_get_math_x_parameter_default(style, math_parameter_space_before_script, 0), script_space_before_factor_par, scaling_factor);
         presupdata.box = tex_aux_clean_box(noad_supprescr(target), (has_noad_option_nosupprescript(target) ? style : tex_math_style_variant(style, math_parameter_superscript_variant)), style, math_sup_list, 0, NULL);
         if (maxleftkern) {
             tex_aux_append_hkern_to_box_list(presupdata.box, maxleftkern, math_shape_kern_subtype, "max left shape");
@@ -5313,7 +5597,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
             box_shift_amount(presupdata.box) -= extra;
         }
         if (presupdata.slack) {
-            tex_aux_prepend_hkern_to_box_list(presupdata.box, presupdata.slack, horizontal_math_kern_subtype, "pre sup slack");
+            tex_aux_prepend_hkern_to_box_list(presupdata.box, presupdata.slack, left_math_slack_kern_subtype, "pre sup slack");
         }
         kernel_math_list(noad_supprescr(target)) = null;
         tex_flush_node(noad_supprescr(target));
@@ -5322,7 +5606,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     if (noad_subprescr(target)) {
         halfword extra = tex_get_math_y_parameter_checked(style, math_parameter_extra_subprescript_shift);
         presubdata.slack = tex_get_math_x_parameter_checked(style, math_parameter_extra_subprescript_space);
-        presubdata.slack += tex_get_math_x_parameter_default(style, math_parameter_space_before_script, 0);
+        presubdata.slack += tex_round_xn_over_d(tex_get_math_x_parameter_default(style, math_parameter_space_before_script, 0), script_space_before_factor_par, scaling_factor);
         presubdata.box = tex_aux_clean_box(noad_subprescr(target), (has_noad_option_nosubprescript(target) ? style : tex_math_style_variant(style, math_parameter_subscript_variant)), style, math_sub_list, 0, NULL);
         if (maxleftkern) {
             tex_aux_append_hkern_to_box_list(presubdata.box, maxleftkern, math_shape_kern_subtype, "max left shape");
@@ -5332,7 +5616,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
             box_shift_amount(presubdata.box) += extra;
         }
         if (presubdata.slack) {
-            tex_aux_prepend_hkern_to_box_list(presubdata.box, presubdata.slack, horizontal_math_kern_subtype, "pre sub slack");
+            tex_aux_prepend_hkern_to_box_list(presubdata.box, presubdata.slack, left_math_slack_kern_subtype, "pre sub slack");
         }
         kernel_math_list(noad_subprescr(target)) = null;
         tex_flush_node(noad_subprescr(target));
@@ -5376,7 +5660,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
         if (list) {
             /*tex We want to keep the size for tracing! */
             halfword overshoot = box_width(primedata.box) - box_width(postsubdata.box);
-            halfword primebox = tex_hpack(primedata.box, 0, packing_additional, direction_unknown, holding_none_option);
+            halfword primebox = tex_hpack(primedata.box, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
             tex_attach_attribute_list_copy(primebox, primedata.box);
             box_width(primebox) = 0; 
             tex_couple_nodes(tex_tail_of_node_list(list), primebox);
@@ -5643,10 +5927,20 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
         noad_right_slack(target) = rightslack;
         if (tracing_math_par >= 2) {
             tex_begin_diagnostic();
-            tex_print_format("[math: script slack, left %D, right %D]", leftslack, pt_unit, rightslack, pt_unit);
+            tex_print_format("[math: script slack, left %p, right %p]", leftslack, rightslack);
             tex_end_diagnostic();
         }
     }
+    if (presubdata.box || postsubdata.box) {
+        noad_subshift(target) = shift_down;
+    }
+    if (presupdata.box || postsupdata.box) {
+        noad_supshift(target) = shift_up;
+    }
+    if (primedata.box) {
+        noad_primeshift(target) = prime_up;
+    }    
+    noad_script_kern(target) = tex_round_xn_over_d(tex_get_math_x_parameter_default(style, math_parameter_space_between_script, 0), script_space_between_factor_par, scaling_factor);
 }
 
 /*tex
@@ -5702,7 +5996,7 @@ static halfword tex_aux_make_left_right(halfword target, int style, scaled max_d
     if (height || depth || has_noad_option_exact(target)) {
         halfword lst;
         scaled delta = height + depth;
-        tmp = tex_aux_make_delimiter(target, fence_delimiter_list(target), size, delta, 0, style, 0, &stack, &ic, 0, has_noad_option_nooverflow(target), extremes, 0);
+        tmp = tex_aux_make_delimiter(target, fence_delimiter_list(target), size, delta, 0, style, 0, &stack, &ic, 0, has_noad_option_nooverflow(target), extremes, 0, null);
         /* do extremes here */
         noad_italic(target) = ic;
         /*tex
@@ -5757,10 +6051,12 @@ static halfword tex_aux_make_left_right(halfword target, int style, scaled max_d
                  }
              }
         }
-        if (! delta) { 
+        if (has_noad_option_auto_middle(target)) {
+            delta = max_h + max_d; 
+        } else if (! delta) { 
             delta = tex_aux_get_delimiter_height(max_h, max_d, axis, size, style); // todo: pass scaled axis
         }
-        tmp = tex_aux_make_delimiter(target, fence_delimiter_list(target), size, delta, 0, style, axis, &stack, &ic, 0, has_noad_option_nooverflow(target), extremes, 0);
+        tmp = tex_aux_make_delimiter(target, fence_delimiter_list(target), size, delta, 0, style, axis, &stack, &ic, 0, has_noad_option_nooverflow(target), extremes, 0, null);
     }
     /* delimiter is wiped */
     noad_height(target) = height;
@@ -5886,7 +6182,7 @@ static halfword tex_aux_math_spacing_glue(halfword ltype, halfword rtype, halfwo
                             x = tex_aux_math_dimension(x, inter_math_skip_glue, c);
                             if (tracing_math_par >= 2) {
                                 tex_begin_diagnostic();
-                                tex_print_format("[math: inter atom kern, left %n, right %n, resolved %i, amount %D]", ltype, rtype, s, kern_amount(x), pt_unit);
+                                tex_print_format("[math: inter atom kern, left %n, right %n, resolved %i, amount %p]", ltype, rtype, s, kern_amount(x));
                                 tex_end_diagnostic();
                             }
                             return x;
@@ -6027,10 +6323,15 @@ static halfword tex_aux_math_ruling(halfword ltype, halfword rtype, halfword sty
     return MATHPARAMDEFAULT;
 }
 
+/*tex 
+    Used in |texmaincontrol| and |texscanning|: 
+*/
+
 halfword tex_math_spacing_glue(halfword ltype, halfword rtype, halfword style)
 {
-    halfword mu = tex_get_math_quad_size_scaled(lmt_math_state.size);
-    halfword sg = tex_aux_math_spacing_glue(ltype, rtype, style, mu);
+ // halfword mu = tex_get_math_quad_size_scaled(lmt_math_state.size); /* scales by math x scale */
+    halfword mu = tex_get_math_quad_size_unscaled(lmt_math_state.size); /* scales by math x scale */
+    halfword sg = tex_aux_math_spacing_glue(ltype, rtype, style, mu); 
     if (node_type(sg) == glue_node) {
         tex_add_glue_option(sg, glue_option_no_auto_break);
     }
@@ -6079,6 +6380,7 @@ static halfword tex_aux_check_nucleus_complexity(halfword target, scaled *italic
                             case fraction_noad_subtype:    subtype = glyph_math_fraction_subtype;    break;
                             case radical_noad_subtype:     subtype = glyph_math_radical_subtype;     break;
                             case middle_noad_subtype:      subtype = glyph_math_middle_subtype;      break;
+                            case prime_noad_subtype:       subtype = glyph_math_prime_subtype;       break;
                             case accent_noad_subtype:      subtype = glyph_math_accent_subtype;      break;
                             case fenced_noad_subtype:      subtype = glyph_math_fenced_subtype;      break;
                             case ghost_noad_subtype:       subtype = glyph_math_ghost_subtype;       break;
@@ -6184,7 +6486,7 @@ static halfword tex_aux_check_nucleus_complexity(halfword target, scaled *italic
                     int unpack = tex_math_has_class_option(node_subtype(target), unpack_class_option) || has_noad_option_unpacklist(target);
                     halfword result = tex_mlist_to_hlist(list, unpack, style, unset_noad_class, unset_noad_class, kerns); /*tex Here we're nesting. */
                     tex_aux_set_current_math_size(style);
-                    package = tex_hpack(result, 0, packing_additional, direction_unknown, holding_none_option);
+                    package = tex_hpack(result, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
                     if (fenced) {
                         node_subtype(package) = math_fence_list;
                         if (list && node_type(list) == fence_noad && noad_analyzed(list) != unset_noad_class) {
@@ -6200,7 +6502,8 @@ static halfword tex_aux_check_nucleus_complexity(halfword target, scaled *italic
                     } else {
                         node_subtype(package) = 0x100 + noad_class_main(target);
                     }
-                    tex_attach_attribute_list_copy(package, nucleus);
+                    // tex_attach_attribute_list_copy(package, nucleus); /* was wrong, related toattr key for atoms */
+                    tex_attach_attribute_list_copy(package, target); 
                     return package;
                 }
             case hlist_node:
@@ -6355,19 +6658,19 @@ static int tex_aux_make_fenced(halfword current, halfword current_style, halfwor
     return 0;
 }
 
-static void tex_aux_finish_fenced(halfword current, halfword main_style, scaled max_depth, scaled max_height, kernset *kerns)
+static void tex_aux_finish_fenced(halfword current, halfword main_style, halfword main_size, scaled max_depth, scaled max_height, kernset *kerns)
 {
     delimiterextremes extremes = { .tfont = null_font, .tchar = 0, .bfont = null_font, .bchar = 0, .height = 0, .depth = 0 };
-    noad_analyzed(current) = (singleword) tex_aux_make_left_right(current, main_style, max_depth, max_height, lmt_math_state.size, &extremes);
+    noad_analyzed(current) = (singleword) tex_aux_make_left_right(current, main_style, max_depth, max_height, main_size, &extremes);
     if (kerns && extremes.tfont) { 
         switch (node_subtype(current)) { 
             case left_fence_side:
             case extended_left_fence_side:
                 if (tex_math_has_class_option(fenced_noad_subtype, carry_over_left_top_kern_class_option)) {  
-                     kerns->topleft = tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_left_kern_from_font(extremes.tfont, extremes.tchar), main_style);
+                     kerns->topleft = tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_left_kern_from_font(extremes.tfont, extremes.tchar), main_size);
                 }
                 if (tex_math_has_class_option(fenced_noad_subtype, carry_over_left_bottom_kern_class_option)) {  
-                     kerns->bottomleft = tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_left_kern_from_font(extremes.bfont, extremes.bchar), main_style);
+                     kerns->bottomleft = tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_left_kern_from_font(extremes.bfont, extremes.bchar), main_size);
                 }
                 if (tex_math_has_class_option(fenced_noad_subtype, prefer_delimiter_dimensions_class_option)) {  
                     kerns->height = extremes.height;
@@ -6381,10 +6684,10 @@ static void tex_aux_finish_fenced(halfword current, halfword main_style, scaled 
             case left_operator_side:
             case no_fence_side:
                 if (tex_math_has_class_option(fenced_noad_subtype, carry_over_right_top_kern_class_option)) {  
-                    kerns->topright = tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_right_kern_from_font(extremes.tfont, extremes.tchar), main_style);
+                    kerns->topright = tex_aux_math_x_size_scaled(extremes.tfont, tex_char_top_right_kern_from_font(extremes.tfont, extremes.tchar), main_size);
                 }
                 if (tex_math_has_class_option(fenced_noad_subtype, carry_over_right_bottom_kern_class_option)) {  
-                    kerns->bottomright = tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_right_kern_from_font(extremes.bfont, extremes.bchar), main_style);
+                    kerns->bottomright = tex_aux_math_x_size_scaled(extremes.bfont, tex_char_bottom_right_kern_from_font(extremes.bfont, extremes.bchar), main_size);
                 }
                 if (tex_math_has_class_option(fenced_noad_subtype, prefer_delimiter_dimensions_class_option)) {  
                     kerns->height = extremes.height;
@@ -6504,15 +6807,6 @@ static halfword tex_aux_get_plus_glyph(halfword current)
     return null;
 }
 
-static void tex_aux_show_math_list(const char *fmt, halfword list)
-{
-    tex_begin_diagnostic();
-    tex_print_format(fmt, lmt_math_state.level);
-    tex_show_node_list(list, tracing_math_par >= 3 ? max_integer : show_box_depth_par, tracing_math_par >= 3 ? max_integer : show_box_breadth_par);
-    tex_print_ln();
-    tex_end_diagnostic();
-}
-
 static halfword tex_aux_check_source(halfword current, halfword list, int repack)
 {
     if (list && noad_source(current)) {
@@ -6531,7 +6825,7 @@ static halfword tex_aux_check_source(halfword current, halfword list, int repack
                         tex_print_format("[math: packing due to source field %D]", noad_source(current));
                         tex_end_diagnostic();
                     }
-                    list = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option);
+                    list = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
                  // printf("anchoring to wrapped list: %i\n", noad_source(current));
                     tex_attach_attribute_list_copy(list, current);
                     box_source_anchor(list) = noad_source(current);
@@ -6560,7 +6854,8 @@ static void tex_aux_wrapup_nucleus_and_add_scripts(halfword current, halfword nx
             drop = tex_get_math_y_parameter_default(current_style, math_parameter_accent_superscript_drop, 0);
             drop += scaledround(kerns->toptotal * tex_get_math_parameter_default(current_style, math_parameter_accent_superscript_percent, 0) / 100.0);
         }
-        tex_aux_make_scripts(current, p, *italic, current_style, 0, 0, drop, kerns);
+        tex_aux_make_scripts(current, p, *italic, current_style, 0, 0, drop, kerns, lmt_math_state.single);
+        lmt_math_state.single = 0;
     } else {
         /*tex
             Adding italic correction here is kind of fuzzy because some characters already have
@@ -6602,6 +6897,8 @@ typedef struct mliststate {
     halfword scale;
     scaled   max_height;
     scaled   max_depth;
+    halfword single;
+    halfword padding;
 } mliststate;
 
 static void tex_mlist_to_hlist_set_boundaries(mliststate *state)
@@ -6695,7 +6992,7 @@ static void tex_mlist_to_hlist_preroll_radicals(mliststate *state)
 }
 
 /*tex 
-    At some point this will all change to well defined kernel/script/talic handling but then we no 
+    At some point this will all change to well defined kernel/script/italic handling but then we no 
     longer are compatible. It depends on fonts being okay. We already have some dead brances. 
 */
 
@@ -6708,9 +7005,10 @@ static void tex_mlist_to_hlist_preroll_dimensions(mliststate *state)
     /*tex We set the math unit width corresponding to |size|: */
     tex_aux_set_current_math_size(current_style);
     tex_aux_set_current_math_scale(state->scale);
-    current_mu = tex_get_math_quad_size_scaled(lmt_math_state.size);
+ // current_mu = tex_get_math_quad_size_scaled(lmt_math_state.size);
+    current_mu = tex_get_math_quad_size_unscaled(lmt_math_state.size);
     if (tracing_math_par >= 2) {
-        tex_aux_show_math_list("[math: first pass, level %i]", state->mlist);
+        tex_aux_show_math_list("[math: preroll dimensions pass, level %i]", state->mlist);
     }
     while (current) {
         /*tex The italic correction offset for subscript and superscript: */
@@ -6816,10 +7114,12 @@ static void tex_mlist_to_hlist_preroll_dimensions(mliststate *state)
                 break;
             case fence_noad:
                 {
+                    state->single = has_noad_option_single(current); 
                     /* why still ... */
                     current_style = state->main_style;
                     tex_aux_set_current_math_size(current_style);
-                    current_mu = tex_get_math_quad_size_scaled(lmt_math_state.size);
+                 // current_mu = tex_get_math_quad_size_scaled(lmt_math_state.size);
+                    current_mu = tex_get_math_quad_size_unscaled(lmt_math_state.size);
                     /* ... till here */
                     goto DONE_WITH_NODE;
                 }
@@ -6884,7 +7184,7 @@ static void tex_mlist_to_hlist_preroll_dimensions(mliststate *state)
         tex_aux_wrapup_nucleus_and_add_scripts(current, nxt, current_style, &italic, &localkerns);
       CHECK_DIMENSIONS:
         {
-            scaledwhd siz = tex_natural_hsizes(noad_new_hlist(current), null, normal_glue_multiplier, normal_glue_sign, normal_glue_sign);
+            scaledwhd siz = tex_natural_msizes(noad_new_hlist(current), 0);
             if (siz.ht > state->max_height) {
                 state->max_height = siz.ht;
             }
@@ -6903,19 +7203,268 @@ static void tex_mlist_to_hlist_preroll_dimensions(mliststate *state)
     }
 }
 
+/* also use this elsewhere */
+
+static singleword tex_mlist_aux_guess_class(halfword target)
+{
+    if (noad_class_right(target) != unset_noad_class) { 
+        return noad_class_right(target);
+    } else if (noad_class_main(target) != unset_noad_class) { 
+        return noad_class_main(target);
+    } else {  
+        switch (node_type(target)) {
+            case simple_noad:
+                return node_subtype(target);
+            case radical_noad:
+                switch (node_subtype(target)) {
+                    case normal_radical_subtype:
+                    case radical_radical_subtype:
+                    case root_radical_subtype:
+                    case rooted_radical_subtype:
+                    case delimited_radical_subtype:
+                        return radical_noad_subtype;
+                    case under_delimiter_radical_subtype:
+                    case delimiter_under_radical_subtype:
+                        return under_noad_subtype;
+                    case over_delimiter_radical_subtype:
+                    case delimiter_over_radical_subtype:
+                        return over_noad_subtype;
+                 // case h_extensible_radical_subtype:
+                 //     return accent_noad_subtype;
+                    default: 
+                        return accent_noad_subtype;
+                }
+           case accent_noad:
+                return get_noad_main_class(target);
+           case fraction_noad:
+                return fraction_noad_subtype;
+           case fence_noad:
+                return noad_analyzed(target);
+           default: 
+                return ordinary_noad_subtype;
+        }
+    }
+}
+
+static void tex_mlist_aux_realign(halfword first, halfword last)
+{
+    scaled up = 0;
+    scaled down = 0;
+    scaled prime = 0;
+    halfword c = first;
+    halfword k = first;
+    while (c) {
+        if (tex_math_scripts_allowed(c)) { 
+            if (has_noad_option_continuation_kernel(c)) {
+                k = c; /* only one so we can have a check */
+            }
+            if (has_noad_option_realign_scripts(last)) { // move out 
+                // printf("> up %i, down %i\n",noad_supshift(c),noad_subshift(c));
+                if (noad_supshift(c) > up) {
+                    up = noad_supshift(c);
+                }
+                if (noad_subshift(c) > down) {
+                    down = noad_subshift(c);
+                }
+                if (noad_primeshift(c) > prime) {
+                    prime = noad_primeshift(c);
+                }
+            }
+        }
+        if (c == last) {
+            break;
+        } else {
+            c = node_next(c);
+        }
+    }
+    c = first;
+    while (c) {
+        if (tex_math_scripts_allowed(c)) {
+            halfword list = noad_new_hlist(c);
+            if (list) {
+                scaled u = up - noad_supshift(c);
+                scaled d = down - noad_subshift(c);
+                scaled p = prime - noad_primeshift(c);
+                while (list) {
+                    switch (node_type(list)) { 
+                        case hlist_node:
+                            switch (node_subtype(list)) {
+                                case math_sup_list:
+                                    if (has_noad_option_realign_scripts(last)) {
+                                        box_shift_amount(list) -= u;  
+                                    }
+                                    goto COMMON;
+                                case math_prime_list:
+                                    if (has_noad_option_realign_scripts(last)) {
+                                        box_shift_amount(list) -= p;  
+                                    }
+                                    goto COMMON;
+                                case math_sub_list:                 
+                                    if (has_noad_option_realign_scripts(last)) {
+                                        box_shift_amount(list) += d;  
+                                    }
+                                  COMMON:
+                                    if (has_noad_option_discard_shape_kern(last)) {
+                                        halfword c = box_list(list);
+                                        while (c) {
+                                            if (node_type(c) == kern_node && node_subtype(c) == math_shape_kern_subtype) {
+                                                box_width(list) -= kern_amount(c); 
+                                                kern_amount(c) = 0;
+                                            }
+                                            c = node_next(c);
+                                        }
+                                    }
+                                    break;
+                                case math_pre_post_list:
+                                    /* what */
+                                    break;
+                            }
+                            break;
+                        case vlist_node:
+                            switch (node_subtype(list)) {
+                                case math_scripts_list:
+                                    {
+                                        halfword b = box_list(list);
+                                        while (b) {
+                                            switch(node_type(b)) {
+                                                case kern_node:
+                                                    if (has_noad_option_realign_scripts(last)) {
+                                                        box_height(list) += u;
+                                                        box_depth(list) += d;
+                                                        kern_amount(b) += d + u; 
+                                                    }
+                                                    break;
+                                                case hlist_node:
+                                                    switch (node_subtype(b)) {
+                                                        case math_sup_list:
+                                                        case math_sub_list:                 
+                                                        case math_prime_list:                 
+                                                            if (has_noad_option_discard_shape_kern(last)) {
+                                                                halfword c = box_list(b);
+                                                                while (c) {
+                                                                    if (node_type(c) == kern_node && node_subtype(c) == math_shape_kern_subtype) {
+                                                                        box_width(b) -= kern_amount(c); 
+                                                                        scaled delta = box_width(b) - box_width(list);
+                                                                        if (delta > 0) {
+                                                                            box_width(list) += delta; 
+                                                                        }
+                                                                        kern_amount(c) = 0;
+                                                                    }
+                                                                    c = node_next(c);
+                                                                }
+                                                            }
+                                                            break;
+                                                    }
+                                                    break;
+                                            }
+                                            b = node_next(b);
+                                        }
+                                    }
+                                    break;
+                            }
+                            break;
+                    }
+                    list = node_next(list);
+                }
+            }
+        }
+        if (c == last) {
+            break;
+        } else {
+            halfword next = node_next(c);
+            if (c != last && noad_script_kern(first)) { 
+                halfword kern = tex_new_kern_node(noad_script_kern(first), horizontal_math_kern_subtype);
+                tex_attach_attribute_list_copy(kern, first);
+                tex_couple_nodes(c, kern);
+                tex_couple_nodes(kern, next);
+            }
+            c = next;
+        }
+    }
+    if (has_noad_option_inherit_class(last)) {
+        noad_class_right(last) = tex_mlist_aux_guess_class(k);
+        noad_class_left(first) = noad_class_right(last);
+    }
+}
+
+static void tex_mlist_to_hlist_preroll_continuation(mliststate *state)
+{
+    halfword current = state->mlist;
+    halfword first = null;
+    halfword last = null;
+    if (tracing_math_par >= 2) {
+        tex_aux_show_math_list("[math: continuation pass, level %i]", state->mlist);
+    }
+    while (current) {
+        if (tex_math_scripts_allowed(current)) {
+            if (has_noad_option_continuation(current)) {
+         // if (has_noad_option_continuation(current) || has_noad_option_pre_continuation_head(current)) {
+                if (! first) {
+                    first = current;
+                }
+                last = current;
+            } else if (first != last) {
+                tex_mlist_aux_realign(first, last);
+                first = null;
+                last = null;
+            } else { 
+                first = current;
+                last = current; 
+            }
+        } else {
+            if (first != last) {
+                tex_mlist_aux_realign(first, last);
+            }
+            first = null;
+            last = null;
+        }
+        current = node_next(current);
+    }
+    if (first != last) {
+        tex_mlist_aux_realign(first, last);
+    }
+}
+
+/*tex 
+
+    The two pass approach is the result of some experiments with bad fonts. Actually, when we were 
+    testing middle bars we found that many fonts have flaws: slightly off dimensions (compared to 
+    for instance parentheses, square brackets and curly braces, and then these can be inconsistent 
+    in height and depth), missing double or triple bars or partially implemented ones (no variants 
+    or extensibles), inconsistent rule widths, weird positioning in the baseline etc. It doesn't 
+    help either that \UNICODE\ lacks left, middle and right bars. In the end we decided to come up
+    with companion fonts that provide fixed bars but the engine feature remains. 
+
+    The first pass should actually be a preroll and not finalize the fences yet because we can have
+    inconsistent single and double bars but for now we forget about this. 
+
+*/
+
 static void tex_mlist_to_hlist_size_fences(mliststate *state)
 {
     halfword current = state->mlist;
     halfword current_style = state->main_style;
+    scaled height = 0;
+    scaled depth = 0;
     tex_aux_set_current_math_size(current_style);
     tex_aux_set_current_math_scale(state->scale);
     if (tracing_math_par >= 2) {
         tex_aux_show_math_list("[math: fence sizing pass, level %i]", state->mlist);
     }
+    /* first pass */
     while (current) {
         switch (node_type(current)) {
             case fence_noad:
-                tex_aux_finish_fenced(current, current_style, state->max_depth, state->max_height, state->kerns);
+                if (node_subtype(current) != middle_fence_side) {
+                    tex_aux_finish_fenced(current, current_style, lmt_math_state.size, state->max_depth, state->max_height, state->kerns);
+                    if (node_subtype(current) == left_fence_side || node_subtype(current) == right_fence_side) {
+                        halfword list = noad_new_hlist(current);
+                        if (list) { 
+                            height = box_height(list);
+                            depth = box_depth(list);
+                        }
+                    }
+                }
                 break;
             case style_node:
                 tex_aux_make_style(current, &current_style, NULL);
@@ -6923,6 +7472,18 @@ static void tex_mlist_to_hlist_size_fences(mliststate *state)
             case parameter_node:
                 /* tricky as this is sort of persistent, we need to reset it at the start */
                 tex_aux_set_parameter(current, current_style);
+                break;
+        }
+        current = node_next(current);
+    }
+    current = state->mlist;
+    while (current) {
+        switch (node_type(current)) {
+            case fence_noad:
+                if (node_subtype(current) == middle_fence_side) { 
+                    int automiddle = has_noad_option_auto_middle(current) && (height || depth);
+                    tex_aux_finish_fenced(current, current_style, lmt_math_state.size, automiddle ? depth : state->max_depth, automiddle ? height : state->max_height, state->kerns);
+                }
                 break;
         }
         current = node_next(current);
@@ -6958,12 +7519,13 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
     node_next(p) = null;
     tex_aux_set_current_math_size(current_style);
     tex_aux_set_current_math_scale(state->scale);
-    current_mu = tex_get_math_quad_size_scaled(lmt_math_state.size);
+ // current_mu = tex_get_math_quad_size_scaled(lmt_math_state.size);
+    current_mu = tex_get_math_quad_size_unscaled(lmt_math_state.size);
     if (math_penalties_mode_par) {
         state->penalties = 1; /* move to caller ? */
     }
     if (tracing_math_par >= 2) {
-        tex_aux_show_math_list("[math: second pass, level %i]", state->mlist);
+        tex_aux_show_math_list("[math: finalize pass, level %i]", state->mlist);
     }
   RESTART:
     while (current) {
@@ -7150,20 +7712,20 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 if (node_subtype(current) == math_boundary) {
                     halfword l = boundary_data(current);
                     switch(l) {
-                        case 0: 
-                        case 2: 
+                        case begin_math_implicit_boundary: 
+                        case begin_math_explicit_boundary: 
                             boundarylevel++;
-                            if (l == 2) { 
+                            if (l == begin_math_explicit_boundary) { 
                                 boundaryfactor = boundary_reserved(current) ? boundary_reserved(current) : scaling_factor;
                             }
                             break;
-                        case 1: 
-                        case 3: 
+                        case end_math_implicit_boundary: 
+                        case end_math_explicit_boundary: 
                             if (boundarylevel > 0) {
                                 boundarylevel--;
                                 if (boundarylevel == 0) { 
                                     boundaryfactor = scaling_factor;
-                                } else if (l == 2) { 
+                                } else if (l == end_math_explicit_boundary) { 
                                     boundaryfactor = boundary_reserved(current) ? boundary_reserved(current) : scaling_factor;
                                 }
                             } else { 
@@ -7296,7 +7858,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 p = kern;
                 if (tracing_math_par >= 2) {
                     tex_begin_diagnostic();
-                    tex_print_format("[math: state driven left shape kern %p]", plus, pt_unit);
+                    tex_print_format("[math: state driven left shape kern %p]", plus);
                     tex_end_diagnostic();
                 }
             }
@@ -7309,7 +7871,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 tex_attach_attribute_list_copy(glue, current);
             }
             if (recent_right_slack) {
-                halfword kern = tex_new_kern_node(-recent_right_slack, horizontal_math_kern_subtype);
+                halfword kern = tex_new_kern_node(-recent_right_slack, right_math_slack_kern_subtype);
                 tex_attach_attribute_list_copy(kern, current);
                 tex_couple_nodes(p, kern);
                 p = kern;
@@ -7322,7 +7884,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 }
                 if (tracing_math_par >= 2) {
                     tex_begin_diagnostic();
-                    tex_print_format("[math: migrating right slack %p]", recent_right_slack, pt_unit);
+                    tex_print_format("[math: migrating right slack %p]", recent_right_slack);
                     tex_end_diagnostic();
                 }
                 recent_right_slack = 0;
@@ -7337,13 +7899,13 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                     p = kern;
                     if (tracing_math_par >= 2) {
                         tex_begin_diagnostic();
-                        tex_print_format("[math: state driven right shape kern %p]", plus, pt_unit);
+                        tex_print_format("[math: state driven right shape kern %p]", plus);
                         tex_end_diagnostic();
                     }
                 }
             }
             if (current_left_slack) {
-                kern = tex_new_kern_node(-current_left_slack, horizontal_math_kern_subtype);
+                kern = tex_new_kern_node(-current_left_slack, left_math_slack_kern_subtype);
                 tex_attach_attribute_list_copy(kern, p);
                 /* tex_couple_nodes(node_prev(p), kern); */ /* close to the molecule */
                 /* tex_couple_nodes(kern, p);            */ /* close to the molecule */
@@ -7517,29 +8079,34 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
         recent_right_slack = current_right_slack;
         recent_script_state = current_script_state;
         recent_plus_glyph = current_plus_glyph;
+        /*tex 
+            We could zero or even remove the existing slack kern but this is (at least currently) 
+            nicer for tracing. In fact we could have an (optional) clean up run that removes 
+            zero kerns and zero glue with no penalties around it. 
+        */
         // if (first && recent_left_slack) {
         if (p == temp_head && recent_left_slack) {
-            halfword kern = tex_new_kern_node(-recent_left_slack, horizontal_math_kern_subtype);
+            halfword kern = tex_new_kern_node(-recent_left_slack, left_math_slack_kern_subtype);
             halfword head = node_next(temp_head);
             tex_attach_attribute_list_copy(kern, p);
             tex_couple_nodes(kern, head);
             node_next(temp_head) = kern;
             if (tracing_math_par >= 2) {
                 tex_begin_diagnostic();
-                tex_print_format("[math: nilling recent left slack %p]", recent_left_slack);
+                tex_print_format("[math: nilling recent left slack %D]", recent_left_slack);
                 tex_end_diagnostic();
             }
         }
         recent = current;
         current = node_next(current);
         if (! current && recent_right_slack) {
-            halfword kern = tex_new_kern_node(-recent_right_slack, horizontal_math_kern_subtype);
+            halfword kern = tex_new_kern_node(-recent_right_slack, right_math_slack_kern_subtype);
             tex_attach_attribute_list_copy(kern, p);
             tex_couple_nodes(p, kern);
             p = kern;
             if (tracing_math_par >= 2) {
                 tex_begin_diagnostic();
-                tex_print_format("[math: nilling recent right slack %p]", recent_right_slack);
+                tex_print_format("[math: nilling recent right slack %D]", recent_right_slack);
                 tex_end_diagnostic();
             }
         }
@@ -7566,18 +8133,20 @@ halfword tex_mlist_to_hlist(halfword mlist, int penalties, int main_style, int b
         collected all relevant state parameters in a structure. The values in there can be adapted 
         in this state. 
     */
-    mliststate state;
-    state.mlist = mlist;
-    state.penalties = penalties;
-    state.main_style = main_style;
-    state.beginclass = beginclass == unset_noad_class ? math_begin_class : beginclass;
-    state.endclass = endclass == unset_noad_class ? math_end_class : endclass;
-    state.kerns = kerns;
-    state.scale = glyph_scale_par;
-    state.max_height = 0;
-    state.max_depth = 0;
-    if (state.kerns) { 
-        tex_math_wipe_kerns(state.kerns);
+    mliststate state = {
+        .mlist = mlist,
+        .penalties = penalties,
+        .main_style = main_style,
+        .beginclass = beginclass == unset_noad_class ? math_begin_class : beginclass,
+        .endclass = endclass == unset_noad_class ? math_end_class : endclass,
+        .kerns = kerns,
+        .scale = glyph_scale_par,
+        .max_height = 0,
+        .max_depth = 0,
+        .single = 0,
+    };
+    if (kerns) { 
+        tex_math_wipe_kerns(kerns);
     }
     ++lmt_math_state.level;
     /*tex
@@ -7590,17 +8159,21 @@ halfword tex_mlist_to_hlist(halfword mlist, int penalties, int main_style, int b
         and/or depth are set.
     */
     tex_mlist_to_hlist_preroll_radicals(&state);
-    /*
+    /*tex
         Make a second pass over the mlist. This is needed in order to get the maximum height and 
         depth in order to make fences match.
     */
     tex_mlist_to_hlist_preroll_dimensions(&state);
     /*tex
-        The fence sizing is done in the third pass. Using a dedicated pass permits experimenting.
+        Continuation atoms with scripts get realigned in this third pass. 
+    */
+    tex_mlist_to_hlist_preroll_continuation(&state);
+    /*tex
+        The fence sizing is done in the fourth pass. Using a dedicated pass permits experimenting.
     */
     tex_mlist_to_hlist_size_fences(&state);
     /*tex
-        Make a fourth pass over the mlist; traditionally this was the second pass. We removing all 
+        Make a fifth pass over the mlist; traditionally this was the second pass. We removing all 
         noads and insert the proper spacing (glue) and penalties. The binary checking is gone and 
         replaced by generic arbitrary inter atom mapping control, so for the hard coded older logic 
         one has to check the (development) git repository.
@@ -7620,6 +8193,7 @@ halfword tex_mlist_to_hlist(halfword mlist, int penalties, int main_style, int b
     tex_unsave_math_data(cur_level + lmt_math_state.level);
     cur_list.math_begin = state.beginclass;
     cur_list.math_end = state.endclass;
+    lmt_math_state.single = state.single;
     glyph_scale_par = state.scale;
     --lmt_math_state.level;
     node_prev(node_next(temp_head)) = null;

@@ -12,6 +12,7 @@ local next, type = next, type
 local match, format = string.match, string.format
 local concat, sortedhash = table.concat, table.sortedhash
 local idiv = number.idiv
+local addsuffix = file.addsuffix
 
 local trace_defining           = false  trackers.register("fonts.defining", function(v) trace_defining = v end)
 local trace_features           = false  trackers.register("tfm.features",   function(v) trace_features = v end)
@@ -28,6 +29,8 @@ local helpers                  = fonts.helpers
 local readers                  = fonts.readers
 local constructors             = fonts.constructors
 local encodings                = fonts.encodings
+
+local slotcommand              = helpers.commands.slot
 
 local tfm                      = constructors.handlers.tfm
 tfm.version                    = 1.000
@@ -150,7 +153,7 @@ local function read_from_tfm(specification)
         end
         local newtfmdata = (depth[filename] == 1) and tfm.reencode(tfmdata,specification)
         if newtfmdata then
-             tfmdata = newtfmdata
+            tfmdata = newtfmdata
         end
 
         local resources  = tfmdata.resources  or { }
@@ -162,15 +165,15 @@ local function read_from_tfm(specification)
         shared.resources = resources
         --
         properties.id         = specification.id
-        properties.name       = tfmdata.name           -- todo: fallback
-        properties.fontname   = tfmdata.fontname       -- todo: fallback
-        properties.psname     = tfmdata.psname         -- todo: fallback
-        properties.fullname   = tfmdata.fullname       -- todo: fallback
-        properties.filename   = specification.filename -- todo: fallback
+        properties.name       = tfmdata.name       -- todo: fallback
+        properties.fontname   = tfmdata.fontname   -- todo: fallback
+        properties.psname     = tfmdata.psname     -- todo: fallback
+        properties.fullname   = tfmdata.fullname   -- todo: fallback
+        properties.filename   = tfmdata.filename   -- todo: fallback
         properties.format     = tfmdata.format or fonts.formats.tfm -- better than nothing
-        properties.usedbitmap = tfmdata.usedbitmap
-        properties.designsize = tfmdata.designsize     -- let's be nice
-        parameters.designsize = tfmdata.designsize     -- needed because of pdf position synchronzing
+        properties.usedbitmap = tfmdata.usedbitmap -- only one .. a bit weak when we have a vf then calls for bitmaps
+        properties.designsize = tfmdata.designsize -- let's be nice
+        parameters.designsize = tfmdata.designsize -- needed because of pdf position synchronzing
         --
         if getmapentry and newtfmdata then
             properties.filename = features.pfbfile
@@ -229,7 +232,7 @@ local function read_from_tfm(specification)
             --
             otf.readers.unifymissing(tfmdata)
             --
-            -- Next we fill in the gaps, based on names from teh agl. Probably not much will
+            -- Next we fill in the gaps, based on names from the agl. Probably not much will
             -- happen here.
             --
             fonts.mappings.addtounicode(tfmdata,filename)
@@ -246,9 +249,9 @@ local function read_from_tfm(specification)
             -- that information is not carried with those fonts (there is no name info, nor
             -- proper index info, nor unicodes at that end). So, we provide it ourselves.
             --
-            if tfmdata.usedbitmap then
-                tfm.addtounicode(tfmdata)
-            end
+--             if tfmdata.usedbitmap then
+--                 tfm.addtounicode(tfmdata)
+--             end
         end
         --
         shared.processes = next(features) and tfm.setfeatures(tfmdata,features) or nil
@@ -272,8 +275,9 @@ local function read_from_tfm(specification)
         --
         constructors.enhanceparameters(parameters) -- official copies for us
         --
-        properties.private       =  properties.private or tfmdata.private or privateoffset
+        properties.private       = properties.private or tfmdata.private or privateoffset
         --
+-- inspect(tfmdata.fonts)
         if newtfmdata then
             --
             -- We do nothing as we assume flat tfm files. It would become real messy
@@ -305,8 +309,42 @@ local function read_from_tfm(specification)
         properties.haskerns     = true
         properties.hasligatures = true
         properties.hasitalics   = true
-        resources.unicodes      = { }
-        resources.lookuptags    = { }
+        properties.bitmapped    = tfmdata.bitmapped
+        properties.resolution   = features.resolution or 7200
+        --
+        -- We support all kind of combinations but only because we want to
+        -- document it. Normally we only use 7200 dpi and default settings.
+        --
+        local bitmap = features.bitmap
+        if bitmap == "cff" or bitmap == "outline" or bitmap == "pk" then
+            local resolution = features.resolution or 7200
+            local settings   = nil
+            local potrace    = features.potrace
+            if potrace then
+                settings = utilities.parsers.settings_to_hash_colon_too(potrace)
+                settings.resolution = resolution
+            else
+                settings = {resolution = resolution }
+            end
+            if bitmap == "cff" then
+                parameters.size = parameters.size / 10 * 7200 / resolution
+                settings.bmp = "c"
+                properties.potrace = settings
+            elseif bitmap == "outline" then
+                settings.bmp = "o"
+                properties.potrace = settings
+            else
+                settings.bmp = "p"
+            end
+            properties.extrahash = table.sequenced(settings,",") -- or ""
+        else
+        end
+        --
+        resources.unicodes   = { }
+        resources.lookuptags = { }
+        --
+--         tfmdata.subfont = tfmdata.potraced and 1 or 0 -- for now, we'd better use a foo .. pk hash as with otf
+        tfmdata.subfont = 0 -- for now, we'd better use a foo .. pk hash as with otf
         --
         depth[filename] = depth[filename] - 1
         --
@@ -367,7 +405,7 @@ do
 
     local encdone  = table.setmetatableindex("table")
 
-    function tfm.reencode(tfmdata,specification)
+    function tfm.reencode(tfmdata,specification) -- overlaps with lpdf-emb
 
         local features = specification.features
 
@@ -385,11 +423,9 @@ do
         local encfile = features.reencode -- or features.enc
         local pfbfile = features.pfbfile  -- or features.pfb
         local bitmap  = features.bitmap   -- or features.pk
-
         if not encfile then
             return
         end
-
         local pfbfile = pfbfile or outfiles[tfmfile]
 
         if pfbfile == nil then
@@ -399,7 +435,7 @@ do
                 pfbfile = tfmfile
             end
             if type(pfbfile) == "string" then
-                pfbfile = file.addsuffix(pfbfile,"pfb")
+                pfbfile = addsuffix(pfbfile,"pfb")
              -- pdf.mapline(tfmfile .. "<" .. pfbfile)
                 report_tfm("using type1 shapes from %a for %a",pfbfile,tfmfile)
             else
@@ -411,6 +447,7 @@ do
 
         local encoding = false
         local vector   = false
+        local hash     = false
         if type(pfbfile) == "string" then
             local pfb = constructors.handlers.pfb
             if pfb and pfb.loadvector then
@@ -424,23 +461,29 @@ do
             end
         end
         if type(encfile) == "string" and encfile ~= "auto" then
-            encoding = fonts.encodings.load(file.addsuffix(encfile,"enc"))
+            encoding = fonts.encodings.load(addsuffix(encfile,"enc"))
             if encoding then
+                if not vector then
+                    hash = encoding.hash -- works with duplicates as this one is sparse
+                end
                 encoding = encoding.vector
+             -- if not vector then
+             --     vector = encoding -- only works when no duplicates
+             -- end
             end
         end
+
         if not encoding then
             report_tfm("bad encoding for %a, quitting",tfmfile)
             return
         end
-
         local unicoding  = fonts.encodings.agl and fonts.encodings.agl.unicodes
         local virtualid  = tfmcache[tfmdata]
         local tfmdata    = table.copy(tfmdata) -- good enough for small fonts
         local characters = { }
         local originals  = tfmdata.characters
         local indices    = { }
-        local parentfont = { "font", 1 } -- can be zero (self referencing)
+     -- local parentfont = { "font", 1 } -- can be zero (self referencing)
         local private    = tfmdata.privateoffset or constructors.privateoffset
         local reported   = encdone[tfmfile][encfile] -- bah, encdone for tfm or pfb ?
         -- create characters table
@@ -456,7 +499,8 @@ do
             v.order = k
         end
 
-        local backmap = vector and table.swapped(vector)
+     -- local backmap = vector and table.swapped(vector)
+        local backmap = vector and table.swapped(vector) or hash -- otherwise duplicates in cmr that overload
         local done    = { } -- prevent duplicate
 
         for tfmindex, name in sortedhash(encoding) do -- predictable order
@@ -478,8 +522,10 @@ do
                 if backmap then
                     original.index = backmap[name] -- the pfb index
                 else -- probably bitmap
-                    original.commands = { parentfont, charcommand[tfmindex] } -- or "slot"
-                    original.oindex   = tfmindex
+                 -- original.commands = { parentfont, charcommand[tfmindex] } -- or "slot"
+                    original.commands = slotcommand[tfmindex]
+                 -- original.oindex   = tfmindex
+                    original.index   = tfmindex
                 end
                 done[name] = true
             elseif not done[name] then
@@ -490,10 +536,6 @@ do
         encdone[tfmfile][encfile] = true
 
         -- redo kerns and ligatures
-
--- for k, v in next, characters do
---     print(k,v.width)
--- end
 
         for k, v in next, characters do
             local kerns = v.kerns
@@ -540,15 +582,27 @@ do
 
         -- wrap up
 
-        tfmdata.fonts      = { { id = virtualid } }
+     -- tfmdata.fonts      = { { id = virtualid } }
         tfmdata.characters = characters
         tfmdata.fullname   = tfmdata.fullname or tfmdata.name
-        tfmdata.psname     = file.nameonly(pfbfile or tfmdata.name)
-        tfmdata.filename   = pfbfile
-     -- tfmdata.format     = bitmap and "type3" or "type1"
+        tfmdata.filename   = pfbfile or tfmdata.name
+        tfmdata.psname     = file.nameonly(tfmdata.filename)
         tfmdata.format     = "type1"
+
+        if bitmap == "outline" or bitmap == "potrace" then
+            tfmdata.potraced = true
+            bitmap = "pk"
+        elseif bitmap == "cff" then
+            tfmdata.potraced = true
+            tfmdata.format   = "pkcff"
+            bitmap           = false
+        else
+            tfmdata.filename = addsuffix(tfmdata.filename,"pfb")
+        end
+
         tfmdata.usedbitmap = bitmap and virtualid
         tfmdata.private    = private
+        tfmdata.bitmapped  = bitmap and true or false
 
         return tfmdata
     end

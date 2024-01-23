@@ -102,10 +102,12 @@
 \definetagconstant{mtr}                    % TR
 \definetagconstant{mtd}                    % TD
 \definetagconstant{maction}                %
+
 \definetagconstant{mstacker}
 \definetagconstant{mstackertop}
 \definetagconstant{mstackermid}
 \definetagconstant{mstackerbot}
+\definetagconstant{mextensible}
 
 \aliastagconstant{mtablerow} {mtr}
 \aliastagconstant{mtablecell}{mtd}
@@ -519,6 +521,12 @@
 \enforced\permanent\protected\def\epar{\strc_tagged_saved_epar\dostoptagged}
 
 \popoverloadmode
+
+%D For now:
+
+\appendtoks
+    \clf_settagginglevel{\taggingparameter\c!level}%
+\to \everysetuptagging
 
 % \permanent\def\untagged{attr \taggedattribute\attributeunsetvalue}
 

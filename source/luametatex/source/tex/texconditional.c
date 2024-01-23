@@ -44,13 +44,13 @@ condition_state_info lmt_condition_state = {
     .cur_if        = 0,
     .cur_unless    = 0,
     .if_step       = 0,
-    .if_unless     = 0,
     .if_limit      = 0,
     .if_line       = 0,
+    .if_nesting    = 0,
+    .if_unless     = 0,
     .skip_line     = 0,
     .chk_integer   = 0,
     .chk_dimension = 0,
-    .if_nesting    = 0,
     .padding       = 0,
 };
 
@@ -270,6 +270,13 @@ static void tex_aux_pop_condition_stack(void)
     tex_free_node(p, if_node_size);
 }
 
+/*
+    void tex_quit_fi(void) 
+    {
+        tex_aux_pop_condition_stack();
+    }
+*/
+
 /*tex
     Here's a procedure that changes the |if_limit| code corresponding to a given value of
     |cond_ptr|.
@@ -377,7 +384,7 @@ static void tex_aux_show_if_state(halfword code, halfword case_value)
 
 /*tex Why do we skip over relax? */
 
-inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head)
+inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head) // todo: tail 
 {
     halfword p = null;
     if (expand) {
@@ -778,6 +785,7 @@ void tex_conditional_if(halfword code, int unless)
                 lmt_input_state.scanner_status = save_scanner_status;
             }
             goto RESULT;
+        case if_last_named_cs_code:
         case if_x_code:
             {
                 /*tex
@@ -795,10 +803,16 @@ void tex_conditional_if(halfword code, int unless)
                 halfword p, q;
                 int save_scanner_status = lmt_input_state.scanner_status;
                 lmt_input_state.scanner_status = scanner_is_normal;
-                tex_get_next();
-             // n = cur_cs;
-                p = cur_cmd;
-                q = cur_chr;
+                if (code == if_x_code) {
+                    tex_get_next();
+                 // n = cur_cs;
+                    p = cur_cmd;
+                    q = cur_chr;
+                } else {
+                 // n = lmt_scanner_state.last_cs_name;
+                    p = eq_type(lmt_scanner_state.last_cs_name); 
+                    q = eq_value(lmt_scanner_state.last_cs_name);
+                }
                 tex_get_next();
                 if ((p == constant_call_cmd && cur_cmd == call_cmd) || (p == call_cmd && cur_cmd == constant_call_cmd)) {
                     /*tex This is a somewhat special case. */
@@ -942,7 +956,7 @@ void tex_conditional_if(halfword code, int unless)
             /*tex Select the appropriate case and |return| or |goto common_ending|. */
             result = tex_scan_integer(0, NULL);
             goto CASE;
-        case if_def_code:
+        case if_defined_code:
             /*tex
                 The conditional |\ifdefined| tests if a control sequence is defined. We need to
                 reset |scanner_status|, since |\outer| control sequences are allowed, but we
@@ -956,7 +970,7 @@ void tex_conditional_if(halfword code, int unless)
                 lmt_input_state.scanner_status = save_scanner_status;
                 goto RESULT;
             }
-        case if_cs_code:
+        case if_csname_code:
             result = tex_is_valid_csname();
             goto RESULT;
         case if_in_csname_code:
@@ -1020,7 +1034,7 @@ void tex_conditional_if(halfword code, int unless)
                 }
                 goto RESULT;
             }
-        case if_empty_cmd_code:
+        case if_empty_code:
             {
                 tex_get_token();
               EMPTY_CHECK_AGAIN:
@@ -1069,7 +1083,7 @@ void tex_conditional_if(halfword code, int unless)
                 }
                 goto RESULT;
             }
-        case if_relax_cmd_code:
+        case if_relax_code:
             {
                 tex_get_token();
                 result = cur_cmd == relax_cmd;
@@ -1143,6 +1157,10 @@ void tex_conditional_if(halfword code, int unless)
                         tex_get_token();
                         result = cur_cmd == if_test_cmd ? 2 : 1;
                     }          
+                    /*tex Because we only have two values we can actually support |\unless|. */
+                    if (unless) { 
+                        result = result == 1 ? 2 : 1;
+                    }
                 }
                 goto CASE;
             }
@@ -1268,6 +1286,9 @@ void tex_conditional_if(halfword code, int unless)
                 result = tex_in_alignment();
                 goto RESULT;
             }
+        case if_cramped_code:
+            result = tex_is_cramped_style(tex_scan_math_style_identifier(0, 0));
+            goto RESULT;
      // case if_bitwise_and_code:
      //     {
      //         halfword n1 = scan_integer(0, NULL);

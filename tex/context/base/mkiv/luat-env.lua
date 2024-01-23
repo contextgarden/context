@@ -101,7 +101,7 @@ local function strippable(filename)
     end
 end
 
-function environment.luafilechunk(filename,silent,macros) -- used for loading lua bytecode in the format
+function environment.luafilechunk(filename,silent,macros,optional) -- used for loading lua bytecode in the format
     filename = file.replacesuffix(filename, "lua")
     local fullname = environment.luafile(filename)
     if fullname and fullname ~= "" then
@@ -111,7 +111,7 @@ function environment.luafilechunk(filename,silent,macros) -- used for loading lu
         end
         return data
     else
-        if not silent then
+        if not optional and not silent then
             report_lua("unknown file %a",filename)
         end
         return nil

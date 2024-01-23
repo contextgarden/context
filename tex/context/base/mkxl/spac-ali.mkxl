@@ -337,8 +337,11 @@
    \xspaceskip       \v_spac_align_space_amount_x
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeroskip
-   \parfillleftskip  \zeroskip
-   \parfillrightskip \s_zero_plus_zero
+ % \parfillleftskip  \zeroskip
+ % \parfillrightskip \s_zero_plus_zero
+ % needs testing:
+   \parfillleftskip  \s_zero_plus_one_fil
+   \parfillrightskip \zeroskip
    \parindent        \zeropoint
    \relax}
 
@@ -381,8 +384,11 @@
    \xspaceskip       \v_spac_align_space_amount_x
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeroskip
-   \parfillleftskip  \zeroskip
-   \parfillrightskip \s_zero_plus_zero
+ % \parfillleftskip  \zeroskip
+ % \parfillrightskip \s_zero_plus_zero
+ % needs testing:
+   \parfillleftskip  \s_zero_plus_zero
+   \parfillrightskip \zeroskip
    \parindent        \zeropoint
    \relax}
 
@@ -506,14 +512,24 @@
    \or
      % 2 flush left
      \ifcase\c_spac_align_state_broad
-       \spac_align_set_horizontal_right
+       \ifcase\c_spac_align_state_tight
+         \spac_align_set_horizontal_right
+       \else
+         \spac_align_set_horizontal_center
+         \leftskip1\leftskip
+       \fi
      \else
        \spac_align_set_horizontal_very_right
      \fi
    \or
      % 3 flush right
      \ifcase\c_spac_align_state_broad
-       \spac_align_set_horizontal_left
+       \ifcase\c_spac_align_state_tight
+         \spac_align_set_horizontal_left
+       \else
+         \spac_align_set_horizontal_center
+         \rightskip1\rightskip
+       \fi
      \else
        \spac_align_set_horizontal_very_left
      \fi
@@ -616,6 +632,19 @@
      \righttoleft
    \fi}
 
+% Trick
+
+%D \starttyping
+%D \framed[width=5.5cm,align={flushleft}]       {This is a test sentence to see if it aligns okay.}
+%D \framed[width=5.5cm,align={flushright}]      {This is a test sentence to see if it aligns okay.}
+%D \framed[width=5.5cm,align={flushleft,tight}] {This is a test sentence to see if it aligns okay.}
+%D \framed[width=5.5cm,align={flushright,tight}]{This is a test sentence to see if it aligns okay.}
+%D \framed[width=5.5cm,align={flushleft,broad}] {This is a test sentence to see if it aligns okay.}
+%D \framed[width=5.5cm,align={flushright,broad}]{This is a test sentence to see if it aligns okay.}
+%D \stoptyping
+
+\newconstant\c_spac_align_state_tight
+
 % Interesting is that the non cached version is also pretty efficient
 % and as we cache we seldom call that one now so one can debate the
 % speedup.
@@ -661,6 +690,7 @@
    \c_spac_align_state_vertical  \zerocount
    \c_spac_align_state_spread    \zerocount
    \c_spac_align_state_direction \zerocount % what is default ?
+   \c_spac_align_state_tight     \zerocount
    \c_spac_align_state_page      \zerocount
    \c_spac_align_state_par_fill  \zerocount
 \to \t_spac_align_presets
@@ -790,6 +820,7 @@
 \defcsname\??aligncommand               l2r\endcsname{\c_spac_align_state_direction \plusone  }
 \defcsname\??aligncommand               r2l\endcsname{\c_spac_align_state_direction \plustwo  }
 
+\defcsname\??aligncommand\v!tight          \endcsname{\c_spac_align_state_tight     \plusone}
 
 \defcsname\??aligncommand\v!slanted        \endcsname{\c_spac_align_state_horizontal\plusten
                                                       \c_spac_align_state_broad     \plustwo  }

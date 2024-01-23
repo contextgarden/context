@@ -307,8 +307,7 @@
   {\buff_verbatim_initialize_type_two
    \dostarttaggedchained\t!verbatim\currenttype\??type
    \clf_type
-     data    {\detokenize{#1}}%
-%      data    {#1}%
+     data    {\protecteddetokenize{#1}}%
      tab     {\typeparameter\c!tab}%
      method  {\p_buff_option}%
      compact {\typeparameter\c!compact}% % none | all | last (all needed in tabulate etc for manuals)
@@ -324,6 +323,7 @@
    \dostarttaggedchained\t!verbatim\currenttype\??type
    \clf_type
      data   {\detokenize{#1}}%
+%      data    {\protecteddetokenize{#1}}%
      tab    {\typeparameter\c!tab}%
      method {\p_buff_option}% % extra visualizer (maybe: nested,\typeparameter\c!option)
      escape {\typeparameter\c!escape}%  % new but rather useless imo (escaping in general is not used much)
@@ -445,11 +445,13 @@
   {\begingroup
    \cdef\currenttyping       {#1}%
    \edef\currenttypingwrapper{#2}%
-   \obeylines
+   \begingroup
+   \obeylines % alternatively \future.. could *not* ignore newlines
    \futureexpandis[\buff_verbatim_typing_start_yes\buff_verbatim_typing_start_nop}
 
 \def\buff_verbatim_typing_start_yes[#S#1]%
-  {\ifhastok={#1}%
+  {\endgroup
+   \ifhastok={#1}%
      \setupcurrenttyping[#1]%
    \orelse\ifcstok{#1}\v!continue
      \lettypingparameter\c!continue\v!yes
@@ -462,7 +464,8 @@
    \normalexpanded{\buff_verbatim_type_block{\e!start\currenttypingwrapper}{\e!stop\currenttypingwrapper}}}
 
 \def\buff_verbatim_typing_start_nop
-  {\typingparameter\c!before\relax
+  {\endgroup
+   \typingparameter\c!before\relax
    \startpacked[\v!blank]%
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
@@ -1005,8 +1008,11 @@
 %    \usevisualizerstyleandcolor\c!style\c!color
 %    \let\next}
 
+% in footnotes no longer needed as we can preroll
+
 \appendtoks
-    \enforced\def\type#1{\detokenize\expandafter{\csstring#1}}% or maybe detokenize
+  % \enforced\def\type#1{\detokenize\expandafter{\csstring#1}}% \protecteddetokenize
+    \enforced\def\type#1{\detokenize{#1}}% \protecteddetokenize fails
     \enforced\def\tex #1{\letterbackslash#1}%
 \to \everysimplifycommands
 

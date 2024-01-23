@@ -1,0 +1,987 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\setupexternalfigures[directory=screendumps]
+
+\usebodyfont[antykwa]
+\usebodyfont[modern-nt]
+\usebodyfont[modern]
+\usebodyfont[bonum-nt]
+\usebodyfont[bonum]
+\usebodyfont[lucida-nt]
+\usebodyfont[lucida]
+\usebodyfont[erewhon-nt]
+\usebodyfont[erewhon]
+\usebodyfont[libertinus-nt]
+\usebodyfont[libertinus]
+\usebodyfont[stixtwo]
+\usebodyfont[cambria]
+
+\hyphenation{prime-shift-up-cramped}
+
+\startcomponent ontarget-standardize
+
+\environment ontarget-style
+
+\startchapter[title={Standardizing math fonts}]
+
+\startsection[title={Introduction}]
+
+\CONTEXT\ has always had a good support for the typesetting of mathematics.
+\CONTEXT\ \MKII\ uses the \PDFTEX\ engine and hence traditional (\TYPEONE) fonts.
+Several math fonts are available, specifically designed to work seamlessly with
+\TEX. \CONTEXT\ \MKIV, the successor version, utilizes the \LUATEX\ engine,
+providing support not only for traditional fonts but also for \OPENTYPE\
+\UNICODE\ math fonts. Unlike the \XETEX\ engine, which interpreted these new
+fonts in a manner similar to traditional \TEX\ fonts, \LUATEX\ adheres more
+closely to the (unfortunately somewhat vague) \OPENTYPE\ specification. \footnote
+{See \typ{https://learn.microsoft.com/en-us/typography/opentype/spec/math}} When
+new fonts appeared, some were more like the traditional fonts, others more like
+\OPENTYPE\ \UNICODE\ math fonts. This leads to difficulties in achieving
+consistent results across different fonts and might be one reason that the
+\UNICODE\ engines are not yet used as much as they probably should.
+
+In autumn 2021 we started to discuss how to improve the typesetting of \OPENTYPE\
+\UNICODE\ mathematics, and it was natural to go on and do this for the
+\LUAMETATEX\ engine, and hence for \CONTEXT\ \LMTX. Since then, we have been
+engaging in daily discussions covering finer details such as glyphs, kerning,
+accent placement, inter|-|atom spacing (what we refer to as math
+microtypography), as well as broader aspects like formula alignment and formula
+line breaking (math macrotypography). This article will primarily focus on the
+finer details. Specifically, we will explore the various choices we have made
+throughout the process. The \OPENTYPE\ \UNICODE\ math specification is
+incomplete; some aspects are missing, while others remain ambiguous. This issue
+is exacerbated by the varying behaviors of fonts.
+
+We make runtime changes to fonts, and add a few additional font parameters that
+we missed. As a result, we deviate from the standard set by Microsoft (or rather,
+we choose to interpret it in our own way) and exercise the freedom to make
+runtime changes to font parameters. Regarding this aspect, we firmly believe that
+our results often align more closely with the original intentions of the font
+designers. Indeed, the existence of \quotation{oddities} in these fonts may be
+attributed to the lack of an engine, during their creation, that supported all
+the various features, making testing difficult, if not essentially impossible.
+Within \CONTEXT\ \LMTX, we have the necessary support, and we can activate
+various helpers that allow us to closely examine formulas. Without them our work
+would not have been possible.
+
+Ultimately, we hope and believe that we have made straightforward yet effective
+choices, rendering the existing \OPENTYPE\ \UNICODE\ math fonts usable. We hope
+that this article might be inspiring and useful for others who aim to achieve
+well|-|designed, modern math typesetting.
+
+\stopsection
+
+\startsection[title={Traditional vs.\ \OPENTYPE\ math fonts}]
+
+There is a fundamental difference between traditional \TEX\ math fonts and
+\OPENTYPE\ \UNICODE\ fonts. In the traditional approach, a math setup consists of
+multiple independent fonts. There is no direct relationship between a math italic
+$x$ and an $\hat{\hphantom{x}}$ on top of it. The engine handles the positioning
+almost independently of the shapes involved. There can be a shift to the right of
+$\hat{x}$ triggered by kerning with a so|-|called skew character but that is it.
+
+A somewhat loose coupling between fonts is present when we go from a base
+character to a larger variant that itself can point to a larger one and
+eventually end up at an extensible recipe. But the base character and that
+sequence are normally from different fonts. The assumption is that they are
+designed as a combination. In an \OPENTYPE\ font, variants and extensibles more
+directly relate to a base character.
+
+Then there is the italic correction which adds kerns between a character and what
+follows depending on the situation. It is not, in fact, a true italic correction,
+but more a hack where an untrue width is compensated for. A traditional \TEX\
+engine defaults to adding these corrections and selectively removes or
+compensates for them. In traditional \TEX\ this fake width helps placing the
+subscript properly while the italic correction is added to the advance width when
+attaching subscripts and|/|or moving to the next atom.
+
+In an \OPENTYPE\ font we see these phenomena translated into features. Instead of
+many math fonts we have one font. This means that one can have relations between
+glyphs, although in practice little of that happens. One example is that a
+specific character can have script and scriptscript sizes with a somewhat
+different design. Another is that there can be alternate shapes for the same
+character, and yet another is substitution of (for instance) dotted characters by
+dotless ones. However, from the perspective of features a math font is rather
+simple and undemanding.
+
+Another property is that in an \OPENTYPE\ math font the real widths are used in
+combination with optional italic correction when a sequence of characters is
+considered text, with the exception of large operators where italic correction is
+used for positioning limits on top and below. Instead of abusing italic
+corrections this way, a system of staircase kerns in each corner of a shape is
+possible.
+
+Then there are top (but not bottom) anchor positions that, like marks in text
+fonts, can be used to position accents on top of base characters or boxes. And
+while we talk of accents: they can come with so|-|called flat substitutions for
+situations where we want less height.
+
+All this is driven by a bunch of font parameters that (supposedly) relate to the
+design of the font. Some of them concern rules that are being used in
+constructing, for instance, fractions and radicals but maybe also for making new
+glyphs like extensibles, which is essentially a traditional \TEX\ thing.
+
+So, when we now look back at the traditional approach we can say that there are
+differences in the way a font is set up: widths and italic corrections, staircase
+kerns, rules as elements for constructing glyphs, anchoring of accents,
+flattening of accents, replacement of dotted characters, selection of smaller
+sizes, and font parameters. These differences have been reflected in the way
+engines (seem to) deal with \OPENTYPE\ math: one can start with a traditional
+engine and map \OPENTYPE\ onto that; one can implement an \OPENTYPE\ engine and,
+if needed, map traditional fonts onto the way that works; and of course there can
+be some mix of these.
+
+In practice, when we look at existing fonts, there is only one reference and that
+is Cambria. When mapped onto a traditional engine, much can be made to work, but
+not all. Then there are fonts that originate in the \TEX\ community and these do
+not always work well with an \OPENTYPE\ engine. Other fonts are a mix and work
+more or less. The more one looks into details, the clearer it becomes that no
+font is perfect and that it is hard to make an engine work well with them. In
+\LUAMETATEX\ we can explicitly control many of the choices the math engine makes,
+and there are more such choices than with traditional \TEX\ machinery. And
+although we can adapt fonts at runtime to suit the possibilities, it is not
+pretty.
+
+This is why we gradually decided on a somewhat different approach: we use the
+advantage of having a single font, normalize fonts to what we can reliably
+support, and if needed, add to fonts and control the math engine, especially the
+various subsystems, with directives that tell it what we want to be done. Let us
+discuss a few things that we do when we load a math font.
+
+\stopsection
+
+\startsection[title={Getting rid of italic corrections}]
+
+\OPENTYPE\ math has italic corrections for using characters in text and large
+operators (for limits), staircase kerns for combining scripts, and top anchor for
+placement of accents. In \LUAMETATEX\ we have access to more features.
+
+Let's remind ourselves. In a bit more detail, \OPENTYPE\ has:
+
+\startitemize[packed]
+\startitem
+    \typ An \typ {italic correction} is injected between characters in running
+    text, but: a sequence of atoms is {\em not} text, they are individually
+    spaced.
+\stopitem
+\startitem
+    An \typ {italic correction} value in large operators that reflects where
+    limits are attached in display mode; in effect, using the italic
+    correction as an anchor.
+\stopitem
+\startitem
+    \typ {Top anchors} are used to position accents over characters, but
+    not so much over atoms that are composed from not only characters.
+\stopitem
+\startitem
+    \typ {Flat accents} as substitution feature for situations where the height
+    would become excessive.
+\stopitem
+\startitem
+    \typ {Script and scriptscript} as substitution feature for a selection of
+    characters that are sensitive for scaling down.
+\stopitem
+\stopitemize
+
+This somewhat limited view on math character positioning has been extended in
+\LUAMETATEX, and we remap the above onto what we consider a bit more reliable,
+especially because we can tweak these better. We have:
+
+\startitemize[packed]
+\startitem
+    \typ {Corner kerns} that make it possible to adjust the horizontal location
+    of sub- and superscripts and prescripts.
+\stopitem
+\startitem
+    Although \typ {flat accents} are an existing feature, we extended them by
+    providing additional scaling when they are not specified.
+\stopitem
+\startitem
+    In addition to script sizes we also have \typ {mirror} as a feature so that
+    we can provide right to left math typesetting. (This also relates to
+    dropping in characters from other fonts, like Arabic.)
+\stopitem
+\startitem
+    In addition to the \typ {top anchors} we also have \typ {bottom anchors}
+    in order to properly place bottom accents. These are often
+    missing, so we need to construct them from available snippets.
+\stopitem
+\startitem
+    An additional \typ {extensible italic correction} makes it possible to
+    better anchor scripts to sloped large operators. This is combined with
+    keeping track of \typ {corner kerns} that can be specified per character.
+\stopitem
+\startitem
+    Characters can have \typ {margins} which makes it possible to more precisely
+    position accents that would normally overflow the base character and clash
+    with scripts. These go in all four directions.
+\stopitem
+\startitem
+    In order to be able to place the degree in a radical more precisely (read:
+    not run into the shape when there is more than just a single degree atom) we
+    have \typ {radical offsets}.
+\stopitem
+\stopitemize
+
+There are plenty more tuning options but some are too obscure to mention here.
+All high level constructors, like fences, radicals, accents, operators,
+fractions, etc.\ can be tuned via optional keyword and key|/|values at the macro
+end.
+
+We eliminate the italic correction in math fonts, instead adding it to the width,
+and using a negative bottom right kern. If possible we also set a top and bottom
+accent anchor. This happens when we load the font. We also translate the italic
+correction on large operators into anchors. As a result, the engine can now
+completely ignore italic corrections in favor of proper widths, kerns and
+anchors. Let us look at a few examples.
+
+The italic $f$ is used a lot in mathematics and it is also one of the most
+problematic characters. In \TEXGYRE\ Bonum Math the italic f has a narrow
+bounding box; the character sticks out on both the left and right. To the right,
+this is compensated by a large amount of italic correction. This means that when
+one adds sub- and superscripts, it works well. We add italic correction to the
+width, and introducing a negative corner kern at the bottom right corner, and
+thus the placement of sub- and superscripts is not altered. Look carefully at the
+bounding boxes below.
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=2,distance=1es]
+    \startcontent
+      \switchtobodyfont[bonum-nt]
+      \showglyphs
+      \dm{\setmscale{3}f_0^1}
+    \stopcontent
+    \startcaption
+      \hbox {original}
+    \stopcaption
+    \startcontent
+      \showglyphs
+      \dm{\setmscale{3}f_0^1}
+    \stopcontent
+    \startcaption
+      \hbox {tweaked}
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+Compare with Lucida Bright Math, which comes with staircase kerns instead of
+italic correction. We convert these kerns into corner kerns.
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=2,distance=5ts]
+    \startcontent
+      \switchtobodyfont[lucida-nt]
+      \showglyphs
+      \dm{\setmscale{3}f_0^1}
+    \stopcontent
+    \startcaption
+      \hbox {original}
+    \stopcaption
+    \startcontent
+      \switchtobodyfont[lucida]
+      \showglyphs
+      \dm{\setmscale{3}f_0^1}
+    \stopcontent
+    \startcaption
+      \hbox {tweaked}
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+For characters that stick out to the left, we also increase the width and shift
+the glyph to ensure that it does not stick out on the left side. This prevents
+glyphs from clashing into each other.
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=2,distance=5ts]
+    \startcontent
+      \switchtobodyfont[bonum-nt]
+      \showglyphs
+      \dm{\setmscale{3}(f)}
+    \stopcontent
+    \startcaption
+      \hbox {original}
+    \stopcaption
+    \startcontent
+      \showglyphs
+      \dm{\setmscale{3}(f)}
+    \stopcontent
+    \startcaption
+      \hbox {tweaked}
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+As mentioned, for the integral, one of the most common big operators, the limits
+are also placed with help of the italic correction. When the limits go below and
+on top, proper bottom and top anchor points are introduced, calculated from the
+italic correction. (The difference in size of the integral signs is a side effect
+of the font parameter \typ {DisplayOperatorMinHeight} being tweaked, as we'll
+discuss more later. \OPENTYPE\ fonts can come with more than two sizes.)
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=3,distance=5ts]
+    \startcontent
+      \switchtobodyfont[bonum-nt]
+      \showglyphs
+      \dm{\setmscale{1.5}\int_a^b f(x) \dd x}
+    \stopcontent
+    \startcaption
+      original
+    \stopcaption
+    \startcontent
+      \showglyphs
+      \dm{\setmscale{1.5}\int_a^b f(x) \dd x}
+    \stopcontent
+    \startcaption
+      \hbox {tweaked, nolimits}
+    \stopcaption
+    \startcontent
+      \setupmathematics
+        [integral=limits]
+      \showglyphs
+      \dm{\setmscale{1.5}\int_a^b f(x) \dd x}
+    \stopcontent
+    \startcaption
+      \hbox {tweaked, limits}
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+Compare these integrals with the summation, that usually does not have any italic
+correction bound to it. This means that the new anchor points end up in the
+middle of the summation symbol.
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=2,distance=5ts]
+    \startcontent
+      \switchtobodyfont[bonum-nt]
+      \showglyphs
+      \dm{\setmscale{1.5}\sum_{k=1}^{n}a_k}
+    \stopcontent
+    \startcaption
+      original
+    \stopcaption
+    \startcontent
+      \showglyphs
+      \dm{\setmscale{1.5}\sum_{k=1}^{n}a_k}
+    \stopcontent
+    \startcaption
+      tweaked
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+We also introduce some corner kerns in cases where there were neither italic
+corrections nor staircase kerns. This is mainly done for delimiters, like
+parentheses. We can have a different amount of kerning for the various sizes.
+Often the original glyph does not benefit from any kerning, while the variants
+and extensibles do.
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=2,distance=5ts]
+    \startcontent
+      \switchtobodyfont[bonum-nt]
+      \showglyphs
+      \dm{\setmscale{1.5}\left( \frac {1}{1 + x^2} \right)^2}
+    \stopcontent
+    \startcaption
+      original
+    \stopcaption
+    \startcontent
+      \showglyphs
+      \dm{\setmscale{1.5}\left( \frac {1}{1 + x^2} \right)^2}
+    \stopcontent
+    \startcaption
+      tweaked
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+Note also the different sizes of the parentheses in the example above. Both
+examples are set with \typ {\left(} and \typ {\right)}, but the font parameters
+are chosen differently in the tweaked version. Font designers should have used
+the opportunity to have more granularity in sizes. Latin Modern Math has four,
+many others have steps in between, but there is a lack of consistency.
+
+\stopsection
+
+\startsection[title={Converting staircase kerns}]
+
+We simplify the staircase kerns, which are often somewhat sloppy and seldom
+complete (see figure below), into more reliable corner kerns. It's good enough
+and looks better on the whole. We also avoid bugs that way.
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=2,ny=1,distance=5TS]
+    \startcontent
+      \clip[ny=3,y=2]
+      {\externalfigure[CambriaItalicV-bottomrightkern][height=3ES]}
+    \stopcontent
+    \startcaption
+      italic V
+    \stopcaption
+    \startcontent
+      \clip[ny=3,y=2]
+      {\externalfigure[CambriauprightV-bottomrightkern][height=3ES]}
+    \stopcontent
+    \startcaption
+      upright V
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+
+\stopsection
+
+\startsection[title={Tweaking accents}]
+
+We ignore the zero dimensions of accents, simply assuming that one cannot know if
+the shape is centered or sticks out in a curious way, and therefore use proper
+widths with top and bottom anchors derived from the bounding box. We compensate
+for negative llx values being abused for positioning. We check for overflows in
+the engine. In case of multiple accents, we place the first one anchored over the
+character, and center the others on top of it.
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=1,distance=5TS]
+    \startcontent
+      \switchtobodyfont[bonum]
+      \showglyphs
+      \dm{\setmscale{3} \hat{\hat{\hat{f}}}}
+    \stopcontent
+    \startcaption
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+We mentioned in an earlier \TUGBOAT\ article that sometimes anchor points are
+just wrong. We have a tweak that resets them (to the middle) that we use for
+several fonts and alphabets.
+
+Some accents, like the hat, can benefit from being scaled. The fonts typically
+provide the base size and a few variants.
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=2,ny=1,distance=5TS]
+    \startcontent
+      \switchtobodyfont[bonum-nt]
+      \showglyphs
+      \dm{\setmscale{3}\widehat[stretch=no]{f+g}}
+    \stopcontent
+    \startcaption
+      original
+    \stopcaption
+    \startcontent
+      \showglyphs
+      \dm{\setmscale{3}\widehat{f+g}}
+    \stopcontent
+    \startcaption
+      tweaked
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+The only fonts we have seen that support flattened accents are Stix Two Math
+and Cambria Math.
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=2,ny=1,distance=1es]
+    \startcontent
+      \switchtobodyfont[stixtwo]
+      \showglyphs
+      \dm{\setmscale{3}\hat{a}\hat{A}\hat{C}}
+    \stopcontent
+    \startcaption
+      stix two
+    \stopcaption
+    \startcontent
+      \switchtobodyfont[cambria]
+      \showglyphs
+      \dm{\setmscale{3}\hat{a}\hat{A}\hat{C}}
+    \stopcontent
+    \startcaption
+      cambria
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+If you look carefully, you notice that the hats over the capital letters are not
+as tall as the one over the lowercase letter. There is a font parameter \typ
+{FlattenedAccentBaseHeight} that is supposed to specify when this effect is
+supposed to kick in. Even though other fonts do not use this feature, the
+parameter is set, sometimes to strange values (if they were to have the
+property). For example, in Garamond Math, the value is 420.
+
+We introduced a tweak that can fake the flattened accents, and therefore we need
+to alter the value of the font parameter to more reasonable values. We
+communicated to Daniel Flipo, who maintains several math fonts, that the
+parameter was not correctly set in Erewhon math. In fact, it was set such that
+the flattened accents were used for some capital letters (C in the example below)
+but not for others (A below). He quickly fixed that. The green rules in the
+picture have the height of \typ {FlattenedAccentBaseHeight}; it did not need to
+be decreased by much.
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=2,distance=5TS]
+    \startcontent
+        \externalfigure[erewhonmath][page=1]
+    \stopcontent
+    \startcaption
+        \hbox{Erewhon, not fixed}
+    \stopcaption
+    \startcontent
+        \externalfigure[erewhonmath][page=2]
+    \stopcontent
+    \startcaption
+        \hbox{Erewhon, fixed}
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+\stopsection
+
+\startsection[title={Getting rid of rules}]
+
+We get rid of rules as pseudo-glyphs in extensibles and bars. This also gives
+nicer visual integration because flat rules do not always fit in with the rest of
+the font. We also added support for this in the few (Polish) Type~1 math fonts
+that we still want to support, like Antykwa Toruńska.
+
+\startplacefloat
+    [intermezzo]
+    [location=nonumber]
+\startcombination[nx=3,ny=1,distance=5TS]
+\startcontent
+\switchtobodyfont[modern-nt]%
+\setupmathfractions
+  [strut=no]%
+\dm{
+  \setmscale{3}
+  \sqrt{\frac{1+x}{1-x}}
+}
+\stopcontent
+\startcaption
+With rule
+\stopcaption
+
+\startcontent
+\switchtobodyfont[modern]%
+\setupmathfractions
+  [strut=no]%
+\dm{
+  \setmscale{3}
+  \sqrt{\frac{1+x}{1-x}}
+}
+\stopcontent
+\startcaption
+With glyph
+\stopcaption
+\startcontent
+\switchtobodyfont[antykwa]%
+\setupmathfractions
+  [strut=no]%
+\dm{
+  \setmscale{3}
+  \sqrt{\frac{1+x}{1-x}}
+}
+\stopcontent
+\startcaption
+Antykwa
+\stopcaption
+\stopcombination
+\stopplacefloat
+
+Here is an enlarged example of an Antykwa rule. Latin Modern has rounded corners,
+here we see a rather distinctive ending.
+
+\startlinecorrection
+\scale[height=2cm]{\switchtobodyfont[antykwa]\im{\overbar{x^2 + 2x + 2}}}
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title={Tweaking primes}]
+
+We make it no secret that we consider primes in math fonts a mess. For some
+reason no one could convince the \UNICODE\ people that a \quote {prime} is not a
+\quote {minute} (that is, \acro{U+2032 PRIME} is also supposed to be used as the
+symbol for minutes); in case you'd like to argue that \quotation {they often look
+the same}, that is also true for the Latin and Greek capital \quote {A}. This
+lost opportunity means that, as with traditional \TEX\ fonts, we need to fight a
+bit with placement. The base character can or cannot be already anchored at some
+superscript|-|like position, so that makes it basically unusable. An alternative
+assumption might be that one should just use the script size variant as a
+superscript, but as we will see below, that assumes that they sit on the baseline
+so that we can move it up to the right spot. Add to that the fact that
+traditional \TEX\ has no concept of a prime, and we need some kind of juggling
+with successive scripts. This is what macro packages end up doing.
+
+But this is not what we want. In \CONTEXT\ \MKIV\ we already have special
+mechanisms for dealing with primes, which include mapping successive primes onto
+the multiple characters in \UNICODE, where we actually have individual triple and
+quadruple primes and three reverse (real) primes as well. However, primes are now
+a native feature, like super- and subscripts, as well as prescripts and indices.
+(All examples here are uniformly scaled.)
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=3,ny=6]
+    \startcontent
+      \externalfigure[Latinmodernprime][scale=200]
+    \stopcontent
+    \startcaption
+      lm
+    \stopcaption
+    \startcontent
+      \externalfigure[Latinmodernprimest][scale=200]
+    \stopcontent
+    \startcaption
+      st
+    \stopcaption
+    \startcontent
+      \externalfigure[Latinmodernprimests][scale=200]
+    \stopcontent
+    \startcaption
+      sts
+    \stopcaption
+    \startcontent
+      \externalfigure[Lucidaprime][scale=200]
+    \stopcontent
+    \startcaption
+      lucida
+    \stopcaption
+    \startcontent
+    \stopcontent
+    \startcaption
+    \stopcaption
+    \startcontent
+      \externalfigure[Lucidaprimessty][scale=200]
+    \stopcontent
+    \startcaption
+      ssty
+    \stopcaption
+    \startcontent
+      \externalfigure[Erewhonprime][scale=200]
+    \stopcontent
+    \startcaption
+      erewhon
+    \stopcaption
+    \startcontent
+      \externalfigure[Erewhonprimest][scale=200]
+    \stopcontent
+    \startcaption
+      st
+    \stopcaption
+    \startcontent
+      \externalfigure[Erewhonprimesst][scale=200]
+    \stopcontent
+    \startcaption
+      sst
+    \stopcaption
+    \startcontent
+      \externalfigure[Libertinusprime][scale=200]
+    \stopcontent
+    \startcaption
+      libertinus
+    \stopcaption
+    \startcontent
+      \externalfigure[Libertinusprimessty1][scale=200]
+    \stopcontent
+    \startcaption
+      ssty1
+    \stopcaption
+    \startcontent
+    \stopcontent
+    \startcaption
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+Because primes are now a native feature, we also have new font parameters \typ
+{PrimeShiftUp} and \typ {PrimeShiftUpCramped}, similar to \typ
+{SuperscriptShiftUp} and \typ {SuperscriptShiftUpCramped}, which add a horizontal
+axis where the primes are placed. There is also a \typ {fixprimes} tweak that we
+can use to scale and fix the glyph itself. Below, we see how very different the
+primes from different fonts look (all examples are uniformly scaled), and then
+examples comparing the original and tweaked primes.
+
+\startbuffer
+\dm{\setmscale{2}f'(x) + e^{f'(x)}}
+\stopbuffer
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=2,ny=4,distance=2ts]
+    \startcontent
+      \switchtobodyfont[modern-nt]
+      \getbuffer
+    \stopcontent
+    \startcaption
+      lm original
+    \stopcaption
+    \startcontent
+      \switchtobodyfont[modern]
+      \getbuffer
+    \stopcontent
+    \startcaption
+      lm tweaked
+    \stopcaption
+    \startcontent
+      \switchtobodyfont[lucida-nt]
+      \getbuffer
+    \stopcontent
+    \startcaption
+      lucida original
+    \stopcaption
+    \startcontent
+      \switchtobodyfont[lucida]
+      \getbuffer
+    \stopcontent
+    \startcaption
+      lucida tweaked
+    \stopcaption
+    \startcontent
+      \switchtobodyfont[erewhon-nt]
+      \getbuffer
+    \stopcontent
+    \startcaption
+      erewhon original
+    \stopcaption
+    \startcontent
+      \switchtobodyfont[erewhon]
+      \getbuffer
+    \stopcontent
+    \startcaption
+      erewhon tweaked
+    \stopcaption
+    \startcontent
+      \switchtobodyfont[libertinus-nt]
+      \getbuffer
+    \stopcontent
+    \startcaption
+      libertinus original
+    \stopcaption
+    \startcontent
+      \switchtobodyfont[libertinus]
+      \getbuffer
+    \stopcontent
+    \startcaption
+      libertinus tweaked
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+\stopsection
+
+\startsection[title={Font parameters}]
+
+We add some font parameters, ignore some existing ones, and fix at runtime those
+that look to be suboptimal. We have no better method than looking at examples, so
+parameters might be fine|-|tuned further in the future.
+
+We have already mentioned that we have a few new parameters, \typ {PrimeShiftUp}
+and \typ {PrimeShiftUpCramped}, to position primes on their own axis, independent
+of the superscripts. They are also chosen to always be placed outside
+superscripts, so the inputs \typ {$f'^2$} and \typ {$f^2'$} both result in
+$f^2'$. Authors should use parentheses in order to avoid confusion.
+
+\startplacefloat
+  [intermezzo]
+  [location=nonumber]
+  \startcombination[nx=1,ny=3]
+  \startcontent
+    \externalfigure[latex-pdfpowers-crop][scale=1.2*2400]
+  \stopcontent
+  \startcaption
+  \stopcaption
+  \startcontent
+    \externalfigure[latex-luapowers-crop][scale=1.2*2400]
+  \stopcontent
+  \startcaption
+  \stopcaption
+  \startcontent
+    \externalfigure[230430-3-crop][scale=1.2*2000]
+  \stopcontent
+  \startcaption
+  \stopcaption
+  \stopcombination
+\stopplacefloat
+
+Let us briefly mention the other parameters. These are the adapted parameters for
+\TeX\ Gyre Bonum:
+
+\starttyping
+AccentTopShiftUp                  =  -15
+FlattenedAccentTopShiftUp         =  -15
+AccentBaseDepth                   =   50
+DelimiterPercent                  =   90
+DelimiterShortfall                =  400
+DisplayOperatorMinHeight          = 1900
+SubscriptShiftDown                =  201
+SuperscriptShiftUp                =  364
+SubscriptShiftDownWithSuperscript = "1.4*SubscriptShiftDown"
+PrimeShiftUp                      = "1.25*SuperscriptShiftUp"
+PrimeShiftUpCramped               = "1.25*SuperscriptShiftUp"
+\stoptyping
+
+Some of these are not in \OPENTYPE. We can set up much more, but it depends on
+the font what is needed, and also on user demands.
+
+We have noticed that many font designers seem to have had problems setting some
+of the values; for example, \typ {DisplayOperatorMinHeight} seems to be off in
+many fonts.
+
+\stopsection
+
+\startsection[title={Profiling}]
+
+Let us end with profiling, which is only indirectly related to the tweaking of
+the fonts. Indeed, font parameters control the vertical positioning of sub- and
+superscripts. If not carefully set, they might force a non-negative \tex {
+lineskip} where not necessary. In the previous section we showed how these
+parameters were tweaked for Bonum.
+
+Sometimes formulas are too high (or have a too large depth) for the line, and so
+a \tex {lineskip} is added so that the lines do not clash. If the lowest part of
+the top line (typically caused by the depth) and the tallest part of the bottom
+line (caused by the height) are not close to each other on the line, one might
+argue that this \tex {lineskip} does not have to be added, or at least with
+reduced amount. This is possible to achieve by adding \typ
+{\setupalign[profile]}. Let us look at one example.
+
+\startbuffer[annals]
+So the question is: how good an approximation to \im {\sigma} is \im {\sigma * W
+\phi}? But the attentive reader will realize that we have already answered this
+question in the course of proving the sharp Gårding inequality. Indeed, suppose
+\im{\phi \in \mathcal{S}} is even and \im {\fenced[doublebar]{\phi}_2 = 1}, and
+set \im {\phi^a(x) = a^{n/4} \phi (a^{1/2}x)}. Then we have shown (cf.\ Remark
+(2.89)) that \im {\sigma - \sigma * W\phi^a \in S_{\rho, \delta}^{m-(\rho-
+\delta)}} whenever \im {\sigma \in S_{\rho, \delta}^m} is supported in a set
+where \im {\langle \xi \rangle^{\rho + \delta} \approx a}.
+\stopbuffer
+
+\starttextdisplay
+\bgroup
+\switchtobodyfont[modern]%23cm
+\startcombination[nx=1,ny=2]
+\startcontent
+\vtop{\hsize 14cm\relax%
+\showmakeup[line]
+\getbuffer[annals]}
+\stopcontent
+\startcaption
+No profiling
+\stopcaption
+\startcontent
+\vtop{\hsize 14cm\relax%
+\setupalign[profile]
+\showmakeup[line]
+\enabletrackers[profiling.lines.show]
+\getbuffer[annals]}
+\stopcontent
+\startcaption
+Profiling
+\stopcaption
+\stopcombination
+\egroup
+\stoptextdisplay
+
+In the above paragraphs we enabled a helper that shows us where the profiling
+feature kicks in. We also show the lines (\typ {\showmakeup[line]}). Below we
+show the example without those helpers. You can judge for yourself which one you
+prefer.
+
+\starttextdisplay
+\bgroup
+\switchtobodyfont[modern]
+\startcombination[nx=1,ny=2]
+\startcontent
+\vtop{\hsize 14cm\relax%
+\getbuffer[annals]}
+\stopcontent
+\startcaption
+No profiling
+\stopcaption
+\startcontent
+\vtop{\hsize 14cm\relax%
+\setupalign[profile]
+\disabletrackers[profiling.lines.show]
+\getbuffer[annals]}
+\stopcontent
+\startcaption
+Profiling
+\stopcaption
+\stopcombination
+\egroup
+\stoptextdisplay
+
+It is worth emphasizing that, contrary to what one might believe at first, the
+profiling does not substantially affect the compilation time. On a 300-page math
+book we tried, which usually compiles in about 10 seconds, profiling did not add
+more than 0.5 seconds. The same observation holds for the other math tweaks we
+have mentioned: the overhead is negligible.
+
+\stopsection
+
+\startsection[title={Conclusions}]
+
+All these tweaks can be overloaded per glyph if needed; for some fonts, we indeed
+do this, in so|-|called goodie files. The good news is that by doing all this we
+present the engine with a font that is consistent, which also means that we can
+more easily control the typeset result in specific circumstances.
+
+The reader may wonder how we ended up with this somewhat confusing state of
+affairs in the font world. Here are some possible reasons. There is only one
+reference font, Cambria, and that uses its reference word processor renderer,
+Word. Then came \XETEX\ that as far as we know maps \OPENTYPE\ math onto a
+traditional \TEX\ engine, so when fonts started coming from the \TEX\ crowd,
+traditional dimensions and parameters sort of fit in. When \LUATEX\ showed up, it
+started from the other end: \OPENTYPE. That works well with the reference font
+but less so with that ones coming from \TEX. Eventually more fonts showed up, and
+it's not clear how these got tested because some lean towards the traditional and
+others towards the reference fonts. And, all in all, these fonts mostly seem to
+be rather untested in real (more complex) math.
+
+The more we looked into the specific properties of \OPENTYPE\ math fonts and
+rendering, the more we got the feeling that it was some hybrid of what \TEX\ does
+(with fonts) and ultimately desired behavior. That works well with Cambria and a
+more or less frozen approach in a word processor, but doesn't suit well with
+\TEX. Bits and pieces are missing, which could have been added from the
+perspective of generalization and imperfections in \TEX\ as well. Lessons learned
+from decades of dealing with math in macros and math fonts were not reflected in
+the \OPENTYPE\ fonts and approach, which is of course understandable as
+\OPENTYPE\ math never especially aimed at \TEX. But that also means that at some
+point one has to draw conclusions and make decisions, which is what we do in
+\CONTEXT, \LUAMETATEX\ and the runtime|-|adapted fonts. And it gives pretty good
+and reliable results.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

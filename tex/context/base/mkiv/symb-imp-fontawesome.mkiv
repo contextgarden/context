@@ -7,7 +7,15 @@
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 
-\definefontsynonym [FontAwesome] [file:FontAwesome.otf]
+\loadfontgoodies[fontawesome]
+
+\definefontsynonym [FontAwesome]        [file:FontAwesome.otf]
+%definefontsynonym [FontAwesomeBrands]  [file:fontawesome5brandsregular400.otf]
+%definefontsynonym [FontAwesomeRegular] [file:fontawesome5freeregular400.otf]
+%definefontsynonym [FontAwesomeSolid]   [file:fontawesome5freesolid900.otf]
+\definefontsynonym [FontAwesomeBrands]  [file:FontAwesomeBrandsRegular.otf]
+\definefontsynonym [FontAwesomeRegular] [file:FontAwesomeFreeRegular.otf]
+\definefontsynonym [FontAwesomeSolid]   [file:FontAwesomeFreeSolid.otf]
 
 %def\FontAwesomeSymbol#1{\getglyphstyled{FontAwesome}{\utfchar{0x#1}}}
 \def\FontAwesomeSymbol#1{\getglyphstyled{FontAwesome}{\tochar{n:#1}}}
@@ -749,19 +757,15 @@
 
 \stopsymbolset
 
-\definefontsynonym [FontAwesomeBrands]  [file:fontawesome5brandsregular400.otf]
-\definefontsynonym [FontAwesomeRegular] [file:fontawesome5freeregular400.otf]
-\definefontsynonym [FontAwesomeSolid]   [file:fontawesome5freesolid900.otf]
-
-\startsymbolset [fontawesome-brands] [font=FontAwesomeBrands]
+\startsymbolset [fontawesome-brands] [font=FontAwesomeBrands*fontawesome]
     % Font Awesome Brands
 \stopsymbolset
 
-\startsymbolset [fontawesome-regular] [font=FontAwesomeRegular]
+\startsymbolset [fontawesome-regular] [font=FontAwesomeRegular*fontawesome]
     % Font Awesome Regular
 \stopsymbolset
 
-\startsymbolset [fontawesome-solid] [font=FontAwesomeSolid]
+\startsymbolset [fontawesome-solid] [font=FontAwesomeSolid*fontawesome]
     % Font Awesome Solid
 \stopsymbolset
 

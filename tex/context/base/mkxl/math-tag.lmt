@@ -26,6 +26,7 @@ local nuts              = nodes.nuts
 local tonut             = nuts.tonut
 
 local getchar           = nuts.getchar
+local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getcharspec       = nuts.getcharspec
 local getdata           = nuts.getdata
@@ -36,6 +37,7 @@ local getattr           = nuts.getattr
 local getattrlist       = nuts.getattrlist
 local setattr           = nuts.setattr
 local getwidth          = nuts.getwidth
+local getoptions        = nuts.getoptions
 
 local getnumerator      = nuts.getnumerator
 local getdenominator    = nuts.getdenominator
@@ -74,6 +76,10 @@ local fencecodes        = nodes.fencecodes
 local fixedtopaccent_code    = accentcodes.fixedtop
 local fixedbottomaccent_code = accentcodes.fixedbottom
 local fixedbothaccent_code   = accentcodes.fixedboth
+
+local hextensible_code   = nodes.radicalcodes.hextensible
+local lextensible_code   = nodes.listcodes.hextensible
+local gextensible_code   = nodes.glyphcodes.extensible
 
 local leftfence_code     = fencecodes.left
 local middlefence_code   = fencecodes.middle
@@ -123,56 +129,108 @@ local report_tags       = logs.reporter("structure","tags")
 
 local process
 
-local function processnucleus(nucleus,prime)
-    if prime then
-        -- This should work wasn't it that browser handling of primes have an issue with
-        -- "big semi raised text" vs "small supposedly superscripted". So let's play safe
-        -- and use a superscript. Even then we get somewhat different positioning for the
-        -- same primed character in q sqrt and (e.g.) a sequential integral.
-     -- start_tagged("mrow", { prime = true })
-        start_tagged("msup", { prime = true })
-        process(nucleus)
-        process(prime)
-        stop_tagged()
-    else
-        process(nucleus)
-    end
-end
+local processsubsup  do
 
-local function processsubsup(start)
-    -- At some point we might need to add an attribute signaling the
-    -- super- and subscripts because TeX and MathML use a different
-    -- order. The mrows are needed to keep mn's separated.
-    local nucleus, prime, sup, sub, presup, presub = getnucleus(start,true)
-    if sub then
-        if sup then
-            setattr(start,a_tagged,start_tagged("msubsup"))
-            processnucleus(nucleus,prime)
-            start_tagged("mrow", { subscript = true })
-            process(sub)
-            stop_tagged()
-            start_tagged("mrow", { superscript = true })
+    local continuation_code       = tex.noadoptioncodes.continuation
+    local continuationhead_code   = tex.noadoptioncodes.continuationhead
+    local continuationkernel_code = tex.noadoptioncodes.continuationkernel
+
+    local function simple(start, nucleus, prime, sup, sub, continuation)
+        if prime then
+            setattr(start,a_tagged,start_tagged("msup", { prime = true }))
+            start_tagged("mrow")
+        end
+        if sub then
+            if sup then
+                setattr(start,a_tagged,start_tagged("msubsup", continuation))
+                process(nucleus)
+                start_tagged("mrow", { script = "sub" })
+                process(sub)
+                stop_tagged()
+                start_tagged("mrow", { script = "sup"  })
+                process(sup)
+                stop_tagged()
+                stop_tagged()
+            else
+                setattr(start,a_tagged,start_tagged("msub", continuation))
+                process(nucleus)
+                start_tagged("mrow", { script = "sub" })
+                process(sub)
+                stop_tagged()
+                stop_tagged()
+            end
+        elseif sup then
+            setattr(start,a_tagged,start_tagged("msup", continuation))
+            process(nucleus)
+            start_tagged("mrow", { script = "sup" })
             process(sup)
             stop_tagged()
             stop_tagged()
         else
-            setattr(start,a_tagged,start_tagged("msub"))
-            processnucleus(nucleus,prime)
-            start_tagged("mrow")
-            process(sub)
+            process(nucleus)
+        end
+        if prime then
+            stop_tagged()
+            start_tagged("mrow", { script = "prime" })
+            process(prime)
             stop_tagged()
             stop_tagged()
         end
-    elseif sup then
-        setattr(start,a_tagged,start_tagged("msup"))
-        processnucleus(nucleus,prime)
-        start_tagged("mrow")
-        process(sup)
-        stop_tagged()
-        stop_tagged()
-    else
-        processnucleus(nucleus,prime)
     end
+
+    local function complex(start, nucleus, prime, sup, sub, presup, presub, continuation)
+        start_tagged("mmultiscripts", continuation)
+        process(nucleus)
+        if prime then
+            start_tagged("mrow", { script = "prime" })
+            start_tagged("mrow", { script = "prime" })
+            process(prime)
+            stop_tagged()
+        end
+        if sup then
+            start_tagged("mrow", { script = "sup" })
+            process(sup)
+            stop_tagged()
+        end
+        if sub then
+            start_tagged("mrow", { script = "sub" })
+            process(sub)
+            stop_tagged()
+        end
+        if presup then
+            start_tagged("mrow", { script = "presup" })
+            process(presup)
+            stop_tagged()
+        end
+        if presub then
+            start_tagged("mrow", { script = "presub" })
+            process(presub)
+            stop_tagged()
+        end
+        stop_tagged()
+    end
+
+    processsubsup = function(start)
+        -- At some point we might need to add an attribute signaling the
+        -- super- and subscripts because TeX and MathML use a different
+        -- order. The mrows are needed to keep mn's separated.
+        local nucleus, prime, sup, sub, presup, presub = getnucleus(start,true)
+        local options = getoptions(start)
+        local continuation = false
+        local c = (options & continuation_code) > 0
+        local h = (options & continuationhead_code) > 0
+        local k = (options & continuationkernel_code) > 0
+        local continuation = (c or h or k) and {
+            continuation = { next = c, head = h, kernel = k }
+        } or nil
+     -- if presup or presub then
+        if presup or presub or (sup and prime) then
+            complex(start,nucleus,prime,sup,sub,presup,presub,continuation)
+        else
+            simple(start,nucleus,prime,sup,sub,continuation)
+        end
+    end
+
 end
 
 -- todo: check function here and keep attribute the same
@@ -319,6 +377,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 processsubsup(start)
             elseif id == subbox_code or id == hlist_code or id == vlist_code then
                 -- keep an eye on subbox_code and see what ends up in there
+                -- a hlist can be a nested result (mlist_to_hlist)
                 local attr = getattr(start,a_tagged)
                 if not attr then
                     -- just skip
@@ -334,11 +393,11 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                 process(list)
                             end
                         else
-if tag ~= "mtable" and tag ~= "mstackertop" and tag ~= "mstackermid" and tag ~= "mstackerbot" then
---                             if tag ~= "mstackertop" and tag ~= "mstackermid" and tag ~= "mstackerbot" then
+                            if tag ~= "mtable" and tag ~= "mstackertop" and tag ~= "mstackermid" and tag ~= "mstackerbot" then
                                 tag = "mtext"
                             end
-                            local text = start_tagged(tag)
+                            local detail = specification.detail
+                            local text   = start_tagged(tag, detail and { detail = detail } or nil)
                             setattr(start,a_tagged,text)
                             local list = getlist(start)
                             if not list then
@@ -359,15 +418,15 @@ if tag ~= "mtable" and tag ~= "mstackertop" and tag ~= "mstackermid" and tag ~= 
                                 local function runner(list,depth) -- quite inefficient
                                     local cache = { } -- we can have nested unboxed mess so best local to runner
                                     local keep = nil
-                                 -- local keep = { } -- win case we might need to move keep outside
+                                 -- local keep = { } -- in case we might need to move keep outside
                                     for n, id, subtype in nextnode, list do
                                         local mth = id == math_code and subtype
-if mth == 0 then -- begin in line
- -- insert(keep,text)
-    keep = text
-    text = start_tagged("mrow")
-    common = common + 1
-end
+                                        if mth == 0 then -- begin in line / nested math box like stackers
+                                         -- insert(keep,text)
+                                            keep = text
+                                            text = start_tagged("mrow")
+                                            common = common + 1
+                                        end
                                         local aa = getattr(n,a_tagged)
                                         if aa then
                                             local ac = cache[aa]
@@ -391,13 +450,14 @@ end
                                             setattr(n,a_tagged,text)
                                         end
                                         if id == hlist_code or id == vlist_code then
+-- if subtype == lextensible_code then
+-- print("L")
+-- end
                                             runner(getlist(n),depth+1)
                                         elseif id == glyph_code then
-                                            -- this should not be needed
-                                         -- local components = getcomponents(n) -- unlikely set
-                                         -- if components then
-                                         --     runner(getcomponent,depth+1)
-                                         -- end
+-- if subtype == gextensible_code then
+--     print("G")
+-- end
                                         elseif id == disc_code then
                                             -- this should not be needed
                                             local pre, post, replace = getdisc(n)
@@ -411,12 +471,12 @@ end
                                                 runner(replace,depth+1)
                                             end
                                         end
-if mth == 1 then -- end in line
-    stop_tagged()
- -- text = remove(keep)
-    text = keep
-    common = common - 1
-end
+                                        if mth == 1 then -- end in line
+                                            stop_tagged()
+                                         -- text = remove(keep)
+                                            text = keep
+                                            common = common - 1
+                                        end
                                     end
                                 end
                                 runner(list,0)
@@ -573,28 +633,32 @@ end
                     start_tagged("mrow") -- begin of subsequence
                 end
             elseif id == radical_code then
-                local left   = getleftdelimiter(start)
-                local right  = getrightdelimiter(start)
-                local degree = getdegree(start)
-                if left then
-                    start_tagged("ignore")
-                    process(left) -- root symbol, ignored
-                    stop_tagged()
-                end
-                if right then
-                    start_tagged("ignore")
-                    process(lright) -- actuarian symbol, ignored
-                    stop_tagged()
-                end
-                if degree and hascontent(degree) then
-                    setattr(start,a_tagged,start_tagged("mroot"))
-                    processsubsup(start)
-                    process(degree)
-                    stop_tagged()
+                if subtype == hextensible_code then
+                    -- eventually we have no radical but just some box
                 else
-                    setattr(start,a_tagged,start_tagged("msqrt"))
-                    processsubsup(start)
-                    stop_tagged()
+                    local left   = getleftdelimiter(start)
+                    local right  = getrightdelimiter(start)
+                    local degree = getdegree(start)
+                    if left then
+                        start_tagged("ignore")
+                        process(left) -- root symbol, ignored
+                        stop_tagged()
+                    end
+                    if right then
+                        start_tagged("ignore")
+                        process(lright) -- actuarian symbol, ignored
+                        stop_tagged()
+                    end
+                    if degree and hascontent(degree) then
+                        setattr(start,a_tagged,start_tagged("mroot"))
+                        processsubsup(start)
+                        process(degree)
+                        stop_tagged()
+                    else
+                        setattr(start,a_tagged,start_tagged("msqrt"))
+                        processsubsup(start)
+                        stop_tagged()
+                    end
                 end
             elseif id == accent_code then
                 local topaccent = gettop(start)
@@ -640,12 +704,12 @@ end
                 local wd = getwidth(start)
                 if em and wd then
                     setattr(start,a_tagged,start_tagged("mspace",{ emfactor = wd/em }))
+                    stop_tagged()
                 end
-                stop_tagged()
             else
                 --rule boundary
-                setattr(start,a_tagged,start_tagged("merror", { detail = nodecodes[id] }))
-                stop_tagged()
+             -- setattr(start,a_tagged,start_tagged("merror", { detail = nodecodes[id] }))
+             -- stop_tagged()
             end
         end
 -- showtag(start,id,false)

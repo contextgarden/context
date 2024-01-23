@@ -92,7 +92,7 @@ extern page_builder_state_info lmt_page_builder_state;
 
 extern void tex_initialize_buildpage (void);
 extern void tex_initialize_pagestate (void);
-extern void tex_build_page           (void);
+extern void tex_build_page           (halfword context, halfword boundary);
 extern void tex_resume_after_output  (void);
 extern void tex_additional_page_skip (void);
 

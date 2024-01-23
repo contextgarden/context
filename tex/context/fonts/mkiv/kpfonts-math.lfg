@@ -12,12 +12,17 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
+            DelimiterPercent                  =   85,
+            DelimiterShortfall                =  400,
+            DelimiterDisplayPercent           =   90,
+            DelimiterDisplayShortfall         =  400,
             AccentBaseDepth                   =   30,
             DelimiterPercent                  =   90,
             DelimiterShortfall                =  400,
             PrimeShiftUp                      = "1.15*SuperscriptShiftUp",
             PrimeShiftUpCramped               = "1.15*SuperscriptShiftUp",
             SubscriptShiftDownWithSuperscript = "1.2*SubscriptShiftDown", -- unclear original value, trial and error
+            RadicalDisplayStyleVerticalGap    = "RadicalVerticalGap", --170, 62
         },
         tweaks = {
             aftercopying = {

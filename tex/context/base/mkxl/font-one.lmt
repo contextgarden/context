@@ -580,6 +580,8 @@ local function copytotfm(data)
         parameters.ascender   = abs(metadata.ascender  or 0)
         parameters.descender  = abs(metadata.descender or 0)
         parameters.capheight  = abs(metadata.capheight or 0)
+        parameters.ascent     = abs(metadata.ascent    or parameters.ascender  or 0)
+        parameters.descent    = abs(metadata.descent   or parameters.descender or 0)
         parameters.units      = 1000
         --
         properties.spacer   = spacer
@@ -590,10 +592,6 @@ local function copytotfm(data)
         properties.psname   = fullname
         properties.name     = filename or fullname or fontname
         properties.private  = properties.private or data.private or privateoffset
-        --
-if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
-        properties.encodingbytes = 2
-end
         --
         if next(characters) then
             return {

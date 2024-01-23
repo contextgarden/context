@@ -24,7 +24,7 @@ local trace_digits     = false  if trackers then trackers.register("modules.asci
 
 local report_asciimath = logs.reporter("mathematics","asciimath")
 
-local asciimath        = { }
+local asciimath        = asciimath or { }
 local moduledata       = moduledata or { }
 moduledata.asciimath   = asciimath
 
@@ -730,6 +730,32 @@ local reserved = {
     ["xxx"]      = { true, utfchar(0x2063) }, -- invisible times
 
 }
+
+-- This is an undocumented option for Ton (math4all):
+
+-- \startluacode
+-- if not asciimath then
+--     asciimath = {
+--         extras = {
+--             ["GTK"] = { false, "\\text{\\it GTK}" }, -- proper kerning/spacing
+--         }
+--     }
+-- end
+-- \stopluacode
+--
+-- \usemodule[asciimath]
+-- \starttext
+--    \asciimath{GTK}
+-- stoptext
+
+local extras = asciimath.extras
+if extras then
+    for k, v in next, extras do
+        if not reserved[k] then
+            reserved[k] = v
+        end
+    end
+end
 
 -- a..z A..Z : allemaal op italic alphabet
 -- en dan default naar upright "upr a"

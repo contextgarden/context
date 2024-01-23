@@ -966,7 +966,7 @@ inline static halfword tex_aux_is_hyphen_char(halfword chr)
     if (tex_get_hc_code(chr)) {
         return tex_get_hc_code(chr);
     } else if (chr == ex_hyphen_char_par) {
-        return ex_hyphen_char_par;
+        return chr;
     } else {
         return null;
     }

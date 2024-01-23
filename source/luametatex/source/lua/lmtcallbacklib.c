@@ -59,7 +59,7 @@ static const char *callbacklib_names[total_callbacks] = {
     "show_build",
     "insert_par",
     "append_line_filter",
-    "build_page_insert",
+    "insert_distance",
  /* "fire_up_output", */
     "wrapup_run",
     "begin_paragraph",
@@ -80,6 +80,7 @@ static const char *callbacklib_names[total_callbacks] = {
     "linebreak_quality",
     "paragraph_pass",
     "handle_uleader",
+    "italic_correction",
 };
 
 /*tex

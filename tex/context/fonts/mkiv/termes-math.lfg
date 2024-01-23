@@ -15,11 +15,13 @@ return {
             AccentTopShiftUp                  =  -15,
             FlattenedAccentTopShiftUp         =  -15,
             AccentBaseDepth                   =   50,
-            DelimiterPercent                  =   90,
+            DelimiterPercent                  =   85,
             DelimiterShortfall                =  400,
+            DelimiterDisplayPercent           =   90,
+            DelimiterDisplayShortfall         =  400,
             DisplayOperatorMinHeight          = 1800, -- 1300 in font (only one)
-            SuperscriptShiftUp                = 310, -- 339
-            SubscriptShiftDown                = 200, -- 222
+            SuperscriptShiftUp                =  310, -- 339
+            SubscriptShiftDown                =  200, -- 222
             SubscriptShiftDownWithSuperscript = "1.40*SubscriptShiftDown", -- 1.5* in math-act
             PrimeShiftUp                      = "1.35*SuperscriptShiftUp",
             PrimeShiftUpCramped               = "1.35*SuperscriptShiftUp",
@@ -36,6 +38,15 @@ return {
                 },
                 {
                     tweak = "addmirrors",
+                },
+                {
+                    tweak   = "replacealphabets",
+                    list    = {
+                        {
+                            source   = { first = 0x02980 }, -- triplebar
+                            filename = "TeXGyreTermesMath-Companion.otf",
+                        },
+                    },
                 },
                 presets.scripttocalligraphic { },
                 presets.rsfstoscript         { rscale  = 0.97 },
@@ -142,10 +153,10 @@ return {
                 --     radical  = { height = .2, yoffset = .8 },
                 --     stacker  = { height = .2, yoffset = .8 },
                 -- },
-                {
-                    tweak   = "addbars",
-                    advance = 0.3,
-                },
+                -- {
+                --     tweak   = "addbars",
+                --     advance = 0.3,
+                -- },
                 {
                     tweak = "addactuarian",
                 },

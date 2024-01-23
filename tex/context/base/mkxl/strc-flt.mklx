@@ -11,7 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D This module will be redone with conditionals and everythings
+%D This module will be redone with conditionals and everythings. Anyway, text floats
+%D are a rather historic feature so changing something is also braking something.
 
 \writestatus{loading}{ConTeXt Structure Macros / Float Numbering}
 
@@ -270,13 +271,15 @@
    \strc_floats_define_commands{#1}{#2}}
 
 \def\strc_floats_define_commands#1#2%
-  {\frozen\protected\instance\edefcsname\e!place   \e!listof#2\endcsname{\strc_lists_place[#1]}% call will change
-   \frozen\protected\instance\edefcsname\e!complete\e!listof#2\endcsname{\strc_lists_complete[#1][#2]}% call will change
-   \frozen\protected\instance\edefcsname\e!place            #1\endcsname{\placefloat[#1]}%
-   \frozen\protected\instance\edefcsname\e!start    \e!place#1\endcsname{\startplacefloat[#1]}%
-   \frozen\protected\instance\edefcsname\e!stop     \e!place#1\endcsname{\stopplacefloat}%
-   \frozen\protected\instance\edefcsname\e!start     #1\e!text\endcsname{\strc_floats_start_text[#1]}%
-   \frozen\protected\instance\edefcsname\e!stop      #1\e!text\endcsname{\strc_floats_stop_text}%
+  {\frozen\protected\instance\edefcsname\e!place      \e!listof#2\endcsname{\strc_lists_place[#1]}% call will change
+   \frozen\protected\instance\edefcsname\e!complete   \e!listof#2\endcsname{\strc_lists_complete[#1][#2]}% call will change
+   \frozen\protected\instance\edefcsname\e!place               #1\endcsname{\placefloat[#1]}%
+   \frozen\protected\instance\edefcsname\e!start       \e!place#1\endcsname{\startplacefloat[#1]}%
+   \frozen\protected\instance\edefcsname\e!stop        \e!place#1\endcsname{\stopplacefloat}%
+   \frozen\protected\instance\edefcsname\e!start        #1\e!text\endcsname{\startfloattext[#1]}%
+   \frozen\protected\instance\edefcsname\e!stop         #1\e!text\endcsname{\stopfloattext}%
+   \frozen\protected\instance\edefcsname\e!start\e!place#1\e!text\endcsname{\startplacefloattext[#1]}%
+   \frozen\protected\instance\edefcsname\e!stop \e!place#1\e!text\endcsname{\stopplacefloattext}%
    % these will become obsolete:
    \frozen\instance\protected\edefcsname\e!reserve               #1\endcsname{\strc_floats_reserve[#1]}%
    \frozen\instance\protected\edefcsname\e!start\e!reserve#1\e!text\endcsname{\strc_floats_start_reserve_text[#1]}%
@@ -857,17 +860,74 @@
 
 % text
 
-\protected\def\strc_floats_start_text
+\permanent\tolerant\protected\def\startfloattext[#tag]#spacer[#location]#spacer[#reference]%
   {\flushnotes      % Here indeed?
    \page_otr_command_flush_side_floats % Here indeed?
    \strc_floats_begin_text_group
-   \strc_floats_start_text_indeed}
+   \strc_floats_place[#tag][\v!text,#location,\v!left][#reference]}
 
-\tolerant\protected\def\strc_floats_start_text_indeed[#tag]#spacer[#location]#spacer[#reference]%
-  {\strc_floats_place[#tag][\v!text,#location,\v!left][#reference]}
-
-\protected\def\strc_floats_stop_text
+\protected\def\stopfloattext
   {\strc_floats_stop_text_indeed}
+
+\ifdefined\startcontent \else \aliased\let\startcontent\relax \fi
+\ifdefined\stopcontent  \else \aliased\let\stopcontent \relax \fi
+\ifdefined\startentry   \else \aliased\let\startentry  \relax \fi
+\ifdefined\stopentry    \else \aliased\let\stopentry   \relax \fi
+
+\permanent\tolerant\protected\def\startplacefloattext[#tag]#spacer[#S#settings]#spacer[#S#userdata]%
+  {\begingroup
+   %
+   \flushnotes % Here indeed?
+   \page_otr_command_flush_side_floats % Here indeed?
+   %
+   \strc_floats_set_current_tag{#tag}%
+   \strc_floats_reset_variables
+   \resetfloatcaptionparameter\c!location
+   \resetfloatcaptionparameter\c!reference
+   \resetfloatcaptionparameter\c!title
+   \resetfloatcaptionparameter\c!marking
+   \resetfloatcaptionparameter\c!list
+   \resetfloatcaptionparameter\c!bookmark
+   \resetfloatcaptionparameter\c!referencetext
+   % pickup
+   \ifparameter#settings\or
+     \setupcurrentfloatcaption[#settings]%
+   \fi
+   \xdef\askedfloatoptions{\v!text,\floatcaptionparameter\c!location,\v!left}%
+   \edef\floatlocationdefault{\floatparameter\c!default}%
+   \let\floatlocation\askedfloatoptions
+   \strc_floats_analyze_location
+   \resetfloatcaptionparameter\c!location
+   \ifparameter#userdata\or
+     \setupcurrentfloatuserdata[#userdata]%
+     \def\m_strc_floats_saved_userdata{#userdata}%
+   \else
+     \lettonothing\m_strc_floats_saved_userdata
+   \fi
+   \enforced\let\startcontent\strc_floats_text_content_start
+   \enforced\let\stopcontent\strc_floats_text_content_stop
+   \enforced\let\startentry\strc_floats_text_entry_start
+   \enforced\let\stopentry \strc_floats_text_entry_stop}
+
+\protected\def\stopplacefloattext
+  {\strc_floats_stop_text_indeed
+   \endgroup}
+
+\protected\def\strc_floats_text_content_start
+  {\setbox\floatbox\vbox\bgroup
+   \ignorespaces}
+
+\protected\def\strc_floats_text_content_stop
+  {\removeunwantedspaces
+   \egroup
+   \strc_floats_begin_text_group
+   \strc_floats_place_next_box_normal{\box\floatbox}}
+
+\protected\def\strc_floats_text_entry_start
+  {\ignorespaces}
+
+\protected\def\strc_floats_text_entry_stop
+  {\removeunwantedspaces}
 
 % reserved text
 

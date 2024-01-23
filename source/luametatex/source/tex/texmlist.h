@@ -20,15 +20,18 @@ typedef struct kernset {
     halfword padding;
 } kernset; 
 
-extern void     tex_run_mlist_to_hlist (halfword p, halfword penalties, halfword style, int beginclass, int endclass);
-extern halfword tex_mlist_to_hlist     (halfword, int penalties, int mainstyle, int beginclass, int endclass, kernset *kerns);
-extern halfword tex_make_extensible    (halfword fnt, halfword chr, scaled target, scaled min_overlap, int horizontal, halfword att, halfword size);
-extern halfword tex_new_math_glyph     (halfword fnt, halfword chr);
-extern halfword tex_math_spacing_glue  (halfword ltype, halfword rtype, halfword style);
-
-extern halfword tex_math_font_char_ht  (halfword fnt, halfword chr, halfword style);
-extern halfword tex_math_font_char_dp  (halfword fnt, halfword chr, halfword style);
-
-extern void     tex_set_math_text_font (halfword style, int usefamfont);
+extern halfword tex_mlist_to_hlist_prepare  (halfword mlist);
+extern void     tex_run_mlist_to_hlist      (halfword p, halfword penalties, halfword style, int beginclass, int endclass);
+extern halfword tex_mlist_to_hlist          (halfword, int penalties, int mainstyle, int beginclass, int endclass, kernset *kerns);
+extern halfword tex_make_extensible         (halfword fnt, halfword chr, scaled target, scaled min_overlap, int horizontal, halfword att, halfword size);
+extern halfword tex_new_math_glyph          (halfword fnt, halfword chr);
+extern halfword tex_math_spacing_glue       (halfword ltype, halfword rtype, halfword style);
+                                            
+extern halfword tex_math_font_char_ht       (halfword fnt, halfword chr, halfword style);
+extern halfword tex_math_font_char_dp       (halfword fnt, halfword chr, halfword style);                                         
+extern void     tex_set_math_text_font      (halfword style, int usefamfont);
+                                            
+extern scaled   tex_math_parameter_x_scaled (int style, int param);
+extern scaled   tex_math_parameter_y_scaled (int style, int param);
 
 # endif

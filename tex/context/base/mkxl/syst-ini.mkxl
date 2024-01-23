@@ -235,9 +235,9 @@
 \immutable\letcharcode \tildeasciicode    \       %                 tilde
 \immutable\letcharcode \spaceasciicode    \space  %                 space
 
-\immutable\defcsname\Uchar\tabasciicode      \endcsname {\ }   % \def\^^I{\ }    tab
-\immutable\defcsname\Uchar\formfeedasciicode \endcsname {\par} % \def\^^L{\par}  formfeed
-\immutable\defcsname\Uchar\endoflineasciicode\endcsname {\ }   % \def\^^M{\ }    return
+\immutable\defcsname\tocharacter\tabasciicode      \endcsname {\ }   % \def\^^I{\ }    tab
+\immutable\defcsname\tocharacter\formfeedasciicode \endcsname {\par} % \def\^^L{\par}  formfeed
+\immutable\defcsname\tocharacter\endoflineasciicode\endcsname {\ }   % \def\^^M{\ }    return
 
 %D For now:
 
@@ -348,9 +348,11 @@
 
 \immutable\integerdef\normalpagebox 255  % hardcoded in pdftex/xetex
 
-\immutable\integerdef\statuswrite   \minusone
+\immutable\integerdef\statuswrite \minusone
 
-\immutable\dimensiondef\zeropoint     0pt
+\immutable\dimensiondef\zeropoint 0pt
+
+\immutable\positdef\zerofloat 0
 
 %D These alternatives avoid the indirect references. Don't use these for generic
 %D code because one never knows what happens elsewhere.
@@ -421,7 +423,7 @@
 
 % %D The next definitions are really needed (in \CONTEXT):
 
-\newlinechar\newlineasciicode  \permanent\edef\outputnewlinechar{\Uchar\newlineasciicode} % {^^J}
+\newlinechar\newlineasciicode  \permanent\edef\outputnewlinechar{\tocharacter\newlineasciicode} % {^^J}
 
 %D One reason to start high with allocation is that it permits us to allocate
 %D consecutive ranges more easily, for instance if for \MPLIB\ we want to allocate a
@@ -578,6 +580,9 @@
 \newinteger\scratchmax
 
 \newinteger\scratchunicode
+\newinteger\scratchunicodeone
+\newinteger\scratchunicodetwo
+\newinteger\scratchunicodethree
 
 \newdimension\scratchleftskip
 \newdimension\scratchrightskip
@@ -606,17 +611,20 @@
 \immutable\dimensiondef  \scaledpoint   1sp
 \immutable\dimensiondef  \thousandpoint 1000pt
 
-\immutable\gluespecdef   \zeroskip           \zeropoint plus \zeropoint     minus \zeropoint
-\immutable\gluespecdef   \centeringskip      \zeropoint plus \thousandpoint minus \thousandpoint
-\immutable\gluespecdef   \stretchingskip     \zeropoint plus \thousandpoint
-\immutable\gluespecdef   \shrinkingskip      \zeropoint                     minus \thousandpoint
-\immutable\gluespecdef   \centeringfillskip  \zeropoint plus 1fill          minus 1fill
-\immutable\gluespecdef   \stretchingfillskip \zeropoint plus 1fill
-\immutable\gluespecdef   \shrinkingfillskip  \zeropoint                     minus 1fill
+\immutable\gluespecdef   \zeroskip            \zeropoint plus \zeropoint     minus \zeropoint
+\immutable\gluespecdef   \centeringskip       \zeropoint plus \thousandpoint minus \thousandpoint
+\immutable\gluespecdef   \stretchingskip      \zeropoint plus \thousandpoint
+\immutable\gluespecdef   \shrinkingskip       \zeropoint                     minus \thousandpoint
+\immutable\gluespecdef   \centeringfillskip   \zeropoint plus 1fill          minus 1fill
+\immutable\gluespecdef   \stretchingfillskip  \zeropoint plus 1fill
+\immutable\gluespecdef   \shrinkingfillskip   \zeropoint                     minus 1fill
+\immutable\gluespecdef   \centeringfilllskip  \zeropoint plus 1filll         minus 1filll
+\immutable\gluespecdef   \stretchingfilllskip \zeropoint plus 1filll
+\immutable\gluespecdef   \shrinkingfilllskip  \zeropoint                     minus 1filll
 
-\immutable\mugluespecdef \zeromuskip    0mu
-\immutable\mugluespecdef \onemuskip     1mu
-\immutable\mugluespecdef \muquad        18mu
+\immutable\mugluespecdef \zeromuskip 0mu
+\immutable\mugluespecdef \onemuskip  1mu
+\immutable\mugluespecdef \muquad     18mu
 
 \aliased\let\points   \onepoint
 \aliased\let\halfpoint\halfapoint
@@ -774,17 +782,20 @@
 %
 % We wrap all into one macro (the frozen stuff adds 10% runtime):
 
-\permanent\protected\def\newif#1%
-  {\permanent\protected\gdefcsname\expandafter\new_if_check\csstring#1true\endcsname {\overloaded\frozen\let#1\iftrue }%
-   \permanent\protected\gdefcsname\expandafter\new_if_check\csstring#1false\endcsname{\overloaded\frozen\let#1\iffalse}%
-   \csname\expandafter\new_if_check\csstring#1false\endcsname}
+\permanent\protected\def\new_if_define#1#2%
+  {\permanent\protected\gdefcsname\expandafter\new_if_check\csstring#2true\endcsname {\enforced#1#2\iftrue }%
+   \permanent\protected\gdefcsname\expandafter\new_if_check\csstring#2false\endcsname{\enforced#1#2\iffalse}%
+   \csname\expandafter\new_if_check\csstring#2false\endcsname}
 
 \normalexpanded{\gdef\noexpand\new_if_check\string i\string f{}}
 
+\permanent\protected\def\newif      {\new_if_define\let }
+\permanent\protected\def\globalnewif{\new_if_define\glet}
+
 %D Let's test this one:
 
-\newif\ifdone
-\newif\iffound
+\newif\ifdone  \globalnewif\ifglobaldone
+\newif\iffound \globalnewif\ifglobalfound
 
 \newif\ifscratchcondition
 \newif\ifscratchconditionone
@@ -809,10 +820,10 @@
 
 %D Constants to be used with \type {\interactionmode}.
 
-\immutable\integerdef\batchmodecode     \zerocount
-\immutable\integerdef\nonstopmodecode   \plusone
-\immutable\integerdef\scrollmodecode    \plustwo
-\immutable\integerdef\errorstopmodecode \plusthree
+% \immutable\integerdef\batchmodecode     \zerocount
+% \immutable\integerdef\nonstopmodecode   \plusone
+% \immutable\integerdef\scrollmodecode    \plustwo
+% \immutable\integerdef\errorstopmodecode \plusthree
 
 %D Of course we want even bigger log files, so we copied this from the \ETEX\
 %D source files.
@@ -1265,15 +1276,95 @@
 
 %D It makes more sense to have these here:
 
-\aliased\let\normalsuperscript  \Usuperscript
-\aliased\let\normalsubscript    \Usubscript
-\aliased\let\normalprimescript  \Uprimescript
-\aliased\let\normalnosuperscript\Unosuperscript
-\aliased\let\normalnosubscript  \Unosubscript
-\aliased\let\normalstartimath   \Ustartmath
-\aliased\let\normalstopimath    \Ustopmath
-\aliased\let\normalstartdmath   \Ustartdisplaymath
-\aliased\let\normalstopdmath    \Ustopdisplaymath
+\aliased\let\normalstartimath  \Ustartmath
+\aliased\let\normalstopimath   \Ustopmath
+\aliased\let\normalstartdmath  \Ustartdisplaymath
+\aliased\let\normalstopdmath   \Ustopdisplaymath
+
+\aliased\let\normalUchar       \tocharacter
+
+% These are the old U* commands:
+
+\aliased\let\Usuperscript      \superscript
+\aliased\let\Usubscript        \subscript
+\aliased\let\Uprimescript      \primescript
+\aliased\let\Unosuperscript    \nosuperscript
+\aliased\let\Unosubscript      \nosubscript
+\aliased\let\Usuperprescript   \superprescript
+\aliased\let\Usubprescript     \subprescript
+\aliased\let\Unosuperprescript \nosuperprescript
+\aliased\let\Unosubprescript   \nosubprescript
+
+\aliased\let\Ustack            \mathstack
+\aliased\let\Umathdict         \mathdictionary
+\aliased\let\Umathclass        \mathclass
+
+\aliased\let\Ustyle            \givenmathstyle
+
+\aliased\let\Uchar             \tocharacter
+
+% Todo:
+
+% \aliased\let\Umathchar            \mathcharacter
+% \aliased\let\Umathchardef         \mathcharacterdef
+% \aliased\let\Umathdictdef         \mathdictionarydef
+% \aliased\let\Umathchardef         \mathcharacterdef
+
+% \aliased\let\Udelimited           \mathdelimited           % left right math
+% \aliased\let\Udelimiterover       \mathdelimiterover       % top math
+% \aliased\let\Udelimiterunder      \mathdelimiterunder      % bottom math
+
+% \aliased\let\Uhextensible         \mathhextensible         % middle
+% \aliased\let\Uoverdelimiter       \mathoverdelimiter       % top math
+% \aliased\let\Uunderdelimiter      \mathunderdelimiter      % bottom math
+
+% \aliased\let\Uradical             \mathdelimitedradical    % left math
+% \aliased\let\Uroot                \mathdelimitedroot       % left degree math
+% \aliased\let\Urooted              \mathdelimitedrooted     % left right degree math
+
+% \aliased\let\Uabove               \mathabove
+% \aliased\let\Uabovewithdelims     \mathabovewithdelims
+% \aliased\let\Uatop                \mathatop
+% \aliased\let\Uatopwithdelims      \mathatopwithdelims
+% \aliased\let\Uover                \mathover
+% \aliased\let\Uoverwithdelims      \mathoverwithdelims
+% \aliased\let\Uskewed              \mathskewed
+% \aliased\let\Uskewedwithdelims    \mathskewedwithdelims
+% \aliased\let\Ustretched           \mathstretched
+% \aliased\let\Ustretchedwithdelims \mathstretchedwithdelims
+
+% \aliased\let\Uleft                \mathleftfence
+% \aliased\let\Umiddle              \mathmiddlefence
+% \aliased\let\Uoperator            \mathoperator
+% \aliased\let\Uright               \mathrightfence
+% \aliased\let\Uvextensible         \mathvextensible
+
+% \aliased\let\overline             \mathoverline
+% \aliased\let\underline            \mathunderline
+
+% \aliased\let\Udelimiter           \Umathdelimiter
+% \aliased\let\Umathaccent          \Umathaccented
+% \aliased\let\Udelcode             \mathdelimitercode
+% \aliased\let\Umathcode            \mathcharactercode
+
+% \aliased\let\Umathadapttoleft     \mathadapttoleft
+% \aliased\let\Umathadapttoright    \mathadapttoright
+% \aliased\let\Umathlimits          \mathlimits
+% \aliased\let\Umathnoaxis          \mathnoaxis
+% \aliased\let\Umathnolimits        \mathnolimits
+% \aliased\let\Umathopenupdepth     \mathopenupdepth
+% \aliased\let\Umathopenupheight    \mathopenupheight
+% \aliased\let\Umathphantom         \mathphantom
+% \aliased\let\Umathsource          \mathsource
+% \aliased\let\Umathuseaxis         \mathuseaxis
+% \aliased\let\Umathvoid            \mathvoid
+
+% \aliased\let\Ustartdisplaymath    \mathstartdisplaymath % otherwise conflict
+% \aliased\let\Ustartmath           \mathstartmath        % idem
+% \aliased\let\Ustartmathmode       \mathstartmathmode    % idem
+% \aliased\let\Ustopdisplaymath     \mathstopdisplaymath  % idem
+% \aliased\let\Ustopmath            \mathstopmath         % idem
+% \aliased\let\Ustopmathmode        \mathstopmathmode     % idem
 
 %D Also better here:
 
@@ -1566,4 +1657,28 @@
 
 \parametermode \plusone
 
+%D While the buildbot is down:
+
+\ifdefined\protecteddetokenize\else
+    \aliased\let\protecteddetokenize\detokenize
+\fi
+
+%D Consistency:
+
+\let\boxwidth \wd
+\let\boxheight\ht
+\let\boxdepth \dp
+
 \protect \endinput
+
+% performance experiment:
+%
+% \def\footest
+%   {\iftrue
+%      \relax\relax\relax\relax\relax\relax\relax\relax\relax\relax
+%      \relax\relax\relax\relax\relax\relax\relax\relax\relax\relax
+%    % \quitfinow\ignorerest % n=11000000 : 0.304 -> 0.224
+%    \else
+%      \relax\relax\relax\relax\relax\relax\relax\relax\relax\relax
+%      \relax\relax\relax\relax\relax\relax\relax\relax\relax\relax
+%    \fi}

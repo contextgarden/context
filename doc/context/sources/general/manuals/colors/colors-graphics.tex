@@ -1,3 +1,4 @@
+
 % language=us runpath=texruns:manuals/colors
 
 \startcomponent colors-basics
@@ -226,6 +227,185 @@ The first directive will make sure that confusing sections (for instance meant t
 the drawing program) are stripped from an \EPS\ file, and the second one forces
 some extra checking on the image (just to make sure that the engine doesn't exit
 on bad images).
+
+\stopsection
+
+\startsection[title=Masks]
+
+A \PNG\ bitmap image can have a mask that permits a background to shine through
+but you can also apply that effect to a regular \PNG\ image. The next examples
+use two (pre)defined masks:
+
+\startbuffer
+\registerfiguremask [mymask1] {
+    {
+        {   0, 100, 0x00 },
+        { 101, 200, 0x7F },
+        { 201, 255, 0xFF },
+    }
+}
+
+\registerfiguremask [mymask2] {
+    210
+}
+\stopbuffer
+
+% demomask = {
+%     {   0,  63,   0 },
+%     {  64, 127, 127 },
+%     { 128, 195, 195 },
+%     { 196, 255, 255 },
+% }
+
+% \registerfiguremask [mymask1] {
+%     function()
+%         return {
+%             {   0, 100, 0x00 },
+%             { 101, 200, 0x7F },
+%             { 201, 255, 0xFF },
+%         }
+%     end
+% }
+
+\typebuffer
+
+The first mask maps the (grayscale) image values onto a mask value by range while
+the second just passes a criterium. The argument to \type {\registerfiguremask}
+is a number, table or string in \LUA\ speak
+
+\getbuffer
+
+For the examples we define two colors:
+
+\startbuffer
+\definecolor[mymaskcolor1][darkred]
+\definecolor[mymaskcolor2][.75(darkblue,white)]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\startbuffer[zero]
+\externalfigure
+  [2019-sneaky-bw-lowres.png]
+  [width=\measure{combination}]
+\stopbuffer
+
+\startbuffer[one]
+\externalfigure
+  [2019-sneaky-bw-lowres.png]
+  [background=color,
+   backgroundcolor=mymaskcolor1,
+   mask=mymask1,
+   width=\measure{combination}]
+\stopbuffer
+
+\startbuffer[two]
+\externalfigure
+  [2019-sneaky-bw-lowres.png]
+  [background=color,
+   backgroundcolor=mymaskcolor2,
+   mask=mymask2,
+   width=\measure{combination}]
+\stopbuffer
+
+\startbuffer[three]
+\externalfigure
+  [2019-sneaky-bw-lowres.png]
+  [background=color,
+   backgroundcolor=mymaskcolor2,
+   mask=demomask,
+   width=\measure{combination}]
+\stopbuffer
+
+We now include two images:
+
+\typebuffer[one]
+
+and
+
+\typebuffer[two]
+
+The result is shown in \in {figure} [fig:masks:one] and shows that one has
+probably experiment a bit with the values. The first shows the original and the
+last the predefined \quote {demomask} that uses a table with four ranges.
+
+\startplacefigure[title=Masks,reference=fig:masks:one]
+    \startcombination[4*1]
+        {\inlinebuffer[zero]} {original}
+        {\inlinebuffer[one]}  {table}
+        {\inlinebuffer[two]}  {number}
+        {\inlinebuffer[three]}{demomask}
+    \stopcombination
+\stopplacefigure
+
+We can also use an image as mask. Take these three definitions:
+
+\startbuffer[one]
+\externalfigure
+  [mill.png]
+  [height=5cm]
+\stopbuffer
+
+\startbuffer[two]
+\externalfigure
+  [2019-sneaky-bw-lowres.png]
+  [height=5cm]
+\stopbuffer
+
+\startbuffer[three]
+\externalfigure
+  [mill.png]
+  [mask=2019-sneaky-bw-lowres.png,height=5cm]
+\stopbuffer
+
+\typebuffer[one,two,three]
+
+In \in {figure} [fig:masks:two] the third example has both images stacked.
+
+\startplacefigure[title=Masks,reference=fig:masks:two]
+    \startcombination[3*1]
+        {\inlinebuffer[one]}  {}
+        {\inlinebuffer[two]}  {}
+        {\inlinebuffer[three]}{}
+    \stopcombination
+\stopplacefigure
+
+Next we show how to make an image lighter or darker. For this we use the \type
+{range} key. It can be assigned a number (fraction) or a name that serves as
+lookup in a registry. As with masks these are \LUA\ definitions. AN example of a
+range definition is:
+
+\startbuffer
+\registerfigurerange [myrange] {
+    { 0.2, 1.2 }
+}
+\stopbuffer
+
+For an \RGB\ you can provide two or six values. In \in {figure} [fig:ranges:gray]
+we show a lighter, normal, darker and limited example. In \in {figure}
+[fig:ranges:color] we apply them to a \JPEG\ image.
+
+\typebuffer \getbuffer
+
+\startplacefigure[title=Ranges,reference=fig:ranges:gray]
+    \startcombination[4*1]
+        {\externalfigure[mill.png][width=\measure{combination},range=0.80]}    {\type{range=0.80}}
+        {\externalfigure[mill.png][width=\measure{combination}]}               {default}
+        {\externalfigure[mill.png][width=\measure{combination},range=1.20]}    {\type{range=1.20}}
+        {\externalfigure[mill.png][width=\measure{combination},range=myrange]} {\type{range=myrange}}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[title=Ranges,reference=fig:ranges:color]
+    \startcombination[4*1]
+        {\externalfigure[hacker.jpg][width=\measure{combination},range=0.80]}    {\type{range=0.80}}
+        {\externalfigure[hacker.jpg][width=\measure{combination}]}               {default}
+        {\externalfigure[hacker.jpg][width=\measure{combination},range=1.20]}    {\type{range=1.20}}
+        {\externalfigure[hacker.jpg][width=\measure{combination},range=myrange]} {\type{range=myrange}}
+    \stopcombination
+\stopplacefigure
 
 \stopsection
 

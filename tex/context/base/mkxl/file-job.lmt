@@ -1168,6 +1168,10 @@ function document.setcommandline() -- has to happen at the tex end in order to e
         directives.enable("system.nostatistics")
     end
 
+    if arguments.notuc then
+        directives.disable("job.save")
+    end
+
     if arguments.paranoid then
         context.setvalue("maxreadlevel",1)
     end
@@ -1327,7 +1331,7 @@ do
         logs.startfilelogging(report,"commandline options")
         if arguments and next(arguments) then
             for argument, value in sortedhash(arguments) do
-                report("%s=%A",argument,value)
+                report("  %s=%A",argument,value)
             end
         else
             report("no arguments")

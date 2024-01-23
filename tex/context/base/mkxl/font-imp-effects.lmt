@@ -6,13 +6,12 @@ if not modules then modules = { } end modules ['font-imp-effects'] = {
     license   = "see context related readme files"
 }
 
--- todo: pickup from goodies: if type(effect) then ...
+-- upgrading musical timestamp: archive, utrecht, oct 2013 (hopefully the mix below is
+-- as good as the excellent stage sound mix, and the performance as exceptional)
 
 local next, type, tonumber = next, type, tonumber
-local is_boolean = string.is_boolean
 
 local fonts              = fonts
-
 local handlers           = fonts.handlers
 local registerotffeature = handlers.otf.features.register
 local registerafmfeature = handlers.afm.features.register
@@ -20,99 +19,15 @@ local registerafmfeature = handlers.afm.features.register
 local settings_to_hash   = utilities.parsers.settings_to_hash_colon_too
 
 local report_effect      = logs.reporter("fonts","effect")
-local report_slant       = logs.reporter("fonts","slant")
-local report_extend      = logs.reporter("fonts","extend")
-local report_squeeze     = logs.reporter("fonts","squeeze")
 
 local trace              = false
 
 trackers.register("fonts.effect", function(v) trace = v end)
-trackers.register("fonts.slant",  function(v) trace = v end)
-trackers.register("fonts.extend", function(v) trace = v end)
-trackers.register("fonts.squeeze",function(v) trace = v end)
 
-local function initializeslant(tfmdata,value)
-    value = tonumber(value)
-    if not value then
-        value =  0
-    elseif value >  1 then
-        value =  1
-    elseif value < -1 then
-        value = -1
-    end
-    if trace then
-        report_slant("applying %0.3f",value)
-    end
-    tfmdata.parameters.slantfactor = value
-end
-
-local specification = {
-    name        = "slant",
-    description = "slant glyphs",
-    initializers = {
-        base = initializeslant,
-        node = initializeslant,
-    }
-}
-
-registerotffeature(specification)
-registerafmfeature(specification)
-
-local function initializeextend(tfmdata,value)
-    value = tonumber(value)
-    if not value then
-        value =  0
-    elseif value >  10 then
-        value =  10
-    elseif value < -10 then
-        value = -10
-    end
-    if trace then
-        report_extend("applying %0.3f",value)
-    end
-    tfmdata.parameters.extendfactor = value
-end
-
-local specification = {
-    name        = "extend",
-    description = "scale glyphs horizontally",
-    initializers = {
-        base = initializeextend,
-        node = initializeextend,
-    }
-}
-
-registerotffeature(specification)
-registerafmfeature(specification)
-
-local function initializesqueeze(tfmdata,value)
-    value = tonumber(value)
-    if not value then
-        value =  0
-    elseif value >  10 then
-        value =  10
-    elseif value < -10 then
-        value = -10
-    end
-    if trace then
-        report_squeeze("applying %0.3f",value)
-    end
-    tfmdata.parameters.squeezefactor = value
-end
-
-local specification = {
-    name        = "squeeze",
-    description = "scale glyphs vertically",
-    initializers = {
-        base = initializesqueeze,
-        node = initializesqueeze,
-    }
-}
-
-registerotffeature(specification)
-registerafmfeature(specification)
+-- This will be a backend function (codeinjection).
 
 local effects = {
+    [0] = 0, [1] = 1, [2] = 2, [3] = 3,
     inner   = 0,
     normal  = 0,
     outer   = 1,
@@ -121,6 +36,8 @@ local effects = {
     hidden  = 3,
 }
 
+-- Math is to be redone, we use characters anyway ...
+
 local rules = {
     "RadicalRuleThickness",
     "OverbarRuleThickness",
@@ -128,194 +45,206 @@ local rules = {
     "UnderbarRuleThickness",
 }
 
--- radicals are not yet ok
+-- local function setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
+--     if dy ~= 0 then
+--         for i=1,#rules do
+--             local name  = rules[i]
+--             local value = mathparameters[name]
+--             if value then
+--                 mathparameters[name] = (squeeze or 1) * (value + dy)
+--             end
+--         end
+--     end
+-- end
 
-local function setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
-    -- hm, this was "if delta ~= 0 then" but delta was gone
-    if dy ~= 0 then
-        for i=1,#rules do
-            local name  = rules[i]
-            local value = mathparameters[name]
-            if value then
-                mathparameters[name] = (squeeze or 1) * (value + dy)
-            end
-        end
-    end
-end
-
-local function initializeeffect(tfmdata,value)
-    local spec
-    if type(value) == "number" then
-        spec = { width = value }
-    else
-        spec = settings_to_hash(value)
-    end
-    local effect = spec.effect or "both"
-    local width  = tonumber(spec.width) or 0
-    local mode   = effects[effect]
-    if not mode then
-        report_effect("invalid effect %a",effect)
---     elseif width == 0 and mode == 0 then
---         report_effect("invalid width %a for effect %a",width,effect)
-    else
-        local parameters = tfmdata.parameters
-        local properties = tfmdata.properties
-        parameters.mode  = mode
-        parameters.width = width * 1000
-        if is_boolean(spec.auto) == true then
-            local squeeze = 1 - width/20
-            local average = (1 - squeeze) * width * 100
-            spec.squeeze  = squeeze
-            spec.extend   = 1 + width/2
-            spec.wdelta   = average
-            spec.hdelta   = average/2
-            spec.ddelta   = average/2
-            spec.vshift   = average/2
-        end
-        local factor  = tonumber(spec.factor)  or 0
-        local hfactor = tonumber(spec.hfactor) or factor
-        local vfactor = tonumber(spec.vfactor) or factor
-        local delta   = tonumber(spec.delta)   or 1
-        local wdelta  = tonumber(spec.wdelta)  or delta
-        local hdelta  = tonumber(spec.hdelta)  or delta
-        local ddelta  = tonumber(spec.ddelta)  or hdelta
-        local vshift  = tonumber(spec.vshift)  or 0
-        local slant   = spec.slant
-        local extend  = spec.extend
-        local squeeze = spec.squeeze
-        if slant then
-            initializeslant(tfmdata,slant)
-        end
-        if extend then
-            initializeextend(tfmdata,extend)
-        end
-        if squeeze then
-            initializesqueeze(tfmdata,squeeze)
-        end
-        effect = {
-            effect  = effect,
-            width   = width,
-            factor  = factor,
-            hfactor = hfactor,
-            vfactor = vfactor,
-            wdelta  = wdelta,
-            hdelta  = hdelta,
-            ddelta  = ddelta,
-            vshift  = vshift,
-            slant   = tfmdata.parameters.slantfactor,
-            extend  = tfmdata.parameters.extendfactor,
-            squeeze = tfmdata.parameters.squeezefactor,
-        }
-        properties.effect = effect
-    end
-end
-
--- local show_effect = { "lua", function(f,c)
---     report_effect("font id %i, char %C",f,c)
---     inspect(fonts.hashes.characters[f][c])
--- end }
-
--- hfactor : not used
--- vfactor : not used
-
-local function manipulateeffect(tfmdata)
+local function applyeffect(tfmdata)
     local effect = tfmdata.properties.effect
-    if effect then
+    if effect and not effect.done then
         local characters     = tfmdata.characters
         local parameters     = tfmdata.parameters
         local mathparameters = tfmdata.mathparameters
-        local multiplier     = effect.width * 100
-        local factor         = parameters.factor
-        local hfactor        = parameters.hfactor
-        local vfactor        = parameters.vfactor
-        local wdelta         = effect.wdelta * hfactor * multiplier
-        local hdelta         = effect.hdelta * vfactor * multiplier
-        local ddelta         = effect.ddelta * vfactor * multiplier
-        local vshift         = effect.vshift * vfactor * multiplier
-        local squeeze        = effect.squeeze
-        local hshift         = wdelta / 2
-        local dx             = multiplier * vfactor
-        local dy             = vshift
-        local factor         = (1 + effect.factor)  * factor
-        local hfactor        = (1 + effect.hfactor) * hfactor
-        local vfactor        = (1 + effect.vfactor) * vfactor
-        parameters.hshift = hshift
-        parameters.vshift = vshift
-        --
-        -- For now we assume that the properties of parts wrt advance and such still
-        -- apply and that the extensible piece kicks in if needed. Beware of creating
-        -- virtual extensibles because these could get squeeze twice.
-        --
-        -- local allparts = { }
-        -- for unicode, character in next, characters do
-        --     local parts = character.parts
-        --     if parts then
-        --         for i=1,#parts do
-        --             allparts[parts[i].glyph] = true
-        --         end
-        --     end
-        -- end
-        --
-        for unicode, character in next, characters do
-            local oldwidth        = character.width
-            local oldheight       = character.height
-            local olddepth        = character.depth
-            local olditalic       = character.italic
-            local oldtopanchor    = character.topanchor
-            local oldbottomanchor = character.bottomanchor
-            if oldwidth and oldwidth > 0 then
-                -- how about the advance
-                character.width = oldwidth + wdelta
-            end
-            if oldheight and oldheight > 0 then
-                character.height = oldheight + hdelta
-            end
-            if olddepth and olddepth > 0 then
-                character.depth = olddepth + ddelta
-            end
-            if olditalic or oldtopaccent or oldbottomaccent then
-                local factor = character.width / oldwidth
-                if olditalic and olditalic > 0 then
-                    character.italic = olditalic * factor
+        local extend  = effect.extend
+        local squeeze = effect.squeeze
+     -- local slant   = effect.slant
+        local weight  = effect.weight or 0
+        if weight ~= 0 then
+
+            weight = weight / 2
+
+            local fraction = (parameters.designsize or parameters.size) / parameters.size
+            if not texconditionals["c_font_compact"] then
+                local f  = 65536 * fraction * weight
+                local fw = f * 2
+                local fh = f
+                local fd = f
+                local fi = f
+                for unicode, character in next, characters do
+                    local v = character.width
+                    if v and v > 0 then
+                        if not character.advance then
+                            character.advance = v
+                        end
+                        character.width = v + fw
+                    end
+                    v = character.height
+                    if v and v > 0 then
+                        character.height = v + fh
+                    end
+                    v = character.depth
+                    if v and v > 0 then
+                        character.depth = v + fd
+                    end
+                    v = character.italic
+                    if v and v > 0 then
+                        character.italic = v + fi
+                    end
+                    v = character.topanchor
+                    if v and v > 0 then
+                        character.topanchor = v + fh
+                    end
+                    v = character.bottomanchor
+                    if v and v > 0 then
+                        character.bottomanchor = v - fd
+                    end
+--                     v = character.parts
+--                     if v then
+--                         for i=1,#v do
+--                             local vi = v[i]
+--                             vi.advance = vi.advance + fw
+--                             vi["end"]  = vi["end"]  + fh
+--                             vi.start   = vi.start   + fd
+--                         end
+--                     end
                 end
-                if oldtopanchor and oldtopanchor > 0 then
-                    character.topanchor = oldtopanchor * factor
-                end
-                if oldbottomanchor and oldbottomanchor > 0 then
-                    character.bottomanchor = oldbottomanchor * factor
-                end
-            end
+-- needs re-checking
+                parameters.hshift = weight * fraction
+
+if mathparameters then
+    -- when we have extensibles we need to use those widths .. engine
+    for i=1,#rules do
+        local name  = rules[i]
+        local value = mathparameters[name]
+        if value then
+            mathparameters[name] = value + f + f -- ht and dp
         end
-        if mathparameters then
-            setmathparameters(tfmdata,characters,mathparameters,dx,dy,squeeze,multiplier)
+    end
+end
+            end
+            effect.weight = weight -- we divided
+        else
+            effect.weight = 0
         end
-        parameters.factor  = factor
-        parameters.hfactor = hfactor
-        parameters.vfactor = vfactor
+        effect.done = true
+    end
+end
+
+-- begin of direct setters
+
+-- When we use the setters a composite effect is ignored.
+
+local function seteffect(tfmdata,key,value,min,max)
+    if value then
+        value = tonumber(value) or 0
+        if not value then
+            value =  0
+        elseif value > max then
+            value =  max
+        elseif value < min then
+            value = min
+        end
+        local properties = tfmdata.properties
+        local parameters = tfmdata.parameters
+        local effect     = properties.effect
+        if not effect then
+            effect = { }
+            properties.effect = effect
+        end
         if trace then
-            report_effect("applying")
-            report_effect("  effect  : %s", effect.effect)
-            report_effect("  width   : %s => %s", effect.width,  multiplier)
-            report_effect("  factor  : %s => %s", effect.factor, factor )
-            report_effect("  hfactor : %s => %s", effect.hfactor,hfactor)
-            report_effect("  vfactor : %s => %s", effect.vfactor,vfactor)
-            report_effect("  wdelta  : %s => %s", effect.wdelta, wdelta)
-            report_effect("  hdelta  : %s => %s", effect.hdelta, hdelta)
-            report_effect("  ddelta  : %s => %s", effect.ddelta, ddelta)
+            report_effect("applying %s %0.3f",key,value)
+        end
+        effect[key] = value
+        effect.done = false
+        if key == "slant" then
+            properties.usedslant = value
+            parameters.usedslant = value
         end
     end
 end
 
+local function initializeslant(tfmdata,value)
+    seteffect(tfmdata,"slant",value,-1,1)
+end
+
 local specification = {
-    name        = "effect",
-    description = "apply effects to glyphs",
+    name        = "slant",
+    description = "slant glyphs",
     initializers = {
-        base = initializeeffect,
-        node = initializeeffect,
+        base = initializeslant,
+        node = initializeslant,
     },
     manipulators = {
-        base = manipulateeffect,
-        node = manipulateeffect,
+        base = applyeffect,
+        node = applyeffect,
+    },
+}
+
+registerotffeature(specification)
+registerafmfeature(specification)
+
+local function initializeextend(tfmdata,value)
+    seteffect(tfmdata,"extend",value,0,10)
+end
+
+local specification = {
+    name        = "extend",
+    description = "scale glyphs horizontally",
+    initializers = {
+        base = initializeextend,
+        node = initializeextend,
+    },
+    manipulators = {
+        base = applyeffect,
+        node = applyeffect,
+    },
+}
+
+registerotffeature(specification)
+registerafmfeature(specification)
+
+local function initializesqueeze(tfmdata,value)
+    seteffect(tfmdata,"squeeze",value,0,10)
+end
+
+local specification = {
+    name        = "squeeze",
+    description = "scale glyphs vertically",
+    initializers = {
+        base = initializesqueeze,
+        node = initializesqueeze,
+    },
+    manipulators = {
+        base = applyeffect,
+        node = applyeffect,
+    },
+}
+
+registerotffeature(specification)
+registerafmfeature(specification)
+
+local function initializeweight(tfmdata,value)
+    seteffect(tfmdata,"weight",value,0,1)
+end
+
+local specification = {
+    name        = "weight",
+    description = "bolden glyphs",
+    initializers = {
+        base = initializeweight,
+        node = initializeweight,
+    },
+    manipulators = {
+        base = applyeffect,
+        node = applyeffect,
     },
 }
 
@@ -331,11 +260,14 @@ local function initializeoutline(tfmdata,value)
     end
     local parameters = tfmdata.parameters
     local properties = tfmdata.properties
-    parameters.mode  = effects.outline
-    parameters.width = value * 1000
+    if trace then
+        report_effect("applying outline %0.3f",value)
+    end
+--     parameters.mode   = effects.outline
+--     parameters.weight = value * 1000   -- todo
     properties.effect = {
-        effect = effect,
-        width  = width,
+        mode   = effects.outline,
+        weight = value,
     }
 end
 
@@ -345,7 +277,104 @@ local specification = {
     initializers = {
         base = initializeoutline,
         node = initializeoutline,
-    }
+    },
+    manipulators = {
+        base = applyeffect,
+        node = applyeffect,
+    },
+}
+
+registerotffeature(specification)
+registerafmfeature(specification)
+
+-- end of direct setters
+
+local function initializeoption(tfmdata,key,value)
+    if value then
+        local parameters = tfmdata.parameters
+        local properties = tfmdata.properties
+        if trace then
+            report_effect("applying effect %a",value)
+        end
+        local effect = properties.effect
+        if not effect then
+            effect = { }
+            properties.effect = effect
+        end
+        effect[key] = value
+    end
+end
+
+local function initializeeffect(tfmdata,value)
+    if tfmdata.properties.effect then
+        report_effect("ignored effect %a",effect)
+    elseif type(value) == "string" then
+        local specification = settings_to_hash(value)
+        if specification.width and not specification.weight then
+            specification.weight = specification.width
+            specification.width = nil
+        end
+        initializeextend (tfmdata,specification.extend)
+        initializesqueeze(tfmdata,specification.squeeze)
+        initializeslant  (tfmdata,specification.slant)
+        initializeweight (tfmdata,specification.weight)
+        initializeoption (tfmdata,"mode",effects[specification.effect or specification.mode or "both"])
+        initializeoption (tfmdata,"auto",specification.auto)
+
+    else
+        value = tonumber(value)
+        if value then
+            initializeextend(tfmdata,value)
+        end
+    end
+end
+
+local specification = {
+    name        = "effect",
+    description = "apply effects to glyphs",
+    initializers = {
+        base = initializeeffect,
+        node = initializeeffect,
+    },
+    manipulators = {
+        base = applyeffect,
+        node = applyeffect,
+    },
+}
+
+registerotffeature(specification)
+registerafmfeature(specification)
+
+local function checkautoeffect(tfmdata)
+    local effect = tfmdata.properties.effect
+    if effect and effect.auto then
+        local weight = effect.weight
+        if weight and weight ~= 0 and not texconditionals["c_font_compact"] then
+            local parameters = tfmdata.parameters
+            local extend     = effect.extend
+            local squeeze    = effect.squeeze
+            local amount     = 65.536 * weight
+            if not squeeze then -- or squeeze == 1 then
+                local xheight = parameters.xheight
+                effect.squeeze = xheight / (xheight + amount)
+            end
+            if not extend then -- or extend == 1 then
+                local emwidth = parameters.quad
+                effect.extend = emwidth / (emwidth + 2 *  amount)
+--                 effect.extend = emwidth / (emwidth + amount)
+            end
+        end
+    end
+end
+
+local specification = {
+    name         = "checkautoeffect",
+    description  = "check auto effect",
+    default      = true,
+    initializers = {
+        base = checkautoeffect,
+        node = checkautoeffect,
+    },
 }
 
 registerotffeature(specification)

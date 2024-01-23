@@ -624,10 +624,11 @@ Spans are applied at the end so you see a mix of templates applied.
 
 {\showboxes\getbuffer[blownup-2]}
 
-When you define an alignment inside a macro, you need to duplicate the \type {\alignmark}
-signals. This is similar to embedded macro definitions. But in \LUAMETATEX\ we can get
-around that by using \type {\aligncontent}. Keep in mind that when the preamble is scanned there
-is no doesn't expand with the exception of the token after \type {\span}.
+When you define an alignment inside a macro, you need to duplicate the \type
+{\alignmark} signals. This is similar to embedded macro definitions. But in
+\LUAMETATEX\ we can get around that by using \type {\aligncontent}. Keep in mind
+that when the preamble is scanned there is no doesn't expand with the exception
+of the token after \type {\span}.
 
 \startbuffer
 \halign \bgroup
@@ -792,6 +793,163 @@ like tabulate.
 
 \stopsectionlevel
 
+\startsectionlevel[title=Templates]
+
+The \type {\omit} command signals that the template should not be applied. But
+what if we actually want something at the left and right of the content? Here is
+how it's done:
+
+\startbuffer
+\tabskip10pt \showboxes
+\halign\bgroup
+    [\hss\aligncontent\hss]\aligntab
+    [\hss\aligncontent\hss]\aligntab
+    [\hss\aligncontent\hss]\cr
+            x\aligntab                       x\aligntab        x\cr
+           xx\aligntab                      xx\aligntab       xx\cr
+          xxx\aligntab                     xxx\aligntab      xxx\cr
+    \omit  oo\aligntab\omit                 oo\aligntab\omit  oo\cr
+           xx\aligntab\realign{\hss(}{)\hss}xx\aligntab       xx\cr
+    \realign{\hss(}{)\hss}xx\aligntab xx\aligntab xx\cr
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The \type {\realign} command is like an \type {omit} but it expects two token
+lists that will for this cell be used instead of the ones from the preamble.
+While \type {\omit} also skips insertion of \type {\everytab}, here it is
+inserted, just like with normal preambles.
+
+\start \blank \getbuffer \blank \stop
+
+It will probably take a while before I'll apply this in \CONTEXT\ because changing
+existing (stable) table environment is not something done lightly.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Pitfalls]
+
+Alignment have a few properties that can catch you off|-|guard. One is the use of
+\type {\everycr}. The next example demonstrates that it is also injected after the
+preamble definition.
+
+\startbuffer
+\everycr{\noalign{\hrule}}
+\halign\bgroup \hsize 5cm \strut \alignmark\cr one\cr two\cr\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This makes sense because it is one way to make sure that for instance a rule gets
+the width of the cell.
+
+\startpacked
+\showboxes \getbuffer
+\stoppacked
+
+The sam eis of course true for a vertical align:
+
+\startbuffer
+\everycr{\noalign{\vrule}}
+\valign\bgroup \hsize 4cm \strut \aligncontent\cr one\cr two\cr\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We set the width because otherwise the current text width is used.
+
+\startpacked
+\showboxes \getbuffer
+\stoppacked
+
+Something similar happens with a \type {\tabskip}: the value set before the
+alignment is used left of the first cell.
+
+\startbuffer
+\tabskip10pt
+\halign\bgroup \tabskip20pt\relax\aligncontent\cr x\cr x\cr \egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startpacked
+\showboxes \getbuffer
+\stoppacked
+
+The \type {\tabskip} outside the alignment is an internal glue register so you
+can for instance use the prefix \type {\global}. However, in a preamble it is
+more a directive: the given value is stored with the cell. This means that the
+next code is invalid:
+
+\starttyping
+\tabskip10pt
+\halign\bgroup \global\tabskip20pt\relax\aligncontent\cr x\cr x\cr \egroup
+\stoptyping
+
+The parser looks at tokens in the preamble, sees the \type {\global} and appends
+it to the current pre|-|part of the cell's template. Then it sees a \type
+{\tabskip} and assigns the value after it to the cell's skip. The token and its
+value just disappear, they are not appended to the template. Now, when the
+template is injected (and interpreted) this \type {\global} expects a variable
+next and in our case the \type {x} doesn't qualify. The next snippet however works
+okay:
+
+\startbuffer
+\scratchcounter0
+\halign\bgroup
+    \global\tabskip40pt\relax\advance\scratchcounter\plusone\aligncontent\cr
+    x:\the\scratchcounter\cr
+    x:\the\scratchcounter\cr
+    x:\the\scratchcounter\cr
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Here the \type {\global} is applied to the \type {advance} because the skip
+definition is {\em not} in the preamble.
+
+\start \blank \getbuffer \blank \stop
+
+Here is a variant:
+
+\startbuffer
+\scratchcounter0
+\halign\bgroup
+   \global\tabskip10pt\relax\aligncontent\cr
+   \advance\scratchcounter\plusone x:\the\scratchcounter\cr
+   \advance\scratchcounter\plusone x:\the\scratchcounter\cr
+   \advance\scratchcounter\plusone x:\the\scratchcounter\cr
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Again the \type {\global} stays and this time if ends up before the content which
+starts with an \type {\advance}.
+
+\start \getbuffer \stop
+
+Normally you will not need the next trickery but it shows that cells are grouped:
+
+\startbuffer
+\halign\bgroup\aligncontent\cr
+    1\atendofgrouped{A}\atendofgrouped{B}\cr
+    2\aftergrouped  {A}\aftergrouped  {B}\cr
+    3                                    \cr
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Maybe at some point I'll add something a bit more tuned for dealing with cells,
+but here is what you get with the above:
+
+\getbuffer
+
+\stopsectionlevel
+
 \startsectionlevel[title=Remark]
 
 It can be that the way alignments are interfaced with respect to attributes is a bit
@@ -827,4 +985,15 @@ to add these.
 %         a\aligntab b\cr
 %         \omit\span \hss ccc\hss\cr
 %     \egroup \egroup
+% \egroup
+
+% \protected\def\oof#1{[#1]}
+% \def\foo{\aligncontent}
+% \def\foo{\oof{\aligncontent}}
+
+% \halign\bgroup
+%     \hss\span\foo\hss\cr
+%     x\cr
+%     \omit xx\cr
+%     xxx\cr
 % \egroup

@@ -32,6 +32,31 @@
 \ifdefined\tpacatcodes \else \newcatcodetable \tpacatcodes \fi % verbatim: { }
 \ifdefined\tpbcatcodes \else \newcatcodetable \tpbcatcodes \fi % verbatim: < >
 \ifdefined\ctdcatcodes \else \newcatcodetable \ctdcatcodes \fi % context definitions
+\ifdefined\hshcatcodes \else \newcatcodetable \hshcatcodes \fi
+
+\startcatcodetable \hshcatcodes
+    \catcode\tabasciicode         \othercatcode
+    \catcode\endoflineasciicode   \othercatcode
+    \catcode\formfeedasciicode    \othercatcode
+    \catcode\spaceasciicode       \othercatcode
+    \catcode\endoffileasciicode   \ignorecatcode
+    \catcode\circumflexasciicode  \othercatcode
+    \catcode\underscoreasciicode  \othercatcode
+    \catcode\ampersandasciicode   \othercatcode
+    \catcode\tildeasciicode       \othercatcode
+    \catcode\hashasciicode        \parametercatcode
+    \catcode\dollarasciicode      \othercatcode
+    \catcode\commentasciicode     \othercatcode
+    \catcode\lessthanasciicode    \othercatcode
+    \catcode\morethanasciicode    \othercatcode
+    \catcode\leftbraceasciicode   \othercatcode
+    \catcode\rightbraceasciicode  \othercatcode
+    \catcode\doublequoteasciicode \othercatcode
+    \catcode\singlequoteasciicode \othercatcode
+    \catcode\forwardslashasciicode\othercatcode
+    \catcode\backslashasciicode   \othercatcode
+    \catcode\barasciicode         \othercatcode
+\stopcatcodetable
 
 \startcatcodetable \nilcatcodes
     \catcode\tabasciicode       \spacecatcode

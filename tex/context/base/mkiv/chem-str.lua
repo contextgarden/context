@@ -39,7 +39,7 @@ local processor_tostring = typesetters and typesetters.processors.tostring
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_array_with_repeat = utilities.parsers.settings_to_array_with_repeat
 
-local lpegmatch = lpeg.match
+local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, R, S, C, Cs, Ct, Cc, Cmt = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.Ct, lpeg.Cc, lpeg.Cmt
 
 local variables    = interfaces and interfaces.variables
@@ -824,10 +824,10 @@ implement {
             { "symalign" },
             { "axis" },
             { "framecolor" },
-            { "rulethickness" },
-            { "offset" },
-            { "unit" },
-            { "factor" }
+            { "rulethickness", "dimension" },
+            { "offset", "dimension" },
+            { "unit", "dimension" },
+            { "factor", "integer" }
         }
     }
 }
@@ -848,6 +848,7 @@ implement {
 
 local inline = {
     ["single"]      = "\\chemicalsinglebond",  ["-"]    = "\\chemicalsinglebond",
+ --                                            ["−"]    = "\\chemicalsinglebond",
     ["double"]      = "\\chemicaldoublebond",  ["--"]   = "\\chemicaldoublebond",
                                                ["="]    = "\\chemicaldoublebond",
     ["triple"]      = "\\chemicaltriplebond",  ["---"]  = "\\chemicaltriplebond",
@@ -863,7 +864,8 @@ local inline = {
     ["space"]       = "\\chemicalspace",
 }
 
-local ctx_chemicalinline = context.chemicalinline
+local ctx_chemicalinline  = context.chemicalinline
+local ctx_chemicalspecial = context.chemicalspecial
 
 function chemistry.inlinechemical(spec)
     local spec = settings_to_array_with_repeat(spec,true)
@@ -871,7 +873,7 @@ function chemistry.inlinechemical(spec)
         local s = spec[i]
         local inl = inline[lower(s)]
         if inl then
-            context(inl) -- could be a fast context.sprint
+            ctx_chemicalspecial(inl)
         else
             ctx_chemicalinline(molecule(s))
         end
@@ -883,3 +885,73 @@ implement {
     actions   = chemistry.inlinechemical,
     arguments = "string"
 }
+
+-- This is the new approach:
+
+do
+
+    local short_mapping = {
+        ["-"]    = "\\csinglebond ",
+     -- ["−"]    = "\\csinglebond ",
+        ["--"]   = "\\cdoublebond ",
+        ["="]    = "\\cdoublebond ",
+        ["---"]  = "\\ctriplebond ",
+        ["≡"]    = "\\ctriplebond ",
+        ["->"]   = "\\cgives ",
+        ["<-"]   = "\\creturns ",
+        ["<->"]  = "\\cmesomeric ",
+        ["-->"]  = "\\clonggives ",
+        ["<--"]  = "\\clongreturns ",
+        ["<-->"] = "\\clongmesomeric ",
+        ["<=>"]  = "\\cequilibrium ",
+        ["<="]   = "\\cleaningleft ",
+        ["=>"]   = "\\cleaningright ",
+        ["<==>"] = "\\clongequilibrium ",
+        ["<=="]  = "\\clongleaningleft ",
+        ["==>"]  = "\\clongleaningright ",
+    }
+
+    local long_mapping = {
+        ["single"]        = "\\csinglebond ",
+        ["double"]        = "\\cdoublebond ",
+        ["triple"]        = "\\ctriplebond ",
+        ["gives"]         = "\\cgives ",        ["lgives"]        = "\\clonggives ",
+        ["returns"]       = "\\creturns ",      ["lreturns"]      = "\\clongreturns ",
+        ["mesomeric"]     = "\\cmesomeric ",    ["lmesomeric"]    = "\\clongmesomeric ",
+        ["equilibrium"]   = "\\cequilibrium ",  ["lequilibrium"]  = "\\clongequilibrium ",
+        ["leaningleft"]   = "\\cleaningleft ",  ["lleaningleft"]  = "\\clongleaningleft ",
+        ["leaningright"]  = "\\cleaningright ", ["lleaningright"] = "\\clongleaningright ",
+     -- ["plus"]          = "\\cplus ",
+     -- ["minus"]         = "\\cminus ",
+     -- ["equals"]        = "\\cequals ",
+    }
+
+    local sign      = S("+-")
+    local script    = S("^_")
+    local character = lpegpatterns.utf8character
+    local cardinal  = lpegpatterns.cardinal
+    local spaces    = lpegpatterns.whitespace
+    local nospaces  = spaces^0/""
+
+    local short     = lpeg.utfchartabletopattern(short_mapping)
+    local long      = lpeg.utfchartabletopattern(long_mapping)
+
+    local csname    = P("\\") * R("az")^1 -- \left[ * lpegpatterns.nestedbrackets^-1
+
+    local pattern = Cs ((
+        csname
+      + spaces * (short / short_mapping) * spaces
+      + spaces * (long  / long_mapping) * spaces
+      + script^1 * nospaces * Cc("{") * nospaces * (sign^-1 * cardinal^1 + sign) * Cc("}")
+      + character
+    )^0)
+
+    interfaces.implement {
+        name      = "ic",
+        arguments = "string",
+        actions   = function(s)
+            context(lpegmatch(pattern,s))
+        end
+    }
+
+end

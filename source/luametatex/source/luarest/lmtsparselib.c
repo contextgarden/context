@@ -72,7 +72,7 @@ static int sparselib_new(lua_State *L)
             bytes = SPARSE_BYTES;
             break;
     }
-    o->tree = sa_new_tree(SPARSE_STACK, bytes, item);
+    o->tree = sa_new_tree(user_sparse_identifier, SPARSE_STACK, bytes, item);
     o->min = -1;
     o->max = -1;
     luaL_setmetatable(L, SPARSE_METATABLE_INSTANCE);
@@ -108,7 +108,7 @@ static int sparselib_set(lua_State *L) /* maybe also globalset as fast one */
         int slot = lmt_check_for_level(L, 2, &level, cur_level);
         int n = lmt_tointeger(L, slot++);
         if (n >= 0) {
-            int v = lmt_tointeger(L, slot++);
+            int v = lmt_optinteger(L, slot++, 1);
             if (o->min < 0) {
                 o->min = n;
                 o->max = n;
@@ -208,37 +208,78 @@ static int sparselib_traverse(lua_State *L)
     return 1;
 }
 
+typedef enum concat_options { 
+    concat_as_byte = 0,
+    concat_as_lsb  = 1,
+    concat_as_msb  = 2,
+} concat_options;
+
+inline static char sparselib_aux_concat(sa_tree t, int i)
+{
+    int h = LMT_SA_H_PART(i);
+    if (t->tree[h]) {
+        int m = LMT_SA_M_PART(i);
+        if (t->tree[h][m]) {
+            return (char) t->tree[h][m][LMT_SA_L_PART(i)/4].uchar_value[i%4];
+        } else {
+            return (char) t->dflt.uchar_value[i%4];
+        }
+    } else {
+        return (char) t->dflt.uchar_value[i%4];
+    }
+}
+
 static int sparselib_concat(lua_State *L)
 {
     sa_tree_object *o = sparselib_aux_check_is_sa_object(L, 1);
     if (o) {
         sa_tree t = o->tree;
         if (t->bytes == 1) {
+            /* quick hack: we can add whole slices */
             luaL_Buffer buffer;
             int min = lmt_optinteger(L, 2, o->min);
             int max = lmt_optinteger(L, 3, o->max);
+            int how = lmt_optinteger(L, 4, concat_as_byte);
+            int siz = 0;
             if (min < 0) {
                 min = 0;
             }
             if (max < min) {
                 max = min;
             }
-            /* quick hack: we can add whole slices */
-            luaL_buffinitsize(L, &buffer, (size_t) max - (size_t) min + 1);
-            for (int i = min; i <= max; i++) {
-                char c;
-                int h = LMT_SA_H_PART(i);
-                if (t->tree[h]) {
-                    int m = LMT_SA_M_PART(i);
-                    if (t->tree[h][m]) {
-                        c = (char) t->tree[h][m][LMT_SA_L_PART(i)/4].uchar_value[i%4];
-                    } else {
-                        c = (char) t->dflt.uchar_value[i%4];
+            siz = (size_t) max - (size_t) min + 1;
+            luaL_buffinitsize(L, &buffer, siz);
+            switch (how) { 
+                case concat_as_lsb:
+                case concat_as_msb:
+                    {
+                        int n = 0;
+                        char b = 0;
+                        luaL_buffinitsize(L, &buffer, (siz / 8) + 1);
+                        for (int i = min; i <= max; i++) {
+                            char c = sparselib_aux_concat(t, i);
+                            if (c) { 
+                                b |= how == concat_as_lsb ? (1 << n) : (1 << (7 - n));
+                            }
+                            if (++n == 8) { 
+                                luaL_addlstring(&buffer, &b, 1);
+                                n = 0;
+                            }
+                        }
+                        if (n) { 
+                            luaL_addlstring(&buffer, &b, 1);
+                        }
                     }
-                } else {
-                    c = (char) t->dflt.uchar_value[i%4];
-                }
-                luaL_addlstring(&buffer, &c, 1);
+                    break;
+                default:
+                    {
+                        luaL_buffinitsize(L, &buffer, siz);
+                        for (int i = min; i <= max; i++) {
+                            char c = sparselib_aux_concat(t, i);
+                            luaL_addlstring(&buffer, &c, 1);
+                        }
+                    }
+                    break;
             }
             luaL_pushresult(&buffer);
             return 1;
@@ -265,7 +306,7 @@ static int sparselib_wipe(lua_State *L)
         int bytes = o->tree->bytes;
         sa_tree_item dflt = o->tree->dflt;
         sa_destroy_tree(o->tree);
-        o->tree = sa_new_tree(SPARSE_STACK, bytes, dflt);
+        o->tree = sa_new_tree(user_sparse_identifier, SPARSE_STACK, bytes, dflt);
         o->min = -1;
         o->max = -1;
     }

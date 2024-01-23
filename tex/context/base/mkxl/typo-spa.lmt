@@ -21,6 +21,8 @@ local quaddata           = fonthashes.quads
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
+local xscaled            = font.xscaled
+
 local v_reset            = interfaces.variables.reset
 
 local nuts               = nodes.nuts
@@ -94,7 +96,7 @@ function spacings.handler(head)
                                 local left = map.left
                                 local right = map.right
                                 local alternative = map.alternative
-                                local quad = quaddata[font]
+                                local quad = xscaled(quaddata[font])
                                 local prev = getprev(start)
                                 if not chardata[font][char] then
                                     report_spacing("missing character %C in font %i",char,font)

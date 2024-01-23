@@ -514,6 +514,7 @@ function mp.lmt_glyphshape_start(id,character)
                     local width  = (descdata.width or 0)  * factor
                     local height = descdata.boundingbox[4] * factor
                     local depth  = descdata.boundingbox[2] * factor
+                    local llx    = descdata.boundingbox[1] * factor
                     local math   = descdata.math
                     local italic = (math and math.italic or 0) * factor
                     local accent = (math and math.accent or 0) * factor
@@ -526,8 +527,9 @@ function mp.lmt_glyphshape_start(id,character)
                         depth       = depth,
                         italic      = italic,
                         accent      = accent,
-                        usedbox     = f_rectangle(0,depth,width,depth,width,height,0,height),
-                        usedline    = f_line(0,0,width,0),
+                        llx         = llx,
+                        usedbox     = f_rectangle(llx,depth,llx+width,depth,llx+width,height,llx,height),
+                        usedline    = f_line(llx,0,llx+width,0),
                     }
                     glyph.mpdata = mpdata
                 else
@@ -600,3 +602,4 @@ function mp.lmt_glyphshape_depth () injectnumeric(mpdata and mpdata.depth  or 0)
 function mp.lmt_glyphshape_height() injectnumeric(mpdata and mpdata.height or 0) end
 function mp.lmt_glyphshape_italic() injectnumeric(mpdata and mpdata.italic or 0) end
 function mp.lmt_glyphshape_accent() injectnumeric(mpdata and mpdata.accent or 0) end
+function mp.lmt_glyphshape_llx   () injectnumeric(mpdata and mpdata.llx    or 0) end

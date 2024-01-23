@@ -82,8 +82,10 @@ local classes = allocate {
     exponential  =  0,
     limop        =  1, -- mathlimopcomm   @@mathlimopcomm
     nolop        =  1, -- mathnolopcomm   @@mathnolopcomm
+    integral     =  1, -- new in lmtx but here still an operator
     --
     ordinary     =  0, -- ord
+    operator     =  1, -- op
     alphabetic   =  7, -- alpha
     punctuation  =  6, -- punct
     opening      =  4, -- open
@@ -430,7 +432,7 @@ end
 
 local function utfmathlimop(chr)
     local cd = somechar[chr]
-    return cd and cd.mathclass == "limop" or false
+    return cd and (cd.mathclass == "operator" or cd.mathclass == "integral") or false
 end
 
 local function utfmathaccent(chr,default,asked1,asked2)

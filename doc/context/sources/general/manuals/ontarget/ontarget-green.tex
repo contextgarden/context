@@ -1,0 +1,204 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-green
+
+\environment ontarget-style
+
+\startchapter[title={Running green}]
+
+There are a few contradicting developments going on: energy prices sky|-|rocket
+and Intel and AMD are competing for the fastest \CPU's where saving energy seems
+mostly related to making sure that the many cores running at the same time don't
+burn the machine. However, \TEX\ is a single core consumer so throwing lots of
+cores into the game is not helping much. You're better served with one very fast
+core than many slower ones that accumulate to much horsepower. The later makes
+sense when you process video or play games, but that's not what \TEX\ is about,
+although it is fun to play with. Of course often multiple cores come in handy,
+for instance in the build farm that is used to compile \LUAMETATEX\ and
+intermediate \TEXLIVE\ releases: when that gets compiled and we also trigger a
+\LUAMETATEX\ build, two times 10 \LINUX\ virtual machines are compiling and one
+windows machine that runs four compile jobs at the same time.
+
+The server that runs the farm is Dell 710 server with dual 5630 Xeon processors,
+6 SAS drives each 2GB in (hardware) raid 10, 72 GB memory, redundant power
+supplies and 6 network ports. It sits idle for most of the time and consumes
+between 250 and 400W. It is part of a redundant setup: dual switches, dual
+routers, multiple UPS's, air conditioning, two backup QNAP NAS's, a few low power
+machines for distributed continuous incremental backups, etc. The server itself
+is a refurbished one, so not the most expensive, but with the Dutch energy prices
+of 2022 bound to gas prices, we quickly realized that there was no way we could
+keep it up and running. Because we have three such servers (one is turned off and
+used as fallback) we started wondering if we could go for a different solution.
+
+As we recently upgraded the 2013 laptops to refurbished 2018 ones (the latest
+models that could use the docking stations that we have), we decided to buy a few
+more and test these as replacements for the servers. Of course one has to pimp
+these machines a bit: a professional 2TB nvme SSD plus a proper 2.5in SSD as
+backup one, 64 GB of memory, a few extra USB3 network cards. The \CPU's are fast
+mobile Xeons. We use proxmox as virtual host and that runs fine in such a
+configuration.
+
+Surprisingly, after moving the farm to that setup, which basically boils down to
+moving virtual machines, we found that running those parallel compilations
+performance wise was quite okay. And the nice thing was that these machines idle
+much lower, some 20--30W. The saving is therefore quite noticeable and we decided
+to check some more; after all it would be nice if we could bring down the average
+power consumption of 1750W down to at least half so that it would match the
+output of a few solar panels. Of course it means that one has to ditch perfectly
+well working machines which itself is not that environmental friendly but there
+is not much to choose here.
+
+The second machine to be replaced was the one that runs quite some virtual
+machines too: the main file server, the mail server, an ftp server, the website, an
+rsync host, the squeezebox server that also serves as update test, and various
+project related rendering services. All run in their own (OpenSuse) virtual
+machine. After installing a similar laptop those were also moved.
+
+As a side effect, the two backup NAS's were replaced by a single laptop (my 2013
+Dell precision workhorse) running one backup file server, and for an extra
+incremental backup (rsnaphot running hourly, daily, weekly and monthly backups is
+our friend) a 2013 macbook was turned into a \LINUX\ machine (15W idle with an
+internal reused SSD\footnote {For a change that apple machine was easy to update,
+and we could even get a new clone battery replacement.} and an external 4GB
+disk), two managed switches became one (after all we had less network cables due
+to lost redundancy), only one backup power supply (that will be replaced by an
+nicer alternative when it breaks down; after all, by using laptops we get power
+backup for free). The total consumption went down with at least 1000W. Of course
+there is an investment involved and we need to reconfigure the server rack, but
+the expectation is that by investing now we get less troubles later (less
+gambling on energy). \footnote {We hope to save some 9000 kWh which means that
+save at least some 2500\euro\ per year and more when the government will
+reinstate its energy tax policy and or prices go further up, which seems to be
+the case. Even before the crisis in the Netherlands 5ct/Kwh became fives times
+that amount effectively when connection, transportation, energy tax and value
+added tax gets added.}
+
+But, there is still the pending question of what the impact is on the services
+that we run. The most demanding ones are the Math4all and Math4mbo: these produce
+large files, need many resources (\XML\ and images), and we didn't want to burn
+ourselves too much. Now, here is an interesting observation: this service runs
+twice as fast on the new infrastructure. But it is hard to explain why. The file
+server is on a different machine (so no fast internal network), the \CPU\ is a
+bit faster but not that much, the virtual machine is on \SSD, but files are saved
+on the file server, which is a two disk \USB3 enclosure connected directly to a
+virtual machine that does software raid. The most important difference is that
+main memory is much faster and \TEX\ is a memory intense process. From when we
+started with \LUATEX\ we do know that memory bandwidth and \CPU\ caches makes a
+difference. Maybe the faster floating point handling fo the more modern Xeon also
+helps here.
+
+And that brings me to the following: how do we actually benchmark \TEX ? When you
+go on the internet and compare \CPU's most tests are not that comparable to a
+\TEX\ run on a single core. One can think of a set of test files, but the problem
+there is that when the engine evolves and details in the macro package coding
+changes, one looses the comparison with older tests. This is why, when we do such
+tests, we always run the same test on the different platforms. Although this
+often shows that the gain on newer hardware is seldom what one expects from the
+more general benchmarks, one can still be surprised. When we moved to five year
+newer laptops the gain was some 30\% for me and 50\% for my colleague. The
+difference between his laptop and the slightly more beefed up virtual machine can
+be neglected.
+
+We monitor the power consumption with a youless device connected to the power
+meter. When I process the \LUAMETATEX\ manual I see the phase that the machine
+sits on go up 20W for a run that takes some 9 seconds. Let's say that we use
+180Ws or 0.0006kWh (20.000 runs per kWh). So, compared to the idle power usage of
+a server, a single \TEX\ run can be neglected, simply because it is so fast. So,
+what is actually the most efficient hardware for a \TEX\ service? I get the
+feeling that a decent Intel Atom C3955 16-Core driven machine is quite okay for
+that, but I don't have that at hand and last time I checked one could not order
+anything anyway. And with prices of hardware going up it's also not something you
+try for fun. As comparison to what we have now, testing \TEX\ on an Intel
+NUC11ATKC2 could also be interesting (it has an N4505 \CPU). There was a time
+when I considered a bunch of raspberry pi's but they no longer are that cheap,
+given that you can get them, and adding a case and proper disc enclosure also
+adds up. When wrapped in a nice package the pi will probably a couple of times
+slower but it then probably also uses less power. These fitlets are also
+interesting but again, one can't get them.
+
+It is kind of fun to play with optimizations that don't really impact the clarity
+of the code. One can argue that spending a day on something that saves 0.005
+seconds on a specific run is a waste of time, but of course one has to multiply
+that number by a number of runs. Personally I will never gain from it but
+nevertheless it can save some energy: imagine a batch of 15000 documents every
+day. We then save $15000 * 0.005 * 365 = 27375$ seconds or about 8 hours runtime.
+This can still be neglected but what if this is not the only optimization?
+
+An example of such an optimization is this:
+
+\starttyping
+\advance\somecounter    \plusone
+\advance\somecounter by \plusone
+\stoptyping
+
+The second one runs faster because there is no push back involved as side effect of
+the lack of a keyword, so how about adding this to the engine?
+
+\starttyping
+\advanceby   \somecounter \plusone
+\advancebyone\somecounter
+\stoptyping
+
+Given the way \LUAMETATEX\ is coded, it only needs a few lines! In this case it
+extends the repertoire of primitives so it is visible but we have many other
+(similarly small) optimizations that contribute. Again, the average user will not
+notice a drop in runtime from 1.5 seconds to 1.45 but when 8 hours become 80
+hours or 800 hours it does become interesting. In energy sensitive 2022 these 800
+hours not only save some \texteuro 400 but also contribute to a lower carbon
+footprint! And now imagine how much could be saved on these extensive runs when
+we make sure that the style used is optimal? Of course, when we need two runs per
+document it starts adding up more.
+
+Some experiments with a demanding file showed one percent gain (on a 2.7 seconds
+run) using the alternative integers, dimensions and advance primitives. However,
+using \CONTEXT's compact font mode brought down runtime to 2.0 seconds! So, in
+the end it's all very relative. It is worth noticing that the .7 seconds saved on
+fonts is sort of constant, which means that accumulated gains elsewhere makes
+that .7 seconds more significant as we progress.
+
+\stopchapter
+
+% 4 * 7520 precision with Xeons
+% 1 * 7600 precision with extreme i7
+% 1 * 2200W dell ups
+% 2 * 4K monitor (+ 3 monitors turned off)
+% 1 * imac server room xubuntu (turned off)
+% 2 * pfsense router (6 port 8 core atom appliances)
+% 1 * dell 48 port switch (1 turned off, 1 24 port switch reserve)
+% 3 * 720 dell server (turned off)
+% 2 * dell 16 port switch
+% 2 * dell 8 port switch (1 turned off)
+% 1 * raspberry pi farm
+% 2 * office printer
+% 4 * standby automatic lights
+% 2 * tv + cable box (+ 1 turned off) (on ups)
+% 2 * hue hub
+% 1 * evohome + pump heating system
+% 1 * airconditioner (idle blow, 28 degrees threshold)
+% 1 * fitlet (serves hue and heating)
+% 1 * fritzbox (7590) + 3 repeaters
+% 1 * cable modem
+% 3 * small UPS
+% 3 * distributed backup (old macbook, hp laptop, hp micro server)
+% - - some standby things (squeeze boxes etc)
+% 32  hue light bulbs
+% 6 * cordless phones
+% 1 * alarm panel
+% 2 * warm water boiler (standby + upping)
+% 1 * coffee machine (standby + upping)
+% 1 * freezer (standby + upping)
+% 1 * refrigerator (standby + upping)
+%
+% 800-1000W (from 1750-2000)
+%
+% (upcoming new monitors will save 100W)
+%
+% aim: 750 during the day, 500 after midnight
+%
+% 4 solar panels on shed
+
+% not mentioned: washing machine, dryer, dish washer, several audio sets,
+% battery loaders (ebike etc),
+
+\stopcomponent
+

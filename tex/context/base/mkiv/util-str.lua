@@ -1558,3 +1558,20 @@ do
 
 end
 
+if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
+
+    local t = {
+        ["#"]  = "#H",
+        ["\n"] = "#L",
+        ['"']  = "#Q",
+        ["\r"] = "#R",
+        [" "]  = "#S",
+        ["\t"] = "#T",
+        ["\\"] = "#X",
+    }
+
+    function string.texhashed(s)
+        return (gsub(s,".",t))
+    end
+
+end

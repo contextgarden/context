@@ -15,15 +15,15 @@
 # mtxrun.lua       (latest version)
 # context.lua      (latest version)
 
-# This test is not yet okay but I have no time (or motivation) to look into it now, so for now we don't 
-# use ninja (not that critical).  
+# This test is not yet okay but I have no time (or motivation) to look into it now, so for now we don't
+# use ninja (not that critical).
 
-#NINJA=$(which ninja); 
+#NINJA=$(which ninja);
 #if (NINJA) then
 #    NINJA="-G Ninja"
 #else
     NINJA=""
-#fi 
+#fi
 
 if [ "$1" = "mingw-64" ] || [ "$1" = "mingw64" ] || [ "$1" = "mingw" ] || [ "$1" == "--mingw64" ]
 then
@@ -43,7 +43,7 @@ then
     cd       build/mingw-32
     cmake $NINJA -DCMAKE_TOOLCHAIN_FILE=./cmake/mingw-32.cmake ../..
 
-elif [ "$1" = "mingw-64-ucrt" ] || [ "$1" = "mingw64ucrt" ] || [ "$1" = "--mingw64ucrt" ]  || [ "$1" = "ucrt" ] || [ "$1" = "--ucrt" ] 
+elif [ "$1" = "mingw-64-ucrt" ] || [ "$1" = "mingw64ucrt" ] || [ "$1" = "--mingw64ucrt" ]  || [ "$1" = "ucrt" ] || [ "$1" = "--ucrt" ]
 then
 
     PLATFORM="win64"
@@ -55,11 +55,58 @@ then
 
 elif [ "$1" = "cygwin" ] || [ "$1" = "--cygwin" ]
 then
+
     PLATFORM="cygwin"
     SUFFIX=".exe"
     mkdir -p build/cygwin
     cd       build/cygwin
     cmake $NINJA ../..
+
+elif [ "$1" = "osx-arm" ] || [ "$1" = "osxarm" ] || [ "$1" = "--osx-arm" ] || [ "$1" = "--osxarm" ]
+then
+
+    PLATFORM="osx-arm"
+    SUFFIX="    "
+    mkdir -p build/osx-arm
+    cd       build/osx-arm
+    cmake $NINJA -DCMAKE_OSX_ARCHITECTURES="arm64" ../..
+
+elif [ "$1" = "osx-intel" ] || [ "$1" = "osxintel" ] || [ "$1" = "--osx-intel" ] || [ "$1" = "--osxintel" ]
+then
+
+    PLATFORM="osx-intel"
+    SUFFIX="    "
+    mkdir -p build/osx-intel
+    cd       build/osx-intel
+    cmake $NINJA -DCMAKE_OSX_ARCHITECTURES="x86_64" ../..
+
+elif [ "$1" = "osx-universal" ] || [ "$1" = "osxuniversal" ] || [ "$1" = "--osx-universal" ] || [ "$1" = "--osxuniversal" ]
+then
+
+    PLATFORM="osx"
+    SUFFIX="    "
+    mkdir -p build/osx
+    cd       build/osx
+    cmake $NINJA -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" ../..
+
+elif [ "$1" = "help" ] || [ "$1" = "--help" ]
+then
+
+echo ""
+echo "platforms, optionally passed as argument:"
+echo ""
+echo "mingw-64"
+echo "mingw-32"
+echo "mingw-64-ucrt"
+echo "cygwin"
+echo "osx-arm"
+echo "osx-intel"
+echo "osx-universal"
+echo ""
+echo "default platform: native"
+echo ""
+
+exit 0
 
 else
 

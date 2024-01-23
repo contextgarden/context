@@ -129,6 +129,7 @@
 \definesystemconstant {noaxis}
 \definesystemconstant {exact}
 \definesystemconstant {a}
+\definesystemconstant {base}
 \definesystemconstant {bf}
 \definesystemconstant {big}
 \definesystemconstant {binary}
@@ -247,6 +248,7 @@
 \definesystemconstant {hfactor}
 \definesystemconstant {hw}
 \definesystemconstant {hyphenmin}
+\definesystemconstant {implication}
 \definesystemconstant {indeed}
 \definesystemconstant {initializations}
 \definesystemconstant {insert} % maybe insertclass

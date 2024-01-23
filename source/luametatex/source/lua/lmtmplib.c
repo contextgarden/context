@@ -2001,6 +2001,196 @@ static int mplib_aux_set_right_control(lua_State *L, MP mp, mp_knot p) {
     }
 }
 
+static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, int numpoints, int *curled, int *cyclic, mp_knot *first, mp_knot *p, mp_knot *q, mp_knot *f, mp_knot *l);
+
+static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, int numpoints, int *curled, int *cyclic, mp_knot *first, mp_knot *p, mp_knot *q, mp_knot *f, mp_knot *l)
+{
+    for (int i = 1; i <= numpoints; i++) {
+        switch (lua_rawgeti(L, index, i)) { 
+            case LUA_TTABLE:
+                {
+                    double x0, y0;
+                    if (*cyclic) { 
+                        if (*first && i == numpoints) {
+                            goto DONE;
+                        } else if (*f && *l) { 
+                            (*f)->left_type = mp_explicit_knot;
+                            (*l)->right_type = mp_explicit_knot;
+                        }
+                        *cyclic = 0; 
+                        *f = NULL;
+                        *l = NULL;
+                    }
+                    lua_rawgeti(L, -1, 1);
+                    lua_rawgeti(L, -2, 2);
+                    x0 = lua_tonumber(L, -2);
+                    y0 = lua_tonumber(L, -1);
+                    *q = *p;
+                    *p = mp_append_knot_xy(mp, *p, x0, y0); /* makes end point */
+                    lua_pop(L, 2);
+                    if (*p) {
+                        double x1, y1, x2, y2;
+                        if (*curled) {
+                            x1 = x0;
+                            y1 = y0;
+                            x2 = x0;
+                            y2 = y0;
+                        } else {
+                            lua_rawgeti(L, -1, 3);
+                            lua_rawgeti(L, -2, 4);
+                            lua_rawgeti(L, -3, 5);
+                            lua_rawgeti(L, -4, 6);
+                            x1 = luaL_optnumber(L, -4, x0);
+                            y1 = luaL_optnumber(L, -3, y0);
+                            x2 = luaL_optnumber(L, -2, x0);
+                            y2 = luaL_optnumber(L, -1, y0);
+                            lua_pop(L, 4);
+                        }
+                        mp_set_knot_left_control(mp, *p, x1, y1);
+                        mp_set_knot_right_control(mp, *p, x2, y2);
+                        if (! *first) {
+                            *first = *p;
+                        }
+                        if (! *f) {
+                            *f = *p; 
+                        }
+                        *l = *p; 
+                    } else {
+                        return "knot creation failure";
+                    }
+                    break;
+                }
+            case LUA_TSTRING:
+                {
+                    const char *s = lua_tostring(L, -1);
+                    if (lua_key_eq(s, cycle)) {
+                        *cyclic = 1;
+                    } else if (lua_key_eq(s, append)) { 
+                        (*f)->right_type = mp_explicit_knot;
+                        (*l)->left_type = mp_explicit_knot;
+                        (*f)->state = mp_begin_knot;
+                        (*l)->state = mp_end_knot;   
+                    }
+                    break;
+                }
+        }
+        /*tex Up the next item */
+      DONE:
+        lua_pop(L, 1);
+    }
+    return NULL;
+}
+
+static const char * mplib_aux_with_path_hashed(lua_State *L, MP mp, mp_knot *first, mp_knot *p, mp_knot *q, int *solve);
+
+static const char * mplib_aux_with_path_hashed(lua_State *L, MP mp, mp_knot *first, mp_knot *p, mp_knot *q, int *solve)
+{
+    /* We can probably also use the _xy here. */
+    int left_set = 0;
+    int right_set = 0;
+    double x_coord, y_coord;
+    if (! lua_istable(L, -1)) {
+        return "wrong argument types";
+    }
+    lua_push_key(x_coord);
+    if (lua_rawget(L, -2) != LUA_TNUMBER) {
+        return "missing x coordinate";
+    }
+    x_coord = (double) lua_tonumber(L, -1);
+    lua_pop(L, 1);
+    lua_push_key(y_coord);
+    if (lua_rawget(L, -2) != LUA_TNUMBER) {
+        return "missing y coordinate";
+    }
+    y_coord = (double) lua_tonumber(L, -1);
+    lua_pop(L, 1);
+    /* */
+    *q = *p;
+    if (*q) {
+        /*tex
+            We have to save the right_tension because |mp_append_knot| trashes it,
+            believing that it is as yet uninitialized .. I need to check this.
+        */
+        double saved_tension = mp_number_as_double(mp, (*p)->right_tension);
+        *p = mp_append_knot(mp, *p, x_coord, y_coord);
+        if (*p) {
+            mp_set_knot_right_tension(mp, *q, saved_tension);
+        }
+    } else {
+        *p = mp_append_knot(mp, *p, x_coord, y_coord);
+    }
+    if (*p) {
+        return "knot creation failure";
+    }
+    /* */
+    if (! *first) {
+        *first = *p;
+    }
+    lua_push_key(left_curl);
+    if (lua_rawget(L, -2) != LUA_TNUMBER) {
+        lua_pop(L, 1);
+    } else if (! mplib_aux_set_left_curl(L, mp, *p)) {
+        return "failed to set left curl";
+    } else {
+        left_set  = 1;
+        *solve = 1;
+    }
+    lua_push_key(left_tension);
+    if (lua_rawget(L, -2) != LUA_TNUMBER) {
+        lua_pop(L, 1);
+    } else if (left_set) {
+        return "left side already set";
+    } else if (! mplib_aux_set_left_tension(L, mp, *p)) {
+        return "failed to set left tension";
+    } else {
+        left_set = 1;
+        *solve = 1;
+    }
+    lua_push_key(left_x);
+    if (lua_rawget(L, -2) != LUA_TNUMBER) {
+        lua_pop(L, 1);
+    } else if (left_set) {
+        return "left side already set";
+    } else if (! mplib_aux_set_left_control(L, mp, *p)) {
+        return "failed to set left control";
+    }
+    lua_push_key(right_curl);
+    if (lua_rawget(L, -2) != LUA_TNUMBER) {
+        lua_pop(L, 1);
+    } else if (! mplib_aux_set_right_curl(L, mp, *p)) {
+        return "failed to set right curl";
+    } else {
+        right_set  = 1;
+        *solve = 1;
+    }
+    lua_push_key(right_tension);
+    if (lua_rawget(L, -2) != LUA_TNUMBER) {
+        lua_pop(L,1);
+    } else if (right_set) {
+        return "right side already set";
+    } else if (! mplib_aux_set_right_tension(L, mp, *p)) {
+        return "failed to set right tension";
+    } else {
+        right_set = 1;
+        *solve = 1;
+    }
+    lua_push_key(right_x);
+    if (lua_rawget(L, -2) != LUA_TNUMBER) {
+        lua_pop(L, 1);
+    } else if (right_set) {
+        return "right side already set";
+    } else if (! mplib_aux_set_right_control(L, mp, *p)) {
+        return "failed to set right control";
+    }
+    lua_push_key(direction_x);
+    if (lua_rawget(L, -2) != LUA_TNUMBER) {
+        lua_pop(L, 1);
+    } else if (! mplib_aux_set_direction(L, mp, *p)) {
+        return "failed to set direction";
+    }
+    return NULL;
+}
+
 static int mplib_aux_with_path(lua_State *L, MP mp, int index, int inject, int multiple)
 {
  // setbuf(stdout, NULL);
@@ -2016,6 +2206,8 @@ static int mplib_aux_with_path(lua_State *L, MP mp, int index, int inject, int m
         mp_knot p = NULL;
         mp_knot q = NULL;
         mp_knot first = NULL;
+        mp_knot f = NULL;
+        mp_knot l = NULL;
         const char *errormsg = NULL;
         int cyclic = 0;
         int curled = 0;
@@ -2055,46 +2247,9 @@ static int mplib_aux_with_path(lua_State *L, MP mp, int index, int inject, int m
             if (len >= 2) {
                 /* .. : p1 .. controls a and b         .. p2  : { p1 a   b   } */
                 /* -- : p1 .. { curl 1 } .. { curl 1 } .. p2  : { p1 nil nil } */
-                for (int i = 1; i <= numpoints; i++) {
-                    if (lua_rawgeti(L, index, i) == LUA_TTABLE) {
-                        double x0, y0;
-                        lua_rawgeti(L, -1, 1);
-                        lua_rawgeti(L, -2, 2);
-                        x0 = lua_tonumber(L, -2);
-                        y0 = lua_tonumber(L, -1);
-                        q = p;
-                        p = mp_append_knot_xy(mp, p, x0, y0); /* makes end point */
-                        lua_pop(L, 2);
-                        if (p) {
-                            double x1, y1, x2, y2;
-                            if (curled) {
-                                x1 = x0;
-                                y1 = y0;
-                                x2 = x0;
-                                y2 = y0;
-                            } else {
-                                lua_rawgeti(L, -1, 3);
-                                lua_rawgeti(L, -2, 4);
-                                lua_rawgeti(L, -3, 5);
-                                lua_rawgeti(L, -4, 6);
-                                x1 = luaL_optnumber(L, -4, x0);
-                                y1 = luaL_optnumber(L, -3, y0);
-                                x2 = luaL_optnumber(L, -2, x0);
-                                y2 = luaL_optnumber(L, -1, y0);
-                                lua_pop(L, 4);
-                            }
-                            mp_set_knot_left_control(mp, p, x1, y1);
-                            mp_set_knot_right_control(mp, p, x2, y2);
-                            if (! first) {
-                                first = p;
-                            }
-                        } else {
-                            errormsg = "knot creation failure";
-                            goto BAD;
-                        }
-                    }
-                    /*tex Up the next item */
-                    lua_pop(L, 1);
+                errormsg = mplib_aux_with_path_indexed(L, mp, index, numpoints, &curled, &cyclic, &first, &p, &q, &f, &l);
+                if (errormsg) {
+                   goto BAD;
                 }
             } else if (len > 0) {
                 errormsg = "messy table";
@@ -2102,123 +2257,29 @@ static int mplib_aux_with_path(lua_State *L, MP mp, int index, int inject, int m
             } else {
                 for (int i = 1; i <= numpoints; i++) {
                     if (lua_rawgeti(L, index, i) == LUA_TTABLE) {
-                        /* We can probably also use the _xy here. */
-                        int left_set = 0;
-                        int right_set = 0;
-                        double x_coord, y_coord;
-                        if (! lua_istable(L, -1)) {
-                            errormsg = "wrong argument types";
-                            goto BAD;
-                        }
-                        lua_push_key(x_coord);
-                        if (lua_rawget(L, -2) != LUA_TNUMBER) {
-                            errormsg = "missing x coordinate";
-                            goto BAD;
-                        }
-                        x_coord = (double) lua_tonumber(L, -1);
-                        lua_pop(L, 1);
-                        lua_push_key(y_coord);
-                        if (lua_rawget(L, -2) != LUA_TNUMBER) {
-                            errormsg = "missing y coordinate";
-                            goto BAD;
-                        }
-                        y_coord = (double) lua_tonumber(L, -1);
-                        lua_pop(L, 1);
-                        /* */
-                        q = p;
-                        if (q) {
-                            /*tex
-                                We have to save the right_tension because |mp_append_knot| trashes it,
-                                believing that it is as yet uninitialized .. I need to check this.
-                            */
-                            double saved_tension = mp_number_as_double(mp, p->right_tension);
-                            p = mp_append_knot(mp, p, x_coord, y_coord);
-                            if (p) {
-                                mp_set_knot_right_tension(mp, q, saved_tension);
+                        lua_push_key(path);
+                        if (lua_rawget(L, -2) == LUA_TTABLE) {
+                            int n = (int) lua_rawlen(L, -1);
+                            errormsg = mplib_aux_with_path_indexed(L, mp, -1, n, &curled, &cyclic, &first, &p, &q, &f, &l);
+                            if (errormsg) {
+                               goto BAD;
                             }
+                            lua_pop(L, 1);
+                            lua_push_key(append);
+                            if (lua_rawget(L, -2) == LUA_TBOOLEAN) {
+                                f->right_type = mp_explicit_knot;
+                                l->left_type = mp_explicit_knot;
+                                f->state = mp_begin_knot;
+                                l->state = mp_end_knot;   
+                            }
+                            lua_pop(L, 1);
+                            continue;
                         } else {
-                            p = mp_append_knot(mp, p, x_coord, y_coord);
-                        }
-                        if (p) {
-                            errormsg = "knot creation failure";
-                            goto BAD;
-                        }
-                        /* */
-                        if (! first) {
-                            first = p;
-                        }
-                        lua_push_key(left_curl);
-                        if (lua_rawget(L, -2) != LUA_TNUMBER) {
                             lua_pop(L, 1);
-                        } else if (! mplib_aux_set_left_curl(L, mp, p)) {
-                            errormsg = "failed to set left curl";
-                            goto BAD;
-                        } else {
-                            left_set  = 1;
-                            solve = 1;
-                        }
-                        lua_push_key(left_tension);
-                        if (lua_rawget(L, -2) != LUA_TNUMBER) {
-                            lua_pop(L, 1);
-                        } else if (left_set) {
-                            errormsg = "left side already set";
-                            goto BAD;
-                        } else if (! mplib_aux_set_left_tension(L, mp, p)) {
-                            errormsg = "failed to set left tension";
-                            goto BAD;
-                        } else {
-                            left_set = 1;
-                            solve = 1;
-                        }
-                        lua_push_key(left_x);
-                        if (lua_rawget(L, -2) != LUA_TNUMBER) {
-                            lua_pop(L, 1);
-                        } else if (left_set) {
-                            errormsg = "left side already set";
-                            goto BAD;
-                        } else if (! mplib_aux_set_left_control(L, mp, p)) {
-                            errormsg = "failed to set left control";
-                            goto BAD;
-                        }
-                        lua_push_key(right_curl);
-                        if (lua_rawget(L, -2) != LUA_TNUMBER) {
-                            lua_pop(L, 1);
-                        } else if (! mplib_aux_set_right_curl(L, mp, p)) {
-                            errormsg = "failed to set right curl";
-                            goto BAD;
-                        } else {
-                            right_set  = 1;
-                            solve = 1;
-                        }
-                        lua_push_key(right_tension);
-                        if (lua_rawget(L, -2) != LUA_TNUMBER) {
-                            lua_pop(L,1);
-                        } else if (right_set) {
-                            errormsg = "right side already set";
-                            goto BAD;
-                        } else if (! mplib_aux_set_right_tension(L, mp, p)) {
-                            errormsg = "failed to set right tension";
-                            goto BAD;
-                        } else {
-                            right_set = 1;
-                            solve = 1;
-                        }
-                        lua_push_key(right_x);
-                        if (lua_rawget(L, -2) != LUA_TNUMBER) {
-                            lua_pop(L, 1);
-                        } else if (right_set) {
-                            errormsg = "right side already set";
-                            goto BAD;
-                        } else if (! mplib_aux_set_right_control(L, mp, p)) {
-                            errormsg = "failed to set right control";
-                            goto BAD;
-                        }
-                        lua_push_key(direction_x);
-                        if (lua_rawget(L, -2) != LUA_TNUMBER) {
-                            lua_pop(L, 1);
-                        } else if (! mplib_aux_set_direction(L, mp, p)) {
-                            errormsg = "failed to set direction";
-                            goto BAD;
+                            errormsg = mplib_aux_with_path_hashed(L, mp, &first, &p, &q, &solve);
+                            if (errormsg ) {
+                                goto BAD;
+                            }
                         }
                     }
                     lua_pop(L, 1);

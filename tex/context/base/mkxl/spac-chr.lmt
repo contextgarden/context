@@ -40,6 +40,7 @@ local getlanguage        = nuts.getlanguage
 local setchar            = nuts.setchar
 local setattrlist        = nuts.setattrlist
 local getfont            = nuts.getfont
+local getxscale          = nuts.getxscale
 local isglyph            = nuts.isglyph
 
 local setcolor           = nodes.tracers.colors.set
@@ -93,7 +94,8 @@ local function inject_quad_space(unicode,head,current,fraction)
     if fraction ~= 0 then
         fraction = fraction * fontquads[getfont(current)]
     end
-    local glue = new_glue(fraction)
+    local scale = getxscale(current)
+    local glue  = new_glue(scale * fraction)
     setattrlist(glue,current)
     setattrlist(current) -- why reset all
     setattr(glue,a_character,unicode)
@@ -101,9 +103,10 @@ local function inject_quad_space(unicode,head,current,fraction)
 end
 
 local function inject_char_space(unicode,head,current,parent)
-    local font = getfont(current)
-    local char = fontcharacters[font][parent]
-    local glue = new_glue(char and char.width or fontparameters[font].space)
+    local font  = getfont(current)
+    local char  = fontcharacters[font][parent]
+    local scale = getxscale(current)
+    local glue  = new_glue(scale * (char and char.width or fontparameters[font].space))
     setattrlist(glue,current)
     setattrlist(current) -- why reset all
     setattr(glue,a_character,unicode)
@@ -111,7 +114,8 @@ local function inject_char_space(unicode,head,current,parent)
 end
 
 local function inject_nobreak_space(unicode,head,current,space,spacestretch,spaceshrink)
-    local glue    = new_glue(space,spacestretch,spaceshrink)
+    local scale   = getxscale(current)
+    local glue    = new_glue(scale*space,scale*spacestretch,scale*spaceshrink)
     local penalty = new_penalty(10000)
     setattrlist(glue,current)
     setattrlist(penalty,current)
@@ -181,6 +185,16 @@ local nbsphash = { } setmetatableindex(nbsphash,function(t,k)
     return nbsphash[k]
 end)
 
+local function inject_regular_space(head,current,font)
+    local p = fontparameters[font]
+    local s = getxscale(current)
+    return insertnodebefore(head,current,new_glue(
+        s * p.space,
+        s * p.spacestretch,
+        s * p.spaceshrink
+    ))
+end
+
 local methods = {
 
     -- The next one uses an attribute assigned to the character but still we
@@ -205,8 +219,7 @@ local methods = {
             -- insert when valid character following
             local char, font = isglyph(next)
             if char and canhavespace[char] then
-                local p = fontparameters[font]
-                head, current = insertnodebefore(head,current,new_glue(p.space,p.spacestretch,p.spaceshrink))
+                head, current = inject_regular_space(head,current,font)
             end
 
         end
@@ -218,8 +231,7 @@ local methods = {
         if next then
             local char, font = isglyph(next)
             if char and not ispunctuation[char] then
-                local p = fontparameters[font]
-                head, current = insertnodebefore(head,current,new_glue(p.space,p.spacestretch,p.spaceshrink))
+                head, current = inject_regular_space(head,current,font)
             end
         end
         return head, current
@@ -305,11 +317,11 @@ local methods = {
     end,
 
     [0x202F] = function(head,current) -- narrownobreakspace
-        return inject_nobreak_space(0x202F,head,current,fontquads[getfont(current)]/8)
+        return inject_nobreak_space(0x202F,head,current,fontquads[getfont(current)]/8,0,0)
     end,
 
     [0x205F] = function(head,current) -- math thinspace
-        return inject_nobreak_space(0x205F,head,current,4*fontquads[getfont(current)]/18)
+        return inject_nobreak_space(0x205F,head,current,4*fontquads[getfont(current)]/18,0,0)
     end,
 
     -- The next one is also a bom so maybe only when we have glyphs around it

@@ -83,10 +83,11 @@ extern halfword    tex_scan_integer                   (int optional_equal, int *
 extern void        tex_scan_integer_validate          (void);
 extern halfword    tex_scan_positive_integer          (int optional_equal);
 extern halfword    tex_scan_scale                     (int optional_equal);
+extern halfword    tex_scan_scale_factor              (int optional_equal);
 extern halfword    tex_scan_posit                     (int optional_equal);
 extern halfword    tex_scan_dimension                 (int mu, int inf, int shortcut, int optional_equal, halfword *order);
 extern void        tex_scan_dimension_validate        (void);
-extern halfword    tex_scan_glue                      (int level, int optional_equal);
+extern halfword    tex_scan_glue                      (int level, int optional_equal, int options_too);
 extern halfword    tex_scan_font                      (int optional_equal);
 extern halfword    tex_scan_general_text              (halfword *tail);
 /*     halfword    tex_scan_toks                      (int macrodef, int xpand, int left_brace_found); */
@@ -140,7 +141,7 @@ extern halfword    tex_scan_bytecode_reference        (int optional_equal);
 
 extern halfword    tex_the_value_toks                 (int unit, halfword *tail, halfword property); /* returns head */
 extern halfword    tex_the_toks                       (int code, halfword *tail); /* returns head */
-extern halfword    tex_the_detokenized_toks           (halfword *tail);
+extern halfword    tex_the_detokenized_toks           (halfword *tail, int expand, int protect);
 extern void        tex_detokenize_list                (halfword head);
 extern strnumber   tex_the_scanned_result             (void);
 

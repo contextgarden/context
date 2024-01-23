@@ -43,6 +43,33 @@
    \mkern18mu
    (\mfunction{mod}\mskip\medmuskip#1)}
 
+%D For the moment we use this in mathml:
+
+\protected\def\matrix#1% not permanent so we can overload
+  {\emptyhbox
+   \mskip\thinmuskip
+   \vcenter
+     {\normalbaselines
+      \mathsurround\zeropoint
+      \everycr\emptytoks
+      \tabskip\zeroskip
+      \halign{%
+        \hfil\normalstartimath\alignmark\alignmark\normalstopimath\hfil
+        \aligntab
+        \aligntab
+        \quad\hfil\normalstartimath\alignmark\alignmark\normalstopimath\hfil
+        \crcr
+        \mathstrut
+        \crcr
+        \noalign{\kern-\baselineskip}
+        #1\crcr
+        \mathstrut
+        \crcr
+        \noalign{\kern-\baselineskip}}}%
+   \mskip\thinmuskip}
+
+\permanent\aliased\let\plainmatrix\matrix
+
 %D This comes from plain but I gave it a \CONTEXT\ touch. When Mikael and I are in
 %D the mood we will redo them in a more modern way.
 

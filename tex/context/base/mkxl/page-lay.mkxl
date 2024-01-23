@@ -123,6 +123,9 @@
 
 \pushoverloadmode
 
+    % don't set [1] because it interferes with initializing the text and one can just
+    % start explicitly with \setuplayout[xxx] or so
+
     \let\page_layouts_define\definelayout % ugly hack for MS
 
     \permanent\protected\def\definelayout[#1]% intercept relative pages
@@ -1501,6 +1504,7 @@
                    \c!paper=,
                     \c!page=,
                 \c!adaptive=\zeropoint, % new: experiment
+            \c!limitstretch=\v!auto, % catches \setupalign[depth] without setting (2 lineheight)
                  \c!columns=\plusone,
           \c!columndistance=\zeropoint]
 

@@ -8,10 +8,10 @@ if not modules then modules = { } end modules ['lpdf-xmp'] = {
 }
 
 local tostring, type = tostring, type
-local format, gsub = string.format, string.gsub
+local format, gsub, match, rep, count = string.format, string.gsub, string.match, string.rep, string.count
 local utfchar = utf.char
-local xmlfillin = xml.fillin
 local md5HEX = md5.HEX
+local xmlfillin, xmldelete, xmltext = xml.fillin, xml.delete, xml.text
 
 local trace_xmp  = false  trackers.register("backend.xmp",  function(v) trace_xmp  = v end)
 local trace_info = false  trackers.register("backend.info", function(v) trace_info = v end)
@@ -47,7 +47,6 @@ local mapping = {
     ["ConTeXt.Url"]          = { "context", "rdf:Description/pdfx:ConTeXt.Url" },
     ["ConTeXt.Support"]      = { "context", "rdf:Description/pdfx:ConTeXt.Support" },
     ["ConTeXt.Version"]      = { "context", "rdf:Description/pdfx:ConTeXt.Version" },
-    ["ConTeXt.LMTX"]         = { "context", "rdf:Description/pdfx:ConTeXt.LMTX" },
     ["TeX.Support"]          = { "metadata","rdf:Description/pdfx:TeX.Support" },
     ["LuaTeX.Version"]       = { "metadata","rdf:Description/pdfx:LuaTeX.Version" },
     ["LuaTeX.Functionality"] = { "metadata","rdf:Description/pdfx:LuaTeX.Functionality" },
@@ -55,19 +54,23 @@ local mapping = {
     ["LuaTeX.Platform"]      = { "metadata","rdf:Description/pdfx:LuaTeX.Platform" },
     ["ID"]                   = { "id",      "rdf:Description/pdfx:ID" },                         -- has date
     -- Adobe PDF schema
-    ["Keywords"]             = { "metadata","rdf:Description/pdf:Keywords" },
-    ["Producer"]             = { "metadata","rdf:Description/pdf:Producer" },
+    ["Keywords"]             = { "metadata","rdf:Description/pdf:Keywords", true },
+    ["Producer"]             = { "metadata","rdf:Description/pdf:Producer", true },
  -- ["Trapped"]              = { "pdf",     "rdf:Description/pdf:Trapped" },                     -- '/False' in /Info, but 'False' in XMP
     -- Dublin Core schema
     ["Format"]               = { "metadata","rdf:Description/dc:format" },                       -- optional, but nice to have
-    -- These were dc:.../rdf:Seq/rdf:li but there was a (invalidating) bug in the iso
-    ["Author"]               = { "metadata","rdf:Description/dc:creator" },
-    ["Subject"]              = { "metadata","rdf:Description/dc:description" },
-    ["Title"]                = { "metadata","rdf:Description/dc:title" },
+    -- see xml file for comment:
+ -- ["Author"]               = { "metadata","rdf:Description/dc:creator" },
+ -- ["Subject"]              = { "metadata","rdf:Description/dc:description" },
+ -- ["Title"]                = { "metadata","rdf:Description/dc:title" },
+    ["Author"]               = { "metadata","rdf:Description/dc:creator/rdf:Seq/rdf:li", true },
+    ["Subject"]              = { "metadata","rdf:Description/dc:description/rdf:Alt/rdf:li", true },
+    ["Title"]                = { "metadata","rdf:Description/dc:title/rdf:Alt/rdf:li", true },
     -- XMP Basic schema
     ["CreateDate"]           = { "date",    "rdf:Description/xmp:CreateDate" },
     ["CreationDate"]         = { "date",    "rdf:Description/xmp:CreationDate" },                -- dummy
-    ["Creator"]              = { "metadata","rdf:Description/xmp:CreatorTool" },
+    ["CreatorTool"]          = { "metadata","rdf:Description/xmp:CreatorTool" },
+ -- ["Creator"]              = { "metadata","rdf:Description/xmp:CreatorTool" },
     ["MetadataDate"]         = { "date",    "rdf:Description/xmp:MetadataDate" },
     ["ModDate"]              = { "date",    "rdf:Description/xmp:ModDate" },                     -- dummy
     ["ModifyDate"]           = { "date",    "rdf:Description/xmp:ModifyDate" },
@@ -90,6 +93,8 @@ local mapping = {
     ["AuthorsPosition"]      = { "metadata", "rdf:Description/photoshop:AuthorsPosition" },
     ["Copyright"]            = { "metadata", "rdf:Description/photoshop:Copyright" },
     ["CaptionWriter"]        = { "metadata", "rdf:Description/photoshop:CaptionWriter" },
+    --
+    ["Placeholder"]          = { "metadata", "pdfaid-placeholder", true }
 }
 
 lpdf.setsuppressoptionalinfo (
@@ -254,6 +259,10 @@ function lpdf.injectxmpinfo(pattern,whatever,prepend)
     xml.inject(xmp or valid_xmp(),pattern,whatever,prepend)
 end
 
+function lpdf.replacexmpinfo(pattern,whatever)
+    xml.replace(xmp or valid_xmp(),pattern,whatever)
+end
+
 -- flushing
 
 local add_xmp_blob = true  directives.register("backend.xmp",function(v) add_xmp_blob = v end)
@@ -293,6 +302,17 @@ local function flushxmpinfo()
         pdfaddxmpinfo("LuaTeX.LuaVersion",metadata.luaversion)
         pdfaddxmpinfo("LuaTeX.Platform",metadata.platform)
 
+        -- checks for empty:
+
+        for tag, map in next, mapping do
+            if map[3] == true then
+                local pattern = map[2]
+                if type(pattern) == "string" and xmltext(xmp,pattern) == "" then
+                    xmldelete(xmp,pattern .. rep("/..",count(pattern,"/")-1))
+                end
+            end
+        end
+        
         local blob = xml.tostring(xml.first(xmp or valid_xmp(),"/x:xmpmeta"))
         local md = pdfdictionary {
             Subtype = pdfconstant("XML"),

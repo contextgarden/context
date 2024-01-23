@@ -135,16 +135,3 @@ local specification = {
 
 registerotffeature(specification)
 registerafmfeature(specification)
-
-local function initialize(tfmdata,value)
-    tfmdata.properties.realdimensions = value and true
-end
-
-registerotffeature {
-    name        = "realdimensions",
-    description = "accept negative dimensions",
-    initializers = {
-        base = initialize,
-        node = initialize,
-    }
-}

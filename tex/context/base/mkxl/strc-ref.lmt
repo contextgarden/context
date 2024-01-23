@@ -2213,7 +2213,7 @@ function references.setlinkmethod(inner,outer)
     end
     if toboolean(outer) or outer == v_page or outer == v_yes then
         outermethod = v_page
-    elseif inner == v_name then
+    elseif outer == v_name then
         outermethod = v_name
     else
         outermethod = v_auto

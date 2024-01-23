@@ -1,0 +1,204 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-bars
+
+\usebodyfont[modern]
+\usebodyfont[modern-nt]
+
+\environment ontarget-style
+
+\startchapter[title={Between bars}]
+
+\startsubject[title=Inconsistencies]
+
+The bar in math can a real pain. There are several reasons for this, for instance
+there is no proper left, middle and right bar in \UNICODE\ and as a result there
+is more work involved in getting them spaced well. Another possible issue can be
+to make them fit well with other fences. You expect the bars in \im {\left(x
+\middle| y\right)} and \im {\left|x \middle| y\right|} to look similar.
+
+\start \glyphscale2000 \startformula
+    \mathaxisbelow \dorecurse {\nofmathvariants \barasciicode} {
+        \char \getmathvariant #1 \leftbracketasciicode
+        \char \getmathvariant #1 \barasciicode
+        \char \getmathvariant #1 \rightparentasciicode
+        \quad
+    }
+\stopformula \stop
+
+However, math fonts have their surprises:
+
+\start \switchtobodyfont[modern-nt] \glyphscale2000 \startformula
+    \mathaxisbelow \dorecurse {\nofmathvariants \barasciicode} {
+        \char \getmathvariant #1 \leftbracketasciicode
+        \char \getmathvariant #1 \barasciicode
+        \char \getmathvariant #1 \rightparentasciicode
+        \quad
+    }
+\stopformula \stop
+
+In Latin Modern only the first variant is tuned to work together but for larger
+sizes the bars stick out. This is a problem when we want fences to adapt. The
+fact that such side effects probably get unnoticed comes from the fact that macro
+packages assume \type {\bigg} and friends to be used but in \CONTEXT, and
+especially \LMTX, we have various mechanisms for this. One method is based on
+selecting specific variants, in the case of Latin Modern 1, 4, 6 and 7, where in
+in fact 7 is the last one before we switch to extensible fences. One can try to
+use a different selection for brackets and bars when there is no nice match but
+there are no equal height matches.
+
+\startbuffer
+\im {\left| x       \right|}
+\im {\left| x^2     \right|}
+\im {\left| x^{1/n} \right|}
+\stopbuffer
+
+\typebuffer
+
+These example formulas can trigger a larger fence:
+
+\startlinecorrection \showglyphs
+\ruledhbox{\scale[width=1tw]{\getbuffer}}
+\stoplinecorrection
+
+In untweaked Latin Modern we get this:
+
+\startlinecorrection \switchtobodyfont[modern-nt] \showglyphs
+\ruledhbox{\scale[width=1tw]{\getbuffer}}
+\stoplinecorrection
+
+The slash in this font is rather high and therefore triggers the larger fence.
+One can configure this with the \typ {\delimiterfactor} and \typ
+{\delimitershortfall} but as you can see values have to relate to the font. In
+\LMTX\ we set them to 1000 and 0pt and use the \LUAMETATEX\ equivalent font
+variables instead, so we can indeed fine tune per font.
+
+To come back to the mismatch in fences, this is dealt with in a tweak: we scale
+the single, double and triple bars to match the brackets:
+
+\start \switchtobodyfont[modern] \startformula
+    \mathaxisbelow \dorecurse {\nofmathvariants \barasciicode} {
+        \char \getmathvariant #1 \leftbracketasciicode
+        \char \getmathvariant #1 \barasciicode
+        \char \getmathvariant #1 \rightparentasciicode
+        \quad
+    }
+\stopformula \stop
+
+Combined with proper settings for the factor (or percentage in \OPENTYPE\ math
+speak) and shortfall, we now get:
+
+\startlinecorrection \switchtobodyfont[modern] \showglyphs
+\ruledhbox{\scale[width=1tw]{\getbuffer}}
+\stoplinecorrection
+
+When we let the upgraded math subsystem evolve we make many examples.
+Unfortunately there is always an exception. For instance, we test a specific
+font, notice something, deal with it, even test all fonts in inline and display
+math and then after months the exception shows up. In this case it was the \im
+{1/n} in a superscript that (only?) in Latin Modern goes over the top. Actually
+we had noticed that bars are often inconsistent so we had a \type {fixbars}
+tweak, However, for Latin Modern we found that the inconsistency between bars and
+other fences needed something more drastic. Of course fixing the font is best but
+we're beyond that stage now: the fonts are basically frozen.
+
+A close inspection of the too large fence which itself results from it being
+larger than expected by design (which we noticed by adding parentheses) itself
+was the result from deciding to configure additional inter|-|atom spacing for
+open and close fences (see below) which then brings us back to the fact that one
+bar serves three purposes. We might actually introduce these three (left, middle
+and right) at some point.
+
+\startbuffer
+\dm {\left| \frac{n^3 - 2n + 1}{n^5 - 3} - 0 \right| < \frac{4}{n^2} }
+\stopbuffer
+
+\startlinecorrection
+\switchtobodyfont[modern]
+\hbox{\scale[width=.45tw]{\getbuffer}\hskip .1tw
+\inherited\setmathspacing\mathordinarycode\mathclosecode\allmathstyles\zeromuskip
+\scale[width=.45tw]{\getbuffer}}
+\stoplinecorrection
+
+\stopsubject
+
+\startsubject[title=Missing shapes]
+
+The tweak discusses in the previous section is a brute force one: we put an
+extensible on the base glyph. Among the arguments for doing this is that we want
+to be able to add consistent double and triple bars. Without mentioning fonts
+explicitly (as some might get fixed after we files bug reports) this is what
+we observed:
+
+\startitemize[packed]
+\startitem
+    There are single bars, double bars and triple bars and each has variants and
+    extensibles. This is okay.
+\stopitem
+\startitem
+    Most are there but the triple bar has no variants and extensibles
+\stopitem
+\startitem
+    We have all three base characters but no variants. The extensible has a
+    different width.
+\stopitem
+\startitem
+    Single, double and triple bars are inconsistent with each other.
+\stopitem
+\startitem
+    Everything is there but widths differ per variant; some match the parenthesis,
+    brackets and braces but not consistently.
+\stopitem
+\startitem
+    The different variant sizes are out of sync with the sizes of parenthesis
+    etc.\ and this makes for inconsistent matches, especially when also the width
+    and positioning differs.
+\stopitem
+\startitem
+    Spacing between and around double and triple bars isn't always consistent.
+\stopitem
+\stopitemize
+
+These observations lead us to the conclusion that there is no single tweak that
+can fix this. Adapting the \quote {addbars} tweak to deal with all this made for
+too many alternatives in checks and fixes to feel comfortable with. This is why
+we decided to come up with companion fonts that provide the missing double and
+triple variants and extensibles consistent with the single ones, fix spacing in
+double and triple ones, fix inconsistent widths of bars, etc. Minor details like
+bad positioning are already handled well do we can keep the \quote {design} as it
+is.
+
+\usebodyfont[pagella]
+
+\start
+\switchtobodyfont[pagella,15pt]
+\dm{
+  \dorecurse {\nofmathvariants "28} {
+    \char \getmathvariant #1 "5B
+    \char \getmathvariant #1 "7B
+    \char \getmathvariant #1 "28
+    \char \getmathvariant #1 "7C
+    \char \getmathvariant #1 "29
+    \char \getmathvariant #1 "7D
+    \char \getmathvariant #1 "5D \quad }
+}
+
+\dm{
+  \dorecurse {\nofmathvariants "7C} {
+    \char \getmathvariant #1 "7C   \enspace
+    \char \getmathvariant #1 "2016 \enspace
+    \char \getmathvariant #1 "2980 \quad }
+}
+\stop
+
+\stopsubject
+
+\startsubject[title=Different sizes]
+
+middle
+
+\stopsubject
+
+\stopchapter
+
+\stopcomponent

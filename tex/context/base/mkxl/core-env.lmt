@@ -36,6 +36,8 @@ texconditionals            = allocate { }  tex.conditionals = texconditionals
 texifs                     = allocate { }  tex.ifs          = texifs
 texisdefined               = allocate { }  tex.isdefined    = texisdefined
 
+local implement            = interfaces.implement
+
 -- we could use the built-in tex.is[count|dimen|skip|toks] here but caching
 -- at the lua end is not that bad (and we need more anyway)
 
@@ -138,7 +140,7 @@ do
         return texgetcount(c_trialtypesetting) == 1
     end)
 
-    interfaces.implement {
+    implement {
         name      = "ifmode",
         public    = true,
         usage     = "condition",
@@ -148,7 +150,7 @@ do
         end
     }
 
-    interfaces.implement {
+    implement {
         name      = "ifsystemmode",
         public    = true,
         usage     = "condition",
@@ -171,7 +173,7 @@ do
 
     local cache = utilities.parsers.hashes.settings_to_list
 
-    interfaces.implement {
+    implement {
         name      = "ifmodes",
         public    = true,
         usage     = "condition",
@@ -192,7 +194,7 @@ do
         end
     }
 
-    interfaces.implement {
+    implement {
         name      = "ifallmodes",
         public    = true,
         usage     = "condition",
@@ -209,6 +211,22 @@ do
             else
                 return boolean_value, texmodes[m]
             end
+        end
+    }
+
+end
+
+do
+
+    local namespace = interfaces.getnamespace("setup")
+
+    implement {
+        name      = "ifsetups",
+        public    = true,
+        usage     = "condition",
+        arguments = "argument",
+        actions   = function(m)
+            return boolean_value, isdefined(namespace .. m)
         end
     }
 
@@ -274,20 +292,24 @@ context.conditionals = texconditionals
 -------.constants    = texconstants
 -------.ifs          = texifs
 
-local sep = S("), ")
-local str = C((1-sep)^1)
-local tag = P("(") * C((1-S(")" ))^1) * P(")")
-local arg = P("(") * C((1-S("){"))^1) * P("{") * C((1-P("}"))^0) * P("}") * P(")")
+do
 
-local pattern = (
-     P("lua") * tag        / ctxcore.luasetup
-  +  P("xml") * arg        / ctxcore.setupwithargument -- or xmlw as xmlsetup has swapped arguments
-  + (P("tex") * tag + str) / ctxcore.texsetup
-  +             sep^1
-)^1
+    local sep = S("), ")
+    local str = C((1-sep)^1)
+    local tag = P("(") * C((1-S(")" ))^1) * P(")")
+    local arg = P("(") * C((1-S("){"))^1) * P("{") * C((1-P("}"))^0) * P("}") * P(")")
 
-interfaces.implement {
-    name      = "autosetups",
-    actions   = function(str) lpegmatch(pattern,str) end,
-    arguments = "string"
-}
+    local pattern = (
+         P("lua") * tag        / ctxcore.luasetup
+      +  P("xml") * arg        / ctxcore.setupwithargument -- or xmlw as xmlsetup has swapped arguments
+      + (P("tex") * tag + str) / ctxcore.texsetup
+      +             sep^1
+    )^1
+
+    implement {
+        name      = "autosetups",
+        actions   = function(str) lpegmatch(pattern,str) end,
+        arguments = "string"
+    }
+
+end

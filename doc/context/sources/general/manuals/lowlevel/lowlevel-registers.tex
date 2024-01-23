@@ -462,6 +462,29 @@ using the same \METAPOST\ instance.
     \getbuffer
 \stopplacefigure
 
+There a few units not mentioned yet and those concern math, where we need to adapt to
+the current style.
+
+\protected\def\ShowMathUnits#1%
+  {\im{#1x\mathord{+
+     {\darkgray \vrule width 1pt depth 0pt height 1ex \relax}%
+     {\darkred  \vrule width 1pt depth 0pt height 1ma \relax}%
+     {\darkgreen\vrule width 1pt depth 0pt height 1mx \relax}%
+     {\darkblue \vrule width 1pt depth 0pt height 1mq \relax}%
+    x}}}
+
+\startlinecorrection
+\startcombination[nx=3,ny=1]
+    {\scale[scale=6000]{\ShowMathUnits\textstyle}}         {text style}
+    {\scale[scale=6000]{\ShowMathUnits\scriptstyle}}       {script style}
+    {\scale[scale=6000]{\ShowMathUnits\scriptscriptstyle}} {script script style}
+\stopcombination
+\stoplinecorrection
+
+The bars show \type {1ex}, \type {1ma} (axis), \type {1mx} (ex|-|height) and
+\type {1mq} (em|-|width or quad). The last three adapt themselves to the style.
+Often the \type {mx} makes more sense than \type {ex}.
+
 \stopsectionlevel
 
 \page

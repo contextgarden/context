@@ -1,0 +1,914 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-envelopes
+
+\environment ontarget-style
+
+\startchapter[title={Pushing the envelope}]
+
+Here I describe the results of some exploration and experiments by Mikael
+Sundqvist and me. We got sidetracked from intersections, arcs and drawing
+functions when we noticed some artifacts with envelopes. But what are envelopes
+actually? Let us start with a simple path:
+
+\startbuffer[testpath]
+\startMPinclusions
+    path TestPath ; TestPath := fullcircle xyscaled (10cm,1cm)
+\stopMPinclusions
+\stopbuffer
+
+\startbuffer[a]
+\startMPcode
+    draw TestPath withpen pencircle scaled 2mm withcolor darkred ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[b]
+\startMPcode
+    fill TestPath withpen pencircle scaled 2mm withcolor darkred  ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[c]
+\startMPcode
+    draw TestPath withpen pensquare scaled 2mm withcolor darkblue ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[d]
+\startMPcode
+    fill TestPath withpen pensquare scaled 2mm withcolor darkblue ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[e]
+\startMPcode
+    fill TestPath withpen pensquare scaled 2mm withcolor darkgreen
+        withtransparency (1,.5) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[testpath]
+
+When we draw this with a circular pen we get this:
+
+\typebuffer[a] \startlinecorrection \getbuffer[testpath,a] \stoplinecorrection
+
+Filling gives:
+
+\typebuffer[b] \startlinecorrection \getbuffer[testpath,b] \stoplinecorrection
+
+When a \type {pencircle} is used \METAPOST\ delegates the work to the backend
+because \POSTSCRIPT\ has a circular pen, otherwise it has to calculate the
+to|-|be|-|filled shape itself. The backend has to do some path juggling in the
+case of \PDF\ because there a pen transform is different from \POSTSCRIPT.
+
+\typebuffer[c] \startlinecorrection \getbuffer[testpath,c] \stoplinecorrection
+
+Here we draw the shape with a square pen while filling gives:
+
+\typebuffer[d] \startlinecorrection \getbuffer[testpath,d] \stoplinecorrection
+
+In most cases this works out well but there are some hidden issues. These get
+exposed when we use a transparency:
+
+\typebuffer[e] \startlinecorrection \getbuffer[testpath,e] \stoplinecorrection
+
+It are these artifacts that we will explore a little. For that we will render
+quite some graphics. We could show numerous more examples but when you are a
+\CONTEXT\ user you will be able to make plenty yourself by looking at these
+examples.
+
+\startbuffer[e]
+\startMPcode
+    fill fullcircle xyscaled (.8TextWidth,2cm)
+        withpen pensquare scaled 8mm
+        withcolor darkgreen
+        withtransparency (1,.5) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[e] \startlinecorrection \getbuffer[testpath,e] \stoplinecorrection
+
+When we were playing with the \type {envelope} primitive we noticed these
+artifacts and we spent quite some time looking at the code to see where it comes
+from and if we could prevent this. It was then that we realized that the fill
+actually also uses these envelopes but that it gets delayed till the shapes are
+flushed to the backend. That meant that we could use fills with transparencies
+as simple test cases.
+
+The first thing to get rid of is the weird blob at the right end of the fill in
+this example. Not really understanding all what went on, we explored all kind of
+shapes and temporarily disabled some of the code in the \METAPOST\ library to see
+where it crept in. We decided that touching the code to get rid of for instance
+rounding issues or potential direction related side effects made no sense. In the
+end the solution was simple:
+
+\startbuffer[e]
+\startMPcode
+    pen p ; p := makepen(unitsquare rotated eps) ;
+    fill fullcircle xyscaled (.8TextWidth,2cm)
+        withpen p scaled 8mm
+        withcolor darkgreen
+        withtransparency (1,.5) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[e] \startlinecorrection \getbuffer[testpath,e] \stoplinecorrection
+
+We show what the \type {envelope} primitive gives us:
+
+\startbuffer[e]
+\startMPcode
+    pen p ; p := makepen(unitsquare rotated eps) ;
+    path e ; e :=
+        envelope (p scaled 8mm)
+    of
+        (fullcircle xyscaled (.8TextWidth,2cm))
+    ;
+    draw e
+        withpen pencircle scaled 2mm
+        withcolor darkgreen
+        withtransparency (1,.5) ;
+    drawpoints e ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[e] \startlinecorrection \getbuffer[testpath,e] \stoplinecorrection
+
+This looks okay compared to previous the examples but we have only a simple path
+here, while the fill actually has two:
+
+\startbuffer[e]
+\startMPcode
+    pen p ; p := makepen(unitsquare rotated eps) ;
+    enfill fullcircle xyscaled (.8TextWidth,2cm)
+        withpen p scaled 8mm
+        withcolor darkgreen
+        withtransparency (1,.5) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[e] \startlinecorrection \getbuffer[testpath,e] \stoplinecorrection
+
+So how do we get that inner shape? Once you know what a fill actually outputs to
+the backend it is easy! There are two envelopes: the normal one and one made from
+the reverse path (or in internal \METAPOST\ speak: htap). In the previous example
+the \type {enfill} treats the path as a fill but will draw the envelopes instead.
+As with \type {eofill}, \type {eoclip} and path accumulators this is a \METAFUN\
+backend related feature but we introduced \type {enfill} as a new one.
+
+\startbuffer[e]
+\startMPcode
+    pen p ; p := makepen(unitsquare rotated eps) ;
+    draw
+        envelope (p scaled 8mm) of
+        (fullcircle xyscaled (.8TextWidth,2cm))
+        withpen pencircle scaled 2mm
+        withcolor darkgreen
+        withtransparency (1,.5) ;
+    draw
+        envelope (p scaled 8mm) of
+        reverse (fullcircle xyscaled (.8TextWidth,2cm))
+        withpen pencircle scaled 2mm
+        withcolor darkblue
+        withtransparency (1,.5) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[e] \startlinecorrection \getbuffer[testpath,e] \stoplinecorrection
+
+We're now ready for the real deal but keep in mind that what we show here is the
+result of stepwise growing insight combined with adding some features to the
+engine that not only makes it possible to illustrate this but also might prove to
+be useful. The used primitives will be explained later, for now we just stick
+to the results.
+
+\startMPextensions
+    def pentest (expr pth, psh, convex, enhance, width) =
+        image (
+            save p, s, w, pp, somepen ;
+            numeric s ; s := width ;
+            numeric w ; w := (15/100)*s ;
+
+            path p, e, pp, somepen ;
+
+            p := pth scaled s ;
+
+            % gets rid of bad end condition (rectangle) (introduced close points)
+
+            pp := psh rotated eps ;
+
+            if convex :
+                pen somepen ; somepen := makepen (pp) ;
+            else :
+                nep somepen ; somepen := makenep (pp) ;
+            fi ;
+
+            if cycle p : fill else : draw fi p
+                withcolor blue
+                withpen somepen scaled w
+                withtransparency (1,.5)
+            ;
+            drawarrow p ;
+            drawpoints p ;
+
+            path ppp ; ppp := pp scaled w;
+            path qqq ; qqq := convexed ppp;
+
+            for i within p :
+                drawarrow  qqq shifted pathpoint withcolor yellow dashed evenly withpen pencircle scaled 1;
+                drawarrow  ppp shifted pathpoint withcolor white;
+                drawpoints ppp shifted pathpoint withcolor white ;
+            endfor ;
+
+          % for i within arcpointlist 50 of p  :
+          %     draw ppp shifted pathpoint withcolor white ;
+          % endfor ;
+
+            defaultscale := .4 ;
+            e := envelope somepen scaled w of p ;
+          % e := e scrutinized 0.01 ;
+            draw            e withcolor darkgreen withpen pencircle scaled 1mm;
+            drawpoints      e ;
+          % drawpointlabels e withcolor green ;
+            e := envelope somepen scaled w of reverse p ;
+          % e := e scrutinized 0.01 ;
+            draw            e withcolor yellow withpen pencircle scaled 1mm;
+            drawpoints      e ;
+          % drawpointlabels e withcolor yellow ;
+
+            if enhance :
+                e := e scrutinized 0.01 ;
+                draw convexed e withcolor darkmagenta withpen pencircle scaled 2mm ;
+            fi ;
+
+        )
+    enddef ;
+\stopMPextensions
+
+\startMPextensions
+    def TestShapesA(expr pth, convex, enhance, dy) =
+        draw pentest (pth, fullcircle,   convex, enhance, .4TextWidth) shifted (          0,          0) ;
+        draw pentest (pth, fulldiamond,  convex, enhance, .4TextWidth) shifted (.5TextWidth,          0) ;
+        draw pentest (pth, fulltriangle, convex, enhance, .4TextWidth) shifted (          0,dy*TextWidth) ;
+        draw pentest (pth, fullsquare,   convex, enhance, .4TextWidth) shifted (.5TextWidth,dy*TextWidth) ;
+    enddef ;
+
+    def TestShapesB(expr pth, convex, enhance, dy) =
+        draw pentest (pth, starring(-1/3), convex, enhance, .35TextWidth) shifted (          0,          0) ;
+        draw pentest (pth, starring(-1/2), convex, enhance, .35TextWidth) shifted (.5TextWidth,          0) ;
+        draw pentest (pth, starring(-eps), convex, enhance, .35TextWidth) shifted (          0,dy*TextWidth) ;
+        draw pentest (pth, starring(-1/2), convex, enhance, .35TextWidth) shifted (.5TextWidth,dy*TextWidth) ;
+    enddef ;
+\stopMPextensions
+
+\startplacefigure[reference=fig:A:T:F:1,title={Using four different relatively large pens on a circle.}]
+    \startMPcode
+        TestShapesA(fullcircle, true, false, .5) ;
+    \stopMPcode
+\stopplacefigure
+
+\in {Figure} [fig:A:T:F:1] shows a circle filled (or enveloped) with pens made from
+\type {fullcircle}, \type {fulldiamond}, \type {fulltriangle} and \type
+{fullsquare}. The paths that we use for the pens are also shown. The outcome can
+be puzzling but after going over the code (in the engine) and trying to reason
+the logic it becomes clear that the unexpected is mostly due to the fact that
+there is no other way to draw the path (read: meet the criteria).
+
+When looking closely at the results (adding labels to the points and zooming in)
+one will notice more side effects. Because we rotate over \type {eps} to get rid
+of the weird end situation we can end up with more points than we like and these
+are so close to each other that one doesn't notice them. For this we can apply
+the scrutinizer:
+
+\starttyping
+e := e scrutinized 0.01 ;
+\stoptyping
+
+When that is done we can wonder if a simplified (inner) path is possible. I tried
+a few solutions using the \LUA\ interface while Mikael (as mathematician)
+followed the more scientific approach but the results largely depend on the pens
+and shapes.
+
+\startplacefigure[reference=fig:B:T:F:1]
+    \startMPcode
+        TestShapesB(fullcircle, true, false, .5) ;
+    \stopMPcode
+\stopplacefigure
+
+Actually when doing all that we used a more complex pen in several variants. This
+is shown in \in {figure} [fig:B:T:F:1]. Notice the dashed lines here. When a pen
+is defined there is some checking going on. One is that circular pens get no
+treatment at all and just pass through the system. Basically any single point
+cycle is considered as elliptical anyway. Then the path turned into a so called
+\quote {convex} path. It also showed us the real pen being used. When out of
+curiosity I commented that bit of code I noticed that we could achieve
+interesting results. The result is that we now have a \type {convexed} primitive.
+After all the code was there so it took only a few lines to add this primitive.
+In \in {figure} [fig:B:F:F:1] you can see the result of a unconvexed pen.
+
+\startplacefigure[reference=fig:B:F:F:1]
+    \startMPcode
+        TestShapesB(fullcircle, false, false, .5) ;
+    \stopMPcode
+\stopplacefigure
+
+We can also calculate envelopes of non|-|cyclic paths which is demonstrated in
+\in {figure} [fig:B:T:F:2] and \in {figure} [fig:B:F:F:2]. There is however some
+trickery involved. Just to make this easier the \METAFUN\ macro package has a
+type {starring} macro that makes such a star:
+
+\starttyping
+path p ; p := starring(-1/2) rotated eps ;
+\stoptyping
+
+This star can become a pen:
+
+\starttyping
+pen somepen ; somepen := makepen (pp) ;
+\stoptyping
+
+And as mentioned pens get convexed by default. Even worse, whenever we transform
+a pen it gets convexed again. When we fill a shape the pen gets attached to that shape
+and the backend will do the enveloping. The easiest way to consistently avoid
+convexing was to introduce a new pen type.
+
+\starttyping
+nep somepen ; somepen := makenep (pp) ;
+\stoptyping
+
+The somewhat weird short \type {nep} perfectly fits the bill as in Dutch it means
+fake. A pen defined this way stays unconvexed. Actually there is another property
+where pens differ from regular paths: they are double linked. In original
+\METAPOST\ that back (prev) link uses a field in a knot record that is not used
+by pen paths. The path that gets pencilled also abuses one of knot fields for
+keeping track of the offset that a point has relative to the current point in the
+pen. It was good moment to also make regular paths double linked lists. That
+comes at the cost of an extra pointer in the knot record but we could also save
+some space by using smaller slots for other fields. Memory is not our biggest
+worry anyway. \footnote {Of course adding code is but when looking in more detail
+at the code involved it was actually possible to simplify the code a bit so there
+we gained}. Double linking meant that there was no need for doing that when
+making pens. \footnote {It makes it possible to get points relative to the
+current point in iterators over paths that we introduced a while ago, which makes
+for high performance path manipulators.}
+
+\startplacefigure[reference=fig:B:T:F:2]
+    \startMPcode
+        TestShapesB((0,0) -- (1/2,1/2) -- (2/2,0), true, false, .35) ;
+    \stopMPcode
+\stopplacefigure
+
+\startplacefigure[reference=fig:B:F:F:2]
+    \startMPcode
+        TestShapesB((0,0) -- (1/2,1/2) -- (2/2,0), false, false, .35) ;
+    \stopMPcode
+\stopplacefigure
+
+We can apply the \type {convexed} primitive to the inner envelope which is demonstrated
+in \in {figure} [fig:B:T:T:3] and \in {figure} [fig:B:F:T:3]. Of course it is debatable
+how useful this is but as with all these \METAPOST\ shapes, it has some charm.
+
+\startplacefigure[reference=fig:B:T:T:3]
+    \startMPcode
+        TestShapesB(fullcircle, true, true, .5) ;
+    \stopMPcode
+\stopplacefigure
+
+\startplacefigure[reference=fig:B:F:T:3]
+    \startMPcode
+        TestShapesB(fullcircle, false, true, .5) ;
+    \stopMPcode
+\stopplacefigure
+
+% \startplacefigure[reference=fig:B:T:F:2]
+%     \startMPcode
+%         TestShapesB((0,0) -- (1/2,1/2) -- (2/2,0) -- cycle, true, false) ;
+%     \stopMPcode
+% \stopplacefigure
+
+% \startplacefigure[reference=fig:B:F:F:2]
+%     \startMPcode
+%         TestShapesB((0,0) -- (1/2,1/2) -- (2/2,0) -- cycle, false, false) ;
+%     \stopMPcode
+% \stopplacefigure
+
+% \startMPpage[offset=1dk]
+%     enfill         fullcircle scaled 2cm withpen makepen(fullsquare) scaled 1pt withcolor darkred ;
+%     enfill         fullcircle scaled 3cm withpen makepen(fullsquare) scaled 1pt withcolor darkblue ;
+%     enfill reverse fullcircle scaled 1cm withpen makepen(fullsquare) scaled 1pt withcolor darkgreen ;
+% \stopMPpage
+
+% \startMPpage[offset=1dk]
+%     draw envelope makepen(fullsquare)         of (        fullcircle scaled 2cm) withpen pencircle scaled 1pt withcolor darkred ;
+%     draw envelope makepen(fullsquare)         of (reverse fullcircle scaled 3cm) withpen pencircle scaled 1pt withcolor darkblue ;
+%     draw envelope makepen(reverse fullsquare) of (        fullcircle scaled 1cm) withpen pencircle scaled 1pt withcolor darkgreen ;
+% \stopMPpage
+
+\page
+
+To what extend does all this influence the output? As long as we don't use
+transparencies we're quite okay unless we use a pen size that introduces the more
+extreme overshoots. If you think these phenomena only relate to \METAPOST\
+output, you're wrong. Over the past decades I've seen various fonts that exhibit
+the same small spikes and other artifacts btu as we often see the shapes at small
+sizes it goes unnoticed. A particular sensitive areas is variable fonts where,
+when the ranges on which the various dimensions operate are too liberal, you can
+also get these effects. After all, glyphs are filled shapes. To that you can also
+add the fact that they are single (connected) paths drawn with \type {eofill}.
+
+The final format a graphics ends up in can be \PDF. Take the following three
+shapes and watch the subtle side effect of rotating either the to be drawn shape
+or the pen.
+
+\startbuffer[e]
+\startMPcode
+    fill fullcircle xyscaled (5cm,3cm)
+        withpen makepen(fullsquare) scaled 2mm
+        withcolor darkred
+        withtransparency (1,.5) ;
+    fill fullcircle xyscaled (5cm,3cm)
+        shifted (6cm,0)
+        withpen makepen(fullsquare rotated eps) scaled 2mm
+        withcolor darkblue
+        withtransparency (1,.5) ;
+    fill fullcircle rotated eps xyscaled (5cm,3cm)
+        shifted (12cm,0)
+        withpen makepen(fullsquare) scaled 2mm
+        withcolor darkgreen
+        withtransparency (1,.5) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[e] \startlinecorrection \getbuffer[e] \stoplinecorrection
+
+This produces four filled paths in the \PDF\ file, a normal and a reverse path
+per shape. I show the whole output because you can see how some points of the
+\quote {inside} curve are sort of duplicated: they have the same coordinates but
+can have different control points.
+
+\starttabulate[|lT|lT|lT|]
+\BC        \BC inner                               \BC outer                      \NC \NR
+\BC left   \NC 25=26 31=32 35=36 39=40 43=25       \NC                            \NC \NR
+\BC middle \NC                                     \NC 49=50=51 54=55 58=59 62=63 \NC \NR
+\BC right  \NC 107=108=109 112=113 116=117 120=121 \NC 89=105                     \NC \NR
+\stoptabulate
+
+Here is the output. Each combination is between bound by the transparency
+operators \type {/Tr1} and \type {/Tr0} and has different colors.
+
+\startlinenumbering
+\starttyping
+% mps graphic 1: begin
+q
+/Tr1 gs
+0.625 0 0 rg 0.625 0 0 RG
+10 M
+1 j
+ 45.354315 2.83464 m
+ 45.354315 14.111559 40.874577 24.926605 32.900591 32.900591 c
+ 24.926605 40.874577 14.111559 45.354315 2.83464 45.354315 c
+  2.83464 45.354315 -2.83464 45.354315 -2.83464 45.354315 c
+ -2.83464 45.354315 l
+-14.111559 45.354315 -24.926605 40.874577 -32.900591 32.900591 c
+-40.874577 24.926605 -45.354315 14.111559 -45.354315 2.83464 c
+-45.354315 2.83464 -45.354315 -2.83464 -45.354315 -2.83464 c
+-45.354315 -2.83464 l
+-45.354315 -14.111559 -40.874577 -24.926605 -32.900591 -32.900591 c
+-24.926605 -40.874577 -14.111559 -45.354315 -2.83464 -45.354315 c
+-2.83464 -45.354315 2.83464 -45.354315 2.83464 -45.354315 c
+2.83464 -45.354315 l
+14.111559 -45.354315 24.926605 -40.874577 32.900591 -32.900591 c
+40.874577 -24.926605 45.354315 -14.111559 45.354315 -2.83464 c
+45.354315 -2.83464 45.354315 2.83464 45.354315 2.83464 c
+45.354315 2.83464 l
+h f
+39.685035 -2.83464 m
+39.685035 -2.83464 45.354315 -2.83464 45.354315 -2.83464 c
+45.354315 -2.83464 45.354315 2.83464 45.354315 2.83464 c
+45.354315 2.83464 39.685035 2.83464 39.685035 2.83464 c
+39.685035 -8.442279 35.205297 -19.257325 27.231311 -27.231311 c
+19.257325 -35.205297 8.442279 -39.685035 -2.83464 -39.685035 c
+-2.83464 -39.685035 l
+-2.83464 -39.685035 2.83464 -39.685035 2.83464 -39.685035 c
+-8.442279 -39.685035 -19.257325 -35.205297 -27.231311 -27.231311 c
+-35.205297 -19.257325 -39.685035 -8.442279 -39.685035 2.83464 c
+-39.685035 2.83464 l
+-39.685035 2.83464 -39.685035 -2.83464 -39.685035 -2.83464 c
+-39.685035 8.442279 -35.205297 19.257325 -27.231311 27.231311 c
+-19.257325 35.205297 -8.442279 39.685035 2.83464 39.685035 c
+2.83464 39.685035 l
+2.83464 39.685035 -2.83464 39.685035 -2.83464 39.685035 c
+8.442279 39.685035 19.257325 35.205297 27.231311 27.231311 c
+35.205297 19.257325 39.685035 8.442279 39.685035 -2.83464 c
+39.685035 -2.83464 l
+h f
+/Tr0 gs
+0 g 0 G
+/Tr1 gs
+0 0 0.625 rg 0 0 0.625 RG
+158.740139 -2.834616 m
+158.740139 -2.834252 l
+158.740139 -2.834252 158.740091 2.835028 158.740091 2.835028 c
+158.739994 14.111816 154.260267 24.926715 146.286366 32.900615 c
+138.31238 40.874601 127.497335 45.354339 116.220416 45.354339 c
+116.220052 45.354339 l
+116.220052 45.354339 110.550772 45.354291 110.550772 45.354291 c
+99.273984 45.354194 88.459085 40.874467 80.485185 32.900566 c
+72.511199 24.92658 68.031461 14.111535 68.031461 2.834616 c
+68.031461 2.834252 l
+68.031461 2.834252 68.031509 -2.835028 68.031509 -2.835028 c
+68.031606 -14.111816 72.511333 -24.926715 80.485234 -32.900615 c
+88.45922 -40.874601 99.274265 -45.354339 110.551184 -45.354339 c
+110.551548 -45.354339 l
+110.551548 -45.354339 116.220828 -45.354291 116.220828 -45.354291 c
+127.497616 -45.354194 138.312515 -40.874467 146.286415 -32.900566 c
+154.260401 -24.92658 158.740139 -14.111535 158.740139 -2.834616 c
+h f
+153.070811 2.834616 m
+153.070811 -8.442303 148.591072 -19.257349 140.617086 -27.231335 c
+132.643186 -35.205235 121.828288 -39.684963 110.5515 -39.685059 c
+110.5515 -39.685059 116.22078 -39.685011 116.22078 -39.685011 c
+116.220416 -39.685011 l
+104.943497 -39.685011 94.128451 -35.205272 86.154465 -27.231286 c
+78.180565 -19.257386 73.700837 -8.442488 73.700741 2.8343 c
+73.700741 2.8343 73.700789 -2.83498 73.700789 -2.83498 c
+73.700789 -2.834616 l
+73.700789 8.442303 78.180528 19.257349 86.154514 27.231335 c
+94.128414 35.205235 104.943312 39.684963 116.2201 39.685059 c
+116.2201 39.685059 110.55082 39.685011 110.55082 39.685011 c
+110.551184 39.685011 l
+121.828103 39.685011 132.643149 35.205272 140.617135 27.231286 c
+148.591035 19.257386 153.070763 8.442488 153.070859 -2.8343 c
+153.070859 -2.8343 153.070811 2.83498 153.070811 2.83498 c
+153.070811 2.834616 l
+h f
+/Tr0 gs
+0 g 0 G
+/Tr1 gs
+0 0.625 0 rg 0 0.625 0 RG
+272.125915 2.835004 m
+272.125819 14.111923 267.645988 24.92693 259.671934 32.900848 c
+251.697965 40.87468 240.883028 45.354315 229.606241 45.354315 c
+229.606241 45.354315 223.936961 45.354315 223.936961 45.354315 c
+223.936596 45.354315 l
+212.659677 45.354219 201.84467 40.874388 193.870752 32.900334 c
+185.89692 24.926365 181.417285 14.111428 181.417285 2.834641 c
+181.417285 2.834641 181.417285 -2.834639 181.417285 -2.834639 c
+181.417285 -2.835004 l
+181.417381 -14.111923 185.897212 -24.92693 193.871266 -32.900848 c
+201.845235 -40.87468 212.660172 -45.354315 223.936959 -45.354315 c
+223.936959 -45.354315 229.606239 -45.354315 229.606239 -45.354315 c
+229.606604 -45.354315 l
+240.883523 -45.354219 251.69853 -40.874388 259.672448 -32.900334 c
+267.64628 -24.926365 272.125915 -14.111428 272.125915 -2.834641 c
+272.125915 -2.834641 272.125915 2.834639 272.125915 2.834639 c
+272.125915 2.835004 l
+h f
+266.456635 -2.834276 m
+266.456635 -2.834641 l
+266.456635 -2.834641 266.456635 2.834639 266.456635 2.834639 c
+266.456635 -8.442148 261.977 -19.257085 254.003168 -27.231054 c
+246.02925 -35.205108 235.214243 -39.684939 223.937324 -39.685035 c
+223.936959 -39.685035 l
+223.936959 -39.685035 229.606239 -39.685035 229.606239 -39.685035 c
+218.329452 -39.685035 207.514515 -35.2054 199.540546 -27.231568 c
+191.566492 -19.25765 187.086661 -8.442643 187.086565 2.834276 c
+187.086565 2.834641 l
+187.086565 2.834641 187.086565 -2.834639 187.086565 -2.834639 c
+187.086565 8.442148 191.5662 19.257085 199.540032 27.231054 c
+207.51395 35.205108 218.328957 39.684939 229.605876 39.685035 c
+229.606241 39.685035 l
+229.606241 39.685035 223.936961 39.685035 223.936961 39.685035 c
+235.213748 39.685035 246.028685 35.2054 254.002654 27.231568 c
+261.976708 19.25765 266.456539 8.442643 266.456635 -2.834276 c
+h f
+/Tr0 gs
+0 g 0 G
+Q
+% mps graphic 1: end
+\stoptyping
+\stoplinenumbering
+
+The duplicates differ per variant and as they are effective \type {lineto}
+combine with \type {curveto} we can consider removing the \type {lineto}'s. This
+can either be done in the backend or we can decide to do that in the \METAPOST\
+library during the export. \footnote {In the end I settled on introducing a move
+tolerance in addition to the bend tolerance that we already have in the export.
+The default value of \cldcontext {"\letterpercent .6N", metapost .
+getmovetolerance ()} removes 14 lines from the above \PDF\ code.}
+
+The \type {tracingspecs} flag can help us to see what happens deep down when
+
+envelopes are made. It will show the intermediate path on the console.
+
+\starttyping
+tracingspecs := 1;
+path e ; e := envelope (makepen(fullsquare) scaled 2mm) of (fullcircle scaled 3cm) ;
+show(e);
+\stoptyping
+
+The intermediate path is reported as:
+
+\starttyping
+   % beginning with      offset ( 2.83464, 2.83464)
+   ( 42.51968, 0       ) .. controls ( 42.51968, 11.27742) and ( 38.03908, 22.09160)
+.. ( 30.06534, 30.06534) .. controls ( 22.09160, 38.03908) and ( 11.27742, 42.51968)
+   % counterclockwise to offset (-2.83464, 2.83464)
+.. (  0,       42.51968) .. controls (  0,       42.51968) and (  0,       42.51968)
+.. (  0,       42.51968) .. controls (-11.27742, 42.51968) and (-22.09160, 38.03908)
+.. (-30.06534, 30.06534) ..controls (-38.03908, 22.09160) and (-42.51968, 11.27742)
+   % counterclockwise to offset (-2.83464,-2.83464)
+.. (-42.51968,  0      ) .. controls (-42.51968,  0      ) and (-42.51968,  0      )
+.. (-42.51968,  0      ) .. controls (-42.51968,-11.27742) and (-38.03908,-22.09160)
+.. (-30.06534,-30.06534) .. controls (-22.0916, -38.03908) and (-11.27742,-42.51968)
+   % counterclockwise to offset ( 2.83464,-2.83464)
+.. (  0,      -42.51968) .. controls (  0,      -42.51968) and (  0,      -42.51968)
+.. (  0,      -42.51968) .. controls ( 11.27742,-42.51968) and ( 22.0916, -38.03908)
+.. ( 30.06534,-30.06534) .. controls ( 38.03908,-22.09160) and ( 42.51968,-11.27742)
+   % counterclockwise to offset ( 2.83464, 2.83464)
+.. ( 42.51968,  0      ) .. controls ( 42.51968,  0      ) and ( 42.51968,  0      )
+.. ( 42.51968,  0      )
+&  cycle
+\stoptyping
+
+The result becomes:
+
+\starttyping
+   ( 45.35432,  2.83464) .. controls ( 45.35432, 14.11206) and ( 40.87372, 24.92624)
+.. ( 32.89998, 32.89998) .. controls ( 24.92624, 40.87372) and ( 14.11206, 45.35432)
+.. (  2.83464, 45.35432) .. controls (  2.83464, 45.35432) and ( -2.83464, 45.35432)
+.. ( -2.83464, 45.35432) .. controls ( -2.83464, 45.35432) and ( -2.83464, 45.35432)
+.. ( -2.83464, 45.35432) .. controls (-14.11206, 45.35432) and (-24.92624, 40.87372)
+.. (-32.89998, 32.89998) .. controls (-40.87372, 24.92624) and (-45.35432, 14.11206)
+.. (-45.35432,  2.83464) .. controls (-45.35432,  2.83464) and (-45.35432, -2.83464)
+.. (-45.35432, -2.83464) .. controls (-45.35432, -2.83464) and (-45.35432, -2.83464)
+.. (-45.35432, -2.83464) .. controls (-45.35432,-14.11206) and (-40.87372,-24.92624)
+.. (-32.89998,-32.89998) .. controls (-24.92624,-40.87372) and (-14.11206,-45.35432)
+.. ( -2.83464,-45.35432) .. controls ( -2.83464,-45.35432) and (  2.83464,-45.35432)
+.. (  2.83464,-45.35432) .. controls (  2.83464,-45.35432) and (  2.83464,-45.35432)
+.. (  2.83464,-45.35432) .. controls ( 14.11206,-45.35432) and ( 24.92624,-40.87372)
+.. ( 32.89998,-32.89998) .. controls ( 40.87372,-24.92624) and ( 45.35432,-14.11206)
+.. ( 45.35432, -2.83464) .. controls ( 45.35432, -2.83464) and ( 45.35432,  2.83464)
+.. ( 45.35432,  2.83464) .. controls ( 45.35432,  2.83464) and ( 45.35432,  2.83464)
+.. cycle
+\stoptyping
+
+Numerous experiments by Mikael and me lead to the conclusion that both stages can
+introduce the duplicate points and that any messing with that during envelop
+generation time has negative side effects. However, when we export the path we
+can definitely get rid of them. They are harmless but we're talking quality
+control here and \TEX\ and \METAPOST\ is all about quality!
+
+As usual, playing with mechanisms like this gets one wondering about similar cases,
+for instance variants of dashing.
+
+\startbuffer[e]
+\startMPcode
+vardef dashing (expr pth, shp, stp) =
+    for i within arcpointlist stp of pth :
+        shp
+            rotated angle(pathdirection)
+            shifted pathpoint
+        &&
+    endfor nocycle
+enddef ;
+
+path parrA ; parrA :=
+    (0,0) -- (0,-1) -- (2,-1) -- (2,-2) -- (4,0) -- (2,2) -- (2,1) -- (0,1) -- (0,0)
+;
+path parrB ; parrB :=
+    parrA -- (0,-1) -- (2,-1) -- (2,-2) -- (4,0)
+;
+path p ; p := fullcircle scaled 2cm ;
+
+fill (dashing (p, parrA, 25) && cycle)                 withtransparency (1,.5) ;
+draw (dashing (p, parrA, 25) && cycle)                 withtransparency (1,.5) ;
+fill (dashing (p, parrB, 25) && cycle) shifted (3cm,0) withtransparency (1,.5) ;
+draw (dashing (p, parrB, 25) && cycle) shifted (3cm,0) withtransparency (1,.5) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[e]
+
+In \in {figure} [fig:DASHING:1] we see the result. Of course how well if comes out
+depends on the definition but what is special here is that we use the double
+ampersand operator. That one will connect the paths without complaining about the
+end and being point not colliding. I suppose there was a good reason for making
+that a condition in the case of fonts, after all \METAFONT\ is what it came from,
+but there is no real reason for it. It is a cheap extension anyway. At the same
+time I decided to add a native \quote {direction} operator. The number of extra
+bytes in the binary is probably less than what is needed in memory to store the
+macro and the advantage is that we save an extra run over the path to reach the
+point we're consulting. \footnote {In case you wonder, \ this is how the macro
+definition looks like: \typ {vardef direction expr t of p = postcontrol t of p -
+precontrol t of p enddef ;}. Because points are searched from from the start
+there are two lookups needed. Normally this is no problem but Mikael and I are
+playing with really large paths, like those that come from drawing functions.}
+
+\startplacefigure[reference=fig:DASHING:1,title=A somewhat related rendering.]
+    \scale[width=\textwidth]{\getbuffer[e]}
+\stopplacefigure
+
+In case you wonder why we need this feature, here is an argument:
+
+\startbuffer[e]
+\startMPcode
+    path s ; s := fullcircle scaled 4cm ; pickup pencircle scaled 5mm ;
+
+    draw (s shifted (0cm,0) && s shifted (3cm,0) && s shifted (6cm,0))
+        withcolor "darkred" withtransparency (1,.5) ;
+
+    currentpicture := currentpicture shifted (-8cm,0) ;
+
+    draw s shifted (0cm,0)
+        withcolor "darkblue" withtransparency (1,.5) ;
+    draw s shifted (3cm,0)
+        withcolor "darkblue" withtransparency (1,.5) ;
+    draw s shifted (6cm,0)
+        withcolor "darkblue" withtransparency (1,.5) ;
+
+    currentpicture := currentpicture shifted (-8cm,0) ;
+
+    nodraw s shifted (0cm,0) ;
+    nodraw s shifted (3cm,0) ;
+    nodraw s shifted (6cm,0) ;
+    dodraw origin withcolor "darkgreen" withtransparency (1,.5) ;
+
+\stopMPcode
+\stopbuffer
+
+\typebuffer[e]
+
+The results are shown in \in {figure} [fig:DASHING:2]. Which if the alternatives
+you prefer also depends on how you generate the shape. The \type {nodraw} variant
+for instance can be mixed with calculations without the need to revert to \type
+{hide}.
+
+\startplacefigure[reference=fig:DASHING:1,title=Do you see the difference?]
+    \scale[width=\textwidth]{\getbuffer[e]}
+\stopplacefigure
+
+\startbuffer[e]
+\startMPcode
+vardef dashing (expr pth, shp, stp) =
+    for i within arcpointlist stp of pth :
+        shp
+            rotated angle(pathdirection)
+            shifted pathpoint
+        &&
+    endfor nocycle
+enddef ;
+
+path e, p ; numeric n ;
+e := (0,0) -- (0,-1) -- (2,-1) -- (2,-2) -- (4,0) -- (2,2) -- (2,1) -- (0,1) -- (0,0) ;
+n := 10 * bbwidth(e) ;
+p := function(1,"x","x/4 + sin(x)",epsed(0.1),epsed(4*pi),0.01) scaled 2cm ;
+
+fill (dashing (p, e scaled 2.5, n) && cycle) withcolor .6white    ;
+draw (dashing (p, e scaled 2.5, n) && cycle) withcolor  darkgreen ;
+
+currentpicture := currentpicture shifted (0,-2cm) ;
+
+n := 20 * bbwidth(e) ;
+fill (dashing (p, e, n) && cycle) withcolor .6white   ;
+draw (dashing (p, e, n) && cycle) withcolor  darkblue ;
+\stopMPcode
+\stopbuffer
+
+\in {Figure} [fig:DASHING:3] demonstrates how far we've come. Mikaels fancy
+arrows nicely follow the shape of the function. Of course you need to make sure
+that these arrows are reasonably scaled. The definition of \type {dashing}
+demonstrates a few primitives that permits efficient iteration over a path and
+\type {arcpointlist} is sort of a path.
+
+\startplacefigure[reference=fig:DASHING:3,title=Advanced pseudo dashing.]
+    \scale[width=\textwidth]{\getbuffer[e]}
+\stopplacefigure
+
+\typebuffer[e]
+
+\stopchapter
+
+\stopcomponent
+
+% \startMPpage[offset=1dk]
+% path theta, xaxis, yaxis;
+%
+% xaxis := (-4, 0) -- (5, 0) ;
+% yaxis := ( 0,-2) -- (0, 2) ;
+% theta := (-3, 0) -- (0, 0) &&
+%          ( 0, 1) -- (3, 1) &&
+%          ( 3,-1) -- (5,-1) ;
+%
+% draw theta scaled 2cm
+%     withpen pencircle scaled 2
+%     withcolor darkred ;
+%
+% drawarrow xaxis scaled 2cm ;
+% drawarrow yaxis scaled 2cm ;
+% \stopMPpage
+
+% \startMPpage[offset=1dk]
+%     vardef dashing (expr pth, shp, stp) =
+%         for i within arcpointlist stp of pth :
+%             shp
+%                 rotated angle(pathdirection)
+%                 shifted pathpoint
+%             &&
+%         endfor nocycle
+%     enddef ;
+%
+%     path e, p ; numeric n ;
+%     e := (0,0) -- (0,-1) -- (2,-1) -- (2,-2) -- (4,0) -- (2,2) -- (2,1) -- (0,1) -- (0,0) ;
+%     n := 30 * bbwidth(e) ; % 80 ;
+%     p := function(1,"x","x/4 + sin(x)",epsed(0.1),epsed(4*pi),0.01) scaled 2cm ;
+
+%   % draw p withpen pencircle scaled .1mm withcolor darkblue ;
+
+%     eofill (dashing (p, e, n) && cycle) withcolor .6white    ; % withtransparency (1,.5) ;
+%     draw   (dashing (p, e, n) && cycle) withcolor  darkgreen ; % withtransparency (1,.5) ;
+% \stopMPpage
+
+% \startMPpage[offset=1dk]
+% path theta, xaxis, yaxis;
+%
+% xaxis := (-4,0) -- (4,0) ;
+% yaxis := (0,-1/4) -- (0,3/2) ;
+% theta := (-3,0) -- (0,0) && (0,1) -- (3,1) ;
+%
+% pickup pencircle scaled 1mm;
+%
+% drawarrow xaxis scaled 2cm ;
+% drawarrow yaxis scaled 2cm ;
+% draw theta scaled 2cm withcolor darkred ;
+%
+% currentpicture := currentpicture shifted (0,5cm) ;
+%
+% drawarrow xaxis scaled 2cm ;
+% drawarrow yaxis scaled 2cm ;
+%
+% draw            (theta && cycle) scaled 2cm withcolor darkyellow ;
+% drawpoints      (theta && cycle) scaled 2cm withcolor darkyellow ;
+% drawpointlabels (theta && cycle) scaled 2cm withcolor darkyellow ;
+% fill            (theta && cycle) scaled 2cm withcolor "orange" withpen pencircle scaled .5mm;
+%
+% show(theta );
+% show(theta && cycle);
+%
+% \stopMPpage
+
+% \startMPpage[offset=1dk]
+%     path theta, xaxis, yaxis, thetaA, thetaB ;
+%
+%     xaxis := (-4,0) -- (4,0) ;
+%     yaxis := (0,-1/4) -- (0,3/2) ;
+%
+%     thetaA := (-3,0) -- (0,0) -- (-2,1) -- cycle ;
+%     thetaB := ( 0,1) -- (3,1) -- ( 2,0) -- cycle ;
+%     theta  := thetaA && thetaB ;
+%
+%     pickup pencircle scaled 1mm;
+%
+%     drawarrow xaxis scaled 2cm ;
+%     drawarrow yaxis scaled 2cm ;
+%     draw theta scaled 2cm withcolor darkred ;
+%
+%     currentpicture := currentpicture shifted (0,5cm) ;
+%
+%     drawarrow xaxis scaled 2cm ;
+%     drawarrow yaxis scaled 2cm ;
+%
+%     draw (theta && cycle) scaled 2cm withcolor darkyellow ;
+%     fill (theta && cycle) scaled 2cm withcolor "orange" withpen pencircle scaled .5mm;
+% \stopMPpage
+
+% \startMPpage
+% picture q ; q := lmt_outline [ text = "\TEX", kind = "path" ] ;
+% path qq ; qq := for i within q :
+%     if picture i : for j within i : if stroked j :
+%         pathpart j &&
+%     fi endfor fi
+% endfor nocycle ;
+%
+% path e, p ; numeric n ;
+% e := qq shifted - center qq xsized 1mm ;
+% n := 30 * bbwidth(e) ;
+% p := function(1,"x","x/4 + sin(x)",epsed(0.1),epsed(4*pi),0.01) scaled 2cm ;
+%
+% draw (dashing (p, e scaled 2.5, n) && cycle)
+%     withpen pencircle scaled .1
+%     withcolor darkgreen
+% ;
+%
+% path e, p ; numeric n ;
+% e := qq shifted - center qq xsized .1mm ;
+% n := 2000 * bbwidth(e) ;
+% p := function(1,"x","x/4 + sin(x)",epsed(0.1),epsed(4*pi),0.01) scaled 2cm ;
+
+% draw (dashing (p, e scaled 2.5, n) && cycle)
+%     withpen pencircle scaled .01
+%     withcolor darkgreen
+% ;
+% \stopMPpage

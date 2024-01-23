@@ -127,6 +127,13 @@ typedef struct scaledwhd {
     };
 } scaledwhd;
 
+typedef struct scaledkrn {
+    scaled bl;
+    scaled br;
+    scaled tl;
+    scaled tr;
+} scaledkrn;
+
 extern halfword tex_badness(
     scaled t,
     scaled s
@@ -207,6 +214,8 @@ extern halfword tex_badness(
 
 # define min_space_factor                           0 /*tex watch out: |\spacefactor| cannot be zero but the sf code can!*/
 # define max_space_factor                      0x7FFF /*tex |077777| */
+# define min_scale_factor                           0 
+# define max_scale_factor                      100000 /*tex for now */
 # define default_space_factor                    1000
 # define space_factor_threshold                  2000
 # define default_tolerance                      10000
@@ -313,6 +322,8 @@ extern halfword tex_badness(
 # define max_size_of_word                      1024 /*tex More than enough (esp. since this can end up on the stack. */
 # define min_limited_scale                        0 /*tex Zero is a signal too. */
 # define max_limited_scale                     1000
+# define min_math_style_scale                     0 /*tex Zero is a signal too. */
+# define max_math_style_scale                  2000
 # define max_parameter_index                     15
 
 # define max_mark_index         (max_n_of_marks         - 1)
@@ -555,7 +566,6 @@ typedef union tokenword {
 # define stp_body_size         1000000
 
 # define max_node_size       100000000    /* Currently these are the memory words! */
-//define siz_node_size         5000000
 # define siz_node_size        25000000
 # define min_node_size         2000000    /* Currently these are the memory words! */
 # define stp_node_size          500000    /* Currently these are the memory words! */
@@ -794,6 +804,24 @@ typedef struct line_break_properties {
     halfword optional_found;
     halfword single_line_penalty;
 } line_break_properties;
+
+typedef enum sparse_identifiers {
+    unknown_sparse_identifier,
+    catcode_sparse_identifier,
+    lccode_sparse_identifier,
+    uccode_sparse_identifier,
+    sfcode_sparse_identifier,
+    hjcode_sparse_identifier,
+    hmcode_sparse_identifier,
+    hccode_sparse_identifier,
+    amcode_sparse_identifier,
+    fontchar_sparse_identifier,
+    mathcode_sparse_identifier,
+    delcode_sparse_identifier,
+    mathfont_sparse_identifier, 
+    mathparam_sparse_identifier, 
+    user_sparse_identifier,
+} sparse_identifiers;
 
 # endif
 

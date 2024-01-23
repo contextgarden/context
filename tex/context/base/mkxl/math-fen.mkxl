@@ -56,8 +56,10 @@
    \c!distance=\zerocount,
    \c!topspace=\zeropoint,
    \c!bottomspace=\zeropoint,
-   \c!overflow=\v!no,
-   \c!factor=\v!auto]
+ % \c!overflow=\v!no,
+   \c!overflow=\v!auto,
+   \c!factor=\v!auto,
+   \c!snap=\mathematicsparameter\c!snap] % "28
 
 \appendtoks
     \ifcstok{\mathfenceparameter\c!define}\v!yes
@@ -197,18 +199,28 @@
          \Uvextensible
        \else
          #1% \Uleft \Umiddle \Uleft
-         \ifx#1\Umiddle \ifx\p_overflow\v!no
-           nooverflow %
-         \fi \fi
+         \ifx#1\Umiddle
+           \ifx\p_overflow\v!auto
+             middle %
+             nooverflow %
+           \orelse\ifx\p_overflow\v!no
+             nooverflow %
+           \fi
+         \fi
        \fi
      \orelse\ifx\p_factor\v!auto
        \ifconditional\c_math_fenced_level_mode
          \Uvextensible
        \else
          #1% \Uleft \Umiddle \Uleft
-        \ifx#1\Umiddle\ifx\p_overflow\v!no
-          nooverflow %
-        \fi \fi
+        \ifx#1\Umiddle
+           \ifx\p_overflow\v!auto
+             middle %
+             nooverflow %
+           \orelse\ifx\p_overflow\v!no
+             nooverflow %
+           \fi
+        \fi
        \fi
      \orelse\ifx\p_factor\v!none
        \math_fenced_common_factor_none
@@ -236,6 +248,10 @@
      %
      \ifzero\c_math_factor_fenced\else
          \s!factor \c_math_factor_fenced
+     \fi
+     %
+     \ifcstok{\mathfenceparameter\c!snap}\v!yes
+        \s!single\space
      \fi
      %
      \math_fenced_trace
@@ -576,7 +592,7 @@
 
 \defcsname\??fencelevels+\endcsname{\advanceby\c_math_fenced_level\plusone  }
 \defcsname\??fencelevels-\endcsname{\advanceby\c_math_fenced_level\minusone }
-\defcsname\??fencelevels=\endcsname        {\c_math_fenced_level\zerocount}
+\defcsname\??fencelevels=\endcsname          {\c_math_fenced_level\zerocount}
 
 \letcsname\??fencelevels*\endcsname\donothing
 
@@ -756,7 +772,7 @@
 \def\math_fenced_x_middle
   {\math_fenced_common\Umiddle\c!middleclass\math_fenced_x_p_middle\c!middlesource}
 
-% the expandafter permits \left\Uchar...
+% the expandafter permits \left\tocharacter...
 
 \protected\def\lfence{\afterassignment\math_fenced_x_left  \expandafter\let\expandafter\math_fenced_x_p_left}
 \protected\def\rfence{\afterassignment\math_fenced_x_right \expandafter\let\expandafter\math_fenced_x_p_right}

@@ -99,17 +99,19 @@ static unsigned char lmt_tochar(lua_State *L, int index)
 
 static void potracelib_aux_get_parameters(lua_State *L, int index, potracer *p) 
 {
-    if (lua_getfield(L, index, "size")      == LUA_TNUMBER ) { p->parameters->turdsize     =   lmt_tointeger(L, -1); } lua_pop(L, 1);
-    if (lua_getfield(L, index, "threshold") == LUA_TNUMBER ) { p->parameters->alphamax     =   lua_tonumber (L, -1); } lua_pop(L, 1);
-    if (lua_getfield(L, index, "tolerance") == LUA_TNUMBER ) { p->parameters->opttolerance =   lua_tonumber (L, -1); } lua_pop(L, 1);
-    if (lua_getfield(L, index, "optimize")  == LUA_TBOOLEAN) { p->parameters->opticurve    =   lua_toboolean(L, -1); } lua_pop(L, 1);
-    if (lua_getfield(L, index, "value")     == LUA_TSTRING ) { p->value                    =   lmt_tochar   (L, -1); } lua_pop(L, 1);
-    if (lua_getfield(L, index, "negate")    == LUA_TBOOLEAN) { p->match                    = ! lua_toboolean(L, -1); } lua_pop(L, 1);
+    if (lua_type(L, index) == LUA_TTABLE) {
+        if (lua_getfield(L, index, "size")      == LUA_TNUMBER ) { p->parameters->turdsize     =   lmt_tointeger(L, -1); } lua_pop(L, 1);
+        if (lua_getfield(L, index, "threshold") == LUA_TNUMBER ) { p->parameters->alphamax     =   lua_tonumber (L, -1); } lua_pop(L, 1);
+        if (lua_getfield(L, index, "tolerance") == LUA_TNUMBER ) { p->parameters->opttolerance =   lua_tonumber (L, -1); } lua_pop(L, 1);
+        if (lua_getfield(L, index, "optimize")  == LUA_TBOOLEAN) { p->parameters->opticurve    =   lua_toboolean(L, -1); } lua_pop(L, 1);
+        if (lua_getfield(L, index, "value")     == LUA_TSTRING ) { p->value                    =   lmt_tochar   (L, -1); } lua_pop(L, 1);
+        if (lua_getfield(L, index, "negate")    == LUA_TBOOLEAN) { p->match                    = ! lua_toboolean(L, -1); } lua_pop(L, 1);
 
-    if (lua_getfield(L, index, "policy") == LUA_TSTRING ) { 
-        p->parameters->turnpolicy = luaL_checkoption(L, -1, "minority", policies); 
-    } 
-    lua_pop(L, 1);
+        if (lua_getfield(L, index, "policy") == LUA_TSTRING ) { 
+            p->parameters->turnpolicy = luaL_checkoption(L, -1, "minority", policies); 
+        } 
+        lua_pop(L, 1);
+    }
 }
 
 static void potracelib_get_bitmap(potracer *p, unsigned char match) 
@@ -124,7 +126,7 @@ static void potracelib_get_bitmap(potracer *p, unsigned char match)
             if (p->nx != 1 || p->ny != 1) { 
                 /* maybe a 3x3 fast one */
                 for (int x = 0; x < p->width; x += p->nx) {
-                    int bp = (p->height/p->nx) * (x/p->nx);
+                    int bp = (p->height/p->ny) * (x/p->nx); /* yet unchecked */
                     for (int y = 0; y < p->height; y += p->ny) {
                         unsigned char b = (unsigned char) bytes[bp++] == c ? 1 : 0;
                         if (b) { 
@@ -140,19 +142,20 @@ static void potracelib_get_bitmap(potracer *p, unsigned char match)
             } else { /* fast one */
                 for (int x = 0; x < p->width; x++) {
                     int bp = p->height * x;
+                    int dy = p->height - 1;
                     for (int y = 0; y < p->height; y++) {
                         unsigned char b = (unsigned char) bytes[bp++] == c ? 1 : 0;
                         if (b) { 
-                            BM_PUT(p->bitmap, x, p->height - y - 1, b);
+                            BM_PUT(p->bitmap, x, dy - y, b);
                         }
                     }
                 }
             }
         } else {
             if (p->nx != 1 || p->ny != 1) { 
-                /* maybe a 3x3 fast one */
+                /* maybe a 3x3 fast one and also when one of them is 1 */
                 for (int y = 0; y < p->height; y += p->ny) {
-                    int bp = (p->width/p->ny) * (y/p->ny);
+                    int bp = (p->width/p->nx) * (y/p->ny);
                     for (int x = 0; x < p->width; x += p->nx) {
                         unsigned char b = (unsigned char) bytes[bp++] == c ? 1 : 0;
                         if (b) { 
@@ -168,10 +171,11 @@ static void potracelib_get_bitmap(potracer *p, unsigned char match)
             } else { /* fast one */
                 for (int y = 0; y < p->height; y++) {
                     int bp = p->width * y;
+                    int dy = p->height - y - 1; 
                     for (int x = 0; x < p->width; x++) {
                         unsigned char b = ((unsigned char) bytes[bp++] == c ? 1 : 0) == match;
                         if (b) { 
-                            BM_PUT(p->bitmap, x, p->height - y - 1, b);
+                            BM_PUT(p->bitmap, x, dy, b);
                         }
                     }
                 }
@@ -180,8 +184,7 @@ static void potracelib_get_bitmap(potracer *p, unsigned char match)
     }
 }
 
-
-# define max_explode 3
+# define max_explode 4
 
 static int potracelib_new(lua_State *L) 
 {
@@ -334,7 +337,8 @@ static int potracelib_totable_normal(lua_State *L, potracer *p, int first, int l
         int n = entry->curve.n;
         int m = n + 1;
         int *tag = entry->curve.tag;
-        int sign = (entry->next == NULL || entry->next->sign == '+') ? 1 : 0;
+//        int sign = (entry->next == NULL || entry->next->sign == '+') ? 1 : 0;
+        int sign = (entry->sign == '+') ? 1 : 0;
         potrace_dpoint_t (*c)[3] =entry->curve.c;
         lua_createtable(L, m, sign ? 2 : 1);
         if (sign) {
@@ -394,7 +398,8 @@ static int potracelib_totable_debug(lua_State *L, potracer *p, int first, int la
     while (entry) { 
         point_t *pt = entry->priv->pt;
         int segments = 0;
-        int sign = (entry->next == NULL || entry->next->sign == '+') ? 1 : 0;
+//        int sign = (entry->next == NULL || entry->next->sign == '+') ? 1 : 0;
+        int sign = (entry->sign == '+') ? 1 : 0;
         lua_newtable(L);
         if (sign) {
             lua_push_boolean_at_key(L, sign, 1);
@@ -407,33 +412,33 @@ static int potracelib_totable_debug(lua_State *L, potracer *p, int first, int la
         if (sign)  { 
             point_t cur = pt[entry->priv->len - 1];
             point_t prev = cur; 
-            lua_push_number_at_index(L, ++segments, cur.x);
-            lua_push_number_at_index(L, ++segments, cur.y);
+            lua_push_integer_at_index(L, ++segments, cur.x);
+            lua_push_integer_at_index(L, ++segments, cur.y);
             for (int i = 0; i < entry->priv->len; i++) {
                 if (pt[i].x != cur.x && pt[i].y != cur.y) {
                     cur = prev;
-                    lua_push_number_at_index(L, ++segments, cur.x);
-                    lua_push_number_at_index(L, ++segments, cur.y);
+                    lua_push_integer_at_index(L, ++segments, cur.x);
+                    lua_push_integer_at_index(L, ++segments, cur.y);
                 }
                 prev = pt[i];
             }
-            lua_push_number_at_index(L, ++segments, pt[entry->priv->len-1].x);
-            lua_push_number_at_index(L, ++segments, pt[entry->priv->len-1].y);
+            lua_push_integer_at_index(L, ++segments, pt[entry->priv->len-1].x);
+            lua_push_integer_at_index(L, ++segments, pt[entry->priv->len-1].y);
         } else { 
             point_t cur = pt[0];
             point_t prev = cur; 
-            lua_push_number_at_index(L, ++segments, cur.x);
-            lua_push_number_at_index(L, ++segments, cur.y);
+            lua_push_integer_at_index(L, ++segments, cur.x);
+            lua_push_integer_at_index(L, ++segments, cur.y);
             for (int i = entry->priv->len - 1; i >= 0; i--) {
                 if (pt[i].x != cur.x && pt[i].y != cur.y) {
                     cur = prev;
-                    lua_push_number_at_index(L, ++segments, cur.x);
-                    lua_push_number_at_index(L, ++segments, cur.y);
+                    lua_push_integer_at_index(L, ++segments, cur.x);
+                    lua_push_integer_at_index(L, ++segments, cur.y);
                 }
                 prev = pt[i];
             }
-            lua_push_number_at_index(L, ++segments, pt[0].x);
-            lua_push_number_at_index(L, ++segments, pt[0].y);
+            lua_push_integer_at_index(L, ++segments, pt[0].x);
+            lua_push_integer_at_index(L, ++segments, pt[0].y);
         }
         lua_rawseti(L, -2, ++entries);
         if (first + entries > last) { 

@@ -223,7 +223,7 @@
          \begingroup
          \floatingpenalty\zerocount
          \page_inserts_inject\namedinsertionnumber\s!topfloat\bgroup
-           \vbox to \d_page_col_top_height{\vss}
+           \vbox to \d_page_col_top_height{\vss}%
              % can be an option
              \page_col_command_flush_top_insertions
              \page_col_command_flush_floats
@@ -733,6 +733,12 @@
      \scratchdepth \dp\b_page_mix_preceding
      \global\initialpageskip\htdp\b_page_mix_preceding
      \global\initialtopskip \strutht
+     % for the moment
+     \setbox\scratchbox\vbox\bgroup
+        \pagediscards
+     \egroup
+     \global\advanceby\initialtopskip \ht\scratchbox
+     % till here
      \setbox\scratchbox\hbox to \zeropoint
        \bgroup
          \box\b_page_mix_preceding

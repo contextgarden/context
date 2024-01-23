@@ -52,11 +52,16 @@ return {
             AccentBaseDepth           =   30,
             FlattenedAccentTopShiftUp =    0,
             RadicalKernAfterDegree    = -500,
-            DelimiterPercent          =   90,
-            DelimiterShortfall        =  400,
+            DelimiterPercent          =  85,
+            DelimiterShortfall        = 400,
+            DelimiterDisplayPercent   =  90,
+            DelimiterDisplayShortfall = 400,
             DisplayOperatorMinHeight  = 1800, -- 1800 in font
             PrimeShiftUp              = "1.3*SuperscriptShiftUp",
             PrimeShiftUpCramped       = "1.3*SuperscriptShiftUp",
+            RadicalDisplayStyleVerticalGap    = "RadicalVerticalGap", --170, 85
+-- SuperscriptSnap = 1000,
+-- SubscriptSnap = 500,
         },
         tweaks = {
             aftercopying = {
@@ -220,10 +225,6 @@ return {
                 {
                     tweak = "fixslashes",
                 },
-                { -- already exists, but not good spacing
-                    tweak   = "addbars",
-                    advance = 0.4,
-                },
                 {
                     tweak    = "replacerules",
                     minus    = {
@@ -272,6 +273,11 @@ return {
                         }
                     }
                 },
+{
+    tweak   = "addbars",
+    advance = 0.3,
+    check   = true, -- only add triples
+},
                 -- this is the mkiv section
                 {
                     tweak   = "emulatelmtx",

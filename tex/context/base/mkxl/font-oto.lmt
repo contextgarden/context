@@ -419,55 +419,23 @@ local function initializehashes(tfmdata)
     -- already done
 end
 
-local function checkmathreplacements(tfmdata,fullname,fixitalics)
-    if tfmdata.mathparameters then
-        local characters = tfmdata.characters
-        local changed    = tfmdata.changed
-        if next(changed) then
-            if trace_preparing or trace_baseinit then
-                report_prepare("checking math replacements for %a",fullname)
-            end
-            for unicode, replacement in next, changed do
-                local u = characters[unicode]
-                local r = characters[replacement]
-                if u and r then
-                    local n = u.next
-                    local v = u.vert_variants
-                    local h = u.horiz_variants
-                    if fixitalics then
-                        -- quite some warnings on stix ...
-                        local ui = u.italic
-                        if ui and not r.italic then
-                            if trace_preparing then
-                                report_prepare("using %i units of italic correction from %C for %U",ui,unicode,replacement)
-                            end
-                            r.italic = ui -- print(ui,ri)
-                        end
-                    end
-                    if n and not r.next then
-                        if trace_preparing then
-                            report_prepare("forcing %s for %C substituted by %U","incremental step",unicode,replacement)
-                        end
-                        r.next = n
-                    end
-                    if v and not r.vert_variants then
-                        if trace_preparing then
-                            report_prepare("forcing %s for %C substituted by %U","vertical variants",unicode,replacement)
-                        end
-                        r.vert_variants = v
-                    end
-                    if h and not r.horiz_variants then
-                        if trace_preparing then
-                            report_prepare("forcing %s for %C substituted by %U","horizontal variants",unicode,replacement)
-                        end
-                        r.horiz_variants = h
-                    end
-                else
-                    if trace_preparing then
-                        report_prepare("error replacing %C by %U",unicode,replacement)
-                    end
-                end
-            end
+local function relocatessty(sequences,fullname)
+    local position     = false
+    local sstydata     = false
+    local nofsequences = #sequences
+    for s=1,#sequences do
+        local sequence = sequences[s]
+        local features = sequence.features
+        if features and features.ssty then
+            position = s
+            sstydata = sequence
+        end
+    end
+    if position and position ~= nofsequences then
+        table.remove(sequences,position)
+        sequences[nofsequences-1] = sstydata
+        if trace_preparing then
+            report_prepare("ssty feature relocated to the end in %a",fullname)
         end
     end
 end
@@ -493,6 +461,9 @@ local function featuresinitializer(tfmdata,value)
             --
             if basesubstitutions or basepositionings then
                 local sequences = tfmdata.resources.sequences
+                if basesubstitutions.ssty then
+--                     relocatessty(sequences,fullname)
+                end
                 for s=1,#sequences do
                     local sequence = sequences[s]
                     local sfeatures = sequence.features
@@ -504,9 +475,6 @@ local function featuresinitializer(tfmdata,value)
                                 local value = features[feature]
                                 if value then
                                     local validlookups, lookuplist = collectlookups(rawdata,feature,script,language)
--- if not validlookups and not lookuplist and script == "math" then
---     validlookups, lookuplist = collectlookups(rawdata,feature,"dflt","dflt")
--- end
                                     if not validlookups then
                                         -- skip
                                     elseif basesubstitutions and basesubstitutions[feature] then
@@ -530,11 +498,6 @@ local function featuresinitializer(tfmdata,value)
                     end
                 end
             end
-            --
-            if substitutionsdone then
-                checkmathreplacements(tfmdata,fullname,features.fixitalics)
-            end
-            --
             registerbasehash(tfmdata)
         end
         if trace_preparing then

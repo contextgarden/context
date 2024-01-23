@@ -402,144 +402,148 @@ vectors['quality'] = table.merged(
     vectors['alpha']
 )
 
--- As this is experimental code, users should not depend on it. The implications are still
--- discussed on the ConTeXt Dev List and we're not sure yet what exactly the spec is (the
--- next code is tested with a gyre font patched by / fea file made by Khaled Hosny). The
--- double trick should not be needed it proper hanging punctuation is used in which case
--- values < 1 can be used.
---
--- preferred (in context, usine vectors):
---
--- \definefontfeature[whatever][default][mode=node,protrusion=quality]
---
--- using lfbd and rtbd, with possibibility to enable only one side :
---
--- \definefontfeature[whocares][default][mode=node,protrusion=yes,  opbd=yes,script=latn]
--- \definefontfeature[whocares][default][mode=node,protrusion=right,opbd=yes,script=latn]
---
--- idem, using multiplier
---
--- \definefontfeature[whocares][default][mode=node,protrusion=2,opbd=yes,script=latn]
--- \definefontfeature[whocares][default][mode=node,protrusion=double,opbd=yes,script=latn]
---
--- idem, using named feature file (less frozen):
---
--- \definefontfeature[whocares][default][mode=node,protrusion=2,opbd=yes,script=latn,featurefile=texgyrepagella-regularxx.fea]
+-- As with math, this kind of optimal correction is likely to be messed up when defined in a font and
+-- heuristics work more reliable then. We keep this experiment around for a while but it has been
+-- disabled.
 
-classes['double'] = { -- for testing opbd
-    factor = 2,
-    left   = 1,
-    right  = 1,
-}
-
-local function map_opbd_onto_protrusion(tfmdata,value,opbd)
-    local characters   = tfmdata.characters
-    local descriptions = tfmdata.descriptions
-    local properties   = tfmdata.properties
-    local parameters   = tfmdata.parameters
-    local resources    = tfmdata.resources
-    local rawdata      = tfmdata.shared.rawdata
-    local lookuphash   = rawdata.lookuphash
-    local lookuptags   = resources.lookuptags
-    local script       = properties.script
-    local language     = properties.language
-    local units        = parameters.units
-    local done, factor, left, right = false, 1, 1, 1
-    local class = classes[value]
-    if class then
-        factor = class.factor or 1
-        left   = class.left   or 1
-        right  = class.right  or 1
-    else
-        factor = tonumber(value) or 1
-    end
-    local lfactor = left  * factor
-    local rfactor = right * factor
-    if trace_protrusion then
-        report_protrusions("left factor %0.3F, right factor %0.3F",lfactor,rfactor)
-    end
-    tfmdata.parameters.protrusion = {
-        factor = factor,
-        left   = left,
-        right  = right,
-    }
-    if opbd ~= "right" then
-        local validlookups, lookuplist = otf.collectlookups(rawdata,"lfbd",script,language)
-        if validlookups then
-            for i=1,#lookuplist do
-                local lookup = lookuplist[i]
-                local steps  = lookup.steps
-                if steps then
-                    if trace_protrusion then
-                        report_protrusions("setting left using lfbd")
-                    end
-                    for i=1,#steps do
-                        local step     = steps[i]
-                        local coverage = step.coverage
-                        if coverage then
-                            for k, v in next, coverage do
-                                if v == true then
-                                    -- zero
-                                else
-                                    local w = descriptions[k].width
-                                    local d = - v[1]
-                                    if w == 0 or d == 0 then
-                                        -- ignored
-                                    else
-                                        local p = lfactor * d/units
-                                        characters[k].leftprotrusion = p
-                                        if trace_protrusion then
-                                            report_protrusions("lfbd -> %0.3F %C",p,k)
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    end
-                    done = true
-                end
-            end
-        end
-    end
-    if opbd ~= "left" then
-        local validlookups, lookuplist = otf.collectlookups(rawdata,"rtbd",script,language)
-        if validlookups then
-            for i=1,#lookuplist do
-                local lookup = lookuplist[i]
-                local steps  = lookup.steps
-                if steps then
-                    if trace_protrusion then
-                        report_protrusions("setting right using rtbd")
-                    end
-                    for i=1,#steps do
-                        local step     = steps[i]
-                        local coverage = step.coverage
-                        if coverage then
-                            for k, v in next, coverage do
-                                if v == true then
-                                    -- zero
-                                else
-                                    local w = descriptions[k].width
-                                    local d = - v[3]
-                                    if w == 0 or d == 0 then
-                                        -- ignored
-                                    else
-                                        local p = rfactor * d/units
-                                        characters[k].rightprotrusion = p
-                                        if trace_protrusion then
-                                            report_protrusions("rtbd -> %0.3F %C",p,k)
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-                done = true
-            end
-        end
-    end
-end
+-- -- As this is experimental code, users should not depend on it. The implications are still
+-- -- discussed on the ConTeXt Dev List and we're not sure yet what exactly the spec is (the
+-- -- next code is tested with a gyre font patched by / fea file made by Khaled Hosny). The
+-- -- double trick should not be needed it proper hanging punctuation is used in which case
+-- -- values < 1 can be used.
+-- --
+-- -- preferred (in context, usine vectors):
+-- --
+-- -- \definefontfeature[whatever][default][mode=node,protrusion=quality]
+-- --
+-- -- using lfbd and rtbd, with possibibility to enable only one side :
+-- --
+-- -- \definefontfeature[whocares][default][mode=node,protrusion=yes,  opbd=yes,script=latn]
+-- -- \definefontfeature[whocares][default][mode=node,protrusion=right,opbd=yes,script=latn]
+-- --
+-- -- idem, using multiplier
+-- --
+-- -- \definefontfeature[whocares][default][mode=node,protrusion=2,opbd=yes,script=latn]
+-- -- \definefontfeature[whocares][default][mode=node,protrusion=double,opbd=yes,script=latn]
+-- --
+-- -- idem, using named feature file (less frozen):
+-- --
+-- -- \definefontfeature[whocares][default][mode=node,protrusion=2,opbd=yes,script=latn,featurefile=texgyrepagella-regularxx.fea]
+--
+-- classes['double'] = { -- for testing opbd
+--     factor = 2,
+--     left   = 1,
+--     right  = 1,
+-- }
+--
+-- local function map_opbd_onto_protrusion(tfmdata,value,opbd)
+--     local characters   = tfmdata.characters
+--     local descriptions = tfmdata.descriptions
+--     local properties   = tfmdata.properties
+--     local parameters   = tfmdata.parameters
+--     local resources    = tfmdata.resources
+--     local rawdata      = tfmdata.shared.rawdata
+--     local lookuphash   = rawdata.lookuphash
+--     local lookuptags   = resources.lookuptags
+--     local script       = properties.script
+--     local language     = properties.language
+--     local units        = parameters.units
+--     local done, factor, left, right = false, 1, 1, 1
+--     local class = classes[value]
+--     if class then
+--         factor = class.factor or 1
+--         left   = class.left   or 1
+--         right  = class.right  or 1
+--     else
+--         factor = tonumber(value) or 1
+--     end
+--     local lfactor = left  * factor
+--     local rfactor = right * factor
+--     if trace_protrusion then
+--         report_protrusions("left factor %0.3F, right factor %0.3F",lfactor,rfactor)
+--     end
+--     tfmdata.parameters.protrusion = {
+--         factor = factor,
+--         left   = left,
+--         right  = right,
+--     }
+--     if opbd ~= "right" then
+--         local validlookups, lookuplist = otf.collectlookups(rawdata,"lfbd",script,language)
+--         if validlookups then
+--             for i=1,#lookuplist do
+--                 local lookup = lookuplist[i]
+--                 local steps  = lookup.steps
+--                 if steps then
+--                     if trace_protrusion then
+--                         report_protrusions("setting left using lfbd")
+--                     end
+--                     for i=1,#steps do
+--                         local step     = steps[i]
+--                         local coverage = step.coverage
+--                         if coverage then
+--                             for k, v in next, coverage do
+--                                 if v == true then
+--                                     -- zero
+--                                 else
+--                                     local w = descriptions[k].width
+--                                     local d = - v[1]
+--                                     if w == 0 or d == 0 then
+--                                         -- ignored
+--                                     else
+--                                         local p = lfactor * d/units
+--                                         characters[k].leftprotrusion = p
+--                                         if trace_protrusion then
+--                                             report_protrusions("lfbd -> %0.3F %C",p,k)
+--                                         end
+--                                     end
+--                                 end
+--                             end
+--                         end
+--                     end
+--                     done = true
+--                 end
+--             end
+--         end
+--     end
+--     if opbd ~= "left" then
+--         local validlookups, lookuplist = otf.collectlookups(rawdata,"rtbd",script,language)
+--         if validlookups then
+--             for i=1,#lookuplist do
+--                 local lookup = lookuplist[i]
+--                 local steps  = lookup.steps
+--                 if steps then
+--                     if trace_protrusion then
+--                         report_protrusions("setting right using rtbd")
+--                     end
+--                     for i=1,#steps do
+--                         local step     = steps[i]
+--                         local coverage = step.coverage
+--                         if coverage then
+--                             for k, v in next, coverage do
+--                                 if v == true then
+--                                     -- zero
+--                                 else
+--                                     local w = descriptions[k].width
+--                                     local d = - v[3]
+--                                     if w == 0 or d == 0 then
+--                                         -- ignored
+--                                     else
+--                                         local p = rfactor * d/units
+--                                         characters[k].rightprotrusion = p
+--                                         if trace_protrusion then
+--                                             report_protrusions("rtbd -> %0.3F %C",p,k)
+--                                         end
+--                                     end
+--                                 end
+--                             end
+--                         end
+--                     end
+--                 end
+--                 done = true
+--             end
+--         end
+--     end
+-- end
 
 -- The opbd test is just there because it was discussed on the context development list. However,
 -- the mentioned fxlbi.otf font only has some kerns for digits. So, consider this feature not supported
@@ -547,11 +551,11 @@ end
 
 local function initialize(tfmdata,value)
     if value then
-        local opbd = tfmdata.shared.features.opbd
-        if opbd then
-            -- possible values: left right both yes no (experimental)
-            map_opbd_onto_protrusion(tfmdata,value,opbd)
-        else
+     -- local opbd = tfmdata.shared.features.opbd
+     -- if opbd then
+     --     -- possible values: left right both yes no (experimental)
+     --     map_opbd_onto_protrusion(tfmdata,value,opbd)
+     -- else
             local class, vector = get_class_and_vector(tfmdata,value,"protrusions")
             if class then
                 if vector then
@@ -623,7 +627,7 @@ local function initialize(tfmdata,value)
             elseif trace_protrusion then
                 report_protrusions("unknown class %a",value)
             end
-        end
+     -- end
     end
 end
 

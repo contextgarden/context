@@ -13,6 +13,8 @@
 
 \writestatus{loading}{ConTeXt Core Macros / Environments}
 
+\installcorenamespace{setup} % is referenced in the lmt file:
+
 \registerctxluafile{core-env}{autosuffix}
 
 \unprotect
@@ -383,7 +385,7 @@
 
 %D Setups:
 
-\installcorenamespace{setup} % we can probably get rid of some :'s later on
+% \installcorenamespace{setup} % we can probably get rid of some :'s later on
 
 % \protected\def\startsetups{} % to please dep checker
 % \protected\def\stopsetups {} % to please dep checker
@@ -401,7 +403,7 @@
 \letcsname\??setup:\??empty\endcsname\gobbleoneargument
 
 \permanent\def\syst_setups#1% the grid option will be extended to other main modes
-  {\csname\??setup
+  {\begincsname\??setup
      \ifgridsnapping
        \ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else:\ifcsname\??setup:#1\endcsname#1\else\??empty\fi\fi
      \else
@@ -411,9 +413,9 @@
 
 % no checking and we assume it being defined:
 
-\permanent\def\fastsetup                     #1{\csname\??setup:#1\endcsname\empty}
-\permanent\def\fastsetupwithargument         #1{\csname\??setup:#1\endcsname}    % swapped per 2015-08-30
-\permanent\def\fastsetupwithargumentswapped#1#2{\csname\??setup:#2\endcsname{#1}}% swapped per 2015-09-05
+\permanent\def\fastsetup                     #1{\begincsname\??setup:#1\endcsname\empty}
+\permanent\def\fastsetupwithargument         #1{\begincsname\??setup:#1\endcsname}    % swapped per 2015-08-30
+\permanent\def\fastsetupwithargumentswapped#1#2{\begincsname\??setup:#2\endcsname{#1}}% swapped per 2015-09-05
 
 %D The next one is meant for \c!setups situations, hence the check for a
 %D shortcut.
@@ -575,11 +577,16 @@
 % \def\syst_setups_start_loc_two#1#2#+\stoplocalsetups{\endgroup\instance\defcsname\??setup#1:#2\endcsname##1{#3}}
 % \def\syst_setups_start_tex_two#1#2#+\stopsetups     {\endgroup\instance\defcsname\??setup#1:#2\endcsname##1{#3}}
 
-\def\syst_setups_start_lua_two#1#2#L\startluasetups  #R\stopluasetups  #+{\endgroup\instance\defcsname\??setup#1:#2\endcsname##1{#3}} % + keep braces
-\def\syst_setups_start_xml_two#1#2#L\startxmlsetups  #R\stopxmlsetups  #+{\endgroup\instance\defcsname\??setup#1:#2\endcsname##1{#3}}
-\def\syst_setups_start_raw_two#1#2#L\startrawsetups  #R\stoprawsetups  #+{\endgroup\instance\defcsname\??setup#1:#2\endcsname##1{#3}}
-\def\syst_setups_start_loc_two#1#2#L\startlocalsetups#R\stoplocalsetups#+{\endgroup\instance\defcsname\??setup#1:#2\endcsname##1{#3}}
-\def\syst_setups_start_tex_two#1#2#L\startsetups     #R\stopsetups     #+{\endgroup\instance\defcsname\??setup#1:#2\endcsname##1{#3}}
+\let\syst_setups_defcsname\defcsname
+
+\permanent\protected\def\pushglobalsetups{\let\syst_setups_defcsname\gdefcsname}
+\permanent\protected\def\popglobalsetups {\let\syst_setups_defcsname\defcsname }
+
+\def\syst_setups_start_lua_two#1#2#L\startluasetups  #R\stopluasetups  #+{\endgroup\instance\syst_setups_defcsname\??setup#1:#2\endcsname##1{#3}} % + keep braces
+\def\syst_setups_start_xml_two#1#2#L\startxmlsetups  #R\stopxmlsetups  #+{\endgroup\instance\syst_setups_defcsname\??setup#1:#2\endcsname##1{#3}}
+\def\syst_setups_start_raw_two#1#2#L\startrawsetups  #R\stoprawsetups  #+{\endgroup\instance\syst_setups_defcsname\??setup#1:#2\endcsname##1{#3}}
+\def\syst_setups_start_loc_two#1#2#L\startlocalsetups#R\stoplocalsetups#+{\endgroup\instance\syst_setups_defcsname\??setup#1:#2\endcsname##1{#3}}
+\def\syst_setups_start_tex_two#1#2#L\startsetups     #R\stopsetups     #+{\endgroup\instance\syst_setups_defcsname\??setup#1:#2\endcsname##1{#3}}
 
 \tolerant\def\syst_setups_start_lua_yes[#1]#*[#2]%
   {\expand\t_syst_setups_lua

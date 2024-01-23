@@ -66,9 +66,9 @@
 
 % \definefontfeature[husayni-colored][goodies=husayni,colorscheme=default,featureset=default]
 %
-% \definedfont[husayni*husayni-colored at 36pt]
-%
 % \starttext \righttoleft
+%
+% \definedfont[husayni*husayni-colored at 36pt]
 %
 % \setfontcolorscheme[1]
 %

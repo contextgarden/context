@@ -15,12 +15,15 @@
 
 \registerctxluafile{s-fonts-features}{}
 
-\installmodulecommandluasingle \showusedfeatures {moduledata.fonts.features.showused}
-\installmodulecommandluasingle \showallkerns     {moduledata.fonts.features.showallkerns}
-\installmodulecommandluasingle \showbasekerns    {moduledata.fonts.features.showbasekerns}
-\installmodulecommandluasingle \showallligatures {moduledata.fonts.features.showallligatures}
-\installmodulecommandluasingle \showfeatureset   {moduledata.fonts.features.showfeatureset}
-\installmodulecommandluasingle \showallfeatures  {moduledata.fonts.features.showallfeatures}
+\installmodulecommandluasingle \showusedfeatures  {moduledata.fonts.features.showused}
+\installmodulecommandluasingle \showallkerns      {moduledata.fonts.features.showallkerns}
+\installmodulecommandluasingle \showbasekerns     {moduledata.fonts.features.showbasekerns}
+\installmodulecommandluasingle \showallligatures  {moduledata.fonts.features.showallligatures}
+\installmodulecommandluasingle \showfeatureset    {moduledata.fonts.features.showfeatureset}
+\installmodulecommandluasingle \showallfeatures   {moduledata.fonts.features.showallfeatures}
+\installmodulecommandluasingle \showsubstitutions {moduledata.fonts.features.showsubstitutions}
+
+\unexpanded\def\showfontidchar#1#2{\glyph id #1 #2\relax}
 
 \def\kernpairheight{.8\strutht}
 \def\kernpairdepth {.8\strutdp}
@@ -66,20 +69,26 @@
 
 \starttext
 
-    \showusedfeatures \page
+%     \showusedfeatures \page
 
-    \definefontfeature[default-base][default][mode=base]
+%     \definefontfeature[default-base][default][mode=base]
 
-    \start
-        \definedfont[Serif*default-base]
-        \showbasekerns
-        \page
-    \stop
+%     \start
+%         \definedfont[Serif*default-base]
+%         \showbasekerns
+%         \page
+%     \stop
 
-    \start
-        \bf
-        \showallkerns
-        \page
-    \stop
+%     \start
+%         \bf
+%         \showallkerns
+%         \page
+%     \stop
+
+    \showsubstitutions
+      [name=xcharter-math.otf,
+       feature=*,
+       script=math,
+       language=dflt]
 
 \stoptext

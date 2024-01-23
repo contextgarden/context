@@ -49,6 +49,8 @@
     \let\page_otr_commands_process\gobbleoneargument
 \to \everyswitchoutputroutine
 
+% use \csstring
+
 \protected\def\page_otr_specifics_preset#name%
   {\edef\page_otr_specifics_command{\directoutputroutineparameter{#name}}% no inheritance of commands
    \ifempty\page_otr_specifics_command
@@ -204,28 +206,49 @@
    \fi
    \resetpagebreak}
 
-% \def\page_otr_eject_page
-%   {\par
-%    \ifvmode
-%      \ifdim\pagetotal>\pagegoal \else
-%        \normalvfil
-%      \fi
-%      \penalty\c_page_otr_eject_penalty
-%    \fi
-%    \resetpagebreak}
+% In case \pagetotal is ahead of \pagegoal (\pagelastheight is the real one) we
+% need to make sure that we flush but we don't do that in a ragged situation where
+% we have safeguards.
+
+% \setuplayout[limitstretch=yes] % border case 1
+% \setupalign[depth]
+%
+% \starttext
+%     \startitemize
+%         \dorecurse{24}{\startitem test \stopitem}
+%         \dorecurse{3}{\startitem test \stopitem}
+%         \startitem test \stopitem % border case 2
+%     \stopitemize
+% \stoptext
+
+% \def\page_otr_fill_page_unchecked
+%   {\ifdim\pagetotal>\pagegoal \else
+%      \normalvfil
+%    \fi}
+
+\def\page_otr_fill_page_unchecked
+  {% \writestatus{!!!!!}{h=\the\pagelastheight,t=\the\pagetotal,g=\the\pagegoal}%
+   \ifdim\pagetotal>\pagegoal
+     % we're probably okay and are not too flexible
+   \orelse\ifnum\bottomraggednessmode>\plusone
+     % we actualy want to be flexible
+   \else
+     % we have to make sure that we don't stretch
+     \normalvfil
+   \fi}
+
+\def\page_otr_fill_page_checked
+  {\ifdim\dimexpr\pagelastheight+\c_page_scale_lines\lineheight+\pageexcess\relax>\pagegoal\else
+     \normalvfil
+   \fi}
 
 \def\page_otr_eject_page
   {\par
    \ifvmode
      \ifcase\c_page_scale_lines
-       \ifdim\pagetotal>\pagegoal\else
-     % \ifdim\pagelastheight>\pagegoal\else
-         \normalvfil
-       \fi
+       \page_otr_fill_page_unchecked
      \else
-       \ifdim\dimexpr\pagelastheight+\c_page_scale_lines\lineheight+\pageexcess\relax>\pagegoal\else
-         \normalvfil
-       \fi
+       \page_otr_fill_page_checked
      \fi
      \penalty\c_page_otr_eject_penalty
    \fi
@@ -234,20 +257,23 @@
 \def\page_otr_eject_page_and_flush_inserts % can be an installed one
   {\par
    \ifvmode
-     \ifdim\pagetotal>\pagegoal \else
-       \normalvfil
+     \ifcase\c_page_scale_lines
+       \page_otr_fill_page_unchecked
+     \else
+       \page_otr_fill_page_checked
      \fi
      \penalty\c_page_otr_super_penalty
    \fi
    \resetpagebreak}
 
 \def\page_otr_check_for_pending_inserts
-  {\ifnum\outputpenalty>\c_page_otr_super_penalty \else
-     \ifnum\insertpenalties>\zerocount
-       % something is being held over so we force a new page
-       \page_otr_force_another_page
-     \fi
+  {\ifnum\outputpenalty>\c_page_otr_super_penalty
+   \orelse\ifnum\insertpenalties>\zerocount
+     % something is being held over so we force a new page
+     \page_otr_force_another_page
    \fi}
+
+%D So far.
 
 \def\page_otr_force_another_page
   {% we should actually remove the dummy line in the otr

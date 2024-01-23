@@ -1,0 +1,35 @@
+
+\starttypescriptcollection[gfsneohellenic]
+
+    \doifunknownfontfeature {gfsneohellenic-math-bold} {\definefontfeature[gfsneohellenic-math-bold][boldened]}
+
+    \starttypescript [\s!serif] [gfsneohellenic,gfsneohellenic-nt] [\s!name]
+        \definefontsynonym [\s!Serif]           [\s!file:GFSNeohellenic]       [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:GFSNeohellenicIt]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:GFSNeohellenicBold]   [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:GFSNeohellenicBoldIt] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!math] [gfsneohellenic,gfsneohellenic-nt][\s!name]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.70]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.55]
+    \stoptypescript
+
+    \starttypescript [\s!math] [gfsneohellenic][\s!name]
+        \definefontsynonym [\s!MathRoman]    [\s!file:GFSNeohellenicMath.otf][\s!features={\s!math\mathsizesuffix,gfsneohellenic:mathextra,mathextra},\s!goodies=gfsneohellenic-math]
+        \definefontsynonym [\s!MathRomanBold][\s!file:GFSNeohellenicMath.otf][\s!features={\s!math\mathsizesuffix,gfsneohellenic-math-bold,gfsneohellenic:mathextra,mathextra},\s!goodies=gfsneohellenic-math]
+    \stoptypescript
+
+    \starttypescript [\s!math] [gfsneohellenic-nt][\s!name]
+        \definefontsynonym [\s!MathRoman]    [\s!file:GFSNeohellenicMath.otf][\s!features={\s!math\mathsizesuffix,gfsneohellenic:mathextra,mathextra}]
+        \definefontsynonym [\s!MathRomanBold][\s!file:GFSNeohellenicMath.otf][\s!features={\s!math\mathsizesuffix,gfsneohellenic-math-bold,gfsneohellenic:mathextra,mathextra}]
+    \stoptypescript
+
+    \starttypescript [gfsneohellenic,gfsneohellenic-nt]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        % \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection

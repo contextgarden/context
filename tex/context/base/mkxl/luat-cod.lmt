@@ -79,7 +79,7 @@ function lua.registercode(filename,options)
         if barename == filename then
             filename = filename .. (opts.autosuffix and ".lmt" or ".lua")
         end
-        local code = environment.luafilechunk(filename,false,opts.optimize)
+        local code = environment.luafilechunk(filename,false,opts.optimize,opts.optional)
         if code then
             bytedone[basename] = true
             if environment.initex and not opts.initexonly then
@@ -92,6 +92,8 @@ function lua.registercode(filename,options)
                 end
                 lua.lastbytecode = n
             end
+        elseif opts.optional then
+            -- we're fine
         elseif environment.initex then
             texio.writenl(format("\nerror loading file: %s (aborting)",filename))
             os.exit()

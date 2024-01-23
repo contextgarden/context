@@ -7,12 +7,13 @@ if not modules then modules = { } end modules ['font-map'] = {
     license   = "see context related readme files"
 }
 
-local tonumber, next, type = tonumber, next, type
+local next, type = next, type
 
 local match, format, find, concat, gsub, lower = string.match, string.format, string.find, table.concat, string.gsub, string.lower
 local P, R, S, C, Ct, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.match
 local formatters = string.formatters
 local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
+local hextointeger, dectointeger = string.hextointeger, string.dectointeger
 
 local trace_loading = false  trackers.register("fonts.loading", function(v) trace_loading = v end)
 local trace_mapping = false  trackers.register("fonts.mapping", function(v) trace_mapping = v end)
@@ -30,9 +31,9 @@ fonts.mappings = mappings
 local allocate = utilities.storage.allocate
 
 local hex      = R("AF","af","09")
-local hexfour  = (hex*hex*hex^-2) / function(s) return tonumber(s,16) end
-local hexsix   = (hex*hex*hex^-4) / function(s) return tonumber(s,16) end
-local dec      = (R("09")^1) / tonumber
+local hexfour  = (hex*hex*hex^-2) / function(s) return hextointeger(s) end
+local hexsix   = (hex*hex*hex^-4) / function(s) return hextointeger(s) end
+local dec      = (R("09")^1) / dectointeger
 local period   = P(".")
 local unicode  = (P("uni") + P("UNI")) * (hexfour * (period + P(-1)) * Cc(false) + Ct(hexfour^1) * Cc(true)) -- base planes
 local ucode    = (P("u")   + P("U")  ) * (hexsix  * (period + P(-1)) * Cc(false) + Ct(hexsix ^1) * Cc(true)) -- extended
@@ -71,7 +72,7 @@ local function tounicode16(unicode)
         return s_unknown
     else
         unicode = unicode - 0x10000
-        return f_double((k//0x400)+0xD800,unicode%0x400+0xDC00)
+        return f_double((unicode//0x400)+0xD800,unicode%0x400+0xDC00)
     end
 end
 
@@ -92,7 +93,7 @@ local function tounicode16sequence(unicodes)
             t[l] = s_unknown
         else
             u = u - 0x10000
-            t[l] = f_double((k//0x400)+0xD800,u%0x400+0xDC00)
+            t[l] = f_double((u//0x400)+0xD800,u%0x400+0xDC00)
         end
     end
     return concat(t)
@@ -137,10 +138,10 @@ end
 
 local function fromunicode16(str)
     if #str == 4 then
-        return tonumber(str,16)
+        return hextointeger(str)
     else
         local l, r = match(str,"(....)(....)")
-        return 0x10000 + (tonumber(l,16)-0xD800)*0x400  + tonumber(r,16) - 0xDC00
+        return 0x10000 + (hextointeger(l)-0xD800)*0x400  + hextointeger(r) - 0xDC00
     end
 end
 
@@ -148,9 +149,9 @@ end
 --
 -- local p = C(4) * (C(4)^-1) / function(l,r)
 --     if r then
---         return (tonumber(l,16))*0x400  + tonumber(r,16) - 0xDC00
+--         return (hextointeger(l))*0x400  + hextointeger(r) - 0xDC00
 --     else
---         return tonumber(l,16)
+--         return hextointeger(l)
 --     end
 -- end
 --

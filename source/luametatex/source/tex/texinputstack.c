@@ -1153,7 +1153,7 @@ void tex_tex_string_start(int iotype, int cattable)
         halfword head = tex_scan_general_text(NULL);
         int saved_selector = lmt_print_state.selector;
         lmt_print_state.selector = new_string_selector_code;
-        tex_show_token_list(head, 0);
+        tex_show_token_list(head, 0, 0);
         lmt_print_state.selector = saved_selector;
         tex_flush_token_list(head);
     }

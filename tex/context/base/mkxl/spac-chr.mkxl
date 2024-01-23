@@ -31,28 +31,28 @@
 
 \pushoverloadmode
 
-%immutable\edef\nobreakspace         {\begingroup\setalignstateattribute\normalUchar"00A0\endgroup} % 1 = left
-\immutable\edef\nobreakspace         {\normalUchar"00A0} % space
-\immutable\edef\softhyphen           {\normalUchar"00AD} % softhyohen
-\immutable\edef\enquad               {\normalUchar"2000} % quad/2
-\immutable\edef\emquad               {\normalUchar"2001} % quad
-\immutable\edef\twoperemspace        {\normalUchar"2002} % quad/2
+%immutable\edef\nobreakspace         {\begingroup\setalignstateattribute\tocharacter"00A0\endgroup} % 1 = left
+\immutable\edef\nobreakspace         {\tocharacter"00A0} % space
+\immutable\edef\softhyphen           {\tocharacter"00AD} % softhyohen
+\immutable\edef\enquad               {\tocharacter"2000} % quad/2
+\immutable\edef\emquad               {\tocharacter"2001} % quad
+\immutable\edef\twoperemspace        {\tocharacter"2002} % quad/2
 %                                    %            "2003  % quad == \quad == \hskip\emwidth
-\immutable\edef\threeperemspace      {\normalUchar"2004} % quad/3
-\immutable\edef\fourperemspace       {\normalUchar"2005} % quad/4
-%immutable\edef\fiveperemspace       {\normalUchar"001E} % quad/5 (bonus)
-\immutable\edef\sixperemspace        {\normalUchar"2006} % quad/6
-\immutable\edef\figurespace          {\normalUchar"2007} % width of zero
-\immutable\edef\punctuationspace     {\normalUchar"2008} % width of period
-\immutable\edef\breakablethinspace   {\normalUchar"2009} % quad/8
-\immutable\edef\hairspace            {\normalUchar"200A} % quad/8
-\immutable\edef\zerowidthspace       {\normalUchar"200B} % 0
-\immutable\edef\zerowidthnonjoiner   {\normalUchar"200C} % 0
-\immutable\edef\zerowidthjoiner      {\normalUchar"200D} % 0
-\immutable\edef\narrownobreakspace   {\normalUchar"202F} % quad/8
-%immutable\edef\mediummathspace      {\normalUchar"205F} % space/8 (math)
-%immutable\edef\zerowidthnobreakspace{\normalUchar"FEFF}
-%immutable\edef\fiveperemspace       {\normalUchar"001E}
+\immutable\edef\threeperemspace      {\tocharacter"2004} % quad/3
+\immutable\edef\fourperemspace       {\tocharacter"2005} % quad/4
+%immutable\edef\fiveperemspace       {\tocharacter"001E} % quad/5 (bonus)
+\immutable\edef\sixperemspace        {\tocharacter"2006} % quad/6
+\immutable\edef\figurespace          {\tocharacter"2007} % width of zero
+\immutable\edef\punctuationspace     {\tocharacter"2008} % width of period
+\immutable\edef\breakablethinspace   {\tocharacter"2009} % quad/8
+\immutable\edef\hairspace            {\tocharacter"200A} % quad/8
+\immutable\edef\zerowidthspace       {\tocharacter"200B} % 0
+\immutable\edef\zerowidthnonjoiner   {\tocharacter"200C} % 0
+\immutable\edef\zerowidthjoiner      {\tocharacter"200D} % 0
+\immutable\edef\narrownobreakspace   {\tocharacter"202F} % quad/8
+%immutable\edef\mediummathspace      {\tocharacter"205F} % space/8 (math)
+%immutable\edef\zerowidthnobreakspace{\tocharacter"FEFF}
+%immutable\edef\fiveperemspace       {\tocharacter"001E}
 
 \immutable\protected\def\zerowidthnobreakspace{\penalty\plustenthousand\kern\zeropoint}
 \immutable\protected\def\fiveperemspace       {\hskip\dimexpr\emwidth/5\relax}

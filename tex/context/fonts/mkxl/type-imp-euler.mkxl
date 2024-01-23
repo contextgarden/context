@@ -21,11 +21,24 @@
 \definefontfeature[pagellaovereuler][pagellaovereuler=yes]
 \definefontfeature[euleroverpagella][euleroverpagella=yes]
 
+\definefontfeature[eulerregular]   [default][compose=yes]
+\definefontfeature[eulerbold]      [default][compose=yes,weight=.3]
+\definefontfeature[euleritalic]    [default][compose=yes,slant=.2]
+\definefontfeature[eulerbolditalic][default][compose=yes,slant=.2,weight=.3]
+
 \starttypescriptcollection[pagella-eulernova]
+
+  % \starttypescript [\s!serif] [eulernova] [\s!name]
+  %     \setups[\s!font:\s!fallback:\s!serif]
+  %     \definefontsynonym [\s!Serif] [\s!file:euler-math.otf] [\s!features=\s!default]
+  % \stoptypescript
 
     \starttypescript [\s!serif] [eulernova] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym [\s!Serif] [\s!file:euler-math.otf] [\s!features=\s!default]
+        \definefontsynonym [\s!Serif]           [file:euler-math.otf] [features=eulerregular]
+        \definefontsynonym [\s!SerifBold]       [file:euler-math.otf] [features=eulerbold]
+        \definefontsynonym [\s!SerifItalic]     [file:euler-math.otf] [features=euleritalic]
+        \definefontsynonym [\s!SerifBoldItalic] [file:euler-math.otf] [features=eulerbolditalic]
     \stoptypescript
 
     \starttypescript [\s!math] [eulernova] [\s!name]

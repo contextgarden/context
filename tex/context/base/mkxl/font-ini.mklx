@@ -12,6 +12,20 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% maybe:
+
+% \glyphweight
+% \glyphslant
+%
+% in backend get from lua: (when 'true' passed)
+%
+% width   -> width   + 2 * weight
+% height  -> height  + weight
+% depth   -> depth   + weight
+% xoffset -> xoffset - weight
+% yoffset -> yoffset - weight
+% weight  -> weight
+
 % todo: frozen tolerant iftok etc
 
 % todo: < 3 pt => 3pt
@@ -401,6 +415,23 @@
 %D local (sometimes in the textflow) size. We store these dimensions in two
 %D \DIMENSION\ registers. These registers are not to be misused in calculations.
 
+%D Ascender, descender and capheight are unreliable and often wrong. One can use
+%D alternatives in the OS/2 table but these then can be too large. We therefore
+%D just use ( and X as template characters to derive these properties.
+
+% \protected\def\ShowScenders
+%   {\dontleavehmode
+%    \hpack\bgroup
+%      \setbox\scratchbox\hpack{(\showstruts\strut X\textbar g)}%
+%      {\lightgray \srule height 1fa depth 1fd width \wd\scratchbox\relax}%
+%      \kern-\wd\scratchbox
+%      \box\scratchbox
+%    \egroup}
+%
+% {\switchtobodyfont[modern,10pt]  \ShowScenders}\blank
+% {\switchtobodyfont[pagella,10pt] \ShowScenders}\blank
+% {\switchtobodyfont[cambria,10pt] \ShowScenders}\blank
+
 \ifdefined\globalbodyfontsize \else \newdimension\globalbodyfontsize \fi \globalbodyfontsize=12pt
 \ifdefined\localbodyfontsize  \else \newdimension\localbodyfontsize  \fi \localbodyfontsize =\globalbodyfontsize
 \ifdefined\bodyfontsize       \else \newdimension\bodyfontsize       \fi \bodyfontsize      =\globalbodyfontsize
@@ -438,15 +469,26 @@
 
 \installcorenamespace{fontnormalizedbody}
 
+% \permanent\protected\def\normalizebodyfontsize#macro#body%
+%   {\expandafter\let\expandafter#macro\csname\??fontnormalizedbody\number\dimexpr#body\endcsname
+%    \ifrelax#macro%
+%       \normalizebodyfontsize_indeed#macro{#body}%
+%    \fi}
+%
+% \def\normalizebodyfontsize_indeed#macro#body%
+%   {\edef#macro{\clf_normalizedbodyfontsize\dimexpr#body\relax}%
+%    \gletcsname\??fontnormalizedbody\number\dimexpr#body\endcsname#macro}
+
 \permanent\protected\def\normalizebodyfontsize#macro#body%
-  {\expandafter\let\expandafter#macro\csname\??fontnormalizedbody\number\dimexpr#body\endcsname
+  {\scratchdimen\ifchkdimension#body\or\lastchkdimension\else#body\dimexpr\fontbody\relax\fi
+   \expandafter\let\expandafter#macro\csname\??fontnormalizedbody\number\scratchdimen\endcsname
    \ifrelax#macro%
-      \normalizebodyfontsize_indeed#macro{#body}%
+      \normalizebodyfontsize_indeed#macro%
    \fi}
 
-\def\normalizebodyfontsize_indeed#macro#body%
-  {\edef#macro{\clf_normalizedbodyfontsize\dimexpr#body\relax}%
-   \gletcsname\??fontnormalizedbody\number\dimexpr#body\endcsname#macro}
+\def\normalizebodyfontsize_indeed#macro%
+  {\edef#macro{\clf_normalizedbodyfontsize\scratchdimen}%
+   \gletcsname\??fontnormalizedbody\number\scratchdimen\endcsname#macro}
 
 \permanent\def\thenormalizedbodyfontsize#body%
   {\clf_normalizedbodyfontsize\dimexpr#body\relax}
@@ -481,17 +523,9 @@
 %D \getbuffer
 %D \stoppacked
 
+%D Size mapping only applies to math fonts.
+
 \installcorenamespace{mappedfontsize}
-
-% \permanent\tolerant\protected\def\mapfontsize[#from]#spacer[#to]%
-%   {\ifarguments\or\or\defcsname\??mappedfontsize\the\dimexpr#from\relax\endcsname{#to}\fi}
-%
-% \def\font_basics_set_mapped_fontsize#from%
-%   {\ifcsname\??mappedfontsize\the\dimexpr#from\relax\endcsname
-%      \lastnamedcs\else#from%
-%    \fi}
-
-% will become: mapmathfontsize
 
 %letcsname\??mappedfontsize\s!text        \endcsname\!!plusone
 \letcsname\??mappedfontsize\s!script      \endcsname\!!plustwo
@@ -516,7 +550,7 @@
      \endcsname{#to}%
    \fi}
 
-\permanent\tolerant\protected\def\checkedmapfontsize[#class]#spacer[#from]#spacer[#to]%
+\permanent\tolerant\protected\def\checkedmapfontsize[#class]#spacer[#from]#spacer[#to]% used in typescripts
   {\ifcsname\??mappedfontsize#class:\begincsname\??mappedfontsize#from\endcsname\endcsname
      % keep (user) value
    \else
@@ -538,6 +572,52 @@
    \else % we could use default
      #from%
    \fi}
+
+\appendtoks
+    \def\font_basics_set_mapped_fontsize#from%
+      {\ifcsname\??mappedfontsize\fontclass:\fontface\endcsname % really ?
+         \the\dimexpr\lastnamedcs\dimexpr\normalizedbodyfontsize\relax\relax
+       \else % we could use default
+         #from%
+       \fi}%
+\to \everycompactfontmode
+
+% \defcsname font_basics_mapped_fontsize_1\endcsname{\begincsname\??mappedfontsize\fontclass:1\endcsname}
+% \defcsname font_basics_mapped_fontsize_2\endcsname{\begincsname\??mappedfontsize\fontclass:2\endcsname}
+% \defcsname font_basics_mapped_fontsize_3\endcsname{\begincsname\??mappedfontsize\fontclass:3\endcsname}
+
+% Somehow moving rscale into here doesn't work out ok, so for now we don't do that
+%
+% \the\floatexpr\v_font_size_relative*\plusthousand\relax
+
+\defcsname font_basics_mapped_fontsize_1\endcsname
+  {\the\plusthousand}
+
+\defcsname font_basics_mapped_fontsize_2\endcsname
+  {\the\numexpr
+     \plusthousand
+    *\dimexpr
+       \ifcsname\??mappedfontsize\fontclass:2\endcsname
+         \lastnamedcs\dimexpr\textface\relax
+       \else
+         \scriptface
+       \fi
+     \relax
+    /\dimexpr\textface\relax
+   \relax}
+
+\defcsname font_basics_mapped_fontsize_3\endcsname
+  {\the\numexpr
+     \plusthousand
+    *\dimexpr
+       \ifcsname\??mappedfontsize\fontclass:3\endcsname
+         \lastnamedcs\dimexpr\textface\relax
+       \else
+         \scriptscriptface
+       \fi
+     \relax
+    /\dimexpr\textface\relax
+   \relax}
 
 \installcorenamespace{fontbodyknown}
 \installcorenamespace{fontclassyes}   % fontclass
@@ -586,7 +666,7 @@
      \v_font_rscale_default
    \fi}
 
-\def\font_helpers_register_fontbody#body%
+\protected\def\font_helpers_register_fontbody#body%
   {\letcsname\??fontbodyknown#body\endcsname\empty}
 
 %D \macros
@@ -753,16 +833,15 @@
 \aliased\let\c_font_feature_inheritance_fontfirst \plusthree  % fontfirst
 \aliased\let\c_font_feature_inheritance_classfirst\plusfour   % classfirst
 
-\aliased\let\c_font_feature_inheritance_default   \c_font_feature_inheritance_fontfirst
+\aliased\let\c_font_feature_inheritance_default\c_font_feature_inheritance_fontfirst
 
-\setnewconstant\c_font_feature_inheritance_mode \c_font_feature_inheritance_default
+\setnewconstant\c_font_feature_inheritance_mode\c_font_feature_inheritance_default
 
 \newdimension  \d_font_scaled_text_face
 \newdimension  \d_font_scaled_font_size
 \newconditional\c_font_body_scale
 \newfraction   \f_font_body_scale
 
-\newconditional\c_font_compact
 \newinteger    \c_font_scaled_glyph_scale
 
 \immutable\dimensiondef\d_font_scaled_default 10pt
@@ -790,15 +869,9 @@
 \lettonothing\m_font_fallbacks
 \lettonothing\m_font_goodies
 
-\protected\def\font_helpers_low_level_define
-  {\ifconditional\c_font_compact
-     \expandafter\font_helpers_low_level_define_compact
-   \else
-     \expandafter\font_helpers_low_level_define_normal
-   \fi}
-
-\protected\def\font_helpers_low_level_define_normal#specification#csname%
-  {% we can now set more at the lua end
+\protected\def\font_helpers_low_level_define#specification#csname% normal mode
+  {\font_ignore_compact_font_mode
+   % we can now set more at the lua end
    \glet\somefontname\defaultfontfile
    \lettonothing\somefontsize
    \lettonothing\somefontsizex
@@ -806,7 +879,8 @@
    \clf_definefont_one{\detokenize\expandafter{\normalexpanded{#specification}}}% the escapestring catches at \somedimen
    % sets \scaledfontmode and \somefontname and \somefontsize
    \ifcase\fontface\relax
-   % \let\v_font_size_absolute\textface % fontbody
+     % this was commented but we need it in order to be compatible to compact mode
+     \let\v_font_size_absolute\textface
    \or
      \let\v_font_size_absolute\textface
    \or
@@ -820,9 +894,6 @@
    \fi
    %
    \ifcase\scaledfontmode\relax
-     % mkiv, fails with glyphscale:
-   % \d_font_scaled_font_size-\plusthousand\scaledpoint
-     % so we just assume
      \d_font_scaled_font_size\d_font_default_size
    \or
      % at
@@ -896,6 +967,11 @@
    \fi
    \c_font_feature_inheritance_mode\c_font_feature_inheritance_default}
 
+\mutable\lettonothing\somefontslant
+\mutable\lettonothing\somefontweight
+\mutable\lettonothing\somefontextend
+\mutable\lettonothing\somefontsqueeze
+
 \protected\def\font_helpers_low_level_define_compact#specification#csname%
   {% we can now set more at the lua end
    \glet\somefontname\defaultfontfile
@@ -903,42 +979,24 @@
    \lettonothing\somefontsizex
    \lettonothing\somefontsizey
    \clf_definefont_one{\detokenize\expandafter{\normalexpanded{#specification}}}% the escapestring catches at \somedimen
-   % sets \scaledfontmode and \somefontname and \somefontsize
-   \ifcase\fontface\relax
-   % \let\v_font_size_absolute\textface % fontbody
-   \or
-     \let\v_font_size_absolute\textface
-   \or
-     \let\v_font_size_absolute\scriptface
-   \or
-     \let\v_font_size_absolute\scriptscriptface
-   \or
-     \let\v_font_size_absolute\xtextface
-   \or
-     \let\v_font_size_absolute\xxtextface
-   \fi
    %
    \ifcase\scaledfontmode\relax
-     % mkiv, fails with glyphscale:
-   % \d_font_scaled_font_size-\plusthousand\scaledpoint
-     % so we just assume
      \d_font_scaled_font_size\d_font_default_size
    \or
      % at
      \d_font_scaled_font_size\somefontsize
    \or
      % sa
-     \d_font_scaled_font_size\v_font_size_absolute\relax
+     \d_font_scaled_font_size\textface
      \d_font_scaled_font_size\currentfontbodysize\d_font_scaled_font_size % uses \somefontsize set by lua
    \or
      % mo
-     \d_font_scaled_font_size\font_basics_set_mapped_fontsize\v_font_size_absolute
+     \d_font_scaled_font_size\font_basics_set_mapped_fontsize\textface
      \d_font_scaled_font_size\currentfontbodysize\d_font_scaled_font_size
    \or
      % scaled, don't use this one as it's unpredictable (we fallback on scaled 1200 -> sa 1.2)
      \d_font_scaled_font_size-\somefontsize\scaledpoint
    \else % ht cp
-     % experiment, yet undocumented
      \d_font_scaled_font_size\somefontsize
    \fi
    \relax
@@ -963,10 +1021,6 @@
      \scaledfontmode\zerocount
    \fi
    \c_font_future_glyph_scale\numexpr\plushundred*\d_font_scaled_font_size/\maxcard\relax
- % \glyphscale\numexpr\plushundred*\d_font_scaled_font_size/\maxcard\relax % needed ? for math i guess
-   \glyphscale\numexpr\c_font_future_glyph_scale % needed ? for math i guess
- % \d_font_scaled_font_size\d_font_scaled_default
- % \d_font_scaled_text_face\d_font_scaled_default
    %
    \edef\somefontspec{at \number\d_font_scaled_font_size sp}%
    % this has to happen at the tex end ...
@@ -988,7 +1042,7 @@
       \m_font_features
       \m_font_class_fallbacks
       \m_font_fallbacks
-      \fontface
+      \zerocount
       \d_font_scaled_default
       \m_font_class_goodies
       \m_font_goodies
@@ -1004,71 +1058,68 @@
    \else
      \edef\somefontspec{at \number\scaledfontsize sp}% we need the resolved designsize (for fallbacks) % \the\scaledfontsize
      %
-     \glyphscale
-       \ifnum\scaledfontmode=\plusfour
-         \somefontsize % not overloaded at the lua end so still 'scaled'
-       \orelse\ifnum\c_font_scaled_font_mode_saved>\plusfour
-         % \c_font_scaled_points is set when we pass the font to the engine
-         \numexpr\plusthousand*\dimexpr\d_font_scaled_default\relax/\c_font_scaled_points\relax
-       \else
-         \c_font_future_glyph_scale
-       \fi
-     % experiment
+     \glyphscale\c_font_future_glyph_scale
      \glyphxscale\ifempty\somefontsizex\plusthousand\else\somefontsizex\fi\relax
      \glyphyscale\ifempty\somefontsizey\plusthousand\else\somefontsizey\fi\relax
-     % experiment
+     %
      \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
      \ifrelax\lastrawfontcall
        \lettonothing\somefontspec
      \else
-     %
-     % \ifempty\fontclass\else\global\fi
-     % \mutable\protected\edefcsname#csname\endcsname
-     %   {\setfontid\the\fontid\csname#csname\endcsname\relax
-     %    \glyphscale\the\glyphscale\relax
-     %    \somefontsizex
-     %    \somefontsizey}%
-     % \expandafter\let\expandafter\lastrawfontcall\csname#csname\endcsname
-     %
-     % \mutable\protected\edef\lastrawfontcall
-     %   {\setfontid\the\fontid\csname#csname\endcsname\relax
-     %    \glyphscale\the\glyphscale\relax
-     %    \somefontsizex
-     %    \somefontsizey}%
-     % \mutable\ifempty\fontclass\letcsname\else\gletcsname\fi#csname\endcsname\lastrawfontcall
-     %
+       \ifempty\somefontextend \else\glyphxscale\somefontextend \relax\fi
+       \ifempty\somefontsqueeze\else\glyphyscale\somefontsqueeze\relax\fi
+       \glyphslant \ifempty\somefontslant \zerocount\else\somefontslant \fi\relax
+       \glyphweight\ifempty\somefontweight\zerocount\else\somefontweight\fi\relax
        \mutable\fontspecdef\lastrawfontcall
             \lastnamedcs
-          % scale  \glyphscale
-          % xscale \glyphxscale
-          % yscale \glyphyscale
-            all \glyphscale \glyphxscale \glyphyscale
+            all \glyphscale \glyphxscale \glyphyscale \glyphslant \glyphweight
        \relax
        \mutable\ifempty\fontclass\letcsname\else\gletcsname\fi#csname\endcsname\lastrawfontcall
-      %
        \expand\everydefinefont
      \fi
    \fi
    \c_font_feature_inheritance_mode\c_font_feature_inheritance_default}
 
+\appendtoks
+    \enforced\let\font_helpers_low_level_define\font_helpers_low_level_define_compact
+\to \everycompactfontmode
+
 \def\font_helpers_check_body_scale#fontsize%  gets character (x xx a etc)
-  {\ifcsname\??fontenvironments\fontclass\fontbody#fontsize\endcsname
-     \expandafter\let\expandafter\f_font_body_scale\lastnamedcs
+  {\ifcsname\??fontenvironments\fontclass:\fontstyle\fontbody#fontsize\endcsname
+     \lettolastnamedcs\f_font_body_scale
+     \c_font_body_scale\conditionalfalse % !
+   \orelse\ifcsname\??fontenvironments\fontclass:\fontstyle\s!default#fontsize\endcsname
+     \lettolastnamedcs\f_font_body_scale
+     \c_font_body_scale\conditionaltrue
+   \orelse\ifcsname\??fontenvironments\fontclass\fontbody#fontsize\endcsname
+     \lettolastnamedcs\f_font_body_scale
      \c_font_body_scale\conditionalfalse % !
    \orelse\ifcsname\??fontenvironments\fontclass\s!default#fontsize\endcsname
-     \expandafter\let\expandafter\f_font_body_scale\lastnamedcs
+     \lettolastnamedcs\f_font_body_scale
      \c_font_body_scale\conditionaltrue
+   % bonus:
+   \orelse\ifcsname\??fontenvironments\fontclass\s!default\s!parent\endcsname
+      \ifcsname\??fontenvironments\lastnamedcs#fontsize\endcsname
+        \lettolastnamedcs\f_font_body_scale
+      \else
+        \let\f_font_body_scale\plusone
+      \fi
+      \c_font_body_scale\conditionaltrue
+   %
+   \orelse\ifcsname\??fontenvironments\fontbody:\fontstyle#fontsize\endcsname
+     \lettolastnamedcs\f_font_body_scale
+     \c_font_body_scale\conditionalfalse % !
    \orelse\ifcsname\??fontenvironments\fontbody#fontsize\endcsname
-     \expandafter\let\expandafter\f_font_body_scale\lastnamedcs
+     \lettolastnamedcs\f_font_body_scale
      \c_font_body_scale\conditionalfalse % !
    \orelse\ifcsname\??fontenvironments\s!default#fontsize\endcsname
-     \expandafter\let\expandafter\f_font_body_scale\lastnamedcs
+     \lettolastnamedcs\f_font_body_scale
      \c_font_body_scale\conditionaltrue
    \orelse\ifcsname\??fontenvironments\fontclass\s!default\s!text\endcsname
-     \expandafter\let\expandafter\f_font_body_scale\lastnamedcs
+     \lettolastnamedcs\f_font_body_scale
      \c_font_body_scale\conditionaltrue
    \orelse\ifcsname\??fontenvironments\s!default\s!text\endcsname
-     \expandafter\let\expandafter\f_font_body_scale\lastnamedcs
+     \lettolastnamedcs\f_font_body_scale
      \c_font_body_scale\conditionaltrue
    \else
      \let\f_font_body_scale\plusone
@@ -1079,8 +1130,8 @@
 
 % \tracingfonts\plussix % <id: name @ size>
 
-%D When fontclasses are used, we define the font global, since namespaces are
-%D used. Otherwise we parse the specs each time.
+%D When fontclasses are used, we define the font global, since namespaces are used.
+%D Otherwise we parse the specs each time.
 
 \mutable\let\fontfile\s!unknown
 
@@ -1158,10 +1209,17 @@
      \expandafter\font_basics_define_font_b
    \fi[#1][#2][#3]}
 
+% \def\font_basics_define_font_a[#name][#specification][#settings]% [name][spec][1.6 | line=10pt | setup_id]
+%   {\doifelsesetups{#settings}%
+%      {\mutable\protected\defcsname#name\endcsname{\font_basics_define_font_with_setups    {#name}{#specification}{#settings}}}
+%      {\mutable\protected\defcsname#name\endcsname{\font_basics_define_font_with_parameters{#name}{#specification}{#settings}}}}
+
 \def\font_basics_define_font_a[#name][#specification][#settings]% [name][spec][1.6 | line=10pt | setup_id]
-  {\doifelsesetups{#settings}%
-     {\mutable\protected\defcsname#name\endcsname{\font_basics_define_font_with_setups    {#name}{#specification}{#settings}}}
-     {\mutable\protected\defcsname#name\endcsname{\font_basics_define_font_with_parameters{#name}{#specification}{#settings}}}}
+  {\ifsetups{#settings}%
+     \mutable\protected\defcsname#name\endcsname{\font_basics_define_font_with_setups    {#name}{#specification}{#settings}}%
+   \else
+     \mutable\protected\defcsname#name\endcsname{\font_basics_define_font_with_parameters{#name}{#specification}{#settings}}%
+   \fi}
 
 \def\font_basics_define_font_b[#name][#specification][#dummy]%
   {\mutable\protected\defcsname#name\endcsname{\font_basics_define_font_without_parameters{#name}{#specification}}}
@@ -1173,7 +1231,7 @@
 
 \def\font_basics_define_font_with_setups#name#specification#settings%
   {\font_basics_define_font_without_parameters{#name}{#specification}%
-   \setups[#settings]}
+   \directsetup{#settings}}
 
 %D Beware, in the frozen variants no settings are supported yet, but that might happen
 %D some day.
@@ -1208,7 +1266,13 @@
 \let\v_font_identifier_basic_saved\v_font_identifier_basic
 \let\v_font_identifier_class_saved\v_font_identifier_class
 
-% \def\v_font_identifier_class{\??fontinstanceclass\fontclass-\lastfontidentifier-\fontstyle-\fontsize} % no \fontface
+\appendtoks
+    \def\v_font_identifier_basic{\??fontinstancebasic           \lastfontidentifier-\fontsize}%
+    \def\v_font_identifier_class{\??fontinstanceclass\fontclass-\lastfontidentifier-\fontsize}%
+    %
+    \let\v_font_identifier_basic_saved\v_font_identifier_basic
+    \let\v_font_identifier_class_saved\v_font_identifier_class
+\to \everycompactfontmode
 
 \def\font_basics_define_font_without_parameters#identifier#2%
   {\relax % intercept lookahead, in case we scan for a number
@@ -1263,9 +1327,26 @@
 
 \installcorenamespace{fontenvironments}
 
+% \permanent\def\currentfontbodysize % gets number (the normal sa 1 etc)
+%   {\ifcsname\??fontenvironments\fontclass\s!default\somefontsize\endcsname
+%      \lastnamedcs
+%    \orelse\ifcsname\??fontenvironments\s!default\somefontsize\endcsname
+%      \lastnamedcs
+%    \else
+%      \somefontsize
+%    \fi}
+
 \permanent\def\currentfontbodysize % gets number (the normal sa 1 etc)
-  {\ifcsname\??fontenvironments\fontclass\s!default\somefontsize\endcsname
+  {\ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\somefontsize\endcsname
      \lastnamedcs
+   \orelse\ifcsname\??fontenvironments\fontclass\s!default\somefontsize\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\??fontenvironments\fontclass\s!default\s!parent\endcsname
+     \ifcsname\??fontenvironments\lastnamedcs\somefontsize\endcsname
+       \lastnamedcs
+     \else
+       \somefontsize
+     \fi
    \orelse\ifcsname\??fontenvironments\s!default\somefontsize\endcsname
      \lastnamedcs
    \else
@@ -1274,45 +1355,45 @@
 
 \permanent\def\currentfontbodyscale % gets character (x xx a etc)
   {\csname\??fontenvironments
-     \ifcsname\??fontenvironments\fontclass\s!default\fontsize\endcsname\fontclass\s!default\fontsize\orelse
-     \ifcsname\??fontenvironments          \s!default\fontsize\endcsname          \s!default\fontsize\orelse
-     \ifcsname\??fontenvironments\fontclass\s!default\s!text  \endcsname\fontclass\s!default\s!text  \orelse
-     \ifcsname\??fontenvironments          \s!default\s!text  \endcsname          \s!default\s!text  \else
-                                                                                  \s!default         \fi
+     \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\fontsize\endcsname\fontclass:\fontstyle\s!default\fontsize\orelse
+     \ifcsname\??fontenvironments\fontclass           \s!default\fontsize\endcsname\fontclass           \s!default\fontsize\orelse
+     \ifcsname\??fontenvironments                     \s!default\fontsize\endcsname                     \s!default\fontsize\orelse
+     \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\s!text  \endcsname\fontclass:\fontstyle\s!default\s!text  \orelse
+     \ifcsname\??fontenvironments\fontclass           \s!default\s!text  \endcsname\fontclass           \s!default\s!text  \orelse
+     \ifcsname\??fontenvironments                     \s!default\s!text  \endcsname                     \s!default\s!text  \else
+                                                                                                        \s!default         \fi
    \endcsname}
-
-\def\font_currentfontbodyscale % gets character (x xx a etc)
-  {\ifcsname\??fontenvironments\fontclass\s!default\fontsize\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments          \s!default\fontsize\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments\fontclass\s!default\s!text  \endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments          \s!default\s!text  \endcsname\lastnamedcs\else
-     \csname\??fontenvironments          \s!default         \endcsname            \fi}
 
 \permanent\def\currentfontscale % used in default definition
   {\csname\??fontenvironments
-     \ifcsname\??fontenvironments\fontclass\s!default\xfontsize\endcsname\fontclass\s!default\fontsize\orelse
-     \ifcsname\??fontenvironments          \s!default\xfontsize\endcsname          \s!default\fontsize\orelse
-     \ifcsname\??fontenvironments\fontclass\s!default\s!text   \endcsname\fontclass\s!default\s!text  \orelse
-     \ifcsname\??fontenvironments          \s!default\s!text   \endcsname          \s!default\s!text  \else
-                                                                                   \s!default         \fi
+     \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\wildcardfontsize\endcsname\fontclass:\fontstyle\s!default\fontsize\orelse
+     \ifcsname\??fontenvironments\fontclass           \s!default\wildcardfontsize\endcsname\fontclass           \s!default\fontsize\orelse
+     \ifcsname\??fontenvironments                     \s!default\wildcardfontsize\endcsname                     \s!default\fontsize\orelse
+     \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\s!text          \endcsname\fontclass:\fontstyle\s!default\s!text  \orelse
+     \ifcsname\??fontenvironments\fontclass           \s!default\s!text          \endcsname\fontclass           \s!default\s!text  \orelse
+     \ifcsname\??fontenvironments                     \s!default\s!text          \endcsname                     \s!default\s!text  \else
+                                                                                                                \s!default         \fi
    \endcsname}
 
+% \def\font_currentfontbodyscale % gets character (x xx a etc)
+%   {\ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\fontsize\endcsname\lastnamedcs\orelse
+%    \ifcsname\??fontenvironments\fontclass           \s!default\fontsize\endcsname\lastnamedcs\orelse
+%    \ifcsname\??fontenvironments                     \s!default\fontsize\endcsname\lastnamedcs\orelse
+%    \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\s!text  \endcsname\lastnamedcs\orelse
+%    \ifcsname\??fontenvironments\fontclass           \s!default\s!text  \endcsname\lastnamedcs\orelse
+%    \ifcsname\??fontenvironments                     \s!default\s!text  \endcsname\lastnamedcs\else
+%      \csname\??fontenvironments                     \s!default         \endcsname            \fi}
+
 \def\font_currentfontscale % used in default definition
-  {\ifcsname\??fontenvironments\fontclass\s!default\xfontsize\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments          \s!default\xfontsize\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments\fontclass\s!default\s!text   \endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments          \s!default\s!text   \endcsname\lastnamedcs\else
-     \csname\??fontenvironments          \s!default          \endcsname            \fi}
+  {\ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\wildcardfontsize\endcsname\lastnamedcs\orelse
+   \ifcsname\??fontenvironments\fontclass           \s!default\wildcardfontsize\endcsname\lastnamedcs\orelse
+   \ifcsname\??fontenvironments                     \s!default\wildcardfontsize\endcsname\lastnamedcs\orelse
+   \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\s!text          \endcsname\lastnamedcs\orelse
+   \ifcsname\??fontenvironments\fontclass           \s!default\s!text          \endcsname\lastnamedcs\orelse
+   \ifcsname\??fontenvironments                     \s!default\s!text          \endcsname\lastnamedcs\else
+     \csname\??fontenvironments                     \s!default                 \endcsname            \fi}
 
 \defcsname\??fontenvironments\s!default\endcsname{1}
-
-%D In the following macros we use \type {\currentxfontsize} to hold the current
-%D x||size of the font. This enables us to support for instance \type {\sl} inside a
-%D \type {\tx} switch.
-
-\newconstant\currentxfontsize
-
-\permanent\def\xfontsize{\ifcase\currentxfontsize\fontsize\or\s!x\else\s!xx\fi}
 
 %D Now we enter the area of font switching. The switching mechanism has to take care
 %D of several situations, like:
@@ -1399,53 +1480,104 @@
 % todo: class:size
 % todo: make assignments global
 
+% \setupbodyfontenvironment [all]     [12pt] [x=4pt,small=4pt]
+% \setupbodyfontenvironment [pagella] [12pt] [x=4pt,small=4pt]
+%
+% \setupbodyfont[pagella,12pt]
+%
+% \starttext normal {\tx tx} {\small small} \stoptext
+
 \letcsname\??fontenvironments\endcsname\empty % so we default to empty
 
 \permanent\def\bodyfontvariable#parameter%
   {\begincsname\??fontenvironments
-     \ifcsname\??fontenvironments\fontclass\normalizedbodyfontsize#parameter\endcsname\fontclass\normalizedbodyfontsize#parameter\orelse
-     \ifcsname\??fontenvironments\fontclass                       #parameter\endcsname\fontclass                       #parameter\orelse
-     \ifcsname\??fontenvironments          \normalizedbodyfontsize#parameter\endcsname          \normalizedbodyfontsize#parameter\orelse
-     \ifcsname\??fontenvironments\s!default                       #parameter\endcsname\s!default                       #parameter\fi
+            \ifcsname\??fontenvironments\fontclass:\fontstyle\normalizedbodyfontsize#parameter\endcsname\fontclass:\fontstyle\normalizedbodyfontsize#parameter%
+     \orelse\ifcsname\??fontenvironments\fontclass           \normalizedbodyfontsize#parameter\endcsname\fontclass           \normalizedbodyfontsize#parameter%
+     \orelse\ifcsname\??fontenvironments\fontclass:\fontstyle                       #parameter\endcsname\fontclass:\fontstyle                       #parameter%
+     \orelse\ifcsname\??fontenvironments\fontclass                                  #parameter\endcsname\fontclass                                  #parameter%
+     \orelse\ifcsname\??fontenvironments\fontclass \s!default                        \s!parent\endcsname\lastnamedcs                                #parameter%
+     \orelse\ifcsname\??fontenvironments                     \normalizedbodyfontsize#parameter\endcsname                     \normalizedbodyfontsize#parameter%
+     \orelse\ifcsname\??fontenvironments           \s!default                       #parameter\endcsname\s!default                                  #parameter\fi
    \endcsname}
-
-\def\font_bodyfontvariable#parameter%
-  {\ifcsname\??fontenvironments\fontclass\normalizedbodyfontsize#parameter\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments\fontclass                       #parameter\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments          \normalizedbodyfontsize#parameter\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments\s!default                       #parameter\endcsname\lastnamedcs\fi}
 
 \permanent\def\bodyfontsizevariable#size#parameter% used in s-fonts-show
   {\begincsname\??fontenvironments
-     \ifcsname\??fontenvironments\fontclass#size#parameter\endcsname\fontclass#size#parameter\orelse
-     \ifcsname\??fontenvironments\fontclass     #parameter\endcsname\fontclass     #parameter\orelse
-     \ifcsname\??fontenvironments\v!all    #size#parameter\endcsname\v!all    #size#parameter\orelse
-     \ifcsname\??fontenvironments          #size#parameter\endcsname          #size#parameter\orelse
-     \ifcsname\??fontenvironments\s!default     #parameter\endcsname\s!default     #parameter\fi
+            \ifcsname\??fontenvironments\fontclass:\fontstyle#size#parameter\endcsname\fontclass:\fontstyle#size#parameter%
+     \orelse\ifcsname\??fontenvironments\fontclass           #size#parameter\endcsname\fontclass           #size#parameter%
+     \orelse\ifcsname\??fontenvironments\fontclass:\fontstyle     #parameter\endcsname\fontclass:\fontstyle#parameter%
+     \orelse\ifcsname\??fontenvironments\fontclass                #parameter\endcsname\fontclass           #parameter%
+     \orelse\ifcsname\??fontenvironments\fontclass \s!default      \s!parent\endcsname\lastnamedcs         #parameter%
+     \orelse\ifcsname\??fontenvironments                     #size#parameter\endcsname                #size#parameter%
+     \orelse\ifcsname\??fontenvironments           \s!default     #parameter\endcsname\s!default           #parameter\fi
    \endcsname}
 
 \def\font_bodyfontvariable#parameter%
-  {\ifcsname\??fontenvironments\fontclass\normalizedbodyfontsize#parameter\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments\fontclass                       #parameter\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments\v!all    \normalizedbodyfontsize#parameter\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments          \normalizedbodyfontsize#parameter\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments\s!default                       #parameter\endcsname\lastnamedcs\fi}
+         {\ifcsname\??fontenvironments\fontclass:\fontstyle\normalizedbodyfontsize#parameter\endcsname\lastnamedcs
+   \orelse\ifcsname\??fontenvironments\fontclass           \normalizedbodyfontsize#parameter\endcsname\lastnamedcs
+   \orelse\ifcsname\??fontenvironments\fontclass:\fontstyle                       #parameter\endcsname\lastnamedcs
+   \orelse\ifcsname\??fontenvironments\fontclass                                  #parameter\endcsname\lastnamedcs
+   \orelse\ifcsname\??fontenvironments\fontclass\s!default                         \s!parent\endcsname\begincsname\??fontenvironments\lastnamedcs#parameter\endcsname
+   \orelse\ifcsname\??fontenvironments                     \normalizedbodyfontsize#parameter\endcsname\lastnamedcs
+   \orelse\ifcsname\??fontenvironments          \s!default                        #parameter\endcsname\lastnamedcs\fi}
 
 \def\font_bodyfontsizevariable#size#parameter%
-  {\ifcsname\??fontenvironments\fontclass#size#parameter\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments\fontclass     #parameter\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments          #size#parameter\endcsname\lastnamedcs\orelse
-   \ifcsname\??fontenvironments\s!default     #parameter\endcsname\lastnamedcs\fi}
+         {\ifcsname\??fontenvironments\fontclass:\fontstyle    #size#parameter\endcsname\lastnamedcs
+   \orelse\ifcsname\??fontenvironments\fontclass               #size#parameter\endcsname\lastnamedcs
+   \orelse\ifcsname\??fontenvironments\fontclass:\fontstyle         #parameter\endcsname\lastnamedcs
+   \orelse\ifcsname\??fontenvironments\fontclass                    #parameter\endcsname\lastnamedcs
+   \orelse\ifcsname\??fontenvironments\fontclass\s!default           \s!parent\endcsname\begincsname\??fontenvironments\lastnamedcs#parameter\endcsname
+   \orelse\ifcsname\??fontenvironments                         #size#parameter\endcsname\lastnamedcs
+   \orelse\ifcsname\??fontenvironments\s!default                    #parameter\endcsname\lastnamedcs\fi}
 
-\permanent\def\bodyfontinterlinespace{\bodyfontvariable\c!interlinespace} % used elsewhere
+\permanent\def\currentbodyfontdimension#parameter% there can be factors here
+  {\the\dimexpr
+            \ifcsname\??fontenvironments\fontclass:\fontstyle\normalizedbodyfontsize#parameter\endcsname
+     \orelse\ifcsname\??fontenvironments\fontclass:\fontstyle\s!default #parameter\endcsname
+     \orelse\ifcsname\??fontenvironments\fontclass\normalizedbodyfontsize#parameter\endcsname
+     \orelse\ifcsname\??fontenvironments\fontclass\s!default#parameter\endcsname
+     % bonus:
+     \orelse\ifcsname\??fontenvironments\fontclass\s!default\s!parent\endcsname
+            \ifcsname\??fontenvironments\lastnamedcs#parameter\endcsname\fi
+     %
+     \orelse\ifcsname\??fontenvironments\normalizedbodyfontsize#parameter\endcsname
+     \orelse\ifcsname\??fontenvironments\s!default#parameter\endcsname
+     \fi
+     \lastnamedcs
+     \ifchkdim\lastnamedcs\or\else
+       \dimexpr\normalizedbodyfontsize\relax % we need a cheaper one
+     \fi
+   \relax}
 
 \permanent\def\bodyfontdimension#class#size#parameter#body%
   {\the\dimexpr
-     \ifcsname\??fontenvironments     #class#size#parameter\endcsname \lastnamedcs                   \orelse
-     \ifcsname\??fontenvironments#class\s!default#parameter\endcsname \lastnamedcs\dimexpr#body\relax\orelse % factor
-     \ifcsname\??fontenvironments           #size#parameter\endcsname \lastnamedcs                   \else
-                                                                      \lastnamedcs\dimexpr#body\relax\fi     % factor
+            \ifcsname\??fontenvironments#class:\fontstyle#size#parameter\endcsname
+     \orelse\ifcsname\??fontenvironments#class:\fontstyle\s!default#parameter\endcsname
+     \orelse\ifcsname\??fontenvironments#class#size#parameter\endcsname
+     \orelse\ifcsname\??fontenvironments#class\s!default#parameter\endcsname
+     % bonus:
+     \orelse\ifcsname\??fontenvironments#class\s!default\s!parent\endcsname
+            \ifcsname\??fontenvironments\lastnamedcs#parameter\endcsname\fi
+     %
+     \orelse\ifcsname\??fontenvironments#size#parameter\endcsname
+     \orelse\ifcsname\??fontenvironments\s!default#parameter\endcsname
+     \fi
+     \lastnamedcs
+     \ifchkdim\lastnamedcs\or\else
+       \dimexpr#body\relax % we need a cheaper one
+     \fi
    \relax}
+
+%D In the following macros we use \type {\currentxfontsize} to hold the current
+%D x||size of the font. This enables us to support for instance \type {\sl} inside a
+%D \type {\tx} switch.
+
+\newconstant\currentxfontsize
+
+\permanent\def\wildcardfontsize {\ifcase\currentxfontsize\fontsize\or\s!x\else\s!xx\fi}
+\permanent\def\wildcardfontscale{\normalexpanded{\noexpand\bodyfontvariable{\ifcase\currentxfontsize\fontsize\or\s!x\else\s!xx\fi}}}
+
+\permanent\def\bodyfontinterlinespace{\bodyfontvariable     \c!interlinespace} % used elsewhere
+%permanent\def\bodyfontinterlinespace{\font_bodyfontvariable\c!interlinespace} % used elsewhere
 
 \installcorenamespace{fontenvironmentknown}
 
@@ -1455,7 +1587,7 @@
 \newmacro\m_font_body
 \newmacro\m_font_body_normalized
 
-\permanent\tolerant\protected\def\definebodyfontenvironment[#1]#*[#2]#*[#3]% todo
+\permanent\tolerant\protected\def\definebodyfontenvironment[#1]#*[#2]#*[#3]#*[#4]%
   {\ifarguments
      \expandafter\font_basics_define_body_font_environment_unset
    \or
@@ -1464,7 +1596,9 @@
      \expandafter\font_basics_define_body_font_environment_empty
    \or
      \expandafter\font_basics_define_body_font_environment_class
-   \fi[#1][#2][#3]}
+   \or
+     \expandafter\font_basics_define_body_font_environment_detail
+   \fi[#1][#2][#3][#4]}
 
 \aliased\let\setupbodyfontenvironment\definebodyfontenvironment
 
@@ -1478,30 +1612,35 @@
 \permanent\def\bodyfontenvironmentlist
   {\clf_getbodyfontsizes}
 
-\def\font_basics_define_body_font_environment_class[#class][#body][#settings]%
+\def\font_basics_define_body_font_environment_detail[#class][#style][#body][#settings]%
+  {\font_basics_define_body_font_environment_class[#class:#style][#body][#settings][]}
+
+\def\font_basics_define_body_font_environment_class[#class][#body][#settings][#dummy]%
   {\edef\m_font_body{#body}%
-   \ifx\m_font_body\s!default
-     % these are the last resort within a class
-     \getparameters[\??fontenvironments#class\s!default][#settings]%
-   \else
+   \ifchkdim\m_font_body\or
      \normalizebodyfontsize\m_font_body_normalized\m_font_body
      \font_basics_define_body_font_environment_size[#class][\m_font_body_normalized][#settings]%
      \clf_registerbodyfontsize{\m_font_body_normalized}%
+   \orelse\ifhastok={#settings}%
+     \getparameters[\??fontenvironments#class#body][#settings]% old fashioned setter
+   \else
+     \setvalue{\??fontenvironments#class#body\s!parent}{#settings}% old fashioned setter
+    %\getparameters[\??fontenvironments#class#body][\s!parent=#settings]% old fashioned setter
    \fi}
 
 %D The empty case uses the same code but needs to ignore the current class settings
 %D (just to be sure, as it's not really needed).
 
-\def\font_basics_define_body_font_environment_empty[#body][#settings][#dummy]%
+\def\font_basics_define_body_font_environment_empty[#body][#settings][#dummya][#dummyb]%
   {\push_macro_fontclass
    \lettonothing\fontclass
-   \font_basics_define_body_font_environment_class[][#body][#settings]%
+   \font_basics_define_body_font_environment_class[][#body][#settings][#dummya]%
    \pop_macro_fontclass}
 
-\def\font_basics_define_body_font_environment_unset[#body][#dummya][#dummyb]%
+\def\font_basics_define_body_font_environment_unset[#body][#dummya][#dummyb][#dummyc]%
   {\push_macro_fontclass
    \lettonothing\fontclass
-   \font_basics_define_body_font_environment_class[][#body][]%
+   \font_basics_define_body_font_environment_class[][#body][][]%
    \pop_macro_fontclass}
 
 %D We don't check too soon as we can refer to later definitions.
@@ -1640,6 +1779,13 @@
 \protected\def\font_basics_define_body_font[#whatever]%
   {\doifelsenumber{#whatever}\font_basics_define_body_font_body\font_basics_define_body_font_name[#whatever]}
 
+% \protected\def\font_basics_define_body_font[#whatever]%
+%   {\ifchknum#whatever\or
+%      \expandafter\font_basics_define_body_font_body
+%    \else
+%      \expandafter\font_basics_define_body_font_name
+%    \fi[#whatever]}
+
 \protected\def\font_basics_define_body_font_class_given[#1][#2][#3]#4%
   {\push_macro_fontclass
    \ifcstok{#4}\s!default
@@ -1754,6 +1900,22 @@
      {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest-5}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
   }
 
+\appendtoks
+    % the undefined need checking here
+    \protected\def\font_basics_define_body_font_nop_xx[#one#two#rest=#value]% local
+      {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
+       \letcsname\??fontinstanceclass\m_font_asked_body-\m_font_asked_style-#one#two-#rest\endcsname\undefined
+       \protected\edefcsname\??fontinstanceready\m_font_asked_body-\m_font_asked_style-#one#two-#rest\endcsname
+         {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+    }%
+    \protected\def\font_basics_define_body_font_yes_xx[#one#two#rest=#value]% global
+      {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
+       \gletcsname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest\endcsname\undefined
+       \protected\xdefcsname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest\endcsname
+         {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+    }%
+\to \everycompactfontmode
+
 % \writestatus{fonts}{define \m_asked_style\space yes: {\expandafter\meaning\csname\fontclass\m_font_asked_body\m_font_asked_style#one#two#rest\endcsname}
 
 %D Here the rest concerns rl or lr so in this case it is not a size specifier but
@@ -1780,6 +1942,19 @@
    \protected\xdefcsname\??fontinstanceready\fontclass-\m_font_asked_body-\s!mm-#one#two#rest\endcsname
      {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
   }
+
+\appendtoks
+    \protected\def\font_basics_define_body_font_nop_mm[#one#two#rest=#value]% local
+      {\letcsname\??fontinstanceclass\m_font_asked_body-\s!mm-#one#two#rest\endcsname\undefined
+       \protected\xdefcsname\??fontinstanceready\m_font_asked_body-\s!mm-#one#two#rest\endcsname
+         {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\noexpand\font_rscale_mm}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+    }%
+    \protected\def\font_basics_define_body_font_yes_mm[#one#two#rest=#value]% global
+      {\gletcsname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest\endcsname\undefined
+       \protected\xdefcsname\??fontinstanceready\fontclass-\m_font_asked_body-\s!mm-#one#two#rest\endcsname
+         {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+    }%
+\to \everycompactfontmode
 
 % \writestatus{fonts}{define \m_asked_style\space yes: \expandafter\meaning\csname\fontclass\m_font_asked_body\m_font_asked_style#one#two#rest\endcsname}%
 
@@ -1834,12 +2009,15 @@
        \c_font_defining_state\conditionalfalse
        \font_helpers_register_fontbody{#body}%
        % needed ?
-       \ifconditional\c_font_defining_unknown
-       \else
-         \c_font_defining_unknown\conditionaltrue
-         \font_helpers_process_relative_size_list{\font_helpers_define_unknown_check_relatives{#body}}%
-         \c_font_defining_unknown\conditionalfalse
-       \fi
+%
+% Otherwise no math when we define [class][style][size]
+%
+%        \ifconditional\c_font_defining_unknown
+%        \else
+%          \c_font_defining_unknown\conditionaltrue
+%          \font_helpers_process_relative_size_list{\font_helpers_define_unknown_check_relatives{#body}}%
+%          \c_font_defining_unknown\conditionalfalse
+%        \fi
      \fi
    \fi}
 
@@ -1886,19 +2064,24 @@
      \font_helpers_check_bodyfont_environment\normalizedbodyfontsize\normalizedbodyfontsize % !!
    \else
      \showmessage\m!fonts4{#body}%
-   \fi
-   \ifconditional\c_font_compact
-     \glyphscale\numexpr\plushundred*\dimexpr\normalizedbodyfontsize\relax/\maxcard\relax
    \fi}
 
-% \prependtoks
-%     \ifconditional\c_font_compact
-%         % better in lua ... accuracy
-%         \glyphtextscale         \numexpr\plusthousand*\dimexpr\textface        \relax/\d_font_scaled_default\relax
-%         \glyphscriptscale       \numexpr\plusthousand*\dimexpr\scriptface      \relax/\d_font_scaled_default\relax
-%         \glyphscriptscriptscale \numexpr\plusthousand*\dimexpr\scriptscriptface\relax/\d_font_scaled_default\relax
-%     \fi
-% \to \everymathematics
+\appendtoks
+    \protected\def\font_basics_switch_points#body%
+      {\ifcsname\??fontbodyknown#body\endcsname \else
+         % we need to check the relative sizes for this body
+         \font_helpers_define_unknown_font{#body}%
+       \fi%
+       \ifcsname\??fontbodyknown#body\endcsname % always true now
+         \font_basics_complete_switch{#body}%
+         \localbodyfontsize#body\relax
+         \normalizebodyfontsize\normalizedbodyfontsize\localbodyfontsize
+         \font_helpers_check_bodyfont_environment\normalizedbodyfontsize\normalizedbodyfontsize % !!
+       \else
+         \showmessage\m!fonts4{#body}%
+       \fi
+       \glyphscale\numexpr\plushundred*\dimexpr\normalizedbodyfontsize\relax/\maxcard\relax}
+\to \everycompactfontmode
 
 \protected\def\font_basics_switch_style#style%
   {\ifcsname\??fontstyle#style\endcsname
@@ -1920,9 +2103,9 @@
    \ifempty\m_font_specification \else
      \ifx\m_font_specification\v!global % we can have all kind of presets
        \restoreglobalbodyfont
-     \else
-       \processcommacommand[\m_font_specification]{\font_helpers_set_font_check_size}%
+     \else % order swapped per nov 2023
        \processcommacommand[\m_font_specification]{\font_helpers_set_font_set_font{#method}}%
+       \processcommacommand[\m_font_specification]{\font_helpers_set_font_check_size}%
        \ifproductionrun
          \font_preloads_at_definition
          \font_basics_switch_points\normalizedbodyfontsize
@@ -1992,11 +2175,13 @@
 
 % we need to check the fontclass
 
-\permanent\def\registerfontclass#class%
+\permanent\protected\def\registerfontclass#class%
   {\gletcsname\??fontclassyes#class\endcsname\v!yes} % global ?
 
-\permanent\def\setcurrentfontclass#class%
-  {\ifcsname\??fontclassyes#class\endcsname
+\permanent\protected\def\setcurrentfontclass#class%
+  {\ifcsname\??bodyfontalias#class\endcsname
+     \constant\lettolastnamedcs\fontclass
+   \orelse\ifcsname\??fontclassyes#class\endcsname
      \cdef\fontclass{#class}%
    \orelse\ifcsname\??fontclassnop#class\endcsname
      % already tried
@@ -2042,6 +2227,23 @@
    \cdef\fontalternative{#alternative}%
    \font_helpers_synchronize_font}
 
+\appendtoks
+%     \protected\def\font_helpers_set_current_xsize_alternative#xsize#alternative%
+%       {\cdef\fontface{0}% % not used in compact mode
+%        \cdef\fontalternative{#alternative}%
+%        \ifnum#xsize=\plusfour % best just pass the number
+%          \currentxfontsize\plusone
+%        \else
+%          \currentxfontsize\plustwo
+%        \fi
+%        \font_helpers_synchronize_font}%
+    \protected\def\font_helpers_set_current_xsize_alternative#xsize#alternative%
+      {\cdef\fontface{0}% % not used in compact mode
+       \cdef\fontalternative{#alternative}%
+       \currentxfontsize#xsize\relax
+       \font_helpers_synchronize_font}%
+\to \everycompactfontmode
+
 \protected\def\font_helpers_set_current_font_alternative#alternative%
   {\cdef\fontalternative{#alternative}%
    \font_helpers_synchronize_font}
@@ -2075,17 +2277,38 @@
    \font_helpers_check_big_math_synchronization % double? better in everymath?
    \font_helpers_synchronize_font}
 
-\protected\def\font_helpers_synchronize_font % we can have dups i.e. no need to let fontstrategy
+\protected\def\font_helpers_synchronize_font
   {\ifempty\fontclass
      \applyfontstrategies
    \else
      \applyfontclassstrategies
    \fi
    \c_font_auto_size\conditionalfalse
-   \ifskipfontcharacteristics
+   \ifskipfontcharacteristics \else
      \expand\everyfont % \setfontcharacteristics
      \expand\everyfontswitch
    \fi}
+
+\appendtoks
+    \protected\def\font_helpers_synchronize_font
+      {\ifempty\fontclass
+         \applyfontstrategies
+       \else
+         \applyfontclassstrategies
+       \fi
+       \c_font_auto_size\conditionalfalse
+       \ifcase\currentxfontsize
+         % nothing
+       \or
+         \normaltx
+       \else
+         \normaltxx
+       \fi
+       \ifskipfontcharacteristics \else
+         \expand\everyfont % \setfontcharacteristics
+         \expand\everyfontswitch
+       \fi}%
+\to \everycompactfontmode
 
 %D This is the resolver for special cases (sizes) and in practice it is not called
 %D that often so further optimization makes no sense.
@@ -2138,6 +2361,56 @@
      \expandafter\font_helpers_check_strategy_a
    \fi}
 
+\appendtoks
+    \def\font_helpers_check_strategy_class_a % --- --- --- --- % pt tt bf a
+      {\ifcsname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\fontalternative-\fontsize\endcsname
+         \c_font_auto_size\conditionalfalse
+         \lastnamedcs
+       \else
+         \expandafter\font_helpers_check_strategy_class_b
+       \fi}%
+    %
+    \def\font_helpers_check_strategy_class_b % --- --- --- def % pt tt bf
+      {\ifcsname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\fontalternative-\defaultfontsize\endcsname
+         \c_font_auto_size\conditionaltrue
+         \lastnamedcs
+       \else
+         \expandafter\font_helpers_check_strategy_class_c
+       \fi}%
+    %
+    \def\font_helpers_check_strategy_class_c % --- --- def --- % pt tt tf a
+      {\ifcsname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\defaultfontalternative-\fontsize\endcsname
+         \c_font_auto_size\conditionaltrue
+         \lastnamedcs
+       \else
+         \expandafter\font_helpers_check_strategy_class_d
+       \fi}%
+    %
+    \def\font_helpers_check_strategy_class_d % --- --- def def % pt tt tf
+      {\ifcsname\??fontinstanceready\fontclass-\fontbody-\fontstyle-\defaultfontalternative-\defaultfontsize\endcsname
+         \c_font_auto_size\conditionaltrue
+         \lastnamedcs
+       \else
+         \expandafter\font_helpers_check_strategy_class_e
+       \fi}%
+    %
+    \def\font_helpers_check_strategy_class_e % --- def def def % pt rm tf
+      {\ifcsname\??fontinstanceready\fontclass-\fontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize\endcsname
+         \c_font_auto_size\conditionalfalse
+         \lastnamedcs
+       \else
+         \expandafter\font_helpers_check_strategy_class_f
+       \fi}%
+    %
+    \def\font_helpers_check_strategy_class_f % def def def def % rm tf
+      {\ifcsname\??fontinstanceready\fontclass-\defaultfontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize\endcsname
+         \c_font_auto_size\conditionaltrue
+         \lastnamedcs
+       \else
+         \expandafter\font_helpers_check_strategy_a
+       \fi}%
+\to \everycompactfontmode
+
 % no class
 
 \def\font_helpers_check_strategy_a % --- --- --- --- % pt tt bf a
@@ -2186,8 +2459,61 @@
      \lastnamedcs
    \fi}
 
+\appendtoks
+    \def\font_helpers_check_strategy_a % --- --- --- --- % pt tt bf a
+      {\ifcsname\??fontinstanceready\fontbody-\fontstyle-\fontalternative-\fontsize\endcsname
+         \c_font_auto_size\conditionalfalse
+         \lastnamedcs
+       \else
+         \expandafter\font_helpers_check_strategy_b
+       \fi}%
+    %
+    \def\font_helpers_check_strategy_b % --- --- --- --- % pt tt bf a
+      {\ifcsname\??fontinstanceready\fontbody-\fontstyle-\fontalternative-\defaultfontsize\endcsname
+         \c_font_auto_size\conditionaltrue
+         \lastnamedcs
+       \else
+         \expandafter\font_helpers_check_strategy_c
+       \fi}%
+    %
+    \def\font_helpers_check_strategy_c % --- --- --- --- % pt tt bf a
+      {\ifcsname\??fontinstanceready\fontbody-\fontstyle-\defaultfontalternative-\fontsize\endcsname
+         \c_font_auto_size\conditionaltrue
+         \lastnamedcs
+       \else
+         \expandafter\font_helpers_check_strategy_d
+       \fi}%
+    %
+    \def\font_helpers_check_strategy_d % --- --- --- --- % pt tt bf a
+      {\ifcsname\??fontinstanceready\fontbody-\fontstyle-\defaultfontalternative-\defaultfontsize\endcsname
+         \c_font_auto_size\conditionaltrue
+         \lastnamedcs
+       \else
+         \expandafter\font_helpers_check_strategy_e
+       \fi}%
+    %
+    \def\font_helpers_check_strategy_e % --- --- --- --- % pt tt bf a
+      {\ifcsname\??fontinstanceready\fontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize\endcsname
+         \c_font_auto_size\conditionalfalse
+         \lastnamedcs
+       \else
+         \expandafter\font_helpers_check_strategy_f
+       \fi}%
+    %
+    \def\font_helpers_check_strategy_f % --- --- --- --- % pt tt bf a
+      {\ifcsname\??fontinstanceready\defaultfontbody-\defaultfontstyle-\defaultfontalternative-\defaultfontsize\endcsname
+         \c_font_auto_size\conditionaltrue
+         \lastnamedcs
+       \fi}%
+\to \everycompactfontmode
+
 \permanent\let\applyfontstrategies     \font_helpers_check_strategy_a
 \permanent\let\applyfontclassstrategies\font_helpers_check_strategy_class_a
+
+\appendtoks
+    \enforced\permanent\let\applyfontstrategies     \font_helpers_check_strategy_a
+    \enforced\permanent\let\applyfontclassstrategies\font_helpers_check_strategy_class_a
+\to \everycompactfontmode
 
 %D Let's synchronize:
 
@@ -2206,6 +2532,62 @@
 %D the values defined by the bodyfontenvironment are used. Here we also set \type
 %D {\currentxfontsize}.
 
+\permanent\protected\def\resettx
+  {\ifzeronum\currentxfontsize\else
+     \currentxfontsize\zerocount
+     \enforced\let\tx\normaltx
+     \enforced\let\txx\normaltxx
+    %\enforced\let\sx\normalsx
+    %\enforced\let\sxx\normalsxx
+     \let\fontsize\empty
+     \font_scale_defined
+    %\font_helpers_check_big_math_synchronization
+    %\font_helpers_synchronize_font
+   \fi}
+
+% \prependtoks
+%     \currentxfontsize\zerocount
+%     \enforced\let\tx \normaltx
+%     \enforced\let\txx\normaltxx
+% \to \everysetupbodyfont
+
+% \prependtoks
+%     \currentxfontsize\zerocount
+%     \enforced\let\tx \normaltx
+%     \enforced\let\txx\normaltxx
+% \to \everyswitchtobodyfont
+
+% \appendtoks
+\prependtoks
+    \currentxfontsize\zerocount
+    \enforced\let\tx \normaltx
+    \enforced\let\txx\normaltxx
+    \font_scale_defined
+\to \everysetupbodyfont
+
+\prependtoks
+% \appendtoks
+    \currentxfontsize\zerocount
+    \enforced\let\tx \normaltx
+    \enforced\let\txx\normaltxx
+    \font_scale_defined
+\to \everyswitchtobodyfont
+
+% \appendtoks
+%     \enforced\permanent\protected\def\resettx
+%        {\ifzeronum\currentxfontsize\else
+%          \currentxfontsize\zerocount
+%          \enforced\let\tx\normaltx
+%          \enforced\let\txx\normaltxx
+%          \let\fontsize\empty
+%         %\enforced\let\sx\normalsx
+%         %\enforced\let\sxx\normalsxx
+%          \font_scale_defined
+%         %\font_helpers_check_big_math_synchronization
+%         %\font_helpers_synchronize_font
+%        \fi}%
+% \to \everycompactfontmode
+
 \def\font_helpers_set_current_font_xxx_alternative#alternative#xsize#scriptstyle%
   {\ifmmode
      #scriptstyle%
@@ -2213,28 +2595,42 @@
      \font_helpers_set_current_xsize_alternative{#xsize}{#alternative}%
    \fi}
 
-\def\font_helpers_reset_x_fontsize
-  {\ifcase\currentxfontsize\else
-     \currentxfontsize\zerocount
-     % also \sx and \sxx ?
-     \enforced\let\tx \normaltx
-     \enforced\let\txx\normaltxx
-   \fi}
+% \def\font_helpers_reset_x_fontsize
+%   {\ifcase\currentxfontsize\else
+%      \currentxfontsize\zerocount
+%      % also \sx and \sxx ?
+%      \enforced\let\tx \normaltx
+%      \enforced\let\txx\normaltxx
+%    \fi}
 
-\let\font_helpers_check_nested_x_fontsize\relax
+% \let\font_helpers_check_nested_x_fontsize\relax
 
 \def\font_helpers_set_current_font_x_alternative#alternative%
-  {\font_helpers_check_nested_x_fontsize
+  {%\font_helpers_check_nested_x_fontsize
    \font_helpers_set_current_font_xxx_alternative{#alternative}{4}\scriptstyle
    \currentxfontsize\plusone
    \enforced\let\tx\txx}
 
 \def\font_helpers_set_current_font_xx_alternative#alternative%
-  {\font_helpers_check_nested_x_fontsize
+  {%\font_helpers_check_nested_x_fontsize
    \font_helpers_set_current_font_xxx_alternative{#alternative}{5}\scriptscriptstyle
    \currentxfontsize\plustwo
    \enforced\lettonothing\tx
    \enforced\lettonothing\txx}
+
+\appendtoks
+    \def\font_helpers_set_current_font_x_alternative#alternative%
+      {%\font_helpers_check_nested_x_fontsize
+       \currentxfontsize\plusone
+       \font_helpers_set_current_font_xxx_alternative{#alternative}\plusone\scriptstyle
+       \enforced\let\tx\txx}%
+    \def\font_helpers_set_current_font_xx_alternative#alternative%
+      {%\font_helpers_check_nested_x_fontsize
+       \currentxfontsize\plusone
+       \font_helpers_set_current_font_xxx_alternative{#alternative}\plustwo\scriptscriptstyle
+       \enforced\lettonothing\tx
+       \enforced\lettonothing\txx}%
+\to \everycompactfontmode
 
 %D This alternative is not really needed, but for old time's sake we keep it there.
 %D We can speed it up when needed.
@@ -2263,122 +2659,41 @@
 %D Setting the main size involves the style list and therefore takes a bit more
 %D time. Keep in mind that the fontsize is represented by a character or empty.
 
-\installcorenamespace{fontscalex}
-\installcorenamespace{fontscalexx}
-
-\newconditional\c_font_inherit_scale
-
-\def\font_scale_inherit_normal#1%
-  {\begingroup
-   \scratchcounterone\fontid\font\relax
-   \currentxfontsize\plusone
-   \normalexpanded{\definedfont[\clf_specifiedfont\scratchcounterone\font_currentfontscale\relax]}%
-   \scratchcountertwo\fontid\font\relax
-   \currentxfontsize\plustwo
-   \normalexpanded{\definedfont[\clf_specifiedfont\scratchcounterone\font_currentfontscale\relax]}%
-   \scratchcounterthree\fontid\font\relax
-   % parent -> x -> xx
-   % parent -> xx
-   \global\expandafter\integerdef\csname\??fontscalex \the\scratchcounterone\endcsname\scratchcountertwo
-   \global\expandafter\integerdef\csname\??fontscalexx\the\scratchcounterone\endcsname\scratchcounterthree
-   \global\expandafter\integerdef\csname\??fontscalex \the\scratchcountertwo\endcsname\scratchcounterthree
-   \global\expandafter\integerdef\csname\??fontscalexx\the\scratchcountertwo\endcsname\scratchcounterthree
-   \endgroup
-   \setfontid\csname#1\the\fontid\font\endcsname}
-
-\def\font_scale_inherit_normal_x
-  {\ifcsname\??fontscalex\the\fontid\font\endcsname
-     \setfontid\lastnamedcs
-   \else
-     \font_scale_inherit_normal\??fontscalex
-   \fi
-   \ifskipfontcharacteristics
-     \expand\everyfont % \setfontcharacteristics
-     \expand\everyfontswitch
-   \fi}
-
-\def\font_scale_inherit_normal_xx
-  {\ifcsname\??fontscalexx\the\fontid\font\endcsname
-     \setfontid\lastnamedcs
-   \else
-     \font_scale_inherit_normal\??fontscalexx
-   \fi
-   \ifskipfontcharacteristics
-     \expand\everyfont % \setfontcharacteristics
-     \expand\everyfontswitch
-   \fi}
-
-\def\font_scale_inherit_compact#1%
-  {\begingroup
-   \scratchcounterone\fontid\font\relax
-   \currentxfontsize\plusone
-   \scratchcountertwo\numericscale\font_currentfontscale
-   \currentxfontsize\plustwo
-   \scratchcounterthree\numericscale\font_currentfontscale
-   % parent -> x -> xx
-   % parent -> xx
-   \global\expandafter\fontspecdef\csname\??fontscalex \the\scratchcounterone:\number\glyphscale\endcsname
-     \scratchcounterone
-     scale  \numexpr\glyphscale*\scratchcountertwo/1000\relax
-   % scale  \glyphscale
-   % xscale \scratchcountertwo
-   % yscale \scratchcountertwo
-   \relax
-   \global\expandafter\fontspecdef\csname\??fontscalexx\the\scratchcounterone:\number\glyphscale\endcsname
-     \scratchcounterone
-     scale  \numexpr\glyphscale*\scratchcounterthree/1000\relax
-   % scale  \glyphscale
-   % xscale \scratchcounterthree
-   % yscale \scratchcounterthree
-   \relax
-   \global\expandafter\fontspecdef\csname\??fontscalex \the\scratchcountertwo:\number\glyphscale\endcsname
-     \scratchcounterone
-     scale  \numexpr\glyphscale*\scratchcounterthree/1000\relax
-   % scale  \glyphscale
-   % xscale \scratchcounterthree
-   % yscale \scratchcounterthree
-   \relax
-   \global\expandafter\fontspecdef\csname\??fontscalexx\the\scratchcountertwo:\number\glyphscale\endcsname
-     \scratchcounterone
-     scale  \numexpr\glyphscale*\scratchcounterthree/1000\relax
-   % scale  \glyphscale
-   % xscale \scratchcounterthree
-   % yscale \scratchcounterthree
-   \relax
-   \endgroup
-   \csname#1\the\fontid\font:\the\glyphscale\endcsname}
-
-\def\font_scale_inherit_compact_x
-  {\ifcsname\??fontscalex\the\fontid\font:\the\glyphscale\endcsname
-     \lastnamedcs
-   \else
-     \font_scale_inherit_compact\??fontscalex
-   \fi
-   \ifskipfontcharacteristics
-     \expand\everyfont % \setfontcharacteristics
-     \expand\everyfontswitch
-   \fi}
-
-\def\font_scale_inherit_compact_xx
-  {\ifcsname\??fontscalexx\the\fontid\font:\the\glyphscale\endcsname
-     \lastnamedcs
-   \else
-     \font_scale_inherit_compact\??fontscalexx
-   \fi
-   \ifskipfontcharacteristics
-     \expand\everyfont % \setfontcharacteristics
-     \expand\everyfontswitch
-   \fi}
+\def\font_scale_defined
+  {\let\fontface\!!zerocount
+  %\let\fontalternative\fontalternative
+   \font_helpers_synchronize_font}
 
 \def\font_scale_defined_x
   {\let\fontface\!!plusfour
-   \let\fontalternative\fontalternative
+  %\let\fontalternative\fontalternative
    \font_helpers_synchronize_font}
 
 \def\font_scale_defined_xx
   {\let\fontface\!!plusfive
-   \let\fontalternative\fontalternative
+  %\let\fontalternative\fontalternative
    \font_helpers_synchronize_font}
+
+\appendtoks
+    \def\font_scale_defined
+      {\glyphscale\dimexpr\textface*\plushundred/\onepoint\relax
+       \ifskipfontcharacteristics \else
+         \expand\everyfont % \setfontcharacteristics
+         \expand\everyfontswitch
+       \fi}%
+    \def\font_scale_defined_x
+      {\glyphscale\dimexpr\xtextface*\plushundred/\onepoint\relax
+       \ifskipfontcharacteristics \else
+         \expand\everyfont % \setfontcharacteristics
+         \expand\everyfontswitch
+       \fi}%
+    \def\font_scale_defined_xx
+      {\glyphscale\dimexpr\xxtextface*\plushundred/\onepoint\relax
+       \ifskipfontcharacteristics \else
+         \expand\everyfont % \setfontcharacteristics
+         \expand\everyfontswitch
+       \fi}%
+\to \everycompactfontmode
 
 % to freeze or not ...
 
@@ -2386,12 +2701,6 @@
   {\currentxfontsize\plusone
    \ifmmode
      \scriptstyle
-   \orelse\ifconditional\c_font_inherit_scale
-     \ifconditional\c_font_compact
-       \font_scale_inherit_compact_x
-     \else
-       \font_scale_inherit_normal_x
-     \fi
    \else
      \font_scale_defined_x
    \fi
@@ -2401,12 +2710,6 @@
   {\currentxfontsize\plustwo
    \ifmmode
      \scriptscriptstyle
-   \orelse\ifconditional\c_font_inherit_scale
-     \ifconditional\c_font_compact
-       \font_scale_inherit_compact_xx
-     \else
-       \font_scale_inherit_normal_xx
-     \fi
    \else
      \font_scale_defined_xx
    \fi
@@ -2417,10 +2720,8 @@
   {\currentxfontsize\plusone
    \ifmmode
      \scriptstyle
-   \orelse\ifconditional\c_font_compact
-     \font_scale_inherit_compact_x
    \else
-     \font_scale_inherit_normal_x
+     \font_scale_defined_x
    \fi
    \enforced\let\tx\txx
    \enforced\let\sx\sxx}
@@ -2429,24 +2730,22 @@
   {\currentxfontsize\plustwo
    \ifmmode
      \scriptscriptstyle
-   \orelse\ifconditional\c_font_compact
-     \font_scale_inherit_compact_xx
    \else
-     \font_scale_inherit_normal_xx
+     \font_scale_defined_xx
    \fi
    \enforced\lettonothing\tx
    \enforced\lettonothing\txx
    \enforced\lettonothing\sx
    \enforced\lettonothing\sxx}
 
-\permanent\protected\def\useinheritxsizes{\c_font_inherit_scale\conditionaltrue} % not yet public, playground for WS and me
-\permanent\protected\def\usedefinedxsizes{\c_font_inherit_scale\conditionalfalse} % not yet public, playground for WS and me
-
 \aliased\let\normaltx \tx
 \aliased\let\normaltxx\txx
 
 \aliased\let\normalsx \sx
 \aliased\let\normalsxx\sxx
+
+\lettonothing\useinheritxsizes % will go
+\lettonothing\usedefinedxsizes % will go
 
 %D When asking for a complete font switch, for instance from 10 to 12~points, the
 %D next macro does the job. First we normalize the size, next we define the current
@@ -2462,65 +2761,9 @@
 \permanent\protected\def\xtextface       {\currentbodyfontdimension\s!x           }
 \permanent\protected\def\xxtextface      {\currentbodyfontdimension\s!xx          }
 
-\installcorenamespace{fontbodyfaces}
-
 \protected\def\font_basics_complete_switch#size%
   {\bodyfontsize#size\relax
-   \normalizebodyfontsize\normalizedbodyfontsize\bodyfontsize
-   \expandafter\let\expandafter\font_basics_set_faces\csname\??fontbodyfaces\fontbody\endcsname
-   \ifrelax\font_basics_set_faces
-     \font_basics_set_faces_preset
-   \fi
-   \font_basics_set_faces}
-
-\def\font_basics_set_faces_preset
-  {\edef\font_basics_set_faces{% 0.2 sec on 10K \tfa
-     \enforced\permanent\protected\def\textface        {\currentbodyfontdimension\s!text        }%
-     \enforced\permanent\protected\def\scriptface      {\currentbodyfontdimension\s!script      }%
-     \enforced\permanent\protected\def\scriptscriptface{\currentbodyfontdimension\s!scriptscript}%
-     \enforced\permanent\protected\def\xtextface       {\currentbodyfontdimension\s!x           }%
-     \enforced\permanent\protected\def\xxtextface      {\currentbodyfontdimension\s!xx          }%
-   }%
-   \gletcsname\??fontbodyfaces\fontbody\endcsname\font_basics_set_faces}
-
-% \permanent\def\currentbodyfontdimension#parameter% there can be factors here
-%   {\the\dimexpr
-%      \ifcsname\??fontenvironments\fontclass\normalizedbodyfontsize#parameter\endcsname
-%        \lastnamedcs
-%      \orelse\ifcsname\??fontenvironments\fontclass\s!default#parameter\endcsname
-%        \lastnamedcs
-%        \dimexpr\normalizedbodyfontsize\relax
-%      \orelse\ifcsname\??fontenvironments\normalizedbodyfontsize#parameter\endcsname
-%        \lastnamedcs
-%      \else
-%        \csname\??fontenvironments\s!default#parameter\endcsname
-%        \dimexpr\normalizedbodyfontsize\relax
-%      \fi
-%    \relax}
-
-% \setupbodyfontenvironment [all]     [12pt] [x=4pt,small=4pt]
-% \setupbodyfontenvironment [pagella] [12pt] [x=4pt,small=4pt]
-%
-% \setupbodyfont[pagella,12pt]
-%
-% \starttext normal {\tx tx} {\small small} \stoptext
-
-\permanent\def\currentbodyfontdimension#parameter% there can be factors here
-  {\the\dimexpr
-     \ifcsname\??fontenvironments\fontclass\normalizedbodyfontsize#parameter\endcsname
-       \lastnamedcs
-     \orelse\ifcsname\??fontenvironments\fontclass\s!default#parameter\endcsname
-       \lastnamedcs
-       \dimexpr\normalizedbodyfontsize\relax
-     \orelse\ifcsname\??fontenvironments\v!all\normalizedbodyfontsize#parameter\endcsname
-       \lastnamedcs
-     \orelse\ifcsname\??fontenvironments\normalizedbodyfontsize#parameter\endcsname
-       \lastnamedcs
-     \else
-       \csname\??fontenvironments\s!default#parameter\endcsname
-       \dimexpr\normalizedbodyfontsize\relax
-     \fi
-   \relax}
+   \normalizebodyfontsize\normalizedbodyfontsize\bodyfontsize}
 
 %D \macros
 %D   {setupbodyfont,switchtobodyfont}
@@ -2554,15 +2797,29 @@
 % \newtoks \everysetupbodyfont
 % \newtoks \everyswitchtobodyfont
 
-\permanent\protected\def\setupbodyfont
-  {\doifelsenextoptionalcs\font_basics_setupbodyfont_yes\font_basics_setupbodyfont_nop}
+% \permanent\protected\def\setupbodyfont
+%   {\doifelsenextoptionalcs\font_basics_setupbodyfont_yes\font_basics_setupbodyfont_nop}
+%
+% \def\font_basics_setupbodyfont_nop
+%   {\restoreglobalbodyfont
+%    \saveinterlinespace}
+%
+% \def\font_basics_setupbodyfont_yes[#specification]%
+%   {\ifempty{#specification}\else
+%      \font_helpers_set_font\plusone{#specification}%
+%      \globalbodyfontsize\localbodyfontsize
+%      \normalizebodyfontsize\normalizedglobalbodyfontsize\globalbodyfontsize
+%      \let\globalfontstyle\fontstyle
+%      \ifproductionrun
+%        \expand\everybodyfont
+%        \expand\everyglobalbodyfont
+%        \saveinterlinespace
+%      \fi
+%      \expand\everysetupbodyfont
+%    \fi}
 
-\def\font_basics_setupbodyfont_nop
-  {\restoreglobalbodyfont
-   \saveinterlinespace}
-
-\def\font_basics_setupbodyfont_yes[#specification]%
-  {\ifempty{#specification}\else
+\permanent\protected\tolerant\def\setupbodyfont[#specification]%
+  {\ifparameter#specification\or
      \font_helpers_set_font\plusone{#specification}%
      \globalbodyfontsize\localbodyfontsize
      \normalizebodyfontsize\normalizedglobalbodyfontsize\globalbodyfontsize
@@ -2573,6 +2830,14 @@
        \saveinterlinespace
      \fi
      \expand\everysetupbodyfont
+   \else
+     \restoreglobalbodyfont
+     \saveinterlinespace
+   \fi}
+
+\permanent\protected\def\switchtobodyfont[#specification]% could become an ifx
+  {\ifparameter#specification\or
+     \font_basics_switchtobodyfont{#specification}%
    \fi}
 
 \protected\def\font_basics_switchtobodyfont#specification%
@@ -2583,12 +2848,10 @@
      \font_helpers_switch_bodyfont_step % so we have a fast [small] switch
    \fi
    \expand\everybodyfont
-   \expand\everyswitchtobodyfont}
-
-\permanent\protected\def\switchtobodyfont[#specification]% could become an ifx
-  {\ifempty{#specification}\else
-     \font_basics_switchtobodyfont{#specification}%
-   \fi}
+   \expand\everyswitchtobodyfont
+\expand\everyfont
+\expand\everyfontswitch
+   }
 
 \permanent\protected\def\usebodyfontparameter#1%
   {\edef\m_font_bodyfont_asked{#1\c!bodyfont}%
@@ -2605,14 +2868,17 @@
 
 \permanent\protected\def\fastswitchtobodyfont#name%
   {\ifcsname\??fontenvironments\normalizedbodyfontsize#name\endcsname
-     \edef\p_bodyfont{\lastnamedcs}%
+   % \edef\p_bodyfont{\lastnamedcs}%
+     \lettolastnamedcs\p_bodyfont
      \ifcsname\??fontbodyknown\p_bodyfont\endcsname
        \font_basics_complete_switch\p_bodyfont
        \localbodyfontsize\p_bodyfont\relax
      \fi
    \fi
    \csname\??fontstyle\fontstyle\endcsname
-   \expand\everybodyfont}
+   \expand\everybodyfont
+\expand\everyfontswitch
+   }
 
 %D \starttyping
 %D $\cases{& \ccaron}$ $x=\hbox{\ccaron $x=\hbox{\ccaron}$}$
@@ -2634,6 +2900,16 @@
 %D     test
 %D \stoptext
 %D \stoptyping
+%D
+%D You can define an meaningfull alias but beware, the font will be partially
+%D preloaded:
+%D
+%D \starttyping
+%D \aliasbodyfont[mainfont][pagella]
+%D \switchtobodyfont[mainfont]
+%D \stoptyping
+
+\installcorenamespace{bodyfontalias}
 
 \permanent\protected\def\usebodyfont[#1]%
   {\ifempty\fontclass
@@ -2641,6 +2917,11 @@
    \else
      \switchtobodyfont[#1]%
      \fullrestoreglobalbodyfont
+   \fi}
+
+\permanent\protected\def\aliasbodyfont[#1]#*[#2]%
+  {\ifparameter#2\or
+     \cdefcsname\??bodyfontalias#1\endcsname{#2}%
    \fi}
 
 \fetchmodulecommand \showbodyfontstate \f!font_run
@@ -2839,12 +3120,16 @@
 
 %D Ugly helper:
 
+% we can use a \fontspecdef as container
+
 \permanent\protected\def\saverunningstyleandcolor
   {\enforced\permanent\protected\edef\restorerunningstyleandcolor
      {\setfontid          \the\fontid\font
       \glyphscale         \the\glyphscale
       \glyphxscale        \the\glyphxscale
       \glyphyscale        \the\glyphyscale
+      \glyphslant         \the\glyphslant
+      \glyphweight        \the\glyphweight
       \c_attr_colormodel  \the\c_attr_colormodel
       \c_attr_color       \the\c_attr_color
       \c_attr_transparency\the\c_attr_transparency
@@ -2931,5 +3216,65 @@
         \registerfallbackfont[\s!mono][\m_list]%
     \fi
 \to \everysetupfonts
+
+%D Handy for testing environments. Options determine position and shift: \typ {[-]},
+%D \typ {[.4]}, \typ {[-.4]}, etc.
+
+\definecolor[currentfont] [darkgray]
+
+\permanent\tolerant\protected\def\showcurrentfont[#1]%
+  {\dontleavehmode\bgroup\setbox\scratchbox\hpack\bgroup
+    \startcolor[currentfont]%
+    \scratchdimen #1\exheight
+    \ifdim\scratchdimen<\zeropoint
+      \scratchheight\strutht
+      \scratchdepth \strutdp % \dimexpr\strutdp-\scratchdimen\relax
+    \else
+      \scratchheight\strutht % \dimexpr\strutht+0\scratchdimen\relax
+      \scratchdepth \strutdp
+    \fi
+    \virtualvrule
+      \s!height \scratchheight
+      \s!depth  \scratchdepth
+      \s!width .5\onepoint
+    \relax
+    \ifdim\scratchdimen>\zeropoint
+      \raise\dimexpr\strutht+\scratchdimen-1.5\exheight\relax
+    \else
+      \lower\dimexpr\strutdp-\scratchdimen-1.5\exheight\relax
+    \fi
+    \hpack to \zeropoint \bgroup\normalexpanded{%
+      \tinyinfofont
+      \hpack to \zeropoint\bgroup
+        \hss
+        \iftok{\fontspecifiedname\font}{\fontname\font}\else
+          (\fontspecifiedname\font)%
+        \fi
+        (\fontname\font)%
+        \kern.5\onepoint
+      \egroup
+      \kern\onepoint
+      (%
+      \ifempty\fontclass.\else\fontclass\fi,%
+      \ifempty\fontstyle.\else\fontstyle\fi,%
+      \fontbody%
+      )%
+      (%
+      \ifnum\glyphscale =\plusthousand .\else\the\glyphscale \fi,%
+      \ifnum\glyphxscale=\plusthousand .\else\the\glyphxscale\fi,%
+      \ifnum\glyphyscale=\plusthousand .\else\the\glyphyscale\fi
+      )%
+      (%
+      \ifnum\glyphslant =\zerocount .\else\the\glyphslant \fi,%
+      \ifnum\glyphweight=\zerocount .\else\the\glyphweight\fi
+      )%
+      (\toscaled\xtextface,\toscaled\xxtextface)\hss
+    }%
+    \egroup
+    \stopcolor
+  \egroup
+  \smashbox\scratchbox
+  \box\scratchbox
+  \egroup}
 
 \protect \endinput

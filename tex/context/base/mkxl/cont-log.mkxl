@@ -49,15 +49,27 @@
 \frozen\instance\protected\def\TeXsuffix{\wordboundary\TeX}
 \frozen\instance\protected\def\TeXprefix{\TeX\wordboundary}
 
-\frozen\instance\protected\def\ConTeXt
-  {\dontleavehmode
-   \begingroup
-   Con%
+\def\syst_logos_context
+  {Con%
    \wordboundary
    \setbox\scratchboxone\hbox{T\kern\zeropoint e}%
    \setbox\scratchboxtwo\hbox{Te}%
    \discretionary{-}{}{\kern\dimexpr\wd\scratchboxtwo-\wd\scratchboxone\relax}%
-   \TeX t%
+   \TeX t}
+
+\frozen\instance\protected\def\ConTeXt
+  {\dontleavehmode
+   \begingroup
+   \ifcase\getcharactercasingcategory % todo: also other logos
+     \syst_logos_context
+   \or % 1 uppercase
+     \syst_logos_context
+   \or % 2 lowercase
+     \resetcharactercasing
+     con\-text
+   \else
+     Con\-text
+   \fi
    \endgroup}
 
 \frozen\instance\protected\def\PPCHTeX{ppch\TeX}

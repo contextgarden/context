@@ -642,7 +642,7 @@ local function getstrip(lines,first,last)
     return first, last, last - first + 1
 end
 
--- we look for text (todo):
+-- we look for text (todo): (needs documentation)
 --
 -- "foo"  : start after line with "foo"
 -- "="    : ignore first blob
@@ -816,7 +816,10 @@ local compactors = {
     [v_last]     = Cs((space^1   * endstring/"" + 1)^0),
 }
 
+-- local content = ""
+
 local function typestring(settings)
+--     content = settings.data
     local content = settings.data
     if content and content ~= "" then
         local compact   = settings.compact
@@ -827,6 +830,8 @@ local function typestring(settings)
      -- content = decodecomment(content)
      -- content = dotabs(content,settings)
         visualize(content,checkedsettings(settings,"inline"))
+--     else
+--         content = ""
     end
 end
 
@@ -860,6 +865,7 @@ implement {
         {
             { "data" },
 --             { "data", "detokened" },
+--             { "data", "tokenstring" },
             { "tab"     },
             { "par"     },
             { "method"  },
@@ -869,6 +875,16 @@ implement {
         }
     }
 }
+
+-- implement {
+--     name    = "gettypestring",
+--     public  = true,
+--     actions = function()
+--         if content ~= "" then
+--             context(content)
+--         end
+--     end
+-- }
 
 -- implement {
 --     name      = "type_x",

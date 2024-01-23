@@ -130,8 +130,11 @@
 
 \aliased\let\stopcircuitikz\relax
 
-\permanent\protected\def\startcircuitikz#1\stopcircuitikz
-  {\starttikzpicture#1\stoptikzpicture}
+% \permanent\protected\def\startcircuitikz#1\stopcircuitikz
+%   {\starttikzpicture#1\stoptikzpicture}
+
+\protected\def\startcircuitikz{\starttikzpicture}
+\protected\def\stopcircuitikz {\stoptikzpicture}
 
 \stopmodule
 

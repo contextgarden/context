@@ -568,6 +568,7 @@ typedef enum mp_name_type_type {
     mp_ASCII_operation,
     mp_char_operation,
     mp_length_operation,
+    mp_no_length_operation,
     mp_turning_operation,
     mp_color_model_operation,
     mp_path_part_operation,

@@ -11,16 +11,30 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\permanent\protected\def\showunitsmap
+% \definepalet
+%   [unitclasses]
+%   [1=darkred,    % tex
+%    2=darkblue,   % pdftex
+%    3=darkgreen,  % luametatex
+%    4=darkgray]   % user
+
+\unprotect
+
+\newdimension \unitsmapwidth
+
+\permanent\tolerant\protected\def\showunitsmap[#1]%
   {\vpack\bgroup \forgetall
-   \ttxx \setupinterlinespace
-   \hpack to 40\emwidth\bgroup
+   \ttx \setupinterlinespace
+   \global\unitsmapwidth40\emwidth
+   \hpack to \unitsmapwidth\bgroup
      \kern\emwidth
      \localcontrolledloop\alowercaseasciicode\zlowercaseasciicode \plusone
        {\hss\char\currentloopiterator\hss}%
    \egroup
+   \ifcstok{#1}\v!tight\globaldonefalse\else\globaldonetrue\fi
    \localcontrolledloop\alowercaseasciicode\zlowercaseasciicode\plusone
-     {\hpack to 40\emwidth\bgroup
+     {\ifglobaldone\globalfoundtrue\else\globalfoundfalse\fi
+      \setbox\scratchbox\hpack to \unitsmapwidth\bgroup
       \char\currentloopiterator
       \bf
       \hss
@@ -34,17 +48,43 @@
            \kern\emwidth
          \else
            \begingroup
-           \ifcase\scratchcounter\or\darkred\or\darkblue\or\darkgreen\fi
+           \ifcase\scratchcounter\or\darkred\or\darkblue\or\darkgreen\else\darkgray\fi
            \char\previousloopiterator\plusone
            \char\currentloopiterator
            \endgroup
+           \globalfoundtrue
          \fi
          \hss}%
-      \egroup}%
+      \egroup
+      \ifglobalfound
+        \box\scratchbox
+      \fi}%
    \egroup}
+
+\permanent\protected\def\showunitsmaplegend
+  {\hpack\bgroup
+     \ttx\setstrut\white
+     \unitsmapwidth.25\unitsmapwidth
+     \backgroundline[darkred]  {\strut\hbox to \unitsmapwidth{\hss        tex\hss}}%
+     \backgroundline[darkblue] {\strut\hbox to \unitsmapwidth{\hss     pdftex\hss}}%
+     \backgroundline[darkgreen]{\strut\hbox to \unitsmapwidth{\hss luametatex\hss}}%
+     \backgroundline[darkgray] {\strut\hbox to \unitsmapwidth{\hss    context\hss}}%
+   \egroup}
+
+\protect
 
 \continueifinputfile{s-system-units.mkxl}
 
+\starttext
+
 \startTEXpage[offset=1ts]
     \showunitsmap
+    \showunitsmaplegend
 \stopTEXpage
+
+\startTEXpage[offset=1ts]
+    \showunitsmap[tight]
+    \showunitsmaplegend
+\stopTEXpage
+
+\stoptext

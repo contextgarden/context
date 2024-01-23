@@ -65,6 +65,8 @@ local defaulthandlers = {
 
 local installwhatsits  do
 
+    local round       = math.round
+
     local leaderlevel = 0
     local backends    = backends
     local trace       = true
@@ -110,8 +112,8 @@ local installwhatsits  do
 
     local function flushsavepos(current,pos_h,pos_v)
         local jp = job.positions
-        jp.lastx = pos_h
-        jp.lasty = pos_v
+        jp.lastx = round(pos_h)
+        jp.lasty = round(pos_v)
     end
 
     local function flushuserdefined()

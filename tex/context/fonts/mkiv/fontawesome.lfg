@@ -1,0 +1,30 @@
+return {
+    name = "fontawesome",
+    version = "1.00",
+    comment = "Goodies that deal with the ever changing filenames.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    filenames = {
+        ["FontAwesomeBrandsRegular.otf"] = {
+            "fontawesome5brandsregular400.otf",
+            "fontawesome6brandsregular400.otf",
+            "fontawesome7brandsregular400.otf",
+            "fontawesome8brandsregular400.otf",
+            "fontawesome9brandsregular400.otf",
+        },
+        ["FontAwesomeFreeRegular.otf"] = {
+            "fontawesome5freeregular400.otf",
+            "fontawesome6freeregular400.otf",
+            "fontawesome7freeregular400.otf",
+            "fontawesome8freeregular400.otf",
+            "fontawesome9freeregular400.otf",
+        },
+        ["FontAwesomeFreeSolid.otf"] = {
+            "fontawesome5freesolid900.otf",
+            "fontawesome6freesolid900.otf",
+            "fontawesome7freesolid900.otf",
+            "fontawesome8freesolid900.otf",
+            "fontawesome9freesolid900.otf",
+        },
+    },
+}

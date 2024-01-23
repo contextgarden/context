@@ -90,7 +90,8 @@
    \c!alignsymbol=\v!yes,
   %\c!stretch=\v!no,
   %\c!shrink=\v!no,
-   \c!define=\v!yes] % not used
+   \c!define=\v!yes, % not used
+   \c!snap=\mathematicsparameter\c!snap]
 
 \definemathaccent
   [\v!both]
@@ -166,11 +167,15 @@
    \ifcstok{\mathaccentparameter\c!align  }\v!middle\s!center \space\fi
    \ifcstok{\mathaccentparameter\c!stretch}\v!yes   \s!stretch\space\fi
    \ifcstok{\mathaccentparameter\c!shrink }\v!yes   \s!shrink \space\fi
+   \ifcstok{\mathaccentparameter\c!snap   }\v!yes   \s!single \space\fi
    \ifx\p_scale\v!keep
      \s!keepbase\space
    \fi
    \ifcstok{\mathaccentparameter\c!alignsymbol}\v!yes
      \s!nooverflow\space
+   \fi
+   \ifcstok{\mathaccentparameter\c!offset}\v!auto
+     \s!base\space
    \fi
    \ifcase#kind\or
      \s!top\space
@@ -275,6 +280,11 @@
   [\v!both]
   [\c!scale=\v!keep,\c!stretch=\v!yes,\c!shrink=\v!yes]
 
+\definemathaccent
+  [\v!top:\v!dot]
+  [\v!top:\v!stretch]
+  [i=]
+
 %D We have a problem. We can use stackers but then we need to adapt the dimensions
 %D which is font dependent. So, for now we keep them as accents.
 
@@ -305,6 +315,13 @@
 \definemathbottomaccent[\v!bottom:\v!stretch][wideunderleftharpoon]   ["20ED]
 \definemathbottomaccent[\v!bottom:\v!stretch][wideunderleftarrow]     ["20EE]
 \definemathbottomaccent[\v!bottom:\v!stretch][wideunderrightarrow]    ["20EF]
+
+% For complex conjugate: i below keeps the dot
+%
+% \im { \widebar  {\cos\theta + \ii \sin\theta} = \cos\theta - \ii\sin\theta }\par
+% \im { \conjugate{\cos\theta + \ii \sin\theta} = \cos\theta - \ii\sin\theta }
+
+\definemathtopaccent[\v!top:\v!dot][conjugate]["0305]
 
 \aliased\let\mathring\ring % for a while
 

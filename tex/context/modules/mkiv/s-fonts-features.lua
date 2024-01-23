@@ -18,6 +18,7 @@ local v_yes  = interfaces.variables.yes
 local v_no   = interfaces.variables.no
 local c_name = interfaces.constants.name
 
+local context = context
 local NC, NR, bold = context.NC, context.NR, context.bold
 
 function moduledata.fonts.features.showused(specification)
@@ -308,12 +309,12 @@ function moduledata.fonts.features.showallfeatures(specification)
 
     context.starttabulate { "|T|T|Tc|T|T|Tp|" }
 
-    NC() context.bold("\\letterhash")
-    NC() context.bold("type")
-    NC() context.bold("\\letterhash steps")
-    NC() context.bold("feature")
-    NC() context.bold("script")
-    NC() context.bold("language")
+    NC() bold("\\letterhash")
+    NC() bold("type")
+    NC() bold("\\letterhash steps")
+    NC() bold("feature")
+    NC() bold("script")
+    NC() bold("language")
     NC() NR()
     context.HL()
 
@@ -342,7 +343,7 @@ function moduledata.fonts.features.showallfeatures(specification)
                     end
                     NC() context(script)
                     NC() context("% t",table.sortedkeys(languages))
-                    NC() context.NR()
+                    NC() NR()
                 end
             end
         else
@@ -355,3 +356,78 @@ function moduledata.fonts.features.showallfeatures(specification)
 
     context.stoptabulate()
 end
+
+local function collect(tfmdata,id,specification,feature)
+    local validlookups, lookuplist = fonts.handlers.otf.collectlookups(
+        tfmdata.shared.rawdata,
+        feature,
+        specification.script or "math",
+        specification.language or "dflt"
+    )
+    if lookuplist then
+        local descriptions = tfmdata.descriptions
+        for i=1,#lookuplist do
+            local lookup = lookuplist[i]
+            if lookup.type == "gsub_single" then
+                local steps = lookup.steps
+                context.startsubject { title = feature }
+                context.starttabulate { "|T|||T|" }
+                for i=1,lookup.nofsteps do
+                    local c = steps[i].coverage
+                    for k, v in table.sortedhash(c) do
+                        NC() context(descriptions[k].name)
+                        NC() context.showfontidchar(id,k)
+                        NC() context.showfontidchar(id,v)
+                        NC() context(descriptions[v].name)
+                        NC() NR()
+                    end
+                end
+                context.stoptabulate()
+                context.stopsubject()
+            elseif lookup.type == "gsub_alternate" then
+                local steps = lookup.steps
+                context.startsubject { title = feature }
+                context.starttabulate { "|T|||Tp|" }
+                for i=1,lookup.nofsteps do
+                    local c = steps[i].coverage
+                    for k, v in table.sortedhash(c) do
+                        NC() context(descriptions[k].name)
+                        NC() context.showfontidchar(id,k)
+                        NC()
+                        for i=1,#v do
+                            if i > 1 then context(" ") end
+                            context.showfontidchar(id,v[i])
+                        end
+                        NC()
+                        for i=1,#v do
+                            if i > 1 then context(" ") end
+                            context(descriptions[v[i]].name)
+                        end
+                        NC() NR()
+                    end
+                end
+                context.stoptabulate()
+                context.stopsubject()
+            end
+        end
+    end
+end
+
+function moduledata.fonts.features.showsubstitutions(specification)
+    specification = interfaces.checkedspecification(specification)
+    local id, cs  = fonts.definers.internal(specification,"<module:fonts:features:font>")
+    local tfmdata = fonts.hashes.identifiers[id]
+    local feature = specification.feature
+    if feature == "*" then
+        local features = tfmdata.shared.rawdata.resources.features
+        for k in table.sortedhash(features.gsub) do
+            collect(tfmdata,id,specification,k)
+        end
+    else
+        collect(tfmdata,id,specification,feature)
+    end
+end
+
+-- moduledata.fonts.features.showsubstitutions { name = "xcharter-math.otf", feature = "cv06", script = "math", language = "dflt" }
+-- moduledata.fonts.features.showsubstitutions { name = "xcharter-math.otf", feature = "*",    script = "math", language = "dflt" }
+

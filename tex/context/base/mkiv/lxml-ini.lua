@@ -65,6 +65,8 @@ implement { name = "xmldirectivesafter",   public = true, actions = lxml.directi
 implement { name = "xmldirectivesbefore",  public = true, actions = lxml.directives.before, arguments = "string" }
 implement { name = "xmldisplayverbatim",   public = true, actions = lxml.displayverbatim,   arguments = "string" }
 implement { name = "xmlelement",           public = true, actions = lxml.element,           arguments = "2 strings" } -- could be integer but now we can alias
+implement { name = "xmlfilename",          public = true, actions = lxml.filename,          arguments = "string" }
+implement { name = "xmlfileline",          public = true, actions = lxml.fileline,          arguments = "string" }
 implement { name = "xmlfilter",            public = true, actions = lxml.filter,            arguments = "2 strings" }
 implement { name = "xmlfilterlist",        public = true, actions = lxml.filterlist,        arguments = "2 strings" }
 implement { name = "xmlfirst",             public = true, actions = lxml.first,             arguments = "2 strings" }
@@ -212,7 +214,7 @@ if CONTEXTLMTXMODE > 0 then
         usage     = "condition",
         arguments = "2 arguments",
         actions   = function(id,pattern)
-            return boolean_code, not checkedempty(getid(id),pattern) and true
+            return boolean_code, checkedempty(getid(id),pattern) and true
         end
     }
 
@@ -222,7 +224,7 @@ if CONTEXTLMTXMODE > 0 then
         usage     = "condition",
         arguments = "argument",
         actions   = function(id)
-            return boolean_code, not checkedempty(getid(id)) and true
+            return boolean_code, checkedempty(getid(id)) and true
         end
     }
 

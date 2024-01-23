@@ -140,9 +140,9 @@
      \expandafter\phys_digits_normalized_text
    \fi}
 
-\def\phys_digits_normalized_math#1#2%
-  {\setbox\scratchbox\hbox{\normalstartimath\Ustack{#1}\normalstopimath}%
-   \hbox to \wd\scratchbox{\hss{\normalstartimath\Ustack{#2}\normalstopimath}\hss}}
+\def\phys_digits_normalized_math#1#2% todo
+  {\setbox\scratchbox\hbox{\normalstartimath\mathstack{#1}\normalstopimath}%
+   \hbox to \wd\scratchbox{\hss{\normalstartimath\mathstack{#2}\normalstopimath}\hss}}
 
 \def\phys_digits_normalized_text#1#2%
   {\setbox\scratchbox\hbox{#1}%

@@ -23,18 +23,15 @@ typedef struct main_control_state_info {
     int            local_level;
     halfword       after_token;
     halfword       after_tokens;
+    halfword       last_par_trigger;
     halfword       last_par_context;
     halfword       loop_iterator;
     halfword       loop_nesting;
-    halfword       quit_loop;
     halfword       loop_stack_head;
     halfword       loop_stack_tail; 
+    halfword       quit_loop;
+    halfword       padding;
 } main_control_state_info;
-
-typedef enum saved_discretionary_items {
-    saved_discretionary_item_component = 0,
-    saved_discretionary_n_of_items     = 1,
-} saved_discretionary_items;
 
 extern main_control_state_info lmt_main_control_state;
 
@@ -82,6 +79,9 @@ extern halfword tex_previous_loop_iterator          (void);
 extern halfword tex_expand_parameter                (halfword tok, halfword *tail);
 extern halfword tex_expand_iterator                 (halfword tok);
 
+extern void     tex_show_discretionary_group        (void);
+extern int      tex_show_discretionary_record       (void);
+
 inline int valid_parameter_reference(int r) 
 {
     switch (r) {
@@ -91,6 +91,7 @@ inline int valid_parameter_reference(int r)
         case H_token_l: case H_token_o: // hash escape
         case L_token_l: case L_token_o: // newline escape (\n)
      // case N_token_l: case N_token_o: // no break space
+        case Q_token_l: case Q_token_o: // double quote
         case R_token_l: case R_token_o: // return escape (\r)
         case S_token_l: case S_token_o: // space escape
         case T_token_l: case T_token_o: // tab escape (\t)

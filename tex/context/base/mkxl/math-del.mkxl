@@ -141,7 +141,7 @@
   {\ifmmode
      \setbox\nextbox\mathstylehbox{#3}%
      \scratchdimen\ifdim\nextboxht>\nextboxdp\nextboxht\else\nextboxdp\fi
-     \mathlimop{%
+     \mathatom \mathintegralcode {%
        \Uvextensible
          height \scratchdimen
          depth \scratchdimen

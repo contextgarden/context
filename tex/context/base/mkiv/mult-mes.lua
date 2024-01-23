@@ -610,7 +610,7 @@ return {
         ["fonts:14"] = {
             cs = "bodyfont %a is defined (can better be done global)",
             de = "Fliesstext %a wurde definiert (besser waere globale Definition)",
-            en = "bodyfont %a is defined (can better be done global)",
+            en = "bodyfont %a is defined (can better be done global (maybe use \\usebodyfont)",
             fr = "policecorps %a est défini (une définition globale pourrait être plus adéquat)",
             it = "corpo del testo %a definito (sarebbe meglio globale)",
             nl = "korps %a is gedefinieerd (kan beter globaal plaatsvinden)",

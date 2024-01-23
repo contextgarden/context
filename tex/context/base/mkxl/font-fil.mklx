@@ -303,8 +303,7 @@
 % pre-expansion.
 
 \def\font_helpers_update_font_class_parameters
-  {%edef\m_font_class_direction {\begincsname\??fontclass\fontclass\fontstyle\s!direction \endcsname}%
-   \edef\m_font_class_features  {\begincsname\??fontclass\fontclass\fontstyle\s!features  \endcsname}%
+  {\edef\m_font_class_features  {\begincsname\??fontclass\fontclass\fontstyle\s!features  \endcsname}%
    \edef\m_font_class_fallbacks {\begincsname\??fontclass\fontclass\fontstyle\s!fallbacks \endcsname}%
    \edef\m_font_class_goodies   {\begincsname\??fontclass\fontclass\fontstyle\s!goodies   \endcsname}%
    \edef\m_font_class_designsize{\begincsname\??fontclass\fontclass\fontstyle\s!designsize\endcsname}}
@@ -428,13 +427,12 @@
 
 % we can pack them (don't use \setxvalue!)
 
-\permanent\protected\def\savefontclassparameters#style#rscale#features#fallbacks#goodies#designsize#direction%
+\permanent\protected\def\savefontclassparameters#style#rscale#features#fallbacks#goodies#designsize%
   {\gletcsname\??fontclass\fontclass#style\s!rscale    \endcsname#rscale%
    \gletcsname\??fontclass\fontclass#style\s!features  \endcsname#features%
    \gletcsname\??fontclass\fontclass#style\s!fallbacks \endcsname#fallbacks%
    \gletcsname\??fontclass\fontclass#style\s!goodies   \endcsname#goodies%
-   \gletcsname\??fontclass\fontclass#style\s!designsize\endcsname#designsize%
-   \gletcsname\??fontclass\fontclass#style\s!direction \endcsname#direction}% math
+   \gletcsname\??fontclass\fontclass#style\s!designsize\endcsname#designsize}
 
 % bonus
 

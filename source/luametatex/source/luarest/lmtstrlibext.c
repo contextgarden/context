@@ -711,28 +711,25 @@ static int strlib_pack_rows_columns(lua_State* L)
                 case LUA_TNUMBER:
                     {
                         lua_Integer size = rows * columns;
-                        char *result = lmt_memory_malloc(size);
+                        unsigned char *result = lmt_memory_malloc(size);
                         lua_pop(L, 2); /* row and cell */
                         if (result) {
-                            char *first = result;
+                            unsigned char *first = result;
                             for (lua_Integer r = 1; r <= rows; r++) {
                                 if (lua_rawgeti(L, -1, r) == LUA_TTABLE) {
                                     for (lua_Integer c = 1; c <= columns; c++) {
                                         if (lua_rawgeti(L, -1, c) == LUA_TNUMBER) {
-                                            lua_Integer v = lua_tointeger(L, -1);
-                                            if (v < 0) {
-                                                v = 0;
-                                            } else if (v > 255) {
-                                                v = 255;
-                                            }
-                                            *result++ = (char) v;
+                                             lua_Integer v = lua_tointeger(L, -1);
+                                            *result++ = v < 0 ? 0 : v > 255 ? 255 : (unsigned char) v;
+                                        } else { 
+                                            *result++ = 0;
                                         }
                                         lua_pop(L, 1);
                                     }
                                 }
                                 lua_pop(L, 1);
                             }
-                            lua_pushlstring(L, first, result - first);
+                            lua_pushlstring(L, (char *) first, result - first);
                             return 1;
                         }
                     }
@@ -740,10 +737,10 @@ static int strlib_pack_rows_columns(lua_State* L)
                     {
                         lua_Integer mode = lua_rawlen(L, -1);
                         lua_Integer size = rows * columns * mode;
-                        char *result = lmt_memory_malloc(size);
+                        unsigned char *result = lmt_memory_malloc(size);
                         lua_pop(L, 2); /* row and cell */
                         if (result) {
-                            char *first = result;
+                            unsigned char *first = result;
                             for (lua_Integer r = 1; r <= rows; r++) {
                                 if (lua_rawgeti(L, -1, r) == LUA_TTABLE) {
                                     for (lua_Integer c = 1; c <= columns; c++) {
@@ -751,12 +748,9 @@ static int strlib_pack_rows_columns(lua_State* L)
                                             for (int i = 1; i <= mode; i++) {
                                                 if (lua_rawgeti(L, -1, i) == LUA_TNUMBER) {
                                                     lua_Integer v = lua_tointeger(L, -1);
-                                                    if (v < 0) {
-                                                        v = 0;
-                                                    } else if (v > 255) {
-                                                        v = 255;
-                                                    }
-                                                    *result++ = (char) v;
+                                                    *result++ = v < 0 ? 0 : v > 255 ? 255 : (unsigned char) v;
+                                                } else { 
+                                                    *result++ = 0;
                                                 }
                                                 lua_pop(L, 1);
                                             }
@@ -766,7 +760,7 @@ static int strlib_pack_rows_columns(lua_State* L)
                                 }
                                 lua_pop(L, 1);
                             }
-                            lua_pushlstring(L, first, result - first);
+                            lua_pushlstring(L, (char *) first, result - first);
                             return 1;
                         }
                     }
@@ -845,6 +839,90 @@ static int strlib_hextocharacters(lua_State *L)
     }
 }
 
+static int strlib_octtointeger(lua_State *L)
+{
+    const char *s = lua_tostring(L, 1);
+//  lua_Integer n = 0;
+//     int negate = *s == '-';
+//     if (negate) {
+//         s++;
+//     }
+//     while (*s && n < 0xFFFFFFFF) { /* large enough */
+//         if (*s >= '0' && *s <= '7') {
+//             n = n * 8 + *s - '0';
+//         } else { 
+//             break;
+//         }
+//         s++;
+//     }    
+//  lua_pushinteger(L, negate ? -n : n);
+    lua_pushinteger(L, strtoul(s, NULL, 8));
+    return 1; 
+}
+
+static int strlib_dectointeger(lua_State *L)
+{
+    const char *s = lua_tostring(L, 1);
+//  lua_Integer n = 0;
+//  int negate = *s == '-';
+//  if (negate) {
+//      s++;
+//  }
+//  while (*s && n < 0xFFFFFFFF) { /* large enough */
+//      if (*s >= '0' && *s <= '9') {
+//          n = n * 10 + *s - '0';
+//      } else { 
+//          break;
+//      }
+//      s++;
+//  }    
+//  lua_pushinteger(L, negate ? -n : n);
+//  lua_pushinteger(L, atol(s));
+    lua_pushinteger(L, strtoul(s, NULL, 10));
+    return 1; 
+}
+
+static int strlib_hextointeger(lua_State *L)
+{
+    const char *s = lua_tostring(L, 1);
+//  lua_Integer n = 0;
+//  int negate = *s == '-';
+//  if (negate) {
+//      s++;
+//  }
+//  while (*s && n < 0xFFFFFFFF) { /* large enough */
+//      if (*s >= '0' && *s <= '9') {
+//          n = n * 16 + *s - '0';
+//      } else if (*s >= 'A' && *s <= 'F') {
+//          n = n * 16 + *s - 'A' + 10;
+//      } else if (*s >= 'a' && *s <= 'f') {
+//          n = n * 16 + *s - 'a' + 10;
+//      } else { 
+//          break;
+//      }
+//      s++;
+//  }    
+//  lua_pushinteger(L, negate ? -n : n);
+    lua_pushinteger(L, strtoul(s, NULL, 16));
+    return 1; 
+}
+
+static int strlib_chrtointeger(lua_State *L)
+{
+    lua_Integer n = 0;
+    size_t l = 0;
+    const char *s = lua_tolstring(L, 1, &l);
+    if (l > 0) {
+        size_t p = 0;
+        while (p < l && n < 0xFFFFFFFF) { /* large enough */
+            n = n * 255 + (unsigned char) s[p];
+            p++;
+        }    
+        lua_pushinteger(L, n);
+    }
+    return 1; 
+}
+
 static const luaL_Reg strlib_function_list[] = {
     { "characters",        strlib_characters         },
     { "characterpairs",    strlib_characterpairs     },
@@ -866,6 +944,10 @@ static const luaL_Reg strlib_function_list[] = {
     { "toutf32",           strlib_format_toutf32     },
     { "packrowscolumns",   strlib_pack_rows_columns  },
     { "hextocharacters",   strlib_hextocharacters    },
+    { "octtointeger",      strlib_octtointeger       },
+    { "dectointeger",      strlib_dectointeger       },
+    { "hextointeger",      strlib_hextointeger       },
+    { "chrtointeger",      strlib_chrtointeger       },
     { NULL,                NULL                      },
 };
 

@@ -6,11 +6,11 @@ if not modules then modules = { } end modules ['syst-con'] = {
     license   = "see context related readme files"
 }
 
-local tonumber = tonumber
+local tonumber, tostring = tonumber, tostring
 local math = math
 local utfchar = utf.char
 local gsub = string.gsub
-local concat, reverse = table.concat, table.reverse
+local concat, reverse, sort = table.concat, table.reverse, table.sort
 
 converters       = converters or { }
 local converters = converters
@@ -95,6 +95,9 @@ local function tobits(b,w,d)
         end
         b = b >> 1
     end
+    if t[k] == " " then
+        t[k] = nil
+    end
     return concat(reverse(t))
 end
 
@@ -105,9 +108,49 @@ implement {
     actions   = function(w,d,n) context(tobits(n,w,d)) end,   -- fast enough
 }
 
+do
+
+    local round, log = math.round, math.log
+
+    implement {
+        name      = "tobit",
+        public    = true,
+        arguments = "integer",
+        actions   = function(n)
+            context(n > 0 and (round(log(n,2)) + 1) or 0)
+        end,
+    }
+
+end
+
 implement {
     name      = "tohexa",
     public    = true,
     arguments = "2 integers",
     actions   = function(w,n) context("0x%0"..w.."X",n) end, -- somewhat slow
+}
+
+interfaces.implement {
+    name      = "showbits",
+    public    = true,
+    arguments = { "string", "integer" },
+    actions   = function(s,n)
+        local b = tex[s]
+        if type(b) == "table" then
+            local t = { }
+            for i=1,32 do
+                if (n & 0x1) == 1 then
+                    local f = b[1<<(i-1)]
+                    if f then
+                        t[#t+1] = tostring(f)
+                    end
+                end
+                n = n >> 1
+            end
+            if #t > 0 then
+                sort(t)
+                context("% t",t)
+            end
+        end
+    end,
 }

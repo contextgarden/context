@@ -372,6 +372,9 @@ void tex_expand_current_token(void)
                                         case index_cmd:
                                             tex_inject_parameter(cur_chr);
                                             break;
+                                        case case_shift_cmd:
+                                            tex_run_case_shift(cur_chr);
+                                            break;
                                         default: 
                                             /* Use expand_current_token so that protected lua call are dealt with too? */
                                             tex_back_input(cur_tok);
@@ -548,7 +551,7 @@ void tex_expand_current_token(void)
                             tex_lua_string_start();
                         }
                     } else {
-                        tex_normal_error("luacall", "invalid number");
+                        tex_normal_error("luacall", "invalid number in expansion");
                     }
                     break;
                 case lua_local_call_cmd:
@@ -567,7 +570,7 @@ void tex_expand_current_token(void)
                             }
                         }
                     } else {
-                        tex_normal_error("luacall", "invalid number");
+                        tex_normal_error("luacall", "invalid local number in expansion");
                     }
                     break;
                 case begin_local_cmd:
@@ -609,7 +612,10 @@ void tex_expand_current_token(void)
                             } else { 
                                 /*tex We're not in a loop and end up at some fuzzy error. */
                             }
-                            break;
+                            break;                            
+                     /* case quit_fi_now_code: */ /*tex |\if ... \quitfinow\ignorerest \else .. \fi| */
+                     /*     tex_quit_fi();     */
+                     /*     break;             */
                         case token_input_code:
                             tex_tex_string_start(io_token_eof_input_code, cat_code_table_par);
                             break;
@@ -1733,7 +1739,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                     if (tracing) {
                         tex_begin_diagnostic();
                         tex_print_format("%c%c<-", match_visualizer, '0' + nofscanned + (nofscanned > 9 ? gap_match_count : 0));
-                        tex_show_token_list(pstack[nofscanned - 1], 0);
+                        tex_show_token_list(pstack[nofscanned - 1], 0, 0);
                         tex_end_diagnostic();
                     }
                 } else {

@@ -28,6 +28,7 @@
 
 \registerctxluafile{lpdf-ini}{autosuffix}
 \registerctxluafile{lpdf-lmt}{autosuffix}
+\registerctxluafile{lpdf-sig}{autosuffix,optional}
 \registerctxluafile{lpdf-col}{autosuffix}
 \registerctxluafile{lpdf-xmp}{autosuffix}
 \registerctxluafile{lpdf-ano}{autosuffix}
@@ -42,11 +43,14 @@
 \registerctxluafile{lpdf-img}{autosuffix}
 \registerctxluafile{lpdf-epa}{autosuffix}
 \registerctxluafile{lpdf-emb}{autosuffix}
-\registerctxluafile{lpdf-fnt}{autosuffix}
+\registerctxluafile{lpdf-fix}{autosuffix}
 \registerctxluafile{lpdf-rul}{autosuffix}
 
 \registerctxluafile{back-imp-pdf}{autosuffix} % some code will move to lpdf-*
 \registerctxluafile{back-imp-pdp}{autosuffix}
+
+\registerctxluafile{lpdf-fix-imp-fonts}   {autosuffix} % some code will move to lpdf-*
+%registerctxluafile{lpdf-fix-imp-contents}{autosuffix} % on demand
 
 % \registerctxluafile{lpdf-u3d}{autosuffix}
 

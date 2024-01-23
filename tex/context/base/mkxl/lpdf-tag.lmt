@@ -66,6 +66,7 @@ local getnext             = nuts.getnext
 local getlist             = nuts.getlist
 local getchar             = nuts.getchar
 
+local tailoflist          = nuts.tail
 local setlink             = nuts.setlink
 local setlist             = nuts.setlist
 
@@ -438,9 +439,17 @@ local EMCliteral = nil
 local visualize  = nil
 
 local enabled = true
+local reduced = false
 
-updaters.register("tagging.state.disable",function() enabled = false end)
-updaters.register("tagging.state.enable", function() enabled = true  end)
+updaters.register("tagging.state.disable", function() enabled = false end)
+updaters.register("tagging.state.enable",  function() enabled = true  end)
+
+directives.register("tagging.state.reduced", function(v) reduced = v end)
+
+function codeinjections.reducetags()
+    report_tags("only outer level document tag used")
+    reduced = true
+end
 
 function nodeinjections.addtags(head)
 
@@ -465,41 +474,69 @@ function nodeinjections.addtags(head)
         names          = pdfarray()
     end
 
-    local function collectranges(head,list)
-        for n, id in nextnode, head do
-            if id == glyph_code then
-                -- maybe also disc
-                if getchar(n) ~= 0 then
-                    local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
-                    if last ~= at then
-                        range = { at, "glyph", n, n, list } -- attr id start stop list
-                        nofranges = nofranges + 1
-                        ranges[nofranges] = range
-                        last = at
-                    elseif range then
-                        range[4] = n -- stop
+    initializepage()
+
+    if reduced then
+
+        local list = getlist(head)
+
+        if list then
+
+            ranges = {
+                { 1, "glyph", list, tailoflist(list), head }
+            }
+
+            nofranges = 1
+
+            taglist = {
+                {
+                    attribute = 1,
+                    metadata  = { },
+                    tagindex  = 1,
+                    taglist   = { "document>1" },
+                    tagname   = "document",
+                },
+            }
+
+        end
+
+    else
+
+        local function collectranges(head,list)
+            for n, id in nextnode, head do
+                if id == glyph_code then
+                    -- maybe also disc
+                    if getchar(n) ~= 0 then
+                        local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
+                        if last ~= at then
+                            range = { at, "glyph", n, n, list } -- attr id start stop list
+                            nofranges = nofranges + 1
+                            ranges[nofranges] = range
+                            last = at
+                        elseif range then
+                            range[4] = n -- stop
+                        end
                     end
-                end
-            elseif id == hlist_code or id == vlist_code then
-                local at = getattr(n,a_image)
-                if at then
-                    local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
-                    nofranges = nofranges + 1
-                    ranges[nofranges] = { at, "image", n, n, list } -- attr id start stop list
-                    last = nil
-                else
-                    local list = getlist(n)
-                    if list then
-                        collectranges(list,n)
+                elseif id == hlist_code or id == vlist_code then
+                    local at = getattr(n,a_image)
+                    if at then
+                        local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
+                        nofranges = nofranges + 1
+                        ranges[nofranges] = { at, "image", n, n, list } -- attr id start stop list
+                        last = nil
+                    else
+                        local list = getlist(n)
+                        if list then
+                            collectranges(list,n)
+                        end
                     end
                 end
             end
         end
+
+        collectranges(head)
+
     end
-
-    initializepage()
-
-    collectranges(head)
 
 -- inspect(taglist)
 -- inspect(ranges)
@@ -796,7 +833,7 @@ function codeinjections.settaggingsupport(option)
     if option == false then
         if enabled then
             disableaction("shipouts","structures.tags.handler")
-            disableaction("shipouts","nodes.handlers.accessibility") -- maybe not this one
+         -- disableaction("shipouts","nodes.handlers.accessibility") -- maybe not this one
             disableaction("math","noads.handlers.tags")
             enabled = false
         end
@@ -813,7 +850,7 @@ function codeinjections.enabletags()
     if permitted and not enabled then
         structures.tags.handler = nodeinjections.addtags
         enableaction("shipouts","structures.tags.handler")
-        enableaction("shipouts","nodes.handlers.accessibility")
+     -- enableaction("shipouts","nodes.handlers.accessibility")
         enableaction("math","noads.handlers.tags")
         -- maybe also textblock
         if trace_tags then

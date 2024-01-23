@@ -182,6 +182,7 @@ void tex_initialize_levels(void)
 {
     cur_level = level_one;
     cur_group = bottom_level_group;
+    cur_boundary = 0;
     lmt_scanner_state.last_cs_name = null_cs;
 }
 
@@ -331,7 +332,6 @@ static int tex_room_on_save_stack(void)
             }
             if (top > lmt_save_state.save_stack_data.allocated) {
                 top = lmt_save_state.save_stack_data.allocated + lmt_save_state.save_stack_data.step;
-                lmt_save_state.save_stack_data.allocated = top;
                 tmp = aux_reallocate_array(lmt_save_state.save_stack, sizeof(save_record), top, reserved_save_stack_slots);
                 lmt_save_state.save_stack = tmp;
             }
@@ -340,15 +340,19 @@ static int tex_room_on_save_stack(void)
                 tex_overflow_error("save", top);
                 return 0;
             }
+         // memset((void *) (lmt_save_state.save_stack + lmt_save_state.save_stack_data.allocated + 1), 0, ((size_t) lmt_save_state.save_stack_data.step + reserved_save_stack_slots) * sizeof(save_record));
+            lmt_save_state.save_stack_data.allocated = top;
         }
     }
     return 1;
 }
 
-void tex_save_halfword_on_stack(quarterword t, halfword v)
+void tex_save_halfword_on_stack(quarterword t, halfword v) /* todo: also value_2 and value_3 */
 {
     if (tex_room_on_save_stack()) {
-        tex_set_saved_record(0, t, 0, v);
+        saved_type(0) = t;
+        saved_record(0) = 0;
+        saved_value_1(0) = v;
         ++lmt_save_state.save_stack_data.ptr;
     }
 }
@@ -400,6 +404,13 @@ static void tex_aux_group_trace(int g)
         \stopitem
     \stopitemize
 
+    Per end 2023 the decision was made to use the two halfwords in the memory word that is used for
+    saving eq values for other purposes too. It meant for instance that instead if every new group 
+    needing 3 stack entries, it now needs just one. Actually there are not that meny mechanism that 
+    need the stack. For instance alignments have their own stack, math needs it for multi argument 
+    mechanism and the most demanding one is box handling. In addition to the two extra |value_2| and 
+    |value_3| fields we also use |options| and |extra| as alias for |level| (these are quarterwords). 
+
 */
 
 static void tex_aux_group_warning(void)
@@ -443,27 +454,54 @@ static void tex_aux_group_warning(void)
     }
 }
 
-void tex_new_save_level(quarterword c)
+/*tex 
+    We store the line number and attribute state in the memory word part for the save entry and  
+    then we need only one slot instead of three. Each slot is 16 bytes so we're also a bit nicer to 
+    caching memory (if it happens at all). Because in practice we don't group that much (400.000 
+    times in the luametatex manual and a similar amount in the primitives manual) there is no real  
+    significant (positive) impact on performance. It's all about abstraction. 
+*/
+
+typedef enum saved_group_entries {
+    saved_group_group_entry           = 0,
+    saved_group_boundary_entry        = 0,
+    saved_group_attribute_state_entry = 0,
+    saved_group_input_line_entry      = 0,
+    saved_group_n_records             = 1,
+} saved_group_entries;
+
+# define saved_group_group           saved_group(saved_group_group_entry)
+# define saved_group_boundary        saved_value_1(saved_group_boundary_entry)
+# define saved_group_attribute_state saved_value_2(saved_group_attribute_state_entry)
+# define saved_group_input_line      saved_value_3(saved_group_input_line_entry)
+
+inline static void saved_group_initialize(void)
 {
-    /*tex We begin a new level of grouping. */
+    saved_type(0) = level_boundary_save_type;
+    /* here level is really level */
+}
+
+void tex_new_save_level(quarterword group)
+{
+    /*tex We begin a new level of grouping. This will cost us three entries. */
     if (tex_room_on_save_stack()) {
-        save_attribute_state_before();
-        tex_set_saved_record(saved_group_line_number, line_number_save_type, 0, lmt_input_state.input_line);
-        tex_set_saved_record(saved_group_level_boundary, level_boundary_save_type, cur_group, cur_boundary);
-        /*tex eventually we will have bumped |lmt_save_state.save_stack_data.ptr| by |saved_group_n_of_items|! */
-        ++lmt_save_state.save_stack_data.ptr; /* bump one */
+        add_attribute_reference(current_attribute_state); 
+        saved_group_initialize();
+        saved_group_group = cur_group;
+        saved_group_boundary = cur_boundary;
+        saved_group_attribute_state = current_attribute_state;
+        saved_group_input_line = lmt_input_state.input_line;
         if (cur_level == max_quarterword) {
+            /*tex We quit if |(cur_level+1)| is too big to be stored in |eqtb|. */
             tex_overflow_error("grouping levels", max_quarterword - min_quarterword);
         }
-        /*tex We quit if |(cur_level+1)| is too big to be stored in |eqtb|. */
         cur_boundary = lmt_save_state.save_stack_data.ptr;
-        cur_group = c;
+        cur_group = group;
         if (tracing_groups_par > 0) {
             tex_aux_group_trace(0);
         }
         ++cur_level;
-        ++lmt_save_state.save_stack_data.ptr; /* bump two */
-        save_attribute_state_after();
+        lmt_save_state.save_stack_data.ptr += saved_group_n_records;
         if (end_of_group_par) {
             update_tex_end_of_group(null);
         }
@@ -472,7 +510,7 @@ void tex_new_save_level(quarterword c)
 
 int tex_saved_line_at_level(void)
 {
-    return lmt_save_state.save_stack_data.ptr > 0 ? (saved_value(-1) > 0 ? saved_value(-1) : 0) : 0;
+    return lmt_save_state.save_stack_data.ptr > 0 ? (saved_group_input_line > 0 ? saved_group_input_line : 0) : 0;
 }
 
 /*tex
@@ -490,47 +528,6 @@ int tex_saved_line_at_level(void)
     The output is not (entirely) downward compatible which is no big deal because we output some more
     details anyway.
 */
-
-static int tex_aux_found_save_type(int id)
-{
-    int i = -1;
-    while (saved_valid(i) && saved_type(i) != id) {
-        i--;
-    }
-    return i;
-}
-
-static int tex_aux_save_value(int id)
-{
-    int i = tex_aux_found_save_type(id);
-    return i ? saved_value(i) : 0;
-}
-
-static int tex_aux_save_level(int id)
-{
-    int i = tex_aux_found_save_type(id);
-    return i ? saved_level(i) : 0;
-}
-
-static int tex_aux_saved_box_spec(halfword *packing, halfword *amount)
-{
-    int i = tex_aux_found_save_type(box_spec_save_type);
-    if (i) {
-        *packing = saved_extra(i);
-        *amount = saved_value(i);
-    } else {
-        *packing = 0;
-        *amount = 0;
-    }
-    return (*amount != 0);
-}
-
-static void tex_aux_show_group_count(int n)
-{
-    for (int i = 1; i <= n; i++) {
-        tex_print_str("{}");
-    }
-}
 
 void tex_show_save_groups(void)
 {
@@ -619,37 +616,25 @@ void tex_show_save_groups(void)
                 tex_print_str_esc("mathstack");
                 goto FOUND2;
             case discretionary_group:
-                tex_print_str_esc("discretionary");
-                tex_aux_show_group_count(tex_aux_save_value(saved_discretionary_item_component));
+                tex_show_discretionary_group();
                 goto FOUND2;
             case math_fraction_group:
-                tex_print_str_esc("fraction");
-                tex_aux_show_group_count(tex_aux_save_value(saved_fraction_item_variant));
+                tex_show_math_fraction_group();
                 goto FOUND2;
             case math_radical_group:
-                tex_print_str_esc("radical");
-                tex_aux_show_group_count(tex_aux_save_value(radical_degree_done_save_type));
+                tex_show_math_radical_group();
                 goto FOUND2;
             case math_operator_group:
-                tex_print_str_esc("operator");
-                tex_aux_show_group_count(tex_aux_save_value(saved_operator_item_variant));
+                tex_show_math_operator_group();
                 goto FOUND2;
             case math_choice_group:
-                tex_print_str_esc("mathchoice");
-                tex_aux_show_group_count(tex_aux_save_value(saved_choice_item_count));
+                tex_show_math_choice_group();
                 goto FOUND2;
             case insert_group:
-                tex_print_str_esc("insert");
-                tex_print_int(tex_aux_save_value(saved_insert_item_index));
+                tex_show_insert_group();
                 goto FOUND2;
             case vadjust_group:
-                tex_print_str_esc("vadjust");
-                if (tex_aux_save_value(saved_adjust_item_location) == pre_adjust_code) {
-                    tex_print_str(" pre");
-                }
-                if (tex_aux_save_value(saved_adjust_item_options) & adjust_option_before) {
-                    tex_print_str(" before");
-                }
+                tex_show_adjust_group();
                 goto FOUND2;
             case vcenter_group:
                 package = "vcenter";
@@ -669,7 +654,7 @@ void tex_show_save_groups(void)
                 tex_print_char('$');
                 goto FOUND2;
             case math_number_group:
-                tex_print_cmd_chr(equation_number_cmd, tex_aux_save_value(saved_equation_number_item_location));
+                tex_show_math_number_group();
                 goto FOUND2;
             case math_fence_group:
                 /* kind of ugly ... maybe also save that one */ /* todo: operator */
@@ -684,10 +669,10 @@ void tex_show_save_groups(void)
             why it had such a large offset for the other context value. That somewhat dirty trick 
             was has stepwise been removed.
         */
-        switch (tex_aux_save_value(saved_full_spec_item_context)) {
+        switch (tex_get_packaging_context()) {
             case direct_box_flag:
                 {
-                    scaled shift = tex_aux_save_value(saved_full_spec_item_shift);
+                    scaled shift = tex_get_packaging_shift();
                     if (shift != null_flag) { 
                         /*tex We passed the safeguard. */
                         singleword cmd = is_v_mode(lmt_nest_state.nest[pointer].mode) ? hmove_cmd : vmove_cmd;
@@ -701,7 +686,7 @@ void tex_show_save_groups(void)
             case box_flag:
                 {
                     tex_print_str_esc("setbox");
-                    tex_print_int(tex_aux_save_level(saved_full_spec_item_context));
+                    tex_print_int(tex_get_packaging_context());
                     tex_print_char('=');
                 }
                 break;
@@ -722,25 +707,151 @@ void tex_show_save_groups(void)
                 break;
         }
       FOUND1:
-        {
-            /*tex Show the box packaging info. */
-            halfword packing, amount;
-            tex_print_str_esc(package);
-            if (tex_aux_saved_box_spec(&packing, &amount)) {
-                tex_print_str(packing == packing_exactly ? " to " : " spread ");
-                tex_print_dimension(amount, pt_unit);
-            }
-        }
+        tex_show_packaging_group(package);
       FOUND2:
         --cur_level;
-        cur_group = save_level(lmt_save_state.save_stack_data.ptr);
-        lmt_save_state.save_stack_data.ptr = save_value(lmt_save_state.save_stack_data.ptr);
+        cur_group = saved_group_group;
+        lmt_save_state.save_stack_data.ptr = saved_group_boundary;
     }
   DONE:
     lmt_save_state.save_stack_data.ptr = saved_pointer;
     cur_level = saved_level;
     cur_group = saved_group;
     tracing_levels_par = saved_tracing;
+}
+
+void tex_show_save_stack(void)
+{
+    halfword savedptr = lmt_save_state.save_stack_data.ptr;
+    tex_print_format("%l[savestack size %i]\n", lmt_save_state.save_stack_data.ptr);
+    while (lmt_save_state.save_stack_data.ptr) {
+        --lmt_save_state.save_stack_data.ptr;
+        tex_print_nlp();
+        tex_print_levels();
+        tex_print_format("[%i: ", lmt_save_state.save_stack_data.ptr);
+        if (save_type(lmt_save_state.save_stack_data.ptr) >= saved_record_0 && save_type(lmt_save_state.save_stack_data.ptr) <= saved_record_9) {
+            tex_print_format("save record %i, ", save_type(lmt_save_state.save_stack_data.ptr) - saved_record_0 + 1, save_record(lmt_save_state.save_stack_data.ptr));
+            /* these have to be provided in the modules */
+            switch (save_record(lmt_save_state.save_stack_data.ptr)) {
+                case unknown_save_type:
+                    break;
+                case box_save_type:
+                    if (tex_show_packaging_record()) {
+                        break;
+                    } else { 
+                        goto INVALID_TYPE;
+                    }
+                case local_box_save_type:
+                    if (tex_show_localbox_record()) {
+                        break;
+                    } else { 
+                        goto INVALID_TYPE;
+                    }
+                case alignment_save_type:
+                    if (tex_show_alignment_record()) {
+                        break;
+                    } else { 
+                        goto INVALID_TYPE;
+                    }
+                case adjust_save_type:
+                    if (tex_show_adjust_record()) {
+                        break;
+                    } else { 
+                        goto INVALID_TYPE;
+                    }
+                case math_save_type:
+                    if (tex_show_math_record()) {
+                        break;
+                    } else { 
+                        goto INVALID_TYPE;
+                    }
+                case fraction_save_type:
+                    if (tex_show_math_fraction_record()) {
+                        break;
+                    } else { 
+                        goto INVALID_TYPE;
+                    }
+                case radical_save_type:
+                    if (tex_show_math_radical_record()) {
+                        break;
+                    } else { 
+                        goto INVALID_TYPE;
+                    }
+                case operator_save_type:
+                    if (tex_show_math_operator_record()) {
+                        break;
+                    } else { 
+                        goto INVALID_TYPE;
+                    }
+                case math_group_save_type:
+                    if (tex_show_math_group_record()) {
+                        break;
+                    } else { 
+                        goto INVALID_TYPE;
+                    }
+                case choice_save_type:
+                    if (tex_show_math_choice_record()) {
+                        break;
+                    } else { 
+                        goto INVALID_TYPE;
+                    }
+                case number_save_type:
+                    if (tex_show_math_number_record()) {
+                        break;
+                    } else { 
+                        goto INVALID_TYPE;
+                    }
+                case insert_save_type:
+                    if (tex_show_insert_record()) {
+                        break;
+                    } else { 
+                        goto INVALID_TYPE;
+                    }
+                case discretionary_save_type:
+                    if (tex_show_discretionary_record()) {
+                        break;
+                    } else { 
+                        goto INVALID_TYPE;
+                    }
+                default: 
+                    goto INVALID_RECORD;
+            }
+        } else {
+            switch (save_type(lmt_save_state.save_stack_data.ptr)) {
+                case level_boundary_save_type:
+                    tex_print_format("boundary, group '%s', boundary %i, attrlist %i, line %i", lmt_interface.group_code_values[saved_group_group].name, saved_group_boundary, saved_group_attribute_state, tex_saved_line_at_level());
+                    break;
+                case restore_old_value_save_type:
+                    tex_print_format("restore, level %i, cs ", save_level(lmt_save_state.save_stack_data.ptr));
+                    tex_aux_show_eqtb(save_value(lmt_save_state.save_stack_data.ptr));
+                    break;
+                case insert_tokens_save_type:
+                    tex_print_format("insert, pointer %i", save_value(lmt_save_state.save_stack_data.ptr));
+                    break;
+                case restore_lua_save_type:
+                    tex_print_format("restore lua, level %i, function %i", save_level(lmt_save_state.save_stack_data.ptr), save_value(lmt_save_state.save_stack_data.ptr));
+                    break;
+                case restore_zero_save_type:
+                    tex_print_format("restore zero, level %i, cs ", save_level(lmt_save_state.save_stack_data.ptr));
+                    tex_aux_show_eqtb(save_value(lmt_save_state.save_stack_data.ptr));
+                    break;
+                default:
+                    goto INVALID_TYPE;
+            }
+        }
+        goto DONE;
+      INVALID_RECORD:
+        tex_print_format("invalid record %i", save_record(lmt_save_state.save_stack_data.ptr));
+        goto DONE;
+      INVALID_TYPE:
+        tex_print_format("invalid type %i", save_type(lmt_save_state.save_stack_data.ptr));
+        goto DONE;
+      DONE:
+        tex_print_char(']');
+        tex_print_nlp();
+    }
+    tex_print_format("%l[savestack bottom]\n");
+    lmt_save_state.save_stack_data.ptr = savedptr;
 }
 
 /*tex
@@ -1574,7 +1685,7 @@ void tex_unsave(void)
         }
         tex_local_control(1);
     }
-    unsave_attribute_state_before();
+    delete_attribute_reference(current_attribute_state); 
     tex_unsave_math_codes(cur_level);
     tex_unsave_cat_codes(cat_code_table_par, cur_level);
     tex_unsave_text_codes(cur_level);
@@ -1691,14 +1802,13 @@ void tex_unsave(void)
             /*tex Groups are possibly not properly nested with files. */
             tex_aux_group_warning();
         }
-        cur_group = save_level(lmt_save_state.save_stack_data.ptr);
-        cur_boundary = save_value(lmt_save_state.save_stack_data.ptr);
-        --lmt_save_state.save_stack_data.ptr;
+        cur_group = saved_group_group;
+        cur_boundary = saved_group_boundary;
+        set_current_attribute_state(saved_group_attribute_state); 
     } else {
         /*tex |unsave| is not used when |cur_group=bottom_level| */
         tex_confusion("current level");
     }
-    unsave_attribute_state_after();
 }
 
 /*tex

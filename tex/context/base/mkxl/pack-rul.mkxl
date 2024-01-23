@@ -1639,8 +1639,9 @@
 
 \def\pack_framed_reverse_box
   {\ifvbox\b_framed_normal
-     \edef\p_linedirection{\framedparameter\c!linedirection}%
-     \ifx\p_linedirection\v!reverse
+%      \edef\p_linedirection{\framedparameter\c!linedirection}%
+%      \ifx\p_linedirection\v!reverse
+     \ifcstok{\framedparameter\c!linedirection}\v!reverse
        \reversevboxcontent\b_framed_normal
        \setbox\b_framed_normal\vpack{\unvbox\b_framed_normal}%
      \fi
@@ -1679,6 +1680,9 @@
   {\ifempty{\framedparameter\c!freezespacing}\else
      \boxadapt\b_framed_normal\p_freeze\relax
    \fi
+ % \ifcstok{\framedparameter\c!limit}\v!yes
+ %   \boxlimit\b_framed_normal % maybe
+ % \fi
    \pack_framed_locator_before\p_framed_location
    \ifconditional\c_framed_has_format
      \ifempty\p_framed_anchoring\else

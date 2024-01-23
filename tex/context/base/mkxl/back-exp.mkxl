@@ -268,6 +268,17 @@
        \fi}%
 \to \everyenableelements
 
+% For more elements, so an extra argument:
+
+\ifdefined\dotagcodepoint \else \aliased\let\dotagcodepoint\gobbletwoarguments \fi
+
+\appendtoks
+    \enforced\permanent\protected\def\dotagcodepoint#1#2%
+      {\iftrialtypesetting\else
+         \clf_settagcodepoint{#1}#2\relax
+       \fi}%
+\to \everyenableelements
+
 % The action: \setupbackend[export=yes] % or filename
 
 % maybe xhtml css settings will move to setupexport

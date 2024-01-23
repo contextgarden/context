@@ -214,6 +214,8 @@ scanners.bracketedasis   = scanbracketedasis
 scanners.argumentasis    = scanargumentasis
 scanners.csnameunchecked = scancsnameunchecked
 
+--------.detokenize      = function() return scanners.tokenstring(false) end -- needs testing
+
 local shortcuts = {
     tokens              = tokens,
     bits                = tokenbits,
@@ -223,6 +225,7 @@ local shortcuts = {
     scanstring          = scanstring,
     scanargument        = scanargument,
     scantokenstring     = scanners.tokenstring,
+ -- scandetokenize      = scanners.detokenize,
     scanverbatim        = scanverbatim,
     scantokenlist       = scantokenlist,
     scantoks            = scantoks,

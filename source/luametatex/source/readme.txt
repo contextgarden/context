@@ -180,6 +180,16 @@ it does provide the methods that make sense, it is not meant for usage in
 ConTeXt, but more as a toolkit to identify issues and conflicts with parallel
 installations like TeXLive.
 
+posit: 
+
+This is an experiment with compact high resolution 32 bit floating point 
+numbers. We have a Lua interface but also a number moder in MetaPost. 
+
+potrace: 
+
+This library permmits us to play with bitmaps turned outlines, especially in 
+MetaPost. It's little code for much fun. 
+
 hb:
 
 I have a module that works the same as the ffi variant from a couple of years
@@ -541,6 +551,12 @@ possibilities. Mojca Miklavec handles the compile farm, coordinates the
 distributions, deals with integration in TeXLive, etc. Alan Braslau is the first
 line tester so that in an early stage we can identify issues with for TeX,
 MetaPost, Lua and compilation on the different platforms that users have.
+
+Math, one of the core building blocks of the TeX engine has been significantly 
+upgraded (starting 2021+). Mikael Sundqvist and I spent a lot of time on this 
+project which also involves (tweaking) fonts. We also have a MetaPost agenda 
+(224+) and diverge in other fundamental improvements (2022+), like the extended 
+par builder. 
 
 If you run into problems with LuaMetaTeX, the ConTeXt mailing list is the place
 to go to: ntg-context@ntg.nl. Of course you can also communicate LuaTeX problems

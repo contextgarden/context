@@ -41,14 +41,14 @@
 %
 % impossible in math mode so there always fallback (till we have gyre):
 %
-% use \normalUchar when possible .. the next one is nice for documents and it also accepts
+% use \tocharacter when possible .. the next one is nice for documents and it also accepts
 % 0x prefixed numbers
 
 \permanent\def\utfchar #1{\clf_utfchar {#1}} % todo: define public at lua end
 \permanent\def\safechar#1{\clf_safechar{#1}} % todo: define public at lua end
 
-\permanent\protected\def\Ux #1{\Uchar\numexpr"#1\relax} % used in xml (sometimes overloaded)
-\permanent          \def\eUx#1{\Uchar\numexpr"#1\relax} % used in xml (sometimes overloaded)
+\permanent\protected\def\Ux #1{\tocharacter\numexpr"#1\relax} % used in xml (sometimes overloaded)
+\permanent          \def\eUx#1{\tocharacter\numexpr"#1\relax} % used in xml (sometimes overloaded)
 
 \permanent\def\expandUx{\enforced\let\Ux\eUx}
 
@@ -124,5 +124,12 @@
 
 \permanent\protected\def\overloaduppercase{\clf_overloaduppercase} % todo: define public at lua end
 \permanent\protected\def\overloadlowercase{\clf_overloadlowercase} % todo: define public at lua end
+
+%D For old times sake (for now), for Thomas Schmitz (\type {\greekdasiavaria} etc):
+
+\permanent\protected\def\addcharacternames{\ctxlua{characters.addcharacternames()}} % we could be granular e.g. 'greek'
+
+\greekdasiavaria
+
 
 \protect \endinput

@@ -204,6 +204,8 @@
 
 \continueifinputfile{meta-imp-kaktovik.mkxl}
 
+\startbuffer
+
 \definefontfeature
   [default]
   [default]
@@ -214,38 +216,51 @@
 
 % \nopdfcompression
 
-\startTEXpage[offset=1ts,width=3es]
-
-    \start
+\start
     \showglyphs
-        KAKTOVIK
-        \dostepwiserecurse{0}{19}{1}{\kaktoviknumerals{#1}\space }
-    \stop
-
-    kaktovik \start
-        \red\glyphxscale 700
-        \dostepwiserecurse{0}{19}{1}{\kaktoviknumerals{#1}\space }
-    \stop
-
-    \startitemize[packed,K][color=orange,stopper=]
-        \startitem first  \stopitem
-        \startitem second \stopitem
-        \startitem third  \stopitem
-    \stopitemize
-
-    KAKTOVIK \start
-        \red  \kaktoviknumerals{2023} --
-        \green\kaktoviknumerals{4}    --
-        \blue \kaktoviknumerals{18}
-    \stop
-
     KAKTOVIK
+    \dostepwiserecurse{0}{19}{1}{\kaktoviknumerals{#1}\space }
+\stop
 
-    𝋂 + 𝋂 = \kaktovikcalculate{𝋂 + 𝋂} = \kaktoviknumerals{4}
+kaktovik \start
+    \red\glyphxscale 700
+    \dostepwiserecurse{0}{19}{1}{\kaktoviknumerals{#1}\space }
+\stop
 
-    \protected\def\ForWilli#1{#1 = \kaktovikcalculate{#1}}
+\startitemize[packed,K][color=orange,stopper=]
+    \startitem first  \stopitem
+    \startitem second \stopitem
+    \startitem third  \stopitem
+\stopitemize
 
-    \ForWilli{(𝋂 + 𝋂) ^ (𝋂 + 𝋂)}
+KAKTOVIK \start
+    \red  \kaktoviknumerals{2023} --
+    \green\kaktoviknumerals{4}    --
+    \blue \kaktoviknumerals{18}
+\stop
 
-    \ForWilli{(sin ( 𝋂𝋓 ) )}
+KAKTOVIK
+
+𝋂 + 𝋂 = \kaktovikcalculate{𝋂 + 𝋂} = \kaktoviknumerals{4}
+
+\protected\def\ForWilli#1{#1 = \kaktovikcalculate{#1}}
+
+\ForWilli{(𝋂 + 𝋂) ^ (𝋂 + 𝋂)}
+
+\ForWilli{(sin ( 𝋂𝋓 ) )}
+
+\stopbuffer
+
+\starttext
+
+\startTEXpage[offset=1ts,width=3es]
+    \getbuffer
 \stopTEXpage
+
+\setuplayout[tight]
+
+\usemodule[scite]
+
+\typebuffer[option=TEX]
+
+\stoptext

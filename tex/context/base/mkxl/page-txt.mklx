@@ -892,29 +892,62 @@
 
 % only for very special controlled cases or experiments:
 
-\newinteger  \c_page_scale_lines
-\newdimension\d_page_box_stretch_delta
-\newdimension\d_page_box_stretch_criterium
+\newinteger    \c_page_scale_lines
+\newdimension  \d_page_box_stretch_delta
+\newdimension  \d_page_box_stretch_criterium
+\newconditional\c_page_box_check_stretch
+
+% The stretch setting can depend on the current lineheight and the
+% alignment can be set later. So we need to delay.
+
+\def\page_box_check_limit_stretch_indeed#1%
+  {\edef\p_limitstretch{\layoutparameter\c!limitstretch}%
+   \ifx\p_limitstretch\v!yes
+     \d_page_box_stretch_criterium\zeropoint
+     \settrue\c_page_box_check_stretch
+   \orelse\ifx\p_limitstretch\v!auto
+     % safeguard for depth without limit set
+     \ifnum\bottomraggednessmode=\plusthree
+       \d_page_box_stretch_criterium2\lineheight
+       \settrue\c_page_box_check_stretch
+     \else
+       \d_page_box_stretch_criterium\maxdimen
+       \setfalse\c_page_box_check_stretch
+     \fi
+   \orelse\ifchkdimension\p_limitstretch\or
+     \d_page_box_stretch_criterium\p_limitstretch\relax
+     \settrue\c_page_box_check_stretch
+   \else
+     \d_page_box_stretch_criterium\maxdimen
+     \setfalse\c_page_box_check_stretch
+   \fi
+   \ifconditional\c_page_box_check_stretch
+     \boxfixstretch\d_page_box_stretch_criterium#1\relax
+     \d_page_box_stretch_delta\boxstretchdelta
+   \fi}
+
+\let\page_box_check_limit_stretch\relax % we test for this
 
 \appendtoks
     \edef\p_limitstretch{\layoutparameter\c!limitstretch}%
     \ifx\p_limitstretch\v!yes
-        \d_page_box_stretch_criterium\maxdimen
+      \let\page_box_check_limit_stretch\page_box_check_limit_stretch_indeed
+    \orelse\ifx\p_limitstretch\v!auto
+      \let\page_box_check_limit_stretch\page_box_check_limit_stretch_indeed
     \orelse\ifchkdimension\p_limitstretch\or
-        \d_page_box_stretch_criterium\p_limitstretch\relax
+      \let\page_box_check_limit_stretch\page_box_check_limit_stretch_indeed
     \else
-        \d_page_box_stretch_criterium\zeropoint
+      \let\page_box_check_limit_stretch\relax % we test for this
     \fi
 \to \everysetuplayout
 
 \def\page_layouts_check_stretch#1%
   {\ifcase\bottomraggednessmode
      \d_page_box_stretch_delta\zeropoint
-   \orelse\ifdim\d_page_box_stretch_criterium>\zeropoint
-     \boxfixstretch\d_page_box_stretch_criterium#1\relax
-     \d_page_box_stretch_delta\boxstretchdelta
-   \else
+   \orelse\ifrelax\page_box_check_limit_stretch
      \d_page_box_stretch_delta\zeropoint
+   \else
+     \page_box_check_limit_stretch{#1}%
    \fi}
 
 \def\page_insert_body#1#2%

@@ -424,13 +424,13 @@ function scripts.unicode.update()
                             if l or r then
                                 mathextensible = 'm' -- mixed
                             else
-                                mathextensible = "u"     -- up
+                                mathextensible = "u" -- up
                             end
                         elseif d then
                             if l or r then
                                 mathextensible = 'm' -- mixed
                             else
-                                mathextensible = "d"     -- down
+                                mathextensible = "d" -- down
                             end
                         elseif l and r then
                             mathextensible = "h"     -- horizontal
@@ -673,7 +673,10 @@ end
 
 function scripts.unicode.save(filename)
     if preamble then
-        local data = table.serialize(characters.data,"characters.data", { hexify = true, noquotes = true })
+        local data = table.serialize(characters.data,"characters.data", {
+            hexify   = true,
+            noquotes = true,
+        })
         data = gsub(data,
             "%{%s+%[0xFE0E%]=\"text style\",%s+%[0xFE0F%]=\"emoji style\",%s+%}",
             "variants_emoji"
@@ -907,7 +910,7 @@ else
         scripts.unicode.save("char-def-new.lua")
         scripts.unicode.emoji("char-emj-new.lua")
         report("saved file %a","char-def-new.lua")
-        report("saved file %a (current 14.0, check for updates, see above!)","char-emj-new.lua")
+        report("saved file %a (current 15.1, check for updates, see above!)","char-emj-new.lua")
     else
         report("nothing to do")
     end

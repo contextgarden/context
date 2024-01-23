@@ -1,0 +1,252 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-active
+
+\environment ontarget-style
+
+\usemodule[system-tokens]
+
+\startchapter[title={Active characters}]
+
+Each character in \TEX\ has a so called category code. Most are of category
+\quote {letter} or \quote {other character} but some have a special meaning, like
+\quote {superscript} or \quote {subscript} or \quote {math shift}. Of course the
+backslash is special too and it has the \quote {escape} category.
+
+A single character can also be a command in which case it has category \quote
+{active}. In \CONTEXT\ the \type {|} is an example of that. It grabs an argument
+delimited by yet another such (active) bar and handles that argument as compound
+character.
+
+From the perspective of \CONTEXT\ we have a couple of challenges with respect to
+active characters.
+
+\startitemize
+\startitem
+    We want to limit the number of special symbols so we only really have to deal with the
+    active bar and tilde. Both have a history starting with \MKII.
+\stopitem
+\startitem
+    There are cases where we don't want them to be not active, most noticeably in
+    math and verbatim. This means that we either have to make a sure that they
+    are not active bit in nested exceptions, for instance when we flush a page
+    halfway verbatim, made active again.
+\stopitem
+\startitem
+    In text we always hade catcode regimes to deal with this (which is actually
+    why in \LUATEX\ efficient catcode tables were one of the first native
+    features to implement. This involves some namespace management.
+\stopitem
+\startitem
+    In math we have to fall back on a different meaning which adds another
+    (meaning) axis alongside catcode regimes: in math we use the same catcode
+    regime as in text so we have a mode dependent meaning on top of the catcode
+    regime specific one.
+\stopitem
+\startitem
+    In math we have this special active class|/|character definition value \type
+    {"8000} that makes characters active in math only. We use(d) that for permitting
+    regular hat and underscore characters in text mode but let them act as
+    superscript and subscript triggers in math mode.
+\stopitem
+\startitem
+    Active characters travel in a special way trough the system: they are
+    actually stored as macro calls in token lists en macro bodies. This normally
+    goes unnoticed (and is not that different from other catcodes being frozen in
+    macros).
+\stopitem
+\stopitemize
+
+So far we could always comfortably implement whatever we wanted but sometimes the
+code was not that pretty. Because part of the \LUAMETATEX\ project is to make
+code cleaner, I started wondering if we could come up with a better mechanism for
+dealing with active characters especially in math. Among the other reasons were:
+less tracing clutter, a bit more natural approach, and less intercepts for
+special cases. Of course we have to be compatible. Some first experiments were
+promising but as usual it took a while to identify all the cases we have to deal
+with. At moments I wondered if I should go forward but as I stepwise adapted the
+\CONTEXT\ code to the experiment there was no way back. I did however reject
+experiments that out active characters in the catcode table namespaces.
+
+In \LUATEX\ (and its predecessors) internally active characters are stored as a
+reference to a control sequence, although a \type {\show} or trace will report
+the character as \quote {name}. For example:
+
+\startbuffer
+\catcode `!=\activecatcode
+\def !{whatever} % we also have \letcharcode
+\def\foo{x!x}
+\stopbuffer
+
+\typebuffer
+
+is stored as (cs, cmd, chr):
+
+\start
+\getbuffer
+\luatokentable\foo
+\stop
+
+However, when we want some more hybrid approach, a text versus math mix, we need
+to postpone resolving into a control sequence. Examples are macro bodies and
+token registers. When we flag a character (with \type {amcode}) as being of a
+different catcode than active in math mode, we get the following:
+
+\startbuffer
+\amcode`! \othercatcode
+\catcode `!=\activecatcode
+\def !{whatever}
+\def\foo{x!x}
+\stopbuffer
+\typebuffer
+
+\start
+\getbuffer
+\luatokentable\foo
+\stop
+
+The difference is that here we get the active character in the body of the macro.
+Interesting is that this is not something that parser is prepared for so the main
+loop has now to catch active characters. This is no big deal but also not
+something to neglect. The same is true for serialization of tokens.
+
+Other situations when we need to be clever is for instance when we try to enter
+math mode. In math mode we want the (in text) active character as math character
+and a convenient test is checking the mode. However, when we see \type {$} we are
+not yet in math mode and as \TEX\ looks for a potential next \type {$} we grab a
+active character it should not resolve in a reference to an command. The reason
+for that is that when \TEX\ pushes back the token (because it doesn't see a \type
+{$}) we need it to be an active character and not a control sequence. If it were
+a control sequence we would see it as such in math mode which is not what we
+intended. It is one of these cases where \TEX\ is not roundtrip. Similar cases
+occur when \TEX\ looks ahead for (what makes a) number and doesn't see one which
+then results in a push back. Actually, there are many look ahead and push back
+moments in the source.
+
+\startbuffer
+text: \def\foo{x|!|x}
+
+\meaningasis\foo
+
+\luatokentable\foo
+
+$x\foo x$ \foo
+\stopbuffer
+
+\typebuffer \start\getbuffer\stop
+
+\startbuffer
+math: $\gdef\oof{x|!|x}$
+
+\meaningasis\oof
+
+\luatokentable\oof
+
+$x\oof x$ \oof
+\stopbuffer
+
+\typebuffer \start\getbuffer\stop
+
+\startbuffer
+toks: \scratchtoks{x|!|x}
+
+\detokenize\expandafter{\the\scratchtoks}
+
+\luatokentable\scratchtoks
+
+$x\the\scratchtoks x$ \the\scratchtoks
+\stopbuffer
+
+\typebuffer \start\getbuffer\stop
+
+A good test case for \CONTEXT\ is:
+
+\startbuffer
+\def\foo{x|!|x||x}
+
+ x|!|x||x + \foo
+$x|!|x||x + \foo$
+\stopbuffer
+
+\typebuffer
+
+Here we expect bars in math mode but the compound mechanism applied in text mode:
+
+\startlines\getbuffer\stoplines
+
+So the bottom line is this:
+
+\startitemize
+\startitem
+    Active characters should behave as expected, which means that they get
+    replaced by references to commands.
+\stopitem
+\startitem
+    When the \type {\amcode} is set, this signal the engine to delay that
+    replacement and retain the active character.
+\stopitem
+\startitem
+    When the moment is there the engine either expands it as command (text mode)
+    or injects the alternative meaning based on the catcode. There we support
+    letters, other characters, super- and subscripts and alignment codes. The
+    rest we simply ignore (for now).
+\stopitem
+\stopitemize
+
+Of course you can abuse this mechanism and also retain the character's active
+property in text mode by simply setting the \type {\amcode}. We'll see how that
+works out. Actually this mechanism was provided in the first place to get around
+the \type {"8000} limitations! So here is another cheat:
+
+\starttyping
+\catcode `^ \othercatcode       % so a ^ is just that
+\amcode  `^ \superscriptcatcode % but a ^ in math signals a superscript
+\stoptyping
+
+So, the \type {a} in \type {\amcode} stands for both \quote {active} and \quote
+{alternative}. As mentioned, because we distinguish between math and text mode we
+no longer need to adapt the meaning of active commands: think of using \type
+{\mathtext} in a formula where we leave math mode and then need to use the text
+meaning of the bar, just as outside the formula.
+
+In the end, because we only have a few active characters and no user ever
+demanded name spaces that mechanism was declared obsolete. There is no need to
+keep code around that is not really used any more.
+
+% Although this mechanism works okay, there is a pitfall. When you define a macro, and
+% \type {\amcode} is set, the active character is stored as such. That means that doing
+% something like this is likely to fail:
+%
+% \starttyping
+% \def\whatever{\let~\space}
+% \stoptyping
+%
+% when the tilde is active as well as has a \type {\amcode} set. However,
+%
+% \starttyping
+% \def\whatever{\letcharcode\tildeasciicode\space}
+% \stoptyping
+%
+% will work just fine.
+
+Internally an active character is stored in the hash that also stores regular
+control sequences. The character becomes an \UTF\ string prefixed by the \UTF\
+value of \type {0xFFFF} which doesn't exist in \UNICODE. The \type {\csactive}
+primitive is a variant on \type {\csstring} that returns this hash. Its companion
+\type {\expandactive} (a variant on \type {\expand}) can be used to inject the
+related control sequence. If \type {\csactive} is not followed by an active
+character it expands to just the prefix, as does \type {\Uchar"FFFF} but a bit of
+abstraction makes sense.
+
+% control sequence: xxxx
+% 271731  13  126  active char
+% control sequence: xxxx
+% 271732  135    0  protected call  ~
+% control sequence: xxxx
+% 271734   12  65535  other char      ￿ (U+0FFFF)
+% 408124  135      0  protected call  ~
+
+\stopchapter
+
+\stopcomponent
+

@@ -16,8 +16,10 @@ return {
             AccentTopShiftUp                  =   10,
             FlattenedAccentTopShiftUp         =   10,
             AccentBaseDepth                   =   80,
-            DelimiterPercent                  =   90,
+            DelimiterPercent                  =   85,
             DelimiterShortfall                =  400,
+            DelimiterDisplayPercent           =   90,
+            DelimiterDisplayShortfall         =  400,
             DisplayOperatorMinHeight          = 1800, -- 1500 in font
             SuperscriptShiftUp                =  386, -- 354 in font
             SubscriptShiftDown                =  200, -- 232 in font
@@ -80,7 +82,15 @@ return {
                     tweak   = "fixoldschool",
                     feature = "euleroverpagella",
                 },
-
+                {
+                    tweak   = "replacealphabets",
+                    list    = {
+                        {
+                            source   = { first = 0x02980 }, -- triplebar
+                            filename = "TeXGyrePagellaMath-Companion.otf",
+                        },
+                    },
+                },
                 presets.scripttocalligraphic { },
                 presets.rsfstoscript         { },
                 presets.rsfsuprighttoscript  { },
@@ -215,10 +225,11 @@ return {
                 {
                     tweak = "addarrows",
                 },
-                {
-                    tweak   = "addbars",
-                    advance = 0.2,
-                },
+--                 {
+--                     tweak   = "addbars",
+--                     advance = 0.2,
+-- variant = 2,
+--                 },
                 {
                     tweak    = "replacerules",
                     fraction = { height = .215, yoffset = .785 },

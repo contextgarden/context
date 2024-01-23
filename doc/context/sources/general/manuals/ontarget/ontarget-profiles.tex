@@ -1,0 +1,507 @@
+% language=us runpath=texruns:manuals/ontarget
+
+% timestamp: Scary Pockets with Leland Sklar: https://www.youtube.com/watch?v=1UOVLdPslmo
+% around 19 minutes in ... interesting! Hopefully I once see LS live!
+
+% we can yscale too
+
+\usebodyfont[modern,10pt]
+\usebodyfont[lucida,10pt]
+\usebodyfont[pagella,10pt]
+\usebodyfont[bonum,10pt]
+\usebodyfont[antykwa,10pt]
+
+\startcomponent ontarget-profiles
+
+\environment ontarget-style
+
+\startchapter[title={Profiles}]
+
+\startsection[title=Introduction]
+
+Among the typesetting problems that relate to math are inline formulas that have
+a bit too much height or depth but not so much as to justify some additional
+interline space. For that reason in \CONTEXT\ \MKII\ we have some snapping
+features that can be enabled that limit the dimensions. In \MKIV\ a more
+extensive profile feature was written (we talked about it at meetings in 2015)
+that look at the bottom and top of lines in order to determine if lines can be
+moved closer, but in practice snapping and profiling are never really used. In
+the end it was more an academic exercise which is not uncommon when it comes to
+\TEX\ user demands and practice.
+
+As part of exploring math micro typography these features surfaced again during
+some discussion about weird mechanisms and we actually wondered if we could revive
+this now that we also control other aspects of math typesetting in more detail.
+One condition is that the overhead is not that high. Users accept some overhead
+for protrusion and expansion that relate to horizontal optimization so a little
+extra overhead for vertical optimization should not be a problem.
+
+Of course, as with protrusion and especially expansion, the question is if
+readers will notice it. Best would be to set up some experiments but, although
+one can argue that research is important, in practice it always boils down to a
+visual impression, feel good and, like it or not, exploration, trial and error.
+And so a simplified variant of profiling was implemented and applied to a math
+intensive math book used in academia. Instead of proper experiments some unaware
+bystanders were asked if they noticed a difference and to our surprise that was
+the case! And these were not even math students but kids who were more familiar
+with children books and phones. That convinced us that we were on the right
+track, that we need to explain a little about what we actually do, and that we
+should tell users what to look at when this gets applied.
+
+With an introduction like this, mentioning \quote {research}, \quote {academia},
+\quote {students} and \quote {typography} we're sure that future generations will
+be convinced that what  is discussed next has a strong fundament so here we go!
+
+\stopsection
+
+\startsection[title=A first example]
+
+We start with a simple example. Because in practice profiling always kicks in
+when possible one really need to handcraft an example that can be used for
+demonstration: \in {figure} [fig:profile].
+
+\definelineprofile[MyLineProfileA][step=1pt,factor=0.125]
+\definelineprofile[MyLineProfileB][step=1pt,factor=0.250]
+\definelineprofile[MyLineProfileC][step=1pt,factor=1.000]
+
+\startbuffer
+    \hsize 7cm
+    no no no no  no  no no no no no no no no no no no no \im{x^{2^{A^P}}+x_{2_g}}. no no no no no no no no no  no  no no no no no no no no no no no no no \im{\frac{1+A^{2^x}}{2+B_2}} no no no no no no no no no no no no no no no no no.\blank
+    no no no yes yes no no no no no no no no no no no    \im{x^{2^{A^P}}+x_{2_g}}. no no no no no no no no yes yes no no no no no no no no no no no no \im{\frac{1+A^{2^x}}{2+B_2}} no no no no no no no no no no no no no no no no no.\par
+\stopbuffer
+
+\startbuffer[set]
+\showmakeup[line]
+\enabletrackers[profiling.lines.show]
+\stopbuffer
+
+\startbuffer[reset]
+\disabletrackers[profiling.lines.show]
+\stopbuffer
+
+\startplacefigure[reference=fig:profile]
+\startcombination[2*2]
+    {\getbuffer[set]\vbox{\hsize7cm\resetlineprofile                \getbuffer}\getbuffer[reset]}{\type{no profile}}
+    {\getbuffer[set]\vbox{\hsize7cm\setlineprofile  [MyLineProfileA]\getbuffer}\getbuffer[reset]}{\type{step=1pt,factor=0.125}}
+    {\getbuffer[set]\vbox{\hsize7cm\setlineprofile  [MyLineProfileB]\getbuffer}\getbuffer[reset]}{\type{step=1pt,factor=0.250}}
+    {\getbuffer[set]\vbox{\hsize7cm\setlineprofile  [MyLineProfileC]\getbuffer}\getbuffer[reset]}{\type{step=1pt,factor=1.000}}
+\stopcombination
+\stopplacefigure
+
+In order to see what happens it is important to understand how \TEX\ sees lines.
+Actually, the concept of lines in \TEX\ is rather limited: lines are just
+horizontal boxes where the baselines are separated by \type {\baselineskip} and
+when the distance is larger than that dimensions a \type {\lineskip} gets added.
+
+\appendtoks\showmakeup[reset]\to\everybeforeoutput
+
+\startlines \showmakeup[line]
+these are a few
+lines of text
+where lines have depths
+or no real
+height at all
+\stoplines
+
+Between all these lines some skip needs to be added: the \type {\baselineskip}
+minus the height and depth. If we add struts the lines get the optimal height and
+depth so then no skips are inserted:
+
+\startlines \showmakeup[line] \showstruts
+\strut these are a few
+\strut lines of text
+\strut where lines have depths
+\strut or no real
+\strut height at all
+\stoplines
+
+When we increase the depth a little, for instance 1.2 times the normal strut depth,
+we see that some additional space, the \type {\lineskip} gets added:
+
+\startlines \showmakeup[line] \showstruts
+\strut these {\vrule depth 1.2\strutdp width .25em \relax} are a few
+\strut lines of {\vrule depth 1.2\strutdp width .25em \relax} text
+\strut where lines have {\vrule depth 1.2\strutdp width .25em \relax} depths
+\strut or {\vrule depth 1.2\strutdp width .25em \relax} no real
+\strut height at {\vrule depth 1.2\strutdp width .25em \relax} all
+\stoplines
+
+However, there is no real reason to do that here because the
+larger rules don't clash with text or other content. So this is what we get when
+we pass the \type {profile} option to \type {\setupalign}:
+
+\def\MyStrut{\vrule depth 1.2\strutdp width .25em \relax}
+
+\enabletrackers[profiling.lines.show]
+\startpacked \setupalign[profile]
+\strut these {\MyStrut} are a few \crlf
+\strut lines of {\MyStrut} text \crlf
+\strut where lines have {\MyStrut} depths \crlf
+\strut or {\MyStrut} no real \crlf
+\strut height at {\MyStrut} all
+\stoppacked
+\disabletrackers[profiling.lines.show]
+
+Profiling works per paragraph, so when we add a \type {\par} in the middle we get
+this:
+
+\enabletrackers[profiling.lines.show]
+\startpacked \setupalign[profile]
+\strut these {\MyStrut} are a few \crlf
+\strut lines of {\MyStrut} text  \crlf
+\strut where lines have {\MyStrut} depths \par
+\strut or {\MyStrut} no real  \crlf
+\strut height at {\MyStrut} all
+\stoppacked
+\disabletrackers[profiling.lines.show]
+
+But, we can actually setup the profiler to look back. Setting up the main
+(document) profiler happens with:
+
+\starttyping
+\setuplineprofile
+  [factor=0.125,      % default
+   paragraph=yes,     % default: no
+   step=0.5\emwidth]  % default
+\stoptyping
+
+but as with most \CONTEXT\ mechanisms you can define your own profiler. The step
+tells what granularity to use when comparing positions in a line. The factor sets
+the threshold for the interline skip. We saw these two differ in the first
+example we gave.
+
+\stopsection
+
+\startsection[title=Profiled math]
+
+We will give several examples of math profiling.
+In the examples we will switch font to Latin Modern,
+since the effect is more visible for that font.
+Most of our examples will be \quotation{real} (slightly modified) ones,
+but we start with a rather artificial example. Below we have
+two occurrences of a fraction. Note that the profiling only kicks
+in for the second one. The reason is that on the line above the first
+one we only have letters (x) with no depth, while in the second one,
+we have added one letter (g) that has depth.
+
+\startbuffer \hsize 8cm
+xxx xxxx xxxx xx xxx xx xx xxx xxxx xxx xx xxx xxx xx xx xxx x xxxxx xxxxx
+xxx xxxx xxxx xx xxx xx xx xxx xxxx xxx xx xxx xxx xx xx xxx x xxxxx xxxxx
+\im{\frac{1}{2}} xxx xxx xx xx xxx xxxx xxxxxxx xxxx xxxx xxxxx xxx xxxx xxx
+xxx xxx xxx xxx xxx xxxx xxxxxx xxxxxxx xxxgxxx xxx xxx xxx xx x xxxxxxx xxx
+\im{\frac{1}{2}} xxx xxxx xxxx xx xxx xx xx xxx xxxx xxx xx xxx xxx xx xx
+xxx x xxxxx xxxxx.\par
+\stopbuffer
+
+\starttextdisplay
+\switchtobodyfont[modern,9pt]
+\startcombination[nx=2,ny=1,distance=1cm]
+    {\getbuffer[set]\vtop{\hsize8cm\resetlineprofile                \getbuffer}\getbuffer[reset]}{\type{no profile}           }
+    {\getbuffer[set]\vtop{\hsize8cm\setlineprofile  [MyLineProfileA]\getbuffer}\getbuffer[reset]}{\type{step=1pt,factor=0.125}}
+\stopcombination
+\stoptextdisplay
+
+We next show a simple paragraph where the mechanism gets applied in three out of five line breaks.
+
+\startbuffer \hsize 8cm
+The results of Section 6.3 show that the same phenomenon is encountered when
+treating the norms of inverses: \im{\fenced[doublebar][size=0]{B_n^{-1}}_p}
+converges to \im{N_p} very fast if \im{N_p > N_p^0}, while the convergence
+may be slow if \im{N_p = N_p^0}. As the following proposition reveals, at
+least for \im{p = 2} the strict inequality \im{N_2 > N_2^0} is the generic
+case.\par
+\stopbuffer
+
+\starttextdisplay
+\startcombination[nx=2,ny=1,distance=1cm]
+    {\switchtobodyfont[modern,9pt]\getbuffer[set]\vtop{\hsize8cm\resetlineprofile                \getbuffer}\getbuffer[reset]}{\type{no profile}           }
+    {\switchtobodyfont[modern,9pt]\getbuffer[set]\vtop{\hsize8cm\setlineprofile  [MyLineProfileA]\getbuffer}\getbuffer[reset]}{\type{step=1pt,factor=0.125}}
+\stopcombination
+\stoptextdisplay
+
+We have shown the lines and used the helper to show where the profiling
+is applied. We show the same example but without these helpers. After
+all, this is how we usually see it.
+
+\starttextdisplay
+\startcombination[nx=2,ny=1,distance=1cm]
+    {\switchtobodyfont[modern,9pt]\vtop{\hsize8cm\resetlineprofile                \getbuffer}\getbuffer[reset]}{\type{no profile}           }
+    {\switchtobodyfont[modern,9pt]\vtop{\hsize8cm\setlineprofile  [MyLineProfileA]\getbuffer}\getbuffer[reset]}{\type{step=1pt,factor=0.125}}
+\stopcombination
+\stoptextdisplay
+
+If the paragraph is slightly reformulated, the profiling might change.
+Below we show an example where the subscript (p) on the fourth line gets
+too close to the superscript (0) on the last line.
+
+\startbuffer \hsize 8cm
+The results of Section 6.3 show that the same phenomenon is encountered when
+treating the norms of inverses: \im{\fenced[doublebar][size=0]{B_n^{-1}}_p}
+converges to \im{N_p} very fast if \im{N_p > N_p^0}, while the convergence
+may be slow if \im{N_p = N_p^0}.
+At least for \im{p = 2} the strict inequality \im{N_2 > N_2^0} is the generic
+case.\par
+\stopbuffer
+
+\starttextdisplay
+\startcombination[nx=2,ny=1,distance=1cm]
+    {\switchtobodyfont[modern,9pt]\getbuffer[set]\vtop{\hsize8cm\resetlineprofile                \getbuffer}\getbuffer[reset]}{\type{no profile}           }
+    {\switchtobodyfont[modern,9pt]\getbuffer[set]\vtop{\hsize8cm\setlineprofile  [MyLineProfileA]\getbuffer}\getbuffer[reset]}{\type{step=1pt,factor=0.125}}
+\stopcombination
+\stoptextdisplay
+
+We can configure the amount of space that shall be added with the \type{factor} key.
+
+% MS: Fixing a shift issue in the one below took one timestamp loop:
+
+\starttextdisplay
+\startcombination[nx=2,ny=1,distance=1cm]
+    {\switchtobodyfont[modern,9pt]\getbuffer[set]\vtop{\hsize8cm\setlineprofile  [MyLineProfileA]\getbuffer}\getbuffer[reset]}{\type{step=1pt,factor=0.125}    }
+    {\switchtobodyfont[modern,9pt]\getbuffer[set]\vtop{\hsize8cm\setlineprofile  [MyLineProfileC]\getbuffer}\getbuffer[reset]}{\type{step=1pt,factor=1}}
+\stopcombination
+\stoptextdisplay
+
+\startbuffer \hsize 8cm
+This shows that the sequence \im{(f_n)} is a Cauchy sequence in \im{L^1(\reals)}
+and therefore it converges in norm to some \im{\sum_{k=1}^n \hat{f} \in L^1(\reals)}, by
+Thereom~2.8.1. On the other hand, by Theorem~2.8.2, there exists an increasing
+sequence of positive integers \im{q_n} such that \im{f_{q_n} \to \tilde{f}}
+almost everywhere.\par
+\stopbuffer
+
+\starttextdisplay
+\startcombination[nx=2,ny=2,distance=1cm]
+    {\switchtobodyfont[modern,9pt]\getbuffer[set]\vtop{\hsize8cm\resetlineprofile                \getbuffer}\getbuffer[reset]}{\type{no profile}           }
+    {\switchtobodyfont[modern,9pt]\getbuffer[set]\vtop{\hsize8cm\setlineprofile  [MyLineProfileA]\getbuffer}\getbuffer[reset]}{\type{step=1pt,factor=0.125}}
+\stopcombination
+\stoptextdisplay
+
+\stopsection
+
+\startsection[title=Line spacing]
+
+When we enable the line profiler on a 300 page math course with plenty inline
+formulas, the number of \quote {corrections} varies a lot with the fonts. Some
+simple tests show that Latin Modern, Bonum and EBGaramond get quite some applied,
+while Lucida, Dejavu, Antykwa, Erewhon and   Libertinus only see a few corrections.
+Pagella, Termes and StixTwo end up in the middle.
+
+The trigger is not always text or math. The course material has quite some
+structure, like numbered descriptions. In \CONTEXT\ we use plenty of struts to
+make sure that spacing is consistent and the keyword that starts a description
+therefore gets them. Normally that is not an issue but when the height of the
+next line exceeds the strut height we get a clash and line skip will be added.
+One can argue that the strut spoils the typesetting but in general it does more
+good than harm, at least in \CONTEXT. It looks like the profiler is quite capable
+of getting rid of the cases where it interferes (or more precisely: where it
+doesn't run into the next line).
+
+The reason why we get a line skip added is simple: when the depth of the first
+line equals strut depth and the height of the second one equals strut height
+we're okay. When one of them is less we're also okay because \TEX\ will adapt the
+baseline skip so that it compensated the difference. However, when the first line
+has strut depth (due to the present strut) and the second line more than strut
+height (resulting for instance from a formula) the lines are considered
+overflowing in each other and therefore interline skip gets added.
+
+When we end up in this situation the profiler can bring down the line skip when
+it concludes that the strut is not running into the next line. However when the
+formula sits directly below the strut we cannot really determine what is right so
+then we just keep the skip. This situation occurs seldom. In many cases struts
+are optional so one can always disable them (locally).
+
+As the mentioned test document uses Lucida as body font, in the three cases where
+we actually get a clash, one definitely relates to the strut: the overflow in the
+second line occurs close to the right margin and the strut in the first line sits
+at the left margin so we can get rid of the line skip, which leave us with only
+two cases. However, there is another observation, one that involves the baseline
+distance or line height.
+
+In \CONTEXT\ the ratio between the strut height and depth is 72:28 which works
+quite well for most fonts. If we look at Lucida shapes we see that the depth is
+normally small so we can actually decide to change that ratio. It is however not
+clear how that will influence decisions. Assuming more height will help with for
+instance formulas that have superscripts, but an inline integral with subscript
+might suffer. For other fonts, like EBGaramond, that have some extremely deep
+shapes changing rations won't help anyway. We win here and loose there.
+
+\startbuffer[text-001]
+    abcdefghijklmnopqrstuvwxyz
+    ABCDEFGHIJKLMNOPQRSTUVWXYZ
+    1234567890
+    ()[]/\{\}\|
+    .,!?@\#\$\%^&*_-+=
+\stopbuffer
+
+\startbuffer[math-001]
+     $\int\sum\sqrt{}$
+\stopbuffer
+
+\startbuffer[math-002]
+     x_2^2
+\stopbuffer
+
+\newbox\MyHtDpBoxA
+\newbox\MyHtDpBoxB
+\newbox\MyHtDpBoxC
+
+\def\CheckThemA#1%
+  {\begingroup
+   \switchtobodyfont[#1,10pt]%
+   \starttabulate[||r|]
+     \FL
+     \BC \rlap{#1} \NC \NC \NR
+     \FL
+     \NC strut ht \EQ \the\strutht \NC \NR
+     \NC strut dp \EQ \the\strutdp \NC \NR
+   % \NC height   \EQ \meaningless\strutheightfactor \NC \NR
+   % \NC depth    \EQ \meaningless\strutdepthfactor \NC \NR
+     \NC ex       \EQ \the\exheight \NC \NR
+     \LL
+   \stoptabulate
+   \endgroup}
+
+\def\CheckThemB#1%
+  {\begingroup
+   \switchtobodyfont[#1,10pt]%
+   \setbox\MyHtDpBoxA\ruledhpack\bgroup\inlinebuffer[text-001]\egroup
+   \setbox\MyHtDpBoxB\ruledhpack\bgroup\inlinebuffer[math-001]\egroup
+   \setbox\MyHtDpBoxC\ruledhpack\bgroup\inlinebuffer[math-002]\egroup
+   \def\ShowThem##1##2%
+     {\cldcontext{"\letterpercent 0.2f",\number##1##2/\number\htdp##2}
+      \NC
+      \the##1##2%
+      \NC}
+   \starttabulate[|r|r|i2r|r|i2r|r|]
+     \FL
+        \NS[1][c] \bf text-001
+        \NS[1][c] \bf math-001
+        \NS[1][c] \bf math-002
+%         \rlap{\quad\quad#1}
+     \NR
+     \FL
+     \NC
+        \ShowThem\ht\MyHtDpBoxA
+        \ShowThem\ht\MyHtDpBoxB
+        \ShowThem\ht\MyHtDpBoxC
+     \NR
+     \NC
+        \ShowThem\dp\MyHtDpBoxA
+        \ShowThem\dp\MyHtDpBoxB
+        \ShowThem\dp\MyHtDpBoxC
+     \NR
+     \LL
+   \stoptabulate
+   \endgroup}
+
+We will look into a few fonts to get a better impression how all this relates. We
+will use 10pt sizes. When we compare Lucida, Latin Modern, Bonum and Pagella we
+notice that we start out with design sizes that are quite different.
+
+\CheckThemA{lucida}
+\CheckThemA{modern}
+\CheckThemA{bonum}
+\CheckThemA{pagella}
+
+This is why we always use ratios (the 0.72 and 0.28) as well as abstract
+dimensions like \type {ex} and \type {em} so that we adapt to what the font
+provides. Because the default (total) line height is set to \type {2.8ex} we get
+larger values in for instance Lucida.
+
+In the next tables we use three samples, with \type {text-001} being:
+
+\typebuffer[text-001]
+
+The two math samples are:
+
+\typebuffer[math-001]
+
+and
+
+\typebuffer[math-002]
+
+For text the ratios are not that far off the defaults, but for math they start
+to differ and the distance becomes larger. For Lucida we get:
+
+\CheckThemB{lucida}
+
+Modern gives:
+
+\CheckThemB{modern}
+
+And bonum moves in the other direction:
+
+\CheckThemB{bonum}
+
+Pagella also differs:
+
+\CheckThemB{pagella}
+
+Changing the ratios for the sake of math makes not that much sense because
+profiling depends a lot on what math ends up inline. When we looked around a bit
+for realistic examples we got the impression that seeing some clash (read:
+getting uneven line spacing) might be a reason why small formulas eventually end
+up as display. Without mentioning names, we noticed that a reprint of a book
+actually got reformatted and when we looked for the slashing formulas in the
+original they had become display instead. With proper profiling there is no need
+for that. On top of that one can argue that some inline rendering can be done
+better anyway, like using skewed fraction instead of ruled ones. Can we predict
+that math with many superscripts goes well with a font with relatively high
+shapes? As soon as some parenthesis are used we get depth anyway and how likely
+is it that math without these is used inline? It also depends on the amount of
+math: two lines with superscripted math will drive \TEX\ to use line skip so we
+need to profile anyway. For that reason we will not adapt the ratios, just like
+we keep the default line spacing. There are of course fonts with extreme heights
+(like the Computer Modern Dunhill variant) but no one will use those artistic
+variants in a math document. If you want to go fancy and distinctive, Antykwa is
+a good choice and that one actually scores pretty good with the defaults!
+
+\CheckThemA{antykwa}
+
+\CheckThemB{antykwa}
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+So, should we enable profiling on mixed text|-|math documents or not? One
+possible reason for not doing it is that it adds overhead, but in practice it's
+not that much compared to processing the rest. It is no problem to find
+complaints on the internet about \LUATEX\ performing worse than its ancestors so
+if you're in that category: don't use profiling because it sets you back a few
+percent runtime. However, when you're a demanding \CONTEXT\ user who mixes in a
+lot of math, you might give it a try. It will intercept a couple of cases where
+struts (assuming structure is used) trigger a line skip, and it might also catch
+a couple of cases where \TEX\ found lines getting too close. Tweaking the \type
+{factor} and \type {step} can actually be fun. Because it does influence page
+breaks it is not something to be applied last minute. And, talking performance,
+this kind of vertical optimization comes cheaper than horizontal optimization
+using expansion (hz) and protrusion.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% \framed[width=7cm,offset=overlay,align={lohi,normal}]{\getbuffer}
+% \framed[width=7cm,offset=overlay,align={lohi,normal,profile}]{\getbuffer}
+
+% maybe add an interline callback ...
+
+% Test different fonts
+% lots: modern, bonum, ebgaramond,
+% some: pagella, termes, stixtwo
+% few:  lucida, dejavu, antykwa, kurier, erewhon, libertinus
+
+% Strut can force lineheight and depth.
+
+% antykwa size of vertical bar is maybe too big. Change step?
+
+% antykwa \Biggl(1+\frac{1}{n}\Biggr)^n
+
+% cambria, superscripts sit a bit high (we did not change it)
+
+% the role of font parameters (superscripts... not enough steps in i.e. square roots)
+
+% dp / ht relation and struts

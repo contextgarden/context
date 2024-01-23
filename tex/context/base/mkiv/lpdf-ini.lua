@@ -1417,7 +1417,7 @@ do
         local t = type(str)
         if t == "string" then
             local Y, M, D, h, m, s, Zs, Zh, Zm = match(str,"^(%d%d%d%d)%-(%d%d)%-(%d%d)T(%d%d):(%d%d):(%d%d)([%+%-])(%d%d):(%d%d)$")
-            return Y and format("D:%s%s%s%s%s%s%s%s'%s'",Y,M,D,h,m,s,Zs,Zh,Zm)
+            return Y and format("D:%s%s%s%s%s%s%s%s'%s",Y,M,D,h,m,s,Zs,Zh,Zm)
         else
             return osdate("D:%Y%m%d%H%M%S",t == "number" and str or ostime()) -- maybe "!D..." : universal time
         end

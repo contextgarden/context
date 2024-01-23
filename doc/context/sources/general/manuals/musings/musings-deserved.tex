@@ -1,0 +1,356 @@
+% language=us runpath=texruns:manuals/musings
+
+% \enableexperiments[fonts.compact]
+
+\startcomponent musings-deserved
+
+\environment musings-style
+
+\startchapter[title={We deserved it}]
+
+\startsection[title={Introduction}]
+
+Among the first macros we cooked up are the ones that we used to typeset
+chemistry. They come under the \PPCHTEX, and it was mostly done by Hans, Ton and
+Tobias. Over time rendering structures by \PICTEX\ got replaced by \PSTRICKS\ and
+later \METAPOST. When we moved to \MKIV\ all that got reimplemented, this time by
+Hans and Alan and we stuck to \METAPOST. We actually also updated the syntax and,
+because old documents were supposed to be rendered by \MKII\ we took the liberty
+to sacrifice some compatibility for a more complete and consistent feature set.
+However we never came to updating the existing manual and the new one became work
+in progress. We didn't really needed the code and Alan, who did need it, knew
+what was there anyway.
+
+Then Mikael had some questions and it pushed me into manual mode: upgrade the old
+one and combine it with the pending new one. That also made me wonder if we could
+now benefit from some new features in the math engine, which in turn could
+simplify the code base. This is typically something that takes weeks instead of
+hours so better do it right from the start. And, while at it, one then of course
+ends up in looking (again) at arrows (or more specifically: stackers) and from
+that to \UNICODE, which in turn is good for some introspection.
+
+\stopsection
+
+\startsection[title={Implementation}]
+
+Among the (old) complications in dealing with chemistry are the following:
+
+\startitemize[packed]
+\startitem
+    Simple inline chemical formulas (snippets) of the kind \ic { U __92 ^^ 238 ^
+    +} where scripts need to be properly vertically aligned and an upright font
+    is used.
+\stopitem
+\startitem
+    In running text one wants to use \ic {A + B -> C} but also \ic {A + B <-> C}
+    or \ic {A + B <=> C}.
+\stopitem
+\startitem
+    Even more symbolic representations might be on the wish list, think of
+    \ic {A - B -- C --- D}.
+\stopitem
+\stopitemize
+
+There is more but these examples demonstrate a few features: we need prescripts,
+proper spacing, line breaks at preferred spots, and some symbols.
+
+\start
+
+\setupalign[profile]
+% \showglyphs \showmakeup[boxes] \showstruts
+\setupmathstackers[reverse][strut=no]
+
+\startitemize[packed]
+\startitem
+    And of course one also wants to annotate like \ic {A + B ->{here} C} but also
+    \ic {A + B <->{}{there} C} or \ic {A + B <=>{where}{every} C} where the
+    arrows stretch with the text.
+\stopitem
+\startitem
+    It would be nice if we can also use the advanced alignment options that are
+    available in math but discussing this is beyond this musing.
+\stopitem
+\stopitemize
+
+\stop
+
+\stopsection
+
+\startsection[title=Unicode]
+
+Implementing the above has never been that hard but just became a little easier
+in \LMTX. However, when doing that I wondered if there were more than the already
+present symbols to be taken care of. And so I did a search on the internet for
+\quotation {unicode and chemistry}. One of the first hits was \quotation {Five
+symbols used in chemistry L2/23-193}, a request for some more arrows. One can
+search the web for it and see if it is still around. When staring at I wondered a
+bit about the descriptions:
+
+\starttyping
+BALANCED EQUILIBRIUM ARROW
+EQUILIBRIUM ARROW LYING TOWARD THE RIGHT
+EQUILIBRIUM ARROW LYING TOWARD THE LEFT
+REACTION DOES NOT PROCEED
+STANDARD STATE SYMBOL
+\stoptyping
+
+When later I discussed this with Mikael we came to the conclusion that \quote
+{LYING} probably means \quote {LEANING} but we're not chemists so we can be
+wrong. The proposed rendering of the first three boils down to arrows with half a
+tip, also known as harpoons: long left and right pointing ones stacked for the
+first and long over short ones for the other two.
+
+\startlinecorrection
+\setupmathstackers[mathematics][strut=no]
+\startcombination[nx=3,ny=1]
+    {\vbox{\offinterlineskip\glyphscale2000
+        \ruledhbox to 2cm{$\mrightharpoonup {\hskip2cm}{}$}
+        \ruledhbox to 2cm{$\mleftharpoondown{\hskip1cm}{}\hss$}
+    }} {}
+    {\vbox{\offinterlineskip\glyphscale2000
+        \ruledhbox to 2cm{$\mrightharpoonup {\hskip2cm}{}$}
+        \ruledhbox to 2cm{$\mleftharpoondown{\hskip2cm}{}$}
+    }} {}
+    {\vbox{\offinterlineskip\glyphscale2000
+        \ruledhbox to 2cm{$\mleftharpoonup{\hskip2cm}{}$}
+        \ruledhbox to 2cm{\hss$\mrightharpoondown{\hskip1cm}{}$}
+    }} {}
+\stopcombination
+\stoplinecorrection
+
+There are several observation to make here. First of all, there is a whole bunch
+of arrows (stacked and single) that bare descriptions mentioning them being
+arrows. There is no meaning in them. One can even wonder why some are there. So,
+in order to be in sync with that it makes more sense to add a few more harpoons.
+Cooking up names like this serves no purpose.
+
+If we look at the proposed shapes (which are actually different from those used
+in \TEX\ packages that are references) one can actually wonder about the way
+these are supposed to stretch. The short variant is not different from existing
+double harpoons in which case the meaning is lost. Then when we go longer we get
+this empty space and then we should wonder how the extensible should kick in: how
+do the left- and rightmost fixed glyphs and the one or two middle repeated ones
+behave?
+
+\startlinecorrection
+\setupmathstackers[mathematics][strut=no]
+\startcombination[nx=3,ny=1]
+    {\vbox{\offinterlineskip\glyphscale2000
+        \ruledhbox to 1cm{$\mrightharpoonup {\hskip1cm}{}$}
+        \ruledhbox to 1cm{$\mleftharpoondown{\hskip1cm}{}\hss$}
+    }} {}
+    {\vbox{\offinterlineskip\glyphscale2000
+        \ruledhbox to 1cm{$\mrightharpoonup {\hskip1cm}{}$}
+        \ruledhbox to 1cm{$\mleftharpoondown{\hskip1cm}{}$}
+    }} {}
+    {\vbox{\offinterlineskip\glyphscale2000
+        \ruledhbox to 1cm{$\mleftharpoonup{\hskip1cm}{}$}
+        \ruledhbox to 1cm{\hss$\mrightharpoondown{\hskip1cm}{}$}
+    }} {}
+\stopcombination
+\stoplinecorrection
+
+Why don't we just use the next three? After all, as with math, how we interpret
+symbols depends on how we define them to be read. Sometimes Mikael and I get a
+good laugh over some of the shapes bound to math code points and we're sure that
+some legend is needed when using them.
+
+\startlinecorrection
+\setupmathstackers[mathematics][strut=no]
+\startcombination[nx=3,ny=1]
+    {\vbox{\offinterlineskip\glyphscale2000
+        \ruledhbox to 2cm{$\mleftrightharpoons{\hskip2cm}{}$}
+    }} {}
+    {\vbox{\offinterlineskip\glyphscale2000
+        \ruledhbox to 2cm{$\mrightharpoonup {\hskip2cm}{}$}
+    }} {}
+    {\vbox{\offinterlineskip\glyphscale2000
+        \ruledhbox to 2cm{$\mleftharpoondown{\hskip2cm}{}\hss$}
+    }} {}
+\stopcombination
+\stoplinecorrection
+
+Of course there are and can be conventions but getting some agreement is not
+trivial. We only have to look at \UNICODE\ math to see some issues, like:
+
+\startitemize[packed]
+\startitem
+    The repertoire of symbols is large but to a large extent somewhat arbitrary:
+    what was known (or assumed) to be used got in there. There is a difference
+    between a left, right and even middle bar, just like there is a left and
+    right brace.
+\stopitem
+\startitem
+    There are alphabets but they come with holes. We're not supposed to
+    distinguish between a Plank constant \quote {h} and variable \quote {h}. We
+    can distinguish the greek uppercase \type {A} from a latin \type {A} so
+    mathematicians are less convincing.
+\stopitem
+\startitem
+    One can define extensible fences with components but not all of them. There
+    are no constructors for arrows. Some likely come from old encodings but
+    why add these and not be consistent.
+\stopitem
+\stopitemize
+
+Plugging a hole in an alphabet is doable. Adding some missing snippets for fences
+is also no big deal, just because we have a limited set. Making bars consistent
+also is not hard. But I don't see it happen soon. After all, we're decades along
+the road and no one bothered much about it till now, and above all, it will never
+be complete. I wonder if there ever has been a good analysis, extensive
+description and a watertight arguing from the \TEX\ community about what should
+go in \UNICODE\ and fonts. It was easy to point to existing fonts and the names
+used in macro packages and that shows.
+
+To the above we can add:
+
+\startitemize[packed]
+\startitem
+    There are some combinations of arrows and e.g.rules missing that could have
+    made adding composed constructs easier when there is demand for that. After
+    all, this is what existing characters are also used for. And these chemistry
+    ones fit into this.
+\stopitem
+\stopitemize
+
+Our solution is to just accept that the \TEX\ community got what it deserved: a
+bit of chaos, unreliable cur'n'paste support, symbols but no meaning, imperfect
+\UNICODE\ coverage and therefore imperfect coverage in fonts. The good news is
+that we can adapt. But we have to be honest: it is not perfect.
+
+\stopsection
+
+\startsection[title=How about]
+
+As mentioned we have a problem with base glyphs versus extensibles and these
+combined hooked things are bad for that. In the chemistry macros the first four
+are the ones that we always had and the last two are examples of how we can
+render the two leaning extras.
+
+\starttabulate[|c||c||]
+\NC \type {<->} \NC \ic {A + B <-> C}\NC \type {<-->} \NC \ic {A + B <--> C} \NC \NR
+\NC \type {->}  \NC \ic {A + B  -> C}\NC \type {-->}  \NC \ic {A + B  --> C} \NC \NR
+\NC \type {<-}  \NC \ic {A + B <-  C}\NC \type {<--}  \NC \ic {A + B <--  C} \NC \NR
+\NC \type {<=>} \NC \ic {A + B <=> C}\NC \type {<==>} \NC \ic {A + B <==> C} \NC \NR
+\ML
+\NC \type {=>}  \NC \ic {A + B  => C}\NC \type {==>}  \NC \ic {A + B  ==> C} \NC \NR
+\NC \type {<=}  \NC \ic {A + B <=  C}\NC \type {<==}  \NC \ic {A + B <==  C} \NC \NR
+\stoptabulate
+
+Watch the longer should arrow. Not al fonts have it as extensible, which
+indicates that not that much thought has been put in usage patterns. That said,
+more interesting would be to use something like this, where we fake a character
+from two existing arrows:
+
+\startlinecorrection
+\switchtobodyfont[cambria]
+\definemathextensible [mathematics] [mleftarrowdashed]  ["21E0]
+\definemathextensible [mathematics] [mrightarrowdashed] ["21E2]
+\setupmathstackers[mathematics][strut=no]
+\startcombination[nx=4,ny=1]
+    {\vbox{\offinterlineskip\glyphscale2000
+        \ruledhbox{$\mrightarrow     {}{}$}
+        \ruledhbox{$\mleftarrowdashed{}{}$}
+    }} {}
+    {\vbox{\offinterlineskip\glyphscale2000
+        \ruledhbox{$\mrightarrow{}{}$}
+        \ruledhbox{$\mleftarrow {}{}$}
+    }} {}
+    {\vbox{\offinterlineskip\glyphscale2000
+        \ruledhbox{$\mrightarrowdashed{}{}$}
+        \ruledhbox{$\mleftarrow       {}{}$}
+    }} {}
+    {\vbox{\offinterlineskip\glyphscale2000
+        \ruledhbox{$\mrightarrowdashed{}{}$}
+        \ruledhbox{$\mleftarrowdashed {}{}$}
+    }} {}
+%     {\vbox{\offinterlineskip\glyphscale2000
+%         \ruledhbox to 2cm{$\mrightarrow     {\hskip2cm}{}$}
+%         \ruledhbox to 2cm{$\mleftarrowdashed{\hskip2cm}{}$}
+%     }} {}
+%     {\vbox{\offinterlineskip\glyphscale2000
+%         \ruledhbox to 2cm{$\mrightarrow{\hskip2cm}{}$}
+%         \ruledhbox to 2cm{$\mleftarrow {\hskip2cm}{}$}
+%     }} {}
+%     {\vbox{\offinterlineskip\glyphscale2000
+%         \ruledhbox to 2cm{$\mrightarrowdashed{\hskip2cm}{}$}
+%         \ruledhbox to 2cm{$\mleftarrow       {\hskip2cm}{}$}
+%     }} {}
+%     {\vbox{\offinterlineskip\glyphscale2000
+%         \ruledhbox to 2cm{$\mrightarrowdashed{\hskip2cm}{}$}
+%         \ruledhbox to 2cm{$\mleftarrowdashed {\hskip2cm}{}$}
+%     }} {}
+\stopcombination
+\stoplinecorrection
+
+However, not all math fonts provide these dashed arrows and therefore here we
+have to use Cambria (here). And even if it has such dashed hashes, they don't
+come with an extensible. I just want to point out that by looking at what we
+already have, it might make more sense to extend some (combinations) of those.
+
+It is good to notice that these arrows come with qualifications like \quotation
+{code for undetermined script}, so one can wonder how much they relate to math.
+Actually the fact that we have these holes in alphabets already indicates that
+math is not really seen as script. Occasionally (old) scripts get added and they
+get lots of code points, while one can argue for sharing there too, but maybe
+their status is higher than the status of math. In \OPENTYPE\ fonts math is seen
+as script but that's because it is basically a selector. One can actually argue
+for chemistry as a math language in fonts.
+
+The main point I want to make here is that adding some new symbol that is
+somewhere used but never made it in \UNICODE\ in the first place needs some
+thought. Especially when used in a setting of formulas, where size matters.
+
+\stopsection
+
+\startsection[title=Also]
+
+In \CONTEXT\ we have stackers: text above and|/|or below an extensible, or
+extensibles above and|/|or below text. The mentioned arrows are using this
+mechanism. However, when playing with \type {\iff}, \typ {\implies} and \typ
+{impliedby} in math mode, we noticed some spacing side effects. Originally these
+double arrows got skips around them but that interfered with our alignment
+mechanism. However, that could be solved without much hassle by letting the
+commands check the nature (class) of the previous atom (an indication of being at
+the start of a next alignment line). In the end that we decided that an extra
+\quote {implication} class was more flexible than adding glue. More interesting
+was the observation that in Latin Modern and some other math fonts these arrows
+have different dimensions, which leads to yet another alignment issue.
+
+Again that could be solved by taking the usage into account but one can wonder
+why the opportunity was lost to make the glyphs consistent with each other, read:
+come up with a proper analysis of requirements based on decades of \TEX\ usage.
+At least there could have been recommended alternates. But wait, aren't
+alternates kind of bad as they demand user intervention (choices)? Sure, but
+there are more examples of alternates, take the \quote {\dotlessi} (dotless i).
+It has a textual code point but is not in the math alphabets, so one needs
+alternates as way out (and yes, fonts then have a blackboard and fraktur dotless
+i).
+
+One can argue that these are visual aspects, but with arrows as well as symbols,
+we have ended up in a somewhat curious inconsistent situation: there are no
+established command names for the single arrows, so there we speak \type
+{\..arrow..} while for some there are names, like \type {\iff}. The same is true
+for characters like the dotless i and j. Some mathematicians use these in the
+same way as some hard- and software vendors put an \quote {i} in front of a
+product name, but in order to get it one has to communicate in terms of \type
+{\dotless.} or somthing with an \type {i} in the macro name.
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+To come back to updating chemistry. It makes no sense to add much more.
+Implementing the left- and right leaning is easy with existing hooks so this is
+what we will do. Proper math fonts have these and how likely is it that existing
+math fonts get new ones? If it ever comes to more chemistry in \UNICODE\ a
+handful of them will not help much. It is probably not that hard to find an
+existing symbol that can act as standard state symbol. In fact, some code points
+have several additional descriptions so we could just add some to existing one.
+It's not like we have gone over the top with doing that for math yet.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

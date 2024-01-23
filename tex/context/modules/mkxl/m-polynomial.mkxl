@@ -1,0 +1,900 @@
+%D \module
+%D   [       file=m-polynomial,
+%D        version=2023.8.18,
+%D          title=\CONTEXT\ Math Module,
+%D       subtitle=Polynomials,
+%D         author={Mikael Sundqvist & Hans Hagen},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% maybe just m-polynomial like m-matrix
+
+% built-in
+%
+% alternative=align:normal % uses align mechanism (carry over spacing)
+% alternative=align:split  % uses align mechanism
+% alternative=text:normal  % not aligned
+% alternative=text:align   % uses alignhere etc
+% alternative=default      % same as text:align (can be normal instead)
+% alternative=none         % only processing
+%
+% user:
+%
+% alternative=somename     % \startsetups[math:polynomial:somename]
+
+\startluacode
+if not tex.issetup then -- will become a faster helper
+
+    function tex.issetup(n) -- will become a faster helper
+        return tex.isdefined(tokens.getters.macro("??setup") .. ":" .. n)
+    end
+
+end
+
+local tonumber = tonumber
+
+local context   = context
+local copytable = table.copy
+local round     = math.round
+
+local shows   = { }
+local helpers = { }
+
+local implement = interfaces.implement
+
+local v_none = interfaces.variables.none
+
+local ctx_NC         = context.NC
+local ctx_NR         = context.NR
+local ctx_startcolor = context.startcolor
+local ctx_stopcolor  = context.stopcolor
+
+local result = {
+    n           = 0,
+    numerator   = { },
+    denominator = { },
+    steps       = { },
+}
+
+do
+
+    local function show(t,split,symbol,mark)
+        local n = #t
+        local done = false
+        for i=n,1,-1 do
+            local tn = t[i]
+            ctx_NC()
+            if not tn or tn == 0 then
+                if split then
+                    ctx_NC()
+                end
+            else
+                if mark then ctx_startcolor { mark } end
+                if done and tn > 0 then
+                    context("+")
+                end
+                if tn < 0 then
+                    context("-")
+                    tn = - tn
+                end
+                if split then
+                    if mark then ctx_stopcolor() end
+                    ctx_NC()
+                    if mark then ctx_startcolor { mark } end
+                end
+                if i > 1 then
+                    if tn ~= 1 then
+                        context("%.3N",tn)
+                    end
+                    context(symbol)
+                else
+                   context("%.3N",tn)
+                end
+                if i > 2 then
+                    context("^{%s}",i-1)
+                end
+                if mark then ctx_stopcolor() end
+                done = true
+            end
+        end
+        ctx_NR()
+    end
+
+    local function default(settings)
+        local split  = settings.split
+        local symbol = settings.symbol or "x"
+        context.startalign {
+            n     = (split and 2 or 1) * result.n,
+            align = "all:right",
+        }
+            local steps    = result.steps
+            local previous = result.numerator
+            show(result.denominator,split,symbol,"blue")
+            show(result.numerator,split,symbol)
+            for i=1,#steps do
+                local current = steps[i].numerator
+                if previous then
+                    show(helpers.subtract(previous,current),split,symbol,"red")
+                end
+                show(current,split,symbol)
+                previous = current
+            end
+            show(result.quotient,split,symbol,"green")
+         -- inspect(result)
+        context.stopalign()
+    end
+
+    shows["align:normal"] = function(settings) default(settings,false) end
+    shows["align:split"]  = function(settings) default(settings,true)  end
+
+end
+
+do
+
+    local function show(t,symbol)
+        local n = #t
+        local done = false
+        for i=n,1,-1 do
+            local tn = t[i]
+            if not tn or tn == 0 then
+                -- ignore
+            else
+                if done and tn > 0 then
+                    context("+")
+                end
+                if tn < 0 then
+                    context("-")
+                    tn = - tn
+                end
+                if i > 1 then
+                    if tn ~= 1 then
+                        context("%.3N",tn)
+                    end
+                    context(symbol)
+                else
+                   context("%.3N",tn)
+                end
+                if i > 2 then
+                    context("^{%s}",i-1)
+                end
+                done = true
+            end
+        end
+    end
+
+    helpers.show = show
+
+    local function show_n_over_d(n,d,index,symbol)
+        local colors = result.colors
+        local c  = colors and colors[index]
+        local cn = c and (c.ns or c.n)
+        local cd = c and (c.ds or c.d)
+        context.frac(
+            function()
+                if cn then
+                    ctx_startcolor { cn }
+                        show(n,symbol)
+                    ctx_stopcolor()
+                else
+                    show(n,symbol)
+                end
+            end,
+            function()
+                if cd then
+                    ctx_startcolor { cd }
+                        show(d,symbol)
+                    ctx_stopcolor()
+                else
+                    show(d,symbol)
+                end
+            end
+        )
+    end
+
+    local function show_what(w,what,index,symbol)
+        local colors = result.colors
+        local c = colors and colors[index]
+        local cw = c and c[what]
+        if cw then
+            ctx_startcolor { cw }
+                show(w,symbol)
+            ctx_stopcolor()
+        else
+            show(w,symbol)
+        end
+    end
+
+    local function show_n(n,index,symbol) show_what(n,"n",index,symbol) end
+    local function show_d(d,index,symbol) show_what(d,"d",index,symbol) end
+    local function show_q(q,index,symbol) show_what(q,"q",index,symbol) end
+
+    helpers.show_n        = show_n
+    helpers.show_d        = show_d
+    helpers.show_q        = show_q
+    helpers.show_n_over_d = show_n_over_d
+
+    local function lines(settings,align)
+        local steps    = result.steps
+        local nofsteps = #steps
+        local colors   = result.colors
+        local symbol   = result.symbol or "x"
+        show_n_over_d(result.numerator,result.denominator,0,symbol)
+        if nofsteps > 0 then
+            if align then
+                context.alignhere()
+            end
+            context(steps[1].clipped and "≈" or "=")
+            for i=1,nofsteps do
+                local step = steps[i]
+                show_q(step.quotient,i,symbol)
+                if not helpers.iszero(step.numerator) then
+                    context("+")
+                    show_n_over_d(step.numerator,result.denominator,i,symbol)
+                end
+                if i < nofsteps then
+                    if align then
+                        context.breakhere()
+                    end
+                    context(step.clipped and "≈" or "=",symbol)
+                end
+            end
+        else
+         -- context.quad()
+         -- context.mtext("(no quotient)")
+        end
+    end
+
+    shows["text:normal"] = function(settings) lines(settings,false) end
+    shows["text:align"]  = function(settings) lines(settings,true)  end
+
+end
+
+do
+
+    local function subtract(n,d)
+        local t = { }
+        for i=1,#d do
+             t[i] = n[i] - d[i]
+        end
+        return t
+    end
+
+    local function negate(v)
+        local t = { }
+        for i=1,#v do
+            t[i] = -v[i]
+        end
+        return t
+    end
+
+    local function iszero(t)
+        for i=1,#t do
+            if t[i] ~= 0 then
+                return false
+            end
+        end
+        return true
+    end
+
+    local function last(t)
+        for i=#t,1,-1 do
+            local ti = t[i]
+            if ti ~= 0 then
+                return i
+            end
+        end
+        return false
+    end
+
+    local meps <const> = -0.000001
+    local peps <const> =  0.000001
+
+    local function solve(settings)
+        local numerator   = settings.numerator
+        local denominator = settings.denominator
+        if type(numerator) == "string" then
+            numerator          = utilities.parsers.settings_to_array(numerator)
+            settings.numerator = numerator
+        end
+        if type(denominator) == "string" then
+            denominator          = utilities.parsers.settings_to_array(denominator)
+            settings.denominator = denominator
+        end
+        local n = #numerator
+        local d = #denominator
+        for i=1,n do numerator  [i] = tonumber(numerator  [i]) or 0 end
+        for i=1,d do denominator[i] = tonumber(denominator[i]) or 0 end -- proper numbers
+        for i=1,n do denominator[i] = tonumber(denominator[i]) or 0 end
+        --
+        if d > n then
+            logs.report("polynomial","denominator has a higher degree")
+            -- kind of fatal error
+        end
+        --
+        local nlast    = last(numerator)
+        local dlast    = last(denominator)
+        local steps    = { }
+        local quotient = { }
+        result   = {
+            n           = n,
+            numerator   = numerator,
+            denominator = denominator,
+            steps       = steps,
+            colors      = settings.colors,
+            symbol      = settings.symbol or "x",
+        }
+        for i=1,n do
+            quotient[i] = 0
+        end
+        while nlast and dlast and nlast >= dlast do
+            numerator = copytable(numerator)
+            local shift  = nlast - dlast
+            local nvalue = numerator[nlast]
+            local dvalue = denominator[dlast]
+         -- local factor = nvalue // dvalue
+            local factor = nvalue / dvalue
+            local clipped = false
+            for i=1,n do
+                 local ni = numerator[i]
+                 local di = denominator[i-shift] or 0
+                 local ni = ni - factor * di
+                 if ni ~= 0 and ni > meps and ni < peps then
+                     ni = 0
+                     clipped = true
+                 end
+                 numerator[i] = ni
+            end
+            quotient[shift+1] = factor
+            steps[#steps+1]  = {
+                numerator = numerator,
+                factor   = factor,
+                nvalue   = nvalue,
+                dvalue   = dvalue,
+                shift    = shift,
+                quotient = copytable(quotient),
+                clipped  = clipped
+            }
+            local l = last(numerator)
+            if l == nlast then
+                break
+            end
+            nlast = l
+        end
+        return result
+    end
+
+    helpers.last     = last
+    helpers.subtract = subtract
+    helpers.negate   = negate
+    helpers.iszero   = iszero
+    helpers.solve    = solve
+
+    shows[v_none] = function(settings)
+        --
+    end
+
+    shows.default = shows["text:normal"]
+
+    local function tocolors(colors)
+        if type(colors) == "string" then
+            local list = utilities.parsers.settings_to_hash(colors)
+            local done = { }
+            for k, v in next, list do
+                done[tonumber(k) or 0] = utilities.parsers.settings_to_hash(v)
+            end
+            return done
+        end
+    end
+
+    implement {
+        name      = "polynomial",
+        arguments =  {
+            {
+                { "alternative" },
+                { "numerator" },
+                { "denominator" },
+                { "split", "boolean" },
+                { "colors" },
+                { "symbol" },
+            },
+        },
+        actions   = function(settings)
+            settings.colors = tocolors(settings.colors)
+            result = solve(settings)
+            local alternative = settings.alternative or "default"
+            if shows[alternative] then
+                shows[alternative](settings)
+            else
+                local s = "math:polynomial:" .. alternative
+                if tex.issetup(s) then
+                    context.formatted.directsetup(s)
+                else
+                    shows.default(settings)
+                end
+            end
+        end
+    }
+
+    local show = helpers.show
+
+    local function getcolor(n,what)
+        local colors = result.colors
+        local c = colors and colors[n]
+        return c and c[what]
+    end
+
+    implement {
+        name      = "polynomialsteps",
+        usage     = "value",
+        actions   = function()
+            return tokens.values.integer, #result.steps
+        end
+    }
+
+    implement {
+        name      = "polynomialfactor",
+        arguments = "integer",
+        actions   = function(n)
+            local s = result.steps[n]
+            if s and s.factor then
+                context(round(s.factor))
+            else
+                context(0)
+            end
+        end,
+    }
+
+    implement {
+        name      = "polynomialshift",
+        arguments = "integer",
+        actions   = function(n)
+            local s = result.steps[n]
+            if s and s.shift then
+                context(round(s.shift))
+            else
+                context(0)
+            end
+        end,
+    }
+
+
+-- tokens.converters = { }
+--
+-- local getexpansion = token.getexpansion
+--
+-- function tokens.converters.tonumber(s)
+--     return tonumber(s and getexpansion([[\noexpand\the\numexpr ]] .. s)) or 0
+-- end
+--
+-- interfaces.implement {
+--     name      = "demo",
+--     public    = true,
+--     arguments = "optional",
+--     actions = function(s)
+--         context(tokens.converters.tonumber(s))
+--     end
+-- }
+
+
+    local function whatever(kind,s)
+        if kind == "-" then
+            s = helpers.negate(s)
+        end
+        if kind == "+" or kind == '-' then
+            for i=#s,1,-1 do
+                if s[i] < 0 then
+                    break
+                elseif s[i] > 0 then
+                    context("+")
+                    break
+                end
+            end
+        end
+        helpers.show(s,result.symbol)
+    end
+
+    implement {
+        name      = "polynomialnumerator",
+        arguments = { "string", "integer" },
+        actions   = function(kind,n)
+            if n > 0 then
+                local s = result.steps[n]
+                if s then
+                    whatever(kind,s.numerator)
+                end
+            else
+                whatever(kind,result.numerator)
+            end
+        end
+    }
+
+    implement {
+        name      = "polynomialdenominator",
+        arguments = { "string", "integer" },
+        actions   = function(kind,n)
+            whatever(kind,result.denominator)
+        end,
+    }
+
+    implement {
+        name      = "polynomialquotient",
+        arguments = { "string", "integer" },
+        actions   = function(kind,n)
+            if n > 0 then
+                local s = result.steps[n]
+                if s then
+                    whatever(kind,s.quotient)
+                end
+            end
+        end,
+    }
+
+    implement {
+        name      = "polynomialstep",
+        arguments = { "string", "integer" },
+        actions   = function(kind,n)
+            local s = n > 0 and result.steps[n] or result
+            if s then
+                helpers.show_n_over_d(s.numerator,result.denominator,n,result.symbol)
+            end
+        end
+    }
+
+    implement {
+        name      = "polynomialquotientstep",
+        arguments = { "string", "integer" },
+        actions   = function(kind,n)
+            local s = result.steps[n]
+            if s then
+                local f = s.factor
+                if n > 1 then
+                    local p = result.steps[n-1]
+                    s = helpers.subtract(s.quotient,p.quotient)
+                else
+                    s = s.quotient
+                end
+                if kind == "-" then
+                    if f > 0 then
+                        context("-")
+                    else
+                        s = helpers.negate(s)
+                        context("+")
+                    end
+                elseif kind == "+" then
+                    if f > 0 then
+                        context("+")
+                    end
+                end
+                helpers.show_q(s,n,result.symbol)
+            end
+        end,
+    }
+
+    implement {
+        name      = "ifpolynomialclipped",
+        arguments = "integer",
+        usage     = "condition",
+        public    = true,
+        actions   = function(n)
+            local s = result.steps[n]
+            return tokens.values.boolean, s and s.quotient
+        end,
+    }
+
+    implement {
+        name      = "ifpolynomialnumerator",
+        arguments = "integer",
+        usage     = "condition",
+        public    = true,
+        actions   = function(n)
+            local s
+            if n > 0 then
+                s = result.steps[n]
+            else
+                s = result
+            end
+            return tokens.values.boolean, s and not helpers.iszero(s.numerator)
+        end
+    }
+
+    implement {
+        name      = "polynomialsymbol",
+        public    = true,
+        protected = true,
+        actions   = function()
+            context(result.symbol)
+        end,
+    }
+
+end
+
+\stopluacode
+
+\unprotect
+
+\installcorenamespace {polynomial}
+
+\installparameterhandler\??polynomial {polynomial}
+\installsetuphandler    \??polynomial {polynomial}
+
+\setuppolynomial
+  [\c!split=\v!no,
+   \c!alternative=text:align,
+   \c!symbol=x]
+
+\tolerant\protected\def\polynomial[#S#1]#*[#2]#*[#3]%
+  {\begingroup
+   \ifhastok={#1}%
+     \setupcurrentpolynomial[#1]%
+     \donetrue
+   \else
+     \donefalse
+   \fi
+   \clf_polynomial {
+      numerator   \ifdone{#2}\else{#1}\fi
+      denominator \ifdone{#3}\else{#2}\fi
+      alternative {\polynomialparameter\c!alternative}
+      colors      {\polynomialparameter\c!color}
+      symbol      {\polynomialparameter\c!symbol}
+      split       \ifcstok{\polynomialparameter\c!split}\v!yes true \else false\fi
+   }%
+   \endgroup}
+
+\tolerant\protected\def\polynomialsteps       {\the\clf_polynomialsteps}
+\tolerant\protected\def\polynomialfactor      [#1]{\clf_polynomialfactor      \numexpr\ifparameter#1\or#1\else\zerocount\fi\relax}
+\tolerant\protected\def\polynomialshift       [#1]{\clf_polynomialshift       \numexpr\ifparameter#1\or#1\else\zerocount\fi\relax}
+
+\tolerant\def\module_polynomial_component[#1]#*[#2]#*[#3]%
+  {\ifarguments
+   \or
+     #1{}\zerocount
+   \or
+     #1{}\numexpr\ifparameter#2\or#2\else\zerocount\fi\relax
+   \else
+     #1{#2}\numexpr\ifparameter#3\or#3\else\zerocount\fi\relax
+   \fi}
+
+\protected\def\polynomialnumerator   {\module_polynomial_component[\clf_polynomialnumerator   ]}
+\protected\def\polynomialdenominator {\module_polynomial_component[\clf_polynomialdenominator ]}
+\protected\def\polynomialquotient    {\module_polynomial_component[\clf_polynomialquotient    ]}
+\protected\def\polynomialquotientstep{\module_polynomial_component[\clf_polynomialquotientstep]}
+\protected\def\polynomialstep        {\module_polynomial_component[\clf_polynomialstep        ]}
+
+\startsetups math:polynomial:complete
+    \frac {
+        \polynomialnumerator
+    } {
+        \polynomialdenominator
+    }
+    \alignhere
+    \localcontrolledrepeat \polynomialsteps {
+        =
+        \ifnum\currentloopiterator>\plusone
+            \polynomialquotient[\currentloopiterator - 1] +
+        \fi
+        \frac {
+            \polynomialquotientstep[\currentloopiterator]
+            (\polynomialdenominator)
+            \polynomialnumerator[+][\currentloopiterator - 1]
+% \polynomialnumerator[-][\currentloopiterator - 1]
+            \polynomialquotientstep[-][\currentloopiterator]
+% \polynomialquotientstep[+][\currentloopiterator]
+            (\polynomialdenominator)
+        } {
+            \polynomialdenominator
+        }
+        \breakhere
+        =
+        \polynomialquotient[\currentloopiterator]
+        \ifpolynomialnumerator\currentloopiterator
+            +
+            \frac {
+                \polynomialnumerator[\currentloopiterator]
+            } {
+                \polynomialdenominator
+            }
+        \fi
+        \ifnum\currentloopiterator<\polynomialsteps
+            \breakhere
+        \fi
+    }
+\stopsetups
+
+\protect
+
+\continueifinputfile{m-polynomial.mkxl}
+
+\setuplayout[tight]
+
+\setuppapersize[A4,landscape][A4,landscape]
+
+\starttext
+
+\setuppolynomial[symbol=z]
+
+% \def\TempHack
+%   {\scratchcounter\setmathoptions\mathbinarycode
+%    \bitwiseflip\scratchcounter-\lookaheadforendclassoptioncode
+%    \setmathoptions\mathbinarycode\scratchcounter}
+%
+% \startformula
+% \TempHack
+% \polynomial
+%     [-5, -3,  3, -1, 1,  0, 2, -3, -2, -1, 4]
+%     [-8, -7, -5,  2, 8, -9, 1]
+% \stopformula
+
+% \startformula
+% \TempHack
+% \polynomial
+%     [split=yes]
+%     [-5, -3,  3, -1, 1,  0, 2, -3, -2, -1, 4]
+%     [-8, -7, -5,  2, 8, -9, 1]
+% \stopformula
+
+\def\TestPolynomial#1#2#3%
+  {\startformula
+   \polynomial
+      [alternative=#1]
+      [#2]
+      [#3]
+   \stopformula}
+
+% \page
+
+% \def\TestPolynomials#1#2%
+%   {\page
+%    \TestPolynomial{text:normal} {#1}{#2}
+%    \TestPolynomial{text:align}  {#1}{#2}
+%    \TestPolynomial{align:normal}{#1}{#2}
+%    \TestPolynomial{align:split} {#1}{#2}
+%    \page
+%    }
+%
+% \TestPolynomials
+%     {7, -5,  2, 3}
+%     {3, 0, 1}
+%
+% \TestPolynomials
+%     {7, -5,  2, 3}
+%     {3,  0,  2.7}
+%
+% \TestPolynomials
+%     {7, -5,  2, 3}
+%     {3,  0,  1}
+
+\startformula
+\polynomial
+  [color={1={n=red,d=green,q=blue},2={n=cyan,d=magenta,q=orange}}]
+  [7, -5,  2, 3, 2]
+  [3,  0,  1]
+\stopformula
+
+\polynomial
+  [alternative=none,
+   color={1={n=red,d=green,q=blue},2={n=cyan,d=magenta,q=orange,ds=darkgray}}]
+  [7, -5,  2, 3, 2]
+  [3,  0,  1]
+
+numerator
+
+\startformula
+    \polynomialnumerator
+\stopformula
+
+numerator 2
+
+\startformula
+    \polynomialnumerator[2]
+\stopformula
+
+denominator
+
+\startformula
+    \polynomialdenominator
+\stopformula
+
+quotient 1/2/3
+
+\startformula
+    \polynomialquotient[1]/
+    \polynomialquotient[2]/
+    \polynomialquotient[3]
+\stopformula
+
+quotientstep 1/2/3
+
+\startformula
+    \polynomialquotientstep[1]/
+    \polynomialquotientstep[2]/
+    \polynomialquotientstep[3]
+\stopformula
+
+steps
+
+\startformula
+    \polynomialsteps
+\stopformula
+
+factor
+
+\startformula
+    \polynomialfactor[2]
+\stopformula
+a
+shift
+
+\startformula
+    \polynomialshift[2]
+\stopformula
+
+
+\startformula
+    \frac {\polynomialnumerator}{\polynomialdenominator}
+    =
+    \polynomialquotient[1]
+    +
+    \frac {\polynomialnumerator[1]}{\polynomialdenominator}
+\stopformula
+
+\startformula
+\polynomial
+  [alternative=complete,
+   color={1={n=red,d=green,q=blue},2={n=cyan,d=magenta,q=orange,ds=darkgray}}]
+  [7, -5,  2, 3, 2]
+  [3,  0,  1]
+\stopformula
+
+% \ifpolynomialclipped1 YES \else NOP \fi
+
+\dorecurse\polynomialsteps{
+    \startformula
+        \polynomialstep[#1]
+    \stopformula
+}
+
+% \input tufte
+
+% \startformula
+%     \denominator
+%     \numerator[2]
+%     \frac{3x^3+2x^2-5x+7}{x^2+3}
+%     \alignhere
+%     = 3x + \frac{2x^2 - 14x + 7}{x^2+3}
+%     \breakhere
+%     = 3x + 2 + \frac{-14x+1}{x^2+3}
+% \stopformula
+
+% \input tufte
+
+% \startformula
+%     \frac{3x^3+2x^2-5x+7}{x^2+3}
+%     \alignhere
+%     = 3x + \frac{2x^2 - 14x + 7}{x^2+3}
+%     \breakhere
+%     = 3x + 2 + \frac{-14x+1}{x^2+3}
+% \stopformula
+
+% \input tufte
+
+% \TestPolynomials
+%     {-5, -3,  3, -1, 1,  0, 2, -3, -2, -1, 4}
+%     {-8, -7, -5,  2, 8, -9, 1}
+
+% \TestPolynomials
+%     {-1, 0, 1}
+%     {-1, 1}
+
+% \input tufte
+
+% \TestPolynomials
+%     {-1, 1}
+%     {-1, 0, 1}
+
+% \input tufte
+
+\stoptext

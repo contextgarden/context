@@ -1,0 +1,116 @@
+if not modules then modules = { } end modules ['libs-imp-openssl'] = {
+    version   = 1.001,
+    comment   = "companion to luat-lib.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local type = type
+local dirname = file.dirname
+
+local libname    = "openssl"
+local libfiles   = os.name == "windows"
+   and { "libcrypto-3-x64", "libssl-3-x64" }
+    or { "libcrypto",       "libssl" }
+
+local openssllib = resolvers.libraries.validoptional(libname)
+
+if not openssllib then return end
+
+local openssl_sign       = openssllib.sign
+local openssl_verify     = openssllib.verify
+local openssl_getversion = openssllib.getversion
+
+local report             = logs.reporter(libname)
+
+local function okay()
+    if resolvers.libraries.optionalloaded(libname,libfiles) then
+     -- openssllib.initialize()
+        okay = function() return true end
+    else
+        okay = function() return false end
+    end
+    return okay()
+end
+
+local messages = {
+    "invalid certificate file",
+    "invalid certificate",
+    "invalid private key",
+    "invalid data file",
+    "invalid signature",
+    "unable to open output file",
+    "unable to reset file",
+    "unable to save signature",
+    "incomplete specification",
+    "library is unitialized",
+}
+
+-- this     : datafile   = "oeps.tmp"
+-- or that  : data       = io.loaddata("oeps.tmp")
+-- mandate  : certfile   = "cert.pem"
+-- mandate  : password   = "test"
+-- optional : resultfile = "oeps.sig"
+
+local function sign(specification)
+    if okay() then
+        local t = type(specification)
+        if t == "table" then
+            local result, message = openssl_sign(specification)
+            if result then
+                return true, message
+            else
+                report(messages[message] or "unknown error")
+            end
+        else
+            report("invalid argument")
+        end
+    else
+        report("no openssl library loaded")
+    end
+    return false
+end
+
+local function verify(specification)
+    if okay() then
+        local t = type(specification)
+        if t == "table" then
+            local result, message = openssl_verify(specification)
+            if result then
+                return true, message
+            else
+                report(messages[message] or "unknown error")
+            end
+        else
+            report("invalid argument")
+        end
+    else
+        report("no openssl library loaded")
+    end
+    return false
+end
+
+local function getversion()
+    return okay() and openssl_getversion()
+end
+
+local openssl = {
+    getversion = getversion,
+    sign       = sign,
+    verify     = verify,
+    libfiles   = libfiles,
+    libfile    = libfiles[1],
+    libpath    = dirname(libfiles[1]),
+}
+
+package.loaded[libname] = openssl
+
+return openssl
+
+-- local result, message = openssl.sign {
+--     datafile   = "oeps.pdf",
+--     certfile   = "cert.pem",
+--     password   = "test",
+--     resultfile = "oeps.xxx",
+-- }

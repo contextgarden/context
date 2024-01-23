@@ -7,7 +7,7 @@
 --     copyright = 'LuaTeX Development Team',
 -- }
 
-LUATEXCOREVERSION = 1.120 -- we reflect the luatex version where changes happened
+LUATEXCOREVERSION = 1.161 -- we reflect the luatex version where changes happened
 
 -- This file overloads some Lua functions. The readline variants provide the same
 -- functionality as LuaTeX <= 1.04 and doing it this way permits us to keep the
@@ -33,8 +33,11 @@ if kpseused == 1 then
     local kpse_recordinputfile  = kpse.record_input_file
     local kpse_recordoutputfile = kpse.record_output_file
 
+    local kpse_outputnameok     = kpse.out_name_ok
+    local kpse_inputnameok      = kpse.in_name_ok
+
     local io_open               = io.open
-    local io_popen              = io.popen
+    local io_popen              = kpse.popen or io.popen -- should have been be in the kpse namespace
     local io_lines              = io.lines
 
     local fio_readline          = fio.readline
@@ -44,56 +47,48 @@ if kpseused == 1 then
     io.saved_lines              = io_lines -- always readonly
     mt.saved_lines              = mt_lines -- always readonly
 
-    local function luatex_io_open(name,how)
-        if not how then
-            how = 'r'
+    -- The version below is different from the luatex one (which is probably made for
+    -- LaTeX) because read should not be the default (e.g. when how == 'q'). Also in
+    -- that version record doesn't always work for write. How about append?
+
+    local function validinput(name,how)
+        if type(how) ~= "string" or how == "" then
+            how = "r"
         end
-        local f = io_open(name,how)
-        if f then
-            if type(how) == 'string' and find(how,'w') then
-                kpse_recordoutputfile(name,'w')
-            else
-                kpse_recordinputfile(name,'r')
+        return not find(how,"w") and kpse_inputnameok(name) and io_open(name,how)
+    end
+
+    local function validoutput(name,how)
+        return type(how) == "string" and find(how,"w") and kpse_outputnameok(name) and io_open(name,how)
+    end
+
+    local function luatex_io_open(name,how)
+        local handle = validinput(name,how)
+        if handle then
+            kpse_recordinputfile(name,"r")
+        else
+            handle = validoutput(name,how)
+            if handle then
+                kpse_recordoutputfile(name,"w")
             end
         end
-        return f
+        return handle
     end
 
     local function luatex_io_open_readonly(name,how)
-        if not how then
-            how = 'r'
-        else
-            how = gsub(how,'[^rb]','')
-            if how == '' then
-                how = 'r'
-            end
+        local handle = validinput(name,how)
+        if handle then
+            kpse_recordinputfile(name,"r")
         end
-        local f = io_open(name,how)
-        if f then
-            fio_recordfilename(name,'r')
-        end
-        return f
+        return handle
     end
 
-    local function luatex_io_popen(name,...)
-        local okay, found = kpse_checkpermission(name)
-        if okay and found then
-            return io_popen(found,...)
-        end
-    end
-
-    -- local function luatex_io_lines(name,how)
-    --     if name then
-    --         local f = io_open(name,how or 'r')
-    --         if f then
-    --             return function()
-    --                 return fio_readline(f)
-    --             end
-    --         end
-    --     else
-    --         return io_lines()
-    --     end
-    -- end
+ -- local function luatex_io_popen(name,...)
+ --     local okay, found = kpse_checkpermission(name)
+ --     if okay and found then
+ --         return io_popen(found,...)
+ --     end
+ -- end
 
     -- For some reason the gc doesn't kick in so we need to close explicitly
     -- so that the handle is flushed.
@@ -102,8 +97,9 @@ if kpseused == 1 then
 
     local function luatex_io_lines(name,how)
         if type(name) == "string" then
-            local f = io_open(name,how or 'r')
-            if f then
+            local handle = validinput(name,how)
+            if handle then
+                kpse_recordinputfile(name,"r")
                 return function()
                     local l = fio_readline(f)
                     if not l then
@@ -130,7 +126,8 @@ if kpseused == 1 then
     mt.lines = luatex_io_readline
 
     io.open  = luatex_io_open
-    io.popen = luatex_io_popen
+ -- io.popen = luatex_io_popen
+    io.popen = io_popen
 
 else
 
@@ -163,28 +160,31 @@ if saferoption == 1 then
         local reported = false
     end
 
-    os.execute = installdummy("os.execute")
-    os.spawn   = installdummy("os.spawn")
-    os.exec    = installdummy("os.exec")
-    os.setenv  = installdummy("os.setenv")
-    os.tempdir = installdummy("os.tempdir")
+    os.execute   = installdummy("os.execute")
+    os.spawn     = installdummy("os.spawn")
+    os.exec      = installdummy("os.exec")
+    os.setenv    = installdummy("os.setenv")
+    os.tempdir   = installdummy("os.tempdir")
 
-    io.popen   = installdummy("io.popen")
-    io.open    = installdummy("io.open",luatex_io_open_readonly)
+    io.popen     = installdummy("io.popen")
+    io.open      = installdummy("io.open",luatex_io_open_readonly)
 
-    os.rename  = installdummy("os.rename")
-    os.remove  = installdummy("os.remove")
+    os.kpsepopen = io.popen -- because it's in the os namespace ... brr
 
-    io.tmpfile = installdummy("io.tmpfile")
-    io.output  = installdummy("io.output")
+    os.rename    = installdummy("os.rename")
+    os.remove    = installdummy("os.remove")
 
-    lfs.chdir  = installdummy("lfs.chdir")
-    lfs.lock   = installdummy("lfs.lock")
-    lfs.touch  = installdummy("lfs.touch")
-    lfs.rmdir  = installdummy("lfs.rmdir")
-    lfs.mkdir  = installdummy("lfs.mkdir")
+    io.tmpfile   = installdummy("io.tmpfile")
+    io.output    = installdummy("io.output")
+
+    lfs.chdir    = installdummy("lfs.chdir")
+    lfs.lock     = installdummy("lfs.lock")
+    lfs.touch    = installdummy("lfs.touch")
+    lfs.rmdir    = installdummy("lfs.rmdir")
+    lfs.mkdir    = installdummy("lfs.mkdir")
 
     debug = nil
+    package.loaded.debug = nil
 
     -- os.[execute|os.spawn|os.exec] already are shellescape aware)
 
@@ -197,6 +197,10 @@ if saferoption == 1 or shellescape ~= 1 then
     package.loadlib      = function() end
     package.searchers[4] = nil
     package.searchers[3] = nil
+
+    if os.setenv then
+        os.setenv = function(...) end -- Great, this will fail for some usage.
+    end
 
     ffi = require('ffi')
 

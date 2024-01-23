@@ -526,7 +526,6 @@ function constructors.scale(tfmdata,specification)
     local stackmath        = not properties.nostackmath
     local haskerns         = properties.haskerns     or properties.mode == "base" -- we can have afm in node mode
     local hasligatures     = properties.hasligatures or properties.mode == "base" -- we can have afm in node mode
-    local realdimensions   = properties.realdimensions
     local writingmode      = properties.writingmode or "horizontal"
     local identity         = properties.identity or "horizontal"
     local vfonts = target.fonts
@@ -651,13 +650,13 @@ function constructors.scale(tfmdata,specification)
         if changed then
             local c = changed[unicode]
             if c and c ~= unicode then
-             -- local cc = changed[c]
-             -- if cc then
-             --     while cc do
-             --         c = cc
-             --         cc = changed[c]
-             --     end
-             -- end
+                local cc = changed[c]
+                if cc then
+                    while cc do
+                        c = cc
+                        cc = changed[c]
+                    end
+                end
                 -- check not needed:
                 if c then
                     description = descriptions[c] or descriptions[unicode] or character
@@ -679,27 +678,6 @@ function constructors.scale(tfmdata,specification)
         local height    = description.height
         local depth     = description.depth
         local isunicode = description.unicode
-        if realdimensions then
-            -- this is mostly for checking issues
-            if not height or height == 0 then
-                local bb = description.boundingbox
-                local ht =  bb[4]
-                if ht ~= 0 then
-                    height = ht
-                end
-                if not depth or depth == 0 then
-                    local dp = -bb[2]
-                    if dp ~= 0 then
-                        depth = dp
-                    end
-                end
-            elseif not depth or depth == 0 then
-                local dp = -description.boundingbox[2]
-                if dp ~= 0 then
-                    depth = dp
-                end
-            end
-        end
         if width  then width  = hdelta*width  else width  = scaledwidth  end
         if height then height = vdelta*height else height = scaledheight end
     --  if depth  then depth  = vdelta*depth  else depth  = scaleddepth  end

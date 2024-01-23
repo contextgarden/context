@@ -36,4 +36,9 @@ extern void       tex_set_local_broken_penalty    (halfword p, halfword penalty)
 extern void       tex_set_local_tolerance         (halfword p, halfword penalty);
 extern void       tex_set_local_pre_tolerance     (halfword p, halfword penalty);
 
+extern void       tex_aux_scan_local_box          (int code);
+extern void       tex_aux_finish_local_box        (void);
+
+extern int        tex_show_localbox_record        (void);
+
 # endif

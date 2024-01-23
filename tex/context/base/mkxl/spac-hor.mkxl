@@ -669,13 +669,13 @@
 \newgluespec\s_spac_neg_fill   \s_spac_neg_fill  \zeropoint \s!plus-1\s!fill \relax
 \newgluespec\s_spac_neg_filll  \s_spac_neg_filll \zeropoint \s!plus-1\s!filll\relax
 
-\permanent\protected\def\hfilll   {\hskip\s_spac_filll\relax}
-\permanent\protected\def\vfilll   {\vskip\s_spac_filll\relax}
+\permanent\protected\untraced\def\hfilll   {\hskip\s_spac_filll\relax}
+\permanent\protected\untraced\def\vfilll   {\vskip\s_spac_filll\relax}
 
-\permanent\protected\def\hfillneg {\hskip\s_spac_neg_fill \relax}
-\permanent\protected\def\hfilllneg{\hskip\s_spac_neg_filll\relax}
-\permanent\protected\def\vfillneg {\vskip\s_spac_neg_fill \relax}
-\permanent\protected\def\vfilllneg{\vskip\s_spac_neg_filll\relax}
+\permanent\protected\untraced\def\hfillneg {\hskip\s_spac_neg_fill \relax}
+\permanent\protected\untraced\def\hfilllneg{\hskip\s_spac_neg_filll\relax}
+\permanent\protected\untraced\def\vfillneg {\vskip\s_spac_neg_fill \relax}
+\permanent\protected\untraced\def\vfilllneg{\vskip\s_spac_neg_filll\relax}
 
 \permanent\protected\def\tfskip    {\begingroup\tf\hskip\emwidth\endgroup}
 \permanent\protected\def\dotfskip#1{\begingroup\tf\hskip      #1\endgroup} % used elsewhere
@@ -1073,7 +1073,7 @@
 \overloaded\permanent\protected \def\negthinspace {\textormathspace-\thinmuskip 1}
 \overloaded\permanent\protected \def\negmedspace  {\textormathspace-\medmuskip  2}
 \overloaded\permanent\protected \def\negthickspace{\textormathspace-\thickmuskip3}
-\overloaded\permanent\protected\edef\medspace     {\textormathspacecommand+\medmuskip{\Uchar"205F}}
+\overloaded\permanent\protected\edef\medspace     {\textormathspacecommand+\medmuskip{\tocharacter"205F}}
 
 % maybe
 

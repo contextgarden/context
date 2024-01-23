@@ -1,0 +1,45 @@
+if not modules then modules = { } end modules ['font-imp-italics'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv and hand-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local tonumber = tonumber
+
+local handlers = fonts.handlers
+
+-- Instead of a factor we now expect an angle or just "yes". There are some fonts
+-- out there that are italic but have no angle but 'fixing' that runtime is just
+-- too fragile.
+
+local function initialize(tfmdata,value) -- hm, always value
+    if value then
+        local parameters  = tfmdata.parameters
+        local italicangle = parameters.italicangle or 0
+        if italicangle == 0 then
+            italicangle = tonumber(value)
+        end
+        if italicangle ~= 0 then
+            local properties = tfmdata.properties
+            if not properties.hasitalics then
+             -- properties.hasitalics = true -- no!
+                properties.useditalicangle = italicangle
+                parameters.useditalicangle = italicangle
+            end
+        end
+    end
+end
+
+local specification = {
+    name         = "itlc",
+    description  = "italic correction",
+    initializers = {
+        base = initialize,
+        node = initialize,
+    }
+}
+
+handlers.otf.features.register(specification)
+handlers.afm.features.register(specification)

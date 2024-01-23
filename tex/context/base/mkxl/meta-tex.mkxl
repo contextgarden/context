@@ -248,7 +248,7 @@
  % \egroup}
 
 \permanent\protected\def\svg_traced_pcode#1#2#3%
-  {\writestatus{SVG TEXT}{....[poscode #1 #2 \Uchar #3]}%
+  {\writestatus{SVG TEXT}{....[poscode #1 #2 \tocharacter#3]}%
    \svg_normal_pcode{#1}{#2}{#3}}
 
 \permanent\protected\def\svg_traced_pchar#1#2#3%
@@ -260,7 +260,7 @@
    \svg_normal_pspace{#1}{#2}}
 
 \permanent\protected\def\svg_traced_code#1%
-  {\writestatus{SVG TEXT}{....[char \Uchar #1]}%
+  {\writestatus{SVG TEXT}{....[char \tocharacter#1]}%
    \svg_normal_code{#1}}
 
 \permanent\protected\def\svg_traced_char#1%

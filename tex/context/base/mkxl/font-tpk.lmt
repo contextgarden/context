@@ -20,6 +20,9 @@ local concat, insert, remove, copy = table.concat, table.insert, table.remove, t
 local tobitstring = number.tobitstring
 local formatters = string.formatters
 local round = math.round
+local addsuffix, basename, nameonly, pathpart, joinfile = file.addsuffix, file.basename, file.nameonly, file.pathpart, file.join
+
+local findbinfile   = resolvers.findbinfile
 
 local streams       = utilities.streams
 local openstream    = streams.open
@@ -52,6 +55,7 @@ tfm.readers    = readers
 -- Performance is no real issue here so I didn't optimize too much. After
 -- all, these files are small and we mostly use opentype or type1 fonts.
 
+
 do
 
     local function readbitmap(glyph,s,flagbyte)
@@ -68,7 +72,7 @@ do
                 bitweight = 16
                 inputbyte = readbyte(s)
              -- return extract(inputbyte,4,4)
-                return (inputbyte >> 4) & 0xF
+                return (inputbyte >> 4) & 0xF -- no need for & 0xF
             else
                 bitweight = 0
                 return inputbyte & 15
@@ -77,7 +81,7 @@ do
 
         local function getbit() -- can be inlined
          -- bitweight = rshift(bitweight,1)
-            bitweight = (bitweight >> 1) & 0xFFFFFFFF
+            bitweight = (bitweight >> 1) & 0xFFFFFFFF -- no need for &
             if bitweight == 0 then -- actually we can check for 1
                 inputbyte = readbyte(s)
                 bitweight = 128
@@ -85,7 +89,38 @@ do
             return inputbyte & bitweight
         end
 
-        local function pkpackednum()
+        local rest, handlehuge, pkpackednum
+
+        rest = function()
+            if remainder < 0 then
+                remainder = -remainder
+                return 0
+            elseif remainder > 4000 then
+                remainder = 4000 - remainder
+                return 4000
+            elseif remainder > 0 then
+                local i = remainder
+                remainder = 0
+                realfunc  = pkpackednum
+                return i
+            else
+             -- error = "pk issue that shouldn't happen"
+                return 0
+            end
+        end
+
+        handlehuge = function (i,j)
+            while i ~= 0 do
+             -- j = lshift(j,4) + getnyb()
+                j = ((j << 4) & 0xFFFFFFFF) + getnyb() -- no need for &
+                i = i - 1
+            end
+            remainder = j - 15 + (13 - dynf) * 16 + dynf
+            realfunc  = rest
+            return rest()
+        end
+
+        pkpackednum = function()
             local i = getnyb(s)
             if i == 0 then
                 repeat
@@ -110,35 +145,6 @@ do
                 repeatcount = 1
             end
             return realfunc()
-        end
-
-        local function rest()
-            if remainder < 0 then
-                remainder = -remainder
-                return 0
-            elseif remainder > 4000 then
-                remainder = 4000 - remainder
-                return 4000
-            elseif remainder > 0 then
-                local i = remainder
-                remainder = 0
-                realfunc  = pkpackednum
-                return i
-            else
-             -- error = "pk issue that shouldn't happen"
-                return 0
-            end
-        end
-
-        local function handlehuge(i,j)
-            while i ~= 0 do
-             -- j = lshift(j,4) + getnyb()
-                j = ((j << 4) & 0xFFFFFFFF) + getnyb()
-                i = i - 1
-            end
-            remainder = j - 15 + (13 - dynf) * 16 + dynf
-            realfunc  = rest
-            return rest()
         end
 
         local gpower = { [0] =
@@ -174,7 +180,7 @@ do
                         word = word + wordweight
                     end
                  -- wordweight = rshift(wordweight,1)
-                    wordweight = (wordweight >> 1) & 0xFFFFFFFF
+                    wordweight = (wordweight >> 1) & 0xFFFFFFFF -- no need for &
                     if wordweight == 0 then
                         r          = r + 1
                         raster[r]  = word
@@ -242,10 +248,7 @@ do
 
     end
 
-    function readers.showpk(glyph)
-        local xsize  = glyph.xsize
-        local ysize  = glyph.ysize
-        local stream = glyph.stream
+    local function showpk(stream,xsize,ysize,oneline)
         local result = { }
         local rr     = { }
         local r      = 0
@@ -264,17 +267,25 @@ do
             if extra then
                 r = r + 1 ; rr[r] = tobitstring(b,16,16)
             else
-             -- r = r + 1 ; rr[r] = tobitstring(extract(b,8+(8-cw),cw),cw,cw)
-                r = r + 1 ; rr[r] = tobitstring((b >> (8+(8-cw))) &~ (-1 << cw),cw,cw)
+                r = r + 1 ; rr[r] = tobitstring(b>>8,8,8)
             end
             result[y] = concat(rr)
         end
-        return concat(result,"\n")
+        if oneline then
+            return concat(result),ysize > 0 and #result[1]or 0,ysize
+        else
+            return concat(result,"\n")
+        end
+    end
+
+    function readers.showpk(glyph,oneline)
+        if glyph then
+            return showpk(glyph.stream,glyph.xsize,glyph.ysize,oneline)
+        end
     end
 
     local template = formatters [ [[
-%.3N 0 %i %i %i %i d1
-q
+%N 0 %i %i %i %i d1
 %i 0 0 %i %i %i cm
 BI
   /W %i
@@ -283,22 +294,22 @@ BI
   /BPC 1
   /D [1 0]
 ID %t
-EI
-Q]] ]
+EI]] ]
 
     function readers.pktopdf(glyph,data,factor)
         local width   = data.width * factor
+width = round(width)
         local xsize   = glyph.xsize or 0
         local ysize   = glyph.ysize or 0
         local xoffset = glyph.xoffset or 0
         local yoffset = glyph.yoffset or 0
         local stream  = glyph.stream
 
-        local dpi     = 1
-        local newdpi  = 1
-
-        local xdpi    = dpi * xsize  / newdpi
-        local ydpi    = dpi * ysize  / newdpi
+     -- local dpi     = 1
+     -- local newdpi  = 1
+     --
+     -- local xdpi    = dpi * xsize / newdpi
+     -- local ydpi    = dpi * ysize / newdpi
 
         local llx     = - xoffset
         local lly     = yoffset - ysize + 1
@@ -315,121 +326,177 @@ Q]] ]
         for y=1,ysize do
             for x=1,rw-1 do
                 s = s + 1 ; b = stream[s]
-             -- r = r + 1 ; result[r] = char(extract(b,8,8),extract(b,0,8))
-                r = r + 1 ; result[r] = char((b >> 8) & 0xFF,b & 0xFF)
+--               r = r + 1 ; result[r] = char(extract(b,8,8),extract(b,0,8))
+                 r = r + 1 ; result[r] = char((b >> 8) & 0xFF,b & 0xFF)
             end
             s = s + 1 ; b = stream[s]
             if extra then
-             -- r = r + 1 ; result[r] = char(extract(b,8,8),extract(b,0,8))
-                r = r + 1 ; result[r] = char((b >> 8) & 0xFF,b & 0xFF)
+--               r = r + 1 ; result[r] = char(extract(b,8,8),extract(b,0,8))
+                 r = r + 1 ; result[r] = char((b >> 8) & 0xFF,b & 0xFF)
             else
-             -- r = r + 1 ; result[r] = char(extract(b,8,8))
-                r = r + 1 ; result[r] = char((b >> 8) & 0xFF)
+--               r = r + 1 ; result[r] = char(extract(b,8,8))
+                 r = r + 1 ; result[r] = char((b >> 8) & 0xFF)
             end
         end
-        return template(width,llx,lly,urx,ury,xdpi,ydpi,llx,lly,xsize,ysize,result), width
+     -- return template(width,llx,lly,urx,ury,xdpi,ydpi,llx,lly,xsize,ysize,result), width
+        return template(width,llx,lly,urx,ury,xsize,ysize,llx,lly,xsize,ysize,result), width
+    end
+
+    local template = formatters [ [[
+%N 0 %N %N %N %N d1
+1 0 0 1 %N %N cm
+%t h f
+]] ]
+
+-- S
+
+    local f_curveto = formatters["%N %N %N %N %N %N c"]
+    local f_moveto  = formatters["%N %N m"]
+    local f_lineto  = formatters["%N %N l"]
+
+    function readers.potracedtopdf(glyph,data,factor,settings)
+        local width   = data.width * factor
+-- width = round(10*width/65536)
+width = round(width)
+        local xsize   = glyph.xsize or 0
+        local ysize   = glyph.ysize or 0
+        local xoffset = glyph.xoffset or 0
+        local yoffset = glyph.yoffset or 0
+        local stream  = glyph.stream
+
+        local llx     = - xoffset
+        local lly     = yoffset - ysize + 1
+        local urx     = llx + xsize + 1
+        local ury     = lly + ysize
+
+        local bytes, w, h = showpk(stream,xsize,ysize,true)
+        local result = potrace.convert(bytes,settings,w,h)
+        if result then
+            for i=1,#result do
+                local ri = result[i]
+                local ni = #ri
+                for j=1,ni do
+                    local tj = ri[j]
+                    local nj = #tj
+                    local x1 = tj[1]
+                    local y1 = tj[2]
+                    if nj == 6 then
+                        ri[j] = f_curveto(tj[3],tj[4],tj[5],tj[6],x1,y1)
+                    elseif j == 1 then
+                        ri[j] = f_moveto(x1,y1)
+                    else
+                        ri[j] = f_lineto(x1,y1)
+                    end
+                end
+                ri[ni+1] = " "
+                result[i] = concat(ri," ")
+            end
+llx = round(llx)
+lly = round(lly)
+urx = round(urx)
+ury = round(ury)
+            return template(width,llx,lly,urx,ury,llx,lly,result), width
+        end
+
     end
 
     function readers.loadpk(filename)
-        local s          = openstream(filename)
-        local preamble   = readcardinal1(s)
-        local version    = readcardinal1(s)
-        local comment    = readstring(s,readcardinal1(s))
-        local designsize = readcardinal4(s)
-        local checksum   = readcardinal4(s)
-        local hppp       = readcardinal4(s)
-        local vppp       = readcardinal4(s)
-        if preamble ~= 247 or version ~= 89 or not vppp then
-            return { error = "invalid preamble" }
-        end
-        local glyphs = { }
-        local data   = {
-            designsize = designsize,
-            comment    = comment,
-            hppp       = hppp,
-            vppp       = vppp,
-            glyphs     = glyphs,
-        }
-        while true do
-            local flagbyte = readcardinal1(s)
-            if flagbyte < 240 then
-                local c = flagbyte & 7
-                local length, index, width, pixels, xsize, ysize, xoffset, yoffset
-                if c >= 0 and c <= 3 then
-                    length  = (flagbyte & 7) * 256 + readcardinal1(s) - 3
-                    index   = readcardinal1(s)
-                    width   = readinteger3(s)
-                    pixels  = readcardinal1(s)
-                    xsize   = readcardinal1(s)
-                    ysize   = readcardinal1(s)
-                    xoffset = readcardinal1(s)
-                    yoffset = readcardinal1(s)
-                    if xoffset > 127 then
-                        xoffset = xoffset - 256
-                    end
-                    if yoffset > 127 then
-                        yoffset = yoffset - 256
-                    end
-                elseif c >= 4 and c <= 6 then
-                    length  = (flagbyte & 3) * 65536 + readcardinal1(s) * 256 + readcardinal1(s) - 4
-                    index   = readcardinal1(s)
-                    width   = readinteger3(s)
-                    pixels  = readcardinal2(s)
-                    xsize   = readcardinal2(s)
-                    ysize   = readcardinal2(s)
-                    xoffset = readcardinal2(s)
-                    yoffset = readcardinal2(s)
-                else -- 7
-                    length  = readcardinal4(s) - 9
-                    index   = readcardinal4(s)
-                    width   = readinteger4(s)
-                    pixels  = readcardinal4(s)
-                              readcardinal4(s)
-                    xsize   = readcardinal4(s)
-                    ysize   = readcardinal4(s)
-                    xoffset = readcardinal4(s)
-                    yoffset = readcardinal4(s)
-                end
-                local glyph = {
-                    index   = index,
-                    width   = width,
-                    pixels  = pixels,
-                    xsize   = xsize,
-                    ysize   = ysize,
-                    xoffset = xoffset,
-                    yoffset = yoffset,
-                }
-                if length <= 0 then
-                    data.error = "bad packet"
-                    return data
-                end
-                readbitmap(glyph,s,flagbyte)
-                glyphs[index] = glyph
-            elseif flagbyte == 240 then
-                -- k[1] x[k]
-                skipbytes(s,readcardinal1(s))
-            elseif flagbyte == 241 then
-                -- k[2] x[k]
-                skipbytes(s,readcardinal2(s)*2)
-            elseif flagbyte == 242 then
-                -- k[3] x[k]
-                skipbytes(s,readcardinal3(s)*3)
-            elseif flagbyte == 243 then
-                -- k[4] x[k]
-                skipbytes(s,readcardinal4(s)*4) -- readinteger4
-            elseif flagbyte == 244 then
-                -- y[4]
-                skipbytes(s,4)
-            elseif flagbyte == 245 then
-                break
-            elseif flagbyte == 246 then
-                -- nop
-            else
-                data.error = "unknown pk command"
-                break
+        local s = openstream(filename)
+        if s then
+            local preamble   = readcardinal1(s)
+            local version    = readcardinal1(s)
+            local comment    = readstring(s,readcardinal1(s))
+            local designsize = readcardinal4(s)
+            local checksum   = readcardinal4(s)
+            local hppp       = readcardinal4(s)
+            local vppp       = readcardinal4(s)
+            if preamble ~= 247 or version ~= 89 or not vppp then
+                return { error = "invalid preamble" }
             end
+            local glyphs = { }
+            local data   = {
+                designsize = designsize,
+                comment    = comment,
+                hppp       = hppp,
+                vppp       = vppp,
+                glyphs     = glyphs,
+                resolution = round(72.27*hppp/65536),
+            }
+            while true do
+                local flagbyte = readcardinal1(s)
+                if flagbyte < 240 then
+                    local c = flagbyte & 7
+                    local length, index, width, pixels, xsize, ysize, xoffset, yoffset
+                    if c >= 0 and c <= 3 then
+                        length  = (flagbyte & 7) * 256 + readcardinal1(s) - 3
+                        index   = readcardinal1(s)
+                        width   = readinteger3(s)
+                        pixels  = readcardinal1(s)
+                        xsize   = readcardinal1(s)
+                        ysize   = readcardinal1(s)
+                        xoffset = readinteger1(s)
+                        yoffset = readinteger1(s)
+                    elseif c >= 4 and c <= 6 then
+                        length  = (flagbyte & 3) * 65536 + readcardinal1(s) * 256 + readcardinal1(s) - 4
+                        index   = readcardinal1(s)
+                        width   = readinteger3(s)
+                        pixels  = readcardinal2(s)
+                        xsize   = readcardinal2(s)
+                        ysize   = readcardinal2(s)
+                        xoffset = readinteger2(s)
+                        yoffset = readinteger2(s)
+                    else -- 7
+                        length  = readcardinal4(s) - 9
+                        index   = readcardinal4(s)
+                        width   = readinteger4(s)
+                        pixels  = readcardinal4(s)
+                                  readcardinal4(s)
+                        xsize   = readcardinal4(s)
+                        ysize   = readcardinal4(s)
+                        xoffset = readinteger4(s)
+                        yoffset = readinteger4(s)
+                    end
+                    local glyph = {
+                        index   = index,
+                        width   = width,
+                        pixels  = pixels,
+                        xsize   = xsize,
+                        ysize   = ysize,
+                        xoffset = xoffset,
+                        yoffset = yoffset,
+                    }
+                    if length <= 0 then
+                        data.error = "bad packet"
+                        return data
+                    end
+                    readbitmap(glyph,s,flagbyte)
+                    glyphs[index] = glyph
+                elseif flagbyte == 240 then
+                    -- k[1] x[k]
+                    skipbytes(s,readcardinal1(s))
+                elseif flagbyte == 241 then
+                    -- k[2] x[k]
+                    skipbytes(s,readcardinal2(s)*2)
+                elseif flagbyte == 242 then
+                    -- k[3] x[k]
+                    skipbytes(s,readcardinal3(s)*3)
+                elseif flagbyte == 243 then
+                    -- k[4] x[k]
+                    skipbytes(s,readcardinal4(s)*4) -- readinteger4
+                elseif flagbyte == 244 then
+                    -- y[4]
+                    skipbytes(s,4)
+                elseif flagbyte == 245 then
+                    break
+                elseif flagbyte == 246 then
+                    -- nop
+                else
+                    data.error = "unknown pk command"
+                    break
+                end
+            end
+            return data
         end
-        return data
     end
 
 end
@@ -492,7 +559,7 @@ do
         local filesize   = fileattr and fileattr.size or 0
         local filetime   = fileattr and fileattr.modification or 0
         local fileformat = "tfm"
-        local filehash   = cleanname(file.basename(filename))
+        local filehash   = cleanname(basename(filename))
         --
         data = caching and containers.read(filecache,filehash)
         --
@@ -929,8 +996,8 @@ do
      -- end
         --
         data = {
-            name           = file.nameonly(filename),
-            fontarea       = file.pathpart(filename),
+            name           = nameonly(filename),
+            fontarea       = pathpart(filename),
             glyphs         = glyphs,
             parameters     = parameters,
             designsize     = designsize,
@@ -1277,8 +1344,8 @@ do
             return data
         else
             return {
-                name       = file.nameonly(filename),
-                fontarea   = file.pathpart(filename),
+                name       = nameonly(filename),
+                fontarea   = pathpart(filename),
                 glyphs     = glyphs,
                 designsize = designsize,
                 header     = header,
@@ -1290,9 +1357,9 @@ do
     -- the replacement loader (not sparse):
 
     function readers.loadtfmvf(tfmname,size)
-        local vfname  = file.addsuffix(file.nameonly(tfmfile),"vf")
+        local vfname  = addsuffix(nameonly(tfmfile),"vf")
         local tfmfile = tfmname
-        local vffile  = resolvers.findbinfile(vfname,"ovf")
+        local vffile  = findbinfile(vfname,"ovf")
         if tfmfile and tfmfile ~= "" then
             if size < 0 then
                 size = (65536 * -size) // 100
@@ -1397,6 +1464,16 @@ do
         end
     end
 
+end
+
+function resolvers.findpk(font,resolution)
+    local filename = addsuffix(font,(resolution or "") .. "pk")
+    local fullname = findbinfile(filename) or ""
+    if fullname == "" then
+        filename = addsuffix(font,"pk")
+        fullname = findbinfile(filename) or ""
+    end
+    return fullname
 end
 
 -- inspect(readers.loadtfmvf(resolvers.findfile("mi-iwonari.tfm")))

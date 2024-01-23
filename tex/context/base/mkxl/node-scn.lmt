@@ -40,6 +40,7 @@ local vlist_code         = nodecodes.vlist
 local userskip_code      = gluecodes.userskip
 local spaceskip_code     = gluecodes.spaceskip
 local xspaceskip_code    = gluecodes.xspaceskip
+local intermathkip_code  = gluecodes.intermathskip
 local leaders_code       = gluecodes.leaders
 local rightfillskip_code = gluecodes.rightparfillskip
 local righthangskip_code = gluecodes.righthangskip
@@ -252,7 +253,7 @@ local function processwords(nesting,attribute,data,flush,head,parent,skip) -- we
                     elseif id == glue_code then
                         -- catch \underbar{a} \underbar{a} (subtype test is needed)
                         local subtype = getsubtype(n)
-                        if getattr(n,attribute) and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code or (leaders and subtype >= leaders_code)) then
+                        if getattr(n,attribute) and (subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code or subtype == intermathkip_code or (leaders and subtype >= leaders_code)) then
                             l = n
                         else
                             head = flush(head,f,l,d,level,parent,strip)

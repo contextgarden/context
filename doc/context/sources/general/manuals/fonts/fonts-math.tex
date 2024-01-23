@@ -276,6 +276,8 @@ glyphs and building special constructs. The same is true for spacing. Although
 math fonts do have kerning information, most of the math spacing is controlled
 by properties of characters and not by the font.
 
+\startmkivmode
+
 \unexpanded\def\SampleLine#1%
   {\NC
    \type{$a #1{+} b$}
@@ -298,6 +300,8 @@ As a user you don't have to worry about these issues because characters are tagg
 according to their usage. \footnote {There are a few more commands, like \type
 {\mathlimop}, \type {\mathnolop} and \type {mathbox} but these are used
 differently.}
+
+\stopmkivmode
 
 With \TEX\ being the oldest and still dominant math renderer it is no surprise
 that \MICROSOFT\ modelled its math renderer after \TEX\ and Cambria quite well
@@ -776,12 +780,12 @@ command. An example is the fence mechanism:
 \definemathfence
   [fancybracket] [bracket]
   [color=darkblue]
-\definemathfence
+\definemathfence % mkiv: command, mkxl: define
   [smallbracket] [bracket]
-  [command=yes,color=darkgreen,mathstyle=small]
-\definemathfence
+  [command=yes,define=yes,color=darkgreen,mathstyle=small]
+\definemathfence % mkiv: command, mkxl: define
   [normalbracket] [bracket]
-  [command=yes,color=darkred]
+  [command=yes,define=yes,color=darkred]
 \stopbuffer
 
 \typebuffer \getbuffer

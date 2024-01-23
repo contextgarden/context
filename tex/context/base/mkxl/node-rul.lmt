@@ -258,8 +258,9 @@ do
     -- we could check the passed level on the real one ... (no need to pass level)
 
     local function flush_ruled(head,f,l,d,level,parent,strip) -- not that fast but acceptable for this purpose
+        local max   = d.max or 1
         local level = d.stack or d.level or 1
-        if level > d.max then
+        if level > max then
             -- todo: trace message
             return head
         end
@@ -306,15 +307,14 @@ do
             return head
         end
         local wd, ht, dp    = getrangedimensions(parent,f,getnext(l))
-        local method        = d.method
+        local method        = d.method or 0
         local empty         = d.empty == v_yes
-        local offset        = d.offset
-        local dy            = d.dy
+        local offset        = d.offset or 0
+        local dy            = d.dy or 0
         local order         = d.order
-        local max           = d.max
         local mp            = d.mp
         local rulethickness = d.rulethickness
-        local unit          = d.unit
+        local unit          = d.unit or "ex"
         local ma            = d.ma
         local ca            = d.ca
         local ta            = d.ta
@@ -399,10 +399,20 @@ do
                 l = hpack_nodes(l,wd,"exactly")
                 inject(l,wd,ht,dp)
             else
-                local hd = (offset+(level-1)*dy)*e - m
-                local ht =  hd + rulethickness
-                local dp = -hd + rulethickness
-                inject(setcoloring(new_rule(wd,ht,dp),colorspace,color,transparency),wd,ht,dp)
+                local rule
+                if method == 2 then
+                    local height = d.height
+                    local depth  = d.depth
+                    if height > ht then ht = height end
+                    if depth  > dp then dp = depth  end
+                    rule = nodepool.outlinerule(wd,ht,dp,rulethickness)
+                else
+                    local hd = (offset+(level-1)*dy)*e - m
+                    ht =  hd + rulethickness
+                    dp = -hd + rulethickness
+                    rule = new_rule(wd,ht,dp)
+                end
+                inject(setcoloring(rule,colorspace,color,transparency),wd,ht,dp)
             end
         end
         return head
@@ -439,6 +449,8 @@ do
                 { "empty" },
                 { "text", "box" },
                 { "repeat" },
+{ "height", "dimension" },
+{ "depth", "dimension" },
             }
         }
     }
@@ -589,7 +601,7 @@ do
         end
     end
 
-    local function getskips(list) -- this could be a helper
+    local function getskips(list) -- this could be a helper .. is already one
         local ls = nil
         local rs = nil
         local is = nil

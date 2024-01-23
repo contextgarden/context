@@ -28,6 +28,7 @@ extern int luaopen_zstd          (lua_State *L);
 extern int luaopen_lzma          (lua_State *L);
 extern int luaopen_kpse          (lua_State *L); /*tex For testing compatibility, if needed at all, not really I guess. */
 extern int luaopen_hb            (lua_State *L); /*tex For when Idris needs to check fonts some day ... old stuff, not tested much. */
+extern int luaopen_openssl       (lua_State *L); /*tex Only for testing. */
 
 extern int luaextend_xcomplex    (lua_State *L);
 

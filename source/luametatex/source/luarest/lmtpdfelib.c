@@ -678,7 +678,7 @@ static int pdfelib_arraytotable(lua_State *L)
         for (unsigned int i = 0; i < a->array->size; i++) {
             ppobj *object = pparray_at(a->array,i);
             if (object) {
-                pdfelib_totable(L, object,flat);
+                pdfelib_totable(L, object, flat);
                 /* table { type, [value], [extra], [more] } */
                 lua_rawseti(L, -2, ++j);
                 /* table[i] = { type, [value], [extra], [more] } */
@@ -1295,6 +1295,20 @@ static int pdfelib_getfromobject(lua_State *L)
     return 0;
 }
 
+static int pdfelib_getobjectrange(lua_State *L)
+{
+    pdfe_document *p = pdfelib_aux_check_isdocument(L, 1, get_from_error);
+    if (p) {
+        ppref *rr = ppxref_find(p->document->xref, lua_tointeger(L, 2));
+        if (rr) {
+             lua_pushinteger(L, (lua_Integer) rr->offset);
+             lua_pushinteger(L, (lua_Integer) rr->length);
+             return 2;
+        }
+    }
+    return 0;
+}
+
 /*tex
 
     Here are some convenient getters:
@@ -1640,16 +1654,20 @@ static int pdfelib_pushvalue(lua_State *L, ppobj *object)
 static int pdfelib_document_access(lua_State *L)
 {
     if (lua_type(L, 2) == LUA_TSTRING) {
-        pdfe_document *p = (pdfe_document *) lua_touserdata(L, 1);
+     // pdfe_document *p = (pdfe_document *) lua_touserdata(L, 1);
         const char *s = lua_tostring(L, 2);
         if (lua_key_eq(s, catalog) || lua_key_eq(s, Catalog)) {
-            return pdfelib_aux_pushdictionaryonly(L, ppdoc_catalog(p->document));
+         // return pdfelib_aux_pushdictionaryonly(L, ppdoc_catalog(p->document));
+            return pdfelib_getcatalog(L);
         } else if (lua_key_eq(s, info) || lua_key_eq(s, Info)) {
-            return pdfelib_aux_pushdictionaryonly(L, ppdoc_info(p->document));
+         // return pdfelib_aux_pushdictionaryonly(L, ppdoc_info(p->document));
+            return pdfelib_getinfo(L);
         } else if (lua_key_eq(s, trailer) || lua_key_eq(s, Trailer)) {
-            return pdfelib_aux_pushdictionaryonly(L, ppdoc_trailer(p->document));
+         // return pdfelib_aux_pushdictionaryonly(L, ppdoc_trailer(p->document));
+            return pdfelib_getcatalog(L);
         } else if (lua_key_eq(s, pages) || lua_key_eq(s, Pages)) {
-            return pdfelib_aux_pushpages(L, p->document);
+         // return pdfelib_aux_pushpages(L, p->document);
+            return pdfelib_getpages(L);
         }
     }
     return 0;
@@ -1782,6 +1800,7 @@ static const struct luaL_Reg pdfelib_function_list[] = {
     { "getfromstream",      pdfelib_getfromstream     },
     /* handy too */
     { "getfromobject",      pdfelib_getfromobject     },
+    { "getobjectrange",     pdfelib_getobjectrange    },
     /* collectors */
     { "dictionarytotable",  pdfelib_dictionarytotable },
     { "arraytotable",       pdfelib_arraytotable      },

@@ -1,0 +1,245 @@
+% language=us runpath=texruns:manuals/ontarget
+
+% \profilemacro\scaledfontdimen
+
+\usebodyfont[antykwa]
+\usebodyfont[iwona]
+\usebodyfont[kurier]
+
+\startcomponent ontarget-jmn
+
+\environment ontarget-style
+
+\startchapter[title={Supporting math in the JMN collection}]
+
+\startlines
+Hans Hagen, Hasselt NL
+Mikael Sundqvist, Lund SV
+\stoplines
+
+\startsubject[title=Introduction]
+
+In 2022 we overhauled math font support in \CONTEXT, using new functionality in
+the \LUAMETATEX\ engine. By that time it had become clear that the \OPENTYPE\
+math font landscape had more or less settled. The Latin Modern fonts as well as
+the \TEX gyre fonts don't evolve, so we consider them being frozen. It is also
+unlikely that the reference Cambria font will change or become more complete.
+More recent math font are modelled as a mixture of Cambria and Latin Modern.
+
+When we started with \LUATEX\ in \CONTEXT\ we immediately started using \UNICODE\
+math but the lack of proper \UNICODE\ fonts, with the exception of Cambria,
+resulted in creating virtual \UNICODE\ math fonts on the fly using the virtual
+font features of the \LUATEX. But when the \OPENTYPE\ math fonts came available
+that kind of trickery was no longer needed (or at least less preferred).
+
+That is why we considered dropping the virtual math font mechanism from \LMTX. We
+had already dropped \type {tx} (we can use Termes) and \type {px} (better use
+Pagella) fonts as well as \TYPEONE\ based Latin Modern. Dropping the commercial
+Math Times was a logical next step, also because it has never been tested. The
+mixtures of Pagella and Euler were already replaced by using the upgraded tweak
+mechanism.
+
+That left us with Antykwa, Iwona and Kurier, the fonts that the late Janusz
+Nowacky vectorized and that came with plenty \OPENTYPE\ text fonts but also with
+\TYPEONE\ math companions. And, as we like these fonts, it meant that we had to
+come up with a solution. One option was to create proper \OPENTYPE\ math fonts, but
+another was to strip down the virtual math font mechanism to just support these
+fonts. There is some charm in keeping the \TYPEONE\ fonts, also because it is a
+test case for (by now sort of obsolete) \TFM\ metric, \PFB\ outline, encoding and
+map files, for which we have code embedded so having a proper test case makes
+sense.
+
+In the end we opted for the second solution so this is what the next sections are
+about: supporting \OPENTYPE\ math using \TYPEONE\ fonts. We admit that it took
+way more time than a conversion to \OPENTYPE\ math fonts would have, but that is
+partly due to the fact that these fonts, and especially Antykwa, have some
+characteristic features that we wanted to use. So, in a sense it was also an
+esthetics challenge. It also helped that the font was used in realistic and
+moderately complex math rendering. We also note that rendering in \LMTX\ is
+different (and hopefully better) than in \MKIV\ because we try to benefit from
+the upgraded math engine in \LUAMETATEX.
+
+This exploration is dedicated to Janusz who was one of the characteristic
+presenters of fonts at Bacho\TEX\ meetings, who contributed these fonts, and
+who in some sense was thereby kick starting the Polish \TEX\ related font
+projects.
+
+\stopsubject
+
+\startsubject[title=Virtual math]
+
+We keep this expose simple and only tell what we did, you can look at the \type
+{lfg} files and source code to see what magick is done. For the standard Antykwa
+we load \typ {LatinModern-Math} first, so we cover all symbols that matter. Next
+we stepwise load \typ {rm-anttr.tfm}, \typ {mi-anttri.tfm}, \typ {mi-anttbi.tfm},
+\typ {rm-anttb.tfm}, \typ {sy-anttrz.tfm}, \typ {ex-anttr.tfm}. For each we
+specify an encoding vector. Some are loaded multiple times with different
+vectors. Because we don't like the slanted curly braces we even load \typ
+{AntykwaTorunska-Regular} in order to get the upright ones. This method is not that
+different from what we do in \MKIV.
+
+The specification of a loaded font also can contain a list of (named) characters
+that should be ignored, That was one of the new features in the virtual
+constructor. We take the math parameters from the fonts where these are
+specified, here in the symbols and extension fonts.
+
+The fonts contain extra snippets of extensibles that one can use to construct
+some of these vertical and horizontal stretched symbols on the fly in addition to
+what the font metrics already define. Unfortunately some snippets are missing,
+like the six pieces that could make up horizontal and vertical bars, for which we
+now need to cheat. We considered making a companion font but for now we are in
+\quote {as good as we can} emulation mode.
+
+\stopsubject
+
+\startsubject[title=The fonts]
+
+We start out with a skeleton font and in the past we used the \OPENTYPE\ text
+font for that. On top of that we overlay a bunch of \TYPEONE\ fonts, and as was
+common in those days, the \AMS\ math symbol fonts \type {msa} and \type {msb}
+were overlayed last in order to fill in remaining gaps. However, now that we have
+a Latin Modern \OPENTYPE\ math font it made more sense to use that as starting
+point because it already has all these symbols.
+
+If we forget about the additional weights and condensed variants, the JMN math
+collection has actually not that many fonts. One reason for that is that the
+upright roman font, the ones that have an \type {r} near the end of the file
+name, in traditional \TEX\ speak \type {rm}, have way more than 255 characters:
+it not only has all kind of composed characters, it also has all the extensible
+shapes. All is (as usual with \TYPEONE\ fonts) driven by encoding and mapping
+files. Fortunately the glyphs names (that we use for filtering) are the same for
+the three fonts but there are some more in Antykwa.
+
+\stopsubject
+
+\startsubject[title=Challenges]
+
+The real challenge was Antykwa. This is because it has a distinctive curvature at
+the end of sticky parts (like rules and such). The \TEX\ machinery as well as
+\OPENTYPE\ math assume rules being used in for instance radicals, fractions,
+overbars, underbars and vertical bar fences.
+
+\startlinecorrection
+\scale[width=\textwidth]{\switchtobodyfont[antykwa]\im {
+    \showglyphs
+    \mathbin{-}
+    \mathbin{+}
+    \mathbin{=}
+    \mathbin{<}
+    \mathbin{>}
+}}
+\stoplinecorrection
+
+The last three come in not only sizes (aka variants) but also can stretch (aka
+extensible). And, them being just rules it is assumes that the \TEX\ engine deals
+with that, and as it cannot really do that without characters, the traditional
+approach is to use commands that use \TEX\ rules. However, in \CONTEXT\ (\MKIV\
+and \LMTX) we can provide the proper variants and extensible using virtual
+shapes, and in \LMTX\ we can even scale as last resort.
+
+The first two are special. We already could support fractions using dedicated
+characters because we played with the fraction builder using for instance arrows
+as separator and these are not rules but characters. It was not that much work to
+also make that possible for the rule in a radical. The main adaptation was that
+we need to center the numerator and denominator of a fraction and the body of a
+radical when the character used is wider than requested.
+
+\startlinecorrection
+\scale[height=2cm]{\switchtobodyfont[antykwa]\im {
+    \showglyphs
+    \sqrt{x+1} -
+    \fenced[bar]{
+        \frac{1}{x+1}
+    }
+}}
+\stoplinecorrection
+
+Because we have two font models in \CONTEXT, normal and compact, we had to be careful
+in defining the virtual shapes and extensibles so that they work in both models. This
+has to do with scaling and sharing.
+
+\stopsubject
+
+\startsubject[title=Implementation]
+
+The original virtual math font mechanism worked closely with the math fall back
+features, but these have been replaced by tweaks, which means that we lost some
+of that. Also, heuristics worked fine on the average but for Antykwa we wanted
+more. Therefore some of the built in logic has been moved to the goodie file that
+controls the composition. After all, we don't want to hard code specific
+solutions in the core.
+
+Another addition was the use of so called setups bound to a font class so that we
+can set up some math machinery features for e.g.\ Antykwa in the goodie file. We
+need to bind to a class because we mix a dozen math fonts in one test file and
+therefore we need to separate these setups.
+
+As in regular \OPENTYPE\ math support we ignore the italic correction and translate
+it in combinations of proper width and specific kerning. That way we avoid all kind
+of issues that we otherwise need to compensate for.
+
+Because we need to hook extensible characters into the machine for Antykwa its
+font typescript file also defines a font class specific setup (of a few lines) to
+be applied. This might evolve into a more granular mechanism but for now it works
+fine and adds little overhead.
+
+\stopsubject
+
+\startsubject[title=Examples]
+
+We end by showing a few \quotation{real} examples.
+
+\bgroup\switchtobodyfont[antykwa]
+\startformula
+\binom{n}{k} = \frac{n!}{k!(n-k)!}\mtp{,} 0 \leq k \leq n\mtp{.}
+\stopformula
+\egroup
+
+The parentheses are unchanged, and we believe that using rotation symmetry
+instead of mirror symmetry is a brave but interesting choice, and the new
+fraction bar fits well with it. The fraction bar also fits well with the equal
+sign.
+
+\bgroup
+\switchtobodyfont[antykwa]
+\startformula
+1 + x + x^2 + \ldots + x^n = \frac{1 - x^{n+1}}{1 - x}
+\stopformula
+\egroup
+
+The new vertical bars go well with the brackets, the integral and the solidus.
+
+\bgroup
+\switchtobodyfont[antykwa]
+\startformula
+\fenced[doublebar]{f}_p = \F3\left[ \int_0^1 \fenced[bar]{f(x)}^p \dd x \right]^{1/p}
+\stopformula
+\egroup
+
+The fancy fraction bar and the radical bar have made the arithmetic|-|geometric
+mean inequality look more appealing than ever, hasn't it?
+
+\bgroup
+\switchtobodyfont[antykwa]
+\startformula
+    \frac{a_1 + a_2 + \ldots + a_n}{n} \geq \root[n=n]{a_1 a_2 \ldots a_n}
+\stopformula
+\egroup
+
+Primes are usually a bit of a challenge:
+
+\bgroup
+\switchtobodyfont[antykwa]
+\startformula
+f(k+1)-f(k) \alignhere = f'(k)+f''(k)\frac{1}{2}+f'''(\xi_k)\frac{1}{6}
+            \breakhere = k^p+\frac{p}{2}k^{p-1}+\frac{p(p-1)}{6}\xi_k^{p-2}
+\stopformula
+\egroup
+
+And, as expected, multi|-|line formulas also look fine.
+
+\stopsubject
+
+\stopchapter
+
+\stopcomponent

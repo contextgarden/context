@@ -1,0 +1,109 @@
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
+
+-- Initial support for the font.
+-- Tell us if something looks weird.
+return {
+    name = "gfsneohellenic",
+    version = "1.00",
+    comment = "Goodies that complement gfsneohellenicmath.",
+    author = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+    mathematics = {
+        parameters = {
+            DelimiterPercent                     =  85,
+            DelimiterShortfall                   = 400,
+            DelimiterDisplayPercent              =  90,
+            DelimiterDisplayShortfall            = 400,
+        },
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak    = "version",
+                    expected = "Version 1.02",
+                },
+                {
+                    tweak   = "fixprimes",
+                    factor  = 0.825,
+                    smaller = true,
+                    fake    = 0.8,
+                },
+                presets.scripttocalligraphic { },
+                presets.rsfstoscript         { },
+                presets.rsfsuprighttoscript  { },
+                presets.moderntocalligraphic { },
+                presets.eulertocalligraphic  { },
+                presets.xitsarabic           { rscale  = 0.80 },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { },
+                presets.wipeanchors          { },
+                presets.wipeitalics          { },
+                {
+                    tweak = "checkaccents",
+                },
+                {
+                    tweak = "kerns",
+                    list  = {
+                        ["0x7D.parts.top"]      = { topright = -0.25                      }, -- right brace top
+                        ["0x7D.parts.bottom"]   = {                   bottomright = -0.25 }, -- right brace bottom
+                        ["0x7D.variants.*"]     = { topright = -0.25, bottomright = -0.25 }, -- right brace variants
+                        ["0x29.parts.top"]      = { topright =  -0.3,                     }, -- right parenthesis top
+                        ["0x29.parts.bottom"]   = {                   bottomright = -0.3  }, -- right parenthesis bottom
+                        ["0x29.variants.*"]     = { topright = -0.15, bottomright = -0.15 }, -- right parenthesis variants
+                        ["0x221A.parts.top"]    = { topright =  0.2,                      }, -- right radical top
+                        ["0x221A.parts.bottom"] = {                   bottomright =  0.2  }, -- right radical bottom
+                        ["0x221A.variants.*"]   = { topright =  0.2,  bottomright =  0.2  }, -- right radical variants
+                        [0x27E9]                = { topright = -0.2,  bottomright = -0.2  }, -- angles
+                        ["0x27E9.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
+                        [0x27EB]                = { topright = -0.2,  bottomright = -0.2  },
+                        ["0x27EB.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
+
+                    },
+                },
+                {
+                    tweak = "flattenaccents",
+                },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "fixradicals",
+                },
+                {
+                    tweak = "addscripts",
+                },
+                {
+                    tweak = "accentdimensions",
+                },
+                {
+                    tweak = "addrules",
+                },
+                -- Font has extensible minus, but it looks like the LM one
+                -- {
+                --     tweak    = "replacerules",
+                --     -- minus    = true, -- we have an extensible
+                --     fraction = { height = .15, yoffset = .85 },
+                --     radical  = { height = .15, yoffset = .823, leftoffset = .065, rightoffset = .065, leftoverlap = 0.03 },
+                --     stacker  = { height = .15, yoffset = .85 },
+                -- },
+                {
+                    tweak = "addfourier",
+                    variant = 1,
+                },
+                {
+                    tweak   = "addprimed",
+                },
+            },
+        },
+        bigs = {
+            1, 2, 3, 4
+        },
+        --
+        -- experimental fixes for mkiv:
+        --
+        dimensions = dimensions,
+        kerns = kerns,
+    },
+}

@@ -139,6 +139,7 @@
   {\unless\ifcsname\??framed\currentotrbackground:\c!background\endcsname
      \page_backgrounds_check_frame
    \orelse\ifempty{\lastnamedcs}%
+%    \orelse\iflastnamedcs\v!on
      \page_backgrounds_check_frame
    \else
      \page_backgrounds_set_yes
@@ -148,6 +149,7 @@
   {\unless\ifcsname\??framed\currentotrbackground:\c!frame\endcsname
      \page_backgrounds_check_leftframe
    \orelse\ifcstok{\lastnamedcs}\v!on
+%    \orelse\iflastnamedcs\v!on
      \page_backgrounds_set_yes
    \else
      \page_backgrounds_check_leftframe
@@ -157,6 +159,7 @@
   {\unless\ifcsname\??framed\currentotrbackground:\c!leftframe\endcsname
      \page_backgrounds_check_rightframe
    \orelse\ifcstok{\lastnamedcs}\v!on
+%    \orelse\iflastnamedcs\v!on
      \page_backgrounds_set_yes
    \else
      \page_backgrounds_check_rightframe
@@ -166,6 +169,7 @@
   {\unless\ifcsname\??framed\currentotrbackground:\c!rightframe\endcsname
      \page_backgrounds_check_topframe
    \orelse\ifcstok{\lastnamedcs}\v!on
+%    \orelse\iflastnamedcs\v!on
      \page_backgrounds_set_yes
    \else
      \page_backgrounds_check_topframe
@@ -175,6 +179,7 @@
   {\unless\ifcsname\??framed\currentotrbackground:\c!topframe\endcsname
      \page_backgrounds_check_bottomframe
    \orelse\ifcstok{\lastnamedcs}\v!on
+%    \orelse\iflastnamedcs\v!on
      \page_backgrounds_set_yes
    \else
      \page_backgrounds_check_bottomframe
@@ -184,6 +189,7 @@
   {\unless\ifcsname\??framed\currentotrbackground:\c!bottomframe\endcsname
      \page_backgrounds_set_nop
    \orelse\ifcstok{\lastnamedcs}\v!on
+%    \orelse\iflastnamedcs\v!on
      \page_backgrounds_set_yes
    \else
      \page_backgrounds_set_nop

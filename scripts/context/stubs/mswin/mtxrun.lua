@@ -2141,7 +2141,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 42452, stripped down to: 23025
+-- original size: 42596, stripped down to: 23029
 
 if not modules then modules={} end modules ['l-table']={
  version=1.001,
@@ -2670,7 +2670,7 @@ local function do_serialize(root,name,depth,level,indexed)
       if accurate then
        handle(format("%s %s=%q,",depth,k,v))
       else
-       handle(format("%s %s=%s,",depth,k,v))
+       handle(format("%s %s=0x%X,",depth,k,v))
       end
      elseif accurate then
       handle(format("%s %s=%q,",depth,k,v))
@@ -2682,7 +2682,7 @@ local function do_serialize(root,name,depth,level,indexed)
       if accurate then
        handle(format("%s [%q]=%q,",depth,k,v))
       else
-       handle(format("%s [%q]=%s,",depth,k,v))
+       handle(format("%s [%q]=0x%X,",depth,k,v))
       end
      elseif accurate then
       handle(format("%s [%q]=%q,",depth,k,v))
@@ -3864,7 +3864,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-os"] = package.loaded["l-os"] or true
 
--- original size: 20585, stripped down to: 10701
+-- original size: 20686, stripped down to: 10791
 
 if not modules then modules={} end modules ['l-os']={
  version=1.001,
@@ -4004,6 +4004,8 @@ os.type=os.type or (io.pathseparator==";"    and "windows") or "unix"
 os.name=os.name or (os.type=="windows" and "mswin"  ) or "linux"
 if os.type=="windows" then
  os.libsuffix,os.binsuffix,os.binsuffixes='dll','exe',{ 'exe','cmd','bat' }
+elseif os.name=="macosx" then
+ os.libsuffix,os.binsuffix,os.binsuffixes='dylib','',{ '' }
 else
  os.libsuffix,os.binsuffix,os.binsuffixes='so','',{ '' }
 end
@@ -6599,7 +6601,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 46602, stripped down to: 24244
+-- original size: 46912, stripped down to: 24470
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -7547,6 +7549,20 @@ do
  end })
  function string.wordsplitter(s)
   return cache[s]
+ end
+end
+if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 then
+ local t={
+  ["#"]="#H",
+  ["\n"]="#L",
+  ['"']="#Q",
+  ["\r"]="#R",
+  [" "]="#S",
+  ["\t"]="#T",
+  ["\\"]="#X",
+ }
+ function string.texhashed(s)
+  return (gsub(s,".",t))
  end
 end
 
@@ -9365,7 +9381,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-prs"] = package.loaded["util-prs"] or true
 
--- original size: 26234, stripped down to: 17121
+-- original size: 26298, stripped down to: 17137
 
 if not modules then modules={} end modules ['util-prs']={
  version=1.001,
@@ -9693,7 +9709,7 @@ local splitter=lpeg.tsplitat(" ")
 function parsers.options_to_array(str)
  return str and lpegmatch(splitter,str) or {}
 end
-local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C(digit^1*lparent*(noparent+nestedparents)^1*rparent)+C((nestedbraces+(1-comma))^1)
+local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+C(digit^1*lparent*(noparent+nestedparents)^1*rparent)+C((nestedbraces+(1-comma))^1)+Cc("") 
 local pattern_a=spaces*Ct(value*(separator*value)^0)
 local function repeater(n,str)
  if not n then
@@ -9715,7 +9731,7 @@ local function repeater(n,str)
   end
  end
 end
-local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+(C(digit^1)/tonumber*lparent*Cs((noparent+nestedparents)^1)*rparent)/repeater+C((nestedbraces+(1-comma))^1)
+local value=P(lbrace*C((nobrace+nestedbraces)^0)*rbrace)+(C(digit^1)/tonumber*lparent*Cs((noparent+nestedparents)^1)*rparent)/repeater+C((nestedbraces+(1-comma))^1)+Cc("") 
 local pattern_b=spaces*Ct(value*(separator*value)^0)
 function parsers.settings_to_array_with_repeat(str,expand) 
  if expand then
@@ -14184,7 +14200,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-lua"] = package.loaded["util-lua"] or true
 
--- original size: 7149, stripped down to: 4997
+-- original size: 7166, stripped down to: 5009
 
 if not modules then modules={} end modules ['util-lua']={
  version=1.001,
@@ -14218,6 +14234,7 @@ luautilities.suffixes={
  tma="tma",
  tmc=(CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 and "tmd") or (jit and "tmb") or "tmc",
  lua="lua",
+ lmt="lmt",
  luc=(CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 and "lud") or (jit and "lub") or "luc",
  lui="lui",
  luv="luv",
@@ -15742,7 +15759,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-env"] = package.loaded["luat-env"] or true
 
--- original size: 6267, stripped down to: 4115
+-- original size: 6293, stripped down to: 4141
 
  if not modules then modules={} end modules ['luat-env']={
  version=1.001,
@@ -15815,7 +15832,7 @@ local function strippable(filename)
   return false
  end
 end
-function environment.luafilechunk(filename,silent,macros) 
+function environment.luafilechunk(filename,silent,macros,optional) 
  filename=file.replacesuffix(filename,"lua")
  local fullname=environment.luafile(filename)
  if fullname and fullname~="" then
@@ -15825,7 +15842,7 @@ function environment.luafilechunk(filename,silent,macros)
   end
   return data
  else
-  if not silent then
+  if not optional and not silent then
    report_lua("unknown file %a",filename)
   end
   return nil
@@ -16534,7 +16551,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 62221, stripped down to: 36225
+-- original size: 62425, stripped down to: 36404
 
 if not modules then modules={} end modules ['lxml-tab']={
  version=1.001,
@@ -16918,8 +16935,13 @@ do
   [ [[}]] ]="&U+7D;",
   [ [[~]] ]="&U+7E;",
  }
- local privates_n={ 
+ local privates_n={
  }
+ utilities.storage.mark(privates_u)
+ utilities.storage.mark(privates_p)
+ utilities.storage.mark(privates_s)
+ utilities.storage.mark(privates_x)
+ utilities.storage.mark(privates_n)
  local escaped=utf.remapper(privates_u,"dynamic")
  local unprivatized=utf.remapper(privates_p,"dynamic")
  local unspecialized=utf.remapper(privates_s,"dynamic")
@@ -21557,7 +21579,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-env"] = package.loaded["data-env"] or true
 
--- original size: 9501, stripped down to: 6413
+-- original size: 9758, stripped down to: 6523
 
 if not modules then modules={} end modules ['data-env']={
  version=1.001,
@@ -21571,6 +21593,7 @@ local next,rawget=next,rawget
 local resolvers=resolvers
 local allocate=utilities.storage.allocate
 local setmetatableindex=table.setmetatableindex
+local sortedhash=table.sortedhash
 local suffixonly=file.suffixonly
 local formats=allocate()
 local suffixes=allocate()
@@ -21672,7 +21695,7 @@ local relations=allocate {
   lua={
    names={ "lua" },
    variable='LUAINPUTS',
-   suffixes={ luasuffixes.lua,luasuffixes.luc,luasuffixes.tma,luasuffixes.tmc },
+   suffixes={ luasuffixes.lmt,luasuffixes.lua,luasuffixes.luc,luasuffixes.tma,luasuffixes.tmc },
    usertype=true,
   },
   lib={
@@ -21773,8 +21796,8 @@ local relations=allocate {
 }
 resolvers.relations=relations
 function resolvers.updaterelations()
- for category,categories in next,relations do
-  for name,relation in next,categories do
+ for category,categories in sortedhash(relations) do
+  for name,relation in sortedhash(categories) do
    local rn=relation.names
    local rv=relation.variable
    if rn and rv then
@@ -21787,7 +21810,9 @@ function resolvers.updaterelations()
       suffixes[rni]=rs
       for i=1,#rs do
        local rsi=rs[i]
-       suffixmap[rsi]=rni
+       if not suffixmap[rsi] then
+        suffixmap[rsi]=rni
+       end
       end
      end
     end
@@ -22379,7 +22404,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 70711, stripped down to: 44839
+-- original size: 70775, stripped down to: 44854
 
 if not modules then modules={} end modules ['data-res']={
  version=1.001,
@@ -23296,7 +23321,7 @@ end
 local preparetreepattern=Cs((P(".")/"%%."+P("-")/"%%-"+P(1))^0*Cc("$"))
 local collect_instance_files
 local function find_analyze(filename,askedformat,allresults)
- local filetype=''
+ local filetype=""
  local filesuffix=suffixonly(filename)
  local wantedfiles={}
  wantedfiles[#wantedfiles+1]=filename
@@ -23304,7 +23329,7 @@ local function find_analyze(filename,askedformat,allresults)
   if filesuffix=="" or not suffixmap[filesuffix] then
    local defaultsuffixes=resolvers.defaultsuffixes
    for i=1,#defaultsuffixes do
-    local forcedname=filename..'.'..defaultsuffixes[i]
+    local forcedname=filename.."."..defaultsuffixes[i]
     wantedfiles[#wantedfiles+1]=forcedname
     filetype=formatofsuffix(forcedname)
     if trace_locating then
@@ -23648,7 +23673,8 @@ collect_instance_files=function(filename,askedformat,allresults)
   local result={}
   local status={}
   local done={}
-  for k,r in next,results do
+  for k=1,#results do
+   local r=results[k]
    local method,list=r[1],r[2]
    if method and list then
     for i=1,#list do
@@ -26236,8 +26262,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1048730
--- stripped bytes    : 416800
+-- original bytes    : 1049917
+-- stripped bytes    : 417309
 
 -- end library merge
 
@@ -26585,8 +26611,8 @@ messages = messages or { } -- for the moment
 runners = runners  or { } -- global (might become local)
 
 runners.applications = {
-    ["lua"] = "luatex --luaonly",
-    ["luc"] = "luatex --luaonly",
+    ["lua"] = "luatex --luaonly --socket",
+    ["luc"] = "luatex --luaonly --socket",
     ["pl"] = "perl",
     ["py"] = "python",
     ["rb"] = "ruby",

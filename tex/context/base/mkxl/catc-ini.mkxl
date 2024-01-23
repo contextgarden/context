@@ -21,7 +21,7 @@
 %D Also, in \MKIV\ less active characters are used.
 
 % \begingroup
-%     \letcharcode\newlineasciicode\relax \xdef\outputnewlinechar{\Uchar\newlineasciicode}
+%     \letcharcode\newlineasciicode\relax \xdef\outputnewlinechar{\tocharacter\newlineasciicode}
 % \endgroup
 
 % \endlinechar = \endoflineasciicode % appended to input lines
@@ -33,7 +33,7 @@
 %   {\begingroup
 %    \enforced\letcharcode\newlineasciicode\relax
 %    \newlinechar\newlineasciicode
-%    \xdef\outputnewlinechar{\Uchar\newlineasciicode}%
+%    \xdef\outputnewlinechar{\tocharacter\newlineasciicode}%
 %    \endgroup}
 
 %D We predefine some prefixes ahead of syst-aux and mult-sys. We reserve 8 slots for
@@ -229,12 +229,12 @@
 
 \permanent\protected\def\pushactivechar#1%
   {\expandafter\let\expandafter\m_active\csname\csactive#1\endcsname
-  %\expandafter\let\expandafter\m_active\csname\Uchar"FFFF\Uchar\expandafter`\string#1\endcsname
+  %\expandafter\let\expandafter\m_active\csname\tocharacter"FFFF\tocharacter\expandafter`\string#1\endcsname
    \pushmacro\m_active}
 
 \permanent\protected\def\popactivechar#1%
   {\popmacro\m_active
-  %\letcsname\Uchar"FFFF\Uchar\expandafter`\string#1\endcsname\m_active
+  %\letcsname\tocharacter"FFFF\tocharacter\expandafter`\string#1\endcsname\m_active
    \letcsname\csactive#1\endcsname\m_active}
 
 \mutable\integerdef\c_active_char_code\zerocount
@@ -243,14 +243,14 @@
 \permanent\protected\def\popactivecharcode {\afterassignment\syst_active_pop \integerdef\c_active_char_code}
 
 \permanent\protected\def\syst_active_push
-  {\expandafter\let\expandafter\m_active\csname\csactive\Uchar\c_active_char_code\endcsname
-  %\expandafter\let\expandafter\m_active\csname\Uchar"FFFF\Uchar\c_active_char_code\endcsname
+  {\expandafter\let\expandafter\m_active\csname\csactive\tocharacter\c_active_char_code\endcsname
+  %\expandafter\let\expandafter\m_active\csname\tocharacter"FFFF\tocharacter\c_active_char_code\endcsname
    \pushmacro\m_active}
 
 \permanent\protected\def\syst_active_pop
   {\popmacro\m_active
-  %\letcsname\Uchar"FFFF\Uchar\c_active_char_code\endcsname\m_active
-   \letcsname\csactive\Uchar\c_active_char_code\endcsname\m_active}
+  %\letcsname\tocharacter"FFFF\tocharacter\c_active_char_code\endcsname\m_active
+   \letcsname\csactive\tocharacter\c_active_char_code\endcsname\m_active}
 
 %D \macros
 %D   {restorecatcodes,pushcatcodetable,popcatcodetable}

@@ -160,6 +160,18 @@ do
         targets = variants.default.targets,
     }
 
+-- do
+--     local iosize   = 512
+--     local iomode   = "line"
+--     local ioflush  = io.flush
+--     local iooutput = io.output
+--     iooutput():setvbuf(iomode,iosize)
+--     io.flush = function()
+--     --         ioflush()
+--     --         iooutput():setvbuf(iomode,iosize)
+--     end
+-- end
+
     logs.flush = io.flush
 
     writer = function(...)
@@ -337,6 +349,8 @@ do
     settimedlog = ignore
 
 end
+
+-- io.output():setvbuf("line",1024)
 
 logs.report          = report
 logs.subreport       = subreport

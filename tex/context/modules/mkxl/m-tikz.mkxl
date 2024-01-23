@@ -29,11 +29,34 @@
 
 \startmodule[tikz]
 
+\ifdefined\hoffset \else
+    \newdimen\hoffset
+    \newdimen\voffset
+\fi
+
 \ifdefined\pdflastxpos \else
     \unprotect
         \frozen\overloaded\protected\def\pdflastxpos{\numexpr\clf_lastxpos\relax}
         \frozen\overloaded\protected\def\pdflastypos{\numexpr\clf_lastypos\relax}
     \protect
+\fi
+
+\ifdefined\pdfstrcmp\else
+
+    \startluacode
+        interfaces.implement {
+            name      = "pdfstrcmp",
+            arguments = "2 strings",
+            usage     = "value",
+            public    = true,
+            actions   = function(a,b)
+                return
+                    tokens.values.integer,
+                    (a < b and -1) or (a > b and 1) or 0
+            end
+        }
+    \stopluacode
+
 \fi
 
 \newcatcodetable \tikzcatcodes
@@ -60,19 +83,27 @@
     \catcode\barasciicode             \othercatcode
 \stopcatcodetable
 
+\newinteger\tikzinputlevel
+
 \permanent\protected\def\starttikzinput
-  {\pushoverloadmode
-   \pushcatcodetable
-   \setcatcodetable\tikzcatcodes
-   \pushmacro\meaning
-   \let\meaning\meaningless
-   \autoparagraphmode\zerocount}
+  {\advance\tikzinputlevel\plusone
+   \ifcase\tikzinputlevel\or
+     \pushoverloadmode
+     \pushcatcodetable
+     \setcatcodetable\tikzcatcodes
+     \pushmacro\meaning
+     \let\meaning\meaningless
+     \autoparagraphmode\zerocount
+  \fi}
 
 \permanent\protected\def\stoptikzinput
   {\autoparagraphmode\plusone
-   \popcatcodetable
-   \popmacro\meaning
-   \popoverloadmode}
+   \ifcase\tikzinputlevel\or
+     \popcatcodetable
+     \popmacro\meaning
+     \popoverloadmode
+   \fi
+   \advance\tikzinputlevel\minusone}
 
 \permanent\protected\def\tikzinputfile#1%
   {\starttikzinput
@@ -97,6 +128,8 @@
 
 \permanent\protected\def\starttikzsettings
   {\pushoverloadmode
+   \pushcatcodetable
+   \setcatcodetable\tikzcatcodes
    \pushmacro\meaning
    \let\meaning\meaningless
    \autoparagraphmode\zerocount}
@@ -104,6 +137,7 @@
 \permanent\protected\def\stoptikzsettings
   {\autoparagraphmode\plusone
    \popmacro\meaning
+   \popcatcodetable
    \popoverloadmode}
 
 \permanent\tolerant\protected\def\starttikzpicture[#S#1]%
@@ -151,6 +185,10 @@
 \let\normalusepgflibrary \usepgflibrary
 \let\normalusetikzlibrary\usetikzlibrary
 
+\installnamespace{pgfmhack}
+\installnamespace{pgflhack}
+\installnamespace{tikzhack}
+
 \tolerant\protected\def\usepgfmodule[#1]#;#2% somehow both variants are used
   {\starttikzinput
    \normalusepgfmodule[#1#2]%
@@ -166,6 +204,34 @@
    \normalusetikzlibrary[#1#2]%
    \stoptikzinput}
 
+\unprotect
+
+\protected\def\installsomethingtikzindeed#1#2#3#4%
+  {\defcsname#1:b:#2\endcsname{#3}%
+   \defcsname#1:a:#2\endcsname{#4}}
+
+\protected\def\usesomethingtikzindeed#1#2#3%
+  {\ifcsname#1:l:#3\endcsname\else
+     \letcsname#1:l:#3\endcsname\relax
+     \begincsname#1:b:#3\endcsname
+     \starttikzinput
+     #2[#3]%
+     \stoptikzinput
+     \begincsname#1:a:#3\endcsname
+   \fi}
+
+% somehow both variants [#1] and {#1} are used
+
+\protected\def\installtikzlibraryhacks{\installsomethingtikzindeed\????tikzhack}
+\protected\def\installpgfmodulehacks  {\installsomethingtikzindeed\????pgfmhack}
+\protected\def\installpgflibraryhacks {\installsomethingtikzindeed\????pgflhack}
+
+\tolerant\protected\def\usepgfmodule  [#1]#;#2{\usesomethingtikzindeed\????pgfmhack\normalusepgfmodule  {#1#2}}
+\tolerant\protected\def\usepgflibrary [#1]#;#2{\usesomethingtikzindeed\????pgflhack\normalusepgflibrary {#1#2}}
+\tolerant\protected\def\usetikzlibrary[#1]#;#2{\usesomethingtikzindeed\????tikzhack\normalusetikzlibrary{#1#2}}
+
+\protect
+
 \usepgfmodule[shapes]
 \usepgfmodule[plot]
 \usepgfmodule[matrix]
@@ -173,5 +239,9 @@
 
 \definefilesynonym [pgfplots]      [tikz-pgfplots]
 \definefilesynonym [pgfplotstable] [tikz-pgfplotstable]
+
+% Here come the hacks:
+
+\installtikzlibraryhacks{calendar}{}{\tikzinputfile{pgfcalendar.code.tex}}
 
 \stopmodule
