@@ -736,24 +736,24 @@ interfaces.implement {
             { "yoffset", "dimension" },
             { "left", "dimension" },
             { "right", "dimension" },
+            { "on", "dimension" },
+            { "off", "dimension" },
         },
     },
     actions   = function(t)
         local n = new_rule(
-            t.width or runningrule,
+            t.width  or runningrule,
             t.height or runningrule,
-            t.depth or runningrule
+            t.depth  or runningrule
         )
         setattrlist(n,true)
-        setoffsets(n,t.xoffset,t.yoffset) -- ,t.left, t.right
-        local l = t.left
-        local r = t.right
-        if l then
-            setfield(n,"left",l)
-        end
-        if r then
-            setfield(n,"right",r)
-        end
+--         setoffsets(n,t.xoffset,t.yoffset) -- ,t.left, t.right
+--         local
+--             v = t.left   if v then setfield(n,"left", v) end
+--             v = t.right  if v then setfield(n,"right",v) end
+--             v = t.on     if v then setfield(n,"on",   v) end
+--             v = t.off    if v then setfield(n,"off",  v) end
+        setoffsets(n,t.xoffset,t.yoffset,t.left, t.right,t.on,t.off)
         context(tonode(n))
     end
 }

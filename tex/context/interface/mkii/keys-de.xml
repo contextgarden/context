@@ -702,6 +702,7 @@
 		<cd:constant name='autofile' value='autofile'/>
 		<cd:constant name='autofocus' value='autofocus'/>
 		<cd:constant name='autohang' value='autohang'/>
+		<cd:constant name='autointervals' value='autointervals'/>
 		<cd:constant name='autonumbers' value='autonumbers'/>
 		<cd:constant name='autopunctuation' value='autopunctuation'/>
 		<cd:constant name='autospacing' value='autospacing'/>

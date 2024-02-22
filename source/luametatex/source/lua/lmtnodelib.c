@@ -6964,6 +6964,10 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                 lua_pushinteger(L, tex_get_rule_left(n));
                             } else if (lua_key_eq(s, right)) {
                                 lua_pushinteger(L, tex_get_rule_right(n));
+                            } else if (lua_key_eq(s, on)) {
+                                lua_pushinteger(L, tex_get_rule_on(n));
+                            } else if (lua_key_eq(s, off)) {
+                                lua_pushinteger(L, tex_get_rule_off(n));
                             } else if (lua_key_eq(s, data)) {
                                 lua_pushinteger(L, rule_data(n));
                             } else if (lua_key_eq(s, font)) {
@@ -7657,6 +7661,10 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                 tex_set_rule_left(n, (halfword) lmt_roundnumber(L, 3));
                             } else if (lua_key_eq(s, right)) {
                                 tex_set_rule_right(n, (halfword) lmt_roundnumber(L, 3));
+                            } else if (lua_key_eq(s, on)) {
+                                tex_set_rule_on(n, (halfword) lmt_roundnumber(L, 3));
+                            } else if (lua_key_eq(s, off)) {
+                                tex_set_rule_off(n, (halfword) lmt_roundnumber(L, 3));
                             } else if (lua_key_eq(s, data)) {
                                 rule_data(n) = lmt_tohalfword(L, 3);
                             } else if (lua_key_eq(s, font)) {

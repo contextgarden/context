@@ -83,6 +83,9 @@ don't create a dummy file (can confuse pdf viewers that keep file in view)
 .B --purgeresult
 purge result file before run
 .TP
+.B --find=string
+search for the given pattern in the documentation sources
+.TP
 .B --forcexml
 force xml stub
 .TP

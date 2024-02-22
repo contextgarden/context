@@ -957,7 +957,7 @@ return {
  ["is strictly equivalent to"]={
   ["en"]="is strictly equivalent to",
   ["sv"]="är strikt ekvivalent med",
-  ["nl"]="is precide equivalent aan",
+  ["nl"]="is precies equivalent aan",
  },
  ["laplacian"]={
   ["en"]="the laplace operator",

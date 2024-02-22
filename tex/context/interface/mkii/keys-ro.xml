@@ -167,6 +167,7 @@
 		<cd:variable name='conversion' value='conversie'/>
 		<cd:variable name='current' value='curent'/>
 		<cd:variable name='cutspace' value='cutspace'/>
+		<cd:variable name='dash' value='dash'/>
 		<cd:variable name='dataset' value='dataset'/>
 		<cd:variable name='date' value='data'/>
 		<cd:variable name='day' value='zi'/>
@@ -702,6 +703,7 @@
 		<cd:constant name='autofile' value='autofile'/>
 		<cd:constant name='autofocus' value='autofocus'/>
 		<cd:constant name='autohang' value='autohang'/>
+		<cd:constant name='autointervals' value='autointervals'/>
 		<cd:constant name='autonumbers' value='autonumbers'/>
 		<cd:constant name='autopunctuation' value='autopunctuation'/>
 		<cd:constant name='autospacing' value='autospacing'/>
@@ -807,6 +809,7 @@
 		<cd:constant name='current' value='curent'/>
 		<cd:constant name='cutspace' value='cutspace'/>
 		<cd:constant name='dash' value='dash'/>
+		<cd:constant name='dashstep' value='dashstep'/>
 		<cd:constant name='dat' value='dat'/>
 		<cd:constant name='database' value='database'/>
 		<cd:constant name='dataset' value='dataset'/>

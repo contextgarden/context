@@ -11,7 +11,7 @@ if not modules then modules = { } end modules['mtx-context'] = {
 
 local type, next, tostring, tonumber = type, next, tostring, tonumber
 local format, gmatch, match, gsub, find = string.format, string.gmatch, string.match, string.gsub, string.find
-local quote, validstring, splitstring = string.quote, string.valid, string.split
+local quote, validstring, splitstring, splitlines = string.quote, string.valid, string.split, string.splitlines
 local sort, concat, insert, sortedhash, tohash = table.sort, table.concat, table.insert, table.sortedhash, table.tohash
 local settings_to_array = utilities.parsers.settings_to_array
 local appendtable = table.append
@@ -39,7 +39,7 @@ local elapsedtime   = statistics.elapsedtime
 
 local application = logs.application {
     name     = "mtx-context",
-    banner   = "ConTeXt Process Management 1.05",
+    banner   = "ConTeXt Process Management 1.06",
  -- helpinfo = helpinfo, -- table with { category_a = text_1, category_b = text_2 } or helpstring or xml_blob
     helpinfo = "mtx-context.xml",
 }
@@ -1262,7 +1262,7 @@ do -- more or less copied from mtx-plain.lua:
                 fmtpathspec = "."
             end
         end
-        fmtpathspec = string.splitlines(fmtpathspec)[1] or fmtpathspec
+        fmtpathspec = splitlines(fmtpathspec)[1] or fmtpathspec
         fmtpathspec = fmtpathspec and file.splitpath(fmtpathspec)
         local fmtpath = nil
         if fmtpathspec then
@@ -1768,7 +1768,7 @@ do
             for i=1,#files do
                 -- could be an lpeg
                 local name = files[i]
-                local data = string.splitlines(io.loaddata(name) or "")
+                local data = splitlines(io.loaddata(name) or "")
                 if data then
                     for i=1,#data do
                         local line = data[i]
@@ -1944,6 +1944,35 @@ function scripts.context.logcategories()
     scripts.context.run()
 end
 
+function scripts.context.find(pattern)
+    if pattern ~= "" then
+        local found = resolvers.findfile("luametatex.tex")
+        if found and found ~= "" then
+            for i=1,6 do
+                found = file.pathpart(found)
+            end
+        end
+        local files = dir.glob(found.."**.tex")
+        for i=1,#files do
+            local f = files[i]
+            local d = io.loaddata(f)
+            if find(d,pattern) then
+                local l = splitlines(d)
+                report(f)
+                report("")
+                for i=1,#l do
+                    if find(l[i],pattern) then
+                        report("%5i  %s",i,l[i])
+                    end
+                end
+                report("")
+            end
+        end
+    else
+        report("there is nothing to search for")
+    end
+end
+
 function scripts.context.timed(action)
     statistics.timed(action,true)
 end
@@ -2072,6 +2101,9 @@ elseif getargument("purge") then
 elseif getargument("purgeall") then
     -- only when no filename given, supports --pattern
     scripts.context.purge(true,nil,true)
+elseif getargument("find") then
+    -- context --find="%\framed"
+    scripts.context.find(getargument("find"))
 elseif getargument("pattern") then
     environment.filenames = dir.glob(getargument("pattern"))
     scripts.context.timed(scripts.context.autoctx)

@@ -1284,6 +1284,9 @@ local flushimage  do
     local f_v_d = formatters["[%.6N %.6N] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
     local f_h_d = formatters["[%.6N %.6N] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
 
+    local f_d_h = formatters["[%.6N %.6N] 0 d 0 J %.6N w 0 %.6N m %.6N %.6N l S"]
+    local f_d_v = formatters["[%.6N %.6N] 0 d 0 J %.6N w %.6N 0 m %.6N %.6N l S"]
+
     -- Historically the index is an object which is kind of bad.
 
     local boxresources, n = { }, 0
@@ -1620,6 +1623,15 @@ local flushimage  do
     -- never because the next are like the other engines and compensate for
     -- small sizes which is needed for inaccurate viewers.
 
+    local function onoff(on,off,dim)
+        on  = on  * bpfactor
+        off = off * bpfactor
+        local n = dim // (on+off)
+        on  = on  + .5*((dim  - n*(on+off)))/n
+        return on, off
+    end
+
+
     flushers.rule = function(current,pos_h,pos_v,pos_r,size_h,size_v,subtype,on,off,vmode)
         if subtype == emptyrule_code then
             return
@@ -1661,7 +1673,8 @@ local flushimage  do
 if not on or on == 0 or off == 0 then -- for now
                 rule = f_v(dim_v,dim_h)
             else
-                rule = f_v_d(on*bpfactor,off*bpfactor,dim_v,dim_h)
+                on, off = onoff(on,off,dim_h)
+                rule = f_v_d(on,off,dim_v,dim_h)
             end
         elseif dim_h <= one_bp then
             pdf_set_pos_temp(pos_h + 0.5 * size_h,pos_v)
@@ -1669,7 +1682,8 @@ if not on or on == 0 or off == 0 then -- for now
 if not on or on == 0 or off == 0 then -- for now
                 rule = f_h(dim_h,dim_v)
             else
-                rule = f_h_d(on*bpfactor,off*bpfactor,dim_h,dim_v)
+                on, off = onoff(on,off,dim_v)
+                rule = f_h_d(on,off,dim_h,dim_v)
             end
         else
 --             if on == 0 or off == 0 then
@@ -1677,11 +1691,15 @@ if not on or on == 0 or off == 0 then -- for now
                 pdf_set_pos_temp(pos_h,pos_v)
                 rule = f_f(dim_h,dim_v)
             elseif vmode then
-                pdf_set_pos_temp(pos_h + 0.5 * size_h,pos_v)
-                rule = f_h_d(on*bpfactor,off*bpfactor,dim_h,dim_v)
+                local offset = dim_v/2
+                on, off = onoff(on,off,dim_h)
+                pdf_set_pos_temp(pos_h,pos_v)
+                rule = f_d_h(on,off,dim_v,offset,dim_h,offset)
             else
-                pdf_set_pos_temp(pos_h,pos_v + 0.5 * size_v)
-                rule = f_v_d(on*bpfactor,off*bpfactor,dim_v,dim_h)
+                local offset = dim_h/2
+                on, off = onoff(on,off,dim_v)
+                pdf_set_pos_temp(pos_h,pos_v)
+                rule = f_d_v(on,off,dim_h,offset,offset,dim_v)
             end
         end
 

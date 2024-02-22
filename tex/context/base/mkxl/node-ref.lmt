@@ -537,7 +537,6 @@ do
 
     local stack      = { }
     local done       = { }
-
     local attribute  <const> = attributes.private('reference')
     local topofstack = 0
 

@@ -8414,6 +8414,9 @@ return {
    ["pe"]="دش",
    ["ro"]="dash",
   },
+  ["dashstep"]={
+   ["en"]="dashstep",
+  },
   ["dat"]={
    ["cs"]="dat",
    ["de"]="dat",
@@ -15399,6 +15402,16 @@ return {
    ["nl"]="snijwit",
    ["pe"]="فضای‌برش",
    ["ro"]="cutspace",
+  },
+  ["dash"]={
+   ["cs"]="pomlcka",
+   ["de"]="strich",
+   ["en"]="dash",
+   ["fr"]="pointille",
+   ["it"]="dash",
+   ["nl"]="streep",
+   ["pe"]="دش",
+   ["ro"]="dash",
   },
   ["dataset"]={
    ["en"]="dataset",
