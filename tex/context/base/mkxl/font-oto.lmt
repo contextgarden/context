@@ -444,8 +444,8 @@ local function featuresinitializer(tfmdata,value)
     if true then -- value then
         local starttime = trace_preparing and os.clock()
         local features  = tfmdata.shared.features
-        local fullname  = tfmdata.properties.fullname or "?"
-        if features then
+        local fullname  = tfmdata.properties.fullname
+        if features and fullname then
             initializehashes(tfmdata)
             local collectlookups    = otf.collectlookups
             local rawdata           = tfmdata.shared.rawdata

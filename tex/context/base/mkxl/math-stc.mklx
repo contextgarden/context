@@ -1340,6 +1340,7 @@
    \scratchdistance\zeropoint
    \scratchcounter\ifchknum\mathstackersparameter\c!sample\or\mathstackersparameter\c!sample\else\zerocount\fi
    \scratchunicode#codepoint\relax
+   \scratchclass\mathcodechecked{\mathstackersparameter\c!mathclass}\relax
    \ifconditional\indisplaymath\ifcase\scratchcounter\orelse\ifnum\lastatomclass=\mathbegincode
      \scratchdistance\dimexpr
        \fontcharwd\mathstylefont\mathstyle\scratchcounter
@@ -1348,7 +1349,7 @@
    \fi\fi
    \math_atom_by_parameter\mathstackersparameter
      {\usemathstackerscolorparameter\c!color
-      \Umathchar\zerocount\zerocount\scratchunicode\relax
+      \Umathchar\scratchclass\fam\scratchunicode\relax
       \ifzeropt\scratchdistance\else
         \kern\scratchdistance
       \fi}%

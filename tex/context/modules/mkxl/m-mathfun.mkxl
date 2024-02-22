@@ -16,10 +16,6 @@
 %D making it a module the user can decide. It's actually an example of abusing a
 %D \LUA\ interfacing mechanism that is meant for something else.
 
-\ifdefined\compute \else
-    \permanent\protected\def\compute{\thewithproperty\plusone}
-\fi
-
 %D At some point this will move to \type {m-mathfun.lmt}:
 
 \startluacode
@@ -210,9 +206,8 @@ $ \sqrt(x) = \luaexpr       {math.sqrt(2)}        $
 $ \sqrt(x) = \luaexpr [.6N] {math.sqrt(2)}        $
 $ \sqrt(x) = \the\sqrt                {2}         $
 $ \sqrt(x) = \the\sqrt[.3N]           {2}         $
-$ \sqrt(x) = \compute\sqrt[.3N]       {2}         $
 $ \sind(x) = \luaexpr [.4N] {math.pi}             $
-$ \pi = \compute\pi[.4N]                          $
+$ \pi = \the\pi[.4N]                          $
 $ \pi = \mathexpr[.40N]{pi}                       $
 $ \pi = \mathexpr[.80N]{sqrt(11)}                 $
 $ \pi = \decimalexpr[.80N]{sqrt(11)}              $

@@ -19,7 +19,6 @@ local states            = attributes.states
 local enableaction      = nodes.tasks.enableaction
 local nodeinjections    = backends.nodeinjections
 local texsetattribute   = tex.setattribute
-local variables         = interfaces.variables
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 
@@ -28,16 +27,16 @@ local setmetatableindex = table.setmetatableindex
 attributes.negatives    = attributes.negatives or { }
 local negatives         = attributes.negatives
 
-local a_negative        = attributes.private("negative")
+local a_negative        <const> = attributes.private("negative")
 
-local v_none            = interfaces.variables.none
+local v_none            <const> = interfaces.variables.none
 
 negatives.data          = allocate()
 negatives.attribute     = a_negative
 
 negatives.registered = allocate {
-    [variables.positive] = 1,
-    [variables.negative] = 2,
+    [interfaces.variables.positive] = 1,
+    [interfaces.variables.negative] = 2,
 }
 
 local data       = negatives.data

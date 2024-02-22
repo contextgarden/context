@@ -41,11 +41,11 @@ local report_destinations     = logs.reporter("backend","destinations")
 local report_bookmarks        = logs.reporter("backend","bookmarks")
 
 local variables               = interfaces.variables
-local v_auto                  = variables.auto
-local v_page                  = variables.page
-local v_name                  = variables.name
+local v_auto                  <const> = variables.auto
+local v_page                  <const> = variables.page
+local v_name                  <const> = variables.name
 
-local factor                  = number.dimenfactors.bp
+local factor                  <const> = number.dimenfactors.bp
 
 local settings_to_array       = utilities.parsers.settings_to_array
 
@@ -449,7 +449,7 @@ local v_minheight = variables.minheight
 local v_fit       = variables.fit
 local v_tight     = variables.tight
 
-local c_realpageno = tex.iscount("realpageno")
+local c_realpageno  <const> = tex.iscount("realpageno")
 
 -- nicer is to create dictionaries and set properties but it's a bit overkill
 

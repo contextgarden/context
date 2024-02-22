@@ -188,8 +188,9 @@ blobs.strhd = strhd
 
 -- upgraded
 
-local dimension_code = tokens.values.dimension
-local scan_hbox      = tokens.scanners.hbox
+local scan_hbox = tokens.scanners.hbox
+
+local dimension_code <const> = tokens.values.dimension
 
 local function action(field,what)
     local l = scan_hbox()

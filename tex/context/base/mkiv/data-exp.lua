@@ -131,10 +131,10 @@ local function splitpathexpr(str, newlist, validate) -- I couldn't resist lpeggi
     str = lpegmatch(stripper_1,str)
     if validate then
         for s in gmatch(str,"[^,]+") do
-            s = validate(s)
-            if s then
+            local v = validate(s)
+            if v then
                 n = n + 1
-                t[n] = s
+                t[n] = v
             end
         end
     else

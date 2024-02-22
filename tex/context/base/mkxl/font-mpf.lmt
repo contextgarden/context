@@ -108,9 +108,7 @@ local function initializempf(tfmdata,kind,value)
     if value then
         local font = tfmdata.properties.id
         for char, spec in sortedhash(metafont) do
-            if type(char) == "string" then
-                char = newprivateslot(char)
-            end
+            local char = type(char) == "string" and newprivateslot(char) or char
             register(font,char,function(font,char)
                 return setmetaglyphs(value,font,char,spec)
             end)

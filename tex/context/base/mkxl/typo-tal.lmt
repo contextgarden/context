@@ -20,17 +20,15 @@ local utfbyte = utf.byte
 
 local splitmethod          = utilities.parsers.splitmethod
 
-local nodecodes            = nodes.nodecodes
-local glyph_code           = nodecodes.glyph
-local glue_code            = nodecodes.glue
+local glyph_code           <const> = nodes.nodecodes.glyph
+local glue_code            <const> = nodes.nodecodes.glue
 
 local fontcharacters       = fonts.hashes.characters
 ----- unicodes             = fonts.hashes.unicodes
 local categories           = characters.categories -- nd
 
-local variables            = interfaces.variables
-local v_text               = variables.text
-local v_number             = variables.number
+local v_text               <const> = interfaces.variables.text
+local v_number             <const> = interfaces.variables.number
 
 local nuts                 = nodes.nuts
 local tonut                = nuts.tonut
@@ -69,8 +67,8 @@ typesetters.characteralign = characteralign
 local trace_split          = false  trackers.register("typesetters.characteralign", function(v) trace_split = true end)
 local report               = logs.reporter("aligning")
 
-local a_characteralign     = attributes.private("characteralign")
-local a_character          = attributes.private("characters")
+local a_characteralign     <const> = attributes.private("characteralign")
+local a_character          <const> = attributes.private("characters")
 
 local enabled              = false
 
@@ -78,9 +76,9 @@ local datasets             = false
 
 local implement            = interfaces.implement
 
-local comma                = 0x002C
-local period               = 0x002E
-local punctuationspace     = 0x2008
+local comma                <const> = 0x002C
+local period               <const> = 0x002E
+local punctuationspace     <const> = 0x2008
 
 local validseparators = {
     [comma]            = true,

@@ -47,8 +47,7 @@ local texgetcount        = tex.getcount
 local codeinjections     = backends.codeinjections
 local nodeinjections     = backends.nodeinjections
 
-local variables          = interfaces.variables
-local v_auto             = variables.auto
+local v_auto             <const> = interfaces.variables.auto
 
 local trace_attachments = false  trackers.register("widgets.attachments", function(v) trace_attachments = v end)
 
@@ -280,6 +279,8 @@ implement {
 local collected = allocate()
 local tobesaved = allocate()
 
+local c_realpageno <const> = tex.iscount("realpageno")
+
 local linkedlists = {
     collected = collected,
     tobesaved = tobesaved,
@@ -311,7 +312,7 @@ implement {
                         linkedlist     = { }
                         tobesaved[tag] = linkedlist
                     end
-                    linkedlist[n] = texgetcount("realpageno")
+                    linkedlist[n] = texgetcount(c_realpageno)
                 end
 }
 

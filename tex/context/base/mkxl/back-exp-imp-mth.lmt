@@ -30,12 +30,14 @@ local implement      = interfaces.implement
 
 do
 
-    local automathrows   = true  directives.register("export.math.autorows",   function(v) automathrows   = v end)
-    local automathapply  = true  directives.register("export.math.autoapply",  function(v) automathapply  = v end)
-    local automathnumber = true  directives.register("export.math.autonumber", function(v) automathnumber = v end)
+    ----- automathrows   = true  directives.register("export.math.autorows",   function(v) automathrows   = v end)
+    ----- automathapply  = true  directives.register("export.math.autoapply",  function(v) automathapply  = v end)
+    ----- automathnumber = true  directives.register("export.math.autonumber", function(v) automathnumber = v end)
     local automathstrip  = true  directives.register("export.math.autostrip",  function(v) automathstrip  = v end)
 
     local functions      = mathematics.categories.functions
+    local tagging        = mathematics.tagging
+    local functiontype   = mathematics.functiontype
 
     local function collapse(di,i,data,ndata,detail,element)
         local collapsing = di.data
@@ -57,47 +59,88 @@ do
         return i
     end
 
-    local function collapse_mn(di,i,data,ndata)
-        -- this is tricky ... we need to make sure that we wrap in mrows if we want
-        -- to bypass this one
-        local collapsing = di.data
-        if data then
-            i = i + 1
-            while i <= ndata do
-                local dn = data[i]
-                local tg = dn.tg
-                if tg == "mn" then
-                    collapsing[#collapsing+1] = dn.data[1]
-                    dn.skip = "ignore"
-                    i = i + 1
-                elseif tg == "mo" then
-                    local d = dn.data[1]
-                    if d == "." then
-                        collapsing[#collapsing+1] = d
-                        dn.skip = "ignore"
-                        i = i + 1
+    local function collapse_all_mn(data)
+        local n = #data
+        local f = false
+        local l = false
+        local d = false
+        local p = false
+        for i=1,n do
+            local di = data[i]
+            local tg = di.tg
+            if tg == "mn" then
+                if not f then
+                    d = di.data
+                    f = i
+                    p = false
+                else
+                    if p then
+                        p.element = "mn"
+                        local s = specifications[p.fulltag]
+                        s.mathcharacter = nil
+                        s.mathclass     = nil
+                        s.mathgroup     = nil
+                        s.mathindex     = nil
+                    end
+                    d[#d+1] = di.data[1]
+                    data[i] = false
+                    p = false
+                end
+                l = i
+            elseif tg == "mi" or tg == "mc" then
+                if p then
+                    f = false
+                end
+                if i < n and data[i+1].tg == "mn" then
+                    local d1 = di.data[1]
+                    if d1 then
+                        local c = d1.content
+                        local s = specifications[di.fulltag]
+                        if s.mathclass == "ordinary" and c and (c == "." or c == ",") then
+                            if not f then
+                                d = di.data
+                                f = i
+                                l = i
+                                p = di
+                            else
+                                d[#d+1] = d1
+                                data[i] = false
+                            end
+                        else
+                            f = false
+                        end
                     else
-                        break
+                        f = false
                     end
                 else
-                    break
+                    f = false
                 end
+            elseif f and (tg == "msub" or tg == "msup" or tg == "msubsup") then
+                local d1 = di.data[1]
+                if d1 and d1.tg == "mn" then
+                    d[#d+1] = d1.data[1]
+                    d1.data = d
+                    data[f] = false
+                end
+                f = false
+            else
+                f = false
             end
         end
-        return i
+        if d then
+            local j = 0
+            for i=1,n do
+                local d = data[i]
+                if d then
+                    j = j + 1
+                    data[j] = d
+                end
+            end
+            for i=j+1,n do
+                data[i] = nil
+            end
+        end
     end
-
-    -- maybe delay __i__ till we need it
-
-    local apply_function = {
-        {
-            element = "mo",
-         -- comment = "apply function",
-         -- data    = { utfchar(0x2061) },
-            data    = { "&#x2061;" },
-            nature  = "mixed",
-        }
-    }
 
     local functioncontent = { }
 
@@ -110,7 +153,7 @@ do
     local dummy_nucleus = {
         element   = "mtext",
         data      = { content = "" },
-        nature    = "inline",
+        nature    = "mixed",
         comment   = "dummy nucleus",
         fulltag   = "mtext>0"
     }
@@ -146,10 +189,13 @@ do
         mo            = true,
         mn            = true,
         mspace        = true,
+        mtext         = true,
      -- mmultiscripts = true,
      -- mstacker      = true,
      -- mextensible   = true,
     }
+
+    -- we could make a stupid xml and then just use lpath to clean it up
 
     local function checkmath(root) -- we can provide utf.toentities as an option
         local data = root.data
@@ -158,61 +204,27 @@ do
             local roottg = root.tg
             if roottg == "mo" then
                 local s = specifications[root.fulltag]
-                local c = s.class
-                if c == "open" or c == "close" or c == "middle" then
+                 -- maybe just via metatable
+                if s.mathgroup then
                     root.attributes = {
-                        maxsize = 1
+                        mathclass     = s.mathclass,
+                        mathgroup     = s.mathgroup,
+                        mathindex     = s.mathindex,
+                        mathcharacter = s.mathcharacter,
+                        mathstack     = s.mathstack,
+                    }
+                else
+                    root.attributes = {
+                        mathstack = s.mathstack,
                     }
                 end
---             elseif roottg == "msubsup" then
---                 -- kind of tricky: we have a different order in display mode
---                 local nucleus, superscript, subscript
---                 if ndata > 3 then
---                     -- error
---                 else
---                     for i=1,ndata do
---                         local di = data[i]
---                         if not di then
---                             -- weird
---                         elseif di.content then
---                             -- text
---                         else
---                             local s = specifications[di.fulltag]
---                             if s.subscript then
---                                 subscript = i
---                             elseif s.superscript then
---                                 superscript = i
---                             else
---                                 nucleus = i
---                             end
---                         end
---                     end
---                     if superscript or subscript then
---                         -- we probably always have 3 anyway ... needs checking
---                         local nuc = nucleus     and data[nucleus]
---                         local sub = subscript   and data[subscript]
---                         local sup = superscript and data[superscript]
---                         local n = 0 -- play safe
---                         if nuc then n = n + 1 ; data[n] = nuc end
---                         if sub then n = n + 1 ; data[n] = sub end
---                         if sup then n = n + 1 ; data[n] = sup end
---                     end
---                 end
-         -- elseif roottg == "msup" or roottg == "msub" then
-         --     -- m$^2$
-         --     if ndata == 1 then
-         --         local d = data[1]
-         --         data[2] = d
-         --         d.__i__ = 2
-         --         data[1] = dummy_nucleus
-         --     end
             elseif roottg == "mfenced" then
                 local s = specifications[root.fulltag]
                 local o = s.operator
                 if o then
                     root.skip = "comment"
                  -- root.content = utfchar(o) -- use embedded for now
-                else
+                elseif tagging.mfenced then
                     local l = s.left
                     local m = s.middle
                     local r = s.right
@@ -234,8 +246,13 @@ do
                         separators = m,
                         close      = r,
                     }
+                else
+                    root.element    = "mrow"
+                    root.attributes = {
+                        mathcategory = s.mathcategory
+                    }
                 end
-            elseif roottg == "mstacker" then
+         -- elseif roottg == "mstacker" then
             end
             if ndata == 0 then
                 root.skip = "comment" -- get rid of weird artefacts
@@ -248,21 +265,38 @@ do
                     return
                 elseif d.content then
                     return
-                else -- if ndata == 1 then
-                    local tg = d.tg
-                    if automathrows and (roottg == "mrow" or roottg == "mtext") then
-                        -- maybe just always ! check spec first
-                        -- or we can have checks.* for each as we then can flatten
-                        if no_mrow[tg] then
-                            root.skip = "comment"
-                        end
-                    elseif roottg == "mo" then
-                        if tg == "mo" then
-                            root.skip = "comment"
-                        end
+                elseif roottg == "mrow" or roottg == "mtext" then
+                    -- maybe just always ! check spec first
+                    -- or we can have checks.* for each as we then can flatten
+                    local s = specifications[root.fulltag]
+                    if s.mathunit then
+                        d.attributes = {
+                            mathunit = s.mathunit
+                        }
+                    elseif s.mathdigits then
+                        d.attributes = {
+                            mathdigits = s.mathdigits
+                        }
+                    elseif s.mathfunction then
+                        d.attributes = {
+                           mathfunction = s.mathfunction,
+                           mathcategory = s.mathcategory,
+                           mathstack    = s.mathstack,
+                        }
+                    elseif no_mrow[d.tg] then
+                        root.skip = "comment"
+                    else
+                        d.attributes = {
+                           mathstack = s.mathstack,
+                        }
+                    end
+                elseif roottg == "mo" then
+                    if d.tg == "mo" then
+                        root.skip = "comment"
                     end
                 end
             end
+            -- todo
             local i = 1
             while i <= ndata do                   -- -- -- TOO MUCH NESTED CHECKING -- -- --
                 local di = data[i]
@@ -280,12 +314,13 @@ do
                             local d = di.data
                             -- todo: accent = "false" (for scripts like limits)
                             di.attributes = {
-                                accent = "true",
+                                accent       = "true",
+                                mathcategory = s.mathcategory,
                             }
                             -- todo: p.topfixed
                             if t then
                                 -- mover
-                                if true then -- we don't go here any more
+                                if true then
                                     local dd = d[1].data
                                     if dd then
                                         dd[1].content = utfchar(t)
@@ -306,12 +341,13 @@ do
                             local d = di.data
                             -- todo: accent = "false" (for scripts like limits)
                             di.attributes = {
-                                accent = "true",
+                                accent       = "true",
+                                mathcategory = s.mathcategory,
                             }
                          -- todo: p.bottomfixed
                             if b then
                                 -- munder
-                                if true then -- we don't go here any more
+                                if true then
                                     local dd = d[2].data
                                     if dd then
                                         dd[1].content = utfchar(b)
@@ -359,7 +395,6 @@ do
                         checkmath(di)
                         i = i + 1
                     elseif tg == "mstacker" then
---                     inspect(di)
                         local d = di.data
                         local d1 = d[1]
                         local d2 = d[2]
@@ -397,7 +432,6 @@ do
                                     di.data    = { m or d1.data[1], b or d2.data[1] }
                                 end
                             else
--- di.element = "mweird"
                                 -- can't happen
                             end
                         else
@@ -410,7 +444,6 @@ do
                             }
                             di.detail = nil
                         end
--- inspect(di)
                         checkmath(di)
                         i = i + 1
                     elseif tg == "mroot" then
@@ -467,82 +500,96 @@ do
                         end
                         checkmath(di)
                         i = i + 1
-                    elseif tg == "mrow" and detail then -- hm, falls through
-                        di.detail = nil
-                        checkmath(di)
-                        di = {
-                            element    = "maction",
-                            nature     = "display",
-                            attributes = { actiontype = detail },
-                            data       = { di },
-                            n          = 0,
-                        }
-                        data[i] = di
-                        i = i + 1
-                    else
-                        local category = di.mathcategory
-                        if category then
-                         -- no checkmath(di) here
-                            if category == 1 then -- mo
-                                i = collapse(di,i,data,ndata,detail,"mo")
-                            elseif category == 2 then -- mi
-                                i = collapse(di,i,data,ndata,detail,"mi")
-                            elseif category == 3 then -- mn
-                                i = collapse(di,i,data,ndata,detail,"mn")
-                            elseif category == 4 then -- ms
-                                i = collapse(di,i,data,ndata,detail,"ms")
-                            elseif category >= 1000 then
-                                local apply = category >= 2000
-                                if apply then
-                                    category = category - 1000
-                                end
-                                if tg == "mi" then -- function
-                                    if roottg == "mrow" then
-                                        root.skip = "comment"
-                                        root.element = "function"
-                                    end
-                                    i = collapse(di,i,data,ndata,detail,"mi")
-                                    local tag = functions[category]
-                                    if tag then
-                                        di.data = functioncontent[tag]
-                                    end
-                                    if apply then
-                                        di.after = apply_function
-                                    elseif automathapply then -- make function
-                                        local following
-                                        if i <= ndata then
-                                            -- normally not the case
-                                            following = data[i]
-                                        else
-                                            local parent = di.__p__ -- == root
-                                            if parent.tg == "mrow" then
-                                                parent = parent.__p__
-                                            end
-                                            local index = parent.__i__
-                                            following = parent.data[index+1]
-                                        end
-                                        if following then
-                                            local tg = following.tg
-                                            if tg == "mrow" or tg == "mfenced" then -- we need to figure out the right condition
-                                                di.after = apply_function
-                                            end
-                                        end
-                                    end
-                                else -- some problem
-                                    checkmath(di)
-                                    i = i + 1
-                                end
-                            else
-                                checkmath(di)
-                                i = i + 1
-                            end
-                        elseif automathnumber and tg == "mn" then
+                    elseif tg == "mi" then
+                        local s = specifications[di.fulltag]
+                        if s.mathclass == "punctuation" then
+                            di.element = "mtext"
                             checkmath(di)
-                            i = collapse_mn(di,i,data,ndata)
+                            i = i + 1
                         else
+                            local category = s.mathcategory
+                            if s.mathgroup then
+                                di.attributes = {
+                                    mathclass     = s.mathclass,
+                                    mathgroup     = s.mathgroup,
+                                    mathindex     = s.mathindex,
+                                    mathcharacter = s.mathcharacter,
+                                    mathstack     = s.mathstack,
+                                }
+                            else
+                                di.attributes = {
+                                    mathstack     = s.mathstack,
+                                }
+                            end
                             checkmath(di)
                             i = i + 1
                         end
+                    elseif tg == "mrow" then
+                        local d = di.data
+                        local n = #d
+                        local s = specifications[di.fulltag]
+                        if s.mathunit then
+                            di.attributes = { mathunit = s.mathunit }
+                        elseif s.mathdigits then
+                            for i=1,n do
+                                d[i] = d[i].data[1].content or ""
+                            end
+                            di.tg      = "mn"
+                            di.element = "mn"
+                            di.nature  = "mixed"
+                            di.data    = { { content = concat(d) } }
+                        elseif s.mathfunction then
+                            di.attributes = {
+                                mathfunction = s.mathfunction,
+                                mathstack    = s.mathstack
+                            }
+                            local category = tonumber(s.mathcategory)
+                            if functiontype(category) == "function" then
+                                local fnc = functions[category] -- functions[s.mathfunction]
+                                local tag = fnc and fnc.tag
+                                if tag then
+                                    di.tg      = "mi"
+                                    di.element = "mi"
+                                    di.nature  = "mixed"
+                                    di.data    = functioncontent[tag]
+                                end
+                            end
+                            i = i + 1
+                        elseif s.mathfunctionstack then
+                            di.attributes = {
+                                mathfunction      = s.mathfunction,
+                                mathstack         = s.mathstack,
+                                mathfunctionstack = s.mathfunctionstack,
+                            }
+                            checkmath(di)
+                            i = i + 1
+                            -- maybe fall through
+                        elseif s.mathfractionstack then
+                            di.attributes = {
+                                mathfractionstack = s.mathfractionstack,
+                            }
+                            checkmath(di)
+                            i = i + 1
+                            -- maybe fall through
+                        else
+                            if n > 0 then
+                                local d1 = d[1]
+                                if d1.tg == "mfrac" then
+                                    if n == 1 then -- simple one
+                                        di = d1
+                                        data[i] = di
+                                    elseif n == 2 and d[2].tg == "ignore" then -- simple one with nilled middle fence
+                                        di = d1
+                                        data[i] = di
+                                    end
+                                end
+                            end
+                            checkmath(di)
+                            i = i + 1
+                        end
+                    else
+                        checkmath(di)
+                        i = i + 1
                     end
                 else -- can be string or boolean
                     if parenttg ~= "mtext" and di == " " then
@@ -581,38 +628,9 @@ do
                             data[n] = d
                             d.data = { }
                         elseif not content then
---                      if not content then
                             n = n + 1
                             d.__i__ = n
                             data[n] = d
---                        elseif content == " " or content == "" then
---                            if d.tg == "mspace" then
---                             -- we append or prepend a space to a preceding or following mtext
---                                local parent = di.__p__
---                                local index  = di.__i__ -- == i
---                                local data   = parent.data
---                                if index > 1 then
---                                    local d = data[index-1]
---                                    if d.tg == "mtext" then
---                                        local dd = d.data
---                                        local dn = dd[#dd]
---                                        local dc = dn.content
---                                        if dc then
---                                            dn.content = dc .. content
---                                        end
---                                    end
---                                elseif index < ndata then
---                                    local d = data[index+1]
---                                    if d.tg == "mtext" then
---                                        local dd = d.data
---                                        local dn = dd[1]
---                                        local dc = dn.content
---                                        if dc then
---                                            dn.content = content .. dc
---                                        end
---                                    end
---                                end
---                            end
                         else
                             n = n + 1
                             data[n] = d
@@ -622,6 +640,9 @@ do
                 for i=ndata,n+1,-1 do
                     data[i] = nil
                 end
+                -- maybe integrate the above and this one:
+                collapse_all_mn(data)
+                --
                 if #data > 0 then
                     return di
                 end
@@ -635,14 +656,19 @@ do
             -- issue that i need to look into
         else
             local specification = specifications[di.fulltag]
-            local mode = specification and specification.mode == "display" and "block" or "inline"
+            local mode   = specification.mode   == "display" and "block" or "inline"
+            local domain = specification.domain or "default"
             di.attributes = {
                 ["display"]    = mode,
+                ["domain"]     = domain,
+                ["alttext"]    = specification.input, -- bonus
                 ["xmlns:m"]    = mathmlns,
                 ["xmlns:math"] = mathmlns,
             }
             -- can be option if needed:
-            if mode == "inline" then
+            if specification.standalone then
+                di.nature = "display"
+            elseif mode == "inline" then
              -- di.nature = "mixed"  -- else spacing problem (maybe inline)
                 di.nature = "inline" -- we need to catch x$X$x and x $X$ x
             else
@@ -707,7 +733,7 @@ do
     local mprescripts = {
         element = "mprescripts",
         data    = { content = "" },
-        nature  = "inline",
+        nature  = "inline", -- mixed
         fulltag = "mprescripts>0"
     }
 
@@ -739,14 +765,26 @@ do
     end
 
     local function found(d,what)
-        for i=1,#d do
-            local di = d[i]
-            local sp = specifications[di.fulltag]
-            if sp and sp.script == what then
-                return di
+        if what then
+            for i=1,#d do
+                local di = d[i]
+                local sp = specifications[di.fulltag]
+                if sp and sp.script == what then
+                    return di
+                end
+            end
+        else
+            for i=1,#d do
+                local di = d[i]
+                local sp = specifications[di.fulltag]
+                if not sp or not sp.script then
+                    return di
+                end
             end
         end
     end
+
+    -- todo: pick up kernel
 
     function checks.mrow(di)
         local d = di.data
@@ -778,7 +816,7 @@ do
                             prelist  = { }
                             kernel   = dummy_nucleus
                         end
-                        local sub = found(data,"sup")
+                        local sup = found(data,"sup")
                         postlist[#postlist+1] = dummy_nucleus
                         postlist[#postlist+1] = sup
                         if continuation.kernel then
@@ -806,8 +844,8 @@ do
                         end
                         local sub = found(data,"sub")
                         local sup = found(data,"sup")
-                        postlist[#postlist+1] = sub
-                        postlist[#postlist+1] = sup
+                        postlist[#postlist+1] = sub or dummy_nucleus
+                        postlist[#postlist+1] = sup or dummy_nucleus
                         if continuation.kernel then
                             kernel = data[1] or dummy_nucleus
                         end
@@ -934,20 +972,38 @@ do
             insert(data,1,dummy_nucleus)
             data.__i__ = 2
         end
+        local sp = specifications[di.fulltag]
+        di.attributes = {
+            mathsubindex = sp.subshifted,
+        }
     end
 
-    extras.msup = extras.msub
+    function extras.msup(di,element,n,fulltag)
+        local data = di.data
+        if #data == 1 then
+            insert(data,1,dummy_nucleus)
+            data.__i__ = 2
+        end
+        local sp = specifications[di.fulltag]
+        di.attributes = {
+            mathsupindex = sp.supshifted,
+        }
+    end
 
     function extras.msubsup(di,element,n,fulltag)
         local data = di.data
-        if #data == 2 then
-            insert(data,1,dummy_nucleus)
-            data.__i__ = 3
-        end
+        local nuc = found(data)
         local sup = found(data,"sup")
         local sub = found(data,"sub")
+        data[1] = nuc or dummy_nucleus
         data[2] = sub
         data[3] = sup
+        data.__i__ = 3
+        local sp = specifications[di.fulltag]
+        di.attributes = {
+            mathsupindex = sp.supshifted,
+            mathsubindex = sp.subshifted,
+        }
     end
 
 end

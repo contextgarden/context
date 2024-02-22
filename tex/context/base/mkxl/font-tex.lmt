@@ -28,7 +28,7 @@ local currentfont    = font.current
 
 local makesetups = formatters["box:%s:%S"]
 
-local a_exportstatus = attributes.private('exportstatus')
+local a_exportstatus <const> = attributes.private('exportstatus')
 
 local function makeglyphbox(char,spec)
     token.expand_macro("makeglyphbox",true,spec.setups or tostring(char))
@@ -133,9 +133,7 @@ local function initializebox(tfmdata,kind,value)
         -- just preregister the list
         for char, spec in sortedhash(boxes) do
             spec.setups = makesetups(value,char)
-            if type(char) == "string" then
-                char = newprivateslot(name)
-            end
+            local char = type(char) == "string" and newprivateslot(name) or char
             -- check if spec.code
             register(font,char,function(font,char)
                 local action = spec.action

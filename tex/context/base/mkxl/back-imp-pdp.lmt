@@ -28,11 +28,11 @@ local scaninteger      = tokenscanners.integer
 local scanwhd          = tokenscanners.whd
 
 local values           = tokens.values
-local dimension_value  = values.dimension
-local cardinal_value   = values.cardinal
-local integer_value    = values.integer
+local dimension_value  <const> = values.dimension
+local cardinal_value   <const> = values.cardinal
+local integer_value    <const> = values.integer
 
-local immediate_code   = tex.flagcodes.immediate
+local immediate_code   <const> = tex.flagcodes.immediate
 
 local trace            = false  trackers.register("backend.primitives", function(v) trace = v end)
 local report           = logs.reporter("backend")
@@ -45,7 +45,6 @@ local newsetmatrix     = nodepool.setmatrix
 
 local implement        = interfaces.implement
 local constants        = interfaces.constants
-local variables        = interfaces.variables
 
 -- literals
 

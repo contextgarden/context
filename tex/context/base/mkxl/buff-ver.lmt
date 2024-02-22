@@ -36,19 +36,18 @@ local implement            = interfaces.implement
 local formatters           = string.formatters
 
 local tabtospace           = utilities.strings.tabtospace
-local variables            = interfaces.variables
 local settings_to_array    = utilities.parsers.settings_to_array
-local variables            = interfaces.variables
 local findfile             = resolvers.findfile
 local addsuffix            = file.addsuffix
 
-local v_yes                = variables.yes
-local v_no                 = variables.no
-local v_last               = variables.last
-local v_all                = variables.all
-local v_absolute           = variables.absolute
------ v_inline             = variables.inline  -- not !
------ v_display            = variables.display -- not !
+local variables            = interfaces.variables
+local v_yes                <const> = variables.yes
+local v_no                 <const> = variables.no
+local v_last               <const> = variables.last
+local v_all                <const> = variables.all
+local v_absolute           <const> = variables.absolute
+----- v_inline             <const> = variables.inline  -- not !
+----- v_display            <const> = variables.display -- not !
 
 -- beware, all macros have an argument:
 

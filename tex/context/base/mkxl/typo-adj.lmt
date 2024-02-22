@@ -7,9 +7,8 @@ if not modules then modules = { } end modules ['typo-adj'] = {
     license   = "see context related readme files"
 }
 
-local nodecodes    = nodes.nodecodes
-local hlist_code   = nodecodes.hlist
-local penalty_code = nodecodes.penalty
+local hlist_code   <const> = nodes.nodecodes.hlist
+local penalty_code <const> = nodes.nodecodes.penalty
 
 local nuts         = nodes.nuts
 local getprev      = nuts.getprev
@@ -40,7 +39,7 @@ end
 
 local function block_baselineskip(head,tail)
  -- tex.prevdepth = -1000 * 65536 -- ignoredepth
-    tex.prevdepth = texgetdimen("ignoredepthcriterion")
+    tex.prevdepth = texgetdimen("ignoredepthcriterion") -- todo: c_...
     return head
 end
 

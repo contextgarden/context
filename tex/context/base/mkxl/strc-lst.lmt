@@ -85,20 +85,20 @@ local autosectiondepth  = sections.autodepth
 
 local variables         = interfaces.variables
 
-local v_all             = variables.all
-local v_reference       = variables.reference
-local v_title           = variables.title
-local v_command         = variables.command
-local v_text            = variables.text
-local v_current         = variables.current
-local v_previous        = variables.previous
-local v_intro           = variables.intro
-local v_here            = variables.here
-local v_component       = variables.component
-local v_product         = variables.product
-local v_file            = variables.file
-local v_local           = variables["local"]
-local v_default         = variables.default
+local v_all             <const> = variables.all
+local v_reference       <const> = variables.reference
+local v_title           <const> = variables.title
+local v_command         <const> = variables.command
+local v_text            <const> = variables.text
+local v_current         <const> = variables.current
+local v_previous        <const> = variables.previous
+local v_intro           <const> = variables.intro
+local v_here            <const> = variables.here
+local v_component       <const> = variables.component
+local v_product         <const> = variables.product
+local v_file            <const> = variables.file
+local v_local           <const> = variables["local"]
+local v_default         <const> = variables.default
 
 local cheats = {
     [variables.fit]   = true,

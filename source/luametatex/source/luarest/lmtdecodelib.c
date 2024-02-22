@@ -577,7 +577,7 @@ static int pnglib_makemask(lua_State *L) /* for palette */
     switch (lua_type(L, 2)) {
         case LUA_TNUMBER:
             {
-                int n = lua_tointeger(L, 2);
+                int n = (int) lua_tointeger(L, 2);
                 n = n < 0 ? 0 : n > 255 ? 255 : n;
                 for (int i = 0; i <= n; i++) {
                     mapping[i] = 0xFF;
@@ -595,9 +595,9 @@ static int pnglib_makemask(lua_State *L) /* for palette */
                             lua_rawgeti(L, -1, 1);
                             lua_rawgeti(L, -2, 2);
                             lua_rawgeti(L, -3, 3);
-                            b = lua_tointeger(L, -3);
-                            e = lua_tointeger(L, -2);
-                            v = lua_tointeger(L, -1);
+                            b = (int) lua_tointeger(L, -3);
+                            e = (int) lua_tointeger(L, -2);
+                            v = (int) lua_tointeger(L, -1);
                             b = b < 0 ? 0 : b > 255 ? 255 : b;
                             e = e < 0 ? 0 : e > 255 ? 255 : e;
                             v = v < 0 ? 0 : v > 255 ? 255 : v;
@@ -620,7 +620,7 @@ static int pnglib_makemask(lua_State *L) /* for palette */
         default:
             break;
     }
-    for (int i = 0; i < size; i++) {
+    for (int i = 0; i < (int) size; i++) {
         mask[i] = (unsigned char) mapping[(unsigned char) content[i]];
     }
     lua_pushlstring(L, mask, size);

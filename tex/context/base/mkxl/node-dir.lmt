@@ -10,12 +10,13 @@ local nodes             = nodes
 local nuts              = nodes.nuts
 
 local nodecodes         = nodes.nodecodes
-local hlist_code        = nodecodes.hlist
-local vlist_code        = nodecodes.vlist
-local normaldir_code    = nodes.dircodes.normal
-local line_code         = nodes.listcodes.line
 
-local lefttoright_code  = tex.directioncodes.lefttoright
+local hlist_code        <const> = nodecodes.hlist
+local vlist_code        <const> = nodecodes.vlist
+local normaldir_code    <const> = nodes.dircodes.normal
+local line_code         <const> = nodes.listcodes.line
+
+local lefttoright_code  <const> = tex.directioncodes.lefttoright
 
 local getnext           = nuts.getnext
 local getlist           = nuts.getlist

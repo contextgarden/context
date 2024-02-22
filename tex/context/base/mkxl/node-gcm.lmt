@@ -7,9 +7,9 @@ if not modules then modules = { } end modules ['node-gmc'] = {
 }
 
 local type, tostring = type, tostring
+local fastcopy = table.fastcopy
 
 local nodes         = nodes
-local ligature_code = nodes.glyphcodes.ligature
 local nuts          = nodes.nuts
 
 local getnext       = nuts.getnext
@@ -21,9 +21,9 @@ local isglyph       = nuts.isglyph
 local getprop       = nuts.getprop
 local setprop       = nuts.setprop
 
-local fastcopy      = table.fastcopy
-
 local report_error  = logs.reporter("node-aux:error")
+
+local ligature_code <const> = nodes.glyphcodes.ligature
 
 local function setcomponents(base,list)
     local t = { }

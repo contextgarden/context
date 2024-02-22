@@ -469,19 +469,22 @@ local function copy(t,tables) -- taken from lua wiki, slightly adapted
         tables[t] = tcopy
     end
     for i,v in next, t do -- brrr, what happens with sparse indexed
+        local k
         if type(i) == "table" then
             if tables[i] then
-                i = tables[i]
+                k = tables[i]
             else
-                i = copy(i,tables)
+                k = copy(i,tables)
             end
+        else
+            k = i
         end
         if type(v) ~= "table" then
-            tcopy[i] = v
+            tcopy[k] = v
         elseif tables[v] then
-            tcopy[i] = tables[v]
+            tcopy[k] = tables[v]
         else
-            tcopy[i] = copy(v,tables)
+            tcopy[k] = copy(v,tables)
         end
     end
     local mt = getmetatable(t)

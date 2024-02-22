@@ -3461,7 +3461,7 @@
    \push_macro_recursedepth
    \protected\gdef\recurseaction##1##2{#1}%
    \untraced\edef\recurselevel{\noexpand\the\nestedloopiterator\the\currentloopnesting\space}%
-   \untraced\edef\recursedepth{\the\numexpr\currentloopnesting+\minusone}%
+   \untraced\edef\recursedepth{\the\numexpr\currentloopnesting+\plusone}%
    \localcontrolledendless
      {%\edef\recurselevel{\the\currentloopiterator}%
       %\edef\recursedepth{\the\currentloopnesting}%
@@ -3606,7 +3606,7 @@
    \push_macro_recursedepth
    \protected\gdef\recurseaction##1##2{#4}%
    \untraced\edef\recurselevel{\noexpand\the\nestedloopiterator\the\currentloopnesting\space}%
-   \untraced\edef\recursedepth{\the\numexpr\currentloopnesting+\minusone}%
+   \untraced\edef\recursedepth{\the\numexpr\currentloopnesting+\plusone}%
    \localcontrolledloop=#1=#2=#3%
      {%\edef\recurselevel{\the\currentloopiterator}%
       %\edef\recursedepth{\the\currentloopnesting}%
@@ -3621,7 +3621,7 @@
    \push_macro_recursedepth
    \protected\gdef\recurseaction##1##2{#2}%
    \untraced\edef\recurselevel{\noexpand\the\nestedloopiterator\the\currentloopnesting\space}%
-   \untraced\edef\recursedepth{\the\numexpr\currentloopnesting+\minusone}%
+   \untraced\edef\recursedepth{\the\numexpr\currentloopnesting+\plusone}%
    \localcontrolledrepeat=#1%
      {%\edef\recurselevel{\the\currentloopiterator}%
       %\edef\recursedepth{\the\currentloopnesting}%

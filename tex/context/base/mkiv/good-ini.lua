@@ -309,7 +309,7 @@ local function setextrafeatures(tfmdata)
                 -- hashed
                 for feature, specification in sortedhash(f) do
                     if not done[feature] then
-                        feature = specification.name or feature
+                        local feature = specification.name or feature
                         specification.name = feature
                         addotffeature(rawdata,feature,specification)
                         registerotffeature {

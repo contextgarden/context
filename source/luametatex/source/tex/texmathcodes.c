@@ -330,7 +330,6 @@ void tex_initialize_math_codes(void)
     tex_aux_initialize_delcode();
     /*tex This might become optional: */
     tex_set_default_math_codes();
-    tex_set_del_code('.', (delcodeval) { { 0, 0, 0, }, { 0, 0, 0 } }, level_one);
 }
 
 void tex_free_math_codes(void)

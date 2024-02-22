@@ -38,11 +38,12 @@ storage.register("structures/notes/numbers", notes.numbers, "structures.notes.nu
 local notestates = notes.states
 local notedata   = table.setmetatableindex("table")
 
-local variables  = interfaces.variables
 local context    = context
 local commands   = commands
 
 local implement  = interfaces.implement
+
+local v_page     <const> = interfaces.variables.page
 
 -- state: store, insert, postpone
 
@@ -396,7 +397,7 @@ local function flushnotes(tag,whatkind,how) -- store and postpone
                 -- todo: as registers: start, stop, inbetween
                 for i=ns,#nd do
                     -- tricky : trialtypesetting
-                    if how == variables.page then
+                    if how == v_page then
                         local rp = get(tag,i)
                         rp = rp and rp.references
                         rp = rp and rp.symbolpage or 0

@@ -99,6 +99,7 @@ typedef enum saved_box_options {
     saved_box_reverse_option   = 0x01,
     saved_box_container_option = 0x02,
     saved_box_limit_option     = 0x04,
+    saved_box_mathtext_option  = 0x08,
 } saved_box_options;
 
 inline static void saved_box_initialize(void)
@@ -212,7 +213,7 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
     int brace = 0;
     while (1) {
         /*tex Maybe |migrate <int>| makes sense here. */
-        switch (tex_scan_character("tascdoxyrlTASCDOXYRL", 1, 1, 1)) {
+        switch (tex_scan_character("tascdoxyrlmTASCDOXYRLM", 1, 1, 1)) {
             case 0:
                 goto DONE;
             case 't': case 'T':
@@ -424,6 +425,11 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
             case 'l': case 'L':
                 if (tex_scan_mandate_keyword("limit", 1)) {
                     options |= saved_box_limit_option;
+                }
+                break;
+            case 'm': case 'M':
+                if (tex_scan_mandate_keyword("mathtext", 1)) {
+                    options |= saved_box_mathtext_option;
                 }
                 break;
             case '{':
@@ -3029,6 +3035,8 @@ void tex_package(singleword nature)
         box_geometry(boxnode) = (singleword) geometry;
         if (option & saved_box_container_option) {
             node_subtype(boxnode) = container_list;
+        } else if (option & saved_box_mathtext_option) {
+            node_subtype(boxnode) = math_text_list;
         }
         box_axis(boxnode) = (singleword) axis;
         box_package_state(boxnode) |= (singleword) state;

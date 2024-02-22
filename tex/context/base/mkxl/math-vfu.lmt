@@ -745,6 +745,7 @@ local function copy_glyph(main,target,original,unicode,slot)
             kerns     = olddata.kerns,
             mathkerns = olddata.mathkerns,
             tounicode = olddata.tounicode,
+            unicode   = olddata.unicode,
          -- smaller   = olddata.smaller,
             commands  = { slotcommand[slot][unicode] },
         }
@@ -762,6 +763,7 @@ local function copy_glyph(main,target,original,unicode,slot)
                     kerns     = olddata.kerns,
                     mathkerns = olddata.mathkerns,
                     tounicode = olddata.tounicode,
+                    unicode   = olddata.unicode,
                     smaller   = olddata.smaller,
                     commands  = { slotcommand[slot][nextglyph] },
                 }
@@ -794,6 +796,7 @@ local function copy_glyph(main,target,original,unicode,slot)
                     height    = olddata.height,
                     depth     = olddata.depth,
                     tounicode = olddata.tounicode,
+                    unicode   = olddata.unicode,
                     commands  = { slotcommand[slot][oldglyph] },
                 }
                 newpart.glyph = addprivate(main,formatters["M-P-%H"](oldglyph),newdata)

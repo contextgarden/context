@@ -1,0 +1,240 @@
+%D \module
+%D   [      file=s-fonts-outlines,
+%D        version=2024.01.05,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Showing Outlines,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is mostly used for debugging a font and might evolve accordingly. The
+%D current interface is minimalistic. It was made when debugging some cff issues with
+%D old type one fonts that we needed to support.
+%D
+%D Processing all fonts on my disk results in some 2500 pages and the highest memory
+%D usage I ever encountered with \LUAMETATEX: when we start with an empty cache we
+%D need some 30 GB and for a final run more than 10; much relates to \LUA\ allocating
+%D beforehand (doubling table memory as they grow) and garbage collection.
+
+\startbuffer[samplefonttext]
+    a\\b\\c\\d\\e\\f\\g\\h\\i\\j\\k\\l\\m\\n\\o\\p\\q\\r\\s\\t\\u\\v\\w\\x\\y\\z\crlf
+    A\\B\\C\\D\\E\\F\\G\\H\\I\\J\\K\\L\\M\\N\\O\\P\\Q\\R\\S\\T\\U\\V\\W\\X\\Y\\Z\crlf
+    @\\1\\2\\3\\4\\5\\6\\7\\8\\9\\0\\(\\)\\[\\]\\\{\\\}\\&\\+\\-\\=\\<\\>\\%
+    \textslash\\\textbackslash\\\texthash\\\textpercent\\_\\-\\*\\!\\?\\,\\.\\:\\;%
+\stopbuffer
+
+\startbuffer[samplefont]
+    \framed
+      [offset=overlay,
+       frame=off,
+       align=middle]
+      {\def\\{\kern.2\emwidth}%
+       \getbuffer[samplefonttext]}%
+\stopbuffer
+
+\startMPdefinitions
+
+presetparameters "samplefont" [
+    name   = "",
+    labels = false,
+    buffer = "samplefont"
+] ;
+
+def lmt_samplefont = applyparameters "samplefont" "lmt_do_samplefont" enddef ;
+
+vardef lmt_do_samplefont =
+    image (
+        pushparameters "samplefont" ;
+
+        save sample ; string sample ; sample := "\getbuffer[" & (getparameter "buffer") & "]" ;
+        save banner ; string banner ; banner := "\strut\tttf " & (getparameter "name") ;
+
+        save p ; picture p[] ;
+
+        p[1] := lmt_outline [ text = sample ] ;
+        p[2] := textext(sample) ;
+        p[3] := textext.ulft(banner) ;
+
+        p[1] := (p[1] shifted - center p[1]) scaled 20 ;
+        p[2] := (p[2] shifted - center p[2]) scaled 20 ;
+        p[3] :=  p[3]                        scaled  4 ;
+
+        save c ; string c[] ;
+
+        c[1] := "middlered"   ; c[4] := "middlemagenta" ;
+        c[2] := "middlegreen" ; c[5] := "middlecyan"    ;
+        c[3] := "middleblue"  ; c[6] := "middleyellow"  ;
+
+        save n ; numeric n ; n := 1 ;
+
+        for i within p[1] :
+            drawpath pathpart i ;
+            drawpoints pathpart i withcolor c[n] ;
+            n := if n == 6 : 1 else : n + 1 fi ;
+        endfor ;
+
+        if (getparameter "labels") :
+
+            save defaultfont  ; string  defaultfont  ; defaultfont  := "Mono" ;
+            save defaultscale ; numeric defaultscale ; defaultscale := .4 ;
+
+            c[1] := "darkred"   ; c[4] := "darkmagenta" ;
+            c[2] := "darkgreen" ; c[5] := "darkcyan"    ;
+            c[3] := "darkblue"  ; c[6] := "darkyellow"  ;
+
+            n := 1 ;
+
+            for i within p[1] :
+                drawpointlabels pathpart i withcolor c[n] ;
+                n := if n == 6 : 1 else : n + 1 fi ;
+            endfor ;
+
+        fi ;
+
+        draw p[2]
+            shifted (0,-1.1*bbheight(p2)) ;
+
+        draw p[3]
+            shifted urcorner currentpicture ;
+
+        popparameters ;
+    )
+enddef ;
+
+\stopMPdefinitions
+
+\starttexdefinition protected samplefont[#1]
+    \begingroup
+        \getdummyparameters[name=dejavuserif.otf,buffer=samplefont,labels=no,#1]
+        \writestatus{fontfile}{\dummyparameter{name}}
+        \definedfont[\dummyparameter{name}]
+        \iffontchar\font`a\relax
+            \startMPpage[offset=2ts]
+                draw lmt_samplefont [
+                    buffer = "\dummyparameter{buffer}",
+                    name   = "\dummyparameter{name}",
+                    labels = \ifcstok{\dummyparameter{labels}}{yes}true\else false\fi
+                ] ;
+            \stopMPpage
+        \else
+            \writestatus{fontfile}{\dummyparameter{name} has no 'a'}
+        \fi
+    \endgroup
+\stoptexdefinition
+
+\continueifinputfile{s-fonts-outlines.mkxl}
+
+% \enabledirectives[fonts.cff.flatten]
+
+\starttext
+% \disabledirectives[fonts.streams.pack]
+% \enabletrackers[fonts.cff.charstrings]
+% \samplefont[name=gentiumbookplusitalic.ttf,labels=yes] % missing contours
+% \samplefont[name=lmr10.afm,labels=yes]
+% \samplefont[name=ibmplexmath.otf]
+\samplefont[name=sab.afm]
+\samplefont[name=creditsuissetyperoman.ttf]
+\samplefont[name=calibri.ttf]
+% \samplefont[name=lmmonoprop10-regular.otf]
+% \samplefont[name=texgyrepagella-regular.otf]
+% \samplefont[name=lmmonoltcond10-regular.otf]
+% \samplefont[name=lmsans10-boldoblique.otf]
+% \samplefont[name=sourcecodevariableitalic.otf]
+% \samplefont[name=sourcecodevariableroman.otf]
+% \samplefont[name=sourcehansansextralight.otf]
+% \samplefont[name=notosanscjkkrlight.otf]
+% \samplefont[name=notosanscjkscdemilight.otf]
+% \samplefont[name=notosanscjktclight.otf]
+% \samplefont[name=dfminchopstdw5.otf]
+\stoptext
+
+%D I might look into some of the crashes but some of these fonts are experimental
+%D and might be produced manually. Also some are plain ugly due to their state of
+%D development, but it's what I had to test at some point, so they stuck around and
+%D I have no motivation to sort out the mess.
+
+\starttext
+
+\startluacode
+    local todo = {
+
+        ["adobeblank.otf"]                  = "useless",
+        ["adobeblank2.otf"]                 = "useless",
+        ["lastresort.ttf"]                  = "useless",
+
+        ["sourcecodevariableitalic.otf"]    = "crash",
+        ["sourcecodevariableroman.otf"]     = "crash",
+        ["sourcehansansextralight.otf"]     = "crash",
+        ["sourceserif4displaylight.otf"]    = "crash",
+        ["notosanscjkkrlight.otf"]          = "crash",
+        ["notosanscjkscdemilight.otf"]      = "crash",
+        ["notosanscjktclight.otf"]          = "crash",
+        ["junicodetwobetaregularvf.otf"]    = "crash",
+        ["junicodetwobetabold.otf"]         = "crash",
+        ["dfminchopstdw5.otf"]              = "crash",
+        ["alegreyasansthin.otf"]            = "crash",
+        ["alegreyasansthinitalic.otf"]      = "crash",
+
+
+        ["lte52172.ttf"]                    = "crash",
+        ["avkv.ttf"]                        = "crash",
+        ["tirekv.ttf"]                      = "crash",
+
+        ["bhb.afm"]                         = "crash",
+        ["bhd.afm"]                         = "crash",
+        ["bhh.afm"]                         = "crash",
+        ["bhl.afm"]                         = "crash",
+        ["bhm.afm"]                         = "crash",
+        ["a.afm"]                           = "crash",
+        ["myriadmmitweight400width600.afm"] = "crash",
+        ["myriadmmitweight700width600.afm"] = "crash",
+        ["myriadmmweight400width600.afm"]   = "crash",
+        ["myriadmmweight700width600.afm"]   = "crash",
+
+    }
+
+    local skip = {
+        ["^arial"]    = "bugged",
+        ["^myriad"]   = "bugged",
+        ["^junicode"] = "bugged",
+        ["^noto"]     = "big",
+        ["^source"]   = "big",
+        ["^amiri"]    = "bugged",
+    }
+
+    local function isbad(name)
+        if todo[name] then
+            return todo[name]
+        else
+            for k, v in next, skip do
+                if string.find(name,k) then
+                    return v
+                end
+            end
+        end
+        return false
+    end
+
+    fonts.names.load()
+    local data = fonts.names.data
+    for k, v in table.sortedhash(data.files) do
+        local bad = isbad(k)
+        if bad then
+            context.writestatus("fontfile","skipping '" .. k .. "' : " .. bad)
+        else
+            local s = string.lower(file.suffix(k))
+            if s == "otf" or s == "ttf" or s == "afm" then
+         -- if s == "otf" then
+         -- if s == "ttf" then
+         -- if s == "afm" then
+                context.showsampleFont { name = k }
+            end
+        end
+    end
+\stopluacode
+
+\stoptext

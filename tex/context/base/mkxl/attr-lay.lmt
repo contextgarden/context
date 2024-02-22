@@ -44,12 +44,12 @@ attributes.viewerlayers = attributes.viewerlayers or { }
 local viewerlayers      = attributes.viewerlayers
 
 local variables         = interfaces.variables
-local v_local           = variables["local"]
-local v_global          = variables["global"]
-local v_start           = variables["start"]
-local v_yes             = variables["yes"]
+local v_local           <const> = variables["local"]
+local v_global          <const> = variables["global"]
+local v_start           <const> = variables["start"]
+local v_yes             <const> = variables["yes"]
 
-local a_viewerlayer     = attributes.private("viewerlayer")
+local a_viewerlayer     <const> = attributes.private("viewerlayer")
 
 viewerlayers            = viewerlayers            or { }
 viewerlayers.data       = allocate()
@@ -133,7 +133,7 @@ local function initializer(...)
     return states.initialize(...)
 end
 
-attributes.viewerlayers.handler = nodes.installattributehandler {
+viewerlayers.handler = nodes.installattributehandler {
     name        = "viewerlayer",
     namespace   = viewerlayers,
     initializer = initializer,

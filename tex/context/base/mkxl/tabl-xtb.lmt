@@ -87,21 +87,22 @@ local new_glue            = nodepool.glue
 local new_kern            = nodepool.kern
 local new_hlist           = nodepool.hlist
 
-local lefttoright_code    = tex.directioncodes.lefttoright
+local lefttoright_code    <const> = tex.directioncodes.lefttoright
 
-local v_stretch           = variables.stretch
-local v_normal            = variables.normal
-local v_width             = variables.width
-local v_height            = variables.height
-local v_repeat            = variables["repeat"]
-local v_max               = variables.max
-local v_fixed             = variables.fixed
------ v_auto              = variables.auto
-local v_before            = variables.before
-local v_after             = variables.after
-local v_both              = variables.both
-local v_samepage          = variables.samepage
-local v_tight             = variables.tight
+local v_stretch           <const> = variables.stretch
+local v_normal            <const> = variables.normal
+local v_width             <const> = variables.width
+local v_height            <const> = variables.height
+local v_repeat            <const> = variables["repeat"]
+local v_max               <const> = variables.max
+local v_fixed             <const> = variables.fixed
+----- v_auto              <const> = variables.auto
+local v_before            <const> = variables.before
+local v_after             <const> = variables.after
+local v_both              <const> = variables.both
+local v_samepage          <const> = variables.samepage
+local v_tight             <const> = variables.tight
+local v_split             <const> = variables.split
 
 local xtables             = { }
 typesetters.xtables       = xtables
@@ -111,24 +112,24 @@ local report_xtable       = logs.reporter("xtable")
 
 trackers.register("xtable.construct", function(v) trace_xtable = v end)
 
-local c_tabl_x_nx            = texiscount("c_tabl_x_nx")
-local c_tabl_x_ny            = texiscount("c_tabl_x_ny")
-local c_tabl_x_state         = texiscount("c_tabl_x_state")
-local c_tabl_x_mode          = texiscount("c_tabl_x_mode")
-local c_tabl_x_skip_mode     = texiscount("c_tabl_x_skip_mode")
-local d_tabl_x_final_width   = texisdimen("d_tabl_x_final_width")
-local d_tabl_x_distance      = texisdimen("d_tabl_x_distance")
-local d_tabl_x_width         = texisdimen("d_tabl_x_width")
-local d_tabl_x_height        = texisdimen("d_tabl_x_height")
-local d_tabl_x_depth         = texisdimen("d_tabl_x_depth")
-local d_lineheight           = texisdimen("lineheight")
+local c_tabl_x_nx            <const> = texiscount("c_tabl_x_nx")
+local c_tabl_x_ny            <const> = texiscount("c_tabl_x_ny")
+local c_tabl_x_state         <const> = texiscount("c_tabl_x_state")
+local c_tabl_x_mode          <const> = texiscount("c_tabl_x_mode")
+local c_tabl_x_skip_mode     <const> = texiscount("c_tabl_x_skip_mode")
+local d_tabl_x_final_width   <const> = texisdimen("d_tabl_x_final_width")
+local d_tabl_x_distance      <const> = texisdimen("d_tabl_x_distance")
+local d_tabl_x_width         <const> = texisdimen("d_tabl_x_width")
+local d_tabl_x_height        <const> = texisdimen("d_tabl_x_height")
+local d_tabl_x_depth         <const> = texisdimen("d_tabl_x_depth")
+local d_lineheight           <const> = texisdimen("lineheight")
 
-local c_frameddimensionstate = texiscount("frameddimensionstate")
+local c_frameddimensionstate <const> = texiscount("frameddimensionstate")
 
-local head_mode = 1
-local foot_mode = 2
-local more_mode = 3
-local body_mode = 4
+local head_mode <const> = 1
+local foot_mode <const> = 2
+local more_mode <const> = 3
+local body_mode <const> = 4
 
 local namedmodes = { [0] =
     "null",
@@ -1156,7 +1157,7 @@ function xtables.flush(directives) -- todo split by size / no inbetween then .. 
         data.bodystop = bodystop
         ctx_endvbox()
     else
-        if method == variables.split then
+        if method == v_split then
             -- maybe also a non float mode with header/footer repeat although
             -- we can also use a float without caption
             for i=1,#head do

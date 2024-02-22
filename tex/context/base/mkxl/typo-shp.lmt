@@ -24,7 +24,7 @@ local scaninteger  = scan.integer
 local scanboolean  = scan.boolean
 local scanstring   = scan.string
 
-local bpfactor     = number.dimenfactors.bp
+local bpfactor     <const> = number.dimenfactors.bp
 
 local context      = context
 

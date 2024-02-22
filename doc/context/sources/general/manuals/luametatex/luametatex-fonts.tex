@@ -1011,26 +1011,26 @@ values only makes sense in the perspective of the used macro package.
 
 \stopsubsection
 
-\startsubsection[title={Tracing}]
-
-The \prm {tracingfonts} primitive that has been inherited from \PDFTEX\ has
-been adapted to support variants in reporting the font. The reason for this
-extension is that a csname not always makes sense. The zero case is the default.
-
-\starttabulate[|l|l|]
-\DB value \BC reported \NC \NR
-\TB
-\NC \type{0} \NC \type{\foo xyz} \NC \NR
-\NC \type{1} \NC \type{\foo (bar)} \NC \NR
-\NC \type{2} \NC \type{<bar> xyz} \NC \NR
-\NC \type{3} \NC \type{<bar @ ..pt> xyz} \NC \NR
-\NC \type{4} \NC \type{<id>} \NC \NR
-\NC \type{5} \NC \type{<id: bar>} \NC \NR
-\NC \type{6} \NC \type{<id: bar @ ..pt> xyz} \NC \NR
-\LL
-\stoptabulate
-
-\stopsubsection
+% \startsubsection[title={Tracing}]
+%
+% The \prm {tracingfonts} primitive that has been inherited from \PDFTEX\ has
+% been adapted to support variants in reporting the font. The reason for this
+% extension is that a csname not always makes sense. The zero case is the default.
+%
+% \starttabulate[|l|l|]
+% \DB value \BC reported \NC \NR
+% \TB
+% \NC \type{0} \NC \type{\foo xyz} \NC \NR
+% \NC \type{1} \NC \type{\foo (bar)} \NC \NR
+% \NC \type{2} \NC \type{<bar> xyz} \NC \NR
+% \NC \type{3} \NC \type{<bar @ ..pt> xyz} \NC \NR
+% \NC \type{4} \NC \type{<id>} \NC \NR
+% \NC \type{5} \NC \type{<id: bar>} \NC \NR
+% \NC \type{6} \NC \type{<id: bar @ ..pt> xyz} \NC \NR
+% \LL
+% \stoptabulate
+%
+% \stopsubsection
 
 \stopsection
 

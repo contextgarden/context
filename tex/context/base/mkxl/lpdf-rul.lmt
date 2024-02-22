@@ -14,14 +14,14 @@ local concat, setmetatableindex = table.concat, table.setmetatableindex
 local attributes       = attributes
 local nodes            = nodes
 
-local bpfactor         = number.dimenfactors.bp
+local bpfactor         <const> = number.dimenfactors.bp
 
 local nuts             = nodes.nuts
 local ruleactions      = nuts.rules.ruleactions
 
 local getwhd           = nuts.getwhd
 
-local lefttoright_code = tex.directioncodes.lefttoright
+local lefttoright_code <const> = tex.directioncodes.lefttoright
 
 local mpcolor          = attributes.colors.mpcolor
 
@@ -39,14 +39,14 @@ local setmacro         = tokens.setters.macro
 
 local codeinjections   = backends.registered.pdf.codeinjections
 
-local d_rule_width  = isdimen("d_rule_width")
-local d_rule_height = isdimen("d_rule_height")
-local d_rule_depth  = isdimen("d_rule_depth")
-local d_rule_h      = isdimen("d_rule_h")
-local d_rule_v      = isdimen("d_rule_v")
-local d_rule_line   = isdimen("d_rule_line")
-local d_rule_offset = isdimen("d_rule_offset")
-local d_rule_factor = isdimen("d_rule_factor")
+local d_rule_width     <const> = isdimen("d_rule_width")
+local d_rule_height    <const> = isdimen("d_rule_height")
+local d_rule_depth     <const> = isdimen("d_rule_depth")
+local d_rule_h         <const> = isdimen("d_rule_h")
+local d_rule_v         <const> = isdimen("d_rule_v")
+local d_rule_line      <const> = isdimen("d_rule_line")
+local d_rule_offset    <const> = isdimen("d_rule_offset")
+local d_rule_factor    <const> = isdimen("d_rule_factor")
 
 -- This is very pdf specific. Maybe move some to lpdf-rul.lua some day.
 

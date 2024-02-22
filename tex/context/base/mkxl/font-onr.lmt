@@ -307,7 +307,7 @@ do
             }
             local version = metadata.FontType or 1
             -- only cff 1 in type 1 fonts
-            fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,"cff",streams,true,true)
+            fonts.handlers.otf.readers.parsecharstrings(false,data,glyphs,true,"cff0",streams,true,true)
         elseif not names then
             lpegmatch(p_filternames,binary,1,filename)
         end

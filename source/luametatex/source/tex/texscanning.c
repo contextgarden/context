@@ -770,7 +770,7 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
             /* we actually need two commands or we need to look ahead */
             {
                 mathcodeval mval = tex_no_math_code();
-                mathdictval dval = { 0, 0, 0 };
+                mathdictval dval = tex_no_dict_code();
                 if (tex_scan_math_cmd_val(&mval, &dval)) {
                     switch (code) {
                         case math_char_class_code:
@@ -5112,7 +5112,7 @@ static void tex_aux_scan_expr(halfword level)
             }
             break;
         case posit_val_level:
-            if (((unsigned) factor > max_cardinal) || ((unsigned) factor < min_cardinal)) {
+            if ((factor > max_integer) || (factor < min_integer)) {
                 lmt_scanner_state.arithmic_error = 1;
                 factor = 0;
             }

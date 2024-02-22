@@ -41,9 +41,7 @@
     ctx_verbatim("{\n")
     for accent, group in sortedhash(characters.tex.accentmapping) do
         for character, mapping in sortedhash(group) do
-            if character == "" then
-                character = " "
-            end
+            local character = character == "" and " " or character
             if accent == '"' then
                 ctx_verbatim("    '\\\\%s%s' : '\\u%04X',\n",accent,character,utfbyte(mapping))
             else

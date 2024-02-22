@@ -34,7 +34,7 @@ target_include_directories(luasocket PRIVATE
     source/luacore/luasocket
   # source/luacore/luasec
   # source/luacore/luasec/src
-    source/luacore/lua54/src
+    source/luacore/lua55/src
 )
 
 if (NOT MSVC)

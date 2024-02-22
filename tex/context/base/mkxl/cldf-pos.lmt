@@ -19,9 +19,8 @@ local fromposit         = posit.fromposit
 local toposit           = posit.toposit
 local posittonumber     = posit.tonumber
 
-local values            = tokens.values
-local boolean_code      = values.boolean
-local float_code        = values.float
+local boolean_code      <const> = tokens.values.boolean
+local float_code        <const> = tokens.values.float
 
 local scanners          = tokens.scanners
 local scanposit         = scanners.posit
@@ -33,7 +32,7 @@ do -- these are only for testing and might go to a module eventually
 
     local codes             = tex.codes
 
-    local global_code       = tex.flagcodes.global
+    local global_code       <const> = tex.flagcodes.global
 
     local savelua           = token.savelua
     ----- isdefined         = token.isdefined

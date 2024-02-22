@@ -132,7 +132,7 @@
                     ctx_gap()
                     ctx_setlegend(formatters["%03X"](r*0x10+i))
                 end
-                r = r * 0xFF
+                local r = r * 0xFF
                 ctx_par()
                 for i=0,0xF do
                     ctx_setlegend(formatters["%0X"](i))

@@ -2256,15 +2256,24 @@ void tex_off_save(void)
                 }
             case math_fence_group:
                 {
-                    /* maybe nicer is just a zero delimiter one */
-                    halfword q = tex_get_available_token(period_token);
+                    /*tex
+                        We feed the right dummy fence back into the input which is cheaper then 
+                        finishing the fence here. We don't use the hard coded period approach 
+                        because, even if that is kind of convention and likely configured in 
+                        a macro package, one can never be sure. That means that using zero as 
+                        signal is just as good.
+                    */
+                
+                 // halfword q = tex_get_available_token(period_token); /* or char 0 */
+                    halfword q = tex_get_available_token(token_val(math_char_number_cmd, math_char_ignore_code));
                     halfword f = node_next(cur_list.head);
                     set_token_info(h, deep_frozen_right_token);
                     set_token_link(h, q);
+                 // tex_add_noad_option(f, noad_option_ignore);
                     if (! (f && node_type(f) == fence_noad && has_noad_option_nocheck(f))) {
                         tex_handle_error(
                             normal_error_type,
-                            "Missing \\right. inserted",
+                            "Missing \\right\\nomathchar inserted",
                             helpinfo
                         );
                     }

@@ -16,8 +16,8 @@ local tasks        = nodes.tasks
 local handlers     = nodes.handlers
 
 local nodecodes    = nodes.nodecodes
-local hlist_code   = nodecodes.hlist
-local vlist_code   = nodecodes.vlist
+local hlist_code   <const> = nodecodes.hlist
+local vlist_code   <const> = nodecodes.vlist
 
 local nuts         = nodes.nuts
 local tonut        = nuts.tonut
@@ -28,7 +28,7 @@ local getbox       = nuts.getbox
 
 local implement    = interfaces.implement
 
-local v_yes        = interfaces.variables.yes
+local v_yes        <const> = interfaces.variables.yes
 
 local actions = tasks.actions("shipouts")
 
@@ -164,7 +164,8 @@ end)
 do -- for the moment:
 
     local whatsitcodes = nodes.whatsitcodes
-    local whatsit_code = nodecodes.whatsit
+
+    local whatsit_code <const> = nodecodes.whatsit
 
     local removables   = {
         [whatsitcodes.open]    = true,

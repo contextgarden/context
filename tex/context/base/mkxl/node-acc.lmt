@@ -1,4 +1,4 @@
- if not modules then modules = { } end modules ['node-acc'] = {
+if not modules then modules = { } end modules ['node-acc'] = {
     version   = 1.001,
     comment   = "companion to node-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -36,15 +36,15 @@ local copy_node          = nuts.copy
 local nodecodes          = nodes.nodecodes
 local gluecodes          = nodes.gluecodes
 
-local glue_code          = nodecodes.glue
-local glyph_code         = nodecodes.glyph
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
+local glue_code          <const> = nodecodes.glue
+local glyph_code         <const> = nodecodes.glyph
+local hlist_code         <const> = nodecodes.hlist
+local vlist_code         <const> = nodecodes.vlist
 
-local spaceskip_code     = gluecodes.spaceskip
-local xspaceskip_code    = gluecodes.xspaceskip
+local spaceskip_code     <const> = gluecodes.spaceskip
+local xspaceskip_code    <const> = gluecodes.xspaceskip
 
-local a_characters       = attributes.private("characters")
+local a_characters       <const> = attributes.private("characters")
 
 local nofreplaced        = 0
 

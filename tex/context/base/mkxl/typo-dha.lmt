@@ -73,19 +73,19 @@ local nodepool           = nuts.pool
 
 local nodecodes          = nodes.nodecodes
 local gluecodes          = nodes.gluecodes
-
-local glyph_code         = nodecodes.glyph
-local math_code          = nodecodes.math
-local kern_code          = nodecodes.kern
-local glue_code          = nodecodes.glue
-local dir_code           = nodecodes.dir
-local par_code           = nodecodes.par
-
-local parfillskip_code   = gluecodes.parfillskip
-
 local directioncodes     = tex.directioncodes
-local lefttoright_code   = directioncodes.lefttoright
-local righttoleft_code   = directioncodes.righttoleft
+
+local glyph_code         <const> = nodecodes.glyph
+local math_code          <const> = nodecodes.math
+local kern_code          <const> = nodecodes.kern
+local glue_code          <const> = nodecodes.glue
+local dir_code           <const> = nodecodes.dir
+local par_code           <const> = nodecodes.par
+
+local parfillskip_code   <const> = gluecodes.parfillskip
+
+local lefttoright_code   <const> = directioncodes.lefttoright
+local righttoleft_code   <const> = directioncodes.righttoleft
 
 local new_direction      = nodepool.direction
 
@@ -102,7 +102,7 @@ local directions         = typesetters.directions
 local setcolor           = directions.setcolor
 local getglobal          = directions.getglobal
 
-local a_directions       = attributes.private('directions')
+local a_directions       <const> = attributes.private('directions')
 
 local strip              = false
 

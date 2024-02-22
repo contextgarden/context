@@ -24,6 +24,8 @@ renderings.numbers      = numbers
 local sets              = allocate()
 renderings.sets         = sets
 
+local unsetvalue        <const> = attributes.unsetvalue
+
 mappings["blackboard-to-bold"] = {
     [0x1D538] = 0x1D400, [0x1D539] = 0x1D401, [0x02102] = 0x1D402, [0x1D53B] = 0x1D403, [0x1D53C] = 0x1D404,
     [0x1D53D] = 0x1D405, [0x1D53E] = 0x1D406, [0x0210D] = 0x1D407, [0x1D540] = 0x1D408, [0x1D541] = 0x1D409,
@@ -58,7 +60,7 @@ local function renderset(list) -- order matters
             n = #numbers + 1
             numbers[n] = mapping
         else
-            n = attributes.unsetvalue
+            n = unsetvalue
         end
         sets[tag] = n
     end

@@ -1473,7 +1473,11 @@ local f_attribute = formatters['%s=%q']
 local function verbose_element(e,handlers,escape) -- options
     local handle = handlers.handle
     local serialize = handlers.serialize
-    local ens, etg, eat, edt, ern = e.ns, e.tg, e.at, e.dt, e.rn
+    local ens = e.ns
+    local etg = e.tg
+    local eat = e.at
+    local edt = e.dt
+    local ern = e.rn
     local ats = eat and next(eat) and { }
     if ats then
         -- we now sort attributes

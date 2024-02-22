@@ -10,8 +10,8 @@ local concat = table.concat
 local type, next, load = type, next, load
 local sub, format, find, match = string.sub, string.format, string.find, string.match
 local splitlines, validstring, replacenewlines = string.splitlines, string.valid, string.replacenewlines
-local P, S, C, Ct, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs
-local patterns, lpegmatch = lpeg.patterns, lpeg.match
+local P, S, C, Ct, Cs, Cp = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Cp
+local lpegpatterns, lpegmatch = lpeg.patterns, lpeg.match
 local utfchar  = utf.char
 local nameonly = file.nameonly
 local totable  = string.totable
@@ -49,7 +49,6 @@ local grabtokens        = token.grab
 local getcommand        = tokens.accessors.command
 local getnextchar       = tokens.scanners.nextchar
 
-local variables         = interfaces.variables
 local settings_to_array = utilities.parsers.settings_to_array
 local formatters        = string.formatters
 local addsuffix         = file.addsuffix
@@ -57,20 +56,18 @@ local replacesuffix     = file.replacesuffix
 
 local registertempfile  = luatex.registertempfile
 
-local v_yes             = variables.yes
-local v_append          = variables.append
+local v_yes             <const> = interfaces.variables.yes
+local v_append          <const> = interfaces.variables.append
 
-local eol               = patterns.eol
-local space             = patterns.space
-local whitespace        = patterns.whitespace
+local eol               = lpegpatterns.eol
+local space             = lpegpatterns.space
+local whitespace        = lpegpatterns.whitespace
 local blackspace        = whitespace - eol
 local whatever          = (1-eol)^1 * eol^0
 local emptyline         = space^0 * eol
 
-local catcodenumbers    = catcodes.numbers
-
-local ctxcatcodes       = catcodenumbers.ctxcatcodes
-local txtcatcodes       = catcodenumbers.txtcatcodes
+local ctxcatcodes       <const> = catcodes.numbers.ctxcatcodes
+local txtcatcodes       <const> = catcodes.numbers.txtcatcodes
 
 local setdata           = job.datasets.setdata
 local getdata           = job.datasets.getdata
@@ -103,7 +100,7 @@ local assign  do
     -- There is no gain in an immediate concatenating lpeg
 
     local action  = whitespace^0 * C(P("+")^1 + P("*")) * whitespace^0
-    local equal   = whitespace^0 * patterns.equal * whitespace^0
+    local equal   = whitespace^0 * lpegpatterns.equal * whitespace^0
     local name    = C((1-action)^1)
     local pattern = C((1-equal)^1) * equal * Ct((action + name)^1)
 
@@ -270,9 +267,9 @@ implement {
     arguments = "string"
 }
 
--- local anything      = patterns.anything
--- local alwaysmatched = patterns.alwaysmatched
--- local utf8character = patterns.utf8character
+-- local anything      = lpegpatterns.anything
+-- local alwaysmatched = lpegpatterns.alwaysmatched
+-- local utf8character = lpegpatterns.utf8character
 --
 -- local function countnesting(b,e)
 --     local n
@@ -761,7 +758,7 @@ implement { name = "getbuffer",       actions = getbuffer,     arguments = "argu
 implement { name = "getbuffermkvi",   actions = getbuffermkvi, arguments = "argument" }
 implement { name = "getbuffertex",    actions = getbuffertex,  arguments = "argument" }
 
-interfaces.implement {
+implement {
     name      = "getbuffercontent",
     arguments = "string",
     actions   = { getcontent, context },
@@ -847,7 +844,7 @@ implement {
 
 function buffers.splitsamplefile(name,before,after,inbetween)
     local data  = io.loaddata(resolvers.findfile(name)) or ""
-    local split = string.split(utilities.strings.striplines(data,"prune and collapse"),lpeg.patterns.whitespace^1)
+    local split = string.split(utilities.strings.striplines(data,"prune and collapse"),lpegpatterns.whitespace^1)
     local size  = #split
     local before = tonumber(before) or 1
     local after  = tonumber(after) or 1
@@ -944,6 +941,58 @@ do
             local box = getbox(box)
             assign(buffer or "",box and serialized(box,detail))
         end,
+    }
+
+end
+
+do
+
+    local integer_value <const> = tokens.values.integer
+
+    local p_newline = lpegpatterns.newline
+
+    local amount
+
+    local p_count = (
+        p_newline / function() amount = amount + 1 end
+      + 1
+    )^0
+
+    local p_width = (
+        (
+            Cp() * (lpegpatterns.utf8char-p_newline)^1 * Cp() * (p_newline + P(0))
+        ) / function(f,t) local l = t - f ; if l > amount then amount = l end end
+      + p_newline
+    )^0
+
+    implement {
+        name      = "nofbufferlines",
+        public    = true,
+        usage     = "value",
+        arguments = "string",
+        actions   = function(n)
+            amount = 0
+            local data = getcontent(n)
+            if data and data ~= "" then
+                lpegmatch(p_count,data)
+            end
+            return integer_value, amount
+        end
+    }
+
+    implement {
+        name      = "maxbufferwidth",
+        public    = true,
+        usage     = "value",
+        arguments = "string",
+        actions   = function(n)
+            amount = 0
+            local data = getcontent(n)
+            if data and data ~= "" then
+                lpegmatch(p_width,data)
+            end
+            return integer_value, amount
+        end
     }
 
 end

@@ -291,6 +291,7 @@ do
                            + utf8two   / function(s) local c1, c2         = byte(s,1,2) return   c1 * 64 + c2                       -    12416 end
                            + utf8three / function(s) local c1, c2, c3     = byte(s,1,3) return  (c1 * 64 + c2) * 64 + c3            -   925824 end
                            + utf8four  / function(s) local c1, c2, c3, c4 = byte(s,1,4) return ((c1 * 64 + c2) * 64 + c3) * 64 + c4 - 63447168 end
+    helpers.charpattern    = usage == "scite" and 1 or helpers.utfcharpattern
 
     local p_false          = P(false)
     local p_true           = P(true)

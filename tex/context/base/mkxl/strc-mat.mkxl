@@ -1904,6 +1904,8 @@
 
 \permanent\tolerant\protected\def\numberhere[#1]%
   {\begingroup
+   \attribute\mathblobattribute\attributeunsetvalue
+   \dostarttagged\t!formulacaption\empty
    \global\c_strc_formulas_incremented\conditionalfalse
    \global\c_strc_formulas_referenced\conditionaltrue
    \global\c_strc_formulas_inside_place\conditionalfalse
@@ -1935,6 +1937,7 @@
       \else
         \strc_formulas_handle_numbering
       \fi}%
+   \dostoptagged
    \endgroup}
 
 % to be checked
@@ -1999,12 +2002,15 @@
 % numbers probably due to some % interference with other local variables
 
 \def\strc_formulas_place_number_in_box
-  {\dostarttagged\t!formulacaption\empty
+  {\begingroup
+   \attribute\mathblobattribute\attributeunsetvalue
+   \dostarttagged\t!formulacaption\empty
    \glet\strc_formulas_place_number\relax
   %\glet\strc_formulas_place_number_nested\gobbletwoarguments
    \global\setbox\b_strc_formulas_number\naturalhbox{\strc_formulas_number_indeed}%
    \global\d_strc_formulas_number\wd\b_strc_formulas_number
-   \dostoptagged}
+   \dostoptagged
+   \endgroup}
 
 \let\strc_formulas_flush_number\relax
 

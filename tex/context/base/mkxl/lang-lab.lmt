@@ -11,19 +11,20 @@ local next, rawget, type = next, rawget, type
 local lpegmatch = lpeg.match
 local formatters = string.formatters
 
-local prtcatcodes = catcodes.numbers.prtcatcodes -- todo: use different method
-
 local trace_labels  = false  trackers.register("languages.labels", function(v) trace_labels = v end)
 local report_labels = logs.reporter("languages","labels")
 
-languages.labels        = languages.labels or { }
-local labels            = languages.labels
+languages.labels          = languages.labels or { }
+local labels              = languages.labels
 
-local context           = context
-local implement         = interfaces.implement
+local context             = context
+local implement           = interfaces.implement
 
-local variables         = interfaces.variables
-local settings_to_array = utilities.parsers.settings_to_array
+local prtcatcodes <const> = catcodes.numbers.prtcatcodes -- todo: use different method
+local ctxcatcodes <const> = catcodes.numbers.ctxcatcodes -- todo: use different method
+
+local variables           = interfaces.variables
+local settings_to_array   = utilities.parsers.settings_to_array
 
 local splitter = lpeg.splitat(":")
 
@@ -45,6 +46,8 @@ local f_raw_key          = formatters["%s:\\v!%s"]
 local f_raw_raw          = formatters["%s:%s"]
 local f_key              = formatters["\\v!%s"]
 local f_raw              = formatters["%s"]
+
+-- setmacro("\??label#1:\reallanguagetag{#2}:#3","{{#4}{#5}}}") -- class tag key left right
 
 local function definelanguagelabels(data,class,tag,rawtag)
     for language, text in next, data.labels do
@@ -89,8 +92,8 @@ function labels.define(class,name,prefixed)
     local list = languages.data.labels[name]
     if list then
         report_labels("defining label set %a",name)
-        for tag, data in next, list do
-            tag = variables[tag] or tag
+        for key, data in next, list do
+            local tag = variables[key] or key
             if not data.hidden then
                 local key = tag
                 if prefixed then
@@ -120,6 +123,39 @@ function labels.define(class,name,prefixed)
     end
 end
 
+--Todo: first check if defined at the tex end otherwise fetch it from lua.
+
+interfaces.implement {
+    name      = "fetchlanguagetext",
+    public    = true,
+    arguments = { "string", "string", "string", "integer" },
+    actions   = function(language,name,label,n)
+        local found = languages.data.labels[name]
+        if not found then
+            return
+        end
+        found = found[label]
+        if not found then
+            return
+        end
+        found = found.labels -- hidden
+        if not found then
+            return
+        end
+        found = found[language]
+        if not found or found == "" then
+            return
+        end
+        if type(found) == "table" then
+            found = found[n] or found[1]
+        end
+        if found and found ~= "" then
+         -- contextsprint(found)
+            contextsprint(ctxcatcodes,found)
+        end
+    end
+}
+
 -- function labels.check()
 --     for category, list in next, languages.data.labels do
 --         for tag, specification in next, list do
@@ -140,7 +176,7 @@ end
 interfaces.implement {
     name      = "definelabels",
     actions   = labels.define,
-    arguments = { "string",  "string", "boolean" }
+    arguments = { "string", "string", "boolean" }
 }
 
 -- function commands.setstrippedtextprefix(str)

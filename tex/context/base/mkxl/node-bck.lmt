@@ -20,11 +20,11 @@ local enableaction       = nodes.tasks.enableaction
 local nodecodes          = nodes.nodecodes
 local listcodes          = nodes.listcodes
 
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
+local hlist_code         <const> = nodecodes.hlist
+local vlist_code         <const> = nodecodes.vlist
 
-local alignmentlist_code = listcodes.alignment
-local celllist_code      = listcodes.cell
+local alignmentlist_code <const> = listcodes.alignment
+local celllist_code      <const> = listcodes.cell
 
 local nuts               = nodes.nuts
 local nodepool           = nuts.pool
@@ -59,17 +59,17 @@ local new_kern           = nodepool.kern
 local new_hlist          = nodepool.hlist
 
 local privateattributes  = attributes.private
-local unsetvalue         = attributes.unsetvalue
 
 local getvalue           = attributes.getvalue
 local hasvalues          = attributes.hasvalues
 
 local linefillers        = nodes.linefillers
 
-local a_background       = privateattributes("background")
-local a_alignbackground  = privateattributes("alignbackground")
-local a_linefiller       = privateattributes("linefiller")
------ a_ruled            = privateattributes("ruled")
+local a_background       <const> = privateattributes("background")
+local a_alignbackground  <const> = privateattributes("alignbackground")
+local a_linefiller       <const> = privateattributes("linefiller")
+----- a_ruled            <const> = privateattributes("ruled")
+local unsetvalue         <const> = attributes.unsetvalue
 
 local trace_alignment    = false
 local report_alignment   = logs.reporter("backgrounds","alignment")

@@ -34,10 +34,11 @@ local numbers            = constructors.numbers
 constructors.methods     = constructors.methods or { }
 local methods            = constructors.methods
 
-local a_parbuilder       = attributes.numbers['parbuilder'] or 999 -- why 999
+local a_parbuilder       <const> = attributes.numbers['parbuilder'] or 999 -- why 999
 constructors.attribute   = a_parbuilder
 
-local unsetvalue         = attributes.unsetvalue
+local unsetvalue         <const> = attributes.unsetvalue
+
 local texsetattribute    = tex.setattribute
 local texnest            = tex.nest
 local texget             = tex.get

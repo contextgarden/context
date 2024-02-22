@@ -739,6 +739,33 @@ local function checklookups(fontdata,missing,nofmissing)
             report_unicodes("not unicoded: % t",sortedkeys(done))
         end
     end
+
+    for k, v in next, descriptions do
+        local math = v.math
+        if math then
+            local variants = math.variants
+            local parts    = math.parts
+            local unicode  = v.unicode
+            if variants then
+                if unicode then
+                    for i=1,#variants do
+                        local v = descriptions[variants[i]]
+                        if not v then
+                            -- error
+                        elseif v.unicode then
+                            -- error
+                        else
+                            v.unicode = unicode
+                        end
+                    end
+                end
+            end
+            if parts then
+                parts[#parts//2+1].unicode = unicode
+            end
+        end
+    end
+
 end
 
 local firstprivate = fonts.privateoffsets and fonts.privateoffsets.textbase or 0xF0000

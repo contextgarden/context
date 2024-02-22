@@ -351,9 +351,9 @@ local function setblocked(category,value) -- v.state == value == true : disable
             if v then
                 v.state = value
             else
-                c = topattern(c,true,true)
+                local p = topattern(c,true,true)
                 for k, v in next, data do
-                    if find(k,c) then
+                    if find(k,p) then
                         v.state = value
                     end
                 end

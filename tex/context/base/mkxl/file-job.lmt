@@ -63,16 +63,16 @@ local getextrapaths     = resolvers.getextrapaths
 local pushextrapath     = resolvers.pushextrapath
 local popextrapath      = resolvers.popextrapath
 
------ v_outer           = variables.outer
-local v_text            = variables.text
-local v_project         = variables.project
-local v_environment     = variables.environment
-local v_product         = variables.product
-local v_component       = variables.component
-local v_yes             = variables.yes
+----- v_outer           <const> = variables.outer
+local v_text            <const> = variables.text
+local v_project         <const> = variables.project
+local v_environment     <const> = variables.environment
+local v_product         <const> = variables.product
+local v_component       <const> = variables.component
+local v_yes             <const> = variables.yes
 
-local v_local           = variables["local"]
-local v_global          = variables["global"]
+local v_local           <const> = variables["local"]
+local v_global          <const> = variables["global"]
 
 local e_start           = elements.start
 local e_stop            = elements.stop
@@ -406,7 +406,7 @@ end
 
 local textlevel = 0 -- inaccessible for user, we need to define counter textlevel at the tex end
 
-local c_textlevel = tex.iscount("textlevel")
+local c_textlevel <const> = tex.iscount("textlevel")
 
 local function dummyfunction() end
 
@@ -1138,9 +1138,9 @@ function document.setcommandline() -- has to happen at the tex end in order to e
     local options   = document.options
 
     for k, v in next, environment.arguments do
-        k = gsub(k,"^c:","") -- already done, but better be safe than sorry
-        if arguments[k] == nil then
-            arguments[k] = v
+        local a = gsub(k,"^c:","") -- already done, but better be safe than sorry
+        if arguments[a] == nil then
+            arguments[a] = v
         end
     end
 

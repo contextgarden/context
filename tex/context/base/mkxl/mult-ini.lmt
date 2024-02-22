@@ -17,11 +17,12 @@ local implement           = interfaces.implement
 
 local allocate            = utilities.storage.allocate
 local mark                = utilities.storage.mark
------ prtcatcodes         = catcodes.numbers.prtcatcodes
-local vrbcatcodes         = catcodes.numbers.vrbcatcodes
 local contextsprint       = context.sprint
 local setmetatableindex   = table.setmetatableindex
 local formatters          = string.formatters
+
+----- prtcatcodes <const> = catcodes.numbers.prtcatcodes
+local vrbcatcodes <const> = catcodes.numbers.vrbcatcodes
 
 local report_interface    = logs.reporter("interface","initialization")
 

@@ -1,0 +1,11 @@
+--------------------------------------------------------------------------------------
+lctype.h : no longer needed as we dan use -DLUA_UCID now
+--------------------------------------------------------------------------------------
+
+/*       lislalpha(c)    testprop(c,  MASK(ALPHABIT)) */
+/*       lislalnum(c)    testprop(c, (MASK(ALPHABIT) | MASK(DIGITBIT))) */
+
+# define lislalpha(c)   (testprop(c,  MASK(ALPHABIT))                   || (c) > 0x7f)
+# define lislalnum(c)   (testprop(c, (MASK(ALPHABIT) | MASK(DIGITBIT))) || (c) > 0x7f)
+
+--------------------------------------------------------------------------------------

@@ -118,23 +118,23 @@
 
 \permanent\tolerant\protected\def\definemathtopaccent[#1]#*[#2]#*[#3]% class name top
   {\ifparameter#3\or
-     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                       {#1}\plusone{\number#3}\zerocount}%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                       {#1}{#2}\plusone{\number#3}\zerocount}%
    \else
-     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent\plusone{\number#2}\zerocount}%
+     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent{#1}\plusone{\number#2}\zerocount}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathbottomaccent[#1]#*[#2]#*[#3]% class name bottom
   {\ifparameter#3\or
-     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                       {#1}\plustwo\zerocount{\number#3}}%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                       {#1}{#2}\plustwo\zerocount{\number#3}}%
    \else
-     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent\plustwo\zerocount{\number#2}}%
+     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent{#1}\plustwo\zerocount{\number#2}}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathdoubleaccent[#1]#*[#2]#*[#3]#*[#4]% class name top bottom
   {\ifparameter#4\or
-     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                       {#1}\plusthree{\number#3}{\number#4}}%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                       {#1}{#2}\plusthree{\number#3}{\number#4}}%
    \else
-     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent\plusthree{\number#2}{\number#3}}%
+     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent{#1}\plusthree{\number#2}{\number#3}}%
    \fi}
 
 \installlocalcurrenthandler \??mathaccents {mathaccent}
@@ -148,7 +148,7 @@
 %D }
 %D \stoptyping
 
-\tolerant\protected\def\math_accent_make_double#class#kind#top#bottom#*[#settings]#:#content%
+\tolerant\protected\def\math_accent_make_double#class#name#kind#top#bottom#*[#settings]#:#content%
   {\beginmathgroup
    \setlocalmathaccentcurrent{#class}% \edef\currentmathaccent{#class}%
    \startusemathstyleparameter\mathaccentparameter\c!mathstyle
@@ -161,6 +161,7 @@
    \else
      \let\m_fixed\s!fixed
    \fi
+   \math_tags_mfunctionlab\plustwo{#name}{\ifcase#kind\or\v!top\or\v!bottom\else\v!both\fi}%
    \Umathaccent
      \usedcolorparameterattributes{\mathaccentparameter\c!color}%
  % nooverflow % there is never na overflow anyway but we do accept the key
@@ -321,6 +322,8 @@
 % \im { \widebar  {\cos\theta + \ii \sin\theta} = \cos\theta - \ii\sin\theta }\par
 % \im { \conjugate{\cos\theta + \ii \sin\theta} = \cos\theta - \ii\sin\theta }
 
+\definemathtopaccent[\v!top:\v!dot][conjugate]["0305]
+\definemathtopaccent[\v!top:\v!dot][closure]  ["0305]
 \definemathtopaccent[\v!top:\v!dot][conjugate]["0305]
 
 \aliased\let\mathring\ring % for a while

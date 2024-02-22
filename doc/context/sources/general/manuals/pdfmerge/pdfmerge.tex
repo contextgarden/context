@@ -1,0 +1,604 @@
+% language=us runpath=texruns:manuals/pdfmerge
+
+% The font merge feature is also availble in \MKIV\ where it is an experiment and
+% some cleanup is also there. In \LMTX\ it's more mature. Thanks to the competent
+% Team Ramkumar (including Syabil and Fish) for providing input, testing this
+% extensively, and feed back.
+
+% \nopdfcompression
+
+\usemodule[abbreviations-logos]
+
+\setupbodyfont
+  [bonum,10pt]
+
+\setuplayout
+  [topspace=.05ph,
+   bottomspace=.05ph,
+   backspace=.05ph,
+   header=.05 ph,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+\setupwhitespace
+  [big]
+
+\setuphead
+  [chapter]
+  [style=\bfc,
+   headerstate=high,
+   interaction=all]
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+\setuphead
+  [subsection]
+  [style=\bfa]
+
+\setuphead
+  [subsubsection]
+  [style=\bf,
+   after=]
+
+\setuplist
+  [interaction=all]
+
+\setuptyping
+  [color=darkyellow]
+
+\enabletrackers[graphics.fonts]
+\enabletrackers[graphics.fixes]
+
+\startdocument
+  [title=PDFmerge,
+   author=Hans Hagen]
+
+\startMPpage
+    fill Page withcolor "darkyellow" ;
+
+    picture p[] ;
+
+    p1 := image ( draw textext.ulft("PDF")
+        ysized 4cm
+        shifted lrcorner Page
+        withcolor "white"
+    ; );
+    p2 := image ( draw textext.ulft("\strut merging, embedding, fixing")
+        xsized bbwidth p[1]
+        shifted lrcorner Page
+        withcolor "lightgray"
+    ; );
+    p3 := image ( draw textext.ulft("\strut and messing a bit around")
+        xsized bbwidth p[1]
+        shifted lrcorner Page
+        withcolor "lightgray"
+    ; );
+    p4 := image ( draw textext.ulft("\strut in context lmtx")
+        xsized bbwidth p[1]
+        shifted lrcorner Page
+        withcolor "lightgray"
+    ; );
+    draw p[4] shifted (-1cm,1cm) ;
+    draw p[3] shifted (-1cm,1cm+bbheight(p4)+0cm) ;
+    draw p[2] shifted (-1cm,1cm+bbheight(p3)+bbheight(p4)+0cm) ;
+    p[1] := p[1] shifted (-1cm,1cm+bbheight(p2)+bbheight(p3)+bbheight(p4)+15mm);
+    save dy ; dy := 0 ;
+    for i=0 upto 7 :
+        p[1] := p[1] yscaled (1-i/80) ;
+        draw p[1]
+            shifted (0,dy)
+            withtransparency (1,.8-i/10) ;
+            dy := dy + .6*bbheight(p[1]) ;
+    endfor ;
+\stopMPpage
+
+\startluacode
+    backends.registered.pdf.codeinjections.registercompactor {
+        name = "preset:mine",
+        identify = {
+            content   = true,
+            resources = true,
+            page      = true,
+        },
+--        embed = {
+--            type0    = true,
+--            truetype = true,
+--            type1    = true,
+--        },
+        merge = {
+            type0    = true, -- check if a..z A..Z 0..9
+            truetype = true,
+            type1    = true,
+            LMTX     = true,
+        },
+        strip = {
+--         group     = true,
+--         extgstate = true,
+         marked    = true,
+        },
+--     reduce = {
+--         color = true,
+--         rgb   = true,
+--         cmyk  = true,
+--     },
+--     convert = {
+--         rgb  = true,
+--         cmyk = true,
+--     },
+--     add = {
+--         cidset, -- when missing or even fix
+--     },
+        recolor = {
+            viagray = { 1, 0, 0 },
+--            viagray = { 0, 1, 0 },
+--            viagray = { 0, 1, 0, .5 },
+--            viagray = { .75 },
+        }
+    }
+\stopluacode
+
+\starttext
+
+The three graphic formats that make most sense for inclusion in \PDF\ are \PNG,
+\JPG, and \PDF. The easiest if these is \JPG\ because basically the binary blob
+get transferred to the result file. A \PNG\ graphic might need more work because
+what actually is supported is basic \PNG\ inclusion. It means that often the
+image data has to be unpacked and split into \PDF\ counterparts that get
+embedded. The \PDF\ format is quite convenient because basically we only need to
+copy the used objects to the result, so when those object are for instance \PNG\
+encoded images, we gain runtime, but when we're talking pages of documents it
+might take some more. Nevertheless, in practice it is still quite efficient.
+
+Here we focus on \PDF\ inclusion where we have sereral scenarios to deal with:
+
+\startitemize[packed]
+    \startitem
+        A straightforward inclusion of a single page \PDF\ file.
+    \stopitem
+    \startitem
+        Inclusion of a specific page from a \PDF\ file.
+    \stopitem
+    \startitem
+        Inclusion of several pages from a \PDF\ file.
+    \stopitem
+    \startitem
+        Inclusion of one or more pages from several \PDF\ files.
+    \stopitem
+\stopitemize
+
+To this we can add:
+
+\startitemize
+    \startitem
+        Inclusion of one or more pages from \PDF\ files that are generated
+        independently (subruns) for instance in the process of writing a manual
+        about something \CONTEXT. Think of externaly processed buffers.
+    \stopitem
+\stopitemize
+
+When we include more than one page from a file, we only need to embed shared
+objects once. Of course it demands some object management but that has to be done
+anyway. We could share objects across files but that demands more memory and
+runtime and the saving are likely to be small, with one exception: fonts. It
+would be nice if we can embed missing fonts and also merge fonts that are the
+same. This can make the result much smaller, especially when we're talking of
+including examples of typesetting in a manual that uses the same fonts.
+
+Another aspect of inclusion is the quality of the to be embedded page. Here you
+can think of errors in the page stream, color spaces that don't match, missing
+properties, invalid metadata, etc. Often there's not much we can do about it, but
+sometimes we can. However, it has to happen under user control and the outcome
+has to be checked, although often a visual check is good enough.
+
+The \type {compact} parameter of \type {\externalfigure} controls the embedding
+of \PDF\ content. When set to \quote {yes} it will merge fonts but only when the
+file is produced by \CONTEXT\ \LMTX. The reason for not checking all fonts by
+default comes from the fact that references from the page stream to glyphs in the
+font depend on the application that made the \PDF. In some cases the mapping is
+using the original glyph index, but one can never be sure. Using the \type
+{tounicode} map to go from page stream index to glyph index is also not reliable
+because multiple glyphs can have the same \UNICODE\ slot and when font features
+are applied (say small caps) you actually don't know that.
+
+The mentioned \type {yes} option is a preset that has been defined like:
+
+\starttyping
+\startluacode
+graphics.registerpdfcompactor ( "yes", {
+    merge = {
+        lmtx = true,
+    },
+} )
+\stopluacode
+\stoptyping
+
+Another preset is \type {merge}:
+
+\starttyping
+\startluacode
+graphics.registerpdfcompactor ( "merge", {
+    merge = {
+        type0    = true,
+        truetype = true,
+        type1    = true,
+        lmtx     = true,
+    },
+} )
+\stopluacode
+\stoptyping
+
+Currently we don't support \TYPETHREE\ optimization. It is doable but probably
+not worth the effort.
+
+We can also force embedding of fonts that are not included in the document that
+we get the page from. This is unlikely unless you have old documents.
+
+\starttyping
+embed = {
+    type0    = true,
+    truetype = true,
+    type1    = true,
+}
+\stoptyping
+
+References to glyphs in the page stream use an eight bit string encoding or an
+hexadecimal byte pairs. Depending on the font type we have upto 256 references
+(using one character or two hex bytes) or at most 65536 references (using two
+characters or 4 hex bytes). We normalize everything to hex encoding. That way we
+get rid of the ugly escapes and exceptions in page stream glyph string.
+
+There are two trackers:
+
+\starttyping
+\enabletrackers[graphics.fonts]
+\enabletrackers[graphics.fixes]
+\stoptyping
+
+The first one reports what is done with fonts. When embedding of merging is not
+possible you can try to remap the found font onto one on your system. Here are
+some examples:
+
+\starttyping
+graphics.registerpdffont {
+    source = "arial",
+    target = "file:arial.ttf",
+}
+graphics.registerpdffont {
+    source = "arial-bold",
+    target = "file:arialbd.ttf",
+}
+graphics.registerpdffont {
+    source = "arial,bold",
+    target = "file:arialbd.ttf",
+}
+graphics.registerpdffont {
+    source = "helvetica",
+    target = "file:arial.ttf",
+ -- unicode = true,
+}
+graphics.registerpdffont {
+    source = "helvetica-bold",
+    target = "file:arialbd.ttf",
+ -- unicode = true,
+}
+graphics.registerpdffont {
+    source = "courier",
+    target = "file:cour.ttf",
+}
+graphics.registerpdffont {
+    source  = "ms-pgothic",
+    unicode = true, -- via unicode (false for composite)
+}
+\stoptyping
+
+The \type {unicode} key needed when you get rubish due to the indices in the page
+stream being different from glyph indices in the used font. In that case we go
+via the \type {tounicode} vector which works ok for the average simple document
+not using special font features. There is some trial and error involved but that
+is probably worth the effort when you have to manipulate many documents.
+
+There are two activities when we compact: fonts and content. When content is
+handled additional parsing of the page stream has to happen. What gets processed
+it determined by the \type {identify} table:
+
+\starttyping
+identify = {
+    content   = true,
+    resources = true,
+    page      = true,
+}
+\stoptyping
+
+although this is equivalent:
+
+\starttyping
+identify = "all"
+\stoptyping
+
+As a proof of concept we can recolor an included file. Of course this assumes
+a rather simple use of color. Here is an example:
+
+\startbuffer[demo-1]
+\startluacode
+    graphics.registerpdfcompactor ( "preset:demo-1", {
+        identify = {
+            content   = true,
+            resources = true,
+            page      = true,
+        },
+        merge = {
+            type0    = true,
+            truetype = true,
+            type1    = true,
+            lmtx     = true,
+        },
+        recolor = {
+            viagray = { 1, 0, 0 },
+         -- viagray = { 0, 1, 0 },
+         -- viagray = { 0, 1, 0, .5 },
+         -- viagray = { .75 },
+        }
+    } )
+\stopluacode
+\setupexternalfigures[compact=preset:demo-1]
+\startTEXpage
+    \startcombination[3*4]
+        {\externalfigure[test-000.pdf][frame=on]}        {\LUAMETATEX\ 0}
+        {\externalfigure[test-001.pdf][frame=on]}        {\LUATEX\ 1}
+        {\externalfigure[test-002.pdf][frame=on]}        {\LUATEX\ 2}
+        {\externalfigure[test-003.pdf][frame=on,page=1]} {\LUATEX\ 3.1}
+        {\externalfigure[test-003.pdf][frame=on,page=2]} {\LUATEX\ 3.2}
+        {\externalfigure[test-003.pdf][frame=on,page=3]} {\LUATEX\ 3.3}
+        {\externalfigure[test-004.pdf][frame=on,page=1]} {\PDFTEX\ 4.1}
+        {\externalfigure[test-004.pdf][frame=on,page=2]} {\PDFTEX\ 4.2}
+        {\externalfigure[test-004.pdf][frame=on,page=3]} {\PDFTEX\ 4.3}
+        {\externalfigure[test-005.pdf][frame=on,page=1]} {\PDFTEX\ 4.1}
+        {\externalfigure[test-005.pdf][frame=on,page=2]} {\PDFTEX\ 5.2}
+        {\externalfigure[test-005.pdf][frame=on,page=3]} {\PDFTEX\ 5.3}
+    \stopcombination
+\stopTEXpage
+\stopbuffer
+
+\typebuffer[demo-1]
+
+In \in {figure} [fig:compact-1] we make a single page document that embeds 12
+pages from six files made by several engines. The six files have a total of about
+114K but the single page combination is only 19K. The test files are:
+
+\typefile{test-000}
+
+So this one is an \LMTX\ produced file. The next two files:
+
+\typefile{test-001}
+
+and
+
+\typefile{test-002}
+
+are done by \LUATEX\ with \MKIV\ and
+
+\typefile{test-003}
+
+as well as
+
+\typefile{test-004}
+
+and
+
+\typefile{test-005}
+
+are typeset with \PDFTEX\ and \MKII\ so they have the \TYPEONE\ instead of the
+\OPENTYPE\ Latin Modern file embedded (in fact, the \MKII\ and \MKIV\ files use
+the twelve point variant and \LMTX\ the upscaled ten point, so if those were the
+same we would have an even smaller final file.
+
+\startplacefigure[title={An example of content manipulation.},reference=fig:compact-1]
+    \typesetbuffer[demo-1][compact=yes]
+\stopplacefigure
+
+A useful manipulation is removing tags. The fact that the content is tagged
+doesn't mean that tagging has any use, certainly not if it relates to editing
+specific for some application. Maybe at some point I'll add a retagging option
+but for now we just strip:
+
+\starttyping
+strip = {
+    marked    = true,
+ -- group     = true,
+ -- extgstate = true,
+}
+\stoptyping
+
+The other two are sort of special and might be needed too, especially when for
+instance the states are just there because the producer wasn't clever enough
+to leave them out when not applicable.
+
+It happens that producers use color while actually gray scales are meant. In that
+case one can use these:
+
+\starttyping
+reduce = {
+    color = true, -- both rgb and cmyk
+    rgb   = true,
+    cmyk  = true,
+}
+\stoptyping
+
+Using a gray scale is more efficient and in the case of \CMYK\ a sloppy \typ {.5
+.5 .5 0 K} quite likely is meant to be \typ {0 0 0 0.5 K} or just \typ {.5 G}.
+
+Remapping \RGB\ to \CMYK\ (or gray if applicable) is done with:
+
+\starttyping
+convert = {
+    rgb  = true,
+ -- cmyk = true,
+}
+\stoptyping
+
+and of course one can also remap \CMYK\ to \RGB.
+
+%     \setupexternalfigures[compact=preset:mine]
+
+%     test \type {test}
+
+%     \startTEXpage \externalfigure[test-000.pdf]\stopTEXpage % luametatex
+%     \startTEXpage \externalfigure[test-001.pdf]\stopTEXpage % luatex
+%     \startTEXpage \externalfigure[test-002.pdf]\stopTEXpage % luatex
+%     \dorecurse{3}{
+%         \startTEXpage \externalfigure[test-003.pdf][page=#1]\stopTEXpage % luatex
+%     }
+%     \dorecurse{3}{
+%         \startTEXpage \externalfigure[test-004.pdf][page=#1]\stopTEXpage % pdftex
+%     }
+%     \dorecurse{3}{
+%         \startTEXpage \externalfigure[test-005.pdf][page=#1]\stopTEXpage % pdftex
+%     }
+
+% --     add = {
+% --         cidset, -- when missing or even fix
+% --     },
+
+I want to stress that manipulating the content stream has some limitations. For
+instance because objects are shared including a page a second time will reuse the
+already converted page. However, you can try the next trick:
+
+\startbuffer[demo-2]
+\startluacode
+    graphics.registerpdfcompactor ( "preset:demo-2", {
+        identify =  "all",
+        merge    = { lmtx = true },
+        recolor  = { viagray = { 0, 1, 0 } },
+    } )
+    graphics.registerpdfcompactor ( "preset:demo-3", {
+        identify =  "all",
+        merge    = { lmtx = true },
+        recolor  = { viagray = { 0, 0, 1 } },
+    } )
+
+\stopluacode
+\setupexternalfigures[compact=preset:demo-1]
+\startTEXpage
+    \startcombination[2*1]
+        {\externalfigure
+            [test-000.pdf]
+            [frame=on,compact=preset:demo-2,width=6cm,object=no,arguments=1]}
+            {demo-2}
+        {\externalfigure
+            [test-000.pdf]
+            [frame=on,compact=preset:demo-3,width=6cm,object=no,arguments=2]}
+            {demo-3}
+    \stopcombination
+\stopTEXpage
+\stopbuffer
+
+\typebuffer[demo-2]
+
+In \in {figure} [fig:compact-2] we see that indeed a different compactor is used.
+We need to disable sharing by setting \type {object} to \type {no}. However, this
+will still share some but we abuse the arguments key to create a different
+sharing hash (normally that key is used to pass arguments to converters).
+
+\startplacefigure[title={An example of manipulation content twice.},reference=fig:compact-2]
+    \typesetbuffer[demo-2][compact=yes]
+\stopplacefigure
+
+I cases where color conversion is problematic (or critical) you can remap
+specific colors. Especially \CMYK\ is sensitive for conversion because there we
+have four color components while in \RGB\ we have only three. Also watching on a
+display (\RGB) is different from looking at a print (\CMYK) and who knows what
+transfer function gets applied in the former. Here is how remapping works:
+
+\starttyping
+local cmykmap = {
+    { 100, 100, 55, 0, 57, 0, 22, 40.8 }
+}
+graphics.registerpdfcompactor ( "preset:demo-5", {
+    identify =  "all",
+    merge    = { lmtx = true },
+    convert  = { cmyk = cmykmap },
+} )
+\stoptyping
+
+Here the entries in a \CMYK\ map are:
+
+\starttyping
+    { factor, c, m, y, k, r, g, b }
+\stoptyping
+
+In this case values are multiplied by 100 which makes sure that we catch rounding
+errors in the \PDF\ definitions. Keep in mind that colors in many applications
+have at most 256 values per component. Also, even quality \LCD\ displays can use
+less than eight bits per component.
+
+\startbuffer[demo-3]
+\startluacode
+    local cmykmap = {
+        { 100, 100, 55, 0, 57, 0, 22, 40.8 } -- factor, c, m, y, k, r, g, b
+    }
+    graphics.registerpdfcompactor ( "preset:demo-4", {
+        identify =  "all",
+        merge    = { lmtx = true },
+        convert  = { cmyk = true },
+    } )
+    graphics.registerpdfcompactor ( "preset:demo-5", {
+        identify =  "all",
+        merge    = { lmtx = true },
+        convert  = { cmyk = cmykmap },
+    } )
+\stopluacode
+\setupexternalfigures[compact=preset:demo-1]
+\startTEXpage
+    \startcombination[2*1]
+        {\externalfigure
+            [test-006.pdf]
+            [frame=on,compact=preset:demo-4,width=6cm,object=no,arguments=3]}
+            {demo-4}
+        {\externalfigure
+            [test-006.pdf]
+            [frame=on,compact=preset:demo-5,width=6cm,object=no,arguments=4]}
+            {demo-5}
+    \stopcombination
+\stopTEXpage
+\stopbuffer
+
+In \in {figure} [fig:compact-3] we show an example. The file used looks like:
+
+\typefile{test-006.tex}
+
+\startplacefigure[title={An example of remapping colors.},reference=fig:compact-3]
+    \typesetbuffer[demo-3][compact=yes]
+\stopplacefigure
+
+I want to stress that you need to check the outcome. Often a visual check is
+enough. Extending the compactor beyond what \MKIV\ provided was to a large extend
+facilitated by a cooperation with Tan, Syabil M. and Ser, Zheng Y. of \quote
+{Team Ramkumar} who did extensive testing and gave enjoyable feedback. In the
+process a test script was made that can help with experiments. We assume that
+\type {qpdf}, \type {mutool} and \type {graphicmagic} abd \type {verapdf} are
+installed.
+
+\starttyping
+mtxrun --script fixpdf --uncompress                         foo
+mtxrun --script fixpdf --convert    --compactor=preset:test foo
+mtxrun --script fixpdf --validate                           foo
+mtxrun --script fixpdf --check                              foo
+mtxrun --script fixpdf --compare    --resolution=300        foo
+\stoptyping
+
+Here we produce an uncompressed version (so that we can see what we deal with),
+convert the original into a new one, validate (and check the outcome) and create
+a version for visual comparison. It's just an example of usage and here the focus
+was on fixing existing documents (six digit numbers so the workflow needs to be
+carefully checked) and not so much on single page inclusion.
+
+\startlines
+Hans Hagen
+Hasselt NL
+January 2024
+\stoplines
+
+\stopdocument

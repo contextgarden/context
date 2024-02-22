@@ -24,8 +24,8 @@ local subtypes    = nodes.subtypes
 local tonode      = nodes.tonode
 local tonut       = nodes.tonut
 
-local hlist_code  = nodecodes.hlist
-local vlist_code  = nodecodes.vlist
+local hlist_code  <const> = nodecodes.hlist
+local vlist_code  <const> = nodecodes.vlist
 
 local f_char      = formatters["%U"]
 local f_attr      = formatters["<attribute : %i>"]

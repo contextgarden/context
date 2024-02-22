@@ -28,13 +28,13 @@ local executers           = references.executers
 
 local variables           = interfaces.variables
 
-local v_no                = variables.no
-local v_yes               = variables.yes
-local v_start             = variables.start
-local v_stop              = variables.stop
-local v_reset             = variables.reset
-local v_auto              = variables.auto
-local v_random            = variables.random
+local v_no                <const> = variables.no
+local v_yes               <const> = variables.yes
+local v_start             <const> = variables.start
+local v_stop              <const> = variables.stop
+local v_reset             <const> = variables.reset
+local v_auto              <const> = variables.auto
+local v_random            <const> = variables.random
 
 local lpdf                = lpdf
 local pdfconstant         = lpdf.constant
@@ -105,25 +105,6 @@ end)
 local specifications = { }
 local initialized    = { }
 
-function codeinjections.defineviewerlayer(specification)
-    if viewerlayers.supported and textlayers then
-        local tag = specification.tag
-        if not specifications[tag] then
-            specifications[tag] = specification
-        end
-    end
-end
-
-function codeinjections.setupviewerlayer(specification)
-    if viewerlayers.supported and textlayers then
-        local tag = specification.tag
-        local set = tag and specifications[tag]
-        if set then
-            for k, v in next, specification do set[k] = v end
-        end
-    end
-end
-
 local function useviewerlayer(name) -- move up so that we can use it as local
     if not environment.initex and not initialized[name] then
         local specification = specifications[name]
@@ -168,6 +149,25 @@ local function useviewerlayer(name) -- move up so that we can use it as local
             pagelayers[tag] = dr -- check
         else
             -- todo: message
+        end
+    end
+end
+
+function codeinjections.defineviewerlayer(specification)
+    if viewerlayers.supported and textlayers then
+        local tag = specification.tag
+        if not specifications[tag] then
+            specifications[tag] = specification
+        end
+    end
+end
+
+function codeinjections.setupviewerlayer(specification)
+    if viewerlayers.supported and textlayers then
+        local tag = specification.tag
+        local set = tag and specifications[tag]
+        if set then
+            for k, v in next, specification do set[k] = v end
         end
     end
 end

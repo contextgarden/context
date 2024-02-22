@@ -102,11 +102,11 @@ local function set(t,what,newvalue)
             else
                 value = is_boolean(value,value,true) -- strict
             end
-            w = topattern(w,true,true)
+            local p = topattern(w,true,true)
             for name, functions in sortedhash(data) do
                 if done[name] then
                     -- prevent recursion due to wildcards
-                elseif find(name,w) then
+                elseif find(name,p) then
                     done[name] = true
                     for i=1,#functions do
                         functions[i](value)

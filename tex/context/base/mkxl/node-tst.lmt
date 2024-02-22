@@ -12,13 +12,13 @@ local chardata                   = characters.data
 local nodecodes                  = nodes.nodecodes
 local gluecodes                  = nodes.gluecodes
 
-local glue_code                  = nodecodes.glue
-local penalty_code               = nodecodes.penalty
-local kern_code                  = nodecodes.kern
-local glyph_code                 = nodecodes.glyph
+local glue_code                  <const> = nodecodes.glue
+local penalty_code               <const> = nodecodes.penalty
+local kern_code                  <const> = nodecodes.kern
+local glyph_code                 <const> = nodecodes.glyph
 
-local abovedisplayshortskip_code = gluecodes.abovedisplayshortskip
-local belowdisplayshortskip_code = gluecodes.belowdisplayshortskip
+local abovedisplayshortskip_code <const> = gluecodes.abovedisplayshortskip
+local belowdisplayshortskip_code <const> = gluecodes.belowdisplayshortskip
 
 local nuts                       = nodes.nuts
 

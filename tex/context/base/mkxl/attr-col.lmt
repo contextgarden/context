@@ -26,8 +26,8 @@ local context               = context
 local tex                   = tex
 
 local variables             = interfaces.variables
-local v_yes                 = variables.yes
-local v_no                  = variables.no
+local v_yes                 <const> = variables.yes
+local v_no                  <const> = variables.no
 
 local p_split_comma         = lpeg.tsplitat(",")
 local p_split_colon         = lpeg.splitat(":")
@@ -49,7 +49,8 @@ local report_transparencies = logs.reporter("transparencies","support")
 local states          = attributes.states
 local registrations   = backends.registrations
 local nodeinjections  = backends.nodeinjections
-local unsetvalue      = attributes.unsetvalue
+
+local unsetvalue      <const> = attributes.unsetvalue
 
 local enableaction    = nodes.tasks.enableaction
 local setaction       = nodes.tasks.setaction
@@ -95,8 +96,8 @@ local texgetattribute = tex.getattribute
 attributes.colors = attributes.colors or { }
 local colors      = attributes.colors
 
-local a_color     = attributes.private('color')
-local a_selector  = attributes.private('colormodel')
+local a_color     <const> = attributes.private('color')
+local a_selector  <const> = attributes.private('colormodel')
 
 colors.data       = allocate()
 colors.values     = colors.values or { }
@@ -132,7 +133,7 @@ local f_colors = {
 }
 
 local models = {
-    [interfaces.variables.none] = unsetvalue,
+    [variables.none] = unsetvalue,
     black = unsetvalue,
     bw    = unsetvalue,
     all   = 1,
@@ -502,7 +503,7 @@ end
 
 -- transparencies
 
-local a_transparency      = attributes.private('transparency')
+local a_transparency      <const> = attributes.private('transparency')
 
 attributes.transparencies = attributes.transparencies or { }
 local transparencies      = attributes.transparencies
@@ -613,6 +614,7 @@ end
 attributes.colorintents = attributes.colorintents or  { }
 local colorintents      = attributes.colorintents
 colorintents.data       = allocate() -- colorintents.data or { }
+
 colorintents.attribute  = attributes.private('colorintent')
 
 colorintents.registered = allocate {

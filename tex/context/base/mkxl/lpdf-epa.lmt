@@ -70,9 +70,8 @@ local escapetex         = characters.filters.utf.private.escape
 
 local bookmarks         = structures.bookmarks
 
-local maxdimen          = 0x3FFFFFFF -- 2^30-1
-
-local bpfactor          = number.dimenfactors.bp
+local maxdimen          <const> = tex.magicconstants.maxdimen
+local bpfactor          <const> = number.dimenfactors.bp
 
 local layerspec = {
     "epdfcontent"

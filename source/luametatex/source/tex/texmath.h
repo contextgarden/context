@@ -247,6 +247,7 @@ typedef enum math_parameters {
 # define math_last_user_class  (math_all_class    - 1)
 
 # define valid_math_class_code(n)  (n >= 0 && n < max_n_of_math_classes)
+# define real_math_class_code(n)   (n >= 0 && n < math_all_class)
 
 # define last_math_parameter               math_parameter_stack_variant
 # define math_parameter_first_variant      math_parameter_over_line_variant
@@ -654,7 +655,17 @@ extern void     tex_set_default_math_codes       (void);
 extern int      tex_check_active_math_char       (int character);
 extern int      tex_pass_active_math_char        (int character);
 
-inline int      tex_math_scripts_allowed         (halfword node) { return ((node_type(node) >= simple_noad) && (node_type(node) < fence_noad)); }
+inline int tex_math_scripts_allowed(halfword node) 
+{ 
+    return (node_type(node) >= simple_noad) && (node_type(node) < fence_noad); 
+}
+
+inline int tex_math_no_more_scripts(halfword node) 
+{ 
+    return (node_type(node) >= simple_noad) && (node_type(node) < fence_noad)
+        && has_noad_option_no_more_scripts(node)
+        && ! (noad_supscr(node) || noad_subscr(node) || noad_supprescr(node) || noad_subprescr(node) || noad_prime(node));
+}
 
 extern halfword tex_new_math_continuation_atom   (halfword node, halfword attr);
 

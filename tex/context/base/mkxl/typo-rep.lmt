@@ -37,12 +37,11 @@ local nodecodes       = nodes.nodecodes
 local chardata        = characters.data
 local collected       = false
 
-local a_stripping     = attributes.private("stripping")
-
 local texsetattribute = tex.setattribute
-local unsetvalue      = attributes.unsetvalue
 
-local v_reset         = interfaces.variables.reset
+local a_stripping     <const> = attributes.private("stripping")
+local unsetvalue      <const> = attributes.unsetvalue
+local v_reset         <const> = interfaces.variables.reset
 
 -- todo: other namespace -> typesetters
 

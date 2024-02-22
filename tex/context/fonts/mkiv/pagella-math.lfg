@@ -24,8 +24,8 @@ return {
             SuperscriptShiftUp                =  386, -- 354 in font
             SubscriptShiftDown                =  200, -- 232 in font
             SubscriptShiftDownWithSuperscript = "1.4*SubscriptShiftDown", -- 1.5* in math-act
-            PrimeShiftUp                      = "1.3*SuperscriptShiftUp",
-            PrimeShiftUpCramped               = "1.3*SuperscriptShiftUp",
+            PrimeShiftUp                      = "1.1*SuperscriptShiftUp",
+            PrimeShiftUpCramped               = "1.1*SuperscriptShiftUp",
         },
         tweaks = {
             aftercopying = {

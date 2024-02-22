@@ -1,0 +1,139 @@
+if not modules then modules = { } end modules ['math-txt'] = {
+    version   = 1.001,
+    comment   = "companion to math-ini.mkxl",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+local setmetatableindex = table.setmetatableindex
+local upper = string.upper
+local utfchar = utf.char
+local settings_to_hash = utilities.parsers.settings_to_hash
+
+local mathematics = mathematics
+
+local a_mathdomain <const> = attributes.private("mathdomain")
+local integer_value        = tokens.values.integer
+
+local report               = logs.reporter("mathematics","domains")
+
+-- We don't need to store anything because we preset default and registering
+-- other domains happens at runtime.
+
+local domainlabels         = { }
+mathematics.domainlabels   = domainlabels
+local domainnames          = mathematics.domainnames or { [1] = "default", default = 1 }
+mathematics.domainnames    = domainnames
+
+local nofdomains           = 1
+local defaultlabels        = false
+local defaultdomain        = domainnames.default
+
+setmetatableindex(domainnames,function(t,name)
+    nofdomains = nofdomains + 1
+    domainnames[name] = nofdomains
+    domainnames[nofdomains] = name
+    report("registering %a with id %s",name,nofdomains)
+    return nofdomains
+end)
+
+local function loadone(name)
+    local f = resolvers.findfile("math-txt-imp-" .. name .. ".lmt") or ""
+    local t = f ~= "" and table.load(f) or { }
+    report("labels for %a %s",name,f ~= "" and "loaded" or "not found")
+    return t
+end
+
+setmetatableindex(domainlabels,function(t,name)
+    if not defaultlabels then
+        defaultlabels = loadone("default")
+        t.default = defaultlabels
+    end
+    if name == "default" then
+        return defaultlabels
+    else
+        local v = loadone(name)
+        setmetatableindex(v,defaultlabels)
+        t[name] = v
+        return v
+    end
+end)
+
+interfaces.implement {
+    name      = "domainattribute",
+    arguments = "string",
+    usage     = "value",
+    actions   = function(name)
+        return integer_value, domainnames[name]
+    end
+}
+
+function mathematics.getdomainname(id)
+    return id and domainnames[id] or "default"
+end
+
+local uppercased = setmetatableindex(function(t,k)
+    local v = upper(k)
+    t[k] = v
+    return v
+end)
+
+function mathematics.getverboselabel(name,language,domain) -- todo: change order
+    local verboselabels = domainlabels[domain] or defaultlabels
+    local l = verboselabels[name]
+    if l then
+        if language == "debug" then
+            return l.en and uppercased[name] or name
+        else
+            return (language and l[language]) or l.en or name
+        end
+    else
+     -- print("missing label",language or "en", name)
+        return name
+    end
+end
+
+function mathematics.getoptionallabel(name,language,domain) -- todo: change order
+    local verboselabels = domainlabels[domain] or defaultlabels
+    local l = verboselabels[name]
+    if l then
+        return (language and l[language]) or l.en
+    end
+end
+
+-- characters.blocks
+-- characters.getrange
+
+local function set(verboselabels,language,name,meaning)
+    local v = verboselabels[name]
+    if not v then
+        v = { }
+        verboselabels[name] = v
+    end
+    v[language or "en"] = meaning
+end
+
+function mathematics.registerverboselabel(domain,language,name,meaning)
+    local verboselabels = domainlabels[domain] or defaultlabels
+    local first, last, _, gaps = characters.getrange(name)
+    if first then
+        for i=first,last do
+            set(verboselabels,language,utfchar(i),meaning)
+        end
+        if gaps then
+            for k, v in next, gaps do
+                set(verboselabels,language,utfchar(v),meaning)
+            end
+        end
+    else
+        set(verboselabels,language,name,meaning)
+    end
+end
+
+interfaces.implement {
+    name      = "registerverbosemathlabel",
+    protected = true,
+    arguments = "4 strings",
+    actions   = mathematics.registerverboselabel,
+}

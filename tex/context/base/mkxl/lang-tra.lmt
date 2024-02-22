@@ -40,13 +40,13 @@ local getvalue            = attributes.getvalue
 local transliteration     = { }
 languages.transliteration = transliteration
 
-local a_transliteration   = attributes.private("transliteration")
-local unsetvalue          = attributes.unsetvalue
+local a_transliteration   <const> = attributes.private("transliteration")
+local unsetvalue          <const> = attributes.unsetvalue
 
 local implement           = interfaces.implement
 local context             = context
 
-local zwj                 = utf.char(0x200D)
+local zwj                 <const> = utf.char(0x200D)
 
 -- local lastmapping         = 0
 local loadedmappings      = { }

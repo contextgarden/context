@@ -40,10 +40,10 @@ local findattribute      = nuts.findattribute
 local unsetattributes    = nuts.unsetattributes
 
 local texsetattribute    = tex.setattribute
-local unsetvalue         = attributes.unsetvalue
 
-local nodecodes          = nodes.nodecodes
-local glyph_code         = nodecodes.glyph
+local unsetvalue         <const> = attributes.unsetvalue
+
+local glyph_code         <const> = nodes.nodecodes.glyph
 
 local nodepool           = nuts.pool
 local enableaction       = nodes.tasks.enableaction
@@ -53,7 +53,7 @@ local new_glue           = nodepool.glue
 local fonthashes         = fonts.hashes
 local chardata           = fonthashes.characters
 
-local v_reset            = interfaces.variables.reset
+local v_reset            <const> = interfaces.variables.reset
 
 local charbase           = characters.data
 local getdigitwidth      = fonts.helpers.getdigitwidth
@@ -67,7 +67,7 @@ local digits             = typesetters.digits
 digits.actions           = { }
 local actions            = digits.actions
 
-local a_digits           = attributes.private("digits")
+local a_digits           <const> = attributes.private("digits")
 
 -- at some point we can manipulate the glyph node so then i need
 -- to rewrite this then

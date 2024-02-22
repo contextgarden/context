@@ -40,7 +40,7 @@ handlers.afm             = afm
 local readers            = afm.readers or { }
 afm.readers              = readers
 
-afm.version              = 1.513 -- incrementing this number one up will force a re-cache
+afm.version              = 1.540 -- incrementing this number one up will force a re-cache
 
 -- We start with the basic reader which we give a name similar to the built in TFM
 -- and OTF reader. We use a PFB loader but I see no differences between the old and

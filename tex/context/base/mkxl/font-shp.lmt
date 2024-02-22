@@ -24,10 +24,15 @@ local streamscache = containers.define("fonts", "streams", version, true)
 -- shapes (can be come a separate file at some point)
 
 local compact_streams = false
+local pack_outlines   = true
 
 directives.register("fonts.streams.compact", function(v) compact_streams = v end)
+directives.register("fonts.streams.pack",    function(v) pack_outlines   = v end)
 
 local function packoutlines(data,makesequence)
+    if not pack_outlines then
+        return
+    end
     local subfonts = data.subfonts
     if subfonts then
         for i=1,#subfonts do

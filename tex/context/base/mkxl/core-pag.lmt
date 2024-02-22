@@ -28,8 +28,8 @@ local new_latelua       = nodes.pool.latelua
 local implement         = interfaces.implement
 local getnamespace      = interfaces.getnamespace
 
-local c_realpageno      = tex.iscount("realpageno")
-local c_realpagestateno = tex.iscount("realpagestateno")
+local c_realpageno      <const> = tex.iscount("realpageno")
+local c_realpagestateno <const> = tex.iscount("realpagestateno")
 
 local collected = allocate()
 local tobesaved = allocate()

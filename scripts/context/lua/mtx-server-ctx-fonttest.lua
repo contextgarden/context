@@ -541,15 +541,20 @@ local function show_font(currentfont,detail)
                 for f,ff in table.sortedhash(data) do
                     local done = false
                     for s, ss in table.sortedhash(ff) do
-                        if s == "*"  then s       = "all" end
-                        if ss  ["*"] then ss["*"] = nil ss.all = true end
+                        local s =  s == "*" and "all" or s
+                        if ss  ["*"] then
+                            ss["*"] = nil
+                            ss.all  = true
+                        end
+                        local name
                         if done then
-                            f = ""
+                            name = ""
                         else
                             done = true
+                            name = f
                         end
-                        local title = fonts.handlers.otf.tables.features[f] or ""
-                        result[#result+1] = formatters["<tr><td width='50%%'>%s&nbsp;&nbsp;</td><td><tt>%s&nbsp;&nbsp;</tt></td><td><tt>%s&nbsp;&nbsp;</tt></td><td><tt>%s&nbsp;&nbsp;</tt></td></tr>"](title,f,s,concat(table.sortedkeys(ss)," "))
+                        local title = fonts.handlers.otf.tables.features[name] or ""
+                        result[#result+1] = formatters["<tr><td width='50%%'>%s&nbsp;&nbsp;</td><td><tt>%s&nbsp;&nbsp;</tt></td><td><tt>%s&nbsp;&nbsp;</tt></td><td><tt>%s&nbsp;&nbsp;</tt></td></tr>"](title,name,s,concat(table.sortedkeys(ss)," "))
                     end
                 end
                 result[#result+1] = "</table>"

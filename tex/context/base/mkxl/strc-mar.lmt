@@ -14,11 +14,11 @@ local context        = context
 local implement      = interfaces.implement
 local variables      = interfaces.variables
 
-local v_first        = variables.first
-local v_last         = variables.last
-local v_previous     = variables.previous
-local v_next         = variables.next
-local v_column       = variables.column
+local v_first        <const> = variables.first
+local v_last         <const> = variables.last
+local v_previous     <const> = variables.previous
+local v_next         <const> = variables.next
+local v_column       <const> = variables.column
 
 local nuts           = nodes.nuts
 local nextmark       = nuts.traversers.mark
@@ -28,9 +28,9 @@ local getlist        = nuts.getlist
 local getindex       = nuts.getindex
 local getdata        = nuts.getdata
 ----- setmark_code   = nodes.markcodes.set
-local flushmark_code = nodes.markcodes.flush
-local hlist_code     = nodes.nodecodes.hlist
-local vlist_code     = nodes.nodecodes.vlist
+local flushmark_code <const> = nodes.markcodes.flush
+local hlist_code     <const> = nodes.nodecodes.hlist
+local vlist_code     <const> = nodes.nodecodes.vlist
 
 local marks      = { }
 structures.marks = marks

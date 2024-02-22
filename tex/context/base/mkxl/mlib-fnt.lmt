@@ -26,7 +26,7 @@ fonts.metapost      = metapost
 local f_moveto      = formatters["(%N,%N)"]
 local f_lineto      = formatters["--(%N,%N)"]
 local f_curveto     = formatters["..controls(%N,%N)and(%N,%N)..(%N,%N)"]
-local s_cycle       = "--cycle"
+local s_cycle       <const> = "--cycle"
 
 local f_nofill      = formatters["nofill %s;"]
 local f_dofill      = formatters["fill %s;"]
@@ -73,6 +73,7 @@ function metapost.zeroline(d,factor)
 end
 
 function metapost.paths(d,xfactor,yfactor)
+    -- todo: add tracer that shows d
     local sequence = d.sequence
     local segments = d.segments
     local list     = { }
@@ -83,6 +84,9 @@ function metapost.paths(d,xfactor,yfactor)
     if sequence then
         local i = 1
         local n = #sequence
+        if sequence[1] ~= "m" then
+            report()
+        end
         while i < n do
             local operator = sequence[i]
             if operator == "m" then -- "moveto"
@@ -127,7 +131,6 @@ function metapost.paths(d,xfactor,yfactor)
             end
         end
     elseif segments then
--- inspect(segments)
         for i=1,#segments do
             local segment  = segments[i]
             local operator = segment[#segment]
@@ -164,6 +167,11 @@ function metapost.paths(d,xfactor,yfactor)
                     r_y + 2/3 * (m_y-r_y),
                     r_x, r_y
                 )
+            elseif operator == "close" then -- second argument is diagnostic
+                size = size + 1
+                path[size] = s_cycle
+                list[#list+1] = concat(path,"",1,size)
+                size = 0
             else
                 -- weird
             end
@@ -265,12 +273,12 @@ local texgetbox          = tex.getbox
 local nodecodes          = nodes.nodecodes -- no nuts yet
 local rulecodes          = nodes.rulecodes
 
-local rule_code          = nodecodes.rule
+local rule_code          <const> = nodecodes.rule
 
-local normalrule_code    = rulecodes.normal
-local outlinerule_code   = rulecodes.outline
-local userrule_code      = rulecodes.user
-local emptyrule_code     = rulecodes.empty
+local normalrule_code    <const> = rulecodes.normal
+local outlinerule_code   <const> = rulecodes.outline
+local userrule_code      <const> = rulecodes.user
+local emptyrule_code     <const> = rulecodes.empty
 
 local nuts               = nodes.nuts
 ----- getwhd             = nuts.getwhd

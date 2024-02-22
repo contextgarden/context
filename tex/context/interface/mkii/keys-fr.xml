@@ -356,6 +356,7 @@
 		<cd:variable name='mathcases' value='casmath'/>
 		<cd:variable name='mathematics' value='mathematics'/>
 		<cd:variable name='mathmatrix' value='matricemath'/>
+		<cd:variable name='mathnote' value='mathnote'/>
 		<cd:variable name='max' value='max'/>
 		<cd:variable name='maxdepth' value='profondeurmax'/>
 		<cd:variable name='maxheight' value='hauteurmax'/>

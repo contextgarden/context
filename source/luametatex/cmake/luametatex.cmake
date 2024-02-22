@@ -9,7 +9,7 @@ add_executable(luametatex ${luametatex_sources})
 target_include_directories(luametatex PRIVATE
     .
     source/.
-    source/luacore/lua54/src
+    source/luacore/lua55/src
 )
 
 target_link_libraries(luametatex

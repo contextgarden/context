@@ -78,7 +78,6 @@
 \registerctxluafile{luat-run}{autosuffix}
 \registerctxluafile{luat-fio}{autosuffix}
 \registerctxluafile{luat-cnf}{autosuffix,initexonly}
-\registerctxluafile{luat-lua}{}
 \registerctxluafile{luat-sto}{}
 \registerctxluafile{luat-ini}{autosuffix}
 \registerctxluafile{util-env}{}

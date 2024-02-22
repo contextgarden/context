@@ -45,12 +45,12 @@ local nextglyph       = nuts.traversers.glyph
 local nodecodes       = nodes.nodecodes
 local kerncodes       = nodes.kerncodes
 
-local glyph_code      = nodecodes.glyph
-local kern_code       = nodecodes.kern
-local disc_code       = nodecodes.disc
-local math_code       = nodecodes.math
+local glyph_code      <const> = nodecodes.glyph
+local kern_code       <const> = nodecodes.kern
+local disc_code       <const> = nodecodes.disc
+local math_code       <const> = nodecodes.math
 
-local fontkern_code   = kerncodes.fontkern
+local fontkern_code   <const> = kerncodes.fontkern
 
 local enableaction    = nodes.tasks.enableaction
 
@@ -63,13 +63,13 @@ local fontchar        = fonthashes.characters
 local currentfont     = font.current
 
 local variables       = interfaces.variables
-local v_reset         = variables.reset
+local v_reset         <const> = variables.reset
 
 local texsetattribute = tex.setattribute
 local texgetattribute = tex.getattribute
 local texgetscales    = tex.getglyphscales
 
-local integer_value   = tokens.values.integer
+local integer_value   <const> = tokens.values.integer
 
 typesetters           = typesetters or { }
 local typesetters     = typesetters
@@ -79,7 +79,8 @@ local cases           = typesetters.cases
 
 cases.actions         = { }
 local actions         = cases.actions
-local a_cases         = attributes.private("case")
+
+local a_cases         <const> = attributes.private("case")
 
 local run             = 0 -- a trick to make neighbouring ranges work
 

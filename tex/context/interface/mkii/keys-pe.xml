@@ -176,6 +176,7 @@
 		<cd:variable name='description' value='شرح'/>
 		<cd:variable name='disable' value='ناتوان'/>
 		<cd:variable name='display' value='نمایش'/>
+		<cd:variable name='document' value='document'/>
 		<cd:variable name='dot' value='نقطه'/>
 		<cd:variable name='doublesided' value='دورو'/>
 		<cd:variable name='down' value='down'/>
@@ -327,6 +328,7 @@
 		<cd:variable name='less' value='less'/>
 		<cd:variable name='lesshyphenation' value='شکست‌کلمات‌کمتر'/>
 		<cd:variable name='letterspacing' value='letterspacing'/>
+		<cd:variable name='limit' value='limit'/>
 		<cd:variable name='line' value='خط'/>
 		<cd:variable name='linenote' value='خط‌نوشت'/>
 		<cd:variable name='lines' value='خطها'/>
@@ -354,6 +356,7 @@
 		<cd:variable name='mathcases' value='حالتهای‌ریاضی'/>
 		<cd:variable name='mathematics' value='ریاضی'/>
 		<cd:variable name='mathmatrix' value='ماتریش‌ریاضی'/>
+		<cd:variable name='mathnote' value='mathnote'/>
 		<cd:variable name='max' value='بیشترین'/>
 		<cd:variable name='maxdepth' value='maxdepth'/>
 		<cd:variable name='maxheight' value='maxheight'/>
@@ -523,6 +526,7 @@
 		<cd:variable name='simplelist' value='simplelist'/>
 		<cd:variable name='singlesided' value='یک‌رو'/>
 		<cd:variable name='six' value='six'/>
+		<cd:variable name='size' value='اندازه'/>
 		<cd:variable name='slanted' value='خوابیده'/>
 		<cd:variable name='slantedbold' value='مشکی‌خوابیده'/>
 		<cd:variable name='small' value='کوچک'/>
@@ -671,6 +675,7 @@
 		<cd:constant name='alignmentleftwidth' value='alignmentleftwidth'/>
 		<cd:constant name='alignmentrightsample' value='alignmentrightsample'/>
 		<cd:constant name='alignmentrightwidth' value='alignmentrightwidth'/>
+		<cd:constant name='alignscripts' value='alignscripts'/>
 		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='عنوان‌تنظیم'/>
 		<cd:constant name='alternative' value='جایگزین'/>
@@ -952,6 +957,7 @@
 		<cd:constant name='interaction' value='پانل'/>
 		<cd:constant name='interlinespace' value='فضای‌بین‌خط'/>
 		<cd:constant name='internalgrid' value='internalgrid'/>
+		<cd:constant name='interscriptfactor' value='interscriptfactor'/>
 		<cd:constant name='italicfeatures' value='italicfeatures'/>
 		<cd:constant name='italicfont' value='italicfont'/>
 		<cd:constant name='itemalign' value='تنظیم‌آیتم'/>
@@ -1002,6 +1008,7 @@
 		<cd:constant name='less' value='less'/>
 		<cd:constant name='level' value='مرحله'/>
 		<cd:constant name='levels' value='مرحله‌ها'/>
+		<cd:constant name='limit' value='limit'/>
 		<cd:constant name='limitstretch' value='limitstretch'/>
 		<cd:constant name='limittext' value='مرزمتن'/>
 		<cd:constant name='line' value='خط'/>
@@ -1028,6 +1035,7 @@
 		<cd:constant name='mathclass' value='mathclass'/>
 		<cd:constant name='mathdenominatorstyle' value='mathdenominatorstyle'/>
 		<cd:constant name='mathlimits' value='mathlimits'/>
+		<cd:constant name='mathmeaning' value='mathmeaning'/>
 		<cd:constant name='mathnumeratorstyle' value='mathnumeratorstyle'/>
 		<cd:constant name='mathstyle' value='mathstyle'/>
 		<cd:constant name='max' value='بیشترین'/>
@@ -1036,6 +1044,7 @@
 		<cd:constant name='maxwidth' value='بیشترین‌عرض'/>
 		<cd:constant name='maybeyear' value='maybeyear'/>
 		<cd:constant name='menu' value='منو'/>
+		<cd:constant name='metadata' value='metadata'/>
 		<cd:constant name='method' value='روش'/>
 		<cd:constant name='middle' value='میان'/>
 		<cd:constant name='middleclass' value='middleclass'/>

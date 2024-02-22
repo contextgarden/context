@@ -26,17 +26,15 @@ local attributes        = attributes
 local nodes             = nodes
 local context           = context
 
-local nodecodes         = nodes.nodecodes
-
 local implement         = interfaces.implement
 
-local glyph_code        = nodecodes.glyph
-local glue_code         = nodecodes.glue
+local glyph_code        <const> = nodes.nodecodes.glyph
+local glue_code         <const> = nodes.nodecodes.glue
 
 local emwidths          = fonts.hashes.emwidths
 local exheights         = fonts.hashes.exheights
 
-local a_script          = attributes.private('script')
+local a_script          <const> = attributes.private('script')
 
 local fontdata          = fonts.hashes.identifiers
 local allocate          = utilities.storage.allocate

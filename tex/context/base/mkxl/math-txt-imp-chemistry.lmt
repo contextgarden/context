@@ -1,0 +1,63 @@
+if not modules then modules = { } end modules ['math-txt'] = {
+    version   = 1.001,
+    comment   = "companion to math-ini.mkxl",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+    dataonly  = true,
+}
+
+-- This one is not ok yet but used as test.
+
+return {
+ ["sub"]={
+  ["en"]="count",
+  ["sv"]="Cnedsänkt",
+  ["nl"]="aantal",
+ },
+ ["super"]={
+  ["en"]="charge",
+  ["sv"]="Cupphöjd",
+  ["nl"]="lading",
+ },
+ ["presub"]={
+  ["en"]="weight",
+  ["sv"]="Cnedsänkt",
+  ["nl"]="gewicht",
+ },
+ ["presuper"]={
+  ["en"]="isotope",
+  ["sv"]="Cupphöjd",
+  ["nl"]="CTODO",
+ },
+ ["postsub"]={
+  ["en"]="count",
+  ["sv"]="Cnedsänkt",
+  ["nl"]="aantal",
+ },
+ ["postsuper"]={
+  ["en"]="charge",
+  ["sv"]="Cupphöjd",
+  ["nl"]="lading",
+ },
+ ["prescripts"]={
+  ["en"]="",
+  ["sv"]="",
+  ["nl"]="",
+ },
+ ["end scripts"]={
+  ["en"]="",
+  ["sv"]="",
+  ["nl"]="",
+ },
+ ["postscripts"]={
+  ["en"]="",
+  ["sv"]="",
+  ["nl"]="",
+ },
+ ["endpostcripts"]={
+  ["en"]="",
+  ["sv"]="",
+  ["nl"]="",
+ },
+}

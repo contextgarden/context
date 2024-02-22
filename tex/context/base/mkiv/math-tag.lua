@@ -389,13 +389,13 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                                 setattr(start,a_tagged,start_tagged("mrow"))
                                 process(list)
                                 stop_tagged()
-                            elseif actionstack[#actionstack] == action then
+                            elseif actionstack[#actionstack] == detail then
                                 setattr(start,a_tagged,start_tagged("mrow"))
                                 process(list)
                                 stop_tagged()
                             else
-                                insert(actionstack,action)
-                                setattr(start,a_tagged,start_tagged("mrow",{ detail = action }))
+                                insert(actionstack,detail)
+                                setattr(start,a_tagged,start_tagged("mrow",{ detail = detail }))
                                 process(list)
                                 stop_tagged()
                                 remove(actionstack)

@@ -74,20 +74,20 @@ local rulecodes          = nodes.rulecodes
 local gluecodes          = nodes.gluecodes
 local listcodes          = nodes.listcodes
 
-local glyph_code         = nodecodes.glyph
-local par_code           = nodecodes.par
-local dir_code           = nodecodes.dir
-local glue_code          = nodecodes.glue
-local hlist_code         = nodecodes.hlist
+local glyph_code         <const> = nodecodes.glyph
+local par_code           <const> = nodecodes.par
+local dir_code           <const> = nodecodes.dir
+local glue_code          <const> = nodecodes.glue
+local hlist_code         <const> = nodecodes.hlist
 
-local indentlist_code    = listcodes.indent
-local linelist_code      = listcodes.line
+local indentlist_code    <const> = listcodes.indent
+local linelist_code      <const> = listcodes.line
 
-local leftskip_code         = gluecodes.leftskip
-local rightskip_code        = gluecodes.rightskip
-local parfillleftskip_code  = gluecodes.parfillleftskip
-local parfillrightskip_code = gluecodes.parfillrightskip
-local indentskip_code       = gluecodes.indentskip
+local leftskip_code         <const> = gluecodes.leftskip
+local rightskip_code        <const> = gluecodes.rightskip
+local parfillleftskip_code  <const> = gluecodes.parfillleftskip
+local parfillrightskip_code <const> = gluecodes.parfillrightskip
+local indentskip_code       <const> = gluecodes.indentskip
 
 local nodepool           = nuts.pool
 
@@ -102,26 +102,26 @@ local n_tosequence       = nodes.tosequence
 local variables          = interfaces.variables
 local implement          = interfaces.implement
 
-local privateattributes  = attributes.private
+local privateattribute   = attributes.private
 
-local a_ruled            = privateattributes('ruled')
-local a_runningtext      = privateattributes('runningtext')
-local a_color            = privateattributes('color')
-local a_transparency     = privateattributes('transparency')
-local a_colormodel       = privateattributes('colormodel')
-local a_linefiller       = privateattributes("linefiller")
-local a_viewerlayer      = privateattributes("viewerlayer")
+local a_ruled            <const> = privateattribute('ruled')
+local a_runningtext      <const> = privateattribute('runningtext')
+local a_color            <const> = privateattribute('color')
+local a_transparency     <const> = privateattribute('transparency')
+local a_colormodel       <const> = privateattribute('colormodel')
+local a_linefiller       <const> = privateattribute("linefiller")
+local a_viewerlayer      <const> = privateattribute("viewerlayer")
 
 local registervalue      = attributes.registervalue
 local getvalue           = attributes.getvalue
 local texsetattribute    = tex.setattribute
 
-local v_both             = variables.both
-local v_left             = variables.left
-local v_right            = variables.right
-local v_local            = variables["local"]
-local v_yes              = variables.yes
-local v_foreground       = variables.foreground
+local v_both             <const> = variables.both
+local v_left             <const> = variables.left
+local v_right            <const> = variables.right
+local v_local            <const> = variables["local"]
+local v_yes              <const> = variables.yes
+local v_foreground       <const> = variables.foreground
 
 local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
@@ -131,7 +131,7 @@ local dimenfactor        = fonts.helpers.dimenfactor
 local splitdimen         = number.splitdimen
 local setmetatableindex  = table.setmetatableindex
 
-local runningrule        = tex.magicconstants.runningrule
+local runningrule        <const> = tex.magicconstants.runningrule
 
 local striprange         = nuts.striprange
 local processwords       = nuts.processwords
@@ -224,7 +224,8 @@ do
     local enabled       = false
 
     local texgetattribute = tex.getattribute
-    local unsetvalue      = attributes.unsetvalue
+
+    local unsetvalue <const> = attributes.unsetvalue
 
     -- The setter is now the performance bottleneck but it is no longer
     -- limited to a certain number of cases before we cycle resources.
@@ -449,8 +450,8 @@ do
                 { "empty" },
                 { "text", "box" },
                 { "repeat" },
-{ "height", "dimension" },
-{ "depth", "dimension" },
+                { "height", "dimension" },
+                { "depth", "dimension" },
             }
         }
     }
@@ -461,7 +462,7 @@ do
 
     local trace_shifted  = false  trackers.register("nodes.shifting", function(v) trace_shifted = v end)
     local report_shifted = logs.reporter("nodes","shifting")
-    local a_shifted      = attributes.private('shifted')
+    local a_shifted      <const> = privateattribute('shifted')
     local enabled        = false
 
     local shifts         = nodes.shifts or { }

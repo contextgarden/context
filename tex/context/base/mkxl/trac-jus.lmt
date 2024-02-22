@@ -11,8 +11,8 @@ typesetters.checkers  = checkers
 
 ----- report_justification = logs.reporter("visualize","justification")
 
-local a_alignstate    = attributes.private("alignstate")
-local a_justification = attributes.private("justification")
+local a_alignstate    <const> = attributes.private("alignstate")
+local a_justification <const> = attributes.private("justification")
 
 local nuts            = nodes.nuts
 
@@ -37,10 +37,11 @@ local nodepool        = nuts.pool
 local new_hlist       = nodepool.hlist
 local new_kern        = nodepool.kern
 
-local hlist_code      = nodes.nodecodes.hlist
+local hlist_code      <const> = nodes.nodecodes.hlist
 
 local texsetattribute = tex.setattribute
-local unsetvalue      = attributes.unsetvalue
+
+local unsetvalue      <const> = attributes.unsetvalue
 
 local enableaction    = nodes.tasks.enableaction
 

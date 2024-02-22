@@ -754,6 +754,11 @@ data.labels={
     ["sv"]="coth",
    },
   },
+  ["crossproduct"]={
+   ["labels"]={
+    ["en"]="×",
+   },
+  },
   ["csc"]={
    ["labels"]={
     ["ca"]="csc",
@@ -863,6 +868,12 @@ data.labels={
     ["sv"]="sgd",
    },
   },
+-- not here
+--   ["gradient"]={
+--    ["labels"]={
+--     ["en"]="∇",
+--    },
+--   },
   ["hom"]={
    ["labels"]={
     ["ca"]="hom",
@@ -936,6 +947,11 @@ data.labels={
     ["sr"]="ker",
     ["sr-latn"]="ker",
     ["sv"]="ker",
+   },
+  },
+  ["laplace"]={
+   ["labels"]={
+    ["en"]="∆",
    },
   },
   ["lcm"]={
@@ -1124,6 +1140,16 @@ data.labels={
     ["sv"]="mod",
    },
   },
+  ["neg"]={
+   ["labels"]={
+    ["en"]="¬",
+   },
+  },
+  ["partial"]={
+   ["labels"]={
+    ["en"]="∂",
+   },
+  },
   ["projlim"]={
    ["labels"]={
     ["ca"]="lim proy",
@@ -1137,6 +1163,11 @@ data.labels={
     ["sr"]="proj\\sixperemspace lim",
     ["sr-latn"]="proj\\sixperemspace lim",
     ["sv"]="proj\\sixperemspace lim",
+   },
+  },
+  ["scalarproduct"]={
+   ["labels"]={
+    ["en"]="·",
    },
   },
   ["sec"]={
@@ -4348,4 +4379,3 @@ functions.ctg    = functions.cot
 functions.arctg  = functions.arctan
 functions.arcctg = functions.arccot
 functions.arctgh = functions.arctanh
-

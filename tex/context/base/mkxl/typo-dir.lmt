@@ -41,7 +41,8 @@ local report_textdirections = logs.reporter("typesetting","text directions")
 ----- report_mathdirections = logs.reporter("typesetting","math directions")
 
 local texsetattribute       = tex.setattribute
-local unsetvalue            = attributes.unsetvalue
+
+local unsetvalue            <const> = attributes.unsetvalue
 
 local nuts                  = nodes.nuts
 local getnext               = nuts.getnext
@@ -57,17 +58,17 @@ local implement             = interfaces.implement
 local directions            = typesetters.directions or { }
 typesetters.directions      = directions
 
-local a_directions          = attributes.private('directions')
+local a_directions          <const> = attributes.private('directions')
 
 local variables             = interfaces.variables
-local v_global              = variables["global"]
-local v_local               = variables["local"]
-local v_on                  = variables.on
-local v_yes                 = variables.yes
+local v_global              <const> = variables["global"]
+local v_local               <const> = variables["local"]
+local v_on                  <const> = variables.on
+local v_yes                 <const> = variables.yes
 
-local m_enabled             = 0x00000040 -- 2^6 64
-local m_global              = 0x00000080 -- 2^7
-local m_fences              = 0x00000100 -- 2^8
+local m_enabled             <const> = 0x00000040 -- 2^6 64
+local m_global              <const> = 0x00000080 -- 2^7
+local m_fences              <const> = 0x00000100 -- 2^8
 
 local handlers              = { }
 local methods               = { }

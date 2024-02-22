@@ -46,19 +46,20 @@ local new_disc           = nuts.pool.disc
 
 local nodecodes          = nodes.nodecodes
 local disccodes          = nodes.disccodes
-
-local disc_code          = nodecodes.disc
-local glyph_code         = nodecodes.glyph
-
 local discoptioncodes    = tex.discoptioncodes
-local pre_part_code      = discoptioncodes.pre
-local post_part_code     = discoptioncodes.post
-local replace_part_code  = discoptioncodes.replace
-local always_part_code   = discoptioncodes.always
 
-local explicitdisc_code  = disccodes.explicit
+local disc_code          <const> = nodecodes.disc
+local glyph_code         <const> = nodecodes.glyph
 
-local a_visualize        = attributes.private("visualizediscretionary")
+local pre_part_code      <const> = discoptioncodes.pre
+local post_part_code     <const> = discoptioncodes.post
+local replace_part_code  <const> = discoptioncodes.replace
+local always_part_code   <const> = discoptioncodes.always
+
+local explicitdisc_code  <const> = disccodes.explicit
+
+local a_visualize        <const> = attributes.private("visualizediscretionary")
+
 local setattribute       = tex.setattribute
 
 local getlanguagedata    = languages.getdata

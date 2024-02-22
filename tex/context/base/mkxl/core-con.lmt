@@ -1616,12 +1616,12 @@ converters.lower = characters.lower
 
 -- --
 
-local v_day      = variables.day
-local v_year     = variables.year
-local v_month    = variables.month
-local v_weekday  = variables.weekday
-local v_referral = variables.referral
-local v_space    = variables.space
+local v_day      <const> = variables.day
+local v_year     <const> = variables.year
+local v_month    <const> = variables.month
+local v_weekday  <const> = variables.weekday
+local v_referral <const> = variables.referral
+local v_space    <const> = variables.space
 
 local v_MONTH    = upper(v_month)
 local v_WEEKDAY  = upper(v_weekday)

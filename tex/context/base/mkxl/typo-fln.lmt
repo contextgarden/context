@@ -51,13 +51,14 @@ local getprop            = nuts.getprop
 local setprop            = nuts.setprop
 
 local nodecodes          = nodes.nodecodes
-local glyph_code         = nodecodes.glyph
-local disc_code          = nodecodes.disc
-local kern_code          = nodecodes.kern
-local glue_code          = nodecodes.glue
-local par_code           = nodecodes.par
 
-local spaceskip_code     = nodes.gluecodes.spaceskip
+local glyph_code         <const> = nodecodes.glyph
+local disc_code          <const> = nodecodes.disc
+local kern_code          <const> = nodecodes.kern
+local glue_code          <const> = nodecodes.glue
+local par_code           <const> = nodecodes.par
+
+local spaceskip_code     <const> = nodes.gluecodes.spaceskip
 
 local nextglyph          = nuts.traversers.glyph
 local nextdisc           = nuts.traversers.disc
@@ -82,14 +83,14 @@ local tracerrule         = nodes.tracers.pool.nuts.rule
 local actions            = { }
 firstlines.actions       = actions
 
-local a_firstline        = attributes.private('firstline')
+local a_firstline        <const> = attributes.private('firstline')
 
 local texget             = tex.get
 
 local variables          = interfaces.variables
-local v_default          = variables.default
-local v_line             = variables.line
-local v_word             = variables.word
+local v_default          <const> = variables.default
+local v_line             <const> = variables.line
+local v_word             <const> = variables.word
 
 local function set(par,specification)
     enableaction("processors","typesetters.firstlines.handler")

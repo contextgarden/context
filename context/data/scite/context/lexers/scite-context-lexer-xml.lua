@@ -30,7 +30,6 @@ local xmlcdatalexer    = lexers.load("scite-context-lexer-xml-cdata")
 local xmlscriptlexer   = lexers.load("scite-context-lexer-xml-script")
 local lualexer         = lexers.load("scite-context-lexer-lua")
 
-
 local space            = patterns.space
 local any              = patterns.any
 
@@ -72,6 +71,7 @@ local opendoctype      = P("<!DOCTYPE") -- could grab the whole doctype
 local closedoctype     = P("]>") + P(">")
 local openscript       = openbegin * (P("script") + P("SCRIPT")) * (1-closeend)^0 * closeend -- begin
 local closescript      = openend   * (P("script") + P("SCRIPT"))                  * closeend
+local charpattern      = lexers.helpers.charpattern
 
 local openlua          = "<?lua"
 local closelua         = "?>"
@@ -85,7 +85,6 @@ local closelua         = "?>"
 
 local entity           = ampersand * (1-semicolon)^1 * semicolon
 
-local utfchar          = lexers.helpers.utfchar
 local wordtoken        = patterns.wordtoken
 local iwordtoken       = patterns.iwordtoken
 local wordpattern      = patterns.wordpattern
@@ -114,10 +113,10 @@ local t_word =
     C(iwordpattern) * Cp() / function(s,p) return styleofword(validwords,validminimum,s,p) end  -- a bit of a hack
 
 local t_rest =
-    token("default", any)
+    token("default", charpattern)
 
 local t_text =
-    token("default", (1-S("<>&")-space)^1)
+    token("default", (charpattern-S("<>&")-space)^1)
 
 local t_spacing =
     token(xmlwhitespace, space^1)

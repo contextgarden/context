@@ -12,7 +12,7 @@ local find, match = string.find, string.match
 local data = false
 local user = false
 
-local dimension_code = tokens.values.dimension
+local dimension_code <const> = tokens.values.dimension
 
 local function align_point_delta(n,m)
 

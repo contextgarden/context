@@ -13,7 +13,6 @@ local context          = context
 
 local nuts             = nodes.nuts
 local nodepool         = nodes.pool
-local whatever         = nodepool.userids["localanchor"]
 local new_usernode     = nodepool.usernode
 local new_kern         = nuts.pool.kern
 local getbox           = nuts.getbox
@@ -30,10 +29,12 @@ local implement        = interfaces.implement
 
 local analyze          = drivers.converters.analyze
 
-local dimension_value  = tokens.values.dimension
+local dimension_value  <const> = tokens.values.dimension
 
-local v_left           = interfaces.variables.left
-local v_middle         = interfaces.variables.middle
+local whatever         <const> = nodepool.userids["localanchor"]
+
+local v_left           <const> = interfaces.variables.left
+local v_middle         <const> = interfaces.variables.middle
 
 local positionsstack   = setmetatableindex("table")
 

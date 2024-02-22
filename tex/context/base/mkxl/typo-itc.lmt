@@ -19,23 +19,22 @@ local italics             = typesetters.italics
 typesetters.corrections   = typesetters.corrections or { }
 local corrections         = typesetters.corrections
 
-local variables           = interfaces.variables
 local settings_to_hash    = utilities.parsers.settings_to_hash
 
 local nodecodes           = nodes.nodecodes
-local glyph_code          = nodecodes.glyph
-local kern_code           = nodecodes.kern
-local glue_code           = nodecodes.glue
-local disc_code           = nodecodes.disc
-local math_code           = nodecodes.math
+local glyph_code          <const> = nodecodes.glyph
+local kern_code           <const> = nodecodes.kern
+local glue_code           <const> = nodecodes.glue
+local disc_code           <const> = nodecodes.disc
+local math_code           <const> = nodecodes.math
 
-local end_math_code       = nodes.mathcodes.endmath
-local font_kern_code      = nodes.kerncodes.fontkern
-local italic_kern_code    = nodes.kerncodes.italiccorrection
-local left_kern_code      = nodes.kerncodes.leftcorrectionkern
-local right_kern_code     = nodes.kerncodes.rightcorrectionkern
-local spaceskip_code      = nodes.gluecodes.spaceskip
-local xspaceskip_code     = nodes.gluecodes.xspaceskip
+local end_math_code       <const> = nodes.mathcodes.endmath
+local font_kern_code      <const> = nodes.kerncodes.fontkern
+local italic_kern_code    <const> = nodes.kerncodes.italiccorrection
+local left_kern_code      <const> = nodes.kerncodes.leftcorrectionkern
+local right_kern_code     <const> = nodes.kerncodes.rightcorrectionkern
+local spaceskip_code      <const> = nodes.gluecodes.spaceskip
+local xspaceskip_code     <const> = nodes.gluecodes.xspaceskip
 
 local enableaction        = nodes.tasks.enableaction
 
@@ -89,10 +88,10 @@ local ispunctuation       = characters.is_punctuation
 
 local implement           = interfaces.implement
 
-local no_correction_code     = tex.glyphoptioncodes.noitaliccorrection
-local math_check_italic_code = tex.userglyphoptioncodes.mathcheckitalic
-local text_check_italic_code = tex.userglyphoptioncodes.textcheckitalic
-local disc_check_italic_code = tex.userdiscoptioncodes .textcheckitalic
+local no_correction_code     <const> = tex.glyphoptioncodes.noitaliccorrection
+local math_check_italic_code <const> = tex.userglyphoptioncodes.mathcheckitalic
+local text_check_italic_code <const> = tex.userglyphoptioncodes.textcheckitalic
+local disc_check_italic_code <const> = tex.userdiscoptioncodes .textcheckitalic
 
 local mathokay = false
 local textokay = false
@@ -606,9 +605,9 @@ function corrections.handler(head)
     if kernokay then
         for current, subtype in traverseitalic(head) do
             if subtype == italic_kern_code or subtype == right_kern_code then
-                current = fixrightitalic(current)
+                fixrightitalic(current)
             elseif subtype == left_kern_code then
-                current = fixleftitalic(current)
+                fixleftitalic(current)
             end
         end
     end

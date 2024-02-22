@@ -29,27 +29,27 @@ storage.register("lines/data", data, "nodes.lines.data")
 
 local variables          = interfaces.variables
 
-local v_next             = variables.next
-local v_page             = variables.page
-local v_no               = variables.no
+local v_next             <const> = variables.next
+local v_page             <const> = variables.page
+local v_no               <const> = variables.no
 
 local properties         = nodes.properties.data
 
 local nodecodes          = nodes.nodecodes
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
-local whatsit_code       = nodecodes.whatsit
-local glyph_code         = nodecodes.glyph
+local hlist_code         <const> = nodecodes.hlist
+local vlist_code         <const> = nodecodes.vlist
+local whatsit_code       <const> = nodecodes.whatsit
+local glyph_code         <const> = nodecodes.glyph
 
-local linelist_code      = nodes.listcodes.line
+local linelist_code      <const> = nodes.listcodes.line
 
-local latelua_code       = nodes.whatsitcodes.latelua
+local latelua_code       <const> = nodes.whatsitcodes.latelua
 
 local localtexrun        = tex.runlocal
 
------ a_displaymath      = attributes.private('displaymath')
-local a_linenumber       = attributes.private('linenumber')
-local a_linereference    = attributes.private('linereference')
+----- a_displaymath      <const> = attributes.private('displaymath')
+local a_linenumber       <const> = attributes.private('linenumber')
+local a_linereference    <const> = attributes.private('linereference')
 
 local cross_references   = { }
 

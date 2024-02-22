@@ -21,7 +21,7 @@ local report             = logs.reporter("structure","floats")
 
 local forcepageflush     = builders.vspacing.forcepageflush
 
-local d_page_sides_vsize = tex.isdimen("d_page_sides_vsize")
+local d_page_sides_vsize <const> = tex.isdimen("d_page_sides_vsize")
 
 function builders.checksidefloat(mode,indented)
     if not texgetoutputactive() then

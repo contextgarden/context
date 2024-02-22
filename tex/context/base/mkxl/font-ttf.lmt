@@ -785,8 +785,8 @@ end
 
 -- optimize for zero
 
-local c_zero = char(0)
-local s_zero = char(0,0)
+local c_zero <const> = char(0)
+local s_zero <const> = char(0,0)
 
 -- local shorthash = setmetatableindex(function(t,k)
 --  -- t[k] = char(band(rshift(k,8),0xFF),band(k,0xFF)) return t[k]

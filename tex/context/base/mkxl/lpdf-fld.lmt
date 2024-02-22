@@ -56,14 +56,15 @@ if not modules then modules = { } end modules ['lpdf-fld'] = {
 local tostring, tonumber, next = tostring, tonumber, next
 local gmatch, lower, format, formatters = string.gmatch, string.lower, string.format, string.formatters
 local lpegmatch = lpeg.match
-local bpfactor, todimen = number.dimenfactors.bp, string.todimen
+local todimen = string.todimen
 local sortedhash = table.sortedhash
 local trace_fields = false  trackers.register("backends.fields", function(v) trace_fields = v end)
 
 local report_fields = logs.reporter("backend","fields")
 
-local variables               = interfaces.variables
 local context                 = context
+
+local bpfactor                <const> = number.dimenfactors.bp
 
 local references              = structures.references
 local settings_to_array       = utilities.parsers.settings_to_array

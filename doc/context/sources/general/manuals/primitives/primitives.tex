@@ -8757,7 +8757,7 @@ factors determined preceding characters.
 This processes the given script in the current style, so:
 
 \startbuffer
-$ x__2 + x\nosubprescript{2} + x\subprescript{2} $
+$ x___2 + x\nosubprescript{2} + x\subprescript{2} $
 \stopbuffer
 
 comes out as: \inlinebuffer.
@@ -8769,7 +8769,7 @@ comes out as: \inlinebuffer.
 This processes the given script in the current style, so:
 
 \startbuffer
-$ x__2 + x\nosubscript{2} + x\subscript{2} $
+$ x_2 + x\nosubscript{2} + x\subscript{2} $
 \stopbuffer
 
 comes out as: \inlinebuffer.
@@ -8781,7 +8781,7 @@ comes out as: \inlinebuffer.
 This processes the given script in the current style, so:
 
 \startbuffer
-$ x__2 + x\nosuperprescript{2} + x\superprescript{2} $
+$ x^^^2 + x\nosuperprescript{2} + x\superprescript{2} $
 \stopbuffer
 
 comes out as: \inlinebuffer.
@@ -8793,7 +8793,7 @@ comes out as: \inlinebuffer.
 This processes the given script in the current style, so:
 
 \startbuffer
-$ x__2 + x\nosuperprescript{2} + x\superprescript{2} $
+$ x^2 + x\nosuperprescript{2} + x\superprescript{2} $
 \stopbuffer
 
 comes out as: \inlinebuffer.
@@ -10749,7 +10749,8 @@ dedicated penalty, specified by this parameter.
 
 \startnewprimitive[title={\prm {shiftedsubprescript}}]
 
-This primitive (or \type {____}) influences the alignment of scripts:
+This primitive (or \type {____}) puts a flag on the script but renders
+the same:
 
 \startbuffer
 $
@@ -10768,13 +10769,14 @@ Gives: \inlinebuffer.
 
 \startnewprimitive[title={\prm {shiftedsubscript}}]
 
-This primitive (or \type {___}) influences the alignment of scripts:
+This primitive (or \type {__}) puts a flag on the script but renders
+the same:
 
 \startbuffer
 $
     x \shiftedsuperscript{2} \subscript       {2} +
     x \superscript       {2} \shiftedsubscript{2} +
-    x \superscript       {2} ___              {2} =
+    x \superscript       {2} __               {2} =
     x \superscript       {2} \subscript       {2}
 $
 \stopbuffer
@@ -10787,7 +10789,8 @@ Gives: \inlinebuffer.
 
 \startnewprimitive[title={\prm {shiftedsuperprescript}}]
 
-This primitive (or \type {^^^^}) influences the alignment of scripts:
+This primitive (or \type {^^^^}) puts a flag on the script but renders
+the same:
 
 \startbuffer
 $
@@ -10806,12 +10809,13 @@ Gives: \inlinebuffer.
 
 \startnewprimitive[title={\prm {shiftedsuperscript}}]
 
-This primitive (or \type {^^^}) influences the alignment of scripts:
+This primitive (or \type {^^}) puts a flag on the script but renders
+the same:
 
 \startbuffer
 $
     x \shiftedsuperscript{2} \subscript       {2} +
-    x ^^^                {2} \subscript       {2} +
+    x ^^                 {2} \subscript       {2} +
     x \superscript       {2} \shiftedsubscript{2} =
     x \superscript       {2} \subscript       {2}
 $
@@ -11216,33 +11220,33 @@ a control sequence becomes a backslash followed by characters and a space.
 
 \startnewprimitive[title={\prm {subprescript}}]
 
-Instead of two characters with catcode \the\subscriptcatcode\ (like \type {__})
-this primitive can be used. It will add the following argument as lower left
-script to the nucleus.
+Instead of three or four characters with catcode \the\subscriptcatcode\ (\type
+{__} or \type {____}) this primitive can be used. It will add the following
+argument as lower left script to the nucleus.
 
 \stopnewprimitive
 
 \startnewprimitive[title={\prm {subscript}}]
 
-Instead of a character with catcode \the\subscriptcatcode\ (normally \type {_})
-this primitive can be used. It will add the following argument as lower right
-script to the nucleus.
+Instead of one or two characters with catcode \the\superscriptcatcode\ (\type {_}
+or \type {__}) this primitive can be used. It will add the following argument as
+upper left script to the nucleus.
 
 \stopnewprimitive
 
 \startnewprimitive[title={\prm {superprescript}}]
 
-Instead of two characters with catcode \the\superscriptcatcode\ (like \type {^^})
-this primitive can be used. It will add the following argument as upper left
-script to the nucleus.
+Instead of three or four characters with catcode \the\superscriptcatcode\ (\type
+{^^^} or \type {^^^^}) this primitive can be used. It will add the following
+argument as upper left script to the nucleus.
 
 \stopnewprimitive
 
 \startnewprimitive[title={\prm {superscript}}]
 
-Instead of a character with catcode \the\superscriptcatcode\ (normally \type {^})
-this primitive can be used. It will add the following argument as upper right
-script to the nucleus.
+Instead of one or two character with catcode \the\superscriptcatcode\ (\type {^}
+or \type {^^})this primitive can be used. It will add the following argument as
+upper right script to the nucleus.
 
 \stopnewprimitive
 

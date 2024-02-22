@@ -50,7 +50,9 @@
 \registerctxluafile{back-imp-pdp}{autosuffix}
 
 \registerctxluafile{lpdf-fix-imp-fonts}   {autosuffix} % some code will move to lpdf-*
-%registerctxluafile{lpdf-fix-imp-contents}{autosuffix} % on demand
+\registerctxluafile{lpdf-fix-imp-contents}{autosuffix} % idem
+
+\registerctxluafile{lxml-mms}{autosuffix}
 
 % \registerctxluafile{lpdf-u3d}{autosuffix}
 

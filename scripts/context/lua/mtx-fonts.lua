@@ -17,8 +17,8 @@ local concat = table.concat
 local write_nl = (logs and logs.writer) or (texio and texio.write_nl) or print
 
 local versions = {
-    otl = 3.135,
-    one = 1.513,
+    otl = 3.140,
+    one = 1.520,
 }
 
 local helpinfo = [[
@@ -291,14 +291,19 @@ local function showfeatures(tag,specification)
                 for f,ff in table.sortedhash(data) do
                     local done = false
                     for s, ss in table.sortedhash(ff) do
-                        if s == "*"  then s       = "all" end
-                        if ss  ["*"] then ss["*"] = nil ss.all = true end
+                        local s = s == "*" and all or s
+                        if ss["*"] then
+                            ss["*"] = nil
+                            ss.all  = true
+                        end
+                        local name
                         if done then
-                            f = ""
+                            name = ""
                         else
                             done = true
+                            name = f
                         end
-                        report("  %-8s %-8s %-8s",f,s,concat(table.sortedkeys(ss), " ")) -- todo: padd 4
+                        report("  %-8s %-8s %-8s",name,s,concat(table.sortedkeys(ss), " ")) -- todo: padd 4
                     end
                 end
             end

@@ -1,3 +1,8 @@
+# We use CMake but I bet we can also provide a simple make file for linux just because 
+# when I look what gets compiled into CMake we need very little of that (and it 
+# has a lot of dependencies - ssh related, compression, security, xml, etc), but maybe 
+# there is a lightweight version of CMake. 
+
 cmake_minimum_required(VERSION 3.9)
 
 project(luametatex VERSION 2.10 LANGUAGES C)
@@ -32,7 +37,7 @@ set(LMT_STRIP 1)
 
 if (MSVC)
 
-    if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    if (CMAKE_C_COMPILER_ID MATCHES "Clang")
 
         add_compile_options(
             -Wall
@@ -120,7 +125,7 @@ if (MSVC)
 
  else()
 
-    if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    if (CMAKE_C_COMPILER_ID MATCHES "Clang")
 
         # why not -03
 
@@ -168,7 +173,7 @@ if (MSVC)
 
 endif()
 
-if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+if (CMAKE_C_COMPILER_ID MATCHES "Clang")
 
     add_compile_options(
         -Wno-unknown-warning-option

@@ -425,9 +425,9 @@ local function getunicodes(font)
         setmetatableindex(counts, function(t,k) t[k] = 0 return 0 end)
         for s in gmatch(cid,"beginbfrange%s*(.-)%s*endbfrange") do
             for first, last, offset in gmatch(s,"<([^>]+)>%s+<([^>]+)>%s+<([^>]+)>") do
-                first  = tonumber(first,16)
-                last   = tonumber(last,16)
-                offset = tonumber(offset,16)
+                local first  = tonumber(first,16)
+                local last   = tonumber(last,16)
+                local offset = tonumber(offset,16)
                 offset = offset - first
                 for i=first,last do
                     local c = i + offset

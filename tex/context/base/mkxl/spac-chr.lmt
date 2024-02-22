@@ -62,9 +62,9 @@ local new_rule           = nodepool.rule
 local nodecodes          = nodes.nodecodes
 local gluecodes          = nodes.gluecodes
 
-local glyph_code         = nodecodes.glyph
-local glue_code          = nodecodes.glue
-local spaceskip_code     = gluecodes.spaceskip
+local glyph_code         <const> = nodecodes.glyph
+local glue_code          <const> = nodecodes.glue
+local spaceskip_code     <const> = gluecodes.spaceskip
 
 local chardata           = characters.data
 local ispunctuation      = characters.is_punctuation
@@ -84,8 +84,8 @@ local fontquads          = fonthashes.quads
 
 local setmetatableindex  = table.setmetatableindex
 
-local a_character        = attributes.private("characters")
-local a_alignstate       = attributes.private("alignstate")
+local a_character        <const> = attributes.private("characters")
+local a_alignstate       <const> = attributes.private("alignstate")
 
 local c_zero   = byte('0')
 local c_period = byte('.')

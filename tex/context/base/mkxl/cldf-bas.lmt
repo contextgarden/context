@@ -31,11 +31,10 @@ local concat        = table.concat
 local context       = context
 local ctxcore       = context.core
 
-local variables     = interfaces.variables
-
 local ctx_flushnode = context.nuts.flush
 local ctx_sprint    = context.sprint
-local txtcatcodes   = tex.txtcatcodes
+
+local txtcatcodes   <const> = tex.txtcatcodes
 
 local nuts          = nodes.nuts
 local tonode        = nuts.tonode
@@ -249,8 +248,9 @@ end
 
 do
 
-    local texset   = tex.set
-    local maxdimen = tex.magicconstants.maxdimen
+    local texset = tex.set
+
+    local maxdimen <const> = tex.magicconstants.maxdimen
 
     function tex.dontcomplain()
         texset("hbadness",maxdimen)

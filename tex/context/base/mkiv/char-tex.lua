@@ -64,12 +64,14 @@ local private = {
 
 utffilters.private = private
 
-for ch in gmatch(special,".") do
-    local cb
-    if type(ch) == "number" then
-        cb, ch = ch, utfchar(ch)
+for chr in gmatch(special,".") do
+    local cb, ch
+    if type(chr) == "number" then
+        ch = utfchar(chr)
+        cb = chr
     else
-        cb = utfbyte(ch)
+        ch = chr
+        cb = utfbyte(chr)
     end
     if cb < 256 then
         escapes[ch] = "\\" .. ch

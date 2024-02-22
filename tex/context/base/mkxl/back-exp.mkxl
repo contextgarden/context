@@ -421,15 +421,6 @@
 \installsetuponlycommandhandler \??boxexport  {boxexport}
 \installsetuponlycommandhandler \??mathexport {mathexport}
 
-% \permanent\tolerant\protected\def\startboxexport[#1]%
-%   {\dowithnextbox{\strc_export_box{#1}}\vbox\bgroup}
-%
-% \permanent\protected\def\stopboxexport
-%   {\egroup}
-%
-% \def\strc_export_box#1%
-%   {\ctxlua{buffers.assign("#1",structures.tags.exportbox(\number\nextbox))}}
-
 \permanent\tolerant\protected\def\startboxexport[#S#1]%
   {\begingroup
    \ifempty{#1}%
@@ -462,13 +453,44 @@
 \permanent\protected\def\stopmathexport
   {\clf_stopcollectingmath
    \clf_processcollectedmath
-     {\boxexportparameter\c!file}
+     {\boxexportparameter\c!file}%
      {\boxexportparameter\c!buffer}%
+     {\boxexportparameter\c!n}%
+     {\boxexportparameter\c!option}%
+   \endgroup}
+
+\permanent\tolerant\protected\def\savemathexport[#S#1]%
+  {\begingroup
+   \setupboxexport[#1]%
+   \clf_processcollectedmath
+     {\boxexportparameter\c!file}%
+     {\boxexportparameter\c!buffer}%
+     {\boxexportparameter\c!n}%
+     {\boxexportparameter\c!option}%
    \endgroup}
 
 % Defined at the \LUA\ end:
 %
 % \the\collectedmath : number of snippets
 % \collectedmath n   : specific snippet
+
+% \startluacode
+%     function commands.doifelsesimplecollectedmath()
+%         commands.doifelse(string.find(
+%             buffers.getcontent("test"),
+%             "<math.->%s*<m[nio]>[^<>]+</m[nio]>%s*</math>")
+%         )
+%     end
+% \stopluacode
+%
+% \dorecurse {\collectedmath} {
+%     \savemathexport[buffer=test,n=#1]
+%     \ctxlua{commands.doifelsesimplecollectedmath()} {
+%     } {
+%         \startsubsubsubject[title={math blob #1}]
+%             \typebuffer[test]
+%         \stopsubsubsubject
+%     }
+% }
 
 \protect \endinput

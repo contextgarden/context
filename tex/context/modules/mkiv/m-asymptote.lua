@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['m-asymptote'] = {
 local context = context
 local replacesuffix = file.replacesuffix
 
+moduledata = moduledata or { }
 moduledata.asymptote = { }
 
 sandbox.registerrunner {

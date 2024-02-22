@@ -953,12 +953,12 @@ local flushliteral  do
     local nodeproperties      = nodes.properties.data
     local literalvalues       = nodes.literalvalues
 
-    local originliteral_code  = literalvalues.origin
-    local pageliteral_code    = literalvalues.page
-    local alwaysliteral_code  = literalvalues.always
-    local rawliteral_code     = literalvalues.raw
-    local textliteral_code    = literalvalues.text
-    local fontliteral_code    = literalvalues.font
+    local originliteral_code  <const> = literalvalues.origin
+    local pageliteral_code    <const> = literalvalues.page
+    local alwaysliteral_code  <const> = literalvalues.always
+    local rawliteral_code     <const> = literalvalues.raw
+    local textliteral_code    <const> = literalvalues.text
+    local fontliteral_code    <const> = literalvalues.font
 
     flushliteral = function(current,pos_h,pos_v)
         local p = nodeproperties[current]
@@ -1249,17 +1249,17 @@ local flushimage  do
     local getdata           = nuts.getdata
 
     local rulecodes         = nodes.rulecodes
-    local normalrule_code   = rulecodes.normal
-    local boxrule_code      = rulecodes.box
-    local imagerule_code    = rulecodes.image
-    local emptyrule_code    = rulecodes.empty
-    local userrule_code     = rulecodes.user
-    local overrule_code     = rulecodes.over
-    local underrule_code    = rulecodes.under
-    local fractionrule_code = rulecodes.fraction
-    local radicalrule_code  = rulecodes.radical
-    local outlinerule_code  = rulecodes.outline
-    ----- virtualrule_code  = rulecodes.virtual
+    local normalrule_code   <const> = rulecodes.normal
+    local boxrule_code      <const> = rulecodes.box
+    local imagerule_code    <const> = rulecodes.image
+    local emptyrule_code    <const> = rulecodes.empty
+    local userrule_code     <const> = rulecodes.user
+    local overrule_code     <const> = rulecodes.over
+    local underrule_code    <const> = rulecodes.under
+    local fractionrule_code <const> = rulecodes.fraction
+    local radicalrule_code  <const> = rulecodes.radical
+    local outlinerule_code  <const> = rulecodes.outline
+    ----- virtualrule_code  <const> = rulecodes.virtual
 
     local processrule       = nodes.rules.process
 
@@ -1270,16 +1270,19 @@ local flushimage  do
     local s_b <const> = "q"
     local s_e <const> = "Q"
 
-    local f_v  = formatters["[] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
-    local f_h  = formatters["[] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
+    local f_v   = formatters["[] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
+    local f_h   = formatters["[] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
 
-    local f_f  = formatters["0 0 %.6N %.6N re f"]
-    local f_o  = formatters["[] 0 d 0 J 0 0 %.6N %.6N re S"]
-    local f_w  = formatters["[] 0 d 0 J %.6N w 0 0 %.6N %.6N re S"]
+    local f_f   = formatters["0 0 %.6N %.6N re f"]
+    local f_o   = formatters["[] 0 d 0 J 0 0 %.6N %.6N re S"]
+    local f_w   = formatters["[] 0 d 0 J %.6N w 0 0 %.6N %.6N re S"]
 
-    local f_b  = formatters["%.6N w 0 %.6N %.6N %.6N re f"]
-    local f_x  = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S"]
-    local f_y  = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S %.6N 0 m %.6N 0 l S"]
+    local f_b   = formatters["%.6N w 0 %.6N %.6N %.6N re f"]
+    local f_x   = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S"]
+    local f_y   = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S %.6N 0 m %.6N 0 l S"]
+
+    local f_v_d = formatters["[%.6N %.6N] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
+    local f_h_d = formatters["[%.6N %.6N] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
 
     -- Historically the index is an object which is kind of bad.
 
@@ -1617,7 +1620,7 @@ local flushimage  do
     -- never because the next are like the other engines and compensate for
     -- small sizes which is needed for inaccurate viewers.
 
-    flushers.rule = function(current,pos_h,pos_v,pos_r,size_h,size_v,subtype)
+    flushers.rule = function(current,pos_h,pos_v,pos_r,size_h,size_v,subtype,on,off,vmode)
         if subtype == emptyrule_code then
             return
         elseif subtype == boxrule_code then
@@ -1654,13 +1657,32 @@ local flushimage  do
             end
         elseif dim_v <= one_bp then
             pdf_set_pos_temp(pos_h,pos_v + 0.5 * size_v)
-            rule = f_v(dim_v,dim_h)
+--          if on == 0 or off == 0 then
+if not on or on == 0 or off == 0 then -- for now
+                rule = f_v(dim_v,dim_h)
+            else
+                rule = f_v_d(on*bpfactor,off*bpfactor,dim_v,dim_h)
+            end
         elseif dim_h <= one_bp then
             pdf_set_pos_temp(pos_h + 0.5 * size_h,pos_v)
-            rule = f_h(dim_h,dim_v)
+--             if on == 0 or off == 0 then
+if not on or on == 0 or off == 0 then -- for now
+                rule = f_h(dim_h,dim_v)
+            else
+                rule = f_h_d(on*bpfactor,off*bpfactor,dim_h,dim_v)
+            end
         else
-            pdf_set_pos_temp(pos_h,pos_v)
-            rule = f_f(dim_h,dim_v)
+--             if on == 0 or off == 0 then
+if not on or on == 0 or off == 0 then -- for now
+                pdf_set_pos_temp(pos_h,pos_v)
+                rule = f_f(dim_h,dim_v)
+            elseif vmode then
+                pdf_set_pos_temp(pos_h + 0.5 * size_h,pos_v)
+                rule = f_h_d(on*bpfactor,off*bpfactor,dim_h,dim_v)
+            else
+                pdf_set_pos_temp(pos_h,pos_v + 0.5 * size_v)
+                rule = f_v_d(on*bpfactor,off*bpfactor,dim_v,dim_h)
+            end
         end
 
         b = b + 1 ; buffer[b] = rule
@@ -2350,7 +2372,7 @@ local finalize  do
             local contentsobj = content ~= "" and pdfflushstreamobject(content,false,true) or false -- empty /Contents are forbidden
 
             pageattributes.Type      = pdf_page
-            pageattributes.Contents  = contentsobj and pdfreference(contentsobj)
+            pageattributes.Contents  = contentsobj and pdfreference(contentsobj) or nil
             pageattributes.Resources = pageresources
          -- pageattributes.Resources = pdfreference(pdfflushobject(pageresources))
          -- pageattributes.MediaBox  = bbox
@@ -2645,7 +2667,8 @@ do
     local nofpages     = 0
 
     local texgetcount  = tex.getcount
-    local c_realpageno = tex.iscount("realpageno")
+
+    local c_realpageno <const> = tex.iscount("realpageno")
 
     pdfreserveobject = function(name)
         nofobjects = nofobjects + 1

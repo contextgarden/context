@@ -615,17 +615,20 @@ local function flags_to_string(flags,prefix)
     -- context flags get prepended by c: ... this will move to the sbx module
     local t = { }
     for k, v in table.sortedhash(flags) do
+        local p
         if prefix then
-            k = format("c:%s",k)
+            p = format("c:%s",k)
+        else
+            p = k
         end
         if not v or v == "" or v == '""' then
             -- no need to flag false
         elseif v == true then
-            t[#t+1] = format('--%s',k)
+            t[#t+1] = format('--%s',p)
         elseif type(v) == "string" then
-            t[#t+1] = format('--%s=%s',k,quote(v))
+            t[#t+1] = format('--%s=%s',p,quote(v))
         else
-            t[#t+1] = format('--%s=%s',k,tostring(v))
+            t[#t+1] = format('--%s=%s',p,tostring(v))
         end
     end
     return concat(t," ")

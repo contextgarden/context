@@ -46,10 +46,11 @@ local tonode              = nodes.tonode
 backends                  = backends or { }
 local backends            = backends
 
-local whatsit_code        = nodes.nodecodes.whatsit
 local whatsitcodes        = allocate { }
 nodes.whatsitcodes        = whatsitcodes
 local lastwhatsit         = 0
+
+local whatsit_code        <const> = nodes.nodecodes.whatsit
 
 nodes.subtypes.whatsit       = whatsitcodes
 nodes.subtypes[whatsit_code] = whatsitcodes
@@ -500,7 +501,8 @@ do
     local writenode      = registerwhatsitnode("write")
     local closenode      = registerwhatsitnode("close")
     local channels       = { }
-    local immediate_code = tex.flagcodes.immediate
+
+    local immediate_code <const> = tex.flagcodes.immediate
 
     function backends.openout(n)
         local p = nodeproperties[n]

@@ -66,6 +66,11 @@
 
 \permanent\protected\def\resetcharactercasing{\c_attr_case\attributeunsetvalue}
 
+\definecapitals % nothing
+  [randomvariant]
+  [\c!category=\zerocount]
+
+
 %D \macros
 %D   {Word, Words, WORD, WORDS}
 %D
