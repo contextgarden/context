@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2024-02-22 18:28
+-- merge date  : 2024-03-11 09:31
 
 do -- begin closure to overcome local limits and interference
 
@@ -17688,21 +17688,25 @@ local function chainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,nof
   local current=readarray(f)
   local after=readarray(f)
   local noflookups=readushort(f)
-  local lookups=readlookuparray(f,noflookups,#current)
-  before=readcoveragearray(f,tableoffset,before,true)
-  current=readcoveragearray(f,tableoffset,current,true)
-  after=readcoveragearray(f,tableoffset,after,true)
-  return {
-   format="coverage",
-   rules={
-    {
-     before=before,
-     current=current,
-     after=after,
-     lookups=lookups,
+  local lookups=current and readlookuparray(f,noflookups,#current)
+  if lookups then
+   before=readcoveragearray(f,tableoffset,before,true)
+   current=readcoveragearray(f,tableoffset,current,true)
+   after=readcoveragearray(f,tableoffset,after,true)
+   return {
+    format="coverage",
+    rules={
+     {
+      before=before,
+      current=current,
+      after=after,
+      lookups=lookups,
+     }
     }
    }
-  }
+  else
+   report("confusing subtype %a in %a %s",subtype,"chainedcontext",what)
+  end
  else
   report("unsupported subtype %a in %a %s",subtype,"chainedcontext",what)
  end
@@ -18797,7 +18801,9 @@ do
    if not lookupstoo then
     return
    end
-   local nofmarkclasses=(fontdata.markclasses and #fontdata.markclasses or 0)-(fontdata.marksets and #fontdata.marksets or 0)
+   local markclasses=fontdata.markclasses
+   local marksets=fontdata.marksets
+   local nofmarkclasses=(markclasses and #markclasses or 0)-(marksets and #marksets or 0)
    local lookups=readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder,nofmarkclasses)
    if lookups then
     resolvelookups(f,lookupoffset,fontdata,lookups,lookuptypes,lookuphandlers,what,tableoffset)
@@ -20023,6 +20029,8 @@ function readers.mvar(f,fontdata,specification)
    end
   end
  end
+end
+function readers.dsig(f,fontdata,specification)
 end
 
 end -- closure
@@ -21361,7 +21369,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.140 
+otf.version=3.141 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -24018,6 +24026,7 @@ local P,R,S=lpeg.P,lpeg.R,lpeg.S
 local lpegmatch=lpeg.match
 local insert,remove,copy,unpack=table.insert,table.remove,table.copy,table.unpack
 local find=string.find
+local idiv=number.idiv
 local formatters=string.formatters
 local sortedkeys=table.sortedkeys
 local sortedhash=table.sortedhash
@@ -24703,7 +24712,7 @@ local function checklookups(fontdata,missing,nofmissing)
     end
    end
    if parts then
-    parts[#parts//2+1].unicode=unicode
+    parts[idiv(#parts,2)+1].unicode=unicode
    end
   end
  end

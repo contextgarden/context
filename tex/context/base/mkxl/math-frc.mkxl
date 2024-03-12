@@ -512,6 +512,8 @@
 \def\math_fraction_set_threshold_display_auto
    {\Umathfractiondelsize\alldisplaystyles\maxdimen}
 
+% \dimexpr#1*\plusthousand/\glyphscale\relax
+
 \def\math_fraction_set_threshold_inline_ratio % watch the reverse compensation
   {\edef\p_threshold{\mathfractionparameter\c!inlinethreshold}%
    \Umathfractiondelsize\alltextstyles        \p_threshold\glyphscaled\textface

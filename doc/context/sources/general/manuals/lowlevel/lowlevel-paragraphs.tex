@@ -1395,6 +1395,74 @@ Watch the interline skip kicking in when we make the depth larger than in
 
 \stopsectionlevel
 
+\startsectionlevel[title=Penalties]
+
+In \in {figiure} [fig:penaltylists] we demonstrate the (accumulated) effect of a
+few penalty arrays that you can set. Keep in mind that these are low level
+(primitive) commands that can interfere with other mechanisms. The
+interline penalties are applied to the current paragraph in the same was as \typ
+{\looseness} is. This makes sense because using the club and widow penalties is
+more predictable. You have to zoom in to see how the penalties add up. As with
+\typ {\looseness} the \typ {\interlinepenalties} get reset before the paragraph,
+which is shown in the bottom cells of this figure.
+
+\startbuffer
+\interlinepenalty 0
+\clubpenalty      0
+\widowpenalty     0
+\orphanpenalty    0
+\shapingpenalty   0
+
+\clubpenalties      5   1000   2000   3000   4000   5000 % 6 -> 0
+\widowpenalties     5     10     20     30     40     50 % 6 -> 0
+\orphanpenalties    5      1      2      3      4      5 % 6 -> 0
+\interlinepenalties 5 100000 200000 300000 400000 500000 % 6 -> 0
+\stopbuffer
+
+\typebuffer
+
+It actually makes sense to explicitly zero the last entry because as you can see
+in the figure the last one gets used when we run out of entries.
+
+\startplacefigure[title=Penalty lists,reference=fig:penaltylists]
+\startcombination[nx=2,ny=2]
+  {\ruledvbox\bgroup
+     \hsize.45tw
+     \showmakeup[penalty]
+     \getbuffer
+     \samplefile{ward} \par
+     \samplefile{ward} \par
+   \egroup} {\type{\normalizeparmode 8}}
+  {\ruledvbox\bgroup
+     \hsize.45tw
+     \bitwiseflip\normalizeparmode\pluseight
+     \showmakeup[penalty]
+     \getbuffer
+     \samplefile{ward} \par
+     \samplefile{ward} \par
+   \egroup} {\type{\normalizeparmode 8}}
+  {\ruledvbox\bgroup
+     \hsize.45tw
+     \showmakeup[penalty]
+     \getbuffer
+
+     \samplefile{ward} \par
+     \samplefile{ward} \par
+   \egroup} {newline and \type{\normalizeparmode 8}}
+  {\ruledvbox\bgroup
+     \hsize.45tw
+     \bitwiseflip\normalizeparmode\pluseight
+     \showmakeup[penalty]
+     \getbuffer
+
+     \samplefile{ward} \par
+     \samplefile{ward} \par
+   \egroup} {newline and \type{\normalizeparmode 8}}
+\stopcombination
+\stopplacefigure
+
+\stopsectionlevel
+
 \stopdocument
 
 % I rewarded myself after writing a section by watching the video "Final Thing On

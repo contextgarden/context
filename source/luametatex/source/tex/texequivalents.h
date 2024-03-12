@@ -1841,13 +1841,13 @@ typedef enum normalize_line_mode_bits {
 } normalize_line_mode_bits;
 
 typedef enum normalize_par_mode_bits {
-    normalize_par_mode     = 0x0001,
-    flatten_v_leaders_mode = 0x0002, /* used to be 0x200 */
-    limit_prev_graf_mode   = 0x0004,
+    normalize_par_mode            = 0x0001,
+    flatten_v_leaders_mode        = 0x0002, /* used to be 0x200 */
+    limit_prev_graf_mode          = 0x0004,
+    /*tex Conform etex we reset but one can wonder (ms mail/discussion) so we now have a flag. */
+    keep_interline_penalties_mode = 0x0008,
+    /*tex Maybe add some more control over the resets. */    
 } normalize_par_mode_bits;
-
-# define normalize_line_mode_permitted(a,b) ((a & b) == b)
-# define normalize_par_mode_permitted(a,b) ((a & b) == b)
 
 typedef enum parameter_mode_bits {
     parameter_escape_mode = 0x0001,
@@ -1858,6 +1858,9 @@ typedef enum parameter_mode_bits {
 # define auto_migration_mode_par  integer_parameter(auto_migration_mode_code)
 
 # define parameter_mode_par       integer_parameter(parameter_mode_code)  
+
+# define normalize_line_mode_option(a) ((normalize_line_mode_par & a) == a)
+# define normalize_par_mode_option(a)  ((normalize_par_mode_par  & a) == a)
 
 typedef enum auto_migration_mode_bits {
      auto_migrate_mark   = 0x01,
@@ -1964,7 +1967,6 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 # define update_tex_hang_after(v)              tex_eq_word_define(internal_integer_location(hang_after_code), v)
 # define update_tex_hang_indent(v)             tex_eq_word_define(internal_dimension_location(hang_indent_code), v)
 # define update_tex_looseness(v)               tex_eq_word_define(internal_integer_location(looseness_code), v)
-# define update_tex_inter_line_penalties(v)    tex_eq_word_define(internal_integer_location(inter_line_penalties_code), v)
 # define update_tex_single_line_penalty(v)     tex_eq_word_define(internal_integer_location(single_line_penalty_code), v)
 # define update_tex_math_direction(v)          tex_eq_word_define(internal_integer_location(math_direction_code), v)
 # define update_tex_internal_par_state(v)      tex_eq_word_define(internal_integer_location(internal_par_state_code), v)
@@ -1987,12 +1989,13 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 # define update_tex_math_left_class(v)         tex_eq_word_define(internal_integer_location(math_left_class_code), v)
 # define update_tex_math_right_class(v)        tex_eq_word_define(internal_integer_location(math_right_class_code), v)
 
-# define update_tex_par_shape(v)               tex_eq_define(internal_specification_location(par_shape_code),            specification_reference_cmd, v)
-# define update_tex_par_passes(v)              tex_eq_define(internal_specification_location(par_passes_code),           specification_reference_cmd, v)
-/*define update_tex_club_penalties(v)          eq_define(internal_specification_location(club_penalties_code),           specification_reference_cmd, v) */
-/*define update_tex_widow_penalties(v)         eq_define(internal_specification_location(widow_penalties_code),          specification_reference_cmd, v) */
-/*define update_tex_display_widow_penalties(v) eq_define(internal_specification_location(display_widow_penalties_code),  specification_reference_cmd, v) */
-/*define update_tex_orphan_penalties(v)        eq_define(internal_specification_location(orphan_penalties_code),         specification_reference_cmd, v) */
+# define update_tex_par_shape(v)               tex_eq_define(internal_specification_location(par_shape_code),               specification_reference_cmd, v)
+# define update_tex_par_passes(v)              tex_eq_define(internal_specification_location(par_passes_code),              specification_reference_cmd, v)
+# define update_tex_inter_line_penalties(v)    tex_eq_define(internal_specification_location(inter_line_penalties_code),    specification_reference_cmd, v)
+# define update_tex_club_penalties(v)          tex_eq_define(internal_specification_location(club_penalties_code),          specification_reference_cmd, v)
+# define update_tex_widow_penalties(v)         tex_eq_define(internal_specification_location(widow_penalties_code),         specification_reference_cmd, v)
+# define update_tex_display_widow_penalties(v) tex_eq_define(internal_specification_location(display_widow_penalties_code), specification_reference_cmd, v)
+# define update_tex_orphan_penalties(v)        tex_eq_define(internal_specification_location(orphan_penalties_code),        specification_reference_cmd, v)
 
 # define update_tex_end_of_group(v)            tex_eq_define(internal_toks_location(end_of_group_code), internal_toks_reference_cmd, v)
 /*define update_tex_end_of_par(v)              eq_define(internal_toks_location(end_of_par_code), internal_toks_cmd, v) */

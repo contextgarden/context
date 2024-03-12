@@ -3503,6 +3503,7 @@ halfword tex_scan_font(int optional_equal)
                     font_spec_y_scale(fs) = tex_scan_scale_factor(0);
                     font_spec_slant(fs) = tex_scan_scale_factor(0);
                     font_spec_weight(fs) =  tex_scan_scale_factor(0);
+                    font_spec_state(fs) = font_spec_all_set;
                 }
                 break;
             case 's': case 'S':
@@ -3510,11 +3511,13 @@ halfword tex_scan_font(int optional_equal)
                     case 'c': case 'C':
                         if (tex_scan_mandate_keyword("scale", 2)) {
                             font_spec_scale(fs) = tex_scan_scale_factor(0);
+                            font_spec_state(fs) = font_spec_scale_set;
                         }
                         break;
                     case 'l': case 'L':
                         if (tex_scan_mandate_keyword("slant", 2)) {
                             font_spec_slant(fs) = tex_scan_scale_factor(0);
+                            font_spec_state(fs) = font_spec_slant_set;
                         }
                         break;
                     default:
@@ -3525,21 +3528,25 @@ halfword tex_scan_font(int optional_equal)
             case 'x': case 'X':
                 if (tex_scan_mandate_keyword("xscale", 1)) {
                     font_spec_x_scale(fs) = tex_scan_scale_factor(0);
+                    font_spec_state(fs) = font_spec_x_scale_set;
                 }
                 break;
             case 'y': case 'Y':
                 if (tex_scan_mandate_keyword("yscale", 1)) {
                     font_spec_y_scale(fs) = tex_scan_scale_factor(0);
+                    font_spec_state(fs) = font_spec_y_scale_set;
                 }
                 break;
             case 'w': case 'W':
                 if (tex_scan_mandate_keyword("weight", 1)) {
                     font_spec_weight(fs) = tex_scan_scale_factor(0);
+                    font_spec_state(fs) = font_spec_weight_set;
                 }
                 break;
             case 'o': case 'O': /* oblique */
                 if (tex_scan_mandate_keyword("oblique", 1)) {
                     font_spec_slant(fs) = tex_scan_scale_factor(0);
+                    font_spec_state(fs) = font_spec_slant_set;
                 }
                 break;
             default:

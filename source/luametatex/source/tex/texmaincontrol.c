@@ -892,7 +892,7 @@ static void tex_aux_run_make_box(void) {
 
 static void tex_aux_insert_parindent(int indented)
 {
-    if (normalize_line_mode_permitted(normalize_line_mode_par, parindent_skip_mode)) {
+    if (normalize_line_mode_option(parindent_skip_mode)) {
         /*tex We cannot use |new_param_glue| yet, because it's a dimen */
         halfword glue = tex_new_glue_node(zero_glue, indent_skip_glue);
         if (indented) {
@@ -2807,6 +2807,17 @@ static void tex_aux_run_right_brace(void)
     Here is where we clear the parameters that are supposed to revert to their default values after
     every paragraph and when internal vertical mode is entered.
 
+    The multiple widow penalties work from the bottom and club penalties work from the top. Both are 
+    persistent arrays while interline penalties acts like for instance looseness and is a more 
+    temporary feature. One can argue about how much sense all this makes because it not only affects
+    the next paragraph but nested ones too. 
+
+    One argument for the reset i.e. only set inside a paragraph is that  it then can't influence 
+    a nested one. In that case resetting the widow and club penalties also makes sense but on the 
+    other hand one often wants these to operate over more paragraphs. One solution is to make these 
+    parameters current list specific, that is: wipe them as soon as they are bound to the par node, 
+    although we can emulate that: frozen set and unfrozen reset. 
+
 */
 
 void tex_normal_paragraph(int context)
@@ -2827,7 +2838,7 @@ void tex_normal_paragraph(int context)
         if (par_shape_par) {
             update_tex_par_shape(null);
         }
-        if (inter_line_penalties_par) {
+        if (inter_line_penalties_par && ! normalize_par_mode_option(keep_interline_penalties_mode)) { 
             update_tex_inter_line_penalties(null);
         }
         if (emergency_left_skip_par) {

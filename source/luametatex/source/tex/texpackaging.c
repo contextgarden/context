@@ -1174,19 +1174,16 @@ void tex_freeze(halfword p, int recurse, int limitate, halfword factor)
                         }
                     }
                     while (c) {
-//printf("%i / %i\n",node_type(c),node_subtype(c));
                         switch (node_type(c)) {
                             case glue_node:
                                 switch (sign) {
                                     case stretching_glue_sign:
                                         if (glue_stretch_order(c) == order) {
-//printf("+ %i : %f + %f * %f -> %f\n",node_subtype(c),glue_amount(c)/65536.0,glue_stretch(c)/65536.0,set,scaledround(glue_stretch(c) * set)/65536.0);
                                                 glue_amount(c) += limitate == vlist_node ? glue_stretch(c) : scaledround(glue_stretch(c) * set);
                                         }
                                         break;
                                     case shrinking_glue_sign:
                                         if (glue_shrink_order(c) == order) {
-//printf("- %i : %f + %f * %f -> %f\n",node_subtype(c),glue_amount(c)/65536.0,glue_shrink(c)/65536.0,set,scaledround(glue_shrink(c) * set)/65536.0);
                                             glue_amount(c) -= scaledround(glue_shrink(c) * set);
                                         }
                                         break;
@@ -1501,8 +1498,7 @@ halfword tex_hpack(halfword p, scaled w, int m, singleword pack_direction, int r
                 if (box_depth(p) > d) {
                     d = box_depth(p);
                 }
-             // tex_aux_promote_pre_migrated(r, p);
-             // tex_aux_promote_post_migrated(r, p);
+                /*tex No promotions here. */
                 break;
             case rule_node:
                 /*tex
@@ -1941,7 +1937,7 @@ halfword tex_filtered_hpack(halfword p, halfword qt, scaled w, int m, int grp, h
     }
     head = tex_hpack(head, w, m, direction, retain, box_limit_none);
     if (has_box_package_state(head, package_u_leader_found)) {
-        if (head && normalize_line_mode_permitted(normalize_line_mode_par, flatten_h_leaders_mode)) { 
+        if (head && normalize_line_mode_option(flatten_h_leaders_mode)) { 
             if (! is_box_package_state(state, package_u_leader_delayed)) {
                 tex_flatten_leaders(head, grp, just_pack);
             }
@@ -2553,8 +2549,7 @@ halfword tex_vpack(halfword p, scaled targetheight, int m, scaled targetdepth, s
                 if (box_width(p) > width) {
                     width = box_width(p);
                 }
-             // tex_aux_promote_pre_migrated(box, p);
-             // tex_aux_promote_post_migrated(box, p);
+                /* No promotions here. */
                 break;
             case rule_node:
                 height += depth + rule_height(p);
@@ -2787,7 +2782,7 @@ halfword tex_filtered_vpack(halfword p, scaled h, int m, scaled maxdepth, int gr
     halfword result = p;
     if (! just_pack) {
         /* We have to do it here because we cannot nest packaging! */
-        if (result && normalize_line_mode_permitted(normalize_line_mode_par, flatten_h_leaders_mode)) { 
+        if (result && normalize_line_mode_option(flatten_h_leaders_mode)) { 
             halfword c = result; 
             while (c) {
                 switch (node_type(c)) {
@@ -2806,7 +2801,7 @@ halfword tex_filtered_vpack(halfword p, scaled h, int m, scaled maxdepth, int gr
         result = lmt_vpack_filter_callback(result, h, m, maxdepth, grp, direction, attr);
     }
     result = tex_vpack(result, h, m, maxdepth, (singleword) checked_direction_value(direction), retain, excess);
-    if (result && normalize_par_mode_permitted(normalize_par_mode_par, flatten_v_leaders_mode) && ! is_box_package_state(state, package_u_leader_delayed)) {
+    if (result && normalize_par_mode_option(flatten_v_leaders_mode) && ! is_box_package_state(state, package_u_leader_delayed)) {
         tex_flatten_leaders(result, grp, just_pack);
     }
     if (! just_pack) {
@@ -3089,20 +3084,18 @@ void tex_run_unpackage(void)
                             "or vice versa. And I can't open any boxes in math mode."
                         );
                     } else {
-                        /*tex Todo: check head, not needed, always a temp. */
-                        /*tex We go via variables because we do varmem assignments. Probably not needed */
+                        /*tex 
+                            We go via variables because we do varmem assignments. Probably this is 
+                            not needed.
+                        */
                         halfword tail = cur_list.tail;
                         halfword list = box_list(box);
                         halfword pre_migrated  = code == unpack_code ? null : box_pre_migrated(box);
                         halfword post_migrated = code == unpack_code ? null : box_post_migrated(box);
                         /* probably overkill as we inject vadjust again, maybe it should be an option, 'bind' or so */
-                    //  halfword pre_adjusted  = box_pre_adjusted(box);
-                    //  halfword post_adjusted = box_post_adjusted(box);
                         halfword pre_adjusted  = code == unpack_code ? null : box_pre_adjusted(box);
                         halfword post_adjusted = code == unpack_code ? null : box_post_adjusted(box);
-                     // halfword pre_adjusted  = code == (unpack_code || is_h_mode(cur_list.mode)) ? null : box_pre_adjusted(box);
-                     // halfword post_adjusted = code == (unpack_code || is_h_mode(cur_list.mode)) ? null : box_post_adjusted(box);
-                        int prunekerns = list && node_type(box) == hlist_node && normalize_line_mode_permitted(normalize_line_mode_par, remove_margin_kerns_mode);
+                        int prunekerns = list && node_type(box) == hlist_node && normalize_line_mode_option(remove_margin_kerns_mode);
                         /*tex 
                             This topskip move is an ugly catch for wrong usage: when messing with 
                             vboxes the migrated material can end up outside the unvboxed (pagebody)
@@ -3546,7 +3539,7 @@ halfword tex_vert_break(halfword current, scaled height, scaled depth)
                     }
                 case penalty_node:
                     penalty = penalty_amount(current);
-// option: penalty = 0;
+                    /* option: penalty = 0; */
                     break;
                 case mark_node:
                 case insert_node:

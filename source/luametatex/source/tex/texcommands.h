@@ -110,7 +110,7 @@ typedef enum code_classifications {
 typedef enum tex_command_code {
     /*tex
         The first 16 command codes are used for characters with a special meaning. In traditional
-        \TEX\ some have different names and also aliases. because we have a public token interface
+        \TEX\ some have different names and also aliases. Because we have a public token interface
         they now are uniquely used for characters and the aliases have their own cmd/chr codes.
     */
     escape_cmd,                       /*tex  0: escape delimiter*/

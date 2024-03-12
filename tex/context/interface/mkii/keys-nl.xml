@@ -167,6 +167,7 @@
 		<cd:variable name='conversion' value='conversie'/>
 		<cd:variable name='current' value='huidige'/>
 		<cd:variable name='cutspace' value='snijwit'/>
+		<cd:variable name='dash' value='streep'/>
 		<cd:variable name='dataset' value='dataset'/>
 		<cd:variable name='date' value='datum'/>
 		<cd:variable name='day' value='dag'/>
@@ -808,6 +809,7 @@
 		<cd:constant name='current' value='huidige'/>
 		<cd:constant name='cutspace' value='snijwit'/>
 		<cd:constant name='dash' value='streep'/>
+		<cd:constant name='dashstep' value='dashstep'/>
 		<cd:constant name='dat' value='dat'/>
 		<cd:constant name='database' value='database'/>
 		<cd:constant name='dataset' value='dataset'/>
@@ -821,6 +823,7 @@
 		<cd:constant name='delay' value='wachttijd'/>
 		<cd:constant name='depth' value='diepte'/>
 		<cd:constant name='depthcorrection' value='dieptecorrectie'/>
+		<cd:constant name='differentiald' value='differentiald'/>
 		<cd:constant name='direction' value='richting'/>
 		<cd:constant name='directory' value='directory'/>
 		<cd:constant name='display' value='scherm'/>
@@ -1114,7 +1117,9 @@
 		<cd:constant name='object' value='object'/>
 		<cd:constant name='obstruction' value='blokkade'/>
 		<cd:constant name='oddmargin' value='onevenmarge'/>
+		<cd:constant name='off' value='uit'/>
 		<cd:constant name='offset' value='offset'/>
+		<cd:constant name='on' value='aan'/>
 		<cd:constant name='openaction' value='openactie'/>
 		<cd:constant name='openpage' value='openpagina'/>
 		<cd:constant name='openpageaction' value='openpaginaactie'/>

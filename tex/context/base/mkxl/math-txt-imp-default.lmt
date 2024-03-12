@@ -9,6 +9,15 @@ if not modules then modules = { } end modules ['math-txt'] = {
 
 return {
 
+ -- (No) Space
+
+ ["notimes"]={
+  ["en"]=",",
+  ["sv"]=",",
+  ["nl"]=",",
+ },
+
+
  -- Structure related strings:
 
  ["and"]={
@@ -77,7 +86,7 @@ return {
 --  },
  ["end group"]={
   ["en"]="end group",
-  ["sv"]="slut grupp",
+  ["sv"]="slut",--"slut grupp",
   ["nl"]="einde groep",
  },
  ["pause"]={
@@ -111,9 +120,9 @@ return {
   ["nl"]="kwadraad",
  },
  ["sub"]={
-  ["en"]="sub",
-  ["sv"]="nedsänkt",
-  ["nl"]="sub",
+  ["en"]="with lower index",
+  ["sv"]="med undre index",
+  ["nl"]="TODO",
  },
  ["super"]={
   ["en"]="super",
@@ -332,7 +341,7 @@ return {
 
  ["function"]={
   ["en"]="the function",
-  ["sv"]="funktionen",
+  ["sv"]="",--"funktionen",
   ["nl"]="de functie",
  },
  ["arg"]={
@@ -378,6 +387,20 @@ return {
   ["en"]="vectorproduct",
   ["sv"]="vektorprodukt",
   ["nl"]="vector produkt",
+ },
+
+-- A specific one
+ ["applyfunctionof"]={
+  ["en"]="of",
+  ["sv"]="av",
+  ["nl"]="van",
+ },
+
+-- Show nothing if we only use the "symbol"
+ ["applyfunction"]={
+  ["en"]="",
+  ["sv"]="",
+  ["nl"]="",
  },
 
 -- Operators
@@ -479,10 +502,15 @@ return {
   ["sv"]="eftersom",
   ["nl"]="omdat",
  },
- ["fenced"]={
+ ["begin fenced"]={
   ["en"]="fenced",
   ["sv"]="grupp",
   ["nl"]="begrensd",
+ },
+ ["end fenced"]={
+  ["en"]="end fenced",
+  ["sv"]="slut grupp",
+  ["nl"]="TODO",
  },
  ["belongs to"]={
   ["en"]="belongs to",
@@ -524,7 +552,7 @@ return {
   ["sv"]="koprodukt",
   ["nl"]="coprodukt",
  },
- ["d"]={
+ ["differential"]={
   ["en"]="d",
   ["sv"]="d",
   ["nl"]="d",
@@ -551,7 +579,7 @@ return {
  },
  ["divided by"]={
   ["en"]="divided by",
-  ["sv"]="delad med",
+  ["sv"]="delat med",
   ["nl"]="gedeeld door",
  },
  ["divides"]={
@@ -706,7 +734,7 @@ return {
  },
  ["implies"]={
   ["en"]="implies",
-  ["sv"]="medför",
+  ["sv"]="implicerar",
   ["nl"]="impliceert",
  },
  ["infinity"]={
@@ -1034,6 +1062,11 @@ return {
   ["sv"]="mycket mer lika med",
   ["nl"]="veel meer gelijk aan",
  },
+ ["multiplication"]={
+  ["en"]="times",
+  ["sv"]="multiplicerat med",
+  ["nl"]="TODO",
+ },
  ["multiset union"]={
   ["en"]="multiset union",
   ["sv"]="multimängdunion",
@@ -1119,24 +1152,24 @@ return {
   ["nl"]="TODO",
  },
  ["derivative"]={
-  ["en"]="the derivative of",
-  ["sv"]="derivatan av",
-  ["nl"]="de afgeleide van",
+  ["en"]="the derivative",
+  ["sv"]="derivatan",
+  ["nl"]="de afgeleide",
  },
  ["second derivative"]={
-  ["en"]="the second derivative of",
-  ["sv"]="andraderivatan av",
-  ["nl"]="de tweede afgeleide van",
+  ["en"]="the second derivative",
+  ["sv"]="andraderivatan",
+  ["nl"]="de tweede afgeleide",
  },
  ["third derivative"]={
-  ["en"]="the third derivative of",
+  ["en"]="the third derivative",
   ["sv"]="tredjederivatan av",
-  ["nl"]="de derde afgeleide van",
+  ["nl"]="de derde afgeleide",
  },
  ["fourth derivative"]={
-  ["en"]="the fourth derivative of",
-  ["sv"]="fjärdederivatan av",
-  ["nl"]="de vierde afgeleide van",
+  ["en"]="the fourth derivative",
+  ["sv"]="fjärdederivatan",
+  ["nl"]="de vierde afgeleide",
  },
  ["product"]={
   ["en"]="the product",
@@ -1315,7 +1348,7 @@ return {
  },
  ["times"]={
   ["en"]="TIMES",
-  ["sv"]="multiplicerat med",
+  ["sv"]="TIMES",--"multiplicerat med",
   ["nl"]="maal",
  },
  ["to"]={
@@ -1500,13 +1533,28 @@ return {
   ["nl"]="zo dat",
  },
  ["adjoint"]={
-  ["en"]="the adjoint of",
-  ["sv"]="adjunkten av",
+  ["en"]="the adjoint",
+  ["sv"]="adjunkten",
+  ["nl"]="TODO",
+ },
+ ["inverse"]={
+  ["en"]="the inverse",
+  ["sv"]="inversen",
+  ["nl"]="TODO",
+ },
+ ["preimage"]={
+  ["en"]="the preimage",
+  ["sv"]="urbilden",
   ["nl"]="TODO",
  },
  ["transpose"]={
-  ["en"]="the transpose of",
-  ["sv"]="transponatet av",
+  ["en"]="the transpose",
+  ["sv"]="transponatet",
+  ["nl"]="TODO",
+ },
+ ["orthogonal complement"]={
+  ["en"]="the orthogonal complement",
+  ["sv"]="det ortogonala komplementet",
   ["nl"]="TODO",
  },
 }

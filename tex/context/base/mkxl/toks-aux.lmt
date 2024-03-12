@@ -223,6 +223,7 @@ tex.userdiscoptioncodes = setthem({
 
 tex.glyphoptioncodes        = getthem(tex.getglyphoptionvalues,"glyphoptioncode")
 tex.discoptioncodes         = getthem(tex.getdiscoptionvalues,"discoptioncode")
+tex.ruleoptioncodes         = getthem(tex.getruleoptionvalues,"ruleoptioncode")
 tex.glueoptioncodes         = getthem(tex.getglueoptionvalues)
 tex.mathoptioncodes         = getthem(tex.getmathoptionvalues)
 tex.penaltyoptioncodes      = getthem(tex.getpenaltyoptionvalues)

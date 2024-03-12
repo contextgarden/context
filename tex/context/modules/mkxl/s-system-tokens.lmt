@@ -12,6 +12,7 @@ local ctx_BC  = context.BC
 local ctx_NR  = context.NR
 local ctx_FL  = context.FL
 local ctx_ML  = context.ML
+local ctx_SL  = context.SL
 local ctx_LL  = context.LL
 local gsub    = string.gsub
 local find    = string.find
@@ -97,7 +98,7 @@ function moduledata.system.tokens.showlist()
     ctx_BC() context("max")
     ctx_BC() context("default or subcommands")
     ctx_BC() ctx_NR()
-    ctx_ML()
+    ctx_SL()
     for i=0,#l do
         local kind, min, max, fixedvalue = getrange(i)
         local what = whatever[kind]
@@ -143,6 +144,8 @@ function moduledata.system.tokens.table(t)
     local n = ""
     local w = ""
     local c = t.cmdname
+    local m = nil
+    local l = nil
     if c == "left_brace" then
         w = "given token list"
         t = token.scan_toks(false)
@@ -159,7 +162,7 @@ function moduledata.system.tokens.table(t)
     else
         n = token.scan_csname()
         local r = { }
-        local m = token.get_meaning(n,true)
+        m, l = token.get_meaning(n,true,false,true)
         if t.frozen    then r[#r+1] = "frozen"    end
         if t.permanent then r[#r+1] = "permanent" end
         if t.immutable then r[#r+1] = "immutable" end
@@ -170,28 +173,27 @@ function moduledata.system.tokens.table(t)
         if t.tolerant  then r[#r+1] = "tolerant"  end
         if t.protected then r[#r+1] = "protected" end
         r[#r+1] = "control sequence"
-        if type(m) == "table" then
-            t = m
-        else
-            t = { t }
+        if type(m) ~= "table" then
+            m = { m }
         end
         w = concat(r, " ")
     end
-    if type(t) == "table" and #t > 0 then
+    if type(m) == "table" and #m > 0 then
         context.starttabulate { "|l|r|r|l|c|l|l|" }
         ctx_FL()
         ctx_NC() context.formatted.rlap("\\bold %s: %s",w,n)
         ctx_NC() ctx_NC() ctx_NC() ctx_NC() ctx_NC() ctx_NC() ctx_NC()
         ctx_NC() ctx_NR()
-        ctx_ML()
-        for i=1,#t do
-            local ti = t[i]
+        ctx_SL()
+        for i=1,#m do
+            local ti = m[i]
+            local li = l[i]
             local cs = ti.csname
             local id = ti.id
             local ix = ti.index
             local cd = ti.command
             local cn = gsub(ti.cmdname,"_"," ")
-            ctx_NC() context(id)
+            ctx_NC() context(li or id)
             ctx_NC() context(cd)
             ctx_NC() context("%3i",ix)
             ctx_NC() context(cn)
@@ -208,6 +210,7 @@ function moduledata.system.tokens.table(t)
             elseif cn == "match" then
                 ctx_NC()
                 ctx_NC()
+                ctx_NC()
                     if ix == 32 then context("optional spacer")     -- space
                 elseif ix == 43 then context("keep braces")         -- "+"
                 elseif ix == 45 then context("thrash")              -- "-"
@@ -216,7 +219,7 @@ function moduledata.system.tokens.table(t)
                 elseif ix == 95 then context("keep mandate braces") -- "_"
                 else                 context("argument %c",ix)
                 end
-                ctx_NC()
+--                 ctx_NC()
                 ctx_NC() ctx_NR()
             else
                 ctx_NC()

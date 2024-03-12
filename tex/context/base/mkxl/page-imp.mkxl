@@ -183,7 +183,8 @@
 \pushoverloadmode
 
 \permanent\protected\def\shipout
-  {\begingroup\dowithnextboxcs\endgroup}
+ %{\begingroup\dowithnextboxcs\endgroup}
+  {\bgroup\aftergroup\egroup\setbox\shipoutscratchbox}
 
 \popoverloadmode
 

@@ -307,6 +307,8 @@
 \copymathspacing \mathwrappedcode        \mathfractioncode
 \copymathspacing \mathunarycode          \mathordinarycode
 
+\copymathspacing \mathvariablecode       \mathordinarycode
+
 \copymathspacing \mathmaybeordinarycode  \mathordinarycode
 \copymathspacing \mathmayberelationcode  \mathrelationcode
 \copymathspacing \mathmaybebinarycode    \mathbinarycode
@@ -347,7 +349,7 @@
 \untraced\protected\def\mathaccent      {\mathatom \s!class \mathaccentcode      } % primitive
 \untraced\protected\def\mathfenced      {\mathatom \s!class \mathfencedcode      } % primitive
 \untraced\protected\def\mathghost       {\mathatom \s!class \mathghostcode       } % primitive
-\untraced\protected\def\mathvariable    {\mathatom \s!class \mathvariablecode    } % useless
+\untraced\protected\def\mathvariable    {\mathatom \s!class \mathvariablecode    } % alphabetical
 \untraced\protected\def\mathactive      {\mathatom \s!class \mathactivecode      } % useless
 \untraced\protected\def\mathvcenter     {\mathatom \s!class \mathvcentercode     } % useless
 \untraced\protected\def\mathimaginary   {\mathatom \s!class \mathimaginarycode   }
@@ -2202,7 +2204,7 @@
    \attribute\mathstackattribute\c_mathfunctionstack
    \math_tags_mfunctionlab\plusone{\currentmathfunction}{\mathfunctionparameter\c!method}%
    \dostarttagged\t!mfunctionstack\currentmathfunction
-   \mathghost unpack \bgroup
+   \mathghost carryover \bgroup
       \p_left
       \begingroup
       \attribute\mathstackattribute\attributeunsetvalue
@@ -2304,7 +2306,6 @@
      {#1}%
      {}%
    \endgroup}
-
 
 % domain language name meaning
 % language name meaning
@@ -4974,14 +4975,19 @@
 
 %D Needed for spacing, tagging, etc.
 
+\newinteger\c_math_intervals
+
 \appendtoks
-    \attribute\mathintervalsattribute
     \ifcstok{\mathematicsparameter\c!autointervals}\v!yes
-      \plusone
+      \c_math_intervals\plusone
     \else
-      \attributeunsetvalue
+      \c_math_intervals\attributeunsetvalue
     \fi
 \to \everysetupmathematics
+
+\appendtoks
+    \attribute\mathintervalsattribute\c_math_intervals
+\to \everymathematics
 
 \setupmathematics
   [\c!autointervals=\v!yes]
@@ -5011,6 +5017,16 @@
        \clf_enablecollectingmath
    \fi
 \to \everysetuptagging
+
+% needed for verbose: \im {C \of (a,b) \neq C^2 \of (a,b)}
+
+\permanent\protected\def\math_application_of
+%  {\mathatom class \mathghostcode unpack {\Umathchar \mathghostcode \zerocount "2061}} % only lists gets upacked !
+  {\mathatom class \mathghostcode unpack {\applyfunctionof}} % only lists gets upacked !
+
+\appendtoks
+    \aliased\let\of\math_application_of
+\to \everymathematics
 
 \protect \endinput
 

@@ -2198,23 +2198,52 @@ scaled tex_get_math_font_factor(halfword size)
     Experiment.
 */
 
+// void tex_run_font_spec(void)
+// {
+//     update_tex_font_identifier(font_spec_identifier(cur_chr));
+//     if (font_spec_scale(cur_chr) != unused_scale_value) {
+//         update_tex_glyph_scale(font_spec_scale(cur_chr));
+//     }
+//     if (font_spec_x_scale(cur_chr) != unused_scale_value) {
+//         update_tex_glyph_x_scale(font_spec_x_scale(cur_chr));
+//     }
+//     if (font_spec_y_scale(cur_chr) != unused_scale_value) {
+//         update_tex_glyph_y_scale(font_spec_y_scale(cur_chr));
+//     }
+//     if (font_spec_slant(cur_chr)) {
+//         update_tex_glyph_slant(font_spec_slant(cur_chr));
+//     }
+//     if (font_spec_weight(cur_chr)) {
+//         update_tex_glyph_weight(font_spec_weight(cur_chr));
+//     }
+// }
+
 void tex_run_font_spec(void)
 {
     update_tex_font_identifier(font_spec_identifier(cur_chr));
-    if (font_spec_scale(cur_chr) != unused_scale_value) {
+if (font_spec_property_is_set(cur_chr,font_spec_scale_set)) {
+    if (font_spec_scale(cur_chr) != glyph_scale_par) {
         update_tex_glyph_scale(font_spec_scale(cur_chr));
     }
-    if (font_spec_x_scale(cur_chr) != unused_scale_value) {
+}
+if (font_spec_property_is_set(cur_chr,font_spec_x_scale_set)) {
+    if (font_spec_x_scale(cur_chr) != glyph_x_scale_par) {
         update_tex_glyph_x_scale(font_spec_x_scale(cur_chr));
     }
-    if (font_spec_y_scale(cur_chr) != unused_scale_value) {
+}
+if (font_spec_property_is_set(cur_chr,font_spec_y_scale_set)) {
+    if (font_spec_y_scale(cur_chr) != glyph_y_scale_par)  {
         update_tex_glyph_y_scale(font_spec_y_scale(cur_chr));
     }
-    if (font_spec_slant(cur_chr)) {
+}
+if (font_spec_property_is_set(cur_chr,font_spec_slant_set)) {
+    if (font_spec_y_scale(cur_chr) != glyph_slant_par) {
         update_tex_glyph_slant(font_spec_slant(cur_chr));
     }
-    if (font_spec_weight(cur_chr)) {
+}
+if (font_spec_property_is_set(cur_chr,font_spec_weight_set)) {
+    if (font_spec_weight(cur_chr) != glyph_weight_par) {
         update_tex_glyph_weight(font_spec_weight(cur_chr));
     }
 }
-
+}

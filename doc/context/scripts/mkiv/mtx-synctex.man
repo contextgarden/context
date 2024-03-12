@@ -1,0 +1,39 @@
+.TH "mtx-synctex" "1" "01-01-2024" "version 1.01" "SyncTeX Checker"
+.SH NAME
+ mtx-synctex - SyncTeX Checker
+.SH SYNOPSIS
+.B mtxrun --script synctex [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B SyncTeX Checker
+.SH OPTIONS
+.TP
+.B --edit
+open file at line: --line=.. --editor=.. sourcefile
+.TP
+.B --list
+show all areas: synctexfile
+.TP
+.B --goto
+open file at position: --page=.. --x=.. --y=.. [--tolerance=] --editor=.. synctexfile
+.TP
+.B --report
+show (tex) file and line: [--direct] --page=.. --x=.. --y=.. [--tolerance=] --console synctexfile
+.TP
+.B --find
+find (pdf) page and box: [--direct] --file=.. --line=.. synctexfile
+.SH AUTHOR
+More information about ConTeXt and the tools that come with it can be found at:
+
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

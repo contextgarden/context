@@ -823,6 +823,7 @@
 		<cd:constant name='delay' value='intarziere'/>
 		<cd:constant name='depth' value='inaltime'/>
 		<cd:constant name='depthcorrection' value='corectieadancime'/>
+		<cd:constant name='differentiald' value='differentiald'/>
 		<cd:constant name='direction' value='directie'/>
 		<cd:constant name='directory' value='director'/>
 		<cd:constant name='display' value='display'/>
@@ -1116,7 +1117,9 @@
 		<cd:constant name='object' value='obiect'/>
 		<cd:constant name='obstruction' value='obstructie'/>
 		<cd:constant name='oddmargin' value='margineimpara'/>
+		<cd:constant name='off' value='dezactivat'/>
 		<cd:constant name='offset' value='offset'/>
+		<cd:constant name='on' value='on'/>
 		<cd:constant name='openaction' value='actiunedeschidere'/>
 		<cd:constant name='openpage' value='openpage'/>
 		<cd:constant name='openpageaction' value='actiunedeschiderepagina'/>

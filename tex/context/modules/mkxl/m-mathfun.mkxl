@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-%D Occasionaly some experiment results in some weird feature. It doesn't make sense
+%D Occasionaly some experiment results in weird feature. It doesn't make sense
 %D to make this core functionality but if also makes no sense to throw it away. By
 %D making it a module the user can decide. It's actually an example of abusing a
 %D \LUA\ interfacing mechanism that is meant for something else.
@@ -22,12 +22,9 @@
     local type, load = type, load
     local gmatch = string.gmatch
 
-    local xmath         = xmath
-    local xcomplex      = xcomplex
-    local xdecimal      = xdecimal
-
     local context       = context
     local ctx_mfunction = context.mfunctionlabeltext
+    local ctx_getvalue  = context.getvalue
 
     local scanoptional  = tokens.scanners.optional
     local scanargument  = tokens.scanners.argument
@@ -67,7 +64,8 @@
                 context(name)
             end
         else
-            ctx_mfunction(name)
+--          ctx_mfunction(name)
+            ctx_getvalue("normal"..name)
         end
     end
 
@@ -81,20 +79,49 @@
         end
     end
 
+    implement {
+        name      = "installmathfunction",
+        public    = true,
+        protected = true,
+        actions   = install,
+        arguments = { "optional", "optional" },
+    }
+
+ -- install("sind cosd tand sin cos tan")
+ -- install("sqrt")
+
+    ---------------------------------------------------------
+
+    local type, load = type, load
+
+    local xmath         = xmath
+    local xcomplex      = xcomplex
+    local xdecimal      = xdecimal
+
+    local context       = context
+
+    local scanoptional  = tokens.scanners.optional
+    local scanargument  = tokens.scanners.argument
+
+    local implement     = interfaces.implement
+
     local function mathexpr()
         local temp = scanoptional()
         local code = scanargument()
         local func = load("return " .. code,"mathexpr","t",xmath)
         if type(func) == "function" then
-            if temp and temp ~= "" then
-                temp = "%" .. temp
-            else
-                temp = "%.6N"
+            local result = func()
+            if result then
+                if temp and temp ~= "" then
+                    temp = "%" .. temp
+                else
+                    temp = "%.6N"
+                end
+                context(temp,result)
+                return
             end
-            context(temp,func())
-        else
-            context(code)
         end
+        context(code)
     end
 
     local tostring    = xdecimal.tostring
@@ -105,15 +132,18 @@
         local code = scanargument()
         local func = load("return " .. code,"decimalexpr","t",xdecimal)
         if type(func) == "function" then
-            local result = tostring(func())
-            if temp and temp ~= "" then
-                context("%"..temp,result)
-            else
-                context(result)
+            local result = func()
+            if result then
+                result = tostring(func())
+                if temp and temp ~= "" then
+                    context("%"..temp,result)
+                else
+                    context(result)
+                end
+                return
             end
-        else
-            context(code)
         end
+        context(code)
     end
 
     local topair = xcomplex.topair
@@ -123,31 +153,42 @@
         local code = scanargument()
         local func = load("return " .. code,"complexexpr","t",xcomplex)
         if type(func) == "function" then
-         -- local result = tostring(func())
-         -- if temp and temp ~= "" then
-         --     context("%"..temp,result)
-         -- else
-         --     context(result)
-         -- end
             if temp and temp ~= "" then
                 temp = "%" .. temp
             else
-                temp = "%.6N + %.6Ni"
+                temp = "%.6N"
             end
             local result = func()
-            context(temp,topair(result))
-        else
-            context(code)
+            if result then
+                local r, i = topair(result)
+                if r == 0 then
+                    if i == 0 then
+                        context("0") -- ask MS fo prefered rendering
+                    elseif i == 1 then
+                        context("\\ii")
+                    elseif i == -1 then
+                        context("-\\ii")
+                    else
+                        context(temp.."\\ii",i)
+                    end
+                else
+                    if i == 0 then
+                        context(temp,r)
+                    elseif i == 1 then
+                        context(temp.."+\\ii",r)
+                    elseif i == -1 then
+                        context(temp.."-\\ii",r)
+                    elseif i > 0 then
+                        context(temp.."+"..temp.."\\ii",r,i)
+                    else
+                        context(temp.."-"..temp.."\\ii",r,-i)
+                    end
+                end
+                return
+            end
         end
+        context(code)
     end
-
-    implement {
-        name      = "registermathfunction",
-        public    = true,
-        protected = true,
-        actions   = install,
-        arguments = { "optional", "optional" },
-    }
 
     implement {
         name    = "mathexpr",
@@ -167,55 +208,31 @@
         actions = complexexpr,
     }
 
- -- install("sind cosd tand sin cos tan")
- -- install("sqrt")
 \stopluacode
 
-\pushoverloadmode
-
-    \ifdefined\normalpi \else\let\normalpi\pi \fi
-
-    \registermathfunction[sind,cosd,tand,sin,cos,tan]
-    \registermathfunction[sqrt]
-    \registermathfunction[pi][constant]
-
-\popoverloadmode
+%D The code that overloads \type {\sin} to behave as function (prefixed by \type
+%D {\the}) has been removed because it add overhead to its nromal usage that we
+%D don't want (think: \im {\sin (x) = \the \sin {pi/2}}. .
 
 \continueifinputfile{m-mathfun.mkxl}
 
-% \pushoverloadmode
-% \let\normalpi\pi
-% \registermathfunction[sind,cosd,tand,sin,cos,tan]
-% \registermathfunction[sqrt]
-% \registermathfunction[pi][constant]
-% \popoverloadmode
-
-\usemodule[scite] \setupbodyfont[dejavu] \setuplayout[tight] \setuppapersize[A5]
-
-% \mainlanguage[es]
+\usemodule[scite] \setupbodyfont[dejavu] \setuplayout[tight]
 
 \starttext
 
 \startbuffer
-$ \sin (x) = \luaexpr       {math.sin(math.pi/2)} $
-$ \sin (x) = \luaexpr [.4N] {math.sin(math.pi/2)} $
-$ \sin (x) = \the\sin                     {pi/2}  $
-$ \sind(x) = \luaexpr [.4N] {math.sind(120)}      $
-$ \sind(x) = \the\sind[.4N]           {120}       $
-$ \sqrt(x) = \luaexpr       {math.sqrt(2)}        $
-$ \sqrt(x) = \luaexpr [.6N] {math.sqrt(2)}        $
-$ \sqrt(x) = \the\sqrt                {2}         $
-$ \sqrt(x) = \the\sqrt[.3N]           {2}         $
-$ \sind(x) = \luaexpr [.4N] {math.pi}             $
-$ \pi = \the\pi[.4N]                          $
-$ \pi = \mathexpr[.40N]{pi}                       $
-$ \pi = \mathexpr[.80N]{sqrt(11)}                 $
-$ \pi = \decimalexpr[.80N]{sqrt(11)}              $
-$ \pi = \decimalexpr{sqrt(11)}                    $
-$ c = \complexexpr{123 + new(456,789)}            $
+\im { \sin (x)  = \luaexpr       {math.sin(math.pi/2)}    }
+\im { \sin (x)  = \luaexpr    [.4N] {math.sin(math.pi/2)} }
+\im { \sqrt(x)  = \luaexpr          {math.sqrt(2)}        }
+\im { \sqrt(x)  = \luaexpr    [.6N] {math.sqrt(2)}        }
+\im { \pi       = \mathexpr   [.40N]{pi}                  }
+\im { \sqrt(11) = \mathexpr   [.80N]{sqrt(11)}            }
+\im { \pi       = \decimalexpr[.80N]{sqrt(11)}            }
+\im { \sqrt(11) = \decimalexpr      {sqrt(11)}            }
+\im { c         = \complexexpr      {123 + new(456,789)}  }
 \stopbuffer
 
-Take your choice:
+Code:
 
 \typebuffer[option=TEX]
 

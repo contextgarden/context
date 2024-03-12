@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-synctex</entry>
+  <entry name="detail">SyncTeX Checker</entry>
+  <entry name="version">1.01</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="edit"><short>open file at line: --line=.. --editor=.. sourcefile</short></flag>
+    <flag name="list"><short>show all areas: synctexfile</short></flag>
+    <flag name="goto"><short>open file at position: --page=.. --x=.. --y=.. [--tolerance=] --editor=.. synctexfile</short></flag>
+    <flag name="report"><short>show (tex) file and line: [--direct] --page=.. --x=.. --y=.. [--tolerance=] --console synctexfile</short></flag>
+    <flag name="find"><short>find (pdf) page and box: [--direct] --file=.. --line=.. synctexfile</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

@@ -4462,3 +4462,13 @@ enddef ;
 % vardef centerofmass primary p =
 %     (origin for i within p : + pathpoint endfor) / length(p)
 % enddef ;
+
+numeric mfun_arc_factor ; mfun_arc_factor := 8/360 ;
+
+vardef arc(expr from_angle, to_angle) =
+    (subpath (0,mfun_arc_factor*(to_angle-from_angle)) of fullcircle)
+    rotated from_angle
+enddef ;
+
+% draw ( 0,0) -- (arc(  0,180) scaled 10 shifted ( 0,10)) -- cycle ;
+% draw (15,0) -- (arc(180, 40) scaled 10 shifted (15,10)) -- cycle ;

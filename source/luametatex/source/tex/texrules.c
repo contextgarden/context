@@ -69,13 +69,30 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                 }
             case 'r': case 'R':
                 if (node_subtype(rule) != virtual_rule_subtype) { 
-                    if (tex_scan_mandate_keyword("right", 1)) {
-                        rule_right(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    switch (tex_scan_character("uiUI", 0, 0, 0)) {
+                        case 'u': case 'U':
+                            if (tex_scan_mandate_keyword("running", 2)) {
+                                rule_width(rule) = null_flag;
+                                rule_height(rule) = null_flag;
+                                rule_depth(rule) = null_flag;
+                            }
+                            break;
+                        case 'i': case 'I':
+                            if (tex_scan_mandate_keyword("right", 2)) {
+                                rule_right(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                            }
+                            break;
+                        default:
+                            tex_aux_show_keyword_error("right|running");
+                            goto DONE;
                     }
-                    break;
                 } else {
+                    if (tex_scan_mandate_keyword("running", 1)) {
+                        tex_set_rule_font(rule, tex_scan_font_identifier(NULL));
+                    }
                     goto DONE;
                 }
+                break;
             case 't': case 'T': /* just because it's nicer */
                 if (node_subtype(rule) != virtual_rule_subtype) { 
                     if (tex_scan_mandate_keyword("top", 1)) {
@@ -177,6 +194,15 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
             rule_depth(rule) = 0;
             node_subtype(rule) = virtual_rule_subtype;
             break;
+    }
+    if (type == h_rule_type) { 
+        if (rule_width(rule) == null_flag) { 
+            rule_options(rule) |= rule_option_running;
+        }
+    } else { 
+        if (rule_height(rule) == null_flag && rule_width(rule) == null_flag) { 
+            rule_options(rule) |= rule_option_running;
+        }
     }
     return rule;
 }
@@ -335,7 +361,7 @@ halfword tex_get_rule_on(halfword n)
 
 halfword tex_get_rule_off(halfword n)
 {
-    return node_subtype(n) == normal_rule_subtype ? rule_line_on(n) : 0; 
+    return node_subtype(n) == normal_rule_subtype ? rule_line_off(n) : 0; 
 }
 
 void tex_set_rule_on(halfword n, halfword value)

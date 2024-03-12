@@ -172,10 +172,10 @@ end
 
 if environment.arguments.convertall then
     convert.convertall()
-elseif environment.files[1] then
-    convert.convertgiven()
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),environment.files[1])
+elseif environment.files[1] then
+    convert.convertgiven()
 else
     application.help()
 end

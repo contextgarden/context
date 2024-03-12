@@ -1424,6 +1424,7 @@ make_lua_key(L, color);\
 make_lua_key(L, curl);\
 make_lua_key(L, curled);\
 make_lua_key(L, curved);\
+make_lua_key(L, curvature);\
 make_lua_key(L, cycle);\
 make_lua_key(L, dash);\
 make_lua_key(L, dashes);\

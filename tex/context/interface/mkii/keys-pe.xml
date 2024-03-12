@@ -167,6 +167,7 @@
 		<cd:variable name='conversion' value='تبدیل'/>
 		<cd:variable name='current' value='جاری'/>
 		<cd:variable name='cutspace' value='فضای‌برش'/>
+		<cd:variable name='dash' value='دش'/>
 		<cd:variable name='dataset' value='dataset'/>
 		<cd:variable name='date' value='تاریخ'/>
 		<cd:variable name='day' value='روز'/>
@@ -702,6 +703,7 @@
 		<cd:constant name='autofile' value='پرونده‌خودکار'/>
 		<cd:constant name='autofocus' value='تمرکز‌خودکار'/>
 		<cd:constant name='autohang' value='آویزان‌خودکار'/>
+		<cd:constant name='autointervals' value='autointervals'/>
 		<cd:constant name='autonumbers' value='autonumbers'/>
 		<cd:constant name='autopunctuation' value='autopunctuation'/>
 		<cd:constant name='autospacing' value='autospacing'/>
@@ -807,6 +809,7 @@
 		<cd:constant name='current' value='جاری'/>
 		<cd:constant name='cutspace' value='فضای‌برش'/>
 		<cd:constant name='dash' value='دش'/>
+		<cd:constant name='dashstep' value='dashstep'/>
 		<cd:constant name='dat' value='dat'/>
 		<cd:constant name='database' value='database'/>
 		<cd:constant name='dataset' value='dataset'/>
@@ -820,6 +823,7 @@
 		<cd:constant name='delay' value='تاخیر'/>
 		<cd:constant name='depth' value='عمق'/>
 		<cd:constant name='depthcorrection' value='تصحیح‌عمق'/>
+		<cd:constant name='differentiald' value='differentiald'/>
 		<cd:constant name='direction' value='جهت'/>
 		<cd:constant name='directory' value='پوشه'/>
 		<cd:constant name='display' value='نمایش'/>
@@ -1113,7 +1117,9 @@
 		<cd:constant name='object' value='شیئ'/>
 		<cd:constant name='obstruction' value='انسداد'/>
 		<cd:constant name='oddmargin' value='حاشیه‌فرد'/>
+		<cd:constant name='off' value='خاموش'/>
 		<cd:constant name='offset' value='آفست'/>
+		<cd:constant name='on' value='روی'/>
 		<cd:constant name='openaction' value='عمل‌باز'/>
 		<cd:constant name='openpage' value='openpage'/>
 		<cd:constant name='openpageaction' value='عمل‌صفحه‌باز'/>

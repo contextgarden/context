@@ -852,6 +852,8 @@ local function update_parsers(keepcase) -- todo: don't remap utf sequences
         shortoperator = Cs(V("somespace") * p_short_operator),
         packaged      = Cs(V("somespace") * p_packaged),
         --
+specialsuffix = Cs(V("somespace") * P("^")/"" * lbrace * (1-rbrace)^1 * rbrace),
+        --
         nothing       = Cc(""),
         somespace     = somespace,
         nospace       = (1-somespace)^1, -- was 0
@@ -876,6 +878,7 @@ local function update_parsers(keepcase) -- todo: don't remap utf sequences
                       + V("longprefix")  * V("shortunit")  -- centi m
                       + V("shortprefix") * V("longunit"),  -- c meter
 
+
 --         combination   = (   V("longprefix")   -- centi meter
 --                           + V("nothing")
 --                         ) * V("longunit")
@@ -891,7 +894,7 @@ local function update_parsers(keepcase) -- todo: don't remap utf sequences
                       * (
                             V("packaged") / dimpre
                           + (V("longsuffix") * V("combination")) / dimspu
-                          + (V("combination") * (V("shortsuffix") + V("nothing"))) / dimpus
+                          + (V("combination") * (V("shortsuffix") + V("specialsuffix") + V("nothing"))) / dimpus
                         )
                       * (V("qualifier") / ctx_unitsQ)^-1
                       * V("somespace"),

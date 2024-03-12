@@ -174,10 +174,6 @@
 % \definesymbol[PT][{\getnamedglyphdirect          {flags}{pt}}]
 % \definesymbol[BR][{\getnamedglyphdirectscaled{.7}{flags}{br}}]
 % \definesymbol[PT][{\getnamedglyphdirectscaled{.7}{flags}{pt}}]
-%
-% \def\glyphscaled#1{\cldcontext{math.floor(\the\glyphscale*#1)}\relax}
-% \definesymbol[BR][{\glyphscale\glyphscaled{.7}\getnamedglyphdirect{flags}{br}}]
-% \definesymbol[PT][{\glyphscale\glyphscaled{.7}\getnamedglyphdirect{flags}{pt}}]
 
 \permanent\protected\def\getnamedglyphstyled#fontname#character{{\setstyledsymbolicfont{#fontname}\clf_fontchar{#character}}}
 \permanent\protected\def\getnamedglyphdirect#fontname#character{{\setdirectsymbolicfont{#fontname}\clf_fontchar{#character}}}
@@ -188,6 +184,12 @@
 
 \permanent\protected\def\getnamedglyphdirectscaled#scale#fontname#character%
   {{\setscaleddirectsymbolicfont\fontbody{#scale}{#fontname}\clf_fontchar{#character}}}
+
+% todo
+%
+% test {\glyphscale 2000 test \glyphscale \numericscaled1.2\glyphscale  test} test
+% test {\glyphslant  500 test \glyphslant \numericscaled2.0\glyphslant  test} test
+% test {\glyphweight 100 test \glyphweight\numericscaled2.0\glyphweight test} test
 
 % this one is wrong:
 

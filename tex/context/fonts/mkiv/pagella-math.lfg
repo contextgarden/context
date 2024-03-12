@@ -79,6 +79,9 @@ return {
                     tweak = "addmirrors",
                 },
                 {
+                    tweak = "addcomposites",
+                },
+                {
                     tweak   = "fixoldschool",
                     feature = "euleroverpagella",
                 },
@@ -105,6 +108,9 @@ return {
                 presets.wipeitalics          { },
                 {
                     tweak = "checkaccents",
+                },
+                {
+                    tweak = "wipeweirdones",
                 },
                 {
                     tweak   = "parameters",

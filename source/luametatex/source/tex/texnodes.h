@@ -753,7 +753,7 @@ typedef enum discretionary_subtypes {
 # define last_discretionary_subtype syllable_discretionary_code
 # define last_discretionary_code    automatic_discretionary_code
 
-typedef enum disc_options {
+typedef enum disc_option_codes {
     disc_option_normal_word               = 0x00000000,
     disc_option_pre_word                  = 0x00000001,
     disc_option_post_word                 = 0x00000002,
@@ -768,7 +768,7 @@ typedef enum disc_options {
     disc_option_user_last                 = 0x40000000,
     /*tex So watch out: these are subsets! */
     disc_option_valid                     = 0x4FFF0FFF,
-} disc_options;
+} disc_option_codes;
 
 # define first_disc_option disc_option_prefer_break
 # define last_disc_option  disc_option_prefer_nobreak
@@ -1067,21 +1067,31 @@ typedef enum rule_codes {
     strut_rule_code
 } rule_codes;
 
+typedef enum rule_option_codes {
+    rule_option_horizontal = 0x01, /* maybe we want both at some time */
+    rule_option_vertical   = 0x02, /* when none is set we have a math rule */
+    rule_option_thickness  = 0x04, /* future */
+    rule_option_running    = 0x08,
+    rule_option_valid      = 0x0F,
+} rule_option_codes;
+
 # define last_rule_subtype image_rule_subtype
 # define first_rule_code   normal_rule_code
 # define last_rule_code    strut_rule_code
 
-# define rule_node_size    7
+# define rule_node_size    8
 # define rule_width(a)     vlink(a,2)
 # define rule_x_offset(a)  vinfo(a,2)
 # define rule_depth(a)     vlink(a,3)
 # define rule_y_offset(a)  vinfo(a,3)
 # define rule_height(a)    vlink(a,4)
-# define rule_data(a)      vinfo(a,4)
-# define rule_left(a)      vinfo(a,5) /* depends on subtype */ 
-# define rule_right(a)     vlink(a,5) /* depends on subtype */ 
-# define rule_extra_1(a)   vinfo(a,6) /* depends on subtype */ 
-# define rule_extra_2(a)   vlink(a,6) /* depends on subtype */ 
+# define rule_data(a)      vinfo(a,4) /* used for linewidth */
+# define rule_options(a)   vlink(a,5)
+# define rule_thickness(a) vinfo(a,5) /* future see data */
+# define rule_left(a)      vinfo(a,6) /* depends on subtype */ 
+# define rule_right(a)     vlink(a,6) /* depends on subtype */ 
+# define rule_extra_1(a)   vinfo(a,7) /* depends on subtype */ 
+# define rule_extra_2(a)   vlink(a,7) /* depends on subtype */ 
 
 # define rule_line_on         rule_extra_1
 # define rule_line_off        rule_extra_2
@@ -1095,6 +1105,8 @@ typedef enum rule_codes {
 # define rule_virtual_unused  rule_extra_2
 
 # define rule_total(a) (rule_height(a) + rule_depth(a))
+
+# define set_rule_options(a,b)  rule_options(a) |= b
 
 /*tex
 
@@ -1413,7 +1425,7 @@ typedef enum split_subtypes {
 
 # define precedes_break(a)  (node_type(a) <= last_preceding_break_node)
 # define precedes_kern(a)   ((node_type(a) == kern_node) && (node_subtype(a) == font_kern_subtype || node_subtype(a) == accent_kern_subtype || node_subtype(a) == math_shape_kern_subtype))
-# define precedes_dir(a)    ((node_type(a) == dir_node) && normalize_line_mode_permitted(normalize_line_mode_par,break_after_dir_mode))
+# define precedes_dir(a)    ((node_type(a) == dir_node) && normalize_line_mode_option(break_after_dir_mode))
 # define non_discardable(a) (node_type(a) <= last_non_discardable_node)
 
 static inline int tex_nodetype_is_complex     (halfword t) { return t <= last_complex_node; }
@@ -1472,7 +1484,19 @@ static inline int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && 
     code and also makes save and restore more complex.
 */
 
+typedef enum fontspec_states { 
+    font_spec_scale_set   = 0x0001,
+    font_spec_x_scale_set = 0x0002,
+    font_spec_y_scale_set = 0x0004,
+    font_spec_slant_set   = 0x0008,
+    font_spec_weight_set  = 0x0010,
+    font_spec_all_set     = 0x001F,
+} font_spec_states;
+
+
+
 # define font_spec_node_size     5           /* we can be smaller: no attr and no prev */
+# define font_spec_state(a)      vinfo(a,1)  /* slot of node_attr */
 # define font_spec_identifier(a) vinfo(a,2)
 # define font_spec_scale(a)      vlink(a,2)
 # define font_spec_x_scale(a)    vinfo(a,3)
@@ -1480,11 +1504,14 @@ static inline int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && 
 # define font_spec_slant(a)      vinfo(a,4)
 # define font_spec_weight(a)     vlink(a,4)
 
+# define font_spec_property_is_set(a,b) ((font_spec_state(a) & b) == b)
+
 static inline int tex_same_fontspec(halfword a, halfword b)
 {
     return
         (a == b)
-     || (a && b && font_spec_identifier(a) == font_spec_identifier(b)
+     || (a && b && font_spec_state(a)      == font_spec_state(b)
+                && font_spec_identifier(a) == font_spec_identifier(b)
                 && font_spec_scale(a)      == font_spec_scale(b)
                 && font_spec_x_scale(a)    == font_spec_x_scale(b)
                 && font_spec_y_scale(a)    == font_spec_y_scale(b)
@@ -2004,6 +2031,7 @@ typedef enum noad_options {
 # define noad_option_reorder_pre_scripts        (uint64_t) 0x0040000000000000 /* relates to script continuation */
 # define noad_option_ignore                     (uint64_t) 0x0080000000000000 /* whatever fence */
 # define noad_option_no_more_scripts            (uint64_t) 0x0100000000000000 
+# define noad_option_carry_over_classes         (uint64_t) 0x0200000000000000 
 
 # define has_option(a,b)     (((a) & (b)) == (b))
 # define unset_option(a,b)   ((a) & ~(b))
@@ -2030,59 +2058,60 @@ static inline int has_noad_no_script_option(halfword n, halfword option)
 # define has_noad_option_nosubprescript(a) has_noad_no_script_option(a, noad_option_no_sub_pre_script)
 # define has_noad_option_nosupprescript(a) has_noad_no_script_option(a, noad_option_no_super_pre_script)
 
-# define has_noad_option_shiftedsubscript(a)            (has_option(noad_options(a), noad_option_shifted_sub_script))
-# define has_noad_option_shiftedsupscript(a)            (has_option(noad_options(a), noad_option_shifted_super_script))
-# define has_noad_option_shiftedsubprescript(a)         (has_option(noad_options(a), noad_option_shifted_sub_pre_script))
-# define has_noad_option_shiftedsupprescript(a)         (has_option(noad_options(a), noad_option_shifted_super_pre_script))
-# define has_noad_option_axis(a)                        (has_option(noad_options(a), noad_option_axis))
-# define has_noad_option_exact(a)                       (has_option(noad_options(a), noad_option_exact))
-# define has_noad_option_noaxis(a)                      (has_option(noad_options(a), noad_option_no_axis))
-# define has_noad_option_openupheight(a)                (has_option(noad_options(a), noad_option_openup_height))
-# define has_noad_option_openupdepth(a)                 (has_option(noad_options(a), noad_option_openup_depth))
-# define has_noad_option_adapttoleft(a)                 (has_option(noad_options(a), noad_option_adapt_to_left_size))
-# define has_noad_option_adapttoright(a)                (has_option(noad_options(a), noad_option_adapt_to_right_size))
-# define has_noad_option_limits(a)                      (has_option(noad_options(a), noad_option_limits))
-# define has_noad_option_nolimits(a)                    (has_option(noad_options(a), noad_option_no_limits))
-# define has_noad_option_nooverflow(a)                  (has_option(noad_options(a), noad_option_no_overflow))
-# define has_noad_option_preferfontthickness(a)         (has_option(noad_options(a), noad_option_prefer_font_thickness))
-# define has_noad_option_noruling(a)                    (has_option(noad_options(a), noad_option_no_ruling))
-# define has_noad_option_unpacklist(a)                  (has_option(noad_options(a), noad_option_unpack_list))
-# define has_noad_option_nocheck(a)                     (has_option(noad_options(a), noad_option_no_check))
-# define has_noad_option_exact(a)                       (has_option(noad_options(a), noad_option_exact))
-# define has_noad_option_left(a)                        (has_option(noad_options(a), noad_option_left))
-# define has_noad_option_middle(a)                      (has_option(noad_options(a), noad_option_middle))
-# define has_noad_option_right(a)                       (has_option(noad_options(a), noad_option_right))
-# define has_noad_option_auto(a)                        (has_option(noad_options(a), noad_option_auto))
-# define has_noad_option_phantom(a)                     (has_option(noad_options(a), noad_option_phantom))
-# define has_noad_option_void(a)                        (has_option(noad_options(a), noad_option_void))
-# define has_noad_option_unrolllist(a)                  (has_option(noad_options(a), noad_option_unroll_list))
-# define has_noad_option_followedbyspace(a)             (has_option(noad_options(a), noad_option_followed_by_space))
-# define has_noad_option_proportional(a)                (has_option(noad_options(a), noad_option_proportional))
-# define has_noad_option_center(a)                      (has_option(noad_options(a), noad_option_center))
-# define has_noad_option_source_on_nucleus(a)           (has_option(noad_options(a), noad_option_source_on_nucleus))
-# define has_noad_option_fixed_super_or_sub_script(a)   (has_option(noad_options(a), noad_option_fixed_super_or_sub_script))
-# define has_noad_option_fixed_super_and_sub_script(a)  (has_option(noad_options(a), noad_option_fixed_super_and_sub_script))
-# define has_noad_option_stretch(a)                     (has_option(noad_options(a), noad_option_stretch))
-# define has_noad_option_shrink(a)                      (has_option(noad_options(a), noad_option_shrink))
-# define has_noad_option_auto_base(a)                   (has_option(noad_options(a), noad_option_auto_base))
-# define has_noad_option_scale(a)                       (has_option(noad_options(a), noad_option_scale))
-# define has_noad_option_keep_base(a)                   (has_option(noad_options(a), noad_option_keep_base))
-# define has_noad_option_single(a)                      (has_option(noad_options(a), noad_option_single))
-# define has_noad_option_norule(a)                      (has_option(noad_options(a), noad_option_no_rule))
-# define has_noad_option_auto_middle(a)                 (has_option(noad_options(a), noad_option_auto_middle))
-# define has_noad_option_reflected(a)                   (has_option(noad_options(a), noad_option_reflected))
-# define has_noad_option_continuation(a)                (has_option(noad_options(a), noad_option_continuation))
-# define has_noad_option_inherit_class(a)               (has_option(noad_options(a), noad_option_inherit_class))
-# define has_noad_option_discard_shape_kern(a)          (has_option(noad_options(a), noad_option_discard_shape_kern))
-# define has_noad_option_realign_scripts(a)             (has_option(noad_options(a), noad_option_realign_scripts))
-# define has_noad_option_ignore_empty_sub_script(a)     (has_option(noad_options(a), noad_option_ignore_empty_sub_script))
-# define has_noad_option_ignore_empty_super_script(a)   (has_option(noad_options(a), noad_option_ignore_empty_super_script))
-# define has_noad_option_ignore_empty_prime_script(a)   (has_option(noad_options(a), noad_option_ignore_empty_prime_script))
-# define has_noad_option_continuation_head(a)           (has_option(noad_options(a), noad_option_continuation_head))
-# define has_noad_option_continuation_kernel(a)         (has_option(noad_options(a), noad_option_continuation_kernel))
-# define has_noad_option_reorder_pre_scripts(a)         (has_option(noad_options(a), noad_option_reorder_pre_scripts))
-# define has_noad_option_ignore(a)                      (has_option(noad_options(a), noad_option_ignore))
-# define has_noad_option_no_more_scripts(a)             (has_option(noad_options(a), noad_option_no_more_scripts))
+# define has_noad_option_shiftedsubscript(a)           (has_option(noad_options(a), noad_option_shifted_sub_script))
+# define has_noad_option_shiftedsupscript(a)           (has_option(noad_options(a), noad_option_shifted_super_script))
+# define has_noad_option_shiftedsubprescript(a)        (has_option(noad_options(a), noad_option_shifted_sub_pre_script))
+# define has_noad_option_shiftedsupprescript(a)        (has_option(noad_options(a), noad_option_shifted_super_pre_script))
+# define has_noad_option_axis(a)                       (has_option(noad_options(a), noad_option_axis))
+# define has_noad_option_exact(a)                      (has_option(noad_options(a), noad_option_exact))
+# define has_noad_option_noaxis(a)                     (has_option(noad_options(a), noad_option_no_axis))
+# define has_noad_option_openupheight(a)               (has_option(noad_options(a), noad_option_openup_height))
+# define has_noad_option_openupdepth(a)                (has_option(noad_options(a), noad_option_openup_depth))
+# define has_noad_option_adapttoleft(a)                (has_option(noad_options(a), noad_option_adapt_to_left_size))
+# define has_noad_option_adapttoright(a)               (has_option(noad_options(a), noad_option_adapt_to_right_size))
+# define has_noad_option_limits(a)                     (has_option(noad_options(a), noad_option_limits))
+# define has_noad_option_nolimits(a)                   (has_option(noad_options(a), noad_option_no_limits))
+# define has_noad_option_nooverflow(a)                 (has_option(noad_options(a), noad_option_no_overflow))
+# define has_noad_option_preferfontthickness(a)        (has_option(noad_options(a), noad_option_prefer_font_thickness))
+# define has_noad_option_noruling(a)                   (has_option(noad_options(a), noad_option_no_ruling))
+# define has_noad_option_unpacklist(a)                 (has_option(noad_options(a), noad_option_unpack_list))
+# define has_noad_option_nocheck(a)                    (has_option(noad_options(a), noad_option_no_check))
+# define has_noad_option_exact(a)                      (has_option(noad_options(a), noad_option_exact))
+# define has_noad_option_left(a)                       (has_option(noad_options(a), noad_option_left))
+# define has_noad_option_middle(a)                     (has_option(noad_options(a), noad_option_middle))
+# define has_noad_option_right(a)                      (has_option(noad_options(a), noad_option_right))
+# define has_noad_option_auto(a)                       (has_option(noad_options(a), noad_option_auto))
+# define has_noad_option_phantom(a)                    (has_option(noad_options(a), noad_option_phantom))
+# define has_noad_option_void(a)                       (has_option(noad_options(a), noad_option_void))
+# define has_noad_option_unrolllist(a)                 (has_option(noad_options(a), noad_option_unroll_list))
+# define has_noad_option_followedbyspace(a)            (has_option(noad_options(a), noad_option_followed_by_space))
+# define has_noad_option_proportional(a)               (has_option(noad_options(a), noad_option_proportional))
+# define has_noad_option_center(a)                     (has_option(noad_options(a), noad_option_center))
+# define has_noad_option_source_on_nucleus(a)          (has_option(noad_options(a), noad_option_source_on_nucleus))
+# define has_noad_option_fixed_super_or_sub_script(a)  (has_option(noad_options(a), noad_option_fixed_super_or_sub_script))
+# define has_noad_option_fixed_super_and_sub_script(a) (has_option(noad_options(a), noad_option_fixed_super_and_sub_script))
+# define has_noad_option_stretch(a)                    (has_option(noad_options(a), noad_option_stretch))
+# define has_noad_option_shrink(a)                     (has_option(noad_options(a), noad_option_shrink))
+# define has_noad_option_auto_base(a)                  (has_option(noad_options(a), noad_option_auto_base))
+# define has_noad_option_scale(a)                      (has_option(noad_options(a), noad_option_scale))
+# define has_noad_option_keep_base(a)                  (has_option(noad_options(a), noad_option_keep_base))
+# define has_noad_option_single(a)                     (has_option(noad_options(a), noad_option_single))
+# define has_noad_option_norule(a)                     (has_option(noad_options(a), noad_option_no_rule))
+# define has_noad_option_auto_middle(a)                (has_option(noad_options(a), noad_option_auto_middle))
+# define has_noad_option_reflected(a)                  (has_option(noad_options(a), noad_option_reflected))
+# define has_noad_option_continuation(a)               (has_option(noad_options(a), noad_option_continuation))
+# define has_noad_option_inherit_class(a)              (has_option(noad_options(a), noad_option_inherit_class))
+# define has_noad_option_discard_shape_kern(a)         (has_option(noad_options(a), noad_option_discard_shape_kern))
+# define has_noad_option_realign_scripts(a)            (has_option(noad_options(a), noad_option_realign_scripts))
+# define has_noad_option_ignore_empty_sub_script(a)    (has_option(noad_options(a), noad_option_ignore_empty_sub_script))
+# define has_noad_option_ignore_empty_super_script(a)  (has_option(noad_options(a), noad_option_ignore_empty_super_script))
+# define has_noad_option_ignore_empty_prime_script(a)  (has_option(noad_options(a), noad_option_ignore_empty_prime_script))
+# define has_noad_option_continuation_head(a)          (has_option(noad_options(a), noad_option_continuation_head))
+# define has_noad_option_continuation_kernel(a)        (has_option(noad_options(a), noad_option_continuation_kernel))
+# define has_noad_option_reorder_pre_scripts(a)        (has_option(noad_options(a), noad_option_reorder_pre_scripts))
+# define has_noad_option_ignore(a)                     (has_option(noad_options(a), noad_option_ignore))
+# define has_noad_option_no_more_scripts(a)            (has_option(noad_options(a), noad_option_no_more_scripts))
+# define has_noad_option_carry_over_classes(a)         (has_option(noad_options(a), noad_option_carry_over_classes))
 
 typedef enum double_atom_options {
     inherit_class_double_atom_option      = 0x01,

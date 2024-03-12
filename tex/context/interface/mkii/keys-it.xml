@@ -167,6 +167,7 @@
 		<cd:variable name='conversion' value='coversione'/>
 		<cd:variable name='current' value='corrente'/>
 		<cd:variable name='cutspace' value='cutspace'/>
+		<cd:variable name='dash' value='dash'/>
 		<cd:variable name='dataset' value='dataset'/>
 		<cd:variable name='date' value='data'/>
 		<cd:variable name='day' value='giorno'/>
@@ -808,6 +809,7 @@
 		<cd:constant name='current' value='corrente'/>
 		<cd:constant name='cutspace' value='cutspace'/>
 		<cd:constant name='dash' value='dash'/>
+		<cd:constant name='dashstep' value='dashstep'/>
 		<cd:constant name='dat' value='dat'/>
 		<cd:constant name='database' value='database'/>
 		<cd:constant name='dataset' value='dataset'/>
@@ -821,6 +823,7 @@
 		<cd:constant name='delay' value='attesa'/>
 		<cd:constant name='depth' value='profondita'/>
 		<cd:constant name='depthcorrection' value='correzioneprofondita'/>
+		<cd:constant name='differentiald' value='differentiald'/>
 		<cd:constant name='direction' value='direzione'/>
 		<cd:constant name='directory' value='directory'/>
 		<cd:constant name='display' value='display'/>
@@ -1114,7 +1117,9 @@
 		<cd:constant name='object' value='oggetto'/>
 		<cd:constant name='obstruction' value='ostruzione'/>
 		<cd:constant name='oddmargin' value='marginedispari'/>
+		<cd:constant name='off' value='disattivo'/>
 		<cd:constant name='offset' value='offset'/>
+		<cd:constant name='on' value='attivo'/>
 		<cd:constant name='openaction' value='azioneapri'/>
 		<cd:constant name='openpage' value='openpage'/>
 		<cd:constant name='openpageaction' value='azioneapripagina'/>

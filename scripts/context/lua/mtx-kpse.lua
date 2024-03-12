@@ -77,13 +77,6 @@ local argument = environment.argument
 local files    = environment.files
 local target   = files[1]
 
-if argument("progname") or argument("programname") then
-    kpse.set_program_name(argument("progname"))
-else
-    application.help()
-    return
-end
-
 local function printtable(result)
     if type(result) == "table" then
         for i=1,#result do
@@ -94,7 +87,15 @@ end
 
 if argument("exporthelp") then
     application.export(environment.argument("exporthelp"),target)
-elseif argument("filetypes") or argument("formats") then
+    return
+elseif argument("progname") or argument("programname") then
+    kpse.set_program_name(argument("progname"))
+else
+    application.help()
+    return
+end
+
+if argument("filetypes") or argument("formats") then
     print(table.concat(kpse.get_file_types()," "))
 elseif type(target) == "string" and target ~= "" then
     if argument("findfiles") or argument("find-files") then

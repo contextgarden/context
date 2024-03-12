@@ -187,6 +187,11 @@
                     <short>use this file as input file instead of the given one</short>
                 </flag>
             </subcategory>
+            <subcategory>
+                <flag name="expert">
+                    <short>show some more options</short>
+                </flag>
+            </subcategory>
         </category>
         <category name="expert">
             <subcategory>

@@ -113,8 +113,8 @@ extern void     tex_set_line_dir          (halfword d);
 extern void     tex_set_par_dir           (halfword d);
 extern void     tex_set_box_dir           (halfword b, singleword d);
 
-# define swap_hang_indent(dir,indentation)           (dir == dir_righttoleft && normalize_line_mode_permitted(normalize_line_mode_par, swap_hangindent_mode) ? (                  - indentation) : indentation)
-# define swap_parshape_indent(dir,indentation,width) (dir == dir_righttoleft && normalize_line_mode_permitted(normalize_line_mode_par, swap_parshape_mode)   ? (hsize_par - width - indentation) : indentation)
+# define swap_hang_indent(dir,indentation)           (dir == dir_righttoleft && normalize_line_mode_option(swap_hangindent_mode) ? (                  - indentation) : indentation)
+# define swap_parshape_indent(dir,indentation,width) (dir == dir_righttoleft && normalize_line_mode_option(swap_parshape_mode)   ? (hsize_par - width - indentation) : indentation)
 
 extern halfword tex_update_dir_state     (halfword p, halfword initial);
 extern halfword tex_sanitize_dir_state   (halfword first, halfword last, halfword initial);

@@ -14463,24 +14463,28 @@
      <cd:parameter name="topframe">
       <cd:constant default="yes" type="on"/>
       <cd:constant type="off"/>
+      <cd:constant type="dash"/>
       <cd:constant type="small"/>
       <cd:constant type="cd:name"/>
      </cd:parameter>
      <cd:parameter name="bottomframe">
       <cd:constant default="yes" type="on"/>
       <cd:constant type="off"/>
+      <cd:constant type="dash"/>
       <cd:constant type="small"/>
       <cd:constant type="cd:name"/>
      </cd:parameter>
      <cd:parameter name="leftframe">
       <cd:constant default="yes" type="on"/>
       <cd:constant type="off"/>
+      <cd:constant type="dash"/>
       <cd:constant type="small"/>
       <cd:constant type="cd:name"/>
      </cd:parameter>
      <cd:parameter name="rightframe">
       <cd:constant default="yes" type="on"/>
       <cd:constant type="off"/>
+      <cd:constant type="dash"/>
       <cd:constant type="small"/>
       <cd:constant type="cd:name"/>
      </cd:parameter>
@@ -14497,6 +14501,7 @@
      <cd:parameter name="frame">
       <cd:constant default="yes" type="on"/>
       <cd:constant type="off"/>
+      <cd:constant type="dash"/>
       <cd:constant type="overlay"/>
       <cd:constant type="small"/>
       <cd:constant type="closed"/>
@@ -14642,6 +14647,9 @@
      <cd:parameter name="linedirection">
       <cd:constant default="yes" type="normal"/>
       <cd:constant type="reverse"/>
+     </cd:parameter>
+     <cd:parameter name="dashstep">
+      <cd:constant type="cd:dimension"/>
      </cd:parameter>
     </cd:assignments>
    </cd:arguments>
@@ -45638,6 +45646,12 @@
      <cd:parameter name="bodyfont">
       <cd:inherit name="setupbodyfont"/>
      </cd:parameter>
+     <cd:parameter name="on">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="off">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>
@@ -46540,6 +46554,12 @@
      </cd:parameter>
      <cd:parameter name="n">
       <cd:constant type="cd:number"/>
+     </cd:parameter>
+     <cd:parameter name="on">
+      <cd:constant type="cd:dimension"/>
+     </cd:parameter>
+     <cd:parameter name="off">
+      <cd:constant type="cd:dimension"/>
      </cd:parameter>
     </cd:assignments>
    </cd:arguments>

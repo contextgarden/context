@@ -134,6 +134,9 @@ return {
                     tweak = "checkaccents",
                 },
                 {
+                    tweak = "wipeweirdones",
+                },
+                {
                     tweak = "dimensions",
                     list  = {
                         [0x1D487] = { anchor = 0.9  }, -- bold italic f

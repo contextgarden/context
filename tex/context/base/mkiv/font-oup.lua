@@ -11,6 +11,7 @@ local P, R, S = lpeg.P, lpeg.R, lpeg.S
 local lpegmatch = lpeg.match
 local insert, remove, copy, unpack = table.insert, table.remove, table.copy, table.unpack
 local find = string.find
+local idiv = number.idiv
 
 local formatters           = string.formatters
 local sortedkeys           = table.sortedkeys
@@ -761,7 +762,7 @@ local function checklookups(fontdata,missing,nofmissing)
                 end
             end
             if parts then
-                parts[#parts//2+1].unicode = unicode
+                parts[idiv(#parts,2)+1].unicode = unicode
             end
         end
     end
