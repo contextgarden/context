@@ -1,3 +1,5 @@
+# https://www.aleksandrhovhannisyan.com/blog/crlf-vs-lf-normalizing-line-endings-in-git/
+
 # git config --global core.autocrlf input
 
 * text=auto
