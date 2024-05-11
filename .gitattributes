@@ -1,0 +1,3 @@
+# git config --global core.autocrlf input
+
+* text=auto
