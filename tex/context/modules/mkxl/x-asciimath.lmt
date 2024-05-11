@@ -24,7 +24,7 @@ local trace_digits     = false  if trackers then trackers.register("modules.asci
 
 local report_asciimath = logs.reporter("mathematics","asciimath")
 
-local asciimath        = { }
+local asciimath        = asciimath or { }
 local moduledata       = moduledata or { }
 moduledata.asciimath   = asciimath
 
@@ -731,6 +731,32 @@ local reserved = {
 
 }
 
+-- This is an undocumented option for Ton (math4all):
+
+-- \startluacode
+-- if not asciimath then
+--     asciimath = {
+--         extras = {
+--             ["GTK"] = { false, "\\text{\\it GTK}" }, -- proper kerning/spacing
+--         }
+--     }
+-- end
+-- \stopluacode
+--
+-- \usemodule[asciimath]
+-- \starttext
+--    \asciimath{GTK}
+-- stoptext
+
+local extras = asciimath.extras
+if extras then
+    for k, v in next, extras do
+        if not reserved[k] then
+            reserved[k] = v
+        end
+    end
+end
+
 -- a..z A..Z : allemaal op italic alphabet
 -- en dan default naar upright "upr a"
 
@@ -1164,7 +1190,7 @@ local p_right =
 --   + P("\\")   * (R("az","AZ")^1/entities)
 --   + P("|")    * Cc("\\|")
 --
--- faster bug also uglier:
+-- faster but also uglier:
 
 local p_special =
     P("|")  * Cc("\\|") -- s_mbar -- maybe always add left / right as in mml ?

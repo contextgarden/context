@@ -523,8 +523,15 @@ do
         [ [[~]] ] = "&U+7E;",
     }
 
-    local privates_n = { -- keeps track of defined ones
+    local privates_n = {
+        -- keeps track of defined ones
     }
+
+    utilities.storage.mark(privates_u)
+    utilities.storage.mark(privates_p)
+    utilities.storage.mark(privates_s)
+    utilities.storage.mark(privates_x)
+    utilities.storage.mark(privates_n)
 
     local escaped       = utf.remapper(privates_u,"dynamic")
     local unprivatized  = utf.remapper(privates_p,"dynamic")

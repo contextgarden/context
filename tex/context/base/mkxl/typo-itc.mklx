@@ -18,39 +18,78 @@
 %D The brave might try:
 %D
 %D \starttyping
-%D \definefontfeature[default][default][itlc=yes,textitalics=yes]
-%D \setupitaliccorrection[global,always]
+%D \definefontfeature[default][default][itlc=yes] % is now default
+%D \setitaliccorrection
 %D \stoptyping
 
 \registerctxluafile{typo-itc}{autosuffix}
 
-\definesystemattribute[italics]    [public]
-\definesystemattribute[mathitalics][public]
+\installcorenamespace{italics}
 
-% \let\/=/
-% \let\emphasiscorrection\donothing
+\def\typo_italic_set#1%
+  {\bitwiseflip\glyphoptions        \textcheckitalicglyphoptioncode
+   \bitwiseflip\discretionaryoptions\textcheckitalicdiscoptioncode
+   \clf_setitaliccorrection{#1}}
+
+\def\typo_italic_reset
+  {\bitwiseflip\glyphoptions        -\textcheckitalicglyphoptioncode
+   \bitwiseflip\discretionaryoptions-\textcheckitalicdiscoptioncode}
+
+\permanent\tolerant\protected\def\setitaliccorrection[#1]%
+  {\ifcstok{#1}\v!reset
+     \typo_italic_reset
+   \orelse\ifcsname\??italics#1\endcsname
+     \expandafter\typo_italic_set\expandafter{\lastnamedcs}%
+   \fi}
+
+\defcsname\??italics\v!yes   \endcsname{0}
+\defcsname\??italics\v!small \endcsname{0.1}
+\defcsname\??italics\v!medium\endcsname{0.2}
+\defcsname\??italics\v!big   \endcsname{0.3}
+
+\permanent\protected\def\resetitaliccorrection
+  {\typo_italic_reset}
+
+\permanent\protected\def\setupitaliccorrection% kind of obsolete
+  {\setitaliccorrection}
 
 \permanent\protected\def\italiccorrection
-  {\ifnum\c_attr_italics<\plusone\normalitaliccorrection\fi}
+  {\ifbitwiseand\glyphoptions\textcheckitalicglyphoptioncode\else
+     \normalitaliccorrection
+   \fi}
 
 \pushoverloadmode
     \aliased\let\/\italiccorrection % replaces the primitive
+  % \aliased\let\explicititaliccorrection\italiccorrection % replaces the primitive
 \popoverloadmode
 
-% 1 = end of word
-% 2 = end of word and end of a list
+% only for manuals ... obsolete
 
-\permanent\protected\def\setitaliccorrection        [#code]{\clf_setitaliccorrection#code\relax}   % todo: public implementor
-\permanent\protected\def\resetitaliccorrection             {\clf_resetitaliccorrection}            % todo: public implementor
-\permanent\protected\def\setupitaliccorrection[#S#settings]{\clf_setupitaliccorrection{#settings}} % todo: public implementor
+\permanent\protected\def\pushitaliccorrection{}% \typo_italic_reset
+\permanent\protected\def\popitaliccorrection {}% \typo_italic_set
 
-% global : no attributes, just always (faster and less memory)
-% text   : only text
-% always : text and boxes
-% none   : -
+%D Correcting for weird shapes.
 
-\appendtoks
-    \c_attr_italics\attributeunsetvalue
-\to \everymathematics
+%D \starttyping
+%D \showglyphs \showfontitalics \showfontkerns
+%D
+%D \setupbodyfont[bonum]
+%D
+%D \startTEXpage[offset=1ts,width=5em]
+%D     \setupitaliccorrection[italic]
+%D     \dontleavehmode
+%D     \ruledhbox{\it\shapecorrection[both] f}\quad
+%D     \ruledhbox{\it\shapecorrection[both]ff}
+%D \stopTEXpage
+%D \stoptyping
+
+\installcorenamespace{shapecorrection}
+
+\defcsname\??shapecorrection\v!left \endcsname{\groupedcommandcs\forcedleftcorrection\relax}
+\defcsname\??shapecorrection\v!right\endcsname{\groupedcommandcs\relax               \forcedrightcorrection}
+\defcsname\??shapecorrection\v!both \endcsname{\groupedcommandcs\forcedleftcorrection\forcedrightcorrection}
+\defcsname\??shapecorrection        \endcsname{\groupedcommandcs\relax               \forcedrightcorrection}
+
+\permanent\tolerant\protected\def\shapecorrection[#1]{\begincsname\??shapecorrection#1\endcsname}
 
 \protect \endinput

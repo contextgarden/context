@@ -10,16 +10,23 @@ if not modules then modules = { } end modules ['math-spa'] = {
 
 local setmetatableindex = table.setmetatableindex
 
-local boundary_code     = nodes.nodecodes.boundary
-local hlist_code        = nodes.nodecodes.hlist
-local kern_code         = nodes.nodecodes.kern
-local penalty_code      = nodes.nodecodes.penalty
-local glue_code         = nodes.nodecodes.glue
-local line_code         = nodes.listcodes.line
-local ghost_code        = nodes.listcodes.ghost
-local middle_code       = nodes.listcodes.middle
------ leftskip_code     = nodes.gluecodes.leftskip
------ rightskip_code    = nodes.gluecodes.rightskip
+local nodecodes         = nodes.nodecodes
+local listcodes         = nodes.listcodes
+local boundary_code     = nodecodes.boundary
+local hlist_code        = nodecodes.hlist
+local vlist_code        = nodecodes.vlist
+local kern_code         = nodecodes.kern
+local penalty_code      = nodecodes.penalty
+local glue_code         = nodecodes.glue
+local line_code         = listcodes.line
+local ghost_code        = listcodes.ghost
+local middle_code       = listcodes.middle
+local wrapped_code      = listcodes.wrapped
+local mathpack_code     = listcodes.mathpack
+local construct_code    = listcodes.construct
+local alignment_code    = listcodes.alignment
+local row_code          = listcodes.row
+local fence_code        = listcodes.fence
 
 local nuts              = nodes.nuts
 local tonut             = nodes.tonut
@@ -29,6 +36,8 @@ local getid             = nuts.getid
 local getsubtype        = nuts.getsubtype
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
+local getattr           = nuts.getattr
+local getprop           = nuts.getprop
 local getwidth          = nuts.getwidth
 local getdata           = nuts.getdata
 local getdepth          = nuts.getdepth
@@ -42,6 +51,7 @@ local getbox            = nuts.getbox
 local setoffsets        = nuts.setoffsets
 local addxoffset        = nuts.addxoffset
 local setattrlist       = nuts.setattrlist
+local rangedimensions   = nuts.rangedimensions
 
 local nextglue          = nuts.traversers.glue
 local nextlist          = nuts.traversers.list
@@ -62,6 +72,7 @@ local texiscount        = tex.iscount
 local boundary          = tex.boundaries.system("mathalign")
 local stages            = { }
 local initial           = { }
+local a_location        = attributes.system("mathnumberlocation")
 
 local c_strc_math_n_of_lines   = texiscount("c_strc_math_n_of_lines")
 local d_strc_math_max_right    = texisdimen("d_strc_math_max_right")
@@ -173,6 +184,67 @@ stages[1] = function(specification,stage)
     end
 end
 
+local function handlepacked(parent,plist,position)
+    if plist then
+        local current = plist
+-- print("")
+-- nuts.show(current)
+-- print("")
+        while current do
+            if getid(current) == hlist_code and getsubtype(current) == wrapped_code then
+                local packed = ((getattr(current,a_location) or 0) >> 8) & 0xF
+-- print(packed,a_location,getattr(current,a_location))
+-- packed = 1
+                if packed > 0 then
+                 -- print("")
+                 -- nuts.show(current)
+                 -- print("")
+                    local linewidth, wrapwidth, leading, trailing
+                    local wlist = getlist(current)
+                    if wlist and getid(wlist) == hlist_code and getsubtype(wlist) == fence_code then
+                        wlist = getlist(wlist) -- left=none demands this
+                    end
+                    for wrapped, id, subtype, list in nextlist, wlist do
+                        if id == hlist_code and subtype == construct_code then -- mathpack_code
+                            while getid(list) == vlist_code do
+                                list = getlist(list)
+                            end
+                            for a, id, subtype, alist in nextlist, list do
+                                if subtype == alignment_code then
+                                    for cell, id, subtype, clist in nextlist, alist do
+                                        for n, id, subtype in nextlist, clist do
+                                            local p = getprop(n,"mathalignshift")
+                                            if p == "right" then
+                                                if not leading then
+                                                    linewidth = getwidth(parent)
+                                                    wrapwidth = getwidth(current)
+                                                    leading   = rangedimensions(parent,plist,current)
+                                                end
+                                                local shift = rangedimensions(parent,getnext(wrapped))
+                                                addxoffset(n,shift + linewidth - wrapwidth - leading - position)
+                                            elseif p == "left" then
+                                                if not leading then
+                                                    linewidth = getwidth(parent)
+                                                    wrapwidth = getwidth(current)
+                                                    leading   = rangedimensions(parent,plist,current)
+                                                end
+                                                local shift = nuts.rangedimensions(parent,wlist,wrapped)
+                                                addxoffset(n,- shift - leading - position)
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                        wrapped = getnext(wrapped)
+                    end
+                end
+            end
+            current = getnext(current)
+        end
+    end
+end
+
 local function reposition(n,offset)
     -- We need to relocate the local boxes that we use to push something left or
     -- right ... quite horrible and one needs a bit twisted mindset for this.
@@ -190,9 +262,9 @@ stages[2] = function(specification,stage)
     local head        = getlist(getbox(specification.box))
     local align       = specification.alignstate
     local cnt         = 0
-local maxwidth    = false
-local firstwidth  = 0
-local lastwidth   = 0
+    local maxwidth    = false
+    local firstwidth  = 0
+    local lastwidth   = 0
     local maxright    = false
     local firstright  = false
     local lastright   = false
@@ -202,6 +274,7 @@ local lastwidth   = 0
     local firstheight = 0
     local lastdepth   = 0
     local linenumber  = 0
+    local leftmargin  = specification.leftmargin
     local rightmargin = specification.rightmargin
     if trace then
         report("stage 2")
@@ -244,19 +317,21 @@ local lastwidth   = 0
             lastdepth = getdepth(n)
         end
     end
+
     local position = 0
     if align == 1 then -- flushleft
         if trace then
             report("reposition %p, %s",0, "flush left")
             -- todo
         end
+     -- position = leftmargin
     elseif align == 2 then -- middle
         position = (maxwidth-rightmargin)/2
         if trace then
             report("reposition %p, %s",position, "center")
         end
     elseif align == 3 then -- flushright
-        position = maxwidth
+        position = maxwidth - rightmargin -- a nasty interplay with the tex end (TODO !!!)
         if trace then
             report("reposition %p, %s",maxwidth, "flush right")
         end
@@ -271,7 +346,14 @@ local lastwidth   = 0
         firstright = firstright - position
         lastright  = lastright  - position
         maxright   = maxright   - position
+    else
+        position = 0
     end
+
+    for n, id, subtype, list in nextlist, head do
+        handlepacked(n,list,position)
+    end
+
     texsetcount("global",c_strc_math_n_of_lines,cnt)
     texsetdimen("global",d_strc_math_first_height,firstheight)
     texsetdimen("global",d_strc_math_last_depth,lastdepth)

@@ -21,10 +21,6 @@ local expand_macro   = token.expand_macro
 local prerolled      = { }
 local identitydata   = { }
 
-local function setidentityvariable(key,value)
-    prerolled[key] = value
-end
-
 table.setmetatableindex(identitydata, function(t,k)
     if k == "keywords" then
         k = "keyword"
@@ -49,8 +45,12 @@ end
 
 interfaces.implement {
     name      = "setidentityvariable",
-    actions   = setidentityvariable,
     arguments = "2 strings",
+    public    = true,
+    protected = true,
+    actions   = function(key,value)
+                    prerolled[key] = value
+                end,
 }
 
 interfaces.implement {

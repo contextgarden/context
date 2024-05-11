@@ -65,6 +65,9 @@
   [sheepcolored]
   [sheepdefault,cowscolors]
 
+\definefontfeature[sheepdefaultbold][sheepdefault][boldened]
+\definefontfeature[cowsdefaultbold] [cowsdefault] [boldened]
+
 \starttypescriptcollection[koeielettersot]
 
     \loadfontgoodies[koeielettersot]
@@ -77,6 +80,7 @@
 
     \starttypescript [\s!all] [koeielettersotf,sheepotf]
         \definefontsynonym [Sheep]         [koeielettersot][\s!features=sheepdefault]
+        \definefontsynonym [SheepBold]     [koeielettersot][\s!features=sheepdefaultbold]
         \definefontsynonym [SheepLogo]     [koeielettersot][\s!features=cowslogos]
         \definefontsynonym [SheepMathRoman][koeielettersot][\s!features={mathsheepdigits,mathextra},\s!goodies=koeielettersot]
     \stoptypescript
@@ -104,6 +108,7 @@
     \starttypescript [\s!serif] [koeielettersotf,sheepotf,coloredsheepotf]
         \setups[\s!font:\s!fallback:\s!serif]
         \definefontsynonym [\s!Serif]     [Sheep]
+        \definefontsynonym [\s!SerifBold] [SheepBold]
         \definefontsynonym [\s!Serif Logo][SheepLogo]
     \stoptypescript
 

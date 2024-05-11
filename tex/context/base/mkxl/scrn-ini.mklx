@@ -192,7 +192,7 @@
 %D the \LUA\ end. So this one gets called by the time we need the value.
 
 \def\scrn_identity_get#1%
-  {\clf_setidentityvariable{#1}{\prerolltostring{\interactionparameter{#1}}}}
+  {\setidentityvariable{#1}{\prerolltostring{\interactionparameter{#1}}}}
 
 % this comes before starttext
 

@@ -27,9 +27,9 @@
 
 \unprotect
 
-\immutable\cdef\??empty{\Uchar25}  \immutable\letvalue{\Uchar25}\empty % hex 19
+\immutable\cdef\??empty{\tocharacter25}  \immutable\letvalue{\tocharacter25}\empty % hex 19
 
-% \edef\s!parent{\Uchar29} % inlining  is ugly, a tiny bit faster, but neglectable on a run
+% \edef\s!parent{\tocharacter29} % inlining  is ugly, a tiny bit faster, but neglectable on a run
 
 %D \starttyping
 %D \unprotect

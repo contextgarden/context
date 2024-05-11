@@ -48,4 +48,6 @@ extern void     tex_undump_language_hj_codes   (dumpstream f, int h);
 
 extern void     tex_free_text_codes            (void);
 
+extern void     tex_run_case_shift             (halfword code);
+
 # endif

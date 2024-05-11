@@ -1,29 +1,33 @@
 %D \module
 %D   [       file=type-imp-kurier,
-%D        version=2021.10.24,
+%D        version=2023.11.5, % 2021.10.24,
 %D          title=\CONTEXT\ Typescript Macros,
 %D       subtitle=Kurier,
-%D         author=Hans Hagen & Mikael Sundqvist,
+%D         author=Hans Hagen \& Mikael Sundqvist,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
 %C This module is part of the \CONTEXT\ macro||package and is
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
-%C details.
+%C details. 
 
-\starttypescriptcollection [kurier]
+\starttypescriptcollection[kurier]
 
-    \startsetups[kurier]
-        \setmathfenceparameter\c!alternative{1}%
-    \stopsetups
+    \pushglobalsetups
 
-    \startsetups[kurier-light]      \directsetup{antykwa}\stopsetups
-    \startsetups[kurier-medium]     \directsetup{antykwa}\stopsetups
-    \startsetups[kurier-heavy]      \directsetup{antykwa}\stopsetups
-    \startsetups[kurier-cond]       \directsetup{antykwa}\stopsetups
-    \startsetups[kurier-light-cond] \directsetup{antykwa}\stopsetups
-    \startsetups[kurier-medium-cond]\directsetup{antykwa}\stopsetups
-    \startsetups[kurier-heavy-cond] \directsetup{antykwa}\stopsetups
+        \startsetups[kurier]
+            \setmathfenceparameter\c!alternative{1}%
+        \stopsetups
+
+        \startsetups[kurier-light]      \directsetup{kurier}\stopsetups
+        \startsetups[kurier-medium]     \directsetup{kurier}\stopsetups
+        \startsetups[kurier-heavy]      \directsetup{kurier}\stopsetups
+        \startsetups[kurier-cond]       \directsetup{kurier}\stopsetups
+        \startsetups[kurier-light-cond] \directsetup{kurier}\stopsetups
+        \startsetups[kurier-medium-cond]\directsetup{kurier}\stopsetups
+        \startsetups[kurier-heavy-cond] \directsetup{kurier}\stopsetups
+
+    \popglobalsetups
 
     \definefontfeature[virtualmath-kurier]          [virtualmath][virtualweight=kurier]
     \definefontfeature[virtualmath-kurier-light]    [virtualmath][virtualweight=kurier-light]
@@ -35,77 +39,82 @@
     \definefontfeature[virtualmath-kurier-medium-nt][virtualmath][virtualweight=kurier-medium-nt]
     \definefontfeature[virtualmath-kurier-heavy-nt] [virtualmath][virtualweight=kurier-heavy-nt]
 
-    \starttypescript [\s!sans] [kurier-light,kurier,kurier-medium,kurier-heavy,kurier-light-nt,kurier-nt,kurier-medium-nt,kurier-heavy-nt]
-        \definefontsynonym [Kurier-Light]        [\s!file:kurierlightregular]  [\s!features=\s!default]
-        \definefontsynonym [Kurier-LightItalic]  [\s!file:kurierlightitalic]   [\s!features=\s!default]
-        \definefontsynonym [Kurier-Regular]      [\s!file:kurierregular]       [\s!features=\s!default]
-        \definefontsynonym [Kurier-Italic]       [\s!file:kurieritalic]        [\s!features=\s!default]
-        \definefontsynonym [Kurier-Medium]       [\s!file:kuriermediumregular] [\s!features=\s!default]
-        \definefontsynonym [Kurier-MediumItalic] [\s!file:kuriermediumitalic]  [\s!features=\s!default]
-        \definefontsynonym [Kurier-Bold]         [\s!file:kurierbold]          [\s!features=\s!default]
-        \definefontsynonym [Kurier-BoldItalic]   [\s!file:kurierbolditalic]    [\s!features=\s!default]
-        \definefontsynonym [Kurier-Heavy]        [\s!file:kurierheavyregular]  [\s!features=\s!default]
-        \definefontsynonym [Kurier-HeavyItalic]  [\s!file:kurierheavyitalic]   [\s!features=\s!default]
+    \starttypescript [\s!sans] [%
+        kurier,kurier-light,kurier-medium,kurier-heavy,kurier-cond,%
+        kurier-nt,kurier-light-nt,kurier-medium-nt,kurier-heavy-nt%
+    ]
+        \definefontsynonym [Kurier-Regular]           [\s!file:kurierregular]           [\s!features=\s!default]
+        \definefontsynonym [Kurier-Italic]            [\s!file:kurieritalic]            [\s!features=\s!default]
+        \definefontsynonym [Kurier-Bold]              [\s!file:kurierbold]              [\s!features=\s!default]
+        \definefontsynonym [Kurier-BoldItalic]        [\s!file:kurierbolditalic]        [\s!features=\s!default]
+        \definefontsynonym [Kurier-Light]             [\s!file:kurierlightregular]      [\s!features=\s!default]
+        \definefontsynonym [Kurier-LightItalic]       [\s!file:kurierlightitalic]       [\s!features=\s!default]
+        \definefontsynonym [Kurier-Medium]            [\s!file:kuriermediumregular]     [\s!features=\s!default]
+        \definefontsynonym [Kurier-MediumItalic]      [\s!file:kuriermediumitalic]      [\s!features=\s!default]
+        \definefontsynonym [Kurier-Heavy]             [\s!file:kurierheavyregular]      [\s!features=\s!default]
+        \definefontsynonym [Kurier-HeavyItalic]       [\s!file:kurierheavyitalic]       [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript [\s!sans] [kurier-lightcond,kurier-cond,kurier-mediumcond,kurier-lightcond-nt,kurier-cond-nt,kurier-mediumcond-nt]
-        \definefontsynonym [Kurier-CondLight]        [\s!file:kuriercondlightregular]  [\s!features=\s!default]
-        \definefontsynonym [Kurier-CondLightItalic]  [\s!file:kuriercondlightitalic]   [\s!features=\s!default]
-        \definefontsynonym [Kurier-CondRegular]      [\s!file:kuriercondregular]       [\s!features=\s!default]
-        \definefontsynonym [Kurier-CondItalic]       [\s!file:kurierconditalic]        [\s!features=\s!default]
-        \definefontsynonym [Kurier-CondMedium]       [\s!file:kuriercondmediumregular] [\s!features=\s!default]
-        \definefontsynonym [Kurier-CondMediumItalic] [\s!file:kuriercondmediumitalic]  [\s!features=\s!default]
-        \definefontsynonym [Kurier-CondBold]         [\s!file:kuriercondbold]          [\s!features=\s!default]
-        \definefontsynonym [Kurier-CondBoldItalic]   [\s!file:kuriercondbolditalic]    [\s!features=\s!default]
-        \definefontsynonym [Kurier-CondHeavy]        [\s!file:kuriercondheavyregular]  [\s!features=\s!default]
-        \definefontsynonym [Kurier-CondHeavyItalic]  [\s!file:kuriercondheavyitalic]   [\s!features=\s!default]
+    \starttypescript [\s!sans] [%
+        kurier-cond,kurier-light-cond,kurier-medium-cond,kurier-heavy-cond,%
+        kurier-cond-nt,kurier-light-cond-nt,kurier-medium-cond-nt,kurier-heavy-cond-nt%
+    ]
+        \definefontsynonym [Kurier-Cond-Regular]      [\s!file:kuriercondregular]       [\s!features=\s!default]
+        \definefontsynonym [Kurier-Cond-Italic]       [\s!file:kurierconditalic]        [\s!features=\s!default]
+        \definefontsynonym [Kurier-Cond-Bold]         [\s!file:kuriercondbold]          [\s!features=\s!default]
+        \definefontsynonym [Kurier-Cond-BoldItalic]   [\s!file:kuriercondbolditalic]    [\s!features=\s!default]
+        \definefontsynonym [Kurier-Cond-Light]        [\s!file:kuriercondlightregular]  [\s!features=\s!default]
+        \definefontsynonym [Kurier-Cond-LightItalic]  [\s!file:kuriercondlightitalic]   [\s!features=\s!default]
+        \definefontsynonym [Kurier-Cond-Medium]       [\s!file:kuriercondmediumregular] [\s!features=\s!default]
+        \definefontsynonym [Kurier-Cond-MediumItalic] [\s!file:kuriercondmediumitalic]  [\s!features=\s!default]
+        \definefontsynonym [Kurier-Cond-Heavy]        [\s!file:kuriercondheavyregular]  [\s!features=\s!default]
+        \definefontsynonym [Kurier-Cond-HeavyItalic]  [\s!file:kuriercondheavyitalic]   [\s!features=\s!default]
     \stoptypescript
+
+    % [all] is redundant
 
     \starttypescript [\s!math][kurier][\s!all]
         \definefontsynonym[\s!MathRoman]    [kuriermath@kurier-math]
         \definefontsynonym[\s!MathRomanBold][kuriermediummath@kurier-medium-math]
     \stoptypescript
-    \starttypescript [\s!math][kurier-light][\s!all]
+    \starttypescript [\s!math][kurier-light,kurier-light-cond][\s!all]
         \definefontsynonym[\s!MathRoman]    [kurierlightmath@kurier-light-math]
         \definefontsynonym[\s!MathRomanBold][kuriermath@kurier-math]
     \stoptypescript
-    \starttypescript [\s!math][kurier-medium][\s!all]
+    \starttypescript [\s!math][kurier-medium,kurier-medium-cond][\s!all]
         \definefontsynonym[\s!MathRoman]    [kuriermediummath@kurier-medium-math]
         \definefontsynonym[\s!MathRomanBold][kurierheavymath@kurier-heavy-math]
     \stoptypescript
-    \starttypescript [\s!math][kurier-heavy][\s!all]
+    \starttypescript [\s!math][kurier-heavy,kurier-heavy-cond][\s!all]
         \definefontsynonym[\s!MathRoman][kurierheavymath@kurier-heavy-math]
     \stoptypescript
 
-    \starttypescript [\s!math][kurier-nt][\s!all]
+    \starttypescript [\s!math][kurier-nt,kurier-cond-nt][\s!all]
         \definefontsynonym[\s!MathRoman]    [kuriermathnt@kurier-math-nt]
         \definefontsynonym[\s!MathRomanBold][kuriermediummathnt@kurier-medium-math-nt]
     \stoptypescript
-    \starttypescript [\s!math][kurier-light-nt][\s!all]
+    \starttypescript [\s!math][kurier-light-nt,kurier-light-cond-nt][\s!all]
         \definefontsynonym[\s!MathRoman]    [kurierlightmathnt@kurier-light-math-nt]
         \definefontsynonym[\s!MathRomanBold][kuriermathnt@kurier-math-nt]
     \stoptypescript
-    \starttypescript [\s!math][kurier-medium-nt][\s!all]
+    \starttypescript [\s!math][kurier-medium-nt,kurier-medium-cond-nt][\s!all]
         \definefontsynonym[\s!MathRoman]    [kuriermediummathnt@kurier-medium-math-nt]
         \definefontsynonym[\s!MathRomanBold][kurierheavymathnt@kurier-heavy-math-nt]
     \stoptypescript
-    \starttypescript [\s!math][kurier-heavy-nt][\s!all]
+    \starttypescript [\s!math][kurier-heavy-nt,kurier-heavy-cond-nt][\s!all]
         \definefontsynonym[\s!MathRoman][kurierheavymathnt@kurier-heavy-math-nt]
     \stoptypescript
 
-    \starttypescript [\s!math] [kurier,kurier-light,kurier-medium,kurier-heavy,kurier-nt,kurier-light-nt,kurier-medium-nt,kurier-heavy-nt] [\s!all]
+    \starttypescript [\s!math] [%
+        kurier,kurier-light,kurier-medium,kurier-heavy,%
+        kurier-nt,kurier-light-nt,kurier-medium-nt,kurier-heavy-nt,%
+        kurier-cond,kurier-light-cond,kurier-medium-cond,kurier-heavy-cond,%
+        kurier-cond-nt,kurier-light-cond-nt,kurier-medium-cond-nt,kurier-heavy-cond-nt,%
+    ] [\s!all]
         \loadfontgoodies[kurier-math]
     \stoptypescript
 
-    \starttypescript [\s!sans] [kurier-light,kurier-light-nt]
-        \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [Kurier-Light]
-        \definefontsynonym [\s!SansItalic]     [Kurier-LightItalic]
-        \definefontsynonym [\s!SansBold]       [Kurier-Medium]
-        \definefontsynonym [\s!SansBoldItalic] [Kurier-MediumItalic]
-    \stoptypescript
-
-    \starttypescript [\s!sans] [kurier,kurier-nt]
+    \starttypescript [\s!sans] [kurier,kurier-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [Kurier-Regular]
         \definefontsynonym [\s!SansItalic]     [Kurier-Italic]
@@ -113,7 +122,15 @@
         \definefontsynonym [\s!SansBoldItalic] [Kurier-BoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!sans] [kurier-medium,kurier-medium-nt]
+    \starttypescript [\s!sans] [kurier-light,kurier-light-nt] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]           [Kurier-Light]
+        \definefontsynonym [\s!SansItalic]     [Kurier-LightItalic]
+        \definefontsynonym [\s!SansBold]       [Kurier-Medium]
+        \definefontsynonym [\s!SansBoldItalic] [Kurier-MediumItalic]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [kurier-medium,kurier-medium-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [Kurier-Medium]
         \definefontsynonym [\s!SansItalic]     [Kurier-MediumItalic]
@@ -121,43 +138,48 @@
         \definefontsynonym [\s!SansBoldItalic] [Kurier-HeavyItalic]
     \stoptypescript
 
-    \starttypescript [\s!sans] [kurier-heavy,kurier-heavy-nt]
+    \starttypescript [\s!sans] [kurier-heavy,kurier-heavy-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [Kurier-Heavy]
         \definefontsynonym [\s!SansItalic]     [Kurier-HeavyItalic]
         \definefontsynonym [\s!SansBold]       [Kurier-Heavy]
-        \definefontsynonym [\s!SansBoldItalic] [Kurier-Heavy]
+        \definefontsynonym [\s!SansBoldItalic] [Kurier-HeavyItalic]
     \stoptypescript
 
-    \starttypescript [\s!sans] [kurier-lightcond,kurier-lightcond-nt]
+    \starttypescript [\s!sans] [kurier-light-cond,kurier-light-cond-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [Kurier-CondLight]
-        \definefontsynonym [\s!SansItalic]     [Kurier-CondLightItalic]
-        \definefontsynonym [\s!SansBold]       [Kurier-CondMedium]
-        \definefontsynonym [\s!SansBoldItalic] [Kurier-CondMediumItalic]
+        \definefontsynonym [\s!Sans]           [Kurier-Cond-Light]
+        \definefontsynonym [\s!SansItalic]     [Kurier-Cond-LightItalic]
+        \definefontsynonym [\s!SansBold]       [Kurier-Cond-Medium]
+        \definefontsynonym [\s!SansBoldItalic] [Kurier-Cond-MediumItalic]
     \stoptypescript
 
-    \starttypescript [\s!sans] [kurier-cond,kurier-cond-nt]
+    \starttypescript [\s!sans] [kurier-cond,kurier-cond-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [Kurier-CondRegular]
-        \definefontsynonym [\s!SansItalic]     [Kurier-CondItalic]
-        \definefontsynonym [\s!SansBold]       [Kurier-CondBold]
-        \definefontsynonym [\s!SansBoldItalic] [Kurier-CondBoldItalic]
+        \definefontsynonym [\s!Sans]           [Kurier-Cond-Regular]
+        \definefontsynonym [\s!SansItalic]     [Kurier-Cond-Italic]
+        \definefontsynonym [\s!SansBold]       [Kurier-Cond-Bold]
+        \definefontsynonym [\s!SansBoldItalic] [Kurier-Cond-BoldItalic]
     \stoptypescript
 
-    \starttypescript [\s!sans] [kurier-mediumcond,kurier-mediumcond-nt]
+    \starttypescript [\s!sans] [kurier-medium-cond,kurier-medium-cond-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
-        \definefontsynonym [\s!Sans]           [Kurier-CondMedium]
-        \definefontsynonym [\s!SansItalic]     [Kurier-CondMediumItalic]
-        \definefontsynonym [\s!SansBold]       [Kurier-CondHeavy]
-        \definefontsynonym [\s!SansBoldItalic] [Kurier-CondHeavyItalic]
+        \definefontsynonym [\s!Sans]           [Kurier-Cond-Medium]
+        \definefontsynonym [\s!SansItalic]     [Kurier-Cond-MediumItalic]
+        \definefontsynonym [\s!SansBold]       [Kurier-Cond-Heavy]
+        \definefontsynonym [\s!SansBoldItalic] [Kurier-Cond-HeavyItalic]
     \stoptypescript
 
-    \starttypescript [kurier-light,kurier,kurier-medium,kurier-heavy,kurier-lightcond,kurier-cond,kurier-mediumcond,kurier-light,kurier-nt,kurier-medium-nt,kurier-heavy-nt,kurier-lightcond-nt,kurier-cond-nt,kurier-mediumcond-nt]
-        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [modern]         [\s!default]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default][text=ss]
+    \starttypescript [%
+        kurier,kurier-light,kurier-medium,kurier-heavy,%
+        kurier-nt,kurier-light-nt,kurier-medium-nt,kurier-heavy-nt,%
+        kurier-cond,kurier-light-cond,kurier-medium-cond,kurier-heavy-cond,%
+        kurier-cond-nt,kurier-light-cond-nt,kurier-medium-cond-nt,kurier-heavy-cond-nt%
+    ]
+        \definetypeface[\typescriptone][\s!ss][\s!sans] [\typescriptone][\s!default]
+        \definetypeface[\typescriptone][\s!rm][\s!serif][modern]        [\s!default]
+        \definetypeface[\typescriptone][\s!tt][\s!mono] [modern]        [\s!default]
+        \definetypeface[\typescriptone][\s!mm][\s!math] [\typescriptone][\s!default][text=ss]
         \quittypescriptscanning
     \stoptypescript
 

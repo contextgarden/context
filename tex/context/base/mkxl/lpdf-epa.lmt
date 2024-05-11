@@ -126,7 +126,7 @@ local function getmediasize(specification,pagedata)
     return llx, lly, urx, ury, width, height, xscale, yscale
 end
 
-local function getdimensions(annotation,llx,lly,xscale,yscale,width,height,report)
+local function getdimensions(annotation,llx,lly,xscale,yscale,width,height,report,minheight)
     local rectangle = annotation.Rect
     local a_llx     = rectangle[1]
     local a_lly     = rectangle[2]
@@ -139,6 +139,13 @@ local function getdimensions(annotation,llx,lly,xscale,yscale,width,height,repor
     if w > width or h > height or w < 0 or h < 0 or abs(x) > (maxdimen/2) or abs(y) > (maxdimen/2) then
         report("broken rectangle [%.6F %.6F %.6F %.6F] (max: %.6F)",a_llx,a_lly,a_urx,a_ury,maxdimen/2)
         return
+    end
+    if minheight and minheight ~= 0 then
+        local dh = minheight - h
+        if dh > 0 then
+            y = y - dh/2
+            h = h + dh
+        end
     end
     return x, y, w, h, a_llx, a_lly, a_urx, a_ury
 end
@@ -302,6 +309,17 @@ local function getpageoffset(options)
     end
 end
 
+local function getminheight(options)
+    if options then
+        for k in next, options do
+            local p = tonumber(match(k,"minheight:([%+%-]*%d+)"))
+            if p then
+                return p
+            end
+        end
+    end
+end
+
 function codeinjections.mergereferences(specification,options)
     local specification, fullname, document = validdocument(specification)
     if not document then
@@ -313,6 +331,7 @@ function codeinjections.mergereferences(specification,options)
     local namespace   = makenamespace(fullname)
     local reference   = namespace .. pagenumber
     local pageoffset  = getpageoffset(options)
+    local minheight   = getminheight(options)
     if annotations and #annotations > 0 then
         local llx, lly, urx, ury, width, height, xscale, yscale = getmediasize(specification,pagedata,xscale,yscale)
         initializelayer(height,width)
@@ -325,12 +344,13 @@ function codeinjections.mergereferences(specification,options)
                         local d = annotation.Dest
                         if d then
                             a = { S = "GoTo", D = d } -- no need for a dict
+                            annotation.A = a
                         end
                     end
                     if not a then
                         report_link("missing link annotation")
                     else
-                        local x, y, w, h = getdimensions(annotation,llx,lly,xscale,yscale,width,height,report_link)
+                        local x, y, w, h = getdimensions(annotation,llx,lly,xscale,yscale,width,height,report_link,minheight)
                         if x then
                             local linktype = a.S
                             if linktype == "GoTo" then

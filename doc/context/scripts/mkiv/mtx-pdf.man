@@ -1,4 +1,4 @@
-.TH "mtx-pdf" "1" "01-01-2023" "version 0.10" "ConTeXt PDF Helpers"
+.TH "mtx-pdf" "1" "01-01-2024" "version 0.10" "ConTeXt PDF Helpers"
 .SH NAME
  mtx-pdf - ConTeXt PDF Helpers
 .SH SYNOPSIS
@@ -27,10 +27,16 @@ replace newlines in metadata
 show used fonts (--detail)
 .TP
 .B --object
-show object"/>
+show object
 .TP
 .B --links
-show links"/>
+show links
+.TP
+.B --sign
+sign document (assumes signature template)
+.TP
+.B --verify
+verify document
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

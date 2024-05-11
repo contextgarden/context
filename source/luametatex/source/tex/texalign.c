@@ -206,6 +206,46 @@
 
 */
 
+typedef enum align_options {
+    align_option_exactly  = 0x01, 
+    align_option_reverse  = 0x10, 
+    align_option_discard  = 0x20, 
+    align_option_noskips  = 0x40, 
+    align_option_callback = 0x80, 
+} align_options;
+
+/* Do we still need these .. we have a dedicated stack. */
+
+typedef enum saved_align_entries {
+    saved_align_mode_entry     = 0,
+    saved_align_amount_entry   = 0,
+    saved_align_callback_entry = 0,
+    saved_align_n_of_records   = 1,
+} saved_align_entries;
+
+# define saved_align_mode     saved_value_1(saved_align_mode_entry)
+# define saved_align_amount   saved_value_2(saved_align_amount_entry)
+# define saved_align_callback saved_value_3(saved_align_amount_entry)
+
+inline static void saved_alignment_initialize(void)
+{
+    saved_type(0) = saved_record_0;
+    saved_record(0) = alignment_save_type;
+}
+
+int tex_show_alignment_record(void)
+{
+    tex_print_str("alignment ");
+    switch (saved_type(0)) { 
+       case saved_record_0:
+            tex_print_format("mode %i, amount %p", saved_value_1(0), saved_value_2(0));
+            break;
+        default: 
+            return 0;
+    }
+    return 1;
+}
+
 typedef struct alignment_row_state { 
     halfword orientation;
     scaled   xoffset;
@@ -235,15 +275,12 @@ typedef struct alignment_state_info {
     halfword hold_token_head;       /*tex head of a temporary list of another kind */
     halfword omit_template;         /*tex a constant token list */
     halfword no_align_level;
-    halfword no_tab_skips;
     halfword attr_list;
     halfword cell_source;           
     halfword wrap_source;           /*tex There's also a field in the row_state. */
-    halfword callback;
- /* halfword reverse;            */ /* maybe */
- /* halfword discard_skips;      */ /* maybe */
     halfword row_state_set;
-    halfword padding;
+    halfword options;
+    halfword callback;
     alignment_row_state row_state; 
 } alignment_state_info ;
 
@@ -263,15 +300,12 @@ static alignment_state_info lmt_alignment_state = {
     .hold_token_head       = null,  /*tex head of a temporary list of another kind */
     .omit_template         = null,  /*tex a constant token list */
     .no_align_level        = 0,
-    .no_tab_skips          = 0,
     .attr_list             = null,
     .cell_source           = 0,
     .wrap_source           = 0,
-    .callback              = 0,
- /* .reverse               = 0, */
- /* .discard_skips         = 0, */
     .row_state_set         = 0, 
-    .padding               = 0,
+    .options               = 0,
+    .callback              = 0,
     .row_state = { 
         .attrlist    = null,
         .orientation = 0,
@@ -305,17 +339,6 @@ static void tex_aux_wipe_row_state(void)
     lmt_alignment_state.row_state.anchor = 0;
     lmt_alignment_state.row_state_set = 0;
 }
-
-/*tex We could as well save these in the alignment stack. */
-
-typedef enum saved_align_items {
-    saved_align_specification,
-    saved_align_reverse,
-    saved_align_discard, 
-    saved_align_noskips,  /*tex currently fetched from the state (not used anyway) */
-    saved_align_callback, /*tex currently fetched from the state */
-    saved_align_n_of_items,
-} saved_align_items;
 
 /*tex The current preamble list: */
 
@@ -385,8 +408,9 @@ static void tex_aux_push_alignment(void)
     align_stack_cur_post_migrate_tail(p) = lmt_alignment_state.cur_post_migrate_tail;
     align_stack_cur_pre_migrate_head(p) = lmt_alignment_state.cur_pre_migrate_head;
     align_stack_cur_pre_migrate_tail(p) = lmt_alignment_state.cur_pre_migrate_tail;
-    align_stack_no_tab_skips(p) = lmt_alignment_state.no_tab_skips;
+    align_stack_options(p) = lmt_alignment_state.options;
     align_stack_attr_list(p) = lmt_alignment_state.attr_list;
+    align_stack_callback(p) = lmt_alignment_state.callback;
     /* */
     align_stack_row_attrlist(p) = lmt_alignment_state.row_state.attrlist;
     align_stack_row_orientation(p) = lmt_alignment_state.row_state.orientation;
@@ -407,6 +431,7 @@ static void tex_aux_push_alignment(void)
     /* */
     lmt_alignment_state.cell_source = 0;
     lmt_alignment_state.wrap_source = 0;
+ // lmt_alignment_state.options = 0;
     /* todo: put in align_stack, also wipe attr if needed */
     tex_aux_wipe_row_state();
 }
@@ -435,8 +460,9 @@ static void tex_aux_pop_alignment(void)
     lmt_alignment_state.cur_post_migrate_tail = align_stack_cur_post_migrate_tail(p);
     lmt_alignment_state.cur_pre_migrate_head = align_stack_cur_pre_migrate_head(p);
     lmt_alignment_state.cur_pre_migrate_tail = align_stack_cur_pre_migrate_tail(p);
-    lmt_alignment_state.no_tab_skips = align_stack_no_tab_skips(p);
+    lmt_alignment_state.options = align_stack_options(p);
     lmt_alignment_state.attr_list = align_stack_attr_list(p);
+    lmt_alignment_state.callback = align_stack_callback(p);
     /* */
     lmt_alignment_state.row_state.attrlist = align_stack_row_attrlist(p);    
     lmt_alignment_state.row_state.orientation = align_stack_row_orientation(p);
@@ -516,7 +542,7 @@ static void tex_aux_get_preamble_token(void)
             break;
         case internal_glue_cmd:
             if (cur_chr == internal_glue_location(tab_skip_code)) {
-                halfword v = tex_scan_glue(glue_val_level, 1);
+                halfword v = tex_scan_glue(glue_val_level, 1, 0);
                 if (global_defs_par > 0) {
                     update_tex_tab_skip_global(v);
                 } else {
@@ -561,11 +587,9 @@ static void tex_aux_get_preamble_token(void)
 static void tex_aux_scan_align_spec(quarterword c)
 {
     quarterword mode = packing_additional;
-    quarterword reverse = 0;
-    quarterword discard = 0;
-    quarterword noskips = 0;
-    quarterword callback = 0;
+    quarterword options = 0;
     scaled amount = 0;
+    halfword callback = 0;
     halfword attrlist = null;
     bool brace = false;
     while (1) {
@@ -575,46 +599,41 @@ static void tex_aux_scan_align_spec(quarterword c)
                 goto DONE;
             case 'a': case 'A':
                 if (tex_scan_mandate_keyword("attr", 1)) {
-                    halfword i = tex_scan_attribute_register_number();
-                    halfword v = tex_scan_integer(1, NULL);
-                    if (eq_value(register_attribute_location(i)) != v) {
-                        if (attrlist) {
-                            attrlist = tex_patch_attribute_list(attrlist, i, v);
-                        } else {
-                            attrlist = tex_copy_attribute_list_set(tex_current_attribute_list(), i, v);
-                        }
-                    }
+                    attrlist = tex_scan_attribute(attrlist);
                 }
                 break;
             case 'c': case 'C':
                 if (tex_scan_mandate_keyword("callback", 1)) {
-                    callback = 1;
+                    options |= align_option_callback;
+                    callback = tex_scan_integer(0, NULL);
                 }
                 break;
             case 'd': case 'D':
                 if (tex_scan_mandate_keyword("discard", 1)) {
-                    discard = 1;
+                    options |= align_option_discard;
                 }
                 break;
             case 'n': case 'N':
                 if (tex_scan_mandate_keyword("noskips", 1)) {
-                    noskips = 1;
+                    options |= align_option_noskips;
                 }
                 break;
             case 'r': case 'R':
                 if (tex_scan_mandate_keyword("reverse", 1)) {
-                    reverse = 1;
+                    options |= align_option_reverse;
                 }
                 break;
             case 't': case 'T':
                 if (tex_scan_mandate_keyword("to", 1)) {
                     mode = packing_exactly;
+                    options |= align_option_exactly;
                     amount = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
             case 's': case 'S':
                 if (tex_scan_mandate_keyword("spread", 1)) {
                     mode = packing_additional;
+                    options &= (~ align_option_exactly);
                     amount = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
@@ -627,24 +646,24 @@ static void tex_aux_scan_align_spec(quarterword c)
     }
   DONE:
     if (! attrlist) {
-        /* this alse sets the reference when not yet set */
         attrlist = tex_current_attribute_list();
     } 
+    if (options & align_option_noskips) {
+        options &= (~ align_option_discard);
+    }
     /*tex Now we're referenced. We need to preserve this over the group. */
     add_attribute_reference(attrlist);
-    tex_set_saved_record(saved_align_specification, box_spec_save_type, mode, amount);
-    /* We save them but could put them in the state as we do for some anyway. */
-    tex_set_saved_record(saved_align_reverse, box_reverse_save_type, 0, reverse);
-    tex_set_saved_record(saved_align_discard, box_discard_save_type, 0, noskips ? 0 : discard);
-    tex_set_saved_record(saved_align_noskips, box_noskips_save_type, 0, noskips);
-    tex_set_saved_record(saved_align_callback, box_callback_save_type, 0, callback);
-    lmt_save_state.save_stack_data.ptr += saved_align_n_of_items;
+    saved_alignment_initialize();
+    saved_align_mode = mode;
+    saved_align_amount = amount;
+    saved_align_callback = callback;
+    lmt_save_state.save_stack_data.ptr += saved_align_n_of_records;
     tex_new_save_level(c);
     if (! brace) {
         tex_scan_left_brace();
     }
-    lmt_alignment_state.no_tab_skips = noskips;
     lmt_alignment_state.attr_list = attrlist;
+    lmt_alignment_state.options = options;
     lmt_alignment_state.callback = callback;
 }
 
@@ -959,7 +978,7 @@ void tex_run_alignment_initialize(void)
     while (1) {
         /*tex Append the current tabskip glue to the preamble list. */
         halfword glue = tex_new_param_glue_node(tab_skip_code, tab_skip_glue);
-        if (lmt_alignment_state.no_tab_skips && tex_glue_is_zero(glue)) {
+        if ((lmt_alignment_state.options & align_option_noskips) && tex_glue_is_zero(glue)) {
             node_subtype(glue) = ignored_glue;
         }
         tex_couple_nodes(lmt_alignment_state.cur_align, glue);
@@ -1038,8 +1057,8 @@ void tex_run_alignment_initialize(void)
         tex_print_str("<alignment preamble>");
         tex_show_node_list(preamble, max_integer, max_integer);
     }
-    if (lmt_alignment_state.callback) {
-        lmt_alignment_callback(cur_list.head, preamble_pass_alignment_context, lmt_alignment_state.attr_list, preamble);
+    if (lmt_alignment_state.options & align_option_callback) {
+        lmt_alignment_callback(cur_list.head, preamble_pass_alignment_context, lmt_alignment_state.callback, lmt_alignment_state.attr_list, preamble);
     }
     lmt_input_state.scanner_status = scanner_is_normal;
     tex_new_save_level(align_group);
@@ -1279,7 +1298,7 @@ static int tex_aux_finish_column(void)
                     lmt_alignment_state.cur_loop = node_next(lmt_alignment_state.cur_loop);
                     {
                         halfword glue = tex_new_glue_node(lmt_alignment_state.cur_loop, tab_skip_glue);
-                        if (lmt_alignment_state.no_tab_skips && tex_glue_is_zero(glue)) {
+                        if ((lmt_alignment_state.options & align_option_noskips) && tex_glue_is_zero(glue)) {
                             node_subtype(glue) = ignored_glue;
                         }
                         tex_couple_nodes(record, glue);
@@ -1590,9 +1609,9 @@ static void tex_aux_finish_align(void)
     /*tex shift offset for unset boxes */
     scaled offset = 0;
     /*tex something new */
-    halfword reverse = 0;
-    halfword callback = lmt_alignment_state.callback; /* see below for variant */
-    halfword discard = normalize_line_mode_permitted(normalize_line_mode_par, discard_zero_tab_skips_mode);
+    halfword reverse = lmt_alignment_state.options & align_option_reverse;
+    halfword callback = lmt_alignment_state.options & align_option_callback;
+    halfword discard = normalize_line_mode_permitted(normalize_line_mode_par, discard_zero_tab_skips_mode) || (lmt_alignment_state.options & align_option_discard);
     /*tex The |align_group| was for individual entries: */
     if (cur_group != align_group) {
         tex_confusion("align, case 1");
@@ -1606,11 +1625,8 @@ static void tex_aux_finish_align(void)
     if (lmt_nest_state.nest[lmt_nest_state.nest_data.ptr - 1].mode == mmode) {
         offset = display_indent_par;
     }
-    lmt_save_state.save_stack_data.ptr -= saved_align_n_of_items;
+    lmt_save_state.save_stack_data.ptr -= saved_align_n_of_records;
     lmt_packaging_state.pack_begin_line = -cur_list.mode_line;
-    reverse = saved_value(saved_align_reverse);            /* we can as well save these in the state */
-    discard = discard || saved_value(saved_align_discard); /* we can as well save these in the state */
- /* callback = saved_value(saved_align_callback); */       /* already fetched from the state */
     /*tex
         All content is available now so this is a perfect spot for some processing. However, we
         cannot mess with the unset boxes (as these can have special properties). The main reason
@@ -1620,6 +1636,9 @@ static void tex_aux_finish_align(void)
         We flush the tokenlists so that in principle we can access the align record nodes as normal
         lists.
     */
+    halfword amount = saved_align_amount;
+    halfword mode = saved_align_mode;
+ /* halfword callback = saved_align_callback; */ /* also in state record */
     {
         halfword q = node_next(preamble);
         do {
@@ -1631,7 +1650,7 @@ static void tex_aux_finish_align(void)
         } while (q);
     }
     if (callback) {
-        lmt_alignment_callback(cur_list.head, preroll_pass_alignment_context, lmt_alignment_state.attr_list, preamble);
+        lmt_alignment_callback(cur_list.head, preroll_pass_alignment_context, lmt_alignment_state.callback, lmt_alignment_state.attr_list, preamble);
     }
     /*tex
 
@@ -1717,7 +1736,7 @@ static void tex_aux_finish_align(void)
         } while (q);
     }
     if (callback) {
-        lmt_alignment_callback(cur_list.head, package_pass_alignment_context, lmt_alignment_state.attr_list, preamble);
+        lmt_alignment_callback(cur_list.head, package_pass_alignment_context, lmt_alignment_state.callback, lmt_alignment_state.attr_list, preamble);
     }
     /*tex
 
@@ -1734,7 +1753,7 @@ static void tex_aux_finish_align(void)
         halfword rule_save = overfull_rule_par;
         /*tex Prevent the rule from being packaged. */
         overfull_rule_par = 0; 
-        preroll = tex_hpack(preamble, saved_value(saved_align_specification), saved_extra(saved_align_specification), direction_unknown, holding_none_option);
+        preroll = tex_hpack(preamble, amount, mode, direction_unknown, holding_none_option, box_limit_none);
         overfull_rule_par = rule_save;
     } else {
         halfword unset = node_next(preamble);
@@ -1744,7 +1763,7 @@ static void tex_aux_finish_align(void)
             unset = node_next(node_next(unset));
         } while (unset);
         /* why filtered here ... */
-        preroll = tex_filtered_vpack(preamble, saved_value(saved_align_specification), saved_extra(saved_align_specification), max_depth_par, preamble_group, direction_unknown, 0, 0, 0, holding_none_option, NULL);
+        preroll = tex_filtered_vpack(preamble, amount, mode, max_depth_par, preamble_group, direction_unknown, 0, 0, 0, holding_none_option, NULL);
         /* ... so we'll do this soon instead: */
      /* preroll = tex_vpack(preamble, saved_value(saved_align_specification), saved_extra(saved_align_specification), max_depth_par, direction_unknown, migrate_all_option); */
         unset = node_next(preamble);
@@ -1978,7 +1997,7 @@ static void tex_aux_finish_align(void)
                             halfword box = null;
                             node_prev(rowptr) = null;
                             node_next(rowptr) = null;
-                            box = tex_hpack(rowptr, 0, packing_additional, direction_unknown, holding_none_option);
+                            box = tex_hpack(rowptr, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
                             tex_attach_attribute_list_attribute(box, rowptr);
                             box_shift_amount(box) = offset;
                             node_subtype(box) = align_cell_list; /*tex This is not really a cell. */
@@ -2002,7 +2021,7 @@ static void tex_aux_finish_align(void)
         }
     }
     if (callback) {
-        lmt_alignment_callback(cur_list.head, wrapup_pass_alignment_context, lmt_alignment_state.attr_list, preamble);
+        lmt_alignment_callback(cur_list.head, wrapup_pass_alignment_context, lmt_alignment_state.callback, lmt_alignment_state.attr_list, preamble);
     }
     tex_flush_node_list(preroll);
     delete_attribute_reference(lmt_alignment_state.attr_list);
@@ -2028,10 +2047,7 @@ static void tex_aux_finish_align(void)
                 cur_list.tail = tail;
             }
             if (cur_list.mode == vmode) {
-                if (! lmt_page_builder_state.output_active) {
-                    lmt_page_filter_callback(alignment_page_context, 0);
-                }
-                tex_build_page();
+                tex_build_page(alignment_page_context, 0);
             }
         }
     }

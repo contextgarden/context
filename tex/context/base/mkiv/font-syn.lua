@@ -157,6 +157,7 @@ local styles = Cs (
   + P("italic")
   + P("oblique")        / "italic"
   + P("slanted")
+  + P("slant")          / "slanted"
   + P("roman")          / "normal"
   + P("ital")           / "italic" -- might be tricky
   + P("ita")            / "italic" -- might be tricky

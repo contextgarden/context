@@ -50,223 +50,11 @@ local setmathcode           = tex.setmathcode
 local setdelcode            = tex.setdelcode
 local texintegerdef         = tex.integerdef
 
+local getfontoffamily       = tex.getfontoffamily
+
+local fontchardata          = fonts.hashes.characters
+
 setdelcode = function() end
-
--- This is relatively new and experimental:
-
-do
-
-    local dictionaries       = mathematics.dictionaries or { }
-    mathematics.dictionaries = dictionaries
-
-    local names    = dictionaries.names    or utilities.storage.allocate()
-    local groups   = dictionaries.groups   or utilities.storage.allocate()
-    local data     = dictionaries.data     or utilities.storage.allocate()
-    local sets     = dictionaries.sets     or utilities.storage.allocate()
-    local variants = dictionaries.variants or utilities.storage.allocate() -- todo: get from char-def
-    local defaults = dictionaries.defaults or utilities.storage.allocate() -- todo: get from char-def
-
-    storage.register("mathematics/dictionaries/names",    names,    "mathematics.dictionaries.names")
-    storage.register("mathematics/dictionaries/groups",   groups,   "mathematics.dictionaries.groups")
-    storage.register("mathematics/dictionaries/data",     data,     "mathematics.dictionaries.data")
-    storage.register("mathematics/dictionaries/sets",     sets,     "mathematics.dictionaries.sets")
-    storage.register("mathematics/dictionaries/variants", variants, "mathematics.dictionaries.variants")
-    storage.register("mathematics/dictionaries/defaults", defaults, "mathematics.dictionaries.defaults")
-
-    dictionaries.names    = dictionaries.names    or names
-    dictionaries.groups   = dictionaries.groups   or groups
-    dictionaries.data     = dictionaries.data     or data
-    dictionaries.sets     = dictionaries.sets     or sets
-    dictionaries.variants = dictionaries.variants or variants
-    dictionaries.defaults = dictionaries.defaults or defaults
-
-    if not sets.n then
-        sets.n = 0
-    end
-
-    function dictionaries.registergroup(name)
-        local group = rawget(names,name)
-        if not group then
-            group = #groups + 1
-            names[name]   = group
-            names[group]  = group
-            groups[group] = name
-            data[group]   = { }
-            local csname  = "math" .. nospaces(name) .. "dictionary"
-            texintegerdef(csname,group,"immutable")
-        end
-        return group
-    end
-
-    function dictionaries.registergroupset(name,set)
-        local s = sets[name]
-        if not s then
-            local d = dictionaries.registergroup(name)
-            local n = sets.n + 1
-            local l = utilities.parsers.settings_to_array(set)
-            local g = { }
-            for i=1,#l do
-                local n = names[l[i]]
-                if n then
-                    g[#g+1] = n -- ordered
-                end
-            end
-            s = {
-                names  = l,
-                groups = g,
-                group  = d,
-            }
-            sets[name] = s
-            sets[d]    = s
-
-        end
-    end
-
-    function dictionaries.groupset(name)
-        return sets[name] or { }
-    end
-
-    function dictionaries.groupsetgroup(name)
-        local s = sets[name]
-        if s then
-            return s.group
-        else
-            return names[name] or 0
-        end
-    end
-
-    function dictionaries.registercharacter(group,index,description,class)
-        local d = names[group] -- can be number or string
-        if d then
-            data[d][index] = description or true
-            local v = variants[index]
-            if not class then
-                class = true
-            end
-            if v then
-                v[d] = class
-            else
-                variants[index] = { [d] = class}
-            end
-            if not defaults[index] then
-                defaults[index] = d
-            end
-        end
-    end
-
-    implement {
-        name      = "registergroupset",
-        arguments = "2 strings",
-        actions   = dictionaries.registergroupset,
-    }
-
-    implement {
-        name      = "groupsetgroup",
-        arguments = "string",
-        actions   = { dictionaries.groupsetgroup, context },
-    }
-
-    local fontchardata = fonts.hashes.characters
-    local f_dictionary = false
-    local whatdetail   = "all"
-
-    local function trace(n,properties,group,index,font,char)
-     -- local properties, group, index, font, char = nodes.nuts.getchardict(nodes.nuts.tonut(n))
-        if whatdetail and (properties ~= 0 or group ~= 0 or index ~= 0) then
-            local char = fontchardata[font][char]
-            if char or whatdetail == "all" then
-                local unicode = char and char.unicode
-                if unicode then
-                    local groupname = groups[group]
-                    local indexname = false
-                    if groupname then
-                        indexname = data[group][index] -- dictionaries.data
-                    else
-                        groupname = "unknown"
-                    end
-                    if not indexname or indexname == true then
-                        indexname = chardata[unicode]
-                        indexname = indexname and indexname.description or "unknown"
-                    end
-                    if not f_dictionary then
-                        f_dictionary = formatters["properties [%04X:%04X:%04X] [%s] %U : %s"]
-                    end
-                    return f_dictionary(properties,group,index,groupname,unicode,indexname)
-                end
-            end
-        end
-    end
-
-    trackers.register("math.dictionaries",function(v) whatdetail = v end)
-
-    callbacks.register("get_math_dictionary",trace,"provide math dictionary details")
-
-    -- This is experimental and a prelude to the long pending "relate math rendering to
-    -- some field" wish. In TeX characters and symbols are grouped by class but that is
-    -- mostly related to spacing etc. while we actually want to group by meaning. A
-    -- reasonable but incomplete starting point is:
-    --
-    -- https://www.w3.org/TR/MathML3/appendixa.html#parsing_DefEncAtt
-    --
-    -- But it has some weird short names mixed with long ones (and a strange suddenly
-    -- uppercase: Differential-Operator) but we are not bound to that at all. We will
-    -- probably remove and add categories anyway. This openmath stuff looks a bit
-    -- abandoned but we can use it as a start and playground anyway.
-    --
-    -- The char-def.lua file will have mathgroup entries reflecting this.
-    --
-    -- This is a good one (with nice roll-overs too):
-    --
-    -- https://en.wikipedia.org/wiki/List_of_mathematical_symbols_by_subject
-
-    if environment.initex then
-
-        local registergroup = mathematics.dictionaries.registergroup
-
-        registergroup("default")
-        registergroup("binary arithmetic")
-        registergroup("binary linear algebra")
-        registergroup("binary logical")
-        registergroup("binary relation")
-        registergroup("binary set")
-        registergroup("constant arithmetic")
-        registergroup("constant set")
-        registergroup("differential")
-        registergroup("integral")
-        registergroup("interval")
-        registergroup("lambda")
-        registergroup("limit")
-        registergroup("nary arithmetic")
-        registergroup("nary constructor")
-        registergroup("nary functional")
-        registergroup("nary linear algebra")
-        registergroup("nary logical")
-        registergroup("nary minmax")
-        registergroup("nary relation")
-        registergroup("nary set list")
-        registergroup("nary set relation")
-        registergroup("nary set")
-        registergroup("nary statistics")
-        registergroup("partial") -- partial differential
-        registergroup("product")
-        registergroup("quantifier")
-        registergroup("unary arithmetic")
-        registergroup("unary elementary")
-        registergroup("unary functional")
-        registergroup("unary linear algebra")
-        registergroup("unary logical")
-        registergroup("unary set")
-        registergroup("unary vector")
-
-    end
-
-    -- \Umathdictdef\vdash 1 \mathbinarylogicaldictionary "22A2 \mathrelationcode 0 "22A2
-    --
-    -- \startluacode
-    --     mathematics.dictionaries.registercharacter("binary logical",0x22A2,"implies")
-    -- \stopluacode
-
-end
 
 -- These are different from mkiv with luatex.
 
@@ -375,10 +163,10 @@ registerengineclass("explicit",        "xpl")
 registerengineclass("imaginary",       "img")
 registerengineclass("differential",    "dif")
 registerengineclass("exponential",     "exp")
+registerengineclass("integral",        "int")
 registerengineclass("ellipsis",        "ell")
 registerengineclass("function",        "fnc")
-registerengineclass("digit",           "dig")
-local division_class =
+registerengineclass("digit",           "dig")  local division_class =
 registerengineclass("division",        "div")
 registerengineclass("factorial",       "fac")
 registerengineclass("wrapped",         "wra")
@@ -394,6 +182,9 @@ registerengineclass("numbergroup",     "ngr")
 registerengineclass("maybeordinary",   "mor")
 registerengineclass("mayberelation",   "mre")
 registerengineclass("maybebinary",     "mbi")
+
+registerengineclass("chemicalbond",    "chb")
+registerengineclass("implication",     "imp")
 
 local specialclasses = tex.specialmathclasscodes
 
@@ -524,6 +315,224 @@ mathematics.classnames    = classnames
 mathematics.codes         = codes
 -----------.accents       = codes
 mathematics.virtualized   = virtualized
+
+-- This is relatively new and experimental:
+
+do
+
+    local dictionaries       = mathematics.dictionaries or { }
+    mathematics.dictionaries = dictionaries
+
+    local names    = dictionaries.names    or utilities.storage.allocate()
+    local groups   = dictionaries.groups   or utilities.storage.allocate()
+    local data     = dictionaries.data     or utilities.storage.allocate()
+    local sets     = dictionaries.sets     or utilities.storage.allocate()
+    local variants = dictionaries.variants or utilities.storage.allocate() -- todo: get from char-def
+    local defaults = dictionaries.defaults or utilities.storage.allocate() -- todo: get from char-def
+
+    storage.register("mathematics/dictionaries/names",    names,    "mathematics.dictionaries.names")
+    storage.register("mathematics/dictionaries/groups",   groups,   "mathematics.dictionaries.groups")
+    storage.register("mathematics/dictionaries/data",     data,     "mathematics.dictionaries.data")
+    storage.register("mathematics/dictionaries/sets",     sets,     "mathematics.dictionaries.sets")
+    storage.register("mathematics/dictionaries/variants", variants, "mathematics.dictionaries.variants")
+    storage.register("mathematics/dictionaries/defaults", defaults, "mathematics.dictionaries.defaults")
+
+    dictionaries.names    = dictionaries.names    or names
+    dictionaries.groups   = dictionaries.groups   or groups
+    dictionaries.data     = dictionaries.data     or data
+    dictionaries.sets     = dictionaries.sets     or sets
+    dictionaries.variants = dictionaries.variants or variants
+    dictionaries.defaults = dictionaries.defaults or defaults
+
+    if not sets.n then
+        sets.n = 0
+    end
+
+    function dictionaries.registergroup(name)
+        local group = rawget(names,name)
+        if not group then
+            group = #groups + 1
+            names[name]   = group
+            names[group]  = group
+            groups[group] = name
+            data[group]   = { }
+            local csname  = "math" .. nospaces(name) .. "dictionary"
+            texintegerdef(csname,group,"immutable")
+        end
+        return group
+    end
+
+    function dictionaries.registergroupset(name,set)
+        local s = sets[name]
+        if not s then
+            local d = dictionaries.registergroup(name)
+            local n = sets.n + 1
+            local l = utilities.parsers.settings_to_array(set)
+            local g = { }
+            for i=1,#l do
+                local n = names[l[i]]
+                if n then
+                    g[#g+1] = n -- ordered
+                end
+            end
+            s = {
+                names  = l,
+                groups = g,
+                group  = d,
+            }
+            sets[name] = s
+            sets[d]    = s
+
+        end
+    end
+
+    function dictionaries.groupset(name)
+        return sets[name] or { }
+    end
+
+    function dictionaries.groupsetgroup(name)
+        local s = sets[name]
+        if s then
+            return s.group
+        else
+            return names[name] or 0
+        end
+    end
+
+    function dictionaries.registercharacter(group,index,description,class)
+        local d = names[group] -- can be number or string
+        if d then
+            data[d][index] = description or true
+            local v = variants[index]
+            if type(class) == "string" then
+                class = classes[class]
+            end
+            if not class then
+                class = true
+            end
+            if v then
+                v[d] = class
+            else
+                variants[index] = { [d] = class }
+            end
+            if not defaults[index] then
+                defaults[index] = d
+            end
+        end
+    end
+
+    implement {
+        name      = "registergroupset",
+        arguments = "2 strings",
+        actions   = dictionaries.registergroupset,
+    }
+
+    implement {
+        name      = "groupsetgroup",
+        arguments = "string",
+        actions   = { dictionaries.groupsetgroup, context },
+    }
+
+    local f_dictionary = false
+    local whatdetail   = "all"
+
+    local function trace(n,properties,group,index,font,char)
+     -- local properties, group, index, font, char = nodes.nuts.getchardict(nodes.nuts.tonut(n))
+        if whatdetail and (properties ~= 0 or group ~= 0 or index ~= 0) then
+            local char = fontchardata[font][char]
+            if char or whatdetail == "all" then
+                local unicode = char and char.unicode
+                if unicode then
+                    local groupname = groups[group]
+                    local indexname = false
+                    if groupname then
+                        indexname = data[group][index] -- dictionaries.data
+                    else
+                        groupname = "unknown"
+                    end
+                    if not indexname or indexname == true then
+                        indexname = chardata[unicode]
+                        indexname = indexname and indexname.description or "unknown"
+                    end
+                    if not f_dictionary then
+                        f_dictionary = formatters["properties [%04X:%04X:%04X] [%s] %U : %s"]
+                    end
+                    return f_dictionary(properties,group,index,groupname,unicode,indexname)
+                end
+            end
+        end
+    end
+
+    trackers.register("math.dictionaries",function(v) whatdetail = v end)
+
+    callbacks.register("get_math_dictionary",trace,"provide math dictionary details")
+
+    -- This is experimental and a prelude to the long pending "relate math rendering to
+    -- some field" wish. In TeX characters and symbols are grouped by class but that is
+    -- mostly related to spacing etc. while we actually want to group by meaning. A
+    -- reasonable but incomplete starting point is:
+    --
+    -- https://www.w3.org/TR/MathML3/appendixa.html#parsing_DefEncAtt
+    --
+    -- But it has some weird short names mixed with long ones (and a strange suddenly
+    -- uppercase: Differential-Operator) but we are not bound to that at all. We will
+    -- probably remove and add categories anyway. This openmath stuff looks a bit
+    -- abandoned but we can use it as a start and playground anyway.
+    --
+    -- The char-def.lua file will have mathgroup entries reflecting this.
+    --
+    -- This is a good one (with nice roll-overs too):
+    --
+    -- https://en.wikipedia.org/wiki/List_of_mathematical_symbols_by_subject
+
+    if environment.initex then
+
+        local registergroup = mathematics.dictionaries.registergroup
+
+        registergroup("default")
+        registergroup("binary arithmetic")
+        registergroup("binary linear algebra")
+        registergroup("binary logical")
+        registergroup("binary relation")
+        registergroup("binary set")
+        registergroup("constant arithmetic")
+        registergroup("constant set")
+        registergroup("differential")
+        registergroup("integral")
+        registergroup("interval")
+        registergroup("lambda")
+        registergroup("limit")
+        registergroup("nary arithmetic")
+        registergroup("nary constructor")
+        registergroup("nary functional")
+        registergroup("nary linear algebra")
+        registergroup("nary logical")
+        registergroup("nary minmax")
+        registergroup("nary relation")
+        registergroup("nary set list")
+        registergroup("nary set relation")
+        registergroup("nary set")
+        registergroup("nary statistics")
+        registergroup("partial") -- partial differential
+        registergroup("product")
+        registergroup("quantifier")
+        registergroup("unary arithmetic")
+        registergroup("unary elementary")
+        registergroup("unary functional")
+        registergroup("unary linear algebra")
+        registergroup("unary logical")
+        registergroup("unary set")
+        registergroup("unary vector")
+
+    end
+
+    -- \Umathdictdef\vdash 1 \mathbinarylogicaldictionary "22A2 \mathrelationcode 0 "22A2
+    --
+    -- \startluacode
+    --     mathematics.dictionaries.registercharacter("binary logical",0x22A2,"implies")
+    -- \stopluacode
+
+end
 
 do
 
@@ -784,7 +793,7 @@ do
 
     local function utfmathlimop(chr)
         local cd = somechar[chr]
-        return cd and cd.mathclass == "limop" or false
+        return cd and (cd.mathclass == "operator" or cd.mathclass == "integral") or false
     end
 
     local function utfmathaccent(chr,default,asked1,asked2)
@@ -1121,4 +1130,80 @@ implement {
     name     = "enableasciimode",
     onlyonce = true,
     actions  = resolvers.macros.enablecomment,
+}
+
+implement {
+    name      = "nofmathvariants",
+    public    = true,
+    usage     = "value",
+    arguments = "integer",
+    actions   = function(n)
+        local char = fontchardata[getfontoffamily(0)]
+        local data = char[n]
+        local size = 1
+        while data do
+            local next = data.next
+            if next then
+                size = size + 1
+                data = char[next]
+            else
+                break
+            end
+        end
+        return integer_value, size
+    end,
+}
+
+implement {
+    name      = "getmathvariant",
+    public    = true,
+    usage     = "value",
+    arguments = "2 integers",
+    actions   = function(m,n)
+        local char = fontchardata[getfontoffamily(0)]
+        local data = char[n]
+        local slot = n
+        if data then
+            while data and m > 1 do
+                local next = data.next
+                if next then
+                    m = m - 1
+                    data = char[next]
+                    slot = next
+                else
+                    break
+                end
+            end
+        end
+        return integer_value, slot
+    end,
+}
+
+implement {
+    name      = "getmathcharone",
+    public    = true,
+    usage     = "value",
+    arguments = "integer",
+    actions   = function(n)
+        local char = fontchardata[getfontoffamily(0)]
+        local data = char[n]
+        return integer_value, data and data.smaller or n
+    end,
+}
+
+implement {
+    name      = "getmathchartwo",
+    public    = true,
+    usage     = "value",
+    arguments = "integer",
+    actions   = function(n)
+        local char = fontchardata[getfontoffamily(0)]
+        local data = char[n]
+        local slot = data and data.smaller
+        if slot then
+            data = char[slot]
+            n = slot
+        end
+        return integer_value, data and data.smaller or n
+    end,
 }

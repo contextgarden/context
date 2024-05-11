@@ -678,6 +678,20 @@ function lxml.include(id,pattern,attribute,options)
     stoptiming(xml)
 end
 
+function lxml.filename(id)
+    local e = getid(id)
+    if e then
+        context(e.cf)
+    end
+end
+
+function lxml.fileline(id)
+    local e = getid(id)
+    if e then
+        context(e.cl)
+    end
+end
+
 function lxml.inclusion(id,default,base)
     local inclusion = xmlinclusion(getid(id),default)
     if inclusion then
@@ -2885,11 +2899,25 @@ do
         return u and lpegmatch(unescaper,u)
     end
 
-    function texfinalizers.url(e,a)
-        local u = #e > 0 and e[1].at[a]
-        if u then
-            context(lpegmatch(unescaper,u))
+    if CONTEXTLMTXMODE > 0 then
+
+        function texfinalizers.url(e,a)
+            local u = #e > 0 and e[1].at[a]
+            if u then
+                contextsprint(tex.hshcatcodes,string.texhashed(lpegmatch(unescaper,u)))
+            end
         end
+
+    else
+
+        function texfinalizers.url(e,a)
+            local u = #e > 0 and e[1].at[a]
+            if u then
+             -- context.verbatim(lpegmatch(unescaper,u)) -- no hash intercept here, verbatim is new per 23-09-06
+                context(lpegmatch(unescaper,u))
+            end
+        end
+
     end
 
 end

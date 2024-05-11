@@ -15,7 +15,7 @@ if not modules then modules = { } end modules ['core-con'] = {
 local floor = math.floor
 local osdate, ostime, ostimezone = os.date, os.time, os.timezone
 local concat, insert, reverse = table.concat, table.insert, table.reverse
-local lower, upper, rep, match, gsub = string.lower, string.upper, string.rep, string.match, string.gsub
+local lower, upper, rep, match, gsub, gmatch = string.lower, string.upper, string.rep, string.match, string.gsub, string.gmatch
 local utfchar, utfbyte = utf.char, utf.byte
 local tonumber, tostring, type, rawset = tonumber, tostring, type, rawset
 local P, S, R, Cc, Cf, Cg, Ct, Cs, C, V, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.Cc, lpeg.Cf, lpeg.Cg, lpeg.Ct, lpeg.Cs, lpeg.C, lpeg.V, lpeg.Carg
@@ -621,9 +621,21 @@ local vector = {
     }
 }
 
-local function tochinese(n,name) -- normal, caps, all
- -- improved version by Li Yanrui
+local function tochinese(n,name) -- normal, caps, all, date
+ -- improved version by Li Yanrui, Song Yihan
     local result, r = { }, 0
+
+    if name == "date" then
+        -- We could do some number juggling instead but this is fast enough. There is
+        -- no error checking here so we assume a proper year. Maybe a better name is
+        -- asis (so that it can be used for more than dates).
+        local vector = vector.normal
+        for s in gmatch(tostring(n),".") do
+            r = r + 1 ; result[r] = vector[tonumber(s)]
+        end
+        return concat(result)
+    end
+
     local vector = vector[name] or vector.normal
     while true do
         if n == 0 then
@@ -708,10 +720,12 @@ converters.tochinese = tochinese
 function converters.chinesenumerals   (n,how) return tochinese(n,how or "normal") end
 function converters.chinesecapnumerals(n)     return tochinese(n,"cap") end
 function converters.chineseallnumerals(n)     return tochinese(n,"all") end
+function converters.chinesedatenumerals(n)    return tochinese(n,"date") end
 
 converters['cn']   = converters.chinesenumerals
 converters['cn-c'] = converters.chinesecapnumerals
 converters['cn-a'] = converters.chineseallnumerals
+converters['cn-d'] = converters.chinesedatenumerals
 
 implement {
     name      = "chinesenumerals",

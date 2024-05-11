@@ -52,8 +52,8 @@
 
         -- kind of self-explaining:
 
-        local xsize      = 210
-        local ysize      = 297
+        local xsize      = 255
+        local ysize      = 255
         local colordepth = 1
         local usemask    = true
         local colorspace = "rgb"
@@ -73,7 +73,7 @@
             local d = data[i]
             local m = mask[i]
             for j=1,xsize do
-                d[j] = { i, max(i,j), j, min(i,j) }
+                d[j] = { i, max(i,j), min(i,j) }
                 m[j] = random(minmask,maxmask)
             end
         end
@@ -147,8 +147,8 @@ become a linked list of so called nodes: glyphs, kerns, glue, rules, boxes and a
 couple of more items. But, when doing the job, \TEX\ is only interested in
 dimensions.
 
-In traditional \TEX\ an image inclusion happens via the extension primitive
-\type {\special}, so you can think of something:
+In traditional \TEX\ an image inclusion happens via the extension primitive \type
+{\special}, so you can think of something:
 
 \starttyping
 \vbox to 10cm {%

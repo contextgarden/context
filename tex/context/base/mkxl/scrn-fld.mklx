@@ -1046,4 +1046,31 @@
     \enforced\let\rob     \scrn_menu_rob_direct
 \to \everysetmenucommands
 
+%D Signing:
+%D
+%D \starttyping
+%D \setupinteraction[state=start]
+%D
+%D \definefield[signature][signed]
+%D
+%D \starttext
+%D
+%D     \defineoverlay[signature][my signature]
+%D
+%D     \startTEXpage[offset=1ts]
+%D         sign: \inframed
+%D           [background=signature]
+%D           {\fieldbody[signature][width=3cm,option=hidden]}
+%D     \stopTEXpage
+%D
+%D \stoptext
+%D \stoptyping
+%D
+%D after processing:
+%D
+%D \starttyping
+%D mtxrun --script pdf --sign   --certificate=somesign.pem --password=test --uselibrary somefile
+%D mtxrun --script pdf --verify --certificate=somesign.pem --password=test --uselibrary somefile
+%D \stoptyping
+
 \protect \endinput

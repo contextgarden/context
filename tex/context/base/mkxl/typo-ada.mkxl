@@ -108,7 +108,7 @@
        \edef\p_stretch{\adaptiveparameter\c!stretch}%
        \edef\p_shrink {\adaptiveparameter\c!shrink}%
        \uleaders
-callback \numexpr \adaptiveattribute \relax
+         \s!callback \numexpr \adaptiveattribute \relax
          \ifcase#1%
            \hbox
              \s!spread \scratchdimen

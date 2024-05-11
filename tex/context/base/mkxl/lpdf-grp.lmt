@@ -347,34 +347,76 @@ function codeinjections.getpreviewfigure(request)
     return figure
 end
 
+local masks = {
+    demomask = {
+        {   0,  63,   0 },
+        {  64, 127, 127 },
+        { 128, 195, 195 },
+        { 196, 255, 255 },
+    }
+}
+
+local ranges = {
+--     [".75"] = .75,
+--     [".50"] = .50,
+--     [".25"] = .25,
+}
+
+function codeinjections.registerfiguremask(name,specification)
+    masks[name] = specification
+end
+
+function codeinjections.registerfigurerange(name,specification)
+    ranges[name] = specification
+end
+
 function codeinjections.setfiguremask(data,figure) -- mark
     local request = data.request
     local mask    = request.mask
+    local range   = request.range
     if mask and mask ~= ""  then
-        figures.push {
-            name   = mask,
-            page   = request.page,
-            size   = request.size,
-            prefix = request.prefix,
-            cache  = request.cache,
-            width  = request.width,
-            height = request.height,
-        }
-        mask = figures.identify()
-        mask = figures.check(mask)
-        if mask then
-            local image = mask.status.private
-            if image then
-                figures.include(mask)
-                embedimage(image)
-                local d = pdfdictionary {
-                    Interpolate  = false,
-                    SMask        = pdfreference(mask.status.objectnumber),
-                }
-                figure.attr = d()
+        local m = masks[mask]
+        if m then
+            if type(m) == "function" then
+                m = m()
             end
+            figure.newmask = m
+        else
+            figures.push {
+                name   = mask,
+                page   = request.page,
+                size   = request.size,
+                prefix = request.prefix,
+                cache  = request.cache,
+                width  = request.width,
+                height = request.height,
+            }
+            mask = figures.identify()
+            mask = figures.check(mask)
+            if mask then
+                local image = mask.status.private
+                if image then
+                    figures.include(mask)
+                    embedimage(image)
+                    local d = pdfdictionary {
+                        Interpolate  = false,
+                        SMask        = pdfreference(mask.status.objectnumber),
+                    }
+                    figure.attr = d()
+                end
+            end
+            figures.pop()
         end
-        figures.pop()
+    end
+    if range and range ~= "" then
+        local r = ranges[range]
+        if not r then
+            r = tonumber(range)
+        end
+        if type(r) == "function" then
+            r = r()
+        end
+        figure.newranges = r
     end
 end
 

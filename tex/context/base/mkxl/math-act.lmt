@@ -140,8 +140,19 @@ function mathematics.initializeparameters(target,original,nodimensions)
         if not mathparameters.AccentExtendMargin                then mathparameters.AccentExtendMargin                = 50 end
         if not mathparameters.DelimiterPercent                  then mathparameters.DelimiterPercent                  = 100 end
         if not mathparameters.DelimiterShortfall                then mathparameters.DelimiterShortfall                = 0 end
+        if not mathparameters.DelimiterDisplayPercent           then mathparameters.DelimiterDisplayPercent           = 100 end
+        if not mathparameters.DelimiterDisplayShortfall         then mathparameters.DelimiterDisplayShortfall         = 0 end
         if not mathparameters.RadicalKernAfterExtensible        then mathparameters.RadicalKernAfterExtensible        = 0 end
         if not mathparameters.RadicalKernBeforeExtensible       then mathparameters.RadicalKernBeforeExtensible       = 0 end
+        if not mathparameters.SuperscriptSnap                   then mathparameters.SuperscriptSnap                   = 750 end
+        if not mathparameters.SubscriptSnap                     then mathparameters.SubscriptSnap                     = 250 end
+        --
+-- if mathparameters.RadicalDisplayStyleVerticalGap then
+--     mathparameters.RadicalDisplayStyleVerticalGap = mathparameters.RadicalDisplayStyleVerticalGap - 100
+-- end
+-- if mathparameters.RadicalVerticalGap then
+--     mathparameters.RadicalVerticalGap = mathparameters.RadicalVerticalGap - 100
+-- end
         --
         target.mathparameters = mathparameters
     end
@@ -164,6 +175,7 @@ local how = {
     AccentBottomOvershoot           = "unscaled",
     AccentSuperscriptPercent        = "unscaled",
     DelimiterPercent                = "unscaled",
+    DelimiterDisplayPercent         = "unscaled",
     --
     RadicalRuleThickness            = "vertical",
     OverbarRuleThickness            = "vertical",
@@ -336,6 +348,7 @@ mathtweaks.subsets = {
     i                = { 0x1D456 },
     mw               = { 0x1D45A, 0x1D464 },
     p                = { 0x1D45D },
+    letterlike       = { 0x02202 },
     dotless          = { 0x00049, 0x0004A, 0x00131, 0x00237, 0x1D6A4, 0x1D6A5 },
     integrals        = { 0x0222B, 0x0222C, 0x0222D, 0x0222E, 0x0222F, 0x02230, 0x02231, 0x02232, 0x02233, 0x02A0B, 0x02A0C, 0x02A0D, 0x02A0E, 0x02A0F, 0x02A10, 0x02A11, 0x02A12, 0x02A13, 0x02A14, 0x02A15, 0x02A16, 0x02A17, 0x02A18, 0x02A19, 0x02A1A, 0x02A1B, 0x02A1C, 0x02320, 0x02321 },
     horizontalfences = { 0x0203E, 0x023B4, 0x023B5, 0x023DC, 0x023DD, 0x023DE, 0x023DF, 0x023E0, 0x023E1 }, -- not really used
@@ -383,13 +396,15 @@ end
 local detail  do
 
     local splitter = lpeg.tsplitat(".")
+    local private  = fonts.helpers.privateslot
 
     detail = function(characters,k)
         if type(k) == "string" then
             local t = lpegmatch(splitter,k)
             local n = #t
             if n > 0 then
-                local base = tonumber(t[1]) or tonumber(t[1],16)
+                local slot = t[1]
+                local base = tonumber(slot) or tonumber(slot,16) or private(slot)
                 if base then
                     local c = characters[base]
                     if c and n > 1 then
@@ -559,7 +574,7 @@ do
                         axis = target.mathparameters.AxisHeight * axis
                     end
 
-                    local factor    = v.factor
+                    local factor = v.factor
                     if factor then
                         local m = v
                         v = setmetatableindex({
@@ -763,7 +778,6 @@ do
 
 end
 
-
 do
 
     function mathtweaks.wipevariants(target,original,parameters)
@@ -780,6 +794,7 @@ do
                 local cnt = v
                 if nxt then
                     local prt = nil
+                    local pro = nil
                     local lst = { }
                     while nxt do
                         local chr = targetcharacters[nxt]
@@ -787,6 +802,7 @@ do
                         nxt = chr.next
                         if not nxt then
                             prt = chr.parts
+                            pro = chr.partsorientation
                             break
                         end
                     end
@@ -799,11 +815,72 @@ do
                             ori = lst[cnt]
                         end
                         ori.parts = prt
+                        ori.partsorientation = pro
                     end
                     done = registerdone(done,k)
                 end
             end
             feedback_tweak("wipevariants",target,original,done)
+        end
+    end
+
+end
+
+do
+
+    -- This is a horrible tweak for lm that has bars inconsistent with other fences.
+
+    local function find(targetcharacters,slot,n)
+        local chr = targetcharacters[slot]
+        while chr do
+            slot = chr.next
+            if not slot then
+                break
+            elseif n == 1 then
+                return slot
+            end
+            n = n - 1
+            chr = targetcharacters[slot]
+        end
+        return nil
+    end
+
+    function mathtweaks.fixvariants(target,original,parameters)
+        local list = parameters.list
+        if list then
+            local targetcharacters   = target.characters
+            local done  = false
+            for k, v in sortedhash(list) do
+                local tmp = v.template
+                local idx = v.index
+                local dy  = v.yoffset or 0
+                if tmp and idx then
+                    local olduni = find(targetcharacters,k,idx)
+                    local tmpuni = find(targetcharacters,tmp,idx)
+                    local axis   = target.mathparameters.AxisHeight
+                    if axis then
+                        while olduni and tmpuni do
+                            local oldchr  = targetcharacters[olduni]
+                            local tmpchr  = targetcharacters[tmpuni]
+                            local oldht   = oldchr.height or 0
+                            local olddp   = oldchr.depth  or 0
+                            local tmpht   = tmpchr.height or 0
+                            local tmpdp   = tmpchr.depth  or 0
+                            local scale   = (tmpht + tmpdp) / (oldht + olddp)
+                            local total   = (oldht - olddp) * scale
+                            local yoffset = axis - total/2
+                            oldchr.effect = { squeeze = scale }
+                            oldchr.height  = scale * oldht + yoffset
+                            oldchr.depth   = scale * olddp - yoffset
+                            oldchr.yoffset = yoffset
+                            olduni = oldchr.next
+                            tmpuni = tmpchr.next
+                        end
+                        done = registerdone(done,k)
+                    end
+                end
+            end
+            feedback_tweak("addvariants",target,original,done)
         end
     end
 
@@ -1394,8 +1471,10 @@ do
                         if italic ~= 0 then
                             local width = c.width or 0
                             local half  = (italic/2) * factor
+                            -- kind of weird ... needs to be in sync with engine .. needs checking
                             c.topanchor    = width + half
                             c.bottomanchor = width - half
+-- print(width/65536,c.topanchor/65536)
                             c.bottomright  = - italic * (parameters.icfactor or 1)
                             if trace_tweaking then
                                 -- todo
@@ -1500,31 +1579,67 @@ end
 
 do
 
+--     function mathtweaks.margins(target,original,parameters)
+--         local margins = parameters.list
+--         if margins then
+--             local characters = target.characters
+--             local done       = false
+--             local function setone(unicode,data)
+--                 unicode = mathgaps[unicode] or unicode
+--                 local chardata = characters[unicode]
+--                 if chardata then
+--                     local width    = chardata.width or 0
+--                     local total    = (chardata.height or 0) + (chardata.depth or 0)
+--                     local k = data.left   ; if k and k ~= 0 then chardata.leftmargin   = k * width end
+--                     local k = data.right  ; if k and k ~= 0 then chardata.rightmargin  = k * width end
+--                     local k = data.top    ; if k and k ~= 0 then chardata.topmargin    = k * total end
+--                     local k = data.bottom ; if k and k ~= 0 then chardata.bottommargin = k * total end
+--                     done = registerdone(done,unicode)
+--                 end
+--             end
+--             for unicode, data in next, margins do
+--                 setone(unicode,data) -- withscriptcode(tfmdata,unicode,data,kernone)
+--                 -- also smaller
+--             end
+--             feedback_tweak("margins",target,original,done)
+--         end
+--     end
+
     function mathtweaks.margins(target,original,parameters)
-        local margins = parameters.list
-        if margins then
+        local kerns = parameters.list
+        if kerns then
             local characters = target.characters
             local done       = false
-            local function setone(unicode,data)
-                unicode = mathgaps[unicode] or unicode
-                local chardata = characters[unicode]
-                if chardata then
-                    local width    = chardata.width or 0
-                    local total    = (chardata.height or 0) + (chardata.depth or 0)
-                    local k = data.left   ; if k and k ~= 0 then chardata.leftmargin   = k * width end
-                    local k = data.right  ; if k and k ~= 0 then chardata.rightmargin  = k * width end
-                    local k = data.top    ; if k and k ~= 0 then chardata.topmargin    = k * total end
-                    local k = data.bottom ; if k and k ~= 0 then chardata.bottommargin = k * total end
-                    done = registerdone(done,unicode)
+            local function setone(uc,data)
+                local function set(unicode)
+                    unicode = mathgaps[unicode] or unicode
+                    local chardata = characters[unicode]
+                    if chardata then
+                        local width = chardata.width  or 0
+                        local k = data.left   ; if k and k ~= 0 then chardata.leftmargin   = k * width end
+                        local k = data.right  ; if k and k ~= 0 then chardata.rightmargin  = k * width end
+                        local k = data.top    ; if k and k ~= 0 then chardata.topmargin    = k * width end
+                        local k = data.bottom ; if k and k ~= 0 then chardata.bottommargin = k * width end
+                        done = registerdone(done,unicode)
+                    end
+                end
+                local unicode  = detail(characters,uc)
+                if type(unicode) == "table" then
+                    for i=1,#unicode do
+                        set(unicode[i])
+                    end
+                elseif unicode then
+                    set(unicode)
                 end
             end
-            for unicode, data in next, margins do
+            for unicode, data in next, kerns do
                 setone(unicode,data) -- withscriptcode(tfmdata,unicode,data,kernone)
                 -- also smaller
             end
             feedback_tweak("margins",target,original,done)
         end
     end
+
 
 end
 
@@ -1913,6 +2028,8 @@ extensible = false,
         newprivateslot("minus rule right piece"),
     }
 
+    local forceextensible_tag = tex.charactertagcodes.forceextensible
+
     local function useminus(target,unicode,characters,parameters,skipfirst,what,tounicode)
         local minus   = characters[0x2212]
         local parts   = minus.parts
@@ -1920,8 +2037,9 @@ extensible = false,
             parameters = { }
         end
         if parts then
-            what   = copytable(what)
-            parts  = copytable(parts)
+            minus.tag = forceextensible_tag
+            what  = copytable(what)
+            parts = copytable(parts)
             local xscale   = parameters.xscale  or 1 -- why not applied to width ?
             local yscale   = parameters.yscale  or 1
             local mwidth   = minus.width
@@ -1948,28 +2066,31 @@ extensible = false,
                     xshift = loverlap * width
                     width  = width - xshift
                 elseif i == #parts and roverlap ~= 0 then
-                    width  = width + roverlap * width
+                    width  = width - roverlap * width
                 end
                 characters[what[i]] = {
                     height   = height,
                     depth    = height,
                     width    = width,
                     advance  = gdata.width,
+                    unicode  = 0xFFFD, -- we have no unicode ignore ... maybe zws
                     commands = {
                         leftcommand[xshift],
                         downcommand[yshift],
                         { "slot", 0, glyph, xscale, yscale },
                     },
                 }
-if part["start"] >= width then
-    part["start"] = width
-end
-if part["end"] >= width then
-    part["end"] = width
-end
-part.advance = width
+                -- we should overlap more ...
+                if part["start"] >= width then
+                    part["start"] = width
+                end
+                if part["end"] >= width then
+                    part["end"] = width
+                end
+                part.advance = width
                 part.glyph   = what[i]
             end
+            characters[what[1]].unicode  = unicode -- nice for tagging
             xshift = loffset * mwidth + loverlap * mwidth
             width  = mwidth - xshift - roffset * mwidth - roverlap * mwidth
             characters[unicode] = {
@@ -1977,6 +2098,8 @@ part.advance = width
                 height   = height,
                 depth    = height,
                 width    = width,
+                tag      = forceextensible_tag,
+                -- not needed as we force:
                 commands = {
                     leftcommand[xshift],
                     downcommand[yshift],
@@ -2256,9 +2379,12 @@ end
         if trace_tweaking then
             report_tweak("arrows added",target,original)
         end
+
     end
 
 end
+
+
 
 do -- this could be combined with the previous
 
@@ -2272,8 +2398,9 @@ do -- this could be combined with the previous
                     local source = characters[template]
                     local target = characters[unicode]
                     if source and target then
-                        local sequence   = data.sequence
+                        local sequence = data.sequence
                         if sequence then
+                            -- we should follow the next chain first
                             local parts = source.parts
                             if parts then
                                 local p = { }
@@ -2405,6 +2532,34 @@ do
         0x221A,
     }
 
+--     local function fix(target,original,characters,unicode)
+--         local data = characters[unicode]
+--         if data then
+--             local height = data.height or 0
+--             local depth  = data.depth or 0
+--             if depth > height then
+--                 if trace_tweaking then
+--                     report_tweak("swapping height and depth of radical %U",target,original,unicode)
+--                 end
+--                 data.height  = depth
+--                 data.depth   = height
+--                 if data.rorrim then
+--                     -- the original does the magic
+--                 else
+--                     data.yoffset = depth - height
+--                 end
+--             end
+--             local smaller = data.smaller
+--             if smaller then
+--                 fix(target,original,characters,smaller)
+--             end
+--             local mirror = data.mirror
+--             if mirror then
+--                 fix(target,original,characters,mirror)
+--             end
+--         end
+--     end
+
     local function fix(target,original,characters,unicode)
         local data = characters[unicode]
         if data then
@@ -2414,21 +2569,31 @@ do
                 if trace_tweaking then
                     report_tweak("swapping height and depth of radical %U",target,original,unicode)
                 end
-                data.height  = depth
-                data.depth   = height
                 if data.rorrim then
                     -- the original does the magic
                 else
-                    data.yoffset = depth - height
+                    data.height  = (data.height or 0) + (data.depth or 0)
+                    data.yoffset = data.depth
+                    data.depth   = 0
                 end
             end
             local smaller = data.smaller
             if smaller then
                 fix(target,original,characters,smaller)
             end
-            local mirror = data.mirror
-            if mirror then
-                fix(target,original,characters,mirror)
+         -- local mirror = data.mirror
+         -- if mirror then
+         --     fix(target,original,characters,mirror)
+         -- end
+            local next = data.next
+            if next then
+                fix(target,original,characters,next)
+            else
+             -- -- assume no depth
+             -- local parts = data.parts
+             -- if parts then
+             --     fix(target,original,characters,parts[1].glyph)
+             -- end
             end
         end
     end
@@ -2452,6 +2617,31 @@ do
     end
 
     function mathtweaks.radicaldegreeanchors(target,original,parameters)
+        local list = parameters.list
+        if list then
+            local characters = target.characters
+            for unicode, l in sortedhash(list) do -- resolve variants
+                local u = detail(characters,unicode) or unicode
+                if type(u) == "table" then
+                    for i=1,#u do
+                        fix(target,original,characters,u[i],l)
+                    end
+                else
+                    fix(target,original,characters,u,l)
+                end
+            end
+        end
+    end
+
+    local function fix(target,original,characters,u,l)
+        local data = characters[u]
+        if data then
+            data.leftmargin  = (l.left  or 1) * (data.width  or 0)
+            data.rightmargin = (l.right or 1) * (data.width  or 0)
+        end
+    end
+
+    function mathtweaks.radicalbodymargins(target,original,parameters)
         local list = parameters.list
         if list then
             local characters = target.characters
@@ -3024,10 +3214,17 @@ do
 
     local nps = fonts.helpers.newprivateslot
 
-    local radical   <const> = 0x0221A
-    local actuarian <const> = nps("delimited right annuity") -- 0x020E7
-    local nairautca <const> = nps("delimited left annuity" )
-    local placehold <const> = nps("delimited ghost annuity")
+    local radical             <const> = 0x0221A
+    local actuarianrightlong  <const> = nps("delimited right annuity long") -- 0x020E7
+    local actuarianrightshort <const> = nps("delimited right annuity short")
+    local actuarianleftlong   <const> = nps("delimited left annuity long" )
+    local actuarianleftshort  <const> = nps("delimited left annuity short" )
+    local placehold           <const> = nps("delimited ghost annuity")
+
+    local actuarianbottomrightlong  <const> = nps("delimited bottom right annuity long") -- 0x020E7
+    local actuarianbottomrightshort <const> = nps("delimited bottom right annuity short")
+    local actuarianbottomleftlong   <const> = nps("delimited bottom left annuity long" )
+    local actuarianbottomleftshort  <const> = nps("delimited bottom left annuity short" )
 
     function mathtweaks.addactuarian(target,original,parameters)
         local characters = target.characters
@@ -3038,6 +3235,19 @@ do
         local basedepth  = (basechar.depth  or 0)/2
         local basetotal  = baseheight + basedepth
         local used       = baseheight
+        --
+        characters[placehold] = {
+            width    = 2*linewidth,
+            height   = baseheight,
+            depth    = basedepth,
+            unicode  = actuarian, -- whatever
+            callback = "devirtualize",
+            commands = {
+                rightcommand[linewidth],
+                downcommand[basedepth],
+                { "rule", basetotal, 0 },
+            },
+        }
         --
         characters[0x020E7] = {
             width    = 6*linewidth,
@@ -3053,7 +3263,7 @@ do
             },
         }
         --
-        characters[actuarian] = {
+        characters[actuarianrightlong] = {
             width    = 2*linewidth,
             height   = baseheight,
             depth    = basedepth,
@@ -3067,19 +3277,74 @@ do
                 {
                     advance  = basetotal,
                     ["end"]  = used,
-                    glyph    = actuarian,
+                    glyph    = actuarianrightlong,
                     start    = 0,
                 },
                 {
                     advance  = basetotal,
                     ["end"]  = 0,
                     extender = 1,
-                    glyph    = actuarian,
+                    glyph    = actuarianrightlong,
                     start    = used,
                 },
             }
         }
-        characters[placehold] = {
+        characters[actuarianbottomrightlong] =
+            characters[actuarianrightlong]
+        characters[actuarianrightshort] = {
+            width    = 2*linewidth,
+            height   = baseheight,
+            depth    = basedepth,
+            unicode  = actuarian,
+            callback = "devirtualize",
+            commands = {
+                upcommand[baseheight-4*linewidth],
+                { "rule", 4*linewidth, linewidth },
+            },
+            parts = {
+                {
+                    advance  = basetotal,
+                    ["end"]  = used,
+                    glyph    = actuarianrightshort,
+                    start    = 0,
+                },
+                {
+                    advance  = basetotal,
+                    ["end"]  = 0,
+                    extender = 1,
+                    glyph    = actuarianrightshort,
+                    start    = used,
+                },
+            }
+        }
+        characters[actuarianbottomrightshort] = {
+            width    = 2*linewidth,
+            height   = linewidth,
+            depth    = basedepth,
+            unicode  = actuarian,
+            callback = "devirtualize",
+            commands = {
+                downcommand[basedepth],
+                { "rule", 4*linewidth, linewidth },
+            },
+            parts = {
+                {
+                    advance  = basetotal,
+                    ["end"]  = used,
+                    glyph    = actuarianrightshort,
+                    start    = 0,
+                },
+                {
+                    advance  = basetotal,
+                    ["end"]  = 0,
+                    extender = 1,
+                    glyph    = actuarianrightshort,
+                    start    = used,
+                },
+            }
+        }
+
+        characters[actuarianleftlong] = {
             width    = 2*linewidth,
             height   = baseheight,
             depth    = basedepth,
@@ -3088,20 +3353,32 @@ do
             commands = {
                 rightcommand[linewidth],
                 downcommand[basedepth],
-                { "rule", basetotal, 0 },
+                { "rule", basetotal, linewidth },
             },
+            parts = {
+                {
+                    advance  = basetotal,
+                    ["end"]  = used,
+                    extender = 1,
+                    glyph    = placehold,
+                    start    = 0,
+                },
+                {
+                    advance  = basetotal,
+                    ["end"]  = 0,
+                    glyph    = actuarianleftlong,
+                    start    = used,
+                },
+            }
         }
-        characters[nairautca] = {
+        characters[actuarianbottomleftlong] =
+            characters[actuarianleftlong]
+        characters[actuarianleftshort] = {
             width    = 2*linewidth,
             height   = baseheight,
             depth    = basedepth,
             unicode  = actuarian, -- whatever
             callback = "devirtualize",
-         -- commands = {
-         --     rightcommand[linewidth],
-         --     downcommand[basedepth],
-         --     { "rule", basetotal, linewidth },
-         -- },
             commands = {
                 rightcommand[linewidth],
                 upcommand[baseheight-4*linewidth],
@@ -3118,11 +3395,40 @@ do
                 {
                     advance  = basetotal,
                     ["end"]  = 0,
-                    glyph    = nairautca,
+                    glyph    = actuarianleftshort,
                     start    = used,
                 },
             }
         }
+        characters[actuarianbottomleftshort] = {
+            width    = 2*linewidth,
+         -- height   = baseheight,
+            height   = linewidth,
+            depth    = basedepth,
+            unicode  = actuarian, -- whatever
+            callback = "devirtualize",
+            commands = {
+                rightcommand[linewidth],
+                downcommand[basedepth],
+                { "rule", 4*linewidth, linewidth },
+            },
+            parts = {
+                {
+                    advance  = basetotal,
+                    ["end"]  = used,
+                    extender = 1,
+                    glyph    = placehold,
+                    start    = 0,
+                },
+                {
+                    advance  = basetotal,
+                    ["end"]  = 0,
+                    glyph    = actuarianleftshort,
+                    start    = used,
+                },
+            }
+        }
+        --
         if trace_tweaking then
             report_tweak("actuarian %U added",target,original,actuarian)
         end
@@ -3187,6 +3493,7 @@ do
             local size         = entry[5] or 0
             local basechar     = characters[basecode]
             local compactscale = 1
+            -- bah ...
             if basechar and target.properties.compactmath and size > 0 then
                 compactscale = target.parameters[size > 1 and "scriptscriptscale" or "scriptscale"] / 1000
                 for i=1,size do
@@ -3277,18 +3584,19 @@ do
 
     local function variantlist(unicode,chardata,total,used)
         chardata.varianttemplate = 0x0028
+     -- chardata.next = nil -- better use wipe variants but for testign we keep them
         chardata.parts = {
             {
                 advance  = total,
                 ["end"]  = used,
                 glyph    = unicode,
                 start    = 0,
-             -- start    = used/5,
             },
             {
                 advance  = total,
              -- ["end"]  = 0,
-                ["end"]  = used/5, -- prevents small gap with inward curved endpoints
+             -- ["end"]  = used/5,   -- prevents small gap with inward curved endpoints
+                ["end"]  = 4*used/5, -- is this better?
                 extender = 1,
                 glyph    = unicode,
                 start    = used,
@@ -3297,52 +3605,80 @@ do
         chardata.partsorientation = "vertical"
     end
 
+    -- This is such an inconsistent mess that we cannot simply copy variants so we
+    -- just accept some middle ground for the missing ones. See goodie files for when
+    -- 'check' and/or 'variant' is used.
+
     function mathtweaks.addbars(target,original,parameters)
         local characters = target.characters
-        local basechar   = characters[single]
-        local width      = basechar.width
-        local height     = basechar.height
-        local depth      = basechar.depth
-        local advance    = (parameters.advance or 1/10) * width
-        local used       = 1.2*height -- large overlap because no smaller pieces
-        local total      = height + depth
+        local template   = single
+        local basechar   = characters[template]
+        local tempchar   = basechar
+        local check      = parameters.check
+     -- local variant    = false -- alas ... too large: tonumber(parameters.variant)
+     -- if variant then
+     --     for i=1,variant do
+     --         local n = tempchar.next
+     --         if n then
+     --             template = n
+     --             tempchar = characters[template]
+     --         else
+     --             break
+     --         end
+     --     end
+     -- end
+        local width   = tempchar.width
+        local height  = tempchar.height
+        local depth   = tempchar.depth
+        local advance = (parameters.advance or 1/10) * width
+        local used    = 1.2*height -- large overlap because no smaller pieces
+        local total   = height + depth
         --
-     -- variantlist(characters,single,basechar,"single bar",total,used)
-        variantlist(single,basechar,total,used)
-        --
-        basechar = {
-            unicode  = double,
-            width    = 2*width - 1*advance,
-            height   = height,
-            depth    = depth,
---             callback = "devirtualize",
-            commands = {
-                charcommand[single],
-                leftcommand[advance],
-                charcommand[single],
-            },
-        }
-        characters[double] = basechar
-     -- variantlist(characters,double,basechar,"double bar",total,used)
-        variantlist(double,basechar,total,used)
-        --
-        basechar = {
-            unicode  = triple,
-            width    = 3*width - 2*advance,
-            height   = height,
-            depth    = depth,
---             callback = "devirtualize",
-            commands = {
-                charcommand[single],
-                leftcommand[advance],
-                charcommand[single],
-                leftcommand[advance],
-                charcommand[single],
-            },
-        }
-        characters[triple] = basechar
-     -- variantlist(characters,triple,basechar,"triple bar",total,used)
-        variantlist(triple,basechar,total,used)
+        if not check or not basechar.parts then
+            variantlist(template,basechar,total,used)
+        end
+        if not check or not characters[double] then
+            basechar = {
+                unicode  = double,
+                width    = 2*width - 1*advance,
+                height   = height,
+                depth    = depth,
+             -- callback = "devirtualize",
+                commands = {
+                    charcommand[template],
+                    leftcommand[advance],
+                    charcommand[template],
+                },
+            }
+            characters[double] = basechar
+        else
+            basechar = characters[double]
+        end
+        if not check or not basechar.parts then
+            variantlist(double,basechar,total,used)
+        end
+        if not check or not characters[triple] then
+            basechar = {
+                unicode  = triple,
+                width    = 3*width - 2*advance,
+                height   = height,
+                depth    = depth,
+             -- callback = "devirtualize",
+                commands = {
+                    charcommand[template],
+                    leftcommand[advance],
+                    charcommand[template],
+                    leftcommand[advance],
+                    charcommand[template],
+                },
+            }
+            characters[triple] = basechar
+        else
+            basechar = characters[triple]
+        end
+        if not check or not basechar.parts then
+            variantlist(triple,basechar,total,used)
+        end
         --
         if trace_tweaking then
             report_tweak("single, double and triple bars added",target,original)
@@ -3814,33 +4150,36 @@ do
                 local thesource  = entry.source
                 local thetarget  = entry.target or thesource
                 local theunicode = entry.unicode
+                local unicodes   = entry.unicodes
                 local keep       = (entry.keep == true) or (parameters.keep == true)
-                if thesource and thetarget then
+                if (thesource and thetarget) or unicodes then
                     local function getrange(t)
                         return (type(t) == "table" and t) or (type(t) == "string" and blocks[t])  -- .gaps
                     end
-                    local sourcerange  = getrange(thesource)
-                    local targetrange  = getrange(thetarget)
-                    local unicoderange = getrange(theunicode)
-                    if sourcerange and targetrange then
-                        local firsttarget  = targetrange.first
-                        local firstsource  = sourcerange.first
-                        local lastsource   = sourcerange.last or firstsource
-                        if firstsource and firsttarget then
-                            local offset = firsttarget - firstsource
-                            if filename then
-                                local rscale = entry.rscale or 1 -- todo
-                                size = size * rscale -- maybe use scale in vf command
-                                -- load font, todo: set language and script, the effect hack is ugly
-                                local fullname = filename
-                                local effect = features.effect
-                                if effect then
-                                    fullname = fullname .. "*" .. effects["effect={"..effect.."}"]
-                                end
-                                local id = definedfont {
-                                    name = fullname,
-                                    size = size,
-                                }
+                    local sourcerange  = thesource   and getrange(thesource)
+                    local targetrange  = thetarget   and getrange(thetarget)
+                    local unicoderange = theunicode  and getrange(theunicode)
+                    local firsttarget  = targetrange and targetrange.first
+                    local firstsource  = sourcerange and sourcerange.first
+                    local lastsource   = sourcerange and sourcerange.last or firstsource
+                    if (firstsource and firsttarget) or unicodes then
+                        local offset = unicodes and 0 or (firsttarget - firstsource)
+                        if filename then
+                            local rscale = entry.rscale or 1 -- todo
+                            size = size * rscale -- maybe use scale in vf command
+                            -- load font, todo: set language and script, the effect hack is ugly
+                            local fullname = filename
+                            local effect = features.effect
+                            if effect then
+                                fullname = fullname .. "*" .. effects["effect={"..effect.."}"]
+                            end
+                            local id = definedfont {
+                                name = fullname,
+                                size = size,
+                            }
+                            if id <= 0 then
+                                report_math("font %a doesn't exist",fullname)
+                            else
                                 local chars  = fontchars[id]
                                 local dropin = fontdata[id]
                                 local index  = false
@@ -3856,18 +4195,29 @@ do
                                     fonts[index] = { id = id, size = size }
                                 end
                                 -- copy characters
-                                for s=firstsource,lastsource do
-                                    local t = s + offset
-                                    local sourceunicode = mathgaps[s] or s
-                                    if chars[sourceunicode] then
-                                        local targetunicode = mathgaps[t] or t
-                                        if keep and characters[targetunicode] then
-                                            -- okay
-                                        else
-                                            if feature then
-                                                sourceunicode = getsubstitution(dropin,sourceunicode,feature,true,"math","dflt") or sourceunicode
-                                            end
-                                            characters[targetunicode] = copiedglyph(target,characters,chars,sourceunicode,index)
+                                local function use(sourceunicode,targetunicode)
+                                    if keep and characters[targetunicode] then
+                                        -- okay
+                                    else
+                                        if feature then
+                                            sourceunicode = getsubstitution(dropin,sourceunicode,feature,true,"math","dflt") or sourceunicode
+                                        end
+                                        characters[targetunicode] = copiedglyph(target,characters,chars,sourceunicode,index)
+                                    end
+                                end
+                                if unicodes then
+                                    for i=1,#unicodes do
+                                        local unicode = unicodes[i]
+                                        if chars[unicode] then
+                                            use(unicode,unicode)
+                                        end
+                                    end
+                                else
+                                    for s=firstsource,lastsource do
+                                        local t = s + offset
+                                        local sourceunicode = mathgaps[s] or s
+                                        if chars[sourceunicode] then
+                                            use(sourceunicode,mathgaps[t] or t)
                                         end
                                     end
                                 end
@@ -3885,20 +4235,31 @@ do
                                         end
                                     end
                                 end
-                                --
-                            elseif feature then
-                                for s=firstsource,lastsource do
-                                    local t = s + offset
-                                    local sourceunicode = mathgaps[s] or s
-                                    local targetunicode = mathgaps[t] or t
-                                    local variant       = getsubstitution(original,sourceunicode,feature,true,"math","dflt")
-                                    local data          = characters[variant]
-                                    if data then
-                                        characters[targetunicode] = copytable(data)
-                                    end
+                            end
+                        elseif feature then
+                            local function use(sourceunicode,targetunicode)
+                                local variant = getsubstitution(original,sourceunicode,feature,true,"math","dflt")
+                                local data    = characters[variant]
+                                if data then
+                                    characters[targetunicode] = copytable(data)
+                                end
+                            end
+                            if unicodes then
+                                for i=1,#unicodes do
+                                    local unicode = unicodes[i]
+                                    use(unicode,unicode)
                                 end
                             else
-                                -- this is a hack for stix providing alphabets without proper unicodes
+                                for s=firstsource,lastsource do
+                                    local t = s + offset
+                                    use(mathgaps[s] or s,mathgaps[t] or t)
+                                end
+                            end
+                        else
+                            -- this is a hack for stix providing alphabets without proper unicodes
+                            if unicodes then
+                                -- not supported
+                            else
                                 local firstcode    = unicoderange and unicoderange.first
                                 local descriptions = original.descriptions
                                 for s=firstsource,lastsource do
@@ -3921,8 +4282,6 @@ do
                                     end
                                 end
                             end
-                        else
-                            -- error
                         end
                     end
                 end
@@ -4043,6 +4402,7 @@ end
 function mathematics.tweakaftercopyingfont(target,original)
     if use_math_goodies and tweakable(target) then
         applytweaks("aftercopying",target,original)
+        target.properties.hasitalics = false
     end
 end
 
@@ -4133,9 +4493,6 @@ do
                     goto NEXTSTEP
                 end
             end
-
-            target.properties.mathitalics = false
-            target.properties.textitalics = false
           ::NEXTSTEP::
             -- more to come
         end

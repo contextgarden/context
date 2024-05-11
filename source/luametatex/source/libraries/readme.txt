@@ -41,4 +41,7 @@ to figure out how to get windows dll's.) We did add this:
     # include "libraries/mimalloc/include/mimalloc-override.h"
 # endif 
 
+Nice site : https://mserdarsanli.github.io/FloatInfo
+Nice video: https://youtu.be/Ae9EKCyI1xU (GradIEEEnt half decent)
+
 Hans

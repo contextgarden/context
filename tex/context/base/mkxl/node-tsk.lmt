@@ -370,7 +370,7 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
-return function(head,where,attr,preamble)
+return function(head,where,callback,attr,preamble)
     local nuthead     = tonut(head)
     local nutattr     = tonut(attr)
     local nutpreamble = tonut(preamble)
@@ -380,19 +380,19 @@ end
 ]],
 
 step = [[
-    %action%(head,where,attr,preamble)
+    %action%(head,where,callback,attr,preamble)
 ]],
 
 nut  = [[
-    %action%(nuthead,where,nutattr,nutpreamble)
+    %action%(nuthead,where,callback,nutattr,nutpreamble)
 ]],
 
 nohead = [[
-    %action%(head,where,attr,preamble)
+    %action%(head,where,callback,attr,preamble)
 ]],
 
 nonut = [[
-    %action%(nuthead,where,nutattr,nutpreamble)
+    %action%(nuthead,where,callback,nutattr,nutpreamble)
 ]],
 
     }

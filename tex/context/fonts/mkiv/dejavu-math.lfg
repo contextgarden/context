@@ -16,8 +16,10 @@ return {
             AccentTopShiftUp                  =  -25,
             FlattenedAccentTopShiftUp         =  -25,
             AccentBaseDepth                   =   30,
-            DelimiterPercent                  =   90,
+            DelimiterPercent                  =   85,
             DelimiterShortfall                =  400,
+            DelimiterDisplayPercent           =   90,
+            DelimiterDisplayShortfall         =  400,
             DisplayOperatorMinHeight          = 1800, -- 1333 in font
             SubscriptShiftDown                = 177, -- 277 in font
             SuperscriptShiftUp                = 428, -- 381 in font

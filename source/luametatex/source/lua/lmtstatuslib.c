@@ -273,6 +273,7 @@ static int statslib_getconstants(lua_State *L)
     lua_set_integer_by_key(L, "max_half_value",                 max_half_value);
                                                                 
     lua_set_integer_by_key(L, "max_limited_scale",              max_limited_scale);
+    lua_set_integer_by_key(L, "max_math_style_scale",           max_math_style_scale);
                                                                 
     lua_set_integer_by_key(L, "one_bp",                         one_bp);
                                                                 
@@ -313,6 +314,8 @@ static int statslib_getconstants(lua_State *L)
                                                                 
     lua_set_integer_by_key(L, "min_space_factor",               min_space_factor);
     lua_set_integer_by_key(L, "max_space_factor",               max_space_factor);
+    lua_set_integer_by_key(L, "min_scale_factor",               min_scale_factor);
+    lua_set_integer_by_key(L, "max_scale_factor",               max_scale_factor);
     lua_set_integer_by_key(L, "default_space_factor",           default_space_factor);
     lua_set_integer_by_key(L, "default_tolerance",              default_tolerance);
     lua_set_integer_by_key(L, "default_hangafter",              default_hangafter);

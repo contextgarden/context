@@ -115,9 +115,10 @@
 \aliased  \let\koreanparenthesisnumerals\koreannumeralsp
 \aliased  \let\koreancirclenumerals     \koreannumeralsc
 
-\permanent\def\chinesenumerals   #1{\clf_chinesenumerals\numexpr#1\relax{normal}}
-\permanent\def\chinesecapnumerals#1{\clf_chinesenumerals\numexpr#1\relax{cap}}
-\permanent\def\chineseallnumerals#1{\clf_chinesenumerals\numexpr#1\relax{all}}
+\permanent\def\chinesenumerals    #1{\clf_chinesenumerals\numexpr#1\relax{normal}}
+\permanent\def\chinesecapnumerals #1{\clf_chinesenumerals\numexpr#1\relax{cap}}
+\permanent\def\chineseallnumerals #1{\clf_chinesenumerals\numexpr#1\relax{all}}
+\permanent\def\chinesedatenumerals#1{\clf_chinesenumerals\numexpr#1\relax{date}}
 
 %D \macros
 %D   {character,Character}
@@ -767,10 +768,12 @@
 \defineconversion [chinesenumerals]      [\chinesenumerals]
 \defineconversion [chinesecapnumerals]   [\chinesecapnumerals]
 \defineconversion [chineseallnumerals]   [\chineseallnumerals]
+\defineconversion [chinesedatenumerals]  [\chinesedatenumerals]
 
 \defineconversion [cn]                   [\chinesenumerals]
 \defineconversion [cn-c]                 [\chinesecapnumerals]
 \defineconversion [cn-a]                 [\chineseallnumerals]
+\defineconversion [cn-d]                 [\chinesedatenumerals]
 
 %D Moved from lang-def.mkiv:
 %D
@@ -984,7 +987,7 @@
 
 \mutable\lettonothing\spaceddigitsmethod    % alternative methods   : 1 default, 2 and 3 only when > 4
 \mutable\lettonothing\spaceddigitssymbol    % extra splitter symbol : {,}
-\mutable\lettonothing\spaceddigitsseparator % separator symbol      : {\Uchar{"2008}}
+\mutable\lettonothing\spaceddigitsseparator % separator symbol      : {\tocharacter{"2008}}
 
 \permanent\protected\def\spaceddigits#1%
   {\clf_spaceddigits

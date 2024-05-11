@@ -43,6 +43,12 @@
       [interaction=yes]
 }
 
+\doif {\getdocumentargument{tracelinks}} {yes} {
+    \enabletrackers[figures.links]
+%     \enabletrackers[refer*]
+%     \enabletrackers[dest*]
+}
+
 \starttexdefinition CopyPages #1
 
     \filterpages[#1][all][alternative=page]
@@ -122,8 +128,14 @@
                     local last        = tonumber(entry.last)  or "*"
                     local interaction = entry.interaction or ""
                     local pageoffset  = tonumber(entry.pageoffset)
-                    if pageoffset and interaction ~= "" then
-                        interaction = interaction .. ",pageoffset:" .. pageoffset
+                    local minheight   = tonumber(entry.minheight)
+                    if interaction ~= "" then
+                        if pageoffset then
+                            interaction = interaction .. ",pageoffset:" .. pageoffset
+                        end
+                        if minheight then
+                            interaction = interaction .. ",minheight:" .. minheight
+                        end
                     end
                     context.CopyEntry(filename,first,last,interaction)
                 end

@@ -24,6 +24,7 @@ values.dimen    = values.dimension
 values.count    = values.integer
 tokens.values   = utilities.storage.allocate(table.swapped(values, values))
 tokens.commands = utilities.storage.allocate(table.swapped(commands,commands))
+tokens.cache    = utilities.storage.allocate()
 
 local scantoks            = token.scantoks
 local scanstring          = token.scanstring
@@ -297,7 +298,7 @@ if setinspector then -- can best be true
 
 end
 
-tokens.cache = table.setmetatableindex(function(t,k)
+table.setmetatableindex(tokens.cache, function(t,k)
     if not isdefined(k) then
         setmacro(k,"","global") -- So we default to nothing! Maybe some message as option?
     end

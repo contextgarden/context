@@ -568,6 +568,66 @@ static int pnglib_tomask(lua_State *L) /* for palette */
     }
     return 1;
 }
+static int pnglib_makemask(lua_State *L) /* for palette */
+{
+    size_t size;
+    const char *content  = luaL_checklstring(L, 1, &size);
+    char mapping[256] = { 0x00 };
+    char *mask = lmt_memory_malloc(size);
+    switch (lua_type(L, 2)) {
+        case LUA_TNUMBER:
+            {
+                int n = lua_tointeger(L, 2);
+                n = n < 0 ? 0 : n > 255 ? 255 : n;
+                for (int i = 0; i <= n; i++) {
+                    mapping[i] = 0xFF;
+                }
+            }
+            break;
+        case LUA_TTABLE:
+            {
+                int n = (int) lua_rawlen(L, 2);
+                for (int i = 1; i <= n; i++) {
+                    if (lua_rawgeti(L, 2, i) == LUA_TTABLE) {
+                        int m = (int) lua_rawlen(L, -1);
+                        if (m == 3) { 
+                            int b, e, v; 
+                            lua_rawgeti(L, -1, 1);
+                            lua_rawgeti(L, -2, 2);
+                            lua_rawgeti(L, -3, 3);
+                            b = lua_tointeger(L, -3);
+                            e = lua_tointeger(L, -2);
+                            v = lua_tointeger(L, -1);
+                            b = b < 0 ? 0 : b > 255 ? 255 : b;
+                            e = e < 0 ? 0 : e > 255 ? 255 : e;
+                            v = v < 0 ? 0 : v > 255 ? 255 : v;
+                            for (int i = b; i <= e; i++) {
+                                mapping[i] = (char) v;
+                            }
+                            lua_pop(L, 3);
+                        }
+                    }
+                    lua_pop(L, 1);
+                }
+            }
+        case LUA_TSTRING:
+            {
+                size_t l = 0;
+                const char *m  = luaL_checklstring(L, 1, &l);
+                memcpy(mask, m, l > size ? size : l);               
+            }
+            break;
+        default:
+            break;
+    }
+    for (int i = 0; i < size; i++) {
+        mask[i] = (unsigned char) mapping[(unsigned char) content[i]];
+    }
+    lua_pushlstring(L, mask, size);
+    lua_pushlstring(L, mapping, 256);
+    lmt_memory_free(mask);
+    return 2;
+}
 
 static const struct luaL_Reg pngdecodelib_function_list[] = {
     { "applyfilter", pnglib_applyfilter },
@@ -576,6 +636,7 @@ static const struct luaL_Reg pngdecodelib_function_list[] = {
     { "expand",      pnglib_expand      },
     { "tocmyk",      pnglib_tocmyk      },
     { "tomask",      pnglib_tomask      },
+    { "makemask",    pnglib_makemask    },
     { NULL,          NULL               },
 };
 

@@ -12,7 +12,7 @@
 %C details.
 
 %D Todo: auto apply setups (manage at lua end)
-%D Todo: manuak: \xmlinclusion \xmlinclusions
+%D Todo: manual: \xmlinclusion \xmlinclusions
 
 \writestatus{loading}{ConTeXt XML Support / Initialization}
 

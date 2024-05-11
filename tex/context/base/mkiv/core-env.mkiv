@@ -574,17 +574,22 @@
 
 % Is doglobal still relevant? Maybe always global? Or never? Anyway, it will become obsolete.
 
+\let\syst_setups_def\def
+
+\unexpanded\def\pushglobalsetups{\let\syst_setups_def\gdef}
+\unexpanded\def\popglobalsetups {\let\syst_setups_def\def }
+
 \unexpanded\def\startluasetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_lua_a\syst_setups_start_lua_b} \let\stopluasetups              \relax
 \unexpanded\def\startxmlsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_xml_a\syst_setups_start_xml_b} \let\stopxmlsetups              \relax
 \unexpanded\def\startrawsetups  {\begingroup\doifelsenextoptionalcs\syst_setups_start_raw_a\syst_setups_start_raw_b} \let\stoprawsetups              \relax
 \unexpanded\def\startlocalsetups{\begingroup\doifelsenextoptionalcs\syst_setups_start_loc_a\syst_setups_start_loc_b} \let\stoplocalsetups            \relax
 \unexpanded\def\startsetups     {\begingroup\doifelsenextoptionalcs\syst_setups_start_tex_a\syst_setups_start_tex_b} \let\stopsetups                 \relax
 
-\def\syst_setups_start_lua_indeed#1#2#3\stopluasetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
-\def\syst_setups_start_xml_indeed#1#2#3\stopxmlsetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
-\def\syst_setups_start_raw_indeed#1#2#3\stoprawsetups  {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
-\def\syst_setups_start_loc_indeed#1#2#3\stoplocalsetups{\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
-\def\syst_setups_start_tex_indeed#1#2#3\stopsetups     {\endgroup\dodoglobal\expandafter\def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
+\def\syst_setups_start_lua_indeed#1#2#3\stopluasetups  {\endgroup\dodoglobal\expandafter\syst_setups_def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
+\def\syst_setups_start_xml_indeed#1#2#3\stopxmlsetups  {\endgroup\dodoglobal\expandafter\syst_setups_def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
+\def\syst_setups_start_raw_indeed#1#2#3\stoprawsetups  {\endgroup\dodoglobal\expandafter\syst_setups_def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
+\def\syst_setups_start_loc_indeed#1#2#3\stoplocalsetups{\endgroup\dodoglobal\expandafter\syst_setups_def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
+\def\syst_setups_start_tex_indeed#1#2#3\stopsetups     {\endgroup\dodoglobal\expandafter\syst_setups_def\csname\??setup#1:#2\expandafter\endcsname\expandafter##\expandafter1\expandafter{#3}}
 
 \def\syst_setups_start_lua{\ifsecondargument\expandafter\syst_setups_start_lua_c\else\expandafter\syst_setups_start_lua_d\fi}
 \def\syst_setups_start_xml{\ifsecondargument\expandafter\syst_setups_start_xml_c\else\expandafter\syst_setups_start_xml_d\fi}

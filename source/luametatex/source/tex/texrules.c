@@ -40,15 +40,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                 goto DONE;
             case 'a': case 'A':
                 if (tex_scan_mandate_keyword("attr", 1)) {
-                    halfword i = tex_scan_attribute_register_number();
-                    halfword v = tex_scan_integer(1, NULL);
-                    if (eq_value(register_attribute_location(i)) != v) {
-                        if (attr) {
-                            attr = tex_patch_attribute_list(attr, i, v);
-                        } else {
-                            attr = tex_copy_attribute_list_set(tex_current_attribute_list(), i, v);
-                        }
-                    }
+                    attr = tex_scan_attribute(attr);
                 }
                 break;
             case 'w': case 'W':
@@ -147,7 +139,10 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
         }
     }
   DONE:
-    node_attr(rule) = attr;
+    if (! attr) {
+        /* Also bumps reference and replaces the one set. */
+        tex_attach_attribute_list_attribute(rule, attr);
+    }    
     switch (code) {
         case strut_rule_code:
             if (type == v_rule_type) {

@@ -15,6 +15,8 @@ return {
             DisplayOperatorMinHeight = 2800, -- 2500 in font
             PrimeShiftUp             = "1.25*SuperscriptShiftUp",
             PrimeShiftUpCramped      = "1.25*SuperscriptShiftUp",
+            RadicalVerticalGap             = 100, -- "RadicalVerticalGap", --345, 166
+            RadicalDisplayStyleVerticalGap = 200, -- "RadicalVerticalGap", --345, 166
         },
         tweaks = {
             aftercopying = {
@@ -75,16 +77,22 @@ return {
                 {
                     tweak   = "radicaldegreeanchors",
                     list = {
-                        [0x221A]                = { location = "left", hfactor  = -0.15, vfactor  = .75 },
-                        ["0x221A.variants.*"]   = { location = "left", hfactor  = -0.1, vfactor  = .15 },
-                        ["0x221A.variants.1"]   = { location = "left", hfactor  = -0.1, vfactor  = .55 },
-                        ["0x221A.variants.2"]   = { location = "left", hfactor  = -0.1, vfactor  = .375 },
-                        ["0x221A.variants.3"]   = { location = "left", hfactor  = -0.1, vfactor  = .275 },
-                        ["0x221A.variants.4"]   = { location = "left", hfactor  = -0.1, vfactor  = .22 },
-                        ["0x221A.variants.5"]   = { location = "left", hfactor  = -0.1, vfactor  = .175 },
-                        ["0x221A.parts.bottom"] = { location = "left", hfactor  = -0.1, vfactor  = 0.95 },
+                        [0x221A]                = { location = "left", hfactor  = -0.15, vfactor  = 0.75 },
+                        ["0x221A.variants.*"]   = { location = "left", hfactor  = -0.1,  vfactor  = 0.15 },
+                        ["0x221A.variants.1"]   = { location = "left", hfactor  = -0.1,  vfactor  = 0.55 },
+                        ["0x221A.variants.2"]   = { location = "left", hfactor  = -0.1,  vfactor  = 0.375 },
+                        ["0x221A.variants.3"]   = { location = "left", hfactor  = -0.1,  vfactor  = 0.275 },
+                        ["0x221A.variants.4"]   = { location = "left", hfactor  = -0.1,  vfactor  = 0.22 },
+                        ["0x221A.variants.5"]   = { location = "left", hfactor  = -0.1,  vfactor  = 0.175 },
+                        ["0x221A.parts.bottom"] = { location = "left", hfactor  = -0.1,  vfactor  = 0.95 },
                     }
                 },
+{
+    tweak = "wipevariants",
+    list = {
+        [0x221A] = 1,
+    },
+},
                 -- First we set the dimensions of the initial accent which started out as zero but we want
                 -- a proper width.
                 -- {

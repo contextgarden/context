@@ -1,0 +1,123 @@
+if not modules then modules = { } end modules ['lpdf-fix'] = {
+    version   = 1.001,
+    comment   = "companion to lpdf-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- local everything = {
+--     embed = {
+--         type0    = true,
+--         truetype = true,
+--         type1    = true,
+--     },
+--     merge = {
+--         type0    = true, -- check if a..z A..Z 0..9
+--         truetype = true,
+--         type1    = true,
+--         type3    = true,
+--         LMTX     = true,
+--     },
+--     strip = {
+--         transparency = true, -- when zero
+--         extgstate    = true,
+--         cmyk         = true,
+--     },
+--     add = {
+--         cidset, -- when missing or even fix
+--     },
+-- }
+
+-- local report = logs.reporter("graphics","compactors")
+
+do
+
+    local pdfbackend        = backends.registered.pdf
+    local codeinjections    = pdfbackend.codeinjections
+    local setmetatableindex = table.setmetatableindex
+
+    local variables         = interfaces.variables
+
+    local compactors = {
+     -- [variables.no]   = false,
+     -- [variables.nono] = false,
+     -- [""]             = false,
+    }
+
+    function codeinjections.registercompactor(name,data)
+        if not data then
+            data = name
+            name = data.name
+        end
+        compactors[name] = setmetatableindex(data,"table")
+    end
+
+    function codeinjections.validcompactor(name)
+        return name and compactors[name] or false
+    end
+
+    compactors["preset:yes"] = {
+        merge = {
+            lmtx = true,
+        },
+    }
+
+    compactors[interfaces.variables.yes] = compactors["preset:yes"]
+
+    compactors["preset:merge"] = {
+        merge = {
+            type0    = true,
+            truetype = true,
+            type1    = true,
+         -- type3    = true,
+            lmtx     = true,
+        },
+    }
+
+end
+
+do
+
+    local sequencers  = utilities.sequencers
+    local appendgroup = sequencers.appendgroup
+
+    local pdfcontentmanipulators = sequencers.new {
+        name      = "pdfcontentmanipulators",
+        arguments = "pdfdoc,page,pagenumber,resources,compactor",
+    }
+
+    appendgroup(pdfcontentmanipulators,"before") -- user
+    appendgroup(pdfcontentmanipulators,"system") -- private
+    appendgroup(pdfcontentmanipulators,"after" ) -- user
+
+    function lpdf.epdf.contentplugin(pdfdoc,page,pagenumber,resources,compactor)
+        local runner = pdfcontentmanipulators.runner
+        if runner then
+            runner(pdfdoc,page,pagenumber,resources,compactor)
+        end
+    end
+
+    -- todo: contents: table first time, concat last time .. automatic .. when
+    -- performance becomes an issue
+
+    local pdfpagemanipulators = sequencers.new {
+        name      = "pdfpagemanipulators",
+        arguments = "pdfdoc,page,pagenumber,resources,compactor",
+    }
+
+    appendgroup(pdfpagemanipulators,"before") -- user
+    appendgroup(pdfpagemanipulators,"system") -- private
+    appendgroup(pdfpagemanipulators,"after" ) -- user
+
+    sequencers.appendaction("pdfpagemanipulators","system","lpdf.epdf.contentplugin")
+    sequencers.enableaction("pdfpagemanipulators","lpdf.epdf.contentplugin")
+
+    function lpdf.epdf.pageplugin(pdfdoc,page,pagenumber,resources,compactor)
+        local runner = pdfpagemanipulators.runner
+        if runner then
+            runner(pdfdoc,page,pagenumber,resources,compactor)
+        end
+    end
+
+end

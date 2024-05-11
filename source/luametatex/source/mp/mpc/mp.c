@@ -637,6 +637,7 @@ if (mp_post_script(p)) { \
  static void mp_bad_color_part (MP mp, int c);
  static mp_edge_header_node mp_scale_edges (MP mp, mp_number *se_sf, mp_edge_header_node se_pic);
  static void mp_path_length (MP mp, mp_number *n);
+ static void mp_path_no_length (MP mp, mp_number *n);
  static void mp_pair_value (MP mp, mp_number *x, mp_number *y);
  static void mp_do_type_declaration (MP mp);
  static void mp_do_max_knot_pool (MP mp);
@@ -1818,6 +1819,7 @@ static const char *mp_op_string (int c)
             case mp_ASCII_operation            : return "ASCII";
             case mp_char_operation             : return "char";
             case mp_length_operation           : return "length";
+            case mp_no_length_operation        : return "nolength";
             case mp_turning_operation          : return "turningnumber";
             case mp_x_part_operation           : return "xpart";
             case mp_y_part_operation           : return "ypart";
@@ -14402,6 +14404,10 @@ static void mp_path_length (MP mp, mp_number *n)
     } while (p != cur_exp_knot);
     set_number_from_int(*n, l);
 }
+static void mp_path_no_length (MP mp, mp_number *n)
+{
+    set_number_from_boolean(*n, mp_next_knot(cur_exp_knot) == cur_exp_knot ? mp_true_operation : mp_false_operation);
+}
 static void mp_picture_length (MP mp, mp_number *n)
 {
     mp_node p = mp_edge_list(cur_exp_node)->link;
@@ -15099,6 +15105,26 @@ static void mp_do_unary (MP mp, int c)
                     } else {
                         mp_bad_unary(mp, c);
                     }
+                    break;
+            }
+            break;
+        case mp_no_length_operation:
+            switch (mp->cur_exp.type) {
+                case mp_path_type:
+                    {
+                        mp_value expr;
+                        memset(&expr, 0, sizeof(mp_value));
+                        new_number(expr.data.n);
+                        mp_path_no_length(mp, &expr.data.n);
+                        mp_flush_cur_exp(mp, expr);
+                        mp->cur_exp.type = mp_boolean_type;
+                        break;
+                    }
+                case mp_string_type:
+                case mp_known_type:
+                case mp_picture_type:
+                default:
+                    mp_bad_unary(mp, c);
                     break;
             }
             break;
@@ -21610,6 +21636,8 @@ static int mp_scan_path (MP mp)
     if (d == mp_ampersand_command) {
         if (dd == mp_tolerant_concat_operation || dd == mp_tolerant_append_operation) {
             mp_number dx, dy;
+            new_number(dx);
+            new_number(dy);
             set_number_from_subtraction(dx, path_q->x_coord, pp->x_coord);
             set_number_from_subtraction(dy, path_q->y_coord, pp->y_coord);
             number_abs(dx);
@@ -21623,6 +21651,8 @@ static int mp_scan_path (MP mp)
                 number_clone(path_q->right_y, dy);
             }
             dd = dd == mp_tolerant_concat_operation ? mp_concatenate_operation : mp_just_append_operation;
+            free_number(dx);
+            free_number(dy);
         }
         if (dd == mp_just_append_operation) {
             mp_left_type(pp) = mp_explicit_knot;
@@ -21941,6 +21971,7 @@ void mp_final_cleanup (MP mp)
     mp_primitive(mp, "ASCII", mp_unary_command, mp_ASCII_operation);
     mp_primitive(mp, "char", mp_unary_command, mp_char_operation);
     mp_primitive(mp, "length", mp_unary_command, mp_length_operation);
+    mp_primitive(mp, "nolength", mp_unary_command, mp_no_length_operation);
     mp_primitive(mp, "turningnumber", mp_unary_command, mp_turning_operation);
     mp_primitive(mp, "xpart", mp_unary_command, mp_x_part_operation);
     mp_primitive(mp, "ypart", mp_unary_command, mp_y_part_operation);

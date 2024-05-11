@@ -329,9 +329,9 @@ void tex_show_activities(void)
                 tex_show_box(node_next(page_head));
                 if (lmt_page_builder_state.contents != contribute_nothing) {
                     halfword r;
-                    tex_print_format("%l[total height %P, goal height %D]",
+                    tex_print_format("%l[total height %P, goal height %p]",
                         page_total, page_stretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
-                        page_goal, pt_unit
+                        page_goal
                     );
                     r = node_next(page_insert_head);
                     while (r != page_insert_head) {
@@ -347,9 +347,9 @@ void tex_show_activities(void)
                                     ++n;
                                 }
                             } while (q != split_broken_insert(r));
-                            tex_print_format("%l[insert %i adds %D, might split to %i]", index, size, pt_unit, n);
+                            tex_print_format("%l[insert %i adds %p, might split to %i]", index, size, n);
                         } else {
-                            tex_print_format("%l[insert %i adds %D]", index, size, pt_unit);
+                            tex_print_format("%l[insert %i adds %p]", index, size);
                         }
                         r = node_next(r);
                     }
@@ -370,7 +370,7 @@ void tex_show_activities(void)
                     if (n.prev_depth <= ignore_depth_criterion_par) {
                         tex_print_format("%l[prevdepth ignored");
                     } else {
-                        tex_print_format("%l[prevdepth %D", n.prev_depth, pt_unit);
+                        tex_print_format("%l[prevdepth %p", n.prev_depth);
                     }
                     if (n.prev_graf != 0) {
                         tex_print_format(", prevgraf %i line%s", n.prev_graf, n.prev_graf == 1 ? "" : "s");

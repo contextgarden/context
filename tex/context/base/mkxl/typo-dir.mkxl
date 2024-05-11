@@ -31,8 +31,8 @@
 
 \installsimplecommandhandler \??directions {directions} \??directions % no \define... yet
 
-\immutable\edef\lefttorightmark{\normalUchar"200E} \aliased\let\lrm\lefttorightmark % expandable
-\immutable\edef\righttoleftmark{\normalUchar"200F} \aliased\let\rlm\righttoleftmark % expandable
+\immutable\edef\lefttorightmark{\tocharacter"200E} \aliased\let\lrm\lefttorightmark % expandable
+\immutable\edef\righttoleftmark{\tocharacter"200F} \aliased\let\rlm\righttoleftmark % expandable
 
 \permanent\protected\def\setdirection[#1]% todo: symbolic names
   {\clf_setdirection#1\relax}
@@ -96,11 +96,11 @@
    \c!break=\v!both, % experimental value, maybe \v!no will be default (bad name too)
    \c!fences=\v!yes]
 
-\permanent\protected\edef\bidilre{\normalUchar"202A}
-\permanent\protected\edef\bidirle{\normalUchar"202B}
-\permanent\protected\edef\bidipop{\normalUchar"202C}
-\permanent\protected\edef\bidilro{\normalUchar"202D}
-\permanent\protected\edef\bidirlo{\normalUchar"202E}
+\permanent\protected\edef\bidilre{\tocharacter"202A}
+\permanent\protected\edef\bidirle{\tocharacter"202B}
+\permanent\protected\edef\bidipop{\tocharacter"202C}
+\permanent\protected\edef\bidilro{\tocharacter"202D}
+\permanent\protected\edef\bidirlo{\tocharacter"202E}
 
 \permanent\protected\def\dirlre{\ifcase\directionsbidimode\or\bidilre\or\textdirection\directionlefttoright\fi}
 \permanent\protected\def\dirrle{\ifcase\directionsbidimode\or\bidirle\or\textdirection\directionrighttoleft\fi}

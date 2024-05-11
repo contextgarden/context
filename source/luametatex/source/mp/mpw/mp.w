@@ -2587,6 +2587,7 @@ mp_hex_operation,               /* operation code for |hex| */
 mp_ASCII_operation,             /* operation code for |ASCII| */
 mp_char_operation,              /* operation code for |char| */
 mp_length_operation,            /* operation code for |length| */
+mp_no_length_operation,         /* operation code for |nolength| */
 mp_turning_operation,           /* operation code for |turningnumber| */
 mp_color_model_operation,       /* operation code for |colormodel| */
 mp_path_part_operation,         /* operation code for |pathpart| */
@@ -2714,6 +2715,7 @@ static const char *mp_op_string (int c)
             case mp_ASCII_operation            : return "ASCII";
             case mp_char_operation             : return "char";
             case mp_length_operation           : return "length";
+            case mp_no_length_operation        : return "nolength";
             case mp_turning_operation          : return "turningnumber";
             case mp_x_part_operation           : return "xpart";
             case mp_y_part_operation           : return "ypart";
@@ -21733,6 +21735,8 @@ static int mp_scan_path (MP mp)
         /* Splice independent paths together */
         if (dd == mp_tolerant_concat_operation || dd == mp_tolerant_append_operation) {
             mp_number dx, dy;
+            new_number(dx);
+            new_number(dy);
             set_number_from_subtraction(dx, path_q->x_coord, pp->x_coord);
             set_number_from_subtraction(dy, path_q->y_coord, pp->y_coord);
             number_abs(dx);
@@ -21746,6 +21750,8 @@ static int mp_scan_path (MP mp)
                 number_clone(path_q->right_y, dy);
             }
             dd = dd == mp_tolerant_concat_operation ? mp_concatenate_operation : mp_just_append_operation;
+            free_number(dx);
+            free_number(dy);
         }
         if (dd == mp_just_append_operation) {
             mp_left_type(pp) = mp_explicit_knot;
@@ -22111,6 +22117,8 @@ mp_primitive(mp, "char", mp_unary_command, mp_char_operation);
 @:char_}{|char| primitive@>
 mp_primitive(mp, "length", mp_unary_command, mp_length_operation);
 @:length_}{|length| primitive@>
+mp_primitive(mp, "nolength", mp_unary_command, mp_no_length_operation);
+@:length_}{|nolength| primitive@>
 mp_primitive(mp, "turningnumber", mp_unary_command, mp_turning_operation);
 @:turning_number_}{|turningnumber| primitive@>
 mp_primitive(mp, "xpart", mp_unary_command, mp_x_part_operation);
@@ -22881,6 +22889,7 @@ static void mp_do_unary (MP mp, int c)
                         memset(&expr, 0, sizeof(mp_value));
                         new_number(expr.data.n);
                         number_clone(expr.data.n, unity_t);
+                        /* Kind of weird, this multiply: */
                         number_multiply_int(expr.data.n, (int) cur_exp_str->len);
                         mp_flush_cur_exp(mp, expr);
                         break;
@@ -22922,6 +22931,27 @@ static void mp_do_unary (MP mp, int c)
                     } else {
                         mp_bad_unary(mp, c);
                     }
+                    break;
+            }
+            break;
+        case mp_no_length_operation:
+            /* For now only support paths/ */
+            switch (mp->cur_exp.type) {
+                case mp_path_type:
+                    {
+                        mp_value expr;
+                        memset(&expr, 0, sizeof(mp_value));
+                        new_number(expr.data.n);
+                        mp_path_no_length(mp, &expr.data.n);
+                        mp_flush_cur_exp(mp, expr);
+                        mp->cur_exp.type = mp_boolean_type;
+                        break;
+                    }
+                case mp_string_type:
+                case mp_known_type:
+                case mp_picture_type:
+                default:
+                    mp_bad_unary(mp, c);
                     break;
             }
             break;
@@ -23843,6 +23873,7 @@ mean that scaled outperforms double manyfold while decimal is always way slower.
 
 @<Declarations@>=
 static void mp_path_length (MP mp, mp_number *n);
+static void mp_path_no_length (MP mp, mp_number *n);
 
 @ @<Declare unary action...@>=
 static void mp_path_length (MP mp, mp_number *n)
@@ -23854,6 +23885,11 @@ static void mp_path_length (MP mp, mp_number *n)
         ++l;
     } while (p != cur_exp_knot);
     set_number_from_int(*n, l);
+}
+
+static void mp_path_no_length (MP mp, mp_number *n)
+{
+    set_number_from_boolean(*n, mp_next_knot(cur_exp_knot) == cur_exp_knot ? mp_true_operation : mp_false_operation);
 }
 
 static void mp_picture_length (MP mp, mp_number *n)

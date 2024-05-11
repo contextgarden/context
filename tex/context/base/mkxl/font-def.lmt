@@ -443,7 +443,7 @@ function definers.register(tfmdata,id)
     end
 end
 
-function definers.read(specification,size,id) -- id can be optional, name can already be table
+function definers.read(specification,size,id,compact) -- id can be optional, name can already be table
     statistics.starttiming(fonts)
     if type(specification) == "string" then
         specification = definers.analyze(specification,size)
@@ -453,8 +453,8 @@ function definers.read(specification,size,id) -- id can be optional, name can al
         specification = variants[method](specification)
     end
     specification = definers.resolve(specification)
-    local hash    = constructors.hashinstance(specification)
--- inspect(hash)
+--     local hash    = constructors.hashinstance(specification,false,true)
+    local hash, extend, squeeze, slant, weight, auto = constructors.hashinstance(specification,false,compact)
     local tfmdata = definers.registered(hash) -- id
     local name    = specification.name
     if tfmdata then
@@ -490,7 +490,22 @@ function definers.read(specification,size,id) -- id can be optional, name can al
             properties.fullname, basename(properties.filename))
     end
     statistics.stoptiming(fonts)
-    return tfmdata
+    if compact and weight ~= 0 then
+        local parameters = (tfmtype == "table" and tfmdata or fontdata[tfmdata]).parameters
+        local amount = 65536 * weight
+        if auto then
+            if not squeeze or squeeze == 1 then
+                local xheight = parameters.xheight
+                squeeze = xheight / (xheight + amount)
+            end
+            if not extend or extend == 1 then
+                local emwidth = parameters.quad
+                extend = emwidth / (emwidth + 2 * amount)
+            end
+        end
+        parameters.hshift = amount -- * extend -- weight
+    end
+    return tfmdata, extend, squeeze, slant, weight
 end
 
 function font.getfont(id)

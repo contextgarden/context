@@ -35,7 +35,8 @@ lua_state_info lmt_lua_state = {
 
 /*tex
     Some more can move here, or we can move some to modules instead. It's a very stepwise
-    process because things need to keep running.
+    process because things need to keep running. We only have fast accessors for strings 
+    that we use in the \LUA\ interface. 
 */
 
 lmt_keys_info lmt_keys;
@@ -44,7 +45,7 @@ lmt_interface_info lmt_interface = {
     .pack_type_values          = NULL,
     .group_code_values         = NULL,
     .par_context_values        = NULL,
-    .par_begin_values          = NULL,
+    .par_trigger_values        = NULL,
     .par_mode_values           = NULL,
     .math_style_name_values    = NULL,
     .math_style_variant_values = NULL,
@@ -136,7 +137,7 @@ void lmt_initialize_interface(void)
     set_par_context_value(span_par_context,        span);
     set_par_context_value(reset_par_context,       reset);
 
-    lmt_interface.page_context_values = lmt_aux_allocate_value_info(alignment_page_context);
+    lmt_interface.page_context_values = lmt_aux_allocate_value_info(triggered_page_context);
 
     # define set_page_context_value(n,k) lmt_interface.page_context_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }
 
@@ -153,6 +154,7 @@ void lmt_initialize_interface(void)
     set_page_context_value(after_display_page_context,   afterdisplay);
     set_page_context_value(after_output_page_context,    afteroutput);
     set_page_context_value(alignment_page_context,       alignment);
+    set_page_context_value(triggered_page_context,       triggered);
 
     lmt_interface.append_line_context_values = lmt_aux_allocate_value_info(post_migrate_append_line_context);
 
@@ -200,24 +202,24 @@ void lmt_initialize_interface(void)
     set_build_context_value(fireup_show_build_context,     fireup);
     set_build_context_value(wrapup_show_build_context,     wrapup);
 
-    lmt_interface.par_begin_values = lmt_aux_allocate_value_info(vrule_char_par_begin);
+    lmt_interface.par_trigger_values = lmt_aux_allocate_value_info(vrule_char_par_trigger);
 
-    # define set_par_begin_value(n,k) lmt_interface.par_begin_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }
+    # define set_par_trigger_value(n,k) lmt_interface.par_trigger_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }
 
-    set_par_begin_value(normal_par_begin,       normal);
-    set_par_begin_value(force_par_begin,        force);
-    set_par_begin_value(indent_par_begin,       indent);
-    set_par_begin_value(no_indent_par_begin,    noindent);
-    set_par_begin_value(math_char_par_begin,    mathchar);
-    set_par_begin_value(char_par_begin,         char);
-    set_par_begin_value(boundary_par_begin,     boundary);
-    set_par_begin_value(space_par_begin,        space);
-    set_par_begin_value(math_par_begin,         math);
-    set_par_begin_value(kern_par_begin,         kern);
-    set_par_begin_value(hskip_par_begin,        hskip);
-    set_par_begin_value(un_hbox_char_par_begin, unhbox);
-    set_par_begin_value(valign_char_par_begin,  valign);
-    set_par_begin_value(vrule_char_par_begin,   vrule);
+    set_par_trigger_value(normal_par_trigger,       normal);
+    set_par_trigger_value(force_par_trigger,        force);
+    set_par_trigger_value(indent_par_trigger,       indent);
+    set_par_trigger_value(no_indent_par_trigger,    noindent);
+    set_par_trigger_value(math_char_par_trigger,    mathchar);
+    set_par_trigger_value(char_par_trigger,         char);
+    set_par_trigger_value(boundary_par_trigger,     boundary);
+    set_par_trigger_value(space_par_trigger,        space);
+    set_par_trigger_value(math_par_trigger,         math);
+    set_par_trigger_value(kern_par_trigger,         kern);
+    set_par_trigger_value(hskip_par_trigger,        hskip);
+    set_par_trigger_value(un_hbox_char_par_trigger, unhbox);
+    set_par_trigger_value(valign_char_par_trigger,  valign);
+    set_par_trigger_value(vrule_char_par_trigger,   vrule);
 
     lmt_interface.par_mode_values = lmt_aux_allocate_value_info(math_par_subtype);
 
@@ -353,6 +355,7 @@ void lmt_initialize_interface(void)
     # define set_math_parameter_value(n,t,k) lmt_interface.math_parameter_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .type = t }
 
     set_math_parameter_value(math_parameter_quad,                             math_dimension_parameter, quad);
+    set_math_parameter_value(math_parameter_exheight,                         math_dimension_parameter, exheight);
     set_math_parameter_value(math_parameter_axis,                             math_dimension_parameter, axis);
     set_math_parameter_value(math_parameter_accent_base_height,               math_dimension_parameter, accentbaseheight);
     set_math_parameter_value(math_parameter_accent_base_depth,                math_dimension_parameter, accentbasedepth);
@@ -447,6 +450,9 @@ void lmt_initialize_interface(void)
     set_math_parameter_value(math_parameter_extra_subscript_space,              math_dimension_parameter,  extrasubscriptspace);
     set_math_parameter_value(math_parameter_extra_superprescript_space,         math_dimension_parameter,  extrasuperprescriptspace);
     set_math_parameter_value(math_parameter_extra_subprescript_space,           math_dimension_parameter,  extrasubprescriptspace);
+
+    set_math_parameter_value(math_parameter_superscript_snap,                   math_dimension_parameter,  superscriptsnap);
+    set_math_parameter_value(math_parameter_subscript_snap,                     math_dimension_parameter,  subscriptsnap);
 
     set_math_parameter_value(math_parameter_skewed_delimiter_tolerance,         math_dimension_parameter,  skeweddelimitertolerance);
 
@@ -552,6 +558,8 @@ void lmt_initialize_interface(void)
     set_math_font_parameter(RadicalKernAfterExtensible,               math_dimension_parameter);
     set_math_font_parameter(RadicalKernBeforeExtensible,              math_dimension_parameter);
     set_math_font_parameter(MinConnectorOverlap,                      math_dimension_parameter);
+    set_math_font_parameter(SuperscriptSnap,                          math_dimension_parameter);
+    set_math_font_parameter(SubscriptSnap,                            math_dimension_parameter);
     set_math_font_parameter(SubscriptShiftDownWithSuperscript,        math_dimension_parameter);
     set_math_font_parameter(FractionDelimiterSize,                    math_dimension_parameter);
     set_math_font_parameter(FractionDelimiterDisplayStyleSize,        math_dimension_parameter);
@@ -576,5 +584,7 @@ void lmt_initialize_interface(void)
     set_math_font_parameter(FlattenedAccentBottomShiftDown,           math_dimension_parameter);
     set_math_font_parameter(DelimiterPercent,                         math_integer_parameter);
     set_math_font_parameter(DelimiterShortfall,                       math_dimension_parameter);
+    set_math_font_parameter(DelimiterDisplayPercent,                  math_integer_parameter);
+    set_math_font_parameter(DelimiterDisplayShortfall,                math_dimension_parameter);
     set_math_font_parameter(DelimiterExtendMargin,                    math_dimension_parameter);
 }

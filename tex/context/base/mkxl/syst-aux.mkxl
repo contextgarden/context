@@ -7058,4 +7058,9 @@
      \expandafter\secondoftwoarguments
    \fi}
 
+%D Here (can become primitive):
+
+\untraced\permanent\protected\def\glyphscaled#1% name will change
+  {\dimexpr#1*\plusthousand/\glyphscale\relax}
+
 \protect \endinput

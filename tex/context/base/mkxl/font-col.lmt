@@ -45,8 +45,12 @@ fonts.collections        = collections
 local definitions        = collections.definitions or { }
 collections.definitions  = definitions
 
+-- why public ?
+
 local vectors            = collections.vectors or { }
 collections.vectors      = vectors
+local rscales            = collections.rscales or { }
+collections.rscales      = rscales
 
 local helpers            = fonts.helpers
 local charcommand        = helpers.commands.char
@@ -220,7 +224,9 @@ function collections.clonevector(name)
     end
     local definitions = definitions[name]
     local vector      = { }
+    local rscale      = { }
     vectors[current]  = vector
+    rscales[current]  = rscale
     for i=1,#definitions do
         local definition = definitions[i]
         local name       = definition.font
@@ -236,12 +242,15 @@ function collections.clonevector(name)
         local oldchars   = fontdata[current].characters
         local newchars   = fontdata[cloneid].characters
         local factor     = definition.factor
-        local rscale     = definition.rscale
+        local rscale     = false
         if factor then
             vector.factor = factor
         end
-        if texconditionals["c_font_compact"] and rscale then
-            vector.rscale = rscale
+        if texconditionals["c_font_compact"] then
+            local rs = definition.rscale
+            if rs and rs ~= 1 then
+                rscale = rs
+            end
         end
         if trace_collecting then
             if target then
@@ -265,6 +274,9 @@ function collections.clonevector(name)
                         -- not in font
                     elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = { cloneid, target }
+if rscale then
+    rscales[unic] = rscale
+end
                     end
                     target = target + 1
                 end
@@ -279,6 +291,9 @@ function collections.clonevector(name)
                         -- not in font
                     elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = cloneid
+if rscale then
+    rscales[unic] = rscale
+end
                     end
                 end
             end
@@ -290,6 +305,9 @@ function collections.clonevector(name)
                         -- ignore
                     elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = { cloneid, target }
+if rscale then
+    rscales[unic] = rscale
+end
                     end
                     target = target + 1
                 end
@@ -300,6 +318,9 @@ function collections.clonevector(name)
                         -- ignore
                     elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = { cloneid, remap[unicode] }
+if rscale then
+    rscales[unic] = rscale
+end
                     end
                 end
             else
@@ -309,6 +330,9 @@ function collections.clonevector(name)
                         -- ignore
                     elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = cloneid
+if rscale then
+    rscales[unic] = rscale
+end
                     end
                 end
             end
@@ -351,8 +375,8 @@ function collections.prepare(name) -- we can do this in lua now .. todo
         context.pushcatcodes("prt") -- context.unprotect()
         context.font_fallbacks_start_cloning()
         for i=1,#d do
-            local f = d[i]
-            local name = f.font
+            local f     = d[i]
+            local name  = f.font
             local scale = f.rscale or 1
             if texconditionals["c_font_compact"] then
                 scale = 1
@@ -424,14 +448,15 @@ end
 -- todo: also general one for missing
 
 local function apply(n,char,font,vector,vect)
-    local kind = type(vect)
+    local kind   = type(vect)
+    local rscale = rscales[char] or 1
     local newfont, newchar
     if kind == "table" then
         newfont = vect[1]
         newchar = vect[2]
         if trace_collecting then
-            report_fonts("remapping character %C in font %a to character %C in font %a%s",
-                char,font,newchar,newfont,not chardata[newfont][newchar] and " (missing)" or ""
+            report_fonts("remapping character %C in font %a to character %C in font %a%s, rscale %s",
+                char,font,newchar,newfont,not chardata[newfont][newchar] and " (missing)" or "",rscale
             )
         end
     elseif kind == "function" then
@@ -443,16 +468,16 @@ local function apply(n,char,font,vector,vect)
             newchar = char
         end
         if trace_collecting then
-            report_fonts("remapping character %C in font %a to character %C in font %a%s",
-                char,font,newchar,newfont,not chardata[newfont][newchar] and " (missing)" or ""
+            report_fonts("remapping character %C in font %a to character %C in font %a%s, rscale %f",
+                char,font,newchar,newfont,not chardata[newfont][newchar] and " (missing)" or "",rscale
             )
         end
         vector[char] = { newfont, newchar }
     else
         local fakemono = vector.factor
         if trace_collecting then
-            report_fonts("remapping font %a to %a for character %C%s",
-                font,vect,char,not chardata[vect][char] and " (missing)" or ""
+            report_fonts("remapping font %a to %a for character %C%s, rscale %s",
+                font,vect,char,not chardata[vect][char] and " (missing)" or "",rscale
             )
         end
         newfont = vect
@@ -462,10 +487,9 @@ local function apply(n,char,font,vector,vect)
             newchar = char
         end
     end
-    local rscale = vector.rscale
     if rscale and rscale ~= 1 then
         local s, x, y = getscales(n)
-        setscales(n,s*rscale,x*rscale,y*rscale)
+        setscales(n,s*rscale,x,y)
     end
     setfont(n,newfont,newchar)
     setprop(n, "original", { font = font, char = char })

@@ -81,8 +81,8 @@
     2.10.07 : around TeXLive 2023
     2.10.08 : close to BachoTeX 2023 
     2.10.09 : evolved in May/June 2023 (math & text linebreak experiments) 
-
-    2.11.00 : maybe around the ctx 2023 meeting 
+    2.10.10 : around the ctx 2023 meeting 
+    2.10.11 : till the end of 2024 
 
     At some point the \CONTEXT\ group will be responsible for guaranteeing that the official version
     is what comes with \CONTEXT\ and that long term support and stabilty is guaranteed and that no 
@@ -98,7 +98,7 @@
 # define luametatex_revision         10
 # define luametatex_release          11
 # define luametatex_version_string   "2.10.11"
-# define luametatex_development_id   20230904
+# define luametatex_development_id   20231231
 
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
@@ -111,6 +111,9 @@
     One difference with \LUATEX\ is that we keep global variables that kind of belong together in
     structures. This also has the advantage that we have more specific access (via a namespace) and
     don't use that many macros (that can conflict later on).
+
+    We deliberately don't rewrite everything, if only because the original documentation suit apply
+    where possible and also because \quotation {What works, works}. 
 
 */
 

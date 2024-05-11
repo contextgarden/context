@@ -265,9 +265,10 @@ return {
       --        "sqlite3",
       --        "libharfbuzz", "libharfbuzz-0",
       --    },
-      -- -- ["system.librarynames"]  = {
-      -- --     ["libcurl"] = { "libcurl", "libcurl-4" },
-      -- -- },
+      --    ["system.librarynames"]  = {
+      --     -- ["libcurl"] = { "libcurl", "libcurl-4" },
+      --        ["libmysql"] = { "libmysql", "libmysqlclient" },
+      --    },
 
         },
 

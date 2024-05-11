@@ -35,14 +35,36 @@
 
 %D Beware, these are not really defines (yet).
 
-\definecapitals[\v!WORD]            % all upper
-\definecapitals[\v!capital]         % one upper + font
-\definecapitals[\v!Capital]         % some upper + font
-\definecapitals[\v!mixed]           % UpperCase
-\definecapitals[\v!Word]            % one upper + font
-\definecapitals[\v!Words]           % some upper
-\definecapitals[\v!camel]           % lowers first
-\definecapitals[\v!word][\c!style=] % nothing
+% 1=upper 2=lower 3=mixed
+
+\setupcapitals
+  [\c!category=\zerocount,
+   \c!xscale=\plusthousand,
+   \c!yscale=\plusthousand]
+
+\definecapitals[\v!WORD]    [\c!category=\plusone]   % all upper
+\definecapitals[\v!capital] [\c!category=\plusthree] % one upper + font
+\definecapitals[\v!Capital] [\c!category=\plusthree] % some upper + font
+\definecapitals[\v!mixed]   [\c!category=\plusthree] % UpperCase
+\definecapitals[\v!Word]    [\c!category=\plusthree] % one upper + font
+\definecapitals[\v!Words]   [\c!category=\plusthree] % some upper
+\definecapitals[\v!camel]   [\c!category=\plusthree] % lowers first
+
+\definecapitals[\v!cap]     [\v!capital] % adapts to mathmode
+\definecapitals[\v!Cap]     [\v!Capital]
+
+\definecapitals % nothing
+  [\v!word]
+  [\c!category=\plustwo,
+   \c!style=]
+
+\definecapitals % scale upper
+  [\v!Camel]
+  [\c!xscale=900,
+   \c!yscale=900,
+   \c!category=\plusthree]
+
+\permanent\protected\def\resetcharactercasing{\c_attr_case\attributeunsetvalue}
 
 %D \macros
 %D   {Word, Words, WORD, WORDS}
@@ -73,24 +95,31 @@
 % test \word{test TEST \TeX} test
 % test \Word{test TEST \TeX} test
 
-\permanent\tolerant\protected\def\setcharactercasing[#1]{\clf_setcharactercasing{#1}} % can be public implementor
+\permanent\tolerant\protected\def\setcharactercasing[#1]%
+  {\clf_setcharactercasing
+     {#1}%
+     \numexpr\namedcapitalsparameter{#1}\c!category\relax
+     \numexpr\namedcapitalsparameter{#1}\c!xscale\relax
+     \numexpr\namedcapitalsparameter{#1}\c!yscale\relax}
 
-\protected\def\casing[#1]{\groupedcommand{\clf_setcharactercasing{#1}}{}}
-\protected\def\nocasing  {\groupedcommand{\clf_setcharactercasing  {}}{}}
+\protected\def\casing[#1]{\groupedcommand{\setcharactercasing[#1]}{}}
+\protected\def\nocasing  {\groupedcommand{\resetcharactercasing}{}}
 
-\protected\def\typo_capitale_WORD {\clf_setcharactercasing\v!WORD }
-\protected\def\typo_capitale_word {\clf_setcharactercasing\v!word }
-\protected\def\typo_capitale_Word {\clf_setcharactercasing\v!Word }
-\protected\def\typo_capitale_Words{\clf_setcharactercasing\v!Words}
-\protected\def\typo_capitale_camel{\clf_setcharactercasing\v!camel}
+\protected\def\typo_capital_WORD {\setcharactercasing[\v!WORD ]}
+\protected\def\typo_capital_word {\setcharactercasing[\v!word ]}
+\protected\def\typo_capital_Word {\setcharactercasing[\v!Word ]}
+\protected\def\typo_capital_Words{\setcharactercasing[\v!Words]}
+\protected\def\typo_capital_camel{\setcharactercasing[\v!camel]}
+\protected\def\typo_capital_Camel{\setcharactercasing[\v!Camel]}
 
 \pushoverloadmode
 
-\permanent\protected\def\WORD {\triggergroupedcommandcs\typo_capitale_WORD }
-\permanent\protected\def\word {\triggergroupedcommandcs\typo_capitale_word }
-\permanent\protected\def\Word {\triggergroupedcommandcs\typo_capitale_Word }
-\permanent\protected\def\Words{\triggergroupedcommandcs\typo_capitale_Words}
-\permanent\protected\def\camel{\triggergroupedcommandcs\typo_capitale_camel}
+\permanent\protected\def\WORD {\triggergroupedcommandcs\typo_capital_WORD }
+\permanent\protected\def\word {\triggergroupedcommandcs\typo_capital_word }
+\permanent\protected\def\Word {\triggergroupedcommandcs\typo_capital_Word }
+\permanent\protected\def\Words{\triggergroupedcommandcs\typo_capital_Words}
+\permanent\protected\def\camel{\triggergroupedcommandcs\typo_capital_camel}
+\permanent\protected\def\Camel{\triggergroupedcommandcs\typo_capital_Camel}
 
 \aliased\let\WORDS\WORD
 \aliased\let\words\word
@@ -160,13 +189,13 @@
 
 \def\typo_capitals_set_fake#1%
   {\cdef\currentcapitals{#1}%
-   \clf_setcharactercasing\currentcapitals
+   \setcharactercasing[\currentcapitals]%
    \usecapitalsstyleparameter\c!style}
 
-\def\typo_capitals_set_real#1%
+\def\typo_capitals_set_real#1#2%
   {\cdef\currentcapitals{#1}%
    \sc % \smallcaps
-   \clf_setcharactercasing\currentcapitals}
+   \setcharactercasing[\currentcapitals]}
 
 \permanent\protected\def\pseudosmallcapped{\triggergroupedcommandcs\font_style_pseudosmallcapped}
 \permanent\protected\def\pseudoSmallcapped{\triggergroupedcommandcs\font_style_pseudoSmallcapped}
@@ -179,16 +208,16 @@
 
 \permanent\protected\def\notsmallcapped   {\triggergroupedcommandcs\font_style_notsmallcapped}
 
-\protected\def\font_style_pseudosmallcapped{\typo_capitals_set_fake\v!WORD   } % all upper
+\protected\def\font_style_pseudosmallcapped{\typo_capitals_set_fake\v!WORD}    % all upper
 \protected\def\font_style_pseudoSmallcapped{\typo_capitals_set_fake\v!capital} % one upper + font
 \protected\def\font_style_pseudoSmallCapped{\typo_capitals_set_fake\v!Capital} % some upper + font
 \protected\def\font_style_pseudoMixedCapped{\typo_capitals_set_fake\v!mixed  }
 
-\protected\def\font_style_realsmallcapped  {\typo_capitals_set_real\v!WORD   } % all lower
-\protected\def\font_style_realSmallcapped  {\typo_capitals_set_real\v!Word   } % one upper + font
-\protected\def\font_style_realSmallCapped  {\typo_capitals_set_real\v!Words  } % some upper
+\protected\def\font_style_realsmallcapped  {\typo_capitals_set_real\v!WORD}    % all lower
+\protected\def\font_style_realSmallcapped  {\typo_capitals_set_real\v!Word}    % one upper + font
+\protected\def\font_style_realSmallCapped  {\typo_capitals_set_real\v!Words}   % some upper
 
-\protected\def\font_style_notsmallcapped   {\typo_capitals_set_fake\v!word   }
+\protected\def\font_style_notsmallcapped   {\typo_capitals_set_fake\v!word}
 
 \protected\def\typo_capitals_smallcaps
   {\ifconditional\c_typo_capitals_pseudo

@@ -52,7 +52,7 @@ local report_otf          = logs.reporter("fonts","otf loading")
 local fonts               = fonts
 local otf                 = fonts.handlers.otf
 
-otf.version               = 3.133 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version               = 3.135 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                 = containers.define("fonts", "otl", otf.version, true)
 otf.svgcache              = containers.define("fonts", "svg", otf.version, true)
 otf.pngcache              = containers.define("fonts", "png", otf.version, true)
@@ -317,7 +317,7 @@ local function copytotfm(data,cache_id)
         local properties     = derivetable(data.properties)
         local descriptions   = derivetable(data.descriptions)
         local goodies        = derivetable(data.goodies)
-        local characters     = { } -- newtable if we knwo how many
+        local characters     = { } -- newtable if we know how many
         local parameters     = { }
         local mathparameters = { }
         --

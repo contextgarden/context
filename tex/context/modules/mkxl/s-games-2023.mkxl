@@ -1,0 +1,221 @@
+%D \module
+%D   [      file=s-games-2023,
+%D        version=2023.12.20,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=A Simple Card Game,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This style is a side track of the 2023 X-mas card which is similar
+%D but on a 100 by 100 grid. Because the shapes are rather nice and
+%D intriguing we decided to see if we could make it into a match them
+%D game. So here it is. Maybe at the 2023 \CONTEXT\ meeting we will
+%D play a bit with different formulas.
+
+\startluacode
+    local sin, cos, tan, log = math.sin, math.cos, math.tan, math.log
+
+    local N = 20
+    local M = 0
+
+    M = math.random(100)/100
+
+    local mybitmaps = {
+        [1] = function(x,y)
+            x = x + M
+            y = y + M
+            local z = sin(x*x) - cos(y*y)
+            if z > 0 then
+                return '1'
+            else
+                return '0'
+            end
+        end,
+        [2] = function(x,y)
+            x = x + M
+            y = y + M
+            local z = sin(x*x) + cos(y*y) + tan(x*y)
+            if z > 0 then
+                return '1'
+            else
+                return '0'
+            end
+        end,
+        [3] = function(x,y)
+            x = x + M
+            y = y + M
+            local z = tan(x*x) + tan(y*y) + tan(y*x)
+            if z > 0 then
+                return '1'
+            else
+                return '0'
+            end
+        end,
+        [4] = function(x,y)
+            x = x + M
+            y = y + M
+            local z = sin(sin(x*x)) - sin(sin(y*y))
+            if z > 0 then
+                return '1'
+            else
+                return '0'
+            end
+        end,
+        [5] = function(x,y)
+            x = x + M
+            y = y + M
+            local z = (100*(log(x*x) - log(y*y))) // 2
+            if (z % 2) == 1 then
+                return '1'
+            else
+                return '0'
+            end
+        end
+    }
+
+    local mybitmap = mybitmaps[1]
+ -- local mybitmap = mybitmaps[4]
+
+    -- generate a N * N bitmap of "1" and "0" and store it
+
+    function MP.setmybitmap(n)
+        N = n
+        potrace.setbitmap("MyBitMap",potrace.contourplot(N,N,mybitmap))
+        M = M + math.pi/24
+    end
+\stopluacode
+
+\definecolor[colortwo][h=0057b7] % the ukraine flag colors
+\definecolor[colorone][h=ffd700] % yellowish and blueish
+
+\setMPvariables[whatever][n=100,a=1]
+
+\startuseMPgraphic{whatever}{n,a}
+    MP.setmybitmap(\MPvar{n});
+    % let potrace generate outlines from the stored bitmap
+    picture r ; r := image (
+        draw lmt_potraced [
+            stringname = "MyBitMap",
+            value      = "1",
+            size       = 0,
+        ] ;
+    ) xysized (10cm,10cm) ;
+    setbounds r to
+        boundingbox r
+        enlarged 5mm
+    ;
+    % actually it's one path as we used &&&
+    if \MPvar{a} = 2 :
+        draw boundingbox r
+            withcolor .5white
+            withpen pencircle scaled 5 ;
+        draw r
+            withcolor .3white ;
+    else :
+        fill boundingbox r
+            withcolor "colorone" ;
+        draw r
+            withcolor "colortwo" ;
+    fi ;
+\stopuseMPgraphic
+
+\protected\def\MakeSet#1#2#3#4#5{
+    \dorecurse{#1} {
+        \startTEXpage[offset=1cm]
+            \vbox \bgroup
+                \offinterlineskip
+                \dorecurse{#2} {%
+                    \hbox \bgroup
+                        \dorecurse{#3} {%
+                            \useMPgraphic{whatever}{n=#4,a=#5}%
+                            \hskip5mm
+                        }%
+                        \unskip
+                    \egroup
+                    \vskip5mm
+                }%
+                \removelastskip
+            \egroup
+        \stopTEXpage
+    }
+}
+
+\setuplayout[tight]
+
+\startbuffer[game-2023]
+
+\page \setupwhitespace[big]
+
+\subject{The addendum to the 2023 X-mas card}
+
+This is a \quote {find matching shapes} game for all ages, inspired by the
+\PRAGMA\ 2023 X-mas card. You can invent the rules yourself but this is how we
+played it during the holidays:
+
+\startitemize
+    \startitem
+        We took the (3 by 5, 12 page, complexity 20) version and printed two
+        copies on 160-200 gram paper. Any decent printer will scale to fit and it
+        looks quite okay on a proper inkjet printer.
+    \stopitem
+    \startitem
+        The print is cut into rectangles. You don't need to be too precise but try
+        to get through the middle of the white lines. Shuffle the cards and make a
+        stack.
+    \stopitem
+    \startitem
+        Best let one person lay out the cards slowly till there are some six by
+        four on the table and at some point matching pairs will show up.
+    \stopitem
+    \startitem
+        Add more card if needed. After a while players will start calling the
+        cards names, because human pattern recognition kicks in.
+    \stopitem
+    \startitem
+        When a player extracts a match the emptyt spaces will be filled with new
+        samples.
+    \stopitem
+    \startitem
+        Of course once you run out of new cards to lay out, the collection of
+        pairs speeds up. Some players can catch up at the end.
+    \stopitem
+\stopitemize
+
+Nothing prohibits to play with three copies and we can make it as complex as
+needed. Afterwards you can try to figure out the logic behind the shapes. If
+there is demand more variants can be provided and we can introduce more
+randomness. Just ask for it on the mailing list.
+
+\blank
+
+\startlines
+Hans Hagen & Ton Otten
+PRAGMA ADE, Hasselt NL
+December 2023
+\stoplines
+
+\page
+
+\stopbuffer
+
+\continueifinputfile{s-games-2023.mkxl}
+
+\setupbodyfont[dejavu] \setupwhitespace[big]
+
+\starttext
+
+% \MakeSet {8}{6}{4} {10} {1} %  8 * 24
+% \MakeSet{10}{5}{3} {15} {1} % 10 * 15
+% \MakeSet{10}{5}{3} {15} {1} % 10 * 15
+% \MakeSet{1}{40}{30} {20} {1} % 10 * 12
+\MakeSet{1}{40}{30} {15} {1} % 10 * 12
+\MakeSet{1}{40}{30} {20} {1} % 10 * 12
+
+% \getbuffer[game-2023]
+
+\stoptext

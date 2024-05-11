@@ -122,7 +122,7 @@ local registerotffeature  = otffeatures.register
 
 local sequencers          = utilities.sequencers
 local appendgroup         = sequencers.appendgroup
-local appendaction        = sequencers.appendaction
+----- appendaction        = sequencers.appendaction
 
 specifiers.contextsetups  = specifiers.contextsetups  or { }
 specifiers.contextnumbers = specifiers.contextnumbers or { }
@@ -1218,6 +1218,10 @@ do  -- else too many locals
         combinefeatures = v
     end)
 
+    function fonts.mode()
+        return texconditionals["c_font_compact"] and "compact" or "normal"
+    end
+
     implement {
         name      = "definefont_two",
         arguments = {
@@ -1250,6 +1254,7 @@ do  -- else too many locals
             if trace_defining then
                 report_defining("start stage two: %s, size %s, features %a & %a, mode %a",str,size,classfeatures,fontfeatures,inheritancemode)
             end
+            local compact = texconditionals["c_font_compact"]
             -- name is now resolved and size is scaled cf sa/mo
             local lookup, name, sub, method, detail = getspecification(str or "")
             -- new (todo: inheritancemode)
@@ -1267,7 +1272,7 @@ do  -- else too many locals
                 name = o_name
                 sub = o_sub
             end
-            if texconditionals["c_font_compact"] then
+            if compact then
                 size = 655360
             end
             -- so far
@@ -1372,10 +1377,21 @@ do  -- else too many locals
                 end
             end
             --
-            local tfmdata = definers.read(specification,size) -- id not yet known (size in spec?)
-            --
+--             local tfmdata = definers.read(specification,size) -- id not yet known (size in spec?)
+            local tfmdata, extend, squeeze, slant, weight = definers.read(specification,size,nil,compact) -- id not yet known (size in spec?)
             local lastfontid = 0
             local tfmtype    = type(tfmdata)
+            if compact then
+                setmacro("somefontextend", extend  ~= 1 and round(extend *1000) or "")
+                setmacro("somefontsqueeze",squeeze ~= 1 and round(squeeze*1000) or "")
+                setmacro("somefontslant",  slant   ~= 0 and round(slant  *1000) or "")
+                setmacro("somefontweight", weight  ~= 0 and round(weight *1000) or "")
+            else -- actually we can omit this as it's not used there
+                setmacro("somefontextend")
+                setmacro("somefontsqueeze")
+                setmacro("somefontslant")
+                setmacro("somefontweight")
+            end
             if tfmtype == "table" then
                 -- setting the extra characters will move elsewhere
                 local characters = tfmdata.characters
@@ -1398,9 +1414,9 @@ do  -- else too many locals
                     end
                     -- resolved (when designsize is used):
                     local size = round(tfmdata.parameters.size or 655360)
-if scaledfontmode ~= 4 then
-                    setmacro("somefontsize",size.."sp")
-end
+                    if scaledfontmode ~= 4 then
+                        setmacro("somefontsize",size.."sp")
+                    end
                     texsetcount(c_scaledfontsize,size)
                     lastfontid = id
                 else
@@ -1418,14 +1434,14 @@ end
                         name,tfmdata,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,classgoodies,goodies,classdesignsize,fontdesignsize)
                 end
                 csnames[tfmdata] = specification.cs
--- \definedfont ends up here
+                -- \definedfont ends up here
                 texdefinefont(global,cs,tfmdata)
              -- texdefinefont(cs,tfmdata,global and "global")
                 -- resolved (when designsize is used):
                 local size = round(fontdata[tfmdata].parameters.size or 0)
-if scaledfontmode ~= 4 then
-                setmacro("somefontsize",size.."sp")
-end
+                if scaledfontmode ~= 4 then
+                    setmacro("somefontsize",size.."sp")
+                end
                 texsetcount(c_scaledfontsize,size)
                 lastfontid = tfmdata
             else
@@ -1665,7 +1681,6 @@ function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specificati
     if accuratescale and not negative then
         size = round(delta * 1000)
     end
--- print(size,delta)
     return size, delta
 end
 
@@ -1674,7 +1689,66 @@ local designsizes = constructors.designsizes
 -- called quite often when in mp labels
 -- otf.normalizedaxis
 
-function constructors.hashinstance(specification,force)
+-- function constructors.hashinstance(specification,force)
+--     local hash      = specification.hash
+--     local size      = specification.size
+--     local fallbacks = specification.fallbacks
+--     if force or not hash then
+--         hash = constructors.hashfeatures(specification)
+--         specification.hash = hash
+--     end
+--     if size < 1000 and designsizes[hash] then
+--         size = round(constructors.scaled(size,designsizes[hash]))
+--     else
+--         size = round(size)
+--     end
+--     specification.size = size
+--     if fallbacks then
+--         hash = hash .. ' @ ' .. size .. ' @ ' .. fallbacks
+--     else
+--         local scalemode = specification.scalemode
+--         local special   = scalemode and specialscale[scalemode]
+--         if special then
+--             hash = hash .. ' @ ' .. size .. ' @ ' .. special
+--         else
+--             hash = hash .. ' @ ' .. size
+--         end
+--     end
+--     return hash
+-- end
+
+function constructors.hashinstance(specification,force,compact)
+    --
+    local normal = compact and specification.features.normal
+    local extend, squeeze, slant, weight, auto
+    if normal then
+        local effect = normal.effect
+        if effect then
+            extend  = effect.extend  or 1
+            squeeze = effect.squeeze or 1
+            slant   = effect.slant   or 0
+            weight  = effect.weight  or 0
+            auto    = effect.auto    or false
+        else
+            extend  = normal.extend  or 1
+            squeeze = normal.squeeze or 1
+            slant   = normal.slant   or 0
+            weight  = normal.weight  or 0
+            auto    = false
+        end
+        normal.extend  = nil
+        normal.squeeze = nil
+        normal.slant   = nil
+        normal.weight  = nil
+        weight = weight / 2
+    else
+        extend  = 1
+        squeeze = 1
+        slant   = 0
+        weight  = 0
+        auto    = false
+    end
+    --
     local hash      = specification.hash
     local size      = specification.size
     local fallbacks = specification.fallbacks
@@ -1699,7 +1773,7 @@ function constructors.hashinstance(specification,force)
             hash = hash .. ' @ ' .. size
         end
     end
-    return hash
+    return hash, extend, squeeze, slant, weight, auto
 end
 
 -- We overload the (generic) resolver:
@@ -2139,7 +2213,7 @@ function fonts.definetypeface(name,t)
         ctx_definefontsynonym( { formatters["%sBoldItalic"](Shape) }, { formatters["spec:%s-%s-italic-%s"]  (fontname, boldweight,   boldwidth  ) } )
         ctx_definefontsynonym( { formatters["%sItalic"]    (Shape) }, { formatters["spec:%s-%s-italic-%s"]  (fontname, normalweight, normalwidth) } )
     ctx_stopfontclass()
-    local settings = sequenced({ features= t.features },",")
+    local settings = sequenced({ features = t.features },",")
     ctx_dofastdefinetypeface(name, shortcut, shape, size, settings)
 end
 
@@ -3236,7 +3310,10 @@ end
 
 do
 
+    -- We can make these real font dimens instead:
+
     local dimen_code = tokens.values.dimension
+    local yscaled    = font.yscaled
 
     implement {
         name      = "ascender",
@@ -3244,7 +3321,10 @@ do
         protected = true,
         usage     = "value",
         actions   = function(index)
-            return dimen_code, parameters[true].ascender or 0
+         -- return dimen_code, yscaled(parameters[true].ascender or 0) -- unreliable
+         -- return dimen_code, yscaled(parameters[true].ascent   or 0) -- too much
+            local c = characters[true][0x28] -- (
+            return dimen_code, yscaled(c and c.height or 0)
         end
     }
     implement {
@@ -3253,7 +3333,10 @@ do
         protected = true,
         usage     = "value",
         actions   = function(index)
-            return dimen_code, parameters[true].descender or 0
+         -- return dimen_code, yscaled(parameters[true].descender or 0) -- unreliable
+         -- return dimen_code, yscaled(parameters[true].descent   or 0) -- too much
+            local c = characters[true][0x28] -- (
+            return dimen_code, yscaled(c and c.depth or 0)
         end
     }
     implement {
@@ -3262,11 +3345,13 @@ do
         protected = true,
         usage     = "value",
         actions   = function(index)
-            return dimen_code, parameters[true].capheight or 0
+         -- return dimen_code, yscaled(parameters[true].capheight or 0) -- unreliable
+            local c = characters[true][0x58] -- X
+            return dimen_code, yscaled(c and c.height or 0)
         end
     }
 
- -- similar performance but then we need to define at the tex end anyway
+ -- This has similar performance but then we need to define at the tex end so ...
  --
  -- local properties = {
  --     [130] = "ascender",
@@ -3280,7 +3365,7 @@ do
  --     protected = true,
  --     usage     = "value",
  --     actions   = function(index)
- --         return dimen_code, parameters[true][properties[index]] or 0
+ --         return dimen_code, yscaled(parameters[true][properties[index]] or 0)
  --     end
  -- }
 

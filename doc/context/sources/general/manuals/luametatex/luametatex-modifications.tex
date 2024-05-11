@@ -906,6 +906,29 @@ all is discussed in detail in this manual but there are introductions in the
 \CONTEXT\ distribution that explain them. But the \TEX\ kernel is of course
 omnipresent.
 
+\startbuffer[luatex]
+
+The following primitives are available in \LUATEX\ but not in \LUAMETATEX. Some
+of these are emulated in \CONTEXT. Some of these primitives that deal with math
+and start with an \type {U} have been renamed to names not having this prefix.
+
+\stopbuffer
+
+\startbuffer[luametatex]
+
+The following primitives are available in \LUAMETATEX\ only. In the meantime the
+\LUAMETATEX\ code base is so different from \LUATEX\ that porting back is no
+longer reasonable. The primitives can roughly be divided in those that relate to
+programming and those that deal with typesetting. In this manual we don't go into
+details about most of these. More information (and examples) of the first
+category can be found in the \quote {primitives} manual that ships with \CONTEXT,
+and the second category is spread over (for instance) the \quote {lowlevel}
+manuals. After all, it is easier to present usage in a known environment. Because
+development of \LUATEX\ and \LUAMETATEX\ is related to \CONTEXT\ development, you
+can also expect to find more examples of usage there.
+
+\stopbuffer
+
 \startluacode
 
 local luametatex = tex.primitives()
@@ -920,7 +943,6 @@ if not luatex then
 
     luatex = table.load("luatex-primitives.lua")
 end
-
 
 if luatex and luametatex then
 
@@ -945,10 +967,7 @@ if luatex and luametatex then
     luametatex = table.tohash(luametatex)
 
  -- context.page()
-
-    context("The following primitives are available in \\LUATEX\\ but not in \\LUAMETATEX.  ")
-    context("Some of these are emulated in \\CONTEXT.")
-
+    context.getbuffer { "luatex"}
     context.blank()
     context.startcolumns { n = 2 }
         for k, v in table.sortedhash(luatex) do
@@ -964,11 +983,7 @@ if luatex and luametatex then
     context.blank()
 
  -- context.page()
-
-    context("The following primitives are available in \\LUAMETATEX\\ only. In the meantime ")
-    context("the \\LUAMETATEX\\ code base is so different from \\LUATEX\\ that backporting ")
-    context("is no longer reasonable.")
-
+    context.getbuffer { "luametatex"}
     context.blank()
     context.startcolumns { n = 2 }
         for k, v in table.sortedhash(luametatex) do

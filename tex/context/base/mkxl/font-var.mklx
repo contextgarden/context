@@ -56,4 +56,38 @@
 % we can use an indirect mapping for fontclasses (map string onto numbers) and indeed this
 % is somewhat more efficient but also makes the code messy ... maybe some day ...
 
+\newtoks\everycompactfontmode
+
+\newconditional\c_font_compact
+
+\appendtoks
+    \c_font_compact\conditionaltrue
+\to \everycompactfontmode
+
+\protected\def\font_enable_compact_font_mode
+  {\ifcase\currentgrouplevel
+     \the\everycompactfontmode
+     \global\everycompactfontmode\emptytoks
+     \glettonothing\font_enable_compact_font_mode
+     \writestatus\m!fonts\empty
+     \writestatus\m!fonts{compact font mode enabled}%
+     \writestatus\m!fonts\empty
+   \else
+     \font_ignore_compact_font_mode
+     \font_enable_compact_font_mode
+   \fi}
+
+\protected\def\font_ignore_compact_font_mode
+  {\gdef\font_enable_compact_font_mode
+     {\writestatus\m!fonts\empty
+      \writestatus\m!fonts{compact font mode cannot be enabled}%
+      \writestatus\m!fonts\empty
+      \glettonothing\font_enable_compact_font_mode
+      \glettonothing\font_ignore_compact_font_mode}}
+
+\installtexexperiment
+  {fonts.compact}
+  {\font_enable_compact_font_mode}
+  {}
+
 \protect \endinput

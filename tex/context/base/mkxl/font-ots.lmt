@@ -1093,7 +1093,7 @@ end
 -- to explicitly test for basechar, baselig and basemark entries.
 
 function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode,skiphash)
-    local markchar = getchar(start)
+    local markchar = getchar(start) -- combine with getprev
     if marks[markchar] then
         local base = getprev(start) -- [glyph] [start=mark]
         if base then
@@ -2610,17 +2610,17 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                     if last then
                         local nxt, char, id = isnextchar(last,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
                         if char then
-                            if skiphash and skiphash[char] then
+                            if seq[n][char] then
+                                if n < l then
+                                    last = nxt
+                                end
+                                n = n + 1
+                            elseif skiphash and skiphash[char] then
                                 skipped = true
                                 if trace_skips then
                                     show_skip(dataset,sequence,char,ck,classes[char])
                                 end
                                 last = nxt
-                            elseif seq[n][char] then
-                                if n < l then
-                                    last = nxt
-                                end
-                                n = n + 1
                             elseif discfound then
                                 notmatchreplace[discfound] = true
                                 if notmatchpre[discfound] then
@@ -2719,17 +2719,17 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                             if prev then
                                 local prv, char, id = isprevchar(prev,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
                                 if char then
-                                    if skiphash and skiphash[char] then
+                                   if seq[n][char] then
+                                        if n > 1 then
+                                            prev = prv
+                                        end
+                                        n = n - 1
+                                    elseif skiphash and skiphash[char] then
                                         skipped = true
                                         if trace_skips then
                                             show_skip(dataset,sequence,char,ck,classes[char])
                                         end
                                         prev = prv
-                                    elseif seq[n][char] then
-                                        if n > 1 then
-                                            prev = prv
-                                        end
-                                        n = n - 1
                                     elseif discfound then
                                         notmatchreplace[discfound] = true
                                         if notmatchpost[discfound] then
@@ -2851,17 +2851,17 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                         if current then
                             local nxt, char, id = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
                             if char then
-                                if skiphash and skiphash[char] then
+                                if seq[n][char] then
+                                    if n < s then
+                                        current = nxt
+                                    end
+                                    n = n + 1
+                                elseif skiphash and skiphash[char] then
                                     skipped = true
                                     if trace_skips then
                                         show_skip(dataset,sequence,char,ck,classes[char])
                                     end
-                                    current = nxt -- was absent
-                                elseif seq[n][char] then
-                                    if n < s then -- new test
-                                        current = nxt -- was absent
-                                    end
-                                    n = n + 1
+                                    current = nxt
                                 elseif discfound then
                                     notmatchreplace[discfound] = true
                                     if notmatchpre[discfound] then
@@ -3981,22 +3981,19 @@ do
                     while start do
                         local nxt, char, id = isnextchar(start,font,dynamic,state) -- we can move the data/state checks here
                         if char then
-                            if skiphash and skiphash[char] then -- we never needed it here but let's try
-                                start = nxt
-                            else
-                                local lookupmatch = lookupcache[char]
-                                if lookupmatch then
-                                    currentscale, currentxscale, currentyscale = getscales(start)
-                                    local ok, df
-                                    head, start, ok, df = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
-                                    if df then
-                                     -- print("restart 1",typ)
-                                    elseif start then
-                                        start = getnext(start) -- can be a new start
-                                    end
-                                else
-                                    start = nxt
+                            -- no skiphash check here
+                            local lookupmatch = lookupcache[char]
+                            if lookupmatch then
+                                currentscale, currentxscale, currentyscale = getscales(start)
+                                local ok, df
+                                head, start, ok, df = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
+                                if df then
+                                 -- print("restart 1",typ)
+                                elseif start then
+                                    start = getnext(start) -- can be a new start
                                 end
+                            else
+                                start = nxt
                             end
                         elseif char == false or id == glue_code then
                             -- a different font|state or glue (happens often)
@@ -4030,39 +4027,36 @@ do
                     while start do
                         local nxt, char, id = isnextchar(start,font,dynamic,state)
                         if char then
-                            if skiphash and skiphash[char] then -- we never needed it here but let's try
-                                start = nxt
-                            else
-                                local m = merged[char]
-                                if m then
-                                    currentscale, currentxscale, currentyscale = getscales(start)
-                                    local ok, df
-                                    for i=m[1],m[2] do
-                                        local step = steps[i]
-                                        local lookupcache = step.coverage
-                                        local lookupmatch = lookupcache[char]
-                                        if lookupmatch then
-                                            -- we could move all code inline but that makes things even more unreadable
+                            -- no skiphash check here
+                            local m = merged[char]
+                            if m then
+                                currentscale, currentxscale, currentyscale = getscales(start)
+                                local ok, df
+                                for i=m[1],m[2] do
+                                    local step = steps[i]
+                                    local lookupcache = step.coverage
+                                    local lookupmatch = lookupcache[char]
+                                    if lookupmatch then
+                                        -- we could move all code inline but that makes things even more unreadable
 --                                                 local ok, df
-                                            head, start, ok, df = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
-                                            if df then
-                                                break
-                                            elseif ok then
-                                                break
-                                            elseif not start then
-                                                -- don't ask why ... shouldn't happen
-                                                break
-                                            end
+                                        head, start, ok, df = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
+                                        if df then
+                                            break
+                                        elseif ok then
+                                            break
+                                        elseif not start then
+                                            -- don't ask why ... shouldn't happen
+                                            break
                                         end
                                     end
-                                    if df then
-                                     -- print("restart 2",typ)
-                                    elseif start then
-                                        start = getnext(start) -- can be a new next
-                                    end
-                                else
-                                    start = nxt
                                 end
+                                if df then
+                                 -- print("restart 2",typ)
+                                elseif start then
+                                    start = getnext(start) -- can be a new next
+                                end
+                            else
+                                start = nxt
                             end
                         elseif char == false or id == glue_code then
                             -- a different font|state or glue (happens often)
@@ -4161,32 +4155,29 @@ do
                 position = position + 1
                 local m = merged[char]
                 if m then
-                    if skiphash and skiphash[char] then -- we never needed it here but let's try
-                        start = nxt
-                    else
-                        for i=m[1],m[2] do
-                            local step = steps[i]
-                            local lookupcache = step.coverage
-                            local lookupmatch = lookupcache[char]
-                            if lookupmatch then
-                                currentscale, currentxscale, currentyscale = getscales(start)
-                                local ok
-                                head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
-                                if ok then
-                                 -- if matches then
-                                 --     matches[position] = i
-                                 -- else
-                                 --     matches = { [position] = i }
-                                 -- end
-                                    break
-                                elseif not start then
-                                    break
-                                end
+                    -- no skiphash check here
+                    for i=m[1],m[2] do
+                        local step = steps[i]
+                        local lookupcache = step.coverage
+                        local lookupmatch = lookupcache[char]
+                        if lookupmatch then
+                            currentscale, currentxscale, currentyscale = getscales(start)
+                            local ok
+                            head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
+                            if ok then
+                             -- if matches then
+                             --     matches[position] = i
+                             -- else
+                             --     matches = { [position] = i }
+                             -- end
+                                break
+                            elseif not start then
+                                break
                             end
                         end
-                        if start then
-                            start = getnext(start) -- start can be new
-                        end
+                    end
+                    if start then
+                        start = getnext(start) -- start can be new
                     end
                 else
                  -- start = getnext(start)

@@ -110,6 +110,8 @@ local pdf_n                   = pdfconstant("N") -- None Invert Outline Push
 --
 local pdf_no_rect             = pdfarray { 0, 0, 0, 0 }
 
+local signature               = nil
+
 local splitter = lpeg.splitat("=>")
 
 local formats = {
@@ -942,10 +944,16 @@ local function finishfields()
     end
     if #collected > 0 then
         local acroform = pdfdictionary {
-            NeedAppearances = pdfmajorversion() == 1 or nil,
             Fields          = pdfreference(pdfflushobject(collected)),
             CO              = fieldsetlist(calculationset),
         }
+        if signature then
+            acroform.SigFlags = 3
+        elseif pdfmajorversion() == 1 then
+            acroform.NeedAppearances = true
+        else
+            -- depricated
+        end
         if sometext or somefont then
             checkpdfdocencoding()
             if sometext then
@@ -1108,6 +1116,7 @@ end
 local function makesignatureparent(field,specification)
     local text   = pdfunicode(field.default)
     local length = tonumber(specification.length or 0) or 0
+    local value  = lpdf.registersignature(field.values)
     local d      = pdfdictionary {
         Subtype  = pdf_widget,
         T        = pdfunicode(specification.title),
@@ -1119,8 +1128,8 @@ local function makesignatureparent(field,specification)
         FT       = pdf_sig,
         Q        = fieldalignment(specification),
         MaxLen   = length == 0 and 1000 or length,
-        DV       = text,
-        V        = text,
+        DV       = not value and text or nil,
+        V        = value or text,
     }
     save_parent(field,specification,d)
 end
@@ -1160,6 +1169,9 @@ local function makesignaturechild(name,specification)
         AA      = fieldactions(specification),
         MK      = fieldrendering(specification),
         Q       = fieldalignment(specification),
+-- AP = pdfdictionary {
+--     N = pdfreference(lpdf.flushstreamobject("q 0 0 100 100 re f Q"))
+-- }
     }
     return save_kid(parent,specification,d)
 end
@@ -1167,6 +1179,44 @@ end
 function methods.signature(name,specification)
     return makesignaturechild(name,specification)
 end
+
+--
+
+function methods.signed(name,specification)
+    local field = fields[name]
+    if field then
+        specification.option = "hidden" -- for now
+        local value = lpdf.registersignature(field.values)
+        if not value or value == "" then
+            value = "pkcs7"
+        end
+        local d = pdfdictionary {
+            Subtype  = pdf_widget,
+            T        = pdfunicode(specification.title),
+            F        = fieldplus(specification),
+            Ff       = fieldflag(specification),
+            OC       = fieldlayer(specification),
+         -- DA       = fieldsurrounding(specification),
+         -- AA       = fieldactions(specification),
+            FT       = pdf_sig,
+         -- Q        = fieldalignment(specification),
+            V        = lpdf.registersignature(value),
+        }
+        --
+        local kn = pdfreserveobject()
+        local width  = specification.width  or 0
+        local height = specification.height or 0
+        local depth  = specification.depth  or 0
+        local box = hpack_node(nodeinjections.annotation(width,height,depth,d(),kn))
+        -- redundant
+        box.width  = width
+        box.height = height
+        box.depth  = depth
+        collected[#collected+1] = pdfreference(kn)
+        return box
+    end
+end
+
 --
 
 local function makechoiceparent(field,specification)

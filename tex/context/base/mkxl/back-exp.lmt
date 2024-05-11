@@ -191,35 +191,36 @@ local namespaced = {
 }
 
 local namespaces = {
-    msubsup      = "m",
-    msub         = "m",
-    msup         = "m",
-    mn           = "m",
-    mi           = "m",
-    ms           = "m",
-    mo           = "m",
-    mtext        = "m",
-    mrow         = "m",
-    mfrac        = "m",
-    mroot        = "m",
-    msqrt        = "m",
-    munderover   = "m",
-    munder       = "m",
-    mover        = "m",
-    merror       = "m",
-    math         = "m",
-    mrow         = "m",
-    mtable       = "m",
-    mtr          = "m",
-    mtd          = "m",
-    mfenced      = "m",
-    maction      = "m",
-    mspace       = "m",
+    msubsup     = "m",
+    msub        = "m",
+    msup        = "m",
+    mn          = "m",
+    mi          = "m",
+    ms          = "m",
+    mo          = "m",
+    mtext       = "m",
+    mrow        = "m",
+    mfrac       = "m",
+    mroot       = "m",
+    msqrt       = "m",
+    munderover  = "m",
+    munder      = "m",
+    mover       = "m",
+    merror      = "m",
+    math        = "m",
+    mrow        = "m",
+    mtable      = "m",
+    mtr         = "m",
+    mtd         = "m",
+    mfenced     = "m",
+    maction     = "m",
+    mspace      = "m",
     -- only when testing
-    mstacker     = "m",
-    mstackertop  = "m",
-    mstackermid  = "m",
-    mstackerbot  = "m",
+    mstacker    = "m",
+    mstackertop = "m",
+    mstackermid = "m",
+    mstackerbot = "m",
+    mextensible = 'm',
 }
 
 setmetatableindex(namespaced, function(t,k)
@@ -1597,7 +1598,9 @@ local collectresults  do -- too many locals otherwise
                             fc = fc and fc[c]
                             if fc then
                                 local u = fc.unicode
-                                if not u then
+                                if u == 0 or u == 0xFFFD then
+                                    -- ignore (can make disappear)
+                                elseif not u then
                                     nofcurrentcontent = nofcurrentcontent + 1
                                     currentcontent[nofcurrentcontent] = utfchar(c)
                                 elseif type(u) == "table" then
@@ -2793,7 +2796,7 @@ local htmltemplate <const> = [[
         if not exporting then
             report_export("enabling export to xml")
             enableaction("shipouts","nodes.handlers.export")
-            enableaction("shipouts","nodes.handlers.accessibility")
+         -- enableaction("shipouts","nodes.handlers.accessibility")
             enableaction("math",    "noads.handlers.tags")
             enableaction("everypar","nodes.handlers.checkparcounter")
             luatex.registerstopactions(structurestags.finishexport)

@@ -24,10 +24,13 @@
 \installcorenamespace{mathoperators}
 \installcorenamespace{mathoperatormethod}
 
+\mathlimitsmode\plusone % make long script look right
+
 \installcommandhandler \??mathoperators {mathoperator} \??mathoperators
 
 \setupmathoperator
-  [\c!left=\zerocount]% so we always have something
+  [\c!left=\zerocount,
+   \c!mathclass=\mathoperatorcode]
 
 \aliased\let\setupmathoperators\setupmathoperator
 
@@ -73,7 +76,7 @@
      \orelse\ifcstok{\mathoperatorparameter\c!size}\v!auto
        \s!auto
      \fi
-     \s!class \mathoperatorcode
+     \s!class \mathcodechecked{\mathoperatorparameter\c!mathclass} %
      \s!attr \indexofregister \c_attr_mathsize \attributeunsetvalue
      % todo: find a way to pick up or pass sup/sub to here
      \Udelimiter \zerocount \fam \mathoperatorparameter\c!left
@@ -113,10 +116,14 @@
 \definemathoperator [products]
 \definemathoperator [operators]
 
-\setupmathoperators [integrals]  [\c!size=\v!auto,\c!method=\mathematicsparameter\c!integral] % cf Mikael's wish
 \setupmathoperators [summations] [\c!size=\v!auto]
 \setupmathoperators [products]   [\c!size=\v!auto]
 \setupmathoperators [operators]  [\c!size=\v!auto]
+
+\setupmathoperators [integrals]
+  [\c!size=\v!auto,
+   \c!mathclass=\mathintegralcode,
+   \c!method=\mathematicsparameter\c!integral] % cf Mikael's wish
 
 \setupmathematics[\c!integral=nolimits]
 
@@ -185,6 +192,5 @@
 \definemathoperator [bigreversesolidus] [operators]  [\c!left="29F9] % big reverse solidus
 \definemathoperator [bigdoublewedge]    [operators]  [\c!left="2A07] % big double wedge
 \definemathoperator [bigdoublevee]      [operators]  [\c!left="2A08] % big double vee
-
 
 \protect \endinput

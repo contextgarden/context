@@ -293,7 +293,7 @@ setmetatableindex(italics, function(t,k) -- is test !
         return italics[currentfont()]
     else
         local properties = identifiers[k].properties
-        local hasitalics = properties and properties.hasitalics
+        local hasitalics = properties and properties.hasitalics or (properties.autoitalicamount and properties.autoitalicamount ~= 0)
         if hasitalics then
             hasitalics = characters[k] -- convenient return
         else

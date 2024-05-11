@@ -1,0 +1,831 @@
+%D \module
+%D   [      file=s-tugboat-columns,
+%D        version=2023-08-10,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=\TUGBOAT\ base style,
+%D         author={Hans Hagen and others},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+
+\startmodule[tugboat-columns]
+
+% \startmode[columns]
+%     \widowpenalty        0
+%     \clubpenalty         0
+% %    \hyphenpenalty       0
+% %     \finalhyphendemerits 0
+% %     \doublehyphendemerits0
+% \stopmode
+%
+% \startnotmode[columns]
+%     \widowpenalty        100000
+%     \clubpenalty         100000
+% %     \finalhyphendemerits 100000
+% %     \doublehyphendemerits100000
+% \stopnotmode
+
+% \enablemode[columns]
+
+% \startsetups columns:figure:before
+%     \startlinecorrection[blank]
+% \stopsetups
+%
+% \startsetups columns:figure:after
+%     \stoplinecorrection
+% \stopsetups
+
+%D This file is derived t-tugboat by Aditya Mahajan which in turn is derived from
+%D older files. As Mikael and I work on and experiment with math, par building, page
+%D building, etc.\ we decided to look (again) into the \TUGBOAT\ style, also because
+%D write articles for it. We use page columns because with a few tricks we don't
+%D need to adapt the source too much; we prefer single columns and that shows.
+
+\enablemode[tugboat]
+
+%D Karl wants:
+
+\enabletrackers[builders.hpack.quality]
+\enabletrackers[builders.hpack.collect]
+\enabletrackers[builders.hpack.overflow]
+
+%D We store the information about the article in variables. We can pick up some from
+%D \type {rugboat.dates} once I know which ones.
+
+\setvariables
+  [tugboat]
+  [type=article,
+   %
+   year=1900,
+   volume=0,
+   number=0,
+   page=1001,
+   %
+   title=ConTeXt style for TUGboat,
+   subtitle=,
+   keywords=,
+   author=T. Boat,
+   address={Harbour Master KB \\ Harbour St. 1 \\ 8061XX Hasselt NL},
+   email={tugboat@tug.org}]
+
+%D \TUGBOAT\ uses slightly different interline space than the default. So we change
+%D the interline space. Keep in mind that the engine does not really have a concept
+%D of lines beyond baseline skip that interacts with the previous depth and current
+%D height. There's a lot of attention to spacing in \CONTEXT\ so don't mess it up
+%D with vertical skips and such, use \type {\blank} instead.
+
+\definebodyfontenvironment    [8pt] [interlinespace=9.5pt, big=9pt,   small=7pt]
+\definebodyfontenvironment    [9pt] [interlinespace=11pt,  big=10pt,  small=8pt]
+\definebodyfontenvironment   [10pt] [interlinespace=12pt,  big=12pt,  small=9pt]
+\definebodyfontenvironment   [12pt] [interlinespace=14pt,  big=14.4pt,small=10pt]
+\definebodyfontenvironment [14.4pt] [interlinespace=18pt,  big=14.4pt,small=12pt]
+
+%D We use italic rather than slanted for emphasis.
+
+\setupbodyfontenvironment
+  [default]
+  [em=italic]
+
+%D \TUGBOAT\ uses Computer Modern fonts, and \CONTEXT\ uses Latin Modern by default.
+%D So, we just specify the font size.
+
+\setupbodyfont
+  [10pt]
+
+%D We break after these chars in urls, not before.
+
+\sethyphenatedurlafter /
+\sethyphenatedurlafter .
+\sethyphenatedurlafter _
+
+%D The layout is based on the letter paper format. This means that we get somewhat
+%D wider columns than on A4, but we can't make the margins narrower, which would
+%D ease some constraints.
+
+\setuppapersize
+  [letter]
+  [letter]
+
+\setuplayout
+  [topspace=3.8pc,% was 3.5pc
+   header=1pc,
+   headerdistance=1.5pc,
+   height=middle,
+   footerdistance=2pc,
+   footer=1pc,
+   bottomspace=3pc,
+   %
+   backspace=6pc,
+   width=middle,
+   cutspace=6pc,
+   %
+   margin=4pc,
+   margindistance=1pc]
+
+%D We have several column mechanisms and they all serve a different purpose. Here we
+%D use pagecolumns. They support much of what we can do in single columns, but of
+%D course there are exceptions. Floats can go into columns of aremoved to the top or
+%D bottom when there is no room. We don't span mid column. Notes can go in columns
+%D or at the end. We can start with a single column (for titles and such).
+%D
+%D This mechanism will be improved over time in sync with additional features in the
+%D \LUAMETATEX\ engine. This means that older documents might render differently
+%D (hopefully better). It is no problem to use more than two columns but this is
+%D what \TUGBOAT\ needs:
+
+\setuppagecolumns
+  [n=2,
+   distance=1.5pc]
+
+\setuppagenumbering
+  [location=,
+   alternative=doublesided]
+
+%D In \TUGBOAT\ different articles are glued together to form the final journal, so
+%D we do not want each article to occupy even number of pages.
+
+%D TODO: this needs checking with page columns:
+
+\installpagebreakhandler {last} {}
+
+%D We use automatic indentation control, that is: no indentation after titles and
+%D skips. Normally we dont'use indentation in \CONTEXT\ articles but prefer
+%D whitespace. Quite often we have short sentences and indentation just looks bad
+%D on successive ones.
+
+\setupindenting
+  [20pt,yes]
+
+%D We do not usually want indentation after lists.
+
+\setupenumerations [indentnext=no]
+\setupdescriptions [indentnext=no]
+
+%D And these. We typeset itemizations ragged right.
+
+\setupitemgroup
+  [itemize]
+  [indentnext=no,
+   align=right]
+
+%D We align them at the paragraph indentation and pack them by default.
+
+\setupitemgroup
+  [itemize]
+  [each]
+  [margin=1pc,
+   width=1em,
+   distance=0pt]
+
+\setupitemgroup
+  [itemize]
+  [1]
+  [packed]
+
+%D This a good opportunity to play with the additional passes in the par builder.
+%D The following values are experimental
+
+% \setupalign
+%   [tolerant]
+
+\startsetups align:pass:quality:1
+\parpasses    6
+    classes              \indecentparpassclasses
+    threshold            0.025pt
+    tolerance             250
+    extrahyphenpenalty     50
+    orphanpenalty        5000
+  % font driven
+  next ifadjustspacing
+    threshold            0.025pt
+    classes              \tightparpassclasses
+    tolerance             300
+    adjustspacing           3
+    orphanpenalty        5000
+  next ifadjustspacing
+    threshold            0.025pt
+    tolerance            350
+    adjustspacing           3
+    adjustspacingstep       1
+    adjustspacingshrink    20
+    adjustspacingstretch   40
+    orphanpenalty        5000
+    emergencystretch     .25\bodyfontsize
+  % otherwise, factors 1000
+  next
+    threshold            0.025pt
+    classes              \tightparpassclasses
+    tolerance             300
+    adjustspacing           3
+    adjustspacingstep       1
+    adjustspacingshrink    10
+    adjustspacingstretch   15
+    orphanpenalty        5000
+  next
+    threshold            0.025pt
+    tolerance             350
+    adjustspacing           3
+    adjustspacingstep       1
+    adjustspacingshrink    20
+    adjustspacingstretch   40
+    orphanpenalty        5000
+    emergencystretch     .25\bodyfontsize
+  % whatever
+  next
+    threshold            0.025pt
+    tolerance            3000
+    orphanpenalty        5000
+    emergencystretch     .25\bodyfontsize
+\relax\stopsetups
+
+\setupalignpass[quality:1]
+
+%D We don't want this ugly extreme stretching between elements when we end a page
+%D and package it.
+
+\setuplayout
+  [limitstretch=yes]
+
+\setuplayout
+  [vz=2]
+
+\setupalign
+  [depth]
+
+%D The question is: do we prefer a \CONTEXT\ look and feel or go for the more \LATEX
+%D ish one used in \TUGBOAT. Because no grid typesetting is expected we suppose that
+%D it doesn't matter much. We also definitely will use properly spaced tables, so
+%D we're already different.
+
+\definevspacingamount[tugbeforesection] [8pt plus 1pt minus 1pt][\lineheight]
+\definevspacingamount[tugaftersection]  [4pt plus 1pt minus 1pt][.5\lineheight]
+
+\setuphead
+  [section,subsection,subsubsection,
+   subject,subsubject,subsubsubject]
+  [style=bold,
+   align=right,
+   before={\blank[tugbeforesection]},
+   after={\blank[tugaftersection]}]
+
+%D We define a logical skip. This is equal to the \type {topsep} in the normal style,
+%D and most environments should have this skip.
+
+\definevspacingamount[tugsmallamount] [3pt  plus 1pt minus 1pt][.5\lineheight]
+\definevspacingamount[tugmediumamount][9pt  plus 3pt minus 3pt][.5\lineheight]
+\definevspacingamount[tuglargeamount] [10pt plus 4pt minus 4pt][\lineheight]
+
+\defineblank[tugblank] [tugsmallamount]
+\defineblank[tugsmall] [tugsmallamount]
+\defineblank[tugmedium][tugmediumamount]
+\defineblank[tuglarge] [tuglargeamount]
+\defineblank[tughalf]  [halfline]
+
+\setupblank
+  [tugblank]
+
+\setupitemize
+  [1]
+  [before={\blank[tugblank]},
+   after={\blank[tugblank]},
+   inbetween={\blank[tugblank]}]
+
+\setuplines
+  [before={\blank[tugblank]},
+   after={\blank[tugblank]},
+   inbetween={\blank[tugblank]}]
+
+%D Because we don't want to mess up originals too much we have a few hacks:
+
+\setuplinecorrection
+  [before={\blank[tugblank]},
+   after={\blank[tugblank]}]
+
+%D \TUGBOAT\ uses a smaller font size for verbatim typesetting.
+
+%D TODO: tb uses 9pt for verbatim, which looks a bit funny and it messes up the spacing
+%D but in lmtx we can actually play with \glyphxscale
+
+\definefontfile[modern-condensed][modern-condensed]
+
+\definetypeface
+  [narrowtt] [tt]
+  [mono] [modern-condensed] [default] [features=none]
+
+\definefont[TugBoatVerbatimFont][Mono*none sa .9]
+
+\setuptyping
+  [option=none,
+   align=hangright,
+   style=narrowtt,
+   before={\blank[tugblank]},
+   after={\blank[tugblank]}]
+
+% An uglier variant:
+
+\startsetups[tugboat:verbatim:tight]
+    \setuptyping
+      [style=TugBoatVerbatimFont,
+       bodyfont=9pt, % hm
+       blank=halfline,
+       lines=hyphenated]
+\stopsetups
+
+%D Do not colorize code.
+
+\setuptyping[LUA][option=]
+\setuptyping[TEX][option=]
+\setuptyping[MP] [option=]
+
+
+%      %D Tiny line numbers in numbered code (not text size)
+%
+%      \setuplinenumbering[style=\tfxx] % \infofont would be really tiny
+%
+%      %D \section{Figure captions}
+%      %D
+%      %D \TUGBOAT\ uses a smaller font size for captions, too; \type {\small} gives 8pt,
+%      %D and we want 9pt, so we have to manually fix the baselines.
+%
+%      \setupcaptions
+%        [headstyle=\AcroFontBold,
+%         style={\AcroFont\advance\baselineskip by -1pt},
+%         align=right]
+%
+%      %D We like a colon after the caption label.
+%
+%      \let\floatcaptionsuffix=:
+%
+%      % Prefer floats in text.
+%
+%      \setupfloat[figure][align=middle,default=here]
+%      \setupfloat[table] [align=middle,default=here]
+
+
+%D Not entirely a la \TUGBOAT:
+
+\protected\def\MyFootNoteRule
+  {\hrule width 5pc height .4pt depth 0pt\relax \kern \strutdepth}
+
+\setupfootnotes
+% [bodyfont=8pt,
+  [bodyfont=9pt,
+   location=columns,
+   rule=on,
+   rulecommand=\MyFootNoteRule]
+
+% \setupnotation
+% [footnote]
+
+\setupnotations
+  [location=joinedup,
+   width=fit,
+   headstyle=normal,
+   distance=.5em]
+
+%D We define a standard description and enumeration environment.
+
+\definedescription
+  [description]
+  [location=hanging,
+   width=broad,
+   before={\blank[tugblank]},
+   after={\blank[tugblank]}]
+
+\defineenumeration
+  [enumeration]
+  [location=hanging,
+   width=broad,
+   before={\blank[tugblank]},
+   after={\blank[tugblank]}]
+
+%D We need to get rid of some structure in case we include something also used
+%D otherwise. This assumes that we always start at the section level.
+
+\setuphead
+  [chapter]
+  [page=,
+   before=,
+   after=,
+   incrementnumber=no,
+   placehead=no]
+
+%D More or less like plain BibTeX + ltugboat.
+
+\setupbtx
+  [default:list:numbering]
+  [left={[},
+   right={]}]
+
+\setupbtxlist
+  [default]
+  [width=2em,
+   style={\frenchspacing},
+   align={raggedright,verystrict}]
+
+%D Instead of color, we use weighted gray scales (will become an option):
+
+\setupcolors
+  [conversion=always]
+
+%D English it is.
+
+\mainlanguage
+  [en]
+
+%D We define some logical skips
+
+\defineblank [tugbefore]   [big]
+\defineblank [tuginbetween][big]
+\defineblank [tugafter]    [tugbefore]
+
+%D Some real macros:
+
+\protected\def\StopAbstract
+  {}
+
+\protected\def\StartAbstract
+  {\dostartbuffer[abstract][StartAbstract][StopAbstract]}
+
+\startsetups tugboat:abstract:setup
+
+  \setuptolerance              % really? we need an example
+    [horizontal,tolerant]
+
+  \setupnarrower
+    [before={\blank[tughalf]},
+     after={\blank[tuglarge]},
+     middle=4.875pc]
+
+\stopsetups
+
+%D Headers and footers are different for normal issues and proceedings.
+
+\startsetups tugboat:banner:text:article
+
+%   {\sl TUGboat},\space
+%   Volume \getvariable{tugboat}{volume}\space
+%   (\getvariable{tugboat}{year}),\space
+%   No.\space\getvariable{tugboat}{number}
+
+\stopsetups
+
+\def\postissno{Proceedings of the \tubyear\ Annual Meeting}
+
+\startsetups tugboat:banner:text:proceedings
+
+    \setups[tugboat:banner:text:article]
+    \thinspace\emdash\thinspace
+    \postissno
+
+\stopsetups
+
+\startsetups tugboat:banner:setup:article
+
+  \setupheadertexts
+    [\setups{tugboat:banner:text:article}]
+    [pagenumber]
+
+% There are no footers in regular articles
+%
+%  \setupfootertexts
+%    [][\getvariable{tugboat}{author}]
+%    [\getvariable{tugboat}{title}][]
+
+\stopsetups
+
+\startsetups tugboat:banner:setup:proceedings
+
+  \setupheadertexts
+    [][\getvariable{tugboat}{title}]
+    [\getvariable{tugboat}{author}][]
+
+  \setupfootertexts
+    [\setups{tugboat:banner:text:proceedings}]
+    [pagenumber]
+
+\stopsetups
+
+%D Article is default so,
+
+\setups[tugboat:banner:setup:article]
+
+%D It all starts here:
+
+\permanent\protected\def\StartArticle{\directsetup{tugboat:\getvariable{tugboat}{type}:start}}
+\permanent\protected\def\StopArticle {\directsetup{tugboat:article:stop}}
+
+\startsetups tugboat:introduction:article
+
+    \start
+        \enforced\protected\def\\{\unskip\space\&\space\ignorespaces}
+        \hbox{\indent\getvariable{tugboat}{author}}% really \indent here?
+        \par
+    \stop
+
+\stopsetups
+
+\startsetups tugboat:introduction:proceedings
+
+    \blank[20pt]
+
+    \start
+        \switchtobodyfont[12pt]
+        \enforced\protected\def\\{\unskip\space\&\space\ignorespaces}
+        \getvariable{tugboat}{author}
+        \par
+    \stop
+
+    \start
+        \switchtobodyfont[9pt]
+        \enforced\protected\def\\{\unskip,\space\ignorespaces}
+        \getvariable{tugboat}{address}
+        \par
+        \start
+            \tt
+            \getvariable{tugboat}{email}
+        \stop
+        \par
+    \stop
+
+\stopsetups
+
+\startsetups tugboat:columns:presets
+
+    % whatever
+
+\stopsetups
+
+\startsetups tugboat:article:start
+
+  \starttext
+
+    \setups{tugboat:columns:presets}
+
+    \setups{tugboat:banner:setup:\getvariable{tugboat}{type}}
+
+    \startpagecolumns
+
+    \setupheadertexts
+        [\setups{tugboat:banner:text:article}]
+        [pagenumber]
+
+    \setuppagenumber
+        [number=\getvariable{tugboat}{page}]
+
+  % \snaptogrid \vbox \bgroup
+    \vbox \bgroup % \dbox ?
+        \forgetall
+        \hrule height .6pt
+        \blank[halfline]
+        \start
+            \enforced\let\\\par
+            \start
+                \bf
+                \getvariable{tugboat}{title}
+            \stop
+            \par
+            \blank[halfline]
+            \hskip20pt\getvariable{tugboat}{author}
+        \stop
+
+        \doifelsebufferempty {abstract} {
+            % no abstract
+        } {
+            \blank[line]
+
+            \enforced\let\\\endgraf
+            \setups[tugboat:abstract:setup]
+            \startsubject[title={Abstract}]
+                \getbuffer[abstract]
+            \stopsubject
+        }
+    \egroup
+
+\stopsetups
+
+\startsetups tugboat:proceedings:start
+
+    \starttext
+
+    \setups{tugboat:banner:setup:\getvariable{tugboat}{type}}
+
+    \setupheader
+        [state=empty]
+
+    \setuppagenumber
+        [number=\getvariable{tugboat}{page}]
+
+  % \snaptogrid \vbox \bgroup
+    \vbox \bgroup % \dbox ?
+
+        \forgetall
+
+        \start
+            \switchtobodyfont[14.4pt]
+            \enforced\let\\\par
+            \getvariable{tugboat}{title}
+            \par
+        \stop
+
+        \setups{tugboat:introduction:\getvariable{tugboat}{type}}
+
+        \blank[tugmedium]
+
+        \enforced\let\\\par
+
+        \doifelsebufferempty {abstract} {
+            % no abstract
+        } {
+            \setups[tugboat:abstract:setup]
+
+            \midaligned{\bf Abstract}
+
+            \startnarrower[middle]
+                \getbuffer[abstract]
+            \stopnarrower
+        }
+    \egroup
+
+    \startpagecolumns
+
+\stopsetups
+
+\def\signaturewidth{13pc}
+
+\startsetups tugboat:affiliation:article
+
+    \blank[line]
+
+  % \snaptogrid \vbox \bgroup
+    \vbox \bgroup % \dbox ?
+
+        \forgetall
+
+        \leftskip=\dimexpr\textwidth-\signaturewidth\relax
+
+        \enforced\let\\\par
+
+        \noindent\llap {
+            $\diamond$\enspace
+        }
+        \getvariable{tugboat}{author}
+        \par
+
+        \getvariable{tugboat}{address}
+        \par
+
+        {\tt\getvariable{tugboat}{email}}
+
+  \egroup
+
+\stopsetups
+
+\startsetups tugboat:affiliation:proceedings
+
+    % nothing fancy at the end
+
+\stopsetups
+
+\startsetups tugboat:article:stop
+
+    \setups{tugboat:affiliation:\getvariable{tugboat}{type}}
+
+    \blank[line]
+
+    \startpacked
+        \placenotes[endnotes]
+    \stoppacked
+
+    % Karl: what does \writelastpage do
+
+    \ifdefined\writelastpage
+        \begingroup
+            \count0 = \realpageno % an integerdef
+            \writelastpage{+1}%
+        \endgroup
+    \fi
+
+    \stoppagecolumns
+
+    \page
+
+    \stoptext
+
+\stopsetups
+
+%D Normal word spacing, really?
+
+\setuptolerance
+  [strict]
+
+%D Use this in documents:
+
+% \setuptolerance
+%   [verytolerant,stretch]
+
+%D Language stuff.
+
+\setuplanguage
+  [lefthyphenmin=2,
+   rightthyphenmin=3]
+
+%D A hack to read tugboat.dates settings. I need an example.
+
+\doifelsefileexists {../tugboat.dates} {
+
+    \pushoverloadmode
+
+    \newcount\issueseqno
+    \newif   \ifPrelimDraft
+
+  % \pushmacro\vol
+  % \pushmacro\issyear
+
+    \def\vol    #1, #2.{\xdef\tubvol {#1}%
+                        \xdef\tubnum {#2}}
+    \def\issyear    #1.{\xdef\tubyear{#1}}
+
+    \input {../tugboat.dates}
+
+  % \popmacro\vol
+  % \popmacro\issyear
+
+    \popoverloadmode
+
+    \setevariables
+      [tugboat]
+      [year=\tubyear,
+       volume=\tubvol,
+       number=\tubnum,
+       page=\the\count0]
+
+} {
+    % nothing
+}
+
+\def\tubyear{1234}
+\def\tubvol {5}
+\def\tubnum {6}
+
+\def\issyear    #1.{\def\tubyear{#1}}
+\def\vol    #1, #2.{\def\tubvol {#1}%
+                    \def\tubnum {#2}}
+
+\stopmodule
+
+%D Good bye.
+
+\continueifinputfile{s-tugboat-columns.mkxl}
+
+\setupexternalfigures[location={local,global,default}]
+
+\StartArticle
+
+    \StartAbstract
+        \input bryson
+    \StopAbstract
+
+%     \dorecurse{30}{\input ward \par} \page
+
+%     \startitemize
+%         \startitem \input ward \stopitem
+%         \startitem \input ward \stopitem
+%     \stopitemize
+
+
+    \samplefile{tufte}\par
+    \samplefile{tufte}
+
+    As we see \doifelsemode {columns} {in \in {table} [demo-1]} {below} we can have
+    more than one cell in a row.
+
+    \startplacetable[mode=columns,reference=demo-1]
+        \starttabulate[|||||]
+            \expandedloop 1 10 1 {%
+                \NC one \the\currentloopiterator \NC one more \NC and even 1 mode \NC and way more 1 now \NC \NR
+                \NC two \the\currentloopiterator \NC two more \NC and even 2 mode \NC and way more 2 now \NC \NR
+            }%
+        \stoptabulate
+    \stopplacetable
+
+    \samplefile{tufte}
+
+    \startplacefigure[mode=columns,reference=demo-2]
+        \externalfigure[cow.pdf][height=2cm,width=\textwidth]
+    \stopplacetable
+
+    \samplefile{tufte}\par
+    \samplefile{tufte}
+
+    \starttyping
+    test test test test test test
+    test test test test test test test test test test test test test test test test test test
+    test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test test
+    test test test test test test test test test test test test test test test test test test
+    \stoptyping
+
+    \samplefile{tufte}
+
+    \dorecurse{10}{\samplefile{zapf}\blank}
+
+\StopArticle

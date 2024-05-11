@@ -209,6 +209,8 @@ os.name = os.name or (os.type          == "windows" and "mswin"  ) or "linux"
 
 if os.type == "windows" then
     os.libsuffix, os.binsuffix, os.binsuffixes = 'dll', 'exe', { 'exe', 'cmd', 'bat' }
+elseif os.name == "macosx" then
+    os.libsuffix, os.binsuffix, os.binsuffixes = 'dylib', '', { '' }
 else
     os.libsuffix, os.binsuffix, os.binsuffixes = 'so', '', { '' }
 end

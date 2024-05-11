@@ -168,10 +168,10 @@
      symalign      {\chemicalparameter\c!symalign}%
      axis          {\chemicalparameter\c!axis}% was \MPcolor{...}
      framecolor    {\chemicalparameter\c!framecolor}%
-     rulethickness {\number\dimexpr\chemicalparameter\c!rulethickness}%
-     offset        {\number\dimexpr\chemicalparameter\c!offset}%
-     unit          {\number\dimexpr\chemicalparameter\c!unit}%
-     factor        {\number\chemicalparameter\c!factor}%
+     rulethickness \dimexpr\chemicalparameter\c!rulethickness\relax
+     offset        \dimexpr\chemicalparameter\c!offset\relax
+     unit          \dimexpr\chemicalparameter\c!unit\relax
+     factor        \numexpr\chemicalparameter\c!factor\relax
    \relax
    \startnointerference}
 
@@ -246,11 +246,12 @@
 % kind of compatible, but text sizes instead of math sizes (i.e. tx is larger than scriptsize)
 
 \appendtoks
-   \edef\m_bodyfont{\chemicalparameter\c!bodyfont}%
-   \ifempty\m_bodyfont
-     \switchtobodyfont[\m_bodyfont]%
-   \fi
-   \begincsname\??chemicalsize\chemicalparameter\c!size\endcsname
+    \usebodyfontparameter\chemicalparameter
+  % \edef\m_bodyfont{\chemicalparameter\c!bodyfont}%
+  % \ifempty\m_bodyfont\else
+  %     \switchtobodyfont[\m_bodyfont]%
+  % \fi
+    \begincsname\??chemicalsize\chemicalparameter\c!size\endcsname
 % \to \everystructurechemical
 \to \everychemical
 
@@ -428,6 +429,8 @@
 \permanent\protected\def\chemicaloxidation#1#2#3%
   {\chemicaltop{\txx\ifcase#2\relax0\else#1\convertnumber{I}{#2}\fi}{#3}}
 
+% todo: modernize
+
 \permanent\protected\def\chemicaloxidationplus {\dotriplegroupempty\chemicaloxidation{\textplus }} % {} needed!
 \permanent\protected\def\chemicaloxidationminus{\dotriplegroupempty\chemicaloxidation{\textminus}} % {} needed!
 \permanent\protected\def\chemicalforeveropen   {\dotriplegroupempty\chemicalleft     {$\big[$}}    % {} needed!
@@ -455,7 +458,11 @@
 \permanent\let\R\relax
 
 \appendtoks
-   \enforced\let  |\chemicalbar % \SR{N|NH}
+   \amcode\barasciicode\zerocount
+   \enforced\let|\chemicalbar % \SR{N|NH}
+\to \everychemical
+
+\appendtoks
    \enforced\let \+\chemicaloxidationplus
    \enforced\let \-\chemicaloxidationminus
    \enforced\let \[\chemicalforeveropen
@@ -505,14 +512,6 @@
 \permanent\protected\def\indisplaychemical
   {\mathstylecommand\displaychemical\inlinechemical\inlinechemical}
 
-% \permanent\protected\def\inlinechemical#1%
-%   {\dontleavehmode
-%    \begingroup
-%    \scratchcounter\normalmathstyle
-%    \usechemicalstyleandcolor\c!style\c!color
-%    \hbox{\mathematics{\tf\triggermathstyle\scratchcounter\clf_inlinechemical{#1}}}%
-%    \endgroup}
-
 \permanent\tolerant\protected\def\displaychemical#=#=#=%
   {\expand\everychemical
    \everychemical\emptytoks
@@ -531,12 +530,37 @@
    \egroup
    \quad}
 
+% \permanent\protected\def\inlinechemical#1%
+%   {\dontleavehmode
+%    \hbox{\usechemicalstyleandcolor\c!style\c!color\clf_inlinechemical{#1}}}
+
 \permanent\protected\def\inlinechemical#1%
-  {\dontleavehmode
-   \hbox{\usechemicalstyleandcolor\c!style\c!color\clf_inlinechemical{#1}}}
+  {\dontleavehmode\begingroup
+  %\hbox % will become option
+   \usechemicalstyleandcolor\c!style\c!color\clf_inlinechemical{#1}%
+   \endgroup}
+
+\aliased\let\ic\inlinechemical
 
 \permanent\protected\def\chemicalbondrule
-  {\hpack{\vrule\s!height.75\exheight\s!depth-\dimexpr.75\exheight-\linewidth\relax\s!width\emwidth\relax}}
+  {\vrule\s!height.75\exheight\s!depth-\dimexpr.75\exheight-\linewidth\relax\s!width\emwidth\relax}
+
+\permanent\protected\def\chemicalsinglebondrule
+  {\hpack{\chemicalbondrule}}
+
+\permanent\protected\def\chemicaldoublebondrule
+  {\hpack
+     {\lower.5\exheight\chemicalsinglebondrule
+      \kern-\emwidth
+      \raise.5\exheight\chemicalsinglebondrule}}
+
+\permanent\protected\def\chemicaltriplebondrule
+  {\hpack
+     {\chemicalsinglebondrule
+      \kern-\emwidth
+      \lower.5\exheight\chemicalsinglebondrule
+      \kern-\emwidth
+      \raise.5\exheight\chemicalsinglebondrule}}
 
 \definechemicalsymbol[i:space]       [\enspace\quad\enspace]
 \definechemicalsymbol[i:plus]        [\enspace\mathematics{+}\enspace]
@@ -545,9 +569,9 @@
 \definechemicalsymbol[i:gives]       [\enspace\mathematics{\xrightarrow{}{}}\enspace]
 \definechemicalsymbol[i:equilibrium] [\enspace\mathematics{\xrightoverleftarrow{}{}}\enspace]
 \definechemicalsymbol[i:mesomeric]   [\enspace\mathematics{\xleftrightarrow{}{}}\enspace]
-\definechemicalsymbol[i:single]      [\chemicalbondrule]
-\definechemicalsymbol[i:double]      [\hpack{\lower.5ex\chemicalbondrule\kern-\emwidth\raise.5\exheight\chemicalbondrule}]
-\definechemicalsymbol[i:triple]      [\hpack{\chemicalbondrule\kern-\emwidth\lower.5\exheight\chemicalbondrule\kern-\emwidth\raise.5\exheight\chemicalbondrule}]
+\definechemicalsymbol[i:single]      [\chemicalsinglebondrule]
+\definechemicalsymbol[i:double]      [\chemicaldoublebondrule]
+\definechemicalsymbol[i:triple]      [\chemicaltriplebondrule]
 
 \permanent\protected\def\chemicalsinglebond {\chemicalsymbol[i:single]}
 \permanent\protected\def\chemicaldoublebond {\chemicalsymbol[i:double]}
@@ -559,7 +583,18 @@
 \permanent\protected\def\chemicalminus      {\chemicalsymbol[i:minus]}
 \permanent\protected\def\chemicalequals     {\chemicalsymbol[i:equals]}
 \permanent\protected\def\chemicalspace      {\chemicalsymbol[i:space]}
-\permanent\protected\def\chemicalinline   #1{#1}
+% \permanent\protected\def\chemicalinline   #1{#1}
+% \permanent\protected\def\chemicalspecial  #1{#1}
+
+\permanent\protected\def\chemicalinline#1%
+  {#1}
+
+\permanent\protected\def\chemicalspecial#1%
+  {\penalty\plustenthousand
+   \hskip.1\emwidth\s!plus.1\emwidth\relax
+   #1%
+   \penalty\plusfivehundred
+   \hskip.1\emwidth\s!plus.1\emwidth\relax}
 
 % display
 
@@ -587,7 +622,7 @@
 
 \permanent\protected\def\stopchemicalformula
   {\tabskip\emwidth\relax
-   \nointerlineskip
+   \ifvmode\nointerlineskip\fi
    \ifconditional\c_chem_has_top
      \ifconditional\c_chem_has_bot
        \halign{\aligntab\hss\usechemicalstyleandcolor\c!style\c!color\alignmark\alignmark\hss\cr\expand\t_chem_top\cr\expand\t_chem_mid\cr\expand\t_chem_bot\cr}%
@@ -603,21 +638,18 @@
    \fi
    \egroup}
 
-% for the moment we have a special set
+% for the moment we have a special set .. kind of old
 
 \definechemicalsymbol[d:space]       [\enspace\quad\enspace]
 \definechemicalsymbol[d:plus]        [\enspace+\enspace]
 \definechemicalsymbol[d:minus]       [\enspace-\enspace]
 \definechemicalsymbol[d:equals]      [\enspace=\enspace]
-%definechemicalsymbol[d:gives]       [\rightarrowfill]          % \chem_arrow_construct\xrightarrow
-%definechemicalsymbol[d:equilibrium] [\rightoverleftarrowfill]  % \chem_arrow_construct\xrightoverleftarrow
-%definechemicalsymbol[d:mesomeric]   [\leftarrowfill]           % \chem_arrow_construct\xleftrightarrow
-\definechemicalsymbol[d:gives]       [\crightarrow]
-\definechemicalsymbol[d:equilibrium] [\cleftarrow]
-\definechemicalsymbol[d:mesomeric]   [\crightoverleftarrow]
-\definechemicalsymbol[d:single]      [\chemicalbondrule]
-\definechemicalsymbol[d:double]      [\hpack{\lower.5\exheight\chemicalbondrule\kern-\emwidth\raise.5\exheight\chemicalbondrule}]
-\definechemicalsymbol[d:triple]      [\hpack{\chemicalbondrule\kern-\emwidth\lower.5\exheight\chemicalbondrule\kern-\emwidth\raise.5\exheight\chemicalbondrule}]
+\definechemicalsymbol[d:gives]       [\cgives]
+\definechemicalsymbol[d:equilibrium] [\cequilibrium]
+\definechemicalsymbol[d:mesomeric]   [\cmesomeric]
+\definechemicalsymbol[d:single]      [\chemicalsinglebondrule]
+\definechemicalsymbol[d:double]      [\chemicaldoublebondrule]
+\definechemicalsymbol[d:triple]      [\chemicaltriplebondrule]
 \definechemicalsymbol[d:opencomplex] [\mathematics{\Bigg[}]     % not yet ok
 \definechemicalsymbol[d:closecomplex][\mathematics{\Bigg]}]     % not yet ok
 
@@ -738,8 +770,10 @@
 
 %D Compatibility:
 
-\definechemical[+R]               {\chemical[RR]}
-\definechemical[-R]               {\chemical[LR]}
+% Now we have + - : shortening and L R : rotating
+
+% \definechemical[+R]               {\chemical[RR]} % fails
+% \definechemical[-R]               {\chemical[LR]} % fails
 
 \definechemical[CARBON:CB]        {\chemical[NEWMANSTAGGER,C,SB]}
 \definechemical[NEWMANSTAGGER:CB] {\chemical[NEWMANSTAGGER,C,SB]}
@@ -752,5 +786,179 @@
 \definechemical[ECLIPSED]         {\chemical[NEWMANECLIPSED]}
 \definechemical[SIX:FRONT]        {\chemical[SIXFRONT]}
 \definechemical[FIVE:FRONT]       {\chemical[FIVEFRONT]}
+
+%D This is new, more in sycn with math.
+
+\definemathstackers
+  [\v!chemistry]
+  [\v!mathematics]
+  [\c!offset=\v!max,
+%    \c!order=\v!reverse,
+   \c!left=\enspace,
+   \c!right=\enspace,
+   \c!hoffset=.5\mathemwidth]
+
+\definemathextensible [\v!chemistry] [creturns]          ["2190]
+\definemathextensible [\v!chemistry] [cgives]            ["2192]
+\definemathextensible [\v!chemistry] [cmesomeric]        ["2194]
+\definemathextensible [\v!chemistry] [cequilibrium]      ["21C4]
+\definemathextensible [\v!chemistry] [cleaningright]     ["21CB]
+\definemathextensible [\v!chemistry] [cleaningleft]      ["21CC]
+
+\definemathextensible [\v!chemistry] [clongreturns]      ["27F5]
+\definemathextensible [\v!chemistry] [clonggives]        ["27F6]
+\definemathextensible [\v!chemistry] [clongmesomeric]    ["27F7]
+\definemathextensible [\v!chemistry] [clongequilibrium]  ["21C4]
+\definemathextensible [\v!chemistry] [clongleaningright] ["21CB]
+\definemathextensible [\v!chemistry] [clongleaningleft]  ["21CC]
+
+%permanent\protected\def\cplus  {+}
+%permanent\protected\def\cminus {-}
+%permanent\protected\def\cequals{=}
+
+\permanent\protected\def\csinglebond{\mathchemicalbond{\chemicalsinglebondrule}} % todo dedicated class
+\permanent\protected\def\cdoublebond{\mathchemicalbond{\chemicaldoublebondrule}} % idem
+\permanent\protected\def\ctriplebond{\mathchemicalbond{\chemicaltriplebondrule}} % idem
+
+\aliased\let\csingle\csinglebond
+\aliased\let\cdouble\cdoublebond
+\aliased\let\ctriple\ctriplebond
+
+\setmathoptions\mathchemicalbondcode\numexpr
+   \shortinlineclassoptioncode
+\relax
+
+\setmathpostpenalty\mathchemicalbondcode\plusfivehundred
+
+\installcorenamespace {chemistry}
+
+\installswitchcommandhandler \??chemistry {chemistry}
+
+\setupchemistry
+  [\c!spacing=\v!chemistry,
+  %\c!factor=3000, % display
+   \c!filter=\v!yes,
+   \c!scale=800]   % script
+
+\defineformula
+  [\v!chemistry]
+% [setups=chemistry:formula]
+
+\definemathspacing
+  [\v!chemistry]
+  [\v!horizontal]
+  [3000]
+
+\definemathfence
+  [ccomplex]
+  [\c!left="005B,
+   \c!right="005D]
+
+\newtoks \everychemistry
+\newtoks \everydisplaychemistry
+
+\permanent\protected\def\chem_ch{\mathtriplet[\v!chemistry]}
+
+\appendtoks
+    \setmathignore\Umathxscale\plustwo
+    \setmathignore\Umathyscale\plustwo
+    \setmathignore\Umathspacebeforescript\plusone
+    \setmathignore\Umathspaceafterscript \plusone
+    \mathscriptsmode\plusone
+    \scratchcounter\chemistryparameter\c!scale
+    \glyphscriptscale      \numexpr\glyphscriptscale      *\scratchcounter/\plusthousand\relax
+    \glyphscriptscriptscale\numexpr\glyphscriptscriptscale*\scratchcounter/\plusthousand\relax
+    \enforced\let\math_default\math_upright
+    \enforced\let\ch\chem_ch
+\to \everychemistry
+
+\appendtoks
+   \expand\everychemistry
+   \setupmathspacing[\chemistryparameter\c!spacing]%
+ % \Umathxscale\allmathstyles\chemistryparameter\c!factor\relax
+\to \everydisplaychemistry
+
+% this will move to math-ini ... digits inherit from ordinary
+
+\newmuskip\extrafencemuskip
+
+\appendtoks
+    \inherited\setmathspacing \mathchemicalbondcode \mathordinarycode     \allsplitstyles   \tinymuskip
+    \inherited\setmathspacing \mathchemicalbondcode \mathordinarycode     \allunsplitstyles \pettymuskip
+    \inherited\setmathspacing \mathordinarycode     \mathchemicalbondcode \allsplitstyles   \tinymuskip
+    \inherited\setmathspacing \mathordinarycode     \mathchemicalbondcode \allunsplitstyles \pettymuskip
+\to \everychemistry
+
+\appendtoks
+    \inherited\setmathspacing \mathopencode         \mathordinarycode     \allmathstyles    \extrafencemuskip
+    \inherited\setmathspacing \mathordinarycode     \mathclosecode        \allmathstyles    \extrafencemuskip
+    \extrafencemuskip \medmuskip
+\to \everydisplaychemistry
+
+% .. upto here
+
+% \permanent\protected\def\ic#1%
+%   {\im{%
+%      \expand\everychemistry
+%      \mathupright\relax
+%      \clf_ic{#1}%
+%    }}
+
+% \permanent\protected\def\dc#1%
+%   {\dm{%
+%      \expand\everydisplaychemistry
+%      \mathupright\relax
+%      \clf_ic{#1}%
+%    }}
+
+\permanent\protected\def\chem_ic#1%
+  {\expand\everychemistry
+   \mathupright\relax
+   \ifcstok{\chemistryparameter\c!filter}\v!yes
+     \clf_ic{#1}%
+   \else
+     #1\relax
+   \fi}
+
+\permanent\protected\def\chem_dc#1%
+  {\expand\everydisplaychemistry
+   \mathupright\relax
+   \ifcstok{\chemistryparameter\c!filter}\v!yes
+     \clf_ic{#1}%
+   \else
+     #1\relax
+   \fi}
+
+\permanent\protected\def\ic#1%
+ {\relax
+  \ifmmode
+    \mathconstruct{\forceinlinemath\chem_ic{#1}}%
+  \else
+    \startimath\chem_ic{#1}\stopimath
+  \fi}
+
+\permanent\protected\def\dc#1%
+  {\relax\ifmmode
+     \mathconstruct{\forcedisplaymath\chem_dc{#1}}%
+   \else % no grouping
+     \startimath\forcedisplaymath\chem_dc{#1}\stopimath
+   \fi}
+
+\aliased\let\stopchemistry\relax
+
+\permanent\tolerant\protected\def\startchemistry[#1]#:#2\stopchemistry
+  {\begingroup
+   \ifhastok={#1}%
+     \setupcurrentchemistry[#1]%
+   \fi
+   \expand\everydisplaychemistry
+   \startchemistryformula
+     \ifcstok{\chemistryparameter\c!filter}\v!yes
+       \clf_ic{#2}%
+     \else
+       #2\relax
+     \fi
+   \stopchemistryformula
+   \endgroup}
 
 \protect \endinput

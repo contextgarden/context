@@ -349,7 +349,7 @@ typedef struct lmt_interface_info {
     value_info    *alignment_context_values;
     value_info    *break_context_values;
     value_info    *build_context_values;
-    value_info    *par_begin_values;
+    value_info    *par_trigger_values;
     value_info    *par_mode_values;
     value_info    *math_style_name_values;
     value_info    *math_style_variant_values;
@@ -379,7 +379,7 @@ extern lmt_interface_info lmt_interface;
 # define lmt_push_page_context(L,n)        lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_interface.page_context_values       [n].lua)
 # define lmt_push_append_line_context(L,n) lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_interface.append_line_context_values[n].lua)
 # define lmt_push_alignment_context(L,n)   lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_interface.alignment_context_values  [n].lua)
-# define lmt_push_par_begin(L,n)           lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_interface.par_begin_values          [n].lua)
+# define lmt_push_par_trigger(L,n)         lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_interface.par_trigger_values        [n].lua)
 # define lmt_push_par_mode(L,n)            lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_interface.par_mode_values           [n].lua)
 # define lmt_push_math_style_name(L,n)     lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_interface.math_style_name_values    [n].lua)
 # define lmt_push_math_style_variant(L,n)  lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_interface.math_style_variant_values [n].lua)
@@ -400,7 +400,7 @@ extern lmt_interface_info lmt_interface;
 # define lmt_name_of_page_context(n)        lmt_interface.page_context_values       [n].name
 # define lmt_name_of_append_line_context(n) lmt_interface.append_line_context_values[n].name
 # define lmt_name_of_alignment_context(n)   lmt_interface.alignment_context_values  [n].name
-# define lmt_name_of_par_begin(n)           lmt_interface.par_begin_values          [n].name
+# define lmt_name_of_trigger_begin(n)       lmt_interface.par_trigger_values        [n].name
 # define lmt_name_of_par_mode(n)            lmt_interface.par_mode_values           [n].name
 # define lmt_name_of_math_style_name(n)     lmt_interface.math_style_name_values    [n].name
 # define lmt_name_of_math_style_variant(n)  lmt_interface.math_style_variant_values [n].name
@@ -490,6 +490,7 @@ make_lua_key(L, auto);\
 make_lua_key(L, autobase);\
 make_lua_key(L, automatic);\
 make_lua_key(L, automaticpenalty);\
+make_lua_key(L, automiddle);\
 make_lua_key(L, auxiliary);\
 make_lua_key(L, axis);\
 make_lua_key(L, AxisHeight);\
@@ -601,8 +602,10 @@ make_lua_key(L, delimiterextendmargin);\
 make_lua_key(L, DelimiterExtendMargin);\
 make_lua_key(L, delimiterover);\
 make_lua_key(L, delimiterovervariant);\
+make_lua_key(L, DelimiterDisplayPercent);\
 make_lua_key(L, DelimiterPercent);\
 make_lua_key(L, delimiterpercent);\
+make_lua_key(L, DelimiterDisplayShortfall);\
 make_lua_key(L, DelimiterShortfall);\
 make_lua_key(L, delimitershortfall);\
 make_lua_key(L, delimiterunder);\
@@ -653,6 +656,7 @@ make_lua_key(L, escape);\
 make_lua_key(L, etex);\
 make_lua_key(L, exact);\
 make_lua_key(L, exactly);\
+make_lua_key(L, exheight);\
 make_lua_key(L, expand_after);\
 make_lua_key(L, expandable);\
 make_lua_key(L, expanded);\
@@ -843,6 +847,7 @@ make_lua_key(L, left_brace);\
 make_lua_key(L, leftboundary);\
 make_lua_key(L, leftbox);\
 make_lua_key(L, leftboxwidth);\
+make_lua_key(L, leftcorrectionkern);\
 make_lua_key(L, lefthangskip);\
 make_lua_key(L, leftmargin);\
 make_lua_key(L, leftmarginkern);\
@@ -1156,6 +1161,7 @@ make_lua_key(L, right_brace);\
 make_lua_key(L, rightboundary);\
 make_lua_key(L, rightbox);\
 make_lua_key(L, rightboxwidth);\
+make_lua_key(L, rightcorrectionkern);\
 make_lua_key(L, righthangskip);\
 make_lua_key(L, rightmargin);\
 make_lua_key(L, rightmarginkern);\
@@ -1223,6 +1229,7 @@ make_lua_key(L, spaceafterscript);\
 make_lua_key(L, spacebeforescript);\
 make_lua_key(L, SpaceBeforeScript);\
 make_lua_key(L, spacefactor);\
+make_lua_key(L, spacefontkern);\
 make_lua_key(L, spacer);\
 make_lua_key(L, spaceshrink);\
 make_lua_key(L, spaceskip);\
@@ -1275,6 +1282,8 @@ make_lua_key(L, subscriptshiftdistance);\
 make_lua_key(L, SubscriptShiftDown);\
 make_lua_key(L, SubscriptShiftDownWithSuperscript);\
 make_lua_key(L, SubscriptTopMax);\
+make_lua_key(L, SubscriptSnap);\
+make_lua_key(L, subscriptsnap);\
 make_lua_key(L, subscriptvariant);\
 make_lua_key(L, subshiftdown);\
 make_lua_key(L, subshiftdrop);\
@@ -1293,6 +1302,8 @@ make_lua_key(L, SuperscriptBottomMin);\
 make_lua_key(L, superscriptshiftdistance);\
 make_lua_key(L, SuperscriptShiftUp);\
 make_lua_key(L, SuperscriptShiftUpCramped);\
+make_lua_key(L, SuperscriptSnap);\
+make_lua_key(L, superscriptsnap);\
 make_lua_key(L, superscriptvariant);\
 make_lua_key(L, suppre);\
 make_lua_key(L, supshiftdrop);\
@@ -1338,6 +1349,7 @@ make_lua_key(L, tracingparagraphs);\
 make_lua_key(L, tracingpasses);\
 make_lua_key(L, trailer);\
 make_lua_key(L, Trailer);\
+make_lua_key(L, triggered);\
 make_lua_key(L, type);\
 make_lua_key(L, uchyph);\
 make_lua_key(L, uleaders);\
@@ -1397,6 +1409,7 @@ make_lua_key(L, whatsit);\
 make_lua_key(L, widowpenalties);\
 make_lua_key(L, widowpenalty);\
 make_lua_key(L, width);\
+make_lua_key(L, weight);\
 make_lua_key(L, woffset);\
 make_lua_key(L, word);\
 make_lua_key(L, wordpenalty);\

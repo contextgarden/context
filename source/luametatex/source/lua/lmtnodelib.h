@@ -57,6 +57,7 @@ extern int lmt_linebreak_callback(
 extern void lmt_alignment_callback(
     halfword head,
     halfword context,
+    halfword callback, 
     halfword attrlist,
     halfword preamble
 );
@@ -131,6 +132,12 @@ extern halfword lmt_uleader_callback(
     halfword head,
     halfword index, 
     int      context
+);
+
+extern scaled lmt_italic_correction_callback(
+    halfword glyph,
+    scaled   kern,
+    halfword subtype
 );
 
 # endif

@@ -54,11 +54,12 @@ local setglue            = nuts.setglue
 local setkern            = nuts.setkern
 local setchar            = nuts.setchar
 local setglue            = nuts.setglue -- todo
+local setattrlist        = nuts.setattrlist
 
 local texsetattribute    = tex.setattribute
 local unsetvalue         = attributes.unsetvalue
 
-local new_kern           = nodepool.kern
+local new_kern           = nodepool.kern -- fontkern
 local new_glue           = nodepool.glue
 
 local nodecodes          = nodes.nodecodes
@@ -100,6 +101,8 @@ local tracers            = nodes.tracers
 local setcolor           = tracers.colors.set
 local resetcolor         = tracers.colors.reset
 
+local setattrlist        = nuts.setattrlist
+
 local v_max              = interfaces.variables.max
 local v_auto             = interfaces.variables.auto
 
@@ -110,7 +113,7 @@ local kerns              = typesetters.kerns or { }
 typesetters.kerns        = kerns
 
 local report             = logs.reporter("kerns")
-local trace_ligatures    = false  trackers.register("typesetters.kerns.ligatures",        function(v) trace_ligatures   = v end)
+local trace_ligatures    = false  trackers.register("typesetters.kerns.ligatures",         function(v) trace_ligatures   = v end)
 local trace_ligatures_d  = false  trackers.register("typesetters.kerns.ligatures.details", function(v) trace_ligatures_d = v end)
 
 kerns.mapping            = kerns.mapping or { }
@@ -204,15 +207,17 @@ end
 
 -- can be optimized .. the prev thing .. but hardly worth the effort
 
-local function kern_injector(fillup,kern)
+local function kern_injector(fillup,kern,template)
+    local n
     if fillup then
-        local g = new_glue(kern)
-        setfield(g,"stretch",kern)
-        setfield(g,"stretchorder",1)
-        return g
+        n = new_glue(kern)
+        setfield(n,"stretch",kern)
+        setfield(n,"stretchorder",1)
     else
-        return new_kern(kern)
+        n = new_kern(kern)
     end
+    setattrlist(n,template)
+    return n
 end
 
 -- a simple list injector, no components and such .. just disable ligatures in
@@ -225,12 +230,12 @@ local function inject_begin(boundary,prev,keeptogether,krn,ok,scale) -- prev is 
         if keeptogether and keeptogether(boundary,prev) then
             -- keep 'm
         else
-            local prevchar = isglyph(prev)
-            if prevchar and prevchar > 0 then
-                local font  = getfont(boundary)
-                local data  = chardata[font][prevchar]
+            local prevchar, prevfont = isglyph(prev)
+            if prevchar and prevchar > 0 and prevfont == id then
+                local data  = chardata[id][prevchar]
                 local kerns = data and data.kerns
-                local kern  = new_kern(scale*((kerns and kerns[char] or 0) + quaddata[font]*krn))
+                local kern  = new_kern(scale*((kerns and kerns[char] or 0) + quaddata[id]*krn))
+                setattrlist(kern,boundary)
                 setlink(kern,boundary)
                 return kern, true
             end
@@ -246,7 +251,7 @@ local function inject_begin(boundary,prev,keeptogether,krn,ok,scale) -- prev is 
             end
             if inject then
                 -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                setkern(boundary,scale*(getkern(boundary) + quaddata[getfont(prev)]*krn),userkern_code)
+                setkern(boundary,getkern(boundary) + scale*quaddata[getfont(prev)]*krn) -- ,userkern_code)
                 return boundary, true
             end
         end
@@ -261,13 +266,14 @@ local function inject_end(boundary,next,keeptogether,krn,ok,scale)
         if keeptogether and keeptogether(tail,two) then
             -- keep 'm
         else
-            local nextchar = isglyph(tail)
-            if nextchar and nextchar > 0 then
-                local font  = getfont(tail)
-                local data  = chardata[font][nextchar]
+            -- base mode
+            local nextchar, nextfont = isglyph(tail)
+            if nextchar and nextchar > 0 and nextfont == id then
+                local data  = chardata[id][nextchar]
                 local kerns = data and data.kerns
-                local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
-                setlink(tail,new_kern(scale*kern))
+                local kern  = new_kern(scale*((kerns and kerns[char] or 0) + quaddata[id]*krn))
+                setattrlist(kern,boundary)
+                setlink(tail,kern)
                 return boundary, true
             end
         end
@@ -282,7 +288,7 @@ local function inject_end(boundary,next,keeptogether,krn,ok,scale)
             end
             if inject then
                 -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                setkern(tail,scale*(getkern(tail) + quaddata[getfont(next)]*krn),userkern_code)
+                setkern(tail,getkern(tail) + scale*quaddata[getfont(next)]*krn) -- ,userkern_code)
                 return boundary, true
             end
         end
@@ -320,7 +326,7 @@ local function process_list(head,keeptogether,krn,font,okay)
                         end
                         if inject then
                             -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                            setkern(prev,scale*(getkern(prev) + kern),userkern_code)
+                            setkern(prev,getkern(prev) + scale*kern) -- ,userkern_code)
                             okay = true
                         end
                     end
@@ -334,17 +340,19 @@ local function process_list(head,keeptogether,krn,font,okay)
                      -- if kerns then
                      --     print("it happens indeed, basemode kerns not yet injected")
                      -- end
-                        insertnodebefore(head,start,new_kern(scale*((kerns and kerns[char] or 0) + kern)))
+                        local kern = new_kern(scale*((kerns and kerns[char] or 0) + kern))
+                        setattrlist(kern,start)
+                        insertnodebefore(head,start,kern)
                         okay = true
                     end
                 end
             end
+            pid = glyph_code
+        else
+            pid = id
         end
-        if start then
-            prev  = start
-            pid   = id
-            start = getnext(start)
-        end
+        prev  = start
+        start = getnext(start)
     end
     return head, okay, prev
 end
@@ -439,7 +447,7 @@ function kerns.handler(head)
                             end
                             if inject then
                                 -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                                setkern(prev,scale*(getkern(prev) + quaddata[font]*krn),userkern_code)
+                                setkern(prev,getkern(prev) + scale*quaddata[font]*krn) -- ,userkern_code)
                             end
                         end
                     elseif previd == glyph_code then
@@ -451,10 +459,10 @@ function kerns.handler(head)
                                 local data  = chardata[font][prevchar]
                                 local kerns = data and data.kerns
                                 local kern  = (kerns and kerns[char] or 0) + quaddata[font]*krn
-                                insertnodebefore(head,start,kern_injector(fillup,scale*kern))
+                                insertnodebefore(head,start,kern_injector(fillup,scale*kern,start))
                             end
                         else
-                            insertnodebefore(head,start,kern_injector(fillup,scale*quaddata[font]*krn))
+                            insertnodebefore(head,start,kern_injector(fillup,scale*quaddata[font]*krn,start))
                         end
                     end
                     prev     = start
@@ -530,6 +538,7 @@ function kerns.handler(head)
                         end
                     elseif prevfont then
                         replace = new_kern(scale*quaddata[prevfont]*krn)
+                        setattrlist(replace,start)
                         indeed  = true
                     end
                     if indeed then
@@ -564,11 +573,11 @@ function kerns.handler(head)
                         -- special case
                         local b, f = closest_bound(start,getprev)
                         if b then
-                            insertnodebefore(head,start,kern_injector(fillup,scale*quaddata[f]*krn))
+                            insertnodebefore(head,start,kern_injector(fillup,scale*quaddata[f]*krn,start))
                         end
                         local b, f = closest_bound(start,getnext)
                         if b then
-                            insertnodeafter(head,start,kern_injector(fillup,scale*quaddata[f]*krn))
+                            insertnodeafter(head,start,kern_injector(fillup,scale*quaddata[f]*krn,start))
                         end
                     end
                     bound = false

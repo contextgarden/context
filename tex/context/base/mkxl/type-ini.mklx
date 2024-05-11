@@ -430,11 +430,13 @@
          \cdef\fontclass{#typeface}%
        \else
          % todo: message
+% \gletcsname
          \letcsname\??fontclassnop#typeface\endcsname\empty
        \fi
      \fi
    \else
      % todo: message
+% \gletcsname
      \letcsname\??fontclassnop#typeface\endcsname\empty
    \fi}
 
@@ -495,18 +497,22 @@
      \fi
    \fi}
 
+\lettonothing\m_ts_features
+\lettonothing\m_ts_fallbacks
+\lettonothing\m_ts_goodies
+\lettonothing\m_ts_designsize
+
 \def\font_typefaces_defining_start#name#style#settings%
-  {\let\m_ts_rscale    \!!plusone % as we push/pop
+  {\let\m_ts_rscale\!!plusone % as we push/pop
    \lettonothing\m_ts_features
    \lettonothing\m_ts_fallbacks
    \lettonothing\m_ts_goodies
-   \lettonothing\m_ts_direction
    \lettonothing\m_ts_designsize
    \geteparameters[m_ts_][#settings]% todo raw ... no need for key interpretation
    \push_macro_fontclass
    \push_macro_fontclassstyle
    \setcurrentfontclass{#name}%
-   \savefontclassparameters{#style}\m_ts_rscale\m_ts_features\m_ts_fallbacks\m_ts_goodies\m_ts_designsize\m_ts_direction
+   \savefontclassparameters{#style}\m_ts_rscale\m_ts_features\m_ts_fallbacks\m_ts_goodies\m_ts_designsize
    \expand\everybeforedefinetypeface}
 
 \permanent\def\tsvar#key#default% undocumented and unofficial

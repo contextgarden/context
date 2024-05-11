@@ -86,17 +86,18 @@ typedef enum if_test_codes {
     if_val_dim_code,        /*tex |\ifdimval| */
     if_cmp_dim_code,        /*tex |\ifcmpdim| */
     if_case_code,           /*tex |\ifcase| */
-    if_def_code,            /*tex |\ifdefined| */
-    if_cs_code,             /*tex |\ifcsname| */
+    if_defined_code,        /*tex |\ifdefined| */
+    if_csname_code,         /*tex |\ifcsname| */
     if_in_csname_code,      /*tex |\ifincsname| */
     if_font_char_code,      /*tex |\iffontchar| */
     if_condition_code,      /*tex |\ifcondition| */
     if_flags_code,          /*tex |\ifflags| */
-    if_empty_cmd_code,      /*tex |\ifempty| */
-    if_relax_cmd_code,      /*tex |\ifrelax| */
+    if_empty_code,          /*tex |\ifempty| */
+    if_relax_code,          /*tex |\ifrelax| */
     if_boolean_code,        /*tex |\ifboolean| */
     if_numexpression_code,  /*tex |\ifnumexpression| */
     if_dimexpression_code,  /*tex |\ifdimexpression| */
+    if_last_named_cs_code,  /*tex |\iflastnamedcs| */
     if_math_parameter_code, /*tex |\ifmathparameter| */
     if_math_style_code,     /*tex |\ifmathstyle| */
     if_arguments_code,      /*tex |\ifarguments| */
@@ -124,13 +125,13 @@ typedef struct condition_state_info {
     int       cur_if;     /*tex type of conditional being worked on */
     int       cur_unless;
     int       if_step;
-    int       if_unless;
     int       if_limit;   /*tex upper bound on |fi_or_else| codes */
     int       if_line;    /*tex line where that conditional began */
+    halfword  if_nesting;
+    int       if_unless;
     int       skip_line;  /*tex skipping began here */
     halfword  chk_integer;
     scaled    chk_dimension;
-    halfword  if_nesting;
     halfword  padding;
 } condition_state_info ;
 
@@ -140,6 +141,7 @@ extern void tex_conditional_if         (halfword code, int unless);
 extern void tex_conditional_fi_or_else (void);
 extern void tex_conditional_unless     (void);
 extern void tex_show_ifs               (void);
+/*     void tex_quit_fi                (void); */
 /*     void tex_conditional_after_fi   (void); */
 
 # endif

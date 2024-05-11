@@ -13,6 +13,7 @@ local resolvers = resolvers
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
+local sortedhash        = table.sortedhash
 local suffixonly        = file.suffixonly
 
 local formats           = allocate()
@@ -118,7 +119,7 @@ local relations = allocate { -- todo: handlers also here
         lua = {
             names    = { "lua" },
             variable = 'LUAINPUTS',
-            suffixes = { luasuffixes.lua, luasuffixes.luc, luasuffixes.tma, luasuffixes.tmc },
+            suffixes = { luasuffixes.lmt, luasuffixes.lua, luasuffixes.luc, luasuffixes.tma, luasuffixes.tmc },
             usertype = true,
         },
         lib = {
@@ -223,8 +224,10 @@ resolvers.relations = relations
 -- formats: maps a format onto a variable
 
 function resolvers.updaterelations()
-    for category, categories in next, relations do
-        for name, relation in next, categories do
+    -- we sort because we have a few duplicates and we want the same
+    -- mapping every run
+    for category, categories in sortedhash(relations) do
+        for name, relation in sortedhash(categories) do
             local rn = relation.names
             local rv = relation.variable
             if rn and rv then
@@ -237,7 +240,9 @@ function resolvers.updaterelations()
                         suffixes[rni] = rs
                         for i=1,#rs do
                             local rsi = rs[i]
-                            suffixmap[rsi] = rni
+                            if not suffixmap[rsi] then
+                                suffixmap[rsi] = rni
+                            end
                         end
                     end
                 end

@@ -31,4 +31,7 @@ extern halfword tex_math_font_char_dp  (halfword fnt, halfword chr, halfword sty
 
 extern void     tex_set_math_text_font (halfword style, int usefamfont);
 
+extern scaled   tex_math_parameter_x_scaled(int style, int param);
+extern scaled   tex_math_parameter_y_scaled(int style, int param);
+
 # endif

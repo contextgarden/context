@@ -27,15 +27,19 @@ local helpinfo = [[
     <flag name="metadata"><short>show metadata xml blob</short></flag>
     <flag name="formdata"><short>show formdata</short></flag>
     <flag name="pretty"><short>replace newlines in metadata</short></flag>
-    <flag name="fonts"><short>show used fonts (<ref name="detail)"/></short></flag>
-    <flag name="object"><short>show object"/></short></flag>
-    <flag name="links"><short>show links"/></short></flag>
+    <flag name="fonts"><short>show used fonts (<ref name="detail"/>)</short></flag>
+    <flag name="object"><short>show object</short></flag>
+    <flag name="links"><short>show links</short></flag>
+    <flag name="sign"><short>sign document (assumes signature template)</short></flag>
+    <flag name="verify"><short>verify document</short></flag>
    </subcategory>
    <subcategory>
     <example><command>mtxrun --script pdf --info foo.pdf</command></example>
     <example><command>mtxrun --script pdf --metadata foo.pdf</command></example>
     <example><command>mtxrun --script pdf --metadata --pretty foo.pdf</command></example>
     <example><command>mtxrun --script pdf --stream=4 foo.pdf</command></example>
+    <example><command>mtxrun --script pdf --sign --certificate=somesign.pem --password=test --uselibrary somefile</command></example>
+    <example><command>mtxrun --script pdf --verify --certificate=somesign.pem --password=test --uselibrary somefile</command></example>
    </subcategory>
   </category>
  </flags>
@@ -56,6 +60,7 @@ elseif CONTEXTLMTXMODE then
     dofile(resolvers.findfile("util-dim.lua","tex"))
     dofile(resolvers.findfile("lpdf-ini.lmt","tex"))
     dofile(resolvers.findfile("lpdf-pde.lmt","tex"))
+    dofile(resolvers.findfile("lpdf-sig.lmt","tex"))
 else
     dofile(resolvers.findfile("lpdf-pde.lua","tex"))
 end
@@ -70,13 +75,13 @@ local function loadpdffile(filename)
     if not filename or filename == "" then
         report("no filename given")
     elseif not lfs.isfile(filename) then
-        report("unknown file '%s'",filename)
+        report("unknown file %a",filename)
     else
-        local pdffile  = lpdf.epdf.load(filename)
+        local pdffile = lpdf.epdf.load(filename)
         if pdffile then
             return pdffile
         else
-            report("no valid pdf file '%s'",filename)
+            report("no valid pdf file %a",filename)
         end
     end
 end
@@ -185,89 +190,164 @@ function scripts.pdf.formdata(filename,save)
     local pdffile = loadpdffile(filename)
     if pdffile then
         local widgets = pdffile.widgets
-        local results = { { "type", "name", "value" } }
-        for i=1,#widgets do
-            local annotation = widgets[i]
-            local parent = annotation.Parent or { }
-            local name   = annotation.T or parent.T
-            local what   = annotation.FT or parent.FT
-            if name and what then
-                local value = annotation.V and tostring(annotation.V) or ""
-                if value and value ~= "" then
-                    local wflags = flagstoset(annotation.Ff or parent.Ff or 0, widgetflags)
-                    if what == "Tx" then
-                        if wflags.MultiLine then
-                            wflags.MultiLine = nil
-                            what = "text"
-                        else
-                            what = "line"
-                        end
-                        local default = annotation.V or ""
-                    elseif what == "Btn" then
-                        if wflags.Radio or wflags.RadiosInUnison then
-                            what = "radio"
-                        elseif wflags.PushButton then
-                            what = "push"
-                        else
-                            what = "check"
-                        end
-                    elseif what == "Ch" then
-                        -- F Ff FT Opt T | AA OC (rest follows)
-                        if wflags.PopUp then
-                            wflags.PopUp = nil
-                            if wflags.Edit then
-                                what = "combo"
+        if widgets then
+            local results = { { "type", "name", "value" } }
+            for i=1,#widgets do
+                local annotation = widgets[i]
+                local parent = annotation.Parent or { }
+                local name   = annotation.T or parent.T
+                local what   = annotation.FT or parent.FT
+                if name and what then
+                    local value = annotation.V and tostring(annotation.V) or ""
+                    if value and value ~= "" then
+                        local wflags = flagstoset(annotation.Ff or parent.Ff or 0, widgetflags)
+                        if what == "Tx" then
+                            if wflags.MultiLine then
+                                wflags.MultiLine = nil
+                                what = "text"
                             else
-                                what = "popup"
+                                what = "line"
                             end
+                            local default = annotation.V or ""
+                        elseif what == "Btn" then
+                            if wflags.Radio or wflags.RadiosInUnison then
+                                what = "radio"
+                            elseif wflags.PushButton then
+                                what = "push"
+                            else
+                                what = "check"
+                            end
+                        elseif what == "Ch" then
+                            -- F Ff FT Opt T | AA OC (rest follows)
+                            if wflags.PopUp then
+                                wflags.PopUp = nil
+                                if wflags.Edit then
+                                    what = "combo"
+                                else
+                                    what = "popup"
+                                end
+                            else
+                                what = "choice"
+                            end
+                        elseif what == "Sig" then
+                            what  = "signature"
                         else
-                            what = "choice"
+                            what = nil
                         end
-                    elseif what == "Sig" then
-                        what = "signature"
-                    else
-                        what = nil
+                        if what then
+                            results[#results+1] = { what, name, value }
+                        end
                     end
-                    if what then
-                        results[#results+1] = { what, name, value }
+                end
+            end
+            if save then
+                local values = { }
+                for i=2,#results do
+                    local result= results[i]
+                    values[#values+1] = {
+                        type  = result[1],
+                        name  = result[2],
+                        value = result[3],
+                    }
+                end
+                local data = {
+                    filename = filename,
+                    values   = values,
+                }
+                local name = file.nameonly(filename) .. "-formdata"
+                if save == "json" then
+                    name = file.addsuffix(name,"json")
+                    io.savedata(name,utilities.json.tojson(data))
+                elseif save then
+                    name = file.addsuffix(name,"lua")
+                    table.save(name,data)
+                end
+                report("")
+                report("%i widgets found, %i values saved in %a",#widgets,#results-1,name)
+                report("")
+            end
+            utilities.formatters.formatcolumns(results)
+            report(results[1])
+            report("")
+            for i=2,#results do
+                report(results[i])
+            end
+            report("")
+        end
+    end
+end
+
+function scripts.pdf.signature(filename,save)
+    local pdffile = loadpdffile(filename)
+    if pdffile then
+        local widgets = pdffile.widgets
+        if widgets then
+            for i=1,#widgets do
+                local annotation = widgets[i]
+                local parent = annotation.Parent or { }
+                local name   = annotation.T or parent.T
+                local what   = annotation.FT or parent.FT
+                if what == "Sig" then
+                    local value = annotation.V
+                    if value then
+                        local contents = tostring(value.Contents) or ""
+                        report("")
+                        if save then
+                            local name = file.nameonly(filename) .. "-signature.bin"
+                            report("signature saved in %a",name)
+                            io.savedata(name,string.tobytes(contents))
+                        else
+                            report("signature: %s",contents)
+                        end
+                        report("")
+                        return
                     end
                 end
             end
         end
-        if save then
-            local values = { }
-            for i=2,#results do
-                local result= results[i]
-                values[#values+1] = {
-                    type  = result[1],
-                    name  = result[2],
-                    value = result[3],
-                }
-            end
-            local data = {
-                filename = filename,
-                values   = values,
-            }
-            local name = file.nameonly(filename) .. "-formdata"
-            if save == "json" then
-                name = file.addsuffix(name,"json")
-                io.savedata(name,utilities.json.tojson(data))
-            elseif save then
-                name = file.addsuffix(name,"lua")
-                table.save(name,data)
-            end
-            report("")
-            report("%i widgets found, %i values saved in %a",#widgets,#results-1,name)
-            report("")
-        end
-        utilities.formatters.formatcolumns(results)
-        report(results[1])
-        report("")
-        for i=2,#results do
-            report(results[i])
-        end
-        report("")
+        report("there is no signature")
     end
+end
+
+function scripts.pdf.sign(filename,save)
+    local pdffile = file.addsuffix(filename,"pdf")
+    if not lfs.isfile(pdffile) then
+        report("invalid pdf file %a",pdffile)
+        return
+    end
+    local certificate = environment.argument("certificate")
+    local password    = environment.argument("password")
+    if type(certificate) ~= "string" or type(password) ~= "string" then
+        report("provide --certificate and --password")
+        return
+    end
+    lpdf.sign {
+        filename    = pdffile,
+        certificate = certificate,
+        password    = password,
+        purge       = environment.argument("purge"),
+        uselibrary  = environment.argument("uselibrary"),
+    }
+end
+
+function scripts.pdf.verify(filename,save)
+    local pdffile = file.addsuffix(filename,"pdf")
+    if not lfs.isfile(pdffile) then
+        report("invalid pdf file %a",pdffile)
+        return
+    end
+    local certificate = environment.argument("certificate")
+    local password    = environment.argument("password")
+    if type(certificate) ~= "string" or type(password) ~= "string" then
+        report("provide --certificate and --password")
+        return
+    end
+    lpdf.verify {
+        filename    = pdffile,
+        certificate = certificate,
+        password    = password,
+        uselibrary  = environment.argument("uselibrary"),
+    }
 end
 
 function scripts.pdf.metadata(filename,pretty)
@@ -319,6 +399,8 @@ local function getfonts(pdffile)
 
     return usedfonts
 end
+
+-- todo: fromunicode16
 
 local function getunicodes(font)
     local cid = font.ToUnicode
@@ -640,6 +722,12 @@ elseif environment.argument("object") then
     scripts.pdf.object(filename,tonumber(environment.argument("object")))
 elseif environment.argument("links") then
     scripts.pdf.links(filename,tonumber(environment.argument("page")))
+elseif environment.argument("signature") then
+    scripts.pdf.signature(filename,environment.argument("save"))
+elseif environment.argument("sign") then
+    scripts.pdf.sign(filename)
+elseif environment.argument("verify") then
+    scripts.pdf.verify(filename)
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),filename)
 else

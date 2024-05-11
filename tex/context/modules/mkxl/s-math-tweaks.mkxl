@@ -174,7 +174,7 @@
     \setbox\scratchbox\ruledhbox {
         \im {
             \resetmathattributes
-            \widehat{\Uchar#1}
+            \widehat{\tocharacter#1}
             \showmathalphabettweaks_check_scripts
        }
     }
@@ -186,7 +186,7 @@
         \im {
             \resetmathattributes
             \left(
-                \Uchar#1
+                \tocharacter#1\relax
                 \showmathalphabettweaks_check_scripts
             \right)
         }
@@ -292,6 +292,18 @@
     \removeunwantedspaces
 \stoptexdefinition
 
+\starttexdefinition protected showmathvarianttweaks
+\dm {
+    \dorecurse {\nofmathvariants "28} {
+        \char \getmathvariant ##1 "28
+        \char \getmathvariant ##1 "7B
+        \char \getmathvariant ##1 "7C
+        \char \getmathvariant ##1 "7D
+        \char \getmathvariant ##1 "29
+    }
+}
+\stoptexdefinition
+
 \protect
 
 \stopmodule
@@ -349,7 +361,54 @@
         \showmathaccenttweaks
         \showmathfencetweaks
         \showmathmiddletweaks
+        \showmathvarianttweaks
     }
 
 \stoptext
 
+% \setupbodyfont[10pt]
+%
+% \starttext
+%
+% \setupmathematics[integral=limits]
+%
+% \mathlimitsmode 1
+%
+% \startTEXpage[offset=1ts] \showboxes \showglyphs
+% \dontleavehmode
+% \ruledhbox{\dm{\left|\integral^{!!!!!!!!!!!}\right|}}
+% \ruledhbox{\dm{\left|\integral^{!!!!!!!!!!} \right|}}
+% \ruledhbox{\dm{\left|\integral^{!!!!!!!!!}  \right|}}
+% \ruledhbox{\dm{\left|\integral^{!!!!!!!!}   \right|}}
+% \ruledhbox{\dm{\left|\integral^{!!!!!!!}    \right|}}
+% \ruledhbox{\dm{\left|\integral^{!!!!!!}     \right|}}
+% \ruledhbox{\dm{\left|\integral^{!!!!!}      \right|}}
+% \ruledhbox{\dm{\left|\integral^{!!!!}       \right|}}
+% \ruledhbox{\dm{\left|\integral^{!!!}        \right|}}
+% \ruledhbox{\dm{\left|\integral^{!!}         \right|}}
+% \ruledhbox{\dm{\left|\integral^{!}          \right|}}
+% \blank
+% \dontleavehmode
+% \ruledhbox{\dm{\left|\integral_{!!!!!!!!!!!}\right|}}
+% \ruledhbox{\dm{\left|\integral_{!!!!!!!!!!} \right|}}
+% \ruledhbox{\dm{\left|\integral_{!!!!!!!!!}  \right|}}
+% \ruledhbox{\dm{\left|\integral_{!!!!!!!!}   \right|}}
+% \ruledhbox{\dm{\left|\integral_{!!!!!!!}    \right|}}
+% \ruledhbox{\dm{\left|\integral_{!!!!!!}     \right|}}
+% \ruledhbox{\dm{\left|\integral_{!!!!!}      \right|}}
+% \ruledhbox{\dm{\left|\integral_{!!!!}       \right|}}
+% \ruledhbox{\dm{\left|\integral_{!!!}        \right|}}
+% \ruledhbox{\dm{\left|\integral_{!!}         \right|}}
+% \ruledhbox{\dm{\left|\integral_{!}          \right|}}
+% \blank
+% \dontleavehmode
+% \ruledhbox{\dm{\left|\integral_{!}      ^{!}              \right|}}
+% \ruledhbox{\dm{\left|\integral_{!!!!!!!}^{!}              \right|}}
+% \ruledhbox{\dm{\left|\integral_{!}      ^{!!!!!!!}        \right|}}
+% \ruledhbox{\dm{\left|\integral_{!}      ^{!!!!!!!!!!}     \right|}}
+% \ruledhbox{\dm{\left|\integral_{!!!!!!!}^{!!!!!!!!!}      \right|}}
+% \ruledhbox{\dm{\left|\integral_{!!!!!!!}^{!!!!!!!!!!!!!!!}\right|}}
+% \ruledhbox{\dm{\left|\integral^{\mtext{for demanding}}_{\mtext{integral freaks}}\right|}}
+% \stopTEXpage
+%
+% \stoptext

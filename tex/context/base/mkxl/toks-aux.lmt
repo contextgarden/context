@@ -8,7 +8,10 @@ if not modules then modules = { } end modules ['toks-aux'] = {
 local type, tostring, next = type, tostring, next
 local max = math.max
 local formatters, gsub, char, gmatch = string.formatters, string.gsub, string.char, string.gmatch
-local concat = table.concat
+local concat, swapped = table.concat, table.swapped
+
+local allocate      = utilities.storage.allocate
+local texintegerdef = tex.integerdef
 
 do
 
@@ -28,128 +31,145 @@ do
 
 end
 
--- todo : locals from scanners
+do
 
-local function flags(t)
-    if type(t) == "string" then
-        t = token.create(t)
-    end
-    local r = { }
-    if t.frozen    then r[#r+1] = "frozen"    end
-    if t.permanent then r[#r+1] = "permanent" end
-    if t.immutable then r[#r+1] = "immutable" end
-    if t.primitive then r[#r+1] = "primitive" end
-    if t.mutable   then r[#r+1] = "mutable"   end
-    if t.noaligned then r[#r+1] = "noaligned" end
-    if t.instance  then r[#r+1] = "instance"  end
-    if t.tolerant  then r[#r+1] = "tolerant"  end
-    if t.protected then r[#r+1] = "protected" end
-    if t.constant  then r[#r+1] = "constant"  end
-    return r
-end
+    -- todo : locals from scanners
 
-tokens.flags= flags
-
-interfaces.implement {
-    name      = "showluatokens",
-    public    = true,
-    protected = true,
-    actions   = function()
-        local f0 = formatters["%s: %s"]
-        local nl = logs.newline
-        local wr = logs.writer
-        local t  = token.peeknext() -- local t = token.scannext() token.putback(t)
-        local n  = ""
-        local w  = ""
-        local c  = t.cmdname
-        local tl = nil
-        if c == "left_brace" then
-            w = "given token list"
-            t = token.scantoks(false)
-        elseif c == "register_toks" then
-            token.scannext()
-            w = "token register"
-            n = t.csname or t.index
-            t = tex.gettoks(n,true)
-        elseif c == "internal_toks" then
-            token.scannext()
-            w = "internal token variable"
-            n = t.csname or t.index
-            t = tex.gettoks(n,true)
-        else
-            n = token.scancsname()
-            local r = flags(t)
-            local m, l = token.getmeaning(n,true,false,true) -- last argument: we want original links
-            r[#r+1] = "control sequence"
-            if type(m) == "table" then
-                t = m
-                tl = l
-            else
-                t = { t }
-            end
-            w = concat(r, " ")
+    local function flags(t)
+        if type(t) == "string" then
+            t = token.create(t)
         end
-        wr(f0(w,n))
-        nl()
-        if type(t) == "table" then
-            local w1 = 4
-            local w2 = 1
-            local w3 = 3
-            local w4 = 3
-            for i=1,#t do
-                local ti = t[i]
-                local li = tl and tl[i]
-                w1 = max(w1,#tostring(li or ti.id))
-                w2 = max(w2,#tostring(ti.command))
-                w3 = max(w3,#tostring(ti.index))
-                w4 = max(w4,#ti.cmdname)
-            end
-            local f1 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s  %s"]
-            local f2 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s"]
-            local f3 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s  %C"]
-            for i=1,#t do
-                local ti = t[i]
-                local li = tl and tl[i]
-                local cs = ti.csname
-                local id = li or ti.id
-                local ix = ti.index
-                local cd = ti.command
-                local cn = ti.cmdname
-                if cn == "prefix" and not cs then
-                    cs = "always enforced"
-                end
-                cn = gsub(cn,"_"," ")
-                if cs then
-                    wr(f1(id,cd,ix,cn,cs))
-                elseif cn == "letter" or cn == "other char" then
-                    wr(f3(id,cd,ix,cn,ix))
-                elseif cn == "match" then
-                    -- needs checking for additions
-                    local s
-                        if ix == 32 then s = "optional spacer"     -- space
-                    elseif ix == 42 then s = "skip spaces"         -- *
-                    elseif ix == 43 then s = "keep braces"         -- +
-                    elseif ix == 45 then s = "thrash"              -- -
-                    elseif ix == 47 then s = "prune"               -- /
-                    elseif ix == 58 then s = "continue"            -- :
-                    elseif ix == 59 then s = "quit"                -- ;
-                    elseif ix == 61 then s = "mandate braces"      -- =
-                    elseif ix == 94 then s = "keep spaces"         -- ^
-                    elseif ix == 95 then s = "keep mandate braces" -- _
-                    else                 s = "argument " .. char(ix)
-                    end
-                    wr(f1(id,cd,ix,cn,s))
+        local r = { }
+        if t.frozen    then r[#r+1] = "frozen"    end
+        if t.permanent then r[#r+1] = "permanent" end
+        if t.immutable then r[#r+1] = "immutable" end
+        if t.primitive then r[#r+1] = "primitive" end
+        if t.mutable   then r[#r+1] = "mutable"   end
+        if t.noaligned then r[#r+1] = "noaligned" end
+        if t.instance  then r[#r+1] = "instance"  end
+        if t.tolerant  then r[#r+1] = "tolerant"  end
+        if t.protected then r[#r+1] = "protected" end
+        if t.constant  then r[#r+1] = "constant"  end
+        return r
+    end
+
+    tokens.flags= flags
+
+    interfaces.implement {
+        name      = "showluatokens",
+        public    = true,
+        protected = true,
+        actions   = function()
+            local f0 = formatters["%s: %s"]
+            local nl = logs.newline
+            local wr = logs.writer
+            local t  = token.peeknext() -- local t = token.scannext() token.putback(t)
+            local n  = ""
+            local w  = ""
+            local c  = t.cmdname
+            local tl = nil
+            if c == "left_brace" then
+                w = "given token list"
+                t = token.scantoks(false)
+            elseif c == "register_toks" then
+                token.scannext()
+                w = "token register"
+                n = t.csname or t.index
+                t = tex.gettoks(n,true)
+            elseif c == "internal_toks" then
+                token.scannext()
+                w = "internal token variable"
+                n = t.csname or t.index
+                t = tex.gettoks(n,true)
+            elseif t.active then
+                token.scannext()
+                local r = flags(t)
+                local m, l = token.getmeaning("\xEF\xBF\xBF"..t.csname,true,false,true)
+                r[#r+1] = "active character"
+                if type(m) == "table" then
+                    t = m
+                    tl = l
                 else
-                    wr(f2(id,cd,ix,cn))
-                    if cn == "end match" then
-                        wr("--------------")
+                    t = { t }
+                end
+                w = concat(r, " ")
+                n = t.csname
+            else
+                n = token.scancsname()
+                local r = flags(t)
+                local m, l = token.getmeaning(n,true,false,true) -- last argument: we want original links
+                r[#r+1] = "control sequence"
+                if type(m) == "table" then
+                    t = m
+                    tl = l
+                else
+                    t = { t }
+                end
+                w = concat(r, " ")
+            end
+            wr(f0(w,n))
+            nl()
+            if type(t) == "table" then
+                local w1 = 4
+                local w2 = 1
+                local w3 = 3
+                local w4 = 3
+                for i=1,#t do
+                    local ti = t[i]
+                    local li = tl and tl[i]
+                    w1 = max(w1,#tostring(li or ti.id))
+                    w2 = max(w2,#tostring(ti.command))
+                    w3 = max(w3,#tostring(ti.index))
+                    w4 = max(w4,#ti.cmdname)
+                end
+                local f1 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s  %s"]
+                local f2 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s"]
+                local f3 = formatters["%" .. w1 .. "i  %" .. w2 .. "i  %" .. w3 .. "i  %-" .. w4 .. "s  %C"]
+                for i=1,#t do
+                    local ti = t[i]
+                    local li = tl and tl[i]
+                    local cs = ti.csname
+                    local id = li or ti.id
+                    local ix = ti.index
+                    local cd = ti.command
+                    local cn = ti.cmdname
+                    if cn == "prefix" and not cs then
+                        cs = "always enforced"
+                    end
+                    cn = gsub(cn,"_"," ")
+                    if cs then
+                        wr(f1(id,cd,ix,cn,cs))
+                    elseif cn == "letter" or cn == "other char" then
+                        wr(f3(id,cd,ix,cn,ix))
+                    elseif cn == "match" then
+                        -- needs checking for additions
+                        local s
+                            if ix == 32 then s = "optional spacer"     -- space
+                        elseif ix == 42 then s = "skip spaces"         -- *
+                        elseif ix == 43 then s = "keep braces"         -- +
+                        elseif ix == 45 then s = "thrash"              -- -
+                        elseif ix == 47 then s = "prune"               -- /
+                        elseif ix == 58 then s = "continue"            -- :
+                        elseif ix == 59 then s = "quit"                -- ;
+                        elseif ix == 61 then s = "mandate braces"      -- =
+                        elseif ix == 94 then s = "keep spaces"         -- ^
+                        elseif ix == 95 then s = "keep mandate braces" -- _
+                        else                 s = "argument " .. char(ix)
+                        end
+                        wr(f1(id,cd,ix,cn,s))
+                    else
+                        wr(f2(id,cd,ix,cn))
+                        if cn == "end match" then
+                            wr("--------------")
+                        end
                     end
                 end
+                nl()
             end
-            nl()
         end
-    end
-}
+    }
+
+end
 
 -- For the moment here, will move to initex only (also see node-ini.lua); we need
 -- to actually store these.
@@ -159,7 +179,6 @@ local context = context
 local function getthem(getter,post)
     local codes = { }
     if getter then
-        local texintegerdef = tex.integerdef
         for k, v in next, getter() do
             codes[k] = gsub(v,"[_ ]","")
         end
@@ -179,40 +198,65 @@ local function getthem(getter,post)
             }
         end
     end
-    return utilities.storage.allocate(table.swapped(codes,codes))
+    return allocate(swapped(codes,codes))
 end
+
+-- For the moment we do it like this:
+
+local function setthem(codes,post)
+    for k, v in next, codes do
+        texintegerdef(k .. post,v,"immutable")
+    end
+    return allocate(swapped(codes,codes))
+end
+
+tex.userglyphoptioncodes = setthem({
+    textcheckitalic = 0x01000000,
+    mathcheckitalic = 0x02000000,
+},"glyphoptioncode")
+
+tex.userdiscoptioncodes = setthem({
+    textcheckitalic = 0x01000000,
+},"discoptioncode")
 
 -- Not all of these make sense at the tex end (can't be set).
 
-tex.glyphoptioncodes      = getthem(tex.getglyphoptionvalues,     "glyphoptioncode")
-tex.discoptioncodes       = getthem(tex.getdiscoptionvalues,      "discoptioncode")
-tex.glueoptioncodes       = getthem(tex.getglueoptionvalues       )
-tex.mathoptioncodes       = getthem(tex.getmathoptionvalues       )
-tex.penaltyoptioncodes    = getthem(tex.getpenaltyoptionvalues    )
-tex.flagcodes             = getthem(tex.getflagvalues,            "flagcode" )
-tex.frozenparcodes        = getthem(tex.getfrozenparvalues,       "frozenparcode")
-tex.groupcodes            = getthem(tex.getgroupvalues,           "groupcode")
-tex.hyphenationcodes      = getthem(tex.gethyphenationvalues,     "hyphenationcode")
-tex.mathcontrolcodes      = getthem(tex.getmathcontrolvalues,     "mathcontrolcode")
----.mathflattencodes      = getthem(tex.getmathflattenvalues,     "mathflattencode")
-tex.noadoptioncodes       = getthem(tex.getnoadoptionvalues       )
-tex.normalizelinecodes    = getthem(tex.getnormalizelinevalues,   "normalizecode")     -- we keep the short name
-tex.normalizeparcodes     = getthem(tex.getnormalizeparvalues,    "normalizeparcode")
-tex.automigrationcodes    = getthem(tex.getautomigrationvalues,   "automigrationcode")
-tex.parcontextcodes       = getthem(tex.getparcontextvalues,      "parcontextcode")
-tex.textcontrolcodes      = getthem(tex.gettextcontrolvalues      )
-tex.fitnesscodes          = getthem(tex.getfitnessvalues          )
-tex.parpassclasscodes     = getthem(tex.getparpassclassvalues,    "parpassclass" )
-tex.listanchorcodes       = getthem(tex.getlistanchorvalues,      "listanchorcode")
-tex.listsigncodes         = getthem(tex.getlistsignvalues,        "listsigncode")
-tex.classoptioncodes      = getthem(tex.getmathclassoptionvalues, "classoptioncode")
----.alignmentcontextcodes = getthem(tex.getalignmentcontextvalues )
-tex.specialmathclasscodes = getthem(tex.getspecialmathclassvalues )
-tex.directioncodes        = getthem(tex.getdirectionvalues        )
-tex.fillcodes             = getthem(tex.getfillvalues             )
-tex.mathparametercodes    = getthem(tex.getmathparametervalues    )
-tex.breakcodes            = getthem(tex.getbreakcontextvalues     )
-tex.buildcodes            = getthem(tex.getbuildcontextvalues     )
+tex.glyphoptioncodes        = getthem(tex.getglyphoptionvalues,      "glyphoptioncode")
+tex.discoptioncodes         = getthem(tex.getdiscoptionvalues,       "discoptioncode")
+tex.glueoptioncodes         = getthem(tex.getglueoptionvalues        )
+tex.mathoptioncodes         = getthem(tex.getmathoptionvalues        )
+tex.penaltyoptioncodes      = getthem(tex.getpenaltyoptionvalues     )
+tex.flagcodes               = getthem(tex.getflagvalues,             "flagcode" )
+tex.frozenparcodes          = getthem(tex.getfrozenparvalues,        "frozenparcode")
+tex.groupcodes              = getthem(tex.getgroupvalues,            "groupcode")
+tex.hyphenationcodes        = getthem(tex.gethyphenationvalues,      "hyphenationcode")
+tex.mathcontrolcodes        = getthem(tex.getmathcontrolvalues,      "mathcontrolcode")
+---.mathflattencodes        = getthem(tex.getmathflattenvalues,      "mathflattencode")
+tex.noadoptioncodes         = getthem(tex.getnoadoptionvalues        )
+tex.normalizelinecodes      = getthem(tex.getnormalizelinevalues,    "normalizecode")     -- we keep the short name
+tex.normalizeparcodes       = getthem(tex.getnormalizeparvalues,     "normalizeparcode")
+tex.automigrationcodes      = getthem(tex.getautomigrationvalues,    "automigrationcode")
+tex.autoparagraphcodes      = getthem(tex.getautoparagraphvalues)
+tex.parcontextcodes         = getthem(tex.getparcontextvalues,       "parcontextcode")
+tex.partriggercodes         = getthem(tex.getpartriggervalues,       "partriggercode")
+tex.textcontrolcodes        = getthem(tex.gettextcontrolvalues       )
+tex.fitnesscodes            = getthem(tex.getfitnessvalues           )
+tex.parpassclasscodes       = getthem(tex.getparpassclassvalues,     "parpassclass" )
+tex.listanchorcodes         = getthem(tex.getlistanchorvalues,       "listanchorcode")
+tex.listsigncodes           = getthem(tex.getlistsignvalues,         "listsigncode")
+tex.listgeometrycodes       = getthem(tex.getlistgeometryvalues      )
+tex.classoptioncodes        = getthem(tex.getmathclassoptionvalues,  "classoptioncode")
+---.alignmentcontextcodes   = getthem(tex.getalignmentcontextvalues  )
+tex.specialmathclasscodes   = getthem(tex.getspecialmathclassvalues  )
+tex.directioncodes          = getthem(tex.getdirectionvalues         )
+tex.fillcodes               = getthem(tex.getfillvalues              )
+tex.mathparametercodes      = getthem(tex.getmathparametervalues     )
+tex.breakcodes              = getthem(tex.getbreakcontextvalues      )
+tex.buildcodes              = getthem(tex.getbuildcontextvalues      )
+tex.interactioncodes        = getthem(tex.getinteractionmodes,       "modecode")
+tex.charactertagcodes       = getthem(tex.getcharactertagvalues      )
+tex.protrusionboundarycodes = getthem(tex.getprotrusionboundaryvalues)
+tex.shapingpenaltiescodes   = getthem(tex.getshapingpenaltiesvalues  )
 
 function tex.stringtocodesbitmap(str,codes)
     local bitmap = 0

@@ -649,3 +649,31 @@ void tex_initialize_xx_codes(void)
  /* set_hc_code(0x002D, 0x002D, level_one); */
  /* set_hc_code(0x2010, 0x2010, level_one); */
 }
+
+void tex_run_case_shift(halfword code)
+{
+    int upper = code == upper_case_code;
+    halfword l = tex_scan_toks_normal(0, NULL);
+    halfword p = token_link(l);
+    while (p) {
+        halfword t = token_info(p);
+        if (t < cs_token_flag) {
+            halfword c = t % cs_offset_value;
+            halfword i = upper ? tex_get_uc_code(c) : tex_get_lc_code(c);
+            if (i) {
+                set_token_info(p, t - c + i);
+            }
+        } else if (tex_is_active_cs(cs_text(t - cs_token_flag))) {
+            halfword c = active_cs_value(cs_text(t - cs_token_flag));
+            halfword i = upper ? tex_get_uc_code(c) : tex_get_lc_code(c);
+            if (i) {
+                set_token_info(p, tex_active_to_cs(i, 1) + cs_token_flag);
+            }
+        }
+        p = token_link(p);
+    }
+    if (token_link(l)) {
+        tex_begin_backed_up_list(token_link(l));
+    }
+    tex_put_available_token(l);
+}

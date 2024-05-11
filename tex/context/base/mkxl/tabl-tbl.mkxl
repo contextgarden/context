@@ -442,8 +442,8 @@
 \c_tabl_use_size    \conditionaltrue % default per 2022-08-25
 \c_tabl_sparse_skips\conditionaltrue % default per 2022-08-25
 
-\installtexdirective {tabulateusesize}     {\c_tabl_use_size    \conditionaltrue} {\c_tabl_use_size    \conditionalfalse}
-\installtexdirective {tabulatesparseskips} {\c_tabl_sparse_skips\conditionaltrue} {\c_tabl_sparse_skips\conditionalfalse}
+% \installtexdirective {tabulateusesize}     {\c_tabl_use_size    \conditionaltrue} {\c_tabl_use_size    \conditionalfalse}
+% \installtexdirective {tabulatesparseskips} {\c_tabl_sparse_skips\conditionaltrue} {\c_tabl_sparse_skips\conditionalfalse}
 
 \def\tabl_tabulate_tag_start
   {\dostarttaggedchained\t!tabulate\empty\??tabulation}
@@ -990,6 +990,9 @@
       \ifdim\lastskip>\d_tabl_tabulate_splitoff_betweenskip
         \global\d_tabl_tabulate_splitoff_betweenskip\lastskip
       \fi}}
+
+% see bruce's test file for variant that is template driven, could be an option
+% to a tabulate
 
 \installtexdirective
   {tabulate.linenumbers}

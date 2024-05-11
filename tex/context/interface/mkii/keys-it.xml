@@ -8,6 +8,7 @@
 		<cd:variable name='Addition' value='Aggiunta'/>
 		<cd:variable name='Alphabetic' value='Alphabetic'/>
 		<cd:variable name='Balloon' value='Pallone'/>
+		<cd:variable name='Camel' value='Camel'/>
 		<cd:variable name='Cap' value='Cap'/>
 		<cd:variable name='Capital' value='Maiuscolo'/>
 		<cd:variable name='Character' value='Lettera'/>
@@ -427,6 +428,8 @@
 		<cd:variable name='outer' value='esterno'/>
 		<cd:variable name='outeredge' value='bordoesterno'/>
 		<cd:variable name='outermargin' value='margineesterno'/>
+		<cd:variable name='outline' value='outline'/>
+		<cd:variable name='outlined' value='outlined'/>
 		<cd:variable name='overbar' value='sopralinea'/>
 		<cd:variable name='overbars' value='sopralinee'/>
 		<cd:variable name='overlay' value='sovrapponi'/>
@@ -741,6 +744,7 @@
 		<cd:constant name='bottomoffset' value='offsetfondo'/>
 		<cd:constant name='bottomspace' value='spaziofondo'/>
 		<cd:constant name='bottomstate' value='statofondo'/>
+		<cd:constant name='bottomstyle' value='bottomstyle'/>
 		<cd:constant name='break' value='break'/>
 		<cd:constant name='buffer' value='buffer'/>
 		<cd:constant name='cache' value='cache'/>
@@ -1362,6 +1366,7 @@
 		<cd:constant name='topoffset' value='offsetcima'/>
 		<cd:constant name='topspace' value='spaziocima'/>
 		<cd:constant name='topstate' value='statocima'/>
+		<cd:constant name='topstyle' value='topstyle'/>
 		<cd:constant name='totalnumber' value='totalnumber'/>
 		<cd:constant name='transform' value='transform'/>
 		<cd:constant name='translate' value='translate'/>

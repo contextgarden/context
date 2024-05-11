@@ -47,7 +47,7 @@ run TeX code from within Lua. Some more functionality will move to Lua.
 
 local tonumber, tostring, next, unpack = tonumber, tostring, next, unpack
 local format, lower, find, match, gsub = string.format, string.lower, string.find, string.match, string.gsub
-local longtostring = string.longtostring
+local longtostring, texhashed = string.longtostring, string.texhashed
 local contains = table.contains
 local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
 local concat, insert, remove, unique = table.concat, table.insert, table.remove, table.unique
@@ -62,6 +62,7 @@ local P, R, S, Cc, C, Cs, Ct, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.Cc, lpeg.
 
 local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash  = utilities.parsers.settings_to_hash
+local settings_to_set   = utilities.parsers.settings_to_set
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 local replacetemplate   = utilities.templates.replace
@@ -106,9 +107,12 @@ local report            = logs.reporter("graphics")
 local report_inclusion  = logs.reporter("graphics","inclusion")
 
 local f_hash_part       = formatters["%s->%s->%s->%s"]
-local f_hash_full       = formatters["%s->%s->%s->%s->%s->%s->%s->%s"]
+local f_hash_full       = formatters["%s->%s->%s->%s->%s->%s->%s->%s->%s"]
 
 local v_yes             = variables.yes
+local v_always          = variables.always
+local v_embed           = variables.embed
+local v_fix             = variables.fix
 local v_global          = variables["global"]
 local v_local           = variables["local"]
 local v_default         = variables.default
@@ -552,11 +556,11 @@ function figures.setpaths(locationset,pathlist)
         end
         figures.defaultsearch = h[v_default]
         last_locationset = locationset
-if p then
-    for i=1,#t do
-        t[#t+1] = joinfile(p,t[i])
-    end
-end
+        if p then
+            for i=1,#t do
+                t[#t+1] = joinfile(p,t[i])
+            end
+        end
     end
     if h[v_global] then
         local list = settings_to_array(pathlist)
@@ -566,20 +570,19 @@ end
                 t[#t+1] = s
             end
         end
-if p then
-    for i=1,#t do
-        if not is_qualified_path(t[i]) then
-            t[#t+1] = joinfile(p,t[i])
+        if p then
+            for i=1,#t do
+                if not is_qualified_path(t[i]) then
+                    t[#t+1] = joinfile(p,t[i])
+                end
+            end
         end
-    end
-end
     end
     -- new
     if p then
         insert(t,1,p)
     end
-t = unique(t)
--- inspect(t)
+    t = unique(t)
     --
     figure_paths  = t
     last_pathlist = pathlist
@@ -675,7 +678,7 @@ function figures.initialize(request)
         request.cache     = request.cache ~= "" and request.cache
         request.prefix    = request.prefix ~= "" and request.prefix
         request.format    = request.format ~= "" and request.format
-        request.compact   = request.compact == v_yes
+        request.compact   = backends.codeinjections.validcompactor(request.compact)
         table.merge(figuredata.request,request)
     end
     return figuredata
@@ -706,12 +709,17 @@ function figures.setconversion(format,conversion)
     conversions[format] = conversion
 end
 
+local hash = { name = true, label = true, fullname = true }
+
 local function get(category,tag,default)
     local value = lastfiguredata and lastfiguredata[category]
     value = value and value[tag]
     if not value or value == "" or value == true then
         return default or ""
     else
+        if hash[tag] then
+            value = texhashed(value)
+        end
         return value
     end
 end
@@ -1529,6 +1537,7 @@ function checkers.generic(data) -- called by checkers.pdf/png/jpg
     local size          = dr.size or "crop"
     local color         = dr.color or "natural"
     local mask          = dr.mask or "none"
+    local range         = dr.range or "none"
     local crop          = dr.crop or "none"
     local conversion    = dr.conversion
     local resolution    = dr.resolution
@@ -1551,6 +1560,7 @@ function checkers.generic(data) -- called by checkers.pdf/png/jpg
         size,
         color,
         mask,
+        range,
         crop,
         conversion,
         resolution,
@@ -1594,6 +1604,12 @@ function checkers.generic(data) -- called by checkers.pdf/png/jpg
             if figure.attr and not f.attr then
                 -- tricky as img doesn't allow it
                 f.attr = figure.attr
+            end
+            if figure.newmask then
+                f.newmask = figure.newmask
+            end
+            if figure.newranges then
+                f.newranges = figure.newranges
             end
             if dr.cmyk == v_yes then
                 f.enforcecmyk = true
@@ -2147,6 +2163,7 @@ implement {
             { "preview" },
             { "display" },
             { "mask" },
+            { "range" },
             { "crop" },
             { "conversion" },
             { "resolution" },
@@ -2156,6 +2173,7 @@ implement {
             { "repeat" },
             { "transform" },
             { "compact" },
+            { "metadata" },
             { "width", "dimen" },
             { "height", "dimen" },
             { "userpassword" },
@@ -2326,3 +2344,34 @@ do
     }
 
 end
+
+local function register(name,specification,setter)
+    -- could be a helper
+    specification = loadstring("return " .. specification)
+    if type(specification) == "function" then
+        specification = specification()
+        if specification then
+            setter(name,specification)
+        end
+    end
+end
+
+implement {
+    name      = "registerfiguremask",
+    public    = true,
+    protected = true,
+    arguments = { "optional", "string" }, -- "lua"
+    actions   = function(name,specification)
+        register(name,specification,codeinjections.registerfiguremask)
+    end
+}
+
+implement {
+    name      = "registerfigurerange",
+    public    = true,
+    protected = true,
+    arguments = { "optional", "string" }, -- "lua"
+    actions   = function(name,specification)
+        register(name,specification,codeinjections.registerfigurerange)
+    end
+}

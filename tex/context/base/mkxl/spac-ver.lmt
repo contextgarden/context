@@ -59,7 +59,6 @@ local texgetbox    = tex.getbox
 local buildpage    = tex.triggerbuildpage
 
 local variables    = interfaces.variables
-local implement    = interfaces.implement
 
 local v_local      = variables["local"]
 local v_global     = variables["global"]
@@ -129,8 +128,6 @@ local getlist             = nuts.getlist
 local setlist             = nuts.setlist
 local getattr             = nuts.getattr
 local setattr             = nuts.setattr
-local setattrs            = nuts.setattrs
-local getattrs            = nuts.getattrs
 local getsubtype          = nuts.getsubtype
 local getbox              = nuts.getbox
 local getwhd              = nuts.getwhd
@@ -795,6 +792,9 @@ elseif method == 2 then
 
     -- quite okay but more memory due to attributes (not many)
 
+    local setattrs = nuts.setattrs
+    local getattrs = nuts.getattrs
+
     setspecification = function(n,category,penalty,order)
         setattrs(n,false,a_skipcategory,category or nil,a_skippenalty,penalty or nil,a_skiporder,order or 1)
     end
@@ -889,10 +889,13 @@ do
 
     local k_fixed    = variables.fixed
     local k_flexible = variables.flexible
+    local k_limit    = variables.limit
 
     local k_category <const> = "category"
     local k_penalty  <const> = "penalty"
     local k_order    <const> = "order"
+
+    local setoptions = nuts.setoptions
 
     function vspacing.setmap(from,to)
         map[from] = to
@@ -922,6 +925,7 @@ do
     local b_order    = false
     local b_fixed    = false
     local b_grid     = false
+    local b_limit    = false
 
     local pattern    = nil
 
@@ -939,6 +943,7 @@ do
         b_penalty  = false
         b_order    = false
         b_fixed    = b_grid
+        b_limit    = false
     end
 
     local function after()
@@ -956,8 +961,11 @@ do
     local function inject()
         local n = new_glue(b_amount,b_stretch,b_shrink)
         setspecification(n,b_category,b_penalty,b_order or 1)
-        setvisual(k)
+        setvisual(n)
         write_node(n)
+        if b_limit then
+            setoptions(n,tex.glueoptioncodes.limit)
+        end
         -- todo: inject via value
     end
 
@@ -1010,6 +1018,8 @@ do
                     b_penalty = penalty
                     flush()
                 end
+            elseif keyword == k_limit then
+                b_limit = true
             else
                 local amount, stretch, shrink
                 multiplier = tonumber(multiplier) or 1
@@ -1437,7 +1447,9 @@ do
             while c and c ~= n do
                 local id = getid(c)
                 if id == glue_code then
-                    skips = skips + getwidth(c)
+                    local w = getwidth(c)
+                    skips = skips + w
+                    setglue(c,w) -- nil stretch
                 elseif id == kern_code then
                     skips = skips + getkern(c)
                 end
@@ -1448,7 +1460,9 @@ do
             while c and c ~= n and c ~= l do
                 local id = getid(c)
                 if id == glue_code then
-                    skips = skips + getwidth(c)
+                    local w = getwidth(c)
+                    skips = skips + w
+                    setglue(c,w) -- nil stretch
                 elseif id == kern_code then
                     skips = skips + getkern(c)
                 end
@@ -1787,6 +1801,9 @@ do
              --     trace_done("removed penalty",current)
              -- end
              -- head, current = remove_node(head,current,true)
+                if trace then
+                    trace_done("kept penalty",current)
+                end
                 current = getnext(current)
             elseif id == kern_code then
                 if snap and trace_vsnapping and getkern(current) ~= 0 then
@@ -2623,6 +2640,7 @@ do
                             local strutdp = texgetdimen(d_strutdp)
                             local delta   = strutdp - getdepth(n)
                             if delta > 0 then
+                                --- also pagelastdepth
                                 setdepth(n,strutdp)
                                 texset("pagetotal",texget("pagetotal") + delta)
                                 texset("pagedepth",strutdp)
@@ -2635,7 +2653,11 @@ do
                     elseif id == insert_code or id == mark_code then
                         -- prev
                     else
+-- if id == glue_code then
+--     print(gluecodes[subtype],nuts.getwidth(n))
+-- else
                         break
+-- end
                     end
                 end
             end
@@ -2741,25 +2763,27 @@ end
 
 do
 
-    interfaces.implement {
+    local implement = interfaces.implement
+
+    implement {
         name      = "injectvspacing",
         actions   = vspacing.inject,
         arguments = { "integer", "string" },
     }
 
-    interfaces.implement {
+    implement {
         name      = "injectvpenalty",
         actions   = vspacing.injectpenalty,
         arguments = "integer",
     }
 
-    interfaces.implement {
+    implement {
         name      = "injectvskip",
         actions   = vspacing.injectskip,
         arguments = "dimension",
     }
 
-    interfaces.implement {
+    implement {
         name    = "injectdisable",
         actions = vspacing.injectdisable,
     }
@@ -2901,10 +2925,6 @@ do
         name    = "forcepageflush",
         actions = vspacing.forcepageflush
     }
-
-end
-
-do
 
     implement {
         name      = "injectzerobaselineskip",

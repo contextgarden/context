@@ -55,7 +55,8 @@
 \to \everysetupbackend
 
 \setupbackend
-  [\c!hyphen=\v!yes]
+  [\c!space=\v!yes, % is now default
+   \c!hyphen=\v!yes]
 
 %D For the moment this is an experiment (defauls is pdf, but we also
 %D have lua, json and mps).
@@ -76,6 +77,8 @@
 %D \stoptext
 %D \stoptyping
 
-\permanent\protected\def\setupoutput[#1]{\clf_enabledriver{#1}}
+\permanent\protected\def\setupoutput[#1]%
+  {\clf_enabledriver{#1}%
+   \clf_setrealspaces{\backendparameter\c!space}}
 
 \protect \endinput

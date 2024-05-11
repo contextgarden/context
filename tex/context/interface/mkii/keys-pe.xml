@@ -8,6 +8,7 @@
 		<cd:variable name='Addition' value='جمع'/>
 		<cd:variable name='Alphabetic' value='Alphabetic'/>
 		<cd:variable name='Balloon' value='بادکنک'/>
+		<cd:variable name='Camel' value='Camel'/>
 		<cd:variable name='Cap' value='Cap'/>
 		<cd:variable name='Capital' value='Capital'/>
 		<cd:variable name='Character' value='Character'/>
@@ -427,6 +428,8 @@
 		<cd:variable name='outer' value='خارجی'/>
 		<cd:variable name='outeredge' value='لبه‌خارجی'/>
 		<cd:variable name='outermargin' value='حاشیه‌خارجی'/>
+		<cd:variable name='outline' value='outline'/>
+		<cd:variable name='outlined' value='outlined'/>
 		<cd:variable name='overbar' value='میله‌رو'/>
 		<cd:variable name='overbars' value='میله‌ها‌رو'/>
 		<cd:variable name='overlay' value='پوشش'/>
@@ -741,6 +744,7 @@
 		<cd:constant name='bottomoffset' value='آفست‌پایین'/>
 		<cd:constant name='bottomspace' value='فضای‌پایین'/>
 		<cd:constant name='bottomstate' value='وضعیت‌پایین'/>
+		<cd:constant name='bottomstyle' value='bottomstyle'/>
 		<cd:constant name='break' value='break'/>
 		<cd:constant name='buffer' value='buffer'/>
 		<cd:constant name='cache' value='میانگیر'/>
@@ -1362,6 +1366,7 @@
 		<cd:constant name='topoffset' value='آفست‌بالا'/>
 		<cd:constant name='topspace' value='فضای‌بالا'/>
 		<cd:constant name='topstate' value='وضعیت‌بالا'/>
+		<cd:constant name='topstyle' value='topstyle'/>
 		<cd:constant name='totalnumber' value='totalnumber'/>
 		<cd:constant name='transform' value='transform'/>
 		<cd:constant name='translate' value='translate'/>

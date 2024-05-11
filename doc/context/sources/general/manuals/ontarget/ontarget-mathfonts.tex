@@ -1,0 +1,1247 @@
+% language=us runpath=texruns:manuals/ontarget
+
+% musical timestamp: 2022/07/01 while listening to Hania Rani @ https://www.youtube.com/watch?v=sp3B97N67Cw
+
+% todo apply withprescripts -> to all components
+
+\usemodule[math-tweaks]
+
+\startcomponent ontarget-mathfonts
+
+\environment ontarget-style
+
+\startchapter[title={Dealing with math fonts}]
+
+\startsubject[title=Introduction]
+
+Here we will explain some of the tricks that we apply to math fonts so that they
+not only work better with the \LUAMETATEX\ math engine but also look better, at
+least in our opinion. We will not show specific fonts because after all, who can
+complain about something that comes for free, but you can see whatever we do to
+make it work in action in \CONTEXT\ where we setup these fonts. This is also a
+summary of what Mikael Sundqvist and I have been doing for a while now: improve
+the rendering of math, a rather enjoyable experience, also because we ran into
+humorous effects with and properties of fonts. Because we consider ourselves free
+from any conventions we could happily explore solution.
+
+\stopsubject
+
+\startsubject[title=Fences]
+
+\startMPdefinitions
+path My_left_fence    ; My_left_fence    := (1,1) -- (0,1) -- (0,-1) -- (1,-1) ;
+path My_right_fence   ; My_right_fence   := (0,1) -- (1,1) -- (1,-1) -- (0,-1) ;
+path My_middle_fence  ; My_middle_fence  := (0,1)                    -- (0,-1) ;
+
+path My_right_fence_x ; My_right_fence_x   := (0,1) -- (1, 1/2) -- (1,-1/2) -- (0,-1) ;
+
+path My_left_top      ; My_left_top      := (1, 1  ) -- (0, 1  ) -- (0, 1/2) ;
+path My_left_middle   ; My_left_middle   := (0, 1/2) -- (0,-1/2) ;
+path My_left_bottom   ; My_left_bottom   := (0,-1/2) -- (0,-1  ) -- (1,-1  ) ;
+
+path My_right_top     ; My_right_top     := (0, 1  ) -- (1, 1  ) -- (1, 1/2) ;
+path My_right_middle  ; My_right_middle  := (1, 1/2) -- (1,-1/2) ;
+path My_right_bottom  ; My_right_bottom  := (1,-1/2) -- (1,-1  ) -- (0,-1  ) ;
+
+path My_right_top_x    ; My_right_top_x     := (0, 1  ) -- (1, 1/2) ;
+path My_right_middle_x ; My_right_middle_x  := (1, 1/2) -- (1,-1/2) ;
+path My_right_bottom_x ; My_right_bottom_x  := (1,-1/2) -- (0,-1  ) ;
+
+path My_middle_top    ; My_middle_top    := (0, 1  ) -- (0, 1/2) ;
+path My_middle_middle ; My_middle_middle := (0, 1/2) -- (0,-1/2) ;
+path My_middle_bottom ; My_middle_bottom := (0,-1/2) -- (0,-1  ) ;
+
+path My_content       ; My_content       := fullcircle ;
+
+vardef My_Fenced (expr left, middle, right, size) =
+    image (
+        draw My_left_fence   xyscaled (1,left  ) shifted (0,0) withcolor darkgray ;
+        draw My_content      xyscaled (2,size  ) shifted (3,0) withcolor darkblue ;
+        draw My_middle_fence xyscaled (1,middle) shifted (5,0) withcolor darkgray ;
+        draw My_content      xyscaled (2,size  ) shifted (7,0) withcolor darkblue ;
+        if left <> right :
+            draw My_right_fence_x xyscaled (1,right ) shifted (9,0) withcolor darkgray ;
+        else :
+            draw My_right_fence   xyscaled (1,right ) shifted (9,0) withcolor darkgray ;
+        fi ;
+    )
+enddef ;
+
+vardef My_Extensibled (expr left, middle, right, size) =
+    image (
+        draw        My_left_top      xyscaled (1,left  ) shifted (0,0) withcolor darkgray ;
+        draw        My_left_middle   xyscaled (1,left  ) shifted (0,0) withcolor darkgreen ;
+        draw        My_left_bottom   xyscaled (1,left  ) shifted (0,0) withcolor darkgray ;
+        drawpoints  My_left_middle   xyscaled (1,left  ) shifted (0,0) withpen pencircle scaled .4 withcolor white ;
+        drawpoints  My_left_top      xyscaled (1,left  ) shifted (0,0) withpen pencircle scaled .2 withcolor red ;
+        drawpoints  My_left_bottom   xyscaled (1,left  ) shifted (0,0) withpen pencircle scaled .2 withcolor red ;
+        draw        My_content       xyscaled (2,size  ) shifted (3,0) withcolor darkblue ;
+        draw        My_middle_top    xyscaled (1,middle) shifted (5,0) withcolor darkgray ;
+        draw        My_middle_middle xyscaled (1,middle) shifted (5,0) withcolor darkgreen ;
+        draw        My_middle_bottom xyscaled (1,middle) shifted (5,0) withcolor darkgray ;
+        drawpoints  My_middle_middle xyscaled (1,middle) shifted (5,0) withpen pencircle scaled .4 withcolor white ;
+        drawpoints  My_middle_top    xyscaled (1,middle) shifted (5,0) withpen pencircle scaled .2 withcolor red ;
+        drawpoints  My_middle_bottom xyscaled (1,middle) shifted (5,0) withpen pencircle scaled .2 withcolor red ;
+        draw        My_content       xyscaled (2,size  ) shifted (7,0) withcolor darkblue ;
+        if left <> right :
+            draw        My_right_top     xyscaled (1,right ) shifted (9,0) withcolor darkgray ;
+            draw        My_right_middle  xyscaled (1,right ) shifted (9,0) withcolor darkgreen ;
+            draw        My_right_bottom  xyscaled (1,right ) shifted (9,0) withcolor darkgray ;
+            drawpoints  My_right_middle  xyscaled (1,right ) shifted (9,0) withpen pencircle scaled .4 withcolor white ;
+            drawpoints  My_right_top     xyscaled (1,right ) shifted (9,0) withpen pencircle scaled .2 withcolor red ;
+            drawpoints  My_right_bottom  xyscaled (1,right ) shifted (9,0) withpen pencircle scaled .2 withcolor red ;
+        else :
+            draw        My_right_top_x     xyscaled (1,right ) shifted (9,0) withcolor darkgray ;
+            draw        My_right_middle_x  xyscaled (1,right ) shifted (9,0) withcolor darkgreen ;
+            draw        My_right_bottom_x  xyscaled (1,right ) shifted (9,0) withcolor darkgray ;
+            drawpoints  My_right_middle_x  xyscaled (1,right ) shifted (9,0) withpen pencircle scaled .4 withcolor white ;
+            drawpoints  My_right_top_x     xyscaled (1,right ) shifted (9,0) withpen pencircle scaled .2 withcolor red ;
+            drawpoints  My_right_bottom_x  xyscaled (1,right ) shifted (9,0) withpen pencircle scaled .2 withcolor red ;
+        fi ;
+    )
+enddef ;
+\stopMPdefinitions
+
+Fences come in two variants: fixed sizes and so called extensibles that are
+constructed from recipes that combine snippets that can partially overlap. Fenced
+material has an optional symbol at the start, an optional one at the end and zero
+or more symbols in the middle. Here we have all three:
+
+\startlinecorrection
+\startMPcode
+    draw My_Fenced (2,2,2,2) scaled 5mm ;
+\stopMPcode
+\stoplinecorrection
+
+Ideally these symbols scale in the same way, depending on the other context. This
+means that \TEX\ first has to measure what sits in between but we will not dive
+into that. The left and right symbols are normally pairs like parentheses or
+braces, but any mix is possible. Ideally a font is designed with this in mind but
+unfortunately we see this:
+
+\startlinecorrection
+\startMPcode
+    draw My_Fenced (2,3,2,2) scaled 5mm ;
+\stopMPcode
+\stoplinecorrection
+
+And even this:
+
+\startlinecorrection
+\startMPcode
+    draw My_Fenced (2,3,2.5,2) scaled 5mm ;
+\stopMPcode
+\stoplinecorrection
+
+It might be a side effect of the limited amount fo available slots in traditional
+math fonts that also resulted in non consistent sets in \OPENTYPE\ follow|-|ups
+and when one fonts does that more follow that approach.
+
+You can find rendering like this:
+
+\startlinecorrection
+\startMPcode
+    draw My_Fenced (3,2,3,2) scaled 5mm ;
+\stopMPcode
+\stoplinecorrection
+
+and this
+
+\startlinecorrection
+\startMPcode
+    draw My_Fenced (2,2,2,6) scaled 5mm ;
+\stopMPcode
+\stoplinecorrection
+
+because a programmable language like \TEX\ can use some tricks to force sizes: we
+just create some local fence which dimension is determined by some invisible
+rule. In \LUAMETATEX\ we can actually enforce dimensions and in \CONTEXT\ we can
+filter specific sizes.
+
+So how does this sizing work? A fence character starts out with the normal size
+but then a larger one is needed, the math engine will check if there is a larger
+variant. An \OPENTYPE\ font can provide these and in the engine that works out as
+following a linked list to a next size. When we run out of sizes there can be an
+extension recipe present where a fence is made from snippets pasted together.
+Normally that goes unnoticed because there is a little overlap between these
+snippets.
+
+\startlinecorrection
+\startMPcode
+    draw My_Extensibled (2,2,2,4) scaled 5mm ;
+\stopMPcode
+\stoplinecorrection
+
+A larger fence will simply add more middle pieces, and it will not do as below:
+
+\startlinecorrection
+\startMPcode
+    draw My_Extensibled (3,3,3,6) scaled 5mm ;
+\stopMPcode
+\stoplinecorrection
+
+Because we're talking of a deliberate design you cannot simply scale snippets and
+expect them to work out well visually. However, in a pure vertical case one
+actually could and in practice all these extensibles have (of course) vertical
+bars. Anyway, in the above example the larger middle piece actually is just
+several middle pieces overlapping.
+
+However, as we mentioned, fonts are not always consistent. First of all, when we
+run over the (increasing in size) variants we have discrete steps and you're
+lucky if a font has more than half a dozen. As soon as we end up with the
+extensible the size can be matched well.
+
+So how do we compensate for misbehavior? There are two parameters in \TEX\ then
+determine the matching: \typ {\delimiterfactor} and \typ {\delimitershortfall}.
+Plain \TEX\ set them to 901 and 5pt which works okay in most cases. In \CONTEXT\
+we set them to 1000 and 0pt and instead use the parameters \typ
+{\UmathDelimiterPercent} and \typ {\UmathDelimiterShortfall} that are bound fo
+fonts. In addition to that we use the \typ {nooverflow} keyword with \type
+{\Umiddle} which makes sure that we always stay within the size of the outer
+fences. That just looks better.
+
+In addition we can tweak the dimensions of glyphs and apply effects such as
+expanding so that we get a bit more consistent visual appearance. We can also
+signal that we should ignore sizes larger than a given index.
+
+The next sequence show what happens in practice when we tell \type {\Umiddle} to
+never exceed the requested size. Because we start with stepwise sizes the first
+part of this sequence has no matching sizes. At some point we end up at the
+extensibles.
+
+\showmathmiddletweaks
+
+Its is worth noticing that we tried several alternative approaches. For instance
+what happens when we only use extensibles? In that case there will be no fit for
+the smaller ones because the at least two parts of an extensible can seldom
+completely overlap that much.
+
+Actually, when we tested that we noticed that even in valid situations there can
+be strange overlap. At that time for instance the Lucida fonts had overlapping
+artifact in some curly braces which we found out when we tried to nil some of the
+larger, odd looking, step variants. Latin modern and some of the gyre fonts had
+unexpected jumps to larger sizes which made us decide to make the delimiter
+parameters font specific so that we could more easily adapt them: they basically
+became part of the math parameters of a font.
+
+There are also inconsistencies in the perceived widths of glyphs used: often the
+bars are too thin. That can be solved by applying effects like scaling
+horizontally or vertically and cheating a bit with the dimensions. Another
+solution is that we ignore the variants after a certain size and force
+extensibles sooner but that of course needs to be tested for unwanted overlaps
+too. All these tricks combined make it possible to use math fonts with imperfect
+fences more or less reliable.
+
+\startitemize[packed]
+\startitem
+    Provide an equal amount of fixed size larger variants for all fences: assume
+    arbitrary pairing.
+\stopitem
+\startitem
+    Because fonts have plenty room, provide some ten variants before going
+    extensible.
+\stopitem
+\startitem
+    Try to make the variants and the extensibles similar in look.
+\stopitem
+\startitem
+    Ensure that the width of the vertical bar matches the design.
+\stopitem
+\startitem
+    Make sure that the odd entries in a extensible recipe don't overlap badly.
+\stopitem
+\stopitemize
+
+\stopsubject
+
+\startsubject[title=Accents]
+
+When traditional \TEX\ showed up it was not that common to have pre|-|composed
+characters so when you needed something with an accept on top the way to go was
+to typeset the base character and position the accent on top using either the
+\type {\accent} primitive or some macro. It always was a compromise but
+eventually fonts with more assembled characters showed up. In \OPENTYPE\ fonts
+that operate in the \UNICODE\ domain we have even more characters but even there
+characters can be composed. However, anchors that help achieving this are part of
+the format. For text we use the mark features and for math we use the top anchor.
+Given that, why do we need to tweak it?
+
+\startMPdefinitions
+path My_top_accent ; My_top_accent    := (-1/2,0) -- (0,1/4) -- (1/2,0) ;
+
+path My_content    ; My_content       := fulldiamond ;
+
+vardef My_Accent (expr shift, accent, size, slant) =
+    image (
+        path p ; p := My_content
+            xyscaled (2,size)
+            slanted slant
+        ;
+        draw My_top_accent
+            xyscaled (1,accent)
+            shifted (0,2)
+            withcolor darkgray ;
+        draw p
+            withcolor darkblue ;
+    )
+enddef ;
+
+vardef My_Accent_X (expr shift, accent, size, slant, rotation) =
+    image (
+        path p ; p := My_content rotated rotation
+            xyscaled (2,size)
+            slanted slant
+        ;
+        draw My_top_accent
+            xyscaled (1,accent)
+            shifted point 2 of p
+            shifted - (0,-1)
+            withcolor darkgray ;
+        draw p
+            withcolor darkblue ;
+    )
+enddef ;
+
+vardef My_Accent_Y (expr shift, accent, size, scale) =
+    image (
+        path p ; p := My_content
+            xyscaled (2,size)
+        ;
+        draw My_top_accent xscaled scale
+            xyscaled (1,accent)
+            shifted (0,2)
+            withcolor darkgray ;
+        draw p
+            withcolor darkblue ;
+    )
+enddef ;
+
+vardef My_Accent_Z (expr shift, accent, size, scale) =
+    image (
+        path p ; p := My_content
+            xyscaled (2,size)
+        ;
+        path q ; q := My_top_accent
+            xscaled scale
+            xyscaled (1,accent)
+            shifted (0,2)
+        ;
+        draw q
+            withcolor darkgray ;
+        draw p
+            withcolor darkblue ;
+        draw outerboundingbox q
+            withpen pencircle scaled 1/20
+            withcolor darkred ;
+        draw outerboundingbox p
+            withpen pencircle scaled 1/20
+            withcolor darkred ;
+    )
+enddef ;
+\stopMPdefinitions
+
+Here we have a base character with an accent on top. The character is upright and
+the accent gets positioned in the middle.
+
+\startlinecorrection
+\startMPcode
+    draw My_Accent (2.5,1,2,0) scaled 5mm ;
+\stopMPcode
+\stoplinecorrection
+
+This doesn't work out well if we have a slanted or italic shape:
+
+\startlinecorrection
+\startMPcode
+    draw My_Accent (2.5,1,2,.2) scaled 5mm ;
+    draw My_Accent (2.5,1,2,.4) scaled 5mm shifted (2cm,0) ;
+    draw My_Accent (2.5,1,2,.6) scaled 5mm shifted (4cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+So we need to compensate, for instance like this:
+
+\startlinecorrection
+\startMPcode
+    draw My_Accent_X (2.5,1,2,.2,0) scaled 5mm ;
+    draw My_Accent_X (2.5,1,2,.4,0) scaled 5mm shifted (2cm,0) ;
+    draw My_Accent_X (2.5,1,2,.6,0) scaled 5mm shifted (4cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+However, what does determine the right anchor point? From this example you can
+conclude that it is the top of the character. It is probably for that reason why
+the semi automated construction of Latin Modern and the Gyre fonts have quite
+some anchors that are rather bad: getting the anchors right is more a visual job
+than something that can be automated. The topmost point is not really the best
+one to focus on.
+
+\startlinecorrection
+\startMPcode
+    draw My_Accent_X (2.5,1,2,.2,35) scaled 5mm ;
+    draw My_Accent_X (2.5,1,2,.4,35) scaled 5mm shifted (2cm,0) ;
+    draw My_Accent_X (2.5,1,2,.6,35) scaled 5mm shifted (4cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+Here the topmost position is very off center. In for instance Latin Modern that
+means that on digits like~7 and~4 you get very weird anchoring. And this is why
+we have a tweak that just wipes all the anchors from an alphabet: most alphabets
+don't need them anyway and the engine will use the center when no anchor is
+defined. Just for the record: in traditional \TEX\ engines the horizontal
+position is determined by the kern between a so called skew character and the
+base character. The font format has no anchor field but it has kerns, so this
+trick makes much sense.
+
+We discussed vertical extensible that grow but horizontally we have accents that
+can grow. There are also a few horizontal fences like braces that have
+extensibles but we will cover that later. Accents are such that they only have a
+fixed set of variants and one problem is that there are often not enough of them.
+This means that the engine has to choose one that is reasonable.
+
+\startlinecorrection
+\startMPcode
+    draw My_Accent_Y (2.5,1,2,1)   scaled 5mm ;
+    draw My_Accent_Y (2.5,1,2,2)   scaled 5mm shifted (2cm,0) ;
+    draw My_Accent_Y (2.5,1,2,2.5) scaled 5mm shifted (4cm,0) ;
+    draw My_Accent_Y (2.5,1,2,3)   scaled 5mm shifted (6cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+In the example above the first two are acceptable but the third and fourth are
+not. Just imagine that there is a superscript or subscript involved. Here we
+apply another cheat: we lie about the dimensions. A glyph can have left and right
+margins that get subtracted when the accent analyzer tries to make a fit which
+means that we can sort of enforce the second solution. The \CONTEXT\ font goodie
+files set the margins for some problematic characters because (of course) these
+are not part of \OPENTYPE\ math fonts. This is an optical issue mostly because the
+engine will not easily put a too wide one on top.
+
+\startlinecorrection
+\startMPcode
+    draw My_Accent_Z (2.5,1.0,2,1) scaled 5mm ;
+    draw My_Accent_Z (2.5,1.5,2,2) scaled 5mm shifted ( 2cm,0) ;
+    draw My_Accent_Z (2.5,2.0,2,3) scaled 5mm shifted ( 4cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+Watch how the larger accents also have a larger bounding box. That is all right
+but does interfere with a consistent makeup. The solution is simple: we use the
+\CONTEXT\ dimension tweak to reposition accents and cheat with their height and
+depth to make sure that we get consistent rendering. We need to tweak anyway
+because sometimes accents have bad dimensions. The smallest one is actually a
+text accent and therefore can have properties that are inconsistent with its
+wider variants. This is typically a side effect of the fact that math accents and
+text accents are not considered to be different.
+
+\startitemize[packed]
+\startitem
+    Only add anchors to some (forward leaning!) italic shapes.
+\stopitem
+\startitem
+    Make extensibles as much a possible consistent with respect to dimensions.
+\stopitem
+\stopitemize
+
+\stopsubject
+
+\startsubject[title=Kerning]
+
+In a text font there are two mechanisms that influence the spacing between
+individual characters: kerning and italic corrections. In \OPENTYPE\ text fonts
+we have a more generalized relative positioning mechanism which can be seen as
+kerning. The italic correction well known to \TEX\ users can be implemented as a
+positional font feature but very seldom is.
+
+An \OPENTYPE\ math font has both kerning and italic correction. The kerning at
+the left top, left bottom, right top and right bottom of a glyph can be specified
+as a staircase and is used to position scripts. The italic correction is bit more
+curious and is applied is some cases. Keep in mind that in math a sequence of
+alphabetic characters does not make a word but represents a multiplication of
+ordinary symbols and thereby specific inter|-|atom spacing rules apply.
+
+A traditional \TEX\ font has kerns and italic correction and an \OPENTYPE\ font has
+staircase kerns and italic correction. For practical (space and time) reasons the
+widths of italic shapes in traditional math fonts are such that when you add the
+correction they kind of match the bounding box.
+
+So, one way to suit both kind of fonts is to add the italic correction (often
+absent in \OPENTYPE\ glyphs but very present in traditional ones) as well as the
+staircase kerns (present in \OPENTYPE\ fonts and unknown to traditional fonts).
+
+There are however some complications: what if a glyph has both? Which one is to
+be preferred? Should we try our luck? Even worse: in the traditional the italic
+correction is {\em always} added to the box that wraps a glyph but in some cases
+that correction gets removed. \footnote {In \LUAMETATEX\ we never remove but
+compensate so that we can track what happens.} But should we also remove a
+staircase kern? When we started with \LUAMETATEX\ it was a bit of a gamble
+because the specification only showed up later and improved over time. \footnote
+{This is true for much of \OPENTYPE\ which has the danger that bugs and side
+effects become features. Keep that in mind when you criticize solutions that
+early adopters came up with!}
+
+In \LUATEX\ we often have to code paths. That was done after other attempts to
+deal with this weak aspect of fonts worked for one font and not for the other.
+For instance at the time of this writing some fonts have italic corrections for
+upright characters! In \LUAMETATEX\ that model was changed into a detailed
+control model at the font as well as engine level. Later, when Mikael and I went
+over the fonts, usage of characters in math, atoms and spacing, we decided to
+kick out that detailed control and use more general control mechanisms assuming
+that we use \OPENTYPE\ fonts without bad italics. Whenever we had bad ones we
+could correct that in a so called font goodie file. In other words: no heuristics
+in the engine but fixed fonts. For that we always take Cambria as reference.
+
+{\em To be considered: should we finally turn italic correction into top and
+bottom kerns? Basically: model after Cambria? Then we can kick out code! We just
+assume font goodies.}
+
+\startMPdefinitions
+vardef My_Character (expr shape, sx, sy, slant, left, right, side) =
+    image (
+        path p ; p := shape
+            xyscaled (sx, sy)
+            slanted slant
+        ;
+        draw p
+            withcolor darkgray ;
+        draw (outerboundingbox p) leftenlarged side rightenlarged side
+            withpen pencircle scaled 1/20
+            withcolor darkgreen ;
+        draw (outerboundingbox p) leftenlarged left rightenlarged right
+            withpen pencircle scaled 1/20
+            withcolor darkred ;
+    )
+enddef ;
+
+vardef My_Character_K (expr shape, sx, sy, slant, left, right, lt, lb, rt, rb) =
+    image (
+        path p ; p := shape
+            xyscaled (sx, sy)
+            slanted slant
+        ;
+        draw p
+            withcolor darkgray ;
+        draw (outerboundingbox p) leftenlarged left rightenlarged right
+            withpen pencircle scaled 1/20
+            withcolor darkred ;
+        draw (ulcorner outerboundingbox p) shifted (lt,0)
+            withpen pencircle scaled 1/2
+            withcolor darkgreen ;
+        draw (llcorner outerboundingbox p) shifted (lb,0)
+            withpen pencircle scaled 1/2
+            withcolor darkgreen ;
+        draw (urcorner outerboundingbox p) shifted (rt,0)
+            withpen pencircle scaled 1/2
+            withcolor darkgreen ;
+        draw (lrcorner outerboundingbox p) shifted (rb,0)
+            withpen pencircle scaled 1/2
+            withcolor darkgreen ;
+    )
+enddef ;
+\stopMPdefinitions
+
+\startlinecorrection
+\startMPcode
+    draw My_Character (fulldiamond, 2, 4, 0, 1/4, 1/4, 0) scaled 5mm ;
+    draw My_Character (fullcircle,  2, 4, 0, 1/4, 1/4, 0) scaled 5mm shifted (3cm,0) ;
+    draw My_Character (fullsquare,  2, 4, 0, 1/4, 1/4, 0) scaled 5mm shifted (6cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+Here we have three shapes and as usual they have some space at the left and right.
+A text font like Lucida is designed in such a way that no kerns between glyphs
+are needed but most text fonts have kerns. These compensate for these average
+acceptable side bearings.
+
+\startlinecorrection
+\startMPcode
+    draw My_Character (fulldiamond, 2, 4, 0.3, 1/4, 1/4, 0) scaled 5mm ;
+    draw My_Character (fullcircle,  2, 4, 0.3, 1/4, 1/4, 0) scaled 5mm shifted (3cm,0) ;
+    draw My_Character (fullsquare,  2, 4, 0.3, 1/4, 1/4, 0) scaled 5mm shifted (6cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+In these slanted versions we get wider shapes but not always. For some shapes the
+amount of perceived spacing at the left top and right bottom increases and this is
+where we start thinking in terms of italic correction:
+
+\startlinecorrection
+\startMPcode
+    draw My_Character (fulldiamond, 2, 4, 0.3,  1/4,  1/4, 0  ) scaled 5mm ;
+    draw My_Character (fullcircle,  2, 4, 0.3,  1/4,  1/4, 0  ) scaled 5mm shifted (3cm,0) ;
+    draw My_Character (fullsquare,  2, 4, 0.3,  1/4, -1/2, 1/4) scaled 5mm shifted (6cm,0) ;
+    draw My_Character (fullsquare,  2, 4, 0.3, -1/2, -1/2, 1/4) scaled 5mm shifted (9cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+That way, when we put characters next to each other on the average words look
+better. But how about math: a superscript should be outside that bounding box and
+a subscript inside, assuming that we have a shape like this. It is unfortunate
+that the widely used $f$ is the perfect candidate. When using that one as test
+case things can look great but kick in a $g$ and it gets worse. The $v$ and $w$
+are also a fertile playground. It is hard to come up with logic that satisfied
+all which is why glyph specific engine control was implemented (and later
+dropped). In the previous graphic the fourth shape also cheats on the left and
+yes, there are some fonts that do just that, which the of course interferes with
+prescripts.
+
+Now think of using shapes in formulas: some are put in sequence, in which case
+inter atom spacing is added so there is less danger of touching due to too a
+narrow width and \TEX ies somehow accepted that adding thin spaces every now and
+then is fine \footnote {We don't think so which is why we came up with a more
+granular inter atom spacing mode.} But there's more than sequences: shapes end up
+in scripts, as degrees in radicals, above and below fraction rules, as fences and
+accents. Just assume the worst possible scenarios!
+
+In these examples the italic correction at the right is the difference between
+the red and green box. There is no left italic correction and that is why \OPENTYPE\
+math (driven by Cambria) has these four sets of kerns.
+
+\startlinecorrection
+\startMPcode
+    draw My_Character_K (fulldiamond, 2, 4, 0.3, 1/4, 1/4, 1/4, -1/4, 1/2, -1/4) scaled 5mm ;
+    draw My_Character_K (fullcircle,  2, 4, 0.3, 1/4, 1/4, 1/8,  0,   0,   -1/8) scaled 5mm shifted (3cm,0) ;
+    draw My_Character_K (fullsquare,  2, 4, 0.3, 1/4, 1/4, 1/8, -1/2, 1/2, -1/8) scaled 5mm shifted (6cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+Here we show some possibilities for better anchoring but it will be clear that it
+is a compromise. Staircase kerns as in \OPENTYPE\ therefore have a set of kerns
+going up or down for not only the base character but also the one that ends up in
+a script as that one itself can have a \quote {problematic} shape.
+
+Our solution to this problem is to tweak dimensions and italic correction of
+problematic characters. We also can add four kerns that roughly compensate for
+tricky corrections needed. We therefore have more glyph properties than the
+official \OPENTYPE\ specification provides (cheaper and easier than staircase
+kerns that work on pairs of characters) . But we have more font parameters
+anyway, and with \TEX\ being one of the main math renderers and \TEX ies always
+being to tune and tweak we think this is okay. It is better to have more control
+than to rely on (hard to fight) heuristics.
+
+We're stuck with the fonts we have and (in the case of \TEX\ fonts) the chosen
+traditional approach of dimensions and italic corrections (no staircase kerns) but
+the least we can ask is:
+
+\startitemize[packed]
+    \startitem
+        Be consistent in dimensions and italic corrections. Get rid of limitations
+        imposed by the 8 bit font era: we have plenty slots available and some more
+        glyph properties as well. And if you compromise: make that clear.
+    \stopitem
+    \startitem
+        Don't just take the old properties but assume that \OPENTYPE\ math fonts
+        are used in a modern \OPENTYPE\ \TEX\ engine.
+    \stopitem
+    \startitem
+        Assume that any character is used in any combination: that is what made it
+        hard to satisfy all needs at the engine end. Better play safe.
+    \stopitem
+\stopitemize
+
+\stopsubject
+
+\startsubject[title=Scripts and primes]
+
+We start with showing a few shapes (in \TEX\ speak: nuclei) with a different
+perceived spacing and with some items attached to the corners: scripts.
+
+\startMPdefinitions
+vardef My_Character_P (expr shape, sx, sy, slant, left, right, prime, index) =
+    image (
+        path p ; p := shape
+            xyscaled (sx, sy)
+            slanted slant
+        ;
+        draw p
+            withcolor darkgray ;
+        draw (outerboundingbox p) leftenlarged left rightenlarged right
+            withpen pencircle scaled 1/20
+            withcolor darkred ;
+        draw (fullsquare shifted (ulcorner outerboundingbox p)) shifted (-1,0)
+            withpen pencircle scaled 1/5
+            withcolor darkgreen ;
+        draw (fullsquare shifted (llcorner outerboundingbox p)) shifted (-1,0)
+                withpen pencircle scaled 1/5
+                withcolor darkgreen ;
+        if prime:
+            draw (fullsquare xyscaled(1/2,1) shifted (urcorner outerboundingbox p)) shifted (.75,1/2)
+                withpen pencircle scaled 1/5
+                withcolor darkblue ;
+            draw (fullsquare shifted (urcorner outerboundingbox p)) shifted (1.75,0)
+                withpen pencircle scaled 1/5
+                withcolor darkgreen ;
+        else :
+            draw (fullsquare shifted (urcorner outerboundingbox p)) shifted ( 1,0)
+                withpen pencircle scaled 1/5
+                withcolor darkgreen ;
+        fi
+        if index:
+            draw (fullsquare shifted (lrcorner outerboundingbox p)) shifted (if prime: 3 else : 2 fi,0)
+                withpen pencircle scaled 1/5
+                withcolor darkyellow ;
+        else :
+            draw (fullsquare shifted (lrcorner outerboundingbox p)) shifted ( 1,0)
+                withpen pencircle scaled 1/5
+                withcolor darkgreen ;
+        fi ;
+    )
+enddef ;
+\stopMPdefinitions
+
+\startlinecorrection
+\startMPcode
+    draw My_Character_P (fulldiamond, 2, 4, 0, 1/4, 1/4, false, false) scaled 5mm ;
+    draw My_Character_P (fullcircle,  2, 4, 0, 1/4, 1/4, false, false) scaled 5mm shifted ( 5cm,0) ;
+    draw My_Character_P (fullsquare,  2, 4, 0, 1/4, 1/4, false, false) scaled 5mm shifted (10cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+The green ones represent the super- and sub-, pre- and postscripts. According to what we
+discussed previously the anchoring depends on the shape
+
+\startlinecorrection
+\startMPcode
+    draw My_Character_P (fulldiamond, 2, 4, .3, 1/4, 1/4, false, false) scaled 5mm ;
+    draw My_Character_P (fullcircle,  2, 4, .3, 1/4, 1/4, false, false) scaled 5mm shifted ( 5cm,0) ;
+    draw My_Character_P (fullsquare,  2, 4, .3, 1/4, 1/4, false, false) scaled 5mm shifted (10cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+But we will not take that into account here because this time we focus on support
+for primes and indices. A prime normally is a narrow character that is positioned
+after the nuclues and sits in a similar position as a superscript. When it is
+present a subscript doesn't move. Here the blue rectangle represents the prime.
+
+\startlinecorrection
+\startMPcode
+    draw My_Character_P (fulldiamond, 2, 4, 0, 1/4, 1/4, true, false) scaled 5mm ;
+    draw My_Character_P (fullcircle,  2, 4, 0, 1/4, 1/4, true, false) scaled 5mm shifted ( 5cm,0) ;
+    draw My_Character_P (fullsquare,  2, 4, 0, 1/4, 1/4, true, false) scaled 5mm shifted (10cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+An index, here yellow, is a subscript that applies to the whole so that one does
+move. We cannot have a subscript and an index at the same time. The prescripts
+are not affected by primes and indices other than that the engine has to do more
+work in getting it right.
+
+\startlinecorrection
+\startMPcode
+    draw My_Character_P (fulldiamond, 2, 4, 0, 1/4, 1/4, false, true) scaled 5mm ;
+    draw My_Character_P (fullcircle,  2, 4, 0, 1/4, 1/4, false, true) scaled 5mm shifted ( 5cm,0) ;
+    draw My_Character_P (fullsquare,  2, 4, 0, 1/4, 1/4, false, true) scaled 5mm shifted (10cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+Of course we can have primes and indices at the same time. A prime actually belongs to the
+nuclues so that combination determines quite a bit of the vertical and horizontal spacing.
+
+\startlinecorrection
+\startMPcode
+    draw My_Character_P (fulldiamond, 2, 4, 0, 1/4, 1/4, true, true) scaled 5mm ;
+    draw My_Character_P (fullcircle,  2, 4, 0, 1/4, 1/4, true, true) scaled 5mm shifted ( 5cm,0) ;
+    draw My_Character_P (fullsquare,  2, 4, 0, 1/4, 1/4, true, true) scaled 5mm shifted (10cm,0) ;
+\stopMPcode
+\stoplinecorrection
+
+The problem with primes is that they were never part of the concept and
+\OPENTYPE\ math inherited that. Thanks to \UNICODE\ (and the math community not
+being convincing enough) we ended up with a prime being equivalent to minutes and
+double primes being minutes. The fact that we have triple and quadruple primes as
+well as reverse primes is a consequence of not having symbols for sub second
+indicators. And even the seconds are overloaded by meaning: time related and
+geographical.
+
+What has this to do with primes? Well, it means that a font has a prime character
+that is already positioned at a certain distance from the baseline. But in most
+math fonts the script and scriptscript sizes aren't. It looks as if the
+assumption is that primes are treated like superscripts. But which one then gets
+superscripted at the text level? The text one or the script one? Unfortunately
+fonts are somewhat inconsistent in the sizing and positioning of primes and the
+math community not being convincing enough. It was a tough decision to make: in
+some fonts using the text prime have nice output and in other fonts the script
+one.
+
+So, because in the traditional approach primes had to be manually positioned, be
+able deal with super and subscripts the old school approach was to make them
+active characters and pick up what follows in order to deal with this situation.
+It probably is the main reason why we have a somewhat special active character
+mechanism in math mode. In \CONTEXT\ \MKIV\ we followed a different approach,
+also because we wanted to deal with collapsing multiple primes to their rightful
+\UNICODE\ slot.
+
+In \LMTX\ and \LUAMETATEX\ we (need to) go a step further because we want proper
+inter|-|atom space as well as more fine tuned positioning. Primes became elements
+bound to a nucleus! We also wanted to solve this issue once and for all (in
+\MKIV\ we has several methods but in \LMTX\ we only have one left). We not only
+added a native prime element to nuclei but also introduced font parameters
+similar to those of superscripts. Just keep in mind that in \LUAMETATEX\ we don't
+need to worry about having a few more fields in a math node. There are not that
+many nodes involved and the amount of extra memory used can be neglected. Of
+course there is plenty of code added to deal with it so the binary definitely is
+larger due to it and the code way more complex. In fact we already introduced
+some missing parameters for the spacing related to prescripts. Furthermore we can
+tune the prime spacing relative to the scripts.
+
+In the goodie files you can add fixes that relate to primes and most of them
+involved quite a bit of experimental. We can safely say that we spent quite some
+prime time on this issue.
+
+\startitemize[packed]
+\startitem
+    It would be nice if fonts at least has prime shapes that are consistent
+    because currently script one can look quite different (tilt and shape).
+\stopitem
+\startitem
+    Because primes are also minutes and seconds we probably have to accept the
+    current situation and deal with it in the goodie files forever.
+\stopitem
+\stopitemize
+
+\stopsubject
+
+% Yet another section, this time I got in the mood after listening to Cindy
+% Blackman Santana’s "Give The Drummer Some" ... here we go:
+
+\startsubject[title=Two choices]
+
+Imagine a situation like this: a sequence of characters with a leading left fence
+but nothing at the right. The fence is not really a fence but something that can
+grow and have its own super and subscripts, either after it or on top and below.
+We leave these scripts (aka limits) out of the discussion.
+
+\startMPdefinitions
+vardef My_Character (expr shape, sx, sy, c) =
+    image (
+        draw
+            shape xyscaled (sx, sy)
+            withcolor c ;
+    )
+enddef ;
+\stopMPdefinitions
+
+\startlinecorrection
+\startMPcode
+    draw My_Character (fulldiamond, 2, 4, darkblue) scaled 5mm ;
+    for i = 1 upto 5 :
+        draw My_Character (fullcircle, 2, 2 randomized 1, darkgray ) scaled 5mm shifted (i * 2cm,0) ;
+    endfor ;
+\stopMPcode
+\stoplinecorrection
+
+There is a visual aspect here, which can be illustrated from a variant:
+
+\startlinecorrection
+\startMPcode
+    draw My_Character (fulldiamond, 2, 4, darkblue)                  scaled 5mm ;
+    for i = 1 upto 3 :
+        draw My_Character (fullcircle, 2, 2 randomized 1, darkgray ) scaled 5mm shifted (i * 2cm,0) ;
+    endfor ;
+    draw My_Character (fulldiamond, 2, 6, darkblue)                  scaled 5mm shifted (9cm,0) ;
+    for i = 1 upto 3 :
+        draw My_Character (fullcircle, 2, 3 randomized 1, darkgray ) scaled 5mm shifted (9cm + i * 2cm,0) ;
+    endfor ;
+\stopMPcode
+\stoplinecorrection
+
+One can argue that the larger characters in the second sequence rightfully trigger a larger
+blue variant. But for consistency one might actually go for:
+
+\startlinecorrection
+\startMPcode
+    draw My_Character (fulldiamond, 2, 6, darkblue)                  scaled 5mm ;
+    for i = 1 upto 3 :
+        draw My_Character (fullcircle, 2, 2 randomized 1, darkgray ) scaled 5mm shifted (i * 2cm,0) ;
+    endfor ;
+    draw My_Character (fulldiamond, 2, 6, darkblue)                  scaled 5mm shifted (9cm,0) ;
+    for i = 1 upto 3 :
+        draw My_Character (fullcircle, 2, 3 randomized 1, darkgray ) scaled 5mm shifted (9cm + i * 2cm,0) ;
+    endfor ;
+\stopMPcode
+\stoplinecorrection
+
+Now imagine that you only have two choices? When do you go for the larger one?
+This situation occurs with so called large operators like integrals and
+summations. The original \TEX\ fonts have two sizes of these characters. The
+smaller one is used in normal (text) math and the larger one in display math.
+
+But what if, as in \OPENTYPE\ fonts there are more? There is a font parameter \typ
+{DisplayOperatorMinHeight} that tells what size to use (as a minimum) in display
+mode. Because the \TEX\ engines never had to make a decision the value of that
+variable in the Latin Modern and Gyre fonts is somewhat arbitrary. It is one of
+the variables that we need to adapt in the goodie files: we roughly bump from
+1300 to 1800 to get what we are accustomed to in display mode.
+
+So what are these large operators anyway? In traditional \TEX\ they are just
+that: larger variants of smaller ones. In \OPENTYPE\ math however, they are
+extensibles. That means that when there are more variants and an extensible
+recipe it can grow on demand. That conflicts with the expectations of two sizes.
+
+In order to support these two conflicting demands \LUAMETATEX\ provides so called
+left operators that either act upon their own, in which case we talk of \quote
+{auto} mode, or they can be told to have a specific size, or they can adapt, in
+which case they have the usual bogus right companion that ends the subformula.
+And, because they are implemented as fences but are not really fences there are
+some provisions for the scripts: they bind to the left fence and not the right
+one.
+
+As side note: when we were experimenting with the usage of these (new) mechanisms
+we again ran into the race condition that is imposed by the algorithm that
+determines the size of fences: the delimiters target height is either a fraction
+of the total height of the sublist or the total height diminished by some
+constant amount. In \LUAMETATEX\ we therefore added the already discussed \typ
+{\UmathDelimiterPercent} and \typ {\UmathDelimiterShortfall} but these only kick
+in when we have a wrapped integral or such.
+
+\startitemize[packed]
+\startitem
+    We can't be too picky but it would be nice if fonts have \typ
+    {DisplayOperatorMinHeight} set to a more reasonable value. We have to tweak
+    most font for this now (and probably forever).
+\stopitem
+\stopitemize
+
+\stopsubject
+
+\startsubject[title=To the point]
+
+A nice feature of math fonts is that they have so called extensible characters. Fences
+can grow vertically and accents horizontally. When we run out of discrete steps in size,
+we end up with a recipe that build large characters from snippets as we discussed before.
+
+The limitations in the size of fonts and the fact that the engine also had to
+impose some limits in the amount of used fonts and complexity of their usage made
+for some exceptions to the rule and, no pun intended, it might be why \TEX\ has a
+concept of rules. Lines over and under something, arrows, fractions and radicals
+all use rules. It is interesting to notice that when \OPENTYPE\ fonts showed up
+the converted \TEX\ fonts didn't make arrows and bars use the extension
+mechanism, thereby forcing the old school construction of them. This doesn't hurt
+\CONTEXT\ much because we can implement proper characters using the virtual
+character mechanism and we did things different anyway (for instance we can kick
+in \METAFUN\ replacements).
+
+Nevertheless there is this curious in|-|between: radical. It comes in a set of
+fixed sized often sloped characters and then switches to an upright one. In all
+cases there is that horizontal rule attached that covers the nucleus. There is no
+mix of horizontal and vertical extensibles so there is no fancy end of rule
+thingie possible (the little hook that we learned to draw at school): it's just a
+stupid rule.
+
+\startlinecorrection
+\startMPcode
+    for i = 1 upto 5 :
+        draw image (
+            draw fullsquare xyscaled(2, 4+i)
+                withcolor darkblue ;
+            fill fullsquare xyscaled(1/2, 1/2+i)
+                shifted (1,2)
+                withcolor darkblue ;
+            draw fullsquare xyscaled(1, 1)
+                shifted (1+i/100,2+i/2+i/100)
+                withcolor darkgray ;
+        ) scaled 5mm shifted (i*2cm, 0) ;
+    endfor ;
+\stopMPcode
+\stoplinecorrection
+
+Instead of a rule, these examples show a simple rectangle attached to another
+one. The idea is that the center of that small one snaps onto the upper right
+corner of the large one. In these examples we show how it looks when that is not
+exact. At small sizes it goes unnoticed but at larger ones it becomes visible.
+Actually, when you start scaling up math you often see artifacts in shapes, which
+makes one wonder if high resolution screens are really used for proofing.
+
+\startlinecorrection
+\startMPcode
+    for i = 1 upto 5 :
+        draw image (
+            draw fullsquare xyscaled(2, 4+i)
+                withcolor darkblue ;
+            draw fullsquare xyscaled(1, 1)
+                shifted (1+i/100,2+i/2+i/100)
+                withcolor darkgray ;
+        ) scaled 5mm shifted (i*2cm, 0) ;
+    endfor ;
+\stopMPcode
+\stoplinecorrection
+
+In the first example the effect is small because we make sure that the right top
+corner is square but in the second one we don't do that. Now it really becomes
+annoying, even if we remove the small errors in positioning.
+
+\startlinecorrection
+\startMPcode
+    for i = 1 upto 5 :
+        draw image (
+            draw fullsquare xyscaled(2, 4+i)
+                withcolor darkblue ;
+            draw fullsquare xyscaled(1, 1)
+                shifted (1,2+i/2)
+                withcolor darkgray ;
+        ) scaled 5mm shifted (i*2cm, 0) ;
+    endfor ;
+\stopMPcode
+\stoplinecorrection
+
+We have seen different effects. The most common was an inaccurate font dimension
+that determines what the height of the rule is. That we can fix in the goodie
+file and we do that. Other artifacts were (in the stepwise sizes) characters that
+were so sloped that there was not possibility for properly attaching the rule (we
+noticed this best when checking the Lucida and Latin Modern fonts): one can cheat
+and move a little to the left but the thickness of the sloped line was not enough
+for that, so it could qualify as a design error but a design cannot simply be
+changed in such case: one has to compromise and assume no scaling (keep in mind
+that we scale on screen while on print one has to take a magnifying glass and
+reading math that way is not much fun).
+
+Some of these extensible radicals have rather thin vertical lines but we can
+assume that their height is never such that this becomes too annoying. One
+complication in designing these shapes is that when one uses a font creator
+program it is unlikely to provide a math composer for testing. The same is true
+for overlapping the end glyphs of e.g.\ curly braces: the middle piece can get
+into the way when we have the smallest extensible and have that one kick in too
+soon due to the lack of stepwise sizes. It's hard to check that without an engine
+applying them to the extreme cases.
+
+\startitemize[packed]
+\startitem
+    Benefit from your high resolution screen and zoom in on the results. Take no
+    risk.
+\stopitem
+\startitem
+    Play safe and create an top right corner that has some overlap and already
+    starts out horizontally.
+\stopitem
+\startitem
+    If the design complicates rule attachments, move to an extensible sooner
+    because that one can have a horizontal attachment point as part of the
+    design.
+\stopitem
+\stopitemize
+
+\startsubject[title=Removing slack]
+
+In the process of optimizing the spacing we ran into several cases where a bit of
+spacing was added that eventually made that the resulting formula had small quite
+visible whitespace at the edges. Take for instance the little bit of kerning
+between a nuclues and a superscript.
+
+\startlinecorrection
+\startMPcode
+    draw image (
+        draw fullsquare xyscaled(2, 4)
+            withcolor darkblue ;
+        draw fullsquare xyscaled(1/2, 1)
+            shifted (2-1/4,-1.5)
+            withcolor darkred ;
+        draw fullsquare xyscaled(1, 1)
+            shifted (3,2)
+            withcolor darkgray ;
+    ) scaled 5mm shifted (2cm, 0) ;
+\stopMPcode
+\stoplinecorrection
+
+Normally one can predict this situation but when components are glued together
+that are typeset independently the (in this case red) spacing remains. The engine
+is capable to remove that kind of slack at the left and right of the formula so
+that one gets a proper tight bounding box. There is a bit more logic on board now.
+
+The fact that all kind of spacing gets added is one of the reasons for the more
+granular inter atom spacing: that way we could remove for instance the spacing
+added to the left and right of fractions (which is buried in the constructed
+box).
+
+\startitemize[packed]
+\startitem
+    There is not much we can advice here because it doesn't relate to fonts.
+    However, given that Lucida text fonts have no kerning could make one wonder
+    to what extend math fonts needs all these compensations.
+\stopitem
+\startitem
+    Some of the inter atom|/|script kerning is probably there as safeguard for
+    italic shapes where staircase kerns are lacking. The question then is how the
+    related font parameters themselves relate to staircase kerns. We suppose that
+    this puts some stress on the font designer.
+\stopitem
+\stopitemize
+
+\stopsubject
+
+\page
+
+\startsubject[title=Initializing fonts]
+
+\startsubsubject[title=introduction]
+
+When a math font is initialized there are (as with any font) features applies.
+The only official one is the {ssty} feature that defines the substitution sets
+for script and scripscript size. In traditional \TEX\ one has to set up multiple
+fonts because one can only have 256 characters and because one might want to map
+alphabets on the regular \ASCII\ slots. In an \OPENTYPE\ font all these alphabets
+are on the same font so basically one can do with three instances per size: text,
+script and scriptscript. What actually is done depends on the philosophy of the
+macro package but we will not discuss that here. So let's assume three instances
+in the default case. In \LUAMETATEX\ we can scale on the fly and therefore we can
+stick to one instance: as long as we know what the slots of the (optionally
+provided) smaller sizes are. Supporting this had quite some consequences for the
+engine as scaling happens all over the place (also think of font parameters) and
+we're talking two independent dimensions here: horizontal and vertical sizing.
+
+In addition to this size related font feature \CONTEXT\ provide some additional
+ones (and always had). Some are set up as regular features and some are driven by
+the font goodie features which organizes a lot of features under one umbrella.
+Font goodies always have been part of \MKIV\ and \LMTX.
+
+{\em also mention the non tweak related ones}
+
+\stopsubsubject
+
+\startsubsubject[title=wipeitalics]
+
+This tweak wipes the italics from one or more characters, most noticeable upright
+characters. Because locating the individual characters took too much time, we
+added the option complete alphabets.
+
+\starttyping
+example
+\stoptyping
+
+\stopsubsubject
+
+\startsubsubject[title=wipeanchors]
+
+This tweak removes the top anchors from one or more characters, most noticeable
+upright characters. As with wiping italics, we often wipe complete alphabets.
+
+\starttyping
+example
+\stoptyping
+
+\stopsubsubject
+
+\startsubsubject[title=accentdimensions]
+
+Configure the position of overbar, underbar, overbrace, underbrace, overparent,
+underparent, overbracket and underbracket. More? Added 220307.
+
+\stopsubsubject
+
+\startsubsubject[title=addrules]
+
+I think we did not get overbars for some fonts (kpfonts and erewhon come to
+mind).
+
+\stopsubsubject
+
+\startsubsubject[title=addscripts]
+
+Maybe something done for Ton? (\typ{math-act})
+
+\stopsubsubject
+
+\startsubsubject[title=checkspacing]
+
+I don't know how it works. Seems there is not really any settings. But you once
+wrote
+
+\starttyping
+$\liminf$ \quad
+$\limsup$ \quad [\sixperemspace] \quad
+$x\sixperemspace x$
+
+\setbox0\hbox{$x\sixperemspace x$} \showbox0
+\stoptyping
+
+in an email (220118).
+
+\stopsubsubject
+
+\startsubsubject[title=dimensions]
+
+We use this to change anchor points of accents, to raise/lower them, and of
+course to change bounding boxes and italic correction for many letters/symbols.
+We use it in bonum to resize the whole lower case fraktur alphabet (and maybe
+more should be added)
+
+\stopsubsubject
+
+\startsubsubject[title=fixprimes]
+
+Maybe explained elsewhere? But it could belong here.
+
+\stopsubsubject
+
+\startsubsubject[title=fixradicals]
+
+I don't know what it does. Could be: In some fonts the radicals are just
+positioned wrongly, and this moves them up/down to have something uniform to work
+with. (\typ{math-act})
+
+\stopsubsubject
+
+\startsubsubject[title=kerns]
+
+A bit like staircase kerning. The \quote{topleft} and \quote{bottomright} come in
+handy, in particular the last one when it comes to the position of subscripts.
+
+\stopsubsubject
+
+\startsubsubject[title=margins]
+
+We fake the width of some characters. Useful, for example, not to get too
+large/too small accents when using \tex{widehat} (also to get a uniform size over
+some alphabets or glyphs that often go togeter).
+
+\stopsubsubject
+
+\startsubsubject[title=variants]
+
+Some fonts (lucida, xits, stixtwo) have calligraphic (chancery) and script
+(roundhand) alphabets. Of course not the same as default, and of course not the
+same ss0X.
+
+\stopsubsubject
+
+\startsubsubject[title=wipecues]
+
+Only added to cambria and dejavu. Added 220327. I think it has to do with
+characters like 2061, 2062 and 2063. From the mails I think it has why does 2061
+render a shape in some fonts so we need an 'wipe char' tweak (basically making it
+a zero dimensions symbol)
+
+\starttyping
+\mathspacingmode2
+\showmakeup[mathglue]
+$ \sin                 \Uchar"2061  (y) $ \quad
+$ x                    \Uchar"2062   y  $ \quad
+$ x                    \Uchar"2063   y  $ \par
+$ \sin      \mathghost{\Uchar"2061} (y) $ \quad
+$ x         \mathghost{\Uchar"2062}  y  $ \quad
+$ x         \mathghost{\Uchar"2063}  y  $ \par
+\stoptyping
+
+\stopsubsubject
+
+\startsubsubject[title=bigslots]
+
+Fences are chosen automatically to match what they surround. However, in traditional
+engines a fenced sub formula won't break across lines. In \CONTEXT\ we have sveral st
+
+1, 3, 5, 7 that could fit here, if we find a font where the linking is not
+present.
+
+\stopsubsubject
+
+\startsubsubject[title=parameters]
+
+I don't know if all of them are parameters that typically moved from document to
+font level.
+
+\stopsubsubject
+
+\stopsubject
+
+\stopchapter
+
+\stopcomponent

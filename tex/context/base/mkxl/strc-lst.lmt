@@ -151,7 +151,9 @@ local function initializer()
                     -- we're okay
                 elseif lastblock then
                     if blockdone[block] then
-                        report_lists("out of order sectionsblocks, maybe use \\setsectionblock")
+                        if trace_lists then
+                            report_lists("out of order sectionsblocks, maybe use \\setsectionblock")
+                        end
                     else
                         blockdone[block] = true
                         sectionblocks[#sectionblocks+1] = block

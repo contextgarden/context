@@ -43,41 +43,29 @@ function texconfig.init()
 
     libraries = { -- we set it here as we want libraries also 'indexed'
         basiclua = {
-            -- always
             "string", "table", "coroutine", "debug", "file", "io", "lpeg", "math", "os", "package",
-            -- bonus
-            "bit32", "utf8",
+            "utf8",
         },
         basictex = {
-            -- always
             "callback", "font", "lua", "node", "status", "tex", "texconfig", "texio", "token",
-            -- not in luametatex
-            "img", "pdf", "lang",
-            -- in luametatex
-            "language",
+            "font", "language",
         },
         extralua = {
-            -- not in luametatex
-            "unicode", "utf", "gzip",  "zip", "zlib",
-            -- in luametatex
-            "xzip", "xmath", "xcomplex", "xdecimal", "basexx", "posit",
-            -- maybe some day in luametatex
-            "lz4", "lzo",
-            -- always (mime can go)
-            "lfs","socket", "mime", "md5", "sha2", "fio", "sio",
+            "library", "luac",
+            "xzip", "xmath", "xcomplex", "xdecimal", "basexx", "posit", "sparse",
+            "md5", "sha2", "aes", "fio", "sio",
+            "lfs","socket",
         },
         extratex = {
-            -- not in luametatex
-            "kpse",
-            -- always
-            "pdfe", "mplib",
-            -- in luametatex
+            "pdfe", "mplib", "potrace",
             "pdfdecode", "pngdecode",
         },
+        optional = {
+            "cerf", "curl", "foreign", "ghostscript", "graphicsmagick", "hb", "imagemagick",
+            "kpse", "lzma", "lzo", "lz4", "mujs", "mysql", "optional", "postgress", "sqlite",
+            "zint", "zstd",
+        },
         obsolete = {
-            "epdf",
-            "fontloader", -- can be filled by luat-log
-            "kpse",
         },
         functions = {
             "assert", "pcall", "xpcall", "error", "collectgarbage",
@@ -122,6 +110,7 @@ function texconfig.init()
     libraries.extratex  = collect(libraries.extratex)
     libraries.functions = collect(libraries.functions,true)
     libraries.obsolete  = collect(libraries.obsolete)
+    libraries.optional  = collect(libraries.optional)
 
     -- shortcut and helper
 

@@ -42,13 +42,14 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
 -- PPCRYPT_FAIL                 -2   invalid or unsupported encryption (eg. undocumented in pdf spec)
 
 local setmetatable, type, next = setmetatable, type, next
-local tostring, tonumber, unpack = tostring, tonumber, unpack
+local tostring, unpack = tostring, unpack
 local char, byte, find = string.char, string.byte, string.find
 local abs = math.abs
 local concat, swapped, sortedhash, sortedkeys = table.concat, table.swapped, table.sortedhash, table.sortedkeys
 local utfchar = string.char
 local setmetatableindex = table.setmetatableindex
 local ioopen = io.open
+local octtointeger, dectointeger, hextointeger = string.octtointeger, string.dectointeger, string.hextointeger
 
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local P, C, S, R, Ct, Cc, V, Carg, Cs, Cf, Cg = lpeg.P, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cc, lpeg.V, lpeg.Carg, lpeg.Cs, lpeg.Cf, lpeg.Cg
@@ -85,6 +86,7 @@ local pagestotable      = pdfe.pagestotable
 local readwholestream   = pdfe.readwholestream
 local getfromreference  = pdfe.getfromreference
 local getfromobject     = pdfe.getfromobject
+local getobjectrange    = pdfe.getobjectrange
 
 local report_epdf       = logs.reporter("epdf")
 
@@ -104,6 +106,7 @@ local objectcodes = { [0] =
     "dictionary",
     "stream",
     "reference",
+    "lpdf",
 }
 
 local encryptioncodes = {
@@ -116,13 +119,8 @@ local encryptioncodes = {
 objectcodes                  = allocate(swapped(objectcodes,objectcodes))
 encryptioncodes              = allocate(swapped(encryptioncodes,encryptioncodes))
 
-pdfe.objectcodes             = objectcodes
-pdfe.encryptioncodes         = encryptioncodes
-
--- lpdf_epdf.objectcodes     = objectcodes
-
-local null_object_code       = objectcodes.null
-local reference_object_code  = objectcodes.reference
+lpdf_epdf.objectcodes             = objectcodes
+lpdf_epdf.encryptioncodes         = encryptioncodes
 
 local none_object_code       = objectcodes.none
 local null_object_code       = objectcodes.null
@@ -135,6 +133,7 @@ local array_object_code      = objectcodes.array
 local dictionary_object_code = objectcodes.dictionary
 local stream_object_code     = objectcodes.stream
 local reference_object_code  = objectcodes.reference
+local lpdf_object_code       = objectcodes.lpdf
 
 -- We need to convert the string from utf16 although there is no way to
 -- check if we have a regular string starting with a bom. So, we have
@@ -232,7 +231,7 @@ if lpdf.dictionary then
         elseif kind == reference_object_code then
             return pdfreference(value[3])
         else
-         -- report("weird: %s", objecttypes[kind] or "?")
+         -- report("weird: %s", objectcodes[kind] or "?")
         end
     end
 
@@ -302,7 +301,7 @@ else
 
 end
 
-some_dictionary = function (d,document)
+some_dictionary = function(d,document)
     local f = dictionarytotable(d,true)
     local t = setmetatable({ __raw__ = f, __type__ = dictionary_object_code }, {
         __index = function(t,k)
@@ -315,7 +314,7 @@ some_dictionary = function (d,document)
     return t, "dictionary"
 end
 
-some_array = function (a,document)
+some_array = function(a,document)
     local f = arraytotable(a,true)
     local n = #f
     local t = setmetatable({ __raw__ = f, __type__ = array_object_code, n = n }, {
@@ -366,12 +365,20 @@ some_reference = function(r,document)
         elseif kind == string_object_code then
             cached = some_string(object,document)
         else
-            cached = { kind, object, b, c }
             -- really cache this?
+            cached = { kind, object, b, c }
         end
         document.__cache__[objnum] = cached
         document.__xrefs__[cached] = objnum
     end
+-- local handles = document.handles
+-- if handles then
+--     local h = handles[objnum]
+--     if h then
+--      -- handles[objnum] = nil
+--         h(document,cached,objnum) -- todo: pass less
+--     end
+-- end
     return cached
 end
 
@@ -579,13 +586,20 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
                 -- we could also use cached but this proxy hides it
                 -- setmetatableindex(__cache__,function(t,objnum)
                 document.objects = setmetatableindex(function(t,objnum)
-                    local cached = __cache__[objnum]
-                    if not cached then
-                        cached = some_object(document,objnum)
-                        __cache__[objnum] = cached
-                        __xrefs__[cached] = objnum
+                    local kind = type(objnum)
+                    if kind == "table" and objnum[1] == reference_object_code then
+                        objnum = objnum[3]
+                        kind   = type(objnum)
                     end
-                    return cached
+                    if kind == "number" then
+                        local cached = __cache__[objnum]
+                        if not cached then
+                            cached = some_object(document,objnum)
+                            __cache__[objnum] = cached
+                            __xrefs__[cached] = objnum
+                        end
+                        return cached
+                    end
                 end)
             else
                 document = false
@@ -607,6 +621,13 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
     return document or nil
 end
 
+function lpdf_epdf.objectrange(filename,n)
+    local document = loaded[filename]
+    if document then
+        return getobjectrange(document.__data__,n)
+    end
+end
+
 function lpdf_epdf.unload(filename)
     if type(filename) == "table" then
         filename = filename.filename
@@ -618,6 +639,14 @@ function lpdf_epdf.unload(filename)
             loaded[filename] = nil
             pdfclose(document.__data__)
         end
+    end
+end
+
+function lpdf.close(document)
+    if loaded[document] then
+        loaded[document] = nil
+        loaded[document.filename] = nil
+        pdfclose(document.__data__)
     end
 end
 
@@ -639,29 +668,107 @@ lpdf_epdf.expanded = expanded
 -- we could resolve the text stream in one pass if we directly handle the
 -- font but why should we complicate things
 
+-- local unescape = Cs((
+--     p_remap / remapper
+--   + P("\\")/"" * (lpegpatterns.octdigit * lpegpatterns.octdigit^-2) / remapper
+--   + P(1) / h_hex_2
+-- )^0)
+
+-- decstring  = Ct(Cc("dec")   * P("(")  * Cs((numchar+1-(P")"))^1) * P(")")), -- untested
+--     decstring  = Ct(Cc("dec")   * P("(")  * (Cs((P("\\")*P(1)+1-(P")"))^1)/lpdf.fromeight) * P(")")), -- untested
+--     decstring  = Ct(Cc("dec")   * P("(")  * (Cs((P("\\")*P(1)+1-(P")"))^1)) * P(")")), -- untested
+--     decstring  = Ct(Cc("dec")   * P("(")  * (C((P("\\)")+1-(P")"))^1)/lpdf.fromeight) * P(")")), -- untested
+--     decstring  = Ct(Cc("dec")   * P("(")  * (lpegpatterns.pdffromeight - P(")")) * P(")")), -- untested
+
+-- We normalize to hex because when strings move through lua we sometimes get escaping
+-- (ff) that I can't figure out.
+
+
+local h_hex_2 = lpdf.h_hex_2
+
+local remapper = {
+    ["\\("]  = h_hex_2["("],
+    ["\\)"]  = h_hex_2[")"],
+    ["\\n"]  = h_hex_2["\n"],
+    ["\\r"]  = h_hex_2["\r"],
+    ["\\t"]  = h_hex_2["\t"],
+    ["\\b"]  = h_hex_2["\b"],
+    ["\\f"]  = h_hex_2["\f"],
+    ["\\\n"] = "",
+    ["\\\r"] = "",
+    ["\\\\"] = h_hex_2["\\"],
+}
+
+local p_remap = lpeg.utfchartabletopattern(remapper)
+
+setmetatableindex(remapper,function(t,k)
+    local v = h_hex_2[char(octtointeger(k))]
+    t[k] = v
+    return v
+end)
+
+local p_hex_string = Ct(Cc("hex") *
+    P("<")
+  * Cs((1 - P(">"))^1)
+  * P(">")
+)
+
+local p_dec_string = Ct(Cc("hex") *
+    P("(")
+  * Cs(
+        (
+            p_remap / remapper
+          + P("\\")/"" * ((lpegpatterns.octdigit * lpegpatterns.octdigit^-2) / remapper)
+          + P(1) / h_hex_2
+          - P(")")
+        )^0
+    )
+  * P(")")
+)
+
 local spaces    = lpegpatterns.whitespace^1
 local optspaces = lpegpatterns.whitespace^0
 local comment   = P("%") * (1 - lpegpatterns.newline)^0
-local numchar   = P("\\")/"" * (R("09")^3/function(s) return char(tonumber(s,8)) end)
+
+local numchar   = P("\\")/"" * (R("09")^3/function(s) return char(octtointeger(s)) end)
                 + P("\\") * P(1)
+
 local key       = P("/") * C(R("AZ","az","09","__","--")^1)
-local number    = Ct(Cc("number") * (lpegpatterns.number/tonumber))
+local number    = Ct(Cc("number") * (lpegpatterns.number/dectointeger))
 local keyword   = Ct(Cc("name") * key)
 local operator  = C((R("AZ","az")+P("*")+P("'")+P('"'))^1)
 
-local grammar   = P { "start",
+local grammar = P { "start",
     start      = (comment + keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
     keyvalue   = key * optspaces * V("start"),
-    array      = Ct(Cc("array") * P("[")  * Ct(V("start")^1)         * P("]")),
-    dictionary = Ct(Cc("dict")  * P("<<") * Ct(V("keyvalue")^1)      * P(">>")),
-    hexstring  = Ct(Cc("hex")   * P("<")  * Cs((        1-P(">"))^1) * P(">")),
-    decstring  = Ct(Cc("dec")   * P("(")  * Cs((numchar+1-(P")"))^1) * P(")")), -- untested
+    dictionary = Ct(Cc("dict")  * P("<<") * Ct(V("keyvalue")^1) * P(">>")),
+    array      = Ct(Cc("array") * P("[")  * Ct(V("start")^1) * P("]")),
+    hexstring  = p_hex_string,
+    decstring  = p_dec_string,
 }
 
-local operation = Ct(grammar^1 * operator)
+local operation = Ct(grammar^1 * operator + operator)
 local parser    = Ct((operation + P(1))^1)
 
--- todo: speed this one up
+local number = C(lpegpatterns.number)
+
+local fastgrammar = P { "start",
+    start      = (comment + keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
+    keyvalue   = key * optspaces * V("start"),
+    dictionary = Ct(Cc("dict")  * P("<<") * Ct(V("keyvalue")^1) * P(">>")),
+    array      = Ct(Cc("array") * P("[")  * Ct(V("start")^1) * P("]")),
+    hexstring  = p_hex_string,
+    decstring  = p_dec_string,
+}
+
+local fastoperation = Ct(fastgrammar^1 * operator + operator)
+local fastparser    = Ct((fastoperation + P(1))^1)
+
+function lpdf_epdf.parsecontent(str,fast)
+    return lpegmatch(fast and fastparser or parser,str)
+end
+
+-- this will go as we can better run over the list --
 
 local numchar   = P("\\") * (R("09")^3 + P(1))
 local number    = lpegpatterns.number
@@ -688,10 +795,6 @@ local grammar   = P { "skip",
 
 local stripper = Cs((grammar + P(1))^1)
 
-function lpdf_epdf.parsecontent(str)
-    return lpegmatch(parser,str)
-end
-
 function lpdf_epdf.stripcontent(str)
     if find(str,"EMC") then
         return lpegmatch(stripper,str)
@@ -700,6 +803,8 @@ function lpdf_epdf.stripcontent(str)
     end
 end
 
+---------------------------------------------------------------------------
+
 -- beginbfrange : <start> <stop> <firstcode>
 --                <start> <stop> [ <firstsequence> <firstsequence> <firstsequence> ]
 -- beginbfchar  : <code> <newcodes>
@@ -707,19 +812,19 @@ end
 local fromsixteen = lpdf.fromsixteen -- maybe inline the lpeg ... but not worth it
 
 local function f_bfchar(t,a,b)
-    t[tonumber(a,16)] = fromsixteen(b)
+    t[hextointeger(a)] = fromsixteen(b)
 end
 
 local function f_bfrange_1(t,a,b,c)
     print("todo 1",a,b,c)
     -- c is string
-    -- todo t[tonumber(a,16)] = fromsixteen(b)
+    -- todo t[hextointeger(a)] = fromsixteen(b)
 end
 
 local function f_bfrange_2(t,a,b,c)
     print("todo 2",a,b,c)
     -- c is table
-    -- todo t[tonumber(a,16)] = fromsixteen(b)
+    -- todo t[hextointeger(a)] = fromsixteen(b)
 end
 
 local optionals   = spaces^0
@@ -733,6 +838,14 @@ local fromunicode = (
     spaces +
     P(1)
 )^1  * Carg(1)
+
+lpdf_epdf.helpers = { }
+
+function lpdf_epdf.helpers.tounicodetable(tounicode)
+    return tounicode and lpegmatch(fromunicode,tounicode,1,{})
+end
+
+---------------------------------------------------------------------------
 
 local function analyzefonts(document,resources) -- unfinished, see mtx-pdf for better code
     local fonts = document.__fonts__
@@ -764,7 +877,7 @@ local more = 0
 local unic = nil -- cheaper than passing each time as Carg(1)
 
 local p_hex_to_utf = C(4) / function(s) -- needs checking !
-    local now = tonumber(s,16)
+    local now = hextointeger(s)
     if more > 0 then
         now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
         more = 0
@@ -777,7 +890,7 @@ local p_hex_to_utf = C(4) / function(s) -- needs checking !
     end
 end
 
-local p_dec_to_utf = C(1) / function(s) -- needs checking !
+local p_dec_to_utf = C(1) / function(s) -- needs checking ! not needed now that we always go hex
     local now = byte(s)
     return unic[now] or utfchar(now)
 end
@@ -785,7 +898,27 @@ end
 local p_hex_to_utf = P(true) / function() more = 0 end * Cs(p_hex_to_utf^1)
 local p_dec_to_utf = P(true) / function() more = 0 end * Cs(p_dec_to_utf^1)
 
-function lpdf_epdf.getpagecontent(document,pagenumber)
+-- also xform?
+
+local function allcontent(content)
+    if type(content) == "table" then
+        local ctype = content.__type__
+        if ctype == stream_object_code then
+            content = content()
+        elseif ctype == array_object_code then
+            local c = { }
+            for i=1,#content do
+                c[i] = content[i]()
+            end
+            content = concat(c," ")
+        end
+    end
+    return content
+end
+
+lpdf_epdf.allcontent = allcontent
+
+function lpdf_epdf.getpagecontent(document,pagenumber,asis,fast)
 
     local page = document.pages[pagenumber]
 
@@ -793,12 +926,16 @@ function lpdf_epdf.getpagecontent(document,pagenumber)
         return
     end
 
-    local fonts   = analyzefonts(document,page.Resources)
+    local content = allcontent(page.Contents or "")
+    local list    = lpegmatch(fast and fastparser or parser,content)
 
-    local content = page.Contents() or ""
-    local list    = lpegmatch(parser,content)
-    local font    = nil
- -- local unic    = nil
+    if asis then
+        return list -- , fonts
+    end
+
+    local fonts = analyzefonts(document,page.Resources)
+    local font  = nil
+ -- local unic  = nil
 
     for i=1,#list do
         local entry    = list[i]
@@ -810,6 +947,7 @@ function lpdf_epdf.getpagecontent(document,pagenumber)
         elseif operator == "TJ" then
             local data = entry[1] -- { "array", { ... } }
             local list = data[2]  -- { { ... }, { ... } }
+         -- inspect(list)
             for i=1,#list do
                 local li = list[i]
 --                 if type(li) == "table" then
@@ -903,6 +1041,59 @@ function lpdf_epdf.contenttotext(document,list) -- maybe signal fonts
     end
 
     return concat(text)
+end
+
+function lpdf_epdf.contenttostring(contents)
+    local r       = 0
+    local result  = { }
+    local compact = false
+    local rr      = false
+
+    local flatten ; flatten = function(t)
+        local nt = #t
+        compact = t[nt] == "TJ"
+        for i=1,nt do
+            local ti = t[i]
+            if type(ti) == "table" then
+                local t1 = ti[1]
+                local t2 = ti[2]
+                if t1 == "array" then
+                    if compact then
+                        local sr, sresult = r, result
+                        r, result = 1, { "[" }
+                        flatten(t2)
+                        r = r + 1 ; result[r] = "]"
+                        sr = sr + 1; sresult[sr] = concat(result)
+                        r, result = sr, sresult
+                    else
+                        r = r + 1 ; result[r] = "["
+                        flatten(t2)
+                        r = r + 1 ; result[r] = "]"
+                    end
+                elseif t1 == "dict" then
+                    r = r + 1 ; result[r] = "<<"
+                    flatten(t2)
+                    r = r + 1 ; result[r] = ">>"
+                elseif t1 == "hex" then
+                    r = r + 1 ; result[r] = "<" .. t2 .. ">"
+                elseif t1 == "dec" then -- can't happen anymore
+                 -- r = r + 1 ; result[r] = "(" .. t2 .. ")"
+                    r = r + 1 ; result[r] = lpdf.toeight(t2)
+                elseif type(t2) == "number" then
+                    r = r + 1 ; result[r] = t2 -- todo formatter %N
+                else -- name
+                    r = r + 1 ; result[r] = "/" .. t2
+                end
+            else
+                r = r + 1 ; result[r] = ti
+            end
+        end
+    end
+
+    for i=1,#contents do
+        flatten(contents[i])
+    end
+    return concat(result," ")
 end
 
 function lpdf_epdf.getstructure(document,list) -- just a test
@@ -1062,18 +1253,19 @@ if images then do
         elseif kind == array_object_code then
             return copyarray(xref,copied,object[key])
         elseif kind == dictionary_object_code then
-            return copydictionary(xref,copied,object[key])
+            return copydictionary(xref,copied,object[key]) -- value
         elseif kind == null_object_code then
             return pdfnull()
         elseif kind == reference_object_code then
-            -- expand
             return deepcopyobject(xref,copied,object[key])
+        elseif kind == lpdf_object_code then
+            return value[2]
         else
-            report("weird: %s", objecttypes[kind] or "?")
+         -- report("weird: %s", objectcodes[kind] or "?")
         end
     end
 
-    copyarray = function (xref,copied,object)
+    copyarray = function(xref,copied,object)
         local target = pdfarray()
         local source = object.__raw__
         for i=1,#source do
@@ -1082,61 +1274,32 @@ if images then do
         return target
     end
 
-    local plugins = nil
+--     local plugins = nil
 
     -- Sorting the hash slows down upto 5% bit but it is still as fast as the C
     -- code. We could loop over the index instead but sorting might be nicer in
     -- the end.
 
+    -- This is fragile because keys can be the same in different objects.
+
     copydictionary = function (xref,copied,object)
         local target = pdfdictionary()
         local source = object.__raw__
         -- hm .. no need to sort here as we create a hash
-     -- for key, value in next, source do
-        for key, value in sortedhash(source) do
-            if plugins then
-                local p = plugins[key]
-                if p then
-                    target[key] = p(xref,copied,object,key,value,copyobject) -- maybe a table of methods
-                else
-                    target[key] = copyobject(xref,copied,object,key,value)
-                end
-            else
+        for key, value in next, source do
+     -- for key, value in sortedhash(source) do
+--             if plugins then
+--                 local p = plugins[key]
+--                 if p then
+--                     target[key] = p(xref,copied,object,key,value,copyobject) -- maybe a table of methods
+--                 else
+--                     target[key] = copyobject(xref,copied,object,key,value)
+--                 end
+--             else
                 target[key] = copyobject(xref,copied,object,key,value)
-            end
+--             end
         end
         return target
-    end
-
- -- local function copyresources(pdfdoc,xref,copied,pagedata)
- --     local Resources = pagedata.Resources
- --     if Resources then
- --         local r = pdfreserveobject()
- --         local d = copydictionary(xref,copied,Resources)
- --         pdfflushobject(r,tostring(d))
- --         return pdfreference(r)
- --     end
- -- end
-
-    local function copyresources(pdfdoc,xref,copied,pagedata)
-        local Resources = pagedata.Resources
-     --
-     -- -- This needs testing:
-     --
-     -- if not Resources then
-     --     local Parent = page.Parent
-     --     while (Parent and (Parent.__type__ == dictionary_object_code or Parent.__type__ == reference_object_code) do
-     --         Resources = Parent.Resources
-     --         if Resources then
-     --             break
-     --         end
-     --         Parent = Parent.Parent
-     --     end
-     -- end
-        if Resources then
-            local d = copydictionary(xref,copied,Resources)
-            return shareobjectreference(d)
-        end
     end
 
     local openpdf  = lpdf_epdf.load
@@ -1185,17 +1348,40 @@ if images then do
         end
     end
 
-    local function copypage(pdfdoc,pagenumber,attributes,compact,width,height,attr)
+    local function copyresources(pdfdoc,xref,copied,Resources)
+        if Resources then
+            local d = copydictionary(xref,copied,Resources)
+            return shareobjectreference(d)
+        end
+    end
+
+    local variables = interfaces.variables
+
+    local function copypage(pdfdoc,pagenumber,attributes,compact,width,height,attr,copymeta)
         if pdfdoc then
             local root     = pdfdoc.Catalog
             local page     = pdfdoc.pages[pagenumber or 1]
             local pageinfo = querypdf(pdfdoc,pagenumber)
             local contents = page.Contents
             if contents then
-                local xref     = pdfdoc.__xrefs__
-                local copied   = pdfdoc.__copied__
-                if compact and lpdf_epdf.plugin then
-                    plugins = lpdf_epdf.plugin(pdfdoc,xref,copied,page)
+                local xref      = pdfdoc.__xrefs__
+                local copied    = pdfdoc.__copied__
+                local resources = page.Resources
+                if compact and resources and lpdf_epdf.pageplugin then
+                    lpdf_epdf.pageplugin(pdfdoc,page,pagenumber,resources,compact)
+                    contents = page.Contents
+                end
+                local metadata = nil
+                -- page     : only page (default, compatibility)
+                -- document : only document
+                -- yes      : page or document
+                if copymeta == variables.page or copymeta == variables.yes then
+                    -- We seldom have metadata with a page.
+                    metadata = copyobject(xref,copied,page,"Metadata")
+                end
+                if not metadata and (copymeta == variables.document or copymeta == variables.yes) then
+                    -- For our own documents we don't need this.
+                    metadata = copyobject(xref,copied,root,"Metadata")
                 end
                 local xobject = pdfdictionary {
                     Type           = pdfconstant("XObject"),
@@ -1203,9 +1389,11 @@ if images then do
                     FormType       = 1,
                     Group          = copyobject(xref,copied,page,"Group"),
                     LastModified   = copyobject(xref,copied,page,"LastModified"),
-                    Metadata       = copyobject(xref,copied,page,"Metadata"),
+                 -- Metadata       = copyobject(xref,copied,page,"Metadata"),
+                    Metadata       = metadata,
                     PieceInfo      = copyobject(xref,copied,page,"PieceInfo"),
-                    Resources      = copyresources(pdfdoc,xref,copied,page),
+                    Resources      = copyresources(pdfdoc,xref,copied,resources),
+                 -- Resources      = copyobject(xref,copied,page,"Resources"),
                     SeparationInfo = copyobject(xref,copied,page,"SeparationInfo"),
                 } + attr
                 if attributes then
@@ -1215,40 +1403,44 @@ if images then do
                 end
                 local content  = ""
                 local nolength = nil
-                local ctype    = contents.__type__
-                -- we always recompress because image object streams can not be
-                -- influenced (yet)
-                if ctype == stream_object_code then
-                    if stripmarked then
-                        content = contents() -- uncompressed
-                        local stripped = lpdf_epdf.stripcontent(content)
-                        if stripped ~= content then
-                         -- report("%i bytes stripped on page %i",#content-#stripped,pagenumber or 1)
-                            content = stripped
-                        end
-                    elseif recompress then
-                        content = contents() -- uncompressed
-                    else
-                        local Filter = copyobject(xref,copied,contents,"Filter")
-                        local Length = copyobject(xref,copied,contents,"Length")
-                        if Length and Filter then
-                            nolength = true
-                            xobject.Length = Length
-                            xobject.Filter = Filter
-                            content = contents(false) -- uncompressed
-                        else
+                if type(contents) == "string" then
+                    content = contents -- can be result of plugin
+                else
+                    local ctype = contents.__type__
+                    -- we always recompress because image object streams can not be
+                    -- influenced (yet)
+                    if ctype == stream_object_code then
+                        if stripmarked then
                             content = contents() -- uncompressed
+                            local stripped = lpdf_epdf.stripcontent(content)
+                            if stripped ~= content then
+                             -- report("%i bytes stripped on page %i",#content-#stripped,pagenumber or 1)
+                                content = stripped
+                            end
+                        elseif recompress then
+                            content = contents() -- uncompressed
+                        else
+                            local Filter = copyobject(xref,copied,contents,"Filter")
+                            local Length = copyobject(xref,copied,contents,"Length")
+                            if Length and Filter then
+                                nolength = true
+                                xobject.Length = Length
+                                xobject.Filter = Filter
+                                content = contents(false) -- uncompressed
+                            else
+                                content = contents() -- uncompressed
+                            end
                         end
+                    elseif ctype == array_object_code then
+                        content = { }
+                        for i=1,#contents do
+                            content[i] = contents[i]() -- uncompressed
+                        end
+                        content = concat(content," ")
                     end
-                elseif ctype == array_object_code then
-                    content = { }
-                    for i=1,#contents do
-                        content[i] = contents[i]() -- uncompressed
-                    end
-                    content = concat(content," ")
                 end
                 -- still not nice: we double wrap now
-                plugins = nil
+--                 plugins = nil
                 local rotation    = pageinfo.rotation
                 local boundingbox = pageinfo.boundingbox
                 local transform   = nil
@@ -1268,7 +1460,8 @@ if images then do
                     boundingbox[4] * bpfactor,
                 }
                 -- maybe like bitmaps
-                return createimage { -- beware: can be a img.new or a dummy
+-- TESTTEST = content
+                    return createimage { -- beware: can be a img.new or a dummy
                     bbox      = boundingbox,
                     transform = transform,
                     nolength  = nolength,
@@ -1299,6 +1492,83 @@ if images then do
 
 
 end end
+
+function lpdf_epdf.producer(pdfdoc)
+    local producer = false
+    if pdfdoc then
+        local info = pdfdoc.Info
+        if info then
+            producer = info.Producer
+        end
+        if not producer then
+            local metadata = pdfdoc.Catalog.Metadata
+            if metadata then
+                local x = xml.convert(metadata())
+                if x then
+                    producer = xml.text(x,"rdf:Description/pdf:Producer")
+                    if not producer or producer == "" then
+                        producer = xml.text(x,"Producer")
+                    end
+                end
+            end
+        end
+    end
+    return producer or ""
+end
+
+function lpdf_epdf.expandwidths(widths,expanded)
+    if not expanded then
+        expanded = { }
+    end
+    local min = false
+    local max = false
+    local i = 1
+    local n = #widths -- - 1
+    while i < n do
+        local w1 = widths[i] ; i = i + 1
+        local w2 = widths[i] ; i = i + 1
+        if type(w2) == "table" then
+            local k = 1
+            local wn = w1 + #w2 - 1
+            for j=w1,wn do
+                expanded[j] = w2[k]
+                k = k + 1
+            end
+            if not min then
+                min = w1
+                max = wn
+            elseif wn > max then
+                max = wn
+            end
+        else
+            local w3 = widths[i] ; i = i + 1
+            if w3 then
+                for j=w1,w2 do
+                    expanded[j] = w3
+                end
+                if not min then
+                    min = w1
+                    max = w2
+                elseif w2 > max then
+                    max = w2
+                end
+            end
+        end
+    end
+    return expanded, min or 0, max or 0
+end
+
+function lpdf_epdf.mergewidths(widths,expanded)
+    if not expanded then
+        expanded = { }
+    end
+    local min = 1
+    local max = #widths
+    for i=1,#widths do
+        expanded[i] = widths[i]
+    end
+    return expanded, min, max
+end
 
 -- local d = lpdf_epdf.load("e:/tmp/oeps.pdf")
 -- inspect(d)

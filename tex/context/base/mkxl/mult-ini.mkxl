@@ -764,10 +764,10 @@
 %D So much for the basic multi||lingual interface commands. The macro's can be
 %D enhanced with more testing facilities, but for the moment they suffice.
 
-% use \Uchar
+% use \tocharacter
 
-\ifdefined\zwnj \else \immutable\edef\zwnj{\directlua{utf.char(\number"200C)}} \fi % needed for cont-pe % maybe to char-utf.mkiv
-\ifdefined\zwj  \else \immutable\edef\zwj {\directlua{utf.char(\number"200D)}} \fi % needed for cont-pe % maybe to char-utf.mkiv
+\ifdefined\zwnj \else \immutable\edef\zwnj{\tocharacter"200C} \fi % needed for cont-pe % maybe to char-utf.mkiv
+\ifdefined\zwj  \else \immutable\edef\zwj {\tocharacter"200D} \fi % needed for cont-pe % maybe to char-utf.mkiv
 
 %D \macros
 %D   {contextversion, contextversionnumber, contextversionno,

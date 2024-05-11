@@ -219,7 +219,9 @@ void tex_store_fmt_file(void)
     tex_aux_dump_preamble(f);    pos = tex_aux_report_dump_state(f, pos, "preamble + ");
     tex_dump_constants(f);       pos = tex_aux_report_dump_state(f, pos, "constants + ");
     tex_dump_string_pool(f);     pos = tex_aux_report_dump_state(f, pos, "stringpool + ");
+ // tex_print_format("(%i used and %i free) ", tex_used_node_count(), tex_free_node_count());
     tex_dump_node_mem(f);        pos = tex_aux_report_dump_state(f, pos, "nodes + ");
+ // tex_print_format("(%i used and free) ", tex_used_token_count());
     tex_dump_token_mem(f);       pos = tex_aux_report_dump_state(f, pos, "tokens + ");
     tex_dump_equivalents_mem(f); pos = tex_aux_report_dump_state(f, pos, "equivalents + ");
     tex_dump_math_codes(f);      pos = tex_aux_report_dump_state(f, pos, "math codes + ");

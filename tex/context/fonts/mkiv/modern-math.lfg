@@ -15,12 +15,14 @@ return {
     mathematics = {
         parameters = {
             FractionNumeratorDisplayStyleShiftUp = 600, -- used to be a function
-            AccentTopShiftUp                     = -60,
-            FlattenedAccentTopShiftUp            = -60,
+            AccentTopShiftUp                     = -30,
+            FlattenedAccentTopShiftUp            = -30,
             AccentSuperscriptDrop                = 100, -- drop the superscripts if accents are present. Amount in percentage of height of accent(?)
             AccentSuperscriptPercent             =   0,
-            DelimiterPercent                     =  90,
+            DelimiterPercent                     =  85,
             DelimiterShortfall                   = 400,
+            DelimiterDisplayPercent              =  90, -- MS
+            DelimiterDisplayShortfall            = 400,
             SubscriptShiftDown                   = 150, -- 247 in font (multiplied to be consistent with cm)
             SubscriptShiftDownWithSuperscript    = 247, -- relates to the previous one (see math-act)
          -- SubscriptTopMax                      = 344, -- 344 in font .8 exheight
@@ -35,6 +37,8 @@ return {
             PrimeShiftUpCramped                  = "1.05*SuperscriptShiftUp",
          -- PrimeRaisePercent                    =   0, -- set to 0 in math-act
          -- PrimeRaiseComposedPercent            =   0, -- set to 0 in math-act
+            RadicalDisplayStyleVerticalGap       = 120,--"RadicalVerticalGap" too small, 148, 50
+            -- RadicalVerticalGap                   =  50,-- Going smaller looks too cramped
         },
         tweaks = {
             aftercopying = {
@@ -43,7 +47,76 @@ return {
                     expected = "Version 1.959",
                 },
                 {
-                    tweak = "addmirrors",
+                    tweak   = "replacealphabets",
+                    list    = {
+                        {
+                            -- source   = { first = 0x02980 }, -- triplebar
+                            filename = "LatinModernMath-Companion.otf",
+                            feature = "ss01",
+                            unicodes = {
+                                0x00028, -- left parenthesis
+                                0x00029, -- right parenthesis
+                                0x0005B, -- left bracket
+                                0x0005D, -- right bracket
+                                0x027EE, -- left flattened parenthesis
+                                0x027EF, -- right falttened parenthesis
+                                0x02308, -- left ceiling
+                                0x02309, -- right ceiling
+                                0x0230A, -- left floor
+                                0x0230B, -- right floor
+                                0x027E6, -- left white bracket
+                                0x027E7, -- right white bracket
+                            },
+                        },
+                        {
+                            -- source   = { first = 0x02980 }, -- triplebar
+                            filename = "LatinModernMath-Companion.otf",
+                            feature = "ss02",
+                            unicodes = {
+                                0x0007B, -- left brace
+                                0x0007D, -- right brace
+                            },
+                        },
+                        {
+                            filename = "LatinModernMath-Companion.otf",
+                            feature = "ss03",
+                            unicodes = {
+                                0x0221A, -- radical
+                            },
+                        },
+                        {
+                            -- source   = { first = 0x02980 }, -- triplebar
+                            filename = "LatinModernMath-Companion.otf",
+                            unicodes = {
+                                0x0002F, -- solidus
+                                -- 0x00028, -- left parenthesis
+                                -- 0x00029, -- right parenthesis
+                                -- 0x0005B, -- left bracket
+                                0x0005C, -- reverse solidus
+                                -- 0x0005D, -- right bracket
+                                -- 0x0007B, -- left brace
+                                0x0007C, -- single vertical bar
+                                -- 0x0007D, -- right brace
+                                0x02016, -- double vertical bar
+                                -- 0x02308, -- left ceiling
+                                -- 0x02309, -- right ceiling
+                                -- 0x0230A, -- left floor
+                                -- 0x0230B, -- right floor
+                                -- 0x027E6, -- left white bracket
+                                -- 0x027E7, -- right white bracket
+                                0x027E8, -- left angle
+                                0x027E9, -- right angle
+                                0x027EA, -- left double angle
+                                0x027EB, -- right double angle
+                                -- 0x027EE, -- left flattened parenthesis
+                                -- 0x027EF, -- right flattened parenthesis
+                                0x02980, -- triple vertical bar
+                            },
+                        },
+                    },
+                },
+                {
+                    tweak = "addmirrors", --bidi
                 },
                 presets.scripttocalligraphic { },
                 presets.rsfstoscript         { },
@@ -53,6 +126,7 @@ return {
                 presets.xitsarabic           { rscale  = 0.80 },
                 presets.fallbacks            { },
                 presets.moveitalics          { correct = true, letters = true },
+                presets.moveitalics          { correct = true, list = mathematics.tweaks.subsets.letterlike },
                 presets.moveintegrals        { factor = 1.4, icfactor = 0.8 }, -- the icfactor is due to the very slanted integral.
                 presets.wipeanchors          { },
                 presets.wipeitalics          { },
@@ -132,13 +206,13 @@ return {
                         [0x1D4B3] = { anchor = 0.95 }, -- script X
                         [0x1D4B4] = { anchor = 0.9  }, -- script Y
                         [0x1D4B5] = { anchor = 1    }, -- script Z
-                        ["0x7C.variants.1"]={ squeeze = 0.90, height = 0.90, depth = 0.90 },
-                        ["0x7C.variants.2"]={ squeeze = 0.85, height = 0.85, depth = 0.85 },
-                        ["0x7C.variants.3"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
-                        ["0x7C.variants.4"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
-                        ["0x7C.variants.5"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
-                        ["0x7C.variants.6"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
-                        ["0x7C.variants.7"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
+                     -- ["0x7C.variants.1"]={ squeeze = 0.90, height = 0.90, depth = 0.90 },
+                     -- ["0x7C.variants.2"]={ squeeze = 0.85, height = 0.85, depth = 0.85 },
+                     -- ["0x7C.variants.3"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
+                     -- ["0x7C.variants.4"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
+                     -- ["0x7C.variants.5"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
+                     -- ["0x7C.variants.6"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
+                     -- ["0x7C.variants.7"]={ squeeze = 0.80, height = 0.80, depth = 0.80 },
                     },
                 },
                 {
@@ -234,6 +308,24 @@ return {
                         ["0x221A.parts.bottom"] = { location = "left", hfactor  = 0.05, vfactor  = 1.05 },
                     }
                 },
+                {
+                    tweak = "radicalbodymargins",
+                    list  = {
+                        -- [0x221A]                = { left = 0.025 },
+                        ["0x221A.variants.*"]   = { left = 0.05 },
+                        ["0x221A.variants.1"]   = { left = 0 },
+                        ["0x221A.variants.2"]   = { left = 0 },
+                        ["0x221A.variants.3"]   = { left = 0 },
+                        ["0x221A.variants.4"]   = { left = 0 },
+                        ["0x221A.variants.5"]   = { left = 0 },
+                        ["0x221A.variants.6"]   = { left = 0.025 },
+                        ["0x221A.variants.7"]   = { left = 0.025 },
+                        ["0x221A.variants.8"]   = { left = 0.025 },
+                        ["0x221A.variants.9"]   = { left = 0.025 },
+                        ["0x221A.variants.10"]   = { left = 0.025 },
+                        ["0x221A.parts.bottom"] = { left = 0.10 },
+                    }
+                },
                 -- First we set the dimensions of the initial accent which started out as zero but we want
                 -- a proper width.
              -- {
@@ -295,6 +387,10 @@ return {
                         [0x1D4B5] = { bottomright = -0.05, }, -- script Z
                         --
                         [0x00393] = { bottomright = -0.20, }, -- upright Gamma
+                        [0x02207] = { bottomright = -0.20, }, -- nabla
+                        [0x1D6C1] = { bottomright = -0.20, }, -- bold nabla
+                        [0x1D6FB] = { bottomright = -0.25, }, -- italic nabla
+                        [0x1D735] = { bottomright = -0.25, }, -- bold italic nabla
                         --
                         ["0x7D.parts.top"]      = { topright = -0.25                      }, -- right brace top
                         ["0x7D.parts.bottom"]   = {                   bottomright = -0.25 }, -- right brace bottom
@@ -309,7 +405,6 @@ return {
                         ["0x27E9.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
                         [0x27EB]                = { topright = -0.2,  bottomright = -0.2  },
                         ["0x27EB.variants.*"]   = { topright = -0.3,  bottomright = -0.3  },
-
                     },
                 },
                 {
@@ -412,13 +507,39 @@ return {
                     radical  = { height = .15, yoffset = .85, leftoffset = .065, rightoffset = .065, leftoverlap = 0.023, rightoverlap = 0.023 },
                     stacker  = { height = .15, yoffset = .85 },
                 },
-                {
-                    tweak   = "addbars",
-                    advance = 0.52,
-                },
+                -- This is gone:
+             -- {
+             --     tweak   = "addbars",
+             --     advance = 0.52,
+             -- },
+                -- And instead we now have this:
+                -- {
+                --     tweak = "fixvariants",
+                --     list  = {
+                --         -- watch out, showglyphs is now fuzzy
+                --         [0x0028] = { template = 0x005B, index = 1, yoffset = .03 },
+                --         [0x0029] = { template = 0x005D, index = 1, yoffset = .03 },
+                --         [0x007C] = { template = 0x005B, index = 1, yoffset = .03 },
+                --         [0x2016] = { template = 0x005B, index = 1, yoffset = .03 },
+                --         [0x2980] = { template = 0x005B, index = 1, yoffset = .03 },
+                --     }
+                -- },
+             -- {
+             --     tweak   = "addbars",
+             --     advance = 0.52,
+             --     check   = true,
+             -- --     variant = 1,
+             -- },
                 {
                     tweak = "addactuarian",
                 },
+             -- {
+             --     comment = "demo",
+             --     tweak   = "radicalbodymargins",
+             --     list    = {
+             --         ["delimited right annuity.parts.bottom"] = { right = 1 },
+             --     }
+             -- },
                 {
                     tweak = "addfourier",
                     variant = 1,
@@ -437,10 +558,24 @@ return {
                 },
             -- { tweak = "inspect", slot = 0x2212 },
             -- { tweak = "inspect", slot = 0x003D },
+            --
+            -- only for testing
+            --
+                {
+                    tweak   = "dimensions",
+                    feature = "mathforme",
+                    list    = {
+                        [0x58] = { -- upright X
+                         -- scale   = 0.5,
+                            xoffset = 0.5,
+                            yoffset = 0.5,
+                        },
+                    }
+                },
             },
         },
         bigslots = {
-            1, 4, 6, 7 -- In fact, 7 is the last one.
+            2, 4, 6, 7 -- In fact, 7 is the last one.
         },
     },
 }

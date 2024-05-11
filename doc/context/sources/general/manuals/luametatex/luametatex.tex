@@ -1,8 +1,5 @@
 % language=us runpath=texruns:manuals/luametatex
 
-\unprotect \pushoverloadmode
-\protect
-
 %     \definefontfeature
 %       [default]
 %       [default]
@@ -145,11 +142,12 @@
 % rpi 64        :      (hdd, not overclocked)
 % amd 10 fitlet : 30.9 12pps (we gained over 25% compared to the 268 page manual)
 
-
 % \ifdefined\linebuffering \linebuffering \fi
 
+% \linebuffering
+
 \enableexperiments[fonts.compact]
-%disableexperiments[fonts.accurate]
+% \enableexperiments[fonts.accurate]
 
 % \enabledirectives[fonts.injections.method=advance] % tricky ... not all xoffsets are advance robust
 

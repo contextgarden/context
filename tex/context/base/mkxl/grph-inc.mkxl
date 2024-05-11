@@ -62,6 +62,7 @@
    \c!file           =,
    \c!display        =,
    \c!mask           =,
+   \c!range          =,
    \c!preset         =\v!yes,
    \c!split          =,
    \c!color          =,
@@ -113,6 +114,7 @@
    \c!userpassword   =,
    \c!ownerpassword  =,
    \c!compact        =,
+   \c!metadata       =\v!page, % page | document | yes | no
    \c!cmyk           =,
    \c!crop           =\v!yes,
   ]
@@ -323,6 +325,7 @@
         preview      {\externalfigureparameter\c!preview}%
         display      {\externalfigureparameter\c!display}%
         mask         {\externalfigureparameter\c!mask}%
+        range        {\externalfigureparameter\c!range}%
         conversion   {\externalfigureparameter\c!conversion}%
         resolution   {\externalfigureparameter\c!resolution}%
         color        {\externalfigureparameter\c!color}% unprocessed raw key
@@ -331,6 +334,7 @@
         repeat       {\externalfigureparameter\c!repeat}%
         transform    {\externalfigureparameter\c!transform}%
         compact      {\externalfigureparameter\c!compact}% experiment, share fonts
+        metadata     {\externalfigureparameter\c!metadata}%
         userpassword {\externalfigureparameter\c!userpassword}%
         ownerpassword{\externalfigureparameter\c!ownerpassword}%
         crop         {\externalfigureparameter\c!crop}%
@@ -778,10 +782,13 @@
    \setexternalfigureparameter\c!backgroundcolor{missingfigurecolor}%
    \setexternalfigureparameter\c!align{\v!middle,\v!lohi}% we default to \v!none
    \inheritedexternalfigureframed
-     {\tt\tfxx \nohyphens
-      name:  #1\crlf
-      file:  #2\crlf
-      state: #3}%
+     {\ttxx \nohyphens
+%       name: \detokenize\expandafter{\normalexpanded{#1}}\crlf
+%       file: \detokenize\expandafter{\normalexpanded{#2}}\crlf
+      name: \expandeddetokenize{#1}\crlf
+      file: \expandeddetokenize{#2}\crlf
+      state: #3
+      }%
    \egroup}
 
 % maybe setuphandler
@@ -945,6 +952,25 @@
 %D Needs to be done global:
 
 \definelayer[epdfcontent]
+
+%D Experiment:
+%D
+%D \starttyping
+%D \registerfiguremask[mymask] {
+%D     {
+%D         {   0, 100, 0x00 },
+%D         { 101, 200, 0x7F },
+%D         { 201, 255, 0xFF },
+%D     }
+%D }
+%D
+%D \dontleavehmode \externalfigure
+%D     [proofs.png]
+%D     [background=color,
+%D      backgroundcolor=yellow,
+%D      mask=mymask,
+%D      width=5cm]
+%D \stOPtyping
 
 \protect \endinput
 

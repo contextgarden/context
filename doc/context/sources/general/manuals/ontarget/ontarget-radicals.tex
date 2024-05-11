@@ -1,0 +1,160 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-radicals
+
+\environment ontarget-style
+
+\startchapter[title={Somewhat radical}]
+
+Here we will discuss an aspect of radicals, namely how variants get applied. Take
+the following situation:
+
+\startbuffer[one]
+\dontleavehmode \glyphscale 4000
+\ruledhbox{\setupmathradical[sqrt][mindepth=0pt,strut=no,leftmargin=0pt]$\sqrt{x+1}$ $\sqrt{x-1}$}\blank
+\ruledhbox{\setupmathradical[sqrt][mindepth=0pt,strut=no,leftmargin=0pt]$\sqrt{1+x}$ $\sqrt{1-x}$}
+\stopbuffer
+
+\startbuffer[two]
+\dontleavehmode \glyphscale 4000
+\ruledhbox{\setupmathradical[sqrt][mindepth=0pt,strut=no,leftmargin=0pt]$\sqrt{\frac{x+1}{x-1}}$}
+\ruledhbox{\setupmathradical[sqrt][mindepth=0pt,strut=no,leftmargin=0pt]$\sqrt{\frac{1+x}{1-x}}$}
+\stopbuffer
+
+\startbuffer[three]
+\dontleavehmode \glyphscale 4000
+\ruledhbox{$\sqrt{\frac{x+1}{x-1}}$}
+\ruledhbox{$\sqrt{\frac{1+x}{1-x}}$}
+\stopbuffer
+
+\startlinecorrection
+\switchtobodyfont[modern-nt]\getbuffer[one]
+\stoplinecorrection
+
+Watch the slight difference in radical heights. Now look at this:
+
+\startlinecorrection
+\switchtobodyfont[modern-nt]\getbuffer[two]
+\stoplinecorrection
+
+Here we need to make sure that we don't run into the slope, because, when we have
+a close look at the shapes we see that the radical symbol has a tight bounding
+box:
+
+\startlinecorrection
+\showglyphs\switchtobodyfont[modern-nt]\getbuffer[one]
+\stoplinecorrection
+
+In pagella we get:
+
+\startlinecorrection
+\showglyphs\switchtobodyfont[pagella-nt]\getbuffer[two]
+\stoplinecorrection
+
+and in antykwa:
+
+\startlinecorrection
+\showglyphs\switchtobodyfont[antykwa]\getbuffer[two]
+\stoplinecorrection
+
+But now look at this formula:
+
+\startlinecorrection
+\switchtobodyfont[antykwa]
+{\showglyphs \showstruts \getbuffer[three]}
+{\getbuffer[three]}
+\stoplinecorrection
+
+Here we see several mechanisms in action and for a good reason. First of all we
+want similar subformulas (under the symbol) to have compatible radicals. For this
+we use special struts so that we always have at least some height. We also
+compensate for slight differences in depth by setting a minimum depth. Finally we
+add a bit of margin. That last feature moves the content free from the symbols
+which means that we can have less distance between the top of the content and the
+rule. In many fonts that distance is set to a value that prevents clashes and the
+more slope we have, the more opportunity there is to clash.
+
+When the best fit decision is made for a radical, the effective height of the
+content (height plus depth of the box) is incremented by a gap variable. The
+standard specifies the \typ {RadicalVerticalGap} as \quotation {Space between the
+(ink) top of the expression and the bar over it. Suggested: 1.25 default rule
+thickness.} and \typ {RadicalDisplayStyleVerticalGap} as \quotation {Space
+between the (ink) top of the expression and the bar over it. Suggested: default
+rule thickness plus .25 times x-height.}. These values are actually rather font
+dependent because the slope needs to be taken into account; there is also a
+visual aspect to it.
+
+We can't tweak the radical width because the rule has to be attached. If we could
+we'd have to do it for every variant. So, instead we set up radical like this:
+
+\starttyping
+\setupmathradical
+  [strut=height,     % only height
+   leftmargin=.05mq, % fraction of math quad
+   mindepth=.05mx]   % fraction of math x height
+\stoptyping
+
+When deciding what size to use, a list of variants is followed till there is a
+match and when we run out of variants an extensible is constructed. Here is the
+list of possible sizes in the current font:
+
+\startbuffer[four]
+\startformula
+    \glyphscale 2000
+    \dorecurse {\nofmathvariants "221A} {
+        \ruledhbox{$\char \getmathvariant #1 "221A \relax$}
+        \quad
+    }
+\stopformula
+\stopbuffer
+
+\startbuffer[five]
+\startformula
+    \glyphscale 2000
+    \dorecurse {\nofmathvariants "221A} {
+        \setbox\scratchbox\ruledhbox{$\char \getmathvariant #1 "221A$}
+        \raise\dp\scratchbox\box\scratchbox
+        \quad
+    }
+\stopformula
+\stopbuffer
+
+\getbuffer[four]
+
+However, when we don't center around the math axis we get a more distinctive view
+on the steps:
+
+\getbuffer[five]
+
+It will be clear that the steps can't be too large but there are fonts out there
+that behave rather extreme, like Cambria:
+
+{\switchtobodyfont[cambria-nt] \getbuffer[five]}
+
+The only way out here is to either inject scaled variants into the list of
+possibilities or to simply ignore all except the first one and go straight to the
+extensible, so that's what we do, in combination with tweaked parameters and a
+margin:
+
+{\switchtobodyfont[cambria] \getbuffer[five]}
+
+As with many font parameters (also in text) one sometimes wonder if font designer
+test with real examples. There are of course exceptions, for instance the \typ
+{ebgaramond} font, but that one goes over the top in other areas. Here one can
+also wonder if the upper half of the range makes sense over an extensible. For
+consistency one wants steps to be not too small, so that a sequence of radicals
+looks simular, but steps larger than for instance the height are probably bad.
+
+\pushoverloadmode
+{\switchtobodyfont[ebgaramond] \let\quad\thinspace \getbuffer[five]}
+\popoverloadmode
+
+So, as with other examples that we give of tweaking math, it is clear that there
+is no way around also tweaking radicals, and we're not even talking of the way we
+fine tune the positioning of degrees in radicals because that is also a neglected
+area in \OPENTYPE\ math fonts.
+
+\stopchapter
+
+\stopcomponent
+

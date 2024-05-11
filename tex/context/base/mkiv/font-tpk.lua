@@ -356,14 +356,8 @@ Q]] ]
                     pixels  = readcardinal1(s)
                     xsize   = readcardinal1(s)
                     ysize   = readcardinal1(s)
-                    xoffset = readcardinal1(s)
-                    yoffset = readcardinal1(s)
-                    if xoffset > 127 then
-                        xoffset = xoffset - 256
-                    end
-                    if yoffset > 127 then
-                        yoffset = yoffset - 256
-                    end
+                    xoffset = readinteger1(s)
+                    yoffset = readinteger1(s)
                 elseif c >= 4 and c <= 6 then
                     length  = band(flagbyte,3) * 65536 + readcardinal1(s) * 256 + readcardinal1(s) - 4
                     index   = readcardinal1(s)
@@ -371,8 +365,8 @@ Q]] ]
                     pixels  = readcardinal2(s)
                     xsize   = readcardinal2(s)
                     ysize   = readcardinal2(s)
-                    xoffset = readcardinal2(s)
-                    yoffset = readcardinal2(s)
+                    xoffset = readinteger2(s)
+                    yoffset = readinteger2(s)
                 else -- 7
                     length  = readcardinal4(s) - 9
                     index   = readcardinal4(s)
@@ -381,8 +375,8 @@ Q]] ]
                               readcardinal4(s)
                     xsize   = readcardinal4(s)
                     ysize   = readcardinal4(s)
-                    xoffset = readcardinal4(s)
-                    yoffset = readcardinal4(s)
+                    xoffset = readinteger4(s)
+                    yoffset = readinteger4(s)
                 end
                 local glyph = {
                     index   = index,

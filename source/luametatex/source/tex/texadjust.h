@@ -7,17 +7,6 @@
 # ifndef LMT_ADJUST_H
 # define LMT_ADJUST_H
 
-typedef enum saved_adjust_items {
-    saved_adjust_item_location,
-    saved_adjust_item_options,
-    saved_adjust_item_index,
-    saved_adjust_item_attr_list,
-    saved_adjust_item_depth_before,
-    saved_adjust_item_depth_after,
-    saved_adjust_item_target,
-    saved_adjust_n_of_items,
-} saved_adjust_items;
-
 extern void     tex_initialize_adjust    (void);
 extern void     tex_cleanup_adjust       (void);
                                          
@@ -37,5 +26,8 @@ extern halfword tex_append_adjust_list   (halfword head, halfword tail, halfword
 
 extern halfword tex_flush_adjust_append  (halfword adjust, halfword tail);
 extern halfword tex_flush_adjust_prepend (halfword adjust, halfword tail);
+
+extern void     tex_show_adjust_group    (void);
+extern int      tex_show_adjust_record   (void);
 
 # endif

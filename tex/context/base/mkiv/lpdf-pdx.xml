@@ -3,46 +3,76 @@
 <!-- lpdf-pdx.xml -->
 
 <!--
-    There was a bug in the iso standard so now we just flush them flat because for some
+    There was a bug in the ISO standard so now we just flush them flat because for some
     reason there is no upward compatibulity. It's a sort of useless mess anyway.
 -->
 
+<!--
+    <dc:creator>    <rdf:Seq><rdf:li xml:lang="x-default"/></rdf:Seq></dc:creator>
+    <dc:description><rdf:Alt><rdf:li xml:lang="x-default"/></rdf:Alt></dc:description>
+    <dc:title>      <rdf:Alt><rdf:li xml:lang="x-default"/></rdf:Alt></dc:title>
+
+    vs
+
+    <dc:creator/>
+    <dc:description/>
+    <dc:title/>
+-->
+
+<!--
+    So now we're back to what we had before, otherwise verapdf fails. Beware, the
+    pdfbox variant of verapdf gives false positives (can't compare dates) so use
+    the greenfield variant instead.
+-->
+
 <x:xmpmeta xmlns:x="adobe:ns:meta/">
-    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
-        <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
-            <dc:format>application/pdf</dc:format>
-            <dc:creator/>
-            <dc:description/>
-            <dc:title/>
-         </rdf:Description>
-        <rdf:Description rdf:about="" xmlns:pdfx="http://ns.adobe.com/pdfx/1.3/">
-            <pdfx:ID/>
-            <pdfx:ConTeXt.Jobname/>
-            <pdfx:ConTeXt.Time/>
-            <pdfx:ConTeXt.Url/>
-            <pdfx:ConTeXt.Support/>
-            <pdfx:ConTeXt.Version/>
-            <pdfx:ConTeXt.LMTX/>
-            <pdfx:TeX.Support/>
-            <pdfx:LuaTeX.Version/>
-            <pdfx:LuaTeX.Functionality/>
-            <pdfx:LuaTeX.LuaVersion/>
-            <pdfx:LuaTeX.Platform/>
-        </rdf:Description>
-        <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
-            <xmp:CreateDate/>
-            <xmp:CreatorTool/>
-            <xmp:ModifyDate/>
-            <xmp:MetadataDate/>
-        </rdf:Description>
-        <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
-            <pdf:Keywords/>
-            <pdf:Producer/>
-            <pdf:Trapped>False</pdf:Trapped>
-        </rdf:Description>
-        <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/">
-            <xmpMM:DocumentID/>
-            <xmpMM:InstanceID/>
-        </rdf:Description>
-    </rdf:RDF>
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <dc:format>application/pdf</dc:format>
+      <dc:creator>
+        <rdf:Seq>
+          <rdf:li></rdf:li>
+        </rdf:Seq>
+      </dc:creator>
+      <dc:description>
+        <rdf:Alt>
+          <rdf:li xml:lang="x-default"></rdf:li>
+        </rdf:Alt>
+      </dc:description>
+      <dc:title>
+        <rdf:Alt>
+          <rdf:li xml:lang="x-default"></rdf:li>
+        </rdf:Alt>
+      </dc:title>
+    </rdf:Description>
+    <rdf:Description rdf:about="" xmlns:pdfx="http://ns.adobe.com/pdfx/1.3/">
+      <pdfx:ID/>
+      <pdfx:ConTeXt.Jobname/>
+      <pdfx:ConTeXt.Time/>
+      <pdfx:ConTeXt.Url/>
+      <pdfx:ConTeXt.Support/>
+      <pdfx:ConTeXt.Version/>
+      <pdfx:TeX.Support/>
+      <pdfx:LuaTeX.Version/>
+      <pdfx:LuaTeX.Functionality/>
+      <pdfx:LuaTeX.LuaVersion/>
+      <pdfx:LuaTeX.Platform/>
+    </rdf:Description>
+    <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
+      <xmp:CreateDate/>
+      <xmp:CreatorTool/>
+      <xmp:ModifyDate/>
+      <xmp:MetadataDate/>
+    </rdf:Description>
+    <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
+      <pdf:Keywords/>
+      <pdf:Producer/>
+      <pdf:Trapped>False</pdf:Trapped>
+    </rdf:Description>
+    <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/">
+      <xmpMM:DocumentID/>
+      <xmpMM:InstanceID/>
+    </rdf:Description>
+    <pdfaid-placeholder/>
+  </rdf:RDF>
 </x:xmpmeta>

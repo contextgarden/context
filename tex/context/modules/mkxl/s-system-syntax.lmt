@@ -110,6 +110,7 @@ local s_number        = choice(s_integer,s_float)
 local s_family        = "family"
 local s_rule          = "rule"
 local s_glyph         = "glyph"
+local s_todo          = "TODO"
 
 local s_expression    = [==[tokens\relax]==]
 local s_conditional   = [==[\if...]==]
@@ -212,6 +213,10 @@ syntax.arithmic = newsyntax {
     advanceby  = sequence(s_quantity,s_quantity),
     divideby   = sequence(s_quantity,s_quantity),
     multiplyby = sequence(s_quantity,s_quantity),
+    edivide    = sequence(s_quantity,s_quantity),
+    edivideby  = sequence(s_quantity,s_quantity),
+    rdivide    = sequence(s_quantity,s_quantity),
+    rdivideby  = sequence(s_quantity,s_quantity),
 }
 
 syntax.beginlocal = newsyntax {
@@ -301,7 +306,7 @@ syntax.combinetoks = newsyntax {
 }
 
 result.convert = newresult {
-    Uchar             = { s_integer, c_tokens },
+    tocharacter       = { s_integer, c_tokens },
     csactive          = { s_token, c_tokens },
     csstring          = { s_token, c_tokens },
     detokened         = { choice(s_cs,s_tokens,s_toks,s_tok), c_tokens },
@@ -325,6 +330,8 @@ result.convert = newresult {
     number            = { s_integer, c_tokens },
     romannumeral      = { s_integer, c_tokens },
     semiexpanded      = { s_tokens, c_tokens },
+    futureexpandis    = { s_todo },
+    futureexpandisap  = { s_todo },
     string            = { s_token, c_tokens },
     todimension       = { s_dimension, c_tokens },
     tohexadecimal     = { s_integer, c_tokens },
@@ -486,7 +493,7 @@ syntax.getmark = newsyntax {
 syntax.halign = newsyntax {
     halign = sequence(
         optional(sequence(keyword("attr"),s_integer,s_integer)),
-        optional(keyword("callback")),
+        optional(sequence(keyword("callback"),s_integer)),
         optional(keyword("discard")),
         optional(keyword("noskips")),
         optional(keyword("reverse")),
@@ -594,12 +601,14 @@ syntax.iftest = newsyntax {
     ifhasxtoks      = s_tokens_relax,
     ifhbox          = s_boxreference,
     ifhmode         = false,
+    ifinalignment   = false,
     ifincsname      = s_tokens_endcs,
     ifinner         = false,
     ifinsert        = s_integer,
     ifintervaldim   = sequence(s_dimension,s_dimension,s_dimension),
     ifintervalfloat = sequence(s_integer,s_integer,s_integer),
     ifintervalnum   = sequence(s_float,s_float,s_float),
+    iflastnamedcs   = false,
     ifmathparameter = s_integer,
     ifmathstyle     = s_mathstyle,
     ifmmode         = false,
@@ -628,6 +637,7 @@ syntax.ignoresomething = newsyntax {
     ignorearguments  = false,
     ignorenestedupto = s_token,
     ignorepars       = false,
+    ignorerest       = false,
     ignorespaces     = false,
     ignoreupto       = s_token,
 }
@@ -757,10 +767,12 @@ result.internalinteger = {
     glyphscriptfield         = r_integer,
     glyphscriptscale         = r_integer,
     glyphscriptscriptscale   = r_integer,
+    glyphslant               = r_integer,
     glyphstatefield          = r_integer,
     glyphtextscale           = r_integer,
     glyphxscale              = r_integer,
     glyphyscale              = r_integer,
+    glyphweight              = r_integer,
     hangafter                = r_integer,
     hbadness                 = r_integer,
     holdinginserts           = r_integer,
@@ -820,6 +832,7 @@ result.internalinteger = {
     outputbox                = r_integer,
     outputpenalty            = r_integer,
     overloadmode             = r_integer,
+    parametermode            = r_integer,
     pardirection             = r_integer,
     pausing                  = r_integer,
     postdisplaypenalty       = r_integer,
@@ -859,7 +872,6 @@ result.internalinteger = {
     tracingassigns           = r_integer,
     tracingcommands          = r_integer,
     tracingexpressions       = r_integer,
-    tracingfonts             = r_integer,
     tracingfullboxes         = r_integer,
     tracinggroups            = r_integer,
     tracinghyphenation       = r_integer,
@@ -919,7 +931,10 @@ result.internaltoks = {
 syntax.internaltoks = setsyntaxfromresult(result.internaltoks)
 
 syntax.italiccorrection = newsyntax {
-    ["/"] = false,
+    ["/"]            = false,
+    italiccorrection = false,
+    leftcorrection   = false,
+    rightcorrection  = false,
 }
 
 syntax.kern = newsyntax {
@@ -1052,16 +1067,16 @@ syntax.mathaccent = newsyntax {
 }
 
 syntax.mathcharnumber = newsyntax {
-    Umathchar  = s_integer,
-    Umathclass = s_integer,
-    Umathdict  = sequence(s_integer,s_mathchar),
-    mathchar   = s_integer,
+    Umathchar      = s_integer,
+    mathclass      = s_integer,
+    mathdictionary = sequence(s_integer,s_mathchar),
+    mathchar       = s_integer,
 }
 
 syntax.mathchoice = newsyntax {
-    Umathdiscretionary = sequence(optional(sequence(keyword("class"),s_integer)),s_tokens,s_tokens,s_tokens),
-    Ustack             = s_tokens,
-    mathchoice         = sequence(s_tokens,s_tokens,s_tokens,s_tokens),
+    mathdiscretionary = sequence(optional(sequence(keyword("class"),s_integer)),s_tokens,s_tokens,s_tokens),
+    mathstack         = s_tokens,
+    mathchoice        = sequence(s_tokens,s_tokens,s_tokens,s_tokens),
 }
 
 syntax.mathcomponent = newsyntax {
@@ -1231,21 +1246,21 @@ do
 end
 
 syntax.mathscript = newsyntax {
-    Unosubprescript        = false,
-    Unosubscript           = false,
-    Unosuperprescript      = false,
-    Unosuperscript         = false,
-    Uprimescript           = s_mathtokens,
-    Ushiftedsubprescript   = s_mathtokens,
-    Ushiftedsubscript      = s_mathtokens,
-    Ushiftedsuperprescript = s_mathtokens,
-    Ushiftedsuperscript    = s_mathtokens,
-    Usubprescript          = s_mathtokens,
-    Usubscript             = s_mathtokens,
-    Usuperprescript        = s_mathtokens,
-    Usuperscript           = s_mathtokens,
-    noatomruling           = false,
-    nonscript              = false,
+    nosubprescript        = false,
+    nosubscript           = false,
+    nosuperprescript      = false,
+    nosuperscript         = false,
+    primescript           = s_mathtokens,
+    shiftedsubprescript   = s_mathtokens,
+    shiftedsubscript      = s_mathtokens,
+    shiftedsuperprescript = s_mathtokens,
+    shiftedsuperscript    = s_mathtokens,
+    subprescript          = s_mathtokens,
+    subscript             = s_mathtokens,
+    superprescript        = s_mathtokens,
+    superscript           = s_mathtokens,
+    noatomruling          = false,
+    nonscript             = false,
 }
 
 syntax.mathshiftcs = newsyntax {
@@ -1258,7 +1273,7 @@ syntax.mathshiftcs = newsyntax {
 }
 
 syntax.mathstyle = newsyntax {
-    Ustyle                   = s_mathstyle,
+    givenmathstyle           = s_mathstyle,
     allcrampedstyles         = false,
     alldisplaystyles         = false,
     allmainstyles            = false,
@@ -1397,9 +1412,10 @@ syntax.boxproperty = newsyntax {
     boxanchors     = sequence(s_boxreference,o_equal,s_integer,s_integer), -- check
     boxattribute   = sequence(s_boxreference,s_integer,o_equal,s_integer),
     boxdirection   = sequence(s_boxreference,o_equal,s_integer),
-    boxfreeze      = s_boxreference,
+    boxfreeze      = sequence(s_boxreference,o_equal,s_integer),
+    boxfinalize    = sequence(s_boxreference,o_equal,s_integer),
     boxgeometry    = sequence(s_boxreference,o_equal,s_integer),
-    boxlimitate    = s_boxreference,
+    boxlimitate    = sequence(s_boxreference,o_equal,s_integer),
     boxorientation = sequence(s_boxreference,o_equal,s_integer),
     boxrepack      = s_boxreference,
     boxshift       = sequence(s_boxreference,o_equal,s_dimension),
@@ -1525,6 +1541,7 @@ do
         Umathdelimitershortfall             = dimension,
         Umathdelimiterundervariant          = variant,
         Umathdenominatorvariant             = variant,
+        Umathexheight                       = dimension,
         Umathextrasubpreshift               = dimension,
         Umathextrasubprespace               = dimension,
         Umathextrasubshift                  = dimension,
@@ -1765,9 +1782,9 @@ syntax.shorthanddef = newsyntax {
 }
 
 result.someitem = newresult {
-    Umathcharclass         = { s_integer, s_integer },
-    Umathcharfam           = { s_integer, s_integer },
-    Umathcharslot          = { s_integer, s_integer },
+    mathcharclass          = { s_integer, s_integer },
+    mathcharfam            = { s_integer, s_integer },
+    mathcharslot           = { s_integer, s_integer },
     badness                = { "", s_integer },
     currentgrouplevel      = { "", s_integer },
     currentgrouptype       = { "", s_integer },
@@ -1791,8 +1808,10 @@ result.someitem = newresult {
     fontspecid             = { s_font, s_integer },
     fontspecifiedsize      = { s_font, s_integer },
     fontspecscale          = { s_font, s_integer },
+    fontspecslant          = { s_font, s_integer },
     fontspecxscale         = { s_font, s_integer },
     fontspecyscale         = { s_font, s_integer },
+    fontspecweight         = { s_font, s_integer },
     fonttextcontrol        = { s_font, s_integer },
     glueexpr               = { s_expression, s_glue },
     glueshrink             = { s_glue, s_dimension },
@@ -1848,19 +1867,31 @@ result.someitem = newresult {
     scaledemwidth          = { s_font, s_dimension },
     scaledexheight         = { s_font, s_dimension },
     scaledextraspace       = { s_font, s_dimension },
+    scaledfontcharba       = { s_fontchar, s_dimension },
+    scaledfontchardp       = { s_fontchar, s_dimension },
+    scaledfontcharht       = { s_fontchar, s_dimension },
+    scaledfontcharic       = { s_fontchar, s_dimension },
+    scaledfontcharta       = { s_fontchar, s_dimension },
+    scaledfontcharwd       = { s_fontchar, s_dimension },
     scaledinterwordshrink  = { s_font, s_dimension },
     scaledinterwordspace   = { s_font, s_dimension },
     scaledinterwordstretch = { s_font, s_dimension },
+    scaledmathaxis         = { s_mathstyle, s_dimension },
+    scaledmathemwidth      = { s_mathstyle, s_dimension },
+    scaledmathexheight     = { s_mathstyle, s_dimension },
     scaledslantperpoint    = { s_font, s_dimension },
 }
 
 syntax.someitem = setsyntaxfromresult(result.someitem)
 
 syntax.the = newsyntax {
-    detokenize     = s_tokens,
-    the            = s_dimension,
-    thewithoutunit = s_quantity,
-    unexpanded     = s_tokens,
+    detokenize                  = s_tokens,
+    expandeddetokenize          = s_tokens,
+    protecteddetokenize         = s_tokens,
+    protectedexpandeddetokenize = s_tokens,
+    the                         = s_dimension,
+    thewithoutunit              = s_quantity,
+    unexpanded                  = s_tokens,
 }
 
 syntax.unhbox = newsyntax {
@@ -1927,6 +1958,7 @@ syntax.xray = newsyntax {
     showgroups = false,
     showifs    = false,
     showlists  = false,
+    showstack  = false,
     showthe    = s_quantity,
     showtokens = s_tokens,
 }
@@ -2107,6 +2139,35 @@ do
                 compares = compares,
             })
 
+        end
+    end
+
+end
+
+do
+
+    function moduledata.engine.codes(name)
+        local t = type(name) == "table" and name or tex[name]
+        if t then
+            local l = { }
+            for k, v in table.sortedhash(t) do
+                if tonumber(k) then
+                    l[#l+1] = k
+                end
+            end
+            local m = l[#l]
+            local f = (m > 0xFFFF and "0x%08X") or (m > 0x00FF and "0x%04X") or "0x%02X"
+            context.starttabulate { "|lT|l|" }
+            for i=1,#l do
+                local li = l[i]
+                context.NC()
+                context(f,li)
+                context.NC()
+                context(t[li])
+                context.NC()
+                context.NR()
+            end
+            context.stoptabulate()
         end
     end
 

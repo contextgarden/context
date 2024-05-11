@@ -123,7 +123,7 @@ local function findlocation(filename,page,xpos,ypos)
             if find(line,"^}") then
                 break
             else
-                -- we only look at positive cases
+                -- we only look at positive cases / could be sped up but it is not critical
                 local f, l, x, y, w, h, d = match(line,"^h(.-),(.-):(.-),(.-):(.-),(.-),(.-)$")
                 if f and f ~= 0 then
                     x = tonumber(x)
@@ -284,6 +284,8 @@ local function findlocation(filename,page,xpos,ypos,tolerance)
                     locate( s,-s) if fi ~= 0 then tl = s ; goto done end
                     locate(-s, s) if fi ~= 0 then tl = s ; goto done end
                     locate(-s,-s) if fi ~= 0 then tl = s ; goto done end
+                    locate( 0, s) if fi ~= 0 then tl = s ; goto done end
+                    locate( 0,-s) if fi ~= 0 then tl = s ; goto done end
                 end
                 break
             else

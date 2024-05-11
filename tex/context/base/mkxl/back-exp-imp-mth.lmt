@@ -114,37 +114,22 @@ do
         fulltag   = "mtext>0"
     }
 
-    local function accentchar(d)
-        for i=1,3 do
-            d = d.data
-            if not d then
-                return
-            end
-            d = d[1]
-            if not d then
-                return
-            end
-            local tg = d.tg
-            if tg == "mover" then
-                local s = specifications[d.fulltag]
-                local t = s.top
-                if t then
-                    d = d.data[1]
-                    local d1 = d.data[1]
-                    d1.content = utfchar(t)
-                    d.data = { d1 }
-                    return d
-                end
-            elseif tg == "munder" then
-                local s = specifications[d.fulltag]
-                local b = s.bottom
-                if b then
-                    d = d.data[1]
-                    local d1 = d.data[1]
-                    d1.content = utfchar(b)
-                    d.data = { d1 }
-                    return d
-                end
+    local function accentchar(d) -- see mkiv for old one
+        local detail = tonumber(d.detail)
+        if detail then
+            local d1 = d.data[1]
+            if d1 and d1.tg == "mrow" then
+                --
+                d.element = "mrow" -- used
+                d.detail = nil
+                local s = specifications[d.fulltag] -- hm, used when not set
+                s.detail = nil
+                --
+                d1.element = "mo" -- used
+             -- d1.detail = nil
+                d1.nature = "mixed"
+                d1.data = { { content = utfchar(detail) } }
+                return d
             end
         end
     end
@@ -160,6 +145,9 @@ do
         mo       = true,
         mn       = true,
         mspace   = true,
+
+     -- mstacker    = true,
+     -- mextensible = true,
     }
 
     local function checkmath(root) -- we can provide utf.toentities as an option
@@ -246,6 +234,7 @@ do
                         close      = r,
                     }
                 end
+            elseif roottg == "mstacker" then
             end
             if ndata == 0 then
                 root.skip = "comment" -- get rid of weird artefacts
@@ -369,6 +358,7 @@ do
                         checkmath(di)
                         i = i + 1
                     elseif tg == "mstacker" then
+--                     inspect(di)
                         local d = di.data
                         local d1 = d[1]
                         local d2 = d[2]
@@ -406,6 +396,7 @@ do
                                     di.data    = { m or d1.data[1], b or d2.data[1] }
                                 end
                             else
+-- di.element = "mweird"
                                 -- can't happen
                             end
                         else
@@ -418,6 +409,7 @@ do
                             }
                             di.detail = nil
                         end
+-- inspect(di)
                         checkmath(di)
                         i = i + 1
                     elseif tg == "mroot" then

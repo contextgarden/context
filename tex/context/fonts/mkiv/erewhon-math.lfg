@@ -13,14 +13,19 @@ return {
     mathematics = {
         parameters = {
             AccentBaseDepth                   =  60,
-            DelimiterPercent                  =  90,
+            DelimiterPercent                  =  85,
             DelimiterShortfall                = 400,
+            DelimiterDisplayPercent           =  90,
+            DelimiterDisplayShortfall         = 400,
             SubscriptShiftDown                = 200, -- 220 in font
             SuperscriptShiftUp                = 400, -- 400 in font
             SubscriptShiftDownWithSuperscript = "1.2*SubscriptShiftDown", -- unclear original value, trial and error
             PrimeShiftUp                      = "1*SuperscriptShiftUp",
             PrimeShiftUpCramped               = "1*SuperscriptShiftUp",
             PrimeBaselineDropMax              = "0.5*SuperscriptBaselineDropMax",
+            RadicalDisplayStyleVerticalGap    = "RadicalVerticalGap", --170, 69
+            -- RadicalDisplayStyleVerticalGap    = 55,--"RadicalVerticalGap", --170, 69
+            -- RadicalVerticalGap                = 55,
         },
         tweaks = {
             aftercopying = {

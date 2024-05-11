@@ -11,6 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% because we cannot mix we can just 'redefine' the relevant
+% macro when \ifconditional\c_font_compact
+
 \writestatus{loading}{ConTeXt Font Macros / Math}
 
 \unprotect
@@ -154,53 +157,62 @@
    \let\fontbody\savedfontbody
    \c_font_auto_size\conditionalfalse}
 
-\def\font_helpers_set_math_family_set_scales_compact
-  {% these are used when no font setting is there, the settings come before setting the parameters
-   % and are stored with the family ... this is not really needed because the size is used otherwise
-   \glyphtextscale                 \plusthousand
-   \glyphscriptscale       \numexpr\plusthousand*\dimexpr\scriptface      \relax/\dimexpr\textface\relax\relax
-   \glyphscriptscriptscale \numexpr\plusthousand*\dimexpr\scriptscriptface\relax/\dimexpr\textface\relax\relax}
-
 \def\font_helpers_set_math_family_set_scales_normal
   {\glyphtextscale        \plusthousand
    \glyphscriptscale      \plusthousand
    \glyphscriptscriptscale\plusthousand}
 
-\def\font_helpers_set_math_family_indeed_compact#mrtag#family% \fontface etc are also used later on
+\def\font_helpers_set_math_family_set_scales_compact
+  {\glyphtextscale        \plusthousand
+   \glyphscriptscale      \plusthousand
+   \glyphscriptscriptscale\plusthousand}
+
+\installcorenamespace{compactmathrscale}
+
+\def\font_helpers_set_math_scales_compact
+  {\glyphtextscale        \the\floatexpr\v_font_size_relative*\plusthousand\relax
+   \glyphscriptscale      \glyphtextscale
+   \glyphscriptscriptscale\glyphtextscale
+   \global\expandafter\integerdef\csname\??compactmathrscale\the\fontid\font\endcsname\glyphtextscale}
+
+\def\font_helpers_get_math_scales_compact
+  {\ifcsname\??compactmathrscale\the\fontid\font\endcsname
+     \glyphtextscale        \lastnamedcs
+     \glyphscriptscale      \glyphtextscale
+     \glyphscriptscriptscale\glyphtextscale
+   \fi}
+
+\def\font_helpers_set_math_family_indeed_compact#mrfam#family% \fontface etc are also used later on
   {\let\savedfontbody\fontbody
    \let\savedfontstyle\fontstyle
    \let\fontstyle\s!mm
    \let\fontfamily#family%
    \c_math_last_family_used\zerocount
-   \font_helpers_set_math_family_set_scales_compact
    % the order is important as we depend on known id's when completing fonts
    % enabling is needed when we have fallbacks which spoils the families
    \let\mathsizesuffix\mathtextsuffix
    \let\fontface\!!plusone
-   \font_helpers_set_math_family_a\textfont        #mrtag\font % defines
-   \font_helpers_set_math_family_a\textfont        #mrtag\font % enables / still needed ?
-                                  \scriptfont      #mrtag\font % reuses
-                                  \scriptscriptfont#mrtag\font % reuses
+   % todo: set them al on one go
+   \font_helpers_set_math_family_a\textfont        #mrfam\font % defines
+   \font_helpers_set_math_family_a\textfont        #mrfam\font % enables / still needed ?
+                                  \scriptfont      #mrfam\font % reuses
+                                  \scriptscriptfont#mrfam\font % reuses
+   \font_helpers_set_math_scales_compact
    \lettonothing\mathsizesuffix
    \let\fontface\!!zerocount
    \let\fontstyle\savedfontstyle
    \let\fontbody\savedfontbody
    \c_font_auto_size\conditionalfalse}
 
-\def\font_helpers_set_math_family_indeed
-  {\ifconditional\c_font_compact
-     \expandafter\font_helpers_set_math_family_indeed_compact
-   \else
-     \expandafter\font_helpers_set_math_family_indeed_normal
-   \fi}
+% why somewhat more save here than normal
 
-\def\font_helpers_set_math_family_bold_indeed_normal#mbfam#familytag#mrfam% \c_font_fam_mb \s!mb \c_font_fam_mr
+\def\font_helpers_set_math_family_bold_indeed_normal#mbfam#family#mrfam% \c_font_fam_mb \s!mb \c_font_fam_mr
   {\let\savedfontclass\defaultfontclass
    \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
    \let\savedfontbody\fontbody
    \let\savedfontstyle\fontstyle
    \let\fontstyle\s!mm
-   \let\fontfamily#familytag%
+   \let\fontfamily#family%
    \c_math_last_family_used\zerocount
    \font_helpers_set_math_family_set_scales_normal
    \let\mathsizesuffix\mathscriptscriptsuffix
@@ -222,13 +234,13 @@
    \let\defaultfontclass\savedfontclass
    \c_font_auto_size\conditionalfalse}
 
-\def\font_helpers_set_math_family_bold_indeed_compact#mbfam#familytag#mrfam% \c_font_fam_mb \s!mb \c_font_fam_mr
+\def\font_helpers_set_math_family_bold_indeed_compact#mbfam#family#mrfam% \c_font_fam_mb \s!mb \c_font_fam_mr
   {\let\savedfontclass\defaultfontclass
    \let\defaultfontclass\fontclass % else truefontname falls back on the wrong one
    \let\savedfontbody\fontbody
    \let\savedfontstyle\fontstyle
    \let\fontstyle\s!mm
-   \let\fontfamily#familytag%
+   \let\fontfamily#family%
    \c_math_last_family_used\zerocount
    \let\mathsizesuffix\mathtextsuffix
    \let\fontface\!!plusone
@@ -243,13 +255,6 @@
    \let\defaultfontclass\savedfontclass
    \c_font_auto_size\conditionalfalse}
 
-\def\font_helpers_set_math_family_bold_indeed
-  {\ifconditional\c_font_compact
-     \expandafter\font_helpers_set_math_family_bold_indeed_compact
-   \else
-     \expandafter\font_helpers_set_math_family_bold_indeed_normal
-   \fi}
-
 \def\font_helpers_set_math_family_bold_a#font#mbfam#mrfam%
   {\ifcsname\??fontinstanceready\fontclass-\fontbody-\s!mm-\fontfamily-\fontsize\endcsname \c_font_auto_size\conditionalfalse
      \lastnamedcs #font#mbfam\font \orelse
@@ -263,34 +268,65 @@
 % sort of tricky: we cannot reset in \everybeforedefinetypeface as we don't know
 % all sizes so we postpone the optimization to the first starttext
 %
-% pitfall: we should reset 'm when a fontclass name is reused
+% pitfall: we should reset them when a fontclass name is reused
 
 \newconditional\optimizemathfontdefinitions \optimizemathfontdefinitions\conditionaltrue
 
-\def\font_helpers_set_math_family#mrfam#familytag%
+\def\font_helpers_set_math_family_normal#mrfam#familytag%
   {\ifconditional\optimizemathfontdefinitions
      \ifcsname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
        % \writestatus{fonts}{math: reusing \fontclass\fontbody\s!mm#familytag\fontsize1}%
        \font_helpers_preset_math_family_indeed#mrfam#familytag%
      \else
        % \writestatus{fonts}{math: defining \fontclass\fontbody\s!mm#familytag\fontsize1}%
-       \font_helpers_set_math_family_indeed#mrfam#familytag%
+       \font_helpers_set_math_family_indeed_normal#mrfam#familytag%
      \fi
    \else
-     \font_helpers_set_math_family_indeed#mrfam#familytag%
+     \font_helpers_set_math_family_indeed_normal#mrfam#familytag%
    \fi}
 
-\def\font_helpers_set_math_family_bold#mbfam#familytag#mrfam%
+\def\font_helpers_set_math_family_bold_normal#mbfam#familytag#mrfam%
   {\ifconditional\optimizemathfontdefinitions
-    %\ifcsname\??fontinstanceclass\fontclass-\textface-\s!mm-#familytag-\fontsize-1\endcsname
      \ifcsname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
        \font_helpers_preset_math_family_indeed#mbfam#familytag%
      \else
-       \font_helpers_set_math_family_bold_indeed#mbfam#familytag#mrfam%
+       \font_helpers_set_math_family_bold_indeed_normal#mbfam#familytag#mrfam%
      \fi
    \else
-     \font_helpers_set_math_family_bold_indeed#mbfam#familytag#mrfam%
+     \font_helpers_set_math_family_bold_indeed_normal#mbfam#familytag#mrfam%
    \fi}
+
+\def\font_helpers_set_math_family_compact#mrfam#familytag%
+  {\ifconditional\optimizemathfontdefinitions
+     \ifcsname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize\endcsname
+       % \writestatus{fonts}{math: reusing \fontclass\fontbody\s!mm#familytag\fontsize1}%
+       \font_helpers_preset_math_family_indeed#mrfam#familytag%
+     \else
+       % \writestatus{fonts}{math: defining \fontclass\fontbody\s!mm#familytag\fontsize1}%
+       \font_helpers_set_math_family_indeed_compact#mrfam#familytag%
+     \fi
+   \else
+     \font_helpers_set_math_family_indeed_compact#mrfam#familytag%
+   \fi}
+
+\def\font_helpers_set_math_family_bold_compact#mbfam#familytag#mrfam%
+  {\ifconditional\optimizemathfontdefinitions
+     \ifcsname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize\endcsname
+       \font_helpers_preset_math_family_indeed#mbfam#familytag%
+     \else
+       \font_helpers_set_math_family_bold_indeed_compact#mbfam#familytag#mrfam%
+     \fi
+   \else
+     \font_helpers_set_math_family_bold_indeed_compact#mbfam#familytag#mrfam%
+   \fi}
+
+\aliased\let\font_helpers_set_math_family     \font_helpers_set_math_family_normal
+\aliased\let\font_helpers_set_math_family_bold\font_helpers_set_math_family_bold_normal
+
+\appendtoks
+    \aliased\let\font_helpers_set_math_family     \font_helpers_set_math_family_compact
+    \aliased\let\font_helpers_set_math_family_bold\font_helpers_set_math_family_bold_compact
+\to \everycompactfontmode
 
 %D It can happen that we use a bodyfont with no math in which case we have a problem
 %D with setting the global bodyfont size in the page builder. For instance in:
@@ -320,23 +356,22 @@
    \font_math_last_font                                                                  \textfont        #fam\font}
 
 \def\font_helpers_preset_math_family_indeed_compact#fam#familytag%
-  {\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize-1\endcsname
+  {\csname\??fontinstanceclass\fontclass-\fontbody-\s!mm-#familytag-\fontsize\endcsname
    \ifnum\fontid\textfont#fam=\fontid\font\else
      \font_helpers_preset_math_family_indeed_changed_compact#fam%
    \fi}
 
 \def\font_helpers_preset_math_family_indeed_changed_compact#fam%
-  {\font_helpers_set_math_family_set_scales_compact
-   \scriptscriptfont#fam\font
+  {\scriptscriptfont#fam\font
    \scriptfont      #fam\font
-   \textfont        #fam\font}
+   \textfont        #fam\font
+   \font_helpers_get_math_scales_compact}
 
-\def\font_helpers_preset_math_family_indeed
-  {\ifconditional\c_font_compact
-     \expandafter\font_helpers_preset_math_family_indeed_compact
-   \else
-     \expandafter\font_helpers_preset_math_family_indeed_normal
-   \fi}
+\aliased\let\font_helpers_preset_math_family_indeed\font_helpers_preset_math_family_indeed_normal
+
+\appendtoks
+    \enforced\let\font_helpers_preset_math_family_indeed\font_helpers_preset_math_family_indeed_compact
+\to \everycompactfontmode
 
 \let\font_helpers_reset_fontclass_math_families\gobbleoneargument
 
@@ -505,9 +540,7 @@
 \mutable\lettonothing\bigmathfontsize
 
 \permanent\protected\def\synchronizebigmath
-  {\ifconditional\c_font_compact
-     % no need
-   \orelse\ifx\bigmathfontsize\fontsize
+  {\ifx\bigmathfontsize\fontsize
      % already in sync
    \else
      \let\bigmathfontsize\fontsize
@@ -523,12 +556,19 @@
      \synchronizebigmath
    \fi}
 
+\appendtoks
+    \enforced\lettonothing\synchronizebigmath
+    \enforced\lettonothing\font_helpers_check_big_math_synchronization
+\to \everycompactfontmode
+
 %D This is an experiment!
 
-\permanent\protected\def\mx {\ifmmode\scaledmathstyle\dimexpression\plusthousand*(\xtextface /\textface)\relax\fi}
-\permanent\protected\def\mxx{\ifmmode\scaledmathstyle\dimexpression\plusthousand*(\xxtextface/\textface)\relax\fi}
-
-% permanent\protected\def\setmscale#1{\ifmmode\scaledmathstyle\numericscale#1\relax\fi}
+% x$ x \beginmathgroup\scaledmathstyle600 x\endmathgroup x$x
+% $ x{\setmscale{.5}x{\setmscale{.25}x}x}x$
+% $ x{\setmscale{x}x{\setmscale{xx}x}x}x$
+% $x \beginmathgroup\mxx x\endmathgroup x $
+% $x \begingroup\mxx x\endgroup x $ % this one is like style, bleeds over group
+% $x {\mxx x} x $
 
 \installcorenamespace{mscaled}
 
@@ -542,6 +582,10 @@
        \c_math_m_scaled\numexpr(\numericscale\mathscalefactor)*\c_math_m_scaled/\plusthousand\relax
      \orelse\iftok{#1}{=}%
        \c_math_m_scaled\plusthousand
+     \orelse\iftok{#1}{x}%
+       \c_math_m_scaled\numexpr\plusthousand*\dimexpression\xtextface\relax/\dimexpression\textface\relax\relax
+     \orelse\iftok{#1}{xx}%
+       \c_math_m_scaled\numexpr\plusthousand*\dimexpression\xxtextface\relax/\dimexpression\textface\relax\relax
      \else
        \c_math_m_scaled\numericscale#1\relax
      \fi
@@ -552,6 +596,18 @@
          \numexpr(\c_math_m_scaled*\glyphscale)/\plusthousand\relax
        \fi
    \fi}
+
+\permanent\protected\def\setmxscale {\ifmmode\scaledmathstyle\numexpr\glyphscale*\dimexpression\xtextface \relax/\dimexpression\textface\relax\relax\fi}
+\permanent\protected\def\setmxxscale{\ifmmode\scaledmathstyle\numexpr\glyphscale*\dimexpression\xxtextface\relax/\dimexpression\textface\relax\relax\fi}
+
+\permanent\protected\def\mx
+  {\aliased\let\mx\mxx
+   \setmxscale}
+
+\permanent\protected\def\mxx
+  {\aliased\let\mx\relax
+   \aliased\let\mxx\relax
+   \setmxxscale}
 
 %D This is nasty, as the engine only stores the last set family parameters (per style) which
 %D in our case can be bold.

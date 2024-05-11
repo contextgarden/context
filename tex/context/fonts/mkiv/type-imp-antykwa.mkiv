@@ -13,20 +13,25 @@
 
 \starttypescriptcollection[antykwa-torunska]
 
-    \startsetups[antykwa]
-        \setmathfenceparameter\c!alternative{1}%
-    \stopsetups
+    \pushglobalsetups
 
-    % cond => -cont as in iwona
+        \startsetups[antykwa]
+            \setmathfenceparameter\c!alternative{1}%
+            \setupmathradical[\c!leftmargin=.05mq,\c!mindepth=.05mx]%
+        \stopsetups
 
-    \startsetups[antykwa-light]              \directsetup{antykwa}\stopsetups
-    \startsetups[antykwa-cond]               \directsetup{antykwa}\stopsetups
-    \startsetups[antykwa-light-cond]         \directsetup{antykwa}\stopsetups
-    % these long names are obsolete and will go away
-    \startsetups[antykwa-torunska]           \directsetup{antykwa}\stopsetups
-    \startsetups[antykwa-torunska-light]     \directsetup{antykwa}\stopsetups
-    \startsetups[antykwa-torunska-cond]      \directsetup{antykwa}\stopsetups
-    \startsetups[antykwa-torunska-light-cond]\directsetup{antykwa}\stopsetups
+        % cond => -cont as in iwona
+
+        \startsetups[antykwa-light]              \directsetup{antykwa}\stopsetups
+        \startsetups[antykwa-cond]               \directsetup{antykwa}\stopsetups
+        \startsetups[antykwa-light-cond]         \directsetup{antykwa}\stopsetups
+        % these long names are obsolete and will go away
+        \startsetups[antykwa-torunska]           \directsetup{antykwa}\stopsetups
+        \startsetups[antykwa-torunska-light]     \directsetup{antykwa}\stopsetups
+        \startsetups[antykwa-torunska-cond]      \directsetup{antykwa}\stopsetups
+        \startsetups[antykwa-torunska-light-cond]\directsetup{antykwa}\stopsetups
+
+    \popglobalsetups
 
     % these fetaures make the loaded base font unique:
 

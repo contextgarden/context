@@ -95,6 +95,18 @@
 */
 
 
+/*tex 
+    In the future we can add classifications that tell what to pick up in which case we can also 
+    have generic handlers that take arguments but I need to check first what that does with 
+    performance at the \TEX\ end. 
+*/
+
+typedef enum code_classifications {
+    classification_no_arguments = 0, 
+    classification_unknown      = 1, 
+    classification_integer      = 2, 
+} code_classifications;
+
 typedef enum tex_command_code {
     /*tex
         The first 16 command codes are used for characters with a special meaning. In traditional
@@ -171,7 +183,6 @@ typedef enum tex_command_code {
     math_component_cmd,               /*tex component of formula (|\mathbin|, etc.) */
     math_modifier_cmd,                /*tex limit conventions (|\displaylimits|, etc.) */
     math_fraction_cmd,                /*tex generalized fraction (|\above|, |\atop|, etc.) */
- // math_style_cmd,                   /*tex style specification (|\displaystyle|, etc.) */
     math_choice_cmd,                  /*tex choice specification (|\mathchoice|) */
     vcenter_cmd,                      /*tex vertically center a vbox (|\vcenter|) */
     case_shift_cmd,                   /*tex force specific case (|\lowercase|, |\uppercase|) */
@@ -238,6 +249,7 @@ typedef enum tex_command_code {
     mathspec_cmd,
     fontspec_cmd,
     association_cmd,
+    interaction_cmd,                  /*tex define level of interaction (|\batchmode|, etc.) */ /* valid after |\the|, see ** */
     register_cmd,                     /*tex internal register (|\count|, |\dimen|, etc.) */
     /*tex
         That was the last command that could follow |\the|.
@@ -247,11 +259,9 @@ typedef enum tex_command_code {
     prefix_cmd,                       /*tex qualify a definition (|\global|, |\long|, |\outer|) */
     let_cmd,                          /*tex assign a command code (|\let|, |\futurelet|) */
     shorthand_def_cmd,                /*tex code definition (|\chardef|, |\countdef|, etc.) */
-//  association_cmd,
     def_cmd,                          /*tex macro definition (|\def|, |\gdef|, |\xdef|, |\edef|) */
+ /* interaction_cmd,               */ /*tex define level of interaction (|\batchmode|, etc.) */ /* invalid after |\the|,  see ** */
     set_box_cmd,                      /*tex set a box (|\setbox|) */
-//  hyphenation_cmd,                  /*tex hyphenation data (|\hyphenation|, |\patterns|) */
-    interaction_cmd,                  /*tex define level of interaction (|\batchmode|, etc.) */
     /*tex
         Here ends the section that is part of the big switch.  What follows are commands that are
         intercepted when expanding tokens. The |string_cmd| came from a todo list and moved to a
@@ -329,11 +339,11 @@ typedef enum tex_command_code {
     number_tex_commands,
 } tex_command_code;
 
-# define max_char_code_cmd    invalid_char_cmd    /*tex largest catcode for individual characters */
-# define min_internal_cmd     char_given_cmd      /*tex the smallest code that can follow |the| */
-# define max_non_prefixed_cmd some_item_cmd       /*tex largest command code that can't be |global| */
-# define max_internal_cmd     register_cmd        /*tex the largest code that can follow |the| */
-# define max_command_cmd      interaction_cmd     /*tex the largest command code seen at |big_switch| */
+# define max_char_code_cmd    invalid_char_cmd       /*tex largest catcode for individual characters */
+# define min_internal_cmd     char_given_cmd         /*tex the smallest code that can follow |the| */
+# define max_non_prefixed_cmd some_item_cmd          /*tex largest command code that can't be |global| */
+# define max_internal_cmd     register_cmd           /*tex the largest code that can follow |the| */
+# define max_command_cmd      (undefined_cs_cmd - 1) /*tex the largest command code seen at |big_switch| */
 
 # define first_cmd            escape_cmd
 # define last_cmd             register_dimension_reference_cmd
@@ -483,7 +493,7 @@ typedef enum convert_codes {
     meaning_asis_code,        /*tex command code for |\meaningasis| */
     meaning_ful_code,         /*tex command code for |\meaningful| */
     meaning_les_code,         /*tex command code for |\meaningles| */
-    uchar_code,               /*tex command code for |\Uchar| */
+    to_character_code,        /*tex command code for |\Uchar| */
     lua_escape_string_code,   /*tex command code for |\luaescapestring| */
  /* lua_token_string_code, */ /*tex command code for |\luatokenstring| */
     font_name_code,           /*tex command code for |\fontname| */
@@ -493,6 +503,8 @@ typedef enum convert_codes {
     luatex_banner_code,       /*tex command code for |\luatexbanner| */
     font_identifier_code,     /*tex command code for |tex.fontidentifier| (virtual) */
 } convert_codes;
+
+extern const unsigned char some_convert_classification[font_identifier_code+1];
 
 # define first_convert_code number_code
 # define last_convert_code  luatex_banner_code
@@ -510,11 +522,12 @@ typedef enum input_codes {
     tex_token_input_code,
     tokenized_code,
     retokenized_code,
+ /* quit_fi_now_code, */ /*tex only for performance testing */
     quit_loop_code,
     quit_loop_now_code,
 } input_codes;
 
-# define last_input_code quit_loop_now_code /* hm */
+# define last_input_code quit_loop_now_code 
 
 typedef enum some_item_codes {
     lastpenalty_code,           /*tex |\lastpenalty| */
@@ -555,6 +568,8 @@ typedef enum some_item_codes {
     font_spec_scale_code,       /*tex |\fontspecscale| */
     font_spec_xscale_code,      /*tex |\fontspecxscale| */
     font_spec_yscale_code,      /*tex |\fontspecyscale| */
+    font_spec_slant_code,       /*tex |\fontspecslant| */
+    font_spec_weight_code,      /*tex |\fontspecweight| */
     font_size_code,             /*tex |\fontsize| */
     font_math_control_code,     /*tex |\fontmathcontrol| */
     font_text_control_code,     /*tex |\fonttextcontrol| */
@@ -573,6 +588,9 @@ typedef enum some_item_codes {
     scaled_ex_height_code,
     scaled_em_width_code,
     scaled_extra_space_code,
+    scaled_math_axis_code,
+    scaled_math_ex_height_code,
+    scaled_math_em_width_code,
     last_arguments_code,        /*tex |\lastarguments| */
     parameter_count_code,       /*tex |\parametercount| */
     parameter_index_code,       /*tex |\parametercount| */
@@ -611,9 +629,12 @@ typedef enum some_item_codes {
     current_loop_iterator_code,
     current_loop_nesting_code,
     last_loop_iterator_code,
+    last_par_trigger_code,
     last_par_context_code,
     last_page_extra_code,
 } some_item_codes;
+
+extern const unsigned char some_item_classification[last_page_extra_code+1];
 
 # define last_some_item_code last_page_extra_code
 
@@ -659,6 +680,8 @@ typedef enum box_property_codes {
     box_repack_code,
     box_freeze_code,
     box_limitate_code,
+    box_finalize_code,
+    box_limit_code,
     box_stretch_code,
     box_shrink_code,
     /* we actually need set_box_int_cmd, or set_box_property */
@@ -726,7 +749,7 @@ typedef enum end_paragraph_codes {
 typedef enum shorthand_def_codes {
     char_def_code,        /*tex |\chardef| */
     math_char_def_code,   /*tex |\mathchardef| */
-    math_xchar_def_code,  /*tex |\Umathchardef| */
+    math_uchar_def_code,  /*tex |\Umathchardef| */
     math_dchar_def_code,  /*tex |\Umathdictdef| */
     float_def_code,  
     count_def_code,       /*tex |\countdef| */
@@ -764,10 +787,10 @@ typedef enum char_number_codes {
 # define last_char_number_code glyph_number_code
 
 typedef enum math_char_number_codes {
-    math_char_number_code,  /*tex |\mathchar| */
-    math_xchar_number_code, /*tex |\Umathchar| */
-    math_dchar_number_code, /*tex |\Umathdict| */
-    math_class_number_code, /*tex |\Umathclass| */
+    math_char_number_code,        /*tex |\mathchar| */
+    math_xchar_number_code,       /*tex |\Umathchar| */
+    math_dictionary_number_code,  /*tex |\Umathdictionary| */
+    math_class_number_code,       /*tex |\Umathclass| */
 } math_char_number_codes;
 
 # define last_math_char_number_code math_class_number_code
@@ -778,6 +801,7 @@ typedef enum xray_codes {
     show_the_code,    /*tex |\showthe| */
     show_lists_code,  /*tex |\showlists| */
     show_groups_code, /*tex |\showgroups| */
+    show_stack_code,  /*tex |\showstack| */
     show_tokens_code, /*tex |\showtokens|, must be odd! */
     show_ifs_code,    /*tex |\showifs| */
 } xray_codes;
@@ -789,6 +813,9 @@ typedef enum the_codes {
     the_without_unit_code,
  /* the_with_property_code, */ /* replaced by value functions */
     detokenize_code,
+    expanded_detokenize_code,
+    protected_detokenize_code,
+    protected_expanded_detokenize_code,
     unexpanded_code,
 } the_codes;
 
@@ -1010,10 +1037,10 @@ typedef enum math_delimiter_codes {
 typedef enum math_choice_codes {
     math_choice_code,
     math_discretionary_code,
-    math_ustack_code,
+    math_stack_code,
 } math_choice_codes;
 
-# define last_math_choice_code math_ustack_code
+# define last_math_choice_code math_stack_code
 
 typedef enum math_accent_codes {
     math_accent_code,
@@ -1102,12 +1129,12 @@ typedef enum local_box_options {
 } local_box_options;
 
 typedef enum skip_codes {
-    fi_l_code,     /*tex |\hfil| and |\vfil| */
-    fi_ll_code,    /*tex |\hfill| and |\vfill| */
-    fi_ss_code,    /*tex |\hss| and |\vss|, aka |ss_code| */
-    fi_l_neg_code, /*tex |\hfilneg| and |\vfilneg| */
-    skip_code,     /*tex |\hskip| and |\vskip| */
-    mskip_code,    /*tex |\mskip| */
+    fi_l_code,         /*tex |\hfil| and |\vfil| */
+    fi_ll_code,        /*tex |\hfill| and |\vfill| */
+    fi_ss_code,        /*tex |\hss| and |\vss|, aka |ss_code| */
+    fi_l_neg_code,     /*tex |\hfilneg| and |\vfilneg| */
+    skip_code,         /*tex |\hskip| and |\vskip| */
+    mskip_code,        /*tex |\mskip| */
 } skip_codes;
 
 # define first_skip_code fi_l_code
@@ -1169,7 +1196,7 @@ static inline halfword tex_math_style_to_size(halfword s)
 {
     if (s == script_style || s == cramped_script_style) {
         return script_size;
-    } else if (s == script_style || s == cramped_script_style) {
+    } else if (s == script_script_style || s == cramped_script_script_style) {
         return script_script_size;
     } else {
         return text_size;
@@ -1274,6 +1301,14 @@ typedef enum tex_mskip_codes {
     normal_mskip_code,
     atom_mskip_code,
 } tex_mskip_codes;
+
+# define last_mskip_code atom_mskip_code
+
+typedef enum tex_correction_codes {
+    italic_correction_code,
+    left_correction_code,
+    right_correction_code,
+} tex_correction_codes;
 
 # define last_mskip_code atom_mskip_code
 

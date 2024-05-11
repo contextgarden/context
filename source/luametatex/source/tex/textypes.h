@@ -127,6 +127,13 @@ typedef struct scaledwhd {
     };
 } scaledwhd;
 
+typedef struct scaledkrn {
+    scaled bl;
+    scaled br;
+    scaled tl;
+    scaled tr;
+} scaledkrn;
+
 extern halfword tex_badness(
     scaled t,
     scaled s
@@ -207,6 +214,8 @@ extern halfword tex_badness(
 
 # define min_space_factor                           0 /*tex watch out: |\spacefactor| cannot be zero but the sf code can!*/
 # define max_space_factor                      0x7FFF /*tex |077777| */
+# define min_scale_factor                           0 
+# define max_scale_factor                      100000 /*tex for now */
 # define default_space_factor                    1000
 # define space_factor_threshold                  2000
 # define default_tolerance                      10000
@@ -313,6 +322,8 @@ extern halfword tex_badness(
 # define max_size_of_word                      1024 /*tex More than enough (esp. since this can end up on the stack. */
 # define min_limited_scale                        0 /*tex Zero is a signal too. */
 # define max_limited_scale                     1000
+# define min_math_style_scale                     0 /*tex Zero is a signal too. */
+# define max_math_style_scale                  2000
 # define max_parameter_index                     15
 
 # define max_mark_index         (max_n_of_marks         - 1)

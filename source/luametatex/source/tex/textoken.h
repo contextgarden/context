@@ -315,8 +315,11 @@ typedef enum macro_preamble_states {
 # define N_token_l               (letter_token + 'N') 
 # define N_token_o               (other_token  + 'N')
 
-# define P_token_l               (letter_token + 'P')  /*tex the largest special hex digit */
+# define P_token_l               (letter_token + 'P')
 # define P_token_o               (other_token  + 'P')
+
+# define Q_token_l               (letter_token + 'Q')
+# define Q_token_o               (other_token  + 'Q')
 
 # define R_token_l               (letter_token + 'R') 
 # define R_token_o               (other_token  + 'R')
@@ -342,6 +345,8 @@ typedef enum macro_preamble_states {
 # define newline_token_o         (other_token  + '\n')
 # define return_token_o          (other_token  + '\r')
 # define backslash_token_o       (other_token  + '\\')
+# define double_quote_token_o    (other_token  + '\"')
+# define single_quote_token_o    (other_token  + '\'')
 
 //define nbsp_token_o            (other_token  + 0x202F)
 //define zws_token_o             (other_token  + 0x200B)
@@ -366,6 +371,9 @@ typedef enum macro_preamble_states {
 # define match_brackets      'S'  /* square brackets */ 
 # define match_angles        'X'  /* angle brackets */ 
 # define match_parentheses   'P'  /* parentheses */ 
+
+# define single_quote        '\''
+# define double_quote        '\"'
 
 # define spacer_match_token        (match_token + match_spacer)
 # define keep_match_token          (match_token + match_bracekeeper)
@@ -427,11 +435,12 @@ extern void     tex_increment_token_reference (halfword p, int n);
 
 extern void       tex_dump_token_mem              (dumpstream f);
 extern void       tex_undump_token_mem            (dumpstream f);
+extern int        tex_used_token_count            (void);
 extern void       tex_print_meaning               (halfword code);
 extern void       tex_flush_token_list            (halfword p);
 extern void       tex_flush_token_list_head_tail  (halfword h, halfword t, int n);
 extern void       tex_show_token_list_context     (halfword p, halfword q);
-extern void       tex_show_token_list             (halfword p, int asis);
+extern void       tex_show_token_list             (halfword p, int asis, int single);
 extern void       tex_token_show                  (halfword p);
 /*     void       tex_add_token_ref               (halfword p); */
 /*     void       tex_delete_token_ref            (halfword p); */

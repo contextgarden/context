@@ -124,7 +124,8 @@
 %D We use automatic indentation control, that is: no indentation after titles and
 %D skips.
 
-\setupindenting[20pt,yes]
+\setupindenting
+  [20pt,yes]
 
 %D We do not usually want indentation after lists.
 
@@ -140,8 +141,7 @@
   [indentnext=no,
    align=right]
 
-%D We align them at the paragraph indentation and
-%D pack them by default.
+%D We align them at the paragraph indentation and pack them by default.
 
 \setupitemgroup
   [itemize]
@@ -241,7 +241,7 @@
 %D
 %D Not entirely a la \TUGBOAT:
 
-% rule={\hrule width 5pc height .4pt depth 0pt\relax \kern \strutdepth},
+% rule={\hrule width 5pc height .4pt depth 0pt\relax \kern \strutdepth}
 
 \setupfootnotes
   [bodyfont=9pt]

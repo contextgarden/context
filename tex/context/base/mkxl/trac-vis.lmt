@@ -619,15 +619,15 @@ local fontkern, italickern, marginkern, mathkern do
     end
 
     mathshapekern = function(head,current)
-        return somekern(head,current,s_cache,"trace:do",l_mathshapekern)
+        return somekern(head,current,s_cache,"trace:dg",l_mathshapekern)
     end
 
     marginkern = function(head,current)
-        return somekern(head,current,m_cache,"trace:do",l_marginkern)
+        return somekern(head,current,m_cache,"trace:dr",l_marginkern)
     end
 
     mathkern = function(head,current)
-        return somekern(head,current,l_cache,"trace:do",l_mathkern)
+        return somekern(head,current,l_cache,"trace:db",l_mathkern)
     end
 
 end
@@ -1074,18 +1074,9 @@ local ruledglyph do
             local prev = previous
             setboth(current)
             local linewidth = emwidth/(2*fraction)
-            local x_offset, y_offset, l_margin, r_margin, raise = getoffsets(current)
---             local info = setlink((dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
---                 width  = wd,
---                 height = ht,
---                 depth  = dp,
---                 line   = linewidth,
---                 type   = "box",
---             },new_kern(-wd))
--- if ht == 0 and dp == 0 then
---     ht = linewidth/2
---     dp = ht
--- end
+         -- local x_offset, y_offset, l_margin, r_margin, raise = getoffsets(current)
+            local c, f = isglyph(current)
+            local char = chardata[f][c]
             local info = (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
                 width  = wd,
                 height = ht,
@@ -1093,8 +1084,6 @@ local ruledglyph do
                 line   = linewidth,
                 type   = "box",
             }
-            local c, f = isglyph(current)
-            local char = chardata[f][c]
             if char and type(char.unicode) == "table" then -- hackery test
                 setlistcolor(info,"trace:s")
                 setlisttransparency(info,"trace:ds")
@@ -1776,6 +1765,9 @@ do
     local kerncodes               = nodes.kerncodes
     local fontkern_code           = kerncodes.fontkern
     local italickern_code         = kerncodes.italiccorrection
+    local spacefontkern_code      = kerncodes.spacefontkern
+    local leftkern_code           = kerncodes.leftcorrectionkern
+    local rightkern_code          = kerncodes.rightcorrectionkern
     local leftmarginkern_code     = kerncodes.leftmarginkern
     local rightmarginkern_code    = kerncodes.rightmarginkern
     local mathshapekern_code      = kerncodes.mathshapekern
@@ -1793,15 +1785,14 @@ do
     local linelist_code           = listcodes.line
     local rowlist_code            = listcodes.alignment
 
-    local vtop_package_state      = 3 -- todo: symbolic
-    local dbox_package_state      = 4 -- todo: symbolic
+ -- local vtop_package_state      = 3 -- todo: symbolic
+ -- local dbox_package_state      = 4 -- todo: symbolic
 
     local getleader               = nuts.getleader
     local getdisc                 = nuts.getdisc
 
     local setleader               = nuts.setleader
     local setdisc                 = nuts.setdisc
-    local hpack                   = nuts.hpack
 
  -- local cache
 
@@ -2021,7 +2012,6 @@ do
           ::glue::
             content = getleader(current)
             if content then
-             -- setleader(current,hpack(visualize(content,false,nil,parent)))
                 setleader(current,visualize(content,false,nil,parent))
             elseif trace_glue then
                 local f = getattr(current,a_filter)
@@ -2052,14 +2042,14 @@ do
             goto next
           ::kern::
             subtype = getsubtype(current)
-            if subtype == fontkern_code then
+            if subtype == fontkern_code or subtype == spacefontkern_code then
                 if trace_fontkern or prev_trace_fontkern then
                     head, current = fontkern(head,current)
                 end
                 if trace_expansion or prev_trace_expansion then
                     head, current = kernexpansion(head,current)
                 end
-            elseif subtype == italickern_code then
+            elseif subtype == italickern_code or subtype == leftkern_code or subtype == rightkern_code then
                 if trace_italic or prev_trace_italic then
                     head, current = italickern(head,current)
                 elseif trace_kern then
@@ -2122,8 +2112,8 @@ do
             elseif id == vlist_code then
                 local content = getlist(current)
                 local state   = getstate(current)
-                local isvtop  = state == vtop_package_state
-                local isdbox  = state == dbox_package_state
+                local isvtop  = state == 3 -- vtop_package_state
+                local isdbox  = state == 4 -- dbox_package_state
                 local tag     = nil
                 local layer   = nil
                 if content then

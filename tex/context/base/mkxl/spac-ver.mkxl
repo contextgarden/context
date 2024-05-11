@@ -92,12 +92,24 @@
   \lettonothing\bodyfontinterlinespace
 \fi
 
+% \permanent\protected\def\presetnormallineheight % each bodyfont
+%   {\edef\normallineheight{\interlinespaceparameter\c!line}%
+%    \iflocalinterlinespace \else
+%      \edef\m_spac_normallineheight{\bodyfontinterlinespace}%
+%      \ifempty\m_spac_normallineheight \else
+%        \let\normallineheight\m_spac_normallineheight
+%      \fi
+%    \fi}
+
 \permanent\protected\def\presetnormallineheight % each bodyfont
   {\edef\normallineheight{\interlinespaceparameter\c!line}%
    \iflocalinterlinespace \else
      \edef\m_spac_normallineheight{\bodyfontinterlinespace}%
-     \ifempty\m_spac_normallineheight \else
+     \ifempty\m_spac_normallineheight
+     \orelse\ifchkdimension\m_spac_normallineheight\or
        \let\normallineheight\m_spac_normallineheight
+     \else
+       \edef\normallineheight{\todimension\m_spac_normallineheight\dimexpr\fontbody\relax}%
      \fi
    \fi}
 
@@ -585,21 +597,36 @@
    \offbaselinecorrection % ???
    \spac_lines_start_correction_box}
 
+\newconstant\linecorrectionmode
+
+% \linecorrectionmode\plusone % better for end of column and depth alignment
+
 \permanent\protected\def\spac_lines_stop_correction_normal
   {\spac_lines_stop_correction_box
-   \directcheckedvspacing\v!nowhite % \blank[\v!nowhite]%
-   \ifdim\parskip>\zeropoint
-      % too fuzzy otherwise
-   \orelse\ifdim\d_spac_prevdepth<\maxdimen
-     \unless\ifdim\d_spac_prevdepth<\zeropoint
-       \ifdim\d_spac_prevdepth<\strutdp \relax
-         \pushlastnode
-         \ifdim\d_spac_prevdepth>\zeropoint
-            \kern-\d_spac_prevdepth
+   \ifnum\linecorrectionmode=\plusone
+     \forcestrutdepth
+     \iftrue
+       \penalty\zerocount % works too
+     \else
+         %\tracingpages\plusone \tracingonline\plustwo
+       \pageboundary\plustenthousand % becomes a penalty (after triggering the callback) (experimental!)
+         %\tracingpages\zerocount
+     \fi
+   \else
+     \directcheckedvspacing\v!nowhite % \blank[\v!nowhite]%
+     \ifdim\parskip>\zeropoint
+        % too fuzzy otherwise
+     \orelse\ifdim\d_spac_prevdepth<\maxdimen
+       \unless\ifdim\d_spac_prevdepth<\zeropoint
+         \ifdim\d_spac_prevdepth<\strutdp \relax
+           \pushlastnode
+           \ifdim\d_spac_prevdepth>\zeropoint
+               \kern-\d_spac_prevdepth
+           \fi
+           \kern\strutdp
+           \prevdepth\strutdp
+           \poplastnode
          \fi
-         \kern\strutdp
-         \prevdepth\strutdp
-         \poplastnode
        \fi
      \fi
    \fi
@@ -607,7 +634,7 @@
    % \blank[\v!white,\the\d_spac_lines_correction_before]% \blank[\v!white]\dotopbaselinecorrection
      \directcheckedvspacing{\v!white,\the\d_spac_lines_correction_before}% \blank[\v!white]\dotopbaselinecorrection
    \fi
-   \nointerlineskip % new
+   \nointerlineskip % relatively new
    \noindent % not \dontleavehmode !
    \ifcase\c_spac_lines_correction_mode
      % nothing

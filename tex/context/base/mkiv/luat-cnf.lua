@@ -87,28 +87,16 @@ function texconfig.init()
         basictex = {
             -- always
             "callback", "font", "lua", "node", "status", "tex", "texconfig", "texio", "token",
-            -- not in luametatex
             "img", "pdf", "lang",
-            -- in luametatex
-            "language",
         },
         extralua = {
-            -- not in luametatex
             "unicode", "utf", "gzip",  "zip", "zlib",
-            -- in luametatex
-            "xzip", "xmath", "xcomplex", "xdecimal", "basexx",
-            -- maybe some day in luametatex
             "lz4", "lzo",
-            -- always (mime can go)
             "lfs","socket", "mime", "md5", "sha2", "fio", "sio",
         },
         extratex = {
-            -- not in luametatex
             "kpse",
-            -- always
             "pdfe", "mplib",
-            -- in luametatex
-            "pdfdecode", "pngdecode",
         },
         obsolete = {
             "epdf",

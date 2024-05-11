@@ -8,6 +8,7 @@
 		<cd:variable name='Addition' value='Toevoeging'/>
 		<cd:variable name='Alphabetic' value='Alphabetic'/>
 		<cd:variable name='Balloon' value='Ballon'/>
+		<cd:variable name='Camel' value='Camel'/>
 		<cd:variable name='Cap' value='Kap'/>
 		<cd:variable name='Capital' value='Kapitaal'/>
 		<cd:variable name='Character' value='Letter'/>
@@ -326,6 +327,7 @@
 		<cd:variable name='less' value='minder'/>
 		<cd:variable name='lesshyphenation' value='lesshyphenation'/>
 		<cd:variable name='letterspacing' value='letterspacing'/>
+		<cd:variable name='limit' value='beperk'/>
 		<cd:variable name='line' value='regel'/>
 		<cd:variable name='linenote' value='regelnoot'/>
 		<cd:variable name='lines' value='regels'/>
@@ -427,6 +429,8 @@
 		<cd:variable name='outer' value='buiten'/>
 		<cd:variable name='outeredge' value='buitenrand'/>
 		<cd:variable name='outermargin' value='buitenmarge'/>
+		<cd:variable name='outline' value='outline'/>
+		<cd:variable name='outlined' value='outlined'/>
 		<cd:variable name='overbar' value='overstreep'/>
 		<cd:variable name='overbars' value='overstrepen'/>
 		<cd:variable name='overlay' value='overlay'/>
@@ -741,6 +745,7 @@
 		<cd:constant name='bottomoffset' value='onderoffset'/>
 		<cd:constant name='bottomspace' value='bodemwit'/>
 		<cd:constant name='bottomstate' value='onderstatus'/>
+		<cd:constant name='bottomstyle' value='bottomstyle'/>
 		<cd:constant name='break' value='break'/>
 		<cd:constant name='buffer' value='buffer'/>
 		<cd:constant name='cache' value='cache'/>
@@ -998,6 +1003,7 @@
 		<cd:constant name='less' value='minder'/>
 		<cd:constant name='level' value='niveau'/>
 		<cd:constant name='levels' value='niveaus'/>
+		<cd:constant name='limit' value='beperk'/>
 		<cd:constant name='limitstretch' value='limietrek'/>
 		<cd:constant name='limittext' value='limiettekst'/>
 		<cd:constant name='line' value='regel'/>
@@ -1362,6 +1368,7 @@
 		<cd:constant name='topoffset' value='bovenoffset'/>
 		<cd:constant name='topspace' value='kopwit'/>
 		<cd:constant name='topstate' value='bovenstatus'/>
+		<cd:constant name='topstyle' value='topstyle'/>
 		<cd:constant name='totalnumber' value='totalnumber'/>
 		<cd:constant name='transform' value='transformatie'/>
 		<cd:constant name='translate' value='translate'/>

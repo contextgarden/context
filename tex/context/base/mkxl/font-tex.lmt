@@ -28,9 +28,12 @@ local currentfont    = font.current
 
 local makesetups = formatters["box:%s:%S"]
 
+local a_exportstatus = attributes.private('exportstatus')
+
 local function makeglyphbox(char,spec)
     token.expand_macro("makeglyphbox",true,spec.setups or tostring(char))
     local b = tex.takebox("glyphbox")
+-- b[a_exportstatus] = 0
     spec.code = {
         width  = b.width,
         height = b.height,
@@ -85,18 +88,20 @@ local function setboxglyph(specification)
     end
 end
 
-local function setboxdirectly(font,unicode,box) -- hash based on wd/ht/dp
+local function setboxdirectly(font,unicode,box,expose) -- hash based on wd/ht/dp
     if box then
         local tfmdata      = fontdata[font]
         local glyphboxes   = (tfmdata.glyphboxes or 0) + 1
         tfmdata.glyphboxes = glyphboxes
         local private      = newprivateslot(formatters["BG:%05X"](glyphboxes))
+-- box[a_exportstatus] = 0
         local newdata      = {
             width   = box.width  or 0,
             height  = box.height or 0,
             depth   = box.depth  or 0,
             unicode = unicode,
             objnum  = tex.boxresources.save(box,nil,nil,true),
+            expose  = expose, -- permit color etc
         }
         local specification = {
             code = newdata

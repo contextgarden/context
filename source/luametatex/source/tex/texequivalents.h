@@ -429,6 +429,7 @@ typedef enum page_property_codes {
     page_filllstretch_code,
     page_shrink_code,
     page_last_stretch_code,
+    page_last_fistretch_code,
     page_last_filstretch_code,
     page_last_fillstretch_code,
     page_last_filllstretch_code,
@@ -453,6 +454,8 @@ typedef enum int_codes {
     glyph_scale_code,
     glyph_x_scale_code,
     glyph_y_scale_code,
+    glyph_slant_code,
+    glyph_weight_code,
     glyph_text_scale_code,
     glyph_script_scale_code,
     glyph_scriptscript_scale_code,
@@ -527,7 +530,7 @@ typedef enum int_codes {
     tracing_lost_chars_code,            /*tex show characters that aren't in the font */
     tracing_commands_code,              /*tex show command codes at |big_switch| */
     tracing_restores_code,              /*tex show equivalents when they are restored */
-    tracing_fonts_code,
+ // tracing_fonts_code,                   
     tracing_assigns_code,               /*tex show assignments */
     tracing_groups_code,                /*tex show save/restore groups */
     tracing_ifs_code,                   /*tex show conditionals */
@@ -569,7 +572,7 @@ typedef enum int_codes {
  // local_broken_penalty_code,          /*tex local |\brokenpenalty| */
  // local_tolerance_code,
  // local_pre_tolerance_code,
-    disable_spaces_code,
+    no_spaces_code,
     parameter_mode_code,
  // glyph_scale_code,
  // glyph_x_scale_code,
@@ -660,6 +663,7 @@ typedef enum int_codes {
     space_factor_mode,
     space_factor_shrink_limit_code,
     space_factor_stretch_limit_code,
+    box_limit_mode_code,
     /* those below these are not interfaced via primitives */
     internal_par_state_code,
     internal_dir_state_code,
@@ -689,7 +693,7 @@ typedef enum int_codes {
 } int_codes;
 
 # define first_integer_code pre_tolerance_code
-# define last_integer_code  space_factor_stretch_limit_code
+# define last_integer_code  box_limit_mode_code
 
 typedef enum dimension_codes {
     /* normal ones */
@@ -909,10 +913,23 @@ extern void tex_undump_equivalents_mem  (dumpstream f);
 */
 
 typedef struct save_record {
-    union       { quarterword saved_level;  quarterword saved_extra; };
-    quarterword saved_type; 
-    halfword    saved_value; /*tex Started out as padding, is now actually used for value. */
-    memoryword  saved_word;
+    union { 
+        quarterword saved_level; 
+        quarterword saved_group; 
+        quarterword saved_record; 
+    };
+    quarterword saved_type;    
+    union { 
+        halfword saved_value;  
+        halfword saved_value_1; 
+    };
+    union { 
+        memoryword saved_word;
+        struct { 
+            halfword saved_value_2;
+            halfword saved_value_3;
+        };
+    };
 } save_record;
 
 typedef struct save_state_info {
@@ -938,107 +955,75 @@ extern save_state_info lmt_save_state;
 
 */
 
-# define save_type(A)   lmt_save_state.save_stack[(A)].saved_type  /*tex classifies a |save_stack| entry */
-# define save_extra(A)  lmt_save_state.save_stack[(A)].saved_extra /*tex a more generic alias */
-# define save_level(A)  lmt_save_state.save_stack[(A)].saved_level /*tex saved level for regions 5 and 6, or group code, or ...  */
-# define save_value(A)  lmt_save_state.save_stack[(A)].saved_value /*tex |eqtb| location or token or |save_stack| location or ... */
-# define save_word(A)   lmt_save_state.save_stack[(A)].saved_word  /*tex |eqtb| entry */
+# define save_type(A)    lmt_save_state.save_stack[A].saved_type     /*tex classifies a |save_stack| entry */
+# define save_record(A)  lmt_save_state.save_stack[A].saved_record
+# define save_level(A)   lmt_save_state.save_stack[A].saved_level    /*tex saved level for regions 5 and 6, or group code, or ...  */
+# define save_group(A)   lmt_save_state.save_stack[A].saved_group 
 
-# define saved_valid(A) (lmt_save_state.save_stack_data.ptr + (A) >= 0)
-# define saved_type(A)  lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_type
-# define saved_extra(A) lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_extra
-# define saved_level(A) lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_level
-# define saved_value(A) lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_value
-# define saved_word(A)  lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_word
+# define save_value(A)   lmt_save_state.save_stack[A].saved_value    /*tex |eqtb| location or token or |save_stack| location or ... */
+# define save_word(A)    lmt_save_state.save_stack[A].saved_word     /*tex |eqtb| entry */
 
-static inline void tex_set_saved_record(halfword ptr, quarterword type, quarterword level, halfword value)
-{
-    saved_type(ptr)  = type;
-    saved_level(ptr) = level;
-    saved_value(ptr) = value;
-}
+# define save_value_1(A) lmt_save_state.save_stack[A].saved_value_1
+# define save_value_2(A) lmt_save_state.save_stack[A].saved_value_2
+# define save_value_3(A) lmt_save_state.save_stack[A].saved_value_3
 
-# define reserved_save_stack_slots 32 /* was 8 */
+# define saved_type(A)    lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_type
+# define saved_record(A)  lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_record
+# define saved_level(A)   lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_level
+# define saved_group(A)   lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_group
+
+# define saved_value_1(A) lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_value_1
+# define saved_value_2(A) lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_value_2
+# define saved_value_3(A) lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_value_3
+
+# define reserved_save_stack_slots 32 /* plenty reserve */
 
 /*tex
 
     The rather explicit |save_| items indicate a type. They are sometimes used to lookup a specific
     field (when tracing).
 
-    Todo: less of these, a few more generic ones, like count, dimen, etc
+    The save stack is now a bit more hybrid because we use |memoryword| for |value_2| and |value_3|
+    so this will be cleaned up a bit.  
+
 */
 
 typedef enum save_types {
+    /* recovery entries */
     restore_old_value_save_type, /*tex a value should be restored later */
     restore_zero_save_type,      /*tex an undefined entry should be restored */
     insert_tokens_save_type,
     restore_lua_save_type,
     level_boundary_save_type,    /*tex the beginning of a group */
-    /* */
-    line_number_save_type,
-    /* */
-    insert_index_save_type,
-    /* */
-    discretionary_count_save_type,
-    /* */
-    text_direction_save_type,
-    /* */
-    equation_number_location_save_type,
-    /* */
-    choices_count_save_type,
-    /* */
-    fraction_variant_save_type,
-    fraction_auto_style_save_type,
-    fraction_user_style_save_type,
-    /* */
-    radical_degree_done_save_type, /* make this better: just types */
-    radical_style_save_type,
-    /* */
-    operator_variant_save_type,
-    /* */
-    attribute_list_save_type,
-    /* */
-    math_pointer_save_type,
-    math_class_save_type,
-    /* */
-    box_type_save_type,
-    box_context_save_type,
-    box_spec_save_type,
-    box_direction_save_type,
-    box_attr_list_save_type,
-    box_pack_save_type,
-    box_orientation_save_type,
-    box_anchor_save_type,
-    box_geometry_save_type,
-    box_xoffset_save_type,
-    box_yoffset_save_type,
-    box_xmove_save_type,
-    box_ymove_save_type,
-    box_reverse_save_type,
-    box_discard_save_type,
-    box_noskips_save_type,
-    box_callback_save_type,
-    box_container_save_type,
-    box_shift_save_type,
-    box_source_save_type,
-    box_target_save_type,
-    box_axis_save_type,
-    box_class_save_type,
-    box_state_save_type,
-    box_retain_save_type,
-    /* */
-    local_box_location_save_type,
-    local_box_index_save_type,
-    local_box_options_save_type,
-    /* */
-    adjust_location_save_type,
-    adjust_options_save_type,
-    adjust_index_save_type,
-    adjust_attr_list_save_type,
-    adjust_depth_before_save_type,
-    adjust_depth_after_save_type,
-    adjust_target_save_type,
+    /* data entries */
+    saved_record_0,
+    saved_record_1,
+    saved_record_2,
+    saved_record_3,
+    saved_record_4,
+    saved_record_5,
+    saved_record_6,
+    saved_record_7,
+    saved_record_8,
+    saved_record_9,
 } save_types;
+
+typedef enum save_record_types {
+    unknown_save_type,
+    box_save_type,
+    local_box_save_type,
+    alignment_save_type,
+    adjust_save_type,
+    math_save_type,
+    fraction_save_type,
+    radical_save_type,
+    operator_save_type,
+    math_group_save_type,
+    choice_save_type,
+    number_save_type,
+    insert_save_type,
+    discretionary_save_type,
+} save_record_types;
 
 /*tex Nota bena: |equiv_value| is the same as |equiv| but sometimes we use that name instead. */
 
@@ -1138,11 +1123,12 @@ typedef enum tex_group_codes {
     lua_group,
 } tex_group_codes;
 
-typedef enum saved_group_items {
-    saved_group_line_number    = 0,
-    saved_group_level_boundary = 1,
-    saved_group_n_of_items     = 2,
-} saved_group_items;
+inline static void tex_aux_show_group_count(int n)
+{
+    for (int i = 1; i <= n; i++) {
+        tex_print_str("{}");
+    }
+}
 
 /*
     In the end I decided to split them into context and begin, but maybe some day
@@ -1208,6 +1194,7 @@ typedef enum tex_page_context_codes {
     after_display_page_context,
     after_output_page_context,
     alignment_page_context,
+    triggered_page_context
 } tex_page_context_codes;
 
 typedef enum tex_append_line_context_codes {
@@ -1219,22 +1206,22 @@ typedef enum tex_append_line_context_codes {
     post_migrate_append_line_context,
 } tex_append_line_context_codes;
 
-typedef enum tex_par_begin_codes {
-    normal_par_begin,
-    force_par_begin,
-    indent_par_begin,
-    no_indent_par_begin,
-    math_char_par_begin,
-    char_par_begin,
-    boundary_par_begin,
-    space_par_begin,
-    math_par_begin,
-    kern_par_begin,
-    hskip_par_begin,
-    un_hbox_char_par_begin,
-    valign_char_par_begin,
-    vrule_char_par_begin,
-} tex_par_begin_codes;
+typedef enum tex_par_trigger_codes {
+    normal_par_trigger,
+    force_par_trigger,
+    indent_par_trigger,
+    no_indent_par_trigger,
+    math_char_par_trigger,
+    char_par_trigger,
+    boundary_par_trigger,
+    space_par_trigger,
+    math_par_trigger,
+    kern_par_trigger,
+    hskip_par_trigger,
+    un_hbox_char_par_trigger,
+    valign_char_par_trigger,
+    vrule_char_par_trigger,
+} tex_par_trigger_codes;
 
 typedef enum tex_tracing_levels_codes {
     tracing_levels_group    = 0x01,
@@ -1246,7 +1233,7 @@ extern void tex_initialize_save_stack  (void);
 /*     int  tex_room_on_save_stack     (void); */
 extern void tex_save_halfword_on_stack (quarterword t, halfword v);
 extern void tex_show_cmd_chr           (halfword cmd, halfword chr);
-extern void tex_new_save_level         (quarterword c);                            /*tex begin a new level of grouping */
+extern void tex_new_save_level         (quarterword group);                        /*tex begin a new level of grouping */
 extern int  tex_saved_line_at_level    (void);
 extern void tex_eq_define              (halfword p, singleword cmd, halfword chr); /*tex new data for |eqtb| */
 extern void tex_eq_word_define         (halfword p, int w);
@@ -1256,6 +1243,7 @@ extern void tex_save_for_after_group   (halfword t);
 extern void tex_unsave                 (void);                                     /*tex pops the top level off the save stack */
 extern void tex_show_save_groups       (void);
 extern int  tex_located_save_value     (int id);
+extern void tex_show_save_stack        (void);
 
 /*tex
 
@@ -1555,6 +1543,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define space_factor_mode_par           integer_parameter(space_factor_mode)
 # define space_factor_shrink_limit_par   integer_parameter(space_factor_shrink_limit_code)
 # define space_factor_stretch_limit_par  integer_parameter(space_factor_stretch_limit_code)
+# define box_limit_mode_par              integer_parameter(box_limit_mode_code)
 # define pre_display_direction_par       integer_parameter(pre_display_direction_code)
 # define pre_display_penalty_par         integer_parameter(pre_display_penalty_code)
 # define post_display_penalty_par        integer_parameter(post_display_penalty_code)
@@ -1593,7 +1582,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define math_check_fences_par           integer_parameter(math_check_fences_mode_code)
 # define math_slack_mode_par             integer_parameter(math_slack_mode_code)
 # define null_delimiter_space_par        dimension_parameter(null_delimiter_space_code)
-# define disable_spaces_par              integer_parameter(disable_spaces_code)
+# define no_spaces_par                   integer_parameter(no_spaces_code)
 # define glyph_options_par               integer_parameter(glyph_options_code)
 # define glyph_scale_par                 integer_parameter(glyph_scale_code)
 # define glyph_text_scale_par            integer_parameter(glyph_text_scale_code)
@@ -1601,6 +1590,8 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define glyph_scriptscript_scale_par    integer_parameter(glyph_scriptscript_scale_code)
 # define glyph_x_scale_par               integer_parameter(glyph_x_scale_code)
 # define glyph_y_scale_par               integer_parameter(glyph_y_scale_code)
+# define glyph_slant_par                 integer_parameter(glyph_slant_code)
+# define glyph_weight_par                integer_parameter(glyph_weight_code)
 # define glyph_x_offset_par              dimension_parameter(glyph_x_offset_code)
 # define glyph_y_offset_par              dimension_parameter(glyph_y_offset_code)
 # define discretionary_options_par       integer_parameter(discretionary_options_code)
@@ -1614,10 +1605,12 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 typedef enum math_glue_modes {
     math_glue_stretch_code = 0x01,
     math_glue_shrink_code  = 0x02,
+    math_glue_limit_code   = 0x04,
 } math_glue_modes;
 
 # define math_glue_stretch_enabled       ((math_glue_mode_par & math_glue_stretch_code) == math_glue_stretch_code)
 # define math_glue_shrink_enabled        ((math_glue_mode_par & math_glue_shrink_code) == math_glue_shrink_code)
+# define math_glue_limit_enabled         ((math_glue_mode_par & math_glue_limit_code) == math_glue_limit_code)
 # define default_math_glue_mode          (math_glue_stretch_code | math_glue_shrink_code)
 
 # define petty_muskip_par                muglue_parameter(petty_muskip_code)
@@ -1719,7 +1712,7 @@ typedef enum shaping_penalties_mode_bits {
 # define tracing_commands_par            integer_parameter(tracing_commands_code)
 # define tracing_macros_par              integer_parameter(tracing_macros_code)
 # define tracing_assigns_par             integer_parameter(tracing_assigns_code)
-# define tracing_fonts_par               integer_parameter(tracing_fonts_code)
+//define tracing_fonts_par               integer_parameter(tracing_fonts_code)
 # define tracing_pages_par               integer_parameter(tracing_pages_code)
 # define tracing_restores_par            integer_parameter(tracing_restores_code)
 # define tracing_groups_par              integer_parameter(tracing_groups_code)
@@ -1980,6 +1973,8 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 # define update_tex_glyph_scale(v)             tex_eq_word_define(internal_integer_location(glyph_scale_code), v)
 # define update_tex_glyph_x_scale(v)           tex_eq_word_define(internal_integer_location(glyph_x_scale_code), v)
 # define update_tex_glyph_y_scale(v)           tex_eq_word_define(internal_integer_location(glyph_y_scale_code), v)
+# define update_tex_glyph_slant(v)             tex_eq_word_define(internal_integer_location(glyph_slant_code), v)
+# define update_tex_glyph_weight(v)            tex_eq_word_define(internal_integer_location(glyph_weight_code), v)
 
 # define update_tex_math_left_class(v)         tex_eq_word_define(internal_integer_location(math_left_class_code), v)
 # define update_tex_math_right_class(v)        tex_eq_word_define(internal_integer_location(math_right_class_code), v)
@@ -2018,6 +2013,10 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 # define update_tex_local_broken_penalty(v)    tex_eq_word_define(internal_integer_location(local_broken_penalty_code), v);
 # define update_tex_local_tolerance(v)         tex_eq_word_define(internal_integer_location(local_tolerance_code), v);
 # define update_tex_local_pre_tolerance(v)     tex_eq_word_define(internal_integer_location(local_pre_tolerance_code), v);
+
+# define box_limit_mode_hlist ((box_limit_mode_par & box_limit_hlist) == box_limit_hlist)
+# define box_limit_mode_vlist ((box_limit_mode_par & box_limit_vlist) == box_limit_vlist)
+# define box_limit_mode_line  ((box_limit_mode_par & box_limit_line) == box_limit_line)
 
 /*tex For the moment here; a preparation for a dedicated insert structure. */
 

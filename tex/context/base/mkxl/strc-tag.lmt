@@ -206,6 +206,7 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
     mstackertop           = { pdf = "Span",       nature = "display" }, -- these are only internally used
     mstackerbot           = { pdf = "Span",       nature = "display" }, -- these are only internally used
     mstackermid           = { pdf = "Span",       nature = "display" }, -- these are only internally used
+    mextensible           = { pdf = "Span",       nature = "display" }, -- these are only internally used
 
     mtable                = { pdf = "Table",      nature = "display", namespace = "mathml" }, -- might change
     mtr                   = { pdf = "TR",         nature = "display", namespace = "mathml" }, -- might change
@@ -617,4 +618,15 @@ implement {
     protected = true,
     actions   = tags.registermetadata,
     arguments = "optional",
+}
+
+implement {
+    name      = "settagginglevel",
+    protected = true,
+    arguments = "argument",
+    actions   = function(level)
+        if level == interfaces.variables.none then
+            codeinjections.reducetags()
+        end
+    end,
 }

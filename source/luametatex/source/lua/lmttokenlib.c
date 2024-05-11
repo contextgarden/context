@@ -437,7 +437,8 @@ void lmt_token_list_to_lua(lua_State *L, halfword p)
 void lmt_token_list_to_luastring(lua_State *L, halfword p, int nospace, int strip, int wipe)
 {
     int l;
-    char *s = tex_tokenlist_to_tstring(p, 1, &l, 0, nospace, strip, wipe, 0); /* nasty ... preambles or not, could have been endmatchtoken  */
+ // char *s = tex_tokenlist_to_tstring(p, 1, &l, 0, nospace, strip, wipe, 0); /* nasty ... preambles or not, could have been endmatchtoken  */
+    char *s = tex_tokenlist_to_tstring(p, 1, &l, 0, nospace, strip, wipe, 1); /* nasty ... preambles or not, could have been endmatchtoken  */
     if (l) {
         lua_pushlstring(L, s, (size_t) l);
     } else {
@@ -1332,7 +1333,7 @@ static int tokenlib_scan_skip(lua_State *L)
     saved_tex_scanner texstate = tokenlib_aux_save_tex_scanner();
     int mu = lua_toboolean(L, 1) ? muglue_val_level : glue_val_level;
     int eq = lua_toboolean(L, 2);
-    halfword v = tex_scan_glue(mu, eq);
+    halfword v = tex_scan_glue(mu, eq, 0);
     lmt_push_node_fast(L, v);
     tokenlib_aux_unsave_tex_scanner(texstate);
     return 1;
@@ -1344,7 +1345,7 @@ static int tokenlib_scan_glue(lua_State *L)
     int mu = lua_toboolean(L, 1) ? muglue_val_level : glue_val_level;
     int eq = lua_toboolean(L, 2);
     int t  = lua_toboolean(L, 3);
-    halfword v = tex_scan_glue(mu, eq);
+    halfword v = tex_scan_glue(mu, eq, 0);
     tokenlib_aux_unsave_tex_scanner(texstate);
     if (t) {
         lua_createtable(L, 5, 0);
@@ -1506,8 +1507,8 @@ static int tokenlib_scan_tokenstring(lua_State *L) /* noexpand noexpandconstant 
     /*tex is saving really needed here? */
     saved_tex_scanner texstate = tokenlib_aux_save_tex_scanner();
     halfword defref = lmt_input_state.def_ref;
- // halfword result = ! lua_toboolean(L, 1) ? tex_scan_toks_expand(0, NULL, ! lua_toboolean(L, 2), lua_toboolean(L, 3)) : tex_scan_toks_normal(0, NULL);
-    halfword result = tex_scan_toks_expand(0, NULL, 1, 1);
+    halfword result = lua_toboolean(L, 1) ? tex_scan_toks_normal(0, NULL) : tex_scan_toks_expand(0, NULL, ! lua_toboolean(L, 2), ! lua_toboolean(L, 3));
+ // halfword result = tex_scan_toks_expand(0, NULL, 1, 1);
     lmt_token_list_to_luastring(L, result, 0, 0, 1);
     lmt_input_state.def_ref = defref;
     tokenlib_aux_unsave_tex_scanner(texstate);
@@ -3233,6 +3234,7 @@ static halfword tokenlib_aux_expand_macros_in_tokenlist(halfword p)
     /*tex Disable |\prevdepth|, |\spacefactor|, |\lastskip|, |\prevgraf|. */
     cur_cs = 0; /* was write_loc i.e. eq of \write */
     /*tex Expand macros, etc. */
+    ++lmt_input_state.align_state; /* emulates the { for the } above */
     tex_scan_toks_expand(1, NULL, 0, 0);
     tex_get_token();
     if (cur_tok != deep_frozen_end_write_token) {

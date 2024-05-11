@@ -143,7 +143,9 @@ local function initialize(tfmdata,key,value)
             rule = { rule }
         end
         for unicode, character in next, characters do
-            if showchar then
+            if characters == 32 then
+                -- maybe skip all spacing
+            elseif showchar then
                 local commands = character.commands
                 if commands then
                     character.commands = prependcommands ( commands, rule )

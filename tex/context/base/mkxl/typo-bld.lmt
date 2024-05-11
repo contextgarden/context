@@ -421,9 +421,6 @@ end
 registercallback("hpack_quality", hpackbuilders.qualityactions, "report horizontal packing quality")
 registercallback("vpack_quality", vpackbuilders.qualityactions, "report vertical packing quality")
 
-
---
-
 statistics.register("quality reports", function()
     local n = #list
     if n > 0 then
@@ -448,7 +445,7 @@ statistics.register("quality reports", function()
             report_quality(
                 how == "overfull"
                     and "%-" .. fw .. "s [%04i - %04i] : %-" .. hw .. "s %s : %s (%p)"
-                     or "%-" .. fw .. "s [%04i - %04i] : %-" .. hw .. "s %s : %s (%badness %i)",
+                     or "%-" .. fw .. "s [%04i - %04i] : %-" .. hw .. "s %s : %s (badness %i)",
                 file.basename(l[3]),l[4],l[5],how,l[1],l[6],l[7]
             )
         end

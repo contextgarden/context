@@ -168,11 +168,13 @@ else
                 end
             elseif kind == "with" then
                 if size == 3 then
-                    combined[utfchar(vs[2])..utfchar(vs[3])] = utfchar(unicode)
+                 -- combined[utfchar(vs[2])..utfchar(vs[3])] = utfchar(unicode)
+                    combined[utfchar(vs[2],vs[3])] = utfchar(unicode)
                 end
             elseif kind == "compat" then
                 if size == 3 then
-                    combined[utfchar(vs[2])..utfchar(vs[3])] = utfchar(unicode)
+                 -- combined[utfchar(vs[2])..utfchar(vs[3])] = utfchar(unicode)
+                    combined[utfchar(vs[2],vs[3])] = utfchar(unicode)
                 end
                 if size > 2 and (v.mathclass or v.mathspec) then
                     setlist(unicode,vs,2,"specials")

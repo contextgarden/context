@@ -1,0 +1,517 @@
+
+% language=us runpath=texruns:manuals/fonts
+
+\continuewhenlmtxmode
+
+\startcomponent fonts-compact
+
+\environment fonts-environment
+
+\definetypeface
+  [narrowtt] [tt]
+  [mono] [modern-condensed] [default] [features=none]
+
+\startchapter[title=Compact][color=darkgray]
+
+\startsection[title=Introduction]
+
+The title of this chapter is somewhat misleading but in the end a lot boils down
+to efficient but flexible usage as offered in \CONTEXT\ \LMTX\ and \LUAMETATEX.
+This also means that what is discussed here does not apply to \MKIV.
+
+\stopsection
+
+\startsection[title=Compact mode]
+
+\startsubsection[title=What \TEX\ needs]
+
+A traditional \TEX\ approach to fonts is that you explicitly load a font
+that then gets an identifier which is used to trigger its usage. In plain \TEX\
+you find these lines:
+
+\startcolumns[n=3]
+\starttyping
+\font\tenrm     cmr10
+\font\preloaded cmr9
+\font\preloaded cmr8
+\font\sevenrm   cmr7
+\font\preloaded cmr6
+\font\fiverm    cmr5
+
+\font\teni      cmmi10
+\font\preloaded cmmi9
+\font\preloaded cmmi8
+\font\seveni    cmmi7
+\font\preloaded cmmi6
+\font\fivei     cmmi5
+
+\font\tensy     cmsy10
+\font\preloaded cmsy9
+\font\preloaded cmsy8
+\font\sevensy   cmsy7
+\font\preloaded cmsy6
+\font\fivesy    cmsy5
+
+\font\tenex     cmex10
+
+\font\preloaded cmss10
+\font\preloaded cmssq8
+
+\font\preloaded cmssi10
+\font\preloaded cmssqi8
+
+\font\tenbf     cmbx10
+\font\preloaded cmbx9
+\font\preloaded cmbx8
+\font\sevenbf   cmbx7
+\font\preloaded cmbx6
+\font\fivebf    cmbx5
+
+\font\tentt     cmtt10
+\font\preloaded cmtt9
+\font\preloaded cmtt8
+
+\font\preloaded cmsltt10
+
+\font\tensl     cmsl10
+\font\preloaded cmsl9
+\font\preloaded cmsl8
+
+\font\tenit     cmti10
+\font\preloaded cmti9
+\font\preloaded cmti8
+\font\preloaded cmti7
+\stoptyping
+\stopcolumns
+
+There are a few more later on in that file. Although users seldom see such low
+level definitions it shows a few interesting aspects. First of all, we see that
+there are different fonts for different sizes. These can be triggered with
+commands like \type {\tenbf}. We also see that some fonts get the name \type
+{\preloaded} but because later one we have:
+
+\starttyping
+\let\preloaded\undefined
+\stoptyping
+
+that command is no longer meaningful. The fonts are loaded but not accessible.
+However, when you define it again, the already loaded variant will be used which
+might save some runtime. Back to the sizes: all is centered around a ten point
+body font. The smaller sizes are for math and footnotes, the larger ones for
+section titles and such. The different sizes are optimized for that size and
+expected to be printed at that size. Of course looking at a document on a phone,
+epub device, high resolution monitor or beamer image, spoils that concept:
+instead of being optimized for some size it then becomes a variant with different
+properties. A seven point glyph at indeed seven point in a math superscript makes
+sense but when blown up to 16 point there is less need for a different shape
+unless one wants (for instance) to run the scripts narrower. The danger of ink
+filling shapes at small sizes is not present when we scale up.
+
+Anyway, the engine loads a font and when triggered it will use the dimensions
+that it provides: character properties like widths, heights, depths, italic
+corrections, kerns, ligatures, math variants and extensibles as well as font
+properties like spacing. If you load a ten point font at fifteen point the
+original gets scaled and a copy is used with these new properties. If you use
+400 sizes, you get 400 copies.
+
+\stopsubsection
+
+\startsubsection[title=How \LUATEX\ works]
+
+Because \LUATEX\ is a wide engine loading a font not only takes more time but
+using one also consumes more memory. In principle there should be no real
+difference in the amount of fonts loaded unless the macro package does a poor
+job. In what we call base mode, there is no difference with the traditional
+approach: \TEX\ needs the usual properties so, assuming that callbacks are used
+for font management, only these have to be passed to the engine. In what we call
+node mode in \CONTEXT\ rendering is delegated to \LUA. The engine is not involved
+in for instance ligature building and kerning.
+
+Where in a traditional engine small caps and old style variants are bound to
+specific fonts, using them involves loading a new instance. However, in \CONTEXT\
+we can avoid that by using dynamic features. This dynamic mechanism is part of
+node mode and is a convenient way to deal with small caps and oldstyle shapes. So
+here we can actually save some memory due to less instances but of course at the
+cost of some more complexity. But we still have dedicated instances for say eight
+point and ten point.
+
+\stopsubsection
+
+\startsubsection[title=What \LUAMETATEX\ can do]
+
+In this engine we can do scaling of glyphs on demand. This makes it possible to
+only define a ten point instance and scale for instance an eight point size from
+that instance. This can come at the cost of more runtime due to more calculations
+but in the end experiments demonstrated that runtime can become less. Memory
+consumption of course is less anyway.
+
+This scaling feature has quite some impact on the front|-|end because dimensions
+that relate to the current font might have to be scaled too. It is definitely
+something to take into account at the \LUA\ end. In addition to scaling we also
+have some other manipulations. Although these are taken into account in the
+frontend, it is the backend that eventually has to take care of it.
+
+\starttabulate
+\NC \type {\glyphscale } \NC scales the glyphs in two directions \NC \NR
+\NC \type {\glyphxscale} \NC scales the glyphs horizontally, aka extending \NC \NR
+\NC \type {\glyphyscale} \NC scales the glyphs vertically, aka squeezing \NC \NR
+\NC \type {\glyphslant } \NC transforms the glyphs such that it becomes oblique\NC \NR
+\NC \type {\glyphweight} \NC boldens the glyphs \NC \NR
+\stoptabulate
+
+Apart from slanting all these primitives result in different metrics. The weight is
+somewhat tricky because here we need some guesswork.
+
+When we use compact font mode in \CONTEXT\ \LMTX, the same font is loaded once
+and scaled on demand using the above control options. Of course this need some
+management, for instance because when setting the scale an already active scale
+might effectively get rescaled.
+
+% \unprotect
+% \meaning\font_scale_defined_x
+% \protect
+% \glyphscale\dimexpr\xtextface*\plushundred/\onepoint\relax
+% \gyphrescale\xtextface\relax
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Design sizes]
+
+\startsubsection[title=Introduction]
+
+The first \TEX\ distributions had an important characteristic: the fonts that
+came with them were tuned for a certain size and we could speak of them having
+\quote {design sizes}. There were good reasons for this.
+
+\startitemize
+
+\startitem
+    The typeset result was supposed to be printed and we were not talking desktop
+    printers here, but printing presses. A book normally came in a ten point
+    design; after all, how many type does a typesetter has available in lead or
+    film.
+\stopitem
+
+\startitem
+    When math is involved there are two levels of script which means that there
+    are seven and five point sizes used too. At these smaller sizes some details of a
+    glyph have to be exaggerated and other bits and pieces have to become more
+    open in order not to become a blob of black ink.
+\stopitem
+
+\startitem
+    A section header or maybe a bit larger chapter title got its own size, often a
+    bit heavier and maybe running somewhat wider.
+\stopitem
+
+\startitem
+    Combined, this kind of usage results in a predictable way of presenting the
+    result to the user. Unless the reader uses a magnifying glass, what you see is
+    what you got.
+\stopitem
+
+\stopitemize
+
+Compare this to todays rendering and presentation. What is a ten point on a
+mobile phone, 1920x1080 14 inch laptop screen, a 27 inch 4K desktop monitor, or
+beamed on the wall presentation with a 3 meter diameter? And let's not bring
+these low res epub devices into the discussion. It is of course also a matter of
+taste but it is not uncommon to hear \TEX ies claim virtues of fonts and the
+rendering with \TEX\ (take expansion) while at the same time observing that they
+ignore aspects of typesetting that would really make their documents look nice.
+
+Where in the good old \TEX\ approach, rooted in traditional typesetting and
+printing, the concept of \quote {design size} made sense, I personally think that
+in today's rendering and usage it has no real meaning. A basic ten point font can
+show up in any size and is not adapted on-the-fly which in turn would demand
+on-the-fly typesetting with definitely a different look and feel due to different
+line breaks, and we don't even consider how scaling (bitmap or vector) images fit
+into such adaptations. It might work in browsers but not on more traditional
+designed and optimized published content.
+
+There is a sort of tradition that a font comes in \quote {normal}, \quote {bold},
+\quote {italic} and \quote {bolditalic} shapes. It can make sense to come up with
+a bit lighter and more heavy variant, but some designers can't make up their mind
+and come with a whole range, so we see \quote {thin}, \quote {demi-bold}, \quote
+{medium} and \quote {medium-bold}, and whatever fits the repertoire. The choice
+of what looks best is delegated to the user. In the past there definitely was a
+commercial aspect to this, after all each set has to be bought, and when it's not
+clear what to use you end up with dozens of fonts, of which most are never used.
+Today the drive probably comes from the possibilities that font design programs
+offer. And when variable fonts showed up we suddenly saw fonts come in many
+weights, again putting the burden of what looks best on users instead of what is
+intended on designers. As a side effect, the distinction between designs becomes
+vague and there is a danger that in the end users no longer really care what font
+they use because they can make it look like any other anyway.
+
+I like to argue that these \quote {new} fonts that come in what some call design
+sizes has little to do with design sizes in the traditional sense. The variants
+more reflect usage, like \quote {display} or \quote {heading}. As mentioned
+above, one can indeed consider them to be designed for (say) larger than default
+sizes, but then the word \quote {size} no longer hold.
+
+Say that in a traditional \TEX\ document one has the running text in ten point. A
+section header can use the twelve point and a chapter heading fourteen (\TEX\ has
+these 14.4pt, 17.3pt sizes). In print they really are like that but but when
+watched on a device the ten point can effectively be a eight point (epub) or
+twenty point (monitor) so there size has become meaningless because the font is
+not seen at the size it was designed for. When we choose a different one (say
+\quote {display}) we do so because of other properties than size. This means that
+instead of \quote {design size} we can better talk of \quote {usage}.
+
+The advantage of talking \quote {usage} is that we don't need to think size. In a
+traditional \TEX\ setup using design sizes you end up with (difficult) choices.
+If the document is in eleven point, do we scale down the twelve point or scale up
+the ten point, assuming that we have ten and twelve point designs optimized for
+the running text. And how about math when we go down to eight point in footnotes,
+do we really use five point script and three point script script or do we go for
+six point and five or maybe four point. Nowadays we can decide to just scale
+relative, and sticking to what was common in the days of lead typesetters with
+fixed sizes is not needed. Maybe a gradual evolution meant that we stuck to
+concepts a bit too much. So in todays \TEX\ setup we can decide to just define a
+basic setup (no design sizes at all) and do that multiple times depending on
+usage: kicking in a different set of shapes for \quote {display} and \quote
+{heading} when available. There is no reason to use a shape meant for display for
+a sixteen point running text because we scale the ten point and then use the
+display font at (say) twenty four point: it is usage and not scale that matters
+here. And an occasional ten point display font used at ten point in a ten point
+running text can have some use, but we make sure to trigger it with the right
+denomination: we mix a \quote {display} design into a \quote {regular} stream at
+the same size.
+
+It is of course also a matter of perception and taste but as with font expansion
+(aka hz) it could be annoying to see two different two's in $2^2$, something at
+10 points might look better at small sizes but worse as larger. In {figures}
+[fig:designsizes:1] \in {and} [fig:designsizes:2] you can see how it looks when
+we scale a design size beyond its intended size. Especially the second stylistic
+variant (meant for script script) can stand out.
+
+\def\SampleOne#1#2{\switchtobodyfont[#1]\scale[scale=#2000]{\im{2^{2^2}}}}
+
+\startbuffer
+\startcombination[6*3]
+    {\SampleOne{lucida} {1}} {}
+    {\SampleOne{lucida} {2}} {}
+    {\SampleOne{lucida} {3}} {}
+    {\SampleOne{lucida} {4}} {}
+    {\SampleOne{lucida} {5}} {}
+    {\SampleOne{lucida} {6}} {}
+    {\SampleOne{pagella}{1}} {}
+    {\SampleOne{pagella}{2}} {}
+    {\SampleOne{pagella}{3}} {}
+    {\SampleOne{pagella}{4}} {}
+    {\SampleOne{pagella}{5}} {}
+    {\SampleOne{pagella}{6}} {}
+    {\SampleOne{modern} {1}} {}
+    {\SampleOne{modern} {2}} {}
+    {\SampleOne{modern} {3}} {}
+    {\SampleOne{modern} {4}} {}
+    {\SampleOne{modern} {5}} {}
+    {\SampleOne{modern} {6}} {}
+\stopcombination
+\stopbuffer
+
+\startplacefigure[title={Design sizes beyond their design size (1).},reference=fig:designsizes:1]
+    \getbuffer
+\stopplacefigure
+
+\def\SampleOne#1#2{\switchtobodyfont[#1]\scale[scale=#2000]{\im{2\char\getmathcharone`2 \char\getmathchartwo`2}}}
+
+\startplacefigure[title={Design sizes beyond their design size (2).},reference=fig:designsizes:2]
+    \getbuffer
+\stopplacefigure
+
+With arbitrary scaling \quote {design size} no longer is a meaningful concept but
+(intended) usage might be; we could just drop the \quote {sizes} and stick to
+\quote {design} or maybe go for \quote {design variants} or simply \quote
+{usage}. So, that is what in \CONTEXT\ we will carry on. That still leaves the
+user the horrible task of figuring out all these weights, because in the worst
+case all the usage sets (3-5) combined with weights (3-8) will give us (9-40)
+setups to come up with and then choose from. Of course we can decide that the
+regular shape is what the designer came up with and that the rest is just
+marketing and bit of technical show-off. And if it's all too much work for a
+user, the regular shapes a good choice anyway. I wonder if readers really care
+that much, especially when they read on devices instead of proper high resolution
+print.
+
+\stopsubsection
+
+\startsubsection[title=A system]
+
+Mainly because, as shown above, \TEX\ shipped with Computer Modern in several
+design sizes the low level font system is designed to deal with that. This means
+that setups for \MKII\ look more complex than those for \MKIV\ and \LMTX,
+although deep down the same mechanism is active.
+
+Most fonts come with normal, bold, italic and bolditalic variants and for such a
+basic set of four, defining a typescript is relatively easy. If we don't need to
+access the specific fonts by name (like \typ {MyFontSerif}) we can just map
+(file)names onto \type {Serif} directly. If the \quote {select font} mechanism is
+used (\typ {\definefontfamily}) one doesn't even make typescripts but that
+assumes that we can reliably resolve fontnames.
+
+So how, in the perspective of the mentioned (usage specific) font variants does
+one set up a system. I will use Iwona as an example because that font comes in
+different variants. For that font we have the following choices:
+
+\startlines
+iwona      iwona-light      iwona-medium      iwona-heavy
+iwona-cond iwona-light-cond iwona-medium-cond iwona-heavy-cond
+\stoplines
+
+\startbuffer[iwona-use]
+\usebodyfont[iwona]
+\usebodyfont[iwona-heavy]
+\usebodyfont[iwona-cond]
+\stopbuffer
+
+Say that we know that we use, we can instruct \CONTEXT\ to preload these so that
+we don't get local definitions and loading when we use one of them grouped, as in
+a section title.
+
+\typebuffer[iwona-use]
+
+These names are a bit too bound to the fontname so we introduce some abstraction:
+
+\startbuffer[iwona-abstract]
+\aliasbodyfont[mainfont] [iwona]
+\aliasbodyfont[titlefont][iwona-heavy]
+\aliasbodyfont[notefont] [iwona-cond]
+\stopbuffer
+
+\typebuffer[iwona-abstract]
+
+\startbuffer[iwona-demo]
+\setupbodyfont[mainfont]
+\setuphead[chapter][style=\switchtobodyfont[titlefont]\tfd]
+\setuphead[section][style=\switchtobodyfont[titlefont]\tfc]
+\setupnotes[bodyfont={notefont,small}]
+
+\starttext
+
+\startchapter[title=Demo]
+\startsection[title=Demo]
+\samplefile {tufte} \footnote{\samplefile{tufte}}
+\stopsection
+\stopchapter
+
+\stoptext
+\stopbuffer
+
+\typebuffer[iwona-demo]
+
+We see the result in \in {figure} [fig:iwona:demo] and when that example is
+processed the log tells that quite some fonts got loaded: 18. The majority is
+traditional math fonts that get assembled into a pseudo \OPENTYPE\ font.
+
+\startplacefigure[default=page,title={An example font setup},reference=fig:iwona:demo]
+    \scale[width=\textwidth]{\typesetbuffer[iwona-use,iwona-abstract,iwona-demo]}
+\stopplacefigure
+
+The log also mentions: {\tt 28 instances, 24 shared in backend, 2 common vectors,
+22 common hashes, load time 0.615 seconds}. When we start the document with:
+
+\starttyping
+\enableexperiments[fonts.compact]
+\stoptyping
+
+We can see that less instances are loaded: {\tt 6 instances, 2 shared in backend,
+2 common vectors, 0 common hashes, load time 0.154 seconds}. We also save half a
+second. All this is because we now enabled scaling on-the-fly.
+
+\stopsubsection
+
+\startsubsection[title=Relations]
+
+There is a lot of history behind the font system. We started out with design
+sizes and features distributed over fonts. So, at the lowest level we had to
+handle for instance small caps and oldstyle via specific definitions. A tenpoint
+definition looked similar to a twelvepoint but with different font names. On top
+of that there were more general (and abstract) definitions as well as size
+specific mappings to larger or smaller variants of the fonts used at that size.
+
+With a single design size a setup is much simpler but it still uses that granular
+low level mechanism. In all of this, typescripts play an important role: they are
+recipes that relate symbolic names to files, and use these symbolic names in
+assemblies of fonts. Eventually a combination of serif, sans, mono and math is
+defined, even if most fonts don't have these four available. In that case we
+combine different designs.
+
+We could come up with a new system and it could even be a bit faster but we also
+need to keep compatibility in mind. It is not trivial to come up with something
+better (read: more \LMTX-ish) that is backward compatible. The default setup for
+a bodyfont is a rather safe one but not always the best for every body font.
+Without complicatign the existing mechanisms too much some extensions in for
+instance the bodyfont environment system were possible, for instance:
+
+% \setupbodyfontenvironment
+%   [metric]
+%   [
+%     small=0.7,
+%     interlinespace=1.4,
+%   ]
+
+\starttyping
+\definebodyfontenvironment[iwona]      [default][metric]
+\definebodyfontenvironment[iwona-heavy][default][metric]
+\definebodyfontenvironment[iwona-cond] [default][metric]
+\stoptyping
+
+where \type {metric} is a predefined setup and \type {default} indicates that all
+unset sizes use that one. You can define your own or adapt the predefined ones.
+
+\starttyping
+\setupbodyfontenvironment
+  [metric]
+  [small=0.7]
+\stoptyping
+
+or
+
+\starttyping
+\setupbodyfontenvironment
+  [metric]
+  [interlinespace=1.4]
+\stoptyping
+
+for a line height relative to the bodyfont size. Although this seldom happens
+you can be even mor granular. Say that you have
+
+\starttyping
+\definetypeface [DejavuA] [rm] [serif] [dejavu] [default]
+\definetypeface [DejavuA] [ss] [sans]  [dejavu] [default]
+\definetypeface [DejavuA] [tt] [mono]  [dejavu] [default]
+\definetypeface [DejavuA] [mm] [math]  [dejavu] [default]
+\stoptyping
+
+We can now make the sans a bit smaller:
+
+\starttyping
+\definebodyfontenvironment
+  [DejavuA] [ss] [default]
+  [text=0.95, ...]
+\stoptyping
+
+and a specific bodyfont size even more:
+
+\starttyping
+\definebodyfontenvironment
+  [DejavuA] [ss] [8pt]
+  [text=0.85, ...]
+\stoptyping
+
+Of course this kind of setups can best be achieved with an isolated, stepwise
+written environment file because testing it on a huge and versatile document
+source is not much fun.
+
+\stopsubsection
+
+% TODO: set tx to be some other bodyfont but with same interlinespace
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

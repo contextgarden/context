@@ -61,7 +61,7 @@
 %D
 %D \typebuffer \getbuffer
 %D
-%D By default a synonym is just typeset and flagges as being used, so that in
+%D By default a synonym is just typeset and flagged as being used, so that in
 %D a list it wil be shows with its meaning. You can however also expand the
 %D meaning automatically at first use:
 %D
@@ -378,7 +378,7 @@
 
 \permanent\protected\def\registercurrentsynonympage % \registercurrentsortingpage
   {\ifcstok{\simplelistparameter\v!page}\v!yes
-     \clf_enhancesynonym\currentsimplelist\currentsortingtag
+     \clf_enhancesynonym\currentsimplelist\currentsynonymtag
    \fi}
 
 \aliased\let\rawsynonymname   \clf_synonymname

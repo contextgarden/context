@@ -45,6 +45,8 @@ int luaopen_optional(lua_State *L) {
 # ifdef LMT_HB_TOO
     luaopen_hb(L);
 # endif
+    /*tex These are for testing. */
+    luaopen_openssl(L);
     /*tex Done. */
     return 0;
 }

@@ -45,7 +45,7 @@ typedef enum callback_callback_types {
     show_build_callback,
     insert_par_callback,
     append_line_filter_callback,
-    build_page_insert_callback,
+    insert_distance_callback,
  /* fire_up_output_callback, */
     wrapup_run_callback,
     begin_paragraph_callback,
@@ -66,6 +66,7 @@ typedef enum callback_callback_types {
     linebreak_quality_callback,
     paragraph_pass_callback,
     handle_uleader_callback,
+    italic_correction_callback,
     total_callbacks,
 } callback_callback_types;
 

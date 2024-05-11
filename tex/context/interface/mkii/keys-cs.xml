@@ -8,6 +8,7 @@
 		<cd:variable name='Addition' value='Pridavek'/>
 		<cd:variable name='Alphabetic' value='Alphabetic'/>
 		<cd:variable name='Balloon' value='Bublinka'/>
+		<cd:variable name='Camel' value='Camel'/>
 		<cd:variable name='Cap' value='Kap'/>
 		<cd:variable name='Capital' value='Kapitalky'/>
 		<cd:variable name='Character' value='Pismeno'/>
@@ -326,6 +327,7 @@
 		<cd:variable name='less' value='less'/>
 		<cd:variable name='lesshyphenation' value='lesshyphenation'/>
 		<cd:variable name='letterspacing' value='letterspacing'/>
+		<cd:variable name='limit' value='limit'/>
 		<cd:variable name='line' value='radek'/>
 		<cd:variable name='linenote' value='linenote'/>
 		<cd:variable name='lines' value='radky'/>
@@ -427,6 +429,8 @@
 		<cd:variable name='outer' value='vnejsi'/>
 		<cd:variable name='outeredge' value='outeredge'/>
 		<cd:variable name='outermargin' value='outermargin'/>
+		<cd:variable name='outline' value='outline'/>
+		<cd:variable name='outlined' value='outlined'/>
 		<cd:variable name='overbar' value='nadtrzeno'/>
 		<cd:variable name='overbars' value='nadtrzeni'/>
 		<cd:variable name='overlay' value='prekryv'/>
@@ -741,6 +745,7 @@
 		<cd:constant name='bottomoffset' value='offsetspodku'/>
 		<cd:constant name='bottomspace' value='bottomspace'/>
 		<cd:constant name='bottomstate' value='statusspodku'/>
+		<cd:constant name='bottomstyle' value='bottomstyle'/>
 		<cd:constant name='break' value='break'/>
 		<cd:constant name='buffer' value='buffer'/>
 		<cd:constant name='cache' value='cache'/>
@@ -998,6 +1003,7 @@
 		<cd:constant name='less' value='less'/>
 		<cd:constant name='level' value='uroven'/>
 		<cd:constant name='levels' value='urovne'/>
+		<cd:constant name='limit' value='limit'/>
 		<cd:constant name='limitstretch' value='limitstretch'/>
 		<cd:constant name='limittext' value='limittext'/>
 		<cd:constant name='line' value='radek'/>
@@ -1362,6 +1368,7 @@
 		<cd:constant name='topoffset' value='offsetvrsku'/>
 		<cd:constant name='topspace' value='svrchnimezera'/>
 		<cd:constant name='topstate' value='statusvrsku'/>
+		<cd:constant name='topstyle' value='topstyle'/>
 		<cd:constant name='totalnumber' value='totalnumber'/>
 		<cd:constant name='transform' value='transform'/>
 		<cd:constant name='translate' value='translate'/>

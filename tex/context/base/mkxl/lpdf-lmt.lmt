@@ -8,7 +8,8 @@ if not modules then modules = { } end modules ['lpdf-lmt'] = {
 }
 
 -- The code below was originally in back-lpd.lua but it makes more sense in this
--- namespace. I will rename variables.
+-- namespace. I will rename variables. Because we run into the 200 locals this file
+-- has to be split.
 
 -- There is no way that a lua based backend can compete performance wise with the
 -- original one for relative simple text runs. And we're talking seconds here on say
@@ -46,8 +47,6 @@ local osuuid                 = os.uuid
 local zlibcompresssize       = xzip.compresssize
 
 local nuts                   = nodes.nuts
-local tonut                  = nodes.tonut
-local tonode                 = nuts.tonode
 
 local pdfreference           = lpdf.reference
 local pdfdictionary          = lpdf.dictionary
@@ -121,19 +120,40 @@ local flushers = { }
 local pdf_h = 0
 local pdf_v = 0
 
-local need_tm, need_tf, need_font, cur_tmrx, cur_factor
-local need_width, need_mode, done_width, done_mode
+local need_tm
+local need_tf
+local need_font
+----- cur_tmrx
+local need_width
+local need_mode
+local done_width
+local done_mode
 local mode
-local f_pdf_cur, f_pdf, fs_cur, fs, f_cur, f_x_scale, f_y_scale
-local tj_delta, cw
-local usedfonts, usedxforms, usedximages, usedxgroups
-local getxformname, getximagename
-local boundingbox, shippingmode, objectnumber
-local tmrx, tmry, tmsx, tmsy, tmtx, tmty
+local current_pdf
+----- f_pdf_cur
+local current_font
+local current_effect
+local current_slant
+local current_weight
+local current_sx
+local current_sy
+local current_factor
+local f_x_scale
+local f_y_scale
+local tj_scale
+local tj_delta
+local tj_position
+----- tmrx, tmry, tmsx, tmsy, tmtx, tmty
+local tmrx, tmry,       tmsy, tmtx, tmty
 ----- cmrx, cmry, cmsx, cmsy, cmtx, cmty
 local cmrx, cmry,             cmtx, cmty
 local tmef
-local c_effect
+local tmef_f_x_scale
+local tmef_f_w_scale
+
+local usedfonts, usedxforms, usedximages, usedxgroups
+local getxformname, getximagename
+local boundingbox, shippingmode, objectnumber
 
 local function usefont(t,k) -- a bit redundant hash
  -- local v = pdfgetfontname(k)
@@ -143,41 +163,47 @@ local function usefont(t,k) -- a bit redundant hash
 end
 
 local function reset_variables(specification)
-    pdf_h, pdf_v  = 0, 0
-    cmrx, cmry    = 1.0, 1.0
- -- cmsx, cmsy    = 0.0, 0.0
-    cmtx, cmty    = 0.0, 0.0
-    tmrx, tmry    = 1.0, 1.0
-    tmsx, tmsy    = 0.0, 0.0
-    tmtx, tmty    = 0.0, 0.0
-    tmef          = 1.0
-    need_tm       = false
-    need_tf       = false
-    need_font     = true
-    need_width    = 0
-    need_mode     = 0
-    done_width    = false
-    done_mode     = false
-    mode          = "page"
-    shippingmode  = specification.shippingmode
-    objectnumber  = specification.objectnumber
-    cur_tmrx      = 0.0
-    f_cur         = 0
-    f_pdf_cur     = 0 -- nullfont
-    f_pdf         = 0 -- nullfont
-    fs_cur        = 0
-    fs            = 0
-    f_x_scale     = 1.0
-    f_y_scale     = 1.0
-    cur_factor    = 0
-    tj_delta      = 0.0
-    cw            = 0.0
-    c_effect      = nil
-    usedfonts     = setmetatableindex(usefont)
-    usedxforms    = { }
-    usedximages   = { }
- -- usedxgroups   = { }
-    boundingbox   = specification.boundingbox
+    pdf_h, pdf_v   = 0, 0
+    cmrx, cmry     = 1.0, 1.0
+ -- cmsx, cmsy     = 0.0, 0.0
+    cmtx, cmty     = 0.0, 0.0
+    tmrx, tmry     = 1.0, 1.0
+ -- tmsx, tmsy     = 0.0, 0.0
+          tmsy     =      0.0 -- sy makes no sense
+    tmtx, tmty     = 0.0, 0.0
+    tmef           = 1.0
+    need_tm        = false
+    need_tf        = false
+    need_font      = true
+    need_width     = 0
+    need_mode      = 0
+    done_width     = false
+    done_mode      = false
+    mode           = "page"
+    shippingmode   = specification.shippingmode
+    objectnumber   = specification.objectnumber
+ -- cur_tmrx       = 0.0
+ -- f_pdf_cur      = 0 -- nullfont
+    tj_scale       = 1
+    tj_delta       = 0.0
+    tj_position    = 0.0
+    current_font   = 0
+    current_pdf    = 0 -- nullfont
+    current_effect = nil
+    current_slant  = 0
+    current_weight = 0
+    current_factor = 0
+    current_sx     = 1
+    current_sy     = 1
+    f_x_scale      = 1.0
+    f_y_scale      = 1.0
+    tmef_f_x_scale = 1
+    tmef_f_w_scale = 1
+    usedfonts      = setmetatableindex(usefont)
+    usedxforms     = { }
+    usedximages    = { }
+ -- usedxgroups    = { }
+    boundingbox    = specification.boundingbox
 end
 
 -- buffer
@@ -191,6 +217,49 @@ end
 
 -- fonts
 
+-- The text in a PDF file ends up in the page stream. Right from the start PDF files
+-- were supposed to be efficient but over time that concept was messed up by for
+-- instance mixed in tagging. One can argue if that was a good idea: just embed the
+-- source and use that as for special purposes instead of trying to turn something
+-- visual into something structure. We have these angle bracket formats for that
+-- already. Anyway, here we assume an uninterupted stream.
+--
+-- A sequence of characters in the same font and with the same scale (and other
+-- rendering properties). When we started with the backend in Lua I just followed
+-- the same approach as in LuaTeX (which was modelled after pdfTeX) but at some
+-- point a (stepwise) transition took place. For instance, we always use a 10bp font
+-- size (instead of the scale in the document) and delegate all scaling to the font
+-- transform matrix. Because the text stream uses a different coordinate system
+-- (font units combined with 1000 based kerning) we need to keep track of where we
+-- are and when we drift too much we need to restart. In the engines this is
+-- complicated by integer math so there drift really plays a role, but in our case
+-- we can now approach it a bit different, although we don't really know the
+-- acceptable thresholds. This code evolved over time, also because we introduced
+-- additional scaling options.
+--
+-- So, in the backend we have to deal with this:
+--
+-- - positioning in target space (page)
+-- - positioning in the stream (text)
+-- - glyph scale (!), glyph xscale (!), glyph yscale
+-- - font scale (!)
+-- - horizontal extend (!)
+-- - vertical squeeze
+-- - slant
+-- - expansion factor (!)
+-- - font effects (mode and width/line)
+-- - temporary glyph effects (extend, squeeze, slant, mode, width/line)
+-- - drift (synchronization and check for threshold)
+--
+-- This means that we have to check if one of these properties has changed and the
+-- horizontal scale is the most demanding one. We also need to mix the check for
+-- font specific changes and glyph specific effects. For now we assume that slanted
+-- font is just a copy but in the future we could just make it a glyph property like
+-- scale, xscale and yscale. An even more advanced approach is to integrate
+-- boldening but then we also need 4 offsets and runtime calculation, while it might
+-- also complicate e.g. extensibles in math. There is much more overhead so it will
+-- also impact performance.
+
 local fontcharacters
 ----- fontdescriptions
 local fontparameters
@@ -199,7 +268,7 @@ local pdfcharacters
 
 local getstreamhash = fonts.handlers.otf.getstreamhash
 
-local usedfontstreams = { }
+local usedfontstreams = utilities.storage.allocate()
 
 local usedindices = setmetatableindex(function(t,k)
     local n = 0
@@ -239,7 +308,6 @@ lpdf.usedindices     = usedindices     -- [streamhash][index] -> realindex (can 
 local horizontalmode = true
 local scalefactor    = 1
 local threshold      = 655360
------ thresfactor    = 100
 local tjfactor       = 100 / 65536
 
 function flushers.updatefontstate(font)
@@ -253,25 +321,19 @@ function flushers.updatefontstate(font)
     pdfcharacters    = usedcharacters[font]
     horizontalmode   = fontparameters.writingmode ~= "vertical"
     scalefactor      = (designsize/size) * tjfactor
-    --
-    local fthreshold = fontproperties.threshold
-    threshold        = (fthreshold and (size * fthreshold / 100)) or 655360
-    -- when we bolden the threshold should be smaller .. a hack .. i need to redo all this
-    if (fontparameters.extendfactor or 1) == 1 then
-        -- we're probably okay
-    elseif fontparameters.hshift or fontparameters.vshift then
-        -- we could be okay
-    else
-        -- some vf magic going on
-        threshold = threshold / 5
-    end
 end
-
--- helpers (maybe in collapse mode we have to go %.9N)
 
 local f_cm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
 local f_cz = formatters["%.6N 0 0 %.6N %.6N %.6N cm"]
-local f_tm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N Tm"]
+----- f_tm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N Tm"]
+local f_tm = formatters["%.6N 0 %.6N %.6N %.6N %.6N Tm"]
+
+directives.register("backend.pdf.accurate", function()
+    f_cm = formatters["%.9N %.9N %.9N %.9N %.9N %.9N cm"]
+    f_cz = formatters["%.9N 0 0 %.9N %.9N %.9N cm"]
+ -- f_tm = formatters["%.9N %.9N %.9N %.9N %.9N %.9N Tm"]
+    f_tm = formatters["%.9N 0 %.9N %.9N %.9N %.9N Tm"]
+end)
 
 local saved_text_pos_v = 0
 local saved_text_pos_h = 0
@@ -280,12 +342,14 @@ local function begin_text()
     saved_text_pos_h = pdf_h
     saved_text_pos_v = pdf_v
     b = b + 1 ; buffer[b] = "BT"
-    need_tf    = true
-    need_font  = true
-    need_width = 0
-    need_mode  = 0
-    c_effect   = nil
-    mode       = "text"
+    need_tf        = true
+    need_font      = true
+    need_width     = 0
+    need_mode      = 0
+    current_effect = nil
+    current_slant  = 0
+    current_weight = 0
+    mode           = "text"
 end
 
 local function end_text()
@@ -313,7 +377,7 @@ local begin_chararray, end_chararray do
     begin_chararray = function()
         saved_chararray_pos_h = pdf_h
         saved_chararray_pos_v = pdf_v
-        cw = horizontalmode and saved_chararray_pos_h or - saved_chararray_pos_v
+        tj_position = horizontalmode and saved_chararray_pos_h or - saved_chararray_pos_v
         tj_delta = 0
         saved_b = b
         b = b + 1 ; buffer[b] = " ["
@@ -353,11 +417,11 @@ local function calc_pdfpos(h,v)
         return h ~= pdf_h or v ~= pdf_v
     elseif horizontalmode then
         tmty = v - saved_text_pos_v
-        tj_delta = cw - h
+        tj_delta = tj_position - h
         return tj_delta ~= 0 or v ~= pdf_v
     else
         tmtx = h - saved_text_pos_h
-        tj_delta = cw + v
+        tj_delta = tj_position + v
         return tj_delta ~= 0 or h ~= pdf_h
     end
 end
@@ -387,13 +451,13 @@ local function pdf_reset_pos()
         end
     elseif horizontalmode then
         tmty = - saved_text_pos_v
-        tj_delta = cw
+        tj_delta = tj_position
         if tj_delta == 0 and pdf_v == 0 then
             return
         end
     else
         tmtx = - saved_text_pos_h
-        tj_delta = cw
+        tj_delta = tj_position
         if tj_delta == 0 and pdf_h == 0 then
             return
         end
@@ -481,6 +545,24 @@ do
     local hshift           = false
     local vshift           = false
 
+    local dupx = 100 / bpfactor -- 6578176.0
+    local dumx = - dupx
+    local dupy = dupx
+    local dumy = dumx
+
+    directives.register("backend.pdf.drift", function(v)
+        dupx = tonumber(v) or 100
+        if dupx < 10 then
+            dupx = 10
+        elseif dupx > 100 then
+            dupx = 100
+        end
+        dupx = dupx / bpfactor
+    end)
+
+    local h_hex_2 = lpdf.h_hex_2
+    local h_hex_4 = lpdf.h_hex_4
+
     -- The width array uses the original dimensions! This is different from e.g.
     -- luatex where we have more widths arrays and these reflect the cheated
     -- widths (goes wrong elsewhere).
@@ -495,11 +577,6 @@ do
             local w
             local e = c and c[char]
             if e then
---                 w = e.width or 0
---                 local a = e.advance
---                 if a then
---                     w = a
---                 end
                 local a = e.advance
                 if a then
                     w = a
@@ -526,79 +603,93 @@ do
         return v
     end)
 
-    -- it's about time to get rid of the pdftex based model but i'll wait with that till after
-    -- the first release so that we have some test period ... when we go compact even less
-
     -- the descriptions are used for the width array
 
-    local collapse = true
+    local extend  = 1 -- some more can move here
+    local squeeze = 1
+    local tohex   = h_hex_4
 
-    experiments.register("backend.pdf.collapsefonts",function(v)
-        collapse = v
-    end)
+    local function setup_fontparameters(font,factor,sx,sy,slant,weight,effect)
+        --
+        current_sx = sx
+        current_sy = sy
+        --
+        if fontproperties.bitmapped then
+            tohex = h_hex_2
+        elseif font < 0 then
+            tohex = h_hex_2
+        else
+            tohex = h_hex_4
+        end
 
-    local function setup_fontparameters(font,factor,sx,sy,effect)
         local format = fontproperties.format
         local expand = 1 + factor / 1000000
-        tmef         = expand
-
-     -- local slant   = fontparameters.slantfactor   or 0
-     -- local squeeze = fontparameters.squeezefactor or 1
-     -- local extend  = fontparameters.extendfactor  or 1
-     -- tmrx          = extend * expand
-     -- tmry          = squeeze
-     -- tmsy          = slant
-     -- need_width    = fontparameters.width or 0
-     -- need_mode     = fontparameters.mode or 0
-
         if effect then
-            if effect ~= c_effect then
-                tmsy       = effect.slant   or fontparameters.slantfactor   or 0
-                tmry       = effect.squeeze or fontparameters.squeezefactor or 1
-                tmrx       = effect.extend  or fontparameters.extendfactor  or 1
-                need_mode  = effect.mode    or fontparameters.mode          or 0
-                need_width = effect.line    or fontparameters.width         or 0 -- scale sensitive!
-                c_effect   = effect
+            -- We have glyph specific effects and these have a higher priority than
+            -- the font specific effects.
+            if effect ~= current_effect then
+                current_effect   = effect
+                tmrx             = 1
+                tmry             = 1
+                tmsy             = effect.slant   or fontparameters.slantfactor   or slant or 0
+                extend           = effect.extend  or fontparameters.extendfactor  or 1
+                squeeze          = effect.squeeze or fontparameters.squeezefactor or 1
+                need_mode        = effect.mode    or fontparameters.mode          or 0
+                need_width       = effect.weight  or fontparameters.weight        or 0
+                sx               = extend  * sx
+                sy               = squeeze * sy
             else
              -- we could check if effects have changed but effects use unique tables; for
              -- now they win over font effects (only used in math)
             end
         else
-            tmsy       = fontparameters.slantfactor   or 0
-            tmry       = fontparameters.squeezefactor or 1
-            tmrx       = fontparameters.extendfactor  or 1
-            need_mode  = fontparameters.mode          or 0
-            need_width = fontparameters.width         or 0
-            c_effect   = nil
+            -- These are the font specific effects and the scales are part of the main
+            -- font setup, so we use the factors and not the properties.effect data.
+            current_effect = nil
+            tmrx           = 1
+            tmry           = 1
+            --
+            local e = fontproperties.effect
+            if e then
+                tmsy       = e.slant   or slant or 0
+                extend     = e.extend  or 1
+                squeeze    = e.squeeze or 1
+                need_mode  = e.mode    or 0
+                need_width = e.weight  or 0
+                sx         = extend  * sx
+                sy         = squeeze * sy
+            else
+                tmsy       = slant or 0
+                extend     = 1
+                squeeze    = 1
+                need_mode  = 0
+                need_width = weight
+            end
         end
 
-        tmrx       = expand * tmrx
+        tmef = expand
+        tmrx = expand * tmrx
 
-        f_cur      = font
-        f_pdf      = usedfonts[font] -- cache
-        cur_factor = factor
-        tj_delta   = 0
-        cw         = 0
-        --
-        fs = fontparameters.size * bpfactor
-        if collapse then
-            local sc = fs / 10
-            -- kind of special:
-            if format == "opentype" or format == "type1" then
-                sc = sc * 1000 / fontparameters.units -- can we avoid this ?
-            end
-            --
-            fs = 10
-            --
-            tmsy = tmsy * sc
-            tmrx = tmrx * sc
-            tmry = tmry * sc
+        current_font   = font
+        current_pdf    = usedfonts[font] -- cache
+        current_factor = factor
+        current_slant  = tmsy
+        current_weight = weight
+
+        local sc = fontparameters.size * bpfactor / 10
+        -- kind of special:
+        if format == "opentype" or format == "type1" then
+            sc = sc * 1000 / fontparameters.units
+            tj_scale = fontparameters.units / 1000
         else
-            -- kind of special:
-            if format == "opentype" or format == "type1" then
-                fs = fs * 1000 / fontparameters.units -- can we avoid this ?
-            end
+            tj_scale = 1
         end
+        tj_delta    = 0
+        tj_position = 0
+        --
+        tmsy = tmsy * sc
+        tmrx = tmrx * sc
+        tmry = tmry * sc
         --
         f_x_scale = sx
         if f_x_scale ~= 1.0 then
@@ -610,23 +701,48 @@ do
             tmry = tmry * f_y_scale
         end
         --
+        tmef_f_x_scale = tmef * f_x_scale
+        --
+        if tmef_f_x_scale == 1.0 then
+            tmef_f_x_scale = 1
+        end
+        --
+        tj_scale = tj_scale * scalefactor / tmef_f_x_scale
+        --
+        tmef_f_w_scale = tmef_f_x_scale / extend
+        --
         characterwidth   = characterwidths[font]
      -- descriptionwidth = descriptionwidths[font]
         --
         hshift = fontparameters.hshift
         vshift = fontparameters.vshift
+
+        if need_width > 0 then
+            if not need_mode or need_mode == 0 then
+                need_mode = 2
+            end
+            need_width = need_width * 2
+need_width = need_width * tmrx
+-- if hshift then
+--     hshift = hshift  * tmrx
+-- end
+        end
+
+        if current_weight > 0 then
+--             hshift  = (hshift or 0) + current_weight
+        end
+
     end
 
     local f_width = formatters["%.6N w"]
     local f_mode  = formatters["%i Tr"]        -- can be hash
-    local f_font  = formatters["/F%i %.6N Tf"] -- can be hash
+    local f_font  = formatters["/F%i 10 Tf"]
 
     local s_width = "0 w"
     local s_mode  = "0 Tr"
 
-    local width_factor = 72.27 / 72000.0
+    local width_factor = 72.27 / 72.0
 
-    local last_fs
     local last_fpdf
 
     local function set_font()
@@ -647,52 +763,27 @@ do
             done_mode = false
         end
         -- no need when the same
-        if need_font or last_fs ~= fs or last_pdf ~= f_pdf then
-            b = b + 1 ; buffer[b] = f_font(f_pdf,fs)
-            last_fs   = fs
-            last_pdf  = f_pdf
+        if need_font or last_pdf ~= current_pdf then
+            b = b + 1 ; buffer[b] = f_font(current_pdf)
+            last_pdf  = current_pdf
             need_font = false
         end
-        f_pdf_cur = f_pdf
-        fs_cur    = fs
-        need_tf   = false
-        need_tm   = true
+     -- f_pdf_cur = current_pdf
+        need_tf = false
+        need_tm = true
     end
 
     local function set_textmatrix(h,v)
        local move = calc_pdfpos(h,v)
        if need_tm or move then
-            b = b + 1 ; buffer[b] = f_tm(tmrx, tmsx, tmsy, tmry, tmtx*bpfactor, tmty*bpfactor)
+         -- b = b + 1 ; buffer[b] = f_tm(tmrx, tmsx, tmsy, tmry, tmtx*bpfactor, tmty*bpfactor)
+            b = b + 1 ; buffer[b] = f_tm(tmrx,       tmsy, tmry, tmtx*bpfactor, tmty*bpfactor)
             pdf_h = saved_text_pos_h + tmtx
             pdf_v = saved_text_pos_v + tmty
             need_tm = false
         end
-        cur_tmrx = tmrx
+     -- cur_tmrx = tmrx
     end
-
-    local f_hex_4 = formatters["%04X"]
-    local f_hex_2 = formatters["%02X"]
-
-    local h_hex_4 = setmetatableindex(function(t,k) -- we already have this somewhere
-        if k < 256 then -- maybe 512
-            -- not sparse in this range
-            for i=0,255 do
-                t[i] = f_hex_4(i)
-            end
-            return t[k]
-        else
-            local v = f_hex_4(k)
-            t[k] = v
-            return v
-        end
-    end)
-    local h_hex_2 = setmetatableindex(function(t,k) -- we already have this somewhere
-        local v = k < 256 and f_hex_2(k) or "00"
-        t[k] = v
-        return v
-    end)
-
-    local trace_threshold = false  trackers.register("backends.pdf.threshold", function(v) trace_threshold = v end)
 
     ----- f_skip = formatters["%.2N"]
 
@@ -702,11 +793,13 @@ do
 
     -- factor is for hz
 
-    flushers.character = function(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy) -- ,naturalwidth,width)
+    flushers.character = function(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy,slant,weight) -- ,naturalwidth,width)
 
         local s = data.scale
         local x = data.xoffset
         local y = data.yoffset
+        local effect = data.effect
+
         if s then
             sx = s * sx
             sy = s * sy
@@ -719,27 +812,32 @@ do
             sy = sy * csy
             csy = 1
         end
-
-        local effect = data.effect
-
-     -- if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur then
-        if sx ~= f_x_scale or sy ~= f_y_scale or need_tf or font ~= f_cur or f_pdf ~= f_pdf_cur or fs ~= fs_cur
+        if     sx ~= current_sx -- was: f_x_scale
+            or sy ~= current_sy -- was: f_x_scale
+            or need_tf
+            or font ~= current_font
+         -- or current_pdf ~= f_pdf_cur
             or mode == "page"
-            or effect ~= c_effect
+            or slant  ~= current_slant
+            or weight ~= current_weight
+            or effect ~= current_effect
         then
             pdf_goto_textmode()
-            setup_fontparameters(font,factor,sx,sy,effect) -- too often due to page
+            setup_fontparameters(font,factor,sx,sy,slant,weight,effect) -- too often due to page
             set_font()
      -- elseif mode == "page" then
      --     pdf_goto_textmode()
      --     set_font()
-        elseif cur_tmrx ~= tmrx or cur_factor ~= factor then
-            setup_fontparameters(font,factor,sx,sy,effect)
+        elseif current_factor ~= factor
+         -- or cur_tmrx ~= tmrx
+        then
+            -- check if this happens and when
+            setup_fontparameters(font,factor,sx,sy,slant,weight,effect)
             need_tm = true
         end
 
         if x then
-            pos_h = pos_h + x * tmef * f_x_scale
+            pos_h = pos_h + x * tmef_f_x_scale
         end
         if y then
             pos_v = pos_v + y * f_y_scale
@@ -747,30 +845,22 @@ do
 
         local move = calc_pdfpos(pos_h,pos_v)
 
-        if trace_threshold then
-            report_fonts(
-                "before: font %i, char %C, factor %i, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
-                font,char,factor,characterwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
-            )
-        end
-
         if move or need_tm then
             if not need_tm then
                 if horizontalmode then
                     if (saved_text_pos_v + tmty) ~= pdf_v then
                         need_tm = true
-                    elseif tj_delta >= threshold or tj_delta <= -threshold then
+                    elseif tj_delta >= dupx or tj_delta <= dumx then
                         need_tm = true
                     end
                 else
                     if (saved_text_pos_h + tmtx) ~= pdf_h then
                         need_tm = true
-                    elseif tj_delta >= threshold or tj_delta <= -threshold then
+                    elseif tj_delta >= dupy or tj_delta <= dumy then
                         need_tm = true
                     end
                 end
             end
-
             if hshift then pos_h = pos_h + hshift end
             if vshift then pos_v = pos_v - vshift end
             if need_tm then
@@ -780,40 +870,78 @@ do
                 move = calc_pdfpos(pos_h,pos_v)
             end
             if move then
-                local d = tj_delta * scalefactor / (tmef * f_x_scale)
+                local d = tj_delta * tj_scale
                 if d <= -0.5 or d >= 0.5 then
                     if mode == "char" then
                         end_charmode()
                     end
                     b = b + 1 ; buffer[b] = round(d) -- or f_skip(d)
+-- print(d,buffer[b])
                 end
-                cw = cw - tj_delta
+                tj_position = tj_position - tj_delta
+             -- tj_position = tj_position - tj_delta * tmef_f_x_scale
             end
-        end
-
-        if trace_threshold then
-            report_fonts(
-                 "after : font %i, char %C, factor %i, naturalwidth %p, move %l, tm %l, hpos %p, delta %p, threshold %p, cw %p",
-                 font,char,factor,characterwidth[char],move,need_tm,pos_h,tj_delta,threshold,cw
-             )
         end
 
         if mode == "chararray" then
             begin_charmode()
         end
 
-        cw = cw + characterwidth[char] * tmef * f_x_scale
+        -- When we have say 100 x without spaces we do accumulate some error but in practice
+        -- we have spaces so we sync. This is the same as in pdftex and luatex.
+
+        tj_position = tj_position + characterwidth[char] * tmef_f_w_scale
 
         local slot = pdfcharacters[data.index or char] -- registers usage
 
-        b = b + 1 ; buffer[b] = font > 0 and h_hex_4[slot] or h_hex_2[slot]
+--         b = b + 1 ; buffer[b] = font > 0 and h_hex_4[slot] or h_hex_2[slot]
+        b = b + 1 ; buffer[b] = tohex[slot]
+
+    end
+
+    do
+
+        -- We like a little bit of optimization, just for the fun of it.
+
+        local spaces = setmetatableindex(function(t,font)
+            local bytes = false
+            local data  = characters[font]
+            if data then
+                data = data[32]
+                if data then
+                    local index = data.index
+                    if index then
+                        local dummy = usedfonts[font]
+                        local slot  = usedcharacters[font][index]
+                        if slot then
+--                             bytes = font > 0 and h_hex_4[slot] or h_hex_2[slot]
+                            bytes = tohex[slot]
+                        end
+                    end
+                end
+            end
+            t[font] = bytes
+            return bytes
+        end)
+
+        -- We have to be in the current font stream.
+
+        flushers.space = function(font)
+            if mode == "char" and font == current_font then
+                local slot = spaces[font]
+                if slot then
+                    tj_position = tj_position + characterwidth[32] * tmef_f_w_scale
+                    b = b + 1 ; buffer[b] = slot
+                end
+            end
+        end
 
     end
 
     flushers.fontchar = function(font,char,data)
         local dummy = usedfonts[font]
         local slot  = pdfcharacters[data.index or char] -- registers usage
-        return dummy
+        return dummy, slot
     end
 
 end
@@ -1101,6 +1229,9 @@ local flushedxforms  = { } -- actually box resources but can also be direct
 local localconverter = nil -- will be set
 
 local flushimage  do
+
+    local tonut             = nodes.tonut
+    local tonode            = nuts.tonode
 
     local pdfbackend        = backends.registered.pdf
     local nodeinjections    = pdfbackend.nodeinjections
@@ -2100,7 +2231,7 @@ do
     local oldsize = 0
     local newsize = 0
 
-    directives.register("pdf.compact", function(v)
+    directives.register("backend.pdf.compact", function(v)
         compact = v and function(s)
             oldsize = oldsize + #s
             s = lpegmatch(pattern,s) or s
@@ -2173,7 +2304,6 @@ local finalize  do
         if next(usedfonts) then
             fonts = pdfdictionary { }
             for k, v in next, usedfonts do
---                 fonts[f_font(v)] = pdfreference(pdfgetfontobjectnumber(k)) -- we can overload for testing
                 fonts[f_font(v)] = pdfreference(usedfontobjects[k]) -- we can overload for testing
             end
         end
@@ -2353,21 +2483,12 @@ local nofobjects    = 0
 local offset        = 0
 local f             = false
 local flush         = false
-local threshold     = 40 -- also #("/Filter /FlateDecode") (compression threshold)
 local objectstream  = true
 local compress      = true
 local cache         = false
 local info          = ""
 local catalog       = ""
 local lastdeferred  = false
-
-directives.register("backend.pdf.threshold",function(v)
-    if v then
-        threshold = tonumber(v) or 40
-    else
-        threshold = -1000
-    end
-end)
 
 local f_object       = formatters["%i 0 obj\010%s\010endobj\010"]
 local f_stream_n_u   = formatters["%i 0 obj\010<< /Length %i >>\010stream\010%s\010endstream\010endobj\010"]
@@ -2722,103 +2843,140 @@ local function flushnormalobj(data,n)
     return n
 end
 
-local function flushstreamobj(data,n,dict,comp,nolength)
-    if not data then
-        report("no data for %S",dict)
-        return
+local flushstreamobj, streamstatus do
+
+    local uncompressed  = 0
+    local compressed    = 0
+    local notcompressed = 0
+
+    local threshold     = 40 -- also #("/Filter /FlateDecode") (compression threshold)
+
+    -- directives.register("backend.pdf.threshold",function(v)
+    --     if v then
+    --         threshold = tonumber(v) or 40
+    --     else
+    --         threshold = -1000
+    --     end
+    -- end)
+
+    streamstatus = function()
+        return {
+            nofstreams          = uncompressed + compressed + notcompressed,
+            uncompressed        = uncompressed,
+            compressed          = compressed,
+            notcompressed       = notcompressed,
+            threshold           = threshold,
+            compresslevel       = lpdf.compresslevel(),
+            objectcompresslevel = lpdf.objectcompresslevel(),
+
+        }
     end
-    if not n then
-        nofobjects = nofobjects + 1
-        n = nofobjects
-    end
-    local size = #data
-    if comp ~= false then
-        comp = compress and size > threshold
-    end
-    if encryptobject then
-        dict = encryptobject(dict)
-    end
-    if level == 0 then
-        local b = nil
-        local e = s_stream_e
-        if nolength then
-            -- probleem: we need to adapt length!
-            b = f_stream_b_d_r(n,dict) -- raw object, already treated
-            if encryptstream then
-                print("check length")
-                data = encryptstream(data)
-                size = #data
-            end
-       else
-            if comp then
-                local compdata = compressdata(data,size)
-                if compdata then
-                    local compsize = #compdata
-                    if compsize <= size - threshold then
-                        data = compdata
-                        size = compsize
+
+    flushstreamobj = function(data,n,dict,comp,nolength)
+        if not data then
+            report("no data for %S",dict)
+            return
+        end
+        if not n then
+            nofobjects = nofobjects + 1
+            n = nofobjects
+        end
+        local size = #data
+        if comp ~= false then
+            comp = compress and size > threshold
+        end
+        if encryptobject then
+            dict = encryptobject(dict)
+        end
+        if level == 0 then
+            local b = nil
+            local e = s_stream_e
+            if nolength then
+                -- probleem: we need to adapt length!
+                b = f_stream_b_d_r(n,dict) -- raw object, already treated
+                if encryptstream then
+                    print("check length")
+                    data = encryptstream(data)
+                    size = #data
+                end
+                uncompressed = uncompressed + 1
+            else
+                if comp then
+                    local compdata = compressdata(data,size)
+                    if compdata then
+                        local compsize = #compdata
+                        if compsize <= size - threshold then
+                            data = compdata
+                            size = compsize
+                        else
+                            comp = false
+                        end
                     else
                         comp = false
                     end
+                end
+                if encryptstream then
+                    data = encryptstream(data)
+                    size = #data
+                end
+                if comp then
+                    b = dict and f_stream_b_d_c(n,dict,size) or f_stream_b_n_c(n,size)
+                    compressed = compressed + 1
                 else
-                    comp = false
+                    b = dict and f_stream_b_d_u(n,dict,size) or f_stream_b_n_u(n,size)
+                    notcompressed = notcompressed + 1
                 end
             end
-            if encryptstream then
-                data = encryptstream(data)
-                size = #data
-            end
-            if comp then
-                b = dict and f_stream_b_d_c(n,dict,size) or f_stream_b_n_c(n,size)
-            else
-                b = dict and f_stream_b_d_u(n,dict,size) or f_stream_b_n_u(n,size)
-            end
-        end
-        flush(f,b)
-        flush(f,data)
-        flush(f,e)
-        objects[n] = offset
-        offset = offset + #b + size + #e
-    else
-        if nolength then
-            if encryptstream then
-                print("check length")
-                data = encryptstream(data)
-            end
-            data = f_stream_d_r(n,dict,data) -- raw object, already treated
+            flush(f,b)
+            flush(f,data)
+            flush(f,e)
+            objects[n] = offset
+            offset = offset + #b + size + #e
         else
-            if comp then
-                local compdata = compressdata(data,size)
-                if compdata then
-                    local compsize = #compdata
-                    if compsize <= size - threshold then
-                        data = compdata
-                        size = compsize
+            if nolength then
+                if encryptstream then
+                    print("check length")
+                    data = encryptstream(data)
+                end
+                data = f_stream_d_r(n,dict,data) -- raw object, already treated
+                uncompressed = uncompressed + 1
+            else
+                if comp then
+                    local compdata = compressdata(data,size)
+                    if compdata then
+                        local compsize = #compdata
+                        if compsize <= size - threshold then
+                            data = compdata
+                            size = compsize
+                        else
+                            comp = false
+                        end
                     else
                         comp = false
                     end
+                end
+                if encryptstream then
+                    data = encryptstream(data)
+                    size = #data
+                end
+                if comp then
+                    data = dict and f_stream_d_c(n,dict,size,data) or f_stream_n_c(n,size,data)
+                    compressed = compressed + 1
                 else
-                    comp = false
+                    data = dict and f_stream_d_u(n,dict,size,data) or f_stream_n_u(n,size,data)
+                    notcompressed = notcompressed + 1
                 end
             end
-            if encryptstream then
-                data = encryptstream(data)
-                size = #data
+            if not lastdeferred then
+                lastdeferred = n
+            elseif n < lastdeferred then
+                lastdeferred = n
             end
-            if comp then
-                data = dict and f_stream_d_c(n,dict,size,data) or f_stream_n_c(n,size,data)
-            else
-                data = dict and f_stream_d_u(n,dict,size,data) or f_stream_n_u(n,size,data)
-            end
+            objects[n] = data
         end
-        if not lastdeferred then
-            lastdeferred = n
-        elseif n < lastdeferred then
-            lastdeferred = n
-        end
-        objects[n] = data
+        return n
     end
-    return n
+
 end
 
 flushdeferred = function() -- was forward defined
@@ -2936,6 +3094,8 @@ local openfile, closefile  do
     local inmemory = false
     local close    = false
     local update   = false
+    local usedname = false
+    local usedsize = false
 
     directives.enable("backend.pdf.inmemory", function(v) inmemory = true end)
 
@@ -2962,6 +3122,7 @@ local openfile, closefile  do
             end
             close = function(f)
                 f = concat(f)
+                usedsize = #f
                 io.savedata(filename,f)
                 f = false
             end
@@ -3000,6 +3161,7 @@ local openfile, closefile  do
         flush(f,version)
         flush(f,banner)
         offset = offset + #version + #banner
+        usedname = filename
     end
 
     closefile = function(abort)
@@ -3035,10 +3197,12 @@ local openfile, closefile  do
             --
             local info       = lpdf.getinfo()
             local trailerid  = lpdf.gettrailerid()
-
+            --
             if objectstream then
                 flushdeferred()
                 flushcache()
+                --
+                offset = lpdf.preparesignature and lpdf.preparesignature(flush,f,offset,objects) or offset
                 --
                 xrefoffset = offset
                 --
@@ -3203,6 +3367,8 @@ local openfile, closefile  do
             else
                 flushdeferred()
                 --
+                offset = lpdf.preparesignature and lpdf.preparesignature(flush,f,offset,objects) or offset
+                --
              -- if encryptstream then
              --     -- unencrypted !
              --     local eo = encryptobject
@@ -3241,8 +3407,11 @@ local openfile, closefile  do
                     flush(f,f_trailer_no(trailer(),xrefoffset))
                 end
             end
-            update(f,f_pdf_tag(majorversion,minorversion))
+            update(f,f_pdf_tag(majorversion,minorversion)) -- check this
+            usedsize = f:seek("end")
             close(f)
+            io.flush()
+            if lpdf.finalizesignature then lpdf.finalizesignature(usedname,usedsize) end
         end
         io.flush()
         closefile = function() end
@@ -3266,6 +3435,7 @@ do
     local imagetypes     = images.types -- pdf png jpg jp2 jbig2 stream
     local img_none       = imagetypes.none
 
+    local tonode         = nuts.tonode
     local newimagerule   = nuts.pool.imagerule
     local setattrlist    = nuts.setattrlist
     local setprop        = nuts.setprop
@@ -3453,9 +3623,20 @@ do
             lpdf.registerdocumentfinalizer(wrapupdocument,nil,"wrapping up")
             --
             statistics.register("result saved in file", function()
+                local status = streamstatus()
                 local outputfilename = environment.outputfilename or environment.jobname or tex.jobname or "<unset>"
                 outputfilename = string.gsub(outputfilename,"^%./+","") -- todo: make/use a helper
-                return string.format("%s.%s, compresslevel %s, objectcompresslevel %s",outputfilename,"pdf",lpdf.getcompression())
+                return string.format(
+                    "%s.pdf, compresslevel %s, objectcompresslevel %s, %i streams, %i uncompressed, %i compressed, %i not compressed, threshold %i",
+                    outputfilename,
+                    status.compresslevel,
+                    status.objectcompresslevel,
+                    status.nofstreams or 0,
+                    status.uncompressed or 0,
+                    status.compressed or 0,
+                    status.notcompressed or 0,
+                    status.threshold or 0
+                )
             end)
             --
             luatex.registerstopactions(function()

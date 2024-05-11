@@ -9,11 +9,16 @@ return {
     copyright = "ConTeXt development team",
     mathematics = {
         parameters = {
-            DelimiterPercent     =   90,
-            DelimiterShortfall   =  400,
-            PrimeShiftUp         = "1.2*SuperscriptShiftUp",
-            PrimeShiftUpCramped  = "1.2*SuperscriptShiftUp",
-            PrimeBaselineDropMax = "0.5*SuperscriptBaselineDropMax",
+            DelimiterPercent               =  85,
+            DelimiterShortfall             = 400,
+            DelimiterDisplayPercent        =  90,
+            DelimiterDisplayShortfall      = 400,
+            DelimiterPercent               =  90,
+            DelimiterShortfall             = 400,
+            PrimeShiftUp                   = "1.2*SuperscriptShiftUp",
+            PrimeShiftUpCramped            = "1.2*SuperscriptShiftUp",
+            PrimeBaselineDropMax           = "0.5*SuperscriptBaselineDropMax",
+            RadicalDisplayStyleVerticalGap = "RadicalVerticalGap", --152, 75
         },
         tweaks = {
             aftercopying = {

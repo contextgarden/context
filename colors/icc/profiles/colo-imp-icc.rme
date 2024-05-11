@@ -1,0 +1,3 @@
+The icc files are renamed into the "colo-imp-" namespace in order not to clash
+with names that (can) show up in tex live installations. One can use the short
+names because we check for the long ones when we load them.

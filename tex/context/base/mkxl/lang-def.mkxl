@@ -720,7 +720,7 @@
    \c!rightquote=\rightguillemot,
    \c!leftquotation=\leftguillemot,
    \c!rightquotation=\rightguillemot,
-   \c!time={h,{\Uchar104 },m},% we need to cheat in order to get the h
+   \c!time={h,{\tocharacter104 },m},% we need to cheat in order to get the h
    \c!date={\v!day:mnem,\v!space,\v!month,\v!space,\v!year}]
 
 \installlanguage

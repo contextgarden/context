@@ -8,6 +8,7 @@
 		<cd:variable name='Addition' value='Addition'/>
 		<cd:variable name='Alphabetic' value='Alphabetic'/>
 		<cd:variable name='Balloon' value='Balloon'/>
+		<cd:variable name='Camel' value='Camel'/>
 		<cd:variable name='Cap' value='Cap'/>
 		<cd:variable name='Capital' value='Capital'/>
 		<cd:variable name='Character' value='Character'/>
@@ -741,6 +742,7 @@
 		<cd:constant name='bottomoffset' value='bottomoffset'/>
 		<cd:constant name='bottomspace' value='bottomspace'/>
 		<cd:constant name='bottomstate' value='bottomstate'/>
+		<cd:constant name='bottomstyle' value='bottomstyle'/>
 		<cd:constant name='break' value='break'/>
 		<cd:constant name='buffer' value='buffer'/>
 		<cd:constant name='cache' value='cache'/>
@@ -1362,6 +1364,7 @@
 		<cd:constant name='topoffset' value='topoffset'/>
 		<cd:constant name='topspace' value='topspace'/>
 		<cd:constant name='topstate' value='topstate'/>
+		<cd:constant name='topstyle' value='topstyle'/>
 		<cd:constant name='totalnumber' value='totalnumber'/>
 		<cd:constant name='transform' value='transform'/>
 		<cd:constant name='translate' value='translate'/>

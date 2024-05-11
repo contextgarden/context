@@ -9,6 +9,8 @@ if not modules then modules = { } end modules ['mlib-ptr'] = {
 
 -- This is experimental.
 
+-- too: use string.packrowsandcolumns
+
 local formatters, gsub, sub = string.formatters, string.gsub, string.sub
 local concat, setmetatableindex = table.concat, table.setmetatableindex
 local byte, gsub = string.byte, string.gsub
@@ -49,12 +51,13 @@ local potracefromfile do -- this will move to another module
         return (gsub(content,".",thresholds))
     end
 
-    potracefrompng = function(filename,threshold)
+    potracefrompng = function(filename,parameters)
 
         if not filename then
             return false
         end
 
+        local threshold     = parameters.criterium
         local specification = figures.getinfo(filename)
 
         specification = specification and specification.status and specification.status.private
@@ -158,7 +161,7 @@ local potracestripped, potracecount do
 
 end
 
-local potraceflush do
+local potraceflush, potracechecked, potraceconvert do
 
     local potracenew     = potrace.new
     local potracefree    = potrace.free
@@ -179,9 +182,9 @@ local potraceflush do
     ----- setparameter    = metapost.setparameter
     local mpprint         = mp.print
 
-    local f_1 = formatters["(%N,%N)"]
-    local f_2 = formatters["--(%N,%N)"]
-    local f_3 = formatters["..controls(%N,%N)and(%N,%N)..(%N,%N)"]
+    local f_moveto  = formatters["(%N,%N)"]
+    local f_lineto  = formatters["--(%N,%N)"]
+    local f_curveto = formatters["..controls(%N,%N)and(%N,%N)..(%N,%N)"]
 
     potraceflush = function(t,alternative,polygon)
         local result, r, add
@@ -195,23 +198,23 @@ local potraceflush do
             if polygon then
                 add = function(before,ti,after)
                     r = r + 1 ; result[r] = before
-                    r = r + 1 ; result[r] = f_1(ti[1],ti[2])
+                    r = r + 1 ; result[r] = f_moveto(ti[1],ti[2])
                     for i=3,#ti,2 do
-                        r = r + 1 ; result[r] = f_2(ti[i],ti[i+1])
+                        r = r + 1 ; result[r] = f_lineto(ti[i],ti[i+1])
                     end
                     r = r + 1 ; result[r] = after
                 end
             else
                 add = function(before,ti,after)
                     r = r + 1 ; result[r] = before
-                    r = r + 1 ; result[r] = f_1(ti[1][1],ti[1][2])
+                    r = r + 1 ; result[r] = f_moveto(ti[1][1],ti[1][2])
                     for i=2,#ti do
                         local ti = ti[i]
                         local ni = #ti
                         if ni == 2 then
-                            r = r + 1 ; result[r] = f_2(ti[1],ti[2])
+                            r = r + 1 ; result[r] = f_lineto(ti[1],ti[2])
                         elseif ni == 6 then
-                            r = r + 1 ; result[r] = f_3(ti[3],ti[4],ti[5],ti[6],ti[1],ti[2])
+                            r = r + 1 ; result[r] = f_curveto(ti[3],ti[4],ti[5],ti[6],ti[1],ti[2])
                         end
                     end
                     r = r + 1 ; result[r] = after
@@ -247,7 +250,7 @@ local potraceflush do
         mpprint(result)
     end
 
-    local function checked(b,width,height)
+    potracechecked = function(b,width,height)
         if b and type(b) == "string" and b ~= "" then
             local bytes = potracestripped(b)
             if not width or width == 0 then
@@ -261,6 +264,20 @@ local potraceflush do
             return bytes, width, height
         else
             return false, width, height
+        end
+    end
+
+    potraceconvert = function(bytes,settings,w,h)
+        if not w or not h then
+            bytes, w, h = potracechecked(bytes)
+        end
+        local s = { bytes = bytes, width = w, height = h }
+        local p = potracenew(setmetatableindex(s,settings or { }))
+        if p then
+            potraceprocess(p, { value = "1" })
+            local t = potracetotable(p)
+            potracefree(p)
+            return t
         end
     end
 
@@ -293,16 +310,42 @@ local potraceflush do
     local filesuffix = file.suffix
     local getbuffer  = buffers.getcontent
 
-    local function potracefromtxt(filename,threshold)
+    local function potracefromtxt(filename,parameters)
         local bytes = loaddata(filename)
         if bytes and bytes ~= 0 then
-            return checked(bytes,0,0)
+            return potracechecked(bytes,0,0)
+        end
+    end
+
+    -- cache ?
+
+    local function potracefrompk(filename,parameters)
+        local index = parameters.index
+        if type(index) == "number" and filename and filename ~= "" then
+            filename = file.removesuffix(filename)
+            local r = math.tointeger(parameters.resolution or 7200) -- get rid of 7200.0
+            local f = fonts.handlers.tfm.readers.loadpk(resolvers.findpk(filename,r) or "")
+            if f then
+                local g = f.glyphs[index]
+                if g then
+                    local xsize = g.xsize
+                    local ysize = g.ysize
+                    parameters.xsize   = xsize
+                    parameters.ysize   = ysize
+                    parameters.xoffset = g.xoffset
+                    parameters.yoffset = g.yoffset
+--                     local b = fonts.handlers.tfm.readers.showpk(g,xsize,ysize) or ""
+--                     return potracechecked(b,0,0)
+                    return fonts.handlers.tfm.readers.showpk(g,xsize,ysize,true)
+                end
+            end
         end
     end
 
     local filehandles = {
         png = potracefrompng,
         txt = potracefromtxt,
+        pk  = potracefrompk,
     }
 
     local function potracefromfile(parameters)
@@ -310,7 +353,7 @@ local potraceflush do
         if filename and filename ~= "" then
             local handle = filehandles[filesuffix(filename)]
             if handle then
-                return handle(filename,parameters.criterium)
+                return handle(filename,parameters)
             end
         end
     end
@@ -320,7 +363,7 @@ local potraceflush do
         if buffer and buffer ~= "" then
             local bytes = getbuffer(buffer)
             if bytes and bytes ~= "" then
-                return checked(bytes,width,height)
+                return potracechecked(bytes,width,height)
             end
         end
     end
@@ -330,7 +373,7 @@ local potraceflush do
         if name and name ~= "" then
             local bytes = potracegetbitmap(name)
             if bytes and #bytes ~= "" then
-                return checked(bytes,width,height)
+                return potracechecked(bytes,width,height)
             end
         end
     end
@@ -341,8 +384,8 @@ local potraceflush do
         local parameters = getparameterset("potraced")
         width  = parameters.width or 0
         height = parameters.height or 0
-        nx     = parameters.nx or 1
-        ny     = parameters.ny or 1
+        nx     = (parameters.nx or 1 // 1)
+        ny     = (parameters.ny or 1 // 1)
         if parameters.explode then
             nx = 3
             ny = 3
@@ -366,13 +409,13 @@ local potraceflush do
             end
         end
         if not bytes then
-            local b, w, h = checked(parameters.bytes,width,height)
+            local b, w, h = potracechecked(parameters.bytes,width,height)
             if b then
                 bytes, width, height = b, w, h
             end
         end
         if not bytes then
-            bytes, width, height = checked("010 111 010",width,height)
+            bytes, width, height = potracechecked("010 111 010",width,height)
         end
 -- report("width : %i",width)
 -- report("height: %i",height)
@@ -458,3 +501,5 @@ potrace.getbitmap   = potracegetbitmap
 potrace.flush       = potraceflush
 potrace.fromfile    = potracefromfile
 potrace.contourplot = potracecontourplot
+potrace.checked     = potracechecked
+potrace.convert     = potraceconvert

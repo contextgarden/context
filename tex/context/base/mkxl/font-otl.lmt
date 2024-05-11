@@ -52,7 +52,7 @@ local report_otf          = logs.reporter("fonts","otf loading")
 local fonts               = fonts
 local otf                 = fonts.handlers.otf
 
-otf.version               = 3.133 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version               = 3.135 -- beware: also sync font-mis.lua and in mtx-fonts
 otf.cache                 = containers.define("fonts", "otl", otf.version, true)
 otf.svgcache              = containers.define("fonts", "svg", otf.version, true)
 otf.pngcache              = containers.define("fonts", "png", otf.version, true)
@@ -352,7 +352,7 @@ local function copytotfm(data,cache_id)
         local properties     = derivetable(data.properties)
         local descriptions   = derivetable(data.descriptions)
         local goodies        = derivetable(data.goodies)
-        local characters     = { } -- newtable if we knwo how many
+        local characters     = { } -- newtable if we know how many
         local parameters     = { }
         local mathparameters = { }
         --
@@ -393,12 +393,16 @@ local function copytotfm(data,cache_id)
                     local parts            = m.parts
                     local partsitalic      = m.partsitalic
                     local partsorientation = m.partsorientation
+                    local mainunicode      = m.unicode
                     if variants then
                         local c = character
                         for i=1,#variants do
                             local un = variants[i]
                             c.next = un
                             c = characters[un]
+if not c.unicode then
+    c.unicode = mainunicode
+end
                         end -- c is now last in chain
                         c.parts = parts
                         c.partsorientation = partsorientation
@@ -412,6 +416,9 @@ local function copytotfm(data,cache_id)
                             character.partsitalic = partsitalic
                         end
                     end
+if parts then
+    parts[#parts//2+1].unicode = mainunicode
+end
                     --
                     local topanchor = m.topanchor or m.accent -- for now
                     if topanchor then
@@ -436,7 +443,7 @@ local function copytotfm(data,cache_id)
         local units    = metadata.units or 1000
         --
         if units == 0 then -- catch bugs in fonts
-            units = 1000 -- maybe 2000 when ttf
+            units = 1000 -- maybe 2048 when ttf
             metadata.units = 1000
             report_otf("changing %a units to %a",0,units)
         end
@@ -517,6 +524,8 @@ local function copytotfm(data,cache_id)
         parameters.ascender   = abs(metadata.ascender  or 0)
         parameters.descender  = abs(metadata.descender or 0)
         parameters.capheight  = abs(metadata.capheight or 0)
+        parameters.ascent     = abs(metadata.ascent    or parameters.ascender  or 0)
+        parameters.descent    = abs(metadata.descent   or parameters.descender or 0)
         parameters.units      = units
         parameters.vheight    = metadata.defaultvheight
         --
@@ -529,30 +538,24 @@ local function copytotfm(data,cache_id)
         properties.name       = filename or fullname
         properties.subfont    = subfont
         --
-if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
-    --
-    properties.encodingbytes = 2
-elseif CONTEXTLMTXMODE then
-    local duplicates = resources and resources.duplicates
-    if duplicates then
-        local maxindex = data.nofglyphs or metadata.nofglyphs
-        if maxindex then
-            for u, d in sortedhash(duplicates) do
-                local du = descriptions[u]
-                if du then
-                    for uu in sortedhash(d) do
-                        maxindex = maxindex + 1
-                        descriptions[uu].dupindex = du.index
-                        descriptions[uu].index    = maxindex
+        local duplicates = resources and resources.duplicates
+        if duplicates then
+            local maxindex = data.nofglyphs or metadata.nofglyphs
+            if maxindex then
+                for u, d in sortedhash(duplicates) do
+                    local du = descriptions[u]
+                    if du then
+                        for uu in sortedhash(d) do
+                            maxindex = maxindex + 1
+                            descriptions[uu].dupindex = du.index
+                            descriptions[uu].index    = maxindex
+                        end
+                    else
+                     -- report_otf("no %U in font %a, duplicates ignored",u,filename)
                     end
-                else
-                 -- report_otf("no %U in font %a, duplicates ignored",u,filename)
                 end
             end
         end
-    end
-    --
-end
         --
      -- properties.name          = specification.name
      -- properties.sub           = specification.sub
@@ -613,9 +616,7 @@ local function otftotfm(specification)
     local cache_id = specification.hash
     local tfmdata  = containers.read(constructors.cache,cache_id)
     if not tfmdata then
-
         checkconversion(specification) -- for the moment here
-
         local name     = specification.name
         local sub      = specification.sub
         local subindex = specification.subindex

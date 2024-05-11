@@ -68,7 +68,7 @@
                     <short>set directive variables (show list with <ref name="showdirectives"/>)</short>
                 </flag>
                 <flag name="silent" value="list">
-                    <short>disable logcatgories (show list with <ref name="showlogcategories"/>)</short>
+                    <short>disable logcategories (show list with <ref name="showlogcategories"/>)</short>
                 </flag>
                 <flag name="strip">
                     <short>strip Lua code (only meant for production where no errors are expected)</short>
@@ -177,11 +177,10 @@
                 <flag name="global">
                     <short>assume given file present elsewhere</short>
                 </flag>
-                    <flag name="nofile">
+                <flag name="nofile">
                     <short>use dummy file as jobname</short>
                 </flag>
-                </flag>
-                    <flag name="forceinput">
+                <flag name="forceinput">
                     <short>use this file as input file instead of the given one</short>
                 </flag>
             </subcategory>
@@ -211,6 +210,9 @@
                 </flag>
                 <flag name="keeplog">
                     <short>keep previous log files (jobname-log-[run].tmp)</short>
+                </flag>
+                <flag name="notuc">
+                    <short>don't write a tuc file</short>
                 </flag>
                 <flag name="lmtx">
                     <short>force lmtx mode (when available)</short>

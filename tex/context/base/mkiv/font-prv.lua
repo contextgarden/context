@@ -15,20 +15,23 @@ local fontdata          = fonts.hashes.identifiers
 
 local setmetatableindex = table.setmetatableindex
 
+-- if we run out of space we can think of another range but by sharing we can
+-- use these privates for mechanisms like alignments-on-character and such
+
 local currentprivate    = fonts.privateoffsets.textextrabase
 local maximumprivate    = currentprivate + 0xFFF
 
-local extraprivates     = { }
+local extraprivates     = utilities.storage.allocate()
+local sharedprivates    = utilities.storage.allocate()
+
 helpers.extraprivates   = extraprivates
+helpers.sharedprivates  = sharedprivates
 
 function fonts.helpers.addextraprivate(name,f)
     extraprivates[#extraprivates+1] = { name, f }
 end
 
--- if we run out of space we can think of another range but by sharing we can
--- use these privates for mechanisms like alignments-on-character and such
-
-local sharedprivates = setmetatableindex(function(t,k)
+setmetatableindex(sharedprivates,function(t,k)
     local v = currentprivate
     if currentprivate < maximumprivate then
         currentprivate = currentprivate + 1
@@ -38,8 +41,6 @@ local sharedprivates = setmetatableindex(function(t,k)
     t[k] = v
     return v
 end)
-
-fonts.helpers.sharedprivates = sharedprivates
 
 function helpers.addprivate(tfmdata,name,characterdata)
     local properties = tfmdata.properties

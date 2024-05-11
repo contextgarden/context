@@ -1,0 +1,83 @@
+
+%D This is a bit of a mess. We have logos defined in \CONTEXT\ but \TUGBOAT\ uses
+%D some scaling. Let's see if we can handle that.
+
+\startmodule[tugboat-logos]
+
+\setupsorting
+  [logo]
+  [style=Camel]
+
+\unprotect \pushoverloadmode
+
+\protected\def\Dash {\unskip\thinspace\emdash\thinspace\ignorespaces} % |=|
+\protected\def\slash{/\penalty\zerocount\hskip\zeropoint\relax}       % |/|
+
+%D This needs a cleanup ... if we define a document in context speak it should also
+%D process in another style.
+
+\definefont[AcroFont]     [Serif*default     sa .90]
+\definefont[AcroFontBold] [SerifBold*default sa .90]
+\definefont[AcroFontSmall][Serif*default     sa .80]
+
+\protected\def\acro     {\triggergroupedcommandcs\AcroFont     }
+\protected\def\acrobf   {\triggergroupedcommandcs\AcroFontBold }
+\protected\def\acrosmall{\triggergroupedcommandcs\AcroFontSmall}
+
+%D TugBoat likes it this way:
+
+\logo[API]       {API}
+\logo[CD]        {CD}
+\logo[CMYK]      {CMYK}
+\logo[CPU]       {CPU}
+\logo[DVI]       {DVI}
+\logo[FTP]       {FTP}
+\logo[HTTP]      {HTTP}
+\logo[IO]        {I/O}
+\logo[ISO]       {ISO}
+\logo[KPSE]      {KPSE}
+\logo[LINUX]     {Linux}
+\logo[LPEG]      {Lpeg}
+\logo[MF]        {{\definedfont[logo10]META\-FONT}}
+\logo[MPLIB]     {MPlib}
+\logo[NFSS]      {NFSS}
+\logo[PASCAL]    {Pascal}
+\logo[PDF]       {PDF}
+\logo[POSIX]     {POSIX}
+\logo[RGB]       {RGB}
+\logo[TDS]       {TDS}
+\logo[TEXBOOK]   {{\sl The \TeX book}}
+\logo[TFM]       {TFM}
+\logo[TRUETYPE]  {True\-Type}
+\logo[TYPEONE]   {Type~1}
+\logo[UTF]       {UTF}
+\logo[WEBC]      {Web2C}
+\logo[XML]       {XML}
+\logo[XPATH]     {XPath}
+\logo[XSLT]      {XSLT}
+\logo[XSLTPROC]  {XSLTPROC}
+
+%D Already defined logos will not be redefined:
+
+\usemodule[abbreviations-logos]
+
+\protect \popoverloadmode
+
+\stopmodule
+
+\continueifinputfile{s-tugboat-logos.mkxl}
+
+\logo[KARL] {Karl Berry}
+
+\startTEXpage[offset=1ts]
+    \showglyphs
+    \startlines[before=,after=]
+    X \CONTEXT
+    X \ZIP
+    X \XPATH
+    X \TEX
+    X \LATEX
+    X \KARL
+    X \acro{Karl Berry}
+    \stoplines
+\stopTEXpage

@@ -13,6 +13,65 @@ typedef struct adjust_properties {
     halfword attrlist;
 } adjust_properties;
 
+typedef enum saved_adjust_entries {
+    saved_adjust_location_entry     = 0,
+    saved_adjust_options_entry      = 0,
+    saved_adjust_index_entry        = 0,
+    saved_adjust_attr_list_entry    = 1,
+    saved_adjust_depth_before_entry = 1,
+    saved_adjust_depth_after_entry  = 1,
+    saved_adjust_target_entry       = 2,
+    saved_adjust_n_of_records       = 3,
+} saved_adjust_entries;
+
+inline static void saved_adjust_initialize(void)
+{
+    saved_type(0) = saved_record_0;
+    saved_type(1) = saved_record_1;
+    saved_type(2) = saved_record_2;
+    saved_record(0) = adjust_save_type;
+    saved_record(1) = adjust_save_type;
+    saved_record(2) = adjust_save_type;
+}
+
+# define saved_adjust_location     saved_value_1(saved_adjust_location_entry)
+# define saved_adjust_options      saved_value_2(saved_adjust_options_entry)
+# define saved_adjust_index        saved_value_3(saved_adjust_index_entry)
+# define saved_adjust_attr_list    saved_value_1(saved_adjust_attr_list_entry)
+# define saved_adjust_depth_before saved_value_2(saved_adjust_depth_before_entry)
+# define saved_adjust_depth_after  saved_value_3(saved_adjust_depth_after_entry)
+# define saved_adjust_target       saved_value_1(saved_adjust_target_entry)
+
+void tex_show_adjust_group(void)
+{
+    tex_print_str_esc("vadjust");
+    if (saved_adjust_location == pre_adjust_code) {
+        tex_print_str(" pre");
+    }
+    if (saved_adjust_options & adjust_option_before) {
+        tex_print_str(" before");
+    }
+}
+
+int tex_show_adjust_record(void)
+{
+    tex_print_str("adjust ");
+    switch (saved_type(0)) { 
+       case saved_record_0:
+            tex_print_format("location %i, options %i, index %i", saved_value_1(0), saved_value_2(0), saved_value_3(0));
+            break;
+       case saved_record_1:
+            tex_print_format("attrlist %i, depth before %p, depth after %p", saved_value_1(0), saved_value_2(0), saved_value_3(0));
+            break;
+       case saved_record_2:
+            tex_print_format("target %i", saved_value_1(0));
+            break;
+       default: 
+            return 0;
+    }
+    return 1;
+}
+
 static void tex_scan_adjust_keys(adjust_properties *properties)
 {
     properties->code = post_adjust_code;
@@ -74,15 +133,7 @@ static void tex_scan_adjust_keys(adjust_properties *properties)
                         break;
                     case 't': case 'T':
                         if (tex_scan_mandate_keyword("attr", 2)) {
-                            halfword i = tex_scan_attribute_register_number();
-                            halfword v = tex_scan_integer(1, NULL);
-                            if (eq_value(register_attribute_location(i)) != v) {
-                                if (properties->attrlist) {
-                                    properties->attrlist = tex_patch_attribute_list(properties->attrlist, i, v);
-                                } else {
-                                    properties->attrlist = tex_copy_attribute_list_set(tex_current_attribute_list(), i, v);
-                                }
-                            }
+                            properties->attrlist = tex_scan_attribute(properties->attrlist);
                         }
                         break;
                     default:
@@ -126,7 +177,10 @@ static void tex_scan_adjust_keys(adjust_properties *properties)
         }
     }
   DONE:
-    return;
+    if (! properties->attrlist) {
+        properties->attrlist = tex_current_attribute_list();
+        add_attribute_reference(properties->attrlist); /* needs checking */
+    }
 }
 
 int tex_valid_adjust_index(halfword n)
@@ -138,14 +192,15 @@ void tex_set_vadjust(halfword target)
 {
     adjust_properties properties;
     tex_scan_adjust_keys(&properties);
-    tex_set_saved_record(saved_adjust_item_location, adjust_location_save_type, 0, properties.code);
-    tex_set_saved_record(saved_adjust_item_options, adjust_options_save_type, 0, properties.options);
-    tex_set_saved_record(saved_adjust_item_index, adjust_index_save_type, 0, properties.index);
-    tex_set_saved_record(saved_adjust_item_attr_list, adjust_attr_list_save_type, 0, properties.attrlist);
-    tex_set_saved_record(saved_adjust_item_depth_before, adjust_depth_before_save_type, 0, properties.depthbefore);
-    tex_set_saved_record(saved_adjust_item_depth_after, adjust_depth_after_save_type, 0, properties.depthafter);
-    tex_set_saved_record(saved_adjust_item_target, adjust_target_save_type, 0, target);
-    lmt_save_state.save_stack_data.ptr += saved_adjust_n_of_items;
+    saved_adjust_initialize();
+    saved_adjust_location = properties.code;
+    saved_adjust_options = properties.options;
+    saved_adjust_index = properties.index;
+    saved_adjust_attr_list = properties.attrlist;
+    saved_adjust_depth_before = properties.depthbefore;
+    saved_adjust_depth_after = properties.depthafter;
+    saved_adjust_target = target;
+    lmt_save_state.save_stack_data.ptr += saved_adjust_n_of_records;
     tex_new_save_level(vadjust_group);
     tex_scan_left_brace();
     tex_normal_paragraph(vadjust_par_context);
@@ -165,17 +220,17 @@ void tex_finish_vadjust_group(void)
         halfword box, adjust, target; /*tex for short-term use */
         tex_end_paragraph(vadjust_group, vadjust_par_context);
         tex_unsave();
-        lmt_save_state.save_stack_data.ptr -= saved_adjust_n_of_items;
+        lmt_save_state.save_stack_data.ptr -= saved_adjust_n_of_records;
         box = tex_vpack(node_next(cur_list.head), 0, packing_additional, max_dimension, direction_unknown, holding_none_option, NULL);
         tex_pop_nest();
-        adjust = tex_new_node(adjust_node, (quarterword) saved_value(saved_adjust_item_location));
-        target = saved_value(saved_adjust_item_target);
+        adjust = tex_new_node(adjust_node, (quarterword) saved_adjust_location);
+        target = saved_adjust_target;
         adjust_list(adjust) = box_list(box);
-        adjust_options(adjust) = (halfword) saved_value(saved_adjust_item_options);
-        adjust_index(adjust) = (halfword) saved_value(saved_adjust_item_index);
-        adjust_depth_before(adjust) = (halfword) saved_value(saved_adjust_item_depth_before);
-        adjust_depth_after(adjust) = (halfword) saved_value(saved_adjust_item_depth_after);
-        tex_attach_attribute_list_attribute(adjust, (halfword) saved_value(saved_adjust_item_attr_list));
+        adjust_options(adjust) = (halfword) saved_adjust_options;
+        adjust_index(adjust) = (halfword) saved_adjust_index;
+        adjust_depth_before(adjust) = (halfword) saved_adjust_depth_before;
+        adjust_depth_after(adjust) = (halfword) saved_adjust_depth_after;
+        tex_attach_attribute_list_attribute(adjust, (halfword) saved_adjust_attr_list);
         if (target < 1) {
             tex_tail_append(adjust);
         } else { 
@@ -185,10 +240,7 @@ void tex_finish_vadjust_group(void)
         tex_flush_node(box);
         /* we never do the callback ... maybe move it outside */
         if (target < 0 && lmt_nest_state.nest_data.ptr == 0) {
-            if (! lmt_page_builder_state.output_active) {
-                lmt_page_filter_callback(vadjust_page_context, 0);
-            }
-            tex_build_page();
+            tex_build_page(vadjust_page_context, 0);
         }
     }
 }

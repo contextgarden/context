@@ -8,6 +8,7 @@ local shapes  = { }
 local default = { }
 local upper   = { }
 local lower   = { }
+local accents = { }
 
 for k, v in next, characters.data do
     local sh = v.shcode
@@ -19,6 +20,9 @@ for k, v in next, characters.data do
             shapes[sh] = { sh, k }
         end
     end
+--     if v.category == ".." then
+--         accents[1][k] = ..
+--     end
 end
 
 for i=1,26 do
@@ -35,6 +39,12 @@ end
 --     ...
 -- }
 
+local accents = { -- todo
+    [1] = {
+        "0x0300:0x0311",
+    },
+}
+
 return {
     name         = "color-latin",
     version      = "1.00",
@@ -45,5 +55,6 @@ return {
          default = default,
          upper   = upper,
          lower   = lower,
+         accents = accents,
      }
 }

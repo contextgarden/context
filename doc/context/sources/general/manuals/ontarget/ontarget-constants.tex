@@ -1,0 +1,220 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-constants
+
+\environment ontarget-style
+
+\usemodule[system-tokens]
+
+\startchapter[title={Constants}]
+
+Strings don't really fit into the concept of \TEX. There everything we input and
+store is tokens and nodes, so when you define a macro like
+
+\startbuffer
+\def\foo{foo}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+you don't store a string but a tokenlist with three tokens:
+
+\luatokentable\foo
+
+We have three single byte characters but end up with 32 bytes memory used because
+we have a linked list with a housekeeping initial token; such a token has a value
+(operator & operand) as well as a pointer to a next token. This is quite ok
+because whenever we need that macro the body has to be interpreted and it already
+being tokenized is what makes \TEX\ fly.
+
+There are occasions where the expansion of a list that itself can contain
+references to macros produces a new list in which case copies are being made.
+Take this:
+
+\startbuffer
+\def\oof{foo}
+\def\foo{foo \oof}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\luatokentable\foo
+
+When \type {\foo} is expanded, the macro body is pushed onto the input stack and
+traversed and when \type {\oof} is seen, that one gets pushed and processed. No
+copy is needed. Now take this:
+
+\startbuffer
+\def\oof{foo}
+\edef\foo{foo \oof}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\luatokentable\foo
+
+Here \type {\foo} gets the expanded result but again \type {\oof} got pushed onto
+the stack. This doesn't involved copying either but there is still the pushing
+and popping input overhead. So when does copying occur? Here is an example:
+
+\startbuffer
+\def\oof{oof}
+\def\ofo{ofo}
+\def\foo{\begincsname \oof:\ofo\endcsname}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+\luatokentable\foo
+
+When a csname is checked, the engine needs to construct a string in order to access the
+hash table. Here is what happens:
+
+\startitemize[packed]
+\startitem
+    everything upto the \type {\endcsname} is collected
+\stopitem
+\startitem
+    in the process macros are expanded (with pushing and popping input) and the
+    expanded tokens are appended to the result
+\stopitem
+\startitem
+    when we're okay that list get converted to a string
+\stopitem
+\startitem
+    that string is used as lookup into the hash
+\stopitem
+\stopitemize
+
+Normally we're okay but when there is some unexpected unexpandable token (an
+assignment, node generator, protected macro, etc.) the collection stops and the
+list so far is recycled. This process is quite efficient, as is everything \TEX,
+but given that going from token list to string involved some \UTF8 juggling too
+there definitely is some overhead.
+
+In \CONTEXT\ we use csname checking and usage quite a lot. The first line is the
+traditional way. It has the disadvantage that it creates an hash entry with alias
+\type {\relax} if there is no such name. That is why \ETEX\ came up with the test
+as in the second line. In \LUATEX\ we introduced \type {\lastnamedcs} so that we
+don't have to construct the mentioned) token list again which saves time. The
+fourth line is similar to the first line but doesn't create a new command.
+
+\starttyping
+\csname      \namespace\key\endcsname                                  ...
+\ifcsname    \namespace\key\endcsname \csname \namespace\key\endcsname ... \fi
+\ifcsname    \namespace\key\endcsname \lastnamedcs                     ... \fi
+\begincsname \namespace\key\endcsname
+\stoptyping
+
+One of the things all versions of \CONTEXT\ have in common (right from the start)
+is that we use this namespace model consistently. In \MKIV\ we changed the
+subsystem that deals with this: it's more flexible and uses less memory but it
+also has way more overhead. But on the average performance is about the same so
+users didn't notice that.
+
+There is however a trick to speed this up a bit. In the 360 page \LUAMETATEX\
+manual we expand macros like \type {\namespace} and \type {\key} 4.3 million
+times (beginning of June 2023). Because Mikael Sundqvist and I are in the middle
+of some math magic, we also checked his 300 page math book, and that also does it
+4.2 million times (the gain was about 0.5 seconds). The upcoming math manual has
+some 1.2 million. How come that we have so many expansions? First of all we use
+abstraction when possible and that means that there's plenty of checking of
+options and some constructs fall back on parent classes (sometimes more that two
+times up the parent chain). Also, we often have three macros to expand:
+
+\starttyping
+\ifcsname\namespace\currentinstance\key\endcsname
+\stoptyping
+
+But these have an important property: their body is basically a string. Nothing
+in there needs expansion and if it does, it's an indication of rubish that
+doesn't contribute for a valid csname anyway. Once we know that we can improve
+performance:
+
+\startbuffer
+\cdef\oof{oof}
+\cdef\ofo{ofo}
+\def\foo{\begincsname \oof:\ofo\endcsname}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+So, \type {\cdef} (or \type {\constant \edef} flags the macro as being a constant
+that doesn't require expansion. For the record, when you define that macro having
+arguments it just becomes an \type {\edef}.
+
+\luatokentable\foo
+
+Here we define the two macros as constant ones which in practice means that they
+are just macros but also indicates that in some scenarios we can directly use
+their body. Now when in this csname construction we do this instead:
+
+\startitemize[packed]
+\startitem
+    everything upto the \type {\endcsname} is collected
+\stopitem
+\startitem
+    in the process macros are expanded (with pushing and popping input) but when
+    we have a constant we add reference token when there is more than one body
+    token, otherwise the expanded tokens are appended to the result
+\stopitem
+\startitem
+    when we're okay that list get converted to a string and in that stage we just
+    convert the referenced body of the constant
+\stopitem
+\startitem
+    that string is used as lookup into the hash
+\stopitem
+\stopitemize
+
+So, instead of immediately injecting an expanded body of a macro that needs no
+expansion we inject a reference and use that later on for the conversion into
+characters. On the 4242938 times in \LUAMETATEX\ (at the time of writing this) this
+trick gives the following results.
+
+\starttyping
+\edef\foo{xxxx} \begincsname\foo\endcsname    0.37
+\cdef\foo{xxxx} \begincsname\foo\endcsname    0.28
+\edef\foo{xxxx} \ifcsname\foo\endcsname\fi    0.53
+\cdef\foo{xxxx} \ifcsname\foo\endcsname\fi    0.35
+\stoptyping
+
+And here for an existing command (\type {\relax}):
+
+\starttyping
+\edef\foo{relax} \begincsname\foo\endcsname   0.55
+\cdef\foo{relax} \begincsname\foo\endcsname   0.36
+\edef\foo{relax} \ifcsname\foo\endcsname\fi   0.62
+\cdef\foo{relax} \ifcsname\foo\endcsname\fi   0.36
+\stoptyping
+
+When I used that trick in for instance some font switching macros it also had
+some gain. For instance 200000 times \type {\it} went from 0.60 down to 0.54
+seconds but it is unlikely that in a document one does that many font switches.
+\footnote {There are a few more places where constants can gain a little but
+those don't add up much.}
+
+In practice other operations play a role, so here we might also benefit from the
+data being in the \CPU\ cache but on the manual I gained a decent .2 seconds. One
+can question if on a 8.5 second run this is worth the trouble. However, in this
+particular manual we spend 3.5 seconds on font processing, some 1.5 seconds on
+the backend and have a unique \METAPOST\ graphics on every page. We spend more
+time in \LUA\ than in \TEX ! On 4 seconds \TEX, these .2 seconds is some 2.5
+gain, and it might actually be even more percent wise.
+
+In case one wonders why I spend time on this, one reason is that the last decade
+I was not that impressed by performance gains of a single core and \TEX\ is a
+single core process. I also can't afford the latest greatest laptops and
+definitely don't want to contribute more e-waste. Also, with \TEX\ and friends
+running on virtual machines and competing for resources (memory, \CPU\ and disk
+or network drives) any gain is good gain. Of course it is also fun to improve
+\LUAMETATEX\ and this string-like property has always bothered me. \footnote {I
+did some experiment with a native string register but that made no sense because
+then tokenization in other places takes a toll. With the mentioned constants we
+don't pay that price.}
+
+\stopchapter
+
+\stopcomponent
+
+% timestamp: Peter Gabriel Live 2023 Amsterdam

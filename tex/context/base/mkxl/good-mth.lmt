@@ -64,6 +64,8 @@ end
 
 fontgoodies.register("mathematics", initialize)
 
+-- This is used in the koeieletters font:
+
 local function mathradicalaction(n,h,v,font,mchar,echar)
     local characters = fontcharacters[font]
     local mchardata  = characters[mchar]

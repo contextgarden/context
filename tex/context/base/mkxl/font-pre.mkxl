@@ -70,7 +70,8 @@
 \definefontfeature
   [default]
   [always]
-  [liga=yes]
+  [itlc=yes, % new per 10-2023
+   liga=yes]
 
  % ccmp=yes, % maybe too
  % locl=yes, % maybe too
@@ -434,10 +435,6 @@
 %     \variablefam 63
 % \fi
 
-\definefontfeature
-  [collapseitalics]
-  [collapseitalics=yes]
-
 \definefontfeature[virtualmath]       [mathematics]
 
 \definefontfeature[math-text]         [mathematics] [ssty=no]
@@ -563,7 +560,12 @@
    one=f:y:t,
    mix=f:b:t]
 
-%D Now we're up to some definitions.
+%D Now we're up for some definitions.
+
+%D \starttyping
+%D \definebodyfontenvironment[pagella][default][default]
+%D \definebodyfontenvironment[pagella][default][metric]
+%D \stoptyping
 
 \definebodyfontenvironment
   [\s!default]
@@ -574,7 +576,24 @@
               \s!b=1.440,
               \s!c=1.728,
               \s!d=2.074,
-                 *=\font_currentfontscale, % wildcard
+                 *=\wildcardfontscale,
+              \s!x=0.8,
+             \s!xx=0.6,
+            \v!big=1.2,
+          \v!small=0.8,
+ \c!interlinespace=,
+             \s!em=\v!slanted]
+
+\definebodyfontenvironment
+  [metric]
+  [        \s!text=1.0,
+         \s!script=0.7,
+   \s!scriptscript=0.5,
+              \s!a=1.25,
+              \s!b=1.50,
+              \s!c=1.75,
+              \s!d=2.00,
+                 *=\wildcardfontscale,
               \s!x=0.8,
              \s!xx=0.6,
             \v!big=1.2,
@@ -903,22 +922,12 @@
 
 \pushoverloadmode
 
-% \let\infofont         \relax
-% \let\infofontbold     \relax
-% \let\smallinfofont    \relax
-% \let\smallinfofontbold\relax
-%
-% \definefont[infofont]         [file:dejavusansmono*none      at 6pt]
-% \definefont[infofontbold]     [file:dejavusansmono-bold*none at 6pt]
-% \definefont[smallinfofont]    [file:dejavusansmono*none      at 3pt]
-% \definefont[smallinfofontbold][file:dejavusansmono-bold*none at 3pt]
-%
-% after testing for quite a while moved from cont-loc.mkxl
-
 \protected\def\infofont         {\definefrozenfont[infofont]         [file:dejavusansmono*none      at 6pt]\infofont}
 \protected\def\infofontbold     {\definefrozenfont[infofontbold]     [file:dejavusansmono-bold*none at 6pt]\infofontbold}
 \protected\def\smallinfofont    {\definefrozenfont[smallinfofont]    [file:dejavusansmono*none      at 3pt]\smallinfofont}
 \protected\def\smallinfofontbold{\definefrozenfont[smallinfofontbold][file:dejavusansmono-bold*none at 3pt]\smallinfofontbold}
+\protected\def\tinyinfofont     {\definefrozenfont[tinyinfofont]     [file:dejavusansmono*none      at 2pt]\tinyinfofont}
+\protected\def\tinyinfofontbold {\definefrozenfont[tinyinfofontbold] [file:dejavusansmono-bold*none at 2pt]\tinyinfofontbold}
 
 %D Optimization (later we overload in math). Also needed in order to get \type {\ss}
 %D properly defined.
@@ -946,29 +955,6 @@
 \let\tt\normaltt
 
 \popoverloadmode
-
-% experiment:
-
-\startsetups experiment:fonts:compact
-    \c_font_compact\conditionaltrue
-%     \definefontfeature[virtualmath]          [mathematics]    [compactmath=yes]
-%     \definefontfeature[virtualmath-l2r]      [mathematics-l2r][compactmath=yes]
-%     \definefontfeature[virtualmath-r2l]      [mathematics-r2l][compactmath=yes]
-%     \definefontfeature[math-text]            [mathematics]    [compactmath=yes]
-%     \definefontfeature[math-script]          [mathematics]    [compactmath=yes]
-%     \definefontfeature[math-scriptscript]    [mathematics]    [compactmath=yes]
-%     \definefontfeature[math-text-l2r]        [mathematics-l2r][compactmath=yes]
-%     \definefontfeature[math-script-l2r]      [mathematics-l2r][compactmath=yes]
-%     \definefontfeature[math-scriptscript-l2r][mathematics-l2r][compactmath=yes]
-%     \definefontfeature[math-text-r2l]        [mathematics-r2l][compactmath=yes]
-%     \definefontfeature[math-script-r2l]      [mathematics-r2l][compactmath=yes]
-%     \definefontfeature[math-scriptscript-r2l][mathematics-r2l][compactmath=yes]
-\stopsetups
-
-\installtexexperiment
-  {fonts.compact}
-  {\directsetup{experiment:fonts:compact}}
-  {}
 
 \protect \endinput
 

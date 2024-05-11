@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=s-engine-syntax,
+%D   [       file=s-system-syntax,
 %D        version=2023.8.18,
 %D          title=\CONTEXT\ Style File,
 %D       subtitle=\LUAMETATEX\ Syntax,
@@ -123,6 +123,74 @@
 \stoptabulate
 \stopbuffer
 
+\startbuffer[engine:syntax:glyphoptions]
+    \ctxlua{moduledata.engine.codes("glyphoptioncodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:mathoptions]
+    \ctxlua{moduledata.engine.codes("mathoptioncodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:mathcontrol]
+    \ctxlua{moduledata.engine.codes("mathcontrolcodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:partriggercodes]
+    \ctxlua{moduledata.engine.codes("partriggercodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:parcontextcodes]
+    \ctxlua{moduledata.engine.codes("parcontextcodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:frozenparcodes]
+    \ctxlua{moduledata.engine.codes("frozenparcodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:frozenparcodes]
+    \ctxlua{moduledata.engine.codes("frozenparcodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:normalizelinecodes]
+    \ctxlua{moduledata.engine.codes("normalizelinecodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:normalizeparcodes]
+    \ctxlua{moduledata.engine.codes("normalizeparcodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:listgeometrycodes]
+    \ctxlua{moduledata.engine.codes("listgeometrycodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:protrusionboundarycodes]
+    \ctxlua{moduledata.engine.codes("protrusionboundarycodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:shapingpenaltiescodes]
+    \ctxlua{moduledata.engine.codes("shapingpenaltiescodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:automigrationcodes]
+    \ctxlua{moduledata.engine.codes("automigrationcodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:autoparagraphcodes]
+    \ctxlua{moduledata.engine.codes("autoparagraphcodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:textcontrolcodes]
+    \ctxlua{moduledata.engine.codes(tex.gettextcontrolvalues())}
+\stopbuffer
+
+\startbuffer[engine:syntax:discoptioncodes]
+    \ctxlua{moduledata.engine.codes("discoptioncodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:mathgluecodes]
+    \ctxlua{moduledata.engine.codes(tex.getmathgluevalues())}
+\stopbuffer
+
 \continueifinputfile{s-system-syntax.mkxl}
 
 \usemodule[abbreviations-logos]
@@ -142,7 +210,7 @@ This is a preliminary overview of the \LUAMETATEX\ primitives. The presentation
 is mostly for myself and kind of informal. The primitives are describes in more
 detail in the (yet incomplete) \quote {primitives} manual.
 
-\vkern\lineheight % bah, I need to fix this
+\vkern\lineheight % bah, I need to fix this : \pagediscards
 
 \startpagecolumns[page=no]
     \startluacode
@@ -198,24 +266,24 @@ The following tokens can be used in a comparison:
 
 % test:
 
-\def \foo{test#Itest} \writestatus{I}{\foo} \meaning \foo \par  \showluatokens\foo
-\def \foo{test#Ptest} \writestatus{P}{\foo} \meaning \foo \par  \showluatokens\foo
-\def \foo{test#Gtest} \writestatus{G}{\foo} \meaning \foo \par  \showluatokens\foo
-\def \foo{test#Htest} \writestatus{H}{\foo} \meaning \foo \par  \showluatokens\foo
-\def \foo{test#Stest} \writestatus{S}{\foo} \meaning \foo \par  \showluatokens\foo
-\def \foo{test#Ttest} \writestatus{T}{\foo} \meaning \foo \par  \showluatokens\foo
-\def \foo{test#Ltest} \writestatus{L}{\foo} \meaning \foo \par  \showluatokens\foo
-\def \foo{test#Rtest} \writestatus{R}{\foo} \meaning \foo \par  \showluatokens\foo
-\def \foo{test#Xtest} \writestatus{X}{\foo} \meaning \foo \par  \showluatokens\foo
+% \def \foo{test#Itest} \writestatus{I}{\foo} \meaning \foo \par  \showluatokens\foo
+% \def \foo{test#Ptest} \writestatus{P}{\foo} \meaning \foo \par  \showluatokens\foo
+% \def \foo{test#Gtest} \writestatus{G}{\foo} \meaning \foo \par  \showluatokens\foo
+% \def \foo{test#Htest} \writestatus{H}{\foo} \meaning \foo \par  \showluatokens\foo
+% \def \foo{test#Stest} \writestatus{S}{\foo} \meaning \foo \par  \showluatokens\foo
+% \def \foo{test#Ttest} \writestatus{T}{\foo} \meaning \foo \par  \showluatokens\foo
+% \def \foo{test#Ltest} \writestatus{L}{\foo} \meaning \foo \par  \showluatokens\foo
+% \def \foo{test#Rtest} \writestatus{R}{\foo} \meaning \foo \par  \showluatokens\foo
+% \def \foo{test#Xtest} \writestatus{X}{\foo} \meaning \foo \par  \showluatokens\foo
 
-\edef\foo{test#Itest} \writestatus{I}{\foo} \meaning \foo \par  \showluatokens\foo
-\edef\foo{test#Ptest} \writestatus{P}{\foo} \meaning \foo \par  \showluatokens\foo
-\edef\foo{test#Gtest} \writestatus{G}{\foo} \meaning \foo \par  \showluatokens\foo
-\edef\foo{test#Htest} \writestatus{H}{\foo} \meaning \foo \par  \showluatokens\foo
-\edef\foo{test#Stest} \writestatus{S}{\foo} \meaning \foo \par  \showluatokens\foo
-\edef\foo{test#Ttest} \writestatus{T}{\foo} \meaning \foo \par  \showluatokens\foo
-\edef\foo{test#Ltest} \writestatus{L}{\foo} \meaning \foo \par  \showluatokens\foo
-\edef\foo{test#Rtest} \writestatus{R}{\foo} \meaning \foo \par  \showluatokens\foo
-\edef\foo{test#Xtest} \writestatus{X}{\foo} \meaning \foo \par  \showluatokens\foo
+% \edef\foo{test#Itest} \writestatus{I}{\foo} \meaning \foo \par  \showluatokens\foo
+% \edef\foo{test#Ptest} \writestatus{P}{\foo} \meaning \foo \par  \showluatokens\foo
+% \edef\foo{test#Gtest} \writestatus{G}{\foo} \meaning \foo \par  \showluatokens\foo
+% \edef\foo{test#Htest} \writestatus{H}{\foo} \meaning \foo \par  \showluatokens\foo
+% \edef\foo{test#Stest} \writestatus{S}{\foo} \meaning \foo \par  \showluatokens\foo
+% \edef\foo{test#Ttest} \writestatus{T}{\foo} \meaning \foo \par  \showluatokens\foo
+% \edef\foo{test#Ltest} \writestatus{L}{\foo} \meaning \foo \par  \showluatokens\foo
+% \edef\foo{test#Rtest} \writestatus{R}{\foo} \meaning \foo \par  \showluatokens\foo
+% \edef\foo{test#Xtest} \writestatus{X}{\foo} \meaning \foo \par  \showluatokens\foo
 
 \stoptext

@@ -16,8 +16,10 @@ return {
             AccentTopShiftUp                  =  -15,
             FlattenedAccentTopShiftUp         =  -15,
             AccentBaseDepth                   =   50,
-            DelimiterPercent                  =   90,
+            DelimiterPercent                  =   85,
             DelimiterShortfall                =  400,
+            DelimiterDisplayPercent           =   90,
+            DelimiterDisplayShortfall         =  400,
             DisplayOperatorMinHeight          = 1900, -- 1250 in font
             SubscriptShiftDown                =  201, -- 231 in font
             SuperscriptShiftUp                =  364, -- 334 in font
@@ -56,6 +58,10 @@ return {
                         {
                             source   = { first = 0x1D736 }, -- bold italic alpha
                             filename = "texgyrebonummath-companion.otf",
+                        },
+                        {
+                            source   = { first = 0x02980 }, -- triplebar
+                            filename = "TeXGyreBonumMath-Companion.otf",
                         },
                     },
                 },
@@ -290,10 +296,10 @@ return {
                         },
                     }
                 },
-                {
-                    tweak   = "addbars",
-                    advance = 0.475,
-                },
+                -- {
+                --     tweak   = "addbars",
+                --     advance = 0.475,
+                -- },
                 {
                     tweak = "addactuarian",
                 },

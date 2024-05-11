@@ -96,7 +96,7 @@
 
 \permanent\protected\def\definecharacter#1 #2 %
   {\doifelsenumber{\string#2}
-     {\edefcsname\string#1\endcsname{\Uchar#2}}
+     {\edefcsname\string#1\endcsname{\tocharacter#2}}
      {\protected\defcsname\string#1\endcsname{#2}}}
 
 %D specials: \aa \ae \cc \i \ij \l \o \oe \sz \par

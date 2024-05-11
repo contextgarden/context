@@ -595,6 +595,7 @@ static int lmt_font_from_lua(lua_State *L, int f)
         if (! no_math) {
             fontlib_aux_read_lua_math_parameters(L, f);
         }
+        lmt_font_state.fonts[f]->weight = 65.536 * lmt_font_state.fonts[f]->design_size / lmt_font_state.fonts[f]->size;
         /*tex The characters. */
         lua_push_key(characters);
         if (lua_rawget(L, -2) == LUA_TTABLE) {
@@ -1024,7 +1025,9 @@ static int fontlib_getfontspec(lua_State *L)
                 lua_pushinteger(L, font_spec_scale(fs));
                 lua_pushinteger(L, font_spec_x_scale(fs));
                 lua_pushinteger(L, font_spec_y_scale(fs));
-                return 4;
+                lua_pushinteger(L, font_spec_slant(fs));
+                lua_pushinteger(L, font_spec_weight(fs));
+                return 6;
             }
         }
     }
@@ -1051,6 +1054,18 @@ static int fontlib_getmathindex(lua_State *L) {
     return 2;
 }
 
+static int fontlib_xscaled(lua_State *L)
+{
+    lua_pushinteger(L, tex_font_x_scaled(lmt_optroundnumber(L, 1, 1)));
+    return 1;
+}
+
+static int fontlib_yscaled(lua_State *L)
+{
+    lua_pushinteger(L, tex_font_y_scaled(lmt_optroundnumber(L, 1, 1)));
+    return 1;
+}
+
 static const struct luaL_Reg fontlib_function_list[] = {
     { "current",       fontlib_current       },
     { "max",           fontlib_max           },
@@ -1065,6 +1080,8 @@ static const struct luaL_Reg fontlib_function_list[] = {
     { "getfontspec",   fontlib_getfontspec   },
     { "getmathspec",   fontlib_getmathspec   },
     { "getmathindex",  fontlib_getmathindex  },
+    { "xscaled",       fontlib_xscaled       },
+    { "yscaled",       fontlib_yscaled       },
     { NULL,            NULL                  },
 };
 

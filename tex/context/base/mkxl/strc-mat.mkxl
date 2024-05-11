@@ -203,7 +203,10 @@
      \setupcurrentformula \formulaparameter \detokenizedformulaparameter
      \relax \relax \relax
      [\c!name=\v!formula,\s!counter=\v!formula,%
-      \s!hascaption=\v!yes,\s!hastitle=\v!yes,\s!hasnumber=\v!yes,\s!haslevel=#6,%
+      \s!hascaption=\v!yes,%
+      \s!hastitle=\v!yes,% maybe also a check
+      \s!hasnumber=\ifempty\namedformulaentry\v!yes\else\v!no\fi,%
+      \s!haslevel=#6,%
       \c!reference=#1,%
       \c!title=\namedformulaentry,
       \c!list=\currentplaceformulalist,
@@ -220,6 +223,7 @@
 \newconstant\c_strc_formulas_number_mode
 \newconstant\c_strc_formulas_sub_number_mode
 \newconstant\c_strc_formulas_nested_number_mode
+\newconstant\c_strc_formulas_counter_level
 
 \let\strc_formulas_show_modes     \relax
 \let\strc_formulas_show_references\relax
@@ -452,6 +456,8 @@
 \mutable\lettonothing\currentsubformulasreference
 \mutable\lettonothing\currentsubformulassynchronize
 
+\c_strc_formulas_counter_level\plusone
+
 \def\strc_formulas_handle_current_references
   {\strc_formulas_reference_show
    \ifnum\c_strc_formulas_place_number_mode=\plusthree
@@ -463,7 +469,7 @@
          \currentplaceformulanumber
          \currentplaceformulasynchronize
          \currentplaceformulaattribute
-         \plusone
+         \c_strc_formulas_counter_level
        \currentplaceformulasynchronize
        \glet\currentplaceformulasynchronize\relax
        \theformuladestinationattribute\currentplaceformulaattribute
@@ -719,6 +725,7 @@
      \fi
      \nointerlineskip
    \fi
+   \whitespace % added, test with spacebefore=small
    \ifempty\m_spacebefore
      \ifx\p_spacebefore\v!none
        % nothing
@@ -738,7 +745,8 @@
    \fi}
 
 \def\strc_formulas_display_space_after_common
-  {\ifx\p_spaceafter\v!none
+  {\whitespace % needs testing
+   \ifx\p_spaceafter\v!none
      % nothing
    \orelse\ifempty\p_spaceafter
      \directvspacing\currentvspacing
@@ -1082,8 +1090,8 @@
 \installcorenamespace{mathtexthere}
 \installcorenamespace{mathbreakhere}
 
-\def\strc_math_text_here_right#1%
-  {\localbox[\v!righttext]{\llap{#1\kern\rightskip}}}
+\def\strc_math_text_here_right#1% a nasty interplay with the lua end  (!!! TODO)
+  {\localbox[\v!righttext]{\llap{#1}}} %\kern\rightskip}}}
 
 \def\strc_math_text_here_left#1%
   {\localbox[\v!lefttext]{\rlap{\kern\leftskip#1}}}
@@ -1260,7 +1268,17 @@
 \def\strc_math_setup_align
   {\ifcsname\??mathtextalign\formulaparameter\c!align\endcsname
      \lastnamedcs\else\begincsname\??mathtextalign\v!middle\endcsname
+     \math_check_limit
    \fi}
+
+\def\math_check_limit
+  {\ifcstok{\mathematicsparameter\c!limit}\v!yes
+     \bitwiseflip\mathgluemode\plusfour
+   \fi}
+
+\appendtoks
+    \math_check_limit
+\to \everymathematics
 
 % split : wrap (box) and flow (yes)
 
@@ -1771,7 +1789,7 @@
   {\xdef\currentplaceformulasuffix{#1}%
    \strc_formulas_place_nop}
 
-%D We no longer picku p $$ as this is now equivalent to inline:
+%D We no longer pickup $$ as this is now equivalent to inline:
 
 % \protected\def\strc_formulas_place_nop
 %   {\doifelsenextchar$\strc_formulas_place_pickup\strc_formulas_place_indeed} % [ref]$$ [ref]\start
@@ -1799,6 +1817,8 @@
 \mutable\lettonothing\currentplaceformulatitle
 \mutable\lettonothing\currentplaceformulareference
 \mutable\lettonothing\currentplaceformulasuffix
+\mutable\lettonothing\currentplaceformulabookmark
+\mutable\lettonothing\currentplaceformulalist
 
 \permanent\tolerant\protected\def\startplaceformula[#S#1]%
   {\begingroup
@@ -1811,24 +1831,20 @@
      \expandafter\strc_formulas_start_place_nop
    \fi[#1]}
 
-\def\strc_formulas_start_place_yes[#S#1]% todo
-  {\doifassignmentelse{#1}\strc_formulas_start_place_parameters\strc_formulas_start_place_reference[#1]}
-
 \def\strc_formulas_start_place_nop[#S#1]%
   {\glettonothing\currentplaceformulareference
    \glettonothing\currentplaceformulasuffix
    \strc_formulas_place_nop}
 
-\def\strc_formulas_start_place_reference[#1]%
-  {\xdef\currentplaceformulareference{#1}%
-   \glettonothing\currentplaceformulasuffix
-  %\doifelsenextbgroup\strc_formulas_place_yes\strc_formulas_place_nop} % [ref]{}
-   \strc_formulas_place_nop}
+\def\strc_formulas_start_place_yes[#S#1]% todo
+  {\doifassignmentelse{#1}
+     {\strc_formulas_set_place_parameters{#1}%
+      \doifelsenextbgroup\strc_formulas_place_yes\strc_formulas_place_nop}% [ref]{}
+     {\xdef\currentplaceformulareference{#1}%
+      \glettonothing\currentplaceformulasuffix
+      \strc_formulas_place_nop}}
 
-\mutable\lettonothing\currentplaceformulabookmark
-\mutable\lettonothing\currentplaceformulalist
-
-\def\strc_formulas_start_place_parameters[#S#1]% maybe a dedicated setup handler
+\def\strc_formulas_set_place_parameters#1% maybe a dedicated setup handler
   {\resetdummyparameter\c!title
    \resetdummyparameter\c!reference
    \resetdummyparameter\c!bookmark
@@ -1842,11 +1858,83 @@
    \edef\currentplaceformulasuffix   {\dummyparameter\c!suffix}%
    \ifempty\currentplaceformulatitle\else
      \normalexpanded{\setformulalistentry{\currentplaceformulatitle}}%
-   \fi
-   \doifelsenextbgroup\strc_formulas_place_yes\strc_formulas_place_nop} % [ref]{}
+   \fi}
 
 \permanent\protected\def\stopplaceformula
   {\relax
+   \endgroup}
+
+%D This is new in \LMTX\ (and described in the manual):
+%D
+%D \starttyping
+%D \startformula
+%D     \startsubnumberinghere
+%D         x \alignhere = a + 1  \numberhere[ref:c1]
+%D           \breakhere = b + 2  \numberhere
+%D           \breakhere = c + 3n \numberhere[ref:c2]
+%D     \stopsubnumberinghere
+%D \stopformula
+%D
+%D \startformula
+%D     x \alignhere = a + 1n \numberhere[ref:a]
+%D       \breakhere = b + 2  \numberhere
+%D       \breakhere = c + 3  \numberhere
+%D \stopformula
+%D
+%D \startformula
+%D     \startsubnumberinghere
+%D         x \alignhere = a + 1  \numberhere
+%D           \breakhere = b + 2  \numberhere
+%D           \breakhere = c + 3  \numberhere
+%D     \stopsubnumberinghere
+%D           \breakhere = d + 4n \numberhere[ref:d]
+%D \stopformula
+%D \stoptyping
+
+\newconditional \c_strc_formulas_in_sub
+
+\permanent\protected\def\startsubnumberinghere
+  {\begingroup
+   \c_strc_formulas_in_sub\conditionaltrue
+   \strc_counters_increment\v!formula}
+
+\permanent\protected\def\stopsubnumberinghere
+  {\c_strc_formulas_in_sub\conditionalfalse
+   \endgroup}
+
+\permanent\tolerant\protected\def\numberhere[#1]%
+  {\begingroup
+   \global\c_strc_formulas_incremented\conditionalfalse
+   \global\c_strc_formulas_referenced\conditionaltrue
+   \global\c_strc_formulas_inside_place\conditionalfalse
+   \global\c_strc_formulas_place_number_mode\zerocount
+   %
+   \glettonothing\currentplaceformulareference
+   \glettonothing\currentplaceformulasuffix
+   %
+   \ifparameter#1\orelse\ifhastok={#1}%
+     \strc_formulas_set_place_parameters{#1}%
+   \else
+     \xdef\currentplaceformulareference{#1}%
+   \fi
+   \iftrialtypesetting
+   \orelse\ifempty\currentplaceformulareference
+   \else
+     \global\c_strc_formulas_referenced\conditionalfalse % maybe always anyway (title etc)
+     \ifconditional\c_strc_formulas_in_sub
+       \c_strc_formulas_counter_level\plustwo % we use normal numbering here
+     \fi
+     \strc_formulas_check_reference
+       \c_strc_formulas_place_number_mode
+       \currentplaceformulareference
+   \fi
+   \texthere
+     [\ifcstok{\formulaparameter\c!location}\v!left\v!left\else\v!right\fi]%
+     {\ifconditional\c_strc_formulas_in_sub
+        \strc_formulas_handle_sub_numbering
+      \else
+        \strc_formulas_handle_numbering
+      \fi}%
    \endgroup}
 
 % to be checked

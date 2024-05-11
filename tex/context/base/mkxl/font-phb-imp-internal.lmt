@@ -99,7 +99,7 @@ local fontdata    = fonts.hashes.identifiers
 local initialized = nil
 local loaded      = { }
 local shared      = { }
-local libname     = os.name == "windows" and "libharfbuzz-0" or "libharfbuzz"
+local libfile     = os.name == "windows" and "libharfbuzz-0" or "libharfbuzz"
 
 local shapers = {
     native    = { "ot", "uniscribe", "fallback" },
@@ -112,7 +112,7 @@ local mode = 8 -- now 32 bit crashes (random, needs checking, probably zero end 
 
 function utilities.hb.methods.internal(font,data,rlmode,text,leading,trailing)
     if initialized == nil then
-        local filename = findlib(libname)
+        local filename = findlib(libfile)
         initialized = hb_initialize(filename)
         if initialized then
             report("using hb library version %a, supported shapers: %,t",hb_getversion(),hb_getshapers())

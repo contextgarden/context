@@ -29,11 +29,31 @@
 
 \startmodule[tikz]
 
+\ifdefined\hoffset \else
+    \newdimen\hoffset
+    \newdimen\voffset
+\fi
+
 \ifdefined\pdflastxpos \else
     \unprotect
         \unexpanded\def\pdflastxpos{\numexpr\clf_lastxpos\relax}
         \unexpanded\def\pdflastypos{\numexpr\clf_lastypos\relax}
     \protect
+\fi
+
+\ifdefined\pdfstrcmp\else
+
+    \startluacode
+        interfaces.implement {
+            name      = "pdfstrcmp",
+            arguments = "2 strings",
+            public    = true,
+            actions   = function(a,b)
+                context((a < b and -1) or (a > b and 1) or 0)
+            end
+        }
+    \stopluacode
+
 \fi
 
 \permanent\protected\def\starttikzinput

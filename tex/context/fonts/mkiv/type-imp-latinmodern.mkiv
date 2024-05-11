@@ -28,6 +28,16 @@
 
 \starttypescriptcollection[latinmodern]
 
+    \pushglobalsetups
+
+        \startsetups[modern]
+            \fencemuskip0mu
+        \stopsetups
+
+        \startsetups[latinmodern]                    \directsetup{modern}\stopsetups
+
+    \popglobalsetups
+
     \doifunknownfontfeature {lm-math-bold} {\definefontfeature[lm-math-bold][boldened]}
 
     \starttypescript [\s!serif] [simple] [\s!name]

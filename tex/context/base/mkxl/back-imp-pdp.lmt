@@ -30,6 +30,7 @@ local scanwhd          = tokenscanners.whd
 local values           = tokens.values
 local dimension_value  = values.dimension
 local cardinal_value   = values.cardinal
+local integer_value    = values.integer
 
 local immediate_code   = tex.flagcodes.immediate
 
@@ -287,3 +288,11 @@ implement { name = "pdfrefobj",    actions = pdf_refobj,    public = true, untra
 --------- { name = "pdfsave",      actions = pdf_save }
 --------- { name = "pdfrestore",   actions = pdf_restore }
 --------- { name = "pdfsetmatrix", actions = pdf_setmatrix }
+
+-- implement {
+--     name      = "pdfstrcmp",
+--     arguments = "2 strings",
+--     usage     = "value",
+--     public    = true,
+--     actions   = function(a,b) return integer_value, (a < b and -1) or (a > b and 1) or 0 end
+-- }

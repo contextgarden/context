@@ -415,8 +415,10 @@
   {\ifzeropt\page_inserts_get_height\namedinsertionnumber\s!topfloat\else
      \page_one_command_flush_top_insertions_indeed % less tracing
      \ifcase\bottomraggednessmode\or\else
-       % will be an option
-       \vskip\zeropoint\s!plus\openstrutdepth\s!minus\openstrutdepth\relax
+       % will be an option because of stretch size effect when we limit
+       \ifzerodim\d_page_box_stretch_delta
+         \vskip\zeropoint\s!plus\openstrutdepth\s!minus\openstrutdepth\relax
+       \fi
      \fi
    \fi
    \global\d_page_floats_inserted_top\zeropoint}

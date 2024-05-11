@@ -190,6 +190,9 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_kern, explicit_kern_subtype,        userkern)
     set_value_entry_key(subtypes_kern, accent_kern_subtype,          accentkern)
     set_value_entry_key(subtypes_kern, italic_kern_subtype,          italiccorrection)
+    set_value_entry_key(subtypes_kern, left_correction_kern_subtype, leftcorrectionkern)
+    set_value_entry_key(subtypes_kern, right_correction_kern_subtype,rightcorrectionkern)
+    set_value_entry_key(subtypes_kern, space_font_kern_subtype,      spacefontkern)
     set_value_entry_key(subtypes_kern, left_margin_kern_subtype,     leftmarginkern)
     set_value_entry_key(subtypes_kern, right_margin_kern_subtype,    rightmarginkern)
     set_value_entry_key(subtypes_kern, explicit_math_kern_subtype,   mathkern)
@@ -1726,6 +1729,29 @@ void tex_initialize_nodes(void)
     }
 }
 
+int tex_used_node_count(void)
+{
+    int used = 0;
+    for  (int i = lmt_node_memory_state.nodes_data.top; i > lmt_node_memory_state.reserved; i--) {
+        if (lmt_node_memory_state.nodesizes[i] > 0 && (node_type(i) <= max_node_type)) {
+            ++used;
+        }
+    }
+    return used;
+}
+int tex_free_node_count(void)
+{
+    int free = 0;
+    for (int i = 1; i < max_chain_size; i++) {
+        halfword p = lmt_node_memory_state.free_chain[i];
+        while (p) {
+            ++free;
+            p = node_next(p);
+        }
+    }
+    return free;
+}
+
 void tex_dump_node_mem(dumpstream f)
 {
     dump_int(f, lmt_node_memory_state.nodes_data.allocated);
@@ -1795,6 +1821,7 @@ int tex_n_of_used_nodes(int counts[])
     for (int i = lmt_node_memory_state.nodes_data.top; i > lmt_node_memory_state.reserved; i--) {
         if (lmt_node_memory_state.nodesizes[i] > 0 && (node_type(i) <= max_node_type)) {
             counts[node_type(i)] += 1;
+//printf("%i %i\n",node_type(i),node_subtype(i));
         }
     }
     for (int i = 0; i < max_node_type; i++) {
@@ -1832,20 +1859,34 @@ halfword tex_list_node_mem_usage(void)
 
 /*
     Now comes some attribute stuff. We could have a fast allocator for them and a dedicated pool
-    (actually for each node tyep I guess).
+    (actually for each node type I guess).
 */
 
 extern void tex_change_attribute_register(halfword a, halfword id, halfword value)
 {
     if (eq_value(id) != value) { 
         if (is_global(a)) { 
-            int i; 
-            for (i = (lmt_save_state.save_stack_data.ptr - 1); i >= 0; i--) { 
-                if (save_type(i) == attribute_list_save_type) { 
-                    delete_attribute_reference(save_value(i)); 
-                    save_value(i) = attribute_cache_disabled; 
-                } 
-            } 
+         // for (int i = (lmt_save_state.save_stack_data.ptr - 1); i >= 0; i--) { 
+         //     if (save_type(i) == level_boundary_save_type) { 
+         //         delete_attribute_reference(save_value_2(i)); /* watch the _2 here */
+         //         save_value_2(i) = attribute_cache_disabled;  /* watch the _2 here */
+         //     } 
+         // } 
+            int ptr = lmt_save_state.save_stack_data.ptr - 1; 
+            while (ptr >= 0) { 
+                if (save_type(ptr) == level_boundary_save_type) { 
+                    delete_attribute_reference(save_value_2(ptr)); /* watch the _2 here */
+                    save_value_2(ptr) = attribute_cache_disabled;  /* watch the _2 here */
+                    if (ptr) { 
+                        ptr = save_value(ptr);
+                    } else {
+                        break;
+                    }
+                } else { 
+                    /* something is wrong here */
+                    break;
+                }
+            }
         } else { 
             delete_attribute_reference(current_attribute_state); 
         } 
@@ -2581,16 +2622,16 @@ void tex_show_node_list(halfword p, int threshold, int max)
                         }
                         /* effective */
                         if (whd.wd) {
-                            tex_print_format(", wd %D", whd.wd, pt_unit);
+                            tex_print_format(", wd %p", whd.wd);
                         }
                         if (whd.ht) {
-                            tex_print_format(", ht %D", whd.ht, pt_unit);
+                            tex_print_format(", ht %p", whd.ht);
                         }
                         if (whd.dp) {
-                            tex_print_format(", dp %D", whd.dp, pt_unit);
+                            tex_print_format(", dp %p", whd.dp);
                         }
                         if (whd.ic) {
-                            tex_print_format(", ic %D", whd.ic, pt_unit);
+                            tex_print_format(", ic %p", whd.ic);
                         }
                         /* */
                         if (get_glyph_language(p)) {
@@ -2603,19 +2644,19 @@ void tex_show_node_list(halfword p, int threshold, int max)
                             tex_print_format(", hyphenationmode %x", get_glyph_hyphenate(p));
                         }
                         if (glyph_x_offset(p)) {
-                            tex_print_format(", xoffset %D", glyph_x_offset(p), pt_unit);
+                            tex_print_format(", xoffset %p", glyph_x_offset(p));
                         }
                         if (glyph_y_offset(p)) {
-                            tex_print_format(", yoffset %D", glyph_y_offset(p), pt_unit);
+                            tex_print_format(", yoffset %p", glyph_y_offset(p));
                         }
                         if (glyph_left(p)) {
-                            tex_print_format(", left %D", glyph_left(p), pt_unit);
+                            tex_print_format(", left %p", glyph_left(p));
                         }
                         if (glyph_right(p)) {
-                            tex_print_format(", right %D", glyph_right(p), pt_unit);
+                            tex_print_format(", right %p", glyph_right(p));
                         }
                         if (glyph_raise(p)) {
-                            tex_print_format(", raise %D", glyph_raise(p), pt_unit);
+                            tex_print_format(", raise %p", glyph_raise(p));
                         }
                         if (glyph_expansion(p)) {
                             tex_print_format(", expansion %i", glyph_expansion(p));
@@ -2650,13 +2691,13 @@ void tex_show_node_list(halfword p, int threshold, int max)
                 case unset_node:
                     /*tex Display box |p|. */
                     if (box_width(p)) {
-                        tex_print_format(", width %D", box_width(p), pt_unit);
+                        tex_print_format(", width %p", box_width(p));
                     }
                     if (box_height(p)) {
-                        tex_print_format(", height %D", box_height(p), pt_unit);
+                        tex_print_format(", height %p", box_height(p));
                     }
                     if (box_depth(p)) {
-                        tex_print_format(", depth %D", box_depth(p), pt_unit);
+                        tex_print_format(", depth %p", box_depth(p));
                     }
                     if (node_type(p) == unset_node) {
                         /*tex Display special fields of the unset node |p|. */
@@ -2702,7 +2743,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
                             }
                         }
                         if (box_shift_amount(p) != 0) {
-                            tex_print_format(", shifted %D", box_shift_amount(p), pt_unit);
+                            tex_print_format(", shifted %p", box_shift_amount(p));
                         }
                         if (valid_direction(box_dir(p))) {
                             tex_print_format(", direction %2", box_dir(p));
@@ -2713,7 +2754,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
                                 tex_print_format(", orientation %x", box_orientation(p));
                             }
                             if (tex_has_box_geometry(p, offset_geometry)) {
-                                tex_print_format(", offset(%D,%D)", box_x_offset(p), pt_unit, box_y_offset(p), pt_unit);
+                                tex_print_format(", offset(%p,%p)", box_x_offset(p), box_y_offset(p));
                             }
                             if (tex_has_box_geometry(p, anchor_geometry)) {
                                 if (box_anchor(p)) {
@@ -2797,10 +2838,10 @@ void tex_show_node_list(halfword p, int threshold, int max)
                 case insert_node:
                     /*tex Display insertion |p|. The natural size is the sum of height and depth. */
                     tex_print_format(
-                        ", index %i, total height %D, max depth %D, split glue (", 
+                        ", index %i, total height %p, max depth %p, split glue (", 
                         insert_index(p), 
-                        insert_total_height(p), pt_unit,
-                        insert_max_depth(p), pt_unit
+                        insert_total_height(p),
+                        insert_max_depth(p)
                     );
                     tex_print_specnode(insert_split_top(p), no_unit); /* todo: formatter for specnode but what CHAR to use */
                     tex_print_format(
@@ -2868,8 +2909,8 @@ void tex_show_node_list(halfword p, int threshold, int max)
                             if (tex_par_state_is_set(p, par_par_passes_code)              ) { v = par_par_passes(p)              ; if (v)                     { tex_print_str(", parpasses * ");                                              } }
                         }
                         /* local boxes */
-                        v = tex_get_local_left_width(p)  ; if (v) { tex_print_format(", leftboxwidth %D", v, pt_unit); }
-                        v = tex_get_local_right_width(p) ; if (v) { tex_print_format(", rightboxwidth %D", v, pt_unit); }
+                        v = tex_get_local_left_width(p)  ; if (v) { tex_print_format(", leftboxwidth %p", v); }
+                        v = tex_get_local_right_width(p) ; if (v) { tex_print_format(", rightboxwidth %p", v); }
                         tex_print_node_list(par_box_left(p), "leftbox", threshold, max);
                         tex_print_node_list(par_box_right(p), "rightbox", threshold, max);
                         tex_print_node_list(par_box_middle(p), "middlebox", threshold, max);
@@ -2934,7 +2975,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
                 case kern_node:
                     /*tex Display kern |p| */
                     if (node_subtype(p) != explicit_math_kern_subtype) {
-                        tex_print_format(", amount %D", kern_amount(p), pt_unit);
+                        tex_print_format(", amount %p", kern_amount(p));
                         if (kern_expansion(p)) {
                             tex_print_format(", expansion %i", kern_expansion(p));
                         }
@@ -2948,7 +2989,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
                         tex_print_str(", glued ");
                         tex_print_specnode(p, no_unit);
                     } else if (math_surround(p)) {
-                        tex_print_format(", surrounded %D", math_surround(p), pt_unit);
+                        tex_print_format(", surrounded %p", math_surround(p));
                     }
                     if (math_penalty(p)) {
                         tex_print_format(", penalty %i", math_penalty(p));
@@ -2997,10 +3038,10 @@ void tex_show_node_list(halfword p, int threshold, int max)
                         tex_print_format(", index %i", adjust_index(p));
                     }
                     if (has_adjust_option(p, adjust_option_depth_before) && adjust_depth_before(p)) {
-                        tex_print_format(", depthbefore %D", adjust_depth_before(p), pt_unit);
+                        tex_print_format(", depthbefore %p", adjust_depth_before(p));
                     }
                     if (has_adjust_option(p, adjust_option_depth_after) &&adjust_depth_before(p)) {
-                        tex_print_format(", depthafter %D", adjust_depth_after(p), pt_unit);
+                        tex_print_format(", depthafter %p", adjust_depth_after(p));
                     }
                     tex_print_node_list(adjust_list(p), "list", threshold, max);
                     break;
@@ -3337,6 +3378,8 @@ halfword tex_new_char_node(quarterword subtype, halfword fnt, halfword chr, int 
         set_glyph_y_scale(p, glyph_y_scale_par);
         set_glyph_x_offset(p, glyph_x_offset_par);
         set_glyph_y_offset(p, glyph_y_offset_par);
+        set_glyph_slant(p, glyph_slant_par);
+        set_glyph_weight(p, glyph_weight_par);
     }
     if (! tex_char_exists(fnt, chr)) {
         int callback_id = lmt_callback_defined(missing_character_callback);
@@ -3369,6 +3412,8 @@ halfword tex_new_text_glyph(halfword fnt, halfword chr)
     set_glyph_y_scale(p, glyph_y_scale_par);
     set_glyph_x_offset(p, glyph_x_offset_par);
     set_glyph_y_offset(p, glyph_y_offset_par);
+    set_glyph_slant(p, glyph_slant_par);
+    set_glyph_weight(p, glyph_weight_par);
     return p;
 }
 
@@ -4533,10 +4578,9 @@ halfword tex_reversed_node_list(halfword list)
     if (list) {
         halfword prev = list;
         halfword last = list;
-        list = node_next(list);
-        if (list) {
+        halfword next = node_next(list);
+        if (next) {
             while (1) {
-                halfword next = node_next(list);
                 tex_couple_nodes(list, prev);
                 if (node_type(list) == dir_node) {
                     node_subtype(list) = node_subtype(list) == cancel_dir_subtype ? normal_dir_subtype : cancel_dir_subtype;
@@ -4544,6 +4588,7 @@ halfword tex_reversed_node_list(halfword list)
                 if (next) {
                     prev = list;
                     list = next;
+                    next = node_next(list);
                 } else {
                     node_next(last) = null;
                     node_prev(list) = null;
@@ -4816,7 +4861,7 @@ int tex_flatten_leaders(halfword box, int grp, int just_pack)
                             break;
                     }
                     if (node_type(leader) == hlist_node) {
-                        packed = tex_hpack(box_list(leader), scaledround(width), packing_exactly, box_dir(leader), holding_none_option);
+                        packed = tex_hpack(box_list(leader), scaledround(width), packing_exactly, box_dir(leader), holding_none_option, box_limit_none);
                     } else {
                         packed = tex_vpack(box_list(leader), scaledround(width), packing_exactly, 0, box_dir(leader), holding_none_option, NULL);
                     }

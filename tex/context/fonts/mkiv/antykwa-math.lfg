@@ -184,6 +184,10 @@ return {
     author = "Hans, Mojca, Aditya, Mikael",
     copyright = "ConTeXt development team",
     mathematics = {
+parameters = {
+    RadicalKernAfterExtensible = 100,
+    RadicalKernBeforeExtensible = 100,
+},
         mapfiles = {
             "antt-rm.map",
             "antt-mi.map",

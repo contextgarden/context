@@ -19,7 +19,7 @@ local report            = logs.reporter("backend")
 
 local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
-local setaction         = nodes.tasks.setaction
+----- setaction         = nodes.tasks.setaction
 
 local implement         = interfaces.implement
 local variables         = interfaces.variables
@@ -115,7 +115,8 @@ interfaces.implement {
     name      = "setrealspaces",
     arguments = "string",
     actions   = function(v)
-        setaction("shipouts","nodes.handlers.accessibility",v == variables.yes)
+        directives.enable("backends.spaces", v == variables.yes)
+     -- setaction("shipouts","nodes.handlers.accessibility",v == variables.yes)
     end
 }
 

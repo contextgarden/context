@@ -15346,6 +15346,17 @@
      <cd:parameter name="ownerpassword">
       <cd:constant type="cd:text"/>
      </cd:parameter>
+     <cd:parameter name="compact">
+      <cd:constant type="yes"/>
+      <cd:constant default="yes" type="no"/>
+      <cd:constant type="cd:text"/>
+     </cd:parameter>
+     <cd:parameter name="metadata">
+      <cd:constant default="yes" type="page"/>
+      <cd:constant type="document"/>
+      <cd:constant type="yes"/>
+      <cd:constant type="no"/>
+     </cd:parameter>
     </cd:assignments>
    </cd:arguments>
   </cd:command>

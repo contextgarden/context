@@ -1,0 +1,430 @@
+if not modules then modules = { } end modules ['lpdf-sig'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to back-imp-pdf.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- experiment and playground
+
+local find, gsub, rep, format = string.find, string.gsub, string.rep, string.format
+
+-- M         = "D:20231118193724Z",
+-- Reference = pdfdictionary  {
+--     Data            = catalog,
+--     TransformMethod = pdfconstant("FieldMDP"),
+--     Type            = pdfconstant("SigRef"),
+--     TransformParams = pdfdictionary {
+--         Action = pdfconstant("Include"),
+--         Fields = pdfarray(),
+--         Type   = pdfconstant("TransformParams"),
+--         V      = 1.2,
+--     }
+-- },
+
+local function updatesignature(signature,...)
+    local updated = gsub(signature,
+     -- "/ByteRange %[ 2000000000 2000000000 2000000000 2000000000 %]",
+        "/ByteRange %[ .......... .......... .......... .......... %]",
+        format("/ByteRange [ %010i %010i %010i %010i ]",...)
+    )
+    return updated ~= signature and updated or false
+end
+
+local function getbyteranges(signature,position,filesize)
+    local leftangle  = find(signature,"<0")
+    local rightangle = find(signature,"0>")
+    local b1 = 0
+    local n1 = position + leftangle  - 2
+    local b2 = position + rightangle + 1
+    local n2 = filesize - b2
+    return { b1, n1, b2, n2 }
+end
+
+if lpdf and context then
+
+    local pdfreserveobject = lpdf.reserveobject
+    local pdfflushobject   = lpdf.flushobject
+    local pdfreference     = lpdf.reference
+    local pdfconstant      = lpdf.constant
+    local pdfdictionary    = lpdf.dictionary
+    local pdfarray         = lpdf.array
+    local pdfliteral       = lpdf.literal
+    local pdfunicode       = lpdf.unicode
+
+    local status    = {
+        signature = false,
+        position  = false,
+        filename  = false,
+        filesize  = false,
+    }
+
+    local reference = nil
+
+    function lpdf.registersignature(value)
+        if value == "pkcs7" then
+            local signature = pdfreserveobject()
+            status.signature = signature
+         -- reference = pdfreference(pdfflushobject(pdfdictionary {
+         --     DigestMethod = pdfconstant("SHA256"),
+         -- }))
+            return pdfreference(signature)
+        end
+    end
+
+    function lpdf.preparesignature(flush,f,offset,objects)
+        local signature = status.signature
+        if signature then
+            local d = pdfdictionary {
+                ByteRange    = pdfarray { 2000000000, 2000000000, 2000000000, 2000000000 },
+                Contents     = pdfliteral(rep("0",4096),true), -- should be enough
+                Filter       = pdfconstant("Adobe.PPKLite"),
+                SubFilter    = pdfconstant("adbe.pkcs7.detached"),
+                Type         = pdfconstant("Sig"),
+             -- Reasons      = pdfunicode("just to be sure"),
+                Reference    = reference,
+            }
+            objects[signature] = offset
+            local object = signature .. " 0 obj\n" .. tostring(d) .. "\nendobj\n"
+            status.reference = signature
+            status.position  = offset
+            status.signature = object
+            flush(f,object)
+            offset = offset + #object
+        end
+        return offset
+    end
+
+    function lpdf.finalizesignature(filename,usedsize)
+        if not filename then
+            return
+        end
+        local signature = status.signature
+        if not signature then
+            return
+        end
+        local signame    = file.replacesuffix(filename,"sig")
+        local filesize   = file.size(filename)
+        local samesize   = usedsize ~= filesize
+        local handle     = samesize and io.open(filename,"r+b")
+        local position   = status.position
+        status.ranges    = getbyteranges(signature,position,filesize)
+        status.signature = signature
+        status.length    = #signature
+        status.filename  = filename
+        status.filesize  = filesize
+        table.save(signame, status)
+        if handle then
+            local updated = updatesignature(signature,b1,n1,b2,n2)
+            if updated then
+                handle:seek("set",position)
+                handle:write(updated)
+                handle:close()
+                status.updated = true
+            end
+        end
+    end
+
+else
+
+    -- "openssl cms -verify -noverify -cmsout -print -inform DER -in ".. binfile
+    -- -binary is needed, otherwise \nopdfcompression output will be real slow
+
+          lpdf    = lpdf or { }
+    local report  = logs.reporter("sign pdf")
+
+    local openssl = nil
+
+    local runner = sandbox and sandbox.registerrunner {
+        name     = "openssl",
+        program  = "openssl",
+        template = "cms -sign -binary -passin pass:%password% -in %datafile% -out %signature% -outform der -signer %certificate%",
+        reporter = report,
+    }
+
+    local function checklibrary(uselibrary)
+        if uselibrary and openssl == nil then
+            dofile(resolvers.findfile("libs-imp-openssl.lmt","tex"))
+            openssl = require("openssl")
+            if not openssl then
+                openssl = false
+            end
+        end
+        return openssl
+    end
+
+    -- Here we use the status file so that we don't need to load the pdf file
+    -- which saves time and memory.
+
+    local function getsigdata(pdffile,f)
+        if not lpdf.epdf then
+            report("epdf support is not loaded")
+            return
+        end
+        local pdf = lpdf.epdf.load(pdffile)
+        if not pdf then
+            report("file %a can't be loaded",pdffile)
+            return
+        end
+        local widgets = pdf.widgets
+        if not widgets then
+            lpdf.close(pdf)
+            return
+        end
+        local position = nil
+        local length   = nil
+        for i=1,#widgets do
+            local annotation = widgets[i]
+            local parent = annotation.Parent or { }
+            local what   = annotation.FT or parent.FT
+            if what == "Sig" then
+                local obj = annotation.__raw__.V
+                if obj and obj[1]== 10 then
+                    position, length = lpdf.epdf.objectrange(pdf,obj[3])
+                    break
+                end
+            end
+        end
+        lpdf.close(pdf)
+        if position then
+            local p = f:seek()
+            f:seek("set",position)
+            local signature = f:read(length),
+            f:seek("set",p)
+            local filesize = file.size(pdffile)
+            return {
+                position  = position,
+                length    = length,
+                signature = signature,
+                filename  = pdffile,
+                filesize  = filesize,
+                ranges    = getbyteranges(signature,position,filesize)
+            }
+        end
+    end
+
+    function lpdf.sign(specification)
+        local report      = specification.report      or report
+        local pdffile     = specification.filename    or ""
+        local certificate = specification.certificate or ""
+        local password    = specification.password    or ""
+        if pdffile == "" or certificate == "" or password == "" then
+            report("invalid specification")
+            return
+        end
+        --
+        local openssl = checklibrary(specification.uselibrary or false)
+        --
+        local sigfile = file.replacesuffix(pdffile,"sig")
+        local tmpfile = file.replacesuffix(pdffile,"tmp")
+        local binfile = file.replacesuffix(pdffile,"bin")
+        --
+        local f = io.open(pdffile,"r+b")
+        if not f then
+            report("unable to open %a for reading and writing",pdffile)
+            return
+        end
+        --
+        local data = table.load(sigfile)
+        if not data then
+            data = getsigdata(pdffile,f)
+        end
+        if not data then
+            report("unable to open %a",sigfile)
+            return
+        end
+        local filename  = data.filename
+        if filename ~= pdffile then
+            report("file mismatch %a",pdffile)
+            return
+        end
+        --
+        local signature = data.signature
+        local position  = data.position
+        local ranges    = data.ranges
+        local filesize  = data.filesize
+        statistics.starttiming("sign pdf")
+        local before = f:read(position)
+        local insert = f:seek()
+        local middle = f:read(#signature)
+        local after  = f:read(filesize) -- no problem if we overshoot
+        if not before or not after then
+            report("invalid status")
+            return
+        end
+        if middle ~= signature then
+            report("no prestine signature")
+            return
+        end
+        --
+     -- if not data.updated then
+            signature = updatesignature(signature,unpack(ranges)) or signature
+     -- end
+        --
+        middle = string.gsub(signature," <0.-0> ","  ")
+        local data = before .. middle .. after -- we can nil before and after
+        statistics.starttiming("sign ssh")
+        report("signing %a",pdffile)
+        local digest = nil
+        if openssl then
+            local result, message = openssl.sign {
+                data     = data,
+                certfile = certificate,
+                password = password,
+            }
+            if result then
+                digest = message
+            else
+                report("ssh error: %a",message)
+            end
+        else
+            io.savedata(tmpfile,data)
+            runner {
+                password    = password,
+                datafile    = tmpfile,
+                signature   = binfile,
+                certificate = certificate,
+            }
+            statistics.stoptiming("sign ssh")
+            digest = io.loaddata(binfile)
+            if not digest or digest == "" then
+                report("invalid digest from ssh")
+                return
+            end
+            if status.purge then
+                os.remove(tmpfile)
+                os.remove(binfile)
+            end
+        end
+        if digest then
+            digest = string.tohex(digest)
+            signature = string.gsub(signature,
+                "(/Contents <)([^>]+)(>)",
+                function(b,s,e) return b .. digest .. string.rep("0",#s-#digest) .. e end
+            )
+            f:seek("set",insert)
+            f:write(signature)
+            f:close()
+        end
+        if status.purge then
+            os.remove(sigfile)
+        end
+        statistics.stoptiming("sign pdf")
+        status.sshtime = statistics.elapsedtime("sign ssh")
+        status.pdftime = statistics.elapsedtime("sign pdf")
+        report("filesize %i bytes, ssh time %0.3f seconds, total time %0.3f seconds",
+            filesize,
+            statistics.elapsedtime("sign ssh"),
+            statistics.elapsedtime("sign pdf")
+        )
+        return status
+    end
+
+ -- local runner = sandbox and sandbox.registerrunner {
+ --     name     = "openssl",
+ --     program  = "openssl",
+ --     template = "...", -- signature and datafile
+ --     reporter = report,
+ -- }
+
+    -- Here we load the to be checked pdf file because the status file is not present
+    -- and the pdf file can be diferent anyway.
+
+    function lpdf.verify(specification)
+        if not lpdf.epdf then
+            report("epdf support is not loaded")
+            return
+        end
+        --
+        local report      = specification.report or report
+        local pdffile     = specification.filename or ""
+        local certificate = specification.certificate or ""
+        local password    = specification.password or ""
+        if pdffile == "" or certificate == "" or password == "" then
+            report("invalid specification")
+            return
+        end
+        --
+        local openssl = checklibrary(specification.uselibrary or false)
+        --
+        local pdf = lpdf.epdf.load(pdffile)
+        if not pdf then
+            report("file %a can't be loaded",pdffile)
+            return
+        end
+        --
+        local widgets = pdf.widgets
+        if not widgets then
+            report("file %a has no signature widgets",pdffile)
+            lpdf.close(pdf)
+            return
+        end
+        local signature = nil
+        local byterange = nil
+        for i=1,#widgets do
+            local annotation = widgets[i]
+            local parent = annotation.Parent or { }
+            local what   = annotation.FT or parent.FT
+            if what == "Sig" then
+                local value = annotation.V
+                if value then
+                    signature = string.tobytes(tostring(value.Contents) or "")
+                    byterange = value.ByteRange
+                end
+            end
+        end
+        lpdf.close(pdf)
+        if not signature or signature == "" or not byterange then
+            report("file %a has no signature",pdffile)
+            return
+        end
+        --
+        local f = io.open(pdffile,"rb")
+        if not f then
+            report("unable to open %a for reading",pdffile)
+            return
+        end
+        f:seek("set",byterange[1])
+        local before = f:read(byterange[2] + 1)
+     -- f:seek("set",byterange[2] + 2)
+     -- local existing = f:read(byterange[3] - byterange[2] - 3)
+        f:seek("set",byterange[3])
+        local after = f:read(byterange[4])
+        -- we could check the size
+        if not before or not after then
+            report("invalid byteranges in %a",pdffile)
+            return
+        end
+        local okay = false
+        local data = before .. after
+        if openssl then
+            okay = openssl.verify {
+                data      = data,
+                certfile  = certificate,
+                password  = password,
+                signature = signature,
+            }
+        else
+            report("verifying with the binary is not yet implemented")
+         -- local tmpfile = file.replacesuffix(pdffile,"tmp")
+         -- local binfile = file.replacesuffix(pdffile,"bin")
+         --
+         -- io.savedata(binfile,signature)
+         -- io.savedata(tmpfile,data)
+         -- runner {
+         --     datafile  = tmpfile,
+         --     signature = binfile,
+         -- }
+         -- os.remove(tmpfile)
+         -- os.remove(binfile)
+        end
+        if okay then
+            report("signature in file %a matches the content",pdffile)
+        else
+            report("signature in file %a doesn't match the content",pdffile)
+        end
+    end
+
+end

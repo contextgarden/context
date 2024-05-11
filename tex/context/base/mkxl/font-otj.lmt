@@ -124,7 +124,7 @@ local insertnodeafter    = nuts.insertafter
 local properties         = nodes.properties.data
 
 local fontkern           = nuts.pool and nuts.pool.fontkern
-local italickern         = nuts.pool and nuts.pool.italickern
+local spacefontkern      = nuts.pool and nuts.pool.spacefontkern
 
 local function somekern(makekern,amount,current)
     local kern = makekern(amount)
@@ -132,14 +132,14 @@ local function somekern(makekern,amount,current)
     return kern
 end
 
-local useitalickerns     = false
+local usespacefontkerns  = false
 local useadvance         = false
 
-directives.register("fonts.injections.useitalics", function(v)
+directives.register("fonts.injections.usespacefontkerns", function(v)
     if v then
-        report_injections("using italics for space kerns (tracing only)")
+        report_injections("using spacefontkerns for space kerns (tracing only)")
     end
-    useitalickerns = v
+    usespacefontkerns = v
 end)
 
 registerdirective("fonts.injections.method", function(v)
@@ -666,8 +666,8 @@ end
 --                         if useadvance then
 --                             addmargins(current,-leftkern)
 --                         elseif prev and getid(prev) == glue_code then
---                             if useitalickerns then
---                                 head = insertnodebefore(head,current,italickern(leftkern))
+--                             if usespacefontkerns then
+--                                 head = insertnodebefore(head,current,spacefontkern(leftkern))
 --                             else
 --                                 setwidth(prev, getwidth(prev) + leftkern)
 --                             end
@@ -849,8 +849,8 @@ local function inject_kerns_only_kerns(head,where)
                     if leftkern and leftkern ~= 0 then
                         leftkern = xscaled(current,leftkern)
                         if prev and getid(prev) == glue_code then
-                            if useitalickerns then
-                                head = insertnodebefore(head,current,italickern(leftkern))
+                            if usespacefontkerns then
+                                head = insertnodebefore(head,current,spacefontkern(leftkern))
                             else
                                 setwidth(prev,getwidth(prev) + leftkern)
                             end
@@ -1142,8 +1142,8 @@ end
 --                                 addxoffset(current,leftkern)
 --                                 rightkern = 0
 --                             elseif prev and getid(prev) == glue_code then
---                                 if useitalickerns then
---                                     head = insertnodebefore(head,current,italickern(leftkern))
+--                                 if usespacefontkerns then
+--                                     head = insertnodebefore(head,current,spacefontkern(leftkern))
 --                                 else
 --                                     setwidth(prev,getwidth(prev)+leftkern)
 --                                 end
@@ -1153,8 +1153,8 @@ end
 --                         end
 --                         if rightkern ~= 0 then
 --                             if next and getid(next) == glue_code then
---                                 if useitalickerns then
---                                     insertnodeafter(head,current,italickern(rightkern))
+--                                 if usespacefontkerns then
+--                                     insertnodeafter(head,current,spacefontkern(rightkern))
 --                                 else
 --                                     setwidth(next, getwidth(next)+rightkern)
 --                                 end
@@ -1455,8 +1455,8 @@ local function inject_positions_only_kerns(head,where)
                             addxoffset(current,leftkern)
                             rightkern = 0
                         elseif prev and getid(prev) == glue_code then
-                            if useitalickerns then
-                                head = insertnodebefore(head,current,italickern(leftkern))
+                            if usespacefontkerns then
+                                head = insertnodebefore(head,current,spacefontkern(leftkern))
                             else
                                 setwidth(prev,getwidth(prev)+leftkern)
                             end
@@ -1466,8 +1466,8 @@ local function inject_positions_only_kerns(head,where)
                     end
                     if rightkern ~= 0 then
                         if next and getid(next) == glue_code then
-                            if useitalickerns then
-                                insertnodeafter(head,current,italickern(rightkern))
+                            if usespacefontkerns then
+                                insertnodeafter(head,current,spacefontkern(rightkern))
                             else
                                 setwidth(next, getwidth(next)+rightkern)
                             end
@@ -2042,8 +2042,8 @@ local function inject_everything(head,where)
                                 addxoffset(current,leftkern)
                                 rightkern = 0
                             elseif prev and getid(prev) == glue_code then
-                                if useitalickerns then
-                                    head = insertnodebefore(head,current,italickern(leftkern))
+                                if usespacefontkerns then
+                                    head = insertnodebefore(head,current,spacefontkern(leftkern))
                                 else
                                     setwidth(prev, getwidth(prev) + leftkern)
                                 end
@@ -2054,8 +2054,8 @@ local function inject_everything(head,where)
                         if rightkern and rightkern ~= 0 then
                             rightkern = xscaled(current,rightkern)
                             if next and getid(next) == glue_code then
-                                if useitalickerns then
-                                    insertnodeafter(head,current,italickern(rightkern))
+                                if usespacefontkerns then
+                                    insertnodeafter(head,current,spacefontkern(rightkern))
                                 else
                                     setwidth(next, getwidth(next) + rightkern)
                                 end
@@ -2326,7 +2326,7 @@ function nodes.injections.setspacekerns(font,sequence)
     end
 end
 
-local threshold =  1 -- todo: add a few methods for context
+local threshold = 1 -- todo: add a few methods for context
 
 directives.register("otf.threshold", function(v) threshold = tonumber(v) or 1 end)
 
@@ -2413,8 +2413,10 @@ local function injectspaces(head)
                 end
                 if rightkerns then
                     rightkern = rightkerns[nextchar]
+                    if rightkern then
+                        xscale = getxscale(next)
+                    end
                 end
-                xscale = getxscale(next)
             end
         end
         if prevchar then
@@ -2425,15 +2427,17 @@ local function injectspaces(head)
                 end
                 if leftkerns then
                     leftkern = leftkerns[prevchar]
+                    if leftkern then
+                        xscale = getxscale(prev)
+                    end
                 end
-                xscale = getxscale(prev)
             end
         end
         if leftkern then
             local old = getwidth(n)
-            if old > threshold then
+            if old > xscale*threshold then
                 if rightkern then
-                    if useitalickerns then
+                    if usespacefontkerns then
                         local lnew = leftkern  * factor
                         local rnew = rightkern * factor
                         if trace_spaces then
@@ -2441,10 +2445,10 @@ local function injectspaces(head)
                         end
                         lnew = lnew * xscale
                         rnew = rnew * xscale
-                        head = insertnodebefore(head,n,italickern(lnew))
-                        insertnodeafter(head,n,italickern(rnew))
+                        head = insertnodebefore(head,n,spacefontkern(lnew))
+                        insertnodeafter(head,n,spacefontkern(rnew))
                     else
-                        local new = old + (leftkern + rightkern) * factor
+                        local new = old + (leftkern + rightkern) * factor * xscale
                         if trace_spaces then
                             report_spaces("%C [%p -> %p] %C",prevchar,old,new,nextchar)
                         end
@@ -2452,13 +2456,12 @@ local function injectspaces(head)
                     end
                     rightkern = false
                 else
-                    if useitalickerns then
-                        local new = leftkern * factor
+                    if usespacefontkerns then
+                        local new = leftkern * factor * xscale
                         if trace_spaces then
                             report_spaces("%C [%p + %p]",prevchar,old,new)
                         end
-                        new = new * xscale
-                        insertnodeafter(head,n,italickern(new)) -- tricky with traverse but ok
+                        insertnodeafter(head,n,spacefontkern(new)) -- tricky with traverse but ok
                     else
                         local new = old + leftkern * factor * xscale
                         if trace_spaces then
@@ -2471,13 +2474,13 @@ local function injectspaces(head)
             leftkern  = false
         elseif rightkern then
             local old = getwidth(n)
-            if old > threshold then
+            if old > xscale*threshold then
                 local new = rightkern * factor * xscale
-                if useitalickerns then
+                if usespacefontkerns then
                     if trace_spaces then
                         report_spaces("[%p + %p] %C",old,new,nextchar)
                     end
-                    insertnodeafter(head,n,italickern(new))
+                    insertnodeafter(head,n,spacefontkern(new))
                 else
                     new = old + new
                     if trace_spaces then

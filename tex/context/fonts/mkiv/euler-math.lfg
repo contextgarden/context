@@ -24,14 +24,16 @@ return {
             RadicalDegreeBottomRaisePercent =   60,
             RadicalKernAfterDegree          = -500,
             RadicalRuleThickness            =   60, --   60 in font
-            DelimiterPercent                =   90,
+            DelimiterPercent                =   85,
             DelimiterShortfall              =  400,
+            DelimiterDisplayPercent         =   90,
+            DelimiterDisplayShortfall       =  400,
             DisplayOperatorMinHeight        = 1800, -- 1500 in font
             PrimeRaisePercent               =   75, --   50 default
             PrimeRaiseComposedPercent       =   10, --   25 default
          -- RadicalKernAfterExtensible      =    0, --    0 default
          -- RadicalKernBeforeExtensible     =    0, --    0 default
-
+            RadicalDisplayStyleVerticalGap  = "RadicalVerticalGap", --148, 50
         },
         tweaks = {
             aftercopying = {

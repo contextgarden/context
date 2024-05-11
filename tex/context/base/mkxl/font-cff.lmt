@@ -1702,7 +1702,7 @@ end
         [037] = flex1,
     }
 
-    local chars = setmetatableindex(function (t,k)
+    local chars = setmetatableindex(function (t,k) -- also make a helper
         local v = char(k)
         t[k] = v
         return v
@@ -1909,6 +1909,11 @@ end
                     -- okay
                 elseif top > 0 then
                     width = stack[1]
+                    if r == 0 and justpass then
+                        -- we  need to set the width of space (lm) and other shapeless things
+                        r = r + 1 ; result[r] = encode[width]
+                        r = r + 1 ; result[r] = c_endchar
+                    end
                     if trace_charstrings then
                         showvalue("width",width)
                     end
@@ -2019,7 +2024,7 @@ end
                     if true then
                         -- we do a moveto over lsb
                         r = r + 1 ; result[r] = encode[lsb]
-                        r = r + 1 ; result[r] = chars[22]
+                        r = r + 1 ; result[r] = chars[22] -- hmoveto
                     else
                         -- lsb is supposed to be zero
                     end
@@ -2127,6 +2132,133 @@ end
  --     end
  -- end
 
+    -- begin of bonus
+
+    readers.potracetocff = potrace and function(glyph,settings)
+        local xsize   = glyph.xsize or 0
+        local ysize   = glyph.ysize or 0
+        local xoffset = glyph.xoffset or 0
+        local yoffset = glyph.yoffset or 0
+        local llx     = - xoffset
+        local lly     = yoffset - ysize + 1
+        local urx     = llx + xsize + 1
+        local ury     = lly + ysize
+        --
+        local b, w, h = fonts.handlers.tfm.readers.showpk(glyph,true)
+        if not b then
+            return
+        end
+        local t = potrace.convert(b,settings,w,h)
+        --
+        llx     = round(10*llx)
+        lly     = round(10*lly)
+        urx     = round(10*urx)
+        ury     = round(10*ury)
+        xoffset =  llx
+        yoffset = -lly
+        --
+        local width = round(10*glyph.width/65536)
+        --
+        for i=1,#t do
+            local ti = t[i]
+            for j=1,#ti do
+                local tj = ti[j]
+                for k=1,#tj do
+                    tj[k] = round(10*tj[k])
+                end
+            end
+        end
+        --
+        local result = { }
+        local r  = 0
+        local x  = 0
+        local y  = yoffset
+        r = r + 1 ; result[r] = encode[width]
+        r = r + 1 ; result[r] = encode[xoffset]
+        r = r + 1 ; result[r] = chars[22] -- hmove
+        for i=1,#t do
+            local ti = t[i]
+            local ni = #ti
+            for j=1,ni do
+                local tj = ti[j]
+                local nj = #tj
+                local x1 = tj[1]
+                local y1 = tj[2]
+                if nj == 6 then
+                    local x2 = tj[3]
+                    local y2 = tj[4]
+                    local x3 = tj[5]
+                    local y3 = tj[6]
+                    local d1 = x2 - x
+                    local d2 = y2 - y
+                    local d3 = x3 - x2
+                    local d4 = y3 - y2
+                    local d5 = x1 - x3
+                    local d6 = y1 - y3
+                    if d1 == 0 and d6 == 0 then
+                        r = r + 1 ; result[r] = encode[d2]
+                        r = r + 1 ; result[r] = encode[d3]
+                        r = r + 1 ; result[r] = encode[d4]
+                        r = r + 1 ; result[r] = encode[d5]
+                        r = r + 1 ; result[r] = chars[30] -- vhcurveto
+                    elseif d2 == 0 and d5 == 0 then
+                        r = r + 1 ; result[r] = encode[d1]
+                        r = r + 1 ; result[r] = encode[d3]
+                        r = r + 1 ; result[r] = encode[d4]
+                        r = r + 1 ; result[r] = encode[d6]
+                        r = r + 1 ; result[r] = chars[31] -- hvcurveto
+                    else
+                        r = r + 1 ; result[r] = encode[d1]
+                        r = r + 1 ; result[r] = encode[d2]
+                        r = r + 1 ; result[r] = encode[d3]
+                        r = r + 1 ; result[r] = encode[d4]
+                        r = r + 1 ; result[r] = encode[d5]
+                        r = r + 1 ; result[r] = encode[d6]
+                        r = r + 1 ; result[r] = chars[8]  -- rrcurveto
+                    end
+                elseif j == 1 then
+                    x = x1 - x
+                    y = y1 - y
+                    if x == 0 then
+                        r = r + 1 ; result[r] = encode[y]
+                        r = r + 1 ; result[r] = chars[4]  -- vmoveto
+                    elseif y == 0 then
+                        r = r + 1 ; result[r] = encode[x]
+                        r = r + 1 ; result[r] = chars[22]  -- hmoveto
+                    else
+                        r = r + 1 ; result[r] = encode[x]
+                        r = r + 1 ; result[r] = encode[y]
+                        r = r + 1 ; result[r] = chars[21] -- rmoveto
+                    end
+                else
+                    x = x1 - x
+                    y = y1 - y
+                    if x == 0 then
+                        r = r + 1 ; result[r] = encode[y]
+                        r = r + 1 ; result[r] = chars[7]  -- vlineto
+                    elseif y == 0 then
+                        r = r + 1 ; result[r] = encode[x]
+                        r = r + 1 ; result[r] = chars[6]  -- hlineto
+                    else
+                        r = r + 1 ; result[r] = encode[x]
+                        r = r + 1 ; result[r] = encode[y]
+                        r = r + 1 ; result[r] = chars[5]  -- rlineto
+                    end
+                end
+                x = x1
+                y = y1
+            end
+        end
+        r = r + 1 ; result[r] = chars[9]  -- closepath
+        r = r + 1 ; result[r] = chars[14] -- endchar
+        return llx, lly, urx, ury, concat(result)
+    end or function()
+        return 0, 0, 0, 0, chars[14]
+    end
+
+
+    -- end of bonus
+
     local function setbias(globals,locals,nobias)
         if nobias then
             return 0, 0
@@ -2176,7 +2308,6 @@ end
         if regions then
             updateregions(vsindex)
         end
-
         process(tab)
         if hack then
             return x, y
@@ -2430,7 +2561,7 @@ local function readprivates(f,data)
     end
 end
 
-local function readlocals(f,data,dictionary,version)
+local function readlocals(f,data,dictionary,cff2)
     local header  = data.header
     local private = dictionary.private
     if private then

@@ -12,15 +12,19 @@
     <flag name="metadata"><short>show metadata xml blob</short></flag>
     <flag name="formdata"><short>show formdata</short></flag>
     <flag name="pretty"><short>replace newlines in metadata</short></flag>
-    <flag name="fonts"><short>show used fonts (<ref name="detail)"/></short></flag>
-    <flag name="object"><short>show object"/></short></flag>
-    <flag name="links"><short>show links"/></short></flag>
+    <flag name="fonts"><short>show used fonts (<ref name="detail"/>)</short></flag>
+    <flag name="object"><short>show object</short></flag>
+    <flag name="links"><short>show links</short></flag>
+    <flag name="sign"><short>sign document (assumes signature template)</short></flag>
+    <flag name="verify"><short>verify document</short></flag>
    </subcategory>
    <subcategory>
     <example><command>mtxrun --script pdf --info foo.pdf</command></example>
     <example><command>mtxrun --script pdf --metadata foo.pdf</command></example>
     <example><command>mtxrun --script pdf --metadata --pretty foo.pdf</command></example>
     <example><command>mtxrun --script pdf --stream=4 foo.pdf</command></example>
+    <example><command>mtxrun --script pdf --sign --certificate=somesign.pem --password=test --uselibrary somefile</command></example>
+    <example><command>mtxrun --script pdf --verify --certificate=somesign.pem --password=test --uselibrary somefile</command></example>
    </subcategory>
   </category>
  </flags>

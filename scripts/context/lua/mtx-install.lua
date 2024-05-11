@@ -104,37 +104,34 @@ local texformats = {
 }
 
 local platforms = {
-    ["mswin"]          = "mswin",
-    ["windows"]        = "mswin",
-    ["win32"]          = "mswin",
-    ["win"]            = "mswin",
-    ["arm32"]          = "windows-arm32",
-    ["windows-arm32"]  = "windows-arm32",
+ -- ["mswin"]          = "mswin",
+ -- ["windows"]        = "mswin",
+ -- ["win32"]          = "mswin",
+ -- ["win"]            = "mswin",
     --
-    ["mswin-64"]       = "win64",
+    ["windows"]        = "win64",
     ["windows-64"]     = "win64",
     ["win64"]          = "win64",
-    ["arm64"]          = "windows-arm64",
-    ["windows-arm64"]  = "windows-arm64",
     --
-    ["linux"]          = "linux",
-    ["linux-32"]       = "linux",
-    ["linux32"]        = "linux",
+ -- ["linux"]          = "linux",
+ -- ["linux-32"]       = "linux",
+ -- ["linux32"]        = "linux",
     --
+    ["linux"]          = "linux-64",
     ["linux-64"]       = "linux-64",
     ["linux64"]        = "linux-64",
     --
-    ["linuxmusl-64"]   = "linuxmusl",
     ["linuxmusl"]      = "linuxmusl",
+    ["linuxmusl-64"]   = "linuxmusl-64",
     --
-    ["linux-armhf"]    = "linux-armhf",
+ -- ["linux-armhf"]    = "linux-armhf",
     --
-    ["openbsd"]        = "openbsd7.3",
-    ["openbsd-i386"]   = "openbsd7.3",
-    ["openbsd-amd64"]  = "openbsd7.3-amd64",
+    ["openbsd"]        = "openbsd-amd64",
+ -- ["openbsd-i386"]   = "openbsd7.3",
+    ["openbsd-amd64"]  = "openbsd-amd64",
     --
-    ["freebsd"]        = "freebsd",
-    ["freebsd-i386"]   = "freebsd",
+    ["freebsd"]        = "freebsd-amd64",
+ -- ["freebsd-i386"]   = "freebsd",
     ["freebsd-amd64"]  = "freebsd-amd64",
     --
  -- ["kfreebsd"]       = "kfreebsd-i386",
@@ -156,6 +153,7 @@ local platforms = {
     --
     ["macosx"]         = "osx-64",
     ["osx"]            = "osx-64",
+    ["osx-intel"]      = "osx-64",
     ["osx-64"]         = "osx-64",
     ["osx-arm"]        = "osx-arm64",
     ["osx-arm64"]      = "osx-arm64",

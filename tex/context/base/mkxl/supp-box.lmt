@@ -411,7 +411,15 @@ implement {
     arguments = "integer",
     public    = true,
     actions   = function(n)
-        context.verbatim(nodes.toutf(texgetbox(n).list)) -- helper is defined later
+        local b = texgetbox(n)
+        local l = b and b.list
+        if l then
+            -- helper is defined later
+            local s = nodes.toutf(l)
+            if s then
+                context.verbatim(s)
+            end
+        end
     end
 }
 

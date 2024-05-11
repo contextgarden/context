@@ -106,9 +106,10 @@
    \c!depth=\zeropoint,
    \c!strut=\v!height,
  % \c!mindepth=\zeropoint,
-   \c!mindepth=.15\exheight, % a reasonable default for: \im { \sqrt{1+x} + \sqrt{1-x} }
+   \c!mindepth=.20\exheight, % a reasonable default for: \im { \sqrt{1+x} + \sqrt{1-x} }
    \c!source=\zerocount,
    \c!left="221A,
+   \c!mathstyle=\v!normal,
    \c!right=\zerocount,
    \c!leftmargin=\zeropoint,
    \c!rightmargin=\zeropoint]
@@ -190,27 +191,36 @@
 % We use a strut in the degree because not all fonts have the right gaps set up but
 % as struts are sort of predictable we can now fix all fonts in the lfg file.
 
-\protected\def\math_radical_common#degree%
+\protected\def\math_radical_common#degree#body%
   {\scratchcounter\ifcstok{\mathradicalparameter\c!rule}\v!symbol
      \mathradicalparameter\c!top\relax
    \else
      \zerocount
    \fi
+   \edef\xxx{\expandedmathstyleparameter\mathradicalparameter\c!mathstyle}
    \Urooted
      \s!height\dimexpr\ifcstok{\mathradicalparameter\c!height}\v!none\scaledpoint\else\mathradicalparameter\c!height\fi\relax
      \s!depth \dimexpr\ifcstok{\mathradicalparameter\c!depth }\v!none\scaledpoint\else\mathradicalparameter\c!depth \fi\relax
      \s!source\numexpr\namedboxanchor{\mathradicalparameter\c!source}\relax
-     \s!style \normalmathstyle
+     \s!style \normalmathstyle % not needed
      \ifzeronum\scratchcounter\else
        top % \s!top
+     \fi
+     \ifcstok{\mathradicalparameter\c!rule}\v!no
+        norule
+     \orelse\ifcstok{\lastnamedcs}\v!bottom
+        reflected %
      \fi
      \zerocount \mathradicalparameter\c!left
      \zerocount \mathradicalparameter\c!right
      \ifzeronum\scratchcounter\else
-       \zerocount\scratchcounter
+        \zerocount\scratchcounter
      \fi
      \relax
-   {\mathstrut#degree}}
+   {\mathstrut#degree}%
+   {% we need to also adapt the strut
+    \expandedmathstyleparameter\mathradicalparameter\c!mathstyle
+    #body}}
 
 \protected\def\math_radical_mindepth
   {\scratchdepth\mathradicalparameter\c!mindepth\relax
@@ -380,11 +390,19 @@
 %
 % \dorecurse{8}{$\mathhat{\blackrule[width=#1ex,color=gray]}$ }
 
-% \annuity {(x+1)} \Uchar"20E7
+% \annuity {(x+1)} \tocharacter"20E7
 
-\integerdef\delimitedleftanutityuc  \privatecharactercode{delimited left annuity}
-\integerdef\delimitedrightanutityuc \privatecharactercode{delimited right annuity}
-\integerdef\radicalbarextenderuc    \privatecharactercode{radical bar extender}
+\integerdef\radicalbarextenderuc\privatecharactercode{radical bar extender}
+
+\integerdef\delimitedleftannuitylonguc  \privatecharactercode{delimited left annuity long}
+\integerdef\delimitedleftannuityshortuc \privatecharactercode{delimited left annuity short}
+\integerdef\delimitedrightannuitylonguc \privatecharactercode{delimited right annuity long}
+\integerdef\delimitedrightannuityshortuc\privatecharactercode{delimited right annuity short}
+
+\integerdef\delimitedbottomleftannuitylonguc  \privatecharactercode{delimited bottom left annuity long}
+\integerdef\delimitedbottomleftannuityshortuc \privatecharactercode{delimited bottom left annuity short}
+\integerdef\delimitedbottomrightannuitylonguc \privatecharactercode{delimited bottom right annuity long}
+\integerdef\delimitedbottomrightannuityshortuc\privatecharactercode{delimited bottom right annuity short}
 
 %D We now default to nice bars:
 
@@ -394,26 +412,62 @@
 
 \definemathradical
   [rannuity]
-  [\c!left=\zerocount,
-   \c!right=\delimitedrightanutityuc,
+  [\c!rule=\v!yes,
+   \c!left=\zerocount,
+   \c!right=\delimitedrightannuitylonguc,
    \c!rightmargin=.05\emwidth]
 
 \definemathradical
   [lannuity]
-  [\c!left=\delimitedleftanutityuc,
+  [\c!rule=\v!yes,
+   \c!left=\delimitedleftannuitylonguc,
    \c!right=\zerocount,
+   \c!leftmargin=.05\emwidth]
+
+\definemathradical
+  [lrannuity]
+  [\c!rule=\v!yes,
+   \c!left=\delimitedleftannuityshortuc,
+   \c!right=\delimitedrightannuitylonguc,
    \c!leftmargin=.05\emwidth,
    \c!rightmargin=.05\emwidth]
 
 \definemathradical
-  [lrannuity]
-  [\c!left=\delimitedleftanutityuc,
-   \c!right=\delimitedrightanutityuc,
+  [rlannuity]
+  [\c!rule=\v!yes,
+   \c!left=\delimitedleftannuitylonguc,
+   \c!right=\delimitedrightannuityshortuc,
    \c!leftmargin=.05\emwidth,
    \c!rightmargin=.05\emwidth]
 
 \definemathradical
   [annuity]
   [rannuity]
+
+\definemathradical
+  [lbannuity]
+  [lannuity]
+  [\c!rule=\v!bottom,
+   \c!left=\delimitedbottomleftannuitylonguc]
+
+\definemathradical
+  [rbannuity]
+  [rannuity]
+  [\c!rule=\v!bottom,
+   \c!right=\delimitedbottomrightannuitylonguc]
+
+\definemathradical
+  [rlbannuity]
+  [rlannuity]
+  [\c!rule=\v!bottom,
+   \c!left=\delimitedbottomleftannuityshortuc,
+   \c!right=\delimitedbottomrightannuitylonguc]
+
+\definemathradical
+  [lrbannuity]
+  [lrannuity]
+  [\c!rule=\v!bottom,
+   \c!left=\delimitedbottomleftannuitylonguc,
+   \c!right=\delimitedbottomrightannuityshortuc]
 
 \protect \endinput

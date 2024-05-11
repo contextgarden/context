@@ -240,11 +240,11 @@ static void tex_aux_freeze_page_specs(int s)
     if (tracing_pages_par > 0) {
         tex_begin_diagnostic();
         tex_print_format(
-            "[page: frozen state, goal=%D, maxdepth=%D, contribution=%s, insertheights=%D]",
-            page_goal, pt_unit,
-            lmt_page_builder_state.max_depth, pt_unit,
+            "[page: frozen state, goal=%p, maxdepth=%p, contribution=%s, insertheights=%p]",
+            page_goal,
+            lmt_page_builder_state.max_depth,
             lmt_interface.page_contribute_values[s].name,
-            lmt_page_builder_state.insert_heights, pt_unit
+            lmt_page_builder_state.insert_heights
         );
         tex_end_diagnostic();
     }
@@ -260,9 +260,8 @@ static void update_page_goal(halfword index, scaled total, scaled delta)
     if (tracing_inserts_par > 0) {
         tex_begin_diagnostic();
         tex_print_format(
-            "[page: update page goal for insert, index=%i, total=%D, insertheights=%D, vsize=%D, delta=%D, goal=%D]",
-            index, total, pt_unit, lmt_page_builder_state.insert_heights, pt_unit,
-            page_vsize, pt_unit, delta, pt_unit, page_goal, pt_unit
+            "[page: update page goal for insert, index=%i, total=%p, insertheights=%p, vsize=%p, delta=%p, goal=%p]",
+            index, total, lmt_page_builder_state.insert_heights, page_vsize, delta, page_goal
         );
         tex_end_diagnostic();
     }
@@ -346,9 +345,9 @@ static int tex_aux_valid_insert_content(halfword content)
 static void tex_aux_display_page_break_cost(halfword badness, halfword penalty, halfword cost, int moveon, int fireup)
 {
     tex_begin_diagnostic();
-    tex_print_format("[page: break, total %P, goal %D, badness %B, penalty %i, cost %B%s, moveon %s, fireup %s]",
+    tex_print_format("[page: break, total %P, goal %p, badness %B, penalty %i, cost %B%s, moveon %s, fireup %s]",
         page_total, page_stretch, page_fistretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
-        page_goal, pt_unit, badness, penalty, cost, cost < lmt_page_builder_state.least_cost ? "#" : "",
+        page_goal, badness, penalty, cost, cost < lmt_page_builder_state.least_cost ? "#" : "",
         moveon ? "yes" : "no", fireup ? "yes" : "no"
     );
     tex_end_diagnostic();
@@ -358,8 +357,8 @@ static void tex_aux_display_insertion_split_cost(halfword index, scaled height, 
 {
     /*tex Display the insertion split cost. */
     tex_begin_diagnostic();
-    tex_print_format("[page: split insert %i: height %D, depth %D, penalty %i]",
-        index, height, pt_unit, lmt_packaging_state.best_height_plus_depth, pt_unit, penalty
+    tex_print_format("[page: split insert %i: height %p, depth %p, penalty %i]",
+        index, height, lmt_packaging_state.best_height_plus_depth, penalty
     );
     tex_end_diagnostic();
 }
@@ -718,14 +717,15 @@ static int tex_aux_migrating_restart(halfword current, int tracing)
     return 0;
 }
 
+/*tex
+    We just triggered the pagebuilder for which we needed a contribution. We fake a zero penalty 
+    so that all gets processed. The main rationale is that we get a better indication of what we 
+    do. Of course a callback can remove this node  so that it is never seen. Triggering from the 
+    callback is not doable.
+*/
+
 static halfword tex_aux_process_boundary(halfword current)
 {
-    /*tex
-        We just triggered the pagebuilder for which we needed a contribution. We fake
-        a zero penalty so that all gets processed. The main rationale is that we get
-        a better indication of what we do. Of course a callback can remove this node
-        so that it is never seen. Triggering from the callback is not doable.
-    */
     halfword penaltynode = tex_new_node(penalty_node, user_penalty_subtype);
     /* todo: copy attributes */
     tex_page_boundary_message("processed as penalty", 0);
@@ -750,9 +750,9 @@ static void tex_aux_reconsider_goal(halfword current, halfword *badness, halfwor
                     if (tracing > 0) {
                         tex_begin_diagnostic();
                         tex_print_format(
-                            "[page: extra check, total=%P, goal=%D, extragoal=%D, badness=%B, costs=%i, extrabadness=%B, extracosts=%i]",
+                            "[page: extra check, total=%P, goal=%p, extragoal=%p, badness=%B, costs=%i, extrabadness=%B, extracosts=%i]",
                             page_total, page_stretch, page_filstretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
-                            page_goal, pt_unit, page_extra_goal_par, pt_unit, 
+                            page_goal, page_extra_goal_par,
                             *badness, *costs, extrabadness, extracosts
                         );
                         tex_end_diagnostic();
@@ -803,12 +803,15 @@ static void tex_aux_contribute_glue(halfword current)
 }
 
 /*tex
-    Maybe: migrate everything beforehand shich is somewhat nicer when we use the builder for 
-    multicolumns balancing etc. 
+    Maybe: migrate everything beforehand is somewhat nicer when we use the builder for multicolumns
+    balancing etc. 
 */
 
-void tex_build_page(void)
+void tex_build_page(halfword context, halfword boundary)
 {
+    if (! lmt_page_builder_state.output_active) {
+        lmt_page_filter_callback(context, boundary);
+    }
     if (node_next(contribute_head) && ! lmt_page_builder_state.output_active) {
         /*tex The (upcoming) penalty to be added to the badness: */
         halfword penalty = 0;
@@ -950,10 +953,10 @@ void tex_build_page(void)
                 lmt_page_builder_state.last_extra_used = 0;
                 if (tracing > 1) {
                     tex_begin_diagnostic();
-                    tex_print_format("[page: calculate, %N, %d, total=%P, goal=%D, badness=%B, costs=%i]", 
+                    tex_print_format("[page: calculate, %N, %d, total=%P, goal=%p, badness=%B, costs=%i]", 
                         current, current, 
                         page_total, page_stretch, page_fistretch, page_filstretch, page_fillstretch, page_filllstretch, page_shrink,
-                        page_goal, pt_unit, 
+                        page_goal,
                         badness, costs
                     );
                     tex_end_diagnostic();
@@ -1506,6 +1509,5 @@ void tex_resume_after_output(void)
     tex_flush_node_list(lmt_packaging_state.page_discards_head);
     lmt_packaging_state.page_discards_head = null;
     tex_pop_nest();
-    lmt_page_filter_callback(after_output_page_context, 0);
-    tex_build_page();
+    tex_build_page(after_output_page_context, 0);
 }

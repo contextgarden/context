@@ -40,6 +40,7 @@ local pdfflushstreamfileobject = lpdf.flushstreamfileobject
 local addtoinfo                = lpdf.addtoinfo
 local injectxmpinfo            = lpdf.injectxmpinfo
 local insertxmpinfo            = lpdf.insertxmpinfo
+local replacexmpinfo           = lpdf.replacexmpinfo
 
 local settings_to_array        = utilities.parsers.settings_to_array
 local settings_to_hash         = utilities.parsers.settings_to_hash
@@ -141,7 +142,14 @@ local formats = utilities.storage.allocate {
             attachments             = false,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-1a:2001")
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-1a:2001</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'>
+      <pdfxid:GTS_PDFXVersion>PDF/X-1a:2001</pdfxid:GTS_PDFXVersion>
+    </rdf:Description>
+]]
+                )
             end
         },
         ["pdf/x-1a:2003"] = {
@@ -158,7 +166,14 @@ local formats = utilities.storage.allocate {
             attachments             = false,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-1a:2003")
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-1a:2003</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'>
+      <pdfxid:GTS_PDFXVersion>PDF/X-1a:2003</pdfxid:GTS_PDFXVersion>
+    </rdf:Description>
+]]
+                )
             end
         },
         ["pdf/x-3:2002"] = {
@@ -224,9 +239,24 @@ local formats = utilities.storage.allocate {
             include_charsets        = true,
             attachments             = false,
             inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-4</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
-                insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:VersionID>1</xmpMM:VersionID>",false)
-                insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:RenditionClass>default</xmpMM:RenditionClass>",false)
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'>
+      <pdfxid:GTS_PDFXVersion>PDF/X-4</pdfxid:GTS_PDFXVersion>
+    </rdf:Description>
+]]
+                )
+                insertxmpinfo(
+                    "xml://rdf:Description/xmpMM:InstanceID",
+                    [[<xmpMM:VersionID>1</xmpMM:VersionID>]],
+                    false
+                )
+                insertxmpinfo(
+                    "xml://rdf:Description/xmpMM:InstanceID",
+                    [[<xmpMM:RenditionClass>default</xmpMM:RenditionClass>]],
+                    false
+                )
             end
         },
         ["pdf/x-4p"] = {
@@ -252,9 +282,24 @@ local formats = utilities.storage.allocate {
             include_charsets        = true,
             attachments             = false,
             inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'><pdfxid:GTS_PDFXVersion>PDF/X-4p</pdfxid:GTS_PDFXVersion></rdf:Description>",false)
-                insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:VersionID>1</xmpMM:VersionID>",false)
-                insertxmpinfo("xml://rdf:Description/xmpMM:InstanceID","<xmpMM:RenditionClass>default</xmpMM:RenditionClass>",false)
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'>
+      <pdfxid:GTS_PDFXVersion>PDF/X-4p</pdfxid:GTS_PDFXVersion>
+    </rdf:Description>
+]]
+                )
+                insertxmpinfo(
+                    "xml://rdf:Description/xmpMM:InstanceID",
+                    [[<xmpMM:VersionID>1</xmpMM:VersionID>]],
+                    false
+                )
+                insertxmpinfo(
+                    "xml://rdf:Description/xmpMM:InstanceID",
+                    [[<xmpMM:RenditionClass>default</xmpMM:RenditionClass>]],
+                    false
+                )
             end
         },
         ["pdf/x-5g"] = {
@@ -355,7 +400,15 @@ local formats = utilities.storage.allocate {
             include_charsets        = true,
             attachments             = false,
             inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'>
+      <pdfaid:part>1</pdfaid:part>
+      <pdfaid:conformance>A</pdfaid:conformance>
+    </rdf:Description>
+]]
+                )
             end
         },
         ["pdf/a-1b:2005"] = {
@@ -376,7 +429,15 @@ local formats = utilities.storage.allocate {
             include_charsets        = true,
             attachments             = false,
             inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>1</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'>
+      <pdfaid:part>1</pdfaid:part>
+      <pdfaid:conformance>B</pdfaid:conformance>
+    </rdf:Description>
+]]
+                )
             end
         },
         -- Only PDF/A Attachments are allowed but we don't check the attachments
@@ -404,7 +465,15 @@ local formats = utilities.storage.allocate {
             include_charsets        = false,
             attachments             = true, -- new
             inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>2</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'>
+      <pdfaid:part>2</pdfaid:part>
+      <pdfaid:conformance>A</pdfaid:conformance>
+    </rdf:Description>
+]]
+                )
             end
         },
 		["pdf/a-2b"] = {
@@ -430,7 +499,15 @@ local formats = utilities.storage.allocate {
             include_charsets        = false,
             attachments             = true,
             inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>2</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'>
+      <pdfaid:part>2</pdfaid:part>
+      <pdfaid:conformance>B</pdfaid:conformance>
+    </rdf:Description>
+]]
+                )
             end
         },
         -- This is like the b variant, but it requires Unicode mapping of fonts
@@ -458,7 +535,15 @@ local formats = utilities.storage.allocate {
             include_charsets        = false,
             attachments             = true,
             inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>2</pdfaid:part><pdfaid:conformance>U</pdfaid:conformance></rdf:Description>",false)
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'>
+      <pdfaid:part>2</pdfaid:part>
+      <pdfaid:conformance>U</pdfaid:conformance>
+    </rdf:Description>
+]]
+                )
             end
         },
         -- Any type of attachment is allowed but we don't check the quality
@@ -486,7 +571,15 @@ local formats = utilities.storage.allocate {
             include_charsets        = false,
             attachments             = true,
             inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'>
+      <pdfaid:part>3</pdfaid:part>
+      <pdfaid:conformance>A</pdfaid:conformance>
+    </rdf:Description>
+]]
+                )
             end
         },
       ["pdf/a-3b"] = {
@@ -512,7 +605,15 @@ local formats = utilities.storage.allocate {
             include_charsets        = false,
             attachments             = true,
             inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>B</pdfaid:conformance></rdf:Description>",false)
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'>
+      <pdfaid:part>3</pdfaid:part>
+      <pdfaid:conformance>B</pdfaid:conformance>
+    </rdf:Description>
+]]
+                )
             end
         },
       ["pdf/a-3u"] = {
@@ -538,7 +639,15 @@ local formats = utilities.storage.allocate {
             include_charsets        = false,
             attachments             = true,
             inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>U</pdfaid:conformance></rdf:Description>",false)
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'>
+      <pdfaid:part>3</pdfaid:part>
+      <pdfaid:conformance>U</pdfaid:conformance>
+    </rdf:Description>
+]]
+            )
             end
         },
         ["pdf/ua-1"] = { -- based on PDF/A-3a, but no 'gts_flag'
@@ -563,8 +672,18 @@ local formats = utilities.storage.allocate {
             include_charsets        = true, --- really ?
             attachments             = true,
             inject_metadata         = function()
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'><pdfaid:part>3</pdfaid:part><pdfaid:conformance>A</pdfaid:conformance></rdf:Description>",false)
-                injectxmpinfo("xml://rdf:RDF","<rdf:Description rdf:about='' xmlns:pdfuaid='http://www.aiim.org/pdfua/ns/id/'><pdfuaid:part>1</pdfuaid:part></rdf:Description>",false)
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'>
+      <pdfaid:part>3</pdfaid:part>
+      <pdfaid:conformance>A</pdfaid:conformance>
+    </rdf:Description>
+    <rdf:Description rdf:about='' xmlns:pdfuaid='http://www.aiim.org/pdfua/ns/id/'>
+      <pdfuaid:part>1</pdfuaid:part>
+    </rdf:Description>
+]]
+                )
             end
         },
     }

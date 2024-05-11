@@ -287,6 +287,7 @@ end
 
 handlers.luc  = handlers.lua
 handlers.html = handlers.htm
+handlers.pdf  = handlers.generic
 
 local indices    = { "index.htm", "index.html" }
 local portnumber = 8088

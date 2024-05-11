@@ -39,6 +39,7 @@ luautilities.suffixes = {
     tma = "tma",
     tmc = (CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 and "tmd") or (jit and "tmb") or "tmc",
     lua = "lua",
+    lmt = "lmt",
     luc = (CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 and "lud") or (jit and "lub") or "luc",
     lui = "lui",
     luv = "luv",

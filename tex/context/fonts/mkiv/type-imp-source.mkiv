@@ -64,3 +64,67 @@
     \stoptypescript
 
 \stoptypescriptcollection
+
+
+% \starttext
+%
+% \definetypescriptprefix [b:as:extralight][regular]
+% \definetypescriptprefix [b:as:light]     [semibold]
+% \definetypescriptprefix [b:as:regular]   [bold]
+% \definetypescriptprefix [b:as:medium]    [bold]
+% \definetypescriptprefix [b:as:semibold]  [black]
+% \definetypescriptprefix [b:as:bold]      [black]
+% \definetypescriptprefix [b:as:black]     [black]
+%
+% \doloopoverlist {,display,caption,smtext,subhead} {
+%     \definetypescriptprefix [u:adobesource#1]  [#1]
+%     \definetypescriptprefix [n:adobesource#1]  [-regular]
+%     \definetypescriptprefix [i:adobesource#1]  [-it]
+%     \definetypescriptprefix [b:adobesource#1]  [-\typescriptprefix{b:as:regular}]
+%     \definetypescriptprefix [bi:adobesource#1] [-\typescriptprefix{b:as:regular}it]
+%     \doloopoverlist {extralight,light,regular,medium,semibold,bold,black} {
+%         \definetypescriptprefix [b:adobesource#1##1]  [-\typescriptprefix{b:as:##1}]
+%         \definetypescriptprefix [bi:adobesource#1##1] [-\typescriptprefix{b:as:##1}it]
+%     }
+% }
+%
+% \starttypescript [adobesource,adobesourcedisplay,adobesourcelight,adobesourcedisplaylight]
+%     %
+%     \writestatus{Serif}          {file:sourceserif4 \typescriptprefix{u:\typescriptone} \typescriptprefix {n:\typescriptone}}
+%     \writestatus{SerifBold}      {file:sourceserif4 \typescriptprefix{u:\typescriptone} \typescriptprefix {b:\typescriptone}}
+%     \writestatus{SerifItalic}    {file:sourceserif4 \typescriptprefix{u:\typescriptone} \typescriptprefix {i:\typescriptone}}
+%     \writestatus{SerifBoldItalic}{file:sourceserif4 \typescriptprefix{u:\typescriptone} \typescriptprefix{bi:\typescriptone}}
+%     %
+%     \definefontsynonym[Serif]          [file:sourceserif4\typescriptprefix{u:\typescriptone}\typescriptprefix{n:\typescriptone}.otf]
+%     \definefontsynonym[SerifBold]      [file:sourceserif4\typescriptprefix{u:\typescriptone}\typescriptprefix{b:\typescriptone}.otf]
+%     \definefontsynonym[SerifItalic]    [file:sourceserif4\typescriptprefix{u:\typescriptone}\typescriptprefix{i:\typescriptone}.otf]
+%     \definefontsynonym[SerifBoldItalic][file:sourceserif4\typescriptprefix{u:\typescriptone}\typescriptprefix{bi:\typescriptone}.otf]
+%     %
+%     \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default]
+%     \definetypeface [\typescriptone] [ss] [sans]  [dejavu] [default]
+%     \definetypeface [\typescriptone] [tt] [mono]  [dejavu] [default]
+%     \definetypeface [\typescriptone] [mm] [math]  [dejavu] [default]
+% \stoptypescript
+%
+% % \usetypescriptfile[adobesource]
+%
+% \usebodyfont[adobesource]
+% \usebodyfont[adobesourcedisplay]
+%
+% \setupbodyfont[adobesource]
+%
+% % \starttext
+%
+% {\switchtobodyfont[adobesource]normal \it italic \bf bold \bi bolditalic}
+%
+% \startoverlay
+%     {\switchtobodyfont[adobesource]this is a test}
+%     {\red\switchtobodyfont[adobesourcedisplay]this is a test}
+% \stopoverlay
+%
+% \startoverlay
+%     {\switchtobodyfont[adobesource]\bf this is a test}
+%     {\red\switchtobodyfont[adobesourcedisplay]\bf this is a test}
+% \stopoverlay
+%
+% \stoptext

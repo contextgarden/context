@@ -307,8 +307,7 @@
   {\buff_verbatim_initialize_type_two
    \dostarttaggedchained\t!verbatim\currenttype\??type
    \clf_type
-     data    {\detokenize{#1}}%
-%      data    {#1}%
+     data    {\protecteddetokenize{#1}}%
      tab     {\typeparameter\c!tab}%
      method  {\p_buff_option}%
      compact {\typeparameter\c!compact}% % none | all | last (all needed in tabulate etc for manuals)
@@ -324,6 +323,7 @@
    \dostarttaggedchained\t!verbatim\currenttype\??type
    \clf_type
      data   {\detokenize{#1}}%
+%      data    {\protecteddetokenize{#1}}%
      tab    {\typeparameter\c!tab}%
      method {\p_buff_option}% % extra visualizer (maybe: nested,\typeparameter\c!option)
      escape {\typeparameter\c!escape}%  % new but rather useless imo (escaping in general is not used much)
@@ -1005,8 +1005,11 @@
 %    \usevisualizerstyleandcolor\c!style\c!color
 %    \let\next}
 
+% in footnotes no longer needed as we can preroll
+
 \appendtoks
-    \enforced\def\type#1{\detokenize\expandafter{\csstring#1}}% or maybe detokenize
+  % \enforced\def\type#1{\detokenize\expandafter{\csstring#1}}% \protecteddetokenize
+    \enforced\def\type#1{\detokenize{#1}}% \protecteddetokenize fails
     \enforced\def\tex #1{\letterbackslash#1}%
 \to \everysimplifycommands
 

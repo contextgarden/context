@@ -831,7 +831,7 @@ char *tex_read_file_name(int optionalequal, const char * name, const char* ext)
     if (cur_cmd == left_brace_cmd) {
         result = tex_scan_toks_expand(1, NULL, 0, 0);
     } else {
-        bool quote = false;
+        char quote = 0;
         halfword p = get_reference_token();
         result = p;
         while (1) {
@@ -846,14 +846,23 @@ char *tex_read_file_name(int optionalequal, const char * name, const char* ext)
                 case subscript_cmd:
                 case letter_cmd:
                 case other_char_cmd:
-                    if (cur_chr == '"') {
-                        if (quote) {
-                            goto DONE;
-                        } else {
-                            quote = true;
-                        }
-                    } else {
-                         p = tex_store_new_token(p, cur_tok);
+                    switch (cur_chr) { 
+                        case double_quote:
+                            if (quote == double_quote) {
+                                goto DONE;
+                            } else {
+                                quote = double_quote;
+                            }
+                            break;
+                        case single_quote:
+                            if (quote == single_quote) {
+                                goto DONE;
+                            } else {
+                                quote = single_quote;
+                            }
+                            break;
+                        default:
+                            p = tex_store_new_token(p, cur_tok);
                     }
                     break;
                 case spacer_cmd:

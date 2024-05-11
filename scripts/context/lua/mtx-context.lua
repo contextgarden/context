@@ -118,7 +118,7 @@ local function restart(engine_old,engine_new)
     local generate  = environment.arguments.generate and (engine_new == "luatex" or engine_new == "luajittex")
     local arguments = generate and  "--generate" or environment.reconstructcommandline()
     local ownname   = filejoinname(filepathpart(environment.ownname),"mtxrun.lua")
-    local command   = format("%s --luaonly %q %s --redirected",engine_new,ownname,arguments)
+    local command   = format("%s --luaonly --socket %q %s --redirected",engine_new,ownname,arguments)
     report(format("redirect %s -> %s: %s",engine_old,engine_new,command))
     local result = os.execute(command)
     os.exit(result == 0 and 0 or 1)
@@ -698,6 +698,7 @@ function scripts.context.run(ctxdata,filename)
     local a_jithash       = getargument("jithash")
     local a_permitloadlib = getargument("permitloadlib")
     local a_texformat     = getargument("texformat")
+    local a_notuc         = getargument("notuc")
     local a_keeptuc       = getargument("keeptuc")
     local a_keeplog       = getargument("keeplog")
     local a_keeppdf       = getargument("keeppdf")
@@ -912,6 +913,8 @@ function scripts.context.run(ctxdata,filename)
                 --
                 local directives = { }
                 --
+                -- todo: handle these at the tex end
+                --
                 if a_nodates then
                     directives[#directives+1] = format("backend.date=%s",type(a_nodates) == "string" and a_nodates or "no")
                 end
@@ -923,6 +926,11 @@ function scripts.context.run(ctxdata,filename)
                 if a_profile then
                     directives[#directives+1] = format("system.profile=%s",tonumber(a_profile) or 0)
                 end
+                --
+             -- if a_notuc then
+             --     removefile(fileaddsuffix(jobname,"tuc"))
+             --     directives[#directives+1] = "job.save=no" -- handled at tex end
+             -- end
                 --
                 for i=1,#synctex_runfiles do
                     removefile(fileaddsuffix(jobname,synctex_runfiles[i]))
@@ -2043,6 +2051,15 @@ elseif getargument("showdirectives") or getargument("directives") == true then
 elseif getargument("showlogcategories") then
     scripts.context.logcategories()
 elseif environment.filenames[1] or getargument("nofile") then
+ -- --
+ -- -- How compatible is this ... we might want to resolve the wildcard at the TeX, so
+ -- -- we just keep this as unsuported feature (but at least we know of this case):
+ --
+ -- if not getargument("pattern") and find(environment.filenames[1],"%*") then
+ --     environment.filenames = dir.glob(environment.filenames[1])
+ --  -- setargument("pattern",dir.glob(environment.filenames[1]))
+ -- end
+ --
     scripts.context.timed(scripts.context.autoctx)
 elseif getargument("pipe") then
     scripts.context.timed(scripts.context.pipe)

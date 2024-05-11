@@ -65,6 +65,7 @@ local P, C, R, S, Cc, Cs, V = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs, 
 local lpegmatch, lpegpatterns = lpeg.match, lpeg.patterns
 local formatters = string.formatters
 local isboolean = string.is_boolean
+local hextointeger, octtointeger = string.hextointeger,string.octtointeger
 
 local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
@@ -95,6 +96,47 @@ end)
 
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
+
+    -- helpers
+
+local f_hex_4 = formatters["%04X"]
+local f_hex_2 = formatters["%02X"]
+
+local h_hex_4 = table.setmetatableindex(function(t,k) -- we already have this somewhere
+    if k < 0 then
+     --report("fatal h_hex_4 error: %i",k)
+        return "0000"
+    elseif k < 256 then -- maybe 512
+        -- not sparse in this range
+        for i=0,255 do
+            t[i] = f_hex_4(i)
+        end
+        return t[k]
+    else
+        local v = f_hex_4(k)
+        t[k] = v
+        return v
+    end
+end)
+
+local h_hex_2 = table.setmetatableindex(function(t,k) -- we already have this somewhere
+    if type(k) == "string" then
+        local v = f_hex_2(byte(k))
+        t[k] = v
+        return v
+    elseif k < 0 or k > 255 then
+     -- report("fatal h_hex_2 error: %i",k)
+        return "00"
+    else
+        local v = f_hex_2(k)
+        t[k] = v
+        return v
+    end
+end)
+
+lpdf.h_hex_2 = h_hex_2
+lpdf.h_hex_4 = h_hex_4
+
 
 do
 
@@ -228,7 +270,7 @@ do
     local more = 0
 
     local pattern = C(4) / function(s) -- needs checking !
-        local now = tonumber(s,16)
+        local now = hextointeger(s)
         if more > 0 then
             now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000
             more = 0
@@ -253,7 +295,15 @@ do
 
     local toregime   = regimes and regimes.toregime
     local fromregime = regimes and regimes.fromregime
-    local escaped    = Cs(Cc("(") * (S("\\()\n\r\t\b\f")/"\\%0" + P(1))^0 * Cc(")"))
+    local escaped    = Cs(
+        Cc("(")
+      * (
+            S("()\n\r\t\b\f")/"\\%0"
+          + P("\\")/"\\\\"
+          + P(1)
+        )^0
+      * Cc(")")
+    )
 
     topdfdoc = function(str,default)
         if not str or str == "" then
@@ -282,11 +332,19 @@ do
         end
     end
 
-    local b_pattern = Cs((P("\\")/"" * (
-        S("()")
-      + S("nrtbf") / { n = "\n", r = "\r", t = "\t", b = "\b", f = "\f" }
-      + lpegpatterns.octdigit^-3 / function(s) return char(tonumber(s,8)) end)
-    + P(1))^0)
+    -- use an oct hash
+
+    local unescape = Cs((
+       P("\\")/"" * (
+           S("()")
+         + S("\n\r")^1 / ""
+         + S("nrtbf") / { n = "\n", r = "\r", t = "\t", b = "\b", f = "\f" }
+         + (lpegpatterns.octdigit * lpegpatterns.octdigit^-2) / function(s) return char(octtointeger(s)) end
+       )
+     + P("\\\\") / "\\"
+     + P(1)
+--      - P(")") -- when inlined
+     )^0)
 
     fromeight = function(str)
         if not str or str == "" then
@@ -295,6 +353,8 @@ do
             return lpegmatch(unescape,str)
         end
     end
+
+    lpegpatterns.pdffromeight = unescape
 
     local u_pattern = lpegpatterns.utfbom_16_be * lpegpatterns.utf16_to_utf8_be -- official
                     + lpegpatterns.utfbom_16_le * lpegpatterns.utf16_to_utf8_le -- we've seen these
@@ -313,12 +373,12 @@ do
                   * Cs( (
                         zero  / ""
                       + two   / function(a,b)
-                                    a = (tonumber(a,16) - 0xD800) * 1024
-                                    b = (tonumber(b,16) - 0xDC00)
+                                    a = (hextointeger(a) - 0xD800) * 1024
+                                    b = (hextointeger(b) - 0xDC00)
                                     return utfchar(a+b)
                                 end
                       + one   / function(a)
-                                    return utfchar(tonumber(a,16))
+                                    return utfchar(hextointeger(a))
                                 end
                     )^1 ) * P(-1)
     }
@@ -342,7 +402,7 @@ do
                 return u
             end
         end
-        return lpegmatch(b_pattern,s)
+        return lpegmatch(unescape,s)
     end
 
     lpdf.tosixteen   = tosixteen

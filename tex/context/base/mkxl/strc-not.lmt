@@ -529,4 +529,4 @@ local function action(index,slot)
     end
 end
 
-callbacks.register("build_page_insert",action,"check spacing around inserts")
+callbacks.register("insert_distance",action,"check spacing around inserts")

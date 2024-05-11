@@ -16,6 +16,7 @@ set(luaoptional_sources
     source/luaoptional/lmtzstd.c
     source/luaoptional/lmtlzma.c
     source/luaoptional/lmtforeign.c
+    source/luaoptional/lmtopenssl.c
 
 )
 

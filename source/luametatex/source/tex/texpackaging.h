@@ -44,50 +44,31 @@ typedef enum box_codes {
     split_discards_code,
 } box_codes;
 
-// typedef enum saved_spec_items {
-//     saved_spec_item_packaging = 0,
-//     saved_spec_item_attribute = 1,
-//     saved_spec_n_of_items     = 2,
-// } saved_spec_items;
-
-typedef enum saved_full_spec_items {
-    saved_full_spec_item_context     =  0,
-    saved_full_spec_item_packaging   =  1,
-    saved_full_spec_item_direction   =  2,
-    saved_full_spec_item_attr_list   =  3,
-    saved_full_spec_item_only_pack   =  4,
-    saved_full_spec_item_orientation =  5,
-    saved_full_spec_item_anchor      =  6,
-    saved_full_spec_item_geometry    =  7,
-    saved_full_spec_item_xoffset     =  8,
-    saved_full_spec_item_yoffset     =  9,
-    saved_full_spec_item_xmove       = 10,
-    saved_full_spec_item_ymove       = 11,
-    saved_full_spec_item_reverse     = 12,
-    saved_full_spec_item_container   = 13,
-    saved_full_spec_item_shift       = 14, /* cleaner than passing it as context */
-    saved_full_spec_item_source      = 15,
-    saved_full_spec_item_target      = 16,
-    saved_full_spec_item_axis        = 17,
-    saved_full_spec_item_class       = 18,
-    saved_full_spec_item_state       = 19,
-    saved_full_spec_item_retain      = 20,
-    saved_full_spec_item_callback    = 21,
-    saved_full_spec_n_of_items       = 22,
-} saved_full_spec_items;
-
-// typedef enum saved_align_spec_items {
-//     saved_align_spec_item_attr_list   = 0,
-//     saved_align_spec_item_orientation = 1,
-//     saved_align_spec_item_anchor      = 2,
-//     saved_align_spec_item_geometry    = 3,
-//     saved_align_spec_item_xoffset     = 4,
-//     saved_align_spec_item_yoffset     = 5,
-//     saved_align_spec_item_shift       = 6,
-//     saved_align_spec_item_source      = 7,
-//     saved_align_spec_item_target      = 8,
-//     saved_align_spec_n_of_items       = 9,
-// } saved_align_spec_items;
+// typedef enum saved_full_spec_items {
+//     saved_full_spec_item_context     =  0,
+//     saved_full_spec_item_packaging   =  1,
+//     saved_full_spec_item_direction   =  2,
+//     saved_full_spec_item_attr_list   =  3,
+//     saved_full_spec_item_only_pack   =  4,
+//     saved_full_spec_item_orientation =  5,
+//     saved_full_spec_item_anchor      =  6,
+//     saved_full_spec_item_geometry    =  7,
+//     saved_full_spec_item_xoffset     =  8,
+//     saved_full_spec_item_yoffset     =  9,
+//     saved_full_spec_item_xmove       = 10,
+//     saved_full_spec_item_ymove       = 11,
+//     saved_full_spec_item_reverse     = 12,
+//     saved_full_spec_item_container   = 13,
+//     saved_full_spec_item_shift       = 14, /* cleaner than passing it as context */
+//     saved_full_spec_item_source      = 15,
+//     saved_full_spec_item_target      = 16,
+//     saved_full_spec_item_axis        = 17,
+//     saved_full_spec_item_class       = 18,
+//     saved_full_spec_item_state       = 19,
+//     saved_full_spec_item_retain      = 20,
+//     saved_full_spec_item_callback    = 21,
+//     saved_full_spec_n_of_items       = 22,
+// } saved_full_spec_items;
 
 typedef enum holding_migration_options {
     holding_none_option    = 0x00,
@@ -121,47 +102,61 @@ typedef struct packaging_state_info {
     halfword padding;
 } packaging_state_info;
 
+typedef enum box_limit_modes {
+    box_limit_none  = 0x00,
+    box_limit_hlist = 0x01,
+    box_limit_vlist = 0x02,
+    box_limit_line  = 0x04,
+} box_limit_modes;
+
 extern packaging_state_info lmt_packaging_state;
 
-extern scaled    tex_char_stretch         (halfword p);
-extern scaled    tex_char_shrink          (halfword p);
-/*     void      tex_get_char_expansion   (halfword p, halfword *stretch, halfword *shrink); */ /* no gain */
-extern scaled    tex_kern_stretch         (halfword p);
-extern scaled    tex_kern_shrink          (halfword p);
-extern scaled    tex_char_protrusion      (halfword p, int side);
-/*     void      tex_kern_protrusion      (halfword p, int side, halfword *stretch, halfword *shrink); */
+extern scaled    tex_char_stretch          (halfword p);
+extern scaled    tex_char_shrink           (halfword p);
+/*     void      tex_get_char_expansion    (halfword p, halfword *stretch, halfword *shrink); */ /* no gain */
+extern scaled    tex_kern_stretch          (halfword p);
+extern scaled    tex_kern_shrink           (halfword p);
+extern scaled    tex_char_protrusion       (halfword p, int side);
+/*     void      tex_kern_protrusion       (halfword p, int side, halfword *stretch, halfword *shrink); */
+                                           
+extern scaled    tex_left_marginkern       (halfword p);
+extern scaled    tex_right_marginkern      (halfword p);
+                                           
+extern halfword  tex_filtered_hpack        (halfword p, halfword qt, scaled w, int m, int grp, halfword d, int just_pack, halfword attr, int state, int retain);
+extern halfword  tex_filtered_vpack        (halfword p, scaled h, int m, scaled maxdepth, int grp, halfword direction, int just_pack, halfword attr, int state, int retain, int *excess);
+                                           
+extern scaledwhd tex_natural_hsizes        (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
+extern scaledwhd tex_natural_vsizes        (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
+extern halfword  tex_natural_width         (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
+extern halfword  tex_natural_hsize         (halfword p, halfword *correction);
+extern halfword  tex_natural_vsize         (halfword p);
+                                           
+extern halfword  tex_hpack                 (halfword p, scaled w, int m, singleword d, int retain, int limit);
+extern halfword  tex_vpack                 (halfword p, scaled h, int m, scaled l, singleword d, int retain, int *excess);
+                                           
+extern void      tex_repack                (halfword p, scaled w, int m);
+extern void      tex_limit                 (halfword p);
+extern void      tex_freeze                (halfword p, int recurse, int limitate, halfword factor);
+extern scaled    tex_stretch               (halfword p);
+extern scaled    tex_shrink                (halfword p);
+                                           
+extern void      tex_package               (singleword nature);
+extern void      tex_run_unpackage         (void);
+                                           
+extern void      tex_append_to_vlist       (halfword b, int location, const line_break_properties *properties);
+                                           
+extern halfword  tex_prune_page_top        (halfword p, int s);
+extern halfword  tex_vert_break            (halfword p, scaled h, scaled d);
+extern halfword  tex_vsplit                (halfword n, scaled h, int m);
+                                           
+extern void      tex_finish_vcenter_group  (void);
+extern void      tex_run_vcenter           (void);
+                                           
+extern void      tex_show_packaging_group  (const char *package);
+extern int       tex_show_packaging_record (void);
 
-extern scaled    tex_left_marginkern      (halfword p);
-extern scaled    tex_right_marginkern     (halfword p);
-
-extern halfword  tex_filtered_hpack       (halfword p, halfword qt, scaled w, int m, int grp, halfword d, int just_pack, halfword attr, int state, int retain);
-extern halfword  tex_filtered_vpack       (halfword p, scaled h, int m, scaled maxdepth, int grp, halfword direction, int just_pack, halfword attr, int state, int retain, int *excess);
-
-extern scaledwhd tex_natural_hsizes       (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
-extern scaledwhd tex_natural_vsizes       (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
-extern halfword  tex_natural_width        (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
-extern halfword  tex_natural_hsize        (halfword p, halfword *correction);
-extern halfword  tex_natural_vsize        (halfword p);
-
-extern halfword  tex_hpack                (halfword p, scaled w, int m, singleword d, int retain);
-extern halfword  tex_vpack                (halfword p, scaled h, int m, scaled l, singleword d, int retain, int *excess);
-
-extern void      tex_repack               (halfword p, scaled w, int m);
-extern void      tex_freeze               (halfword p, int recurse, int limitate);
-extern scaled    tex_stretch              (halfword p);
-extern scaled    tex_shrink               (halfword p);
-
-extern void      tex_package              (singleword nature);
-extern void      tex_run_unpackage        (void);
-
-extern void      tex_append_to_vlist      (halfword b, int location, const line_break_properties *properties);
-
-extern halfword  tex_prune_page_top       (halfword p, int s);
-extern halfword  tex_vert_break           (halfword p, scaled h, scaled d);
-extern halfword  tex_vsplit               (halfword n, scaled h, int m);
-
-extern void      tex_finish_vcenter_group (void);
-extern void      tex_run_vcenter          (void);
+extern int       tex_get_packaging_context (void);
+extern int       tex_get_packaging_shift   (void);
 
 //# define vpack(A,B,C,D) tex_vpackage(A,B,C,max_dimension,D)
 

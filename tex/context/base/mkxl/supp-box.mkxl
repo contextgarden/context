@@ -210,7 +210,7 @@
 
 \protected\def\syst_boxes_math_set_nextbox#1%
   {\setbox\nextbox\hbox\expandafter\bgroup
-     \expandafter\normalstartimath\expandafter\Ustyle\the\mathstackstyle
+     \expandafter\normalstartimath\expandafter\givenmathstyle\the\mathstackstyle
      \mathsurround\zeropoint{#1}%
      \normalstopimath
    \egroup}
@@ -362,7 +362,7 @@
 
 %D We also define plain's \type {\mathstrut}.
 
-\permanent\protected\def\mathstrut{\Ustack{\vphantom(}} % can be made faster by inlining
+\permanent\protected\def\mathstrut{\mathstack{\vphantom(}} % can be made faster by inlining
 
 %D \macros
 %D   {getboxheight}
@@ -744,8 +744,8 @@
 % \def\syst_boxes_math_rlap{\mathpalette\syst_boxes_do_math_rlap}
 
 \def\syst_boxes_math_xlap#1#2%
-  {\normalexpanded{#1\bgroup\normalstartimath\Ustyle\the\mathstyle}%
- %{\expandafter#1\expandafter\bgroup\expandafter\normalstartimath\expandafter\Ustyle\the\mathstyle
+  {\normalexpanded{#1\bgroup\normalstartimath\givenmathstyle\the\mathstyle}%
+ %{\expandafter#1\expandafter\bgroup\expandafter\normalstartimath\expandafter\givenmathstyle\the\mathstyle
      \mathsurround\zeropoint#2%
    \normalstopimath\egroup}
 
@@ -2014,7 +2014,7 @@
       \hpack to \scratchwidth{\hss\box\nextbox   \hss}}}
 
 \permanent\protected\def\startoverlay
-  {\bgroup
+  {\vbox\bgroup % we remove unwanted spaces so we want to prevent the pre-overlay gobble
    \enforced\aliased\let\stopoverlay\egroup
    \processboxes\syst_boxes_overlay_process}
 
@@ -2770,11 +2770,27 @@
 
 \let\prerolltostring\firstofoneargument % we need to bypass initializations
 
+% This fails on an empty document (probably some mode issue):
+
+% \appendtoks
+%     \permanent\def\prerolltostring
+%       {\beginlocalcontrol\begingroup
+%        \expand\everypreroll
+%        \dowithnextboxcs\syst_boxes_contenttostring\hbox}
+% \to \everydump
+%
+% So we do this instead:
+
+\newbox\b_syst_boxes
+
 \appendtoks
-    \permanent\def\prerolltostring
-      {\beginlocalcontrol\begingroup
-       \expand\everypreroll
-       \dowithnextboxcs\syst_boxes_contenttostring\hbox}
+    \permanent\def\prerolltostring#1%
+      {\beginlocalcontrol
+       \setbox\b_syst_boxes\hbox{\expand\everypreroll#1}%
+       \normalexpanded
+         {\setbox\b_syst_boxes\emptybox
+          \endlocalcontrol
+          \boxtostring\b_syst_boxes}}
 \to \everydump
 
 % depricated:
@@ -2994,15 +3010,15 @@
 
 %D \macros{boxfixstretch}
 %D
-%D This is relative new one and a wrapper around \typ {\boxlimitate}
-%D but with a criterium.
+%D This is relative new one and a wrapper around \typ {\boxlimitate} but with a
+%D criterium.
 %D
 %D \startbuffer
-%D \setbox2\copy0 \boxfixstretch 2 20pt      \box2
-%D \setbox2\copy0 \boxfixstretch 2 30pt      \box2
-%D \setbox2\copy0 \boxfixstretch 2 40pt      \box2
-%D \setbox2\copy0 \boxfixstretch 2  0pt      \box2 % \boxlimitate 2 0pt
-%D \setbox2\copy0 \boxfixstretch 2 \maxdimen \box2
+%D \setbox2\copy0 \boxfixstretch 20pt      2 \box2
+%D \setbox2\copy0 \boxfixstretch 30pt      2 \box2
+%D \setbox2\copy0 \boxfixstretch 40pt      2 \box2
+%D \setbox2\copy0 \boxfixstretch  0pt      2 \box2 % \boxlimitate 2 0pt
+%D \setbox2\copy0 \boxfixstretch \maxdimen 2 \box2
 %D \stopbuffer
 %D
 %D \setbox0\ruledvbox to 2cm \bgroup
@@ -3041,18 +3057,94 @@
      % we don't stretch beyond what is acceptable
      \global\boxstretchfixed\conditionalfalse
      \global\boxstretchdelta\zeropoint
-   \orelse\ifdim\scratchdistance<\scratchdimen
+   \orelse\ifdim\scratchdistance>\scratchdimen
      % we are below the criterium
      \boxlimitate\scratchcounter\zerocount
      \global\boxstretchfixed\conditionaltrue
      \global\boxstretchdelta\dimexpr\ifvbox\scratchcounter\ht\else\wd\fi\scratchcounter-\boxrepack\scratchcounter\relax
    \else
+     % we are above the criterium
      \global\boxstretchfixed\conditionalfalse
      \global\boxstretchdelta\zeropoint
    \fi
+% \writestatus{PAGE}{stretch:#L
+%   size \the\scratchdimenone,#L
+%   natural \the\scratchdimentwo,#L
+%   stretch \the\scratchdimenthree,#L
+%   distance \the\scratchdistance,#L
+%   criterium \the\scratchdimen,#L
+%   fixed case
+%    \unless\ifdim\scratchdistance>\scratchdimenthree
+%      1:false,#L
+%    \orelse\ifdim\scratchdistance<\scratchdimen
+%      2:true,#L
+%    \else
+%      4:false,#L
+%    \fi
+%    delta \the\boxstretchdelta
+% }%
    \endgroup}
 
 \protect \endinput
+
+% alternative
+
+% \newdimension\d_syst_boxes_target_size
+% \newdimension\d_syst_boxes_natural_size
+% \newdimension\d_syst_boxes_stretch
+% \newdimension\d_syst_boxes_available
+% \newdimension\d_syst_boxes_limit
+%
+% \permanent\protected\def\boxfixstretch
+%   {\begingroup
+%    \afterassignment\syst_boxes_fixstretch_a\d_syst_boxes_limit}
+%
+% \permanent\protected\def\syst_boxes_fixstretch_a
+%   {\afterassignment\Xsyst_boxes_fixstretch_b\scratchcounter}
+%
+% \permanent\protected\def\syst_boxes_fixstretch_b
+%   {\d_syst_boxes_target_size \ifvbox\scratchcounter\ht\else\wd\fi\scratchcounter % current size
+%    \d_syst_boxes_natural_size\boxrepack\scratchcounter                           % natural
+%    \d_syst_boxes_stretch     \boxstretch\scratchcounter                          % stretch
+%    \d_syst_boxes_available   \dimexpr\d_syst_boxes_target_size-\d_syst_boxes_natural_size\relax
+%    \ifdim\d_syst_boxes_available>\d_syst_boxes_stretch
+%      % we don't stretch beyond what is acceptable
+% %      \boxlimitate\scratchcounter\zerocount
+%      \boxfinalize\scratchcounter-1000
+% % \boxfreeze\scratchcounter1
+%      \global\boxstretchfixed\conditionalfalse
+%      \global\boxstretchdelta\zeropoint
+%    \orelse\ifdim\d_syst_boxes_available>\d_syst_boxes_limit
+%      % we are below the criterium
+% %      \boxfinalize\scratchcounter1000
+% \boxfreeze\scratchcounter\zerocount
+% % \boxfreeze\scratchcounter1
+% % \boxlimitate\scratchcounter\zerocount
+%      \global\boxstretchfixed\conditionaltrue
+%      \global\boxstretchdelta\dimexpr\ifvbox\scratchcounter\ht\else\wd\fi\scratchcounter-\boxrepack\scratchcounter\relax
+%    \else
+%      % we are above the criterium
+%      \global\boxstretchfixed\conditionalfalse
+%      \global\boxstretchdelta\zeropoint
+%    \fi
+% % \writestatus{PAGE}{%
+% %   page      \the\realpageno,#L
+% %   size      \the\d_syst_boxes_target_size,#L
+% %   natural   \the\d_syst_boxes_natural_size,#L
+% %   stretch   \the\d_syst_boxes_stretch,#L
+% %   distance  \the\d_syst_boxes_available,#L
+% %   criterium \the\d_syst_boxes_limit,#L
+% %   fixed case
+% %    \unless\ifdim\d_syst_boxes_available>\d_syst_boxes_stretch
+% %             1:false,#L
+% %    \orelse\ifdim\d_syst_boxes_available>\d_syst_boxes_limit
+% %             2:true,#L
+% %    \else
+% %             4:false,#L
+% %    \fi
+% %    delta    \the\boxstretchdelta
+% % }%
+%    \endgroup}
 
 % a bit of test code:
 
