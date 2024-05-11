@@ -655,7 +655,17 @@ extern void     tex_set_default_math_codes       (void);
 extern int      tex_check_active_math_char       (int character);
 extern int      tex_pass_active_math_char        (int character);
 
-inline int      tex_math_scripts_allowed         (halfword node) { return ((node_type(node) >= simple_noad) && (node_type(node) < fence_noad)); }
+inline int tex_math_scripts_allowed(halfword node) 
+{ 
+    return (node_type(node) >= simple_noad) && (node_type(node) < fence_noad); 
+}
+
+inline int tex_math_no_more_scripts(halfword node) 
+{ 
+    return (node_type(node) >= simple_noad) && (node_type(node) < fence_noad)
+        && has_noad_option_no_more_scripts(node)
+        && ! (noad_supscr(node) || noad_subscr(node) || noad_supprescr(node) || noad_subprescr(node) || noad_prime(node));
+}
 
 extern halfword tex_new_math_continuation_atom   (halfword node, halfword attr);
 

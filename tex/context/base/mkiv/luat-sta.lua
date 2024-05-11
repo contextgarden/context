@@ -112,100 +112,100 @@ function states.get(key,default)
     return get_by_tag(states.tag,key,default)
 end
 
---~ data.update = {
---~ 	["version"] = {
---~ 		["major"] = 0,
---~ 		["minor"] = 1,
---~ 	},
---~ 	["rsync"] = {
---~ 		["server"]     = "contextgarden.net",
---~ 		["module"]     = "minimals",
---~ 		["repository"] = "current",
---~ 		["flags"]      = "-rpztlv --stats",
---~ 	},
---~ 	["tasks"] = {
---~ 		["update"] = true,
---~ 		["make"]   = true,
---~         ["delete"] = false,
---~ 	},
---~ 	["platform"] = {
---~ 		["host"]  = true,
---~ 		["other"] = {
---~ 			["mswin"]     = false,
---~ 			["linux"]     = false,
---~ 			["linux-64"]  = false,
---~ 			["osx-intel"] = false,
---~ 			["osx-ppc"]   = false,
---~ 			["sun"]       = false,
---~ 		},
---~ 	},
---~ 	["context"] = {
---~ 		["available"] = {"current", "beta", "alpha", "experimental"},
---~ 		["selected"]  = "current",
---~ 	},
---~ 	["formats"] = {
---~ 		["cont-en"] = true,
---~ 		["cont-nl"] = true,
---~ 		["cont-de"] = false,
---~ 		["cont-cz"] = false,
---~ 		["cont-fr"] = false,
---~ 		["cont-ro"] = false,
---~ 	},
---~ 	["engine"] = {
---~ 		["pdftex"] = {
---~ 			["install"] = true,
---~ 			["formats"] = {
---~ 				["pdftex"] = true,
---~ 			},
---~ 		},
---~ 		["luatex"] = {
---~ 			["install"] = true,
---~ 			["formats"] = {
---~ 			},
---~ 		},
---~ 		["xetex"] = {
---~ 			["install"] = true,
---~ 			["formats"] = {
---~ 				["xetex"] = false,
---~ 			},
---~ 		},
---~ 		["metapost"] = {
---~ 			["install"] = true,
---~ 			["formats"] = {
---~ 				["mpost"] = true,
---~ 				["metafun"] = true,
---~ 			},
---~ 		},
---~ 	},
---~ 	["fonts"] = {
---~ 	},
---~ 	["doc"] = {
---~ 	},
---~ 	["modules"] = {
---~ 		["f-urwgaramond"] = false,
---~ 		["f-urwgothic"] = false,
---~ 		["t-bnf"] = false,
---~ 		["t-chromato"] = false,
---~ 		["t-cmscbf"] = false,
---~ 		["t-cmttbf"] = false,
---~ 		["t-construction-plan"] = false,
---~ 		["t-degrade"] = false,
---~ 		["t-french"] = false,
---~ 		["t-lettrine"] = false,
---~ 		["t-lilypond"] = false,
---~ 		["t-mathsets"] = false,
---~ 		["t-tikz"] = false,
---~ 		["t-typearea"] = false,
---~ 		["t-vim"] = false,
---~ 	},
---~ }
+-- data.update = {
+-- 	["version"] = {
+-- 		["major"] = 0,
+-- 		["minor"] = 1,
+-- 	},
+-- 	["rsync"] = {
+-- 		["server"]     = "contextgarden.net",
+-- 		["module"]     = "minimals",
+-- 		["repository"] = "current",
+-- 		["flags"]      = "-rpztlv --stats",
+-- 	},
+-- 	["tasks"] = {
+-- 		["update"] = true,
+-- 		["make"]   = true,
+--         ["delete"] = false,
+-- 	},
+-- 	["platform"] = {
+-- 		["host"]  = true,
+-- 		["other"] = {
+-- 			["mswin"]     = false,
+-- 			["linux"]     = false,
+-- 			["linux-64"]  = false,
+-- 			["osx-intel"] = false,
+-- 			["osx-ppc"]   = false,
+-- 			["sun"]       = false,
+-- 		},
+-- 	},
+-- 	["context"] = {
+-- 		["available"] = {"current", "beta", "alpha", "experimental"},
+-- 		["selected"]  = "current",
+-- 	},
+-- 	["formats"] = {
+-- 		["cont-en"] = true,
+-- 		["cont-nl"] = true,
+-- 		["cont-de"] = false,
+-- 		["cont-cz"] = false,
+-- 		["cont-fr"] = false,
+-- 		["cont-ro"] = false,
+-- 	},
+-- 	["engine"] = {
+-- 		["pdftex"] = {
+-- 			["install"] = true,
+-- 			["formats"] = {
+-- 				["pdftex"] = true,
+-- 			},
+-- 		},
+-- 		["luatex"] = {
+-- 			["install"] = true,
+-- 			["formats"] = {
+-- 			},
+-- 		},
+-- 		["xetex"] = {
+-- 			["install"] = true,
+-- 			["formats"] = {
+-- 				["xetex"] = false,
+-- 			},
+-- 		},
+-- 		["metapost"] = {
+-- 			["install"] = true,
+-- 			["formats"] = {
+-- 				["mpost"] = true,
+-- 				["metafun"] = true,
+-- 			},
+-- 		},
+-- 	},
+-- 	["fonts"] = {
+-- 	},
+-- 	["doc"] = {
+-- 	},
+-- 	["modules"] = {
+-- 		["f-urwgaramond"] = false,
+-- 		["f-urwgothic"] = false,
+-- 		["t-bnf"] = false,
+-- 		["t-chromato"] = false,
+-- 		["t-cmscbf"] = false,
+-- 		["t-cmttbf"] = false,
+-- 		["t-construction-plan"] = false,
+-- 		["t-degrade"] = false,
+-- 		["t-french"] = false,
+-- 		["t-lettrine"] = false,
+-- 		["t-lilypond"] = false,
+-- 		["t-mathsets"] = false,
+-- 		["t-tikz"] = false,
+-- 		["t-typearea"] = false,
+-- 		["t-vim"] = false,
+-- 	},
+-- }
 
---~ states.save("teststate", "update")
---~ states.load("teststate", "update")
+-- states.save("teststate", "update")
+-- states.load("teststate", "update")
 
---~ print(states.get_by_tag("update","rsync.server","unknown"))
---~ states.set_by_tag("update","rsync.server","oeps")
---~ print(states.get_by_tag("update","rsync.server","unknown"))
---~ states.save("teststate", "update")
---~ states.load("teststate", "update")
---~ print(states.get_by_tag("update","rsync.server","unknown"))
+-- print(states.get_by_tag("update","rsync.server","unknown"))
+-- states.set_by_tag("update","rsync.server","oeps")
+-- print(states.get_by_tag("update","rsync.server","unknown"))
+-- states.save("teststate", "update")
+-- states.load("teststate", "update")
+-- print(states.get_by_tag("update","rsync.server","unknown"))

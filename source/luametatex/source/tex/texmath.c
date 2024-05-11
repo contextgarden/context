@@ -3874,14 +3874,14 @@ void tex_run_math_script(void)
             break;
     }
     switch (code) {
-        case math_no_script_code:
+        case math_no_script_space_code:
             {
                 halfword glue = tex_new_glue_node(zero_glue, conditional_math_glue);
                 tex_tail_append(glue);
                 tex_add_glue_option(glue, glue_option_no_auto_break);
             }
             return;
-        case math_no_ruling_code:
+        case math_no_ruling_space_code:
             {
                 halfword glue = tex_new_glue_node(zero_glue, rulebased_math_glue);
                 tex_tail_append(glue);
@@ -3891,21 +3891,23 @@ void tex_run_math_script(void)
         case math_sub_script_code:
             tex_get_token();
             if (cur_tok == underscore_token || cur_cmd == subscript_cmd) {
-                tex_get_token();
+                tex_get_token(); 
                 if (cur_tok == underscore_token || cur_cmd == subscript_cmd) {
                     tex_get_token();
                     if (cur_tok == underscore_token || cur_cmd == subscript_cmd) {
-                        code = math_shifted_sub_pre_script_code;
+                        code = math_shifted_sub_pre_script_code; /* ____ */
                     } else {
                         tex_back_input(cur_tok);
-                        code = math_shifted_sub_script_code;
+                     // code = math_shifted_sub_script_code;
+                        code = math_sub_pre_script_code; /* ___ */
                     }
                 } else {
                     tex_back_input(cur_tok);
-                    code = math_sub_pre_script_code;
+                 // code = math_sub_pre_script_code;
+                    code = math_shifted_sub_script_code; /* __ */
                 }
             } else {
-                tex_back_input(cur_tok);
+                tex_back_input(cur_tok); /* _ */
             }
             break;
         case math_super_script_code:
@@ -3915,21 +3917,30 @@ void tex_run_math_script(void)
                 if (cur_tok == circumflex_token || cur_cmd == superscript_cmd) {
                     tex_get_token();
                     if (cur_tok == circumflex_token || cur_cmd == superscript_cmd) {
-                        code = math_shifted_super_pre_script_code;
+                        code = math_shifted_super_pre_script_code; /* ^^^^ */
                     } else {
                         tex_back_input(cur_tok);
-                        code = math_shifted_super_script_code;
+                     // code = math_shifted_super_script_code;
+                        code = math_super_pre_script_code; /* ^^^ */
                     }
                 } else {
                     tex_back_input(cur_tok);
-                    code = math_super_pre_script_code;
+                 // code = math_super_pre_script_code;
+                    code = math_shifted_super_script_code; /* ^^ */
                 }
             } else {
-                tex_back_input(cur_tok);
+                tex_back_input(cur_tok); /* ^ */
             }
             break;
+        case math_no_script_code:
+            {
+                if (tex_math_scripts_allowed(cur_list.tail)) {
+                    noad_options(cur_list.tail) |= noad_option_no_more_scripts;
+                }
+                return; 
+            }
     }
-    if (tail == cur_list.head || (! tex_math_scripts_allowed(tail))) {
+    if ((tail == cur_list.head) || (! tex_math_scripts_allowed(tail)) || (tex_math_no_more_scripts(tail))) { 
         tail = tex_math_double_atom(0);
     }
     switch (code) {
@@ -4410,9 +4421,9 @@ void tex_run_math_fraction(void)
 
 static halfword tex_aux_finish_math_list(halfword p)
 {
-    halfword q;
-    /*tex We reorder prescripts here: */
-    cur_list.head = tex_mlist_to_hlist_prepare(cur_list.head);
+    halfword q = null;
+    /*tex We reorder prescripts here (works on |cur_list.head|). */
+    tex_mlist_to_hlist_prepare();
     /*tex So now we're ready to proceed. */
     if (cur_list.incomplete_noad) {
         halfword denominator = fraction_denominator(cur_list.incomplete_noad);

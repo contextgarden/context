@@ -22,14 +22,14 @@ if not modules then modules = { } end modules ['lxml-mms'] = {
 -- you can overload and adapt bits and pieces as part of the document style. For the
 -- record: we are not involved in accesibility projects, so we might get some things
 -- wrong.
-
+--
 -- This is experimental code that will be optimized. Also, some of it can be a bit
 -- more general (shared) but we do that once we're done.
 
 -- Timestamp: yet another entertaining drum track by Gavin Harrison "Pick Up The
 -- Pieces" | Zildjian 400th UK (posted 2024/2/5) - three weeks before a PT concert.
 
-local tonumber, tostring, type = tonumber, tostring, type
+local tonumber, tostring, type, next = tonumber, tostring, type, next
 local concat = table.concat
 local formatters = string.formatters
 
@@ -39,63 +39,62 @@ local xmltext      = xml.text
 local xmlconvert   = xml.convert
 local xmlcollected = xml.collected
 
-do
+-- do
 
-    local getname            = mathematics.dictionaries.name
-    local classes            = mathematics.classes
-    local getlabel           = mathematics.getverboselabel
-    local functions          = mathematics.categories.functions
-    local functiontype       = mathematics.functiontype
+    local function xmlevery(x)
+        local dt = x.dt
+        local tt
+        local nn = 0
+        for i=1,#dt do
+            local di = dt[i]
+            if di.tg and not di.special then
+                if tt then
+                    nn = nn + 1
+                    tt[nn] = di
+                else
+                    nn = 1
+                    tt = { di }
+                end
+            end
+        end
+        return tt, nn
+    end
 
-    local integral_class     <const> = classes.integral
-    local implication_class  <const> = classes.implication
-    local open_class         <const> = classes.open
-    local close_class        <const> = classes.close
-    local middle_class       <const> = classes.middle
-    local prime_class        <const> = classes.prime
-    local differential_class <const> = classes.differential
-    local ordinary_class     <const> = classes.ordinary
-    local operator_class     <const> = classes.operator
+    local getname          = mathematics.dictionaries.name
+    local classes          = mathematics.classes
+    local getverboselabel  = mathematics.getverboselabel
+    local getoptionallabel = mathematics.getoptionallabel
+    local functions        = mathematics.categories.functions
+    local functiontype     = mathematics.functiontype
 
     local report = logs.reporter("mms")
 
     -- we don't really need to handle mfenced
 
-    local t, n, expand, expandone, okay, language
+    local t, n, expand, expandone, okay, language, domain
 
-local getverboselabel = mathematics.getverboselabel
-local grouplevel      = 0
+    -- todo: a getlabel wrapper so that we don't need to pass language and domain
 
--- local function getlabel(name,language)
---     local s = getverboselabel(name,language)
---     if name == "begin group" then
---         grouplevel = grouplevel + 1
---         if grouplevel > 1 then
---             s = s .. " " .. grouplevel
---         end
---     elseif name == "end group" then
---         if grouplevel > 1 then
---             s = s .. " " .. grouplevel
---         end
---         grouplevel = grouplevel - 1
---     end
---     return s
--- end
+    local function getlabel(tag)
+        return getverboselabel(tag,language,domain)
+    end
+
+    local function getoptional(tag)
+        return getoptionallabel(tag,language,domain)
+    end
 
     local function expandsymbol(c)
         local at = c.at
         if not at.mathignore then
             local result = at.mathidentity
             if not result then
-                local group = tonumber(at.mathgroup)
+                local group = at.mathgroup
                 if group then
                     local character = tonumber(at.mathcharacter)
                     local index     = tonumber(at.mathindex)
---         print(index,character,getname(group,index),getname(group,character))
-        --             local s = getname(group,index) or getname(group,character)
                     local s = getname(group,character) or getname(group,index)
                     if type(s) == "string" then
-                        result = getlabel(s,language)
+                        result = getlabel(s)
                     else
                         result = xmltext(c)
                     end
@@ -114,8 +113,8 @@ local grouplevel      = 0
     local function hasmiddle(a)
         if a then
             for i=1,#a do
-                local class = tonumber(a[i].at.mathclass)
-                if class == middle_class then
+                local class = a[i].at.mathclass
+                if class == "middle" then
                     return true
                 end
             end
@@ -135,24 +134,38 @@ local grouplevel      = 0
     end
 
     local function isintegral(at)
-        return tonumber(at.mathclass) == integral_class
+        return at.mathclass == "integral"
     end
 
     local function isoperator(at)
-        return tonumber(at.mathclass) == operator_class
+        return at.mathclass == "operator"
     end
 
     -- see if we can avoid passing all and i
 
-    local function tothepower(a,all,i)
-        n = n + 1 ; t[n] = getlabel("to the power of",language)
-        expandone(a,all,i)
-        local last = t[n]
-        if last == "2" then
-            n = n - 1 ; t[n] = getlabel("squared",language)
-        elseif last == "3" then
-            n = n - 1 ; t[n] = getlabel("cubed",language)
+    local function expandsupindex(c,a,all,i)
+        if c.at.mathsupindex then
+            n = n + 1 ; t[n] = getlabel("supindex")
+            expandone(a,all,i)
+        else
+            n = n + 1 ; t[n] = getlabel("to the power of")
+            expandone(a,all,i)
+            local last = t[n]
+            if last == "2" then
+                n = n - 1 ; t[n] = getlabel("squared")
+            elseif last == "3" then
+                n = n - 1 ; t[n] = getlabel("cubed")
+            end
         end
+    end
+
+    local function expandsubindex(c,a,all,i)
+        if c.at.mathsubindex then
+            n = n + 1 ; t[n] = getlabel("subindex")
+        else
+            n = n + 1 ; t[n] = getlabel("sub")
+        end
+        expandone(a,all,i)
     end
 
     local function checkfunction(a,i,na)
@@ -166,9 +179,9 @@ local grouplevel      = 0
                     if t2 == "mn" or t2 == "mi" then
                         local at1 = a1.at
                         local at3 = a3.at
-                        local class1 = tonumber(at1.mathclass)
-                        local class2 = tonumber(at3.mathclass)
-                        if class1 and class2 and class1 == open_class and class2 == close_class then
+                        local class1 = at1.mathclass
+                        local class2 = at3.mathclass
+                        if class1 and class2 and class1 == "open" and class2 == "close" then
                             at1.mathnogroup = true
                             at3.mathnogroup = true
                         end
@@ -191,11 +204,11 @@ local grouplevel      = 0
             if tg2 == "mrow" or tg2 == "msub" or tg2 == "msup" or tg2 == "msubsup" then
                 local aa = xmlfirst(a2,"/*")
                 if aa then
-                    if aa.tg == "mi" and tonumber(aa.at.mathclass) == differential_class then
+                    if aa.tg == "mi" and aa.at.mathclass == "differential" then
                         ps = aa
                     else
                         local aa = xmlfirst(aa,"/*")
-                        if aa and aa.tg == "mi" and tonumber(aa.at.mathclass) == differential_class then
+                        if aa and aa.tg == "mi" and aa.at.mathclass == "differential" then
                             ps = aa
                         else
                             return false
@@ -210,7 +223,7 @@ local grouplevel      = 0
             if tg1 == "mrow" or tg1 == "msub" or tg1 == "msup" or tg1 == "msubsup" then
                 local aa = xmlfirst(a1,"/*")
                 if aa then
-                    if aa.tg == "mi" and tonumber(aa.at.mathclass) == differential_class then
+                    if aa.tg == "mi" and aa.at.mathclass == "differential" then
                         local p = partials[aa.dt[1]]
                         if p then
                             -- aa.at.mathidentity = p
@@ -221,7 +234,7 @@ local grouplevel      = 0
                         end
                     else
                         local aa = xmlfirst(aa,"/*")
-                        if aa and aa.tg == "mi" and tonumber(aa.at.mathclass) == differential_class then
+                        if aa and aa.tg == "mi" and aa.at.mathclass == "differential" then
                             local p = partials[aa.dt[1]]
                             if p then
                                 -- aa.at.mathidentity = p
@@ -237,7 +250,7 @@ local grouplevel      = 0
                 else
                     return false
                 end
-            elseif tg1 == "mi" and tonumber(a1.at.mathclass) == differential_class then
+            elseif tg1 == "mi" and a1.at.mathclass == "differential" then
                 local p = partials[a1.dt[1]]
                 if partials[a1.dt[1]] then
                     -- a1.at.mathidentity = p
@@ -251,41 +264,58 @@ local grouplevel      = 0
         return false
     end
 
-    local function expandfenced(ai,fenced)
+    local function applyof(all,i,label)
+        local ai1 = all[i + 1]
+        if ai1 and ai1.tg == "mo" then
+            local c = ai1.at.mathclass
+            if c == "open" then
+                n = n + 1 ; t[n] = getlabel(label)
+            end
+        end
+    end
+
+    local function expandfenced(ai,fenced,all,i)
         local at = ai.at
-        local class = tonumber(at.mathclass)
+        local class = at.mathclass
         if not class then
             if at.mathnogroup then
                 -- ignore
             else
-                expandone(ai)
+                expandone(ai,all,i)
             end
-        elseif class == open_class then
+        elseif class == "open" then
             if fenced or at.mathnogroup then
                 -- ignore
             else
-                n = n + 1; t[n] = getlabel("begin group",language)
+                n = n + 1 ; t[n] = getlabel("begin group")
             end
-at.mathignore = "true"
-expandone(ai)
-        elseif class == close_class then
+            at.mathignore = "true"
+            expandone(ai)
+        elseif class == "close" then
             if fenced or at.mathnogroup then
                 -- ignore
             else
-                n = n + 1; t[n] = getlabel("end group",language)
+                n = n + 1 ; t[n] = getlabel("end group")
             end
-at.mathignore = "true"
-expandone(ai)
-        elseif class == middle_class then
+            at.mathignore = "true"
+            expandone(ai)
+        elseif class == "middle" then
             if fenced then
-                n = n + 1; t[n] = getlabel(fenced.tag .. ":fence",language)
-at.mathignore = "true"
-expandone(ai)
+                n = n + 1 ; t[n] = getlabel(fenced.tag .. ":fence")
+                at.mathignore = "true"
+                expandone(ai)
             else
                 expandone(ai)
             end
         else
-            expandone(ai)
+            expandone(ai,all,i)
+        end
+    end
+
+    local function injecttimes()
+        local s = getlabel("times")
+        if s and s ~= "" then
+            n = n + 1 ; t[n] = s
         end
     end
 
@@ -295,366 +325,618 @@ expandone(ai)
             if tg == "mrow" then
                 local at = c.at
                 if at.mathunit then
-                    n = n + 1; t[n] = at.mathunit
+                    n = n + 1 ; t[n] = at.mathunit
                 else
                     local category = tonumber(at.mathcategory)
                     local kind     = category and functiontype(category)
                     local fenced   = kind == "fence" and functions[category]
-                    local a        = xmlall(c,"/*") or { }
-                    local na       = #a
-                    local subfence = hasmiddle(a)
+                    local a, na    = xmlevery(c)
                     if na > 0 then
-if at.mathfunctionstack then
-    expandsymbol(c)
-    at.mathnogroup = "true"
-elseif at.mathfractionstack then
-    at.mathnogroup = "true"
-    n = n + 1; t[n] = getlabel(at.mathfractionstack,language)
-end
-                        -- how about na == 1
-                        local mi = false
-                        local nn = false
-                     -- local unit = at.mathunit == "true" -- can become more generic (a tag)
-                        if fenced then
-                         -- nn = false
-                        elseif at.mathnogroup then
-                         -- nn = false
-                     -- elseif unit then
-                     --  -- nn = false
+                        local subfence = hasmiddle(a)
+                        if at.mathfunctionstack then
+                            expandsymbol(c)
+                            at.mathnogroup = "true"
                         else
-                            nn = n > 1
+                            local mfs = at.mathfractionstack
+                            if mfs then
+                                at.mathnogroup = "true"
+                        --         fenced = false
+                                local s = getlabel(mfs)
+                                if na > 1 and s and s ~= "" then -- maybe check if there is a meaning set
+                                    at.nofraction = mfs
+                                    n = n + 1 ; t[n] = s
+                                end
+                                local a = xmlall(c,"/mfrac") or { }
+                                expandone(a[1],a,1)
+                                goto DONE
+                            end
+                        end
+                        -- how about na == 1
+                        local isgroup = false
+                        if fenced then
+                         -- isgroup  = false
+                        elseif at.mathnogroup then
+                         -- isgroup  = false
+                        else
+                            isgroup  = n > 1
                         end
                         if fenced then
-                            local s = getlabel(fenced.tag,language)
-                                n = n + 1; t[n] = getlabel("optional begin",language)
+                            local s = getlabel(fenced.tag)
+                            n = n + 1 ; t[n] = getlabel("optional begin")
                             if s == "" then
-                                n = n + 1; t[n] = getlabel("fenced",language)
+                                n = n + 1 ; t[n] = getlabel("fenced")
                             else
-                                -- n = n + 1; t[n] = getlabel("begin",language)
-                                n = n + 1; t[n] = s
+                                n = n + 1 ; t[n] = s
                             end
-                        elseif nn then
-                            n = n + 1; t[n] = getlabel(start or "begin group",language) or "("
-                     -- elseif unit then
-                     --     if na == 1 then
-                     --         n = n + 1; t[n] = getlabel("unit",language)
-                     --         unit = false
-                     --     else
-                     --         n = n + 1; t[n] = getlabel("begin unit",language)
-                     --     end
+                        elseif isgroup then
+                            n = n + 1 ; t[n] = getlabel(start or "begin group")
                         end
                         if fenced then
                             if na == 3 then
                                 a[2].at.mathnogroup = true
-                            elseif na == 5 then
-                                if hasmiddle then
-                                    a[2].at.mathnogroup = true
-                                    a[3].at.mathnogroup = true
-                                end
+                            elseif na == 5 and hasmiddle then
+                                a[2].at.mathnogroup = true
+                                a[3].at.mathnogroup = true
                             end
                         end
+                        --
+--                         local times  = false
+--                         local block  = true
+--                         local closed = false
+--                         for i=1,na do
+--                             local ai    = a[i]
+--                             local tg    = ai.tg
+--                             local at    = ai.at
+--                             local class = at.mathclass
+--                             if tg == "mo" then
+--                                 -- combine more here
+--                                 if class == "open" then
+--                                     if closed then
+--                                         injecttimes()
+--                                         closed = false
+--                                     elseif times and not block then
+--                                         injecttimes()
+--                                     end
+--                                 elseif i > 1 and class == "close" then
+--                                     closed = true
+--                                 else
+--                                     closed = false
+--                                 end
+--                                 if class == "integral" then
+--                                     if not block then
+--                                         injecttimes()
+--                                     end
+--                                     expandfenced(ai,fenced)
+--                                     times = false
+--                                 else
+--                                     expandfenced(ai,fenced)
+--                                 end
+--                                 times = false
+--                                 block = true
+--                             elseif tg == "mn" or tg == "mtext" or tg == "ms" then
+--                                 if closed then
+--                                     injecttimes()
+--                                     closed = false
+--                                 end
+--                                 expandone(ai)
+--                                 times = false
+--                                 block = false
+--                             elseif tg == "msub" or tg == "msup" or tg == "msubsup" then
+--                                 if closed then
+--                                     injecttimes()
+--                                     closed = false
+--                                 end
+--                                 local first = xmlfirst(ai,"/*")
+--                                 -- inspect(first.at)
+--                                 if first and (
+--                                        first.at.mathfunction
+--                                     or first.at.mathfunctionstack
+--                                     or first.at.mathclass == "integral"
+--                                 ) then
+--                                  -- times = false
+--                                     at.mathfunction = true
+--                                     checkfunction(a,i,na)
+--                                     expandone(ai,a,i)
+--                                     times = false
+--                                     block = true
+--                                 else
+--                                     expandfenced(ai,fenced,a,i)
+--                                     times = false
+--                                     block = false
+--                                 end
+--                             elseif at.mathfractionstack
+--                                 or tg == "mroot"
+--                                 or tg == "msqrt"
+--                                 or at.mathsymbolic
+--                             then
+--                                 if closed then
+--                                     injecttimes()
+--                                     closed = false
+--                                 elseif block then
+--                                     block = false
+--                                 else
+--                                     injecttimes()
+--                                 end
+--                                 times = true
+--                                 checkfunction(a,i,na)
+--                                 expandone(ai,a,i)
+--                              -- function can be followed by argument
+--                             elseif at.mathfunction
+--                                 or at.mathfunctionstack
+--                                 or at.mathgroup == "unary set"
+--                                 or class == "integral" -- and then this elseif up
+--                             then
+--                                 if closed then
+--                                     injecttimes()
+--                                     closed = false
+--                                 end
+--                                 if block then
+--                                     block = false
+--                                 else
+--                                     injecttimes()
+--                                 end
+--                                 times = false
+--                                 checkfunction(a,i,na)
+--                                 expandone(ai,a,i)
+--                             elseif class == "differential" then
+--                                 closed = false
+--                                 block = true
+--                                 times = true
+--                                 expandone(ai,a,i)
+--                             elseif class == "ordinary" then
+--                                 if closed then
+--                                     injecttimes()
+--                                     closed = false
+--                                 else times then
+--                                     if not block then
+--                                         injecttimes()
+--                                     end
+--                                 end
+--                                 block = false
+--                                 times = true
+--                                 expandone(ai,a,i)
+--                             elseif tg == "mrow" then
+--                                 if closed or times then
+--                                     injecttimes()
+--                                     closed = false
+--                                 end
+--                 times = true
+--                                 expandone(ai,a,i)
+--                             else
+--                                 if closed then
+--                                     injecttimes()
+--                                     closed = false
+--                                 end
+--                                 times = false
+--                                 expandone(ai,a,i)
+--                             end
+--                         end
+
+                        local times  = false
+                        local block  = true
+                        local closed = false
                         for i=1,na do
-                            local ai = a[i]
-                            local tg = ai.tg
-                            if tg == "mo" then
-                                expandfenced(ai,fenced)
-                                mi = false
-                            elseif tg == "mn" or tg == "mtext" or tg == "ms" then
-                                mi = false
-                                expandone(ai)
-                            elseif tg == "msub" or tg == "msup" or tg == "msubsup" then
-                                local first = xml.first(ai,"/*")
-                                if first and first.at.mathfunction then
-                                    mi = false
-                                    ai.at.mathfunction = true
-                                    checkfunction(a,i,na)
-                                    expandone(ai,a,i)
+                            local ai    = a[i]
+                            local tg    = ai.tg
+                            local at    = ai.at
+                            local class = at.mathclass
+                            if at.mathfunction or at.mathfunctionstack or at.mathgroup == "unary set" or class == "integral" or at.mathgroup == "number set" then
+                                if closed then
+                                    injecttimes()
+                                    closed = false
+                                elseif block then
+                                    block = false
                                 else
-                                    expandfenced(ai,fenced)
-                                    mi = false
+                                    injecttimes()
                                 end
-                            elseif ai.at.mathfunction then
-                                mi = false
+                                times = false
                                 checkfunction(a,i,na)
                                 expandone(ai,a,i)
-                            elseif tonumber(ai.at.mathclass) ~= ordinary_class then
-                                -- this might be too strict (also see derivative)
-                                mi = false
+                            elseif tg == "mo" then
+                                -- combine more here
+                                if class == "open" then
+                                    if closed then
+                                        injecttimes()
+                                        closed = false
+                                    elseif times and not block then
+                                        injecttimes()
+                                    end
+                                elseif i > 1 and class == "close" then -- block ?
+                                    closed = true
+                                else
+                                    closed = false
+                                end
+                                expandfenced(ai,fenced)
+                                times = false
+                                block = true
+                            elseif tg == "mn" or tg == "mtext" or tg == "ms" then
+                                if closed then
+                                    injecttimes()
+                                    closed = false
+                                end
+                                expandone(ai)
+                                times = false
+                                block = false
+                            elseif tg == "msub" or tg == "msup" or tg == "msubsup" then
+                                local first = xmlfirst(ai,"/*")
+                                local at    = first and first.at
+                                if closed then
+                                    injecttimes()
+                                    closed = false
+                                else
+if first and at.mathclass == "close" then
+    closed = true
+else
+                                    if times and not block then
+                                        injecttimes()
+                                    end
+end
+                                end
+                                if first then
+                                    if at.mathfunction or at.mathfunctionstack or at.mathclass == "integral" then
+                                        if not at.mathfunction then
+                                            at.mathfunction = true -- maybe also needed for the stack
+                                        end
+                                        checkfunction(a,i,na)
+                                        expandone(ai,a,i)
+block = true
+                                        times = false
+                                    else
+                                        expandfenced(ai,fenced,a,i)
+        times = true
+block = false
+                                    end
+                                else
+                                    expandfenced(ai,fenced,a,i)
+block = false
+        times = true
+                                end
+                            elseif at.mathfractionstack or tg == "mroot" or tg == "msqrt" or at.mathsymbolic then
+                                if closed then
+                                    injecttimes()
+                                    closed = false
+                                elseif block then
+                                    block = false
+                                else
+                                    injecttimes()
+                                end
+                                times = true
+                                checkfunction(a,i,na)
+                                expandone(ai,a,i)
+                             -- function can be followed by argument
+                            elseif class == "differential" then
+                                closed = false
+                                block = true
+                                times = true
+                                expandone(ai,a,i)
+                            elseif class == "ordinary" then
+local c = tonumber(at.mathcharacter)
+if c == 0x2E or c == 0x2C then -- period comma
+    block = true
+    times = false
+    -- no need, but bad structure
+else
+                                if closed then
+                                    injecttimes()
+                                    closed = false
+                                elseif times and not block then
+                                    injecttimes()
+                                end
+                                block = false
+                                times = true
+end
+                                expandone(ai,a,i)
+                            elseif tg == "mrow" then
+                                if closed or times then
+                                    injecttimes()
+                                    closed = false
+                                end
+                times = true
                                 expandone(ai,a,i)
                             else
-                                if mi then
-                                    local s = getlabel("times",language)
-                                    if s and s ~= "" then
-                                        n = n + 1; t[n] = s
-                                    end
+                                if closed then
+                                    injecttimes()
+                                    closed = false
                                 end
-                                mi = true
+                                times = false
                                 expandone(ai,a,i)
                             end
                         end
+
+
+                        --
                         if fenced then
-                            local s = getlabel(fenced.tag,language)
-                            n = n + 1; t[n] = getlabel("end",language)
+                            local s = getlabel(fenced.tag)
+                            n = n + 1 ; t[n] = getlabel("end")
                             if s == "" then
-                                n = n + 1; t[n] = getlabel("fenced",language)
+                                n = n + 1 ; t[n] = getlabel("fenced")
                             else
-                                -- n = n + 1; t[n] = getlabel("end",language)
-                                n = n + 1; t[n] = s
+                                n = n + 1 ; t[n] = s
                             end
-                        elseif nn then
-                            n = n + 1; t[n] = getlabel(stop or "end group",language) or ")"
-                     -- elseif unit then
-                     --     n = n + 1; t[n] = getlabel("end unit",language)
+                        elseif isgroup then
+                            n = n + 1 ; t[n] = getlabel(stop or "end group")
                         end
                     end
                 end
+          ::DONE::
             elseif tg == "mo" then
                 expandsymbol(c)
             elseif tg == "mn" then
-                n = n + 1; t[n] = xmltext(c)
+                n = n + 1 ; t[n] = xmltext(c)
             elseif tg == "mi" then
                 local at = c.at
                 if at.mathunit then
-                    n = n + 1; t[n] = at.mathunit
-                else
-                    if at.mathsymbolic then
-                        n = n + 1; t[n] = getlabel("function",language)
-                        expandsymbol(c) -- can be done directly
-                        if all then
-                            if all[i + 1] and all[i + 1].tg == "mo" then -- maybe check if class is open?
-                                n = n + 1; t[n] = getlabel("functionof",language)
-                            end
-                        end
-                    elseif at.mathfunction then
-                        n = n + 1; t[n] = getlabel(c.dt[1],language)
-                    else
-                        expandsymbol(c)
+                    n = n + 1 ; t[n] = at.mathunit
+                elseif at.mathsymbolic then
+                    n = n + 1 ; t[n] = getlabel("function")
+                    expandsymbol(c) -- can be done directly
+                    if all then
+                        applyof(all,i,"functionof")
                     end
+                elseif at.mathfunction then
+                    n = n + 1 ; t[n] = getlabel(c.dt[1])
+                    if all then
+                        applyof(all,i,"functionof")
+                    end
+                else
+                    local s = getoptional(c.dt[1])
+                    if s and s ~= "" then
+                        n = n + 1 ; t[n] = s
+                    end
+                    expandsymbol(c)
                 end
             elseif tg == "msub" then
-                local a  = xmlall(c,"/*")
-                local a1 = a[1]
-                local at = a1.at
-                expandone(a1,all,i)
-                if haslimits(at) or isintegral(at) or isoperator(at) then
-                    if isintegral(at) or isoperator(at) then
-                        n = n + 1 ; t[n] = getlabel("integralsub",language) -- integral with lower limit
+                local a, na = xmlevery(c)
+                if a then
+                    local a1 = a[1]
+                    local at = a1.at
+                    expandone(a1,all,i)
+-- MS: do we need to intercept \lim here? for the sake of "operatorof" (maybe all functions ?)
+                    if haslimits(at) or isintegral(at) or isoperator(at) then
+                        if isintegral(at) or isoperator(at) then
+                            n = n + 1 ; t[n] = getlabel("integralsub") -- integral with lower limit
+                        else
+                            n = n + 1 ; t[n] = getlabel("limitsub") -- limit type with lower limit
+                        end
+                        expandone(a[2],all,i)
+                        n = n + 1 ; t[n] = getlabel("pause")
+                        if all and #all > i then
+                            n = n + 1 ; t[n] = getlabel("operatorof")
+                        end
                     else
-                        n = n + 1 ; t[n] = getlabel("limitsub",language) -- limit type with lower limit
+                        expandsubindex(c,a[2],all,i)
                     end
-                    expandone(a[2],all,i,"",getlabel("pause",language))
-                    if all and #all > i then
-                        n = n + 1; t[n] = getlabel("operatorof",language)
-                    end
-                else
-                    n = n + 1 ; t[n] = getlabel("othersub",language)
-                    expandone(a[2],all,i)
                 end
             elseif tg == "msup" then
-                local a  = xmlall(c,"/*")
-                local a1 = a[1]
-                local a2 = a[2]
-                local at = a1.at
-             -- if tonumber(a2.at.mathclass) == prime_class then
-                local group = mathematics.dictionaries.groups[tonumber(a2.at.mathgroup)or -1] or "no group"
--- report("group %a",group)
-                if group == "postfix operator" then
-                    expandone(a2)
-                    expandone(a1)
-                    if all and #all > i then
-                        n = n + 1 ; t[n] = getlabel("operatorof",language)
+                local a, na = xmlevery(c)
+                if a then
+                    local a1 = a[1]
+                    local a2 = a[2]
+                    local at = a1.at
+                    local group = a2.at.mathgroup
+                    if group == "postfix operator" then
+                        expandone(a2)
+                        expandone(a1)
+                        if all and #all > i then
+                            n = n + 1 ; t[n] = getlabel("operatorof")
+                        end
+                    elseif group == "prime" then
+                        expandone(a1)
+                        expandone(a2)
+                        if all then
+                            applyof(all,i,"primeof")
+                        end
+                    elseif haslimits(at) or isintegral(at) or isoperator(at) then
+                        expandone(a1,all,i)
+                        n = n + 1 ; t[n] = getlabel("operatorsup")
+                        expandone(a2,all,i)
+                        n = n + 1 ; t[n] = getlabel("pause")
+                        if all and #all > i then
+                            n = n + 1 ; t[n] = getlabel("operatorof")
+                        end
+                    else
+                        expandone(a1,all,i)
+                        expandsupindex(c,a2,all,i)
                     end
-                elseif group == "prime" then
-                    expandone(a1)
-                    expandone(a2)
-                    if all and #all > i then
-                        n = n + 1 ; t[n] = getlabel("operatorof",language)
-                    end
-                elseif haslimits(at) or isintegral(at) or isoperator(at) then
-                    expandone(a1,all,i)
-                    n = n + 1 ; t[n] = getlabel("operatorsup",language)
-                    expandone(a2,all,i)
-                    if all and #all > i then
-                        n = n + 1 ; t[n] = getlabel("operatorof",language)
-                    end
-                else
-                    expandone(a1,all,i)
-                    tothepower(a2,all,i)
                 end
             elseif tg == "msubsup" then
-                local a  = xmlall(c,"/*")
-                local a1 = a[1]
-                local a2 = a[2]
-                local a3 = a[3]
-                local at = a1.at
-                if tonumber(a2.at.mathclass) == prime_class then
-                    expandone(a2)
-                    expandone(a1)
---                     expandone(a1)
---                     expandone(a2)
-                    -- todo but example needed
-                    if haslimits(at) or isintegral(at) or isoperator(at) then
-                        n = n + 1; t[n] = getlabel("operatorsubsupfrom",language) -- from was: with lower limit
+                local a, na = xmlevery(c)
+                if a then
+                    local a1 = a[1]
+                    local a2 = a[2]
+                    local a3 = a[3]
+                    local at = a1.at
+                    if a2.at.mathclass == "prime" then
+                        expandone(a2)
+                        expandone(a1)
+                        if haslimits(at) or isintegral(at) or isoperator(at) then
+                            n = n + 1 ; t[n] = getlabel("operatorsubsupfrom") -- from was: with lower limit
+                            expandone(a3,all,i)
+                            n = n + 1 ; t[n] = getlabel("pause")
+                        end
+                        if all and #all > i then
+                            n = n + 1 ; t[n] = getlabel("operatorof")
+                        end
+                    elseif haslimits(at) or isintegral(at) or isoperator(at) then
+                        expandone(a1,all,i)
+                        n = n + 1 ; t[n] = getlabel("operatorsubsupfrom") -- from was: with lower limit
+                        expandone(a2,all,i)
+                        n = n + 1 ; t[n] = getlabel("operatorsubsupto")  -- upto was: and upper limit
                         expandone(a3,all,i)
+                        n = n + 1 ; t[n] = getlabel("pause")
+                        if all and #all > i then
+                            n = n + 1 ; t[n] = getlabel("operatorof")
+                        end
+                    else
+                        expandone(a1,all,i)
+                        expandsubindex(c,a2,all,i)
+                        expandsupindex(c,a3,all,i)
                     end
-                    if all and #all > i then
-                        n = n + 1; t[n] = getlabel("operatorof",language)
-                    end
-                elseif haslimits(at) or isintegral(at) or isoperator(at) then
-                    expandone(a1,all,i)
-                    n = n + 1; t[n] = getlabel("operatorsubsupfrom",language) -- from was: with lower limit
-                    expandone(a2,all,i)
-                    n = n + 1; t[n] = getlabel("operatorsubsupto",language)  -- upto was: and upper limit
-                    expandone(a3,all,i)
-                    if all and #all > i then
-                        n = n + 1; t[n] = getlabel("operatorof",language)
-                    end
-                else
-                    expandone(a1,all,i)
-                    n = n + 1; t[n] = getlabel("othersubsup",language) -- was: indexed
-                    expandone(a2,all,i)
-                    tothepower(a3,all,i)
                 end
             elseif tg == "mfrac" then
-                local a = xmlall(c,"/*")
-                local ok, partial = isdifferential(a)
-                if ok then
-                    if partial then
-                        n = n + 1; t[n] = getlabel("the partial derivative",language)
+                local a, na = xmlevery(c)
+                if a then
+                    local ok, partial = isdifferential(a)
+                    if ok then
+                        if partial then
+                            n = n + 1 ; t[n] = getlabel("the partial derivative")
+                        else
+                            n = n + 1 ; t[n] = getlabel("the derivative")
+                        end
+                        expandone(a[1],all,i,"","")
+                        n = n + 1 ; t[n] = getlabel("over")
+                        expandone(a[2],all,i,"","end derivative")
+                    elseif c.__p__.at.nofraction then -- uggly
+                        expandone(a[1],all,i,"","")
+                        n = n + 1 ; t[n] = getlabel("over")
+                        expandone(a[2],all,i,"","")
+                        n = n + 1 ; t[n] = getlabel("end " .. c.__p__.at.nofraction)
+                        -- n = n + 1 ; t[n] = getlabel(c.__p__.at.nofraction)
                     else
-                        n = n + 1; t[n] = getlabel("the derivative",language)
+                        n = n + 1 ; t[n] = getlabel("the fraction of")
+                        expandone(a[1],all,i,"begin numerator","end numerator")
+                        n = n + 1 ; t[n] = getlabel("and")
+                        expandone(a[2],all,i,"begin denominator","end denominator")
                     end
-                    expandone(a[1],all,i,"","")
-                    n = n + 1; t[n] = getlabel("over",language)
-                    expandone(a[2],all,i,"","end derivative")
-                else
-                    n = n + 1; t[n] = getlabel("the fraction of",language)
-                    expandone(a[1],all,i,"begin numerator","end numerator")
-                    n = n + 1; t[n] = getlabel("and",language)
-                    expandone(a[2],all,i,"begin denominator","end denominator")
                 end
             elseif tg == "msqrt" then
-                n = n + 1; t[n] = getlabel("the square root of",language)
-                local a = xmlall(c,"/*")
-             -- if #a > 1 then
-             --     n = n + 1; t[n] = "("
-             --     expand(a,t)
-             --     n = n + 1; t[n] = ")"
-             -- else
+                n = n + 1 ; t[n] = getlabel("the square root")
+                local a, na = xmlevery(c)
+                if a then
+                    n = n + 1 ; t[n] = getlabel("rootof")
                     expand(a,all,i)
-             -- end
+                end
             elseif tg == "mroot" then
-                local a = xmlall(c,"/*")
-                n = n + 1; t[n] = getlabel("the root with degree",language)
-                expandone(a[2],all,i)
-                n = n + 1; t[n] = getlabel("rootof",language)
-                expandone(a[1],all,i)
-            elseif tg == "munder" then -- needs checking
-                local a        = xmlall(c,"/*")
-                local category = tonumber(c.at.mathcategory)
-                local category = tonumber(c.at.mathcategory)
-                if functiontype(category) == "accent" then
-                    local fnc = functions[category]
-                    n = n + 1; t[n] = getlabel(fnc.tag,language)
-                    expandone(a[1],all,i)
-                else
-                    expandone(a[1],all,i)
-                    n = n + 1; t[n] = getlabel("under",language)
+                local a, na = xmlevery(c)
+                n = n + 1 ; t[n] = getlabel("the root with degree")
+                if a then
                     expandone(a[2],all,i)
+                    n = n + 1 ; t[n] = getlabel("rootof")
+                    expandone(a[1],all,i)
+                end
+            elseif tg == "munder" then -- needs checking
+                local a, na = xmlevery(c)
+                if a then
+                    local category = tonumber(c.at.mathcategory)
+                    if functiontype(category) == "accent" then
+                        local fnc = functions[category]
+                        n = n + 1 ; t[n] = getlabel(fnc.tag)
+                        expandone(a[1],all,i)
+                    else
+                        expandone(a[1],all,i)
+                        n = n + 1 ; t[n] = getlabel("under")
+                        expandone(a[2],all,i)
+                    end
                 end
             elseif tg == "mover" then -- needs checking
-                local a        = xmlall(c,"/*")
-                local category = tonumber(c.at.mathcategory)
-                if functiontype(category) == "accent" then
-                    local fnc = functions[category]
-                    n = n + 1; t[n] = getlabel(fnc.tag,language)
-                    expandone(a[1],all,i)
-                else
-                    expandone(a[1],all,i)
-                    n = n + 1; t[n] = getlabel("over",language)
-                    expandone(a[2],all,i)
+                local a, na = xmlevery(c)
+                if a then
+                    local category = tonumber(c.at.mathcategory)
+                    if functiontype(category) == "accent" then
+                        local fnc = functions[category]
+                        n = n + 1 ; t[n] = getlabel(fnc.tag)
+                        expandone(a[1],all,i)
+                    else
+                        expandone(a[1],all,i)
+                        n = n + 1 ; t[n] = getlabel("over")
+                        expandone(a[2],all,i)
+                    end
                 end
             elseif tg == "munderover" then -- needs checking
-                local a = xmlall(c,"/*")
-                expandone(a[1],all,i)
-                n = n + 1; t[n] = getlabel("under",language)
-                expandone(a[2],all,i)
-                n = n + 1; t[n] = getlabel("and over",language)
-                expandone(a[3],all,i)
+                local a, na = xmlevery(c)
+                if a then
+                    expandone(a[1],all,i)
+                    n = n + 1 ; t[n] = getlabel("under")
+                    expandone(a[2],all,i)
+                    n = n + 1 ; t[n] = getlabel("and over")
+                    expandone(a[3],all,i)
+                end
             elseif tg == "mtext" then
-             -- n = n + 1; t[n] = '"'
-                n = n + 1; t[n] = xmltext(c)
-             -- n = n + 1; t[n] = '"'
+                n = n + 1 ; t[n] = xmltext(c)
             elseif tg == "mspace" then
-                n = n + 1; t[n] = ""
+                n = n + 1 ; t[n] = ""
             elseif tg == "ms" then
-                n = n + 1; t[n] = xmltext(c)
+                n = n + 1 ; t[n] = xmltext(c)
             elseif tg == "mmultiscripts" then -- needs checking, todo prime
-                local a = xmlall(c,"/*")
-                local p = false
-                local s = true
-                for i=1,#a do
-                    local ai = a[i]
-                    if ai.tg == "mprescripts" then
-                        p = true
-                        n = n + 1; t[n] = getlabel("prescripts",language)
-                    elseif p then
-                        n = n + 1; t[n] = getlabel(s and "sub" or "super",language)
-                        expandone(ai,all,i)
+                local a, na = xmlevery(c)
+                if a then
+                    local p = false
+                    local s = true
+                    expandone(a[1],all,i)
+                    for i=2,#a do
+                        local ai = a[i]
+                        if ai.tg == "mprescripts" then
+                            p = true
+                            n = n + 1 ; t[n] = getlabel("prescripts")
+                        elseif p then
+                            if ai.tg ~= "mtext" then
+                                n = n + 1 ; t[n] = getlabel(s and "presub" or "presuper")
+                                expandone(ai,all,i)
+                            end
+                            s = not s
+                        end
+                    end
+                    s = true
+                    for i=2,#a do
+                        local ai = a[i]
+                        if ai.tg == "mprescripts" then
+                            break
+                        elseif i == 2 then
+                           n = n + 1 ; t[n] = getlabel("postscripts")
+                        end
+                        if ai.tg ~= "mtext" then
+                            n = n + 1 ; t[n] = getlabel(s and "postsub" or "postsuper")
+                            expandone(ai,all,i)
+                        end
                         s = not s
                     end
-                end
-                s = true
-                for i=1,#a do
-                    local ai = a[i]
-                    if ai.tg == "mprescripts" then
-                        break
-                    elseif i == 1 then
-                       n = n + 1; t[n] = getlabel("postscripts",language)
-                    end
-                    n = n + 1; t[n] = getlabel(s and "sub" or "super",language)
-                    expandone(ai,all,i)
-                    s = not s
+                    n = n + 1 ; t[n] = getlabel("end scripts")
                 end
             elseif tg == "math" then
-                local a = xmlall(c,"/*")
-                expand(a,all,i)
+                local a, na = xmlevery(c)
+                if a then
+                    expand(a,all,i)
+                end
             elseif tg == "mtable" then
                 local detail = c.at.detail
                 if detail == "cases" then
-                    n = n + 1; t[n] = getlabel("begin cases",language)
+                    n = n + 1 ; t[n] = getlabel("begin cases")
                     local nr = 0
                     for row in xmlcollected(c,"/mtr") do
                         nr = nr + 1
-                        n = n + 1; t[n] = getlabel("case",language)
-                        n = n + 1; t[n] = tostring(nr)
+                        n = n + 1 ; t[n] = getlabel("case")
+                        n = n + 1 ; t[n] = tostring(nr)
                         for cell in xmlcollected(row,"/mtd") do
-                            local a = xmlall(cell,"/*")
-                            expand(a)
+                            local a, na = xmlevery(cell)
+                            if a then
+                                expand(a)
+                            end
                         end
-                     -- n = n + 1; t[n] = getlabel("end case",language)
+                     -- n = n + 1 ; t[n] = getlabel("end case")
                     end
-                    n = n + 1; t[n] = getlabel("end cases",language)
+                    n = n + 1 ; t[n] = getlabel("end cases")
                 else
-                    n = n + 1; t[n] = getlabel("begin table",language)
+                    n = n + 1 ; t[n] = getlabel("begin table")
                     local nr = 0
                     for row in xmlcollected(c,"/mtr") do
                         local nc = 0
                         nr = nr + 1
-                     -- n = n + 1; t[n] = getlabel("row",language)
-                     -- n = n + 1; t[n] = tostring(nr)
+                     -- n = n + 1 ; t[n] = getlabel("row")
+                     -- n = n + 1 ; t[n] = tostring(nr)
                         for cell in xmlcollected(row,"/mtd") do
                             nc = nc + 1
-                         -- n = n + 1; t[n] = getlabel("column",language)
-                         -- n = n + 1; t[n] = tostring(nc)
-                            n = n + 1; t[n] = getlabel("cell",language)
-                            n = n + 1; t[n] = tostring(nr)
-                            n = n + 1; t[n] = tostring(nc)
-                            local a = xmlall(cell,"/*")
-                            expand(a)
+                         -- n = n + 1 ; t[n] = getlabel("column")
+                         -- n = n + 1 ; t[n] = tostring(nc)
+                            n = n + 1 ; t[n] = getlabel("cell")
+                            n = n + 1 ; t[n] = tostring(nr)
+                            n = n + 1 ; t[n] = tostring(nc)
+                            local a, na = xmlevery(cell)
+                            if a then
+                                expand(a)
+                            end
                         end
                     end
-                    n = n + 1; t[n] = getlabel("end table",language)
+                    n = n + 1 ; t[n] = getlabel("end table")
                 end
             elseif not c.special then
                 okay = false
@@ -671,17 +953,21 @@ end
         end
     end
 
-    local lpath_fence_check = formatters
-        ["(msub|msup|msubsup)/mo[@mathclass='%i' or @mathclass='%i' or @mathclass='%i']"]
-        (open_class,close_class,middle_class)
+    local lpath_fence_check <const> = "(msub|msup|msubsup)/mo[@mathclass='open' or @mathclass='close' or @mathclass='middle']"
+
+    local warned = false
 
     local function verbose(s,l)
-        local x = xmlconvert(s)
-        if x.error then
+        if not warned then
+            report("this feature is experimental and under construction")
+            warned = true
+        end
+        local root = xmlconvert(s)
+        if root.error then
             -- likely empty so nothing to print
         else
-            local c = xmlall(x,"/*")
-            if c then
+            local x = xmlfirst(root,"/math")
+            if x then
                 --
                 local all = xmlall(x,"mi[not @mathfunction]")
                 if all then
@@ -696,8 +982,7 @@ end
                         end
                     end
                 end
-                -- left  is a function
-                -- right is an operator
+                -- left is a function, right is an operator
                 for c in xmlcollected(x,"mrow[@mathfunctionstack]") do
                     local cat = c.at
                     local s   = cat.mathstack
@@ -713,6 +998,7 @@ end
                         end
                     end
                 end
+                --
                 local all = xmlall(x,lpath_fence_check)
                 if all then
                     for i=1,#all do
@@ -723,28 +1009,42 @@ end
                     end
                 end
                 --
-                n, t, okay, language = 0, { }, true, l or "en"
-                expand(c)
+                t        = { }
+                n        = 0
+                okay     = true
+                language = l or "en"
+                domain   = x.at.domain or "default"
+                --
+                expandone(x)
                 if okay then
--- we can have a helper for this
-local m = false
-for i=1,n do
-    local ti = t[i]
-    if ti == "" then
-        if not m then
-            m = i - 1
-        end
-    elseif m then
-        m = m + 1
-        t[m] = ti
-    end
-end
-if m then
-    n = m
-end
-if t[n] == "." then
-    n = n - 1
-end
+                    -- we can have a helper for this
+                    local m = false
+                    for i=1,n do
+                        local ti = t[i]
+                        if ti == "" then
+                            if not m then
+                                m = i - 1
+                            end
+                        elseif m then
+                            m = m + 1
+                            t[m] = ti
+                        end
+                    end
+                    if m then
+                        n = m
+                    end
+                    if t[n] == "." then
+                        n = n - 1
+                    end
+-- if true then
+--     for c in xmlcollected(x,"*") do
+--         local at = c.at
+--         for k, v in next, at do
+--             at[k] = tostring(v)
+--         end
+--     end
+--     print(x)
+-- end
                     return concat(t," ",1,n)
                 end
             end
@@ -759,7 +1059,7 @@ end
         if strip then
             local x = xmlconvert(s)
             local at = { }
-            for c in xml.collected(x,"*") do
+            for c in xmlcollected(x,"*") do
                 c.at = at
             end
             return tostring(x)
@@ -773,4 +1073,4 @@ end
         stripped = stripped,
     }
 
-end
+-- end

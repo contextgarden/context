@@ -236,7 +236,7 @@ do
         local c3 = c[3]
         if c1 == c2 and c2 == c3 then
             c[1] = c1
-            c[2] = op == "rg" and g or "G"
+            c[2] = op == "rg" and "g" or "G"
             c[3] = nil
             c[4] = nil
         end

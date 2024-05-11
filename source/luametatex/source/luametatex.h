@@ -98,11 +98,11 @@
 # define luametatex_revision         11
 # define luametatex_release          02
 # define luametatex_version_string   "2.11.02"
-# define luametatex_development_id   20240214
+# define luametatex_development_id   20240221
 
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
-# define luametatex_copyright_holder "Taco Hoekwater, Hans Hagen & Wolfgang Schuster"
+# define luametatex_copyright_holder "Taco Hoekwater, Hans Hagen, Wolfgang Schuster & Mikael Sundqvist"
 # define luametatex_bug_address      "dev-context@ntg.nl"
 # define luametatex_support_address  "context@ntg.nl"
 

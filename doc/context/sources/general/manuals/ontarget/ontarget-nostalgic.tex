@@ -6,7 +6,7 @@
 
 \startchapter[title={Getting nostalgic}]
 
-When Mikael and I were playing with \POTRACE\ and eventually ended up by turning
+When Mikael and I were playing with \POTRACE\ we eventually ended up by turning
 some old rune font defined in \METAFONT\ into a quite useable outline font. In
 the process we went from a \TYPETHREE\ to a proper \OPENTYPE\ (\CFF) instance.
 When doing this I remembered that in the times of active \PDFTEX\ development,
@@ -14,16 +14,16 @@ Thanh, Taco and I played with what we called \PDF\ glyph containers. I had done
 experiments with using xforms (small images) as replacement for bitmap characters
 but that is not what we want with fonts, so after discussing it with Thanh
 \TYPETHREE\ support was extended with a user driven variant. Due to the way
-\METAFONT s are defined the results were mixed. Filled shaped could be made to
+\METAFONT s are defined the results were mixed. Filled shapes could be made to
 work but outlines often looked bad and much had to do with the fact that these
 fonts were never defined with odd-even rules in mind. So, Taco made a bitmap to
 outline program that we could hook in and in the end we had a reasonable
 workflow. We're talking of the period 1997 to 1998, some 25 years ago!
 
 So, when in 2023 we came back to bitmap fonts in the perspective of \LUAMETATEX,
-some memories came back but I couldn't find the files or code at that time. It
+some memories returned but I couldn't find the files or code at that time, which
 might relate to the fact that I always start from specifications. However, when
-in January 2024 I had to fix some issue with embedding an old \TYPEONE\ font,
+in January 2024 I had to fix some issue with embedding an old \TYPEONE\ font and
 after succeeding in that I decided again to search for that old code. This time I
 just grep'd the \PDFTEX\ code base (as I had the \TEXLIVE\ git checkout) and I
 found back this feature. In the end I had been looking at the wrong \quote
@@ -31,21 +31,21 @@ found back this feature. In the end I had been looking at the wrong \quote
 
 The basics are as follows. When we have a file (in \PDFTEX) the \TFM\ blob is
 what matters for the frontend. The backend that does the inclusion links that to
-a font resource, most likely a \TYPEONE\ font. This is specified in a map file
-that also permits specifying an encoding vector. For some reason it is not
-possible to map to other font formats other than \TYPEONE\ and \TRUETYPE. No
+a suitable font resource, most likely in \TYPEONE\ format. This is specified in a
+map file that also permits specifying an encoding vector. For some reason it is
+not possible to map to other font formats other than \TYPEONE\ and \TRUETYPE. No
 mapping means that a \PK\ file is used and then we end up in some complicated
 semi automatic bitmap generation.
 
 When I tested how these containers worked out nowadays, once \PDFTEX \footnote
 {Version 3.141592653-2.6-1.40.25 and older.} is happy to include a font it will
-bark about a missing font resource: it always wants a bitmap. Now, one can
+bark about a missing font resource: it always wants a bitmap. Now, you can
 complain about this but I bet no one ever used this 25 year old feature so no one
 ever requested a check for a \type {pgc} file. Basically, when such a file is
 found instead of a \type{600pk} file, all should be fine, even if that is a zero
 length file. Given that the backend actually checks for it and not considers a
 container file useable, one can consider it an oversight, or maybe it just got
-lost in the \KPSE\ library that manages \PK\ fonts.
+lost in the \KPSE\ library that manages \PK\ fonts and its generation.
 
 Anyway, so how does it work? When the backend checks for a glyph container it
 expects this:
@@ -58,7 +58,7 @@ expects this:
 \stoptyping
 
 One can add a \type {\pdffont} and \type{\endfont} wrapper because \PDFTEX\ only
-searched for the mandate scale and one or more glyphs. A simple test then becomes:
+searches for the mandate scale and one or more glyphs. A simple test then becomes:
 
 \startitemize[packed]
 \startitem
@@ -75,12 +75,12 @@ searched for the mandate scale and one or more glyphs. A simple test then become
 \stopitem
 \stopitemize
 
-And then use a safe character present in most fonts at the same position in the
-used encoding:
+And then use a safe character for testing present in most fonts at the same
+position in the used encoding:
 
 \starttyping
 \starttext
-    \font\test=cmr10mine \test \char 65
+    \font\test=cmr10mine \test \char 65 % A
 \stoptext
 \stoptyping
 
@@ -248,17 +248,18 @@ So where does this bring us? Because \MKII\ is frozen and \PDFTEX\ only works
 with that version it makes no sense to add some kind of \TYPETHREE\ support. In
 \MKIV\ and \MKXL\ we have several mechanisms for creating these fonts anyway. I
 cannot comment on use outside \CONTEXT\ but because of the strong connection with
-\PK\ fonts being required in order for glyph containers to kick in, I suspect
-that it's a mostly unknown feature, but one that actually can be made to work. It
-could even work better (with respect to file lookup and font scaling) when it is
-decoupled from the \PK\ requirements. But what worries me more is that after 25
-years I hardly recognize the (reasonable) \PERL\ code and little manual although
-it slowly came back. At that I time I could not have predicted where we are now
-with respect to \TYPETHREE\ support, which in \LMTX\ is very much kicking and
-alive. \footnote {At that time \TYPETHREE\ in the perspective of \TEX\ always had
-a bad ring, probably because the many files that were around with too low
-resolution bitmap fonts. The \PDF\ readers were not particularly good in
-rendering them either. But with outlines this format can be fun!}
+\PK\ fonts being required in order for glyph containers to kick in at all, I
+suspect that it's a mostly unknown feature, but one that actually can be made to
+work. It could even work better (with respect to file lookup and font scaling)
+when it is decoupled from the \PK\ requirements and listen to na map file line
+that also signals if the font can be reused. But what worries me a bit more is
+that after 25 years I hardly recognize the (reasonable) \PERL\ code and little
+manual although it slowly came back. At that I time I could not have predicted
+where we are now with respect to \TYPETHREE\ support, which in \LMTX\ is very
+much kicking and alive. \footnote {At that time \TYPETHREE\ in the perspective of
+\TEX\ always had a bad ring, probably because the many files that were around
+with too low resolution bitmap fonts. The \PDF\ readers were not particularly
+good in rendering them either. But with outlines this format can be fun!}
 
 \stopchapter
 

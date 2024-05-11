@@ -32,11 +32,34 @@ osx). The mtxrun runner also handles the other mtx-* scripts that are in the
 context tree, which is why we have only a few files in the binary path. It also
 reduces the risk for clashes in binary names.
 
+Once the bin path is added to the PATH environment variable the commands:
+
+  context
+  mtxrun
+
+will manage your tex runs. For example:
+
+  mtxrun --generate
+  mtxrun --script fonts --reload
+
+  context --make
+  context --make pdftex
+  context --make luatex
+
+  context          foo.tex
+  context --pdftex foo.tex
+  context --luatex foo.tex
+
+When mkii (with pdftex or xetex) is used the texexec ruby script is launched. By
+using the runners the likelyhood of a clash with other program in a tex
+distriubution is minimized. Other ways of running context and its related scripts
+is not officially supported by the:
+
 An installation can be done using the installer but also by unzipping the archive
 or fetching from github (contextgarden). You can, if needed, compile the binary
 yourself from the includes source code.
 
-All tex resources (smacros, styles, fonts, patterns, etc.) are located relative
+All tex resources (macros, styles, fonts, patterns, etc.) are located relative
 to the binary path so you only need to make sure that the binary is in the path.
 
 The project and font trees can be shared (using links) and are untouched by the

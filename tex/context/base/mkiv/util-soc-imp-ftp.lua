@@ -124,7 +124,7 @@ function methods.port(self, address, port)
     local tp  = self.tp
     self.pasvt = nil
     if not address then
-        address, port = try(tp:getsockname())
+        address = try(tp:getsockname())
         self.server   = try(bindsocket(address, 0))
         address, port = try(self.server:getsockname())
         try(self.server:settimeout(ftp.TIMEOUT))
@@ -142,7 +142,7 @@ function methods.eprt(self, family, address, port)
     local tp  = self.tp
     self.pasvt = nil
     if not address then
-        address, port = try(tp:getsockname())
+        address = try(tp:getsockname())
         self.server   = try(bindsocket(address, 0))
         address, port = try(self.server:getsockname())
         try(self.server:settimeout(ftp.TIMEOUT))

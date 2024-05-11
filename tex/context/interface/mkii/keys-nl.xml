@@ -176,6 +176,7 @@
 		<cd:variable name='description' value='doordefinitie'/>
 		<cd:variable name='disable' value='blokkeer'/>
 		<cd:variable name='display' value='scherm'/>
+		<cd:variable name='document' value='document'/>
 		<cd:variable name='dot' value='punt'/>
 		<cd:variable name='doublesided' value='dubbelzijdig'/>
 		<cd:variable name='down' value='omlaag'/>
@@ -355,6 +356,7 @@
 		<cd:variable name='mathcases' value='mathcases'/>
 		<cd:variable name='mathematics' value='wiskunde'/>
 		<cd:variable name='mathmatrix' value='wiskundematrix'/>
+		<cd:variable name='mathnote' value='mathnote'/>
 		<cd:variable name='max' value='max'/>
 		<cd:variable name='maxdepth' value='maxdiepte'/>
 		<cd:variable name='maxheight' value='maxhoogte'/>
@@ -524,6 +526,7 @@
 		<cd:variable name='simplelist' value='simplelist'/>
 		<cd:variable name='singlesided' value='enkelzijdig'/>
 		<cd:variable name='six' value='zes'/>
+		<cd:variable name='size' value='formaat'/>
 		<cd:variable name='slanted' value='schuin'/>
 		<cd:variable name='slantedbold' value='schuinvet'/>
 		<cd:variable name='small' value='klein'/>
@@ -672,6 +675,7 @@
 		<cd:constant name='alignmentleftwidth' value='alignmentleftwidth'/>
 		<cd:constant name='alignmentrightsample' value='alignmentrightsample'/>
 		<cd:constant name='alignmentrightwidth' value='alignmentrightwidth'/>
+		<cd:constant name='alignscripts' value='alignscripts'/>
 		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='titeluitlijnen'/>
 		<cd:constant name='alternative' value='variant'/>
@@ -698,6 +702,7 @@
 		<cd:constant name='autofile' value='autofile'/>
 		<cd:constant name='autofocus' value='autofocus'/>
 		<cd:constant name='autohang' value='autohang'/>
+		<cd:constant name='autointervals' value='autointervals'/>
 		<cd:constant name='autonumbers' value='autonumbers'/>
 		<cd:constant name='autopunctuation' value='autopunctuation'/>
 		<cd:constant name='autospacing' value='autospacing'/>
@@ -953,6 +958,7 @@
 		<cd:constant name='interaction' value='interactie'/>
 		<cd:constant name='interlinespace' value='interlinie'/>
 		<cd:constant name='internalgrid' value='interngrid'/>
+		<cd:constant name='interscriptfactor' value='interscriptfactor'/>
 		<cd:constant name='italicfeatures' value='italicfeatures'/>
 		<cd:constant name='italicfont' value='italicfont'/>
 		<cd:constant name='itemalign' value='itemuitlijnen'/>
@@ -1030,6 +1036,7 @@
 		<cd:constant name='mathclass' value='mathclass'/>
 		<cd:constant name='mathdenominatorstyle' value='mathdenominatorstyle'/>
 		<cd:constant name='mathlimits' value='mathlimits'/>
+		<cd:constant name='mathmeaning' value='mathmeaning'/>
 		<cd:constant name='mathnumeratorstyle' value='mathnumeratorstyle'/>
 		<cd:constant name='mathstyle' value='mathstyle'/>
 		<cd:constant name='max' value='max'/>
@@ -1038,6 +1045,7 @@
 		<cd:constant name='maxwidth' value='maxbreedte'/>
 		<cd:constant name='maybeyear' value='maybeyear'/>
 		<cd:constant name='menu' value='menu'/>
+		<cd:constant name='metadata' value='metadata'/>
 		<cd:constant name='method' value='methode'/>
 		<cd:constant name='middle' value='midden'/>
 		<cd:constant name='middleclass' value='middleclass'/>

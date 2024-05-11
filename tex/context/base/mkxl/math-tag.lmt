@@ -40,6 +40,7 @@ local getwidth           = nuts.getwidth
 local getoptions         = nuts.getoptions
 local getchardict        = nuts.getchardict
 local getclass           = nuts.getclass
+local getprop            = nuts.getprop
 
 local getnumerator       = nuts.getnumerator
 local getdenominator     = nuts.getdenominator
@@ -106,6 +107,7 @@ local a_tagged           <const> = attributes.private('tagged')
 local a_mathcategory     <const> = attributes.private('mathcategory')
 local a_mathstack        <const> = attributes.private('mathstack')
 local a_mathmode         <const> = attributes.private('mathmode')
+local a_mathdomain       <const> = attributes.private('mathdomain')
 
 local c_mathblobnesting  <const> = tex.iscount("currentmathblobnesting")
 local c_mathblob         <const> = tex.iscount("currentmathblob")
@@ -153,9 +155,16 @@ mathematics.tagging = tagging
 
 local process, processsubsup  do
 
-    local continuation_code       <const> = tex.noadoptioncodes.continuation
-    local continuationhead_code   <const> = tex.noadoptioncodes.continuationhead
-    local continuationkernel_code <const> = tex.noadoptioncodes.continuationkernel
+    local noadoptioncodes = tex.noadoptioncodes
+
+    local continuation_code          <const> = noadoptioncodes.continuation
+    local continuationhead_code      <const> = noadoptioncodes.continuationhead
+    local continuationkernel_code    <const> = noadoptioncodes.continuationkernel
+
+    local shiftedsuperscript_code    <const> = noadoptioncodes.shiftedsuperscript
+    local shiftedsubscript_code      <const> = noadoptioncodes.shiftedsubscript
+    local shiftedsuperprescript_code <const> = noadoptioncodes.shiftedsuperprescript
+    local shiftedsubprescript_code   <const> = noadoptioncodes.shiftedsubprescript
 
  -- x[prime + sup]       : <msup>    <msup>    <mi>x</mi> <mi>sup</mi> </msup>              <mi>prime</mi> </msup>
  -- x[prime + sub]       : <msubsup>           <mi>x</mi> <mi>sub</mi> </msubsup>           <mi>prime</mi> </msubsup>
@@ -169,24 +178,46 @@ local process, processsubsup  do
 
     local t_prime = { script = "prime" } -- etc, todo: set on main table
 
-    local function simple(start,nucleus,prime,sup,sub,continuation)
+    local function simple(start,nucleus,prime,sup,sub,options,continuation)
         if prime then
             setattr(start,a_tagged,start_tagged("msup", { prime = true }))
             start_tagged("mrow")
         end
         if sub then
             if sup then
-                setattr(start,a_tagged,start_tagged("msubsup", continuation))
+--                 local subshifted = ((options & shiftedsubscript_code  ) > 0) and "true" or nil
+--                 local supshifted = ((options & shiftedsuperscript_code) > 0) and "true" or nil
+                local subshifted = ((options & shiftedsubscript_code  ) > 0) or nil
+                local supshifted = ((options & shiftedsuperscript_code) > 0) or nil
+                if continuation then
+                    continuation.subshifted = subshifted
+                    continuation.supshifted = supshifted
+                else
+                    continuation = {
+                        subshifted = subshifted,
+                        supshifted = supshifted,
+                    }
+                end
+                setattr(start,a_tagged,start_tagged("msubsup",continuation))
                 process(nucleus)
                 start_tagged("mrow", { script = "sub" })
                 process(sub)
                 stop_tagged()
-                start_tagged("mrow", { script = "sup"  })
+                start_tagged("mrow", { script = "sup" })
                 process(sup)
                 stop_tagged()
                 stop_tagged()
             else
-                setattr(start,a_tagged,start_tagged("msub", continuation))
+--                 local subshifted = ((options & shiftedsubscript_code  ) > 0) and "true" or nil
+                local subshifted = ((options & shiftedsubscript_code  ) > 0) or nil
+                if continuation then
+                    continuation.subshifted = subshifted
+                else
+                    continuation = {
+                        subshifted = subshifted,
+                    }
+                end
+                setattr(start,a_tagged,start_tagged("msub",continuation))
                 process(nucleus)
                 start_tagged("mrow", { script = "sub" })
                 process(sub)
@@ -194,7 +225,16 @@ local process, processsubsup  do
                 stop_tagged()
             end
         elseif sup then
-            setattr(start,a_tagged,start_tagged("msup", continuation))
+--             local supshifted = ((options & shiftedsuperscript_code  ) > 0) and "true" or nil
+            local supshifted = ((options & shiftedsuperscript_code  ) > 0) or nil
+            if continuation then
+                continuation.supshifted = supshifted
+            else
+                continuation = {
+                    supshifted = supshifted,
+                }
+            end
+            setattr(start,a_tagged,start_tagged("msup",continuation))
             process(nucleus)
             start_tagged("mrow", { script = "sup" })
             process(sup)
@@ -212,7 +252,7 @@ local process, processsubsup  do
         end
     end
 
-    local function complex(start,nucleus,prime,sup,sub,presup,presub,continuation)
+    local function complex(start,nucleus,prime,sup,sub,presup,presub,options,continuation)
         if prime then
             setattr(start,a_tagged,start_tagged("msup", { prime = true }))
             start_tagged("mrow")
@@ -225,22 +265,22 @@ local process, processsubsup  do
 --             stop_tagged()
 --         end
         if sup then
-            start_tagged("mrow", { script = "sup" })
+            start_tagged("mrow", { script = "sup" }) -- , shifted = ((options & shiftedsuperscript_code) > 0) and "true" or nil  })
             process(sup)
             stop_tagged()
         end
         if sub then
-            start_tagged("mrow", { script = "sub" })
+            start_tagged("mrow", { script = "sub" }) -- , shifted = ((options & shiftedsubscript_code) > 0) and "true" or nil  })
             process(sub)
             stop_tagged()
         end
         if presup then
-            start_tagged("mrow", { script = "presup" })
+            start_tagged("mrow", { script = "presup" }) -- , shifted = ((options & shiftedsuperprescript_code) > 0) and "true" or nil  })
             process(presup)
             stop_tagged()
         end
         if presub then
-            start_tagged("mrow", { script = "presub" })
+            start_tagged("mrow", { script = "presub" }) -- , shifted = ((options & shiftedsubprescript_code) > 0) and "true" or nil  })
             process(presub)
             stop_tagged()
         end
@@ -269,9 +309,9 @@ local process, processsubsup  do
         }) or nil
      -- if presup or presub or (sup and prime) then
         if presup or presub then
-            complex(start,nucleus,prime,sup,sub,presup,presub,continuation)
+            complex(start,nucleus,prime,sup,sub,presup,presub,options,continuation)
         else
-            simple(start,nucleus,prime,sup,sub,continuation)
+            simple(start,nucleus,prime,sup,sub,options,continuation)
         end
     end
 
@@ -336,28 +376,38 @@ end
 
 local chardata = characters.data
 
+local mathnames   = mathematics.dictionaries.names
+local mathgroups  = mathematics.dictionaries.groups
+local mathclasses = mathematics.classes
+
+local everygroup <const> = mathematics.dictionaries.names.everygroup
+
 local function getproperties(n,class)
     local props, group, index, font, char = getchardict(n)
-if group == 0xFFFF then
-    -- should be done at the lua end by defining a char bound group code
-    local c = chardata[char]
-    if c then
-        local g = c.mathgroup
-        if not g then
-            local s = c.mathspec
-            if s then
-                g = s[1].group
-            end
-            if g then
-                group = mathematics.dictionaries.names[g] or group
+    if group == everygroup then
+        -- should be done at the lua end by defining a char bound group code
+        local c = chardata[char]
+        if c then
+            local g = c.mathgroup
+            if not g then
+                local s = c.mathspec
+                if s then
+                    g = s[1].group
+                end
+                if g then
+                    group = mathnames[g] or group
+                end
             end
         end
     end
-end
     if group or class then
+        local swapped = getprop(n,"swappedclass")
+        if swapped then
+            class = swapped
+        end
         return {
-            mathclass     = class,
-            mathgroup     = group,
+            mathclass     = mathclasses[class] or class,
+            mathgroup     = mathgroups[group],
             mathindex     = index,
          -- mathfont      = font,
             mathcharacter = char,
@@ -432,16 +482,6 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                             if list then
                                 process(list)
                             end
---                         elseif tag == "msfunctionstack" then
---                             local list = getlist(start)
---                             if list then
---                                 process(list)
---                             end
---                         elseif tag == "msfunctionargument" then
---                             local list = getlist(start)
---                             if list then
---                                 process(list)
---                             end
                         else
                             if tag ~= "mtable" and tag ~= "mstackertop" and tag ~= "mstackermid" and tag ~= "mstackerbot" then
                                 tag = "mtext"
@@ -569,7 +609,12 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                             }))
                             process(list)
                             stop_tagged()
--- mfraction
+                        elseif tag == "mdigits" then
+                            setattr(start,a_tagged,start_tagged("mrow", {
+                                mathdigits = detail or "unknown",
+                            }))
+                            process(list)
+                            stop_tagged()
                         else
                             setattr(start,a_tagged,start_tagged("mrow"))
                             process(list)
@@ -864,6 +909,7 @@ function noads.handlers.tags(head,style,penalties)
         input      = mathematics.lastinput,
         blob       = getintegervalue(c_mathblob),
         language   = getmacro("currentlanguage"),
+        domain     = mathematics.getdomainname(tonumber(getattr(head,a_mathdomain))),
     })
     setattr(head,a_tagged,start_tagged("mrow"))
     process(head)

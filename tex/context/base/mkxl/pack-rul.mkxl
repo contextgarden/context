@@ -163,6 +163,7 @@
   %\c!rightframe=,
    \c!radius=.5\bodyfontsize,
    \c!rulethickness=\linewidth,
+   \c!dashstep=.1\emwidth,
    \c!corner=\v!rectangular,
    \c!depth=\zeropoint,
   %\c!foregroundcolor=,
@@ -781,10 +782,10 @@
      \pack_framed_stroked_box_normal_opened
    \fi}
 
-\def\pack_framed_t_rule{\hrule\s!height\d_framed_linewidth\kern-\d_framed_linewidth}
-\def\pack_framed_b_rule{\kern-\d_framed_linewidth\hrule\s!height\d_framed_linewidth}
-\def\pack_framed_r_rule{\kern-\d_framed_linewidth\vrule\s!width\d_framed_linewidth}
-\def\pack_framed_l_rule{\vrule\s!width\d_framed_linewidth\kern-\d_framed_linewidth}
+\def\pack_framed_t_rule{\hrule\s!height\d_framed_linewidth\relax\kern-\d_framed_linewidth}
+\def\pack_framed_b_rule{\kern-\d_framed_linewidth\hrule\s!height\d_framed_linewidth\relax}
+\def\pack_framed_r_rule{\kern-\d_framed_linewidth\vrule\s!width \d_framed_linewidth\relax}
+\def\pack_framed_l_rule{\vrule\s!width \d_framed_linewidth\relax\kern-\d_framed_linewidth}
 
 \letcsname\??framedtop   \v!on \v!on\endcsname\pack_framed_t_rule
 \letcsname\??framedtop   \v!off\v!on\endcsname\pack_framed_t_rule
@@ -801,6 +802,41 @@
 \letcsname\??framedright \v!on \v!on\endcsname\pack_framed_r_rule
 \letcsname\??framedright \v!off\v!on\endcsname\pack_framed_r_rule
 \letcsname\??framedright \v!on      \endcsname\pack_framed_r_rule
+
+% Let's see who documents this on the wiki:
+%
+% \framed
+%   [align=middle,topframe=dash,frame=off]
+%   {\samplefile{tufte}}
+% \framed
+%   [align=middle,frame=dash,dashstep=.01hs,rulethickness=1pt]
+%   {\samplefile{tufte}}
+% \framed
+%   [align=middle,frame=dash,dashstep=10pt,rulethickness=2pt,background=color,backgroundcolor=gray]
+%   {\samplefile{tufte}}
+
+\def\pack_framed_dash{on \d_framed_framedashstep off \d_framed_framedashstep}
+
+\def\pack_framed_t_rule_d{\hrule\s!height\d_framed_linewidth\pack_framed_dash\relax\kern-\d_framed_linewidth}
+\def\pack_framed_b_rule_d{\kern-\d_framed_linewidth\hrule\s!height\d_framed_linewidth\pack_framed_dash\relax}
+\def\pack_framed_r_rule_d{\kern-\d_framed_linewidth\vrule\s!width \d_framed_linewidth\pack_framed_dash\relax}
+\def\pack_framed_l_rule_d{\vrule\s!width \d_framed_linewidth\pack_framed_dash\relax\kern-\d_framed_linewidth}
+
+\letcsname\??framedtop   \v!off \v!dash\endcsname\pack_framed_t_rule_d
+\letcsname\??framedtop   \v!dash       \endcsname\pack_framed_t_rule_d
+\letcsname\??framedtop   \v!dash\v!dash\endcsname\pack_framed_t_rule_d
+
+\letcsname\??framedbottom\v!off \v!dash\endcsname\pack_framed_b_rule_d
+\letcsname\??framedbottom\v!dash       \endcsname\pack_framed_b_rule_d
+\letcsname\??framedbottom\v!dash\v!dash\endcsname\pack_framed_b_rule_d
+
+\letcsname\??framedleft  \v!off \v!dash\endcsname\pack_framed_l_rule_d
+\letcsname\??framedleft  \v!dash       \endcsname\pack_framed_l_rule_d
+\letcsname\??framedleft  \v!dash\v!dash\endcsname\pack_framed_l_rule_d
+
+\letcsname\??framedright \v!off \v!dash\endcsname\pack_framed_r_rule_d
+\letcsname\??framedright \v!dash       \endcsname\pack_framed_r_rule_d
+\letcsname\??framedright \v!dash\v!dash\endcsname\pack_framed_r_rule_d
 
 % no overlapping rules
 
@@ -1004,6 +1040,7 @@
    \setupcurrentframed[#2]%
    \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}% also used in backgrounds
    \d_framed_frameoffset\framedparameter\c!frameoffset\relax     % also used in backgrounds
+   \d_framed_framedashstep\framedparameter\c!dashstep\relax
    \edef\p_framed_frame{\framedparameter\c!frame}%
    \edef\p_framed_background{\framedparameter\c!background}%
    % not here, in calling macro: setups
@@ -1133,6 +1170,7 @@
 \newdimension\d_framed_width
 \newdimension\d_framed_height
 \newdimension\d_framed_frameoffset
+\newdimension\d_framed_framedashstep
 \newdimension\d_framed_backgroundoffset
 \newdimension\d_framed_local_offset
 
@@ -1212,6 +1250,7 @@
 
 \protected\def\pack_framed_process_indeed
   {\d_framed_frameoffset\framedparameter\c!frameoffset
+   \d_framed_framedashstep\framedparameter\c!dashstep
    \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
    \d_framed_backgroundoffset
      \ifx\p_framed_backgroundoffset\v!frame

@@ -209,13 +209,16 @@
 \newdimension    \d_tabl_tabulate_height_p_max
 \newdimension    \d_tabl_tabulate_vrulethickness_default
 \newdimension    \d_tabl_tabulate_hrulethickness_default
+\newdimension    \d_tabl_tabulate_hruledashsteps_default
 \newdimension    \d_tabl_tabulate_vrulethickness
 \newdimension    \d_tabl_tabulate_hrulethickness          % not used
 \newdimension    \d_tabl_tabulate_vrulethickness_local
 \newdimension    \d_tabl_tabulate_hrulethickness_local
+\newdimension    \d_tabl_tabulate_hruledashsteps_local
 \newdimension    \d_tabl_tabulate_indent
 \newdimension    \d_tabl_tabulate_splitoff_betweenskip
 \newdimension    \d_tabl_tabulate_margin
+\newcount        \c_tabl_tabulate_step
 
 \newgluespec     \s_tabl_tabulate_pre
 \newgluespec     \s_tabl_tabulate_post
@@ -1172,6 +1175,7 @@
    \c!margin=\!!zeropoint,
    \c!split=\v!auto,
    \c!header=\v!yes,
+   \c!dashstep=.1\emwidth,
   %\c!title=,
    \c!indenting=\v!no]
 
@@ -1443,68 +1447,6 @@
      \vskip-\struttotal
    \fi}
 
-% \protected\def\tabl_tabulate_start_building
-%   {\ifinsidefloat
-%      \tabl_tabulate_inside_before
-%    \else
-%      \tabl_tabulate_outside_before
-%    \fi
-%    \bgroup % settings
-%    %
-%    \t_tabl_tabulate_preamble\emptytoks
-%    \t_tabl_tabulate_dummy   \emptytoks
-%    %
-%    \resetcharacteralign
-%    %
-%    \edef\p_distance      {\tabulationparameter\c!distance}%
-%    \edef\p_align         {\tabulationparameter\c!align}%
-%    \edef\p_line          {\tabulationparameter\c!rule}%
-%    \edef\p_rulecolor     {\tabulationparameter\c!rulecolor}%
-%    \edef\p_rulethickness {\tabulationparameter\c!rulethickness}%
-%    \edef\p_bodyfont      {\tabulationparameter\c!bodyfont}%
-%    \edef\p_indenting     {\tabulationparameter\c!indenting}%
-%    \edef\p_blank         {\tabulationparameter\c!blank}%
-%    %
-%    \ifcstok{\tabulationparameter\c!keeptogether}\v!no
-%      \c_tabl_tabulate_tolerant_break\conditionaltrue
-%     %\c_tabl_tabulate_handlepbreak\conditionalfalse
-%    \else
-%      \c_tabl_tabulate_tolerant_break\conditionalfalse
-%     %\c_tabl_tabulate_handlepbreak\conditionaltrue
-%    \fi
-%    %
-%    \ifcstok{\tabulationparameter\c!interlinespace}\v!no
-%      \c_tabl_tabulate_no_interline_space\conditionaltrue
-%    \else
-%      \c_tabl_tabulate_no_interline_space\conditionalfalse
-%    \fi
-%    %
-%    \c_tabl_tabulate_split\conditionaltrue
-%    \begincsname\??tabulatesplit\tabulationparameter\c!split\endcsname
-%    %
-%    \let\m_tabl_tabulate_blank_default\p_blank
-%    %
-%    \d_tabl_tabulate_unit\tabulationparameter\c!unit
-%    \d_tabl_tabulate_margin\tabulationparameter\c!margin
-%    \let\m_tabl_tabulate_vrule_color_default\p_rulecolor
-%    \let\m_tabl_tabulate_hrule_color_default\p_rulecolor
-%    \d_tabl_tabulate_vrulethickness_default\p_rulethickness
-%    \d_tabl_tabulate_hrulethickness_default\p_rulethickness
-%    \ifempty\p_bodyfont\else
-%      \switchtobodyfont[\p_bodyfont]%
-%    \fi
-%    \postponenotes % new, to be tested / will be configurable
-%    \widowpenalty\zerocount % otherwise lines are not broken
-%    \clubpenalty \zerocount % but overlap in funny ways
-%    \expand\everytabulate
-%    \tabulationparameter\c!inner
-%    \d_tabl_tabulate_indent\dimexpr\leftskip+\hangindent\ifx\p_indenting\v!yes+\parindent\fi\relax
-%    \global\c_tabl_tabulate_column\zerocount
-%    \processcontent % stoptabulate needs to match the frozen one
-%      {\ifconditional\c_tabl_generic stoptabulate\else\e!stop\ifempty\currenttabulationparent\v!tabulate\else\currenttabulationparent\fi\fi}
-%      \tabl_tabulate_insert_body
-%      \tabl_tabulate_process}
-
 \protected\def\tabl_tabulate_start_building
   {\ifinsidefloat
      \tabl_tabulate_inside_before
@@ -1526,6 +1468,7 @@
    \edef\p_bodyfont      {\tabulationparameter\c!bodyfont}%
    \edef\p_indenting     {\tabulationparameter\c!indenting}%
    \edef\p_blank         {\tabulationparameter\c!blank}%
+   \edef\p_dashstep      {\tabulationparameter\c!dashstep}%
    %
    \ifcstok{\tabulationparameter\c!keeptogether}\v!no
      \c_tabl_tabulate_tolerant_break\conditionaltrue
@@ -1552,6 +1495,7 @@
    \let\m_tabl_tabulate_hrule_color_default\p_rulecolor
    \d_tabl_tabulate_vrulethickness_default\p_rulethickness
    \d_tabl_tabulate_hrulethickness_default\p_rulethickness
+   \d_tabl_tabulate_hruledashsteps_default\p_dashstep
    \ifempty\p_bodyfont\else
      \switchtobodyfont[\p_bodyfont]%
    \fi
@@ -1845,23 +1789,44 @@
    \directvskip\s_tabl_tabulate_separator
    \egroup}
 
-\lettonothing\m_tabl_tabulate_hrule_color
+% \starttabulate
+% \FL[1,2] % linewidthfactor, dashstepfactor
+% \NC test \NC test and test and test and done \NC \NR
+% \ML[1,1]
+% \NC test \NC test and test and test and done \NC \NR
+% \NC test \NC test and test and test and done \NC \NR
+% \NC test \NC test and test and test and done \NC \NR
+% \LL[1,10]
+% \stoptabulate
 
-\def\tabl_tabulate_hrule_preset_step#1%
-  {\doifelsenumber{#1}%
-     {\global\d_tabl_tabulate_hrulethickness_local#1\d_tabl_tabulate_hrulethickness_default}
-     {\xdef\m_tabl_tabulate_hrule_color{#1}}}
+\lettonothing\m_tabl_tabulate_hrule_color
 
 \def\tabl_tabulate_hrule_preset[#1]%
   {\glet\m_tabl_tabulate_hrule_color\m_tabl_tabulate_hrule_color_default
    \global\d_tabl_tabulate_hrulethickness_local\d_tabl_tabulate_hrulethickness_default
+   \global\d_tabl_tabulate_hruledashsteps_local\zeropoint
+   \c_tabl_tabulate_step\zerocount
    \ifempty{#1}\else\rawprocesscommalist[#1]\tabl_tabulate_hrule_preset_step\fi}
+
+\def\tabl_tabulate_hrule_preset_step#1%
+  {\ifchknum#1\or
+     \advance\c_tabl_tabulate_step\plusone
+     \ifcase\c_tabl_tabulate_step\or
+       \global\d_tabl_tabulate_hrulethickness_local#1\d_tabl_tabulate_hrulethickness_default
+     \else
+       \global\d_tabl_tabulate_hruledashsteps_local#1\d_tabl_tabulate_hruledashsteps_default
+     \fi
+   \else
+     \xdef\m_tabl_tabulate_hrule_color{#1}%
+   \fi}
 
 \def\tabl_tabulate_hrule_inject_normal
   {\autorule
      \s!height.5\d_tabl_tabulate_hrulethickness_local
      \s!depth .5\d_tabl_tabulate_hrulethickness_local
      \s!left    \d_tabl_tabulate_indent
+     on         \d_tabl_tabulate_hruledashsteps_local
+     off        \d_tabl_tabulate_hruledashsteps_local
    \relax}
 
 \def\tabl_tabulate_hrule_inject_colored

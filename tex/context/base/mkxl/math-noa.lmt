@@ -146,6 +146,8 @@ local setoffsets         = nuts.setoffsets
 local getoptions         = nuts.getoptions
 local setoptions         = nuts.setoptions
 
+local setprop            = nuts.setprop
+
 local flushnode          = nuts.flush
 local copy_node          = nuts.copy
 local slide_nodes        = nuts.slide
@@ -2718,6 +2720,89 @@ do
         if trace_suspicious then
             processnoads(head,suspicious,"suspicious")
         end
+    end
+
+end
+
+do  -- we don't need to support nesting here unless we run over sublists
+
+    local trace_intervals  = false  registertracker("math.intervals", function(v) trace_intervals = v end)
+    local report_intervals = logreporter("mathematics","intervals")
+
+    local a_mathintervals <const> = privateattribute("mathintervals")
+
+    local intervals = { }  noads.processors.intervals = intervals
+
+    -- ] a,b [ | [ a,b ] | ] a, b ] | [ a, b [
+
+    local firstclass   = false
+    local firstparent  = false
+    local firstpointer = false
+    local punctuation  = false
+
+    local ignored = {
+        [relation_class] = true,
+        [middle_class]   = true,
+        [fenced_class]   = true,
+        [fraction_class] = true,
+        [radical_class]  = true,
+        [accent_class]   = true,
+    }
+
+    intervals[mathchar_code] = function(pointer,what,n,parent)
+        local class = getsubtype(pointer)
+        if class == open_class or class == close_class then
+            local c = getchar(pointer)
+            if c == 0x5B or c == 0x5D then -- c = 0x27E6 or c = 0x27E7 double ones
+                local a = getattr(pointer,a_mathintervals)
+                if not a then
+                    firstclass  = false
+                    punctuation = false
+                elseif firstclass then
+                    if not punctuation then
+                        --
+                    else
+                        if firstclass ~= open_class then
+                            setclass(firstparent, open_class)
+                            setprop(firstpointer,"swappedclass",open_class)
+                            if trace_intervals then
+                                report_intervals("setting class of %C to %a",getchar(firstpointer),"open")
+                            end
+                        end
+                        if class ~= close_class then
+                            setclass(parent, close_class)
+                            setprop(pointer,"swappedclass",close_class)
+                            if trace_intervals then
+                                report_intervals("setting class of %C to %a",getchar(pointer),"close")
+                            end
+                        end
+                    end
+                    firstclass  = false
+                    punctuation = false
+                else
+                    firstclass   = class
+                    firstpointer = pointer
+                    firstparent  = parent
+                end
+            else
+                firstclass  = false
+                punctuation = false
+            end
+        elseif class == punctuation_class then
+            local c = getchar(pointer)
+            if c == 0x2C or c == 0x3A or c == 0x3B then -- , : ;
+                punctuation = true
+            else
+                punctuation = false
+            end
+        elseif ignored[class] then
+            firstclass  = false
+            punctuation = false
+        end
+    end
+
+    function handlers.intervals(head,style,penalties)
+        processnoads(head,intervals,"intervals")
     end
 
 end

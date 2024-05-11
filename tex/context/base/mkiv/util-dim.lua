@@ -27,8 +27,8 @@ local p_stripzeros      = lpeg.patterns.stripzeros
 number = number or { }
 local number = number
 
-number.tonumberf = function(n) return lpegmatch(p_stripzeros,format("%.20f",n)) end
-number.tonumberg = function(n) return format("%.20g",n) end
+number.tonumberf = function(n) return lpegmatch(p_stripzeros,format("%.20f",n)) end -- not used
+number.tonumberg = function(n) return format("%.20g",n) end -- not used
 
 local dimenfactors = allocate {
     ["pt"] =             1/65536,

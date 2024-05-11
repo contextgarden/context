@@ -2386,12 +2386,12 @@ it were an index.
 
 \startbuffer
 \hbox{$
-    {\tf X}^1_2^^3__4 \quad
-    {\tf X}^1  ^^3    \quad
-    {\tf X}  _1   __4 \quad
-    {\tf X}    ^^3    \quad
-    {\tf X}       __4 \quad
-    {\tf X}^^3    __4
+    {\tf X}^1_2^^^3___4 \quad
+    {\tf X}^1  ^^^3    \quad
+    {\tf X}  _1    ___4 \quad
+    {\tf X}    ^^^3    \quad
+    {\tf X}        ___4 \quad
+    {\tf X}^^^3    ___4
 $}
 \stopbuffer
 
@@ -2657,17 +2657,21 @@ they indicate pre- and postscripts.
 \starttabulate[|c|c|c|c|]
 \NC \type {^}    \NC         \NC super \NC post \NC \NR
 \NC \type {_}    \NC         \NC sub   \NC post \NC \NR
-\NC \type {^^}   \NC         \NC super \NC pre  \NC \NR
-\NC \type {__}   \NC         \NC sub   \NC pre  \NC \NR
-\NC \type {^^^}  \NC shifted \NC super \NC post \NC \NR
-\NC \type {___}  \NC shifted \NC sub   \NC post \NC \NR
+\NC \type {^^}   \NC         \NC super \NC post \NC \NR
+\NC \type {__}   \NC         \NC sub   \NC post \NC \NR
+\NC \type {^^^}  \NC shifted \NC super \NC pre  \NC \NR
+\NC \type {___}  \NC shifted \NC sub   \NC pre  \NC \NR
 \NC \type {^^^^} \NC shifted \NC super \NC pre  \NC \NR
 \NC \type {____} \NC shifted \NC sub   \NC pre  \NC \NR
 \stoptabulate
 
-The shifted variants force a script to be an index and thereby make the other
-script move. This multiple character features used to be optional but is now always
-active.
+The shifted variants force a script to be marked as index. In versions upto 2.10
+a subscript was moved to after the superscript but when we introduced continued
+scripts that feature was disabled (we might bring it back as configurable
+option). The shifted variants now behave the same but at the \LUA\ end one can
+check if they carry this flag. Since 2.11 the one and two character are for post
+while three and four handle prescripts (indices are more common than prescripts).
+The \prm {noscript} command signals that we're up for a new continuation.
 
 Related to this is the issue of double scripts. The regular \TEX\ is to issue
 an error message, inject an ordinary node and carry on when asked to. Here we have

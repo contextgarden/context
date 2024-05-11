@@ -219,6 +219,7 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
     mfraction          = { pdf = "Span",       nature = "display" }, -- idem
     mfractionstack     = { pdf = "Span",       nature = "display" }, -- idem
     munit              = { pdf = "Span",       nature = "mixed"   },
+    mdigits            = { pdf = "Span",       nature = "mixed"   },
     mc                 = { pdf = "Span",       nature = "mixed"   },
 
     mtable             = { pdf = "Table",      nature = "display", namespace = "mathml" }, -- might change

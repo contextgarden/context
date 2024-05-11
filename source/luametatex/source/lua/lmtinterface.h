@@ -419,6 +419,9 @@ extern lmt_interface_info lmt_interface;
     This list will be made smaller because not all values need the boost. Before we define the
     lot we undefine some possibly conflicting snippets. Actually, we don't really define the
     key's here but assemble more complex references to registry indices and variables.
+
+    We could do all keys but some are used only for reporting options (values) so we can skip 
+    these (see |lmttexlib.c| for examples of that. 
 */
 
 # undef quad /* CYGWIN */
@@ -453,8 +456,6 @@ make_lua_key(L, accentvariant);\
 make_lua_key(L, active);\
 make_lua_key(L, active_char);\
 make_lua_key(L, adapted);\
-make_lua_key(L, adapttoleftsize);\
-make_lua_key(L, adapttorightsize);\
 make_lua_key(L, additional);\
 make_lua_key(L, adjdemerits);\
 make_lua_key(L, adjust);\
@@ -488,10 +489,7 @@ make_lua_key(L, attribute);\
 make_lua_key(L, attribute_list);\
 make_lua_key(L, attributelist);\
 make_lua_key(L, auto);\
-make_lua_key(L, autobase);\
 make_lua_key(L, automatic);\
-make_lua_key(L, automaticpenalty);\
-make_lua_key(L, automiddle);\
 make_lua_key(L, auxiliary);\
 make_lua_key(L, axis);\
 make_lua_key(L, AxisHeight);\
@@ -664,7 +662,6 @@ make_lua_key(L, expanded);\
 make_lua_key(L, expansion);\
 make_lua_key(L, explicit);\
 make_lua_key(L, explicit_space);\
-make_lua_key(L, explicitpenalty);\
 make_lua_key(L, expression);\
 make_lua_key(L, extender);\
 make_lua_key(L, extensible);\
@@ -679,7 +676,6 @@ make_lua_key(L, extrasuperprescriptspace);\
 make_lua_key(L, extrasuperscriptshift);\
 make_lua_key(L, extrasuperscriptspace);\
 make_lua_key(L, fam);\
-make_lua_key(L, feedbackcompound);\
 make_lua_key(L, fence);\
 make_lua_key(L, fenced);\
 make_lua_key(L, fi);\
@@ -708,14 +704,11 @@ make_lua_key(L, flattenedaccentbottomshiftdown);\
 make_lua_key(L, flattenedaccenttopshiftup);\
 make_lua_key(L, FlattenedAccentTopShiftUp);\
 make_lua_key(L, float);\
-make_lua_key(L, followedbyspace);\
 make_lua_key(L, font);\
 make_lua_key(L, font_property);\
 make_lua_key(L, fontkern);\
 make_lua_key(L, fontspec);\
 make_lua_key(L, force);\
-make_lua_key(L, forcecheck);\
-make_lua_key(L, forcehandler);\
 make_lua_key(L, forcerulethickness);\
 make_lua_key(L, fraction);\
 make_lua_key(L, FractionDelimiterDisplayStyleSize);\
@@ -780,7 +773,6 @@ make_lua_key(L, if_test);\
 make_lua_key(L, ifstack);\
 make_lua_key(L, ignore);\
 make_lua_key(L, ignore_something);\
-make_lua_key(L, ignorebounds);\
 make_lua_key(L, ignored);\
 make_lua_key(L, image);\
 make_lua_key(L, immediate);\
@@ -839,7 +831,6 @@ make_lua_key(L, largefamily);\
 make_lua_key(L, last);\
 make_lua_key(L, lastinsert);\
 make_lua_key(L, lastlinefit);\
-make_lua_key(L, lazyligatures);\
 make_lua_key(L, leader);\
 make_lua_key(L, leaders);\
 make_lua_key(L, leastpagecost);\
@@ -969,34 +960,24 @@ make_lua_key(L, noad);\
 make_lua_key(L, noadstate);\
 make_lua_key(L, noalign);\
 make_lua_key(L, noaligned);\
-make_lua_key(L, noaxis);\
-make_lua_key(L, nocheck);\
 make_lua_key(L, node);\
 make_lua_key(L, nodelist);\
 make_lua_key(L, noindent);\
-make_lua_key(L, nolimits);\
 make_lua_key(L, NoLimitSubFactor);\
 make_lua_key(L, nolimitsubfactor);\
 make_lua_key(L, nolimitsupfactor);\
 make_lua_key(L, NoLimitSupFactor);\
 make_lua_key(L, nomath);\
 make_lua_key(L, none);\
-make_lua_key(L, nooverflow);\
 make_lua_key(L, normal);\
 make_lua_key(L, norule);\
-make_lua_key(L, noruling);\
-make_lua_key(L, noscript);\
-make_lua_key(L, nosubprescript);\
-make_lua_key(L, nosubscript);\
-make_lua_key(L, nosuperprescript);\
-make_lua_key(L, nosuperscript);\
 make_lua_key(L, nucleus);\
 make_lua_key(L, number);\
 make_lua_key(L, numerator);\
 make_lua_key(L, numeratorvariant);\
+make_lua_key(L, off);\
+make_lua_key(L, on);\
 make_lua_key(L, open);\
-make_lua_key(L, openupdepth);\
-make_lua_key(L, openupheight);\
 make_lua_key(L, operator);\
 make_lua_key(L, operatorsize);\
 make_lua_key(L, optional);\
@@ -1052,9 +1033,6 @@ make_lua_key(L, passive);\
 make_lua_key(L, pdfe);\
 make_lua_key(L, penalty);\
 make_lua_key(L, permanent);\
-make_lua_key(L, permitall);\
-make_lua_key(L, permitglue);\
-make_lua_key(L, permitmathreplace);\
 make_lua_key(L, phantom);\
 make_lua_key(L, posit);\
 make_lua_key(L, post);\
@@ -1069,7 +1047,6 @@ make_lua_key(L, preadjust);\
 make_lua_key(L, preadjusthead);\
 make_lua_key(L, preamble);\
 make_lua_key(L, prebox);\
-make_lua_key(L, preferfontthickness);\
 make_lua_key(L, prefix);\
 make_lua_key(L, premigrate);\
 make_lua_key(L, premigratehead);\
@@ -1100,7 +1077,6 @@ make_lua_key(L, primewidth);\
 make_lua_key(L, PrimeWidthPercent);\
 make_lua_key(L, primitive);\
 make_lua_key(L, properties);\
-make_lua_key(L, proportional);\
 make_lua_key(L, protected);\
 make_lua_key(L, protected_call);\
 make_lua_key(L, protrudechars);\
@@ -1199,10 +1175,6 @@ make_lua_key(L, set_font);\
 make_lua_key(L, shapingpenaltiesmode);\
 make_lua_key(L, shapingpenalty);\
 make_lua_key(L, shift);\
-make_lua_key(L, shiftedsubprescript);\
-make_lua_key(L, shiftedsubscript);\
-make_lua_key(L, shiftedsuperprescript);\
-make_lua_key(L, shiftedsuperscript);\
 make_lua_key(L, shorthand_def);\
 make_lua_key(L, shrink);\
 make_lua_key(L, shrinkorder);\
@@ -1226,7 +1198,6 @@ make_lua_key(L, smaller);\
 make_lua_key(L, smallfamily);\
 make_lua_key(L, some_item);\
 make_lua_key(L, source);\
-make_lua_key(L, sourceonnucleus);\
 make_lua_key(L, space);\
 make_lua_key(L, SpaceAfterScript);\
 make_lua_key(L, spaceafterscript);\
@@ -1273,8 +1244,6 @@ make_lua_key(L, StretchStackBottomShiftDown);\
 make_lua_key(L, StretchStackGapAboveMin);\
 make_lua_key(L, StretchStackGapBelowMin);\
 make_lua_key(L, StretchStackTopShiftUp);\
-make_lua_key(L, strictend);\
-make_lua_key(L, strictstart);\
 make_lua_key(L, string);\
 make_lua_key(L, strut);\
 make_lua_key(L, style);\
@@ -1378,8 +1347,6 @@ make_lua_key(L, unhbox);\
 make_lua_key(L, unhyphenated);\
 make_lua_key(L, unit_reference);\
 make_lua_key(L, unknown);\
-make_lua_key(L, unpacklist);\
-make_lua_key(L, unrolllist);\
 make_lua_key(L, unset);\
 make_lua_key(L, untraced);\
 make_lua_key(L, unvbox);\

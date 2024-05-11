@@ -100,6 +100,7 @@ local function initialize(tfmdata,key,value)
                 local depth  = newdepth  or olddepth  or 0
                 if oldwidth ~= width or oldheight ~= height or olddepth ~= depth then
                     character.width  = width
+-- character.advance  = oldwidth
                     character.height = height
                     character.depth  = depth
                     if oldwidth ~= width then

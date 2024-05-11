@@ -41,6 +41,8 @@
     \definetypescriptprefix [f:narrowplexsans]  [\s!default]
     \definetypescriptprefix [f:narrowplexmono]  [\s!none]
 
+    \doifunknownfontfeature {plex-math-bold} {\definefontfeature[plex-math-bold][boldened]}
+
     % thin
 
     \starttypescript [\s!sans,\s!serif,\s!mono] [plex-thin] [\s!name]
@@ -73,7 +75,7 @@
 
     % regular
 
-    \starttypescript [\s!sans,\s!serif,\s!mono] [plex] [\s!name]
+    \starttypescript [\s!sans,\s!serif,\s!mono] [plex,plex-nt] [\s!name]
         \setups[\s!font:\s!fallback:\typescriptone]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}]              [\s!file:\typescriptprefix{n:plex\typescriptone}-regular]      [\s!features=\typescriptprefix{f:plex\typescriptone}]
         \edefinefontsynonym [\typescriptprefix{\typescriptone}\s!Italic]     [\s!file:\typescriptprefix{n:plex\typescriptone}-italic]       [\s!features=\typescriptprefix{f:plex\typescriptone}]
@@ -121,13 +123,40 @@
         \edefinefontsynonym [\typescriptprefix{\typescriptone}\s!BoldItalic] [\s!file:\typescriptprefix{n:plex\typescriptone}-bolditalic] [\s!features=\typescriptprefix{f:plex\typescriptone}]
     \stoptypescript
 
+    % Maybe not since it also scales primes
+    \starttypescript [\s!math] [plex] [\s!name]
+        \checkedmapfontsize[plex][\s!script]      [.65]% 70
+        \checkedmapfontsize[plex][\s!scriptscript][.50]% 55
+    \stoptypescript
+
+    \starttypescript [\s!math] [plex] [\s!name]
+        \definefontsynonym [\s!MathRoman]    [\s!file:IBMPlexMath.otf][\s!features={\s!math\mathsizesuffix,plex:mathextra,mathextra},\s!goodies=plex-math]
+        \definefontsynonym [\s!MathRomanBold][\s!file:IBMPlexMath.otf][\s!features={\s!math\mathsizesuffix,plex-math-bold,plex:mathextra,mathextra},\s!goodies=plex-math]
+    \stoptypescript
+
+    \starttypescript [\s!math] [plex-nt] [\s!name]
+        \definefontsynonym [\s!MathRoman]    [\s!file:IBMPlexMath.otf][\s!features={\s!math\mathsizesuffix,plex:mathextra,mathextra}]
+        \definefontsynonym [\s!MathRomanBold][\s!file:IBMPlexMath.otf][\s!features={\s!math\mathsizesuffix,plex-math-bold,plex:mathextra,mathextra}]
+    \stoptypescript
+
     % done
 
     \starttypescript[plex,plex-thin,plex-extralight,plex-light,plex,plex-text,plex-medium,plex-semibold,plex-bold]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [\typescriptone] [\s!default]
+\doifelsefileexists{IBMPlexMath.otf} {
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [plex]           [\s!default]
+} {
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [bookman]        [\s!default] [\s!rscale=1.03]
+}
+    \stoptypescript
+
+    \starttypescript[plex-nt]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [plex-nt] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [plex-nt] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [plex-nt] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [plex-nt] [\s!default]
     \stoptypescript
 
     % Here's Taco's variant as used in the ConTeXt Group Journal.
@@ -232,7 +261,6 @@
         \definefontfallback[Fake\typescriptprefix{\typescriptone}Caps]           [\typescriptprefix{\typescriptone}Widened] [0x0000-0xFFFF]         [\s!rscale=0.85,method=uppercase]
         \edefinefontsynonym     [\typescriptprefix{\typescriptone}Caps]          [\s!file:\typescriptprefix{n:narrowplex\typescriptone}-regular]    [\s!fallbacks=Fake\typescriptprefix{\typescriptone}Caps]
     \stoptypescript
-
 
     % For now, as some day plex will have cjk, hebrew, devanagari and arabic. The abstraction is not needed but
     % this way we can add more id needed without much code.
@@ -358,14 +386,22 @@
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [\typescriptone] [\s!default]
+\doifelsefileexists{IBMPlexMath.otf} {
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [plex]           [\s!default]
+} {
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [bookman]        [\s!default] [\s!rscale=1.03]
+}
     \stoptypescript
 
     \starttypescript[ibmplexnarrow,ibmplexnarrow-thin,ibmplexnarrow-extralight,ibmplexnarrow-light]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [\typescriptone] [\s!default]
+\doifelsefileexists{IBMPlexMath.otf} {
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [plex]           [\s!default]
+} {
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [bookman]        [\s!default] [\s!rscale=1.03]
+}
     \stoptypescript
 
 \stoptypescriptcollection

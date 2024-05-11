@@ -88,6 +88,9 @@
                 <flag name="purgeresult">
                     <short>purge result file before run</short>
                 </flag>
+                <flag name="find" value="string">
+                    <short>search for the given pattern in the documentation sources</short>
+                </flag>
             </subcategory>
             <subcategory>
                 <flag name="forcexml">

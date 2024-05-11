@@ -21,6 +21,9 @@
     There is still room for improvement but I'll deal with that when I have a reason (read: when
     I need something).
 
+    We don't reallocate (and share) key references for strings that are only used in functions 
+    that report values used as there's little gain. This will be cleaned up as we go. 
+
 */
 
 # include "luametatex.h"
@@ -4876,25 +4879,26 @@ static int texlib_setrunstate(lua_State *L)
 static int texlib_gethyphenationvalues(lua_State *L)
 {
     lua_createtable(L, 2, 17);
-    lua_push_key_at_index(L, normal,            normal_hyphenation_mode);
-    lua_push_key_at_index(L, automatic,         automatic_hyphenation_mode);
-    lua_push_key_at_index(L, explicit,          explicit_hyphenation_mode);
-    lua_push_key_at_index(L, syllable,          syllable_hyphenation_mode);
-    lua_push_key_at_index(L, uppercase,         uppercase_hyphenation_mode);
-    lua_push_key_at_index(L, compound,          compound_hyphenation_mode);
-    lua_push_key_at_index(L, strictstart,       strict_start_hyphenation_mode);
-    lua_push_key_at_index(L, strictend,         strict_end_hyphenation_mode);
-    lua_push_key_at_index(L, automaticpenalty,  automatic_penalty_hyphenation_mode);
-    lua_push_key_at_index(L, explicitpenalty,   explicit_penalty_hyphenation_mode);
-    lua_push_key_at_index(L, permitglue,        permit_glue_hyphenation_mode);
-    lua_push_key_at_index(L, permitall,         permit_all_hyphenation_mode);
-    lua_push_key_at_index(L, permitmathreplace, permit_math_replace_hyphenation_mode);
-    lua_push_key_at_index(L, forcecheck,        force_check_hyphenation_mode);
-    lua_push_key_at_index(L, lazyligatures,     lazy_ligatures_hyphenation_mode);
-    lua_push_key_at_index(L, forcehandler,      force_handler_hyphenation_mode);
-    lua_push_key_at_index(L, feedbackcompound,  feedback_compound_hyphenation_mode);
-    lua_push_key_at_index(L, ignorebounds,      ignore_bounds_hyphenation_mode);
-    lua_push_key_at_index(L, collapse,          collapse_hyphenation_mode);
+    lua_push_key_at_index(L, normal,    normal_hyphenation_mode);
+    lua_push_key_at_index(L, automatic, automatic_hyphenation_mode);
+    lua_push_key_at_index(L, explicit,  explicit_hyphenation_mode);
+    lua_push_key_at_index(L, syllable,  syllable_hyphenation_mode);
+    lua_push_key_at_index(L, uppercase, uppercase_hyphenation_mode);
+    lua_push_key_at_index(L, compound,  compound_hyphenation_mode);
+    lua_push_key_at_index(L, collapse,  collapse_hyphenation_mode);
+
+    lua_set_string_by_index(L, strict_start_hyphenation_mode,        "strictstart");
+    lua_set_string_by_index(L, strict_end_hyphenation_mode,          "strictend");
+    lua_set_string_by_index(L, automatic_penalty_hyphenation_mode,   "automaticpenalty");
+    lua_set_string_by_index(L, explicit_penalty_hyphenation_mode,    "explicitpenalty");
+    lua_set_string_by_index(L, permit_glue_hyphenation_mode,         "permitglue");
+    lua_set_string_by_index(L, permit_all_hyphenation_mode,          "permitall");
+    lua_set_string_by_index(L, permit_math_replace_hyphenation_mode, "permitmathreplace");
+    lua_set_string_by_index(L, force_check_hyphenation_mode,         "forcecheck");
+    lua_set_string_by_index(L, lazy_ligatures_hyphenation_mode,      "lazyligatures");
+    lua_set_string_by_index(L, force_handler_hyphenation_mode,       "forcehandler");
+    lua_set_string_by_index(L, feedback_compound_hyphenation_mode,   "feedbackcompound");
+    lua_set_string_by_index(L, ignore_bounds_hyphenation_mode,       "ignorebounds");
     return 1;
 }
 
@@ -4950,55 +4954,54 @@ static int texlib_getpenaltyoptionvalues(lua_State *L)
     return 1;
 }
 
-static int texlib_getnoadoptionvalues(lua_State *L) /* less keywords, just strings */
+static int texlib_getnoadoptionvalues(lua_State *L) 
 {
     lua_createtable(L, 2, 46);
-    lua_push_key_at_index(L, axis,                   noad_option_axis);
-    lua_push_key_at_index(L, noaxis,                 noad_option_no_axis);
-    lua_push_key_at_index(L, exact,                  noad_option_exact);
-    lua_push_key_at_index(L, left,                   noad_option_left);
-    lua_push_key_at_index(L, middle,                 noad_option_middle);
-    lua_push_key_at_index(L, right,                  noad_option_right);
-    lua_push_key_at_index(L, adapttoleftsize,        noad_option_adapt_to_left_size);
-    lua_push_key_at_index(L, adapttorightsize,       noad_option_adapt_to_right_size);
-    lua_push_key_at_index(L, nosubscript,            noad_option_no_sub_script);
-    lua_push_key_at_index(L, nosuperscript,          noad_option_no_super_script);
-    lua_push_key_at_index(L, nosubprescript,         noad_option_no_sub_pre_script);
-    lua_push_key_at_index(L, nosuperprescript,       noad_option_no_super_pre_script);
-    lua_push_key_at_index(L, noscript,               noad_option_no_script);
-    lua_push_key_at_index(L, nooverflow,             noad_option_no_overflow);
-    lua_push_key_at_index(L, void,                   noad_option_void);
-    lua_push_key_at_index(L, phantom,                noad_option_phantom);
-    lua_push_key_at_index(L, openupheight,           noad_option_openup_height);
-    lua_push_key_at_index(L, openupdepth,            noad_option_openup_depth);
-    lua_push_key_at_index(L, limits,                 noad_option_limits);
-    lua_push_key_at_index(L, nolimits,               noad_option_no_limits);
-    lua_push_key_at_index(L, preferfontthickness,    noad_option_prefer_font_thickness);
-    lua_push_key_at_index(L, noruling,               noad_option_no_ruling);
-    lua_push_key_at_index(L, shiftedsubscript,       noad_option_shifted_sub_script);
-    lua_push_key_at_index(L, shiftedsuperscript,     noad_option_shifted_super_script);
-    lua_push_key_at_index(L, shiftedsubprescript,    noad_option_shifted_sub_pre_script);
-    lua_push_key_at_index(L, shiftedsuperprescript,  noad_option_shifted_super_pre_script);
-    lua_push_key_at_index(L, unpacklist,             noad_option_unpack_list);
-    lua_push_key_at_index(L, nocheck,                noad_option_no_check);
-    lua_push_key_at_index(L, auto,                   noad_option_auto);
-    lua_push_key_at_index(L, unrolllist,             noad_option_unroll_list);
-    lua_push_key_at_index(L, followedbyspace,        noad_option_followed_by_space);
-    lua_push_key_at_index(L, proportional,           noad_option_proportional);
-    lua_push_key_at_index(L, sourceonnucleus,        noad_option_source_on_nucleus);
-    lua_push_key_at_index(L, fixedsuperorsubscript,  noad_option_fixed_super_or_sub_script);
-    lua_push_key_at_index(L, fixedsuperandsubscript, noad_option_fixed_super_and_sub_script);
-    lua_push_key_at_index(L, autobase,               noad_option_auto_base);
-    lua_push_key_at_index(L, shrink,                 noad_option_shrink);
-    lua_push_key_at_index(L, stretch,                noad_option_stretch);
-    lua_push_key_at_index(L, center,                 noad_option_center);
-    lua_push_key_at_index(L, scale,                  noad_option_scale);
-    lua_push_key_at_index(L, keepbase,               noad_option_keep_base);
-    lua_push_key_at_index(L, single,                 noad_option_single);
-    lua_push_key_at_index(L, norule,                 noad_option_no_rule);
-    lua_push_key_at_index(L, automiddle,             noad_option_auto_middle);
- // lua_set_string_by_index(L, noad_option_auto_middle,                "automiddle");
- // lua_set_string_by_index(L, noad_option_keep_base,                  "keepbase");
+    lua_push_key_at_index(L, axis,     noad_option_axis);
+    lua_push_key_at_index(L, exact,    noad_option_exact);
+    lua_push_key_at_index(L, left,     noad_option_left);
+    lua_push_key_at_index(L, middle,   noad_option_middle);
+    lua_push_key_at_index(L, right,    noad_option_right);
+    lua_push_key_at_index(L, void,     noad_option_void);
+    lua_push_key_at_index(L, phantom,  noad_option_phantom);
+    lua_push_key_at_index(L, limits,   noad_option_limits);
+    lua_push_key_at_index(L, auto,     noad_option_auto);
+    lua_push_key_at_index(L, shrink,   noad_option_shrink);
+    lua_push_key_at_index(L, stretch,  noad_option_stretch);
+    lua_push_key_at_index(L, center,   noad_option_center);
+    lua_push_key_at_index(L, scale,    noad_option_scale);
+    lua_push_key_at_index(L, single,   noad_option_single);
+    lua_push_key_at_index(L, norule,   noad_option_no_rule);
+    lua_push_key_at_index(L, keepbase, noad_option_keep_base);
+
+    lua_set_string_by_index(L, noad_option_auto_base,                  "autobase");
+    lua_set_string_by_index(L, noad_option_no_axis,                    "noaxis");
+    lua_set_string_by_index(L, noad_option_no_overflow,                "nooverflow");
+    lua_set_string_by_index(L, noad_option_no_limits,                  "nolimits");
+    lua_set_string_by_index(L, noad_option_no_check,                   "nocheck");
+    lua_set_string_by_index(L, noad_option_adapt_to_left_size,         "adapttoleftsize");
+    lua_set_string_by_index(L, noad_option_adapt_to_right_size,        "adapttorightsize");
+    lua_set_string_by_index(L, noad_option_no_sub_script,              "nosubscript");
+    lua_set_string_by_index(L, noad_option_no_super_script,            "nosuperscript");
+    lua_set_string_by_index(L, noad_option_no_sub_pre_script,          "nosubprescript");
+    lua_set_string_by_index(L, noad_option_no_super_pre_script,        "nosuperprescript");
+    lua_set_string_by_index(L, noad_option_no_script,                  "noscript");
+    lua_set_string_by_index(L, noad_option_openup_height,              "openupheight");
+    lua_set_string_by_index(L, noad_option_openup_depth,               "openupdepth");
+    lua_set_string_by_index(L, noad_option_prefer_font_thickness,      "preferfontthickness");
+    lua_set_string_by_index(L, noad_option_no_ruling,                  "noruling");
+    lua_set_string_by_index(L, noad_option_shifted_sub_script,         "shiftedsubscript");
+    lua_set_string_by_index(L, noad_option_shifted_super_script,       "shiftedsuperscript");
+    lua_set_string_by_index(L, noad_option_shifted_sub_pre_script,     "shiftedsubprescript");
+    lua_set_string_by_index(L, noad_option_shifted_super_pre_script,   "shiftedsuperprescript");
+    lua_set_string_by_index(L, noad_option_unpack_list,                "unpacklist");
+    lua_set_string_by_index(L, noad_option_unroll_list,                "unrolllist");
+    lua_set_string_by_index(L, noad_option_followed_by_space,          "followedbyspace");
+    lua_set_string_by_index(L, noad_option_proportional,               "proportional");
+    lua_set_string_by_index(L, noad_option_source_on_nucleus,          "sourceonnucleus");
+    lua_set_string_by_index(L, noad_option_fixed_super_or_sub_script,  "fixedsuperorsubscript");
+    lua_set_string_by_index(L, noad_option_fixed_super_and_sub_script, "fixedsuperandsubscript");
+    lua_set_string_by_index(L, noad_option_auto_middle,                "automiddle");
     lua_set_string_by_index(L, noad_option_reflected,                  "reflected");
     lua_set_string_by_index(L, noad_option_continuation,               "continuation");
     lua_set_string_by_index(L, noad_option_inherit_class,              "inheritclass");
@@ -5011,6 +5014,7 @@ static int texlib_getnoadoptionvalues(lua_State *L) /* less keywords, just strin
     lua_set_string_by_index(L, noad_option_continuation_kernel,        "continuationkernel");
     lua_set_string_by_index(L, noad_option_reorder_pre_scripts,        "reorderprescripts");
     lua_set_string_by_index(L, noad_option_ignore,                     "ignore");
+    lua_set_string_by_index(L, noad_option_no_more_scripts,            "nomorescripts");
     return 1;
 }
 

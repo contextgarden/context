@@ -135,8 +135,10 @@ enddef ;
 % \enabletrackers[fonts.cff.charstrings]
 % \samplefont[name=gentiumbookplusitalic.ttf,labels=yes] % missing contours
 % \samplefont[name=lmr10.afm,labels=yes]
-\samplefont[name=ibmplexmath.otf]
-% \samplefont[name=sab.afm]
+% \samplefont[name=ibmplexmath.otf]
+\samplefont[name=sab.afm]
+\samplefont[name=creditsuissetyperoman.ttf]
+\samplefont[name=calibri.ttf]
 % \samplefont[name=lmmonoprop10-regular.otf]
 % \samplefont[name=texgyrepagella-regular.otf]
 % \samplefont[name=lmmonoltcond10-regular.otf]

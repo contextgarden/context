@@ -410,8 +410,10 @@ typedef enum arithmic_codes {
 # define last_arithmic_code r_divide_code
 
 typedef enum math_script_codes {
-    math_no_script_code,
-    math_no_ruling_code,
+    /* It's a bit strange to have this here but both inject a control glue. */
+    math_no_script_space_code,
+    math_no_ruling_space_code,   
+    /* */
     math_sub_script_code,
     math_super_script_code,
     math_super_pre_script_code,
@@ -425,9 +427,10 @@ typedef enum math_script_codes {
     math_shifted_sub_pre_script_code,
     math_shifted_super_pre_script_code,
     math_prime_script_code,
+    math_no_script_code,
 } math_script_codes;
 
-# define last_math_script_code math_prime_script_code
+# define last_math_script_code math_no_script_code
 
 typedef enum math_fraction_codes {
     math_above_code,

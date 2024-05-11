@@ -35,7 +35,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
             but for now we are tolerant because internally it's left/right anyway.
 
         */
-        switch (tex_scan_character("awhdxylrtbcfAWHDXYLRTBCF", 0, 1, 0)) {
+        switch (tex_scan_character("awhdxylrtbcfoAWHDXYLRTBCFO", 0, 1, 0)) {
             case 0:
                 goto DONE;
             case 'a': case 'A':
@@ -119,6 +119,25 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                             break;
                         default:
                             tex_aux_show_keyword_error("font|fam");
+                            goto DONE;
+                    }
+                    break;
+                } else { 
+                    goto DONE;
+                }
+            case 'o': case 'O':
+                if (node_subtype(rule) == normal_rule_subtype) { 
+                    switch (tex_scan_character("nfNF", 0, 0, 0)) {
+                        case 'n': case 'N':
+                            rule_line_on(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                            break;
+                        case 'f': case 'F':
+                            if (tex_scan_mandate_keyword("off", 2)) {
+                                rule_line_off(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                            }
+                            break;
+                        default:
+                            tex_aux_show_keyword_error("on|off");
                             goto DONE;
                     }
                     break;
@@ -308,4 +327,29 @@ void tex_set_rule_right(halfword n, halfword value)
         rule_right(n) = value; 
     }
 }
+
+halfword tex_get_rule_on(halfword n)
+{
+    return node_subtype(n) == normal_rule_subtype ? rule_line_on(n) : 0; 
+}
+
+halfword tex_get_rule_off(halfword n)
+{
+    return node_subtype(n) == normal_rule_subtype ? rule_line_on(n) : 0; 
+}
+
+void tex_set_rule_on(halfword n, halfword value)
+{
+    if (node_subtype(n) == normal_rule_subtype) {
+        rule_line_on(n) = value; 
+    }
+}
+
+void tex_set_rule_off(halfword n, halfword value)
+{
+    if (node_subtype(n) == normal_rule_subtype) {
+        rule_line_off(n) = value; 
+    }
+}
+
 

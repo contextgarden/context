@@ -11949,7 +11949,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-http"] = package.loaded["util-soc-imp-http"] or true
 
--- original size: 12772, stripped down to: 9619
+-- original size: 13055, stripped down to: 9818
 
 
 local tostring,tonumber,setmetatable,next,type=tostring,tonumber,setmetatable,next,type
@@ -12001,7 +12001,7 @@ local function receiveheaders(sock,headers)
  while line~="" do
   local name,value=skipsocket(2,find(line,"^(.-):%s*(.*)"))
   if not (name and value) then
-   return nil,"malformed reponse headers"
+   return nil,"malformed response headers"
   end
   name=lower(name)
   line,err=sock:receive("*l")
@@ -12104,9 +12104,13 @@ function methods.sendbody(self,headers,source,step)
 end
 function methods.receivestatusline(self)
  local try=self.try
- local status=try(self.c:receive(5))
+ local status,err=try(self.c:receive(5))
  if status~="HTTP/" then
-  return nil,status 
+  if err=="timeout" then
+   return 408
+  else
+   return nil,status 
+  end
  end
  status=try(self.c:receive("*l",status))
  local code=skipsocket(2,find(status,"HTTP/%d*%.%d* (%d%d%d)"))
@@ -12211,7 +12215,7 @@ local function adjustrequest(originalrequest)
  end
  return request
 end
-local maxredericts=4
+local maxredericts=5
 local validredirects={ [301]=true,[302]=true,[303]=true,[307]=true }
 local validmethods={ [false]=true,GET=true,HEAD=true }
 local function shouldredirect(request,code,headers)
@@ -12230,7 +12234,8 @@ local function shouldredirect(request,code,headers)
  local method=request.method
  local redirect=request.redirect
  local redirects=request.nredirects or 0
- return redirect and validredirects[code] and validmethods[method] and redirects<=maxredericts
+ local maxredirects=request.maxredirects or maxredirects
+ return redirect and validredirects[code] and validmethods[method] and redirects<=maxredirects
 end
 local function shouldreceivebody(request,code)
  if request.method=="HEAD" then
@@ -12253,6 +12258,7 @@ tredirect=function(request,location)
   headers=request.headers,
   proxy=request.proxy,
   nredirects=(request.nredirects or 0)+1,
+  maxredirects=request.maxredirects or maxredirects,
   create=request.create,
  }
  if not headers then
@@ -12277,9 +12283,11 @@ trequest=function(originalrequest)
   connection:receive09body(status,request.sink,request.step)
   connection:close()
   return 1,200
+ elseif code==408 then
+  return 1,code
  end
  while code==100 do
-  headers=connection:receiveheaders()
+  connection:receiveheaders()
   code,status=connection:receivestatusline()
  end
  headers=connection:receiveheaders()
@@ -12332,7 +12340,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-soc-imp-ftp"] = package.loaded["util-soc-imp-ftp"] or true
 
--- original size: 10357, stripped down to: 8548
+-- original size: 10345, stripped down to: 8538
 
 
 local setmetatable,type,next=setmetatable,type,next
@@ -12443,7 +12451,7 @@ function methods.port(self,address,port)
  local tp=self.tp
  self.pasvt=nil
  if not address then
-  address,port=try(tp:getsockname())
+  address=try(tp:getsockname())
   self.server=try(bindsocket(address,0))
   address,port=try(self.server:getsockname())
   try(self.server:settimeout(ftp.TIMEOUT))
@@ -12460,7 +12468,7 @@ function methods.eprt(self,family,address,port)
  local tp=self.tp
  self.pasvt=nil
  if not address then
-  address,port=try(tp:getsockname())
+  address=try(tp:getsockname())
   self.server=try(bindsocket(address,0))
   address,port=try(self.server:getsockname())
   try(self.server:settimeout(ftp.TIMEOUT))
@@ -15544,7 +15552,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-env"] = package.loaded["util-env"] or true
 
--- original size: 9750, stripped down to: 5538
+-- original size: 10014, stripped down to: 5102
 
 if not modules then modules={} end modules ['util-env']={
  version=1.001,
@@ -15559,22 +15567,7 @@ local unquoted,quoted,optionalquoted=string.unquoted,string.quoted,string.option
 local concat,insert,remove=table.concat,table.insert,table.remove
 environment=environment or {}
 local environment=environment
-local setlocale=os.setlocale
-setlocale(nil,nil)
-local report=logs.reporter("system")
-function os.setlocale(a,b)
- if a or b then
-  if report then
-   report()
-   report("You're messing with os.locale in a supposedly locale neutral enviroment. From")
-   report("now on are on your own and without support. Crashes or unexpected side effects")
-   report("can happen but don't bother the luatex and context developer team with it.")
-   report()
-   report=nil
-  end
-  setlocale(a,b)
- end
-end
+os.setlocale(nil,nil) function os.setlocale() end
 local validengines=allocate {
  ["luatex"]=true,
  ["luajittex"]=true,
@@ -16552,7 +16545,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 62425, stripped down to: 36404
+-- original size: 62465, stripped down to: 36432
 
 if not modules then modules={} end modules ['lxml-tab']={
  version=1.001,
@@ -17666,7 +17659,11 @@ local f_attribute=formatters['%s=%q']
 local function verbose_element(e,handlers,escape) 
  local handle=handlers.handle
  local serialize=handlers.serialize
- local ens,etg,eat,edt,ern=e.ns,e.tg,e.at,e.dt,e.rn
+ local ens=e.ns
+ local etg=e.tg
+ local eat=e.at
+ local edt=e.dt
+ local ern=e.rn
  local ats=eat and next(eat) and {}
  if ats then
   local n=0
@@ -22405,7 +22402,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 70775, stripped down to: 44854
+-- original size: 70699, stripped down to: 45019
 
 if not modules then modules={} end modules ['data-res']={
  version=1.001,
@@ -22470,18 +22467,37 @@ local criticalvars={
  "TEXMF",
  "TEXOS",
 }
-if environment.default_texmfcnf then
- resolvers.luacnfspec="home:texmf/web2c;"..environment.default_texmfcnf 
-else
+do
  local texroot=environment.texroot
- resolvers.luacnfspec="home:texmf/web2c;selfautoparent:/texmf-local/web2c;selfautoparent:/texmf-context/web2c;selfautoparent:/texmf/web2c"
- if texroot and isdir(texroot.."/texmf-context") then
+ resolvers.luacnfspec={
+  "home:texmf/web2c",
+  "selfautoparent:/texmf-local/web2c",
+  "selfautoparent:/texmf-context/web2c",
+  "selfautoparent:/texmf/web2c",
+ }
+ if environment.default_texmfcnf then
+  resolvers.luacnfspec={
+   "home:texmf/web2c",
+   environment.default_texmfcnf,
+  }
+ elseif texroot and isdir(texroot.."/texmf-context") then
  elseif texroot and isdir(texroot.."/texmf-dist") then
-  resolvers.luacnfspec="home:texmf/web2c;selfautoparent:/texmf-local/web2c;selfautoparent:/texmf-dist/web2c;selfautoparent:/texmf/web2c"
+  resolvers.luacnfspec={
+   "home:texmf/web2c",
+   "selfautoparent:/texmf-local/web2c",
+   "selfautoparent:",
+   "selfautoparent:/texmf-dist/web2c",
+   "selfautoparent:/texmf/web2c",
+  }
  elseif ostype~="windows" and isdir("/etc/texmf/web2c") then
-  resolvers.luacnfspec="home:texmf/web2c;/etc/texmf/web2c;selfautodir:/share/texmf/web2c"
+  resolvers.luacnfspec={
+   "home:texmf/web2c",
+   "/etc/texmf/web2c",
+   "selfautodir:/share/texmf/web2c",
+  }
  else
  end
+ resolvers.luacnfspec=concat(resolvers.luacnfspec,";")
 end
 local unset_variable="unset"
 local formats=resolvers.formats
@@ -25873,7 +25889,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["luat-sta"] = package.loaded["luat-sta"] or true
 
--- original size: 5703, stripped down to: 2321
+-- original size: 5608, stripped down to: 2321
 
 if not modules then modules={} end modules ['luat-sta']={
  version=1.001,
@@ -26263,8 +26279,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1049869
--- stripped bytes    : 417185
+-- original bytes    : 1050273
+-- stripped bytes    : 417643
 
 -- end library merge
 

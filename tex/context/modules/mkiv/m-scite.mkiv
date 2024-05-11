@@ -58,8 +58,8 @@ buffers.scite = scite
 
 local f_def_color = formatters["\\definecolor[slxc%s][h=%02X%02X%02X]%%"]
 local f_fore_none = formatters["\\unexpanded\\def\\slx%s#1{{\\slxc%s#1}\\slxbreak}%%"]
-local f_fore_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\slxc%s\\bf#1}\\slxbreak}%%"]
-local f_none_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\bf#1}\\slxbreak}%%"]
+local f_fore_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\slxc%s\\slxbold#1}\\slxbreak}%%"]
+local f_none_bold = formatters["\\unexpanded\\def\\slx%s#1{{\\slxbold#1}\\slxbreak}%%"]
 local f_none_none = formatters["\\unexpanded\\def\\slx%s#1{{#1}\\slxbreak}%%"]
 local f_texstyled = formatters["\\slx%s{%s}\\slxbreak"]
 local f_hanging   = formatters["\\slxb{%r}%s\\slxe"] -- we need to round: lua 5.3
@@ -148,7 +148,7 @@ local function exportstyled(lexer,text)
     local result = lexers.lex(lexer,text,0)
     local start = 1
     local whites = exportwhites()
-    local buffer = { }
+    local buffer, b = { }, 0
     for i=1,#result,2 do
         local style = result[i]
         local position = result[i+1]
@@ -157,9 +157,9 @@ local function exportstyled(lexer,text)
         if txt == "" then
             -- skip
         elseif whites[style] then
-            buffer[#buffer+1] = txt
+            b = b + 1 ; buffer[b] = txt
         else
-            buffer[#buffer+1] = f_texstyled(style,txt)
+            b = b + 1 ; buffer[b] = f_texstyled(style,txt)
         end
         start = position
     end
@@ -368,6 +368,8 @@ moduledata.scite = scite
 \let\slxb    \gobbleoneargument
 \let\slxe    \space
 \let\slxbreak\relax
+
+\def\slxbold {\bf} % maybe contraststyle in verbatim
 
 \let\slxL    \letterleftbrace
 \let\slxR    \letterrightbrace

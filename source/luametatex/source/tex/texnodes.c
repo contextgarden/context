@@ -207,6 +207,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_rule, normal_rule_subtype,        normal)
     set_value_entry_key(subtypes_rule, empty_rule_subtype,         empty)
     set_value_entry_key(subtypes_rule, strut_rule_subtype,         strut)
+    set_value_entry_key(subtypes_rule, virtual_rule_subtype,       virtual)
     set_value_entry_key(subtypes_rule, outline_rule_subtype,       outline)
     set_value_entry_key(subtypes_rule, user_rule_subtype,          user)
     set_value_entry_key(subtypes_rule, math_over_rule_subtype,     over)
@@ -215,7 +216,6 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_rule, math_radical_rule_subtype,  radical)
     set_value_entry_key(subtypes_rule, box_rule_subtype,           box)
     set_value_entry_key(subtypes_rule, image_rule_subtype,         image)
-    set_value_entry_key(subtypes_rule, virtual_rule_subtype,       virtual)
 
     subtypes_glyph = lmt_aux_allocate_value_info(glyph_math_accent_subtype);
 

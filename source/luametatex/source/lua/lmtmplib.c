@@ -2005,19 +2005,21 @@ static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, 
 
 static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, int numpoints, int *curled, int *cyclic, mp_knot *first, mp_knot *p, mp_knot *q, mp_knot *f, mp_knot *l)
 {
+    int midcycle = 0;
     for (int i = 1; i <= numpoints; i++) {
         switch (lua_rawgeti(L, index, i)) { 
             case LUA_TTABLE:
                 {
                     double x0, y0;
-                    if (*cyclic) { 
+                    if (midcycle) { 
                         if (*first && i == numpoints) {
+                            *cyclic = 0;
                             goto DONE;
                         } else if (*f && *l) { 
                             (*f)->left_type = mp_explicit_knot;
                             (*l)->right_type = mp_explicit_knot;
                         }
-                        *cyclic = 0; 
+                        midcycle = 0; 
                         *f = NULL;
                         *l = NULL;
                     }
@@ -2064,7 +2066,7 @@ static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, 
                 {
                     const char *s = lua_tostring(L, -1);
                     if (lua_key_eq(s, cycle)) {
-                        *cyclic = 1;
+                        midcycle = 1;
                     } else if (lua_key_eq(s, append)) { 
                         (*f)->right_type = mp_explicit_knot;
                         (*l)->left_type = mp_explicit_knot;
@@ -2078,6 +2080,13 @@ static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, 
       DONE:
         lua_pop(L, 1);
     }
+    if (midcycle) { 
+        *cyclic = 1;
+    }
+    /* 
+        We could handle the cycle here but we need to do it for th ehashed variant anyway so let's
+        stay with the old method and only do mid cycles here. 
+    */
     return NULL;
 }
 

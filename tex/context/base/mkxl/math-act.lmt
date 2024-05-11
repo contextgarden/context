@@ -2859,7 +2859,7 @@ if false then
     if b then
         local llx = b[1] * target.parameters.hfactor
         local urx = b[3] * target.parameters.hfactor
-        width = urx - llx
+        local width = urx - llx
         stretchingdata.width        = width
         stretchingdata.xoffset      = - llx
         stretchingdata.advance      = urx

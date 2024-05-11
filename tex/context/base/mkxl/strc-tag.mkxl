@@ -117,6 +117,7 @@
 \definetagconstant{mfractionstack}
 
 \definetagconstant{munit}
+\definetagconstant{mdigits}
 
 \aliastagconstant{mtablerow} {mtr}
 \aliastagconstant{mtablecell}{mtd}

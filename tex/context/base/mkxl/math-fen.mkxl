@@ -115,7 +115,8 @@
   {\Uvextensible
    \s!axis\space
    \s!exact\space
-   \s!variant \mathvariantslot\fam \numexpr\c_math_fence_nesting+\plusone\relax}
+   \s!variant \mathvariantslot\fam \numexpr\c_math_fence_nesting\relax}
+  %  \s!variant \mathvariantslot\fam \numexpr\c_math_fence_nesting+\plusone\relax}
 
 \def\math_fenced_common_factor_fixed
   {\Uvextensible
@@ -280,11 +281,11 @@
    \orelse\ifempty\p_size
      % nothing
    \orelse\ifcsname\??mathfencesize\p_size\endcsname
-     \s!variant \mathvariantslot\fam \numexpr\lastnamedcs+\plusone\relax
+     \s!variant \mathvariantslot\fam \numexpr\lastnamedcs\relax
    \orelse\ifcstok{\mathfenceparameter\c!alternative}\v!big
-     \s!variant \mathvariantslot\fam \numexpr\p_size+\plusone\relax
+     \s!variant \mathvariantslot\fam \numexpr\p_size\relax
    \orelse\ifcstok{\lastnamedcs}\v!small
-     \s!variant \numexpr\p_size+\plusone\relax
+     \s!variant \numexpr\p_size\relax
    \fi}
 
 \def\math_fenced_left
@@ -632,9 +633,9 @@
 %    %\enforced\aliased\let\bar\letterbar
 % \to \everymathematics
 
-\definemathfence [parenthesis] [\c!left="0028,\c!right="0029]
-\definemathfence [bracket]     [\c!left="005B,\c!right="005D]
-\definemathfence [brace]       [\c!left="007B,\c!right="007D]
+\definemathfence [parenthesis] [\c!left="0028,\c!right="0029,define=yes]% some kind of meaning
+\definemathfence [bracket]     [\c!left="005B,\c!right="005D,define=yes]% some kind of meaning
+\definemathfence [brace]       [\c!left="007B,\c!right="007D,define=yes]% some kind of meaning
 \definemathfence [bar]         [\c!left="007C,\c!right="007C]
 \definemathfence [doublebar]   [\c!left="2016,\c!right="2016]
 \definemathfence [triplebar]   [\c!left="2980,\c!right="2980]
@@ -729,6 +730,7 @@
 \definemathfence [varopeninterval]      [interval] [\c!left="005D,\c!right="005B,define=yes]
 \definemathfence [varleftopeninterval]  [interval] [\c!left="005D,\c!right="005D,define=yes]
 \definemathfence [varrightopeninterval] [interval] [\c!left="005B,\c!right="005B,define=yes]
+\definemathfence [integerinterval]      [interval] [\c!left="27E6,\c!right="27E7,define=yes]
 
 \immutable\protected\def\Linterval   {\math_fenced_fenced_start{interval}}
 \immutable\protected\def\Lointerval  {\math_fenced_fenced_start{openinterval}}
@@ -1299,6 +1301,7 @@
 \definemathfence [integerpart] [bracket]    [define=yes]
 \definemathfence [norm]        [doublebar]  [define=yes]
 \definemathfence [set]         [brace]      [define=yes,middle=`|]
+\definemathfence [sequence]    [parenthesis][define=yes]
 \definemathfence [tuple]       [parenthesis][define=yes]
 
 \protect

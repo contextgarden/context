@@ -503,6 +503,7 @@ function collections.process(head) -- this way we keep feature processing
         if vector then
             local vect = vector[char]
             if vect then
+-- print(char,font,vect)
                 apply(n,char,font,vector,vect)
             end
         end

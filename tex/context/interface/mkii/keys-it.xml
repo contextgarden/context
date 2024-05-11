@@ -176,6 +176,7 @@
 		<cd:variable name='description' value='descrizione'/>
 		<cd:variable name='disable' value='disattiva'/>
 		<cd:variable name='display' value='schermo'/>
+		<cd:variable name='document' value='document'/>
 		<cd:variable name='dot' value='punto'/>
 		<cd:variable name='doublesided' value='doppiafaccia'/>
 		<cd:variable name='down' value='down'/>
@@ -327,6 +328,7 @@
 		<cd:variable name='less' value='less'/>
 		<cd:variable name='lesshyphenation' value='lesshyphenation'/>
 		<cd:variable name='letterspacing' value='letterspacing'/>
+		<cd:variable name='limit' value='limit'/>
 		<cd:variable name='line' value='riga'/>
 		<cd:variable name='linenote' value='linenote'/>
 		<cd:variable name='lines' value='righe'/>
@@ -354,6 +356,7 @@
 		<cd:variable name='mathcases' value='mathcases'/>
 		<cd:variable name='mathematics' value='matematica'/>
 		<cd:variable name='mathmatrix' value='mathmatrix'/>
+		<cd:variable name='mathnote' value='mathnote'/>
 		<cd:variable name='max' value='max'/>
 		<cd:variable name='maxdepth' value='maxdepth'/>
 		<cd:variable name='maxheight' value='maxheight'/>
@@ -523,6 +526,7 @@
 		<cd:variable name='simplelist' value='simplelist'/>
 		<cd:variable name='singlesided' value='facciasingola'/>
 		<cd:variable name='six' value='six'/>
+		<cd:variable name='size' value='dimensione'/>
 		<cd:variable name='slanted' value='inclinato'/>
 		<cd:variable name='slantedbold' value='inclinatograssetto'/>
 		<cd:variable name='small' value='piccolo'/>
@@ -671,6 +675,7 @@
 		<cd:constant name='alignmentleftwidth' value='alignmentleftwidth'/>
 		<cd:constant name='alignmentrightsample' value='alignmentrightsample'/>
 		<cd:constant name='alignmentrightwidth' value='alignmentrightwidth'/>
+		<cd:constant name='alignscripts' value='alignscripts'/>
 		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='allineatitolo'/>
 		<cd:constant name='alternative' value='alternativa'/>
@@ -697,6 +702,7 @@
 		<cd:constant name='autofile' value='autofile'/>
 		<cd:constant name='autofocus' value='autofocus'/>
 		<cd:constant name='autohang' value='autohang'/>
+		<cd:constant name='autointervals' value='autointervals'/>
 		<cd:constant name='autonumbers' value='autonumbers'/>
 		<cd:constant name='autopunctuation' value='autopunctuation'/>
 		<cd:constant name='autospacing' value='autospacing'/>
@@ -952,6 +958,7 @@
 		<cd:constant name='interaction' value='interazione'/>
 		<cd:constant name='interlinespace' value='interlinea'/>
 		<cd:constant name='internalgrid' value='internalgrid'/>
+		<cd:constant name='interscriptfactor' value='interscriptfactor'/>
 		<cd:constant name='italicfeatures' value='italicfeatures'/>
 		<cd:constant name='italicfont' value='italicfont'/>
 		<cd:constant name='itemalign' value='itemalign'/>
@@ -1002,6 +1009,7 @@
 		<cd:constant name='less' value='less'/>
 		<cd:constant name='level' value='livello'/>
 		<cd:constant name='levels' value='livelli'/>
+		<cd:constant name='limit' value='limit'/>
 		<cd:constant name='limitstretch' value='limitstretch'/>
 		<cd:constant name='limittext' value='limittext'/>
 		<cd:constant name='line' value='riga'/>
@@ -1028,6 +1036,7 @@
 		<cd:constant name='mathclass' value='mathclass'/>
 		<cd:constant name='mathdenominatorstyle' value='mathdenominatorstyle'/>
 		<cd:constant name='mathlimits' value='mathlimits'/>
+		<cd:constant name='mathmeaning' value='mathmeaning'/>
 		<cd:constant name='mathnumeratorstyle' value='mathnumeratorstyle'/>
 		<cd:constant name='mathstyle' value='mathstyle'/>
 		<cd:constant name='max' value='max'/>
@@ -1036,6 +1045,7 @@
 		<cd:constant name='maxwidth' value='ampiezzamax'/>
 		<cd:constant name='maybeyear' value='maybeyear'/>
 		<cd:constant name='menu' value='menu'/>
+		<cd:constant name='metadata' value='metadata'/>
 		<cd:constant name='method' value='metodo'/>
 		<cd:constant name='middle' value='centro'/>
 		<cd:constant name='middleclass' value='middleclass'/>

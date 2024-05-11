@@ -17,6 +17,8 @@ local gsub, format, match, find, gmatch = string.gsub, string.format, string.mat
 local setmetatableindex, sortedhash, sequenced = table.setmetatableindex, table.sortedhash, table.sequenced
 local nameonly, basename = file.nameonly, file.basename
 local hextointeger, chrtointeger = string.hextointeger, string.chrtointeger
+local f6 = string.f6
+local concat = table.concat
 
 local pdfe             = lpdf.epdf
 local pdfreference     = lpdf.reference
@@ -149,7 +151,8 @@ function graphics.registerpdffont(...)
 end
 
 local function isdefinedunknown(fontname)
-    local m = remap[cleanfontname(fontname)]
+    local c = cleanfontname(fontname)
+    local m = remap[c]
     local r = m and m.target
     if r then
         report_merge("remapping %a to %a",fontname,r)
@@ -354,6 +357,7 @@ local getstates, getindexstate_composite, getindexstate_simple  do
                 if descriptor then
                     local widths    = descendant.W
                     local tounicode = somefont.ToUnicode
+                    -- todo: when no tounicode, maybe just use the index
                     if widths and tounicode then
                         local fontstate  = states[fontname]
                         local f_widths   = fontstate.widths
@@ -696,8 +700,8 @@ do
 --                 shared = getstate_Type1(pdfdoc,v,true)
 --                 data[k] = shared
 --             end
-            if compactor.embed.truetype or compactor.merge.truetype then
-                shared = getstate_Type1(pdfdoc,v,compactor.merge.truetype)
+            if compactor.embed.type1 or compactor.merge.type1 then
+                shared = getstate_Type1(pdfdoc,v,compactor.merge.type1)
                 data[k] = shared
             end
             if trace_merge then
@@ -746,6 +750,12 @@ do
 
     -- not always ok .. every page can have different font references but let's
     -- assume it for now
+
+    -- ... Tw : what a mess, why not via tounicode ...
+    --
+    -- Word spacing shall be applied to every occurrence of the single-byte character code 32 in a string
+    -- when using a simple font (including Type 3) or a composite font that defines code 32 as a single-byte
+    -- code. It shall not apply to occurrences of the byte value 32 in multiple-byte codes.
 
     plugin = function(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth)
 
@@ -801,6 +811,11 @@ do
             local function process_hex_narrow(s) return (gsub(s,"..",  process_hex_hexified)) end
             local function process_hex_wide  (s) return (gsub(s,"....",process_hex_hexified)) end
 
+            local Tw     = false -- a horrible pdf feature
+            local spaces = { }
+
+            -- if we have Tw then we also have 0x20 as space
+
             for i=1,#contents do
                 local ti = contents[i]
                 local op = ti[#ti]
@@ -818,6 +833,9 @@ do
                         else
                             process_hex = process_hex_wide
                         end
+if not spaces[f] then
+    spaces[f] = process_hex_wide("0020")
+end
                     else
                         if d == false then
                             old[f] = true
@@ -849,38 +867,172 @@ do
                             end
                         end
                     end
+                elseif op == "Tw" then
+                    Tw = true
                 elseif xobjects and op == "Do" then
                     -- can be recursive
                     local object = xobjects[ti[1][2]]
-                    if object and not object.__fonts_remapped__ and object.Subtype == "Form" then
+                    if object and object.Subtype == "Form" then
                         local r = object.Resources
                         if r then
-                            local contents = object()
-                            local fonts    = r.Font
-                            local xobjects = r.XObject
-                            contents = parsecontent(contents,true)
-                            if plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth+1) then
-                                contents = contenttostring(contents)
-                                object.__raw__.Length = #contents -- nil
-                                object.__raw__.Filter = nil
-                                getmetatable(object).__call = function() return contents end
-                                object.__fonts_remapped__ = true
-                                status.xobjects = status.xobjects + 1
-                                r.Font = fonts
+                            if not object.__fonts_remapped__  then
+                                local contents = object()
+                                local fonts    = r.Font
+                                local xobjects = r.XObject
+-- print("PROCESSING CONTENT",pagenumber,ti[1][2])
+                                contents = parsecontent(contents,true)
+                                if plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth+1) then
+                                    contents = contenttostring(contents)
+                                    object.__raw__.Length = #contents -- nil
+                                    object.__raw__.Filter = nil
+                                    getmetatable(object).__call = function() return contents end
+                                    object.__fonts_remapped__ = true
+                                    status.xobjects = status.xobjects + 1
+                                    r.Font = fonts
+                                end
+                            else
+-- print("CONTENT ALREADY PROCESSED",pagenumber,ti[1][2])
                             end
                         end
                     end
                 end
             end
 
+            if Tw then -- can be optimized
+                local value
+                local space
+
+                local hexed = setmetatableindex(function(t,k)
+                    local v = { "hex", k }
+                    t[k] = v
+                    return v
+                end)
+
+                local function collapse(cc)
+                    local c = { }
+                    local n = 0
+                    local t = { }
+                    local m = 0
+                    for i=1,#cc do
+                        local ci = cc[i]
+                        if type(ci) == "table" then
+                            m = m + 1 ; t[m] = ci[2]
+                        else
+                            if m > 0 then
+                                n = n + 1 ; c[n] = { "hex", concat(t,"",1,m) }
+                                m = 0
+                            end
+                            n = n + 1 ; c[n] = ci
+                        end
+                    end
+                    if m > 0 then
+                        n = n + 1 ; c[n] = { "hex", concat(t,"",1,m) }
+                    end
+                    return c
+                end
+
+                local scale = 1
+
+                for i=1,#contents do
+                    local ti = contents[i]
+                    local op = ti[#ti]
+                    if op == "Tf" then
+                        scale = tonumber(ti[2]) or 1
+                        f = ti[1][2]
+                        space = spaces[f]
+                    elseif op == "Tj" then
+                        if value and space then
+                            local ci = ti[1]
+                            local tp = ci[1]
+                            if tp == "hex" then
+                                local cc = { }
+                                local nn = 0
+                                local ok = false
+                                local ci2 = ci[2]
+                                for s in gmatch(ci2,"....") do -- todo: narrow
+                                    nn = nn + 1 ; cc[nn] = hexed[s]
+                                    if s == space then
+                                        nn = nn + 1 ; cc[nn]  = f6(value/scale)
+                                        ok = true
+                                    end
+                                end
+                                if ok then
+                                 -- contents[i] = { { "array", cc }, "TJ" }
+-- print("B",contenttostring { contents[i]                         } )
+-- print("A",contenttostring { { { "array", collapse(cc) }, "TJ" } } )
+                                    contents[i] = { { "array", collapse(cc) }, "TJ" }
+                                end
+                            end
+                        end
+                    elseif op == "TJ" then
+                        if value and space then
+                            local c = ti[1][2]
+                            if c then
+                                local cc = { }
+                                local nn = 0
+                                local nm = false
+                                local ok = false
+                                -- combine these loops
+                                for i=1,#c do
+                                    local ci = c[i]
+                                    if type(ci) == "table" then
+                                        local tp = ci[1]
+                                        if tp == "hex" then
+                                            local ci2 = ci[2]
+                                            for s in gmatch(ci2,"....") do -- todo: narrow
+                                                nn = nn + 1 ; cc[nn]  = { "hex", s } -- cache this
+                                                if s == space then
+                                                    nn = nn + 1 ; cc[nn]  = f6(value/scale)
+                                                    nm = true
+                                                    ok = true
+                                                else
+                                                    nm = false
+                                                end
+                                            end
+                                        else
+                                            -- can't happen
+                                            nn = nn + 1 ; cc[nn] = ci
+                                            nm = false
+                                        end
+                                    elseif nm then
+                                     -- print("collapse")
+                                        cc[nn] = f6(tonumber(ci) + tonumber(cc[nn]))
+                                    else
+                                        nn = nn + 1 ; cc[nn] = ci
+                                    end
+                                end
+                                if ok then
+                                 -- ti[1][2] = cc
+                                    ti[1][2] = collapse(cc)
+                                end
+                            end
+                        end
+                    elseif op == "Tw" then
+                        value = ti[1] * -1000
+                        if value == 0 then
+                            value = false
+                        end
+                        contents[i] = { } -- constant
+--                     elseif op == "BT" or op == "ET" then
+--                         value = false
+                    end
+                end
+
+
+            end
+
             local state = trace_merge and { } or false
 
             if fonts then
                 for k, v in next, fonts.__raw__ do -- we need the raw values here
---                 for k, v in expanded(fonts) do -- we need the raw values here
-                    if adapted[k] then
-                        -- already done
-                    elseif new[k] then
+             -- for k, v in expanded(fonts) do -- we need the raw values here
+
+-- -- goes wrong on nested objects
+--                     if adapted[k] then
+--                         -- already done
+--                     else
+
+                    if new[k] then
                         local o = lpdf.getfontobjectnumber(new[k])
                         fonts.__raw__[k] = { pdfe.objectcodes.lpdf, pdfreference(o) }
                         adapted[k] = true
@@ -930,10 +1082,12 @@ do
         if fonts or xobjects then
             local contents = getpagecontent(pdfdoc,pagenumber,true,true)
 --             if plugin ...
+-- print("before",contenttostring(contents))
             plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,{},1)
             resources.Font = fonts -- really needed
             if contents then
                 page.Contents = contenttostring(contents)
+-- inspect("after",page.Contents)
             end
             status.pages = status.pages + 1
             status.files[pdfdoc.filename] = (status.files[pdfdoc.filename] or 0) + 1

@@ -1379,8 +1379,8 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "realign",                        alignment_cmd,          re_align_code,                                   0);
         tex_primitive(tex_command,    "span",                           alignment_cmd,          span_code,                                       0);
                                                                                                                                                  
-        tex_primitive(luatex_command, "noatomruling",                   math_script_cmd,        math_no_ruling_code,                             0);
-        tex_primitive(tex_command,    "nonscript",                      math_script_cmd,        math_no_script_code,                             0);
+        tex_primitive(luatex_command, "noatomruling",                   math_script_cmd,        math_no_ruling_space_code,                       0);
+        tex_primitive(tex_command,    "nonscript",                      math_script_cmd,        math_no_script_space_code,                       0);
         tex_primitive(luatex_command, "nosubprescript",                 math_script_cmd,        math_no_sub_pre_script_code,                     0);
         tex_primitive(luatex_command, "nosubscript",                    math_script_cmd,        math_no_sub_script_code,                         0);
         tex_primitive(luatex_command, "nosuperprescript",               math_script_cmd,        math_no_super_pre_script_code,                   0);
@@ -1394,6 +1394,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "subscript",                      math_script_cmd,        math_sub_script_code,                            0);
         tex_primitive(luatex_command, "superprescript",                 math_script_cmd,        math_super_pre_script_code,                      0);
         tex_primitive(luatex_command, "superscript",                    math_script_cmd,        math_super_script_code,                          0);
+        tex_primitive(luatex_command, "noscript",                       math_script_cmd,        math_no_script_code,                             0);
 
         tex_primitive(luatex_command, "copymathatomrule",               math_parameter_cmd,     math_parameter_copy_atom_rule,                   0);
         tex_primitive(luatex_command, "copymathparent",                 math_parameter_cmd,     math_parameter_copy_parent,                      0);

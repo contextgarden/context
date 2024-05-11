@@ -832,6 +832,9 @@ end
 
 local permitted = true
 local enabled   = false
+local shipout   = true
+
+directives.register("structures.tags.shipout",function(v) shipout = v end)
 
 function codeinjections.settaggingsupport(option)
     if option == false then
@@ -853,7 +856,9 @@ end
 function codeinjections.enabletags()
     if permitted and not enabled then
         structures.tags.handler = nodeinjections.addtags
-        enableaction("shipouts","structures.tags.handler")
+        if shipout then
+            enableaction("shipouts","structures.tags.handler")
+        end
      -- enableaction("shipouts","nodes.handlers.accessibility")
         enableaction("math","noads.handlers.tags")
         --

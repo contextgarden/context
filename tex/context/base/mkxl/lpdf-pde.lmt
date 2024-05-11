@@ -652,7 +652,7 @@ end
 
 -- for k, v in expanded(t) do
 
-local function expanded(t)
+local function expanded(t) -- maybe also a sorted variant
     local function iterator(raw,k)
         local k, v = next(raw,k)
         if v then

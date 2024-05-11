@@ -1,0 +1,1512 @@
+if not modules then modules = { } end modules ['math-txt'] = {
+    version   = 1.001,
+    comment   = "companion to math-ini.mkxl",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+    dataonly  = true,
+}
+
+return {
+
+ -- Structure related strings:
+
+ ["and"]={
+  ["en"]="and",
+  ["sv"]="och",
+  ["nl"]="en",
+ },
+ ["and over"]={
+  ["en"]="and over",
+  ["sv"]="och över",
+  ["nl"]="en boven",
+ },
+ ["and upper limit"]={
+  ["en"]="and upper limit",
+  ["sv"]="och övre gräns",
+  ["nl"]="boven limiet",
+ },
+ ["applied to"]={
+  ["en"]="applied to",
+  ["sv"]="tillämpad på",
+  ["nl"]="toegepast op",
+ },
+ ["cubed"]={
+  ["en"]="cubed",
+  ["sv"]="i kubik",
+  ["nl"]="derde macht",
+ },
+ ["end derivative"]={
+  ["en"]="end derivative",
+  ["sv"]="slut derivatan",
+  ["nl"]="eind afgeleide",
+ },
+ ["indexed"]={
+  ["en"]="indexed",
+  ["sv"]="med index",
+  ["nl"]="met index",
+ },
+ ["of"]={
+  ["en"]="of",
+  ["sv"]="av",
+  ["nl"]="van",
+ },
+ ["over"]={
+  ["en"]="over",
+  ["sv"]="över",
+  ["nl"]="over",
+ },
+ ["begin group"]={
+  ["en"]="group",
+  ["sv"]="grupp",
+  ["nl"]="groep",
+ },
+ ["begin"]={
+  ["en"]="begin", -- was begin
+  ["sv"]="start", -- was påbörja
+  ["nl"]="begin",
+ },
+ ["optional begin"]={
+  ["en"]="", -- was begin
+  ["sv"]="", -- was påbörja
+  ["nl"]="",
+ },
+--  ["end fenced"]={
+--   ["en"]="end fenced",
+--   ["sv"]="stop GRUPP",
+--  },
+ ["end group"]={
+  ["en"]="end group",
+  ["sv"]="slut grupp",
+  ["nl"]="einde groep",
+ },
+ ["pause"]={
+  ["en"]=",", --"TAKE A DEEP BREATH",
+  ["sv"]=",", --"pausa",
+  ["nl"]=",", --"pauze",
+ },
+ ["comma"]={
+  ["en"]="comma",
+  ["sv"]="komma",
+  ["nl"]="comma",
+ },
+ ["postscripts"]={
+  ["en"]="postscripts",
+  ["sv"]="postskript",
+  ["en"]="postscripts",
+ },
+ ["prescripts"]={
+  ["en"]="prescripts",
+  ["sv"]="preskript",
+  ["nl"]="prescripts",
+ },
+ ["end scripts"]={
+  ["en"]="end scripts",
+  ["sv"]="slut skript",
+  ["nl"]="einde scripts",
+ },
+ ["squared"]={
+  ["en"]="squared",
+  ["sv"]="i kvadrat",
+  ["nl"]="kwadraad",
+ },
+ ["sub"]={
+  ["en"]="sub",
+  ["sv"]="nedsänkt",
+  ["nl"]="sub",
+ },
+ ["super"]={
+  ["en"]="super",
+  ["sv"]="upphöjd",
+  ["nl"]="super",
+ },
+ ["presub"]={
+  ["en"]="sub",
+  ["sv"]="nedsänkt",
+  ["nl"]="sub",
+ },
+ ["presuper"]={
+  ["en"]="super",
+  ["sv"]="upphöjd",
+  ["nl"]="super",
+ },
+ ["postsub"]={
+  ["en"]="sub",
+  ["sv"]="nedsänkt",
+  ["nl"]="sub",
+ },
+ ["postsuper"]={
+  ["en"]="super",
+  ["sv"]="upphöjd",
+  ["nl"]="super",
+ },
+ ["the derivative"]={
+  ["en"]="the derivative",
+  ["sv"]="derivatan",
+  ["nl"]="de afgeleide",
+ },
+ ["the fraction of"]={
+  ["en"]="the fraction of",
+  ["sv"]="kvoten av",
+  ["nl"]="de breuk van",
+ },
+ ["the partial derivative"]={
+  ["en"]="the partial derivative",
+  ["sv"]="den partiella derivatan",
+  ["nl"]="de partiele afgeleide",
+ },
+ ["the root with degree"]={
+  ["en"]="the root with degree",
+  ["sv"]="roten ur med grad",
+  ["nl"]="de wortel met de graad",
+ },
+ ["the square root"]={
+  ["en"]="the square root",
+  ["sv"]="kvadratroten",
+  ["nl"]="de vierkantswortel",
+ },
+ ["to the power of"]={
+  ["en"]="to the power of",
+  ["sv"]="upphöjt till",
+  ["nl"]="tot de macht",
+ },
+ ["under"]={
+  ["en"]="under",
+  ["sv"]="under",
+  ["nl"]="onder",
+ },
+ ["with lower limit"]={
+  ["en"]="with lower limit",
+  ["sv"]="med undre gräns",
+  ["nl"]="met onder limiet",
+ },
+ ["with upper limit"]={
+  ["en"]="with upper limit",
+  ["sv"]="med övre gräns",
+  ["nl"]="met boven limiet",
+ },
+ ["functionof"]={
+  ["en"]="of",
+  ["sv"]="av",
+  ["nl"]="van",
+ },
+ ["primeof"]={
+  ["en"]="of",
+  ["sv"]="av",
+  ["nl"]="van",
+ },
+ ["rootof"]={
+  ["en"]="of",
+  ["sv"]="av",
+  ["nl"]="van",
+ },
+
+ ["binom"]={
+  ["en"]="begin the binomial coefficient",
+  ["sv"]="start binomialkoefficienten",
+  ["nl"]="begin binominaal coefficient",
+ },
+ ["end binom"]={
+  ["en"]="end",
+  ["sv"]="slut",
+  ["nl"]="einde",
+ },
+
+ -- Verbose function names:
+
+ ["Pr"]={
+  ["en"]="probability",
+  ["sv"]="sannolikhet",
+  ["nl"]="waarschijnlijkheid",
+ },
+ ["adj"]={
+  ["en"]="the adjugate",
+  ["sv"]="adjungerade",
+  ["nl"]="TODO",
+ },
+ ["coker"]={
+  ["en"]="the cokernel",
+  ["sv"]="kokärnan",
+  ["nl"]="TODO",
+ },
+ ["deg"]={
+  ["en"]="the degree",
+  ["sv"]="graden",
+  ["nl"]="graad",
+ },
+ ["det"]={
+  ["en"]="the determinant",
+  ["sv"]="determinanten",
+  ["nl"]="de determinand",
+ },
+ ["diff"]={
+  ["en"]="d",
+  ["sv"]="d",
+  ["nl"]="d",
+ },
+ ["dim"]={
+  ["en"]="the dimension",
+  ["sv"]="dimensionen",
+  ["nl"]="de dimensie",
+ },
+ ["div"]={
+  ["en"]="the divergence",
+  ["sv"]="divergensen",
+  ["nl"]="TODO",
+ },
+ ["gcd"]={
+  ["en"]="the greatest common divisor",
+  ["sv"]="den största gemensamma delaren",
+  ["nl"]="de grootste gemene deler",
+ },
+ ["inf"]={
+  ["en"]="the infimum",
+  ["sv"]="infimumet",
+  ["nl"]="TODO",
+ },
+ ["inv"]={
+  ["en"]="the inverse",
+  ["sv"]="inversen",
+  ["nl"]="TODO",
+ },
+ ["ker"]={
+  ["en"]="the kernel",
+  ["sv"]="nollrummet",
+  ["nl"]="TODO",
+ },
+ ["lg"]={
+  ["en"]="the logarithm",
+  ["sv"]="logaritmen",
+  ["nl"]="de logaritme",
+ },
+ ["lim"]={
+  ["en"]="the limit",
+  ["sv"]="gränsvärdet",
+  ["nl"]="de limiet",
+ },
+ ["ln"]={
+  ["en"]="the natural logarithm",
+  ["sv"]="den naturliga logaritmen",
+  ["nl"]="de natuurlijke logaritme",
+ },
+ ["log"]={
+  ["en"]="the logarithm",
+  ["sv"]="logaritmen",
+  ["nl"]="de logaritme",
+ },
+ ["max"]={
+  ["en"]="the maximum",
+  ["sv"]="maximumet",
+  ["nl"]="maximum",
+ },
+ ["min"]={
+  ["en"]="the minimum",
+  ["sv"]="minimumet",
+  ["nl"]="minumum",
+ },
+ ["mod"]={
+  ["en"]="modulo",
+  ["sv"]="TODO",
+  ["en"]="modulo",
+ },
+ ["sup"]={
+  ["en"]="the supremum",
+  ["sv"]="supremumet",
+  ["nl"]="TODO",
+ },
+
+ -- Accent function:
+
+ ["closure"]={
+  ["en"]="the closure of",
+  ["sv"]="det slutna höljet av",
+  ["nl"]="TODO",
+ },
+ ["conjugate"]={
+  ["en"]="the conjugate of",
+  ["sv"]="konjugatet av",
+  ["nl"]="TODO",
+ },
+
+-- Function
+
+ ["function"]={
+  ["en"]="the function",
+  ["sv"]="funktionen",
+  ["nl"]="de functie",
+ },
+ ["arg"]={
+  ["en"]="the argument",
+  ["sv"]="argumentet",
+  ["nl"]="het argument",
+ },
+
+ ["crossproduct"]={
+  ["en"]="crossproduct",
+  ["sv"]="kryssprodukt",
+  ["nl"]="kruisprodukt",
+ },
+ ["gradient"]={
+  ["en"]="the gradient",
+  ["sv"]="gradienten",
+  ["nl"]="de gradient",
+ },
+ ["nabla"]={
+  ["en"]="the nabla",
+  ["sv"]="nablan",
+  ["nl"]="nabla",
+ },
+ ["neg"]={
+  ["en"]="NEGation",
+  ["sv"]="negationen",
+  ["nl"]="TODO",
+ },
+
+ ["laplace"]={
+  ["en"]="laplace",
+  ["sv"]="laplace",
+  ["nl"]="laplace",
+ },
+
+ ["scalarproduct"]={
+  ["en"]="scalarproduct",
+  ["sv"]="skalärprodukt",
+  ["nl"]="scalair produkt",
+ },
+
+ ["vectorproduct"]={
+  ["en"]="vectorproduct",
+  ["sv"]="vektorprodukt",
+  ["nl"]="vector produkt",
+ },
+
+-- Operators
+
+ ["integralsub"]={
+  ["en"]="over",
+  ["sv"]="över",
+  ["nl"]="over",
+ },
+
+ ["limitsub"]={
+  ["en"]="as",
+  ["sv"]="då",
+  ["nl"]="TODO",
+ },
+
+ ["operatorof"]={
+  ["en"]="of",
+  ["sv"]="av",
+  ["nl"]="van",
+ },
+ ["subindex"]={
+  ["en"]="with lower index",
+  ["sv"]="med undre index",
+  ["nl"]="met onder index",
+ },
+ ["supindex"]={
+  ["en"]="with upper index",
+  ["sv"]="med övre index",
+  ["nl"]="met boven index",
+ },
+
+ ["operatorsup"]={
+  ["en"]="with upper limit",
+  ["sv"]="med övre gräns",
+  ["nl"]="met boven limiet",
+ },
+
+ ["operatorsubsupfrom"]={
+  ["en"]="from",
+  ["sv"]="från",
+  ["nl"]="van",
+ },
+
+ ["operatorsubsupto"]={
+  ["en"]="to",
+  ["sv"]="till",
+  ["nl"]="tot",
+ },
+ -- Verbose unicode characters:
+
+ ["Q.E.D."]={
+  ["en"]="Q.E.D.",
+  ["sv"]="V.S.B.",
+  ["nl"]="Q.E.D.",
+ },
+ ["and"]={
+  ["en"]="and",
+  ["sv"]="och",
+  ["nl"]="en",
+ },
+ ["and so on"]={
+  ["en"]=", and so on,",
+  ["sv"]=", och så vidare,",
+  ["nl"]=", enzovoort,",
+ },
+ ["anticlockwise contour integral"]={
+  ["en"]="anticlockwise contour integral",
+  ["sv"]="moturs orienterad kurvintegral",
+  ["nl"]="tegen de klok in oppervlakte integraal",
+ },
+ ["approximately equals"]={
+  ["en"]="approximately equals",
+  ["sv"]="är ungefär lika med",
+  ["nl"]="is ongeveer gelijk aan",
+ },
+ ["approximately equals, or equals"]={
+  ["en"]="approximately equals, or equals",
+  ["sv"]="är ungefär lika med, eller lika med",
+  ["nl"]="is ongeveer gelijk aan of gelijk aan",
+ },
+ ["approximately identical to"]={
+  ["en"]="approximately identical to",
+  ["sv"]="är ungefär lika med",
+  ["nl"]="is ongeveer gelijk aan",
+ },
+ ["are all equal to"]={
+  ["en"]="are all equal to",
+  ["sv"]="är alla lika med",
+  ["nl"]="zijn allemaal gelijk aan",
+ },
+ ["asymptotically equals"]={
+  ["en"]="asymptotically equals",
+  ["sv"]="är asymptotiskt lika med",
+  ["nl"]="is asymptotisch gelijk aan",
+ },
+ ["because"]={
+  ["en"]="because",
+  ["sv"]="eftersom",
+  ["nl"]="omdat",
+ },
+ ["fenced"]={
+  ["en"]="fenced",
+  ["sv"]="grupp",
+  ["nl"]="begrensd",
+ },
+ ["belongs to"]={
+  ["en"]="belongs to",
+  ["sv"]="tillhör",
+  ["nl"]="behoort tot",
+ },
+ ["clockwise contour integral"]={
+  ["en"]="clockwise contour integral",
+  ["sv"]="medurs orienterad kurvintegral",
+  ["nl"]="oppervlakte integraal",
+ },
+ ["clockwise integral"]={
+  ["en"]="clockwise integral",
+  ["sv"]="medurs integral",
+  ["nl"]="integraal",
+ },
+ ["composed with"]={
+  ["en"]="composed with",
+  ["sv"]="sammansatt med",
+  ["nl"]="samengesteld met",
+ },
+ ["contains"]={
+  ["en"]="contains",
+  ["sv"]="innehåller",
+  ["nl"]="bevat",
+ },
+ ["contour integral"]={
+  ["en"]="contour integral",
+  ["sv"]="kurvintegral",
+  ["nl"]="oppervlakte integraal",
+ },
+ ["convolved with"]={
+  ["en"]="convolved with",
+  ["sv"]="faltad med",
+  ["nl"]="TODO",
+ },
+ ["coproduct"]={
+  ["en"]="coproduct",
+  ["sv"]="koprodukt",
+  ["nl"]="coprodukt",
+ },
+ ["d"]={
+  ["en"]="d",
+  ["sv"]="d",
+  ["nl"]="d",
+ },
+ ["defines"]={
+  ["en"]="defines",
+  ["sv"]="definierar",
+  ["nl"]="definieert",
+ },
+ ["diamond operator"]={
+  ["en"]="diamond operator",
+  ["sv"]="diamantoperator",
+  ["nl"]="TODO",
+ },
+ ["differential operator D"]={
+  ["en"]="D",
+  ["sv"]="D",
+  ["nl"]="D",
+ },
+ ["direct sum"]={
+  ["en"]="direct sum",
+  ["sv"]="direkt summa",
+  ["nl"]="direkte som",
+ },
+ ["divided by"]={
+  ["en"]="divided by",
+  ["sv"]="delad med",
+  ["nl"]="gedeeld door",
+ },
+ ["divides"]={
+  ["en"]="divides",
+  ["sv"]="delar",
+  ["nl"]="verdeelt",
+ },
+ ["does not belong to"]={
+  ["en"]="does not belong to",
+  ["sv"]="tillhör ej",
+  ["nl"]="hoort niet bij",
+ },
+ ["does not contain"]={
+  ["en"]="does not contain",
+  ["sv"]="innehåller ej",
+  ["nl"]="bevat geen",
+ },
+ ["does not contain a normal subgroup"]={
+  ["en"]="does not contain the normal subgroup",
+  ["sv"]="innehåller ej den normala delgruppen",
+  ["nl"]="bevat niet de normale subgroep",
+ },
+ ["does not contain a normal subgroup, nor is equal to"]={
+  ["en"]="does not contain the normal subgroup, nor is equal to",
+  ["sv"]="innehåller ej den normala delgruppen, och är inte lika med",
+  ["nl"]="bevat niet de normale subgroep en is ook niet gelijk aan",
+ },
+ ["does not divide"]={
+  ["en"]="does not divide",
+  ["sv"]="delar ej",
+  ["nl"]="verdeelt niet",
+ },
+ ["does not exist"]={
+  ["en"]="does not exist",
+  ["sv"]="existerar ej",
+  ["nl"]="bestaat niet",
+ },
+ ["does not precede"]={
+  ["en"]="does not precede",
+  ["sv"]="föregår ej",
+  ["nl"]="gaat niet vooraf aan",
+ },
+ ["does not precede, nor equals to"]={
+  ["en"]="does not precede, nor equals to",
+  ["sv"]="föregår ej, och är inte lika med",
+  ["nl"]="gaat niet vooraf aan en is ook niet gelijk aan",
+ },
+ ["does not succeed"]={
+  ["en"]="does not succeed",
+  ["sv"]="does not succeed", -- MS: todo
+  ["nl"]="volgt niet op",
+ },
+ ["does not succeed, nor equals to"]={
+  ["en"]="does not succeed, nor equals to",
+  ["sv"]="does not succeed, nor equals to", -- MS: todo
+  ["nl"]="volgt niet op en is ook niet gelijk an",
+ },
+ ["dot plus"]={
+  ["en"]="dot plus",
+  ["sv"]="dot plus",
+  ["nl"]="TODO",
+ },
+ ["dot product"]={
+  ["en"]="dot product",
+  ["sv"]="skalärprodukt",
+  ["nl"]="TODO",
+ },
+ ["double integral"]={
+  ["en"]="double integral",
+  ["sv"]="dubbelintegral",
+  ["nl"]="dubbel integraal",
+ },
+ ["end"]={
+  ["en"]="end",
+  ["sv"]="slut",
+  ["nl"]="eind",
+ },
+ ["empty set"]={
+  ["en"]="empty set",
+  ["sv"]="tomma mängden",
+  ["nl"]="TODO",
+ },
+ ["equals"]={
+  ["en"]="equals",
+  ["sv"]="är lika med",
+  ["nl"]="is gelijk aan",
+ },
+ ["equals, or is greater than"]={
+  ["en"]="equals, or is greater than",
+  ["sv"]="är lika med, eller större än",
+  ["nl"]="is groter of gelijk an",
+ },
+ ["equals, or is less than"]={
+  ["en"]="equals, or is less than",
+  ["sv"]="är lika med, eller mindre än",
+  ["nl"]="kleiner of gelijk aan",
+ },
+ ["equals, or precedes"]={
+  ["en"]="equals, or precedes",
+  ["sv"]="är lika med eller föregår",
+  ["nl"]="is gelijk of gaat vooraf aan",
+ },
+ ["equals, or succeeds"]={
+  ["en"]="equals, or succeeds",
+  ["sv"]="är lika med, eller följer efter",
+  ["nl"]="is gelijk of volgt op",
+ },
+ ["factorial"]={
+  ["en"]="factorial",
+  ["sv"]="fakultet",
+  ["nl"]="TODO",
+ },
+ ["false"]={
+  ["en"]="false",
+  ["sv"]="falskt",
+  ["nl"]="onwaar",
+ },
+ ["for all"]={
+  ["en"]="for all",
+  ["sv"]="för alla",
+  ["nl"]="voor alle",
+ },
+ ["gets"]={
+  ["en"]="gets",
+  ["sv"]="får",
+  ["nl"]="krijgt",
+ },
+ ["greater than, but not equivalent to"]={
+  ["en"]="greater than, but not equivalent to",
+  ["sv"]="större än, men ej ekvivalent med",
+  ["nl"]="groter dan maar niet equivalent aan",
+ },
+ ["if, and only if"]={
+  ["en"]="if, and only if",
+  ["sv"]="om, och endast om",
+  ["nl"]="als, en alleen als",
+ },
+ ["image of"]={
+  ["en"]="image of",
+  ["sv"]="bilden av",
+  ["nl"]="afbeelding van",
+ },
+ ["imaginary i"]={
+  ["en"]="imaginary i",
+  ["sv"]="imaginära i",
+  ["nl"]="imaginaire i",
+ },
+ ["imaginary j"]={
+  ["en"]="imaginary j",
+  ["sv"]="imaginära j",
+  ["nl"]="imaginaire j",
+ },
+ ["implies"]={
+  ["en"]="implies",
+  ["sv"]="medför",
+  ["nl"]="impliceert",
+ },
+ ["infinity"]={
+  ["en"]="infinity",
+  ["sv"]="oändligheten",
+  ["nl"]="oneindig",
+ },
+ ["integral"]={
+  ["en"]="integral",
+  ["sv"]="integral",
+  ["nl"]="integraal",
+ },
+ ["intersection"]={
+  ["en"]="intersection",
+  ["sv"]="snitt",
+  ["nl"]="doorsnede",
+ },
+ ["is a subset of"]={
+  ["en"]="is a subset of",
+  ["sv"]="är en delmängd av",
+  ["nl"]="is onderdeel van",
+ },
+ ["is a subset of, but not equal to"]={
+  ["en"]="is a subset of, but not equal to",
+  ["sv"]="är en delmängd av, men inte lika med",
+  ["nl"]="is onderdeel van maar niet gelijk aan",
+ },
+ ["is a subset of, or equal to"]={
+  ["en"]="is a subset of, or equal to",
+  ["sv"]="är en delmängd av, eller lika med",
+  ["nl"]="is onderdeel van of gelijk aan",
+ },
+ ["is a superset of"]={
+  ["en"]="is a superset of",
+  ["sv"]="omfattar",
+  ["nl"]="TODO",
+ },
+ ["is a superset of, but not equal to"]={
+  ["en"]="is a superset of, but not equal to",
+  ["sv"]="omfattar, och är ej lika med",
+  ["nl"]="TODO",
+ },
+ ["is a superset of, or equal to"]={
+  ["en"]="is a superset of, or equal to",
+  ["sv"]="omfatter, eller är lika med",
+  ["nl"]="TODO",
+ },
+ ["is defined by"]={
+  ["en"]="is defined by",
+  ["sv"]="definieras av",
+  ["nl"]="is gedefinieerd door",
+ },
+ ["is equivalent to"]={
+  ["en"]="is equivalent to",
+  ["sv"]="är ekvivalent med",
+  ["nl"]="is equivalent aan",
+ },
+ ["is greater than"]={
+  ["en"]="is greater than",
+  ["sv"]="är större än",
+  ["nl"]="is groter dan",
+ },
+ ["is greater than, but not equal to"]={
+  ["en"]="is greater than, but not equal to",
+  ["sv"]="är större än, men inte lika med",
+  ["nl"]="is groter dan maar niet gelijk aan",
+ },
+ ["is greater than, equals, or less than"]={
+  ["en"]="is greater than, equals, or less than",
+  ["sv"]="är större än, lika med, eller mindre än",
+  ["nl"]="is groter dan, gelijk aan of minder dan",
+ },
+ ["is greater than, or equal to"]={
+  ["en"]="is greater than, or equal to",
+  ["sv"]="är större än, eller lika med",
+  ["nl"]="is groter dan of gelijk aan",
+ },
+ ["is greater than, or less than"]={
+  ["en"]="is greater than, or less than",
+  ["sv"]="är större än, eller mindre än",
+  ["nl"]="is groter dan of kleiner aan",
+ },
+ ["is greater than, or similar to"]={
+  ["en"]="is greater than, or similar to",
+  ["sv"]="är större än, eller jämförbar med",
+  ["nl"]="is groter dan or vergelijkbaar met",
+ },
+ ["is implied by"]={
+  ["en"]="is implied by",
+  ["sv"]="följer av",
+  ["nl"]="volgt uit",
+ },
+ ["is less than"]={
+  ["en"]="is less than",
+  ["sv"]="är mindre än",
+  ["nl"]="is kleiner dan",
+ },
+ ["is less than, but not equal to"]={
+  ["en"]="is less than, but not equal to",
+  ["sv"]="är mindre än, men inte lika med",
+  ["nl"]="is kleiner dan maar niet gelijk aan",
+ },
+ ["is less than, equals, or greater than"]={
+  ["en"]="is less than, equals, or greater than",
+  ["sv"]="är mindre än, lika med, eller större än",
+  ["nl"]="is kleiner dan, gelijk aan of groter dan",
+ },
+ ["is less than, or equal to"]={
+  ["en"]="is less than, or equal to",
+  ["sv"]="är mindre än, eller lika med",
+  ["nl"]="is kleiner dan of gelijk aan",
+ },
+ ["is less than, or greater than"]={
+  ["en"]="is less than, or greater than",
+  ["sv"]="är mindre än, eller större än",
+  ["nl"]="is kleiner dan of groter dan",
+ },
+ ["is less than, or similar to"]={
+  ["en"]="is less than, or similar to",
+  ["sv"]="är mindre än, eller liknande",
+  ["nl"]="is kleiner dan of vergelijkaar met",
+ },
+ ["is much greater than"]={
+  ["en"]="is much greater than",
+  ["sv"]="är mycket större än",
+  ["nl"]="is veel groter dan",
+ },
+ ["is much less than"]={
+  ["en"]="is much less than",
+  ["sv"]="är mycket mindre än",
+  ["nl"]="is veel kleiner dan",
+ },
+ ["is neither a subset of, nor equal to"]={
+  ["en"]="is neither a subset of, nor equal to",
+  ["sv"]="är varken en delmängd av, eller lika med",
+  ["nl"]="is geen subset van en ook niet gelijk aan",
+ },
+ ["is neither a superset of, nor equal to"]={
+  ["en"]="is neither a superset of, nor equal to",
+  ["sv"]="varken omfattar, eller är jämförbar med",
+  ["nl"]="TODO",
+ },
+ ["is neither approximately, nor equal to"]={
+  ["en"]="is neither approximately, nor equal to",
+  ["sv"]="är varken ungefärligt lika med, eller lika med",
+  ["nl"]="TODO",
+ },
+ ["is neither greater than, nor equal to"]={
+  ["en"]="is neither greater than, nor equal to",
+  ["sv"]="är varken större än, eller lika med",
+  ["nl"]="TODO",
+ },
+ ["is neither greater than, nor less than"]={
+  ["en"]="is neither greater than, nor less than",
+  ["sv"]="är varken större än, eller mindre än",
+  ["nl"]="TODO",
+ },
+ ["is neither greater than, nor similar to"]={
+  ["en"]="is neither greater than, nor similar to",
+  ["sv"]="är varken större än, eller jämförbar med",
+  ["nl"]="TODO",
+ },
+ ["is neither less than, nor equal to"]={
+  ["en"]="is neither less than, nor equal to",
+  ["sv"]="är varken mindre än, eller lika med",
+  ["nl"]="TODO",
+ },
+ ["is neither less than, nor greater than"]={
+  ["en"]="is neither less than, nor greater than",
+  ["sv"]="är varken mindre än, eller större än",
+  ["nl"]="TODO",
+ },
+ ["is neither less than, nor similar to"]={
+  ["en"]="is neither less than, nor similar to",
+  ["sv"]="är varken mindre än, eller jämförbar med",
+  ["nl"]="TODO",
+ },
+ ["is not a normal subgroup of"]={
+  ["en"]="is not a normal subgroup of",
+  ["sv"]="är inte en delgrupp av",
+  ["nl"]="TODO",
+ },
+ ["is not a normal subgroup of, nor equal to"]={
+  ["en"]="is not a normal subgroup of, nor equal to",
+  ["sv"]="är inte en normal delgrupp av, eller lika med",
+  ["nl"]="TODO",
+ },
+ ["is not a subset of"]={
+  ["en"]="is not a subset of",
+  ["sv"]="är inte en delmängd av",
+  ["nl"]="TODO",
+ },
+ ["is not a superset of"]={
+  ["en"]="is not a superset of",
+  ["sv"]="omfattar ej",
+  ["nl"]="TODO",
+ },
+ ["is not approximately equal to"]={
+  ["en"]="is not approximately equal to",
+  ["sv"]="är inte ungefärligt lika med",
+  ["nl"]="TODO",
+ },
+ ["is not asymptotically equal to"]={
+  ["en"]="is not asymptotically equal to",
+  ["sv"]="är inte asymptotiskt lika med",
+  ["nl"]="TODO",
+ },
+ ["is not equal to"]={
+  ["en"]="is not equal to",
+  ["sv"]="är inte lika med",
+  ["nl"]="TODO",
+ },
+ ["is not equivalent to"]={
+  ["en"]="is not equivalent to",
+  ["sv"]="är inte ekvivalent med",
+  ["nl"]="is niet equivalent aan",
+ },
+ ["is not greater than"]={
+  ["en"]="is not greater than",
+  ["sv"]="är inte större än",
+  ["nl"]="is niet groter dan",
+ },
+ ["is not implied by"]={
+  ["en"]="is not implied by",
+  ["sv"]="följer ej av",
+  ["nl"]="TODO",
+ },
+ ["is not less than"]={
+  ["en"]="is not less than",
+  ["sv"]="är inte mindre än",
+  ["nl"]="is niet kleiner dan",
+ },
+ ["is not parallel to"]={
+  ["en"]="is not parallel to",
+  ["sv"]="är inte parallell med",
+  ["nl"]="is niet parallel aan",
+ },
+ ["is parallel to"]={
+  ["en"]="is parallel to",
+  ["sv"]="är parallell med",
+  ["nl"]="is parallel aan",
+ },
+ ["is proportional to"]={
+  ["en"]="is proportional to",
+  ["sv"]="is proportionelig mot",
+  ["nl"]="TODO",
+ },
+ ["is strictly equivalent to"]={
+  ["en"]="is strictly equivalent to",
+  ["sv"]="är strikt ekvivalent med",
+  ["nl"]="is precies equivalent aan",
+ },
+ ["laplacian"]={
+  ["en"]="the laplace operator",
+  ["sv"]="laplaceoperatorn",
+  ["nl"]="TODO",
+ },
+ ["leads to"]={
+  ["en"]="leads to",
+  ["sv"]="leder till",
+  ["nl"]="leidt tot",
+ },
+ ["left semidirect product"]={
+  ["en"]="left semidirect product",
+  ["sv"]="vänster halvdirekt produkt",
+  ["nl"]="TODO",
+ },
+ ["less or equal to"]={
+  ["en"]="less, or equal to",
+  ["sv"]="mindre än, eller lika med",
+  ["nl"]="minder dan of gelijk aan",
+ },
+ ["less than, but not equivalent to"]={
+  ["en"]="less than, but not equivalent to",
+  ["sv"]="mindre än, men inte ekvivalent med",
+  ["nl"]="minder dan maar niet equivalent aan",
+ },
+ ["maps"]={
+  ["en"]="maps",
+  ["sv"]="avbildar",
+  ["nl"]="TODO",
+ },
+ ["maps as"]={
+  ["en"]="is defined so that",
+  ["sv"]="är definierad så att",
+  ["nl"]="TODO",
+ },
+ ["maps down"]={
+  ["en"]="maps down",
+  ["sv"]="avbildas nedåt",
+  ["nl"]="TODO",
+ },
+ ["maps from"]={
+  ["en"]="maps from",
+  ["sv"]="avbildas från",
+  ["nl"]="TODO",
+ },
+ ["maps to"]={
+  ["en"]="maps to",
+  ["sv"]="avbildas på",
+  ["nl"]="TODO",
+ },
+ ["maps up"]={
+  ["en"]="maps up",
+  ["sv"]="avbildas uppåt",
+  ["nl"]="TODO",
+ },
+ ["minus"]={
+  ["en"]="minus",
+  ["sv"]="minus",
+  ["nl"]="min",
+ },
+ ["minus plus"]={
+  ["en"]="minus or plus",
+  ["sv"]="minus eller plus",
+  ["nl"]="min plus",
+ },
+ ["more or equal to"]={
+  ["en"]="more or equal to",
+  ["sv"]="mer eller lika med",
+  ["nl"]="groter of gelijk aan",
+ },
+ ["much more equal to"]={
+  ["en"]="much more equal to",
+  ["sv"]="mycket mer lika med",
+  ["nl"]="veel meer gelijk aan",
+ },
+ ["multiset union"]={
+  ["en"]="multiset union",
+  ["sv"]="multimängdunion",
+  ["nl"]="TODO",
+ },
+ ["not"]={
+  ["en"]="not",
+  ["sv"]="icke",
+  ["nl"]="niet",
+ },
+ ["not and"]={
+  ["en"]="not and",
+  ["sv"]="ej och",
+  ["nl"]="en niet", -- hm
+ },
+ ["original of"]={
+  ["en"]="original of",
+  ["sv"]="original av",
+  ["nl"]="origineel van",
+ },
+ ["partial"]={
+  ["en"]="partial",
+  ["sv"]="partiell",
+  ["nl"]="partieel",
+ },
+ ["partial d"]={
+  ["en"]="partial d",
+  ["sv"]="partiellt d",-- fix
+  ["nl"]="TODO",
+ },
+ ["percent"]={
+  ["en"]="percent",
+  ["sv"]="procent",
+  ["nl"]="procent",
+ },
+ ["plus"]={
+  ["en"]="plus",
+  ["nl"]="plus",
+ },
+ ["plus minus"]={
+  ["en"]="plus or minus",
+  ["sv"]="plus eller minus",
+  ["nl"]="plus minus",
+ },
+ ["precedes"]={
+  ["en"]="precedes",
+  ["sv"]="föregår",
+  ["nl"]="TODO",
+ },
+ ["precedes, or equals"]={
+  ["en"]="precedes, or equals",
+  ["sv"]="föregår, eller är lika med",
+  ["nl"]="TODO",
+ },
+ ["precedes, or is equivalent to"]={
+  ["en"]="precedes, or is equivalent to",
+  ["sv"]="föregår, eller är ekvivalent med",
+  ["nl"]="gaat vooraf aan of is equivalent aan",
+ },
+ ["preceeds, but not equivalent to"]={
+  ["en"]="preceeds, but not equivalent to",
+  ["sv"]="föregår, men är ej ekvivalent med",
+  ["nl"]="gaat vooraf aan maar is niet equivalent aan",
+ },
+ ["prime"]={
+  ["en"]="prime",
+  ["sv"]="prim",
+  ["nl"]="priem",
+ },
+ ["double prime"]={
+  ["en"]="double prime",
+  ["sv"]="bis",
+  ["nl"]="TODO",
+ },
+ ["triple prime"]={
+  ["en"]="triple prime",
+  ["sv"]="trippelprim",
+  ["nl"]="TODO",
+ },
+ ["quadruple prime"]={
+  ["en"]="quadruple prime",
+  ["sv"]="kvadrupelprim",
+  ["nl"]="TODO",
+ },
+ ["derivative"]={
+  ["en"]="the derivative of",
+  ["sv"]="derivatan av",
+  ["nl"]="de afgeleide van",
+ },
+ ["second derivative"]={
+  ["en"]="the second derivative of",
+  ["sv"]="andraderivatan av",
+  ["nl"]="de tweede afgeleide van",
+ },
+ ["third derivative"]={
+  ["en"]="the third derivative of",
+  ["sv"]="tredjederivatan av",
+  ["nl"]="de derde afgeleide van",
+ },
+ ["fourth derivative"]={
+  ["en"]="the fourth derivative of",
+  ["sv"]="fjärdederivatan av",
+  ["nl"]="de vierde afgeleide van",
+ },
+ ["product"]={
+  ["en"]="the product",
+  ["sv"]="produkten",
+  ["nl"]="TODO",
+ },
+ ["quadruple integral of"]={
+  ["en"]="quadruple integral of",
+  ["sv"]="kvadrupelintegral",
+  ["nl"]="TODO",
+ },
+ ["restriction"]={
+  ["en"]="restriction",
+  ["sv"]="restriktion",
+  ["nl"]="TODO",
+ },
+ ["reversed doubleprime"]={
+  ["en"]="the reversed second derivative of",
+  ["sv"]="den omvända biss",
+  ["nl"]="TODO",
+ },
+ ["reversed prime"]={
+  ["en"]="reversed derivative of",
+  ["sv"]="omvänt prim",
+  ["nl"]="TODO",
+ },
+ ["reversed triple prime"]={
+  ["en"]="reversed third derivative of",
+  ["sv"]="omvänt trippelprim",
+  ["nl"]="TODO",
+ },
+ ["right semidirect product"]={
+  ["en"]="right semidirect product",
+  ["sv"]="höger halvdirekt produkt",
+  ["nl"]="TODO",
+ },
+ ["semidirect product"]={
+  ["en"]="semidirect product",
+  ["sv"]="halvdirekt produkt",
+  ["nl"]="TODO",
+ },
+ ["set minus"]={
+  ["en"]="set minus",
+  ["sv"]="mängdminus",
+  ["nl"]="TODO",
+ },
+ ["similar but not equal to"]={
+  ["en"]="similar, but not equal to",
+  ["sv"]="liknande, men inte lika med",
+  ["nl"]="vergelijkbaar maar niet gelijk aan",
+ },
+ ["star operator"]={
+  ["en"]="star operator",
+  ["sv"]="stjärnaoperator",
+  ["nl"]="TODO",
+ },
+ ["succeeds"]={
+  ["en"]="succeeds",
+  ["sv"]="efterföljer",
+  ["nl"]="volgt op",
+ },
+ ["succeeds, but not equivalent to"]={
+  ["en"]="succeeds, but not equivalent to",
+  ["sv"]="efterföljer, men är inte ekvivalent med",
+  ["nl"]="volgt op meer is niet equivalent aan",
+ },
+ ["succeeds, or equals"]={
+  ["en"]="succeeds, or equals",
+  ["sv"]="efterföljer, eller är lika med",
+  ["nl"]="volgt op of is gelijk aan",
+ },
+ ["succeeds, or is equivalent to"]={
+  ["en"]="succeeds, or is equivalent to",
+  ["sv"]="efterföljer, eller är ekvivalent med",
+  ["nl"]="volgt op of is equivalent aan",
+ },
+ ["sum"]={
+  ["en"]="the sum",
+  ["sv"]="summan",
+  ["nl"]="de som",
+ },
+ ["surface integral"]={
+  ["en"]="surface integral",
+  ["sv"]="ytintegral",
+  ["nl"]="oppervlakte integraal",
+ },
+ ["tends to"]={
+  ["en"]="tends to",
+  ["sv"]="går mot",
+  ["nl"]="neigt naar",
+ },
+ ["tends from above to"]={
+  ["en"]="tends from above to",
+  ["sv"]="närmar sig ovanifrån till",
+  ["nl"]="neigt van boven naar",
+ },
+ ["tends from below to"]={
+  ["en"]="tends from below to",
+  ["sv"]="närmar sig underifrån till",
+  ["nl"]="neigt van onder naar",
+ },
+ ["tensor product"]={
+  ["en"]="tensor product",
+  ["sv"]="tensorprodukt",
+  ["nl"]="tensor produkt",
+ },
+ ["the algebraic numbers"]={
+  ["en"]="the algebraic numbers",
+  ["sv"]="de algebraiska talen",
+  ["nl"]="de algebraische getallen", -- hm
+ },
+ ["the complement of"]={
+  ["en"]="the complement of",
+  ["sv"]="komplementet av",
+  ["nl"]="het complement van",
+ },
+ ["the complex numbers"]={
+  ["en"]="the complex numbers",
+  ["sv"]="de komplexa talen",
+  ["nl"]="de complexe getallen",
+ },
+ ["the integers"]={
+  ["en"]="the integers",
+  ["sv"]="heltalen",
+  ["nl"]="de gehele getallen",
+ },
+ ["the natural numbers"]={
+  ["en"]="the natural numbers",
+  ["sv"]="de naturliga talen",
+  ["nl"]="de natuurlijke getallen",
+ },
+ ["the number of"]={
+  ["en"]="the number of",
+  ["sv"]="antalet",
+  ["nl"]="het aantal",
+ },
+ ["the octonions"]={
+  ["en"]="the octonions",
+  ["sv"]="oktonionerna",
+  ["nl"]="TODO",
+ },
+ ["the prime numbers"]={
+  ["en"]="the prime numbers",
+  ["sv"]="primtalen",
+  ["nl"]="de priemgetallen",
+ },
+ ["the quaternions"]={
+  ["en"]="the quaternions",
+  ["sv"]="kvaternionerna",
+  ["nl"]="TODO",
+ },
+ ["the rational numbers"]={
+  ["en"]="the rational numbers",
+  ["sv"]="de rationella talen",
+  ["nl"]="de rationele getallen",
+ },
+ ["the real numbers"]={
+  ["en"]="the real numbers",
+  ["sv"]="de rella talen",
+  ["nl"]="de reele getallen",
+ },
+ ["the sedenions"]={
+  ["en"]="the sedenions",
+  ["sv"]="sedenionerna",
+  ["nl"]="TODO",
+ },
+ ["there exists"]={
+  ["en"]="there exists",
+  ["sv"]="det existerar",
+  ["nl"]="er bestaat",
+ },
+ ["therefore, "]={
+  ["en"]="therefore, ",
+  ["sv"]="därför, ",
+  ["nl"]="derhalve",
+ },
+ ["times"]={
+  ["en"]="TIMES",
+  ["sv"]="multiplicerat med",
+  ["nl"]="maal",
+ },
+ ["to"]={
+  ["en"]="to",
+  ["sv"]="till",
+  ["nl"]="tot",
+ },
+ ["triple integral of"]={
+  ["en"]="triple integral",
+  ["sv"]="trippelintegral",
+  ["nl"]="TODO",
+ },
+ ["true"]={
+  ["en"]="true",
+  ["sv"]="sant",
+  ["nl"]="waar",
+ },
+ ["union"]={
+  ["en"]="union",
+  ["nl"]="TODO",
+ },
+ ["vector gradient"]={
+  ["en"]="vector gradient",
+  ["sv"]="vektorgradient",
+  ["nl"]="TODO",
+ },
+ ["vector partial"]={
+  ["en"]="vector partial",
+  ["sv"]="vektorpartial",
+  ["nl"]="TODO",
+ },
+ ["volume integral"]={
+  ["en"]="volume integral",
+  ["sv"]="volymintegral",
+  ["nl"]="volume integraal",
+ },
+ ["way equal to"]={
+  ["en"]="way equal to",
+  ["sv"]="väldigt mycket lika med",
+  ["nl"]="heel veel gelijk aan",
+ },
+ ["way greater than"]={
+  ["en"]="way greater than",
+  ["sv"]="väldigt mycket större än",
+  ["nl"]="heel veel meer dan",
+ },
+ ["way less than"]={
+  ["en"]="way less than",
+  ["sv"]="väldigt mycket mindre än",
+  ["nl"]="heel veel minder dan",
+ },
+ ["wedge product"]={
+  ["en"]="wedge product",
+  ["sv"]="hakprodukt",
+  ["nl"]="TODO",
+ },
+ ["wedge sum"]={
+  ["en"]="wedge sum",
+  ["sv"]="haksumma",
+  ["nl"]="TODO",
+ },
+ ["xor"]={
+  ["en"]="xor",
+  ["sv"]="xor",
+  ["nl"]="xor",
+ },
+
+ -- Fences:
+ ["abs"]={
+  ["en"]="the absolute value",
+  ["sv"]="absolutbeloppet",
+  ["nl"]="de absolute waarde",
+ },
+ ["begin numerator"]={
+  ["en"]="numerator",
+  ["sv"]="täljare",
+  ["nl"]="teller",
+ },
+ ["begin denominator"]={
+  ["en"]="denominator",
+  ["sv"]="nämnare",
+  ["nl"]="noemer",
+ },
+ ["end numerator"]={
+  ["en"]="end numerator",
+  ["sv"]="avsluta täljare",
+  ["nl"]="einde teller",
+ },
+ ["end denominator"]={
+  ["en"]="end denominator",
+  ["sv"]="avsluta nämnare",
+  ["nl"]="enide noemer",
+ },
+ ["ceiling"]={
+  ["en"]="the ceiling",
+  ["sv"]="takfunktionen",
+  ["nl"]="TODO",
+ },
+ ["closedinterval"]={
+  ["en"]="the closed interval",
+  ["sv"]="det slutna intervallet",
+  ["nl"]="het gesloten interval",
+ },
+ ["floor"]={
+  ["en"]="the floor",
+  ["sv"]="golvfunktionen",
+  ["nl"]="TODO",
+ },
+ ["innerproduct"]={
+  ["en"]="the inner product",
+  ["sv"]="inre produkten",
+  ["nl"]="het inprodukt",
+ },
+ ["integerpart"]={
+  ["en"]="the integer part",
+  ["sv"]="heltalsdelen",
+  ["nl"]="het integer deel",
+ },
+ ["innerproduct:fence"]={
+  ["en"]="and",
+  ["sv"]="och",
+  ["nl"]="en",
+ },
+ ["leftopeninterval"]={
+  ["en"]="the left open interval",
+  ["sv"]="det vänsteröppna intervallet",
+  ["nl"]="het links open interval",
+ },
+ ["varleftopeninterval"]={
+  ["en"]="the left open interval",
+  ["sv"]="det vänsteröppna intervallet",
+  ["nl"]="het links open interval",
+ },
+ ["norm"]={
+  ["en"]="the norm",
+  ["sv"]="normen",
+  ["nl"]="de norm",
+ },
+ ["openinterval"]={
+  ["en"]="the open interval",
+  ["sv"]="det öppna intervallet",
+  ["nl"]="het open interval",
+ },
+ ["varopeninterval"]={
+  ["en"]="the open interval",
+  ["sv"]="det öppna intervallet",
+  ["nl"]="het open interval",
+ },
+ ["parenthesis"]={
+  ["en"]="parenthesis",
+  ["sv"]="parentes",
+  ["nl"]="TODO",
+ },
+ ["set"]={
+  ["en"]="the set",
+  ["sv"]="mängden",
+  ["nl"]="TODO",
+ },
+ ["sequence"]={
+  ["en"]="the sequence",
+  ["sv"]="talföljden",
+  ["nl"]="TODO",
+ },
+ ["tuple"]={
+  ["en"]="the tuple",
+  ["sv"]="tupeln",
+  ["nl"]="TODO",
+ },
+ ["rightopeninterval"]={
+  ["en"]="the right open interval",
+  ["sv"]="det högeröppna intervallet",
+  ["nl"]="het rechts open interval",
+ },
+ ["varrightopeninterval"]={
+  ["en"]="the right open interval",
+  ["sv"]="det högeröppna intervallet",
+  ["nl"]="het rechts open interval",
+ },
+ ["set:fence"]={
+  ["en"]="such that",
+  ["sv"]="sådana att",
+  ["nl"]="zo dat",
+ },
+ ["adjoint"]={
+  ["en"]="the adjoint of",
+  ["sv"]="adjunkten av",
+  ["nl"]="TODO",
+ },
+ ["transpose"]={
+  ["en"]="the transpose of",
+  ["sv"]="transponatet av",
+  ["nl"]="TODO",
+ },
+}

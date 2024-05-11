@@ -823,13 +823,14 @@
 %definesystemattribute[mathitalics]    [public]
 \definesystemattribute[mathkernpairs]  [public]
 \definesystemattribute[mathbidi]       [public]
-%definesystemattribute[mathdomain]     [public]
+\definesystemattribute[mathdomain]     [public]
 \definesystemattribute[mathcollapsing] [public]
 \definesystemattribute[mathunstack]    [public]
 \definesystemattribute[mathvariant]    [public]
 \definesystemattribute[mathnumbers]    [public]
 \definesystemattribute[mathspacing]    [public]
 \definesystemattribute[mathfencing]    [public]
+\definesystemattribute[mathintervals]  [public]
 
 \definesystemattribute[displaymath]    [public]
 
@@ -2273,8 +2274,13 @@
 
 \permanent\protected\def\math_tags_mo#1{\mathatom \s!class \mathoperatorcode        {#1}}
 \permanent\protected\def\math_tags_mi#1{\mathatom \s!class \mathordinarycode        {#1}}
-\permanent\protected\def\math_tags_mn#1{\mathatom \s!class \mathdigitcode           {\math_upright #1}}
+%permanent\protected\def\math_tags_mn#1{\mathatom \s!class \mathdigitcode           {\math_upright #1}}
 \permanent\protected\def\math_tags_ms#1{\mathatom \s!class \mathtextpunctuationcode {\math_upright #1}}
+
+\permanent\protected\def\math_tags_mn#1%
+  {\dostarttagged\t!mdigits\empty
+   \mathatom \s!class \mathdigitcode {\math_upright #1}%
+   \dostoptagged}
 
 \newconditional\c_apply_function
 
@@ -2298,6 +2304,20 @@
      {#1}%
      {}%
    \endgroup}
+
+
+% domain language name meaning
+% language name meaning
+% name meaning
+
+\permanent\protected\def\registermathsymbol[#1]#*[#2]#*[#3]#*[#4]% experimental
+  {\ifparameter#4\or
+     \clf_registerverbosemathlabel{#1}{#2}{#3}{#4}%
+   \orelse\ifparameter#3\or
+     \clf_registerverbosemathlabel{\s!default}{#1}{#2}{#3}%
+   \else
+     \clf_registerverbosemathlabel{\s!default}{\s!en}{#1}{#2}%
+   \fi}
 
 \appendtoks
     \enforced\let\mo   \math_tags_mo
@@ -4259,6 +4279,21 @@
 %     \c_attr_mathdomain\c_math_domain_attribute
 % \to \everymathematics
 
+\newinteger\c_math_domain_attribute
+
+\appendtoks
+    \edef\p_domain{\mathematicsparameter\c!domain}%
+    \ifempty\p_domain
+        \c_math_domain_attribute\attributeunsetvalue
+    \else
+        \c_math_domain_attribute\clf_domainattribute{\p_domain}\relax
+    \fi
+\to \everyswitchmathematics % only in mathematics
+
+\appendtoks
+    \c_attr_mathdomain\c_math_domain_attribute
+\to \everymathematics
+
 %D For special purposes (koeieletters) we set this one:
 
 \installcorenamespace{mathrules}
@@ -4936,6 +4971,20 @@
 \setupmathematics
   [\c!alignscripts=\v!always,
    \c!interscriptfactor=-.5]
+
+%D Needed for spacing, tagging, etc.
+
+\appendtoks
+    \attribute\mathintervalsattribute
+    \ifcstok{\mathematicsparameter\c!autointervals}\v!yes
+      \plusone
+    \else
+      \attributeunsetvalue
+    \fi
+\to \everysetupmathematics
+
+\setupmathematics
+  [\c!autointervals=\v!yes]
 
 %D This is needed for tagging blobs:
 

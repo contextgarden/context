@@ -15,12 +15,14 @@ local concat, insert, remove = table.concat, table.insert, table.remove
 environment         = environment or { }
 local environment   = environment
 
--- locales are a useless feature in and even dangerous for luatex
+-- -- These locales are a useless feature in and even dangerous for luatex, so
+-- -- we just ignore them. We used to warn but I assume no one needs it anyway
+-- -- so let's save some bytes.
 
-local setlocale = os.setlocale
-
-setlocale(nil,nil) -- setlocale("all","C")
-
+-- local setlocale = os.setlocale
+--
+-- setlocale(nil,nil) -- setlocale("all","C")
+--
 -- function os.resetlocale()
 --     setlocale(nil,nil)
 -- end
@@ -53,21 +55,25 @@ setlocale(nil,nil) -- setlocale("all","C")
 --     end
 -- end
 
-local report = logs.reporter("system")
+-- local report = logs.reporter("system")
+--
+-- function os.setlocale(a,b)
+--     if a or b then
+--         if report then
+--             report()
+--             report("You're messing with os.setlocale in a supposedly locale neutral enviroment. From")
+--             report("now on are on your own and without support. Crashes or unexpected side effects")
+--             report("can happen but don't bother the luatex and context developer team with it.")
+--             report()
+--             report = nil
+--         end
+--         setlocale(a,b)
+--     end
+-- end
 
-function os.setlocale(a,b)
-    if a or b then
-        if report then
-            report()
-            report("You're messing with os.locale in a supposedly locale neutral enviroment. From")
-            report("now on are on your own and without support. Crashes or unexpected side effects")
-            report("can happen but don't bother the luatex and context developer team with it.")
-            report()
-            report = nil
-        end
-        setlocale(a,b)
-    end
-end
+-- It's time to get rid of it:
+
+os.setlocale(nil,nil) function os.setlocale() end
 
 -- dirty tricks (we will replace the texlua call by luatex --luaonly)
 

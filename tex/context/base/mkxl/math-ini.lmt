@@ -351,6 +351,14 @@ do
     dictionaries.variants = dictionaries.variants or variants
     dictionaries.defaults = dictionaries.defaults or defaults
 
+    local i_everygroup <const> = 0xFFFF
+    local s_everygroup <const> = "everygroup"
+
+    names [s_everygroup] = i_everygroup
+    names [i_everygroup] = i_everygroup
+    groups[i_everygroup] = s_everygroup
+    data  [i_everygroup] = { }
+
     if not sets.n then
         sets.n = 0
     end
@@ -360,7 +368,7 @@ do
         if not group then
             group = #groups + 1
             names[name]   = group
-            names[group]  = group
+            names[group]  = group -- hm
             groups[group] = name
             data[group]   = { }
             local csname  = "math" .. nospaces(name) .. "dictionary"
@@ -369,14 +377,12 @@ do
         return group
     end
 
-    local everygroup = 0xFFFF
-
     function dictionaries.registergroupset(name,set)
         local s = sets[name]
         if not s then
             if set == "every" then
                 s = {
-                    group = everygroup,
+                    group = i_everygroup,
                 }
                 sets[name] = s
             else
@@ -408,8 +414,8 @@ do
     end
 
     function dictionaries.groupsetgroup(name)
-        if name == "every" then
-            return everygroup
+        if name == "every" or name == s_everygroup then
+            return i_everygroup
         else
             local s = sets[name]
             if s then
@@ -443,8 +449,9 @@ do
 --         print(group,index,description,class,name)
     end
 
-    function dictionaries.name(group,index) -- assumes numbers
-        if group == everygroup then
+    function dictionaries.name(group,index) -- number, number
+        group = names[group] or i_everygroup
+        if group == i_everygroup then
             for i=1,#groups do
                 local d = data[i]
                 local n = d[index]
@@ -560,6 +567,7 @@ do
         registergroup("constant arithmetic")
         registergroup("constant set")
         registergroup("differential")
+        registergroup("differential2")
         registergroup("factorial")
         registergroup("interval")
         registergroup("quantifier")

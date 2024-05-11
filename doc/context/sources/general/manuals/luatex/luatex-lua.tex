@@ -68,41 +68,44 @@ similar fashion as the other \TEX\ engines. Some options are accepted but have n
 consequence. The following command|-|line options are understood:
 
 \starttabulate[|l|p|]
-\DB commandline argument                    \BC explanation \NC \NR
+\DB commandline argument                \BC explanation \NC \NR
 \TB
-\NC \type{--credits}                        \NC display credits and exit \NC \NR
-\NC \type{--debug-format}                   \NC enable format debugging \NC \NR
-\NC \type{--draftmode}                      \NC switch on draft mode i.e.\ generate no output in \PDF\ mode \NC \NR
-\NC \type{--[no-]file-line-error}           \NC disable/enable \type {file:line:error} style messages \NC \NR
-\NC \type{--[no-]file-line-error-style}     \NC aliases of \type {--[no-]file-line-error} \NC \NR
-\NC \type{--fmt=FORMAT}                     \NC load the format file \type {FORMAT} \NC\NR
-\NC \type{--halt-on-error}                  \NC stop processing at the first error\NC \NR
-\NC \type{--help}                           \NC display help and exit \NC\NR
-\NC \type{--ini}                            \NC be \type {iniluatex}, for dumping formats \NC\NR
-\NC \type{--interaction=STRING}             \NC set interaction mode: \type {batchmode}, \type {nonstopmode},
-                                                \type {scrollmode} or \type {errorstopmode} \NC \NR
-\NC \type{--jobname=STRING}                 \NC set the job name to \type {STRING} \NC \NR
-\NC \type{--kpathsea-debug=NUMBER}          \NC set path searching debugging flags according to the bits of
-                                               \type {NUMBER} \NC \NR
-\NC \type{--lua=FILE}                       \NC load and execute a \LUA\ initialization script \NC\NR
-\NC \type{--[no-]mktex=FMT}                 \NC disable/enable \type {mktexFMT} generation with \type {FMT} is
-                                                \type {tex} or \type {tfm} \NC \NR
-\NC \type{--nosocket} or \type{--no-socket} \NC disable the \LUA\ socket library \NC\NR
-\NC \type{--socket}                         \NC enable the \LUA\ socket library \NC\NR
-\NC \type{--output-comment=STRING}          \NC use \type {STRING} for \DVI\ file comment instead of date (no
-                                                effect for \PDF) \NC \NR
-\NC \type{--output-directory=DIR}           \NC use \type {DIR} as the directory to write files to \NC \NR
-\NC \type{--output-format=FORMAT}           \NC use \type {FORMAT} for job output; \type {FORMAT} is \type {dvi}
-                                                or \type {pdf} \NC \NR
-\NC \type{--progname=STRING}                \NC set the program name to \type {STRING} \NC \NR
-\NC \type{--recorder}                       \NC enable filename recorder \NC \NR
-\NC \type{--safer}                          \NC disable easily exploitable \LUA\ commands \NC\NR
-\NC \type{--[no-]shell-escape}              \NC disable/enable system calls \NC \NR
-\NC \type{--shell-restricted}               \NC restrict system calls to a list of commands given in \type
-                                                {texmf.cnf} \NC \NR
-\NC \type{--synctex=NUMBER}                 \NC enable \type {synctex} \NC \NR
-\NC \type{--utc}                            \NC use utc times when applicable \NC \NR
-\NC \type{--version}                        \NC display version and exit \NC \NR
+\NC \type{--credits}                    \NC display credits and exit \NC \NR
+\NC \type{--debug-format}               \NC enable format debugging \NC \NR
+\NC \type{--draftmode}                  \NC switch on draft mode i.e.\ generate no output in \PDF\ mode \NC \NR
+\NC \type{--[no-]check-dvi-total-pages} \NC exit when DVI exceeds 65535 pages (default: check) \NC \NR
+\NC \type{--[no-]file-line-error}       \NC disable/enable \type {file:line:error} style messages \NC \NR
+\NC \type{--[no-]file-line-error-style} \NC aliases of \type {--[no-]file-line-error} \NC \NR
+\NC \type{--fmt=FORMAT}                 \NC load the format file \type {FORMAT} \NC\NR
+\NC \type{--halt-on-error}              \NC stop processing at the first error\NC \NR
+\NC \type{--help}                       \NC display help and exit \NC\NR
+\NC \type{--ini}                        \NC be \type {iniluatex}, for dumping formats \NC\NR
+\NC \type{--interaction=STRING}         \NC set interaction mode: \type {batchmode}, \type {nonstopmode},
+                                            \type {scrollmode} or \type {errorstopmode} \NC \NR
+\NC \type{--jobname=STRING}             \NC set the job name to \type {STRING} \NC \NR
+\NC \type{--kpathsea-debug=NUMBER}      \NC set path searching debugging flags according to the bits of
+                                           \type {NUMBER} \NC \NR
+\NC \type{--lua=FILE}                   \NC load and execute a \LUA\ initialization script \NC\NR
+\NC \type{--luadebug}                   \NC enable the \type{debug} library\NC\NR
+\NC \type{--[no-]mktex=FMT}             \NC disable/enable \type {mktexFMT} generation with \type {FMT} is
+                                            \type {tex} or \type {tfm} \NC \NR
+\NC \type{--nosocket}                   \NC disable the \LUA\ socket library \NC\NR
+\NC \type{--no-socket}                  \NC disable the \LUA\ socket library \NC\NR
+\NC \type{--socket}                     \NC enable the \LUA\ socket library \NC\NR
+\NC \type{--output-comment=STRING}      \NC use \type {STRING} for \DVI\ file comment instead of date (no
+                                            effect for \PDF) \NC \NR
+\NC \type{--output-directory=DIR}       \NC use \type {DIR} as the directory to write files to \NC \NR
+\NC \type{--output-format=FORMAT}       \NC use \type {FORMAT} for job output; \type {FORMAT} is \type {dvi}
+                                            or \type {pdf} \NC \NR
+\NC \type{--progname=STRING}            \NC set the program name to \type {STRING} \NC \NR
+\NC \type{--recorder}                   \NC enable filename recorder \NC \NR
+\NC \type{--safer}                      \NC disable easily exploitable \LUA\ commands \NC\NR
+\NC \type{--[no-]shell-escape}          \NC disable/enable system calls \NC \NR
+\NC \type{--shell-restricted}           \NC restrict system calls to a list of commands given in \type
+                                            {texmf.cnf} \NC \NR
+\NC \type{--synctex=NUMBER}             \NC enable \type {synctex} \NC \NR
+\NC \type{--utc}                        \NC use utc times when applicable \NC \NR
+\NC \type{--version}                    \NC display version and exit \NC \NR
 \LL
 \stoptabulate
 
@@ -135,6 +138,10 @@ The file names for output files that are generated automatically are created by
 attaching the proper extension (\type {log}, \type {pdf}, etc.) to the found
 \prm {jobname}. These files are created in the directory pointed to by \type
 {--output-directory}, or in the current directory, if that switch is not present.
+If \type{--output-directory} is not empty, its value it's copied to the
+\type{TEXMF_OUTPUT_DIRECTORY} env. variable; if it's empty, the value of
+\type{TEXMF_OUTPUT_DIRECTORY} is the value of the output directory.
+
 
 Without the \type {--lua} option, command line processing works like it does in
 any other \WEBC|-|based typesetting engine, except that \LUATEX\ has a few extra
@@ -147,10 +154,11 @@ in the following order:
 
 \startitem
     First, it will parse the command line as usual, but it will only interpret a
-    small subset of the options immediately: \type {--safer}, \type {--nosocket}
-    (\type {--no-socket}), \type {--socket}, \type {--[no-]shell-escape}, \type
-    {--enable-write18}, \type {--disable-write18}, \type {--shell-restricted},
-    \type {--help}, \type {--version}, and \type {--credits}.
+    small subset of the options immediately: \type {--safer}, \type {--nosocket},
+    \type {--no-socket},
+    \type {--socket}, \type {--[no-]shell-escape}, \type {--enable-write18}, \type
+    {--disable-write18}, \type {--shell-restricted}, \type {--help}, \type
+    {--version}, and \type {--credits}.
 \stopitem
 
 \startitem
@@ -162,8 +170,8 @@ in the following order:
 
 \startitem
     Then it checks the various safety switches. You can use those to disable some
-    \LUA\ commands that can easily be abused by a malicious document. At the
-    moment, \type {--safer} \type {nil}s the following functions:
+    \LUA\ commands that can easily be abused by a malicious document. Currently
+    \type {--safer} nils the following functions:
 
     \blank
 
@@ -174,8 +182,8 @@ in the following order:
                             \type {spawn} \type {setenv}
                             \type {rename} \type {remove} \type {tmpdir} \NC \NR
         \NC \type {io}  \NC \type {popen} \type {output} \type {tmpfile} \NC \NR
-        \NC \type {lfs} \NC \type {rmdir} \type {mkdir} \type {chdir} \type {lock}
-                            \type {touch} \NC \NR
+        \NC \type {lfs} \NC \type {rmdir} \type {mkdir} \type {mkdirp} \type {chdir}
+                            \type {lock}  \type {touch} \NC \NR
         \LL
     \stoptabulate
 
@@ -186,11 +194,27 @@ in the following order:
 
     Finally, it disables the \type {socket} library unconditionally (but not the
     \type {mime} library which is always available).
+
+    From version 1.18.0  and if  \KPATHSEA\ is used, with the exception of \type{debug.traceback}
+    the \type{debug} library is not enabled by default; it can be enabled with the \type
+    {--luadebug} switch. The \type{debug} library is always enabled in shell-escape mode.
+
+   Also from version 1.18.0 and if  \KPATHSEA\ is used, the functions
+   \type{os.rename},\type{os.remove}, \type{lfs.attributes}, \type{lfs.chdir},
+   \type{lfs.lock_dir}, \type{lfs.dir}, \type{lfs.link}, \type{lfs.mkdir}, \type{lfs.mkdirp},
+   \type{lfs.rmdir}, \type{lfs.symlinkattributes}, \type{lfs.touch}
+   return \type{true} if both \type{kpse.in_name_ok_silent_extended} and
+   \type{kpse.out_name_ok_silent_extended} validate the pathname;
+   \type{lfs.attributes}, \type{lfs.dir} and  \type{lfs.symlinkattributes} are validated
+   only against \type{kpse.in_name_ok_silent_extended}.
+
+
+
 \stopitem
 
 \startitem
     When \LUATEX\ starts it sets the \type {locale} to a neutral value. If for
-    some reason you use \type {os.locale}, you need to make sure you \type {nil}
+    some reason you use \type {os.setlocale}, you need to make sure you \type {nil}
     it afterwards because otherwise it can interfere with code that for instance
     generates dates. You can ignore the \type {locale} with:
 
@@ -198,19 +222,19 @@ in the following order:
     os.setlocale(nil,nil)
     \stoptyping
 
-    The \type {--nosocket} (\type {--no-socket}) option makes the socket library
-    unavailable, so that \LUA\ cannot use networking; the \type {--socket} option
+    The \type {--nosocket} or \type {--no-socket} option makes the socket library
+    unavailable, so that \LUA\ cannot use networking. The \type {--socket} option
     makes the socket library available.
 
-    The switches \type {--[no-]shell-escape}, \type {--[enable|disable]-write18},
-    and \type {--shell-restricted} have the same effects as in \PDFTEX, and
-    additionally make \type {io.popen()}, \type {os.execute}, \type {os.exec},
-    \type {os.kpsepopen} and \type {os.spawn} adhere to the requested option.
+    The switches \type {--[no-]shell-escape}, \type {--[enable|disable]-write18}, and
+    \type {--shell-restricted} have the same effects as in \PDFTEX, and additionally
+    make \type {io.popen()}, \type {os.execute}, \type {os.exec}, \type {os.kpsepopen}
+    and \type {os.spawn} adhere to the requested option.
 
-    By default the socket library is not enabled: one can enable it with with
-    \type {--socket} or with \type {--shell-escape} (but without \type
-    {--shell-restricted}) and disable it with \type {--nosocket} (\type
-    {--no-socket}) or unconditionally with \type {--safer}.
+    By default the socket library is not enabled: one can enable it with with \type
+    {--socket} or with \type {--shell-escape}  (but without  \type {--shell-restricted})
+    and disable it with \type {--nosocket} (or \type {--no-socket}) or unconditionally
+    with \type {--safer}.
 
     In case of conflictual options, the most restrictive wins.
 
@@ -259,6 +283,12 @@ finished: in order to initialize the built|-|in \KPATHSEA\ library properly,
 \LUATEX\ needs to know the correct program name to use, and for that it needs to
 check \type {--progname}, or \type {--ini} and \type {--fmt}, if \type
 {--progname} is missing.
+
+From version 1.17.1, in \DVI\ mode the new commandline switch \type {--check-dvi-total-pages},
+enabled by default, checks  that the total number of pages does not exceeds 65535,
+and in case the run abort. This breaks the compatibility with \PDFTEX\ where, as in \TEX,
+when the total number of pages is greater than 65535 the file will lie. The previous behaviour
+can be restored with \type {--[no-]check-dvi-total-pages}.
 
 \stopsubsection
 
@@ -353,11 +383,12 @@ instance, when we started with \LUATEX\ we added some helpers to the \type
 {lfs.isdir} and \type {lfs.isfile} were speedy and better variants of what could
 be done with \type {lfs.attributes}. The additional function \type
 {lfs.shortname} takes a file name and returns its short name on \type {win32}
-platforms. Finally, for non|-|\type {win32} platforms only, we provided \type
-{lfs.readlink} that takes an existing symbolic link as argument and returns its
-name. However, the \type {lfs} library evolved so we have dropped these in favour of
-pure \LUA\ variants. The \type {shortname} helper is obsolete and now just
-returns the name.
+platforms; \type{lfs.mkdirp} is like \type{lfs.mkdir} but make parent directories
+as needed (it is a \LUA\ wrapper function). Finally, for non|-|\type {win32}
+platforms only, we provided \type {lfs.readlink} that takes an existing symbolic
+link as argument and returns its name. However, the \type {lfs} library evolved so
+we have dropped these in favour of pure \LUA\ variants. The \type {shortname}
+helper is obsolete and now just returns the name.
 
 \stopsubsection
 
