@@ -1941,12 +1941,15 @@ do
 
     local reported = setmetatableindex("table")
 
+    -- We could move primes to its own handler but we need to run this one anyway
+    -- so for now we keep it here.
+
     mathlists[39] = { [39] = { [39] = { enforced = 0x2034, [39] = { enforced = 0x2057 } }, enforced = 0x2033 }, enforced = 0x2032 }
     mathlists[96] = { [96] = { [96] = { enforced = 0x2037                               }, enforced = 0x2036 }, enforced = 0x2035 }
 
     collapse[mathchar_code] = function(pointer,what,n,parent)
         if parent and mathlists[getchar(pointer)] then
-            local found, last, lucleus, lsup, lsub, category
+            local found, last, lucleus, lsup, lsub, lprime, category
             local tree    = mathlists
             local current = parent
             while current and validpair[getsubtype(current)] do
@@ -1977,9 +1980,10 @@ do
                                 lucleus  = nucleus
                                 lsup     = sup
                                 lsub     = sub
+                                lprime   = prime
                             end
                             tree = match
-                            if sub or sup then
+                            if sub or sup or prime then
                                 break
                             else
                                 current = getnext(current)
@@ -2017,6 +2021,10 @@ do
                     setsup(parent,lsup)
                     setsup(last)
                 end
+                if lprime then
+                    setprime(parent,lprime)
+                    setprime(last)
+                end
                 while c ~= l do
                     local n = getnext(c)
                     flushnode(c)
@@ -2046,79 +2054,6 @@ do
     }
 
 end
-
-do
-
-    local fixscripts = { }
-
-    local primes = {
-        -- primes
-        [0x2032] = true,
-        [0x2033] = true,
-        [0x2034] = true,
-        [0x2057] = true,
-        -- reverse primes
-        [0x2035] = true,
-        [0x2036] = true,
-        [0x2037] = true,
-    }
-
-    local fixable = {
-        [noad_code]     = true,
-        [accent_code]   = true,
-        [radical_code]  = true,
-        [fraction_code] = true,
-    }
-
-    -- [prime|sub|sup]first
-
-    fixscripts[mathchar_code] = function(pointer,what,n,parent,nested) -- todo: switch to turn it on and off
-        if parent then
-            local char = getchar(pointer)
-            if char and primes[char] then
-                local nuc = getnucleus(parent)
-                if pointer == nuc then
-                    local prev = getprev(parent)
-                    if prev and fixable[getid(prev)] then
-                        local prevsup  = getsup(prev)
-                        local prevsub  = getsub(prev)
-                        local primesup = getsup(parent)
-                        local primesub = getsub(parent)
-                        setfield(prev,"scriptorder",prevsub and 2 or 1) -- sub first, then prime
-                        if primesup and not prevsup then
-                            setsup(prev,primesup)
-                            primesup = nil
-                        end
-                        if primesub and not prevsub then
-                            setsub(prev,primesub)
-                            primesub = nil
-                        end
-                        setprime(prev,nuc)
-                        setnucleus(parent)
-                        if not primesup then
-                            setsup(parent)
-                        end
-                        if not primesub then
-                            setsub(parent)
-                        end
-                        if not (primesup or primesub) then
-                            setlink(prev,getnext(parent))
-                            flushnode(parent)
-                            return true, prev, prev
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    function noads.handlers.fixscripts(head,style,penalties)
-        processnoads(head,fixscripts,"fixscripts")
-    end
-
-end
-
--- variants (upgraded for script too)
 
 do
 

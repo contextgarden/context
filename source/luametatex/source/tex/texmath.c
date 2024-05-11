@@ -1033,11 +1033,11 @@ void tex_unsave_math_data(int level)
 void tex_dump_math_data(dumpstream f)
 {
     if (! lmt_math_state.fam_head) {
-        lmt_math_state.fam_head = sa_new_tree(MATHFONTSTACK, 4, (sa_tree_item) { .int_value = MATHFONTDEFAULT });
+        lmt_math_state.fam_head = sa_new_tree(mathfont_sparse_identifier, MATHFONTSTACK, 4, (sa_tree_item) { .int_value = MATHFONTDEFAULT });
     }
     sa_dump_tree(f, lmt_math_state.fam_head);
     if (! lmt_math_state.par_head) {
-        lmt_math_state.par_head = sa_new_tree(MATHPARAMSTACK, 8, (sa_tree_item) { .int_value = MATHPARAMDEFAULT });
+        lmt_math_state.par_head = sa_new_tree(mathparam_sparse_identifier, MATHPARAMSTACK, 8, (sa_tree_item) { .int_value = MATHPARAMDEFAULT });
     }
     sa_dump_tree(f, lmt_math_state.par_head);
 }
@@ -1051,10 +1051,10 @@ void tex_undump_math_data(dumpstream f)
 void tex_initialize_math(void)
 {
     if (! lmt_math_state.fam_head) {
-        lmt_math_state.fam_head = sa_new_tree(MATHFONTSTACK, 4, (sa_tree_item) { .int_value = MATHFONTDEFAULT });
+        lmt_math_state.fam_head = sa_new_tree(mathfont_sparse_identifier, MATHFONTSTACK, 4, (sa_tree_item) { .int_value = MATHFONTDEFAULT });
     }
     if (! lmt_math_state.par_head) {
-        lmt_math_state.par_head = sa_new_tree(MATHPARAMSTACK, 8, (sa_tree_item) { .int_value = MATHPARAMDEFAULT });
+        lmt_math_state.par_head = sa_new_tree(mathparam_sparse_identifier, MATHPARAMSTACK, 8, (sa_tree_item) { .int_value = MATHPARAMDEFAULT });
         tex_initialize_math_spacing();
     }
     return;
@@ -1531,16 +1531,27 @@ static void tex_aux_new_save_level_math(quarterword group)
 
 static void tex_aux_push_math(quarterword group, int style)
 {
+    halfword main_style = cur_list.math_main_style;
+    halfword parent_style = cur_list.math_style;
     if (math_direction_par != text_direction_par) {
         cur_list.math_dir = 1;
     }
     cur_list.math_begin = math_begin_class_par;
     cur_list.math_end = math_end_class_par;
-    cur_list.math_main_style = style;
+    if (main_style == -1) { 
+        cur_list.math_main_style = style;
+        main_style = style;
+    }
+    if (parent_style == -1) { 
+        cur_list.math_parent_style = main_style;
+        parent_style = main_style;
+    }
     tex_push_nest();
     cur_list.mode = inline_mmode;
     cur_list.incomplete_noad = null;
     cur_list.math_style = style;
+    cur_list.math_main_style = main_style;
+    cur_list.math_parent_style = parent_style;
     cur_list.math_scale = internal_math_scale_par;
     tex_aux_new_save_level_math(group);
     update_tex_math_left_class(unset_noad_class);
@@ -2314,6 +2325,41 @@ static void tex_aux_append_math_fence_val(mathcodeval mval, mathdictval dval, qu
     tex_aux_append_math_fence(fence, mathclass);
 }
 
+
+halfword tex_new_math_continuation_atom(halfword node)
+{
+    if (! node) {
+        /*tex We create a continuation atom. */
+        halfword list = tex_new_node(sub_mlist_node, 0);
+        node = tex_new_node(simple_noad, ordinary_noad_subtype);
+        noad_nucleus(node) = list;
+    } else if (! tex_math_scripts_allowed(node)) { 
+        return node; 
+    } 
+    if (math_double_script_mode_par >= 0) { 
+        /* todo: a flag that we keep classes */
+        int options = (math_double_script_mode_par >> 24) & 0xFF;
+        node_subtype(node) = (math_double_script_mode_par >> 16) & 0xFF;
+        noad_class_left(node) = (math_double_script_mode_par >> 8) & 0xFF;
+        noad_class_right(node) = (math_double_script_mode_par >> 0) & 0xFF;
+        if (options & inherit_class_double_atom_option) {
+            noad_options(node) |= noad_option_inherit_class; 
+        }
+        if (options & discard_shape_kern_double_atom_option) {
+            noad_options(node) |= noad_option_discard_shape_kern; 
+        }
+    }
+    noad_options(node) |= noad_option_continuation;
+    return node; 
+}
+
+static halfword tex_math_double_atom(void)
+{
+    halfword tail = tex_new_math_continuation_atom(null); /*tex We make a new one. */
+    tex_tail_append(tail);
+    return tail; 
+}
+
 static void tex_aux_append_math_char(mathcodeval mval, mathdictval dval, int automatic)
 {
     if (tex_aux_scan_active_math_char(&mval, 2)) { 
@@ -2332,15 +2378,55 @@ static void tex_aux_append_math_char(mathcodeval mval, mathdictval dval, int aut
             }
         } 
         {
-            halfword p = tex_new_node(simple_noad, ordinary_noad_subtype);
             halfword q = tex_new_node(math_char_node, 0);
-            noad_nucleus(p) = q;
-            if (glyph_options_par & glyph_option_no_italic_correction) {
-                math_kernel_node_set_option(q, math_kernel_no_italic_correction);
+            halfword tail = cur_list.tail;
+            if (mval.class_value == prime_noad_subtype && tex_math_scripts_allowed(tail)) {
+                tex_aux_set_math_char(q, &mval, &dval);
+                if (noad_prime(tail)) {
+                    switch (node_type(noad_prime(tail))) { 
+                        case math_char_node:
+                            {
+                                halfword n = tex_new_node(sub_mlist_node, 0);
+                                halfword a = tex_new_node(simple_noad, ordinary_noad_subtype);
+                                halfword b = tex_new_node(simple_noad, ordinary_noad_subtype);
+                                noad_nucleus(a) = noad_prime(tail);
+                                noad_nucleus(b) = q;
+                                tex_couple_nodes(a, b);
+                                kernel_math_list(n) = a;
+                                noad_prime(tail) = n;
+                                break;
+                            }
+                        case sub_mlist_node:
+                            {
+                                halfword n = tex_new_node(simple_noad, ordinary_noad_subtype);
+                                noad_nucleus(n) = q;
+                                tex_couple_nodes(tex_tail_of_node_list(kernel_math_list(noad_prime(tail))),n);
+                                break;
+                            }
+                        default:
+                            {
+                                /* todo: message that we discard */
+                                tex_flush_node_list(noad_prime(tail));
+                                noad_prime(tail) = q;
+                                break;
+                            }
+                    }
+                } else { 
+                    noad_prime(tail) = q;
+                    if (! noad_script_order(tail)) {
+                        noad_script_order(tail) = script_primescript_first;
+                    }
+                }
+            } else {
+                halfword p = tex_new_node(simple_noad, ordinary_noad_subtype);
+                noad_nucleus(p) = q;
+                if (glyph_options_par & glyph_option_no_italic_correction) {
+                    math_kernel_node_set_option(q, math_kernel_no_italic_correction);
+                }
+                node_subtype(p) = tex_aux_set_math_char(q, &mval, &dval);
+                tex_math_set_scripts_options(p);
+                tex_tail_append(p);
             }
-            node_subtype(p) = tex_aux_set_math_char(q, &mval, &dval);
-            tex_math_set_scripts_options(p);
-            tex_tail_append(p);
         }
     }
 }
@@ -2638,12 +2724,24 @@ static void tex_aux_math_math_component(halfword target, int append)
                             }
                             break;
                         case 'c': case 'C':
-                            if (tex_scan_mandate_keyword("class", 1)) {
-                                subtype = (quarterword) tex_scan_math_class_number(0);
-                                if (! valid_math_class_code(subtype)) {
-                                    subtype = ordinary_noad_subtype;
-                                }
-                                set_noad_main_class(target, subtype);
+                            switch (tex_scan_character("loLO", 0, 0, 0)) {
+                                case 'l': case 'L':
+                                    if (tex_scan_mandate_keyword("class", 2)) {
+                                        subtype = (quarterword) tex_scan_math_class_number(0);
+                                        if (! valid_math_class_code(subtype)) {
+                                            subtype = ordinary_noad_subtype;
+                                        }
+                                        set_noad_main_class(target, subtype);
+                                    }
+                                    break;
+                                case 'o': case 'O':
+                                    if (tex_scan_mandate_keyword("continuation", 2)) {
+                                        noad_options(target) |= noad_option_continuation;
+                                    }
+                                    break;
+                                default:
+                                    tex_aux_show_keyword_error("class|continuation");
+                                    goto DONE;
                             }
                             break;
                         case 'u': case 'U':
@@ -3514,7 +3612,20 @@ void tex_run_math_accent(void)
 
 void tex_run_math_choice(void) {
     switch (cur_chr) {
+        case math_choice_code:
+            /*tex |\mathchoice| */
+            {
+                halfword n = tex_new_node(choice_node, normal_choice_subtype);
+                tex_tail_append(n);
+                saved_choice_initialize();
+                saved_choice_count = math_display_choice;
+                lmt_save_state.save_stack_data.ptr += saved_choice_n_of_records;
+                tex_aux_push_math(math_choice_group, display_style);
+                tex_scan_left_brace();
+                break;
+            }
         case math_discretionary_code:
+            /*tex |\mathdiscretionary| */
             {
                 halfword n = tex_new_node(choice_node, discretionary_choice_subtype);
                 choice_class(n) = unset_noad_class;
@@ -3537,18 +3648,6 @@ void tex_run_math_choice(void) {
                 saved_choice_count = math_pre_break_choice;
                 lmt_save_state.save_stack_data.ptr += saved_choice_n_of_records;
                 tex_aux_push_math(math_choice_group, cur_list.math_style);
-                tex_scan_left_brace();
-                break;
-            }
-        case math_choice_code:
-            /*tex |\mathchoice| */
-            {
-                halfword n = tex_new_node(choice_node, normal_choice_subtype);
-                tex_tail_append(n);
-                saved_choice_initialize();
-                saved_choice_count = math_display_choice;
-                lmt_save_state.save_stack_data.ptr += saved_choice_n_of_records;
-                tex_aux_push_math(math_choice_group, display_style);
                 tex_scan_left_brace();
                 break;
             }
@@ -3580,6 +3679,11 @@ int tex_current_math_style(void)
 int tex_current_math_main_style(void)
 {
     return is_m_mode(cur_list.mode) ? cur_list.math_main_style : -1;
+}
+
+int tex_current_math_parent_style(void)
+{
+    return is_m_mode(cur_list.mode) ? cur_list.math_parent_style : -1;
 }
 
 void tex_finish_math_choice(void)
@@ -3700,22 +3804,6 @@ void tex_finish_math_operator(void)
 
 */
 
-# define scripts_allowed(A) ((node_type((A)) >= simple_noad) && (node_type((A)) < fence_noad))
-
-static halfword tex_math_double_atom(void)
-{
-    halfword tail = tex_new_node(simple_noad, ordinary_noad_subtype);
-    halfword list = tex_new_node(sub_mlist_node, 0);
-    tex_tail_append(tail);
-    if (math_double_script_mode_par >= 0) { 
-        node_subtype(tail) = (math_double_script_mode_par >> 16) & 0xFF;
-        noad_class_left(tail) = (math_double_script_mode_par >> 8) & 0xFF;
-        noad_class_right(tail) = (math_double_script_mode_par >> 0) & 0xFF;
-    }
-    noad_nucleus(tail) = list;
-    return tail; 
-}
-
 void tex_run_math_script(void)
 {
     int code = cur_chr;
@@ -3784,11 +3872,12 @@ void tex_run_math_script(void)
             }
             break;
     }
-    if (tail == cur_list.head || (! scripts_allowed(tail))) {
-        halfword n = tex_new_node(sub_mlist_node, 0);
-        tail = tex_new_node(simple_noad, ordinary_noad_subtype);
-        tex_tail_append(tail);
-        noad_nucleus(tail) = n;
+    if (tail == cur_list.head || (! tex_math_scripts_allowed(tail))) {
+        tail = tex_math_double_atom();
+     // halfword n = tex_new_node(sub_mlist_node, 0);
+     // tail = tex_new_node(simple_noad, ordinary_noad_subtype);
+     // tex_tail_append(tail);
+     // noad_nucleus(tail) = n;
     }
     switch (code) {
         case math_sub_script_code:
@@ -5137,11 +5226,11 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
 
 */
 
-/* make propper mappers (see 5967 in texmlist) */
+/* make proper mappers (see 5967 in texmlist) */
 
 inline static int tex_aux_class_from_glyph(halfword n) 
 {
-    return node_subtype(n) - (node_subtype(n) > glyph_math_extra_subtype  ? glyph_math_extra_subtype : glyph_math_ordinary_subtype);
+    return node_subtype(n) - (node_subtype(n) > glyph_math_extra_subtype ? glyph_math_extra_subtype : glyph_math_ordinary_subtype);
 }
 
 inline static int tex_aux_class_from_list(halfword n) 
@@ -5215,6 +5304,7 @@ static int tex_aux_short_math(halfword m)
                     switch (node_subtype(m)) { 
                         case math_sup_list:        /* in hlist */
                         case math_sub_list:        /* in hlist */ 
+                        case math_prime_list:      /* in hlist */ 
                         case math_pre_post_list:   /* in vlist */
                         case math_scripts_list:    /* in vlist */
                            m = node_next(m);

@@ -4951,7 +4951,7 @@ static int texlib_getpenaltyoptionvalues(lua_State *L)
 
 static int texlib_getnoadoptionvalues(lua_State *L) /* less keywords, just strings */
 {
-    lua_createtable(L, 2, 37);
+    lua_createtable(L, 2, 39);
     lua_push_key_at_index(L, axis,                   noad_option_axis);
     lua_push_key_at_index(L, noaxis,                 noad_option_no_axis);
     lua_push_key_at_index(L, exact,                  noad_option_exact);
@@ -4996,9 +4996,12 @@ static int texlib_getnoadoptionvalues(lua_State *L) /* less keywords, just strin
     lua_push_key_at_index(L, single,                 noad_option_single);
     lua_push_key_at_index(L, norule,                 noad_option_no_rule);
     lua_push_key_at_index(L, automiddle,             noad_option_auto_middle);
- // lua_set_string_by_index(L, noad_option_auto_middle, "automiddle");
- // lua_set_string_by_index(L, noad_option_keep_base,   "keepbase");
-    lua_set_string_by_index(L, noad_option_reflected, "reflected");
+ // lua_set_string_by_index(L, noad_option_auto_middle,        "automiddle");
+ // lua_set_string_by_index(L, noad_option_keep_base,          "keepbase");
+    lua_set_string_by_index(L, noad_option_reflected,          "reflected");
+    lua_set_string_by_index(L, noad_option_continuation,       "continuation");
+    lua_set_string_by_index(L, noad_option_inherit_class,      "inheritclass");
+    lua_set_string_by_index(L, noad_option_discard_shape_kern, "discardshapekern");
     return 1;
 }
 
@@ -5133,6 +5136,16 @@ static int texlib_getspecialmathclassvalues(lua_State *L)
     lua_set_string_by_index(L, math_all_class,   "all");
     lua_set_string_by_index(L, math_begin_class, "begin");
     lua_set_string_by_index(L, math_end_class,   "end");
+    return 1;
+}
+
+static int texlib_getmathscriptordervalues(lua_State *L)
+{
+    lua_createtable(L, 3, 1);
+    lua_set_string_by_index(L, script_unknown_first,     "unknown");
+    lua_set_string_by_index(L, script_primescript_first, "primescript");
+    lua_set_string_by_index(L, script_subscript_first,   "subscript");
+    lua_set_string_by_index(L, script_superscript_first, "superscript");
     return 1;
 }
 
@@ -5350,69 +5363,70 @@ static int texlib_getinteractionmodes(lua_State *L)
 static int texlib_getiftypes(lua_State *L)
 {
     lua_createtable(L, 70, 0);
-    lua_set_string_by_index(L, if_char_code            - first_real_if_test_code, "char");       
-    lua_set_string_by_index(L, if_cat_code             - first_real_if_test_code, "cat");       
-    lua_set_string_by_index(L, if_int_code             - first_real_if_test_code, "num");       
-    lua_set_string_by_index(L, if_abs_int_code         - first_real_if_test_code, "absnum"); 
-    lua_set_string_by_index(L, if_zero_int_code        - first_real_if_test_code, "zeronum");
-    lua_set_string_by_index(L, if_interval_int_code    - first_real_if_test_code, "intervalnum");
-    lua_set_string_by_index(L, if_posit_code           - first_real_if_test_code, "float");    
-    lua_set_string_by_index(L, if_abs_posit_code       - first_real_if_test_code, "absfloat");
-    lua_set_string_by_index(L, if_zero_posit_code      - first_real_if_test_code, "zerofloat");
-    lua_set_string_by_index(L, if_interval_posit_code  - first_real_if_test_code, "intervalfloat");
-    lua_set_string_by_index(L, if_dim_code             - first_real_if_test_code, "dim");       
-    lua_set_string_by_index(L, if_abs_dim_code         - first_real_if_test_code, "absdim");
-    lua_set_string_by_index(L, if_zero_dim_code        - first_real_if_test_code, "zerodim");
-    lua_set_string_by_index(L, if_interval_dim_code    - first_real_if_test_code, "intervaldim");
-    lua_set_string_by_index(L, if_odd_code             - first_real_if_test_code, "odd");       
-    lua_set_string_by_index(L, if_vmode_code           - first_real_if_test_code, "vmode");       
-    lua_set_string_by_index(L, if_hmode_code           - first_real_if_test_code, "hmode");       
-    lua_set_string_by_index(L, if_mmode_code           - first_real_if_test_code, "mmode");       
-    lua_set_string_by_index(L, if_inner_code           - first_real_if_test_code, "inner");       
-    lua_set_string_by_index(L, if_void_code            - first_real_if_test_code, "void");       
-    lua_set_string_by_index(L, if_hbox_code            - first_real_if_test_code, "hbox");       
-    lua_set_string_by_index(L, if_vbox_code            - first_real_if_test_code, "vbox");       
-    lua_set_string_by_index(L, if_cstok_code           - first_real_if_test_code, "cstoken");    
-    lua_set_string_by_index(L, if_tok_code             - first_real_if_test_code, "tok");    
-    lua_set_string_by_index(L, if_x_code               - first_real_if_test_code, "x");       
- /* lua_set_string_by_index(L, if_eof_code             - first_real_if_test_code, "eof"); */ /*not used */
-    lua_set_string_by_index(L, if_true_code            - first_real_if_test_code, "true");        
-    lua_set_string_by_index(L, if_false_code           - first_real_if_test_code, "false");       
-    lua_set_string_by_index(L, if_chk_int_code         - first_real_if_test_code, "chknum");            
-    lua_set_string_by_index(L, if_chk_integer_code     - first_real_if_test_code, "chknunber");        
-    lua_set_string_by_index(L, if_val_int_code         - first_real_if_test_code, "numval");            
-    lua_set_string_by_index(L, if_cmp_int_code         - first_real_if_test_code, "cmpnum");            
-    lua_set_string_by_index(L, if_chk_dim_code         - first_real_if_test_code, "chkdim");            
-    lua_set_string_by_index(L, if_chk_dimension_code   - first_real_if_test_code, "chkdimension");      
-    lua_set_string_by_index(L, if_val_dim_code         - first_real_if_test_code, "dimval");            
-    lua_set_string_by_index(L, if_cmp_dim_code         - first_real_if_test_code, "cmpdim");            
-    lua_set_string_by_index(L, if_case_code            - first_real_if_test_code, "case");       
-    lua_set_string_by_index(L, if_defined_code         - first_real_if_test_code, "defined");       
-    lua_set_string_by_index(L, if_csname_code          - first_real_if_test_code, "csname");       
-    lua_set_string_by_index(L, if_font_char_code       - first_real_if_test_code, "fontchar");       
-    lua_set_string_by_index(L, if_posit_code           - first_real_if_test_code, "float");       
-    lua_set_string_by_index(L, if_tok_code             - first_real_if_test_code, "tok");       
-    lua_set_string_by_index(L, if_in_csname_code       - first_real_if_test_code, "incsname");       
-    lua_set_string_by_index(L, if_font_char_code       - first_real_if_test_code, "fontchar");       
-    lua_set_string_by_index(L, if_condition_code       - first_real_if_test_code, "condition");       
-    lua_set_string_by_index(L, if_flags_code           - first_real_if_test_code, "flags");       
-    lua_set_string_by_index(L, if_empty_code           - first_real_if_test_code, "empty");       
-    lua_set_string_by_index(L, if_relax_code           - first_real_if_test_code, "relax");       
-    lua_set_string_by_index(L, if_boolean_code         - first_real_if_test_code, "boolean");
-    lua_set_string_by_index(L, if_numexpression_code   - first_real_if_test_code, "numexpression");    
-    lua_set_string_by_index(L, if_dimexpression_code   - first_real_if_test_code, "dimexpression");    
-    lua_set_string_by_index(L, if_math_parameter_code  - first_real_if_test_code, "mathparameter");
-    lua_set_string_by_index(L, if_math_style_code      - first_real_if_test_code, "mathstyle");       
-    lua_set_string_by_index(L, if_arguments_code       - first_real_if_test_code, "arguments");       
-    lua_set_string_by_index(L, if_parameters_code      - first_real_if_test_code, "parameters");       
-    lua_set_string_by_index(L, if_parameter_code       - first_real_if_test_code, "parameter");       
-    lua_set_string_by_index(L, if_has_tok_code         - first_real_if_test_code, "hastok");            
-    lua_set_string_by_index(L, if_has_toks_code        - first_real_if_test_code, "hastoks");           
-    lua_set_string_by_index(L, if_has_xtoks_code       - first_real_if_test_code, "hasxtoks");          
-    lua_set_string_by_index(L, if_has_char_code        - first_real_if_test_code, "haschar");           
-    lua_set_string_by_index(L, if_insert_code          - first_real_if_test_code, "insert");                 
-    lua_set_string_by_index(L, if_in_alignment_code    - first_real_if_test_code, "inalignment");       
- /* lua_set_string_by_index(L, if_bitwise_and_code     - first_real_if_test_code, "bitwiseand"); */ /* not (yet) used */
+    lua_set_string_by_index(L, if_char_code           - first_real_if_test_code, "char");       
+    lua_set_string_by_index(L, if_cat_code            - first_real_if_test_code, "cat");       
+    lua_set_string_by_index(L, if_int_code            - first_real_if_test_code, "num");       
+    lua_set_string_by_index(L, if_abs_int_code        - first_real_if_test_code, "absnum"); 
+    lua_set_string_by_index(L, if_zero_int_code       - first_real_if_test_code, "zeronum");
+    lua_set_string_by_index(L, if_interval_int_code   - first_real_if_test_code, "intervalnum");
+    lua_set_string_by_index(L, if_posit_code          - first_real_if_test_code, "float");    
+    lua_set_string_by_index(L, if_abs_posit_code      - first_real_if_test_code, "absfloat");
+    lua_set_string_by_index(L, if_zero_posit_code     - first_real_if_test_code, "zerofloat");
+    lua_set_string_by_index(L, if_interval_posit_code - first_real_if_test_code, "intervalfloat");
+    lua_set_string_by_index(L, if_dim_code            - first_real_if_test_code, "dim");       
+    lua_set_string_by_index(L, if_abs_dim_code        - first_real_if_test_code, "absdim");
+    lua_set_string_by_index(L, if_zero_dim_code       - first_real_if_test_code, "zerodim");
+    lua_set_string_by_index(L, if_interval_dim_code   - first_real_if_test_code, "intervaldim");
+    lua_set_string_by_index(L, if_odd_code            - first_real_if_test_code, "odd");       
+    lua_set_string_by_index(L, if_vmode_code          - first_real_if_test_code, "vmode");       
+    lua_set_string_by_index(L, if_hmode_code          - first_real_if_test_code, "hmode");       
+    lua_set_string_by_index(L, if_mmode_code          - first_real_if_test_code, "mmode");       
+    lua_set_string_by_index(L, if_inner_code          - first_real_if_test_code, "inner");       
+    lua_set_string_by_index(L, if_void_code           - first_real_if_test_code, "void");       
+    lua_set_string_by_index(L, if_hbox_code           - first_real_if_test_code, "hbox");       
+    lua_set_string_by_index(L, if_vbox_code           - first_real_if_test_code, "vbox");       
+    lua_set_string_by_index(L, if_cstok_code          - first_real_if_test_code, "cstoken");    
+    lua_set_string_by_index(L, if_tok_code            - first_real_if_test_code, "tok");    
+    lua_set_string_by_index(L, if_x_code              - first_real_if_test_code, "x");       
+ /* lua_set_string_by_index(L, if_eof_code            - first_real_if_test_code, "eof"); */ /*not used */
+    lua_set_string_by_index(L, if_true_code           - first_real_if_test_code, "true");        
+    lua_set_string_by_index(L, if_false_code          - first_real_if_test_code, "false");       
+    lua_set_string_by_index(L, if_chk_int_code        - first_real_if_test_code, "chknum");            
+    lua_set_string_by_index(L, if_chk_integer_code    - first_real_if_test_code, "chknunber");        
+    lua_set_string_by_index(L, if_val_int_code        - first_real_if_test_code, "numval");            
+    lua_set_string_by_index(L, if_cmp_int_code        - first_real_if_test_code, "cmpnum");            
+    lua_set_string_by_index(L, if_chk_dim_code        - first_real_if_test_code, "chkdim");            
+    lua_set_string_by_index(L, if_chk_dimension_code  - first_real_if_test_code, "chkdimension");      
+    lua_set_string_by_index(L, if_val_dim_code        - first_real_if_test_code, "dimval");            
+    lua_set_string_by_index(L, if_cmp_dim_code        - first_real_if_test_code, "cmpdim");            
+    lua_set_string_by_index(L, if_case_code           - first_real_if_test_code, "case");       
+    lua_set_string_by_index(L, if_defined_code        - first_real_if_test_code, "defined");       
+    lua_set_string_by_index(L, if_csname_code         - first_real_if_test_code, "csname");       
+    lua_set_string_by_index(L, if_font_char_code      - first_real_if_test_code, "fontchar");       
+    lua_set_string_by_index(L, if_posit_code          - first_real_if_test_code, "float");       
+    lua_set_string_by_index(L, if_tok_code            - first_real_if_test_code, "tok");       
+    lua_set_string_by_index(L, if_in_csname_code      - first_real_if_test_code, "incsname");       
+    lua_set_string_by_index(L, if_font_char_code      - first_real_if_test_code, "fontchar");       
+    lua_set_string_by_index(L, if_condition_code      - first_real_if_test_code, "condition");       
+    lua_set_string_by_index(L, if_flags_code          - first_real_if_test_code, "flags");       
+    lua_set_string_by_index(L, if_empty_code          - first_real_if_test_code, "empty");       
+    lua_set_string_by_index(L, if_relax_code          - first_real_if_test_code, "relax");       
+    lua_set_string_by_index(L, if_boolean_code        - first_real_if_test_code, "boolean");
+    lua_set_string_by_index(L, if_numexpression_code  - first_real_if_test_code, "numexpression");    
+    lua_set_string_by_index(L, if_dimexpression_code  - first_real_if_test_code, "dimexpression");    
+    lua_set_string_by_index(L, if_math_parameter_code - first_real_if_test_code, "mathparameter");
+    lua_set_string_by_index(L, if_math_style_code     - first_real_if_test_code, "mathstyle");       
+    lua_set_string_by_index(L, if_arguments_code      - first_real_if_test_code, "arguments");       
+    lua_set_string_by_index(L, if_parameters_code     - first_real_if_test_code, "parameters");       
+    lua_set_string_by_index(L, if_parameter_code      - first_real_if_test_code, "parameter");       
+    lua_set_string_by_index(L, if_has_tok_code        - first_real_if_test_code, "hastok");            
+    lua_set_string_by_index(L, if_has_toks_code       - first_real_if_test_code, "hastoks");           
+    lua_set_string_by_index(L, if_has_xtoks_code      - first_real_if_test_code, "hasxtoks");          
+    lua_set_string_by_index(L, if_has_char_code       - first_real_if_test_code, "haschar");           
+    lua_set_string_by_index(L, if_insert_code         - first_real_if_test_code, "insert");                 
+    lua_set_string_by_index(L, if_in_alignment_code   - first_real_if_test_code, "inalignment");       
+    lua_set_string_by_index(L, if_cramped_code        - first_real_if_test_code, "ifcramped");       
+ /* lua_set_string_by_index(L, if_bitwise_and_code    - first_real_if_test_code, "bitwiseand"); */ /* not (yet) used */
     return 1;
 }
 
@@ -6012,6 +6026,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getcharactertagvalues",       texlib_getcharactertagvalues       }, 
     { "getkerneloptionvalues",       texlib_getkerneloptionvalues       },
     { "getspecialmathclassvalues",   texlib_getspecialmathclassvalues   },
+    { "getmathscriptordervalues",    texlib_getmathscriptordervalues    },
     { "getlargestusedmark",          texlib_getlargestusedmark          },
     { "getoutputactive",             texlib_getoutputactive             },
     /* experiment (metafun update) */                                   

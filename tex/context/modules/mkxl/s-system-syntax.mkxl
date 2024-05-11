@@ -131,8 +131,12 @@
     \ctxlua{moduledata.engine.codes("mathoptioncodes")}
 \stopbuffer
 
-\startbuffer[engine:syntax:mathcontrol]
+\startbuffer[engine:syntax:mathcontrolcodes]
     \ctxlua{moduledata.engine.codes("mathcontrolcodes")}
+\stopbuffer
+
+\startbuffer[engine:syntax:classoptioncodes]
+    \ctxlua{moduledata.engine.codes("classoptioncodes")}
 \stopbuffer
 
 \startbuffer[engine:syntax:partriggercodes]

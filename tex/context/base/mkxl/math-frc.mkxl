@@ -127,7 +127,7 @@
 % why only displaystyle .. a bit weak .. will become a set
 
 \protected\def\math_fraction_set_distance_top
-  {\Umathfractionnumup    \displaystyle\m_math_fraction_distance_top
+  {\Umathfractionnumup\displaystyle\m_math_fraction_distance_top
    \relax}
 
 \protected\def\math_fraction_set_distance_bot

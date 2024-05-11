@@ -1196,10 +1196,12 @@ static void tex_aux_run_math_boundary(void) {
                 halfword n = tex_new_node(boundary_node, (quarterword) cur_chr);
                 boundary_data(n) = tex_scan_integer(0, NULL);
                 switch (boundary_data(n)) {
-                    case 0: case 1: 
+                    case begin_math_implicit_boundary: 
+                    case end_math_implicit_boundary: 
                         /* valid */
                         break;
-                    case 2: case 3:
+                    case begin_math_explicit_boundary: 
+                    case end_math_explicit_boundary: 
                         /* valid, penalty to add */
                         boundary_reserved(n) = tex_scan_integer(0, NULL);
                         break;
@@ -1462,6 +1464,16 @@ static void tex_aux_run_catcode_table(void) {
                     tex_aux_overwrite_catcode_table_error();
                 } else {
                     tex_copy_cat_codes(cat_code_table_par, v);
+                }
+                break;
+            }
+        case restore_cat_code_table_code:
+            {
+                halfword v = tex_scan_integer(0, NULL);
+                if ((v < 0) || (v >= max_n_of_catcode_tables)) {
+                    tex_aux_invalid_catcode_table_error();
+                } else {
+                    tex_restore_cat_codes(v, cur_level);
                 }
                 break;
             }
@@ -6937,6 +6949,13 @@ static void tex_aux_run_show_whatever(void)
             {
                 tex_begin_diagnostic();
                 tex_show_save_stack();
+                tex_end_diagnostic();
+                break;
+            }
+        case show_code_stack_code:
+            {
+                tex_begin_diagnostic();
+                tex_show_code_stack();
                 tex_end_diagnostic();
                 break;
             }

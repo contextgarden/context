@@ -738,6 +738,15 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
                 cur_val_level = integer_val_level;
                 break;
             }
+        case math_parent_style_code:
+            {
+                cur_val = tex_current_math_parent_style();
+                if (cur_val < 0) {
+                    cur_val = text_style;
+                }
+                cur_val_level = integer_val_level;
+                break;
+            }
         case math_style_font_id_code:
             {
                 halfword style = tex_scan_math_style_identifier(0, 0);
@@ -1497,6 +1506,7 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
             {
                 switch (chr) {
                     case math_parameter_reset_spacing:
+                        /* or just zero */
                     case math_parameter_set_spacing:
                     case math_parameter_let_spacing:
                     case math_parameter_copy_spacing:

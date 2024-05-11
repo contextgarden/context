@@ -27,6 +27,11 @@
     \let\showmathcharactersstopentry           \relax
     \let\showmathcharactersentryhexdectit      \gobblethreearguments
     \let\showmathcharactersentrywdhtdpic       \gobblefourarguments
+\ifcase\contextlmtxmode
+    \let\showmathcharactersentrywdhtdpicta     \gobblefivearguments
+\else
+    \let\showmathcharactersentrywdhtdpicta     \gobbleoneargument
+\fi
     \let\showmathcharactersentryresource       \gobbleoneargument
     \let\showmathcharactersstartnext           \relax
     \let\showmathcharactersnextentry           \gobblethreearguments
@@ -137,6 +142,7 @@
       \c!check=,
       \c!alternative=default,
       \c!option=\v!all,
+      \c!method=\v!default,
       #1]%
    \directsetup{s-math-characters:\dummyparameter\c!alternative}%
    \doifelsenothing{\dummyparameter\c!bodyfont}
@@ -148,6 +154,7 @@
       check    = "\dummyparameter\c!check",
       list     = "\dummyparameter\c!list",
       option   = "\dummyparameter\c!option",
+      method   = "\dummyparameter\c!method",
    }}%
    \endgroup}
 
@@ -191,7 +198,21 @@
 
     }
 
-    \showmathfontcharacters
+%     \showmathfontcharacters
+
+% \showmathfontcharacters[list=0x2208]
+% \showmathfontcharacters[list=0x2227]
+% \showmathfontcharacters[list=0x31]
+
+\setupbodyfont[stixtwo,12pt]
+
+% \showmathfontcharacters[list=0x2205,method=manual]
+% \showmathfontcharacters[list=lowercaseitalic,method=manual]
+% \showmathfontcharacters[list=lowercasebolditalic,method=manual]
+\showmathfontcharacters[list=uppercasedoublestruck,method=manual]
+% \showmathfontcharacters[list=digitsnormal,method=manual]
+
+% \showmathfontcharacters[list={0x00303,0x02205,0x02208,0x02227,0x0291F},method=manual]
 
 \stoptext
 

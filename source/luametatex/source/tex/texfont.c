@@ -257,7 +257,7 @@ int tex_new_font(void)
                 tex_set_font_parameter(id, i, 0);
             }
             /*tex character info zero is reserved for |notdef|. The stack size 1, default item value 0. */
-            tf->characters = sa_new_tree(1, 4, sa_value);
+            tf->characters = sa_new_tree(fontchar_sparse_identifier, 1, 4, sa_value);
             tf->chardata = ci;
             tf->chardata_size = 1;
             tf->weight = 1.0;

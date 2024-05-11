@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['lpdf-fnt'] = {
+if not modules then modules = { } end modules ['lpdf-fix-imp-fonts'] = {
     version   = 1.001,
     comment   = "companion to lpdf-ini.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -35,8 +35,7 @@ local definefont       = fonts.definers.define
 local getstreamhash    = fonts.handlers.otf.getstreamhash
 local loadstreamdata   = fonts.handlers.otf.loadstreamdata
 local cleanfontname    = fonts.names.cleanname
-
-local chardata = fonts.hashes.characters
+local chardata         = fonts.hashes.characters
 
 local defined = setmetatableindex(function(t,filename)
     local v = setmetatableindex(function(t,subfont)
@@ -112,8 +111,6 @@ end
 
 -- todo: check some more
 
-local cleanname = fonts.names.cleanname
-
 local remap = {
  -- ["helvetica"]            = { target = "file:uhvr8a.afm" },
  -- ["helvetica-bold"]       = { target = "file:uhvb8a.afm" },
@@ -138,12 +135,12 @@ local remap = {
 function backends.codeinjections.registerfont(specification)
     local source = specification.source
     if source then
-        remap[cleanname(source)] = specification
+        remap[cleanfontname(source)] = specification
     end
 end
 
 local function isdefinedunknown(fontname)
-    local m = remap[cleanname(fontname)]
+    local m = remap[cleanfontname(fontname)]
     local r = m and m.target
     if r then
         report_merge("remapping %a to %a",fontname,r)
@@ -354,7 +351,7 @@ local getstates, getindexstate_composite, getindexstate_simple  do
                         fontstate.embedded = isembedded(descriptor)
                         return fontstate
                     end
-               end
+                end
             end
         end
     end
@@ -387,9 +384,42 @@ local getstates, getindexstate_composite, getindexstate_simple  do
                     local fontstate  = states[fontname]
                     fontstate.unicodes = r
                     fontstate.narrow = true
+                    fontstate.embedded = isembedded(descriptor)
                     return fontstate
                 else
-                    -- todo: custom encoding, load from pfb if Type 1
+                    local fontfile = descriptor.FontFile
+                    if fontfile then
+                        local data  = fontfile()
+                        local first = fontfile.Length1
+                        if first and data then
+                            data = string.sub(data,1,first)
+                            local metadata = fonts.handlers.pfb.filtermetadata(data)
+                            if metadata then
+                                local fullname  = metadata.fullname
+                                if fontname == fullname then
+                                    local encoding = fonts.handlers.pfb.filterencoding(data)
+                                    if encoding then
+                                        local name, id = isdefinedunknown(fullname)
+                                        if id > 0 then
+                                            local unicodes = { }
+                                            local nametoslot = fonts.helpers.nametoslot
+                                            for index, name in next, encoding do
+                                                -- todo: check for missing hits
+                                                unicodes[index] = nametoslot(name,id)
+                                            end
+                                            local fontstate = states[fontname]
+                                            fontstate.custom   = encoding
+                                            fontstate.fullname = fullname
+                                            fontstate.narrow   = true
+                                            fontstate.unicodes = unicodes
+                                            fontstate.embedded = isembedded(descriptor)
+                                            return fontstate
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end
                 end
            end
         end
@@ -397,10 +427,9 @@ local getstates, getindexstate_composite, getindexstate_simple  do
 
 end
 
-
 local function makemap(fontname,id,state,unicode)
     local map = { }
-    local r = remap[cleanname(fontname)]
+    local r = remap[cleanfontname(fontname)]
     if r and r.unicode ~= nil then
         unicode = r.unicode
     end
@@ -426,7 +455,9 @@ local function dontembed(basefont,state,embedding)
     if not state.embedded then
         report_merge("font %a is not embedded",basefont)
     end
-    if embedding and state.embedded then
+    if embedding then
+        return false
+    elseif not state.embedded then
         return false
     else
         return true
@@ -560,12 +591,13 @@ do
     local h_hex_4 = lpdf.h_hex_4
 
     local function report_sharing(pdfdoc,what,v,shared,pagenumber,lmtx)
+        local encoding = v.Encoding
         report_merge("page %i of %a, font %a, type %a, encoding %a, %sshared%s",
             pagenumber,
             basename(pdfdoc.filename),
             v.BaseFont or "?",
             what,
-            v.Encoding or "?",
+            type(encoding) == "string" and encoding or "custom",
             shared and "" or "not ",
             lmtx and ", lmtx registry found" or ""
         )
@@ -583,18 +615,24 @@ do
                 if d and d.Subtype == "CIDFontType0" or d.Subtype == "CIDFontType2" then
                     local r = d.LMTXRegistry
                     if r then
+                     -- if compactor.merge and (compactor.merge.lmtx or compactor.merge.LMTX) then
                         if compactor.merge.lmtx or compactor.merge.LMTX then
                             shared = getstate_LMTX(pdfdoc,r)
                             data[k] = shared
                         end
                     elseif find(pdfe.producer(pdfdoc),"^LuaMetaTeX") then
+-- todo: check vector by name
                         -- This is a no go because for sure we have a different index order. Older
                         -- versions append the version to the producer string.
-                    elseif compactor.merge.type0 then
-                        shared = getstate_OpenType(pdfdoc,v,d)
-                        data[k] = shared
-                    elseif compactor.embed.type0 then
-                        shared = getstate_OpenType(pdfdoc,v,d,true)
+--                     elseif compactor.merge.type0 then
+--                         shared = getstate_OpenType(pdfdoc,v,d)
+--                         data[k] = shared
+--                     elseif compactor.embed.type0 then
+--                         shared = getstate_OpenType(pdfdoc,v,d,true)
+--                         data[k] = shared
+--                     end
+                    elseif compactor.merge.type0 or compactor.embed.type0 then
+                        shared = getstate_OpenType(pdfdoc,v,d,compactor.merge.type0)
                         data[k] = shared
                     end
                     if trace_merge then
@@ -605,6 +643,7 @@ do
             end
         else
             -- what ...
+         -- print("case 1",encoding)
         end
         wide[k] = true
     end
@@ -615,11 +654,12 @@ do
             data[k] = shared
         elseif shared == nil then
             shared = false
-            if compactor.merge.truetype then
-                shared = getstate_TrueType(pdfdoc,v)
-                data[k] = shared
-            elseif compactor.embed.truetype then
-                shared = getstate_TrueType(pdfdoc,v,true)
+--             if compactor.merge.truetype then
+--                 shared = getstate_TrueType(pdfdoc,v)
+--                 data[k] = shared
+--             else
+            if compactor.embed.truetype or compactor.merge.truetype then
+                shared = getstate_TrueType(pdfdoc,v,compactor.merge.truetype)
                 data[k] = shared
             end
             if trace_merge then
@@ -636,11 +676,15 @@ do
             data[k] = shared
         elseif shared == nil then
             shared = false
-            if compactor.merge.type1 then
-                shared = getstate_Type1(pdfdoc,v)
-                data[k] = shared
-            elseif compactor.embed.type1 then
-                shared = getstate_Type1(pdfdoc,v,true)
+--             if compactor.merge.type1 then
+--                 shared = getstate_Type1(pdfdoc,v)
+--                 data[k] = shared
+--             elseif compactor.embed.type1 then
+--                 shared = getstate_Type1(pdfdoc,v,true)
+--                 data[k] = shared
+--             end
+            if compactor.embed.truetype or compactor.merge.truetype then
+                shared = getstate_Type1(pdfdoc,v,compactor.merge.truetype)
                 data[k] = shared
             end
             if trace_merge then
@@ -667,6 +711,8 @@ do
                             contents = parsecontent(contents,true)
                             local contents, indices = plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,{})
                             if indices > 0 then
+                                object.__raw__.Length = #contents -- nil
+                                object.__raw__.Filter = nil
                                 getmetatable(object).__call = function() return contents end
                             end
                             object.__remapped__ = true
@@ -723,8 +769,6 @@ do
             local indices = 0
 
             local process_hex = false
---             local process_dec = false
---             local convert_dec = false
 
             -- if we move h and m outside the function we can use lpegs .. todo
 
@@ -742,40 +786,12 @@ do
                 end
             end
 
---             local function process_dec_hexified(h)
---                 local b = chrtointeger(h)
---                 local i = m[b]
---                 if i then
---                     local n = h_hex_4[u[i]]
---                     if h ~= n then
---                         indices = indices + 1
---                     end
---                     return n
---                 else
---                     return h_hex_4[b]
---                 end
---             end
-
-            -- use helper
-
---             local function convert_dec_hexified(h)
---                 local b = chrtointeger(h)
---                 return h_hex_2[b]
---             end
-
             local function process_hex_narrow(s) return (gsub(s,"..",  process_hex_hexified)) end
             local function process_hex_wide  (s) return (gsub(s,"....",process_hex_hexified)) end
---             local function process_dec_narrow(s) return (gsub(s,".",   process_dec_hexified)) end
---             local function process_dec_wide  (s) return (gsub(s,"..",  process_dec_hexified)) end
-
---             local function convert_dec_one   (s) return (gsub(s,".",   convert_dec_hexified)) end
-
--- local fix = compactor.convert.hexadecimal
-
-
             for i=1,#contents do
                 local ti = contents[i]
-                if ti[3] == "Tf" then
+                local op = ti[#ti]
+                if op == "Tf" then
                     -- maybe use /R<N> for replacement
                     f = ti[1][2]
                     d = data[f]
@@ -786,46 +802,26 @@ do
                         new[f] = d.streamhash
                         if d.narrow then
                             process_hex = process_hex_narrow
---                             process_dec = process_dec_narrow
                         else
                             process_hex = process_hex_wide
---                             process_dec = process_dec_wide
                         end
                     else
                         if d == false then
                             old[f] = true
                         end
---                         if fix then
---                             if w == wide[f] then
---                                 convert_dec = false
---                             else
---                                 convert_dec = convert_dec_one
---                             end
---                         end
                         f = false
                     end
-                elseif ti[2] == "Tj" then
+                elseif op == "Tj" then
                     if f then
                         local ci = ti[1]
                         if type(ci) == "table" then
                             local tp = ci[1]
                             if tp == "hex" then
                                 ci[2] = process_hex(ci[2])
---                             elseif tp == "dec" then
---                                 ci[1] = "hex"
---                                 ci[2] = process_dec(ci[2])
                             end
---                     elseif fix and convert_dec then
---                         local ci = ti[1]
---                         if type(ci) == "table" then
---                             local tp = ci[1]
---                             if tp == "dec" then
---                                 ci[1] = "hex"
---                                 ci[2] = convert_dec(ci[2])
---                             end
                         end
                     end
-                elseif ti[2] == "TJ" then
+                elseif op == "TJ" then
                     if f then
                         local c = ti[1][2]
                         for i=1,#c do
@@ -834,25 +830,11 @@ do
                                 local tp = ci[1]
                                 if tp == "hex" then
                                     ci[2] = process_hex(ci[2])
---                                 elseif tp == "dec" then
---                                     ci[1] = "hex"
---                                     ci[2] = process_dec(ci[2])
                                 end
                             end
---                     elseif fix and convert_dec then
---                         local c = ti[1][2]
---                         for i=1,#c do
---                             local ci = c[i]
---                             if type(ci) == "table" then
---                                 local tp = ci[1]
---                                 if tp == "dec" then
---                                     ci[1] = "hex"
---                                     ci[2] = convert_dec(ci[2])
---                                 end
---                             end
                         end
                     end
-                elseif xobjects and ti[2] == "Do" then
+                elseif xobjects and op == "Do" then
                     -- can be recursive
                     local object = xobjects[ti[1][2]]
                     if object and not object.__remapped__ and object.Subtype == "Form" then
@@ -862,13 +844,15 @@ do
                             local fonts    = r.Font
                             local xobjects = r.XObject
                             contents = parsecontent(contents,true)
-                            local contents = plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth+1)
+                            contents = plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth+1)
                             if contents then
                                 contents = contenttostring(contents)
-                                object.__raw__.Length = #contents
+                                object.__raw__.Length = # contents -- nil
+                                object.__raw__.Filter = nil
                                 getmetatable(object).__call = function() return contents end
                                 object.__remapped__ = true
                                 status.xobjects = status.xobjects + 1
+                                r.Font = fonts
                             else
                                 -- some issue
                             end

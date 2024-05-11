@@ -332,6 +332,14 @@ do
 
     end
 
+    function pfb.filtermetadata(str)
+        return lpegmatch(p_filtermetadata,str,1,{})
+    end
+
+    function pfb.filterencoding(str)
+        return lpegmatch(p_filterencoding,str)
+    end
+
     pfb.loadvector = loadpfbvector
 
     get_indexes = function(data,pfbname)

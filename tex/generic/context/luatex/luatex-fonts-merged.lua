@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2024-01-08 11:16
+-- merge date  : 2024-01-18 00:05
 
 do -- begin closure to overcome local limits and interference
 
@@ -27686,7 +27686,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
    if not marks[char] then
     baseindex=baseindex+componentindex
     componentindex=countcomponents(start,marks)
-   elseif not deletemarks then
+    elseif not deletemarks or (skiphash and skiphash[char]) then
     setligaindex(start,baseindex+getligaindex(start,componentindex))
     if trace_marks then
      logwarning("%s: keep ligature mark %s, gets index %s",pref(dataset,sequence),gref(char),getligaindex(start))

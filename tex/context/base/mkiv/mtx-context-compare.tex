@@ -16,6 +16,7 @@
 % usage: context --extra=compare [options] file-1 file-2
 %
 % example: context --extra=compare file1.pdf file-2.pdf
+%          context --extra=compare file1.pdf file-2.pdf --colors=red,blue
 %
 % end help
 
@@ -23,18 +24,47 @@
 
 \starttext
 
+\definecolor[colorred]    [r=1,a=1,t=.5]
+\definecolor[colorgreen]  [g=1,a=1,t=.5]
+\definecolor[colorblue]   [b=1,a=1,t=.5]
+\definecolor[colorgray]   [s=0,a=1,t=.5]
+\definecolor[colorcyan]   [g=1,b=1,a=1,t=.5]
+\definecolor[colormagenta][r=1,b=1,a=1,t=.5]
+\definecolor[coloryellow] [r=1,g=1,a=1,t=.5]
+
 \starttexdefinition unexpanded ShowBoth #1#2#3
     \startTEXpage[width=21cm]
-        \startoverlay
-            {\externalfigure[#1][page=#3,width=21cm]}
-            {\externalfigure[#2][page=#3,width=21cm]}
-        \stopoverlay
+        \doifelsecolor {colorone} {
+            \startoverlay
+                {\color[colorone]{\char0\externalfigure[#1][page=#3,width=21cm]}}
+                {\color[colortwo]{\char0\externalfigure[#2][page=#3,width=21cm]}}
+            \stopoverlay
+        } {
+            \startoverlay
+                {\externalfigure[#1][page=#3,width=21cm]}
+                {\externalfigure[#2][page=#3,width=21cm]}
+            \stopoverlay
+        }
     \stopTEXpage
 \stoptexdefinition
 
-\starttexdefinition unexpanded ShowPage #1#2
+\starttexdefinition unexpanded ShowOne #1#2
     \startTEXpage[width=21cm]
-        \externalfigure[#1][page=#2,width=21cm]
+        \doifelsecolor {colorone} {
+            \color[colorone]{\char0\externalfigure[#1][page=#2,width=21cm]}
+        } {
+            \externalfigure[#1][page=#2,width=21cm]
+        }
+    \stopTEXpage
+\stoptexdefinition
+
+\starttexdefinition unexpanded ShowTwo #1#2
+    \startTEXpage[width=21cm]
+        \doifelsecolor {colorone} {
+            \color[colortwo]{\char0\externalfigure[#1][page=#2,width=21cm]}
+        } {
+            \externalfigure[#1][page=#2,width=21cm]
+        }
     \stopTEXpage
 \stoptexdefinition
 
@@ -44,6 +74,31 @@ local report = logs.reporter("compare")
 
 local fileone = document.files[1] or ""
 local filetwo = document.files[2] or ""
+
+local colorone = false
+local colortwo = false
+
+local colors = document.arguments.colors
+
+if colors then
+    colorone, colortwo = string.splitup(colors,",")
+end
+
+local valid = {
+    red     = "colorred",
+    green   = "colorgreen",
+    blue    = "colorblue",
+    cyan    = "colorcyan",
+    magenta = "colormagenta",
+    yellow  = "coloryellow",
+    gray    = "colorgray",
+    grey    = "colorgray",
+}
+
+if valid[colorone] and valid[colortwo] then
+    context.definecolor({ "colorone" }, { valid[colorone] })
+    context.definecolor({ "colortwo" }, { valid[colortwo] })
+end
 
 if fileone == "" or filetwo == "" then
     report("provide two filenames")
@@ -94,14 +149,14 @@ if n_one > n_two then
         context.ShowBoth(fileone,filetwo,i)
     end
     for i=n_two+1,n_one do
-        context.ShowPage(fileone,i)
+        context.ShowOne(fileone,i)
     end
 else
     for i=1,n_one do
         context.ShowBoth(fileone,filetwo,i)
     end
     for i=n_one+1,n_two do
-        context.ShowPage(filetwo,i)
+        context.ShowTwo(filetwo,i)
     end
 end
 

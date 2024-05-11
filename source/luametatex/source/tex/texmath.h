@@ -242,6 +242,9 @@ typedef enum math_parameters {
 # define math_begin_class  (max_n_of_math_classes - 2)
 # define math_end_class    (max_n_of_math_classes - 1)
 
+# define math_first_user_class (last_noad_subtype + 1)
+# define math_last_user_class  (math_all_class    - 1)
+
 # define valid_math_class_code(n)  (n >= 0 && n < max_n_of_math_classes)
 
 # define last_math_parameter               math_parameter_stack_variant
@@ -338,6 +341,8 @@ typedef enum math_style_variants {
 } math_style_variants;
 
 # define last_math_style_variant math_double_superscript_variant
+
+inline static int tex_is_cramped_style(int s) { return (s % 2) != 0; }
 
 /*
 
@@ -630,6 +635,7 @@ extern void     tex_scan_extdef_del_code         (int level, int extcode);
 extern void     tex_scan_extdef_math_code        (int level, int extcode);
 extern int      tex_current_math_style           (void);
 extern int      tex_current_math_main_style      (void);
+extern int      tex_current_math_parent_style    (void);
 extern int      tex_scan_math_code_val           (halfword code, mathcodeval *mval, mathdictval *dval);
 extern int      tex_scan_math_cmd_val            (mathcodeval *mval, mathdictval *dval);
 
@@ -645,6 +651,10 @@ extern void     tex_set_default_math_codes       (void);
 
 extern int      tex_check_active_math_char       (int character);
 extern int      tex_pass_active_math_char        (int character);
+
+inline int      tex_math_scripts_allowed         (halfword node) { return ((node_type(node) >= simple_noad) && (node_type(node) < fence_noad)); }
+
+extern halfword tex_new_math_continuation_atom   (halfword node);
 
 /*tex The runners in maincontrol: */
 

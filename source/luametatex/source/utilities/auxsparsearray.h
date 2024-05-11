@@ -111,7 +111,7 @@ typedef struct sa_tree_head {
     sa_tree_item   **tree[LMT_SA_HIGHPART]; /*tex item tree head       */ /* we always have HIGH now cf mail by AK to luatex list, little gain */
     sa_stack_item   *stack;                 /*tex stack tree head      */
     int              bytes;                 /*tex the number of items per entry */
-    int              padding;
+    int              identifier;
 } sa_tree_head;
 
 typedef sa_tree_head *sa_tree;
@@ -186,12 +186,14 @@ extern void    sa_set_item_1    (const sa_tree head, int n, int v, int gl);
 extern void    sa_set_item_2    (const sa_tree head, int n, int v, int gl);
 extern void    sa_set_item_4    (const sa_tree head, int n, sa_tree_item v, int gl);
 extern void    sa_set_item_8    (const sa_tree head, int n, sa_tree_item v1, sa_tree_item v2, int gl);
-extern sa_tree sa_new_tree      (int size, int bytes, sa_tree_item dflt);
+extern sa_tree sa_new_tree      (int identifier, int size, int bytes, sa_tree_item dflt);
 extern sa_tree sa_copy_tree     (const sa_tree head);
 extern void    sa_destroy_tree  (sa_tree head);
 extern void    sa_dump_tree     (dumpstream f, sa_tree a);
 extern sa_tree sa_undump_tree   (dumpstream f);
 extern void    sa_restore_stack (const sa_tree a, int gl);
+extern void    sa_reinit_stack  (const sa_tree a, int gl);
+extern void    sa_show_stack    (const sa_tree a);
 extern void    sa_clear_stack   (const sa_tree a);
 
 extern void    sa_set_item_n    (const sa_tree head, int n, int v, int gl);

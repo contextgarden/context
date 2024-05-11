@@ -168,6 +168,7 @@
 \definefilesynonym [type-imp-kpfonts-nt.mkiv]             [type-imp-kpfonts.mkiv]
 \definefilesynonym [type-imp-concrete-nt.mkiv]            [type-imp-concrete.mkiv]
 \definefilesynonym [type-imp-xcharter-nt.mkiv]            [type-imp-xcharter.mkiv]
+\definefilesynonym [type-imp-gfsneohellenic-nt.mkiv]      [type-imp-gfsneohellenic.mkiv]
 
 \definefilesynonym [type-imp-antykwa-poltawskiego.mkiv]   [type-imp-antykwapoltawskiego.mkiv]
 
@@ -179,6 +180,7 @@
 \definefilesynonym [type-imp-kurier-medium.mkiv]          [type-imp-kurier.mkiv]
 \definefilesynonym [type-imp-kurier-heavy.mkiv]           [type-imp-kurier.mkiv]
 
+\definefilesynonym [type-imp-antykwa-torunska.mkiv]       [type-imp-antykwa.mkiv]
 \definefilesynonym [type-imp-antykwa-light.mkiv]          [type-imp-antykwa.mkiv]
 \definefilesynonym [type-imp-antykwa-cond.mkiv]           [type-imp-antykwa.mkiv]
 \definefilesynonym [type-imp-antykwa-light-cond.mkiv]     [type-imp-antykwa.mkiv]

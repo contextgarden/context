@@ -1098,6 +1098,7 @@ syntax.mathcomponent = newsyntax {
         optional(keyword("nooverflow")),
         optional(keyword("void")),
         optional(keyword("phantom")),
+        optional(keyword("continuation")),
         optional(s_integer)
     ),
     mathbin   = s_tokens,

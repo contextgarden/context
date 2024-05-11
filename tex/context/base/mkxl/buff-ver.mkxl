@@ -445,11 +445,13 @@
   {\begingroup
    \cdef\currenttyping       {#1}%
    \edef\currenttypingwrapper{#2}%
-   \obeylines
+   \begingroup
+   \obeylines % alternatively \future.. could *not* ignore newlines
    \futureexpandis[\buff_verbatim_typing_start_yes\buff_verbatim_typing_start_nop}
 
 \def\buff_verbatim_typing_start_yes[#S#1]%
-  {\ifhastok={#1}%
+  {\endgroup
+   \ifhastok={#1}%
      \setupcurrenttyping[#1]%
    \orelse\ifcstok{#1}\v!continue
      \lettypingparameter\c!continue\v!yes
@@ -462,7 +464,8 @@
    \normalexpanded{\buff_verbatim_type_block{\e!start\currenttypingwrapper}{\e!stop\currenttypingwrapper}}}
 
 \def\buff_verbatim_typing_start_nop
-  {\typingparameter\c!before\relax
+  {\endgroup
+   \typingparameter\c!before\relax
    \startpacked[\v!blank]%
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one

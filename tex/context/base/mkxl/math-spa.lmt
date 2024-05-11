@@ -48,7 +48,6 @@ local setwhd            = nuts.setwhd
 local getdimensions     = nuts.dimensions
 local getnormalizedline = nuts.getnormalizedline
 local getbox            = nuts.getbox
-local setoffsets        = nuts.setoffsets
 local addxoffset        = nuts.addxoffset
 local setattrlist       = nuts.setattrlist
 local rangedimensions   = nuts.rangedimensions

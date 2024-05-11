@@ -384,7 +384,7 @@ static void tex_aux_show_if_state(halfword code, halfword case_value)
 
 /*tex Why do we skip over relax? */
 
-inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head)
+inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head) // todo: tail 
 {
     halfword p = null;
     if (expand) {
@@ -1282,6 +1282,9 @@ void tex_conditional_if(halfword code, int unless)
                 result = tex_in_alignment();
                 goto RESULT;
             }
+        case if_cramped_code:
+            result = tex_is_cramped_style(tex_scan_math_style_identifier(0, 0));
+            goto RESULT;
      // case if_bitwise_and_code:
      //     {
      //         halfword n1 = scan_integer(0, NULL);

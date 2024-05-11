@@ -171,7 +171,7 @@ return {
         "mathordinarycode", "mathordcode", "mathoperatorcode", "mathopcode", "mathbinarycode", "mathbincode",
         "mathrelationcode", "mathrelcode", "mathopencode", "mathclosecode", "mathpunctuationcode",
         "mathpunctcode", "mathovercode", "mathundercode", "mathinnercode", "mathradicalcode",
-        "mathfractioncode", "mathmiddlecode", "mathaccentcode", "mathfencedcode", "mathghostcode",
+        "mathfractioncode", "mathmiddlecode", "mathprimecode", "mathaccentcode", "mathfencedcode", "mathghostcode",
         "mathvariablecode",  "mathactivecode", "mathvcentercode", "mathconstructcode", "mathwrappedcode",
         "mathbegincode", "mathendcode", "mathexplicitcode", "mathdivisioncode", "mathfactorialcode",
         "mathdimensioncode", "mathexperimentalcode", "mathtextpunctuationcode",

@@ -741,8 +741,8 @@ local operator  = C((R("AZ","az")+P("*")+P("'")+P('"'))^1)
 local grammar = P { "start",
     start      = (comment + keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
     keyvalue   = key * optspaces * V("start"),
-    dictionary = Ct(Cc("dict")  * P("<<") * Ct(V("keyvalue")^1) * P(">>")),
-    array      = Ct(Cc("array") * P("[")  * Ct(V("start")^1) * P("]")),
+    dictionary = Ct(Cc("dict")  * P("<<") * Ct(V("keyvalue")^0) * P(">>")),
+    array      = Ct(Cc("array") * P("[")  * Ct(V("start")^0) * P("]")),
     hexstring  = p_hex_string,
     decstring  = p_dec_string,
 }
@@ -755,8 +755,8 @@ local number = C(lpegpatterns.number)
 local fastgrammar = P { "start",
     start      = (comment + keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
     keyvalue   = key * optspaces * V("start"),
-    dictionary = Ct(Cc("dict")  * P("<<") * Ct(V("keyvalue")^1) * P(">>")),
-    array      = Ct(Cc("array") * P("[")  * Ct(V("start")^1) * P("]")),
+    dictionary = Ct(Cc("dict")  * P("<<") * Ct(V("keyvalue")^0) * P(">>")),
+    array      = Ct(Cc("array") * P("[")  * Ct(V("start")^0) * P("]")),
     hexstring  = p_hex_string,
     decstring  = p_dec_string,
 }
@@ -1197,8 +1197,7 @@ if images then do
                         local s = entry()                        -- get uncompressed stream
                         pdfflushstreamobject(s,d,true,usednum)   -- compress stream
                     else
-                        -- keep as-is, even Length which indicates the
-                        -- decompressed length
+                        -- keep as-is, even Length which indicates the decompressed length
                         local s = entry(false)                        -- get compressed stream
                      -- pdfflushstreamobject(s,d,false,usednum,true)  -- don't compress stream
                         pdfflushstreamobject(s,d,"raw",usednum)       -- don't compress stream
@@ -1330,20 +1329,25 @@ if images then do
                 local sizetag  = sizes[size or "crop"] or sizes.crop
                 local mediabox = page.MediaBox or { 0, 0, 0, 0 }
                 local cropbox  = page[sizetag] or mediabox
-                return {
-                    filename    = pdfdoc.filename,
-                    pagenumber  = pagenumber,
-                    nofpages    = pdfdoc.nofpages,
-                    boundingbox = scaledbbox(cropbox),
-                    cropbox     = cropbox,
-                    mediabox    = mediabox,
-                    bleedbox    = page.BleedBox or cropbox,
-                    trimbox     = page.TrimBox or cropbox,
-                    artbox      = page.ArtBox or cropbox,
-                    rotation    = page.Rotate or 0,
-                    xsize       = cropbox[3] - cropbox[1],
-                    ysize       = cropbox[4] - cropbox[2],
-                }
+                local filename = pdfdoc.filename
+                if cropbox[4] then
+                    return {
+                        filename    = filename,
+                        pagenumber  = pagenumber,
+                        nofpages    = pdfdoc.nofpages,
+                        boundingbox = scaledbbox(cropbox),
+                        cropbox     = cropbox,
+                        mediabox    = mediabox,
+                        bleedbox    = page.BleedBox or cropbox,
+                        trimbox     = page.TrimBox or cropbox,
+                        artbox      = page.ArtBox or cropbox,
+                        rotation    = page.Rotate or 0,
+                        xsize       = cropbox[3] - cropbox[1],
+                        ysize       = cropbox[4] - cropbox[2],
+                    }
+                else
+                    report("bad page %i in file %a",pagenumber,filename or "?")
+                end
             end
         end
     end
@@ -1357,19 +1361,44 @@ if images then do
 
     local variables = interfaces.variables
 
+    local function allcontents(contents)
+        local ctype = contents.__type__
+        if ctype == stream_object_code then
+            return contents()
+        elseif ctype == array_object_code then
+            content = { }
+            for i=1,#contents do
+                content[i] = contents[i]() -- uncompressed
+            end
+            return concat(content," ")
+        else
+            return contents
+        end
+    end
+
+
+
     local function copypage(pdfdoc,pagenumber,attributes,compact,width,height,attr,copymeta)
         if pdfdoc then
             local root     = pdfdoc.Catalog
             local page     = pdfdoc.pages[pagenumber or 1]
             local pageinfo = querypdf(pdfdoc,pagenumber)
-            local contents = page.Contents
-            if contents then
+            if pageinfo then
+                local contents  = page.Contents
                 local xref      = pdfdoc.__xrefs__
                 local copied    = pdfdoc.__copied__
                 local resources = page.Resources
                 if compact and resources and lpdf_epdf.pageplugin then
                     lpdf_epdf.pageplugin(pdfdoc,page,pagenumber,resources,compact)
+-- local old = allcontents(contents)
                     contents = page.Contents
+-- local new = contents
+-- old = string.gsub(old,"%% mps graphic.-[\n\r]+","")
+-- old = string.gsub(old,"%s+"," ")
+-- old = string.gsub(old,"Tm %(.-%)Tj"," ")
+-- new = string.gsub(new,"Tm <.-> Tj"," ")
+-- print(#old,old)
+-- print(#new,new)
                 end
                 local metadata = nil
                 -- page     : only page (default, compatibility)
@@ -1405,7 +1434,7 @@ if images then do
                 local nolength = nil
                 if type(contents) == "string" then
                     content = contents -- can be result of plugin
-                else
+                elseif contents then
                     local ctype = contents.__type__
                     -- we always recompress because image object streams can not be
                     -- influenced (yet)
@@ -1438,6 +1467,8 @@ if images then do
                         end
                         content = concat(content," ")
                     end
+                else
+                    content = ""
                 end
                 -- still not nice: we double wrap now
 --                 plugins = nil
@@ -1460,8 +1491,7 @@ if images then do
                     boundingbox[4] * bpfactor,
                 }
                 -- maybe like bitmaps
--- TESTTEST = content
-                    return createimage { -- beware: can be a img.new or a dummy
+                return createimage { -- beware: can be a img.new or a dummy
                     bbox      = boundingbox,
                     transform = transform,
                     nolength  = nolength,
@@ -1472,7 +1502,7 @@ if images then do
                     kind      = images.types.stream,
                 }
             else
-                -- maybe report an error
+                report("bad page %i in file %a",pagenumber or "0",pdfdoc.filename or "?")
             end
         end
     end

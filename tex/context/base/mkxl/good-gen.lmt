@@ -21,7 +21,6 @@ local texsp          = tex.sp
 local fontgoodies    = fonts.goodies or { }
 local findfile       = resolvers.findfile
 
-
 local typefaces      = fonts.typefaces or { }
 fonts.typefaces      = typefaces
 
@@ -125,11 +124,24 @@ end
 
 fontgoodies.register("filenames", initialize)
 
+local getfilename = fonts.names.getfilename
+
 function fontgoodies.filenames.resolve(name)
     local fd = filedata[name]
     if fd and findfile(name) == "" then
+        -- maybe not:
+        name = getfilename(name)
+        if findfile(name) ~= "" then
+            return name
+        end
+        -- till here
         for i=1,#fd do
             local fn = fd[i]
+            if findfile(fn) ~= "" then
+                return fn
+            end
+            -- new:
+            fn = getfilename(fn)
             if findfile(fn) ~= "" then
                 return fn
             end
@@ -198,7 +210,7 @@ function fontgoodies.designsizes.register(name,size,specification)
 end
 
 function fontgoodies.designsizes.filename(name,spec,size,force) -- returns nil of no match
-    local data = designdata[lower(name)]
+    local data = name and designdata[lower(name)]
     if data then
         if not spec or spec == "" or spec == "default" then
             return data.default

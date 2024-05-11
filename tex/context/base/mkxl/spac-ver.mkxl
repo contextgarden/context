@@ -1709,26 +1709,38 @@
    \ifvbox\nextbox\vbox\else\hbox\fi attr \snapmethodattribute \zerocount {\box\nextbox}% no pack (?), we snap
    \egroup}
 
-\def\spac_grids_check_nop
-  {\gridsnappingfalse
-   \resetsystemmode\v!grid
-   \spac_grids_snap_value_reset}
+% \def\spac_grids_check_nop
+%   {\gridsnappingfalse
+%    \resetsystemmode\v!grid
+%    \spac_grids_snap_value_reset}
 
-\def\spac_grids_check_yes
-  {\gridsnappingtrue
-   \setsystemmode\v!grid
-   \spac_grids_snap_value_set\p_grid}
+% \def\spac_grids_check_yes
+%   {\gridsnappingtrue
+%    \setsystemmode\v!grid
+%    \spac_grids_snap_value_set\p_grid}
+
+% \permanent\protected\def\synchronizegridsnapping
+%   {\edef\p_grid{\layoutparameter\c!grid}%
+%    \ifx\p_grid\v!no         % official
+%      \spac_grids_check_nop
+%    \orelse\ifx\p_grid\v!off % for taco and luigi
+%      \spac_grids_check_nop
+%    \orelse\ifempty\p_grid   % to be sure
+%      \spac_grids_check_nop
+%    \else
+%      \spac_grids_check_yes
+%    \fi}
 
 \permanent\protected\def\synchronizegridsnapping
   {\edef\p_grid{\layoutparameter\c!grid}%
-   \ifx\p_grid\v!no         % official
-     \spac_grids_check_nop
-   \orelse\ifx\p_grid\v!off % for taco and luigi
-     \spac_grids_check_nop
-   \orelse\ifempty\p_grid   % to be sure
-     \spac_grids_check_nop
+   \ifcsname\??gridsnappers\p_grid\endcsname
+     \gridsnappingtrue
+     \setsystemmode\v!grid
+     \spac_grids_snap_value_set\p_grid
    \else
-     \spac_grids_check_yes
+     \gridsnappingfalse
+     \resetsystemmode\v!grid
+     \spac_grids_snap_value_reset
    \fi}
 
 \permanent\protected\def\setupgridsnapping[#1]% less overhead than setuplayout (needs testing)

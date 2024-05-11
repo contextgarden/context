@@ -855,6 +855,7 @@ typedef enum align_codes  {
     omit_code,
     align_content_code,
     no_align_code,
+    re_align_code,
     cr_code,
     cr_cr_code,
 } align_codes;

@@ -197,7 +197,6 @@
    \else
      \zerocount
    \fi
-   \edef\xxx{\expandedmathstyleparameter\mathradicalparameter\c!mathstyle}
    \Urooted
      \s!height\dimexpr\ifcstok{\mathradicalparameter\c!height}\v!none\scaledpoint\else\mathradicalparameter\c!height\fi\relax
      \s!depth \dimexpr\ifcstok{\mathradicalparameter\c!depth }\v!none\scaledpoint\else\mathradicalparameter\c!depth \fi\relax

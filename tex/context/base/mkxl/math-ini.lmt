@@ -227,7 +227,7 @@ local topaccent_class    = registerprivateclass("topaccent")
 local bottomaccent_class = registerprivateclass("bottomaccent")
 local delimiter_class    = registerprivateclass("delimiter")
 local root_class         = registerprivateclass("root")
-local prime_class        = registerprivateclass("prime")
+----- prime_class        = registerprivateclass("prime")
 
 registerprivateclass("botaccent","bottomaccent")
 

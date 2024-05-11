@@ -362,8 +362,12 @@ static int statslib_getconstants(lua_State *L)
     lua_set_integer_by_key(L, "tex_hash_prime",                 hash_prime);
     lua_set_integer_by_key(L, "tex_eqtb_size",                  eqtb_size);
                                                                 
+    lua_set_integer_by_key(L, "math_first_user_class",          math_first_user_class);
+    lua_set_integer_by_key(L, "math_last_user_class",           math_last_user_class);
+    lua_set_integer_by_key(L, "math_all_class",                 math_all_class);
     lua_set_integer_by_key(L, "math_begin_class",               math_begin_class);
     lua_set_integer_by_key(L, "math_end_class",                 math_end_class);
+
     lua_set_integer_by_key(L, "unused_math_family",             unused_math_family);
     lua_set_integer_by_key(L, "unused_math_style",              unused_math_style);
     lua_set_integer_by_key(L, "assumed_math_control",           assumed_math_control);

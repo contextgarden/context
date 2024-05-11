@@ -5843,6 +5843,8 @@ static mp_knot mp_new_knot (MP mp)
     new_number(q->left_y);
     new_number(q->right_x);
     new_number(q->right_y);
+    mp_knotstate(q) = mp_regular_knot;
+    mp_originator(q) = mp_regular_knot;
     return q;
 }
 

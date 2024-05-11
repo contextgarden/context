@@ -544,7 +544,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
                 componentindex = countcomponents(start,marks)
              -- we can be more clever here: "not deletemarks or (skiphash and not skiphash[char])"
              -- and such:
-            elseif not deletemarks then
+                elseif not deletemarks or (skiphash and skiphash[char]) then
                 -- we can get a loop when the font expects otherwise (i.e. unexpected deletemarks)
                 setligaindex(start,baseindex + getligaindex(start,componentindex))
                 if trace_marks then

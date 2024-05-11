@@ -209,6 +209,7 @@ local nuts = {
     naturalwidth            = direct.naturalwidth,
     new                     = direct.new,
     newmathglyph            = direct.newmathglyph,
+    newcontinuationatom     = direct.newcontinuationatom,
     patchattributes         = direct.patchattributes,
     prependbeforehead       = direct.prependbeforehead,
     protectglyph            = direct.protectglyph,

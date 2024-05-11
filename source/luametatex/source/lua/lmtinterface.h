@@ -480,6 +480,7 @@ make_lua_key(L, alignstack);\
 make_lua_key(L, alsosimple);\
 make_lua_key(L, anchor);\
 make_lua_key(L, argument);\
+make_lua_key(L, append);\
 make_lua_key(L, arithmic);\
 make_lua_key(L, association);\
 make_lua_key(L, attr);\

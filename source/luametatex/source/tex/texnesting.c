@@ -230,6 +230,8 @@ void tex_initialize_nesting(void)
     cur_list.direction_stack = null;
     cur_list.math_dir = 0;
     cur_list.math_style = -1;
+    cur_list.math_main_style = -1;
+    cur_list.math_parent_style = -1;
     cur_list.math_flatten = 1;
     cur_list.math_begin = unset_noad_class;
     cur_list.math_end = unset_noad_class;
@@ -283,6 +285,8 @@ void tex_push_nest(void)
         cur_list.direction_stack = null;
         cur_list.math_dir = 0;
         cur_list.math_style = -1;
+        cur_list.math_main_style = top->math_main_style;
+        cur_list.math_parent_style = top->math_parent_style;
         cur_list.math_flatten = 1;
         cur_list.math_begin = unset_noad_class;
         cur_list.math_end = unset_noad_class;

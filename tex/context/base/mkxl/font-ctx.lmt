@@ -1422,7 +1422,7 @@ do  -- else too many locals
                 else
                     -- case 1: same as **
                     local nice = nice_cs(cs)
-                    if not reported[name][nice] then
+                    if name and not reported[name][nice] then
                         report_defining("unable to define %a as %a",name,nice)
                     end
                     lastfontid = -1
@@ -1447,7 +1447,7 @@ do  -- else too many locals
             else
                 -- case 2: same as **
                 local nice = nice_cs(cs)
-                if not reported[name][nice] then
+                if name and not reported[name][nice] then
                     report_defining("unable to define %a as %a",name,nice)
                 end
                 lastfontid = -1
@@ -1832,10 +1832,13 @@ local pattern = P("P")
               * (lpeg.patterns.hexdigit^4 / function(s) return tonumber(s,16) end)
               * P(-1)
 
-local function nametoslot(name) -- also supports PXXXXX (4+ positions)
+local function nametoslot(name,id) -- also supports PXXXXX (4+ positions)
     local t = type(name)
     if t == "string" then
-        local unic = unicodes[true]
+        if not id then
+            id = true
+        end
+        local unic = unicodes[id]
         local slot = unic[name]
         if slot then
             return slot
@@ -1851,7 +1854,7 @@ local function nametoslot(name) -- also supports PXXXXX (4+ positions)
         if not aglunicodes then
             aglunicodes = encodings.agl.unicodes
         end
-        local char = characters[true]
+        local char = characters[id]
         local slot = aglunicodes[name]
         if slot and char[slot] then
             return slot
@@ -1862,7 +1865,7 @@ local function nametoslot(name) -- also supports PXXXXX (4+ positions)
         end
         -- not in font
     elseif t == "number" then
-        if characters[true][name] then
+        if characters[id][name] then
             return slot
         else
             -- not in font

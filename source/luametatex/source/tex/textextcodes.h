@@ -15,6 +15,7 @@ extern halfword tex_get_cat_code               (int h, int n);
 extern int      tex_valid_catcode_table        (int h);
 extern void     tex_unsave_cat_codes           (int h, int gl);
 extern void     tex_copy_cat_codes             (int from, int to);
+extern void     tex_restore_cat_codes          (int h, int level);
 extern void     tex_initialize_cat_codes       (int h);
 /*     void     tex_set_cat_code_table_default (int h, int dflt); */
 /*     int      tex_get_cat_code_table_default (int h); */
@@ -49,5 +50,8 @@ extern void     tex_undump_language_hj_codes   (dumpstream f, int h);
 extern void     tex_free_text_codes            (void);
 
 extern void     tex_run_case_shift             (halfword code);
+
+extern void     tex_show_code_stack            (void);
+
 
 # endif

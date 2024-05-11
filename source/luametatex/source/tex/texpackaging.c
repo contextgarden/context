@@ -2074,7 +2074,7 @@ scaledwhd tex_natural_hsizes(halfword p, halfword pp, glueratio g_mult, int g_si
             case sub_mlist_node:
                 {
                     /* hack */
-                    scaledwhd whd = tex_natural_hsizes(kernel_math_list(p), null, 0.0, 0, 0);
+                    scaledwhd whd = tex_natural_hsizes(kernel_math_list(p), null, normal_glue_multiplier, normal_glue_sign, normal_glue_sign);
                     siz.wd += whd.wd;
                     if (whd.ht > siz.ht) {
                         siz.ht = whd.ht;
@@ -2098,6 +2098,134 @@ scaledwhd tex_natural_hsizes(halfword p, halfword pp, glueratio g_mult, int g_si
             siz.wd -= glueround((glueratio)(g_mult) * (glueratio)(gm));
             break;
     }
+    return siz;
+}
+
+scaledwhd tex_natural_msizes(halfword p, int ignoreprime)
+{
+    scaledwhd siz = { .wd = 0, .ht = 0, .dp = 0, .ns = 0 };
+    while (p) {
+        switch (node_type(p)) {
+            case glyph_node:
+                {
+                    scaledwhd whd = tex_glyph_dimensions_ex(p);
+                    siz.wd += whd.wd;
+                    if (whd.ht > siz.ht) {
+                        siz.ht = whd.ht;
+                    }
+                    if (whd.dp > siz.dp) {
+                        siz.dp = whd.dp;
+                    }
+                    break;
+                }
+            case hlist_node:
+            case vlist_node:
+                {
+                    scaled s = box_shift_amount(p);
+                    scaledwhd whd = ignoreprime ? tex_natural_msizes(box_list(p), ignoreprime) : tex_pack_dimensions(p);
+                    siz.wd += whd.wd;
+                    if (ignoreprime) {
+                        switch (node_subtype(p)) { 
+                            case math_prime_list:
+                            case math_sup_list:
+                            case math_scripts_list:
+                                goto HERE;
+                        }
+                    }
+                    if (whd.ht - s > siz.ht) {
+                        siz.ht = whd.ht - s;
+                    }
+                  HERE:
+                    if (whd.dp + s > siz.dp) {
+                        siz.dp = whd.dp + s;
+                    }
+                    break;
+                }
+            case unset_node:
+                siz.wd += box_width(p);
+                if (box_height(p) > siz.ht) {
+                    siz.ht = box_height(p);
+                }
+                if (box_depth(p) > siz.dp) {
+                    siz.dp = box_depth(p);
+                }
+                break;
+            case rule_node:
+                siz.wd += rule_width(p);
+                if (rule_height(p) > siz.ht) {
+                    siz.ht = rule_height(p);
+                }
+                if (rule_depth(p) > siz.dp) {
+                    siz.dp = rule_depth(p);
+                }
+                break;
+            case glue_node:
+                siz.wd += glue_amount(p);
+                if (is_leader(p)) {
+                    halfword gl = glue_leader_ptr(p);
+                    halfword ht = 0;
+                    halfword dp = 0;
+                    switch (node_type(gl)) {
+                        case hlist_node:
+                        case vlist_node:
+                            ht = box_height(gl);
+                            dp = box_depth(gl);
+                            break;
+                        case rule_node:
+                            ht = rule_height(gl);
+                            dp = rule_depth(gl);
+                            break;
+                    }
+                    if (ht) {
+                        siz.ht = ht;
+                    }
+                    if (dp > siz.dp) {
+                        siz.dp = dp;
+                    }
+                }
+                break;
+            case kern_node:
+                siz.wd += tex_kern_dimension_ex(p);
+                break;
+            case disc_node:
+                {
+                    scaledwhd whd = tex_natural_msizes(disc_no_break_head(p), ignoreprime);
+                    siz.wd += whd.wd;
+                    if (whd.ht > siz.ht) {
+                        siz.ht = whd.ht;
+                    }
+                    if (whd.dp > siz.dp) {
+                        siz.dp = whd.dp;
+                    }
+                }
+                break;
+            case math_node:
+                if (tex_math_glue_is_zero(p) || tex_ignore_math_skip(p)) {
+                    siz.wd += math_surround(p);
+                } else {
+                    siz.wd += math_amount(p);
+                }
+                break;
+            case sub_box_node:
+                break;
+            case sub_mlist_node:
+                {
+                    scaledwhd whd = tex_natural_msizes(kernel_math_list(p), ignoreprime);
+                    siz.wd += whd.wd;
+                    if (whd.ht > siz.ht) {
+                        siz.ht = whd.ht;
+                    }
+                    if (whd.dp > siz.dp) {
+                        siz.dp = whd.dp;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+        p = node_next(p);
+    }
+    siz.ns = siz.wd;
     return siz;
 }
 

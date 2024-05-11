@@ -343,7 +343,9 @@ local function checkfeatures(tfmdata)
 end
 
 local reported = setmetatableindex(function(t,k)
-    t[k] = true
+    if k then
+        t[k] = true
+    end
     return false
 end)
 
@@ -355,8 +357,8 @@ function definers.loadfont(specification)
     if not tfmdata then
         -- normally context will not end up here often (if so there is an issue somewhere)
         local forced = specification.forced or ""
-local id = nextfont(true)
-specification.id = id
+        local id = nextfont(true)
+        specification.id = id
         if forced ~= "" then
             local reader = readers[lower(forced)] -- normally forced is already lowered
             tfmdata = reader and reader(specification)

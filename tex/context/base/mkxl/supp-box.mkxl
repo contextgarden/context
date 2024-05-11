@@ -360,7 +360,7 @@
    \box\scratchbox
    \endgroup}
 
-%D We also define plain's \type {\mathstrut}.
+%D We also define plain's \type {\mathstrut}. It will be replaced in \typ {math-ini}.
 
 \permanent\protected\def\mathstrut{\mathstack{\vphantom(}} % can be made faster by inlining
 

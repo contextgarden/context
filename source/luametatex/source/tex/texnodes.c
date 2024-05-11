@@ -237,6 +237,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_glyph, glyph_math_fraction_subtype,    fraction);
     set_value_entry_key(subtypes_glyph, glyph_math_radical_subtype,     radical);
     set_value_entry_key(subtypes_glyph, glyph_math_middle_subtype,      middle);
+    set_value_entry_key(subtypes_glyph, glyph_math_prime_subtype,       prime);
     set_value_entry_key(subtypes_glyph, glyph_math_accent_subtype,      accent);
 
     subtypes_disc = lmt_aux_allocate_value_info(syllable_discretionary_code);
@@ -283,6 +284,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_list, math_nucleus_list,         nucleus)
     set_value_entry_key(subtypes_list, math_sup_list,             sup)
     set_value_entry_key(subtypes_list, math_sub_list,             sub)
+    set_value_entry_key(subtypes_list, math_prime_list,           prime)
     set_value_entry_key(subtypes_list, math_pre_post_list,        prepost)
     set_value_entry_key(subtypes_list, math_degree_list,          degree)
     set_value_entry_key(subtypes_list, math_scripts_list,         scripts)
@@ -332,6 +334,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_noad, fraction_noad_subtype,    fraction)
     set_value_entry_key(subtypes_noad, radical_noad_subtype,     radical)
     set_value_entry_key(subtypes_noad, middle_noad_subtype,      middle)
+    set_value_entry_key(subtypes_noad, prime_noad_subtype,       prime)
     set_value_entry_key(subtypes_noad, accent_noad_subtype,      accent)
     set_value_entry_key(subtypes_noad, fenced_noad_subtype,      fenced)
     set_value_entry_key(subtypes_noad, ghost_noad_subtype,       ghost)

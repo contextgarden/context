@@ -50,74 +50,75 @@ typedef enum if_test_codes {
         like |\ifzerodim| (we can use |\ifcase| instead but not with |\unless|). 
     */
 
-    if_char_code,           /*tex |\if| */
-    if_cat_code,            /*tex |\ifcat| */
-    if_int_code,            /*tex |\ifnum| */
-    if_abs_int_code,        /*tex |\ifabsnum| */ 
-    if_zero_int_code,       /*tex |\ifzeronum|*/
+    if_char_code,            /*tex |\if| */
+    if_cat_code,             /*tex |\ifcat| */
+    if_int_code,             /*tex |\ifnum| */
+    if_abs_int_code,         /*tex |\ifabsnum| */ 
+    if_zero_int_code,        /*tex |\ifzeronum|*/
     if_interval_int_code,
     if_posit_code,    
     if_abs_posit_code,
     if_zero_posit_code,
     if_interval_posit_code,
-    if_dim_code,            /*tex |\ifdim| */
-    if_abs_dim_code,        /*tex |\ifabsdim| */
-    if_zero_dim_code,       /*tex |\ifzerodim| */
+    if_dim_code,             /*tex |\ifdim| */
+    if_abs_dim_code,         /*tex |\ifabsdim| */
+    if_zero_dim_code,        /*tex |\ifzerodim| */
     if_interval_dim_code,
-    if_odd_code,            /*tex |\ifodd| */
-    if_vmode_code,          /*tex |\ifvmode| */
-    if_hmode_code,          /*tex |\ifhmode| */
-    if_mmode_code,          /*tex |\ifmmode| */
-    if_inner_code,          /*tex |\ifinner| */
-    if_void_code,           /*tex |\ifvoid| */
-    if_hbox_code,           /*tex |\ifhbox| */
-    if_vbox_code,           /*tex |\ifvbox| */
-    if_tok_code,            /*tex |\iftok| */
-    if_cstok_code,          /*tex |\ifcstok| */
-    if_x_code,              /*tex |\ifx| */
-    if_true_code,           /*tex |\iftrue| */
-    if_false_code,          /*tex |\iffalse| */
-    if_chk_int_code,        /*tex |\ifchknum| */
-    if_chk_integer_code,    /*tex |\ifchknumber| */
-    if_val_int_code,        /*tex |\ifnumval| */
-    if_cmp_int_code,        /*tex |\ifcmpnum| */
-    if_chk_dim_code,        /*tex |\ifchkdim| */
-    if_chk_dimension_code,  /*tex |\ifchkdimension| */
-    if_val_dim_code,        /*tex |\ifdimval| */
-    if_cmp_dim_code,        /*tex |\ifcmpdim| */
-    if_case_code,           /*tex |\ifcase| */
-    if_defined_code,        /*tex |\ifdefined| */
-    if_csname_code,         /*tex |\ifcsname| */
-    if_in_csname_code,      /*tex |\ifincsname| */
-    if_font_char_code,      /*tex |\iffontchar| */
-    if_condition_code,      /*tex |\ifcondition| */
-    if_flags_code,          /*tex |\ifflags| */
-    if_empty_code,          /*tex |\ifempty| */
-    if_relax_code,          /*tex |\ifrelax| */
-    if_boolean_code,        /*tex |\ifboolean| */
-    if_numexpression_code,  /*tex |\ifnumexpression| */
-    if_dimexpression_code,  /*tex |\ifdimexpression| */
-    if_last_named_cs_code,  /*tex |\iflastnamedcs| */
-    if_math_parameter_code, /*tex |\ifmathparameter| */
-    if_math_style_code,     /*tex |\ifmathstyle| */
-    if_arguments_code,      /*tex |\ifarguments| */
-    if_parameters_code,     /*tex |\ifparameters| */
-    if_parameter_code,      /*tex |\ifparameter| */
-    if_has_tok_code,        /*tex |\ifhastok| */
-    if_has_toks_code,       /*tex |\ifhastoks| */
-    if_has_xtoks_code,      /*tex |\ifhasxtoks| */
-    if_has_char_code,       /*tex |\ifhaschar| */
-    if_insert_code,         /*tex |\ifinsert| */
-    if_in_alignment_code,   /*tex |\ifinalignment| */
- // if_bitwise_and_code,    /*tex |\ifbitwiseand| */
+    if_odd_code,             /*tex |\ifodd| */
+    if_vmode_code,           /*tex |\ifvmode| */
+    if_hmode_code,           /*tex |\ifhmode| */
+    if_mmode_code,           /*tex |\ifmmode| */
+    if_inner_code,           /*tex |\ifinner| */
+    if_void_code,            /*tex |\ifvoid| */
+    if_hbox_code,            /*tex |\ifhbox| */
+    if_vbox_code,            /*tex |\ifvbox| */
+    if_tok_code,             /*tex |\iftok| */
+    if_cstok_code,           /*tex |\ifcstok| */
+    if_x_code,               /*tex |\ifx| */
+    if_true_code,            /*tex |\iftrue| */
+    if_false_code,           /*tex |\iffalse| */
+    if_chk_int_code,         /*tex |\ifchknum| */
+    if_chk_integer_code,     /*tex |\ifchknumber| */
+    if_val_int_code,         /*tex |\ifnumval| */
+    if_cmp_int_code,         /*tex |\ifcmpnum| */
+    if_chk_dim_code,         /*tex |\ifchkdim| */
+    if_chk_dimension_code,   /*tex |\ifchkdimension| */
+    if_val_dim_code,         /*tex |\ifdimval| */
+    if_cmp_dim_code,         /*tex |\ifcmpdim| */
+    if_case_code,            /*tex |\ifcase| */
+    if_defined_code,         /*tex |\ifdefined| */
+    if_csname_code,          /*tex |\ifcsname| */
+    if_in_csname_code,       /*tex |\ifincsname| */
+    if_font_char_code,       /*tex |\iffontchar| */
+    if_condition_code,       /*tex |\ifcondition| */
+    if_flags_code,           /*tex |\ifflags| */
+    if_empty_code,           /*tex |\ifempty| */
+    if_relax_code,           /*tex |\ifrelax| */
+    if_boolean_code,         /*tex |\ifboolean| */
+    if_numexpression_code,   /*tex |\ifnumexpression| */
+    if_dimexpression_code,   /*tex |\ifdimexpression| */
+    if_last_named_cs_code,   /*tex |\iflastnamedcs| */
+    if_math_parameter_code,  /*tex |\ifmathparameter| */
+    if_math_style_code,      /*tex |\ifmathstyle| */
+    if_arguments_code,       /*tex |\ifarguments| */
+    if_parameters_code,      /*tex |\ifparameters| */
+    if_parameter_code,       /*tex |\ifparameter| */
+    if_has_tok_code,         /*tex |\ifhastok| */
+    if_has_toks_code,        /*tex |\ifhastoks| */
+    if_has_xtoks_code,       /*tex |\ifhasxtoks| */
+    if_has_char_code,        /*tex |\ifhaschar| */
+    if_insert_code,          /*tex |\ifinsert| */
+    if_in_alignment_code,    /*tex |\ifinalignment| */
+    if_cramped_code,         /*tex |\ifcrampedmathstyle| */
+ // if_bitwise_and_code,     /*tex |\ifbitwiseand| */
 } if_test_codes;
 
 # define first_if_test_code fi_code
-# define last_if_test_code  if_in_alignment_code
+# define last_if_test_code  if_cramped_code
 //define last_if_test_code  if_bitwise_and_code
 
 # define first_real_if_test_code if_char_code
-# define last_real_if_test_code  if_in_alignment_code
+# define last_real_if_test_code  if_cramped_code
 //define last_real_if_test_code  if_bitwise_and_code
 
 typedef struct condition_state_info {

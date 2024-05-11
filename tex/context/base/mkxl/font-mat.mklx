@@ -601,12 +601,12 @@
 \permanent\protected\def\setmxxscale{\ifmmode\scaledmathstyle\numexpr\glyphscale*\dimexpression\xxtextface\relax/\dimexpression\textface\relax\relax\fi}
 
 \permanent\protected\def\mx
-  {\aliased\let\mx\mxx
+  {\enforced\let\mx\mxx
    \setmxscale}
 
 \permanent\protected\def\mxx
-  {\aliased\let\mx\relax
-   \aliased\let\mxx\relax
+  {\enforced\let\mx\relax
+   \enforced\let\mxx\relax
    \setmxxscale}
 
 %D This is nasty, as the engine only stores the last set family parameters (per style) which
@@ -647,7 +647,7 @@
 
 \def\math_synchronize_setup
   {\let\currentmathfontclass\fontclass
-   \fastsetup\fontclass}
+   \fastsetup{\s!math:\fontclass}}
 
 \appendtoks
     \ifx\fontclass\currentmathfontclass\else

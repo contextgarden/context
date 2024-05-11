@@ -179,6 +179,9 @@
 % Beware: we don't support mathinner any longer. We do have construct, wrapper, ellipsis etc
 % as replacements and all inner spacing is basically unset.
 
+\setnewconstant\mathallcode             \mathclassvalue all
+\setnewconstant\mathbegincode           \mathclassvalue begin
+\setnewconstant\mathendcode             \mathclassvalue end
 \setnewconstant\mathunsetcode           \mathclassvalue unset
 
 \setnewconstant\mathordinarycode        \mathclassvalue ordinary         \aliased\let\mathordcode  \mathordinarycode
@@ -188,18 +191,20 @@
 \setnewconstant\mathopencode            \mathclassvalue open
 \setnewconstant\mathclosecode           \mathclassvalue close
 \setnewconstant\mathpunctuationcode     \mathclassvalue punctuation      \aliased\let\mathpunctcode\mathpunctuationcode
+\setnewconstant\mathvariablecode        \mathclassvalue variable
+\setnewconstant\mathactivecode          \mathclassvalue active
 \setnewconstant\mathinnercode           \mathclassvalue inner
-\setnewconstant\mathovercode            \mathclassvalue over
 \setnewconstant\mathundercode           \mathclassvalue under
+\setnewconstant\mathovercode            \mathclassvalue over
 \setnewconstant\mathfractioncode        \mathclassvalue fraction
 \setnewconstant\mathradicalcode         \mathclassvalue radical
 \setnewconstant\mathmiddlecode          \mathclassvalue middle
+\setnewconstant\mathprimecode           \mathclassvalue prime
 \setnewconstant\mathaccentcode          \mathclassvalue accent
 \setnewconstant\mathfencedcode          \mathclassvalue fenced          % unlikely to be seen but can be used
 \setnewconstant\mathghostcode           \mathclassvalue ghost           % transparent for classes
-\setnewconstant\mathvariablecode        \mathclassvalue variable
-\setnewconstant\mathactivecode          \mathclassvalue active
 \setnewconstant\mathvcentercode         \mathclassvalue vcenter
+\setnewconstant\mathexplicitcode        \mathclassvalue explicit        % only for for control
 \setnewconstant\mathimaginarycode       \mathclassvalue imaginary
 \setnewconstant\mathdifferentialcode    \mathclassvalue differential
 \setnewconstant\mathexponentialcode     \mathclassvalue exponential
@@ -207,25 +212,17 @@
 \setnewconstant\mathellipsiscode        \mathclassvalue ellipsis        % replacement for inner
 \setnewconstant\mathfunctioncode        \mathclassvalue function
 \setnewconstant\mathdigitcode           \mathclassvalue digit
-\setnewconstant\mathexplicitcode        \mathclassvalue explicit        % only for for control
 \setnewconstant\mathdivisioncode        \mathclassvalue division
 \setnewconstant\mathfactorialcode       \mathclassvalue factorial
 \setnewconstant\mathwrappedcode         \mathclassvalue wrapped         % replacement for inner
 \setnewconstant\mathconstructcode       \mathclassvalue construct       % replacement for inner
 \setnewconstant\mathdimensioncode       \mathclassvalue dimension
+\setnewconstant\mathunarycode           \mathclassvalue unary           % dedicated to Alan
 \setnewconstant\mathtextpunctuationcode \mathclassvalue textpunctuation % for punctuation in text font followed by interword spacing
 \setnewconstant\mathunspacedcode        \mathclassvalue unspaced        % for cases where we don't want spacing at all
 \setnewconstant\mathexperimentalcode    \mathclassvalue experimental    % for MS and HH testing purposed only
-\setnewconstant\mathunarycode           \mathclassvalue unary           % dedicated to Alan
-\setnewconstant\mathnumbergroupcode     \mathclassvalue numbergroup
-
-\setnewconstant\mathbegincode           \mathclassvalue begin
-\setnewconstant\mathendcode             \mathclassvalue end
-\setnewconstant\mathallcode             \mathclassvalue all
 \setnewconstant\mathfakecode            \mathclassvalue fake
-
-\setnewconstant\mathchemicalbondcode    \mathclassvalue chemicalbond
-\setnewconstant\mathimplicationcode     \mathclassvalue implication
+\setnewconstant\mathnumbergroupcode     \mathclassvalue numbergroup
 
 %D \starttyping
 %D \enabletrackers[math.suspicious]
@@ -247,9 +244,14 @@
 %D mathematics     > suspicious > class 37, U+0003D =
 %D \stoptyping
 
-\setnewconstant\mathmaybeordinarycode   \mathclassvalue maybeordinary
-\setnewconstant\mathmayberelationcode   \mathclassvalue mayberelation
-\setnewconstant\mathmaybebinarycode     \mathclassvalue maybebinary
+\setnewconstant\mathmaybeordinarycode \mathclassvalue maybeordinary
+\setnewconstant\mathmayberelationcode \mathclassvalue mayberelation
+\setnewconstant\mathmaybebinarycode   \mathclassvalue maybebinary
+
+%D Chemistry
+
+\setnewconstant\mathchemicalbondcode  \mathclassvalue chemicalbond
+\setnewconstant\mathimplicationcode   \mathclassvalue implication
 
 %setnewconstant\mathtopaccentcode     \mathclassvalue topaccent    % these are private and above 31
 %setnewconstant\mathbottomaccentcode  \mathclassvalue bottomaccent % these are private and above 31
@@ -263,25 +265,25 @@
 %letmathspacing \mathfunctioncode     \mathordinarycode \mathordinarycode \mathordinarycode \mathordinarycode
 %letmathspacing \mathdigitcode        \mathordinarycode \mathordinarycode \mathordinarycode \mathordinarycode
 
-\copymathspacing \mathimaginarycode    \mathordinarycode
-\copymathspacing \mathdifferentialcode \mathordinarycode
-\copymathspacing \mathfactorialcode    \mathordinarycode
-\copymathspacing \mathexponentialcode  \mathordinarycode
-\copymathspacing \mathintegralcode     \mathoperatorcode
-\copymathspacing \mathdigitcode        \mathordinarycode
-\copymathspacing \mathfunctioncode     \mathoperatorcode
-\copymathspacing \mathwrappedcode      \mathfractioncode
-\copymathspacing \mathunarycode        \mathordinarycode
+\copymathspacing \mathimaginarycode      \mathordinarycode
+\copymathspacing \mathdifferentialcode   \mathordinarycode
+\copymathspacing \mathfactorialcode      \mathordinarycode
+\copymathspacing \mathexponentialcode    \mathordinarycode
+\copymathspacing \mathintegralcode       \mathoperatorcode
+\copymathspacing \mathdigitcode          \mathordinarycode
+\copymathspacing \mathfunctioncode       \mathoperatorcode
+\copymathspacing \mathwrappedcode        \mathfractioncode
+\copymathspacing \mathunarycode          \mathordinarycode
 
 \copymathspacing \mathmaybeordinarycode  \mathordinarycode
 \copymathspacing \mathmayberelationcode  \mathrelationcode
 \copymathspacing \mathmaybebinarycode    \mathbinarycode
 
-%copymathspacing \mathnumbergroupcode  \mathpunctuationcode
-\copymathspacing \mathnumbergroupcode  \mathrelationcode     % for now
+%copymathspacing \mathnumbergroupcode    \mathpunctuationcode
+\copymathspacing \mathnumbergroupcode    \mathrelationcode     % for now
 
-\copymathspacing \mathchemicalbondcode \mathordinarycode
-\copymathspacing \mathimplicationcode  \mathrelationcode
+\copymathspacing \mathchemicalbondcode   \mathordinarycode
+\copymathspacing \mathimplicationcode    \mathrelationcode
 
 \setnewconstant\mathlimopcode \plusone % these will go away
 \setnewconstant\mathnolopcode \plusone % these will go away
@@ -393,9 +395,10 @@
 % $x ^^1__2 ^3_4 ^5_6 ^7_8 $
 
 \mathdoublescriptmode
-  "\tohexadecimal\mathfakecode
-   \tohexadecimal\mathfakecode
-   \tohexadecimal\mathfakecode
+  "03%                         % two digits : inheritclass discardshapekern
+   \tohexadecimal\mathfakecode % > 16 so two digits
+   \tohexadecimal\mathfakecode % idem
+   \tohexadecimal\mathfakecode % idem
 
 \integerdef\defaultmathclassoptions\numexpr
    \zerocount
@@ -452,7 +455,7 @@
 \preshortinlinepenalty 150
 
 \appendtoks
-    \shortinlinemaththreshold\emwidth % only for boxed stuff liek accents and fractions
+    \shortinlinemaththreshold\emwidth % only for boxed stuff like accents and fractions
 \to \everybodyfont
 
 %D Actually a bit low level so it might move:
@@ -948,11 +951,13 @@
 \def\math_m_yes_text_openedup#1%
   {\setbox\scratchbox\hbox\bgroup
       \expand\everyswitchmathematics\relax
-      \normalstartimath
-      \usemathstyleparameter\mathematicsparameter\c!mathstyle
+%       \normalstartimath
+%       \usemathstyleparameter\mathematicsparameter\c!mathstyle
+      \Ustartmathmode\expandedmathstyleparameter\mathematicsparameter\c!mathstyle
       \expand\everyinsidemathematics\relax
       #1%
-      \normalstopimath
+%       \normalstopimath
+      \Ustopmathmode
    \egroup
    \ifdim\ht\scratchbox>\strutht
      \math_inline_openup_start_yes
@@ -967,11 +972,13 @@
 
 \def\math_m_yes_text_normal#1%
   {\expand\everyswitchmathematics\relax
-   \normalstartimath
-   \usemathstyleparameter\mathematicsparameter\c!mathstyle
+%    \normalstartimath
+%    \usemathstyleparameter\mathematicsparameter\c!mathstyle
+   \Ustartmathmode\expandedmathstyleparameter\mathematicsparameter\c!mathstyle
    \expand\everyinsidemathematics\relax
    \begingroup#1\endgroup % grouping permits aftergroups trickery
-   \normalstopimath
+%    \normalstopimath
+   \Ustopmathmode
    \endgroup}
 
 \def\math_m_nop#1%
@@ -999,21 +1006,25 @@
   {\relax
    \ifmmode
     %\beginmathgroup\forcedisplaymath#1\endmathgroup
-     \mathconstruct{\forcedisplaymath#1}%
+    %\mathconstruct{\forcedisplaymath#1}%
+     \mathconstruct{\displaystyle\settrue\indisplaymath#1}%
    \else
-     \startimath\begingroup\forcedisplaymath#1\endgroup\stopimath
+    %\startimath\begingroup\forcedisplaymath#1\endgroup\stopimath
+     \Ustartmathmode\displaystyle\settrue\indisplaymath#1\Ustopmathmode % grouping for \aftergroup ?
    \fi}
 
 \permanent\protected\def\im#1%
   {\relax
    \ifmmode
     %\beginmathgroup\forceinlinemath#1\endmathgroup
-     \mathconstruct{\forceinlinemath#1}%
+    %\mathconstruct{\forceinlinemath#1}%
+     \mathconstruct{\textstyle\setfalse\indisplaymath#1}%
    \else
-     \startimath#1\stopimath
+    %\startimath#1\stopimath
+     \Ustartmathmode\textstyle\setfalse\indisplaymath#1\Ustopmathmode
    \fi}
 
-% \aliased\let\m   \mathematics % we keep the simple versions
+% \aliased\let\m\mathematics % we keep the simple versions
 
 % e.g.: \definemathematics[i:mp][setups=i:tight,openup=yes]
 
@@ -1839,6 +1850,21 @@
 \permanent\protected\def\mathcommand#1%
   {\begincsname\??mathcommand#1\endcsname}
 
+% \definemathsymbol[wedontlikethisone][3]["2979]
+% \definemathsymbol[wedontlikethisone][relation]["2979]
+
+\permanent\tolerant\protected\def\definemathsymbol[#1]#*[#2]#*[#3]%
+  {\frozen\expandafter\Umathchardef\csname#1\endcsname
+     \ifparameter#3\or
+        \mathcodechecked{#2}%
+        \zerocount
+        \numexpr#3% \relax
+    \else
+        \zerocount
+        \zerocount
+        \numexpr#2% \relax
+    \fi\relax}
+
 %D Let's define a few comands here:
 
 %definemathcommand [mathstrut]               {\vphantom{(}}
@@ -2049,51 +2075,50 @@
      \setupcurrentmathfunction[#3]%
      \edef\p_limits{\mathfunctionparameter\c!mathlimits}%
      \mathatom
-          mathfont
-          single % behave like a character
-          class \mathfunctioncode
-          \ifx\p_limits\v!no
-            nolimits
-          \orelse\ifx\p_limits\v!yes
-            limits
-          \orelse\ifx\p_limits\v!auto
-            nolimits
-            limits
-          \fi
-%           \ifcstok{\mathfunctionparameter\c!mathlimits}\v!no
-%             nolimits
-%           \orelse\iflastnamedcs\v!yes
-%             limits
-%           \orelse\iflastnamedcs\v!auto
-%             nolimits
-%             limits
-%           \fi
-       \bgroup % textfont
-
+       mathfont
+       single % behave like a character
+       class \mathfunctioncode
+       \ifx\p_limits\v!no
+         nolimits
+       \orelse\ifx\p_limits\v!yes
+         limits
+       \orelse\ifx\p_limits\v!auto
+         nolimits
+         limits
+       \fi
+%        \ifcstok{\mathfunctionparameter\c!mathlimits}\v!no
+%          nolimits
+%        \orelse\iflastnamedcs\v!yes
+%          limits
+%        \orelse\iflastnamedcs\v!auto
+%          nolimits
+%          limits
+%        \fi
+     \bgroup % textfont
 % for now we reserve command for languages and it completely bypasses
 % the atom!
 %
 % \edef\p_command{\mathfunctionparameter\c!command}%
 % \ifempty\p_command
-         \math_tags_mfunctionlab{#2}\c_apply_function
-         \usemathfunctioncolorparameter\c!color
-         \edef\p_functionstyle{\mathfunctionparameter\c!style}%
-         \ifempty\p_functionstyle
-           \expandafter\math_upright
-         \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
-           \expandafter\lastnamedcs
-         \else
-           \expandafter\p_functionstyle
-         \fi
-         \ifcase#1\relax
-           \expandafter\firstofoneargument
-         \or
-           \expandafter\mathlabeltext
-         \fi{#2}%
+     \math_tags_mfunctionlab{#2}\c_apply_function
+     \usemathfunctioncolorparameter\c!color
+     \edef\p_functionstyle{\mathfunctionparameter\c!style}%
+     \ifempty\p_functionstyle
+       \expandafter\math_upright
+     \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
+       \expandafter\lastnamedcs
+     \else
+       \expandafter\p_functionstyle
+     \fi
+     \ifcase#1\relax
+       \expandafter\firstofoneargument
+     \or
+       \expandafter\mathlabeltext
+     \fi{#2}%
 % \else
 %     \p_command\relax
 % \fi
-       \egroup
+     \egroup
    \endgroup}
 
 \def\math_function_handle_language_indeed#1#2#3%
@@ -3473,7 +3498,8 @@
    \fi}
 
 \installcorenamespace{mathstylecommand}
-\installcorenamespace{mathstylecache}
+\installcorenamespace{mathstylecachem}
+\installcorenamespace{mathstylecachet}
 
 \newconstant\c_math_styles_state_style
 \newconstant\c_math_styles_state_cramped
@@ -3483,72 +3509,62 @@
   \ifcase\c_math_styles_state_size
     \ifcase\c_math_styles_state_style
         \ifcase\c_math_styles_state_cramped
-        \relax                               \or
-        \noexpand\triggeruncrampedstyle      \or
-        \noexpand\triggercrampedstyle        \fi
+        \mathstyle            \or
+        \triggeruncrampedstyle\or
+        \triggercrampedstyle  \fi
     \or\ifcase\c_math_styles_state_cramped
-        \noexpand\triggerdisplaystyle        \or
-        \displaystyle                        \or
-        \crampeddisplaystyle                 \fi
+        \ifmode\triggerdisplaystyle\else\displaystyle\fi
+        \or\displaystyle\or\crampeddisplaystyle\fi
     \or\ifcase\c_math_styles_state_cramped
-        \noexpand\triggertextstyle           \or
-        \textstyle                           \or
-        \crampedtextstyle                    \fi
+        \ifmode\triggertextstyle\else\textstyle\fi
+        \or\textstyle\or\crampedtextstyle\fi
     \or\ifcase\c_math_styles_state_cramped
-        \noexpand\triggerscriptstyle         \or
-        \scriptstyle                         \or
-        \crampedscriptstyle                  \fi
+        \ifmode\triggerscriptstyle\else\scriptstyle\fi
+        \or\scriptstyle\or\crampedscriptstyle\fi
     \or\ifcase\c_math_styles_state_cramped
-        \noexpand\triggerscriptscriptstyle   \or
-        \scriptscriptstyle                   \or
-        \crampedscriptscriptstyle            \fi
+        \ifmode\triggerscriptscriptstyle\else\scriptscriptstyle\fi
+        \or\scriptscriptstyle\or\crampedscriptscriptstyle\fi
     \fi
   \or % small
     \ifcase\c_math_styles_state_style
         \ifcase\c_math_styles_state_cramped
-        \noexpand\triggersmallstyle          \or
-        \noexpand\triggeruncrampedsmallstyle \or
-        \noexpand\triggercrampedsmallstyle   \fi
+        \triggersmallstyle         \or
+        \triggeruncrampedsmallstyle\or
+        \triggercrampedsmallstyle  \fi
     \or\ifcase\c_math_styles_state_cramped
-        \noexpand\triggerscriptstyle         \or
-        \scriptstyle                         \or
-        \crampedscriptstyle                  \fi
+        \ifmode\triggerscriptstyle\else\scriptstyle\fi
+        \or\scriptstyle\or\crampedscriptstyle\fi
     \or\ifcase\c_math_styles_state_cramped
-        \noexpand\triggerscriptstyle         \or
-        \scriptstyle                         \or
-        \crampedscriptstyle                  \fi
+        \ifmode\triggerscriptstyle\else\scriptstyle\fi
+        \or\scriptstyle\or\crampedscriptstyle\fi
     \or\ifcase\c_math_styles_state_cramped
-        \noexpand\triggerscriptscriptstyle   \or
-        \scriptscriptstyle                   \or
-        \crampedscriptscriptstyle            \fi
+        \ifmode\triggerscriptscriptstyle\else\scriptscriptstyle\fi
+        \or\scriptscriptstyle\or\crampedscriptscriptstyle\fi
     \or\ifcase\c_math_styles_state_cramped
-        \noexpand\triggerscriptscriptstyle   \or
-        \scriptscriptstyle                   \or
-        \crampedscriptscriptstyle            \fi
+        \ifmode\triggerscriptscriptstyle\else\scriptscriptstyle\fi
+        \or\scriptscriptstyle\or\crampedscriptscriptstyle\fi
     \fi
   \or % large
     \ifcase\c_math_styles_state_style
         \ifcase\c_math_styles_state_cramped
-        \noexpand\triggerbigstyle            \or
-        \noexpand\triggeruncrampedbigstyle   \or
-        \noexpand\triggercrampedbigstyle     \fi
+        \triggerbigstyle         \or
+        \triggeruncrampedbigstyle\or
+        \triggercrampedbigstyle  \fi
     \or\ifcase\c_math_styles_state_cramped
-        \noexpand\triggerdisplaystyle        \or
-        \displaystyle                        \or
-        \crampeddisplaystyle                 \fi
+        \ifmode\triggerdisplaystyle\else\displaystyle\fi
+        \or\displaystyle\or\crampeddisplaystyle\fi
     \or\ifcase\c_math_styles_state_cramped
-        \noexpand\triggertextstyle           \or
-        \textstyle                           \or
-        \crampedtextstyle                    \fi
+        \ifmode\triggertextstyle\else\textstyle\fi
+        \or\textstyle\or\crampedtextstyle\fi
     \or\ifcase\c_math_styles_state_cramped
-        \noexpand\triggertextstyle           \or
-        \textstyle                           \or
-        \crampedtextstyle                    \fi
+        \ifmode\triggertextstyle\else\textstyle\fi
+        \or\textstyle\or\crampedtextstyle\fi
     \or\ifcase\c_math_styles_state_cramped
-        \noexpand\triggerscriptstyle         \or
-        \scriptstyle                         \or
-        \crampedscriptstyle                  \fi
+        \ifmode\triggerscriptstyle\else\scriptstyle\fi
+        \or\scriptstyle\or\crampedscriptstyle\fi
     \fi
+  \else
+    \mathstyle
   \fi
 }
 
@@ -3573,6 +3589,23 @@
 \defcsname\??mathstylecommand\v!small       \endcsname{\c_math_styles_state_size   \plusone}
 \defcsname\??mathstylecommand\v!big         \endcsname{\c_math_styles_state_size   \plustwo}
 
+%D A \type {mathstyle} is a set of:
+%D
+%D \starttabulate[|lT|lT|]
+%D \BC style   \NC display text script scriptscript \NC \NR
+%D \BC variant \NC uncramped cramped normal packed \NC \NR
+%D \BC size    \NC small big \NC \NR
+%D \stoptabulate
+%D
+%D \startbuffer
+%D \m{x\foo}
+%D \m[mathstyle=text]{x\foo}
+%D \m[mathstyle={cramped,text}]{x\foo}
+%D \m[mathstyle=scriptscript]{x\foo \scriptstyle\foo}
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
 %D \startbuffer
 %D \definemathstyle[mystyle][scriptscript]
 %D
@@ -3585,15 +3618,17 @@
 
 \installcorenamespace {mathstyle}
 
-\letcsname\??mathstyle     \endcsname\empty
-\letcsname\??mathstylecache\endcsname\empty
+\letcsname\??mathstyle      \endcsname\empty
+%letcsname\??mathstylecachem\endcsname\empty
+%letcsname\??mathstylecachet\endcsname\empty
 
 \defcsname\??mathstyle\v!normal\endcsname{\givenmathstyle\normalmathstyle}
+\defcsname\??mathstyle         \endcsname{\givenmathstyle\normalmathstyle}
 
 \def\math_style_set_indeed
   {\ifcsname\??mathstyle\m_math_style_asked\endcsname
      \lastnamedcs
-   \orelse\ifcsname\??mathstylecache\m_math_style_asked\endcsname
+   \orelse\ifcsname\ifmmode\??mathstylecachem\the\mathstyle:\else\??mathstylecachet\fi\m_math_style_asked\endcsname
      \lastnamedcs
    \else
      \math_style_set_mathstyle_mathstylecache\m_math_style_asked
@@ -3605,7 +3640,7 @@
 \def\math_style_set_expanded#1%
   {\ifcsname\??mathstyle#1\endcsname
      \lastnamedcs
-   \orelse\ifcsname\??mathstylecache#1\endcsname
+   \orelse\ifcsname\ifmmode\??mathstylecachem\the\mathstyle:\else\??mathstylecachet\fi#1\endcsname
      \lastnamedcs
    \else
      \math_style_set_mathstyle_mathstylecache{#1}%
@@ -3636,9 +3671,9 @@
    \c_math_styles_state_cramped\zerocount
    \c_math_styles_state_size   \zerocount
    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
-   \gletcsname\??mathstylecache\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
+   \gletcsname\ifmmode\??mathstylecachem\the\mathstyle:\else\??mathstylecachet\fi\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
    \endlocalcontrol
-   \csname\??mathstylecache#1\endcsname}
+   \csname\ifmmode\??mathstylecachem\the\mathstyle:\else\??mathstylecachet\fi\m_math_style_asked\endcsname}
 
 % \letcsname\??mathstyle     \??mathstyle     \endcsname\math_style_set_mathstyle_mathstyle      % still needed?
 % \letcsname\??mathstylecache\??mathstylecache\endcsname\math_style_set_mathstyle_mathstylecache % still needed?

@@ -2347,10 +2347,10 @@ local finalize  do
                 boundingbox[4] * bpfactor,
             }
 
-            local contentsobj = pdfflushstreamobject(content,false,true)
+            local contentsobj = content ~= "" and pdfflushstreamobject(content,false,true) or false -- empty /Contents are forbidden
 
             pageattributes.Type      = pdf_page
-            pageattributes.Contents  = pdfreference(contentsobj)
+            pageattributes.Contents  = contentsobj and pdfreference(contentsobj)
             pageattributes.Resources = pageresources
          -- pageattributes.Resources = pdfreference(pdfflushobject(pageresources))
          -- pageattributes.MediaBox  = bbox

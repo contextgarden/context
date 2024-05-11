@@ -366,7 +366,7 @@
 
 \stoptext
 
-% \setupbodyfont[10pt]
+% \setupbodyfont[10pt] % we need to use LatinModern!
 %
 % \starttext
 %

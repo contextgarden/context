@@ -2000,7 +2000,7 @@
 
 \def\strc_formulas_place_number_in_box
   {\dostarttagged\t!formulacaption\empty
-   \glet\strc_formulas_place_number       \relax
+   \glet\strc_formulas_place_number\relax
   %\glet\strc_formulas_place_number_nested\gobbletwoarguments
    \global\setbox\b_strc_formulas_number\naturalhbox{\strc_formulas_number_indeed}%
    \global\d_strc_formulas_number\wd\b_strc_formulas_number

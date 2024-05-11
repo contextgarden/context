@@ -23,7 +23,7 @@ if not modules then modules = { } end modules ['lpdf-fix'] = {
 --         transparency = true, -- when zero
 --         extgstate    = true,
 --         cmyk         = true,
---     },
+    --     },
 --     add = {
 --         cidset, -- when missing or even fix
 --     },
@@ -45,27 +45,28 @@ do
      -- [""]             = false,
     }
 
-    function codeinjections.registercompactor(name,data)
+    local function registercompactor(name,data)
         if not data then
             data = name
             name = data.name
+            data.name = nil
         end
         compactors[name] = setmetatableindex(data,"table")
     end
+
+    codeinjections.registercompactor = registercompactor
 
     function codeinjections.validcompactor(name)
         return name and compactors[name] or false
     end
 
-    compactors["preset:yes"] = {
+    registercompactor ( "preset:yes", {
         merge = {
             lmtx = true,
         },
-    }
+    } )
 
-    compactors[interfaces.variables.yes] = compactors["preset:yes"]
-
-    compactors["preset:merge"] = {
+    registercompactor ( "preset:merge", {
         merge = {
             type0    = true,
             truetype = true,
@@ -73,7 +74,9 @@ do
          -- type3    = true,
             lmtx     = true,
         },
-    }
+    } )
+
+    compactors[interfaces.variables.yes] = compactors["preset:yes"]
 
 end
 

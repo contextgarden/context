@@ -70,7 +70,7 @@ void *sa_free_array(void *p)
 
 */
 
-static void sa_aux_store_stack(const sa_tree a, int n, sa_tree_item v1, sa_tree_item v2, int gl)
+static void sa_aux_store_stack(const sa_tree head, int n, sa_tree_item v1, sa_tree_item v2, int gl)
 {
     sa_stack_item st = {
         .code    = n,
@@ -78,24 +78,34 @@ static void sa_aux_store_stack(const sa_tree a, int n, sa_tree_item v1, sa_tree_
         .value_2 = v2,
         .level   = gl
     };
-    if (! a->stack) {
-        a->stack = sa_malloc_array(sizeof(sa_stack_item), a->sa_stack_size);
-    } else if (((a->sa_stack_ptr) + 1) >= a->sa_stack_size) {
-        a->stack = sa_realloc_array(a->stack, sizeof(sa_stack_item), a->sa_stack_size, a->sa_stack_step);
-        a->sa_stack_size += a->sa_stack_step;
+ // if (head->sa_stack_ptr && 
+ //     head->stack[head->sa_stack_ptr].code == n && 
+ //     head->stack[head->sa_stack_ptr].value_1.int_value == v1.int_value &&
+ //     head->stack[head->sa_stack_ptr].value_2.int_value == v2.int_value &&
+ //     head->stack[head->sa_stack_ptr].level == gl 
+ //     ) {
+ //     return;
+ // }
+    if (! head->stack) {
+        head->stack = sa_malloc_array(sizeof(sa_stack_item), head->sa_stack_size);
+    } else if (((head->sa_stack_ptr) + 1) >= head->sa_stack_size) {
+        head->stack = sa_realloc_array(head->stack, sizeof(sa_stack_item), head->sa_stack_size, head->sa_stack_step);
+        head->sa_stack_size += head->sa_stack_step;
     }
-    (a->sa_stack_ptr)++;
-    a->stack[a->sa_stack_ptr] = st;
+ // printf("store %i: code %i, v1 %i, v2 %i, level %i\n",head->identifier,st.code,st.value_1.int_value,st.value_2.int_value,st.level);
+    (head->sa_stack_ptr)++;
+    head->stack[head->sa_stack_ptr] = st;
 }
 
-static void sa_aux_skip_in_stack(const sa_tree a, int n)
+static void sa_aux_skip_in_stack(const sa_tree head, int n)
 {
-    if (a->stack) {
-        int p = a->sa_stack_ptr;
+    if (head->stack) {
+        int p = head->sa_stack_ptr;
         while (p > 0) {
-            if (a->stack[p].code == n && a->stack[p].level > 0) {
-                a->stack[p].level = -(a->stack[p].level);
+            if (head->stack[p].code == n && head->stack[p].level > 0) {
+                head->stack[p].level = -(head->stack[p].level);
             }
+         // printf("skip %i: code %i, v1 %i, v2 %i, level %i\n",head->identifier,head->stack[p].code,head->stack[p].value_1.int_value,head->stack[p].value_2.int_value,head->stack[p].level);
             p--;
         }
     }
@@ -362,6 +372,7 @@ sa_tree sa_copy_tree(const sa_tree b)
     a->sa_stack_step = b->sa_stack_step;
     a->sa_stack_size = b->sa_stack_size;
     a->bytes = b->bytes;
+    a->identifier = b->identifier;
     a->dflt = b->dflt;
     a->stack = NULL;
     a->sa_stack_ptr = 0;
@@ -400,7 +411,7 @@ sa_tree sa_copy_tree(const sa_tree b)
 
 */
 
-sa_tree sa_new_tree(int size, int bytes, sa_tree_item dflt)
+sa_tree sa_new_tree(int identifier, int size, int bytes, sa_tree_item dflt)
 {
     sa_tree_head *a = (sa_tree_head *) lmt_memory_malloc(sizeof(sa_tree_head));
     a->dflt = dflt;
@@ -411,6 +422,7 @@ sa_tree sa_new_tree(int size, int bytes, sa_tree_item dflt)
     a->sa_stack_size = size;
     a->sa_stack_step = size;
     a->bytes = bytes;
+    a->identifier = identifier;
     a->sa_stack_ptr = 0;
     return (sa_tree) a;
 }
@@ -454,10 +466,48 @@ void sa_restore_stack(const sa_tree head, int gl)
         }
     }
 }
+void sa_reinit_stack(const sa_tree head, int level)
+{
+    if (head->stack) {
+        /*tex Stack slot 0 is a dummy. */
+        for(int i = head->sa_stack_ptr; i > 0 ; i--) {
+            sa_stack_item st = head->stack[i];
+            if (st.level > 0) {
+             // printf("reinit %i: code %i, v1 %i, v2 %i, level %i\n",head->identifier,st.code,st.value_1.int_value,st.value_2.int_value,st.level);
+                switch (head->bytes) {
+                    case 1 : sa_set_item_1(head, st.code, st.value_1.uchar_value[st.code%4], level); break;
+                    case 2 : sa_set_item_2(head, st.code, st.value_1.ushort_value[st.code%2], level); break;
+                    case 4 : sa_set_item_4(head, st.code, st.value_1, level); break;
+                }
+            }
+        }
+    }
+}
+
+void sa_show_stack(const sa_tree head)
+{
+    if (head->stack) {
+        /*tex Stack slot 0 is a dummy. */
+     // tex_print_format("%l[codestack %i, size %i]\n", head->identifier, head->sa_stack_ptr - 1);
+        tex_print_format("[codestack %i, size %i]\n", head->identifier, head->sa_stack_ptr - 1);
+        for (int i = 1; i <= head->sa_stack_ptr; i++) {
+            sa_stack_item st = head->stack[i];
+            int value = 0;
+            switch (head->bytes) {
+                case 1 : value = st.value_1.uchar_value[st.code%4]; break;
+                case 2 : value = st.value_1.ushort_value[st.code%2]; break;
+                case 4 : value = st.value_1.int_value; break;
+            }
+            tex_print_format("%l[%i: level %i, code %i, value %i]\n",i, st.level,st.code,value);
+        }
+        tex_print_format("%l[codestack %i bottom]\n", head->identifier);
+    }
+}
 
 void sa_dump_tree(dumpstream f, sa_tree a)
 {
     int bytes = a->bytes;
+    dump_int(f, a->identifier);
     dump_int(f, a->sa_stack_step);
     dump_int(f, a->dflt.int_value);
  // if (a->tree) {
@@ -546,8 +596,9 @@ sa_tree sa_undump_tree(dumpstream f)
 {
     int x;
     sa_tree a = (sa_tree) sa_malloc_array(sizeof(sa_tree_head), 1);
-    undump_int(f,a->sa_stack_step);
-    undump_int(f,a->dflt.int_value);
+    undump_int(f, a->identifier);
+    undump_int(f, a->sa_stack_step);
+    undump_int(f, a->dflt.int_value);
     a->sa_stack_size = a->sa_stack_step;
     a->stack = sa_calloc_array(sizeof(sa_stack_item), a->sa_stack_size);
     a->sa_stack_ptr = 0;

@@ -1353,8 +1353,8 @@ local ruledglue, ruledmathglue do
 
     local mathvalues = tex.mathparametercodes -- nodes.mathvalues
 
-    mathvalues[-1] = "left"
-    mathvalues[-2] = "right"
+    mathvalues[-1] = "left"  -- (script) slack detail value
+    mathvalues[-2] = "right" -- (script) slack detail value
 
     local morehack = setmetatableindex(function(t,k)
         local v = mathematics.classnames[k] -- yet unknown

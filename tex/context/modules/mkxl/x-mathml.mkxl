@@ -1076,6 +1076,23 @@
 
 \def\mmlforallexistslist{mml:bvar\string|mml:forall\string|mml:exists\string|mml:condition}
 
+\definemathfence
+  [weirdfences]
+  [bar]
+  [\c!right=]
+
+\definemathalignment
+  [weirdforall]
+  [\c!location=\v!packed,
+   \c!fences=weirdfences,
+   \c!m=1,
+   \c!n=1,
+   \c!align=1:\v!left]
+
+\startxmlsetups mml:forallexists:step
+    \NC \xmlflush{#1} \NR
+\stopxmlsetups
+
 \startxmlsetups mml:forallexists
     \normalsubscript{\xmlconcat{#1}{/mml:bvar}{\MMLseparator,}}
     \xmldoifelse {#1} {/mml:condition} {
@@ -1092,11 +1109,9 @@
             \right.
         \else
             % special case
-            \left\vert
-                \matrix {
-                    \xmlconcat{#1}{/!(\mmlforallexistslist)}{\hfill\crcr}
-                }
-            \right.
+            \startweirdforall % location=packed,fences=weirdfences,m=1,n=1,align=1:left]
+                \xmlcommand{#1}{/!(\mmlforallexistslist)/}{mml:forallexists:step}
+            \stopweirdforall
         \fi
     } {
         :\xmlfirst{#1}{/!(\mmlforallexistslist)}

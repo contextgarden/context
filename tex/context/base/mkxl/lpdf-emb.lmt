@@ -2020,7 +2020,8 @@ do
         function methods.pdf(filename,details)
             local properties = details.properties
             local pdfshapes  = properties.indexdata[1]
-            local pdfdoc     = openpdf(pdfshapes.filename)
+            local filename   = pdfshapes.filename
+            local pdfdoc     = openpdf(filename)
             local xforms     = pdfdictionary()
             local nofglyphs  = 0
             if pdfdoc then
@@ -2034,7 +2035,11 @@ do
                     local image     = useddoc[glyph]
                     local reference = nil
                     if not image then
-                        image        = embedimage(copypage(pdfdoc,glyph))
+                        image = embedimage(copypage(pdfdoc,glyph))
+                        if not image then
+                            report_fonts("bad image in file %a",filenameme)
+                            return
+                        end
                         nofglyphs    = nofglyphs + 1
                         local name   = f_glyph(nofglyphs)
                         local stream = nil

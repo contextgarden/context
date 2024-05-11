@@ -481,7 +481,7 @@ static void tex_aux_pop_alignment(void)
 /*tex
 
     \TEX\ has eight procedures that govern alignments: |initialize_align| and |finish_align| are
-    used at the  very beginning and the very end; |initialize_row| and |finish_row| are used at
+    used at the very beginning and the very end; |initialize_row| and |finish_row| are used at
     the beginning and end of individual rows; |initialize_span| is used at the beginning of a
     sequence of spanned columns (possibly involving only one column); |initialize_column| and
     |finish_column| are used at the beginning and end of individual columns; and |align_peek| is
@@ -1142,20 +1142,92 @@ static void tex_aux_initialize_row(void)
 
 */
 
+inline static void tex_alignment_aux_flush_local_template(halfword record)
+{
+    if (record) { 
+        if (align_record_pre_local(record)) { 
+            tex_flush_token_list(align_record_pre_local(record));
+            align_record_pre_local(record) = null;
+        }
+        if (align_record_post_local(record)) { 
+            tex_flush_token_list(align_record_post_local(record));
+            align_record_post_local(record) = null;
+        }
+    }
+}
+
+inline static void tex_alignment_aux_scan_local_template(halfword record)
+{
+    halfword prehead = null;
+    halfword posthead = null;
+    halfword pretail = null;
+    halfword posttail = null;
+    do {
+        tex_get_x_token();
+    } while (cur_cmd == spacer_cmd);
+    if (cur_cmd == left_brace_cmd) {
+        prehead = tex_scan_toks_normal(1, &pretail);
+        // tex_store_new_token(pretail, deep_frozen_end_template_token);
+    } else { 
+        tex_handle_error(
+            insert_error_type,
+            "Missing pre cell token list"
+        );
+    }
+    do {
+        tex_get_x_token();
+    } while (cur_cmd == spacer_cmd);
+    if (cur_cmd == left_brace_cmd) {
+        posthead = tex_scan_toks_normal(1, &posttail);
+        tex_store_new_token(posttail, deep_frozen_end_template_token);
+    } else { 
+        tex_handle_error(
+            insert_error_type,
+            "Missing post cell token list"
+        );
+    }
+    if (prehead) {
+        align_record_pre_local(record) = token_link(prehead);
+        token_link(prehead) = null;
+        tex_put_available_token(prehead);
+    }
+    if (posthead) {
+        align_record_post_local(record) = token_link(posthead);
+        token_link(posthead) = null;
+        tex_put_available_token(posthead);
+    } 
+}
+
 static void tex_aux_initialize_column(void)
 {
-    align_record_cmd(lmt_alignment_state.cur_align) = cur_cmd;
-    align_record_chr(lmt_alignment_state.cur_align) = cur_chr;
-    if (cur_cmd == alignment_cmd && cur_chr == omit_code) {
-        lmt_input_state.align_state = 0;
-    } else {
-        tex_back_input(cur_tok);
-        if (every_tab_par) {
-            tex_begin_token_list(every_tab_par, every_tab_text);
+    halfword cmd = cur_cmd;
+    halfword chr = cur_chr;
+    align_record_cmd(lmt_alignment_state.cur_align) = cmd;
+    align_record_chr(lmt_alignment_state.cur_align) = chr;
+    if (cmd == alignment_cmd) {
+        switch (chr) { 
+            case re_align_code:
+                {
+                    tex_alignment_aux_scan_local_template(lmt_alignment_state.cur_align);
+                    cur_cmd = cmd;
+                    cur_chr = chr;
+                    lmt_input_state.align_state = busy_alignment_state;
+                    goto OKAY;
+                }
+            case omit_code: 
+                {
+                    lmt_input_state.align_state = 0;
+                    return; 
+                }
         }
-        tex_begin_token_list(align_record_pre_part(lmt_alignment_state.cur_align), template_pre_text);
     }
     /*tex Now |align_state = 1000000|, one of these magic numbers. */
+    tex_back_input(cur_tok);
+  OKAY:
+    if (every_tab_par) {
+        tex_begin_token_list(every_tab_par, every_tab_text);
+    }
+    tex_begin_token_list(align_record_pre_local(lmt_alignment_state.cur_align) ? align_record_pre_local(lmt_alignment_state.cur_align) : align_record_pre_part(lmt_alignment_state.cur_align), template_pre_text);
 }
 
 /*tex
@@ -1179,7 +1251,7 @@ void tex_insert_alignment_template(void)
         /*tex in case of an |\omit| the gets discarded and is nowhere else referenced. */
         halfword cmd = align_record_cmd(lmt_alignment_state.cur_align);
         halfword chr = align_record_chr(lmt_alignment_state.cur_align);
-        halfword tok = (cmd == alignment_cmd && chr == omit_code) ? lmt_alignment_state.omit_template : align_record_post_part(lmt_alignment_state.cur_align);
+        halfword tok = (cmd == alignment_cmd && chr == omit_code) ? lmt_alignment_state.omit_template : align_record_post_local(lmt_alignment_state.cur_align) ? align_record_post_local(lmt_alignment_state.cur_align) : align_record_post_part(lmt_alignment_state.cur_align);
         align_record_cmd(lmt_alignment_state.cur_align) = cur_cmd;
         align_record_chr(lmt_alignment_state.cur_align) = cur_chr;
         tex_begin_token_list(tok, template_post_text);
@@ -1246,6 +1318,7 @@ halfword tex_alignment_hold_token_head(void)
 
 static int tex_aux_finish_column(void)
 {
+    tex_alignment_aux_flush_local_template(lmt_alignment_state.cur_align);
     if (! lmt_alignment_state.cur_align) {
         tex_confusion("end template, case 1");
     } else {
@@ -2102,7 +2175,7 @@ void tex_run_alignment_end_template(void)
 {
     lmt_input_state.base_ptr = lmt_input_state.input_stack_data.ptr;
     lmt_input_state.input_stack[lmt_input_state.base_ptr] = lmt_input_state.cur_input;
-    while ((  lmt_input_state.input_stack[lmt_input_state.base_ptr].index != template_post_text )
+    while ((  lmt_input_state.input_stack[lmt_input_state.base_ptr].index != template_post_text)
         && (! lmt_input_state.input_stack[lmt_input_state.base_ptr].loc)
         && (  lmt_input_state.input_stack[lmt_input_state.base_ptr].state == token_list_state)) {
         --lmt_input_state.base_ptr;

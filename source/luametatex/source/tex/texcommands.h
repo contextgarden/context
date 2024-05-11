@@ -576,6 +576,7 @@ typedef enum some_item_codes {
     math_scale_code,            /*tex |\mathscale| */
     math_style_code,            /*tex |\mathstyle| */
     math_main_style_code,       /*tex |\mathmainstyle| */
+    math_parent_style_code,     /*tex |\mathparentstyle| */
     math_style_font_id_code,    /*tex |\mathstylefontid| */
     math_stack_style_code,      /*tex |\mathstackstyle| */
     math_char_class_code,       /*tex |\Umathcharclass| */
@@ -640,6 +641,7 @@ extern const unsigned char some_item_classification[last_page_extra_code+1];
 
 typedef enum catcode_table_codes {
     save_cat_code_table_code,
+    restore_cat_code_table_code,
     init_cat_code_table_code,
  /* dflt_cat_code_table_code, */
 } catcode_table_codes;
@@ -796,14 +798,15 @@ typedef enum math_char_number_codes {
 # define last_math_char_number_code math_class_number_code
 
 typedef enum xray_codes {
-    show_code,        /*tex |\show| */
-    show_box_code,    /*tex |\showbox| */
-    show_the_code,    /*tex |\showthe| */
-    show_lists_code,  /*tex |\showlists| */
-    show_groups_code, /*tex |\showgroups| */
-    show_stack_code,  /*tex |\showstack| */
-    show_tokens_code, /*tex |\showtokens|, must be odd! */
-    show_ifs_code,    /*tex |\showifs| */
+    show_code,            /*tex |\show| */
+    show_box_code,        /*tex |\showbox| */
+    show_the_code,        /*tex |\showthe| */
+    show_lists_code,      /*tex |\showlists| */
+    show_groups_code,     /*tex |\showgroups| */
+    show_stack_code,      /*tex |\showstack| */
+    show_code_stack_code, /*tex |\showcodestack| */
+    show_tokens_code,     /*tex |\showtokens|, must be odd! */
+    show_ifs_code,        /*tex |\showifs| */
 } xray_codes;
 
 # define last_xray_code show_ifs_code
@@ -1310,7 +1313,7 @@ typedef enum tex_correction_codes {
     right_correction_code,
 } tex_correction_codes;
 
-# define last_mskip_code atom_mskip_code
+# define last_correction_code right_correction_code
 
 /*tex
     All the other cases are zero but we use an indicator for that.

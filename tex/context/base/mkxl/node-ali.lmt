@@ -26,7 +26,6 @@ local getboth            = nuts.getboth
 local getglue            = nuts.getglue
 local setglue            = nuts.setglue
 local getwhd             = nuts.getwhd
-local setwhd             = nuts.setwhd
 local setpenalty         = nuts.setpenalty
 local getlist            = nuts.getlist
 local setlist            = nuts.setlist
@@ -335,7 +334,7 @@ do
 
     local getdata           = nuts.getdata
     local removenode        = nuts.remove
-    local getwhd            = nuts.getwhd
+ -- local getwhd            = nuts.getwhd
     local getheight         = nuts.getheight
     local getdepth          = nuts.getdepth
     local setheight         = nuts.setheight

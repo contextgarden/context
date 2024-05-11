@@ -24,7 +24,7 @@
 \installcorenamespace{mathoperators}
 \installcorenamespace{mathoperatormethod}
 
-\mathlimitsmode\plusone % make long script look right
+\mathlimitsmode\plusone % make long script look right ... font dependent!
 
 \installcommandhandler \??mathoperators {mathoperator} \??mathoperators
 

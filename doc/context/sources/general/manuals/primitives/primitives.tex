@@ -1931,14 +1931,31 @@ This is the box register accessor that returns a copy of the box.
 
 \stopoldprimitive
 
-% \startnewprimitive[title={\prm {copymathatomrule}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {copymathatomrule}}]
 
-% \startnewprimitive[title={\prm {copymathparent}}]
-% \stopnewprimitive
+This copies the rule bitset from the parent class (second argument) to the target
+class (first argument). The bitset controls the features that apply to atoms.
 
-% \startnewprimitive[title={\prm {copymathspacing}}]
-% \stopnewprimitive
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {copymathparent}}]
+
+This binds the given class (first argument) to another class (second argument) so
+that one doesn't need to define all properties.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {copymathspacing}}]
+
+This copies an class spacing specification to another one, so in
+
+\starttyping
+\copymathspacing 34 2
+\stoptyping
+
+class 34 (a user one) get the spacing from class 2 (binary).
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {count}}]
 
@@ -1994,7 +2011,6 @@ There is a lowlevel manual on registers.
 
 This ends a row in an alignment. It also ends an alignment preamble.
 \stopoldprimitive
-
 
 \startnewprimitive[title={\prm {crampeddisplaystyle}}]
 
@@ -3922,8 +3938,26 @@ gives: \inlinebuffer.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {fontmathcontrol}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {fontmathcontrol}}]
+
+The \prm {mathfontcontrol} parameter controls how the engine deals with specific
+font related properties and possibilities. It is set at the \TEX\ end. It makes
+it possible to fine tune behavior in this mixed traditional and not perfect
+\OPENTYPE\ math font arena. One can also set this bitset when initializing
+(loading) the font (at the \LUA\ end) and the value set there is available in
+\prm {fontmathcontrol}. The bits set in the font win over those in \prm
+{mathfontcontrol}. There are a few cases where we set these options in the (so
+called) goodie files. For instance we ignore font kerns in Libertinus, Antykwa
+and some more.
+
+\starttabulate[|l|rT|]
+\NC modern     \NC \bgroup\switchtobodyfont    [modern]\normalexpanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
+\NC pagella    \NC \bgroup\switchtobodyfont   [pagella]\normalexpanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
+\NC antykwa    \NC \bgroup\switchtobodyfont   [antykwa]\normalexpanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
+\NC libertinus \NC \bgroup\switchtobodyfont[libertinus]\normalexpanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
+\stoptabulate
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {fontname}}]
 
@@ -4290,8 +4324,12 @@ As with standard \TEX\ we also define global ones:
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {givenmathstyle}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {givenmathstyle}}]
+
+This primitive expects a math style and returns it when valid or otherwise issues
+an error.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {gleaders}}]
 
@@ -4622,13 +4660,13 @@ This parameter tells the par builder when indentation specified with \prm
 {hangindent} starts. A negative value does the opposite and starts indenting
 immediately. So, a value of $-2$ will make the first two lines indent.
 
+\stopoldprimitive
+
 \startoldprimitive[title={\prm {hangindent}}]
 
 This parameter relates to \prm {hangafter} and sets the amount of indentation.
 When larger than zero indentation happens left, otherwise it starts at the right
 edge.
-
-\stopoldprimitive
 
 \stopoldprimitive
 
@@ -5267,6 +5305,23 @@ is also okay. Now, is that neat or not?
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {ifcramped}}]
+
+Depending on the given math style this returns true of false:
+
+\startbuffer
+\ifcramped\mathstyle        no  \fi
+\ifcramped\crampedtextstyle yes \fi
+\ifcramped\textstyle        no  \fi
+\ifcramped\displaystyle     yes \fi
+\stopbuffer
+
+\typebuffer
+
+gives: \inlinebuffer.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {ifcsname}}]
 
 This is an \ETEX\ conditional that complements the one on the previous section:
@@ -5277,7 +5332,7 @@ This is an \ETEX\ conditional that complements the one on the previous section:
 \stoptyping
 
 Here the first one has the side effect of defining the macro and defaulting it to
-\prm {relax}, while the second one doesn't do that. Juts think of checking a
+\prm {relax}, while the second one doesn't do that. Just think of checking a
 few million different names: the first one will deplete the hash table and
 probably string space too.
 
@@ -6838,11 +6893,30 @@ this is.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {letmathparent}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {letmathparent}}]
 
-% \startnewprimitive[title={\prm {letmathspacing}}]
-% \stopnewprimitive
+This primitive takes five arguments: the target class, and four classes that
+determine the pre penalty class, post penalty class, options class and a dummy
+class for future use.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {letmathspacing}}]
+
+By default inter|-|class spacing inherits from the ordinary class but you can
+remap specific combinations is you want:
+
+\starttyping
+\letmathspacing \mathfunctioncode
+    \mathordinarycode \mathordinarycode
+    \mathordinarycode \mathordinarycode
+\stoptyping
+
+The first value is the target class, and the nest four tell how it behaves in
+display, text, script and script script style. Here \typ {\mathfunctioncode} is a
+\CONTEXT\ specific class (\the\mathfunctioncode), one of the many.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {letprotected}}]
 
@@ -6907,6 +6981,18 @@ This is a modifier: it flags the previous math atom to have its scripts above an
 below the (summation, product, integral etc.) symbol. In \LUAMETATEX\ this can be
 any atom (that is: any class). In display mode the location defaults to above and
 below.
+
+Like any modifier it looks back for a math specific element. This means that the
+following will work well:
+
+\starttyping
+\sum \limits ^2 _3
+\sum ^2 \limits _3
+\sum ^2 _3 \limits
+\sum ^2 _3 \limits \nolimits \limits
+\stoptyping
+
+because scripts are bound to these elements so looking back just sees the element.
 
 \stopoldprimitive
 
@@ -7388,14 +7474,49 @@ directives are accepted. Features like this are discussed in dedicated manuals.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {mathatomglue}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {mathatomglue}}]
 
-% \startnewprimitive[title={\prm {mathatomskip}}]
-% \stopnewprimitive
+This returns the glue that will be inserted between two atoms of a given class
+for a specific style.
 
-% \startnewprimitive[title={\prm {mathbackwardpenalties}}]
-% \stopnewprimitive
+\startbuffer
+\the\mathatomglue \textstyle   1 1
+\the\mathatomglue \textstyle   0 2
+\the\mathatomglue \scriptstyle 1 1
+\the\mathatomglue \scriptstyle 0 2
+\stopbuffer
+
+\typebuffer
+
+\startlines \tttf
+\getbuffer
+\stoplines
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathatomskip}}]
+
+\startbuffer
+$x x$
+$x \mathatomskip \textstyle   1 1 x$
+$x \mathatomskip \textstyle   0 2 x$
+$x \mathatomskip \scriptstyle 1 1 x$
+$x \mathatomskip \scriptstyle 0 2 x$
+\stopbuffer
+
+This injects a glue with the given style and class pair specification:
+\inlinebuffer.
+
+\typebuffer
+
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathbackwardpenalties}}]
+
+See \prm {mathforwardpenalties} for an explanation.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {mathbeginclass}}]
 
@@ -7410,8 +7531,23 @@ This operation wraps following content in a atom with class \quote {binary}.
 
 \stopoldprimitive
 
-% \startnewprimitive[title={\prm {mathboundary}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {mathboundary}}]
+
+This primitive is part of an experiment with granular penalties in math. When set
+nested fences will use the \prm {mathdisplaypenaltyfactor} or \prm
+{mathinlinepenaltyfactor} to increase nested penalties. A bit more control is
+possible with \prm {mathboundary}:
+
+\starttabulate[||||]
+\NC 0 \NC begin \NC factor 1000  \NC \NR
+\NC 1 \NC end   \NC factor 1000  \NC \NR
+\NC 2 \NC begin \NC given factor \NC \NR
+\NC 3 \NC end   \NC given factor \NC \NR
+\stoptabulate
+
+These will be used when the mentioned factors are zero.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {mathchar}}][obsolete=yes]
 
@@ -7471,8 +7607,12 @@ The third passed number is the slot, so we get: \inlinebuffer.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {mathcheckfencesmode}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {mathcheckfencesmode}}]
+
+When set to a positive value there will be no warning if a right fence (\prm
+{right} or \prm {Uright}) is missing.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {mathchoice}}]
 
@@ -7485,9 +7625,47 @@ and typesetting happens.
 
 \startnewprimitive[title={\prm {mathclass}}]
 
-This primitive expects a class number and a valid character number or math character
-and inserts the symbol as if it were of the given class; so the original class is
-replaced.
+There are build in classes and user classes. The first possible user class is
+\cldcontext {tex . magicconstants . mathfirstuserclass} and the last one is
+\cldcontext {tex . magicconstants . mathlastuserclass}. You can better not touch
+the special classes \quote {all} (\number \mathallcode), \quote {begin} (\number
+\mathbegincode) and \quote {end} (\number \mathendcode). The basic 8 classes that
+original \TEX\ provides are of course also present in \LUAMETATEX. In addition we
+have some that relate to constructs that the engine builds.
+
+\starttabulate[|l|l|T|l|]
+\FL
+\NC ordinary        \NC ord    \NC \the\mathordinarycode    \NC the default \NR
+\NC operator        \NC op     \NC \the\mathoperatorcode    \NC small and large operators \NC \NR
+\NC binary          \NC bin    \NC \the\mathbinarycode      \NC \NC \NR
+\NC relation        \NC rel    \NC \the\mathrelationcode    \NC \NC \NR
+\NC open            \NC        \NC \the\mathopencode        \NC \NC \NR
+\NC close           \NC        \NC \the\mathclosecode       \NC \NC \NR
+\NC punctuation     \NC punct  \NC \the\mathpunctuationcode \NC \NC \NR
+\NC variable        \NC        \NC \the\mathvariablecode    \NC adapts to the current family \NC \NR
+\NC active          \NC        \NC \the\mathactivecode      \NC character marked as such becomes active \NR
+\NC inner           \NC        \NC \the\mathinnercode       \NC this class is not possible for characters \NR
+\ML
+\NC under           \NC        \NC \the\mathundercode       \NC \NC \NR
+\NC over            \NC        \NC \the\mathovercode        \NC \NC \NR
+\NC fraction        \NC        \NC \the\mathfractioncode    \NC \NC \NR
+\NC radical         \NC        \NC \the\mathradicalcode     \NC \NC \NR
+\NC middle          \NC        \NC \the\mathmiddlecode      \NC \NC \NR
+\NC accent          \NC        \NC \the\mathaccentcode      \NC \NC \NR
+\NC fenced          \NC        \NC \the\mathfencedcode      \NC \NC \NR
+\NC ghost           \NC        \NC \the\mathghostcode       \NC \NC \NR
+\NC vcenter         \NC        \NC \the\mathvcentercode     \NC \NC \NR
+\LL
+\stoptabulate
+
+There is no standard for user classes but \CONTEXT\ users should be aware of
+quite some additional ones that are set up. The engine initialized the default
+properties of classes (spacing, penalties, etc.) the same as original \TEX.
+
+Normally characters have class bound to them but you can (temporarily) overload
+that one. The \prm {mathclass} primitive expects a class number and a valid
+character number or math character and inserts the symbol as if it were of the
+given class; so the original class is replaced.
 
 \startbuffer
 \ruledhbox{$(x)$} and \ruledhbox{$\mathclass 1 `(x\mathclass 1 `)$}
@@ -7513,14 +7691,26 @@ class, one for the family and two for the index. It has little use in an
 
 \stopoldprimitive
 
-% \startnewprimitive[title={\prm {mathdictgroup}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {mathdictgroup}}]
 
-% \startnewprimitive[title={\prm {mathdictionary}}]
-% \stopnewprimitive
+This is an experimental feature that in due time will be explored in \CONTEXT. It
+currently has no consequences for rendering.
 
-% \startnewprimitive[title={\prm {mathdictproperties}}]
-% \stopnewprimitive
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathdictionary}}]
+
+This is an experimental feature that in due time will be explored in \CONTEXT. It
+currently has no consequences for rendering.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathdictproperties}}]
+
+This is an experimental feature that in due time will be explored in \CONTEXT. It
+currently has no consequences for rendering.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {mathdirection}}]
 
@@ -7543,14 +7733,58 @@ behave as inline formulas starting out in \prm {displaystyle} and with \prm
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {mathdisplaypenaltyfactor}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {mathdisplaypenaltyfactor}}]
 
-% \startnewprimitive[title={\prm {mathdisplayskipmode}}]
-% \stopnewprimitive
+This one is simular to \prm {mathinlinepenaltyfactor} but is used when we're in
+display style.
 
-% \startnewprimitive[title={\prm {mathdoublescriptmode}}]
-% \stopnewprimitive
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathdisplayskipmode}}]
+
+A display formula is preceded and followed by vertical glue specified by
+\prm{abovedisplayskip} and \prm {belowdisplayskip} or \prm
+{abovedisplayshortskip} and \prm {belowdisplayshortskip}. Spacing \quote {above}
+is always inserted, even when zero, but the spacing \quote {below} is only
+inserted when it is non|-|zero. There's also \prm {baselineskip} involved. The
+way spacing is handled can be influenced with \prm {mathdisplayskipmode}, which
+takes the following values:
+
+\starttabulate[|c|l|]
+\NC 0 \NC does the same as any \TEX\ engine       \NC \NR
+\NC 1 \NC idem                                    \NC \NR
+\NC 2 \NC only insert spacing when it is not zero \NC \NR
+\NC 3 \NC never insert spacing                    \NC \NR
+\stoptabulate
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathdoublescriptmode}}]
+
+When this parameter has a negative value double scripts trigger an error, so with
+\prm {superscript}, \prm {nosuperscript}, \prm {shiftedsuperscript}, \prm
+{superprescript}, \prm {nosuperprescript}, \prm {shiftedsuperprescript}, \prm
+{subscript}, \prm {nosubscript}, \prm {shiftedsubscript}, \prm {subprescript},
+\prm {nosubprescript}, \prm {shiftedsubprescript} and \prm {primescript}, as well
+as their (multiple) \type {_} and \type {^} aliases.
+
+A value of zero does the normal and inserts a dummy atom (basically a \type {{}})
+but a positive value is more interesting. Compare these:
+
+\startbuffer
+{\mathdoublescriptmode 0      $x_x_x$}
+{\mathdoublescriptmode"000000 $x_x_x$}
+{\mathdoublescriptmode"030303 $x_x_x$}
+{$x_x_x$}
+\stopbuffer
+
+\typebuffer
+
+The three pairs of bytes indicate the main class, left side class and right side
+class of the inserted atom, so we get this: \inlinebuffer. The last line gives
+what \CONTEXT\ is configured for.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {mathendclass}}]
 
@@ -7568,11 +7802,28 @@ a multiplier \prm {matheqnogapstep} that defaults to 1000.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {mathfontcontrol}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {mathfontcontrol}}]
 
-% \startnewprimitive[title={\prm {mathforwardpenalties}}]
-% \stopnewprimitive
+This bitset controls how the math engine deals with fonts, and provides a way
+around dealing with inconsistencies in the way they are set up. The \prm
+{fontmathcontrol} makes it possible to bind options ot a specific math font. In
+practice, we just set up the general approach which ii possible because we
+normalize the math fonts and \quote {fix} issues at runtime.
+
+\getbuffer[engine:syntax:mathcontrolcodes]
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathforwardpenalties}}]
+
+Inline math can have multiple atoms and constructs and one can configure the
+penalties between then bases on classes. In addition it is possible to configure
+additional penalties starting from the beginning or end using \prm
+{mathforwardpenalties} and \prm {mathbackwardpenalties}. This is one the features
+that we added in the perspective of breaking paragraphs heavy on math into lines.
+It not that easy to come up with useable values.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {mathgluemode}}]
 
@@ -7595,8 +7846,14 @@ non zero value which makes curly braces (and the aliases) behave as expected.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {mathinlinepenaltyfactor}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {mathinlinepenaltyfactor}}]
+
+A math formula can have nested (sub)formulas and one might want to discourage a
+line break inside those. If this value is non zero it becomes a mulitiplier, so a
+value of 1000 will make an inter class penalty of 100 into 200 when at nesting
+level 2 and 500 when at level 5.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {mathinner}}]
 
@@ -7612,14 +7869,134 @@ When set this class will be used when a formula starts.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {mathlimitsmode}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {mathlimitsmode}}]
 
-% \startnewprimitive[title={\prm {mathmainstyle}}]
-% \stopnewprimitive
+When this parameter is set to a value larger than zero real dimensions are used
+and longer limits will not stick out, which is a traditional \TEX\ feature. We
+could have more advanced control but this will do.
 
-% \startnewprimitive[title={\prm {mathnolimitsmode}}]
-% \stopnewprimitive
+\startbuffer
+\dontleavehmode
+\ruledhbox{\dm{\left|\integral^{!!!!!!!!!!!}\right|}}
+\ruledhbox{\dm{\left|\integral^{!!!!!!!!!!} \right|}}
+\ruledhbox{\dm{\left|\integral^{!!!!!!!!!}  \right|}}
+\ruledhbox{\dm{\left|\integral^{!!!!!!!!}   \right|}}
+\ruledhbox{\dm{\left|\integral^{!!!!!!!}    \right|}}
+\ruledhbox{\dm{\left|\integral^{!!!!!!}     \right|}}
+\ruledhbox{\dm{\left|\integral^{!!!!!}      \right|}}
+\ruledhbox{\dm{\left|\integral^{!!!!}       \right|}}
+\ruledhbox{\dm{\left|\integral^{!!!}        \right|}}
+\ruledhbox{\dm{\left|\integral^{!!}         \right|}}
+\ruledhbox{\dm{\left|\integral^{!}          \right|}}
+\blank
+\dontleavehmode
+\ruledhbox{\dm{\left|\integral_{!!!!!!!!!!!}\right|}}
+\ruledhbox{\dm{\left|\integral_{!!!!!!!!!!} \right|}}
+\ruledhbox{\dm{\left|\integral_{!!!!!!!!!}  \right|}}
+\ruledhbox{\dm{\left|\integral_{!!!!!!!!}   \right|}}
+\ruledhbox{\dm{\left|\integral_{!!!!!!!}    \right|}}
+\ruledhbox{\dm{\left|\integral_{!!!!!!}     \right|}}
+\ruledhbox{\dm{\left|\integral_{!!!!!}      \right|}}
+\ruledhbox{\dm{\left|\integral_{!!!!}       \right|}}
+\ruledhbox{\dm{\left|\integral_{!!!}        \right|}}
+\ruledhbox{\dm{\left|\integral_{!!}         \right|}}
+\ruledhbox{\dm{\left|\integral_{!}          \right|}}
+\blank
+\dontleavehmode
+\ruledhbox{\dm{\left|\integral_{!}      ^{!}              \right|}}
+\ruledhbox{\dm{\left|\integral_{!!!!!!!}^{!}              \right|}}
+\ruledhbox{\dm{\left|\integral_{!}      ^{!!!!!!!}        \right|}}
+\ruledhbox{\dm{\left|\integral_{!}      ^{!!!!!!!!!!}     \right|}}
+\ruledhbox{\dm{\left|\integral_{!!!!!!!}^{!!!!!!!!!}      \right|}}
+\ruledhbox{\dm{\left|\integral_{!!!!!!!}^{!!!!!!!!!!!!!!!}\right|}}
+\ruledhbox{\dm{\left|\integral^{\mtext{for demanding}}_{\mtext{integral freaks}}\right|}}
+\stopbuffer
+
+Compare the zero setting:
+
+{\switchtobodyfont[modern]\setupmathoperators[integral][method=limits]\mathlimitsmode 0 \getbuffer}
+
+with the positive variant:
+
+{\switchtobodyfont[modern]\setupmathoperators[integral][method=limits]\mathlimitsmode 1 \getbuffer}
+
+Here we switched to Latin Modern because it's font dependent how serious this
+issue is. In Pagella all is fine in both modes.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathmainstyle}}]
+
+This inspector returns the outermost math style (contrary to \prm {mathstyle}),
+as we can see in the next examples where use these snippets:
+
+\startbuffer
+\def\foo{(\the\mathmainstyle,\the\mathstyle)}
+\def\oof{\sqrt[\foo]{\foo}}
+\def\ofo{\frac{\foo}{\foo}}
+\def\fof{\mathchoice{\foo}{\foo}{\foo}{\foo}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+When we use the regular math triggers we get this:
+
+\startbuffer
+$\displaystyle     \foo + \oof + \ofo$
+$\textstyle        \foo + \oof + \ofo$
+$\displaystyle     \foo + \fof$
+$\textstyle        \foo + \fof$
+$\scriptstyle      \foo + \fof$
+$\scriptscriptstyle\foo + \fof$
+\stopbuffer
+
+\typebuffer
+
+\startlines
+\getbuffer
+\stoplines
+
+But we can also do this:
+
+\startbuffer
+\Ustartmathmode \displaystyle     \foo + \oof + \ofo \Ustopmathmode
+\Ustartmathmode \textstyle        \foo + \oof + \ofo \Ustopmathmode
+\Ustartmathmode \displaystyle     \foo + \fof \Ustopmathmode
+\Ustartmathmode \textstyle        \foo + \fof \Ustopmathmode
+\Ustartmathmode \scriptstyle      \foo + \fof \Ustopmathmode
+\Ustartmathmode \scriptscriptstyle\foo + \fof \Ustopmathmode
+\stopbuffer
+
+\typebuffer
+
+\startlines
+\getbuffer
+\stoplines
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathnolimitsmode}}]
+
+This parameter influences the placement of scripts after an operator. The reason
+we have this lays in the fact that traditional \TEX\ uses italic correction and
+\OPENTYPE\ math does the same but fonts are not consistent in how they set this
+up. Actually, in \OPENTYPE\ math it's the only reason that there is italic
+correction. Say that we have a shift $\delta$ determined by the italic correction:
+
+\starttabulate[|c|c|c|]
+\BC mode  \BC top                \BC bottom                \NC \NR
+\NC $0$   \NC $0$                \NC $-\delta$             \NC \NR
+\NC $1$   \NC $\delta\times f_t$ \NC $\delta\times f_b$    \NC \NR
+\NC $2$   \NC $0$                \NC $0$                   \NC \NR
+\NC $3$   \NC $0$                \NC $-\delta/2$           \NC \NR
+\NC $4$   \NC $\delta/2$         \NC $-\delta/2$           \NC \NR
+\NC $>15$ \NC $0$                \NC $-n\times\delta/1000$ \NC \NR
+\stoptabulate
+
+Mode~1 uses two font parameters: $f_b$: \prm {Umathnolimitsubfactor} and $f_t$:
+\prm {Umathnolimitsupfactor}.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {mathop}}]
 
@@ -7639,8 +8016,52 @@ This operation wraps following content in a atom with class \quote {ordinary}.
 
 \stopoldprimitive
 
-% \startnewprimitive[title={\prm {mathpenaltiesmode}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {mathparentstyle}}]
+
+This inspector returns the math style used in a construct, so is is either
+equivalent to \prm {mathmainstyle} or a nested \prm {mathstyle}. For instance
+in a nested fraction we get this (in \CONTEXT) in display formulas:
+
+\def\foo{(\the\mathmainstyle,\the\mathparentstyle,\the\mathstyle)}
+
+\dm{
+    \frac{\frac{\foo}{\foo}}{\frac{\foo}{\foo}} + \foo
+}
+
+but this in inline formulas:
+
+\im{
+    \frac{\frac{\foo}{\foo}}{\frac{\foo}{\foo}} + \foo
+}
+
+where the first element in a nested fraction.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathpenaltiesmode}}]
+
+Normally the \TEX\ math engine only inserts penalties when in textstyle. You can
+force penalties in displaystyle with this parameter. In inline math we always
+honor penalties, with mode~0 and mode~1 we get this:
+
+\pushoverloadmode
+
+\startlines
+{\mathpenaltiesmode=0 \let\mathpenaltiesmode\scratchcounter $\showmakeup[hpenalty]x+2x=0$}
+{\mathpenaltiesmode=1 \let\mathpenaltiesmode\scratchcounter $\showmakeup[hpenalty]x+2x=1$}
+\stoplines
+
+However in \CONTEXT, where all is done in inline math mode, we set this this
+parameter to~1, otherwise we wouldn't get these penalties, as shown next:
+
+{\mathpenaltiesmode=0 \let\mathpenaltiesmode\scratchcounter \startformula \showmakeup[hpenalty]x+2x=0 \stopformula}
+{\mathpenaltiesmode=1 \let\mathpenaltiesmode\scratchcounter \startformula \showmakeup[hpenalty]x+2x=1 \stopformula}
+
+\popoverloadmode
+
+If one uses a callback it is possible to force penalties from there too.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {mathpretolerance}}]
 
@@ -7667,11 +8088,19 @@ When set this class will be used when a formula ends.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {mathrulesfam}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {mathrulesfam}}]
 
-% \startnewprimitive[title={\prm {mathrulesmode}}]
-% \stopnewprimitive
+When set, this family will be used for setting rule properties in fractions,
+under and over.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathrulesmode}}]
+
+When set to a non zero value rules (as in fractions and radicals) will be based
+on the font parameters in the current family.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {mathscale}}]
 
@@ -7698,29 +8127,160 @@ same font three times so then it doesn't matter which of the three is passed.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {mathscriptsmode}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {mathscriptsmode}}]
 
-% \startnewprimitive[title={\prm {mathslackmode}}]
-% \stopnewprimitive
+There are situations where you don't want \TEX\ to be clever and optimize the
+position of super- and subscripts by shifting. This parameter can be used to
+influence this.
 
-% \startnewprimitive[title={\prm {mathspacingmode}}]
-% \stopnewprimitive
+\startlinecorrection
+\startcombination[3*2]
+  {\startoverlay
+     {\ruledhbox     {\mathscriptsmode 0 0: $x^2_2 + y^x_x + z_2 + w^2$}}
+     {\ruledhbox{\red \mathscriptsmode 1 1: $x^2_2 + y^x_x + z_2 + w^2$}}
+   \stopoverlay} {}
+  {\startoverlay
+     {\ruledhbox     {\mathscriptsmode 0 0: $x^2_2 + y^x_x + z_2 + w^2$}}
+     {\ruledhbox{\red \mathscriptsmode 2 2: $x^2_2 + y^x_x + z_2 + w^2$}}
+   \stopoverlay} {}
+  {\startoverlay
+     {\ruledhbox     {\mathscriptsmode 1 1: $x^2_2 + y^x_x + z_2 + w^2$}}
+     {\ruledhbox{\red \mathscriptsmode 2 2: $x^2_2 + y^x_x + z_2 + w^2$}}
+   \stopoverlay} {}
+  {\startoverlay
+     {\ruledhbox     {\mathscriptsmode 0 0: $x^f_f + y^x_x + z_f + w^f$}}
+     {\ruledhbox{\red \mathscriptsmode 1 1: $x^f_f + y^x_x + z_f + w^f$}}
+   \stopoverlay} {1 over 0}
+  {\startoverlay
+     {\ruledhbox     {\mathscriptsmode 0 0: $x^f_f + y^x_x + z_f + w^f$}}
+     {\ruledhbox{\red \mathscriptsmode 2 2: $x^f_f + y^x_x + z_f + w^f$}}
+   \stopoverlay} {2 over 0}
+  {\startoverlay
+     {\ruledhbox     {\mathscriptsmode 1 1: $x^f_f + y^x_x + z_f + w^f$}}
+     {\ruledhbox{\red \mathscriptsmode 2 2: $x^f_f + y^x_x + z_f + w^f$}}
+   \stopoverlay} {2 over 1}
+\stopcombination
+\stoplinecorrection
 
-% \startnewprimitive[title={\prm {mathstack}}]
-% \stopnewprimitive
+The next table shows what parameters kick in when:
 
-% \startnewprimitive[title={\prm {mathstackstyle}}]
-% \stopnewprimitive
-
-\startnewprimitive[title={\prm {mathstyle}}]
-
-This returns the current math style, so \type {$\the\mathstyle$} gives $\the\mathstyle$.
+\starttabulate[|l|l|l|p|]
+\NC       \BC or (1)         \BC and (2)            \BC otherwise       \NC \NR
+\BC super \NC sup shift up   \NC sup shift up       \NC sup shift up,
+                                                        sup bot min     \NC \NR
+\BC sub   \NC sub shift down \NC sub sup shift down \NC sub shift down,
+                                                        sub top max     \NC \NR
+\BC both  \NC sub shift down \NC sub sup shift down \NC sub sup shift down,
+                                                        sub sup vgap,
+                                                        sup sub bot max \NC \NR
+\stoptabulate
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {mathstylefontid}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {mathslackmode}}]
+
+When positive this parameter will make sure that script spacing is discarded when
+there is no reason to add it.
+
+\startlinecorrection
+\startcombination[nx=3,ny=1]
+    {\mathslackmode0
+     \ruledhbox{$\setmscale{3}x^2 + x^2$}\space
+     \ruledhbox{$\setmscale{3}x^2$}}
+    {disabled (0)}
+    {\mathslackmode1
+     \ruledhbox{$\setmscale{3}x^2 + x^2$}\space
+     \ruledhbox{$\setmscale{3}x^2$}}
+    {enabled (1)}
+    {\startoverlay
+       {\mathslackmode0     \ruledhbox{$\setmscale{3}x^2 + x^2$}}
+       {\mathslackmode1 \red\ruledhbox{$\setmscale{3}x^2 + x^2$}}
+     \stopoverlay
+     \space
+     \startoverlay
+       {\mathslackmode0     \ruledhbox{$\setmscale{3}x^2$}}
+       {\mathslackmode1 \red\ruledhbox{$\setmscale{3}x^2$}}
+     \stopoverlay}
+   {{\red enabled} over disabled}
+\stopcombination
+\stoplinecorrection
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathspacingmode}}]
+
+Zero inter|-|class glue is not injected but setting this parameter to a positive
+value bypasses that check. This can be handy when checking (tracing) how (and
+what) spacing is applied. Keep in mind that glue in math is special in the sense
+that it is not a valid breakpoint. Line breaks in (inline) math are driven by
+penalties.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathstack}}]
+
+There are a few commands in \TEX\ that can behave confusing due to the way they
+are scanned. Compare these:
+
+\starttyping
+$ 1 \over 2 $
+$ 1 + x \over 2 + x$
+$ {1 + x} \over {2 + x}$
+$ {{1 + x} \over {2 + x}}$
+\stoptyping
+
+A single $1$ is an atom as is the curly braced ${1 + x}$. The two arguments to
+\prm {over} eventually will get typeset in the style that this fraction
+constructor uses for the numerator and denominator but on might actually also
+like to relate that to the circumstances. It is comparable to using a \prm
+{mathchoice}. In order not to waste runtime on four variants, which itself can have
+side effects, for instance when counters are involved, \LUATEX\ introduced
+\prm {mathstack}, used like:
+
+\starttyping
+$\mathstack {1 \over 2}$
+\stoptyping
+
+This \prm {mathstack} command will scan the next brace and opens a new math group
+with the correct (in this case numerator) math style. The \prm {mathstackstyle}
+primitive relates to this feature that defaults to \quote {smaller unless already
+scriptscript}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathstackstyle}}]
+
+This returns the (normally) numerator style but the engine can be configured to
+default to another style. Although all these in the original \TEX\ engines hard
+coded style values can be changed in \LUAMETATEX\ it is unlikely to happen. So
+this primitive will normally return the (current) style \quote {smaller unless
+already scriptscript}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathstyle}}]
+
+This returns the current math style, so \type {$\the \mathstyle$} gives $\the
+\mathstyle$.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {mathstylefontid}}]
+
+This returns the font id (a number) of a style|/|family combination. What you get
+back depends on how a macro package implements math fonts.
+
+\startbuffer
+(\the\mathstylefontid\textstyle        \fam)
+(\the\mathstylefontid\scriptstyle      \fam)
+(\the\mathstylefontid\scriptscriptstyle\fam)
+\stopbuffer
+
+\typebuffer
+
+In \CONTEXT\ gives: \inlinebuffer.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {mathsurround}}]
 
@@ -7744,8 +8304,16 @@ When set this one wins over \prm {mathsurround}.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {maththreshold}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {maththreshold}}]
+
+This is a glue parameter. The amount determines what happens: when it is non zero
+and the inline formula is less than that value it will become a special kind of
+box that can stretch and|/| or shrink within the given specification. The par
+builder will use these stretch and|/| or shrink components but it is up to one of
+the \LUA\ callbacks to deal with the content eventually (if at all). As this is
+somewhat specialized, more details can be found on \CONTEXT\ documentation.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {mathtolerance}}]
 
@@ -9362,6 +9930,13 @@ This is the \type {by}|-|less companion to \prm {rdivide}.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {realign}}]
+
+Where \prm {omit} suspends a preamble template, this one overloads is for the
+current table cell. It expects two token lists as arguments.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {relax}}]
 
 This primitive does nothing and is often used to end a verbose number or
@@ -9414,8 +9989,125 @@ the inter atom spacing variables.
 
 \stopoldprimitive
 
-% \startnewprimitive[title={\prm {resetmathspacing}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {resetmathspacing}}]
+
+This initializes all parameters to their initial values.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {restorecatcodetable}}]
+
+This is an experimental feature that should be used with care. The next example
+shows usage. It was added when debugging and exploring a side effect.
+
+\starttyping
+\tracingonline1
+
+\bgroup
+
+    \catcode`6 = 11 \catcode`7 = 11
+
+    \bgroup
+
+    \tracingonline1
+
+    current: \the\catcodetable
+
+    original: \the\catcode`6\quad \the\catcode`7
+
+    \catcode`6 = 11 \catcode`7 = 11
+
+    \showcodestack\catcode
+
+    assigned: \the\catcode`6\quad \the\catcode`7
+
+    \showcodestack\catcode
+
+    \catcodetable\ctxcatcodes switched: \the\catcodetable
+
+    stored: \the\catcode`6\quad \the\catcode`7
+
+    \showcodestack\catcode
+
+    \restorecatcodetable\ctxcatcodes
+
+    \showcodestack\catcode
+
+    restored: \the\catcode`6\quad \the\catcode`7
+
+    \showcodestack\catcode
+
+    \egroup
+
+    \catcodetable\ctxcatcodes
+
+    inner: \the\catcode`6\quad\the\catcode`7
+
+\egroup
+
+outer: \the\catcode`6\quad\the\catcode`7
+\stoptyping
+
+In \CONTEXT\ this typesets:
+
+\starttyping
+current: 9
+original: 11 11
+assigned: 11 11
+switched: 9
+stored: 11 11
+restored: 12 12
+inner: 11 11
+outer; 12 12
+\stoptyping
+
+and on the console we see:
+
+\starttyping
+3:3: [codestack 1, size 3]
+3:3: [1: level 2, code 54, value 12]
+3:3: [2: level 2, code 55, value 12]
+3:3: [3: level 3, code 54, value 11]
+3:3: [4: level 3, code 55, value 11]
+3:3: [codestack 1 bottom]
+3:3: [codestack 1, size 3]
+3:3: [1: level 2, code 54, value 12]
+3:3: [2: level 2, code 55, value 12]
+3:3: [3: level 3, code 54, value 11]
+3:3: [4: level 3, code 55, value 11]
+3:3: [codestack 1 bottom]
+3:3: [codestack 1, size 3]
+3:3: [1: level 2, code 54, value 12]
+3:3: [2: level 2, code 55, value 12]
+3:3: [3: level 3, code 54, value 11]
+3:3: [4: level 3, code 55, value 11]
+3:3: [codestack 1 bottom]
+3:3: [codestack 1, size 7]
+3:3: [1: level 2, code 54, value 12]
+3:3: [2: level 2, code 55, value 12]
+3:3: [3: level 3, code 54, value 11]
+3:3: [4: level 3, code 55, value 11]
+3:3: [5: level 3, code 55, value 11]
+3:3: [6: level 3, code 54, value 11]
+3:3: [7: level 3, code 55, value 11]
+3:3: [8: level 3, code 54, value 11]
+3:3: [codestack 1 bottom]
+3:3: [codestack 1, size 7]
+3:3: [1: level 2, code 54, value 12]
+3:3: [2: level 2, code 55, value 12]
+3:3: [3: level 3, code 54, value 11]
+3:3: [4: level 3, code 55, value 11]
+3:3: [5: level 3, code 55, value 11]
+3:3: [6: level 3, code 54, value 11]
+3:3: [7: level 3, code 55, value 11]
+3:3: [8: level 3, code 54, value 11]
+3:3: [codestack 1 bottom]
+\stoptyping
+
+So basically \prm {restorecatcodetable} brings us (temporarily) back to the
+global settings.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {retained}}]
 
@@ -9844,8 +10536,13 @@ equivalents are okay as register value.
 
 \stopoldprimitive
 
-% \startnewprimitive[title={\prm {setdefaultmathcodes}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {setdefaultmathcodes}}]
+
+This sets the math codes of upper- and lowercase alphabet and digits and the
+delimiter code of the period. It's not so much a useful feature but more just an
+accessor to the internal initializer.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {setfontid}}]
 
@@ -9951,7 +10648,7 @@ This primitive expects a class (number) and a bitset.
 \testpage[2]
 
 \startcolumns
-\getbuffer[engine:syntax:mathcontrol] % weird: one liner at endof    page
+\getbuffer[engine:syntax:classoptioncodes] % weird: one liner at end of page
 \stopcolumns
 
 \stopnewprimitive
@@ -9978,8 +10675,30 @@ when text, script or scriptscript style is used, for instance:
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {setmathspacing}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {setmathspacing}}]
+
+More details about this feature can be found in \CONTEXT\ but it boils down to
+registering what spacing gets inserted between a pair of classes. It can be
+defined per style or for a set of styles, like:
+
+\starttyping
+\inherited\setmathspacing
+  \mathimplicationcode \mathbinarycode
+  \alldisplaystyles \thickermuskip
+\inherited\setmathspacing
+  \mathradicalcode \mathmiddlecode
+  \allunsplitstyles \pettymuskip
+\stoptyping
+
+Here the \prm {inherited} prefix signals that a change in for instance \prm
+{pettymuskip} is reflected in this spacing pair. In \CONTEXT\ there is a lot of
+granularity with respect to spacing and it took years of experimenting (and
+playing with examples) to get at the current stage. In general users are not
+invited to mess around too much with these values, although changing the bound
+registers (here \prm {pettymuskip} and \type {thickermuskip}) is no problem as it
+consistently makes related spacing pairs follow.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {sfcode}}]
 
@@ -10136,6 +10855,14 @@ This primitives determine how deep tracing a box goes into the box. Some boxes,
 like the ones that has the assembled page.
 
 \stopoldprimitive
+
+\startnewprimitive[title={\prm {showcodestack}}]
+
+This inspector is only useful for low level debugging and reports the current
+state of for instance the current catcode table: \typ {\showcodestack \catcode}.
+See \prm {restorecatcodes} for an example.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {showgroups}}]
 
@@ -10394,8 +11121,10 @@ this parameter can overrule that.
 
 \startoldprimitive[title={\prm {span}}]
 
-This primitive combined two upcoming cells into one. Often it is used in combination with
-\prm {omit}.
+This primitive combined two upcoming cells into one. Often it is used in
+combination with \prm {omit}. However, in the preamble it forces the next token
+to be expanded, which means that nested \prm {tabskips} and align content markers
+are seen.
 
 \stopoldprimitive
 
@@ -10872,12 +11601,6 @@ This is a reference to the last mark with the given id (a number) on the previou
 page, it gives back tokens.
 
 \stopoldprimitive
-
-This is a reference to the first mark on the (split off) page, it gives back
-tokens.
-
-This is a reference to the first mark with the given id (a number) on the (split
-off) page, it gives back tokens.
 
 \startoldprimitive[title={\prm {topskip}}]
 
@@ -12053,6 +12776,8 @@ Hans Hagen \crlf Hasselt NL
             end
         end
         context.stopcolumns()
+
+        context("Many primitives starting with \\type{Umath} are math parameters that are discussed elsewhere, if at all.")
 
         context.page()
 

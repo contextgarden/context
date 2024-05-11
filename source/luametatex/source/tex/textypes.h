@@ -806,5 +806,23 @@ typedef struct line_break_properties {
     halfword single_line_penalty;
 } line_break_properties;
 
+typedef enum sparse_identifiers {
+    unknown_sparse_identifier,
+    catcode_sparse_identifier,
+    lccode_sparse_identifier,
+    uccode_sparse_identifier,
+    sfcode_sparse_identifier,
+    hjcode_sparse_identifier,
+    hmcode_sparse_identifier,
+    hccode_sparse_identifier,
+    amcode_sparse_identifier,
+    fontchar_sparse_identifier,
+    mathcode_sparse_identifier,
+    delcode_sparse_identifier,
+    mathfont_sparse_identifier, 
+    mathparam_sparse_identifier, 
+    user_sparse_identifier,
+} sparse_identifiers;
+
 # endif
 

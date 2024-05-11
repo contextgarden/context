@@ -867,6 +867,7 @@ typedef enum list_subtypes {
     math_nucleus_list,
     math_sup_list,
     math_sub_list,
+    math_prime_list,
     math_pre_post_list,
     math_degree_list,
     math_scripts_list,
@@ -1013,13 +1014,15 @@ typedef enum list_axis { /* or maybe math states */
     node.
 */
 
-# define align_record_size         box_node_size
-# define align_record_span_ptr(a)  box_w_offset(a)    /*tex A column spanning list */
-# define align_record_cmd(a)       box_h_offset(a)    /*tex Info to remember during template. */
-# define align_record_chr(a)       box_d_offset(a)    /*tex Info to remember during template. */
-# define align_record_pre_part(a)  box_x_offset(a)    /*tex The pointer to |u_j| token list. */
-# define align_record_post_part(a) box_y_offset(a)    /*tex The pointer to |v_j| token list. */
-# define align_record_dimension(a) box_orientation(a) /*tex Optionally enforced width. */
+# define align_record_size          box_node_size
+# define align_record_span_ptr(a)   box_w_offset(a)    /*tex A column spanning list */
+# define align_record_cmd(a)        box_h_offset(a)    /*tex Info to remember during template. */
+# define align_record_chr(a)        box_d_offset(a)    /*tex Info to remember during template. */
+# define align_record_pre_part(a)   box_x_offset(a)    /*tex The pointer to |u_j| token list. */
+# define align_record_post_part(a)  box_y_offset(a)    /*tex The pointer to |v_j| token list. */
+# define align_record_dimension(a)  box_orientation(a) /*tex Optionally enforced width. */
+# define align_record_pre_local(a)  box_pre_migrated(a)  
+# define align_record_post_local(a) box_post_migrated(a) 
 
 /*tex
    Span nodes are tricky in the sense that their |span_link| actually has to sit in the same slot
@@ -1237,6 +1240,7 @@ typedef enum glyph_subtypes {
     glyph_math_fraction_subtype,
     glyph_math_radical_subtype,
     glyph_math_middle_subtype,
+    glyph_math_prime_subtype,
     glyph_math_accent_subtype,
     glyph_math_fenced_subtype,
     glyph_math_ghost_subtype,
@@ -1805,7 +1809,7 @@ typedef enum simple_choice_subtypes {
 //define noad_state_toptotal(a)    vlink(a,5)
 //define noad_state_bottomtotal(a) vinfo(a,5)
 
-# define noad_size            15
+# define noad_size            17
 # define noad_new_hlist(a)    vlink(a,2)    /*tex the translation of an mlist; a bit confusing name */
 # define noad_nucleus(a)      vinfo(a,2)
 # define noad_supscr(a)       vlink(a,3)
@@ -1835,14 +1839,18 @@ typedef enum simple_choice_subtypes {
 # define noad_prime(a)        vinfo(a,9)
 # define noad_left_slack(a)   vlink(a,10)
 # define noad_right_slack(a)  vinfo(a,10)
-# define noad_extra_1(a)      vlink(a,11)
-# define noad_extra_2(a)      vinfo(a,11)
-# define noad_extra_3(a)      vlink(a,12)
-# define noad_extra_4(a)      vinfo(a,12)
-# define noad_extra_5(a)      vlink(a,13)
-# define noad_extra_6(a)      vinfo(a,13)
-# define noad_extra_7(a)      vlink(a,14)
-# define noad_extra_8(a)      vinfo(a,14)
+# define noad_supshift(a)     vlink(a,11)
+# define noad_subshift(a)     vinfo(a,11)
+# define noad_primeshift(a)   vlink(a,12)
+# define noad_extra_0(a)      vinfo(a,12)
+# define noad_extra_1(a)      vlink(a,13)
+# define noad_extra_2(a)      vinfo(a,13)
+# define noad_extra_3(a)      vlink(a,14)
+# define noad_extra_4(a)      vinfo(a,14)
+# define noad_extra_5(a)      vlink(a,15)
+# define noad_extra_6(a)      vinfo(a,15)
+# define noad_extra_7(a)      vlink(a,16)
+# define noad_extra_8(a)      vinfo(a,16)
 
 # define noad_total(a) (noad_height(a) + noad_depth(a))
 
@@ -1974,6 +1982,10 @@ typedef enum noad_options {
 # define noad_option_auto_middle                (uint64_t) 0x080000000000
 # define noad_option_reflected                  (uint64_t) 0x100000000000
 
+# define noad_option_continuation               (uint64_t) 0x200000000000 /* relates to script continuation */
+# define noad_option_inherit_class              (uint64_t) 0x400000000000 /* idem */
+# define noad_option_discard_shape_kern         (uint64_t) 0x800000000000 /* idem */
+
 # define has_option(a,b)     (((a) & (b)) == (b))
 # define unset_option(a,b)   ((a) & ~(b))
 
@@ -2040,6 +2052,14 @@ static inline int has_noad_no_script_option(halfword n, halfword option)
 # define has_noad_option_norule(a)                      (has_option(noad_options(a), noad_option_no_rule))
 # define has_noad_option_auto_middle(a)                 (has_option(noad_options(a), noad_option_auto_middle))
 # define has_noad_option_reflected(a)                   (has_option(noad_options(a), noad_option_reflected))
+# define has_noad_option_continuation(a)                (has_option(noad_options(a), noad_option_continuation))
+# define has_noad_option_inherit_class(a)               (has_option(noad_options(a), noad_option_inherit_class))
+# define has_noad_option_discard_shape_kern(a)          (has_option(noad_options(a), noad_option_discard_shape_kern))
+
+typedef enum double_atom_options {
+    inherit_class_double_atom_option      = 0x01,
+    discard_shape_kern_double_atom_option = 0x02,
+} double_atom_options;
 
 /*tex
     In the meantime the codes and subtypes are in sync. The variable component does not really
@@ -2062,6 +2082,7 @@ typedef enum simple_noad_subtypes {
     fraction_noad_subtype,
     radical_noad_subtype,
     middle_noad_subtype,
+    prime_noad_subtype,
     accent_noad_subtype,
     fenced_noad_subtype,
     ghost_noad_subtype,
@@ -2086,6 +2107,7 @@ typedef enum math_component_types {
     math_component_fraction_code,
     math_component_radical_code,
     math_component_middle_code,
+    math_component_prime_code,
     math_component_accent_code,
     math_component_fenced_code,
     math_component_ghost_code,
@@ -2317,6 +2339,15 @@ typedef enum protrusion_boundary_options {
     protrusion_skip_previous,
     protrusion_skip_both,
 } protrusion_boundary_options;
+
+typedef enum math_boundary_options {
+    /* default multiplier 1000 */
+    begin_math_implicit_boundary,
+    end_math_implicit_boundary,
+    /* given multiplier */
+    begin_math_explicit_boundary,
+    end_math_explicit_boundary,
+} math_boundary_options;
 
 # define last_boundary_subtype word_boundary
 # define last_boundary_code    optional_boundary

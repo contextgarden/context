@@ -72,7 +72,7 @@ static int sparselib_new(lua_State *L)
             bytes = SPARSE_BYTES;
             break;
     }
-    o->tree = sa_new_tree(SPARSE_STACK, bytes, item);
+    o->tree = sa_new_tree(user_sparse_identifier, SPARSE_STACK, bytes, item);
     o->min = -1;
     o->max = -1;
     luaL_setmetatable(L, SPARSE_METATABLE_INSTANCE);
@@ -306,7 +306,7 @@ static int sparselib_wipe(lua_State *L)
         int bytes = o->tree->bytes;
         sa_tree_item dflt = o->tree->dflt;
         sa_destroy_tree(o->tree);
-        o->tree = sa_new_tree(SPARSE_STACK, bytes, dflt);
+        o->tree = sa_new_tree(user_sparse_identifier, SPARSE_STACK, bytes, dflt);
         o->min = -1;
         o->max = -1;
     }

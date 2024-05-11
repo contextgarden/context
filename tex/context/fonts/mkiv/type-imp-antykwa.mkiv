@@ -15,21 +15,21 @@
 
     \pushglobalsetups
 
-        \startsetups[antykwa]
+        \startsetups[\s!math:antykwa]
             \setmathfenceparameter\c!alternative{1}%
             \setupmathradical[\c!leftmargin=.05mq,\c!mindepth=.05mx]%
         \stopsetups
 
         % cond => -cont as in iwona
 
-        \startsetups[antykwa-light]              \directsetup{antykwa}\stopsetups
-        \startsetups[antykwa-cond]               \directsetup{antykwa}\stopsetups
-        \startsetups[antykwa-light-cond]         \directsetup{antykwa}\stopsetups
+        \startsetups[\s!math:antykwa-light]              \fastsetup{\s!math:antykwa}\stopsetups
+        \startsetups[\s!math:antykwa-cond]               \fastsetup{\s!math:antykwa}\stopsetups
+        \startsetups[\s!math:antykwa-light-cond]         \fastsetup{\s!math:antykwa}\stopsetups
         % these long names are obsolete and will go away
-        \startsetups[antykwa-torunska]           \directsetup{antykwa}\stopsetups
-        \startsetups[antykwa-torunska-light]     \directsetup{antykwa}\stopsetups
-        \startsetups[antykwa-torunska-cond]      \directsetup{antykwa}\stopsetups
-        \startsetups[antykwa-torunska-light-cond]\directsetup{antykwa}\stopsetups
+        \startsetups[\s!math:antykwa-torunska]           \fastsetup{\s!math:antykwa}\stopsetups
+        \startsetups[\s!math:antykwa-torunska-light]     \fastsetup{\s!math:antykwa}\stopsetups
+        \startsetups[\s!math:antykwa-torunska-cond]      \fastsetup{\s!math:antykwa}\stopsetups
+        \startsetups[\s!math:antykwa-torunska-light-cond]\fastsetup{\s!math:antykwa}\stopsetups
 
     \popglobalsetups
 

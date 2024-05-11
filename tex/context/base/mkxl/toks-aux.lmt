@@ -257,6 +257,7 @@ tex.interactioncodes        = getthem(tex.getinteractionmodes,       "modecode")
 tex.charactertagcodes       = getthem(tex.getcharactertagvalues      )
 tex.protrusionboundarycodes = getthem(tex.getprotrusionboundaryvalues)
 tex.shapingpenaltiescodes   = getthem(tex.getshapingpenaltiesvalues  )
+tex.mathscriptordercodes    = getthem(tex.getmathscriptordervalues   )
 
 function tex.stringtocodesbitmap(str,codes)
     local bitmap = 0

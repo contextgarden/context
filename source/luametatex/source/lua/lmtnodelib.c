@@ -1388,7 +1388,7 @@ static int nodelib_direct_getanchors(lua_State *L)
                 }
                 /* bonus detail: source, target */
                 if (box_anchor(n)) {
-                    lua_pushinteger(L,  box_anchor(n)        & 0x0FFF);
+                    lua_pushinteger(L, box_anchor(n) & 0x0FFF);
                 } else {
                     lua_pushnil(L);
                 }
@@ -3969,6 +3969,22 @@ static int nodelib_direct_newmathglyph(lua_State* L)
     nodelib_aux_setattributelist(L, glyph, 3);
     lua_pushinteger(L, glyph);
     return 1;
+}
+
+static int nodelib_direct_newcontinuationatom(lua_State* L)
+{
+    if (lua_type(L, 1) == LUA_TBOOLEAN) {
+        halfword n = tex_new_math_continuation_atom(null);
+        nodelib_aux_setattributelist(L, n, 2);
+        lua_pushinteger(L, n);
+        return 1;
+    } else {
+        halfword n = nodelib_valid_direct_from_index(L, 1);
+        if (n) {
+            n = tex_new_math_continuation_atom(n);
+        }
+        return 0;
+    }
 }
 
 /* node.free (this function returns the 'next' node, because that may be helpful) */
@@ -10253,6 +10269,7 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "new",                     nodelib_direct_new                    },
     { "newtextglyph",            nodelib_direct_newtextglyph           },
     { "newmathglyph",            nodelib_direct_newmathglyph           },
+    { "newcontinuationatom",     nodelib_direct_newcontinuationatom    },
     { "protectglyph",            nodelib_direct_protectglyph           },
     { "protectglyphs",           nodelib_direct_protectglyphs          },
     { "protectglyphsnone",       nodelib_direct_protectglyphs_none     },
