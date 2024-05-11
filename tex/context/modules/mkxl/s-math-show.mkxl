@@ -17,6 +17,7 @@
   {\bgroup
      \par
      \c_attr_visual\attributeunsetvalue
+     \c_attr_tagged\zerocount
      \ruledhbox to \hsize \bgroup
        \setbox\scratchbox\hbox to \hsize\bgroup
          \scratchheight2\lineheight

@@ -39,11 +39,11 @@ local handlers           = fonts.handlers
 
 local afm                = handlers.afm or { }
 handlers.afm             = afm
-afm.version              = 1.514 -- incrementing this number one up will force a re-cache
+afm.version              = 1.541 -- incrementing this number one up will force a re-cache
 
 local pfb                = handlers.pfb or { }
 handlers.pfb             = pfb
-pfb.version              = 1.002
+pfb.version              = 1.003
 
 local readers            = afm.readers or { }
 afm.readers              = readers

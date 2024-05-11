@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['s-fonts-tables'] = {
     license   = "see context related readme files"
 }
 
--- Thsi file needs to be updated to LMTX!
+-- This file needs to be updated to LMTX!
 
 moduledata.fonts          = moduledata.fonts        or { }
 moduledata.fonts.tables   = moduledata.fonts.tables or { }

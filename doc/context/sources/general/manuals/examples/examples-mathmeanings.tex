@@ -1,0 +1,937 @@
+% macros=mkvi
+
+% \unprotect \pushoverloadmode
+% \protect
+
+\setupbackend[format=pdf/ua-2]
+% \setuptagging[state=start]
+% \nopdfcompression
+% \enabletrackers[structures.tags]
+% \enabletrackers[structures.tags.showtree]
+
+\environment examples-style
+\environment examples-style-math
+
+% todo-group.txt
+
+% \setupnote[mathnote][location=page]
+% \enabletrackers[math.textblobs]
+
+% \disabledirectives[structures.tags.shipout]
+% \enabledirectives [structures.tags.math.standalone]
+% \disabledirectives[structures.tags.math.strip]
+
+% \setuptagging
+%   [state=start]
+
+\definemathgroupset
+%   [demob]
+  [every]
+
+% \setmathgroupset
+%   [demob]
+
+\registermathfunction[𝑓]
+\registermathfunction[𝑔]
+
+% \registermathsymbol[default][en][𝐮][the vector]
+% \registermathsymbol[default][en][𝐯][the vector]
+% \registermathsymbol[default][en][𝖠][the matrix]
+
+\registermathsymbol[default][en][lowercasebold]           [the vector] % [of]
+\registermathsymbol[default][en][uppercasesansserifnormal][the matrix]
+
+% \registermathsymbol[default][sv][𝐮][vektorn]
+% \registermathsymbol[default][sv][𝐯][vektorn]
+
+\registermathsymbol[default][sv][lowercasebold]           [vektorn]
+\registermathsymbol[default][sv][uppercasesansserifnormal][matrisen]
+
+% \registermathsymbol[default][en][𝒞][the continuous functions]
+% \registermathsymbol[default][sv][𝒞][de kontinuerliga funktionerna]
+
+        \registermathsymbol[default][ua][lowercasebold]           [vektorn]
+        \registermathsymbol[default][ua][uppercasesansserifnormal][matrisen]
+
+%         \registermathsymbol[default][de][lowercasebold]           [vektorn]
+%         \registermathsymbol[default][de][uppercasesansserifnormal][matrisen]
+
+\def\ExampleLanguages{en,sv}
+\def\ExampleLanguages{debug,en,sv}
+% \def\ExampleLanguages{debug,en,sv,nl}
+% \def\ExampleLanguages{debug,en,sv,ua}
+% \def\ExampleLanguages{en,sv,ua}
+% \def\ExampleLanguages{en,sv,ua,de}
+
+% \enablemode[issues]
+
+% \enabletrackers[structures.tags.math.times]
+% \enabletrackers[structures.tags.math.keeplast=mmldata]
+% \enabletrackers[structures.tags.math.save]
+
+% The document itself:
+
+\startbuffer [colophon]
+
+\startsubject[title=About this document]
+
+This document is used by Mikael Sundqvist and Hans Hagen to check out how well a
+formula translates to a verbose meaning. It's an experiment with accessibility on
+the one hand but also a way to get documents validated and even annotated.
+Eventually there will be support for many languages but we started with English,
+Swedish and Dutch.
+
+\blank
+
+This feature is only available in \CONTEXT\ \MKXL, aka \LMTX. You can enable
+tracking in your document by for instance:
+
+\starttyping[option=TEX]
+\setuptagging
+  [state=start]
+
+\definemathgroupset
+  [mydemogroup]
+  [every]
+
+\setmathgroupset
+  [mydemogroup]
+
+\setupnote
+  [mathnote]
+  [location=page]
+
+\enabletrackers
+  [math.textblobs]
+\stoptyping
+
+By default a \type {mathnote} is set up to be an endnote in which case you need
+to place them with:
+
+\starttyping[option=TEX]
+\placenote[mathnode]
+\stoptyping
+
+\stopsubject
+\stopbuffer
+
+\startdocument
+  [title={Meaningfull Math},
+   author={Mikael Sundqvist & Hans Hagen}]
+
+
+\StartExample
+    % Addition and equals
+    \im {1 + 2 = 3}
+\StopExample
+
+\StartExample
+    % Subtraction and negative number
+    \im {1 - 2 = -1}
+\StopExample
+
+\StartExample
+    % Multiplication
+    \im {2 \times 3 = 2 \cdot 3 = 6}
+\StopExample
+
+\StartExample
+    % Decimal numbers
+    \im {1.1 + 2.22 = 3.33 = 3 + (0.1 + .22) \neq - \digits{1.23^4} \neq 10^5}
+\StopExample
+
+\StartExample
+    % Hexadecimal with \mn
+    \im {\mn{0x34BE} = 13502 = \digits{13502}}
+\StopExample
+
+\StartExample
+    % Squared
+    \im {3^2 + 4^2 = 5^2}
+\StopExample
+
+\StartExample
+    % Higher power
+    \im {3^4 + 4^4 \neq 5^4}
+\StopExample
+
+\StartExample
+    % Simple fraction
+    \dm {\frac{1}{2} = \frac{1}{3} + \frac{1}{6}}
+\StopExample
+
+\StartExample
+    % Fraction with symbols
+    \dm {\frac{1}{x} + \frac{1}{y} = \frac{x + y}{xy}}
+\StopExample
+
+\StartExample
+    % Fraction multiplied by number
+    \m{\frac{1}{2}2 = \frac{1}{2} \cdot 2 = \frac{1}{2} \times 2 = 2 \frac{1}{2} = 2 \cdot \frac{1}{2} = 2 \times \frac{1}{2}}
+\StopExample
+
+\StartExample
+    % Fraction multiplied by symbol
+    \m{\frac{1}{2}a = \frac{1}{2}\cdot a = \frac{1}{2} \times a = a \frac{1}{2} = a \cdot \frac{1}{2} = a \times \frac{1}{2}}
+\StopExample
+
+\StartExample
+    % With fraction times fraction
+    \dm {a\frac{1 + x}{x - 1} + \frac{1 - x}{1 + x}\frac{1 - y}{1 + y} + \frac{1 - x}{1 + x}y}
+\StopExample
+
+\StartExample
+    % Group and number/variable
+    \im {2(1 + x) + (1 + y)3 - a(1 + z) - (1 + u)b}
+\StopExample
+
+\StartExample
+    % Group and number/variable with explicit multiplication
+    \im {2 \cdot (1 + x) + (1 + y) \cdot 3 - a \cdot (1 + z) - (1 + u) \cdot b}
+\StopExample
+
+\StartExample
+    % Multiplication of indexed/sub (use \notimes if times should be surpressed)
+    \dm {a__2b__1 - a_1b_2 = a__2\notimes b__1 - a_1\notimes b_2}
+\StopExample
+
+\StartExample
+    % A few indices, both as one and as multi
+    % Do we want to use invisible comma anywhere? Probably not.
+    \dm {A_{1,20} + A_1_{20} + A_{1,20} + A_1_{20}}
+\StopExample
+
+\StartExample
+    % Group and element with sub(index)
+    \im {a__1(1 + x) + (1 + y)b__1 - a_2(1 + z) - (1 + u)b_2}
+\StopExample
+
+\StartExample
+    % Group and element with sub(index) and with explicit multiplication
+    \im {a__1 \cdot (1 + x) + (1 + y) \cdot b__1 - a_2 \cdot (1 + z) - (1 + u) \cdot b_2}
+\StopExample
+
+\StartExample
+    % Groups and times
+    \im {(n+k)n + (n+k)(n+1) + n(n+k)}
+\StopExample
+
+\StartExample
+    % Left right groups times
+    \im {\left(n+k\right)n + \left(n+k\right)\left(n+1\right) + n\left(n+k\right)}
+\StopExample
+
+\StartExample
+    % Fenced and times
+    \im {\fenced[parenthesis]{n+k}n + \fenced[parenthesis]{n+k}\fenced[parenthesis]{n+1} + n\fenced[parenthesis]{n+k}}
+\StopExample
+
+\StartExample
+    % Groups with powers and times
+    \dm {(1 + x)^n a  = a (1 + x)^n \neq (1 + x)^n (1 + y) - (1 + x)(1 + y)^n}
+\StopExample
+
+\StartExample
+    % Simple parenthesis usage
+    % Better use structured input (see next two examples)
+    \im {(1 + 2 + 3 + 4)^2 = 1^3 + 2^3 + 3^3 + 4^3}
+\StopExample
+
+\StartExample
+    % Better, but next one might be even more clear
+    \im {\left(1 + 2 + 3 + 4 \right)^2 = 1^3 + 2^3 + 3^3 + 4^3}
+\StopExample
+
+\StartExample
+    % Structured parenthesis usage
+    \im{\fenced[parenthesis]{1 + 2 + 3 + 4 }^2 = 1^3 + 2^3 + 3^3 + 4^3}
+\StopExample
+
+\StartExample
+    % Plus minus
+    \im {x \neq x + -1}
+\StopExample
+
+\StartExample
+    % Decimal period last in math goes
+    \im {x = 1.}
+\StopExample
+
+
+\StartExample
+    % Also goes for mathtextpunctuation
+    % (Mostly for displayed formulas, otherwise, keep the punctuation outside math)
+    \im {x = 1\mtp{.}}
+\StopExample
+
+\StartExample
+    % Period at end -> period goes
+    \im {x = y.}
+\StopExample
+
+\StartExample
+    % Also goes for mathtextpunctuation
+    \im {x=z\mtp{.}}
+\StopExample
+
+\StartExample
+    % Shoulf comma at the end also go? (bad input)
+    \im {x = y,}
+\StopExample
+
+\StartExample
+    % Variables can be used as placeholders for numbers (explaining decimals)
+    % We use \notimes to get rid of the explicit multiplication
+    \im {a__{0}.a__{1}\notimes a__{2} \ldots a__{n} \ldots}
+\StopExample
+
+\StartExample
+    % Different ways to access the multiplication dot
+    \im {y·z = y \cdot z = y \scalarproduct z}
+\StopExample
+
+\StartExample
+    % The f and g are in this document registered as functions
+    % There should be TIMES between g and h
+    \im {abcdefghikl}
+\StopExample
+
+\StartExample
+    % Lots of times
+    \im {xx \sin(x) x \frac{x}{x} x \sqrt{x} x \int x \sin \cos x \sin(x) \cos}
+\StopExample
+
+\StartExample
+    % f is registered as a function, h is not
+    \im {af(x) + bh(x) + f(x + b)}
+\StopExample
+
+\StartExample
+    % Apply function or whatever
+    \dm { A(X) \neq A\notimes(X) \neq A\applyfunction(X) \neq A\of(X)}
+\StopExample
+
+\StartExample
+    % Just an example where \of makes sense
+    \dm {\Sigma \of (X \vee Y) = \Sigma \of X \vee \Sigma \of Y}
+\StopExample
+
+\StartExample
+    % An example with something of two variables
+    \dm { F\of(x,t) = f__t(x) = \mathrm{f}__t\of(x)}
+\StopExample
+
+\StartExample
+    % Prime with and without \of
+    \dm { h'\of(x) \neq h'(x)}
+\StopExample
+
+\StartExample
+    % C \of examples
+    % We shall not get rid of the grouping since it gives structure
+    % One could think of a \nogroup (just as \notimes)
+    \im { C \of (\openinterval{a,b}) \neq C^^2 \of (\interval{a,b}) \neq C^^2 \of \interval{0,1} \neq C\of(\Omega) \neq 𝒞 \of (\Omega)}
+\StopExample
+
+\StartExample
+    % Nesting groups. Could it have meaning? Or should we only get one group.
+    \im { (((x))) \neq ((x)) \neq (\parenthesis{x})}
+\StopExample
+
+\StartExample
+    % Nesting groups/parentheses need to be there
+    \im { s\of(1) = s\of(\set{0}) = \set{0} \cup \set{\set{0}}}
+\StopExample
+
+\StartExample
+    % Algebra (ring) examples
+    \dm {\reals \of \bracket{x + 1} = \reals\fenced[bracket]{x} \neq \reals\of[x]}
+\StopExample
+
+\StartExample
+    % This is a result of
+    % \registermathsymbol[default][en][lowercasebold][the vector]
+    % \registermathsymbol[default][en][uppercasesansserifnormal][the matrix]
+    \im {\mathss{A}__{\mathbf{u}}\mathbf{v} \colonequals \mathbf{u} \crossproduct \mathbf{v}}
+\StopExample
+
+\StartExample
+    % Binomials are fractions
+    \im {\binom{3}{2} = \frac{3!}{(3-2)!2!}}
+\StopExample
+
+\StartExample
+    % With symbols it gets a bit long
+    \im {\binom{2n}{n + 1} = \frac{(2n)!}{(n - 1)!(n + 1)!}}
+\StopExample
+
+\StartExample
+    % Binomials, multiplied
+    \im {a\binom{n}{k} + \binom{n}{k}\binom{n}{a} + \binom{n}{k}x^k + \binom{n}{k}x}
+\StopExample
+
+\StartExample
+    % Binomial theorem
+    \dm {\parenthesis{1 + x}^n = \sum_{k = 0}^{n} \binom{n}{k}x^k}
+\StopExample
+
+\StartExample
+    % \ldots = , and so on
+    \im {x + x^2 + x^3 + \ldots = x/(1 - x)}
+\StopExample
+
+\StartExample
+    % Well-known complex formula
+    \im {3i \neq 3\ii \neq 1 + i \neq 2 + \ii \neq 3 + a i \neq 3 + a \ii }
+\StopExample
+
+\StartExample
+    % Well-known complex formula
+    \im {\ee^{\pi \ii } = -1}
+\StopExample
+
+\StartExample
+    % Do we need "times" before the \ee?
+    \im {a + b \ii = \sqrt{a^2 + b^2}\ee^{\ii\arg(a + \ii b)}}
+\StopExample
+
+\StartExample
+    % Simple conjugate
+    \im {\conjugate{a + b \ii} = a - b \ii}
+\StopExample
+
+\StartExample
+    % Implication
+    \im {x^2 = -1 \implies x = \pm \ii}
+\StopExample
+
+\StartExample
+    % Some radicals
+    \im {\sqrt{x} = x^{1/2} \neq x^{1/3} = \root[3]{x}}
+\StopExample
+
+\StartExample
+    % Some radicals with multiplication
+    \im {2\sqrt{x} = 2x^{1/2} \neq 2x^{1/3} = 2\root[3]{x}}
+\StopExample
+
+\StartExample
+    % Some radicals with multiplication
+    \im {a\sqrt{x} = ax^{1/2} \neq ax^{1/3} = a\root[3]{x}}
+\StopExample
+
+\StartExample
+    % Some radicals with multiplication
+    % This is bad input!
+    \im {\sqrt{x}2 = x^{1/2}2 \neq x^{1/3}2 = \root[3]{x}2}
+\StopExample
+
+\StartExample
+    % Product of radicals
+    \im {\sqrt{x} \sqrt{y} = \sqrt{xy}}
+\StopExample
+
+\StartExample
+    % Some radicals with multiplication
+    \im {\sqrt{x}a = x^{1/2}a \neq x^{1/3}a = \root[3]{x}a}
+\StopExample
+
+\StartExample
+    % Just a few numbersets with subsets
+    \im {\naturalnumbers \subset \integers \subset \rationals \subset \reals \subset \complexes}
+\StopExample
+
+\StartExample
+    % Just a few numbersets with intersection
+    \im {\naturalnumbers \cap \reals = \naturalnumbers}
+\StopExample
+
+\StartExample
+    % A set with a \fence. Notice that no group should be started after the fence
+    \im {\set{a \in \naturalnumbers \fence \mtext{\im{a} is even}}}
+\StopExample
+
+\StartExample
+    % A set with a \fence. More conditions
+    \dm {\rationals = \set{\frac{p}{q} \fence p,q \in \integers \land q \neq 0}}
+\StopExample
+
+\StartExample
+    % Maps colon is given by \maps (defined function)
+    \im {f \maps \reals \to \reals}
+\StopExample
+
+\StartExample
+    % Maps colon is given by \maps (named function)
+    \im {\sin \maps \reals \to \reals}
+\StopExample
+
+\StartExample
+    % Maps as colon by \mapsas
+    \im {f \mapsas x \mapsto x + \exp(x)}
+\StopExample
+
+\StartExample
+    % Maps as colon by \mapsas
+    \im {\sin \mapsas x \mapsto \sin(x)}
+\StopExample
+
+\StartExample
+    % Logarithms, spelled out
+    % Todo, add for other or remove for ln
+    \im {x \mapsto \ln(x)}
+\StopExample
+
+\StartExample
+    % The grouping is sometimes needed
+    \im {\sin x = \sin(x) \neq \sin(x) + 1 \neq \sin(x + 1)}
+\StopExample
+
+\StartExample
+    % Just a function
+    \im {f = \sin}
+\StopExample
+
+\StartExample
+    % Just a limit
+    \im {\lim a_{k} = -\infty}
+\StopExample
+
+\StartExample
+    % A limit with sub on lim
+    \im {\lim_{k \tendsto +\infty} a_{k}}
+\StopExample
+
+\StartExample
+    % Using index (__)
+    \im {\lim__{k \tendsto +\infty} a__{k} = -\infty}
+\StopExample
+
+\StartExample
+    % Limit and fractin (no times inbetween)
+    \dm {\lim \frac{a__{k}}{b__{k}}}
+\StopExample
+
+\StartExample
+    % Limit and fraction with sub on lim
+    \dm {\lim_{k \tendsto +\infty} \frac{A__k}{B__k}}
+\StopExample
+
+\StartExample
+    % Should be two formulas, but in this document we only show the last one
+    \im {f(x) \tendsto A \mtext{ as } x \tendsto a}
+\StopExample
+
+\StartExample
+    % Just a standard limit
+    \dm {\lim_{x \tendsto 0} \frac{\sin (x)}{x} = 1}
+\StopExample
+
+\StartExample
+    % More complicated in the sub.
+    \dm {\lim_{f(x) \tendsto 0} g(x)}
+\StopExample
+
+\StartExample
+    % Some derivatives
+    % Do we want "The function" here? (That is a more general question)
+    \im {f'(x) + f''(x) + f'''(x) + f''''(x)}
+\StopExample
+
+\StartExample
+    % Variable primed
+    \im {f' + h' + h'' + h''' + h''''}
+\StopExample
+
+\StartExample
+    % More derivatives
+    \im { \secondderivative{f} = f'' }
+\StopExample
+
+\StartExample
+    % An example with derivative
+    \im {\sin''(x) = -\sin(x) = \sin(x + \pi)}
+\StopExample
+
+\StartExample
+    % Even more derivatives, also with indices
+    \im {f__1'(x) + f__1^^2'(x) }
+\StopExample
+
+\StartExample
+    % Without \notimes we get a times. See also next example
+    \im {(f)'(x) + (f)'\notimes(x) + \derivative{(f)}(x) + \derivative{(f)}\notimes(x)}
+\StopExample
+
+\StartExample
+    % Here we want times, so we cannot block it in previous example
+    \im {(f+g)'(f+g) }
+\StopExample
+
+\StartExample
+    % More indices
+    \im {(f__1)^2 = (f_1)^2 \neq f_1^2 }
+\StopExample
+
+\StartExample
+    % A few more
+    \im {(x_1)^2 \neq x_1^2 }
+\StopExample
+
+\StartExample
+    % More indiced, we probably can remove some
+    \im {h_1 + h__1 + h^1 + h^^1}
+\StopExample
+
+\StartExample
+    % Amazing multiscript example
+    \im{
+        h_{}      ^{\lambda} ___{s}
+         _{\kappa}^{} % \noscript  %
+         _{\mu}   ^{} % \noscript  %
+         _{}      ^{\nu}     ___{t}
+         _{\phi}  ^{} % \noscript
+        }
+\StopExample
+
+\StartExample
+    % Multiscripts
+    \im {\Gamma_1^2_3^4 \neq \Gamma__1^^2__3^^4}
+\StopExample
+
+\StartExample
+    % Even more multiscripts
+    \im {\Gamma__1^^2__3^^4 \neq \Gamma__1^^2^^{}__3^^4}
+\StopExample
+
+\StartExample
+    % One example with prescript
+    The hypergeometric function \im {F____2__1}
+\StopExample
+
+\StartExample
+    % A sum and a fraction
+    \dm {\sum_{n = 1}^{+\infty} \frac{1}{n^2} = \frac{\pi^2}{6}}
+\StopExample
+
+\StartExample
+    % A sum with only sub index, and a fraction
+    \dm {\sum_{n \in \naturalnumbers} \frac{1}{n^2} = \frac{\pi^2}{6}}
+\StopExample
+
+\StartExample
+    % A product followed by a delimitered parenthesis
+    \dm {\sin x = \prod_{n = 1}^{+\infty} \left(1 - \frac{x^2}{\pi^2n^2}\right)}
+\StopExample
+
+\StartExample
+    % A product followed by a fence
+    \dm {\sin x = \prod_{n = 1}^{+\infty} \parenthesis{1 - \frac{x^2}{\pi^2n^2}}}
+\StopExample
+
+\StartExample
+    % A simple integral with limits
+    \dm {\int_{a}^{b} f'(x) \dd x = f(b) - f(a)}
+\StopExample
+
+\StartExample
+    % A bit more complex lower limit
+    \dm {\int_{x=a}^{b} f'(x) \dd x = f(b) - f(a)}
+\StopExample
+
+\StartExample
+    % An integral over the domain
+    \dm {\int_{\Omega} f \dd \mu = 0}
+\StopExample
+
+\StartExample
+    % An integral followed by a fraction
+    \dm {\int \frac{1}{1 + x^2} \dd x}
+\StopExample
+
+\StartExample
+    % An integral with limits, followed by a fraction
+    \dm {\int_0^1 \frac{1}{1 + x^2} \dd x}
+\StopExample
+
+\StartExample
+    % Some tuples
+    \im {\tuple{x^1, x^2, x^3} \neq \tuple{x^^1, x^^2, x^^3} = \tuple{x__1, x__2, x__3}}
+\StopExample
+
+\StartExample
+    % Complement shall not give times
+    \im {A \cup \complement A}
+\StopExample
+
+\StartExample
+    % Quantifiers
+    % We need to think about unary operators (class) in a broader sense
+    \im {\forall x \in A \exists y \in B: \abs{x - y} > 1}
+\StopExample
+
+\StartExample
+    % Right function adjoint
+    \im {\adjoint{T}T = T\adjoint{T} \neq \adjoint{T}}
+\StopExample
+
+\StartExample
+    % Same comment as for adjoint
+    \im {A \adj(A) = \det(A) I}
+\StopExample
+
+\StartExample
+    % Convolution with non-regiestered functions, note the \of
+    \im {(u \convolve v) (x) \colonequals \int_{\reals} u\of(\xi) v\of(x - \xi) \dd \xi}
+\StopExample
+
+\StartExample
+    % Convolution with registered functions
+    \im {(f \convolve g) (x) \colonequals \int_{\reals} f(\xi) g(x - \xi) \dd \xi}
+\StopExample
+
+\StartExample
+    % Right transpose function
+    \im {\transpose{A} + \transpose{(A + B^2)} + \transpose{\left(A^2 + B\right)}}
+\StopExample
+
+\StartExample
+    % Partial derivatives with lower indices. Beware of order.
+    \im {\secondderivative{f__{xy}} = \secondderivative{f__{yx}} = f__{xy}'' \neq \secondderivative{f}__{yx}}
+\StopExample
+
+\StartExample
+    % Inverse of function f
+    % It is the preimage that is the issue
+    \im {f(x) = y \iff x = \inverse{f}\of(y)}
+\StopExample
+
+\StartExample
+    % Inverse of variable h
+    \im {h\of(x) = y \iff x = \inverse{h}\of(y)}
+\StopExample
+
+\StartExample
+    % Preimage of function f
+    \im {\preimage{f}\of(Y) = \set{x \in X \fence f(x) = y}}
+\StopExample
+
+\StartExample
+    % Preimage of variable h
+    \im {\preimage{h}\of(Y) = \set{x \in X \fence h\of(x) = y}}
+\StopExample
+
+\StartExample
+    % Leibniz derivatives
+    \dm {\frac{\dd u}{\dd t} = u' = \dot{u}}
+\StopExample
+
+\StartExample
+    % More derivatives, Laplace operator
+    % Maybe we need operatorof here?
+    \dm {\frac{\partial u}{\partial t} = c^2 \laplace u}
+\StopExample
+
+\StartExample
+    \dm {\frac{\partial u}{\partial t} = c^2 \frac{\partial^2u}{\partial x^2}}
+\StopExample
+
+\StartExample
+    % More derivatives
+    % Here we see that "the function" from the registered
+    % function is not always wanted
+    \dm {\dd + \frac{\dd^3 u}{\dd x^3} + \frac{\dd f}{\dd x}}
+\StopExample
+
+\StartExample
+    % Upright d
+    \setupmathematics[differentiald=upright]
+    \dm {\dd + \frac{\dd^3 u}{\dd x^3} + \frac{\dd f}{\dd x}}
+\StopExample
+
+\StartExample
+    % A mixed partial derivative
+    \dm {\frac{\partial^3 u}{\partial x^2 \partial y}}
+\StopExample
+
+\StartExample
+    % A complex analysis way of writing it.
+    % To be thought of
+    \im {\conjugate{\partial} u = \bar{\partial} u = f}
+\StopExample
+
+\StartExample
+    % Experimented with partial derivative d d x group u plus v end group...
+    % but for accessibility reasons it is better to keep the partial
+    % We need \of here because one can have products as well
+    % Without \of one could consider \notimes, but if none is there we should get a TIMES
+    \dm {\frac{\partial}{\partial x}\of(u + v) = \frac{\partial u}{\partial x} + \frac{\partial v}{\partial x}}
+\StopExample
+
+\StartExample
+    % One example with Laplace followed by a close parenthesis
+    \im {(1 - \laplace)u = f}
+\StopExample
+
+\StartExample
+    % Just a few operators
+    \im {\laplace = \gradient \scalarproduct \gradient = \gradient^2 = \nabla \scalarproduct \nabla}
+\StopExample
+
+\StartExample
+    % Operator and crossproduct
+    \im {\gradient \crossproduct \gradient}
+\StopExample
+
+\StartExample[issue]
+    % Maybe shorter end
+    % Made an issue to enable discussion
+    \im {\floor{3.6} = \ceiling{2.7} = \integerpart{3.2}}
+\StopExample
+
+\StartExample
+    % Just a set
+    \im {A = \set[size=1]{1, 2, 3}}
+\StopExample
+
+\StartExample
+    % Just a tuple
+    \im {A = \tuple{1, 2, 3}}
+\StopExample
+
+\StartExample
+    % Just an absolute value
+    \im {|\abs[size=0]{a__{n__k} - A} < \epsilon}
+\StopExample
+
+\StartExample
+    % Inner product
+    \im {\innerproduct{u \fence v} = \conjugate{\innerproduct{v \fence u}}}
+\StopExample
+
+\StartExample
+    % A set with a fence
+    \im {\reals__{+} \colonequals \set{x \fence x \in \reals \land x > 0}}
+\StopExample
+
+\StartExample
+    % Simple unstructured input works, but do not use!
+    % \setupmathematics[autointervals=no]
+    \im {[a,b[ \neq ]a,b] \neq ]a,b[ \neq [a,b]}
+\StopExample
+
+\StartExample
+    % Warning: Nesting with weird parenthesis is not supported
+    \im {X = \varleftopeninterval{a,(b + 1)} \neq ]a,(b + 1)]}
+\StopExample
+
+\StartExample
+    % Closure of interval
+    \im {\closure{\openinterval{a,b}} = \closedinterval{a,b}}
+\StopExample
+
+\StartExample
+    % Closure of interval
+    \im {\closure{\varopeninterval{0,1}} = \closedinterval{0,1}}
+\StopExample
+
+\StartExample
+    % Random formula
+    % Mikael: Think about the Delta
+    \dm {u\of(b)-u\of(a)=\lim_{n\to+\infty} \parenthesis{f(x__1)\Delta x__1+f(x__2)\Delta x__2+\ldots+f(x__n)\Delta x__n}}
+\StopExample
+
+\StartExample
+    % Absolute value, triangle inequality
+    \im {\abs{x + y} \leq \abs{x} + \abs{y}}
+\StopExample
+
+\StartExample
+    % Norm, triangle inequality
+    \im {\norm{x + y} \leq \norm{x} + \norm{y}}
+\StopExample
+
+\StartExample
+    % Both norm and absolute value
+    \im {\norm{\alpha x} = \abs{\alpha} \norm{x}}
+\StopExample
+
+\StartExample
+    % Example with \mtp
+    \im {f(x) = x^2 \mtp{,} x \in \reals}
+\StopExample
+
+\StartExample
+    % Logic example
+    \im {\lnot(P \lor Q) = (\lnot P) \land (\lnot Q)}
+\StopExample
+
+\StartExample
+    % \neg is now defined as a function. Maybe char-def
+    % TODO Fix \neg?
+    \im {\neg(P \land Q) \iff (\lnot P) \lor (\lnot Q)}
+\StopExample
+
+\StartExample
+    % Yet another example with quantifier
+    % Observe the usage of \notimes
+    \im {(\forall x \in \reals)\notimes (x > 0 \lor x = 0 \lor x < 0)}
+\StopExample
+
+\StartExample
+    % Cases example
+    \dm {f(x) =
+        \startcases
+            \NC x  \NC x > 0 \NR
+            \NC -x \NC x < 0 \NR
+        \stopcases}
+\StopExample
+
+
+\StartExample
+    % Cases with lefttext
+    \dm{f(x) =
+        \startcases[lefttext=\mtp{,}]
+            \NC x  \NC x > 0 \NR
+            \NC -x \NC x < 0 \NR
+        \stopcases}
+\StopExample
+
+\StartExample
+    % Cases with righttext
+    \dm{f(x) =
+        \startcases[righttext=\mtext{if }]
+            \NC x  \NC x > 0 \NR
+            \NC -x \NC x < 0 \NR
+        \stopcases}
+\StopExample
+
+\StartExample
+    % Chemistry example
+    % Todo: maybe defaultstyle to \tf
+    \setupmathematics[domain=chemistry]
+    \dm{
+        {\tf X}^^^{123}__{12}^{+4} \approx X^^^{123}__{12}^{+4}
+    }
+\StopExample
+
+\StartExample
+    \dm{
+        \left(1 + x + x^2\right)^2
+    }
+\StopExample
+
+\StartExample
+    \setupmathematics[domain=simplified]
+    \dm{
+        \left(1 + x + x^2\right)^2
+    }
+\StopExample
+
+\StartExample
+    % User formula
+    % Maybe add something inbetween nedsted sums (and integrals)?
+    \startformula \chi^{2} = \sum_{i = 1}^{r}{\sum_{j = 1}^{c}\frac{\left( O_{ij} - E_{ij} \right)^{2}}{E_{ij}}} \stopformula
+\StopExample
+
+\stopdocument

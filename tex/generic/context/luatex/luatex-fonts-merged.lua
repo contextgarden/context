@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2024-04-01 08:54
+-- merge date  : 2024-05-11 12:49
 
 do -- begin closure to overcome local limits and interference
 
@@ -12012,13 +12012,11 @@ readers.hmtx=function(f,fontdata,specification)
    local glyph=glyphs[i]
    width=readshort(f) 
    leftsidebearing=readshort(f)
-   if width~=0 then
-    glyph.width=width
-   end
+   glyph.width=width
   end
-  for i=nofmetrics,nofglyphs-1 do
+  for i=0,nofglyphs-1 do
    local glyph=glyphs[i]
-   if width~=0 then
+   if not glyph.width then
     glyph.width=width
    end
   end
@@ -21373,7 +21371,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.141 
+otf.version=3.143 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -26740,10 +26738,13 @@ function readers.expand(data)
   for u,d in next,descriptions do
    local bb=d.boundingbox
    local wd=d.width
-   if not wd then
+   if d.class=="mark" then
+    if trace_markwidth and wd~=0 then
+     report_markwidth("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
+    end
+    d.width=0
+   elseif not wd then
     d.width=defaultwidth
-   elseif trace_markwidth and wd~=0 and d.class=="mark" then
-    report_markwidth("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
    end
    if bb then
     local ht=bb[4]
@@ -35052,7 +35053,7 @@ local afm=handlers.afm or {}
 handlers.afm=afm
 local readers=afm.readers or {}
 afm.readers=readers
-afm.version=1.540
+afm.version=1.541
 local get_indexes,get_shapes
 do
  local decrypt
@@ -35438,7 +35439,7 @@ local afmfeatures=constructors.features.afm
 local registerafmfeature=afmfeatures.register
 local afmenhancers=constructors.enhancers.afm
 local registerafmenhancer=afmenhancers.register
-afm.version=1.540 
+afm.version=1.541 
 afm.cache=containers.define("fonts","one",afm.version,true)
 afm.autoprefixed=true 
 afm.helpdata={}  

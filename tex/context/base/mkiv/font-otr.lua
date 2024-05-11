@@ -1184,24 +1184,26 @@ readers.hmtx = function(f,fontdata,specification)
             local glyph     = glyphs[i]
             width           = readshort(f) -- readushort
             leftsidebearing = readshort(f)
-            if width ~= 0 then
-                glyph.width = width
-            end
-         -- if leftsidebearing ~= 0 then
-         --     glyph.lsb = leftsidebearing
-         -- end
--- if leftsidebearing ~= 0 then
---     glyph.lsb = leftsidebearing
--- end
+            glyph.width     = width        -- zero is okay
+         -- glyph.lsb       = leftsidebearing
         end
         -- The next can happen in for instance a monospace font or in a cjk font
         -- with fixed widths.
-        for i=nofmetrics,nofglyphs-1 do
+--         for i=nofmetrics,nofglyphs-1 do
+--             local glyph = glyphs[i]
+--             if width ~= 0 then
+--                 glyph.width = width
+--             end
+--          -- if leftsidebearing ~= 0 then
+--          --     glyph.lsb = leftsidebearing
+--          -- end
+--         end
+        for i=0,nofglyphs-1 do
             local glyph = glyphs[i]
-            if width ~= 0 then
+            if not glyph.width then
                 glyph.width = width
             end
-         -- if leftsidebearing ~= 0 then
+         -- if not glyph.lsb and leftsidebearing ~= 0 then
          --     glyph.lsb = leftsidebearing
          -- end
         end
@@ -2237,6 +2239,7 @@ local function readdata(f,offset,specification)
             rangeshift    = fontdata.rangeshift,
         })
     end
+
     return fontdata
 end
 

@@ -13,6 +13,7 @@ extern halfword   tex_use_local_boxes             (halfword p, halfword location
 extern void       tex_update_local_boxes          (halfword b, halfword index, halfword location);
 extern void       tex_replace_local_boxes         (halfword par, halfword b, halfword index, halfword location);
 extern void       tex_reset_local_boxes           (halfword index, halfword location);
+extern void       tex_reset_local_box             (halfword location); 
 
 extern void       tex_add_local_boxes             (halfword p);
 extern void       tex_scan_local_boxes_keys       (quarterword *options, halfword *index);

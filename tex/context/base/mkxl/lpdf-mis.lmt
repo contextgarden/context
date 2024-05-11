@@ -47,6 +47,7 @@ local pdfstring            = lpdf.string
 local pdfaction            = lpdf.action
 local pdfflushobject       = lpdf.flushobject
 local pdfflushstreamobject = lpdf.flushstreamobject
+local pdfmajorversion      = lpdf.majorversion
 local pdfminorversion      = lpdf.minorversion
 
 local adddocumentextgstate = lpdf.adddocumentextgstate
@@ -397,7 +398,9 @@ local function documentspecification()
             prints = pdfarray(flattened(pages.toranges(marked)))
         end
     end
-    if fit or fixed or duplex or copies or paper or prints or title or direction or nomenubar then
+    -- The ua spec demands that the DisplayDocTitle should be set, with the argument
+    -- that otherwise viewers can't show it correctly. Who cares anyway.
+ -- if fit or fixed or duplex or copies or paper or prints or title or direction or nomenubar then
         addtocatalog("ViewerPreferences",pdfdictionary {
             FitWindow         = fit       and true                   or nil,
             PrintScaling      = fixed     and pdfconstant("None")    or nil,
@@ -405,11 +408,11 @@ local function documentspecification()
             NumCopies         = copies    and copies                 or nil,
             PickTrayByPDFSize = paper     and true                   or nil,
             PrintPageRange    = prints                               or nil,
-            DisplayDocTitle   = title     and true                   or nil,
+            DisplayDocTitle   = true,
             Direction         = direction and pdfconstant(direction) or nil,
             HideMenubar       = nomenubar and true                   or nil,
         })
-    end
+ -- end
     addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP
     addtocatalog("Version", pdfconstant(format("1.%s",pdfminorversion())))
     addtocatalog("Lang",    pdfstring(tokens.getters.macro("currentmainlanguage")))

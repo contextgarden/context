@@ -1,10 +1,10 @@
 -- from the context garden
 
--- incorrectly packaged: metaducks, sudoku, aquamints
+-- incorrectly packaged: metaducks, aquamints
 
 return {
     name = "mtx-install-imp-modules",
-    version = "1.01",
+    version = "1.02",
     comment = "Third party modules",
     author = "Hans Hagen & others",
     copyright = "ConTeXt development team",
@@ -39,7 +39,7 @@ return {
     --  ["grph-downsample"]   = { url = "modules", zips = { "grph-downsample.lua.zip" } }, -- doesn’t work with LMTX
         ["gs"]                = { url = "modules", zips = { "t-gs.zip" } },                -- probably obsolete
         ["high"]              = { url = "modules", zips = { "high.zip" } },
-    --  ["handlecsv"]         = { url = "modules", zips = { "t-handlecsv.zip" } },         -- has top level files
+        ["handlecsv"]         = { url = "modules", zips = { "t-handlecsv.zip" } },
         ["inifile"]           = { url = "modules", zips = { "t-inifile.zip" } },
         ["karnaugh"]          = { url = "modules", zips = { "karnaugh.zip" } },
         ["layout"]            = { url = "modules", zips = { "t-layout.zip" } },            -- probably obsolete
@@ -50,7 +50,9 @@ return {
         ["mathsets"]          = { url = "modules", zips = { "t-mathsets.zip" } },
     --  ["metaducks"]         = { url = "modules", zips = { "metaducks.zip" } },           -- has top level files
         ["pararef"]           = { url = "modules", zips = { "pararef.zip" } },
-    --  ["presvoz"]           = { url = "modules", zips = { "presvoz.zip" } },             -- has top level files
+        ["pauta"]             = { url = "modules", zips = { "Pauta.zip" } },
+        ["president"]         = { url = "modules", zips = { "president.zip" } },
+        ["presvoz"]           = { url = "modules", zips = { "presvoz.zip" } },             -- works only on Windows
         ["pret-c.lua"]        = { url = "modules", zips = { "pret-c.lua.zip" } },
         ["rst"]               = { url = "modules", zips = { "t-rst.zip" } },
         ["rsteps"]            = { url = "modules", zips = { "t-rsteps.zip" } },
@@ -58,6 +60,7 @@ return {
     --  ["simplefonts"]       = { url = "modules", zips = { "t-simplefonts.zip" } },       -- obsolete (confuses users)
         ["simpleslides"]      = { url = "modules", zips = { "t-simpleslides.zip" } },
         ["squares"]           = { url = "modules", zips = { "squares.zip" } },
+        ["statistical-charts"] = { url = "modules", zips = { "statistical-charts.zip" } },
     --  ["stormfontsupport"]  = { url = "modules", zips = { "stormfontsupport.zip" } },    -- obsolete (fonts)
         ["sudoku"]            = { url = "modules", zips = { "sudoku.zip" } },
     --  ["taspresent"]        = { url = "modules", zips = { "t-taspresent.zip" } },        -- obsolete (early version of simpleslides)

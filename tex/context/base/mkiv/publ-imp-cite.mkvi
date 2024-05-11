@@ -13,10 +13,18 @@
 
 \unprotect
 
+% \starttexdefinition mutable protected btx:cite:inject #content
+%     \texdefinition{btx:format:gotointernal} {
+%         #content
+%     }
+% \stoptexdefinition
+
 \starttexdefinition mutable protected btx:cite:inject #content
+    \btxstarttaggedcite
     \texdefinition{btx:format:gotointernal} {
         #content
     }
+    \btxstoptaggedcite
 \stoptexdefinition
 
 \starttexdefinition mutable protected btx:cite:checkconcat

@@ -35,7 +35,7 @@ if not modules then modules = { } end modules ['lpdf-lmt'] = {
 
 local type, next, unpack, tonumber, rawget = type, next, unpack, tonumber, rawget
 local char, rep, find = string.char, string.rep, string.find
-local formatters, splitupstring = string.formatters, string.splitup
+local formatters = string.formatters
 local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local loaddata = io.loaddata
@@ -53,6 +53,7 @@ local pdfdictionary          = lpdf.dictionary
 local pdfarray               = lpdf.array
 local pdfconstant            = lpdf.constant
 local pdfliteral             = lpdf.literal -- not to be confused with a whatsit!
+local pdfunicode             = lpdf.unicode
 
 local pdfreserveobject       -- forward reference
 local pdfpagereference       -- forward reference
@@ -101,7 +102,7 @@ local function compressdata(data,size)
     local comp  = zlibcompresssize(data,guess,3)
  -- if comp then
  --     report()
- --     report("size %i, guess %i, result %i => %s / %s",size,guess,#comp,guess>=#comp and "hit" or "miss")
+ --     report("size %i, guess %i, result %i => %s",size,guess,#comp,guess>=#comp and "hit" or "miss")
  --     report()
  -- end
     return comp
@@ -532,6 +533,13 @@ local function pdf_goto_fontmode()
 end
 
 -- characters
+
+-- we could actually do this:
+--
+-- -- effactor (expand) -> into glyphxscale
+-- -- extend            -> into glyphxscale
+-- -- squeeze           -> into glyphyscale
+
 do
 
     local round = math.round
@@ -1471,7 +1479,7 @@ do
                 FormType  = 1,
                 Group     = group,
                 BBox      = pdfarray(bbox),
-                Resources = lpdf.collectedresources { serialize = false },
+                Resources = lpdf.collectedresources { serialize = false }, -- what if empty
             }
             local objnum = pdfflushstreamobject(content,wrapper,false) -- why not compressed ?
             groups = groups + 1
@@ -2363,6 +2371,24 @@ local finalize  do
         return otherbox
     end
 
+    local dummy = false
+
+    local function checkedresources()
+        if dummy == false then
+         -- if lpdf.majorversion() > 1 then
+            if majorversion > 1 then
+                dummy = pdfsharedobject(pdfdictionary {
+                    LMTX_Comment = pdfunicode("mandate resource dictionary cf 2.0+ specification")
+                } )
+            else
+                dummy = nil
+            end
+        end
+        return dummy
+    end
+
+    lpdf.checkedresources = checkedresources
+
     finalize = function(driver,details)
 
         if not details then
@@ -2422,7 +2448,7 @@ local finalize  do
 
             pageresources.Font    = fonts
             pageresources.XObject = xforms
-            pageresources.ProcSet = lpdf.procset()
+         -- pageresources.ProcSet = lpdf.procset()
 
             local bbox = pdfarray {
                 boundingbox[1] * bpfactor,
@@ -2435,9 +2461,6 @@ local finalize  do
 
             pageattributes.Type      = pdf_page
             pageattributes.Contents  = contentsobj and pdfreference(contentsobj) or nil
-            pageattributes.Resources = pageresources
-         -- pageattributes.Resources = pdfreference(pdfflushobject(pageresources))
-         -- pageattributes.MediaBox  = bbox
             pageattributes.MediaBox  = pdfsharedobject(bbox)
             pageattributes.Parent    = nil -- precalculate
             pageattributes.Group     = nil -- todo
@@ -2463,6 +2486,8 @@ local finalize  do
                 if BleedBox then pageattributes.BleedBox = pdfsharedobject(checkedbox(bbox,BleedBox,"BleedBox")) end
 
             end
+
+            pageattributes.Resources = next(pageresources) and pdfsharedobject(pageresources) or checkedresources()
 
         else
 
@@ -2513,7 +2538,7 @@ local finalize  do
                 patterns = false
             end
 
-            local boxresources   = lpdf.collectedresources {
+            local boxresources = lpdf.collectedresources {
                 patterns  = patterns,
                 serialize = false,
             }
@@ -2530,8 +2555,9 @@ local finalize  do
                 wrapper = wrapper + attributes
             end
 
-            wrapper.Resources = next(boxresources) and boxresources or nil
-            wrapper.ProcSet   = lpdf.procset()
+        --  wrapper.Resources = next(boxresources) and boxresources or nil
+            wrapper.Resources = next(boxresources) and boxresources or checkedresources()
+        --  wrapper.ProcSet   = lpdf.procset()
 
             pdfflushstreamobject(content,wrapper,true,specification.objnum)
 
@@ -2892,17 +2918,36 @@ do
 
 end
 
-local pages = table.setmetatableindex(function(t,k)
-    local v = pdfreserveobject()
-    t[k] = v
-    return v
-end)
+local preallocated = false -- true will not preallocate
 
-pdfgetpagereference = function(n)
-    return pages[n]
+local pages  do
+
+    local texgetcount = tex.getcount
+
+    pages = table.setmetatableindex(function(t,k)
+        if not preallocated then
+            local n = structures.counters.record("realpage")["last"]
+            for i=1,n do
+                t[i] = pdfreserveobject()
+            end
+            preallocated = true
+            if k <= n then
+                return t[k]
+            end
+        end
+        local v = pdfreserveobject()
+        t[k] = v
+        return v
+    end)
+
+    pdfgetpagereference = function(n)
+        return pages[n]
+    end
+
+    lpdf.getpagereference = pdfgetpagereference
+
 end
 
-lpdf.getpagereference = pdfgetpagereference
 
 local function flushnormalobj(data,n)
     if not n then
@@ -2972,6 +3017,9 @@ local flushstreamobj, streamstatus do
         end
         if encryptobject then
             dict = encryptobject(dict)
+        end
+        if dict == "" then
+            dict = nil
         end
         if level == 0 then
             local b = nil
@@ -3097,7 +3145,7 @@ pdfimmediateobject = function(a,b,c,d)
             if filename then
                 data = loaddata(filename) or ""
             end
-        elseif kind == "raw"then
+        elseif kind == "raw" then
             if filename then
                 data = loaddata(filename) or ""
             end
@@ -3196,6 +3244,10 @@ local openfile, closefile  do
                 userpassword  = arguments.userpassword,
                 permissions   = arguments.permissions,
             }
+        end
+        --
+        if not preallocated then
+            local dummy = pages[1]
         end
         --
         if inmemory then

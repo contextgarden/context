@@ -153,6 +153,7 @@ local effects = {
     outer  = 1,
     both   = 2,
     hidden = 3,
+    clip   = 7,
 }
 
 local bp = number.dimenfactors.bp

@@ -226,7 +226,8 @@
   \fi}
 
 \def\lang_basics_install_indeed#1#2%
-  {\ifcsname#1\endcsname\else\setuvalue{#1}{\lang_basics_set_current[#2]}\fi}
+  {\doifnot{\specificlanguageparameter{#1}\c!define}\v!no
+     {\ifcsname#1\endcsname\else\setuvalue{#1}{\lang_basics_set_current[#2]}\fi}}
 
 %D When the second argument is a language identifier, a synonym is created. This
 %D feature is present because we used dutch mnemonics in the dutch version, but

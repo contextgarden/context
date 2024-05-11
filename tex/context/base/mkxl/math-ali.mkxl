@@ -258,6 +258,12 @@
    #1% huh, imath?
    \stopimath}
 
+\def\math_place_number_in_alignment#1#2%
+  {\settrue\c_strc_formulas_number_in_alignment
+   \dostarttaggednodetail\t!mtext
+     \strc_formulas_place_number_nested{#1}{#2}%
+   \dostoptagged}
+
 % the preamble is scanned for tabskips so we need the span to prevent an error
 % message but we can probably do without that hack now .. best not change this
 % now .. what works now keeps working
@@ -301,7 +307,9 @@
    \usemathalignmentstyleandcolor\c!textstyle\c!textcolor
    \usemathalignmentstyleandcolor{\c!textstyle:\the\scratchcounter}{\c!textcolor:\the\scratchcounter}%
    \mathalignmentparameter\c!text
-   \mathalignmentparameter{\c!text:\the\scratchcounter}}
+   \dostarttaggednodetail\t!mtext
+   \mathalignmentparameter{\c!text:\the\scratchcounter}%
+   \dostoptagged}
 
 \def\math_align_initialize_class_states
   {}
@@ -663,12 +671,16 @@
 
 \permanent\tolerant\protected\def\math_alignment_NR[#1]#*[#2]%
   {\aligntab
-   \dostoptagged % finish cell
-   \strc_formulas_place_number_nested{#1}{#2}%
+%    \dostarttaggednodetail\t!mtext
+% \settrue\c_strc_formulas_number_in_alignment
+%    \strc_formulas_place_number_nested{#1}{#2}%
+% \dostoptagged % mtext
+\math_place_number_in_alignment{#1}{#2}%
+\dostoptagged % math
+\dostoptagged % subformla
    \math_number_right_of_eqalign
    \global\c_math_eqalign_first\conditionaltrue
-   \crcr
-   \noalign{\dostoptagged}} % finish row
+   \crcr}
 
 \permanent\protected\def\math_alignment_NC
   {\relax
@@ -798,54 +810,6 @@
    \d_math_alignment_packed_margin\zeropoint
    \c_math_alignment_packed_signal\zerocount}
 
-% \permanent\tolerant\protected\def\math_alignment_start[#1]#*[#S#2]%
-%   {\begingroup
-%    \cdef\currentmathalignment{#1}%
-%    \ifarguments\or\or
-%      \setupmathalignment[#1][#2]%
-%    \fi
-%    \ifcstok{\mathalignmentparameter\c!adaptive}\v!yes
-%      \c_math_align_reformat_mode\conditionaltrue
-%    \else
-%      \c_math_align_reformat_mode\conditionalfalse
-%    \fi
-%    \math_alignment_location_check{\mathalignmentparameter\c!location}% vcenter etc
-%    \ifcase\c_strc_formulas_align_packed\or
-%      \math_alignment_packed_start
-%    \fi
-%    \expand\everymathalignment
-%    \c_math_eqalign_row   \zerocount
-%    \c_math_eqalign_column\zerocount
-%    \edef\p_math_alignment_number{\mathalignmentparameter\c!number}%
-%    \processcommacommand
-%      [\mathalignmentparameter\c!align]%
-%      {\advanceby\c_math_eqalign_column\plusone\math_eqalign_set_column}% takes argument
-%    \global\c_math_eqalign_column\plusone
-%    \strc_math_setup_spacing_aligned\mathalignmentparameter
-%    \dostarttagged\t!math\empty
-%    \dostarttagged\t!mtable\currentmathalignment
-%    \everycr{\ifcase\c_math_eqalign_row\else\noalign{\penalty\interdisplaylinepenalty}\fi}%
-%    \math_alignment_location_box
-%    \bgroup
-%    \ifcstok{\formulaparameter\c!location}\v!left
-%      \math_prepare_l_eqalign_no
-%    \else
-%      \math_prepare_r_eqalign_no
-%    \fi
-%    \math_halign_checked\expandafter\bgroup\the\scratchtoks\crcr}
-%
-% \def\math_alignment_stop % can be protected
-%   {\crcr
-%    \egroup
-%    \egroup
-%    \dostoptagged
-%    \dostoptagged
-%    \expand\everymathalignmentdone
-%    \ifcase\c_strc_formulas_align_packed\or
-%      \math_alignment_packed_stop
-%    \fi
-%    \endgroup}
-
 \permanent\tolerant\protected\def\math_alignment_start[#1]#*[#S#2]%
   {\begingroup
    \currentmathblobnesting\minusone
@@ -882,15 +846,11 @@
    \fi
  % \everycr{\ifcase\c_math_eqalign_row\else\noalign{\penalty\interdisplaylinepenalty}\fi}%
    \math_alignment_location_box \bgroup
-   \dostarttagged\t!math\empty
-   \dostarttagged\t!mtable\currentmathalignment
    \math_halign_checked\expandafter\bgroup\the\scratchtoks\crcr}
 
 \def\math_alignment_stop % can be protected
   {\crcr
    \egroup
-   \dostoptagged
-   \dostoptagged
    \egroup
    \ifcase\c_strc_formulas_align_packed\or
      \math_alignment_packed_stop
@@ -982,14 +942,13 @@
   {\global\c_math_eqalign_column\plusone
    \global\advanceby\c_math_eqalign_row\plusone
    \currentmathblobnesting\minusone
-   \dostarttagged\t!mtablerow \empty
-   \dostarttagged\t!mtablecell\empty}
+   \dostarttaggednodetail\t!subformula
+   \dostarttaggednodetail\t!math
+   }
 
 \protected\def\math_next_in_eqalign % protection prevents tagging expansion
   {\global\advanceby\c_math_eqalign_column\plusone
-   \dostoptagged % finish cell
-   \currentmathblobnesting\minusone
-   \dostarttagged\t!mtablecell\empty}
+   \currentmathblobnesting\minusone}
 
 \protected\def\math_left_of_eqalign
   {\ifcsname\??mathalignmentvariant\the\c_math_eqalign_column\endcsname
@@ -1292,14 +1251,44 @@
    \fi
    \global\advanceby\c_math_cases_nc\plusone}
 
-\noaligned\tolerant\permanent\protected\def\math_cases_NR[#1]#*[#2]%
+%D The \type {#.} catches this case:
+%D
+%D \starttyping
+%D \dm {
+%D     \startcases[righttext=\mtext{if }]
+%D         \NC x  \NC x > 0 \NR
+%D         \NC -x \NC x < 0 \NR
+%D
+%D     \stopcases
+%D }
+%D \stoptyping
+
+% \noaligned\tolerant\permanent\protected\def\math_cases_NR#.[#1]#*[#2]%
+%   {\unskip
+%    \ifmmode\stopimath\fi
+%    \aligntab
+%    \global\c_math_cases_nc\zerocount
+%    \strc_formulas_place_number_nested{#1}{#2}%
+%    \math_number_right_of_eqalign
+%    \box\b_strc_formulas_number
+%    \crcr}
+
+\noaligned\tolerant\permanent\protected\def\math_cases_NR#.[#1]#*[#2]%
   {\unskip
    \ifmmode\stopimath\fi
    \aligntab
    \global\c_math_cases_nc\zerocount
-   \strc_formulas_place_number_nested{#1}{#2}%
+% \settrue\c_strc_formulas_number_in_alignment
+% \dostarttaggednodetail\t!mtext
+%    \strc_formulas_place_number_nested{#1}{#2}%
+% \dostoptagged
+\math_place_number_in_alignment{#1}{#2}%
    \math_number_right_of_eqalign
-   \box\b_strc_formulas_number
+   \dostarttaggednodetail\t!mtablerow
+   \dostarttaggednodetail\t!mtablecell
+   \hpack{\box\b_strc_formulas_number}%
+   \dostoptagged
+   \dostoptagged
    \crcr}
 
 \installglobalmacrostack\c_math_cases_nc
@@ -1344,10 +1333,10 @@
      \s!attr
        \mathnumberlocationattribute \zerocount
      \bgroup % use \indexofregister here
-     \dostarttagged\t!mtablerow\empty
+     \dostarttaggednodetail\t!mtablerow
      \ifmmode\else\startimath\fi
      \mathcasesparameter\c!style
-     \dostarttagged\t!mtablecell\empty
+     \dostarttaggednodetail\t!mtablecell
      \aligncontent
      \dostoptagged % cell
      \ifmmode\stopimath\fi
@@ -1355,7 +1344,7 @@
      \aligntab
      \kern\mathcasesparameter\c!distance\relax
      \math_cases_strut % looks better
-     \dostarttagged\t!mtablecell\empty
+     \dostarttaggednodetail\t!mtablecell
      \aligncontent
      \dostoptagged % cell
      \hfil
@@ -1363,7 +1352,7 @@
      \kern\mathcasesparameter\c!numberdistance\relax
      \span
      \math_text_in_eqalign{%
-     \dostarttagged\t!mtablecell\empty
+     \dostarttaggednodetail\t!mtablecell
      \aligncontent
      \dostoptagged % cell
      \dostoptagged % row
@@ -1482,8 +1471,8 @@
   {\global\c_math_eqalign_column\zerocount
    \global\c_math_eqalign_row\zerocount
    \global\c_math_matrix_columns\zerocount
-   \dostarttagged\t!math\empty
-   \dostarttagged\t!mtable\empty}
+   \dostarttaggednodetail\t!math
+   \dostarttaggednodetail\t!mtable}
 
 \def\math_matrix_stop_table
   {\dostoptagged
@@ -1494,7 +1483,7 @@
    \global\c_math_matrix_columns\c_math_eqalign_column
    \global\c_math_eqalign_column\zerocount
    \global\advanceby\c_math_eqalign_row\plusone
-   \dostarttagged\t!mtablerow\empty
+   \dostarttaggednodetail\t!mtablerow
    \endlocalcontrol}
 
 \def\math_matrix_stop_row
@@ -1504,7 +1493,7 @@
 
 \protected\def\math_matrix_start_cell
   {\currentmathblobnesting\minusone
-   \dostarttagged\t!mtablecell\empty
+   \dostarttaggednodetail\t!mtablecell
    \hss
    \math_left_of_eqalign
    \startimath
@@ -1993,7 +1982,7 @@
    \global\c_math_matrix_columns\c_math_eqalign_column
    \global\c_math_eqalign_column\zerocount
    \global\advanceby\c_math_eqalign_row\plusone
-   \dostarttagged\t!mtablerow\empty
+   \dostarttaggednodetail\t!mtablerow
    \endlocalcontrol}
 
 \appendtoks
@@ -2593,7 +2582,13 @@
    \enforced\let\NC\relax
    \enforced\let\MC\relax
    \enforced\let\NR\crcr
-   \halign\bgroup\hfil\normalstartimath\scriptstyle\aligncontent\normalstopimath\hfil\crcr}
+   \halign\bgroup
+    \hfil
+    \normalstartimath
+    \scriptstyle\aligncontent
+    \normalstopimath
+    \hfil
+    \crcr}
 
 \noaligned\permanent\protected\def\stopsubstack
   {\crcr
@@ -3389,7 +3384,8 @@
 
 \noaligned\tolerant\permanent\protected\def\math_simplealign_NR[#1]#*[#2]%
   {\unskip
-   \strc_formulas_place_number_nested{#1}{#2}%
+%    \strc_formulas_place_number_nested{#1}{#2}%
+\math_place_number_in_alignment{#1}{#2}%
    \math_number_right_of_eqalign
    \crcr}
 

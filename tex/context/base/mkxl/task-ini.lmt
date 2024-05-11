@@ -81,7 +81,7 @@ appendaction("shipouts",     "normalizers", "nodes.references.handler",         
 appendaction("shipouts",     "normalizers", "nodes.destinations.handler",                       nil, "nut",    "production")
 appendaction("shipouts",     "normalizers", "nodes.rules.handler",                              nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "nodes.shifts.handler",                             nil, "nut",    "disabled"  )
-appendaction("shipouts",     "normalizers", "structures.tags.handler",                          nil, "nut",    "disabled"  )
+-- appendaction("shipouts",     "normalizers", "structures.tags.handler",                          nil, "nut",    "disabled"  )
 ------------("shipouts",     "normalizers", "nodes.handlers.accessibility",                     nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds",                       nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "typesetters.rubies.attach",                        nil, "nut",    "disabled"  )
@@ -96,6 +96,8 @@ appendaction("shipouts",     "finishers",   "attributes.negatives.handler",     
 appendaction("shipouts",     "finishers",   "attributes.effects.handler",                       nil, "nut",    "disabled"  )
 appendaction("shipouts",     "finishers",   "attributes.alternates.handler",                    nil, "nut",    "disabled"  )
 appendaction("shipouts",     "finishers",   "attributes.viewerlayers.handler",                  nil, "nut",    "disabled"  )
+
+appendaction("shipouts",     "wrapup",      "structures.tags.handler",                          nil, "nut",    "disabled"  )
 
 appendaction("shipouts",     "wrapup",      "nodes.handlers.export",                            nil, "nut",    "disabled"  )  -- always last
 appendaction("shipouts",     "wrapup",      "luatex.synctex.collect",                           nil, "nut",    "disabled"  )

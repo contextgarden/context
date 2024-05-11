@@ -9,7 +9,12 @@ return {
             name   = "kern", -- adds to kerns
             type   = "kern",
             fonts  = {
+                "KpRoman-Light",
                 "KpRoman-Regular",
+                "KpRoman-Semibold",
+                "KpRoman-Bold",
+                "KpSans-Regular",
+                "KpSans-Bold",
             },
             data   = {
                 ["f"] = {
@@ -24,8 +29,12 @@ return {
             name   = "kern", -- adds to kerns
             type   = "kern",
             fonts  = {
+                "KpRoman-LightItalic",
                 "KpRoman-Italic",
                 "KpRoman-SemiboldItalic",
+                "KpRoman-BoldItalic",
+                "KpSans-Italic",
+                "KpSans-BoldItalic",
             },
             data   = {
                 ["f"] = {

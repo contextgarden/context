@@ -2963,8 +2963,8 @@ void tex_package(singleword nature)
             lmt_dir_state.text_dir_ptr = dirptr;
         }
         /*
-            An attribute is not assigned beforehand, just passed. But, when some is assigned we need to
-            retain it. So, how do we deal with attributes that are added? Maybe we have to merge
+            An attribute is not assigned beforehand, just passed. But, when some is assigned we need 
+            to retain it. So, how do we deal with attributes that are added? Maybe we have to merge
             changes? Or maybe an extra option in hpack ... some day.
         */
         tex_attach_attribute_list_attribute(boxnode, attrlist);

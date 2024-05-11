@@ -397,7 +397,7 @@
      \fi
    \fi
    %
-   \dostarttagged\t!constructiontag\empty % todo
+   \dostarttaggednodetail\t!constructiontag % todo
    \setbox\constructionheadbox\hbox
      {\scratchskip\parindent
       \forgetall
@@ -441,7 +441,7 @@
    \fi
    %
    \dostoptagged % tag
-   \dostarttagged\t!constructioncontent\empty
+   \dostarttaggednodetail\t!constructioncontent
   %\freezeparagraphproperties
    \updateparagraphshapes
    \ignorespaces} % args not needed

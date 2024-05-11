@@ -75,6 +75,7 @@ local setwidth             = nuts.setwidth
 local getheight            = nuts.getheight
 local getattr              = nuts.getattr
 local setattr              = nuts.setattr
+local setattrlist          = nuts.setattrlist
 local getsubtype           = nuts.getsubtype
 local getwhd               = nuts.getwhd
 local getdirection         = nuts.getdirection
@@ -266,6 +267,7 @@ local inject_areas do
         end
         local result, resolved = make(width,height,depth,reference)
         if result and resolved then
+            setattrlist(result,first) -- so that we can pick it up when tagging
             if line then
                 -- special case, we only treat the first line in a vlist
                 local l = getlist(line)
@@ -316,7 +318,7 @@ local inject_areas do
     local function inject(head,skip,parent,pardir,txtdir)
         local first, last, firstdir, reference
         local current = head
-        while current do -- tod: check with loop
+        while current do -- todo: check with loop
             local id = getid(current)
             if id == hlist_code or id == vlist_code then
                 local r = getattr(current,attribute)
@@ -402,8 +404,6 @@ local inject_areas do
                         first     = nil
                         last      = nil
                         firstdir  = nil
-                    else
---                         print("!!!!!!!!")
                     end
                 else
                     -- todo: safeguard when we have a glyph or disc or ... so we might as well
@@ -551,8 +551,8 @@ do
     local function setreference(h,d,r) -- h and d can be nil
         topofstack = topofstack + 1
         -- the preroll permits us to determine samepage (but delayed also has some advantages)
-        -- so some part of the backend work is already done here
-        stack[topofstack] = { r, h or false, d or false, codeinjections.prerollreference(r) }
+        -- so some part of the backend work is already done here .. maybe delay serializiation
+        stack[topofstack] = { r, h or false, d or false, codeinjections.prerollreference(r,topofstack) }
      -- texsetattribute(attribute,topofstack) -- todo -> at tex end
         texsetcount(c_lastreferenceattribute,topofstack)
     end
@@ -687,10 +687,13 @@ do
         done      = done,
     }
 
-    local function setdestination(n,h,d,name,view) -- n = grouplevel, name == table
+    local function setdestination(n,h,d,name,view,internal) -- n = grouplevel, name == table
         topofstack = topofstack + 1
      -- stack[topofstack] = { n, h, d, name, view }
-        stack[topofstack] = { n, h or false, d or false, name, view }
+--         stack[topofstack] = { n, h or false, d or false, name, view, internal }
+-- often internal == topofstack
+--         stack[topofstack] = { n, h or false, d or false, name, view, internal }
+        stack[topofstack] = { n, h or false, d or false, name, view, internal }
         return topofstack
     end
 
@@ -705,6 +708,7 @@ do
             local dp       = sr[3]
             local name     = sr[4]
             local view     = sr[5]
+            local internal = sr[6]
             if ht then
                 if height < ht then height = ht end
                 if depth  < dp then depth  = dp end
@@ -761,7 +765,8 @@ do
                 end
             end
             nofdestinations = nofdestinations + 1
-            local annot = injectdestination(width,height,depth,name,view)
+--             local annot = injectdestination(width,height,depth,name,view,internal)
+            local annot = injectdestination(width,height,depth,name,view,internal)
             if annot then
                 annot = tonut(annot) -- obsolete soon
                 if result then
@@ -791,8 +796,8 @@ do
 
     -- will move
 
-    function references.mark(reference,h,d,view)
-        return setdestination(tex.currentgrouplevel,h,d,reference,view)
+    function references.mark(reference,h,d,view,internal)
+        return setdestination(tex.currentgrouplevel,h,d,reference,view,internal)
     end
 
 end

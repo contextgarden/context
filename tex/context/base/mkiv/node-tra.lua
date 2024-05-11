@@ -49,7 +49,6 @@ local isglyph         = nuts.isglyph
 local getdirection    = nuts.getdirection
 local getwidth        = nuts.getwidth
 local count_nodes     = nuts.countall
-local used_nodes      = nuts.usedlist
 
 local nextnode        = nuts.traversers.node
 local nextglyph       = nuts.traversers.glyph

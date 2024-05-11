@@ -1,0 +1,418 @@
+\environment examples-style
+
+\startdocument
+  [title={Natural Tables},
+   author={Hans Hagen}]
+
+\startbuffer[knuth-1]
+    Thus, I came to the conclusion that the designer of a new
+    system must not only be the implementer and first
+    large||scale user; the designer should also write the first
+    user manual.
+\stopbuffer
+
+\startbuffer[knuth-2]
+    The separation of any of these four components would have
+    hurt \TeX\ significantly. If I had not participated fully in
+    all these activities, literally hundreds of improvements
+    would never have been made, because I would never have
+    thought of them or perceived why they were important.
+\stopbuffer
+
+\startbuffer[knuth-3]
+    But a system cannot be successful if it is too strongly
+    influenced by a single person. Once the initial design is
+    complete and fairly robust, the real test begins as people
+    with many different viewpoints undertake their own
+    experiments.
+\stopbuffer
+
+% ok
+
+\StartExample
+\bTABLE
+\bTR \bTD[nr=3] 1 \eTD \bTD[nc=2] 2/3     \eTD \bTD[nr=3] 4 \eTD \eTR
+\bTR                   \bTD 2 \eTD \bTD 3 \eTD                   \eTR
+\bTR                   \bTD 2 \eTD \bTD 3 \eTD                   \eTR
+\bTR \bTD[nc=3] 1/2/3                     \eTD \bTD 4       \eTD \eTR
+\bTR \bTD 1       \eTD \bTD 2 \eTD \bTD 3 \eTD \bTD 4       \eTD \eTR
+\eTABLE
+\StopExample
+
+% ok
+
+\StartExample
+\setupTABLE[1,4][2][background=color,backgroundcolor=red]
+\bTABLE
+\bTR \bTD 1       \eTD \bTD 2 \eTD \bTD 3 \eTD \bTD 4       \eTD \eTR
+\bTR \bTD[nr=3] 1 \eTD \bTD[nc=2] 2/3     \eTD \bTD[nr=3] 4 \eTD \eTR
+\bTR                   \bTD[nc=2] 2/3     \eTD                   \eTR
+\bTR                   \bTD[nc=2] 2/3     \eTD                   \eTR
+\eTABLE
+\StopExample
+
+% ok
+
+\StartExample
+\bTABLE[align={middle,lohi}]
+\bTR \bTD 1 \eTD \bTD 2 \eTD \bTD 3 \eTD            \bTD 4 \eTD \eTR
+\bTR \bTD 1 \eTD \bTD[nr=2,nc=2,color=red] 2/3 \eTD \bTD 4 \eTD \eTR
+\bTR \bTD 1 \eTD                                    \bTD 4 \eTD \eTR
+\bTR \bTD 1 \eTD \bTD 2 \eTD \bTD 3 \eTD            \bTD 4 \eTD \eTR
+\eTABLE
+\StopExample
+
+% ok
+
+\StartExample
+\hbox \bgroup \ignorespaces
+
+\bTABLE
+\bTR \bTD aa \eTD \bTD[nr=2] xx \eTD \bTD cc \eTD \eTR
+\bTR \bTD bb \eTD                    \bTD dd \eTD \eTR
+\eTABLE
+
+\unskip \quad \ignorespaces
+
+\bTABLE
+\bTR \bTD aa \eTD \bTD[nr=2] xx \eTD \bTD cc \eTD \bTD yy \eTD \eTR
+\bTR \bTD bb \eTD                    \bTD dd \eTD              \eTR
+\eTABLE
+
+\unskip \egroup
+\StopExample
+
+% ok
+
+\StartExample
+\setupTABLE[column][odd][background=color,backgroundcolor=red]
+\setupTABLE[row][odd][background=color,backgroundcolor=blue]
+\setupTABLE[even][odd][background=color,backgroundcolor=red]
+
+\bTABLE
+\bTR \bTD a \eTD \bTD bb \eTD \bTD ccc \eTD \bTD dd \eTD \bTD e \eTD \eTR
+\bTR \bTD a \eTD \bTD bb \eTD \bTD ccc \eTD \bTD dd \eTD \bTD e \eTD \eTR
+\bTR \bTD a \eTD \bTD bb \eTD \bTD ccc \eTD \bTD dd \eTD \bTD e \eTD \eTR
+\bTR \bTD a \eTD \bTD bb \eTD \bTD ccc \eTD \bTD dd \eTD \bTD e \eTD \eTR
+\bTR \bTD a \eTD \bTD bb \eTD \bTD ccc \eTD \bTD dd \eTD \bTD e \eTD \eTR
+\bTR \bTD a \eTD \bTD bb \eTD \bTD ccc \eTD \bTD dd \eTD \bTD e \eTD \eTR
+\bTR \bTD a \eTD \bTD bb \eTD \bTD ccc \eTD \bTD dd \eTD \bTD e \eTD \eTR
+\eTABLE
+\StopExample
+
+% ok
+
+\StartExample
+\hbox \bgroup \ignorespaces
+
+\bTABLE
+\setupTABLE[column][1][width=2cm]
+\bTR \bTD aa \eTD \bTD bbb \eTD \bTD cc \eTD \bTD d \eTD \bTD eeee \eTD \eTR
+\bTR \bTD aa \eTD \bTD bbb \eTD \bTD cc \eTD \bTD d \eTD \bTD eeee \eTD \eTR
+\bTR \bTD aa \eTD \bTD bbb \eTD \bTD cc \eTD \bTD d \eTD \bTD eeee \eTD \eTR
+\eTABLE
+
+\unskip \quad \ignorespaces
+
+\bTABLE
+\setupTABLE[column][width=3em]
+\bTR \bTD aa \eTD \bTD bbb \eTD \bTD cc \eTD \bTD d \eTD \bTD eeee \eTD \eTR
+\bTR \bTD aa \eTD \bTD bbb \eTD \bTD cc \eTD \bTD d \eTD \bTD eeee \eTD \eTR
+\bTR \bTD aa \eTD \bTD bbb \eTD \bTD cc \eTD \bTD d \eTD \bTD eeee \eTD \eTR
+\eTABLE
+
+\unskip \egroup
+\StopExample
+
+% ok
+
+\StartExample
+\hbox \bgroup \ignorespaces
+
+\bTABLE
+\bTR \bTD aa \eTD \bTD[nr=2] xx \eTD \bTD bb \eTD \bTD cc \eTD \eTR
+\bTR \bTD aa \eTD \bTD[nr=2] xx \eTD \bTD bb \eTD \bTD cc \eTD \eTR
+\eTABLE
+
+\unskip \quad \ignorespaces
+
+\bTABLE
+\bTR \bTD aa \eTD \bTD[nr=2] xx \eTD \bTD bb \eTD \bTD cc \eTD \eTR \bTR \eTR
+\bTR \bTD aa \eTD \bTD[nr=2] xx \eTD \bTD bb \eTD \bTD cc \eTD \eTR \bTR \eTR
+\eTABLE
+
+\unskip \quad \ignorespaces
+
+\bTABLE
+\bTR \bTD aa \eTD \bTD[nr=2] xx \eTD \bTD bb \eTD \bTD cc \eTD \eTR \bTR \eTR
+\bTR \bTD aa \eTD \bTD[nr=2] xx \eTD \bTD bb \eTD \bTD cc \eTD \eTR
+\eTABLE
+
+\unskip \quad \ignorespaces
+
+\bTABLE
+\bTR \bTD aa \eTD \bTD[nr=2] xx \eTD \bTD bb \eTD \bTD cc \eTD \eTR
+\bTR \bTD aa \eTD \bTD[nr=2] xx \eTD \bTD bb \eTD \bTD cc \eTD \eTR \bTR \eTR
+\eTABLE
+
+\unskip \egroup
+\StopExample
+
+\StartExample
+\startuniqueMPgraphic{crossed}
+  path p ; p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+  fill p withcolor \MPcolor{red} ;
+  drawoptions (withpen pencircle scaled 2pt withcolor \MPcolor{blue}) ;
+  draw p ; draw llcorner p--urcorner p ; draw ulcorner p--lrcorner p ;
+\stopuniqueMPgraphic
+
+\defineoverlay[crossed][\uniqueMPgraphic{crossed}]
+
+\bTABLE[width=.2\textwidth,background=crossed,frame=off]
+\bTR \bTD[align=left]   \getbuffer[knuth-1] \eTD
+     \bTD[align=middle] \getbuffer[knuth-1] \eTD
+     \bTD[align=right]  \getbuffer[knuth-1] \eTD \eTR
+\eTABLE
+\StopExample
+
+\StartExample
+\startuniqueMPgraphic{fill}
+  path p ; p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+  fill p withcolor \MPcolor{red} ;
+\stopuniqueMPgraphic
+
+\startuniqueMPgraphic{cross}
+  path p ; p := unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+  drawoptions (withpen pencircle scaled 2pt withcolor \MPcolor{gray}) ;
+  draw llcorner p--urcorner p ; draw ulcorner p--lrcorner p ;
+  draw p withpen pencircle scaled 2pt withcolor \MPcolor{blue} ;
+\stopuniqueMPgraphic
+
+\defineoverlay[fill] [\uniqueMPgraphic{fill}]
+\defineoverlay[cross][\uniqueMPgraphic{cross}]
+
+\bTABLE[width=.2\textwidth,background={fill,foreground,cross},frame=off]
+\bTR \bTD[align=left]   \getbuffer[knuth-1] \eTD
+     \bTD[align=middle] \getbuffer[knuth-1] \eTD
+     \bTD[align=right]  \getbuffer[knuth-1] \eTD \eTR
+\eTABLE
+\StopExample
+
+% \StartExample
+% \startuniqueMPgraphic{hashed}
+%   stripe_path_a
+%    (withpen pencircle scaled \overlaylinewidth withcolor blue)
+%    (draw)
+%    unitsquare xscaled \overlaywidth yscaled \overlayheight ;
+% \stopuniqueMPgraphic
+%
+% \defineoverlay[crossed][\uniqueMPgraphic{hashed}]
+%
+% \setupTABLE[column][width=.2\textwidth,background=striped,frame=off]
+% \bTABLE
+%   \bTR
+%     \bTD[align=left]   left   \par in the first place \eTD
+%     \bTD[align=middle] middle \par a second position  \eTD
+%     \bTD[align=right]  right  \par the third term     \eTD
+%   \eTR
+% \eTABLE
+% \StopExample
+
+% first attempt
+% second best
+% third at last
+
+% ok
+
+\StartExample
+\setupTABLE[row][odd] [background=color,backgroundcolor=red,frame=off]
+\setupTABLE[row][even][background=color,backgroundcolor=gray,frame=off]
+
+\bTABLE
+\bTR \bTD first  \eTD \bTD alpha \eTD \bTD one   \eTD \eTR
+\bTR \bTD second \eTD \bTD beta  \eTD \bTD two   \eTD \eTR
+\bTR \bTD third  \eTD \bTD gamma \eTD \bTD three \eTD \eTR
+\eTABLE
+\StopExample
+
+% ok
+
+\StartExample
+\setupTABLE[background=color,backgroundcolor=red,frame=off]
+\setupTABLE[column][2][backgroundcolor=black,color=white]
+
+\bTABLE
+\bTR \bTD a \eTD \bTD $\alpha$ \eTD \bTD i   \eTD \bTD 1 \eTD \eTR
+\bTR \bTD b \eTD \bTD $\beta $ \eTD \bTD ii  \eTD \bTD 2 \eTD \eTR
+\bTR \bTD c \eTD \bTD $\gamma$ \eTD \bTD iii \eTD \bTD 3 \eTD \eTR
+\eTABLE
+\StopExample
+
+% ok
+
+\StartExample
+\bTABLE
+\setupTABLE[column][1][width=175pt]
+\bTR \bTD \getbuffer[knuth-1] \eTD
+     \bTD \getbuffer[knuth-1] \eTD \bTD first  \eTD \eTR
+\bTR \bTD \getbuffer[knuth-2] \eTD
+     \bTD \getbuffer[knuth-2] \eTD \bTD second \eTD \eTR
+\eTABLE
+\StopExample
+
+% ok
+
+\StartExample
+\bTABLE
+\bTR \bTD \getbuffer[knuth-1] \eTD
+     \bTD \getbuffer[knuth-1] \eTD \bTD first  \eTD \eTR
+\bTR \bTD \getbuffer[knuth-2] \eTD
+     \bTD \getbuffer[knuth-2] \eTD \bTD second \eTD \eTR
+\eTABLE
+\StopExample
+
+% ok
+
+\StartExample
+\bTABLE
+\setupTABLE[background=color,backgroundcolor=red,color=gray,frame=off]
+\setupTABLE[column][last][align={middle,lohi}]
+\setupTABLE[1][2]  [backgroundcolor=gray,color=red]
+\setupTABLE[2][1,3][backgroundcolor=gray,color=red]
+\bTR \bTD \getbuffer[knuth-1] \eTD \bTD first quote  \eTD \eTR
+\bTR \bTD \getbuffer[knuth-2] \eTD \bTD second quote \eTD \eTR
+\bTR \bTD \getbuffer[knuth-3] \eTD \bTD third quote  \eTD \eTR
+\eTABLE
+\StopExample
+
+% ok
+
+\StartExample
+\bTABLE
+\bTR \bTD[width=80pt]  \getbuffer[knuth-1] \eTD \bTD first  \eTD \eTR
+\bTR \bTD[width=200pt] \getbuffer[knuth-2] \eTD \bTD second \eTD \eTR
+\eTABLE
+\StopExample
+
+% ok
+
+\StartExample
+\bTABLE
+\bTR \bTD[width=80pt]  \getbuffer[knuth-1] \eTD \bTD first  \eTD \eTR
+\bTR \bTD[width=200pt] \getbuffer[knuth-2] \eTD \bTD second \eTD \eTR
+\bTR \bTD              \getbuffer[knuth-3] \eTD \bTD third  \eTD \eTR
+\eTABLE
+\StopExample
+
+% to do
+
+\StartExample
+\bTABLE
+\bTR \bTD[nc=2] \getbuffer[knuth-1]                         \eTD \eTR
+\bTR \bTD \getbuffer[knuth-2] \eTD \bTD \getbuffer[knuth-2] \eTD \eTR
+\bTR \bTD \getbuffer[knuth-3] \eTD \bTD \getbuffer[knuth-1] \eTD \eTR
+\eTABLE
+\StopExample
+
+% to do
+
+\StartExample
+\bTABLE
+\bTR \bTD[nc=5] \getbuffer[knuth-1]                                     \eTD \eTR
+\bTR \bTD[nc=2] \getbuffer[knuth-2] \eTD \bTD[nc=3] \getbuffer[knuth-2] \eTD \eTR
+\bTR \bTD[nc=3] \getbuffer[knuth-3] \eTD \bTD[nc=2] \getbuffer[knuth-1] \eTD \eTR
+\eTABLE
+\StopExample
+
+% to do
+
+\StartExample
+\bTABLE[width=.5\hsize]
+\bTR \bTD[nc=2] \getbuffer[knuth-1]                         \eTD \eTR
+\bTR \bTD \getbuffer[knuth-2] \eTD \bTD \getbuffer[knuth-2] \eTD \eTR
+\bTR \bTD \getbuffer[knuth-3] \eTD \bTD \getbuffer[knuth-1] \eTD \eTR
+\eTABLE
+\StopExample
+
+% ok
+
+\StartExample
+\bTABLE
+\bTR \bTD[nc=2] \getbuffer[knuth-1] \eTD
+     \bTD[nr=2] \getbuffer[knuth-1] \eTD \eTR
+\bTR \bTD \getbuffer[knuth-2]       \eTD \bTD first  \eTD \eTR
+\bTR \bTD \getbuffer[knuth-3]       \eTD \bTD second \eTD \eTR
+\eTABLE
+\StopExample
+
+% ok
+
+\StartExample
+\setupTABLE                    [frame=off]
+\setupTABLE[column][first]     [leftframe=on]
+\setupTABLE[column][last]      [rightframe=on]
+\setupTABLE[row]   [first]     [topframe=on]
+\setupTABLE[row]   [first,last][bottomframe=on]
+
+\setupTABLE[column][1][alignmentcharacter={.},aligncharacter=yes,align=middle]
+\setupTABLE[column][2][alignmentcharacter={,},aligncharacter=yes,align=middle]
+
+\bTABLE
+\bTR\bTH first     \eTH\bTH second \eTH\bTH third     \eTH\bTH fourth\eTH\eTR
+\bTR\bTD 100.000,00\eTD\bTD 1,0    \eTD\bTD 100.000,00\eTD\bTD 1,0   \eTD\eTR
+\bTR\bTD 10.000,00 \eTD\bTD 10,0   \eTD\bTD 10.000,00 \eTD\bTD 10,0  \eTD\eTR
+\bTR\bTD 100,00    \eTD\bTD 1,00   \eTD\bTD 100,00    \eTD\bTD 1,00  \eTD\eTR
+\bTR\bTD 10        \eTD\bTD 10,00  \eTD\bTD 10        \eTD\bTD 10,00 \eTD\eTR
+\eTABLE
+\StopExample
+
+\StartExample
+\definecolor[back-1][r=.8,g=.8,b=.4]
+\definecolor[back-2][r=.8,g=.8,b=.6]
+\definecolor[back-3][r=.8,g=.8,b=.8]
+
+\setupTABLE[background=color,frame=off,framecolor=white]
+\setupTABLE[row][1]   [rulethickness=2pt,bottomframe=on]
+\setupTABLE[row][1]   [backgroundcolor=back-1]
+\setupTABLE[row][odd] [backgroundcolor=back-2]
+\setupTABLE[row][even][backgroundcolor=back-3]
+
+\bTABLE
+\bTR \bTD aa \eTD \bTD bb \eTD \bTD cc \eTD \bTD dd \eTD \eTR
+\bTR \bTD aa \eTD \bTD bb \eTD \bTD cc \eTD \bTD dd \eTD \eTR
+\bTR \bTD aa \eTD \bTD bb \eTD \bTD cc \eTD \bTD dd \eTD \eTR
+\bTR \bTD aa \eTD \bTD bb \eTD \bTD cc \eTD \bTD dd \eTD \eTR
+\bTR \bTD aa \eTD \bTD bb \eTD \bTD cc \eTD \bTD dd \eTD \eTR
+\bTR \bTD aa \eTD \bTD bb \eTD \bTD cc \eTD \bTD dd \eTD \eTR
+\bTR \bTD aa \eTD \bTD bb \eTD \bTD cc \eTD \bTD dd \eTD \eTR
+\eTABLE
+\StopExample
+
+\StartExample
+\setupTABLE[frame=off,width=3em]
+\setupTABLE[c][each][align={middle,lohi}]
+\setupTABLE[r][1,4][topframe=on]
+\setupTABLE[r][3,4][bottomframe=on]
+\setupTABLE[1,4][2][topframe=on,bottomframe=on]
+\setupTABLE[2][2][topframe=on]
+\setupTABLE[3][2][bottomframe=on]
+
+\bTABLE
+\bTR\bTD1/1\eTD               \bTD1/2\eTD\bTD1/3\eTD\bTD1/4\eTD\bTD1/5\eTD\eTR
+\bTR\bTD2/1\eTD               \bTD2/2\eTD\bTD2/3\eTD\bTD2/4\eTD\bTD2/5\eTD\eTR
+\bTR\bTD[nr=2]3/1 34/1 4/1\eTD\bTD3/2\eTD\bTD3/3\eTD\bTD3/4\eTD\bTD3/5\eTD\eTR
+\bTR                          \bTD4/2\eTD\bTD4/3\eTD\bTD4/4\eTD\bTD4/5\eTD\eTR
+\eTABLE
+\StopExample
+
+\StartExample
+\defineTABLEsetup [xx] [foregroundcolor=red]
+\defineTABLEsetup [zz] [backgroundcolor=blue]
+\bTABLE
+    \bTR      \bTD      oeps \eTD  \bTD oeps \eTD \bTDs[zz] oeps \eTDs \eTR
+    \bTR      \bTDs[xx] oeps \eTDs \bTD oeps \eTD \bTD      oeps \eTD  \eTR
+    \bTRs[xx] \bTD      oeps \eTD  \bTD oeps \eTD \bTDs[zz] oeps \eTDs \eTRs
+\eTABLE
+\StopExample
+
+\stopdocument

@@ -233,6 +233,8 @@ function traditional.loadpatterns(language,filename)
                         lpegmatch(p_exception,data,1,dictionary.exceptions)
                     end
                 end
+                dictionary.lefthyphenmin  = patterns.lefthyphenmin
+                dictionary.righthyphenmin = patterns.righthyphenmin
             end
         end
         dictionary.loaded = true
@@ -255,7 +257,7 @@ local function show_log()
         local w = #steps[1][1]
         for i=1,#steps do
             local s = steps[i]
-            report("%s%w%S  %S",s[1],w - #s[1] + 3,s[2],s[3] or "")
+            report("%s%w%S  %S",s[1],w - #s[1] + 3,s[2] or s[1],s[3] or "")
         end
         report()
     end

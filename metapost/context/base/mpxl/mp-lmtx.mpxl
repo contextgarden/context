@@ -269,11 +269,16 @@ presetparameters "outline" [
 def lmt_outline = applyparameters "outline" "lmt_do_outline" enddef ;
 
 vardef lmt_do_outline =
+    save kind  ; string kind   ; kind  := getparameter "outline" "kind"  ;
+    save align ; string align  ; align := getparameter "outline" "align" ;
+    save style ; string style  ; style := getparameter "outline" "style" ;
+    save width ; numeric width ; width := getparameter "outline" "width" ;
+    save isol  ; boolean isol  ; isol  := (kind == "outline") ;
+    if isol :
+        kind := "p" ;
+        save ol ; picture ol ; ol :=
+    fi
     image ( normaldraw image (
-        save kind  ; string kind   ; kind  := getparameter "outline" "kind"  ;
-        save align ; string align  ; align := getparameter "outline" "align" ;
-        save style ; string style  ; style := getparameter "outline" "style" ;
-        save width ; numeric width ; width := getparameter "outline" "width" ;
         if kind = "draw" :
             kind := "d" ;
         elseif kind = "fill" :
@@ -341,6 +346,9 @@ vardef lmt_do_outline =
         fi ;
         lua.mp.mf_get_outline_text(currentoutlinetext) ;
     ) )
+    if isol :
+        ; for i within ol : pathpart i && endfor cycle
+    fi
 enddef ;
 
 presetparameters "followtext" [

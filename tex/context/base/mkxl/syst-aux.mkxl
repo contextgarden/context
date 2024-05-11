@@ -4206,6 +4206,8 @@
 %D nesting works all right. The extra \type {\bgroup}||\type {\egroup} is needed to
 %D keep \type {\m_syst_helpers_handle_group_after} both into sight and local.
 
+%D Todo: use more modern features like atendofgroup
+
 \let\m_syst_helpers_handle_group_after \relax
 \let\m_syst_helpers_handle_group_before\relax
 
@@ -4268,13 +4270,15 @@
    \m_syst_helpers_handle_group_b}
 
 \protected\def\syst_helpers_handle_group_nop_x
-  {\ifnum\currentgrouptype=\semisimplegroupcode
+  {% why this ...
+   \ifnum\currentgrouptype=\semisimplegroupcode
      \begingroup
      \aftergroup\endgroup
    \else
      \beginsimplegroup
      \aftergroup\egroup
    \fi
+   % ... till here
    \m_syst_helpers_handle_group_b}
 
 \protected\def\syst_helpers_handle_group_normal_x

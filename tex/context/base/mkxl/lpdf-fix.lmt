@@ -25,6 +25,7 @@ if not modules then modules = { } end modules ['lpdf-fix'] = {
 --         transparency = true, -- when zero
 --         extgstate    = true,
 --         cmyk         = true,
+--         marked       = true,
 --     },
 --     add = {
 --         cidset, -- when missing or even fix
@@ -51,19 +52,57 @@ do
             name = data.name
             data.name = nil
         end
+        -- we play safe:
+        local strip = data.strip
+        if not strip then
+            data.strip = { marked = true }
+        elseif strip.marked == nil then
+            strip.marked = true
+        end
+        if not data.cleanup then
+            data.cleanup = { }
+        end
+        if not data.merge then
+            data.merge = { }
+        end
+        if not data.embed then
+            data.embed = { }
+        end
+        -- and are done:
         compactors[name] = setmetatableindex(data,"table")
     end
 
     codeinjections.registercompactor = registercompactor
 
     function codeinjections.validcompactor(name)
-        return name and compactors[name] or false
+        local compactor = name and compactors[name] or false
+-- print("compactor",name,tostring(compactor))
+        return compactor
     end
+
+    registercompactor ( "preset:default", {
+        strip = {
+            marked    = true,
+            procset   = true,
+            pieceinfo = true,
+        },
+        cleanup = {
+            procset   = true,
+            pieceinfo = true,
+        }
+    } )
 
     registercompactor ( "preset:yes", {
         merge = {
             lmtx = true,
         },
+        strip = {
+            marked    = true,
+        },
+        cleanup = {
+            procset   = true,
+            pieceinfo = true,
+        }
     } )
 
     registercompactor ( "preset:merge", {
@@ -74,6 +113,13 @@ do
          -- type3    = true,
             lmtx     = true,
         },
+        strip = {
+            marked    = true,
+        },
+        cleanup = {
+            procset   = true,
+            pieceinfo = true,
+        }
     } )
 
     compactors[interfaces.variables.yes] = compactors["preset:yes"]
@@ -124,6 +170,8 @@ do
     function lpdf.epdf.pageplugin(pdfdoc,page,pagenumber,resources,compactor)
         local runner = pdfpagemanipulators.runner
         if runner then
+-- inspect(pdfdoc.Info)
+-- inspect(pdfdoc.Info)
             runner(pdfdoc,page,pagenumber,resources,compactor)
         end
     end

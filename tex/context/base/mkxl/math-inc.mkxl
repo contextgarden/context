@@ -41,14 +41,14 @@
 
 \permanent\protected\def\xmlattachmml
   {\iftrialtypesetting\orelse\ifexporting\iflocation
-     \dostarttagged\t!ignore\empty
+     \dostarttaggednodetail\t!ignore
        \lxml_add_mml_blob{mmlattachment}\attachment
      \dostoptagged
    \fi\fi}
 
 \permanent\protected\def\xmlcommentmml
   {\iftrialtypesetting\orelse\ifexporting\iflocation
-     \dostarttagged\t!ignore\empty
+     \dostarttaggednodetail\t!ignore
        \lxml_add_mml_blob{mmlcomment}\comment
      \dostoptagged
    \fi\fi}
@@ -57,7 +57,7 @@
 
 \permanent\protected\def\xmladdmmlsource
   {\iftrialtypesetting\orelse\ifexporting\iflocation
-     \dostarttagged\t!ignore\empty
+     \dostarttaggednodetail\t!ignore
      \inleftmargin{%
        \lxml_add_mml_blob{mmlattachment}\attachment
        \quad

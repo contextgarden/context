@@ -509,6 +509,9 @@
 
 \def\scrn_menu_insert_indeed#location%
   {\begingroup
+   \dotagdocumentpush
+  %\strc_tags_horrible_start % test
+   \dostarttaggednodetail\t!navigationmenu
    \xdef\currentinteractionmenulocation{#location}%
    \scrn_menu_set_final
    \ifcase\d_scrn_menu_final_width \orelse \ifcase\d_scrn_menu_final_height \else
@@ -518,6 +521,9 @@
      \expand\everysetmenucommands
      \csname\??menupacker\namedinteractionmenuparameter\currentinteractionmenulocation\c!alternative\endcsname
    \fi
+   \dostoptagged
+   \dotagdocumentpop
+  %\strc_tags_horrible_stop % test
    \endgroup}
 
 %D This calls: % can be \c!command for vertical/horizontal

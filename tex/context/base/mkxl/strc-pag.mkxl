@@ -21,16 +21,25 @@
 
 % Allocation:
 
-\ifdefined\realpageno    \else \permanent\countdef\realpageno    \zerocount  \fi \realpageno    \plusone
-\ifdefined\userpageno    \else \permanent\countdef\userpageno    \plusone    \fi \userpageno    \plusone
-\ifdefined\subpageno     \else \permanent\countdef\subpageno     \plustwo    \fi \subpageno     \plusone % was \zerocount but that doesn't work well with bytext
-\ifdefined\arrangeno     \else \permanent\countdef\arrangeno     \plusthree  \fi \arrangeno     \zerocount % !
-\ifdefined\pagenoshift   \else \permanent\countdef\pagenoshift   \plusfour   \fi \pagenoshift   \zerocount % !
-\ifdefined\lastpageno    \else \permanent\countdef\lastpageno    \plusfive   \fi \lastpageno    \zerocount % !
-\ifdefined\lastuserpageno\else \permanent\countdef\lastuserpageno\plussix    \fi \lastuserpageno\zerocount % !
-\ifdefined\lastsubpageno \else \permanent\countdef\lastsubpageno \plusseven  \fi \lastsubpageno \zerocount % !
+% \ifdefined\realpageno    \else \permanent\countdef\realpageno    \zerocount  \fi \realpageno    \plusone
+% \ifdefined\userpageno    \else \permanent\countdef\userpageno    \plusone    \fi \userpageno    \plusone
+% \ifdefined\subpageno     \else \permanent\countdef\subpageno     \plustwo    \fi \subpageno     \plusone % was \zerocount but that doesn't work well with bytext
+% \ifdefined\arrangeno     \else \permanent\countdef\arrangeno     \plusthree  \fi \arrangeno     \zerocount % !
+% \ifdefined\pagenoshift   \else \permanent\countdef\pagenoshift   \plusfour   \fi \pagenoshift   \zerocount % !
+% \ifdefined\lastpageno    \else \permanent\countdef\lastpageno    \plusfive   \fi \lastpageno    \zerocount % !
+% \ifdefined\lastuserpageno\else \permanent\countdef\lastuserpageno\plussix    \fi \lastuserpageno\zerocount % !
+% \ifdefined\lastsubpageno \else \permanent\countdef\lastsubpageno \plusseven  \fi \lastsubpageno \zerocount % !
 
-\ifdefined\pageno \else \aliased\let\pageno\userpageno \fi
+\ifdefined\realpageno    \else \newinteger\realpageno    \fi \realpageno    \plusone
+\ifdefined\userpageno    \else \newinteger\userpageno    \fi \userpageno    \plusone
+\ifdefined\subpageno     \else \newinteger\subpageno     \fi \subpageno     \plusone % was \zerocount but that doesn't work well with bytext
+\ifdefined\arrangeno     \else \newinteger\arrangeno     \fi \arrangeno     \zerocount % !
+\ifdefined\pagenoshift   \else \newinteger\pagenoshift   \fi \pagenoshift   \zerocount % !
+\ifdefined\lastpageno    \else \newinteger\lastpageno    \fi \lastpageno    \zerocount % !
+\ifdefined\lastuserpageno\else \newinteger\lastuserpageno\fi \lastuserpageno\zerocount % !
+\ifdefined\lastsubpageno \else \newinteger\lastsubpageno \fi \lastsubpageno \zerocount % !
+
+\pushoverloadmode \aliasinteger\pageno\userpageno \popoverloadmode
 
 \permanent\def\realfolio{\the\realpageno}
 \permanent\def\userfolio{\the\userpageno}
@@ -263,7 +272,10 @@
 \permanent\def\currentpage{\the\realpageno}% rather useless
 
 \appendtoks
-    \ifnum\realpageno>\lastpage \enforced\glet\lastpage\lastrealpage \fi
+    \ifnum\realpageno>\lastpage
+      % \enforced\glet\lastpage\lastrealpage % maybe \aliasinteger
+        \enforced\gdef\lastpage{\lastrealpage}
+    \fi
 \to \everyinitializepagecounters
 
 % States:

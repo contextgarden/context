@@ -1368,23 +1368,23 @@
      \else
        \c_tabl_ntb_okay\conditionaltrue
      \fi
-     \dostarttagged\t!tablehead\empty
+     \dostarttaggednodetail\t!tablehead
    \orelse\ifnum\scratchcounter=\c_tabl_ntb_body
      \ifconditional\c_tabl_ntb_okay
        \dostoptagged
      \else
        \c_tabl_ntb_okay\conditionaltrue
      \fi
-     \dostarttagged\t!tablebody\empty
+     \dostarttaggednodetail\t!tablebody
    \orelse\ifnum\scratchcounter=\c_tabl_ntb_foot
      \ifconditional\c_tabl_ntb_okay
        \dostoptagged
      \else
        \c_tabl_ntb_okay\conditionaltrue
      \fi
-     \dostarttagged\t!tablefoot\empty
+     \dostarttaggednodetail\t!tablefoot
    \fi
-   \dostarttagged\t!tablerow\empty}
+   \dostarttaggednodetail\t!tablerow}
 
 \def\tabl_ntb_stop_tagged
   {\dostoptagged
@@ -1567,7 +1567,7 @@
 
 \def\tabl_ntb_pass_three#1 #2 %
   {% height
-   \dostarttagged\t!tablecell\empty
+   \dostarttaggednodetail\t!tablecell
    \scratchcounterone\tabl_ntb_get_col{#1}{#2}\relax
    \scratchcountertwo\tabl_ntb_get_row{#1}{#2}\relax
    \scratchheight\tabl_ntb_get_ht {#1}{#2}\relax

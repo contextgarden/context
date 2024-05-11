@@ -1,0 +1,157 @@
+% language=us
+
+\startenvironment examples-style
+
+\usemodule[scite]
+
+\setupbodyfont[palatino,10pt]
+
+\setuppapersize
+  [S6][S6]
+
+\setupinteractionscreen
+  [option=max]
+
+\setuplayout
+  [topspace=10pt,
+   backspace=10pt,
+   width=middle,
+   height=395pt,
+   top=0cm,
+   bottom=20pt,
+   bottomdistance=15pt,
+   header=0cm,
+   footer=0cm]
+
+\definecolor[green] [r=.2,g=.6,b=.2]
+\definecolor[red]   [r=.6,g=.2,b=.2]
+\definecolor[blue]  [r=.2,g=.2,b=.6]
+\definecolor[yellow][r=1,g=1,b=.75]
+\definecolor[gray]  [s=.4]
+\definecolor[white] [s=.8]
+
+\setupinteraction
+  [state=start,
+   menu=on,
+   color=darkgray,
+   contrastcolor=middlegray]
+
+\setupbackgrounds
+  [page]
+  [background=color,
+   backgroundoffset=5pt,
+   backgroundcolor=darkgray]
+
+\defineframedtext
+  [result]
+  [background=color,
+   backgroundcolor=lightgray,
+   backgroundoffset=5pt,
+   strut=no,
+   depthcorrection=no,
+   frame=off,
+   frameoffset=5.1pt,
+   bottomframe=on,
+   rulethickness=2.5pt,
+   framecolor=darkgray,
+   offset=0pt,
+   width=\textwidth]
+
+\setupbackgrounds
+  [text][text]
+  [background=color,
+   backgroundoffset=5pt,
+   backgroundcolor=lightgray]
+
+\setupbackgrounds
+  [bottom][text]
+  [background=color,
+   backgroundoffset=5pt,
+   backgroundcolor=lightgray]
+
+\starttexdefinition protected StartExample
+    \dostartbuffer[example][StartExample][StopExample]
+\stoptexdefinition
+
+\starttexdefinition protected StopExample
+    \startresult[none]
+    \getbuffer[example]
+    \stopresult
+    \bgroup
+    \switchtobodyfont[9pt]
+    \typebuffer[example]
+    \egroup
+    \page
+\stoptexdefinition
+
+\setupinteractionmenu
+  [bottom]
+  [state=start,
+   left=,
+   right=,
+   middle=\quad,
+   style=\bfa\setstrut,
+   color=darkgray,
+   contrastcolor=middlegray]
+
+\startinteractionmenu[bottom]
+    \startgot [firstpage]
+        \darkblue
+        \ifnum\realpageno>\plusone
+            \documentvariable{title}
+        \else
+            \documentvariable{author}
+        \fi
+    \stopgot
+    \hfill
+    \startgot [firstpage]     begin    \stopgot
+    \startgot [previouspage]  previous \stopgot
+    \startgot [nextpage]      next     \stopgot
+    \startgot [CloseDocument] quit     \stopgot
+    \quad
+    \starttxt \hbox to 2em\bgroup
+        \hss
+        \ifnum\realpageno>\zerocount
+            \pagenumber
+        \fi
+    \egroup \stoptxt
+\stopinteractionmenu
+
+% \setuptyping
+%   [color=darkblue,
+%    blank=halfline]
+
+\setuptype
+  [color=darkblue]
+
+\setuptyping
+  [blank=halfline]
+
+\startsetups document:start
+    \startstandardmakeup
+        \startcolor[darkblue]
+            \start
+                \definedfont [RegularBold at 60pt]\setstrut
+                \setstrut\strut \documentvariable{title} \par
+            \stop
+            \start
+                \definedfont [RegularBold at 45pt]\setstrut
+                \setstrut\strut in \ConTeXt\
+            \stop
+            \vfilll
+            \start
+                \definedfont [RegularBold at 45pt]\setstrut
+              % \hfill
+                \setstrut\strut Examples
+            \stop
+        \stopcolor
+    \stopstandardmakeup
+\stopsetups
+
+\startsetups document:stop
+    \page
+    \getbuffer[colophon]
+    \stoptext
+\stopsetups
+
+\stopenvironment

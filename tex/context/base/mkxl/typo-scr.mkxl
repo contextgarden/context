@@ -199,7 +199,7 @@
        \else
          \uselowhighstyleandcolor\c!style\c!color
        \fi
-       \dostarttagged#3\empty
+       \dostarttaggednodetail#3%
        #4%
        \dostoptagged
      \egroup
@@ -255,9 +255,9 @@
      \dostarttagged\t!subsup\currentlowmidhigh
      \uselowmidhighstyleandcolor\c!style\c!color
      \setstrut
-     \setbox\plustwo \hbox{\strut\dostarttagged\t!sub\empty#2\dostoptagged}%
-     \setbox\plusfour\hbox{\strut\dostarttagged\t!mid\empty#3\dostoptagged}% inefficient
-     \setbox\plussix \hbox{\strut\dostarttagged\t!sup\empty#4\dostoptagged}%
+     \setbox\plustwo \hbox{\strut\dostarttaggednodetail\t!sub#2\dostoptagged}%
+     \setbox\plusfour\hbox{\strut\dostarttaggednodetail\t!mid#3\dostoptagged}% inefficient
+     \setbox\plussix \hbox{\strut\dostarttaggednodetail\t!sup#4\dostoptagged}%
      \scratchdimen \wd
         \ifdim\wd\plustwo>\wd\plusfour
           \ifdim\wd\plustwo>\wd\plussix

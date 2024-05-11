@@ -350,7 +350,7 @@ function resolvers.finders.helpers.createhashed(specification)
                             if not hashes[hash] then
                                 local size = #data
                                 if compress then
-                                    data = zlib.compresssize(data,size)
+                                    data = zlib.compresssize(data,size,3)
                                     nofcompressed = nofcompressed + 1
                                 end
                                 local position = filesize(datname)

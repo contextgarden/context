@@ -929,12 +929,39 @@ do
                     elseif element == "break" then -- or element == "pagebreak" -- todo: use empty flag
                         emptytag(result,element,nature,di)
                     elseif element == "mspace" then -- todo: use empty flag
+-- can this still happen
                         emptytag(result,element,nature,di)
                     elseif element == "mprescripts" then -- todo: use empty flag
+-- can this still happen
                         emptytag(result,element,nature,di) -- -why has nature to be set
-                    elseif element == "" or di.skip == "ignore" then
+                    elseif element == "" or di.skip == "ignore" then --
                         -- skip
                     else
+
+                        -- We arrive here twice which is a bit waste of time but for now
+                        -- we just do it.
+
+                        local mth, txt
+                        if element == "math" then -- can be an option
+                            local n = di.n
+                            if n then
+                                mth = mathematics.getmathblob(n)
+                                txt = mathematics.gettextblob("en",n)
+                                if txt and txt ~= "" then
+                                    local a = di.attributes
+                                    if a then
+                                        a.meaning  = txt
+                                     -- a.stripped = mth
+                                    else
+                                        di.attributes = {
+                                         -- stripped = mth,
+                                            meaning  = txt,
+                                        }
+                                    end
+                                end
+                            end
+                        end
+
                         if di.before then
                             flushtree(result,di.before,nature)
                         end
@@ -944,7 +971,13 @@ do
                             emptytag(result,"break","display",di)
                         end
                         begintag(result,element,natu,di,skip)
-                        flushtree(result,di.data,natu)
+
+                        if mth and math ~= "" then
+                            result[#result+1] = mth -- the stripped one
+                        else
+                            flushtree(result,di.data,natu)
+                        end
+
                         endtag(result,element,natu,di,skip)
                         if di.after then
                             flushtree(result,di.after,nature)
@@ -1218,6 +1251,10 @@ local function push(fulltag,depth)
         tg     = specification.tagname
         n      = specification.tagindex
         detail = specification.detail
+    elseif not fulltag then
+        report_export("%w<%s trigger=%q n=%q paragraph=%q index=%q detail=%q>",
+            currentdepth-1,tg,n,currentattribute or 0,currentparagraph or 0,"error",detail)
+        return
     else
         -- a break (more efficient if we don't store those in specifications)
         tg, n = lpegmatch(tagsplitter,fulltag)
@@ -1319,6 +1356,7 @@ local function pushentry(current)
     if trace_export then
         report_export("%w<!-- moving from depth %s to %s (%s) -->",currentdepth,olddepth,newdepth,current[newdepth])
     end
+-- inspect(current)
     if olddepth <= 0 then
         for i=1,newdepth do
             push(current[i],i)
@@ -1482,6 +1520,7 @@ local collectresults  do -- too many locals otherwise
     local getdisc          = nuts.getdisc
     local getlist          = nuts.getlist
     local getid            = nuts.getid
+    local getattrs         = nuts.getattrs
     local getattr          = nuts.getattr
     local setattr          = nuts.setattr -- maybe use properties
     local isglyph          = nuts.isglyph
@@ -1510,7 +1549,7 @@ local collectresults  do -- too many locals otherwise
 
     local function showmaybe(maybewrong)
         if not trace_export then
-            report_export("fuzzy paragraph: % t",maybewrong)
+--             report_export("fuzzy paragraph: % t",maybewrong)
         end
     end
 
@@ -1537,7 +1576,10 @@ local collectresults  do -- too many locals otherwise
             end
             if id == glyph_code then
                 local c, f = isglyph(n)
-                local at   = getattr(n,a_tagged) or pat
+                local at, ap = getattr(n,a_tagged,a_taggedpar)
+                if not at then
+                    at = pat
+                end
                 if not at then
                  -- we need to tag the pagebody stuff as being valid skippable
                  --
@@ -1545,13 +1587,12 @@ local collectresults  do -- too many locals otherwise
                 else
                     if last ~= at then
                         local tl = taglist[at]
-                        local ap = getattr(n,a_taggedpar) or pap
+                        if not ap then
+                            ap = pap
+                        end
                         if paragraph and (not ap or ap < paragraph) then
                             maybewrong = addtomaybe(maybewrong,c,1)
                         end
--- if subtype > 0 then
---     print("EXPORTING",nodes.glyphcodes[subtype])
--- end
                         tl.class = getclass(n)
                         pushcontent()
                         currentnesting   = tl
@@ -1564,12 +1605,11 @@ local collectresults  do -- too many locals otherwise
                         end
                         -- We need to intercept this here; maybe I will also move this
                         -- to a regular setter at the tex end.
-                        local r = getattr(n,a_reference)
+                        local r, d = getattrs(n,a_reference,a_destination)
                         if r then
                             local t = tl.taglist
                             referencehash[t[#t]] = r -- fulltag
                         end
-                        local d = getattr(n,a_destination)
                         if d then
                             local t = tl.taglist
                             destinationhash[t[#t]] = d -- fulltag
@@ -1579,7 +1619,9 @@ local collectresults  do -- too many locals otherwise
                         -- we can consider tagging the pars (lines) in the parbuilder but then we loose some
                         -- information unless we inject a special node (but even then we can run into nesting
                         -- issues)
-                        local ap = getattr(n,a_taggedpar) or pap
+                        if not ap then
+                            ap = pap
+                        end
                         if ap ~= currentparagraph then
                             pushcontent(currentparagraph,ap)
                             pushentry(currentnesting)
@@ -1652,11 +1694,13 @@ local collectresults  do -- too many locals otherwise
                 end
             elseif id == glue_code then
                 -- we need to distinguish between hskips and vskips
-                local ca = getattr(n,a_characters)
+                local ca, a = getattrs(n,a_characters,a_tagged)
                 if ca == 0 then
                     -- skip this one ... already converted special character (node-acc)
                 elseif ca then
-                    local a = getattr(n,a_tagged) or pat
+                    if not a then
+                        a = pat
+                    end
                     if a then
                         local c = specialspaces[ca]
                         if last ~= a then
@@ -2126,21 +2170,38 @@ local htmltemplate <const> = [[
         if nocheck then
             -- maybe mathml
         else
+            -- we need to get rid of crap and also now need to get rid of "documentpart"
+            -- which is needed for tagged pdf
+            local d = { }
             for i=1,#data do
-                if data[i].tg ~= "document" then
-                    data[i] = { }
+                local di = data[i]
+                if di.tg == "document" then
+                    local d = di.data
+                    for i=1,#d do
+                        local ddi = d[i]
+                        if ddi.tg == "documentpart" then
+                            di.data = ddi.data
+                            break
+                        end
+                    end
+                    break
                 end
             end
         end
+-- inspect(tree.data)
         flushtree(result,tree.data,"display") -- we need to collect images
         -- no need to lpeg .. fast enough
-        result[1] = gsub(result[1],"^%s+","")
-        result[#result] = gsub(result[#result],"%s+$","")
-        result = concat(result)
-        result = gsub(result,"\n *\n","\n")
-        result = gsub(result,"\n +([^< ])","\n%1")
-        --
-        return result
+        local r = result[1]
+        if r then
+            result[1] = gsub(result[1],"^%s+","")
+            result[#result] = gsub(result[#result],"%s+$","")
+            result = concat(result)
+            result = gsub(result,"\n *\n","\n")
+            result = gsub(result,"\n +([^< ])","\n%1")
+            return result
+        else
+            -- inspect(result)
+        end
     end
 
     -- local xhtmlpreamble = [[

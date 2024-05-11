@@ -362,8 +362,8 @@
 \to \everydefinecombination
 
 \def\pack_combinations_pickup
-  {\dostarttagged\t!combinationpair\empty     % better make this text
-   \dostarttagged\t!combinationcontent\empty
+  {\dostarttaggednodetail\t!combinationpair     % better make this text
+   \dostarttaggednodetail\t!combinationcontent
    \expandafterpars\pack_combinations_pickup_content_indeed}
 
 \def\pack_combinations_pickup_content_indeed
@@ -372,7 +372,7 @@
 \def\pack_combinations_pickup_content % we want to add struts but still ignore an empty box
   {\dostoptagged
    \setbox\b_pack_combinations_content\box\nextbox
-   \dostarttagged\t!combinationcaption\empty
+   \dostarttaggednodetail\t!combinationcaption
    \expandnamespacemacro\??combinationalternative\p_pack_combinations_alternative\v!text}
 
 \defcsname\??combinationalternative\v!text\endcsname

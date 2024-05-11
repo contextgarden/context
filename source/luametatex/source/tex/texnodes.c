@@ -177,6 +177,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_penalty, word_penalty_subtype,            wordpenalty)
     set_value_entry_key(subtypes_penalty, final_penalty_subtype,           finalpenalty)
     set_value_entry_key(subtypes_penalty, orphan_penalty_subtype,          orphanpenalty)
+    set_value_entry_key(subtypes_penalty, toddler_penalty_subtype,         toddlerpenalty)
     set_value_entry_key(subtypes_penalty, single_line_penalty_subtype,     singlelinepenalty)
     set_value_entry_key(subtypes_penalty, math_pre_penalty_subtype,        mathprepenalty)
     set_value_entry_key(subtypes_penalty, math_post_penalty_subtype,       mathpostpenalty)
@@ -1005,7 +1006,6 @@ halfword tex_new_node(quarterword type, quarterword subtype)
 {
     halfword size = get_node_size(type);
     halfword node = tex_get_node(size);
-
     /*tex
 
         Both type() and subtype() will be set below, and node_next() is set to null by |get_node()|,
@@ -1161,7 +1161,7 @@ halfword tex_copy_node(halfword original)
         halfword copy = tex_get_node(size);
         /*tex this saves work */
         memcpy((void *) (lmt_node_memory_state.nodes + copy), (void *) (lmt_node_memory_state.nodes + original), (sizeof(memoryword) * (unsigned) size));
-        if (tex_nodetype_is_complex(size)) {
+        if (tex_nodetype_is_complex(type)) { /* was size ... brrrr */
             if (tex_nodetype_has_attributes(type)) {
                 add_attribute_reference(node_attr(original));
                 node_prev(copy) = null;
@@ -1283,6 +1283,7 @@ halfword tex_copy_node(halfword original)
                     par_widow_penalties(copy) = null;
                     par_display_widow_penalties(copy) = null;
                     par_orphan_penalties(copy) = null;
+                    par_fitness_demerits(copy) = null;
                     par_par_passes(copy) = null;
                     /* really copy fields */
                     tex_set_par_par(copy, par_left_skip_code, tex_get_par_par(original, par_left_skip_code), 1);
@@ -1299,6 +1300,7 @@ halfword tex_copy_node(halfword original)
                     tex_set_par_par(copy, par_widow_penalties_code, tex_get_par_par(original, par_widow_penalties_code), 1);
                     tex_set_par_par(copy, par_display_widow_penalties_code, tex_get_par_par(original, par_display_widow_penalties_code), 1);
                     tex_set_par_par(copy, par_orphan_penalties_code, tex_get_par_par(original, par_orphan_penalties_code), 1);
+                    tex_set_par_par(copy, par_fitness_demerits_code, tex_get_par_par(original, par_fitness_demerits_code), 1);
                     tex_set_par_par(copy, par_par_passes_code, tex_get_par_par(original, par_par_passes_code), 1);
                     /* tokens, we could mess with a ref count instead */
                     par_end_par_tokens(copy) = par_end_par_tokens(original);
@@ -1390,6 +1392,7 @@ void tex_flush_node(halfword p)
                     tex_flush_node(par_widow_penalties(p));
                     tex_flush_node(par_display_widow_penalties(p));
                     tex_flush_node(par_orphan_penalties(p));
+                    tex_flush_node(par_fitness_demerits(p));
                     tex_flush_node(par_par_passes(p));
                     /* tokens */
                     tex_flush_token_list(par_end_par_tokens(p));
@@ -1458,6 +1461,16 @@ void tex_flush_node(halfword p)
                     break;
             }
             if (tex_nodetype_has_attributes(t)) {
+             // if (node_attr(p)) {
+             //     printf("%i : %i.%i : %i %i %s\n",
+             //         p,
+             //         node_type(p),
+             //         node_subtype(p),
+             //         node_attr(p),
+             //         attribute_count(node_attr(p)),
+             //         attribute_count(node_attr(p)) ? "" : "!"
+             //     );
+             // }
                 delete_attribute_reference(node_attr(p));
                 node_attr(p) = null; /* when we debug */
                 lmt_properties_reset(lmt_lua_state.lua_instance, p);
@@ -1585,6 +1598,7 @@ static void tex_aux_check_node(halfword p)
             tex_aux_node_range_test(p, par_widow_penalties(p));
             tex_aux_node_range_test(p, par_display_widow_penalties(p));
             tex_aux_node_range_test(p, par_orphan_penalties(p));
+            tex_aux_node_range_test(p, par_fitness_demerits(p));
             tex_aux_node_range_test(p, par_par_fill_left_skip(p));
             tex_aux_node_range_test(p, par_par_fill_right_skip(p));
             tex_aux_node_range_test(p, par_par_init_left_skip(p));
@@ -1700,7 +1714,7 @@ void tex_initialize_node_mem()
         size = lmt_node_memory_state.nodes_data.allocated;
         lmt_node_memory_state.nodes_data.initial = lmt_node_memory_state.nodes_data.ptr;
     }
-    if (size >0) {
+    if (size > 0) {
         nodes = aux_allocate_clear_array(sizeof(memoryword), size, reserved_node_slots);
         sizes = aux_allocate_clear_array(sizeof(char), size, reserved_node_slots);
     }
@@ -1909,13 +1923,13 @@ extern void tex_change_attribute_register(halfword a, halfword id, halfword valu
     } 
 }
 
-inline static halfword tex_aux_new_attribute_list_node(halfword count)
+inline static halfword tex_aux_new_attribute_list_node(void)
 {
     halfword r = tex_get_node(attribute_node_size);
     node_type(r) = attribute_node;
     node_subtype(r) = attribute_list_subtype;
     attribute_unset(r) = 0;
-    attribute_count(r) = count;
+    attribute_count(r) = 0;
     return r;
 }
 
@@ -1939,7 +1953,7 @@ inline static halfword tex_aux_copy_attribute_node(halfword n)
 halfword tex_copy_attribute_list(halfword a_old)
 {
     if (a_old && a_old != attribute_cache_disabled) {
-        halfword a_new = tex_aux_new_attribute_list_node(0);
+        halfword a_new = tex_aux_new_attribute_list_node();
         halfword p_old = a_old;
         halfword p_new = a_new;
         p_old = node_next(p_old);
@@ -1958,7 +1972,7 @@ halfword tex_copy_attribute_list(halfword a_old)
 
 halfword tex_copy_attribute_list_set(halfword a_old, int index, int value)
 {
-    halfword a_new = tex_aux_new_attribute_list_node(0);
+    halfword a_new = tex_aux_new_attribute_list_node();
     halfword p_new = a_new;
     int done = 0;
     if (a_old && a_old != attribute_cache_disabled) {
@@ -1996,7 +2010,7 @@ halfword tex_copy_attribute_list_set(halfword a_old, int index, int value)
 
 static void tex_aux_update_attribute_cache(void)
 {
-    halfword p = tex_aux_new_attribute_list_node(0);
+    halfword p = tex_aux_new_attribute_list_node();
     set_current_attribute_state(p);
     for (int i = 0; i <= lmt_node_memory_state.max_used_attribute; i++) {
         int v = attribute_register(i);
@@ -2065,28 +2079,28 @@ void tex_dereference_attribute_list(halfword a)
                     {
                         int u = 0;
                         /* this works (different order) */
-if (0) { /* chains are often short */
-                        while (a) {
-                            halfword n = node_next(a);
-                            lmt_node_memory_state.nodesizes[a] = 0;
-                            node_next(a) = lmt_node_memory_state.free_chain[attribute_node_size];
-                            lmt_node_memory_state.free_chain[attribute_node_size] = a;
-                            ++u;
-                            a = n;
+                        if (0) { /* chains are often short */
+                            while (a) {
+                                halfword n = node_next(a);
+                                lmt_node_memory_state.nodesizes[a] = 0;
+                                node_next(a) = lmt_node_memory_state.free_chain[attribute_node_size];
+                                lmt_node_memory_state.free_chain[attribute_node_size] = a;
+                                ++u;
+                                a = n;
+                            }
+                        } else { 
+                            /* this doesn't always (which is weird) */
+                            halfword h = a;
+                            halfword t = a;
+                            while (a) {
+                                lmt_node_memory_state.nodesizes[a] = 0;
+                                ++u;
+                                t = a;
+                                a = node_next(a);
+                            }
+                            node_next(t) = lmt_node_memory_state.free_chain[attribute_node_size];
+                            lmt_node_memory_state.free_chain[attribute_node_size] = h;
                         }
-} else { 
-                        /* this doesn't always (which is weird) */
-                        halfword h = a;
-                        halfword t = a;
-                        while (a) {
-                            lmt_node_memory_state.nodesizes[a] = 0;
-                            ++u;
-                            t = a;
-                            a = node_next(a);
-                        }
-                        node_next(t) = lmt_node_memory_state.free_chain[attribute_node_size];
-                        lmt_node_memory_state.free_chain[attribute_node_size] = h;
-}
                         /* */
                         lmt_node_memory_state.nodes_data.ptr -= u * attribute_node_size;
                     }
@@ -2137,7 +2151,7 @@ halfword tex_patch_attribute_list(halfword list, int index, int value)
     } else {
         /*tex Watch out, we don't set a ref count, this branch is not seen anyway. */
         halfword r = tex_aux_new_attribute_node(index, value);
-        list = tex_aux_new_attribute_list_node(0);
+        list = tex_aux_new_attribute_list_node();
         node_next(list) = r;
     }
     return list;
@@ -2699,7 +2713,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
                         }
                         tex_aux_show_dictionary(p, glyph_properties(p), glyph_group(p), glyph_index(p), glyph_font(p), glyph_character(p));
                     }
-                    tex_print_format(", font %F, glyph %U", glyph_font(p), glyph_character(p));
+                    tex_print_format(", font %F, glyph %U, %u", glyph_font(p), glyph_character(p), glyph_character(p));
                     break;
                 case hlist_node:
                 case vlist_node:
@@ -2880,6 +2894,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
                             if (tex_par_state_is_set(p, par_widow_penalties_code)         ) { v = par_widow_penalties(p)         ; if (v)                     { tex_print_str(", widowpenalties * ");        } }
                             if (tex_par_state_is_set(p, par_display_widow_penalties_code) ) { v = par_display_widow_penalties(p) ; if (v)                     { tex_print_str(", displaywidowpenalties * "); } }
                             if (tex_par_state_is_set(p, par_orphan_penalties_code)        ) { v = par_orphan_penalties(p)        ; if (v)                     { tex_print_str(", orphanpenalties * ");       } }
+                            if (tex_par_state_is_set(p, par_fitness_demerits_code)        ) { v = par_fitness_demerits(p)        ; if (v)                     { tex_print_str(", fitnessdemerits * ");       } }
                             if (tex_par_state_is_set(p, par_hang_indent_code)             ) { v = par_hang_indent(p)             ; if (v)                     { tex_print_str(", hangindent ");              tex_print_dimension(v, pt_unit); } }
                             if (tex_par_state_is_set(p, par_hang_after_code)              ) { v = par_hang_after(p)              ; if (v)                     { tex_print_str(", hangafter ");               tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_hsize_code)                   ) { v = par_hsize(p)                   ; if (v)                     { tex_print_str(", hsize ");                   tex_print_dimension(v, pt_unit); } }
@@ -2891,7 +2906,6 @@ void tex_show_node_list(halfword p, int threshold, int max)
                             if (tex_par_state_is_set(p, par_looseness_code)               ) { v = par_looseness(p)               ; if (v)                     { tex_print_str(", looseness ");               tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_adjust_spacing_code)          ) { v = par_adjust_spacing(p)          ; if (v)                     { tex_print_str(", adjustspacing ");           tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_adj_demerits_code)            ) { v = par_adj_demerits(p)            ; if (v)                     { tex_print_str(", adjdemerits ");             tex_print_int      (v);          } }
-                            if (tex_par_state_is_set(p, par_double_adj_demerits_code)     ) { v = par_double_adj_demerits(p)     ; if (v)                     { tex_print_str(", doubleadjdemerits ");       tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_protrude_chars_code)          ) { v = par_protrude_chars(p)          ; if (v)                     { tex_print_str(", protrudechars ");           tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_line_penalty_code)            ) { v = par_line_penalty(p)            ; if (v)                     { tex_print_str(", linepenalty ");             tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_double_hyphen_demerits_code)  ) { v = par_double_hyphen_demerits(p)  ; if (v)                     { tex_print_str(", doublehyphendemerits ");    tex_print_int      (v);          } }
@@ -2901,7 +2915,10 @@ void tex_show_node_list(halfword p, int threshold, int max)
                             if (tex_par_state_is_set(p, par_widow_penalty_code)           ) { v = par_widow_penalty(p)           ; if (v)                     { tex_print_str(", widowpenalty ");            tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_display_widow_penalty_code)   ) { v = par_display_widow_penalty(p)   ; if (v)                     { tex_print_str(", displaywidowpenalty ");     tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_orphan_penalty_code)          ) { v = par_orphan_penalty(p)          ; if (v)                     { tex_print_str(", orphanpenalty ");           tex_print_int      (v);          } }
+                            if (tex_par_state_is_set(p, par_toddler_penalty_code)         ) { v = par_toddler_penalty(p)         ; if (v)                     { tex_print_str(", toddlerpenalty ");          tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_single_line_penalty_code)     ) { v = par_single_line_penalty(p)     ; if (v)                     { tex_print_str(", singlelinepenalty ");       tex_print_int      (v);          } }                                      
+                            if (tex_par_state_is_set(p, par_hyphen_penalty_code)          ) { v = par_hyphen_penalty(p)          ; if (v)                     { tex_print_str(", hyphenlinepenalty ");       tex_print_int      (v);          } }                                      
+                            if (tex_par_state_is_set(p, par_ex_hyphen_penalty_code)       ) { v = par_ex_hyphen_penalty(p)       ; if (v)                     { tex_print_str(", exhyphenlinepenalty ");     tex_print_int      (v);          } }                                      
                             if (tex_par_state_is_set(p, par_broken_penalty_code)          ) { v = par_broken_penalty(p)          ; if (v)                     { tex_print_str(", brokenpenalty ");           tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_emergency_stretch_code)       ) { v = par_emergency_stretch(p)       ; if (v)                     { tex_print_str(", emergencystretch ");        tex_print_dimension(v, pt_unit); } }
                             if (tex_par_state_is_set(p, par_par_indent_code)              ) { v = par_par_indent(p)              ; if (v)                     { tex_print_str(", parindent ");               tex_print_dimension(v, pt_unit); } }
@@ -3896,8 +3913,9 @@ halfword tex_new_par_node(quarterword subtype)
         tex_set_local_pre_tolerance(p, local_pre_tolerance_par);
     }
     par_dir(p) = par_direction_par;
-    /* */
+    /* Is this really always needed? */
     tex_add_local_boxes(p);
+    /* */
     if (subtype != local_box_par_subtype) {
         /*tex Callback with node passed. Todo: move to luanode with the rest of callbacks. */
         callback_id = lmt_callback_defined(insert_par_callback);
@@ -3936,10 +3954,12 @@ static halfword tex_aux_internal_to_par_code(halfword cmd, halfword index) {
                 case widow_penalty_code          : return par_widow_penalty_code;
                 case display_widow_penalty_code  : return par_display_widow_penalty_code;
                 case orphan_penalty_code         : return par_orphan_penalty_code;
+                case toddler_penalty_code        : return par_toddler_penalty_code;
                 case single_line_penalty_code    : return par_single_line_penalty_code;
+                case hyphen_penalty_code         : return par_hyphen_penalty_code;
+                case ex_hyphen_penalty_code      : return par_ex_hyphen_penalty_code;
                 case broken_penalty_code         : return par_broken_penalty_code;
                 case adj_demerits_code           : return par_adj_demerits_code;
-                case double_adj_demerits_code    : return par_double_adj_demerits_code;
                 case double_hyphen_demerits_code : return par_double_hyphen_demerits_code;
                 case final_hyphen_demerits_code  : return par_final_hyphen_demerits_code;
                 case shaping_penalties_mode_code : return par_shaping_penalties_mode_code;
@@ -3978,6 +3998,7 @@ static halfword tex_aux_internal_to_par_code(halfword cmd, halfword index) {
                 case widow_penalties_code        : return par_widow_penalties_code;
                 case display_widow_penalties_code: return par_display_widow_penalties_code;
                 case orphan_penalties_code       : return par_orphan_penalties_code;
+                case fitness_demerits_code       : return par_fitness_demerits_code;
                 case par_passes_code             : return par_par_passes_code;
             }
             break;
@@ -4006,6 +4027,7 @@ halfword tex_get_par_par(halfword p, halfword what)
         case par_widow_penalties_code:         return set ? par_widow_penalties(p)         : widow_penalties_par;
         case par_display_widow_penalties_code: return set ? par_display_widow_penalties(p) : display_widow_penalties_par;
         case par_orphan_penalties_code:        return set ? par_orphan_penalties(p)        : orphan_penalties_par;
+        case par_fitness_demerits_code:        return set ? par_fitness_demerits(p)        : fitness_demerits_par;
         case par_hang_indent_code:             return set ? par_hang_indent(p)             : hang_indent_par;
         case par_hang_after_code:              return set ? par_hang_after(p)              : hang_after_par;
         case par_hsize_code:                   return set ? par_hsize(p)                   : hsize_par;
@@ -4017,7 +4039,6 @@ halfword tex_get_par_par(halfword p, halfword what)
         case par_looseness_code:               return set ? par_looseness(p)               : looseness_par;
         case par_adjust_spacing_code:          return set ? par_adjust_spacing(p)          : adjust_spacing_par;
         case par_adj_demerits_code:            return set ? par_adj_demerits(p)            : adj_demerits_par;
-        case par_double_adj_demerits_code:     return set ? par_double_adj_demerits(p)     : double_adj_demerits_par;
         case par_protrude_chars_code:          return set ? par_protrude_chars(p)          : protrude_chars_par;
         case par_line_penalty_code:            return set ? par_line_penalty(p)            : line_penalty_par;
         case par_double_hyphen_demerits_code:  return set ? par_double_hyphen_demerits(p)  : double_hyphen_demerits_par;
@@ -4027,7 +4048,10 @@ halfword tex_get_par_par(halfword p, halfword what)
         case par_widow_penalty_code:           return set ? par_widow_penalty(p)           : widow_penalty_par;
         case par_display_widow_penalty_code:   return set ? par_display_widow_penalty(p)   : display_widow_penalty_par;
         case par_orphan_penalty_code:          return set ? par_orphan_penalty(p)          : orphan_penalty_par;
+        case par_toddler_penalty_code:         return set ? par_toddler_penalty(p)         : toddler_penalty_par;
         case par_single_line_penalty_code:     return set ? par_single_line_penalty(p)     : single_line_penalty_par;
+        case par_hyphen_penalty_code:          return set ? par_hyphen_penalty(p)          : hyphen_penalty_par;
+        case par_ex_hyphen_penalty_code:       return set ? par_ex_hyphen_penalty(p)       : ex_hyphen_penalty_par;
         case par_broken_penalty_code:          return set ? par_broken_penalty(p)          : broken_penalty_par;
         case par_emergency_stretch_code:       return set ? par_emergency_stretch(p)       : emergency_stretch_par;
         case par_par_indent_code:              return set ? par_par_indent(p)              : par_indent_par;
@@ -4137,6 +4161,12 @@ void tex_set_par_par(halfword p, halfword what, halfword v, int force)
             case par_single_line_penalty_code:
                 par_single_line_penalty(p) = v;
                 break;
+            case par_hyphen_penalty_code:
+                par_hyphen_penalty(p) = v;
+                break;
+            case par_ex_hyphen_penalty_code:
+                par_ex_hyphen_penalty(p) = v;
+                break;
             case par_last_line_fit_code:
                 par_last_line_fit(p) = v;
                 break;
@@ -4158,14 +4188,14 @@ void tex_set_par_par(halfword p, halfword what, halfword v, int force)
             case par_orphan_penalty_code:
                 par_orphan_penalty(p) = v;
                 break;
+            case par_toddler_penalty_code:
+                par_toddler_penalty(p) = v;
+                break;
             case par_broken_penalty_code:
                 par_broken_penalty(p) = v;
                 break;
             case par_adj_demerits_code:
                 par_adj_demerits(p) = v;
-                break;
-            case par_double_adj_demerits_code:
-                par_double_adj_demerits(p) = v;
                 break;
             case par_double_hyphen_demerits_code:
                 par_double_hyphen_demerits(p) = v;
@@ -4208,6 +4238,12 @@ void tex_set_par_par(halfword p, halfword what, halfword v, int force)
                     tex_flush_node(par_orphan_penalties(p));
                 }
                 par_orphan_penalties(p) = v ? tex_copy_node(v) : null;
+                break;
+            case par_fitness_demerits_code:
+                if (par_fitness_demerits(p)) {
+                    tex_flush_node(par_fitness_demerits(p));
+                }
+                par_fitness_demerits(p) = v ? tex_copy_node(v) : null;
                 break;
             case par_baseline_skip_code:
                 if (par_baseline_skip(p)) {
@@ -4303,7 +4339,6 @@ void tex_set_par_par(halfword p, halfword what, halfword v, int force)
             if (tex_par_to_be_set(what, par_orphan_penalty_code))          { tex_set_par_par(p, par_orphan_penalty_code,          unset ? null : orphan_penalty_par,          1); }
             if (tex_par_to_be_set(what, par_broken_penalty_code))          { tex_set_par_par(p, par_broken_penalty_code,          unset ? null : broken_penalty_par,          1); }
             if (tex_par_to_be_set(what, par_adj_demerits_code))            { tex_set_par_par(p, par_adj_demerits_code,            unset ? null : adj_demerits_par,            1); }
-            if (tex_par_to_be_set(what, par_double_adj_demerits_code))     { tex_set_par_par(p, par_double_adj_demerits_code,     unset ? null : double_adj_demerits_par,     1); }
             if (tex_par_to_be_set(what, par_double_hyphen_demerits_code))  { tex_set_par_par(p, par_double_hyphen_demerits_code,  unset ? null : double_hyphen_demerits_par,  1); }
             if (tex_par_to_be_set(what, par_final_hyphen_demerits_code))   { tex_set_par_par(p, par_final_hyphen_demerits_code,   unset ? null : final_hyphen_demerits_par,   1); }
             if (tex_par_to_be_set(what, par_par_shape_code))               { tex_set_par_par(p, par_par_shape_code,               unset ? null : par_shape_par,               1); }
@@ -4312,6 +4347,7 @@ void tex_set_par_par(halfword p, halfword what, halfword v, int force)
             if (tex_par_to_be_set(what, par_widow_penalties_code))         { tex_set_par_par(p, par_widow_penalties_code,         unset ? null : widow_penalties_par,         1); }
             if (tex_par_to_be_set(what, par_display_widow_penalties_code)) { tex_set_par_par(p, par_display_widow_penalties_code, unset ? null : display_widow_penalties_par, 1); }
             if (tex_par_to_be_set(what, par_orphan_penalties_code))        { tex_set_par_par(p, par_orphan_penalties_code,        unset ? null : orphan_penalties_par,        1); }
+            if (tex_par_to_be_set(what, par_fitness_demerits_code))        { tex_set_par_par(p, par_fitness_demerits_code,        unset ? null : fitness_demerits_par,        1); }
             if (tex_par_to_be_set(what, par_baseline_skip_code))           { tex_set_par_par(p, par_baseline_skip_code,           unset ? null : baseline_skip_par,           1); }
             if (tex_par_to_be_set(what, par_line_skip_code))               { tex_set_par_par(p, par_line_skip_code,               unset ? null : line_skip_par,               1); }
             if (tex_par_to_be_set(what, par_line_skip_limit_code))         { tex_set_par_par(p, par_line_skip_limit_code,         unset ? null : line_skip_limit_par,         1); }
@@ -4456,17 +4492,23 @@ void tex_snapshot_par(halfword p, halfword what)
         if (tex_par_to_be_set(what, par_orphan_penalty_code)) { 
             par_orphan_penalty(p) = unset ? null : orphan_penalty_par; 
         }
+        if (tex_par_to_be_set(what, par_toddler_penalty_code)) { 
+            par_toddler_penalty(p) = unset ? null : toddler_penalty_par; 
+        }
         if (tex_par_to_be_set(what, par_single_line_penalty_code)) { 
             par_single_line_penalty(p) = unset ? null : single_line_penalty_par; 
+        }
+        if (tex_par_to_be_set(what, par_hyphen_penalty_code)) { 
+            par_hyphen_penalty(p) = unset ? null : hyphen_penalty_par; 
+        }
+        if (tex_par_to_be_set(what, par_ex_hyphen_penalty_code)) { 
+            par_ex_hyphen_penalty(p) = unset ? null : ex_hyphen_penalty_par; 
         }
         if (tex_par_to_be_set(what, par_broken_penalty_code)) { 
             par_broken_penalty(p) = unset ? null : broken_penalty_par; 
         }
         if (tex_par_to_be_set(what, par_adj_demerits_code)) { 
             par_adj_demerits(p) = unset ? null : adj_demerits_par; 
-        }
-        if (tex_par_to_be_set(what, par_double_adj_demerits_code)) { 
-            par_double_adj_demerits(p) = unset ? null : double_adj_demerits_par; 
         }
         if (tex_par_to_be_set(what, par_double_hyphen_demerits_code)){ 
             par_double_hyphen_demerits(p) = unset ? null : double_hyphen_demerits_par; 
@@ -4516,6 +4558,13 @@ void tex_snapshot_par(halfword p, halfword what)
             }
             par_orphan_penalties(p) = v ? tex_copy_node(v) : null;
         }
+        if (tex_par_to_be_set(what, par_fitness_demerits_code)) { 
+            halfword v = unset ? null : fitness_demerits_par; 
+            if (par_fitness_demerits(p)) {
+                tex_flush_node(par_fitness_demerits(p));
+            }
+            par_fitness_demerits(p) = v ? tex_copy_node(v) : null;
+        }
         if (tex_par_to_be_set(what, par_baseline_skip_code)) { 
             halfword v = unset ? null : baseline_skip_par; 
             if (par_baseline_skip(p)) {
@@ -4563,6 +4612,12 @@ void tex_snapshot_par(halfword p, halfword what)
         }
         if (tex_par_to_be_set(what, par_single_line_penalty_code)) { 
             par_single_line_penalty(p) = unset ? null : single_line_penalty_par; 
+        }
+        if (tex_par_to_be_set(what, par_hyphen_penalty_code)) { 
+            par_hyphen_penalty(p) = unset ? null : hyphen_penalty_par; 
+        }
+        if (tex_par_to_be_set(what, par_ex_hyphen_penalty_code)) { 
+            par_ex_hyphen_penalty(p) = unset ? null : ex_hyphen_penalty_par; 
         }
      // tex_set_par_state(p, what);
         if (what == par_all_category) {
@@ -4634,6 +4689,7 @@ void tex_dispose_specification_nodes(void) {
     if (math_forward_penalties_par)  { tex_flush_node(math_forward_penalties_par);  math_forward_penalties_par  = null; }
     if (math_backward_penalties_par) { tex_flush_node(math_backward_penalties_par); math_backward_penalties_par = null; }
     if (orphan_penalties_par)        { tex_flush_node(orphan_penalties_par);        orphan_penalties_par        = null; }
+    if (fitness_demerits_par)        { tex_flush_node(fitness_demerits_par);        fitness_demerits_par        = null; }
 }
 
 void tex_null_specification_list(halfword a)
@@ -4645,8 +4701,13 @@ void tex_null_specification_list(halfword a)
 static void *tex_aux_allocate_specification(halfword p, int n, size_t *s)
 {
     void *l = NULL;
-    if (node_subtype(p) == par_passes_code) { 
-        n *= par_passes_size;
+    switch (node_subtype(p)) { 
+        case par_passes_code: 
+            n *= par_passes_size;
+            break;
+        case fitness_demerits_code:
+            n *= fitness_demerits_size;
+            break;
     }
     *s = n * sizeof(memoryword);
     lmt_node_memory_state.extra_data.allocated += (int) *s;
@@ -4672,21 +4733,38 @@ static void tex_aux_deallocate_specification(void *p, int n)
 void tex_new_specification_list(halfword a, halfword n, halfword o)
 {
     size_t size = 0;
+    halfword subtype = node_subtype(a);
     specification_pointer(a) = tex_aux_allocate_specification(a, n, &size);
     specification_count(a) = specification_pointer(a) ? n : 0;
     specification_options(a) = o;
-    if (node_subtype(a) == par_passes_code) { 
-        for (int i = 1; i <= n; i++) { 
-            tex_set_passes_threshold(a, i, max_dimension);
-            tex_set_passes_badness(a, i, infinite_bad);        
-            tex_set_passes_optional(a, i, 0x1000000);        
-        }
+    switch (subtype) { 
+        case par_passes_code:
+            {   
+                for (int i = 1; i <= n; i++) { 
+                    tex_set_passes_threshold(a, i, max_dimension);
+                    tex_set_passes_badness(a, i, infinite_bad);        
+                    tex_set_passes_optional(a, i, 0x1000000);        
+                }
+                break;
+            }
+        default: 
+            /*tex Currently nothing more here. */
+            break;
     }
 }
 
 void tex_dispose_specification_list(halfword a)
 {
     if (specification_pointer(a)) {
+        if (node_subtype(a) == par_passes_code) { 
+            for (int i = 1; i <= specification_count(a); i++) {
+                halfword f = tex_get_passes_fitnessdemerits(a, i);
+                if (f) { 
+                   tex_flush_node(f);
+                   tex_set_passes_fitnessdemerits(a, i, null);
+                }
+            }
+        }
         tex_aux_deallocate_specification(specification_pointer(a), specification_count(a));
         specification_pointer(a) = NULL;
         specification_count(a) = 0;
@@ -4702,6 +4780,17 @@ void tex_copy_specification_list(halfword a, halfword b) {
             specification_count(a) = specification_count(b);
             specification_options(a) = specification_options(b);
             memcpy(specification_pointer(a), specification_pointer(b), size);
+            /* */
+            if (node_subtype(a) == par_passes_code) { 
+                for (int i = 1; i <= specification_count(b); i++) {
+                    halfword f = tex_get_passes_fitnessdemerits(b, i);
+                    if (f) { 
+                        halfword c = tex_copy_node(f);
+                        tex_set_passes_fitnessdemerits(a, i, c);
+                    }
+                }
+            }
+            /* */
         } else {
             specification_count(a) = 0;
             specification_options(a) = 0;

@@ -89,79 +89,79 @@ local replaced_whatever =  {
 }
 
 scripts.patterns.list = {
-    { "af",  "hyph-af",            "afrikaans" },
- -- { "ar",  "hyph-ar",            "arabic" },
- -- { "as",  "hyph-as",            "assamese" },
-    { "bg",  "hyph-bg",            "bulgarian" },
-    { "bn",  "hyph-bn",            "bengali" },
-    { "ca",  "hyph-ca",            "catalan" },
- -- { "??",  "hyph-cop",           "coptic" },
-    { "cs",  "hyph-cs",            "czech" },
-    { "cy",  "hyph-cy",            "welsh" },
-    { "da",  "hyph-da",            "danish" },
-    { "deo", "hyph-de-1901",       "german, old spelling" },
-    { "de",  "hyph-de-1996",       "german, new spelling" },
- -- { "??",  "hyph-de-ch-1901",    "swiss german" },
- -- { "??",  "hyph-el-polyton",    "greek" },
-    { "gr",  "hyph-el-monoton",    "greek" },
-    { "agr", "hyph-grc",           "ancient greek", ignored_ancient_greek },
-    { "gb",  "hyph-en-gb",         "british english" },
-    { "us",  "hyph-en-us",         "american english" },
-    { "eo",  "hyph-eo",            "esperanto" },
-    { "es",  "hyph-es",            "spanish" },
-    { "et",  "hyph-et",            "estonian" },
-    { "eu",  "hyph-eu",            "basque" },
- -- { "fa",  "hyph-fa",            "farsi" },
-    { "fi",  "hyph-fi",            "finnish" },
-    { "fr",  "hyph-fr",            "french", ignored_french },
- -- { "??",  "hyph-ga",            "irish" },
- -- { "??",  "hyph-gl",            "galician" },
-    { "gu",  "hyph-gu",            "gujarati" },
-    { "hi",  "hyph-hi",            "hindi" },
-    { "hr",  "hyph-hr",            "croatian" },
- -- { "??",  "hyph-hsb",           "upper sorbian" },
-    { "hu",  "hyph-hu",            "hungarian" },
-    { "hy",  "hyph-hy",            "armenian" },
- -- { "??",  "hyph-ia",            "interlingua" },
-    { "id",  "hyph-id",            "indonesian" },
-    { "is",  "hyph-is",            "icelandic" },
-    { "it",  "hyph-it",            "italian" },
- -- { "??",  "hyph-kmr",           "kurmanji" },
-    { "kn",  "hyph-kn",            "kannada" },
-    { "la",  "hyph-la",            "latin" },
-    { "ala", "hyph-la-x-classic",  "ancient latin" },
- -- { "lo",  "hyph-lo",            "lao" },
-    { "lt",  "hyph-lt",            "lithuanian" },
-    { "lv",  "hyph-lv",            "latvian" },
-    { "mk",  "hyph-mk",            "macedonian" },
-    { "ml",  "hyph-ml",            "malayalam" },
-    { "mn",  "hyph-mn-cyrl",       "mongolian, cyrillic script" },
- -- { "mr",  "hyph-mr",            "..." },
-    { "nb",  "hyph-nb",            "norwegian bokmål" },
-    { "nl",  "hyph-nl",            "dutch" },
-    { "nn",  "hyph-nn",            "norwegian nynorsk" },
- -- { "or",  "hyph-or",            "oriya" },
- -- { "pa",  "hyph-pa",            "panjabi" },
- -- { "",    "hyph-",              "" },
-    { "pl",  "hyph-pl",            "polish" },
-    { "pt",  "hyph-pt",            "portuguese" },
-    { "ro",  "hyph-ro",            "romanian" },
-    { "ru",  "hyph-ru",            "russian" },
-    { "sa",  "hyph-sa",            "sanskrit" },
-    { "sk",  "hyph-sk",            "slovak" },
-    { "sl",  "hyph-sl",            "slovenian" },
-    { "sq",  "hyph-sq",            "albanian" },
-    { "sr",  "hyph-sr",            "serbian", false, { "hyph-sh-cyrl", "hyph-sh-latn" }, },
- -- { "sr",  "hyph-sr-cyrl",       "serbian", false },
- -- { "sr",  "hyph-sr-latn",       "serbian" },
-    { "sv",  "hyph-sv",            "swedish" },
-    { "ta",  "hyph-ta",            "tamil" },
-    { "te",  "hyph-te",            "telugu" },
-    { "th",  "hyph-th",            "thai" },
-    { "tk",  "hyph-tk",            "turkmen" },
-    { "tr",  "hyph-tr",            "turkish" },
-    { "uk",  "hyph-uk",            "ukrainian" },
-    { "zh",  "hyph-zh-latn-pinyin","zh-latn, chinese pinyin" },
+    { mnemonic = "af",  name = "hyph-af",            comment = "afrikaans" },
+ -- { mnemonic = "ar",  name = "hyph-ar",            comment = "arabic" },
+ -- { mnemonic = "as",  name = "hyph-as",            comment = "assamese" },
+    { mnemonic = "bg",  name = "hyph-bg",            comment = "bulgarian" },
+    { mnemonic = "bn",  name = "hyph-bn",            comment = "bengali" },
+    { mnemonic = "ca",  name = "hyph-ca",            comment = "catalan" },
+ -- { mnemonic = "??",  name = "hyph-cop",           comment = "coptic" },
+    { mnemonic = "cs",  name = "hyph-cs",            comment = "czech" },
+    { mnemonic = "cy",  name = "hyph-cy",            comment = "welsh" },
+    { mnemonic = "da",  name = "hyph-da",            comment = "danish" },
+    { mnemonic = "deo", name = "hyph-de-1901",       comment = "german, old spelling" },
+    { mnemonic = "de",  name = "hyph-de-1996",       comment = "german, new spelling" },
+ -- { mnemonic = "??",  name = "hyph-de-ch-1901",    comment = "swiss german" },
+ -- { mnemonic = "??",  name = "hyph-el-polyton",    comment = "greek" },
+    { mnemonic = "gr",  name = "hyph-el-monoton",    comment = "greek" },
+    { mnemonic = "agr", name = "hyph-grc",           comment = "ancient greek", ignored = ignored_ancient_greek },
+    { mnemonic = "gb",  name = "hyph-en-gb",         comment = "british english" },
+    { mnemonic = "us",  name = "hyph-en-us",         comment = "american english", lefthyphenmin = 3, righthyphenmin = 2 },
+    { mnemonic = "eo",  name = "hyph-eo",            comment = "esperanto" },
+    { mnemonic = "es",  name = "hyph-es",            comment = "spanish" },
+    { mnemonic = "et",  name = "hyph-et",            comment = "estonian" },
+    { mnemonic = "eu",  name = "hyph-eu",            comment = "basque" },
+ -- { mnemonic = "fa",  name = "hyph-fa",            comment = "farsi" },
+    { mnemonic = "fi",  name = "hyph-fi",            comment = "finnish" },
+    { mnemonic = "fr",  name = "hyph-fr",            comment = "french", ignored = ignored_french },
+ -- { mnemonic = "??",  name = "hyph-ga",            comment = "irish" },
+ -- { mnemonic = "??",  name = "hyph-gl",            comment = "galician" },
+    { mnemonic = "gu",  name = "hyph-gu",            comment = "gujarati" },
+    { mnemonic = "hi",  name = "hyph-hi",            comment = "hindi" },
+    { mnemonic = "hr",  name = "hyph-hr",            comment = "croatian" },
+ -- { mnemonic = "??",  name = "hyph-hsb",           comment = "upper sorbian" },
+    { mnemonic = "hu",  name = "hyph-hu",            comment = "hungarian" },
+    { mnemonic = "hy",  name = "hyph-hy",            comment = "armenian" },
+ -- { mnemonic = "??",  name = "hyph-ia",            comment = "interlingua" },
+    { mnemonic = "id",  name = "hyph-id",            comment = "indonesian" },
+    { mnemonic = "is",  name = "hyph-is",            comment = "icelandic" },
+    { mnemonic = "it",  name = "hyph-it",            comment = "italian" },
+ -- { mnemonic = "??",  name = "hyph-kmr",           comment = "kurmanji" },
+    { mnemonic = "kn",  name = "hyph-kn",            comment = "kannada" },
+    { mnemonic = "la",  name = "hyph-la",            comment = "latin" },
+    { mnemonic = "ala", name = "hyph-la-x-classic",  comment = "ancient latin" },
+ -- { mnemonic = "lo",  name = "hyph-lo",            comment = "lao" },
+    { mnemonic = "lt",  name = "hyph-lt",            comment = "lithuanian" },
+    { mnemonic = "lv",  name = "hyph-lv",            comment = "latvian" },
+    { mnemonic = "mk",  name = "hyph-mk",            comment = "macedonian" },
+    { mnemonic = "ml",  name = "hyph-ml",            comment = "malayalam" },
+    { mnemonic = "mn",  name = "hyph-mn-cyrl",       comment = "mongolian, cyrillic script" },
+ -- { mnemonic = "mr",  name = "hyph-mr",            comment = "..." },
+    { mnemonic = "nb",  name = "hyph-nb",            comment = "norwegian bokmål" },
+    { mnemonic = "nl",  name = "hyph-nl",            comment = "dutch" },
+    { mnemonic = "nn",  name = "hyph-nn",            comment = "norwegian nynorsk" },
+ -- { mnemonic = "or",  name = "hyph-or",            comment = "oriya" },
+ -- { mnemonic = "pa",  name = "hyph-pa",            comment = "panjabi" },
+ -- { mnemonic = "",    name = "hyph-",              comment = "" },
+    { mnemonic = "pl",  name = "hyph-pl",            comment = "polish" },
+    { mnemonic = "pt",  name = "hyph-pt",            comment = "portuguese" },
+    { mnemonic = "ro",  name = "hyph-ro",            comment = "romanian" },
+    { mnemonic = "ru",  name = "hyph-ru",            comment = "russian" },
+    { mnemonic = "sa",  name = "hyph-sa",            comment = "sanskrit" },
+    { mnemonic = "sk",  name = "hyph-sk",            comment = "slovak" },
+    { mnemonic = "sl",  name = "hyph-sl",            comment = "slovenian" },
+    { mnemonic = "sq",  name = "hyph-sq",            comment = "albanian" },
+    { mnemonic = "sr",  name = "hyph-sr",            comment = "serbian", merged = { "hyph-sh-cyrl", "hyph-sh-latn" }, },
+ -- { mnemonic = "sr",  name = "hyph-sr-cyrl",       comment = "serbian", },
+ -- { mnemonic = "sr",  name = "hyph-sr-latn",       comment = "serbian" },
+    { mnemonic = "sv",  name = "hyph-sv",            comment = "swedish" },
+    { mnemonic = "ta",  name = "hyph-ta",            comment = "tamil" },
+    { mnemonic = "te",  name = "hyph-te",            comment = "telugu" },
+    { mnemonic = "th",  name = "hyph-th",            comment = "thai" },
+    { mnemonic = "tk",  name = "hyph-tk",            comment = "turkmen" },
+    { mnemonic = "tr",  name = "hyph-tr",            comment = "turkish" },
+    { mnemonic = "uk",  name = "hyph-uk",            comment = "ukrainian" },
+    { mnemonic = "zh",  name = "hyph-zh-latn-pinyin",comment = "zh-latn, chinese pinyin" },
 }
 
 -- stripped down from lpeg example:
@@ -414,7 +414,7 @@ function scripts.patterns.load(path,name,mnemonic,ignored, merged)
 end
 
 function scripts.patterns.save(destination,mnemonic,name,patternsnew,hyphenationsnew,patternsold,hyphenationsold,comment,stripped,
-        pusednew,husednew,pusedold,husedold,ignored)
+        pusednew,husednew,pusedold,husedold,ignored,lefthyphenmin,righthyphenmin)
     local nofpatternsnew, nofhyphenationsnew = #patternsnew, #hyphenationsnew
     local nofpatternsold, nofhyphenationsold = #patternsold, #hyphenationsold
     report("language %s has %s old and %s new patterns and %s old and %s new exceptions",mnemonic,nofpatternsold,nofpatternsnew,nofhyphenationsold,nofhyphenationsnew)
@@ -460,8 +460,8 @@ function scripts.patterns.save(destination,mnemonic,name,patternsnew,hyphenation
                 length         = #data,
                 data           = compression and zlib.compress(data,9) or data,
                 characters     = concat(table.sortedkeys(pusednew),""),
-                lefthyphenmin  = 1, -- determined by pattern author
-                righthyphenmax = 1, -- determined by pattern author
+                lefthyphenmin  = lefthyphenmin  or 1, -- determined by pattern author, sometimes set
+                righthyphenmin = righthyphenmin or 1,
             }
         else
             patterndata = {
@@ -528,10 +528,13 @@ function scripts.patterns.check()
         only = table.tohash(files)
     end
     for k, v in next, scripts.patterns.list do
-        local mnemonic, name, ignored, merged = v[1], v[2], v[4], v[5]
+        local mnemonic = v.mnemonic
+        local name     = v.name
+        local ignored  = v.comment
+        local merged   = v.merged
         if not only or only[mnemonic] then
             report("checking language %s, file %s", mnemonic, name)
-            local okay = scripts.patterns.load(path,name,mnemonic,ignored, merged)
+            local okay = scripts.patterns.load(path,name,mnemonic,ignored,merged)
             if not okay then
                 report("there are errors that need to be fixed")
             end
@@ -555,14 +558,22 @@ function scripts.patterns.convert()
                 only = table.tohash(files)
             end
             for k, v in next, scripts.patterns.list do
-                local mnemonic, name, ignored, merged = v[1], v[2], v[4], v[5]
+                local mnemonic = v.mnemonic
+                local name     = v.name
+                local ignored  = v.comment
+                local merged   = v.merged
                 if not only or only[mnemonic] then
                     report("converting language %s, file %s", mnemonic, name)
                     local okay, patternsnew, hyphenationsnew, patternsold, hyphenationsold, comment, stripped,
                         pusednew, husednew, pusedold, husedold = scripts.patterns.load(path,name,mnemonic,ignored,merged)
                     if okay then
-                        scripts.patterns.save(destination,mnemonic,name,patternsnew,hyphenationsnew,patternsold,hyphenationsold,comment,stripped,
-                            pusednew,husednew,pusedold,husedold,ignored)
+                        scripts.patterns.save(
+                            destination,mnemonic,name,
+                            patternsnew,hyphenationsnew,patternsold,hyphenationsold,
+                            comment,stripped,
+                            pusednew,husednew,pusedold,husedold,ignored,
+                            v.lefthyphenmin,v.righthyphenmin
+                        )
                     else
                         report("convertion aborted due to error(s)")
                     end
@@ -663,10 +674,10 @@ end
 function scripts.patterns.hyphenate()
     require("lang-hyp")
     local traditional   = languages.hyphenators.traditional
-    local left          = tonumber(environment.arguments.left)  or 3
-    local right         = tonumber(environment.arguments.right) or 3
     local language      = environment.arguments.language or "us"
     local dictionary    = traditional.loadpatterns(language)
+    local left          = tonumber(environment.arguments.left)  or dictionary.lefthyphenmin  or 3
+    local right         = tonumber(environment.arguments.right) or dictionary.righthyphenmin or 3
     local words         = environment.files
     local specification = {
         leftcharmin     = left,

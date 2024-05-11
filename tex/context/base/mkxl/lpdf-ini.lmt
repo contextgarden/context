@@ -984,6 +984,17 @@ do
     function lpdf.getcatalog()
         if checkcatalog() then
             catalog.Type = pdfconstant("Catalog")
+            -- A bit fuzzy and useless. Has to be a direct one (makes one wonder about what drives
+            -- these demands, like limitations in certain aplications).
+            catalog.Extensions = pdfdictionary {
+                Type = pdfconstant("Extensions"),
+                LMTX = pdfdictionary {
+                    BaseVersion    = pdfconstant("2.0"),
+                    ExtensionLevel = 1,
+
+                }
+            }
+            --
             return pdfreference(pdfimmediateobject(tostring(catalog)))
         end
     end
@@ -1008,13 +1019,14 @@ do
         end
     end
 
-    local names = pdfdictionary {
-     -- Type = pdfconstant("Names")
-    }
+    local names = pdfdictionary {}
 
     local function flushnames()
         if next(names) and not environment.initex then
-            names.Type = pdfconstant("Names")
+         -- The type used to be present when we started with pdf but at some point disappeared from
+         -- the specification, so let's ditch it. The Type key is kind of weird anyway as sometimes
+         -- it is mandate and sometimes not.
+         -- names.Type = pdfconstant("Names")
             trace_flush("names")
             lpdf.addtocatalog("Names",pdfreference(pdfimmediateobject(tostring(names))))
         end
@@ -1379,37 +1391,48 @@ end
 
 do
 
-    -- This is obsolete but old viewers might still use it as directive for what to
-    -- send to a postscript printer.
+    -- This is obsolete but old viewers might still use it as directive for what to send to a
+    -- postscript printer. The bad is that even 2.0 validation can bark about it missing but
+    -- maybe we should no longer care abotu that.
 
-    local a_procset, d_procset
+    local a_procset = nil
+    local d_procset = nil
+    local include   = false
 
     lpdf.registerinitializer(function()
         a_procset = nil
         d_procset = nil
     end)
 
+    function lpdf.setincludeprocset(v)
+        include = v
+    end
+
     function lpdf.procset(dict)
-        if not a_procset then
-            a_procset = pdfarray {
-                pdfconstant("PDF"),
-                pdfconstant("Text"),
-                pdfconstant("ImageB"),
-                pdfconstant("ImageC"),
-                pdfconstant("ImageI"),
-            }
-            a_procset = pdfreference(pdfimmediateobject(tostring(a_procset)))
-        end
-        if dict then
-            if not d_procset then
-                d_procset = pdfdictionary {
-                    ProcSet = a_procset
-                }
-                d_procset = pdfreference(pdfimmediateobject(tostring(d_procset)))
-            end
-            return d_procset
+        if not include or lpdf.majorversion() > 1 then
+            return nil
         else
-            return a_procset
+            if not a_procset then
+                a_procset = pdfarray {
+                    pdfconstant("PDF"),
+                    pdfconstant("Text"),
+                    pdfconstant("ImageB"),
+                    pdfconstant("ImageC"),
+                    pdfconstant("ImageI"),
+                }
+                a_procset = pdfreference(pdfimmediateobject(tostring(a_procset)))
+            end
+            if dict then
+                if not d_procset then
+                    d_procset = pdfdictionary {
+                        ProcSet = a_procset
+                    }
+                    d_procset = pdfreference(pdfimmediateobject(tostring(d_procset)))
+                end
+                return d_procset
+            else
+                return a_procset
+            end
         end
     end
 

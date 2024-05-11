@@ -396,7 +396,7 @@
   {\clf_listrealpage{\currentlist}\numexpr\currentlistindex\relax}
 
 \permanent\protected\def\structurelistpagenumber
-  {\dostarttagged\t!listpage\empty
+  {\dostarttaggednodetail\t!listpage
    \ifconditional\c_lists_show_realpage
      \clf_listrealpage{\currentlist}\numexpr\currentlistindex\relax
    \else
@@ -444,12 +444,12 @@
 \aliased\let\doifstructurelisthasnumberelse\doifelsestructurelisthasnumber
 
 \permanent\protected\def\structurelistgenerictitle
-  {\dostarttagged\t!listcontent\empty
+  {\dostarttaggednodetail\t!listcontent
    \clf_listtitle{\currentlist}\currentlistindex\relax
    \dostoptagged}
 
 \permanent\protected\def\structurelistgenericnumber % tricky, we need to delay tagging as we have nested lua calls
-  {\dostarttagged\t!listtag\empty
+  {\dostarttaggednodetail\t!listtag
    \clf_listprefixednumber
      {\currentlist}%
      \currentlistindex

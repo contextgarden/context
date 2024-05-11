@@ -59,7 +59,7 @@
 
 \defcsname\??combinationmethod\v!formula:\v!start\endcsname
   {\startformula
-   \dostarttagged\t!formulaset\empty
+   \dostarttaggednodetail\t!formulaset
    \global\c_strc_formulas_inside_formulas\conditionaltrue
    \bgroup
    \setupformulas[\c!width=\combinationwidth]%

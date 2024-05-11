@@ -28,7 +28,7 @@ return {
             aftercopying = {
                 {
                     tweak    = "version",
-                    expected = "Version 0.40",
+                    expected = "Version 0.61",
                 },
                 {
                     tweak = "checkaccents",

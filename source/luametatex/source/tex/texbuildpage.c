@@ -930,7 +930,15 @@ void tex_build_page(halfword context, halfword boundary)
                     tex_aux_append_insert(current);
                     goto CONTRIBUTE;
                 default:
-                    tex_formatted_error("pagebuilder", "invalid %N node in vertical mode", current);
+                    tex_handle_error(
+                     // normal_error_type,
+                        succumb_error_type,
+                        "Invalid %N node in pagebuilder",
+                        current,
+                        NULL
+                    );
+                    goto DISCARD;
+                 // tex_formatted_error("pagebuilder", "invalid %N node in vertical mode", current);
                     break;
             }
             /*tex

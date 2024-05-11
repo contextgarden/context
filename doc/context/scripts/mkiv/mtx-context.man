@@ -209,6 +209,9 @@ use an additional password for opening the document
 .TP
 .B --permissions
 list of: print, modify, extract, add, fillin, assemble, quality
+.TP
+.B --wtpdf
+add an wtpdf conformance blob but best check first if it applies
 .SH OPTIONS: SPECIAL
 .TP
 .B --pdftex

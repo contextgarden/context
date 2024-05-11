@@ -283,6 +283,8 @@ void tex_main_body(void)
         tex_initialize_node_mem();
     }
 
+    tex_initialize_destructors();
+
     if (lmt_main_state.run_state == initializing_state) {
         tex_initialize_nodes();
         tex_initialize_tokens();
@@ -357,6 +359,9 @@ void tex_main_body(void)
     tex_engine_check_configuration();
 
     tex_initialize_directions();
+
+    fitness_demerits_par = tex_default_fitness_demerits(); /* can be in format */
+    par_passes_par = null;                                 /* can be in format */
 
     {
         char *ptr = tex_engine_input_filename();
@@ -582,6 +587,21 @@ static void final_cleanup(int dump)
             for (int i = 0; i <= lmt_insert_state.insert_data.ptr; i++) {
                 tex_wipe_insert(i);
             }
+# if 0
+            for (int i = 1; i < max_chain_size; i++) {
+                halfword p = lmt_node_memory_state.free_chain[i];
+                while (p) {
+                    printf("free : node %i : %i (%s), subtype %i, size %i\n", p, node_type(p), lmt_interface.node_data[node_type(p)].name, node_subtype(p), i);
+                    p = node_next(p);
+                }
+            }
+            for (int i = 1; i < lmt_node_memory_state.nodes_data.allocated; i++) {
+                halfword s = lmt_node_memory_state.nodesizes[i];
+                if (s) {
+                    printf("slot : node %i : %i (%s), subtype %i, size %i\n", i, node_type(i), lmt_interface.node_data[node_type(i)].name, node_subtype(i), s);
+                }
+            }
+# endif
             tex_store_fmt_file();
         } else {
             tex_print_message("\\dump is performed only by INITEX");

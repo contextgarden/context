@@ -14,7 +14,7 @@ some other extensions, in \LMTX\ a new interface has been added, but the
 underlying code is the same as in \MKIV.
 
 \startbuffer[1a]
-\startMPcode{doublefun}
+\startMPcode
     draw lmt_outline [
         text      = "hello"
         kind      = "draw",
@@ -24,7 +24,7 @@ underlying code is the same as in \MKIV.
 \stopbuffer
 
 \startbuffer[1b]
-\startMPcode{doublefun}
+\startMPcode
     draw lmt_outline [
         text          = "hello",
         kind          = "both",
@@ -54,7 +54,7 @@ Normally the fill ends up below the draw but we can reverse the order, as in
 \in {figure} [outline:2], where we coded the leftmost example as:
 
 \startbuffer[2a]
-\startMPcode{doublefun}
+\startMPcode
     draw lmt_outline [
         text          = "hello",
         kind          = "reverse",
@@ -66,7 +66,7 @@ Normally the fill ends up below the draw but we can reverse the order, as in
 \stopbuffer
 
 \startbuffer[2b]
-\startMPcode{doublefun}
+\startMPcode
     draw lmt_outline [
         text          = "hello",
         kind          = "both",
@@ -91,7 +91,7 @@ used for both, see \in {figure} [outline:3] for an example fo this. This is a lo
 level optimization where the shape is only output once.
 
 \startbuffer[3a]
-\startMPcode{doublefun}
+\startMPcode
     draw lmt_outline [
         text          = "hello",
         kind          = "fillup",
@@ -102,7 +102,7 @@ level optimization where the shape is only output once.
 \stopbuffer
 
 \startbuffer[3b]
-\startMPcode{doublefun}
+\startMPcode
     draw lmt_outline [
         text          = "hello",
         kind          = "fill",
@@ -125,7 +125,7 @@ This interface is much nicer than the one where each variant (the parameter \typ
 outline and fill. Let's show some more:
 
 \startbuffer[4]
-\startMPcode{doublefun}
+\startMPcode
     draw lmt_outline [
         text      = "\obeydiscretionaries\samplefile{tufte}",
         align     = "normal",
@@ -148,7 +148,7 @@ text.
 \stopplacefigure
 
 \startbuffer[5]
-\startMPcode{doublefun}
+\startMPcode
     draw lmt_outline [
         text      = "\obeydiscretionaries\samplefile{ward}",
         align     = "normal,tolerant",
@@ -182,6 +182,29 @@ We summarize the parameters:
 \NC width         \NC numeric \NC         \NC \NC \NR
 \LL
 \stoptabulate
+
+Here is a bonus:
+
+\startbuffer
+\startMPcode
+    draw lmt_outline [
+        kind = "outline",
+        text = "\bf To foo or to bar, that's the question.",
+    ] xsized TextWidth
+        withshademethod "linear"
+        withshadedirection down
+        withshadecolors ("lightred","lightblue")
+    ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer
+
+Here we get a path back instead of a picture with multiple elements:
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
 
 \stopchapter
 

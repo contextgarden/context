@@ -90,7 +90,7 @@
 
 % \permanent\protected\def\startMPLIBtoPDF#1#2#3#4%
 %   {\meta_process_graphic_figure_start
-%    \dostarttagged\t!mpgraphic\empty
+%    \dostarttaggednodetail\t!mpgraphic
 %    \naturalhpack attr \imageattribute \plusone \bgroup
 %    \dousecolorparameter\s!black\forcecolorhack
 %    \setMPboundingbox{#1}{#2}{#3}{#4}%
@@ -100,7 +100,7 @@
 
 \permanent\protected\def\startMPLIBtoPDF#1#2#3#4%
   {\meta_process_graphic_figure_start
-   \dostarttagged\t!mpgraphic\empty
+   \dostarttaggednodetail\t!mpgraphic
    \naturalhpack attr \imageattribute \plusone \bgroup
    \dousecolorparameter\s!black
    \setMPboundingbox{#1}{#2}{#3}{#4}%

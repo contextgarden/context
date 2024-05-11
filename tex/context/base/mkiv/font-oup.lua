@@ -3173,11 +3173,19 @@ function readers.expand(data)
         for u, d in next, descriptions do
             local bb = d.boundingbox
             local wd = d.width
-            if not wd then
-                -- or bb?
+--             if not wd then
+--                 -- or bb?
+--                 d.width = defaultwidth
+--             elseif trace_markwidth and wd ~= 0 and d.class == "mark" then
+--                 report_markwidth("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
+--             end
+            if d.class == "mark" then
+                if trace_markwidth and wd ~= 0 then
+                    report_markwidth("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
+                end
+                d.width = 0
+            elseif not wd then
                 d.width = defaultwidth
-            elseif trace_markwidth and wd ~= 0 and d.class == "mark" then
-                report_markwidth("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
             end
             if bb then
                 local ht =  bb[4]

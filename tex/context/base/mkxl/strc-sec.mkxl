@@ -813,7 +813,7 @@
 
 \permanent\protected\def\fullheadnumber
   {\edef\currentheadlabeltag{\currentsectionblock\c!label}%
-   \dostarttagged\t!sectionnumber\empty
+   \dostarttaggednodetail\t!sectionnumber
    \labeltexts
      {\headparameter\currentheadlabeltag}
      {\ifrelax\deepstructurenumbercommand
@@ -824,7 +824,7 @@
    \dostoptagged}
 
 \permanent\protected\def\fullheadtitle
-  {\dostarttagged\t!sectiontitle\empty
+  {\dostarttaggednodetail\t!sectiontitle
    \ifrelax\deepstructuretitlecommand
      \structuretitle
    \else
@@ -927,7 +927,7 @@
        \strc_sectioning_before_yes
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
-       \dostarttagged\t!sectioncaption\empty
+       \dostarttaggednodetail\t!sectioncaption
        \let\getheadsyncs\theheadsynchronization
        \let\getheadtitle\fullheadtitle
        \ifconditional\headshownumber
@@ -941,7 +941,7 @@
      \orelse\ifconditional\c_strc_sectioning_hidden
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
-       \dostarttagged\t!sectioncaption\empty
+       \dostarttaggednodetail\t!sectioncaption
        \let\getheadsyncs\theheadsynchronization
        \ifconditional\c_strc_sectioning_section
          \strc_rendering_place_head_section
@@ -953,7 +953,7 @@
        \strc_sectioning_before_nop % toegevoegd ivm subpaginanr / tug sheets
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
-       \dostarttagged\t!sectioncaption\empty
+       \dostarttaggednodetail\t!sectioncaption
        \let\getheadsyncs\theheadsynchronization
        \strc_rendering_place_head_empty % just flush 'm
        \dostoptagged
@@ -964,7 +964,7 @@
        \strc_sectioning_before_yes
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
-       \dostarttagged\t!sectioncaption\empty
+       \dostarttaggednodetail\t!sectioncaption
        \let\getheadsyncs\theheadsynchronization
        \let\getheadtitle\fullheadtitle
        \strc_rendering_place_head_text
@@ -974,7 +974,7 @@
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
        \let\getheadsyncs\theheadsynchronization
-       \dostarttagged\t!sectioncaption\empty
+       \dostarttaggednodetail\t!sectioncaption
        \ifconditional\c_strc_sectioning_section
          \strc_rendering_place_head_section
        \else
@@ -986,7 +986,7 @@
        \strc_sectioning_before_nop
        \strc_sectioning_register{#1}{#2}{#3}% after optional \page
        \strc_sectioning_report
-       \dostarttagged\t!sectioncaption\empty
+       \dostarttaggednodetail\t!sectioncaption
        \let\getheadsyncs\theheadsynchronization
        \strc_rendering_place_head_empty % just flush 'm
        \dostoptagged
@@ -998,7 +998,7 @@
    %
    \c_strc_sectioning_ignore_page\conditionalfalse
    % ignorespaces prevents spaces creeping in when after=\dontleavehmode
-   \dostarttagged\t!sectioncontent\empty
+   \dostarttaggednodetail\t!sectioncontent
    \unless\ifempty\currentstructureplaceholder
      \expandafter\strc_sectioning_placeholder
    \orelse\ifconditional\headisdisplay
@@ -1100,7 +1100,7 @@
    \cdef\currenthead{#1}
    \strc_sectioning_initialize_placement
    \strc_sectioning_initialize_number
-   \dostarttagged\t!sectioncaption\empty
+   \dostarttaggednodetail\t!sectioncaption
    \let\getheadsyncs \relax
    \def\getheadtitle {\getmarking[#1]}
    \def\getheadnumber{\getmarking[#1\v!number]}
@@ -1184,7 +1184,8 @@
 \def\strc_sectioning_before_nop
   {\strc_sectioning_check_before\strc_sectioning_handle_page_nop
    \headparameter\c!inbetween
-   \dostarttagged\currenthead\empty} % this is a weird one .. needs checking
+%  \dostarttaggednodetail\currenthead} % this is a weird one .. needs checking
+   \dostarttaggedchained\t!section\currenthead\??head}
 
 \def\strc_sectioning_empty_correction
   {\ifconditional\c_strc_sectioning_empty

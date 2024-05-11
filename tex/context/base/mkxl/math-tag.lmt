@@ -34,7 +34,7 @@ local getlist            = nuts.getlist
 local getfield           = nuts.getfield
 local getdisc            = nuts.getdisc
 local getattr            = nuts.getattr
-local getattrlist        = nuts.getattrlist
+----- getattrlist        = nuts.getattrlist
 local setattr            = nuts.setattr
 local getwidth           = nuts.getwidth
 local getoptions         = nuts.getoptions
@@ -83,6 +83,7 @@ local glyph_code         <const> = nodecodes.glyph
 local disc_code          <const> = nodecodes.disc
 local glue_code          <const> = nodecodes.glue
 local kern_code          <const> = nodecodes.kern
+local rule_code          <const> = nodecodes.rule
 local math_code          <const> = nodecodes.math
 
 local fixedtopaccent_code    <const> = accentcodes.fixedtop
@@ -428,13 +429,17 @@ end
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)
     local mtexttag = nil
     for start, id, subtype in nextnode, start do -- current
+--         if id == glyph_code or id == disc_code then
         if id == glyph_code or id == disc_code then
             if not mtexttag then
                 mtexttag = start_tagged("mtext")
             end
             setattr(start,a_tagged,mtexttag)
-        elseif mtexttag and id == kern_code and subtype == fontkern_code or subtype == italickern_code then -- italickern
+        elseif mtexttag and id == kern_code and subtype == fontkern_code or subtype == italickern_code then
             setattr(start,a_tagged,mtexttag)
+--         elseif id == rule_code then
+-- setattr(start,a_tagged,start_tagged("ignore"))
+-- stop_tagged()
         else
             if mtexttag then
                 stop_tagged()
@@ -483,6 +488,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     if specification then
                         local tag = specification.tagname
                         if tag == "formulacaption" then
+                            -- can this happen
                             -- skip
                         elseif tag == "mstacker" then
                             local list = getlist(start)
@@ -910,18 +916,22 @@ local standalone  = false
 directives.register("structures.tags.math.standalone", function(v) standalone = v end)
 
 function noads.handlers.tags(head,style,penalties)
-    start_tagged("math", {
-        mode       = (getattr(head,a_mathmode) == 1) and "display" or "inline",
-        standalone = standalone,
-        input      = mathematics.lastinput,
-        blob       = getintegervalue(c_mathblob),
-        language   = getmacro("currentlanguage"),
-        domain     = mathematics.getdomainname(tonumber(getattr(head,a_mathdomain))),
-    })
-    setattr(head,a_tagged,start_tagged("mrow"))
-    process(head)
-    stop_tagged()
-    stop_tagged()
+--     if context.trialtypesetting() then
+--        print("!!!!!!!!!")
+--     else
+        start_tagged("math", {
+            mode       = (getattr(head,a_mathmode) == 1) and "display" or "inline",
+            standalone = standalone,
+            input      = mathematics.lastinput,
+            blob       = getintegervalue(c_mathblob),
+            language   = getmacro("currentlanguage"),
+            domain     = mathematics.getdomainname(tonumber(getattr(head,a_mathdomain))),
+        })
+        setattr(head,a_tagged,start_tagged("mrow"))
+        process(head)
+        stop_tagged()
+        stop_tagged()
+--     end
     mathematics.lastinput= nil
 end
 
@@ -963,7 +973,7 @@ do
     function mathematics.enablecollecting()
         if structures.tags.enabled() then
             if not enabled then
-                nodes.tasks.enableaction("math", "noads.handlers.export")
+                nodes.tasks.enableaction("math","noads.handlers.export")
             end
             enabled = true
             export  = structures.tags.localexport
@@ -989,8 +999,13 @@ do
             local data  = entry and entry[language]
             if not data then
                 -- when no labels we actually now duplicate but so be it
-                data = xml.mml.verbose(entry.data,language)
-                entry[language] = data
+                local d = entry.data
+                if d and d ~= "" then
+                    data = xml.mml.verbose(d,language)
+                    entry[language] = data
+                else
+                    entry[language] = ""
+                end
 
             end
             return data

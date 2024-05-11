@@ -1,0 +1,205 @@
+% language=us
+
+\startenvironment examples-style-math
+
+\def\ExampleLanguages{\currentmainlanguage}
+
+\setupframedtext
+  [result]
+  [align=flushleft]
+
+%definefontfeature[fixedwidth][fixedwidth=0.30]
+%definefontfeature[fixedwidth][fixedwidth=0.28]
+\definefontfeature[fixedwidth][fixedwidth=0.27]
+
+% \definefontfallback
+%   [MonoMathMath]
+%   [dejavusansmono.ttf*fixedwidth]
+%   [0x0400-0x600][rscale=.8]
+
+\definefontfallback
+  [MonoMathMath]
+  [cmuntt.otf*fixedwidth]
+  [0x0400-0x600]
+
+\definefontfallback
+  [MonoMathMath]
+  [concrete-math.otf*fixedwidth]
+  [0x0600-0x1FFFF]
+
+\definefontsynonym
+  [MonoMathBase]
+  [lmmono10-regular.otf*fixedwidth]
+  [fallbacks=MonoMathMath]
+
+% \definefontfallback
+%   [MonoTextMath]
+%   [dejavusansmono.ttf*fixedwidth]
+%   [0x0400-0x600][rscale=.8]
+
+\definefontfallback
+  [MonoTextMath]
+  [cmuntt.otf*fixedwidth]
+  [0x0400-0x600]
+
+\definefontfallback
+  [MonoTextMath]
+  [concrete-math.otf]
+  [0x0600-0x1FFFF]
+
+\definefontsynonym
+  [MonoTextBase]
+  [lmmono10-regular.otf]
+  [fallbacks=MonoTextMath]
+
+\definefontsynonym
+  [MonoMathBaseBold]
+  [lmmonolt10-bold.otf*fixedwidth]
+  [fallbacks=MonoMathMath]
+
+\definefont[MyMathFont]    [MonoMathBase]
+\definefont[MyMathFontBold][MonoMathBaseBold]
+\definefont[MyTextFont]    [MonoTextBase]
+
+\setuptyping
+  [style=MyMathFont]
+
+% \setupmathematics[domain=default]
+
+\starttexdefinition protected ShowExampleMeaning #1
+    \begingroup
+        \ifcstok{#1}\currentmainlanguage
+            \darkblue
+        \orelse\ifcstok{#1}{debug}%
+            \darkgray
+        \fi
+        \gettextblob{#1}\currentmathblob
+    \endgroup
+    \blank[medium]
+\stoptexdefinition
+
+\starttexdefinition protected StartExample
+    \begingroup
+    \obeylines
+    \doifnextcharelse[\StartExampleYES\StartExampleNOP
+\stoptexdefinition
+
+\starttexdefinition tolerant protected StartExampleYES[#1]
+    \doifelsemode {issues} {
+        \definecolor[issuecolor][darkred]
+        \doifelse {#1} {issue} {
+            \dostartbuffer[example][StartExample][StopExample]
+        } {
+            \endgroup
+            \gobbleuntil\StopExample
+        }
+    } {
+        \doif {#1} {issue} {
+            \definecolor[issuecolor][darkred]
+        }
+        \dostartbuffer[example][StartExample][StopExample]
+    }
+\stoptexdefinition
+
+\starttexdefinition tolerant protected StartExampleNOP
+    \doifelsemode {issues} {
+        \endgroup
+        \gobbleuntil\StopExample
+    } {
+        \dostartbuffer[example][StartExample][StopExample]
+    }
+\stoptexdefinition
+
+\starttexdefinition protected StopExample
+    \startresult[none][foregroundcolor=issuecolor]
+        \getbuffer[example]
+    \stopresult
+    \vskip5mm
+    \savemathexport[buffer=mmldata,xoption=ascii]
+    \begingroup
+        \MyTextFont \raggedright
+        \processcommacommand[\ExampleLanguages]\ShowExampleMeaning
+    \endgroup
+    \begingroup
+        \switchtobodyfont[6pt]
+      % \switchtobodyfont[7pt]
+      % \let\slxbold\relax
+        \def\slxbold{\MyMathFontBold}%
+        \typebuffer[example][option=TEX]
+        \scratchcounterone\nofbufferlines{mmldata}
+        \ifnum\scratchcounterone>\zerocount
+            \scratchcountertwo\maxbufferwidth{mmldata}
+            \scratchcounterthree\ctxlua{context(
+                \number\textwidth//(\number\scratchcountertwo*\number\emwidth)
+            )}\relax % columns needed
+            \scratchcounterfour\ctxlua{context(
+                \number\textheight//\number\pagetotal
+            )}\relax % available
+            \ifnum\scratchcounterthree=\zerocount
+                \typebuffer[mmldata][option=XML,n=\the\currentmathblob]%
+            \orelse\ifnum\scratchcounterone>\scratchcounterfour
+                \startcolumns[n=\scratchcounterthree,balance=no]
+                    \typebuffer[mmldata][option=XML,n=\the\currentmathblob]%
+                \stopcolumns
+            \else
+                \typebuffer[mmldata][option=XML,n=\the\currentmathblob]%
+            \fi
+        \fi
+    \endgroup
+    \endgroup
+    \page
+\stoptexdefinition
+
+% Setting up math:
+
+% \setupnote[mathnote][location=page]
+% \enabletrackers[math.textblobs]
+
+\disabledirectives[structures.tags.shipout]
+\enabledirectives [structures.tags.math.standalone]
+% \disabledirectives[structures.tags.math.strip]
+
+\setuptagging
+  [state=start]
+
+\definemathgroupset
+  [demogroupset]
+  [every]
+
+\setmathgroupset
+  [demogroupset]
+
+% This depends on the math used:
+
+% \registermathfunction[𝑓]
+% \registermathfunction[𝑔]
+
+% \registermathsymbol[default][en][𝐮][the vector]
+% \registermathsymbol[default][en][𝐯][the vector]
+% \registermathsymbol[default][en][𝖠][the matrix]
+
+% \registermathsymbol[default][en][lowercasebold]           [the vector] % [of]
+% \registermathsymbol[default][en][uppercasesansserifnormal][the matrix]
+
+% \registermathsymbol[default][sv][𝐮][vektorn]
+% \registermathsymbol[default][sv][𝐯][vektorn]
+
+% \registermathsymbol[default][sv][lowercasebold]           [vektorn]
+% \registermathsymbol[default][sv][uppercasesansserifnormal][matrisen]
+
+% \registermathsymbol[default][en][𝒞][the continuous functions]
+% \registermathsymbol[default][sv][𝒞][de kontinuerliga funktionerna]
+
+% Take your choice:
+
+% \def\ExampleLanguages{en,sv}
+% \def\ExampleLanguages{debug,en,sv}
+% \def\ExampleLanguages{debug,en,sv,nl}
+
+% \enablemode[issues]
+
+% \enabletrackers[structures.tags.math.times]
+% \enabletrackers[structures.tags.math.keeplast=mmldata]
+% \enabletrackers[structures.tags.math.save]
+
+\stopenvironment

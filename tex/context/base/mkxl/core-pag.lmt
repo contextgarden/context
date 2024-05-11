@@ -120,7 +120,7 @@ end
 local function setpagestate(settings)
     local name, tag = setstate(settings)
  -- context(new_latelua(function() extend(name,tag) end))
-    ctx_latelua(function() extend(name,tag) end)
+    ctx_latelua(function() extend(name,tag) end) -- better a table and kind
 end
 
 local function setpagestaterealpageno(name,tag)

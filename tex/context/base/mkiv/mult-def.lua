@@ -15252,6 +15252,16 @@ return {
    ["en"]="cite",
    ["fr"]="cite",
   },
+  ["clip"]={
+   ["cs"]="orez",
+   ["de"]="ausschnitt",
+   ["en"]="clip",
+   ["fr"]="decouper",
+   ["it"]="clip",
+   ["nl"]="clip",
+   ["pe"]="گیره",
+   ["ro"]="clip",
+  },
   ["closed"]={
    ["en"]="closed",
    ["fr"]="ferme",

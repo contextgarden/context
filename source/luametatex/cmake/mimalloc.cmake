@@ -8,6 +8,7 @@ set(mimalloc_sources
     source/libraries/mimalloc/src/bitmap.c
     source/libraries/mimalloc/src/heap.c
     source/libraries/mimalloc/src/init.c
+    source/libraries/mimalloc/src/libc.c
     source/libraries/mimalloc/src/options.c
     source/libraries/mimalloc/src/os.c
     source/libraries/mimalloc/src/page.c

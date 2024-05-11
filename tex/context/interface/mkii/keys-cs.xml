@@ -99,6 +99,7 @@
 		<cd:variable name='autointro' value='autouvod'/>
 		<cd:variable name='back' value='zpet'/>
 		<cd:variable name='background' value='pozadi'/>
+		<cd:variable name='backgroundbar' value='backgroundbar'/>
 		<cd:variable name='backmatter' value='epilogy'/>
 		<cd:variable name='backpart' value='epilog'/>
 		<cd:variable name='backspace' value='zpetnamezera'/>
@@ -144,6 +145,7 @@
 		<cd:variable name='chemicals' value='chemicals'/>
 		<cd:variable name='chemistry' value='chemistry'/>
 		<cd:variable name='cite' value='cite'/>
+		<cd:variable name='clip' value='orez'/>
 		<cd:variable name='closed' value='closed'/>
 		<cd:variable name='collapsed' value='collapsed'/>
 		<cd:variable name='color' value='barevne'/>
@@ -167,6 +169,7 @@
 		<cd:variable name='conversion' value='konverze'/>
 		<cd:variable name='current' value='aktualni'/>
 		<cd:variable name='cutspace' value='cutspace'/>
+		<cd:variable name='dash' value='pomlcka'/>
 		<cd:variable name='dataset' value='dataset'/>
 		<cd:variable name='date' value='datum'/>
 		<cd:variable name='day' value='den'/>
@@ -808,6 +811,7 @@
 		<cd:constant name='current' value='aktualni'/>
 		<cd:constant name='cutspace' value='cutspace'/>
 		<cd:constant name='dash' value='pomlcka'/>
+		<cd:constant name='dashstep' value='dashstep'/>
 		<cd:constant name='dat' value='dat'/>
 		<cd:constant name='database' value='database'/>
 		<cd:constant name='dataset' value='dataset'/>
@@ -821,6 +825,7 @@
 		<cd:constant name='delay' value='prodleva'/>
 		<cd:constant name='depth' value='hloubka'/>
 		<cd:constant name='depthcorrection' value='korekcehloubky'/>
+		<cd:constant name='differentiald' value='differentiald'/>
 		<cd:constant name='direction' value='smer'/>
 		<cd:constant name='directory' value='adresar'/>
 		<cd:constant name='display' value='obrazovka'/>
@@ -1114,7 +1119,9 @@
 		<cd:constant name='object' value='objekt'/>
 		<cd:constant name='obstruction' value='prekazka'/>
 		<cd:constant name='oddmargin' value='lichyokraj'/>
+		<cd:constant name='off' value='vyp'/>
 		<cd:constant name='offset' value='offset'/>
+		<cd:constant name='on' value='zap'/>
 		<cd:constant name='openaction' value='otevriakci'/>
 		<cd:constant name='openpage' value='openpage'/>
 		<cd:constant name='openpageaction' value='akceotevrenistranky'/>

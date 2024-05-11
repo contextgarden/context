@@ -121,8 +121,9 @@ local formats = utilities.storage.allocate {
         transparency            = true, -- todo: block at lua level
         jbig2_compression       = true, -- todo: block at lua level (dropped anyway)
         jpeg2000_compression    = true, -- todo: block at lua level (dropped anyway)
-        include_cidsets         = true,
-        include_charsets        = true,
+     -- include_cidsets         = true,
+     -- include_charsets        = true,
+     -- include_procsets        = true,
         attachments             = true,
         inject_metadata         = function()
             -- nothing
@@ -140,6 +141,7 @@ local formats = utilities.storage.allocate {
             internal_icc_profiles   = true,
             include_cidsets         = true,
             include_charsets        = true,
+            include_procsets        = true,
             attachments             = false,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-1a:2001")
@@ -164,6 +166,7 @@ local formats = utilities.storage.allocate {
             internal_icc_profiles   = true,
             include_cidsets         = true,
             include_charsets        = true,
+            include_procsets        = true,
             attachments             = false,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-1a:2003")
@@ -192,6 +195,7 @@ local formats = utilities.storage.allocate {
             include_intents         = true,
             include_cidsets         = true,
             include_charsets        = true,
+            include_procsets        = true,
             attachments             = false,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-3:2002")
@@ -213,6 +217,7 @@ local formats = utilities.storage.allocate {
             jbig2_compression       = true,
             include_cidsets         = true,
             include_charsets        = true,
+            include_procsets        = true,
             attachments             = false,
             inject_metadata         = function()
                 addtoinfo("GTS_PDFXVersion","PDF/X-3:2003")
@@ -238,6 +243,7 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = true,
             include_charsets        = true,
+            include_procsets        = true,
             attachments             = false,
             inject_metadata         = function()
                 replacexmpinfo(
@@ -281,6 +287,7 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = true,
             include_charsets        = true,
+            include_procsets        = true,
             attachments             = false,
             inject_metadata         = function()
                 replacexmpinfo(
@@ -324,6 +331,7 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = true,
             include_charsets        = true,
+            include_procsets        = true,
             attachments             = false,
             inject_metadata         = function()
                 -- todo
@@ -351,6 +359,7 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = true,
             include_charsets        = true,
+            include_procsets        = true,
             attachments             = false,
             inject_metadata         = function()
                 -- todo
@@ -377,6 +386,7 @@ local formats = utilities.storage.allocate {
             object_compression      = true,
             include_cidsets         = true,
             include_charsets        = true,
+            include_procsets        = true,
             attachments             = false,
             inject_metadata         = function()
                 -- todo
@@ -399,6 +409,7 @@ local formats = utilities.storage.allocate {
             internal_icc_profiles   = true,
             include_cidsets         = true,
             include_charsets        = true,
+            include_procsets        = true,
             attachments             = false,
             inject_metadata         = function()
                 replacexmpinfo(
@@ -428,6 +439,7 @@ local formats = utilities.storage.allocate {
             internal_icc_profiles   = true,
             include_cidsets         = true,
             include_charsets        = true,
+            include_procsets        = true,
             attachments             = false,
             inject_metadata         = function()
                 replacexmpinfo(
@@ -462,8 +474,9 @@ local formats = utilities.storage.allocate {
             jbig2_compression       = true,
             jpeg2000_compression    = true, -- new
             object_compression      = true, -- new
-            include_cidsets         = false,
-            include_charsets        = false,
+         -- include_cidsets         = false,
+         -- include_charsets        = false,
+         -- include_procsets        = false,
             attachments             = true, -- new
             inject_metadata         = function()
                 replacexmpinfo(
@@ -496,8 +509,9 @@ local formats = utilities.storage.allocate {
             jbig2_compression       = true,
             jpeg2000_compression    = true,
             object_compression      = true,
-            include_cidsets         = false,
-            include_charsets        = false,
+         -- include_cidsets         = false,
+         -- include_charsets        = false,
+         -- include_procsets        = false,
             attachments             = true,
             inject_metadata         = function()
                 replacexmpinfo(
@@ -526,14 +540,15 @@ local formats = utilities.storage.allocate {
             cielab_colors           = true, -- unknown
             include_intents         = true,
             forms                   = true,
-            tagging                 = false,
+         -- tagging                 = false,
             internal_icc_profiles   = true,
             transparency            = true,
             jbig2_compression       = true,
             jpeg2000_compression    = true,
             object_compression      = true,
-            include_cidsets         = false,
-            include_charsets        = false,
+         -- include_cidsets         = false,
+         -- include_charsets        = false,
+         -- include_procsets        = false,
             attachments             = true,
             inject_metadata         = function()
                 replacexmpinfo(
@@ -568,8 +583,9 @@ local formats = utilities.storage.allocate {
             jbig2_compression       = true,
             jpeg2000_compression    = true,
             object_compression      = true,
-            include_cidsets         = false,
-            include_charsets        = false,
+         -- include_cidsets         = false,
+         -- include_charsets        = false,
+         -- include_procsets        = false,
             attachments             = true,
             inject_metadata         = function()
                 replacexmpinfo(
@@ -596,14 +612,15 @@ local formats = utilities.storage.allocate {
             cielab_colors           = true, -- unknown
             include_intents         = true,
             forms                   = true,
-            tagging                 = false,
+         -- tagging                 = false,
             internal_icc_profiles   = true,
             transparency            = true,
             jbig2_compression       = true,
             jpeg2000_compression    = true,
             object_compression      = true,
-            include_cidsets         = false,
-            include_charsets        = false,
+         -- include_cidsets         = false,
+         -- include_charsets        = false,
+         -- include_procsets        = false,
             attachments             = true,
             inject_metadata         = function()
                 replacexmpinfo(
@@ -636,8 +653,9 @@ local formats = utilities.storage.allocate {
             jbig2_compression       = true,
             jpeg2000_compression    = true,
             object_compression      = true,
-            include_cidsets         = false,
-            include_charsets        = false,
+         -- include_cidsets         = false,
+         -- include_charsets        = false,
+         -- include_procsets        = false,
             attachments             = true,
             inject_metadata         = function()
                 replacexmpinfo(
@@ -669,8 +687,9 @@ local formats = utilities.storage.allocate {
             jbig2_compression       = true,
             jpeg2000_compression    = true,
             object_compression      = true,
-            include_cidsets         = true,
-            include_charsets        = true, --- really ?
+         -- include_cidsets         = false,
+         -- include_charsets        = false,
+         -- include_procsets        = false,
             attachments             = true,
             inject_metadata         = function()
                 replacexmpinfo(
@@ -680,10 +699,78 @@ local formats = utilities.storage.allocate {
       <pdfaid:part>3</pdfaid:part>
       <pdfaid:conformance>A</pdfaid:conformance>
     </rdf:Description>
-    <rdf:Description rdf:about='' xmlns:pdfuaid='http://www.aiim.org/pdfua/ns/id/'>
+]]
+                )
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfuaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfuaid='http://www.aiim.org/pdfua/ns/id/'>
       <pdfuaid:part>1</pdfuaid:part>
+      <pdfuaid:rev>2024</pdfuaid:rev>
     </rdf:Description>
 ]]
+                )
+            end
+        },
+        ["pdf/ua-2"] = {
+            pdf_version             = 2.0,
+            format_name             = "pdf/ua-2",
+            xmp_file                = "lpdf-pua.xml",
+            gray_scale              = true,
+            cmyk_colors             = true,
+            rgb_colors              = true,
+            spot_colors             = true,
+            calibrated_rgb_colors   = true, -- unknown
+            cielab_colors           = true, -- unknown
+            include_intents         = true,
+            forms                   = true,
+            tagging                 = true,
+            internal_icc_profiles   = true,
+            transparency            = true,
+            jbig2_compression       = true,
+            jpeg2000_compression    = true,
+            object_compression      = true,
+         -- include_cidsets         = false,
+         -- include_charsets        = false,
+         -- include_procsets        = false,
+            attachments             = true,
+            inject_metadata         = function()
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'>
+      <pdfaid:part>3</pdfaid:part>
+      <pdfaid:conformance>A</pdfaid:conformance>
+    </rdf:Description>
+]]
+                )
+                replacexmpinfo(
+                    "xml://rdf:RDF/pdfuaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfuaid='http://www.aiim.org/pdfua/ns/id/'>
+      <pdfuaid:part>2</pdfuaid:part>
+      <pdfuaid:rev>2024</pdfuaid:rev>
+    </rdf:Description>
+]]
+                )
+            end,
+            inject_conformance      = function(indeed)
+                return replacexmpinfo(
+                    "xml://rdf:RDF/wtpdf-placeholder",
+indeed and [[
+<rdf:Description rdf:about='' xmlns:pdfd='http://pdfa.org/declarations/'>
+      <pdfd:declarations>
+        <rdf:Bag>
+          <rdf:li rdf:parseType='Resource'>
+             <pdfd:conformsTo>http://pdfa.org/declarations/wtpdf#accessibility1.0</pdfd:conformsTo>
+          </rdf:li>
+          <rdf:li rdf:parseType='Resource'>
+             <pdfd:conformsTo>http://pdfa.org/declarations/wtpdf#reuse1.0</pdfd:conformsTo>
+          </rdf:li>
+        </rdf:Bag>
+      </pdfd:declarations>
+    </rdf:Description>
+]] or ""
                 )
             end
         },
@@ -1015,6 +1102,7 @@ function codeinjections.setformat(s)
             end
             local pdf_version         = spec.pdf_version * 10
             local inject_metadata     = spec.inject_metadata
+            local inject_conformance  = spec.inject_conformance
             local majorversion        = math.floor(math.div(pdf_version,10))
             local minorversion        = math.floor(math.mod(pdf_version,10))
             local objectcompression   = spec.object_compression and pdf_version >= 15
@@ -1071,6 +1159,9 @@ function codeinjections.setformat(s)
             if type(inject_metadata) == "function" then
                 inject_metadata()
             end
+            if type(inject_conformance) == "function" then
+                inject_conformance(environment.arguments.wtpdf)
+            end
             local options = settings_to_hash(option)
             handleiccprofile("color profile",spec,profile,filename,handledefaultprofile,options,true)
             handleiccprofile("output intent",spec,intent,filename,handleoutputintent,options,false)
@@ -1089,6 +1180,7 @@ function codeinjections.setformat(s)
             end
             -- we could just pass the spec to the backend
             lpdf.setincludecidset(spec.include_cidsets)
+            lpdf.setincludeprocset(spec.include_procsets)
         else
             report_backend("error, format %a is not supported",format)
         end

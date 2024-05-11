@@ -1,0 +1,336 @@
+% language=us runpath=texruns:manuals/tagging
+
+% todo: use concrete
+
+\usemodule
+  [abbreviations-logos,scite,math-verbatim]
+
+\setupbackend[format=pdf/ua-2]
+\setuptagging[state=start]
+% \nopdfcompression
+
+\setupbodyfont
+  [pagella,10pt]
+
+\setupwhitespace
+  [big]
+
+\setuphead
+  [chapter]
+  [style=\bfc,
+   interaction=all]
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+\setuphead
+  [subsection]
+  [style=\bfa]
+
+\setuphead
+  [subsubsection]
+  [style=\bf,
+   after=]
+
+\setuplist
+  [interaction=all]
+
+\setupdocument
+  [before=\directsetup{document:titlepage}]
+
+% The tag shape will be improved.
+
+\startuseMPgraphic{titlepage}
+    numeric n ;
+
+    path p ; p :=
+            (1,0)
+        --- (5,0)
+        ... (6,3)
+        ... (4,4)
+        --- (4,6)
+        ... (3,7)
+        ... (2,6)
+        --- (2,4)
+        ... (0,3)
+        ... cycle
+    ;
+
+    for i=1 upto 21 :
+        for j=1 upto 30 :
+            draw image (
+                fill
+                    p
+                    withcolor .7yellow ;
+                fill
+                    fullcircle shifted (3,6)
+                    withcolor white ;
+                n := -1 randomized 2 ;
+                draw textext (
+                    if n > 0.5 :
+                        "\ttbf no\hskip.2em tag"
+                    elseif n > 0 :
+                        "\ttbf retag"
+                    elseif n > -0.5 :
+                        "\ttbf untag"
+                    else :
+                        "\ttbf tag"
+                    fi
+                ) ysized 3/2 shifted (3,3/2)
+                    withcolor white ;
+            ) rotated (-15 randomized 30)
+                shifted (10i,10j) ;
+        endfor ;
+    endfor ;
+
+    setbounds currentpicture to boundingbox currentpicture enlarged 3 ;
+
+    addbackground withcolor .8blue ;
+
+    currentpicture := currentpicture xysized(PaperWidth,PaperHeight) ;
+
+    picture q[] ;
+
+    q[1] := image (
+        draw image (
+            for i=1 upto 15 :
+                for j=1 upto 14 :
+                    fill
+                        (fullsquare xyscaled (2,3))
+                        shifted (3*i,4*j)
+                    ;
+                endfor ;
+            endfor ;
+        ) withcolor .7red ;
+        draw image (
+            for i=1 upto 15 :
+                for j=1 upto 14 :
+                    draw
+                        textext("\ttbf MCID") rotated 90 xsized .8
+                        shifted (3*i,4*j)
+                    ;
+                endfor ;
+            endfor ;
+        ) withcolor white ;
+    )
+      xsized .9PaperWidth
+    ;
+
+    q[2] := image (
+        fill
+            p
+            withcolor .7green ;
+        fill
+            fullcircle shifted (3,6)
+            withcolor white ;
+        n := -1 randomized 2 ;
+        draw textext ("\ttbf PDF")
+            ysized 3/2 shifted (3,3/2)
+            withcolor white ;
+    )
+      rotated -5
+      xsized .25PaperWidth
+    ;
+
+    q[3] := image (
+        fill
+            p
+            withcolor .7green ;
+        fill
+            fullcircle shifted (3,6)
+            withcolor white ;
+        n := -1 randomized 2 ;
+        draw textext ("\ttbf tagged")
+            ysized 3/2 shifted (3,3/2)
+            withcolor white ;
+    )
+      rotated 5
+      xsized .25PaperWidth
+    ;
+
+    q[1] := q[1]
+        shifted -center topboundary q[1]
+        shifted center topboundary currentpicture
+        shifted (0,-PaperHeight/20)
+    ;
+
+    q[2] := q[2]
+        shifted -center topboundary q[2]
+        shifted center bottomboundary q[1]
+        shifted (6.5PaperWidth/20,1.5PaperHeight/20)
+    ;
+
+    q[3] := q[3]
+        shifted -center topboundary q[3]
+        shifted center bottomboundary q[1]
+        shifted (PaperWidth/20,1PaperHeight/20)
+    ;
+
+    draw q[1] withtransparency (1,.70) ;
+    draw q[2] withtransparency (1,.85) ;
+    draw q[3] withtransparency (1,.85) ;
+
+\stopuseMPgraphic
+
+\startsetups document:titlepage
+    \startTEXpage
+        \useMPgraphic{titlepage}
+    \stopTEXpage
+\stopsetups
+
+\setuptyping[option=TEX]
+
+\startdocument[title=foo]
+
+\startchapter[title=Why do we tag]
+
+Around 2010 tagged \PDF\ showed up in \CONTEXT. Apart from demonstrating that it
+could be done it served little purpose because only full Acrobat could show a
+structure tree and in the more than a decade afterwards no other viewer did
+something with it. However for some users it was a necessity.
+
+In 2024 we picked up on tagging because due to regulations (especially in higher
+education) demands for tagged \PDF\ in the perspective of accessibility popped
+up. We will not go into details here but just mention that we want to make sure
+that users can meet these demands.
+
+As of now (2024) we have little expectations when it comes to tagging. The
+ongoing discussions about how to tag, how to interpret the specification, what to
+validate, and what to expect from applications are likely to go on for a while,
+so the best we can do is keep an eye on it and adapt when needed. If we have
+opinions, these will be exposed in other documents (and articles).
+
+{\em This manual is work in progress!}
+
+\startlines
+Hans Hagen
+Mikael Sundqvist
+\stoplines
+
+\stopchapter
+
+\startchapter[title=Tagging text]
+
+As mentioned in the introduction, we need to satisfy validators that are imposed
+on those working in education (often via web interfaces with little information
+on what actually gets checked, it's business after all). It is not that hard to
+fool them and make documents compliant, so that is what we can do anyway. It is
+also possible to let these tools do some auto tagging but our experiments showed
+that this is a disaster. So, we end up with a mix of relatively rich tagging that
+we feel good with. When we're a decade down the road we expect that with a little
+help from large language models a decent verbose tagging is better than a crappy
+suboptimal one.
+
+One reason for tagging is that it could permit extraction but there are better
+solutions to that: if there is something shown in a table or graphic, why not add
+the dataset. We currently add \MATHML\ and \BIBTEX\ blobs but more can become
+possible in the future (this also depends on user demand).
+
+Another application is reflow but when that is needed, why not go \HTML\ or
+distribute different output. When accessibility is the target one has to wait
+till more is clear how that is actually supposed to work. Often the
+recommendations are to use Arial, little color, simple sectioning etc, so that
+gives little reason to use \PDF\ at all.
+
+All that said, we assume that \PDF\ level 2 is used, if only because it looks
+like validators aim for that. Also, if you find pre level 2 documents produced
+elsewhere, often tagging is so bad or weird that one can as well ignore it.
+
+Tagging in a document is enabled with:
+
+\starttyping
+\setupbackend[format=pdf/ua-2]
+\setuptagging[state=start]
+\stoptyping
+
+The first command ensures that the right data ends up in the \PDF\ file, and the
+second one enables tagging. As long as you're working on a document you can
+comment these commands which saves you some runtime and give way smaller files.
+\footnote {With \type {\enabledirectives [backend.usetags=crap]} you can map to
+old built-in ua-1 tag names but that will fail with version 2 validation because
+it has a simplified (or restricted) model.}
+
+\stopchapter
+
+\startchapter[title=Tagging math]
+
+Tagging math at level 2 is still experimental but works as follows. Instead of
+tagging the atoms and structures, as we do in level 1, we generate a \MATHML\
+attachment and put a so called actual text on the math structure node. This text
+can be spoken by reading machinery. The \MATHML\ is not that rich but we can enable
+more detail when needed. However, given the way (presentational) \MATHML\ evolved
+we are somewhat pessimistic. Instead of adding a few more elements that would
+help to provide structure, some features are dropped. Also, support in browsers
+comes and goes, either native or depending on \JAVASCRIPT.
+
+Because there is much freedom in how mathematical symbols and constructs are
+used, you might need to help math tagging bit. The process is driven by group
+sets that refer to domains. An example of a domain is chemistry. For now we just
+mention that this features is there and as time flies by we can expect more
+granular usage.
+
+\starttyping
+\definemathgroupset
+  [mydomain]
+  [every] % a list of dictionaries
+
+\setmathgroupset
+  [mydomain]
+\stoptyping
+
+For now you can ignore these commands because we default to \type {every}.
+
+{Todo: list all possible dictionaries.}
+
+You can control the tagger by specifying what symbols and characters actually
+mean, for instance:
+
+\starttyping
+\registermathfunction[𝑓]
+\registermathfunction[𝑔]
+
+% \registermathsymbol[default][en][𝐮][the vector]
+% \registermathsymbol[default][en][𝐯][the vector]
+% \registermathsymbol[default][en][𝖠][the matrix]
+
+\registermathsymbol[default][en][lowercasebold]           [the vector] % [of]
+\registermathsymbol[default][en][uppercasesansserifnormal][the matrix]
+\stoptyping
+
+From the language tag being used here you can deduce that this can be done per
+language.
+
+You can trace math translations with:
+
+\starttyping
+\setupnote[mathnote][location=page]
+\enabletrackers[math.textblobs]
+\stoptyping
+
+which is what we used when developing these features. In a few hundred page math
+book one easily gets thousands of notes.
+
+In \type {examples-mathmeanings} you can find a lot of examples. In due time we
+expect to offer more translations. The English and Swedish are for now the
+benchmark. \footnote {As a proof of concept, at Bacho\TeX\ 2024, the Ukrain
+translations were provided by Team Odessa, but they need some tuning.} Likely
+other languages will be served by Tomáš Hala as result of courses on typesetting.
+Feel free to contact all those involved in this.
+
+\stopchapter
+
+\startchapter[title=Tracing]
+
+{Todo}
+
+% \enabletrackers[structures.tags]
+% \enabletrackers[structures.tags.showtree]
+
+% \disabledirectives[structures.tags.shipout]
+% \enabledirectives [structures.tags.math.standalone]
+% \disabledirectives[structures.tags.math.strip]
+
+\stopchapter
+
+\stopdocument

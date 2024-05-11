@@ -92,6 +92,13 @@ return {
                 -- and then need to tweak the width (which is auto set because it was zero with a large
                 -- accent anchor offset). First we copy and fix.
                 {
+                    tweak = "dimensions",
+                    list  = {
+                        [0x302] = { width = 0}, --hat
+                        [0x303] = { width = 0}, --tilde
+                    },
+                },
+                {
                     tweak = "extendaccents",
                 },
                 {

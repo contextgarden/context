@@ -412,8 +412,6 @@ function metapost.flush(specification,result)
                     local linejoin   = -1
                     local dashed     = false
                     local linewidth  = false
-                    local colorstate = false
-                    local transstate = false
                     local llx        = properties.llx
                     local lly        = properties.lly
                     local urx        = properties.urx
@@ -529,43 +527,16 @@ function metapost.flush(specification,result)
                                                         -- this from scratch ... but that doesn't pay off. Also tracking a transstate
                                                         -- is kind of fragile so maybe it should be optional.
                                                         --
-                                                        if optimizecolor and after and #before == #after then
-                                                            local a = after[1]
-                                                            if a == "0 g 0 G" then
-                                                                local b = before[1]
-                                                                if b == colorstate then
-                                                                    remove(before,1)
-                                                                else
-                                                                    colorstate = b
-                                                                end
-                                                                remove(after,1)
--- we could just always have a transparency entry
-if transstate and transstate ~= "/Tr0 gs" then
-    result[#result+1] =  "/Tr0 gs"
-    transstate = "/Tr0 gs"
+if optimizecolor and after then
+    local r = #result
+    if result[r] == "0 g 0 G" and (after[1] == "0 g 0 G" or after[2] == "0 g 0 G") then
+        result[r] = nil
+        r = r - 1
+    end
+    if result[r] == "/Tr0 gs" and (after[1] == "/Tr0 gs" or after[2] == "/Tr0 gs") then
+        result[r] = nil
+    end
 end
-                                                            elseif a == "/Tr0 gs" and after[2] == "0 g 0 G" then
-                                                                local b = before[2]
-                                                                if b == colorstate then
-                                                                    remove(before,2)
-                                                                else
-                                                                    colorstate = b
-                                                                end
-                                                                remove(after,2)
-                                                                --
-local b = before[1]
-if b == transstate then
-    remove(before,1)
-else
-    transstate = b
-end
-remove(after,1)
-                                                                -- always injected as it's optional otherwise we could do as color
---                                                                 if result[#result] == "/Tr0 gs" then
---                                                                     result[#result] = nil
---                                                                 end
-                                                            end
-                                                        end
                                                         --
                                                         result = pluginactions(before,result,flushfigure)
                                                     end
@@ -714,7 +685,6 @@ remove(after,1)
                                                 if object.grouped then
                                                     -- can be qQ'd so changes can end up in groups
                                                     miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
-                                                    colorstate, transstate = false, false
                                                 end
                                             elseif objecttype == "start_clip" then
                                              -- local evenodd = not object.istext and object.postscript == "evenodd"
@@ -725,7 +695,6 @@ remove(after,1)
                                             elseif objecttype == "stop_clip" then
                                                 result[#result+1] = "Q"
                                                 miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
-                                                colorstate, transstate = false, false
                                             elseif objecttype == "start_bounds" or objecttype == "stop_bounds" then
                                                 -- skip
                                             elseif objecttype == "start_group" then
@@ -744,7 +713,6 @@ remove(after,1)
                                                         })
                                                         result = { }
                                                         miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
-                                                        colorstate, transstate = false, false
                                                     else
                                                         insert(groupstack,false)
                                                     end
@@ -761,7 +729,6 @@ remove(after,1)
                                                     result = pluginactions(data.after,result,flushfigure)
                                                     result[#result+1] = "Q"
                                                     miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
-                                                    colorstate, transstate = false, false
                                                 end
                                          -- if objecttype == "text" then
                                          --     result[#result+1] = "q"

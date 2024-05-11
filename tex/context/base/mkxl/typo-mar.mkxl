@@ -264,7 +264,7 @@
    \ifdone
      \edef\p_anchor{\margindataparameter\c!anchor}%
      \anch_positions_initialize % we use positions at the lua end
-     \dostarttagged\t!marginanchor\empty
+     \dostarttaggednodetail\t!marginanchor
      \dotagmarginanchor\c_typo_margins_n
      \clf_savemargindata
        location    {\margindataparameter\c!location}%

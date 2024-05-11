@@ -1567,7 +1567,7 @@
 \protected\def\strc_formulas_start_formula_nested#1%
   {\bgroup
    \let\strc_formulas_stop_formula\strc_formulas_stop_formula_nested
-   \dostarttagged\t!subformula\empty}
+   \dostarttaggednodetail\t!subformula}
 
 \protected\def\strc_formulas_stop_formula_nested
   {\dostoptagged
@@ -1584,7 +1584,7 @@
 \protected\def\strc_formulas_stop_formula
   {\strc_formulas_place_number % in case it hasn't happened yet
    \strc_formulas_flush_number % in case we are in native mode
-   \dostarttagged\t!formulacontent\empty
+   \dostarttaggednodetail\t!formulacontent
    \dotagregisterformula\c_strc_formulas_n
    \csname\e!stop\formulaparameter\c!alternative\v!formula\endcsname
    \dostoptagged
@@ -1730,7 +1730,7 @@
    \hsize \d_strc_formulas_display_width
    \displaywidth\d_strc_formulas_display_width
    \raggedcenter
-   \dostarttagged\t!formulacontent\empty
+   \dostarttaggednodetail\t!formulacontent
    \csname\e!start\formulaparameter\c!alternative\v!formula\endcsname}
 
 \protected\def\strc_formulas_nested_formula_stop
@@ -1742,7 +1742,7 @@
 
 \normalexpanded{\tolerant\def\noexpand\strc_formulas_start_formulas[#1]#:#2\csname\e!stop\v!formulas\endcsname}%
   {\startformula
-   \dostarttagged\t!formulaset\empty
+   \dostarttaggednodetail\t!formulaset
    \global\c_strc_formulas_inside_formulas\conditionaltrue
    \edef\currentformulasreference{#1}%
    \strc_formulas_handle_number
@@ -1923,7 +1923,7 @@
 \permanent\tolerant\protected\def\numberhere[#1]%
   {\begingroup
    \attribute\mathblobattribute\attributeunsetvalue
-   \dostarttagged\t!formulacaption\empty
+   \dostarttaggednodetail\t!formulacaption
    \global\c_strc_formulas_incremented\conditionalfalse
    \global\c_strc_formulas_referenced\conditionaltrue
    \global\c_strc_formulas_inside_place\conditionalfalse
@@ -2019,10 +2019,16 @@
 % Relaxing in the macro is really needed because otherwise we get spurious
 % numbers probably due to some % interference with other local variables
 
+\newconditional\c_strc_formulas_number_in_alignment
+
 \def\strc_formulas_place_number_in_box
   {\begingroup
-   \attribute\mathblobattribute\attributeunsetvalue
-   \dostarttagged\t!formulacaption\empty
+   \ifconditional\c_strc_formulas_number_in_alignment
+     % needed for tagging
+   \else
+     \attribute\mathblobattribute\attributeunsetvalue
+   \fi
+   \dostarttaggednodetail\t!formulacaption
    \glet\strc_formulas_place_number\relax
   %\glet\strc_formulas_place_number_nested\gobbletwoarguments
    \global\setbox\b_strc_formulas_number\naturalhbox{\strc_formulas_number_indeed}%

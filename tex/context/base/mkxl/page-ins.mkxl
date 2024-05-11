@@ -17,7 +17,7 @@
 %D page builder. When multiple footnote classes were introduced, I decided to
 %D isolate some of the functionality in a module.
 
-\registerctxluafile{page-ins}{}
+\registerctxluafile{page-ins}{autosuffix}
 
 \unprotect
 
@@ -222,5 +222,27 @@
 
 \def\page_insert_insertion_height_indeed#1%
   {\ifzeropt\page_inserts_get_height#1\zeropoint\else\dimexpr\page_inserts_get_distance#1\relax+\page_inserts_get_height#1\fi}
+
+%D Tricky stuff:
+%D
+%D \starttyping
+%D \page_inserts_detach\floatbox      % \detachinsertions\floatbox
+%D \page_otr_command_flush_float_box
+%D \page_inserts_attach               % \attachinsertions\attachinsert
+%D \stoptyping
+
+\permanent\protected\def\attachinsert#1%
+  {\dontleavehmode#1\par}
+
+\def\page_inserts_detach#1%
+  {\detachinsertions#1\relax}
+
+\def\page_inserts_attach_indeed
+  {\dorecurse
+     {\nofdetachedinsertions\currentnoteinsertionnumber}
+     {\attachinsertion\currentnoteinsertionnumber\attachinsert}}
+
+\def\page_inserts_attach
+  {\strc_notes_process\page_inserts_attach_indeed}
 
 \protect \endinput

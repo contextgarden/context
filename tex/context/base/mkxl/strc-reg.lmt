@@ -636,7 +636,7 @@ local function extendregister(rawdata) -- this is probably not okay in mkiv
             if entry then
                 references = entry.references
                 references.lastrealpage = texgetcount(c_realpageno)
-                references.lastsection = currentid()
+                references.lastsection  = currentid()
                 if rawdata then
                     local userdata = rawdata.userdata
                     if userdata and userdata ~= "" then
@@ -719,8 +719,8 @@ implement {
     actions   = function(name,label)
         context.latelua(function()
             extendregister {
-                metadata   = { name =  name },
-                references = { abel =  label },
+                metadata   = { name  = name },
+                references = { label = label },
             }
         end)
     end,

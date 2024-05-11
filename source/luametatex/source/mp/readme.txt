@@ -35,5 +35,7 @@ For a while we will keep the W files around because they are also a timestamp bu
 they will be archived. After all, they are still in the GIT repository. By keeping them we 
 can backtrack the documentation but as they are frozen you should not use them! 
 
+There can be fixed in the c files that are not backported to the w files! 
+
 Hans Hagen 
 2018-2024+

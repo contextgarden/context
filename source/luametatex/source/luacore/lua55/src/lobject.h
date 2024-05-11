@@ -188,10 +188,19 @@ typedef union {
 /* Value returned for a key not found in a table (absent key) */
 #define LUA_VABSTKEY	makevariant(LUA_TNIL, 2)
 
+/* Special variant to signal that a fast get is accessing a non-table */
+#define LUA_VNOTABLE    makevariant(LUA_TNIL, 3)
+
 
 /* macro to test for (any kind of) nil */
 #define ttisnil(v)		checktype((v), LUA_TNIL)
 
+/*
+** Macro to test the result of a table access. Formally, it should
+** distinguish between LUA_VEMPTY/LUA_VABSTKEY/LUA_VNOTABLE and
+** other tags. As currently nil is equivalent to LUA_VEMPTY, it is
+** simpler to just test whether the value is nil.
+*/
 #define tagisempty(tag)		(novariant(tag) == LUA_TNIL)
 
 
@@ -247,6 +256,8 @@ typedef union {
 
 
 #define l_isfalse(o)	(ttisfalse(o) || ttisnil(o))
+#define tagisfalse(t)	((t) == LUA_VFALSE || novariant(t) == LUA_TNIL)
+
 
 
 #define setbfvalue(obj)		settt_(obj, LUA_VFALSE)
@@ -762,15 +773,12 @@ typedef union Node {
 #define setnorealasize(t)	((t)->flags |= BITRAS)
 
 
-typedef struct ArrayCell ArrayCell;
-
-
 typedef struct Table {
   CommonHeader;
   lu_byte flags;  /* 1<<p means tagmethod(p) is not present */
   lu_byte lsizenode;  /* log2 of size of 'node' array */
   unsigned int alimit;  /* "limit" of 'array' array */
-  ArrayCell *array;  /* array part */
+  Value *array;  /* array part */
   Node *node;
   struct Table *metatable;
   GCObject *gclist;

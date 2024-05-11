@@ -637,38 +637,54 @@
 %D but can use chardefs for positive ones. Actually, because we have plenty of counters we
 %D can also use counts for those.
 
-%immutable\integerdef\minusone              -1
-\immutable\integerdef\minustwo              -2
-%immutable\integerdef\zerocount              0
-%immutable\integerdef\plusone                1
-\immutable\integerdef\plustwo                2
-\immutable\integerdef\plusthree              3
-\immutable\integerdef\plusfour               4
-\immutable\integerdef\plusfive               5
-\immutable\integerdef\plussix                6
-\immutable\integerdef\plusseven              7
-\immutable\integerdef\pluseight              8
-\immutable\integerdef\plusnine               9
-\immutable\integerdef\plusten               10
-\immutable\integerdef\pluseleven            11
-\immutable\integerdef\plustwelve            12
-\immutable\integerdef\plussixteen           16
-\immutable\integerdef\plusfifty             50
-\immutable\integerdef\plushundred          100
-\immutable\integerdef\plusonehundred       100
-\immutable\integerdef\plustwohundred       200
-\immutable\integerdef\plusfivehundred      500
-\immutable\integerdef\pluscxxvii           127
-\immutable\integerdef\pluscxxviii          128
-\immutable\integerdef\pluscclv             255
-\immutable\integerdef\pluscclvi            256
-\immutable\integerdef\plusthousand        1000
-\immutable\integerdef\plustenthousand    10000
-\immutable\integerdef\plustwentythousand 20000
-\immutable\integerdef\medcard            32768
-\immutable\integerdef\maxcard            65536 % pdftex has less mathchars
-\immutable\integerdef\maxcardminusone    65535
-\immutable\integerdef\maxiterator       "FFFFF
+%immutable\integerdef\minusone                  -1
+\immutable\integerdef\minustwo                  -2
+%immutable\integerdef\zerocount                  0
+%immutable\integerdef\plusone                    1
+\immutable\integerdef\plustwo                    2  % also fitness value
+\immutable\integerdef\plusthree                  3
+\immutable\integerdef\plusfour                   4
+\immutable\integerdef\plusfive                   5
+\immutable\integerdef\plussix                    6
+\immutable\integerdef\plusseven                  7
+\immutable\integerdef\pluseight                  8
+\immutable\integerdef\plusnine                   9
+\immutable\integerdef\plusten                   10
+\immutable\integerdef\pluseleven                11
+\immutable\integerdef\plustwelve                12  % also fitness value
+\immutable\integerdef\plussixteen               16
+\immutable\integerdef\plusfourtytwo             42  % also fitness value
+\immutable\integerdef\plusfifty                 50
+\immutable\integerdef\plusninetynine            99  % also fitness value
+\immutable\integerdef\plushundred              100
+\immutable\integerdef\plusonehundred           100
+\immutable\integerdef\plustwohundred           200
+\immutable\integerdef\plusfivehundred          500
+\immutable\integerdef\pluscxxvii               127
+\immutable\integerdef\pluscxxviii              128
+\immutable\integerdef\pluscclv                 255
+\immutable\integerdef\pluscclvi                256
+\immutable\integerdef\plusthousand            1000
+\immutable\integerdef\plusonethousand         1000
+\immutable\integerdef\plustwothousand         2000
+\immutable\integerdef\plusthreethousand       3000
+\immutable\integerdef\plusfourthousand        4000
+\immutable\integerdef\plusfivethousand        5000
+\immutable\integerdef\plussixthousand         6000
+\immutable\integerdef\plusseventhousand       7000
+\immutable\integerdef\pluseightthousand       8000
+\immutable\integerdef\plusninethousand        9000
+\immutable\integerdef\plustenthousand        10000
+\immutable\integerdef\plustwentythousand     20000
+\immutable\integerdef\plusfifteenhundred      1500
+\immutable\integerdef\plustwentyfivehundred   2500
+\immutable\integerdef\plusfortyfivehundred    4500
+\immutable\integerdef\plusseventyfivehundred  7500
+
+\immutable\integerdef\medcard          32768
+\immutable\integerdef\maxcard          65536 % pdftex has less mathchars
+\immutable\integerdef\maxcardminusone  65535
+\immutable\integerdef\maxiterator     "FFFFF
 
 \immutable\integerdef\binaryshiftedten          1024
 \immutable\integerdef\binaryshiftedtwenty    1048576
@@ -1234,6 +1250,9 @@
 
 %D A few bonus macros:
 
+% todo: use \the\numexpr#1:#2\relax
+% todo: use \the\numexpr#1;#2\relax
+
 %permanent\def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
 \permanent\def\modulonumber#1#2{\the\numexpr#2-(#2:#1)*#1\relax}
 \permanent\def\dividenumber#1#2{\the\numexpr(#2-(#1/2))/#1\relax}
@@ -1622,8 +1641,8 @@
 
 %D We keep this for a while (suggested correction by KB):
 
-\ifdefined\linebreakcriterion   \aliased\let\linebreakcriterium  \linebreakcriterion   \fi
-\ifdefined\ignoredepthcriterion \aliased\let\ignoredepthcriterium\ignoredepthcriterion \fi
+\ifdefined\linebreakcriterion   \aliased\let\linebreakcriterium   \linebreakcriterion   \fi
+\ifdefined\ignoredepthcriterion \aliased\let\ignoredepthcriterium \ignoredepthcriterion \fi
 
 %D Special purpose:
 
@@ -1674,6 +1693,15 @@
 %D Because we use the variable class:
 
 \variablefam-\plustwo % obey class 7
+
+%D For now here:
+
+% \fitnessdemerits 5
+%     99          \plusone
+%     12          \plusone
+%     \zerocount  \plusone
+%     12          \plusone
+%     99          \plusone
 
 \protect \endinput
 

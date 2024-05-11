@@ -443,10 +443,10 @@
 % \def\dodollap{\hbox to \zeropoint{\normalhss\box\nextbox}\endgroup}
 
 \def\page_line_handle_left#align#width#distance%
-  {\dostarttagged\t!linenumber\empty
+  {\dostarttaggednodetail\t!linenumber
    \llap
      {\page_lines_number_inject#align#width%
-      \dostarttagged\t!ignore\empty
+      \dostarttaggednodetail\t!ignore
       \kern\dimexpr
         #distance+\d_page_lines_distance
         \ifconditional\c_page_lines_dir_left_to_right\else+\d_page_lines_line_width\fi
@@ -457,16 +457,16 @@
    \dostoptagged}
 
 \def\page_line_handle_right#align#width#distance%
-  {\dostarttagged\t!linenumber\empty
+  {\dostarttaggednodetail\t!linenumber
    \rlap
-     {\dostarttagged\t!ignore\empty
+     {\dostarttaggednodetail\t!ignore
       \kern\dimexpr
         #distance+\d_page_lines_distance
         \ifconditional\c_page_lines_dir_left_to_right+\d_page_lines_line_width\fi
       \relax
       \dostoptagged
       \page_lines_number_inject#align#width%
-      \dostarttagged\t!ignore\empty
+      \dostarttaggednodetail\t!ignore
       \expand\everylinenumber
       \hss
       \dostoptagged}%

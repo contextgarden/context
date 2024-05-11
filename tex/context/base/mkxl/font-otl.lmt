@@ -52,7 +52,7 @@ local report_otf          = logs.reporter("fonts","otf loading")
 local fonts               = fonts
 local otf                 = fonts.handlers.otf
 
-otf.version               = 3.141 -- beware: also sync font-mis.lua and in mtx-fonts and even font-otl.lua
+otf.version               = 3.143 -- beware: also sync font-mis.lua and in mtx-fonts and even font-otl.lua
 otf.cache                 = containers.define("fonts", "otl", otf.version, true)
 otf.svgcache              = containers.define("fonts", "svg", otf.version, true)
 otf.pngcache              = containers.define("fonts", "png", otf.version, true)
@@ -224,7 +224,7 @@ function otf.load(filename,sub,instance)
             otfreaders.pack(data)
             report_otf("loading done")
             report_otf("saving %a in cache",filename)
-            data = containers.write(otf.cache, hash, data)
+            data = containers.write(otf.cache,hash,data)
             if cleanup > 1 then
                 collectgarbage("collect")
             else

@@ -624,12 +624,12 @@ make_lua_key(L, directory);\
 make_lua_key(L, disc);\
 make_lua_key(L, discpart);\
 make_lua_key(L, discretionary);\
+make_lua_key(L, discretionarypenalty);\
 make_lua_key(L, display);\
 make_lua_key(L, DisplayOperatorMinHeight);\
 make_lua_key(L, displaywidowpenalties);\
 make_lua_key(L, displaywidowpenalty);\
 make_lua_key(L, doffset);\
-make_lua_key(L, doubleadjdemerits);\
 make_lua_key(L, doublehyphendemerits);\
 make_lua_key(L, doublesuperscript);\
 make_lua_key(L, emergencyextrastretch);\
@@ -661,6 +661,7 @@ make_lua_key(L, expand_after);\
 make_lua_key(L, expandable);\
 make_lua_key(L, expanded);\
 make_lua_key(L, expansion);\
+make_lua_key(L, exhyphenpenalty);\
 make_lua_key(L, explicit);\
 make_lua_key(L, explicit_space);\
 make_lua_key(L, expression);\
@@ -689,6 +690,7 @@ make_lua_key(L, finalpenalty);\
 make_lua_key(L, finishrow);\
 make_lua_key(L, fireup);\
 make_lua_key(L, first);\
+make_lua_key(L, fitnessdemerits);\
 make_lua_key(L, fixedboth);\
 make_lua_key(L, fixedbottom);\
 make_lua_key(L, fixedsuperandsubscript);\
@@ -769,6 +771,7 @@ make_lua_key(L, hyphenated);\
 make_lua_key(L, hyphenation);\
 make_lua_key(L, hyphenationmode);\
 make_lua_key(L, hyphenchar);\
+make_lua_key(L, hyphenpenalty);\
 make_lua_key(L, id);\
 make_lua_key(L, if_test);\
 make_lua_key(L, ifstack);\
@@ -863,7 +866,6 @@ make_lua_key(L, limitbelowkern);\
 make_lua_key(L, limitbelowvgap);\
 make_lua_key(L, limits);\
 make_lua_key(L, line);\
-make_lua_key(L, linebreakcriterion);\
 make_lua_key(L, linebreakoptional);\
 make_lua_key(L, linebreakpenalty);\
 make_lua_key(L, linepenalty);\
@@ -1303,6 +1305,7 @@ make_lua_key(L, textscale);\
 make_lua_key(L, the);\
 make_lua_key(L, thickmuskip);\
 make_lua_key(L, thinmuskip);\
+make_lua_key(L, toddlerpenalty);\
 make_lua_key(L, tok);\
 make_lua_key(L, token);\
 make_lua_key(L, tokenlist);\
@@ -1323,6 +1326,7 @@ make_lua_key(L, topskip);\
 make_lua_key(L, total);\
 make_lua_key(L, tracingparagraphs);\
 make_lua_key(L, tracingpasses);\
+make_lua_key(L, tracingfitness);\
 make_lua_key(L, trailer);\
 make_lua_key(L, Trailer);\
 make_lua_key(L, triggered);\

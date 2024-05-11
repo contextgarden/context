@@ -51,58 +51,81 @@ do
 
     function document.pdf_strip_page(pdfdoc,page,pagenumber,resources,compactor)
         if resources then
-            local g_done = compactor.strip.group      and 0 or false
-            local e_done = compactor.strip.extgstate  and 0 or false
-            local m_done = compactor.strip.metadata   and 0 or false
-            local p_done = compactor.strip.properties and 0 or false
-            local c_done = compactor.strip.colorspace and 0 or false
-            local s_done = compactor.report.smask     and 0 or false
-            if g_done and page.__raw__.Group then
-                page.__raw__.Group = nil
-                g_done = g_done + 1
-                -- todo:
-                resources.__raw__.Group = nil
-                g_done = g_done + 1
+            local group_done      = compactor.strip.group       and 0 or false
+            local extgstate_done  = compactor.strip.extgstate   and 0 or false
+            local metadata_done   = compactor.strip.metadata    and 0 or false
+            local properties_done = compactor.strip.properties  and 0 or false
+            local colorspace_done = compactor.strip.colorspace  and 0 or false
+            local procset_done    = compactor.cleanup.procset   and 0 or false
+            local pieceinfo_done  = compactor.cleanup.pieceinfo and 0 or false
+            local smask_done      = compactor.report.smask      and 0 or false
+            if group_done and page.__raw__.Group then
+                page     .__raw__.Group = nil group_done = group_done + 1
+                resources.__raw__.Group = nil group_done = group_done + 1
             end
-            if e_done and resources.__raw__.ExtGState then
-                resources.__raw__.ExtGState = nil
-                e_done = e_done + 1
-            end
-            if p_done and resources.__raw__.Properties then
-                resources.__raw__.Properties = nil
-                p_done = p_done + 1
-            end
-            if s_done and resources.__raw__.SMask then
-                s_done = s_done + 1
-            end
+            if extgstate_done  and resources.__raw__.ExtGState  then resources.__raw__.ExtGState  = nil extgstate_done  = extgstate_done  + 1 end
+            if properties_done and resources.__raw__.Properties then resources.__raw__.Properties = nil properties_done = properties_done + 1 end
+            if smask_done      and resources.__raw__.SMask      then                                    smask_done      = smask_done      + 1 end
+            if procset_done    and resources.__raw__.ProcSet    then resources.__raw__.ProcSet    = nil procset_done    = procset_done    + 1 end
+            if pieceinfo_done  and resources.__raw__.PieceInfo  then resources.__raw__.PieceInfo  = nil pieceinfo_done  = pieceinfo_done  + 1 end
             -- todo : recursely do xforms, only do when not yet done
             local x = resources.XObject
-            if x then
-                for k, v in expanded(x) do
-                    if g_done and v.__raw__.Group then
-                        v.__raw__.Group = nil
-                        g_done = g_done + 1
-                    end
-                    if e_done and v.__raw__.ExtGState then
-                        resources.__raw__.ExtGState = nil
-                        e_done = e_done + 1
-                    end
-                    if m_done and v.__raw__.Metadata then
-                        v.__raw__.Metadata = nil
-                        m_done = m_done + 1
-                    end
+            local f = resources.Font
+            if x or f then
+                local function strip(v)
+                    if group_done     and v.__raw__.Group     then v.__raw__.Group     = nil group_done     = group_done     + 1 end
+                    if extgstate_done and v.__raw__.ExtGState then v.__raw__.ExtGState = nil extgstate_done = extgstate_done + 1 end
+                    if metadata_done  and v.__raw__.Metadata  then v.__raw__.Metadata  = nil metadata_done  = metadata_done  + 1 end
+                    if smask_done     and v.__raw__.SMask     then                           smask_done     = smask_done     + 1 end
+                    if pieceinfo_done and v.__raw__.PieceInfo then v.__raw__.PieceInfo = nil pieceinfo_done = pieceinfo_done + 1 end
+                    --
                     local subtype = v.__raw__.Subtype
-                    if c_done and subtype == "Image" then
+                    if colorspace_done and subtype == "Image" then
                         if fix_colorspace(v) then
-                           c_done = c_done + 1
+                           colorspace_done = colorspace_done + 1
+                        end
+                    end
+                    --
+                    local r = v.Resources
+                    if r then
+                        if procset_done and r.__raw__.ProcSet then r.__raw__.ProcSet = nil procset_done = procset_done + 1 end
+                        local x = r.XObject
+                        if x then
+                            for k, v in expanded(x) do
+                                strip(v)
+                            end
+                        end
+                        v.Resources = r
+                    else
+                        report_fixes("todo: here we have a test case")
+                     -- v.Resources = { lpdf.epdf.objectcodes.lpdf, lpdf.checkedresources() }
+                    end
+                end
+                if x then
+                    for k, v in expanded(x) do
+                        strip(v)
+                    end
+                end
+                if f then
+                    for k, v in expanded(f) do
+                        if v.Type == "Font" and v.Subtype == "Type3" then
+                            strip(v)
                         end
                     end
                 end
             end
-            if trace_fixes and (g_done or e_done or m_done or p_done or s_done or c_done or s_done) then
+            if trace_fixes and (group_done or extgstate_done or metadata_done or properties_done or smask_done or colorspace_done or procset_done or pieceinfo_done) then
                 report_fixes(
-                    "page %i of %a cleaned up resources, %i groups, %i graphic states, %i metadata, %i properties, %i colorspaces, %i smasks",
-                    pagenumber,file.basename(pdfdoc.filename),g_done or 0,e_done or 0,m_done or 0,p_done or 0,c_done or 0, s_done or 0
+                    "page %i of %a cleaned up resources, %i groups, %i graphic states, %i metadata, %i properties, %i colorspaces, %i smasks, %i procsets, %i pieceinfo",
+                    pagenumber,file.basename(pdfdoc.filename),
+                    group_done      or 0,
+                    extgstate_done  or 0,
+                    metadata_done   or 0,
+                    properties_done or 0,
+                    colorspace_done or 0,
+                    smask_done      or 0,
+                    procset_done    or 0,
+                    pieceinfo_done  or 0
                 )
             end
         end
@@ -119,71 +142,128 @@ do
 
     local tocidsetdictionary = lpdf.tocidset
 
-    function document.pdf_add_cidsets(pdfdoc,page,pagenumber,resources,compactor)
-        if resources and compactor.add.cidset then
-            local f = resources.Font
-            if f then
-                local done = document.cidsetdone or { }
-                document.cidsetdone = done
-                for k, v in next, f.__raw__ do
-                    local objref = v[1] == lpdf.epdf.objectcodes.reference and v[3]
-                    if objref and not done[objref] then
-                        done[objref] = true
-                        --
-                        local v = pdfdoc.objects[objref]
-                        if v.Subtype ~= "Type0" then
-                            return
-                        end
-                        local d = v.DescendantFonts
-                        if not d then
-                            return
-                        end
-                        local vd = false
-                        local fd = false
-                        if d then
-                            if #d == 1 then
-                                vd = d[1]
-                                fd = vd.FontDescriptor
-                            end
-                        else
-                            vd = v
+    -- todo: recurse into xforms
+
+    local function pdf_cleanup_cidsets(pdfdoc,page,pagenumber,resources,compactor,action)
+        local f = resources.Font
+        local x = resources.XObject
+        if f then
+            local done = document.cidsetdone or { }
+            document.cidsetdone = done
+            for k, v in next, f.__raw__ do
+                local objref = v[1] == lpdf.epdf.objectcodes.reference and v[3]
+                if objref and not done[objref] then
+                    done[objref] = true
+                    --
+                    local v = pdfdoc.objects[objref]
+                    if v.Subtype ~= "Type0" then
+                        goto DONE
+                    end
+                    local d = v.DescendantFonts
+                    if not d then
+                        goto DONE
+                    end
+                    local vd = false
+                    local fd = false
+                    if d then
+                        if #d == 1 then
+                            vd = d[1]
                             fd = vd.FontDescriptor
                         end
-                        if not fd then
-                            return
-                        end
-                        if not fd.CIDSet then
-                            local w = vd.W
-                            if w then
-                                local u, min, max = lpdf.epdf.expandwidths(w())
-                                local c = tocidsetdictionary(u,min,max)
-                                local o = lpdf.flushstreamobject(c)
-                                local r = lpdf.reference(o)
-                                -- load the object
-                                local object = pdfdoc.objects[vd.__raw__.FontDescriptor]
-                                if object then
-                                    if trace_fixes then
-                                        report_fixes(
-                                            "page %i of %a, font %a, adding CIDSet",
-                                            pagenumber,file.basename(pdfdoc.filename),v.BaseFont
-                                        )
-                                    end
-                                    object.__raw__.CIDSet = { lpdf.epdf.objectcodes.lpdf, r }
-                                end
-                            end
-                        end
-                        if not vd.__raw__.CIDToGIDMap then
-                            if trace_fixes then
-                                report_fixes(
-                                    "page %i of %a, font %a, adding CIDToGIDMap",
-                                    pagenumber,file.basename(pdfdoc.filename),v.BaseFont
-                                )
-                            end
-                            vd.__raw__.CIDToGIDMap = { lpdf.epdf.objectcodes.lpdf, lpdf.constant("Identity") }
-                        end
-                        --
+                    else
+                        vd = v
+                        fd = vd.FontDescriptor
                     end
+                    if not fd then
+                        goto DONE
+                    end
+                    if action == "remove" and fd.CIDSet then
+                        local object = pdfdoc.objects[vd.__raw__.FontDescriptor]
+                        if object then
+                            object.__raw__.CIDSet = nil -- maybe just { } as signal
+                        end
+                    elseif action == "add" and not fd.CIDSet then
+                        local w = vd.W
+                        if w then
+                            local u, min, max = lpdf.epdf.expandwidths(w())
+                            local c = tocidsetdictionary(u,min,max)
+                            local o = lpdf.flushstreamobject(c)
+                            local r = lpdf.reference(o)
+                            -- load the object
+                            local object = pdfdoc.objects[vd.__raw__.FontDescriptor]
+                            if object then
+                                if trace_fixes then
+                                    report_fixes(
+                                        "page %i of %a, font %a, adding CIDSet",
+                                        pagenumber,file.basename(pdfdoc.filename),v.BaseFont
+                                    )
+                                end
+                                object.__raw__.CIDSet = { lpdf.epdf.objectcodes.lpdf, r }
+                            end
+                        end
+                    end
+                    if not vd.__raw__.CIDToGIDMap then
+                        if trace_fixes then
+                            report_fixes(
+                                "page %i of %a, font %a, adding CIDToGIDMap",
+                                pagenumber,file.basename(pdfdoc.filename),v.BaseFont
+                            )
+                        end
+                        vd.__raw__.CIDToGIDMap = { lpdf.epdf.objectcodes.lpdf, lpdf.constant("Identity") }
+                    end
+                    --
                 end
+              ::DONE::
+            end
+        end
+        if x then
+            for k, v in expanded(x) do
+                local resources = v.Resources
+                if resources then
+                    pdf_cleanup_cidsets(pdfdoc,page,pagenumber,resources,compactor,action)
+                end
+            end
+        end
+    end
+
+    function document.pdf_cleanup_cidsets(pdfdoc,page,pagenumber,resources,compactor)
+        if resources then
+            local action = false
+            if lpdf.majorversion() > 1 then
+                action = "remove"
+            elseif compactor.cleanup.cidset then
+                action = "remove"
+            elseif compactor.add.cidset then
+                action = "add"
+            end
+            if action then
+                pdf_cleanup_cidsets(pdfdoc,page,pagenumber,resources,compactor,action)
+            end
+        end
+    end
+
+end
+
+do
+
+    local function pdf_cleanup_procsets(pdfdoc,page,pagenumber,resources,compactor)
+        resources.__raw__.ProcSet = nil
+        --
+        local x = resources.XObject
+        if x then
+            for k, v in expanded(x) do
+                local resources = v.Resources
+                if resources then
+                    pdf_cleanup_procsets(pdfdoc,page,pagenumber,resources,compactor)
+                end
+            end
+        end
+    end
+
+    function document.pdf_cleanup_procsets(pdfdoc,page,pagenumber,resources,compactor)
+        if resources then
+            if lpdf.majorversion() > 1 or lpdf.minorversion() > 3 then
+                pdf_cleanup_procsets(pdfdoc,page,pagenumber,resources,compactor)
             end
         end
     end
@@ -425,16 +505,16 @@ do
     end
 
     local actions = {
-        rg  = reducergb,
-        RG  = reducergb,
-        k   = reducecmyk,
-        K   = reducecmyk,
-        gs  = removestate,
-        GS  = removestate,
-        BMC = removetags,
-        EMC = removetags,
-        BDC = removetags,
-     -- BT  = checkbt,
+--         rg  = reducergb,
+--         RG  = reducergb,
+--         k   = reducecmyk,
+--         K   = reducecmyk,
+--         gs  = removestate,
+--         GS  = removestate,
+--         BMC = removetags,
+--         EMC = removetags,
+--         BDC = removetags,
+--      -- BT  = checkbt,
     }
 
     local function useactions(compactor)
@@ -620,25 +700,29 @@ do
         end
     end
 
-    function document.pdf_strip_content(pdfdoc,page,pagenumber,resources,compactor)
-        local fonts    = resources.Font
-        local xobjects = resources.XObject
-        local contents = getpagecontent(pdfdoc,pagenumber,true,true)
-        if contents then
-            if g1 then
-                insert(contents,1, { 0, "G" })
-                insert(contents,1, { 0, "g" })
-            end
-            contents = strip_content(pdfdoc,contents,fonts,xobjects,pagenumber,compactor)
-            resources.Font = fonts -- really needed
-            if contents then
-                if trace_operators then
-                    countoperators(pdfdoc,contents,fonts,xobjects,pagenumber,"after")
+    local function strip_content_needed(pdfdoc,page,pagenumber,resources,compactor)
+        compactor = table.fastcopy(compactor)
+        local strip = compactor.strip
+        if strip.marked then
+            if pdfdoc.Catalog.StructTreeRoot then
+                report_fixes("page %i of file %a: %s",pagenumber,pdfdoc.filename,"stripping tags")
+            else
+                strip.marked = nil
+                if not next(strip) then
+                    compactor.strip = nil
                 end
-                page.Contents = contenttostring(contents)
             end
         end
+        return
+            compactor, (
+                compactor.strip
+             or compactor.reduce
+             or compactor.convert
+             or compactor.recolor
+            ) and true or false
     end
+
+    -- two compactors: one for content, one for resources etc
 
     function document.pdf_identify_content(pdfdoc,page,pagenumber,resources,compactor)
         if compactor.identify.content or compactor.identify == "all" then
@@ -654,17 +738,42 @@ do
         end
     end
 
+    function document.pdf_strip_content(pdfdoc,page,pagenumber,resources,compactor)
+        local compactor, needed = strip_content_needed(pdfdoc,page,pagenumber,resources,compactor)
+        if needed then
+            local fonts    = resources.Font
+            local xobjects = resources.XObject
+            local contents = getpagecontent(pdfdoc,pagenumber,true,true)
+            if contents then
+                if g1 then
+                    insert(contents,1, { 0, "G" })
+                    insert(contents,1, { 0, "g" })
+                end
+                contents = strip_content(pdfdoc,contents,fonts,xobjects,pagenumber,compactor)
+                resources.Font = fonts -- really needed (or maybe not here)
+                if contents then
+                    if trace_operators then
+                        countoperators(pdfdoc,contents,fonts,xobjects,pagenumber,"after")
+                    end
+                    page.Contents = contenttostring(contents)
+                end
+            end
+        end
+    end
+
 end
 
 utilities.sequencers.appendaction("pdfcontentmanipulators","before","document.pdf_identify_content")
 utilities.sequencers.appendaction("pdfcontentmanipulators","before","document.pdf_strip_content")
 utilities.sequencers.appendaction("pdfpagemanipulators",   "after", "document.pdf_strip_page")
-utilities.sequencers.appendaction("pdfpagemanipulators",   "after", "document.pdf_add_cidsets")
+utilities.sequencers.appendaction("pdfpagemanipulators",   "after", "document.pdf_cleanup_cidsets")
+utilities.sequencers.appendaction("pdfpagemanipulators",   "after", "document.pdf_cleanup_procsets")
 
 utilities.sequencers.enableaction("pdfcontentmanipulators","document.pdf_identify_content")
 utilities.sequencers.enableaction("pdfcontentmanipulators","document.pdf_strip_content")
 utilities.sequencers.enableaction("pdfpagemanipulators",   "document.pdf_strip_page")
-utilities.sequencers.enableaction("pdfpagemanipulators",   "document.pdf_add_cidsets")
+utilities.sequencers.enableaction("pdfpagemanipulators",   "document.pdf_cleanup_cidsets")
+utilities.sequencers.enableaction("pdfpagemanipulators",   "document.pdf_cleanup_procsets")
 
 -- extreme example, also test case, dedicated to team ramkumar,
 

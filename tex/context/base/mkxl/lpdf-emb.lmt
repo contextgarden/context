@@ -349,12 +349,13 @@ end
         return resolved, include, minindex, maxindex
     end
 
-    includecidset = true  -- nicer for standard checking
+    includecidset = false -- nicer for standard checking
     forcecidset   = false -- for private testing only
 
     function lpdf.setincludecidset(v)
-        -- incredible ... it's obselete, no viewer needs it so why still this crap
-        -- so in the end it had to be introduced again
+        -- incredible ... it's obselete, no viewer needs it but then validators (depending on verison
+        -- and parser used) require it ... so in the end it had to be introduced again but now we just
+        -- ditch it in versions > 1 and ignore warnings (basically obsolete should not invalidate)
         includecidset = v
     end
 
@@ -399,7 +400,9 @@ end
     lpdf.tocidset = tocidset
 
     tocidsetdictionary = function(indices,min,max)
-        if includecidset or forcecidset then
+        if lpdf.majorversion() > 1 then
+            return nil
+        elseif includecidset or forcecidset then
             local b = tocidset(indices,min,max,true)
             return pdfreference(pdfflushstreamobject(b))
         end
@@ -947,7 +950,7 @@ do
         local fontbbox    = pdfarray { unpack(metabbox) }
         local ascender    = metadata.ascender
         local descender   = metadata.descender
---         local averagewidth= metadata.averagewidth
+     -- local averagewidth= metadata.averagewidth
         local capheight   = metadata.capheight or fontbbox[4]
         local stemv       = metadata.weightclass
         local italicangle = metadata.italicangle
@@ -973,7 +976,7 @@ do
             BaseFont       = basefont,
             FontDescriptor = pdfreference(reserved),
             W              = pdfreference(pdfflushobject(widths)),
-            LMTXRegistry   = registry or nil,
+            LMTX_Registry  = registry or nil,
             CIDToGIDMap    = pdfconstant("Identity"),
             CIDSystemInfo  = pdfdictionary {
                 Registry   = pdfstring("Adobe"),
@@ -985,21 +988,21 @@ do
             pdfreference(pdfflushobject(child)),
         }
         local descriptor = pdfdictionary {
-            Type        = pdfconstant("FontDescriptor"),
-            FontName    = basefont,
-            Flags       = 4,
-            FontBBox    = fontbbox,
--- FontMatrix = pdfarray { 0.001, 0, 0, 0.001, 0, 0 },
-            Ascent      = scale(ascender),
-            Descent     = scale(descender),
--- AvgWidth = scale(averagewidth),
-            ItalicAngle = round(italicangle or 0),
-            CapHeight   = scale(capheight),
-            StemV       = scale(stemv),
-            XHeight     = scale(xheight),
-            FontFile2   = pdfreference(pdfflushstreamobject(fontdata)),
-            CIDSet      = tocidset, -- no longer needed but verifyers want it
-            Metadata    = sharedmetadata[fontmeta] or nil,
+            Type          = pdfconstant("FontDescriptor"),
+            FontName      = basefont,
+            Flags         = 4,
+            FontBBox      = fontbbox,
+         -- FontMatrix    = pdfarray { 0.001, 0, 0, 0.001, 0, 0 },
+            Ascent        = scale(ascender),
+            Descent       = scale(descender),
+         -- AvgWidth      = scale(averagewidth),
+            ItalicAngle   = round(italicangle or 0),
+            CapHeight     = scale(capheight),
+            StemV         = scale(stemv),
+            XHeight       = scale(xheight),
+            FontFile2     = pdfreference(pdfflushstreamobject(fontdata)),
+            CIDSet        = tocidset, -- no longer needed but verifyers want it
+            LMTX_Metadata = sharedmetadata[fontmeta] or nil,
         }
         local parent = pdfdictionary {
             Type            = pdfconstant("Font"),
@@ -1703,7 +1706,7 @@ do
             BaseFont       = basefont,
             FontDescriptor = pdfreference(reserved),
             W              = pdfreference(pdfflushobject(widths)),
-            LMTXRegistry   = registry or nil,
+            LMTX_Registry  = registry or nil,
             CIDSystemInfo  = pdfdictionary {
                 Registry   = pdfstring("Adobe"),
                 Ordering   = pdfstring("Identity"),
@@ -1717,21 +1720,21 @@ do
             Subtype = pdfconstant("CIDFontType0C"),
         }
         local descriptor = pdfdictionary {
-            Type        = pdfconstant("FontDescriptor"),
-            FontName    = basefont,
-            Flags       = 4,
-            FontBBox    = fontbbox,
-         -- FontMatrix  = pdfarray { 0.001, 0, 0, 0.001, 0, 0 },
-            Ascent      = scale(ascender),
-            Descent     = scale(descender),
-         -- AvgWidth    = scale(averagewidth),
-            ItalicAngle = round(italicangle or 0),
-            CapHeight   = scale(capheight),
-            StemV       = scale(stemv),
-            XHeight     = scale(xheight),
-            CIDSet      = tocidset,
-            FontFile3   = pdfreference(pdfflushstreamobject(fontdata,fontstream())),
-            Metadata    = sharedmetadata[fontmeta] or nil,
+            Type          = pdfconstant("FontDescriptor"),
+            FontName      = basefont,
+            Flags         = 4,
+            FontBBox      = fontbbox,
+         -- FontMatrix    = pdfarray { 0.001, 0, 0, 0.001, 0, 0 },
+            Ascent        = scale(ascender),
+            Descent       = scale(descender),
+         -- AvgWidth      = scale(averagewidth),
+            ItalicAngle   = round(italicangle or 0),
+            CapHeight     = scale(capheight),
+            StemV         = scale(stemv),
+            XHeight       = scale(xheight),
+            CIDSet        = tocidset,
+            FontFile3     = pdfreference(pdfflushstreamobject(fontdata,fontstream())),
+            LMTX_Metadata = sharedmetadata[fontmeta] or nil,
         }
         local parent = pdfdictionary {
             Type            = pdfconstant("Font"),
@@ -1914,11 +1917,15 @@ do
         local f_image_c    = formatters["/%s Do"]
         local f_image_c_xy = formatters["%.6N 0 0 %.6N %.6N %.6N cm /%s Do"]
         local f_image_w    = formatters["%.6N 0 d0 %s"]
-        local f_image_d    = formatters["%.6N 0 d0 1 0 0 1 0 %.6N cm /%s Do"]
+        ----- f_image_d    = formatters["%.6N 0 d0 1 0 0 1 0 %.6N cm /%s Do"]
         local f_stream     = formatters["%.6N 0 d0 %s"]
         local f_stream_c   = formatters["%.6N 0 0 0 0 0 d1 %s"] -- last four bbox
         local f_stream_d   = formatters["%.6N 0 d0 1 0 0 1 0 %.6N cm %s"]
      -- local f_stream_s   = formatters["%.6N 0 0 %.6N 0 0 cm /%s Do"]
+
+        local f_image_xy   = formatters["%.6N 0 d0 1 0 0 1 %.6N %.6N cm /Artifact BMC /%s Do EMC"]
+        local f_image_c    = formatters["/Artifact BMC /%s Do EMC"]
+        local f_image_c_xy = formatters["%.6N 0 0 %.6N %.6N %.6N cm /Artifact BMC /%s Do EMC"]
 
         -- A type 3 font has at most 256 characters and Acrobat also wants a zero slot
         -- to be filled. We can share a mandate zero slot character. We also need to
@@ -2110,12 +2117,14 @@ do
                 image.embedded_stream    = stream
                 image.embedded_reference = pdfreference(image.objnum)
                 xforms[name] = image.embedded_reference
-                if image.expose then
-                    -- support color etc
-                    return stream, width
-                else
+
+-- we need width for validation
+--                 if image.expose then
+--                     -- support color etc
+--                     return stream, width
+--                 else
                     return f_image_w(width,stream), width
-                end
+--                 end
             end
             local function wrapup()
             end

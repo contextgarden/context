@@ -78,7 +78,7 @@
 \definelayoutelement[\v!footer:\v!edge]  [\v!footer][\c!lefttext=,\c!middletext=,\c!righttext=]
 \definelayoutelement[\v!bottom:\v!edge]  [\v!bottom][\c!lefttext=,\c!middletext=,\c!righttext=]
 
-\permanent\tolerant\protected\def\setuplayouttext[#vertical]#spacer[#horizontal]#spacer[#S#settings]%
+\permanent\tolerant\protected\def\setuplayouttext[#S#vertical]#spacer[#S#horizontal]#spacer[#S#settings]%
   {\ifnum\lastarguments>\plustwo
      \setuplayoutelement[#vertical:#horizontal][#settings]%
    \else
@@ -178,7 +178,7 @@
 
 \mutable\lettonothing\currentlayoutelementstate
 
-\permanent\tolerant\protected\def\setuptexts[#vertical]#spacer[#horizontal]#spacer[#S#a]#spacer[#S#b]#spacer[#S#c]#spacer[#S#d]%
+\permanent\tolerant\protected\def\setuptexts[#S#vertical]#spacer[#S#horizontal]#spacer[#S#a]#spacer[#S#b]#spacer[#S#c]#spacer[#S#d]%
   {\ifarguments
      % there is always one
    \or
@@ -390,7 +390,7 @@
 
 % \settext[header][text][middle][xxx][yyy]
 
-\permanent\tolerant\protected\def\settextcontent[#vertical]#spacer[#horizontal]#spacer[#S#one]#spacer[#S#two]#spacer[#S#three]% header text middle text/text
+\permanent\tolerant\protected\def\settextcontent[#S#vertical]#spacer[#S#horizontal]#spacer[#S#one]#spacer[#S#two]#spacer[#S#three]% header text middle text/text
   {\ifarguments\or\or\or % 3
      \defcsname\namedlayoutelementhash{#vertical:#horizontal}\c!middletext\endcsname
        {\page_layouts_process_element_double{#one}{#one}}%
@@ -406,7 +406,7 @@
 
 %D This will be redefined, so no \type {\frozen} here!
 
-\permanent\tolerant\protected\def\resettextcontent[#vertical]#spacer[#horizontal]#spacer[#S#tag]% header text middle
+\permanent\tolerant\protected\def\resettextcontent[#S#vertical]#spacer[#S#horizontal]#spacer[#S#tag]% header text middle
   {\ifarguments\or\or % 2
      \cdef\currentlayoutelement{#vertical:#horizontal}%
      \resetlayoutelementparameter\c!lefttext
@@ -715,7 +715,7 @@
 %D \chapter{tweede} \dorecurse{20}{\input tufte \relax}
 %D \stoptyping
 
-\permanent\tolerant\protected\def\definetext[#tag]#spacer[#vertical]#spacer[#horizontal]#spacer[#S#a]#spacer[#S#b]#spacer[#S#c]#spacer[#S#d]%
+\permanent\tolerant\protected\def\definetext[#S#tag]#spacer[#S#vertical]#spacer[#S#horizontal]#spacer[#S#a]#spacer[#S#b]#spacer[#S#c]#spacer[#S#d]%
   {\ifnum\lastarguments<\plusfour
      \defcsname\namedlayoutelementhash            {#vertical}#tag\endcsname{\setuptexts[#vertical][#horizontal]\relax}% 1, 2, 3
    \orelse\ifarguments\or\or\or\or

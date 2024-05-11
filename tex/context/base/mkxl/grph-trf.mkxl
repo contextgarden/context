@@ -346,6 +346,8 @@
 %D \stopcombination
 %D \stoplinecorrection
 
+% todo: use posits
+
 \def\m_grph_scale_factor_set{\v!min,\v!max,\v!fit,\v!broad,\v!auto} % can be an \edef
 
 \def\grph_scale_by_factor
@@ -1045,5 +1047,75 @@
 %     \setuprotate[location=middle]  \Test \par {\infofont\setstrut\strut middle}  \par
 %     \setuprotate[location=default] \Test \par {\infofont\setstrut\strut default} \par
 % \stopTEXpage
+
+%D Something new (okay, actually old) but very \PDF\ dependent:
+
+\def\grph_with_group
+  {\d_grph_scale_wd\wd\nextbox
+   \d_grph_scale_ht\ht\nextbox
+   \d_grph_scale_dp\dp\nextbox
+   \setbox\nextbox\hcontainer
+     {\clf_startgraphicgroup
+      \smashedbox\nextbox
+      \clf_stopgraphicgroup}%
+   \wd\nextbox\d_grph_scale_wd
+   \ht\nextbox\d_grph_scale_ht
+   \dp\nextbox\d_grph_scale_dp
+   \box\nextbox}
+
+\permanent\protected\def\startgraphicgroup
+  {\dontleavehmode
+   \begingroup
+   \dowithnextboxcs\grph_with_group
+   \hbox\bgroup}
+
+\permanent\protected\def\stopgraphicgroup
+  {\egroup
+   \endgroup}
+
+%D Thi sis used in:
+
+\permanent\protected\def\startclipeffect
+   {\begingroup
+    \dowithnextbox
+      {\stopeffect
+       \setbox\scratchboxone\box\nextbox
+       \dowithnextbox
+         {\setbox\scratchboxtwo\box\nextbox
+          \startgraphicgroup
+          \startoverlay
+             {\box\scratchboxone}%
+             {\box\scratchboxtwo}%
+          \stopoverlay
+          \stopgraphicgroup}
+       \hbox}%
+    \hbox\bgroup\starteffect[\v!clip]\let\next}
+
+\permanent\protected\def\stopclipeffect
+  {\endgroup}
+
+\setbox0\hbox{\strut\starteffect[clip]mikael\stopeffect}
+
+% \startgraphicgroup
+%     \startoverlay
+%       {\copy0}
+%       {\externalfigure[hacker.jpg][width=\wd0,height=\lineheight]}
+%     \stopoverlay
+% \stopgraphicgroup
+%
+% \startclipeffect
+%     {\hbox to 3cm{\hss\strut mikael\hss}}
+%     {\externalfigure[hacker.jpg][width=3cm,height=1cm]}
+% \stopclipeffect
+%
+% \defineoverlay
+%   [hacker]
+%   [\overlayfigure{hacker.jpg}]
+%
+% \startgraphicgroup
+% \framed
+%   [background={foreground,hacker},align={middle,lohi},width=8cm]
+%   {\starteffect[clip]\samplefile{tufte}\stopeffect}
+% \stopgraphicgroup
 
 \protect \endinput

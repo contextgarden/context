@@ -23,33 +23,60 @@
 
 % \resetpenalties\orphanpenalties
 
+%integerdef\unknownparpassclass     "000
+\integerdef\verylooseparpassclass   "001
+\integerdef\looseparpassclass       "002
+\integerdef\almostlooseparpassclass "004
+\integerdef\barelylooseparpassclass "008
+\integerdef\decentparpassclass      "010
+\integerdef\barelytightparpassclass "020
+\integerdef\almosttightparpassclass "040
+\integerdef\tightparpassclass       "080
+\integerdef\verytightparpassclass   "100
+
+% \integerdef\indecentparpassclasses\numexpr
+%       \verylooseparpassclass
+%     + \looseparpassclass
+%     + \almostlooseparpassclass
+%     + \barelylooseparpassclass
+%     % \decentparpassclass
+%     + \barelytightparpassclass
+%     + \almosttightparpassclass
+%     + \tightparpassclass
+%     + \verytightparpassclass
+% \relax
+
+\integerdef\allparpassclasses "FFFF
+
 \integerdef\indecentparpassclasses\numexpr
-      \verylooseparpassclass
-    + \looseparpassclass
-    + \semilooseparpassclass
-    % \decentparpassclass
-    + \semitightparpassclass
-    + \tightparpassclass
+    \allparpassclasses
+  - \decentparpassclass
 \relax
 
 \integerdef\almostdecentparpassclasses\numexpr
       \verylooseparpassclass
     + \looseparpassclass
-    % \semilooseparpassclass
+    + \almostlooseparpassclass
     % \decentparpassclass
-    % \semitightparpassclass % yes or no
+    + \almosttightparpassclass
     + \tightparpassclass
+    + \verytightparpassclass
 \relax
 
 \integerdef\looseparpassclasses\numexpr
       \verylooseparpassclass
     + \looseparpassclass
-    + \semilooseparpassclass
+    % \decentparpassclass
+    + \almostlooseparpassclass
+    + \barelylooseparpassclass
 \relax
 
 \integerdef\tightparpassclasses\numexpr
-      \semitightparpassclass
+      \verytightparpassclass
     + \tightparpassclass
+    % \decentparpassclass
+    + \almosttightparpassclass
+    + \barelytightparpassclass
 \relax
 
 \appendtoks

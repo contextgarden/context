@@ -165,7 +165,7 @@
    \fi}
 
 \permanent\protected\def\midsentence
-  {\dostarttagged\t!subsentencesymbol\empty
+  {\dostarttaggednodetail\t!subsentencesymbol
    \dotagsetsubsentencesymbol\s!middle
    \symbol[\c!midsentence]%
    \dostoptagged}
@@ -182,18 +182,18 @@
    \ifnum\c_typo_subsentence_nesting=\plusone
      \dontleavehmode
    \fi
-   \dostarttagged\t!subsentence\empty % no chain
-   \dostarttagged\t!subsentencesymbol\empty
+   \dostarttaggednodetail\t!subsentence
+   \dostarttaggednodetail\t!subsentencesymbol
    \dotagsetsubsentencesymbol\s!left
    \symbol[\ifodd\c_typo_subsentence_nesting\c!leftsentence\else\c!leftsubsentence\fi]%
    \dostoptagged
-   \dostarttagged\t!subsentencecontent\empty
+   \dostarttaggednodetail\t!subsentencecontent
    \typo_subsentence_cleanup_start}
 
 \permanent\protected\def\endofsubsentence % relax prevents space gobbling
   {\typo_subsentence_cleanup_stop
    \dostoptagged
-   \dostarttagged\t!subsentencesymbol\empty
+   \dostarttaggednodetail\t!subsentencesymbol
    \dotagsetsubsentencesymbol\s!right
    \symbol[\ifodd\c_typo_subsentence_nesting\c!rightsentence\else\c!rightsubsentence\fi]%
    \dostoptagged
@@ -425,7 +425,7 @@
 
 \def\typo_delimited_start_font
   {\let\typo_delimited_stop\typo_delimitedtexts_finish_font
-   \dostarttagged\t!delimitedsymbol\empty
+   \dostarttaggednodetail\t!delimitedsymbol
    \dotagsetdelimitedsymbol\s!left
    \delimitedtextparameter\c!left
    \dostoptagged
@@ -452,7 +452,7 @@
 
 \def\typo_delimitedtexts_finish_font
   {\removeunwantedspaces % again ?
-   \dostarttagged\t!delimitedsymbol\empty
+   \dostarttaggednodetail\t!delimitedsymbol
    \dotagsetdelimitedsymbol\s!right
    \delimitedtextparameter\c!right
    \dostoptagged}
@@ -472,7 +472,7 @@
   {\let\typo_delimited_show_language\gobbletwoarguments}
 
 \def\typo_delimited_start_content
-  {\dostarttagged\t!delimitedcontent\empty
+  {\dostarttaggednodetail\t!delimitedcontent
    \begingroup
    \douselanguageparameter\currentdelimitedlanguage
    \typo_delimited_show_language<\hss
@@ -590,7 +590,7 @@
 \permanent\protected\def\stopdelimited {\stopdelimitedtext}  % no let, dynamically assigned
 \permanent          \def\delimited     {\delimitedtext}
 
-% todo: \dostarttagged\t!nothing\empty % for left/right boxes
+% todo: \dostarttaggednodetail\t!nothing % for left/right boxes
 
 %D We have 4 different location and symbol handlers (two pairs):
 %D
@@ -649,7 +649,7 @@
    \fi}
 
 \def\typo_delimited_left_symbol#1%
-  {\dostarttagged\t!delimitedsymbol\empty
+  {\dostarttaggednodetail\t!delimitedsymbol
    \dotagsetdelimitedsymbol\s!left
    \setbox\scratchbox\hbox{\usedelimitedtextstyleandcolor\c!symstyle\c!symcolor#1}%
    \dontleavehmode
@@ -661,7 +661,7 @@
    \dostoptagged}
 
 \def\typo_delimited_right_symbol#1%
-  {\dostarttagged\t!delimitedsymbol\empty
+  {\dostarttaggednodetail\t!delimitedsymbol
    \dotagsetdelimitedsymbol\s!right
    \hsmash{\usedelimitedtextstyleandcolor\c!symstyle\c!symcolor#1}%
    \dostoptagged}
@@ -727,7 +727,7 @@
         %\fi
        \fi
        \strut % new, needed below
-       \dostarttagged\t!delimitedsymbol\empty
+       \dostarttaggednodetail\t!delimitedsymbol
        \dotagsetdelimitedsymbol\s!middle
        \delimitedtextparameter#1% unhbox\scratchbox
        \dostoptagged
@@ -754,7 +754,7 @@
    %   \hskip\zeroskip % == \prewordbreak
    % \fi
      \strut % new, needed below
-     \dostarttagged\t!delimitedsymbol\empty
+     \dostarttaggednodetail\t!delimitedsymbol
      \dotagsetdelimitedsymbol\s!left
      \delimitedtextparameter#1% unhbox\scratchbox
      \dostoptagged
@@ -777,7 +777,7 @@
        \hskip\zeroskip % == \prewordbreak
      \fi
      \strut % new, needed below
-     \dostarttagged\t!delimitedsymbol\empty
+     \dostarttaggednodetail\t!delimitedsymbol
      \dotagsetdelimitedsymbol\s!right
      \delimitedtextparameter#1% unhbox\scratchbox
      \dostoptagged

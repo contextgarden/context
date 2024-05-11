@@ -521,7 +521,7 @@ function scripts.pdf.fonts(filename)
 
         local list = { }
         for k, v in next, found do
-            local s = string.gsub(k,"(%d+)",function(s) return string.format("%05i",tonumber(s)) end)
+            local s = string.gsub(k,"(%d+)",function(s) return format("%05i",tonumber(s)) end)
             list[s] = { k, v }
             if #v.chars > 0 then
                 haschar = true
@@ -710,6 +710,28 @@ function scripts.pdf.links(filename,asked)
     end
 end
 
+local template = [[
+\startTEXpage
+\externalfigure[%s][page=%i]
+\stopTEXpage
+]]
+
+function scripts.pdf.split(filename)
+    local pdffile = loadpdffile(filename)
+    if pdffile then
+        local pages   = pdffile.nofpages
+        local name    = file.nameonly(filename)
+        local texname = "mtx-pdf-temp.tex"
+        for page=1,pages do
+            local pdfname = file.addsuffix(name.."-"..page,"pdf")
+            local command = format("context --batch --nostats --silent --once %s --result=%s --purgeall",texname,pdfname)
+            io.savedata(texname,format(template,filename,page))
+            os.execute(command)
+        end
+        os.remove(texname)
+    end
+end
+
 -- scripts.pdf.info("e:/tmp/oeps.pdf")
 -- scripts.pdf.metadata("e:/tmp/oeps.pdf")
 -- scripts.pdf.fonts("e:/tmp/oeps.pdf")
@@ -739,6 +761,8 @@ elseif environment.argument("detail") then
     scripts.pdf.detail(filename,environment.argument("detail"))
 elseif environment.argument("verify") then
     scripts.pdf.verify(filename)
+elseif environment.argument("split") then
+    scripts.pdf.split(filename)
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),filename)
 else

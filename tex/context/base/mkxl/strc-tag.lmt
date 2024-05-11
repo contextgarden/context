@@ -69,191 +69,290 @@ end
 local p_splitter     = C((1-S(">"))^1) * P(">") * C(P(1)^1)
 tagpatterns.splitter = p_splitter
 
+-- Tagging is not really meant for structure and is very much driven by simple documents,
+-- which is why we have this H (version 1) and H* (version 2) without granularity. The fact
+-- that (2024) the standards are not really a showcase of how a pdf file should looks and
+-- the version 2 spec is at most a version 1 document means that we have to trial and error.
+--
+-- After some testing we decided to make all NonStruct because these can nest and have no
+-- demands on what's inside, nor is it sensitive for Span and Div. Using the sort of generic
+-- Sect is no option either because it needs some content item at the innermost level. So,
+-- instead we wait for UA-5 to eventually come up with proper generic tagging (instead of
+-- this curious mix of html, long and short tags, and assumptions wrt simple usage). Maybe
+-- we should also adapt UA-1 support to this.
+--
+-- MS/HH 2024
+--
+-- For ua-1 we now also go the NonStruct route: better this than some half-way mapping and
+-- better enforce the dumbest reflow possible if one runs into it. We used to distinguish
+-- but because the meanings have changed we can as wel ditch it for a user installable
+-- mapping which delegates the responsibility.
+--
+-- The standard mentions that meaning of the built in tags differs per versions so that is a
+-- good reason to drop usign them. In due time we will therefore simplify the following table.
+--
+-- Btw, we don't want this to cripple our normal structuring (including export) so we have
+-- some constraints as well as gatekeeping.
+--
+-- Musical timestamp (ua-2 upgrade): Mandoki Soulmates – The Big Quit (LYRIC VIDEO, 2024)
+-- which between the chorus lines has this sublte "visionary garbage" line ... indeed.
+
 local properties     = allocate { -- todo: more "record = true" to improve formatting
 
-    document           = { pdf = "Div",        nature = "display" },
+    document           = { namespace = "context", nature = "display", pdf = "Document"  },
+    documentpart       = { namespace = "context", nature = "display", pdf = "NonStruct" },
 
-    division           = { pdf = "Div",        nature = "display" },
-    paragraph          = { pdf = "P",          nature = "mixed"   },
-    p                  = { pdf = "P",          nature = "mixed"   },
-    construct          = { pdf = "Span",       nature = "inline"  },
-    highlight          = { pdf = "Span",       nature = "inline"  },
+    division           = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    paragraph          = { namespace = "context", nature = "mixed",   pdf = "P"         },
+    p                  = { namespace = "context", nature = "mixed",   pdf = "P"         },
+    construct          = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    highlight          = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    ornament           = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
 
-    section            = { pdf = "Sect",       nature = "display" },
-    sectioncaption     = { pdf = "Div",        nature = "display", record = true },
-    sectiontitle       = { pdf = "H",          nature = "mixed"   },
-    sectionnumber      = { pdf = "H",          nature = "mixed"   },
-    sectioncontent     = { pdf = "Div",        nature = "display" },
+--     sectionblock       = { namespace = "context", nature = "display", pdf = "NonStruct" },
 
-    itemgroup          = { pdf = "L",          nature = "display" },
-    item               = { pdf = "LI",         nature = "display" },
-    itemtag            = { pdf = "Lbl",        nature = "mixed"   },
-    itemcontent        = { pdf = "LBody",      nature = "mixed"   },
-    itemhead           = { pdf = "Div",        nature = "display" },
-    itembody           = { pdf = "Div",        nature = "display" },
+    section            = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    sectioncaption     = { namespace = "context", nature = "display", pdf = "NonStruct" , record = true },
+    sectiontitle       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    sectionnumber      = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    sectioncontent     = { namespace = "context", nature = "display", pdf = "NonStruct" },
 
-    description        = { pdf = "Div",        nature = "display" },
-    descriptiontag     = { pdf = "Div",        nature = "mixed"   },
-    descriptioncontent = { pdf = "Div",        nature = "mixed"   },
-    descriptionsymbol  = { pdf = "Span",       nature = "inline"  }, -- note reference
+    itemgroup          = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    item               = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    itemtag            = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    itemcontent        = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    itemhead           = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    itembody           = { namespace = "context", nature = "display", pdf = "NonStruct" },
 
-    verbatimblock      = { pdf = "Code",       nature = "display" },
-    verbatimlines      = { pdf = "Code",       nature = "display" },
-    verbatimline       = { pdf = "Code",       nature = "mixed"   },
-    verbatim           = { pdf = "Code",       nature = "inline"  },
+    description        = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    descriptiontag     = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    descriptioncontent = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    descriptionsymbol  = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
 
-    lines              = { pdf = "Code",       nature = "display" },
-    line               = { pdf = "Code",       nature = "mixed"   },
-    linenumber         = { pdf = "Span",       nature = "inline"   },
+    verbatimblock      = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    verbatimlines      = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    verbatimline       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    verbatim           = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
 
-    synonym            = { pdf = "Span",       nature = "inline"  },
-    sorting            = { pdf = "Span",       nature = "inline"  },
+    lines              = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    line               = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    linenumber         = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
 
-    register           = { pdf = "Div",        nature = "display" },
-    registerlocation   = { pdf = "Span",       nature = "inline"  },
-    registersection    = { pdf = "Div",        nature = "display" },
-    registertag        = { pdf = "Span",       nature = "mixed"   },
-    registerentries    = { pdf = "Div",        nature = "display" },
-    registerentry      = { pdf = "Div",        nature = "display" },
-    registercontent    = { pdf = "Span",       nature = "mixed"   },
-    registersee        = { pdf = "Span",       nature = "mixed"   },
-    registerpages      = { pdf = "Span",       nature = "mixed"   },
-    registerpage       = { pdf = "Span",       nature = "mixed"   },
-    registerseparator  = { pdf = "Span",       nature = "inline"  },
-    registerpagerange  = { pdf = "Span",       nature = "mixed"   },
+    synonym            = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    sorting            = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
 
-    table              = { pdf = "Table",      nature = "display" },
-    tablerow           = { pdf = "TR",         nature = "display" },
-    tablecell          = { pdf = "TD",         nature = "mixed"   },
-    tableheadcell      = { pdf = "TH",         nature = "mixed"   },
-    tablehead          = { pdf = "THEAD",      nature = "display" },
-    tablebody          = { pdf = "TBODY",      nature = "display" },
-    tablefoot          = { pdf = "TFOOT",      nature = "display" },
+    register           = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    registerlocation   = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    registersection    = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    registertag        = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    registerentries    = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    registerentry      = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    registercontent    = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    registersee        = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    registerpages      = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    registerpage       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    registerseparator  = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    registerpagerange  = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
 
-    tabulate           = { pdf = "Table",      nature = "display" },
-    tabulaterow        = { pdf = "TR",         nature = "display" },
-    tabulatecell       = { pdf = "TD",         nature = "mixed"   },
-    tabulateheadcell   = { pdf = "TH",         nature = "mixed"   },
-    tabulatehead       = { pdf = "THEAD",      nature = "display" },
-    tabulatebody       = { pdf = "TBODY",      nature = "display" },
-    tabulatefoot       = { pdf = "TFOOT",      nature = "display" },
+    table              = { namespace = "context", nature = "display", pdf = "Table",    },
+    tablerow           = { namespace = "context", nature = "display", pdf = "TR",       },
+    tablecell          = { namespace = "context", nature = "mixed",   pdf = "TD",       },
+    tableheadcell      = { namespace = "context", nature = "mixed",   pdf = "TH",       },
+    tablehead          = { namespace = "context", nature = "display", pdf = "THEAD",    },
+    tablebody          = { namespace = "context", nature = "display", pdf = "TBODY",    },
+    tablefoot          = { namespace = "context", nature = "display", pdf = "TFOOT",    },
 
-    list               = { pdf = "TOC",        nature = "display" },
-    listitem           = { pdf = "TOCI",       nature = "display" },
-    listtag            = { pdf = "Lbl",        nature = "mixed"   },
-    listcontent        = { pdf = "P",          nature = "mixed"   },
-    listdata           = { pdf = "P",          nature = "mixed"   },
-    listpage           = { pdf = "Reference",  nature = "mixed"   },
-    listtext           = { pdf = "Span",       nature = "inline"  },
+    tabulate           = { namespace = "context", nature = "display", pdf = "Table",    },
+    tabulaterow        = { namespace = "context", nature = "display", pdf = "TR",       },
+    tabulatecell       = { namespace = "context", nature = "mixed",   pdf = "TD",       },
+    tabulateheadcell   = { namespace = "context", nature = "mixed",   pdf = "TH",       },
+    tabulatehead       = { namespace = "context", nature = "display", pdf = "THEAD",    },
+    tabulatebody       = { namespace = "context", nature = "display", pdf = "TBODY",    },
+    tabulatefoot       = { namespace = "context", nature = "display", pdf = "TFOOT",    },
 
-    delimitedblock     = { pdf = "BlockQuote", nature = "display" },
-    delimited          = { pdf = "Quote",      nature = "inline"  },
-    delimitedcontent   = { pdf = "Span",       nature = "inline"  },
-    delimitedsymbol    = { pdf = "Span",       nature = "inline"  },
-    subsentence        = { pdf = "Span",       nature = "inline"  },
-    subsentencecontent = { pdf = "Span",       nature = "inline"  },
-    subsentencesymbol  = { pdf = "Span",       nature = "inline"  },
+    list               = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    listitem           = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    listtag            = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    listcontent        = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    listdata           = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    listpage           = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    listtext           = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
 
-    label              = { pdf = "Span",       nature = "mixed"   },
-    number             = { pdf = "Span",       nature = "mixed"   },
+    delimitedblock     = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    delimited          = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    delimitedcontent   = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    delimitedsymbol    = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
 
-    float              = { pdf = "Div",        nature = "display" }, -- Figure
-    floatcaption       = { pdf = "Caption",    nature = "mixed"   },
-    floatlabel         = { pdf = "Span",       nature = "inline"  },
-    floatnumber        = { pdf = "Span",       nature = "inline"  },
-    floattext          = { pdf = "Span",       nature = "mixed"   },
-    floatcontent       = { pdf = "P",          nature = "mixed"   },
+    subsentence        = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    subsentencecontent = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    subsentencesymbol  = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
 
-    image              = { pdf = "P",          nature = "mixed"   },
-    mpgraphic          = { pdf = "P",          nature = "mixed"   },
+    label              = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    number             = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
 
-    formulaset         = { pdf = "Div",        nature = "display" },
-    formula            = { pdf = "Div",        nature = "display" }, -- Formula
-    formulacaption     = { pdf = "Span",       nature = "mixed"   },
-    formulalabel       = { pdf = "Span",       nature = "mixed"   },
-    formulanumber      = { pdf = "Span",       nature = "mixed"   },
-    formulacontent     = { pdf = "P",          nature = "display" },
-    subformula         = { pdf = "Div",        nature = "display" },
+    float              = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    floatcaption       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    floatlabel         = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    floatnumber        = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    floattext          = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    floatcontent       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
 
-    link               = { pdf = "Link",       nature = "inline"  },
-    reference          = { pdf = "Span",       nature = "inline"  },
+    image              = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    mpgraphic          = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
 
-    margintextblock    = { pdf = "Span",       nature = "inline"  },
-    margintext         = { pdf = "Span",       nature = "inline"  },
-    marginanchor       = { pdf = "Span",       nature = "inline"  },
+    formulaset         = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    formula            = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    formulacaption     = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    formulalabel       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    formulanumber      = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    formulacontent     = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    subformula         = { namespace = "context", nature = "display", pdf = "NonStruct" },
 
- -- math               = { pdf = "Div",        nature = "inline",  namespace = "mathml" }, -- no display
- -- math               = { pdf = "Formula",    nature = "inline",  namespace = "mathml" }, -- no display
-    math               = { pdf = "Div",        nature = "inline",  namespace = "mathml" }, -- no display
- -- math               = { pdf = "Span",       nature = "inline",  namespace = "mathml" }, -- no display
-    inlinemath         = { pdf = "Span",       nature = "inline",  namespace = "mathml" }, -- maybe
-    displaymath        = { pdf = "Div",        nature = "display", namespace = "mathml" }, -- maybe
-    mn                 = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
-    mi                 = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
-    mo                 = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
-    ms                 = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
-    mrow               = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    msubsup            = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    msub               = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    msup               = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    merror             = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
-    munderover         = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    munder             = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    mover              = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    mtext              = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
-    mfrac              = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    mroot              = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    msqrt              = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    mfenced            = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    maction            = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    mmultiscripts      = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    mprescripts        = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+    link               = { namespace = "context", nature = "inline",  pdf = "Link"      },
+    reference          = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
 
-    mstacker           = { pdf = "Span",       nature = "display" }, -- this one is only used internally
-    mstackertop        = { pdf = "Span",       nature = "display" }, -- idem
-    mstackerbot        = { pdf = "Span",       nature = "display" }, -- idem
-    mstackermid        = { pdf = "Span",       nature = "display" }, -- idem
-    mextensible        = { pdf = "Span",       nature = "display" }, -- idem
-    mfunction          = { pdf = "Span",       nature = "mixed"   }, -- idem
-    mfunctionstack     = { pdf = "Span",       nature = "display" }, -- idem
-    mfraction          = { pdf = "Span",       nature = "display" }, -- idem
-    mfractionstack     = { pdf = "Span",       nature = "display" }, -- idem
-    munit              = { pdf = "Span",       nature = "mixed"   },
-    mdigits            = { pdf = "Span",       nature = "mixed"   },
-    mc                 = { pdf = "Span",       nature = "mixed"   },
+    navigation         = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    navigationbutton   = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    navigationmenu     = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    navigationmenuitem = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    navigationaction   = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    navigationpage     = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
 
-    mtable             = { pdf = "Table",      nature = "display", namespace = "mathml" }, -- might change
-    mtr                = { pdf = "TR",         nature = "display", namespace = "mathml" }, -- might change
-    mtd                = { pdf = "TD",         nature = "display", namespace = "mathml" }, -- might change
+    margintextblock    = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    margintext         = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    marginanchor       = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
 
-    ignore             = { pdf = "Span",       nature = "mixed"   }, -- used internally
-    private            = { pdf = "Span",       nature = "mixed"   }, -- for users (like LS) when they need it
-    metadata           = { pdf = "Div",        nature = "display" },
-    metavariable       = { pdf = "Span",       nature = "mixed"   },
+--     math               = { namespace = "mathml",  nature = "inline",  pdf = "math"      },
+    math               = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    inlinemath         = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    displaymath        = { namespace = "context", nature = "display", pdf = "NonStruct" },
 
-    mid                = { pdf = "Span",       nature = "inline"  },
-    sub                = { pdf = "Span",       nature = "inline"  },
-    sup                = { pdf = "Span",       nature = "inline"  },
-    subsup             = { pdf = "Span",       nature = "inline"  },
+    -- these are wrapped in math and only used in detailed math mode
 
-    combination        = { pdf = "Span",       nature = "display" },
-    combinationpair    = { pdf = "Span",       nature = "display" },
-    combinationcontent = { pdf = "Span",       nature = "mixed"   },
-    combinationcaption = { pdf = "Span",       nature = "mixed"   },
+--     mn                 = { namespace = "mathml",  nature = "mixed",   pua = "mathml", pdf = "mn",            xpdf = "Span"      },
+--     mi                 = { namespace = "mathml",  nature = "mixed",   pua = "mathml", pdf = "mi",            xpdf = "Span"      },
+--     mo                 = { namespace = "mathml",  nature = "mixed",   pua = "mathml", pdf = "mo",            xpdf = "Span"      },
+--     ms                 = { namespace = "mathml",  nature = "mixed",   pua = "mathml", pdf = "ms",            xpdf = "Span"      },
+--     mrow               = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "mrow",          xpdf = "Span"      },
+--     msubsup            = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "msubsup",       xpdf = "Span"      },
+--     msub               = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "msub",          xpdf = "Span"      },
+--     msup               = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "msup",          xpdf = "Span"      },
+--     merror             = { namespace = "mathml",  nature = "mixed",   pua = "mathml", pdf = "merror",        xpdf = "Span"      },
+--     munderover         = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "munderover",    xpdf = "Span"      },
+--     munder             = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "munder",        xpdf = "Span"      },
+--     mover              = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "mover",         xpdf = "Span"      },
+--     mtext              = { namespace = "mathml",  nature = "mixed",   pua = "mathml", pdf = "mtext",         xpdf = "Span"      },
+--     mfrac              = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "mfrac",         xpdf = "Span"      },
+--     mroot              = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "mroot",         xpdf = "Span"      },
+--     msqrt              = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "msqrt",         xpdf = "Span"      },
+--     mfenced            = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "mfenced",       xpdf = "Span"      },
+--     maction            = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "maction",       xpdf = "Span"      },
+--     mmultiscripts      = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "mmultiscripts", xpdf = "Span"      },
+--     mprescripts        = { namespace = "mathml",  nature = "mixed",   pua = "mathml", pdf = "mprescripts",   xpdf = "Span"      },
 
-    publications       = { pdf = "Div",        nature = "display" },
-    publication        = { pdf = "Div",        nature = "mixed"   },
-    pubfld             = { pdf = "Span",       nature = "inline"  },
+    mn                 = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
+    mi                 = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
+    mo                 = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
+    ms                 = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
+    mrow               = { namespace = "context",  nature = "display", pdf = "Span"      },
+    msubsup            = { namespace = "context",  nature = "display", pdf = "Span"      },
+    msub               = { namespace = "context",  nature = "display", pdf = "Span"      },
+    msup               = { namespace = "context",  nature = "display", pdf = "Span"      },
+    merror             = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
+    munderover         = { namespace = "context",  nature = "display", pdf = "Span"      },
+    munder             = { namespace = "context",  nature = "display", pdf = "Span"      },
+    mover              = { namespace = "context",  nature = "display", pdf = "Span"      },
+    mtext              = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
+    mfrac              = { namespace = "context",  nature = "display", pdf = "Span"      },
+    mroot              = { namespace = "context",  nature = "display", pdf = "Span"      },
+    msqrt              = { namespace = "context",  nature = "display", pdf = "Span"      },
+    mfenced            = { namespace = "context",  nature = "display", pdf = "Span"      },
+    maction            = { namespace = "context",  nature = "display", pdf = "Span"      },
+    mmultiscripts      = { namespace = "context",  nature = "display", pdf = "Span"      },
+    mprescripts        = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
 
-    block              = { pdf = "Div",        nature = "display" },
-    userdata           = { pdf = "Div",        nature = "display" },
+    -- these are internal ones
 
-    quantity           = { pdf = "Span",       nature = "inline"  },
-    unit               = { pdf = "Span",       nature = "inline"  },
+    mstacker           = { namespace = "context", nature = "display", pdf = "Span"      },
+    mstackertop        = { namespace = "context", nature = "display", pdf = "Span"      },
+    mstackerbot        = { namespace = "context", nature = "display", pdf = "Span"      },
+    mstackermid        = { namespace = "context", nature = "display", pdf = "Span"      },
+    mextensible        = { namespace = "context", nature = "display", pdf = "Span"      },
+    mfunction          = { namespace = "context", nature = "mixed",   pdf = "Span"      },
+    mfunctionstack     = { namespace = "context", nature = "display", pdf = "Span"      },
+    mfraction          = { namespace = "context", nature = "display", pdf = "Span"      },
+    mfractionstack     = { namespace = "context", nature = "display", pdf = "Span"      },
+    munit              = { namespace = "context", nature = "mixed",   pdf = "Span"      },
+    mdigits            = { namespace = "context", nature = "mixed",   pdf = "Span"      },
+    mc                 = { namespace = "context", nature = "mixed",   pdf = "Span"      },
+
+    -- these are also wrapped
+
+    mtable             = { namespace = "mathml",  nature = "display", pdf = "mtable",   xpdf = "Table"     },
+    mtr                = { namespace = "mathml",  nature = "display", pdf = "mtr",      xpdf = "TR"        },
+    mtd                = { namespace = "mathml",  nature = "display", pdf = "mtd",      xpdf = "TD"        },
+
+    ignore             = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    private            = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    metadata           = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    metavariable       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+
+    mid                = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    sub                = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    sup                = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    subsup             = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+
+    combination        = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    combinationpair    = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    combinationcontent = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    combinationcaption = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+
+    publications       = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    publication        = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    pubfld             = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+
+    citation           = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    cite               = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+
+    block              = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    userdata           = { namespace = "context", nature = "display", pdf = "NonStruct" },
+
+    quantity           = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    unit               = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+
+    verse              = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    versetag           = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    verseseparator     = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    versecontent       = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
 
 }
 
 tags.properties = properties
+
+directives.register("backend.usetags", function(v)
+    if type(v) == "string" then
+        local fullname = resolvers.findfile("lpdf-tag-imp-"..v..".lmt") or ""
+        if fullname ~= "" then
+            local n = 0
+            local mapping = table.load(fullname)
+            if mapping then
+                mapping = mapping.mapping
+                if mapping then
+                    for k, v in next, mapping do
+                        local p = properties[k]
+                        if p and p.pdf ~= v.pdf then
+                            p.pdf = v.pdf
+                            p.pua = v.pua or p.pua
+                            n = n + 1
+                        end
+                    end
+                end
+            end
+            report_tags("%i pdf tags overloaded, cross your fingers",n)
+        end
+    end
+end)
+
 
 local patterns = setmetatableindex(function(t,tag)
     local v = topattern("^" .. tag .. ">")
@@ -301,7 +400,7 @@ function tags.setproperty(tag,key,value)
     if p then
         p[key] = value
     else
-        properties[tag] = { [key] = value }
+        properties[tag] = { [key] = value, namespace = "user" }
     end
 end
 
@@ -312,7 +411,7 @@ function tags.setaspect(key,value)
         if p then
             p[key] = value
         else
-            properties[tag] = { [key] = value }
+            properties[tag] = { [key] = value, namespace = "user" }
         end
     end
 end
@@ -352,6 +451,8 @@ function tags.enabled()
     return enabled
 end
 
+local ignored = { } tags.ignored = ignored
+
 function tags.start(tag,specification)
     if not enabled then
         codeinjections.enabletags()
@@ -362,6 +463,9 @@ function tags.start(tag,specification)
     --
     local attribute = #taglist + 1
     local tagindex  = (ids[tag] or 0) + 1
+if tag == "ignore" then
+    ignored[attribute] = true
+end
     --
     local completetag = tag .. ">" .. tagindex
     --
@@ -420,6 +524,8 @@ function tags.start(tag,specification)
     return attribute
 end
 
+-- kind of messy:
+
 function tags.restart(attribute)
     stacksize = stacksize + 1
     if type(attribute) == "number" then
@@ -433,6 +539,58 @@ function tags.restart(attribute)
     stack[stacksize] = attribute
     texsetattribute(a_tagged,attribute)
     return attribute
+end
+
+do
+
+--     local s_stacksize = 0
+--     local s_attribute = 0
+--     local s_chain     = nil
+--     local s_tagged    = nil
+
+--     function tags.push(attribute)
+--         s_tagged         = texgetattribute(a_tagged)
+--         s_stacksize      = stacksize
+--         s_attribute      = stack[stacksize] -- attribute
+--         s_chain          = chain
+--         -- print("OLD",attribute,concat(chain," ",1,stacksize))
+--         chain            = attribute and { unpack(taglist[attribute].taglist) } or { }
+--         stacksize        = #chain
+--         -- print("NEW",attribute,concat(chain," ",1,stacksize))
+--         stack[stacksize] = attribute
+--     end
+
+--     function tags.pop()
+--         stacksize        = s_stacksize
+--         chain            = s_chain
+--         stack[stacksize] = s_attribute
+--         -- print("XXX",attribute,concat(chain," ",1,stacksize))
+--         texsetattribute(a_tagged,s_tagged)
+--     end
+
+    local tag_ignore_level   <const> = 1
+    local tag_document_level <const> = 2
+
+    local tagstack = { }
+
+    function tags.push(attribute)
+        if not attribute then
+            attribute = tag_document_level
+        end
+        insert(tagstack, { texgetattribute(a_tagged), stacksize, stack[stacksize], chain })
+        chain            = attribute and { unpack(taglist[attribute].taglist) } or { }
+        stacksize        = #chain
+        stack[stacksize] = attribute
+    end
+
+    function tags.pop()
+        local s = remove(tagstack)
+        stacksize        = s[2]
+        chain            = s[4]
+        stack[stacksize] = s[3]
+        texsetattribute(a_tagged,s[1])
+    end
+
 end
 
 function tags.stop()
@@ -510,6 +668,9 @@ end
 statistics.register("structure elements", function()
     if enabled then
         if stacksize > 0 then
+for i=1,stacksize do
+    if not chain[i] then chain[i] = "ERROR" end
+end
             return format("%s element chains identified, open chain: %s ",#taglist,concat(chain," => ",1,stacksize))
         else
             return format("%s element chains identified",#taglist)
@@ -638,12 +799,15 @@ implement {
 }
 
 implement {
-    name      = "settagginglevel",
+    name      = "strc_tags_document_push",
     protected = true,
-    arguments = "argument",
-    actions   = function(level)
-        if level == interfaces.variables.none then
-            codeinjections.reducetags()
-        end
-    end,
+    public    = true,
+    actions   = tags.push
+}
+
+implement {
+    name      = "strc_tags_document_pop",
+    protected = true,
+    public    = true,
+    actions   = tags.pop
 }

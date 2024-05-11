@@ -6,23 +6,40 @@ if not modules then modules = { } end modules ['lpdf-tag'] = {
     license   = "see context related readme files"
 }
 
-local next, type = next, type
-local format, match, gmatch, find = string.format, string.match, string.gmatch, string.find
+-- instead of taglist we can have a backpointer to the parent but then
+-- we also need to adapt the export, it might be a bit slower
+--
+-- maybe also make specifications a two dimensional table
+
+local next, type, tonumber = next, type, tonumber
+local format, match, gmatch, find, gsub = string.format, string.match, string.gmatch, string.find, string.gsub
 local concat, sortedhash = table.concat, table.sortedhash
 local lpegmatch, P, S, C = lpeg.match, lpeg.P, lpeg.S, lpeg.C
 local settings_to_hash = utilities.parsers.settings_to_hash
 local formatters = string.formatters
 
-local trace_tags = false  trackers.register("structures.tags",      function(v)
-    trace_tags = v
-end)
-local trace_info = false  trackers.register("structures.tags.info", function(v)
-    trace_info = v
-end)
-local trace_math = false  trackers.register("structures.tags.math", function(v)
-    trace_math = v
-    attributes.viewerlayers.enable() -- somehow has to happen
-end)
+local trace_tags       = false
+local trace_info       = false
+local trace_math       = false
+local trace_blobs      = false
+local trace_internals  = false
+local trace_suspects   = false
+local trace_tree       = false
+
+trackers.register("structures.tags",           function(v) trace_tags      = v end)
+trackers.register("structures.tags.info",      function(v) trace_info      = v end)
+trackers.register("structures.tags.math",      function(v) trace_math      = v attributes.viewerlayers.enable() end) -- somehow has to happen
+trackers.register("structures.tags.blobs",     function(v) trace_blobs     = v end)
+trackers.register("structures.tags.internals", function(v) trace_internals = v end)
+trackers.register("structures.tags.suspects",  function(v) trace_suspects  = v end)
+trackers.register("structures.tags.showtree",  function(v) trace_tree      = v end)
+
+local detailedmath = false
+local actualtexts  = { }
+
+local checklinks   = true
+
+directives.register("structures.tags.math.detail", function(v) detailedmath = v end)
 
 local report_tags = logs.reporter("backend","tags")
 
@@ -49,6 +66,8 @@ local pdfflushobject      = lpdf.flushobject
 local pdfreserveobject    = lpdf.reserveobject
 local pdfpagereference    = lpdf.pagereference
 
+local version             = 1
+
 local texgetcount         = tex.getcount
 
 local nodes               = nodes
@@ -57,6 +76,12 @@ local nodecodes           = nodes.nodecodes
 local hlist_code          <const> = nodecodes.hlist
 local vlist_code          <const> = nodecodes.vlist
 local glyph_code          <const> = nodecodes.glyph
+local rule_code           <const> = nodecodes.rule
+local glue_code           <const> = nodecodes.glue
+
+local leaders_code        <const> = nodes.gluecodes.leaders
+
+local empty_rule_code     <const> = nodes.rulecodes.empty
 
 local a_tagged            <const> = attributes.private('tagged')
 local a_image             <const> = attributes.private('image')
@@ -75,6 +100,9 @@ local getprev             = nuts.getprev
 local getnext             = nuts.getnext
 local getlist             = nuts.getlist
 local getchar             = nuts.getchar
+local getwhd              = nuts.getwhd
+local getleader           = nuts.getleader
+local getruledimensions   = nuts.getruledimensions
 
 local tailoflist          = nuts.tail
 local setlink             = nuts.setlink
@@ -84,6 +112,7 @@ local copy_node           = nuts.copy
 local tosequence          = nuts.tosequence
 
 local nextnode            = nuts.traversers.node
+local nextcontent         = nuts.traversers.content
 
 local structure_kids   -- delayed
 local structure_ref    -- delayed
@@ -94,6 +123,8 @@ local tree                = { }
 local firstintree         = false
 local lastintree          = false
 local elements            = { }
+local elementsorder       = { }
+local nofelements         = 0
 
 local structurestags      = structures.tags
 local taglist             = structurestags.taglist
@@ -102,116 +133,399 @@ local usedlabels          = structurestags.labels
 local properties          = structurestags.properties
 local usewithcare         = structurestags.usewithcare
 
+local pushtag             = structurestags.push
+local poptag              = structurestags.pop
+local starttag            = structurestags.start
+local stoptag             = structurestags.stop
+
 local usedmapping         = { }
+
+local destinations        = { }
+local references          = { }
 
 ----- tagsplitter         = structurestags.patterns.splitter
 
-local embeddedtags        = false -- true will id all, for tracing, otherwise table
-local f_tagid             = formatters["%s-%04X"]      -- todo: auto adapt to nofblobs
-local f_tagfn             = formatters["%s-%04X.xml"]
-local embeddedfilelist    = pdfarray() -- /AF crap
+-- We used to have a way to embed mathml and bib blobs independent of tagging but
+-- that was actually never really used. It used attachments and text notes but is
+-- was not really supported by viewers so we never advertized it.
 
--- for testing, not that it was ever used:
+local embeddedtags        = false
+local embeddedfilelist    = pdfarray()
+local blobfunctions       = { }
+local tagtracers          = { }
 
-directives.register("structures.tags.embed",function(v)
-    if type(v) == "string" then
-        if type(embeddedtags) ~= "table" then
-            embeddedtags = { }
+local indirectlocalkids   = false
+local indirectglobalkids  = false
+
+-- When we are generating more pages this will be invalid but there will be an extra
+-- run anyway due to storing the final value.
+--
+-- For some reason links needa struct parent an destinations an object ... smells like
+-- application driven stuff.
+
+local pagenumindices      = { }
+local usedpages           = false  -- internal -> structure
+
+local linknumoffset       = false
+local linknumindex        = 0
+local linknumindices      = { }
+local linknumentries      = table.setmetatableindex(function(t,refatt)
+    if not linknumoffset then
+        local tagging = job.variables.collected.tagging
+        if tagging then
+            linknumoffset = tagging.basetreesize
+        else
+         -- linknumoffset = structures.counters.record("realpage")["last"] + 100
+            linknumoffset = 1000
         end
-        for s in gmatch(v,"([^, ]+)") do
-            embeddedtags[s] = true
-        end
-    elseif v and not embeddedtags then
-        embeddedtags = true
     end
+    local v = linknumindex + linknumoffset
+    linknumindex = linknumindex + 1
+    linknumindices[linknumindex] = false
+    -- attribute -> parentindex
+    t[refatt] = v
+    return v
 end)
 
--- for old times sake, not that it was ever used:
+local function setlinkstructureparent(refatt,objref)
+    local p = linknumentries[refatt]
+-- print("SET",refatt,p,objref)
+    linknumindices[p] = objref
+end
 
-directives.register("structures.tags.embedmath",function(v)
-    if not v then
-        -- only enable
-    elseif embeddedtags == true then
-        -- already all tagged
-    elseif embeddedtags then
-        embeddedtags.math = true
-    else
-        embeddedtags = { math = true }
+function codeinjections.getlinkstructureparent(refatt)
+-- print("GET",refatt, linknumentries[refatt])
+    return linknumentries[refatt]
+end
+
+local referencenumindices = { }    -- attribute -> structure
+local useddestinations    = false  -- internal -> structure
+
+function codeinjections.getreferencestructureobject(internal,page)
+    if not useddestinations then
+        local tagging = job.variables.collected.tagging
+        useddestinations = tagging and tagging.destinations or { }
+        usedpages        = tagging and tagging.pages        or { }
     end
+    return (internal and useddestinations[internal]) or (page and usedpages[page])
+end
+
+--
+
+local function embedsupportedtags(str)
+    if not embeddedtags then
+        embeddedtags = { }
+    end
+    if str then
+        for tag in gmatch(str,"([^, ]+)") do
+            embeddedtags[tag] = true
+        end
+    else
+        for tag in next, blobfunctions do
+            embeddedtags[tag] = true
+        end
+    end
+end
+
+directives.register("structures.tags.embed",function(v)
+    embedsupportedtags(type(v) == "string" and v or nil)
 end)
 
 function codeinjections.maptag(original,target,kind)
     mapping[original] = { target, kind or "inline" }
 end
 
--- mostly the same as the annotations tree
+local namespaces = false
 
-local usenamespace = false  experiments.register("structures.tags.namespaces", function(v) usenamespace = v end)
-
-local namespaceurls = {
-    mathml = "http://www.w3.org/1998/Math/MathML",
+local namespaces = {
+    mathml = {
+        url   = "http://www.w3.org/1998/Math/MathML",
+        force = false,
+        known = true,
+        map   = { },
+    },
+    context = {
+        url   = "http://www.contextgarden.net/pdf/context",
+        map   = { },
+    },
+    user = {
+        url   = "http://www.contextgarden.net/pdf/user",
+        map   = { },
+    },
+    ua1 = {
+        url   = "http://iso.org/pdf/ssn",
+        force = false,
+        known = true,
+    },
+    ua2 = {
+        url   = "http://iso.org/pdf2/ssn",
+        force = false,
+        known = true,
+    },
 }
+
+local missingua = table.setmetatableindex(function(t,k)
+ -- local v = version == 1 and "Div" or "NonStruct"
+    local v = "NonStruct"
+    t[k] = v
+    return v
+end)
+
+statistics.register("pdf tags", function()
+    local k, v = next(missingua)
+    if k then
+        return format("unknown tags mapped to %s: % t",v,table.sortedkeys(missingua))
+    end
+end)
+
+local function concattags(tags)
+    local l = { } -- table.new
+    local t = tags.taglist
+    local n = #t
+    for i=1,n do
+        l[i] = t[i] or "ERROR"
+    end
+    return concat(l," ",1,n)
+end
 
 local function finishstructure()
     if root and #structure_kids > 0 then
         local nums   = pdfarray()
         local n      = 0
-        for i=firstintree,lastintree do
-            local ti = tree[i]
-            if ti then
-                n = n + 1 ; nums[n] = i - 1
-                n = n + 1 ; nums[n] = pdfreference(pdfflushobject(ti))
-            else
-                report_tags("beware: missing page %i in tree", i)
+        if indirectglobalkids then
+            for i=firstintree,lastintree do
+                local ti = tree[i]
+                if ti then
+                    n = n + 1 ; nums[n] = i - 1
+                    n = n + 1 ; nums[n] = pdfreference(pdfflushobject(ti))
+                else
+                    report_tags("beware: missing page %i in tree", i)
+                end
+            end
+        else
+            for i=firstintree,lastintree do
+                local ti = tree[i]
+                if not ti then
+                    report_tags("beware: missing page %i in tree", i)
+                elseif #ti > 0 then
+                    n = n + 1 ; nums[n] = i - 1
+                    n = n + 1 ; nums[n] = ti
+                end
             end
         end
+        local usedrolemap    = nil
+        local usednamespaces = nil
+        if version == 1 then
+            for k, v in next, usedmapping do
+                local k = usedlabels[k] or k
+                local p = properties[k]
+                if p then
+                    local pdf = p.pdf
+                    if not pdf then
+                        pdf = missingua[pdf]
+                    end
+                    local r = pdfconstant(pdf)
+                    if usedrolemap then
+                        usedrolemap[k] = r
+                    else
+                        usedrolemap = pdfdictionary { [k] = r }
+                    end
+                else
+                    report_tags("beware: missing property %s", k)
+                end
+            end
+        else
+            for k, v in next, usedmapping do
+                local k = usedlabels[k] or k
+                local p = properties[k]
+                if p then
+                    local s = p.namespace
+                    local n = namespaces[s]
+                    if n then
+                        local pdf = p.pdf
+                        local pua = p.pua
+                        local ua  = n
+                        if not pdf then
+                            pdf = missingua[pdf]
+                        end
+                        if pua == "ua1" then
+                            ua = namespaces.ua1
+                            ua.force = true
+                        elseif pua == "mathml" then
+                            ua = namespaces.mathml
+                            ua.force = true
+                        else
+                            ua = namespaces.ua2
+                            ua.force = true
+                        end
+                        if pdf ~= k then
+                            ua = pdfarray { pdfconstant(pdf), ua.ref }
+                            n.map[k] = ua
+                        end
+                        if not usednamespaces then
+                            usednamespaces = pdfarray()
+                        end
+                    else
+                        report_tags("beware: missing namespace %s", s)
+                    end
+                else
+                    report_tags("beware: missing property %s", k)
+                end
+            end
+            if usednamespaces then
+                for k, v in sortedhash(namespaces) do
+                    if v.force then
+                        local n = pdfdictionary {
+                            Type           = pdfconstant("Namespace"),
+                            NS             = pdfunicode(v.url),
+                            LMTX_NameSpace = pdfconstant(k),
+                        }
+                        pdfflushobject(v.num,n)
+                        usednamespaces[#usednamespaces+1] = v.ref
+                    else
+                        local map = v.map
+                        if map and next(map) then
+                            local m = pdfreference(pdfflushobject(pdfdictionary(map)))
+                            local n = pdfdictionary {
+                                Type           = pdfconstant("Namespace"),
+                                NS             = pdfunicode(v.url),
+                                RoleMapNS      = m,
+                                LMTX_NameSpace = pdfconstant(k),
+                            }
+                            pdfflushobject(v.num,n)
+                            usednamespaces[#usednamespaces+1] = v.ref
+                        end
+                    end
+                end
+            end
+        end
+        if indirectlocalkids then
+            for i=1,nofelements do
+                local fulltag = elementsorder[i]
+                local element = elements[fulltag]
+                local kids    = element.kids
+                local knum    = element.knum
+
+                if checklinks then
+                    local tag = element.tag
+                    if tag == "link" then
+                        local ref = element.ref
+                        if ref then
+                            setlinkstructureparent(ref,element.pref)
+                        end
+                    elseif tag == "reference" then
+                        local des = element.des
+                        if des then
+                            referencenumindices[des] = element.dnum
+                        end
+                    end
+                end
+
+             -- if checklinks then
+             --     for i=1,#kids do
+             --         local d = kids[i]
+             --         if type(d) == "table" then
+             --             local refatt = element.refatt
+             --             if refatt then
+             --                 local refobj = codeinjections.getrefobj(refatt)
+             --                 if refobj then
+             --                     d.Obj = pdfreference(refobj)
+             --                 end
+             --             end
+             --         end
+             --     end
+             -- end
+
+                pdfflushobject(knum,kids)
+            end
+        else
+            for i=1,nofelements do
+                local fulltag = elementsorder[i]
+                local element = elements[fulltag]
+                local dict    = element.dict
+                if dict then
+                    local dnum = element.dnum
+                    local kids = element.kids
+
+                    if checklinks then
+                        local tag = element.tag
+                        if tag == "link" then
+                            local ref = element.ref
+                            if ref then
+                                setlinkstructureparent(ref,element.pref)
+                            end
+                        elseif tag == "reference" then
+                            local des = element.des
+                            if des then
+                                referencenumindices[des] = element.dnum
+                            end
+                        elseif tag == "navigationpage" then
+                            pagenumindices[element.pnum] = element.dnum
+                        end
+                    end
+
+                 -- if checklinks then
+                 --     for i=1,#kids do
+                 --         local d = kids[i]
+                 --         if type(d) == "table" then
+                 --             local refatt = element.refatt
+                 --             if refatt then
+                 --                 local refobj = codeinjections.getrefobj(refatt)
+                 --                 if refobj then
+                 --                     d.Obj = pdfreference(refobj)
+                 --                 end
+                 --             end
+                 --         end
+                 --     end
+                 -- end
+
+--                     if #kids == 1 then
+--                         dict.K = kids[1] -- always okay ?
+--                     end
+                    pdfflushobject(dnum,dict)
+                end
+            end
+        end
+        --
+        local getinternalreference = structures.references.getinternalreference
+        local destinations = { }
+        for k, v in next, referencenumindices do
+            destinations[getinternalreference(k)] = v
+        end
+        job.variables.tobesaved.tagging = {
+            basetreesize = lastintree,
+            destinations = destinations,
+            pages        = pagenumindices,
+        }
+        --
+        table.setmetatableindex(linknumindices)
+--         for k, v in next, linknumindices do
+--             print("CHECK",k,v)
+--         end
+        for k, v in sortedhash(linknumindices) do
+            if v then
+                n = n + 1 ; nums[n] = k
+                n = n + 1 ; nums[n] = v
+            end
+        end
+        --
         local parenttree = pdfdictionary {
             Nums = nums
         }
         local idtree = pdfmakenametree(names)
         --
-        local rolemaps = usenamespace and { }
-        local rolemap  = pdfdictionary() -- main one
-        for k, v in next, usedmapping do
-            local k = usedlabels[k] or k
-            local p = properties[k]
-            if not p then
-                report_tags("beware: missing property %s", k)
-            end
-            local n = p and p.namespace
-            if rolemaps and n then
-                local r = rolemaps[n]
-                if not r then
-                    r = pdfdictionary()
-                    rolemaps[n] = r
-                end
-                r[k] = pdfconstant(k) -- maybe other tag
-            else
-                rolemap[k] = pdfconstant(p and p.pdf or "Span") -- or "Div"
-            end
-        end
-        local namespaces = rolemaps and next(rolemaps) and pdfarray { } or nil
-        if namespaces then
-            for k, v in table.sortedhash(rolemaps) do
-                namespaces[#namespaces+1] = pdfdictionary {
-                    Type      = pdfconstant("Namespace"),
-                    NS        = pdfunicode(namespaceurls[k] or k),
-                    RoleMapNS = v,
-                }
-            end
-        end
         local structuretree = pdfdictionary {
             Type       = pdfconstant("StructTreeRoot"),
             K          = pdfreference(pdfflushobject(structure_kids)),
             ParentTree = pdfreference(pdfflushobject(parent_ref,parenttree)),
             IDTree     = idtree,
-            RoleMap    = rolemap, -- sorted ?
-            Namespaces = namespaces,
+            RoleMap    = usedrolemap,
+            Namespaces = usednamespaces,
         }
         pdfflushobject(structure_ref,structuretree)
         addtocatalog("StructTreeRoot",pdfreference(structure_ref))
         --
-        if lpdf.majorversion() == 1 then
+        if version == 1 then
             local markinfo = pdfdictionary {
                 Marked         = pdfboolean(true) or nil,
              -- UserProperties = pdfboolean(true), -- maybe some day
@@ -221,23 +535,35 @@ local function finishstructure()
             addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
         end
         --
-        for fulltag, element in sortedhash(elements) do -- sorting is easier on comparing pdf
-            local kids = element.kids
-         -- if element.tag == "link" then
-         --     local d = kids[2]
-         --     if type(d) == "table" then
-         --         local refatt = element.refatt
-         --         if refatt then
-         --             local refobj = codeinjections.getrefobj(refatt)
-         --             if refobj then
-         --                 d.Obj = pdfreference(refobj)
-         --             end
-         --         end
-         --     end
-         -- end
-            pdfflushobject(element.knum,kids)
+    end
+
+    if trace_tree then
+        local p = false
+        local n = tonumber(trace_tree) or true
+        for i=1,nofelements do
+            local fulltag       = elementsorder[i]
+            local element       = elements[fulltag]
+            local specification = specifications[fulltag]
+            local pagenumber    = element.pnum
+            if n == true and i > 1 and p ~= pagenumber then
+                report_tags("")
+            end
+            p = pagenumber
+            if n == true or n == p then
+                report_tags("% 5i  %3i  %s (%s)",i,pagenumber,concattags(specification),(element.des and "destination") or (element.ref and "reference") or "content")
+            end
         end
     end
+
+    if trace_blobs then
+        for k, v in sortedhash(actualtexts) do
+            local shared = v[1] and "-" or "+"
+            local index  = v[2]
+            local text   = v[3]
+            report_tags("blob %s : %5i : %04X : %s",shared,index,index,text)
+        end
+    end
+
 end
 
 lpdf.registerdocumentfinalizer(finishstructure,"document structure")
@@ -249,11 +575,20 @@ local pdf_struct_element = pdfconstant("StructElem")
 local pdf_s              = pdfconstant("S")
 local pdf_objr           = pdfconstant("OBJR")
 
+local c_realpageno <const> = tex.iscount("realpageno")
+
 local function initializepage()
     index   = 0
-    pagenum = texgetcount("realpageno")
+    pagenum = texgetcount(c_realpageno)
     pageref = pdfreference(pdfpagereference(pagenum))
     list    = pdfarray()
+    if not namespaced then
+        for k, v in sortedhash(namespaces) do
+            v.num = pdfreserveobject()
+            v.ref = pdfreference(v.num)
+        end
+        namespaced = true
+    end
     -- hm, can be later than 1
     if not firstintree then
         if pagenum > 1 then
@@ -273,8 +608,6 @@ end
 local function finishpage()
     -- flush what can be flushed
     addtopageattributes("StructParents",pagenum-1)
-    -- there might be more
-    addtopageattributes("Tabs",s)
 end
 
 -- here we can flush and free elements that are finished
@@ -300,64 +633,54 @@ local function makeattribute(t)
     end
 end
 
-local shared  = { }
-local bindex  = 0
-local btags   = { }
+local visualizetags      = nil
+local visualizespecial   = nil
+local visualizeblobs     = nil
+local visualizesuspects  = nil
+local visualizeinternals = nil
+local collectedsuspects  = { }
 
-local function makeelement(fulltag,parent)
-    local specification = specifications[fulltag]
-    local tagname       = specification.tagname
-    local tagnameused   = tagname
-    local attributes    = nil
-    if tagname == "ignore" then
-        return false
-    elseif tagname == "mstackertop" or tagname == "mstackerbot" or tagname == "mstackermid" then
-        -- TODO
-        return true
-    elseif tagname == "tabulatecell" then
-        local d = structurestags.gettabulatecell(fulltag)
-        if d and d.kind == 1 then
-            tagnameused = "tabulateheadcell"
-        end
-    elseif tagname == "tablecell" then
-        -- will become a plugin model
-        local d = structurestags.gettablecell(fulltag)
-        if d then
-            if d.kind == 1 then
-                tagnameused = "tableheadcell"
-            end
-            local rows = d.rows    or 1
-            local cols = d.columns or 1
-            if rows > 1 or cols > 1 then
-                attributes = pdfdictionary {
-                    O       = pdfconstant("Table"),
-                    RowSpan = rows > 1 and rows or nil,
-                    ColSpan = cols > 1 and cols or nil,
-                }
-            end
-        end
- -- elseif tagname == "math" then
- --     if specification.mode == "display" then
- --         tagnameused = "displaymath"
- --     else
- --         tagnameused = "inlinemath"
- --     end
+statistics.register("pdf tags", function()
+    if #collectedsuspects > 0 then
+        return formatters["suspects: % t"](collectedsuspects)
     end
-    --
-    local detail     = specification.detail
-    local userdata   = specification.userdata
-    local actualtext = nil
-    --
-    usedmapping[tagname] = true
-    --
-    -- specification.attribute is unique
-    --
-    local af  = nil
-    local id  = nil
-    if embeddedtags then
-        local tagindex = specification.tagindex
-        if embeddedtags == true or embeddedtags[tagname] then
-            id = f_tagid(tagname,tagindex)
+end)
+
+
+local function checkvisualize()
+    if not visualizetags then
+        visualizetags      = nodes.visualizers.register("tags")
+        visualizespecials  = nodes.visualizers.register("specials",nil,nil,2.5,true)
+        visualizeblobs     = nodes.visualizers.register("blobs",nil,nil,2.5,true)
+        visualizesuspects  = nodes.visualizers.register("suspects")
+        visualizeinternals = nodes.visualizers.register("internals")
+    end
+end
+
+local function tagtracer(name,blob)
+    checkvisualize()
+    return visualizetags(name), visualizetags()
+end
+
+table.setmetatableindex(tagtracers,function(t,k)
+    t[k] = tagtracer
+    return tagtracer
+end)
+
+local makeelement  do
+
+    do
+
+        local f_tagid = formatters["math-%04X"]      -- todo: auto adapt to nofblobs
+        local f_tagfn = formatters["math-%04X.xml"]
+
+        local shared  = { }
+        local bindex  = 0
+        local btags   = { }
+
+        function blobfunctions.math(tagname,specification)
+            local tagindex = specification.tagindex
+            local id = f_tagid(tagindex)
             local blob = specification.blob
             if blob then
                 local blobindex = mathematics.getblobindex(blob)
@@ -368,9 +691,10 @@ local function makeelement(fulltag,parent)
                         btags[blob] = index[2]
                     else
                         bindex = bindex + 1
-                        local blobname = f_tagid(tagname,blobindex)
-                        local blobfile = f_tagfn(tagname,blobindex)
-                        local blobdata = mathematics.getmathblob(blobindex)
+                        local blobname = f_tagid(blobindex)
+                        local blobfile = f_tagfn(blobindex)
+--                         local blobdata = mathematics.getmathblob(blobindex)
+                        local blobdata = mathematics.getmathblob(blob)
                         af = codeinjections.embedfile {
                             force          = true,
                             data           = blobdata,
@@ -378,20 +702,26 @@ local function makeelement(fulltag,parent)
                             file           = blobfile,
                          -- hash           = hash,
                             hash           = id,
+--                             index          = bindex,
                             forcereference = true,
                          -- title          = "whatever",
                             mimetype       = "application/mathml+xml",
                             relation       = "Supplement", -- bah
+--                             share          = true,
                         }
                      -- af = pdfarray { af } -- maybe also share this
                         af = pdfreference(pdfflushobject(pdfarray { af })) -- maybe also share this
                         shared[blobindex] = { af, blobname }
                         btags[blob] = blobname
                     end
-                    actualtext = mathematics.gettextblob(specification.language or "en",blobindex)
+                    actualtext = mathematics.gettextblob(specification.language or "en",blob)
                     if actualtext then
+                        if trace_blobs then
+                            actualtexts[blob] = { index and true or false, blobindex, actualtext }
+                        end
                         actualtext = pdfunicode(actualtext)
                     end
+                    return id, af, actualtext
                 end
 
             else
@@ -406,41 +736,291 @@ local function makeelement(fulltag,parent)
             end
 
         end
+
+        local blobdone = { }
+
+        function tagtracers.math(name,specification,blob)
+            checkvisualize()
+            if blob and not blobdone[blob] then
+                local bname = btags[blob]
+                if bname then
+                    bname = "M " .. blob .. " " .. bname
+                else
+                    bname = "M " .. blob
+                end
+                blobdone[blob] = true
+                if detailedmath then
+                    return visualizeblobs(bname,name), visualizeblobs()
+                else
+                    return visualizetags(bname), visualizetags()
+                end
+            else
+                return visualizetags(name), visualizetags()
+            end
+        end
+
+        function tagtracers.suspect(name)
+            checkvisualize()
+            return visualizesuspects("S " .. "mrow"), visualizesuspects()
+        end
+
+        function tagtracers.internallink(internal)
+            checkvisualize()
+            return visualizeinternals("L " .. internal), visualizeinternals()
+        end
+
+        function tagtracers.internalreference(internal)
+            checkvisualize()
+            return visualizeinternals("R " .. internal), visualizeinternals()
+        end
+
     end
-    --
-    local k = pdfarray()
-    local r = pdfreserveobject()
-    local t = usedlabels[tagnameused] or tagnameused
- -- local a = nil
-    local d = pdfdictionary {
-        Type       = pdf_struct_element,
-        S          = pdfconstant(t),
-        ID         = id,
-        T          = detail and detail or nil,
-        P          = parent.pref,
-        Pg         = pageref,
-        K          = pdfreference(r),
-     -- A          = a and makeattribute(a) or nil,
-        A          = attributes,
-     -- Alt        = "Who cares",
-        ActualText = actualtext or nil,
-        AF         = af,
-    }
-    local s = pdfreference(pdfflushobject(d))
-    if id and names then
-        names[id] = s
+
+    do
+
+        function tagtracers.link(name,specification,blob)
+            checkvisualize()
+            return visualizespecials(name), visualizespecials()
+        end
+
+        function tagtracers.reference(name,specification,blob)
+            checkvisualize()
+            return visualizespecials(name), visualizespecials()
+        end
+
     end
-    local kids = parent.kids
-    kids[#kids+1] = s
-    local e = {
-        tag  = t,
-        pref = s,
-        kids = k,
-        knum = r,
-        pnum = pagenum
-    }
-    elements[fulltag] = e
-    return e
+
+    do
+
+        local f_tagid = formatters["cite-%s"]      -- todo: auto adapt to nofblobs
+        local f_tagfn = formatters["cite-%s.bib"]
+
+        local shared  = { }
+        local bindex  = 0
+        local btags   = { }
+
+        function blobfunctions.cite(tagname,specification)
+            local detail = specification.detail
+            if detail then
+                local dataset, tag = match(detail,"^(.+)::(.+)$")
+                local index = shared[tag]
+                local id = f_tagid(tag)
+                if index then
+                    af = index[1]
+                    btags[tag] = index[2]
+                else
+                    bindex = bindex + 1
+                    local data     = publications.datasets[dataset].luadata[tag] or "no data"
+                    local blobname = f_tagid(tag)
+                    local blobfile = f_tagfn(tag)
+                    local blobdata = publications.savers.bib(false,false,{ [tag] = data }) -- converttoxml(dataset,true,false,true,false,true,true)
+                    af = codeinjections.embedfile {
+                        force          = true,
+                        data           = gsub(blobdata,"\n+$",""),
+                        name           = blobname,
+                        file           = blobfile,
+                     -- hash           = hash,
+                        hash           = id,
+                        forcereference = true,
+                     -- title          = "whatever",
+                        mimetype       = "application/x-bibtex",
+                        relation       = "Supplement", -- bah
+                    }
+                 -- af = pdfarray { af } -- maybe also share this
+                    af = pdfreference(pdfflushobject(pdfarray { af })) -- maybe also share this
+                    shared[tag] = { af, blobname }
+                    btags[tag] = blobname
+                end
+                actualtext = publications.meanings[tag]
+                if actualtext then
+                    actualtext = pdfunicode(actualtext)
+                end
+                return id, af, actualtext
+            end
+        end
+
+        function tagtracers.cite(name,specification)
+            checkvisualize()
+            local detail = specification.detail
+            if detail then
+                local dataset, tag = match(detail,"^(.-)::(.-)$")
+                local bname = btags[tag]
+                if bname then
+                    return visualizetags("C " .. bname), visualizetags()
+                end
+            end
+            return visualizetags(name), visualizetags()
+        end
+
+    end
+
+    local lastid = 0
+    local f_id   = formatters["%X"]
+
+    makeelement = function(fulltag,parent)
+        local specification = specifications[fulltag]
+        local tagname       = specification and specification.tagname or "ignore"
+        local tagnameused   = tagname
+        local attributes    = nil
+        -- some catches .. todo
+        if tagname == "ignore" then
+            return false
+        elseif tagname == "mstacker" or tagname == "mstackertop" or tagname == "mstackerbot" or tagname == "mstackermid" then
+            -- test this in an mp stacker in the math manual, basically any private one
+            return true
+        elseif tagname == "mrow" then -- todo: alttext
+            return false
+        elseif tagname == "tabulatecell" then
+            local d = structurestags.gettabulatecell(fulltag)
+            if d and d.kind == 1 then
+                tagnameused = "tabulateheadcell"
+            end
+--         elseif tagname == "tablecell" then
+        elseif tagname == "tablecell" then
+            -- will become a plugin model
+            local d = structurestags.gettablecell(fulltag)
+            if d then
+                if d.kind == 1 then
+                    tagnameused = "tableheadcell"
+                end
+                local rows = d.rows    or 1
+                local cols = d.columns or 1
+                if rows > 1 or cols > 1 then
+                    attributes = pdfdictionary {
+                        O       = pdfconstant("Table"),
+                        RowSpan = rows > 1 and rows or nil,
+                        ColSpan = cols > 1 and cols or nil,
+                    }
+                end
+            end
+--         elseif tagname == "mtd" then
+--             -- only when in detail mode
+--             local cols = specification.cols or 1 -- we could set it beforehand ... todo
+--             if cols > 1 then
+--                 attributes = pdfdictionary {
+--                     O       = pdfconstant("Table"),
+--                     ColSpan = cols,
+--                 }
+--             end
+     -- elseif tagname == "math" then
+     --     if specification.mode == "display" then
+     --         tagnameused = "displaymath"
+     --     else
+     --         tagnameused = "inlinemath"
+     --     end
+        end
+        --
+        local detail     = specification.detail
+        local userdata   = specification.userdata
+        --
+        usedmapping[tagname] = true
+        --
+        -- specification.attribute is unique
+        --
+        local af         = nil
+        local id         = nil
+        local actualtext = nil
+        --
+        if embeddedtags[tagname] then
+            local action = blobfunctions[tagname]
+            if action then
+                id, af, actualtext = action(tagname,specification)
+            end
+        end
+        -- This can be an option but it bloats the file for little reason.
+        --
+     -- if not id then
+     --     lastid = lastid + 1
+     --     id = f_id(lastid)
+     -- end
+        --
+        local namespace = nil
+        if version > 1 then
+            local p = properties[tagname]
+            if p then
+                namespace = namespaces[p.namespace].ref or nil
+            else
+                namespace = "user"
+                properties[tagname] = { namespace = namespace, pdf = "Span", nature = "inline" }
+            end
+        end
+        --
+     -- local alternate = "Who cares"
+        local kids      = pdfarray()
+        local tag       = usedlabels[tagnameused] or tagnameused
+        local subtype   = pdfconstant(tag)
+        local pref      = parent.pref
+        local pkids     = parent.kids
+        local element
+        local dref, dnum
+        if indirectlocalkids then
+            local knum = pdfreserveobject()
+            local dict = pdfdictionary {
+             -- Type       = pdf_struct_element, -- optional, saves bytes
+                S          = subtype,
+                ID         = id,
+                T          = detail and detail or nil,
+                P          = pref,
+                Pg         = pageref,
+                K          = pdfreference(knum),
+                A          = attributes,
+             -- Alt        = alternate,
+                NS         = namespace,
+                ActualText = actualtext or nil,
+                AF         = af or nil,
+            }
+            dnum = pdfflushobject(dict)
+            dref = pdfreference(dnum)
+            element = {
+                blob = af and true or false, -- also actualtext
+                tag  = tag,
+                pnum = pagenum,
+                pref = dref,
+                kids = kids,
+                knum = knum,
+                dnum = dnum,
+                ref  = tag == "link"      and specification.reference   or nil,
+                des  = tag == "reference" and specification.destination or nil,
+            }
+        else
+            local dict = pdfdictionary {
+             -- Type       = pdf_struct_element, -- optional, saves bytes
+                S          = subtype,
+                ID         = id,
+                T          = detail and detail or nil,
+                P          = pref,
+                Pg         = pageref,
+                K          = kids,
+                A          = attributes,
+             -- Alt        = alternate,
+                NS         = namespace,
+                ActualText = actualtext or nil,
+                AF         = af or nil,
+            }
+            dnum = pdfreserveobject()
+            dref = pdfreference(dnum)
+            element = {
+                blob = af and true or false, -- also actualtext
+                tag  = tag,
+                pnum = pagenum,
+                pref = dref,
+                kids = kids,
+                dict = dict,
+                dnum = dnum,
+                ref  = tag == "link"      and specification.reference   or nil,
+                des  = tag == "reference" and specification.destination or nil,
+            }
+        end
+        if id and names then
+            names[id] = dref
+        end
+        pkids[#pkids+1] = dref
+        elements[fulltag] = element
+        nofelements = nofelements + 1
+        elementsorder[nofelements] = fulltag
+        return element
+    end
+
 end
 
 local f_BDC = formatters["/%s <</MCID %s>> BDC"]
@@ -448,10 +1028,13 @@ local f_BDC = formatters["/%s <</MCID %s>> BDC"]
 local a_destination <const> = attributes.private('destination')
 local a_reference   <const> = attributes.private('reference')
 
-local function makecontent(start,parent,id,specification)
+local references = { }
+
+local function makecontent(start,parent,id,specification,range)
     local tag  = parent.tag
     local kids = parent.kids
     local last = index
+index = index + 1
     if id == "image" then
         local list  = specification.taglist
         local data  = usewithcare.images[list[#list]]
@@ -460,21 +1043,27 @@ local function makecontent(start,parent,id,specification)
             Type = pdf_mcr,
             Pg   = pageref,
             MCID = last,
-            Alt  = pdfunicode(label ~= "" and label or "image"),
+         -- Alt  = pdfunicode(label ~= "" and label or "image"),
         }
         kids[#kids+1] = d
     elseif pagenum == parent.pnum then
         kids[#kids+1] = last
-     -- if tag == "link" then
-     --     local ra = getattr(start,a_reference)
-     --     if ra then
-     --         parent.refatt = ra
-     --         kids[#kids+1] = pdfdictionary {
-     --             Type = pdf_objr,
-     --             Obj  = pdfreference(0),
-     --         }
-     --     end
-     -- end
+
+-- if checklinks and tag == "link" then
+--     local ra = range[7]
+--     if ra then
+--         if not references[ra] then
+--             parent.refatt = ra
+--             kids[#kids+1] = pdfdictionary {
+--                 Type = pdf_objr,
+--                 Obj  = pdfreference(0),
+--                 Pg   = pageref,
+--             }
+--             references[ra] = index
+--         end
+--     end
+-- end
+
     else
         local d = pdfdictionary {
             Type = pdf_mcr,
@@ -485,40 +1074,39 @@ local function makecontent(start,parent,id,specification)
         kids[#kids+1] = d
     end
     --
-    index = index + 1
+--     index = index + 1
     list[index] = parent.pref -- page related list
     --
+-- if tag == "navigationpage" then
+--     print(tag,index)
+-- end
     return f_BDC(tag,last)
 end
 
-local function makeignore(specification)
+local function makeignore(specification,range)
+-- inspect(nodes.tonode(range[3]))
     return "/Artifact BMC"
 end
 
 -- no need to adapt head, as we always operate on lists
 
-local EMCliteral     = nil
-local visualizetags  = nil
-local visualizeblobs = nil
+local EMCliteral = nil
 
 local enabled = true
-local reduced = false
 
 updaters.register("tagging.state.disable", function() enabled = false end)
 updaters.register("tagging.state.enable",  function() enabled = true  end)
 
-directives.register("tagging.state.reduced", function(v) reduced = v end)
+local tag_ignore_level    <const> = 1
+local tag_document_level  <const> = 2
 
-function codeinjections.reducetags()
-    report_tags("only outer level document tag used")
-    reduced = true
-end
+local tag_image_state     <const> = -1
+local tag_ignore_state    <const> = -2
+local tag_link_state      <const> = -3
+local tag_reference_state <const> = -4
+local tag_rule_state      <const> = -5
 
-local detailedmath = false
-
-directives.register("structures.tags.math.detail", function(v) detailedmath = v end)
-
-function nodeinjections.addtags(head)
+function nodeinjections.addtags(head,ispage)
 
     if not enabled then
         return
@@ -543,90 +1131,239 @@ function nodeinjections.addtags(head)
 
     initializepage()
 
-    if reduced then
+    local mblob = false
+    local ablob = { }
 
-        local list = getlist(head)
+    if ispage then
+        pushtag() -- tag_document_level
+        local ac = starttag("navigationpage")
+        stoptag()
+        nofranges = nofranges + 1
+        ranges[nofranges] = { ac, "navigationpage" }
+        poptag()
+    end
 
-        if list then
+ -- local function check(n,id)
+ --     local at = getattr(n,a_tagged)
+ --     if at then
+ --         local s = taglist[at]
+ --         if s then
+ --             print(">>>",nodecodes[id],s.tagname)
+ --         end
+ --     end
+ -- end
 
-            ranges = {
-                { 1, "glyph", list, tailoflist(list), head }
-            }
+    local function collectranges(head,parent)
+        for n, id, subtype in nextnode, head do
+         -- check(n,id)
+            if id == glyph_code then
+             -- if getchar(n) ~= 0 then
+                    local at, blob = getattrs(n,a_tagged,a_mathblob)
+                    if at == 0 then
+                        at = false
+                    elseif at == 1 then
+                        at = false
+                    elseif at then
+                        --
+                    else
+                        at = false
+                    end
 
-            nofranges = 1
+                 -- if detailedmath then
+                 --     -- skip
+                 -- elseif blob then
+                 --     if blob == mblob then
+                 --         ranges[nofranges] = range
+                 --         last = at
+                 --     else
+                 --         mblob = blob
+                 --     end
+                 -- else
+                 --     mblob = false
+                 -- end
+                 -- if last ~= at then
+                 --     range = { at, "glyph", n, n, parent, blob } -- attr id start stop list
+                 --     nofranges = nofranges + 1
+                 --     ranges[nofranges] = range
+                 --     last = at
+                 -- elseif range then
+                 --     range[4] = n -- stop
+                 -- end
 
-            taglist = {
-                {
-                    attribute = 1,
-                    metadata  = { },
-                    tagindex  = 1,
-                    taglist   = { "document>1" },
-                    tagname   = "document",
-                },
-            }
-
-        end
-
-    else
-
-        local mblob = false
-
-        local function collectranges(head,list)
-
-            for n, id, subtype in nextnode, head do
-                if id == glyph_code then
-                    -- maybe also disc
-                    if getchar(n) ~= 0 then
-                        local at, blob = getattrs(n,a_tagged,a_mathblob)
-                        if not at then
-                            at = false
-                        end
-                        if detailedmath then
-                            -- skip
-                        elseif blob then
-                            if blob == mblob then
-                                ranges[nofranges] = range
-                                last = at
-                            else
-                                mblob = blob
-                            end
-                        else
-                            mblob = false
-                        end
+                    if not blob then
+                        mblob = false
                         if last ~= at then
-                            range = { at, "glyph", n, n, list, blob } -- attr id start stop list
+                            range = { at, "glyph", n, n, parent } -- attr id start stop list
                             nofranges = nofranges + 1
                             ranges[nofranges] = range
                             last = at
                         elseif range then
                             range[4] = n -- stop
                         end
-                    end
-                elseif id == hlist_code or id == vlist_code then
-                    local at = getattr(n,a_image) --todo: gettags
-                    if at then
-                        local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
-                        nofranges = nofranges + 1
-                        ranges[nofranges] = { at, "image", n, n, list } -- attr id start stop list
-                        last = nil
+                 -- elseif blob == mblob and at == last then
+                    elseif blob == mblob and last > 0 then
+                        if range then
+                            range[4] = n -- stop
+                        end
+                        last = at
                     else
+                        mblob = blob
+                     -- if last ~= at then
+                            local a = ablob[blob]
+                            if not a then
+                                a = tag_document_level
+                                if at then
+                                    local t = taglist[at].taglist
+                                 -- for i=#t,1,-1 do
+                                 --     local s = specifications[t[i]]
+                                 --     if s.tagname == "math" then
+                                 --         a = s.attribute
+                                 --     end
+                                 -- end
+                                 -- we could store the index in specifications but we only need it once
+                                    for i=1,#t do
+                                        local s = specifications[t[i]]
+                                        if s.tagname == "math" then
+                                            a = s.attribute
+                                            break
+                                        end
+                                    end
+                                end
+                                ablob[blob] = a
+                            end
+                            range = { a, "math", n, n, parent, blob } -- attr id start stop list
+                            nofranges = nofranges + 1
+                            ranges[nofranges] = range
+                            last = at
+                     -- elseif range then
+                     --     range[4] = n -- stop
+                     -- end
+                    end
+
+             -- end
+            elseif id == hlist_code or id == vlist_code then
+                local at, img = getattrs(n,a_tagged,a_image)
+                -- img can be more generic: image, mpgraphic
+                if img then
+                    range = { at or false, "image", n, n, parent } -- attr id start stop list
+                    nofranges = nofranges + 1
+                    ranges[nofranges] = range
+                    last = tag_image_state
+                    mblob = false
+                    --
+                    -- TODO, plugin
+                    --
+                    local specification = taglist[at] -- todo: img attr
+                    if specification and specification.tagname == "mpgraphic" then
                         local list = getlist(n)
                         if list then
                             collectranges(list,n)
                         end
                     end
+                    --
+                elseif at == 0 then
+                    range = { false, "ignore", n, n, parent } -- attr id start stop list
+                    nofranges = nofranges + 1
+                    ranges[nofranges] = range
+                    last = tag_ignore_state
+                    mblob = false
+                else -- 1 also process
+                    if at then
+                        local r, d = getattrs(n,a_reference,a_destination)
+                        if r and not references[r] then
+                            -- bah
+                            local b = getattr(n,a_mathblob)
+                            if b then
+                                at = ablob[b]
+                            end
+                            --
+                            pushtag(at < tag_document_level and tag_document_level or at)
+                            local ac = starttag("link", { reference = r })
+                            stoptag()
+                            poptag()
+                            range = { ac, "link", n, false, parent } -- attr id start stop list
+                            nofranges = nofranges + 1
+                            ranges[nofranges] = range
+                            last = tag_link_state
+                            references[r] = true -- ac
+                        end
+                        if d and not destinations[d] then
+                            -- bah
+                            local b = getattr(n,a_mathblob)
+                            if b then
+                                at = ablob[b]
+                            end
+                            --
+                            pushtag(at < tag_document_level and tag_document_level or at)
+                            local ac = starttag("reference", { destination = d })
+                            stoptag()
+                            poptag()
+                            range = { ac, "reference", n, false, parent } -- attr id start stop list
+                            nofranges = nofranges + 1
+                            ranges[nofranges] = range
+                            last = tag_reference_state
+                            mblob = false
+                            destinations[d] = true -- ac
+                        end
+                    end
+                    local list = getlist(n)
+                    if list then
+                        collectranges(list,n)
+                    end
+                end
+         -- elseif id == disc_code then
+         --     -- can't happen
+            elseif id == glue_code then
+                if subtype >= leaders_code then
+                    local leader = getleader(n)
+                    if leader then
+                        collectranges(leader,n)
+                    end
+                end
+            elseif id == rule_code then
+                if subtype == empty_rule_code then
+                    -- skip
+                else
+                    local w, h, d = getruledimensions(n)
+                    if (w ~= 0) and (h + d ~= 0) then
+                        local at, blob = getattrs(n,a_tagged,a_mathblob)
+                        if blob then
+                            at = false
+                        end
+                     -- if blob then
+                     -- else
+                            if not at then
+                                at = false
+                            elseif at == 0 then
+                                at = false
+                            elseif at == 1 then
+                                at = false
+                            end
+                            if last ~= tag_rule_state and last ~= at then
+                                range = { false, "rule", n, n, parent, blob } -- attr id start stop list
+                                nofranges = nofranges + 1
+                                ranges[nofranges] = range
+                                last = at
+                                last = tag_rule_state
+                                mblob = false
+                            elseif range then
+                                range[4] = n -- stop
+                            end
+                     -- end
+                    else
+                     -- print("rule needs tagging",w,h,d,nodes.rulecodes[subtype])
+                    end
                 end
             end
         end
-
-        collectranges(head)
-
     end
 
--- inspect(taglist)
--- inspect(ranges)
+    collectranges(head)
 
     if trace_tags then
+        report_tags("")
+        report_tags(ispage and "begin page" or "begin object")
+        report_tags("")
         for i=1,nofranges do
             local range = ranges[i]
             local attr  = range[1]
@@ -635,9 +1372,23 @@ function nodeinjections.addtags(head)
             local stop  = range[4]
             local tags  = taglist[attr]
             if tags then -- not ok ... only first lines
-                report_tags("%s => %s : %05i % t",tosequence(start,start),tosequence(stop,stop),attr,tags.taglist)
+                local s = concattags(tags)
+                if id == "reference" then
+                    report_tags("R %5i %s",attr,s)
+                elseif id == "link" then
+                    report_tags("L %5i %s",attr,s)
+                elseif id == "navigationpage" then
+                    report_tags("P %5i %s : %i",attr,s,pagenum or 0)
+                else
+                    report_tags("T %5i %s : %s",attr,s,nodes.listtoutf(start,false,true,stop))
+                end
+            else
+                report_tags("  -----")
             end
         end
+        report_tags("")
+        report_tags(ispage and "end page" or "end object")
+        report_tags("")
     end
 
     local top    = nil
@@ -658,23 +1409,39 @@ function nodeinjections.addtags(head)
         if list and not prev then
             setlist(list,literal)
         end
-        local literal = copy_node(EMCliteral)
-        -- use insert instead:
-        local next = getnext(stop)
-        if next then
-            setlink(literal,next)
-        end
-        if right then
-            setlink(stop,right,literal)
+        local finish = copy_node(EMCliteral)
+        if stop then
+            -- use insert instead:
+            local next = getnext(stop)
+            if next then
+                setlink(finish,next)
+            end
+            if right then
+                setlink(stop,right,finish)
+            else
+                setlink(stop,finish)
+            end
         else
-            setlink(stop,literal)
+            local next = getnext(literal)
+            if next then
+                setlink(finish,next)
+            end
+            if right then
+                setlink(literal,right,finish)
+            else
+                setlink(literal,finish)
+            end
         end
     end
+
+    -- not ok (probably when at the start)
 
 --     local function inject(start,stop,list,literal,left,right)
 --         setlink(getprev(start) or list or true,literal,left or true,start)
 --         setlink(stop,right or true,copy_node(EMCliteral),getnext(stop))
 --     end
+
+-- inspect(ranges)
 
     for i=1,nofranges do
 
@@ -686,32 +1453,36 @@ function nodeinjections.addtags(head)
         local start = range[3]
         local stop  = range[4]
         local list  = range[5]
-        local blob  = range[6]
 
-        if attr then
+--         print(id,start,stop)
+
+        if attr == 0 then -- should be false then
+            local literal = setstate(makeignore(false,range))
+            inject(start,stop,list,literal)
+        elseif attr then
+
+            local blob = range[6]
 
             local specification = taglist[attr]
-            local taglist       = specification.taglist
-            local noftags       = #taglist
+            local currentlist   = specification.taglist
+            local noftags       = #currentlist
             local common        = 0
             local literal       = nil
             local ignore        = false
 
             if top then
                 for i=1,noftags >= noftop and noftop or noftags do
-                    if top[i] == taglist[i] then
+                    if top[i] == currentlist[i] then
                         common = i
                     else
                         break
                     end
                 end
             end
-
-            local prev = common > 0 and elements[taglist[common]] or root
-
+            local prev = common > 0 and elements[currentlist[common]] or root
             if blob and not detailedmath then
                 for j=common+1,noftags do
-                    local tag = taglist[j]
+                    local tag = currentlist[j]
                     local prv = elements[tag] or makeelement(tag,prev)
                     if prv == false then
                         -- ignore this one
@@ -723,14 +1494,18 @@ function nodeinjections.addtags(head)
                     else
                         prev = prv
                     end
-                    -- this is an ugly hack but ok for now
+                    -- this is an ugly hack but ok for now -- elements property
+-- print(prev.blob,find(tag,"^math>"))
+--             if prev.blob then
+--                 break
+--             end
                     if find(tag,"^math>") then
                         break
                     end
                 end
             else
                 for j=common+1,noftags do
-                    local tag = taglist[j]
+                    local tag = currentlist[j]
                     local prv = elements[tag] or makeelement(tag,prev)
                     if prv == false then
                         -- ignore this one
@@ -744,77 +1519,46 @@ function nodeinjections.addtags(head)
                     end
                 end
             end
+
             if prev then
-                literal = setstate(makecontent(start,prev,id,specification))
+                literal = setstate(makecontent(start,prev,id,specification,range))
             elseif ignore then
-                literal = setstate(makeignore(specification))
+                literal = setstate(makeignore(specification,range))
             else
                 -- maybe also ignore or maybe better: comment or so
             end
 
             if literal then
-                local left,right
-                if trace_info then
+                local left, right
+                if trace_info or trace_math then
                     local name = specification.tagname
                     if name then
-                        if not visualizetags then
-                            visualizetags  = nodes.visualizers.register("tags")
-                            visualizeblobs = nodes.visualizers.register("blobs",nil,nil,2.5,true)
-                        end
-                        if blob and not blobdone[blob] then
-                            local bname = btags[blob]
-                            if bname then
-                                bname = "M " .. blob .. " " .. bname
-                            else
-                                bname = "M " .. blob
-                            end
-                            blobdone[blob] = true
-                            if detailedmath then
-                                left  = visualizeblobs(bname,name)
-                                right = visualizeblobs()
-                            else
-                                left  = visualizetags(bname)
-                                right = visualizetags()
-                            end
-                        else
-                            left  = visualizetags(name)
-                            right = visualizetags()
-                        end
+                        left, right = tagtracers[name](name,specification,trace_math and blob or nil)
                     end
-                elseif trace_math then
-                    if not visualizetags then
-                        visualizetags  = nodes.visualizers.register("tags")
-                        visualizeblobs = nodes.visualizers.register("blobs",nil,nil,2.5,true)
+                end
+                if not left and trace_suspects then
+                    local name = specification.tagname
+                    if name == "mrow" then -- todo
+                        collectedsuspects[#collectedsuspects+1] = formatters["%i:%s"](pagenum,name)
+                        left, right = tagtracers.suspect(name)
                     end
-                    if blob and not blobdone[blob] then
-                        local bname = btags[blob]
-                        if bname then
-                            bname = "M " .. blob .. " " .. bname
-                        else
-                            bname = "M " .. blob
-                        end
-                        blobdone[blob] = true
-                        if detailedmath then
-                            left  = visualizeblobs(bname,name)
-                            right = visualizeblobs()
-                        else
-                            left  = visualizetags(bname)
-                            right = visualizetags()
-                        end
+                end
+                if not left and trace_internals then
+                    if id == "link" then
+                        left, right = tagtracers.internallink(attr or 0)
+                    elseif id == "reference" then
+                        left, right = tagtracers.internalreference(attr or 0)
                     end
                 end
                 inject(start,stop,list,literal,left,right)
             end
 
-            top    = taglist
+            top    = currentlist
             noftop = noftags
 
         else
-
-            local literal = setstate(makeignore(specification))
-
+            local literal = setstate(makeignore(specification,range))
             inject(start,stop,list,literal)
-
         end
 
     end
@@ -862,15 +1606,19 @@ function codeinjections.enabletags()
      -- enableaction("shipouts","nodes.handlers.accessibility")
         enableaction("math","noads.handlers.tags")
         --
-        if embeddedtags then
-            embeddedtags.math = true
-        else
-            embeddedtags = { math = true }
+        if not embeddedtags then
+            embedsupportedtags()
         end
         --
         if trace_tags then
             report_tags("enabling structure tags")
         end
+        --
         enabled = true
+        version = lpdf.majorversion()
+     -- detailedmath = detailedmath or (version < 2) -- always go for it
+        -- bah
+        updaters.apply("structures.tagging",version)
+        structures.references.forceinnermode()
     end
 end

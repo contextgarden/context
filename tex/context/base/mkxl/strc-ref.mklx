@@ -192,22 +192,22 @@
 
 \protected\def\strc_references_destination_point_yes
   {\strc_references_inject_before % new
-   \dostarttagged\t!reference\empty
+   %dostarttaggednodetail\t!reference
    \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute\bgroup % \hpack
      \strc_references_flush_destination_nodes
      \strc_references_placeholder
      \egroup
-   \dostoptagged
+   %dostoptagged
    \strc_references_inject_after}
 
 \protected\def\strc_references_destination_point_nop
   {\strc_references_inject_before % new
-   \dostarttagged\t!reference\empty
+   %\dostarttaggednodetail\t!reference
    \dontleavehmode\hbox \bgroup % \hpack
      \strc_references_flush_destination_nodes
      \strc_references_placeholder
    \egroup
-   \dostoptagged
+   %\dostoptagged
    \strc_references_inject_after}
 
 \protected\def\strc_references_start_destination_nodes % messy but we need the delay
@@ -1540,9 +1540,9 @@
      \setstrut % can be option
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \c_attr_reference\lastreferenceattribute
-     \dostarttagged\t!link\empty % not here
+     %\dostarttaggednodetail\t!link % not here
      #content%
-     \dostoptagged
+     %\dostoptagged
    \else
      #content%
    \fi
@@ -1566,9 +1566,9 @@
      \setlocationattributes
      \c_attr_reference\lastreferenceattribute
      \global\lastsavedreferenceattribute\lastreferenceattribute
-     \dostarttagged\t!link\empty
+     %dostarttaggednodetail\t!link
      #content%
-     \dostoptagged
+     %dostoptagged
    \else
      #content%
    \fi
@@ -1590,9 +1590,9 @@
         \setstrut % can be option
         \global\lastsavedreferenceattribute\lastreferenceattribute
         \c_attr_reference\lastreferenceattribute
-        \dostarttagged\t!link\empty
+        %dostarttaggednodetail\t!link
         #content%
-        \dostoptagged}%
+       }%dostoptagged}%
        {#content}%
    \else
      #content%
@@ -1611,9 +1611,9 @@
      \global\lastsavedreferenceattribute\currentreferenceattribute
      \c_attr_reference\currentreferenceattribute
      \setlocationattributes
-     \dostarttagged\t!link\empty
+     %\dostarttaggednodetail\t!link
      #content%
-     \dostoptagged
+     %\dostoptagged
    \else
      #content%
    \fi
@@ -1647,11 +1647,11 @@
    \setstrut % can be option
    \global\lastsavedreferenceattribute\lastreferenceattribute
    \c_attr_reference\lastreferenceattribute
-   \dostarttagged\t!link\empty
+   %\dostarttaggednodetail\t!link
    \let\stopgoto\strc_references_stop_goto_yes}
 
 \protected\def\strc_references_stop_goto_yes
-  {\dostoptagged
+  {%\dostoptagged
    \endgroup}
 
 \def\strc_references_goto_htdp#content#dummy[#label]% dummy gobbles spaces
@@ -1668,9 +1668,9 @@
         \setlocationattributes
         \global\lastsavedreferenceattribute\lastreferenceattribute
         \c_attr_reference\lastreferenceattribute
-        \dostarttagged\t!link\empty
+        %\dostarttaggednodetail\t!link
         #content%
-        \dostoptagged}%
+       }%dostoptagged}%
        {#content}%
    \else
      #content%
@@ -1690,9 +1690,9 @@
      \relax
      \setlocationattributes
      \global\lastsavedreferenceattribute\lastreferenceattribute
-     \dostarttagged\t!link\empty
+     %dostarttaggednodetail\t!link
      \hbox attr \referenceattribute \lastreferenceattribute {#content}%
-     \dostoptagged
+     %dostoptagged
    \else
      #content%
    \fi
@@ -1711,9 +1711,9 @@
      \relax
      \setlocationcolorspec{#resolver}% no consequence for strut
      \global\lastsavedreferenceattribute\lastreferenceattribute
-     \dostarttagged\t!link\empty
+     %dostarttaggednodetail\t!link
      \hbox attr \referenceattribute \lastreferenceattribute {#content}%
-     \dostoptagged
+     %dostoptagged
    \else
      #content%
    \fi
@@ -1731,9 +1731,9 @@
        {\extrareferencearguments}%
      \relax
      \global\lastsavedreferenceattribute\lastreferenceattribute
-     \dostarttagged\t!link\empty
+     %dostarttaggednodetail\t!link
      \hbox attr \referenceattribute \lastreferenceattribute {#content}%
-     \dostoptagged
+     %dostoptagged
    \else
      #content%
    \fi
@@ -1749,9 +1749,9 @@
        {\clf_injectcurrentreference
         \setlocationattributes
         \global\lastsavedreferenceattribute\lastreferenceattribute
-        \dostarttagged\t!link\empty
+        %dostarttaggednodetail\t!link
         \hbox attr \referenceattribute \lastreferenceattribute {#content}%
-        \dostoptagged}%
+       }%\dostoptagged}%
        {#content}%
    \else
      #content%

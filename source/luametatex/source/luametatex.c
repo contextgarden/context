@@ -49,7 +49,7 @@ version_state_info lmt_version_state = {
     .luaversionmajor   = LUA_VERSION_MAJOR_N,
     .luaversionminor   = LUA_VERSION_MINOR_N,	
     .luaversionrelease = LUA_VERSION_RELEASE_N,
-    .luatexversion     = (double) luametatex_version + (double) luametatex_revision / 10,
+    .luatexversion     = (double) luametatex_version_number,
     .luaversion        = (double) LUA_VERSION_MAJOR_N + (double) LUA_VERSION_MINOR_N / 10,
 };
 

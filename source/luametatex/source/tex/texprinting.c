@@ -1252,6 +1252,14 @@ const char *tex_print_format_args(const char *format, va_list args)
                             tex_print_unit(va_arg(args, int));
                             break;
                         */
+                        case 'u':
+                            {
+                                unsigned char s[6] = { 0 };
+                                unsigned char *b = s;
+                                b = aux_uni2str(va_arg(args, int));
+                                tex_print_format(", %s", b);
+                                break;
+                            }                       
                         case 'B': /* badness */
                             {
                                 scaled b = va_arg(args, halfword);

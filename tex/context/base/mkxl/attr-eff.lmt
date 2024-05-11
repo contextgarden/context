@@ -20,12 +20,12 @@ local formatters        = string.formatters
 local interfaces        = interfaces
 local implement         = interfaces.implement
 
-local v_normal          <const> = interfaces.variables.normal
+local v_normal  <const> = interfaces.variables.normal
 
 attributes.effects      = attributes.effects or { }
 local effects           = attributes.effects
 
-local a_effect          <const> = attributes.private('effect')
+local a_effect  <const> = attributes.private('effect')
 
 effects.data            = allocate()
 effects.values          = effects.values     or { }

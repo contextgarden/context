@@ -148,7 +148,7 @@
    \glet\spac_after_first_obeyed_line\spac_lines_after_first_obeyed_line_a
    \enforced\let\obeyedline\spac_lines_obeyed_line
    \activatespacehandler{\linesparameter\c!space}%
-   \dostarttagged\t!line\empty
+   \dostarttaggednodetail\t!line
    \ignorepars}
 
 
@@ -170,7 +170,7 @@
   {\ifdone\linesparameter\c!right\fi
    \dostoptagged % can be a dummy one as we don't look ahead
    \par
-   \dostarttagged\t!line\empty
+   \dostarttaggednodetail\t!line
    \futurelet\nexttoken\spac_lines_between}
 
 \protected\def\spac_lines_stop

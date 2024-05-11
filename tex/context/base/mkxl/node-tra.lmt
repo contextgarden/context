@@ -51,7 +51,6 @@ local getdirection    = nuts.getdirection
 local getwidth        = nuts.getwidth
 
 local count_nodes     = nuts.countall
-local used_nodes      = nuts.usedlist
 
 local nextnode        = nuts.traversers.node
 local nextglyph       = nuts.traversers.glyph
@@ -306,6 +305,7 @@ nodes.showsimplelist = function(h,depth) showsimplelist(h,depth,0) end
 
 local function listtoutf(h,joiner,textonly,last,nodisc)
     if h then
+local chardata = fonts.hashes.characters -- not yet defined
         local w = { }
         local n = 0
         local g = formatters["<%i>"]
@@ -313,7 +313,26 @@ local function listtoutf(h,joiner,textonly,last,nodisc)
         while h do
             local c, id = isglyph(h)
             if c then
-                n = n + 1 ; w[n] = c >= 0 and utfchar(c) or g(c)
+                if c >= 0 then
+                    local d = chardata[id]
+                    if d then
+                        d = d[c]
+                        if d then
+                            local u = d.unicode
+                            if type(u) == "table" then
+                                for i=1,#u do
+                                    n = n + 1 ; w[n] = utfchar(u[i])
+                                end
+                                goto DONE
+                            elseif u then
+                                n = n + 1 ; w[n] = utfchar(u)
+                                goto DONE
+                            end
+                        end
+                    end
+                end
+                n = n + 1 ; w[n] = g(c)
+              ::DONE::
                 if joiner then
                     n = n + 1 ; w[n] = joiner
                 end

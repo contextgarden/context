@@ -23,85 +23,89 @@
 %D Eventually these labels will either move to the modules where they're used, or
 %D they will en dup in mult-tag.
 
-\definetagconstant{document}               % Div
+\definetagconstant{document}
+\definetagconstant{documentpart}
 
-\definetagconstant{division}               % Div
-\definetagconstant{paragraph}              % P
-\definetagconstant{p}                      % P
-\definetagconstant{construct}              % Span
-\definetagconstant{highlight}              % Span
+\definetagconstant{division}
+\definetagconstant{paragraph}
+\definetagconstant{p}
+\definetagconstant{construct}
+\definetagconstant{highlight}
+\definetagconstant{ornament}
 
-\definetagconstant{section}                % Sect
-\definetagconstant{sectioncaption}         % Div
-\definetagconstant{sectiontitle}           % H
-\definetagconstant{sectionnumber}          % H
-\definetagconstant{sectioncontent}         % Div
+% \definetagconstant{sectionblock}
 
-\definetagconstant{itemgroup}              % L
-\definetagconstant{item}                   % Li
-\definetagconstant{itemtag}                % Lbl
-\definetagconstant{itemcontent}            % LBody
-\definetagconstant{itemhead}               % Div
-\definetagconstant{itembody}               % Div
+\definetagconstant{section}
+\definetagconstant{sectioncaption}
+\definetagconstant{sectiontitle}
+\definetagconstant{sectionnumber}
+\definetagconstant{sectioncontent}
 
-\definetagconstant{description}            % Li
-\definetagconstant{descriptiontag}         % Lbl
-\definetagconstant{descriptioncontent}     % LBody
-\definetagconstant{descriptionsymbol}      % Span
+\definetagconstant{itemgroup}
+\definetagconstant{item}
+\definetagconstant{itemtag}
+\definetagconstant{itemcontent}
+\definetagconstant{itemhead}
+\definetagconstant{itembody}
+
+\definetagconstant{description}
+\definetagconstant{descriptiontag}
+\definetagconstant{descriptioncontent}
+\definetagconstant{descriptionsymbol}
 
 \aliastagconstant{construction}       {description}
 \aliastagconstant{constructiontag}    {descriptiontag}
 \aliastagconstant{constructioncontent}{descriptioncontent}
 \aliastagconstant{constructionsymbol} {descriptionsymbol}
 
-\definetagconstant{verbatimblock}          % Code
-\definetagconstant{verbatimlines}          % Code
-\definetagconstant{verbatimline}           % Code
-\definetagconstant{verbatim}               % Code
+\definetagconstant{verbatimblock}
+\definetagconstant{verbatimlines}
+\definetagconstant{verbatimline}
+\definetagconstant{verbatim}
 
-\definetagconstant{lines}                  % Code
-\definetagconstant{line}                   % Code
-\definetagconstant{linenumber}             % Span
+\definetagconstant{lines}
+\definetagconstant{line}
+\definetagconstant{linenumber}
 
-\definetagconstant{sorting}                % Span
-\definetagconstant{synonym}                % Span
+\definetagconstant{sorting}
+\definetagconstant{synonym}
 
-\definetagconstant{register}               % Div
-\definetagconstant{registerlocation}       % Span
-\definetagconstant{registersection}        % Div
-\definetagconstant{registertag}            % Span
-\definetagconstant{registerentries}        % Div
-\definetagconstant{registerentry}          % Span
-\definetagconstant{registercontent}        % Span
-\definetagconstant{registersee}            % Span
-\definetagconstant{registerpages}          % Span
-\definetagconstant{registerpage}           % Span
-\definetagconstant{registerpagerange}      % Span
-\definetagconstant{registerfrompage}       % Span
-\definetagconstant{registertopage}         % Span
-\definetagconstant{registerseparator}      % Span
+\definetagconstant{register}
+\definetagconstant{registerlocation}
+\definetagconstant{registersection}
+\definetagconstant{registertag}
+\definetagconstant{registerentries}
+\definetagconstant{registerentry}
+\definetagconstant{registercontent}
+\definetagconstant{registersee}
+\definetagconstant{registerpages}
+\definetagconstant{registerpage}
+\definetagconstant{registerpagerange}
+\definetagconstant{registerfrompage}
+\definetagconstant{registertopage}
+\definetagconstant{registerseparator}
 
-\definetagconstant{table}                  % Table
-\definetagconstant{tablerow}               % TR
-\definetagconstant{tablecell}              % TD
-\definetagconstant{tableheadcell}          % TH
-\definetagconstant{tablehead}              % THEAD
-\definetagconstant{tablebody}              % TBODY
-\definetagconstant{tablefoot}              % TFOOT
+\definetagconstant{table}
+\definetagconstant{tablerow}
+\definetagconstant{tablecell}
+\definetagconstant{tableheadcell}
+\definetagconstant{tablehead}
+\definetagconstant{tablebody}
+\definetagconstant{tablefoot}
 
-\definetagconstant{tabulate}               % Table
-\definetagconstant{tabulaterow}            % TR
-\definetagconstant{tabulatecell}           % TD
-\definetagconstant{tabulateheadcell}       % TH
-\definetagconstant{tabulatehead}           % THEAD
-\definetagconstant{tabulatebody}           % TBODY
-\definetagconstant{tabulatefoot}           % TFOOT
+\definetagconstant{tabulate}
+\definetagconstant{tabulaterow}
+\definetagconstant{tabulatecell}
+\definetagconstant{tabulateheadcell}
+\definetagconstant{tabulatehead}
+\definetagconstant{tabulatebody}
+\definetagconstant{tabulatefoot}
 
-\definetagconstant{math}                   % math
-\definetagconstant{mtable}                 % Table
-\definetagconstant{mtr}                    % TR
-\definetagconstant{mtd}                    % TD
-\definetagconstant{maction}                %
+\definetagconstant{math}
+\definetagconstant{mtable}
+\definetagconstant{mtr}
+\definetagconstant{mtd}
+\definetagconstant{maction}
 
 \definetagconstant{mstacker}
 \definetagconstant{mstackertop}
@@ -119,86 +123,108 @@
 \definetagconstant{munit}
 \definetagconstant{mdigits}
 
-\aliastagconstant{mtablerow} {mtr}
-\aliastagconstant{mtablecell}{mtd}
+\aliastagconstant {mtablerow} {mtr}
+\aliastagconstant {mtablecell}{mtd}
 
-\definetagconstant{munderover}             % special cases
-\definetagconstant{munder}                 % special cases
-\definetagconstant{mover}                  % special cases
+\definetagconstant{munderover}
+\definetagconstant{munder}
+\definetagconstant{mover}
+\definetagconstant{mtext}
 
-\definetagconstant{list}                   % TOC
-\definetagconstant{listitem}               % TOCI
-\definetagconstant{listtag}                % Lbl
-\definetagconstant{listcontent}            % P
-\definetagconstant{listdata}               % P
-\definetagconstant{listpage}               % Reference
-\definetagconstant{listtext}               % Span
+\definetagconstant{list}
+\definetagconstant{listitem}
+\definetagconstant{listtag}
+\definetagconstant{listcontent}
+\definetagconstant{listdata}
+\definetagconstant{listpage}
+\definetagconstant{listtext}
 
-\definetagconstant{delimited}              % BlockQuote
-%definetagconstant{delimited}              % Quote
-\definetagconstant{delimitedsymbol}        % Span
-\definetagconstant{delimitedcontent}       % Span
+\definetagconstant{delimited}
+%definetagconstant{delimited}
+\definetagconstant{delimitedsymbol}
+\definetagconstant{delimitedcontent}
 
-\aliastagconstant{delimitedblock}{delimited}
+\aliastagconstant {delimitedblock}{delimited}
 
-\definetagconstant{subsentence}            % Span
-\definetagconstant{subsentencecontent}     % Span
-\definetagconstant{subsentencesymbol}      % Span
+\definetagconstant{subsentence}
+\definetagconstant{subsentencecontent}
+\definetagconstant{subsentencesymbol}
 
-\definetagconstant{float}                  % Div
-\definetagconstant{floatcaption}           % Caption
-\definetagconstant{floatlabel}             % Span
-\definetagconstant{floattext}              % Span
-\definetagconstant{floatnumber}            % Span
-\definetagconstant{floatcontent}           % P
+\definetagconstant{float}
+\definetagconstant{floatcaption}
+\definetagconstant{floatlabel}
+\definetagconstant{floattext}
+\definetagconstant{floatnumber}
+\definetagconstant{floatcontent}
 
-\definetagconstant{image}                  % P
+\definetagconstant{image}
 
-\definetagconstant{mpgraphic}              % P
+\definetagconstant{mpgraphic}
 
-\definetagconstant{formulaset}             % Div
-\definetagconstant{formula}                % Div
-\definetagconstant{formulacaption}         % Span
-\definetagconstant{formulalabel}           % Span
-\definetagconstant{formulanumber}          % P
-\definetagconstant{formulacontent}         % P
-\definetagconstant{subformula}             % Div
+\definetagconstant{formulaset}
+\definetagconstant{formula}
+\definetagconstant{formulacaption}
+\definetagconstant{formulalabel}
+\definetagconstant{formulanumber}
+\definetagconstant{formulacontent}
+\definetagconstant{subformula}
 
-\definetagconstant{link}                   % Link
-\definetagconstant{reference}              % Span
+\definetagconstant{link}
+\definetagconstant{reference}
 
-\definetagconstant{margintext}             % Span
-\definetagconstant{margintextblock}        % Div
-\definetagconstant{marginanchor}           % Span
+\definetagconstant{nativation}
+\definetagconstant{nativationbutton}
+\definetagconstant{nativationmenu}
+\definetagconstant{nativationmenuitem}
+\definetagconstant{nativationaction}
+
+\definetagconstant{margintext}
+\definetagconstant{margintextblock}
+\definetagconstant{marginanchor}
 
 % we might opt for verbose variants so this is experimental:
 
-\definetagconstant{label}                  % Span
-\definetagconstant{number}                 % Span
+\definetagconstant{label}
+\definetagconstant{number}
 
-\definetagconstant{ignore}                 % Span
-\definetagconstant{private}                % Span
+\definetagconstant{ignore}
+\definetagconstant{private}
 
-\definetagconstant{mid}                    % Span
-\definetagconstant{sub}                    % Span
-\definetagconstant{sup}                    % Span
-\definetagconstant{subsup}                 % Span
+\definetagconstant{mid}
+\definetagconstant{sub}
+\definetagconstant{sup}
+\definetagconstant{subsup}
 
-\definetagconstant{unit}                   % Span
-\definetagconstant{quantity}               % Span
-%definetagconstant{number}                 % Span
+\definetagconstant{unit}
+\definetagconstant{quantity}
+%definetagconstant{number}
 
-\definetagconstant{combination}            % Span
-\definetagconstant{combinationpair}        % Span
-\definetagconstant{combinationcontent}     % Span
-\definetagconstant{combinationcaption}     % Span
+\definetagconstant{combination}
+\definetagconstant{combinationpair}
+\definetagconstant{combinationcontent}
+\definetagconstant{combinationcaption}
 
-\definetagconstant{publications}           % Span
-\definetagconstant{publication}            % Span
-\definetagconstant{pubfld}                 % Span
+\definetagconstant{publications}
+\definetagconstant{publication}
+\definetagconstant{pubfld}
 
-\definetagconstant{block}                  % Div
-\definetagconstant{userdata}               % Div
+\definetagconstant{citation}
+\definetagconstant{cite}
+
+\definetagconstant{block}
+\definetagconstant{userdata}
+
+\definetagconstant{verse}
+\definetagconstant{versetag}
+\definetagconstant{verseseparator}
+\definetagconstant{versecontent}
+
+\definetagconstant{navigation}
+\definetagconstant{navigationbutton}
+\definetagconstant{navigationmenu}
+\definetagconstant{navigationmenuitem}
+\definetagconstant{navigationaction}
+\definetagconstant{navigationpage}
 
 % \setuptaglabeltext
 %   [en]
@@ -303,7 +329,10 @@
    \enforced\let\dostarttaggedchained \strc_tags_enabled_start_chained
    \enforced\let\dostoptagged         \strc_tags_enabled_stop
    \enforced\let\dostartignoretagging \strc_tags_enabled_start_ignore
-   \enforced\let\dostopignoretagging  \strc_tags_stop}
+   \enforced\let\dostopignoretagging  \strc_tags_stop
+   \enforced\let\dotagdocumentpush    \strc_tags_document_push % defined at the lua end
+   \enforced\let\dotagdocumentpop     \strc_tags_document_pop  % defined at the lua end
+   \enforced\let\dotagdocumentignore  \strc_tags_document_ignore}
 
 \protected\def\strc_tags_enable
   {% once enable one is toast
@@ -328,7 +357,38 @@
      \enforced\let\dostoptagged         \donothing
      \enforced\let\dostartignoretagging \donothing
      \enforced\let\dostopignoretagging  \donothing
+     \enforced\let\dotagdocumentpush    \donothing
+     \enforced\let\dotagdocumentpop     \donothing
+     \enforced\let\dotagdocumentignore  \donothing
    \fi}
+
+% this
+%
+% \appendtoks
+%     \strc_tags_disable_elements
+%     \strc_tags_disable
+% \to \everybeforepagebody
+%
+% has become
+
+\protected\def\strc_tags_document_ignore
+  {\c_attr_tagged\plusone}
+
+\prependtoks
+    \dotagdocumentignore
+\to \everybeforepagebody
+
+% \def\strc_tags_horrible_start
+%   {\begingroup
+%    \ifconditional\c_strc_tags_enabled
+%      \dotagdocumentpush
+%    \fi}
+
+% \def\strc_tags_horrible_stop
+%   {\ifconditional\c_strc_tags_enabled
+%       \dotagdocumentpop
+%    \fi
+%    \endgroup}
 
 % for luigi (beware: fully expandable):
 
@@ -372,8 +432,10 @@
 
 \appendtoks
    \ifcstok{\taggingparameter\c!state}\v!start
+     \setsystemmode\s!tagging
      \expand\everyenableelements
    \else
+     \resetsystemmode\s!tagging
      \expand\everydisableelements
    \fi
 \to \everysetuptagging
@@ -436,10 +498,12 @@
 
 \def\strc_tags_document_start_indeed
   {\glet\strc_tags_document_start_indeed\relax
-   \dostarttagged\t!document\empty}
+   \dostarttaggednodetail\t!document
+   \dostarttaggednodetail\t!documentpart} % ua2 demands at least one level more
 
 \def\strc_tags_document_stop_indeed
   {\glet\strc_tags_document_stop_indeed\relax
+   \dostoptagged
    \dostoptagged}
 
 \appendtoks
@@ -453,22 +517,6 @@
 \appendtoks
     \strc_tags_document_stop_indeed
 \to \everystoptext
-
-\appendtoks
-    \strc_tags_disable_elements
-    \strc_tags_disable
-\to \everybeforepagebody
-
-% This doesn't work well either, so instead we handle the ornaments in the tagging
-% in a different way (see attr -> false code).
-
-% \appendtoks
-%     \dostartignoretagging
-% \to \everybeforepagebody
-%
-% \appendtoks
-%     \dostopignoretagging
-% \to \everyafterpagebody
 
 % \doifelseinelement{structure:section}            {yes} {no}
 % \doifelseinelement{structure:chapter}            {yes} {no}
@@ -527,17 +575,26 @@
 \aliased\let\strc_tagged_saved_bpar\bpar
 \aliased\let\strc_tagged_saved_epar\epar
 
-\enforced\permanent\protected\def\bpar{\dostarttagged\t!paragraph\empty\strc_tagged_saved_bpar}
+\enforced\permanent\protected\def\bpar{\dostarttaggednodetail\t!paragraph\strc_tagged_saved_bpar}
 \enforced\permanent\protected\def\epar{\strc_tagged_saved_epar\dostoptagged}
 
 \popoverloadmode
 
-%D For now:
-
-\appendtoks
-    \clf_settagginglevel{\taggingparameter\c!level}%
-\to \everysetuptagging
-
 % \permanent\def\untagged{attr \taggedattribute\attributeunsetvalue}
+
+%D Horrible (maybe enable more here):
+
+\def\strc_tags_horrible_start
+  {\ifconditional\c_strc_tags_enabled
+     \strc_tags_enable_indeed
+     \dostarttaggednodetail\t!document
+     \dostarttaggednodetail\t!documentpart
+   \fi}
+
+\def\strc_tags_horrible_stop
+  {\ifconditional\c_strc_tags_enabled
+     \dostoptagged
+     \dostoptagged
+   \fi}
 
 \protect

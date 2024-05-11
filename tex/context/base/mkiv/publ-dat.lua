@@ -1147,14 +1147,16 @@ do
         local result  = { }
         local n, r = 0, 0
         for tag, data in sortedhash(tobesaved) do
-            r = r + 1 ; result[r] = f_start(data.category or "article",tag)
-            for key, value in sortedhash(data) do
-                if not privates[key] then
-                    r = r + 1 ; result[r] = f_field(key,value)
+            if type(data) == "table" then
+                r = r + 1 ; result[r] = f_start(data.category or "article",tag)
+                for key, value in sortedhash(data) do
+                    if not privates[key] then
+                        r = r + 1 ; result[r] = f_field(key,value)
+                    end
                 end
+                r = r + 1 ; result[r] = s_stop
+                n = n + 1
             end
-            r = r + 1 ; result[r] = s_stop
-            n = n + 1
         end
         result = concat(result)
         if find(result,"\\btxcmd") then
@@ -1187,11 +1189,15 @@ do
         if options.category then
             setmetatableindex(list,"table")
             for tag, data in next, tobesaved do
-                list[data.category or "unknown"][tag] = totable(data)
+                if type(data) == "table" then
+                    list[data.category or "unknown"][tag] = totable(data)
+                end
             end
         else
             for tag, data in next, tobesaved do
-                list[tag] = totable(data,data.category)
+                if type(data) == "table" then
+                    list[tag] = totable(data,data.category)
+                end
             end
         end
         report("%s entries from dataset %a saved in %a",n,dataset,filename)

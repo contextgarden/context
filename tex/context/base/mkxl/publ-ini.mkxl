@@ -677,7 +677,7 @@
 
 \permanent\protected\def\btxnumberingsetup#1%
   {\begingroup
-   \dostarttagged\t!listtag\empty
+   \dostarttaggednodetail\t!listtag
    \setbtxparameterset{\c!list:\s!numbering}\currentbtxnumbering % brrrr   \setbtxlist
    \btxparameter\c!left
    \publ_fast_setup\plusthree{\s!list:\s!numbering}{#1}%
@@ -708,7 +708,7 @@
 
 \protected\def\btx_entry_inject
   {\begingroup
-   \dostarttagged\t!publication\empty
+   \dostarttaggednodetail\t!publication
    \dotagpublication\currentbtxdataset\currentbtxtag
    \redoconvertfont % see (**) in strc-lst, this will become an configuration option
    \edef\currentbtxcategory{\btxrawfield{category}}%
@@ -718,11 +718,11 @@
      \currentbtxbefore
      \dostoptagged
    \fi
-  %\dostarttagged\t!listcontent\empty
+  %\dostarttaggednodetail\t!listcontent
    \btx_entry_inject_list_text
   %\dostoptagged
    \ifconditional\c_btx_list_pages
-     \dostarttagged\t!listpage\empty
+     \dostarttaggednodetail\t!listpage
      \btx_entry_inject_pages
      \dostoptagged
    \fi
@@ -1049,7 +1049,7 @@
    \strc_lists_apply_renderingsetup}
 
 \def\btx_entry_indeed
-  {\dostarttagged\t!listcontent\empty
+  {\dostarttaggednodetail\t!listcontent
    \btx_list_reference_inject
    \btx_entry_inject
    \dostoptagged}
@@ -1506,16 +1506,27 @@
 
 \aliased\let\dobtxcitevariantblob\publ_cite_handle_variant_blob % command can use it via lua
 
+\let\publ_cite_trace_blob\relax
+
 \tolerant\def\publ_cite_handle_variant_indeed[#1]%
   {\letbtxparameter\c!alternative\currentbtxcitealternative
    \edef\currentbtxreference{#1}%
    \saverunningstyleandcolor
    \usebtxstyleandcolor\c!style\c!color
    \uselanguageparameter\btxdatasetparameter % new
+   \dostarttaggednodetail\t!citation
    \btxparameter\c!left
    \btxparameter\c!command{\dobtxcitevariantblob}% {\publ_cite_handle_variant_blob}%
    \btxparameter\c!right
+   \dostoptagged
+   \publ_cite_trace_blob
    \endgroup}
+
+\permanent\protected\def\btxstarttaggedcite
+  {\dostarttagged\t!cite{\currentbtxdataset::\currentbtxtag}}
+
+\permanent\protected\def\btxstoptaggedcite
+  {\dostoptagged}
 
 \permanent\protected\def\btxlistcitation  {\publ_citation\v!list}
 \permanent\protected\def\btxtextcitation  {\publ_citation\v!text}

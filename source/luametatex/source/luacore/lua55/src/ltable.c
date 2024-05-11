@@ -25,6 +25,7 @@
 
 #include <math.h>
 #include <limits.h>
+#include <string.h>
 
 #include "lua.h"
 
@@ -73,7 +74,7 @@ typedef union {
 ** MAXASIZEB is the maximum number of elements in the array part such
 ** that the size of the array fits in 'size_t'.
 */
-#define MAXASIZEB	((MAX_SIZET/sizeof(ArrayCell)) * NM)
+#define MAXASIZEB	(MAX_SIZET/(sizeof(Value) + 1))
 
 
 /*
@@ -358,8 +359,8 @@ static unsigned int arrayindex (lua_Integer k) {
 ** elements in the array part, then elements in the hash part. The
 ** beginning of a traversal is signaled by 0.
 */
-static unsigned int findindex (lua_State *L, Table *t, TValue *key,
-                               unsigned int asize) {
+static unsigned findindex (lua_State *L, Table *t, TValue *key,
+                               unsigned asize) {
   unsigned int i;
   if (ttisnil(key)) return 0;  /* first iteration */
   i = ttisinteger(key) ? arrayindex(ivalue(key)) : 0;
@@ -462,7 +463,7 @@ static int keyinarray (Table *t, lua_Integer key) {
 ** will go to the array part; return the optimal size.  (The condition
 ** 'twotoi > 0' in the for loop stops the loop if 'twotoi' overflows.)
 */
-static unsigned int computesizes (unsigned int nums[], unsigned int *pna) {
+static unsigned computesizes (unsigned nums[], unsigned *pna) {
   int i;
   unsigned int twotoi;  /* 2^i (candidate for optimal size) */
   unsigned int a = 0;  /* number of elements smaller than 2^i */
@@ -506,7 +507,7 @@ l_sinline int arraykeyisempty (const Table *t, lua_Integer key) {
 ** number of keys that will go into corresponding slice and return
 ** total number of non-nil keys.
 */
-static unsigned int numusearray (const Table *t, unsigned int *nums) {
+static unsigned numusearray (const Table *t, unsigned *nums) {
   int lg;
   unsigned int ttlg;  /* 2^lg */
   unsigned int ause = 0;  /* summation of 'nums' */
@@ -533,7 +534,7 @@ static unsigned int numusearray (const Table *t, unsigned int *nums) {
 }
 
 
-static int numusehash (const Table *t, unsigned int *nums, unsigned int *pna) {
+static int numusehash (const Table *t, unsigned *nums, unsigned *pna) {
   int totaluse = 0;  /* total number of elements */
   int ause = 0;  /* elements added to 'nums' (can go to array part) */
   int i = sizenode(t);
@@ -553,26 +554,52 @@ static int numusehash (const Table *t, unsigned int *nums, unsigned int *pna) {
 /*
 ** Convert an "abstract size" (number of slots in an array) to
 ** "concrete size" (number of bytes in the array).
-** If the abstract size is not a multiple of NM, the last cell is
-** incomplete, so we don't need to allocate memory for the whole cell.
-** 'extra' computes how many values are not needed in that last cell.
-** It will be zero when 'size' is a multiple of NM, and from there it
-** increases as 'size' decreases, up to (NM - 1).
 */
 static size_t concretesize (unsigned int size) {
-  unsigned int numcells = (size + NM - 1) / NM;   /* (size / NM) rounded up */
-  unsigned int extra = NM - 1 - ((size + NM - 1) % NM);
-  return numcells * sizeof(ArrayCell) - extra * sizeof(Value);
+  return size * sizeof(Value) + size;  /* space for the two arrays */
 }
 
 
-static ArrayCell *resizearray (lua_State *L , Table *t,
-                               unsigned int oldasize,
-                               unsigned int newasize) {
-  size_t oldasizeb = concretesize(oldasize);
-  size_t newasizeb = concretesize(newasize);
-  void *a = luaM_reallocvector(L, t->array, oldasizeb, newasizeb, lu_byte);
-  return cast(ArrayCell*, a);
+/*
+** Resize the array part of a table. If new size is equal to the old,
+** do nothing. Else, if new size is zero, free the old array. (It must
+** be present, as the sizes are different.) Otherwise, allocate a new
+** array, move the common elements to new proper position, and then
+** frees old array.
+** When array grows, we could reallocate it, but we still would need
+** to move the elements to their new position, so the copy implicit
+** in realloc is a waste.  When array shrinks, it always erases some
+** elements that should still be in the array, so we must reallocate in
+** two steps anyway. It is simpler to always reallocate in two steps.
+*/
+static Value *resizearray (lua_State *L , Table *t,
+                               unsigned oldasize,
+                               unsigned newasize) {
+  if (oldasize == newasize)
+    return t->array;  /* nothing to be done */
+  else if (newasize == 0) {  /* erasing array? */
+    Value *op = t->array - oldasize;  /* original array's real address */
+    luaM_freemem(L, op, concretesize(oldasize));  /* free it */
+    return NULL;
+  }
+  else {
+    size_t newasizeb = concretesize(newasize);
+    Value *np = cast(Value *,
+                  luaM_reallocvector(L, NULL, 0, newasizeb, lu_byte));
+    if (np == NULL)  /* allocation error? */
+      return NULL;
+    if (oldasize > 0) {
+      Value *op = t->array - oldasize;  /* real original array */
+      unsigned tomove = (oldasize < newasize) ? oldasize : newasize;
+      lua_assert(tomove > 0);
+      /* move common elements to new position */
+      memcpy(np + newasize - tomove,
+             op + oldasize - tomove,
+             concretesize(tomove));
+      luaM_freemem(L, op, concretesize(oldasize));
+    }
+    return np + newasize;  /* shift pointer to the end of value segment */
+  }
 }
 
 
@@ -583,7 +610,7 @@ static ArrayCell *resizearray (lua_State *L , Table *t,
 ** comparison ensures that the shift in the second one does not
 ** overflow.
 */
-static void setnodevector (lua_State *L, Table *t, unsigned int size) {
+static void setnodevector (lua_State *L, Table *t, unsigned size) {
   if (size == 0) {  /* no elements to hash part? */
     t->node = cast(Node *, dummynode);  /* use common 'dummynode' */
     t->lsizenode = 0;
@@ -654,6 +681,35 @@ static void exchangehashpart (Table *t1, Table *t2) {
 
 
 /*
+** Re-insert into the new hash part of a table the elements from the
+** vanishing slice of the array part.
+*/
+static void reinsertOldSlice (lua_State *L, Table *t, unsigned oldasize,
+                                            unsigned newasize) {
+  unsigned i;
+  t->alimit = newasize;  /* pretend array has new size... */
+  for (i = newasize; i < oldasize; i++) {  /* traverse vanishing slice */
+    int tag = *getArrTag(t, i);
+    if (!tagisempty(tag)) {  /* a non-empty entry? */
+      TValue aux;
+      farr2val(t, i + 1, tag, &aux);  /* copy entry into 'aux' */
+      luaH_setint(L, t, i + 1, &aux);  /* re-insert it into the table */
+    }
+  }
+  t->alimit = oldasize;  /* restore current size... */
+}
+
+
+/*
+** Clear new slice of the array.
+*/
+static void clearNewSlice (Table *t, unsigned oldasize, unsigned newasize) {
+  for (; oldasize < newasize; oldasize++)
+    *getArrTag(t, oldasize) = LUA_VEMPTY;
+}
+
+
+/*
 ** Resize table 't' for the new given sizes. Both allocations (for
 ** the hash part and for the array part) can fail, which creates some
 ** subtleties. If the first allocation, for the hash part, fails, an
@@ -666,31 +722,21 @@ static void exchangehashpart (Table *t1, Table *t2) {
 ** nils and reinserts the elements of the old hash back into the new
 ** parts of the table.
 */
-void luaH_resize (lua_State *L, Table *t, unsigned int newasize,
-                                          unsigned int nhsize) {
-  unsigned int i;
+void luaH_resize (lua_State *L, Table *t, unsigned newasize,
+                                          unsigned nhsize) {
   Table newt;  /* to keep the new hash part */
   unsigned int oldasize = setlimittosize(t);
-  ArrayCell *newarray;
+  Value *newarray;
   if (newasize > MAXASIZE)
     luaG_runerror(L, "table overflow");
   /* create new hash part with appropriate size into 'newt' */
   newt.flags = 0;
   setnodevector(L, &newt, nhsize);
   if (newasize < oldasize) {  /* will array shrink? */
-    t->alimit = newasize;  /* pretend array has new size... */
-    exchangehashpart(t, &newt);  /* and new hash */
     /* re-insert into the new hash the elements from vanishing slice */
-    for (i = newasize; i < oldasize; i++) {
-      int tag = *getArrTag(t, i);
-      if (!tagisempty(tag)) {  /* a non-empty entry? */
-        TValue aux;
-        farr2val(t, i + 1, tag, &aux);
-        luaH_setint(L, t, i + 1, &aux);
-      }
-    }
-    t->alimit = oldasize;  /* restore current size... */
-    exchangehashpart(t, &newt);  /* and hash (in case of errors) */
+    exchangehashpart(t, &newt);  /* pretend table has new hash */
+    reinsertOldSlice(L, t, oldasize, newasize);
+    exchangehashpart(t, &newt);  /* restore old hash (in case of errors) */
   }
   /* allocate new array */
   newarray = resizearray(L, t, oldasize, newasize);
@@ -702,8 +748,7 @@ void luaH_resize (lua_State *L, Table *t, unsigned int newasize,
   exchangehashpart(t, &newt);  /* 't' has the new hash ('newt' has the old) */
   t->array = newarray;  /* set new array part */
   t->alimit = newasize;
-  for (i = oldasize; i < newasize; i++)  /* clear new slice of the array */
-    *getArrTag(t, i) = LUA_VEMPTY;
+  clearNewSlice(t, oldasize, newasize);
   /* re-insert elements from old hash part into new parts */
   reinsert(L, &newt, t);  /* 'newt' now has the old hash */
   freehash(L, &newt);  /* free old hash part */
@@ -759,18 +804,12 @@ Table *luaH_new (lua_State *L) {
 
 
 /*
-** Frees a table. The assert ensures the correctness of 'concretesize',
-** checking its result against the address of the last element in the
-** array part of the table, computed abstractly.
+** Frees a table.
 */
 void luaH_free (lua_State *L, Table *t) {
   unsigned int realsize = luaH_realasize(t);
-  size_t sizeb = concretesize(realsize);
-  lua_assert((sizeb == 0 && realsize == 0) ||
-             cast_charp(t->array) + sizeb - sizeof(Value) ==
-             cast_charp(getArrVal(t, realsize - 1)));
   freehash(L, t);
-  luaM_freemem(L, t->array, sizeb);
+  resizearray(L, t, realsize, 0);
   luaM_free(L, t);
 }
 
@@ -889,22 +928,17 @@ static int hashkeyisempty (Table *t, lua_Integer key) {
 static int finishnodeget (const TValue *val, TValue *res) {
   if (!ttisnil(val)) {
     setobj(((lua_State*)NULL), res, val);
-    return HOK;  /* success */
   }
-  else
-    return HNOTFOUND;  /* could not get value */
+  return ttypetag(val);
 }
 
 
 int luaH_getint (Table *t, lua_Integer key, TValue *res) {
   if (keyinarray(t, key)) {
     int tag = *getArrTag(t, key - 1);
-    if (!tagisempty(tag)) {
+    if (!tagisempty(tag))
       farr2val(t, key, tag, res);
-      return HOK;  /* success */
-    }
-    else
-      return ~cast_int(key);  /* empty slot in the array part */
+    return tag;
   }
   else
     return finishnodeget(getintfromhash(t, key), res);

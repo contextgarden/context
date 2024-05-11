@@ -78,6 +78,7 @@ local v_text             = variables.text
 local v_doublesided      = variables.doublesided
 local v_default          = variables.default
 local v_dataset          = variables.dataset
+local v_label            = variables.label
 
 local conditionals       = tex.conditionals
 
@@ -1802,6 +1803,21 @@ do
         end
     end
 
+    methods[v_label] = function(dataset,rendering,keyword)
+        if type(keyword) == "table" then
+            local current = datasets[dataset]
+            local luadata = current.luadata
+            local list    = rendering.list
+            for tag in next, keyword do
+                local data = luadata[tag]
+                if data then
+                    local index = data.index or 0
+                    list[#list+1] = { tag, index, 0, false, index }
+                end
+            end
+        end
+    end
+
     -- todo: names = { "btx" }
 
     local function collectresult(rendering)
@@ -2011,6 +2027,8 @@ do
         local newlist        = { }
         local tagtolistindex = { }
         rendering.tagtolistindex = tagtolistindex
+-- if rendering.criterium == v_label then
+-- else
         for i=1,#list do
             local li    = list[i]
             local tag   = li[1]
@@ -2042,6 +2060,7 @@ do
         end
         groups[group] = lastreferencenumber
         rendering.list = newlist
+-- end
     end
 
     function lists.fetchentries(dataset)
@@ -2110,20 +2129,20 @@ do
             flush()
         end
         local nofranges = #ranges
-local interactive = not rendering.collected
+        local interactive = not rendering.collected
         for i=1,nofranges do
             local r = ranges[i]
             ctx_btxsetconcat(concatstate(i,nofranges))
             local first = r[1]
             local last  = r[2]
-if interactive then
-            ctx_btxsetfirstinternal(first[2].internal)
-end
+            if interactive then
+                ctx_btxsetfirstinternal(first[2].internal)
+            end
             ctx_btxsetfirstpage(first[1])
             if last then
-if interactive then
-                ctx_btxsetlastinternal(last[2].internal)
-end
+                if interactive then
+                    ctx_btxsetlastinternal(last[2].internal)
+                end
                 ctx_btxsetlastpage(last[1])
             end
             if trace_details then
@@ -2305,17 +2324,17 @@ end
             ctx_btxsettag(tag)
             ctx_btxsetnumber(n)
             --
-if interactive then
-            local citation = citetolist[n]
-            if citation then
-                local references = citation.references
-                if references then
-                    local internal = references.internal
-                    if internal and internal > 0 then
-                        ctx_btxsetinternal(internal)
+            if interactive then
+                local citation = citetolist[listindex] -- was wrong (sort wise): local citation = citetolist[n]
+                if citation then
+                    local references = citation.references
+                    if references then
+                        local internal = references.internal
+                        if internal and internal > 0 then
+                            ctx_btxsetinternal(internal)
+                        end
                     end
                 end
-end
             end
             --
             if language then
@@ -2331,9 +2350,10 @@ end
                 if a then
                     ctx_btxsetafter(a)
                 end
-                local bl = userdata.btxint
-                if bl and bl ~= "" then
+                local bl = tonumber(userdata.btxint)
+                if bl then
                     ctx_btxsetbacklink(bl)
+                    bl = listtocite[bl]
                 end
             end
             local authorsuffix = detail.authorsuffix
@@ -3281,8 +3301,7 @@ do
                     ctx_btxstartciteauthor()
                     ctx_btxsettag(tag)
                     ctx_btxsetbacklink(currentcitation)
-                    local bl = listtocite[currentcitation]
---                     ctx_btxsetinternal(bl and bl.references.internal or "")
+                    local bl = listtocite[tonumber(currentcitation)]
                     if first then
                         ctx_btxsetfirst(first[key] or "") -- f_missing(first.tag))
                         local suffix = entry.suffix

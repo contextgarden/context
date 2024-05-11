@@ -181,9 +181,8 @@ extern halfword tex_badness(
 # define large_width_excess                   7230584
 # define small_stretchability                 1663497
 # define loose_criterion                           99 
-# define semi_loose_criterion                      12 /* same as |decent_criterion| */
 # define decent_criterion                          12 
-# define semi_tight_criterion                      12 /* same as |decent_criterion| */
+# define tight_criterion                           12 /* same as |decent_criterion| */
 # define max_calculated_badness                  8189
 
 # define default_rule                           26214 /*tex 0.4pt */
@@ -750,6 +749,8 @@ typedef struct line_break_properties {
     halfword initial_par;
     halfword display_math;
     halfword tracing_paragraphs;
+    halfword tracing_fitness;
+    halfword tracing_passes;
     halfword paragraph_dir;
     halfword parfill_left_skip;
     halfword parfill_right_skip;
@@ -765,7 +766,6 @@ typedef struct line_break_properties {
     halfword adjust_spacing;
     halfword protrude_chars;
     halfword adj_demerits;
-    halfword double_adj_demerits;
     halfword line_penalty;
     halfword last_line_fit;
     halfword double_hyphen_demerits;
@@ -786,6 +786,8 @@ typedef struct line_break_properties {
     halfword display_widow_penalties;
     halfword orphan_penalty;
     halfword orphan_penalties;
+    halfword toddler_penalty;
+    halfword fitness_demerits;
     halfword broken_penalty;
     halfword baseline_skip;
     halfword line_skip;
@@ -797,12 +799,12 @@ typedef struct line_break_properties {
     halfword shaping_penalties_mode;
     halfword shaping_penalty;
     halfword par_passes;
-    halfword tracing_passes;
-    halfword line_break_criterion;
     halfword extra_hyphen_penalty; 
     halfword line_break_optional;
     halfword optional_found;
     halfword single_line_penalty;
+    halfword hyphen_penalty;
+    halfword ex_hyphen_penalty;
 } line_break_properties;
 
 typedef enum sparse_identifiers {

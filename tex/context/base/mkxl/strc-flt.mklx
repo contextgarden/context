@@ -325,7 +325,7 @@
 
 \permanent\protected\def\thecurrentfloatcaption
   {\ifnofloatcaption \orelse \ifemptyfloatcaption \orelse \ifrelax\currentfloatnumber \else
-     \dostarttagged\t!floattext\empty
+     \dostarttaggednodetail\t!floattext
      \begstrut
      \floatcaptionparameter\c!textcommand
        {\clf_savedlisttitle{\currentfloat}\numexpr\currentfloatnumber\relax}%
@@ -996,7 +996,7 @@
    \page_margin_strc_floats_set_hsize % todo: each float handler gets a set_hsize
    \expand\everyinsidefloat
    \strc_floats_analyze_variables_one
-   \dostarttagged\t!floatcontent\empty
+   \dostarttaggednodetail\t!floatcontent
    \dowithnextboxcontent
      {\strc_floats_set_local_hsize
       \floatparameter\c!inner
@@ -1399,7 +1399,7 @@
    \ifzeropt\htdp\floatbox
      \showmessage\m!floatblocks{11}\empty
      \global\setbox\floatbox\vpack
-       {\dostarttagged\t!floatcontent\empty
+       {\dostarttaggednodetail\t!floatcontent
         \strc_floats_place_empty_box
         \dostoptagged}%
    \fi
@@ -1937,7 +1937,7 @@
   {\edef\p_strc_floats_caption_width   {\floatcaptionparameter\c!width}%
    \edef\p_strc_floats_caption_minwidth{\floatcaptionparameter\c!minwidth}%
    \edef\p_strc_floats_caption_align   {\floatcaptionparameter\c!align}%
-   \dostarttagged\t!floatcaption\empty
+   \dostarttaggednodetail\t!floatcaption
    \ifcommon{\v!top,\v!bottom}\floatcaptionlocation
      \strc_floats_prepare_page_caption_top_bottom
    \orelse\ifx\p_strc_floats_caption_width\v!fit
@@ -2625,7 +2625,7 @@
    \egroup}
 
 \def\strc_floats_prepare_side_caption
-  {\dostarttagged\t!floatcaption\empty
+  {\dostarttaggednodetail\t!floatcaption
    \edef\p_strc_floats_caption_width{\floatcaptionparameter\c!width}%
    \edef\p_strc_floats_caption_align{\floatcaptionparameter\c!align}%
    \ifx\p_strc_floats_caption_width\v!max
@@ -2675,7 +2675,7 @@
 % \installcorenamespace{floatpreparesidecaption}
 %
 % \def\strc_floats_prepare_side_caption
-%   {\dostarttagged\t!floatcaption\empty
+%   {\dostarttaggednodetail\t!floatcaption
 %    \edef\p_strc_floats_caption_width{\floatcaptionparameter\c!width}%
 %    \edef\p_strc_floats_caption_align{\floatcaptionparameter\c!align}%
 %    \expandnamespacemacro\??floatpreparesidecaption\p_strc_floats_caption_width\s!unknown

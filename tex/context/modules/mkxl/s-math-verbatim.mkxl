@@ -1,0 +1,62 @@
+\startmodule[math-verbatim]
+
+%definefontfeature[fixedwidth][fixedwidth=0.30]
+%definefontfeature[fixedwidth][fixedwidth=0.28]
+\definefontfeature[fixedwidth][fixedwidth=0.27]
+
+% \definefontfallback
+%   [MonoMathMath]
+%   [dejavusansmono.ttf*fixedwidth]
+%   [0x0400-0x600][rscale=.8]
+
+\definefontfallback
+  [MonoMathMath]
+  [cmuntt.otf*fixedwidth]
+  [0x0400-0x600]
+
+\definefontfallback
+  [MonoMathMath]
+  [concrete-math.otf*fixedwidth]
+  [0x0600-0x1FFFF]
+
+\definefontsynonym
+  [MonoMathBase]
+  [lmmono10-regular.otf*fixedwidth]
+  [fallbacks=MonoMathMath]
+
+% \definefontfallback
+%   [MonoTextMath]
+%   [dejavusansmono.ttf*fixedwidth]
+%   [0x0400-0x600][rscale=.8]
+
+\definefontfallback
+  [MonoTextMath]
+  [cmuntt.otf*fixedwidth]
+  [0x0400-0x600]
+
+\definefontfallback
+  [MonoTextMath]
+  [concrete-math.otf]
+  [0x0600-0x1FFFF]
+
+\definefontsynonym
+  [MonoTextBase]
+  [lmmono10-regular.otf]
+  [fallbacks=MonoTextMath]
+
+\definefontsynonym
+  [MonoMathBaseBold]
+  [lmmonolt10-bold.otf*fixedwidth]
+  [fallbacks=MonoMathMath]
+
+\definefont[MyMathFont]    [MonoMathBase]
+\definefont[MyMathFontBold][MonoMathBaseBold]
+\definefont[MyTextFont]    [MonoTextBase]
+
+\setuptyping
+  [style=MyMathFont]
+
+\setuptype
+  [style=MyMathFont]
+
+\stopmodule

@@ -452,10 +452,10 @@
   {\dostarttaggedchained\t!tabulate\empty\??tabulation}
 
 \def\tabl_tabulate_tag_start_row
-  {\dostarttagged\t!tabulaterow\empty}
+  {\dostarttaggednodetail\t!tabulaterow}
 
 \def\tabl_tabulate_tag_start_cell
-  {\dostarttagged\t!tabulatecell\empty
+  {\dostarttaggednodetail\t!tabulatecell
    \dotagtabulatecell}
 
 \def\tabl_tabulate_tag_stop
@@ -531,7 +531,7 @@
                 \ifconditional\c_tabl_tabulate_reshape
                     \tabl_tabulate_shaped_par_begin
                 \fi
-                \dotagtabulatesignal  % empty cells .. todo (can be removed as soon as build)
+                \dotagtabulatesignal % empty cells
                 \noexpand\ifnum\noexpand\c_tabl_tabulate_type=\plusone\noexpand\else
                     \the\t_tabl_tabulate_bmath % maybe later? can interfere with char 0
                     \the\t_tabl_tabulate_font
@@ -1545,7 +1545,7 @@
 \permanent\protected\def\tabulateEQ
   {\ifconditional\c_tabl_tabulate_firstflushed\else
      \dostarttaggedchained\t!ignore\empty\empty
-     \dostarttagged\t!ignore\empty
+     \dostarttaggednodetail\t!ignore
      \tabulationparameter{EQ}%
      \dostoptagged
      \dostoptagged
@@ -2287,6 +2287,7 @@
 \protected\def\tabl_tabulate_bbskip_second_split_yes
   {\ifvoid\b_tabl_tabulate_current\c_tabl_tabulate_column
      \ifempty\tabl_tabulate_flush_collected_indeed\else
+       \tabl_tabulate_tag_start_cell\dotagtabulatesignal\tabl_tabulate_tag_stop_cell
        \setbox0\hbox
      \fi
   \fi}

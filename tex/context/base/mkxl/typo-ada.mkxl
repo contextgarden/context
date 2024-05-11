@@ -223,6 +223,8 @@
 %D
 %D \page
 %D
+%D % How about stretch on an float (make it fit)
+%D
 %D \startsetups adaptive:test
 %D     \setbox\usedadaptivebox\vbox to \usedadaptivetotal \bgroup
 %D         \externalfigure

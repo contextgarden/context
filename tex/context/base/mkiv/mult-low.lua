@@ -15,6 +15,10 @@ return {
         "plussix", "plusseven", "pluseight", "plusnine", "plusten", "pluseleven", "plustwelve", "plussixteen",
         "plusfifty", "plushundred", "plusonehundred", "plustwohundred", "plusfivehundred",
         "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard", "maxcardminusone", "maxiterator",
+        "plusonethousand", "plustwothousand", "plusthreethousand", "plusfourthousand", "plusfivethousand",
+        "plussixthousand", "plusseventhousand", "pluseightthousand", "plusninethousand",
+        "plusfifteenhundred", "plustwentyfivehundred", "plusfortyfivehundred", "plusseventyfivehundred",
+        "plusninetynine", "plusfourtytwo",
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxcount", "maxdimen", "scaledpoint", "thousandpoint",
         "points", "halfpoint",
         "zeroskip", "centeringskip", "stretchingskip", "shrinkingskip",
@@ -82,8 +86,9 @@ return {
         "loosenessfrozenparcode", "lastlinefrozenparcode", "linepenaltyfrozenparcode", "clubpenaltyfrozenparcode",
         "widowpenaltyfrozenparcode", "displaypenaltyfrozenparcode", "brokenpenaltyfrozenparcode",
         "demeritsfrozenparcode", "shapefrozenparcode", "linefrozenparcode", "hyphenationfrozenparcode",
-        "shapingpenaltyfrozenparcode", "orphanpenaltyfrozenparcode", "allfrozenparcode",
+        "shapingpenaltyfrozenparcode", "orphanpenaltyfrozenparcode", "toddlerpenaltyfrozenparcode",
         "emergencyfrozenparcode", "parpassesfrozenparcode", "singlelinepenaltyfrozenparcode",
+        "hyphenpenaltyfrozenparcode", "exhyphenpenaltyfrozenparcode", "allfrozenparcode",
         --
         "activemathcharcode",
         --
@@ -245,10 +250,11 @@ return {
         --
         "nokerningcode", "noligaturingcode", "noitalicscode",
         --
-        "indecentparpassclasses", "looseparpassclasses", "tightparpassclasses",
-        "verylooseparpassclass", "looseparpassclass", "semilooseparpassclass",
-        "decentparpassclass", "almostdecentparpassclasses",
-        "semitightparpassclass", "tightparpassclass",
+        "allparpassclasses", "indecentparpassclasses", "looseparpassclasses", "tightparpassclasses", "almostdecentparpassclasses",
+        --
+        "verylooseparpassclass", "looseparpassclass", "almostlooseparpassclass", "barelylooseparpassclass",
+        "decentparpassclass",
+        "verytightparpassclass", "tightparpassclass", "almosttightparpassclass", "barelytightparpassclass",
         --
         "frozenflagcode", "tolerantflagcode", "protectedflagcode", "primitiveflagcode", "permanentflagcode", "noalignedflagcode", "immutableflagcode",
         "mutableflagcode", "globalflagcode", "overloadedflagcode", "immediateflagcode", "conditionalflagcode", "valueflagcode", "instanceflagcode",

@@ -1300,9 +1300,9 @@
      \spac_overlay_lines % see spac-ver.mkvi ... a typical potential problem
      \c_strc_itemgroups_concat\conditionalfalse
    \fi
-   \dostarttagged\t!item\empty
+   \dostarttaggednodetail\t!item
   % \dotagsetitem\empty
-   \dostarttagged\t!itemtag\empty
+   \dostarttaggednodetail\t!itemtag
    \strc_itemgroups_insert_item
    \dostoptagged
    \ifconditional\c_strc_itemgroups_pack
@@ -1311,7 +1311,7 @@
    \itemgroupparameter\c!inner % will become obsolete (better use setups)
    \strc_itemgroups_margin_symbol
    \let\strc_itemgroups_margin_symbol\relax
-   \dostarttagged\t!itemcontent\empty
+   \dostarttaggednodetail\t!itemcontent
    \begstrut % \strut
    \nobreak                            % else problems with intext items
    \seteffectivehsize % NEW !
@@ -1360,7 +1360,7 @@
 \protected\def\strc_itemgroups_start_head_indeed
   {\c_strc_itemgroups_head\conditionaltrue
    \dotagsetitem\s!head% % weird place
-   \dostarttagged\t!itemhead\empty
+   \dostarttaggednodetail\t!itemhead
    \useitemgroupstyleandcolor\c!headstyle\c!headcolor
    \ignorepars} % \ignorespaces
 
@@ -1383,7 +1383,7 @@
   \fi}
 
 \protected\def\strc_itemgroups_head_body_indeed
-  {\dostarttagged\t!itembody\empty
+  {\dostarttaggednodetail\t!itembody
    \noindentation
    \ignorepars} % \ignorespaces
 
@@ -1423,14 +1423,14 @@
 \protected\def\strc_itemgroups_start_edge#text%
   {\strc_itemgroups_start_symbol
      {\strc_itemgroups_calculate_list_width\c_strc_itemgroups_nesting
-      \dostarttagged\t!ignore\empty % for the moment, maybe an attribute
+      \dostarttaggednodetail\t!ignore % for the moment, maybe an attribute
       \hbox to \d_strc_itemgroups_list_width
         {#text\hskip\itemgroupparameter\c!distance}%
       \dostoptagged}}
 
 \protected\def\strc_itemgroups_start_margin#text%
   {\def\strc_itemgroups_margin_symbol % brrr
-     {\dostarttagged\t!ignore\empty % for the moment, maybe an attribute
+     {\dostarttaggednodetail\t!ignore % for the moment, maybe an attribute
       \llap
         {\begingroup
          \useitemgroupstyleandcolor\c!marstyle\c!marcolor
@@ -1574,7 +1574,7 @@
      {\dontcomplain
       \hbox to \d_strc_itemgroups_list_width
         {\ifconditional\c_strc_itemgroups_sub
-           \dostarttagged\t!ignore\empty
+           \dostarttaggednodetail\t!ignore
            \llap{+\enspace}%
            \dostoptagged
          \fi
@@ -1586,7 +1586,7 @@
 \def\strc_itemgroups_handle_lapped_item_negative
   {\llap
      {\ifconditional\c_strc_itemgroups_sub
-        \dostarttagged\t!ignore\empty
+        \dostarttaggednodetail\t!ignore
         \llap{+\enspace}%
         \dostoptagged
       \fi
@@ -1596,7 +1596,7 @@
 \def\strc_itemgroups_handle_groups_text_item
   {\hbox
      {\ifconditional\c_strc_itemgroups_sub
-        \dostarttagged\t!ignore\empty
+        \dostarttaggednodetail\t!ignore
         +\enspace
         \dostoptagged
       \fi
@@ -1610,7 +1610,7 @@
 \def\strc_itemgroups_handle_groups_inline_item
   {\hbox to \d_strc_itemgroups_list_width
      {\ifconditional\c_strc_itemgroups_sub
-        \dostarttagged\t!ignore\empty
+        \dostarttaggednodetail\t!ignore
         \llap{+\enspace}%
         \dostoptagged
       \fi

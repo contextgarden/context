@@ -593,9 +593,9 @@
 \permanent\protected\def\unitsNstartindeed
   {\ifmmode \else
      \c_phys_units_quantity\conditionaltrue
-     \dostarttagged\t!quantity\empty
+     \dostarttaggednodetail\t!quantity
      \c_phys_units_number\conditionaltrue
-     \dostarttagged\t!number\empty
+     \dostarttaggednodetail\t!number
    \fi}
 
 \permanent\protected\def\unitsNstop
@@ -629,7 +629,7 @@
         \s!rightclass \mathdimensioncode
      \bgroup
    \else
-     \dostarttagged\t!unit\empty
+     \dostarttaggednodetail\t!unit
    \fi
    \let\phys_units_finish\phys_units_stop
    \let\phys_units_start\relax}

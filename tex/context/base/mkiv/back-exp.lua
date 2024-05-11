@@ -894,7 +894,7 @@ do
             setattribute(di,"id",data.id)
             setattribute(di,"width",data.width)
             setattribute(di,"height",data.height)
-            setattribute(di,"label",data.height)
+            setattribute(di,"label",data.label)
         end
     end
 

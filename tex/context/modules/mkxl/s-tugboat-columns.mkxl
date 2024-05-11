@@ -779,6 +779,12 @@
 
 \setupexternalfigures[location={local,global,default}]
 
+\setuppagecolumns[page=]
+
+\input ward
+
+\kern 1cm
+
 \StartArticle
 
     \StartAbstract

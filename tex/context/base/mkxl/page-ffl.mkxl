@@ -117,6 +117,7 @@
       \global\advanceby\c_page_adapts_pushed\minusone
       \nointerlineskip
    \fi}
+\def\page_otr_flush_top_content{}
 
 \permanent\protected\def\flushpendingtopcontent
   {\ifcase\c_page_adapts_pushed\else

@@ -1,0 +1,106 @@
+% language=us runpath=texruns:manuals/canbedone
+
+\environment canbedone-style
+
+% \showframe
+
+\startdocument
+  [title=clipping,
+   color=darkgreen]
+
+\startsectionlevel[title=Clipping]
+
+The feature below is rather \PDF\ specific. Inside a graphic group we
+can register text as clipping path and apply that to what follows. We show
+a few approaches:
+
+\startbuffer
+\newbox      \MyBox
+\newdimension\MyDimenA
+\newdimension\MyDimenB
+
+\setbox\MyBox\hbox{\bfd\setstrut\strut\starteffect[clip]JUST SOME TEXT\stopeffect}
+
+\MyDimenA\wd  \MyBox
+\MyDimenB\htdp\MyBox
+
+\startgraphicgroup
+    \startoverlay
+      {\box\MyBox}
+      {\externalfigure[hacker.jpg][width=\MyDimenA,height=\MyDimenB]}
+    \stopoverlay
+\stopgraphicgroup
+\stopbuffer
+
+\typebuffer[option=tex]
+
+We get:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Here we use a helper:
+
+\startbuffer
+\startclipeffect
+    {\hbox to 9cm{\hss\bfd\setstrut\strut
+       \starteffect[clip]JUST SOME TEXT\stopeffect\hss}}
+    {\externalfigure[hacker.jpg][width=9cm,height=1cm]}
+\stopclipeffect
+\stopbuffer
+
+\typebuffer[option=tex]
+
+We get:
+
+\startlinecorrection
+\ruledhbox{\getbuffer}
+\stoplinecorrection
+
+A bit easier is this:
+
+\startbuffer
+\defineoverlay
+  [hacker]
+  [\overlayfigure{hacker.jpg}]
+
+\startgraphicgroup
+\framed
+  [background={foreground,hacker},align={middle,lohi},width=.8tw]
+  {\starteffect[clip]\samplefile{tufte}\stopeffect}
+\stopgraphicgroup
+\stopbuffer
+
+\typebuffer[option=tex]
+
+As you see, we can use more text:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Finally we introduce:
+
+\startbuffer
+\defineoverlay
+  [hacker]
+  [\overlayfigure{hacker.jpg}]
+
+\startclipframed
+  [background={foreground,hacker},align={middle,lohi},width=.8tw]
+  \samplefile{ward}
+\stopclipframed
+\stopbuffer
+
+\typebuffer[option=tex]
+
+This hides most of the ugly hackery and gives:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+\stopsectionlevel
+
+\stopdocument

@@ -113,7 +113,7 @@
    \c!transform      =\v!auto,
    \c!userpassword   =,
    \c!ownerpassword  =,
-   \c!compact        =,
+   \c!compact        =preset:\s!default,
    \c!metadata       =\v!page, % page | document | yes | no
    \c!cmyk           =,
    \c!crop           =\v!yes,
@@ -308,7 +308,7 @@
    \edef\p_label    {\externalfigureparameter\c!label}%
    \edef\p_reference{\externalfigureparameter\c!reference}%
    %
-   \dostarttagged\t!image\empty
+   \dostarttaggednodetail\t!image
    \clf_figure_push {
         name         {\p_grph_include_name}%
         label        {\ifempty\p_label\p_grph_include_label\else\p_label\fi}%

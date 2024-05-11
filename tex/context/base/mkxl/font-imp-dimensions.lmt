@@ -175,3 +175,29 @@ local specification = {
 
 registerotffeature(specification)
 registerafmfeature(specification)
+
+-- local function initialize(tfmdata,key,value)
+--     if value then
+--         local resources = tfmdata.resources
+--         if resources then
+--             local marks = resources.marks -- markclasses marksets
+--             if marks then
+--                 local characters = tfmdata.characters
+--                 for k, v in next, marks do
+--                     characters[k].width = 0
+--                 end
+--             end
+--         end
+--     end
+-- end
+
+-- local specification = {
+--     name         = "zeromarks",
+--     description  = "zero width marks",
+--     manipulators = {
+--         base = initialize,
+--         node = initialize,
+--     }
+-- }
+
+-- registerotffeature(specification)

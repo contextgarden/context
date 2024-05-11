@@ -18,8 +18,8 @@
 \registerctxluafile{node-shp}{autosuffix}
 \registerctxluafile{node-fin}{autosuffix}
 
-\permanent\protected\def\finalizeobjectbox #1{\clf_finalizebox#1\relax}
-\permanent\protected\def\finalizeshipoutbox#1{\clf_finalizebox#1\relax}
+\permanent\protected\def\finalizeobjectbox #1{\clf_finalizeobjectbox #1\relax}
+\permanent\protected\def\finalizeshipoutbox#1{\clf_finalizeshipoutbox#1\relax}
 
 % % Tricky stuff: this might become obsolete. It is about time to check this out
 % % now (after more than a decade)! The few times that we need this we can better

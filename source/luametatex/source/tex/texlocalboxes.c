@@ -73,8 +73,8 @@ halfword tex_get_local_boxes(halfword location)
 void tex_set_local_boxes(halfword b, halfword location)
 {
     switch (location) {
-        case local_left_box_code  : tex_flush_node_list(local_left_box_par);   local_left_box_par   = b; break;
-        case local_right_box_code : tex_flush_node_list(local_right_box_par);  local_right_box_par  = b; break;
+        case local_left_box_code  : tex_flush_node_list(local_left_box_par  ); local_left_box_par   = b; break;
+        case local_right_box_code : tex_flush_node_list(local_right_box_par ); local_right_box_par  = b; break;
         case local_middle_box_code: tex_flush_node_list(local_middle_box_par); local_middle_box_par = b; break;
     }
 }
@@ -114,6 +114,18 @@ void tex_reset_local_boxes(halfword index, halfword location)
         case local_left_box_code  : local_left_box_par  = tex_aux_reset_boxes(local_left_box_par,   index); break;
         case local_right_box_code : local_right_box_par = tex_aux_reset_boxes(local_right_box_par,  index); break;
         case local_middle_box_code: local_right_box_par = tex_aux_reset_boxes(local_middle_box_par, index); break;
+    }
+} 
+
+void tex_reset_local_box(halfword location)
+{
+    switch (location) {
+        case local_left_box_code   : update_tex_local_left_box  (null); break;
+        case local_right_box_code  : update_tex_local_right_box (null); break;
+        case local_middle_box_code : update_tex_local_middle_box(null); break;
+        case local_reset_boxes_code: update_tex_local_left_box  (null);  /* It could be a loop if we have  */
+                                     update_tex_local_right_box (null);  /* more but this will do for now. */
+                                     update_tex_local_middle_box(null); break;
     }
 }
 
@@ -271,70 +283,19 @@ halfword tex_valid_box_index(halfword n)
     return box_index_in_range(n);
 }
 
+scaled   tex_get_local_left_width        (halfword p) { return par_box_left_width(p);     }
+scaled   tex_get_local_right_width       (halfword p) { return par_box_right_width(p);    }
+halfword tex_get_local_interline_penalty (halfword p) { return par_inter_line_penalty(p); }
+halfword tex_get_local_broken_penalty    (halfword p) { return par_broken_penalty(p);     }
+halfword tex_get_local_tolerance         (halfword p) { return par_tolerance(p);          }
+halfword tex_get_local_pre_tolerance     (halfword p) { return par_pre_tolerance(p);      }
 
-scaled tex_get_local_left_width(halfword p)
-{
-    return par_box_left_width(p);
-}
-
-scaled tex_get_local_right_width(halfword p)
-{
-    return par_box_right_width(p);
-}
-
-void tex_set_local_left_width(halfword p, scaled width)
-{
-    par_box_left_width(p) = width;
-}
-
-void tex_set_local_right_width(halfword p, scaled width)
-{
-    par_box_right_width(p) = width;
-}
-
-halfword tex_get_local_interline_penalty(halfword p)
-{
- // return par_penalty_interline(p);
-    return par_inter_line_penalty(p);
-}
-
-halfword tex_get_local_broken_penalty(halfword p)
-{
- // return par_penalty_broken(p);
-    return par_broken_penalty(p);
-}
-
-halfword tex_get_local_tolerance(halfword p)
-{
-    return par_tolerance(p);
-}
-
-halfword tex_get_local_pre_tolerance(halfword p)
-{
-    return par_pre_tolerance(p);
-}
-
-void tex_set_local_interline_penalty(halfword p, halfword penalty)
-{
- // par_penalty_interline(p) = penalty;
-    par_inter_line_penalty(p) = penalty;
-}
-
-void tex_set_local_broken_penalty(halfword p, halfword penalty)
-{
- // par_penalty_broken(p) = penalty;
-    par_broken_penalty(p) = penalty;
-}
-
-void tex_set_local_tolerance(halfword p, halfword tolerance)
-{
-    par_tolerance(p) = tolerance;
-}
-
-void tex_set_local_pre_tolerance(halfword p, halfword tolerance)
-{
-    par_pre_tolerance(p) = tolerance;
-}
+void     tex_set_local_left_width        (halfword p, scaled   width    ) { par_box_left_width(p)     = width;     }
+void     tex_set_local_right_width       (halfword p, scaled   width    ) { par_box_right_width(p)    = width;     }
+void     tex_set_local_interline_penalty (halfword p, halfword penalty  ) { par_inter_line_penalty(p) = penalty;   }
+void     tex_set_local_broken_penalty    (halfword p, halfword penalty  ) { par_broken_penalty(p)     = penalty;   }
+void     tex_set_local_tolerance         (halfword p, halfword tolerance) { par_tolerance(p)          = tolerance; }
+void     tex_set_local_pre_tolerance     (halfword p, halfword tolerance) { par_pre_tolerance(p)      = tolerance; }
 
 typedef enum saved_localbox_entries {
     saved_localbox_location_entry = 0,
@@ -345,13 +306,13 @@ typedef enum saved_localbox_entries {
 
 inline static void saved_localbox_initialize(void)
 {
-  saved_type(0) = saved_record_0;
-  saved_record(0) = local_box_save_type;
+    saved_type(0) = saved_record_0;
+    saved_record(0) = local_box_save_type;
 }
 
 inline static int saved_localbox_okay(void)
 {
-  return saved_type(0) == saved_record_0 && saved_record(0) == local_box_save_type;
+    return saved_type(0) == saved_record_0 && saved_record(0) == local_box_save_type;
 }
 
 # define saved_localbox_location saved_value_1(saved_localbox_location_entry)
@@ -419,6 +380,8 @@ void tex_aux_finish_local_box(void)
             node_subtype(p) = local_list;
             box_index(p) = index;
          // attach_current_attribute_list(p); // leaks
+        } else { 
+            /* well */
         }
         // what to do with reset
         if (islocal) {

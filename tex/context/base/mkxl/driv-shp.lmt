@@ -701,22 +701,23 @@ local function reset_anchors()
     anchors = { }
 end
 
-interfaces.implement {
-    name      = "registeranchorbox",
-    public    = true,
-    protected = true,
-    arguments = { "integer", "integer", "box" },
-    actions   = function(anchor,where,box)
-        box = tonut(box)
-        insert(where < 0 and befores[anchor] or afters[anchor],box)
-        stored = true
-    end
-}
-
 local hlist_out, vlist_out  do
 
     local finalize  = nodes.handlers.finalizelist
     local flushnode = nuts.flushnode
+
+    interfaces.implement {
+        name      = "registeranchorbox",
+        public    = true,
+        protected = true,
+        arguments = { "integer", "integer", "box" },
+        actions   = function(anchor,where,box)
+            box = tonut(box)
+            insert(where < 0 and befores[anchor] or afters[anchor],box)
+            finalize(box,false)
+            stored = true
+        end
+    }
 
     local function flushstored(current,source,before)
         local t = before and befores or afters
@@ -726,7 +727,8 @@ local hlist_out, vlist_out  do
                 local si = s[i]
                 if si then
                     local box = si -- si[1]
-                    finalize(box) -- tricky: we might need to group
+                    -- tagging needs it to be earlier
+                 -- finalize(box,false)
                     if getid(box) == vlist_code then
                         vlist_out(current,box)
                     else

@@ -1655,9 +1655,6 @@ local function identify_inner(set,var,prefix,collected,derived)
         end
         --
         local n, list = resolvers.jobs.currentstructure()
--- print(prefix)
--- inspect(set)
--- inspect(list)
         if list then
             for i=#list,1,-1 do
                 local l = list[i]
@@ -1665,8 +1662,8 @@ local function identify_inner(set,var,prefix,collected,derived)
                 if i then
                     i = i[inner]
                     if i then
-local p = i.references.prefix or l -- which is what we use in the destination
---                         return finish_inner(set,var,l,i)
+                     -- return finish_inner(set,var,l,i)
+                        local p = i.references.prefix or l -- which is what we use in the destination
                         return finish_inner(set,var,p,i)
                     end
                 end
@@ -2248,11 +2245,16 @@ end)
 -- a reference/prefix specification
 
 local destinationattributes = { }
+local forcedinnermode       = false
+
+function references.forceinnermode()
+    forcedinnermode = true
+end
 
 local function setinternalreference(specification)
     local internal    = specification.internal
     local destination = unsetvalue
-    if innermethod == v_auto or innermethod == v_name then
+    if forcedinnermode or innermethod == v_auto or innermethod == v_name then
         local t         = { } -- maybe add to current (now only used for tracing)
         local tn        = 0
         local reference = specification.reference
@@ -2289,7 +2291,7 @@ local function setinternalreference(specification)
                 end
             end
         end
-        destination = references.mark(t,nil,nil,view) -- returns an attribute
+        destination = references.mark(t,nil,nil,view,internal) -- returns an attribute
     end
     if internal then -- new
         destinationattributes[internal] = destination

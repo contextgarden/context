@@ -297,7 +297,9 @@
    \advanceby\c_math_fence_nesting\minusone}
 
 \def\math_fenced_middle_normal
-  {\math_fenced_common\Umiddle\c!middleclass\math_fenced_p_middle\c!middlesource}
+  {%\beginmathgroup %doesn't work well with color etc
+   \math_fenced_common\Umiddle\c!middleclass\math_fenced_p_middle\c!middlesource
+   }%\endmathgroup}
 
 \def\math_fenced_middle_sized
   {\c_math_fenced_sized\conditionaltrue
@@ -782,7 +784,9 @@
    \advanceby\c_math_fence_nesting\minusone}
 
 \def\math_fenced_x_middle
-  {\math_fenced_common\Umiddle\c!middleclass\math_fenced_x_p_middle\c!middlesource}
+  {%\beginmathgroup %doesn't work well with color etc
+   \math_fenced_common\Umiddle\c!middleclass\math_fenced_x_p_middle\c!middlesource
+   }%\endmathgroup}
 
 % the expandafter permits \left\tocharacter...
 

@@ -21,12 +21,13 @@ typedef enum command_origin {
 } command_origin;
 
 typedef struct hash_state_info {
-    memoryword  *hash;       /*tex The hash table. */
-    memory_data  hash_data;
-    memoryword  *eqtb;       /*tex The equivalents table. */
-    memory_data  eqtb_data;
-    int          no_new_cs;  /*tex Are new identifiers legal? */
-    int          padding;
+    memoryword   *hash;       /*tex The hash table. */
+    memory_data   hash_data;
+    memoryword   *eqtb;       /*tex The equivalents table. */
+    memory_data   eqtb_data;
+    int           no_new_cs;  /*tex Are new identifiers legal? */
+    int           padding;
+    unsigned char destructors[number_tex_commands]; 
 } hash_state_info ;
 
 extern hash_state_info lmt_hash_state;

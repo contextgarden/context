@@ -34,14 +34,14 @@
 
 \permanent\protected\def\btxattach
   {\iftrialtypesetting\orelse\ifexporting\iflocation
-     \dostarttagged\t!ignore\empty
+     \dostarttaggednodetail\t!ignore
        \btx_add_blob{btxattachment}\attachment
      \dostoptagged
    \fi\fi}
 
 \permanent\protected\def\btxcomment
   {\iftrialtypesetting\orelse\ifexporting\iflocation
-     \dostarttagged\t!ignore\empty
+     \dostarttaggednodetail\t!ignore
        \btx_add_blob{btxcomment}\comment
      \dostoptagged
    \fi\fi}
@@ -50,7 +50,7 @@
 
 \permanent\protected\def\btxaddsource
   {\iftrialtypesetting\orelse\ifexporting\iflocation
-     \dostarttagged\t!ignore\empty
+     \dostarttaggednodetail\t!ignore
      \llap{%
        \btx_add_blob{btxattachment}\attachment
        \quad
@@ -59,5 +59,75 @@
      }%
      \dostoptagged
    \fi\fi}
+
+%D Analogue to what we do with math:
+
+\definenote    [publicationnote] % [location=none]
+\setupnotation [publicationnote] [\c!style=\tt]
+
+\protected\def\publ_cite_set_meaning#1%
+  {\setbox\b_btx_cmd\vbox\bgroup
+     \forgetall
+     \nohyphens
+     \let\currentlist\s!btx
+     \setuplist
+       [\s!btx]
+       [\c!before=,%
+        \c!after=]%
+     \setupbtx
+       [\c!specification=\v!default]%
+     \setupbtxrendering
+       [\v!default]%
+       [\c!numbering=\v!no]%
+     \setupinteraction
+       [\c!state=\v!stop]%
+ \let\btx_list_reference_inject_now\relax
+     \btxstartlistentry
+   % \btxsetcurrentlistentry{0}
+   % \btxsetcurrentlistindex{0}
+   % \btxsetcategory{\s!unknown}%
+     \btxsettag{#1}%
+     \btxsetnumber{0}%
+   % \btxsetlanguage{\currentlanguage}%
+     \btxhandlelistentry
+     \btxstoplistentry
+   \egroup}
+
+\protected\def\publ_cite_trace_blob_indeed
+  {\dontleavehmode
+   \hbox to \zeropoint \bgroup
+      \resetinteractionparameter\c!contrastcolor
+      \resetinteractionparameter\c!style
+%       \scratchcounter\getblobindex\currentmathblob
+      \bgroup
+        \darkgray
+        \vrule \s!height .9\strutht \s!depth .9\strutdp \s!width \onepoint \relax
+        \hbox to \zeropoint \bgroup
+          \smallinfofont
+        % \the\currentmathblob\hss
+          \hbox to \zeropoint \s!yoffset -.6\strutdp \bgroup
+            \currentbtxreference
+            \hss
+          \egroup
+        \egroup
+      \egroup
+% \btxdoifelsecitedone{default}{\currentbtxreference}%
+%   {\note[publnote:\currentbtxreference]}
+%   {\normalexpanded{\btxentrytostring{publicationnote}{publnote:\currentbtxreference}{\currentbtxreference}}}%
+%       \ifpublblobindexdone{\currentbtxreference}%
+%         \note[publnote:\currentbtxreference]%
+%       \else
+%         \markpublblobindexdone{\currentbtxreference}
+        \normalexpanded{\btxentrytostring{publicationnote}{note}{\currentbtxreference}}%
+%       \fi
+      \hss
+   \egroup}
+
+\installtextracker
+  {publications.textblobs}
+  {\let\publ_cite_trace_blob\publ_cite_trace_blob_indeed}
+  {\let\publ_cite_trace_blob\relax}
+
+% \enabletrackers[publications.textblobs]
 
 \protect \endinput

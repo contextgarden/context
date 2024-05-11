@@ -3177,4 +3177,29 @@
    \orelse\ifempty{#1\c!background }\expandafter\secondoftwoarguments
      \else                          \expandafter\firstoftwoarguments\fi}
 
+%D A bit out of place here:
+
+% \defineoverlay
+%   [hacker]
+%   [\overlayfigure{hacker.jpg}]
+%
+% \startclipframed
+%   [background={foreground,hacker},align={middle,lohi},width=8cm]
+%   \samplefile{ward}
+% \stopclipframed
+
+\permanent\tolerant\protected\def\startclipframed[#1]%
+  {\startgraphicgroup
+   \framed[\c!background={\v!foreground,clipframed},#1]\bgroup\starteffect[\v!clip]}
+
+\permanent\protected\def\stopclipframed
+  {\stopeffect
+   \egroup
+   \stopgraphicgroup}
+
+\defineoverlay
+  [clipframed]
+  [{\blackrule[\c!width=\overlaywidth,\c!height=\overlayheight,\c!color=darkred]}]
+
+
 \protect \endinput

@@ -867,14 +867,16 @@ do
         end
 
         pack_result_tagged = function(t,width,xoffset,yoffset)
-            local result = { encode[width] }
-            local r = 1
+--             local result = { encode[width] }
+--             local r = 1
+            local result = { encode[width], encode[xoffset or 0], c_hmoveto }
+            local r = 3
             local n = #t
-            local x = xoffset or 0
+            local x = 0
             local y = yoffset or 0
-            if xoffset and yoffset then
-                r, x, y = pack_moveto(result,r,0,0,x,y)
-            end
+--             if xoffset and yoffset then
+--                 r, x, y = pack_moveto(result,r,0,0,x,y)
+--             end
             for i=1,n do
                 local ti = t[i]
                 local tg = ti[#ti]
@@ -894,14 +896,11 @@ do
         end
 
         pack_result_untagged = function(t,width,xoffset,yoffset)
-            local result = { encode[width] }
-            local r = 1
+            local result = { encode[width], encode[xoffset or 0], c_hmoveto }
+            local r = 3
             local n = #t
-            local x = xoffset or 0
+            local x = 0
             local y = yoffset or 0
-            if xoffset and yoffset then
-                r, x, y = pack_moveto(result,r,0,0,x,y)
-            end
             for i=1,n do
                 local ti = t[i]
                 local ni = #ti
@@ -2599,7 +2598,7 @@ do
                 end
             end
         end
-        return llx, lly, urx, ury, pack_result_untagged(t,width,0,yoffset)
+        return llx, lly, urx, ury, pack_result_untagged(t,width,xoffset,yoffset)
     end or function()
         return 0, 0, 0, 0, c_endchar
     end
@@ -2711,7 +2710,7 @@ do
                 stream = concat(result)
                 result = nil
             else
-                stream = pack_result_tagged(result,width)
+                stream = pack_result_tagged(result,width,lsb) -- version == "cff" and -lsb or 0
                 justpass = jp
             end
          -- if trace_charstrings then
@@ -2727,7 +2726,9 @@ do
             glyph.segments    = keepcurve ~= false and result or nil
             glyph.boundingbox = boundingbox
             if not glyph.width then
-                glyph.width = width
+             -- better not because later we will default ro maybe only when we
+             -- have segments
+                glyph.width = round(width)
             end
             if not glyph.name then
                 glyph.name = glyphname

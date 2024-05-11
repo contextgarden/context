@@ -254,6 +254,20 @@ do
         return t
     end
 
+    implement {
+        name    = "startgraphicgroup",
+        actions = function()
+            context(tonode(copynut(savenode)))
+        end,
+    }
+
+    implement {
+        name    = "stopgraphicgroup",
+        actions = function()
+            context(tonode(copynut(restorenode)))
+        end,
+    }
+
     -- common
 
     local function stopcommon(n)

@@ -1124,6 +1124,7 @@ typedef enum local_box_codes {
     local_middle_box_code,
     /* room for more but then we go internal_box_codes */
     number_box_pars,
+    local_reset_boxes_code,
 } local_box_codes;
 
 # define first_local_box_code local_left_box_code

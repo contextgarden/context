@@ -3957,10 +3957,12 @@ static int nodelib_direct_getparstate(lua_State *L)
                         lua_push_integer_at_key(L, widowpenalty,                   tex_get_par_par(p, par_widow_penalty_code));
                         lua_push_integer_at_key(L, displaywidowpenalty,            tex_get_par_par(p, par_display_widow_penalty_code));
                         lua_push_integer_at_key(L, orphanpenalty,                  tex_get_par_par(p, par_orphan_penalty_code));
+                        lua_push_integer_at_key(L, toddlerpenalty,                 tex_get_par_par(p, par_toddler_penalty_code));
                         lua_push_integer_at_key(L, singlelinepenalty,              tex_get_par_par(p, par_single_line_penalty_code));
+                        lua_push_integer_at_key(L, hyphenpenalty,                  tex_get_par_par(p, par_hyphen_penalty_code));
+                        lua_push_integer_at_key(L, exhyphenpenalty,                tex_get_par_par(p, par_ex_hyphen_penalty_code));
                         lua_push_integer_at_key(L, brokenpenalty,                  tex_get_par_par(p, par_broken_penalty_code));
                         lua_push_integer_at_key(L, adjdemerits,                    tex_get_par_par(p, par_adj_demerits_code));
-                        lua_push_integer_at_key(L, doubleadjdemerits,              tex_get_par_par(p, par_double_adj_demerits_code));
                         lua_push_integer_at_key(L, doublehyphendemerits,           tex_get_par_par(p, par_double_hyphen_demerits_code));
                         lua_push_integer_at_key(L, finalhyphendemerits,            tex_get_par_par(p, par_final_hyphen_demerits_code));
                         lua_push_integer_at_key(L, baselineskip,       glue_amount(tex_get_par_par(p, par_baseline_skip_code)));
@@ -11145,6 +11147,9 @@ int lmt_par_pass_callback(
                                 if (v) {
                                     properties->orphan_penalty = v;
                                 }
+                                if (v) {
+                                    properties->toddler_penalty = v;
+                                }
                                 get_integer_par(v, singlelinepenalty, 0);
                                 if (v) {
                                     properties->single_line_penalty = v;
@@ -11164,14 +11169,6 @@ int lmt_par_pass_callback(
                                 get_integer_par(v, adjdemerits, 0);
                                 if (v) { 
                                     properties->adj_demerits = v;
-                                }
-                                get_integer_par(v, doubleadjdemerits, 0);
-                                if (v) { 
-                                    properties->double_adj_demerits = v;
-                                }
-                                get_integer_par(v, linebreakcriterion, 0);
-                                if (v) {
-                                    properties->line_break_criterion = v;
                                 }
                                 get_dimension_par(v, emergencystretch, 0);
                                 if (v) {

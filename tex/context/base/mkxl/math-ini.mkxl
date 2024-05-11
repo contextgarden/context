@@ -622,6 +622,7 @@
 \setmathoptions\mathvariablecode\numexpr
     \zerocount
    +\noitaliccorrectionclassoptioncode
+   +\shortinlineclassoptioncode
 \relax
 
 \setmathoptions\mathactivecode\numexpr
@@ -1030,6 +1031,15 @@
 
 \let\math_trace_blobs\relax
 
+\def\math_trace_blobs_indeed_yes
+  {\markblobindexdone{\currentlanguage}\scratchcounter
+   \normalexpanded{\csname\v!mathnote\endcsname
+     [\v!mathnote:\currentlanguage:\the\scratchcounter]%
+     {\definedfont[\s!MathRoman]\gettextblob{\currentlanguage}\the\currentmathblob}}}
+
+\def\math_trace_blobs_indeed_nop
+  {\note[\v!mathnote:\currentlanguage:\the\scratchcounter]}
+
 \protected\def\math_trace_blobs_indeed
   {\dontleavehmode
    \hbox to \zeropoint \bgroup
@@ -1048,13 +1058,12 @@
           \egroup
         \egroup
       \egroup
-      \ifblobindexdone{\currentlanguage}\scratchcounter
-        \note[\v!mathnote:\currentlanguage:\the\scratchcounter]%
+      \ifinsidefloat
+        \math_trace_blobs_indeed_yes
+      \orelse\ifblobindexdone{\currentlanguage}\scratchcounter
+        \math_trace_blobs_indeed_nop
       \else
-        \markblobindexdone{\currentlanguage}\scratchcounter
-        \normalexpanded{\mathnote
-           [\v!mathnote:\currentlanguage:\the\scratchcounter]
-           {\definedfont[\s!MathRoman]\gettextblob{\currentlanguage}\the\currentmathblob}}%
+        \math_trace_blobs_indeed_yes
       \fi
       \hss
    \egroup}
@@ -2274,7 +2283,7 @@
 \permanent\protected\def\math_tags_ms#1{\mathatom \s!class \mathtextpunctuationcode {\math_upright #1}}
 
 \permanent\protected\def\math_tags_mn#1%
-  {\dostarttagged\t!mdigits\empty
+  {\dostarttaggednodetail\t!mdigits
    \mathatom \s!class \mathdigitcode {\math_upright #1}%
    \dostoptagged}
 
@@ -4711,6 +4720,9 @@
 
 \permanent\tolerant\protected\def\setmathgroupset[#1]%
   {\mathdictgroup\clf_groupsetgroup{#1}\relax}
+
+\setmathgroupset
+  [every]
 
 %D Only for testing (limited line span):
 %D

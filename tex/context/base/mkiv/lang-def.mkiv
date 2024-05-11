@@ -141,17 +141,20 @@
 
 \installlanguage % old german
   [deo]
-  [\c!spacing=\v!packed,
+  [\c!define=\v!no,
+   \c!spacing=\v!packed,
    \c!default=\s!de]
 
 \installlanguage
   [de-de]
-  [\c!spacing=\v!packed,
+  [\c!define=\v!no,
+   \c!spacing=\v!packed,
    \c!default=\s!de]
 
 \installlanguage
   [de-at]
-  [\c!spacing=\v!packed,
+  [\c!define=\v!no,
+   \c!spacing=\v!packed,
    \c!default=\s!de,
    \c!leftquote=\leftguillemot,
    \c!rightquote=\rightguillemot,
@@ -160,14 +163,16 @@
 
 \installlanguage
   [de-ch]
-  [\c!spacing=\v!packed,
+  [\c!define=\v!no,
+   \c!spacing=\v!packed,
    \c!default=\s!de]
 
 %D And some alternative (but very real) english patterns:
 
 \installlanguage
   [en-gb]
-  [\c!default=\s!en,
+  [\c!define=\v!no,
+   \c!default=\s!en,
    \s!patterns=\s!gb,
    \s!lefthyphenmin=3,
    \s!righthyphenmin=3,
@@ -179,7 +184,8 @@
 
 \installlanguage
   [en-us]
-  [\c!default=\s!en,
+  [\c!define=\v!no,
+   \c!default=\s!en,
    \s!patterns=\s!us]
 
 \installlanguage [\s!uk] [\s!en-\s!gb]
@@ -257,7 +263,7 @@
 
 \installlanguage
   [\s!sl]
-  [\c!command=\v!no,
+  [\c!define=\v!no,
    \c!spacing=\v!packed,
    \c!leftsentence=\hbox{\endash\space},
    \c!rightsentence=\hbox{\space\endash},
@@ -267,6 +273,22 @@
    \c!rightquote=\guilsingleleft,
    \c!leftquotation=\rightguillemot,
    \c!rightquotation=\leftguillemot,
+   \c!date={\v!day,{.},\space,\v!month,\space,\v!year}]
+
+\installlanguage
+  [\s!sq]
+  [\c!command=\v!no,
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=2,
+   \c!spacing=\v!packed,
+   \c!leftsentence=\hbox{\endash\space},
+   \c!rightsentence=\hbox{\space\endash},
+   \c!leftsubsentence=\endash,
+   \c!rightsubsentence=\endash,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoublesixquote,
    \c!date={\v!day,{.},\space,\v!month,\space,\v!year}]
 
 \installlanguage
@@ -292,10 +314,13 @@
 \installlanguage [\s!croatian]  [\s!hr]
 \installlanguage [\s!slovenian] [\s!sl]
 \installlanguage [slovene]      [\s!sl] % both possible (mojca: still needed?)
-
+\installlanguage [\s!albanian]  [\s!sq]
 \installlanguage [\s!armenian]  [\s!hy]
-\installlanguage [\s!hye]  [\s!hy]	% Eastern Armenian
-\installlanguage [\s!hyw]  [\s!hy]  % Western Armenian
+
+\installlanguage [\s!als]  [\s!sq]  % Tosk (South) Albanian
+
+\installlanguage [\s!hye] [\s!hy] % Eastern Armenian
+\installlanguage [\s!hyw] [\s!hy] % Western Armenian
 
 % Cyrillic Languages
 
@@ -541,36 +566,36 @@
 
 % Just aliases to "ar" for now
 
-\installlanguage[\s!ar-ae][\c!default=\s!ar]    % U.A.E.
-\installlanguage[\s!ar-bh][\c!default=\s!ar]    % Bahrain
-\installlanguage[\s!ar-eg][\c!default=\s!ar]    % Egypt
-\installlanguage[\s!ar-in][\c!default=\s!ar]    % India?
-\installlanguage[\s!ar-kw][\c!default=\s!ar]    % Kuwait
-\installlanguage[\s!ar-ly][\c!default=\s!ar]    % Libya
-\installlanguage[\s!ar-om][\c!default=\s!ar]    % Oman
-\installlanguage[\s!ar-qa][\c!default=\s!ar]    % Qatar
-\installlanguage[\s!ar-sa][\c!default=\s!ar]    % Saudi Arabia
-\installlanguage[\s!ar-sd][\c!default=\s!ar]    % Sudan
-\installlanguage[\s!ar-tn][\c!default=\s!ar]    % Tunisia
-\installlanguage[\s!ar-ye][\c!default=\s!ar]    % Yemen
+\installlanguage[\s!ar-ae][\c!define=\v!no,\c!default=\s!ar]    % U.A.E.
+\installlanguage[\s!ar-bh][\c!define=\v!no,\c!default=\s!ar]    % Bahrain
+\installlanguage[\s!ar-eg][\c!define=\v!no,\c!default=\s!ar]    % Egypt
+\installlanguage[\s!ar-in][\c!define=\v!no,\c!default=\s!ar]    % India?
+\installlanguage[\s!ar-kw][\c!define=\v!no,\c!default=\s!ar]    % Kuwait
+\installlanguage[\s!ar-ly][\c!define=\v!no,\c!default=\s!ar]    % Libya
+\installlanguage[\s!ar-om][\c!define=\v!no,\c!default=\s!ar]    % Oman
+\installlanguage[\s!ar-qa][\c!define=\v!no,\c!default=\s!ar]    % Qatar
+\installlanguage[\s!ar-sa][\c!define=\v!no,\c!default=\s!ar]    % Saudi Arabia
+\installlanguage[\s!ar-sd][\c!define=\v!no,\c!default=\s!ar]    % Sudan
+\installlanguage[\s!ar-tn][\c!define=\v!no,\c!default=\s!ar]    % Tunisia
+\installlanguage[\s!ar-ye][\c!define=\v!no,\c!default=\s!ar]    % Yemen
 
 % Farsi (Persian)
 
-\installlanguage[\s!ar-ir][\c!default=\s!pe]
-%installlanguage[\s!pe-ir][\c!default=\s!pe]
-%installlanguage[\s!fa-ir][\c!default=\s!fa]
+\installlanguage[\s!ar-ir][\c!define=\v!no,\c!default=\s!pe]
+%installlanguage[\s!pe-ir][\c!define=\v!no,\c!default=\s!pe]
+%installlanguage[\s!fa-ir][\c!define=\v!no,\c!default=\s!fa]
 
 % Syriac months
 
-\installlanguage[\s!ar-sy][\c!default=\s!ar]    % Syria
-\installlanguage[\s!ar-iq][\c!default=\s!ar-sy] % Iraq
-\installlanguage[\s!ar-jo][\c!default=\s!ar-sy] % Jordan
-\installlanguage[\s!ar-lb][\c!default=\s!ar-sy] % Lebanon
+\installlanguage[\s!ar-sy][\c!define=\v!no,\c!default=\s!ar]    % Syria
+\installlanguage[\s!ar-iq][\c!define=\v!no,\c!default=\s!ar-sy] % Iraq
+\installlanguage[\s!ar-jo][\c!define=\v!no,\c!default=\s!ar-sy] % Jordan
+\installlanguage[\s!ar-lb][\c!define=\v!no,\c!default=\s!ar-sy] % Lebanon
 
 % Maghribi months
 
-\installlanguage[\s!ar-dz][\c!default=\s!ar]    % Algeria
-\installlanguage[\s!ar-ma][\c!default=\s!ar]    % Morocco
+\installlanguage[\s!ar-dz][\c!define=\v!no,\c!default=\s!ar]    % Algeria
+\installlanguage[\s!ar-ma][\c!define=\v!no,\c!default=\s!ar]    % Morocco
 
 % Artificial Languages: Esperanto
 
@@ -596,7 +621,7 @@
 
 \installlanguage
   [\s!lt]
-  [\c!command=\v!no,
+  [\c!define=\v!no,
    \c!spacing=\v!packed,
    \c!leftsentence=\emdash,
    \c!rightsentence=\emdash,
@@ -661,7 +686,7 @@
 % Greek
 
 \installlanguage
-  [\s!gr]
+  [\s!gr] % grc el-monotonic-greek.tex
   [\c!spacing=\v!packed,
    \c!leftsentence=\emdash,
    \c!rightsentence=\emdash,
@@ -672,7 +697,7 @@
    \c!leftquotation=«,
    \c!rightquotation=»,
    \c!date={\v!day\space\v!month\space\v!year},
-   \s!patterns=\s!agr] % ok?
+   \s!patterns=\s!gr]
 
 \installlanguage [\s!greek] [\s!gr]
 
@@ -738,7 +763,7 @@
 
 \installlanguage
   [\s!it]
-  [\c!command=\v!no,
+  [\c!define=\v!no,
    \c!spacing=\v!packed,
    \c!leftsentence=\emdash,
    \c!rightsentence=\emdash,
@@ -783,10 +808,9 @@
    \c!rightquotation=\upperrightdoubleninequote,
    \c!date={\v!day,\space,\v!month,\space,\v!year}]
 
-
-\installlanguage[\s!pt-br][\c!default=\s!pt]    % Brazil
-\installlanguage[\s!es-es][\c!default=\s!es]    % Spain
-\installlanguage[\s!es-la][\c!default=\s!es]    % Latin America
+\installlanguage[\s!pt-br][\c!default=\s!pt] % Brazil
+\installlanguage[\s!es-es][\c!default=\s!es] % Spain
+\installlanguage[\s!es-la][\c!default=\s!es] % Latin America
 
 \installlanguage
   [\s!ro]
@@ -797,9 +821,11 @@
    \c!rightsubsentence=\emdash,
    \c!leftquote=\leftguillemot,
    \c!rightquote=\rightguillemot,
-   \c!leftquotation=\lowerrightdoubleninequote,
-   \c!rightquotation=\upperleftdoublesixquote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperrightdoubleninequote,
    \c!date={\v!day,\space,\v!month,\space,\v!year}]
+
+\installlanguage[\s!mo][\c!define=\v!no,\c!default=\s!ro] % just to be sure (ask TH)
 
 %D For compatibility reasons we also define:
 
@@ -810,12 +836,14 @@
 \installlanguage [\s!latin]       [\s!la]
 \installlanguage [\s!portuguese]  [\s!pt]
 \installlanguage [\s!romanian]    [\s!ro]
+\installlanguage [\s!moldavian]   [\s!mo]
 
 % Vietnamese Language
 
-\installlanguage
+\installlanguage % vn
   [\s!vi]
-  [\c!spacing=\v!packed,
+  [\c!define=\v!no,
+   \c!spacing=\v!packed,
    \c!leftsentence=\emdash,
    \c!rightsentence=\emdash,
    \c!leftsubsentence=\emdash,
@@ -832,7 +860,8 @@
 
 \installlanguage
   [\s!th]
-  [\c!spacing=\v!broad,
+  [\c!define=\v!no,
+   \c!spacing=\v!broad,
    \c!leftsentence=\emdash,
    \c!rightsentence=\emdash,
    \c!leftsubsentence=\emdash,
@@ -848,11 +877,36 @@
 
 \installlanguage [\s!thai] [\s!th]
 
-%D Malayalam (needs to be checked)
+%D Indic languages (śrīrāman)
+%
+%
+%D Sanskit (someone needs to define the parameters):
+%D
+%D The file \type {lang-sa.lua} contains sanskrit hyphenation patterns for devanagari,
+%D bengali, telugu, kannada, malayalam and roman(iast.
+
+\installlanguage
+  [\s!sa]
+  [\c!spacing=\v!broad,
+   \c!leftsentence=\endash,
+   \c!rightsentence=\endash,
+   \c!leftsubsentence=\emdash,
+   \c!rightsubsentence=\emdash,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!month,\space,\v!day,{,\space},\v!year},
+   \s!patterns=\s!sa,
+   \s!lefthyphenmin=1,
+   \s!righthyphenmin=1]
+
+%D Malayalam needs some fine-tuning
 
 \installlanguage
   [\s!ml]
-  [\c!spacing=\v!broad,
+  [\c!define=\v!no,
+   \c!spacing=\v!broad,
    \c!leftsentence=\emdash,
    \c!rightsentence=\emdash,
    \c!leftsubsentence=\emdash,
@@ -867,6 +921,46 @@
    \s!righthyphenmin=3]
 
 \installlanguage [\s!malayalam] [\s!ml]
+
+%D Indonesian and Malay languages
+
+\installlanguage
+  [\s!id]
+  [\c!define=\v!no,
+   \c!spacing=\v!packed,
+   \c!leftsentence=\emdash,
+   \c!rightsentence=\emdash,
+   \c!leftsubsentence=\emdash,
+   \c!rightsubsentence=\emdash,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!month,\space,\v!day,\space,\v!year},
+   \s!patterns=\s!id,
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=3]
+
+\installlanguage [\s!indonesian] [\s!id]
+
+\installlanguage
+  [\s!ms]
+  [\c!define=\v!no,
+   \c!spacing=\v!packed,
+   \c!leftsentence=\emdash,
+   \c!rightsentence=\emdash,
+   \c!leftsubsentence=\emdash,
+   \c!rightsubsentence=\emdash,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!month,\space,\v!day,\space,\v!year},
+   \s!patterns=\s!ms,
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=3]
+
+\installlanguage [\s!malay] [\s!ms]
 
 %D Todo: generate this one from languages.data
 

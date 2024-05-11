@@ -30,6 +30,9 @@
 
 \unprotect
 
+% Local boxes are a real mess and although we already mnade it behave better it's
+% still a trouble maker.
+
 \def\typo_localboxes_reset
   {\localleftbox  {}% no index here, works grouped
    \localrightbox {}%
@@ -37,7 +40,7 @@
 
 \appendtoks
     \typo_localboxes_reset
-\to\everyforgetall
+\to \everyforgetall
 
 \definesystemattribute[localboxesmark][public]
 

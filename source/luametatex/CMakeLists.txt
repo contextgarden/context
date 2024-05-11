@@ -87,7 +87,7 @@ if (MSVC)
 
           # /Ob3    # more agressive inline, much larger bin, no gain
 
-            /wd4061 # enumerator * in switch * is not explicitly handles (mp)
+            /wd4061 # enumerator * in switch * is not explicitly handled (mp)
             /wd4701 # potentially unitialized local variable (lua)
             /wd4255 # no function prototype given
 

@@ -1793,10 +1793,6 @@ do
     local f_opacity        = formatters['    withopacity %N']
     local f_pen            = formatters['    withpen pencircle scaled %N']
 
-
-    -- todo: gradient unfinished
-    -- todo: opacity but first we need groups in mp
-
     -- this is rather hard to deal with because browsers differ (at the time of writing)
     -- and what they show on screen comes out different (or not at all) in print
 

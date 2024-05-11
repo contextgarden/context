@@ -37,7 +37,7 @@
 \mutable\lettonothing\MPfilename
 
 \permanent\protected\def\convertMPtoPDF#1#2#3% scaling no longer supported at this level (so #2 & #3 are ignored)
-  {\dostarttagged\t!mpgraphic\empty
+  {\dostarttaggednodetail\t!mpgraphic
    \naturalvpack attr \imageattribute 1 \bgroup
      \message{[MP to PDF]}%
      \xdef\MPfilename{#1}%

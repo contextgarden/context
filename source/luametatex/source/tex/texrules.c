@@ -175,7 +175,8 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
         }
     }
   DONE:
-    if (! attr) {
+  //  if (! attr) {
+    if (attr) {
         /* Also bumps reference and replaces the one set. */
         tex_attach_attribute_list_attribute(rule, attr);
     }    

@@ -24,3 +24,47 @@ interfaces.implement {
         assignbuffer(target,d or "")
     end
 }
+
+do
+
+    local expandmacro = token.expandmacro
+    local nodelisttoutf = nodes.toutf
+    local texgetbox = tex.getbox
+    local settings_to_array = utilities.parsers.settings_to_array
+
+    local meanings        = { }
+    local done            = { }
+    publications.meanings = meanings
+
+    table.setmetatableindex(meanings,function(t,k)
+        expandmacro("publ_cite_set_meaning",true,k)
+        local v = nodelisttoutf(texgetbox("b_btx_cmd").list)
+        t[k] = v
+        return v
+    end)
+
+    interfaces.implement {
+        name      = "btxentrytostring",
+        public    = true,
+        protected = true,
+        arguments = "3 strings",
+        actions   = function(command,again,tag)
+            -- we need to collect multiple
+            local set = settings_to_array(tag)
+            for i=1,#set do
+                tag = set[i]
+                if i > 1 then
+                    context.thinspace()
+                end
+                local meaning = meanings[tag]
+                if done[tag] then
+                    context[again]( { "publ:" .. tag } )
+                else
+                    context[command]( { "publ:" .. tag }, meaning )
+                    done[tag] = true
+                end
+            end
+        end
+    }
+
+end

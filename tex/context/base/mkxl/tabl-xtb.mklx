@@ -482,11 +482,11 @@
 
 \protected\def\tabl_x_start_row_construct_yes[#S#settings]%
   {\setupcurrentxtable[#settings]%
-   \dostarttagged\t!tablerow\empty
+   \dostarttaggednodetail\t!tablerow
    \clf_x_table_next_row_option{\xtableparameter\c!samepage}}
 
 \protected\def\tabl_x_start_row_construct_nop
-  {\dostarttagged\t!tablerow\empty
+  {\dostarttaggednodetail\t!tablerow
    \clf_x_table_next_row}
 
 \protected\def\tabl_x_stop_row_construct
@@ -660,7 +660,7 @@
    \clf_x_table_set_reflow_height}
 
 \protected\def\tabl_x_start_cell_construct_yes[#S#settings]%
-  {\dostarttagged\t!tablecell\empty % can't we just tag the box
+  {\dostarttaggednodetail\t!tablecell % can't we just tag the box
    \setbox\b_tabl_x\hpack\bgroup
    \setupcurrentxtable[#settings]%
    \letxtableparameter\c!width \d_tabl_x_width_reference  % overloads given width
@@ -671,7 +671,7 @@
    \dotagxtablecell}
 
 \protected\def\tabl_x_start_cell_construct_nop
-  {\dostarttagged\t!tablecell\empty % can't we just tag the box
+  {\dostarttaggednodetail\t!tablecell % can't we just tag the box
    \setbox\b_tabl_x\hpack\bgroup
    \letxtableparameter\c!width \d_tabl_x_width_reference  % overloads given width
    \letxtableparameter\c!height\d_tabl_x_height_reference % overloads given height (commenting it ... nice option)

@@ -248,6 +248,11 @@
                     <short>list of: print, modify, extract, add, fillin, assemble, quality</short>
                 </flag>
             </subcategory>
+            <subcategory>
+                <flag name="wtpdf">
+                    <short>add an wtpdf conformance blob but best check first if it applies</short>
+                </flag>
+            </subcategory>
         </category>
         <category name="special">
             <subcategory>

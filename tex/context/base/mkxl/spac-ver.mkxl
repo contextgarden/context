@@ -1408,9 +1408,6 @@
 \immutable\integerdef\defaultgridclubpenalty         \zerocount
 \immutable\integerdef\defaultgridbrokenpenalty       \zerocount
 
-% \linebreakcriterion\optimallinebreakcriterion
-% \divide \adjdemerits \plustwo
-
 \permanent\protected\def\nopenalties
   {\frozen\widowpenalty \zerocount
    \frozen\clubpenalty  \zerocount

@@ -430,7 +430,7 @@
 
 \permanent\protected\def\asciistr#1% used in some old styles
   {\dontleavehmode\begingroup
-   \dostarttagged\t!verbatim\empty
+   \dostarttaggednodetail\t!verbatim
    \usetypestyleandcolor\c!style\c!color\detokenize{#1}%
    \dostoptagged
    \endgroup}
@@ -492,7 +492,7 @@
   {\buff_verbatim_initialize_typing_two
    \dostarttaggedchained\t!verbatimblock\currenttyping\??typing
    \beginofverbatimlines
-   \dostarttagged\t!verbatimlines\empty
+   \dostarttaggednodetail\t!verbatimlines
    \clf_typebuffer
      name    {_typing_}%
      strip   {\typingparameter\c!strip}%
@@ -625,7 +625,7 @@
    \buff_verbatim_initialize_typing_two
    \dostarttaggedchained\t!verbatimblock\currenttyping\??typing
    \beginofverbatimlines
-   \dostarttagged\t!verbatimlines\empty
+   \dostarttaggednodetail\t!verbatimlines
    \clf_typefile
       name   {#2}%
       strip  {\typingparameter\c!strip}%
@@ -827,7 +827,7 @@
    \buff_verbatim_initialize_typing_two
    \dostarttaggedchained\t!verbatimblock{#1}\??typing
    \beginofverbatimlines
-   \dostarttagged\t!verbatimlines\empty
+   \dostarttaggednodetail\t!verbatimlines
    \clf_typebuffer
      name   {#2}%
      strip  {\typingparameter\c!strip}%
@@ -929,7 +929,7 @@
    \buff_verbatim_set_line_margin
    \expand\everyline % maybe also after starttagged
    \strut % after starttagged, else break !
-   \dostarttagged\t!verbatimline\empty}
+   \dostarttaggednodetail\t!verbatimline}
 
 \protected\def\buff_verbatim_end_of_line
   {\dostoptagged
@@ -946,7 +946,7 @@
    \else
      \blank[\typingparameter\c!blank]%
    \fi
-   \dostarttagged\t!verbatimlines\empty}
+   \dostarttaggednodetail\t!verbatimlines}
 
 % hooks (todo: frozen):
 

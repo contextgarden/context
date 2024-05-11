@@ -104,16 +104,19 @@
             value      = "1",
             size       = 0,
         ] ;
-    ) xysized (10cm,10cm) ;
+%     ) xysized (10cm,10cm) ;
+    ) xysized (5cm,5cm) ;
     setbounds r to
         boundingbox r
-        enlarged 5mm
+%         enlarged 5mm
+        enlarged 2.5mm
     ;
     % actually it's one path as we used &&&
     if \MPvar{a} = 2 :
         draw boundingbox r
             withcolor .5white
-            withpen pencircle scaled 5 ;
+%             withpen pencircle scaled 5 ;
+            withpen pencircle scaled 2.5 ;
         draw r
             withcolor .3white ;
     else :
@@ -124,26 +127,33 @@
     fi ;
 \stopuseMPgraphic
 
+\setupTEXpage[offset=1cm]
+
+\protected\def\MakeOneSet#1#2#3#4{
+    \vbox \bgroup
+        \offinterlineskip
+        \dorecurse{#1} {%
+            \hbox \bgroup
+                \dorecurse{#2} {%
+                    \useMPgraphic{whatever}{n=#3,a=#4}%
+                    \hskip5mm
+                }%
+                \unskip
+            \egroup
+            \vskip5mm
+        }%
+        \removelastskip
+    \egroup
+}
+
 \protected\def\MakeSet#1#2#3#4#5{
     \dorecurse{#1} {
-        \startTEXpage[offset=1cm]
-            \vbox \bgroup
-                \offinterlineskip
-                \dorecurse{#2} {%
-                    \hbox \bgroup
-                        \dorecurse{#3} {%
-                            \useMPgraphic{whatever}{n=#4,a=#5}%
-                            \hskip5mm
-                        }%
-                        \unskip
-                    \egroup
-                    \vskip5mm
-                }%
-                \removelastskip
-            \egroup
+        \startTEXpage
+            \MakeOneSet{#2}{#3}{#4}{#5}%
         \stopTEXpage
     }
 }
+
 
 \setuplayout[tight]
 
@@ -209,15 +219,31 @@ December 2023
 
 \starttext
 
-\MakeSet {100}{1}{1} {10} {1} %  8 * 24
-\MakeSet {100}{1}{1} {15} {1} %  8 * 24
-\MakeSet {100}{1}{1} {20} {1} %  8 * 24
+% \MakeSet {100}{1}{1} {10} {1} %  8 * 24
+% \MakeSet {100}{1}{1} {10} {1} %  8 * 24
+% \MakeSet {100}{1}{1} {15} {1} %  8 * 24
+% \MakeSet {100}{1}{1} {20} {1} %  8 * 24
 % \MakeSet {8}{6}{4} {10} {1} %  8 * 24
 % \MakeSet{10}{5}{3} {15} {1} % 10 * 15
 % \MakeSet{10}{5}{3} {15} {1} % 10 * 15
 % \MakeSet{1}{40}{30} {20} {1} % 10 * 12
 % \MakeSet{1}{40}{30} {15} {1} % 10 * 12
 % \MakeSet{1}{40}{30} {20} {1} % 10 * 12
+
+% \MakeSet{1}{40}{20} {20} {1} % 10 * 12
+% \MakeSet{1}{40}{20} {15} {1} % 10 * 12
+
+% \setupTEXpage[offset=overlay]
+% \MakeSet {5}{1}{1} {100} {1} %  8 * 24
+
+% 80 cm x 200
+
+
+% \setMPvariables[whatever][n=100,a=5]
+
+% \startTEXpage[width=80cm,height=200cm,offset=1cm,strut=no]
+%     \dontleavehmode\scale[width=78cm]{\MakeOneSet{50}{20}{15}{1}} % 10 * 12
+% \stopTEXpage
 
 % \getbuffer[game-2023]
 

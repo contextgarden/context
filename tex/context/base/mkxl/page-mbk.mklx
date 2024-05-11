@@ -73,8 +73,12 @@
    \c!bottom=\vfill]
 
 \definesystemconstant{marginblock}
+\definesystemconstant{leftmarginblock}
+\definesystemconstant{rightmarginblock}
 
-\resetboxesincache \s!marginblock \s!marginblock
+\resetboxesincache \s!marginblock      \s!marginblock
+\resetboxesincache \s!leftmarginblock  \s!leftmarginblock
+\resetboxesincache \s!rightmarginblock \s!rightmarginblock
 
 \c_page_margin_blocks_enabled\conditionalfalse
 
@@ -256,23 +260,23 @@
   \fi}
 
 \permanent\tolerant\protected\def\flushallmarginblocks[#1]%
- {\ifconditional\c_page_margin_blocks_enabled
-    \begingroup
-    \scratchcounterone\getboxcountfromcache\s!marginblock\relax
-    \ifcase\scratchcounterone\else
-      \scratchcountertwo\ifparameter#1\or\numexpr\scratchcounterone-#1+\plusone\relax\else\plusone\fi
-      \localcontrolledloop \scratchcountertwo \scratchcounterone \plusone
-        {\ifcase\currentloopiterator\or
-           \marginblockparameter\c!before
-         \else
-           \marginblockparameter\c!inbetween
-         \fi
-         \getboxfromcache\s!marginblock{\the\currentloopiterator}\scratchbox
-         \box\scratchbox
-         \marginblockparameter\c!after}%
-      \pruneboxesincache\s!marginblock
-    \fi
-    \endgroup
-  \fi}
+  {\ifconditional\c_page_margin_blocks_enabled
+     \begingroup
+     \scratchcounterone\getboxcountfromcache\s!marginblock\relax
+     \ifcase\scratchcounterone\else
+       \scratchcountertwo\ifparameter#1\or\numexpr\scratchcounterone-#1+\plusone\relax\else\plusone\fi
+       \localcontrolledloop \scratchcountertwo \scratchcounterone \plusone
+         {\ifcase\currentloopiterator\or
+            \marginblockparameter\c!before
+          \else
+            \marginblockparameter\c!inbetween
+          \fi
+          \getboxfromcache\s!marginblock{\the\currentloopiterator}\scratchbox
+          \box\scratchbox
+          \marginblockparameter\c!after}%
+       \pruneboxesincache\s!marginblock
+     \fi
+     \endgroup
+   \fi}
 
 \protect \endinput

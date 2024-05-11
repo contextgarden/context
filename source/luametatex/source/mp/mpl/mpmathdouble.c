@@ -1074,7 +1074,7 @@ math_data *mp_initialize_double_math(MP mp)
     mp_double_allocate_number(mp, &math->md_p_over_v_threshold_t, mp_fraction_type);
     mp_double_allocate_number(mp, &math->md_equation_threshold_t, mp_scaled_type);
     /* initializations */
-    math->md_precision_default.data.dval         = 16 * unity;
+    math->md_precision_default.data.dval         = 16 * unity; 
     math->md_precision_max.data.dval             = 16 * unity;
     math->md_precision_min.data.dval             = 16 * unity;
     math->md_epsilon_t.data.dval                 = epsilon;
@@ -1100,7 +1100,7 @@ math_data *mp_initialize_double_math(MP mp)
     math->md_twelve_ln_2_k.data.dval             = 8.31776616671934371292 * 256; /* $2^{24}\cdot12\ln2\approx139548959.6165$ */
     math->md_coef_bound_k.data.dval              = coef_bound;
     math->md_coef_bound_minus_1.data.dval        = coef_bound - 1/65536.0;
-    math->md_twelvebits_3.data.dval              = 1365 / 65536.0;               /* $1365\approx 2^{12}/3$ */
+    math->md_twelvebits_3.data.dval              =     1365 / 65536.0;           /* $1365\approx 2^{12}/3$ */
     math->md_twentysixbits_sqrt2_t.data.dval     = 94906266 / 65536.0;           /* $2^{26}\sqrt2\approx94906265.62$ */
     math->md_twentyeightbits_d_t.data.dval       = 35596755 / 65536.0;           /* $2^{28}d\approx35596754.69$ */
     math->md_twentysevenbits_sqrt2_d_t.data.dval = 25170707 / 65536.0;           /* $2^{27}\sqrt2\,d\approx25170706.63$ */

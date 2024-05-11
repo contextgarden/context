@@ -223,6 +223,12 @@
                   <pdfaProperty:name>conformance</pdfaProperty:name>
                   <pdfaProperty:valueType>Text</pdfaProperty:valueType>
                 </rdf:li>
+                <rdf:li rdf:parseType="Resource">
+                  <pdfaProperty:category>internal</pdfaProperty:category>
+                  <pdfaProperty:description>Year of standard</pdfaProperty:description>
+                  <pdfaProperty:name>year</pdfaProperty:name>
+                  <pdfaProperty:valueType>Integer</pdfaProperty:valueType>
+                </rdf:li>
               </rdf:Seq>
             </pdfaSchema:property>
           </rdf:li>
@@ -250,6 +256,12 @@
                   <pdfaProperty:name>corr</pdfaProperty:name>
                   <pdfaProperty:valueType>Text</pdfaProperty:valueType>
                 </rdf:li>
+                <rdf:li rdf:parseType="Resource">
+                 <pdfaProperty:category>internal</pdfaProperty:category>
+                 <pdfaProperty:description>PDF/UA year of standard</pdfaProperty:description>
+                 <pdfaProperty:name>rev</pdfaProperty:name>
+                 <pdfaProperty:valueType>Integer</pdfaProperty:valueType>
+                </rdf:li>
               </rdf:Seq>
             </pdfaSchema:property>
           </rdf:li>
@@ -257,5 +269,7 @@
       </pdfaExtension:schemas>
     </rdf:Description>
     <pdfaid-placeholder/>
+    <pdfuaid-placeholder/>
+    <wtpdf-placeholder/>
   </rdf:RDF>
 </x:xmpmeta>

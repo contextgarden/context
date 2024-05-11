@@ -1409,6 +1409,16 @@ void tex_hyphenate_list(halfword head, halfword tail)
             r = node_next(r);
         }
         if (r) {
+            /* maybe pass used_hyphen_penalty_par and used_ex_hyphen_penalty_par */
+            halfword saved_hyphen_penalty_par = hyphen_penalty_par;
+            halfword saved_ex_hyphen_penalty_par = ex_hyphen_penalty_par;
+            halfword p = tex_find_par_par(head);
+            int penalties_pushed = node_type(p) == par_node; /* maybe check for h|v subtype */
+            if (penalties_pushed) {
+                hyphen_penalty_par = tex_get_par_par(p, par_hyphen_penalty_code); 
+                ex_hyphen_penalty_par = tex_get_par_par(p, par_ex_hyphen_penalty_code); 
+            }
+            /* */
             r = tex_aux_find_next_wordstart(r, first_language);
             if (r) {
                 lang_variables langdata;
@@ -1711,6 +1721,12 @@ void tex_hyphenate_list(halfword head, halfword tail)
                 tex_flush_node(node_next(tail));
                 node_next(tail) = saved_tail;
             }
+            /* */
+            if (penalties_pushed) {
+                hyphen_penalty_par = saved_hyphen_penalty_par;
+                ex_hyphen_penalty_par = saved_ex_hyphen_penalty_par;
+            }
+            /* */
         }
     }
 }

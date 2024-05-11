@@ -953,38 +953,61 @@ static int tex_aux_mutation_permitted(halfword cs)
 
 */
 
-static void tex_aux_eq_destroy(memoryword w)
+// static void tex_aux_eq_destroy(memoryword w)
+// {
+//     halfword p = eq_value_field(w);
+//     if (p) { 
+//         switch (eq_type_field(w)) {
+//             case call_cmd:
+//             case protected_call_cmd:
+//             case semi_protected_call_cmd:
+//             case constant_call_cmd:
+//             case tolerant_call_cmd:
+//             case tolerant_protected_call_cmd:
+//             case tolerant_semi_protected_call_cmd:
+//             case register_toks_reference_cmd:
+//             case internal_toks_reference_cmd:
+//                 tex_delete_token_reference(p);
+//                 break;
+//             case internal_glue_reference_cmd:
+//             case register_glue_reference_cmd:
+//             case internal_muglue_reference_cmd:
+//             case register_muglue_reference_cmd:
+//             case gluespec_cmd:
+//             case mugluespec_cmd:
+//             case mathspec_cmd:
+//             case fontspec_cmd:
+//             case specification_reference_cmd:
+//                 tex_flush_node(p);
+//                 break;
+//             case internal_box_reference_cmd:
+//             case register_box_reference_cmd:
+//                 tex_flush_node_list(p);
+//                 break;
+//             default:
+//                 break;
+//         }
+//     }
+// }
+
+// static int tex_aux_eq_destructor(memoryword w)
+// {
+//     return eq_value_field(w) ? lmt_hash_state.destructors[eq_type_field(w)] : 0;
+// }
+
+inline static void tex_aux_eq_destroy(memoryword w)
 {
     halfword p = eq_value_field(w);
     if (p) { 
-        switch (eq_type_field(w)) {
-            case call_cmd:
-            case protected_call_cmd:
-            case semi_protected_call_cmd:
-            case constant_call_cmd:
-            case tolerant_call_cmd:
-            case tolerant_protected_call_cmd:
-            case tolerant_semi_protected_call_cmd:
-            case register_toks_reference_cmd:
-            case internal_toks_reference_cmd:
+        switch (lmt_hash_state.destructors[eq_type_field(w)]) {
+            case eq_token_list: 
                 tex_delete_token_reference(p);
                 break;
-            case internal_glue_reference_cmd:
-            case register_glue_reference_cmd:
-            case internal_muglue_reference_cmd:
-            case register_muglue_reference_cmd:
-            case gluespec_cmd:
-            case mugluespec_cmd:
-            case mathspec_cmd:
-            case fontspec_cmd:
-            case specification_reference_cmd:
+            case eq_node: 
                 tex_flush_node(p);
                 break;
-            case internal_box_reference_cmd:
-            case register_box_reference_cmd:
+            case eq_node_list: 
                 tex_flush_node_list(p);
-                break;
-            default:
                 break;
         }
     }
@@ -1149,7 +1172,7 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
 
 void tex_eq_define(halfword p, singleword cmd, halfword chr)
 {
-    int trace = tracing_assigns_par > 0;
+    bool trace = tracing_assigns_par > 0;
     if (tex_aux_equal_eq(p, cmd, 0, chr)) {
         if (trace) {
             tex_aux_diagnostic_trace(p, "reassigning");
@@ -1299,7 +1322,7 @@ void tex_define(int g, halfword p, singleword t, halfword e) /* int g -> singlew
 }
 
 /*tex 
-    Used in |\dimendef| but also |\dimensiondef| and alike. Before it gets calles we already 
+    Used in |\dimendef| but also |\dimensiondef| and alike. Before it gets called we already 
     redefined to |\relax| so we might have saved. 
 */
 
@@ -2169,6 +2192,30 @@ void tex_initialize_equivalents(void)
     tex_aux_set_eq(undefined_control_sequence,  level_zero, undefined_cs_cmd,                 null,                   0);
     /*tex why here? */
     cat_code_table_par = 0;
+}
+
+void tex_initialize_destructors(void)
+{
+    lmt_hash_state.destructors[call_cmd]                         = eq_token_list;                   
+    lmt_hash_state.destructors[protected_call_cmd]               = eq_token_list;
+    lmt_hash_state.destructors[semi_protected_call_cmd]          = eq_token_list;
+    lmt_hash_state.destructors[constant_call_cmd]                = eq_token_list;
+    lmt_hash_state.destructors[tolerant_call_cmd]                = eq_token_list;
+    lmt_hash_state.destructors[tolerant_protected_call_cmd]      = eq_token_list;
+    lmt_hash_state.destructors[tolerant_semi_protected_call_cmd] = eq_token_list;
+    lmt_hash_state.destructors[register_toks_reference_cmd]      = eq_token_list;
+    lmt_hash_state.destructors[internal_toks_reference_cmd]      = eq_token_list;
+    lmt_hash_state.destructors[internal_glue_reference_cmd]      = eq_node; 
+    lmt_hash_state.destructors[register_glue_reference_cmd]      = eq_node;
+    lmt_hash_state.destructors[internal_muglue_reference_cmd]    = eq_node;
+    lmt_hash_state.destructors[register_muglue_reference_cmd]    = eq_node;
+    lmt_hash_state.destructors[gluespec_cmd]                     = eq_node;
+    lmt_hash_state.destructors[mugluespec_cmd]                   = eq_node;
+    lmt_hash_state.destructors[mathspec_cmd]                     = eq_node;
+    lmt_hash_state.destructors[fontspec_cmd]                     = eq_node;
+    lmt_hash_state.destructors[specification_reference_cmd]      = eq_node;
+    lmt_hash_state.destructors[internal_box_reference_cmd]       = eq_node_list; 
+    lmt_hash_state.destructors[register_box_reference_cmd]       = eq_node_list; 
 }
 
 int tex_located_save_value(int id)

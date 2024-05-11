@@ -448,7 +448,7 @@ local function insert3d(spec) -- width, height, factor, display, controls, label
                 FormType  = 1,
                 BBox      = pdfarray { 0, 0, pdfnumber(factor*width), pdfnumber(factor*height) },
                 Matrix    = pdfarray { 1, 0, 0, 1, 0, 0 },
-                ProcSet   = lpdf.procset(),
+            --  ProcSet   = lpdf.procset(),
                 Resources = pdfdictionary {
                                 XObject = pdfdictionary {
                                     IM = pdfreference(ref)

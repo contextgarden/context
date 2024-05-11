@@ -287,6 +287,10 @@ lpdf.registerdocumentfinalizer(flushembeddedfiles,"embeddedfiles")
 
 -- relation: Supplement, Data, Source, Alternative, Data
 
+
+local hashed = sha2.HEX256
+local shared = table.setmetatableindex("table")
+
 function codeinjections.embedfile(specification)
     if enabled or specification.force then
         local data      = specification.data
@@ -298,6 +302,7 @@ function codeinjections.embedfile(specification)
         local usedname  = specification.usedname
         local filetype  = specification.filetype
         local compress  = specification.compress
+        local index     = specification.index
         local mimetype  = specification.mimetype or specification.mime
         local relation  = specification.relation or "Unspecified"
         if filename == "" then
@@ -350,13 +355,25 @@ function codeinjections.embedfile(specification)
             filetype = name and (filename and filesuffix(filename)) or "txt"
         end
         savename = addfilesuffix(savename,filetype) -- type is mandate for proper working in viewer
+
+-- local share = data and specification.share and shared[mimetype or ""] -- shared data with different possible filenames
+-- local shash = nil
+local fdict = nil
+-- print(data)
+-- if share then
+--     shash = hashed(data)
+--     fdict = share[shash]
+-- end
+-- if fdict then
+--     -- reuse f
+-- else
+
         local a = pdfdictionary {
             Type    = pdfconstant("EmbeddedFile"),
             Subtype = mimetype and mimetype ~= "" and pdfconstant(mimetype) or nil,
         }
-        local f
         if data then
-            f = pdfflushstreamobject(data,a)
+            fdict = pdfflushstreamobject(data,a)
             specification.data = true -- signal that still data but already flushed
         else
             local attributes   = lfs.attributes(foundname)
@@ -365,16 +382,27 @@ function codeinjections.embedfile(specification)
                 Size    = attributes.size,
                 ModDate = lpdf.pdftimestamp(modification),
             }
-            f = pdfflushstreamfileobject(foundname,a,compress)
+            fdict = pdfflushstreamfileobject(foundname,a,compress)
+        end
+
+        fdict = pdfdictionary { F = pdfreference(fdict) }
+--         if shash then
+--             share[shash] = fdict
+--         end
+-- end
+        if title == "" and lpdf.majorversion() > 1 then
+            title = basefilename(savename)
         end
         local d = pdfdictionary {
             Type           = pdfconstant("Filespec"),
             F              = pdfstring(savename),
          -- UF             = pdfstring(savename),
             UF             = pdfunicode(savename),
-            EF             = pdfdictionary { F = pdfreference(f) },
+         -- EF             = pdfdictionary { F = pdfreference(f) },
+            EF             = fdict,
             Desc           = title ~= "" and pdfunicode(title) or nil,
             AFRelationship = pdfconstant(relation),
+            LMTX_Index     = index or nil,
         }
         local r = pdfreference(pdfflushobject(d))
         filestreams[hash] = r

@@ -958,26 +958,84 @@ ndata = checked(data,ndata)
     function checks.mtable(di)
         flatten(di)
         local d = di.data
-        for i=1,#d do
-            local d = d[i]
-            if d.tg == "mtr" then
-                local d = d.data
-                for i=1,#d do
-                    local d = d[i]
-                    if d.tg == "mtd" then
-                        -- okay
-                    elseif d.content then
-                        d.content = ""
-                    else
-                        d.skip = "comment" -- weird error
-                    end
-                end
-            elseif d.content then
-                d.content = ""
-            else
-                d.skip = "comment" -- weird error
-            end
-        end
+-- -- left / right
+-- -- local main   = { }
+-- -- local left   = { }
+-- local max    = 0
+-- --
+-- for i=1,#d do
+--     local d = d[i]
+--     if d.tg == "mtr" then
+--         if #d.data > max then
+--             max = #d.data
+--         end
+--     end
+-- end
+-- for i=1,#d do
+--     local d = d[i]
+--     if d.tg == "mtr" then
+--         if #d.data < max then
+--             local first = d.data[1]
+--             specifications[first.fulltag].cols = max
+--             first.attributes = { colspan = max }
+--         end
+--     end
+-- end
+
+-- if next(left) then
+--     max = max + 1
+--     for i=1,#main do
+--         insert(main[i].data,1,left[i] or {
+--             tg      = "mtd",
+--             element = "mtd",
+--             nature  = "mixed",
+--             data    = { },
+--         })
+--     end
+-- end
+--     for i=1,#main do
+-- print(#main[i].data,max)
+--         if #main[i].data < max then
+--             insert(main[i].data,{
+--                 tg      = "mtd",
+--                 element = "mtd",
+--                 nature  = "mixed",
+--                 data    = { },
+--             })
+--         end
+--     end
+-- -- if next(right) then
+-- --     for i=1,#main do
+-- --         insert(main[i].data,right[i] or {
+-- --             tg      = "mtd",
+-- --             element = "mtd",
+-- --             nature  = "mixed",
+-- --             data    = { },
+-- --         })
+-- --     end
+-- -- end
+-- di.data = main
+
+         for i=1,#d do
+             local d = d[i]
+             if d.tg == "mtr" then
+                 local d = d.data
+                 for i=1,#d do
+                     local d = d[i]
+                     if d.tg == "mtd" then
+                         -- okay
+                     elseif d.content then
+                         d.content = ""
+                     else
+                         d.skip = "comment" -- weird error
+                     end
+                 end
+             elseif d.content then
+                 d.content = ""
+             else
+                 d.skip = "comment" -- weird error
+             end
+         end
     end
 
     function extras.mmultiscripts(di,element,n,fulltag)

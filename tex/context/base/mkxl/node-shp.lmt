@@ -34,12 +34,12 @@ local actions = tasks.actions("shipouts")
 
 handlers.finalizelist = actions
 
-function handlers.finalizebox(box)
-    actions(getbox(box)) -- nut
+function handlers.finalizebox(box,ispage)
+    actions(getbox(box),ispage) -- nut
 end
 
-function handlers.finalizelist(list) -- beware of export: block it if needed
-    actions(list) -- nut
+function handlers.finalizelist(list,ispage) -- beware of export: block it if needed
+    actions(list,ispage) -- nut
 end
 
 do
@@ -86,8 +86,14 @@ end
 -- interface
 
 implement {
-    name      = "finalizebox",
-    arguments = "integer",
+    name      = "finalizeshipoutbox",
+    arguments = { "integer", true },
+    actions   = handlers.finalizebox,
+}
+
+implement {
+    name      = "finalizeobjectbox",
+    arguments = { "integer", false },
     actions   = handlers.finalizebox,
 }
 

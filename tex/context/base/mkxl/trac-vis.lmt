@@ -57,12 +57,9 @@ local getpenalty          = nuts.getpenalty
 local getwidth            = nuts.getwidth
 local getdepth            = nuts.getdepth
 local getexpansion        = nuts.getexpansion
-local getstate            = nuts.getstate
 local getoffsets          = nuts.getoffsets
 local getindex            = nuts.getindex
 local getprop             = nuts.getprop
-
-local isglyph             = nuts.isglyph
 
 local hpack_nodes         = nuts.hpack
 local vpack_nodes         = nuts.vpack
@@ -70,7 +67,6 @@ local copylist            = nuts.copylist
 local copy_node           = nuts.copy
 local insertnodebefore    = nuts.insertbefore
 local insertnodeafter     = nuts.insertafter
-local flushnodelist       = nuts.flushlist
 
 local hpack_string        = nuts.typesetters.tohpack
 
@@ -112,6 +108,7 @@ local stoptiming          = statistics.stoptiming
 local a_visual            <const> = attributes.private("visual")
 local a_filter            <const> = attributes.private("filter")
 local a_layer             <const> = attributes.private("viewerlayer")
+local a_tagged            <const> = attributes.private('tagged')
 
 local enableaction        = nodes.tasks.enableaction
 
@@ -207,6 +204,8 @@ local function getusedfont()
     end
     return usedfont
 end
+
+local use_layers = true  directives.register("visualizers.layers", function(v) use_layers = v end)
 
 visualizers.getusedfont = getusedfont
 
@@ -436,7 +435,9 @@ function visualizers.setvisual(n)
 end
 
 function visualizers.setlayer(n)
-    texsetattribute(a_layer,layers[n] or unsetvalue)
+    if use_layers then
+        texsetattribute(a_layer,layers[n] or unsetvalue)
+    end
 end
 
 local fraction = 10  do
@@ -472,6 +473,12 @@ end
 
 -- ... if okay it will replace the current hpack_string in node_typ
 
+local crappytaggingmode = false
+
+updaters.register("structures.tagging",function()
+    crappytaggingmode = true
+end)
+
 local function sometext(str,layer,color,textcolor,lap,variant)
     local text = hpack_string(str,usedfont)
     local size = getwidth(text)
@@ -495,9 +502,12 @@ local function sometext(str,layer,color,textcolor,lap,variant)
     if x or y then
         setoffsets(info,x,y)
     end
-    if layer then
+    if use_layers and layer then
         setattr(info,a_layer,layer)
     end
+--     if crappytaggingmode then
+--         setattr(info,a_tagged,0)
+--     end
     return info, size
 end
 
@@ -517,9 +527,12 @@ local function someblob(str,layer,color,textcolor,width)
     info = hpack_nodes(info)
     local width = getwidth(info)
     info = new_hlist(info)
-    if layer then
+    if use_layers and layer then
         setattr(info,a_layer,layer)
     end
+--     if crappytaggingmode then
+--         setattr(info,a_tagged,0)
+--     end
     return info, width
 end
 
@@ -558,7 +571,12 @@ local fontkern, italickern, marginkern, mathkern do
             settransparency(rule,color)
             setshift(text,-5 * exheight)
             info = new_hlist(setlink(rule,text))
-            setattr(info,a_layer,layer)
+            if use_layers and layer then
+                setattr(info,a_layer,layer)
+            end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             cache[kern] = info
         end
         head = insertnodebefore(head,current,copylist(info))
@@ -610,7 +628,12 @@ local ruledglyphexpansion do
                 settransparency(rule,"trace:ds")
                 setshift(text,1.75 * exheight)
                 info = new_hlist(setlink(rule,text))
-                setattr(info,a_layer,l_expansion)
+                if use_layers then
+                    setattr(info,a_layer,l_expansion)
+                end
+                if crappytaggingmode then
+                    setattr(info,a_tagged,0)
+                end
                 f_cache[extra] = info
             end
             head = insertnodebefore(head,current,copylist(info))
@@ -645,7 +668,12 @@ local kernexpansion do
                 settransparency(rule,"trace:ds")
                 setshift(text,3.5 * exheight)
                 info = new_hlist(setlink(rule,text))
-                setattr(info,a_layer,l_expansion)
+                if use_layers then
+                    setattr(info,a_layer,l_expansion)
+                end
+                if crappytaggingmode then
+                    setattr(info,a_tagged,0)
+                end
                 f_cache[extra] = info
             end
             head = insertnodebefore(head,current,copylist(info))
@@ -661,14 +689,24 @@ local ruledmark do
 
     local sm_cache = setmetatableindex(caches["setmark"], function(t,index)
         local info = sometext(formatters["SM:%i"](index),usedfont,nil,"trace:w") -- whatsit
-        setattr(info,a_layer,l_mark)
+        if use_layers then
+            setattr(info,a_layer,l_mark)
+        end
+        if crappytaggingmode then
+            setattr(info,a_tagged,0)
+        end
         t[index] = info
         return info
     end)
 
     local rm_cache = setmetatableindex(caches["resetmark"], function(t,index)
         local info = sometext(formatters["RM:%i"](index),usedfont,nil,"trace:w") -- whatsit
-        setattr(info,a_layer,l_mark)
+        if use_layers then
+            setattr(info,a_layer,l_mark)
+        end
+        if crappytaggingmode then
+            setattr(info,a_tagged,0)
+        end
         t[index] = info
         return info
     end)
@@ -686,7 +724,12 @@ local ruledinsert do
 
     local si_cache = setmetatableindex(caches["insert"], function(f,index)
         local info = sometext(formatters["SI:%i"](index),usedfont,nil,"trace:w") -- whatsit
-        setattr(info,a_layer,l_insert)
+        if use_layers then
+            setattr(info,a_layer,l_insert)
+        end
+        if crappytaggingmode then
+            setattr(info,a_tagged,0)
+        end
         si_cache[index] = info
     end)
 
@@ -735,7 +778,12 @@ local ruledwhatsit do
             -- print("hit whatsit")
         else
             info = sometext(formatters["W:%s"](tags[what] or what),usedfont,nil,"trace:w")
-            setattr(info,a_layer,l_whatsit)
+            if use_layers then
+                setattr(info,a_layer,l_whatsit)
+            end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             w_cache[what] = info
         end
         head, current = insertnodeafter(head,current,copylist(info))
@@ -763,7 +811,12 @@ local ruledboundary do
             -- print("hit whatsit")
         else
             info = sometext(formatters["B:%s"](tags[what] or what),usedfont,nil,"trace:w")
-            setattr(info,a_layer,l_boundary)
+            if use_layers then
+                setattr(info,a_layer,l_boundary)
+            end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             b_cache[what] = info
         end
         head, current = insertnodeafter(head,current,copylist(info))
@@ -799,7 +852,12 @@ local ruleddir, ruledpar do
             -- print("hit par")
         else
             info = sometext(formatters["L:%s"](what),usedfont,nil,"trace:w")
-            setattr(info,a_layer,l_dir)
+            if use_layers then
+                setattr(info,a_layer,l_dir)
+            end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             d_cache[what] = info
         end
         head, current = insertnodeafter(head,current,copylist(info))
@@ -820,7 +878,12 @@ local ruleddir, ruledpar do
             -- print("hit dir")
         else
             info = sometext(formatters["D:%s"](what),usedfont,nil,"trace:w")
-            setattr(info,a_layer,l_dir)
+            if use_layers then
+                setattr(info,a_layer,l_dir)
+            end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             d_cache[what] = info
         end
         head, current = insertnodeafter(head,current,copylist(info))
@@ -840,7 +903,12 @@ local ruleduser do
             -- print("hit user")
         else
             info = sometext(formatters["U:%s"](what),usedfont)
-            setattr(info,a_layer,l_user)
+            if use_layers then
+                setattr(info,a_layer,l_user)
+            end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             u_cache[what] = info
         end
         head, current = insertnodeafter(head,current,copylist(info))
@@ -857,7 +925,12 @@ local ruleddepth do
             local rule = new_rule(wd,0,dp)
             setcolor(rule,"trace:o")
             settransparency(rule,"trace:g")
-            setattr(rule,a_layer,l_depth)
+            if use_layers then
+                setattr(rule,a_layer,l_depth)
+            end
+            if crappytaggingmode then
+                setattr(rule,a_tagged,0)
+            end
             setlist(current,setlink(rule,new_kern(-wd),getlist(current)))
         end
     end
@@ -879,8 +952,13 @@ local ruledbox do
         local origin = hpack_nodes(rule)
         setcolor(rule,"trace:do")
         settransparency(rule,"trace:do")
-        setattr(rule,a_layer,l_origin)
-        setattr(origin,a_layer,l_origin)
+        if use_layers then
+            setattr(rule,a_layer,l_origin)
+            setattr(origin,a_layer,l_origin)
+        end
+        if crappytaggingmode then
+            setattr(origin,a_tagged,0)
+        end
         t[size] = origin
         return origin
     end)
@@ -890,13 +968,12 @@ local ruledbox do
 --       local wd, ht, dh, shift = nuts.getlistdimensions(current) -- MAYBE
         local force_origin = wd == 0 or (dp + ht) == 0
         local shift = getshift(current)
--- print(getorientation(current,true))
         local orientation, xoffset, yoffset, w, h, d = getorientation(current) -- TODO
-if orientation and orientation ~= 0 and (h ~= 0 or d ~= 0) then
---     wd = w
-    ht = h
-    dp = d
-end
+        if orientation and orientation ~= 0 and (h ~= 0 or d ~= 0) then
+         -- wd = w
+            ht = h
+            dp = d
+        end
         local next = getnext(current)
         local prev = previous
         setboth(current)
@@ -910,6 +987,9 @@ end
                 this = setlink(new_kern(-getwidth(text)),text)
                 setlisttransparency(this,"trace:s")
                 this = new_hlist(this)
+                if crappytaggingmode then
+                    setattr(this,a_tagged,0)
+                end
                 b_cache[what] = this
             end
         end
@@ -947,13 +1027,17 @@ end
                 dashed = 3*size,
             }
         end
+-- if crappytaggingmode then
+--     setattr(rest,a_tagged,0)
+-- end
         --
         local info = setlink(this and copylist(this) or nil,rest,more)
         --
         setlisttransparency(info,"trace:s")
         info = new_hlist(info) -- important
-        --
-        setattr(info,a_layer,layer)
+        if use_layers then
+            setattr(info,a_layer,layer)
+        end
         if vertical then
             if not force_origin and shift == 0 then
                 info = setlink(current,dp ~= 0 and new_kern(-dp) or nil,info)
@@ -994,6 +1078,9 @@ end
             end
             info = new_hlist(info,wd,ht,dp,shift)
         end
+--         if crappytaggingmode then
+--             setattr(info,a_tagged,0)
+--         end
 -- if orientation then
 --     setorientation(current,0,0)
 --     setorientation(info,orientation,xoffset,yoffset)
@@ -1022,6 +1109,7 @@ local ruledglyph do
  -- local ligature_code = 0x8000 + nodes.glyphcodes.ligature
 
     local getglyphdimensions  = nuts.getglyphdimensions
+    local isglyph             = nuts.isglyph
 
     ruledglyph = function(head,current,previous) -- wrong for vertical glyphs
         local wd, ht, dp = getglyphdimensions(current)
@@ -1048,9 +1136,14 @@ local ruledglyph do
                 setlisttransparency(info,"trace:do")
             end
             info = new_hlist(info)
-            setattr(info,a_layer,l_glyph)
+            if use_layers then
+                setattr(info,a_layer,l_glyph)
+            end
             local info = setlink(current,new_kern(-wd),info)
             info = hpack_nodes(info)
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             setwidth(info,wd)
             if next then
                 setlink(info,next)
@@ -1261,6 +1354,9 @@ local ruledglue, ruledmathglue do
             else
                 info = sometext(amount,l_glue,"trace:m")
             end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             cache[amount] = info
         end
         info = copylist(info)
@@ -1285,18 +1381,27 @@ local ruledglue, ruledmathglue do
             info = g_cache_x[width]
             if not info then
                 info = someblob("XS",l_glue,"trace:m",nil,width)
+                if crappytaggingmode then
+                    setattr(info,a_tagged,0)
+                end
                 g_cache_x[width] = info
             end
         elseif (getoptions(current) & 2) == 2 then
             info = g_cache_f[width]
             if not info then
                 info = someblob("SF",l_glue,"trace:c",nil,width)
+                if crappytaggingmode then
+                    setattr(info,a_tagged,0)
+                end
                 g_cache_f[width] = info
             end
         else
             info = g_cache_s[width]
             if not info then
                 info = someblob("SP",l_glue,"trace:y",nil,width)
+                if crappytaggingmode then
+                    setattr(info,a_tagged,0)
+                end
                 g_cache_s[width] = info
             end
         end
@@ -1365,7 +1470,12 @@ local ruledglue, ruledmathglue do
             settransparency(rule,color)
             setshift(text,(zero and 3.5 or 2)*exheight)
             info = new_hlist(setlink(rule,text))
-            setattr(info,a_layer,l_glue)
+            if use_layers then
+                setattr(info,a_layer,l_glue)
+            end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             if quad then
                 g_cache_qd[width] = info
             elseif fixed then
@@ -1397,6 +1507,9 @@ local ruledkern do
             else
                 info = sometext(amount,l_kern,"trace:g")
             end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             cache[kern] = info
         end
         info = copylist(info)
@@ -1423,7 +1536,9 @@ local ruledstrut do
             if getsubtype(current) == strut_code  then
                 local w = strut_size
                 local a = getattr(current,a_mathaxis)
-                setattr(current,a_layer,l_strut)
+                if use_layers then
+                    setattr(current,a_layer,l_strut)
+                end
                 if a then
                     local p = getprev(current)
                     local b, e
@@ -1445,6 +1560,9 @@ local ruledstrut do
                     setwidth(current,w)
                     setcolor(current,"trace:ds")
                     settransparency(current,"trace:ds")
+                    if crappytaggingmode then
+                        setattr(current,a_tagged,0)
+                    end
                     head, current, rule = nuts.remove(head,current)
                     local kern = new_kern(-w)
                     if a == 2 then
@@ -1482,6 +1600,9 @@ local ruleditalic do
             else
                 info = sometext(amount,l_kern,"trace:g")
             end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             i_cache[kern] = info
         end
         info = copylist(info)
@@ -1510,6 +1631,9 @@ local ruledmarginkern do
             else
                 info = sometext(amount,l_marginkern,"trace:g")
             end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             cache[kern] = info
         end
         info = copylist(info)
@@ -1537,6 +1661,9 @@ local ruledmathkern do
             else
                 info = sometext(amount,l_mathkern,"trace:g")
             end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             cache[kern] = info
         end
         info = copylist(info)
@@ -1551,18 +1678,23 @@ local ruleddiscretionary do
     local d_cache = caches["discretionary"]
 
     ruleddiscretionary = function(head,current)
-        local d = d_cache[true]
+        local info = d_cache[true]
         if not the_discretionary then
             local rule = new_rule(4*emwidth/fraction,4*exheight,exheight)
             local kern = new_kern(-2*emwidth/fraction)
             setlink(kern,rule)
             setcolor(rule,"trace:dd")
             settransparency(rule,"trace:dd")
-            setattr(rule,a_layer,l_discretionary)
-            d = new_hlist(kern)
-            d_cache[true] = d
+            if use_layers then
+                setattr(rule,a_layer,l_discretionary)
+            end
+            info = new_hlist(kern)
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
+            d_cache[true] = info
         end
-        insertnodeafter(head,current,copylist(d))
+        insertnodeafter(head,current,copylist(info))
         return head, current
     end
 
@@ -1577,6 +1709,7 @@ local ruledpenalty do
         ["MP:%s"] = caches["MP:%s"],
         ["VP:%s"] = caches["VP:%s"],
         ["HP:%s"] = caches["HP:%s"],
+--         ["DP:%s"] = caches["DP:%s"], which ones: hyphen exhyphen word ...
     }
 
     local raisepenalties = false
@@ -1631,6 +1764,9 @@ local ruledpenalty do
             else
                 info = sometext(amount,l_penalty,"trace:g")
             end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             cache[penalty] = info
         end
         info = copylist(info)
@@ -1683,9 +1819,19 @@ local ruledmath do
             local dist = mtag == "beginmath" and width or skip
             setcolor(rule,"trace:dr")
             settransparency(rule,"trace:dr")
-            setattr(rule,a_layer,l_math)
+            if use_layers then
+                setattr(rule,a_layer,l_math)
+            end
             info = new_hlist(setlink(new_glue(-skip),rule,new_glue(-dist),text))
-            setattr(info,a_layer,l_math)
+            if use_layers then
+                setattr(info,a_layer,l_math)
+            end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
             cache[skip] = info
         end
         local saved = current
@@ -1734,10 +1880,10 @@ do
     ----- userkern_code           <const> = kerncodes.userkern
 
  -- local skipcodes               = nodes.skipcodes
-    local spaceskip_code          <const> = nodes.skipcodes.spaceskip
-    local xspaceskip_code         <const> = nodes.skipcodes.xspaceskip
-    local zerospaceskip_code      <const> = nodes.skipcodes.zerospaceskip
-    local intermathskip_code      <const> = nodes.skipcodes.intermathskip
+--     local spaceskip_code          <const> = nodes.skipcodes.spaceskip
+--     local xspaceskip_code         <const> = nodes.skipcodes.xspaceskip
+--     local zerospaceskip_code      <const> = nodes.skipcodes.zerospaceskip
+--     local intermathskip_code      <const> = nodes.skipcodes.intermathskip
 
  -- local listcodes               = nodes.listcodes
     local linelist_code           <const> = nodes.listcodes.line
@@ -1748,9 +1894,12 @@ do
 
     local getleader               = nuts.getleader
     local getdisc                 = nuts.getdisc
+    local getstate                = nuts.getstate
 
     local setleader               = nuts.setleader
     local setdisc                 = nuts.setdisc
+
+    local flushnodelist           = nuts.flushlist
 
  -- local cache
 
@@ -1792,12 +1941,17 @@ do
 
         -- too many locals so:
 
-        local vglue_code    <const> = filters.vglue
-        local hglue_code    <const> = filters.hglue
-        local vkern_code    <const> = filters.vkern
-        local hkern_code    <const> = filters.hkern
-        local vpenalty_code <const> = filters.vpenalty
-        local hpenalty_code <const> = filters.hpenalty
+        local vglue_code         <const> = filters.vglue
+        local hglue_code         <const> = filters.hglue
+        local vkern_code         <const> = filters.vkern
+        local hkern_code         <const> = filters.hkern
+        local vpenalty_code      <const> = filters.vpenalty
+        local hpenalty_code      <const> = filters.hpenalty
+
+        local spaceskip_code     <const> = nodes.skipcodes.spaceskip
+        local xspaceskip_code    <const> = nodes.skipcodes.xspaceskip
+        local zerospaceskip_code <const> = nodes.skipcodes.zerospaceskip
+        local intermathskip_code <const> = nodes.skipcodes.intermathskip
 
         while current do
             local id = getid(current)
@@ -1876,7 +2030,7 @@ do
             elseif a == unsetvalue then
                 goto list
             end
-         -- if trace_strut then
+         -- if use_layers and trace_strut then
          --     setattr(current,a_layer,l_strut)
          -- else
             if id == glyph_code then
@@ -1887,8 +2041,11 @@ do
                     head, current = ruledglyphexpansion(head,current)
                 end
             elseif id == disc_code then
+                -- these are gone already when we display them.
                 if trace_discretionary then
                     head, current = ruleddiscretionary(head,current)
+--                 elseif trace_penalty then
+--                     head, current = ruledpenalty(head,current,true,true)
                 end
                 local pre, post, replace = getdisc(current)
                 if pre then
@@ -1952,6 +2109,7 @@ do
             goto next
           ::penalty::
             if trace_penalty then
+-- print(subtype,getpenalty(current))
                 local f = getattr(current,a_filter)
                 if f then
                     if vertical then
@@ -1964,6 +2122,7 @@ do
                         end
                     end
                 end
+                -- todo: discretionary
                 subtype = getsubtype(current)
                 head, current = ruledpenalty(head,current,vertical,subtype)
             end
@@ -2272,7 +2431,12 @@ do
             end
             info = new_hlist(setlink(rule,text,extra))
         end
-        setattr(info,a_layer,layer)
+        if use_layers then
+            setattr(info,a_layer,layer)
+        end
+        if crappytaggingmode then
+            setattr(info,a_tagged,0,0)
+        end
         return info
     end
 

@@ -1,3 +1,12 @@
+if not modules then modules = { } end modules ['trac-brk'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to trac-brk.mkxl",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
 local next, tonumber, tostring, type = next, tonumber, tostring, type
 local round, abs = math.round, math.abs
 
@@ -19,6 +28,7 @@ local setwhd            = nuts.setwhd
 local getglue           = nuts.getglue
 local getlist           = nuts.getlist
 local setoffsets        = nuts.setoffsets
+local setattr           = nuts.setattr
 
 local setcolor          = nodes.tracers.colors.set
 local settransparency   = nodes.tracers.transparencies.set
@@ -26,13 +36,15 @@ local settransparency   = nodes.tracers.transparencies.set
 local texgetnest        = tex.getnest
 
 local nodecodes         = nodes.nodecodes
-local fitnesscodes      = tex.fitnesscodes
+----- fitnesscodes      = tex.fitnesscodes
 
 local penalty_code      <const> = nodecodes.penalty
 local glue_code         <const> = nodecodes.glue
 local disc_code         <const> = nodecodes.disc
 local kern_code         <const> = nodecodes.kern
 local math_code         <const> = nodecodes.math
+
+local a_tagged          <const> = attributes.private('tagged')
 
 local getnormalizedline = nuts.getnormalizedline
 local getdimensions     = nuts.dimensions
@@ -58,16 +70,47 @@ local overloads   = false
 local overload    = false
 local breakpass   = 0
 local linenumber  = 0
+local fitclasses  = 5
+local decentfit   = 0
+
+local fitnesscodes = {
+    [4] = {
+        "veryloose",
+        "loose",
+        "decent",
+        "tight",
+    },
+    [5] = {
+        "veryloose",
+        "loose",
+        "decent",
+        "tight",
+        "verytight",
+    },
+    [9] = {
+        "veryloose",
+        "loose",
+        "almostloose",
+        "barelyloose",
+        "decent",
+        "barelytight",
+        "almosttight",
+        "tight",
+        "verytight",
+    },
+}
 
 local report      = logs.reporter("linebreaks")
 
 local breakcodes  = tex.breakcodes
 
-local f_status    = string.formatters["[% 2i] b=%i d=%p p=%0.3f r=%0.3f (dt=%i) (%p)"]
+local f_detail = string.formatters["[%02i] b=%i d=%p p=%0.3f r=%0.3f (dt=%i) (%p)"]
+local f_simple = string.formatters["[%02i] b=%i"]
 
 local maxbadness <const> = tex.magicconstants.maxcalculatedbadness
 local marginoffset       = 0
 local showdetails        = false
+local showsimple         = false
 
 local actions = {
     [breakcodes.initialize] = function()
@@ -76,12 +119,14 @@ local actions = {
             usedfont = nodes.visualizers.getusedfont()
         end
     end,
-    [breakcodes.start] = function(pass)
+    [breakcodes.start] = function(pass,classes,decent)
         if texgetnest("ptr") == nestlevel then
             report("tracing pass %i",pass)
             if breakpass ~= pass then
                 breakpass  = pass
                 linenumber = 0
+                fitclasses = classes
+                decentfit  = decent
                 serials    = { }
                 results    = { }
             end
@@ -191,9 +236,11 @@ local actions = {
             end
             -- Here ratio is the value from Digital Typography and a difference
             -- indicates a sensitive area. It is just a playground for MS and HH.
-            local text     = hpack_string(f_status(linenumber,badness,deltawd,100*deltawd/linewd,ratio,ratiob),usedfont,spillover)
+            local text     = showsimple and f_simple(linenumber,badness) or f_detail(linenumber,badness,deltawd,100*deltawd/linewd,ratio,ratiob)
             local location = linedata.last
             local head     = linedata.head
+            text = hpack_string(text,usedfont,spillover)
+            setattr(text,a_tagged,0)
             setwhd(text,0,0,0)
             setoffsets(text,xoffset,yoffset)
             insertbefore(head,location,text)
@@ -227,6 +274,7 @@ local actions = {
             report("wrapping up")
             if serial then
                 local result = { }
+                local codes  = fitnesscodes[fitclasses]
                 results[#results+1] = result
                 for currentserial=1,#serial do
                     local data = serial[currentserial]
@@ -249,13 +297,14 @@ local actions = {
                             local width, height, depth = getruledimensions(rule)
                             setruledimensions(rule,2*width,height,depth)
                         end
+                        setattr(text,a_tagged,0)
                         setcolor(rule,color)
                         setwhd(text,0,0,0)
                         setoffsets(text,-size-xoffset,yoffset)
                         insertafter(rule,rule,text)
                         result[#result+1] = data
                         data.trigger = nodecodes[trigger]
-                        data.class   = fitnesscodes[class]
+                        data.class   = codes and codes[class] or ("class " .. class)
                         data.color   = color
                     end
                 end
@@ -314,6 +363,7 @@ function breakpoints.start(specification)
     breakpass    = 0
     linenumber   = 0
     showdetails  = false
+    showsimple   = false
     serials      = { }
     results      = { }
     nestlevel    = texgetnest("ptr")
@@ -323,6 +373,9 @@ function breakpoints.start(specification)
         option = type(options) == "table" and option or settings_to_hash(option or "")
         if option.margin then
             showdetails = true
+        end
+        if option.simple then
+            showsimple = true
         end
     end
     if list then

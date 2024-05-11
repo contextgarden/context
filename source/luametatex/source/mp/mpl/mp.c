@@ -3170,7 +3170,9 @@ last.
 
 */
 
-void mp_error (MP mp, const char *msg, const char *hlp)
+/* Todo: use print_format here too. */
+
+void mp_error(MP mp, const char *msg, const char *hlp)
 {
     int selector = mp->selector;
     mp_normalize_selector(mp);
@@ -6045,7 +6047,7 @@ static void mp_make_choices (MP mp, mp_knot knots)
                 the length of the path
             */
             {
-                RESTART:
+              RESTART:
                 k = 0;
                 s = p;
                 n = mp->path_size;
@@ -7728,7 +7730,7 @@ relatively expensive to compute and they are needed in different instances of |a
 
 */
 
-static void mp_arc_test (MP mp,
+static void mp_arc_test(MP mp,
     mp_number *ret, mp_number *dx0, mp_number *dy0, mp_number *dx1,
     mp_number *dy1, mp_number *dx2, mp_number *dy2, mp_number *v0,
     mp_number *v02, mp_number *v2, mp_number *a_goal, mp_number *tol_orig
@@ -7764,8 +7766,8 @@ static void mp_arc_test (MP mp,
     set_number_half_from_addition(dy02, dy01, dy12);
     /*tex
         Initialize |v002|, |v022|, and the arc length estimate |arc|; if it overflows set |arc_test|
-        and |return|. We should be careful to keep |arc<EL_GORDO| so that calling |arc_test| with 
-        |a_goal=EL_GORDO| is guaranteed to yield the arc length.
+        and |return|. We should be careful to keep |arc < EL_GORDO| so that calling |arc_test| with 
+        |a_goal = EL_GORDO| is guaranteed to yield the arc length.
     */
     {
         mp_number tmp, arg1, arg2 ;
@@ -7824,7 +7826,7 @@ static void mp_arc_test (MP mp,
         simple = (number_nonnegative(*dy0) && number_nonnegative(*dy1) && number_nonnegative(*dy2))
               || (number_nonpositive(*dy0) && number_nonpositive(*dy1) && number_nonpositive(*dy2));
     }
-    if (!simple) {
+    if (! simple) {
         simple = (number_greaterequal(*dx0, *dy0) && number_greaterequal(*dx1, *dy1) && number_greaterequal(*dx2, *dy2))
               || (number_lessequal   (*dx0, *dy0) && number_lessequal   (*dx1, *dy1) && number_lessequal   (*dx2, *dy2));
         if (simple) {
@@ -8056,7 +8058,7 @@ function value reaches |x| and the slope is positive.
 
 */
 
-void mp_solve_rising_cubic (MP mp, mp_number *ret, mp_number *a_orig, mp_number *b_orig, mp_number *c_orig, mp_number *x_orig)
+void mp_solve_rising_cubic(MP mp, mp_number *ret, mp_number *a_orig, mp_number *b_orig, mp_number *c_orig, mp_number *x_orig)
 {
     mp_number abc;
     mp_number a, b, c, x; /*tex local versions of arguments */
@@ -8367,7 +8369,7 @@ static mp_knot mp_get_arc_time(MP mp, mp_number *ret, mp_knot h, mp_number *arc0
             if (q == h) {
                 /*tex
                     Update |t_tot| and |arc| to avoid going around the cyclic path too many times but
-                    set |arith_error:=1| and |goto done| on overflow.
+                    set |arith_error := 1 | and |goto done| on overflow.
                 */
                 if (number_positive(arc)) {
                     mp_number n, n1, d1, v1;
@@ -8377,12 +8379,13 @@ static mp_knot mp_get_arc_time(MP mp, mp_number *ret, mp_knot h, mp_number *arc0
                     new_number(v1);
                     set_number_from_subtraction(d1, arc0, arc); /* d1 = arc0 - arc */
                     set_number_from_div(n1, arc, d1);           /* n1 = (arc / d1) */
+                    floor_scaled(n1); /* added */
                     number_clone(n, n1);
                     set_number_from_mul(n1, n1, d1);            /* n1 = (n1 * d1) */
                     number_subtract(arc, n1);                   /* arc = arc - n1 */
                     number_clone(d1, inf_t);                    /* reuse d1 */
                     number_clone(v1, n);                        /* v1 = n */
-                    number_add(v1, epsilon_t);                  /* v1 = n1+1 */
+                    number_add(v1, epsilon_t);                  /* v1 = v1 + 1 */
                     set_number_from_div(d1, d1, v1);            /* |d1 = EL_GORDO / v1| */
                     if (number_greater(t_tot, d1)) {
                         mp->arith_error = 1;
@@ -15637,7 +15640,11 @@ static void mp_get_t_next (MP mp)
                 } else {
                     snprintf(msg, 256, "No matching 'etex' for '%stex' in line %d.", verb ? "verbatim" : "b",slin);
                 }
-                mp_error(mp, msg, "An 'etex' is missing at this input level, nothing gets done.");
+                mp_error(
+                    mp, 
+                    msg, 
+                    "An 'etex' is missing at this input level, nothing gets done."
+                );
                 mp_memory_free(txt);
             }
         } else {
@@ -23294,6 +23301,13 @@ static void mp_do_binary (MP mp, mp_node p, int c)
                 mp_pair_to_path(mp);
             }
             if ((mp->cur_exp.type == mp_path_type) && (p->type == mp_known_type)) {
+# if 0 
+                mp_number len;
+                new_number(len);
+                mp_get_arc_length(mp, &len, cur_exp_knot);
+                number_modulo(mp_get_value_number(p), len);
+                free_number(len);
+# endif 
                 memset(&new_expr, 0, sizeof(mp_value));
                 new_number(new_expr.data.n);
                 mp_get_arc_time(mp, &new_expr.data.n, cur_exp_knot, &(mp_get_value_number(p)), 0);

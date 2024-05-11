@@ -1,0 +1,240 @@
+if not modules then modules = { } end modules ['page-ins'] = {
+    version   = 1.001,
+    comment   = "companion to page-mix.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+local next = next
+local remove = table.remove
+
+structures           = structures or { }
+structures.inserts   = structures.inserts or { }
+local inserts        = structures.inserts
+
+local allocate       = utilities.storage.allocate
+
+inserts.stored       = inserts.stored or allocate { } -- combining them in one is inefficient in the
+inserts.data         = inserts.data   or allocate { } -- bytecode storage pool
+
+local variables      = interfaces.variables
+local v_page         = variables.page
+local v_auto         = variables.auto
+
+local context        = context
+local implement      = interfaces.implement
+
+storage.register("structures/inserts/stored", inserts.stored, "structures.inserts.stored")
+
+local data           = inserts.data
+local stored         = inserts.stored
+
+for name, specification in next, stored do
+    data[specification.number] = specification
+    data[name]                 = specification
+end
+
+function inserts.define(name,specification)
+    specification.name= name
+    local number = specification.number or 0
+    data[name]   = specification
+    data[number] = specification
+    -- only needed at runtime as this get stored in a bytecode register
+    stored[name] = specification
+    if not specification.location then
+        specification.location = v_page
+    end
+    return specification
+end
+
+function inserts.setup(name,settings)
+    local specification = data[name]
+    for k, v in next, settings do
+        -- maybe trace change
+        specification[k] = v
+    end
+    return specification
+end
+
+function inserts.setlocation(name,location) -- a practical fast one
+    data[name].location = location
+end
+
+function inserts.getlocation(name,location)
+    return data[name].location or v_page
+end
+
+function inserts.getdata(name) -- or number
+    return data[name]
+end
+
+function inserts.getname(number)
+    return data[name].name
+end
+
+function inserts.getnumber(name)
+    return data[name].number
+end
+
+-- interface
+
+implement {
+    name      = "defineinsertion",
+    actions   = inserts.define,
+    arguments = {
+        "string",
+        {
+            { "number", "integer" }
+        }
+    }
+}
+
+implement {
+    name      = "setupinsertion",
+    actions   = inserts.setup,
+    arguments = {
+        "string",
+        {
+            { "location" }
+        }
+    }
+}
+
+implement {
+    name      = "setinsertionlocation",
+    actions   = inserts.setlocation,
+    arguments = "2 strings",
+}
+
+implement {
+    name      = "insertionnumber",
+    actions   = function(name) context(data[name].number or 0) end,
+    arguments = "string"
+}
+
+implement {
+    name      = "setinsertmigration",
+    arguments = "string",
+    actions   = function(state)
+        nodes.migrations.setinserts(state == v_auto)
+    end
+}
+
+
+-- nasty
+
+do
+
+    local insert_code   <const> = nodes.nodecodes.insert
+    local integer_value <const> = tokens.values.integer
+
+    local nuts       = nodes.nuts
+    local tonode     = nodes.tonode
+
+    local getpost     = nuts.getpost
+    local setpost     = nuts.setpost
+    local getlist     = nuts.getlist
+    local setlist     = nuts.setlist
+ -- local setboth     = nuts.setboth
+    local getbox      = nuts.getbox
+    local getid       = nuts.getid
+    local getindex    = nuts.getindex
+    local getnext     = nuts.getnext
+    local flushlist   = nuts.flushlist
+    local traverseid  = nuts.traverseid
+
+    local detached    = false
+    local nofdetached = false
+
+    local function detach(n)
+        local box = getbox(n)
+        if box then
+            local post = getpost(box)
+            if post then
+                setpost(box)
+                if detached then
+                    flushlist(detached)
+                end
+                detached = post
+                nofdetached = 0
+                for d in traverseid(insert_code,detached) do
+                    nofdetached = nofdetached + 1
+                end
+                if nofdetached == 0 then
+                    flushlist(detached)
+                    detached = false
+                end
+            end
+        end
+    end
+
+    local function attach(index,cs)
+        if detached then
+            for d in traverseid(insert_code,detached) do
+                local idx = getindex(d)
+                if not index or idx == index or index == 0 then
+                    local list = getlist(d)
+                    context[cs](tonode(list))
+                    setlist(d)
+                    nofdetached = nofdetached - 1
+                end
+            end
+            if nofdetached == 0 then
+                flushlist(detached)
+                detached = false
+            end
+        end
+    end
+
+    local function nofdetached(index)
+        local n = 0
+        if detached then
+            for d in traverseid(insert_code,detached) do
+                local idx = getindex(d)
+                if not index or idx == index or index == 0 then
+                    n = n + 1
+                end
+            end
+        end
+        return integer_value, n
+    end
+
+    implement {
+        name      = "detachinsertions",
+        arguments = "integer",
+        public    = true,
+        protected = true,
+        actions   = detach,
+    }
+
+    implement {
+        name      = "attachinsertions",
+        arguments = "csname",
+        public    = true,
+        protected = true,
+        actions   = function(cs) attach(0,cs) end,
+    }
+
+    implement {
+        name      = "attachinsertion",
+        arguments = { "integer", "csname" },
+        public    = true,
+        protected = true,
+        actions   = attach,
+    }
+
+    implement {
+        name      = "nofdetachedinsertions",
+        actions   = nofdetached,
+        public    = true,
+     -- protected = true,
+        usage     = "value",
+        arguments = "integer",
+    }
+
+    inserts.attach      = attach
+    inserts.detach      = detach
+    inserts.nofdetached = nofdetached
+
+end

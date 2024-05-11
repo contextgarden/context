@@ -99,6 +99,7 @@
 		<cd:variable name='autointro' value='autointro'/>
 		<cd:variable name='back' value='dietro'/>
 		<cd:variable name='background' value='sfondo'/>
+		<cd:variable name='backgroundbar' value='backgroundbar'/>
 		<cd:variable name='backmatter' value='postambolo'/>
 		<cd:variable name='backpart' value='postfazione'/>
 		<cd:variable name='backspace' value='backspace'/>
@@ -144,6 +145,7 @@
 		<cd:variable name='chemicals' value='chemicals'/>
 		<cd:variable name='chemistry' value='chemistry'/>
 		<cd:variable name='cite' value='cite'/>
+		<cd:variable name='clip' value='clip'/>
 		<cd:variable name='closed' value='closed'/>
 		<cd:variable name='collapsed' value='collapsed'/>
 		<cd:variable name='color' value='colore'/>

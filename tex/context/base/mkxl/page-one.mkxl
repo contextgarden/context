@@ -312,7 +312,9 @@
          \prevdepth\maxdimen
        \fi
      \fi
+\page_inserts_detach\floatbox % experiment
      \page_otr_command_flush_float_box
+\page_inserts_attach          % experiment
      \vskip\s_page_one_between_top_insert
    \egroup}
 

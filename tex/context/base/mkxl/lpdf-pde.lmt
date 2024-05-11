@@ -135,6 +135,9 @@ local stream_object_code     <const> = objectcodes.stream
 local reference_object_code  <const> = objectcodes.reference
 local lpdf_object_code       <const> = objectcodes.lpdf
 
+local recompress  = false
+local stripmarked = false
+
 -- We need to convert the string from utf16 although there is no way to
 -- check if we have a regular string starting with a bom. So, we have
 -- na dilemma here: a pdf doc encoded string can be invalid utf.
@@ -174,7 +177,6 @@ local function get_value(document,t,key)
     if type(value) ~= "table" then
         return value
     end
-    -- we can assume names to be simple and strings to be tables
     local kind = value[1]
     if kind == name_object_code then
         return value[2]
@@ -199,15 +201,16 @@ if lpdf.dictionary then
 
     -- these are used in mtx-pdf.lua
 
-    local pdfdictionary = lpdf.dictionary
-    local pdfarray      = lpdf.array
-    local pdfconstant   = lpdf.constant
-    local pdfreference  = lpdf.reference
-    local pdfliteral    = lpdf.literal
+    local pdfdictionary  = lpdf.dictionary
+    local pdfarray       = lpdf.array
+    local pdfconstant    = lpdf.constant
+    local pdfreference   = lpdf.reference
+    local pdfliteral     = lpdf.literal
 
-    local copy_array, copy_dictionary
+    local copyarray      = nil
+    local copydictionary = nil
 
-    local function copyobject(object,key,value)
+    local function copyobject(document,object,key,value)
         if not value then
             value = object.__raw__[key]
         end
@@ -223,9 +226,9 @@ if lpdf.dictionary then
         elseif kind == string_object_code then
             return pdfliteral(value[2],value[3])
         elseif kind == array_object_code then
-            return copyarray(object[key])
+            return copyarray(document,object[key])
         elseif kind == dictionary_object_code then
-            return copydictionary(object[key])
+            return copydictionary(document,object[key])
         elseif kind == null_object_code then
             return pdfnull()
         elseif kind == reference_object_code then
@@ -235,34 +238,34 @@ if lpdf.dictionary then
         end
     end
 
-    copyarray = function(object)
+    copyarray = function(document,object)
         local target = pdfarray()
         local source = object.__raw__
         for i=1,#source do
-            target[i] = copyobject(object,i,source[i])
+            target[i] = copyobject(document,object,i,source[i])
         end
         return target
     end
 
-    copydictionary = function(object)
+    copydictionary = function(document,object)
         local target = pdfdictionary()
         local source = object.__raw__
         for key, value in sortedhash(source) do
-            target[key] = copyobject(object,key,value)
+            target[key] = copyobject(document,object,key,value)
         end
         return target
     end
 
-    get_flagged = function(t,f)
+    get_flagged = function(document,t,f)
         local kind = t.__type__
         if kind == name_object_code then
             return pdfconstant(f)
         elseif kind == array_object_code then
-            return copyarray(t)
+            return copyarray(document,t)
         elseif kind == dictionary_object_code then
-            return copydictionary(t)
+            return copydictionary(document,t)
         elseif kind == stream_object_code then
-            return copydictionary(t)
+            return copydictionary(document,t)
         elseif kind == string_object_code then
             return pdfunicode(f)
         elseif kind == null_object_code then
@@ -295,7 +298,7 @@ if lpdf.dictionary then
 
 else
 
-    get_flagged = function(t,f)
+    get_flagged = function(document,t,f)
         return t[k] -- hm
     end
 
@@ -308,7 +311,7 @@ some_dictionary = function(d,document)
             return get_value(document,f,k)
         end,
         __call = function(t)
-            return get_flagged(t,f)
+            return get_flagged(document,t,f)
         end,
     } )
     return t, "dictionary"
@@ -322,7 +325,7 @@ some_array = function(a,document)
             return get_value(document,f,k)
         end,
         __call = function(t)
-            return get_flagged(t,f)
+            return get_flagged(document,t,f)
         end,
         __len = function(t,k)
             return n
@@ -339,7 +342,8 @@ some_stream = function(s,d,document)
         end,
         __call = function(t,how)
             if how == "dictionary" then
-                return get_flagged(t,f)
+                return get_flagged(document,t,f)
+         -- elseif how == false and not recompress then
             elseif how == false then
                 return readwholestream(s,false) -- original
             else
@@ -375,7 +379,6 @@ some_reference = function(r,document)
         elseif kind == array_object_code then
             cached = some_array(object,document)
         elseif kind == stream_object_code then
-            -- optionally not cached
             cached = some_stream(object,b,document)
      -- elseif kind == string_object_code then
      --     cached = some_string(object,document) -- no, just the one below
@@ -386,14 +389,6 @@ some_reference = function(r,document)
         document.__cache__[objnum] = cached
         document.__xrefs__[cached] = objnum
     end
--- local handles = document.handles
--- if handles then
---     local h = handles[objnum]
---     if h then
---      -- handles[objnum] = nil
---         h(document,cached,objnum) -- todo: pass less
---     end
--- end
     return cached
 end
 
@@ -769,7 +764,7 @@ local number = C(lpegpatterns.number)
 
 local fastgrammar = P { "start",
     start      = (comment + keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
-    keyvalue   = key * optspaces * V("start"),
+    keyvalue   = optspaces * key * optspaces * V("start"),
     dictionary = Ct(Cc("dict")  * P("<<") * Ct(V("keyvalue")^0) * P(">>")),
     array      = Ct(Cc("array") * P("[")  * Ct(V("start")^0) * P("]")),
     hexstring  = p_hex_string,
@@ -861,6 +856,8 @@ function lpdf_epdf.helpers.tounicodetable(tounicode)
 end
 
 ---------------------------------------------------------------------------
+
+-- when there is no tounicode we can look at the encoding
 
 local function analyzefonts(document,resources) -- unfinished, see mtx-pdf for better code
     local fonts = document.__fonts__
@@ -1143,9 +1140,6 @@ if images then do
     -- This can be made a bit faster (just get raw data and pass it) but I will
     -- do that later. In the end the benefit is probably neglectable.
 
-    local recompress           = false
-    local stripmarked          = false
-
     local copydictionary       = nil
     local copyarray            = nil
 
@@ -1175,14 +1169,14 @@ if images then do
     end
 
     local codecs = {
-        ASCIIHexDecode  = true,
-        ASCII85Decode   = true,
-        RunLengthDecode = true,
-        FlateDecode     = true,
-        LZWDecode       = true,
+        ["/ASCIIHexDecode"]  = true,
+        ["/ASCII85Decode"]   = true,
+        ["/RunLengthDecode"] = true,
+        ["/FlateDecode"]     = true,
+        ["/LZWDecode"]       = true,
     }
 
-    local function deepcopyobject(xref,copied,value)
+    local function deepcopyobject(pdfdoc,xref,copied,value)
         -- no need for tables, just nested loop with obj
         local objnum = xref[value]
         if objnum then
@@ -1195,15 +1189,16 @@ if images then do
                 local entry = value
                 local kind  = entry.__type__
                 if kind == array_object_code then
-                    local a = copyarray(xref,copied,entry)
+                    local a = copyarray(pdfdoc,xref,copied,entry)
                     pdfflushobject(usednum,tostring(a))
                 elseif kind == dictionary_object_code then
-                    local d = copydictionary(xref,copied,entry)
+                    local d = copydictionary(pdfdoc,xref,copied,entry)
                     pdfflushobject(usednum,tostring(d))
                 elseif kind == stream_object_code then
-                    local d = copydictionary(xref,copied,entry)
+                    local d = copydictionary(pdfdoc,xref,copied,entry)
                     local filter = d.Filter
-                    if filter and codecs[filter] and recompress then
+                    -- watch out we have a lpdf object now so we have the "/" prepended to names
+                    if filter and codecs[tostring(filter)] and recompress then
                         -- recompress
                         d.Filter      = nil
                         d.Length      = nil
@@ -1229,7 +1224,7 @@ if images then do
                         elseif kind == null_object_code then
                             value = pdfnull()
                         elseif kind == reference_object_code then
-                            value = deepcopyobject(xref,copied,entry)
+                            value = deepcopyobject(pdfdoc,xref,copied,entry)
                         elseif entry == nil then
                             value = pdfnull()
                         else
@@ -1250,7 +1245,7 @@ if images then do
         end
     end
 
-    local function copyobject(xref,copied,object,key,value)
+    local function copyobject(pdfdoc,xref,copied,object,key,value)
         if not value then
             value = object.__raw__[key]
         end
@@ -1266,13 +1261,13 @@ if images then do
         elseif kind == string_object_code then
             return pdfliteral(value[2],value[3])
         elseif kind == array_object_code then
-            return copyarray(xref,copied,object[key])
+            return copyarray(pdfdoc,xref,copied,object[key])
         elseif kind == dictionary_object_code then
-            return copydictionary(xref,copied,object[key]) -- value
+            return copydictionary(pdfdoc,xref,copied,object[key]) -- value
         elseif kind == null_object_code then
             return pdfnull()
         elseif kind == reference_object_code then
-            return deepcopyobject(xref,copied,object[key])
+            return deepcopyobject(pdfdoc,xref,copied,object[key])
         elseif kind == lpdf_object_code then
             return value[2]
         else
@@ -1280,39 +1275,21 @@ if images then do
         end
     end
 
-    copyarray = function(xref,copied,object)
+    copyarray = function(pdfdoc,xref,copied,object)
         local target = pdfarray()
         local source = object.__raw__
         for i=1,#source do
-            target[i] = copyobject(xref,copied,object,i,source[i])
+            target[i] = copyobject(pdfdoc,xref,copied,object,i,source[i])
         end
         return target
     end
 
---     local plugins = nil
-
-    -- Sorting the hash slows down upto 5% bit but it is still as fast as the C
-    -- code. We could loop over the index instead but sorting might be nicer in
-    -- the end.
-
-    -- This is fragile because keys can be the same in different objects.
-
-    copydictionary = function (xref,copied,object)
+    copydictionary = function (pdfdoc,xref,copied,object)
         local target = pdfdictionary()
         local source = object.__raw__
-        -- hm .. no need to sort here as we create a hash
-        for key, value in next, source do
-     -- for key, value in sortedhash(source) do
---             if plugins then
---                 local p = plugins[key]
---                 if p then
---                     target[key] = p(xref,copied,object,key,value,copyobject) -- maybe a table of methods
---                 else
---                     target[key] = copyobject(xref,copied,object,key,value)
---                 end
---             else
-                target[key] = copyobject(xref,copied,object,key,value)
---             end
+     -- for key, value in next, source do -- sorting is easier on checking
+        for key, value in sortedhash(source) do
+            target[key] = copyobject(pdfdoc,xref,copied,object,key,value)
         end
         return target
     end
@@ -1370,8 +1347,10 @@ if images then do
 
     local function copyresources(pdfdoc,xref,copied,Resources)
         if Resources then
-            local d = copydictionary(xref,copied,Resources)
+            local d = copydictionary(pdfdoc,xref,copied,Resources)
             return shareobjectreference(d)
+        else
+            return lpdf.checkedresources()
         end
     end
 
@@ -1404,15 +1383,7 @@ if images then do
                 local resources = page.Resources
                 if compact and resources and lpdf_epdf.pageplugin then
                     lpdf_epdf.pageplugin(pdfdoc,page,pagenumber,resources,compact)
--- local old = allcontents(contents)
                     contents = page.Contents
--- local new = contents
--- old = string.gsub(old,"%% mps graphic.-[\n\r]+","")
--- old = string.gsub(old,"%s+"," ")
--- old = string.gsub(old,"Tm %(.-%)Tj"," ")
--- new = string.gsub(new,"Tm <.-> Tj"," ")
--- print(#old,old)
--- print(#new,new)
                 end
                 local metadata = nil
                 -- page     : only page (default, compatibility)
@@ -1420,24 +1391,24 @@ if images then do
                 -- yes      : page or document
                 if copymeta == variables.page or copymeta == variables.yes then
                     -- We seldom have metadata with a page.
-                    metadata = copyobject(xref,copied,page,"Metadata")
+                    metadata = copyobject(pdfdoc,xref,copied,page,"Metadata")
                 end
                 if not metadata and (copymeta == variables.document or copymeta == variables.yes) then
                     -- For our own documents we don't need this.
-                    metadata = copyobject(xref,copied,root,"Metadata")
+                    metadata = copyobject(pdfdoc,xref,copied,root,"Metadata")
                 end
                 local xobject = pdfdictionary {
                     Type           = pdfconstant("XObject"),
                     Subtype        = pdfconstant("Form"),
                     FormType       = 1,
-                    Group          = copyobject(xref,copied,page,"Group"),
-                    LastModified   = copyobject(xref,copied,page,"LastModified"),
-                 -- Metadata       = copyobject(xref,copied,page,"Metadata"),
+                    Group          = copyobject(pdfdoc,xref,copied,page,"Group"),
+                    LastModified   = copyobject(pdfdoc,xref,copied,page,"LastModified"),
+                 -- Metadata       = copyobject(pdfdoc,xref,copied,page,"Metadata"),
                     Metadata       = metadata,
-                    PieceInfo      = copyobject(xref,copied,page,"PieceInfo"),
+                 -- PieceInfo      = copyobject(pdfdoc,xref,copied,page,"PieceInfo"), -- useless as meant for driver
                     Resources      = copyresources(pdfdoc,xref,copied,resources),
-                 -- Resources      = copyobject(xref,copied,page,"Resources"),
-                    SeparationInfo = copyobject(xref,copied,page,"SeparationInfo"),
+                 -- Resources      = copyobject(pdfdoc,xref,copied,page,"Resources"),
+                    SeparationInfo = copyobject(pdfdoc,xref,copied,page,"SeparationInfo"),
                 } + attr
                 if attributes then
                     for k, v in expanded(attributes) do
@@ -1463,8 +1434,8 @@ if images then do
                         elseif recompress then
                             content = contents() -- uncompressed
                         else
-                            local Filter = copyobject(xref,copied,contents,"Filter")
-                            local Length = copyobject(xref,copied,contents,"Length")
+                            local Filter = copyobject(pdfdoc,xref,copied,contents,"Filter")
+                            local Length = copyobject(pdfdoc,xref,copied,contents,"Length")
                             if Length and Filter then
                                 nolength = true
                                 xobject.Length = Length

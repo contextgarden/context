@@ -266,8 +266,9 @@ local function initialize(tfmdata,value)
         local validlookups, lookuplist = fonts.handlers.otf.collectlookups(tfmdata.shared.rawdata,"flac","math","dflt")
         if validlookups then
             -- it's quite likely just one step
-            local characters = tfmdata.characters
-            local changed = tfmdata.changed
+            local characters   = tfmdata.characters
+            local descriptions = tfmdata.descriptions
+            local changed      = tfmdata.changed
             for i=1,#lookuplist do
                 local lookup   = lookuplist[i]
                 local steps    = lookup.steps
@@ -280,9 +281,14 @@ local function initialize(tfmdata,value)
                             local f = characters[v]
                             if c and f then
                                 c.flataccent = v
-                                if not f.unicode then
-                                    f.unicode = c.unicode
-                                end
+local dk = descriptions[k]
+local dv = descriptions[v]
+if not dv.unicode then
+    dv.unicode = dk.unicode or k
+end
+--                                 if not f.unicode then
+--                                     f.unicode = c.unicode
+--                                 end
                             end
                         end
                     end

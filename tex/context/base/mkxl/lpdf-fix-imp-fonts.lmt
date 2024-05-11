@@ -11,20 +11,27 @@ if not modules then modules = { } end modules ['lpdf-fix-imp-fonts'] = {
 -- use a decent sequence which means that we need to resolve the original. This
 -- kind of hackery is fragile anyway, so we only merge files that are produced
 -- by ConTeXt.
+--
+-- It's a stepwise process to get this done and it will never be perfect for all
+-- inclusions. After BT 2024 I managed to handle some of the awfully bad pdf
+-- files that VRWS had to deal with merged and cleaned up. After that I rewarded
+-- myself by watching Camille Bigeault's Mental Web drumming video (which makes
+-- the usual musical timestamp).
 
-local next, type, getmetatable = next, type, getmetatable
+local next, type, getmetatable, unpack = next, type, getmetatable, unpack
 local gsub, format, match, find, gmatch = string.gsub, string.format, string.match, string.find, string.gmatch
 local setmetatableindex, sortedhash, sequenced = table.setmetatableindex, table.sortedhash, table.sequenced
 local nameonly, basename = file.nameonly, file.basename
 local hextointeger, chrtointeger = string.hextointeger, string.chrtointeger
 local f6 = string.f6
-local concat = table.concat
+local concat, insert, remove = table.concat, table.insert, table.remove
 
 local pdfe             = lpdf.epdf
 local pdfreference     = lpdf.reference
 local pdfreserveobject = lpdf.reserveobject
 
-local trace_merge      = false  trackers.register("graphics.fonts",function(v) trace_merge = v end)
+local trace_merge      = false  trackers.register("graphics.fonts",        function(v) trace_merge   = v end)
+local trace_details    = false  trackers.register("graphics.fonts.details",function(v) trace_details = v end)
 local report_merge     = logs.reporter("graphics","fonts")
 
 local expanded         = pdfe.expanded
@@ -122,18 +129,18 @@ local remap = {
  -- ["courier"]              = { target = "file:ucrr8a.afm" }, -- notdef issues width
  -- ["courier-bold"]         = { target = "file:ucrb8a.afm" },
  -- ["courierbold"]          = { target = "file:ucrb8a.afm" },
-    ["helvetica"]            = { target = "file:texgyre-heros-regular.otf" },
-    ["helveticabold"]        = { target = "file:texgyre-heros-bold.otf" },
-    ["helveticaitalic"]      = { target = "file:texgyre-heros-italic.otf" },
-    ["helveticabolditalic"]  = { target = "file:texgyre-heros-bolditalic.otf" },
-    ["courier"]              = { target = "file:texgyre-cursor-regular.otf" },
-    ["courierbold"]          = { target = "file:texgyre-cursor-bold.otf" },
-    ["courieritalic"]        = { target = "file:texgyre-cursor-italic.otf" },
-    ["courierbolditalic"]    = { target = "file:texgyre-cursor-bolditalic.otf" },
-    ["timesroman"]           = { target = "file:texgyre-termes-regular.otf" },
-    ["timesromanbold"]       = { target = "file:texgyre-termes-bold.otf" },
-    ["timesromanitalic"]     = { target = "file:texgyre-termes-italic.otf" },
-    ["timesromanbolditalic"] = { target = "file:texgyre-termes-bolditalic.otf" },
+--     ["helvetica"]            = { target = "file:texgyre-heros-regular.otf" },
+--     ["helveticabold"]        = { target = "file:texgyre-heros-bold.otf" },
+--     ["helveticaitalic"]      = { target = "file:texgyre-heros-italic.otf" },
+--     ["helveticabolditalic"]  = { target = "file:texgyre-heros-bolditalic.otf" },
+--     ["courier"]              = { target = "file:texgyre-cursor-regular.otf" },
+--     ["courierbold"]          = { target = "file:texgyre-cursor-bold.otf" },
+--     ["courieritalic"]        = { target = "file:texgyre-cursor-italic.otf" },
+--     ["courierbolditalic"]    = { target = "file:texgyre-cursor-bolditalic.otf" },
+--     ["timesroman"]           = { target = "file:texgyre-termes-regular.otf" },
+--     ["timesromanbold"]       = { target = "file:texgyre-termes-bold.otf" },
+--     ["timesromanitalic"]     = { target = "file:texgyre-termes-italic.otf" },
+--     ["timesromanbolditalic"] = { target = "file:texgyre-termes-bolditalic.otf" },
 }
 
 local function registerfont(specification)
@@ -171,6 +178,7 @@ local function isdefinedunknown(fontname)
     if id then
         local shash, sdata = getstreamhash(id)
      -- sdata = loadstreamdata(sdata) -- no checking here
+-- print(fontname,c,shash,sdata)
         return shash, id
     end
     return false
@@ -372,12 +380,13 @@ local getstates, getindexstate_composite, getindexstate_simple  do
         end
     end
 
-    getindexstate_simple = function(pdfdoc,somefont,states)
+    getindexstate_simple = function(pdfdoc,somefont,states,kind)
         local basefont = somefont.BaseFont
         if basefont then
             local fontname = match(basefont,"^[A-Z]+%+(.+)$") or basefont
             if fontname then
                 local descriptor = somefont.FontDescriptor
+-- maybe encoding should win
                 if descriptor then
                     local widths    = somefont.Widths
                     local tounicode = somefont.ToUnicode
@@ -510,7 +519,7 @@ local function getstate_OpenType(pdfdoc,v,d,embedding)
 end
 
 local function getstate_TrueType(pdfdoc,v,embedding)
-    local state = getindexstate_simple(pdfdoc,v,getstates(pdfdoc).TrueType)
+    local state = getindexstate_simple(pdfdoc,v,getstates(pdfdoc).TrueType,"truetype")
     if state then
      -- needs checking when unicode ... NOT OK
         local basefont = v.BaseFont
@@ -538,7 +547,7 @@ local function getstate_TrueType(pdfdoc,v,embedding)
 end
 
 local function getstate_Type1(pdfdoc,v,embedding)
-    local state = getindexstate_simple(pdfdoc,v,getstates(pdfdoc).Type1)
+    local state = getindexstate_simple(pdfdoc,v,getstates(pdfdoc).Type1,"type1")
     if state then
         local basefont = v.BaseFont
         if basefont then
@@ -549,16 +558,19 @@ local function getstate_Type1(pdfdoc,v,embedding)
             local cleanname = cleanfontname(fontname)
             local streamhash, id = isdefinedunknown(fontname)
             if streamhash then
-                return {
-                    id         = id,
-                    map        = makemap(fontname,id,state,true),
-                    narrow     = state.narrow,
-                    streamhash = streamhash,
-                    filename   = fontname,
-                 -- subfont    = subfont,
-                 -- instance   = instance,
-                    used       = lpdf.usedindices[streamhash],
-                }
+                local map = makemap(fontname,id,state,true)
+                if next(map) then
+                    return {
+                        id         = id,
+                        map        = map,
+                        narrow     = state.narrow,
+                        streamhash = streamhash,
+                        filename   = fontname,
+                     -- subfont    = subfont,
+                     -- instance   = instance,
+                        used       = lpdf.usedindices[streamhash],
+                    }
+                end
             end
         end
     end
@@ -623,16 +635,16 @@ do
     end
 
     local function plugin_Type0(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber)
-            -- The v table is unique and can be shared
+        -- The v table is unique and can be shared
         local shared = sharedfonts[v]
         if type(shared) == "table" then
             data[k] = shared
         elseif shared == nil then
-                shared = false
-        if v.Encoding == "Identity-H"  then
+            shared = false
+            if v.Encoding == "Identity-H"  then
                 local d = v.DescendantFonts[1] -- how about more
                 if d and d.Subtype == "CIDFontType0" or d.Subtype == "CIDFontType2" then
-                    local r = d.LMTXRegistry
+                    local r = d.LMTX_Registry or d.LMTXRegistry
                     if r then
                      -- if compactor.merge and (compactor.merge.lmtx or compactor.merge.LMTX) then
                         if compactor.merge.lmtx or compactor.merge.LMTX then
@@ -640,7 +652,7 @@ do
                             data[k] = shared
                         end
                     elseif find(pdfe.producer(pdfdoc),"^LuaMetaTeX") then
--- todo: check vector by name
+                        -- todo: check vector by name
                         -- This is a no go because for sure we have a different index order. Older
                         -- versions append the version to the producer string.
 --                     elseif compactor.merge.type0 then
@@ -732,6 +744,9 @@ do
                                 getmetatable(object).__call = function() return contents end
                             end
                             object.__fonts_remapped__ = true
+-- v.resources = resources
+-- resources.Font    = fonts
+-- resources.XObject = xobjects
                             status.charprocs = status.charprocs + 1
                             status.indices   = status.indices + indices
                         end
@@ -757,7 +772,7 @@ do
     -- when using a simple font (including Type 3) or a composite font that defines code 32 as a single-byte
     -- code. It shall not apply to occurrences of the byte value 32 in multiple-byte codes.
 
-    plugin = function(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth)
+    plugin = function(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth,objtag)
 
         local data    = { }
         local indices = 0
@@ -813,6 +828,7 @@ do
 
             local Tw     = false -- a horrible pdf feature
             local spaces = { }
+            local stack  = { }   -- Q q stack for fonts
 
             -- if we have Tw then we also have 0x20 as space
 
@@ -833,15 +849,20 @@ do
                         else
                             process_hex = process_hex_wide
                         end
-if not spaces[f] then
-    spaces[f] = process_hex_wide("0020")
-end
+                        if not spaces[f] then
+                            spaces[f] = process_hex_wide("0020")
+                        end
                     else
                         if d == false then
                             old[f] = true
                         end
                         f = false
                     end
+                elseif op == "q" then
+                    -- This happens seldom but we need to be prepares (one of VS's documents).
+                    insert(stack, { f, d, m, u, r, process_hex }) -- maybe also Tw
+                elseif op == "Q" then
+                    f, d, m, u, r, process_hex  = unpack(remove(stack))
                 elseif op == "Tj" then
                     if f then
                         local ci = ti[1]
@@ -871,34 +892,45 @@ end
                     Tw = true
                 elseif xobjects and op == "Do" then
                     -- can be recursive
-                    local object = xobjects[ti[1][2]]
+                    local objtag = ti[1][2]
+                    local object = xobjects[objtag]
                     if object and object.Subtype == "Form" then
                         local r = object.Resources
                         if r then
-                            if not object.__fonts_remapped__  then
+                            if not object.__fonts_remapped__ then
                                 local contents = object()
                                 local fonts    = r.Font
                                 local xobjects = r.XObject
--- print("PROCESSING CONTENT",pagenumber,ti[1][2])
                                 contents = parsecontent(contents,true)
-                                if plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth+1) then
+                                if plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth+1,objtag) then
                                     contents = contenttostring(contents)
-                                    object.__raw__.Length = #contents -- nil
+                                    object.__raw__.Length = #contents
                                     object.__raw__.Filter = nil
                                     getmetatable(object).__call = function() return contents end
                                     object.__fonts_remapped__ = true
                                     status.xobjects = status.xobjects + 1
                                     r.Font = fonts
+
+                                    r.Font           = fonts -- really needed
+                                    object.Resources = r     -- really needed
+                                    if trace_details then
+                                        for k, v in next, fonts.__raw__ do -- we need the raw values here
+                                            local d = fonts.__raw__[k]
+                                            if d[1] == pdfe.objectcodes.lpdf then
+                                                report_merge("updated font, object %a, font id %a, object %a",objtag,k,d[2][1])
+                                            end
+                                        end
+                                    end
                                 end
                             else
--- print("CONTENT ALREADY PROCESSED",pagenumber,ti[1][2])
                             end
                         end
                     end
                 end
             end
 
-            if Tw then -- can be optimized
+--             if Tw then -- can be optimized
+            if Tw and Tw ~= 0 then -- can be optimized
                 local value
                 local space
 
@@ -957,9 +989,6 @@ end
                                     end
                                 end
                                 if ok then
-                                 -- contents[i] = { { "array", cc }, "TJ" }
--- print("B",contenttostring { contents[i]                         } )
--- print("A",contenttostring { { { "array", collapse(cc) }, "TJ" } } )
                                     contents[i] = { { "array", collapse(cc) }, "TJ" }
                                 end
                             end
@@ -1031,10 +1060,17 @@ end
 --                     if adapted[k] then
 --                         -- already done
 --                     else
-
+local trace_details = true
                     if new[k] then
+                        local x = fonts.__raw__[k][3]
                         local o = lpdf.getfontobjectnumber(new[k])
                         fonts.__raw__[k] = { pdfe.objectcodes.lpdf, pdfreference(o) }
+                        if trace_details then
+                            report_merge(
+                                "%s %a, font id %a, old object %a, new object %a, name %a",
+                                depth > 1 and "object" or "page",depth > 1 and objtag or pagenumber,k,x,o,data[k].filename
+                            )
+                        end
                         adapted[k] = true
                      -- adapted[k] = function(_,_,_,key,value)
                      --     local ref = checkedfontreference(k,v,key,value,o)
@@ -1043,8 +1079,25 @@ end
                         if state then
                             state[k] = true
                         end
-                    elseif state and old[k] then
-                        state[k] = false
+                    elseif old[k] then
+                        if trace_details then
+                            local x = fonts.__raw__[k][3]
+                            report_merge(
+                                "%s %a, font id %a, kept object %a, name %a",
+                                depth > 1 and "object" or "page",depth > 1 and objtag or pagenumber,k,x,data[k].filename
+                            )
+                        end
+                        if state then
+                            state[k] = false
+                        end
+                    else
+                        if trace_details then
+                            local x = fonts.__raw__[k][3]
+                            report_merge(
+                                "%s %a, font id %a, weird object %a",
+                                depth > 1 and "object" or "page",depth > 1 and objtag or pagenumber,k,x
+                            )
+                        end
                     end
                 end
             end
@@ -1076,21 +1129,37 @@ end
         return indices ~= 0
     end
 
-    function pdfe.fontplugin(pdfdoc,page,pagenumber,resources,compactor)
-        local fonts    = resources.Font
-        local xobjects = resources.XObject
-        if fonts or xobjects then
-            local contents = getpagecontent(pdfdoc,pagenumber,true,true)
---             if plugin ...
--- print("before",contenttostring(contents))
-            plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,{},1)
-            resources.Font = fonts -- really needed
-            if contents then
-                page.Contents = contenttostring(contents)
--- inspect("after",page.Contents)
+    local function hasfonts(xobject)
+        if xobject then
+            for k, v in next, xobject do
+                local r = v.Resources
+                if r.Font then
+                    return true
+                end
+                local x = xobject
+                if x then
+                    return hasfonts(x)
+                end
             end
-            status.pages = status.pages + 1
-            status.files[pdfdoc.filename] = (status.files[pdfdoc.filename] or 0) + 1
+        end
+    end
+
+    function pdfe.fontplugin(pdfdoc,page,pagenumber,resources,compactor)
+        if next(compactor.merge) or next(compactor.embed) then
+            local fonts    = resources.Font
+            local xobjects = resources.XObject
+            if fonts or hasfonts(xobjects) then
+                local contents = getpagecontent(pdfdoc,pagenumber,true,true)
+    -- print("before",contenttostring(contents))
+                plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,{},1)
+                resources.Font = fonts -- really needed
+                if contents then
+                    page.Contents = contenttostring(contents)
+    -- print("after",page.Contents)
+                end
+                status.pages = status.pages + 1
+                status.files[pdfdoc.filename] = (status.files[pdfdoc.filename] or 0) + 1
+            end
         end
     end
 

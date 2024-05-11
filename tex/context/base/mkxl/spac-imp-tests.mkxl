@@ -18,6 +18,35 @@
 
 \unprotect
 
+% \startsetups align:pass:default
+%     \parpasses 2
+%         classes \indecentparpassclasses
+%         fitnessdemerits \zerocount
+%         next
+%         quit
+%     \relax
+%   % \linebreakpasses\plusone
+% \stopsetups
+
+\startsetups align:pass:granular
+    \parpasses 2
+        classes \indecentparpassclasses
+        fitnessdemerits \plusnine
+            \plusninetynine \plusninethousand     \zerocount
+            \plusfourtytwo  \plussixthousand      \plusfivehundred      % .75
+            \plustwelve     \plusfortyfivehundred \plusthousand         % .50
+            \plustwo        \plusthreethousand    \plusthousand         % .25
+            \zerocount      \plusfifteenhundred   \plusfifteenhundred   % .00 \adjdemerits baseline is 5000
+            \plustwo        \plusthousand         \plusthreethousand    % .25
+            \plustwelve     \plusthousand         \plusfortyfivehundred % .50
+            \plusfourtytwo  \plusfivehundred      \plussixthousand      % .75
+            \plusninetynine \zerocount            \plusninethousand
+        next
+        quit
+    \relax
+  % \linebreakpasses\plusone
+\stopsetups
+
 \startsetups align:pass:decent
     \pretolerance 50
     \tolerance    150
@@ -33,7 +62,7 @@
         adjustspacingshrink   20
         adjustspacingstretch  40
     \relax
-%     \linebreakpasses\plusone
+  % \linebreakpasses\plusone
 \stopsetups
 
 \startsetups align:pass:quality
@@ -41,6 +70,7 @@
     \tolerance    150
     \parpasses    4
         identifier           \parpassidentifier{quality}
+      % classes              \indecentparpassclasses
         threshold            0.025pt
         tolerance            175
       next
@@ -57,7 +87,7 @@
         adjustspacingshrink   20
         adjustspacingstretch  40
     \relax
-%     \linebreakpasses\plusone
+  % \linebreakpasses\plusone
 \stopsetups
 
 % the test set:
@@ -84,7 +114,7 @@
     \pretolerance 100
     \tolerance    200
     \parpasses    1
-        classes              \almostdecentparpassclasses
+        classes              \ifnum\fitnessdemerits=\plusnine\almostdecentparpassclasses\else\indecentparpassclasses\fi
         tolerance            300
         adjustspacing          3
         adjustspacingstep      1

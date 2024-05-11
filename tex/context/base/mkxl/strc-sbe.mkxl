@@ -85,6 +85,7 @@
 \permanent\tolerant\protected\def\startsectionblock[#1]#*[#S#2]%
   {%\ctxlua{structures.counters.check(0)}% we assume sane usage of \page, as this is the only workable place (in push)
    \begingroup
+%    \dostarttagged\t!sectionblock{#1}%
    \cdef\currentsectionblock{#1}% from now on we assume a value
    \setupcurrentsectionblock[#2]%
    \clf_pushsectionblock{#1}
@@ -99,6 +100,7 @@
   {\showmessage\m!structures2\currentsectionblock
    \expand\everyaftersectionblock\relax
    \clf_popsectionblock
+%    \dostoptagged
    \endgroup}
 
 %D \starttyping

@@ -47,59 +47,61 @@ local xpacket = format ( [[
 local unknown = { false, false }
 local mapping = table.setmetatableindex ( {
     -- user defined keys (pdfx:)
-    ["ConTeXt.Jobname"]      = { "context", "rdf:Description/pdfx:ConTeXt.Jobname" },
-    ["ConTeXt.Time"]         = { "date",    "rdf:Description/pdfx:ConTeXt.Time" },
-    ["ConTeXt.Url"]          = { "context", "rdf:Description/pdfx:ConTeXt.Url" },
-    ["ConTeXt.Support"]      = { "context", "rdf:Description/pdfx:ConTeXt.Support" },
-    ["ConTeXt.Version"]      = { "context", "rdf:Description/pdfx:ConTeXt.Version" },
-    ["TeX.Support"]          = { "metadata","rdf:Description/pdfx:TeX.Support" },
-    ["LuaTeX.Version"]       = { "metadata","rdf:Description/pdfx:LuaTeX.Version" },
-    ["LuaTeX.Functionality"] = { "metadata","rdf:Description/pdfx:LuaTeX.Functionality" },
-    ["LuaTeX.LuaVersion"]    = { "metadata","rdf:Description/pdfx:LuaTeX.LuaVersion" },
-    ["LuaTeX.Platform"]      = { "metadata","rdf:Description/pdfx:LuaTeX.Platform" },
-    ["ID"]                   = { "id",      "rdf:Description/pdfx:ID" },                         -- has date
+    ["ConTeXt.Jobname"]      = { "context",  "rdf:Description/pdfx:ConTeXt.Jobname" },
+    ["ConTeXt.Time"]         = { "date",     "rdf:Description/pdfx:ConTeXt.Time" },
+    ["ConTeXt.Url"]          = { "context",  "rdf:Description/pdfx:ConTeXt.Url" },
+    ["ConTeXt.Support"]      = { "context",  "rdf:Description/pdfx:ConTeXt.Support" },
+    ["ConTeXt.Version"]      = { "context",  "rdf:Description/pdfx:ConTeXt.Version" },
+    ["TeX.Support"]          = { "metadata", "rdf:Description/pdfx:TeX.Support" },
+    ["LuaTeX.Version"]       = { "metadata", "rdf:Description/pdfx:LuaTeX.Version" },
+    ["LuaTeX.Functionality"] = { "metadata", "rdf:Description/pdfx:LuaTeX.Functionality" },
+    ["LuaTeX.LuaVersion"]    = { "metadata", "rdf:Description/pdfx:LuaTeX.LuaVersion" },
+    ["LuaTeX.Platform"]      = { "metadata", "rdf:Description/pdfx:LuaTeX.Platform" },
+    ["ID"]                   = { "id",       "rdf:Description/pdfx:ID" },                         -- has date
     -- Adobe PDF schema
-    ["Keywords"]             = { "metadata","rdf:Description/pdf:Keywords", true },
-    ["Producer"]             = { "metadata","rdf:Description/pdf:Producer", true },
- -- ["Trapped"]              = { "pdf",     "rdf:Description/pdf:Trapped" },                     -- '/False' in /Info, but 'False' in XMP
+    ["Keywords"]             = { "metadata", "rdf:Description/pdf:Keywords", true },
+    ["Producer"]             = { "metadata", "rdf:Description/pdf:Producer", true },
+ -- ["Trapped"]              = { "pdf",      "rdf:Description/pdf:Trapped" },                     -- '/False' in /Info, but 'False' in XMP
     -- Dublin Core schema
-    ["Format"]               = { "metadata","rdf:Description/dc:format" },                       -- optional, but nice to have
+    ["Format"]               = { "metadata", "rdf:Description/dc:format" },                       -- optional, but nice to have
     -- see xml file for comment:
- -- ["Author"]               = { "metadata","rdf:Description/dc:creator" },
- -- ["Subject"]              = { "metadata","rdf:Description/dc:description" },
- -- ["Title"]                = { "metadata","rdf:Description/dc:title" },
-    ["Author"]               = { "metadata","rdf:Description/dc:creator/rdf:Seq/rdf:li", true },
-    ["Subject"]              = { "metadata","rdf:Description/dc:description/rdf:Alt/rdf:li", true },
-    ["Title"]                = { "metadata","rdf:Description/dc:title/rdf:Alt/rdf:li", true },
+ -- ["Author"]               = { "metadata", "rdf:Description/dc:creator" },
+ -- ["Subject"]              = { "metadata", "rdf:Description/dc:description" },
+ -- ["Title"]                = { "metadata", "rdf:Description/dc:title" },
+    ["Author"]               = { "metadata", "rdf:Description/dc:creator/rdf:Seq/rdf:li", true },
+    ["Subject"]              = { "metadata", "rdf:Description/dc:description/rdf:Alt/rdf:li", true },
+    ["Title"]                = { "metadata", "rdf:Description/dc:title/rdf:Alt/rdf:li", true },
     -- XMP Basic schema
-    ["CreateDate"]           = { "date",    "rdf:Description/xmp:CreateDate" },
-    ["CreationDate"]         = { "date",    "rdf:Description/xmp:CreationDate" },                -- dummy
-    ["CreatorTool"]          = { "metadata","rdf:Description/xmp:CreatorTool" },
- -- ["Creator"]              = { "metadata","rdf:Description/xmp:CreatorTool" },
-    ["MetadataDate"]         = { "date",    "rdf:Description/xmp:MetadataDate" },
-    ["ModDate"]              = { "date",    "rdf:Description/xmp:ModDate" },                     -- dummy
-    ["ModifyDate"]           = { "date",    "rdf:Description/xmp:ModifyDate" },
+    ["CreateDate"]           = { "date",     "rdf:Description/xmp:CreateDate" },
+    ["CreationDate"]         = { "date",     "rdf:Description/xmp:CreationDate" },                -- dummy
+    ["CreatorTool"]          = { "metadata", "rdf:Description/xmp:CreatorTool" },
+ -- ["Creator"]              = { "metadata", "rdf:Description/xmp:CreatorTool" },
+    ["MetadataDate"]         = { "date",     "rdf:Description/xmp:MetadataDate" },
+    ["ModDate"]              = { "date",     "rdf:Description/xmp:ModDate" },                     -- dummy
+    ["ModifyDate"]           = { "date",     "rdf:Description/xmp:ModifyDate" },
     -- XMP Media Management schema
-    ["DocumentID"]           = { "id",      "rdf:Description/xmpMM:DocumentID" },                -- uuid
-    ["InstanceID"]           = { "id",      "rdf:Description/xmpMM:InstanceID" },                -- uuid
-    ["RenditionClass"]       = { "pdf",     "rdf:Description/xmpMM:RenditionClass" },            -- PDF/X-4
-    ["VersionID"]            = { "pdf",     "rdf:Description/xmpMM:VersionID" },                 -- PDF/X-4
+    ["DocumentID"]           = { "id",       "rdf:Description/xmpMM:DocumentID" },                -- uuid
+    ["InstanceID"]           = { "id",       "rdf:Description/xmpMM:InstanceID" },                -- uuid
+    ["RenditionClass"]       = { "pdf",      "rdf:Description/xmpMM:RenditionClass" },            -- PDF/X-4
+    ["VersionID"]            = { "pdf",      "rdf:Description/xmpMM:VersionID" },                 -- PDF/X-4
     -- additional entries
     -- PDF/X
-    ["GTS_PDFXVersion"]      = { "pdf",     "rdf:Description/pdfxid:GTS_PDFXVersion" },
+    ["GTS_PDFXVersion"]      = { "pdf",      "rdf:Description/pdfxid:GTS_PDFXVersion" },
     -- optional entries
     -- all what is visible in the 'document properties --> additional metadata' window
     -- XMP Rights Management schema (optional)
     ["Marked"]               = { "pdf",      "rdf:Description/xmpRights:Marked" },
  -- ["Owner"]                = { "metadata", "rdf:Description/xmpRights:Owner/rdf:Bag/rdf:li" }, -- maybe useful (not visible)
  -- ["UsageTerms"]           = { "metadata", "rdf:Description/xmpRights:UsageTerms" },           -- maybe useful (not visible)
-    ["WebStatement"]         = { "metadata", "rdf:Description/xmpRights:WebStatement" },
+ -- ["WebStatement"]         = { "metadata", "rdf:Description/xmpRights:WebStatement" },
     -- Photoshop PDF schema (optional)
-    ["AuthorsPosition"]      = { "metadata", "rdf:Description/photoshop:AuthorsPosition" },
-    ["Copyright"]            = { "metadata", "rdf:Description/photoshop:Copyright" },
-    ["CaptionWriter"]        = { "metadata", "rdf:Description/photoshop:CaptionWriter" },
+ -- ["AuthorsPosition"]      = { "metadata", "rdf:Description/photoshop:AuthorsPosition" },
+ -- ["Copyright"]            = { "metadata", "rdf:Description/photoshop:Copyright" },
+ -- ["CaptionWriter"]        = { "metadata", "rdf:Description/photoshop:CaptionWriter" },
     --
-    ["Placeholder"]          = { "metadata", "pdfaid-placeholder", true }
+    ["Placeholder1"]          = { "metadata", "pdfaid-placeholder",  true },
+    ["Placeholder2"]          = { "metadata", "pdfuaid-placeholder", true },
+    ["Placeholder3"]          = { "metadata", "wtpdf-placeholder",   true },
 }, function() return unknown end )
 
 

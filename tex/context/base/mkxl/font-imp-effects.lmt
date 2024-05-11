@@ -27,13 +27,14 @@ trackers.register("fonts.effect", function(v) trace = v end)
 -- This will be a backend function (codeinjection).
 
 local effects = {
-    [0] = 0, [1] = 1, [2] = 2, [3] = 3,
+    [0] = 0, [1] = 1, [2] = 2, [3] = 3, [7]= 7,
     inner   = 0,
     normal  = 0,
     outer   = 1,
     outline = 1,
     both    = 2,
     hidden  = 3,
+    clip    = 7,
 }
 
 -- Math is to be redone, we use characters anyway ...

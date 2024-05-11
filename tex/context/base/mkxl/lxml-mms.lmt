@@ -84,7 +84,11 @@ end
 local function xmlwipeattributes(x)
     local at = { }
     for c in xmlcollected(x,"*") do
-        c.at = { } -- Don't set them afterwards because they are shared!
+        if c.at.colspan then
+            c.at = { colspan = c.at.colspan } -- Maybe just a property.
+        else
+            c.at = { } -- Don't set them afterwards because they are shared!
+        end
     end
 end
 
@@ -379,6 +383,34 @@ local tomeaning, getlast  do
         return getoptionallabel(tag,language,domain)
     end
 
+    local utfsplit  = utf.split
+    local utfbyte   = utf.byte
+    local isprivate = fonts.helpers.isprivate
+
+    local unknown <const> = " ? "
+
+    local function sanitize(s)
+        local t = utfsplit(s)
+        local n = #t
+        if n == 1 then
+            if isprivate(utfbyte(s)) then
+                return unknown
+            end
+        else
+            local done = false
+            for i=1,n do
+                if isprivate(utfbyte(t[i])) then
+                    done = true
+                    t[i] = unknown
+                end
+            end
+            if done then
+                return concat(t)
+            end
+        end
+        return s
+    end
+
     local function expandsymbol(c)
         local at = c.at
         if not at.mathignore then
@@ -396,10 +428,10 @@ local tomeaning, getlast  do
                     if type(s) == "string" then
                         result = getlabel(s)
                     else
-                        result = xmltext(c)
+                        result = sanitize(xmltext(c))
                     end
                 else
-                    result = xmltext(c)
+                   result = sanitize(xmltext(c))
                 end
 -- end
             end
@@ -1041,7 +1073,7 @@ local tomeaning, getlast  do
                 end
             elseif not c.special then
                 okay = false
-                print("todo: " .. tg)
+                print("todo: (text) " .. tg)
             end
         end
     end
@@ -1109,7 +1141,7 @@ local stripped  do
     directives.register("structures.tags.math.strip", function(v) strip = v end)
 
     stripped = function(s)
-        if strip then
+        if strip and #s > 0 then
             local x = xmlconvert(s)
             xmlwipeattributes(x)
             return tostring(x)

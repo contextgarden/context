@@ -87,6 +87,8 @@ else
     opencalls = {
         ['default']   = [[pdfopen "%filename%"]],
         ['okular']    = [[okular --unique "%filename%"]],
+        ['evince']    = [[evince "%filename%"]],
+        ['zathura']   = [[zathura "%filename%"]],
         ['sumatra']   = [[wine "sumatrapdf.exe" -reuse-instance -bg-color 0xCCCCCC "%filename%"]],
         ['pdfxcview'] = [[wine "pdfxcview.exe" /A "nolock=yes=OpenParameters" "%filename%"]],
         ['auto']      = [[open "%filename%"]], -- linux: xdg-open
@@ -94,12 +96,16 @@ else
     closecalls= {
         ['default']   = [[pdfclose --file "%filename%"]],
         ['okular']    = false,
+        ['evince']    = false,
+        ['zathura']   = [[killall zathura]],
         ['sumatra']   = false,
         ['auto']      = false,
     }
     allcalls = {
         ['default']   = [[pdfclose --all]],
         ['okular']    = false,
+        ['evince']    = false,
+        ['zathura']   = false,
         ['sumatra']   = false,
         ['auto']      = false,
     }

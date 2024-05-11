@@ -907,51 +907,110 @@
    \lastlinefit\ifcase\c_spac_align_state_fit\zerocount\else\plusthousand\fi
 \to \t_spac_align_applied
 
-% linebreakcriterion
+\immutable\integerdef\defaultdoublehyphendemerits\plustenthousand
+\immutable\integerdef\defaultfinalhyphendemerits \plusfivethousand
+\immutable\integerdef\defaultadjdemerits         \plustenthousand
+\immutable\integerdef\defaultorphanpenalty       \zerocount
 
-\immutable\integerdef\defaultdoublehyphendemerits    10000
-\immutable\integerdef\defaultfinalhyphendemerits      5000
-\immutable\integerdef\defaultadjdemerits             10000
-\immutable\integerdef\defaultorphanpenalty               0
-\immutable\integerdef\defaultlinebreakcriterion          0 % 12 12 12 99 : 0C0C0C63
+\immutable\integerdef\granularadjdemerits        \plusfivethousand % see accumulation in granular
 
-\immutable\integerdef\granularadjdemerits              5000  % maybe 2500
-\immutable\integerdef\granularlinebreakcriterion  "020C2A63  %  2 12 42 99
+\frozen\doublehyphendemerits \defaultdoublehyphendemerits
+\frozen\finalhyphendemerits  \defaultfinalhyphendemerits
+\frozen\adjdemerits          \defaultadjdemerits
+\frozen\orphanpenalty        \defaultorphanpenalty
 
-\frozen\doublehyphendemerits\defaultdoublehyphendemerits
-\frozen\finalhyphendemerits \defaultfinalhyphendemerits
-\frozen\adjdemerits         \defaultadjdemerits
-\frozen\linebreakcriterion  \defaultlinebreakcriterion
-\frozen\orphanpenalty       \defaultorphanpenalty
-
-% better but incompatible:
+% \newconstant\c_spac_align_state_granular
 %
-% \frozen\adjdemerits         \optimaladjdemerits
-% \frozen\linebreakcriterion  \optimallinebreakcriterion
-
-\newconstant\c_spac_align_state_granular
-
-\defcsname\??aligncommand\v!granular\endcsname % no way to reset it .. todo: \everyresetalign
-  {\c_spac_align_state_granular\plusone}
+% \defcsname\??aligncommand\v!granular\endcsname % no way to reset it .. todo: \everyresetalign
+%   {\c_spac_align_state_granular\plusone}
+%
+% \appendtoks
+%    \c_spac_align_state_granular\zerocount
+% \to \t_spac_align_presets
+%
+% \def\spac_fitness_demerits_granular
+%   {\fitnessdemerits \plusnine
+%       \plusninetynine \plusfivethousand  \plusfourthousand
+%       \plusfourtytwo  \plusfourthousand  \plusthreethousand % .75
+%       \plustwelve     \plusthreethousand \plustwothousand   % .50
+%       \plustwo        \plustwothousand   \plusonethousand   % .25
+%       \zerocount      \zerocount         \zerocount         % .00 \adjdemerits baseline is 5000
+%       \plustwo        \plustwothousand   \plusonethousand   % .25
+%       \plustwelve     \plusthreethousand \plustwothousand   % .50
+%       \plusfourtytwo  \plusfourthousand  \plusthreethousand % .75
+%       \plusninetynine \plusfivethousand  \plusfourthousand
+%    \relax}
+%
+% % \def\spac_fitness_demerits_default
+% %   {\fitnessdemerits \plusfive
+% %       \plusninetynine \zerocount \zerocount
+% %       \plustwelve     \zerocount \zerocount % .50
+% %       \zerocount      \zerocount \zerocount % .00 \adjdemerits baseline is 10000
+% %       \plustwelve     \zerocount \zerocount % .50
+% %       \plusninetynine \zerocount \zerocount
+% %    \relax}
+%
+% \def\spac_fitness_demerits_default
+%   {\fitnessdemerits \zerocount}
+%
+% \appendtoks
+%   \ifcase\c_spac_align_state_granular
+%      \adjdemerits\defaultadjdemerits
+%      \spac_fitness_demerits_default
+%    \else
+%      \adjdemerits\granularadjdemerits
+%      \spac_fitness_demerits_granular
+%    \fi
+% \to \t_spac_align_applied
 
 \appendtoks
-   \c_spac_align_state_granular\zerocount
+    \fitnessdemerits \zerocount
 \to \t_spac_align_presets
 
-% \doubleadjdemerits: when zero it defaults to \adjdemerits
+\permanent\protected\def\installaligncommand#1#2%
+  {\defcsname\??aligncommand#1\endcsname{\appendtoks#2\to\t_spac_align_applied}}
 
-\appendtoks
-  \ifcase\c_spac_align_state_granular
-     \adjdemerits       \defaultadjdemerits
-     \doubleadjdemerits \defaultadjdemerits
-     \linebreakcriterion\defaultlinebreakcriterion
-   \else
-     \adjdemerits       \granularadjdemerits
-% \doubleadjdemerits 100000
-     \doubleadjdemerits \defaultadjdemerits
-     \linebreakcriterion\granularlinebreakcriterion
-   \fi
-\to \t_spac_align_applied
+% \installaligncommand
+%   {\v!granular}
+%   {\fitnessdemerits \plusnine
+%       \plusninetynine \plusfivethousand    \plusfourthousand
+%       \plusfourtytwo  \plusfourthousand    \plusthreethousand   % .75
+%       \plustwelve     \plusthreethousand   \plustwothousand     % .50
+%       \plustwo        \plustwothousand     \plusonethousand     % .25
+%       \zerocount      \granularadjdemerits \granularadjdemerits % .00 \adjdemerits baseline is 5000
+%       \plustwo        \plustwothousand     \plusonethousand     % .25
+%       \plustwelve     \plusthreethousand   \plustwothousand     % .50
+%       \plusfourtytwo  \plusfourthousand    \plusthreethousand   % .75
+%       \plusninetynine \plusfivethousand    \plusfourthousand
+%    \relax}
+
+\installaligncommand
+  {\v!granular}
+  {\fitnessdemerits \plusnine
+      \plusninetynine \plusninethousand     \zerocount
+      \plusfourtytwo  \plussixthousand      \plusfivehundred      % .75
+      \plustwelve     \plusfortyfivehundred \plusthousand         % .50
+      \plustwo        \plusthreethousand    \plusthousand         % .25
+      \zerocount      \plusfifteenhundred   \plusfifteenhundred   % .00 \adjdemerits baseline is 5000
+      \plustwo        \plusthousand         \plusthreethousand    % .25
+      \plustwelve     \plusthousand         \plusfortyfivehundred % .50
+      \plusfourtytwo  \plusfivehundred      \plussixthousand      % .75
+      \plusninetynine \zerocount            \plusninethousand
+   \relax}
+
+% \installaligncommand
+%   {\v!granular:x}
+%   {\fitnessdemerits \plusnine
+%       \plusninetynine \plusfivethousand    \plusfivethousand
+%       \plusfourtytwo  \plusfourthousand    \plusfourthousand    % .75
+%       \plustwelve     \plusthreethousand   \plusthreethousand   % .50
+%       \plustwo        \plustwothousand     \plustwothousand     % .25
+%       \zerocount      \granularadjdemerits \granularadjdemerits % .00 \adjdemerits baseline is 5000
+%       \plustwo        \plustwothousand     \plustwothousand     % .25
+%       \plustwelve     \plusthreethousand   \plusthreethousand   % .50
+%       \plusfourtytwo  \plusfourthousand    \plusfourthousand    % .75
+%       \plusninetynine \plusfivethousand    \plusfivethousand
+%    \relax}
 
 % end of definitions
 
@@ -1124,7 +1183,7 @@
        \hyphenpenalty \exhyphenpenalty \automatichyphenpenalty \explicithyphenpenalty
        \displaywidowpenalty \widowpenalty \clubpenalty \brokenpenalty
        \doublehyphendemerits \finalhyphendemerits \adjdemerits \orphanpenalty
-       \linebreakcriterion
+%        \linebreakstretchcriterion \linebreakshrinkcriterion
    \relax}}}}}
 
 \permanent\protected\def\startshowpardata

@@ -66,7 +66,7 @@ static int ziplib_aux_compress(
     return 1;
 }
 
-static int ziplib_compress(lua_State *L)
+static int ziplib_compress(lua_State *L) /* data compresslevel method window memory strategy */
 {
     const char *data = luaL_checkstring(L, 1);
     int size = (int) lua_rawlen(L, 1);
@@ -78,12 +78,12 @@ static int ziplib_compress(lua_State *L)
     return ziplib_aux_compress(L, data, size, level, method, window, memory, strategy, ziplib_buffer_size);
 }
 
-static int ziplib_compresssize(lua_State *L)
+static int ziplib_compresssize(lua_State *L) /* data size compresslevel window */
 {
     const char *data = luaL_checkstring(L, 1);
     int size = (int) lua_rawlen(L, 1);
-    int level = lmt_optinteger(L, 2, Z_DEFAULT_COMPRESSION);
-    int buffersize = lmt_optinteger(L, 3, ziplib_buffer_size);
+    int buffersize = lmt_optinteger(L, 2, ziplib_buffer_size);
+    int level = lmt_optinteger(L, 3, Z_DEFAULT_COMPRESSION);
     int window = lmt_optinteger(L, 4, 15); /* like decompresssize */
     return ziplib_aux_compress(L, data, size, level, Z_DEFLATED, window, 8, Z_DEFAULT_STRATEGY, buffersize);
 }

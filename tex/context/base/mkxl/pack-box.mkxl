@@ -1174,6 +1174,7 @@
 
 \permanent\tolerant\protected\def\setanchorbox[#1]#*[#S#2]%
   {\begingroup
+   \dostarttaggednodetail\t!ornament
    \dowithnextbox
      {\cdef\currentanchorbox{#1}%
       \setupboxanchor[#2]%
@@ -1209,6 +1210,7 @@
         \kern-\wd\nextbox
         \box\nextbox
       \egroup
+      \dostoptagged
       \endgroup}}
 
 \expandafter\integerdef\csname\??boxpreset\v!left            \endcsname\leftoriginlistanchorcode
@@ -1297,6 +1299,7 @@
 
 \permanent\tolerant\protected\def\setboxanchor[#1]#*[#S#2]#*[#S#3]#*% assumes \defineboxanchor[#1]
   {\begingroup
+   \dostarttaggednodetail\t!ornament
    \dowithnextbox
      {\ifhastok={#2}%
         \setupcurrentboxanchorcontent[#2]%
@@ -1318,6 +1321,7 @@
             \ifzeropt\scratchyoffset\else \s!yoffset \scratchyoffset\fi
             \s!target \scratchcounter
             {\box\nextbox}%
+      \dostoptagged
       \endgroup}}
 
 %D The name might change:

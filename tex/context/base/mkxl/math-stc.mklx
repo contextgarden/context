@@ -14,6 +14,8 @@
 
 \writestatus{loading}{ConTeXt Math Macros / Stackers}
 
+% todo mathmeaning like fractions
+
 \unprotect
 
 % is subtype for tagged needed: dosettagproperty only used here .. maybe for tagged pdf?

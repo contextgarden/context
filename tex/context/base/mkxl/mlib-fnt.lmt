@@ -470,7 +470,7 @@ drivers.install {
 
 function metapost.boxtomp(n,k)
     kind = k
-    nodes.handlers.finalizebox(n)
+    nodes.handlers.finalizebox(n,false)
     drivers.converters.lmtx(drivers.instances.mpo,texgetbox(n),"box",1)
     local result = concat(buffer,";")
     reset()

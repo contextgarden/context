@@ -99,6 +99,7 @@ local pdfshareobjectreference = lpdf.shareobjectreference
 local pdfreserveobject        = lpdf.reserveobject
 local pdfpagereference        = lpdf.pagereference
 local pdfdelayedobject        = lpdf.delayedobject
+local pdfmajorversion         = lpdf.majorversion
 
 -- defined later on:
 
@@ -120,6 +121,12 @@ local pdf_named               = pdfconstant("Named")
 
 local autoprefix              = "#"
 local usedautoprefixes        = { }
+
+local crappytaggingmode       = 0
+
+updaters.register("structures.tagging",function(version)
+    crappytaggingmode = tonumber(version) or 0
+end)
 
 function codeinjections.setautoprefix(prefix)
     autoprefix = prefix ~= "" and prefix or autoprefix
@@ -347,15 +354,30 @@ local pagedestinations = setmetatableindex(function(t,k)
         return pdfnull()
     end
     local v = rawget(t,k)
-    if v then
-     -- report_references("page number expected, got %s: %a",type(k),k)
-        return v
+    if not v then
+        v = k > 0 and pdfarray {
+            pdfreference(pdfpagereference(k)),
+            pdf_fit,
+        } or pdfnull()
+        t[k] = v
     end
-    local v = k > 0 and pdfarray {
-        pdfreference(pdfpagereference(k)),
-        pdf_fit,
-    } or pdfnull()
-    t[k] = v
+    return v
+end)
+
+local crappypagedestinations = setmetatableindex(function(t,k)
+    k = tonumber(k)
+    if not k or k <= 0 then
+        return pdfnull()
+    end
+    local v = rawget(t,k)
+    if not v then
+        local o = codeinjections.getreferencestructureobject(false,k) or 0
+        v = o > 0 and pdfarray {
+            pdfreference(o),
+            pdf_fit,
+        } or pdfnull()
+        t[k] = v
+    end
     return v
 end)
 
@@ -369,8 +391,9 @@ local pagereferences = setmetatableindex(function(t,k)
         return v
     end
     local v = pdfdictionary { -- can be cached
-        S = pdf_goto,
-        D = pagedestinations[k],
+        S  = pdf_goto,
+        D  = pagedestinations[k],
+        SD = crappytaggingmode > 1 and crappypagedestinations[k] or nil,
     }
     t[k] = v
     return v
@@ -431,15 +454,6 @@ lpdf.registerdocumentfinalizer(pdfdestinationspecification,"collect destinations
 
 local destinations = { }
 
-local f_xyz   = formatters["<< /D [ %i 0 R /XYZ %.6N %.6N null ] >>"]
-local f_fit   = formatters["<< /D [ %i 0 R /Fit ] >>"]
-local f_fitb  = formatters["<< /D [ %i 0 R /FitB ] >>"]
-local f_fith  = formatters["<< /D [ %i 0 R /FitH %.6N ] >>"]
-local f_fitv  = formatters["<< /D [ %i 0 R /FitV %.6N ] >>"]
-local f_fitbh = formatters["<< /D [ %i 0 R /FitBH %.6N ] >>"]
-local f_fitbv = formatters["<< /D [ %i 0 R /FitBV %.6N ] >>"]
-local f_fitr  = formatters["<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>"]
-
 local v_standard  = variables.standard
 local v_frame     = variables.frame
 local v_width     = variables.width
@@ -448,6 +462,20 @@ local v_height    = variables.height
 local v_minheight = variables.minheight
 local v_fit       = variables.fit
 local v_tight     = variables.tight
+
+local mapping = {
+    [v_standard]  = v_standard,  xyz   = v_standard,
+    [v_frame]     = v_frame,     fitr  = v_frame,
+    [v_width]     = v_width,     fith  = v_width,
+    [v_minwidth]  = v_minwidth,  fitbh = v_minwidth,
+    [v_height]    = v_height,    fitv  = v_height,
+    [v_minheight] = v_minheight, fitbv = v_minheight,
+    [v_fit]       = v_fit,       fit   = v_fit,
+    [v_tight]     = v_tight,     fitb  = v_tight,
+}
+
+local defaultview   = v_fit
+local offset        = 0 -- 65536*5
 
 local c_realpageno  <const> = tex.iscount("realpageno")
 
@@ -462,57 +490,101 @@ local c_realpageno  <const> = tex.iscount("realpageno")
 -- and finger zooming this whole view is rather useless and as with any zooming
 -- one looses the overview and keeps zooming.
 
--- todo: scaling
+local destinationactions, defaultaction  do
 
--- local destinationactions = {
---     [v_standard]  = function(r,w,h,d) return f_xyz  (r,gethpos()*factor,(getvpos()+h)*factor) end, -- local left,top with no zoom
---     [v_frame]     = function(r,w,h,d) return f_fitr (r,pdfrectangle(w,h,d)) end,                   -- fit rectangle in window
---     [v_width]     = function(r,w,h,d) return f_fith (r,(getvpos()+h)*factor) end,                  -- top coordinate, fit width of page in window
---     [v_minwidth]  = function(r,w,h,d) return f_fitbh(r,(getvpos()+h)*factor) end,                  -- top coordinate, fit width of content in window
---     [v_height]    = function(r,w,h,d) return f_fitv (r,gethpos()*factor) end,                      -- left coordinate, fit height of page in window
---     [v_minheight] = function(r,w,h,d) return f_fitbv(r,gethpos()*factor) end,                      -- left coordinate, fit height of content in window    [v_fit]       =                          f_fit,                                                 -- fit page in window
---     [v_tight]     =                          f_fitb,                                               -- fit content in window
---     [v_fit]       =                          f_fit,
--- }
+    local f_xyz   = formatters["<< /D [ %i 0 R /XYZ %.6N %.6N null ] >>"]
+    local f_fit   = formatters["<< /D [ %i 0 R /Fit ] >>"]
+    local f_fitb  = formatters["<< /D [ %i 0 R /FitB ] >>"]
+    local f_fith  = formatters["<< /D [ %i 0 R /FitH %.6N ] >>"]
+    local f_fitv  = formatters["<< /D [ %i 0 R /FitV %.6N ] >>"]
+    local f_fitbh = formatters["<< /D [ %i 0 R /FitBH %.6N ] >>"]
+    local f_fitbv = formatters["<< /D [ %i 0 R /FitBV %.6N ] >>"]
+    local f_fitr  = formatters["<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>"]
 
-local destinationactions = {
-    [v_standard]  = function(r,w,h,d,o)        -- local left,top with no zoom
-        local tx, ty = getpos()
-        return f_xyz(r,tx*factor,(ty+h+2*o)*factor) -- we can assume margins
-    end,
-    [v_frame]     = function(r,w,h,d,o)        -- fit rectangle in window
-        return f_fitr(r,pdfrectangle(w,h,d,o))
-    end,
-    [v_width]     = function(r,w,h,d,o)        -- top coordinate, fit width of page in window
-        return f_fith(r,(getvpos()+h+o)*factor)
-    end,
-    [v_minwidth]  = function(r,w,h,d,o)        -- top coordinate, fit width of content in window
-        return f_fitbh(r,(getvpos()+h+o)*factor)
-    end,
-    [v_height]    = function(r,w,h,d,o)        -- left coordinate, fit height of page in window
-        return f_fitv(r,(gethpos())*factor)
-    end,
-    [v_minheight] = function(r,w,h,d,o)        -- left coordinate, fit height of content in window
-        return f_fitbv(r,(gethpos())*factor)
-    end,
-    [v_tight]     = f_fitb,                    -- fit content in window
-    [v_fit]       = f_fit,                     -- fit content in window
-}
+    destinationactions = {
+        -- local left,top with no zoom
+        [v_standard] = function(r,w,h,d,o)
+            local tx, ty = getpos()
+            return f_xyz(r,tx*factor,(ty+h+2*o)*factor)
+        end,
+        -- fit rectangle in window
+        [v_frame] = function(r,w,h,d,o)
+            return f_fitr(r,pdfrectangle(w,h,d,o))
+        end,
+        -- top coordinate, fit width of page in window
+        [v_width] = function(r,w,h,d,o)
+            return f_fith(r,(getvpos()+h+o)*factor)
+        end,
+        -- top coordinate, fit width of content in window
+        [v_minwidth] = function(r,w,h,d,o)
+            return f_fitbh(r,(getvpos()+h+o)*factor)
+        end,
+        -- left coordinate, fit height of page in window
+        [v_height] = function(r,w,h,d,o)
+            return f_fitv(r,(gethpos())*factor)
+        end,
+        -- left coordinate, fit height of content in window
+        [v_minheight] = function(r,w,h,d,o)
+            return f_fitbv(r,(gethpos())*factor)
+        end,
+        -- fit content in window
+        [v_tight] = f_fitb,
+        -- fit content in window
+        [v_fit] = f_fit,
+    }
 
-local mapping = {
-    [v_standard]  = v_standard,  xyz   = v_standard,
-    [v_frame]     = v_frame,     fitr  = v_frame,
-    [v_width]     = v_width,     fith  = v_width,
-    [v_minwidth]  = v_minwidth,  fitbh = v_minwidth,
-    [v_height]    = v_height,    fitv  = v_height,
-    [v_minheight] = v_minheight, fitbv = v_minheight,
-    [v_fit]       = v_fit,       fit   = v_fit,
-    [v_tight]     = v_tight,     fitb  = v_tight,
-}
+    defaultaction = destinationactions[defaultview]
 
-local defaultview   = v_fit
-local defaultaction = destinationactions[defaultview]
-local offset        = 0 -- 65536*5
+end
+
+local xdestinationactions, xdefaultaction  do
+
+    local f_xyz   = formatters["<< /D [ %i 0 R /XYZ %.6N %.6N null ] /SD [ %i 0 R /XYZ %.6N %.6N null ] >>"]
+    local f_fit   = formatters["<< /D [ %i 0 R /Fit ] /SD [ %i 0 R /Fit ] >>"]
+    local f_fitb  = formatters["<< /D [ %i 0 R /FitB ] /SD [ %i 0 R /FitB ] >>"]
+    local f_fith  = formatters["<< /D [ %i 0 R /FitH %.6N ] /SD [ %i 0 R /FitH %.6N ] >>"]
+    local f_fitv  = formatters["<< /D [ %i 0 R /FitV %.6N ] /SD[ %i 0 R /FitV %.6N ] >>"]
+    local f_fitbh = formatters["<< /D [ %i 0 R /FitBH %.6N ] /SD [ %i 0 R /FitBH %.6N ] >>"]
+    local f_fitbv = formatters["<< /D [ %i 0 R /FitBV %.6N ] /SD [ %i 0 R /FitBV %.6N ] >>"]
+    local f_fitr  = formatters["<< /D [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] /SD [ %i 0 R /FitR %.6N %.6N %.6N %.6N ] >>"]
+
+    xdestinationactions = {
+        [v_standard] = function(r,w,h,d,o,s)
+            local tx, ty = getpos()
+            local x = tx*factor
+            local y = (ty+h+2*o)*factor
+            return f_xyz(r,x,y,s,x,y)
+        end,
+        [v_frame] = function(r,w,h,d,o,s)
+            return f_fitr(r,pdfrectangle(w,h,d,o),s,pdfrectangle(w,h,d,o))
+        end,
+        [v_width] = function(r,w,h,d,o,s)
+            local v = (getvpos()+h+o)*factor
+            return f_fith(r,v,s,v)
+        end,
+        [v_minwidth] = function(r,w,h,d,o,s)
+            local h = (getvpos()+h+o)*factor
+            return f_fitbh(r,h,s,h)
+        end,
+        [v_height] = function(r,w,h,d,o,s)
+            local v = gethpos()*factor
+            return f_fitv(r,v,s,v)
+        end,
+        [v_minheight] = function(r,w,h,d,o,s)
+            local h = gethpos()*factor
+            return f_fitbv(r,h,s,h)
+        end,
+        [v_tight] = function(r,w,h,d,o,s)
+            return f_fitb(r,s)
+        end,
+        [v_fit] = function(r,w,h,d,o,s)
+            return f_fit(r,s)
+        end,
+    }
+
+    xdefaultaction = xdestinationactions[defaultview]
+
+end
 
 directives.register("destinations.offset", function(v)
     offset = string.todimen(v) or 0
@@ -521,6 +593,8 @@ end)
 -- A complication is that we need to use named destinations when we have views so we
 -- end up with a mix. A previous versions just output multiple destinations but now
 -- that we moved all to here we can be more sparse.
+
+local f_fit = formatters["<< /D [ %i 0 R /Fit ] >>"]
 
 local pagedestinations = setmetatableindex(function(t,k) -- not the same as the one above!
     local v = pdfdelayedobject(f_fit(k))
@@ -531,12 +605,45 @@ end)
 local function flushdestination(specification)
     local names = specification.names
     local view  = specification.view
-    local r     = pdfpagereference(texgetcount(c_realpageno))
-    if (references.innermethod ~= v_name) and (view == defaultview or not view or view == "") then
+    local page  = texgetcount(c_realpageno)
+    local r     = pdfpagereference(page)
+    if (crappytaggingmode < 2) and (references.innermethod ~= v_name) and (view == defaultview or not view or view == "") then
         r = pagedestinations[r]
     else
-        local action = view and destinationactions[view] or defaultaction
-        r = pdfdelayedobject(action(r,specification.width,specification.height,specification.depth,offset))
+        local action, o
+        if crappytaggingmode > 1 then
+            local internal = specification.internal -- actually attribute
+            if internal or page then
+                o = codeinjections.getreferencestructureobject(internal,page) -- actually attribute
+                if o and o > 0 then
+                    action = view and xdestinationactions[view] or xdefaultaction
+local d = autoprefix .. internal
+local f = false
+for i=1,#names do
+    if names[i] == d then
+        f = true
+        break
+    end
+end
+if not f then
+    names[#names+1] = d
+end
+                else
+                    o = nil
+                end
+            end
+        end
+        if not action then
+            action = view and destinationactions[view] or defaultaction
+        end
+-- if o then
+--     local objref = pdfreserveobject()
+--     local specifier = action(r,specification.width,specification.height,specification.depth,offset,o)
+--     pdfdelayedobject(specifier(),objref)
+--     r = pdfregisterannotation(objref)
+-- else
+        r = pdfdelayedobject(action(r,specification.width,specification.height,specification.depth,offset,o))
+-- end
     end
     for n=1,#names do
         local name = names[n]
@@ -546,7 +653,7 @@ local function flushdestination(specification)
     end
 end
 
-function nodeinjections.destination(width,height,depth,names,view)
+function nodeinjections.destination(width,height,depth,names,view,internal)
     -- todo check if begin end node / was comment
     view = view and mapping[view] or defaultview
     if trace_destinations then
@@ -623,14 +730,16 @@ function nodeinjections.destination(width,height,depth,names,view)
             end
         end
     end
-    if doview then
+    if doview or crappytaggingmode > 0 then
         return new_latelua {
-            action = flushdestination,
-            width  = width,
-            height = height,
-            depth  = depth,
-            names  = names,
-            view   = view,
+--             kind   = "destination",
+            action   = flushdestination,
+            width    = width,
+            height   = height,
+            depth    = depth,
+            names    = names,
+            view     = view,
+            internal = internal,
         }
     end
 end
@@ -645,7 +754,23 @@ local function pdflinkinternal(internal,page)
  -- local method = references.innermethod
     if internal then
         flaginternals[internal] = true -- for bookmarks and so
+        if crappytaggingmode > 1 then
+            local o = codeinjections.getreferencestructureobject(internal,page)
+            if o and o > 0 then
+                if type(internal) ~= "string" then
+                    internal = useautoprefix(internal)
+                end
+                return pdfdictionary {
+                    S  = pdf_goto,
+                    D  = internal, -- redundant here (needs checking)
+                    SD = pdfarray { pdfreference(o), pdf_fit } -- link or nested
+                }
+            end
+        end
         local used = usedinternals[internal]
+        if type(internal) ~= "string" then
+            internal = useautoprefix(internal)
+        end
         if used == defaultview or used == true then
             return pagereferences[page]
         else
@@ -653,8 +778,9 @@ local function pdflinkinternal(internal,page)
                 internal = useautoprefix(internal)
             end
             return pdfdictionary {
-                S = pdf_goto,
-                D = internal,
+                S  = pdf_goto,
+                D  = internal,
+                SD = crappytaggingmode > 1 and crappypagedestinations[page] or nil,
             }
         end
     else
@@ -674,15 +800,17 @@ local function pdflinkname(destination,internal,page)
             return pagereferences[page]
         else
             return pdfdictionary {
-                S = pdf_goto,
-                D = destination,
+                S  = pdf_goto,
+                D  = destination,
+                SD = crappytaggingmode > 1 and crappypagedestinations[page] or nil,
             }
         end
     elseif method == v_name then
      -- flaginternals[internal] = true -- for bookmarks and so
         return pdfdictionary {
-            S = pdf_goto,
-            D = destination,
+            S  = pdf_goto,
+            D  = destination,
+            SD = crappytaggingmode > 1 and crappypagedestinations[page] or nil,
         }
     else
         return pagereferences[page]
@@ -855,7 +983,7 @@ end
 
 lpdf.action = pdfaction
 
-function codeinjections.prerollreference(actions) -- share can become option
+function codeinjections.prerollreference(actions,index) -- share can become option
     if actions then
         local main, n = pdfaction(actions)
         if main then
@@ -869,7 +997,8 @@ function codeinjections.prerollreference(actions) -- share can become option
                 A       = pdfshareobjectreference(main),
                 F       = 4, -- print (mandate in pdf/a)
             }
-            return main("A"), n
+--             return main(), n
+            return main, n
         end
     end
 end
@@ -943,22 +1072,48 @@ end
 local function finishreference(specification)
     local prerolled  = specification.prerolled
     local quadpoints = specification.mesh
+    local refatt     = specification.reference
     local llx, lly,
           urx, ury   = pdfrectangle(specification.width,specification.height,specification.depth)
-    local specifier  = nil
-    if quadpoints and #quadpoints > 0 then
-        specifier = f_quadp(prerolled,toquadpoints(quadpoints),llx,lly,urx,ury)
+    if crappytaggingmode > 0 then
+        local specifier  = nil
+        if type(prerolled) ~= "string" then
+            prerolled.Contents     = "link"
+            prerolled.StructParent = codeinjections.getlinkstructureparent(refatt)
+            prerolled = prerolled()
+        end
+        if quadpoints and #quadpoints > 0 then
+            specifier = f_quadp(prerolled,toquadpoints(quadpoints),llx,lly,urx,ury)
+        else
+            specifier = f_annot(prerolled,llx,lly,urx,ury)
+        end
+        local objref = pdfreserveobject()
+        specification.objref = objref
+     -- nofunique = nofunique + 1
+        nofused = nofused + 1
+        if refatt then
+            refobjects[refatt] = objref
+        end
+        pdfdelayedobject(specifier,objref)
+        return pdfregisterannotation(objref)
     else
-        specifier = f_annot(prerolled,llx,lly,urx,ury)
+        local specifier  = nil
+        if type(prerolled) ~= "string" then
+            prerolled = prerolled()
+        end
+        if quadpoints and #quadpoints > 0 then
+            specifier = f_quadp(prerolled,toquadpoints(quadpoints),llx,lly,urx,ury)
+        else
+            specifier = f_annot(prerolled,llx,lly,urx,ury)
+        end
+        local objref = hashed[specifier]
+        specification.objref = objref
+        nofused = nofused + 1
+        if refatt then
+            refobjects[refatt] = objref
+        end
+        return pdfregisterannotation(objref)
     end
-    local objref = hashed[specifier]
-    local refatt = specification.reference
-    specification.objref = objref
-    nofused = nofused + 1
-    if refatt then
-        refobjects[refatt] = objref
-    end
-    return pdfregisterannotation(objref)
 end
 
 function codeinjections.getrefobj(refatt) -- bad name but experiment anyway
@@ -969,6 +1124,9 @@ local function finishannotation(specification)
     local prerolled = specification.prerolled
     local objref    = specification.objref
     if type(prerolled) == "function" then
+        prerolled = prerolled()
+    end
+    if type(prerolled) ~= "string" then
         prerolled = prerolled()
     end
     local annot = f_annot(prerolled,pdfrectangle(specification.width,specification.height,specification.depth))
@@ -988,6 +1146,7 @@ function nodeinjections.reference(reference,width,height,depth,prerolled,mesh)
             report_references("link: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
         end
         return new_latelua {
+--             kind      = "reference",
             action    = finishreference,
             reference = reference,
             width     = width,
@@ -1006,6 +1165,7 @@ function nodeinjections.annotation(width,height,depth,prerolled,objref)
                 type(prerolled) == "string" and prerolled or "-")
         end
         return new_latelua {
+--             kind      = "annotation",
             action    = finishannotation,
             width     = width,
             height    = height,
@@ -1033,11 +1193,18 @@ end
 
 lpdf.registerannotation = pdfregisterannotation
 
+-- Another weird version 2 demand: there should be a Tabs entry because otherwise a viewer
+-- can choose its own order. So why not just have a recommended default? If a viewer wants
+-- to be compliant it will obey that.
+
 function lpdf.annotationspecification()
     if annotations then
         local r = pdfdelayedobject(tostring(annotations)) -- delayed so okay in latelua
         if r then
             pdfaddtopageattributes("Annots",pdfreference(r))
+         -- if pdfmajorversion() > 1 then
+                pdfaddtopageattributes("Tabs",pdfconstant("S")) -- structure
+         -- end
         end
         annotations = nil
     end
@@ -1088,8 +1255,9 @@ runners["inner"] = function(var,actions)
     end
     if name then
         return pdflinkname(name,internal,page)
+--     elseif internal or crappytaggingmode > 1 then
     elseif internal then
-        return pdflinkinternal(internal,page)
+        return pdflinkinternal(internal,page,true)
     elseif page then
         return pdflinkpage(page)
     else
