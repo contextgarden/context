@@ -34,7 +34,7 @@ attributes.values       = attributes.values   or { }
 attributes.counts       = attributes.counts   or { }
 attributes.handlers     = attributes.handlers or { }
 attributes.states       = attributes.states   or { }
-attributes.unsetvalue   = -0x7FFFFFFF
+attributes.unsetvalue   = tex.magicconstants.unusedattributevalue
 
 local currentfont       = font.current
 local currentattributes = nodes and                nodes.     currentattributes or node.currentattributes
@@ -57,7 +57,7 @@ local report_value       = logs.reporter("attributes","values")
 
 local trace_values       = false
 
-local max_register_index = tex.magicconstants.max_attribute_register_index
+local max_register_index <const> = tex.magicconstants.max_attribute_register_index
 
 trackers.register("attributes.values", function(v) trace_values = v end)
 

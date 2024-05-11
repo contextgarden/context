@@ -10,7 +10,14 @@ local chardata  = characters.data
 local peekchar  = tokens.scanners.peekchar
 local ctx_space = context.space
 
-local can_have_space = characters.can_have_space
+local nuts            = nodes.nuts
+local tonut           = nodes.tonut
+local texgetnest      = tex.getnest
+local traverseglue    = nuts.traversers.glue
+local setwidth        = nodes.nuts.setwidth
+local indentskip_code <const> = nodes.gluecodes.indentskip
+
+local can_have_space  = characters.can_have_space
 
 interfaces.implement {
     name      = "autoinsertnextspace",
@@ -26,13 +33,6 @@ interfaces.implement {
         end
     end,
 }
-
-local nuts = nodes.nuts
-local tonut = nodes.tonut
-local traverseglue = nuts.traversers.glue
-local setwidth = nodes.nuts.setwidth
-local indentskip_code = nodes.gluecodes.indentskip
-local texgetnest = tex.getnest
 
 local function lateindent(amount)
     local head = tonut(texgetnest("top","head"))

@@ -584,6 +584,8 @@
 \newinteger\scratchunicodetwo
 \newinteger\scratchunicodethree
 
+\newinteger\scratchclass
+
 \newdimension\scratchleftskip
 \newdimension\scratchrightskip
 \newdimension\scratchtopskip

@@ -388,7 +388,7 @@ return {
         "givenwidth", "givenheight", "givendepth", "scangivendimensions",
         --
         "scratchwidth", "scratchheight", "scratchdepth", "scratchoffset", "scratchdistance", "scratchtotal", "scratchitalic",
-        "scratchhsize", "scratchvsize",
+        "scratchhsize", "scratchvsize", "scratchclass",
         "scratchxoffset", "scratchyoffset", "scratchhoffset", "scratchvoffset",
         "scratchxposition", "scratchyposition",
         "scratchtopoffset", "scratchbottomoffset", "scratchleftoffset", "scratchrightoffset",

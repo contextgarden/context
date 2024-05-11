@@ -34,20 +34,19 @@ local processors           = typesetters.processors
 local splitprocessor       = processors.split
 
 local texgetcount          = tex.getcount
-local texiscount           = tex.iscount
 
 local variables            = interfaces.variables
-local v_forward            = variables.forward
-local v_all                = variables.all
-local v_no                 = variables.no
-local v_yes                = variables.yes
-local v_packed             = variables.packed
-local v_current            = variables.current
-local v_previous           = variables.previous
-local v_first              = variables.first
-local v_last               = variables.last
-local v_text               = variables.text
-local v_section            = variables.section
+local v_forward            <const> = variables.forward
+local v_all                <const> = variables.all
+local v_no                 <const> = variables.no
+local v_yes                <const> = variables.yes
+local v_packed             <const> = variables.packed
+local v_current            <const> = variables.current
+local v_previous           <const> = variables.previous
+local v_first              <const> = variables.first
+local v_last               <const> = variables.last
+local v_text               <const> = variables.text
+local v_section            <const> = variables.section
 
 local context              = context
 local ctx_latelua          = context.latelua
@@ -66,10 +65,10 @@ local setinternalreference = references.setinternalreference
 
 local setmetatableindex    = table.setmetatableindex
 
-local absmaxlevel          = 5 -- \c_strc_registers_maxlevel
+local absmaxlevel          <const> = 5 -- \c_strc_registers_maxlevel
 
-local c_realpageno         = texiscount("realpageno")
-local c_locationcount      = texiscount("locationcount")
+local c_realpageno         <const> = tex.iscount("realpageno")
+local c_locationcount      <const> = tex.iscount("locationcount")
 
 local h_prefixpage              = helpers.prefixpage
 local h_prefixlastpage          = helpers.prefixlastpage
@@ -1725,7 +1724,6 @@ function registers.flush(data,options,prefixspec,pagespec)
     for i=1,#entries do
         entries[i].split = nil
     end
- -- collectgarbage("collect")
 end
 
 function registers.process(class,...)

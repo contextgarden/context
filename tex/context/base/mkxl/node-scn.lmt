@@ -25,36 +25,32 @@ local nodecodes          = nodes.nodecodes
 local gluecodes          = nodes.gluecodes
 local kerncodes          = nodes.kerncodes
 
-local glyph_code         = nodecodes.glyph
-local disc_code          = nodecodes.disc
-local rule_code          = nodecodes.rule
-local boundary_code      = nodecodes.boundary
-local dir_code           = nodecodes.dir
-local math_code          = nodecodes.math
-local glue_code          = nodecodes.glue
-local penalty_code       = nodecodes.penalty
-local kern_code          = nodecodes.kern
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
+local glyph_code         <const> = nodecodes.glyph
+local disc_code          <const> = nodecodes.disc
+local rule_code          <const> = nodecodes.rule
+local boundary_code      <const> = nodecodes.boundary
+local dir_code           <const> = nodecodes.dir
+local math_code          <const> = nodecodes.math
+local glue_code          <const> = nodecodes.glue
+local penalty_code       <const> = nodecodes.penalty
+local kern_code          <const> = nodecodes.kern
+local hlist_code         <const> = nodecodes.hlist
+local vlist_code         <const> = nodecodes.vlist
 
-local userskip_code      = gluecodes.userskip
-local spaceskip_code     = gluecodes.spaceskip
-local xspaceskip_code    = gluecodes.xspaceskip
-local intermathkip_code  = gluecodes.intermathskip
-local leaders_code       = gluecodes.leaders
-local rightfillskip_code = gluecodes.rightparfillskip
-local righthangskip_code = gluecodes.righthangskip
+local userskip_code      <const> = gluecodes.userskip
+local spaceskip_code     <const> = gluecodes.spaceskip
+local xspaceskip_code    <const> = gluecodes.xspaceskip
+local intermathkip_code  <const> = gluecodes.intermathskip
+local leaders_code       <const> = gluecodes.leaders
+local rightfillskip_code <const> = gluecodes.rightparfillskip
+local righthangskip_code <const> = gluecodes.righthangskip
 
-local fontkern_code      = kerncodes.fontkern
+local fontkern_code      <const> = kerncodes.fontkern
 
-local variables          = interfaces.variables
+local a_runningtext      <const> = attributes.private('runningtext')
 
-local privateattributes  = attributes.private
-
-local a_runningtext      = privateattributes('runningtext')
-
-local v_yes              = variables.yes
-local v_all              = variables.all
+local v_yes              <const> = interfaces.variables.yes
+local v_all              <const> = interfaces.variables.all
 
 local function striprange(first,last) -- todo: dir
     if first and last then -- just to be sure

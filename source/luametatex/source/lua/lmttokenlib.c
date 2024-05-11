@@ -898,6 +898,30 @@ static int tokenlib_scan_csname(lua_State *L)
     return 1;
 }
 
+static int tokenlib_scan_cstoken(lua_State *L)
+{
+    saved_tex_scanner texstate = tokenlib_aux_save_tex_scanner();
+    if (lua_toboolean(L, 1)) {
+        /*tex Not here: |tex_get_next_non_spacer()| unless we adapt more later on. */
+        do {
+            tex_get_token();
+        } while (cur_tok == space_token);
+    } else {
+        /*tex checked */
+        tex_get_next();
+    }
+    {
+        int t = cur_cs ? cs_token_flag + cur_cs : token_val(cur_cmd, cur_chr);
+        if (t >= cs_token_flag) {
+            lua_pushinteger(L, t-cs_token_flag);
+        } else {
+            lua_pushnil(L);
+        }
+    }
+    tokenlib_aux_unsave_tex_scanner(texstate);
+    return 1;
+}
+
 static int tokenlib_scan_integer(lua_State *L)
 {
     saved_tex_scanner texstate = tokenlib_aux_save_tex_scanner();
@@ -3296,22 +3320,37 @@ static int tokenlib_push_macro(lua_State *L) // todo: just store cmd and flag to
 
         Active characters: maybe when we pass a number ... 
     */
-    if (lua_type(L, 1) == LUA_TSTRING) {
-        size_t lname = 0;
-        const char *name = lua_tolstring(L, 1, &lname);
-        if (lname > 0) {
-            halfword cs = tex_string_locate_only(name, lname);
-            singleword cmd = eq_type(cs);
-            halfword chr = eq_value(cs);
-            quarterword global = lua_toboolean(L, 2) ? add_global_flag(0) : 0; /* how */
-            if (is_call_cmd(cmd)) {
-                tex_add_token_reference(chr);
+    halfword cs = null; 
+    switch (lua_type(L, 1)) { 
+        case LUA_TSTRING:
+            {
+                size_t lname = 0;
+                const char *name = lua_tolstring(L, 1, &lname);
+                if (lname > 0) {
+                    cs = tex_string_locate_only(name, lname);
+                }
+                break;
             }
-            tokenlib_aux_make_new_package(L, cmd, eq_flag(cs), chr, cs, global);
-            return 1;
-        }
+        case LUA_TNUMBER:
+            {
+                if (tex_valid_token(cs)) {
+                    cs = lmt_tohalfword(L, 1);
+                }
+                break;
+            }
     }
-    return 0;
+    if (cs) { 
+        singleword cmd = eq_type(cs);
+        halfword chr = eq_value(cs);
+        quarterword global = lua_toboolean(L, 2) ? add_global_flag(0) : 0; /* how */
+        if (is_call_cmd(cmd)) {
+            tex_add_token_reference(chr);
+        }
+        tokenlib_aux_make_new_package(L, cmd, eq_flag(cs), chr, cs, global);
+        return 1;
+    } else {
+        return 0;
+    }
 }
 
 static int tokenlib_pop_macro(lua_State *L)
@@ -3780,6 +3819,7 @@ static const struct luaL_Reg tokenlib_function_list[] = {
     { "scanvalue",             tokenlib_scan_value              },
     { "scanchar",              tokenlib_scan_char               },
     { "scancsname",            tokenlib_scan_csname             },
+    { "scancstoken",           tokenlib_scan_cstoken            }, /* returns a number, not an token userdata */
     { "scantoken",             tokenlib_scan_token              }, /* expands next token if needed */
     { "scanbox",               tokenlib_scan_box                },
     { "scandetokened",         tokenlib_scan_detokened          }, 

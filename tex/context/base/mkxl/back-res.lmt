@@ -21,12 +21,10 @@ local scanwhd         = scanners.whd
 
 local implement       = interfaces.implement
 local constants       = interfaces.constants
-local variables       = interfaces.variables
 
-local values          = tokens.values
------ dimension_value = values.dimension
-local cardinal_value  = values.cardinal
------ direct_value    = values.direct
+----- dimension_value <const> = tokens.values.dimension
+local cardinal_value  <const> = tokens.values.cardinal
+----- direct_value    <const> = tokens.values.direct
 
 -- A box resource has an index. This happens to be an object number due to the pdf
 -- backend but in fact it's an abstraction. This is why we have explicit fetchers.

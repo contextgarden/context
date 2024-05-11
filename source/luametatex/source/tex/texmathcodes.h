@@ -32,6 +32,20 @@ typedef struct mathdictval {
     unsigned int   index;
 } mathdictval;
 
+/*tex 
+    We could have the next variant, on which case we could even have dict properties
+    that control when left and right classes kick in. We only just started scratching
+    the surface of possibilities. 
+*/
+
+// typedef struct mathcodeval {
+//     unsigned char class_value;
+//     unsigned char left_class_value;
+//     unsigned char right_class_value;
+//     unsigned char family_value;
+//     int           character_value;
+// } mathcodeval;
+
 # undef small /* defined in some microsoft library */
 
 /*tex

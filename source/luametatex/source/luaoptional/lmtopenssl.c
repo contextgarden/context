@@ -421,14 +421,14 @@ static int openssllib_verify(lua_State * L)
          //     goto DONE;
          // }
          // openssllib_state.OPENSSL_sk_push(stack, x509);
-            if (! openssllib_state.d2i_PKCS7(&p7, &signature, signaturesize)) {
+            if (! openssllib_state.d2i_PKCS7(&p7, &signature, (long) signaturesize)) {
                 message = m_invalid_signature;
                 goto DONE;
             }
             if (datafile) { 
                 input = openssllib_state.BIO_new_file(datafile, "rb");
             } else {
-                input = openssllib_state.BIO_new_mem_buf(data, datasize);
+                input = openssllib_state.BIO_new_mem_buf(data, (int) datasize);
             }
             if (! input) {
                 message = m_invalid_data_file;

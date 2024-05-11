@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['luat-cbk'] = {
 
 local insert, remove, concat = table.insert, table.remove, table.concat
 local find, format = string.find, string.format
-local collectgarbage, type, next = collectgarbage, type, next
+local type, next = type, next
 local round = math.round
 local sortedhash, sortedkeys, tohash = table.sortedhash, table.sortedkeys, table.tohash
 

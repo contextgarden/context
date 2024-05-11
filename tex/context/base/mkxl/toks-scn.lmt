@@ -326,7 +326,7 @@ local f_scan_c       = formatters["%s(scan%s())"]
 
 local f_any          = formatters["  else local key = scanword(true) if key then data[key] = scan%s() else break end end"]
 local f_any_c        = formatters["  else local key = scanword(true) if key then data[key] = %s(scan%s()) else break end end"]
-local s_done <const> = "  else break end"
+local s_done         <const> = "  else break end"
 
 local f_any_all      = formatters["  local key = scanword(true) if key then data[key] = scan%s() else break end"]
 local f_any_all_c    = formatters["  local key = scanword(true) if key then data[key] = %s(scan%s()) else break end"]

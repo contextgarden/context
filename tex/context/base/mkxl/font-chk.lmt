@@ -65,7 +65,7 @@ local disableaction        = tasks.disableaction
 
 local implement            = interfaces.implement
 
-local glyph_code           = nodes.nodecodes.glyph
+local glyph_code           <const> = nodes.nodecodes.glyph
 
 local hpack_node           = nodes.hpack
 
@@ -579,7 +579,7 @@ do
                                 goto done
                             end
                         end
-                        local fn = lower(metadata.fullname)
+                        local fn = lower(metadata.fullname or fonts.helpers.name(f))
                         for i=1,3 do
                             local o = order[i]
                             if find(fn,o) then

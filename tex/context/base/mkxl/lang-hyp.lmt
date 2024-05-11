@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['lang-hyp'] = {
     license   = "see context related readme files"
 }
 
+-- This one needs checking wrt luametatex additions!
+
 -- In an automated workflow hypenation of long titles can be somewhat problematic
 -- especially when demands conflict. For that reason I played a bit with a Lua based
 -- variant of the traditional hyphenation machinery. This mechanism has been extended
@@ -621,13 +623,13 @@ if context then
     local nodecodes          = nodes.nodecodes
     local disccodes          = nodes.disccodes
 
-    local glyph_code         = nodecodes.glyph
-    local disc_code          = nodecodes.disc
-    local math_code          = nodecodes.math
-    local hlist_code         = nodecodes.hlist
+    local glyph_code         <const> = nodecodes.glyph
+    local disc_code          <const> = nodecodes.disc
+    local math_code          <const> = nodecodes.math
+    local hlist_code         <const> = nodecodes.hlist
 
-    local automaticdisc_code = disccodes.automatic
-    local regulardisc_code   = disccodes.regular
+    local automaticdisc_code <const> = disccodes.automatic
+    local regulardisc_code   <const> = disccodes.regular
 
     local nuts               = nodes.nuts
     local tonode             = nodes.tonode
@@ -670,14 +672,13 @@ if context then
     local setcolor           = nodes.tracers.colors.set
 
     local variables          = interfaces.variables
-    local v_reset            = variables.reset
-    local v_yes              = variables.yes
-    local v_word             = variables.word
-    local v_all              = variables.all
+    local v_reset            <const> = variables.reset
+    local v_yes              <const> = variables.yes
+    local v_word             <const> = variables.word
+    local v_all              <const> = variables.all
 
     local settings_to_array  = utilities.parsers.settings_to_array
 
-    local unsetvalue         = attributes.unsetvalue
     local texsetattribute    = tex.setattribute
 
     local prehyphenchar      = language.prehyphenchar
@@ -685,7 +686,8 @@ if context then
     local preexhyphenchar    = language.preexhyphenchar
     local postexhyphenchar   = language.postexhyphenchar
 
-    local a_hyphenation      = attributes.private("hyphenation")
+    local a_hyphenation      <const> = attributes.private("hyphenation")
+    local unsetvalue         <const> = attributes.unsetvalue
 
     local interwordpenalty   = 5000
 

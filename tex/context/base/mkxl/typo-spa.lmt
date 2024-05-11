@@ -19,7 +19,8 @@ local chardata           = fonthashes.characters
 local quaddata           = fonthashes.quads
 
 local texsetattribute    = tex.setattribute
-local unsetvalue         = attributes.unsetvalue
+
+local unsetvalue         <const> = attributes.unsetvalue
 
 local xscaled            = font.xscaled
 
@@ -44,8 +45,7 @@ local nodepool           = nuts.pool
 local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
 
-local nodecodes          = nodes.nodecodes
-local math_code          = nodecodes.math
+local math_code          <const> = nodes.nodecodes.math
 
 local somespace          = nodes.somespace
 local somepenalty        = nodes.somepenalty
@@ -61,7 +61,7 @@ local spacings           = typesetters.spacings
 spacings.mapping         = spacings.mapping or { }
 spacings.numbers         = spacings.numbers or { }
 
-local a_spacings         = attributes.private("spacing")
+local a_spacings         <const> = attributes.private("spacing")
 
 storage.register("typesetters/spacings/mapping", spacings.mapping, "typesetters.spacings.mapping")
 

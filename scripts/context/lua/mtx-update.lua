@@ -167,11 +167,11 @@ update.platforms = {
     ["windows-64"]     = "win64",
     ["win64"]          = "win64",
     --
- -- ["linux"]          = "linux",
- -- ["linux-32"]       = "linux",
- -- ["linux32"]        = "linux",
+    ["linux"]          = "linux",
+    ["linux-32"]       = "linux",
+    ["linux32"]        = "linux",
     --
-    ["linux"]          = "linux-64",
+ -- ["linux"]          = "linux-64",
     ["linux-64"]       = "linux-64",
     ["linux64"]        = "linux-64",
     --
@@ -685,15 +685,11 @@ if scripts.savestate then
  -- states.set("formats.metafun", true)
 
     for r in gmatch(environment.argument("extras") or "","([^, ]+)") do -- for old times sake
-        if r ~= "all" and not find(r,"^[a-z]%-") then
-            r = "t-" .. r
-        end
+        local r = (r ~= "all" and not find(r,"^[a-z]%-") and  ("t-" .. r)) or r
         states.set("modules." .. r, true)
     end
     for r in gmatch(environment.argument("modules") or "","([^, ]+)") do
-        if r ~= "all" and not find(r,"^[a-z]%-") then
-            r = "t-" .. r
-        end
+        local r = (r ~= "all" and not find(r,"^[a-z]%-") and  ("t-" .. r)) or r
         states.set("modules." .. r, true)
     end
     for r in gmatch(environment.argument("fonts") or "","([^, ]+)") do

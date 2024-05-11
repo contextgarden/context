@@ -42,9 +42,7 @@ local report_reference     = logs.reporter("backend","references")
 local report_destination   = logs.reporter("backend","destinations")
 local report_area          = logs.reporter("backend","areas")
 
-local texiscount           = tex.iscount
 local texsetcount          = tex.setcount
------ texsetattribute      = tex.setattribute
 
 local injectreference      = backends.nodeinjections.reference
 local injectdestination    = backends.nodeinjections.destination
@@ -56,7 +54,7 @@ updaters.register("backends.injections.latebindings",function()
     prerollreference  = backends.codeinjections.prerollreference
 end)
 
-local c_lastreferenceattribute = texiscount("lastreferenceattribute")
+local c_lastreferenceattribute <const> = tex.iscount("lastreferenceattribute")
 
 local nuts                 = nodes.nuts
 local nodepool             = nuts.pool
@@ -96,26 +94,25 @@ local nodecodes            = nodes.nodecodes
 local gluecodes            = nodes.gluecodes
 local listcodes            = nodes.listcodes
 
-local directioncodes       = tex.directioncodes
-local lefttoright_code     = directioncodes.lefttoright
-local righttoleft_code     = directioncodes.righttoleft
+local lefttoright_code     <const> = tex.directioncodes.lefttoright
+local righttoleft_code     <const> = tex.directioncodes.righttoleft
 
-local hlist_code           = nodecodes.hlist
-local vlist_code           = nodecodes.vlist
-local glue_code            = nodecodes.glue
-local glyph_code           = nodecodes.glyph
-local rule_code            = nodecodes.rule
-local dir_code             = nodecodes.dir
-local par_code             = nodecodes.par
+local hlist_code           <const> = nodecodes.hlist
+local vlist_code           <const> = nodecodes.vlist
+local glue_code            <const> = nodecodes.glue
+local glyph_code           <const> = nodecodes.glyph
+local rule_code            <const> = nodecodes.rule
+local dir_code             <const> = nodecodes.dir
+local par_code             <const> = nodecodes.par
 
-local leftskip_code        = gluecodes.leftskip
-local lefthang_code        = gluecodes.lefthangskip
-local rightskip_code       = gluecodes.rightskip
-local righthang_code       = gluecodes.righthangskip
-local parfillleftskip_code = gluecodes.parfillleftskip
-local parfillskip_code     = gluecodes.parfillskip
+local leftskip_code        <const> = gluecodes.leftskip
+local lefthang_code        <const> = gluecodes.lefthangskip
+local rightskip_code       <const> = gluecodes.rightskip
+local righthang_code       <const> = gluecodes.righthangskip
+local parfillleftskip_code <const> = gluecodes.parfillleftskip
+local parfillskip_code     <const> = gluecodes.parfillskip
 
------ linelist_code        = listcodes.line
+----- linelist_code        <const> = listcodes.line
 
 local new_rule             = nodepool.rule
 local new_kern             = nodepool.kern
@@ -540,7 +537,7 @@ do
 
     local stack      = { }
     local done       = { }
-    local attribute  = attributes.private('reference')
+    local attribute  <const> = attributes.private('reference')
     local topofstack = 0
 
     nodes.references = {
@@ -681,7 +678,7 @@ do
 
     local stack      = { }
     local done       = { }
-    local attribute  = attributes.private('destination')
+    local attribute  <const> = attributes.private('destination')
     local topofstack = 0
 
     nodes.destinations = {

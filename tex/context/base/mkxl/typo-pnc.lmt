@@ -14,12 +14,6 @@ local enableaction    = nodes.tasks.enableaction
 local nuts            = nodes.nuts
 local tonut           = nodes.tonut
 
-local nodecodes       = nodes.nodecodes
-local gluecodes       = nodes.gluecodes
-local glyph_code      = nodecodes.glyph
-local glue_code       = nodecodes.glue
-local spaceskip_code  = gluecodes.spaceskip
-
 local new_kern        = nuts.pool.kern
 local insertafter     = nuts.insertafter
 
@@ -36,15 +30,19 @@ local getwidth        = nuts.getwidth
 local setwidth        = nuts.setwidth
 local findattribute   = nuts.findattribute
 
-local glyph_code      = nodes.nodecodes.glyph
+local glyph_code      <const> = nodes.nodecodes.glyph
+local glue_code       <const> = nodes.nodecodes.glue
+local spaceskip_code  <const> = nodes.gluecodes.spaceskip
 
 local parameters      = fonts.hashes.parameters
 local categories      = characters.categories
 
 local texsetattribute = tex.setattribute
-local unsetvalue      = attributes.unsetvalue
 
-local period          = 0x2E
+local unsetvalue      <const> = attributes.unsetvalue
+
+local period          <const> = 0x2E
+
 local factor          = 0.5
 
 -- alternative: tex.getlccode and tex.getuccode
@@ -62,7 +60,8 @@ trackers.register("typesetters.periodkerns",function(v) trace = v end)
 
 periodkerns.mapping     = periodkerns.mapping or { }
 periodkerns.factors     = periodkerns.factors or { }
-local a_periodkern      = attributes.private("periodkern")
+
+local a_periodkern      <const> = attributes.private("periodkern")
 
 storage.register("typesetters/periodkerns/mapping", periodkerns.mapping, "typesetters.periodkerns.mapping")
 storage.register("typesetters/periodkerns/factors", periodkerns.factors, "typesetters.periodkerns.factors")

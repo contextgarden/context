@@ -219,6 +219,8 @@ local function result(t,fmt,a,b,c)
     end
 end
 
+-- the token is kind of generic and shared
+
 local f = replacer (
     [[curl ]] ..
     [[--silent --insecure ]] ..

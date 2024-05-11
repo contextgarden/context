@@ -20,6 +20,7 @@ local insert, remove = table.insert, table.remove
 local pushmacrotoken = token.pushmacro
 local popmacrotoken  = token.popmacro
 local scancsname     = token.scancsname
+local scancstoken    = token.scancstoken
 local createtoken    = token.create
 local gobbletoken    = token.gobble
 
@@ -52,12 +53,15 @@ end
 tokens.pushmacro = pushmacro
 tokens.popmacro  = popmacro
 
+local scancs = scancsname
+-- scancs = scancstoken -- saves a lookup and also seems to work okay, not much faster
+
 implement {
     name      = "localpushmacro",
     public    = true,
     protected = true,
     actions   = function()
-        pushmacro(scancsname())
+        pushmacro(scancs())
     end
 }
 
@@ -66,7 +70,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function()
-        pushmacro(scancsname(),true)
+        pushmacro(scancs(),true)
     end
 }
 
@@ -75,7 +79,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function()
-        popmacro(scancsname())
+        popmacro(scancs())
     end
 }
 
@@ -84,7 +88,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function()
-        popmacro(scancsname())
+        popmacro(scancs())
     end
 }
 
@@ -93,7 +97,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function()
-        local n = scancsname()
+        local n = scancs()
         local s = stack[n]
         local m = #s
         report("%s : %i stack slots used",n,m)

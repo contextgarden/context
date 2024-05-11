@@ -2141,7 +2141,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 42596, stripped down to: 23029
+-- original size: 42643, stripped down to: 23053
 
 if not modules then modules={} end modules ['l-table']={
  version=1.001,
@@ -2433,19 +2433,22 @@ local function copy(t,tables)
   tables[t]=tcopy
  end
  for i,v in next,t do 
+  local k
   if type(i)=="table" then
    if tables[i] then
-    i=tables[i]
+    k=tables[i]
    else
-    i=copy(i,tables)
+    k=copy(i,tables)
    end
+  else
+   k=i
   end
   if type(v)~="table" then
-   tcopy[i]=v
+   tcopy[k]=v
   elseif tables[v] then
-   tcopy[i]=tables[v]
+   tcopy[k]=tables[v]
   else
-   tcopy[i]=copy(v,tables)
+   tcopy[k]=copy(v,tables)
   end
  end
  local mt=getmetatable(t)
@@ -6601,7 +6604,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 46912, stripped down to: 24470
+-- original size: 46976, stripped down to: 24530
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -7481,6 +7484,7 @@ end
 strings.formatters.add=add
 patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;"+anything)^0)
 patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+anything)^0)
+patterns.ctxescape=Cs((C(S("#$%\\{}|"))/"\\%1"+anything)^0)
 patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
 patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
 add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape=patterns.xmlescape })
@@ -12940,7 +12944,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-set"] = package.loaded["trac-set"] or true
 
--- original size: 14568, stripped down to: 9644
+-- original size: 14574, stripped down to: 9650
 
 if not modules then modules={} end modules ['trac-set']={ 
  version=1.001,
@@ -13025,10 +13029,10 @@ local function set(t,what,newvalue)
    else
     value=is_boolean(value,value,true) 
    end
-   w=topattern(w,true,true)
+   local p=topattern(w,true,true)
    for name,functions in sortedhash(data) do
     if done[name] then
-    elseif find(name,w) then
+    elseif find(name,p) then
      done[name]=true
      for i=1,#functions do
       functions[i](value)
@@ -13310,7 +13314,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["trac-log"] = package.loaded["trac-log"] or true
 
--- original size: 16040, stripped down to: 11066
+-- original size: 16046, stripped down to: 11072
 
 if not modules then modules={} end modules ['trac-log']={
  version=1.001,
@@ -13598,9 +13602,9 @@ local function setblocked(category,value)
    if v then
     v.state=value
    else
-    c=topattern(c,true,true)
+    local p=topattern(c,true,true)
     for k,v in next,data do
-     if find(k,c) then
+     if find(k,p) then
       v.state=value
      end
     end
@@ -14379,7 +14383,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-deb"] = package.loaded["util-deb"] or true
 
--- original size: 10593, stripped down to: 7102
+-- original size: 10416, stripped down to: 7076
 
 if not modules then modules={} end modules ['util-deb']={
  version=1.001,
@@ -14544,10 +14548,7 @@ function debugger.showstats(printer,threshold)
       realtime=realtime+real
      end
      totaltime=totaltime+total
-     if line<0 then
-      line=0
-     end
-     dataset[#dataset+1]={ real,total,count,name,source,line }
+     dataset[#dataset+1]={ real,total,count,name,source,line<0 and 0 or line }
     end
    end
   end
@@ -21171,7 +21172,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 18179, stripped down to: 10432
+-- original size: 18185, stripped down to: 10438
 
 if not modules then modules={} end modules ['data-exp']={
  version=1.001,
@@ -21253,10 +21254,10 @@ local function splitpathexpr(str,newlist,validate)
  str=lpegmatch(stripper_1,str)
  if validate then
   for s in gmatch(str,"[^,]+") do
-   s=validate(s)
-   if s then
+   local v=validate(s)
+   if v then
     n=n+1
-    t[n]=s
+    t[n]=v
    end
   end
  else
@@ -26262,8 +26263,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1049917
--- stripped bytes    : 417309
+-- original bytes    : 1049869
+-- stripped bytes    : 417185
 
 -- end library merge
 

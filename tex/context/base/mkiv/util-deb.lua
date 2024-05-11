@@ -186,13 +186,7 @@ function debugger.showstats(printer,threshold)
                         realtime = realtime + real
                     end
                     totaltime = totaltime + total
-                    if line < 0 then
-                        line = 0
-                    end
-                 -- if name = "a" then
-                 --     -- weird name
-                 -- end
-                    dataset[#dataset+1] = { real, total, count, name, source, line }
+                    dataset[#dataset+1] = { real, total, count, name, source, line < 0 and 0 or line }
                 end
             end
         end

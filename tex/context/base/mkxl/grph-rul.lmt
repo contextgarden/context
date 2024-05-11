@@ -22,11 +22,11 @@ local tonode           = nuts.tonode
 
 local getattribute     = tex.getattribute
 
-local direct_value     = tokens.values.direct
+local direct_value     <const> = tokens.values.direct
 
-local a_color          = attributes.private('color')
-local a_transparency   = attributes.private('transparency')
-local a_colormodel     = attributes.private('colormodel')
+local a_color          <const> = attributes.private('color')
+local a_transparency   <const> = attributes.private('transparency')
+local a_colormodel     <const> = attributes.private('colormodel')
 
 local floor            = math.floor
 local getrandom        = utilities.randomizer.get

@@ -12,21 +12,23 @@ local setmetatableindex = table.setmetatableindex
 
 local nodecodes         = nodes.nodecodes
 local listcodes         = nodes.listcodes
-local boundary_code     = nodecodes.boundary
-local hlist_code        = nodecodes.hlist
-local vlist_code        = nodecodes.vlist
-local kern_code         = nodecodes.kern
-local penalty_code      = nodecodes.penalty
-local glue_code         = nodecodes.glue
-local line_code         = listcodes.line
-local ghost_code        = listcodes.ghost
-local middle_code       = listcodes.middle
-local wrapped_code      = listcodes.wrapped
-local mathpack_code     = listcodes.mathpack
-local construct_code    = listcodes.construct
-local alignment_code    = listcodes.alignment
-local row_code          = listcodes.row
-local fence_code        = listcodes.fence
+
+local boundary_code     <const> = nodecodes.boundary
+local hlist_code        <const> = nodecodes.hlist
+local vlist_code        <const> = nodecodes.vlist
+local kern_code         <const> = nodecodes.kern
+local penalty_code      <const> = nodecodes.penalty
+local glue_code         <const> = nodecodes.glue
+
+local line_code         <const> = listcodes.line
+local ghost_code        <const> = listcodes.ghost
+local middle_code       <const> = listcodes.middle
+local wrapped_code      <const> = listcodes.wrapped
+local mathpack_code     <const> = listcodes.mathpack
+local construct_code    <const> = listcodes.construct
+local alignment_code    <const> = listcodes.alignment
+local row_code          <const> = listcodes.row
+local fence_code        <const> = listcodes.fence
 
 local nuts              = nodes.nuts
 local tonut             = nodes.tonut
@@ -68,21 +70,22 @@ local texsetcount       = tex.setcount
 local texisdimen        = tex.isdimen
 local texiscount        = tex.iscount
 
-local boundary          = tex.boundaries.system("mathalign")
 local stages            = { }
 local initial           = { }
-local a_location        = attributes.system("mathnumberlocation")
 
-local c_strc_math_n_of_lines   = texiscount("c_strc_math_n_of_lines")
-local d_strc_math_max_right    = texisdimen("d_strc_math_max_right")
-local d_strc_math_first_right  = texisdimen("d_strc_math_first_right")
-local d_strc_math_last_right   = texisdimen("d_strc_math_last_right")
-local d_strc_math_max_left     = texisdimen("d_strc_math_max_left")
-local d_strc_math_first_left   = texisdimen("d_strc_math_first_left")
-local d_strc_math_last_left    = texisdimen("d_strc_math_last_left")
-local d_strc_math_first_height = texisdimen("d_strc_math_first_height")
-local d_strc_math_last_depth   = texisdimen("d_strc_math_last_depth")
-local d_strc_math_indent       = texisdimen("d_strc_math_indent")
+local boundary   <const> = tex.boundaries.system("mathalign")
+local a_location <const> = attributes.system("mathnumberlocation")
+
+local c_strc_math_n_of_lines   <const> = texiscount("c_strc_math_n_of_lines")
+local d_strc_math_max_right    <const> = texisdimen("d_strc_math_max_right")
+local d_strc_math_first_right  <const> = texisdimen("d_strc_math_first_right")
+local d_strc_math_last_right   <const> = texisdimen("d_strc_math_last_right")
+local d_strc_math_max_left     <const> = texisdimen("d_strc_math_max_left")
+local d_strc_math_first_left   <const> = texisdimen("d_strc_math_first_left")
+local d_strc_math_last_left    <const> = texisdimen("d_strc_math_last_left")
+local d_strc_math_first_height <const> = texisdimen("d_strc_math_first_height")
+local d_strc_math_last_depth   <const> = texisdimen("d_strc_math_last_depth")
+local d_strc_math_indent       <const> = texisdimen("d_strc_math_indent")
 
 local report = logs.reporter("mathalign")
 
@@ -132,7 +135,7 @@ stages[1] = function(specification,stage)
     for s in nextboundary, head do
         local data = getdata(s)
         if data == boundary then
-            s = moveon(s)
+            local s = moveon(s)
             found[#found+1] = { s, 0, head }
         end
     end
@@ -235,7 +238,7 @@ local function handlepacked(parent,plist,position)
                                 end
                             end
                         end
-                        wrapped = getnext(wrapped)
+                     -- wrapped = getnext(wrapped) -- some left-over bad in 5.5 anyway
                     end
                 end
             end

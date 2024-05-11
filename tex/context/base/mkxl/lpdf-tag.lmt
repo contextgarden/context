@@ -13,8 +13,16 @@ local lpegmatch, P, S, C = lpeg.match, lpeg.P, lpeg.S, lpeg.C
 local settings_to_hash = utilities.parsers.settings_to_hash
 local formatters = string.formatters
 
-local trace_tags = false  trackers.register("structures.tags",      function(v) trace_tags = v end)
-local trace_info = false  trackers.register("structures.tags.info", function(v) trace_info = v end)
+local trace_tags = false  trackers.register("structures.tags",      function(v)
+    trace_tags = v
+end)
+local trace_info = false  trackers.register("structures.tags.info", function(v)
+    trace_info = v
+end)
+local trace_math = false  trackers.register("structures.tags.math", function(v)
+    trace_math = v
+    attributes.viewerlayers.enable() -- somehow has to happen
+end)
 
 local report_tags = logs.reporter("backend","tags")
 
@@ -46,13 +54,13 @@ local texgetcount         = tex.getcount
 local nodes               = nodes
 local nodecodes           = nodes.nodecodes
 
-local hlist_code          = nodecodes.hlist
-local vlist_code          = nodecodes.vlist
-local glyph_code          = nodecodes.glyph
+local hlist_code          <const> = nodecodes.hlist
+local vlist_code          <const> = nodecodes.vlist
+local glyph_code          <const> = nodecodes.glyph
 
-local a_tagged            = attributes.private('tagged')
-local a_image             = attributes.private('image')
-local a_mathblob          = attributes.private('mathblob')
+local a_tagged            <const> = attributes.private('tagged')
+local a_image             <const> = attributes.private('image')
+local a_mathblob          <const> = attributes.private('mathblob')
 
 local nuts                = nodes.nuts
 
@@ -99,7 +107,8 @@ local usedmapping         = { }
 ----- tagsplitter         = structurestags.patterns.splitter
 
 local embeddedtags        = false -- true will id all, for tracing, otherwise table
-local f_tagid             = formatters["%s-%04X"]
+local f_tagid             = formatters["%s-%04X"]      -- todo: auto adapt to nofblobs
+local f_tagfn             = formatters["%s-%04X.xml"]
 local embeddedfilelist    = pdfarray() -- /AF crap
 
 -- for testing, not that it was ever used:
@@ -164,10 +173,10 @@ local function finishstructure()
         local rolemaps = usenamespace and { }
         local rolemap  = pdfdictionary() -- main one
         for k, v in next, usedmapping do
-            k = usedlabels[k] or k
+            local k = usedlabels[k] or k
             local p = properties[k]
             if not p then
-                print("UNDEFINED", k)
+                report_tags("beware: missing property %s", k)
             end
             local n = p and p.namespace
             if rolemaps and n then
@@ -291,8 +300,9 @@ local function makeattribute(t)
     end
 end
 
-local shared = { }
-local bindex = 0
+local shared  = { }
+local bindex  = 0
+local btags   = { }
 
 local function makeelement(fulltag,parent)
     local specification = specifications[fulltag]
@@ -325,55 +335,63 @@ local function makeelement(fulltag,parent)
                     ColSpan = cols > 1 and cols or nil,
                 }
             end
-
         end
+ -- elseif tagname == "math" then
+ --     if specification.mode == "display" then
+ --         tagnameused = "displaymath"
+ --     else
+ --         tagnameused = "inlinemath"
+ --     end
     end
     --
-    local detail   = specification.detail
-    local userdata = specification.userdata
+    local detail     = specification.detail
+    local userdata   = specification.userdata
+    local actualtext = nil
     --
     usedmapping[tagname] = true
     --
     -- specification.attribute is unique
     --
-    local af = nil
-    local id = nil
+    local af  = nil
+    local id  = nil
     if embeddedtags then
         local tagindex = specification.tagindex
         if embeddedtags == true or embeddedtags[tagname] then
             id = f_tagid(tagname,tagindex)
-
-            -- kind of hard coded for math so this might become more flexible
-
             local blob = specification.blob
-
             if blob then
-                blob = mathematics.collected()[blob]
-                if blob then
-                    local hash = sha2.HEX256(blob)
-                    if hash then
-                        local index = shared[hash]
-                        if index then
-                            af = index
-                        else
-                            bindex = bindex + 1
-                            af = codeinjections.embedfile {
-                                force    = true,
-                                data     = blob,
-                                name     = f_tagid("BLOB",bindex),
-                                hash     = hash,
-                                mimetype = "application/mathml+xml",
-                                relation = "Supplement", -- bah
-                            }
-                         -- af = pdfarray { af } -- maybe also share this
-                            af = pdfreference(pdfflushobject(pdfarray { af })) -- maybe also share this
-                            shared[hash] = af
-                        end
+                local blobindex = mathematics.getblobindex(blob)
+                if blobindex then
+                    local index = shared[blobindex]
+                    if index then
+                        af = index[1]
+                        btags[blob] = index[2]
                     else
-                        print("unknown hash",id)
+                        bindex = bindex + 1
+                        local blobname = f_tagid(tagname,blobindex)
+                        local blobfile = f_tagfn(tagname,blobindex)
+                        local blobdata = mathematics.getmathblob(blobindex)
+                        af = codeinjections.embedfile {
+                            force          = true,
+                            data           = blobdata,
+                            name           = blobname,
+                            file           = blobfile,
+                         -- hash           = hash,
+                            hash           = id,
+                            forcereference = true,
+                         -- title          = "whatever",
+                            mimetype       = "application/mathml+xml",
+                            relation       = "Supplement", -- bah
+                        }
+                     -- af = pdfarray { af } -- maybe also share this
+                        af = pdfreference(pdfflushobject(pdfarray { af })) -- maybe also share this
+                        shared[blobindex] = { af, blobname }
+                        btags[blob] = blobname
                     end
-                else
-                    print("unknown blob",id)
+                    actualtext = mathematics.gettextblob(specification.language or "en",blobindex)
+                    if actualtext then
+                        actualtext = pdfunicode(actualtext)
+                    end
                 end
 
             else
@@ -404,8 +422,8 @@ local function makeelement(fulltag,parent)
         K          = pdfreference(r),
      -- A          = a and makeattribute(a) or nil,
         A          = attributes,
-     -- Alt        = " Who cares "
-     -- ActualText = " Hi Hans ",
+     -- Alt        = "Who cares",
+        ActualText = actualtext or nil,
         AF         = af,
     }
     local s = pdfreference(pdfflushobject(d))
@@ -427,8 +445,8 @@ end
 
 local f_BDC = formatters["/%s <</MCID %s>> BDC"]
 
-local a_destination = attributes.private('destination')
-local a_reference   = attributes.private('reference')
+local a_destination <const> = attributes.private('destination')
+local a_reference   <const> = attributes.private('reference')
 
 local function makecontent(start,parent,id,specification)
     local tag  = parent.tag
@@ -479,8 +497,9 @@ end
 
 -- no need to adapt head, as we always operate on lists
 
-local EMCliteral = nil
-local visualize  = nil
+local EMCliteral     = nil
+local visualizetags  = nil
+local visualizeblobs = nil
 
 local enabled = true
 local reduced = false
@@ -494,6 +513,10 @@ function codeinjections.reducetags()
     report_tags("only outer level document tag used")
     reduced = true
 end
+
+local detailedmath = false
+
+directives.register("structures.tags.math.detail", function(v) detailedmath = v end)
 
 function nodeinjections.addtags(head)
 
@@ -550,7 +573,7 @@ function nodeinjections.addtags(head)
 
         local function collectranges(head,list)
 
-            for n, id in nextnode, head do
+            for n, id, subtype in nextnode, head do
                 if id == glyph_code then
                     -- maybe also disc
                     if getchar(n) ~= 0 then
@@ -558,7 +581,9 @@ function nodeinjections.addtags(head)
                         if not at then
                             at = false
                         end
-                        if blob then
+                        if detailedmath then
+                            -- skip
+                        elseif blob then
                             if blob == mblob then
                                 ranges[nofranges] = range
                                 last = at
@@ -618,6 +643,8 @@ function nodeinjections.addtags(head)
     local top    = nil
     local noftop = 0
 
+    local blobdone = { }
+
     local function inject(start,stop,list,literal,left,right)
         local prev = getprev(start)
         if prev then
@@ -654,94 +681,130 @@ function nodeinjections.addtags(head)
         local range = ranges[i]
         local mblob = false
 
-    local attr  = range[1]
-    local id    = range[2]
-    local start = range[3]
-    local stop  = range[4]
-    local list  = range[5]
-    local blob  = range[6]
+        local attr  = range[1]
+        local id    = range[2]
+        local start = range[3]
+        local stop  = range[4]
+        local list  = range[5]
+        local blob  = range[6]
 
-    if attr then
+        if attr then
 
-        local specification = taglist[attr]
-        local taglist       = specification.taglist
-        local noftags       = #taglist
-        local common        = 0
-        local literal       = nil
-        local ignore        = false
+            local specification = taglist[attr]
+            local taglist       = specification.taglist
+            local noftags       = #taglist
+            local common        = 0
+            local literal       = nil
+            local ignore        = false
 
-        if top then
-            for i=1,noftags >= noftop and noftop or noftags do
-                if top[i] == taglist[i] then
-                    common = i
-                else
-                    break
-                end
-            end
-        end
-
-        local prev = common > 0 and elements[taglist[common]] or root
-
-        if blob then
-            for j=common+1,noftags do
-                local tag = taglist[j]
-                local prv = elements[tag] or makeelement(tag,prev)
-                if prv == false then
-                    -- ignore this one
-                    prev   = false
-                    ignore = true
-                    break
-                elseif prv == true then
-                    -- skip this one
-                else
-                    prev = prv
-                end
-                -- this is an ugly hack but ok for now
-                if find(tag,"^math>") then
-                    break
-                end
-            end
-        else
-            for j=common+1,noftags do
-                local tag = taglist[j]
-                local prv = elements[tag] or makeelement(tag,prev)
-                if prv == false then
-                    -- ignore this one
-                    prev   = false
-                    ignore = true
-                    break
-                elseif prv == true then
-                    -- skip this one
-                else
-                    prev = prv
-                end
-            end
-        end
-        if prev then
-            literal = setstate(makecontent(start,prev,id,specification))
-        elseif ignore then
-            literal = setstate(makeignore(specification))
-        else
-            -- maybe also ignore or maybe better: comment or so
-        end
-
-        if literal then
-            local left,right
-            if trace_info then
-                local name = specification.tagname
-                if name then
-                    if not visualize then
-                        visualize = nodes.visualizers.register("tags")
+            if top then
+                for i=1,noftags >= noftop and noftop or noftags do
+                    if top[i] == taglist[i] then
+                        common = i
+                    else
+                        break
                     end
-                    if blob then
-                        name = "M " .. blob
-                    end
-                    left  = visualize(name)
-                    right = visualize()
                 end
             end
-            inject(start,stop,list,literal,left,right)
-        end
+
+            local prev = common > 0 and elements[taglist[common]] or root
+
+            if blob and not detailedmath then
+                for j=common+1,noftags do
+                    local tag = taglist[j]
+                    local prv = elements[tag] or makeelement(tag,prev)
+                    if prv == false then
+                        -- ignore this one
+                        prev   = false
+                        ignore = true
+                        break
+                    elseif prv == true then
+                        -- skip this one
+                    else
+                        prev = prv
+                    end
+                    -- this is an ugly hack but ok for now
+                    if find(tag,"^math>") then
+                        break
+                    end
+                end
+            else
+                for j=common+1,noftags do
+                    local tag = taglist[j]
+                    local prv = elements[tag] or makeelement(tag,prev)
+                    if prv == false then
+                        -- ignore this one
+                        prev   = false
+                        ignore = true
+                        break
+                    elseif prv == true then
+                        -- skip this one
+                    else
+                        prev = prv
+                    end
+                end
+            end
+            if prev then
+                literal = setstate(makecontent(start,prev,id,specification))
+            elseif ignore then
+                literal = setstate(makeignore(specification))
+            else
+                -- maybe also ignore or maybe better: comment or so
+            end
+
+            if literal then
+                local left,right
+                if trace_info then
+                    local name = specification.tagname
+                    if name then
+                        if not visualizetags then
+                            visualizetags  = nodes.visualizers.register("tags")
+                            visualizeblobs = nodes.visualizers.register("blobs",nil,nil,2.5,true)
+                        end
+                        if blob and not blobdone[blob] then
+                            local bname = btags[blob]
+                            if bname then
+                                bname = "M " .. blob .. " " .. bname
+                            else
+                                bname = "M " .. blob
+                            end
+                            blobdone[blob] = true
+                            if detailedmath then
+                                left  = visualizeblobs(bname,name)
+                                right = visualizeblobs()
+                            else
+                                left  = visualizetags(bname)
+                                right = visualizetags()
+                            end
+                        else
+                            left  = visualizetags(name)
+                            right = visualizetags()
+                        end
+                    end
+                elseif trace_math then
+                    if not visualizetags then
+                        visualizetags  = nodes.visualizers.register("tags")
+                        visualizeblobs = nodes.visualizers.register("blobs",nil,nil,2.5,true)
+                    end
+                    if blob and not blobdone[blob] then
+                        local bname = btags[blob]
+                        if bname then
+                            bname = "M " .. blob .. " " .. bname
+                        else
+                            bname = "M " .. blob
+                        end
+                        blobdone[blob] = true
+                        if detailedmath then
+                            left  = visualizeblobs(bname,name)
+                            right = visualizeblobs()
+                        else
+                            left  = visualizetags(bname)
+                            right = visualizetags()
+                        end
+                    end
+                end
+                inject(start,stop,list,literal,left,right)
+            end
 
             top    = taglist
             noftop = noftags
@@ -762,154 +825,8 @@ function nodeinjections.addtags(head)
 
 end
 
--- variant: more structure but funny collapsing in viewer
-
--- function nodeinjections.addtags(head)
---
---     local last, ranges, range = nil, { }, nil
---
---     local function collectranges(head,list)
---         for n, id in nextnode, head do
---             if id == glyph_code then
---                 local at = getattr(n,a_tagged)
---                 if not at then
---                     range = nil
---                 elseif last ~= at then
---                     range = { at, "glyph", n, n, list } -- attr id start stop list
---                     ranges[#ranges+1] = range
---                     last = at
---                 elseif range then
---                     range[4] = n -- stop
---                 end
---             elseif id == hlist_code or id == vlist_code then
---                 local at = getattr(n,a_image)
---                 if at then
---                     local at = getattr(n,a_tagged)
---                     if not at then
---                         range = nil
---                     else
---                         ranges[#ranges+1] = { at, "image", n, n, list } -- attr id start stop list
---                     end
---                     last = nil
---                 else
---                     local nl = getlist(n)
---                     collectranges(nl,n)
---                 end
---             end
---         end
---     end
---
---     initializepage()
---
---     collectranges(head)
---
---     if trace_tags then
---         for i=1,#ranges do
---             local range = ranges[i]
---             local attr  = range[1]
---             local id    = range[2]
---             local start = range[3]
---             local stop  = range[4]
---             local tags  = taglist[attr]
---             if tags then -- not ok ... only first lines
---                 report_tags("%s => %s : %05i % t",tosequence(start,start),tosequence(stop,stop),attr,tags.taglist)
---             end
---         end
---     end
---
---     local top    = nil
---     local noftop = 0
---     local last   = nil
---
---     for i=1,#ranges do
---         local range         = ranges[i]
---         local attr          = range[1]
---         local id            = range[2]
---         local start         = range[3]
---         local stop          = range[4]
---         local list          = range[5]
---         local specification = taglist[attr]
---         local taglist       = specification.taglist
---         local noftags       = #taglist
---         local tag           = nil
---         local common        = 0
---      -- local prev          = root
---
---         if top then
---             for i=1,noftags >= noftop and noftop or noftags do
---                 if top[i] == taglist[i] then
---                     common = i
---                 else
---                     break
---                 end
---             end
---         end
---
---         local result        = { }
---         local r             = noftop - common
---         if r > 0 then
---             for i=1,r do
---                 result[i] = "EMC"
---             end
---         end
---
---         local prev   = common > 0 and elements[taglist[common]] or root
---
---         for j=common+1,noftags do
---             local tag = taglist[j]
---             local prv = elements[tag] or makeelement(tag,prev)
---          -- if prv == false then
---          --     -- ignore this one
---          --     prev = false
---          --     break
---          -- elseif prv == true then
---          --     -- skip this one
---          -- else
---                 prev = prv
---                 r = r + 1
---                 result[r] = makecontent(start,prev,id)
---          -- end
---         end
---
---         if r > 0 then
---             local literal = setstate(concat(result,"\n"))
---             -- use insert instead:
---             local literal = setstate(result)
---             local prev = getprev(start)
---             if prev then
---                 setlink(prev,literal)
---             end
---             setlink(literal,start)
---             if list and getlist(list) == start then
---                 setlist(list,literal)
---             end
---         end
---
---         top    = taglist
---         noftop = noftags
---         last   = stop
---
---     end
---
---     if last and noftop > 0 then
---         local result = { }
---         for i=1,noftop do
---             result[i] = "EMC"
---         end
---         local literal = setstate(concat(result,"\n"))
---         -- use insert instead:
---         local next = getnext(last)
---         if next then
---             setlink(literal,next)
---         end
---         setlink(last,literal)
---     end
---
---     finishpage()
---
---     return head
---
--- end
+-- variant: more structure but funny collapsing in viewer, only in lua
+-- file as commented anyway
 
 -- this belongs elsewhere (export is not pdf related)
 

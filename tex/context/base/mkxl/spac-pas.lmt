@@ -10,10 +10,11 @@ local rawget, tonumber = rawget, tonumber
 
 local report         = logs.reporter("break quality")
 
-local integer_value  = tokens.values.integer
 local currentfile    = luatex.currentfile
 
-local toobad         = 20
+local integer_value  <const> = tokens.values.integer
+
+local toobad         <const> = 20
 local tracing        = false
 local details        = false
 

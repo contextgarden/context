@@ -655,7 +655,7 @@ end
 
 -- of course we could do some div/mod trickery instead
 
-local mathalphabet = attributes.private("mathalphabet")
+local mathalphabet <const> = attributes.private("mathalphabet")
 
 function mathematics.getboth(alphabet,style)
     local data = alphabet and alphabets[alphabet] or regular

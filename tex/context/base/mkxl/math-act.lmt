@@ -39,7 +39,6 @@ local context          = context
 local commands         = commands
 local mathematics      = mathematics
 local texsetdimen      = tex.setdimen
-local texisdimen       = tex.isdimen
 local abs              = math.abs
 
 local blocks           = characters.blocks
@@ -67,8 +66,8 @@ local fontproperties   = fonts.hashes.properties
 
 local mathgaps         = mathematics.gaps
 
-local d_scratchleftoffset  = texisdimen("scratchleftoffset")
-local d_scratchrightoffset = texisdimen("scratchrightoffset")
+local d_scratchleftoffset  <const> = tex.isdimen("scratchleftoffset")
+local d_scratchrightoffset <const> = tex.isdimen("scratchrightoffset")
 
 local use_math_goodies = true   directives.register("math.nogoodies",    function(v) use_math_goodies = not v end)
 local checkitalics     = false  trackers  .register("math.checkitalics", function(v) checkitalics     =     v end)
@@ -2030,7 +2029,7 @@ extensible = false,
         newprivateslot("minus rule right piece"),
     }
 
-    local forceextensible_tag = tex.charactertagcodes.forceextensible
+    local forceextensible_tag <const> = tex.charactertagcodes.forceextensible
 
     local function useminus(target,unicode,characters,parameters,skipfirst,what,tounicode)
         local minus   = characters[0x2212]

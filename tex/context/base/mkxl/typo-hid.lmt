@@ -6,9 +6,6 @@ if not modules then modules = { } end modules ['typo-hid'] = {
     license   = "see context related readme files"
 }
 
-local a_hidecontent = attributes.system("hidecontent")
-local specialskips  = nodes.specialskipcodes
-local glue_code     = nodes.nodecodes.glue
 local nuts          = nodes.nuts
 local getattr       = nuts.getattr
 local getnext       = nuts.getnext
@@ -23,6 +20,12 @@ local hpack         = nuts.hpack
 local setwhd        = nuts.setwhd
 local setattrlist   = nuts.setattrlist
 local enableaction  = nodes.tasks.enableaction
+
+local specialskips  = nodes.specialskipcodes
+
+local glue_code     <const> = nodes.nodecodes.glue
+
+local a_hidecontent <const> = attributes.system("hidecontent")
 
 function nodes.handlers.wipe(head,groupcode,line)
     if getattr(line,a_hidecontent) then

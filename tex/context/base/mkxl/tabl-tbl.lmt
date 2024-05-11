@@ -27,9 +27,9 @@ local pattern     = Ct((separator * (nested + Cc("")) * C((1-separator)^0))^0)
 local ctx_settabulatelastentry = context.settabulatelastentry
 local ctx_settabulateentry     = context.settabulateentry
 
-local c_tabl_tabulate_nofcolumns          = texiscount("c_tabl_tabulate_nofcolumns")
-local c_tabl_tabulate_has_rule_spec_first = texiscount("c_tabl_tabulate_has_rule_spec_first")
-local c_tabl_tabulate_has_rule_spec_last  = texiscount("c_tabl_tabulate_has_rule_spec_last")
+local c_tabl_tabulate_nofcolumns          <const> = texiscount("c_tabl_tabulate_nofcolumns")
+local c_tabl_tabulate_has_rule_spec_first <const> = texiscount("c_tabl_tabulate_has_rule_spec_first")
+local c_tabl_tabulate_has_rule_spec_last  <const> = texiscount("c_tabl_tabulate_has_rule_spec_last")
 
 -- the lmtx raw processor handles {} like the normal one so we need to prune
 

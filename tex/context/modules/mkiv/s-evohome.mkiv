@@ -133,123 +133,127 @@ function moduledata.evohome.history(specification)
 
         local year = years[y]
 
-        for m=minmonth,maxmonth do
+        if year then
 
-            local month = year.months[m]
+            for m=minmonth,maxmonth do
 
-            if month then
+                local month = year.months[m]
 
-                context.starttitle { title = "\\month{" .. m .. "}\\enspace" .. y } -- todo: function context.Month(m) end
+                if month then
 
-                for i=1,#zones do
+                    context.starttitle { title = "\\month{" .. m .. "}\\enspace" .. y } -- todo: function context.Month(m) end
 
-                    local zone    = zones[i]
-                    local where   = zone.name
-                    local mintemp = zone.min
-                    local maxtemp = zone.max
+                    for i=1,#zones do
 
-                 -- context.startMPpage { offset = "10pt" }
-                    context.startlinecorrection()
-                    context.startMPcode()
-                    context("linecap := butt; pickup pencircle scaled .5")
+                        local zone    = zones[i]
+                        local where   = zone.name
+                        local mintemp = zone.min
+                        local maxtemp = zone.max
 
-                    context("fill (%s,%s) -- (%s,%s) -- (%s,%s) -- (%s,%s) -- cycle withcolor .8white ;",
-                              0, mintemp/scale,
-                        31 * 24, mintemp/scale,
-                        31 * 24, maxtemp/scale,
-                              0, maxtemp/scale
-                    )
+                     -- context.startMPpage { offset = "10pt" }
+                        context.startlinecorrection()
+                        context.startMPcode()
+                        context("linecap := butt; pickup pencircle scaled .5")
 
-                    for i=0,abstemp do
-                        context("draw (%s,%s) -- (%s,%s) withcolor .6white ;",
-                                  0, i/scale,
-                            31 * 24, i/scale
+                        context("fill (%s,%s) -- (%s,%s) -- (%s,%s) -- (%s,%s) -- cycle withcolor .8white ;",
+                                  0, mintemp/scale,
+                            31 * 24, mintemp/scale,
+                            31 * 24, maxtemp/scale,
+                                  0, maxtemp/scale
                         )
-                    end
 
-                    local days = month.days
-                    if days then
-                        local nd = os.nofdays(y,m)
-                        for d=1,nd do
-                            local day = days[d]
-                            local xoffset = (d-1) * 24
-                            local wd = os.weekday(d,m,y)
-                            local weekend = wd == 1 or wd == 7
-                            if not weekend then
-                                -- okay
-                            elseif mark == 1 then
-                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -17.5,xoffset,   -32.5)
-                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset+24,-17.5,xoffset+24,-32.5)
-                            elseif mark == 2 then
-                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -17.5,xoffset+24,-17.5)
-                                context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -32.5,xoffset+24,-32.5)
-                            elseif mark == 3 then
-                                context("draw unitsquare xysized (%s,%s) shifted (%s,%s) ; ",24,15,xoffset,-32.5)
-                            end
-                            context([[draw textext("%s") shifted (%s,%s) ; ]],d,xoffset + 12,-25)
-                            if day then
-                                for h=0,23 do
-                                    local hours = day.hours
-                                    if hours then
-                                        local hour = hours[h]
-                                        if hour then
-                                            local a = 0
-                                            local n = 0
-                                            local m = 0
-                                            for minute, d in next, hour do
-                                                local v = d[where]
-                                                if v then
-                                                    a = a + v
-                                                    n = n + 1
-                                                    if v > m then
-                                                        m = v
+                        for i=0,abstemp do
+                            context("draw (%s,%s) -- (%s,%s) withcolor .6white ;",
+                                      0, i/scale,
+                                31 * 24, i/scale
+                            )
+                        end
+
+                        local days = month.days
+                        if days then
+                            local nd = os.nofdays(y,m)
+                            for d=1,nd do
+                                local day = days[d]
+                                local xoffset = (d-1) * 24
+                                local wd = os.weekday(d,m,y)
+                                local weekend = wd == 1 or wd == 7
+                                if not weekend then
+                                    -- okay
+                                elseif mark == 1 then
+                                    context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -17.5,xoffset,   -32.5)
+                                    context("draw (%s,%s) -- (%s,%s) ; ",xoffset+24,-17.5,xoffset+24,-32.5)
+                                elseif mark == 2 then
+                                    context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -17.5,xoffset+24,-17.5)
+                                    context("draw (%s,%s) -- (%s,%s) ; ",xoffset,   -32.5,xoffset+24,-32.5)
+                                elseif mark == 3 then
+                                    context("draw unitsquare xysized (%s,%s) shifted (%s,%s) ; ",24,15,xoffset,-32.5)
+                                end
+                                context([[draw textext("%s") shifted (%s,%s) ; ]],d,xoffset + 12,-25)
+                                if day then
+                                    for h=0,23 do
+                                        local hours = day.hours
+                                        if hours then
+                                            local hour = hours[h]
+                                            if hour then
+                                                local a = 0
+                                                local n = 0
+                                                local m = 0
+                                                for minute, d in next, hour do
+                                                    local v = d[where]
+                                                    if v then
+                                                        a = a + v
+                                                        n = n + 1
+                                                        if v > m then
+                                                            m = v
+                                                        end
                                                     end
                                                 end
+                                                if n > 0 then
+                                                    a = a / n
+                                                else
+                                                    a = 0
+                                                end
+                                                local dx = xoffset + h
+                                                local dy = a/scale
+                                                local dm = m/scale
+                                                context("draw (%s,%s) -- (%s,%s) withcolor %s ; ",
+                                                    dx, 0,dx,dy,weekend and "darkmagenta" or "darkblue")
+                                                context("draw (%s,%s) -- (%s,%s) withcolor %s ; ",
+                                                    dx,dy,dx,dm,"darkred")
                                             end
-                                            if n > 0 then
-                                                a = a / n
-                                            else
-                                                a = 0
-                                            end
-                                            local dx = xoffset + h
-                                            local dy = a/scale
-                                            local dm = m/scale
-                                            context("draw (%s,%s) -- (%s,%s) withcolor %s ; ",
-                                                dx, 0,dx,dy,weekend and "darkmagenta" or "darkblue")
-                                            context("draw (%s,%s) -- (%s,%s) withcolor %s ; ",
-                                                dx,dy,dx,dm,"darkred")
                                         end
                                     end
                                 end
                             end
+                            for d=0,30 do
+                                local xoffset = d * 24
+                                context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+ 0,0,xoffset+ 0,-10)
+                                context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+ 6,0,xoffset+ 6,-2.5)
+                                context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+12,0,xoffset+12,-5)
+                                context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+18,0,xoffset+18,-2.5)
+                            end
+                            local xoffset = 31 * 24
+                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset,0,xoffset,-10)
                         end
-                        for d=0,30 do
-                            local xoffset = d * 24
-                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+ 0,0,xoffset+ 0,-10)
-                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+ 6,0,xoffset+ 6,-2.5)
-                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+12,0,xoffset+12,-5)
-                            context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset+18,0,xoffset+18,-2.5)
+
+                        for i=0,abstemp,5 do
+                            context([[draw textext.lft("%s") shifted (%s,%s) ; ]],i,-10,i/scale)
+                            context("draw (%s,%s) -- (%s,%s) withcolor .2white  ;",0,i/scale,31 * 24,i/scale)
                         end
-                        local xoffset = 31 * 24
-                        context("draw (%s,%s) -- (%s,%s) withcolor darkgray ; ",xoffset,0,xoffset,-10)
+
+                        context([[draw textext("\strut\month{%s}\enspace%s\enspace:\enspace%s") shifted (%s,%s) ; ]], m, y, where, 31 * 24 / 2, -50)
+                        context([[draw textext.lft("\textdegree{}C") shifted (%s,%s) ; ]],-10,-25)
+
+                        context("currentpicture := currentpicture xsized TextWidth") ;
+
+                        context.stopMPcode()
+                        context.stoplinecorrection()
+                        -- context.stopMPpage()
                     end
 
-                    for i=0,abstemp,5 do
-                        context([[draw textext.lft("%s") shifted (%s,%s) ; ]],i,-10,i/scale)
-                        context("draw (%s,%s) -- (%s,%s) withcolor .2white  ;",0,i/scale,31 * 24,i/scale)
-                    end
+                    context.stoptitle()
 
-                    context([[draw textext("\strut\month{%s}\enspace%s\enspace:\enspace%s") shifted (%s,%s) ; ]], m, y, where, 31 * 24 / 2, -50)
-                    context([[draw textext.lft("\textdegree{}C") shifted (%s,%s) ; ]],-10,-25)
-
-                    context("currentpicture := currentpicture xsized TextWidth") ;
-
-                    context.stopMPcode()
-                    context.stoplinecorrection()
-                    -- context.stopMPpage()
                 end
-
-                context.stoptitle()
 
             end
 

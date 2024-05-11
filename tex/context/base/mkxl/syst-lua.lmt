@@ -58,8 +58,7 @@ local ctx_secondoftwoarguments = context.secondoftwoarguments
 local ctx_firstofoneargument   = context.firstofoneargument
 local ctx_gobbleoneargument    = context.gobbleoneargument
 
-local values                   = tokens.values
-local boolean_code             = values.boolean
+local boolean_value <const> = tokens.values.boolean
 
 implement { -- will be overloaded later
     name      = "writestatus",
@@ -529,8 +528,6 @@ do
 
     -- This one uses the special lua condition option which is kind of experimental
     -- but seems to work fine.
-
-    local boolean_value = tokens.values.boolean
 
     implement {
         name      = "ifeof",

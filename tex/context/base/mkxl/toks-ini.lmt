@@ -19,9 +19,11 @@ local concat     = table.concat
 local format     = string.format
 
 local commands  = token.getcommandvalues()  -- tex.functioncode
+
 local values    = token.getfunctionvalues() -- tex.functioncode
 values.dimen    = values.dimension
 values.count    = values.integer
+
 tokens.values   = utilities.storage.allocate(table.swapped(values, values))
 tokens.commands = utilities.storage.allocate(table.swapped(commands,commands))
 tokens.cache    = utilities.storage.allocate()

@@ -394,7 +394,7 @@ void tex_aux_finish_local_box(void)
     if (saved_localbox_okay()) {
         /* here we could just decrement ptr and then access */
         halfword location = saved_localbox_location;
-        quarterword options = saved_localbox_options;
+        quarterword options = (quarterword) saved_localbox_options;
         halfword index = saved_localbox_index;
         int islocal = (options & local_box_local_option) == local_box_local_option;
         int keep = (options & local_box_keep_option) == local_box_keep_option;

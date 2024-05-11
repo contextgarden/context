@@ -114,7 +114,7 @@ appendaction("math",         "normalizers", "noads.handlers.collapse",          
 appendaction("math",         "normalizers", "noads.handlers.fixscripts",                        nil, "nonut",  "enabled"   )
 ------------("math",         "normalizers", "noads.handlers.domains",                           nil, "nonut",  "disabled"  )
 appendaction("math",         "normalizers", "noads.handlers.autofences",                        nil, "nonut",  "disabled"  )
-appendaction("math",         "normalizers", "noads.handlers.resize",                            nil, "nonut",  "enabled"   )
+------------("math",         "normalizers", "noads.handlers.resize",                            nil, "nonut",  "enabled"   )
 ------------("math",         "normalizers", "noads.handlers.respace",                           nil, "nonut",  "enabled"   )
 appendaction("math",         "normalizers", "noads.handlers.alternates",                        nil, "nonut",  "enabled"   )
 -- shouldn't tags move down to after classes and dictionaries

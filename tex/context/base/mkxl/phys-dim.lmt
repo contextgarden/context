@@ -969,8 +969,10 @@ local c_p_parser_keepcase  = nil
 local dirty_lowercase = true
 local dirty_keepcase  = true
 
-local v_reverse = interfaces.variables.reverse
-local v_keep    = interfaces.variables.keep
+local v_reverse <const> = interfaces.variables.reverse
+local v_keep    <const> = interfaces.variables.keep
+
+local lastunitstring = ""
 
 local function makeunit(order,option,str)
     local reverse = order  == v_reverse
@@ -995,6 +997,7 @@ local function makeunit(order,option,str)
         end
         parser = reverse and p_c_parser_lowercase or c_p_parser_lowercase
     end
+    lastunitstring = str
     if not matchlpeg(parser,str) then
         report_units("unable to parse: %s",str)
         context(str)
@@ -1091,6 +1094,12 @@ implement {
     name      = "unit",
     actions   = makeunit,
     arguments = "3 strings"
+}
+
+implement {
+    name    = "lastunitstring",
+    public  = true,
+    actions = function() context(lastunitstring) end,
 }
 
 implement {

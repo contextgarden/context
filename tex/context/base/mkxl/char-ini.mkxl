@@ -129,7 +129,6 @@
 
 \permanent\protected\def\addcharacternames{\ctxlua{characters.addcharacternames()}} % we could be granular e.g. 'greek'
 
-\greekdasiavaria
-
+% \greekdasiavaria
 
 \protect \endinput

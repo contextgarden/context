@@ -17,7 +17,7 @@ local tonut         = nodes.tonut
 local tonode        = nodes.tonode
 local nodepool      = nuts.pool
 
-local vlist_code    = nodes.nodecodes.vlist
+local vlist_code    <const> = nodes.nodecodes.vlist
 
 local new_hlist     = nodepool.hlist
 local new_vlist     = nodepool.vlist

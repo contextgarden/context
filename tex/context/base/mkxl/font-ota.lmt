@@ -45,8 +45,8 @@ local isnextchar          = nuts.isnextchar
 local endofmath           = nuts.endofmath
 
 local nodecodes           = nodes.nodecodes
-local disc_code           = nodecodes.disc
-local math_code           = nodecodes.math
+local disc_code           <const> = nodecodes.disc
+local math_code           <const> = nodecodes.math
 
 local fontdata            = fonts.hashes.identifiers
 local descriptiondata     = fonts.hashes.descriptions

@@ -193,7 +193,7 @@ function ctxrunner.load(ctxname)
             for r, d, k in xml.elements(pattern,"/ctx:value[@name='old'") do
                 d[k] = jobname
             end
-            pattern =justtext(xml.tostring(pattern))
+            local pattern =justtext(xml.tostring(pattern))
             if preprocessor and preprocessor ~= "" and pattern and pattern ~= "" then
                 local noftreatments = #treatments + 1
                 local findpattern   = string.topattern(pattern)

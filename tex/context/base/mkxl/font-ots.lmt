@@ -244,17 +244,17 @@ local nextnode           = nuts.traversers.node
 
 local nodecodes          = nodes.nodecodes
 
-local glyph_code         = nodecodes.glyph
-local glue_code          = nodecodes.glue
-local disc_code          = nodecodes.disc
-local math_code          = nodecodes.math
-local dir_code           = nodecodes.dir
-local par_code           = nodecodes.par
+local glyph_code         <const> = nodecodes.glyph
+local glue_code          <const> = nodecodes.glue
+local disc_code          <const> = nodecodes.disc
+local math_code          <const> = nodecodes.math
+local dir_code           <const> = nodecodes.dir
+local par_code           <const> = nodecodes.par
 
-local lefttoright_code   = tex.directioncodes.lefttoright
-local righttoleft_code   = tex.directioncodes.righttoleft
+local lefttoright_code   <const> = tex.directioncodes.lefttoright
+local righttoleft_code   <const> = tex.directioncodes.righttoleft
 
-local discretionarydisc_code = nodes.disccodes.discretionary
+local discretionarydisc_code <const> = nodes.disccodes.discretionary
 
 local injections         = nodes.injections
 local setmark            = injections.setmark
@@ -512,10 +512,10 @@ end
 
 local glyphoptioncodes       = tex.glyphoptioncodes
 
-local no_left_ligature_code  = glyphoptioncodes.noleftligature
-local no_right_ligature_code = glyphoptioncodes.norightligature
------ no_left_kern_code      = glyphoptioncodes.noleftkern
-local no_right_kern_code     = glyphoptioncodes.norightkern
+local no_left_ligature_code  <const> = glyphoptioncodes.noleftligature
+local no_right_ligature_code <const> = glyphoptioncodes.norightligature
+----- no_left_kern_code      <const> = glyphoptioncodes.noleftkern
+local no_right_kern_code     <const> = glyphoptioncodes.norightkern
 
 local hasglyphoption         = nuts.hasglyphoption
 

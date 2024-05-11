@@ -27,9 +27,9 @@ local attributes      = attributes
 local structures      = structures
 local implement       = interfaces.implement
 
-local a_tagged        = attributes.private('tagged')
+local a_tagged        <const> = attributes.private('tagged')
+local unsetvalue      <const> = attributes.unsetvalue
 
-local unsetvalue      = attributes.unsetvalue
 local codeinjections  = backends.codeinjections
 
 local texgetattribute = tex.getattribute
@@ -71,171 +71,184 @@ tagpatterns.splitter = p_splitter
 
 local properties     = allocate { -- todo: more "record = true" to improve formatting
 
-    document              = { pdf = "Div",        nature = "display" },
+    document           = { pdf = "Div",        nature = "display" },
 
-    division              = { pdf = "Div",        nature = "display" },
-    paragraph             = { pdf = "P",          nature = "mixed"   },
-    p                     = { pdf = "P",          nature = "mixed"   },
-    construct             = { pdf = "Span",       nature = "inline"  },
-    highlight             = { pdf = "Span",       nature = "inline"  },
+    division           = { pdf = "Div",        nature = "display" },
+    paragraph          = { pdf = "P",          nature = "mixed"   },
+    p                  = { pdf = "P",          nature = "mixed"   },
+    construct          = { pdf = "Span",       nature = "inline"  },
+    highlight          = { pdf = "Span",       nature = "inline"  },
 
-    section               = { pdf = "Sect",       nature = "display" },
-    sectioncaption        = { pdf = "Div",        nature = "display", record = true },
-    sectiontitle          = { pdf = "H",          nature = "mixed"   },
-    sectionnumber         = { pdf = "H",          nature = "mixed"   },
-    sectioncontent        = { pdf = "Div",        nature = "display" },
+    section            = { pdf = "Sect",       nature = "display" },
+    sectioncaption     = { pdf = "Div",        nature = "display", record = true },
+    sectiontitle       = { pdf = "H",          nature = "mixed"   },
+    sectionnumber      = { pdf = "H",          nature = "mixed"   },
+    sectioncontent     = { pdf = "Div",        nature = "display" },
 
-    itemgroup             = { pdf = "L",          nature = "display" },
-    item                  = { pdf = "LI",         nature = "display" },
-    itemtag               = { pdf = "Lbl",        nature = "mixed"   },
-    itemcontent           = { pdf = "LBody",      nature = "mixed"   },
-    itemhead              = { pdf = "Div",        nature = "display" },
-    itembody              = { pdf = "Div",        nature = "display" },
+    itemgroup          = { pdf = "L",          nature = "display" },
+    item               = { pdf = "LI",         nature = "display" },
+    itemtag            = { pdf = "Lbl",        nature = "mixed"   },
+    itemcontent        = { pdf = "LBody",      nature = "mixed"   },
+    itemhead           = { pdf = "Div",        nature = "display" },
+    itembody           = { pdf = "Div",        nature = "display" },
 
-    description           = { pdf = "Div",        nature = "display" },
-    descriptiontag        = { pdf = "Div",        nature = "mixed"   },
-    descriptioncontent    = { pdf = "Div",        nature = "mixed"   },
-    descriptionsymbol     = { pdf = "Span",       nature = "inline"  }, -- note reference
+    description        = { pdf = "Div",        nature = "display" },
+    descriptiontag     = { pdf = "Div",        nature = "mixed"   },
+    descriptioncontent = { pdf = "Div",        nature = "mixed"   },
+    descriptionsymbol  = { pdf = "Span",       nature = "inline"  }, -- note reference
 
-    verbatimblock         = { pdf = "Code",       nature = "display" },
-    verbatimlines         = { pdf = "Code",       nature = "display" },
-    verbatimline          = { pdf = "Code",       nature = "mixed"   },
-    verbatim              = { pdf = "Code",       nature = "inline"  },
+    verbatimblock      = { pdf = "Code",       nature = "display" },
+    verbatimlines      = { pdf = "Code",       nature = "display" },
+    verbatimline       = { pdf = "Code",       nature = "mixed"   },
+    verbatim           = { pdf = "Code",       nature = "inline"  },
 
-    lines                 = { pdf = "Code",       nature = "display" },
-    line                  = { pdf = "Code",       nature = "mixed"   },
-    linenumber            = { pdf = "Span",       nature = "inline"   },
+    lines              = { pdf = "Code",       nature = "display" },
+    line               = { pdf = "Code",       nature = "mixed"   },
+    linenumber         = { pdf = "Span",       nature = "inline"   },
 
-    synonym               = { pdf = "Span",       nature = "inline"  },
-    sorting               = { pdf = "Span",       nature = "inline"  },
+    synonym            = { pdf = "Span",       nature = "inline"  },
+    sorting            = { pdf = "Span",       nature = "inline"  },
 
-    register              = { pdf = "Div",        nature = "display" },
-    registerlocation      = { pdf = "Span",       nature = "inline"  },
-    registersection       = { pdf = "Div",        nature = "display" },
-    registertag           = { pdf = "Span",       nature = "mixed"   },
-    registerentries       = { pdf = "Div",        nature = "display" },
-    registerentry         = { pdf = "Div",        nature = "display" },
-    registercontent       = { pdf = "Span",       nature = "mixed"   },
-    registersee           = { pdf = "Span",       nature = "mixed"   },
-    registerpages         = { pdf = "Span",       nature = "mixed"   },
-    registerpage          = { pdf = "Span",       nature = "mixed"   },
-    registerseparator     = { pdf = "Span",       nature = "inline"  },
-    registerpagerange     = { pdf = "Span",       nature = "mixed"   },
+    register           = { pdf = "Div",        nature = "display" },
+    registerlocation   = { pdf = "Span",       nature = "inline"  },
+    registersection    = { pdf = "Div",        nature = "display" },
+    registertag        = { pdf = "Span",       nature = "mixed"   },
+    registerentries    = { pdf = "Div",        nature = "display" },
+    registerentry      = { pdf = "Div",        nature = "display" },
+    registercontent    = { pdf = "Span",       nature = "mixed"   },
+    registersee        = { pdf = "Span",       nature = "mixed"   },
+    registerpages      = { pdf = "Span",       nature = "mixed"   },
+    registerpage       = { pdf = "Span",       nature = "mixed"   },
+    registerseparator  = { pdf = "Span",       nature = "inline"  },
+    registerpagerange  = { pdf = "Span",       nature = "mixed"   },
 
-    table                 = { pdf = "Table",      nature = "display" },
-    tablerow              = { pdf = "TR",         nature = "display" },
-    tablecell             = { pdf = "TD",         nature = "mixed"   },
-    tableheadcell         = { pdf = "TH",         nature = "mixed"   },
-    tablehead             = { pdf = "THEAD",      nature = "display" },
-    tablebody             = { pdf = "TBODY",      nature = "display" },
-    tablefoot             = { pdf = "TFOOT",      nature = "display" },
+    table              = { pdf = "Table",      nature = "display" },
+    tablerow           = { pdf = "TR",         nature = "display" },
+    tablecell          = { pdf = "TD",         nature = "mixed"   },
+    tableheadcell      = { pdf = "TH",         nature = "mixed"   },
+    tablehead          = { pdf = "THEAD",      nature = "display" },
+    tablebody          = { pdf = "TBODY",      nature = "display" },
+    tablefoot          = { pdf = "TFOOT",      nature = "display" },
 
-    tabulate              = { pdf = "Table",      nature = "display" },
-    tabulaterow           = { pdf = "TR",         nature = "display" },
-    tabulatecell          = { pdf = "TD",         nature = "mixed"   },
-    tabulateheadcell      = { pdf = "TH",         nature = "mixed"   },
-    tabulatehead          = { pdf = "THEAD",      nature = "display" },
-    tabulatebody          = { pdf = "TBODY",      nature = "display" },
-    tabulatefoot          = { pdf = "TFOOT",      nature = "display" },
+    tabulate           = { pdf = "Table",      nature = "display" },
+    tabulaterow        = { pdf = "TR",         nature = "display" },
+    tabulatecell       = { pdf = "TD",         nature = "mixed"   },
+    tabulateheadcell   = { pdf = "TH",         nature = "mixed"   },
+    tabulatehead       = { pdf = "THEAD",      nature = "display" },
+    tabulatebody       = { pdf = "TBODY",      nature = "display" },
+    tabulatefoot       = { pdf = "TFOOT",      nature = "display" },
 
-    list                  = { pdf = "TOC",        nature = "display" },
-    listitem              = { pdf = "TOCI",       nature = "display" },
-    listtag               = { pdf = "Lbl",        nature = "mixed"   },
-    listcontent           = { pdf = "P",          nature = "mixed"   },
-    listdata              = { pdf = "P",          nature = "mixed"   },
-    listpage              = { pdf = "Reference",  nature = "mixed"   },
-    listtext              = { pdf = "Span",       nature = "inline"  },
+    list               = { pdf = "TOC",        nature = "display" },
+    listitem           = { pdf = "TOCI",       nature = "display" },
+    listtag            = { pdf = "Lbl",        nature = "mixed"   },
+    listcontent        = { pdf = "P",          nature = "mixed"   },
+    listdata           = { pdf = "P",          nature = "mixed"   },
+    listpage           = { pdf = "Reference",  nature = "mixed"   },
+    listtext           = { pdf = "Span",       nature = "inline"  },
 
-    delimitedblock        = { pdf = "BlockQuote", nature = "display" },
-    delimited             = { pdf = "Quote",      nature = "inline"  },
-    delimitedcontent      = { pdf = "Span",       nature = "inline"  },
-    delimitedsymbol       = { pdf = "Span",       nature = "inline"  },
-    subsentence           = { pdf = "Span",       nature = "inline"  },
-    subsentencecontent    = { pdf = "Span",       nature = "inline"  },
-    subsentencesymbol     = { pdf = "Span",       nature = "inline"  },
+    delimitedblock     = { pdf = "BlockQuote", nature = "display" },
+    delimited          = { pdf = "Quote",      nature = "inline"  },
+    delimitedcontent   = { pdf = "Span",       nature = "inline"  },
+    delimitedsymbol    = { pdf = "Span",       nature = "inline"  },
+    subsentence        = { pdf = "Span",       nature = "inline"  },
+    subsentencecontent = { pdf = "Span",       nature = "inline"  },
+    subsentencesymbol  = { pdf = "Span",       nature = "inline"  },
 
-    label                 = { pdf = "Span",       nature = "mixed"   },
-    number                = { pdf = "Span",       nature = "mixed"   },
+    label              = { pdf = "Span",       nature = "mixed"   },
+    number             = { pdf = "Span",       nature = "mixed"   },
 
-    float                 = { pdf = "Div",        nature = "display" }, -- Figure
-    floatcaption          = { pdf = "Caption",    nature = "mixed"   },
-    floatlabel            = { pdf = "Span",       nature = "inline"  },
-    floatnumber           = { pdf = "Span",       nature = "inline"  },
-    floattext             = { pdf = "Span",       nature = "mixed"   },
-    floatcontent          = { pdf = "P",          nature = "mixed"   },
+    float              = { pdf = "Div",        nature = "display" }, -- Figure
+    floatcaption       = { pdf = "Caption",    nature = "mixed"   },
+    floatlabel         = { pdf = "Span",       nature = "inline"  },
+    floatnumber        = { pdf = "Span",       nature = "inline"  },
+    floattext          = { pdf = "Span",       nature = "mixed"   },
+    floatcontent       = { pdf = "P",          nature = "mixed"   },
 
-    image                 = { pdf = "P",          nature = "mixed"   },
-    mpgraphic             = { pdf = "P",          nature = "mixed"   },
+    image              = { pdf = "P",          nature = "mixed"   },
+    mpgraphic          = { pdf = "P",          nature = "mixed"   },
 
-    formulaset            = { pdf = "Div",        nature = "display" },
-    formula               = { pdf = "Div",        nature = "display" }, -- Formula
-    formulacaption        = { pdf = "Span",       nature = "mixed"   },
-    formulalabel          = { pdf = "Span",       nature = "mixed"   },
-    formulanumber         = { pdf = "Span",       nature = "mixed"   },
-    formulacontent        = { pdf = "P",          nature = "display" },
-    subformula            = { pdf = "Div",        nature = "display" },
+    formulaset         = { pdf = "Div",        nature = "display" },
+    formula            = { pdf = "Div",        nature = "display" }, -- Formula
+    formulacaption     = { pdf = "Span",       nature = "mixed"   },
+    formulalabel       = { pdf = "Span",       nature = "mixed"   },
+    formulanumber      = { pdf = "Span",       nature = "mixed"   },
+    formulacontent     = { pdf = "P",          nature = "display" },
+    subformula         = { pdf = "Div",        nature = "display" },
 
-    link                  = { pdf = "Link",       nature = "inline"  },
-    reference             = { pdf = "Span",       nature = "inline"  },
+    link               = { pdf = "Link",       nature = "inline"  },
+    reference          = { pdf = "Span",       nature = "inline"  },
 
-    margintextblock       = { pdf = "Span",       nature = "inline"  },
-    margintext            = { pdf = "Span",       nature = "inline"  },
-    marginanchor          = { pdf = "Span",       nature = "inline"  },
+    margintextblock    = { pdf = "Span",       nature = "inline"  },
+    margintext         = { pdf = "Span",       nature = "inline"  },
+    marginanchor       = { pdf = "Span",       nature = "inline"  },
 
- -- math                  = { pdf = "Div",        nature = "inline",  namespace = "mathml" }, -- no display
-    math                  = { pdf = "Formula",    nature = "inline",  namespace = "mathml" }, -- no display
-    mn                    = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
-    mi                    = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
-    mo                    = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
-    ms                    = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
-    mrow                  = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    msubsup               = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    msub                  = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    msup                  = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    merror                = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
-    munderover            = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    munder                = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    mover                 = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    mtext                 = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
-    mfrac                 = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    mroot                 = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    msqrt                 = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    mfenced               = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    maction               = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    mmultiscripts         = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    mprescripts           = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+ -- math               = { pdf = "Div",        nature = "inline",  namespace = "mathml" }, -- no display
+ -- math               = { pdf = "Formula",    nature = "inline",  namespace = "mathml" }, -- no display
+    math               = { pdf = "Div",        nature = "inline",  namespace = "mathml" }, -- no display
+ -- math               = { pdf = "Span",       nature = "inline",  namespace = "mathml" }, -- no display
+    inlinemath         = { pdf = "Span",       nature = "inline",  namespace = "mathml" }, -- maybe
+    displaymath        = { pdf = "Div",        nature = "display", namespace = "mathml" }, -- maybe
+    mn                 = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+    mi                 = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+    mo                 = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+    ms                 = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+    mrow               = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    msubsup            = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    msub               = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    msup               = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    merror             = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+    munderover         = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    munder             = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    mover              = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    mtext              = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
+    mfrac              = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    mroot              = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    msqrt              = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    mfenced            = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    maction            = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    mmultiscripts      = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    mprescripts        = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
 
-    mstacker              = { pdf = "Span",       nature = "display" }, -- these are only internally used
-    mstackertop           = { pdf = "Span",       nature = "display" }, -- these are only internally used
-    mstackerbot           = { pdf = "Span",       nature = "display" }, -- these are only internally used
-    mstackermid           = { pdf = "Span",       nature = "display" }, -- these are only internally used
-    mextensible           = { pdf = "Span",       nature = "display" }, -- these are only internally used
+    mstacker           = { pdf = "Span",       nature = "display" }, -- this one is only used internally
+    mstackertop        = { pdf = "Span",       nature = "display" }, -- idem
+    mstackerbot        = { pdf = "Span",       nature = "display" }, -- idem
+    mstackermid        = { pdf = "Span",       nature = "display" }, -- idem
+    mextensible        = { pdf = "Span",       nature = "display" }, -- idem
+    mfunction          = { pdf = "Span",       nature = "mixed"   }, -- idem
+    mfunctionstack     = { pdf = "Span",       nature = "display" }, -- idem
+    mfraction          = { pdf = "Span",       nature = "display" }, -- idem
+    mfractionstack     = { pdf = "Span",       nature = "display" }, -- idem
+    munit              = { pdf = "Span",       nature = "mixed"   },
+    mc                 = { pdf = "Span",       nature = "mixed"   },
 
-    mtable                = { pdf = "Table",      nature = "display", namespace = "mathml" }, -- might change
-    mtr                   = { pdf = "TR",         nature = "display", namespace = "mathml" }, -- might change
-    mtd                   = { pdf = "TD",         nature = "display", namespace = "mathml" }, -- might change
+    mtable             = { pdf = "Table",      nature = "display", namespace = "mathml" }, -- might change
+    mtr                = { pdf = "TR",         nature = "display", namespace = "mathml" }, -- might change
+    mtd                = { pdf = "TD",         nature = "display", namespace = "mathml" }, -- might change
 
-    ignore                = { pdf = "Span",       nature = "mixed"   }, -- used internally
-    private               = { pdf = "Span",       nature = "mixed"   }, -- for users (like LS) when they need it
-    metadata              = { pdf = "Div",        nature = "display" },
-    metavariable          = { pdf = "Span",       nature = "mixed"   },
+    ignore             = { pdf = "Span",       nature = "mixed"   }, -- used internally
+    private            = { pdf = "Span",       nature = "mixed"   }, -- for users (like LS) when they need it
+    metadata           = { pdf = "Div",        nature = "display" },
+    metavariable       = { pdf = "Span",       nature = "mixed"   },
 
-    mid                   = { pdf = "Span",       nature = "inline"  },
-    sub                   = { pdf = "Span",       nature = "inline"  },
-    sup                   = { pdf = "Span",       nature = "inline"  },
-    subsup                = { pdf = "Span",       nature = "inline"  },
+    mid                = { pdf = "Span",       nature = "inline"  },
+    sub                = { pdf = "Span",       nature = "inline"  },
+    sup                = { pdf = "Span",       nature = "inline"  },
+    subsup             = { pdf = "Span",       nature = "inline"  },
 
-    combination           = { pdf = "Span",       nature = "display" },
-    combinationpair       = { pdf = "Span",       nature = "display" },
-    combinationcontent    = { pdf = "Span",       nature = "mixed"   },
-    combinationcaption    = { pdf = "Span",       nature = "mixed"   },
+    combination        = { pdf = "Span",       nature = "display" },
+    combinationpair    = { pdf = "Span",       nature = "display" },
+    combinationcontent = { pdf = "Span",       nature = "mixed"   },
+    combinationcaption = { pdf = "Span",       nature = "mixed"   },
 
-    publications          = { pdf = "Div",        nature = "display" },
-    publication           = { pdf = "Div",        nature = "mixed"   },
-    pubfld                = { pdf = "Span",       nature = "inline"  },
+    publications       = { pdf = "Div",        nature = "display" },
+    publication        = { pdf = "Div",        nature = "mixed"   },
+    pubfld             = { pdf = "Span",       nature = "inline"  },
 
-    block                 = { pdf = "Div",        nature = "display"  },
-    userdata              = { pdf = "Div",        nature = "display"  },
+    block              = { pdf = "Div",        nature = "display" },
+    userdata           = { pdf = "Div",        nature = "display" },
+
+    quantity           = { pdf = "Span",       nature = "inline"  },
+    unit               = { pdf = "Span",       nature = "inline"  },
 
 }
 

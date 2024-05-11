@@ -1511,6 +1511,8 @@
 \pushoverloadmode
     \newuserunit \textwidth  tw
     \newuserunit \textheight th
+    \newuserunit \paperwidth  pw
+    \newuserunit \paperheight ph
     \newuserunit \hsize      hs % just for fun
     \newuserunit \vsize      vs % just for fun
 \popoverloadmode

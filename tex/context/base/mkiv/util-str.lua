@@ -1423,6 +1423,7 @@ strings.formatters.add = add
 
 patterns.xmlescape = Cs((P("<")/"&lt;" + P(">")/"&gt;" + P("&")/"&amp;" + P('"')/"&quot;" + anything)^0)
 patterns.texescape = Cs((C(S("#$%\\{}"))/"\\%1" + anything)^0)
+patterns.ctxescape = Cs((C(S("#$%\\{}|"))/"\\%1" + anything)^0)
 patterns.luaescape = Cs(((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"')^0) -- maybe also \0
 patterns.luaquoted = Cs(Cc('"') * ((1-S('"\n'))^1 + P('"')/'\\"' + P('\n')/'\\n"')^0 * Cc('"'))
 

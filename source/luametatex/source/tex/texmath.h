@@ -247,6 +247,7 @@ typedef enum math_parameters {
 # define math_last_user_class  (math_all_class    - 1)
 
 # define valid_math_class_code(n)  (n >= 0 && n < max_n_of_math_classes)
+# define real_math_class_code(n)   (n >= 0 && n < math_all_class)
 
 # define last_math_parameter               math_parameter_stack_variant
 # define math_parameter_first_variant      math_parameter_over_line_variant

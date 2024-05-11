@@ -1904,6 +1904,8 @@
 
 \permanent\tolerant\protected\def\numberhere[#1]%
   {\begingroup
+   \attribute\mathblobattribute\attributeunsetvalue
+   \dostarttagged\t!formulacaption\empty
    \global\c_strc_formulas_incremented\conditionalfalse
    \global\c_strc_formulas_referenced\conditionaltrue
    \global\c_strc_formulas_inside_place\conditionalfalse
@@ -1935,6 +1937,7 @@
       \else
         \strc_formulas_handle_numbering
       \fi}%
+   \dostoptagged
    \endgroup}
 
 % to be checked

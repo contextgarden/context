@@ -3451,7 +3451,6 @@ do
                     end
                 end
             end
-            i = i - 1
         end
         return true
     end

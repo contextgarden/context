@@ -91,7 +91,7 @@ local function glob(files,path) -- some day: sort by name (order prefix) and ati
         if name:find("^%.") then
             -- skip . and ..
         else
-            name = path .. "/" .. name
+            local name = path .. "/" .. name
             local a = lfsattributes(name)
             if not a then
                 -- weird

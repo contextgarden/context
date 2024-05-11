@@ -459,8 +459,8 @@ end
 
 local sharedpalettes = { }  do
 
-    local colors         = attributes.list[attributes.private('color')] or { }
-    local transparencies = attributes.list[attributes.private('transparency')] or { }
+    local colors         <const> = attributes.list[attributes.private('color')] or { }
+    local transparencies <const> = attributes.list[attributes.private('transparency')] or { }
 
     function otf.registerpalette(name,values)
         sharedpalettes[name] = values

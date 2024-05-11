@@ -692,6 +692,7 @@ static void tex_aux_print_fam(const char *what, halfword size, halfword fam)
 
 int tex_fam_fnt(int fam, int size)
 {
+    /* todo check valid fam */
     sa_tree_item item;
     sa_get_item_4(lmt_math_state.fam_head, fam + (256 * size), &item);
     return (int) item.int_value;
@@ -1319,6 +1320,9 @@ static void tex_aux_print_delimiter(halfword d)
     history. An empty mlist is distinguished from a missing field, because these are not equivalent
     (as explained above).
 
+    There are more fields and options that we have to report here so that is a todo for a rainy day 
+    with nothing else to do. 
+
 */
 
 static void tex_aux_display_common_noad(halfword n, int threshold, int max)
@@ -1484,7 +1488,7 @@ static void tex_aux_display_fence_noad(halfword n, int threshold, int max) /* to
     if (noad_options(n)) {
         tex_print_format(", options %x", noad_options(n));
     }
-    tex_aux_print_delimiter(fence_delimiter_list(n));
+    tex_aux_print_delimiter(fence_delimiter(n));
     tex_print_node_list(fence_delimiter_top(n), "top", threshold, max);
     tex_print_node_list(fence_delimiter_bottom(n), "bottom", threshold, max);
 }
@@ -2165,15 +2169,18 @@ static int tex_aux_scan_math(halfword target, halfword style, int usetextfont, h
             switch (cur_chr) {
                 case math_char_number_code:
                     mval = tex_scan_mathchar(tex_mathcode);
+                 // dval = tex_fake_math_dict(mval.character_value);
                     break;
                 case math_xchar_number_code:
                     mval = tex_scan_mathchar(umath_mathcode);
+                    dval = tex_fake_math_dict(mval.character_value);
+                    break;
+                case math_char_ignore_code:
                     break;
                 default:
                     tex_confusion("scan math char, case 1");
                     break;
             }
-            dval = tex_fake_math_dict(mval.character_value);
             break;
         case mathspec_cmd:
             mval = tex_get_math_spec(cur_chr);
@@ -2234,7 +2241,7 @@ static int tex_aux_scan_math(halfword target, halfword style, int usetextfont, h
             }
             return 1;
     }
-    node_type(target) = math_char_node;
+    node_type(target) = math_char_node; /* The sizes can best match! */
     if (glyph_options_par & glyph_option_no_italic_correction) {
         math_kernel_node_set_option(target, math_kernel_no_italic_correction);
     }
@@ -2323,7 +2330,7 @@ static void tex_aux_append_math_fence_val(mathcodeval mval, mathdictval dval, qu
     halfword fence = tex_new_node(fence_noad, middle_fence_side);
     halfword delimiter = tex_new_node(delimiter_node, mval.class_value);
     (void) dval; /* maybe todo */
-    fence_delimiter_list(fence) = delimiter;
+    fence_delimiter(fence) = delimiter;
     delimiter_small_family(delimiter) = mval.family_value;
     delimiter_small_character(delimiter) = mval.character_value;
     delimiter_large_family(delimiter) = mval.family_value;
@@ -2522,10 +2529,13 @@ int tex_scan_math_cmd_val(mathcodeval *mval, mathdictval *dval)
                     break;
                 case math_xchar_number_code:
                     *mval = tex_scan_mathchar(umath_mathcode);
+                    *dval = tex_fake_math_dict(mval->character_value);
                     break;
                 case math_dictionary_number_code:
                     *dval = tex_scan_mathdict();
                     *mval = tex_scan_mathchar(umath_mathcode);
+                    break;
+                case math_char_ignore_code:
                     break;
                 default:
                     /* no message yet */
@@ -2579,6 +2589,7 @@ int tex_scan_math_code_val(halfword code, mathcodeval *mval, mathdictval *dval)
             break;
         case math_xchar_number_code:
             *mval = tex_scan_mathchar(umath_mathcode);
+            *dval = tex_fake_math_dict(mval->character_value);
             break;
         case math_dictionary_number_code:
             *dval = tex_scan_mathdict();
@@ -2592,6 +2603,8 @@ int tex_scan_math_code_val(halfword code, mathcodeval *mval, mathdictval *dval)
                 mval->class_value = (short) mathclass;
                 mval->family_value = (short) family;
             }
+            break;
+        case math_char_ignore_code:
             break;
         default:
             /* no message yet */
@@ -3045,6 +3058,8 @@ static void tex_aux_scan_delimiter(halfword target, int code, int mathclass)
                         case math_xchar_number_code:
                             mval = tex_scan_mathchar(umath_mathcode);
                             break;
+                        case math_char_ignore_code:
+                            break;
                         default:
                             tex_confusion("scan math char, case 1");
                             break;
@@ -3074,11 +3089,15 @@ static void tex_aux_scan_delimiter(halfword target, int code, int mathclass)
     if (! target) {
         return;
     } else if (tex_has_del_code(dval)) {
-        node_subtype(target) = dval.small.class_value;
+        mathdictval dict = tex_fake_math_dict(dval.small.character_value);
+        node_subtype(target) = dval.small.class_value; 
         delimiter_small_family(target) = dval.small.family_value;
         delimiter_small_character(target) = dval.small.character_value;
         delimiter_large_family(target) = dval.large.family_value;
         delimiter_large_character(target) = dval.large.character_value;
+        delimiter_math_properties(target) = dict.properties; 
+        delimiter_math_group(target) = dict.group; 
+        delimiter_math_index(target) = dict.index; 
     } else {
         tex_back_input(cur_tok);
         tex_handle_error(
@@ -3811,10 +3830,18 @@ void tex_finish_math_operator(void)
             halfword fenced = cur_list.tail;
             switch (over) {
                 case math_limits_top:
-                    kernel_math_list(fence_delimiter_top(fenced)) = content;
+                    if (content) { 
+                        halfword top = tex_new_node(sub_mlist_node, 0);
+                        fence_delimiter_top(fenced) = top;
+                        kernel_math_list(top) = content;
+                    }
                     break;
                 case math_limits_bottom:
-                    kernel_math_list(fence_delimiter_bottom(fenced)) = content;
+                    if (content) { 
+                        halfword bottom = tex_new_node(sub_mlist_node, 0);
+                        fence_delimiter_bottom(fenced) = bottom;
+                        kernel_math_list(bottom) = content;
+                    }
                     lmt_save_state.save_stack_data.ptr -= saved_operator_n_of_records;
                     return;
             }
@@ -4538,6 +4565,7 @@ void tex_run_math_fence(void)
     scaled top = 0;
     scaled bottom = 0;
     fullword options = 0;
+    halfword variant = 0;
     halfword mainclass = unset_noad_class;
     halfword leftclass = unset_noad_class;
     halfword rightclass = unset_noad_class;
@@ -4679,8 +4707,20 @@ void tex_run_math_fence(void)
                 }
                 break;
             case 'v': case 'V':
-                if (tex_scan_mandate_keyword("void", 1)) {
-                    options |= noad_option_void;
+                switch (tex_scan_character("aoAO", 0, 0, 0)) {
+                    case 'o': case 'O':
+                        if (tex_scan_mandate_keyword("void", 2)) {
+                            options |= noad_option_void;
+                        }
+                        break;
+                    case 'a': case 'A':
+                        if (tex_scan_mandate_keyword("variant", 2)) {
+                            variant = tex_scan_integer(0, NULL);
+                        }
+                        break;
+                    default:
+                        tex_aux_show_keyword_error("void|variant");
+                        goto CHECK_PAIRING;
                 }
                 break;
             case 'p': case 'P':
@@ -4720,7 +4760,7 @@ void tex_run_math_fence(void)
                         }
                         break;
                     default:
-                        tex_aux_show_keyword_error("scale|source|single");
+                        tex_aux_show_keyword_error("scale|source|single|size");
                         goto CHECK_PAIRING;
                 }
                 break;
@@ -4785,7 +4825,8 @@ void tex_run_math_fence(void)
         halfword fence = tex_new_node(fence_noad, st);
         halfword delimiter = tex_new_node(delimiter_node, 0);
         halfword autoclass = unset_noad_class;
-        fence_delimiter_list(fence) = delimiter;
+        fence_delimiter(fence) = delimiter;
+        fence_delimiter_variant(fence) = variant;
         noad_height(fence) = ht;
         noad_depth(fence) = dp;
         noad_options(fence) = options;
@@ -4856,10 +4897,6 @@ void tex_run_math_fence(void)
                 break;
             case left_operator_side:
                 {
-                    halfword top = tex_new_node(sub_mlist_node, 0);
-                    halfword bottom = tex_new_node(sub_mlist_node, 0);
-                    fence_delimiter_top(fence) = top;
-                    fence_delimiter_bottom(fence) = bottom;
                     tex_aux_push_math(math_fence_group, style, -1);
                     node_next(cur_list.head) = fence;
                     cur_list.tail = fence;
@@ -4875,6 +4912,10 @@ void tex_run_math_fence(void)
                 {
                     halfword n = tex_new_node(simple_noad, fenced_noad_subtype);
                     halfword l = tex_new_node(sub_mlist_node, 0);
+                    if (attrlist) {
+                        tex_attach_attribute_list_attribute(n, attrlist);
+                        tex_attach_attribute_list_attribute(l, attrlist);
+                    }
                     tex_tail_append(n);
                     set_noad_main_class(n, mainclass); /*tex Really needed here! */
                     noad_nucleus(n) = l;

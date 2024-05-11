@@ -25,7 +25,7 @@ target_include_directories(mp PRIVATE
     .
     source/.
     source/mp/mpc
-    source/luacore/lua54/src
+    source/luacore/lua55/src
     source/libraries/avl
     source/libraries/decnumber
     source/utilities

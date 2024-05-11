@@ -12,9 +12,9 @@ local setattrs          = nuts.setattrs
 
 local privateattributes = attributes.private
 
-local a_colormodel      = privateattributes('colormodel')
-local a_color           = privateattributes('color')
-local a_transparency    = privateattributes('transparency')
+local a_colormodel      <const> = privateattributes('colormodel')
+local a_color           <const> = privateattributes('color')
+local a_transparency    <const> = privateattributes('transparency')
 
 local colors            = { }
 nuts.colors             = colors

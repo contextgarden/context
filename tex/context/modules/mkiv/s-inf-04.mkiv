@@ -8,7 +8,7 @@
 
         context.subject("Configuration files")
 
-        local configurations = resolvers.instance.specification
+        local configurations = resolvers.configurationfiles()
 
         context.starttabulate { "|Tl|Tl|" }
         for i=1,#configurations do

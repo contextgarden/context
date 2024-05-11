@@ -32,7 +32,7 @@ set(LMT_STRIP 1)
 
 if (MSVC)
 
-    if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    if (CMAKE_C_COMPILER_ID MATCHES "Clang")
 
         add_compile_options(
             -Wall
@@ -120,7 +120,7 @@ if (MSVC)
 
  else()
 
-    if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+    if (CMAKE_C_COMPILER_ID MATCHES "Clang")
 
         # why not -03
 
@@ -168,7 +168,7 @@ if (MSVC)
 
 endif()
 
-if (CMAKE_C_COMPILER_ID STREQUAL "Clang")
+if (CMAKE_C_COMPILER_ID MATCHES "Clang")
 
     add_compile_options(
         -Wno-unknown-warning-option

@@ -20,9 +20,8 @@ local nuts         = nodes.nuts
 local tonut        = nodes.tonut
 local tonode       = nodes.tonode
 
-local nodecodes    = nodes.nodecodes
-local glyph_code   = nodecodes.glyph
-local disc_code    = nodecodes.disc
+local glyph_code   <const> = nodes.nodecodes.glyph
+local disc_code    <const> = nodes.nodecodes.disc
 
 local getnext      = nuts.getnext
 local getid        = nuts.getid
@@ -36,15 +35,16 @@ local setfont      = nuts.setfont
 
 local nextnode     = nuts.traversers.node
 
-local unsetvalue   = attributes.unsetvalue
 local prvattribute = attributes.private
 
 local texgetbox    = tex.getbox
 local currentfont  = font.current
 
-local a_overloads  = attributes.private("overloads")
 local n_overloads  = 0
 local t_overloads  = { }
+
+local a_overloads  <const> = prvattribute("overloads")
+local unsetvalue   <const> = attributes.unsetvalue
 
 local overloaded   = { }
 

@@ -25,8 +25,8 @@ local setlink         = nuts.setlink
 local setstate        = nuts.setstate
 local setattr         = nuts.setattr
 
-local hlist_code      = nodes.nodecodes.hlist
-local vlist_code      = nodes.nodecodes.vlist
+local hlist_code      <const> = nodes.nodecodes.hlist
+local vlist_code      <const> = nodes.nodecodes.vlist
 
 local getbox          = nuts.getbox
 local takebox         = nuts.takebox
@@ -37,7 +37,7 @@ local flattenleaders  = nuts.flattenleaders
 local traverselist    = nuts.traverselist
 local traverseleader  = nuts.traverseleader
 
-local a_adaptive      = attributes.private("adaptive")
+local a_adaptive      <const> = attributes.private("adaptive")
 
 local registervalue   = attributes.registervalue
 local getvalue        = attributes.getvalue
@@ -50,10 +50,10 @@ local enabled         = false
 
 ----- enableaction    = nodes.tasks.enableaction
 
-local d_adaptive_width  = isdimen("d_adaptive_width")
-local d_adaptive_height = isdimen("d_adaptive_height")
-local d_adaptive_depth  = isdimen("d_adaptive_depth")
-local d_adaptive_line   = isdimen("d_adaptive_line")
+local d_adaptive_width  <const> = isdimen("d_adaptive_width")
+local d_adaptive_height <const> = isdimen("d_adaptive_height")
+local d_adaptive_depth  <const> = isdimen("d_adaptive_depth")
+local d_adaptive_line   <const> = isdimen("d_adaptive_line")
 
 local function setadaptive(w,h,d,l,c,a)
     setdimen(d_adaptive_width,w)

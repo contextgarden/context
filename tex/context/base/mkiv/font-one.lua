@@ -58,7 +58,7 @@ local registerafmfeature  = afmfeatures.register
 local afmenhancers        = constructors.enhancers.afm
 local registerafmenhancer = afmenhancers.register
 
-afm.version               = 1.513 -- incrementing this number one up will force a re-cache
+afm.version               = 1.540 -- incrementing this number one up will force a re-cache
 afm.cache                 = containers.define("fonts", "one", afm.version, true)
 afm.autoprefixed          = true -- this will become false some day (catches texnansi-blabla.*)
 

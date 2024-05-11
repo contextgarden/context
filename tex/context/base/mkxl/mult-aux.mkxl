@@ -1297,10 +1297,12 @@
 
 %D Cheaper (assumes grouping at some point):
 
-\permanent\protected\def\mult_interfaces_install_local_current_injector#1#2#3#4%
-  {\protected\def#4##1%
+\permanent\protected\def\mult_interfaces_install_local_current_injector#1#2#3#4#5%
+  {\lettonothing#4% \currentglobalXXX
+   \protected\def#5##1%
      {\advanceby#2\plusone
       \cdef#3{##1:\the#2}% \currentXXX
+      \cdef#4{##1}% \currentglobalXXX
       \cdefcsname#1#3:\s!parent\endcsname{#1##1}}}
 
 \permanent\protected\def\installlocalcurrenthandler#1#2% \??XXX {XXX}
@@ -1309,6 +1311,7 @@
      {\noexpand#1}%
      \expandafter\noexpand\csname #1:\s!counter\endcsname
      \expandafter\noexpand\csname current#2\endcsname
+     \expandafter\noexpand\csname currentglobal#2\endcsname
      \expandafter\noexpand\csname setlocal#2current\endcsname}}
 
 %  \unprotect

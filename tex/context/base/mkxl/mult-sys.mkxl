@@ -436,6 +436,7 @@
 \definesystemconstant {userdata}
 \definesystemconstant {userpage}
 \definesystemconstant {user}
+\definesystemconstant {variant}
 \definesystemconstant {vfrac}
 \definesystemconstant {vfactor}
 \definesystemconstant {white}

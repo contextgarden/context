@@ -97,7 +97,7 @@ target_include_directories(tex PRIVATE
     source/libraries/miniz
     source/libraries/pplib
     source/libraries/pplib/util
-    source/luacore/lua54/src
+    source/luacore/lua55/src
     source/libraries/mimalloc/include
     source/libraries/softposit/source/include
     source/libraries/potrace/src

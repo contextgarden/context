@@ -67,10 +67,10 @@ local nextchar          = nuts.traversers.char
 local flushnode         = nuts.flush
 local removefromlist    = nuts.removefromlist
 
-local disc_code         = nodecodes.disc
-local boundary_code     = nodecodes.boundary
+local disc_code         <const> = nodecodes.disc
+local boundary_code     <const> = nodecodes.boundary
 
-local wordboundary_code = boundarycodes.word
+local wordboundary_code <const> = boundarycodes.word
 
 local protectglyphs     = nuts.protectglyphs
 local unprotectglyphs   = nuts.unprotectglyphs

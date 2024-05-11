@@ -67,7 +67,8 @@ local allocate          = utilities.storage.allocate
 local setmetatableindex = table.setmetatableindex
 local replacetemplate   = utilities.templates.replace
 
-local bpfactor          = number.dimenfactors.bp
+local bpfactor          <const> = number.dimenfactors.bp
+local maxdimen          <const> = tex.magicconstants.maxdimen
 
 images                  = images or { }
 local images            = images
@@ -109,16 +110,14 @@ local report_inclusion  = logs.reporter("graphics","inclusion")
 local f_hash_part       = formatters["%s->%s->%s->%s"]
 local f_hash_full       = formatters["%s->%s->%s->%s->%s->%s->%s->%s->%s->%s"]
 
-local v_yes             = variables.yes
-local v_always          = variables.always
-local v_embed           = variables.embed
-local v_fix             = variables.fix
-local v_global          = variables["global"]
-local v_local           = variables["local"]
-local v_default         = variables.default
-local v_auto            = variables.auto
-
-local maxdimen          = tex.magicconstants.maxdimen -- 0x3FFFFFFF -- 2^30-1
+local v_yes             <const> = variables.yes
+local v_always          <const> = variables.always
+local v_embed           <const> = variables.embed
+local v_fix             <const> = variables.fix
+local v_global          <const> = variables["global"]
+local v_local           <const> = variables["local"]
+local v_default         <const> = variables.default
+local v_auto            <const> = variables.auto
 
 local ctx_doscalefigure            = context.doscalefigure
 local ctx_relocateexternalfigure   = context.relocateexternalfigure

@@ -10,7 +10,7 @@ local context     = context
 local implement   = interfaces.implement
 local texgetcount = tex.getcount
 
-local c_realpageno = tex.iscount("realpageno")
+local c_realpageno <const> = tex.iscount("realpageno")
 
 local blocks = { }
 local block  = false

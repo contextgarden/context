@@ -85,6 +85,8 @@ local validvectors       = table.setmetatableindex(function(t,k)
     return v
 end)
 
+table.setmetatableindex(rscales,"table")
+
 local function checkenabled()
     -- a bit ugly but nicer than a fuzzy state while defining math
     if next(vectors) then
@@ -224,9 +226,9 @@ function collections.clonevector(name)
     end
     local definitions = definitions[name]
     local vector      = { }
-    local rscale      = { }
+    local scales      = { }
     vectors[current]  = vector
-    rscales[current]  = rscale
+    rscales[current]  = scales
     for i=1,#definitions do
         local definition = definitions[i]
         local name       = definition.font
@@ -274,9 +276,9 @@ function collections.clonevector(name)
                         -- not in font
                     elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = { cloneid, target }
-if rscale then
-    rscales[unic] = rscale
-end
+                        if rscale then
+                            scales[unic] = rscale
+                        end
                     end
                     target = target + 1
                 end
@@ -291,9 +293,9 @@ end
                         -- not in font
                     elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = cloneid
-if rscale then
-    rscales[unic] = rscale
-end
+                        if rscale then
+                            scales[unic] = rscale
+                        end
                     end
                 end
             end
@@ -305,9 +307,9 @@ end
                         -- ignore
                     elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = { cloneid, target }
-if rscale then
-    rscales[unic] = rscale
-end
+                        if rscale then
+                            scales[unic] = rscale
+                        end
                     end
                     target = target + 1
                 end
@@ -318,9 +320,9 @@ end
                         -- ignore
                     elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = { cloneid, remap[unicode] }
-if rscale then
-    rscales[unic] = rscale
-end
+                        if rscale then
+                            scales[unic] = rscale
+                        end
                     end
                 end
             else
@@ -330,9 +332,9 @@ end
                         -- ignore
                     elseif force or (not vector[unic] and not oldchars[unic]) then
                         vector[unic] = cloneid
-if rscale then
-    rscales[unic] = rscale
-end
+                        if rscale then
+                             scales[unic] = rscale
+                        end
                     end
                 end
             end
@@ -449,7 +451,7 @@ end
 
 local function apply(n,char,font,vector,vect)
     local kind   = type(vect)
-    local rscale = rscales[char] or 1
+    local rscale = rscales[font][char] or 1
     local newfont, newchar
     if kind == "table" then
         newfont = vect[1]

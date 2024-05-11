@@ -39,11 +39,9 @@ do
     local codeinjections    = pdfbackend.codeinjections
     local setmetatableindex = table.setmetatableindex
 
-    local variables         = interfaces.variables
-
     local compactors = {
-     -- [variables.no]   = false,
-     -- [variables.nono] = false,
+     -- [interfaces.variables.no]   = false,
+     -- [interfaces.variables.nono] = false,
      -- [""]             = false,
     }
 

@@ -39,24 +39,24 @@ local variables          = interfaces.variables
 local conditionals       = tex.conditionals
 local systemmodes        = tex.systemmodes
 
-local v_top              = variables.top
-local v_depth            = variables.depth
-local v_local            = variables["local"]
-local v_global           = variables["global"]
-local v_left             = variables.left
-local v_right            = variables.right
-local v_inner            = variables.inner
-local v_outer            = variables.outer
-local v_margin           = variables.margin
-local v_edge             = variables.edge
-local v_default          = variables.default
-local v_normal           = variables.normal
-local v_yes              = variables.yes
-local v_continue         = variables.continue
-local v_first            = variables.first
-local v_text             = variables.text
-local v_paragraph        = variables.paragraph
-local v_line             = variables.line
+local v_top              <const> = variables.top
+local v_depth            <const> = variables.depth
+local v_local            <const> = variables["local"]
+local v_global           <const> = variables["global"]
+local v_left             <const> = variables.left
+local v_right            <const> = variables.right
+local v_inner            <const> = variables.inner
+local v_outer            <const> = variables.outer
+local v_margin           <const> = variables.margin
+local v_edge             <const> = variables.edge
+local v_default          <const> = variables.default
+local v_normal           <const> = variables.normal
+local v_yes              <const> = variables.yes
+local v_continue         <const> = variables.continue
+local v_first            <const> = variables.first
+local v_text             <const> = variables.text
+local v_paragraph        <const> = variables.paragraph
+local v_line             <const> = variables.line
 
 local nuts               = nodes.nuts
 local tonode             = nuts.tonode
@@ -91,10 +91,10 @@ local nodecodes          = nodes.nodecodes
 local listcodes          = nodes.listcodes
 local whatsitcodes       = nodes.whatsitcodes
 
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
-local whatsit_code       = nodecodes.whatsit
-local userdefined_code   = whatsitcodes.userdefined
+local hlist_code         <const> = nodecodes.hlist
+local vlist_code         <const> = nodecodes.vlist
+local whatsit_code       <const> = nodecodes.whatsit
+local userdefined_code   <const> = whatsitcodes.userdefined
 
 local nodepool           = nuts.pool
 
@@ -115,9 +115,9 @@ local addtoline          = paragraphs.addtoline
 local moveinline         = paragraphs.moveinline
 local calculatedelta     = paragraphs.calculatedelta
 
-local a_linenumber       = attributes.private('linenumber')
+local a_linenumber       <const> = attributes.private('linenumber')
 
-local inline_mark        = nodepool.userids["margins.inline"]
+local inline_mark        <const> = nodepool.userids["margins.inline"]
 
 local jobpositions       = job.positions
 local getposition        = jobpositions.get

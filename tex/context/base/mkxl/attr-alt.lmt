@@ -22,7 +22,7 @@ local implement         = interfaces.implement
 attributes.alternates   = attributes.alternates or { }
 local alternates        = attributes.alternates
 
-local a_alternate       = attributes.private('alternate')
+local a_alternate       <const> = attributes.private('alternate')
 
 alternates.data         = allocate()
 alternates.values       = alternates.values     or { }

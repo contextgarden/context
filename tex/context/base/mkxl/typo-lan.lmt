@@ -69,9 +69,10 @@ end
 
 -- Just because we can, we also have a setter ...
 
-local dimension_value = tokens.values.dimension
-local scanstring      = tokens.scanners.string
-local scandimension   = tokens.scanners.dimension
+local scanstring    = tokens.scanners.string
+local scandimension = tokens.scanners.dimension
+
+local dimension_value <const> = tokens.values.dimension
 
 interfaces.implement {
     name      = "languagecharwidth",

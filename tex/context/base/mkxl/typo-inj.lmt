@@ -19,9 +19,8 @@ local showall           = false
 
 local settings_to_array = utilities.parsers.settings_to_array
 
-local variables         = interfaces.variables
-local v_next            = variables.next
-local v_previous        = variables.previous
+local v_next            <const> = interfaces.variables.next
+local v_previous        <const> = interfaces.variables.previous
 
 local ctx_domarkinjector     = context.domarkinjector
 local ctx_doactivateinjector = context.doactivateinjector

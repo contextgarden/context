@@ -297,6 +297,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_list, math_fence_list,           fence)
     set_value_entry_key(subtypes_list, math_rule_list,            rule)
     set_value_entry_key(subtypes_list, math_ghost_list,           ghost)
+    set_value_entry_key(subtypes_list, math_text_list,            mathtext)
     set_value_entry_key(subtypes_list, insert_result_list,        insert)
     set_value_entry_key(subtypes_list, local_list,                local)
     set_value_entry_key(subtypes_list, local_left_list,           left)
@@ -372,7 +373,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_attribute, attribute_list_subtype,  list)
     set_value_entry_key(subtypes_attribute, attribute_value_subtype, value)
 
-    /*tex The fields of nodes. */
+    /*tex The fields of nodes. I need to update these! */
 
     lmt_node_fields_accent = lmt_aux_allocate_value_info(9);
 
@@ -427,7 +428,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_dir, 1, integer_field,   dir);
     set_value_entry_val(lmt_node_fields_dir, 2, integer_field,   level);
 
-    lmt_node_fields_disc = lmt_aux_allocate_value_info( 6);
+    lmt_node_fields_disc = lmt_aux_allocate_value_info(7);
 
     set_value_entry_val(lmt_node_fields_disc, 0, attribute_field, attr);
     set_value_entry_val(lmt_node_fields_disc, 1, node_list_field, pre);
@@ -435,19 +436,21 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_disc, 3, node_list_field, replace);
     set_value_entry_val(lmt_node_fields_disc, 4, integer_field,   penalty);
     set_value_entry_val(lmt_node_fields_disc, 5, integer_field,   options);
+    set_value_entry_val(lmt_node_fields_disc, 6, integer_field,   class);
 
-    lmt_node_fields_fence = lmt_aux_allocate_value_info(10);
+    lmt_node_fields_fence = lmt_aux_allocate_value_info(11);
 
-    set_value_entry_val(lmt_node_fields_fence, 0, attribute_field, attr);
-    set_value_entry_val(lmt_node_fields_fence, 1, node_list_field, delimiter);
-    set_value_entry_val(lmt_node_fields_fence, 2, dimension_field, italic);
-    set_value_entry_val(lmt_node_fields_fence, 3, dimension_field, height);
-    set_value_entry_val(lmt_node_fields_fence, 4, dimension_field, depth);
-    set_value_entry_val(lmt_node_fields_fence, 5, integer_field,   options);
-    set_value_entry_val(lmt_node_fields_fence, 6, integer_field,   class);
-    set_value_entry_val(lmt_node_fields_fence, 7, integer_field,   source);
-    set_value_entry_val(lmt_node_fields_fence, 8, node_list_field, top);
-    set_value_entry_val(lmt_node_fields_fence, 9, node_list_field, bottom);
+    set_value_entry_val(lmt_node_fields_fence,  0, attribute_field, attr);
+    set_value_entry_val(lmt_node_fields_fence,  1, node_list_field, delimiter);
+    set_value_entry_val(lmt_node_fields_fence,  2, dimension_field, italic);
+    set_value_entry_val(lmt_node_fields_fence,  3, dimension_field, height);
+    set_value_entry_val(lmt_node_fields_fence,  4, dimension_field, depth);
+    set_value_entry_val(lmt_node_fields_fence,  5, integer_field,   options);
+    set_value_entry_val(lmt_node_fields_fence,  6, integer_field,   class);
+    set_value_entry_val(lmt_node_fields_fence,  7, integer_field,   source);
+    set_value_entry_val(lmt_node_fields_fence,  8, node_list_field, top);
+    set_value_entry_val(lmt_node_fields_fence,  9, node_list_field, bottom);
+    set_value_entry_val(lmt_node_fields_fence, 10, node_list_field, variant);
 
     lmt_node_fields_fraction = lmt_aux_allocate_value_info(9);
 
@@ -473,43 +476,49 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_glue, 7, integer_field,   font);
     set_value_entry_val(lmt_node_fields_glue, 8, integer_field,   options);
 
-    lmt_node_fields_glue_spec = lmt_aux_allocate_value_info(5);
+    lmt_node_fields_glue_spec = lmt_aux_allocate_value_info(8);
 
     set_value_entry_val(lmt_node_fields_glue_spec, 0, dimension_field, width);
     set_value_entry_val(lmt_node_fields_glue_spec, 1, dimension_field, stretch);
     set_value_entry_val(lmt_node_fields_glue_spec, 2, dimension_field, shrink);
     set_value_entry_val(lmt_node_fields_glue_spec, 3, integer_field,   stretchorder);
     set_value_entry_val(lmt_node_fields_glue_spec, 4, integer_field,   shrinkorder);
+    set_value_entry_val(lmt_node_fields_glue_spec, 5, integer_field,   font);
+    set_value_entry_val(lmt_node_fields_glue_spec, 6, integer_field,   data);
+    set_value_entry_val(lmt_node_fields_glue_spec, 7, integer_field,   options);
 
-    lmt_node_fields_glyph = lmt_aux_allocate_value_info(27);
+    lmt_node_fields_glyph = lmt_aux_allocate_value_info(30);
 
     set_value_entry_val(lmt_node_fields_glyph,  0, attribute_field, attr);
-    set_value_entry_val(lmt_node_fields_glyph,  1, integer_field,   char);
-    set_value_entry_val(lmt_node_fields_glyph,  2, integer_field,   font);
-    set_value_entry_val(lmt_node_fields_glyph,  3, integer_field,   language);
-    set_value_entry_val(lmt_node_fields_glyph,  4, integer_field,   lhmin);
-    set_value_entry_val(lmt_node_fields_glyph,  5, integer_field,   rhmin);
-    set_value_entry_val(lmt_node_fields_glyph,  6, integer_field,   uchyph);
-    set_value_entry_val(lmt_node_fields_glyph,  7, integer_field,   state);
-    set_value_entry_val(lmt_node_fields_glyph,  8, dimension_field, left);
-    set_value_entry_val(lmt_node_fields_glyph,  9, dimension_field, right);
-    set_value_entry_val(lmt_node_fields_glyph, 10, dimension_field, xoffset);
-    set_value_entry_val(lmt_node_fields_glyph, 11, dimension_field, yoffset);
-    set_value_entry_val(lmt_node_fields_glyph, 12, dimension_field, xscale);
-    set_value_entry_val(lmt_node_fields_glyph, 13, dimension_field, yscale);
-    set_value_entry_val(lmt_node_fields_glyph, 14, dimension_field, width);
-    set_value_entry_val(lmt_node_fields_glyph, 15, dimension_field, height);
-    set_value_entry_val(lmt_node_fields_glyph, 16, dimension_field, depth);
-    set_value_entry_val(lmt_node_fields_glyph, 17, dimension_field, total);
-    set_value_entry_val(lmt_node_fields_glyph, 18, integer_field,   expansion);
-    set_value_entry_val(lmt_node_fields_glyph, 19, integer_field,   data);
-    set_value_entry_val(lmt_node_fields_glyph, 20, integer_field,   script);
-    set_value_entry_val(lmt_node_fields_glyph, 21, integer_field,   hyphenate);
-    set_value_entry_val(lmt_node_fields_glyph, 22, integer_field,   options);
-    set_value_entry_val(lmt_node_fields_glyph, 23, integer_field,   protected);
-    set_value_entry_val(lmt_node_fields_glyph, 24, integer_field,   properties);
-    set_value_entry_val(lmt_node_fields_glyph, 25, integer_field,   group);
-    set_value_entry_val(lmt_node_fields_glyph, 26, integer_field,   index);
+    set_value_entry_val(lmt_node_fields_glyph,  1, integer_field,   font);
+    set_value_entry_val(lmt_node_fields_glyph,  2, integer_field,   char);
+    set_value_entry_val(lmt_node_fields_glyph,  3, dimension_field, xoffset);
+    set_value_entry_val(lmt_node_fields_glyph,  4, dimension_field, yoffset);
+    set_value_entry_val(lmt_node_fields_glyph,  5, integer_field,   data);
+    set_value_entry_val(lmt_node_fields_glyph,  6, dimension_field, width);
+    set_value_entry_val(lmt_node_fields_glyph,  7, dimension_field, height);
+    set_value_entry_val(lmt_node_fields_glyph,  8, dimension_field, depth);
+    set_value_entry_val(lmt_node_fields_glyph,  9, dimension_field, total);
+    set_value_entry_val(lmt_node_fields_glyph, 10, dimension_field, scale);
+    set_value_entry_val(lmt_node_fields_glyph, 11, dimension_field, xscale);
+    set_value_entry_val(lmt_node_fields_glyph, 12, dimension_field, yscale);
+    set_value_entry_val(lmt_node_fields_glyph, 13, integer_field,   expansion);
+    set_value_entry_val(lmt_node_fields_glyph, 14, integer_field,   state);
+    set_value_entry_val(lmt_node_fields_glyph, 15, integer_field,   script);
+    set_value_entry_val(lmt_node_fields_glyph, 16, integer_field,   language);
+    set_value_entry_val(lmt_node_fields_glyph, 17, integer_field,   lhmin);
+    set_value_entry_val(lmt_node_fields_glyph, 18, integer_field,   rhmin);
+    set_value_entry_val(lmt_node_fields_glyph, 19, dimension_field, left);
+    set_value_entry_val(lmt_node_fields_glyph, 20, dimension_field, right);
+    set_value_entry_val(lmt_node_fields_glyph, 21, integer_field,   uchyph);
+    set_value_entry_val(lmt_node_fields_glyph, 22, integer_field,   script);
+    set_value_entry_val(lmt_node_fields_glyph, 23, integer_field,   hyphenate);
+    set_value_entry_val(lmt_node_fields_glyph, 24, integer_field,   options);
+    set_value_entry_val(lmt_node_fields_glyph, 25, integer_field,   discpart);
+    set_value_entry_val(lmt_node_fields_glyph, 26, integer_field,   protected);
+    set_value_entry_val(lmt_node_fields_glyph, 27, integer_field,   properties);
+    set_value_entry_val(lmt_node_fields_glyph, 28, integer_field,   group);
+    set_value_entry_val(lmt_node_fields_glyph, 29, integer_field,   index);
 
     lmt_node_fields_insert = lmt_aux_allocate_value_info(6);
 
@@ -535,28 +544,33 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_kern, 1, dimension_field, kern);
     set_value_entry_val(lmt_node_fields_kern, 2, integer_field,   expansion);
 
-    lmt_node_fields_list = lmt_aux_allocate_value_info(20);
+    lmt_node_fields_list = lmt_aux_allocate_value_info(24);
 
     set_value_entry_val(lmt_node_fields_list,  0, attribute_field, attr);
-    set_value_entry_val(lmt_node_fields_list,  1, dimension_field, width);
-    set_value_entry_val(lmt_node_fields_list,  2, dimension_field, depth);
-    set_value_entry_val(lmt_node_fields_list,  3, dimension_field, height);
-    set_value_entry_val(lmt_node_fields_list,  4, integer_field,   direction);
-    set_value_entry_val(lmt_node_fields_list,  5, dimension_field, shift);
-    set_value_entry_val(lmt_node_fields_list,  6, integer_field,   glueorder);
-    set_value_entry_val(lmt_node_fields_list,  7, integer_field,   gluesign);
-    set_value_entry_val(lmt_node_fields_list,  8, integer_field,   glueset);
-    set_value_entry_val(lmt_node_fields_list,  9, node_list_field, list);
-    set_value_entry_val(lmt_node_fields_list, 10, integer_field,   orientation);
-    set_value_entry_val(lmt_node_fields_list, 11, integer_field,   source);
-    set_value_entry_val(lmt_node_fields_list, 12, integer_field,   target);
-    set_value_entry_val(lmt_node_fields_list, 13, dimension_field, woffset);
-    set_value_entry_val(lmt_node_fields_list, 14, dimension_field, hoffset);
-    set_value_entry_val(lmt_node_fields_list, 15, dimension_field, doffset);
-    set_value_entry_val(lmt_node_fields_list, 16, dimension_field, xoffset);
-    set_value_entry_val(lmt_node_fields_list, 17, dimension_field, yoffset);
-    set_value_entry_val(lmt_node_fields_list, 18, integer_field,   state);
-    set_value_entry_val(lmt_node_fields_list, 19, integer_field,   class);
+    set_value_entry_val(lmt_node_fields_list,  1, node_list_field, list);
+    set_value_entry_val(lmt_node_fields_list,  2, dimension_field, width);
+    set_value_entry_val(lmt_node_fields_list,  3, dimension_field, depth);
+    set_value_entry_val(lmt_node_fields_list,  4, dimension_field, height);
+    set_value_entry_val(lmt_node_fields_list,  5, integer_field,   direction);
+    set_value_entry_val(lmt_node_fields_list,  6, dimension_field, shift);
+    set_value_entry_val(lmt_node_fields_list,  7, integer_field,   glueorder);
+    set_value_entry_val(lmt_node_fields_list,  8, integer_field,   gluesign);
+    set_value_entry_val(lmt_node_fields_list,  9, integer_field,   glueset);
+    set_value_entry_val(lmt_node_fields_list, 10, integer_field,   geometry);
+    set_value_entry_val(lmt_node_fields_list, 11, integer_field,   orientation);
+    set_value_entry_val(lmt_node_fields_list, 12, integer_field,   anchor);
+    set_value_entry_val(lmt_node_fields_list, 13, integer_field,   source);
+    set_value_entry_val(lmt_node_fields_list, 14, integer_field,   target);
+    set_value_entry_val(lmt_node_fields_list, 15, dimension_field, xoffset);
+    set_value_entry_val(lmt_node_fields_list, 16, dimension_field, yoffset);
+    set_value_entry_val(lmt_node_fields_list, 17, dimension_field, woffset);
+    set_value_entry_val(lmt_node_fields_list, 18, dimension_field, hoffset);
+    set_value_entry_val(lmt_node_fields_list, 19, dimension_field, doffset);
+    set_value_entry_val(lmt_node_fields_list, 20, integer_field,   pre);
+    set_value_entry_val(lmt_node_fields_list, 21, integer_field,   post);
+    set_value_entry_val(lmt_node_fields_list, 22, integer_field,   state);
+    set_value_entry_val(lmt_node_fields_list, 23, integer_field,   index);
+ // set_value_entry_val(lmt_node_fields_list, 24, integer_field,   class);
 
     lmt_node_fields_par = lmt_aux_allocate_value_info(9);
     set_value_entry_val(lmt_node_fields_par, 0, attribute_field, attr);
@@ -597,12 +611,15 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_math_char, 5, integer_field,   group);
     set_value_entry_val(lmt_node_fields_math_char, 6, integer_field,   index);
 
-    lmt_node_fields_math_text_char = lmt_aux_allocate_value_info(4);
+    lmt_node_fields_math_text_char = lmt_aux_allocate_value_info(7);
 
     set_value_entry_val(lmt_node_fields_math_text_char, 0, attribute_field, attr);
     set_value_entry_val(lmt_node_fields_math_text_char, 1, integer_field,   fam);
     set_value_entry_val(lmt_node_fields_math_text_char, 2, integer_field,   char);
     set_value_entry_val(lmt_node_fields_math_text_char, 3, integer_field,   options);
+    set_value_entry_val(lmt_node_fields_math_text_char, 4, integer_field,   properties);
+    set_value_entry_val(lmt_node_fields_math_text_char, 5, integer_field,   group);
+    set_value_entry_val(lmt_node_fields_math_text_char, 6, integer_field,   index);
 
     lmt_node_fields_noad = lmt_aux_allocate_value_info(8);
 
@@ -615,10 +632,11 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_noad, 6, node_list_field, prime);
     set_value_entry_val(lmt_node_fields_noad, 7, integer_field,   options);
 
-    lmt_node_fields_penalty = lmt_aux_allocate_value_info(2);
+    lmt_node_fields_penalty = lmt_aux_allocate_value_info(3);
 
     set_value_entry_val(lmt_node_fields_penalty, 0, attribute_field, attr);
     set_value_entry_val(lmt_node_fields_penalty, 1, integer_field,   penalty);
+    set_value_entry_val(lmt_node_fields_penalty, 2, integer_field,   options);
 
     lmt_node_fields_radical = lmt_aux_allocate_value_info(11);
 
@@ -634,19 +652,21 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_radical,  9, dimension_field, width);
     set_value_entry_val(lmt_node_fields_radical, 10, integer_field,   options);
 
-    lmt_node_fields_rule = lmt_aux_allocate_value_info(11);
+    lmt_node_fields_rule = lmt_aux_allocate_value_info(12);
 
     set_value_entry_val(lmt_node_fields_rule,  0, attribute_field, attr);
     set_value_entry_val(lmt_node_fields_rule,  1, dimension_field, width);
     set_value_entry_val(lmt_node_fields_rule,  2, dimension_field, depth);
     set_value_entry_val(lmt_node_fields_rule,  3, dimension_field, height);
+    set_value_entry_val(lmt_node_fields_rule,  3, dimension_field, total);
     set_value_entry_val(lmt_node_fields_rule,  4, dimension_field, xoffset);
     set_value_entry_val(lmt_node_fields_rule,  5, dimension_field, yoffset);
     set_value_entry_val(lmt_node_fields_rule,  6, dimension_field, left);
     set_value_entry_val(lmt_node_fields_rule,  7, dimension_field, right);
     set_value_entry_val(lmt_node_fields_rule,  8, integer_field,   data);
-    set_value_entry_val(lmt_node_fields_rule,  9, integer_field,   char);
-    set_value_entry_val(lmt_node_fields_rule, 10, integer_field,   font);
+    set_value_entry_val(lmt_node_fields_rule,  9, integer_field,   font);
+    set_value_entry_val(lmt_node_fields_rule, 10, integer_field,   fam);
+    set_value_entry_val(lmt_node_fields_rule, 11, integer_field,   char);
 
     lmt_node_fields_style = lmt_aux_allocate_value_info(2);
 
@@ -1249,7 +1269,7 @@ halfword tex_copy_node(halfword original)
                     break;
                 case fence_noad:
                     /* in principle also scripts */
-                    copy_sub_node(fence_delimiter_list(copy), fence_delimiter_list(original));
+                    copy_sub_node(fence_delimiter(copy), fence_delimiter(original));
                     copy_sub_node(fence_delimiter_top(copy), fence_delimiter_top(original));
                     copy_sub_node(fence_delimiter_bottom(copy), fence_delimiter_bottom(original));
                     break;
@@ -1439,7 +1459,7 @@ void tex_flush_node(halfword p)
                     }
                     break;
                 case fence_noad:
-                    tex_aux_free_sub_node_list(fence_delimiter_list(p));
+                    tex_aux_free_sub_node_list(fence_delimiter(p));
                     tex_aux_free_sub_node_list(fence_delimiter_top(p));
                     tex_aux_free_sub_node_list(fence_delimiter_bottom(p));
                     break;
@@ -1563,7 +1583,7 @@ static void tex_aux_check_node(halfword p)
             }
             break;
         case fence_noad:
-            tex_aux_node_range_test(p, fence_delimiter_list(p));
+            tex_aux_node_range_test(p, fence_delimiter(p));
             tex_aux_node_range_test(p, fence_delimiter_top(p));
             tex_aux_node_range_test(p, fence_delimiter_bottom(p));
             break;
@@ -1920,7 +1940,7 @@ inline static halfword tex_aux_new_attribute_node(halfword index, int value)
     halfword r = tex_get_node(attribute_node_size);
     node_type(r) = attribute_node;
     node_subtype(r) = attribute_value_subtype;
-    attribute_index(r) = index;
+    attribute_index(r) = (quarterword) index;
     attribute_value(r) = value;
     return r;
 }

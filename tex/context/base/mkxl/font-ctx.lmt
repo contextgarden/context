@@ -1129,12 +1129,13 @@ do  -- else too many locals
     local stoptiming       = statistics.stoptiming
 
     local setmacro         = tokens.setters.macro
-    local ctxcatcodes      = tex.ctxcatcodes
     local texconditionals  = tex.conditionals
 
-    local c_scaledfontmode = texiscount("scaledfontmode")
-    local c_scaledfontsize = texiscount("scaledfontsize")
-    local c_lastfontid     = texiscount("lastfontid")
+    local ctxcatcodes      <const> = tex.ctxcatcodes
+
+    local c_scaledfontmode <const> = texiscount("scaledfontmode")
+    local c_scaledfontsize <const> = texiscount("scaledfontsize")
+    local c_lastfontid     <const> = texiscount("lastfontid")
 
     local reported = setmetatableindex(function(t,k)
         local v = setmetatableindex(function(t,k)
@@ -1583,7 +1584,7 @@ do  -- else too many locals
 
     local n = 0
 
-    local d_bodyfontsize = tex.isdimen("bodyfontsize")
+    local d_bodyfontsize <const> = tex.isdimen("bodyfontsize")
 
     function definers.internal(specification,cs)
         specification = specification or { }
@@ -1650,7 +1651,7 @@ end
 -- have delayed definitions and so we never know what style is taken
 -- as start.
 
-local c_font_scaled_points = texiscount("c_font_scaled_points")
+local c_font_scaled_points <const> = texiscount("c_font_scaled_points")
 
 function constructors.calculatescale(tfmdata,scaledpoints,relativeid,specification)
     local parameters = tfmdata.parameters
@@ -2615,13 +2616,14 @@ do
     local analyzers       = fonts.analyzers
     local methods         = analyzers.methods
 
-    local unsetvalue      = attributes.unsetvalue
+    local unsetvalue      <const> = attributes.unsetvalue
 
-    local a_color         = attributes.private('color')
-    local a_colormodel    = attributes.private('colormodel')
+    local a_color         <const> = attributes.private('color')
+    local a_colormodel    <const> = attributes.private('colormodel')
+
+    local glyph_code      <const> = nodes.nodecodes.glyph
+
     local m_color         = attributes.list[a_color] or { }
-
-    local glyph_code      = nodes.nodecodes.glyph
 
     local states          = analyzers.states
 
@@ -3315,8 +3317,9 @@ do
 
     -- We can make these real font dimens instead:
 
-    local dimen_code = tokens.values.dimension
-    local yscaled    = font.yscaled
+    local yscaled = font.yscaled
+
+    local dimen_code <const> = tokens.values.dimension
 
     implement {
         name      = "ascender",

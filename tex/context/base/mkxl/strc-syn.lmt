@@ -32,13 +32,12 @@ synonyms.tobesaved = tobesaved
 
 local progressions = { } -- false=not_yet_shown  true=shown
 
-local c_realpageno = tex.iscount("realpageno")
+local c_realpageno <const> = tex.iscount("realpageno")
 
 local texgetcount  = tex.getcount
 
-local variables    = interfaces.variables
-local v_all        = variables.all
-local v_current    = variables.current
+local v_all        <const> = interfaces.variables.all
+local v_current    <const> = interfaces.variables.current
 
 local function initializer()
     collected = synonyms.collected

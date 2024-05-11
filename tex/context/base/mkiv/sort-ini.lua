@@ -220,7 +220,7 @@ local function preparetables(data)
                                     end
                                 end
                             else
-                                l = lower[l] or lcchars[l]
+                                local l = lower[l] or lcchars[l]
                                 if l then
                                     if trace_orders then
                                         report_sorters(" 5 lower: %C",l)

@@ -953,12 +953,12 @@ local flushliteral  do
     local nodeproperties      = nodes.properties.data
     local literalvalues       = nodes.literalvalues
 
-    local originliteral_code  = literalvalues.origin
-    local pageliteral_code    = literalvalues.page
-    local alwaysliteral_code  = literalvalues.always
-    local rawliteral_code     = literalvalues.raw
-    local textliteral_code    = literalvalues.text
-    local fontliteral_code    = literalvalues.font
+    local originliteral_code  <const> = literalvalues.origin
+    local pageliteral_code    <const> = literalvalues.page
+    local alwaysliteral_code  <const> = literalvalues.always
+    local rawliteral_code     <const> = literalvalues.raw
+    local textliteral_code    <const> = literalvalues.text
+    local fontliteral_code    <const> = literalvalues.font
 
     flushliteral = function(current,pos_h,pos_v)
         local p = nodeproperties[current]
@@ -1249,17 +1249,17 @@ local flushimage  do
     local getdata           = nuts.getdata
 
     local rulecodes         = nodes.rulecodes
-    local normalrule_code   = rulecodes.normal
-    local boxrule_code      = rulecodes.box
-    local imagerule_code    = rulecodes.image
-    local emptyrule_code    = rulecodes.empty
-    local userrule_code     = rulecodes.user
-    local overrule_code     = rulecodes.over
-    local underrule_code    = rulecodes.under
-    local fractionrule_code = rulecodes.fraction
-    local radicalrule_code  = rulecodes.radical
-    local outlinerule_code  = rulecodes.outline
-    ----- virtualrule_code  = rulecodes.virtual
+    local normalrule_code   <const> = rulecodes.normal
+    local boxrule_code      <const> = rulecodes.box
+    local imagerule_code    <const> = rulecodes.image
+    local emptyrule_code    <const> = rulecodes.empty
+    local userrule_code     <const> = rulecodes.user
+    local overrule_code     <const> = rulecodes.over
+    local underrule_code    <const> = rulecodes.under
+    local fractionrule_code <const> = rulecodes.fraction
+    local radicalrule_code  <const> = rulecodes.radical
+    local outlinerule_code  <const> = rulecodes.outline
+    ----- virtualrule_code  <const> = rulecodes.virtual
 
     local processrule       = nodes.rules.process
 
@@ -2645,7 +2645,8 @@ do
     local nofpages     = 0
 
     local texgetcount  = tex.getcount
-    local c_realpageno = tex.iscount("realpageno")
+
+    local c_realpageno <const> = tex.iscount("realpageno")
 
     pdfreserveobject = function(name)
         nofobjects = nofobjects + 1

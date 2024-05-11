@@ -8,10 +8,10 @@ if not modules then modules = { } end modules ['typo-wrp'] = {
 
 -- begin/end par wrapping stuff ... more to come
 
-local boundary_code     = nodes.nodecodes.boundary
-local glyph_code        = nodes.nodecodes.glyph
-local wordboundary_code = nodes.boundarycodes.word
-local userboundary_code = nodes.boundarycodes.user
+local boundary_code     <const> = nodes.nodecodes.boundary
+local glyph_code        <const> = nodes.nodecodes.glyph
+local wordboundary_code <const> = nodes.boundarycodes.word
+local userboundary_code <const> = nodes.boundarycodes.user
 
 local nuts              = nodes.nuts
 
@@ -45,7 +45,7 @@ local report            = logs.reporter("paragraphs","wrappers")
 --
 -- ... boundary [strut: hlist] [break: glue penalty] boundary
 
-local a_crlf = attributes.private("crlf")
+local a_crlf <const> = attributes.private("crlf")
 
 local function remove_dangling_crlf(head,tail)
     if head and tail then
@@ -92,7 +92,7 @@ typesetters.tighten = tighten
 local trace_tighten   trackers.register("typesetters.tighten",function(v) trace_tighten = v end)
 local report        = logs.reporter("typesetters","tighten")
 
-local a_tightfit_boundary = tex.boundaries.system("c_tightfit_boundary") -- private, not defined with \defineboundary
+local a_tightfit_boundary <const> = tex.boundaries.system("c_tightfit_boundary") -- private, not defined with \defineboundary
 
 local function bbcompensation(font,char)
     local tfmdata   = fontdata[font]
@@ -140,7 +140,7 @@ implement {
     end
 }
 
-local dimension_value = tokens.values.dimension
+local dimension_value <const> = tokens.values.dimension
 local texgetnest      = tex.getnest
 
 implement {

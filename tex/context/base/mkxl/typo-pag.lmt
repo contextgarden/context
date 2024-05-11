@@ -16,14 +16,14 @@ local parbuilders         = builders.paragraphs
 local nodes               = nodes
 local nodecodes           = nodes.nodecodes
 
-local hlist_code          = nodecodes.hlist
-local vlist_code          = nodecodes.vlist
-local glue_code           = nodecodes.glue
-local kern_code           = nodecodes.kern
-local penalty_code        = nodecodes.penalty
+local hlist_code          <const> = nodecodes.hlist
+local vlist_code          <const> = nodecodes.vlist
+local glue_code           <const> = nodecodes.glue
+local kern_code           <const> = nodecodes.kern
+local penalty_code        <const> = nodecodes.penalty
 
-local unsetvalue          = attributes.unsetvalue
-local a_keeptogether      = attributes.private("keeptogether")
+local unsetvalue          <const> = attributes.unsetvalue
+local a_keeptogether      <const> = attributes.private("keeptogether")
 
 local nuts                = nodes.nuts
 

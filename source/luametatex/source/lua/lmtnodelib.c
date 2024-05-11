@@ -597,6 +597,15 @@ static int nodelib_direct_getchardict(lua_State *L)
                 lua_pushinteger(L, tex_fam_fnt(kernel_math_family(n),0));
                 lua_pushinteger(L, kernel_math_character(n));
                 return 5;
+            case delimiter_node:
+                { 
+                    lua_pushinteger(L, delimiter_math_properties(n));
+                    lua_pushinteger(L, delimiter_math_group(n));
+                    lua_pushinteger(L, delimiter_math_index(n));
+                    lua_pushinteger(L, tex_fam_fnt(delimiter_small_family(n),0));
+                    lua_pushinteger(L, delimiter_small_character(n));
+                    return 5;
+                }
         }
     }
     return 0;
@@ -858,6 +867,33 @@ static int nodelib_direct_getclass(lua_State *L)
                 lua_push_integer(L, get_noad_left_class(n)); 
                 lua_push_integer(L, get_noad_right_class(n));
                 return 3;
+            case glyph_node:
+                { 
+                    singleword mathclass = node_subtype(n) - glyph_math_ordinary_subtype;
+                    if (mathclass >= 0) { 
+                        lua_push_integer(L, mathclass);
+                        return 1;
+                    } else { 
+                        break;
+                    }
+                }
+            case disc_node:
+                lua_push_integer(L, disc_class(n));
+                return 1;
+            case hlist_node:
+            case vlist_node:
+                { 
+                    singleword mathclass = node_subtype(n) - noad_class_list_base;
+                    if (mathclass >= 0) { 
+                        lua_push_integer(L, mathclass);
+                        return 1;
+                    } else { 
+                        break;
+                    }
+                }
+            case delimiter_node:
+                lua_push_integer(L, node_subtype(n));
+                return 1;
         }
     }
     lua_pushnil(L);
@@ -875,15 +911,28 @@ static int nodelib_direct_setclass(lua_State *L)
             case accent_noad:
             case fence_noad:
                 if (lua_type(L, 2) == LUA_TNUMBER) {
-                    set_noad_main_class(n, lmt_tohalfword(L, 2)); 
+                    set_noad_main_class(n, lmt_tosingleword(L, 2)); 
                 }
                 if (lua_type(L, 3) == LUA_TNUMBER) {
-                    set_noad_left_class(n, lmt_tohalfword(L, 3)); 
+                    set_noad_left_class(n, lmt_tosingleword(L, 3)); 
                 }
                 if (lua_type(L, 4) == LUA_TNUMBER) {
-                    set_noad_right_class(n, lmt_tohalfword(L, 4)); 
+                    set_noad_right_class(n, lmt_tosingleword(L, 4)); 
                 }
                 break;
+            case glyph_node:
+                node_subtype(n) = glyph_math_ordinary_subtype + lmt_tosingleword(L, 2);
+                break;
+            case disc_node:
+                disc_class(n) = lmt_tosingleword(L, 2);
+                break;
+            case hlist_node:
+            case vlist_node:
+                node_subtype(n) = noad_class_list_base + lmt_tosingleword(L, 2);
+                break;
+            case delimiter_node:
+                node_subtype(n) = lmt_tosingleword(L, 2);
+                return 1;
         }
     }
     return 0;
@@ -3293,6 +3342,9 @@ static int nodelib_direct_gettopdelimiter(lua_State *L)
             case radical_noad:
                 nodelib_push_direct_or_nil(L, radical_top_delimiter(n));
                 return 1;
+            case fence_noad:
+                nodelib_push_direct_or_nil(L, fence_delimiter_top(n));
+                return 1;
         }
     }
     lua_pushnil(L);
@@ -3306,6 +3358,9 @@ static int nodelib_direct_getbottomdelimiter(lua_State *L)
         switch (node_type(n)) {
             case radical_noad:
                 nodelib_push_direct_or_nil(L, radical_bottom_delimiter(n));
+                return 1;
+            case fence_noad:
+                nodelib_push_direct_or_nil(L, fence_delimiter_bottom(n));
                 return 1;
         }
     }
@@ -3322,7 +3377,7 @@ static int nodelib_direct_getdelimiter(lua_State *L)
                 nodelib_push_direct_or_nil(L, fraction_middle_delimiter(n));
                 return 1;
             case fence_noad:
-                nodelib_push_direct_or_node(L, n, fence_delimiter_list(n));
+                nodelib_push_direct_or_node(L, n, fence_delimiter(n));
                 return 1;
             case radical_noad:
                 nodelib_push_direct_or_node(L, n, radical_left_delimiter(n));
@@ -3368,6 +3423,38 @@ static int nodelib_direct_setrightdelimiter(lua_State *L)
     return 0;
 }
 
+static int nodelib_direct_settopdelimiter(lua_State *L)
+{
+    halfword n = nodelib_valid_direct_from_index(L, 1);
+    if (n) {
+        switch (node_type(n)) {
+            case radical_noad:
+                radical_top_delimiter(n) = nodelib_valid_direct_from_index(L, 2);
+                return 1;
+            case fence_noad:
+                fence_delimiter_top(n) = nodelib_valid_direct_from_index(L, 2);
+                return 1;
+        }
+    }
+    return 0;
+}
+
+static int nodelib_direct_setbottomdelimiter(lua_State *L)
+{
+    halfword n = nodelib_valid_direct_from_index(L, 1);
+    if (n) {
+        switch (node_type(n)) {
+            case radical_noad:
+                radical_bottom_delimiter(n) = nodelib_valid_direct_from_index(L, 2);
+                return 1;
+            case fence_noad:
+                fence_delimiter_bottom(n) = nodelib_valid_direct_from_index(L, 2);
+                return 1;
+        }
+    }
+    return 0;
+}
+
 static int nodelib_direct_setdelimiter(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -3377,7 +3464,7 @@ static int nodelib_direct_setdelimiter(lua_State *L)
                 fraction_middle_delimiter(n) = nodelib_valid_direct_from_index(L, 2);
                 break;
             case fence_noad:
-                fence_delimiter_list(n) = nodelib_valid_direct_from_index(L, 2);
+                fence_delimiter(n) = nodelib_valid_direct_from_index(L, 2);
                 break;
             case radical_noad:
                 radical_left_delimiter(n) = nodelib_valid_direct_from_index(L, 2);
@@ -6734,7 +6821,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                 lua_pushinteger(L, glyph_group(n));
                             } else if (lua_key_eq(s, index)) {
                                 lua_pushinteger(L, glyph_index(n));
-                           } else {
+                            } else {
                                 lua_pushnil(L);
                             }
                             break;
@@ -7095,7 +7182,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                         break;
                                     case fence_noad:
                                         if (lua_key_eq(s, delimiter)) {
-                                            nodelib_push_direct_or_node(L, direct, fence_delimiter_list(n));
+                                            nodelib_push_direct_or_node(L, direct, fence_delimiter(n));
                                         } else if (lua_key_eq(s, top)) {
                                             nodelib_push_direct_or_node(L, direct, fence_delimiter_top(n));
                                         } else if (lua_key_eq(s, bottom)) {
@@ -7108,6 +7195,8 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                             lua_pushinteger(L, noad_depth(n));
                                         } else if (lua_key_eq(s, total)) {
                                             lua_pushinteger(L, noad_total(n));
+                                        } else if (lua_key_eq(s, variant)) {
+                                            lua_pushinteger(L, fence_delimiter_variant(n));
                                         } else {
                                             lua_pushnil(L);
                                         }
@@ -7782,7 +7871,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                         return 0;
                                     case fence_noad:
                                         if (lua_key_eq(s, delimiter)) {
-                                            fence_delimiter_list(n) = nodelib_direct_or_node_from_index(L, direct, 3);
+                                            fence_delimiter(n) = nodelib_direct_or_node_from_index(L, direct, 3);
                                         } else if (lua_key_eq(s, top)) {
                                             fence_delimiter_top(n) = nodelib_direct_or_node_from_index(L, direct, 3);
                                         } else if (lua_key_eq(s, bottom)) {
@@ -7793,6 +7882,8 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                             noad_height(n) = (halfword) lmt_roundnumber(L, 3);
                                         } else if (lua_key_eq(s, depth)) {
                                             noad_depth(n) = (halfword) lmt_roundnumber(L, 3);
+                                        } else if (lua_key_eq(s, variant)) {
+                                            fence_delimiter_variant(n) = (halfword) lmt_roundnumber(L, 3);
                                         } else {
                                             goto CANTSET;
                                         }
@@ -10301,6 +10392,8 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "setdata",                 nodelib_direct_setdata                },
     { "setleftdelimiter",        nodelib_direct_setleftdelimiter       },
     { "setrightdelimiter",       nodelib_direct_setrightdelimiter      },
+    { "settopdelimiter",         nodelib_direct_settopdelimiter        },
+    { "setbottomdelimiter",      nodelib_direct_setbottomdelimiter     },
     { "setdelimiter",            nodelib_direct_setdelimiter           },
     { "setdenominator",          nodelib_direct_setdenominator         },
     { "setdegree",               nodelib_direct_setdegree              },

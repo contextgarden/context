@@ -92,7 +92,7 @@ local report_epdf       = logs.reporter("epdf")
 
 local allocate          = utilities.storage.allocate
 
-local bpfactor          = number.dimenfactors.bp
+local bpfactor          <const> = number.dimenfactors.bp
 
 local objectcodes = { [0] =
     "none",
@@ -119,21 +119,21 @@ local encryptioncodes = {
 objectcodes                  = allocate(swapped(objectcodes,objectcodes))
 encryptioncodes              = allocate(swapped(encryptioncodes,encryptioncodes))
 
-lpdf_epdf.objectcodes             = objectcodes
-lpdf_epdf.encryptioncodes         = encryptioncodes
+lpdf_epdf.objectcodes        = objectcodes
+lpdf_epdf.encryptioncodes    = encryptioncodes
 
-local none_object_code       = objectcodes.none
-local null_object_code       = objectcodes.null
-local bool_object_code       = objectcodes.bool
-local integer_object_code    = objectcodes.integer
-local number_object_code     = objectcodes.number
-local name_object_code       = objectcodes.name
-local string_object_code     = objectcodes.string
-local array_object_code      = objectcodes.array
-local dictionary_object_code = objectcodes.dictionary
-local stream_object_code     = objectcodes.stream
-local reference_object_code  = objectcodes.reference
-local lpdf_object_code       = objectcodes.lpdf
+local none_object_code       <const> = objectcodes.none
+local null_object_code       <const> = objectcodes.null
+local bool_object_code       <const> = objectcodes.bool
+local integer_object_code    <const> = objectcodes.integer
+local number_object_code     <const> = objectcodes.number
+local name_object_code       <const> = objectcodes.name
+local string_object_code     <const> = objectcodes.string
+local array_object_code      <const> = objectcodes.array
+local dictionary_object_code <const> = objectcodes.dictionary
+local stream_object_code     <const> = objectcodes.stream
+local reference_object_code  <const> = objectcodes.reference
+local lpdf_object_code       <const> = objectcodes.lpdf
 
 -- We need to convert the string from utf16 although there is no way to
 -- check if we have a regular string starting with a bom. So, we have
@@ -709,7 +709,7 @@ end)
 
 local p_hex_string = Ct(Cc("hex") *
     P("<")
-  * Cs((1 - P(">"))^1)
+  * Cs((1 - P(">"))^0)
   * P(">")
 )
 
@@ -1375,8 +1375,6 @@ if images then do
             return contents
         end
     end
-
-
 
     local function copypage(pdfdoc,pagenumber,attributes,compact,width,height,attr,copymeta)
         if pdfdoc then

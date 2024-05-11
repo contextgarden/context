@@ -103,6 +103,7 @@
 \registerctxluafile{math-spa}{autosuffix}
 \registerctxluafile{math-fnt}{autosuffix}
 \registerctxluafile{math-pre}{autosuffix}
+\registerctxluafile{math-txt}{autosuffix}
 
 %D Some neat units:
 
@@ -812,7 +813,7 @@
 %D The attributes that we will use (todo: pack some into one but uglier code):
 
 \definesystemattribute[mathalphabet]   [public]
-\definesystemattribute[mathsize]       [public]
+%definesystemattribute[mathsize]       [public] % we now use the engine features
 \definesystemattribute[mathpunctuation][public]
 \definesystemattribute[mathgreek]      [public] % will become generic
 \definesystemattribute[mathalternate]  [public]
@@ -1029,6 +1030,51 @@
 %D     \im{g(x) = \frac{x}{y}} \mtp{.}
 %D \stopformula
 %D \stoptyping
+
+\let\math_trace_blobs\relax
+
+\protected\def\math_trace_blobs_indeed
+  {\dontleavehmode
+   \hbox to \zeropoint \bgroup
+      \resetinteractionparameter\c!contrastcolor
+      \resetinteractionparameter\c!style
+      \scratchcounter\getblobindex\currentmathblob
+      \bgroup
+        \darkgray
+        \vrule \s!height .9\strutht \s!depth .9\strutdp \s!width \onepoint \relax
+        \hbox to \zeropoint \bgroup
+          \smallinfofont
+          \the\currentmathblob\hss
+          \hbox to \zeropoint \s!yoffset -.6\strutdp \bgroup
+            \currentlanguage
+            \hss
+          \egroup
+        \egroup
+      \egroup
+      \ifblobindexdone{\currentlanguage}\scratchcounter
+        \note[\v!mathnote:\currentlanguage:\the\scratchcounter]%
+      \else
+        \markblobindexdone{\currentlanguage}\scratchcounter
+        \normalexpanded{\mathnote
+           [\v!mathnote:\currentlanguage:\the\scratchcounter]
+           {\definedfont[\s!MathRoman]\gettextblob{\currentlanguage}\the\currentmathblob}}%
+      \fi
+      \hss
+   \egroup}
+
+\protected\def\math_trace_blobs_checked
+  {\ifnum\currentmathblobnesting<\zerocount\else
+     \aftergroup\math_trace_blobs_indeed
+   \fi}
+
+\installtextracker
+  {math.textblobs}
+  {\let\math_trace_blobs\math_trace_blobs_checked}
+  {\let\math_trace_blobs\relax}
+
+\appendtoks
+    \math_trace_blobs
+\to \everymathematics
 
 \permanent\protected\def\dm#1%
   {\relax
@@ -2015,7 +2061,10 @@
    \endgroup}
 
 \permanent\protected\def\mtext#1%
-  {\text{\usemathematicsstyleandcolor\c!textstyle\c!textcolor#1}}
+  {\begingroup
+   \currentmathblobnesting\minusone
+   \text{\usemathematicsstyleandcolor\c!textstyle\c!textcolor#1}%
+   \endgroup}
 
 %D The next hack is needed needed for sine, cosine etc.
 
@@ -2024,11 +2073,11 @@
 \let\math_tags_function         \firstofoneunexpanded
 \let\math_tags_functionlabeltext\mathlabeltext
 
-\let\math_tags_mo\firstofoneunexpanded
-\let\math_tags_mi\firstofoneunexpanded
+% \let\math_tags_mo\firstofoneunexpanded
+% \let\math_tags_mi\firstofoneunexpanded
 
-\protected\def\math_tags_mn#1{\begingroup\math_upright\math_set_o_both#1\endgroup}
-\protected\def\math_tags_ms#1{\begingroup\math_upright\math_set_p_both#1\endgroup} % why not just \text
+% \protected\def\math_tags_mn#1{\begingroup\math_upright\math_set_o_both#1\endgroup}
+% \protected\def\math_tags_ms#1{\begingroup\math_upright\math_set_p_both#1\endgroup} % why not just \text
 
 % Once this is stable we can store the number at the tex end which is
 % faster. Functions getnumbers >= 1000.
@@ -2050,7 +2099,7 @@
 % \Umathcode"2064 = \mathghostcode \zerocount "2063 % \invisibleplus
 
 %D For previous variants of the function styling you can check the git repository
-%D end April 2022.
+%D end April 2022. We dropped the optional apply feature.
 
 % \startTEXpage[offset=1dk]
 %                           $\sin(x) = 10$
@@ -2058,37 +2107,6 @@
 %     \startformula                     \sin(x) = 10 \stopformula
 %     \startformula[functionstyle=sans] \sin(x) = 10 \stopformula
 % \stopTEXpage
-
-% \protected\def\math_function_handle#1#2#3%
-%   {\begingroup
-%    \resetdummyparameter\c!mathlimits
-%    \getdummyparameters[#1]%
-%    \edef\p_limits{\dummyparameter\c!mathlimits}%
-%    \mathatom
-%         mathfont
-%         class \mathfunctioncode
-%         \ifx\p_limits\v!no
-%           nolimits
-%         \orelse\ifx\p_limits\v!yes
-%           limits
-%         \orelse\ifx\p_limits\v!auto
-%           nolimits
-%           limits
-%         \fi
-%      \bgroup % textfont
-%        \math_tags_mfunctionlab{#3}\c_apply_function
-%        \usemathematicscolorparameter\c!functioncolor
-%        \edef\p_functionstyle{\mathematicsparameter\c!functionstyle}%
-%        \ifempty\p_functionstyle
-%          \expandafter\math_upright
-%        \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
-%          \expandafter\lastnamedcs
-%        \else
-%          \expandafter\p_functionstyle
-%        \fi
-%        #2{#3}%
-%      \egroup
-%    \endgroup}
 
 \installcorenamespace{mathfunction}
 
@@ -2102,59 +2120,96 @@
 
 \setupmathfunctions
   [\c!color=\mathematicsparameter\c!functioncolor,
-   \c!style=\mathematicsparameter\c!functionstyle]
+   \c!style=\mathematicsparameter\c!functionstyle,
+   \s!class=function]
+
+\newconstant\c_function_method
 
 \def\math_function_handle_normal#1#2#3%
   {\begingroup
-     \mathdotfull
-     \cdef\currentmathfunction{#2}%
-     \setupcurrentmathfunction[#3]%
-     \edef\p_limits{\mathfunctionparameter\c!mathlimits}%
-     \mathatom
-       mathfont
-       single % behave like a character
-       class \mathfunctioncode
-       \ifx\p_limits\v!no
-         nolimits
-       \orelse\ifx\p_limits\v!yes
-         limits
-       \orelse\ifx\p_limits\v!auto
-         nolimits
-         limits
+   \mathdotfull
+   \cdef\currentmathfunction{#2}%
+   \setupcurrentmathfunction[#3]%
+   \edef\p_limits{\mathfunctionparameter\c!mathlimits}%
+   \edef\p_left{\mathfunctionparameter\c!left}%
+   \edef\p_right{\mathfunctionparameter\c!right}%
+   \c_function_method
+     \ifempty\p_left
+       \ifempty\p_right
+         \zerocount % prefix no argument
+       \else
+         \plustwo % postfix with argument
        \fi
-%        \ifcstok{\mathfunctionparameter\c!mathlimits}\v!no
-%          nolimits
-%        \orelse\iflastnamedcs\v!yes
-%          limits
-%        \orelse\iflastnamedcs\v!auto
-%          nolimits
-%          limits
-%        \fi
-     \bgroup % textfont
-% for now we reserve command for languages and it completely bypasses
-% the atom!
-%
-% \edef\p_command{\mathfunctionparameter\c!command}%
-% \ifempty\p_command
-     \math_tags_mfunctionlab{#2}\c_apply_function
-     \usemathfunctioncolorparameter\c!color
-     \edef\p_functionstyle{\mathfunctionparameter\c!style}%
-     \ifempty\p_functionstyle
-       \expandafter\math_upright
-     \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
-       \expandafter\lastnamedcs
+     \orelse\ifempty\p_right
+       \plusone % prefix with argument
      \else
-       \expandafter\p_functionstyle
+       \plusthree % pre- and postfix with argument
      \fi
-     \ifcase#1\relax
-       \expandafter\firstofoneargument
-     \or
-       \expandafter\mathlabeltext
-     \fi{#2}%
-% \else
-%     \p_command\relax
-% \fi
-     \egroup
+   \ifcase\c_function_method
+     \expandafter\math_function_handle_normal_string
+   \else
+     \expandafter\math_function_handle_normal_symbol
+   \fi#1} % constant
+
+\def\math_function_handle_normal_string#1%
+  {\dostarttagged\t!mfunction\currentmathfunction% todo: pass lab id
+   \math_tags_mfunctionlab\plusone{\currentmathfunction}{\mathfunctionparameter\c!method}%
+   \mathatom
+     mathfont
+     single % behave like a character
+     class \mathcodechecked{\mathfunctionparameter\s!class}
+     \ifx\p_limits\v!no
+       nolimits
+     \orelse\ifx\p_limits\v!yes
+       limits
+     \orelse\ifx\p_limits\v!auto
+       nolimits
+       limits
+     \fi
+ % \ifcstok{\mathfunctionparameter\c!mathlimits}\v!no
+ %   nolimits
+ % \orelse\iflastnamedcs\v!yes
+ %   limits
+ % \orelse\iflastnamedcs\v!auto
+ %   nolimits
+ %   limits
+ % \fi
+   \bgroup % textfont but can be anything
+   \usemathfunctioncolorparameter\c!color
+   \edef\p_functionstyle{\mathfunctionparameter\c!style}%
+   % no need for \expandafter here
+   \ifempty\p_functionstyle
+     \expandafter\math_upright
+   \orelse\ifcsname\??alternativestyle\p_functionstyle\endcsname
+     \expandafter\lastnamedcs
+   \else
+     \expandafter\p_functionstyle
+   \fi
+   \ifcase#1\or
+     \mathlabeltext{\currentmathfunction}%
+   \fi
+   \egroup
+   \dostoptagged
+   \endgroup}
+
+\definesystemattribute[mathstack][public]
+
+\newinteger\c_mathfunctionstack
+
+\def\math_function_handle_normal_symbol#1#2%
+  {\global\advanceby\c_mathfunctionstack\plusone
+   \attribute\mathstackattribute\c_mathfunctionstack
+   \math_tags_mfunctionlab\plusone{\currentmathfunction}{\mathfunctionparameter\c!method}%
+   \dostarttagged\t!mfunctionstack\currentmathfunction
+   \mathghost unpack \bgroup
+      \p_left
+      \begingroup
+      \attribute\mathstackattribute\attributeunsetvalue
+      #2%
+      \endgroup
+      \p_right
+   \egroup
+   \dostoptagged
    \endgroup}
 
 \def\math_function_handle_language_indeed#1#2#3%
@@ -2208,25 +2263,20 @@
     \fi
 \to \everybeforedisplayformula
 
-\let\math_tags_mfunctiontxt\gobbletwoarguments
-\let\math_tags_mfunctionlab\gobbletwoarguments
+\let\math_tags_mfunctionlab         \gobblethreearguments
+\def\math_tags_mfunctionlabattribute#-#-#-{\zerocount}
 
-\permanent\protected\def\math_tags_mo_indeed#1{\begingroup             \c_attr_mathcategory\plusone                  #1\endgroup}
-\permanent\protected\def\math_tags_mi_indeed#1{\begingroup             \c_attr_mathcategory\plustwo                  #1\endgroup}
-\permanent\protected\def\math_tags_mn_indeed#1{\begingroup\math_upright\c_attr_mathcategory\plusthree\math_set_o_both#1\endgroup}
-\permanent\protected\def\math_tags_ms_indeed#1{\begingroup\math_upright\c_attr_mathcategory\plusfour \math_set_p_both#1\endgroup} % todo: mathoptext
+% \permanent\protected\def\math_tags_mo_indeed#1{\begingroup             \c_attr_mathcategory\plusone                  #1\endgroup}
+% \permanent\protected\def\math_tags_mi_indeed#1{\begingroup             \c_attr_mathcategory\plustwo                  #1\endgroup}
+% \permanent\protected\def\math_tags_mn_indeed#1{\begingroup\math_upright\c_attr_mathcategory\plusthree\math_set_o_both#1\endgroup}
+% \permanent\protected\def\math_tags_ms_indeed#1{\begingroup\math_upright\c_attr_mathcategory\plusfour \math_set_p_both#1\endgroup} % todo: mathoptext
+
+\permanent\protected\def\math_tags_mo#1{\mathatom \s!class \mathoperatorcode        {#1}}
+\permanent\protected\def\math_tags_mi#1{\mathatom \s!class \mathordinarycode        {#1}}
+\permanent\protected\def\math_tags_mn#1{\mathatom \s!class \mathdigitcode           {\math_upright #1}}
+\permanent\protected\def\math_tags_ms#1{\mathatom \s!class \mathtextpunctuationcode {\math_upright #1}}
 
 \newconditional\c_apply_function
-
-\permanent\protected\def\math_tags_apply#1#2%
-  {\begingroup
-   \c_apply_function\conditionaltrue
-   #1%
-   \endgroup
-   \begingroup
-   % todo: auto ()
-   #2%
-   \endgroup}
 
 \ifdefined\apply \else \aliased\let\apply\relax \fi
 
@@ -2236,13 +2286,18 @@
 \mutable\let\ms\relax
 
 \appendtoks
-    \enforced\let\math_tags_mfunctiontxt\clf_tagmfunctiontxt
-    \enforced\let\math_tags_mfunctionlab\clf_tagmfunctionlab
-    \enforced\let\math_tags_mo          \math_tags_mo_indeed
-    \enforced\let\math_tags_mi          \math_tags_mi_indeed
-    \enforced\let\math_tags_mn          \math_tags_mn_indeed
-    \enforced\let\math_tags_ms          \math_tags_ms_indeed
+    \enforced\let\math_tags_mfunctionlab         \clf_tagmfunctionlab
+    \enforced\let\math_tags_mfunctionlabattribute\clf_tagmfunctionlabattribute
 \to \everyenableelements
+
+
+\permanent\protected\def\registermathfunction[#1]% experimental
+  {\begingroup
+   \scratchcounter\clf_tagmfunctionlabattribute
+     \plusone
+     {#1}%
+     {}%
+   \endgroup}
 
 \appendtoks
     \enforced\let\mo   \math_tags_mo
@@ -4819,7 +4874,7 @@
      % todo: tag this differently
      \subscript{%
         \ifx\p_strut\v!yes\topstrut\fi
-       \mtext{\mathannotationparameter\c!bottom}%
+        \mtext{\mathannotationparameter\c!bottom}%
      }%
    \fi
    \endmathgroup}
@@ -4889,12 +4944,17 @@
 % \newinteger\currentmathblob
 % \newinteger\currentmathblobnesting % could be a primitive
 
+\protected\def\math_bump_blob_state
+  {\ifnum\currentmathblobnesting<\zerocount\else
+     \ifcase\currentmathblobnesting
+       \global\advanceby\currentmathblob\plusone
+       \attribute\mathblobattribute\currentmathblob
+     \fi
+     \advanceby\currentmathblobnesting\plusone
+   \fi}
+
 \appendtoks
-    \ifcase\currentmathblobnesting
-      \global\advanceby\currentmathblob\plusone
-      \attribute\mathblobattribute\currentmathblob
-    \fi
-    \advanceby\currentmathblobnesting\plusone
+    \math_bump_blob_state
 \to \everymathematics
 
 \appendtoks

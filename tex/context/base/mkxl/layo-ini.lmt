@@ -12,8 +12,8 @@ if not modules then modules = { } end modules ['layo-ini'] = {
 local texgetcount  = tex.getcount
 local conditionals = tex.conditionals
 
-local c_realpageno  = tex.iscount("realpageno")
-local c_pagenoshift = tex.iscount("pagenoshift")
+local c_realpageno  <const> = tex.iscount("realpageno")
+local c_pagenoshift <const> = tex.iscount("pagenoshift")
 
 layouts = {
     status = { },

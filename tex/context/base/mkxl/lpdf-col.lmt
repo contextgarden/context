@@ -53,7 +53,7 @@ local registertransparancy    = transparencies.register
 local transparenciesvalue     = transparencies.value
 local transparencytoattribute = transparencies.toattribute
 
-local unsetvalue              = attributes.unsetvalue
+local unsetvalue              <const> = attributes.unsetvalue
 
 local setmetatableindex       = table.setmetatableindex
 

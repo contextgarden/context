@@ -34,7 +34,7 @@ local scanproperty   = scan.property
 
 local gethashentry   = get.hashentry
 
-local bpfactor       = number.dimenfactors.bp
+local bpfactor       <const> = number.dimenfactors.bp
 
 local injectwhatever = inject.whatever
 local injectboolean  = inject.boolean
@@ -180,11 +180,11 @@ do
     local expandtex       = mp.expandtex
 
     local tokenvalues     = tokens.values
-    local dimension_value = tokenvalues.dimension
-    local integer_value   = tokenvalues.integer
-    local boolean_value   = tokenvalues.boolean
-    local string_value    = tokenvalues.string
-    local unknown_value   = tokenvalues.none
+    local dimension_value <const> = tokenvalues.dimension
+    local integer_value   <const> = tokenvalues.integer
+    local boolean_value   <const> = tokenvalues.boolean
+    local string_value    <const> = tokenvalues.string
+    local unknown_value   <const> = tokenvalues.none
 
     registerdirect("mpvard", function()
         if not expandtex(dimension_value,"mpcategoryparameter",true,scanstring()) then
@@ -358,7 +358,7 @@ do
 
     local skiptoken      = skip.token
 
-    local comma_code     = codes.comma
+    local comma_code     <const> = codes.comma
 
     local getmacro       = tokens.getters.macro
     local setmacro       = tokens.setters.macro

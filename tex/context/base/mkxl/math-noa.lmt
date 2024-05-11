@@ -53,24 +53,24 @@ local colortracers       = nodes.tracers.colors
 
 -- most trace/report will move into the closures
 
-local trace_remapping     = false  registertracker("math.remapping",    function(v) trace_remapping    = v end)
-local trace_processing    = false  registertracker("math.processing",   function(v) trace_processing   = v end)
-local trace_analyzing     = false  registertracker("math.analyzing",    function(v) trace_analyzing    = v end)
-local trace_normalizing   = false  registertracker("math.normalizing",  function(v) trace_normalizing  = v end)
-local trace_collapsing    = false  registertracker("math.collapsing",   function(v) trace_collapsing   = v end)
-local trace_goodies       = false  registertracker("math.goodies",      function(v) trace_goodies      = v end)
+local trace_remapping    = false  registertracker("math.remapping",    function(v) trace_remapping    = v end)
+local trace_processing   = false  registertracker("math.processing",   function(v) trace_processing   = v end)
+local trace_analyzing    = false  registertracker("math.analyzing",    function(v) trace_analyzing    = v end)
+local trace_normalizing  = false  registertracker("math.normalizing",  function(v) trace_normalizing  = v end)
+local trace_collapsing   = false  registertracker("math.collapsing",   function(v) trace_collapsing   = v end)
+local trace_goodies      = false  registertracker("math.goodies",      function(v) trace_goodies      = v end)
 
-local check_coverage      = true   registerdirective("math.checkcoverage", function(v) check_coverage   = v     end)
-local use_math_goodies    = true   registerdirective("math.nogoodies",     function(v) use_math_goodies = not v end)
+local check_coverage     = true   registerdirective("math.checkcoverage", function(v) check_coverage   = v     end)
+local use_math_goodies   = true   registerdirective("math.nogoodies",     function(v) use_math_goodies = not v end)
 
-local report_processing   = logreporter("mathematics","processing")
-local report_remapping    = logreporter("mathematics","remapping")
-local report_normalizing  = logreporter("mathematics","normalizing")
-local report_collapsing   = logreporter("mathematics","collapsing")
-local report_goodies      = logreporter("mathematics","goodies")
+local report_processing  = logreporter("mathematics","processing")
+local report_remapping   = logreporter("mathematics","remapping")
+local report_normalizing = logreporter("mathematics","normalizing")
+local report_collapsing  = logreporter("mathematics","collapsing")
+local report_goodies     = logreporter("mathematics","goodies")
 
-local a_mathrendering    = privateattribute("mathrendering")
-local a_exportstatus     = privateattribute("exportstatus")
+local a_mathrendering    <const> = privateattribute("mathrendering")
+local a_exportstatus     <const> = privateattribute("exportstatus")
 
 local nuts               = nodes.nuts
 local nodepool           = nuts.pool
@@ -169,14 +169,14 @@ local variables          = interfaces.variables
 local texsetattribute    = tex.setattribute
 local texgetattribute    = tex.getattribute
 local getfontoffamily    = tex.getfontoffamily
-local unsetvalue         = attributes.unsetvalue
+local unsetvalue         <const> = attributes.unsetvalue
 local implement          = interfaces.implement
 
-local v_reset            = variables.reset
-local v_small            = variables.small
-local v_medium           = variables.medium
-local v_big              = variables.big
-local v_line             = variables.line
+local v_reset            <const> = variables.reset
+local v_small            <const> = variables.small
+local v_medium           <const> = variables.medium
+local v_big              <const> = variables.big
+local v_line             <const> = variables.line
 
 local chardata           = characters.data
 
@@ -198,38 +198,38 @@ local nodecodes          = nodes.nodecodes
 local fencecodes         = nodes.fencecodes
 local classes            = mathematics.classes -- or nodes.noadcodes
 
-local ordinary_class     = classes.ordinary
-local operator_class     = classes.operator
-local binary_class       = classes.binary
-local relation_class     = classes.relation
-local open_class         = classes.open
-local close_class        = classes.close
-local middle_class       = classes.middle
-local punctuation_class  = classes.punctuation
-local fenced_class       = classes.fenced
-local fraction_class     = classes.fraction
-local radical_class      = classes.radical
-local accent_class       = classes.accent
-local numbergroup_class  = classes.numbergroup
-local digit_class        = classes.digit
+local ordinary_class     <const> = classes.ordinary
+local operator_class     <const> = classes.operator
+local binary_class       <const> = classes.binary
+local relation_class     <const> = classes.relation
+local open_class         <const> = classes.open
+local close_class        <const> = classes.close
+local middle_class       <const> = classes.middle
+local punctuation_class  <const> = classes.punctuation
+local fenced_class       <const> = classes.fenced
+local fraction_class     <const> = classes.fraction
+local radical_class      <const> = classes.radical
+local accent_class       <const> = classes.accent
+local numbergroup_class  <const> = classes.numbergroup
+local digit_class        <const> = classes.digit
 
-local noad_code          = nodecodes.noad
-local accent_code        = nodecodes.accent
-local radical_code       = nodecodes.radical
-local fraction_code      = nodecodes.fraction
-local subbox_code        = nodecodes.subbox
-local submlist_code      = nodecodes.submlist
-local mathchar_code      = nodecodes.mathchar
-local mathtextchar_code  = nodecodes.mathtextchar
-local delimiter_code     = nodecodes.delimiter
------ style_code         = nodecodes.style
------ parameter_code     = nodecodes.parameter
-local math_choice        = nodecodes.choice
-local fence_code         = nodecodes.fence
+local noad_code          <const> = nodecodes.noad
+local accent_code        <const> = nodecodes.accent
+local radical_code       <const> = nodecodes.radical
+local fraction_code      <const> = nodecodes.fraction
+local subbox_code        <const> = nodecodes.subbox
+local submlist_code      <const> = nodecodes.submlist
+local mathchar_code      <const> = nodecodes.mathchar
+local mathtextchar_code  <const> = nodecodes.mathtextchar
+local delimiter_code     <const> = nodecodes.delimiter
+----- style_code         <const> = nodecodes.style
+----- parameter_code     <const> = nodecodes.parameter
+local math_choice        <const> = nodecodes.choice
+local fence_code         <const> = nodecodes.fence
 
-local leftfence_code     = fencecodes.left
-local middlefence_code   = fencecodes.middle
-local rightfence_code    = fencecodes.right
+local leftfence_code     <const> = fencecodes.left
+local middlefence_code   <const> = fencecodes.middle
+local rightfence_code    <const> = fencecodes.right
 
 -- this initial stuff is tricky as we can have removed and new nodes with the same address
 -- the only way out is a free-per-page list of nodes (not bad anyway)
@@ -527,7 +527,7 @@ end
 do
 
     local families     = { }
-    local a_mathfamily = privateattribute("mathfamily")
+    local a_mathfamily <const> = privateattribute("mathfamily")
     local boldmap      = mathematics.boldmap
 
     local trace_families  = false  registertracker("math.families", function(v) trace_families = v end)
@@ -646,8 +646,8 @@ end
 
 do
 
-    local a_mathalphabet       = privateattribute("mathalphabet")
-    local a_mathgreek          = privateattribute("mathgreek")
+    local a_mathalphabet       <const> = privateattribute("mathalphabet")
+    local a_mathgreek          <const> = privateattribute("mathgreek")
 
     local relocate             = { }
 
@@ -670,7 +670,7 @@ do
         local char, font = getcharspec(pointer)
         local data = fontcharacters[font]
         if not data[char] then
-            local specials = characters.data[char].specials
+            local specials = chardata[char].specials
             if specials and (specials[1] == "char" or specials[1] == "font") then
                 local newchar = specials[#specials]
                 if trace_remapping then
@@ -816,95 +816,86 @@ do
 
 end
 
--- some resize options (this works ok because the content is
--- empty and no larger next will be forced)
+-- -- We now use the engine feature and a bit of different lua interfacing to it but
+-- -- that code is located elsewhere.
 --
--- beware: we don't use \delcode but \Udelcode and as such have
--- no largefamily; also, we need to check for subtype and/or
--- smallfamily not being 0 because \. sits in 0,0 by default
+-- do
 --
--- todo: just replace the character by an ord noad
--- and remove the right delimiter as well
-
-do
-
-    -- todo: use registerattribute
-
-    local a_mathsize  = privateattribute("mathsize") -- this might move into other fence code
-    local resize      = { }
-
-    local trace_fences  = false  registertracker("math.fences", function(v) trace_fences = v end)
-    local report_fences = logreporter("mathematics","fences")
-
-    resize[fence_code] = function(pointer)
-        local subtype = getsubtype(pointer)
-     -- if subtype == leftfence_code or subtype == rightfence_code then
-            local a = getattr(pointer,a_mathsize)
-            if a and a > 0 then
-                local method = div(a,100)
-                local size   = a % 100
-                setattr(pointer,a_mathsize,0)
-                if size ~= 0 then
-                    local delimiter = getdelimiter(pointer)
-                    if delimiter then
-                        local oldchar, font, fam = getcharspec(delimiter)
-                        if oldchar > 0 and font > 0 then
-                            local ht         = getheight(pointer)
-                            local dp         = getdepth(pointer)
-                            local data       = fontdata[font]
-                            local characters = data.characters
-                            local olddata    = characters[oldchar]
-                            if olddata then
-                                local template  = olddata.varianttemplate
-                                local newchar   = mathematics.big(data,template or oldchar,size,method)
-                                local newdata   = characters[newchar]
-                                local newheight = newdata.height or 0
-                                local newdepth  = newdata.depth or 0
-                                if template then
-                                    setheight(pointer,newheight)
-                                    setdepth(pointer,newdepth)
-                                    if not olddata.extensible then
-                                        -- check this on bonum and antykwa
-                                        setoptions(pointer,0)
-                                    end
-                                    setoptions(pointer,getoptions(pointer)| tex.noadoptioncodes.scale                        )
-                                    if trace_fences then
-                                        report_fences("replacing %C using method %a, size %a and template %C",newchar,method,size,template)
-                                    end
-                                else
-                                    -- 1 scaled point is a signal, for now
-                                    if ht == 1 then
-                                        setheight(pointer,newheight)
-                                    end
-                                    if dp == 1 then
-                                        setdepth(pointer,newdepth)
-                                    end
-                                    setchar(delimiter,newchar)
-                                    if trace_fences then
-                                        report_fences("replacing %C by %C using method %a and size %a",oldchar,char,method,size)
-                                    end
-                                end
-                            elseif trace_fences then
-                                report_fences("not replacing %C using method %a and size %a",oldchar,method,size)
-                            end
-                        end
-                    end
-                end
-            end
-     -- end
-    end
-
-    function handlers.resize(head,style,penalties)
-        processnoads(head,resize,"resize")
-    end
-
-end
+--     local a_mathsize  <const> = privateattribute("mathsize") -- this might move into other fence code
+--     local resize      = { }
+--
+--     local trace_fences  = false  registertracker("math.fences", function(v) trace_fences = v end)
+--     local report_fences = logreporter("mathematics","fences")
+--
+--     resize[fence_code] = function(pointer)
+--         local subtype = getsubtype(pointer)
+--      -- if subtype == leftfence_code or subtype == rightfence_code then
+--             local a = getattr(pointer,a_mathsize)
+--             if a and a > 0 then
+--                 local method = div(a,100)
+--                 local size   = a % 100
+--                 setattr(pointer,a_mathsize,0)
+--                 if size ~= 0 then
+--                     local delimiter = getdelimiter(pointer)
+--                     if delimiter then
+--                         local oldchar, font, fam = getcharspec(delimiter)
+--                         if oldchar > 0 and font > 0 then
+--                             local ht         = getheight(pointer)
+--                             local dp         = getdepth(pointer)
+--                             local data       = fontdata[font]
+--                             local characters = data.characters
+--                             local olddata    = characters[oldchar]
+--                             if olddata then
+--                                 local template  = olddata.varianttemplate
+--                                 local newchar   = mathematics.big(data,template or oldchar,size,method)
+--                                 local newdata   = characters[newchar]
+--                                 local newheight = newdata.height or 0
+--                                 local newdepth  = newdata.depth or 0
+--                                 if template then
+--                                     setheight(pointer,newheight)
+--                                     setdepth(pointer,newdepth)
+--                                     if not olddata.extensible then
+--                                         -- check this on bonum and antykwa
+--                                         setoptions(pointer,0)
+--                                     end
+--                                     setoptions(pointer,getoptions(pointer)| tex.noadoptioncodes.scale                        )
+--                                     if trace_fences then
+--                                         report_fences("replacing %C using method %a, size %a and template %C",newchar,method,size,template)
+--                                     end
+--                                 else
+--                                     -- 1 scaled point is a signal, for now
+--                                     if ht == 1 then
+--                                         setheight(pointer,newheight)
+--                                     end
+--                                     if dp == 1 then
+--                                         setdepth(pointer,newdepth)
+--                                     end
+--                                     setchar(delimiter,newchar)
+--                                     if trace_fences then
+--                                         report_fences("replacing %C by %C using method %a and size %a",oldchar,char,method,size)
+--                                     end
+--                                 end
+--                             elseif trace_fences then
+--                                 report_fences("not replacing %C using method %a and size %a",oldchar,method,size)
+--                             end
+--                         end
+--                     end
+--                 end
+--             end
+--      -- end
+--     end
+--
+--     function handlers.resize(head,style,penalties)
+--         processnoads(head,resize,"resize")
+--     end
+--
+-- end
 
 -- still not perfect:
 
 do
 
-    local a_autofence     = privateattribute("mathautofence")
+    local a_autofence     <const> = privateattribute("mathautofence")
     local autofences      = { }
     local dummyfencechar  = 0x2E
 
@@ -1258,10 +1249,13 @@ do
 
     local unstack   = { }    noads.processors.unstack = unstack
     local enabled   = false
-    local a_unstack = privateattribute("mathunstack")
+    local a_unstack <const> = privateattribute("mathunstack")
 
     local trace_unstacking  = false  registertracker("math.unstack", function(v) trace_unstacking  = v end)
     local report_unstacking = logreporter("mathematics","unstack")
+
+    local shiftedsubscript_code   <const> = tex.noadoptioncodes.shiftedsubscript
+    local shiftedsuperscript_code <const> = tex.noadoptioncodes.shiftedsuperscript
 
     unstack[noad_code] = function(pointer)
         local a = getattr(pointer,a_unstack)
@@ -1273,9 +1267,9 @@ do
              --     report_unstacking() -- todo ... what to show ...
              -- end
                 if a == 1 then
-                    a = tex.noadoptioncodes.shiftedsubscript
+                    a = shiftedsubscript_code
                 elseif a == 2 then
-                    a = tex.noadoptioncodes.shiftedsuperscript
+                    a = shiftedsuperscript_code
                 else
                     a = 0
                 end
@@ -1435,7 +1429,7 @@ do
 
     -- todo: not shared but copies ... one never knows
 
-    local a_mathalternate = privateattribute("mathalternate")
+    local a_mathalternate <const> = privateattribute("mathalternate")
     local alternate       = { } -- processors.alternate = alternate
     local fontdata        = fonts.hashes.identifiers
     local fontresources   = fonts.hashes.resources
@@ -1602,7 +1596,7 @@ do
     --     },
     -- }
 
-    local a_kernpairs = privateattribute("mathkernpairs")
+    local a_kernpairs <const> = privateattribute("mathkernpairs")
     local kernpairs   = { }
 
     local trace_kernpairs  = false  registertracker("math.kernpairs", function(v) trace_kernpairs = v end)
@@ -1673,9 +1667,9 @@ end
 
 do
 
-    local a_numbers = privateattribute("mathnumbers")
-    local a_spacing = privateattribute("mathspacing")
-    local a_fencing = privateattribute("mathfencing")
+    local a_numbers <const> = privateattribute("mathnumbers")
+    local a_spacing <const> = privateattribute("mathspacing")
+    local a_fencing <const> = privateattribute("mathfencing")
 
     local numbers = { }
     local spacing = { }
@@ -1716,7 +1710,7 @@ do
         0x2980,
     }
 
-    local followedbyspace_code = tex.noadoptioncodes.followedbyspace
+    local followedbyspace_code <const> = tex.noadoptioncodes.followedbyspace
 
     local function followedbyspace(n)
         return n and (getoptions(n) & followedbyspace_code == followedbyspace_code)
@@ -1742,7 +1736,9 @@ do
                         if digits[rc] then
                             local newchar = found[alternative]
                             local class   = followedbyspace(parent) and punctuation_class or ordinary_class
-                            setsubtype(parent,class)
+                            -- noad class == subtype
+--                             setsubtype(parent,class)
+setclass(parent,class)
                             if newchar ~= oldchar then
                                 setchar(pointer,newchar)
                             end
@@ -1788,7 +1784,8 @@ do
                 if prev then
                     local class   = followedbyspace(prev) and relation_class or punctuation_class
                     local newchar = found[class]
-                    setsubtype(parent,class)
+--                     setsubtype(parent,class)
+setclass(parent,class)
                     if newchar ~= oldchar then
                         setchar(pointer,newchar)
                     end
@@ -1845,8 +1842,8 @@ do
                     local f2 = makefence(chr,fam,middlefence_code,middle_class,pointer)
                     setlink(prev,f1,f2,next)
                     flushnode(parent)
-followbyspace(f1)
-followbyspace(f2)
+                    followbyspace(f1)
+                    followbyspace(f2)
                     return true, f2
                 else
                     return true, parent
@@ -1923,7 +1920,7 @@ do
 
     -- is validpair stil needed? why not always now?
 
-    local a_mathcollapsing = privateattribute("mathcollapsing")
+    local a_mathcollapsing <const> = privateattribute("mathcollapsing")
     local collapse         = { }
     local mathlists        = characters.mathlists
     local validpair        = {
@@ -1946,6 +1943,11 @@ do
 
     mathlists[39] = { [39] = { [39] = { enforced = 0x2034, [39] = { enforced = 0x2057 } }, enforced = 0x2033 }, enforced = 0x2032 }
     mathlists[96] = { [96] = { [96] = { enforced = 0x2037                               }, enforced = 0x2036 }, enforced = 0x2035 }
+
+    local getchardict  = nuts.getchardict
+    local setchardict  = nuts.setchardict
+
+    local groups       = mathematics.dictionaries.groups
 
     collapse[mathchar_code] = function(pointer,what,n,parent)
         if parent and mathlists[getchar(pointer)] then
@@ -2010,6 +2012,22 @@ do
                 elseif trace_collapsing then
                     report_collapsing("%s ligature %C from %s","creating",found,category)
                 end
+-- we need to use the chardict of the replacement
+
+local properties, group = getchardict(pointer)
+local c = chardata[found]
+if c then
+    local g = c.mathgroup
+    if g then
+        group = groups[g] or 0xFFFF
+    else
+        group = 0xFFFF
+    end
+else
+    group = 0xFFFF
+end
+setchardict(pointer,properties,group,found)
+
                 setchar(pointer,found)
                 local l = getnext(last)
                 local c = getnext(parent)
@@ -2058,8 +2076,8 @@ end
 do
 
     local variants  = { }
-    local chardata  = characters.data
-    local a_variant = privateattribute("mathvariant")
+    ----- chardata  = characters.data
+    local a_variant <const> = privateattribute("mathvariant")
 
     local trace_variants  = false  registertracker("math.variants", function(v) trace_variants = v end)
     local report_variants = logreporter("mathematics","variants")
@@ -2203,7 +2221,6 @@ do
 
 end
 
-
 do
 
     local traversehlist = nuts.traversers.hlist
@@ -2252,11 +2269,11 @@ do
     local newkern       = nuts.pool.kern
     local setcolor      = nodes.tracers.colors.set
 
-    local a_mathsnap    = attributes.private("mathsnap")
+    local a_mathsnap    <const> = privateattribute("mathsnap")
 
-    local d_mathstrutht = tex.isdimen("mathstrutht")
-    local d_mathstrutdp = tex.isdimen("mathstrutdp")
-    local c_mathnesting = tex.iscount("mathnestinglevel")
+    local d_mathstrutht <const> = tex.isdimen("mathstrutht")
+    local d_mathstrutdp <const> = tex.isdimen("mathstrutdp")
+    local c_mathnesting <const> = tex.iscount("mathnestinglevel")
 
     local trace_snapping  = false  registertracker("math.snapping", function(v) trace_snapping = v end)
     local report_snapping = logreporter("mathematics","snapping")
@@ -2406,7 +2423,7 @@ end
 --     local domains       = { }
 --     local categories    = { }
 --     local numbers       = { }
---     local a_mathdomain  = privateattribute("mathdomain")
+--     local a_mathdomain  <const> = privateattribute("mathdomain")
 --     mathematics.domains = categories
 --     local permitted     = {
 --         ordinary    = ordinary_class,

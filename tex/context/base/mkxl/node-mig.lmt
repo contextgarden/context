@@ -33,12 +33,12 @@ local count            = nuts.count
 local migrate          = nuts.migrate
 
 local nodecodes        = nodes.nodecodes
-local hlist_code       = nodecodes.hlist
-local vlist_code       = nodecodes.vlist
-local insert_code      = nodecodes.ins
-local mark_code        = nodecodes.mark
+local hlist_code       <const> = nodecodes.hlist
+local vlist_code       <const> = nodecodes.vlist
+local insert_code      <const> = nodecodes.ins
+local mark_code        <const> = nodecodes.mark
 
-local a_migrated       = attributes.private("migrated")
+local a_migrated       <const> = attributes.private("migrated")
 
 local migrate_inserts  = false
 local migrate_marks    = false

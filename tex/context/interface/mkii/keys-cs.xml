@@ -176,6 +176,7 @@
 		<cd:variable name='description' value='popis'/>
 		<cd:variable name='disable' value='zablokovat'/>
 		<cd:variable name='display' value='obrazovka'/>
+		<cd:variable name='document' value='document'/>
 		<cd:variable name='dot' value='tecka'/>
 		<cd:variable name='doublesided' value='dvoustranny'/>
 		<cd:variable name='down' value='down'/>
@@ -355,6 +356,7 @@
 		<cd:variable name='mathcases' value='mathcases'/>
 		<cd:variable name='mathematics' value='mathematika'/>
 		<cd:variable name='mathmatrix' value='mathmatrix'/>
+		<cd:variable name='mathnote' value='mathnote'/>
 		<cd:variable name='max' value='max'/>
 		<cd:variable name='maxdepth' value='maxdepth'/>
 		<cd:variable name='maxheight' value='maxheight'/>
@@ -672,6 +674,7 @@
 		<cd:constant name='alignmentleftwidth' value='alignmentleftwidth'/>
 		<cd:constant name='alignmentrightsample' value='alignmentrightsample'/>
 		<cd:constant name='alignmentrightwidth' value='alignmentrightwidth'/>
+		<cd:constant name='alignscripts' value='alignscripts'/>
 		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='zarovnejtitul'/>
 		<cd:constant name='alternative' value='alternativa'/>
@@ -953,6 +956,7 @@
 		<cd:constant name='interaction' value='interakce'/>
 		<cd:constant name='interlinespace' value='meziradkovamezera'/>
 		<cd:constant name='internalgrid' value='internalgrid'/>
+		<cd:constant name='interscriptfactor' value='interscriptfactor'/>
 		<cd:constant name='italicfeatures' value='italicfeatures'/>
 		<cd:constant name='italicfont' value='italicfont'/>
 		<cd:constant name='itemalign' value='itemalign'/>
@@ -1038,6 +1042,7 @@
 		<cd:constant name='maxwidth' value='maxsirka'/>
 		<cd:constant name='maybeyear' value='maybeyear'/>
 		<cd:constant name='menu' value='menu'/>
+		<cd:constant name='metadata' value='metadata'/>
 		<cd:constant name='method' value='metoda'/>
 		<cd:constant name='middle' value='stredni'/>
 		<cd:constant name='middleclass' value='middleclass'/>

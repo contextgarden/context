@@ -848,6 +848,7 @@
 
 \permanent\tolerant\protected\def\math_alignment_start[#1]#*[#S#2]%
   {\begingroup
+   \currentmathblobnesting\minusone
    \cdef\currentmathalignment{#1}%
    \ifarguments\or\or
      \setupmathalignment[#1][#2]%
@@ -980,12 +981,14 @@
 \protected\def\math_first_in_eqalign % protection prevents tagging expansion
   {\global\c_math_eqalign_column\plusone
    \global\advanceby\c_math_eqalign_row\plusone
+   \currentmathblobnesting\minusone
    \dostarttagged\t!mtablerow \empty
    \dostarttagged\t!mtablecell\empty}
 
 \protected\def\math_next_in_eqalign % protection prevents tagging expansion
   {\global\advanceby\c_math_eqalign_column\plusone
    \dostoptagged % finish cell
+   \currentmathblobnesting\minusone
    \dostarttagged\t!mtablecell\empty}
 
 \protected\def\math_left_of_eqalign
@@ -1242,9 +1245,13 @@
   {\ifmmode\else\startimath\fi}
 
 \def\math_cases_NC_one
-  {\ifmmode\stopimath\fi
+  {\mathcasesparameter\c!lefttext\relax
+   \ifmmode\stopimath\fi
    \aligntab
-   \ifmmode\else\startimath\fi}
+   \ifmmode\else
+     \startimath
+   \fi
+   \mathcasesparameter\c!righttext\relax}
 
 \def\math_cases_NC_two
   {\ifmmode\stopimath\fi}
@@ -1299,6 +1306,7 @@
 
 \permanent\tolerant\protected\def\math_cases_start[#1]#*[#S#2]%
   {\begingroup
+   \currentmathblobnesting\minusone
    \cdef\currentmathcases{#1}%
    \ifarguments\or\or
      \setupcurrentmathcases[#2]%
@@ -1328,30 +1336,45 @@
    \global\c_math_cases_nc\zerocount
    \strc_math_setup_spacing_aligned\mathcasesparameter
    \enablemathalignrelocate
+   \dostarttagged\t!math{cases}% \empty
+   \dostarttagged\t!mtable\currentmathcases
    \halign
      \s!callback
        \align_callback_mathalign
      \s!attr
        \mathnumberlocationattribute \zerocount
      \bgroup % use \indexofregister here
+     \dostarttagged\t!mtablerow\empty
      \ifmmode\else\startimath\fi
      \mathcasesparameter\c!style
+     \dostarttagged\t!mtablecell\empty
      \aligncontent
+     \dostoptagged % cell
      \ifmmode\stopimath\fi
      \hfil
      \aligntab
      \kern\mathcasesparameter\c!distance\relax
      \math_cases_strut % looks better
+     \dostarttagged\t!mtablecell\empty
      \aligncontent
+     \dostoptagged % cell
      \hfil
      \aligntab
      \kern\mathcasesparameter\c!numberdistance\relax
-     \span\math_text_in_eqalign{\aligncontent}%
+     \span
+     \math_text_in_eqalign{%
+     \dostarttagged\t!mtablecell\empty
+     \aligncontent
+     \dostoptagged % cell
+     \dostoptagged % row
+     }%
      \crcr} % todo: number
 
 \noaligned\permanent\protected\def\math_cases_stop
   {\crcr
    \egroup
+   \dostoptagged % table
+   \dostoptagged % math
    \egroup
    \egroup
    \math_fenced_stop_wrap
@@ -1480,7 +1503,8 @@
    \endlocalcontrol}
 
 \protected\def\math_matrix_start_cell
-  {\dostarttagged\t!mtablecell\empty
+  {\currentmathblobnesting\minusone
+   \dostarttagged\t!mtablecell\empty
    \hss
    \math_left_of_eqalign
    \startimath
@@ -2117,6 +2141,7 @@
 
 \tolerant\protected\def\math_matrix_start[#1]#*[#S#2]%
   {\begingroup
+   \currentmathblobnesting\minusone
    \globalpushmacro\c_math_matrix_first % hm, does that work?
    \c_math_eqalign_column_saved\c_math_eqalign_column
    \c_math_eqalign_row_saved\c_math_eqalign_row
@@ -2557,6 +2582,7 @@
 \permanent\protected\def\startsubstack
   {\begingroup
    \vcenter\bgroup
+   \currentmathblobnesting\minusone
    \baselineskip\mathstacktotal
    \lineskip\mathstackvgap
    \lineskiplimit\lineskip
@@ -3553,6 +3579,7 @@
 
 \permanent\tolerant\protected\def\math_simplealign_start[#1]#*[#S#2]%
   {\begingroup
+   \currentmathblobnesting\minusone
    \cdef\currentmathsimplealign{#1}%
    \ifarguments\or\or
      \setupcurrentmathsimplealign[#2]%
@@ -3695,6 +3722,7 @@
 \permanent\protected\def\eqalign#1% rather plain, is this used at all ...
   {\dontleavehmode
    \mskip\thinmuskip\vcenter\bgroup % \vcenter \s!class \mathwrappercode \bgroup
+     \currentmathblobnesting\minusone
      \mathsurround\zeropoint        % \math_eqalign_set_defaults
      \everycr\emptytoks
      \tabskip\zeroskip

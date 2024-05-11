@@ -15,9 +15,10 @@ local byte = string.byte
 local insert, remove, concat = table.insert, table.remove, table.concat
 local unpack, type = unpack or table.unpack, type
 
-local ctxcatcodes    = catcodes.numbers.ctxcatcodes
 local context        = context
 local contextsprint  = context.sprint
+
+local ctxcatcodes    <const> = catcodes.numbers.ctxcatcodes
 
 local trace_define   = false  trackers.register("context.define", function(v) trace_define = v end)
 
@@ -34,10 +35,10 @@ local scankey        = scanners.key
 local scanvalue      = scanners.value
 local scanskip       = scanners.skip
 
-local open           = byte('[')
-local close          = byte(']')
-local equal          = byte('=')
-local comma          = byte(',')
+local open           <const> = byte('[')
+local close          <const> = byte(']')
+local equal          <const> = byte('=')
+local comma          <const> = byte(',')
 
 local function scanhash(scanners)
     if peekchar() == open then

@@ -793,9 +793,10 @@ typedef enum math_char_number_codes {
     math_xchar_number_code,       /*tex |\Umathchar| */
     math_dictionary_number_code,  /*tex |\Umathdictionary| */
     math_class_number_code,       /*tex |\Umathclass| */
+    math_char_ignore_code,        /*tex |\nomathchar| */
 } math_char_number_codes;
 
-# define last_math_char_number_code math_class_number_code
+# define last_math_char_number_code math_char_ignore_code
 
 typedef enum xray_codes {
     show_code,            /*tex |\show| */

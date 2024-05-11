@@ -1528,16 +1528,16 @@ do
                         end
                         checkmath(di)
                         i = i + 1
-                    elseif tg == "mrow" and detail then -- hm, falls through
-                        di.detail = nil
+                    elseif tg == "mrow" and di.detail then -- hm, falls through
                         checkmath(di)
                         di = {
                             element    = "maction",
                             nature     = "display",
-                            attributes = { actiontype = detail },
+                            attributes = { actiontype = di.detail },
                             data       = { di },
                             n          = 0,
                         }
+                        di.detail = nil
                         data[i] = di
                         i = i + 1
                     else
@@ -1545,14 +1545,15 @@ do
                         if category then
                          -- no checkmath(di) here
                             if category == 1 then -- mo
-                                i = collapse(di,i,data,ndata,detail,"mo")
+                                i = collapse(di,i,data,ndata,di.detail,"mo")
                             elseif category == 2 then -- mi
-                                i = collapse(di,i,data,ndata,detail,"mi")
+                                i = collapse(di,i,data,ndata,di.detail,"mi")
                             elseif category == 3 then -- mn
-                                i = collapse(di,i,data,ndata,detail,"mn")
+                                i = collapse(di,i,data,ndata,di.detail,"mn")
                             elseif category == 4 then -- ms
-                                i = collapse(di,i,data,ndata,detail,"ms")
+                                i = collapse(di,i,data,ndata,di.detail,"ms")
                             elseif category >= 1000 then
+                                -- Can this still happen .. maybe it's broken.
                                 local apply = category >= 2000
                                 if apply then
                                     category = category - 1000
@@ -1562,7 +1563,7 @@ do
                                         root.skip = "comment"
                                         root.element = "function"
                                     end
-                                    i = collapse(di,i,data,ndata,detail,"mi")
+                                    i = collapse(di,i,data,ndata,di.detail,"mi")
                                     local tag = functions[category]
                                     if tag then
                                         di.data = functioncontent[tag]

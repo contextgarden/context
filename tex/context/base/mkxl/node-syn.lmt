@@ -150,14 +150,14 @@ local kerncodes          = nodes.kerncodes
 
 local nextnode           = nuts.traversers.node
 
-local glyph_code         = nodecodes.glyph
-local disc_code          = nodecodes.disc
-local glue_code          = nodecodes.glue
-local penalty_code       = nodecodes.penalty
-local kern_code          = nodecodes.kern
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
-local fontkern_code      = kerncodes.fontkern
+local glyph_code         <const> = nodecodes.glyph
+local disc_code          <const> = nodecodes.disc
+local glue_code          <const> = nodecodes.glue
+local penalty_code       <const> = nodecodes.penalty
+local kern_code          <const> = nodecodes.kern
+local hlist_code         <const> = nodecodes.hlist
+local vlist_code         <const> = nodecodes.vlist
+local fontkern_code      <const> = kerncodes.fontkern
 
 local insertbefore       = nuts.insertbefore
 local insertafter        = nuts.insertafter

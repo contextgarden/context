@@ -542,6 +542,7 @@ function scripts.decomposehangul(head)
     for current, char in nextglyph, head do
         local lead_consonant, medial_vowel, tail_consonant = decomposed(char)
         if lead_consonant then
+            local current = current -- 5.5 constant
             setchar(current,lead_consonant)
             local m = copy_node(current)
             setchar(m,medial_vowel)

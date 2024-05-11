@@ -13,21 +13,23 @@ local fontparameters    = fonts.hashes.parameters
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming
 
-local bpfactor          = number.dimenfactors.bp
 local texgetbox         = tex.getbox
 local formatters        = string.formatters
 
 local rulecodes         = nodes.rulecodes
-local normalrule_code   = rulecodes.normal
------ boxrule_code      = rulecodes.box
------ imagerule_code    = rulecodes.image
------ emptyrule_code    = rulecodes.empty
------ userrule_code     = rulecodes.user
------ overrule_code     = rulecodes.over
------ underrule_code    = rulecodes.under
------ fractionrule_code = rulecodes.fraction
------ radicalrule_code  = rulecodes.radical
-local outlinerule_code  = rulecodes.outline
+
+local normalrule_code   <const> = rulecodes.normal
+----- boxrule_code      <const> = rulecodes.box
+----- imagerule_code    <const> = rulecodes.image
+----- emptyrule_code    <const> = rulecodes.empty
+----- userrule_code     <const> = rulecodes.user
+----- overrule_code     <const> = rulecodes.over
+----- underrule_code    <const> = rulecodes.under
+----- fractionrule_code <const> = rulecodes.fraction
+----- radicalrule_code  <const> = rulecodes.radical
+local outlinerule_code  <const> = rulecodes.outline
+
+local bpfactor          <const> = number.dimenfactors.bp
 
 local fonts     = { }
 local pages     = { }

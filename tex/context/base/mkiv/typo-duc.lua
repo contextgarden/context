@@ -685,7 +685,8 @@ end
 
 local function resolve_neutral(list,size,start,limit,orderbefore,orderafter)
     -- N1, N2
-    for i=start,limit do
+    local i = start
+    while i <= limit do
         local entry = list[i]
         if b_s_ws_on[entry.direction] then
             -- this needs checking

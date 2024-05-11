@@ -55,15 +55,15 @@ local registrations            = pdfbackend.registrations
 local executers                = structures.references.executers
 local variables                = interfaces.variables
 
-local v_hidden                 = variables.hidden
-local v_auto                   = variables.auto
-local v_embed                  = variables.embed
-local v_max                    = variables.max
-local v_yes                    = variables.yes
-local v_no                     = variables.no
-local v_compress               = variables.compress
-local v_list                   = variables.list
-local v_title                  = variables.title
+local v_hidden                 <const> = variables.hidden
+local v_auto                   <const> = variables.auto
+local v_embed                  <const> = variables.embed
+local v_max                    <const> = variables.max
+local v_yes                    <const> = variables.yes
+local v_no                     <const> = variables.no
+local v_compress               <const> = variables.compress
+local v_list                   <const> = variables.list
+local v_title                  <const> = variables.title
 
 local lpdf                     = lpdf
 

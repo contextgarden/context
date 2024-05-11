@@ -29,8 +29,8 @@ if job then
     job.register("structures.itemgroups.collected", tobesaved, initializer)
 end
 
-local c_strc_itemgroups_max_items = tex.iscount("c_strc_itemgroups_max_items")
-local d_strc_itemgroups_max_width = tex.isdimen("d_strc_itemgroups_max_width")
+local c_strc_itemgroups_max_items <const> = tex.iscount("c_strc_itemgroups_max_items")
+local d_strc_itemgroups_max_width <const> = tex.isdimen("d_strc_itemgroups_max_width")
 
 -- We keep the counter at the Lua end so we can group the items within
 -- an itemgroup which in turn makes for less passes when one itemgroup

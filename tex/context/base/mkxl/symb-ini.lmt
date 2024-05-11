@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['symb-ini'] = {
 }
 
 local context        = context
-local variables      = interfaces.variables
 
 fonts                = fonts or { } -- brrrr
 
@@ -19,6 +18,8 @@ local uselibrary     = resolvers.uselibrary
 
 local report_symbols = logs.reporter ("fonts","symbols")
 local status_symbols = logs.messenger("fonts","symbols")
+
+local v_reset        <const> = interfaces.variables.reset
 
 local patterns = {
     "symb-imp-%s.mkxl",
@@ -39,7 +40,7 @@ local function failure(name)
 end
 
 function symbols.uselibrary(name)
-    if name ~= variables.reset then
+    if name ~= v_reset then
         for name in listitem(name) do
             uselibrary {
                 name     = name,

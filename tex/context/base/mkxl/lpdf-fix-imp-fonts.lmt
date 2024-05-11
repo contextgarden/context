@@ -278,29 +278,32 @@ local getstates, getindexstate_composite, getindexstate_simple  do
 
     -- This could be an lpeg but there is not that much to gain here.
 
-    local function register1(pdfdoc,unicodes,index,uni)
+    local function register1(pdfdoc,unicodes,index,uni,fontname)
         local old = unicodes[index]
         if not old then
             unicodes[index] = uni
         elseif old ~= uni then
-            report_merge("inconsistent unicode file %a, font %a, index 0x%04X, old %U, new %U, %s",pdfdoc.filename,fontname,index,old,new,"range")
+            report_merge("inconsistent unicode file %a, font %a, index 0x%04X, old %U, new %U, %s",
+                pdfdoc.filename,fontname,index,old,uni,"bfrange")
         end
     end
 
-    local function register2(pdfdoc,unicodes,index,uni)
+    local function register2(pdfdoc,unicodes,index,uni,fontname)
         local old = unicodes[index]   -- unicode
         local new, more = splitsixteen(uni) -- unicode16 or ligature
         if more then
             if not old then
                 unicodes[index] = uni -- string
             elseif old ~= uni then
-                report_merge("inconsistent unicode file %a, font %a, index 0x%04X, old %a, new %a, %s",pdfdoc.filename,fontname,index,old,new,"bfchar")
+                report_merge("inconsistent unicode file %a, font %a, index 0x%04X, old %a, new %a, %s",
+                    pdfdoc.filename,fontname,index,old,uni,"bfchar")
             end
         else
             if not old then
                 unicodes[index] = new
             elseif old ~= new then
-                report_merge("inconsistent unicode file %a, font %a, index 0x%04X, old %U, new %U, %s",pdfdoc.filename,fontname,index,old,new,"bfchar")
+                report_merge("inconsistent unicode file %a, font %a, index 0x%04X, old %U, new %U, %s",
+                    pdfdoc.filename,fontname,index,old,uni,"bfchar")
             end
         end
     end
@@ -308,22 +311,22 @@ local getstates, getindexstate_composite, getindexstate_simple  do
     local function getunicodes(pdfdoc,fontname,str,unicodes)
         -- <0000> <005E> <0020> : first index, last index, first unicode
         for s in gmatch(str,"beginbfrange%s*(.-)%s*endbfrange") do
-            for first, last, offset in gmatch(s,"<([^>]+)>%s+<([^>]+)>%s+<([^>]+)>") do
+            for first, last, offset in gmatch(s,"<([^>]+)>%s*<([^>]+)>%s*<([^>]+)>") do
                 local first = tonumber(first,16)    -- index
                 local last  = tonumber(last,16)     -- index
                 local uni   = fromunicode16(offset) -- unicode16
                 for index=first,last do
-                    register1(pdfdoc,unicodes,index,uni)
+                    register1(pdfdoc,unicodes,index,uni,fontname)
                     uni = uni + 1
                 end
             end
         end
         -- <005F> <0061> [<00660066> <00660069> <00660066006C>] -- untested as not seen yet
         for s in gmatch(str,"beginbfrange%s*(.-)%s*endbfrange") do
-            for first, last, offset in gmatch(s,"<([^>]+)>%s+<([^>]+)>%s+%[([^%]]+)%]") do
+            for first, last, offset in gmatch(s,"<([^>]+)>%s*<([^>]+)>%s*%[([^%]]+)%]") do
                 local index = tonumber(first,16) -- index
                 for uni in gmatch("%s*<([^>]+)>") do
-                    register2(pdfdoc,unicodes,index,uni)
+                    register2(pdfdoc,unicodes,index,uni,fontname)
                     index = index + 1
                 end
             end
@@ -331,9 +334,9 @@ local getstates, getindexstate_composite, getindexstate_simple  do
         -- <0000> <0020>     : index, single
         -- <005F> <00660066> : index, ligature
         for s in gmatch(str,"beginbfchar%s*(.-)%s*endbfchar") do
-            for idx, uni in gmatch(s,"<([^>]+)>%s+<([^>]+)>") do
+            for idx, uni in gmatch(s,"<([^>]+)>%s*<([^>]+)>") do
                 local index = tonumber(idx,16)  -- index
-                register2(pdfdoc,unicodes,index,uni)
+                register2(pdfdoc,unicodes,index,uni,fontname)
             end
         end
     end
@@ -395,7 +398,7 @@ local getstates, getindexstate_composite, getindexstate_simple  do
                     fontstate.narrow = true
                     fontstate.embedded = isembedded(descriptor)
                     return fontstate
-                else
+                elseif descriptor then
                     local fontfile = descriptor.FontFile
                     if fontfile then
                         local data  = fontfile()
@@ -429,6 +432,8 @@ local getstates, getindexstate_composite, getindexstate_simple  do
                             end
                         end
                     end
+                else
+                    report_merge("no encoding or descriptor in file %a for font %a",pdfdoc.filename,fontname)
                 end
            end
         end
@@ -447,7 +452,7 @@ local function makemap(fontname,id,state,unicode)
         for k, v in next, state.unicodes do
             local d = chr[v]
             if d then
--- print(string.formatters["index in pdf %I unicode %C index in font %I"](k,v,d.index))
+-- print(string.formatters["index in pdf %i unicode %C index in font %i"](k,v,d.index))
                 map[k] = d.index
             else
                 -- issue
@@ -613,14 +618,14 @@ do
         )
     end
 
-    local function plugin_Type0(pdfdoc,k,v,sharedfonts,data,wide,compactor,pagenumber)
-        if v.Encoding == "Identity-H"  then
+    local function plugin_Type0(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber)
             -- The v table is unique and can be shared
-            local shared = sharedfonts[v]
-            if type(shared) == "table" then
-                data[k] = shared
-            elseif shared == nil then
+        local shared = sharedfonts[v]
+        if type(shared) == "table" then
+            data[k] = shared
+        elseif shared == nil then
                 shared = false
+        if v.Encoding == "Identity-H"  then
                 local d = v.DescendantFonts[1] -- how about more
                 if d and d.Subtype == "CIDFontType0" or d.Subtype == "CIDFontType2" then
                     local r = d.LMTXRegistry
@@ -644,7 +649,6 @@ do
                     elseif compactor.merge.type0 or compactor.embed.type0 then
                         shared = getstate_OpenType(pdfdoc,v,d,compactor.merge.type0)
                         data[k] = shared
--- inspect(shared)
                     end
                     if trace_merge then
                         report_sharing(pdfdoc,"type0",v,shared,pagenumber,r and true or false)
@@ -656,10 +660,9 @@ do
             -- what ...
          -- print("case 1",encoding)
         end
-        wide[k] = true
     end
 
-    local function plugin_TrueType(pdfdoc,k,v,sharedfonts,data,wide,compactor,pagenumber)
+    local function plugin_TrueType(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber)
         local shared = sharedfonts[v]
         if type(shared) == "table" then
             data[k] = shared
@@ -678,10 +681,9 @@ do
             end
             sharedfonts[v] = shared
         end
-        wide[k] = true
     end
 
-    local function plugin_Type1(pdfdoc,k,v,sharedfonts,data,wide,compactor,pagenumber)
+    local function plugin_Type1(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber)
         local shared = sharedfonts[v]
         if type(shared) == "table" then
             data[k] = shared
@@ -703,12 +705,11 @@ do
             end
         end
         sharedfonts[v] = shared
-        wide[k] = false
     end
 
     local plugin -- defined after the next one
 
-    local function plugin_Type3(pdfdoc,k,v,sharedfonts,data,wide,compactor,pagenumber)
+    local function plugin_Type3(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber)
         local charprocs = v.CharProcs
         if charprocs then
             local resources = v.Resources
@@ -717,16 +718,16 @@ do
                 local xobjects = resources.XObject
                 if fonts or xobjects then
                     for k, object in expanded(charprocs) do
-                        if not object.__remapped__ then
+                        if not object.__fonts_remapped__ then
                             local contents = object()
                             contents = parsecontent(contents,true)
-                            local contents, indices = plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,{})
-                            if indices > 0 then
+                            if plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,{}) then
+                                contents = contenttostring(contents)
                                 object.__raw__.Length = #contents -- nil
                                 object.__raw__.Filter = nil
                                 getmetatable(object).__call = function() return contents end
                             end
-                            object.__remapped__ = true
+                            object.__fonts_remapped__ = true
                             status.charprocs = status.charprocs + 1
                             status.indices   = status.indices + indices
                         end
@@ -734,7 +735,6 @@ do
                 end
             end
         end
-        wide[k] = false
     end
 
     local handlers = {
@@ -749,24 +749,26 @@ do
 
     plugin = function(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth)
 
-        local data = { }
-        local wide = { }
+        local data    = { }
+        local indices = 0
 
         local sharedfonts  = pdfdoc.sharedfonts or { }
         pdfdoc.sharedfonts = sharedfonts
+        if fonts or xobjects then
 
-        if fonts then
+            if fonts then
 
-            -- check if ref for k is the same
-
-            for k, v in expanded(fonts) do
-                local subtype = v.Subtype
-                local handler = subtype and handlers[subtype]
-                if handler then
-                    handler(pdfdoc,k,v,sharedfonts,data,wide,compactor,pagenumber)
-                else
-                    -- weird
+                -- check if ref for k is the same
+                for k, v in expanded(fonts) do
+                    local subtype = v.Subtype
+                    local handler = subtype and handlers[subtype]
+                    if handler then
+                        handler(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber)
+                    else
+                        -- weird
+                    end
                 end
+
             end
 
             local r = false
@@ -777,7 +779,6 @@ do
 
             local new     = { }
             local old     = { }
-            local indices = 0
 
             local process_hex = false
 
@@ -799,6 +800,7 @@ do
 
             local function process_hex_narrow(s) return (gsub(s,"..",  process_hex_hexified)) end
             local function process_hex_wide  (s) return (gsub(s,"....",process_hex_hexified)) end
+
             for i=1,#contents do
                 local ti = contents[i]
                 local op = ti[#ti]
@@ -833,14 +835,16 @@ do
                         end
                     end
                 elseif op == "TJ" then
-                    if f then
+                     if f then
                         local c = ti[1][2]
-                        for i=1,#c do
-                            local ci = c[i]
-                            if type(ci) == "table" then
-                                local tp = ci[1]
-                                if tp == "hex" then
-                                    ci[2] = process_hex(ci[2])
+                        if c then
+                            for i=1,#c do
+                                local ci = c[i]
+                                if type(ci) == "table" then
+                                    local tp = ci[1]
+                                    if tp == "hex" then
+                                        ci[2] = process_hex(ci[2])
+                                    end
                                 end
                             end
                         end
@@ -848,24 +852,21 @@ do
                 elseif xobjects and op == "Do" then
                     -- can be recursive
                     local object = xobjects[ti[1][2]]
-                    if object and not object.__remapped__ and object.Subtype == "Form" then
+                    if object and not object.__fonts_remapped__ and object.Subtype == "Form" then
                         local r = object.Resources
                         if r then
                             local contents = object()
                             local fonts    = r.Font
                             local xobjects = r.XObject
                             contents = parsecontent(contents,true)
-                            contents = plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth+1)
-                            if contents then
+                            if plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth+1) then
                                 contents = contenttostring(contents)
-                                object.__raw__.Length = # contents -- nil
+                                object.__raw__.Length = #contents -- nil
                                 object.__raw__.Filter = nil
                                 getmetatable(object).__call = function() return contents end
-                                object.__remapped__ = true
+                                object.__fonts_remapped__ = true
                                 status.xobjects = status.xobjects + 1
                                 r.Font = fonts
-                            else
-                                -- some issue
                             end
                         end
                     end
@@ -916,13 +917,11 @@ do
                 end
             end
 
-            if indices then
-                status.indices = status.indices + indices
-            end
+            status.indices = status.indices + indices
 
-            return contents
         end
 
+        return indices ~= 0
     end
 
     function pdfe.fontplugin(pdfdoc,page,pagenumber,resources,compactor)
@@ -930,7 +929,8 @@ do
         local xobjects = resources.XObject
         if fonts or xobjects then
             local contents = getpagecontent(pdfdoc,pagenumber,true,true)
-            contents = plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,{},1)
+--             if plugin ...
+            plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,{},1)
             resources.Font = fonts -- really needed
             if contents then
                 page.Contents = contenttostring(contents)

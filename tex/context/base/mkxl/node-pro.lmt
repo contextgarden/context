@@ -106,7 +106,7 @@ do
     local setlist       = nodes.setlist
     local getsubtype    = nodes.getsubtype
 
-    local linelist_code = nodes.listcodes.line
+    local linelist_code <const> = nodes.listcodes.line
 
     local lineactions   = tasks.actions("contributers")
     local adjustactions = tasks.actions("adjusters")

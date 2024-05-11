@@ -673,6 +673,14 @@ end
 
 function scripts.unicode.save(filename)
     if preamble then
+     -- for k, v in next, characters.data do
+     --     v.adobename = nil
+     -- end
+        --
+        characters.data[0x1FE3].uccode={ 0x3C5, 0x308, 0x301 }
+        characters.data[0x1FD3].uccode={ 0x3B9, 0x308, 0x301 }
+        characters.data[0x00DF].uccode={ 0x53, 0x53 }
+        --
         local data = table.serialize(characters.data,"characters.data", {
             hexify   = true,
             noquotes = true,

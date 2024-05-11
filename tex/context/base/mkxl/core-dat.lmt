@@ -23,13 +23,13 @@ local settings_to_hash  = utilities.parsers.settings_to_hash
 local texgetcount       = tex.getcount
 local texsetcount       = tex.setcount
 
-local v_yes             = interfaces.variables.yes
+local v_yes             <const> = interfaces.variables.yes
 
 local new_latelua       = nodes.pool.latelua
 
 local implement         = interfaces.implement
 
-local c_realpageno      = tex.iscount("realpageno")
+local c_realpageno      <const> = tex.iscount("realpageno")
 
 local collected = allocate()
 local tobesaved = allocate()

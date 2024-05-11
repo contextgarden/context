@@ -2009,6 +2009,7 @@ local uncrapped = {
 }
 
 local function convert(str,nowrap)
+    mathematics.lastinput = str
     if str ~= "" then
         local unicoded = lpegmatch(u_parser,str) or str
         if lpegmatch(p_onechar,unicoded) then

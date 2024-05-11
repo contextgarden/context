@@ -289,7 +289,7 @@ static int texlib_aux_store(lua_State *L, int i, int partial, int cattable, int 
                                 for (unsigned i = 0; i < tsize; i++) {
                                       write_spindle.tail->data.c[s++] = (unsigned char) sttemp[i];
                                 }   
-                                write_spindle.tail->tsize += tsize;
+                                write_spindle.tail->tsize += (unsigned int) tsize;
                              /* lmt_token_state.luacstrings++; */ /* already set */
                              /* write_spindle.complete = 0;    */ /* already set */
                                 return 1;
@@ -4914,6 +4914,7 @@ static int texlib_getglyphoptionvalues(lua_State *L)
     lua_set_string_by_index(L, glyph_option_no_zero_italic_correction, "nozeroitaliccorrection");
     lua_set_string_by_index(L, glyph_option_math_discretionary,        "mathdiscretionary");
     lua_set_string_by_index(L, glyph_option_math_italics_too,          "mathsitalicstoo");
+    lua_set_string_by_index(L, glyph_option_math_artifact,             "mathartifact");
     lua_set_string_by_index(L, glyph_option_user_first,                "userfirst");
     lua_set_string_by_index(L, glyph_option_user_last,                 "userlast");
     return 1;
@@ -5009,6 +5010,7 @@ static int texlib_getnoadoptionvalues(lua_State *L) /* less keywords, just strin
     lua_set_string_by_index(L, noad_option_continuation_head,          "continuationhead");
     lua_set_string_by_index(L, noad_option_continuation_kernel,        "continuationkernel");
     lua_set_string_by_index(L, noad_option_reorder_pre_scripts,        "reorderprescripts");
+    lua_set_string_by_index(L, noad_option_ignore,                     "ignore");
     return 1;
 }
 

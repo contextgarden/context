@@ -26,11 +26,11 @@ local usercodes      = nodes.usercodes
 
 local nodeproperties = nodes.properties.data
 
-local glyph_code     = nodecodes.glyph
-local rule_code      = nodecodes.rule
-local kern_code      = nodecodes.kern
-local glue_code      = nodecodes.glue
-local gluespec_code  = nodecodes.gluespec
+local glyph_code     <const> = nodecodes.glyph
+local rule_code      <const> = nodecodes.rule
+local kern_code      <const> = nodecodes.kern
+local glue_code      <const> = nodecodes.glue
+local gluespec_code  <const> = nodecodes.gluespec
 
 local currentfont    = font.current
 local texgetcount    = tex.getcount
@@ -176,7 +176,7 @@ local cleader           = register_nut(copy_nut(glue)) setsubtype(cleader,glueco
 
 -- the dir field needs to be set otherwise crash:
 
-local lefttoright_code  = tex.directioncodes.lefttoright
+local lefttoright_code  <const> = tex.directioncodes.lefttoright
 
 local rule              = register_nut(new_nut(rule_code))                   -- setdirection(rule, lefttoright_code)
 local emptyrule         = register_nut(new_nut(rule_code,rulecodes.empty))   -- setdirection(rule, lefttoright_code)

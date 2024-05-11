@@ -1,0 +1,267 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-nostalgic
+
+\environment ontarget-style
+
+\startchapter[title={Getting nostalgic}]
+
+When Mikael and I were playing with \POTRACE\ and eventually ended up by turning
+some old rune font defined in \METAFONT\ into a quite useable outline font. In
+the process we went from a \TYPETHREE\ to a proper \OPENTYPE\ (\CFF) instance.
+When doing this I remembered that in the times of active \PDFTEX\ development,
+Thanh, Taco and I played with what we called \PDF\ glyph containers. I had done
+experiments with using xforms (small images) as replacement for bitmap characters
+but that is not what we want with fonts, so after discussing it with Thanh
+\TYPETHREE\ support was extended with a user driven variant. Due to the way
+\METAFONT s are defined the results were mixed. Filled shaped could be made to
+work but outlines often looked bad and much had to do with the fact that these
+fonts were never defined with odd-even rules in mind. So, Taco made a bitmap to
+outline program that we could hook in and in the end we had a reasonable
+workflow. We're talking of the period 1997 to 1998, some 25 years ago!
+
+So, when in 2023 we came back to bitmap fonts in the perspective of \LUAMETATEX,
+some memories came back but I couldn't find the files or code at that time. It
+might relate to the fact that I always start from specifications. However, when
+in January 2024 I had to fix some issue with embedding an old \TYPEONE\ font,
+after succeeding in that I decided again to search for that old code. This time I
+just grep'd the \PDFTEX\ code base (as I had the \TEXLIVE\ git checkout) and I
+found back this feature. In the end I had been looking at the wrong \quote
+{strings} because it looked like the interface evolved a little.
+
+The basics are as follows. When we have a file (in \PDFTEX) the \TFM\ blob is
+what matters for the frontend. The backend that does the inclusion links that to
+a font resource, most likely a \TYPEONE\ font. This is specified in a map file
+that also permits specifying an encoding vector. For some reason it is not
+possible to map to other font formats other than \TYPEONE\ and \TRUETYPE. No
+mapping means that a \PK\ file is used and then we end up in some complicated
+semi automatic bitmap generation.
+
+When I tested how these containers worked out nowadays, once \PDFTEX \footnote
+{Version 3.141592653-2.6-1.40.25 and older.} is happy to include a font it will
+bark about a missing font resource: it always wants a bitmap. Now, one can
+complain about this but I bet no one ever used this 25 year old feature so no one
+ever requested a check for a \type {pgc} file. Basically, when such a file is
+found instead of a \type{600pk} file, all should be fine, even if that is a zero
+length file. Given that the backend actually checks for it and not considers a
+container file useable, one can consider it an oversight, or maybe it just got
+lost in the \KPSE\ library that manages \PK\ fonts.
+
+Anyway, so how does it work? When the backend checks for a glyph container it
+expects this:
+
+\starttyping
+\pdffontscale factor
+\pdfglyph slot width height depth llx lly urx ury =
+    % pdf operators
+\endglyph
+\stoptyping
+
+One can add a \type {\pdffont} and \type{\endfont} wrapper because \PDFTEX\ only
+searched for the mandate scale and one or more glyphs. A simple test then becomes:
+
+\startitemize[packed]
+\startitem
+    Copy a \TFM\ file to a new name, say \type {cmr10mine.tfm}.
+\stopitem
+\startitem
+    Create a bogus \PK\ file, for instance a zero byte \type {cmr10mine.600pk}.
+\stopitem
+\startitem
+    Make sure it can be found, I had to set \type {set MISCFONTS=.}.
+\stopitem
+\startitem
+    Create a glyph container with suffix \type {pgc} with some valid \PDF\ code.
+\stopitem
+\stopitemize
+
+And then use a safe character present in most fonts at the same position in the
+used encoding:
+
+\starttyping
+\starttext
+    \font\test=cmr10mine \test \char 65
+\stoptext
+\stoptyping
+
+This should produce something, assuming an entry like:
+
+\starttyping
+\pdffontscale 0.01
+\pdfglyph 65 200 0 0 0 0 200 200 =
+    10 M 1 j 1 J 5 w
+    % outlines
+    h S
+\endglyph
+\stoptyping
+
+Just for completeness, I could find a \PERL\ program on my disk that I wrote at
+that time and that has the banner:
+
+\starttyping
+mptopgc 1.01 - pdfTeX / HH 1998
+\stoptyping
+
+It produces help like:
+
+\starttyping
+       --silent   use logfile instead of screen (no)
+      --autorun   run MetaPost first (no)
+     --optimize   convert gray into eofill (no)
+       --ignore   ignore gray path (no)
+         --gray   permit the gray operator (no)
+        --merge   substitute gray using glyphs (no)
+--magnification   set MetaPost mag factor (1)
+     --rounding   alternative rounding offset (0)
+      --pgcpath   pgc path
+      --tfmpath   tfm file path
+      --tfmtopl   ftmtopl binary name (tfmtopl)
+     --metapost   metapost binary name (mpost)
+\stoptyping
+
+But it is a long time since I installed \PERL\ on my laptop so I didn't check it.
+I also found a manual that could be updated but I don't see much use for it now.
+There is even a \MKII\ \TEX\ file that one can run with \type {pdftex &plain
+\input supp-pgc.mkii \MPtoPGC} that produces container files but I didn't test
+that either.
+
+However, what I did test was if it still works. For that I used the following
+test file:
+
+\starttyping
+% engine=pdftex
+
+\startTEXpage[offset=10pt]
+
+\pdfmapline{texnansi-lmr10 < texnansi.enc}
+
+\font\test=texnansi-lmr10 \test
+
+\input tufte
+
+\stopTEXpage
+\stoptyping
+
+Here I use a normal \TFM\ file because after all we need the metrics. Then I made
+an empty \typ {texnansi-lmr10.600pk} so that we can fool the \PK\ generator. Using
+Latin Modern files is more convenient. The glyph container file was made by
+abusing some features of \LMTX:
+
+% \disabledirectives[fonts.streams.pack]
+
+\startitemize
+
+\startitem
+    With the module \type {s-fonts-outlines} I made a font sample that as
+    byproduct generates a file with outline definitions. Basically any attempt to
+    use an outline in \METAFUN\ will populate the cache. We load the font \type
+    {lmr10.afm} and it will get the outlines from \type {lmr10.pfb}. Of course
+    there are more that 256 characters in there but that doesn't matter.
+\stopitem
+
+\startitem
+    I also generated a \type {texnansi} vector file which can be done from a
+    normal \TEX\ run using the \LUA\ call \typ {fonts.encodings.load
+    ("texnansi.enc"))}. It locates and converts a regular \type{enc} into a \LUA\
+    representation. I picked up the file from the cache.
+\stopitem
+
+\startitem
+    From these files I generated a glyph container file \typ {texnansi-lmr10.pgc}
+    that can be used instead of the \PK\ file. The file \typ {mtx-pgc.lua} is
+    shown below.
+\stopitem
+
+\startitem
+    I made sure to set \type {MISCFONTS} to a sensible value because otherwise
+    the container file is not found (who knows what location strategy is used).
+\stopitem
+
+\stopitemize
+
+This is the \quote {quick and dirty} conversion file:
+
+\starttyping
+local round = math.round
+local concat = table.concat
+
+local result = { "\\pdffontscale 0.001\n" }
+local r      = 1
+
+local f_pdfglyph = string.formatters["\\pdfglyph %i %i %i %i %i %i %i %i"]
+local s_endglyph = "\\endglyph\n"
+local f_comment  = string.formatters["%% name %s index %i slot %i \n"]
+
+local shapes   = table.load("lmr10-pfb.tma")
+local encoding = table.load("texnansi.tma")
+
+local glyphs = shapes.glyphs
+local hash   = encoding.hash
+
+for index=0,#glyphs do
+    local glyph    = glyphs[index]
+    local segments = glyph.segments    or { }
+    local bounds   = glyph.boundingbox or { 0, 0, 0, 0 }
+    local width    = round(glyph.width or 0)
+    local name     = glyph.name
+    local slotused = hash[name]
+    if slotused then
+        local llx, lly = bounds[1], bounds[2]
+        local urx, ury = bounds[3], bounds[4]
+        r = r + 1 ; result[r] = f_comment(name,index,slotused)
+        r = r + 1 ; result[r] = f_pdfglyph(slotused,width,0,0,llx,lly,urx,ury)
+        if #segments > 0 then
+            r = r + 1 ; result[r] = "10 M 1 j 1 J 0 w"
+            for i=1,#segments do
+                local s = segments[i]
+                if s[1] ~= "close" then
+                    r = r + 1 ; result[r] = concat(s," ")
+                end
+            end
+            r = r + 1 ; result[r] = "h f*"
+        end
+        r = r + 1 ; result[r] = s_endglyph
+    end
+end
+
+io.savedata("texnansi-lmr10.pgc",concat(result,"\n"))
+\stoptyping
+
+Of course for a proper workflow we need to make this into a real helper script
+but here I just want to show the idea. The result is shown in \in {figure}
+[fig:pgcresult]. There is however one drawback: because \PDFTEX\ goes via the
+\PK\ route using the same font with a different scale will result in an extra
+copy while actually we have a scalable \TYPETHREE\ font. It is for that reason
+that I will not waste any more time on this. I could provide a patch to deal with
+it but changing a long time ago frozen \TEX\ program is tricky because bug(let)s
+have become features.
+
+\startplacefigure[title={This is what we get with glyph containers.},reference=fig:pgcresult]
+    \externalfigure
+      [ontarget-nostalgic-pgc.pdf]
+      [width=\textwidth,
+       background=color,
+       backgroundcolor=gray]
+\stopplacefigure
+
+So where does this bring us? Because \MKII\ is frozen and \PDFTEX\ only works
+with that version it makes no sense to add some kind of \TYPETHREE\ support. In
+\MKIV\ and \MKXL\ we have several mechanisms for creating these fonts anyway. I
+cannot comment on use outside \CONTEXT\ but because of the strong connection with
+\PK\ fonts being required in order for glyph containers to kick in, I suspect
+that it's a mostly unknown feature, but one that actually can be made to work. It
+could even work better (with respect to file lookup and font scaling) when it is
+decoupled from the \PK\ requirements. But what worries me more is that after 25
+years I hardly recognize the (reasonable) \PERL\ code and little manual although
+it slowly came back. At that I time I could not have predicted where we are now
+with respect to \TYPETHREE\ support, which in \LMTX\ is very much kicking and
+alive. \footnote {At that time \TYPETHREE\ in the perspective of \TEX\ always had
+a bad ring, probably because the many files that were around with too low
+resolution bitmap fonts. The \PDF\ readers were not particularly good in
+rendering them either. But with outlines this format can be fun!}
+
+\stopchapter
+
+\stopcomponent
+
+

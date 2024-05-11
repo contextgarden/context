@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2024-01-24 22:31
+-- merge date  : 2024-02-14 13:35
 
 do -- begin closure to overcome local limits and interference
 
@@ -1341,19 +1341,22 @@ local function copy(t,tables)
   tables[t]=tcopy
  end
  for i,v in next,t do 
+  local k
   if type(i)=="table" then
    if tables[i] then
-    i=tables[i]
+    k=tables[i]
    else
-    i=copy(i,tables)
+    k=copy(i,tables)
    end
+  else
+   k=i
   end
   if type(v)~="table" then
-   tcopy[i]=v
+   tcopy[k]=v
   elseif tables[v] then
-   tcopy[i]=tables[v]
+   tcopy[k]=tables[v]
   else
-   tcopy[i]=copy(v,tables)
+   tcopy[k]=copy(v,tables)
   end
  end
  local mt=getmetatable(t)
@@ -4033,6 +4036,7 @@ end
 strings.formatters.add=add
 patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;"+anything)^0)
 patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+anything)^0)
+patterns.ctxescape=Cs((C(S("#$%\\{}|"))/"\\%1"+anything)^0)
 patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
 patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
 add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape=patterns.xmlescape })
@@ -21357,7 +21361,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.135 
+otf.version=3.140 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -24678,6 +24682,29 @@ local function checklookups(fontdata,missing,nofmissing)
   end
   if next(done) then
    report_unicodes("not unicoded: % t",sortedkeys(done))
+  end
+ end
+ for k,v in next,descriptions do
+  local math=v.math
+  if math then
+   local variants=math.variants
+   local parts=math.parts
+   local unicode=v.unicode
+   if variants then
+    if unicode then
+     for i=1,#variants do
+      local v=descriptions[variants[i]]
+      if not v then
+      elseif v.unicode then
+      else
+       v.unicode=unicode
+      end
+     end
+    end
+   end
+   if parts then
+    parts[#parts//2+1].unicode=unicode
+   end
   end
  end
 end
@@ -35012,7 +35039,7 @@ local afm=handlers.afm or {}
 handlers.afm=afm
 local readers=afm.readers or {}
 afm.readers=readers
-afm.version=1.513
+afm.version=1.540
 local get_indexes,get_shapes
 do
  local decrypt
@@ -35398,7 +35425,7 @@ local afmfeatures=constructors.features.afm
 local registerafmfeature=afmfeatures.register
 local afmenhancers=constructors.enhancers.afm
 local registerafmenhancer=afmenhancers.register
-afm.version=1.513 
+afm.version=1.540 
 afm.cache=containers.define("fonts","one",afm.version,true)
 afm.autoprefixed=true 
 afm.helpdata={}  

@@ -18,11 +18,11 @@ local nodecodes         = nodes.nodecodes
 local boundarycodes     = nodes.boundarycodes
 local subtypes          = nodes.subtypes
 
-local glyph_code        = nodecodes.glyph
-local par_code          = nodecodes.par
-local boundary_code     = nodecodes.boundary
+local glyph_code        <const> = nodecodes.glyph
+local par_code          <const> = nodecodes.par
+local boundary_code     <const> = nodecodes.boundary
 
-local wordboundary_code = boundarycodes.word
+local wordboundary_code <const> = boundarycodes.word
 
 local texgetnest        = tex.getnest -- to be used
 local texsetcount       = tex.setcount
@@ -34,8 +34,8 @@ local settexattribute   = tex.setattribute
 local ispunctuation     = characters.is_punctuation
 
 local variables         = interfaces.variables
-local v_all             = variables.all
-local v_reset           = variables.reset
+local v_all             <const> = variables.all
+local v_reset           <const> = variables.reset
 
 local stack             = { }
 
@@ -228,7 +228,7 @@ interfaces.implement {
 
 -- not needed in lmtx ...
 
-local c_syst_last_node_id = tex.iscount("c_syst_last_node_id")
+local c_syst_last_node_id <const> = tex.iscount("c_syst_last_node_id")
 
 interfaces.implement {
     name    = "lastnodeid",

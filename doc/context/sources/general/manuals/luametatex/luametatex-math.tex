@@ -1554,17 +1554,17 @@ unprocessed math list. The result looks as follows:
 
 \startsubsection[title={Arbitrary atoms with \prm {mathatom} etc.}]
 
-The original \TEX\ engine has primitives like \prm {mathord} and a limited set of
-possible atoms. In \LUAMETATEX\ we have many more built in and you can add more.
-It will take a while before we have documented all the new math features and more
-details can be found in the manuals that come with \CONTEXT\ for which all this
-was implemented. In addition to \prm {mathordinary} (aka \prm {mathord}), \prm
-{mathoperator} (aka \prm {mathop}), \prm {mathbinary} (aka \prm {mathbin}), \prm
-{mathrelation} (aka \prm {mathrel}), \prm {mathopen}, \prm {mathclose}, \prm
-{mathpunctuation} (aka {mathpunct}) and \prm {mathinner} we have \prm
-{mathfraction}, \prm {mathradical}, \prm {mathmiddle}, \prm {mathaccent}, \prm
-{mathfenced}, \prm {mathghost} and the existing \prm {mathunderline} (aka \prm
-{underline}) and \prm {mathoverline} (aka \prm {overline}) class driven atoms.
+% The original \TEX\ engine has primitives like \prm {mathord} and a limited set of
+% possible atoms. In \LUAMETATEX\ we have many more built in and you can add more.
+% It will take a while before we have documented all the new math features and more
+% details can be found in the manuals that come with \CONTEXT\ for which all this
+% was implemented. In addition to \prm {mathordinary} (aka \prm {mathord}), \prm
+% {mathoperator} (aka \prm {mathop}), \prm {mathbinary} (aka \prm {mathbin}), \prm
+% {mathrelation} (aka \prm {mathrel}), \prm {mathopen}, \prm {mathclose}, \prm
+% {mathpunctuation} (aka {mathpunct}) and \prm {mathinner} we have \prm
+% {mathfraction}, \prm {mathradical}, \prm {mathmiddle}, \prm {mathaccent}, \prm
+% {mathfenced}, \prm {mathghost} and the existing \prm {mathunderline} (aka \prm
+% {underline}) and \prm {mathoverline} (aka \prm {overline}) class driven atoms.
 
 The \prm {mathatom} primitive is the generic one and it accepts a couple of
 keywords:
@@ -2197,7 +2197,7 @@ influence the spacing. The numbers are the same as for character classes.
 \startsection[title={Extracting values}]
 
 \startsubsection[title={Codes and using \prm {Umathcode}, \prm {mathcharclass}, \prm
-{Umathcharfam} and \prm {Umathcharslot}}]
+{mathcharfam} and \prm {mathcharslot}}]
 
 \topicindex {math+codes}
 
@@ -2311,7 +2311,7 @@ the four mathon|/|mathoff commands with explicit dollar sign(s).
 
 \stopsubsection
 
-\startsubsection[title={Script commands \prm {Unosuperscript}, \prm {Unosubscript}, \prm {Unosuperprescript} and \prm {Unosubprescript}}]
+\startsubsection[title={Script commands \prm {nosuperscript}, \prm {nosubscript}, \prm {nosuperprescript} and \prm {nosubprescript}}]
 
 \topicindex {math+styles}
 \topicindex {math+scripts}
@@ -2334,7 +2334,7 @@ results in \inlinebuffer[script].
 
 \stopsubsection
 
-\startsubsection[title={Script commands \prm {Ushiftedsuperscript}, \prm {Ushiftedsubscript}, \prm {Ushiftedsuperprescript} and \prm {Ushiftedsubprescript}}]
+\startsubsection[title={Script commands \prm {shiftedsuperscript}, \prm {shiftedsubscript}, \prm {shiftedsuperprescript} and \prm {shiftedsubprescript}}]
 
 \topicindex {math+styles}
 \topicindex {math+scripts}
@@ -2359,7 +2359,7 @@ results in \inlinebuffer[script].
 
 \stopsubsection
 
-\startsubsection[title={Injecting primes with \prm {Uprimescript}}]
+\startsubsection[title={Injecting primes with \prm {primescript}}]
 
 This one is a bit special. In \LUAMETATEX\ a prime is a native element of a
 nucleus, alongside the two prescript and two postscripts. The most confusing
@@ -2382,7 +2382,7 @@ it were an index.
 
 \stopsubsection
 
-\startsubsection[title={Prescripts with \prm {Usuperprescript} and \prm {Usubprescript}}]
+\startsubsection[title={Prescripts with \prm {superprescript} and \prm {subprescript}}]
 
 \startbuffer
 \hbox{$
@@ -2523,7 +2523,7 @@ If you also want to see something on the console make sure to set \prm
 
 \startsection[title={Classes}]
 
-\startsubsection[title={Forcing classes with \prm {Umathclass}}]
+\startsubsection[title={Forcing classes with \prm {mathclass}}]
 
 You can change the class of a math character on the fly:
 

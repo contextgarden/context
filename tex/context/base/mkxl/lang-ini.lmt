@@ -76,10 +76,8 @@ storage.register("languages/associated",associated,"languages.associated")
 storage.register("languages/numbers",   numbers,   "languages.numbers")
 storage.register("languages/data",      data,      "languages.data")
 
-local variables = interfaces.variables
-
-local v_reset   = variables.reset
-local v_yes     = variables.yes
+local v_reset <const> = interfaces.variables.reset
+local v_yes   <const> = interfaces.variables.yes
 
 local nofloaded  = 0
 
@@ -652,7 +650,7 @@ local expand ; do
 
     -- can be a helper
 
-    local compound_disc_code = tex.discoptioncodes.preword | tex.discoptioncodes.postword
+    local compound_disc_code <const> = tex.discoptioncodes.preword | tex.discoptioncodes.postword
 
     local function setcompound(current,id,first,last,lh,rh,hyphen)
         local prev     = getprev(current)
@@ -748,8 +746,8 @@ local expand ; do
 
  -- local optioncodes = table.copy(glyphoptioncodes)
  --
- -- optioncodes.nokerns     = optioncodes.noleftkern     | optioncodes.norightkern
- -- optioncodes.noligatures = optioncodes.noleftligature | optioncodes.norightligature
+ -- optioncodes.nokerns     <const> = optioncodes.noleftkern     | optioncodes.norightkern
+ -- optioncodes.noligatures <const> = optioncodes.noleftligature | optioncodes.norightligature
 
     local lh, rh = false, false
 
@@ -1028,10 +1026,10 @@ local expand ; do
         end
     end
 
-    local norightligature_option = glyphoptioncodes.norightligature
-    local noleftligature_option  = glyphoptioncodes.noleftligature
-    local norightkern_option     = glyphoptioncodes.norightkern
-    local noleftkern_option      = glyphoptioncodes.noleftkern
+    local norightligature_option <const> = glyphoptioncodes.norightligature
+    local noleftligature_option  <const> = glyphoptioncodes.noleftligature
+    local norightkern_option     <const> = glyphoptioncodes.norightkern
+    local noleftkern_option      <const> = glyphoptioncodes.noleftkern
 
     local function applyaction(oc,v,n)
         if oc == "noligature" then

@@ -14,6 +14,7 @@ local utfvalues = string.utfvalues
 local formatters = string.formatters
 local setmetatableindex = table.setmetatableindex
 local context = context
+local ctxescaped = context.ctxescaped
 local NC, NR, HL, FL, LL, SL, TB = context.NC, context.NR, context.HL, context.TB, context.FL, context.LL, context.SL
 local sortedhash, sortedkeys, concat, sequenced = table.sortedhash, table.sortedkeys, table.concat, table.sequenced
 
@@ -158,8 +159,12 @@ function moduledata.xml.analyzers.structure(filename)
         end
         local children   = data.children
         local attributes = data.attributes
-        NC() context.bold("element") NC() context.darkred(name) NC() NR()
-        NC() context.bold("frequency") NC() context(data.n) NC() NR()
+        NC() context.bold("element")
+        NC() context.darkred(name)
+        NC() NR()
+        NC() context.bold("frequency")
+        NC() context(data.n)
+        NC() NR()
         if next(children) then
             local t = { }
             for k, v in next, children do
@@ -186,8 +191,8 @@ function moduledata.xml.analyzers.characters(filename)
     analyze(filename)
     context.starttabulate { "|r|r|l|c|l|" }
     for c, n in table.sortedhash(char) do
-        NC() context.darkred("%s",n)
-        NC() context.darkgreen("%s",attr[c])
+        NC() context.color({ "darkred" }, n)
+        NC() context.color({ "darkgreen" }, attr[c] or "")
         NC() context("%U",c)
         NC() context.char(c)
         NC() context("%s",chardata[c].description)

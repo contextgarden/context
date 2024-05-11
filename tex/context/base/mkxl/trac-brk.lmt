@@ -28,11 +28,11 @@ local texgetnest        = tex.getnest
 local nodecodes         = nodes.nodecodes
 local fitnesscodes      = tex.fitnesscodes
 
-local penalty_code      = nodecodes.penalty
-local glue_code         = nodecodes.glue
-local disc_code         = nodecodes.disc
-local kern_code         = nodecodes.kern
-local math_code         = nodecodes.math
+local penalty_code      <const> = nodecodes.penalty
+local glue_code         <const> = nodecodes.glue
+local disc_code         <const> = nodecodes.disc
+local kern_code         <const> = nodecodes.kern
+local math_code         <const> = nodecodes.math
 
 local getnormalizedline = nuts.getnormalizedline
 local getdimensions     = nuts.dimensions

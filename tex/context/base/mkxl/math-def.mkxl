@@ -57,9 +57,9 @@
 \definemathfunction [injlim]  [\c!mathlimits=\v!auto]
 \definemathfunction [ker]
 \definemathfunction [lg]
-\definemathfunction [liminf]  [\c!mathlimits=\v!auto]
-\definemathfunction [limsup]  [\c!mathlimits=\v!auto]
-\definemathfunction [lim]     [\c!mathlimits=\v!auto]
+\definemathfunction [liminf]  [\c!mathlimits=\v!auto,\c!method=limits]
+\definemathfunction [limsup]  [\c!mathlimits=\v!auto,\c!method=limits]
+\definemathfunction [lim]     [\c!mathlimits=\v!auto,\c!method=limits]
 \definemathfunction [ln]
 \definemathfunction [log]
 \definemathfunction [median]  [\c!mathlimits=\v!yes]
@@ -77,10 +77,28 @@
 \definemathfunction [tan]
 \definemathfunction [diff]
 
+\definemathfunction [adj]
+\definemathfunction [coker]
+
 % When [\c!command=] the label kicks in:
 
 \definemathfunction [cs:median] [\c!command=\widetilde]
 \definemathfunction [sk:median] [\c!command=\widetilde]
+
+% \definemathfunction[partial]      [class=differential]
+% \definemathfunction[gradient]     [class=differential]
+\definemathfunction[adjoint]         [right=\adjointsymbol]
+\definemathfunction[transpose]       [right=\transposesymbol]
+\definemathfunction[derivative]      [right=\derivativesymbol]
+\definemathfunction[secondderivative][right=\secondderivativesymbol]
+\definemathfunction[thirdderivative] [right=\thirdderivativesymbol]
+\definemathfunction[fourthderivative][right=\fourthderivativesymbol]
+
+% \definemathfunction[laplace]      [class=differential]
+% \definemathfunction[crossproduct] [class=binary]
+% \definemathfunction[scalarproduct][class=binary]
+% \definemathfunction[complement]
+\definemathfunction[neg]
 
 \aliased\let\normalmatharg\arg % todo: maybe automatically
 

@@ -68,10 +68,10 @@ local nodes             = nodes
 local attributes        = attributes
 
 local variables         = interfaces.variables
-local v_yes             = variables.yes
-local v_no              = variables.no
-local v_xml             = variables.xml
-local v_hidden          = variables.hidden
+local v_yes             <const> = variables.yes
+local v_no              <const> = variables.no
+local v_xml             <const> = variables.xml
+local v_hidden          <const> = variables.hidden
 
 local implement         = interfaces.implement
 
@@ -191,38 +191,44 @@ local namespaced = {
 }
 
 local namespaces = {
-    msubsup       = "m",
-    msub          = "m",
-    msup          = "m",
-    mn            = "m",
-    mi            = "m",
-    ms            = "m",
-    mo            = "m",
-    mtext         = "m",
-    mrow          = "m",
-    mfrac         = "m",
-    mroot         = "m",
-    msqrt         = "m",
-    munderover    = "m",
-    munder        = "m",
-    mover         = "m",
-    merror        = "m",
-    math          = "m",
-    mrow          = "m",
-    mtable        = "m",
-    mtr           = "m",
-    mtd           = "m",
-    mfenced       = "m",
-    maction       = "m",
-    mspace        = "m",
-    mmultiscripts = "m",
-    mprescripts   = "m",
+    msubsup        = "m",
+    msub           = "m",
+    msup           = "m",
+    mn             = "m",
+    mi             = "m",
+    ms             = "m",
+    mo             = "m",
+    mc             = "m",
+    mtext          = "m",
+    mrow           = "m",
+    mfrac          = "m",
+    mroot          = "m",
+    msqrt          = "m",
+    munderover     = "m",
+    munder         = "m",
+    mover          = "m",
+    merror         = "m",
+    math           = "m",
+    mrow           = "m",
+    mtable         = "m",
+    mtr            = "m",
+    mtd            = "m",
+    mfenced        = "m",
+    maction        = "m",
+ -- munit          = "m",
+    mspace         = "m",
+    mmultiscripts  = "m",
+    mprescripts    = "m",
     -- only when testing
-    mstacker      = "m",
-    mstackertop   = "m",
-    mstackermid   = "m",
-    mstackerbot   = "m",
-    mextensible   = 'm',
+    mstacker       = "m",
+    mstackertop    = "m",
+    mstackermid    = "m",
+    mstackerbot    = "m",
+    mextensible    = 'm',
+    mfunction      = 'm',
+    mfunctionstack = 'm',
+    mfraction      = 'm',
+    mfractionstack = 'm',
 }
 
 setmetatableindex(namespaced, function(t,k)
@@ -390,7 +396,7 @@ local styletemplate <const> = [[
             for detail, data in sortedhash(details) do
                 local s = fontspecification(data.style)
                 local c = colorspecification(data.color)
-                detail = gsub(detail,"[^A-Za-z0-9]+","-")
+                local detail = gsub(detail,"[^A-Za-z0-9]+","-")
                 result[#result+1] = replacetemplate(styletemplate,{
                     namespace = usecssnamespace and cssnamespace or "",
                     element   = element,
@@ -1429,39 +1435,39 @@ local collectresults  do -- too many locals otherwise
 
     local subtypes           = nodes.subtypes
 
-    local userkern_code      = nodes.kerncodes.userkern
+    local userkern_code      <const> = nodes.kerncodes.userkern
 
-    local hlist_code         = nodecodes.hlist
-    local vlist_code         = nodecodes.vlist
-    local glyph_code         = nodecodes.glyph
-    local glue_code          = nodecodes.glue
-    local kern_code          = nodecodes.kern
-    local disc_code          = nodecodes.disc
-    local whatsit_code       = nodecodes.whatsit
-    local par_code           = nodecodes.par
+    local hlist_code         <const> = nodecodes.hlist
+    local vlist_code         <const> = nodecodes.vlist
+    local glyph_code         <const> = nodecodes.glyph
+    local glue_code          <const> = nodecodes.glue
+    local kern_code          <const> = nodecodes.kern
+    local disc_code          <const> = nodecodes.disc
+    local whatsit_code       <const> = nodecodes.whatsit
+    local par_code           <const> = nodecodes.par
 
-    local userskip_code      = gluecodes.userskip
-    local rightskip_code     = gluecodes.rightskip
-    local parfillskip_code   = gluecodes.parfillskip
-    local spaceskip_code     = gluecodes.spaceskip
-    local xspaceskip_code    = gluecodes.xspaceskip
-    local intermathskip_code = gluecodes.intermathskip
+    local userskip_code      <const> = gluecodes.userskip
+    local rightskip_code     <const> = gluecodes.rightskip
+    local parfillskip_code   <const> = gluecodes.parfillskip
+    local spaceskip_code     <const> = gluecodes.spaceskip
+    local xspaceskip_code    <const> = gluecodes.xspaceskip
+    local intermathskip_code <const> = gluecodes.intermathskip
 
-    local linelist_code      = listcodes.line
+    local linelist_code      <const> = listcodes.line
 
-    local userdefinedwhatsit_code  = whatsitcodes.userdefined
+    local userdefinedwhatsit_code  <const> = whatsitcodes.userdefined
 
     local privateattribute = attributes.private
-    local a_image          = privateattribute('image')
-    local a_reference      = privateattribute('reference')
-    local a_destination    = privateattribute('destination')
-    local a_characters     = privateattribute('characters')
-    local a_exportstatus   = privateattribute('exportstatus')
-    local a_tagged         = privateattribute('tagged')
-    local a_taggedpar      = privateattribute("taggedpar")
-    local a_textblock      = privateattribute("textblock")
+    local a_image          <const> = privateattribute('image')
+    local a_reference      <const> = privateattribute('reference')
+    local a_destination    <const> = privateattribute('destination')
+    local a_characters     <const> = privateattribute('characters')
+    local a_exportstatus   <const> = privateattribute('exportstatus')
+    local a_tagged         <const> = privateattribute('tagged')
+    local a_taggedpar      <const> = privateattribute("taggedpar")
+    local a_textblock      <const> = privateattribute("textblock")
 
-    local inline_mark      = nodes.pool.userids["margins.inline"]
+    local inline_mark      <const> = nodes.pool.userids["margins.inline"]
 
     local nuts             = nodes.nuts
 
@@ -1474,6 +1480,7 @@ local collectresults  do -- too many locals otherwise
     local isglyph          = nuts.isglyph
     local getkern          = nuts.getkern
     local getwidth         = nuts.getwidth
+    local getclass         = nuts.getclass
 
     local startofpar       = nuts.startofpar
 
@@ -1535,6 +1542,10 @@ local collectresults  do -- too many locals otherwise
                         if paragraph and (not ap or ap < paragraph) then
                             maybewrong = addtomaybe(maybewrong,c,1)
                         end
+-- if subtype > 0 then
+--     print("EXPORTING",nodes.glyphcodes[subtype])
+-- end
+                        tl.class = getclass(n)
                         pushcontent()
                         currentnesting   = tl
                         currentparagraph = ap
@@ -2115,8 +2126,10 @@ local htmltemplate <const> = [[
             end
         end
         flushtree(result,tree.data,"display") -- we need to collect images
-        result = concat(result)
         -- no need to lpeg .. fast enough
+        result[1] = gsub(result[1],"^%s+","")
+        result[#result] = gsub(result[#result],"%s+$","")
+        result = concat(result)
         result = gsub(result,"\n *\n","\n")
         result = gsub(result,"\n +([^< ])","\n%1")
         --
@@ -2440,10 +2453,15 @@ local htmltemplate <const> = [[
 
         if simple then
             while true do
-                local d = tree.data[1]
+                local d = tree.data
                 if not d then
                     return
-                elseif d.tg == simple then
+                end
+                d = d[1]
+                if not d then
+                    return
+                end
+                if d.tg == simple then
                     local ns   = namespaced
                     namespaced = notnamespaced
                     result = allcontent(tree,true)

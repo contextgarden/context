@@ -623,7 +623,7 @@
 
 \def\phys_units_start
   {\ifmmode
-     \dostarttagged\t!maction\t!unit
+     \dostarttagged\t!munit{\lastunitstring}%
      \mathatom
         \s!leftclass  \mathdimensioncode
         \s!rightclass \mathdimensioncode

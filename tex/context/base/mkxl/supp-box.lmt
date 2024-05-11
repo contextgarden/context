@@ -23,20 +23,20 @@ local ctx_doifelse  = commands.doifelse
 
 local nodecodes     = nodes.nodecodes
 
-local disc_code     = nodecodes.disc
-local hlist_code    = nodecodes.hlist
-local vlist_code    = nodecodes.vlist
-local glue_code     = nodecodes.glue
-local penalty_code  = nodecodes.penalty
-local glyph_code    = nodecodes.glyph
-local par_code      = nodecodes.par
+local disc_code       <const> = nodecodes.disc
+local hlist_code      <const> = nodecodes.hlist
+local vlist_code      <const> = nodecodes.vlist
+local glue_code       <const> = nodecodes.glue
+local penalty_code    <const> = nodecodes.penalty
+local glyph_code      <const> = nodecodes.glyph
+local par_code        <const> = nodecodes.par
 
-local indentlist_code = nodes.listcodes.indent
-local topskip_code    = nodes.gluecodes.topskip
-local indentskip_code = nodes.gluecodes.indentskip
-local line_code       = nodes.listcodes.line
+local indentlist_code <const> = nodes.listcodes.indent
+local topskip_code    <const> = nodes.gluecodes.topskip
+local indentskip_code <const> = nodes.gluecodes.indentskip
+local line_code       <const> = nodes.listcodes.line
 
-local hmode_code    = tex.modelevels.horizontal
+local hmode_code      <const> = tex.modelevels.horizontal
 
 local nuts          = nodes.nuts
 local tonut         = nuts.tonut
@@ -111,19 +111,19 @@ local texisdimen    = tex.isdimen
 local texsetdimen   = tex.setdimen
 local texgetnest    = tex.getnest
 
-local values                    = tokens.values
-local dimension_value   <const> = values.dimension
-local cardinal_value    <const> = values.cardinal
-local direct_value      <const> = values.direct
-local conditional_value <const> = values.conditional
+local values             = tokens.values
+local dimension_value    <const> = values.dimension
+local cardinal_value     <const> = values.cardinal
+local direct_value       <const> = values.direct
+local conditional_value  <const> = values.conditional
 
-local d_lastnaturalboxwd = texisdimen("lastnaturalboxwd")
-local d_lastnaturalboxht = texisdimen("lastnaturalboxht")
-local d_lastnaturalboxdp = texisdimen("lastnaturalboxdp")
+local d_lastnaturalboxwd <const> = texisdimen("lastnaturalboxwd")
+local d_lastnaturalboxht <const> = texisdimen("lastnaturalboxht")
+local d_lastnaturalboxdp <const> = texisdimen("lastnaturalboxdp")
 
-local d_givenwidth       = texisdimen("givenwidth")
-local d_givenheight      = texisdimen("givenheight")
-local d_givendepth       = texisdimen("givendepth")
+local d_givenwidth       <const> = texisdimen("givenwidth")
+local d_givenheight      <const> = texisdimen("givenheight")
+local d_givendepth       <const> = texisdimen("givendepth")
 
 local function hyphenatedlist(head,usecolor)
     local current = head and tonut(head)
@@ -341,7 +341,7 @@ end
 
 do
 
-    local a_vboxtohboxseparator = attributes.private("vboxtohboxseparator")
+    local a_vboxtohboxseparator <const> = attributes.private("vboxtohboxseparator")
 
     implement {
         name      = "vboxlisttohbox",
@@ -496,9 +496,8 @@ end
 
 do
 
-    local directioncodes   = tex.directioncodes
-    local lefttoright_code = directioncodes.lefttoright
-    local righttoleft_code = directioncodes.righttoleft
+    local lefttoright_code <const> = tex.directioncodes.lefttoright
+    local righttoleft_code <const> = tex.directioncodes.righttoleft
 
     local function firstdirinbox(n)
         local b = getbox(n)
@@ -1167,10 +1166,9 @@ do
     local setprop            = nuts.setprop
     local getprop            = nuts.getprop
 
-    local listcodes          = nodes.listcodes
-    local line_code          = listcodes.line
-    local equation_code      = listcodes.equation
-    local unknown_code       = listcodes.unknown
+    local line_code          <const> = nodes.listcodes.line
+    local equation_code      <const> = nodes.listcodes.equation
+    local unknown_code       <const> = nodes.listcodes.unknown
 
     -- todo: make helper that formats
 

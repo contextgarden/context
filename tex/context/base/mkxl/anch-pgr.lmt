@@ -35,14 +35,13 @@ local ctx_doifelse      = commands.doifelse
 local implement         = interfaces.implement
 
 local texgetcount       = tex.getcount
-local texiscount        = tex.iscount
 
 local getmacro          = tokens.getters.macro
 local expandasvalue     = tex.expandasvalue
 local scanmpstring      = mp.scan.string
 ----- mpgnamespace      = getmacro("??graphicvariable")
 
-local string_value      = tokens.values.string
+local string_value      <const> = tokens.values.string
 
 local report_graphics   = logs.reporter("backgrounds")
 local report_shapes     = logs.reporter("backgrounds","shapes")
@@ -63,7 +62,7 @@ local f_pair            = formatters["(%p,%p)"]
 local f_path            = formatters["%--t--cycle"]
 local f_pair_i          = formatters["(%r,%r)"] -- rounded
 
-local c_realpageno      = texiscount("realpageno")
+local c_realpageno      <const> = tex.iscount("realpageno")
 
 graphics                = graphics or { }
 local backgrounds       = { }
@@ -79,7 +78,7 @@ backgrounds.path  = f_path
 
 local texsetattribute   = tex.setattribute
 
-local a_textbackground  = attributes.private("textbackground")
+local a_textbackground  <const> = attributes.private("textbackground")
 
 local nuts              = nodes.nuts
 
@@ -95,8 +94,7 @@ local setlink           = nuts.setlink
 local getheight         = nuts.getheight
 local getdepth          = nuts.getdepth
 
-local nodecodes         = nodes.nodecodes
-local par_code          = nodecodes.par
+local par_code          <const> = nodes.nodecodes.par
 
 local startofpar        = nuts.startofpar
 local insertbefore      = nuts.insertbefore
@@ -104,7 +102,7 @@ local insertafter       = nuts.insertafter
 
 local processranges     = nuts.processranges
 
-local unsetvalue        = attributes.unsetvalue
+local unsetvalue        <const> = attributes.unsetvalue
 
 local jobpositions      = job.positions
 local getpos            = jobpositions.getpos

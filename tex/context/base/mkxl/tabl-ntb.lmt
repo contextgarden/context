@@ -8,9 +8,6 @@ if not modules then modules = { } end modules ['tabl-ntb'] = {
 
 local context = context
 
-local a_tablesection = attributes.system("tablesection")
-
-local hlist_code     = nodes.nodecodes.hlist
 
 local nuts           = nodes.nuts
 local tonode         = nuts.tonode
@@ -23,7 +20,9 @@ local getattr        = nuts.getattr
 local copylist       = nuts.copylist
 local flushlist      = nuts.flushlist
 
-local integer_value  = tokens.values.integer
+local integer_value  <const> = tokens.values.integer
+local hlist_code     <const> = nodes.nodecodes.hlist
+local a_tablesection <const> = attributes.system("tablesection")
 
 local implement      = interfaces.implement
 

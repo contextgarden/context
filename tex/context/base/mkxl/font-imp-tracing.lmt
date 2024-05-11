@@ -28,10 +28,10 @@ local charcommand        = helpers.commands.char
 
 local variables          = interfaces.variables
 
-local v_background       = variables.background
-local v_frame            = variables.frame
-local v_empty            = variables.empty
-local v_none             = variables.none
+local v_background       <const> = variables.background
+local v_frame            <const> = variables.frame
+local v_empty            <const> = variables.empty
+local v_none             <const> = variables.none
 
 -- d:width d:height d:depth d:rulethickness b:outline b:advance b:baseline s:color
 

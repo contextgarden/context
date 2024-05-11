@@ -16,12 +16,10 @@ local ctx_pushcatcodes = context.pushcatcodes
 local ctx_popcatcodes  = context.popcatcodes
 
 local implement = interfaces.implement
-local variables = interfaces.variables
-
-local v_before  = variables.before
-local v_after   = variables.after
-
 local is_letter = characters.is_letter
+
+local v_before <const> = interfaces.variables.before
+local v_after  <const> = interfaces.variables.after
 
 -- Hyphenating URL's is somewhat tricky and a matter of taste. I did consider using
 -- a dedicated hyphenation pattern or dealing with it by node parsing, but the

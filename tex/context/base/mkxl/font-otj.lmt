@@ -71,10 +71,10 @@ local setcolor           = tracers and tracers.colors.set
 local resetcolor         = tracers and tracers.colors.reset
 
 local nodecodes          = nodes.nodecodes
-local glyph_code         = nodecodes.glyph
-local disc_code          = nodecodes.disc
-local kern_code          = nodecodes.kern
-local glue_code          = nodecodes.glue
+local glyph_code         <const> = nodecodes.glyph
+local disc_code          <const> = nodecodes.disc
+local kern_code          <const> = nodecodes.kern
+local glue_code          <const> = nodecodes.glue
 
 local nuts               = nodes.nuts
 local nodepool           = nuts.pool
@@ -2357,8 +2357,8 @@ end
 -- local getprev = nodes.direct.getprev
 -- local getnext = nodes.direct.getnext
 --
--- local whatsit_code = nodes.nodecodes.whatsit
--- local glyph_code   = nodes.nodecodes.glyph
+-- local whatsit_code <const> = nodes.nodecodes.whatsit
+-- local glyph_code   <const> = nodes.nodecodes.glyph
 --
 -- local function getspaceboth(n) -- fragile: what it prev/next has no width field
 --     local prev, next = getboth(n)

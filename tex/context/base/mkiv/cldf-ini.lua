@@ -1667,22 +1667,13 @@ do
     end
 
     local p_texescape = patterns.texescape
+    local p_ctxescape = patterns.ctxescape
 
-    function context.escaped(s)
-        if s then
-            context(lpegmatch(p_texescape,s) or s)
-        else
-         -- context("")
-        end
-    end
+    function context.escaped   (s) if s then context(lpegmatch(p_texescape,s) or s) end end
+    function context.ctxescaped(s) if s then context(lpegmatch(p_ctxescape,s) or s) end end
 
-    function context.escape(s)
-        if s then
-            return lpegmatch(p_texescape,s) or s
-        else
-            return ""
-        end
-    end
+    function context.escape   (s) return (s and lpegmatch(p_texescape,s)) or s or "" end
+    function context.ctxescape(s) return (s and lpegmatch(p_ctxescape,s)) or s or "" end
 
 end
 

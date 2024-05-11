@@ -107,7 +107,16 @@
 \definetagconstant{mstackertop}
 \definetagconstant{mstackermid}
 \definetagconstant{mstackerbot}
+
 \definetagconstant{mextensible}
+
+\definetagconstant{mfunction}
+\definetagconstant{mfunctionstack}
+
+\definetagconstant{mfraction}
+\definetagconstant{mfractionstack}
+
+\definetagconstant{munit}
 
 \aliastagconstant{mtablerow} {mtr}
 \aliastagconstant{mtablecell}{mtd}

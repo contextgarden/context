@@ -60,9 +60,9 @@ local nuts              = nodes.nuts
 local nodecodes         = nodes.nodecodes
 local listcodes         = nodes.listcodes
 
-local hlist_code        = nodecodes.hlist
-local kern_code         = nodecodes.kern
-local linelist_code     = listcodes.line
+local hlist_code        <const> = nodecodes.hlist
+local kern_code         <const> = nodecodes.kern
+local linelist_code     <const> = listcodes.line
 
 local tonut             = nodes.tonut
 local tonode            = nodes.tonode
@@ -97,7 +97,7 @@ local new_hlist         = nodepool.hlist
 local new_rule          = nodepool.rule
 local new_glue          = nodepool.glue
 
-local righttoleft_code  = tex.directioncodes.righttoleft
+local righttoleft_code  <const> = tex.directioncodes.righttoleft
 
 local setmetatableindex = table.setmetatableindex
 

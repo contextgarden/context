@@ -38,7 +38,7 @@ static TString **tmname = NULL;
 
 static void luaclib_aux_print_string(const TString* ts)
 {
-    const char* s = getstr(ts);
+    const char * s = getstr(ts);
     size_t n = tsslen(ts);
     printf("\"");
     for (size_t i = 0; i < n; i++) {
@@ -556,7 +556,7 @@ static void luaclib_aux_print_header(const Proto* f)
     );
     printf("%d%s param%s, %d slot%s, %d upvalue%s, ",
         (int)(f->numparams),
-        f->is_vararg?"+":"",
+     /* f->is_vararg?"+":"", */ "",
         SS(f->numparams),
         S(f->maxstacksize),
         S(f->sizeupvalues)

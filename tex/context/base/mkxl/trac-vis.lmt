@@ -79,7 +79,7 @@ local texsetattribute     = tex.setattribute
 
 local setmetatableindex   = table.setmetatableindex
 
-local unsetvalue          = attributes.unsetvalue
+local unsetvalue          <const> = attributes.unsetvalue
 
 local current_font        = font.current
 
@@ -87,7 +87,8 @@ local fonthashes          = fonts.hashes
 local chardata            = fonthashes.characters
 local exheights           = fonthashes.exheights
 local emwidths            = fonthashes.emwidths
-local pt_factor           = number.dimenfactors.pt
+
+local ptfactor            <const> = number.dimenfactors.pt
 
 local nodepool            = nuts.pool
 local new_rule            = nodepool.rule
@@ -108,9 +109,9 @@ local setlisttransparency = tracers.transparencies.setlist
 local starttiming         = statistics.starttiming
 local stoptiming          = statistics.stoptiming
 
-local a_visual            = attributes.private("visual")
-local a_filter            = attributes.private("filter")
-local a_layer             = attributes.private("viewerlayer")
+local a_visual            <const> = attributes.private("visual")
+local a_filter            <const> = attributes.private("filter")
+local a_layer             <const> = attributes.private("viewerlayer")
 
 local enableaction        = nodes.tasks.enableaction
 
@@ -209,22 +210,27 @@ end
 
 visualizers.getusedfont = getusedfont
 
+function visualizers.definelayer(name)
+    local tag = formatters["v_%s"](name)
+    attributes.viewerlayers.define {
+        tag       = tag,
+        title     = formatters["visualizer %s"](name),
+        visible   = "start",
+        editable  = "yes",
+        printable = "yes",
+    }
+    layers[name] = attributes.viewerlayers.register(tag,true)
+    return tag
+end
+
 local function initialize()
     --
     if not usedfont then
         getusedfont()
     end
     --
-    for mode, value in next, modes do
-        local tag = formatters["v_%s"](mode)
-        attributes.viewerlayers.define {
-            tag       = tag,
-            title     = formatters["visualizer %s"](mode),
-            visible   = "start",
-            editable  = "yes",
-            printable = "yes"
-        }
-        layers[mode] = attributes.viewerlayers.register(tag,true)
+    for mode in next, modes do
+        visualizers.definelayer(mode)
     end
     l_hbox          = layers.hbox
     l_vbox          = layers.vbox
@@ -466,61 +472,6 @@ end
 
 -- ... if okay it will replace the current hpack_string in node_typ
 
--- local function sometext(str,layer,color,textcolor,lap,variant)
---     local text = hpack_string(str,usedfont)
---     local size = getwidth(text)
---     local rule = new_rule(size,2*exheight,exheight/2)
---     local kern = new_kern(-size)
---     if color then
---         setcolor(rule,color)
---     end
---     if textcolor then
---         setlistcolor(getlist(text),textcolor)
---     end
---     local info = setlink(rule,kern,text)
---     setlisttransparency(info,"trace:g")
---     info = hpack_nodes(info)
---     local width = getwidth(info)
---     if variant then
---         setoffsets(info,0,variant*exheight)
---     end
---     if lap then
---         info = new_hlist(setlink(new_kern(-width),info)) -- use xoffset and set info wd to 0
---     else
---         info = new_hlist(info) -- a bit overkill: double wrapped
---     end
---     if layer then
---         setattr(info,a_layer,layer)
---     end
---     return info, width
--- end
-
--- local function sometext(str,layer,color,textcolor,lap,variant)
---     local text = hpack_string(str,usedfont)
---     local size = getwidth(text)
---     local rule = new_virtual_rule(size,2*exheight,exheight/2)
---     if color then
---         setcolor(rule,color)
---     end
---     if textcolor then
---         setlistcolor(getlist(text),textcolor)
---     end
---     local info = setlink(rule,text)
---     setlisttransparency(info,"trace:g")
---     info = hpack_nodes(info)
---     if variant then
---         setoffsets(info,0,variant*exheight)
---     end
---     info = new_hlist(info) -- a bit overkill: double wrapped
---     if lap then
---         setoffsets(info,-size)
---     end
---     if layer then
---         setattr(info,a_layer,layer)
---     end
---     return info, size
--- end
-
 local function sometext(str,layer,color,textcolor,lap,variant)
     local text = hpack_string(str,usedfont)
     local size = getwidth(text)
@@ -574,6 +525,10 @@ end
 
 local caches = setmetatableindex("table")
 
+function visualizers.registercache(name)
+    return caches[name]
+end
+
 local fontkern, italickern, marginkern, mathkern do
 
     local f_cache = caches["fontkern"]
@@ -588,7 +543,7 @@ local fontkern, italickern, marginkern, mathkern do
         local kern  = width + extra
         local info  = cache[kern]
         if not info then
-            local text = hpack_string(formatters[" %0.3f"](kern*pt_factor),usedfont)
+            local text = hpack_string(formatters[" %0.3f"](kern*ptfactor),usedfont)
             local rule = new_rule(emwidth/fraction,6*exheight,2*exheight)
             local list = getlist(text)
             if kern > 0 then
@@ -702,7 +657,7 @@ end
 
 local ruledmark do
 
-    local set_code = nodes.markcodes.set
+    local set_code <const> = nodes.markcodes.set
 
     local sm_cache = setmetatableindex(caches["setmark"], function(t,index)
         local info = sometext(formatters["SM:%i"](index),usedfont,nil,"trace:w") -- whatsit
@@ -822,9 +777,9 @@ local ruleddir, ruledpar do
     local dircodes       = nodes.dircodes
     local directioncodes = tex.directioncodes -- nodes.dirvalues
 
-    local cancel_code    = dircodes.cancel
-    local l2r_code       = directioncodes.l2r
-    local r2l_code       = directioncodes.r2l
+    local cancel_code    <const> = dircodes.cancel
+    local l2r_code       <const> = directioncodes.l2r
+    local r2l_code       <const> = directioncodes.r2l
 
     local d_cache        = caches["dir"]
 
@@ -925,6 +880,7 @@ local ruledbox do
         setcolor(rule,"trace:do")
         settransparency(rule,"trace:do")
         setattr(rule,a_layer,l_origin)
+        setattr(origin,a_layer,l_origin)
         t[size] = origin
         return origin
     end)
@@ -1125,23 +1081,23 @@ local ruledglue, ruledmathglue do
 
     local gluecodes             = nodes.gluecodes
 
-    local userskip_code         = gluecodes.userskip
-    local spaceskip_code        = gluecodes.spaceskip
-    local xspaceskip_code       = gluecodes.xspaceskip
-    local zerospaceskip_code    = gluecodes.zerospaceskip or gluecodes.userskip
- -- local keepskip_code         = gluecodes.keepskip or gluecodes.userskip
-    local leftskip_code         = gluecodes.leftskip
-    local rightskip_code        = gluecodes.rightskip
-    local lefthangskip_code     = gluecodes.lefthangskip
-    local righthangskip_code    = gluecodes.righthangskip
-    local parfillleftskip_code  = gluecodes.parfillleftskip or parfillskip_code
-    local parfillrightskip_code = gluecodes.parfillrightskip or parfillskip_code
-    local parinitleftskip_code  = gluecodes.parinitleftskip
-    local parinitrightskip_code = gluecodes.parinitrightskip
-    local indentskip_code       = gluecodes.indentskip
-    local intermathskip_code    = gluecodes.intermathskip
-    local correctionskip_code   = gluecodes.correctionskip
-    local tabskip_code          = gluecodes.tabskip
+    local userskip_code         <const> = gluecodes.userskip
+    local spaceskip_code        <const> = gluecodes.spaceskip
+    local xspaceskip_code       <const> = gluecodes.xspaceskip
+    local zerospaceskip_code    <const> = gluecodes.zerospaceskip or gluecodes.userskip
+ -- local keepskip_code         <const> = gluecodes.keepskip or gluecodes.userskip
+    local leftskip_code         <const> = gluecodes.leftskip
+    local rightskip_code        <const> = gluecodes.rightskip
+    local lefthangskip_code     <const> = gluecodes.lefthangskip
+    local righthangskip_code    <const> = gluecodes.righthangskip
+    local parfillleftskip_code  <const> = gluecodes.parfillleftskip or parfillskip_code
+    local parfillrightskip_code <const> = gluecodes.parfillrightskip or parfillskip_code
+    local parinitleftskip_code  <const> = gluecodes.parinitleftskip
+    local parinitrightskip_code <const> = gluecodes.parinitrightskip
+    local indentskip_code       <const> = gluecodes.indentskip
+    local intermathskip_code    <const> = gluecodes.intermathskip
+    local correctionskip_code   <const> = gluecodes.correctionskip
+    local tabskip_code          <const> = gluecodes.tabskip
 
     local g_cache_v  = caches["vglue"]
     local g_cache_h  = caches["hglue"]
@@ -1206,7 +1162,7 @@ local ruledglue, ruledmathglue do
 --         local subtype = getsubtype(current)
 --         local width   = effectiveglue(current,parent)
 --         local stag    = stags[subtype]
---         local amount  = f_amount(tags[subtype] or (vertical and "VS") or "HS",width*pt_factor) -- can be sped up
+--         local amount  = f_amount(tags[subtype] or (vertical and "VS") or "HS",width*ptfactor) -- can be sped up
 --         local info    = (vertical and g_cache_v or g_cache_h)[amount]
 --         if subtype == intermathskip_code then
 --             head = ruledmathglue(head, current)
@@ -1271,7 +1227,7 @@ local ruledglue, ruledmathglue do
         if info then
             -- print("glue hit")
         else
-            local amount = f_amount(tags[subtype] or (vertical and "VS") or "HS",width*pt_factor)
+            local amount = f_amount(tags[subtype] or (vertical and "VS") or "HS",width*ptfactor)
             if subtype == spaceskip_code or subtype == xspaceskip_code or subtype == zerospaceskip_code then
                 info = sometext(amount,l_glue,"trace:y")
             elseif subtype == userskip_code then
@@ -1398,8 +1354,8 @@ local ruledglue, ruledmathglue do
             end
         end
         if not info then
-            local amount = quad and f_amount("QUAD",width*pt_factor) or temphack[name]
-         -- local amount = quad and f_amount("QD",width*pt_factor) or temphack[name]
+            local amount = quad and f_amount("QUAD",width*ptfactor) or temphack[name]
+         -- local amount = quad and f_amount("QD",width*ptfactor) or temphack[name]
             local text   = hpack_string(amount,usedfont)
             local rule   = new_rule(emwidth/fraction,2*exheight,(zero and 4.25 or 2.75)*exheight)
             local list   = getlist(text)
@@ -1433,7 +1389,7 @@ local ruledkern do
         local cache = vertical and v_cache or h_cache
         local info  = cache[kern]
         if not info then
-            local amount = formatters["%s:%0.3f"](vertical and "VK" or "HK",kern*pt_factor)
+            local amount = formatters["%s:%0.3f"](vertical and "VK" or "HK",kern*ptfactor)
             if kern > 0 then
                 info = sometext(amount,l_kern,"trace:b")
             elseif kern < 0 then
@@ -1455,12 +1411,12 @@ end
 
 local ruledstrut do
 
-    local strut_size      = 65536 * 8 / 10
-    local strut_code      = nodes.rulecodes.strut
-    local math_code       = nodes.nodecodes.math
+    local strut_size      <const> = 65536 * 8 / 10
+    local strut_code      <const> = nodes.rulecodes.strut
+    local math_code       <const> = nodes.nodecodes.math
     local traverseid      = nuts.traverseid
     local rangedimensions = nuts.rangedimensions
-    local a_mathaxis      = attributes.private("mathaxis")
+    local a_mathaxis      <const> = attributes.private("mathaxis")
 
     ruledstrut = function(head,current,parent)
         if getwidth(current) == 0 then
@@ -1518,7 +1474,7 @@ local ruleditalic do
         local kern = getkern(current)
         local info = i_cache[kern]
         if not info then
-            local amount = formatters["%s:%0.3f"]("IC",kern*pt_factor)
+            local amount = formatters["%s:%0.3f"]("IC",kern*ptfactor)
             if kern > 0 then
                 info = sometext(amount,l_kern,"trace:b")
             elseif kern < 0 then
@@ -1546,7 +1502,7 @@ local ruledmarginkern do
         local cache = left and l_cache or r_cache
         local info  = cache[kern]
         if not info then
-            local amount = formatters["%s:%0.3f"](left and "ML" or "MR",kern*pt_factor)
+            local amount = formatters["%s:%0.3f"](left and "ML" or "MR",kern*ptfactor)
             if kern > 0 then
                 info = sometext(amount,l_marginkern,"trace:b")
             elseif kern < 0 then
@@ -1573,7 +1529,7 @@ local ruledmathkern do
         local cache = vertical and v_cache or h_cache
         local info  = cache[kern]
         if not info then
-            local amount = formatters["%s:%0.3f"](vertical and "MV" or "MH",kern*pt_factor)
+            local amount = formatters["%s:%0.3f"](vertical and "MV" or "MH",kern*ptfactor)
             if kern > 0 then
                 info = sometext(amount,l_mathkern,"trace:b")
             elseif kern < 0 then
@@ -1626,15 +1582,15 @@ local ruledpenalty do
     local raisepenalties = false
 
     ----- getpenalty        = nuts.getpenalty
-    local pre_penalty_code  = nodes.penaltycodes.mathprepenalty
-    local post_penalty_code = nodes.penaltycodes.mathpostpenalty
+    local pre_penalty_code  <const> = nodes.penaltycodes.mathprepenalty
+    local post_penalty_code <const> = nodes.penaltycodes.mathpostpenalty
 
     directives.register("visualizers.raisepenalties",function(v) raisepenalties = v end)
 
     local getoptions   = nuts.getoptions
 
-    local mathforward  = tex.penaltyoptioncodes.mathforward
-    local mathbackward = tex.penaltyoptioncodes.mathbackward
+    local mathforward  <const> = tex.penaltyoptioncodes.mathforward
+    local mathbackward <const> = tex.penaltyoptioncodes.mathbackward
 
     ruledpenalty = function(head,current,vertical,subtype)
         local penalty = getpenalty(current)
@@ -1708,7 +1664,7 @@ local ruledmath do
     }
 
     local getoptions = nuts.getoptions
-    local shortmath  = tex.mathoptioncodes.short
+    local shortmath  <const> = tex.mathoptioncodes.short
 
     ruledmath = function(head,current)
         local what  = getsubtype(current)
@@ -1745,47 +1701,47 @@ end
 do
 
     local nodecodes               = nodes.nodecodes
-    local disc_code               = nodecodes.disc
-    local kern_code               = nodecodes.kern
-    local glyph_code              = nodecodes.glyph
-    local glue_code               = nodecodes.glue
-    local penalty_code            = nodecodes.penalty
-    local whatsit_code            = nodecodes.whatsit
-    local user_code               = nodecodes.user
-    local math_code               = nodecodes.math
-    local hlist_code              = nodecodes.hlist
-    local vlist_code              = nodecodes.vlist
-    local dir_code                = nodecodes.dir
-    local par_code                = nodecodes.par
-    local mark_code               = nodecodes.mark
-    local insert_code             = nodecodes.insert
-    local rule_code               = nodecodes.rule
-    local boundary_code           = nodecodes.boundary
+    local disc_code               <const> = nodecodes.disc
+    local kern_code               <const> = nodecodes.kern
+    local glyph_code              <const> = nodecodes.glyph
+    local glue_code               <const> = nodecodes.glue
+    local penalty_code            <const> = nodecodes.penalty
+    local whatsit_code            <const> = nodecodes.whatsit
+    local user_code               <const> = nodecodes.user
+    local math_code               <const> = nodecodes.math
+    local hlist_code              <const> = nodecodes.hlist
+    local vlist_code              <const> = nodecodes.vlist
+    local dir_code                <const> = nodecodes.dir
+    local par_code                <const> = nodecodes.par
+    local mark_code               <const> = nodecodes.mark
+    local insert_code             <const> = nodecodes.insert
+    local rule_code               <const> = nodecodes.rule
+    local boundary_code           <const> = nodecodes.boundary
 
     local kerncodes               = nodes.kerncodes
-    local fontkern_code           = kerncodes.fontkern
-    local italickern_code         = kerncodes.italiccorrection
-    local spacefontkern_code      = kerncodes.spacefontkern
-    local leftkern_code           = kerncodes.leftcorrectionkern
-    local rightkern_code          = kerncodes.rightcorrectionkern
-    local leftmarginkern_code     = kerncodes.leftmarginkern
-    local rightmarginkern_code    = kerncodes.rightmarginkern
-    local mathshapekern_code      = kerncodes.mathshapekern
-    local horizontalmathkern_code = kerncodes.horizontalmathkern
-    local verticalmathkern_code   = kerncodes.verticalmathkern
-    local leftmathslackkern_code  = kerncodes.leftmathslackkern
-    local rightmathslackkern_code = kerncodes.rightmathslackkern
-    ----- userkern_code           = kerncodes.userkern
+    local fontkern_code           <const> = kerncodes.fontkern
+    local italickern_code         <const> = kerncodes.italiccorrection
+    local spacefontkern_code      <const> = kerncodes.spacefontkern
+    local leftkern_code           <const> = kerncodes.leftcorrectionkern
+    local rightkern_code          <const> = kerncodes.rightcorrectionkern
+    local leftmarginkern_code     <const> = kerncodes.leftmarginkern
+    local rightmarginkern_code    <const> = kerncodes.rightmarginkern
+    local mathshapekern_code      <const> = kerncodes.mathshapekern
+    local horizontalmathkern_code <const> = kerncodes.horizontalmathkern
+    local verticalmathkern_code   <const> = kerncodes.verticalmathkern
+    local leftmathslackkern_code  <const> = kerncodes.leftmathslackkern
+    local rightmathslackkern_code <const> = kerncodes.rightmathslackkern
+    ----- userkern_code           <const> = kerncodes.userkern
 
  -- local skipcodes               = nodes.skipcodes
-    local spaceskip_code          = nodes.skipcodes.spaceskip
-    local xspaceskip_code         = nodes.skipcodes.xspaceskip
-    local zerospaceskip_code      = nodes.skipcodes.zerospaceskip
-    local intermathskip_code      = nodes.skipcodes.intermathskip
+    local spaceskip_code          <const> = nodes.skipcodes.spaceskip
+    local xspaceskip_code         <const> = nodes.skipcodes.xspaceskip
+    local zerospaceskip_code      <const> = nodes.skipcodes.zerospaceskip
+    local intermathskip_code      <const> = nodes.skipcodes.intermathskip
 
  -- local listcodes               = nodes.listcodes
-    local linelist_code           = nodes.listcodes.line
-    local rowlist_code            = nodes.listcodes.alignment
+    local linelist_code           <const> = nodes.listcodes.line
+    local rowlist_code            <const> = nodes.listcodes.alignment
 
  -- local vtop_package_state      = 3 -- todo: symbolic
  -- local dbox_package_state      = 4 -- todo: symbolic
@@ -1836,12 +1792,12 @@ do
 
         -- too many locals so:
 
-        local vglue_code    = filters.vglue
-        local hglue_code    = filters.hglue
-        local vkern_code    = filters.vkern
-        local hkern_code    = filters.hkern
-        local vpenalty_code = filters.vpenalty
-        local hpenalty_code = filters.hpenalty
+        local vglue_code    <const> = filters.vglue
+        local hglue_code    <const> = filters.hglue
+        local vkern_code    <const> = filters.vkern
+        local hkern_code    <const> = filters.hkern
+        local vpenalty_code <const> = filters.vpenalty
+        local hpenalty_code <const> = filters.hpenalty
 
         while current do
             local id = getid(current)
@@ -2195,8 +2151,8 @@ end
 do
 
     local nodecodes  = nodes.nodecodes
-    local hlist_code = nodecodes.hlist
-    local vlist_code = nodecodes.vlist
+    local hlist_code <const> = nodecodes.hlist
+    local vlist_code <const> = nodecodes.vlist
     local nextnode   = nuts.traversers.node
 
     local last       = nil
@@ -2287,11 +2243,14 @@ end
 
 do
 
-    local function make(str,forecolor,rulecolor,layer)
-        if initialize then
-            initialize()
+    local function make(str,forecolor,rulecolor,layer,delta,extra)
+     -- if initialize then
+     --     initialize()
+     -- end
+        if not usedfont then
+            getusedfont()
         end
-        local rule = new_rule(emwidth/fraction,exheight,4*exheight)
+        local rule = new_rule(emwidth/fraction,exheight,(4+delta)*exheight)
         setcolor(rule,rulecolor)
         settransparency(rule,rulecolor)
         local info
@@ -2302,34 +2261,52 @@ do
             local list = getlist(text)
             setlistcolor(list,textcolor)
             setlisttransparency(list,textcolor)
-            setshift(text,3.5 * exheight)
-            info = new_hlist(setlink(rule,text))
+            setshift(text,(3.5+delta)*exheight)
+            if extra then
+                setwidth(text)
+                extra = hpack_string(extra,usedfont)
+                local list = getlist(text)
+                setlistcolor(extra,textcolor)
+                setlisttransparency(extra,textcolor)
+                setshift(extra,(3.5)*exheight)
+            end
+            info = new_hlist(setlink(rule,text,extra))
         end
         setattr(info,a_layer,layer)
         return info
     end
 
-    function visualizers.register(name,textcolor,rulecolor)
+    function visualizers.register(name,textcolor,rulecolor,shift,nocache)
         if rawget(layers,name) then
             -- message
             return
         end
+
+        visualizers.definelayer(name,true)
+
         local cache = caches[name]
         local layer = layers[name]
+
         if not textcolor then
             textcolor = "trace:ds"
         end
         if not rulecolor then
             rulecolor = "trace:do"
         end
-        return function(str)
+        local delta = shift or 0
+        return function(str,extra)
             if not str then
                 str = ""
             end
-            local info = cache[str]
-            if not info then
-                info = make(str,textcolor,rulecolor,layer)
-                cache[str] = info
+            local info
+            if nocache then
+                info = make(str,textcolor,rulecolor,layer,delta,extra)
+            else
+                info = cache[str]
+                if not info then
+                    info = make(str,textcolor,rulecolor,layer,delta,extra)
+                    cache[str] = info
+                end
             end
             return copy_node(info)
         end

@@ -22,7 +22,7 @@ local getlinedir  = tex.getlinedir
 local getpardir   = tex.getpardir
 local getboxdir   = tex.getboxdir
 
-local none_code   = tokens.values.none
+local none_code   <const> = tokens.values.none
 
 local context     = context
 

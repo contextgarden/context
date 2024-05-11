@@ -52,7 +52,7 @@ local report_otf          = logs.reporter("fonts","otf loading")
 local fonts               = fonts
 local otf                 = fonts.handlers.otf
 
-otf.version               = 3.135 -- beware: also sync font-mis.lua and in mtx-fonts
+otf.version               = 3.140 -- beware: also sync font-mis.lua and in mtx-fonts and even font-otl.lua
 otf.cache                 = containers.define("fonts", "otl", otf.version, true)
 otf.svgcache              = containers.define("fonts", "svg", otf.version, true)
 otf.pngcache              = containers.define("fonts", "png", otf.version, true)
@@ -347,7 +347,7 @@ end
 -- end
 
 local function copytotfm(data,cache_id)
-    if data then
+    if data and data.descriptions then
         local metadata       = data.metadata
         local properties     = derivetable(data.properties)
         local descriptions   = derivetable(data.descriptions)
@@ -393,32 +393,32 @@ local function copytotfm(data,cache_id)
                     local parts            = m.parts
                     local partsitalic      = m.partsitalic
                     local partsorientation = m.partsorientation
-                    local mainunicode      = m.unicode
+                    local mainunicode      = d.unicode
                     if variants then
                         local c = character
                         for i=1,#variants do
                             local un = variants[i]
                             c.next = un
                             c = characters[un]
-if not c.unicode then
-    c.unicode = mainunicode
-end
+-- if not c.unicode then
+--     descriptions[un].unicode = mainunicode
+--     c.unicode = mainunicode
+-- end
                         end -- c is now last in chain
                         c.parts = parts
                         c.partsorientation = partsorientation
                         if partsitalic and partsitalic ~= 0 then
                             c.partsitalic = partsitalic
                         end
+--     parts[#parts//2+1].unicode = mainunicode
                     elseif parts then
                         character.parts = parts
                         character.partsorientation = partsorientation
                         if partsitalic and partsitalic ~= 0 then
                             character.partsitalic = partsitalic
                         end
+--     parts[#parts//2+1].unicode = mainunicode
                     end
-if parts then
-    parts[#parts//2+1].unicode = mainunicode
-end
                     --
                     local topanchor = m.topanchor or m.accent -- for now
                     if topanchor then
@@ -546,9 +546,12 @@ end
                     local du = descriptions[u]
                     if du then
                         for uu in sortedhash(d) do
-                            maxindex = maxindex + 1
-                            descriptions[uu].dupindex = du.index
-                            descriptions[uu].index    = maxindex
+                            local duu = descriptions[uu]
+                            if duu then
+                                maxindex = maxindex + 1
+                                duu.dupindex = du.index
+                                duu.index    = maxindex
+                            end
                         end
                     else
                      -- report_otf("no %U in font %a, duplicates ignored",u,filename)

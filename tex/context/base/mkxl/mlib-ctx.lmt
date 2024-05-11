@@ -33,7 +33,7 @@ local setters          = tokens.setters
 local setmacro         = setters.macro
 local implement        = interfaces.implement
 
-local v_no             = interfaces.variables.no
+local v_no             <const> = interfaces.variables.no
 
 local extensiondata    = metapost.extensiondata or storage.allocate { }
 metapost.extensiondata = extensiondata

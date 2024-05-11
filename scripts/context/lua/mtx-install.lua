@@ -113,11 +113,11 @@ local platforms = {
     ["windows-64"]     = "win64",
     ["win64"]          = "win64",
     --
- -- ["linux"]          = "linux",
- -- ["linux-32"]       = "linux",
- -- ["linux32"]        = "linux",
+    ["linux"]          = "linux",
+    ["linux-32"]       = "linux",
+    ["linux32"]        = "linux",
     --
-    ["linux"]          = "linux-64",
+ -- ["linux"]          = "linux-64",
     ["linux-64"]       = "linux-64",
     ["linux64"]        = "linux-64",
     --

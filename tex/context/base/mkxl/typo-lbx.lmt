@@ -15,10 +15,10 @@ local nuts              = nodes.nuts
 local tonut             = nodes.tonut
 local tonode            = nodes.tonode
 
-local left_box_code     = nodes.listcodes.left
-local right_box_code    = nodes.listcodes.right
-local local_box_code    = nodes.listcodes["local"]
-local hlist_code        = nodes.nodecodes.hlist
+local left_box_code     <const> = nodes.listcodes.left
+local right_box_code    <const> = nodes.listcodes.right
+local local_box_code    <const> = nodes.listcodes["local"]
+local hlist_code        <const> = nodes.nodecodes.hlist
 
 -- some can go:
 
@@ -43,8 +43,8 @@ local traverse_list     = nuts.traversers.list
 
 local expandmacro       = token.expandmacro
 
-local dimension_value   = tokens.values.dimension
-local integer_value     = tokens.values.integer
+local dimension_value   <const> = tokens.values.dimension
+local integer_value     <const> = tokens.values.integer
 
 local implement         = interfaces.implement
 
@@ -54,7 +54,7 @@ local typesetters       = typesetters
 typesetters.localboxes  = typesetters.localboxes or { }
 local localboxes        = typesetters.localboxes
 
-local a_localboxesmark  = attributes.private("localboxesmark")
+local a_localboxesmark  <const> = attributes.private("localboxesmark")
 
 local starttiming       = statistics.starttiming
 local stoptiming        = statistics.stoptiming

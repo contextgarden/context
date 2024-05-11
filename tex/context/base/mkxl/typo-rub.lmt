@@ -24,12 +24,12 @@ local implement       = interfaces.implement
 
 local texsetattribute = tex.setattribute
 
-local v_flushleft     = variables.flushleft
-local v_middle        = variables.middle
-local v_flushright    = variables.flushright
-local v_yes           = variables.yes
-local v_no            = variables.no
-local v_auto          = variables.auto
+local v_flushleft     <const> = variables.flushleft
+local v_middle        <const> = variables.middle
+local v_flushright    <const> = variables.flushright
+local v_yes           <const> = variables.yes
+local v_no            <const> = variables.no
+local v_auto          <const> = variables.auto
 
 local nuts            = nodes.nuts
 
@@ -54,18 +54,19 @@ local takebox         = nuts.takebox
 local nextlist        = nuts.traversers.list
 
 local nodecodes       = nodes.nodecodes
-local glyph_code      = nodecodes.glyph
-local disc_code       = nodecodes.disc
-local kern_code       = nodecodes.kern
-local glue_code       = nodecodes.glue
-local penalty_code    = nodecodes.penalty
-local hlist_code      = nodecodes.hlist
-local vlist_code      = nodecodes.vlist
-local par_code        = nodecodes.par
-local dir_code        = nodecodes.dir
-
 local kerncodes       = nodes.kerncodes
-local fontkern_code   = kerncodes.font
+
+local glyph_code      <const> = nodecodes.glyph
+local disc_code       <const> = nodecodes.disc
+local kern_code       <const> = nodecodes.kern
+local glue_code       <const> = nodecodes.glue
+local penalty_code    <const> = nodecodes.penalty
+local hlist_code      <const> = nodecodes.hlist
+local vlist_code      <const> = nodecodes.vlist
+local par_code        <const> = nodecodes.par
+local dir_code        <const> = nodecodes.dir
+
+local fontkern_code   <const> = kerncodes.font
 
 local nodepool        = nuts.pool
 local new_kern        = nodepool.kern
@@ -80,7 +81,7 @@ local enableaction    = nodes.tasks.enableaction
 local nofrubies       = 0
 local rubylist        = { }
 
-local a_ruby          = attributes.private("ruby")
+local a_ruby          <const> = attributes.private("ruby")
 
 local rubies          = { }
 typesetters.rubies    = rubies

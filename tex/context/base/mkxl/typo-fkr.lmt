@@ -12,9 +12,6 @@ local getnext       = nuts.getnext
 local getattr       = nuts.getattr
 local isglyph       = nuts.isglyph
 
-local nodecodes     = nodes.nodecodes
-local glyph_code    = nodecodes.glyph
-
 local fontdata      = fonts.hashes.identifiers
 local getkernpair   = fonts.handlers.otf.getkern
 
@@ -23,7 +20,9 @@ local new_kern      = nuts.pool.fontkern
 
 local enableaction  = nodes.tasks.enableaction
 
-local a_extrakern   = attributes.private("extrafontkern")
+local glyph_code  <const> = nodes.nodecodes.glyph
+
+local a_extrakern <const> = attributes.private("extrafontkern")
 
 -- 0=none 1=min 2=max 3=mixed
 
@@ -91,9 +90,10 @@ end
 do
 
     local variables    = interfaces.variables
-    local unsetvalue   = attributes.unsetvalue
     local enabled      = false
     local setattribute = tex.setattribute
+
+    local unsetvalue <const> = attributes.unsetvalue
 
     local values       = {
         [variables.none ] = 0,

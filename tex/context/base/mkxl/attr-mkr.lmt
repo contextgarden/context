@@ -11,7 +11,7 @@ nodes.markers = markers
 
 local cache     = { }
 local numbers   = attributes.numbers
-local a_unknown = attributes.private("marker:unknown")
+local a_unknown <const> = attributes.private("marker:unknown")
 
 local nuts    = nodes.nuts
 local tonut   = nodes.tonut

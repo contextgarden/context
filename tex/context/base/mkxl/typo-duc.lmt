@@ -86,26 +86,26 @@ local new_direction        = nodepool.direction
 
 local nodecodes            = nodes.nodecodes
 local gluecodes            = nodes.gluecodes
-
-local glyph_code           = nodecodes.glyph
-local glue_code            = nodecodes.glue
-local hlist_code           = nodecodes.hlist
-local vlist_code           = nodecodes.vlist
-local math_code            = nodecodes.math
-local dir_code             = nodecodes.dir
-local par_code             = nodecodes.par
-local penalty_code         = nodecodes.penalty
-
-local parfillskip_code     = gluecodes.parfillskip
-local parfillleftskip_code = gluecodes.parfillleftskip
-
 local directioncodes       = tex.directioncodes
-local lefttoright_code     = directioncodes.lefttoright
-local righttoleft_code     = directioncodes.righttoleft
 
-local maximum_stack        = 0xFF
+local glyph_code           <const> = nodecodes.glyph
+local glue_code            <const> = nodecodes.glue
+local hlist_code           <const> = nodecodes.hlist
+local vlist_code           <const> = nodecodes.vlist
+local math_code            <const> = nodecodes.math
+local dir_code             <const> = nodecodes.dir
+local par_code             <const> = nodecodes.par
+local penalty_code         <const> = nodecodes.penalty
 
-local a_directions         = attributes.private('directions')
+local parfillskip_code     <const> = gluecodes.parfillskip
+local parfillleftskip_code <const> = gluecodes.parfillleftskip
+
+local lefttoright_code     <const> = directioncodes.lefttoright
+local righttoleft_code     <const> = directioncodes.righttoleft
+
+local maximum_stack        <const> = 0xFF
+
+local a_directions         <const> = attributes.private('directions')
 
 local directions           = typesetters.directions
 local setcolor             = directions.setcolor
@@ -695,7 +695,8 @@ end
 
 local function resolve_neutral(list,size,start,limit,orderbefore,orderafter)
     -- N1, N2
-    for i=start,limit do
+    local i = start
+    while i <= limit do
         local entry = list[i]
         if b_s_ws_on[entry.direction] then
             -- this needs checking

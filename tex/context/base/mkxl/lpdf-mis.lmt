@@ -59,26 +59,26 @@ local texset               = tex.set
 
 local variables            = interfaces.variables
 
-local v_stop               = variables.stop
-local v_none               = variables.none
-local v_max                = variables.max
-local v_bookmark           = variables.bookmark
-local v_fit                = variables.fit
-local v_doublesided        = variables.doublesided
-local v_singlesided        = variables.singlesided
-local v_default            = variables.default
-local v_auto               = variables.auto
-local v_fixed              = variables.fixed
-local v_landscape          = variables.landscape
-local v_portrait           = variables.portrait
-local v_page               = variables.page
-local v_paper              = variables.paper
-local v_attachment         = variables.attachment
-local v_layer              = variables.layer
-local v_lefttoright        = variables.lefttoright
-local v_righttoleft        = variables.righttoleft
-local v_title              = variables.title
-local v_nomenubar          = variables.nomenubar
+local v_stop               <const> = variables.stop
+local v_none               <const> = variables.none
+local v_max                <const> = variables.max
+local v_bookmark           <const> = variables.bookmark
+local v_fit                <const> = variables.fit
+local v_doublesided        <const> = variables.doublesided
+local v_singlesided        <const> = variables.singlesided
+local v_default            <const> = variables.default
+local v_auto               <const> = variables.auto
+local v_fixed              <const> = variables.fixed
+local v_landscape          <const> = variables.landscape
+local v_portrait           <const> = variables.portrait
+local v_page               <const> = variables.page
+local v_paper              <const> = variables.paper
+local v_attachment         <const> = variables.attachment
+local v_layer              <const> = variables.layer
+local v_lefttoright        <const> = variables.lefttoright
+local v_righttoleft        <const> = variables.righttoleft
+local v_title              <const> = variables.title
+local v_nomenubar          <const> = variables.nomenubar
 
 local positive             = register(setstate("/GSpositive gs"))
 local negative             = register(setstate("/GSnegative gs"))
@@ -415,7 +415,7 @@ local function documentspecification()
     addtocatalog("Lang",    pdfstring(tokens.getters.macro("currentmainlanguage")))
 end
 
-local bpfactor = number.dimenfactors.bp
+local bpfactor <const> = number.dimenfactors.bp
 
 local function pagespecification()
     local canvas      = getcanvas()

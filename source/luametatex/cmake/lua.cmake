@@ -1,38 +1,38 @@
 set(lua_sources
 
-    source/luacore/lua54/src/lapi.c
-    source/luacore/lua54/src/lauxlib.c
-    source/luacore/lua54/src/lbaselib.c
-    source/luacore/lua54/src/lcode.c
-    source/luacore/lua54/src/lcorolib.c
-    source/luacore/lua54/src/lctype.c
-    source/luacore/lua54/src/ldblib.c
-    source/luacore/lua54/src/ldebug.c
-    source/luacore/lua54/src/ldo.c
-    source/luacore/lua54/src/ldump.c
-    source/luacore/lua54/src/lfunc.c
-    source/luacore/lua54/src/lgc.c
-    source/luacore/lua54/src/linit.c
-    source/luacore/lua54/src/liolib.c
-    source/luacore/lua54/src/llex.c
-    source/luacore/lua54/src/lmathlib.c
-    source/luacore/lua54/src/lmem.c
-    source/luacore/lua54/src/loadlib.c
-    source/luacore/lua54/src/lobject.c
-    source/luacore/lua54/src/lopcodes.c
-    source/luacore/lua54/src/loslib.c
-    source/luacore/lua54/src/lparser.c
-    source/luacore/lua54/src/lstate.c
-    source/luacore/lua54/src/lstring.c
-    source/luacore/lua54/src/lstrlib.c
-    source/luacore/lua54/src/ltable.c
-    source/luacore/lua54/src/ltablib.c
-    source/luacore/lua54/src/ltm.c
-    source/luacore/lua54/src/lua.c
-    source/luacore/lua54/src/lundump.c
-    source/luacore/lua54/src/lutf8lib.c
-    source/luacore/lua54/src/lvm.c
-    source/luacore/lua54/src/lzio.c
+    source/luacore/lua55/src/lapi.c
+    source/luacore/lua55/src/lauxlib.c
+    source/luacore/lua55/src/lbaselib.c
+    source/luacore/lua55/src/lcode.c
+    source/luacore/lua55/src/lcorolib.c
+    source/luacore/lua55/src/lctype.c
+    source/luacore/lua55/src/ldblib.c
+    source/luacore/lua55/src/ldebug.c
+    source/luacore/lua55/src/ldo.c
+    source/luacore/lua55/src/ldump.c
+    source/luacore/lua55/src/lfunc.c
+    source/luacore/lua55/src/lgc.c
+    source/luacore/lua55/src/linit.c
+    source/luacore/lua55/src/liolib.c
+    source/luacore/lua55/src/llex.c
+    source/luacore/lua55/src/lmathlib.c
+    source/luacore/lua55/src/lmem.c
+    source/luacore/lua55/src/loadlib.c
+    source/luacore/lua55/src/lobject.c
+    source/luacore/lua55/src/lopcodes.c
+    source/luacore/lua55/src/loslib.c
+    source/luacore/lua55/src/lparser.c
+    source/luacore/lua55/src/lstate.c
+    source/luacore/lua55/src/lstring.c
+    source/luacore/lua55/src/lstrlib.c
+    source/luacore/lua55/src/ltable.c
+    source/luacore/lua55/src/ltablib.c
+    source/luacore/lua55/src/ltm.c
+    source/luacore/lua55/src/lua.c
+    source/luacore/lua55/src/lundump.c
+    source/luacore/lua55/src/lutf8lib.c
+    source/luacore/lua55/src/lvm.c
+    source/luacore/lua55/src/lzio.c
 
     source/luacore/luapeg/lptree.c
     source/luacore/luapeg/lpvm.c
@@ -48,7 +48,7 @@ add_library(lua STATIC ${lua_sources})
 set_property(TARGET lua PROPERTY C_STANDARD 99)
 
 target_include_directories(lua PRIVATE
-    source/luacore/lua54/src
+    source/luacore/lua55/src
     source/luacore/luapeg
 )
 

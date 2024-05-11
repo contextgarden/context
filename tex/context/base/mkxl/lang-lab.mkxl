@@ -65,6 +65,7 @@
 
 % \lettonothing\currentlabelcategory
 
+
 \permanent\tolerant\protected\def\definelabelclass[#1]#*[#2]%
   {\normalexpanded
      {\lang_labels_define_class_indeed

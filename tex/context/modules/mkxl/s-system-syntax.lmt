@@ -1013,6 +1013,7 @@ do
         optional(keyword("reverse")),
         optional(keyword("retain")),
         optional(keyword("container")),
+        optional(keyword("mathtext")),
         optional(sequence(keyword("class"),s_integer)),
         s_tokens
     )

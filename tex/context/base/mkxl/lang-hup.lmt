@@ -18,15 +18,19 @@ local is_letter     = characters.is_letter
 local is_hyphenator = characters.is_hyphenator
 
 local specialskips  = nodes.specialskipcodes
+
 local nodecodes     = nodes.nodecodes
-local disc_code     = nodecodes.disc
-local glyph_code    = nodecodes.glyph
-local glue_code     = nodecodes.glue
-local hlist_code    = nodecodes.hlist
-local kern_code     = nodecodes.kern
-local par_code      = nodecodes.par
-local line_code     = nodes.listcodes.line
-local fontkern_code = nodes.kerncodes.fontkern
+
+local disc_code     <const> = nodecodes.disc
+local glyph_code    <const> = nodecodes.glyph
+local glue_code     <const> = nodecodes.glue
+local hlist_code    <const> = nodecodes.hlist
+local kern_code     <const> = nodecodes.kern
+local par_code      <const> = nodecodes.par
+
+local line_code     <const> = nodes.listcodes.line
+local fontkern_code <const> = nodes.kerncodes.fontkern
+
 local nuts          = nodes.nuts
 local getlist       = nuts.getlist
 local getnext       = nuts.getnext
@@ -222,7 +226,7 @@ end)
 -- local char = chardata[f][c]
 -- if char and type(char.unicode) == "table" then -- hackery test
 
-local ligature_code = 0x8000 + nodes.glyphcodes.ligature
+local ligature_code <const> = 0x8000 + nodes.glyphcodes.ligature -- still valid?
 local ligature_mode = false
 
 local color_n = { "red",     "green",     "blue"     }

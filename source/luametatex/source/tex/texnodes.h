@@ -880,6 +880,7 @@ typedef enum list_subtypes {
     math_fence_list,
     math_rule_list,
     math_ghost_list,
+    math_text_list,
     insert_result_list,
     local_list,
     local_left_list,
@@ -1279,6 +1280,7 @@ typedef enum glyph_option_codes {
     /* These are only meant for math characters: */
     glyph_option_math_discretionary        = 0x00000400,
     glyph_option_math_italics_too          = 0x00000800,
+    glyph_option_math_artifact             = 0x00001000,
     /*tex We permit user options. */
     glyph_option_user_first                = 0x00010000,
     glyph_option_user_last                 = 0x40000000,
@@ -1758,38 +1760,38 @@ typedef enum simple_choice_subtypes {
 
     \starttabulate[|l|l|l|l|l|l|]
     \FL
-    \BC            \BC noad       \BC accent            \BC fraction         \BC radical          \NC fence        \NC \NR
+    \BC            \BC noad       \BC accent            \BC fraction         \BC radical          \NC fence           \NC \NR
+    \ML                                                                                                               
+    \NC vlink  2   \NC new_hlist  \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \ML                                                                                                               
+    \NC vinfo  2   \NC nucleus    \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vlink  3   \NC supscr     \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vinfo  3   \NC subscr     \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vlink  4   \NC supprescr  \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vinfo  4   \NC subprescr  \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \ML                                                                                                               
+    \NC vlink  5   \NC italic     \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vinfo  5   \NC width      \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vlink  6   \NC height     \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vinfo  6   \NC depth      \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \ML                                                                                                               
+    \NC vlink  7   \NC options    \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vinfo  7   \NC style      \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vlink  8   \NC family     \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vinfo  8   \NC class      \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vlink  9   \NC source     \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vinfo  9   \NC prime      \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vlink 10   \NC leftslack  \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC vinfo 10   \NC rightslack \NC                   \NC                  \NC                  \NC                 \NC \NR
     \ML                                                                                           
-    \NC vlink  2   \NC new_hlist  \NC                   \NC                  \NC                  \NC              \NC \NR
-    \ML                                                                                           
-    \NC vinfo  2   \NC nucleus    \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vlink  3   \NC supscr     \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vinfo  3   \NC subscr     \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vlink  4   \NC supprescr  \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vinfo  4   \NC subprescr  \NC                   \NC                  \NC                  \NC              \NC \NR
-    \ML                                                                                           
-    \NC vlink  5   \NC italic     \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vinfo  5   \NC width      \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vlink  6   \NC height     \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vinfo  6   \NC depth      \NC                   \NC                  \NC                  \NC              \NC \NR
-    \ML                                                                                           
-    \NC vlink  7   \NC options    \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vinfo  7   \NC style      \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vlink  8   \NC family     \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vinfo  8   \NC class      \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vlink  9   \NC source     \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vinfo  9   \NC prime      \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vlink 10   \NC leftslack  \NC                   \NC                  \NC                  \NC              \NC \NR
-    \NC vinfo 10   \NC rightslack \NC                   \NC                  \NC                  \NC              \NC \NR
-    \ML                                                                                           
-    \NC vlink 11   \NC extra_1    \NC top_character     \NC rule_thickness   \NC degree           \NC list         \NC \NR
-    \NC vinfo 11   \NC extra_2    \NC bot_character     \NC left_delimiter   \NC left_delimiter   \NC source       \NC \NR
-    \NC vlink 12   \NC extra_3    \NC overlay_character \NC right_delimiter  \NC right_delimiter  \NC top          \NC \NR
-    \NC vinfo 12   \NC extra_4    \NC fraction          \NC middle_delimiter \NC size             \NC bottom       \NC \NR
-    \NC vlink 13   \NC extra_5    \NC topovershoot      \NC h_factor         \NC height           \NC topovershoot \NC \NR
-    \NC vinfo 13   \NC extra_6    \NC botovershoot      \NC v_factor         \NC depth            \NC botovershoot \NC \NR
-    \NC vlink 14   \NC extra_7    \NC                   \NC numerator        \NC top_delimiter    \NC              \NC \NR
-    \NC vinfo 14   \NC extra_8    \NC                   \NC denominator      \NC bottom_delimiter \NC              \NC \NR
+    \NC vlink 11   \NC extra_1    \NC top_character     \NC rule_thickness   \NC degree           \NC delimiter       \NC \NR
+    \NC vinfo 11   \NC extra_2    \NC bot_character     \NC left_delimiter   \NC left_delimiter   \NC source          \NC \NR
+    \NC vlink 12   \NC extra_3    \NC overlay_character \NC right_delimiter  \NC right_delimiter  \NC topdelimiter           \NC \NR
+    \NC vinfo 12   \NC extra_4    \NC fraction          \NC middle_delimiter \NC size             \NC bottomdelimiter \NC \NR
+    \NC vlink 13   \NC extra_5    \NC topovershoot      \NC h_factor         \NC height           \NC topovershoot    \NC \NR
+    \NC vinfo 13   \NC extra_6    \NC botovershoot      \NC v_factor         \NC depth            \NC botovershoot    \NC \NR
+    \NC vlink 14   \NC extra_7    \NC                   \NC numerator        \NC top_delimiter    \NC delimitervariant\NC \NR
+    \NC vinfo 14   \NC extra_8    \NC                   \NC denominator      \NC bottom_delimiter \NC                 \NC \NR
     \LL
     \stoptabulate
 
@@ -1852,7 +1854,11 @@ typedef enum simple_choice_subtypes {
 # define noad_extra_5(a)      vlink(a,15)
 # define noad_extra_6(a)      vinfo(a,15)
 # define noad_extra_7(a)      vlink(a,16)
+# define noad_extra_70(a)     vlink0(a,16)
+# define noad_extra_71(a)     vlink1(a,16)
 # define noad_extra_8(a)      vinfo(a,16)
+# define noad_extra_80(a)     vinfo0(a,16)
+# define noad_extra_81(a)     vinfo1(a,16)
 
 # define noad_total(a) (noad_height(a) + noad_depth(a))
 
@@ -1920,7 +1926,7 @@ typedef struct noad_classes {
 # define set_noad_family(n,f) noad_family(n) = (singleword) (f & 0xFF)
 
 /*tex
-    Options are something \LUATEX\ and in \LUAMETEX\ we added some more. When we have dimensions
+    Options are something \LUATEX\ and in \LUAMETATEX\ we added some more. When we have dimensions
     then we obey |axis| and otherwise |noaxis|. This might evolve a bit over time. These options
     currently are on the same spot but we pretend they aren't so we have dedicated accessors. This
     also makes clear what noads have what options.
@@ -1993,6 +1999,7 @@ typedef enum noad_options {
 # define noad_option_continuation_head          (uint64_t) 0x0010000000000000 /* relates to script continuation */
 # define noad_option_continuation_kernel        (uint64_t) 0x0020000000000000 /* relates to script continuation */
 # define noad_option_reorder_pre_scripts        (uint64_t) 0x0040000000000000 /* relates to script continuation */
+# define noad_option_ignore                     (uint64_t) 0x0080000000000000 /* whatever fence */
 
 # define has_option(a,b)     (((a) & (b)) == (b))
 # define unset_option(a,b)   ((a) & ~(b))
@@ -2070,6 +2077,7 @@ static inline int has_noad_no_script_option(halfword n, halfword option)
 # define has_noad_option_continuation_head(a)           (has_option(noad_options(a), noad_option_continuation_head))
 # define has_noad_option_continuation_kernel(a)         (has_option(noad_options(a), noad_option_continuation_kernel))
 # define has_noad_option_reorder_pre_scripts(a)         (has_option(noad_options(a), noad_option_reorder_pre_scripts))
+# define has_noad_option_ignore(a)                      (has_option(noad_options(a), noad_option_ignore))
 
 typedef enum double_atom_options {
     inherit_class_double_atom_option      = 0x01,
@@ -2182,13 +2190,14 @@ typedef enum math_accent_subtypes {
     |shield|) naming which for now we keep. It gets swapped with the generic noad, so size matters.
  */
 
-# define fence_noad_size        noad_size
-# define fence_delimiter_list   noad_extra_1    // not really a list
-# define fence_nesting_factor   noad_extra_2
-# define fence_delimiter_top    noad_extra_3
-# define fence_delimiter_bottom noad_extra_4
-# define fence_top_overshoot    noad_extra_5
-# define fence_bottom_overshoot noad_extra_6
+# define fence_noad_size         noad_size
+# define fence_delimiter         noad_extra_1    
+# define fence_nesting_factor    noad_extra_2
+# define fence_delimiter_top     noad_extra_3
+# define fence_delimiter_bottom  noad_extra_4
+# define fence_top_overshoot     noad_extra_5
+# define fence_bottom_overshoot  noad_extra_6
+# define fence_delimiter_variant noad_extra_7
 
 typedef enum fence_subtypes {
     unset_fence_side,
@@ -2289,13 +2298,20 @@ typedef enum math_kernel_options {
 } math_kernel_options;
 
 # define math_kernel_node_size     5
-# define kernel_math_family(a)     vinfo(a,2)
+# define kernel_math_family(a)     vinfo(a,2)   /* can be vinfo00 */
 # define kernel_math_character(a)  vlink(a,2)
 # define kernel_math_options(a)    vinfo(a,3)
 # define kernel_math_list(a)       vlink(a,3)
 # define kernel_math_properties(a) vinfo0(a,4)  /* for characters */
 # define kernel_math_group(a)      vinfo1(a,4)  /* for characters */
 # define kernel_math_index(a)      vlink(a,4)   /* for characters */
+
+/* delimiters can be old and new as type */
+
+# define kernel_math_small_family     vinfo00(a,2)
+# define kernel_math_large_family     vinfo01(a,2)
+# define kernel_math_small_character  vlink(a,2)
+# define kernel_math_large_character  vinfo02(a,2)
 
 # define math_kernel_node_has_option(a,b) ((kernel_math_options(a) & b) == b)
 # define math_kernel_node_set_option(a,b) kernel_math_options(a) = (kernel_math_options(a) | b)
@@ -2306,31 +2322,14 @@ typedef enum math_kernel_options {
     from another, but in \OPENTYPE\ math font that doesn't happen.
 */
     
-/* It could be: */
-
-// # define math_delimiter_node_size     4
-// # define delimiter_small_family(a)    vinfo00(a,2)  
-// # define delimiter_large_family(a)    vinfo01(a,2)  
-// # define delimiter_reserved_1         vinfo02(a,2)  
-// # define delimiter_reserved_2         vinfo03(a,2)  
-// # define delimiter_reserved_3         vlink(a,2)  
-// # define delimiter_small_character(a) vinfo(a,3)
-// # define delimiter_large_character(a) vlink(a,3)
-
-/* And some day (we then even assume traditionally to be mapped onto wide): */
-
-// # define math_delimiter_node_size 3
-// # define delimiter_family(a)      vinfo00(a,2)  
-// # define delimiter_reserved_1     vinfo01(a,2)  
-// # define delimiter_reserved_2     vinfo02(a,2)  
-// # define delimiter_reserved_3     vinfo03(a,2)  
-// # define delimiter_character(a)   vlink(a,2)
-
-# define math_delimiter_node_size     4
-# define delimiter_small_family(a)    vinfo(a,2) /*tex |family| for small delimiter */
-# define delimiter_small_character(a) vlink(a,2) /*tex |character| for small delimiter */
-# define delimiter_large_family(a)    vinfo(a,3) /*tex |family| for large delimiter */
-# define delimiter_large_character(a) vlink(a,3) /*tex |character| for large delimiter */
+# define math_delimiter_node_size     5
+# define delimiter_small_family(a)    vinfo(a,2)   /*tex |family| for small delimiter */
+# define delimiter_small_character(a) vlink(a,2)   /*tex |character| for small delimiter */
+# define delimiter_large_family(a)    vinfo(a,3)   /*tex |family| for large delimiter */
+# define delimiter_large_character(a) vlink(a,3)   /*tex |character| for large delimiter */
+# define delimiter_math_properties(a) vinfo0(a,4)  /* for characters */
+# define delimiter_math_group(a)      vinfo1(a,4)  /* for characters */
+# define delimiter_math_index(a)      vlink(a,4)   /* for characters */
 
 /*tex
     Before we come to the by now rather large local par node we define some small ones. The
@@ -2846,20 +2845,24 @@ static inline void remove_attribute_list(halfword target)
 
 static inline void tex_attach_attribute_list_copy(halfword target, halfword source)
 {
-    halfword a_new = node_attr(source);
-    halfword a_old = node_attr(target);
-    node_attr(target) = a_new;
-    add_attribute_reference(a_new);
-    delete_attribute_reference(a_old);
+    if (source) {
+        halfword a_new = node_attr(source);
+        halfword a_old = node_attr(target);
+        node_attr(target) = a_new;
+        add_attribute_reference(a_new);
+        delete_attribute_reference(a_old);
+    }
 }
 
 static inline void tex_attach_attribute_list_attribute(halfword target, halfword a_new)
 {
-    halfword a_old = node_attr(target);
-    if (a_old != a_new) {
-        node_attr(target) = a_new;
-        add_attribute_reference(a_new);
-        delete_attribute_reference(a_old);
+    if (a_new) {
+        halfword a_old = node_attr(target);
+        if (a_old != a_new) {
+            node_attr(target) = a_new;
+            add_attribute_reference(a_new);
+            delete_attribute_reference(a_old);
+        }
     }
 }
 

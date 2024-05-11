@@ -939,6 +939,7 @@ make_lua_key(L, mathspec);\
 make_lua_key(L, mathstack);\
 make_lua_key(L, mathstyle);\
 make_lua_key(L, mathsubformula);\
+make_lua_key(L, mathtext);\
 make_lua_key(L, mathtextchar);\
 make_lua_key(L, medmuskip);\
 make_lua_key(L, message);\
@@ -1394,6 +1395,7 @@ make_lua_key(L, vadjust);\
 make_lua_key(L, valign);\
 make_lua_key(L, value);\
 make_lua_key(L, variable);\
+make_lua_key(L, variant);\
 make_lua_key(L, vbox);\
 make_lua_key(L, vcenter);\
 make_lua_key(L, vdelimiter);\

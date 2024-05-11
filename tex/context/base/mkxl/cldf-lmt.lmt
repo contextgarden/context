@@ -49,15 +49,15 @@ local texgetcount       = tex.getcount
 local texget            = tex.get
 
 local values            = tokens.values
-local none_code         = values.none
-local integer_code      = values.integer
-local cardinal_code     = values.cardinal
-local dimension_code    = values.dimension
-local skip_code         = values.skip
-local boolean_code      = values.boolean
-local float_code        = values.float
+local none_code         <const> = values.none
+local integer_code      <const> = values.integer
+local cardinal_code     <const> = values.cardinal
+local dimension_code    <const> = values.dimension
+local skip_code         <const> = values.skip
+local boolean_code      <const> = values.boolean
+local float_code        <const> = values.float
 
-local global_code      = tex.flagcodes.global
+local global_code       <const> = tex.flagcodes.global
 
 local context           = context
 
@@ -993,7 +993,7 @@ do
     local codes         = { }
     tex.codes           = codes
 
-    local global_code   = tex.flagcodes.global
+    local global_code   <const> = tex.flagcodes.global
 
     local savelua       = token.savelua
     local isdefined     = token.isdefined

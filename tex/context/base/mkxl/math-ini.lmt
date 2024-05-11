@@ -41,20 +41,20 @@ local mathematics           = mathematics
 mathematics.extrabase       = fonts.privateoffsets.mathextrabase -- here we push some virtuals
 mathematics.privatebase     = fonts.privateoffsets.mathbase      -- here we push the ex
 
-local unsetvalue            = attributes.unsetvalue
+local unsetvalue            <const> = attributes.unsetvalue
+
 local allocate              = utilities.storage.allocate
 local chardata              = characters.data
 
 local texsetattribute       = tex.setattribute
 local setmathcode           = tex.setmathcode
-local setdelcode            = tex.setdelcode
+----- setdelcode            = tex.setdelcode -- we no longer set these as the engine also accepts otherwise
 local texintegerdef         = tex.integerdef
 
 local getfontoffamily       = tex.getfontoffamily
 
+local fontdata              = fonts.hashes.identifiers
 local fontchardata          = fonts.hashes.characters
-
-setdelcode = function() end
 
 -- These are different from mkiv with luatex.
 
@@ -117,6 +117,8 @@ classes.largeoperator   = operator_class
 
 -- special in the engine : variable active inner vcenter
 
+local glyphcodes = nodes.glyphcodes
+
 local function registerengineclass(name,short)
     local class = classes[name]
     if not class then
@@ -132,6 +134,9 @@ local function registerengineclass(name,short)
     end
     classes[class] = name
     classes[name] = class
+    local subtype = class + 31 -- todo magic constant
+    glyphcodes[subtype] = name
+    glyphcodes[name] = subtype
     return class
 end
 
@@ -243,7 +248,7 @@ local accents = allocate {
     unknown      = false,
 }
 
-local integer_value = tokens.values.integer
+local integer_value <const> = tokens.values.integer
 
 implement {
     name      = "mathclassvalue",
@@ -364,44 +369,58 @@ do
         return group
     end
 
+    local everygroup = 0xFFFF
+
     function dictionaries.registergroupset(name,set)
         local s = sets[name]
         if not s then
-            local d = dictionaries.registergroup(name)
-            local n = sets.n + 1
-            local l = utilities.parsers.settings_to_array(set)
-            local g = { }
-            for i=1,#l do
-                local n = names[l[i]]
-                if n then
-                    g[#g+1] = n -- ordered
+            if set == "every" then
+                s = {
+                    group = everygroup,
+                }
+                sets[name] = s
+            else
+                local d = dictionaries.registergroup(name)
+                local n = sets.n + 1
+                local l = utilities.parsers.settings_to_array(set)
+                local g = { }
+                for i=1,#l do
+                    local n = names[l[i]]
+                    if n then
+                        g[#g+1] = n -- ordered
+                    end
                 end
+                s = {
+                    names  = l,
+                    groups = g,
+                    group  = d,
+                }
+                sets[name] = s
+                sets[d]    = s
             end
-            s = {
-                names  = l,
-                groups = g,
-                group  = d,
-            }
-            sets[name] = s
-            sets[d]    = s
-
         end
     end
+
+    -- TODO: check 'minus' as it reports true
 
     function dictionaries.groupset(name)
         return sets[name] or { }
     end
 
     function dictionaries.groupsetgroup(name)
-        local s = sets[name]
-        if s then
-            return s.group
+        if name == "every" then
+            return everygroup
         else
-            return names[name] or 0
+            local s = sets[name]
+            if s then
+                return s.group
+            else
+                return names[name] or 0
+            end
         end
     end
 
-    function dictionaries.registercharacter(group,index,description,class)
+    function dictionaries.registercharacter(group,index,description,class,name) -- name is diagnostic
         local d = names[group] -- can be number or string
         if d then
             data[d][index] = description or true
@@ -421,6 +440,39 @@ do
                 defaults[index] = d
             end
         end
+--         print(group,index,description,class,name)
+    end
+
+    function dictionaries.name(group,index) -- assumes numbers
+        if group == everygroup then
+            for i=1,#groups do
+                local d = data[i]
+                local n = d[index]
+                if type(n) == "string" then
+                    return n
+                end
+            end
+        elseif group then
+            local d = data[group]
+            if d then
+                local n = d[index]
+                if type(n) == "string" then
+                    return n
+                end
+            end
+            local s = sets[group]
+            if s then
+                local g = s.groups
+                for i=1,#g do
+                    d = data[g[i]]
+                    local n = d[index]
+                    if type(n) == "string" then
+                        return n
+                    end
+                end
+            end
+        end
+        return false
     end
 
     implement {
@@ -492,39 +544,58 @@ do
         local registergroup = mathematics.dictionaries.registergroup
 
         registergroup("default")
-        registergroup("binary arithmetic")
-        registergroup("binary linear algebra")
-        registergroup("binary logical")
+
         registergroup("binary relation")
+        registergroup("binary set relation")
+        registergroup("integral")
+        registergroup("limit")
+        registergroup("number set")
+        registergroup("postfix operator")
+        registergroup("prime")
+        registergroup("binary operator")
+        registergroup("binary vector")
+        registergroup("binary arithmetic")     -- operator
+        registergroup("binary logical")
         registergroup("binary set")
         registergroup("constant arithmetic")
         registergroup("constant set")
         registergroup("differential")
-        registergroup("integral")
+        registergroup("factorial")
         registergroup("interval")
-        registergroup("lambda")
-        registergroup("limit")
-        registergroup("nary arithmetic")
-        registergroup("nary constructor")
-        registergroup("nary functional")
-        registergroup("nary linear algebra")
-        registergroup("nary logical")
-        registergroup("nary minmax")
-        registergroup("nary relation")
-        registergroup("nary set list")
-        registergroup("nary set relation")
-        registergroup("nary set")
-        registergroup("nary statistics")
-        registergroup("partial") -- partial differential
-        registergroup("product")
         registergroup("quantifier")
-        registergroup("unary arithmetic")
-        registergroup("unary elementary")
-        registergroup("unary functional")
-        registergroup("unary linear algebra")
+        registergroup("unary set")             -- check forall exists etc
+        registergroup("constant logical")      -- new one
+        registergroup("partial")               -- partial differential
+        registergroup("nary operator")         -- new one
+        registergroup("nary logical")
+        registergroup("specifier")
+        registergroup("specifier2")
+        registergroup("pause")
+        registergroup("punctuation")
+     -- registergroup("grouped")
         registergroup("unary logical")
-        registergroup("unary set")
-        registergroup("unary vector")
+        registergroup("whatever")
+
+
+     -- registergroup("binary linear algebra")
+     -- registergroup("lambda")
+     -- registergroup("nary arithmetic")       -- see operator
+     -- registergroup("nary constructor")
+     -- registergroup("nary functional")
+     -- registergroup("nary linear algebra")
+     -- registergroup("nary minmax")
+     -- registergroup("nary relation")
+     -- registergroup("nary set list")
+     -- registergroup("nary set relation")
+     -- registergroup("nary set")
+     -- registergroup("nary statistics")
+     -- registergroup("product")
+     -- registergroup("unary arithmetic")      -- operator
+     -- registergroup("unary elementary")      -- sin cos ln sqrt
+     -- registergroup("unary functional")
+     -- registergroup("unary linear algebra")
+     -- registergroup("unary logical")
+     -- registergroup("unary vector")
 
     end
 
@@ -551,24 +622,20 @@ do
     local registercharacter = mathematics.dictionaries.registercharacter
     local groupnames        = mathematics.dictionaries.names
 
-    local setmathcharacter = function(class,family,slot,unicode,mset,dset,group)
+    local setmathcharacter = function(class,family,slot,unicode,mset,group,meaning)
         if mset and class ~= ordinary_class then
             setmathcode("global",slot,class,family,unicode)
             mset = false
         end
-     -- if dset and (class == open_class or class == close_class or class == middle_class or class == division_class) then
-     --     setdelcode("global",slot,family,unicode,0,0)
-     --     dset = false
-     -- end
         if group then
             group = groupnames[group] or 0
             if group ~= 0 then
                 -- which one
-                registercharacter(group,unicode,nil,class)
-             -- registercharacter(group,slot,nil,class)
+                registercharacter(group,unicode,meaning,class)
+             -- registercharacter(group,slot,meaning,class)
             end
         end
-        return mset, dset
+        return mset
     end
 
     local function report(class,family,unicode,name)
@@ -584,27 +651,7 @@ do
 
     local texmathchardef = tex.mathchardef
 
- -- local setmathsymbol = function(name,class,family,slot,stretch,group) -- hex is nicer for tracing
- --     if skip[class] then
- --         return -- only in mkiv
- --     elseif class == open_class or class == close_class or class == middle_class then
- --         setdelcode("global",slot,family,slot,0,0) -- can go
- --     elseif class == delimiter_class then -- open close or middle (bars)
- --         setdelcode("global",slot,family,slot,0,0) -- can go
- --         class = 0
- --     else
- --         if group then
- --             group = groupnames[group] or 0
- --             if group ~= 0 then
- --                 texmathchardef(name,class,family,slot,"permanent",0x1,group,slot)
- --                 return
- --             end
- --         end
- --     end
- --     texmathchardef(name,class,family,slot,"permanent")
- -- end
-
-    local setmathsymbol = function(name,class,family,slot,stretch,group) -- hex is nicer for tracing
+    local setmathsymbol = function(name,class,family,slot,stretch,group,meaning) -- hex is nicer for tracing
         if skip[class] then
             return -- only in mkiv
      -- elseif class == open_class or class == close_class or class == middle_class then
@@ -616,6 +663,12 @@ do
                 group = groupnames[group] or 0
                 if group ~= 0 then
                     texmathchardef(name,class,family,slot,"permanent",0x1,group,slot)
+                    if group then
+                        group = groupnames[group] or 0
+                        if group ~= 0 then
+                            registercharacter(group,slot,meaning,class,name)
+                        end
+                    end
                     return
                 end
             end
@@ -639,12 +692,17 @@ do
         remap("A","Z")
         remap("a","z")
         --
-        setdelcode("global",0x2E,0,0,0,0) -- period is special
+     -- setdelcode("global",0x2E,0,0,0,0) -- period is special -- still?
         --
         for unicode, character in sortedhash(data) do
-            local symbol = character.mathsymbol
-            local mset   = true
-            local dset   = true
+            local symbol  = character.mathsymbol
+            local mset    = true
+            local class   = character.mathclass
+            local spec    = character.mathspec
+            local name    = character.mathname
+            local stretch = character.mathstretch
+            local group   = character.mathgroup
+            local meaning = character.mathmeaning
             if symbol then
                 local other = data[symbol]
                 local class = other.mathclass
@@ -653,7 +711,7 @@ do
                     if trace_defining then
                         report(engine,family,unicode,symbol)
                     end
-                    mset, dset = setmathcharacter(engine,family,unicode,symbol,mset,dset,group)
+                    mset = setmathcharacter(engine,family,unicode,symbol,mset,group,meaning)
                 end
                 local spec = other.mathspec
                 if spec then
@@ -663,16 +721,11 @@ do
                         if class then
                             local engine = toengineclass(class)
                             -- todo: trace
-                            mset, dset = setmathcharacter(engine,family,unicode,symbol,mset,dset,group)
+                            mset = setmathcharacter(engine,family,unicode,symbol,mset,group,meaning)
                         end
                     end
                 end
             end
-            local class   = character.mathclass
-            local spec    = character.mathspec
-            local name    = character.mathname
-            local stretch = character.mathstretch
-            local group   = character.mathgroup
             if spec then
                 local done = false
                 if class then
@@ -685,7 +738,7 @@ do
                         if trace_defining then
                             report(engine,family,unicode)
                         end
-                        mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset,group)
+                        mset = setmathcharacter(engine,family,unicode,unicode,mset,group,meaning)
                         done = true
                     end
                 end
@@ -695,6 +748,7 @@ do
                     local class   = m.class   or class
                     local group   = m.group   or group
                     local stretch = m.stretch or stretch
+                    local meaning = m.meaning or meaning
                     if class then
                         class = classes[class] or ordinary_class
                     else
@@ -706,15 +760,15 @@ do
                             if trace_defining then
                                 report(engine,family,unicode,name)
                             end
-                            setmathsymbol(name,engine,family,unicode,stretch,group)
+                            setmathsymbol(name,engine,family,unicode,stretch,group,meaning)
                         else
-                            name = (class == classes.ordinary or class == classes.digit) and character.adobename -- bad
+                            name = (class == classes.ordinary or class == classes.digit) and "no name" -- character.adobename -- bad
                             if name and trace_defining then
                                 report(engine,family,unicode,name)
                             end
                         end
                         if not done then
-                            mset, dset = setmathcharacter(engine,family,unicode,m.unicode or unicode,mset,dset,group) -- see solidus
+                            mset = setmathcharacter(engine,family,unicode,m.unicode or unicode,mset,group,meaning) -- see solidus
                             done = true
                         end
                     end
@@ -731,7 +785,7 @@ do
                         if trace_defining then
                             report(engine,family,unicode,name)
                         end
-                        mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset,group)
+                        mset = setmathcharacter(engine,family,unicode,unicode,mset,group,meaning)
                     else
                      -- if not name then
                      --     name = character.contextname -- too dangerous, we loose textslash and a few more
@@ -740,20 +794,20 @@ do
                             if trace_defining then
                                 report(engine,family,unicode,name)
                             end
-                            setmathsymbol(name,engine,family,unicode,stretch,group)
+                            setmathsymbol(name,engine,family,unicode,stretch,group,meaning)
                         else
                             if trace_defining then
-                                report(engine,family,unicode,character.adobename)
+                                report(engine,family,unicode,"no name") -- character.adobename)
                             end
                         end
-                        mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset,group)
+                        mset = setmathcharacter(engine,family,unicode,unicode,mset,group,meaning)
                     end
                 elseif class ~= ordinary_class then
                     local engine = toengineclass(class)
                     if trace_defining then
-                        report(engine,family,unicode,character.adobename)
+                        report(engine,family,unicode,"no name") -- character.adobename)
                     end
-                    mset, dset = setmathcharacter(engine,family,unicode,unicode,mset,dset,group)
+                    mset = setmathcharacter(engine,family,unicode,unicode,mset,group,meaning)
                 end
             end
         end
@@ -999,103 +1053,144 @@ do
 
 end
 
--- helpers
---
--- 1: step 1
--- 2: step 2
--- 3: htdp * 1.33^n
--- 4: size * 1.33^n
--- 5: use lfg
+do
 
-function mathematics.big(tfmdata,unicode,n,method)
-    local t = tfmdata.characters
-    local c = t[unicode]
-    if c and n > 0 then
-        if method == 1 or method == 2 or method == 5 then
-            if method == 5 then
-                local b = tfmdata.bigslots
-                if b then
-                    n = (n > #b and b[#b]) or b[n] or n
-                end
-            elseif method == 2 then -- large steps
-                n = n * 2
+    -- 1: step 1
+    -- 2: step 2
+    -- 3: htdp * 1.33^n
+    -- 4: size * 1.33^n
+    -- 5: use lfg
+
+    implement {
+        name      = "mathvariantslot",
+        public    = true,
+        usage     = "value",
+        arguments = "2 integers",
+        actions   = function(fam,n)
+            local b = fontdata[getfontoffamily(fam)].bigslots
+            if b then
+                n = (n > #b and b[#b]) or b[n] or n
             end
-            local next = c.next
-            while next do
-                if n <= 1 then
-                    return next
-                else
-                    n = n - 1
-                    local tn = t[next].next
-                    if tn then
-                        next = tn
-                    else
+            return integer_value, n
+        end
+    }
+
+    function mathematics.big(tfmdata,unicode,n,method)
+        local t = tfmdata.characters
+        local c = t[unicode]
+        if c and n > 0 then
+            if method == 1 or method == 2 or method == 5 then
+                if method == 5 then
+                    local b = tfmdata.bigslots
+                    if b then
+                        n = (n > #b and b[#b]) or b[n] or n
+                    end
+                elseif method == 2 then -- large steps
+                    n = n * 2
+                end
+                local next = c.next
+                while next do
+                    if n <= 1 then
                         return next
+                    else
+                        n = n - 1
+                        local tn = t[next].next
+                        if tn then
+                            next = tn
+                        else
+                            return next
+                        end
                     end
                 end
-            end
-        elseif method >= 3 then
-            local size = 1.33^n
-            if method == 4 then
-                size = tfmdata.parameters.size * size
-            else -- if method == 3 then
-                size = (c.height + c.depth) * size
-            end
-            local next = c.next
-            while next do
-                local cn = t[next]
-                if (cn.height + cn.depth) >= size then
-                    return next
-                else
-                    local tn = cn.next
-                    if tn then
-                        next = tn
-                    else
+            elseif method >= 3 then
+                local size = 1.33^n
+                if method == 4 then
+                    size = tfmdata.parameters.size * size
+                else -- if method == 3 then
+                    size = (c.height + c.depth) * size
+                end
+                local next = c.next
+                while next do
+                    local cn = t[next]
+                    if (cn.height + cn.depth) >= size then
                         return next
+                    else
+                        local tn = cn.next
+                        if tn then
+                            next = tn
+                        else
+                            return next
+                        end
                     end
                 end
             end
         end
+        return unicode
     end
-    return unicode
+
 end
 
-do -- experimental
+do -- experimental, not stored in the format
 
     local categories       = { }
     mathematics.categories = categories
 
-    local a_mathcategory   = attributes.private("mathcategory")
+    local a_mathcategory   <const> = attributes.private("mathcategory")
+    local a_mathstack      <const> = attributes.private("mathstack")
 
     local functions        = storage.allocate()
     categories.functions   = functions
-    local noffunctions     = 1000 -- offset
+    local noffunctions     = 0
+
+    local function identify(kind,tag,method)
+        local n = functions[tag]
+        if n then
+            n = n.index
+        else
+            n = noffunctions + 1 ---
+            local t = {
+                kind   = kind,
+                tag    = tag,
+                method = method,
+                index  = n,
+            }
+            functions[n] = t
+            functions[tag] = t
+            noffunctions = n
+        end
+        return n
+    end
 
     implement {
-        name      = "tagmfunctiontxt",
-        arguments = { "string", "conditional" },
-        actions   = function(tag,apply)
-            local delta = apply and 1000 or 0
-            texsetattribute(a_mathcategory,1000 + delta)
+        name      = "tagmfunctionlab", -- this one will be replaced by the next
+        arguments = { "integer", "string", "string" },
+        actions   = function(kind,tag,method)
+            texsetattribute(a_mathcategory,identify(kind,tag,method))
         end
     }
 
     implement {
-        name      = "tagmfunctionlab",
-        arguments = { "string", "conditional" },
-        actions   = function(tag,apply)
-            local delta = apply and 1000 or 0
-            local n = functions[tag]
-            if not n then
-                noffunctions = noffunctions + 1
-                functions[noffunctions] = tag
-                functions[tag] = noffunctions
-                texsetattribute(a_mathcategory,noffunctions + delta)
-            else
-                texsetattribute(a_mathcategory,n + delta)
-            end
+        name      = "tagmfunctionlabattribute",
+        usage     = "value",
+        arguments = { "integer", "string", "string" },
+        actions   = function(kind,tag,method)
+            return integer_value, identify(kind,tag,method)
         end
     }
+
+    function mathematics.functiontype(n)
+        local func = n and functions[n]
+        local kind = func and func.kind or 0
+        if kind == 1 then
+            return "function"
+        elseif kind == 2 then
+            return "accent"
+        elseif kind == 3 then
+            return "fence"
+        else
+            return "unknown"
+        end
+    end
 
 end
 

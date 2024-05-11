@@ -34,7 +34,7 @@ local active       = false
 
 local trace        = false  trackers.register("pages.mark",function(v) trace = v end)
 
-local c_realpageno = tex.iscount("realpageno")
+local c_realpageno <const> = tex.iscount("realpageno")
 
 function pages.mark(name,list,settings)
     active = true

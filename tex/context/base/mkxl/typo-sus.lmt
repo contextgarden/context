@@ -31,13 +31,13 @@ local categories      = characters.categories
 
 local nodecodes       = nodes.nodecodes
 
-local glyph_code      = nodecodes.glyph
-local kern_code       = nodecodes.kern
-local penalty_code    = nodecodes.penalty
-local glue_code       = nodecodes.glue
-local math_code       = nodecodes.math
-local hlist_code      = nodecodes.hlist
-local vlist_code      = nodecodes.vlist
+local glyph_code      <const> = nodecodes.glyph
+local kern_code       <const> = nodecodes.kern
+local penalty_code    <const> = nodecodes.penalty
+local glue_code       <const> = nodecodes.glue
+local math_code       <const> = nodecodes.math
+local hlist_code      <const> = nodecodes.hlist
+local vlist_code      <const> = nodecodes.vlist
 
 local nuts            = nodes.nuts
 
@@ -70,11 +70,13 @@ local new_kern        = nodepool.kern
 local new_hlist       = nodepool.hlist
 ----- new_penalty     = nodepool.penalty
 
-local a_characters    = attributes.private("characters")
-local a_suspecting    = attributes.private('suspecting')
-local a_suspect       = attributes.private('suspect')
+local a_characters    <const> = attributes.private("characters")
+local a_suspecting    <const> = attributes.private('suspecting')
+local a_suspect       <const> = attributes.private('suspect')
+
+local unsetvalue      <const> = attributes.unsetvalue
+
 local texsetattribute = tex.setattribute
-local unsetvalue      = attributes.unsetvalue
 local enabled         = false
 
 local enableaction    = nodes.tasks.enableaction
@@ -261,19 +263,25 @@ end
 
 local function showsuspects(head)
     -- we inject before so we're okay with a loop
+    local pickup = false
     for current, id, subtype in nextnode, head do
-        if id == glyph_code then
+        if current == pickup then
+            pickup = false
+        elseif id == glyph_code then
             local a = getattr(current,a_suspect)
             if a then
-                head, current = mark(head,current,id,colors[a])
+                head = mark(head,current,id,colors[a])
             end
         elseif id == glue_code then
             local a = getattr(current,a_suspect)
             if a then
-                head, current = mark(head,current,id,colors[a])
+                head = mark(head,current,id,colors[a])
             end
         elseif id == math_code then
-            current = endofmath(current)
+            pickup = endofmath(current)
+            if pickup == current then
+                pickup = false
+            end
         elseif id == hlist_code or id == vlist_code then
             local list = getlist(current)
             if list then

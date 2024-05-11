@@ -18,9 +18,9 @@
     lua/llualib.c                   : fopen -> utf8_fopen
     lua/lenginelib.c                : fopen -> utf8_fopen
 
-    luacore/lua54/src/lauxlib.c     : fopen -> see below
-    luacore/lua54/src/liolib.c      : fopen -> see below
-    luacore/lua54/src/loadlib.c     : fopen -> see below
+    luacore/lua55/src/lauxlib.c     : fopen -> see below
+    luacore/lua55/src/liolib.c      : fopen -> see below
+    luacore/lua55/src/loadlib.c     : fopen -> see below
 
     luaffi/call.c                   : fopen -> not used
 

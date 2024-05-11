@@ -629,6 +629,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "Umathchar",                      math_char_number_cmd,   math_xchar_number_code,                   0);
         tex_primitive(luatex_command, "mathclass",                      math_char_number_cmd,   math_class_number_code,                   0);
         tex_primitive(luatex_command, "mathdictionary",                 math_char_number_cmd,   math_dictionary_number_code,              0);
+        tex_primitive(luatex_command, "nomathchar",                     math_char_number_cmd,   math_char_ignore_code,                    0);
 
         tex_primitive(tex_command,    "mathchoice",                     math_choice_cmd,        math_choice_code,                         0);
         tex_primitive(luatex_command, "mathdiscretionary",              math_choice_cmd,        math_discretionary_code,                  0);

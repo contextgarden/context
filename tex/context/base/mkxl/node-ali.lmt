@@ -63,23 +63,23 @@ local nextlist           = traversers.list
 local nextrule           = traversers.rule
 
 local nodecodes          = nodes.nodecodes
-local glyph_code         = nodecodes.glyph
-local glue_code          = nodecodes.glue
-local kern_code          = nodecodes.kern
-local disc_code          = nodecodes.disc
-local unset_code         = nodecodes.unset
-local alignrecord_code   = nodecodes.alignrecord
-local rule_code          = nodecodes.rule
-local temp_code          = nodecodes.temp
+local glyph_code         <const> = nodecodes.glyph
+local glue_code          <const> = nodecodes.glue
+local kern_code          <const> = nodecodes.kern
+local disc_code          <const> = nodecodes.disc
+local unset_code         <const> = nodecodes.unset
+local alignrecord_code   <const> = nodecodes.alignrecord
+local rule_code          <const> = nodecodes.rule
+local temp_code          <const> = nodecodes.temp
 
-local spaceskip_code     = nodes.gluecodes.spaceskip
-local xspaceskip_code    = nodes.gluecodes.xspaceskip
-local intermathskip_code = nodes.gluecodes.intermathskip
-local fontkern_code      = nodes.kerncodes.fontkern
-local row_code           = nodes.listcodes.alignment -- should be row
-local cell_code          = nodes.listcodes.cell
-local line_code          = nodes.listcodes.line
-local linepenalty_code   = nodes.penaltycodes.linepanalty
+local spaceskip_code     <const> = nodes.gluecodes.spaceskip
+local xspaceskip_code    <const> = nodes.gluecodes.xspaceskip
+local intermathskip_code <const> = nodes.gluecodes.intermathskip
+local fontkern_code      <const> = nodes.kerncodes.fontkern
+local row_code           <const> = nodes.listcodes.alignment -- should be row
+local cell_code          <const> = nodes.listcodes.cell
+local line_code          <const> = nodes.listcodes.line
+local linepenalty_code   <const> = nodes.penaltycodes.linepanalty
 
 -- local preamble_pass <const> = tex.alignmentcontextcodes.preamble
 -- local preroll_pass  <const> = tex.alignmentcontextcodes.preroll
@@ -90,7 +90,7 @@ local linepenalty_code   = nodes.penaltycodes.linepanalty
 do
 
 
-    local a_alignchar = attributes.private("aligncharacter")
+    local a_alignchar <const> = attributes.private("aligncharacter")
 
     local method      = 2
     local unislots    = fonts.hashes.unislots -- todo
@@ -343,13 +343,13 @@ do
     local setoffsets        = nuts.setoffsets
     local setsubtype        = nuts.setsubtype
 
-    local baselineskip_code = nodes.gluecodes.baselineskip
-    local lineskip_code     = nodes.gluecodes.lineskip
+    local baselineskip_code <const> = nodes.gluecodes.baselineskip
+    local lineskip_code     <const> = nodes.gluecodes.lineskip
 
-    local alignrecord_code  = nodecodes.alignrecord
-    local hlist_code        = nodecodes.hlist
-    local unset_code        = nodecodes.unset
- -- local rule_code         = nodecodes.rule
+    local alignrecord_code  <const> = nodecodes.alignrecord
+    local hlist_code        <const> = nodecodes.hlist
+    local unset_code        <const> = nodecodes.unset
+ -- local rule_code         <const> = nodecodes.rule
 
     local nextnode          = nuts.traversers.node
 
@@ -358,15 +358,15 @@ do
     local texgetglue        = tex.getglue
     local texget            = tex.get
 
-    local leftmarker        = tex.boundaries.system("c_math_align_l_marker")
-    local rightmarker       = tex.boundaries.system("c_math_align_r_marker")
+    local leftmarker        <const> = tex.boundaries.system("c_math_align_l_marker")
+    local rightmarker       <const> = tex.boundaries.system("c_math_align_r_marker")
 
-    local a_location        = attributes.system("mathnumberlocation")
-    local a_threshold       = attributes.system("mathnumberthreshold")
+    local a_location        <const> = attributes.system("mathnumberlocation")
+    local a_threshold       <const> = attributes.system("mathnumberthreshold")
 
-    local v_first          = interfaces.variables.first
-    local v_last           = interfaces.variables.last
-    local v_both           = interfaces.variables.both
+    local v_first           <const> = interfaces.variables.first
+    local v_last            <const> = interfaces.variables.last
+    local v_both            <const> = interfaces.variables.both
 
     -- Here:
 
@@ -691,11 +691,11 @@ end
 
 do
 
-    local a_mathalignmentvrule = attributes.private("mathalignmentvrule")
-    local a_mathalignmenthrule = attributes.private("mathalignmenthrule")
-    local a_mathalignmenttop   = attributes.private("mathalignmenttop")
-    local a_mathalignmentmid   = attributes.private("mathalignmentmid")
-    local a_mathalignmentbot   = attributes.private("mathalignmentbot")
+    local a_mathalignmentvrule <const> = attributes.private("mathalignmentvrule")
+    local a_mathalignmenthrule <const> = attributes.private("mathalignmenthrule")
+    local a_mathalignmenttop   <const> = attributes.private("mathalignmenttop")
+    local a_mathalignmentmid   <const> = attributes.private("mathalignmentmid")
+    local a_mathalignmentbot   <const> = attributes.private("mathalignmentbot")
 
     local function hrule_pass(head,attr,preamble)
         local i = 0
@@ -843,14 +843,14 @@ end
 
     --
 
-    local a_ornament     = attributes.system("mathmatrixornament")
+    local a_ornament     <const> = attributes.system("mathmatrixornament")
 
-    local leftornament   = tex.boundaries.system("c_math_matrix_ornament_l")
-    local rightornament  = tex.boundaries.system("c_math_matrix_ornament_r")
-    local topornament    = tex.boundaries.system("c_math_matrix_ornament_t")
-    local bottomornament = tex.boundaries.system("c_math_matrix_ornament_b")
+    local leftornament   <const> = tex.boundaries.system("c_math_matrix_ornament_l")
+    local rightornament  <const> = tex.boundaries.system("c_math_matrix_ornament_r")
+    local topornament    <const> = tex.boundaries.system("c_math_matrix_ornament_t")
+    local bottomornament <const> = tex.boundaries.system("c_math_matrix_ornament_b")
 
-    local verticalline   = tex.boundaries.system("c_math_matrix_vl_boundary")
+    local verticalline   <const> = tex.boundaries.system("c_math_matrix_vl_boundary")
 
     local left     = 0
     local right    = 0

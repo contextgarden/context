@@ -222,7 +222,7 @@ static void enginelib_show_version_info(void)
         "\n"
         "Functionality : level " LMT_TOSTRING(luametatex_development_id) "\n"
         "Support       : " luametatex_support_address "\n"
-        "Copyright     : The Lua(Meta)TeX Team(s) (2005-2023+)\n"
+        "Copyright     : The Lua(Meta)TeX Team(s) (2005-2024+)\n"
         "\n"
         "The LuaMetaTeX project is related to ConTeXt development. This macro package\n"
         "tightly integrates TeX and MetaPost in close cooperation with Lua. Updates will\n"
@@ -995,9 +995,18 @@ static void enginelib_disable_loadlib(lua_State *L)
     lua_settop(L, top);
 }
 
+/*tex
+    The seed is new but makeseed needs a state before we have a state. Maybe it relates 
+    to multiple states with the same hash. Anyway, we can decide on zero at some point 
+    which brings us back to predictable 'ordering', not that it matters much because 
+    we adapted when coming from 5.2 already. 
+*/
+
 void lmt_initialize(void)
 {
-    lua_State *L = lua_newstate(enginelib_aux_luaalloc, NULL);
+    lua_State *L = NULL;
+    int seed = luaL_makeseed(L); /* maybe we will default to the luametatex version number */
+    L = lua_newstate(enginelib_aux_luaalloc, NULL, seed);
     if (L) {
         /*tex By default we use the generational garbage collector. */
         lua_gc(L, LUA_GCGEN, 0, 0);

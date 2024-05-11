@@ -22,12 +22,12 @@ local context           = context
 local nodecodes         = nodes.nodecodes
 local listcodes         = nodes.listcodes
 
-local hlist_code        = nodecodes.hlist
-local vlist_code        = nodecodes.vlist
+local hlist_code        <const> = nodecodes.hlist
+local vlist_code        <const> = nodecodes.vlist
 
-local boxlist_code      = listcodes.box
-local linelist_code     = listcodes.line
-local equationlist_code = listcodes.equation
+local boxlist_code      <const> = listcodes.box
+local linelist_code     <const> = listcodes.line
+local equationlist_code <const> = listcodes.equation
 
 local texsetdimen       = tex.setdimen
 local texsetcount       = tex.setcount
@@ -69,12 +69,12 @@ directives.register("framed.checkmath",function(v) checkformath = v end) -- expe
 
 -- beware: dir nodes and pseudostruts can end up on lines of their own
 
-local c_framednoflines     = texiscount("framednoflines")
-local d_framedfirstheight  = texisdimen("framedfirstheight")
-local d_framedlastdepth    = texisdimen("framedlastdepth")
-local d_framedminwidth     = texisdimen("framedminwidth")
-local d_framedmaxwidth     = texisdimen("framedmaxwidth")
-local d_framedaveragewidth = texisdimen("framedaveragewidth")
+local c_framednoflines     <const> = texiscount("framednoflines")
+local d_framedfirstheight  <const> = texisdimen("framedfirstheight")
+local d_framedlastdepth    <const> = texisdimen("framedlastdepth")
+local d_framedminwidth     <const> = texisdimen("framedminwidth")
+local d_framedmaxwidth     <const> = texisdimen("framedmaxwidth")
+local d_framedaveragewidth <const> = texisdimen("framedaveragewidth")
 
 local function doreshapeframedbox(n,resync)
     if resync then

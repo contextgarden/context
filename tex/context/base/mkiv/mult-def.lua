@@ -10109,6 +10109,9 @@ return {
    ["en"]="mathclass",
    ["fr"]="classemath",
   },
+  ["mathmeaning"]={
+   ["en"]="mathmeaning",
+  },
   ["leftclass"]={
    ["en"]="leftclass",
   },
@@ -15579,6 +15582,9 @@ return {
    ["pe"]="ته‌نوشت",
    ["ro"]="endnote",
   },
+  ["mathnote"]={
+   ["en"]="mathnote",
+  },
   ["enumeration"]={
    ["cs"]="vycet",
    ["de"]="nummerierung",
@@ -18527,6 +18533,16 @@ return {
    ["nl"]="zes",
    ["pe"]="six",
    ["ro"]="six",
+  },
+  ["size"]={
+   ["cs"]="velikost",
+   ["de"]="groesse",
+   ["en"]="size",
+   ["fr"]="taille",
+   ["it"]="dimensione",
+   ["nl"]="formaat",
+   ["pe"]="اندازه",
+   ["ro"]="dimensiune",
   },
   ["slanted"]={
    ["cs"]="sklonene",

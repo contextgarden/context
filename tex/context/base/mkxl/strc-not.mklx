@@ -1936,6 +1936,7 @@
 
 \definenote [\v!footnote]
 \definenote [\v!endnote ] [\c!location=\v!none] % else no break
+\definenote [\v!mathnote] [\c!location=\v!none]
 
 %D Compatibility macros:
 

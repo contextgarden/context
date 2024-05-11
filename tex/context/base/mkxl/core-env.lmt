@@ -46,16 +46,17 @@ local cache = tokens.cache
 -- we can have a modes cache too
 
 local commandcodes  = tokens.commands
-local iftrue        = cache["iftrue"].index
 
-local conditioncode = commandcodes.if_test
-local integercode   = commandcodes.integer
+local iftrue        <const> = cache["iftrue"].index
 
--- local dimencode     = commandcodes.register_dimenension
--- local countcode     = commandcodes.register_integer
--- local tokencode     = commandcodes.register_toks
--- local skipcode      = commandcodes.register_glue
--- local muskipcode    = commandcodes.register_mu_glue
+local conditioncode <const> = commandcodes.if_test
+local integercode   <const> = commandcodes.integer
+
+-- local dimencode     <const> = commandcodes.register_dimenension
+-- local countcode     <const> = commandcodes.register_integer
+-- local tokencode     <const> = commandcodes.register_toks
+-- local skipcode      <const> = commandcodes.register_glue
+-- local muskipcode    <const> = commandcodes.register_mu_glue
 --
 -- local types = {
 --     [dimencode]     = "dimen",
@@ -96,7 +97,7 @@ do
     local texiscount    = tex.iscount
     local texgetcount   = tex.getcount
 
-    local boolean_value = tokens.values.boolean
+    local boolean_value <const> = tokens.values.boolean
 
     local function nomode()
         return false
@@ -132,7 +133,7 @@ do
         return m()
     end)
 
-    local c_trialtypesetting = tex.iscount("mode>*trialtypesetting")
+    local c_trialtypesetting <const> = tex.iscount("mode>*trialtypesetting")
 
     context.settrialtypesettingmethod(function()
      -- return texsystemmodes.trialtypesetting

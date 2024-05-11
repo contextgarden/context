@@ -268,16 +268,16 @@ local function scaleparts(parts,delta)
     return t
 end
 
-local abovebaseline_tag = tex.charactertagcodes.abovebaseline
-local belowbaseline_tag = tex.charactertagcodes.belowbaseline
+local abovebaseline_tag <const> = tex.charactertagcodes.abovebaseline
+local belowbaseline_tag <const> = tex.charactertagcodes.belowbaseline
 
 local textcontrolcodes  = tex.textcontrolcodes
-local collapse_hyphens  = textcontrolcodes.collapsehyphens
-local base_ligaturing   = textcontrolcodes.baseligaturing
-local base_kerning      = textcontrolcodes.basekerning
-local none_protected    = textcontrolcodes.noneprotected
-local has_italics       = textcontrolcodes.hasitalics
-local auto_italics      = textcontrolcodes.autoitalics
+local collapse_hyphens  <const> = textcontrolcodes.collapsehyphens
+local base_ligaturing   <const> = textcontrolcodes.baseligaturing
+local base_kerning      <const> = textcontrolcodes.basekerning
+local none_protected    <const> = textcontrolcodes.noneprotected
+local has_italics       <const> = textcontrolcodes.hasitalics
+local auto_italics      <const> = textcontrolcodes.autoitalics
 
 function constructors.scale(tfmdata,specification)
     local target         = { } -- the new table

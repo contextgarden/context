@@ -114,15 +114,15 @@ local startofpar       = nuts.startofpar
 
 local nodecodes        = nodes.nodecodes
 
-local glyph_code       = nodecodes.glyph
-local glue_code        = nodecodes.glue
-local disc_code        = nodecodes.disc
-local kern_code        = nodecodes.kern
-local math_code        = nodecodes.math
-local dir_code         = nodecodes.dir
-local par_code         = nodecodes.par
+local glyph_code       <const> = nodecodes.glyph
+local glue_code        <const> = nodecodes.glue
+local disc_code        <const> = nodecodes.disc
+local kern_code        <const> = nodecodes.kern
+local math_code        <const> = nodecodes.math
+local dir_code         <const> = nodecodes.dir
+local par_code         <const> = nodecodes.par
 
-local righttoleft_code = tex.directioncodes.righttoleft
+local righttoleft_code <const> = tex.directioncodes.righttoleft
 
 local txtdirstate      = otf.helpers.txtdirstate
 local pardirstate      = otf.helpers.pardirstate

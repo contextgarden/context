@@ -1,0 +1,1201 @@
+if not modules then modules = { } end modules ['math-txt'] = {
+    version   = 1.001,
+    comment   = "companion to math-ini.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+    dataonly  = true,
+}
+
+if not mathematics then mathematics = { } end
+
+-- Maybe we should split these into three tables for clearity. The redundant entries
+-- will be removed eventually but for now help with translation.
+
+local verboselabels = {
+
+ -- Structure related strings:
+
+ ["and"]={
+  ["en"]="and",
+  ["sv"]="och",
+ },
+ ["and over"]={
+  ["en"]="and over",
+  ["sv"]="och över",
+ },
+ ["and upper limit"]={
+  ["en"]="and upper limit",
+  ["sv"]="och övre gräns",
+ },
+ ["applied to"]={
+  ["en"]="applied to",
+  ["sv"]="tillämpad på",
+ },
+ ["cubed"]={
+  ["en"]="cubed",
+  ["sv"]="i kubik",
+ },
+ ["end derivative"]={
+  ["en"]="end derivative",
+  ["sv"]="slut derivatan",
+ },
+ ["indexed"]={
+  ["en"]="indexed",
+  ["sv"]="med index",
+ },
+ ["of"]={
+  ["en"]="of",
+  ["sv"]="av",
+ },
+ ["over"]={
+  ["en"]="over",
+  ["sv"]="över",
+ },
+ ["begin group"]={
+  ["en"]="group",
+  ["sv"]="grupp",
+ },
+ ["begin"]={
+  ["en"]="begin", -- was begin
+  ["sv"]="start", -- was påbörja
+ },
+ ["optional begin"]={
+  ["en"]="", -- was begin
+  ["sv"]="", -- was påbörja
+ },
+--  ["end fenced"]={
+--   ["en"]="end fenced",
+--   ["sv"]="stop GRUPP",
+--  },
+ ["end group"]={
+  ["en"]="end group",
+  ["sv"]="slut grupp",
+ },
+ ["pause"]={
+  ["en"]=",",--"TAKE A DEEP BREATH",
+  ["sv"]=",",--"pausa",
+ },
+ ["comma"]={
+  ["en"]="comma",
+  ["sv"]="komma",
+ },
+ ["postscripts"]={
+  ["en"]="postscripts",
+  ["sv"]="postskript",
+ },
+ ["prescripts"]={
+  ["en"]="prescripts",
+  ["sv"]="preskript",
+ },
+ ["squared"]={
+  ["en"]="squared",
+  ["sv"]="i kvadrat",
+ },
+ ["sub"]={
+  ["en"]="sub",
+  ["sv"]="nedsänkt",
+ },
+ ["super"]={
+  ["en"]="super",
+  ["sv"]="upphöjd",
+ },
+ ["the derivative"]={
+  ["en"]="the derivative",
+  ["sv"]="derivatan",
+ },
+ ["the fraction of"]={
+  ["en"]="the fraction of",
+  ["sv"]="kvoten av",
+ },
+ ["the partial derivative"]={
+  ["en"]="the partial derivative",
+  ["sv"]="den partiella derivatan",
+ },
+ ["the root with degree"]={
+  ["en"]="the root with degree",
+  ["sv"]="roten ur med grad",
+ },
+ ["the square root of"]={
+  ["en"]="the square root of",
+  ["sv"]="roten ur",
+ },
+ ["to the power of"]={
+  ["en"]="to the power of",
+  ["sv"]="upphöjt till",
+ },
+ ["under"]={
+  ["en"]="under",
+  ["sv"]="under",
+ },
+ ["with lower limit"]={
+  ["en"]="with lower limit",
+  ["sv"]="med undre gräns",
+ },
+ ["with upper limit"]={
+  ["en"]="with upper limit",
+  ["sv"]="med övre gräns",
+ },
+ ["functionof"]={
+  ["en"]="of",
+  ["sv"]="av",
+ },
+ ["rootof"]={
+  ["en"]="of",
+  ["sv"]="av",
+ },
+
+ -- Verbose function names:
+
+ ["Pr"]={
+  ["en"]="probability",
+  ["sv"]="sannolikhet",
+ },
+ ["adj"]={
+  ["en"]="the adjugate",
+  ["sv"]="adjungerade",
+ },
+ ["coker"]={
+  ["en"]="the cokernel",
+  ["sv"]="kokärnan",
+ },
+ ["deg"]={
+  ["en"]="the degree",
+  ["sv"]="graden",
+ },
+ ["det"]={
+  ["en"]="the determinant",
+  ["sv"]="determinanten",
+ },
+ ["diff"]={
+  ["en"]="d",
+  ["sv"]="d",
+ },
+ ["dim"]={
+  ["en"]="the dimension",
+  ["sv"]="dimensionen",
+ },
+ ["div"]={
+  ["en"]="the divergence",
+  ["sv"]="divergensen",
+ },
+ ["gcd"]={
+  ["en"]="the greatest common divisor",
+  ["sv"]="den största gemensamma delaren",
+ },
+ ["inf"]={
+  ["en"]="the infimum",
+  ["sv"]="infimumet",
+ },
+ ["inv"]={
+  ["en"]="the inverse",
+  ["sv"]="inversen",
+ },
+ ["ker"]={
+  ["en"]="the kernel",
+  ["sv"]="nollrummet",
+ },
+ ["lg"]={
+  ["en"]="the logarithm",
+  ["sv"]="logaritmen",
+ },
+ ["lim"]={
+  ["en"]="the limit",
+  ["sv"]="gränsvärdet",
+ },
+ ["ln"]={
+  ["en"]="the natural logarithm",
+  ["sv"]="den naturliga logaritmen",
+ },
+ ["log"]={
+  ["en"]="the logarithm",
+  ["sv"]="logaritmen",
+ },
+ ["max"]={
+  ["en"]="the maximum",
+  ["sv"]="maximumet",
+ },
+ ["min"]={
+  ["en"]="the minimum",
+  ["sv"]="minimumet",
+ },
+ ["mod"]={
+  ["en"]="modulo",
+ },
+ ["sup"]={
+  ["en"]="the supremum",
+  ["sv"]="supremumet",
+ },
+
+ -- Accent function:
+
+ ["closure"]={
+  ["en"]="the closure of",
+  ["sv"]="det slutna höljet av",
+ },
+ ["conjugate"]={
+  ["en"]="the conjugate of",
+  ["sv"]="konjugatet av",
+ },
+
+-- Function
+
+ ["function"]={
+  ["en"]="the function",
+  ["sv"]="funktionen",
+ },
+ ["arg"]={
+  ["en"]="the argument",
+  ["sv"]="argumentet",
+ },
+
+ ["crossproduct"]={
+  ["en"]="crossproduct",
+  ["sv"]="kryssprodukt",
+ },
+ ["gradient"]={
+  ["en"]="the gradient",
+  ["sv"]="gradienten",
+ },
+ ["neg"]={
+  ["en"]="NEGation",
+  ["sv"]="negationen",
+ },
+
+ ["laplace"]={
+  ["en"]="laplace",
+  ["sv"]="laplace",
+ },
+
+ ["scalarproduct"]={
+  ["en"]="scalarproduct",
+  ["sv"]="skalärprodukt",
+ },
+
+ ["vectorproduct"]={
+  ["en"]="vectorproduct",
+  ["sv"]="vektorprodukt",
+ },
+
+-- Operators
+
+ ["integralsub"]={
+  ["en"]="over",
+  ["sv"]="över",
+ },
+
+ ["limitsub"]={
+  ["en"]="as",
+  ["sv"]="då",
+ },
+
+ ["operatorof"]={
+  ["en"]="of",
+  ["sv"]="av",
+ },
+
+ ["othersub"]={
+  ["en"]="subindexed",
+  ["sv"]="med undre index",
+ },
+
+ ["operatorsup"]={
+  ["en"]="with upper limit",
+  ["sv"]="med övre gräns",
+ },
+
+ ["operatorsubsupfrom"]={
+  ["en"]="from",
+  ["sv"]="från",
+ },
+
+ ["operatorsubsupto"]={
+  ["en"]="to",
+  ["sv"]="till",
+ },
+ ["othersubsup"]={
+  ["en"]="OTHERSUBSUP",
+  ["sv"]="OTHERSUBSUP",
+ },
+
+ -- Verbose unicode characters:
+
+ ["Q.E.D."]={
+  ["en"]="Q.E.D.",
+  ["sv"]="V.S.B.",
+ },
+ ["and"]={
+  ["en"]="and",
+  ["sv"]="och",
+ },
+ ["and so on"]={
+  ["en"]=", and so on, ",
+  ["sv"]=", och så vidare, ",
+ },
+ ["anticlockwise contour integral"]={
+  ["en"]="anticlockwise contour integral",
+  ["sv"]="moturs orienterad kurvintegral",
+ },
+ ["approximately equals"]={
+  ["en"]="approximately equals",
+  ["sv"]="är ungefär lika med",
+ },
+ ["approximately equals, or equals"]={
+  ["en"]="approximately equals, or equals",
+  ["sv"]="är ungefär lika med, eller lika med",
+ },
+ ["approximately identical to"]={
+  ["en"]="approximately identical to",
+  ["sv"]="är ungefär lika med",
+ },
+ ["are all equal to"]={
+  ["en"]="are all equal to",
+  ["sv"]="är alla lika med",
+ },
+ ["asymptotically equals"]={
+  ["en"]="asymptotically equals",
+  ["sv"]="är asymptotiskt lika med",
+ },
+ ["because"]={
+  ["en"]="because",
+  ["sv"]="eftersom",
+ },
+ ["fenced"]={
+  ["en"]="fenced",
+  ["sv"]="grupp",
+ },
+ ["belongs to"]={
+  ["en"]="belongs to",
+  ["sv"]="tillhör",
+ },
+ ["clockwise contour integral"]={
+  ["en"]="clockwise contour integral",
+  ["sv"]="medurs orienterad kurvintegral",
+ },
+ ["clockwise integral"]={
+  ["en"]="clockwise integral",
+  ["sv"]="medurs integral",
+ },
+ ["composed with"]={
+  ["en"]="composed with",
+  ["sv"]="sammansatt med",
+ },
+ ["contains"]={
+  ["en"]="contains",
+  ["sv"]="innehåller",
+ },
+ ["contour integral"]={
+  ["en"]="contour integral",
+  ["sv"]="kurvintegral",
+ },
+ ["convolved with"]={
+  ["en"]="convolved with",
+  ["sv"]="faltad med",
+ },
+ ["coproduct"]={
+  ["en"]="coproduct",
+  ["sv"]="koprodukt",
+ },
+ ["d"]={
+  ["en"]="d",
+  ["sv"]="d",
+ },
+ ["defines"]={
+  ["en"]="defines",
+  ["sv"]="definierar",
+ },
+ ["diamond operator"]={
+  ["en"]="diamond operator",
+  ["sv"]="diamantoperator",
+ },
+ ["differential operator D"]={
+  ["en"]="D",
+  ["sv"]="D",
+ },
+ ["direct sum"]={
+  ["en"]="direct sum",
+  ["sv"]="direkt summa",
+ },
+ ["divided by"]={
+  ["en"]="divided by",
+  ["sv"]="delad med",
+ },
+ ["divides"]={
+  ["en"]="divides",
+  ["sv"]="delar",
+ },
+ ["does not belong to"]={
+  ["en"]="does not belong to",
+  ["sv"]="tillhör ej",
+ },
+ ["does not contain"]={
+  ["en"]="does not contain",
+  ["sv"]="innehåller ej",
+ },
+ ["does not contain a normal subgroup"]={
+  ["en"]="does not contain the normal subgroup",
+  ["sv"]="innehåller ej den normala delgruppen",
+ },
+ ["does not contain a normal subgroup, nor is equal to"]={
+  ["en"]="does not contain the normal subgroup, nor is equal to",
+  ["sv"]="innehåller ej den normala delgruppen, och är inte lika med",
+ },
+ ["does not divide"]={
+  ["en"]="does not divide",
+  ["sv"]="delar ej",
+ },
+ ["does not exist"]={
+  ["en"]="does not exist",
+  ["sv"]="existerar ej",
+ },
+ ["does not precede"]={
+  ["en"]="does not precede",
+  ["sv"]="föregår ej",
+ },
+ ["does not precede, nor equals to"]={
+  ["en"]="does not precede, nor equals to",
+  ["sv"]="föregår ej, och är inte lika med",
+ },
+ ["does not succeed"]={
+  ["en"]="does not succeed",
+  ["sv"]="does not succeed",
+ },
+ ["does not succeed, nor equals to"]={
+  ["en"]="does not succeed, nor equals to",
+  ["sv"]="does not succeed, nor equals to",
+ },
+ ["dot plus"]={
+  ["en"]="dot plus",
+ },
+ ["dot product"]={
+  ["en"]="dot product",
+  ["sv"]="skalärprodukt",
+ },
+ ["double integral"]={
+  ["en"]="double integral",
+  ["sv"]="dubbelintegral",
+ },
+ ["end"]={
+  ["en"]="end",
+  ["sv"]="slut",
+ },
+ ["empty set"]={
+  ["en"]="empty set",
+  ["sv"]="tomma mängden",
+ },
+ ["equals"]={
+  ["en"]="equals",
+  ["sv"]="är lika med",
+ },
+ ["equals, or is greater than"]={
+  ["en"]="equals, or is greater than",
+  ["sv"]="är lika med, eller större än",
+ },
+ ["equals, or is less than"]={
+  ["en"]="equals, or is less than",
+  ["sv"]="är lika med, eller mindre än",
+ },
+ ["equals, or precedes"]={
+  ["en"]="equals, or precedes",
+  ["sv"]="är lika med eller föregår",
+ },
+ ["equals, or succeeds"]={
+  ["en"]="equals, or succeeds",
+  ["sv"]="är lika med, eller följer efter",
+ },
+ ["factorial"]={
+  ["en"]="factorial",
+  ["sv"]="fakultet",
+ },
+ ["false"]={
+  ["en"]="false",
+  ["sv"]="falskt",
+ },
+ ["for all"]={
+  ["en"]="for all",
+  ["sv"]="för alla",
+ },
+ ["gets"]={
+  ["en"]="gets",
+  ["sv"]="får",
+ },
+ ["greater than, but not equivalent to"]={
+  ["en"]="greater than, but not equivalent to",
+  ["sv"]="större än, men ej ekvivalent med",
+ },
+ ["if, and only if"]={
+  ["en"]="if, and only if",
+  ["sv"]="om, och endast om",
+ },
+ ["image of"]={
+  ["en"]="image of",
+  ["sv"]="bilden av",
+ },
+ ["imaginary i"]={
+  ["en"]="imaginary i",
+  ["sv"]="imaginära i",
+ },
+ ["imaginary j"]={
+  ["en"]="imaginary j",
+  ["sv"]="imaginära j",
+ },
+ ["implies"]={
+  ["en"]="implies",
+  ["sv"]="medför",
+ },
+ ["infinity"]={
+  ["en"]="infinity",
+  ["sv"]="oändligheten",
+ },
+ ["integral"]={
+  ["en"]="integral",
+  ["sv"]="integral",
+ },
+ ["intersection"]={
+  ["en"]="intersection",
+  ["sv"]="snitt",
+ },
+ ["is a subset of"]={
+  ["en"]="is a subset of",
+  ["sv"]="är en delmängd av",
+ },
+ ["is a subset of, but not equal to"]={
+  ["en"]="is a subset of, but not equal to",
+  ["sv"]="är en delmängd av, men inte lika med",
+ },
+ ["is a subset of, or equal to"]={
+  ["en"]="is a subset of, or equal to",
+  ["sv"]="är en delmängd av, eller lika med",
+ },
+ ["is a superset of"]={
+  ["en"]="is a superset of",
+  ["sv"]="omfattar",
+ },
+ ["is a superset of, but not equal to"]={
+  ["en"]="is a superset of, but not equal to",
+  ["sv"]="omfattar, och är ej lika med",
+ },
+ ["is a superset of, or equal to"]={
+  ["en"]="is a superset of, or equal to",
+  ["sv"]="omfatter, eller är lika med",
+ },
+ ["is defined by"]={
+  ["en"]="is defined by",
+  ["sv"]="definieras av",
+ },
+ ["is equivalent to"]={
+  ["en"]="is equivalent to",
+  ["sv"]="är ekvivalent med",
+ },
+ ["is greater than"]={
+  ["en"]="is greater than",
+  ["sv"]="är större än",
+ },
+ ["is greater than, but not equal to"]={
+  ["en"]="is greater than, but not equal to",
+  ["sv"]="är större än, men inte lika med",
+ },
+ ["is greater than, equals, or less than"]={
+  ["en"]="is greater than, equals, or less than",
+  ["sv"]="är större än, lika med, eller mindre än",
+ },
+ ["is greater than, or equal to"]={
+  ["en"]="is greater than, or equal to",
+  ["sv"]="är större än, eller lika med",
+ },
+ ["is greater than, or less than"]={
+  ["en"]="is greater than, or less than",
+  ["sv"]="är större än, eller mindre än",
+ },
+ ["is greater than, or similar to"]={
+  ["en"]="is greater than, or similar to",
+  ["sv"]="är större än, eller jämförbar med",
+ },
+ ["is implied by"]={
+  ["en"]="is implied by",
+  ["sv"]="följer av",
+ },
+ ["is less than"]={
+  ["en"]="is less than",
+  ["sv"]="är mindre än",
+ },
+ ["is less than, but not equal to"]={
+  ["en"]="is less than, but not equal to",
+  ["sv"]="är mindre än, men inte lika med",
+ },
+ ["is less than, equals, or greater than"]={
+  ["en"]="is less than, equals, or greater than",
+  ["sv"]="är mindre än, lika med, eller större än",
+ },
+ ["is less than, or equal to"]={
+  ["en"]="is less than, or equal to",
+  ["sv"]="är mindre än, eller lika med",
+ },
+ ["is less than, or greater than"]={
+  ["en"]="is less than, or greater than",
+  ["sv"]="är mindre än, eller större än",
+ },
+ ["is less than, or similar to"]={
+  ["en"]="is less than, or similar to",
+  ["sv"]="är mindre än, eller liknande",
+ },
+ ["is much greater than"]={
+  ["en"]="is much greater than",
+  ["sv"]="är mycket större än",
+ },
+ ["is much less than"]={
+  ["en"]="is much less than",
+  ["sv"]="är mycket mindre än",
+ },
+ ["is neither a subset of, nor equal to"]={
+  ["en"]="is neither a subset of, nor equal to",
+  ["sv"]="är varken en delmängd av, eller lika med",
+ },
+ ["is neither a superset of, nor equal to"]={
+  ["en"]="is neither a superset of, nor equal to",
+  ["sv"]="varken omfattar, eller är jämförbar med",
+ },
+ ["is neither approximately, nor equal to"]={
+  ["en"]="is neither approximately, nor equal to",
+  ["sv"]="är varken ungefärligt lika med, eller lika med",
+ },
+ ["is neither greater than, nor equal to"]={
+  ["en"]="is neither greater than, nor equal to",
+  ["sv"]="är varken större än, eller lika med",
+ },
+ ["is neither greater than, nor less than"]={
+  ["en"]="is neither greater than, nor less than",
+  ["sv"]="är varken större än, eller mindre än",
+ },
+ ["is neither greater than, nor similar to"]={
+  ["en"]="is neither greater than, nor similar to",
+  ["sv"]="är varken större än, eller jämförbar med",
+ },
+ ["is neither less than, nor equal to"]={
+  ["en"]="is neither less than, nor equal to",
+  ["sv"]="är varken mindre än, eller lika med",
+ },
+ ["is neither less than, nor greater than"]={
+  ["en"]="is neither less than, nor greater than",
+  ["sv"]="är varken mindre än, eller större än",
+ },
+ ["is neither less than, nor similar to"]={
+  ["en"]="is neither less than, nor similar to",
+  ["sv"]="är varken mindre än, eller jämförbar med",
+ },
+ ["is not a normal subgroup of"]={
+  ["en"]="is not a normal subgroup of",
+  ["sv"]="är inte en delgrupp av",
+ },
+ ["is not a normal subgroup of, nor equal to"]={
+  ["en"]="is not a normal subgroup of, nor equal to",
+  ["sv"]="är inte en normal delgrupp av, eller lika med",
+ },
+ ["is not a subset of"]={
+  ["en"]="is not a subset of",
+  ["sv"]="är inte en delmängd av",
+ },
+ ["is not a superset of"]={
+  ["en"]="is not a superset of",
+  ["sv"]="omfattar ej",
+ },
+ ["is not approximately equal to"]={
+  ["en"]="is not approximately equal to",
+  ["sv"]="är inte ungefärligt lika med",
+ },
+ ["is not asymptotically equal to"]={
+  ["en"]="is not asymptotically equal to",
+  ["sv"]="är inte asymptotiskt lika med",
+ },
+ ["is not equal to"]={
+  ["en"]="is not equal to",
+  ["sv"]="är inte lika med",
+ },
+ ["is not equivalent to"]={
+  ["en"]="is not equivalent to",
+  ["sv"]="är inte ekvivalent med",
+ },
+ ["is not greater than"]={
+  ["en"]="is not greater than",
+  ["sv"]="är inte större än",
+ },
+ ["is not implied by"]={
+  ["en"]="is not implied by",
+  ["sv"]="följer ej av",
+ },
+ ["is not less than"]={
+  ["en"]="is not less than",
+  ["sv"]="är inte mindre än",
+ },
+ ["is not parallel to"]={
+  ["en"]="is not parallel to",
+  ["sv"]="är inte parallell med",
+ },
+ ["is parallel to"]={
+  ["en"]="is parallel to",
+  ["sv"]="är parallell med",
+ },
+ ["is proportional to"]={
+  ["en"]="is proportional to",
+  ["sv"]="is proportionelig mot",
+ },
+ ["is strictly equivalent to"]={
+  ["en"]="is strictly equivalent to",
+  ["sv"]="är strikt ekvivalent med",
+ },
+ ["laplacian"]={
+  ["en"]="the laplace operator",
+  ["sv"]="laplaceoperatorn",
+ },
+ ["leads to"]={
+  ["en"]="leads to",
+  ["sv"]="leder till",
+ },
+ ["left semidirect product"]={
+  ["en"]="left semidirect product",
+  ["sv"]="vänster halvdirekt produkt",
+ },
+ ["less or equal to"]={
+  ["en"]="less, or equal to",
+  ["sv"]="mindre än, eller lika med",
+ },
+ ["less than, but not equivalent to"]={
+  ["en"]="less than, but not equivalent to",
+  ["sv"]="mindre än, men inte ekvivalent med",
+ },
+ ["maps"]={
+  ["en"]="maps",
+  ["sv"]="avbildar",
+ },
+ ["maps as"]={
+  ["en"]="is defined so that",
+  ["sv"]="är definierad så att",
+ },
+ ["maps down"]={
+  ["en"]="maps down",
+  ["sv"]="avbildas nedåt",
+ },
+ ["maps from"]={
+  ["en"]="maps from",
+  ["sv"]="avbildas från",
+ },
+ ["maps to"]={
+  ["en"]="maps to",
+  ["sv"]="avbildas på",
+ },
+ ["maps up"]={
+  ["en"]="maps up",
+  ["sv"]="avbildas uppåt",
+ },
+ ["minus"]={
+  ["en"]="minus",
+ },
+ ["minus plus"]={
+  ["en"]="minus or plus",
+  ["sv"]="minus eller plus",
+ },
+ ["more or equal to"]={
+  ["en"]="more or equal to",
+  ["sv"]="mer eller lika med",
+ },
+ ["much more equal to"]={
+  ["en"]="much more equal to",
+  ["sv"]="mycket mer lika med",
+ },
+ ["multiset union"]={
+  ["en"]="multiset union",
+  ["sv"]="multimängdunion",
+ },
+ ["not"]={
+  ["en"]="not",
+  ["sv"]="icke",
+ },
+ ["not and"]={
+  ["en"]="not and",
+  ["sv"]="ej och",
+ },
+ ["original of"]={
+  ["en"]="original of",
+  ["sv"]="original av",
+ },
+ ["partial"]={
+  ["en"]="partial",
+  ["sv"]="partiell",
+ },
+ ["partial d"]={
+  ["en"]="partial d",
+  ["sv"]="partiellt d",-- fix
+ },
+ ["percent"]={
+  ["en"]="percent",
+  ["sv"]="procent",
+ },
+ ["plus"]={
+  ["en"]="plus",
+ },
+ ["plus minus"]={
+  ["en"]="plus or minus",
+  ["sv"]="plus eller minus",
+ },
+ ["precedes"]={
+  ["en"]="precedes",
+  ["sv"]="föregår",
+ },
+ ["precedes, or equals"]={
+  ["en"]="precedes, or equals",
+  ["sv"]="föregår, eller är lika med",
+ },
+ ["precedes, or is equivalent to"]={
+  ["en"]="precedes, or is equivalent to",
+  ["sv"]="föregår, eller är ekvivalent med",
+ },
+ ["preceeds, but not equivalent to"]={
+  ["en"]="preceeds, but not equivalent to",
+  ["sv"]="föregår, men är ej ekvivalent med",
+ },
+ ["prime"]={
+  ["en"]="prime",
+  ["sv"]="prim",
+ },
+ ["double prime"]={
+  ["en"]="double prime",
+  ["sv"]="bis",
+ },
+ ["triple prime"]={
+  ["en"]="triple prime",
+  ["sv"]="trippelprim",
+ },
+ ["quadruple prime"]={
+  ["en"]="quadruple prime",
+  ["sv"]="kvadrupelprim",
+ },
+ ["derivative"]={
+  ["en"]="the derivative of",
+  ["sv"]="derivatan av",
+ },
+ ["second derivative"]={
+  ["en"]="the second derivative of",
+  ["sv"]="andraderivatan av",
+ },
+ ["third derivative"]={
+  ["en"]="the third derivative of",
+  ["sv"]="tredjederivatan av",
+ },
+ ["fourth derivative"]={
+  ["en"]="the fourth derivative of",
+  ["sv"]="fjärdederivatan av",
+ },
+ ["product"]={
+  ["en"]="the product",
+  ["sv"]="produkten",
+ },
+ ["quadruple integral of"]={
+  ["en"]="quadruple integral of",
+  ["sv"]="kvadrupelintegral",
+ },
+ ["restriction"]={
+  ["en"]="restriction",
+  ["sv"]="restriktion",
+ },
+ ["reversed doubleprime"]={
+--   ["en"]="reversed doubleprime",
+  ["en"]="the reversed second derivative of",
+  ["sv"]="den omvända biss",
+ },
+ ["reversed prime"]={
+--   ["en"]="reversed prime",
+  ["en"]="reversed derivative of",
+  ["sv"]="omvänt prim",
+ },
+ ["reversed triple prime"]={
+--   ["en"]="reversed triple prime",
+  ["en"]="reversed third derivative of",
+  ["sv"]="omvänt trippelprim",
+ },
+ ["right semidirect product"]={
+  ["en"]="right semidirect product",
+  ["sv"]="höger halvdirekt produkt",
+ },
+ ["semidirect product"]={
+  ["en"]="semidirect product",
+  ["sv"]="halvdirekt produkt",
+ },
+ ["set minus"]={
+  ["en"]="set minus",
+  ["sv"]="mängdminus",
+ },
+ ["similar but not equal to"]={
+  ["en"]="similar, but not equal to",
+  ["sv"]="liknande, men inte lika med",
+ },
+ ["star operator"]={
+  ["en"]="star operator",
+  ["sv"]="stjärnaoperator",
+ },
+ ["succeeds"]={
+  ["en"]="succeeds",
+  ["sv"]="efterföljer",
+ },
+ ["succeeds, but not equivalent to"]={
+  ["en"]="succeeds, but not equivalent to",
+  ["sv"]="efterföljer, men är inte ekvivalent med",
+ },
+ ["succeeds, or equals"]={
+  ["en"]="succeeds, or equals",
+  ["sv"]="efterföljer, eller är lika med",
+ },
+ ["succeeds, or is equivalent to"]={
+  ["en"]="succeeds, or is equivalent to",
+  ["sv"]="efterföljer, eller är ekvivalent med",
+ },
+ ["sum"]={
+  ["en"]="the sum",
+  ["sv"]="summan",
+ },
+ ["surface integral"]={
+  ["en"]="surface integral",
+  ["sv"]="ytintegral",
+ },
+ ["tends to"]={
+  ["en"]="tends to",
+  ["sv"]="går mot",
+ },
+ ["tends from above to"]={
+  ["en"]="tends from above to",
+  ["sv"]="närmar sig ovanifrån till",
+ },
+ ["tends from below to"]={
+  ["en"]="tends from below to",
+  ["sv"]="närmar sig underifrån till",
+ },
+ ["tensor product"]={
+  ["en"]="tensor product",
+  ["sv"]="tensorprodukt",
+ },
+ ["the algebraic numbers"]={
+  ["en"]="the algebraic numbers",
+  ["sv"]="de algebraiska talen",
+ },
+ ["the complement of"]={
+  ["en"]="the complement of",
+  ["sv"]="komplementet av",
+ },
+ ["the complex numbers"]={
+  ["en"]="the complex numbers",
+  ["sv"]="de komplexa talen",
+ },
+ ["the integers"]={
+  ["en"]="the integers",
+  ["sv"]="heltalen",
+ },
+ ["the natural numbers"]={
+  ["en"]="the natural numbers",
+  ["sv"]="de naturliga talen",
+ },
+ ["the number of"]={
+  ["en"]="the number of",
+  ["sv"]="antalet",
+ },
+ ["the octonions"]={
+  ["en"]="the octonions",
+  ["sv"]="oktonionerna",
+ },
+ ["the prime numbers"]={
+  ["en"]="the prime numbers",
+  ["sv"]="primtalen",
+ },
+ ["the quaternions"]={
+  ["en"]="the quaternions",
+  ["sv"]="kvaternionerna",
+ },
+ ["the rational numbers"]={
+  ["en"]="the rational numbers",
+  ["sv"]="de rationella talen",
+ },
+ ["the real numbers"]={
+  ["en"]="the real numbers",
+  ["sv"]="de rella talen",
+ },
+ ["the sedenions"]={
+  ["en"]="the sedenions",
+  ["sv"]="sedenionerna",
+ },
+ ["there exists"]={
+  ["en"]="there exists",
+  ["sv"]="det existerar",
+ },
+ ["therefore, "]={
+  ["en"]="therefore, ",
+  ["sv"]="därför, ",
+ },
+ ["times"]={
+  ["en"]="times",
+  ["sv"]="multiplicerat med",
+ },
+ ["to"]={
+  ["en"]="to",
+  ["sv"]="till",
+ },
+ ["triple integral of"]={
+  ["en"]="triple integral",
+  ["sv"]="trippelintegral",
+ },
+ ["true"]={
+  ["en"]="true",
+  ["sv"]="sant",
+ },
+ ["union"]={
+  ["en"]="union",
+ },
+ ["vector gradient"]={
+  ["en"]="vector gradient",
+  ["sv"]="vektorgradient",
+ },
+ ["vector partial"]={
+  ["en"]="vector partial",
+  ["sv"]="vektorpartial",
+ },
+ ["volume integral"]={
+  ["en"]="volume integral",
+  ["sv"]="volymintegral",
+ },
+ ["way equal to"]={
+  ["en"]="way equal to",
+  ["sv"]="väldigt mycket lika med",
+ },
+ ["way greater than"]={
+  ["en"]="way greater than",
+  ["sv"]="väldigt mycket större än",
+ },
+ ["way less than"]={
+  ["en"]="way less than",
+  ["sv"]="väldigt mycket mindre än",
+ },
+ ["wedge product"]={
+  ["en"]="wedge product",
+  ["sv"]="hakprodukt",
+ },
+ ["wedge sum"]={
+  ["en"]="wedge sum",
+  ["sv"]="haksumma",
+ },
+ ["xor"]={
+  ["en"]="xor",
+  ["sv"]="xor",
+ },
+
+ -- Fences:
+ ["abs"]={
+  ["en"]="the absolute value",
+  ["sv"]="absolutbeloppet",
+ },
+ ["begin numerator"]={
+  ["en"]="numerator",
+  ["sv"]="täljare",
+ },
+ ["begin denominator"]={
+  ["en"]="denominator",
+  ["sv"]="nämnare",
+ },
+ ["end numerator"]={
+  ["en"]="end numerator",
+  ["sv"]="avsluta täljare",
+ },
+ ["end denominator"]={
+  ["en"]="end denominator",
+  ["sv"]="avsluta nämnare",
+ },
+ ["ceiling"]={
+  ["en"]="the ceiling",
+  ["sv"]="takfunktionen",
+ },
+ ["closedinterval"]={
+  ["en"]="the closed interval",
+  ["sv"]="det slutna intervallet",
+ },
+ ["floor"]={
+  ["en"]="the floor",
+  ["sv"]="golvfunktionen",
+ },
+ ["innerproduct"]={
+  ["en"]="the inner product",
+  ["sv"]="inre produkten",
+ },
+ ["integerpart"]={
+  ["en"]="the integer part",
+  ["sv"]="heltalsdelen",
+ },
+ ["innerproduct:fence"]={
+  ["en"]="and",
+  ["sv"]="och",
+ },
+ ["leftopeninterval"]={
+  ["en"]="the left open interval",
+  ["sv"]="det vänsteröppna intervallet",
+ },
+ ["varleftopeninterval"]={
+  ["en"]="the left open interval",
+  ["sv"]="det vänsteröppna intervallet",
+ },
+ ["norm"]={
+  ["en"]="the norm",
+  ["sv"]="normen",
+ },
+ ["openinterval"]={
+  ["en"]="the open interval",
+  ["sv"]="det öppna intervallet",
+ },
+ ["varopeninterval"]={
+  ["en"]="the open interval",
+  ["sv"]="det öppna intervallet",
+ },
+ ["parenthesis"]={
+  ["en"]="parenthesis",
+  ["sv"]="parentes",
+ },
+ ["set"]={
+  ["en"]="set",
+  ["sv"]="mängd",
+ },
+ ["rightopeninterval"]={
+  ["en"]="the right open interval",
+  ["sv"]="det högeröppna intervallet",
+ },
+ ["varrightopeninterval"]={
+  ["en"]="the right open interval",
+  ["sv"]="det högeröppna intervallet",
+ },
+ ["set:fence"]={
+  ["en"]="such that",
+  ["sv"]="sådana att",
+ },
+ ["adjoint"]={
+   ["en"]="the adjoint of",
+   ["sv"]="adjunkten av",
+ },
+ ["transpose"]={
+   ["en"]="the transpose of",
+   ["sv"]="transponatet av",
+ },
+}
+
+mathematics.verboselabels = verboselabels
+
+function mathematics.getverboselabel(name,language)
+    local l = verboselabels[name]
+    if l then
+        return (language and l[language]) or l.en or name
+    else
+     -- print("missing label",language or "en", name)
+        return name
+    end
+end
+
+function mathematics.registerverboselabel(name,language,meaning)
+    local v = verboselabels[name]
+    if not v then
+        v = { }
+        verboselabels[name] = v
+    end
+    v[language or "en"] = meaning
+end

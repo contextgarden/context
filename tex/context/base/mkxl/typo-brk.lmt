@@ -58,13 +58,14 @@ local unsetattributes    = nuts.unsetattributes
 local tonodes            = nuts.tonodes
 
 local texsetattribute    = tex.setattribute
-local unsetvalue         = attributes.unsetvalue
+
+local unsetvalue         <const> = attributes.unsetvalue
 
 local nodepool           = nuts.pool
 local enableaction       = nodes.tasks.enableaction
 
-local v_reset            = interfaces.variables.reset
-local v_yes              = interfaces.variables.yes
+local v_reset            <const> = interfaces.variables.reset
+local v_yes              <const> = interfaces.variables.yes
 
 local implement          = interfaces.implement
 
@@ -76,11 +77,11 @@ local new_wordboundary   = nodepool.wordboundary
 local nodecodes          = nodes.nodecodes
 local kerncodes          = nodes.kerncodes
 
-local kern_code          = nodecodes.kern
-local math_code          = nodecodes.math
+local kern_code          <const> = nodecodes.kern
+local math_code          <const> = nodecodes.math
 
-local fontkern_code      = kerncodes.fontkern
-local italickern_code    = kerncodes.italiccorrection
+local fontkern_code      <const> = kerncodes.fontkern
+local italickern_code    <const> = kerncodes.italiccorrection
 
 local is_letter          = characters.is_letter
 
@@ -95,7 +96,7 @@ breakpoints.numbers      = breakpoints.numbers or { }
 breakpoints.methods      = breakpoints.methods or { }
 local methods            = breakpoints.methods
 
-local a_breakpoints      = attributes.private("breakpoint")
+local a_breakpoints      <const> = attributes.private("breakpoint")
 
 storage.register("typesetters/breakpoints/mapping", breakpoints.mapping, "typesetters.breakpoints.mapping")
 

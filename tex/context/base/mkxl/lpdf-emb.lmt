@@ -55,9 +55,8 @@ local report_fonts         = logs.reporter("backend","fonts")
 local trace_fonts          = false
 local trace_details        = false
 
-local dimenfactors  = number.dimenfactors
-local bpfactor      = dimenfactors.bp
-local ptfactor      = dimenfactors.pt
+local bpfactor <const> = number.dimenfactors.bp
+local ptfactor <const> = number.dimenfactors.pt
 
 trackers.register("backend.fonts",        function(v) trace_fonts   = v end)
 trackers.register("backend.fonts.details",function(v) trace_details = v end)
@@ -756,23 +755,32 @@ do
             -- if fontfile.streams.cffinfo then
                 -- error
             -- end
-            fontfile.maxp = concat {
-                tocardinal4(0x00010000),
-                tocardinal2(n),
-                tocardinal2(t.points),
-                tocardinal2(t.contours),
-                tocardinal2(t.compositepoints),
-                tocardinal2(t.compositecontours),
-                tocardinal2(t.zones),
-                tocardinal2(t.twilightpoints),
-                tocardinal2(t.storage),
-                tocardinal2(t.functiondefs),
-                tocardinal2(t.instructiondefs),
-                tocardinal2(t.stackelements),
-                tocardinal2(t.sizeofinstructions),
-                tocardinal2(t.componentelements),
-                tocardinal2(t.componentdepth),
-            }
+            local version = tocardinal4(0x00010000)
+            local count   = tocardinal2(n)
+            if t.points then
+                fontfile.maxp = concat {
+                    version, count,
+                    tocardinal2(t.points),
+                    tocardinal2(t.contours),
+                    tocardinal2(t.compositepoints),
+                    tocardinal2(t.compositecontours),
+                    tocardinal2(t.zones),
+                    tocardinal2(t.twilightpoints),
+                    tocardinal2(t.storage),
+                    tocardinal2(t.functiondefs),
+                    tocardinal2(t.instructiondefs),
+                    tocardinal2(t.stackelements),
+                    tocardinal2(t.sizeofinstructions),
+                    tocardinal2(t.componentelements),
+                    tocardinal2(t.componentdepth),
+                }
+            else -- catch bugged font that felt through the checking
+                local zero = tocardinal2(0)
+                fontfile.maxp = concat {
+                    version, count, zero, zero, zero, zero, zero,
+                    zero, zero, zero, zero, zero, zero, zero, zero,
+                }
+            end
         end
 
         tablecreators.loca = function(fontfile) return create(fontfile,"loca") end

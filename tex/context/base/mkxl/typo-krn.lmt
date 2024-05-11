@@ -57,7 +57,8 @@ local setglue            = nuts.setglue -- todo
 local setattrlist        = nuts.setattrlist
 
 local texsetattribute    = tex.setattribute
-local unsetvalue         = attributes.unsetvalue
+
+local unsetvalue         <const> = attributes.unsetvalue
 
 local new_kern           = nodepool.kern -- fontkern
 local new_glue           = nodepool.glue
@@ -68,26 +69,26 @@ local gluecodes          = nodes.gluecodes
 local disccodes          = nodes.disccodes
 local listcodes          = nodes.listcodes
 
-local glyph_code         = nodecodes.glyph
-local kern_code          = nodecodes.kern
-local disc_code          = nodecodes.disc
-local glue_code          = nodecodes.glue
-local hlist_code         = nodecodes.hlist
-local vlist_code         = nodecodes.vlist
-local math_code          = nodecodes.math
+local glyph_code         <const> = nodecodes.glyph
+local kern_code          <const> = nodecodes.kern
+local disc_code          <const> = nodecodes.disc
+local glue_code          <const> = nodecodes.glue
+local hlist_code         <const> = nodecodes.hlist
+local vlist_code         <const> = nodecodes.vlist
+local math_code          <const> = nodecodes.math
 
-local boxlist_code       = listcodes.box
-local unknownlist_code   = listcodes.unknown
+local boxlist_code       <const> = listcodes.box
+local unknownlist_code   <const> = listcodes.unknown
 
-local discretionarydisc_code = disccodes.discretionary
-local automaticdisc_code     = disccodes.automatic
+local discretionarydisc_code <const> = disccodes.discretionary
+local automaticdisc_code     <const> = disccodes.automatic
 
-local fontkern_code      = kerncodes.fontkern
-local userkern_code      = kerncodes.userkern
+local fontkern_code      <const> = kerncodes.fontkern
+local userkern_code      <const> = kerncodes.userkern
 
-local userskip_code      = gluecodes.userskip
-local spaceskip_code     = gluecodes.spaceskip
-local xspaceskip_code    = gluecodes.xspaceskip
+local userskip_code      <const> = gluecodes.userskip
+local spaceskip_code     <const> = gluecodes.spaceskip
+local xspaceskip_code    <const> = gluecodes.xspaceskip
 
 local fonthashes         = fonts.hashes
 local chardata           = fonthashes.characters
@@ -103,8 +104,8 @@ local resetcolor         = tracers.colors.reset
 
 local setattrlist        = nuts.setattrlist
 
-local v_max              = interfaces.variables.max
-local v_auto             = interfaces.variables.auto
+local v_max              <const> = interfaces.variables.max
+local v_auto             <const> = interfaces.variables.auto
 
 typesetters              = typesetters or { }
 local typesetters        = typesetters
@@ -118,7 +119,8 @@ local trace_ligatures_d  = false  trackers.register("typesetters.kerns.ligatures
 
 kerns.mapping            = kerns.mapping or { }
 kerns.factors            = kerns.factors or { }
-local a_kerns            = attributes.private("kern")
+
+local a_kerns            <const> = attributes.private("kern")
 
 local contextsetups      = fonts.specifiers.contextsetups
 
