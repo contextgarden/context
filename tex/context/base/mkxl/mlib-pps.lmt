@@ -111,7 +111,9 @@ local f_f3    = formatters["%.3N"]
 local f_gray  = formatters["%.3N g %.3N G"]
 local f_rgb   = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
 local f_cmyk  = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
+local f_cm    = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
 local f_cm_b  = formatters["q %.6N %.6N %.6N %.6N %.6N %.6N cm"]
+
 local f_scn   = formatters["%.3N"]
 
 local f_shade = formatters["MpSh%s"]
@@ -1181,7 +1183,6 @@ local gt_reset, gt_process do
 
     local graphics = { }
 
-
     local mp_index = 0
     local mp_str   = ""
 
@@ -1202,7 +1203,8 @@ local gt_reset, gt_process do
 
 end
 
--- shades
+-- shades: transformation is for afterward transform so then one also need to inverse transform
+-- the path (see svg)
 
 local function sh_process(object,prescript,before,after)
     local sh_type = prescript.sh_type
@@ -1212,6 +1214,10 @@ local function sh_process(object,prescript,before,after)
         local centera   = lpegmatch(centersplitter,prescript.sh_center_a or "0 0")
         local centerb   = lpegmatch(centersplitter,prescript.sh_center_b or "0 0")
         local transform = toboolean(prescript.sh_transform or "yes",true)
+        local transformation = prescript.sh_transformation
+        if transformation then
+            transformation = lpegmatch(coordinatesplitter,transformation)
+        end
         -- compensation for scaling
         local sx = 1
         local sy = 1
@@ -1260,7 +1266,7 @@ local function sh_process(object,prescript,before,after)
         local steps      = tonumber(prescript.sh_step) or 1
         local sh_color_a = prescript.sh_color_a_1 or prescript.sh_color_a or "1"
         local sh_color_b = prescript.sh_color_b_1 or prescript.sh_color_b or "1" -- sh_color_b_<sh_steps>
-        local ca, cb, colorspace, name, model, separation, fractions
+        local ca, cb, colorspace, name, model, separation, fractions, opacities
         if prescript.sh_color == "into" and prescript.sp_name then
             -- some spotcolor
             local value_a, components_a, fractions_a, name_a
@@ -1301,12 +1307,15 @@ local function sh_process(object,prescript,before,after)
             if steps > 1 then
                 ca = { ca }
                 cb = { cb }
+                -- todo: cache the formatted
                 fractions = { tonumber(prescript[formatters["sh_fraction_%i"](1)]) or 0 }
+                opacities = { tonumber(prescript[formatters["sh_opacity_%i"](1)]) or false }
                 for i=2,steps do
                     local colora = lpegmatch(colorsplitter,prescript[formatters["sh_color_a_%i"](i)])
                     local colorb = lpegmatch(colorsplitter,prescript[formatters["sh_color_b_%i"](i)])
                     ca[i], cb[i] = checkandconvert(colora,colorb,model)
                     fractions[i] = tonumber(prescript[formatters["sh_fraction_%i"](i)]) or (i/steps)
+                    opacities[i] = tonumber(prescript[formatters["sh_opacity_%i"](i)]) or false
                 end
             end
         end
@@ -1316,20 +1325,24 @@ local function sh_process(object,prescript,before,after)
         end
         if sh_type == "linear" then
             local coordinates = { dx + sx*centera[1], dy + sy*centera[2], dx + sx*centerb[1], dy + sy*centerb[2] }
-            lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates,separation,steps>1 and steps,fractions) -- backend specific (will be renamed)
+            lpdf.linearshade(name,domain,ca,cb,1,colorspace,coordinates,separation,steps>1 and steps,fractions,opacities) -- backend specific (will be renamed)
         elseif sh_type == "circular" then
             local factor  = tonumber(prescript.sh_factor) or 1
             local radiusa = factor * tonumber(prescript.sh_radius_a)
             local radiusb = factor * tonumber(prescript.sh_radius_b)
             local coordinates = { dx + sx*centera[1], dy + sy*centera[2], sr*radiusa, dx + sx*centerb[1], dy + sy*centerb[2], sr*radiusb }
-            lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates,separation,steps>1 and steps,fractions) -- backend specific (will be renamed)
+            lpdf.circularshade(name,domain,ca,cb,1,colorspace,coordinates,separation,steps>1 and steps,fractions,opacities) -- backend specific (will be renamed)
         else
             -- fatal error
         end
-        before[#before+1] = "q /Pattern cs"
-        after [#after+1]  = formatters["W n /%s sh Q"](name)
+        -- kind of ugly the pdf code here
+        before[#before+1] = "q /Pattern cs" -- when did pattern space creep in?
+        if transformation then
+            before[#before+1] = f_cm(unpack(transformation))
+        end
+        after[#after+1] = formatters["W n /%s sh Q"](name)
         -- false, not nil, else mt triggered
-        object.colored = false -- hm, not object.color ?
+        object.color   = false -- hm, not object.color ?
         object.type    = false
         object.grouped = true
     end
@@ -1341,11 +1354,12 @@ local function bm_process(object,prescript,before,after)
     local bm_xresolution = prescript.bm_xresolution
     local bm_yresolution = prescript.bm_yresolution
     if bm_xresolution then
---         before[#before+1] = f_cm_b(cm(object))
-local sx, rx, ry, sy, tx, ty = cm(object)
-local postscript = object.postscript
+     -- before[#before+1] = f_cm_b(cm(object))
+        local sx, rx, ry, sy, tx, ty = cm(object)
+        local postscript = object.postscript
         before[#before+1] = function()
-context.MPLIBscaledcm(function()
+            context.MPLIBscaledcm(
+                function()
                     figures.bitmapimage {
                         xresolution = tonumber(bm_xresolution),
                         yresolution = tonumber(bm_yresolution),
@@ -1354,10 +1368,11 @@ context.MPLIBscaledcm(function()
                         data        = postscript,
                         format      = "png",
                     }
-                end
-, sx, rx, ry, sy, tx, ty)
+                end,
+                sx, rx, ry, sy, tx, ty
+            )
         end
---         before[#before+1] = s_cm_e
+     -- before[#before+1] = s_cm_e
         object.path = false
         object.color = false
         object.grouped = true
@@ -1595,6 +1610,8 @@ local function getcorners(path)
 --     end
 end
 
+-- todo: just in place instead of calling out to tex
+
 local function gr_process(object,prescript,before,after)
     local gr_state = prescript.gr_state
     if not gr_state then
@@ -1617,6 +1634,25 @@ local function gr_process(object,prescript,before,after)
     object.path    = false
     object.color   = false
     object.grouped = true
+end
+
+-- states
+
+local function gs_process(object,prescript,before,after)
+    local gs_type = prescript.gs_type
+    if gs_type then
+        object.detail = {
+            type   = gs_type,
+            action = prescript.gs_action,
+            name   = prescript.gs_name,
+        }
+        -- just a signal that we need to do something .. will change
+        before[#before+1] = function() end
+        after [#after +1] = function() end
+    end
+ -- object.path    = false
+ -- object.color   = false
+ -- object.grouped = true
 end
 
 -- patterns
@@ -1734,16 +1770,17 @@ metapost.installplugin = installplugin
 
 -- definitions
 
-installplugin { name = "outline",      reset = ot_reset, process = ot_process }
-installplugin { name = "color",        reset = cl_reset, process = cl_process }
-installplugin { name = "text",         reset = tx_reset, process = tx_process }
-installplugin { name = "group",        reset = gr_reset, process = gr_process }
-installplugin { name = "pattern",      reset = pt_reset, process = pt_process }
-installplugin { name = "graphictext",  reset = gt_reset, process = gt_process }
-installplugin { name = "shade",        reset = sh_reset, process = sh_process }
-installplugin { name = "bitmap",       reset = bm_reset, process = bm_process }
-installplugin { name = "box",          reset = bx_reset, process = bx_process }
-installplugin { name = "position",     reset = ps_reset, process = ps_process }
-installplugin { name = "figure",       reset = fg_reset, process = fg_process }
-installplugin { name = "layer",        reset = la_reset, process = la_process }
-installplugin { name = "transparency", reset = tr_reset, process = tr_process }
+installplugin { name = "outline",       reset = ot_reset, process = ot_process }
+installplugin { name = "color",         reset = cl_reset, process = cl_process } -- there is no cl_process
+installplugin { name = "text",          reset = tx_reset, process = tx_process }
+installplugin { name = "group",         reset = gr_reset, process = gr_process }
+installplugin { name = "pattern",       reset = pt_reset, process = pt_process }
+installplugin { name = "graphictext",   reset = gt_reset, process = gt_process }
+installplugin { name = "shade",         reset = sh_reset, process = sh_process }
+installplugin { name = "bitmap",        reset = bm_reset, process = bm_process }
+installplugin { name = "box",           reset = bx_reset, process = bx_process }
+installplugin { name = "position",      reset = ps_reset, process = ps_process }
+installplugin { name = "figure",        reset = fg_reset, process = fg_process }
+installplugin { name = "layer",         reset = la_reset, process = la_process }
+installplugin { name = "transparency",  reset = tr_reset, process = tr_process }
+installplugin { name = "graphicstates", reset = gs_reset, process = gs_process }

@@ -950,22 +950,6 @@ static void tex_aux_node_range_test(halfword a, halfword b)
     }
 }
 
-/*tex
-
-    Because of the 5-10\% overhead that \SYNTEX\ creates some options have been implemented
-    controlled by |synctex_anyway_mode|.
-
-    \startabulate
-    \NC \type {1} \NC all but glyphs  \NC \NR
-    \NC \type {2} \NC also glyphs     \NC \NR
-    \NC \type {3} \NC glyphs and glue \NC \NR
-    \NC \type {4} \NC only glyphs     \NC \NR
-    \stoptabulate
-
-*/
-
-/*tex |if_stack| is called a lot so maybe optimize that one. */
-
 /*tex This needs a cleanup ... there is no need to store the pointer location itself. */
 
 inline static void tex_aux_preset_disc_node(halfword n)

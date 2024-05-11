@@ -5400,9 +5400,9 @@ static int texlib_getinteractionmodes(lua_State *L)
 {
     lua_createtable(L, 4, 0);
     lua_set_string_by_index(L, batch_mode,      "batch");
-    lua_set_string_by_index(L, error_stop_mode, "errorstop");
     lua_set_string_by_index(L, nonstop_mode,    "nonstop");
     lua_set_string_by_index(L, scroll_mode,     "scroll");
+    lua_set_string_by_index(L, error_stop_mode, "errorstop");
     return 1;
 }
 

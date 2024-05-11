@@ -207,8 +207,12 @@ local function processjob()
             state  = interfaces.variables.never,
         }
     elseif arguments.synctex then
+        local state = arguments.synctex
+        if state == true then
+            state = interfaces.variables.start
+        end
         luatex.synctex.setup {
-            state  = interfaces.variables.start,
+            state  = state,
             method = interfaces.variables.max,
         }
     end

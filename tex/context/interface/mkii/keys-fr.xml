@@ -99,6 +99,7 @@
 		<cd:variable name='autointro' value='autointro'/>
 		<cd:variable name='back' value='retour'/>
 		<cd:variable name='background' value='arriereplan'/>
+		<cd:variable name='backgroundbar' value='backgroundbar'/>
 		<cd:variable name='backmatter' value='pagesdefin'/>
 		<cd:variable name='backpart' value='postface'/>
 		<cd:variable name='backspace' value='retourarrière'/>
@@ -167,6 +168,7 @@
 		<cd:variable name='conversion' value='conversion'/>
 		<cd:variable name='current' value='courant'/>
 		<cd:variable name='cutspace' value='espacecoupe'/>
+		<cd:variable name='dash' value='pointille'/>
 		<cd:variable name='dataset' value='jeudedonnees'/>
 		<cd:variable name='date' value='date'/>
 		<cd:variable name='day' value='jour'/>
@@ -526,6 +528,7 @@
 		<cd:variable name='simplelist' value='listesimple'/>
 		<cd:variable name='singlesided' value='recto'/>
 		<cd:variable name='six' value='six'/>
+		<cd:variable name='size' value='taille'/>
 		<cd:variable name='slanted' value='incline'/>
 		<cd:variable name='slantedbold' value='inclinegras'/>
 		<cd:variable name='small' value='petit'/>
@@ -701,6 +704,7 @@
 		<cd:constant name='autofile' value='autofichier'/>
 		<cd:constant name='autofocus' value='autofocus'/>
 		<cd:constant name='autohang' value='autosuspendre'/>
+		<cd:constant name='autointervals' value='autointervals'/>
 		<cd:constant name='autonumbers' value='autonumbers'/>
 		<cd:constant name='autopunctuation' value='autoponctuation'/>
 		<cd:constant name='autospacing' value='autospacing'/>
@@ -806,6 +810,7 @@
 		<cd:constant name='current' value='courant'/>
 		<cd:constant name='cutspace' value='espacecoupe'/>
 		<cd:constant name='dash' value='pointille'/>
+		<cd:constant name='dashstep' value='dashstep'/>
 		<cd:constant name='dat' value='dat'/>
 		<cd:constant name='database' value='basededonnees'/>
 		<cd:constant name='dataset' value='jeudedonnees'/>
@@ -819,6 +824,7 @@
 		<cd:constant name='delay' value='retard'/>
 		<cd:constant name='depth' value='profondeur'/>
 		<cd:constant name='depthcorrection' value='correctionprofondeur'/>
+		<cd:constant name='differentiald' value='differentiald'/>
 		<cd:constant name='direction' value='direction'/>
 		<cd:constant name='directory' value='repertoire'/>
 		<cd:constant name='display' value='affichage'/>
@@ -1034,6 +1040,7 @@
 		<cd:constant name='mathclass' value='classemath'/>
 		<cd:constant name='mathdenominatorstyle' value='mathdenominatorstyle'/>
 		<cd:constant name='mathlimits' value='limitesmath'/>
+		<cd:constant name='mathmeaning' value='mathmeaning'/>
 		<cd:constant name='mathnumeratorstyle' value='mathnumeratorstyle'/>
 		<cd:constant name='mathstyle' value='stylemath'/>
 		<cd:constant name='max' value='max'/>
@@ -1111,7 +1118,9 @@
 		<cd:constant name='object' value='objet'/>
 		<cd:constant name='obstruction' value='obstruction'/>
 		<cd:constant name='oddmargin' value='margeimpaire'/>
+		<cd:constant name='off' value='arret'/>
 		<cd:constant name='offset' value='decalage'/>
+		<cd:constant name='on' value='marche'/>
 		<cd:constant name='openaction' value='actionouvrir'/>
 		<cd:constant name='openpage' value='ouvrirpage'/>
 		<cd:constant name='openpageaction' value='actionouvrirpage'/>

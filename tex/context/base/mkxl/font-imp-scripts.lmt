@@ -31,6 +31,7 @@ local otf                = handlers.otf
 local afm                = handlers.afm
 local registerotffeature = otf.features.register
 local registerafmfeature = afm.features.register
+local addotffeature      = otf.addfeature
 
 local settings_to_hash   = utilities.parsers.settings_to_hash
 local sortedhash         = table.sortedhash
@@ -186,3 +187,126 @@ local specification = {
 
 registerotffeature(specification)
 registerafmfeature(specification)
+
+do
+
+    -- See Wolfgang Schusters patches for Japanese etc.
+
+    local left   <const> = 1
+    local middle <const> = 2
+    local right  <const> = 3
+
+    local mapping = {
+       [0x02010] = middle,
+       [0x02027] = middle,
+       [0x02329] = left,
+       [0x0232A] = right,
+       [0x03001] = right,
+       [0x03002] = right,
+       [0x03008] = left,
+       [0x03009] = right,
+       [0x0300A] = left,
+       [0x0300B] = right,
+       [0x0300C] = left,
+       [0x0300D] = right,
+       [0x0300E] = left,
+       [0x0300F] = right,
+       [0x03010] = left,
+       [0x03011] = right,
+       [0x03014] = left,
+       [0x03015] = right,
+       [0x03016] = left,
+       [0x03017] = right,
+       [0x03018] = left,
+       [0x03019] = right,
+       [0x0301A] = left,
+       [0x0301B] = right,
+       [0x0301D] = left,
+       [0x0301E] = right,
+       [0x0301F] = right,
+       [0x030FB] = middle,
+       [0x0FF01] = middle,
+       [0x0FF02] = middle,
+       [0x0FF07] = middle,
+       [0x0FF08] = left,
+       [0x0FF09] = right,
+       [0x0FF0C] = right,
+       [0x0FF0E] = right,
+       [0x0FF1A] = middle,
+       [0x0FF1B] = middle,
+       [0x0FF3B] = left,
+       [0x0FF3D] = right,
+       [0x0FF5B] = left,
+       [0x0FF5C] = middle,
+       [0x0FF5D] = right,
+       [0x0FF5F] = left,
+       [0x0FF60] = right,
+       [0x0FFE4] = middle,
+
+       [0xF054C] = left,
+       [0xF054D] = right,
+       [0xF054E] = left,
+       [0xF054F] = right,
+    }
+
+    local firstprivate <const> = fonts.privateoffsets and fonts.privateoffsets.textbase or 0xF0000
+
+    addotffeature {
+        name = "halt",
+        type = "single",
+        data = function(tfmdata)
+            local resources = tfmdata.resources
+            if not resources then
+                return
+            end
+            local features = resources.features
+            if not features then
+                return
+            end
+            local gpos = features.gpos
+            if gpos and gpos.halt then
+               return
+            end
+            local descriptions = tfmdata.descriptions
+            if not descriptions[0x3002] then
+                -- no fullstop means it's not a cjk font
+                return
+            end
+            local positions = { }
+            local reposition
+            for u, v in next, mapping do
+                local d = descriptions[u]
+                if d then
+                    if not reposition then
+                        local w = d.width
+                        reposition = {
+                            { -w/2, 0, -w/2, 0 },
+                            { -w/4, 0, -w/2, 0 },
+                            {    0, 0, -w/2, 0 },
+                        }
+                    end
+                    positions[u] = reposition[v]
+                else
+                 -- print(string.format("! %X",u))
+                end
+            end
+            if reposition then
+                local p = firstprivate
+                while true do
+                    local d = descriptions[p]
+                    if d then
+                        local v = mapping[d.unicode or 0]
+                        if v then
+                            positions[p] = reposition[v]
+                        end
+                        p = p + 1
+                    else
+                        break
+                    end
+                end
+            end
+            return next(positions) and positions
+        end,
+    }
+
+end

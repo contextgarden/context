@@ -827,11 +827,18 @@ end
 
 -- moved here:
 
+local findfile    = resolvers.findfile
+local setfilename = luatex.synctex.setfilename
+
 function buffers.samplefile(name,before,after,inbetween)
-    if not exists(name) then
-        assign(name,io.loaddata(resolvers.findfile(name)))
+    local fullname = findfile(name)
+    if fullname and fullname ~= "" then
+        if not exists(name) then
+            assign(name,io.loaddata(fullname))
+        end
+        setfilename(fullname)
+        getbuffer(name)
     end
-    getbuffer(name)
 end
 
 implement {
@@ -843,20 +850,24 @@ implement {
 }
 
 function buffers.splitsamplefile(name,before,after,inbetween)
-    local data  = io.loaddata(resolvers.findfile(name)) or ""
-    local split = string.split(utilities.strings.striplines(data,"prune and collapse"),lpegpatterns.whitespace^1)
-    local size  = #split
-    local before = tonumber(before) or 1
-    local after  = tonumber(after) or 1
-    if before + after < size then
-        table.move(split,size-after,size,before+1)
-        if inbetween and inbetween ~= "" then
-            split[before+1] = inbetween
+    local fullname = findfile(name)
+    if fullname and fullname ~= "" then
+        local data  = io.loaddata(fullname) or ""
+        local split = string.split(utilities.strings.striplines(data,"prune and collapse"),lpegpatterns.whitespace^1)
+        local size  = #split
+        local before = tonumber(before) or 1
+        local after  = tonumber(after) or 1
+        if before + after < size then
+            table.move(split,size-after,size,before+1)
+            if inbetween and inbetween ~= "" then
+                split[before+1] = inbetween
+            end
+            data = concat(split, " ",1,before+after+1)
         end
-        data = concat(split, " ",1,before+after+1)
+        assign(name,data)
+        setfilename(fullname)
+        getbuffer(name)
     end
-    assign(name,data)
-    getbuffer(name)
 end
 
 implement {

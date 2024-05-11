@@ -1228,7 +1228,7 @@ end
 local flushedxforms  = { } -- actually box resources but can also be direct
 local localconverter = nil -- will be set
 
-local flushimage  do
+do
 
     local tonut             = nodes.tonut
     local tonode            = nuts.tonode
@@ -1270,6 +1270,7 @@ local flushimage  do
     local f_fm = formatters["/Fm%d Do"]
     local f_im = formatters["/Im%d Do"]
     local f_gr = formatters["/Gp%d Do"]
+    local f_st = formatters["/Gs%d gs"]
 
     local s_b <const> = "q"
     local s_e <const> = "Q"
@@ -1431,7 +1432,7 @@ local flushimage  do
     local img_pdf        = imagetypes.pdf
     local img_stream     = imagetypes.stream
 
-    local one_bp = 65536 * bpfactor
+    local one_bp <const> = 65536 * bpfactor
 
     local imageresources, n = { }, 0
 
@@ -1448,29 +1449,69 @@ local flushimage  do
     -- specific whatsit ... but not now. We could hash them if needed when
     -- we use lot sof them in mp ... but not now.
 
-          usedxgroups = { }
-    local groups      = 0
-    local group       = nil
+    usedxgroups = { }
 
-    local flushgroup = function(content,bbox)
-        if not group then
-            group = pdfdictionary {
-                Type = pdfconstant("Group"),
-                S    = pdfconstant("Transparency"),
+    local flushgroup do
+
+        local groups = 0
+        local group  = nil
+        local states = 0
+        local names  = { }
+
+        flushgroup = function(content,bbox,detail)
+            if not group then
+                group = pdfdictionary {
+                    Type = pdfconstant("Group"),
+                    S    = pdfconstant("Transparency"),
+                }
+            end
+            local wrapper = pdfdictionary {
+                Type      = pdf_xobject,
+                Subtype   = pdf_form,
+                FormType  = 1,
+                Group     = group,
+                BBox      = pdfarray(bbox),
+                Resources = lpdf.collectedresources { serialize = false },
             }
+            local objnum = pdfflushstreamobject(content,wrapper,false) -- why not compressed ?
+            groups = groups + 1
+            usedxgroups[groups] = objnum
+            local kind = detail and detail.type == "luminosity"
+            local result = f_gr(groups)
+            if not detail then
+                -- nothing special
+            elseif detail.type == "luminosity" then
+                local action = detail.action
+                if action == "register" then
+                    local state = pdfdictionary {
+                        Type  = pdfconstant("ExtGState"),
+                        AIS   = false,
+                        CA    = 1,
+                        ca    = 1,
+                        SMask = pdfdictionary {
+                            G    = pdfreference(objnum),
+                            S    = pdfconstant("Luminosity"),
+                            Type = pdfconstant("Mask"),
+                        }
+                    }
+                    states = states + 1
+                    lpdf.adddocumentextgstate("Gs" .. states,pdfreference(pdfflushobject(state)))
+                    names[detail.name or "default"] = f_st(states)
+                    return
+                elseif action == "apply" then
+                    local name  = detail.name or "default"
+                    local delay = names[name]
+                    if delay then
+                        result = delay .. " " .. result
+                        names[name] = nil
+                    end
+                else
+                    -- error
+                end
+            end
+            return result
         end
-        local wrapper = pdfdictionary {
-            Type      = pdf_xobject,
-            Subtype   = pdf_form,
-            FormType  = 1,
-            Group     = group,
-            BBox      = pdfarray(bbox),
-            Resources = lpdf.collectedresources { serialize = false },
-        }
-        local objnum = pdfflushstreamobject(content,wrapper,false) -- why not compressed ?
-        groups = groups + 1
-        usedxgroups[groups] = objnum
-        return f_gr(groups)
+
     end
 
     flushers.group  = flushgroup
@@ -1583,7 +1624,7 @@ local flushimage  do
         b = b + 1 ; buffer[b] = s_e
     end
 
-    flushimage = function(index,width,height,depth,pos_h,pos_v)
+    flushers.flushimage = function(index,width,height,depth,pos_h,pos_v)
 
         -- used in vf characters
 
@@ -1617,8 +1658,6 @@ local flushimage  do
         b = b + 1 ; buffer[b] = f_im(index)
         b = b + 1 ; buffer[b] = s_e
     end
-
-    flushers.image = flushimage
 
     -- For the moment we need this hack because the engine checks the 'image'
     -- command in virtual fonts (so we use lua instead).
@@ -2308,6 +2347,7 @@ local finalize  do
     local f_form  = formatters["Fm%d"]
     local f_group = formatters["Gp%d"]
     local f_image = formatters["Im%d"]
+    local f_state = formatters["Gs%d"]
 
     local function checkedbox(mediabox,otherbox,what)
         if otherbox and #mediabox == 4 and #otherbox == 4 then

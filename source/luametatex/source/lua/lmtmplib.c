@@ -2056,8 +2056,6 @@ static int mplib_aux_set_right_control(lua_State *L, MP mp, mp_knot p) {
     }
 }
 
-static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, int numpoints, int *curled, int *cyclic, mp_knot *first, mp_knot *p, mp_knot *q, mp_knot *f, mp_knot *l);
-
 static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, int numpoints, int *curled, int *cyclic, mp_knot *first, mp_knot *p, mp_knot *q, mp_knot *f, mp_knot *l)
 {
     int midcycle = 0;
@@ -2123,10 +2121,19 @@ static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, 
                     if (lua_key_eq(s, cycle)) {
                         midcycle = 1;
                     } else if (lua_key_eq(s, append)) { 
-                        (*f)->right_type = mp_explicit_knot;
-                        (*l)->left_type = mp_explicit_knot;
-                        (*f)->state = mp_begin_knot;
-                        (*l)->state = mp_end_knot;   
+                        if (*f && *l) { 
+                            if (midcycle) {
+                                (*f)->left_type = mp_explicit_knot;
+                                (*l)->right_type = mp_explicit_knot;
+                                midcycle = 0; 
+                            }
+                            (*f)->right_type = mp_explicit_knot;
+                            (*l)->left_type = mp_explicit_knot;
+                            (*f)->state = mp_begin_knot;
+                            (*l)->state = mp_end_knot;   
+                            *f = NULL;
+                            *l = NULL;
+                        }
                     }
                     break;
                 }
@@ -2139,13 +2146,11 @@ static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, 
         *cyclic = 1;
     }
     /* 
-        We could handle the cycle here but we need to do it for th ehashed variant anyway so let's
+        We could handle the cycle here but we need to do it for the hashed variant anyway so let's
         stay with the old method and only do mid cycles here. 
     */
     return NULL;
 }
-
-static const char * mplib_aux_with_path_hashed(lua_State *L, MP mp, mp_knot *first, mp_knot *p, mp_knot *q, int *solve);
 
 static const char * mplib_aux_with_path_hashed(lua_State *L, MP mp, mp_knot *first, mp_knot *p, mp_knot *q, int *solve)
 {
@@ -2172,8 +2177,8 @@ static const char * mplib_aux_with_path_hashed(lua_State *L, MP mp, mp_knot *fir
     *q = *p;
     if (*q) {
         /*tex
-            We have to save the right_tension because |mp_append_knot| trashes it,
-            believing that it is as yet uninitialized .. I need to check this.
+            We have to save the right_tension because |mp_append_knot| trashes it, believing that 
+            it is as yet uninitialized .. I need to check this.
         */
         double saved_tension = mp_number_as_double(mp, (*p)->right_tension);
         *p = mp_append_knot(mp, *p, x_coord, y_coord);
@@ -2183,7 +2188,7 @@ static const char * mplib_aux_with_path_hashed(lua_State *L, MP mp, mp_knot *fir
     } else {
         *p = mp_append_knot(mp, *p, x_coord, y_coord);
     }
-    if (*p) {
+    if (! *p) {
         return "knot creation failure";
     }
     /* */
@@ -2212,10 +2217,10 @@ static const char * mplib_aux_with_path_hashed(lua_State *L, MP mp, mp_knot *fir
     }
     lua_push_key(left_x);
     if (lua_rawget(L, -2) != LUA_TNUMBER) {
-        lua_pop(L, 1);
+        lua_pop(L, 1); /* ignore left_y */
     } else if (left_set) {
         return "left side already set";
-    } else if (! mplib_aux_set_left_control(L, mp, *p)) {
+    } else if (! mplib_aux_set_left_control(L, mp, *p)) { /* also uses left_y */
         return "failed to set left control";
     }
     lua_push_key(right_curl);
@@ -2319,34 +2324,51 @@ static int mplib_aux_with_path(lua_State *L, MP mp, int index, int inject, int m
                 errormsg = "messy table";
                 goto BAD;
             } else {
+                /*tex Here we have a list of tables with |path| and |append| keys. */
                 for (int i = 1; i <= numpoints; i++) {
-                    if (lua_rawgeti(L, index, i) == LUA_TTABLE) {
-                        lua_push_key(path);
-                        if (lua_rawget(L, -2) == LUA_TTABLE) {
-                            int n = (int) lua_rawlen(L, -1);
-                            errormsg = mplib_aux_with_path_indexed(L, mp, -1, n, &curled, &cyclic, &first, &p, &q, &f, &l);
-                            if (errormsg) {
-                               goto BAD;
+cyclic = 0;
+f = NULL;
+l = NULL;
+                    switch (lua_rawgeti(L, index, i)) { 
+                        case LUA_TTABLE: 
+                            {
+                                lua_push_key(path);
+                                if (lua_rawget(L, -2) == LUA_TTABLE) {
+                                    int n = (int) lua_rawlen(L, -1);
+                                    errormsg = mplib_aux_with_path_indexed(L, mp, -1, n, &curled, &cyclic, &first, &p, &q, &f, &l);
+                                    if (errormsg) {
+                                       goto BAD;
+                                    }
+                                    lua_pop(L, 1); /* path value */
+                                    lua_push_key(append);
+                                    if (lua_rawget(L, -2) == LUA_TBOOLEAN) {
+                                        f->right_type = mp_explicit_knot;
+                                        l->left_type = mp_explicit_knot;
+                                        f->state = mp_begin_knot;
+                                        l->state = mp_end_knot;   
+                                    }
+                                    lua_pop(L, 1); /* append value */
+                                 // if (i == numpoints) { 
+                                 //     lua_push_key(cycle);
+                                 //     if (lua_rawget(L, -2) == LUA_TBOOLEAN) {
+                                 //         cyclic = 1;
+                                 //     }
+                                 //     lua_pop(L, 1); /* cycle value */
+                                 // }
+                                } else {
+                                    lua_pop(L, 1);
+                                    errormsg = mplib_aux_with_path_hashed(L, mp, &first, &p, &q, &solve);
+                                    if (errormsg) {
+                                        goto BAD;
+                                    }
+                                }
                             }
-                            lua_pop(L, 1);
-                            lua_push_key(append);
-                            if (lua_rawget(L, -2) == LUA_TBOOLEAN) {
-                                f->right_type = mp_explicit_knot;
-                                l->left_type = mp_explicit_knot;
-                                f->state = mp_begin_knot;
-                                l->state = mp_end_knot;   
-                            }
-                            lua_pop(L, 1);
-                            continue;
-                        } else {
-                            lua_pop(L, 1);
-                            errormsg = mplib_aux_with_path_hashed(L, mp, &first, &p, &q, &solve);
-                            if (errormsg ) {
-                                goto BAD;
-                            }
-                        }
+                            break;
+                        case LUA_TSTRING:
+                            /*tex Maybe some day also |append| and |cycle| here. */
+                            break;
                     }
-                    lua_pop(L, 1);
+                    lua_pop(L, 1); /* table entry i */
                 }
             }
         }
@@ -2361,47 +2383,47 @@ static int mplib_aux_with_path(lua_State *L, MP mp, int index, int inject, int m
                 first->left_type = mp_endpoint_knot;
             }
             p->next = first;
-            if (inject) {
-                if (solve && ! mp_solve_path(mp, first)) {
-                    tex_normal_warning("lua", "failed to solve the path");
-                }
-                mp_push_path_value(mp, first);
-                return 0;
-            } else {
-                /*tex We're finished reading arguments so we squeeze the new values back into the table. */
-                if (! mp_solve_path(mp, first)) {
-                    errormsg = "failed to solve the path";
-                } else {
-                    /* We replace in the original table .. maybe not a good idea at all. */
-                    p = first;
-                    for (int i = 1; i <= numpoints; i++) {
-                        lua_rawgeti(L, -1, i);
-                        lua_push_number_at_key(L, left_x,  mp_number_as_double(mp, p->left_x));
-                        lua_push_number_at_key(L, left_y,  mp_number_as_double(mp, p->left_y));
-                        lua_push_number_at_key(L, right_x, mp_number_as_double(mp, p->right_x));
-                        lua_push_number_at_key(L, right_y, mp_number_as_double(mp, p->right_y));
-                        /*tex This is a bit overkill, wiping  \unknown */
-                        lua_push_nil_at_key(L, left_tension);
-                        lua_push_nil_at_key(L, right_tension);
-                        lua_push_nil_at_key(L, left_curl);
-                        lua_push_nil_at_key(L, right_curl);
-                        lua_push_nil_at_key(L, direction_x);
-                        lua_push_nil_at_key(L, direction_y);
-                        /*tex \unknown\ till here. */
-                        lua_push_svalue_at_key(L, left_type, mplib_values_knot[p->left_type]);
-                        lua_push_svalue_at_key(L, right_type, mplib_values_knot[p->right_type]);
-                        lua_pop(L, 1);
-                        p = p->next;
-                    }
-                    lua_pushboolean(L, 1);
-                    return 1;
-                }
-            }
-        } else {
+            first->prev = p;
+        } else { 
             errormsg = "invalid path";
+            goto BAD;
+        }
+        if (inject) {
+            if (solve && ! mp_solve_path(mp, first)) {
+                tex_normal_warning("lua", "failed to solve the path");
+            }
+            mp_push_path_value(mp, first);
+            return 0;
+        } else if (mp_solve_path(mp, first)) {
+            /* We replace in the original table .. maybe not a good idea at all. */
+            p = first;
+            for (int i = 1; i <= numpoints; i++) {
+                lua_rawgeti(L, -1, i);
+                lua_push_number_at_key(L, left_x,  mp_number_as_double(mp, p->left_x));
+                lua_push_number_at_key(L, left_y,  mp_number_as_double(mp, p->left_y));
+                lua_push_number_at_key(L, right_x, mp_number_as_double(mp, p->right_x));
+                lua_push_number_at_key(L, right_y, mp_number_as_double(mp, p->right_y));
+                /*tex This is a bit overkill, wiping  \unknown */
+                lua_push_nil_at_key(L, left_tension);
+                lua_push_nil_at_key(L, right_tension);
+                lua_push_nil_at_key(L, left_curl);
+                lua_push_nil_at_key(L, right_curl);
+                lua_push_nil_at_key(L, direction_x);
+                lua_push_nil_at_key(L, direction_y);
+                /*tex \unknown\ till here. */
+                lua_push_svalue_at_key(L, left_type, mplib_values_knot[p->left_type]);
+                lua_push_svalue_at_key(L, right_type, mplib_values_knot[p->right_type]);
+                lua_pop(L, 1);
+                p = p->next;
+            }
+            lua_pushboolean(L, 1);
+            return 1;
+        } else {
+            errormsg = "failed to solve the path";
         }
       BAD:
         if (p) {
+            /* can fail */
             mp_free_path(mp, p);
         }
         lua_pushboolean(L, 0);

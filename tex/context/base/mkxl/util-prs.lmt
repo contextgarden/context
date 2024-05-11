@@ -610,6 +610,7 @@ end
 function parsers.rfc4180splitter(specification)
     specification     = specification and setmetatableindex(specification,defaultspecification) or defaultspecification
     local numbers     = specification.numbers
+    local zero        = specification.zero
     local separator   = specification.separator --> rfc: COMMA
     local quotechar   = P(specification.quote)  -->      DQUOTE
     local dquotechar  = quotechar * quotechar   -->      2DQUOTE
@@ -617,10 +618,12 @@ function parsers.rfc4180splitter(specification)
     local separator   = S(separator ~= "" and separator or ",")
     local whatever    = (dquotechar + (1 - quotechar))^0
     local escaped     = quotechar
-                      * (numbers and (whatever/tonumber) or Cs(whatever))
+                      * (numbers and (zero and (whatever/function(n) return tonumber(n) or 0 end) or whatever/tonumber) or Cs(whatever))
                       * quotechar
-    local non_escaped = C((1 - quotechar - newline - separator)^1)
-    local field       = escaped + non_escaped + Cc("")
+ -- local non_escaped = C((1 - quotechar - newline - separator)^1)
+    local whotever    = (1 - quotechar - newline - separator)^1
+    local non_escaped = (numbers and (zero and (whotever/function(n) return tonumber(n) or 0 end) or whotever/tonumber) or Cs(whotever))
+    local field       = escaped + non_escaped + (numbers and zero and Cc(0) or Cc(""))
     local record      = Ct(field * (separator * field)^1)
     local headerline  = record * Cp()
     local morerecords = (newline^(specification.strict and -1 or 1) * record)^0

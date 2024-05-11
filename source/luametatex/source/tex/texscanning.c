@@ -43,6 +43,7 @@ void tex_scan_left_brace(void)
                 return;
             case spacer_cmd:
             case relax_cmd:
+         /* case end_paragraph_cmd: */ /* could be an option in keyword scanner */
                 /* stay in while */
                 break;
             default:
@@ -173,9 +174,9 @@ inline static void tex_aux_downgrade_cur_val(int level, int succeeded, int negat
                 cur_val_level = level;
                     break;
             }
-//            if (cur_val_level > level) {
-//                cur_val_level = level;
-//            }
+          // if (cur_val_level > level) {
+          //     cur_val_level = level;
+          // }
             break;
         case integer_val_level:
             if (cur_val_level > level) {
@@ -3212,9 +3213,9 @@ halfword tex_scan_dimension(int mu, int inf, int shortcut, int optional_equal, h
                 } else if (num) {
                     int remainder = 0;
                     cur_val = tex_xn_over_d_r(cur_val, num, denom, &remainder);
-                    fraction = (num * fraction + 0200000 * remainder) / denom;
-                    cur_val += fraction / 0200000;
-                    fraction = fraction % 0200000;
+                    fraction = (num * fraction + unity * remainder) / denom;
+                    cur_val += fraction / unity;
+                    fraction = fraction % unity;
                 }
                 goto ATTACH_FRACTION;
             case scaled_point_scanned:
@@ -3228,7 +3229,7 @@ halfword tex_scan_dimension(int mu, int inf, int shortcut, int optional_equal, h
                 if (mu) {
                     tex_aux_scan_dimension_unknown_unit_error();
                 }
-                cur_val = tex_nx_plus_y(save_cur_val, v, tex_xn_over_d(v, fraction, 0200000));
+                cur_val = tex_nx_plus_y(save_cur_val, v, tex_xn_over_d(v, fraction, unity));
                 goto DONE;
             case math_unit_scanned:
                 /* mu (slightly different but an error anyway */
@@ -3258,7 +3259,7 @@ halfword tex_scan_dimension(int mu, int inf, int shortcut, int optional_equal, h
                     }
                 }
                 v = cur_val;
-                cur_val = tex_nx_plus_y(save_cur_val, v, tex_xn_over_d(v, fraction, 0200000));
+                cur_val = tex_nx_plus_y(save_cur_val, v, tex_xn_over_d(v, fraction, unity));
                 goto ATTACH_SIGN;
         }
     }
@@ -4772,7 +4773,7 @@ inline static int tex_aux_add_or_sub(int x, int y, int max_answer, int operation
 
 */
 
-// inline static int xtex_aux_quotient(int n, int d, int round)
+// inline static int tex_aux_quotient(int n, int d, int round)
 // {
 //     /*tex The answer: */
 //     if (d == 0) {
@@ -4855,7 +4856,7 @@ int tex_fract(int x, int n, int d, int max_answer)
     int a = 0;
     /*tex a proper fraction */
     int f;
-    /*tex smallest integer such that |2*h>=d| */
+    /*tex smallest integer such that |2 * h >= d| */
     int h;
     /*tex intermediate remainder */
     int r;
@@ -4866,6 +4867,9 @@ int tex_fract(int x, int n, int d, int max_answer)
     }
     if (x == 0) {
         return 0;
+    }
+    if (n == d) { 
+        return x;
     }
     if (d < 0) {
         d = -d;
@@ -5103,7 +5107,7 @@ static void tex_aux_scan_expr(halfword level)
                 tex_handle_error(
                     back_error_type,
                     "Missing ) inserted for expression",
-                    "I was expecting to see '+', '-', '*', '/', ':' or ')'. Didn't."
+                    "I was expecting to see '+', '-', '*', '/', ':', ';' or ')'. Didn't."
                 );
             }
             break;
@@ -5607,7 +5611,7 @@ static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int
     if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
         halfword saved_val = value;
         value = tex_aux_scan_something_internal(cur_cmd, cur_chr, dimension_val_level, 0, 0);
-        value = tex_nx_plus_y(saved_val, cur_val, tex_xn_over_d(cur_val, fraction, 0200000));
+        value = tex_nx_plus_y(saved_val, cur_val, tex_xn_over_d(cur_val, fraction, unity));
         return value;
     } else if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
         halfword num = 0;
@@ -5627,7 +5631,7 @@ static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int
                             denom = 1;
                             goto NORMALUNIT;
                         case 'x': case 'X':
-                            return tex_nx_plus_y(value, px_dimension_par, tex_xn_over_d(px_dimension_par, fraction, 0200000));
+                            return tex_nx_plus_y(value, px_dimension_par, tex_xn_over_d(px_dimension_par, fraction, unity));
                     }
                 }
                 break;
@@ -5726,9 +5730,9 @@ static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int
         if (num) {
             int remainder = 0;
             value = tex_xn_over_d_r(value, num, denom, &remainder);
-            fraction = (num * fraction + 0200000 * remainder) / denom;
-            value += fraction / 0200000;
-            fraction = fraction % 0200000;
+            fraction = (num * fraction + unity * remainder) / denom;
+            value += fraction / unity;
+            fraction = fraction % unity;
         }
         if (value >= 040000) { // 0x4000
             lmt_scanner_state.arithmic_error = 1;
@@ -5769,9 +5773,9 @@ static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int
 //             if (num) {
 //                 int remainder = 0;
 //                 cur_val = tex_xn_over_d_r(cur_val, num, denom, &remainder);
-//                 fraction = (num * fraction + 0200000 * remainder) / denom;
-//                 cur_val += fraction / 0200000;
-//                 fraction = fraction % 0200000;
+//                 fraction = (num * fraction + unity * remainder) / denom;
+//                 cur_val += fraction / unity;
+//                 fraction = fraction % unity;
 //             }
 //             *has_unit = 1;
 //             goto FRACTION;
@@ -5780,10 +5784,10 @@ static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int
 //             return value;
 //         case relative_unit_scanned:
 //             *has_unit = 1;
-//             return tex_nx_plus_y(value, unit, tex_xn_over_d(unit, fraction, 0200000));
+//             return tex_nx_plus_y(value, unit, tex_xn_over_d(unit, fraction, unity));
 //         case quantitity_unit_scanned:
 //             tex_aux_scan_something_internal(cur_cmd, cur_chr, dimension_val_level, 0, 0);
-//             value = tex_nx_plus_y(value, cur_val, tex_xn_over_d(cur_val, fraction, 0200000));
+//             value = tex_nx_plus_y(value, cur_val, tex_xn_over_d(cur_val, fraction, unity));
 //             *has_unit = 1;
 //             return value;
 //      /* case math_unit_scanned:     */ /* ignored */

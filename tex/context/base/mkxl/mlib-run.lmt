@@ -20,6 +20,7 @@ if not modules then modules = { } end modules ['mlib-run'] = {
 local type, tostring, tonumber, next = type, tostring, tonumber, next
 local find, striplines = string.find, utilities.strings.striplines
 local concat, insert, remove, sortedkeys = table.concat, table.insert, table.remove, table.sortedkeys
+local abs = math.abs
 
 local emptystring = string.is_empty
 
@@ -665,4 +666,90 @@ local gethashtokens = mplib.gethashtokens
 
 function metapost.getinstancenames()
     return sortedkeys(mpxformats)
+end
+
+-- This used to be in mlib-pdf but is also used elsewhere so we need to
+-- define it early.
+
+-- default_bend_tolerance 131/65536.0
+-- default_move_tolerance 131/65536.0
+
+-- local function curved(ith,pth,tolerance) --- still better than the build in
+--     local d = pth.left_x - ith.right_x
+--     local b = abs(ith.right_x - ith.x_coord - d)
+--     if b <= tolerance then
+--         b = abs(pth.x_coord - pth.left_x - d)
+--         if b <= tolerance then
+--             d = pth.left_y - ith.right_y
+--             b = abs(ith.right_y - ith.y_coord - d)
+--             if b <= tolerance then
+--                 b = abs(pth.y_coord - pth.left_y - d)
+--                 if b <= tolerance then
+--                     return false
+--                 end
+--             end
+--         end
+--     end
+--     return true
+-- end
+
+-- The final two tests are for the case when the control point lie on the other side
+-- of the other point (so to say). One could use a different factor in front of the
+-- parentheses, but I have not managed to find it (there are two control points, so
+-- it might be complicated in the end). Here we only test if it is on the other side
+-- of the other point. If so, we mark it as curve. Thus, if this is not the case,
+-- then the control points lie between the points, and we should be safe.
+
+local a1 = math.abs
+local a2 = xmath.fabs
+
+function metapost.hascurvature(ith,pth,tolerance)
+-- if true then return true end
+-- if true then return pth.curved end
+    local v1x = ith.right_x - ith.x_coord
+    local v1y = ith.right_y - ith.y_coord
+    local v2x = pth.left_x - pth.x_coord
+    local v2y = pth.left_y - pth.y_coord
+    local eps = abs(v1x * v2y - v2x * v1y)
+-- print("XYZ",eps,tolerance)
+    if eps > tolerance then
+-- print(1,pth.curved,true)
+        return true
+    end
+    local v3x = pth.x_coord - ith.x_coord
+    local v3y = pth.y_coord - ith.y_coord
+    eps = abs(v3x * v2y - v2x * v3y)
+    -- print("ZYX",eps,tolerance)
+    if eps > tolerance then
+-- print(2,pth.curved,true)
+        return true
+    end
+    eps = abs(v3x * v1y - v1x * v3y)
+    -- print("ABC",eps,tolerance)
+    if eps > tolerance then
+-- print(3,pth.curved,true)
+        return true
+    end
+    --
+    eps = v1x * v3x + v1y * v3y -- v1 \cdot v3 = |v1|*|v3|cos([v1,v3])
+    if eps < 0 then
+-- print(3,pth.curved,true)
+        return true
+    end
+    eps = v2x * v3x + v2y * v3y -- v2 \cdot v3 = |v2|*|v3|cos([v2,v3])
+    if eps > 0 then
+-- print(4,pth.curved,true)
+        return true
+    end
+    eps = (v1x * v1x + v1y * v1y) - (v3x * v3x + v3y * v3y) -- checking lengths
+    if eps > 0 then
+-- print(5,pth.curved,true)
+        return true
+    end
+    eps = (v2x * v2x + v2y * v2y) - (v3x * v3x + v3y * v3y) -- checking lengths
+    if eps > 0 then
+-- print(6,pth.curved,true)
+        return true
+    end
+    return false
 end

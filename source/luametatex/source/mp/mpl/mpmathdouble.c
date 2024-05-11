@@ -339,7 +339,7 @@ static char *mp_double_number_tostring(MP mp, mp_number *n)
     int l = 0;
     char *ret = mp_memory_allocate(64);
     (void) mp;
-    snprintf(set, 64, "%.17g", n->data.dval);
+    snprintf(set, 64, mp->less_digits ? "%.3g" : "%.17g", n->data.dval);
     while (set[l] == ' ') {
         l++;
     }
@@ -712,20 +712,22 @@ static void mp_double_m_exp(MP mp, mp_number *ret, mp_number *x_orig)
     in \CONTEXT\ before 2024), posit and decimal, but failed in double (which became default in 
     mid 2023) and in binary (both also tested in \LUATEX). 
 
-    We now try to catch the |-0.0| upstream hbu we keep the patch commented.
+    We now try to catch the |-0.0| upstream but we keep the patch commented. However, it was 
+    decided that in mplib (in \LUAMETATEX) we patch the |n_arg| function, so there the commented 
+    code below is used. 
 
 */
 
 static void mp_double_n_arg(MP mp, mp_number *ret, mp_number *x_orig, mp_number *y_orig)
 {
-    /* */
- // if (x_orig->data.dval == -0.0) {
- //     x_orig->data.dval = 0.0;
- // }
- // if (y_orig->data.dval == -0.0) {
- //     y_orig->data.dval = 0.0;
- // }
-    /* */
+    /*        
+        if (x_orig->data.dval == -0.0) {
+            x_orig->data.dval = 0.0;
+        }
+        if (y_orig->data.dval == -0.0) {
+            y_orig->data.dval = 0.0;
+        }
+    */
     if (x_orig->data.dval == 0.0 && y_orig->data.dval == 0.0) {
         mp_error(
             mp,

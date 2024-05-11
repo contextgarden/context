@@ -3,6 +3,10 @@
 % This file takes a while to process because we render some complex graphics. It
 % can be sped up by enabling caching, but for some images that has been disabled.
 
+% \enabledirectives[metapost.optimizecolor]
+
+% todo: add to syntax description
+
 \setupfootertexts[{\tttf uncorrected draft}]
 
 \environment luametafun-style
@@ -35,10 +39,14 @@
         \component luametafun-poisson
         \component luametafun-fonts
         \component luametafun-color
+        \component luametafun-lines
         \component luametafun-paths
+        \component luametafun-envelope
         \component luametafun-groups
+        \component luametafun-potrace
         \component luametafun-extensions
         \component luametafun-interface
+%         \component luametafun-synchronizers
     \stopbodymatter
 
 \stopcomponent

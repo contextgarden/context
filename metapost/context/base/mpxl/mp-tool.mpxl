@@ -4352,7 +4352,7 @@ tertiarydef p intersectionpath q =
     save mfun_k ; pair mfun_k ; mfun_k := point 0 of mfun_b;
     if mfun_k <> (-1,-1) :
         .5[point xpart mfun_k of p, point ypart mfun_k of q]
-        for i = 1 upto length(mfun_b) :
+        for i = 1 upto length(mfun_b) : % use fast loop
             hide(mfun_k := point i of mfun_b;)
             -- .5[point xpart mfun_k of p, point ypart mfun_k of q]
         endfor
@@ -4384,6 +4384,9 @@ vardef intersectionsfound expr p =
     (point 0 of p) <> (-1,-1)
 enddef ;
 
+permanent intersectionpath, sortedintersectiontimes,
+    firstintersectionpath, secondintersectionpath, intersectionsfound ;
+
 %D As part of our intersection journey MS came up with:
 
 tertiarydef p cutbeforefirst q =
@@ -4410,7 +4413,6 @@ tertiarydef p cutafterfirst q =
     endgroup
 enddef ;
 
-
 tertiarydef p cutbeforelast q =
     begingroup ;
     save mfun_b, mfun_p ; path mfun_b, mfun_p ; mfun_b := sortedpath (p intersectiontimeslist q) ;
@@ -4435,6 +4437,29 @@ tertiarydef p cutafterlast q =
     endgroup
 enddef ;
 
+permanent cutbeforefirst, cutafterfirst, cutbeforelast, cutafterlast ;
+
+% And:
+
+vardef selfintersectiontimeslist expr p =
+    save mfun_b ; path mfun_b ; mfun_b := sortedpath (p intersectiontimeslist p) ;
+    if (known mfun_b) and (length mfun_b > 0) :
+        save b ; boolean b ; b := false ;
+        save n ; numeric n ; n := length(p) ;
+        for i within mfun_b :
+             if     (xpart pathpoint = ypart pathpoint) :
+             elseif (xpart pathpoint = n) and (ypart pathpoint = 0) :
+             elseif (xpart pathpoint - ypart pathpoint < 0.1) :
+             else :
+                hide(b := true)
+                pathpoint --
+            fi
+        endfor if b : nocycle else : mfun_nullpath fi
+    else :
+        mfun_nullpath
+    fi
+enddef ;
+
 % I don't want to define this path every time I make a demo:
 
 vardef starring(expr e) =
@@ -4457,6 +4482,8 @@ vardef dashing (expr pth, shp, stp) =
     endfor nocycle
 enddef ;
 
+permanent starring, dashing ;
+
 % like center, mod and div this is a candidate for a primitive
 
 % vardef centerofmass primary p =
@@ -4472,3 +4499,273 @@ enddef ;
 
 % draw ( 0,0) -- (arc(  0,180) scaled 10 shifted ( 0,10)) -- cycle ;
 % draw (15,0) -- (arc(180, 40) scaled 10 shifted (15,10)) -- cycle ;
+
+%D This macro is part of our (MS & HH) envelope exploration and it's probably the macro that
+%D took most time to get right, but it is rewarding. It took us quite some tests with various
+%D paths and pens to get it right. We tried several strategies and eventually got there. It's
+%D not always fast but the results can be rewarding. And yes, we have much fun figuring it
+%D out (a lot of chatting).
+
+primarydef a crossprod b =
+    (xpart a * ypart b ) - (ypart a * xpart b)
+enddef;
+
+newinternal scrutinizing ; scrutinizing := 3 ;
+newinternal curvarturetolerance ; curvarturetolerance := 5eps ;
+newinternal boolean tracereducedpath ; tracereducedpath := false ;
+
+vardef hasreducedcurvature (expr p,i,tolerance) =
+    save ldir, mdir, rdir ; pair ldir, mdir, rdir ;
+    ldir := unitvector(direction i + 10eps of p) ;
+    mdir := unitvector(direction i + 1/2 of p) ;
+    rdir := unitvector(direction i + 1 - 10eps of p) ;
+    not (
+        ((ldir dotprod mdir) > 1 - tolerance)
+        and
+        ((mdir dotprod rdir) > 1 - tolerance)
+    )
+enddef ;
+
+vardef reducedpath(expr target) =
+    save result ; path result ;
+    save iproduct, oldlength, newlength ;
+    result := target scrutinized 1 ; % needs to be large for starring on circle
+    newlength := length(result) ;
+    if tracereducedpath : message("reducedpath: start main loop") ; fi
+    forever:
+        if tracereducedpath : message("  start inner loop") ; fi
+        oldlength := newlength ;
+        if tracereducedpath : message("  length of path is " & decimal oldlength) ; fi
+        for i = 1 upto oldlength :
+            if tracereducedpath : message("  iteration " & decimal(i)) ; fi
+            if hasreducedcurvature(result, i - 1, curvarturetolerance) or
+               hasreducedcurvature(result, i, curvarturetolerance) :
+                if tracereducedpath : message("  not two lines, skipping") ; fi
+            else :
+                if tracereducedpath : message("  two lines, checking") ; fi
+                iproduct :=
+                    unitvector (point i of result - point (i - 1) of result)
+                    dotprod
+                    unitvector (point (i + 1) of result - point i of result) ;
+                if iproduct > 1 - eps :
+                    if tracereducedpath : message("  parallel and same direction, replacing 0->1->2 by 0--2") ; fi
+                    result :=
+                        if i > 1 : (subpath(0,i - 1) of result) && fi
+                        if i < oldlength - 1 :
+                          (point i - 1 of result -- point i + 1 of result) &&
+                          (subpath(i + 1,oldlength) of result) &&
+                        fi
+                        if cycle result : cycle fi;
+                    break
+                elseif iproduct < -1 + eps :
+                    if tracereducedpath : message("  parallel but opposite, more testing needed") ; fi
+                    if not hasreducedcurvature(result, i + 1, curvarturetolerance) :
+                        if tracereducedpath : message("  the next segment is straight") ; fi
+                        iproduct :=
+                            unitvector( point (i + 2) of result - point (i + 1) of result)
+                            dotprod
+                            unitvector( point (i + 1) of result - point i of result) ;
+                        if (iproduct < 1 - eps) and (iproduct > -1 + eps) :
+                            if tracereducedpath : message("  the next segment is not parallel to the previous, skipping") ; fi
+                        elseif iproduct > 1 - eps :
+                            if tracereducedpath : message("   the points are in order 0321, 3021 or 3201 while in all cases we need 0->1->3") ; fi
+                            result :=
+                                (subpath(0,i) of result)
+                                && (point i of result -- point i + 2 of result)
+                                && (subpath(i + 2,oldlength) of result)
+                                if cycle result : && cycle fi;
+                            break
+                        else :
+                            if tracereducedpath : message("  points are in order 0231, 0213, 2031 or 2013") ; fi
+                            if (abs(point (i + 1) of result - point i of result)
+                                >
+                                abs(point (i + 2) of result - point (i + 1) of result)) :
+                                if tracereducedpath : message("  we have case 0231 or 2031") ; fi
+                                if (abs(point (i + 1) of result - point i of result)
+                                    >
+                                    abs(point i of result - point (i - 1) of result)) :
+                                    if tracereducedpath : message("  we are in case 2031, quitting") ; fi
+                                else :
+                                    if tracereducedpath : message("  we are in case 0231 but need 0 -> 1 -> 3") ; fi
+                                    result :=
+                                        (subpath(0,i) of result)
+                                        && (point i of result -- point i + 2 of result)
+                                        && (subpath(i + 2,oldlength) of result)
+                                        if cycle result : && cycle fi;
+                                    break
+                                fi
+                            else :
+                                if tracereducedpath : message("  we are in case 0213 or 2013") ; fi
+                                if (abs(point (i + 2) of result - point (i - 1) of result)
+                                    >
+                                    abs(point (i + 2) of result - point (i + 1) of result)) :
+                                    if tracereducedpath : message("  we are in 0213, replace by 0 -> 3") ; fi
+                                    result :=
+                                        (subpath(0,i - 1) of result)
+                                        && (point (i - 1) of result -- point (i + 2) of result)
+                                        && (subpath(i + 2,oldlength) of result)
+                                        if cycle result : && cycle fi;
+                                    break
+                                else :
+                                    if tracereducedpath : message("  we are in 2013, replace by 0 -> 2 -> 3") ; fi
+                                    result :=
+                                        (subpath(0,i - 1) of result)
+                                        && (point (i - 1) of result -- point (i + 1) of result)
+                                        && (subpath(i + 1,oldlength) of result)
+                                        if cycle result : && cycle fi;
+                                    break
+                                fi
+                            fi
+                        fi
+                    fi
+                else :
+                    if tracereducedpath : message ("  next iteration") ; fi
+                fi
+            fi
+            if tracereducedpath : message ("  next step") ; fi
+        endfor
+        result := result scrutinized scrutinizing ;
+        newlength := length(result) ;
+        exitif newlength >= oldlength ;
+    endfor
+    if tracereducedpath : message ("reducedpath: done") ; fi
+    result
+enddef ;
+
+newinternal envelopeprecision ; envelopeprecision := 2 ;
+
+vardef reducedenvelope(expr target) =
+    save original, tmppath, tmppaths ; path original, tmppath, tmppaths[] ;
+    save curi, n, l, iproduct, vproduct ; numeric curi, n, l, iproduct, vproduct ;
+    original := reducedpath(target) ;
+    % drawpoints original withpen pencircle scaled 7 withcolor "orange" ;
+    % drawpointlabels original shifted (0,5) withcolor "orange" ;
+    l := length(original) ;
+    curi := 0 ;
+    n := 0 ;
+    for i = 0 upto (l + 1) :
+        if not hasreducedcurvature(original, i, curvarturetolerance) :
+            % message("Are we here?" & decimal(i)) ;
+            iproduct := (unitvector (point i + 1 of original - point i of original))
+                        dotprod
+                        (unitvector (point i of original - precontrol i of original)) ;
+            if (i > 0) and (not hasreducedcurvature(original, i - 1, curvarturetolerance)) :
+                vproduct := (unitvector (point i of original - point (i - 1) of original))
+                            crossprod
+                            (unitvector (point (i + 1) of original - point i of original)) ;
+                % message("i vproduct iproduct = " & dddecimal(i,vproduct,iproduct)) ;
+                if (vproduct > -eps) and (iproduct < 0) : % -1 + eps :
+                    tmppath := subpath(curi,i) of original ;
+                    % sanity check :
+                    if length(tmppath scrutinized scrutinizing) <> 0 :
+                        n := n + 1 ;
+                        tmppaths[n] := tmppath ;
+                        curi := i + 1 ;
+                    fi
+                fi
+            else :
+                % message("i and iproduct = " & ddecimal(i,iproduct));
+                if (iproduct < 0) or (i == 0) : % -1 + eps :
+                    % message("We are here, and i is " & decimal(i)) ;
+                    tmppath := subpath(curi,i) of original ;
+                    % sanity check :
+                    if length(tmppath scrutinized scrutinizing) <> 0 :
+                        n := n + 1 ;
+                        tmppaths[n] := tmppath ;
+                        curi := i + 1 ;
+                    fi
+                fi
+            fi
+        fi
+    endfor
+    % message("l n curi = " & dddecimal(l,n,curi)) ;
+    if curi < l :
+        n := n + 1 ;
+        tmppaths[n] := subpath(curi,l) of original ;
+    fi
+    % message("l n = ",ddecimal(l,n)) ;
+    interim intersectionprecision := 2 ;
+    if n = 0 :
+        original
+    elseif n = 1 :
+        tmppaths[1] && cycle
+    elseif n = 2 :
+        (tmppaths[1] cutafterlast tmppaths[2]) &&
+        (tmppaths[2] cutbeforefirst tmppaths[1]) && cycle % can use intersectiontimes
+    else :
+        save s ; numeric s ; % start
+        if (abs(point length(tmppaths[1]) of tmppaths[1] - point length(tmppaths[n]) of tmppaths[n]) < eps) :
+            s := 2 ;
+        else :
+            s := 1 ;
+        fi
+        intersectionprecision := envelopeprecision ;
+        for i = s upto (n - 1) :
+          % tmppath := tmppaths[i] intersectiontimeslist tmppaths[i + 1] ;
+          % if (point 0 of tmppath) = (-1,-1) :
+            if (tmppaths[i] intersectiontimes tmppaths[i + 1]) = (-1,-1) :
+                tmppaths[i] := tmppaths[i] -- point 0 of tmppaths[i + 1];
+            fi
+            tmppath     := tmppaths[i] ;
+            tmppaths[i] := tmppath cutafterfirst tmppaths[i + 1] ; % can use intersectiontimes
+            tmppaths[i + 1] := tmppaths[i + 1] cutbeforefirst tmppath ; % can use intersectiontimes
+        endfor
+      % tmppath := tmppaths[n] intersectiontimeslist tmppaths[s] ;
+      % if (point 0 of tmppath) = (-1,-1) :
+        if (tmppaths[n] intersectiontimes tmppaths[s]) = (-1,-1) :
+            tmppaths[n] := tmppaths[n] -- point 0 of tmppaths[s];
+        fi
+        intersectionprecision := 2 ;
+        tmppath   := tmppaths[n] ;
+        tmppaths[n] := tmppath cutafterfirst tmppaths[s] ; % can use intersectiontimes
+        tmppaths[s] := tmppaths[s] cutbeforelast tmppath ;
+
+        if true : % so we can disable when testing
+
+            intersectionprecision := envelopeprecision ;
+
+            % Here we remove funny pieces that were not see in a previous pass. These
+            % are likely to show up on paths with tight bends and complex pens. Here We
+            % check for self intersecting.
+
+            save i ; numeric i ;
+            save a ; pair a ;
+
+            tmppath := for i = s upto n :
+                tmppaths[i] if i < n: &&& else : -- fi
+            endfor cycle ;
+
+            l := length(tmppath) ;
+            n := 0 ;
+            curi := 0 ;
+            i := 0 ;
+
+            forever :
+                a := subpath(i,i + 1 - eps) of tmppath intersectiontimes subpath(i + 1,l - eps) of tmppath;
+                if xpart a > 0 :
+                    n := n + 1 ;
+                    tmppaths[n] := subpath(curi,i + xpart a) of tmppath ;
+                    curi := i + 1 + ypart a ;
+                    i := floor(curi) ;
+                else :
+                    i := i + 1 ;
+                fi
+                exitif i >= l ;
+            endfor
+            n := n + 1 ;
+            tmppaths[n] := subpath(curi,l) of tmppath ;
+        fi
+
+        for i = 1 upto n :
+            tmppaths[i] if i < n: &&& else : -- fi
+        endfor cycle
+    fi
+enddef ;
+
+primarydef p enveloped q =
+    reducedenvelope(envelope q of p)
+enddef ;
+
+% This is a new one, and for now we keep it small:
+
+jointolerance := 2eps ;

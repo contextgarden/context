@@ -229,7 +229,7 @@ vardef positionatanchor(expr name) =
 enddef ;
 
 permanent positionpath, positioncurve, positionxy, positionwhd,
-    positionpage, positionregion, positioncolumn, positionparagraph,
+    positionpage, positionregion, positioncolumn, positionparagraph, positionpar,
     positionbox, positionanchor, positioninregion, positionatanchor,
     positioncolumnatx, positioncolumnbox, overlaycolumnbox ;
 
@@ -245,7 +245,7 @@ newscriptindex mfid_uniquepath ; mfid_uniquepath := scriptindex "uniquepath" ;
 def sortedpath = runscript mfid_sortedpath enddef ;
 def uniquepath = runscript mfid_uniquepath enddef ;
 
-permanent sortpath, uniquepath ;
+permanent sortedpath, uniquepath ;
 
 newscriptindex mfid_texvar ; mfid_texvar := scriptindex "texvar" ; vardef texvar(expr s) = runscript mfid_texvar s enddef ;
 newscriptindex mfid_texstr ; mfid_texstr := scriptindex "texstr" ; vardef texstr(expr s) = runscript mfid_texstr s enddef ;

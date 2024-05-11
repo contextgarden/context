@@ -32,7 +32,7 @@ typedef struct scanner_state_info {
     halfword current_tok;       /*tex packed representative of |cur_cmd| and |cur_chr| */
     int      current_val;       /*tex value returned by numeric scanners */
     int      current_val_level; /*tex the level of this value */
-    halfword current_box;       /*tex the box to be placed into its context: */
+    halfword current_box;       /*tex the box to be placed into its context */
     halfword last_cs_name;      /*tex used in |\csname| and |\ifcsname| */
     int      arithmic_error;
     int      expression_depth;

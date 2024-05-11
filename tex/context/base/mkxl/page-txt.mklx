@@ -908,7 +908,7 @@
    \orelse\ifx\p_limitstretch\v!auto
      % safeguard for depth without limit set
      \ifnum\bottomraggednessmode=\plusthree
-       \d_page_box_stretch_criterium2\lineheight
+       \d_page_box_stretch_criterium2\lineheight % 2 is hardcoded
        \settrue\c_page_box_check_stretch
      \else
        \d_page_box_stretch_criterium\maxdimen

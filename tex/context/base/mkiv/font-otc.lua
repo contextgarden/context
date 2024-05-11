@@ -148,8 +148,8 @@ local function addfeature(data,feature,specifications,prepareonly)
         return
     end
 
-    local features     = resources.features
-    local sequences    = resources.sequences
+    local features  = resources.features
+    local sequences = resources.sequences
 
     if not features or not sequences then
         report_otf("missing specification")
@@ -787,7 +787,7 @@ local function addfeature(data,feature,specifications,prepareonly)
                     local coverage = nil
                     local format   = nil
 if type(list) == "function" then
-    list = list(data,specification,list,i)
+    list = list(data,specification,list,i) -- why pass list instead if askedsteps
 end
                     if not list then
                         -- see ebgaramond hack

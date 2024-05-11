@@ -99,6 +99,7 @@
 		<cd:variable name='autointro' value='پیشگفتارخودکار'/>
 		<cd:variable name='back' value='پشت'/>
 		<cd:variable name='background' value='پس‌زمینه'/>
+		<cd:variable name='backgroundbar' value='backgroundbar'/>
 		<cd:variable name='backmatter' value='پس‌مطلب'/>
 		<cd:variable name='backpart' value='پس‌قسمت'/>
 		<cd:variable name='backspace' value='فضای‌پشت'/>

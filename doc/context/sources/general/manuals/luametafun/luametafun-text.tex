@@ -6,6 +6,8 @@
 
 \startchapter[title={Text}]
 
+\startsection[title={Typesetting text}]
+
 The \METAFUN\ \type {textext} command normally can do the job of typesetting a
 text snippet quite well.
 
@@ -131,6 +133,95 @@ The next example demonstrates the positioning options:
 \getbuffer
 \stoplinecorrection
 
+\stopsection
+
+\startsection[title=Strings]
+
+Those familiar with \TEX\ probably know that there's something called catcodes.
+These are properties that you assign to characters and that gives them some
+meaning, like regular letters, other characters, spaces, but also escape
+character (the backslash) or math shift (the dollar). Control over catcodes is
+what makes for instance verbatim possible.
+
+We show a few possibilities and start by defining a macro:
+
+\startbuffer
+\def\foo{x}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startbuffer
+\framed\bgroup
+    \startMPcode
+        interim catcoderegime := vrbcatcoderegime ;
+        draw textext("stream $\string\foo$") withcolor "darkred" ;
+    \stopMPcode
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\framed\bgroup
+    \startMPcode
+        draw textext("stream $\foo$") withcolor "darkblue" ;
+    \stopMPcode
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\framed\bgroup
+    \startMPcode
+        interim catcoderegime := vrbcatcoderegime ;
+        draw textext(stream "!" $\string\foo$) withcolor "darkgreen" ;
+    \stopMPcode
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\framed\bgroup
+    \startMPcode
+        draw textext(stream "!" $\foo$) withcolor "darkyellow" ;
+    \stopMPcode
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\framed\bgroup
+    \startMPcode
+        draw textext(\btx stream "!" $\string\foo$\etx) withcolor "darkgreen" ;
+    \stopMPcode
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+The \type {vrbcatcodesregime} switches to a verbatim catcode regime so the dollars
+remain dollars. But because we do expand control sequences we have to put \type
+{\string} in front.
+
+The (expandable) \type {\btx} and \type {\etx} commands are aliases for the
+control characters \type {0x02} and \type {0x03}. These are valid string fences
+in \LUAMETATEX's \METAPOST\ and thereby permit embedding of the double quotes.
+
+\stopsection
 
 \stopchapter
 

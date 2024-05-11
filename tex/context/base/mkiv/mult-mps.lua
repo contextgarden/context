@@ -13,7 +13,7 @@ return {
         "time", "hour", "minute", "charcode", "charwd", "charht", "chardp",
         "charic", "pausing", "showstopping", "texscriptmode", "overloadmode",
         "linejoin", "linecap", "stacking", "miterlimit", "warningcheck",
-        "truecorners", "defaultcolormodel", "restoreclipcolor", "numbersystem",
+        "truecorners", "defaultcolormodel", "restoreclipcolor", "numbersystem", "jointolerance",
         "numberprecision", "jobname", "addto", "atleast", "begingroup",
         "controls", "curl", "delimiters", "endgroup", "everyjob", "exitif",
         "firstcontrol", "secondcontrol",
@@ -38,7 +38,8 @@ return {
         "deltaprecontrol", "deltapostcontrol", "deltadirection", "arclength",
         "angle", "cycle", "nocycle", "stroked", "filled", "clipped", "grouped",
         "bounded", "or", "and", "substring", "subpath", "directiontime", "point",
-        "precontrol", "postcontrol", "direction", "pathpoint", "pathprecontrol",
+        "deltapoint", "pathindex", "pathlastindex", "pathlength", "pathfirst", "pathlast",
+        "pathstate", "precontrol", "postcontrol", "direction", "pathpoint", "pathprecontrol",
         "pathpostcontrol", "pathdirection", "penoffset", "arctime", "arcpoint",
         "arcpointlist", "subarclength", "mpversion", "rotated", "slanted",
         "scaled", "shifted", "transformed", "xscaled", "yscaled", "zscaled",
@@ -50,9 +51,11 @@ return {
         "inner", "outer", "setproperty", "showtoken", "showstats", "show",
         "showvariable", "showdependencies", "doublepath", "contour", "also",
         "withpen", "dashed", "withprescript", "withpostscript", "withstacking",
+        "withnestedprescript", "withnestedpostscript",
         "withlinecap", "withlinejoin", "withmiterlimit", "withoutcolor",
         "withgreyscale", "withcolor", "withrgbcolor", "withcmykcolor", "clip",
         "setgroup", "setbounds", "message", "errmessage", "errhelp",
+        "lessdigits",
         --
         -- aliased
         --
@@ -120,6 +123,8 @@ return {
         "range", "thru",
         "z", "laboff",
         "bye",
+        --
+        "crossprod",
         --
         "red", "green", "blue", "cyan", "magenta", "yellow", "black", "white", "background",
         --

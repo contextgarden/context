@@ -1,0 +1,33 @@
+% language=us runpath=texruns:manuals/luametafun
+
+\environment luametafun-style
+
+\startcomponent luametafun-lines
+
+\startchapter[title={Lines}]
+
+We assume that when you arrived here you already know how to deal with drawing
+lines including the way they get connected. When you draw a line some properties
+are controlled by variables which forces you to save existing values when you
+temporarily adapts them.
+
+\startbuffer
+\startMPcode
+draw (0, 0) -- (20, 0)                                withcolor "darkyellow" ;
+draw (0,-1) -- (20,-1)           withlinecap  butt    withcolor "darkred" ;
+draw (0,-2) -- (20,-2)           withlinecap  squared withcolor "darkgreen" ;
+draw (0,-3) -- (20,-3) -- (0,-4) withlinejoin squared withcolor "darkblue" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+These \type {with} features are a \LUAMETATEX\ extension:
+
+\startlinecorrection \scale[width=1tw]{\getbuffer} \stoplinecorrection
+
+\stopchapter
+
+\stopcomponent
+
+

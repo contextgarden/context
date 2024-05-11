@@ -649,6 +649,7 @@ typedef enum mp_name_type_type {
     mp_intertimes_operation,        /* operation code for |intersectiontimes| */
     mp_intertimes_list_operation,   /* operation code for |intersectiontimeslist| */
     mp_double_dot_operation,        /* operation code for improper |..| */
+    /* the |of| operations: */
     mp_substring_operation,         /* operation code for |substring| */
     mp_subpath_operation,           /* operation code for |subpath| */
     mp_direction_time_operation,    /* operation code for |directiontime| */
@@ -675,6 +676,8 @@ typedef enum mp_name_type_type {
     mp_envelope_operation,          /* operation code for |envelope| */
     mp_boundingpath_operation,      /* operation code for |boundingpath| */
 } mp_name_type_type;
+
+# define mp_min_of_operation mp_substring_operation
 
 typedef enum mp_class_codes {
     mp_digit_class             =  0, /* the class number of |0123456789| */
@@ -776,6 +779,8 @@ typedef enum mp_with_codes {
     mp_with_dashed_code,
     mp_with_pre_script_code,
     mp_with_post_script_code,
+    mp_with_nested_pre_script_code,
+    mp_with_nested_post_script_code,
     mp_with_stacking_code,
     mp_with_no_model_code,
     mp_with_grey_model_code,
@@ -786,6 +791,7 @@ typedef enum mp_with_codes {
     mp_with_linejoin_code,
     mp_with_miterlimit_code,
     mp_with_curvature_code,
+    mp_with_nothing_code,    /* quits scanning of a with, avoids lookahead */
 } mp_with_codes;
 
 typedef enum mp_add_codes {
@@ -1078,7 +1084,12 @@ typedef enum mp_given_internal {
     mp_true_corners_internal,        /* positive to make |llcorner| etc. ignore |setbounds| */
     mp_default_color_model_internal, /* the default color model for unspecified items */
     mp_restore_clip_color_internal,
+    mp_less_digits_internal,
+    mp_intersection_precision_internal,
+    mp_join_tolerance_internal,
 } mp_given_internal;
+
+# define max_given_internal mp_join_tolerance_internal
 
 typedef struct mp_internal {
     mp_value  v;
@@ -1168,12 +1179,12 @@ typedef struct File {
 
 typedef struct MP_instance {
     /*  */
-    int                 halt_on_error;          /* do we quit at the first error? */
     void               *userdata;               /* this allows the calling application to setup local (e.g. L for Lua) */
     char               *banner;                 /* the banner that is printed to the screen and log */
     int                 utf8_mode;
     int                 text_mode;
     int                 show_mode;
+    int                 halt_on_error;          /* do we quit at the first error? */
     /*  */
     mp_file_finder      find_file;
     mp_script_runner    run_script;
@@ -1197,11 +1208,10 @@ typedef struct MP_instance {
     int                 make_text_id;
     int                 open_file_id;
     /*  */
+    int                 less_digits; 
     int                 interaction;
     int                 extensions;
-    /*  */
     int                 random_seed;
-    /*  */
     int                 math_mode;
     /*  */
     char               *job_name;
@@ -1212,7 +1222,6 @@ typedef struct MP_instance {
     /*  */
     int                 max_in_open;            /* maximum number of input files and error insertions that can be going on simultaneously */
     int                 param_size;             /* maximum number of simultaneous macro parameters */
-    int                 padding_size;           /* so that the next array nicely sits in the cache */
     /*  */
     char               *name_of_file;           /* the name of a system file */
     /*  */
@@ -1310,7 +1319,7 @@ typedef struct MP_instance {
     mp_symbol           frozen_undefined;
     mp_symbol           frozen_dump;
     /*  */
-    mp_symbol              id_lookup_test;
+    mp_symbol           id_lookup_test;
     /*  */
     mp_save_data       *save_ptr;               /* the most recently saved item */
     /*  */
@@ -1748,7 +1757,7 @@ typedef struct mp_if_node_data *mp_if_node;
 /* mp header stuff */
 
 extern void             mp_print_e_str                (MP mp, const char *s);
-extern void             mp_print_e_chr                (MP mp, unsigned char k);
+//extern void             mp_print_e_chr                (MP mp, unsigned char k);
 extern void             mp_show_context               (MP mp);
 extern void             mp_error                      (MP mp, const char *msg, const char *hlp);
 extern void             mp_warn                       (MP mp, const char *msg);

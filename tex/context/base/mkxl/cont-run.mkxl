@@ -18,7 +18,8 @@
 % \enabletrackers[system.synctex.visualize]
 % \enabletrackers[system.synctex.xml]
 % \enabledirectives[system.synctex.details]
-% \setupsynctex[state=start]
+% \setupsynctex[state=start]  % works in most cases (old libs)
+% \setupsynctex[state=repeat] % in case the lib is new
 
 \unprotect
 
@@ -42,6 +43,9 @@
       state  {\p_state}%
       method {\dummyparameter\c!method}%
    \relax
+   \ifx\p_state\v!repeat
+     \let\p_state\v!start
+   \fi
    \ifx\p_state\v!start
      % when public implementor, use conditional
      \enforced\glet\synctexpause   \clf_synctexpause

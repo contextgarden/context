@@ -211,7 +211,9 @@ local temporary_suffixes = {
 }
 
 local synctex_runfiles = {
-    "synctex", "synctex.gz", "syncctx" -- synctex
+    "synctex",    -- should not be created by engine
+    "synctex.gz", -- not used
+ -- "syncctx"     --
 }
 
 local persistent_runfiles = {
@@ -901,7 +903,7 @@ function scripts.context.run(ctxdata,filename)
                 --
                 local l_flags = {
                     ["interaction"]           = a_batchmode,
-                 -- ["synctex"]               = false,       -- context has its own way
+                    ["synctex"]               = false,       -- context has its own way
                  -- ["no-parse-first-line"]   = true,        -- obsolete
                  -- ["safer"]                 = a_safer,     -- better use --sandbox
                  -- ["no-mktex"]              = true,
@@ -1010,15 +1012,10 @@ function scripts.context.run(ctxdata,filename)
                         io.savedata(logfile,(gsub(logdata,"%[.-m","")))
                     end
                 end
-                --
-                --
-                --  this will go away after we update luatex
-                --
-                local syncctx = fileaddsuffix(jobname,"syncctx")
-                if validfile(syncctx) then
-                    renamefile(syncctx,fileaddsuffix(jobname,"synctex"))
-                end
-                --
+             -- local syncctx = fileaddsuffix(jobname,"syncctx")
+             -- if validfile(syncctx) then
+             --     renamefile(syncctx,fileaddsuffix(jobname,"synctex"))
+             -- end
                 if a_arrange then
                     --
                     c_flags.final      = true

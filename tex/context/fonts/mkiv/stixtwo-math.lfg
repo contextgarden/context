@@ -91,6 +91,16 @@ return {
                             feature = "ss01",
                         },
                         {
+                            source  = "uppercaseboldscript",
+                            target  = "uppercaseboldcalligraphic",
+                            unicode = "uppercasescriptbold",
+                        },
+                        {
+                            source  = "uppercaseboldscript",
+                            target  = "uppercaseboldscript",
+                            feature = "ss01",
+                        },
+                        {
                             source  = { first = 0xE17D, last = 0xE195 },
                             target  = "uppercasesansgreek",
                             unicode = "uppercasegreeknormal",

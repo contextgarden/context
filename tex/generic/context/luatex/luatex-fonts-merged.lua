@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2024-03-11 09:31
+-- merge date  : 2024-04-01 08:54
 
 do -- begin closure to overcome local limits and interference
 
@@ -4896,6 +4896,7 @@ local loaddatafromcache=caches.loaddata
 local savedataincache=caches.savedata
 local report_containers=logs.reporter("resolvers","containers")
 local allocated={}
+local cache_format=1.001 
 local mt={
  __index=function(t,k)
   if k=="writable" then
@@ -4940,7 +4941,9 @@ end
 function containers.is_valid(container,name)
  if name and name~="" then
   local storage=container.storage[name]
-  return storage and storage.cache_version==container.version
+  return storage
+   and storage.cache_format==cache_format 
+   and storage.cache_version==container.version
  else
   return false
  end
@@ -4951,7 +4954,7 @@ function containers.read(container,name)
  local stored=not reload and storage[name]
  if not stored and container.enabled and caches and containers.usecache then
   stored=loaddatafromcache(container.readables,name,container.writable)
-  if stored and stored.cache_version==container.version then
+  if stored and stored.cache_format==cache_format and stored.cache_version==container.version then
    if trace_cache or trace_containers then
     report_containers("action %a, category %a, name %a","load",container.subcategory,name)
    end
@@ -4968,6 +4971,7 @@ function containers.read(container,name)
 end
 function containers.write(container,name,data,fast)
  if data then
+  data.cache_format=cache_format
   data.cache_version=container.version
   if container.enabled and caches then
    local unique=data.unique
@@ -31790,7 +31794,7 @@ local function addfeature(data,feature,specifications,prepareonly)
      local coverage=nil
      local format=nil
 if type(list)=="function" then
- list=list(data,specification,list,i)
+ list=list(data,specification,list,i) 
 end
      if not list then
      elseif featuretype=="substitution" then

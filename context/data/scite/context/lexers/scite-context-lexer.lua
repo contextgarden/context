@@ -594,6 +594,34 @@ end
 
 do
 
+    -- we can load characters.lower if we can find it
+
+    local pattern = false
+    local mapping = { }
+
+    lower = function(str)
+        if not pattern and next(mapping) then
+            pattern = Cs((helpers.utfchartabletopattern(mapping)/mapping + helpers.utfcharpattern)^1)
+        end
+        return pattern and lpegmatch(pattern,str) or str
+    end
+
+    helpers.lowercasestring = lower
+
+    helpers.registermapping = function(data)
+        local l = data.lower
+        if l then
+            for k, v in next, l do
+                mapping[k] = v
+            end
+        end
+        pattern = false
+    end
+
+end
+
+do
+
   -- function patterns.exactmatch(words,case_insensitive)
   --     local characters = concat(words)
   --     local pattern = S(characters) + patterns.idtoken
@@ -762,6 +790,7 @@ do
                 list.min   = list.min or 3
             end
             lists[tag] = list
+            helpers.registermapping(list)
         end
         if trace then
             report("enabling spell checking for '%s' with minimum '%s'",tag,list.min)

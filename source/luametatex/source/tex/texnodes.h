@@ -374,20 +374,15 @@ extern void     lmt_nodelib_initialize  (void); /* name ? */
     have some extra fields in some nodes. In \LUAMETATEX\ only glyph and list nodes have these fields
     as it makes no sense to have them elsewhere: macro packages can add glue and kerns and rules and
     \unknown\ all over the place and adding file state info there only makes things confusing and
-    working less well. This is what the mode parameter can handle in \LUATEX\ and in \LUAMETATEX\ it
-    only supports the modes 1 and 3.
+    working less well. This is what the mode parameter can handle in \LUATEX\ and in \LUAMETATEX\ we
+    have no control other than what the macro package provides. The engine can set the file and line 
+    fields or it can be done from \LUA. Automatic setting is controlled by |input_file_state.mode|.
 
     As a side note: the fact that a viewer needs to embed the library is also a limitation. Calling
     out to an external program that analyzes the file and gives back the filename and line is more
     flexible and robust. Because we have such an analyzer in \MKIV\ it was no big deal to add a few
     lines so that the \TEX shop environment could use that script/method (bidirectional); hopefully
     other viewers and editors will follow.
-
-    So, compared to \LUATEX\ less nodes have the extra fields (which saves memory) and therefore
-    less has to be set. Because there is no library at all, writing a synctex file is up to some
-    additional \LUA\ code, but that was already the case in \MKIV\ anyway. We might at some point
-    change the field names to \quote {file} and \quote {line} and remove interface options that
-    have no use any more. We also moved to a more generic naming of (input related) fields.
 
 */
 
@@ -927,20 +922,20 @@ typedef enum list_geometries {
 # define box_d_offset(a)        vinfo(a,3)
 # define box_height(a)          vlink(a,4)
 # define box_h_offset(a)        vinfo(a,4)
-# define box_list(a)            vlink(a,5)    /* 5 = list_offset */
+# define box_list(a)            vlink(a,5)   /* 5 = list_offset */
 # define box_shift_amount(a)    vinfo(a,5)
-# define box_glue_order(a)      vlink(a,6)    /* quarterword (?) */
-# define box_glue_sign(a)       vinfo(a,6)    /* quarterword (!) */
+# define box_glue_order(a)      vlink(a,6)   /* quarterword (?) */
+# define box_glue_sign(a)       vinfo(a,6)   /* quarterword (!) */
 //define box_glue_order(a)      vlink00(a,6)  
 //define box_glue_sign(a)       vlink01(a,6)  
 //define box_glue_reserved_1(a) vlink02(a,6)  
 //define box_glue_reserved_2(a) vlink03(a,6)  
-# define box_glue_set(a)        dvalue(a,7)   /* So we reserve a whole memory word! */
-# define box_dir(a)             vlink00(a,8)  /* We could encode it as geomtry but not now. */
+# define box_glue_set(a)        dvalue(a,7)  /* So we reserve a whole memory word! */
+# define box_dir(a)             vlink00(a,8) /* We could encode it as geomtry but not now. */
 # define box_package_state(a)   vlink01(a,8)
 # define box_axis(a)            vlink02(a,8)
 # define box_geometry(a)        vlink03(a,8)
-# define box_orientation(a)     vinfo(a,8)    /* Also used for size in alignments. */
+# define box_orientation(a)     vinfo(a,8)   /* Also used for size in alignments. */
 # define box_x_offset(a)        vlink(a,9)
 # define box_y_offset(a)        vinfo(a,9)
 # define box_pre_migrated(a)    vlink(a,10)
@@ -951,8 +946,8 @@ typedef enum list_geometries {
 # define box_target_anchor(a)   vinfo(a,12)
 # define box_anchor(a)          vlink(a,13)
 # define box_index(a)           vinfo(a,13)
-# define box_input_file(a)      vlink(a,14) /* aka box_synctex_tag  */
-# define box_input_line(a)      vinfo(a,14) /* aka box_synctex_line */
+# define box_input_file(a)      vlink(a,14) 
+# define box_input_line(a)      vinfo(a,14) 
 
 # define box_total(a) (box_height(a) + box_depth(a)) /* Here we add, with glyphs we maximize. */ 
 

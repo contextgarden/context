@@ -323,6 +323,38 @@ style.
 This is an experimental interface anyway so we don't explain the parameters yet
 as there might be more of them.
 
+Sometimes examples can be made from answers to questions on the mailing list,
+like the following:
+
+\starttyping[option=TEX]
+\startMPcalculation{simplefun}
+    vardef QuotationDash =
+        draw image (
+            interim linecap := squared ;
+            save l ; l := 0.2 ;
+            draw (l/2,2) -- (15-l/2,2) withpen pencircle scaled l ;
+        )
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "symbols",
+        units    = 10,
+        usecolor = true,
+        width    = 15,
+        height   = 2.1,
+        depth    = 0,
+    ] ;
+
+    lmt_registerglyph [ category = "symbols", unicode = "0x2015", code  = "QuotationDash ;" ] ;
+\stopMPcalculation
+
+\definefontfeature[default][default][metapost=symbols]
+\stoptyping
+
+Of course you need to figure out how to enter the equivalent of \type {\char
+"2015} and|/|or the font used in your editor should have that character too. Here
+the wide dash is about twice the \type {\emdash}.
+
 \stopchapter
 
 \stopcomponent

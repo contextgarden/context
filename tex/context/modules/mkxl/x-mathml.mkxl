@@ -1194,7 +1194,7 @@
 \startxmlsetups mml:approx     \xmlsetup{#1}{mml:relation} \stopxmlsetups
 \startxmlsetups mml:factorof   \xmlsetup{#1}{mml:relation} \stopxmlsetups
 
-%D This needs to be adapted and can nwo use the alignhere mechanism:
+%D This needs to be adapted and can now use the alignhere mechanism:
 
 \startxmlsetups mml:relation
     \edef\mmlapplyaction{\xmlfilter{#1}{/*/tag()}}

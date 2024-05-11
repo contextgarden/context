@@ -258,9 +258,9 @@ immutable ditto, EOF ;
 
 pen pensquare, penrazor, penspec ;
 
-pensquare = makepen(unitsquare shifted -(.5,.5)) ;
-penrazor  = makepen((-.5,0) -- (.5,0) -- cycle) ;
-penspec   = pensquare scaled eps ;
+pensquare := makepen(unitsquare shifted -(.5,.5)) ;
+penrazor  := makepen((-.5,0) -- (.5,0) -- cycle) ;
+penspec   := pensquare scaled eps ;
 
 immutable pensquare, penrazor, penspec ;
 
@@ -956,7 +956,7 @@ vardef labels@#(text t) =
     endfor
 enddef ;
 
-% till lhere
+% till here
 
 vardef dotlabels@#(text t) =
     forsuffixes $=t:

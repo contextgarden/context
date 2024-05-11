@@ -1,0 +1,93 @@
+%D \module
+%D   [       file=mp-misc.mpxl,
+%D        version=2024.03.15,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=anchored background macros,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D I moved some code here that was in local files (mostly for documentation)
+%D but this module is not loaded by default.
+
+if known metafun_loaded_misc : endinput ; fi ;
+
+newinternal boolean metafun_loaded_misc ; metafun_loaded_misc := true ; immutable metafun_loaded_misc ;
+
+%D Mikael Sundqvist and I made these when we were playing with envelopes and writing an article
+%D about it.
+
+def showenvelope(expr pth, psh) =
+    image (
+        save e, usedpath, convpath, usedpen ;
+        path e, usedpath, convpath, somepath ; pen usedpen ;
+
+interim linejoin := 1;
+
+        usedpath := psh rotated eps ; % gets rid of bad end condition (rectangle) (introduced close points)
+        usedpen  := makepen(usedpath) ;
+        convpath := convexed usedpath ;
+
+        if cycle pth :
+            enfill
+                pth
+                withpen usedpen
+                withcolor red
+        fi ;
+
+        if cycle pth : fill else : draw fi
+            pth
+            withcolor blue
+            withpen usedpen
+            withtransparency (1,.5)
+        ;
+        drawarrow pth ;
+        drawpoints pth ;
+
+        for i within pth :
+            drawarrow  convpath shifted pathpoint withcolor yellow dashed evenly ;
+            drawarrow  usedpath shifted pathpoint withcolor white;
+            drawpoints usedpath shifted pathpoint withcolor white ;
+        endfor ;
+
+        interim defaultscale := .4 ;
+
+        e := envelope usedpen of pth ;
+        draw            e withcolor green withpen pencircle scaled 1 ; % 1mm;
+        drawpoints      e ;
+        drawpointlabels e withcolor green ;
+
+        e := envelope usedpen of reverse pth ;
+        draw            e withcolor yellow withpen pencircle scaled 1 ; % 1mm;
+        drawpoints      e ;
+        drawpointlabels e withcolor yellow ;
+
+    )
+enddef ;
+
+vardef showreducedenvelope(expr pth, psh, pthtxt, pshtxt) =
+    image (
+        save e, r ; path e, r ;
+        e := envelope psh of pth ;
+        r := reducedenvelope(e) ;
+        draw pth withpen pencircle scaled 2 withcolor "darkgray";
+        draw e withpen pencircle scaled 2 withcolor "darkred" ;
+        drawpoints e withcolor "darkred" ;
+        drawpointlabels e withcolor "darkred" ;
+        draw r withpen pencircle scaled 1 withcolor "darkgreen" ;
+        drawpoints r withpen pencircle scaled 5 withcolor "darkblue" ;
+        drawpointlabels r withcolor "darkblue" ;
+        draw r dashed evenly withcolor "white" ;
+        draw
+            textext.bot ("\strut\tttf path " & pthtxt & " pen " & pshtxt)
+            shifted (center bottomboundary currentpicture)
+            shifted (0,-LineHeight) ;
+        ;
+    )
+enddef ;
+
+% So far for envelopes.

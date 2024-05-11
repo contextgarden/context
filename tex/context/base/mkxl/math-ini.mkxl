@@ -889,7 +889,7 @@
   {\Ustartmathmode\displaystyle
    \begingroup % can go
    \indisplaymath\conditionaltrue
-\expand\everyinsidemathematics\relax % check
+   \expand\everyinsidemathematics\relax % check
 }
 
 \permanent\protected\def\stopforceddisplaymath
@@ -983,12 +983,9 @@
 \def\math_m_yes_text_openedup#1%
   {\setbox\scratchbox\hbox\bgroup
       \expand\everyswitchmathematics\relax
-%       \normalstartimath
-%       \usemathstyleparameter\mathematicsparameter\c!mathstyle
       \Ustartmathmode\expandedmathstyleparameter\mathematicsparameter\c!mathstyle
       \expand\everyinsidemathematics\relax
       #1%
-%       \normalstopimath
       \Ustopmathmode
    \egroup
    \ifdim\ht\scratchbox>\strutht
@@ -1004,12 +1001,9 @@
 
 \def\math_m_yes_text_normal#1%
   {\expand\everyswitchmathematics\relax
-%    \normalstartimath
-%    \usemathstyleparameter\mathematicsparameter\c!mathstyle
    \Ustartmathmode\expandedmathstyleparameter\mathematicsparameter\c!mathstyle
    \expand\everyinsidemathematics\relax
    \begingroup#1\endgroup % grouping permits aftergroups trickery
-%    \normalstopimath
    \Ustopmathmode
    \endgroup}
 
@@ -1089,7 +1083,7 @@
     %\startimath\begingroup\forcedisplaymath#1\endgroup\stopimath
      \Ustartmathmode\displaystyle
        \indisplaymath\conditionaltrue
-\expand\everyinsidemathematics\relax % check
+       \expand\everyinsidemathematics\relax % check
        #1%
      \Ustopmathmode % grouping for \aftergroup ?
    \fi}
@@ -1104,7 +1098,7 @@
     %\startimath#1\stopimath
      \Ustartmathmode\textstyle
        \indisplaymath\conditionalfalse
-\expand\everyinsidemathematics\relax % check
+       \expand\everyinsidemathematics\relax % check
        #1%
      \Ustopmathmode
    \fi}

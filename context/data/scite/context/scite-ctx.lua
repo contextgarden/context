@@ -72,6 +72,8 @@
 
 -- Once lpeg is available I will update the functions below.
 
+os.setlocale("C") -- get rid of the locale: it works bad for comparing as in utflen
+
 local props = props or { }
 
 local byte, char = string.byte, string.char
@@ -88,58 +90,69 @@ end
 
 local magicstring = rep("<ctx-crlf/>", 2)
 
-local l2 = char(0xC0)
-local l3 = char(0xE0)
-local l4 = char(0xF0)
+local utflen  = utf8 and utf8.len
+local utfchar = utf8 and utf8.char
 
-local function utflen(str)
-    local n = 0
-    local l = 0
-    for s in gmatch(str,".") do
-        if l > 0 then
-            l = l - 1
-        else
-            n = n + 1
-            if s >= l4 then
-                l = 3
-            elseif s >= l3 then
-                l = 2
-            elseif s >= l2 then
-                l = 1
+if not utflen then
+
+    local l2 = char(0xC0)
+    local l3 = char(0xE0)
+    local l4 = char(0xF0)
+
+    utflen = function(str) -- we could use an lpeg instead
+        local n = 0
+        local l = 0
+        for s in gmatch(str,".") do
+            if l > 0 then
+                l = l - 1
+            else
+                n = n + 1
+                if s >= l4 then
+                    l = 3
+                elseif s >= l3 then
+                    l = 2
+                elseif s >= l2 then
+                    l = 1
+                end
             end
         end
+        return n
     end
-    return n
+
 end
 
-local function utfchar(u)
-    if u <= 0x7F then
-        return char(
-            u
-        )
-    elseif u <= 0x7FF then
-        return char (
-            0xC0 | (u >> 6),
-            0x80 | (u & 0x3F)
-        )
-    elseif u <= 0xFFFF then
-        return char (
-            0xE0 | (u >> 12),
-            0x80 | ((u >> 6) & 0x3F),
-            0x80 | (u & 0x3F)
-        )
-    elseif n < 0x110000 then
-        local n = u - 0x10000
-        local r = ((n & 0xF0000) >> 16) + 1
-        return char (
-            0xF0 | (r >> 2),
-            0x80 | ((r & 3) << 4) | ((n & 0x0F000) >> 12),
-            0x80 | ((n & 0x00FC0) >> 6),
-            0x80 | (n & 0x0003F)
-        )
-    else
-        return utfchar(0xFFFD)
+if not utfchar then
+
+    utfchar = function(u)
+        if u <= 0x7F then
+            return char(
+                u
+            )
+        elseif u <= 0x7FF then
+            return char (
+                0xC0 | (u >> 6),
+                0x80 | (u & 0x3F)
+            )
+        elseif u <= 0xFFFF then
+            return char (
+                0xE0 | (u >> 12),
+                0x80 | ((u >> 6) & 0x3F),
+                0x80 | (u & 0x3F)
+            )
+        elseif n < 0x110000 then
+            local n = u - 0x10000
+            local r = ((n & 0xF0000) >> 16) + 1
+            return char (
+                0xF0 | (r >> 2),
+                0x80 | ((r & 3) << 4) | ((n & 0x0F000) >> 12),
+                0x80 | ((n & 0x00FC0) >> 6),
+                0x80 | (n & 0x0003F)
+            )
+        else
+            return utfchar(0xFFFD)
+        end
     end
+
 end
 
 -- helpers: system
@@ -793,7 +806,7 @@ do
 
         local n, sum = 0, 0
         for s in gmatch(selection,"[%-%+]?[%d%.%,]+") do -- todo: proper lpeg
-            s = gsub(s,",",".")
+            local s = gsub(s,",",".")
             local m = tonumber(s)
             if m then
                 n = n + 1

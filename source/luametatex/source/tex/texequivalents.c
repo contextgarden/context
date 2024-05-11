@@ -1124,6 +1124,8 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
                 if (eq_type(p) == cmd && eq_value(p) == chr) {
              // if (eq_type(p) == cmd && eq_value(p) == chr && eq_level(p) == cur_level) {
                     return 1;
+                } else { 
+                    return 0;
                 }
             default:
                 /*tex
@@ -1134,8 +1136,9 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
                 if (eq_type(p) == cmd && eq_value(p) == chr) {
              // if (eq_type(p) == cmd && eq_value(p) == chr && eq_level(p) == cur_level) {
                     return 1;
+                } else { 
+                    return 0;
                 }
-                return 0;
         }
     } else {
         return 0;
@@ -1432,7 +1435,7 @@ void tex_define_swapped(int g, halfword p1, halfword p2, int force)
                 case register_integer_cmd:
                 case register_attribute_cmd:
                 case register_dimension_cmd:
-                case register_glue_cmd:    /* unchecked */
+                case register_glue_cmd:   /* unchecked */
                 case register_muglue_cmd: /* unchecked */
                 case internal_muglue_cmd: /* unchecked */
                 case integer_cmd:

@@ -35,10 +35,5 @@ For a while we will keep the W files around because they are also a timestamp bu
 they will be archived. After all, they are still in the GIT repository. By keeping them we 
 can backtrack the documentation but as they are frozen you should not use them! 
 
-The fact that at the same moment compilation of luatex failed because "tie" and the build 
-check for version (now needs WEBINPUTS) has been updated in a not upward compatible way 
-proved that in the long run this was also the right moment, not that we depend on "tie" but 
-who know what other expectation there will be wrt W files.
-
 Hans Hagen 
 2018-2024+

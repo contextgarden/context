@@ -263,8 +263,13 @@ do
             for i=1,n do
                 collected[w[i]] = true
             end
-        elseif not find(word,"/") then
-            collected[word] = true
+--         elseif not find(word,"/") then
+--             collected[word] = true
+        else
+            word = match(word,"^(.+)/")
+            if word and #word > 1 then
+                collected[word] = true
+            end
         end
         return true
     end
@@ -308,6 +313,8 @@ do
             elseif type(specification) ~= "string" or specification == "" then
                 report("missing --specification=name")
             elseif type(result) ~= "string" or result == "" then
+                report("missing --result=name")
+            else
                 resetall()
                 getfixes(specification)
                 getwords(dictionary)

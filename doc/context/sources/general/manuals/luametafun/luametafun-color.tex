@@ -6,6 +6,8 @@
 
 \startchapter[title={Color}]
 
+\startsection[title=Lab colors]
+
 There are by now plenty of examples made by users that use color and \METAFUN\
 provides all kind of helpers. So do we need more? When I play around with things
 or when users come with questions that then result in a nice looking graphic, the
@@ -74,10 +76,10 @@ do this:
 
 \startbuffer
 \startcombination[nx=4,ny=1]
-    {\startMPcode draw lmt_labtorgb [ l = 20, step = 20 ] ysized 35mm withpen pencircle scaled 8 ; \stopMPcode} {\type {l = 20}}
-    {\startMPcode draw lmt_labtorgb [ l = 40, step = 20 ] ysized 35mm withpen pencircle scaled 8 ; \stopMPcode} {\type {l = 40}}
-    {\startMPcode draw lmt_labtorgb [ l = 60, step = 20 ] ysized 35mm withpen pencircle scaled 8 ; \stopMPcode} {\type {l = 60}}
-    {\startMPcode draw lmt_labtorgb [ l = 80, step = 20 ] ysized 35mm withpen pencircle scaled 8 ; \stopMPcode} {\type {l = 80}}
+    {\startMPcode draw lmt_labtorgb [ l = 20, step = 20 ] ysized 35mm withpen pencircle scaled 8 ; \stopMPcode} {\type {l=20}}
+    {\startMPcode draw lmt_labtorgb [ l = 40, step = 20 ] ysized 35mm withpen pencircle scaled 8 ; \stopMPcode} {\type {l=40}}
+    {\startMPcode draw lmt_labtorgb [ l = 60, step = 20 ] ysized 35mm withpen pencircle scaled 8 ; \stopMPcode} {\type {l=60}}
+    {\startMPcode draw lmt_labtorgb [ l = 80, step = 20 ] ysized 35mm withpen pencircle scaled 8 ; \stopMPcode} {\type {l=80}}
 \stopcombination
 \stopbuffer
 
@@ -131,8 +133,237 @@ Of course we can now add all kind of extra features but this is what we currentl
 have. Maybe this doesn't belong in the \METAFUN\ core but it's not that much code
 and a nice demo. After all, there is much in there that is seldom used.
 
+A perceptive color space that uses the lab model is lhc. Here is an example of
+how that can be used:
+
+\startbuffer
+\startMPdefinitions
+vardef lchcolorcircle(expr l, c, n) =
+    image (
+        save p, h ; path p ; numeric h ;
+        p := arcpointlist n of fullcircle ;
+        for i within p :
+            h := i*360/n ;
+            draw
+                pathpoint scaled 50
+                withpen pencircle scaled (120/n)
+                withcolor lchtorgb(l,c,h) ;
+            draw
+                textext ("\tt\bf" & decimal h)
+                scaled .4
+                shifted (pathpoint scaled 50)
+                withcolor white ;
+        endfor ;
+    )
+enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\getbuffer
+
+Of course you can come up with another representation than this but here is
+how it looks:
+
+\startbuffer
+\startMPcode
+draw image (
+    draw lchcolorcircle(75,100,24) ;
+    draw lchcolorcircle(50,100,24) scaled .75 ;
+    draw lchcolorcircle(25,100,24) scaled .50 ;
+) ysized 4cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startbuffer
+\startcombination[nx=6,ny=1,distance=.02tw]
+    {\startMPcode draw lmt_lchcircle [ l = 75, c = 100, steps = 12 ] xsized .15TextWidth ; \stopMPcode} {\type {l=75,c=100}}
+    {\startMPcode draw lmt_lchcircle [ l = 50, c = 100, steps = 12 ] xsized .15TextWidth ; \stopMPcode} {\type {l=50,c=100}}
+    {\startMPcode draw lmt_lchcircle [ l = 25, c = 100, steps = 12 ] xsized .15TextWidth ; \stopMPcode} {\type {l=25,c=100}}
+    {\startMPcode draw lmt_lchcircle [ l = 75, c =  25, steps = 12 ] xsized .15TextWidth ; \stopMPcode} {\type {l=75,c=25}}
+    {\startMPcode draw lmt_lchcircle [ l = 50, c =  25, steps = 12 ] xsized .15TextWidth ; \stopMPcode} {\type {l=50,c=25}}
+    {\startMPcode draw lmt_lchcircle [ l = 25, c =  25, steps = 12 ] xsized .15TextWidth ; \stopMPcode} {\type {l=25,c=25}}
+\stopcombination
+\stopbuffer
+
+You can get rather nice color pallets by manipulating the axis without really
+knowing what color you get. The \type {h} value is in angles and shown inside the
+circles.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Of course we can again wrap this into a parameter driven macro, this time \typ
+{lmt_lchcircle} which accepts \type {l}, \type {c}, \type {steps} and a
+\type {labels} boolean.
+
+\stopsection
+
+\startsection[title=Transparency]
+
+Although transparency is independent from color we discuss one aspect here. Where
+color is sort of native to \METAPOST, especially when we talk \RGB\ and \CMYK,
+other color spaces are implemented using so called prescripts, think \quotation
+{information bound to paths and related wrappers}.
+
+When you do this:
+
+\startbuffer
+\startMPcode
+path c ; c := fullcircle scaled 1cm ;
+picture p ; p := image (
+    fill c shifted ( 0mm,0) withcolor "darkred" ;
+    fill c shifted ( 5mm,0) withcolor "darkgreen" ;
+    fill c shifted (10mm,0) withcolor "darkblue" ;
+) ;
+
+draw p ; draw p shifted (3cm,0) withcolor "middlegray" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+You will notice that the picture gets recolored so the color properties set on
+the picture are applied to separate elements that make it. A picture itself is
+actually just a list of objects and it has no properties of its own. A way around
+this is to wrap it in a group, bound or clip which basically means something:
+begin, list of objects, end. By putting properties on the wrapper we can support
+features that apply to what gets wrapped without adapting the properties
+directly.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+Because transparency is also implemented with prescripts we have a problem:
+should it apply to the wrapper or to everything? In the \LUATEX\ version of the
+\METAPOST\ library the scripts get assigned to the first element that supports
+them and because there only paths can have these properties, you cannot simply
+change the transparency without looping over the picture and redraw it.
+
+\startbuffer
+\startMPcode
+picture q ; q := image (
+    fill c shifted ( 0mm,0) withcolor "darkcyan"    withtransparency (1,.5);
+    fill c shifted ( 5mm,0) withcolor "darkmagenta" withtransparency (1,.5);
+    fill c shifted (10mm,0) withcolor "darkyellow"  withtransparency (1,.5);
+) ;
+
+draw q ; draw q shifted (3cm,0) withtransparency (1,.25) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+In \LUAMETATEX\ we have a way to assign the properties to the elements so we get
+three less transparent circles:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+In \MKIV\ only the first circle becomes lighter.
+
+\startbuffer
+\startMPcode
+picture r ; r := image (
+    draw p ;
+    draw q shifted (7cm,0cm) ;
+) ;
+
+draw r ;
+draw r shifted (3cm,0) withtransparency (1,.75) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This example shows that when we draw \type {p} and \type {q} we get the elements
+at the same level (flattened) so we can indeed apply the transparency to all of
+them.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+So, keep in mind that this only works in \MKXL\ and not in \MKVI\ (unless we also
+upgrade \LUATEX\ to support this).
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent
 
+% \startMPpage[offset=1ts]
 
+%     draw image (
+%         fill (unitsquare xscaled 10cm yscaled 4cm)
+%             withcolor svgcolor(0.5,0,0)
+%         ;
+
+%         registerluminositygroup ("test") (
+%             fill (unitsquare scaled 2cm) shifted (1cm,1cm)
+%                 withshademethod "circular"
+%                 withshadecolors (.6,.1)
+%         ) ;
+
+%         applyluminositygroup ("test") (
+%             fill (unitsquare scaled 2cm) shifted (1cm,1cm)
+%                 withshademethod "circular"
+%         ) ;
+
+%         draw luminositygroup (
+%             fill (unitsquare scaled 2cm) shifted (4cm,1cm)
+%                 withshademethod "circular"
+%                 withshadecolors (.6,.1)
+%         ) (
+%             fill (unitsquare scaled 2cm) shifted (4cm,1cm)
+%                 withshademethod "circular"
+%         ) ;
+
+%         draw luminosityshade (
+%             (unitsquare scaled 2cm) shifted (7cm,1cm)
+%         ) (
+%                 withshademethod "circular"
+%                 withshadecolors (.6,.1)
+%         ) (
+%                 withshademethod "circular"
+%         ) ;
+%     ) ;
+
+% \stopMPpage
+
+% \startMPpage[offset=1ts]
+
+%     draw image (
+%         fill (unitsquare xscaled 10cm yscaled 4cm)
+%             withcolor "darkblue"
+%         ;
+
+%         registerluminositygroup ("test") (
+%             fill (unitsquare scaled 2cm) shifted (1cm,1cm)
+%                 withcolor "darkgreen"
+%         ) ;
+
+%         applyluminositygroup ("test") (
+%             fill (unitsquare scaled 2cm) shifted (1cm,1cm)
+%                 withcolor "darkred"
+%         ) ;
+
+%         draw luminositygroup (
+%             fill (unitsquare scaled 2cm) shifted (4cm,1cm)
+%                 withcolor "darkgreen"
+%         ) (
+%             fill (unitsquare scaled 2cm) shifted (4cm,1cm)
+%                 withcolor "darkred"
+%         ) ;
+
+%         draw luminosityshade (
+%             (unitsquare scaled 2cm) shifted (7cm,1cm)
+%         ) (
+%                 withcolor "darkgreen"
+%         ) (
+%                 withcolor "darkred"
+%         ) ;
+%     ) ;
+
+% \stopMPpage

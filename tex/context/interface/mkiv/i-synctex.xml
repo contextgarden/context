@@ -23,6 +23,7 @@
             <cd:assignments list="yes">
                 <cd:parameter name="state">
                     <cd:constant type="start"/>
+                    <cd:constant type="repeat"/>
                     <cd:constant type="stop" default="yes"/>
                 </cd:parameter>
                 <cd:parameter name="method">

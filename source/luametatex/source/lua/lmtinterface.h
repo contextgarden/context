@@ -429,6 +429,7 @@ extern lmt_interface_info lmt_interface;
 # define declare_shared_lua_keys(L) \
 /* */\
 make_lua_key(L, __index);\
+make_lua_key(L, __newindex);\
 make_lua_key(L, above);\
 make_lua_key(L, abovedisplayshortskip);\
 make_lua_key(L, abovedisplayskip);\

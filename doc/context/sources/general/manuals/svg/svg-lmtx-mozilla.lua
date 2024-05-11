@@ -352,7 +352,7 @@ return {
         </svg>
     ]],
     [[
-        svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
           <path d="M60,15 L60,110 M30,40 L90,40 M30,75 L90,75 M30,110 L90,110" stroke="grey" />
           <text text-anchor="start" x="60" y="40">A</text>
           <text text-anchor="middle" x="60" y="75">A</text>
@@ -363,7 +363,7 @@ return {
         </svg>
     ]],
     -- https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Gradients
-    [[
+    [==[
         <svg viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <linearGradient id="gradient" x1="0%" y1="0%" x2="0" y2="100%">
@@ -375,7 +375,7 @@ return {
           <circle cx="50" cy="50" r="40" fill="black" />
           <circle cx="150" cy="50" r="40" fill="black" opacity="0.3" />
         </svg>
-    ]],
+    ]==],
     [==[
         <svg width="120" height="240" version="1.1" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -491,6 +491,7 @@ return {
     ]],
     [[
         <svg viewBox="0 0 420 200" xmlns="http://www.w3.org/2000/svg">
+         <!-- inkscape -> pdf is wrong (2024) so no reference pdf, only mozilla website exmaple -->
           <radialGradient id="gradient1" gradientUnits="userSpaceOnUse" cx="100" cy="100" r="100" fx="100" fy="100">
             <stop offset="0%" stop-color="darkblue" />
             <stop offset="50%" stop-color="skyblue" />
@@ -502,7 +503,7 @@ return {
             <stop offset="100%" stop-color="darkblue" />
           </radialGradient>
           <rect x="0" y="0" width="200" height="200" fill="url(#gradient1)" />
-          <xrect x="0" y="0" width="200" height="200" fill="url(#gradient2)" style="transform: translateX(220px);" />
+          <rect x="0" y="0" width="200" height="200" fill="url(#gradient2)" style="transform: translateX(220px);" />
           <rect x="0" y="0" width="200" height="200" fill="url(#gradient2)" transform="translateX(220px)" />
         </svg>
     ]],

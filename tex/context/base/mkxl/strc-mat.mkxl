@@ -1011,7 +1011,8 @@
 
 % maybe: \newboundary \c_strc_math_align_boundary
 
-\defineboundary[mathalign] % this one is also used at the lua end
+\defineboundary[mathalign]  % this one is also used at the lua end
+\defineboundary[mathinject] % idem
 
 \newconditional\c_strc_math_trace_hang
 \newdimension  \d_strc_math_hang_state
@@ -1118,10 +1119,27 @@
      \egroup
    \egroup}
 
-\letcsname\??mathtexthere\v!left  \endcsname\strc_math_text_here_left
-\letcsname\??mathtexthere\v!right \endcsname\strc_math_text_here_right
-\letcsname\??mathtexthere\v!before\endcsname\strc_math_text_here_before
-\letcsname\??mathtexthere\v!after \endcsname\strc_math_text_here_after
+\permanent\protected\def\strc_math_text_here_inbetween#1%
+  {\begingroup
+   \breakhere
+ % \setbox\scratchboxone\vbox{\forgetall\begstrut#1\endstrut}%
+   \setbox\scratchboxone\vbox{\forgetall#1}%
+   \scratchcounter\boxlines\scratchboxone
+   \localcontrolledrepeat\scratchcounter
+     {\boundary\c_bndr_mathinject
+      \setbox\scratchboxtwo\hbox{\setstrut\strut\boxline\scratchboxone\currentloopiterator}%
+      \box\scratchboxtwo
+      \ifnum\currentloopiterator<\scratchcounter
+        \vadjust depth after -\thousandpoint{\strut\vskip-\struthtdp}%
+      \fi
+      \breakhere}%
+  \endgroup}
+
+\letcsname\??mathtexthere\v!left     \endcsname\strc_math_text_here_left
+\letcsname\??mathtexthere\v!right    \endcsname\strc_math_text_here_right
+\letcsname\??mathtexthere\v!before   \endcsname\strc_math_text_here_before
+\letcsname\??mathtexthere\v!after    \endcsname\strc_math_text_here_after
+\letcsname\??mathtexthere\v!inbetween\endcsname\strc_math_text_here_inbetween
 
 \defcsname\??mathbreakhere\v!left\endcsname#1%
   {\ifnum\lastboundary=\c_math_begin_boundary\else

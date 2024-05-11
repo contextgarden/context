@@ -528,6 +528,69 @@ local function defineprocesscolor(name,str,global,freeze) -- still inconsistent 
     colorset[name] = true-- maybe we can store more
 end
 
+local function definelabcolor(name,str,global,freeze) -- still inconsistent color vs transparent
+    local settings = settings_to_hash_strict(str)
+    if settings then
+        local s
+        local a = settings.a
+        local t = settings.t
+        local l = settings.l
+        if l then
+            local c = settings.c
+            local h = settings.h
+            -- lhc
+            if c and h then
+                local r, g, b = colors.lchtorgb(tonumber(l) or 0, tonumber(c) or 0, tonumber(h) or 0)
+                definecolor(name, register_color(name,'rgb',r,g,b), global)
+                goto TRANSPARENCY
+            end
+            -- lab
+            local b = settings.b
+            if a and b then
+                local r, g, b = colors.labtorgb(tonumber(l) or 0, tonumber(a) or 0, tonumber(b) or 0)
+                definecolor(name, register_color(name,'rgb',r,g,b), global)
+                goto TRANSPARENCY
+            end
+        else
+            local x = settings.x
+            local y = settings.z
+            local z = settings.z
+            if x and y and z then
+                local r, g, b = colors.xyztorgb(tonumber(x) or 0, tonumber(y) or 0, tonumber(z) or 0)
+                definecolor(name, register_color(name,'rgb',r,g,b), global)
+                goto TRANSPARENCY
+            end
+        end
+        -- todo srgb
+        s = settings.s
+        definecolor(name, register_color(name,'gray',tonumber(s) or 0), global)
+      ::TRANSPARENCY::
+        if a and t then
+            definetransparent(name, transparencies.register(name,transparent[a] or tonumber(a) or 1,tonumber(t) or 1), global)
+        elseif colors.couple then
+        --  definetransparent(name, transparencies.register(nil, 1, 1), global) -- can be sped up
+            definetransparent(name, 0, global) -- can be sped up
+        end
+    elseif freeze then
+        local ca = attributes_list[a_color]       [str]
+        local ta = attributes_list[a_transparency][str]
+        if ca then
+            definecolor(name, ca, global)
+        end
+        if ta then
+            definetransparent(name, ta, global)
+        end
+    else
+        inheritcolor(name, str, global)
+        inherittransparent(name, str, global)
+    --  if global and str ~= "" then -- For Peter Rolf who wants access to the numbers in Lua. (Currently only global is supported.)
+    --      attributes_list[a_color]       [name] = attributes_list[a_color]       [str] or attributes.unsetvalue  -- reset
+    --      attributes_list[a_transparency][name] = attributes_list[a_transparency][str] or attributes.unsetvalue
+    --  end
+    end
+    colorset[name] = true-- maybe we can store more
+end
+
 -- You cannot overload a local color so one then has to use some prefix, like
 -- mp:red. Kind of protection.
 
@@ -1189,6 +1252,18 @@ implement {
 implement {
     name      = "defineprocesscolorglobal",
     actions   = defineprocesscolor,
+    arguments = { "string", "string", true, "boolean" }
+}
+
+implement {
+    name      = "definelabcolorlocal",
+    actions   = definelabcolor,
+    arguments = { "string", "string", false, "boolean" }
+}
+
+implement {
+    name      = "definelabcolorglobal",
+    actions   = definelabcolor,
     arguments = { "string", "string", true, "boolean" }
 }
 

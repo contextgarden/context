@@ -1,0 +1,56 @@
+%D \module
+%D   [      file=s-math-goodriddance.mkxl,
+%D        version=2024.04.01,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=get rid of math,
+%D         author=Hans Hagen & MIkael Sundqvist,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is a prelude to \MLTX\ and subjected to change or maybe even removal!
+
+\startmodule[math-goodriddance]
+
+\unprotect
+
+\let\math_good_riddance\relax
+
+\appendtoks
+    \aftergroup\math_good_riddance
+\to \everymathematics
+
+\def\math_good_riddance_indeed
+  {\begingroup
+   \definedfont[MathRoman sa *]%
+   \gettextblob{\currentlanguage}\currentmathblob
+   \endgroup}
+
+\protected\def\goodriddancemath
+  {\setuptagging[\c!state=\v!start]%
+   \setmathgroupset[every]%
+   \enabledirectives[structures.tags.math.standalone]%
+   \disabledirectives[structures.tags.shipout]%
+   \ctxlua{nodes.tasks.enableaction("math", "noads.handlers.riddance")}%
+   \let\math_good_riddance\math_good_riddance_indeed}
+
+\protected\def\badriddancemath
+  {\setuptagging[\c!state=\v!stop]%
+   \setmathgroupset[default]%
+   \disabledirectives[structures.tags.math.standalone]
+   \ctxlua{nodes.tasks.disableaction("math", "noads.handlers.riddance")}%
+   \let\math_good_riddance\relax}
+
+\startluacode
+    function noads.handlers.riddance(head,...)
+        nodes.nuts.flushlist(head)
+     -- return nodes.nuts.pool.rule(1*65536,1*65536,1*65536)
+        return nil
+    end
+    nodes.tasks.appendaction("math", "finalizers", "noads.handlers.riddance", nil, "nut", "disabled")
+\stopluacode
+
+\stopmodule

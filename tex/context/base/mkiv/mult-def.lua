@@ -14878,6 +14878,9 @@ return {
    ["pe"]="پشت",
    ["ro"]="inapot",
   },
+  ["backgroundbar"]={
+   ["en"]="backgroundbar",
+  },
   ["background"]={
    ["cs"]="pozadi",
    ["de"]="hintergrund",

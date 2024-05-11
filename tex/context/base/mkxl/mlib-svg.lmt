@@ -7,10 +7,10 @@ if not modules then modules = { } end modules ['mlib-svg'] = {
     license   = "see context related readme files",
 }
 
+-- text: fill white also
+
 -- todo: svg stripper
-
 -- todo: check clip: what if larger than bbox
-
 -- todo: when opacity is 1 don't flush it
 
 -- Just a few notes:
@@ -90,6 +90,19 @@ if not modules then modules = { } end modules ['mlib-svg'] = {
 -- effect is that one starts to get a disliking. Anyway, at sime point I can just
 -- simplify some code because ugliness is part of the game.
 
+-- What a mess: opacity=0.8 and fill-opacity=1 on the same element ...
+
+-- the fact that everything glyph is gone makes it less useful because now one is
+-- dependent of some text renderer which then also removes some control because one
+-- has to fight and/or abuse features to get a specific shape ... the same is true
+-- for browsers ... it makes that svg is not really an output format any longer so
+-- less useful in the end (so for instance to get a specific glyph one needs to find
+-- a feature that provides it .. likely per glyph (om the other hand creepy shading
+-- and opacity has to be supported that can easier be done otherwise) .. and what
+-- about optimizeSpeed, optimizeLegibility, geometricPrecision ... it basically makes
+-- using labels impossible because no one knows how it will align .. so best convert
+-- text to curves!
+
 local rawget, rawset, type, tonumber, tostring, next, setmetatable = rawget, rawset, type, tonumber, tostring, next, setmetatable
 
 local P, S, R, C, Ct, Cs, Cc, Cp, Cg, Cf, Carg = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Cc, lpeg.Cp, lpeg.Cg, lpeg.Cf, lpeg.Carg
@@ -101,7 +114,7 @@ local gmatch, gsub, find, match = string.gmatch, string.gsub, string.find, strin
 local formatters, fullstrip = string.formatters, string.fullstrip
 local utfsplit, utfbyte = utf.split, utf.byte
 
-local xmlconvert, xmlcollected, xmlcount, xmlfirst, xmlroot = xml.convert, xml.collected, xml.count, xml.first, xml.root
+local xmlconvert, xmlcollected, xmlcount, xmlfirst, xmlroot, xmlall = xml.convert, xml.collected, xml.count, xml.first, xml.root, xml.all
 local xmltext, xmltextonly = xml.text, xml.textonly
 local css = xml.css or { } -- testing
 
@@ -763,8 +776,6 @@ local grabpath, grablist  do
         setmetatable(p,m)
         local t      = { }    -- no real saving here if we share
         local n      = 0
-     -- n = 0
-        local a      = 0
         local i      = 0
         local last   = "M"
         local prev   = last
@@ -828,9 +839,6 @@ local grabpath, grablist  do
                 i = i + 1 ; y  = y + p[i]
                 goto curveto
             elseif last == "m" then
-                if n > 0 then
-                    a = a + 1 ; all[a] = concat(t,"",1,n) ; n = 0
-                end
                             x = x + pi
                 i = i + 1 ; y = y + p[i]
                 goto moveto
@@ -880,9 +888,6 @@ local grabpath, grablist  do
                 i = i + 1 ; y  = p[i]
                 goto curveto
             elseif last == "M" then
-                if n > 0 then
-                    a = a + 1 ; all[a] = concat(t,"",1,n) ; n = 0
-                end
                             x = pi ;
                 i = i + 1 ; y = p[i]
                 goto moveto
@@ -927,6 +932,9 @@ local grabpath, grablist  do
                 goto continue
             end
             ::moveto::
+                if n > 0 then
+                    n = n + 1 ; t[n] = "&&"
+                end
                 n = n + 1 ; t[n] = f_moveto(x,y)
                 last = last == "M" and "L" or "l"
                 prev = "M"
@@ -961,11 +969,6 @@ local grabpath, grablist  do
                 prev = "C"
                 goto continue
             ::close::
-            --  n = n + 1 ; t[n] = prev == "C" and "..cycle" or "--cycle"
-                n = n + 1 ; t[n] = "--cycle"
-                if n > 0 then
-                    a = a + 1 ; all[a] = concat(t,"",1,n) ; n = 0
-                end
                 if i == np then
                     break
                 else
@@ -979,12 +982,13 @@ local grabpath, grablist  do
             ::continue::
         end
         if n > 0 then
-            a = a + 1 ; all[a] = concat(t,"",1,n) ; n = 0
+            if prev == "Z" then
+                all.closed = true
+                n = n + 1 ; t[n] = "&&cycle"
+            end
+            all.path = concat(t,"",1,n)
         end
-        if prev == "Z" then
-            all.closed = true
-        end
-        all.curve = (kind == "C" or kind == "A")
+        all.curve = kind == "C" or kind == "A"
         return all, p
     end
 
@@ -1213,17 +1217,6 @@ local handletransform, handleviewbox  do
 
     local sind = math.sind
 
- -- local f_rotatedaround           = formatters["svg_p := svg_p rotatedaround((%N,%N),%N) ;"]
- -- local f_rotated                 = formatters["svg_p := svg_p rotated(%N) ;"]
- -- local f_shifted                 = formatters["svg_p := svg_p shifted(%N,%N) ;"]
- -- local f_slanted_x               = formatters["svg_p := svg_p xslanted(%N) ;"]
- -- local f_slanted_y               = formatters["svg_p := svg_p yslanted(%N) ;"]
- -- local f_scaled                  = formatters["svg_p := svg_p scaled(%N) ;"]
- -- local f_xyscaled                = formatters["svg_p := svg_p xyscaled(%N,%N) ;"]
- -- local f_matrix                  = formatters["svg_p := svg_p transformed bymatrix(%N,%N,%N,%N,%N,%N) ;"]
- -- local s_transform_start <const> = "draw image ( begingroup ; save svg_p ; picture svg_p ; svg_p := image ( "
- -- local f_transform_stop          = formatters[" ; ) ; %s ; draw svg_p ; endgroup ; ) ; "]
-
     local f_rotatedaround           = formatters["rotatedaround((%N,%N),%N) "]
     local f_rotated                 = formatters["rotated(%N) "]
     local f_shifted                 = formatters["shifted(%N,%N) "]
@@ -1347,7 +1340,7 @@ local handletransform, handleviewbox  do
         end
     end
 
-    handletransform = function(at)
+    handletransform = function(at,unwrapped)
         local t = at.transform
         if t then
             noftransforms = 0
@@ -1359,10 +1352,10 @@ local handletransform, handleviewbox  do
         end
     end
 
-    handletransformstring = function(t)
-        if t then
+    handletransformstring = function(s)
+        if s then
             noftransforms = 0
-            lpegmatch(p_transform,t)
+            lpegmatch(p_transform,s)
             return noftransforms > 0 and combined()
         end
     end
@@ -1630,7 +1623,7 @@ do
                     report("loading use file: %s",fullname)
                     local root = xml.load(fullname)
                     res = xmlfirst(root,"**[@id='"..fragment.."']")
-                    if res then
+                    if res and c then
                         xmlinheritattributes(res,c) -- tricky
                         setmetatableindex(res.at,c.at)
                         definitions[id] = res
@@ -1794,11 +1787,11 @@ do
 
     -- do
 
-    local s_shade_linear       =            '    withshademethod "linear" '
-    local s_shade_circular     =            '    withshademethod "circular" '
-    local f_color              = formatters['    withcolor "%s"']
-    local f_opacity            = formatters['    withopacity %N']
-    local f_pen                = formatters['    withpen pencircle scaled %N']
+    local s_shade_linear   =            '    withshademethod "linear" '
+    local s_shade_circular =            '    withshademethod "circular" '
+    local f_color          = formatters['    withcolor "%s"']
+    local f_opacity        = formatters['    withopacity %N']
+    local f_pen            = formatters['    withpen pencircle scaled %N']
 
 
     -- todo: gradient unfinished
@@ -1896,24 +1889,33 @@ do
 
     local gradient do
 
-        local f_shade_step         = formatters['withshadestep ( withshadefraction %N withshadecolors (%s,%s) )']
-        local f_shade_step_opacity = formatters['withshadestep ( withshadefraction %N withshadecolors (%s,%s) withshadeopacity %N )']
-        local f_shade_center       = formatters['withshadecenter (%N,%N)']
-        local f_shade_center_f     = formatters['withshadecenterfraction (%N,%N)']
-        local f_shade_radius       = formatters['withshaderadius (%N,%N) ']
-        local f_shade_radius_f     = formatters['withshaderadiusfraction %N']
-        local f_shade_center_one   = formatters['withshadecenterone (%N,%N)']
-        local f_shade_center_two   = formatters['withshadecentertwo (%N,%N)']
-        local f_shade_center_one_f = formatters['withshadecenteronefraction (%N,%N)']
-        local f_shade_center_two_f = formatters['withshadecentertwofraction (%N,%N)']
+        local f_shade_step         = formatters['    withshadestep ( withshadefraction %N withshadecolors (%s,%s) )']
+        local f_shade_colors       = formatters['    withshadecolors (%s,%s)']
+        local f_shade_center       = formatters['    withshadecenter (%N,%N)']
+        local f_shade_center_f     = formatters['    withshadecenterfraction (%N,%N)']
+        local f_shade_radius       = formatters['    withshaderadius (%N,%N) ']
+        local f_shade_radius_f     = formatters['    withshaderadiusfraction %N']
+        local f_shade_center_one   = formatters['    withshadecenterone (%N,%N)']
+        local f_shade_center_two   = formatters['    withshadecentertwo (%N,%N)']
+        local f_shade_center_one_f = formatters['    withshadecenteronefraction (%N,%N)']
+        local f_shade_center_two_f = formatters['    withshadecentertwofraction (%N,%N)']
+        local f_shade_transform    = formatters['    withshadetransformation identity %s']
+
+        local f_shade_inverse      = formatters[' transformed inverse (identity %s)']
+--         local f_shade_inverse      = formatters[' transformed inverse identity %s'] -- or this?
 
         gradient = function(id)
             local spec = definitions[id] -- no locate !
             if spec then
                 local kind  = spec.tg
-                local shade = nil
-                local n     = 1
+                local shade = { }
+                local opacs = nil
+                local ns    = 0
+                local no    = 0
                 local a     = spec.at
+                -- bah
+                local hid = rawget(a,"href") or rawget(a,"xlink:href") -- better a rawget
+                local res = locate(hid)
                 -- bah
                 local gu = rawget(a, "gradientUnits")         -- userSpaceOnUse
                 local gt = rawget(a, "gradientTransform")
@@ -1922,21 +1924,30 @@ do
                 local userspace = gu == "userSpaceOnUse"
                 --
                 if kind == "linearGradient" then
-                    shade = { s_shade_linear }
+                    ns = ns + 1 ; shade[ns] = s_shade_linear
                     --
                     local x1 = rawget(a,"x1")
                     local y1 = rawget(a,"y1")
                     local x2 = rawget(a,"x2")
                     local y2 = rawget(a,"y2")
-                    if x1 and y1 then
-                        n = n + 1 ; shade[n] = f_shade_center_one_f(asnumber_p(x1),1-asnumber_p(y1))
-                    end
-                    if x2 and y2 then
-                        n = n + 1 ; shade[n] = f_shade_center_two_f(asnumber_p(x2),1-asnumber_p(y2))
+                    if userspace then
+                        if x1 and y1 then
+                            ns = ns + 1 ; shade[ns] = f_shade_center_one(asnumber_p(x1),asnumber_p(y1))
+                        end
+                        if x2 and y2 then
+                            ns = ns + 1 ; shade[ns] = f_shade_center_two(asnumber_p(x2),asnumber_p(y2))
+                        end
+                    else
+                        if x1 and y1 then
+                            ns = ns + 1 ; shade[ns] = f_shade_center_one_f(asnumber_p(x1),1-asnumber_p(y1))
+                        end
+                        if x2 and y2 then
+                            ns = ns + 1 ; shade[ns] = f_shade_center_two_f(asnumber_p(x2),1-asnumber_p(y2))
+                        end
                     end
                     --
                 elseif kind == "radialGradient" then
-                    shade = { s_shade_circular }
+                    ns = ns + 1 ; shade[ns] = s_shade_circular
                     --
                     local cx = rawget(a,"cx") -- x center
                     local cy = rawget(a,"cy") -- y center
@@ -1946,26 +1957,26 @@ do
                     --
                     if userspace then
                         if cx and cy then
-                            n = n + 1 ; shade[n] = f_shade_center(asnumber_p(cx),asnumber_p(cy))
+                            ns = ns + 1 ; shade[ns] = f_shade_center(asnumber_p(cx),asnumber_p(cy))
                         end
                         if fx and fy then
-                            n = n + 1 ; shade[n] = f_shade_center_one(asnumber_p(fx),-asnumber_p(fy))
+                            ns = ns + 1 ; shade[ns] = f_shade_center_one(asnumber_p(fx),-asnumber_p(fy))
                         end
                         if r then
-                            n = n + 1 ; shade[n] = f_shade_radius(asnumber_p(r))
+                            ns = ns + 1 ; shade[ns] = f_shade_radius(asnumber_p(r))
                         end
                         if fx and fy then
                             -- todo
                         end
                     else
                         if cx and cy then
-                            n = n + 1 ; shade[n] = f_shade_center_f(asnumber_p(cx),1-asnumber_p(cy))
+                            ns = ns + 1 ; shade[ns] = f_shade_center_f(asnumber_p(cx),1-asnumber_p(cy))
                         end
                         if fx and fy then
-                            n = n + 1 ; shade[n] = f_shade_center_one_f(asnumber_p(fx),1-asnumber_p(fy))
+                            ns = ns + 1 ; shade[ns] = f_shade_center_one_f(asnumber_p(fx),1-asnumber_p(fy))
                         end
                         if r then
-                            n = n + 1 ; shade[n] = f_shade_radius_f(asnumber_p(r))
+                            ns = ns + 1 ; shade[ns] = f_shade_radius_f(asnumber_p(r))
                         end
                         if fx and fy then
                             -- todo
@@ -1974,41 +1985,75 @@ do
                 else
                     return
                 end
-                local colora, colorb
                 -- startcolor ?
-                for c in xmlcollected(spec,"/stop") do
-                    local a       = c.at
-                    local offset  = rawget(a,"offset")
-                    local colorb  = rawget(a,"stop-color")
-                 -- local opacity = rawget(a,"stop-opacity") -- not in pdf for steps
-                    if not colora then
+                local function crap(spec)
+                    local colora, colorb
+                    local opacitya, opacityb
+                    local lastns = ns
+                    for c in xmlcollected(spec,"/stop") do
+                        local a      = c.at
+                        local offset = rawget(a,"offset")
+                        local colorb = rawget(a,"stop-color")
+                        if not colora then
+                            colora = colorb
+                        end
+                        -- what if no percentage
+                     -- local fraction = offset and asnumber_r(offset) -- asnumber_p ?
+                        local fraction = offset and asnumber_p(offset)
+                        if not fraction then
+                            -- for now
+                            fraction = xmlcount(spec,"/stop")/100      -- asnumber_p ?
+                        end
+                        if colora and colorb and colora ~= "" and colorb ~= "" then
+                            ns = ns + 1
+                            if userspace then -- todo
+                                shade[ns] = f_shade_step(fraction,thecolor(colora),thecolor(colorb))
+                            else
+                                shade[ns] = f_shade_step(fraction,thecolor(colora),thecolor(colorb))
+                            end
+                        end
                         colora = colorb
                     end
-                    -- what if no percentage
---                     local fraction = offset and asnumber_r(offset) -- asnumber_p ?
-local fraction = offset and asnumber_p(offset)
-                    if not fraction then
-                        -- for now
-                        fraction = xmlcount(spec,"/stop")/100      -- asnumber_p ?
+                    for c in xmlcollected(spec,"/stop[@stop-opacity]") do
+                        opacityb = c.at["stop-opacity"]
+                        if not opacitya then
+                            opacitya = opacityb
+                        end
                     end
-                    if colora and colorb and colora ~= "" and colorb ~= "" then
-                        n = n + 1
-                     -- if opacity then
-                     --     shade[n] = f_shade_step_opacity(fraction,thecolor(colora),thecolor(colorb),asnumber(o))
-                     -- else
-                            if userspace then
-                                shade[n] = f_shade_step(fraction,thecolor(colora),thecolor(colorb))
-                            else
-                                shade[n] = f_shade_step(fraction,thecolor(colora),thecolor(colorb))
-                            end
-                     -- end
+                    if opacitya then
+                        opacs = { }
+                        for i=1,lastns do
+                            no = no + 1 ; opacs[no] = shade[i]
+                        end
+                        no = no + 1 ; opacs[no] = f_shade_colors(opacitya,opacityb)
                     end
-                    colora = colorb
+                    return colora
                 end
-                return concat(shade,"\n    ")
+                --
+                if not crap(spec) then
+                    -- for now but maybe we need more
+                 -- local id  = rawget(a,"href") or rawget(a,"xlink:href") -- better a rawget
+                 -- local res = locate(id,c)
+                    if res then
+                        crap(res)
+                    end
+                end
+                local transform
+                if gt then
+                    ns = ns + 1
+                    transform = handletransformstring(gt)
+                    shade[ns] = f_shade_transform(transform)
+                    transform = f_shade_inverse(transform)
+                    if opacitya then
+                        no = no + 1
+                        opacs[no] = shade[no]
+                    end
+                end
+                shade = concat(shade,"\n    ")
+                opacs = no > 0 and concat(opacs,"\n    ")
+                return shade, opacs, transform
             end
         end
-
     end
 
     local function drawproperties(stroke,at,opacity)
@@ -2067,37 +2112,50 @@ local fraction = offset and asnumber_p(offset)
     -- it looks like none and transparent are both used (mozilla examples)
 
     local function fillproperties(fill,at,opacity)
-        local o = at["fill-opacity"] or (opacity and at["opacity"])
-        local c = nil
+     -- local o = at["fill-opacity"] or (opacity and at["opacity"])
+        local o = at["fill-opacity"] or (opacity and rawget(at,"opacity")) -- opacity not inherited as it can be on the group
+-- what a mess ... examples and suggestions are not consistent
+local o = at["fill-opacity"]
+if tonumber(o) == 1 then
+    -- so kind of unset
+    o = rawget(at,"opacity") or o
+end
+
+        local c   = nil
+        local t   = nil
+        local ops = nil
         if c ~= "none" then
-            c = gradient(fill)
+            c, ops, t = gradient(fill)
+if ops then
+    return c, ops, t
+end
             if not c then
                 c = pattern(fill)
                 if c then
                     if o and o ~= "none" then
                         o = asnumber_r(o)
                         if o ~= ignoredopacity then
-                            return c, f_opacity(o), "pattern"
+                            return c, ops, t, f_opacity(o), "pattern"
                         end
                     end
-                    return c, false, "pattern"
+                    return c, ops, t, false, "pattern"
                 else
                     c = withcolor(fill)
                 end
             end
         end
         if not o and fill == "transparent" then
-            return nil, f_opacity(0), true
+            return nil, nil, nil, f_opacity(0), true
         elseif o and o ~= "none" then
             o = asnumber_r(o)
             if o == ignoredopacity then
-                return c
+                return c, nil, t
             end
             if o then
-                return c, f_opacity(o), (o == 1 and "invisible")
+                return c, nil, t, f_opacity(o), (o == 1 and "invisible")
             end
         end
-        return c
+        return c, ops, t
     end
 
     local viewport do
@@ -2218,25 +2276,18 @@ setmetatableindex(res.at,at)
         end
     end
 
-    local f_no_draw               = formatters['  nodraw (%s)']
     local f_do_draw               = formatters['  draw (%s)']
-    local f_no_fill_c             = formatters['  nofill closedcurve(%s)']
-    local f_do_fill_c             = formatters['  fill closedcurve(%s)']
-    local f_eo_fill_c             = formatters['  eofill closedcurve(%s)']
-    local f_no_fill_l             = formatters['  nofill closedlines(%s)']
-    local f_do_fill_l             = formatters['  fill closedlines(%s)']
-    local f_eo_fill_l             = formatters['  eofill closedlines(%s)']
-    local f_closed_draw           = formatters['  draw closedcurve(%s)']
-    local f_do_fill               = f_do_fill_c
-    local f_eo_fill               = f_eo_fill_c
-    local f_no_fill               = f_no_fill_c
+    local f_do_fill               = formatters['  fill (%s)']
+    local f_eo_fill               = formatters['  eofill (%s)']
     local s_clip_start    <const> = 'save p ; picture p ; p := image ('
-    local f_clip_stop_c           = formatters[') ; clip p to closedcurve(%s) %s ; draw p ;']
-    local f_clip_stop_l           = formatters[') ; clip p to closedlines(%s) %s ; draw p ;']
+    local f_clip_stop_c           = formatters[') ; clip p to (%s &&& cycle) %s ; draw p ;']
+    local f_clip_stop_l           = formatters[') ; clip p to (%s &&& cycle) %s ; draw p ;']
     local f_clip_stop             = f_clip_stop_c
-    local f_eoclip_stop_c         = formatters[') ; eoclip p to closedcurve(%s) %s ; draw p ;']
-    local f_eoclip_stop_l         = formatters[') ; eoclip p to closedlines(%s) %s ; draw p ;']
+    local f_eoclip_stop_c         = formatters[') ; eoclip p to (%s &&& cycle) %s ; draw p ;']
+    local f_eoclip_stop_l         = formatters[') ; eoclip p to (%s &&& cycle) %s ; draw p ;']
     local f_eoclip_stop           = f_eoclip_stop_c
+
+    local f_shade_luminosity      = formatters['draw luminosityshade (\n  (%s &&& cycle) %s\n  ) (\n%s\n  ) (\n%s\n) ;']
 
     -- could be shared and then beginobject | endobject
 
@@ -2275,7 +2326,7 @@ setmetatableindex(res.at,at)
             else
                 f_done = f_done and f_eoclip_stop_l or f_clip_stop_l
             end
-            r = r + 1 ; result[r] = f_done(cpath[1],ctransform or "")
+            r = r + 1 ; result[r] = f_done(cpath.path,ctransform or "")
         end
     end
 
@@ -2283,44 +2334,27 @@ setmetatableindex(res.at,at)
 
         local flush
 
-        local f_linecap    = formatters["  interim linecap := %s ;"]
-        local f_linejoin   = formatters["  interim linejoin := %s ;"]
-        local f_miterlimit = formatters["  interim miterlimit := %s ;"]
-
-        local s_begingroup <const> = "begingroup;"
-        local s_endgroup   <const> = "endgroup;"
+        local f_withlinecap    = formatters["    withlinecap %s"]
+        local f_withlinejoin   = formatters["    withlinejoin %s"]
+        local f_withmiterlimit = formatters["    withmiterlimit %s;"]
 
         local linecaps  = { butt  = "butt",    square = "squared", round = "rounded" }
         local linejoins = { miter = "mitered", bevel  = "beveled", round = "rounded" }
 
-        local function startlineproperties(at)
+        local function lineproperties(at)
             local cap   = at["stroke-linecap"]
             local join  = at["stroke-linejoin"]
             local limit = at["stroke-miterlimit"]
-            cap   = cap   and linecaps [cap]
-            join  = join  and linejoins[join]
-            limit = limit and asnumber_r(limit)
-            if cap or join or limit then
-                r = r + 1 ; result[r] = s_begingroup
-                if cap then
-                    r = r + 1 ; result[r] = f_linecap(cap)
-                end
-                if join then
-                    r = r + 1 ; result[r] = f_linejoin(join)
-                end
-                if limit then
-                    r = r + 1 ; result[r] = f_miterlimit(limit)
-                end
-                return function()
-                    at["stroke-linecap"]    = false
-                    at["stroke-linejoin"]   = false
-                    at["stroke-miterlimit"] = false
-                    r = r + 1 ; result[r] = s_endgroup
-                    at["stroke-linecap"]    = cap
-                    at["stroke-linejoin"]   = join
-                    at["stroke-miterlimit"] = limit
-                end
+            if cap then
+                cap = linecaps[cap]
             end
+            if join then
+                join = linejoins[join]
+            end
+            if limit then
+                limit = asnumber_r(limit)
+            end
+            return cap, join, limit
         end
 
         -- markers are a quite rediculous thing .. let's assume simple usage for now
@@ -2497,8 +2531,7 @@ setmetatableindex(res.at,at)
             end
         end
 
-        local function flush(shape,dofill,at,list,begmarker,midmarker,endmarker)
-
+        local function flush(shape,dofill,closed,at,list,begmarker,midmarker,endmarker)
             local fill   = dofill and (at["fill"] or "black")
             local stroke = at["stroke"] or "none"
 
@@ -2516,70 +2549,69 @@ setmetatableindex(res.at,at)
             if has_stroke and has_fill then
                 bopacity, copacity, eopacity = sharedopacity(at)
             end
-
             if copacity then
                 r = r + 1 ; result[r] = bopacity
             end
-
+            if has_fill and not closed then
+                shape = shape .. "&&cycle"
+            end
             if has_fill then
-                local color, opacity, option = fillproperties(fill,at,not has_stroke)
+                local color, opacs, transform, opacity, option = fillproperties(fill,at,not has_stroke)
                 local f_xx_fill = at["fill-rule"] == "evenodd" and f_eo_fill or f_do_fill
-                if btransform then
-                    r = r + 1 ; result[r] = btransform
-                end
-                if option == "pattern" then
-                    r = r + 1 result[r] = f_closed_draw(shape)
+                if option ~= pattern and opacs then
+                 -- btransform or "",
+                 -- etransform or "",
+                    r = r + 1 ; result[r] = f_shade_luminosity(shape,transform or "",opacs,color)
                 else
-                    r = r + 1 result[r] = f_xx_fill(shape)
+                    if btransform then
+                        r = r + 1 ; result[r] = btransform
+                    end
+                    if option == "pattern" then
+                        r = r + 1 ; result[r] = f_d_draw(shape)
+                    else
+                        r = r + 1 ; result[r] = f_xx_fill(shape)
+                        if transform then
+                            r = r + 1 result[r] = transform
+                        end
+                    end
+                    if color   then
+                        r = r + 1 ; result[r] = color
+                    end
+                    if opacity then
+                        r = r + 1 ; result[r] = opacity
+                    end
+                    r = r + 1 ; result[r] = etransform or "  ;"
                 end
-                if color   then
-                    r = r + 1 ; result[r] = color
-                end
-                if opacity then
-                    r = r + 1 ; result[r] = opacity
-                end
-                r = r + 1 ; result[r] = etransform or "  ;"
             end
 
             if has_stroke then
-                local wrapup = startlineproperties(at)
                 local pen, dashing, color, opacity = drawproperties(stroke,at,not has_fill)
+                local cap, join, limit = lineproperties(at)
                 if btransform then
                     r = r + 1 ; result[r] = btransform
                 end
                 r = r + 1 ; result[r] = f_do_draw(shape)
-                if pen     then
-                    r = r + 1 ; result[r] = pen
-                end
-                if dashing then
-                    r = r + 1 ; result[r] = dashing
-                end
-                if color then
-                    r = r + 1 ; result[r] = color
-                end
-                if opacity then
-                    r = r + 1 ; result[r] = opacity
-                end
+                if pen     then r = r + 1 ; result[r] = pen     end
+                if dashing then r = r + 1 ; result[r] = dashing end
+                if color   then r = r + 1 ; result[r] = color   end
+                if opacity then r = r + 1 ; result[r] = opacity end
+                if cap     then r = r + 1 ; result[r] = f_withlinecap   (cap)   end
+                if join    then r = r + 1 ; result[r] = f_withlinejoin  (join)  end
+                if limit   then r = r + 1 ; result[r] = f_withmiterlimit(limit) end
                 r = r + 1 ; result[r] = etransform or "  ;"
                 --
                 if list then
                     addmarkers(list,begmarker,midmarker,endmarker,at)
                 end
-                --
-                if wrapup then
-                    wrapup()
-                end
             end
-
             if copacity then
                 r = r + 1 ; result[r] = copacity
                 r = r + 1 ; result[r] = eopacity
             end
 
             if cpath then
-                r = r + 1 ; result[r] = (cpath.evenodd and f_eoclip_stop or f_clip_stop)(cpath[1],ctransform)
+                r = r + 1 ; result[r] = (cpath.evenodd and f_eoclip_stop or f_clip_stop)(cpath.path,ctransform)
             end
-
         end
 
         local f_rectangle = formatters['unitsquare xyscaled (%N,%N) shifted (%N,%N)']
@@ -2600,7 +2632,7 @@ setmetatableindex(res.at,at)
             x2 = x2 and asnumber_vx(x2) or 0
             y2 = y2 and asnumber_vy(y2) or 0
 
-            flush(f_line(x1,y1,x2,y2),false,at)
+            flush(f_line(x1,y1,x2,y2),false,false,at)
         end
 
         function handlers.rect(c)
@@ -2625,9 +2657,9 @@ setmetatableindex(res.at,at)
             if rx or ry then
                 if not rx then rx = ry end
                 if not ry then ry = rx end
-                flush(f_rounded(width,height,rx,ry,x,y),true,at)
+                flush(f_rounded(width,height,rx,ry,x,y),true,true,at)
             else
-                flush(f_rectangle(width,height,x,y),true,at)
+                flush(f_rectangle(width,height,x,y),true,true,at)
             end
         end
 
@@ -2643,7 +2675,7 @@ setmetatableindex(res.at,at)
             rx = rx and asnumber_r (rx) or 0
             ry = ry and asnumber_r (ry) or 0
 
-            flush(f_ellipse(2*rx,2*ry,cx,cy),true,at)
+            flush(f_ellipse(2*rx,2*ry,cx,cy),true,true,at)
         end
 
         function handlers.circle(c)
@@ -2656,7 +2688,7 @@ setmetatableindex(res.at,at)
             cy = cy and asnumber_vy(cy) or 0
             r  = r  and asnumber_r (r)  or 0
 
-            flush(f_circle(2*r,cx,cy),true,at)
+            flush(f_circle(2*r,cx,cy),true,true,at)
         end
 
         local f_lineto_z  = formatters['(%N,%N)']
@@ -2680,25 +2712,25 @@ setmetatableindex(res.at,at)
                 if begmarker or midmarker or endmarker then
                     list = lpegmatch(p_polypair,points)
                 end
-                flush(path,true,at,list,begmarker,midmarker,endmarker)
+                -- check closed
+                flush(path,true,false,at,list,begmarker,midmarker,endmarker)
             end
         end
 
         function handlers.polyline(c) poly(c,       ")") end
         function handlers.polygon (c) poly(c,"--cycle)") end
 
-        local s_image_start <const> = "draw image ("
-        local s_image_stop  <const> = ") ;"
-
         function handlers.path(c)
             local at = c.at
             local d  = rawget(at,"d")
             if d then
                 local shape, l = grabpath(d)
-                local fill     = at["fill"] or "black"
-                local stroke   = at["stroke"] or "none"
-                local n        = #shape
-
+                local path     = shape.path
+                if not path or #path == "" then
+                    return
+                end
+                local fill   = at["fill"] or "black"
+                local stroke = at["stroke"] or "none"
                 local btransform, etransform = handletransform(at)
                 local cpath = handleclippath(at)
                 if cpath then
@@ -2708,22 +2740,26 @@ setmetatableindex(res.at,at)
                 -- todo: image (nicer for transform too)
 
                 if fill and fill ~= "none" then
-                    local color, opacity, option = fillproperties(fill,at)
-                    local f_xx_fill = at["fill-rule"] == "evenodd"
-                    if option == "pattern" then
-                        f_xx_fill = f_closed_draw
-                    elseif shape.closed then
-                        f_xx_fill = f_xx_fill and f_eo_fill   or f_do_fill
-                    elseif shape.curve then
-                        f_xx_fill = f_xx_fill and f_eo_fill_c or f_do_fill_c
-                    else
-                        f_xx_fill = f_xx_fill and f_eo_fill_l or f_do_fill_l
+                    local color, opacs, transform, opacity, option = fillproperties(fill,at)
+                    local evenodd = at["fill-rule"] == "evenodd"
+                    if not shape.closed then
+                        path = path .. "&&cycle"
                     end
-                    if n == 1 then
+                    if opacs then
+                     -- btransform or "",
+                     -- etransform or "",
+                        r = r + 1 ; result[r] = f_shade_luminosity(path,transform or "",opacs,color)
+                    else
                         if btransform then
                             r = r + 1 ; result[r] = btransform
                         end
-                        r = r + 1 result[r] = f_xx_fill(shape[1])
+                        if option == "pattern" then
+                            r = r + 1 result[r] = f_do_draw(path)
+                        elseif evenodd then
+                            r = r + 1 result[r] = f_eo_fill(path)
+                        else
+                            r = r + 1 result[r] = f_do_fill(path)
+                        end
                         if color then
                             r = r + 1 ; result[r] = color
                         end
@@ -2731,23 +2767,6 @@ setmetatableindex(res.at,at)
                             r = r + 1 ; result[r] = opacity
                         end
                         r = r + 1 ; result[r] = etransform or "  ;"
-                    else
-                        r = r + 1 ; result[r] = btransform or s_image_start
-                        for i=1,n do
-                            if i == n then
-                                r = r + 1 ; result[r] = f_xx_fill(shape[i])
-                                if color then
-                                    r = r + 1 ; result[r] = color
-                                end
-                                if opacity then
-                                    r = r + 1 ; result[r] = opacity
-                                end
-                            else
-                                r = r + 1 ; result[r] = f_no_fill(shape[i])
-                            end
-                            r = r + 1 ; result[r] = "  ;"
-                        end
-                        r = r + 1 ; result[r] = etransform or s_image_stop
                     end
                 end
 
@@ -2758,56 +2777,27 @@ setmetatableindex(res.at,at)
                     if begmarker or midmarker or endmarker then
                         list = grablist(l)
                     end
-                    local wrapup = startlineproperties(at)
                     local pen, dashing, color, opacity = drawproperties(stroke,at)
-                    if n == 1 and not list then
-                        if btransform then
-                            r = r + 1 ; result[r] = btransform
-                        end
-                        r = r + 1 result[r] = f_do_draw(shape[1])
-                        if pen then
-                            r = r + 1 ; result[r] = pen
-                        end
-                        if dashing then
-                            r = r + 1 ; result[r] = dashing
-                        end
-                        if color then
-                            r = r + 1 ; result[r] = color
-                        end
-                        if opacity then
-                            r = r + 1 ; result[r] = opacity
-                        end
-                        r = r + 1 result[r] = etransform or "  ;"
-                    else
-                        r = r + 1 result[r] = btransform or s_draw_image_start
-                        for i=1,n do
-                            r = r + 1 result[r] = f_do_draw(shape[i])
-                            if pen then
-                                r = r + 1 ; result[r] = pen
-                            end
-                            if dashing then
-                                r = r + 1 ; result[r] = dashing
-                            end
-                            if color then
-                                r = r + 1 ; result[r] = color
-                            end
-                            if opacity then
-                                r = r + 1 ; result[r] = opacity
-                            end
-                            r = r + 1 ; result[r] = "  ;"
-                        end
-                        if list then
-                            addmarkers(list,begmarker,midmarker,endmarker,at)
-                        end
-                        r = r + 1 ; result[r] = etransform or s_draw_image_stop
+                    local cap, join, limits = lineproperties(at)
+                    if btransform then
+                        r = r + 1 ; result[r] = btransform
                     end
-                    if wrapup then
-                        wrapup()
+                    r = r + 1 result[r] = f_do_draw(path)
+                    if pen     then r = r + 1 ; result[r] = pen     end
+                    if dashing then r = r + 1 ; result[r] = dashing end
+                    if color   then r = r + 1 ; result[r] = color   end
+                    if opacity then r = r + 1 ; result[r] = opacity end
+                    if cap     then r = r + 1 ; result[r] = f_withlinecap   (cap)   end
+                    if join    then r = r + 1 ; result[r] = f_withlinejoin  (join)  end
+                    if limit   then r = r + 1 ; result[r] = f_withmiterlimit(limit) end
+                    r = r + 1 result[r] = etransform or "  ;"
+                    if list then
+                        addmarkers(list,begmarker,midmarker,endmarker,at)
                     end
                 end
 
                 if cpath then
-                    r = r + 1 ; result[r] = f_clip_stop(cpath[1],"")
+                    r = r + 1 ; result[r] = f_clip_stop(cpath.path,"")
                 end
 
             end
@@ -2904,13 +2894,18 @@ setmetatableindex(res.at,at)
 
             local btransform, etransform, transform = handletransform(at)
             local cpath, clippath, ctransform = handleclippath(at)
+            local bopacity, copacity, eopacity = sharedopacity(at)
+
+            if copacity then
+                r = r + 1 ; result[r] = bopacity
+            end
 
             if cpath then
                 r = r + 1 ; result[r] = s_clip_start
             end
 
             if btransform then
-                r= r + 1 result[r] = btransform
+                r = r + 1 result[r] = btransform
             end
 
             local _transform = transform
@@ -2934,7 +2929,11 @@ setmetatableindex(res.at,at)
                 else
                     f_done = f_done and f_eoclip_stop_l or f_clip_stop_l
                 end
-                r = r + 1 ; result[r] = f_done(cpath[1],ctransform or "")
+                r = r + 1 ; result[r] = f_done(cpath,path,ctransform or "")
+            end
+            if copacity then
+                r = r + 1 ; result[r] = copacity
+                r = r + 1 ; result[r] = eopacity
             end
         end
 
@@ -3287,7 +3286,7 @@ setmetatableindex(res.at,at)
                 if not v_fill or v_fill == "none" then
                     v_fill = "black"
                 end
-                local color, opacity, option = fillproperties(v_fill,at)
+                local color, opacs, transform, opacity, option = fillproperties(v_fill,at)
                 local anchor = anchors[at["text-anchor"] or "start"] or "drt"
                 local remap = metapost.remappedtext(only)
                 -- x = x + dx
@@ -3621,8 +3620,9 @@ do
     function metapost.typesvgpage(data)
         local dd = data.data
         if not dd then
-            local fn = data.filename
-            dd = fn and table.load(fn)
+            local filename = data.filename
+            local fullname = filename and resolvers.findbinfile(filename)
+            dd = fullname and table.load(fullname)
         end
         if type(dd) == "table" then
             local index = data.index

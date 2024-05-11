@@ -188,7 +188,7 @@
 \stopsetups
 
 % Start with low tolerance and hopefully no hyphens. increase tolerance and
-% decrease extrahyphenpenalty Last one has a larger threshold, so only kicks in for
+% decrease extrahyphenpenalty. Last one has a larger threshold, so only kicks in for
 % lines that stick out "much" 31-1-4-0 (but two slightly overfull hboxes)
 
 \startsetups align:pass:test5

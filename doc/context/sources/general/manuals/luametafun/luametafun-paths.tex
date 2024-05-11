@@ -1,0 +1,1007 @@
+% language=us runpath=texruns:manuals/luametafun
+
+% \enablemode[check]
+
+% corners == boundingbox
+
+\environment luametafun-style
+
+\startcomponent luametafun-paths
+
+\startchapter[title={Paths}]
+
+\startsection[title=Introduction]
+
+In the end \METAPOST\ is all about creating (beautiful) paths. In this chapter we
+introduce some extensions to the engine that can be of help when constructing
+paths. Some relate to combining paths segments, others to generating the points.
+
+\stopsection
+
+\startsection[title=Cycles]
+
+The \type {cycle} commands closes a path: the end gets connected to the start. One
+way to construct a path stepwise is using a \type {for} loop, as in:
+
+\startbuffer
+\startMPcode
+draw (
+    (0,sin(0)) for i=pi/20 step pi/20 until 2pi :
+        .. (i,sin(i))
+    endfor
+) xysized(8cm,2cm)
+withpen pencircle scaled 1mm
+withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+This looks kind of ugly because we need to make sure that we only put the
+\type {..} between points. If we have a closed path we can do this:
+
+\startbuffer
+\startMPcode
+draw (
+    for i=0 step pi/20 until 2pi :
+        (i,sin(i)) ..
+    endfor cycle
+) xysized(8cm,2cm)
+withpen pencircle scaled 1mm
+withcolor "darkblue" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+But that is not what we want here. It is for this reason that we have a different
+operator, one that closes a path without cycling:
+
+\startbuffer
+\startMPcode
+draw (
+    for i=0 step pi/20 until 2pi :
+        (i,sin(i)) ..
+    endfor nocycle
+) xysized(8cm,2cm)
+withpen pencircle scaled 1mm
+withcolor "darkgreen" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Combining paths]
+
+The \type {&} concat operator requires the last point of the previous and the
+first point of the current path to be the same. This restriction is lifted with
+the \type {&&}, \type {&&&} and \type {&&&&} commands.
+
+\startbuffer
+\startMPcode
+def Example(expr p, q) =
+    draw image (
+        drawpathonly (p &&   q) shifted ( 0u,0) ;
+        drawpathonly (p &&&  q) shifted ( 5u,0) ;
+        drawpathonly (p &&&& q) shifted (10u,0) ;
+    ) ;
+enddef ;
+
+path p[] ; numeric u ; u := 1cm ;
+p[1] := (0u,0u) -- (1u,0u) -- (1u,1u) ;
+p[2] := (1u,1u) -- (2u,1u) -- (2u,0u) ;
+
+Example(p[1], p[2]) ;
+
+Example(p[1] shifted (0u,-2u), p[2] shifted (1u,-2u)) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+The precise working can be best be seen from what path we get. The single
+ampersand just does a concat but issues an error when the paths don't touch so we
+leave that one out.
+
+% 0 -> 0
+
+\startbuffer
+\startMPdefinitions
+path p, q, r ;
+p := (0,0) -- (1,0) ;
+q := (2,0) -- (3,0) ;
+r := (1,0) -- (3,0) ;
+vardef Example(expr p) =
+  % show (p);
+    drawpathonly p scaled 4cm ;
+enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\testpage[4]
+
+This gives us:
+
+\startlinecorrection \startMPcode Example(p && q) ; \stopMPcode \stoplinecorrection
+
+\starttyping
+(0,0)         .. controls (0.33,0) and (0.67,0) .. % p && q
+(1,0) {end}   .. controls (2,   0) and (1,   0) ..
+(2,0) {begin} .. controls (2.33,0) and (2.67,0) ..
+(3,0)
+\stoptyping
+
+\testpage[3]
+
+\startlinecorrection \startMPcode Example(p && r) ; \stopMPcode \stoplinecorrection
+
+\starttyping
+(0,0)         .. controls (0.33,0) and (0.67,0) .. % p && r
+(1,0) {end}   .. controls (1,   0) and (1,   0) ..
+(1,0) {begin} .. controls (1.67,0) and (2.33,0) ..
+(3,0)
+\stoptyping
+
+\testpage[3]
+
+\startlinecorrection \startMPcode Example(p &&& q) ; \stopMPcode \stoplinecorrection
+
+\starttyping
+(0,0)         .. controls (0.33,0) and (0.67,0) .. % p &&& q
+(1,0)         .. controls (2.33,0) and (2.67,0) ..
+(3,0)
+\stoptyping
+
+\testpage[3]
+
+\startlinecorrection \startMPcode Example(p &&& r) ; \stopMPcode \stoplinecorrection
+
+\starttyping
+(0,0)         .. controls (0.33,0) and (0.67,0) .. % p &&& r
+(1,0)         .. controls (1.67,0) and (2.33,0) ..
+(3,0)
+\stoptyping
+
+\testpage[3]
+
+\startlinecorrection \startMPcode Example(p &&&& q) ; \stopMPcode \stoplinecorrection
+
+\starttyping
+(0,0)         .. controls (0.33,0) and (0.67,0) .. % p &&&& q
+(1,0) {end}   .. controls (2,   0) and (1,   0) ..
+(2,0) {begin} .. controls (2.33,0) and (2.67,0) ..
+(3,0)
+\stoptyping
+
+\testpage[3]
+
+\startlinecorrection \startMPcode Example(p &&&& r) ; \stopMPcode \stoplinecorrection
+
+\starttyping
+(0,0)         .. controls (0.33,0) and (0.67,0) .. % p &&&& r
+(1,0) {end}   .. controls (1,   0) and (1,   0) ..
+(1,0) {begin} .. controls (1.67,0) and (2.33,0) ..
+(3,0)
+\stoptyping
+
+If we have one (concat) ampersand we check if the paths touch, error or move on.
+If we have three (tolerant concat) or four (tolerant append) ampersands we check
+if the end and begin are the same and if so, we remove one and set the controls
+points halfway, and then degrade to one (concat) or two (append) ampersands.
+Finally when (then) we have one ampersand (concat) we connect with some curl
+magic but when we have two (append) we connect without the curl magic: we let the
+left and right control points be the points.
+
+\startbuffer
+\startMPcode
+path p[] ;
+
+p[1] := (0,0) -- (100,0) -- (100,100) ; for i=2 upto 5 : p[i] := p[1] ; endfor ;
+
+p[1] := p[1]   -- cycle ; p[1] := p[1]   -- cycle ; p[1] := p[1]   -- cycle ;
+p[2] := p[2]   -- cycle ; p[2] := p[2]  &&& cycle ; p[2] := p[2]  &&& cycle ;
+p[3] := p[3]   -- cycle ; p[3] := p[3] &&&& cycle ; p[3] := p[3] &&&& cycle ;
+p[4] := p[4]  &&& cycle ;
+p[5] := p[5] &&&& cycle ;
+
+for i=1 upto 5 :
+  % show(p[i]) ;
+    fill p[i] shifted (i*110,0) withcolor "middlegray" ;
+    draw p[i] shifted (i*110,0) withcolor "darkred" withpen pencircle scaled 5  ;
+endfor ;
+currentpicture := currentpicture xsized TextWidth ;
+\stopMPcode
+\stopbuffer
+
+Here is another example of usage. Watch how \type {&&&} doesn't influence an
+already closed curve.
+
+\typebuffer
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+The paths are, here shown with less precision:
+
+\starttyping
+(0,0) .. controls (33.33,0) and (66.67,-0)
+.. (100,0) .. controls (100,33.33) and (100,66.67)
+.. (100,100) .. controls (66.67,66.67) and (33.33,33.33)
+.. (0,0) .. controls (0,0) and (0,0)
+.. (0,0) .. controls (0,0) and (0,0)
+.. cycle
+
+(0,0) .. controls (33.33,0) and (66.67,-0)
+.. (100,0) .. controls (100,33.33) and (100,66.67)
+.. (100,100) .. controls (66.67,66.67) and (33.33,33.33)
+.. cycle
+
+(0,0) {begin} .. controls (33.33,0) and (66.67,-0)
+.. (100,0) .. controls (100,33.33) and (100,66.67)
+.. (100,100) .. controls (66.67,66.67) and (33.33,33.33)
+.. (0,0) {end} .. controls (0,0) and (0,0) % duplicate {end} is
+.. (0,0) {end} .. controls (0,0) and (0,0) % sort of an error
+.. cycle
+
+(100,100) .. controls (33.33,0) and (66.67,-0)
+.. (100,0) .. controls (100,33.33) and (100,66.67)
+.. cycle
+
+(0,0) {begin} .. controls (33.33,0) and (66.67,-0)
+.. (100,0) .. controls (100,33.33) and (100,66.67)
+.. (100,100) {end} .. controls (0,0) and (100,100)
+.. cycle
+\stoptyping
+
+These somewhat complicated rules also relate to the intended application: the
+backend can apply \type {fill} or \type {eofill} in which case also cycles are
+involved as the following examples demonstrate:
+
+\startbuffer
+\startMPdefinitions
+path p, q, r ;
+p := fullcircle ;
+q := reverse fullcircle ;
+r := fullcircle shifted (1/2,0) ;
+vardef Example(expr p) =
+    image (
+        eofill p scaled 4cm withcolor "middlegray" ;
+        drawpathonly p scaled 4cm ;
+    )
+enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startbuffer
+\startMPcode
+    draw Example(p &&&           q &&& cycle) ;
+    draw Example(p &&& cycle &&& q &&& cycle) shifted (8cm,0) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+    draw Example(p &&&           r &&& cycle) ;
+    draw Example(p &&& cycle &&& r &&& cycle) shifted (8cm,0) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+    draw Example(p &&&&            q &&&& cycle) ;
+    draw Example(p &&&& cycle &&&& q &&&& cycle) shifted (8cm,0) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+    draw Example(p &&&&            r &&&& cycle) ;
+    draw Example(p &&&& cycle &&&& r &&&& cycle) shifted (8cm,0) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Implicit points]
+
+In the \METAPOST\ library that comes with \LUAMETATEX\ we have a few extensions
+that relate to paths. You might wonder why we need these but some relate to the
+fact that paths can be generated programmatically. A prominent operator (or
+separator) is \type {..} and contrary to what one might expect the frequently
+used \type {--} is a macro:
+
+\starttyping[option=MP]
+def -- = { curl 1 } .. { curl 1 } enddef ;
+\stoptyping
+
+This involves interpreting nine tokens as part of expanding the macro and in
+practice that is fast even for huge paths. Nevertheless we now have a \type {--}
+primitive that involves less interpreting and also avoids some intermediate
+memory allocation of numbers. Of course you can still define it as macro.
+
+When you look at \POSTSCRIPT\ you'll notice that it has operators for relative
+and absolute positioning in the horizontal, vertical or combined direction. In
+\LUAMETATEX\ we now have similar operators that we will demonstrate with a few
+examples.
+
+\startbuffer
+\startMPcode
+drawarrow origin
+    -- xrelative  300
+    -- yrelative   20
+    -- xrelative -300
+    -- cycle
+withpen pencircle scaled 2
+withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+In the next example we show a relative position combined with an absolute and we
+define them as macros. You basically gets what goes under the name \quote {turtle
+graphics}:
+
+\startbuffer
+\startMPcode
+save h ; def h = -- xrelative enddef ;
+save v ; def v = -- yabsolute enddef ;
+
+drawarrow origin
+    h 30 v 20 h 30 v 30
+    h 30 v 10 h 30 v 50
+    h 30 v 60 h 30 v 10
+withpen pencircle scaled 2
+withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+When you provide a pair to \type {xabsolute} or \type {yabsolute}, the xpart is
+the (relative) advance and the second the absolute coordinate.
+
+\startbuffer
+\startMPcode
+draw origin
+    -- yabsolute(10,30)
+    -- yabsolute(20,20)
+    -- yabsolute(30,10)
+    -- yabsolute(40,20)
+    -- yabsolute(50,30)
+    -- yabsolute(60,20)
+    -- yabsolute(70,10)
+    -- yabsolute(80,20)
+    -- yabsolute(90,30)
+withpen pencircle scaled 2
+withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+The \type {xyabsolute} is sort of redundant and is equivalent to just a pair, but
+maybe there is a use for it. When the two coordinates are the same you can use
+a numeric.
+
+\startbuffer
+\startMPcode
+draw origin
+    -- xyabsolute(10, 10) % -- xyabsolute 10
+    -- xyabsolute(20, 10)
+    -- xyabsolute(30,-10)
+    -- xyabsolute(40,-10)
+    -- xyabsolute(50, 10)
+    -- xyabsolute(60, 10)
+    -- xyabsolute(70,-10)
+    -- xyabsolute(80,-10)
+withpen pencircle scaled 2
+withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+The relative variant also can take a pair and numeric, as in:
+
+\startbuffer
+\startMPcode
+draw origin
+    -- xyrelative 10
+    -- xyrelative 10
+    -- xyrelative(10,-10)
+    -- xyrelative(10,-10)
+    -- xyrelative 10
+    -- xyrelative 10
+    -- xyrelative(10,-10)
+    -- xyrelative(10,-10)
+withpen pencircle scaled 2
+withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+In these examples we used \type {--} but you can mix in \type {..} and
+control point related operations, although the later is somewhat less
+intuitive here.
+
+\startbuffer
+\startMPcode
+draw   yabsolute(10,30)
+    .. yabsolute(20,20)
+    .. yabsolute(10,10)
+    .. yabsolute(20,20)
+    .. yabsolute(10,30)
+    .. yabsolute(20,20)
+    .. yabsolute(10,10)
+    .. yabsolute(20,20)
+    .. yabsolute(10,30)
+withpen pencircle scaled 2
+withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+And with most features, users will likely find a use for it:
+
+\startbuffer
+\startMPcode
+draw for i=1 upto 5 :
+    yabsolute(10,30) ---
+    yabsolute(20,20) ...
+    yabsolute(10,10) ---
+    yabsolute(20,20) ...
+endfor nocycle
+withpen pencircle scaled 2
+withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX] \startlinecorrection \getbuffer \stoplinecorrection
+
+Here is a more impressive example, the result is shown in \in {figure}
+[fig:r-a-paths]:
+
+\startbuffer
+\startMPcode
+for n=10 upto 40 :
+    path p ; p := (
+        for i = 0 step pi/n until pi :
+            yabsolute(cos(i)^2-sin(i)^2,sin(i)^2-cos(i)^2) --
+        endfor cycle
+    ) ;
+    draw p
+        withpen pencircle scaled 1/20
+        withcolor "darkred" withtransparency (1,.25) ;
+endfor ;
+currentpicture := currentpicture xysized (TextWidth,.25TextWidth) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startplacefigure[title=Combined relative x and absolute y positioning,ref=fig:r-a-paths]
+    \getbuffer
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Control points]
+
+Most users will create paths by using \type {..}, \type {...}, \type {--} and
+\type {---} and accept what they get by the looks. If your expectations are more
+strict you might use \type {tension} or \type {curl} with directions and vectors
+for the so called control points between connections. In \in {figure}
+[fig:controlpoints] you see not only \type {controls} in action but also two
+operators that can be used to set the first and second control point. For the
+record: if you use \type {controls} without \type {and} the singular pair will
+be used for both control points.
+
+\startbuffer
+\startMPcode
+path p, q, r, s ;
+
+p = origin {dir 25} .. (80,0) ..      controls ( 80, 0) and (100,40) .. (140,30) .. {dir 0} (180,0) ;
+q = origin {dir 25} .. (80,0) ..      controls (100,40) and (140,30) .. (140,30) .. {dir 0} (180,0) ;
+r = origin {dir 25} .. (80,0) .. secondcontrol              (100,40) .. (140,30) .. {dir 0} (180,0) ;
+s = origin {dir 25} .. (80,0) ..  firstcontrol (100,40)              .. (140,30) .. {dir 0} (180,0) ;
+
+def Example(expr p, t, c) =
+    draw p ;
+    drawpoints p withcolor "middlegray" ;
+    drawcontrollines p withpen pencircle scaled .3 withcolor c ;
+    drawcontrolpoints p withpen pencircle scaled 2  withcolor c ;
+    label.lft("\smallinfofont current", point 1 of p) ;
+    label.top("\smallinfofont next", point 2 of p) ;
+    draw thetextext.rt("\infofont path " & t, (point 3 of p) shifted (5,0)) ;
+enddef ;
+
+draw image (
+    Example(p, "p", "darkred")  ; currentpicture := currentpicture yshifted 50 ;
+    Example(q, "q", "darkblue") ; currentpicture := currentpicture yshifted 50 ;
+    Example(r, "r", "darkred")  ; currentpicture := currentpicture yshifted 50 ;
+    Example(s, "s", "darkblue") ; currentpicture := currentpicture yshifted 50 ;
+) xsized TextWidth ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+% This picture was made by Mikael when we tested these new commands.
+
+\startplacefigure[title={Three ways to set the control points.},reference=fig:controlpoints]
+    \getbuffer
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Arcs]
+
+In \POSTSCRIPT\ and \SVG\ we have an arc command but not in \METAPOST. In \LMTX\
+we provide a macro that does something similar:
+
+\startbuffer
+\startMPcode
+draw
+    (0,0) --
+    (arc(0,180) scaled 30 shifted (0,30)) --
+    cycle
+withpen pencircle scaled 2
+withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The result is not spectacular:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+Instead of a primitive with five arguments and the prescribed line drawn from the
+current point to the beginning of the arc we just use \type {..}, \type{scaled}
+for the radius, and \type {shifted} for the origin. It actually permits more
+advanced trickery.
+
+\startbuffer
+\startMPcode
+draw
+    (0,0) ..
+    (arc(30,240) xscaled 60 yscaled 30 shifted (0,30)) ..
+    cycle
+withpen pencircle scaled 2
+withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Here time we get smooth connections:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+but because we scale differently also a different kind of arc: it is no longer a
+circle segment, which is often the intended use of arc.
+
+\stopsection
+
+\startsection[title=Loops]
+
+The \METAPOST\ program is a follow up on \METAFONT, which primary target was to
+design fonts. The paths that make op glyphs are often not that large and because
+in most cases we don't know in advance how large a path is they are implemented
+as linked lists. Now consider a large paths, with say 500 knots. The following
+assignment:
+
+\starttyping[option=MP]
+pair a ; a := point 359 of p ;
+\stoptyping
+
+has to jump across 358 knots before it reaches the requested point. Let's take an
+example of drawing a function by (naively) stepping over values:
+
+\startbuffer
+\startMPcode
+path p ; p := for i=0 step 4pi/500 until 4pi: (i,sin(i)) -- endfor nocycle ;
+p := p xysized(TextWidth,2cm) ;
+draw p ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+draw p ; for i=0 step 5 until length(p) :
+    drawdot point i of p withpen pencircle scaled 2 ;
+endfor ;
+\stopMPcode
+\stopbuffer
+
+Of course we can just calculate the point directly but here we just
+want to illustrate a problem.
+
+\typebuffer[option=TEX]
+
+% \startlinecorrection \getbuffer \stoplinecorrection
+
+For 500 points, on a modern computer running over the list is rather fast
+but when we are talking 5000 points is gets noticeable, and given what
+\METAPOST\ is used for, having many complex graphics calculated at runtime
+can have some impact on runtime.
+
+% \startlinecorrection \getbuffer \stoplinecorrection
+
+Of course we can just calculate the point directly but here we just
+want to illustrate a problem. Where the previous loop takes 0.002
+seconds, the second loop needs 0.001 seconds:
+
+\startbuffer
+\startMPcode
+pair p ; for i within p :
+   if i mod 5 == 0 :
+       drawdot pathpoint withpen pencircle scaled 2 ;
+   fi ;
+endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+% \startlinecorrection \getbuffer \stoplinecorrection
+
+These numbers are for assigning the point to a pair variable so that we don't
+take into account the extra drawing (and backend) overhead. The difference in
+runtime can be neglected but what if we go to 5000 points? Not unsurprisingly we
+go down from 0.142 seconds to 0.004 seconds. There are plenty examples where
+runtime can be impacted, for instance when one first takes the \typ {xpart point
+i} and then the \typ {ypart point i}.
+
+One motivation for adding a more efficient loop for paths is that in generative
+art one has such long parts and drawing that took tens of minutes or more now can
+be generated in seconds. Another motivation is in analyzing and manipulating
+paths. In that case we also need access to the control points and maybe even
+preceding or succeeding points. In \in {figure} [fig:withinpath] we show the
+output of the following code:
+
+\startbuffer
+\startMPcode
+path p ; p := fullcircle scaled 10cm ;
+fill p withcolor "darkred" ;
+draw p withpen pencircle scaled 1mm withcolor "middleblue" ;
+
+for i within p :
+    draw pathpoint       withpen pencircle scaled 4mm withcolor "middlegray" ;
+    draw pathprecontrol  withpen pencircle scaled 2mm withcolor "middlegreen" ;
+    draw pathpostcontrol withpen pencircle scaled 2mm withcolor "middlegreen" ;
+    draw textext("\ttbf" & decimal i) shifted .6[deltapoint -2,origin] withcolor white ;
+    draw textext("\ttbf" & decimal i) shifted .4[pathpoint    ,origin] withcolor white ;
+    draw textext("\ttbf" & decimal i) shifted .2[deltapoint  2,origin] withcolor white ;
+endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The \METAPOST\ library in \LUAMETATEX\ uses double linked lists for paths so going
+back and forward is a rather cheap operation.
+
+\startplacefigure[title={Fast looping over paths.},reference=fig:withinpath]
+    \getbuffer
+\stopplacefigure
+
+A nice application of this feature is the following, where we use yet another
+point property, \typ {pathdirection}:
+
+\starttyping[option=MP]
+vardef dashing (expr pth, shp, stp) =
+    for i within arcpointlist stp of pth :
+        shp
+            rotated angle(pathdirection)
+            shifted pathpoint
+        &&
+    endfor nocycle
+enddef ;
+\stoptyping
+
+With:
+
+\startbuffer
+\startMPcode
+path p ; p := unitsquare xysized (TextWidth,1cm) ;
+draw p withpen pencircle scaled .2mm withcolor darkblue ;
+fill dashing (p, triangle scaled 1mm, 100) && cycle withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+we get:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+It is worth noticing that the path returned by dashing is actually a combined
+path where the pen gets lifted between the subpaths. This is what the \type {&&}
+does. The \type {nocycle} is there to intercept the last \quote {connector} (which
+of course could also have been a \type {--} or \type {..}. So we end up with an
+open path, which why in case of a fill we need to close it by \type {cycle}.
+In the next example we show all the accessors:
+
+\startbuffer
+\startMPcode[instance=scaledfun]
+path p; p := (fullsquare scaled 3 && fullsquare rotated 45 scaled 2 && cycle) ;
+
+for i within p :
+    message(
+            "index "       & decimal  pathindex
+        & ", lastindex "   & decimal  pathlastindex
+        & ", length "      & decimal  pathlength
+        & ", first "       & if       pathfirst : "true" else : "false" fi
+        & ", last "        & if       pathlast  : "true" else : "false" fi
+        & ", state "       & decimal  pathstate % end/begin subpath
+        & ", point "       & ddecimal pathpoint
+        & ", postcontrol " & ddecimal pathprecontrol
+        & ", precontrol "  & ddecimal pathpostcontrol
+        & ", direction "   & ddecimal pathdirection
+        & ", delta "       & ddecimal deltapoint 1
+    );
+endfor ;
+
+eofill p xysized (TextWidth, 2cm) withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+If you want to see the messages you need to process it yourself, but this is how the
+ten point shape looks like:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Randomized paths]
+
+When randomizing a path the points move and when such a path has to bound a specific
+areas that can result in overlap which what is bounded.
+
+\startbuffer
+\startMPcode
+path p ; p := fullsquare xyscaled (10cm,2cm) ;
+fill p withcolor "darkred" ;
+draw p randomized 3mm withpen pencircle scaled 1mm withcolor "middlegray";
+setbounds currentpicture to p ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+Here are two variants that randomize a path but keep the points where they
+are. They might be better suited for cases where there is text within the
+area.
+
+\startbuffer
+\startMPcode
+path p ; p := fullsquare xyscaled (10cm,2cm) ;
+fill p withcolor "darkblue" ;
+draw p randomizedcontrols 3mm withpen pencircle scaled 1mm withcolor "middlegray";
+setbounds currentpicture to p ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+path p ; p := fullsquare xyscaled (10cm,2cm) ;
+fill p withcolor "darkyellow" ;
+draw p randomrotatedcontrols 15 withpen pencircle scaled 1mm withcolor "middlegray";
+setbounds currentpicture to p ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Connecting]
+
+In \LUAMETATEX\ the \type {--} operator is a primitive, like \type {..} and when
+exploring this we came up with this example that demonstrates the difference
+with (still a macro ) \type {---}.
+
+\startbuffer
+\startMPcode
+path p[] ;
+p[1] = origin --  (100, 0) ..  (75, 50) ..  (50, 100) ..  (25, 50) ..  cycle ;
+p[2] = origin --- (100, 0) ..  (75, 50) ..  (50, 100) ..  (25, 50) ..  cycle ;
+p[3] = origin --  (100, 0) ... (75, 50) ... (50, 100) ... (25, 50) ... cycle ;
+p[4] = origin --- (100, 0) ... (75, 50) ... (50, 100) ... (25, 50) ... cycle ;
+
+draw p[1] withpen pencircle scaled 3bp withcolor "darkblue" ;
+draw p[2] withpen pencircle scaled 2bp withcolor "darkyellow" ;
+drawpoints p[1] withpen pencircle scaled 3bp withcolor darkred ;
+
+draw image (
+    draw p[1] withpen pencircle scaled 4bp withcolor "darkblue" ;
+    draw p[2] withpen pencircle scaled 3bp withcolor "darkyellow" ;
+    draw p[3] withpen pencircle scaled 2bp withcolor "darkred" ;
+    draw p[4] withpen pencircle scaled 1bp withcolor "darkgreen" ;
+) shifted (150,0) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Where \type {...} makes a more tight curve, \type {---} has consequences for the
+way a curve gets connected to a straight line segment.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Curvature]
+
+Internally \METAPOST\ only has curves but when a path is output it makes sense to
+use lines when possible. The \CONTEXT\ backend takes care of that (and further optimizations)
+but you can check yourself too.
+
+\startbuffer
+\startMPcode
+def Test(expr p, c) =
+    draw
+        p
+        withpen pencircle scaled 2mm
+        withcolor c ;
+    draw
+        textext("\bf " & if not (subpath(2,3) of p hascurvature 0.02) : "not" else : "" fi & " curved" )
+        shifted center p ;
+enddef ;
+
+Test(fullcircle scaled 3cm shifted (0cm,0),"darkred");
+Test(fullsquare scaled 3cm shifted (4cm,0),"darkblue");
+Test(fullsquare scaled 3cm shifted (8cm,0) randomizedcontrols 1cm,"darkgreen");
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The \typ {hascurvature} macro is a primary and applies a curvature criterium to a
+(sub)path. The default tolerance in the backend is \im {131/65536} or \im
+{\luaexpr[.5N]{131/65536}}. The same default is used for eliminating points that \quote
+{are the same}.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+In the rare case that the backend decides for straight lines while actually
+there is a curve, you can use \typ {withcurvature 1} to bypass the check.
+
+\stopsection
+
+\startsection[title=Joining paths]
+
+Say that you have three paths:
+
+\starttyping[option=TEX]
+path p[] ;
+p[1] := (0,0) -- (100,0) ;
+p[2] := (101,0) -- (100,100) ;
+p[3] := (100,101) ;
+\stoptyping
+
+If you join these with:
+
+\starttyping[option=TEX]
+draw p[1] & p[2] & p[3] -- cycle ;
+\stoptyping
+
+You will get an error message telling that the paths don't have common points so
+that they can't be joined. This can be a problem when your snippets are the result
+of cutting up a path. In practice the difference between the to be joined coordinates is
+small, so we provide a way to get around this problem:
+
+\startbuffer
+\startMPcode
+    interim jointolerance := 5eps ;
+    draw (0,0) -- (100,0) & (100+4eps,0) -- (100,20) & (100,20+2eps) -- cycle
+        withpen pencircle scaled 2 withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Up to the tolerance is accepted as difference in either direction, so indeed we get
+a valid result:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+    interim jointolerance := 20 ;
+    draw (0,0) -- (100,0) & (110,10) -- (100,40) & (100,50) -- cycle
+        withpen pencircle scaled 2 withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+Larger values can give a more noticeable side effect:
+
+\typebuffer[option=TEX]
+
+It all depends on your need it this is considered okay:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+As with everything \TEX\ and \METAPOST, once you see what is possible it can be
+abused:
+
+\startbuffer
+\startMPcode
+    interim jointolerance := 20 ;
+    randomseed := 10 ;
+    draw for i=1 upto 200 :
+       (i,50 randomized 10) --
+    endfor nocycle
+        withpen pencircle scaled .1 ;
+    randomseed := 10 ;
+    draw for i=1 upto 200 :
+        (i,50 randomized 10) if odd i : & else : -- fi
+    endfor nocycle
+        withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We leave it up to the reader to decide how the red line can be interpreted.
+
+\startlinecorrection \scale[width=\textwidth]{\getbuffer} \stoplinecorrection
+
+Here is another nice example:
+
+\startbuffer
+\startMPcode
+    path p[] ;
+    p[1] := origin -- (100,50) ;
+    p[2] := (200,50) -- (300,0) ;
+    draw p[1] && p[2] withpen pencircle scaled 4 withcolor darkgreen ;
+    draw p[1] -- p[2] withpen pencircle scaled 2 withcolor "orange" ;
+    interim jointolerance := 100 ;
+    draw p[1] & p[2]  withpen pencircle scaled 1 withcolor darkblue ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Watch how we get a curve:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

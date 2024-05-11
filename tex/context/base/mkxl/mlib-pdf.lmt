@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['mlib-pdf'] = {
 
 local gsub = string.gsub
 local concat, insert, remove, sortedkeys = table.concat, table.insert, table.remove, table.sortedkeys
-local abs, sqrt, round = math.abs, math.sqrt, math.round
+local sqrt, round = math.sqrt, math.round
 local setmetatable, rawset, tostring, tonumber, type = setmetatable, rawset, tostring, tonumber, type
 local P, S, C, Ct, Cc, Cg, Cf, Carg = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cg, lpeg.Cf, lpeg.Carg
 local lpegmatch = lpeg.match
@@ -50,6 +50,7 @@ local f_j  = formatters["%i j"]
 local f_J  = formatters["%i J"]
 local f_d  = formatters["[%s] %.6N d"]
 local f_w  = formatters["%.6N w"]
+local f_r  = formatters["%.6N %.6N %.6N %.6N re"]
 
 directives.register("metapost.savetable",function(v)
     if type(v) == "string" then
@@ -122,85 +123,9 @@ local function mpconcat(px, py) -- no tx, ty here / we can move this one inline 
 end
 
 local getbendtolerance = metapost.getbendtolerance
+local curved           = metapost.hascurvature
 
--- local function curved(ith,pth,tolerance) --- still better than the build in
---     local d = pth.left_x - ith.right_x
---     local b = abs(ith.right_x - ith.x_coord - d)
---     if b <= tolerance then
---         b = abs(pth.x_coord - pth.left_x - d)
---         if b <= tolerance then
---             d = pth.left_y - ith.right_y
---             b = abs(ith.right_y - ith.y_coord - d)
---             if b <= tolerance then
---                 b = abs(pth.y_coord - pth.left_y - d)
---                 if b <= tolerance then
---                     return false
---                 end
---             end
---         end
---     end
---     return true
--- end
-
--- The final two tests are for the case when the control point lie on the other side
--- of the other point (so to say). One could use a different factor in front of the
--- parentheses, but I have not managed to find it (there are two control points, so
--- it might be complicated in the end). Here we only test if it is on the other side
--- of the other point. If so, we mark it as curve. Thus, if this is not the case,
--- then the control points lie between the points, and we should be safe.
-
-local function curved(ith,pth,tolerance)
--- if true then return true end
--- if true then return pth.curved end
-    local v1x = ith.right_x - ith.x_coord
-    local v1y = ith.right_y - ith.y_coord
-    local v2x = pth.left_x - pth.x_coord
-    local v2y = pth.left_y - pth.y_coord
-    local eps = abs(v1x * v2y - v2x * v1y)
-    -- print("XYZ",eps,tolerance)
-    if eps > tolerance then
--- print(1,pth.curved,true)
-        return true
-    end
-    local v3x = pth.x_coord - ith.x_coord
-    local v3y = pth.y_coord - ith.y_coord
-    eps = abs(v3x * v2y - v2x * v3y)
-    -- print("ZYX",eps,tolerance)
-    if eps > tolerance then
--- print(2,pth.curved,true)
-        return true
-    end
-    eps = abs(v3x * v1y - v1x * v3y)
-    -- print("ABC",eps,tolerance)
-    if eps > tolerance then
--- print(3,pth.curved,true)
-        return true
-    end
-    --
-    eps = v1x * v3x + v1y * v3y -- v1 \cdot v3 = |v1|*|v3|cos([v1,v3])
-    if eps < 0 then
--- print(3,pth.curved,true)
-        return true
-    end
-    eps = v2x * v3x + v2y * v3y -- v2 \cdot v3 = |v2|*|v3|cos([v2,v3])
-    if eps > 0 then
--- print(4,pth.curved,true)
-        return true
-    end
-    eps = (v1x * v1x + v1y * v1y) - (v3x * v3x + v3y * v3y) -- checking lengths
-    if eps > 0 then
--- print(5,pth.curved,true)
-        return true
-    end
-    eps = (v2x * v2x + v2y * v2y) - (v3x * v3x + v3y * v3y) -- checking lengths
-    if eps > 0 then
--- print(6,pth.curved,true)
-        return true
-    end
-    return false
-end
-
-local function flushnormalpath(path, t, open, tolerance)
+local function flushnormalpath(path,t,open,tolerance)
     local pth, ith, nt
     local length = #path
     if t then
@@ -209,6 +134,24 @@ local function flushnormalpath(path, t, open, tolerance)
         t = { }
         nt = 0
     end
+if length == 4 and path.cycle then
+    local p1 = path[1]
+    local p2 = path[2]
+    local p3 = path[3]
+    local p4 = path[4]
+    if not p1.curved and not p2.curved and not p3.curved and not p4.curved then
+        local p1x = p1.x_coord
+        local p1y = p1.y_coord
+        local p3x = p3.x_coord
+        local p3y = p3.y_coord
+        if p1y == p2.y_coord and p1x == p4.x_coord and p2.x_coord == p3x and p3y == p4.y_coord then
+            nt = nt + 1
+            t[nt] = f_r(p1.x_coord,p1y,p3x-p1x,p3y-p1y)
+            path.rectangle = true
+            return
+        end
+    end
+end
     for i=1,length do
         nt = nt + 1
         pth = path[i]
@@ -242,7 +185,7 @@ elseif one.curved then
     return t
 end
 
-local function flushconcatpath(path, t, open, tolerance, transform)
+local function flushconcatpath(path,t,open,tolerance,transform)
     local pth, ith, nt
     local length = #path
     if t then
@@ -319,7 +262,6 @@ local function toboundingbox(path)
         return { 0, 0, 0, 0 }
     end
 end
-
 
 function metapost.flushnormalpath(path, t, open, tolerance)
     return flushnormalpath(path, t, open, tolerance or getbendtolerance())
@@ -422,6 +364,16 @@ local function popproperties()
     metapost.properties = remove(stack)
 end
 
+local optimizecolor = false
+
+directives.register("metapost.optimizecolor", function(v)
+    optimizecolor = v
+end)
+
+local function enhancedobject(original)
+    return setmetatable({ }, { __index = original })
+end
+
 function metapost.flush(specification,result)
     if result then
         local flusher   = specification.flusher
@@ -460,6 +412,8 @@ function metapost.flush(specification,result)
                     local linejoin   = -1
                     local dashed     = false
                     local linewidth  = false
+                    local colorstate = false
+                    local transstate = false
                     local llx        = properties.llx
                     local lly        = properties.lly
                     local urx        = properties.urx
@@ -563,6 +517,56 @@ function metapost.flush(specification,result)
                                                         dashed, linewidth = "", 1 -- to be sure
                                                     end
                                                     if before then
+                                                        -- We inject too many color and transparency directives although in practice
+                                                        -- it's not that relevant. However, we can optimize this a bit because we know
+                                                        -- what we can get so we just intercept these two cases:
+                                                        --
+                                                        -- { [1] = transparency, [2] = color }
+                                                        -- { [1] = color }
+                                                        --
+                                                        -- It is anyway a rather ugly hack becuase we should keep some kind of state
+                                                        -- but as we mix all kind of features that is also tricky. Maybe if I'd write
+                                                        -- this from scratch ... but that doesn't pay off. Also tracking a transstate
+                                                        -- is kind of fragile so maybe it should be optional.
+                                                        --
+                                                        if optimizecolor and after and #before == #after then
+                                                            local a = after[1]
+                                                            if a == "0 g 0 G" then
+                                                                local b = before[1]
+                                                                if b == colorstate then
+                                                                    remove(before,1)
+                                                                else
+                                                                    colorstate = b
+                                                                end
+                                                                remove(after,1)
+-- we could just always have a transparency entry
+if transstate and transstate ~= "/Tr0 gs" then
+    result[#result+1] =  "/Tr0 gs"
+    transstate = "/Tr0 gs"
+end
+                                                            elseif a == "/Tr0 gs" and after[2] == "0 g 0 G" then
+                                                                local b = before[2]
+                                                                if b == colorstate then
+                                                                    remove(before,2)
+                                                                else
+                                                                    colorstate = b
+                                                                end
+                                                                remove(after,2)
+                                                                --
+local b = before[1]
+if b == transstate then
+    remove(before,1)
+else
+    transstate = b
+end
+remove(after,1)
+                                                                -- always injected as it's optional otherwise we could do as color
+--                                                                 if result[#result] == "/Tr0 gs" then
+--                                                                     result[#result] = nil
+--                                                                 end
+                                                            end
+                                                        end
+                                                        --
                                                         result = pluginactions(before,result,flushfigure)
                                                     end
                                                     local ml = object.miterlimit
@@ -640,7 +644,17 @@ function metapost.flush(specification,result)
                                                         else
                                                             flushnormalpath(path,result,open,tolerance)
                                                         end
-                                                        if outline or envelope then
+                                                        if path.rectangle then
+                                                            if outline or envelope then
+                                                                result[#result+1] = "S"
+                                                            elseif objecttype == "fill" then
+                                                                result[#result+1] = "f"
+                                                            elseif objecttype == "outline" then
+                                                                result[#result+1] = both and "B" or "S"
+                                                            elseif objecttype == "both" then
+                                                                result[#result+1] = "B"
+                                                            end
+                                                        elseif outline or envelope then
                                                             result[#result+1] = open and "S" or "h S"
                                                         elseif objecttype == "fill" then
                                                             result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
@@ -700,6 +714,7 @@ function metapost.flush(specification,result)
                                                 if object.grouped then
                                                     -- can be qQ'd so changes can end up in groups
                                                     miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                                    colorstate, transstate = false, false
                                                 end
                                             elseif objecttype == "start_clip" then
                                              -- local evenodd = not object.istext and object.postscript == "evenodd"
@@ -710,21 +725,26 @@ function metapost.flush(specification,result)
                                             elseif objecttype == "stop_clip" then
                                                 result[#result+1] = "Q"
                                                 miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                                colorstate, transstate = false, false
                                             elseif objecttype == "start_bounds" or objecttype == "stop_bounds" then
                                                 -- skip
                                             elseif objecttype == "start_group" then
                                                 if lpdf.flushgroup then
+                                                    local object = enhancedobject(object)
                                                     local before, after = processplugins(object)
-                                                    if before then
+                                                    local detail = object.detail
+                                                    if detail or before then
                                                         result[#result+1] = "q"
                                                         result = pluginactions(before,result,flushfigure)
                                                         insert(groupstack, {
                                                             after  = after,
                                                             result = result,
+                                                            detail = detail,
                                                             bbox   = toboundingbox(object.path),
                                                         })
                                                         result = { }
                                                         miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                                        colorstate, transstate = false, false
                                                     else
                                                         insert(groupstack,false)
                                                     end
@@ -734,12 +754,14 @@ function metapost.flush(specification,result)
                                             elseif objecttype == "stop_group" then
                                                 local data = remove(groupstack)
                                                 if data then
-                                                    local reference = lpdf.flushgroup(concat(result,"\r"),data.bbox)
+                                                    local reference = lpdf.flushgroup(concat(result,"\r"),data.bbox,data.detail)
+-- crashes on after = false
                                                     result = data.result
                                                     result[#result+1] = reference
                                                     result = pluginactions(data.after,result,flushfigure)
                                                     result[#result+1] = "Q"
                                                     miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
+                                                    colorstate, transstate = false, false
                                                 end
                                          -- if objecttype == "text" then
                                          --     result[#result+1] = "q"

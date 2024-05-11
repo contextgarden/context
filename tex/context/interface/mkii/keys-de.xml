@@ -99,6 +99,7 @@
 		<cd:variable name='autointro' value='autointro'/>
 		<cd:variable name='back' value='zurueck'/>
 		<cd:variable name='background' value='hintergrund'/>
+		<cd:variable name='backgroundbar' value='backgroundbar'/>
 		<cd:variable name='backmatter' value='epiloge'/>
 		<cd:variable name='backpart' value='epilog'/>
 		<cd:variable name='backspace' value='rumpfspatium'/>
@@ -167,6 +168,7 @@
 		<cd:variable name='conversion' value='konversion'/>
 		<cd:variable name='current' value='aktuell'/>
 		<cd:variable name='cutspace' value='cutspace'/>
+		<cd:variable name='dash' value='strich'/>
 		<cd:variable name='dataset' value='dataset'/>
 		<cd:variable name='date' value='datum'/>
 		<cd:variable name='day' value='tag'/>
@@ -808,6 +810,7 @@
 		<cd:constant name='current' value='aktuell'/>
 		<cd:constant name='cutspace' value='cutspace'/>
 		<cd:constant name='dash' value='strich'/>
+		<cd:constant name='dashstep' value='dashstep'/>
 		<cd:constant name='dat' value='dat'/>
 		<cd:constant name='database' value='database'/>
 		<cd:constant name='dataset' value='dataset'/>
@@ -821,6 +824,7 @@
 		<cd:constant name='delay' value='wartezeit'/>
 		<cd:constant name='depth' value='tiefe'/>
 		<cd:constant name='depthcorrection' value='tiefekorrektur'/>
+		<cd:constant name='differentiald' value='differentiald'/>
 		<cd:constant name='direction' value='richtung'/>
 		<cd:constant name='directory' value='verzeichnis'/>
 		<cd:constant name='display' value='bildschirm'/>
@@ -1114,7 +1118,9 @@
 		<cd:constant name='object' value='objekt'/>
 		<cd:constant name='obstruction' value='gesperrt'/>
 		<cd:constant name='oddmargin' value='ungeraderand'/>
+		<cd:constant name='off' value='aus'/>
 		<cd:constant name='offset' value='offset'/>
+		<cd:constant name='on' value='an'/>
 		<cd:constant name='openaction' value='oeffenaktion'/>
 		<cd:constant name='openpage' value='openpage'/>
 		<cd:constant name='openpageaction' value='openpageaction'/>

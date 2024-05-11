@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['lpdf-grp'] = {
 
 local type, tonumber = type, tonumber
 local formatters, gsub = string.formatters, string.gsub
-local concat, sort = table.concat, table.sort
+local sort = table.sort
 local round = math.round
 
 local colors         = attributes.colors
@@ -37,7 +37,19 @@ local embedimage     = images.embed
 -- 22 : << /Bounds [ ] /Domain [ 0.0 1.0 ] /Encode [ 0.0 1.0 ] /FunctionType 3 /Functions [ 31 0 R ] >>
 -- 31 : << /C0 [ 1.0 0.0 ] /C1 [ 0.0 1.0 ] /Domain [ 0.0 1.0 ] /FunctionType 2 /N 1.0 >>
 
-local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions)
+local function hasopacities(opacities)
+    if opacities then
+        for i=1,#opacities do
+            if type(opacities[i]) ~= "number" then
+                return false
+            end
+        end
+        return true
+    end
+    return false
+end
+
+local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions,opacities)
     local func = nil
     --
     -- domain has to be consistently added in all dictionaries here otherwise
@@ -50,6 +62,28 @@ local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,
         local list   = pdfarray()
         local bounds = pdfarray()
         local encode = pdfarray()
+
+-- if not opacities then
+--     opacities = { }
+-- end
+-- local hasops = hasopacities(opacities)
+-- if hasops then
+--     for i=1,steps do
+--         local o = opacities[i]
+--         local a = color_a[i]
+--         for i=1,#a do
+--             local c = o * a[i]
+--             a[i] = c > 1 and 1 or c
+--         end
+--     end
+--     color_b[1] = 1
+--     for i=2,steps do
+--         local color_b[i] = color_a[i-1]
+--     end
+--     inspect(color_a)
+--     inspect(color_b)
+-- end
+
         -- The bounds need to be sorted and we can have illustrator output
         -- that violates this rule.
         local tmp = { }
@@ -109,12 +143,12 @@ local function shade(stype,name,domain,color_a,color_b,n,colorspace,coordinates,
     lpdf.adddocumentshade(name,pdfreference(pdfflushobject(s)))
 end
 
-function lpdf.circularshade(name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions)
-    shade(3,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions)
+function lpdf.circularshade(name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions,opacities)
+    shade(3,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions,opacities)
 end
 
-function lpdf.linearshade(name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions)
-    shade(2,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions)
+function lpdf.linearshade(name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions,opacities)
+    shade(2,name,domain,color_a,color_b,n,colorspace,coordinates,separation,steps,fractions,opacities)
 end
 
 -- inline bitmaps but xform'd

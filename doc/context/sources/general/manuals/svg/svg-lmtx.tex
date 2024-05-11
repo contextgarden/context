@@ -92,11 +92,28 @@ from websites. We might add more in due time. The cover page has the \SVG\ logo
 taken from \WIKIPEDIA\ but with some details added. It's not a nice cover image
 but it will do for our purpose. Feel free to suggest additional examples.
 
+Occasionally I come back to the code and in 2024 one can conclude that aspects of
+\SVG\ are still a mess, for instance shading and transparency. Examples that work
+on the web don't work in exported \PDF\ vise versa, so what should we do in our
+converter. Or a \SVG\ or derived \PDF\ works in one viewer and not on the other.
+In the end one can best stick with simple \SVG, also because examples that
+(currently) fail can often be done simpler anyway. It is therefore unlikely that
+I will support everything, especially when one can read that some additions can
+best be avoided because partial support in browsers. In case of problems one can
+always export an image in the producing program and visually check that. It is
+anyway a good idea, when saving a \SVG\ for use elsewhere to go for the options
+that output an as simple as possible variant (like attributes and no \CSS).
+
 \startlines
 Hans Hagen
 Hasselt NL
 October 2019\high{+}
+March 2024\high{+}
 \stoplines
+
+% testing smile.svg posted on list: pdf has some global pattern (/scn) which is
+% not in the file; mentions being tiger.svg from mozilla but isn't; uses too many
+% shades anyway; possible solution works in sumatra but not in acrobat; etc
 
 \stoptitle
 
@@ -406,7 +423,7 @@ It's all a matter of taste. Watch the grouping trick!
 The Mozilla documentation pages for \SVG\ are pretty good and contain snippets
 that can be used for testing. More examples might be added in due time.
 
-\dorecurse{38}{
+\dorecurse{47}{
     \page
     \startsection[title=Snippet #1]
         \framed
@@ -521,3 +538,21 @@ to deal with it.
 % after first listening to a nice long interview, which I hit after following some
 % Hammond links, I finally decided that it made sense to write this manual. Life is
 % too short for delays.
+
+% acrobat reader 2024: stepwise scaling makes the centyer come and go (gray vs red) so it looks
+% like all this shading is pretty fragile
+%
+% \startMPcode
+%     draw image (
+%         fill (fullsquare scaled 4cm)
+%             withcolor svgcolor(0.5,0,0)
+%         ;
+%         picture q ; q := image (
+%             fill (fullsquare scaled 2cm)
+%                 withshademethod "circular"
+%                 withshadecolors (0.6,0.1)
+%         ) ;
+%      %  setgroup q to boundingbox q ;
+%         draw q withtransparency (3,1) ;
+%     ) ;
+% \stopMPcode

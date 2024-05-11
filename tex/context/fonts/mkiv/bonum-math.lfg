@@ -81,6 +81,9 @@ return {
                     tweak = "checkaccents",
                 },
                 {
+                    tweak = "wipeweirdones",
+                },
+                {
                     -- We need to check these, are the tweaks necessary or not?
                     tweak = "dimensions",
                     list  = {

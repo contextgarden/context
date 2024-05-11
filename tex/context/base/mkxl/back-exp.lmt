@@ -1230,6 +1230,11 @@ local function push(fulltag,depth)
         record  = p.record
     end
     local treedata = tree.data
+    if not treedata then
+        report_export("%w<%s trigger=%q n=%q paragraph=%q index=%q detail=%q>",
+            currentdepth-1,tg,n,currentattribute or 0,currentparagraph or 0,"error",detail)
+        return
+    end
     local t = { -- maybe we can use the tag table
         tg        = tg,
         fulltag   = fulltag,
@@ -1248,9 +1253,11 @@ local function push(fulltag,depth)
     treestack[currentdepth] = tree
     if trace_export then
         if detail and detail ~= "" then
-            report_export("%w<%s trigger=%q n=%q paragraph=%q index=%q detail=%q>",currentdepth-1,tg,n,currentattribute or 0,currentparagraph or 0,#treedata,detail)
+            report_export("%w<%s trigger=%q n=%q paragraph=%q index=%q detail=%q>",
+                currentdepth-1,tg,n,currentattribute or 0,currentparagraph or 0,#treedata,detail)
         else
-            report_export("%w<%s trigger=%q n=%q paragraph=%q index=%q>",currentdepth-1,tg,n,currentattribute or 0,currentparagraph or 0,#treedata)
+            report_export("%w<%s trigger=%q n=%q paragraph=%q index=%q>",
+                currentdepth-1,tg,n,currentattribute or 0,currentparagraph or 0,#treedata)
         end
     end
     tree = t

@@ -6,6 +6,8 @@
 
 \startchapter[title={Interface}]
 
+\startsection[title=Macros]
+
 Because graphic solutions are always kind of personal or domain driven it makes not
 much sense to cook up very generic solutions. If you have a project where \METAPOST\
 can be of help, it also makes sense to spend some time on implementing the basics that
@@ -149,6 +151,164 @@ the \METAFUN\ end.
 \startlinecorrection
 \getbuffer
 \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Units]
+
+Many dimensions used at the \TEX\ end are also available in \METAFUN. Examples
+are \typ {TextWidth}, \typ {EmHeight} and \typ {StrutHeight}. In \MKIV\ they are
+numeric variables that get set every graphic but in \MKXL\ these are not numeric
+variables but (hidden) \LUA\ calls so they can't be set at the \METAPOST\ end;
+but they are injected as numeric quantities so you can efficiently them in
+calculations.
+
+In \METAPOST\ examples you often find \type {u} being used as unit, like:
+
+\starttyping
+u := 1cm ; draw (u,0) -- (u,u) -- (3u,0);
+\stoptyping
+
+However, what if you want to set such a unit at the \TEX\ end? For this purpose
+we have a dedicated variable, which is demonstrated in the following examples.
+First we set a variable:
+
+\starttyping[option=TEX]
+\uunit=1cm
+\stoptyping
+
+\typebuffer[option=TEX]
+
+and next we apply it:
+
+\startbuffer
+\framed[offset=.2uu,strut=no]
+    \bgroup
+        \startMPcode
+            fill fullcircle scaled (2uu) withcolor "darkblue" ;
+            fill fullcircle scaled (8mm) withcolor "middlegray" ;
+        \stopMPcode
+    \egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The \type {\uunit} dimension register is hooked into \TEX's unit parser as type
+{uu} (user unit). At the \METAPOST\ end \type {uu} is effectively a \LUA\ call
+that fetches the of the dimension from the \TEX end and presents it a a numeric.
+
+\startlinecorrection \uunit=1cm \getbuffer \stoplinecorrection
+
+When we set
+
+\starttyping[option=TEX]
+\uunit=5mm
+\stoptyping
+
+The same code gives::
+
+\startlinecorrection \uunit=5mm \getbuffer \stoplinecorrection
+
+\startbuffer
+\framed[offset=.1uu,strut=no]
+    \bgroup
+        \startMPcode
+            save uu ; numeric uu ; uu := 5mm ;
+            fill fullcircle scaled (3uu) withcolor "darkred"  ;
+            fill fullcircle scaled (2uu) withcolor "middlegray" ;
+        \stopMPcode
+    \egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This demonstrates that we can overload \type {uu} but make sure to save it first
+so that later it is available again.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Paths from \LUA]
+
+Passing paths to \METAPOST\ using specific properties is sort of tricky because
+once the points are set, the solver will be applied. This translates curls,
+tensions and|/|or explicit control points into the final control points.
+
+In the next example we show a few interfaces. Not all of that might be perfect
+yes but in most cases it works out.
+
+\startbuffer
+\startluacode
+    local shapes = { }
+    shapes[1] = { {0,0}, {-1,-1}, {-1, 0}, {0,0}, "cycle" }
+    shapes[2] = { {0,1}, { 1, 0}, { 1,-1}, {0,1}, "cycle" }
+    shapes[3] = { {0,2}, { 2, 0}, { 2, 1}, {0,2}, "cycle" }
+    shapes[4] = {
+        {0,0}, {-1,-1}, {-1, 0}, {0,0}, "cycle", "append",
+        {0,1}, { 1, 0}, { 1,-1}, {0,1}, "cycle", "append",
+        {0,2}, { 2, 0}, { 2, 1}, {0,2}, "cycle", "append",
+    }
+    shapes[5] = {
+        { path = shapes[1], append = true },
+        { path = shapes[2], append = true },
+        { path = shapes[3], append = true },
+    }
+    function mp.getshapepath(n)
+        mp.inject.path(shapes[n])
+    end
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startbuffer
+\startMPcode
+    path p ;
+    p := lua.mp.getshapepath(1) scaled 1cm ;
+    draw p withpen pencircle scaled 2pt withcolor red ;
+    p := lua.mp.getshapepath(2) scaled 1cm ;
+    draw p withpen pencircle scaled 2pt withcolor blue ;
+    p := lua.mp.getshapepath(3) scaled 1cm ;
+    draw p withpen pencircle scaled 2pt withcolor green ;
+    p := lua.mp.getshapepath(4) scaled 1cm &&cycle ;
+    fill p withcolor 0.9 ;
+    draw p withpen pencircle scaled 1pt withcolor 0.7 ;
+    p := lua.mp.getshapepath(5) scaled 1cm ;
+    draw p withpen pencircle scaled .25pt withcolor 0.2 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Especially cycling and appending needs to be done precisely in order not to get
+redundant (or bad) points.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+This combines the first three paths similar to the fourth and fifths. If you
+doubt what you get you can always \type {show} the path and look for \type
+{{begin}} and \type {{end}} indicators.
+
+\startbuffer
+\startMPcode
+    path p ;
+    p := lua.mp.getshapepath(1) scaled 1cm &&
+         lua.mp.getshapepath(2) scaled 1cm &&
+         lua.mp.getshapepath(3) scaled 1cm ;
+    draw p withpen pencircle scaled 1pt withcolor 0.7 ;
+  % show(p);
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We draw the result and see that they are decoupled indeed thanks to some \type
+{&&} magic:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\stopsection
 
 \stopchapter
 

@@ -172,8 +172,14 @@
    \edef\p_node_color {\barparameter\c!color}% todo
    \edef\p_node_offset{\barparameter\c!offset}%
    % better is a dedicated key: up/down .. todo
-   \advanceby\ifdim\p_node_offset\onepoint<\zeropoint\c_node_rules_down\else\c_node_rules_up\fi\plusone
    \scratchcounter\barparameter\c!method\relax
+   \ifnum\scratchcounter=\plustwo
+     % offset is dimension
+   \orelse\ifnum\scratchcounter=\plusthree
+     % offset is dimension
+   \else
+     \advanceby\ifdim\p_node_offset\onepoint<\zeropoint\c_node_rules_down\else\c_node_rules_up\fi\plusone
+   \fi
    \clf_setrule
          method        \scratchcounter
          continue      {\barparameter\c!continue}%
@@ -186,12 +192,23 @@
      \ifnum\scratchcounter=\plustwo
          height        \dimexpr\barparameter\c!height\relax
          depth         \dimexpr\barparameter\c!depth\relax
+\ifchkdim\p_node_offset\or
+         offset        \number\dimexpr\p_node_offset\relax % dimension
+\fi
+     \orelse\ifnum\scratchcounter=\plusthree
+         height        \dimexpr\barparameter\c!height\relax
+         depth         \dimexpr\barparameter\c!depth\relax
+\ifchkdim\p_node_offset\or
+         offset        \number\dimexpr\p_node_offset\relax % dimension
+\fi
      \else
          unit          {\barparameter\c!unit}%
          level         \c_node_rules_level
          stack         \ifdim\p_node_offset\onepoint<\zeropoint\c_node_rules_down\else\c_node_rules_up\fi
          max           \barparameter\c!max\space % number
+% \ifchkdim\p_node_offset\else
          offset        \p_node_offset\space % number
+% \fi
          dy            \barparameter\c!dy\space % number, also fraction
          empty         {\barparameter\c!empty}%
        \ifempty{\barparameter\c!text}\else
@@ -295,7 +312,7 @@
 \definebar
   [\v!outline]
   [\c!method=2,
-   \c!offset=0,
+   \c!offset=\zeropoint,
    \c!rulethickness=0.25,
    \c!continue=\v!yes,
    \c!order=\v!background,
@@ -306,6 +323,25 @@
   [\v!outline]
   [\c!height=\strutht,
    \c!depth=\strutdp]
+
+%D \starttyping
+%D \definebar[mybar][backgroundbar][offset=.25ex,color=red]
+%D
+%D \startformula
+%D             a      \alignhere= b + c \breakhere
+%D     \mybar {d + e} \alignhere= f     \breakhere
+%D             g      \alignhere= h + i
+%D \stopformula
+%D \stoptyping
+
+\definebar
+  [\v!backgroundbar] % joke
+  [\c!method=3,
+   \c!offset=0,
+   \c!rulethickness=0.25,
+   \c!continue=\v!yes,
+   \c!order=\v!background,
+   \c!color=lightgray]
 
 % \setupbar[\v!overstrike][continue=all]
 

@@ -30,7 +30,7 @@
 \installcorenamespace{colornumber}
 
 \registerctxluafile{colo-ini}{}
-\registerctxluafile{colo-icc}{}
+\registerctxluafile{colo-icc}{autosuffix}
 
 \unprotect
 
@@ -937,6 +937,20 @@
    \ifcase\c_colo_protection
      \protected\instance\defcsname#1\endcsname{\colo_helpers_activate{#1}}%
    \fi}
+
+\permanent\tolerant\protected\def\definelabcolor[#1]#*[#2]#*[#3]%
+  {\clf_definelabcolorlocal{#1}{#2}{#3}%
+   \colo_basics_synchronize{#1}%
+   \ifcase\c_colo_protection
+     \protected\instance\gdefcsname#1\endcsname{\colo_helpers_activate{#1}}%
+   \fi}
+
+% \permanent\tolerant\protected\def\definegloballabcolor[#1]#*[#2]#*[#3]%
+%   {\clf_definelabcolorglobal{#1}{#2}{#3}%
+%    \colo_basics_synchronize{#1}%
+%    \ifcase\c_colo_protection
+%      \protected\instance\gdefcsname#1\endcsname{\colo_helpers_activate{#1}}%
+%    \fi}
 
 %D Spotcolors used setxvalue but that messes up currentcolor and probably no global
 %D is needed either but they are global at the lua end (true argument) so we keep

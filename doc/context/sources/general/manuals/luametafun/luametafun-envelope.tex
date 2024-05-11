@@ -1,0 +1,604 @@
+% language=us runpath=texruns:manuals/luametafun
+
+\environment luametafun-style
+
+\startcomponent luametafun-envelopes
+
+\startMPdefinitions
+    loadmodule("misc") ;
+\stopMPdefinitions
+
+\startchapter[title={Envelopes}]
+
+\startsection[title=Introduction]
+
+Envelopes are what \METAPOST\ makes for a non circular path. A circular path is
+supported directly by \POSTSCRIPT\ and \PDF. When such a oath is rotated, it is
+still somewhat easy because \METAPOST\ outputs the shape twice, transformed
+differently, but in the end we have one curve, and filling the right space the
+two curves bound which is native behavior of path filling. When the pen is more
+complex, that is not a transformed basic pencircle, \METAPOST\ will calculate a
+so called envelope. This chapter limits the explanation to what we can observe
+and better explanations about pens can be found in the \METAFONT\ book.
+
+\stopsection
+
+\startsection[title=Pens]
+
+The code involves is non trivial and can only work reliable for paths made from
+straight lines which which is why a pen is always reduced to a path with straight
+lines. Internally the term \quote {convex hull} is used. In \LUAMETATEX\ we have
+that operation as primitive.
+
+\startbuffer
+\startMPcode
+pen mypen ; mypen := makepen (fullcircle);
+draw origin withpen mypen scaled 100 withcolor "darkblue" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+By drawing just one point we see the pen:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+Indeed the circle has been simplified here.
+
+\startbuffer
+\startMPcode
+def ShowPaths(expr pth) =
+    path p[] ;
+    p[0] := pth scaled 50;
+    p[1] := uncontrolled p[0] ; % show(p[1]);
+    p[2] := convexed     p[0] ; % show(p[2]);
+    draw p[0] shifted (  0,0) withpen pencircle scaled 5 withcolor "darkgreen" ;
+    draw p[1] shifted (100,0) withpen pencircle scaled 5 withcolor "darkred"   ;
+    draw p[2] shifted (160,0) withpen pencircle scaled 5 withcolor "darkblue"  ;
+    draw p[1] shifted (260,0) withpen pencircle scaled 5 withcolor "darkred"  ;
+    draw p[2] shifted (260,0) withpen pencircle scaled 5 withcolor "white" ;
+enddef ;
+
+ShowPaths(fullcircle) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+In this case the straightforward removal of control points gives the same result
+as first calculating the convex hull.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+ShowPaths(fullcircle randomized .1) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+In this example we still seem to get what we expect:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\startbuffer
+\startMPcode
+ShowPaths(fullcircle randomized .4) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+But a bit of exaggeration shows that we don't get the same:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+It all has to do with heuristics and nasty border cases when we turn corners. Here is
+what these (not randomized) paths look like, first the \type {uncontrolled}:
+
+\starttyping
+(25,0) .. controls (22.56,5.89) and (20.12,11.79)
+.. (17,68,17,68) .. controls (11.79,20.12) and (5.89,22.56)
+.. (0,25) .. controls (-5.89,22.56) and (-11.79,20.12)
+.. (-17,68,17,68) .. controls (-20.12,11.79) and (-22.56,5.89)
+.. (-25,0) .. controls (-22.56,-5.89) and (-20.12,-11.79)
+.. (-17,68,-17,68) .. controls (-11.79,-20.12) and (-5.89,-22.56)
+.. (0,-25) .. controls (5.89,-22.56) and (11.79,-20.12)
+.. (17,68,-17,68) .. controls (20.12,-11.79) and (22.56,-5.89)
+.. cycle
+\stoptyping
+
+and here is the \type {unconvexed}:
+
+\starttyping
+(-25,0) .. controls (-22.56,-5.89) and (-20.12,-11.79)
+.. (-17,68,-17,68) .. controls (-11.79,-20.12) and (-5.89,-22.56)
+.. (0,-25) .. controls (5.89,-22.56) and (11.79,-20.12)
+.. (17,68,-17,68) .. controls (20.12,-11.79) and (22.56,-5.89)
+.. (25,0) .. controls (22.56,5.89) and (20.12,11.79)
+.. (17,68,17,68) .. controls (11.79,20.12) and (5.89,22.56)
+.. (0,25) .. controls (-5.89,22.56) and (-11.79,20.12)
+.. (-17,68,17,68) .. controls (-20.12,11.79) and (-22.56,5.89)
+.. cycle
+\stoptyping
+
+Now, in order to see what convexing has to do with pens we also introduce a
+\quote {nep} which is a pen that doesn't get its path convexed. We mainly have
+this variant available for experimenting and documentation purposes. Take these
+definitions:
+
+\startbuffer
+\startMPdefinitions
+path PthP ; PthP := (fullcircle scaled 100) randomized 80 ;
+pen  PenP ; PenP := makepen      PthP ;
+nep  NepP ; NepP := makenep      PthP ;
+path ConP ; ConP := convexed     PthP ;
+path UncP ; UncP := uncontrolled PthP ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+That are used in:
+
+\startbuffer
+\startMPdefinitions
+def Pth =
+    draw PthP  ;
+enddef ;
+def Pen =
+    draw origin withpen PenP withcolor "darkred" withtransparency (1,.5) ;
+enddef ;
+def Nep =
+    draw origin withpen NepP withcolor "darkblue" withtransparency (1,.5);
+enddef ;
+def Con =
+    fill ConP withpen pencircle scaled 0 withcolor "darkgreen" withtransparency (1,.5) ;
+enddef ;
+def Unc =
+    fill UncP withpen pencircle scaled 0 withcolor "darkyellow" withtransparency (1,.5) ;
+enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+The main reason for showing the differences in \in {figure} [fig:trickyconvex] is that
+one should be aware of possible side effects
+
+\startbuffer[all]
+\startcombination [nx=3,ny=4]
+   {\startMPcode draw image (Pen Nep Pth) ; \stopMPcode} {pen          nep}
+   {\startMPcode draw image (Pen Con Pth) ; \stopMPcode} {pen          convexed}
+   {\startMPcode draw image (Pen Unc Pth) ; \stopMPcode} {pen          uncontrolled}
+   {\startMPcode draw image (Nep Pen Pth) ; \stopMPcode} {nep          pen}
+   {\startMPcode draw image (Nep Con Pth) ; \stopMPcode} {nep          convexed}
+   {\startMPcode draw image (Nep Unc Pth) ; \stopMPcode} {nep          uncontrolled}
+   {\startMPcode draw image (Con Pen Pth) ; \stopMPcode} {convexed     pen}
+   {\startMPcode draw image (Con Nep Pth) ; \stopMPcode} {convexed     nep}
+   {\startMPcode draw image (Con Unc Pth) ; \stopMPcode} {convexed     uncontrolled}
+   {\startMPcode draw image (Unc Pen Pth) ; \stopMPcode} {uncontrolled pen}
+   {\startMPcode draw image (Unc Nep Pth) ; \stopMPcode} {uncontrolled nep}
+   {\startMPcode draw image (Unc Con Pth) ; \stopMPcode} {uncontrolled convexed}
+\stopcombination
+\stopbuffer
+
+\startplacefigure[title={Pens are paths with straight lines.},reference=fig:trickyconvex]
+    \getbuffer[all]
+\stopplacefigure
+
+In case you doubt if all this matters, if we use a not to weird path, we're
+fine, as is demonstrated in \in {figure} [fig:okayconvex]; here we used
+
+\starttyping[option=MP]
+PthP := fullcircle yscaled 80 xscaled 140 rotated 45 ;
+\stoptyping
+
+\startbuffer
+\startMPdefinitions
+path PthP ; PthP := fullcircle yscaled 80 xscaled 140 rotated 45 ;
+pen  PenP ; PenP := makepen      PthP ;
+nep  NepP ; NepP := makenep      PthP ;
+path ConP ; ConP := convexed     PthP ;
+path UncP ; UncP := uncontrolled PthP ;
+\stopMPdefinitions
+\stopbuffer
+
+\getbuffer
+
+\startplacefigure[title={When using decent pens the results will be consistent.},reference=fig:okayconvex]
+    \getbuffer[all]
+\stopplacefigure
+
+And when we use such rather normal (non extreme) paths for pens we're ready for
+envelopes.
+
+\page
+
+\startsection[title=Usage]
+
+An envelop is the outline that we get when we run a pen over a path. An envelop
+is (of course) a closed path. Here is a simple example:
+
+\startbuffer
+\startMPcode
+path p ; p := origin -- (100,10) -- cycle ;
+path e ; e := envelope pensquare scaled 10 rotated 45 of p ;
+
+draw e withpen pencircle scaled 2 withcolor "darkred" ;
+draw p withpen pencircle scaled 2 withcolor "darkgray" ;
+
+fill e shifted (120,0) withcolor "darkred" ;
+draw p shifted (120,0) withcolor "lightgray" withpen pencircle scaled 2  ;
+
+fill e shifted (240,0)
+    withshademethod "linear"
+    withshadecolors ("darkred","lightgray") ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This also demonstrates that this way you can apply a shade to a path:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+One problem with envelopes is that you can get unexpected results so let's try to
+explore some details. We start by defining a main path, a pen, a path from the
+pen, and two envelopes.
+
+\startbuffer
+\startMPcode
+path PthP ; PthP := fullcircle xysized(10cm,2cm) ;
+pen  PenP ; PenP := pensquare scaled 2mm rotated 45 ;
+path PthU ; PthU := fullsquare scaled 2mm rotated 45 ;
+path PatP ; PatP := makepath PenP ;
+
+path PthI ; PthI := envelope PenP of reverse PthP ;
+path PthO ; PthO := envelope PenP of PthP ;
+
+fill PthI && PthO && cycle withcolor "lightgray" ;
+
+draw PthI withcolor "darkred" ;
+draw PthO withcolor "darkgreen" ;
+draw PthP dashed evenly ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Watch the difference between the two envelopes: one is the result from traveling
+the pen clockwise and one from running anti-clockwise:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+We can emulate running the pen over the path:
+
+\startbuffer
+\startMPcode
+fill PthI && PthO && cycle withcolor "darkgray" ;
+fill
+    for i within (arcpointlist 50 of PthP) :
+        PatP shifted pathpoint &&
+    endfor cycle
+    withcolor "middlegray" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Instead of drawing 50 paths, we draw an efficient single one made from 50
+segments and we get this:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+If you look closely at the first rendering you will notice an artifact in the inner
+envelope.
+
+\startlinecorrection
+\startMPcode
+draw PthI withpen pencircle scaled .4mm withcolor "darkred" ;
+\stopMPcode
+\stoplinecorrection
+
+We can get rid of this with a helper macro:
+
+\startbuffer
+\startMPcode
+draw reducedenvelope(PthI) withpen pencircle scaled .4mm withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Of course you get no guarantees but here it works:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+One reason why the helper is not in the core is that it doesn't catch all cases:
+
+\startbuffer
+\startMPcode
+path p ; p := fullcircle scaled 4cm ;
+pen  e ; e := pensquare scaled 3mm ;
+draw envelope e of p ;
+draw envelope e of reverse p ;
+p := p rotated eps shifted (5cm,0) ;
+draw envelope e of p ;
+draw envelope e of reverse p ;
+p := p shifted (5cm,0) ;
+draw          p  enveloped e ;
+draw (reverse p) enveloped e ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Watch how a tiny rotations rid us of the weird rectangle, and the helper makes three
+extra inflected points go away but we're still stuck with an imperfection.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+When we only fill the envelope we don't suffer from this'because the artifacts
+stay within the bounds. Sometimes rotating the pen by \type {eps} also helps.
+
+\startbuffer
+\startMPcode
+path p ; p := fullcircle scaled 4cm ;
+pen  e ; e := pensquare scaled 3mm ;
+fill
+    (envelope e of p) && (envelope e of reverse p) && cycle
+    withcolor "darkblue" ;
+draw % just show the artifacts:
+    (envelope e of p) && (envelope e of reverse p) && cycle
+    withcolor "white" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=Details]
+
+For those who are interested in seeing what goes on behind the scenes, this
+section shows some examples that we made when writing an article about envelopes. We start with a  couple of definitions
+
+\startbuffer
+\startMPdefinitions
+loadmodule("misc") ;
+
+path mypaths[] ;
+path mypens[] ;
+
+mypens[ 1] := fullcircle     scaled 15mm ;
+mypens[ 2] := fulldiamond    scaled 15mm ;
+mypens[ 3] := fulltriangle   scaled 15mm ;
+mypens[ 4] := fullsquare     scaled 15mm ; % randomized 4mm ;
+mypens[ 5] := starring(-1/3) scaled 15mm ;
+mypens[ 6] := starring(-1/2) scaled 15mm ;
+mypens[ 7] := starring(-eps) scaled 15mm ;
+mypens[ 8] := starring(1)    scaled 15mm ;
+mypens[ 9] := starring(1/2)  scaled 15mm ;
+mypens[10] := starring(eps)  scaled 15mm ;
+
+mypaths[1] := fullcircle                               scaled 10cm ;
+mypaths[2] := ((0,0) -- (1/2,1/2) -- (2/2,0))          scaled 10cm ;
+mypaths[3] := ((0,0) -- (1/2,1/2) -- (2/2,0) -- cycle) scaled 10cm ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+We are not going to use all these shapes and pens here but you might want to try
+out some yourself. We \in {Figure} [fig:envelope:1] we apply a so called \type
+{pensquare} to the paths. In \in {Figure} [fig:envelope:2] we use a star but
+\METAPOST\ will turn this one into a rectangle. In \in {Figure} [fig:envelope:3]
+we also use star but here the points are used.
+
+\startbuffer
+\startMPcode
+draw showenvelope(mypaths[1], mypens[4]) ;
+draw showenvelope(mypaths[2], mypens[4]) shifted (10cm, 1cm) ;
+draw showenvelope(mypaths[3], mypens[4]) shifted (10cm,-6cm) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startplacefigure[title={How pen 4 creates an envelope.},reference=fig:envelope:1]
+    \scale[width=1tw]{\getbuffer}
+\stopplacefigure
+
+\startbuffer
+\startMPcode
+draw showenvelope(mypaths[1], mypens[6]) ;
+draw showenvelope(mypaths[2], mypens[6]) shifted (10cm, 1cm) ;
+draw showenvelope(mypaths[3], mypens[6]) shifted (10cm,-6cm) ;
+\stopMPcode
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startplacefigure[title={How pen 6 creates an envelope.},reference=fig:envelope:2]
+    \scale[width=1tw]{\getbuffer}
+\stopplacefigure
+
+\startbuffer
+\startMPcode
+draw showenvelope(mypaths[1], mypens[9]) ;
+draw showenvelope(mypaths[2], mypens[9]) shifted (10cm, 1cm) ;
+draw showenvelope(mypaths[3], mypens[9]) shifted (10cm,-6cm) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startplacefigure[title={How pen 9 creates an envelope.},reference=fig:envelope:3]
+    \scale[width=1tw]{\getbuffer}
+\stopplacefigure
+
+\stopsection
+
+\startsection[title=Reducing]
+
+If you watch the third shape in the previous examples, the last figure differs in
+that it has a symmetrical inner envelope. We can actually use this knowledge to
+define a pensquare that is better suited for envelopes. We take this example:
+
+\startbuffer
+\startMPdefinitions
+def ExamplePaths =
+    path PthA ; PthA := fullcircle scaled 5cm ;
+    path PthB ; PthB := triangle   scaled 5cm ;
+
+    draw envelope pensquare scaled 10mm of reverse PthA
+        withpen pencircle scaled 2mm
+        withcolor "darkblue"
+    ;
+    draw envelope pensquare scaled 10mm of reverse PthB
+        withpen pencircle scaled 2mm
+        withcolor "darkblue"
+    ;
+
+    draw (reverse PthA) enveloped (pensquare scaled 10mm)
+        withpen pencircle scaled 2mm
+        withcolor "darkred"
+    ;
+    draw (reverse PthB) enveloped (pensquare scaled 10mm)
+        withpen pencircle scaled 2mm
+        withcolor "darkred"
+    ;
+ enddef ;
+\stopMPdefinitions
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+We define two renderings, one with the normal pensquare definition:
+
+\startbuffer[a]
+\startMPcode
+pensquare := makepen(unitsquare shifted -(.5,.5)) ; ExamplePaths ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[a][option=TEX]
+
+and one with an alternative definition where we have middle points on the
+edges that stick out one eps:
+
+\startbuffer[b]
+\startMPcode
+pensquare := makepen((starring(eps) scaled 1/2)) ; ExamplePaths ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[b][option=TEX]
+
+This gives \in {figure} [fig:envelope:4]. The blue extensions are what we get
+without clean up but at least the alternative has symmetrical ears.
+
+\startplacefigure[title={An alternative pensquare.},reference=fig:envelope:4]
+    \startcombination[nx=2,ny=1]
+        {\scale[width=.45tw]{\getbuffer[a]}} {default pensquare}
+        {\scale[width=.45tw]{\getbuffer[b]}} {alternative pensquare}
+    \stopcombination
+\stopplacefigure
+
+When you have a somewhat weird envelope the \type {reducedenvelope} macro might
+be able to improve it. The \typ {<pth> enveloped <pen>} primary macro has this
+built in.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% \startMPdefinitions
+% interim tracereducedpath := false ;
+% interim scrutinizing := 3 ;
+%
+% path Paths[], Envelopes[] ; pen Pens[];
+%
+% Paths[1] := reverse fullcircle scaled 200 rotated 30 xyscaled(2,1) ;
+% Paths[2] := reverse fullcircle scaled 200 ;
+% Paths[3] := fullcircle scaled 200 ;
+%
+% Paths[4] := reverse (
+%         (100,0){up}
+%      .. xyrelative (100,100)
+%      .. {left}(0,100)
+%      .. xyrelative (-100,100)
+%      .. {down}(-100,0)
+%      .. xyrelative (-100,-100)
+%      .. {right}(0,-100)
+%      .. xyrelative (100,-100)
+%      .. {up}cycle );
+%
+% Paths[5] := reverse fullsquare rotated 80 scaled 200 ;
+% Paths[6] := fullsquare  scaled 200 rotated 20 ;
+%
+% Paths[7] := for i = 0 step 50 until 200 : (i,uniformdeviate(100)) .. endfor nocycle ;
+% Paths[8] := for i = 0 step 50 until 2000 : (i,uniformdeviate(100)) .. endfor nocycle ;
+%
+% Pens[1] := makepen starring(eps) scaled 1/2 ;
+% Pens[2] := Pens[1] scaled 50 ;
+% Pens[3] := pensquare scaled 50 rotated eps ;
+% Pens[4] := makepen punked fullcircle scaled 50 ;
+% Pens[5] := makepen fulltriangle scaled 50 ;
+%
+% loadmodule "misc" ;
+%
+% % lessdigits := false;
+%
+% def MyTest(expr p, q) =
+%     % show(Pens[q]);
+%     % show(Paths[p]);
+%     draw showreducedenvelope(Paths[p],Pens[q],decimal p,decimal q)
+% enddef ;
+%
+% def MyTest(expr p, q) =
+%     draw Paths[p] enveloped Pens[q] withpen pencircle scaled 2 dashed evenly ;
+% enddef ;
+%
+% % def MyTest(expr p, q) =
+% %     save pp ; path pp ;
+% %     pp := Paths[p] enveloped Pens[q] ;
+% %     fill pp withcolor .7[darkred,white] ;
+% %     draw pp withpen pencircle scaled 2 withcolor darkred ;
+% %     draw pp dashed evenly withcolor white ;
+% %     draw Paths[p] withpen pencircle scaled 2 withcolor darkred ;
+% % enddef ;
+%
+% \stopMPdefinitions
+%
+% \starttext
+%
+% % \startMPpage[offset=1TS] MyTest(5,3) ; \stopMPpage
+% % \startMPpage[offset=1TS] MyTest(8,4) ; \stopMPpage
+% \dorecurse{8}{
+%     \startMPpage[offset=1TS] MyTest(#1,2) ; \stopMPpage
+%     \startMPpage[offset=1TS] MyTest(#1,3) ; \stopMPpage
+%     \startMPpage[offset=1TS] MyTest(#1,4) ; \stopMPpage
+%     \startMPpage[offset=1TS] MyTest(#1,5) ; \stopMPpage
+% }
+%
+% \stoptext

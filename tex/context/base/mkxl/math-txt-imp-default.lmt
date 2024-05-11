@@ -1347,8 +1347,8 @@ return {
   ["nl"]="derhalve",
  },
  ["times"]={
-  ["en"]="TIMES",
-  ["sv"]="TIMES",--"multiplicerat med",
+  ["en"]="times",
+  ["sv"]="multiplicerat med",
   ["nl"]="maal",
  },
  ["to"]={

@@ -1040,7 +1040,7 @@
 
 % called at the lua end, the real rendering
 
-% we could have a yes and no where o nils the btx_reference_indeed ... saves a check there
+% we could have a yes and no where no nils the btx_reference_indeed ... saves a check there
 
 \installstructurelistprocessor{\s!btx}
   {\let\currentlistentrynumber    \btx_reference_indeed
@@ -1140,9 +1140,9 @@
        \s!btxref=\currentbtxtag,%
        \s!btxspc=\currentbtxspecification,%
        \s!btxlst=\the\c_btx_list_reference,% check if needed
-      %\ifempty\currentbtxcombis  \else\s!btxcom={\currentbtxcombis},\fi%
-       \ifempty\currentbtxbefore  \else\s!btxbtx={\currentbtxbefore},\fi%
-       \ifempty\currentbtxafter   \else\s!btxatx={\currentbtxafter },\fi%
+      %\ifempty\currentbtxcombis  \else\s!btxcom={\currentbtxcombis},\fi
+       \ifempty\currentbtxbefore  \else\s!btxbtx={\currentbtxbefore},\fi
+       \ifempty\currentbtxafter   \else\s!btxatx={\currentbtxafter },\fi
        \ifempty\currentbtxbacklink\else\s!btxint=\number\currentbtxbacklink\fi
       }%
       {\s!btx::\v!list::\the\c_btx_list_reference}%

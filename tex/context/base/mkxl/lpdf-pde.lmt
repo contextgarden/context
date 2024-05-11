@@ -350,6 +350,21 @@ some_stream = function(s,d,document)
     return t, "stream"
 end
 
+-- Just temporarily put this in a font resource and test if it gets copied:
+--
+-- local nA = pdfflushobject("/FOO")
+-- local nB = pdfflushobject("true")
+-- local nC = pdfflushobject("1234")
+-- local nD = pdfflushobject("(12abc)")
+-- local nE = pdfflushobject("<4E6F762073686D6F7A206B6120706F702E>")
+-- local nF = pdfflushobject("null")
+-- ByHansA = pdfreference(nA),
+-- ByHansB = pdfreference(nB),
+-- ByHansC = pdfreference(nC),
+-- ByHansD = pdfreference(nD),
+-- ByHansE = pdfreference(nE),
+-- ByHansF = pdfreference(nF),
+
 some_reference = function(r,document)
     local objnum = r[3]
     local cached = document.__cache__[objnum]
@@ -362,8 +377,8 @@ some_reference = function(r,document)
         elseif kind == stream_object_code then
             -- optionally not cached
             cached = some_stream(object,b,document)
-        elseif kind == string_object_code then
-            cached = some_string(object,document)
+     -- elseif kind == string_object_code then
+     --     cached = some_string(object,document) -- no, just the one below
         else
             -- really cache this?
             cached = { kind, object, b, c }
@@ -382,7 +397,7 @@ some_reference = function(r,document)
     return cached
 end
 
-local function some_object(document,n)
+local function some_object(document,n) -- name obj?
     local kind, object, b, c = getfromobject(document.__data__,n)
     if kind == dictionary_object_code then
         return some_dictionary(object,document)
@@ -1204,9 +1219,7 @@ if images then do
                     end
                 else
                     local t = type(value)
-                    if t == "string" then
-                        value = pdfconstant(value)
-                    elseif t == "table" then
+                    if t == "table" then
                         local kind  = value[1]
                         local entry = value[2]
                         if kind == name_object_code then
@@ -1222,6 +1235,9 @@ if images then do
                         else
                             value = tostring(entry)
                         end
+                        -- I need to make a few testcases for objects with whatever in it.
+                 -- elseif t == "string" then
+                 --  -- value = pdfconstant(value) -- name is handled elsewhere
                     end
                     pdfflushobject(usednum,value)
                 end

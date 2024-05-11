@@ -42,6 +42,9 @@
       state  {\p_state}%
       method {\dummyparameter\c!method}%
    \relax
+   \ifx\p_state\v!repeat
+     \let\p_state\v!start
+   \fi
    \ifx\p_state\v!start
      \glet\synctexpause   \clf_synctexpause
      \glet\synctexresume  \clf_synctexresume

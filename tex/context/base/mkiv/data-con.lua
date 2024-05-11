@@ -39,6 +39,8 @@ local report_containers = logs.reporter("resolvers","containers")
 
 local allocated = { }
 
+local cache_format = 1.001 -- for subtle bytecode changes during betas
+
 local mt = {
     __index = function(t,k)
         if k == "writable" then
@@ -88,7 +90,9 @@ end
 function containers.is_valid(container,name)
     if name and name ~= "" then
         local storage = container.storage[name]
-        return storage and storage.cache_version == container.version
+        return storage
+            and storage.cache_format  == cache_format -- extra safeguard for bytecode change
+            and storage.cache_version == container.version
     else
         return false
     end
@@ -100,7 +104,7 @@ function containers.read(container,name)
     local stored  = not reload and storage[name]
     if not stored and container.enabled and caches and containers.usecache then
         stored = loaddatafromcache(container.readables,name,container.writable)
-        if stored and stored.cache_version == container.version then
+        if stored and stored.cache_format == cache_format and stored.cache_version == container.version then
             if trace_cache or trace_containers then
                 report_containers("action %a, category %a, name %a","load",container.subcategory,name)
             end
@@ -116,8 +120,9 @@ function containers.read(container,name)
     return stored
 end
 
-function containers.write(container, name, data, fast)
+function containers.write(container,name,data,fast)
     if data then
+        data.cache_format  = cache_format
         data.cache_version = container.version
         if container.enabled and caches then
             local unique = data.unique

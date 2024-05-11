@@ -906,7 +906,7 @@ inline static next_line_retval tex_aux_next_line(void);
 
 */
 
-halfword tex_scan_character(const char *s, int left_brace, int skip_space, int skip_relax)
+halfword tex_scan_character(const char *s, int left_brace, int skip_space, int skip_relax) // int skip_endpar
 {
     halfword save_cur_cs = cur_cs;
     while (1) {
@@ -924,6 +924,12 @@ halfword tex_scan_character(const char *s, int left_brace, int skip_space, int s
                 } else {
                     goto DONE;
                 }
+         // case end_paragraph_cmd:
+         //   if (skip_space) { /* skip_endpar */
+         //       break;
+         //   } else {
+         //       goto DONE;
+         //   }
             case letter_cmd:
             case other_char_cmd:
                 if (cur_chr <= 'z' && strchr(s, cur_chr)) {

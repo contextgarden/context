@@ -24433,7 +24433,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-con"] = package.loaded["data-con"] or true
 
--- original size: 5477, stripped down to: 3757
+-- original size: 5733, stripped down to: 3900
 
 if not modules then modules={} end modules ['data-con']={
  version=1.100,
@@ -24457,6 +24457,7 @@ local loaddatafromcache=caches.loaddata
 local savedataincache=caches.savedata
 local report_containers=logs.reporter("resolvers","containers")
 local allocated={}
+local cache_format=1.001 
 local mt={
  __index=function(t,k)
   if k=="writable" then
@@ -24501,7 +24502,9 @@ end
 function containers.is_valid(container,name)
  if name and name~="" then
   local storage=container.storage[name]
-  return storage and storage.cache_version==container.version
+  return storage
+   and storage.cache_format==cache_format 
+   and storage.cache_version==container.version
  else
   return false
  end
@@ -24512,7 +24515,7 @@ function containers.read(container,name)
  local stored=not reload and storage[name]
  if not stored and container.enabled and caches and containers.usecache then
   stored=loaddatafromcache(container.readables,name,container.writable)
-  if stored and stored.cache_version==container.version then
+  if stored and stored.cache_format==cache_format and stored.cache_version==container.version then
    if trace_cache or trace_containers then
     report_containers("action %a, category %a, name %a","load",container.subcategory,name)
    end
@@ -24529,6 +24532,7 @@ function containers.read(container,name)
 end
 function containers.write(container,name,data,fast)
  if data then
+  data.cache_format=cache_format
   data.cache_version=container.version
   if container.enabled and caches then
    local unique=data.unique
@@ -26279,8 +26283,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua
 -- skipped libraries : -
--- original bytes    : 1050273
--- stripped bytes    : 417643
+-- original bytes    : 1050529
+-- stripped bytes    : 417756
 
 -- end library merge
 

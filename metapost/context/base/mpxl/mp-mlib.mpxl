@@ -62,60 +62,60 @@ enddef ;
 
 def namedcolor expr n =
     (1)
-    withprescript "sp_type=named"
-    withprescript "sp_name=" & n
+    withnestedprescript "sp_type=named"
+    withnestedprescript "sp_name=" & n
 enddef ;
 
 % def mfun_spotcolor(expr n, v) =
 %     1
-%     withprescript "sp_type=xspot"
-%     withprescript "sp_name="  & n
-%     withprescript "sp_value=" & (if numeric v : decimal v else : v fi)
+%     withnestedprescript "sp_type=xspot"
+%     withnestedprescript "sp_name="  & n
+%     withnestedprescript "sp_value=" & (if numeric v : decimal v else : v fi)
 % enddef ;
 
 % def mfun_multispotcolor(expr name, fractions, components, value) =
 %     1
-%     withprescript "sp_type=multispot"
-%     withprescript "sp_name="       & name
-%     withprescript "sp_fractions="  & decimal fractions
-%     withprescript "sp_components=" & components
-%     withprescript "sp_value="      & value
+%     withnestedprescript "sp_type=multispot"
+%     withnestedprescript "sp_name="       & name
+%     withnestedprescript "sp_fractions="  & decimal fractions
+%     withnestedprescript "sp_components=" & components
+%     withnestedprescript "sp_value="      & value
 % enddef ;
 
 def spotcolor(expr name, v) =
     (1)
-    withprescript "sp_type=spot"
-    withprescript "sp_name=" & name
-    withprescript "sp_value=" & colordecimals v
+    withnestedprescript "sp_type=spot"
+    withnestedprescript "sp_name=" & name
+    withnestedprescript "sp_value=" & colordecimals v
 enddef ;
 
 % In this case a mixed color will be calculated:
 
 def multitonecolor(expr name)(text t) =
     (1)
-    withprescript "sp_type=multitone"
-    withprescript "sp_name=" & name
-    withprescript "sp_value=" & colordecimalslist(t)
+    withnestedprescript "sp_type=multitone"
+    withnestedprescript "sp_name=" & name
+    withnestedprescript "sp_value=" & colordecimalslist(t)
 enddef ;
 
 def transparent(expr a, t)(text c) = % use withtransparency instead
     (1) % this permits withcolor x intoshade y
-    withprescript "tr_alternative=" & decimal transparency_alternative_to_number(a)
-    withprescript "tr_transparency=" & decimal t
+    withnestedprescript "tr_alternative=" & decimal transparency_alternative_to_number(a)
+    withnestedprescript "tr_transparency=" & decimal t
     withcolor c
 enddef ;
 
 def withtransparency(expr a, t) =
-    withprescript "tr_alternative="  & decimal transparency_alternative_to_number(a)
-    withprescript "tr_transparency=" & decimal t
+    withnestedprescript "tr_alternative="  & decimal transparency_alternative_to_number(a)
+    withnestedprescript "tr_transparency=" & decimal t
 enddef ;
 
 % for svg:
 
 def withopacity expr o =
     if o <> 1 :
-        withprescript "tr_alternative="  & decimal normaltransparent
-        withprescript "tr_transparency=" & decimal o
+        withnestedprescript "tr_alternative="  & decimal normaltransparent
+        withnestedprescript "tr_transparency=" & decimal o
     fi
 enddef ;
 
@@ -660,6 +660,7 @@ enddef ;
 def mfun_withshadestep (text t) =
     withprescript "sh_step=" & decimal mfun_shade_step
     t
+    withnothing % otherwise we scan ahead and can unwantingly bump the step
 enddef ;
 
 numeric mfun_shade_fx, mfun_shade_fy ;
@@ -671,14 +672,44 @@ pair    mfun_shade_center ;
 path    mfun_shade_bbox ;
 
 numeric mfun_shade_height, mfun_shade_width;
-% first
+
+% def mfun_with_shade_method_analyze(expr p) =
+%     mfun_shade_path   := p ;
+%     mfun_shade_bbox   := boundingbox p ;
+%     mfun_shade_center := center p ;
+%     mfun_shade_width  := bbwidth p ;
+%     mfun_shade_height := bbheight p ;
+%     mfun_shade_step   := 1 ;
+%     mfun_shade_fx     := xpart point 0 of p ;
+%     mfun_shade_fy     := ypart point 0 of p ;
+%     mfun_shade_lx     := mfun_shade_fx ;
+%     mfun_shade_ly     := mfun_shade_fy ;
+%     mfun_shade_nx     := 0 ;
+%     mfun_shade_ny     := 0 ;
+%     mfun_shade_dx     := abs(mfun_shade_fx - mfun_shade_lx) ;
+%     mfun_shade_dy     := abs(mfun_shade_fy - mfun_shade_ly) ;
+%     for i=1 upto length(p) :
+%         mfun_shade_tx := abs(mfun_shade_fx - xpart point i of p) ;
+%         mfun_shade_ty := abs(mfun_shade_fy - ypart point i of p) ;
+%         if mfun_shade_tx > mfun_shade_dx :
+%             mfun_shade_nx := i + 1 ;
+%             mfun_shade_lx := xpart point i of p ;
+%             mfun_shade_dx := mfun_shade_tx ;
+%         fi ;
+%         if mfun_shade_ty > mfun_shade_dy :
+%             mfun_shade_ny := i + 1 ;
+%             mfun_shade_ly := ypart point i of p ;
+%             mfun_shade_dy := mfun_shade_ty ;
+%         fi ;
+%     endfor ;
+% enddef ;
 
 def mfun_with_shade_method_analyze(expr p) =
     mfun_shade_path   := p ;
-    mfun_shade_center := center p;
-    mfun_shade_bbox   := boundingbox p;
-    mfun_shade_width  := bbwidth p;
-    mfun_shade_height := bbheight p;
+    mfun_shade_bbox   := boundingbox p ;
+    mfun_shade_center := center mfun_shade_bbox ;
+    mfun_shade_width  := bbwidth mfun_shade_bbox ;
+    mfun_shade_height := bbheight mfun_shade_bbox ;
     mfun_shade_step   := 1 ;
     mfun_shade_fx     := xpart point 0 of p ;
     mfun_shade_fy     := ypart point 0 of p ;
@@ -688,17 +719,17 @@ def mfun_with_shade_method_analyze(expr p) =
     mfun_shade_ny     := 0 ;
     mfun_shade_dx     := abs(mfun_shade_fx - mfun_shade_lx) ;
     mfun_shade_dy     := abs(mfun_shade_fy - mfun_shade_ly) ;
-    for i=1 upto length(p) :
-        mfun_shade_tx := abs(mfun_shade_fx - xpart point i of p) ;
-        mfun_shade_ty := abs(mfun_shade_fy - ypart point i of p) ;
+    for i within p :
+        mfun_shade_tx := abs(mfun_shade_fx - xpart pathpoint) ;
+        mfun_shade_ty := abs(mfun_shade_fy - ypart pathpoint) ;
         if mfun_shade_tx > mfun_shade_dx :
             mfun_shade_nx := i + 1 ;
-            mfun_shade_lx := xpart point i of p ;
+            mfun_shade_lx := xpart pathpoint ;
             mfun_shade_dx := mfun_shade_tx ;
         fi ;
         if mfun_shade_ty > mfun_shade_dy :
             mfun_shade_ny := i + 1 ;
-            mfun_shade_ly := ypart point i of p ;
+            mfun_shade_ly := ypart pathpoint ;
             mfun_shade_dy := mfun_shade_ty ;
         fi ;
     endfor ;
@@ -807,6 +838,16 @@ def withshadetransform expr a = % yes | no
     withprescript "sh_transform=" & a
 enddef ;
 
+def withshadetransformation expr a =
+    withprescript "sh_transformation=" &
+        decimal (xxpart a) & " " &
+        decimal (yxpart a) & " " &
+        decimal (xypart a) & " " &
+        decimal (yypart a) & " " &
+        decimal (xpart  a) & " " &
+        decimal (ypart  a)
+enddef ;
+
 pair shadedup    ; shadedup    := (0.5,2.5) ;
 pair shadeddown  ; shadeddown  := (2.5,0.5) ;
 pair shadedleft  ; shadedleft  := (1.5,3.5) ;
@@ -844,6 +885,7 @@ enddef ;
 % def withshadeopacity expr a =
 %     if mfun_shade_step > 0 :
 %         withprescript "sh_opacity_" & decimal mfun_shade_step & "=" & decimal a
+%         % withtransparency(3,1)
 %     fi
 % enddef ;
 
@@ -1817,14 +1859,18 @@ permanent comment, report ;
 
 % todo: use mfid_* cum suis
 
-newscriptindex mfid_hash_new     ; mfid_hash_new     := scriptindex("lmt_hash_new") ;
-newscriptindex mfid_hash_dispose ; mfid_hash_dispose := scriptindex("lmt_hash_dispose") ;
+newscriptindex mfid_hash_new     ; mfid_hash_new     := scriptindex("lmt_hash_new") ;     % mkiv compatible
+newscriptindex mfid_hash_dispose ; mfid_hash_dispose := scriptindex("lmt_hash_dispose") ; % mkiv compatible
+
+newscriptindex mfid_hash_reset   ; mfid_hash_dispose := scriptindex("lmt_hash_reset") ;
 newscriptindex mfid_hash_in      ; mfid_hash_in      := scriptindex("lmt_hash_in") ;
 newscriptindex mfid_hash_from    ; mfid_hash_from    := scriptindex("lmt_hash_from") ;
 newscriptindex mfid_hash_to      ; mfid_hash_to      := scriptindex("lmt_hash_to") ;
 
 def newhash                          = runscript mfid_hash_new                 enddef ; % optional, returns index
 def disposehash (expr n)             = runscript mfid_hash_dispose n           enddef ;
+
+def resethash   (expr n)             = runscript mfid_hash_reset   n           enddef ;
 def inhash      (expr n, key)        = runscript mfid_hash_in      n key       enddef ;
 def fromhash    (expr n, key)        = runscript mfid_hash_from    n key       enddef ;
 def tohash      (expr n, key, value) = runscript mfid_hash_to      n key value enddef ;
@@ -1873,3 +1919,59 @@ newscriptindex mfid_repeatablerandom ; mfid_repeatablerandom := scriptindex("rep
 
 def repeatablerandom = runscript mfid_repeatablerandom enddef ;
 
+% somewhat esoteric
+
+picture mfun_luminosity_picture ;
+
+def registerluminositygroup (expr name) (text t) =
+    begingroup ;
+    save  mfun_luminosity_picture ;
+    picture  mfun_luminosity_picture ;
+    mfun_luminosity_picture := image ( t ) ;
+    setgroup mfun_luminosity_picture to boundingbox mfun_luminosity_picture ;
+    draw mfun_luminosity_picture
+        withprescript "gs_type=luminosity"
+        withprescript "gs_action=register"
+        withprescript "gs_name=" & name
+    ;
+    endgroup ;
+enddef ;
+
+def applyluminositygroup (expr name) (text t) =
+    begingroup ;
+    save  mfun_luminosity_picture ;
+    picture  mfun_luminosity_picture ;
+    mfun_luminosity_picture := image ( t ) ;
+    setgroup  mfun_luminosity_picture to boundingbox mfun_luminosity_picture ;
+    draw mfun_luminosity_picture
+        withprescript "gs_type=luminosity"
+        withprescript "gs_action=apply"
+        withprescript "gs_name=" & name
+    ;
+    endgroup ;
+enddef ;
+
+def luminositygroup (text a) (text b) =
+    image (
+        registerluminositygroup ("default") (a) ;
+        applyluminositygroup    ("default") (b) ;
+    )
+enddef ;
+
+def luminosityshade (expr p) (text a) (text b) =
+    image (
+        registerluminositygroup ("default") (fill p a) ;
+        applyluminositygroup    ("default") (fill p b) ;
+    )
+enddef ;
+
+permanent registerluminositygroup, applyluminositygroup, luminositygroup, luminosityshade ;
+
+% message(subpath(2,3) of fullcircle scaled 10cm hascurvature 0.02);
+% message(subpath(2,3) of fullsquare scaled 10cm hascurvature 0.02);
+
+newscriptindex mfid_hascurvature ; mfid_hascurvature := scriptindex("hascurvature") ;
+
+primarydef p hascurvature c = runscript mfid_hascurvature (p) (c) enddef ;
+
+permanent hascurvature ;

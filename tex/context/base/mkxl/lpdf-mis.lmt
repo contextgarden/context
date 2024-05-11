@@ -510,7 +510,7 @@ local function featurecreep()
             return -- fatal error
         end
         local label = p.viewerprefix or ""
-        if p.status == v_stop then
+        if p.state == v_stop then
             if not stopped then
                 list[#list+1] = i - 1 -- pdf starts numbering at 0
                 list[#list+1] = pdfdictionary {

@@ -746,26 +746,25 @@ end
 
 % \page
 
-% \def\TestPolynomials#1#2%
-%   {\page
-%    \TestPolynomial{text:normal} {#1}{#2}
-%    \TestPolynomial{text:align}  {#1}{#2}
-%    \TestPolynomial{align:normal}{#1}{#2}
-%    \TestPolynomial{align:split} {#1}{#2}
-%    \page
-%    }
-%
-% \TestPolynomials
-%     {7, -5,  2, 3}
-%     {3, 0, 1}
-%
-% \TestPolynomials
-%     {7, -5,  2, 3}
-%     {3,  0,  2.7}
-%
-% \TestPolynomials
-%     {7, -5,  2, 3}
-%     {3,  0,  1}
+\def\TestPolynomials#1#2%
+  {\page
+   \TestPolynomial{text:normal} {#1}{#2}
+   \blank[3*big]
+   \TestPolynomial{text:align}  {#1}{#2}
+   \page
+   }
+
+\TestPolynomials
+    {7, -5,  2, 3}
+    {3, 0, 1}
+
+\TestPolynomials
+    {7, -5,  2, 3}
+    {3,  0,  2.7}
+
+\TestPolynomials
+    {7, -5,  2, 3}
+    {3,  0,  1}
 
 \startformula
 \polynomial
@@ -857,43 +856,43 @@ shift
     \stopformula
 }
 
-% \input tufte
+\input tufte
 
-% \startformula
-%     \denominator
-%     \numerator[2]
-%     \frac{3x^3+2x^2-5x+7}{x^2+3}
-%     \alignhere
-%     = 3x + \frac{2x^2 - 14x + 7}{x^2+3}
-%     \breakhere
-%     = 3x + 2 + \frac{-14x+1}{x^2+3}
-% \stopformula
+\startformula
+    \polynomialdenominator
+    \polynomialnumerator[2]
+    \frac{3x^3+2x^2-5x+7}{x^2+3}
+    \alignhere
+    = 3x + \frac{2x^2 - 14x + 7}{x^2+3}
+    \breakhere
+    = 3x + 2 + \frac{-14x+1}{x^2+3}
+\stopformula
 
-% \input tufte
+\input tufte
 
-% \startformula
-%     \frac{3x^3+2x^2-5x+7}{x^2+3}
-%     \alignhere
-%     = 3x + \frac{2x^2 - 14x + 7}{x^2+3}
-%     \breakhere
-%     = 3x + 2 + \frac{-14x+1}{x^2+3}
-% \stopformula
-
-% \input tufte
-
-% \TestPolynomials
-%     {-5, -3,  3, -1, 1,  0, 2, -3, -2, -1, 4}
-%     {-8, -7, -5,  2, 8, -9, 1}
-
-% \TestPolynomials
-%     {-1, 0, 1}
-%     {-1, 1}
+\startformula
+    \frac{3x^3+2x^2-5x+7}{x^2+3}
+    \alignhere
+    = 3x + \frac{2x^2 - 14x + 7}{x^2+3}
+    \breakhere
+    = 3x + 2 + \frac{-14x+1}{x^2+3}
+\stopformula
 
 % \input tufte
 
-% \TestPolynomials
-%     {-1, 1}
-%     {-1, 0, 1}
+\TestPolynomials
+    {-5, -3,  3, -1, 1,  0, 2, -3, -2, -1, 4}
+    {-8, -7, -5,  2, 8, -9, 1}
+
+\TestPolynomials
+    {-1, 0, 1}
+    {-1, 1}
+
+% \input tufte
+
+\TestPolynomials
+    {-1, 1}
+    {-1, 0, 1}
 
 % \input tufte
 

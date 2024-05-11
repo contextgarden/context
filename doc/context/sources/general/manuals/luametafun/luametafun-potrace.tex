@@ -1,0 +1,289 @@
+% language=us runpath=texruns:manuals/luametafun
+
+\environment luametafun-style
+
+\startcomponent luametafun-potrace
+
+\startchapter[title={Potrace}]
+
+\startsection[title=Introduction]
+
+The potrace connection targets at bitmaps. You can think of logos that only exist
+as bitmaps while outlines are preferred, but in this case we actually think more
+of bitmaps that the user lays out. In order to give an impression what we are
+talking about I give three simple examples:
+
+\startbuffer[potraced]
+01111111111111111111111111111100
+11000000000000000000000000000110
+11000000000000000000000000000011
+11000000000000000000000000000011
+11000000000000000000000000000011
+01100000000000000000000000000011
+00111111111111111111111111111110
+\stopbuffer
+
+\savebuffer[list=potraced,file=potraced.txt,prefix=no]
+
+\startbuffer[1]
+\startMPcode
+    fill
+        lmt_potraced [ bytes =
+            "01111111111111111111111111111100
+             11000000000000000000000000000110
+             11000000000000000000000000000011
+             11000000000000000000000000000011
+             11000000000000000000000000000011
+             01100000000000000000000000000011
+             00111111111111111111111111111110",
+        ] ysized 1cm
+        withcolor "darkblue"
+        withpen pencircle scaled 1 ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[2]
+\startMPcode
+    fill
+        lmt_potraced [
+            filename = "potraced.txt",
+        ] ysized 1cm
+        withcolor "darkgreen"
+        withpen pencircle scaled 1 ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[3]
+\startMPcode
+    fill
+        lmt_potraced [
+            buffer = "potraced",
+        ] ysized 1cm
+        withcolor "darkred"
+        withpen pencircle scaled 1 ;
+\stopMPcode
+\stopbuffer
+
+\startlinecorrection
+\startcombination[nx=3,ny=1]
+    {\getbuffer[1]} {\type {bytes}}
+    {\getbuffer[2]} {\type {buffer}}
+    {\getbuffer[3]} {\type {filename}}
+\stopcombination
+\stoplinecorrection
+
+Here we vectorize bitmaps with Peter Selingers potrace library, that we built in
+\LUAMETATEX. We can directly feed bytes in a \METAFUN\ blob:
+
+\typebuffer[1][option=TEX]
+
+But we can also go via a file that has the same data:
+
+\typebuffer[2][option=TEX]
+
+Of course we can also use buffers:
+
+\typebuffer[3][option=TEX]
+
+You feed a bitmap specification and get back a \METAPOST\ path, likely multiple
+subpaths sewed together. You can of course draw and fill that path, or store it
+in a path variable and then do both.
+
+In the following sections we will explore the various options and some tricks.
+The main message in this section is that you need to look at bitmaps with
+vectorized eyes because that is what you get in the end: a vector representation.
+
+\stopsection
+
+\startsection[title=Functions]
+
+{\em todo}
+
+\stopsection
+
+\startsection[title=Icons]
+
+When Mikael Sundqvist and I were playing with potrace in \METAFUN\ his girls came
+up with this pattern.
+
+\startbuffer
+\startMPcode
+fill
+    lmt_potraced [ bytes =
+        "001111100
+         010000010
+         100000001
+         101101101
+         100000001
+         101000101
+         100111001
+         010000010
+         001111100",
+         size = 1,
+    ] xysized (3cm,3cm)
+    withcolor "middleorange" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This produces the following icon. The somewhat asymmetrical shape gives it a
+charm, and it is surprising how little code is needed. This picture inspired
+Willi Egger to make a ten by ten composition gadget for the attendants of the
+2023 \CONTEXT\ meeting that was used in a tutorial.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+We use this to demonstrate a few more features of the interface:
+
+\startbuffer
+\startMPcode
+draw
+    lmt_potraced [ bytes =
+        "..11111..
+         .1.....1.
+         1.......1
+         1.11.11.1
+         1.......1
+         1.1...1.1
+         1..111..1
+         .1.....1.
+         ..11111..",
+         polygon = true,
+         size = 1,
+    ] xysized (3cm,3cm)
+    withcolor "darkblue"
+    withpen pencircle scaled 1mm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This contour is actually accurate:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+We can color some components:
+
+\startbuffer
+\startMPcode
+draw image (
+    lmt_startpotraced [ bytes =
+        "..11111..
+         .1.....1.
+         1.......1
+         1.22.22.1
+         1.......1
+         1.3...3.1
+         1..333..1
+         .1.....1.
+         ..11111.."
+    ] ;
+    fill lmt_potraced [ value = "1", size = 1 ]
+        withcolor "darkred" ;
+    fill lmt_potraced [ value = "3", size = 1 ]
+        withcolor "darkgreen" ;
+    fill lmt_potraced [ value = "2", size = 0 ]
+        withcolor "darkblue" ;
+    lmt_stoppotraced ;
+) xysized (3cm,3cm) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Of course there must be enough distinction (white space) between the
+shapes:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+Again we show the polygons:
+
+\startbuffer
+\startMPcode
+draw image (
+    lmt_startpotraced [ bytes =
+        "..11111..
+         .1.....1.
+         1.......1
+         1.22.22.1
+         1.......1
+         1.3...3.1
+         1..333..1
+         .1.....1.
+         ..11111.."
+    ] ;
+    draw lmt_potraced [ value = "1", size = 1, polygon = true ]
+        withcolor "darkred" ;
+    draw lmt_potraced [ value = "3", size = 1, polygon = true ]
+        withcolor "darkgreen" ;
+    draw lmt_potraced [ value = "2", size = 0, polygon = true ]
+        withcolor "darkblue" ;
+    lmt_stoppotraced ;
+)
+    xysized (3cm,3cm)
+    withpen pencircle scaled 1mm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Gives:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+We can do the same with data defined in \LUA:
+
+\startbuffer
+\startluacode
+io.savedata("temp.txt",[[
+..11111..
+.1.....1.
+1.......1
+1.22.22.1
+1.......1
+1.3...3.1
+1..333..1
+.1.....1.
+..11111..
+]])
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+With:
+
+\startbuffer
+\startMPcode
+draw image (
+    lmt_startpotraced [ filename = "temp.txt" ] ;
+        fill lmt_potraced [ value = "1", size = 1 ]
+            withcolor "darkcyan" ;
+        fill lmt_potraced [ value = "3", size = 1 ]
+            withcolor "darkmagenta" ;
+        fill lmt_potraced [ value = "2", size = 0 ]
+            withcolor "darkyellow" ;
+    lmt_stoppotraced ;
+) xysized (3cm,3cm) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Indeed we get:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Fonts]
+
+{\em maybe}
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+

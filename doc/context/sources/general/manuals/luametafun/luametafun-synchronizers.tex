@@ -1,0 +1,127 @@
+% language=us runpath=texruns:manuals/luametafun
+
+\environment luametafun-style
+
+\startcomponent luametafun-synchronizers
+
+\startchapter[title={Synchronizers}]
+
+{Work in progress.} \blank
+
+
+\definesyncpositions[1]
+\definesyncpositions[2]
+
+% \startuseMPgraphic{sync1}
+%     StartPage ;
+%         lmt_synchronizer [
+%             index      = 1,
+%             hoffset    = 0,
+%             width      = BackSpace - LeftMarginDistance,
+%             extend     = false,
+%             prune      = true,
+%             draw       = false,
+%             fill       = true,
+%         ] ;
+%       clip currentpicture to Page ;
+%       setbounds currentpicture to Page ;
+%     StopPage ;
+% \stopuseMPgraphic
+
+% \startuseMPgraphic{sync1}
+%     lmt_synchronizer [
+%       % page       = "yes",
+%         index      = 1,
+%         hoffset    = 0,
+%         width      = BackSpace - LeftMarginDistance,
+%         extend     = false,
+%         prune      = true,
+%         draw       = false,
+%         fill       = true,
+%     ] ;
+% \stopuseMPgraphic
+
+% \definecolor[redshade]    [.5(darkred,white)]
+% \definecolor[greenshade]  [.5(darkgreen,white)]
+% \definecolor[blueshade]   [.5(darkblue,white)]
+% \definecolor[yellowshade] [.5(darkyellow,white)]
+
+% \startuseMPgraphic{sync1}
+%     lmt_synchronizer [
+%       % page       = "yes",
+%         index      = 1,
+%         hoffset    = 0,
+%         width      = BackSpace - LeftMarginDistance,
+%         extend     = false,
+%         prune      = true,
+%         draw       = false,
+%         fill       = true,
+%         colors     = { "redshade", "greenshade", "blueshade", "yellowshade" }
+%     ] ;
+% \stopuseMPgraphic
+
+\startuseMPgraphic{sync2}
+    lmt_synchronizer [
+        index   = 2,
+        region  = OverlayRegion,
+        hoffset = -1cm,
+        width   = 1cm,
+        extend  = true,
+        prune   = false,
+        draw    = false,
+        fill    = true,
+    ] ;
+    clip currentpicture to OverlayBox leftenlarged 1cm;
+    setbounds currentpicture to OverlayBox ;
+\stopuseMPgraphic
+
+\defineoverlay[tempoverlay1][\useMPgraphic{sync1}]
+\defineoverlay[tempoverlay2][\useMPgraphic{sync2}]
+
+% \setupbackgrounds[page][background=tempoverlay1]
+
+\startlinecorrection
+\framed
+    [region=yes,background=tempoverlay2,width=14cm,align=normal]
+    \bgroup
+        \syncposition[2][1]\samplefile{ward}\endgraf
+        \syncposition[2][2]\samplefile{ward}\endgraf
+        \syncposition[2][3]\samplefile{ward}\endgraf
+    \egroup
+\stoplinecorrection
+
+% \vskip1cm \hskip1cm \framed[region=yes,background=tempoverlay2,width=16cm,align=normal]{%
+%     \syncposition[2][1]\samplefile{ward}\endgraf
+%     \syncposition[2][2]\samplefile{ward}\endgraf
+%     \syncposition[2][3]\samplefile{ward}\endgraf
+% }
+
+% \vskip1cm \hskip1cm \framed[region=yes,background=tempoverlay2,width=10cm,align=normal]{%
+%     \syncposition[2][1]\samplefile{ward}\endgraf
+%     \syncposition[2][2]\samplefile{ward}\endgraf
+%     \syncposition[2][3]\samplefile{ward}\endgraf
+% }
+
+% \dorecurse {100} {
+% \dorecurse {1} {
+%     \startchapter[title={Test #1}]
+%         \syncposition[1][1,reset]\dorecurse{20}{\samplefile{ward}\endgraf}
+%         \syncposition[1][2]\dorecurse {4}{\samplefile{ward}\endgraf}
+%         \syncposition[1][3]\dorecurse {7}{\samplefile{ward}\endgraf}
+%         \syncposition[1][4]\dorecurse {3}{\samplefile{ward}\endgraf}
+%     \stopchapter
+% }
+
+% \dorecurse {100} {
+% \dorecurse {1} {
+%     \startchapter[title={Test #1}]
+%         \syncposition[1][1]\dorecurse{1}{\samplefile{ward}\endgraf}
+%         \syncposition[1][2]\dorecurse{1}{\samplefile{ward}\endgraf}
+%         \syncposition[1][3]\dorecurse{1}{\samplefile{ward}\endgraf}
+%         \syncposition[1][4]\dorecurse{1}{\samplefile{ward}\endgraf}
+%     \stopchapter
+% }
+
+\stopchapter
+
+\stopcomponent

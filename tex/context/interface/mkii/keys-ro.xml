@@ -99,6 +99,7 @@
 		<cd:variable name='autointro' value='autointro'/>
 		<cd:variable name='back' value='inapot'/>
 		<cd:variable name='background' value='fundal'/>
+		<cd:variable name='backgroundbar' value='backgroundbar'/>
 		<cd:variable name='backmatter' value='epilogul'/>
 		<cd:variable name='backpart' value='epilog'/>
 		<cd:variable name='backspace' value='spatiuspate'/>

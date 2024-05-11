@@ -47,6 +47,7 @@ local getheight         = nuts.getheight
 local getlist           = nuts.getlist
 local setglue           = nuts.setglue
 local setwhd            = nuts.setwhd
+local setoffsets        = nuts.setoffsets
 local getdimensions     = nuts.dimensions
 local getnormalizedline = nuts.getnormalizedline
 local getbox            = nuts.getbox
@@ -73,8 +74,9 @@ local texiscount        = tex.iscount
 local stages            = { }
 local initial           = { }
 
-local boundary   <const> = tex.boundaries.system("mathalign")
-local a_location <const> = attributes.system("mathnumberlocation")
+local b_mathalign  <const> = tex.boundaries.system("mathalign")
+local b_mathinject <const> = tex.boundaries.system("mathinject")
+local a_location   <const> = attributes.system("mathnumberlocation")
 
 local c_strc_math_n_of_lines   <const> = texiscount("c_strc_math_n_of_lines")
 local d_strc_math_max_right    <const> = texisdimen("d_strc_math_max_right")
@@ -134,9 +136,11 @@ stages[1] = function(specification,stage)
     local max      = 0
     for s in nextboundary, head do
         local data = getdata(s)
-        if data == boundary then
+        if data == b_mathalign then
             local s = moveon(s)
             found[#found+1] = { s, 0, head }
+--         elseif data == b_mathinject then
+--             print("!!!!!!!")
         end
     end
     if #found > 0 then
@@ -278,6 +282,7 @@ stages[2] = function(specification,stage)
     local linenumber  = 0
     local leftmargin  = specification.leftmargin
     local rightmargin = specification.rightmargin
+    local injections  = { }
     if trace then
         report("stage 2")
     end
@@ -287,12 +292,22 @@ stages[2] = function(specification,stage)
          -- local m = t.rightskip + t.parfillrightskip
             local l = t.leftskip  + t.lefthangskip  + t.parinitleftskip  + t.parfillleftskip  + t.indent
             local r = t.rightskip + t.righthangskip + t.parinitrightskip + t.parfillrightskip
+
+for s in nextboundary, list do
+    local data = getdata(s)
+    if data == b_mathinject then
+        injections[n] = true
+        goto HERE
+    end
+end
+            linenumber = linenumber + 1
+
             local w = getwidth(n)
             local m = r
-            linenumber = linenumber + 1
             if trace then
                 report("line %i, width %p, left %p, right %p, used %p",linenumber,w,l,r,w-l-r)
             end
+
             if not maxleft or m > maxleft then
                 maxleft = l
             end
@@ -317,6 +332,7 @@ stages[2] = function(specification,stage)
             cnt       = cnt + 1
             lastwidth = m
             lastdepth = getdepth(n)
+::HERE::
         end
     end
 
@@ -353,7 +369,14 @@ stages[2] = function(specification,stage)
     end
 
     for n, id, subtype, list in nextlist, head do
+        if subtype == line_code and injections[n] then
+            local t = getnormalizedline(n)
+            local l = t.leftskip  + t.lefthangskip  + t.parinitleftskip  + t.parfillleftskip  + t.indent
+            setoffsets(n,-l,nil)
+            goto DONE
+        end
         handlepacked(n,list,position)
+      ::DONE::
     end
 
     texsetcount("global",c_strc_math_n_of_lines,cnt)

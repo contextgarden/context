@@ -158,13 +158,17 @@ todecimal = xdecimal and xdecimal.new or tonumber -- bonus
 -- mail on list by Mikael Sundqvist and Taco's analysis of near duplicate points (2021/02/11+)
 
 registerscript("scrutinized", function()
-    local pth  = scanpath()
-    local d    = 1/10^scannumeric() -- decimals
-    local p1   = pth[1]
-    local x1   = p1[1]
-    local y1   = p1[2]
-    local res  = { pth[1] }
-    local r    = 1
+    local pth = scanpath()
+-- for i=1,#pth do
+--     pth[i].right_type = nil
+--     pth[i].left_type = nil
+-- end
+    local d   = 1/(10^scannumeric()) -- decimals
+    local p1  = pth[1]
+    local x1  = p1[1]
+    local y1  = p1[2]
+    local res = { pth[1] }
+    local r   = 1
     for i=2,#pth do
         local pi = pth[i]
         x2 = pi[1]
@@ -183,16 +187,51 @@ registerscript("scrutinized", function()
         if abs(x1-p1[1]) > d or abs(y1-p1[2]) > d then
             -- keep
         else
+            p1[3] = res[r][3]
+            p1[4] = res[r][4]
             res[r] = nil
         end
     end
     injectpath(res)
 end)
 
+local newtable = lua.newtable
+
+registerscript("recycled", function()
+    local pth = scanpath()
+    local n   = scannumeric()
+    local p   = #pth
+    n = n % p
+    if n == 0 or not pth.cycle then -- table.rotate
+        injectpath(pth)
+    else
+      local res = newtable(p,1)
+      local r   = 0
+      for i=p-n+1,p do
+          r = r + 1 ; res[r] = pth[i]
+      end
+      for i=1,p-n do
+          r = r + 1 ; res[r] = pth[i]
+      end
+-- for i=1,r do
+--     res[i].right_type = nil
+--     res[i].left_type  = nil
+-- end
+        res.cycle = true
+        injectpath(res)
+    end
+end)
+
 -- A goodie, mostly a side effect of updating the metafun manual.
 
 local labtorgb = attributes.colors.labtorgb
+local xyxtorgb = attributes.colors.xyztorgb
+local lchtorgb = attributes.colors.lchtorgb
+local hsvtorgb = attributes.colors.hsvtorgb
+local hwbtorgb = attributes.colors.hwbtorgb
 
-registerscript("labtorgb", function()
-    injectcolor(labtorgb(scannumeric(),scannumeric(),scannumeric()))
-end)
+registerscript("labtorgb", function() injectcolor(labtorgb(scannumeric(),scannumeric(),scannumeric())) end)
+registerscript("xyztorgb", function() injectcolor(xyztorgb(scannumeric(),scannumeric(),scannumeric())) end)
+registerscript("lchtorgb", function() injectcolor(lchtorgb(scannumeric(),scannumeric(),scannumeric())) end)
+registerscript("hsvtorgb", function() injectcolor(hsvtorgb(scannumeric(),scannumeric(),scannumeric())) end)
+registerscript("hwbtorgb", function() injectcolor(hwbtorgb(scannumeric(),scannumeric(),scannumeric())) end)

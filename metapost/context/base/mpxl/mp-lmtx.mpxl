@@ -1,5 +1,5 @@
 %D \module
-%D   [       file=mp-lmtx.lmtx,
+%D   [       file=mp-lmtx.mpxl,
 %D        version=2019.06.23,
 %D          title=\CONTEXT\ \METAPOST\ graphics,
 %D       subtitle=\LUA,
@@ -2463,12 +2463,12 @@ permanent
 % nice hack
 
 newscriptindex mfid_scrutinized ; mfid_scrutinized := scriptindex "scrutinized" ;
+newscriptindex mfid_recycled    ; mfid_recycled    := scriptindex "recycled" ;
 
-primarydef p scrutinized n =
-    runscript mfid_scrutinized p n
-enddef ;
+primarydef p scrutinized n = runscript mfid_scrutinized p n enddef ;
+primarydef p recycled    n = runscript mfid_recycled    p n enddef ;
 
-permanent scrutinized ;
+permanent scrutinized, recycled ;
 
 % for now here
 
@@ -2503,10 +2503,18 @@ vardef textual primary p = false enddef ;
 % also for the menafun manual:
 
 newscriptindex mfid_labtorgb ; mfid_labtorgb := scriptindex "labtorgb" ;
+newscriptindex mfid_xyztorgb ; mfid_xyztorgb := scriptindex "xyztorgb" ;
+newscriptindex mfid_lchtorgb ; mfid_lchtorgb := scriptindex "lchtorgb" ;
+newscriptindex mfid_hsvtorgb ; mfid_hsvtorgb := scriptindex "hsvtorgb" ;
+newscriptindex mfid_hwbtorgb ; mfid_hwbtorgb := scriptindex "hwbtorgb" ;
 
 def labtorgb(expr l, a, b) = runscript mfid_labtorgb l a b enddef ;
+def xyztorgb(expr x, y, z) = runscript mfid_xyztorgb x y z enddef ;
+def lchtorgb(expr l, c, h) = runscript mfid_lchtorgb l c h enddef ;
+def hsvtorgb(expr h, s, v) = runscript mfid_hsvtorgb h s b enddef ;
+def hwbtorgb(expr h, w, b) = runscript mfid_hwbtorgb h w b enddef ;
 
-permanent labtorgb ;
+permanent labtorgb, xyztorgb, lchtorgb, hsvtorgb, hwbtorgb ;
 
 presetparameters "labtorgb" [
     mina = -100,
@@ -2531,6 +2539,43 @@ vardef lmt_do_labtorgb =
             endfor ;
         popparameters ;
     )
+enddef ;
+
+presetparameters "lchcircle" [
+  steps  =  24,
+  labels = true,
+  l      = 100,
+  c      = 100,
+] ;
+
+def lmt_lchcircle = applyparameters "lchcircle" "lmt_do_lchcircle" enddef ;
+
+vardef lmt_do_lchcircle =
+  image (
+    pushparameters "lchcircle" ;
+    save p, l, c, h, n, b ;
+    path p ; numeric l, c, h, n ; boolean b ;
+    l := getparameter "l" ;
+    c := getparameter "c" ;
+    n := getparameter "steps" ;
+    b := getparameter "labels" ;
+    p := arcpointlist n of fullcircle ;
+    for i within p :
+      h := i*360/n ;
+      draw
+        pathpoint scaled 50
+        withpen pencircle scaled (120/n)
+        withcolor lchtorgb(l,c,h) ;
+      if b :
+        draw
+          textext ("\tt\bf" & decimal h)
+          scaled .4
+          shifted (pathpoint scaled 50)
+          withcolor white ;
+      fi ;
+    endfor ;
+    popparameters ;
+  )
 enddef ;
 
 % For now we collect all lmt namespace extensions here, so also this one:

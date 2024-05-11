@@ -6,6 +6,11 @@ if not modules then modules = { } end modules ['mtx-scite'] = {
     license   = "see context related readme files"
 }
 
+-- apt-get install aspell
+-- apt-get install aspell-de aspell-nl aspell-en aspell-gb  aspell-de  aspell-fr
+--
+-- cat /usr/share/hunspell/xxx.dic | aspell --lang=xx --encoding=utf-8 expand | tr " " "\n" >spell-xx.txt
+
 -- mtxrun --script scite --tree --source=t:/texmf/tex/context --target=e:/tmp/context --numbers
 
 local P, R, S, C, Ct, Cf, Cc, Cg = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cf, lpeg.Cc, lpeg.Cg
@@ -41,6 +46,10 @@ local application = logs.application {
 local report = application.report
 
 local scite = require("util-sci")
+
+dofile(resolvers.findfile("char-ini.lua"))
+
+local lower = characters.lower
 
 scripts       = scripts       or { }
 scripts.scite = scripts.scite or { }
@@ -194,15 +203,22 @@ scripts.scite = scripts.scite or { }
 
 local function splitwords(words)
     local w = { }
-    for s in string.gmatch(words,"[a-zA-Z\127-255]+") do
+    for s in string.gmatch(words,"%S+") do
         if #s > 2 then -- will become option
             w[lower(s)] = s
         end
     end
-    return w
+    local u = { }
+    for s in string.utfcharacters(words) do
+        u[s] = true
+    end
+    for k, v in next, u do
+        u[k] = lower(k)
+    end
+    u["\n"] = nil
+    u["\r"] = nil
+    return w, u
 end
-
--- maybe: lowerkey = UpperWhatever
 
 function scripts.scite.words()
     for i=1,#environment.files do
@@ -214,7 +230,7 @@ function scripts.scite.words()
         if lfs.isfile(txtname) then
             report("loading %s",txtname)
             local olddata = io.loaddata(txtname) or ""
-            local words = splitwords(olddata)
+            local words, lower = splitwords(olddata)
             local min, max, n = 100, 1, 0
             for k, v in next, words do
                 local l = #k
@@ -235,11 +251,12 @@ function scripts.scite.words()
                 min    = min,
                 max    = max,
                 n      = n,
+                lower  = lower,
             }
             report("saving %q, %s words, %s shortest, %s longest",luaname,n,min,max)
             io.savedata(luaname,table.serialize(newdata,true))
-            report("compiling %q",lucname)
-            os.execute(format("luac -s -o %s %s",lucname,luaname))
+         -- report("compiling %q",lucname)
+         -- os.execute(format("luac -s -o %s %s",lucname,luaname))
         else
             report("no data file %s",txtname)
         end
