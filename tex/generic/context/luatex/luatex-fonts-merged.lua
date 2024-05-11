@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2024-02-27 09:18
+-- merge date  : 2024-03-05 11:22
 
 do -- begin closure to overcome local limits and interference
 
@@ -21369,7 +21369,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.140 
+otf.version=3.141 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -24026,6 +24026,7 @@ local P,R,S=lpeg.P,lpeg.R,lpeg.S
 local lpegmatch=lpeg.match
 local insert,remove,copy,unpack=table.insert,table.remove,table.copy,table.unpack
 local find=string.find
+local idiv=number.idiv
 local formatters=string.formatters
 local sortedkeys=table.sortedkeys
 local sortedhash=table.sortedhash
@@ -24711,7 +24712,7 @@ local function checklookups(fontdata,missing,nofmissing)
     end
    end
    if parts then
-    parts[#parts//2+1].unicode=unicode
+    parts[idiv(#parts,2)+1].unicode=unicode
    end
   end
  end

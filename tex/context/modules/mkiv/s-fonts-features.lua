@@ -371,7 +371,7 @@ local function collect(tfmdata,id,specification,feature)
             if lookup.type == "gsub_single" then
                 local steps = lookup.steps
                 context.startsubject { title = feature }
-                context.starttabulate { "|T|||T|" }
+                context.starttabulate { "|T||Tpl|Tpl|" }
                 for i=1,lookup.nofsteps do
                     local c = steps[i].coverage
                     for k, v in table.sortedhash(c) do
@@ -387,7 +387,7 @@ local function collect(tfmdata,id,specification,feature)
             elseif lookup.type == "gsub_alternate" then
                 local steps = lookup.steps
                 context.startsubject { title = feature }
-                context.starttabulate { "|T|||Tp|" }
+                context.starttabulate { "|T||Tpl|Tpl|" }
                 for i=1,lookup.nofsteps do
                     local c = steps[i].coverage
                     for k, v in table.sortedhash(c) do

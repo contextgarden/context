@@ -17,7 +17,7 @@ local concat = table.concat
 local write_nl = (logs and logs.writer) or (texio and texio.write_nl) or print
 
 local versions = {
-    otl = 3.140,
+    otl = 3.141,
     one = 1.520,
 }
 

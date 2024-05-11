@@ -382,10 +382,14 @@ local mathnames   = mathematics.dictionaries.names
 local mathgroups  = mathematics.dictionaries.groups
 local mathclasses = mathematics.classes
 
-local everygroup <const> = mathematics.dictionaries.names.everygroup
+local everygroup      <const> = mathematics.dictionaries.names.everygroup
+local variable_class  <const> = classes.variable
 
 local function getproperties(n,class)
     local props, group, index, font, char = getchardict(n)
+
+-- if group == 0 and class == variable_class then group = everygroup end -- NO: we want to see it missing on the mml
+
     if group == everygroup then
         -- should be done at the lua end by defining a char bound group code
         local c = chardata[char]
@@ -402,6 +406,7 @@ local function getproperties(n,class)
             end
         end
     end
+-- print(group,class)
     if group or class then
         local swapped = getprop(n,"swappedclass")
         if swapped then

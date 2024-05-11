@@ -67,7 +67,7 @@ return {
  },
  ["begin group"]={
   ["en"]="group",
-  ["sv"]="grupp",
+  ["sv"]="GR",
   ["nl"]="groep",
  },
  ["begin"]={
@@ -86,7 +86,7 @@ return {
 --  },
  ["end group"]={
   ["en"]="end group",
-  ["sv"]="slut grupp",
+  ["sv"]="SL",--"slut grupp",
   ["nl"]="einde groep",
  },
  ["pause"]={
@@ -574,7 +574,7 @@ return {
  },
  ["divided by"]={
   ["en"]="divided by",
-  ["sv"]="delad med",
+  ["sv"]="delat med",
   ["nl"]="gedeeld door",
  },
  ["divides"]={
@@ -697,11 +697,6 @@ return {
   ["sv"]="för alla",
   ["nl"]="voor alle",
  },
- ["fractionplus"]={
-  ["en"]="FRACTIONPLUS",
-  ["sv"]="TODO",
-  ["nl"]="TODO",
- },
  ["gets"]={
   ["en"]="gets",
   ["sv"]="får",
@@ -734,7 +729,7 @@ return {
  },
  ["implies"]={
   ["en"]="implies",
-  ["sv"]="medför",
+  ["sv"]="implicerar",
   ["nl"]="impliceert",
  },
  ["infinity"]={
@@ -1062,6 +1057,11 @@ return {
   ["sv"]="mycket mer lika med",
   ["nl"]="veel meer gelijk aan",
  },
+ ["multiplication"]={
+  ["en"]="times",
+  ["sv"]="multiplicerat med",
+  ["nl"]="TODO",
+ },
  ["multiset union"]={
   ["en"]="multiset union",
   ["sv"]="multimängdunion",
@@ -1147,24 +1147,24 @@ return {
   ["nl"]="TODO",
  },
  ["derivative"]={
-  ["en"]="the derivative of",
-  ["sv"]="derivatan av",
-  ["nl"]="de afgeleide van",
+  ["en"]="the derivative",
+  ["sv"]="derivatan",
+  ["nl"]="de afgeleide",
  },
  ["second derivative"]={
-  ["en"]="the second derivative of",
-  ["sv"]="andraderivatan av",
-  ["nl"]="de tweede afgeleide van",
+  ["en"]="the second derivative",
+  ["sv"]="andraderivatan",
+  ["nl"]="de tweede afgeleide",
  },
  ["third derivative"]={
-  ["en"]="the third derivative of",
+  ["en"]="the third derivative",
   ["sv"]="tredjederivatan av",
-  ["nl"]="de derde afgeleide van",
+  ["nl"]="de derde afgeleide",
  },
  ["fourth derivative"]={
-  ["en"]="the fourth derivative of",
-  ["sv"]="fjärdederivatan av",
-  ["nl"]="de vierde afgeleide van",
+  ["en"]="the fourth derivative",
+  ["sv"]="fjärdederivatan",
+  ["nl"]="de vierde afgeleide",
  },
  ["product"]={
   ["en"]="the product",
@@ -1528,13 +1528,28 @@ return {
   ["nl"]="zo dat",
  },
  ["adjoint"]={
-  ["en"]="the adjoint of",
-  ["sv"]="adjunkten av",
+  ["en"]="the adjoint",
+  ["sv"]="adjunkten",
+  ["nl"]="TODO",
+ },
+ ["inverse"]={
+  ["en"]="the inverse",
+  ["sv"]="inversen",
+  ["nl"]="TODO",
+ },
+ ["preimage"]={
+  ["en"]="the preimage",
+  ["sv"]="urbilden",
   ["nl"]="TODO",
  },
  ["transpose"]={
-  ["en"]="the transpose of",
-  ["sv"]="transponatet av",
+  ["en"]="the transpose",
+  ["sv"]="transponatet",
+  ["nl"]="TODO",
+ },
+ ["orthogonal complement"]={
+  ["en"]="the orthogonal complement",
+  ["sv"]="det ortogonala komplementet",
   ["nl"]="TODO",
  },
 }

@@ -3651,11 +3651,48 @@ layerlistoffset   = 0
                     local glyphindex = readushort(f)
                     local firstlayer = readushort(f)
                     local noflayers  = readushort(f)
-                    local t = { }
-                    for i=1,noflayers do
-                        t[i] = layerrecords[firstlayer+i]
+                    if noflayers > 0 then
+                        local t = { }
+                        local g = glyphs[glyphindex]
+                        for i=1,noflayers do
+                            t[i] = layerrecords[firstlayer+i]
+                        end
+                        g.colors = t
+                        -- This is a catch for an emoji fonts where the base glyph has no dimensions and
+                        -- I admit that it's bad to fix this here instead of the font. But for sure someone
+                        -- will argue that the font is ok, as one can use ascender and descender for height
+                        -- and depth, but in tex we want granularity and exact dimensions.
+                        local b = g.boundingbox
+                        if not b or (b[1] == 0 and b[2] == 0 and b[3] == 0 and b[4] == 0) then
+                            local llx, lly, urx, ury
+                            for i=1,noflayers do
+                                local c = glyphs[t[i].slot]
+                                if c then
+                                    b = c.boundingbox
+                                    if b then
+                                        local b1 = b[1]
+                                        local b2 = b[2]
+                                        local b3 = b[3]
+                                        local b4 = b[4]
+                                        if not llx then
+                                            llx = b1
+                                            lly = b2
+                                            urx = b3
+                                            ury = b4
+                                        else
+                                            if b1 < llx then llx = b1 end
+                                            if b2 < lly then lly = b2 end
+                                            if b3 > urx then urx = b3 end
+                                            if b4 > ury then ury = b4 end
+                                        end
+                                    end
+                                end
+                            end
+                            if llx then
+                                g.boundingbox = { llx, lly, urx, ury }
+                            end
+                        end
                     end
-                    glyphs[glyphindex].colors = t
                 end
             end
             if next(layerrecords) then

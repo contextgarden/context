@@ -2204,7 +2204,7 @@
    \attribute\mathstackattribute\c_mathfunctionstack
    \math_tags_mfunctionlab\plusone{\currentmathfunction}{\mathfunctionparameter\c!method}%
    \dostarttagged\t!mfunctionstack\currentmathfunction
-   \mathghost unpack \bgroup
+   \mathghost carryover \bgroup
       \p_left
       \begingroup
       \attribute\mathstackattribute\attributeunsetvalue
@@ -2306,7 +2306,6 @@
      {#1}%
      {}%
    \endgroup}
-
 
 % domain language name meaning
 % language name meaning
@@ -4976,14 +4975,19 @@
 
 %D Needed for spacing, tagging, etc.
 
+\newinteger\c_math_intervals
+
 \appendtoks
-    \attribute\mathintervalsattribute
     \ifcstok{\mathematicsparameter\c!autointervals}\v!yes
-      \plusone
+      \c_math_intervals\plusone
     \else
-      \attributeunsetvalue
+      \c_math_intervals\attributeunsetvalue
     \fi
 \to \everysetupmathematics
+
+\appendtoks
+    \attribute\mathintervalsattribute\c_math_intervals
+\to \everymathematics
 
 \setupmathematics
   [\c!autointervals=\v!yes]

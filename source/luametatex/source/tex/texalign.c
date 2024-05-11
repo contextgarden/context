@@ -1684,7 +1684,7 @@ static void tex_aux_finish_align(void)
     /*tex something new */
     halfword reverse = lmt_alignment_state.options & align_option_reverse;
     halfword callback = lmt_alignment_state.options & align_option_callback;
-    halfword discard = normalize_line_mode_permitted(normalize_line_mode_par, discard_zero_tab_skips_mode) || (lmt_alignment_state.options & align_option_discard);
+    halfword discard = normalize_line_mode_option(discard_zero_tab_skips_mode) || (lmt_alignment_state.options & align_option_discard);
     /*tex The |align_group| was for individual entries: */
     if (cur_group != align_group) {
         tex_confusion("align, case 1");

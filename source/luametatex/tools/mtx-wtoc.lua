@@ -218,9 +218,13 @@ do
 
     local result = { }
 
+    local p_comment_b = P("/*")/""
+    local p_comment_e = P("*/")/""
+
     local p_nothing   = Cc("")
-    local p_comment   = Cs(((p_beginofweb * (space + newline + P("*")))/"" * c_content)^1)
-                      + p_nothing
+ -- local p_comment   = Cs(((p_beginofweb * (space + newline + P("*")))/"" * c_content)^1)
+ --                   + Cs((p_comment_b * (1-p_comment_e)^1 * p_comment_e))
+ --                   + p_nothing
 
     local p_title     = c_noperiod * (p_period/"")
     local p_skipspace = newline + space
@@ -233,6 +237,7 @@ do
                           + ((p_beginofweb * P("*")^1   )/"" * c_title * c_content)
                           + c_obeyspace
                         )^1 )
+                      + Cs((p_comment_b * (1-p_comment_e)^1 * p_comment_e))
                       + p_nothing
 
     local p_define    = C(p_beginofweb * P("d")) * Cs(Cc("# define ") * p_content)
@@ -479,7 +484,7 @@ do
         return data
     end
 
-    function cweb.convert(filename,target)
+    function cweb.convert(filename,target,keepcomment)
 
         statistics.starttiming(filename)
 
@@ -500,7 +505,7 @@ do
             nofresolved   = 0,
             nofunresolved = 0,
 
-         -- keepcomment   = true, - not okay but good enough for a rough initial
+            keepcomment   = keepcomment, -- not okay but good enough for a rough initial
 
         }
 
@@ -544,6 +549,7 @@ do
 
         if result.keepcomment then
             report("unprocessed  : %i bytes", #data)
+            io.savedata(file.replacesuffix(fullname,"txt"),data)
             print(data)
         end
 
@@ -587,18 +593,18 @@ do
 
 end
 
-function cweb.convertfiles(source,target)
+function cweb.convertfiles(source,target,keepcomment,pattern)
 
     report("source path  : %s", source)
     report("target path  : %s", target)
 
     report()
 
-    local files = dir.glob(file.join(source,"*.w"))
+    local files = dir.glob(file.join(source,pattern or "*.w"))
 
     statistics.starttiming(files)
     for i=1,#files do
-        cweb.convert(files[i],target)
+        cweb.convert(files[i],target,keepcomment)
         report()
     end
     statistics.stoptiming(files)
@@ -612,13 +618,26 @@ end
 -- converter tries to make the H/C files look kind of good so that I can expect then
 -- in (for instance) Visual Studio.
 
-local source = file.join(dir.current(),"../source/mp/mpw")
-local target = file.join(dir.current(),"../source/mp/mpc")
+
+if false then
+-- if true then
+
+    local source = file.join(dir.current(),"../source/mp/mpw")
+    local target = file.join(dir.current(),"../source/mp/mpt")
+
+--     cweb.convertfiles(source,target,true,"mp.w")
+
+else
+
+    local source = file.join(dir.current(),"../source/mp/mpw")
+    local target = file.join(dir.current(),"../source/mp/mpc")
+
+    cweb.convertfiles(source,target)
+
+end
 
 -- local source = file.join("e:/luatex/luatex-experimental-export/source/texk/web2c/mplibdir/")
 -- local target = file.join("e:/luatex/luatex-experimental-export/source/texk/web2c")
-
-cweb.convertfiles(source,target)
 
 -- -- inefficient but good enough
 --

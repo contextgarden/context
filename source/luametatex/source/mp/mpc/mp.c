@@ -3,7 +3,7 @@
 
 # include "mpconfig.h"
 # include "mp.h"
-# include "mpmath.h"
+# include "mpmathscaled.h"
 # include "mpmathdouble.h"
 # include "mpmathbinary.h"
 # include "mpmathdecimal.h"
@@ -1895,6 +1895,7 @@ static const char *mp_op_string (int c)
             case mp_scaled_operation           : return "scaled";
             case mp_shifted_operation          : return "shifted";
             case mp_transformed_operation      : return "transformed";
+            case mp_uncycled_operation         : return "uncycled";
             case mp_x_scaled_operation         : return "xscaled";
             case mp_y_scaled_operation         : return "yscaled";
             case mp_z_scaled_operation         : return "zscaled";
@@ -3573,7 +3574,7 @@ static void mp_toss_knot_list (MP mp, mp_knot p)
     }
 }
 
-void mp_make_choices  (MP mp, mp_knot knots)
+void mp_make_choices (MP mp, mp_knot knots)
 {
     mp_knot h;
     mp_knot p, q;
@@ -10048,6 +10049,7 @@ const char *mp_cmd_mod_string (MP mp, int c, int m)
         case mp_new_internal_command:  return "newinternal";
         case mp_of_command:            return "of";
         case mp_path_join_command:     return "..";
+        case mp_path_connect_command:  return "--";
         case mp_relax_command:         return "\\";
         case mp_right_brace_command:   return "}";
         case mp_right_bracket_command: return "]";
@@ -21489,7 +21491,24 @@ static int mp_scan_path (MP mp)
     new_number(y);
     new_number(x);
   CONTINUE_PATH:
-    if (cur_cmd == mp_left_brace_command) {
+    if (cur_cmd == mp_path_connect_command) {
+        d = cur_cmd;
+        dd = cur_mod;
+
+        t = mp_curl_knot;
+        mp_right_type(path_q) = (unsigned char) t;
+        set_number_to_unity(path_q->right_given);
+        if (mp_left_type(path_q) == mp_open_knot) {
+            mp_left_type(path_q) = (unsigned char) t;
+            set_number_to_unity(path_q->left_given);
+        }
+        set_number_to_unity(path_q->right_tension);
+        set_number_to_unity(y);
+
+        set_number_to_unity(x);
+        mp_get_x_next(mp);
+        goto HERE;
+    } else if (cur_cmd == mp_left_brace_command) {
         t = mp_scan_direction(mp);
         if (t != mp_open_knot) {
             mp_right_type(path_q) = (unsigned char) t;
@@ -21581,6 +21600,7 @@ static int mp_scan_path (MP mp)
         t = mp_open_knot;
         set_number_to_zero(x);
     }
+  HERE:
     if (cur_cmd == mp_cycle_command) {
         if (cur_mod == mp_cycle_operation) {
             cycle_hit = 1;
@@ -21870,6 +21890,7 @@ void mp_final_cleanup (MP mp)
     mp_primitive(mp, "numberprecision", mp_internal_command, mp_number_precision_internal);
     mp_primitive(mp, "jobname", mp_internal_command, mp_job_name_internal);
     mp_primitive(mp, "..", mp_path_join_command, 0);
+    mp_primitive(mp, "--", mp_path_connect_command, 0);
     mp_primitive(mp, "[", mp_left_bracket_command, 0);
     mp->frozen_left_bracket = mp_frozen_primitive (mp, "[", mp_left_bracket_command, 0);
     mp_primitive(mp, "]", mp_right_bracket_command, 0);

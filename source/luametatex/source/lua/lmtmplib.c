@@ -195,6 +195,7 @@ static const char *mplib_codes[] = {
     "tertiarybinary",  /* mp_tertiary_binary_command     */ /* an operator at the tertiary level: ++ (etc) */
     "leftbrace",       /* mp_left_brace_command          */ /* { */
     "pathjoin",        /* mp_path_join_command           */ /* .. */
+    "pathconnect",     /* mp_path_connect_command        */ /* -- */
     "ampersand",       /* mp_ampersand_command           */ /* & */
     "tertiarydef",     /* mp_tertiary_def_command        */ /* tertiarydef */
     "primarybinary",   /* mp_primary_binary_command      */ /* < (etc) */

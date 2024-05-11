@@ -112,7 +112,13 @@ return {
                         },
                     },
                 },
-                --
+                {
+                    tweak    = "replacealphabets",
+                    filename = "TeXGyrePagellaMath.otf",
+                    list     = {
+                        { unicodes = { 0x007C, 0x2223, 0x2016, 0x2980, 0x007C } }, -- single single double triple
+                    }
+                },
                 presets.scripttocalligraphic  { },
                 presets.rsfstoscript          { },
                 presets.rsfsuprighttoscript   { },

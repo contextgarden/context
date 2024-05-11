@@ -48,6 +48,7 @@ local getprev         = nuts.getprev
 local getnext         = nuts.getnext
 local getattr         = nuts.getattr
 local getfont         = nuts.getfont
+local getchar         = nuts.getchar
 local getlist         = nuts.getlist
 local getkern         = nuts.getkern
 local getpenalty      = nuts.getpenalty
@@ -73,6 +74,7 @@ local new_hlist       = nodepool.hlist
 local a_characters    <const> = attributes.private("characters")
 local a_suspecting    <const> = attributes.private('suspecting')
 local a_suspect       <const> = attributes.private('suspect')
+local a_invisibles    <const> = attributes.private('invisibles')
 
 local unsetvalue      <const> = attributes.unsetvalue
 
@@ -314,3 +316,57 @@ trackers.register("typesetters.suspects",function(v)
     end
 end)
 
+local enabled    = false
+local invisibles = false
+
+local invisible = {
+    [0x200B] = "zwsp",
+    [0x200C] = "zwnj",
+    [0x200D] = "zwj",
+    [0x2061] = "apply",
+    [0x2062] = "times",
+    [0x2063] = "separator",
+    [0x2064] = "plus",
+}
+
+local function showinvisibles(head)
+    -- we inject before so we're okay with a loop
+    for current, id, subtype in nextnode, head do
+        -- get...
+        if id == glyph_code then
+--            local a = getattr(current,a_suspect)
+--            if a then
+                local c = getchar(current)
+                local i = invisible[c]
+                if i then
+                    if not invisibles then
+                        invisibles = nodes.visualizers.register("invisible")
+                    end
+                    local info = invisibles(i)
+                    head = insertbefore(head,current,info)
+                end
+--            end
+        elseif id == hlist_code or id == vlist_code then
+            local list = getlist(current)
+            if list then
+                local l = showinvisibles(list)
+                if l ~= list then
+                    setlist(current,l)
+                end
+            end
+        end
+    end
+    return head
+end
+
+function typesetters.showinvisibles(head)
+    return showinvisibles(head)
+end
+
+trackers.register("typesetters.invisibles",function(v)
+--     texsetattribute(a_invisibles,v and 1 or unsetvalue)
+    if v and not enabled then
+        enableaction("shipouts","typesetters.showinvisibles")
+        enabled = true
+    end
+end)

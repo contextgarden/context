@@ -2768,7 +2768,7 @@ static void tex_aux_math_math_component(halfword target, int append)
                             }
                             break;
                         case 'c': case 'C':
-                            switch (tex_scan_character("loLO", 0, 0, 0)) {
+                            switch (tex_scan_character("loaLOA", 0, 0, 0)) {
                                 case 'l': case 'L':
                                     if (tex_scan_mandate_keyword("class", 2)) {
                                         subtype = (quarterword) tex_scan_math_class_number(0);
@@ -2781,6 +2781,11 @@ static void tex_aux_math_math_component(halfword target, int append)
                                 case 'o': case 'O':
                                     if (tex_scan_mandate_keyword("continuation", 2)) {
                                         noad_options(target) |= noad_option_continuation;
+                                    }
+                                    break;
+                                case 'a': case 'A':
+                                    if (tex_scan_mandate_keyword("carryover", 2)) {
+                                        noad_options(target) |= noad_option_carry_over_classes;
                                     }
                                     break;
                                 default:

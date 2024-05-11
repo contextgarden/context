@@ -269,10 +269,13 @@ do
             if roottg == "mo" then
                 local s = specifications[root.fulltag]
                  -- maybe just via metatable
-                if s.mathgroup then
+--                 if s.mathgroup then
+                local class = s.mathclass
+                local group = s.mathgroup
+                if class or group then
                     root.attributes = {
-                        mathclass     = s.mathclass,
-                        mathgroup     = s.mathgroup,
+                        mathclass     = class,
+                        mathgroup     = group,
                         mathindex     = s.mathindex,
                         mathcharacter = s.mathcharacter,
                         mathstack     = s.mathstack,
@@ -576,11 +579,13 @@ ndata = checked(data,ndata)
                          -- if di.data[1].content == separator then
                          --     markapplicationof(di,data,i)
                          -- end
-                            local category = s.mathcategory
-                            if s.mathgroup then
+                            local class    = s.mathclass
+                            local group    = s.mathgroup
+                         -- local category = s.mathcategory
+                            if class or group then
                                 di.attributes = {
-                                    mathclass     = s.mathclass,
-                                    mathgroup     = s.mathgroup,
+                                    mathclass     = class,
+                                    mathgroup     = group,
                                     mathindex     = s.mathindex,
                                     mathcharacter = s.mathcharacter,
                                     mathstack     = s.mathstack,

@@ -112,7 +112,22 @@ local prepare  do
                             local tg    = ai.tg
                             local at    = ai.at
                             local class = at.mathclass
-                            if     at.mathfunction
+                            if  at.mathsymbolic
+or at.mathgroup == "postfix operator"
+                            then -- has to come before at.mathfunction check
+                                at.checkfunction = true -- saves a check later
+                                if closed then
+                                    at.mathtimes = 9.1
+                                    closed = false
+                                elseif block then
+                                    block = false
+                                else
+                                    at.mathtimes = 9.2
+                                end
+                                block = false -- registered functions like f and g
+                                times = true
+                                expandtimesone(ai,a,i)
+                            elseif     at.mathfunction
                              -- or at.mathfractionstack -- ADDED
                                 or at.mathfunctionstack
                                 or class == "integral"
@@ -122,28 +137,30 @@ local prepare  do
                             then
                                 at.checkfunction = true -- saves a check later
                                 if closed then
-                                    at.mathtimes = 1
+                                    at.mathtimes = 1.1
                                     closed = false
                                 elseif block then
                                     block = false
-                                else
-                                    at.mathtimes = 2
+--                                 elseif at.mathgroup == "postfix operator" then
+--                                     block = false
+                                elseif at.mathgroup ~= "unary set" then
+                                    at.mathtimes = 1.2
                                 end
-                                if at.mathsymbolic then
-                                    block = false -- registered functions like f and g
-                                else
-                                    block = true -- lim etc .. we need to intercept kind == 1
-                                end
+                                -- if at.mathsymbolic then
+                                --     block = false -- registered functions like f and g
+                                -- else
+                                block = true -- lim etc .. we need to intercept kind == 1
+                                -- end
                                 times = false
                                 expandtimesone(ai,a,i)
                             elseif tg == "mo" then
                                 -- combine more here
                                 if class == "open" then
                                     if closed then
-                                        at.mathtimes = 3
+                                        at.mathtimes = 2.1
                                         closed = false
                                     elseif times and not block then
-                                        at.mathtimes = 4
+                                        at.mathtimes = 2.2
                                     end
                                 elseif i > 1 and class == "close" then -- block ?
                                     closed = true
@@ -153,10 +170,12 @@ local prepare  do
                                 expandtimes(ai)
                                 times = false
                                 block = true
-                            elseif tg == "mn" or tg == "mtext" or tg == "ms" then
+                            elseif tg == "mn" then
                                 if closed then
-                                    at.mathtimes = 5
+                                    at.mathtimes = 3.1
                                     closed = false
+                                elseif times and not block then
+                                    at.mathtimes = 3.2
                                 end
                                 expandtimesone(ai)
                                 times = false
@@ -165,12 +184,12 @@ local prepare  do
                                 local first = xmlfirst(ai,"/*")
                                 local fat   = first and first.at
                                 if closed then
-                                    at.mathtimes = 6
+                                    at.mathtimes = 4.1
                                     closed = false
                                 elseif first and at.mathclass == "close" then
                                     closed = true
                                 elseif times and not block then
-                                    at.mathtimes = 7
+                                    at.mathtimes = 4.2
                                 end
                                 if first then
                                     if     fat.mathfunction
@@ -198,12 +217,12 @@ local prepare  do
                                 end
                             elseif at.mathfractionstack or tg == "mroot" or tg == "mfrac" or tg == "msqrt" or at.mathsymbolic then
                                 if closed then
-                                    at.mathtimes = 8
+                                    at.mathtimes = 5.1
                                     closed = false
                                 elseif block then
                                     block = false
                                 else
-                                    at.mathtimes = 9
+                                    at.mathtimes = 5.2
                                 end
                                 times = true
                                 expandtimesone(ai,a,i)
@@ -219,10 +238,10 @@ local prepare  do
                              --     times = false
                              -- else
                                     if closed then
-                                        at.mathtimes = 10
+                                        at.mathtimes = 6.1
                                         closed = false
                                     elseif times and not block then
-                                        at.mathtimes = 11
+                                        at.mathtimes = 6.2
                                     end
                                     block = false
                                     times = true
@@ -230,14 +249,22 @@ local prepare  do
                                 expandtimesone(ai,a,i)
                             elseif tg == "mrow" then
                                 if closed or times then
-                                    at.mathtimes = 12
+                                    at.mathtimes = 7.1
                                     closed = false
                                 end
                                 times = true
                                 expandtimesone(ai,a,i)
+                            elseif tg == "mtext" or tg == "ms" then
+                                if closed then
+                                    at.mathtimes = 8.1
+                                    closed = false
+                                end
+                                expandtimesone(ai)
+                                times = false
+                                block = false
                             else
                                 if closed then
-                                    at.mathtimes = 13
+                                    at.mathtimes = 9.1
                                     closed = false
                                 end
                                 times = false
@@ -295,6 +322,7 @@ local prepare  do
         end
         -- left is a function, right is an operator
         for c in xmlcollected(x,"mrow[@mathfunctionstack]") do
+--         for c in xmlcollected(x,"(msub|msup|msubsup|mrow)[@mathfunctionstack]") do
             local cat = c.at
             local s   = cat.mathstack
             for cc in xmlcollected(c,"(mi|mo)[@mathstack]") do
@@ -304,7 +332,8 @@ local prepare  do
                     cat.mathcharacter = ccat.mathcharacter or cat.mathcharacter
                     cat.mathgroup     = ccat.mathgroup     or cat.mathgroup
                     if cc.tg == "mo" then
-                        ccat.mathignore = "true"
+                        ccat.mathignore  = "true"
+--                         ccat.mathmeaning = cat.mathfunctionstack
                     end
                 end
             end
@@ -346,6 +375,10 @@ local tomeaning, getlast  do
         if not at.mathignore then
             local result = at.mathidentity
             if not result then
+-- better: mathmeaning as overload
+-- if at.mathfunctionstack then
+--     result = getlabel(at.mathfunctionstack)
+-- else
                 local group = at.mathgroup
                 if group then
                     local character = tonumber(at.mathcharacter)
@@ -359,6 +392,7 @@ local tomeaning, getlast  do
                 else
                     result = xmltext(c)
                 end
+-- end
             end
             if result ~= "" then
                 n = n + 1 ; t[n] = result
@@ -528,6 +562,7 @@ local tomeaning, getlast  do
             local c = ai1.at.mathclass
             if c == "open" then
                 n = n + 1 ; t[n] = getlabel(label)
+                ai1.at.mathtimes = nil
             end
         end
     end
@@ -595,10 +630,14 @@ end
                     if na > 0 then
                         local subfence = hasmiddle(a)
                         if at.mathfunctionstack then
-                            expandsymbol(c)
+if at.mathfunctionstack then
+    n = n + 1 ; t[n] = getlabel(at.mathfunctionstack)
+else
+                expandsymbol(c)
+end
                             at.mathnogroup = "true"
                         else
-                            local mfs = at.mathfractionstack -- matbe also cgheckj for tg == "mfrac"
+                            local mfs = at.mathfractionstack -- maybe also check for tg == "mfrac"
                             if mfs then
                                 at.mathnogroup = "true"
                         --         fenced = false
@@ -665,7 +704,6 @@ end
                                 expandone(ai,a,i)
                             elseif tg == "mo" then
                                 expandfenced(ai,fenced,a,i)
--- n = n + 1 ; t[n] = "!"
                          -- elseif tg == "mn" or tg == "mtext" or tg == "ms" then
                          --     expandone(ai)
                             elseif tg == "msub" or tg == "msup" or tg == "msubsup" then
@@ -766,11 +804,10 @@ end
                     local at = a1.at
                     local group = a2.at.mathgroup
                     if group == "postfix operator" then
-                        expandone(a2)
+                        -- kind of ugly:
+                        expandone(a2) -- ignored anyway
+                        n = n + 1 ; t[n] = getlabel("operatorof")
                         expandone(a1)
-                        if all and #all > i then
-                            n = n + 1 ; t[n] = getlabel("operatorof")
-                        end
                     elseif group == "prime" then
                         expandone(a1)
                         expandone(a2)

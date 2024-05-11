@@ -1431,17 +1431,19 @@ static void tex_aux_fire_up(halfword c)
 void tex_resume_after_output(void)
 {
     if (lmt_input_state.cur_input.loc || ((lmt_input_state.cur_input.token_type != output_text) && (lmt_input_state.cur_input.token_type != backed_up_text))) {
-        /*tex Recover from an unbalanced output routine */
-        tex_handle_error(
-            normal_error_type,
-            "Unbalanced output routine",
-            "Your sneaky output routine has problematic {'s and/or }'s. I can't handle that\n"
-            "very well; good luck."
-        );
-        /*tex Loops forever if reading from a file, since |null = min_halfword <= 0|. */
-        do {
-            tex_get_token();
-        } while (lmt_input_state.cur_input.loc);
+        /*tex Let's just be fatal here. */
+        tex_fatal_error("Unbalanced output routine");
+     // /*tex Recover from an unbalanced output routine */
+     // tex_handle_error(
+     //     normal_error_type,
+     //     "Unbalanced output routine",
+     //     "Your sneaky output routine has problematic {'s and/or }'s. I can't handle that\n"
+     //     "very well; good luck."
+     // );
+     // /*tex Loops forever if reading from a file, since |null = min_halfword <= 0|. */
+     // do {
+     //     tex_get_token();
+     // } while (lmt_input_state.cur_input.loc);
     }
     /*tex Conserve stack space in case more outputs are triggered. */
     tex_end_token_list();

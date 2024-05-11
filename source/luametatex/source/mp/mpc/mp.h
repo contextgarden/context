@@ -419,6 +419,7 @@ typedef enum mp_command_code {
     mp_tertiary_binary_command,
     mp_left_brace_command,
     mp_path_join_command,
+    mp_path_connect_command,
     mp_ampersand_command,
     mp_tertiary_def_command,
     mp_primary_binary_command,

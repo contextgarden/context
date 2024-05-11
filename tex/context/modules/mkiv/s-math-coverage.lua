@@ -104,7 +104,12 @@ function moduledata.math.coverage.showcharacters()
                 if mathspec then
                     local t = { }
                     for i=1,#mathspec do
-                        t[mathspec[i].class] = true
+                        local class = mathspec[i].class
+                        if class then
+                            t[class] = true
+                        else
+-- inspect(d)
+                        end
                     end
                     t = table.sortedkeys(t)
                     context("% t",t)

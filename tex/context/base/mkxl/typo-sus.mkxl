@@ -20,7 +20,8 @@
 
 \unprotect
 
-\permanent\protected\def\showsuspects{\enabletrackers[typesetters.suspects]}
+\permanent\protected\def\showsuspects  {\enabletrackers[typesetters.suspects]}
+\permanent\protected\def\showinvisibles{\enabletrackers[typesetters.invisibles]}
 
 %D The suspicious spacing will be colored in the text. There can be false
 %D positives but this features is mostly used when proofreading. So, we

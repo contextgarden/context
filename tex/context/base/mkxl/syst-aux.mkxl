@@ -3028,6 +3028,17 @@
   {\enforced\let\redoglobal\syst_helpers_redo_global
    \enforced\let\dodoglobal\syst_helpers_dodo_global}
 
+% Maybe:
+%
+% \installmacrostack\globaldefs
+%
+% \protected\def\start_global
+%   {\push_macro_globaldefs
+%    \globaldefs\plusone}
+%
+% \protected\def\stop_global
+%   {\pop_macro_globaldefs}
+
 %D Whatever (will be overloaded):
 
 \protected\def\define#1%

@@ -85,14 +85,19 @@
 \definemathfunction [cs:median] [\c!command=\widetilde]
 \definemathfunction [sk:median] [\c!command=\widetilde]
 
-% \definemathfunction[partial]      [class=differential]
-% \definemathfunction[gradient]     [class=differential]
-\definemathfunction[adjoint]         [right=\adjointsymbol]
-\definemathfunction[transpose]       [right=\transposesymbol]
-\definemathfunction[derivative]      [right=\derivativesymbol]
-\definemathfunction[secondderivative][right=\secondderivativesymbol]
-\definemathfunction[thirdderivative] [right=\thirdderivativesymbol]
-\definemathfunction[fourthderivative][right=\fourthderivativesymbol]
+% Maybe set a method as well to signal the order
+
+%definemathfunction[partial]              [class=differential]
+%definemathfunction[gradient]             [class=differential]
+\definemathfunction[adjoint]              [right=\adjointsymbol]
+\definemathfunction[orthogonalcomplement] [right=\orthogonalcomplementsymbol]
+\definemathfunction[transpose]            [right=\transposesymbol]
+\definemathfunction[derivative]           [right=\derivativesymbol]
+\definemathfunction[secondderivative]     [right=\secondderivativesymbol]
+\definemathfunction[thirdderivative]      [right=\thirdderivativesymbol]
+\definemathfunction[fourthderivative]     [right=\fourthderivativesymbol]
+\definemathfunction[preimage]             [right=\preimagesymbol]
+\definemathfunction[inverse]              [right=\inversesymbol]
 
 % \definemathfunction[laplace]      [class=differential]
 % \definemathfunction[crossproduct] [class=binary]

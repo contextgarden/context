@@ -1526,7 +1526,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                 (and did that) but this is rather easy. 
             */
             int curfam = delimiter_small_family(delimiter);
-            int curchr = delimiter_small_character(delimiter);;
+            int curchr = delimiter_small_character(delimiter);
             halfword curfnt = tex_fam_fnt(curfam, size);
             if (curchr && curfnt != null_font && tex_char_exists(curfnt, curchr)) {
                 fnt = curfnt;
@@ -7604,7 +7604,6 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
     scaled current_mu = 0;
     halfword current = state->mlist;
     halfword p = temp_head;
- // halfword ghost = null;
     int boundarylevel = 0;
     int boundaryfactor = scaling_factor;
     int nestinglevel = 0;
@@ -7612,8 +7611,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
     node_next(p) = null;
     tex_aux_set_current_math_size(current_style);
     tex_aux_set_current_math_scale(state->scale);
- // current_mu = tex_get_math_quad_size_scaled(lmt_math_state.size);
-    current_mu = tex_get_math_quad_size_unscaled(lmt_math_state.size);
+    current_mu = tex_get_math_quad_size_unscaled(lmt_math_state.size); /* not _scaled */
     if (math_penalties_mode_par) {
         state->penalties = 1; /* move to caller ? */
     }
@@ -7655,8 +7653,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
         switch (node_type(current)) {
             case simple_noad:
                 {
-                    if (node_subtype(current) == ghost_noad_subtype) {
-//                        ghost = current;
+                    if (node_subtype(current) == ghost_noad_subtype && ! has_noad_option_carry_over_classes(current)) {
                         p = tex_aux_append_ghost(current, p, 0);
                         recent = current; 
                         current = node_next(current);
@@ -7730,7 +7727,6 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 break;
             case accent_noad:
                 current_type = simple_noad; /*tex Same kind of fields. */
-             // current_subtype = accent_noad_subtype;
                 current_subtype = get_noad_main_class(current);
                 current_left_slack = noad_left_slack(current);
                 current_right_slack = noad_right_slack(current);
@@ -7821,7 +7817,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                     }
                 }
                 goto PICKUP;
-            // case glyph_node:
+         /* case glyph_node: */
             case disc_node:
             case hlist_node:
             case whatsit_node:
@@ -8058,14 +8054,12 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 p = kern;
             }
         }
-     // if (ghost && ! fenced && ! packedfence) {
-     //     p = tex_aux_append_ghost(ghost, p, 0);
-     //     ghost = null;
-     // } else 
         {
             halfword l = noad_new_hlist(current);
             if (! l) { 
                 /* curious */
+            } else if (current_subtype == ghost_noad_subtype) {
+                p = tex_aux_append_ghost(current, p, 0);
             } else if (node_type(l) == hlist_node && box_source_anchor(l)) {
                 tex_couple_nodes(p, l);
             } else if (packedfence) { 

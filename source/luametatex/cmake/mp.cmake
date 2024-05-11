@@ -2,7 +2,7 @@ set(mp_sources
 
     source/mp/mpc/mp.c
     source/mp/mpc/mpstrings.c
-    source/mp/mpc/mpmath.c
+    source/mp/mpc/mpmathscaled.c
     source/mp/mpc/mpmathdouble.c
     source/mp/mpc/mpmathbinary.c
     source/mp/mpc/mpmathdecimal.c

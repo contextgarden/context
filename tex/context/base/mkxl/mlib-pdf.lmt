@@ -124,15 +124,6 @@ end
 local getbendtolerance = metapost.getbendtolerance
 
 local function curved(ith,pth,tolerance) --- still better than the build in
- -- if pth.right_x == pth.x_coord then
- --     if pth.right_y == pth.y_coord then
- --         if ith.left_x == ith.x_coord then
- --             if ith.left_y == ith.y_coord then
- --                 return false
- --             end
- --         end
- --     end
- -- end
     local d = pth.left_x - ith.right_x
     local b = abs(ith.right_x - ith.x_coord - d)
     if b <= tolerance then
@@ -143,15 +134,19 @@ local function curved(ith,pth,tolerance) --- still better than the build in
             if b <= tolerance then
                 b = abs(pth.y_coord - pth.left_y - d)
                 if b <= tolerance then
---                  print(tolerance,ith.curved,pth.curved,false)
+-- print(tolerance,pth.curved,false)
                     return false
                 end
             end
         end
     end
---  print(tolerance,ith.curved,pth.curved,true)
+-- print(tolerance,pth.curved,true)
     return true
 end
+
+-- local function curved(ith,pth,tolerance) --- still better than the build in
+--     return pth.curved
+-- end
 
 local function flushnormalpath(path, t, open, tolerance)
     local pth, ith, nt

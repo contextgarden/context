@@ -129,6 +129,19 @@ Todo: x mod y
 Todo: dir x
 Todo: unitvector
 
+The current code that deals with paths is too messy (a side effect of merging 
+snippets) but when I've moved to C (maybe 2024/2025) and cleanup a bit (maybe 
+split the code into smaller pieces too) we can consider: 
+
+Todo: primitive -- 
+Todo: primitive hmoveto 
+Todo: primitive vmoveto 
+Todo: primitive rmoveto 
+Todo: primitive hlineto 
+Todo: primitive vlineto 
+Todo: primitive rlineto 
+Todo: primitive curveto
+
 (Hans Hagen, 2019+)
 
 @* Introduction.
@@ -228,7 +241,7 @@ typedef struct MP_instance {
 @ @c
 # include "mpconfig.h"
 # include "mp.h"
-# include "mpmath.h"
+# include "mpmathscaled.h"
 # include "mpmathdouble.h"
 # include "mpmathbinary.h"
 # include "mpmathdecimal.h"
@@ -2298,20 +2311,21 @@ typedef enum mp_command_code {
     mp_of_binary_command,           /* binary operation taking |of| (e.g., |point|) */
     mp_capsule_command,             /* a value that has been put into a token list */
     mp_string_command,              /* a string constant (e.g., |"hello"|) */
-    mp_internal_command,   /* internal numeric parameter (e.g., |pausing|) */
+    mp_internal_command,            /* internal numeric parameter (e.g., |pausing|) */
     mp_tag_command,                 /* a symbolic token without a primitive meaning */
     mp_numeric_command,             /* a numeric constant (e.g., |3.14159|) */
     mp_plus_or_minus_command,       /* either |+| or |-| */
-    mp_secondary_def_command,  /* a macro defined by |secondarydef| */
+    mp_secondary_def_command,       /* a macro defined by |secondarydef| */
     mp_tertiary_binary_command,     /* an operator at the tertiary level (e.g., |++|) */
     mp_left_brace_command,          /* the operator `|\char||| */
     mp_path_join_command,           /* the operator |..| */
+    mp_path_connect_command,        /* the operator |--| */
     mp_ampersand_command,           /* the operator `\.\&' */
-    mp_tertiary_def_command, /* a macro defined by |tertiarydef| */
-    mp_primary_binary_command,   /* an operator at the expression level (e.g., |<|) */
+    mp_tertiary_def_command,        /* a macro defined by |tertiarydef| */
+    mp_primary_binary_command,      /* an operator at the expression level (e.g., |<|) */
     mp_equals_command,              /* the operator |=| */
     mp_and_command,                 /* the operator |and| */
-    mp_primary_def_command,   /* a macro defined by |primarydef| */
+    mp_primary_def_command,         /* a macro defined by |primarydef| */
     mp_slash_command,               /* the operator |/| */
     mp_secondary_binary_command,    /* an operator at the binary level (e.g., |shifted|) */
     mp_parameter_commmand,          /* type of parameter (|primary|, |expr|, |suffix|, etc.) */
@@ -2791,6 +2805,7 @@ static const char *mp_op_string (int c)
             case mp_scaled_operation           : return "scaled";
             case mp_shifted_operation          : return "shifted";
             case mp_transformed_operation      : return "transformed";
+            case mp_uncycled_operation         : return "uncycled";
             case mp_x_scaled_operation         : return "xscaled";
             case mp_y_scaled_operation         : return "yscaled";
             case mp_z_scaled_operation         : return "zscaled";
@@ -3585,6 +3600,8 @@ static int mp_is_frozen (MP mp, mp_sym sym)
 @<Put each of \MP's primitives into the hash table@>=
 mp_primitive(mp, "..", mp_path_join_command, 0);
 @:.._}{|..| primitive@>
+mp_primitive(mp, "--", mp_path_connect_command, 0);
+@:--_}{|--| primitive@>
 mp_primitive(mp, "[", mp_left_bracket_command, 0);
 mp->frozen_left_bracket = mp_frozen_primitive (mp, "[", mp_left_bracket_command, 0);
 @:[ }{|[| primitive@>
@@ -3696,6 +3713,7 @@ case mp_let_command:           return "let";
 case mp_new_internal_command:  return "newinternal";
 case mp_of_command:            return "of";
 case mp_path_join_command:     return "..";
+case mp_path_connect_command:  return "--";
 case mp_relax_command:         return "\\";
 case mp_right_brace_command:   return "}";
 case mp_right_bracket_command: return "]";
@@ -6090,7 +6108,7 @@ knots whose left and right angles are both prespecified in some way (i.e., their
 |mp_left_type| and |mp_right_type| aren't both open).
 
 @c
-void mp_make_choices  (MP mp, mp_knot knots)
+void mp_make_choices (MP mp, mp_knot knots)
 {
     mp_knot h;    /* the first breakpoint */
     mp_knot p, q; /* consecutive breakpoints being processed */
@@ -21553,7 +21571,25 @@ static int mp_scan_path (MP mp)
         direction specifier At this point |cur_cmd| is either |ampersand|,
         |left_brace|, or |path_join|.
     */
-    if (cur_cmd == mp_left_brace_command) {
+    if (cur_cmd == mp_path_connect_command) {
+        d = cur_cmd;
+        dd = cur_mod;
+        // { curl 1 }  
+        t = mp_curl_knot;
+        mp_right_type(path_q) = (unsigned char) t;
+        set_number_to_unity(path_q->right_given);
+        if (mp_left_type(path_q) == mp_open_knot) {
+            mp_left_type(path_q) = (unsigned char) t;
+            set_number_to_unity(path_q->left_given);
+        }
+        // .. 
+        set_number_to_unity(path_q->right_tension);
+        set_number_to_unity(y);
+        // { curl 1 }  
+        set_number_to_unity(x);
+        mp_get_x_next(mp);
+        goto HERE;
+    } else if (cur_cmd == mp_left_brace_command) {
         /*
             Put the pre-join direction information into node |q|. At this point
             |mp_right_type(q)| is usually |open|, but it may have been set to some
@@ -21663,6 +21699,7 @@ static int mp_scan_path (MP mp)
         t = mp_open_knot;
         set_number_to_zero(x);
     }
+  HERE:
     if (cur_cmd == mp_cycle_command) {
         /*
             Get ready to close a cycle. If a person tries to define an entire
@@ -21700,7 +21737,8 @@ static int mp_scan_path (MP mp)
         while (mp_next_knot(qq) != pp) {
             qq = mp_next_knot(qq);
         }
-        if (mp_left_type(pp) != mp_endpoint_knot) {             /* open up a cycle */
+        if (mp_left_type(pp) != mp_endpoint_knot) {    
+            /* open up a cycle */
             r = mp_copy_knot(mp, pp);
             mp_prev_knot(r) = qq;
             mp_next_knot(qq) = r;

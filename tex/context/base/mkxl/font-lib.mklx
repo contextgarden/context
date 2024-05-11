@@ -54,7 +54,7 @@
 \registerctxluafile{font-otl}{autosuffix}
 \registerctxluafile{font-oto}{autosuffix}
 \registerctxluafile{font-otj}{autosuffix}
-\registerctxluafile{font-oup}{}
+\registerctxluafile{font-oup}{autosuffix}
 \registerctxluafile{font-ota}{autosuffix}
 \registerctxluafile{font-ots}{autosuffix}
 \registerctxluafile{font-otd}{autosuffix}

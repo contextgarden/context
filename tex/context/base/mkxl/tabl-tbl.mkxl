@@ -1434,14 +1434,14 @@
   {\tabulationparameter\c!after}
 
 \def\tabl_tabulate_outside_inbetween_indeed
-  {\ifempty{\tabulationparameter\c!after}\else
+  {\ifempty{\tabulationparameter\c!after}%
      \vskip\strutdp
      \verticalstrut
      \vskip-\struttotal
    \fi}
 
 \def\tabl_tabulate_inside_inbetween % needs checking
-  {\ifempty{\tabulationparameter\c!after}\else
+  {\ifempty{\tabulationparameter\c!after}%
      \vskip\strutdp
      \verticalstrut
      \vskip-\struttotal
@@ -2413,6 +2413,7 @@
 
 \permanent\tolerant\noaligned\protected\def\tabl_tabulate_FL_second[#1]{\noalign{\tabl_tabulate_hrule_preset[#1]\tabl_tabulate_FL_second_indeed}}
 \permanent\tolerant\noaligned\protected\def\tabl_tabulate_ML_second[#1]{\noalign{\tabl_tabulate_hrule_preset[#1]\tabl_tabulate_ML_second_indeed}}
+\permanent\tolerant\noaligned\protected\def\tabl_tabulate_SL_second[#1]{\noalign{\tabl_tabulate_hrule_preset[#1]\tabl_tabulate_SL_second_indeed}}
 \permanent\tolerant\noaligned\protected\def\tabl_tabulate_LL_second[#1]{\noalign{\tabl_tabulate_hrule_preset[#1]\tabl_tabulate_LL_second_indeed}}
 \permanent\tolerant\noaligned\protected\def\tabl_tabulate_TL_second[#1]{\noalign{\tabl_tabulate_hrule_preset[#1]\tabl_tabulate_TL_second_indeed}}
 \permanent\tolerant\noaligned\protected\def\tabl_tabulate_BL_second[#1]{\noalign{\tabl_tabulate_hrule_preset[#1]\tabl_tabulate_BL_second_indeed}}
@@ -2442,6 +2443,15 @@
    \endgroup
    \tabl_tabulate_break_no
    \tabl_tabulate_column_rule_separator_inject}
+
+\protected\def\tabl_tabulate_SL_second_indeed
+  {\tabl_tabulate_break_no
+   \tabl_tabulate_column_rule_separator_inject
+   \tabl_tabulate_break_no
+   \tabl_tabulate_hrule_inject
+   \tabl_tabulate_break_no
+   \tabl_tabulate_column_rule_separator_inject
+   \tabl_tabulate_break_no}
 
 \protected\def\tabl_tabulate_LL_second_indeed
   {\tabl_tabulate_nobreak_inject
@@ -2477,6 +2487,7 @@
 \appendtoks
     \enforced\let\FL\tabl_tabulate_XX_none
     \enforced\let\ML\tabl_tabulate_XX_none
+    \enforced\let\SL\tabl_tabulate_XX_none
     \enforced\let\LL\tabl_tabulate_XX_none
     \enforced\let\TL\tabl_tabulate_XX_none
     \enforced\let\BL\tabl_tabulate_XX_none
@@ -2487,6 +2498,7 @@
 \appendtoks
     \enforced\let\FL\tabl_tabulate_FL_second
     \enforced\let\ML\tabl_tabulate_ML_second
+    \enforced\let\SL\tabl_tabulate_SL_second
     \enforced\let\LL\tabl_tabulate_LL_second
     \enforced\let\TL\tabl_tabulate_TL_second
     \enforced\let\BL\tabl_tabulate_BL_second

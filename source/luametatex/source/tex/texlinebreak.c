@@ -3249,7 +3249,7 @@ void tex_do_line_break(line_break_properties *properties)
     halfword quality = 0; 
     (void) (properties->inter_line_penalties); /* avoid not used message */
     /*tex Fix a buglet that probably is a feature. */
-    if ((cur_list.prev_graf > max_prev_graf || cur_list.prev_graf < 0) && normalize_par_mode_permitted(normalize_par_mode_par, limit_prev_graf_mode)) { 
+    if ((cur_list.prev_graf > max_prev_graf || cur_list.prev_graf < 0) && normalize_par_mode_option(limit_prev_graf_mode)) { 
         tex_formatted_warning("tex", "clipping prev_graf %i to %i", cur_list.prev_graf, max_prev_graf);
         cur_list.prev_graf = max_prev_graf;
     }
@@ -4182,7 +4182,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
         lmt_packaging_state.post_migrate_tail = post_migrate_head;
         lmt_packaging_state.pre_migrate_tail = pre_migrate_head;
         /*tex A bonus feature. */
-        if (normalize_line_mode_permitted(normalize_line_mode_par, flatten_discretionaries_mode)) {
+        if (normalize_line_mode_option(flatten_discretionaries_mode)) {
             int count = 0;
             q = tex_flatten_discretionaries(q, &count, 0); /* there is no need to nest */
             cur_disc = null;
@@ -4194,7 +4194,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
         }
         /*tex Finally we pack the lot. */
         shaping = 0;
-        if (normalize_line_mode_permitted(normalize_line_mode_par, normalize_line_mode)) {
+        if (normalize_line_mode_option(normalize_line_mode)) {
             halfword head = q;
             halfword tail = rs ? rs : head;
             halfword lefthang = 0;
@@ -4260,7 +4260,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                 analyzers that assume this correction not being there (unpack and repack). So we have
                 a flag to control it.
             */
-            if (normalize_line_mode_permitted(normalize_line_mode_par, clip_width_mode)) {
+            if (normalize_line_mode_option(clip_width_mode)) {
                 if (lmt_packaging_state.last_overshoot) {
                     halfword g = tex_new_glue_node(zero_glue, correction_skip_glue);
                     glue_amount(g) =  -lmt_packaging_state.last_overshoot;

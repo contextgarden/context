@@ -31,7 +31,7 @@ let \\    = \ ; % double relaxation is like single
 def [[ = [ [ enddef ;
 def ]] = ] ] enddef ;
 
-def --  = {curl 1} .. {curl 1}    enddef ;
+% def --  = {curl 1} .. {curl 1}    enddef ;
 def --- = .. tension infinity ..  enddef ;
 def ... = .. tension atleast 1 .. enddef ;
 

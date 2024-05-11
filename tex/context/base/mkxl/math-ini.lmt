@@ -634,6 +634,8 @@ do
     local registercharacter = mathematics.dictionaries.registercharacter
     local groupnames        = mathematics.dictionaries.names
 
+    local i_everygroup <const> = 0xFFFF
+
     local setmathcharacter = function(class,family,slot,unicode,mset,group,meaning)
         if mset and class ~= ordinary_class then
             setmathcode("global",slot,class,family,unicode)
@@ -650,14 +652,17 @@ do
         return mset
     end
 
-    local function report(class,family,unicode,name)
+    local function report(class,family,unicode,name,group)
         local nametype = type(name)
+        if not group then
+            group = "no group"
+        end
         if nametype == "string" then
-            report_math("class %a, family %a, char %C, name %a",class,family,unicode,name)
+            report_math("class %a, family %a, char %C, name %a, group %a",class,family,unicode,name,group)
         elseif nametype == "number" then
-            report_math("class %a, family %a, char %C, number %U",class,family,unicode,name)
+            report_math("class %a, family %a, char %C, number %U, group %a",class,family,unicode,name,group)
         else
-            report_math("class %a, family %a, char %C",class,family,unicode)
+            report_math("class %a, family %a, char %C, group %a",class,family,unicode,group)
         end
     end
 
@@ -675,18 +680,15 @@ do
                 group = groupnames[group] or 0
                 if group ~= 0 then
                     texmathchardef(name,class,family,slot,"permanent",0x1,group,slot)
-                    if group then
-                        group = groupnames[group] or 0
-                        if group ~= 0 then
-                            registercharacter(group,slot,meaning,class,name)
-                        end
-                    end
+                    registercharacter(group,slot,meaning,class,name)
                     return
                 end
             end
             texmathchardef(name,class,family,slot,"permanent")
         end
     end
+
+    mathematics.setmathsymbol = setmathsymbol
 
     function mathematics.define()
         if trace_defining then
@@ -721,7 +723,7 @@ do
                 if class then
                     local engine = toengineclass(class)
                     if trace_defining then
-                        report(engine,family,unicode,symbol)
+                        report(engine,family,unicode,symbol,group)
                     end
                     mset = setmathcharacter(engine,family,unicode,symbol,mset,group,meaning)
                 end
@@ -748,7 +750,7 @@ do
                         class = classes[class] or ordinary_class
                         local engine = toengineclass(class)
                         if trace_defining then
-                            report(engine,family,unicode)
+                            report(engine,family,unicode,nil,group)
                         end
                         mset = setmathcharacter(engine,family,unicode,unicode,mset,group,meaning)
                         done = true
@@ -770,13 +772,13 @@ do
                         local engine = toengineclass(class)
                         if name then
                             if trace_defining then
-                                report(engine,family,unicode,name)
+                                report(engine,family,unicode,name,group)
                             end
                             setmathsymbol(name,engine,family,unicode,stretch,group,meaning)
                         else
                             name = (class == classes.ordinary or class == classes.digit) and "no name" -- character.adobename -- bad
                             if name and trace_defining then
-                                report(engine,family,unicode,name)
+                                report(engine,family,unicode,name,group)
                             end
                         end
                         if not done then
@@ -795,7 +797,7 @@ do
                     local engine = toengineclass(class)
                     if name == false then
                         if trace_defining then
-                            report(engine,family,unicode,name)
+                            report(engine,family,unicode,name,group)
                         end
                         mset = setmathcharacter(engine,family,unicode,unicode,mset,group,meaning)
                     else
@@ -804,12 +806,20 @@ do
                      -- end
                         if name then
                             if trace_defining then
-                                report(engine,family,unicode,name)
+                                report(engine,family,unicode,name,group)
+                            end
+                            if not group then
+                                if class == variable_class then
+                                 -- happens with greek where have a name but don't set a group .. somewhat messy
+                                    group = i_everygroup
+                                else
+                                 -- report(engine,family,unicode,name) -- character.adobename)
+                                end
                             end
                             setmathsymbol(name,engine,family,unicode,stretch,group,meaning)
                         else
                             if trace_defining then
-                                report(engine,family,unicode,"no name") -- character.adobename)
+                                report(engine,family,unicode,"no name",group) -- character.adobename)
                             end
                         end
                         mset = setmathcharacter(engine,family,unicode,unicode,mset,group,meaning)
@@ -817,7 +827,7 @@ do
                 elseif class ~= ordinary_class then
                     local engine = toengineclass(class)
                     if trace_defining then
-                        report(engine,family,unicode,"no name") -- character.adobename)
+                        report(engine,family,unicode,"no name",group) -- character.adobename)
                     end
                     mset = setmathcharacter(engine,family,unicode,unicode,mset,group,meaning)
                 end
@@ -1084,8 +1094,11 @@ do
                 n = (n > #b and b[#b]) or b[n] or n
             end
             return integer_value, n
++ 1
         end
     }
+
+    -- will go away:
 
     function mathematics.big(tfmdata,unicode,n,method)
         local t = tfmdata.characters
