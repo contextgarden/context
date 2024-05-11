@@ -8517,6 +8517,9 @@ return {
    ["pe"]="تصحیح‌عمق",
    ["ro"]="corectieadancime",
   },
+  ["differentiald"]={
+    ["en"]="differentiald",
+  },
   ["direction"]={
    ["cs"]="smer",
    ["de"]="richtung",
@@ -10675,6 +10678,16 @@ return {
    ["pe"]="حاشیه‌فرد",
    ["ro"]="margineimpara",
   },
+  ["off"]={
+   ["cs"]="vyp",
+   ["de"]="aus",
+   ["en"]="off",
+   ["fr"]="arret",
+   ["it"]="disattivo",
+   ["nl"]="uit",
+   ["pe"]="خاموش",
+   ["ro"]="dezactivat",
+  },
   ["offset"]={
    ["cs"]="offset",
    ["de"]="offset",
@@ -10684,6 +10697,16 @@ return {
    ["nl"]="offset",
    ["pe"]="آفست",
    ["ro"]="offset",
+  },
+  ["on"]={
+   ["cs"]="zap",
+   ["de"]="an",
+   ["en"]="on",
+   ["fr"]="marche",
+   ["it"]="attivo",
+   ["nl"]="aan",
+   ["pe"]="روی",
+   ["ro"]="on",
   },
   ["openaction"]={
    ["cs"]="otevriakci",

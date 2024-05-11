@@ -15,34 +15,32 @@
 
 \unprotect
 
-\pushoverloadmode
+%D The shapes are defined in \type {char-def.lua} where they get the right class
+%D too.
+%D
+%D \starttyping
+%D \setupmathematics
+%D   [differentiald=upright]
+%D \stoptyping
 
-    % For new times sake:
+\permanent\protected\def\dd
+  {\ifcstok{\mathematicsparameter\c!differentiald}\s!upright
+     \begingroup
+       \mathupright
+       \mathduprightshape
+     \endgroup
+   \else
+     \mathditalicshape
+   \fi}
 
-    \ifdefined\dd \aliased\let\normal_math_dd\dd \else \lettonothing\normal_math_dd \fi
-    \ifdefined\DD \aliased\let\normal_math_DD\DD \else \lettonothing\normal_math_DD \fi
-
-    \def\c!differentiald{differentiald} % for now
-
-    \def\upright_math_dd{\mathatom \s!unpack \mathdifferentialcode{\mathupright d}}
-    \def\upright_math_DD{\mathatom \s!unpack \mathdifferentialcode{\mathupright D}}
-
-    \permanent\protected\def\dd
-      {\ifcstok{\mathematicsparameter\c!differentiald}\s!upright
-         \upright_math_dd
-       \else
-         \normal_math_dd
-       \fi}
-
-    \permanent\protected\def\DD
-      {\ifcstok{\mathematicsparameter\c!differentiald}\s!upright
-         \upright_math_DD
-       \else
-         \normal_math_DD
-       \fi}
-
-  % \setupmathematics[differentiald=upright]
-
-\popoverloadmode
+\permanent\protected\def\DD
+  {\ifcstok{\mathematicsparameter\c!differentiald}\s!upright
+     \begingroup
+       \mathupright
+       \mathDuprightshape
+     \endgroup
+   \else
+     \mathDitalicshape
+   \fi}
 
 \protect

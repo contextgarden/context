@@ -2059,7 +2059,7 @@ elseif getargument("touch") then
     scripts.context.touch()
 elseif getargument("pages") then
     scripts.context.pages()
-elseif getargument("expert") then
+elseif getargument("expert") then -- or getargument("special") then
     application.help("expert", "special")
 elseif getargument("showmodules") or getargument("modules") then
     scripts.context.modules()

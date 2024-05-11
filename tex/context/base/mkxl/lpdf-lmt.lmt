@@ -1243,6 +1243,7 @@ local flushimage  do
     local setprop           = nuts.setprop
     local getprop           = nuts.getprop
     local setattrlist       = nuts.setattrlist
+    local getoptions        = nuts.getoptions
 
     local getwhd            = nuts.getwhd
     local flushlist         = nuts.flushlist
@@ -1260,6 +1261,9 @@ local flushimage  do
     local radicalrule_code  <const> = rulecodes.radical
     local outlinerule_code  <const> = rulecodes.outline
     ----- virtualrule_code  <const> = rulecodes.virtual
+
+    local vertical_rule     <const> = tex.ruleoptioncodes.vertical
+    local horizontal_rule   <const> = tex.ruleoptioncodes.horizontal
 
     local processrule       = nodes.rules.process
 
@@ -1626,13 +1630,18 @@ local flushimage  do
     local function onoff(on,off,dim)
         on  = on  * bpfactor
         off = off * bpfactor
-        local n = dim // (on+off)
-        on  = on  + .5*((dim  - n*(on+off)))/n
-        return on, off
+        if on + off > dim then
+            return dim, 0
+        else
+            local n = ((dim -on) // (on + off)) + 1
+            if n > 1 then
+                off = (dim - n * on)/(n - 1)
+            end
+            return on, off
+        end
     end
 
-
-    flushers.rule = function(current,pos_h,pos_v,pos_r,size_h,size_v,subtype,on,off,vmode)
+    flushers.rule = function(current,pos_h,pos_v,pos_r,size_h,size_v,subtype,on,off,running)
         if subtype == emptyrule_code then
             return
         elseif subtype == boxrule_code then
@@ -1667,30 +1676,16 @@ local flushimage  do
             else
                 rule = f_o(dim_h,dim_v)
             end
-        elseif dim_v <= one_bp then
-            pdf_set_pos_temp(pos_h,pos_v + 0.5 * size_v)
---          if on == 0 or off == 0 then
-if not on or on == 0 or off == 0 then -- for now
-                rule = f_v(dim_v,dim_h)
-            else
-                on, off = onoff(on,off,dim_h)
-                rule = f_v_d(on,off,dim_v,dim_h)
+        elseif on ~= 0 and off ~= 0 then -- and subtype ~= strutrule_code
+            local options    = getoptions(current)
+            local horizontal = (options & horizontal_rule) == 1
+            local vertical   = (options & vertical_rule  ) == 1
+            if not horizontal and not vertical then
+                horizontal = true -- and no check for running, see autorule in tabulate
+            elseif not running then
+                horizontal = not horizontal
             end
-        elseif dim_h <= one_bp then
-            pdf_set_pos_temp(pos_h + 0.5 * size_h,pos_v)
---             if on == 0 or off == 0 then
-if not on or on == 0 or off == 0 then -- for now
-                rule = f_h(dim_h,dim_v)
-            else
-                on, off = onoff(on,off,dim_v)
-                rule = f_h_d(on,off,dim_h,dim_v)
-            end
-        else
---             if on == 0 or off == 0 then
-if not on or on == 0 or off == 0 then -- for now
-                pdf_set_pos_temp(pos_h,pos_v)
-                rule = f_f(dim_h,dim_v)
-            elseif vmode then
+            if horizontal then
                 local offset = dim_v/2
                 on, off = onoff(on,off,dim_h)
                 pdf_set_pos_temp(pos_h,pos_v)
@@ -1701,6 +1696,15 @@ if not on or on == 0 or off == 0 then -- for now
                 pdf_set_pos_temp(pos_h,pos_v)
                 rule = f_d_v(on,off,dim_h,offset,offset,dim_v)
             end
+        elseif dim_v <= one_bp then
+            pdf_set_pos_temp(pos_h,pos_v + 0.5 * size_v)
+            rule = f_v(dim_v,dim_h)
+        elseif dim_h <= one_bp then
+            pdf_set_pos_temp(pos_h + 0.5 * size_h,pos_v)
+            rule = f_h(dim_h,dim_v)
+        else
+            pdf_set_pos_temp(pos_h,pos_v)
+            rule = f_f(dim_h,dim_v)
         end
 
         b = b + 1 ; buffer[b] = rule

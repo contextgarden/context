@@ -2801,6 +2801,9 @@ static int nodelib_direct_getoptions(lua_State *L)
             case glue_node:
                 lua_pushinteger(L, glue_options(n));
                 return 1;
+            case rule_node:
+                lua_pushinteger(L, rule_options(n));
+                return 1;
             case math_node:
                 lua_pushinteger(L, math_options(n));
                 return 1;
@@ -2837,6 +2840,9 @@ static int nodelib_direct_setoptions(lua_State *L)
             case glue_node:
                 tex_add_glue_option(n, lmt_tohalfword(L, 2));
                 return 1;
+            case rule_node:
+                set_rule_options(n, lmt_tohalfword(L, 2) & rule_option_valid);
+                break;
             case math_node:
                 tex_add_math_option(n, lmt_tohalfword(L, 2));
                 return 1;
@@ -6970,6 +6976,8 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                 lua_pushinteger(L, tex_get_rule_off(n));
                             } else if (lua_key_eq(s, data)) {
                                 lua_pushinteger(L, rule_data(n));
+                            } else if (lua_key_eq(s, options)) {
+                                lua_pushinteger(L, rule_options(n));
                             } else if (lua_key_eq(s, font)) {
                                 lua_pushinteger(L, tex_get_rule_font(n, text_style));
                             } else if (lua_key_eq(s, fam)) {
@@ -7667,6 +7675,8 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                 tex_set_rule_off(n, (halfword) lmt_roundnumber(L, 3));
                             } else if (lua_key_eq(s, data)) {
                                 rule_data(n) = lmt_tohalfword(L, 3);
+                             } else if (lua_key_eq(s, options)) {
+                                rule_options(n) = lmt_tohalfword(L, 3) & rule_option_valid;
                             } else if (lua_key_eq(s, font)) {
                                 tex_set_rule_font(n, lmt_tohalfword(L, 3));
                             } else if (lua_key_eq(s, fam)) {

@@ -47,32 +47,14 @@
   {\setupcurrentblackrules[#1]%
    \pack_black_rule_indeed}
 
-% \def\pack_black_rule_indeed
-%   {\edef\p_width {\directblackrulesparameter\c!width }%
-%    \edef\p_height{\directblackrulesparameter\c!height}%
-%    \edef\p_depth {\directblackrulesparameter\c!depth }%
-%    \ifx\p_height\v!max
-%      \setstrut
-%    \orelse\ifx\p_depth\v!max
-%      \setstrut
-%    \fi
-%    \useblackrulesstyleandcolor\c!style\c!color
-%    \ifcsname\??blackruletype\directblackrulesparameter\c!type\endcsname
-%      \lastnamedcs
-%    \else
-%      \vrule
-%    \fi
-%    \ifx\p_width \v!max\s!width \emwidth\orelse\ifempty\p_width \else\s!width \p_width \fi
-%    \ifx\p_height\v!max\s!height\strutht\orelse\ifempty\p_height\else\s!height\p_height\fi
-%    \ifx\p_depth \v!max\s!depth \strutdp\orelse\ifempty\p_depth \else\s!depth \p_depth \fi
-%    \egroup}
-
 \def\pack_black_rule_indeed
   {\edef\p_width  {\directblackrulesparameter\c!width}%
    \edef\p_height {\directblackrulesparameter\c!height}%
    \edef\p_depth  {\directblackrulesparameter\c!depth}%
    \edef\p_stretch{\directblackrulesparameter\c!stretch}%
    \edef\p_shrink {\directblackrulesparameter\c!shrink}%
+   \edef\p_on     {\directblackrulesparameter\c!on}%
+   \edef\p_off    {\directblackrulesparameter\c!off}%
    \ifx\p_height\v!max
      \setstrut
      \let\p_height\strutdp
@@ -104,6 +86,8 @@
      \lastnamedcs
    \else
      \vrule
+     \ifempty\p_on \else on  \p_on \fi
+     \ifempty\p_off\else off \p_off\fi
    \fi
    \ifempty\p_height\else\s!height\p_height\fi
    \ifempty\p_depth\else\s!depth\p_depth\fi
@@ -120,6 +104,8 @@
   [\c!width=\emwidth,
    \c!height=\exheight,
    \c!depth=\zeropoint,
+  %\c!on=\zeropoint,
+  %\c!off=\zeropoint,
    \c!color=]
 
 %D \macros
@@ -312,15 +298,23 @@
 \letcsname\??thinrulealternatives\v!c   \endcsname\plustwo
 \letcsname\??thinrulealternatives\v!none\endcsname\zerocount
 
+\def\pack_textrule_check_dash#1%
+   {\edef\p_on  {#1\c!on}%
+    \edef\p_off {#1\c!off}%
+    \edef\p_dash{\ifempty\p_on \else on  \p_on \space\fi
+                 \ifempty\p_off\else off \p_off\space\fi}}
+
 \newconstant\c_pack_thinrules_type
 
-\permanent\protected\def\thinrule
+\permanent\tolerant\protected\def\thinrule[#1]%
   {\strut
    \bgroup
+   \ifparameter#1\or\setupthinrules[#1]\fi
    \edef\p_height    {\directthinrulesparameter\c!height}%
    \edef\p_depth     {\directthinrulesparameter\c!depth}%
    \edef\p_background{\directthinrulesparameter\c!background}%
    \edef\p_frame     {\directthinrulesparameter\c!frame}%
+   \pack_textrule_check_dash\directthinrulesparameter
    \linewidth\dimexpr\directthinrulesparameter\c!rulethickness/\plustwo\relax
    \ifzeropt\linewidth
      \c_pack_thinrules_type\zerocount
@@ -351,12 +345,16 @@
            \hrule
              \s!height\dimexpr\scratchheight-\linewidth\relax
              \s!depth \dimexpr\scratchdepth -\linewidth\relax
+             \p_dash
+           \relax
            \hfill
        \else
          \leaders
            \hrule
              \s!height\scratchheight
              \s!depth \scratchdepth
+             \p_dash
+           \relax
            \hfill
        \fi
      \stopcolor
@@ -369,6 +367,8 @@
            \hrule
              \s!height\linewidth
              \s!depth \linewidth
+             \p_dash
+           \relax
            \hfill
        \stopcolor
      \or
@@ -378,27 +378,31 @@
            \hrule
              \s!height\dimexpr-\scratchdepth+\linewidth\relax
              \s!depth \scratchdepth
+             \p_dash
+           \relax
            \hfill
          \hfillneg
          \leaders
            \hrule
              \s!height\scratchheight
              \s!depth \dimexpr-\scratchheight+\linewidth\relax
+             \p_dash
+           \relax
            \hfill
        \stopcolor
      \fi
+   \orelse\ifcase\c_pack_thinrules_type
+     % no rule
    \else
-     \ifcase\c_pack_thinrules_type
-       % no rule
-     \else
-       \startcolor[\directthinrulesparameter\c!color]%
-         \leaders
-           \hrule
-             \s!height\scratchheight
-             \s!depth \scratchdepth
-           \hfill
-       \stopcolor
-     \fi
+     \startcolor[\directthinrulesparameter\c!color]%
+       \leaders
+         \hrule
+           \s!height\scratchheight
+           \s!depth \scratchdepth
+           \p_dash
+         \relax
+         \hfill
+     \stopcolor
    \fi
    \strut
    \carryoverpar\egroup}
@@ -643,6 +647,7 @@
      {\scratchwidth \directtextrulesparameter\c!rulethickness\relax
       \scratchheight\dimexpr .5\exheight+.5\scratchwidth\relax
       \scratchdepth \dimexpr-.5\exheight+.5\scratchwidth\relax
+      \pack_textrule_check_dash\directtextrulesparameter
       \ifempty{#1}%
         % nothing
       \orelse\ifcstok{\directtextrulesparameter\c!location}\v!inmargin
@@ -655,7 +660,8 @@
           {\vrule
              \s!height\scratchheight
              \s!depth \scratchdepth
-             \s!width \directtextrulesparameter\c!width}%
+             \s!width \directtextrulesparameter\c!width
+             \p_dash}%
         \hbox spread 2\dimexpr\directtextrulesparameter\c!distance\relax
           {\hss
            \usetextrulesstyleandcolor\c!style\c!color
@@ -666,7 +672,9 @@
         {\leaders\hrule
            \s!height\scratchheight
            \s!depth \scratchdepth
-           \hfill}}%
+           \p_dash
+         \relax
+         \hfill}}%
    \ht\scratchbox\strutht
    \dp\scratchbox\strutdp
    \box\scratchbox
@@ -685,10 +693,12 @@
    \nointerlineskip
    \noindent\naturalvpack % was \dontleavehmode
      {\color[\directtextrulesparameter\c!rulecolor]
-        {\hrule
+        {\pack_textrule_check_dash\directtextrulesparameter
+         \hrule
            \s!depth \directtextrulesparameter\c!rulethickness
            \s!height\zeropoint
-           \s!width \availablehsize}}}
+           \s!width \availablehsize
+           \p_dash}}}
 
 \def\pack_textrule_correct_depth_yes
   {\vskip\dimexpr

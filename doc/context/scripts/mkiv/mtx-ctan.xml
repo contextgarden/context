@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-ctan</entry>
+  <entry name="detail">Dealing with CTAN</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="packages"><short>list available packages [--field=key|name|caption]</short></flag>
+    <flag name="topics"><short>list available topics [--field=key|name|details]</short></flag>
+    <flag name="details"><short>show details about package</short></flag>
+    <flag name="pattern" value="string"><short>use this pattern, otherwise first argument</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>

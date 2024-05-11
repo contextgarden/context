@@ -5033,6 +5033,16 @@ static int texlib_getdiscoptionvalues(lua_State *L)
     return 1;
 }
 
+static int texlib_getruleoptionvalues(lua_State *L)
+{
+    lua_createtable(L, 2, 2);
+    lua_set_string_by_index(L, rule_option_horizontal, "horizontal");
+    lua_set_string_by_index(L, rule_option_vertical,   "vertical");
+    lua_set_string_by_index(L, rule_option_thickness,  "thickness");
+    lua_set_string_by_index(L, rule_option_running,    "running");
+    return 1;
+}
+
 static int texlib_getmathsurroundvalues(lua_State *L)
 {
     lua_createtable(L, 2, 6);
@@ -6014,6 +6024,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getpenaltyoptionvalues",      texlib_getpenaltyoptionvalues      },
     { "getnoadoptionvalues",         texlib_getnoadoptionvalues         },
     { "getdiscoptionvalues",         texlib_getdiscoptionvalues         },
+    { "getruleoptionvalues",         texlib_getruleoptionvalues         },
     { "getmathsurroundvalues",       texlib_getmathsurroundvalues       },
     { "getlistanchorvalues",         texlib_getlistanchorvalues         },
     { "getlistsignvalues",           texlib_getlistsignvalues           },

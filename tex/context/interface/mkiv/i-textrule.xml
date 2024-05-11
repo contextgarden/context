@@ -48,6 +48,12 @@
                 <cd:parameter name="bodyfont">
                     <cd:inherit name="setupbodyfont"/>
                 </cd:parameter>
+                <cd:parameter name="on">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="off">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

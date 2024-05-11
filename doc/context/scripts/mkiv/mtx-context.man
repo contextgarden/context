@@ -160,6 +160,9 @@ use dummy file as jobname
 .TP
 .B --forceinput
 use this file as input file instead of the given one
+.TP
+.B --expert
+show some more options
 .SH OPTIONS: EXPERT
 .TP
 .B --touch

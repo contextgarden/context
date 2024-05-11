@@ -107,6 +107,9 @@ return {
                     tweak = "checkaccents",
                 },
                 {
+                    tweak = "wipeweirdones",
+                },
+                {
                     tweak   = "parameters",
                     feature = "euleroverpagella",
                     list    = {

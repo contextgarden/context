@@ -307,6 +307,8 @@
 \copymathspacing \mathwrappedcode        \mathfractioncode
 \copymathspacing \mathunarycode          \mathordinarycode
 
+\copymathspacing \mathvariablecode       \mathordinarycode
+
 \copymathspacing \mathmaybeordinarycode  \mathordinarycode
 \copymathspacing \mathmayberelationcode  \mathrelationcode
 \copymathspacing \mathmaybebinarycode    \mathbinarycode
@@ -347,7 +349,7 @@
 \untraced\protected\def\mathaccent      {\mathatom \s!class \mathaccentcode      } % primitive
 \untraced\protected\def\mathfenced      {\mathatom \s!class \mathfencedcode      } % primitive
 \untraced\protected\def\mathghost       {\mathatom \s!class \mathghostcode       } % primitive
-\untraced\protected\def\mathvariable    {\mathatom \s!class \mathvariablecode    } % useless
+\untraced\protected\def\mathvariable    {\mathatom \s!class \mathvariablecode    } % alphabetical
 \untraced\protected\def\mathactive      {\mathatom \s!class \mathactivecode      } % useless
 \untraced\protected\def\mathvcenter     {\mathatom \s!class \mathvcentercode     } % useless
 \untraced\protected\def\mathimaginary   {\mathatom \s!class \mathimaginarycode   }
@@ -5011,6 +5013,16 @@
        \clf_enablecollectingmath
    \fi
 \to \everysetuptagging
+
+% needed for verbose: \im {C \of (a,b) \neq C^2 \of (a,b)}
+
+\permanent\protected\def\math_application_of
+%  {\mathatom class \mathghostcode unpack {\Umathchar \mathghostcode \zerocount "2061}} % only lists gets upacked !
+  {\mathatom class \mathghostcode unpack {\applyfunctionof}} % only lists gets upacked !
+
+\appendtoks
+    \aliased\let\of\math_application_of
+\to \everymathematics
 
 \protect \endinput
 

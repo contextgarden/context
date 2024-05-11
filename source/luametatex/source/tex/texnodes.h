@@ -753,7 +753,7 @@ typedef enum discretionary_subtypes {
 # define last_discretionary_subtype syllable_discretionary_code
 # define last_discretionary_code    automatic_discretionary_code
 
-typedef enum disc_options {
+typedef enum disc_option_codes {
     disc_option_normal_word               = 0x00000000,
     disc_option_pre_word                  = 0x00000001,
     disc_option_post_word                 = 0x00000002,
@@ -768,7 +768,7 @@ typedef enum disc_options {
     disc_option_user_last                 = 0x40000000,
     /*tex So watch out: these are subsets! */
     disc_option_valid                     = 0x4FFF0FFF,
-} disc_options;
+} disc_option_codes;
 
 # define first_disc_option disc_option_prefer_break
 # define last_disc_option  disc_option_prefer_nobreak
@@ -1067,21 +1067,31 @@ typedef enum rule_codes {
     strut_rule_code
 } rule_codes;
 
+typedef enum rule_option_codes {
+    rule_option_horizontal = 0x01, /* maybe we want both at some time */
+    rule_option_vertical   = 0x02, /* when none is set we have a math rule */
+    rule_option_thickness  = 0x04, /* future */
+    rule_option_running    = 0x08,
+    rule_option_valid      = 0x0F,
+} rule_option_codes;
+
 # define last_rule_subtype image_rule_subtype
 # define first_rule_code   normal_rule_code
 # define last_rule_code    strut_rule_code
 
-# define rule_node_size    7
+# define rule_node_size    8
 # define rule_width(a)     vlink(a,2)
 # define rule_x_offset(a)  vinfo(a,2)
 # define rule_depth(a)     vlink(a,3)
 # define rule_y_offset(a)  vinfo(a,3)
 # define rule_height(a)    vlink(a,4)
-# define rule_data(a)      vinfo(a,4)
-# define rule_left(a)      vinfo(a,5) /* depends on subtype */ 
-# define rule_right(a)     vlink(a,5) /* depends on subtype */ 
-# define rule_extra_1(a)   vinfo(a,6) /* depends on subtype */ 
-# define rule_extra_2(a)   vlink(a,6) /* depends on subtype */ 
+# define rule_data(a)      vinfo(a,4) /* used for linewidth */
+# define rule_options(a)   vlink(a,5)
+# define rule_thickness(a) vinfo(a,5) /* future see data */
+# define rule_left(a)      vinfo(a,6) /* depends on subtype */ 
+# define rule_right(a)     vlink(a,6) /* depends on subtype */ 
+# define rule_extra_1(a)   vinfo(a,7) /* depends on subtype */ 
+# define rule_extra_2(a)   vlink(a,7) /* depends on subtype */ 
 
 # define rule_line_on         rule_extra_1
 # define rule_line_off        rule_extra_2
@@ -1095,6 +1105,8 @@ typedef enum rule_codes {
 # define rule_virtual_unused  rule_extra_2
 
 # define rule_total(a) (rule_height(a) + rule_depth(a))
+
+# define set_rule_options(a,b)  rule_options(a) |= b
 
 /*tex
 

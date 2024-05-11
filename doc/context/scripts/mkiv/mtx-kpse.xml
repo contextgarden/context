@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-kpse</entry>
+  <entry name="detail">ConTeXt KPSE checking utility</entry>
+  <entry name="version">1.00</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="progname"><short>mandate, set the program name (e.g. pdftex)</short></flag>
+    <flag name="findfile"><short>report the fully qualified path of the given file</short></flag>
+    <flag name="findfiles"><short>report a list of all full names of the given file</short></flag>
+    <flag name="expandpath"><short>expand the given path variable</short></flag>
+    <flag name="expandvar"><short>expand a variable</short></flag>
+    <flag name="expandbraces"><short>expand a complex variable specification</short></flag>
+    <flag name="varvalue"><short>show the value of a variable</short></flag>
+    <flag name="readablefile"><short>report if a file is readable</short></flag>
+    <flag name="filetypes"><short>list all supported formats</short></flag>
+   </subcategory>
+  </category>
+  <category name="additional">
+   <subcategory>
+    <flag name="format"><short>format type</short></flag>
+    <flag name="path"><short>path variable</short></flag>
+    <flag name="split"><short>split result in lines</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+ <examples>
+  <category>
+   <title>Examples</title>
+   <subcategory>
+    <example><command>mtxrun --script kpse --progname=pdftex --findfile  context.mkii</command></example>
+    <example><command>mtxrun --script kpse --progname=pdftex --findfile  context.mkii --format=tex</command></example>
+    <example><command>mtxrun --script kpse --progname=pdftex --findfiles context.mkii --path=$TEXINPUTS</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script kpse --progname=pdftex --expandpath $TEXMFVAR</command></example>
+    <example><command>mtxrun --script kpse --progname=pdftex --expandpath $TEXINPUTS -- split</command></example>
+   </subcategory>
+  </category>
+ </examples>
+</application>

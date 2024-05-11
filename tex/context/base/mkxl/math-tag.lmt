@@ -129,11 +129,13 @@ local classes            = mathematics.classes
 
 local classtotag = {
     [classes.ordinary]     = "mi",
+    [classes.variable]     = "mi",
     [classes.imaginary]    = "mi",
     [classes.differential] = "mi",
     [classes.exponential]  = "mi",
     [classes.digit]        = "mn",
     [classes.implication]  = "mo",
+    [classes.ghost]        = "mo",--always?
 --  [classes.relation]     = "mo",
 --  [classes.binary]       = "mo",
 --  [classes.punctuation]  = "mc",

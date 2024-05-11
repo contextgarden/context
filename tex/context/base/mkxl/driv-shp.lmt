@@ -896,10 +896,12 @@ local hlist_out, vlist_out  do
                             if id == rule_code then
                                 if gluewidth > 0 then
                                     local width, height, depth = getwhd(leader)
-                                    if height == runningrule then
+                                    local runningheight = height == runningrule
+                                    local runningdepth  = depth  == runningrule
+                                    if runningheight then
                                         height = boxheight
                                     end
-                                    if depth == runningrule then
+                                    if runningdepth then
                                         depth = boxdepth
                                     end
                                     local total = height + depth
@@ -928,7 +930,7 @@ local hlist_out, vlist_out  do
                                             pos_h = pos_h - gluewidth
                                         end
                                         pos_v = pos_v - depth
-                                        flushrule(leader,pos_h,pos_v,pos_r,gluewidth,total,getsubtype(leader),on,off)
+                                        flushrule(leader,pos_h,pos_v,pos_r,gluewidth,total,getsubtype(leader),on,off,runningheight and runningdepth)
                                     end
                                     cur_h = cur_h + gluewidth
                                 end
@@ -1223,10 +1225,12 @@ flush_space(current)
             elseif id == rule_code then
                 local width, height, depth, virtual = getruledimensions(current)
                 if width > 0 then
-                    if height == runningrule then
+                    local runningheight = height == runningrule
+                    local runningdepth  = depth  == runningrule
+                    if runningheight then
                         height = boxheight
                     end
-                    if depth == runningrule then
+                    if runningdepth then
                         depth = boxdepth
                     end
                     local total = height + depth
@@ -1247,7 +1251,7 @@ flush_space(current)
                             end
                         end
                         pos_v = pos_v - depth
-                        flushrule(current,pos_h + xoffset,pos_v + yoffset,pos_r,width,total,subtype,on,off)
+                        flushrule(current,pos_h + xoffset,pos_v + yoffset,pos_r,width,total,subtype,on,off,runningheight and runningdepth)
                     end
                     if not virtual then
                         cur_h = cur_h + width
@@ -1337,7 +1341,7 @@ flush_space(current)
             end
          -- pos_v = ref_v - cur_v
             pos_v = ref_v
-            ::synced::
+          ::synced::
         end
         pos_h = ref_h
         pos_v = ref_v
@@ -1386,7 +1390,8 @@ flush_space(current)
                                 depth = 0 -- hm
                                 total = glueheight -- forgotten ... needs testing
                                 if total > 0 then
-                                    if width == runningrule then
+                                    local runningwidth = width == runningrule
+                                    if runningwidth then
                                         width = boxwidth
                                     end
                                     if width > 0 then
@@ -1410,7 +1415,7 @@ flush_space(current)
                                         if pos_r == righttoleft_code then
                                             cur_h = cur_h - width
                                         end
-                                        flushrule(leader,pos_h,pos_v - total,pos_r,width,total,getsubtype(leader),on,off,true)
+                                        flushrule(leader,pos_h,pos_v - total,pos_r,width,total,getsubtype(leader),on,off,runningwidth)
                                     end
                                     cur_v = cur_v + total
                                 end
@@ -1633,7 +1638,8 @@ flush_space(current)
                 local width, height, depth, virtual = getruledimensions(current)
                 local total = height + depth
                 if total > 0 then
-                    if width == runningrule then
+                    local runningwidth = width == runningrule
+                    if runningwidth then
                         width = boxwidth
                     end
                     if width > 0 then
@@ -1650,7 +1656,7 @@ flush_space(current)
                         if pos_r == righttoleft_code then
                             xoffset = - xoffset - width
                         end
-                        flushrule(current,pos_h + xoffset,pos_v - total - yoffset,pos_r,width,total,subtype,on,off,true)
+                        flushrule(current,pos_h + xoffset,pos_v - total - yoffset,pos_r,width,total,subtype,on,off,runningwidth)
                     end
                     if not virtual then
                         cur_v = cur_v + total
@@ -1668,7 +1674,7 @@ flush_space(current)
                 pos_h = ref_h + cur_h
             end
             pos_v = ref_v - cur_v
-            ::synced::
+          ::synced::
         end
         pos_h = ref_h
         pos_v = ref_v

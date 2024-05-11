@@ -101,10 +101,10 @@ local readcardinaltable = streamreader.readcardinaltable
 local readintegertable  = streamreader.readintegertable
 local readfword         = readshort
 
-local short   = 2
-local ushort  = 2
-local uoffset = 3
-local ulong   = 4
+local short   <const> = 2
+local ushort  <const> = 2
+local uoffset <const> = 3
+local ulong   <const> = 4
 
 directives.register("fonts.streamreader",function()
 
@@ -143,7 +143,7 @@ local helpers           = readers.helpers
 local gotodatatable     = helpers.gotodatatable
 local setvariabledata   = helpers.setvariabledata
 
-local lookupidoffset    = -1    -- will become 1 when we migrate (only -1 for comparign with old)
+local lookupidoffset    <const> = -1    -- will become 1 when we migrate (only -1 for comparing with old)
 
 local classes = {
     "base",
@@ -3077,14 +3077,8 @@ local function readmathvariants(f,fontdata,offset)
             end
         end
     end
-
- -- if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
-        get(offset,hcoverage,hnofglyphs,hconstruction,"variants","parts","partsitalic","partsorientation","horizontal")
-        get(offset,vcoverage,vnofglyphs,vconstruction,"variants","parts","partsitalic","partsorientation","vertical")
- -- else
- --     get(offset,vcoverage,vnofglyphs,vconstruction,"vvariants","vparts","vitalic")
- --     get(offset,hcoverage,hnofglyphs,hconstruction,"hvariants","hparts","hitalic")
- -- end
+    get(offset,hcoverage,hnofglyphs,hconstruction,"variants","parts","partsitalic","partsorientation","horizontal")
+    get(offset,vcoverage,vnofglyphs,vconstruction,"variants","parts","partsitalic","partsorientation","vertical")
 end
 
 function readers.math(f,fontdata,specification)
@@ -3668,7 +3662,7 @@ layerlistoffset   = 0
                 report("table version %a of %a is %s supported for font %s",version,"colr","partially",fontdata.filename)
                 return
             end
-         -- if not (CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0) then
+         -- if true then
          --     return
          -- end
             if layerlistoffset > 0 and glyphlistoffset > 0 then
@@ -3940,8 +3934,7 @@ end
 local compress   = gzip and gzip.compress
 local compressed = compress and gzip.compressed
 
--- At some point I will delay loading and only store the offsets (in context lmtx
--- only).
+-- At some point I will delay loading and only store the offsets.
 
 -- compressed = false
 
@@ -4016,7 +4009,7 @@ function readers.sbix(f,fontdata,specification)
             end
         end)
         local glyphs  = { }
-     -- local delayed = CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 or fonts.handlers.typethree
+     -- local delayed = fonts.handlers.typethree
         for i=1,nofstrikes do
             local strike       = strikes[i]
             local strikeppem   = strike.ppem
@@ -4255,7 +4248,7 @@ do
 
             local default = { width = 0, height = 0 }
             local glyphs  = fontdata.glyphs
-         -- local delayed = CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 or fonts.handlers.typethree
+         -- local delayed = fonts.handlers.typethree
 
             for index, subtable in sortedhash(shapes) do
                 if type(subtable) == "table" then

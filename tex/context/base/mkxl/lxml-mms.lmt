@@ -27,7 +27,8 @@ if not modules then modules = { } end modules ['lxml-mms'] = {
 -- more general (shared) but we do that once we're done.
 
 -- Timestamp: yet another entertaining drum track by Gavin Harrison "Pick Up The
--- Pieces" | Zildjian 400th UK (posted 2024/2/5) - three weeks before a PT concert.
+-- Pieces" | Zildjian 400th UK (posted 2024/2/5) - three weeks before a PT concert
+-- (YT: "The Pineapple Thief - It Leads to This).
 
 local tonumber, tostring, type, next = tonumber, tostring, type, next
 local concat = table.concat
@@ -39,35 +40,292 @@ local xmltext      = xml.text
 local xmlconvert   = xml.convert
 local xmlcollected = xml.collected
 
--- do
+local report = logs.reporter("mms")
 
-    local function xmlevery(x)
-        local dt = x.dt
-        local tt
-        local nn = 0
-        for i=1,#dt do
-            local di = dt[i]
-            if di.tg and not di.special then
-                if tt then
-                    nn = nn + 1
-                    tt[nn] = di
+local getname          = mathematics.dictionaries.name
+local classes          = mathematics.classes
+local getverboselabel  = mathematics.getverboselabel
+local getoptionallabel = mathematics.getoptionallabel
+local functions        = mathematics.categories.functions
+local functiontype     = mathematics.functiontype
+
+local function xmlevery(x)
+    local dt = x.dt
+    local tt
+    local nn = 0
+    for i=1,#dt do
+        local di = dt[i]
+        if di.tg and not di.special then
+            if tt then
+                nn = nn + 1
+                tt[nn] = di
+            else
+                nn = 1
+                tt = { di }
+            end
+        end
+    end
+    return tt, nn
+end
+
+local function xmlfixattributes(x)
+    for c in xmlcollected(x,"*") do
+        local at = c.at
+        for k, v in next, at do
+            at[k] = tostring(v)
+        end
+    end
+end
+
+local function xmlwipeattributes(x)
+    local at = { }
+    for c in xmlcollected(x,"*") do
+        c.at = { } -- Don't set them afterwards because they are shared!
+    end
+end
+
+local prepare  do
+
+    local expandtimes, expandtimesone
+
+    expandtimesone = function(c,all,i,start,stop)
+        if c then
+            local tg = c.tg
+            if tg == "mrow" then
+                local at = c.at
+                if at.mathunit then
+                    -- nothing
                 else
-                    nn = 1
-                    tt = { di }
+                    local a, na = xmlevery(c)
+                    if na > 0 then
+                     -- local mfs = at.mathfractionstack
+                     -- if mfs then
+                     --     local a = xmlall(c,"/mfrac") or { }
+                     --     expandtimesone(a[1],a,1)
+                     --     goto DONE
+                     -- end
+                        local times  = false
+                        local block  = true
+                        local closed = false
+                        for i=1,na do
+                            local ai    = a[i]
+                            local tg    = ai.tg
+                            local at    = ai.at
+                            local class = at.mathclass
+                            if     at.mathfunction
+                             -- or at.mathfractionstack -- ADDED
+                                or at.mathfunctionstack
+                                or class == "integral"
+                                or at.mathgroup == "unary set"
+                                or at.mathgroup == "number set"
+                             -- or at.mathapplication
+                            then
+                                at.checkfunction = true -- saves a check later
+                                if closed then
+                                    at.mathtimes = 1
+                                    closed = false
+                                elseif block then
+                                    block = false
+                                else
+                                    at.mathtimes = 2
+                                end
+                                if at.mathsymbolic then
+                                    block = false -- registered functions like f and g
+                                else
+                                    block = true -- lim etc .. we need to intercept kind == 1
+                                end
+                                times = false
+                                expandtimesone(ai,a,i)
+                            elseif tg == "mo" then
+                                -- combine more here
+                                if class == "open" then
+                                    if closed then
+                                        at.mathtimes = 3
+                                        closed = false
+                                    elseif times and not block then
+                                        at.mathtimes = 4
+                                    end
+                                elseif i > 1 and class == "close" then -- block ?
+                                    closed = true
+                                else
+                                    closed = false
+                                end
+                                expandtimes(ai)
+                                times = false
+                                block = true
+                            elseif tg == "mn" or tg == "mtext" or tg == "ms" then
+                                if closed then
+                                    at.mathtimes = 5
+                                    closed = false
+                                end
+                                expandtimesone(ai)
+                                times = false
+                                block = false
+                            elseif tg == "msub" or tg == "msup" or tg == "msubsup" then
+                                local first = xmlfirst(ai,"/*")
+                                local fat   = first and first.at
+                                if closed then
+                                    at.mathtimes = 6
+                                    closed = false
+                                elseif first and at.mathclass == "close" then
+                                    closed = true
+                                elseif times and not block then
+                                    at.mathtimes = 7
+                                end
+                                if first then
+                                    if     fat.mathfunction
+                                        or fat.mathfunctionstack
+                                        or fat.mathclass == "integral"
+                                        or fat.mathclass == "operator"
+                                        or fat.mathclass == "differential"
+                                    then
+                                        if not fat.mathfunction then
+                                            fat.mathfunction = true -- maybe also needed for the stack
+                                        end
+                                        at.checkfunction = true -- saves a check later
+                                        expandtimesone(ai,a,i)
+                                        block = true
+                                        times = false
+                                    else
+                                        expandtimesone(ai,a,i)
+                                        block = false
+                                        times = true
+                                    end
+                                else
+                                    expandtimesone(ai,a,i)
+                                    block = false
+                                    times = true
+                                end
+                            elseif at.mathfractionstack or tg == "mroot" or tg == "mfrac" or tg == "msqrt" or at.mathsymbolic then
+                                if closed then
+                                    at.mathtimes = 8
+                                    closed = false
+                                elseif block then
+                                    block = false
+                                else
+                                    at.mathtimes = 9
+                                end
+                                times = true
+                                expandtimesone(ai,a,i)
+                            elseif class == "differential" then
+                                closed = false
+                                block = true
+                                times = true
+                                expandtimesone(ai,a,i)
+                            elseif class == "variable" then
+                             -- local c = at.mathcharacter
+                             -- if c == "." or c == "," then -- period comma
+                             --     block = true
+                             --     times = false
+                             -- else
+                                    if closed then
+                                        at.mathtimes = 10
+                                        closed = false
+                                    elseif times and not block then
+                                        at.mathtimes = 11
+                                    end
+                                    block = false
+                                    times = true
+                             -- end
+                                expandtimesone(ai,a,i)
+                            elseif tg == "mrow" then
+                                if closed or times then
+                                    at.mathtimes = 12
+                                    closed = false
+                                end
+                                times = true
+                                expandtimesone(ai,a,i)
+                            else
+                                if closed then
+                                    at.mathtimes = 13
+                                    closed = false
+                                end
+                                times = false
+                                expandtimesone(ai,a,i)
+                            end
+                        end
+                    end
+                end
+          ::DONE::
+            elseif tg == "mtable" then
+                for cell in xmlcollected(c,"mtd") do
+                    local a, na = xmlevery(cell)
+                    if a then
+                        expandtimes(a)
+                    end
+                end
+            elseif tg == "mtext" or tg == "mspace" or tg == "ms" then
+                -- nothing to do
+            elseif tg == "mfrac" then
+                local a, na = xmlevery(c)
+                if i > 1 and na == 2 and all[i-1].tg == "mn" and a[1].tg == "mn" and a[2].tg == "mn" and not c.__p__.at.mathfractionstack then
+                    -- mark not times
+                    c.at.mathplus = 1 -- invisible plus
+                end
+            else
+                local a, na = xmlevery(c)
+                if a then
+                    expandtimes(a)
                 end
             end
         end
-        return tt, nn
     end
 
-    local getname          = mathematics.dictionaries.name
-    local classes          = mathematics.classes
-    local getverboselabel  = mathematics.getverboselabel
-    local getoptionallabel = mathematics.getoptionallabel
-    local functions        = mathematics.categories.functions
-    local functiontype     = mathematics.functiontype
+    expandtimes = function(all)
+        if all then
+            for i=1,#all do
+                expandtimesone(all[i],all,i)
+            end
+        end
+    end
 
-    local report = logs.reporter("mms")
+    prepare = function(x)
+        local all = xmlall(x,"mi[not @mathfunction]")
+        if all then
+            for i=1,#all do
+                local a = all[i]
+                local t = a.dt[1]
+                local f = functions[t]
+                if f then
+                    local at = a.at
+                    at.mathfunction = "true"
+                    at.mathsymbolic = "true"
+                end
+            end
+        end
+        -- left is a function, right is an operator
+        for c in xmlcollected(x,"mrow[@mathfunctionstack]") do
+            local cat = c.at
+            local s   = cat.mathstack
+            for cc in xmlcollected(c,"(mi|mo)[@mathstack]") do
+                local ccat = cc.at
+                if ccat.mathstack == s then
+                    cat.mathfunction  = ccat.mathfunction  or cat.mathfunction
+                    cat.mathcharacter = ccat.mathcharacter or cat.mathcharacter
+                    cat.mathgroup     = ccat.mathgroup     or cat.mathgroup
+                    if cc.tg == "mo" then
+                        ccat.mathignore = "true"
+                    end
+                end
+            end
+        end
+        --
+        local all = xmlall(x,"(msub|msup|msubsup)/mo[@mathclass='open' or @mathclass='close' or @mathclass='middle']")
+        if all then
+            for i=1,#all do
+                local ai = all[i]
+                local at = ai.at
+                at.mathignore = "true"
+                ai.__p__.at.mathclass = at.mathclass
+            end
+        end
+        --
+        expandtimesone(x)
+    end
+
+end
+
+local tomeaning, getlast  do
 
     -- we don't really need to handle mfenced
 
@@ -304,6 +562,12 @@ local xmlcollected = xml.collected
                 n = n + 1 ; t[n] = getlabel(fenced.tag .. ":fence")
                 at.mathignore = "true"
                 expandone(ai)
+
+local aa = all and all[i+1]
+if aa then
+    aa.at.mathnogroup = true
+end
+
             else
                 expandone(ai)
             end
@@ -312,12 +576,9 @@ local xmlcollected = xml.collected
         end
     end
 
-    local function injecttimes()
-        local s = getlabel("times")
-        if s and s ~= "" then
-            n = n + 1 ; t[n] = s
-        end
-    end
+    local trace_times = false
+
+    trackers.register("structures.tags.math.times", function(v) trace_times = v end)
 
     expandone = function(c,all,i,start,stop)
         if c then
@@ -337,7 +598,7 @@ local xmlcollected = xml.collected
                             expandsymbol(c)
                             at.mathnogroup = "true"
                         else
-                            local mfs = at.mathfractionstack
+                            local mfs = at.mathfractionstack -- matbe also cgheckj for tg == "mfrac"
                             if mfs then
                                 at.mathnogroup = "true"
                         --         fenced = false
@@ -380,270 +641,50 @@ local xmlcollected = xml.collected
                             end
                         end
                         --
---                         local times  = false
---                         local block  = true
---                         local closed = false
---                         for i=1,na do
---                             local ai    = a[i]
---                             local tg    = ai.tg
---                             local at    = ai.at
---                             local class = at.mathclass
---                             if tg == "mo" then
---                                 -- combine more here
---                                 if class == "open" then
---                                     if closed then
---                                         injecttimes()
---                                         closed = false
---                                     elseif times and not block then
---                                         injecttimes()
---                                     end
---                                 elseif i > 1 and class == "close" then
---                                     closed = true
---                                 else
---                                     closed = false
---                                 end
---                                 if class == "integral" then
---                                     if not block then
---                                         injecttimes()
---                                     end
---                                     expandfenced(ai,fenced)
---                                     times = false
---                                 else
---                                     expandfenced(ai,fenced)
---                                 end
---                                 times = false
---                                 block = true
---                             elseif tg == "mn" or tg == "mtext" or tg == "ms" then
---                                 if closed then
---                                     injecttimes()
---                                     closed = false
---                                 end
---                                 expandone(ai)
---                                 times = false
---                                 block = false
---                             elseif tg == "msub" or tg == "msup" or tg == "msubsup" then
---                                 if closed then
---                                     injecttimes()
---                                     closed = false
---                                 end
---                                 local first = xmlfirst(ai,"/*")
---                                 -- inspect(first.at)
---                                 if first and (
---                                        first.at.mathfunction
---                                     or first.at.mathfunctionstack
---                                     or first.at.mathclass == "integral"
---                                 ) then
---                                  -- times = false
---                                     at.mathfunction = true
---                                     checkfunction(a,i,na)
---                                     expandone(ai,a,i)
---                                     times = false
---                                     block = true
---                                 else
---                                     expandfenced(ai,fenced,a,i)
---                                     times = false
---                                     block = false
---                                 end
---                             elseif at.mathfractionstack
---                                 or tg == "mroot"
---                                 or tg == "msqrt"
---                                 or at.mathsymbolic
---                             then
---                                 if closed then
---                                     injecttimes()
---                                     closed = false
---                                 elseif block then
---                                     block = false
---                                 else
---                                     injecttimes()
---                                 end
---                                 times = true
---                                 checkfunction(a,i,na)
---                                 expandone(ai,a,i)
---                              -- function can be followed by argument
---                             elseif at.mathfunction
---                                 or at.mathfunctionstack
---                                 or at.mathgroup == "unary set"
---                                 or class == "integral" -- and then this elseif up
---                             then
---                                 if closed then
---                                     injecttimes()
---                                     closed = false
---                                 end
---                                 if block then
---                                     block = false
---                                 else
---                                     injecttimes()
---                                 end
---                                 times = false
---                                 checkfunction(a,i,na)
---                                 expandone(ai,a,i)
---                             elseif class == "differential" then
---                                 closed = false
---                                 block = true
---                                 times = true
---                                 expandone(ai,a,i)
---                             elseif class == "ordinary" then
---                                 if closed then
---                                     injecttimes()
---                                     closed = false
---                                 else times then
---                                     if not block then
---                                         injecttimes()
---                                     end
---                                 end
---                                 block = false
---                                 times = true
---                                 expandone(ai,a,i)
---                             elseif tg == "mrow" then
---                                 if closed or times then
---                                     injecttimes()
---                                     closed = false
---                                 end
---                 times = true
---                                 expandone(ai,a,i)
---                             else
---                                 if closed then
---                                     injecttimes()
---                                     closed = false
---                                 end
---                                 times = false
---                                 expandone(ai,a,i)
---                             end
---                         end
-
-                        local times  = false
-                        local block  = true
-                        local closed = false
                         for i=1,na do
-                            local ai    = a[i]
-                            local tg    = ai.tg
-                            local at    = ai.at
-                            local class = at.mathclass
-                            if at.mathfunction or at.mathfunctionstack or at.mathgroup == "unary set" or class == "integral" or at.mathgroup == "number set" then
-                                if closed then
-                                    injecttimes()
-                                    closed = false
-                                elseif block then
-                                    block = false
-                                else
-                                    injecttimes()
+                            local ai = a[i]
+                            local tg = ai.tg
+                            local at = ai.at
+                            if at.mathtimes then
+                                local s
+                             -- if at.mathplus then
+                             --     s = getlabel("fractionplus")
+                             -- else
+                                    s = getlabel("times")
+                             -- end
+                                if s and s ~= "" then
+                                    if trace_times then
+                                        n = n + 1 ; t[n] = s .. at.mathtimes
+                                    else
+                                        n = n + 1 ; t[n] = s
+                                    end
                                 end
-                                times = false
+                            end
+                            if at.checkfunction then
                                 checkfunction(a,i,na)
                                 expandone(ai,a,i)
                             elseif tg == "mo" then
-                                -- combine more here
-                                if class == "open" then
-                                    if closed then
-                                        injecttimes()
-                                        closed = false
-                                    elseif times and not block then
-                                        injecttimes()
-                                    end
-                                elseif i > 1 and class == "close" then -- block ?
-                                    closed = true
-                                else
-                                    closed = false
-                                end
-                                expandfenced(ai,fenced)
-                                times = false
-                                block = true
-                            elseif tg == "mn" or tg == "mtext" or tg == "ms" then
-                                if closed then
-                                    injecttimes()
-                                    closed = false
-                                end
-                                expandone(ai)
-                                times = false
-                                block = false
+                                expandfenced(ai,fenced,a,i)
+-- n = n + 1 ; t[n] = "!"
+                         -- elseif tg == "mn" or tg == "mtext" or tg == "ms" then
+                         --     expandone(ai)
                             elseif tg == "msub" or tg == "msup" or tg == "msubsup" then
                                 local first = xmlfirst(ai,"/*")
-                                local at    = first and first.at
-                                if closed then
-                                    injecttimes()
-                                    closed = false
-                                else
-if first and at.mathclass == "close" then
-    closed = true
-else
-                                    if times and not block then
-                                        injecttimes()
-                                    end
-end
-                                end
+                                local fat   = first and first.at
                                 if first then
-                                    if at.mathfunction or at.mathfunctionstack or at.mathclass == "integral" then
-                                        if not at.mathfunction then
-                                            at.mathfunction = true -- maybe also needed for the stack
-                                        end
+                                    if fat.checkfunction then
                                         checkfunction(a,i,na)
                                         expandone(ai,a,i)
-block = true
-                                        times = false
                                     else
                                         expandfenced(ai,fenced,a,i)
-        times = true
-block = false
                                     end
                                 else
                                     expandfenced(ai,fenced,a,i)
-block = false
-        times = true
                                 end
-                            elseif at.mathfractionstack or tg == "mroot" or tg == "msqrt" or at.mathsymbolic then
-                                if closed then
-                                    injecttimes()
-                                    closed = false
-                                elseif block then
-                                    block = false
-                                else
-                                    injecttimes()
-                                end
-                                times = true
-                                checkfunction(a,i,na)
-                                expandone(ai,a,i)
-                             -- function can be followed by argument
-                            elseif class == "differential" then
-                                closed = false
-                                block = true
-                                times = true
-                                expandone(ai,a,i)
-                            elseif class == "ordinary" then
-local c = tonumber(at.mathcharacter)
-if c == 0x2E or c == 0x2C then -- period comma
-    block = true
-    times = false
-    -- no need, but bad structure
-else
-                                if closed then
-                                    injecttimes()
-                                    closed = false
-                                elseif times and not block then
-                                    injecttimes()
-                                end
-                                block = false
-                                times = true
-end
-                                expandone(ai,a,i)
-                            elseif tg == "mrow" then
-                                if closed or times then
-                                    injecttimes()
-                                    closed = false
-                                end
-                times = true
-                                expandone(ai,a,i)
                             else
-                                if closed then
-                                    injecttimes()
-                                    closed = false
-                                end
-                                times = false
                                 expandone(ai,a,i)
                             end
                         end
-
-
                         --
                         if fenced then
                             local s = getlabel(fenced.tag)
@@ -658,7 +699,7 @@ end
                         end
                     end
                 end
-          ::DONE::
+              ::DONE::
             elseif tg == "mo" then
                 expandsymbol(c)
             elseif tg == "mn" then
@@ -670,13 +711,21 @@ end
                 elseif at.mathsymbolic then
                     n = n + 1 ; t[n] = getlabel("function")
                     expandsymbol(c) -- can be done directly
-                    if all then
-                        applyof(all,i,"functionof")
+                    local tg = c.__p__.tg
+                    if tg == "msub" or tg == "msup" or tg == "msubsup" then
+                    else
+                        if all then
+                            applyof(all,i,"functionof")
+                        end
                     end
                 elseif at.mathfunction then
                     n = n + 1 ; t[n] = getlabel(c.dt[1])
-                    if all then
-                        applyof(all,i,"functionof")
+                    local tg = c.__p__.tg
+                    if tg == "msub" or tg == "msup" or tg == "msubsup" then
+                    else
+                        if all then
+                            applyof(all,i,"functionof")
+                        end
                     end
                 else
                     local s = getoptional(c.dt[1])
@@ -691,7 +740,6 @@ end
                     local a1 = a[1]
                     local at = a1.at
                     expandone(a1,all,i)
--- MS: do we need to intercept \lim here? for the sake of "operatorof" (maybe all functions ?)
                     if haslimits(at) or isintegral(at) or isoperator(at) then
                         if isintegral(at) or isoperator(at) then
                             n = n + 1 ; t[n] = getlabel("integralsub") -- integral with lower limit
@@ -705,6 +753,9 @@ end
                         end
                     else
                         expandsubindex(c,a[2],all,i)
+                        if at.mathfunction or at.mathsymbolic then
+                            applyof(all,i,"functionof")
+                        end
                     end
                 end
             elseif tg == "msup" then
@@ -737,6 +788,9 @@ end
                     else
                         expandone(a1,all,i)
                         expandsupindex(c,a2,all,i)
+                        if at.mathfunction or at.mathsymbolic then
+                            applyof(all,i,"functionof")
+                        end
                     end
                 end
             elseif tg == "msubsup" then
@@ -771,6 +825,9 @@ end
                         expandone(a1,all,i)
                         expandsubindex(c,a2,all,i)
                         expandsupindex(c,a3,all,i)
+                        if at.mathfunction or at.mathsymbolic then
+                            applyof(all,i,"functionof")
+                        end
                     end
                 end
             elseif tg == "mfrac" then
@@ -953,124 +1010,111 @@ end
         end
     end
 
-    local lpath_fence_check <const> = "(msub|msup|msubsup)/mo[@mathclass='open' or @mathclass='close' or @mathclass='middle']"
+    local keep_last = false
 
-    local warned = false
+    trackers.register("structures.tags.math.keeplast", function(v) keep_last = v end)
 
-    local function verbose(s,l)
-        if not warned then
-            report("this feature is experimental and under construction")
-            warned = true
-        end
-        local root = xmlconvert(s)
-        if root.error then
-            -- likely empty so nothing to print
-        else
-            local x = xmlfirst(root,"/math")
-            if x then
-                --
-                local all = xmlall(x,"mi[not @mathfunction]")
-                if all then
-                    for i=1,#all do
-                        local a = all[i]
-                        local t = a.dt[1]
-                        local f = functions[t]
-                        if f then
-                            local at = a.at
-                            at.mathfunction = "true"
-                            at.mathsymbolic = "true"
-                        end
+    tomeaning = function(x,l)
+        t        = { }
+        n        = 0
+        okay     = true
+        language = l or "en"
+        domain   = x.at.domain or "default"
+        --
+        expandone(x)
+        if okay then
+            -- we can have a helper for this
+            local m = false
+            for i=1,n do
+                local ti = t[i]
+                if ti == "" then
+                    if not m then
+                        m = i - 1
                     end
-                end
-                -- left is a function, right is an operator
-                for c in xmlcollected(x,"mrow[@mathfunctionstack]") do
-                    local cat = c.at
-                    local s   = cat.mathstack
-                    for cc in xmlcollected(c,"(mi|mo)[@mathstack]") do
-                        local ccat = cc.at
-                        if ccat.mathstack == s then
-                            cat.mathfunction  = ccat.mathfunction  or cat.mathfunction
-                            cat.mathcharacter = ccat.mathcharacter or cat.mathcharacter
-                            cat.mathgroup     = ccat.mathgroup     or cat.mathgroup
-                            if cc.tg == "mo" then
-                                ccat.mathignore = "true"
-                            end
-                        end
-                    end
-                end
-                --
-                local all = xmlall(x,lpath_fence_check)
-                if all then
-                    for i=1,#all do
-                        local ai = all[i]
-                        local at = ai.at
-                        at.mathignore = "true"
-                        ai.__p__.at.mathclass = at.mathclass
-                    end
-                end
-                --
-                t        = { }
-                n        = 0
-                okay     = true
-                language = l or "en"
-                domain   = x.at.domain or "default"
-                --
-                expandone(x)
-                if okay then
-                    -- we can have a helper for this
-                    local m = false
-                    for i=1,n do
-                        local ti = t[i]
-                        if ti == "" then
-                            if not m then
-                                m = i - 1
-                            end
-                        elseif m then
-                            m = m + 1
-                            t[m] = ti
-                        end
-                    end
-                    if m then
-                        n = m
-                    end
-                    if t[n] == "." then
-                        n = n - 1
-                    end
--- if true then
---     for c in xmlcollected(x,"*") do
---         local at = c.at
---         for k, v in next, at do
---             at[k] = tostring(v)
---         end
---     end
---     print(x)
--- end
-                    return concat(t," ",1,n)
+                elseif m then
+                    m = m + 1
+                    t[m] = ti
                 end
             end
+            if m then
+                n = m
+            end
+            if t[n] == "." then
+                n = n - 1
+            end
+            if keep_last then
+                xmlfixattributes(x)
+                buffers.assign(type(keep_last) == "string" and keep_last or "lastmms",tostring(x))
+            else
+                lastxml = false
+            end
+            return concat(t," ",1,n)
         end
     end
+
+    getlast = function()
+        return lastxml or ""
+    end
+
+end
+
+local stripped  do
 
     local strip = true
 
     directives.register("structures.tags.math.strip", function(v) strip = v end)
 
-    local function stripped(s)
+    stripped = function(s)
         if strip then
             local x = xmlconvert(s)
-            local at = { }
-            for c in xmlcollected(x,"*") do
-                c.at = at
-            end
+            xmlwipeattributes(x)
             return tostring(x)
         else
             return s
         end
     end
 
-    xml.mml = {
-        verbose  = verbose,
-        stripped = stripped,
-    }
+end
 
--- end
+local verbose  do
+
+    -- We could save the prepared if we do more languages but that is only relevant when
+    -- we develop so it has little gain.
+
+    local warned = false
+ -- local saved  = false
+ -- local saving = false
+
+ -- trackers.register("structures.tags.math.save",function(v)
+ --     saving = v
+ --     if saving and not saved then
+ --         saved = table.setmetatableindex("table")
+ --         luatex.registerstopactions(function() table.save(tex.jobname .. "-mms-meanings.lua",saved) end)
+ --     end
+ -- end)
+
+    verbose = function(s,l)
+        if not warned then
+            report("this feature is experimental and under construction")
+            warned = true
+        end
+        local root = xmlconvert(s)
+        if not root.error then
+            local x = xmlfirst(root,"/math")
+            if x then
+                prepare(x)
+                local meaning = tomeaning(x,l)
+             -- if saving then
+             --     saved[s][l] = meaning
+             -- end
+                return meaning
+            end
+        end
+    end
+
+end
+
+xml.mml = {
+    verbose  = verbose,
+    stripped = stripped,
+}

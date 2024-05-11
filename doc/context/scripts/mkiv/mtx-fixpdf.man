@@ -1,0 +1,57 @@
+.TH "mtx-tools" "1" "01-01-2024" "version 1.01" "Some File Related Goodies"
+.SH NAME
+ mtx-tools - Some File Related Goodies
+.SH SYNOPSIS
+.B mtxrun --script tools [
+.I OPTIONS ...
+.B ] [
+.I FILENAMES
+.B ]
+.SH DESCRIPTION
+.B Some File Related Goodies
+.SH OPTIONS
+.TP
+.B --uncompress
+uncompress using qpdf
+.TP
+.B --validate
+validate using verapdf
+.TP
+.B --check
+check verification result 
+.TP
+.B --convert
+convert using context
+.TP
+.B --compare
+compare result with original
+.TP
+.B --compactor
+use given compactor
+.TP
+.B --standard
+use given standard
+.TP
+.B --pattern
+processs files according to pattern
+.TP
+.B --silent
+suppress messages
+.TP
+.B --once
+run only once
+.TP
+.B --resolution
+use this resolution when comparing
+.SH AUTHOR
+More information about ConTeXt and the tools that come with it can be found at:
+
+
+.B "maillist:"
+ntg-context@ntg.nl / http://www.ntg.nl/mailman/listinfo/ntg-context
+
+.B "webpage:"
+http://www.pragma-ade.nl / http://tex.aanhet.net
+
+.B "wiki:"
+http://contextgarden.net

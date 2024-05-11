@@ -82,6 +82,7 @@ local binary_class      = classes.binary
 local relation_class    = classes.relation
 local open_class        = classes.open
 local close_class       = classes.close
+local variable_class    = classes.variable
 local punctuation_class = classes.punctuation
 local middle_class      = classes.middle
 local accent_class      = classes.accent
@@ -201,6 +202,8 @@ classes["end"]   = specialclasses["end"]    classnames[specialclasses["end"]  ] 
 
 callbacks.register("get_noad_class", function(n) return classnames[n] end,"provide math class name")
 
+-- inspect(classes) os.exit()
+
 local function registerprivateclass(name,parent)
     local class = parent and classes[parent] or classes[name]
     if not class then
@@ -265,6 +268,7 @@ implement {
 -- mathml
 
 local codes = allocate {
+    variable       = variable_class,    [variable_class]    = "variable",
     ordinary       = ordinary_class,    [ordinary_class]    = "ordinary",
     largeoperator  = operator_class,    [operator_class]    = "largeoperator",
     binaryoperator = binary_class,      [binary_class]      = "binaryoperator",
@@ -583,7 +587,7 @@ do
      -- registergroup("grouped")
         registergroup("unary logical")
         registergroup("whatever")
-
+        registergroup("whatever2")
 
      -- registergroup("binary linear algebra")
      -- registergroup("lambda")

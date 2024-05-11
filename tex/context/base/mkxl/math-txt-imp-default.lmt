@@ -9,6 +9,15 @@ if not modules then modules = { } end modules ['math-txt'] = {
 
 return {
 
+ -- (No) Space
+
+ ["notimes"]={
+  ["en"]=",",
+  ["sv"]=",",
+  ["nl"]=",",
+ },
+
+
  -- Structure related strings:
 
  ["and"]={
@@ -111,9 +120,9 @@ return {
   ["nl"]="kwadraad",
  },
  ["sub"]={
-  ["en"]="sub",
-  ["sv"]="nedsänkt",
-  ["nl"]="sub",
+  ["en"]="with lower index",
+  ["sv"]="med undre index",
+  ["nl"]="TODO",
  },
  ["super"]={
   ["en"]="super",
@@ -332,7 +341,7 @@ return {
 
  ["function"]={
   ["en"]="the function",
-  ["sv"]="funktionen",
+  ["sv"]="",--"funktionen",
   ["nl"]="de functie",
  },
  ["arg"]={
@@ -378,6 +387,20 @@ return {
   ["en"]="vectorproduct",
   ["sv"]="vektorprodukt",
   ["nl"]="vector produkt",
+ },
+
+-- A specific one
+ ["applyfunctionof"]={
+  ["en"]="of",
+  ["sv"]="av",
+  ["nl"]="van",
+ },
+
+-- Show nothing if we only use the "symbol"
+ ["applyfunction"]={
+  ["en"]="",
+  ["sv"]="",
+  ["nl"]="",
  },
 
 -- Operators
@@ -524,7 +547,7 @@ return {
   ["sv"]="koprodukt",
   ["nl"]="coprodukt",
  },
- ["d"]={
+ ["differential"]={
   ["en"]="d",
   ["sv"]="d",
   ["nl"]="d",
@@ -673,6 +696,11 @@ return {
   ["en"]="for all",
   ["sv"]="för alla",
   ["nl"]="voor alle",
+ },
+ ["fractionplus"]={
+  ["en"]="FRACTIONPLUS",
+  ["sv"]="TODO",
+  ["nl"]="TODO",
  },
  ["gets"]={
   ["en"]="gets",
@@ -1315,7 +1343,7 @@ return {
  },
  ["times"]={
   ["en"]="TIMES",
-  ["sv"]="multiplicerat med",
+  ["sv"]="TIMES",--"multiplicerat med",
   ["nl"]="maal",
  },
  ["to"]={

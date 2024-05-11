@@ -1671,6 +1671,10 @@
 \let\boxheight\ht
 \let\boxdepth \dp
 
+%D Because we use the variable class:
+
+\variablefam-\plustwo % obey class 7
+
 \protect \endinput
 
 % performance experiment:

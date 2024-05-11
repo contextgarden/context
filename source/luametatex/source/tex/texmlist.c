@@ -1676,7 +1676,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                 the traditional width (which is fake width + italic) becomes less and the delta is
                 added. See (**).
             */
-        HERE:
+          HERE:
             result = tex_aux_char_box(fnt, chr, att, delta, glyph_math_delimiter_subtype, flat ? targetsize : 0, style, shrink, stretch, &isscaled);
             if (flat) { 
                 /* This will be done when we have a reasonable example. */
@@ -6753,6 +6753,9 @@ static void tex_aux_finish_fenced(halfword current, halfword main_style, halfwor
     a more generic class and penalty handling the two stages are clearly separated, also variable
     wise.
 
+    We only unroll lists so don't change this without testign all places in \CONTEXT\ where we use
+    ghost nodes! 
+
 */
 
 static halfword tex_aux_unroll_noad(halfword tail, halfword l, quarterword s)
@@ -7601,7 +7604,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
     scaled current_mu = 0;
     halfword current = state->mlist;
     halfword p = temp_head;
-    halfword ghost = null;
+ // halfword ghost = null;
     int boundarylevel = 0;
     int boundaryfactor = scaling_factor;
     int nestinglevel = 0;
@@ -7653,7 +7656,11 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
             case simple_noad:
                 {
                     if (node_subtype(current) == ghost_noad_subtype) {
-                        ghost = current;
+//                        ghost = current;
+                        p = tex_aux_append_ghost(current, p, 0);
+                        recent = current; 
+                        current = node_next(current);
+                        goto WIPE;
                     }
                     /*tex
                         Here we have a wrapped list of left, middle, right and content nodes.  
@@ -8051,10 +8058,11 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
                 p = kern;
             }
         }
-        if (ghost && ! fenced && ! packedfence) {
-            p = tex_aux_append_ghost(ghost, p, 0);
-            ghost = null;
-        } else {
+     // if (ghost && ! fenced && ! packedfence) {
+     //     p = tex_aux_append_ghost(ghost, p, 0);
+     //     ghost = null;
+     // } else 
+        {
             halfword l = noad_new_hlist(current);
             if (! l) { 
                 /* curious */

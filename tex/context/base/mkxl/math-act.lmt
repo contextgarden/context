@@ -4042,6 +4042,31 @@ end
 
 do
 
+    local placeholder = {
+        width    = 0,
+        height   = 0,
+        depth    = 0,
+        commands = {
+            { "rule" , 0, 0 }
+        }
+    }
+
+    local list = { 0x2061 }
+
+    function mathtweaks.wipeweirdones(target,original,parameters)
+        local characters = target.characters
+        for i=1,#list do
+            local l = list[i]
+         -- if characters[l] then -- applyfunction
+                characters[l] = placeholder
+         -- end
+        end
+    end
+
+end
+
+do
+
     function mathtweaks.setoptions(target,original,parameters)
         local setlist   = parameters.set or parameters.list
         local resetlist = parameters.reset

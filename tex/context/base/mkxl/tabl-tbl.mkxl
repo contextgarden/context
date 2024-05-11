@@ -1829,6 +1829,15 @@
      off        \d_tabl_tabulate_hruledashsteps_local
    \relax}
 
+% \def\tabl_tabulate_hrule_inject_normal .. messes with prevdepth and needs mode
+%   {\hrule % running
+%      \s!height.5\d_tabl_tabulate_hrulethickness_local
+%      \s!depth .5\d_tabl_tabulate_hrulethickness_local
+%      \s!left    \d_tabl_tabulate_indent
+%      on         \d_tabl_tabulate_hruledashsteps_local
+%      off        \d_tabl_tabulate_hruledashsteps_local
+%    \relax}
+
 \def\tabl_tabulate_hrule_inject_colored
   {\dousecolorparameter\m_tabl_tabulate_hrule_color
    \tabl_tabulate_hrule_inject_normal}

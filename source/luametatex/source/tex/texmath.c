@@ -1124,11 +1124,15 @@ static quarterword tex_aux_set_math_char(halfword target, mathcodeval *mval, mat
 {
     halfword hmcode = tex_get_hm_code(mval->character_value);
     kernel_math_character(target) = mval->character_value;
-    if (mval->class_value == math_use_current_family_code) {
+    if (variable_family_par == -2) {
+        /*tex For those (read: context) who want to use this variable class as intended. */
+        kernel_math_family(target) = cur_fam_par_in_range ? cur_fam_par : mval->family_value;
+        node_subtype(target) = mval->class_value;
+    } else if (mval->class_value == math_use_current_family_code) {
+        /*tex For CMS chairman MS, so that he can answer a ltx question someplace. */
         kernel_math_family(target) = cur_fam_par_in_range ? cur_fam_par : mval->family_value;
         node_subtype(target) = ordinary_noad_subtype;
     } else if (mval->family_value == variable_family_par) {
-        /*tex For CMS chairman MS, so that he can answer a ltx question someplace. */
         kernel_math_family(target) = cur_fam_par_in_range ? cur_fam_par : mval->family_value;
         node_subtype(target) = mval->class_value;
     } else {

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<application>
+ <metadata>
+  <entry name="name">mtx-tools</entry>
+  <entry name="detail">Some File Related Goodies</entry>
+  <entry name="version">1.01</entry>
+ </metadata>
+ <flags>
+  <category name="basic">
+   <subcategory>
+    <flag name="uncompress"><short>uncompress using qpdf</short></flag>
+    <flag name="validate"><short>validate using verapdf</short></flag>
+    <flag name="check"><short>check verification result </short></flag>
+    <flag name="convert"><short>convert using context</short></flag>
+    <flag name="compare"><short>compare result with original</short></flag>
+    <flag name="compactor"><short>use given compactor</short></flag>
+    <flag name="standard"><short>use given standard</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="pattern"><short>processs files according to pattern</short></flag>
+    <flag name="silent"><short>suppress messages</short></flag>
+    <flag name="once"><short>run only once</short></flag>
+    <flag name="resolution"><short>use this resolution when comparing</short></flag>
+   </subcategory>
+  </category>
+ </flags>
+</application>
