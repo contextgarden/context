@@ -673,6 +673,7 @@
 		<cd:constant name='alignmentleftwidth' value='alignmentleftwidth'/>
 		<cd:constant name='alignmentrightsample' value='alignmentrightsample'/>
 		<cd:constant name='alignmentrightwidth' value='alignmentrightwidth'/>
+		<cd:constant name='alignscripts' value='alignscripts'/>
 		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='alinieretitlu'/>
 		<cd:constant name='alternative' value='alternativ'/>
@@ -954,6 +955,7 @@
 		<cd:constant name='interaction' value='interactiune'/>
 		<cd:constant name='interlinespace' value='spatiereinterliniara'/>
 		<cd:constant name='internalgrid' value='internalgrid'/>
+		<cd:constant name='interscriptfactor' value='interscriptfactor'/>
 		<cd:constant name='italicfeatures' value='italicfeatures'/>
 		<cd:constant name='italicfont' value='italicfont'/>
 		<cd:constant name='itemalign' value='itemalign'/>

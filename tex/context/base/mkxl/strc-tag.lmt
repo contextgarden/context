@@ -182,7 +182,8 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
     margintext            = { pdf = "Span",       nature = "inline"  },
     marginanchor          = { pdf = "Span",       nature = "inline"  },
 
-    math                  = { pdf = "Div",        nature = "inline",  namespace = "mathml" }, -- no display
+ -- math                  = { pdf = "Div",        nature = "inline",  namespace = "mathml" }, -- no display
+    math                  = { pdf = "Formula",    nature = "inline",  namespace = "mathml" }, -- no display
     mn                    = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
     mi                    = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
     mo                    = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
@@ -202,7 +203,7 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
     mfenced               = { pdf = "Span",       nature = "display", namespace = "mathml" },
     maction               = { pdf = "Span",       nature = "display", namespace = "mathml" },
     mmultiscripts         = { pdf = "Span",       nature = "display", namespace = "mathml" },
-    mprescripts           = { pdf = "Span",       nature = "inline",  namespace = "mathml" },
+    mprescripts           = { pdf = "Span",       nature = "mixed",   namespace = "mathml" },
 
     mstacker              = { pdf = "Span",       nature = "display" }, -- these are only internally used
     mstackertop           = { pdf = "Span",       nature = "display" }, -- these are only internally used

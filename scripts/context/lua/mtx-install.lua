@@ -104,10 +104,10 @@ local texformats = {
 }
 
 local platforms = {
- -- ["mswin"]          = "mswin",
+    ["mswin"]          = "mswin",
  -- ["windows"]        = "mswin",
- -- ["win32"]          = "mswin",
- -- ["win"]            = "mswin",
+    ["win32"]          = "mswin",
+    ["win"]            = "mswin",
     --
     ["windows"]        = "win64",
     ["windows-64"]     = "win64",

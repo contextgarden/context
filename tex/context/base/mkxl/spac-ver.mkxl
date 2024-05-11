@@ -981,14 +981,14 @@
      \ifdim\minimumstrutheight>\zeropoint
        \minimumstrutheight
      \else
-       \strutheightfactor\dimexpr\normallineheight
+       \strutheightfactor\dimexpr\normallineheight\relax
      \fi
    \relax
    \strutdp\spacingfactor\dimexpr
      \ifdim\minimumstrutdepth>\zeropoint
        \minimumstrutdepth
      \else
-       \strutdepthfactor\dimexpr\normallineheight
+       \strutdepthfactor\dimexpr\normallineheight\relax
      \fi
    \relax
    \dosetstrut}
@@ -1648,8 +1648,14 @@
 
 %D More might be added here:
 
-\def\restoreglobalinterlinespace
-  {\mutable\let\normallineheight\globalbodyfontlineheight
+% \def\restoreglobalinterlinespace
+%   {\mutable\let\normallineheight\globalbodyfontlineheight % mutable crashed at some point
+%    \bodyfontlineheight \globalbodyfontlineheight          % s we have a bug deep down
+%    \bodyfontstrutheight\globalbodyfontstrutheight
+%    \bodyfontstrutdepth \globalbodyfontstrutdepth}
+
+\permanent\protected\def\restoreglobalinterlinespace
+  {\let\normallineheight\globalbodyfontlineheight
    \bodyfontlineheight \globalbodyfontlineheight
    \bodyfontstrutheight\globalbodyfontstrutheight
    \bodyfontstrutdepth \globalbodyfontstrutdepth}

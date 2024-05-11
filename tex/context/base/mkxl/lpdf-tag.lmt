@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['lpdf-tag'] = {
 }
 
 local next, type = next, type
-local format, match, gmatch = string.format, string.match, string.gmatch
+local format, match, gmatch, find = string.format, string.match, string.gmatch, string.find
 local concat, sortedhash = table.concat, table.sortedhash
 local lpegmatch, P, S, C = lpeg.match, lpeg.P, lpeg.S, lpeg.C
 local settings_to_hash = utilities.parsers.settings_to_hash
@@ -52,6 +52,7 @@ local glyph_code          = nodecodes.glyph
 
 local a_tagged            = attributes.private('tagged')
 local a_image             = attributes.private('image')
+local a_mathblob          = attributes.private('mathblob')
 
 local nuts                = nodes.nuts
 
@@ -61,6 +62,7 @@ local register            = nodepool.register
 
 local getid               = nuts.getid
 local getattr             = nuts.getattr
+local getattrs            = nuts.getattrs
 local getprev             = nuts.getprev
 local getnext             = nuts.getnext
 local getlist             = nuts.getlist
@@ -97,7 +99,7 @@ local usedmapping         = { }
 ----- tagsplitter         = structurestags.patterns.splitter
 
 local embeddedtags        = false -- true will id all, for tracing, otherwise table
-local f_tagid             = formatters["%s-%04i"]
+local f_tagid             = formatters["%s-%04X"]
 local embeddedfilelist    = pdfarray() -- /AF crap
 
 -- for testing, not that it was ever used:
@@ -289,6 +291,9 @@ local function makeattribute(t)
     end
 end
 
+local shared = { }
+local bindex = 0
+
 local function makeelement(fulltag,parent)
     local specification = specifications[fulltag]
     local tagname       = specification.tagname
@@ -331,18 +336,57 @@ local function makeelement(fulltag,parent)
     --
     -- specification.attribute is unique
     --
-    local id = nil
     local af = nil
+    local id = nil
     if embeddedtags then
         local tagindex = specification.tagindex
         if embeddedtags == true or embeddedtags[tagname] then
             id = f_tagid(tagname,tagindex)
-            af = job.fileobjreferences.collected[id]
-            if af then
-                local r = pdfreference(af)
-                af = pdfarray { r }
-             -- embeddedfilelist[#embeddedfilelist+1] = r
+
+            -- kind of hard coded for math so this might become more flexible
+
+            local blob = specification.blob
+
+            if blob then
+                blob = mathematics.collected()[blob]
+                if blob then
+                    local hash = sha2.HEX256(blob)
+                    if hash then
+                        local index = shared[hash]
+                        if index then
+                            af = index
+                        else
+                            bindex = bindex + 1
+                            af = codeinjections.embedfile {
+                                force    = true,
+                                data     = blob,
+                                name     = f_tagid("BLOB",bindex),
+                                hash     = hash,
+                                mimetype = "application/mathml+xml",
+                                relation = "Supplement", -- bah
+                            }
+                         -- af = pdfarray { af } -- maybe also share this
+                            af = pdfreference(pdfflushobject(pdfarray { af })) -- maybe also share this
+                            shared[hash] = af
+                        end
+                    else
+                        print("unknown hash",id)
+                    end
+                else
+                    print("unknown blob",id)
+                end
+
+            else
+
+             -- af = job.fileobjreferences.collected[id]
+             -- if af then
+             --     local r = pdfreference(af)
+             --     af = pdfarray { r }
+             --  -- embeddedfilelist[#embeddedfilelist+1] = r
+             -- end
+
             end
+
         end
     end
     --
@@ -360,7 +404,7 @@ local function makeelement(fulltag,parent)
         K          = pdfreference(r),
      -- A          = a and makeattribute(a) or nil,
         A          = attributes,
-     -- Alt        = " Who cares ",
+     -- Alt        = " Who cares "
      -- ActualText = " Hi Hans ",
         AF         = af,
     }
@@ -502,14 +546,30 @@ function nodeinjections.addtags(head)
 
     else
 
+        local mblob = false
+
         local function collectranges(head,list)
+
             for n, id in nextnode, head do
                 if id == glyph_code then
                     -- maybe also disc
                     if getchar(n) ~= 0 then
-                        local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
+                        local at, blob = getattrs(n,a_tagged,a_mathblob)
+                        if not at then
+                            at = false
+                        end
+                        if blob then
+                            if blob == mblob then
+                                ranges[nofranges] = range
+                                last = at
+                            else
+                                mblob = blob
+                            end
+                        else
+                            mblob = false
+                        end
                         if last ~= at then
-                            range = { at, "glyph", n, n, list } -- attr id start stop list
+                            range = { at, "glyph", n, n, list, blob } -- attr id start stop list
                             nofranges = nofranges + 1
                             ranges[nofranges] = range
                             last = at
@@ -518,7 +578,7 @@ function nodeinjections.addtags(head)
                         end
                     end
                 elseif id == hlist_code or id == vlist_code then
-                    local at = getattr(n,a_image)
+                    local at = getattr(n,a_image) --todo: gettags
                     if at then
                         local at = getattr(n,a_tagged) or false -- false: pagebody or so, so artifact
                         nofranges = nofranges + 1
@@ -592,33 +652,56 @@ function nodeinjections.addtags(head)
     for i=1,nofranges do
 
         local range = ranges[i]
-        local attr  = range[1]
-        local id    = range[2]
-        local start = range[3]
-        local stop  = range[4]
-        local list  = range[5]
+        local mblob = false
 
-        if attr then
+    local attr  = range[1]
+    local id    = range[2]
+    local start = range[3]
+    local stop  = range[4]
+    local list  = range[5]
+    local blob  = range[6]
 
-            local specification = taglist[attr]
-            local taglist       = specification.taglist
-            local noftags       = #taglist
-            local common        = 0
-            local literal       = nil
-            local ignore        = false
+    if attr then
 
-            if top then
-                for i=1,noftags >= noftop and noftop or noftags do
-                    if top[i] == taglist[i] then
-                        common = i
-                    else
-                        break
-                    end
+        local specification = taglist[attr]
+        local taglist       = specification.taglist
+        local noftags       = #taglist
+        local common        = 0
+        local literal       = nil
+        local ignore        = false
+
+        if top then
+            for i=1,noftags >= noftop and noftop or noftags do
+                if top[i] == taglist[i] then
+                    common = i
+                else
+                    break
                 end
             end
+        end
 
-            local prev = common > 0 and elements[taglist[common]] or root
+        local prev = common > 0 and elements[taglist[common]] or root
 
+        if blob then
+            for j=common+1,noftags do
+                local tag = taglist[j]
+                local prv = elements[tag] or makeelement(tag,prev)
+                if prv == false then
+                    -- ignore this one
+                    prev   = false
+                    ignore = true
+                    break
+                elseif prv == true then
+                    -- skip this one
+                else
+                    prev = prv
+                end
+                -- this is an ugly hack but ok for now
+                if find(tag,"^math>") then
+                    break
+                end
+            end
+        else
             for j=common+1,noftags do
                 local tag = taglist[j]
                 local prv = elements[tag] or makeelement(tag,prev)
@@ -633,28 +716,32 @@ function nodeinjections.addtags(head)
                     prev = prv
                 end
             end
-            if prev then
-                literal = setstate(makecontent(start,prev,id,specification))
-            elseif ignore then
-                literal = setstate(makeignore(specification))
-            else
-                -- maybe also ignore or maybe better: comment or so
-            end
+        end
+        if prev then
+            literal = setstate(makecontent(start,prev,id,specification))
+        elseif ignore then
+            literal = setstate(makeignore(specification))
+        else
+            -- maybe also ignore or maybe better: comment or so
+        end
 
-            if literal then
-                local left,right
-                if trace_info then
-                    local name = specification.tagname
-                    if name then
-                        if not visualize then
-                            visualize = nodes.visualizers.register("tags")
-                        end
-                        left  = visualize(name)
-                        right = visualize()
+        if literal then
+            local left,right
+            if trace_info then
+                local name = specification.tagname
+                if name then
+                    if not visualize then
+                        visualize = nodes.visualizers.register("tags")
                     end
+                    if blob then
+                        name = "M " .. blob
+                    end
+                    left  = visualize(name)
+                    right = visualize()
                 end
-                inject(start,stop,list,literal,left,right)
             end
+            inject(start,stop,list,literal,left,right)
+        end
 
             top    = taglist
             noftop = noftags
@@ -852,7 +939,13 @@ function codeinjections.enabletags()
         enableaction("shipouts","structures.tags.handler")
      -- enableaction("shipouts","nodes.handlers.accessibility")
         enableaction("math","noads.handlers.tags")
-        -- maybe also textblock
+        --
+        if embeddedtags then
+            embeddedtags.math = true
+        else
+            embeddedtags = { math = true }
+        end
+        --
         if trace_tags then
             report_tags("enabling structure tags")
         end

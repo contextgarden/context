@@ -635,14 +635,21 @@ do
             -- issue that i need to look into
         else
             local specification = specifications[di.fulltag]
-            local mode = specification and specification.mode == "display" and "block" or "inline"
+            local mode
+            if specification then
+                mode = specification.mode == "display" and "block" or "inline"
+            else
+                mode = "inline"
+            end
             di.attributes = {
                 ["display"]    = mode,
                 ["xmlns:m"]    = mathmlns,
                 ["xmlns:math"] = mathmlns,
             }
             -- can be option if needed:
-            if mode == "inline" then
+            if specification.standalone then
+                di.nature = "display"
+            elseif mode == "inline" then
              -- di.nature = "mixed"  -- else spacing problem (maybe inline)
                 di.nature = "inline" -- we need to catch x$X$x and x $X$ x
             else

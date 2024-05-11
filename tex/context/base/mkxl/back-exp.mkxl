@@ -421,15 +421,6 @@
 \installsetuponlycommandhandler \??boxexport  {boxexport}
 \installsetuponlycommandhandler \??mathexport {mathexport}
 
-% \permanent\tolerant\protected\def\startboxexport[#1]%
-%   {\dowithnextbox{\strc_export_box{#1}}\vbox\bgroup}
-%
-% \permanent\protected\def\stopboxexport
-%   {\egroup}
-%
-% \def\strc_export_box#1%
-%   {\ctxlua{buffers.assign("#1",structures.tags.exportbox(\number\nextbox))}}
-
 \permanent\tolerant\protected\def\startboxexport[#S#1]%
   {\begingroup
    \ifempty{#1}%
@@ -462,8 +453,18 @@
 \permanent\protected\def\stopmathexport
   {\clf_stopcollectingmath
    \clf_processcollectedmath
-     {\boxexportparameter\c!file}
+     {\boxexportparameter\c!file}%
      {\boxexportparameter\c!buffer}%
+     {\boxexportparameter\c!n}%
+   \endgroup}
+
+\permanent\tolerant\protected\def\savemathexport[#S#1]%
+  {\begingroup
+   \setupboxexport[#1]%
+   \clf_processcollectedmath
+     {\boxexportparameter\c!file}%
+     {\boxexportparameter\c!buffer}%
+     {\boxexportparameter\c!n}%
    \endgroup}
 
 % Defined at the \LUA\ end:

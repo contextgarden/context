@@ -7906,7 +7906,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
             }
             if (current_left_slack) {
                 kern = tex_new_kern_node(-current_left_slack, left_math_slack_kern_subtype);
-                tex_attach_attribute_list_copy(kern, p);
+                tex_attach_attribute_list_copy(kern, current);
                 /* tex_couple_nodes(node_prev(p), kern); */ /* close to the molecule */
                 /* tex_couple_nodes(kern, p);            */ /* close to the molecule */
                 if (recent_subtype >= 0 && tex_math_has_class_option(recent_subtype, no_post_slack_class_option)) {
@@ -8088,7 +8088,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
         if (p == temp_head && recent_left_slack) {
             halfword kern = tex_new_kern_node(-recent_left_slack, left_math_slack_kern_subtype);
             halfword head = node_next(temp_head);
-            tex_attach_attribute_list_copy(kern, p);
+            tex_attach_attribute_list_copy(kern, head);
             tex_couple_nodes(kern, head);
             node_next(temp_head) = kern;
             if (tracing_math_par >= 2) {

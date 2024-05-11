@@ -2350,7 +2350,7 @@ local finalize  do
             local contentsobj = content ~= "" and pdfflushstreamobject(content,false,true) or false -- empty /Contents are forbidden
 
             pageattributes.Type      = pdf_page
-            pageattributes.Contents  = contentsobj and pdfreference(contentsobj)
+            pageattributes.Contents  = contentsobj and pdfreference(contentsobj) or nil
             pageattributes.Resources = pageresources
          -- pageattributes.Resources = pdfreference(pdfflushobject(pageresources))
          -- pageattributes.MediaBox  = bbox

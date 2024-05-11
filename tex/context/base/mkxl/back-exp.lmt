@@ -2102,12 +2102,16 @@ local htmltemplate <const> = [[
         return concat(result,"\n\n")
     end
 
-    local function allcontent(tree)
+    local function allcontent(tree,nocheck)
         local result = { }
         local data   = tree.data
-        for i=1,#data do
-            if data[i].tg ~= "document" then
-                data[i] = { }
+        if nocheck then
+            -- maybe mathml
+        else
+            for i=1,#data do
+                if data[i].tg ~= "document" then
+                    data[i] = { }
+                end
             end
         end
         flushtree(result,tree.data,"display") -- we need to collect images
@@ -2229,7 +2233,7 @@ local htmltemplate <const> = [[
       * lpeg.P(" ")^0 )^1 )
 
 
-    local classes = table.setmetatableindex(function(t,k)
+    local classes = setmetatableindex(function(t,k)
         local v = concat(lpegmatch(p_splitter,k,1,{})," ")
         t[k] = v
         return v
@@ -2407,7 +2411,9 @@ local htmltemplate <const> = [[
         wrapups.finalizetree(tree)
     end
 
-    local function localexport(head)
+    local notnamespaced = setmetatableindex(function(t,k) t[k] = k return k end)
+
+    local function localexport(head,simple)
         starttiming(treehash)
 
         local saved_treestack    = treestack
@@ -2430,13 +2436,29 @@ local htmltemplate <const> = [[
         finishexport()
         wrapuptree(tree)
 
-     -- tree.data = tree.data[1].data
+        local result
 
-        local result = concat {
-            wholepreamble(true,true),
-            allcontent(tree),
-        }
-
+        if simple then
+            while true do
+                local d = tree.data[1]
+                if not d then
+                    return
+                elseif d.tg == simple then
+                    local ns   = namespaced
+                    namespaced = notnamespaced
+                    result = allcontent(tree,true)
+                    namespaced = ns
+                    break
+                else
+                    tree.data = d.data
+                end
+            end
+        else
+            result = concat {
+                wholepreamble(true),
+                allcontent(tree),
+            }
+        end
         treestack    = saved_treestack
         nesting      = saved_nesting
         currentdepth = saved_currentdepth

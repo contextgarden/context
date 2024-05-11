@@ -285,8 +285,10 @@ end
 
 lpdf.registerdocumentfinalizer(flushembeddedfiles,"embeddedfiles")
 
+-- relation: Supplement, Data, Source, Alternative, Data
+
 function codeinjections.embedfile(specification)
-    if enabled then
+    if enabled or specification.force then
         local data      = specification.data
         local filename  = specification.file
         local name      = specification.name or ""
@@ -297,6 +299,7 @@ function codeinjections.embedfile(specification)
         local filetype  = specification.filetype
         local compress  = specification.compress
         local mimetype  = specification.mimetype or specification.mime
+        local relation  = specification.relation or "Unspecified"
         if filename == "" then
             filename = nil
         end
@@ -371,7 +374,7 @@ function codeinjections.embedfile(specification)
             UF             = pdfunicode(savename),
             EF             = pdfdictionary { F = pdfreference(f) },
             Desc           = title ~= "" and pdfunicode(title) or nil,
-            AFRelationship = pdfconstant("Unspecified"), -- Supplement, Data, Source, Alternative, Data
+            AFRelationship = pdfconstant(relation),
         }
         local r = pdfreference(pdfflushobject(d))
         filestreams[hash] = r
