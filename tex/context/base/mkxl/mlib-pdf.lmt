@@ -123,30 +123,82 @@ end
 
 local getbendtolerance = metapost.getbendtolerance
 
-local function curved(ith,pth,tolerance) --- still better than the build in
-    local d = pth.left_x - ith.right_x
-    local b = abs(ith.right_x - ith.x_coord - d)
-    if b <= tolerance then
-        b = abs(pth.x_coord - pth.left_x - d)
-        if b <= tolerance then
-            d = pth.left_y - ith.right_y
-            b = abs(ith.right_y - ith.y_coord - d)
-            if b <= tolerance then
-                b = abs(pth.y_coord - pth.left_y - d)
-                if b <= tolerance then
--- print(tolerance,pth.curved,false)
-                    return false
-                end
-            end
-        end
-    end
--- print(tolerance,pth.curved,true)
-    return true
-end
-
 -- local function curved(ith,pth,tolerance) --- still better than the build in
---     return pth.curved
+--     local d = pth.left_x - ith.right_x
+--     local b = abs(ith.right_x - ith.x_coord - d)
+--     if b <= tolerance then
+--         b = abs(pth.x_coord - pth.left_x - d)
+--         if b <= tolerance then
+--             d = pth.left_y - ith.right_y
+--             b = abs(ith.right_y - ith.y_coord - d)
+--             if b <= tolerance then
+--                 b = abs(pth.y_coord - pth.left_y - d)
+--                 if b <= tolerance then
+--                     return false
+--                 end
+--             end
+--         end
+--     end
+--     return true
 -- end
+
+-- The final two tests are for the case when the control point lie on the other side
+-- of the other point (so to say). One could use a different factor in front of the
+-- parentheses, but I have not managed to find it (there are two control points, so
+-- it might be complicated in the end). Here we only test if it is on the other side
+-- of the other point. If so, we mark it as curve. Thus, if this is not the case,
+-- then the control points lie between the points, and we should be safe.
+
+local function curved(ith,pth,tolerance)
+-- if true then return true end
+-- if true then return pth.curved end
+    local v1x = ith.right_x - ith.x_coord
+    local v1y = ith.right_y - ith.y_coord
+    local v2x = pth.left_x - pth.x_coord
+    local v2y = pth.left_y - pth.y_coord
+    local eps = abs(v1x * v2y - v2x * v1y)
+    -- print("XYZ",eps,tolerance)
+    if eps > tolerance then
+-- print(1,pth.curved,true)
+        return true
+    end
+    local v3x = pth.x_coord - ith.x_coord
+    local v3y = pth.y_coord - ith.y_coord
+    eps = abs(v3x * v2y - v2x * v3y)
+    -- print("ZYX",eps,tolerance)
+    if eps > tolerance then
+-- print(2,pth.curved,true)
+        return true
+    end
+    eps = abs(v3x * v1y - v1x * v3y)
+    -- print("ABC",eps,tolerance)
+    if eps > tolerance then
+-- print(3,pth.curved,true)
+        return true
+    end
+    --
+    eps = v1x * v3x + v1y * v3y -- v1 \cdot v3 = |v1|*|v3|cos([v1,v3])
+    if eps < 0 then
+-- print(3,pth.curved,true)
+        return true
+    end
+    eps = v2x * v3x + v2y * v3y -- v2 \cdot v3 = |v2|*|v3|cos([v2,v3])
+    if eps > 0 then
+-- print(4,pth.curved,true)
+        return true
+    end
+    eps = (v1x * v1x + v1y * v1y) - (v3x * v3x + v3y * v3y) -- checking lengths
+    if eps > 0 then
+-- print(5,pth.curved,true)
+        return true
+    end
+    eps = (v2x * v2x + v2y * v2y) - (v3x * v3x + v3y * v3y) -- checking lengths
+    if eps > 0 then
+-- print(6,pth.curved,true)
+        return true
+    end
+    return false
+end
 
 local function flushnormalpath(path, t, open, tolerance)
     local pth, ith, nt
@@ -162,8 +214,8 @@ local function flushnormalpath(path, t, open, tolerance)
         pth = path[i]
         if not ith or pth.state == 1 then
             t[nt] = f_m(pth.x_coord,pth.y_coord)
-        elseif curved(ith,pth,tolerance) then
--- elseif pth.curved then
+--         elseif curved(ith,pth,tolerance) then
+elseif pth.curved then
             t[nt] = f_c(ith.right_x,ith.right_y,pth.left_x,pth.left_y,pth.x_coord,pth.y_coord)
         else
             t[nt] = f_l(pth.x_coord,pth.y_coord)
@@ -175,8 +227,8 @@ local function flushnormalpath(path, t, open, tolerance)
         local one = path[1]
         if one.state == 1 then
             t[nt] = f_m(one.x_coord,one.y_coord)
-        elseif curved(pth,one,tolerance) then
--- if one.curved then
+--         elseif curved(pth,one,tolerance) then
+elseif one.curved then
             t[nt] = f_c(pth.right_x,pth.right_y,one.left_x,one.left_y,one.x_coord,one.y_coord)
         else
             t[nt] = f_l(one.x_coord,one.y_coord)
@@ -208,8 +260,8 @@ local function flushconcatpath(path, t, open, tolerance, transform)
         pth = path[i]
         if not ith or pth.state == 1 then
             t[nt] = f_m(mpconcat(pth.x_coord,pth.y_coord))
-        elseif curved(ith,pth,tolerance) then
--- elseif pth.curved then
+--         elseif curved(ith,pth,tolerance) then
+elseif pth.curved then
             local a, b = mpconcat(ith.right_x,ith.right_y)
             local c, d = mpconcat(pth.left_x,pth.left_y)
             t[nt] = f_c(a,b,c,d,mpconcat(pth.x_coord,pth.y_coord))
@@ -223,8 +275,8 @@ local function flushconcatpath(path, t, open, tolerance, transform)
         local one = path[1]
         if one.state == 1 then
             t[nt] = f_m(one.x_coord,one.y_coord)
-        elseif curved(pth,one,tolerance) then
--- if one.curved then
+--         elseif curved(pth,one,tolerance) then
+elseif one.curved then
             local a, b = mpconcat(pth.right_x,pth.right_y)
             local c, d = mpconcat(one.left_x,one.left_y)
             t[nt] = f_c(a,b,c,d,mpconcat(one.x_coord, one.y_coord))

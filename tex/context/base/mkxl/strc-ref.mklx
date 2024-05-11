@@ -1416,10 +1416,7 @@
      \resetinteractionparameter\c!color
    \fi
    \ifx\currentreferenceformatlabel\wildcardsymbol
-      \edef\currentreferenceformatlabel{\autoreferencelabeltext}%
-   \fi
-   \ifx\currentreferenceformatautocase\v!yes
-     \setcharactercleaning[1]%
+      \let\currentreferenceformatlabel\autoreferencelabeltext
    \fi
    \ifempty\currentreferenceformatlabel
      \defaultleftreferencetoks {\referenceformatparameter\c!text}%
@@ -1440,10 +1437,15 @@
    %
    \enforced\lettonothing\leftofreferencecontent
    \enforced\lettonothing\rightofreferencecontent
+   %
+   \ifx\currentreferenceformatautocase\v!yes
+     \setcharactercleaning[1]%
+   \fi
    \strc_references_pickup_goto}
 
-\permanent\protected\def\autoreferencelabeltext
-  {\clf_getcurrentreferencemetadata{name}}
+\permanent\def\autoreferencelabeltext
+%   {\clf_getcurrentreferencemetadata{name}}
+  {\clf_getcurrentreferencelabel}
 
 % \starttext
 %     \definereferenceformat[inxx]  [left=(,right=),text=txt]

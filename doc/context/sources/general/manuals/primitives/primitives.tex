@@ -9907,6 +9907,7 @@ is the same as \prm {edivide}.
 \startbuffer
 \the\dimexpr .4999pt                     : 2 \relax            =.24994pt
 \the\dimexpr .4999pt                     / 2 \relax            =.24995pt
+\the\dimexpr .4999pt                     ; 2 \relax            =.00002pt
 \scratchdimen.4999pt \divide \scratchdimen 2 \the\scratchdimen =.24994pt
 \scratchdimen.4999pt \edivide\scratchdimen 2 \the\scratchdimen =.24995pt
 \scratchdimen 4999pt \rdivide\scratchdimen 2 \the\scratchdimen =2500.0pt
@@ -9914,6 +9915,7 @@ is the same as \prm {edivide}.
 
 \the\numexpr   1001                       : 2 \relax             =500
 \the\numexpr   1001                       / 2 \relax             =501
+\the\numexpr   1001                       ; 2 \relax             =1
 \scratchcounter1001 \divide \scratchcounter 2 \the\scratchcounter=500
 \scratchcounter1001 \edivide\scratchcounter 2 \the\scratchcounter=501
 \scratchcounter1001 \rdivide\scratchcounter 2 \the\scratchcounter=501
@@ -9924,6 +9926,9 @@ is the same as \prm {edivide}.
 \startlines
 \getbuffer
 \stoplines
+
+The integer division \type{:} and modulo \type {;} are an addition to the \ETEX\
+compatible expressions.
 
 \stopnewprimitive
 

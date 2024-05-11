@@ -64,6 +64,7 @@ return {
         "paired", "tripled",
         "unitcircle", "fulldiamond", "unitdiamond", "fullsquare", "unittriangle", "fulltriangle",
         "unitoctagon", "fulloctagon", "unithexagon", "fullhexagon",
+        "arc",
      -- "halfcircle", "quartercircle",
         "llcircle", "lrcircle", "urcircle", "ulcircle",
         "tcircle", "bcircle", "lcircle", "rcircle",

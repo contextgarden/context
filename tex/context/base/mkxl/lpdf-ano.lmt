@@ -1446,7 +1446,10 @@ local function build(levels,start,parent,method,nested)
                     end
                     return i, n, first, last
                 else
-                    report_bookmarks("confusing level change at level %a around %a",level,title)
+                    if i > 1 and block == levels[i-1].block then
+                        -- or maybe never report
+                        report_bookmarks("confusing level change at level %a around %a",level,title)
+                    end
                     startlevel = level
                 end
             end

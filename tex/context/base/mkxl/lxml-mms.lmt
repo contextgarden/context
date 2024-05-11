@@ -23,12 +23,16 @@ if not modules then modules = { } end modules ['lxml-mms'] = {
 -- record: we are not involved in accesibility projects, so we might get some things
 -- wrong.
 --
--- This is experimental code that will be optimized. Also, some of it can be a bit
--- more general (shared) but we do that once we're done.
-
 -- Timestamp: yet another entertaining drum track by Gavin Harrison "Pick Up The
 -- Pieces" | Zildjian 400th UK (posted 2024/2/5) - three weeks before a PT concert
 -- (YT: "The Pineapple Thief - It Leads to This).
+--
+-- While we worked on this we decovered Mohini Dey so that's another timestamp on
+-- this development (one of the Rick Beato interviews).
+--
+-- This is experimental code that will be optimized. Also, some of it can be a bit
+-- but we do that once we're done. In the end it might look simple but quite a bit
+-- of exploration was involved.
 
 local tonumber, tostring, type, next = tonumber, tostring, type, next
 local concat = table.concat
@@ -113,7 +117,7 @@ local prepare  do
                             local at    = ai.at
                             local class = at.mathclass
                             if  at.mathsymbolic
-or at.mathgroup == "postfix operator"
+                             or at.mathgroup == "postfix operator"
                             then -- has to come before at.mathfunction check
                                 at.checkfunction = true -- saves a check later
                                 if closed then
@@ -127,7 +131,7 @@ or at.mathgroup == "postfix operator"
                                 block = false -- registered functions like f and g
                                 times = true
                                 expandtimesone(ai,a,i)
-                            elseif     at.mathfunction
+                            elseif at.mathfunction
                              -- or at.mathfractionstack -- ADDED
                                 or at.mathfunctionstack
                                 or class == "integral"
@@ -215,7 +219,12 @@ or at.mathgroup == "postfix operator"
                                     block = false
                                     times = true
                                 end
-                            elseif at.mathfractionstack or tg == "mroot" or tg == "mfrac" or tg == "msqrt" or at.mathsymbolic then
+                            elseif at.mathfractionstack
+                                or tg == "mroot"
+                                or tg == "mfrac"
+                                or tg == "msqrt"
+                                or at.mathsymbolic
+                            then
                                 if closed then
                                     at.mathtimes = 5.1
                                     closed = false
@@ -597,12 +606,10 @@ local tomeaning, getlast  do
                 n = n + 1 ; t[n] = getlabel(fenced.tag .. ":fence")
                 at.mathignore = "true"
                 expandone(ai)
-
-local aa = all and all[i+1]
-if aa then
-    aa.at.mathnogroup = true
-end
-
+                local aa = all and all[i+1]
+                if aa then
+                    aa.at.mathnogroup = true
+                end
             else
                 expandone(ai)
             end
@@ -630,11 +637,11 @@ end
                     if na > 0 then
                         local subfence = hasmiddle(a)
                         if at.mathfunctionstack then
-if at.mathfunctionstack then
-    n = n + 1 ; t[n] = getlabel(at.mathfunctionstack)
-else
-                expandsymbol(c)
-end
+                            if at.mathfunctionstack then
+                                n = n + 1 ; t[n] = getlabel(at.mathfunctionstack)
+                            else
+                                expandsymbol(c)
+                            end
                             at.mathnogroup = "true"
                         else
                             local mfs = at.mathfractionstack -- maybe also check for tg == "mfrac"
@@ -664,7 +671,7 @@ end
                             local s = getlabel(fenced.tag)
                             n = n + 1 ; t[n] = getlabel("optional begin")
                             if s == "" then
-                                n = n + 1 ; t[n] = getlabel("fenced")
+                                n = n + 1 ; t[n] = getlabel("begin fenced")
                             else
                                 n = n + 1 ; t[n] = s
                             end
@@ -726,10 +733,10 @@ end
                         --
                         if fenced then
                             local s = getlabel(fenced.tag)
-                            n = n + 1 ; t[n] = getlabel("end")
                             if s == "" then
-                                n = n + 1 ; t[n] = getlabel("fenced")
+                                n = n + 1 ; t[n] = getlabel("end fenced")
                             else
+                                n = n + 1 ; t[n] = getlabel("end")
                                 n = n + 1 ; t[n] = s
                             end
                         elseif isgroup then

@@ -2201,13 +2201,40 @@ implement {
 
 function references.getcurrentmetadata(tag)
     local data = currentreference and currentreference.i
-    return data and data.metadata and data.metadata[tag]
+    if data then
+        local entry = data.metadata
+        local value = entry[tag]
+        if value then
+            return value
+        end
+    end
 end
 
 implement {
     name      = "getcurrentreferencemetadata",
     actions   = { references.getcurrentmetadata, context },
     arguments = "string",
+}
+
+function references.getcurrentlabel()
+    local data = currentreference and currentreference.i
+    if data then
+        local entry = data.titledata
+        local value = entry.label
+        if value then
+            return value
+        end
+        local entry = data.metadata
+        local value = entry[tag]
+        if value then
+            return value
+        end
+    end
+end
+
+implement {
+    name    = "getcurrentreferencelabel",
+    actions = { references.getcurrentlabel, context },
 }
 
 local function currentmetadata(tag)

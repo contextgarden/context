@@ -21,8 +21,6 @@
 
 */
 
-# include "mpconfig.h"
-
 # include "mp.h"
 
 /*tex
@@ -82,7 +80,7 @@ static const char *mplib_fill_fields[] = {
     "pen", "color",
     "linejoin", "miterlimit",
     "prescript", "postscript",
-    "stacking",
+    "stacking", "curvature",
     NULL
 };
 
@@ -93,7 +91,7 @@ static const char *mplib_stroked_fields[] =  {
     "linejoin", "miterlimit", "linecap",
     "dash",
     "prescript", "postscript",
-    "stacking",
+    "stacking", "curvature",
     NULL
 };
 
@@ -445,7 +443,7 @@ inline static mp_edge_object **mplib_aux_is_figure(lua_State *L, int n)
     return NULL;
 }
 
-inline static mp_graphic_object **mplib_aux_is_gr_object(lua_State *L, int n)
+inline static mp_graphic_object **mplib_aux_is_graphic_object(lua_State *L, int n)
 {
     mp_graphic_object **p = (mp_graphic_object **) lua_touserdata(L, n);
     if (p && lua_getmetatable(L, n)) {
@@ -487,7 +485,7 @@ static void mplib_aux_initialize_lua(lua_State *L)
     mplib_values_knot[mp_end_cycle_knot] = lua_key_index(end_cycle);
 }
 
-static void mplib_aux_push_pentype(lua_State *L, mp_gr_knot h)
+static void mplib_aux_push_pentype(lua_State *L, mp_graphic_knot h)
 {
     if (h && h == h->next) {
         lua_push_value_at_key(L, type, elliptical);
@@ -1093,22 +1091,78 @@ static int mplib_scan_property(lua_State *L)
 }
 
 /*tex
-    A circle has 8 points and a square 4 so let's just start with 8 slots in the table.
+    A circle has 8 points and a square 4 so let's just start with 8 slots in the table. 
 */
 
-static int aux_is_curved_gr(mp_gr_knot ith, mp_gr_knot pth, lua_Number tolerance)
+// static int aux_is_curved_gr(mp_graphic_knot ith, mp_graphic_knot pth, lua_Number tolerance)
+// {
+//     lua_Number d = pth->left_x - ith->right_x;
+//     if (fabs(ith->right_x - ith->x_coord - d) <= tolerance && fabs(pth->x_coord - pth->left_x - d) <= tolerance) {
+//         d = pth->left_y - ith->right_y;
+//         if (fabs(ith->right_y - ith->y_coord - d) <= tolerance && fabs(pth->y_coord - pth->left_y - d) <= tolerance) {
+//             return 0;
+//         }
+//     }
+//     return 1;
+// }
+
+/*tex 
+
+The first three tests are okay for most cases, but control points can run ourside the natural 
+boundingbox of the path. So we need two more tests. The final two tests are for the case when the 
+control point lie on the other side of the other point (so to say). One could use a different 
+factor in front of the parentheses, but I have not managed to find it (there are two control 
+points, so t might be complicated in the end). Here we only test if it is on the other side
+of the other point. If so, we mark it as curve. Thus, if this is not the case, then the control 
+points lie between the points, and we should be safe.
+
+We (MS & HH) dis lots of tests and eventually decided that adding |withcurvature| made sense, 
+if only for experimenting and documentation. The current solution is different from what we had 
+before (pre March 2024). 
+
+*/
+
+static int aux_is_curved_gr(mp_graphic_knot ith, mp_graphic_knot pth, lua_Number tolerance)
 {
-    lua_Number d = pth->left_x - ith->right_x;
-    if (fabs(ith->right_x - ith->x_coord - d) <= tolerance && fabs(pth->x_coord - pth->left_x - d) <= tolerance) {
-        d = pth->left_y - ith->right_y;
-        if (fabs(ith->right_y - ith->y_coord - d) <= tolerance && fabs(pth->y_coord - pth->left_y - d) <= tolerance) {
-            return 0;
-        }
+    lua_Number v1x, v1y, v2x, v2y, v3x, v3y, eps;
+    v1x = ith->right_x - ith->x_coord;
+    v1y = ith->right_y - ith->y_coord;
+    v2x = pth->left_x  - pth->x_coord;
+    v2y = pth->left_y  - pth->y_coord;
+    eps = fabs(v1x*v2y - v2x*v1y);
+    if (eps > tolerance) {
+        return 1;
+    } 
+    v3x = pth->x_coord - ith->x_coord;
+    v3y = pth->y_coord - ith->y_coord;
+    eps = fabs(v3x*v2y - v2x*v3y);
+    if (eps > tolerance) {
+        return 1;
+    } 
+    eps = fabs(v3x*v1y - v1x*v3y);
+    if (eps > tolerance) {
+        return 1;
+    } 
+    eps = v1x * v3x + v1y * v3y; /* \im { v__1 \cdot v__3 = |v__1| \times |v__3|\times cos([v__1,v__3]) } */
+    if (eps < 0) {
+        return 1;
     }
-    return 1;
+    eps = v2x * v3x + v2y * v3y; /* \im { v__2 \cdot v__3 = |v__2| \times |v__3|\times cos([v__2,v__3]) } */
+    if  (eps > 0) {
+        return 1;
+    }
+    eps = (v1x * v1x + v1y * v1y) - (v3x * v3x + v3y * v3y) ; /* checking lengths */
+    if (eps > 0) {
+        return 1;
+    }
+    eps = (v2x * v2x + v2y * v2y) - (v3x * v3x + v3y * v3y); /* checking lengths */
+    if (eps > 0) {
+        return 1;
+    }
+    return 0;
 }
 
-static int aux_is_duplicate_gr(mp_gr_knot pth, mp_gr_knot nxt, lua_Number tolerance)
+static int aux_is_duplicate_gr(mp_graphic_knot pth, mp_graphic_knot nxt, lua_Number tolerance)
 {
     return (fabs(pth->x_coord - nxt->x_coord) <= tolerance && fabs(pth->y_coord - nxt->y_coord) <= tolerance);
 }
@@ -1118,30 +1172,30 @@ static int aux_is_duplicate_gr(mp_gr_knot pth, mp_gr_knot nxt, lua_Number tolera
 // -68.031485 2.83464 l
 // -68.031485 2.83464 -68.031485 -2.83464 -68.031485 -2.83464 c
 
-static void mplib_aux_push_path(lua_State *L, mp_gr_knot h, int ispen, lua_Number bendtolerance, lua_Number movetolerance)
+static void mplib_aux_push_path(lua_State *L, mp_graphic_knot h, int ispen, lua_Number bendtolerance, lua_Number movetolerance, int curvature)
 {
     if (h) {
         int i = 0;
-        mp_gr_knot p = h;
-        mp_gr_knot q = h;
+        mp_graphic_knot p = h;
+        mp_graphic_knot q = h;
         int iscycle = 1;
+        curvature = curvature == mp_always_curvature_code;
         lua_createtable(L, ispen ? 1 : MPLIB_PATH_SIZE, ispen ? 2 : 1);
         do {
-            mp_gr_knot n = p->next;
+            mp_graphic_knot n = p->next;
             int lt = p->left_type;
             int rt = p->right_type;
             if (ispen) {
                 lua_createtable(L, 0, 6);
-         // } else if (i > 0 && p != h && aux_is_duplicate_gr(p, n, movetolerance) && ! aux_is_curved_gr(p, n, bendtolerance) ) {
-            } else if (i > 0 && p != h && n != h && aux_is_duplicate_gr(p, n, movetolerance) && ! aux_is_curved_gr(p, n, bendtolerance) ) {
+            } else if (i > 0 && p != h && n != h && aux_is_duplicate_gr(p, n, movetolerance) && (curvature || aux_is_curved_gr(p, n, bendtolerance)) ) {
                 n->left_x = p->left_x;
                 n->left_y = p->left_y;
                 goto NEXTONE;
             } else {
                 int ln = lt != mp_explicit_knot;
                 int rn = rt != mp_explicit_knot;
-                int ic = i > 0 && aux_is_curved_gr(q, p, bendtolerance);
                 int st = p->state;
+                int ic = curvature || (i > 0 && aux_is_curved_gr(q, p, bendtolerance));
                 lua_createtable(L, 0, 6 + (ic ? 1 : 0) + (ln ? 1 : 0) + (rn ? 1 : 0) + (st ? 1: 0));
                 if (ln && valid_knot_type(lt)) {
                     lua_push_svalue_at_key(L, left_type, mplib_values_knot[lt]);
@@ -1171,7 +1225,7 @@ static void mplib_aux_push_path(lua_State *L, mp_gr_knot h, int ispen, lua_Numbe
             q = p;
             p = n;
         } while (p && p != h);
-        if (iscycle && i > 1 && aux_is_curved_gr(q, h, bendtolerance)) {
+        if (iscycle && i > 1 && (curvature || aux_is_curved_gr(q, h, bendtolerance))) {
             lua_rawgeti(L, -1, 1);
             lua_push_boolean_at_key(L, curved, 1);
             lua_pop(L, 1);
@@ -1615,7 +1669,7 @@ static int mplib_new(lua_State *L)
         options->extensions      = 0 ;
         options->utf8_mode       = 0;
         options->text_mode       = 0;
-        options->show_mode      = 0;
+        options->show_mode       = 0;
         options->halt_on_error   = 0;
         options->find_file       = mplib_aux_find_file;
         options->run_script      = mplib_aux_run_script;
@@ -2395,7 +2449,7 @@ static int mplib_figure_collect(lua_State *L)
 {
     struct mp_edge_object **hh = mplib_aux_is_figure(L, 1);
     if (*hh) {
-        mp_gr_toss_objects(*hh);
+        mp_graphic_toss_objects(*hh);
         *hh = NULL;
     }
     return 0;
@@ -2543,9 +2597,9 @@ static int mplib_figure_bounds(lua_State *L)
 
 static int mplib_object_collect(lua_State *L)
 {
-    struct mp_graphic_object **hh = mplib_aux_is_gr_object(L, 1);
+    struct mp_graphic_object **hh = mplib_aux_is_graphic_object(L, 1);
     if (*hh) {
-        mp_gr_toss_object(*hh);
+        mp_graphic_toss_object(*hh);
         *hh = NULL;
     }
     return 0;
@@ -2553,7 +2607,7 @@ static int mplib_object_collect(lua_State *L)
 
 static int mplib_object_tostring(lua_State *L)
 {
-    struct mp_graphic_object **hh = mplib_aux_is_gr_object(L, 1);
+    struct mp_graphic_object **hh = mplib_aux_is_graphic_object(L, 1);
     lua_pushfstring(L, "<mp.object %p>", *hh);
     return 1;
 }
@@ -2563,11 +2617,11 @@ static int mplib_object_tostring(lua_State *L)
 # define aspect_default 1.0
 # define eps            0.0001
 
-static double mplib_aux_coord_range_x(mp_gr_knot h, double dz)
+static double mplib_aux_coord_range_x(mp_graphic_knot h, double dz)
 {
     double zlo = 0.0;
     double zhi = 0.0;
-    mp_gr_knot f = h;
+    mp_graphic_knot f = h;
     while (h) {
         double z = h->x_coord;
         if (z < zlo) {
@@ -2595,11 +2649,11 @@ static double mplib_aux_coord_range_x(mp_gr_knot h, double dz)
     return (zhi - zlo <= dz) ? aspect_bound : aspect_default;
 }
 
-static double mplib_aux_coord_range_y(mp_gr_knot h, double dz)
+static double mplib_aux_coord_range_y(mp_graphic_knot h, double dz)
 {
     double zlo = 0.0;
     double zhi = 0.0;
-    mp_gr_knot f = h;
+    mp_graphic_knot f = h;
     while (h) {
         double z = h->y_coord;
         if (z < zlo) {
@@ -2629,13 +2683,13 @@ static double mplib_aux_coord_range_y(mp_gr_knot h, double dz)
 
 static int mplib_object_peninfo(lua_State *L)
 {
-    struct mp_graphic_object **hh = mplib_aux_is_gr_object(L, -1);
+    struct mp_graphic_object **hh = mplib_aux_is_graphic_object(L, -1);
     if (! *hh) {
         lua_pushnil(L);
         return 1;
     } else {
-        mp_gr_knot p = NULL;
-        mp_gr_knot path = NULL;
+        mp_graphic_knot p = NULL;
+        mp_graphic_knot path = NULL;
         switch ((*hh)->type) { 
             case mp_fill_code:
             case mp_stroked_code:
@@ -2717,7 +2771,7 @@ static void mplib_aux_mplib_push_fields(lua_State* L, const char **fields)
 
 static int mplib_gettype(lua_State *L)
 {
-    struct mp_graphic_object **hh = mplib_aux_is_gr_object(L, 1);
+    struct mp_graphic_object **hh = mplib_aux_is_graphic_object(L, 1);
     if (*hh) {
         lua_pushinteger(L, (*hh)->type);
     } else {
@@ -2743,7 +2797,7 @@ static int mplib_getobjecttypes(lua_State* L)
 static int mplib_getfields(lua_State *L)
 {
     if (lua_type(L, 1) == LUA_TUSERDATA) {
-        struct mp_graphic_object **hh = mplib_aux_is_gr_object(L, 1);
+        struct mp_graphic_object **hh = mplib_aux_is_graphic_object(L, 1);
         if (*hh) {
             const char **fields;
             switch ((*hh)->type) {
@@ -2903,11 +2957,11 @@ static void mplib_aux_push_dash(lua_State *L, struct mp_shape_object *h)
 static void mplib_aux_shape(lua_State *L, const char *s, struct mp_shape_object *h, lua_Number bendtolerance, lua_Number movetolerance)
 {
     if (lua_key_eq(s, path)) {
-        mplib_aux_push_path(L, h->path, MPLIB_PATH, bendtolerance, movetolerance);
+        mplib_aux_push_path(L, h->path, MPLIB_PATH, bendtolerance, movetolerance, h->curvature);
     } else if (lua_key_eq(s, htap)) {
-        mplib_aux_push_path(L, h->htap, MPLIB_PATH, bendtolerance, movetolerance);
+        mplib_aux_push_path(L, h->htap, MPLIB_PATH, bendtolerance, movetolerance, h->curvature);
     } else if (lua_key_eq(s, pen)) {
-        mplib_aux_push_path(L, h->pen, MPLIB_PEN, bendtolerance, movetolerance);
+        mplib_aux_push_path(L, h->pen, MPLIB_PEN, bendtolerance, movetolerance, h->curvature);
         /* pushed in the table at the top */
         mplib_aux_push_pentype(L, h->pen);
     } else if (lua_key_eq(s, color)) {
@@ -2918,6 +2972,8 @@ static void mplib_aux_shape(lua_State *L, const char *s, struct mp_shape_object 
         lua_pushnumber(L, (lua_Number) h->linecap);
  // } else if (lua_key_eq(s, stacking)) {
  //     lua_pushinteger(L, (lua_Integer) h->stacking);
+ // } else if (lua_key_eq(s, curvature)) {
+ //     lua_pushnumber(L, (lua_Number) h->curvature);
     } else if (lua_key_eq(s, miterlimit)) {
         lua_pushnumber(L, h->miterlimit);
     } else if (lua_key_eq(s, prescript)) {
@@ -2934,7 +2990,7 @@ static void mplib_aux_shape(lua_State *L, const char *s, struct mp_shape_object 
 static void mplib_aux_start(lua_State *L, const char *s, struct mp_start_object *h, lua_Number bendtolerance, lua_Number movetolerance)
 {
     if (lua_key_eq(s, path)) {
-        mplib_aux_push_path(L, h->path, MPLIB_PATH, bendtolerance, movetolerance);
+        mplib_aux_push_path(L, h->path, MPLIB_PATH, bendtolerance, movetolerance, -1);
     } else if (lua_key_eq(s, prescript)) {
         lua_pushlstring(L, h->pre_script, h->pre_length);
     } else if (lua_key_eq(s, postscript)) {
@@ -2957,7 +3013,7 @@ static void mplib_aux_start(lua_State *L, const char *s, struct mp_start_object 
 
 static int mplib_object_index(lua_State *L)
 {
-    struct mp_graphic_object **hh = mplib_aux_is_gr_object(L, 1); /* no need for test */
+    struct mp_graphic_object **hh = mplib_aux_is_graphic_object(L, 1); /* no need for test */
     if (*hh) {
         struct mp_graphic_object *h = *hh;
         const char *s = lua_tostring(L, 2);

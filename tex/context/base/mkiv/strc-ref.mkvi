@@ -1378,7 +1378,7 @@
      \resetinteractionparameter\c!color
    \fi
    \ifx\currentreferenceformatlabel\autoreferencelabeltextflag
-      \edef\currentreferenceformatlabel{\autoreferencelabeltext}%
+      \def\currentreferenceformatlabel{\autoreferencelabeltext}%
    \fi
    \ifx\currentreferenceformatautocase\v!yes
      \setcharactercleaning[1]%
@@ -1406,8 +1406,9 @@
 
 \def\autoreferencelabeltextflag{*} % a proper key like 'auto' or 'name' can clash with a label key
 
-\unexpanded\def\autoreferencelabeltext
-  {\clf_getcurrentreferencemetadata{name}}
+\def\autoreferencelabeltext
+%   {\clf_getcurrentreferencemetadata{name}}
+  {\clf_getcurrentreferencelabel}
 
 % \starttext
 %     \definereferenceformat[inxx]  [left=(,right=),text=txt]

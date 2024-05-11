@@ -1,0 +1,245 @@
+%D \module
+%D   [       file=m-mathfun,
+%D        version=2021.02.20,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Wried Math Stuff,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Occasionaly some experiment results in weird feature. It doesn't make sense
+%D to make this core functionality but if also makes no sense to throw it away. By
+%D making it a module the user can decide. It's actually an example of abusing a
+%D \LUA\ interfacing mechanism that is meant for something else.
+
+%D At some point this will move to \type {m-mathfun.lmt}:
+
+\startluacode
+    local type, load = type, load
+    local gmatch = string.gmatch
+
+    local context       = context
+    local ctx_mfunction = context.mfunctionlabeltext
+    local ctx_getvalue  = context.getvalue
+
+    local scanoptional  = tokens.scanners.optional
+    local scanargument  = tokens.scanners.argument
+
+    local createtoken   = tokens.create
+    local defined       = tokens.defined
+
+    local implement     = interfaces.implement
+
+    local compute_code  = 1
+
+    local function smart(what,name,kind)
+        if what == "value" or what == compute_code then
+            local temp = scanoptional()
+            if temp and temp ~= "" then
+                temp = "%" .. temp
+            else
+                temp = "%.6N"
+            end
+            if kind == "constant" then
+                context(temp,math[name])
+            else
+                local code = scanargument()
+                local func = load("return "..name.."("..code..")","mathfunction","t",math)
+                if type(func) == "function" then
+                    context(temp,func())
+                else
+                    context(code)
+                end
+            end
+        elseif kind == "constant" then
+          -- context[name]() -- recursion
+            name = "normal"..name
+            if defined(name) then
+                context(createtoken(name))
+            else
+                context(name)
+            end
+        else
+--          ctx_mfunction(name)
+            ctx_getvalue("normal"..name)
+        end
+    end
+
+    local template = { name = false, usage = "value", public = true, protected = true, actions = false, overload = true }
+
+    local function install(str,kind)
+        for name in gmatch(str,"[^ ,]+") do
+            template.name    = name
+            template.actions = function(what) smart(what,name,kind) end
+            implement(template)
+        end
+    end
+
+    implement {
+        name      = "installmathfunction",
+        public    = true,
+        protected = true,
+        actions   = install,
+        arguments = { "optional", "optional" },
+    }
+
+ -- install("sind cosd tand sin cos tan")
+ -- install("sqrt")
+
+    ---------------------------------------------------------
+
+    local type, load = type, load
+
+    local xmath         = xmath
+    local xcomplex      = xcomplex
+    local xdecimal      = xdecimal
+
+    local context       = context
+
+    local scanoptional  = tokens.scanners.optional
+    local scanargument  = tokens.scanners.argument
+
+    local implement     = interfaces.implement
+
+    local function mathexpr()
+        local temp = scanoptional()
+        local code = scanargument()
+        local func = load("return " .. code,"mathexpr","t",xmath)
+        if type(func) == "function" then
+            local result = func()
+            if result then
+                if temp and temp ~= "" then
+                    temp = "%" .. temp
+                else
+                    temp = "%.6N"
+                end
+                context(temp,result)
+                return
+            end
+        end
+        context(code)
+    end
+
+    local tostring    = xdecimal.tostring
+    local toengstring = xdecimal.toengstring -- todo
+
+    local function decimalexpr()
+        local temp = scanoptional()
+        local code = scanargument()
+        local func = load("return " .. code,"decimalexpr","t",xdecimal)
+        if type(func) == "function" then
+            local result = func()
+            if result then
+                result = tostring(func())
+                if temp and temp ~= "" then
+                    context("%"..temp,result)
+                else
+                    context(result)
+                end
+                return
+            end
+        end
+        context(code)
+    end
+
+    local topair = xcomplex.topair
+
+    local function complexexpr()
+        local temp = scanoptional()
+        local code = scanargument()
+        local func = load("return " .. code,"complexexpr","t",xcomplex)
+        if type(func) == "function" then
+            if temp and temp ~= "" then
+                temp = "%" .. temp
+            else
+                temp = "%.6N"
+            end
+            local result = func()
+            if result then
+                local r, i = topair(result)
+                if r == 0 then
+                    if i == 0 then
+                        context("0") -- ask MS fo prefered rendering
+                    elseif i == 1 then
+                        context("\\ii")
+                    elseif i == -1 then
+                        context("-\\ii")
+                    else
+                        context(temp.."\\ii",i)
+                    end
+                else
+                    if i == 0 then
+                        context(temp,r)
+                    elseif i == 1 then
+                        context(temp.."+\\ii",r)
+                    elseif i == -1 then
+                        context(temp.."-\\ii",r)
+                    elseif i > 0 then
+                        context(temp.."+"..temp.."\\ii",r,i)
+                    else
+                        context(temp.."-"..temp.."\\ii",r,-i)
+                    end
+                end
+                return
+            end
+        end
+        context(code)
+    end
+
+    implement {
+        name    = "mathexpr",
+        public  = true,
+        actions = mathexpr,
+    }
+
+    implement {
+        name    = "decimalexpr",
+        public  = true,
+        actions = decimalexpr,
+    }
+
+    implement {
+        name    = "complexexpr",
+        public  = true,
+        actions = complexexpr,
+    }
+
+\stopluacode
+
+%D The code that overloads \type {\sin} to behave as function (prefixed by \type
+%D {\the}) has been removed because it add overhead to its nromal usage that we
+%D don't want (think: \im {\sin (x) = \the \sin {pi/2}}. .
+
+\continueifinputfile{m-mathfun.mkxl}
+
+\usemodule[scite] \setupbodyfont[dejavu] \setuplayout[tight]
+
+\starttext
+
+\startbuffer
+\im { \sin (x)  = \luaexpr       {math.sin(math.pi/2)}    }
+\im { \sin (x)  = \luaexpr    [.4N] {math.sin(math.pi/2)} }
+\im { \sqrt(x)  = \luaexpr          {math.sqrt(2)}        }
+\im { \sqrt(x)  = \luaexpr    [.6N] {math.sqrt(2)}        }
+\im { \pi       = \mathexpr   [.40N]{pi}                  }
+\im { \sqrt(11) = \mathexpr   [.80N]{sqrt(11)}            }
+\im { \pi       = \decimalexpr[.80N]{sqrt(11)}            }
+\im { \sqrt(11) = \decimalexpr      {sqrt(11)}            }
+\im { c         = \complexexpr      {123 + new(456,789)}  }
+\stopbuffer
+
+Code:
+
+\typebuffer[option=TEX]
+
+And get:
+
+\startlines
+    \getbuffer
+\stoplines
+
+\stoptext

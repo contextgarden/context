@@ -67,7 +67,7 @@ return {
  },
  ["begin group"]={
   ["en"]="group",
-  ["sv"]="GR",
+  ["sv"]="grupp",
   ["nl"]="groep",
  },
  ["begin"]={
@@ -86,7 +86,7 @@ return {
 --  },
  ["end group"]={
   ["en"]="end group",
-  ["sv"]="SL",--"slut grupp",
+  ["sv"]="slut",--"slut grupp",
   ["nl"]="einde groep",
  },
  ["pause"]={
@@ -502,10 +502,15 @@ return {
   ["sv"]="eftersom",
   ["nl"]="omdat",
  },
- ["fenced"]={
+ ["begin fenced"]={
   ["en"]="fenced",
   ["sv"]="grupp",
   ["nl"]="begrensd",
+ },
+ ["end fenced"]={
+  ["en"]="end fenced",
+  ["sv"]="slut grupp",
+  ["nl"]="TODO",
  },
  ["belongs to"]={
   ["en"]="belongs to",

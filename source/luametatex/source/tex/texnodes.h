@@ -1484,7 +1484,19 @@ static inline int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && 
     code and also makes save and restore more complex.
 */
 
+typedef enum fontspec_states { 
+    font_spec_scale_set   = 0x0001,
+    font_spec_x_scale_set = 0x0002,
+    font_spec_y_scale_set = 0x0004,
+    font_spec_slant_set   = 0x0008,
+    font_spec_weight_set  = 0x0010,
+    font_spec_all_set     = 0x001F,
+} font_spec_states;
+
+
+
 # define font_spec_node_size     5           /* we can be smaller: no attr and no prev */
+# define font_spec_state(a)      vinfo(a,1)  /* slot of node_attr */
 # define font_spec_identifier(a) vinfo(a,2)
 # define font_spec_scale(a)      vlink(a,2)
 # define font_spec_x_scale(a)    vinfo(a,3)
@@ -1492,11 +1504,14 @@ static inline int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && 
 # define font_spec_slant(a)      vinfo(a,4)
 # define font_spec_weight(a)     vlink(a,4)
 
+# define font_spec_property_is_set(a,b) ((font_spec_state(a) & b) == b)
+
 static inline int tex_same_fontspec(halfword a, halfword b)
 {
     return
         (a == b)
-     || (a && b && font_spec_identifier(a) == font_spec_identifier(b)
+     || (a && b && font_spec_state(a)      == font_spec_state(b)
+                && font_spec_identifier(a) == font_spec_identifier(b)
                 && font_spec_scale(a)      == font_spec_scale(b)
                 && font_spec_x_scale(a)    == font_spec_x_scale(b)
                 && font_spec_y_scale(a)    == font_spec_y_scale(b)
