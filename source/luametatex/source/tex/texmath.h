@@ -130,6 +130,7 @@ typedef enum math_parameters {
     math_parameter_superscript_subscript_bottom_max,
     math_parameter_subscript_superscript_vgap,
     math_parameter_space_before_script,
+    math_parameter_space_between_script,
     math_parameter_space_after_script,
     math_parameter_connector_overlap_min,
     math_parameter_superscript_snap, /* bonus */
@@ -514,6 +515,7 @@ typedef enum math_parameter_codes {
     AccentBaseDepth,          /* reserved */
     FlattenedAccentBaseDepth, /* reserved */
     SpaceBeforeScript,                        
+    SpaceBetweenScript,                        
     PrimeRaisePercent,                        
     PrimeRaiseComposedPercent,                        
     PrimeShiftUp,                             
@@ -654,7 +656,7 @@ extern int      tex_pass_active_math_char        (int character);
 
 inline int      tex_math_scripts_allowed         (halfword node) { return ((node_type(node) >= simple_noad) && (node_type(node) < fence_noad)); }
 
-extern halfword tex_new_math_continuation_atom   (halfword node);
+extern halfword tex_new_math_continuation_atom   (halfword node, halfword attr);
 
 /*tex The runners in maincontrol: */
 

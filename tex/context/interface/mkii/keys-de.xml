@@ -176,6 +176,7 @@
 		<cd:variable name='description' value='beschreibung'/>
 		<cd:variable name='disable' value='sperren'/>
 		<cd:variable name='display' value='bildschirm'/>
+		<cd:variable name='document' value='document'/>
 		<cd:variable name='dot' value='punkt'/>
 		<cd:variable name='doublesided' value='doppelseitig'/>
 		<cd:variable name='down' value='down'/>
@@ -672,6 +673,7 @@
 		<cd:constant name='alignmentleftwidth' value='alignmentleftwidth'/>
 		<cd:constant name='alignmentrightsample' value='alignmentrightsample'/>
 		<cd:constant name='alignmentrightwidth' value='alignmentrightwidth'/>
+		<cd:constant name='alignscripts' value='alignscripts'/>
 		<cd:constant name='alignsymbol' value='alignsymbol'/>
 		<cd:constant name='aligntitle' value='titelausrichten'/>
 		<cd:constant name='alternative' value='alternative'/>
@@ -953,6 +955,7 @@
 		<cd:constant name='interaction' value='interaktion'/>
 		<cd:constant name='interlinespace' value='zeilenabstande'/>
 		<cd:constant name='internalgrid' value='internalgrid'/>
+		<cd:constant name='interscriptfactor' value='interscriptfactor'/>
 		<cd:constant name='italicfeatures' value='italicfeatures'/>
 		<cd:constant name='italicfont' value='italicfont'/>
 		<cd:constant name='itemalign' value='itemalign'/>
@@ -1038,6 +1041,7 @@
 		<cd:constant name='maxwidth' value='maxbreite'/>
 		<cd:constant name='maybeyear' value='maybeyear'/>
 		<cd:constant name='menu' value='menue'/>
+		<cd:constant name='metadata' value='metadata'/>
 		<cd:constant name='method' value='methode'/>
 		<cd:constant name='middle' value='mittig'/>
 		<cd:constant name='middleclass' value='middleclass'/>

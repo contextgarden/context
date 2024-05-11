@@ -405,6 +405,9 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "righthyphenmin",                 internal_integer_cmd,   right_hyphen_min_code,                    internal_integer_base);
         tex_primitive(etex_command,   "savinghyphcodes",                internal_integer_cmd,   saving_hyph_codes_code,                   internal_integer_base);
         tex_primitive(etex_command,   "savingvdiscards",                internal_integer_cmd,   saving_vdiscards_code,                    internal_integer_base);
+        tex_primitive(luatex_command, "scriptspacebeforefactor",        internal_integer_cmd,   script_space_before_factor_code,          internal_integer_base);
+        tex_primitive(luatex_command, "scriptspacebetweenfactor",       internal_integer_cmd,   script_space_between_factor_code,         internal_integer_base);
+        tex_primitive(luatex_command, "scriptspaceafterfactor",         internal_integer_cmd,   script_space_after_factor_code,           internal_integer_base);
         tex_primitive(luatex_command, "setfontid",                      internal_integer_cmd,   font_code,                                internal_integer_base);
         tex_primitive(tex_command,    "setlanguage",                    internal_integer_cmd,   language_code,                            internal_integer_base); /* compatibility */
         tex_primitive(luatex_command, "shapingpenaltiesmode",           internal_integer_cmd,   shaping_penalties_mode_code,              internal_integer_base);
@@ -1222,6 +1225,7 @@ void tex_initialize_commands(void)
         tex_primitive(tex_command,    "scriptscriptstyle",              math_style_cmd,         script_script_style,                      0);
         tex_primitive(tex_command,    "scriptstyle",                    math_style_cmd,         script_style,                             0);
         tex_primitive(tex_command,    "textstyle",                      math_style_cmd,         text_style,                               0);
+        tex_primitive(luatex_command, "currentlysetmathstyle",          math_style_cmd,         currently_set_math_style,                 0);
         tex_primitive(luatex_command, "givenmathstyle",                 math_style_cmd,         yet_unset_math_style,                     0);
 
         tex_primitive(tex_command,    "errmessage",                     message_cmd,            error_message_code,                       0);
@@ -1494,6 +1498,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "Umathskewedfractionhgap",        math_parameter_cmd,     math_parameter_skewed_fraction_hgap,             0);
         tex_primitive(luatex_command, "Umathskewedfractionvgap",        math_parameter_cmd,     math_parameter_skewed_fraction_vgap,             0);
         tex_primitive(luatex_command, "Umathspaceafterscript",          math_parameter_cmd,     math_parameter_space_after_script,               0);
+        tex_primitive(luatex_command, "Umathspacebetweenscript",        math_parameter_cmd,     math_parameter_space_between_script,             0);
         tex_primitive(luatex_command, "Umathspacebeforescript",         math_parameter_cmd,     math_parameter_space_before_script,              0);
         tex_primitive(luatex_command, "Umathstackdenomdown",            math_parameter_cmd,     math_parameter_stack_denom_down,                 0);
         tex_primitive(luatex_command, "Umathstacknumup",                math_parameter_cmd,     math_parameter_stack_num_up,                     0);

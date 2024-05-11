@@ -227,7 +227,7 @@ typedef enum tex_command_code {
     internal_muglue_cmd,              /*tex */
     register_muglue_cmd,              /*tex user-defined math glue */
     lua_value_cmd,                    /*tex reference to a regular lua function */
-    iterator_value_cmd,
+    iterator_value_cmd,               /*tex prefixes make no sense here (yet) */
     font_property_cmd,                /*tex user-defined font integer (|\hyphenchar|, |\skewchar|) or (|\fontdimen|)  */
     auxiliary_cmd,                    /*tex state info (|\spacefactor|, |\prevdepth|) */
     hyphenation_cmd,                  /*tex hyphenation data (|\hyphenation|, |\patterns|) */
@@ -1183,6 +1183,7 @@ typedef enum math_styles {
     all_uncramped_styles,
     all_cramped_styles,
     /* hidden */
+    currently_set_math_style,
     yet_unset_math_style,
     scaled_math_style,
     former_choice_math_style,
@@ -1314,6 +1315,14 @@ typedef enum tex_correction_codes {
 } tex_correction_codes;
 
 # define last_correction_code right_correction_code
+
+typedef enum tex_math_script_codes {
+    fixed_super_or_sub_script_code  = 0x01,
+    fixed_super_and_sub_script_code = 0x02,
+    ignore_empty_super_script_code  = 0x10,
+    ignore_empty_sub_script_code    = 0x20,
+    ignore_empty_prime_script_code  = 0x40,
+} tex_math_script_codes;
 
 /*tex
     All the other cases are zero but we use an indicator for that.

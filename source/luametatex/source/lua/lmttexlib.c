@@ -4951,7 +4951,7 @@ static int texlib_getpenaltyoptionvalues(lua_State *L)
 
 static int texlib_getnoadoptionvalues(lua_State *L) /* less keywords, just strings */
 {
-    lua_createtable(L, 2, 39);
+    lua_createtable(L, 2, 46);
     lua_push_key_at_index(L, axis,                   noad_option_axis);
     lua_push_key_at_index(L, noaxis,                 noad_option_no_axis);
     lua_push_key_at_index(L, exact,                  noad_option_exact);
@@ -4996,12 +4996,19 @@ static int texlib_getnoadoptionvalues(lua_State *L) /* less keywords, just strin
     lua_push_key_at_index(L, single,                 noad_option_single);
     lua_push_key_at_index(L, norule,                 noad_option_no_rule);
     lua_push_key_at_index(L, automiddle,             noad_option_auto_middle);
- // lua_set_string_by_index(L, noad_option_auto_middle,        "automiddle");
- // lua_set_string_by_index(L, noad_option_keep_base,          "keepbase");
-    lua_set_string_by_index(L, noad_option_reflected,          "reflected");
-    lua_set_string_by_index(L, noad_option_continuation,       "continuation");
-    lua_set_string_by_index(L, noad_option_inherit_class,      "inheritclass");
-    lua_set_string_by_index(L, noad_option_discard_shape_kern, "discardshapekern");
+ // lua_set_string_by_index(L, noad_option_auto_middle,                "automiddle");
+ // lua_set_string_by_index(L, noad_option_keep_base,                  "keepbase");
+    lua_set_string_by_index(L, noad_option_reflected,                  "reflected");
+    lua_set_string_by_index(L, noad_option_continuation,               "continuation");
+    lua_set_string_by_index(L, noad_option_inherit_class,              "inheritclass");
+    lua_set_string_by_index(L, noad_option_discard_shape_kern,         "discardshapekern");
+    lua_set_string_by_index(L, noad_option_realign_scripts,            "realignscripts");
+    lua_set_string_by_index(L, noad_option_ignore_empty_sub_script,    "ignoreemptysubscript");
+    lua_set_string_by_index(L, noad_option_ignore_empty_super_script,  "ignoreemptysuperscript");
+    lua_set_string_by_index(L, noad_option_ignore_empty_prime_script,  "ignoreemptyprimescript");
+    lua_set_string_by_index(L, noad_option_continuation_head,          "continuationhead");
+    lua_set_string_by_index(L, noad_option_continuation_kernel,        "continuationkernel");
+    lua_set_string_by_index(L, noad_option_reorder_pre_scripts,        "reorderprescripts");
     return 1;
 }
 
@@ -5149,6 +5156,17 @@ static int texlib_getmathscriptordervalues(lua_State *L)
     return 1;
 }
 
+static int texlib_getmathscriptsmodevalues(lua_State *L)
+{
+    lua_createtable(L, 2, 3);
+    lua_set_string_by_index(L, fixed_super_or_sub_script_code,  "fixedsuperorsub"); 
+    lua_set_string_by_index(L, fixed_super_and_sub_script_code, "fixedsuperandsub");
+    lua_set_string_by_index(L, ignore_empty_super_script_code,  "ignoreemptysuper");
+    lua_set_string_by_index(L, ignore_empty_sub_script_code,    "ignoreemptysub");
+    lua_set_string_by_index(L, ignore_empty_prime_script_code,  "ignoreemptyprime");
+    return 1;
+}
+
 static int texlib_getmathclassoptionvalues(lua_State *L)
 {
     lua_createtable(L, 2, 25);
@@ -5278,6 +5296,17 @@ static int texlib_getfrozenparvalues(lua_State *L)
  /* lua_set_string_by_index(L, par_all_category,                     "all"); */
     return 1;
 }
+
+static int texlib_getdoublescriptoptionvalues(lua_State *L)
+{
+    lua_createtable(L, 2, 2);
+    lua_set_string_by_index(L, inherit_class_double_atom_option,      "inheritclass");
+    lua_set_string_by_index(L, discard_shape_kern_double_atom_option, "discardshapekern");
+    lua_set_string_by_index(L, realign_scripts_double_atom_option,    "realignscripts");
+    lua_set_string_by_index(L, reorder_double_pre_script_atom_option, "reorderprescripts");
+    return 1;
+}
+
 
 static int texlib_getkerneloptionvalues(lua_State *L)
 {
@@ -6025,8 +6054,10 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getautoparagraphvalues",      texlib_getautoparagraphvalues      },
     { "getcharactertagvalues",       texlib_getcharactertagvalues       }, 
     { "getkerneloptionvalues",       texlib_getkerneloptionvalues       },
+    { "getdoublescriptoptionvalues", texlib_getdoublescriptoptionvalues },
     { "getspecialmathclassvalues",   texlib_getspecialmathclassvalues   },
     { "getmathscriptordervalues",    texlib_getmathscriptordervalues    },
+    { "getmathscriptsmodevalues",    texlib_getmathscriptsmodevalues    },
     { "getlargestusedmark",          texlib_getlargestusedmark          },
     { "getoutputactive",             texlib_getoutputactive             },
     /* experiment (metafun update) */                                   

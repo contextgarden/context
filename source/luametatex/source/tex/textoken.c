@@ -2199,13 +2199,13 @@ void tex_get_next(void)
             /*tex Parameter needs to be expanded. */
             continue;
         }
-//        if ((! lmt_input_state.align_state) && (cur_cmd == alignment_tab_cmd || cur_cmd == alignment_cmd)) {
-//            /*tex If an alignment entry has just ended, take appropriate action. */
-//            tex_insert_alignment_template();
-//            continue;
-//        } else {
-//            break;
-//        }
+     // if ((! lmt_input_state.align_state) && (cur_cmd == alignment_tab_cmd || cur_cmd == alignment_cmd)) {
+     //     /*tex If an alignment entry has just ended, take appropriate action. */
+     //     tex_insert_alignment_template();
+     //     continue;
+     // } else {
+     //     break;
+     // }
         switch (cur_cmd) { 
             case alignment_tab_cmd:
             case alignment_cmd:
@@ -2221,6 +2221,48 @@ void tex_get_next(void)
         }
     }
 }
+
+// void tex_get_next(void)
+// {
+//     while (1) {
+//         cur_cs = 0;
+//         if (lmt_input_state.cur_input.state != token_list_state) {
+//             /*tex Input from external file, |goto restart| if no input found. */
+//             if (tex_aux_get_next_file()) {
+//                 switch (cur_cmd) { 
+//                     case alignment_tab_cmd:
+//                     case alignment_cmd:
+//                         /*tex If an alignment entry has just ended, take appropriate action. */
+//                         if (lmt_input_state.align_state) {
+//                             return;
+//                         } else {
+//                             tex_insert_alignment_template();
+//                             break;
+//                         }
+//                     default:
+//                         return;
+//                 }
+//             }
+//         } else if (! lmt_input_state.cur_input.loc) {
+//             /*tex List exhausted, resume previous level. */
+//             tex_end_token_list();
+//         } else if (tex_aux_get_next_tokenlist()) {
+//             switch (cur_cmd) { 
+//                 case alignment_tab_cmd:
+//                 case alignment_cmd:
+//                     /*tex If an alignment entry has just ended, take appropriate action. */
+//                     if (lmt_input_state.align_state) {
+//                         return;
+//                     } else {
+//                         tex_insert_alignment_template();
+//                         break;
+//                     }
+//                 default:
+//                     return;
+//             }
+//         }
+//     }
+// }
 
 void tex_get_next_non_spacer(void)
 {

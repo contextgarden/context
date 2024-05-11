@@ -225,12 +225,14 @@ nodes.specialskipcodes = {
 
 table.setmetatableindex(listcodes,function(t,k)
     local v
-    if type(k) == "string" then
-        v = mathematics.classes[k] + 0x100
-    else
-        local i = k - 0x100
-        v = mathematics.classes[i] or mathematics.classnames[i]
-    end
+ -- if mathematics then
+        if type(k) == "string" then
+            v = mathematics.classes[k] + 0x100
+        else
+            local i = k - 0x100
+            v = mathematics.classes[i] or mathematics.classnames[i]
+        end
+ -- end
     if not v then
         v = listcodes.unknown
     end

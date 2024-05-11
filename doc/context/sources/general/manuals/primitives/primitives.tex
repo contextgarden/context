@@ -519,6 +519,9 @@ This original \TEX\ primitive is equivalent to the more verbose \prm
 % \startnewprimitive[title={\prm {Umathspacebeforescript}}]
 % \stopnewprimitive
 
+% \startnewprimitive[title={\prm {Umathspacebetweenscript}}]
+% \stopnewprimitive
+
 % \startnewprimitive[title={\prm {Umathstackdenomdown}}]
 % \stopnewprimitive
 
@@ -3871,7 +3874,7 @@ results in: \inlinebuffer.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\prm {fontdimen}}]
+\startoldprimitive[title={\prm {fontdimen}}][obsolete=yes]
 
 A traditional \TEX\ font has a couple of font specific dimensions, we only
 mention the seven that come with text fonts:
@@ -10454,7 +10457,7 @@ integer representation: \the\scriptscriptstyle.
 
 \stopoldprimitive
 
-\startoldprimitive[title={\prm {scriptspace}}]
+\startoldprimitive[title={\prm {scriptspace}}][obsolete=yes]
 
 The math engine will add this amount of space after subscripts and superscripts.
 It can be seen as compensation for the often too small widths of characters (in
@@ -10462,6 +10465,24 @@ the traditional engine italic correction is used too). It prevents scripts from
 running into what follows.
 
 \stopoldprimitive
+
+\startnewprimitive[title={\prm {scriptspaceafterfactor}}]
+
+This is a (1000 based) multiplier for \prm {Umathspaceafterscript}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {scriptspacebeforefactor}}]
+
+This is a (1000 based) multiplier for \prm {Umathspacebeforescript}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {scriptspacebetweenfactor}}]
+
+This is a (1000 based) multiplier for \prm {Umathspacebetweenscript}.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {scriptstyle}}]
 
@@ -10630,10 +10651,11 @@ when display style is used, for instance:
 You can flag a math parameter to be ignored, like:
 
 \starttyping
-\setmathignore \Umathxscale            2
-\setmathignore \Umathyscale            2
-\setmathignore \Umathspacebeforescript 1
-\setmathignore \Umathspaceafterscript  1
+\setmathignore \Umathxscale             2
+\setmathignore \Umathyscale             2
+\setmathignore \Umathspacebeforescript  1
+\setmathignore \Umathspacebetweenscript 1
+\setmathignore \Umathspaceafterscript   1
 \stoptyping
 
 A value of two will not initialize the variable, so its old value (when set) is

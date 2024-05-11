@@ -677,6 +677,8 @@ typedef enum kern_subtypes {
     space_font_kern_subtype,    /*tex for tracing only */
     explicit_math_kern_subtype,
     math_shape_kern_subtype,
+    left_math_slack_kern_subtype,
+    right_math_slack_kern_subtype,
     horizontal_math_kern_subtype,
     vertical_math_kern_subtype,
 } kern_subtypes;
@@ -1839,10 +1841,10 @@ typedef enum simple_choice_subtypes {
 # define noad_prime(a)        vinfo(a,9)
 # define noad_left_slack(a)   vlink(a,10)
 # define noad_right_slack(a)  vinfo(a,10)
-# define noad_supshift(a)     vlink(a,11)
-# define noad_subshift(a)     vinfo(a,11)
-# define noad_primeshift(a)   vlink(a,12)
-# define noad_extra_0(a)      vinfo(a,12)
+# define noad_subshift(a)     vinfo(a,11) /* continuation */
+# define noad_supshift(a)     vlink(a,11) /* continuation */
+# define noad_primeshift(a)   vlink(a,12) /* continuation */
+# define noad_script_kern(a)  vinfo(a,12) /* continuation */
 # define noad_extra_1(a)      vlink(a,13)
 # define noad_extra_2(a)      vinfo(a,13)
 # define noad_extra_3(a)      vlink(a,14)
@@ -1968,29 +1970,35 @@ typedef enum noad_options {
 
 /*tex The Microsoft compiler truncates to int, so: */
 
-# define noad_option_source_on_nucleus          (uint64_t) 0x000100000000
-# define noad_option_fixed_super_or_sub_script  (uint64_t) 0x000200000000
-# define noad_option_fixed_super_and_sub_script (uint64_t) 0x000400000000
-# define noad_option_auto_base                  (uint64_t) 0x000800000000
-# define noad_option_stretch                    (uint64_t) 0x001000000000
-# define noad_option_shrink                     (uint64_t) 0x002000000000
-# define noad_option_center                     (uint64_t) 0x004000000000
-# define noad_option_scale                      (uint64_t) 0x008000000000
-# define noad_option_keep_base                  (uint64_t) 0x010000000000
-# define noad_option_single                     (uint64_t) 0x020000000000
-# define noad_option_no_rule                    (uint64_t) 0x040000000000
-# define noad_option_auto_middle                (uint64_t) 0x080000000000
-# define noad_option_reflected                  (uint64_t) 0x100000000000
-
-# define noad_option_continuation               (uint64_t) 0x200000000000 /* relates to script continuation */
-# define noad_option_inherit_class              (uint64_t) 0x400000000000 /* idem */
-# define noad_option_discard_shape_kern         (uint64_t) 0x800000000000 /* idem */
+# define noad_option_source_on_nucleus          (uint64_t) 0x0000000100000000
+# define noad_option_fixed_super_or_sub_script  (uint64_t) 0x0000000200000000
+# define noad_option_fixed_super_and_sub_script (uint64_t) 0x0000000400000000
+# define noad_option_auto_base                  (uint64_t) 0x0000000800000000
+# define noad_option_stretch                    (uint64_t) 0x0000001000000000
+# define noad_option_shrink                     (uint64_t) 0x0000002000000000
+# define noad_option_center                     (uint64_t) 0x0000004000000000
+# define noad_option_scale                      (uint64_t) 0x0000008000000000
+# define noad_option_keep_base                  (uint64_t) 0x0000010000000000
+# define noad_option_single                     (uint64_t) 0x0000020000000000
+# define noad_option_no_rule                    (uint64_t) 0x0000040000000000
+# define noad_option_auto_middle                (uint64_t) 0x0000080000000000
+# define noad_option_reflected                  (uint64_t) 0x0000100000000000
+# define noad_option_continuation               (uint64_t) 0x0000200000000000 /* relates to script continuation */
+# define noad_option_inherit_class              (uint64_t) 0x0000400000000000 /* idem */
+# define noad_option_discard_shape_kern         (uint64_t) 0x0000800000000000 /* idem */
+# define noad_option_realign_scripts            (uint64_t) 0x0001000000000000 /* idem */
+# define noad_option_ignore_empty_sub_script    (uint64_t) 0x0002000000000000 
+# define noad_option_ignore_empty_super_script  (uint64_t) 0x0004000000000000 
+# define noad_option_ignore_empty_prime_script  (uint64_t) 0x0008000000000000 
+# define noad_option_continuation_head          (uint64_t) 0x0010000000000000 /* relates to script continuation */
+# define noad_option_continuation_kernel        (uint64_t) 0x0020000000000000 /* relates to script continuation */
+# define noad_option_reorder_pre_scripts        (uint64_t) 0x0040000000000000 /* relates to script continuation */
 
 # define has_option(a,b)     (((a) & (b)) == (b))
 # define unset_option(a,b)   ((a) & ~(b))
 
 static inline void tex_add_noad_option    (halfword a, uint64_t r) { noad_options(a) |= r; }
-static inline void tex_remove_noad_option (halfword a, uint64_t r) { noad_options(a) &= ~(r | noad_options(a)); }
+static inline void tex_remove_noad_option (halfword a, uint64_t r) { noad_options(a) &= ~r; }
 static inline int  tex_has_noad_option    (halfword a, uint64_t r) { return (noad_options(a) & r) == r; }
 
 static inline int has_noad_no_script_option(halfword n, halfword option)
@@ -2055,10 +2063,19 @@ static inline int has_noad_no_script_option(halfword n, halfword option)
 # define has_noad_option_continuation(a)                (has_option(noad_options(a), noad_option_continuation))
 # define has_noad_option_inherit_class(a)               (has_option(noad_options(a), noad_option_inherit_class))
 # define has_noad_option_discard_shape_kern(a)          (has_option(noad_options(a), noad_option_discard_shape_kern))
+# define has_noad_option_realign_scripts(a)             (has_option(noad_options(a), noad_option_realign_scripts))
+# define has_noad_option_ignore_empty_sub_script(a)     (has_option(noad_options(a), noad_option_ignore_empty_sub_script))
+# define has_noad_option_ignore_empty_super_script(a)   (has_option(noad_options(a), noad_option_ignore_empty_super_script))
+# define has_noad_option_ignore_empty_prime_script(a)   (has_option(noad_options(a), noad_option_ignore_empty_prime_script))
+# define has_noad_option_continuation_head(a)           (has_option(noad_options(a), noad_option_continuation_head))
+# define has_noad_option_continuation_kernel(a)         (has_option(noad_options(a), noad_option_continuation_kernel))
+# define has_noad_option_reorder_pre_scripts(a)         (has_option(noad_options(a), noad_option_reorder_pre_scripts))
 
 typedef enum double_atom_options {
     inherit_class_double_atom_option      = 0x01,
     discard_shape_kern_double_atom_option = 0x02,
+    realign_scripts_double_atom_option    = 0x04,
+    reorder_double_pre_script_atom_option = 0x08,
 } double_atom_options;
 
 /*tex

@@ -820,7 +820,7 @@ if not csletters then
         end
     end
 
-    function characters.setcharacternames(ctt)
+    function characters.setcharacternames()
         for u, chr in next, data do -- will move up
             local contextname = chr.contextname
             local contextspec = chr.contextspec
@@ -840,7 +840,24 @@ if not csletters then
     end
 
 else
+
     mark(csletters)
+
+    local pattern = P("greek") + P("arabic") + P("hebrew") + P("cyrillic") + P("roman")
+
+    function characters.addcharacternames() -- we could be granular e.g. 'greek'
+        for u, chr in next, data do -- will move up
+            local contextname = chr.contextname
+            if contextname and lpegmatch(pattern,contextname) then
+                local category = chr.category
+                if is_character[category] or is_command[category] then
+                    texsetmacro(contextname,utfchar(u),"immutable")
+                end
+            end
+        end
+        function characters.addcharacternames() end
+    end
+
 end
 
 lpegpatterns.csletter = utfchartabletopattern(csletters)

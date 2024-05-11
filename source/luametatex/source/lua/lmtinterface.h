@@ -852,6 +852,7 @@ make_lua_key(L, leftcorrectionkern);\
 make_lua_key(L, lefthangskip);\
 make_lua_key(L, leftmargin);\
 make_lua_key(L, leftmarginkern);\
+make_lua_key(L, leftmathslackkern);\
 make_lua_key(L, leftprotrusion);\
 make_lua_key(L, leftskip);\
 make_lua_key(L, lefttoright);\
@@ -1166,6 +1167,7 @@ make_lua_key(L, rightcorrectionkern);\
 make_lua_key(L, righthangskip);\
 make_lua_key(L, rightmargin);\
 make_lua_key(L, rightmarginkern);\
+make_lua_key(L, rightmathslackkern);\
 make_lua_key(L, rightprotrusion);\
 make_lua_key(L, rightskip);\
 make_lua_key(L, righttoleft);\
@@ -1228,7 +1230,9 @@ make_lua_key(L, space);\
 make_lua_key(L, SpaceAfterScript);\
 make_lua_key(L, spaceafterscript);\
 make_lua_key(L, spacebeforescript);\
+make_lua_key(L, spacebetweenscript);\
 make_lua_key(L, SpaceBeforeScript);\
+make_lua_key(L, SpaceBetweenScript);\
 make_lua_key(L, spacefactor);\
 make_lua_key(L, spacefontkern);\
 make_lua_key(L, spacer);\

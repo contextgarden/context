@@ -186,6 +186,8 @@ registerengineclass("maybebinary",     "mbi")
 registerengineclass("chemicalbond",    "chb")
 registerengineclass("implication",     "imp")
 
+registerengineclass("continuation",    "ctn")
+
 local specialclasses = tex.specialmathclasscodes
 
 classes["all"]   = specialclasses["all"]    classnames[specialclasses["all"]  ] = "all"

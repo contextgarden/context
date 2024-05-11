@@ -36,8 +36,8 @@
     \startTEXpage[width=21cm]
         \doifelsecolor {colorone} {
             \startoverlay
-                {\color[colorone]{\char0\externalfigure[#1][page=#3,width=21cm]}}
-                {\color[colortwo]{\char0\externalfigure[#2][page=#3,width=21cm]}}
+                {{\char0\externalfigure[#1][page=#3,width=21cm,foregroundcolor=colorone]}}
+                {{\char0\externalfigure[#2][page=#3,width=21cm,foregroundcolor=colortwo]}}
             \stopoverlay
         } {
             \startoverlay

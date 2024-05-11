@@ -819,6 +819,8 @@
 
 \setupMMLappearance[piece][\c!separator=]
 
+\let\theMMLpieceseparator\empty
+
 \startxmlsetups mml:piecewise
     \processaction
          [\MMLpieceseparator]
@@ -826,7 +828,9 @@
                \v!no=>\def\theMMLpieceseparator{&},
           \s!default=>\def\theMMLpieceseparator{&},
           \s!unknown=>\def\theMMLpieceseparator{\,\,\hbox{\MMLpieceseparator}\,\,}]
-    \cases{\xmlflush{#1}}
+    \startcases
+        \xmlflush{#1}
+    \stopcases
 \stopxmlsetups
 
 \startxmlsetups mml:piece
@@ -1035,11 +1039,22 @@
 
 \setupMMLappearance[root][\c!symbol=\v!yes]
 
+% \startxmlsetups mml:root
+%     \xmldoifelse {#1} {/mml:degree} {
+%         \root
+%             \doifnot\MMLrootsymbol\v!no{\MMLcreset\xmltext{#1}{/mml:degree}}
+%         \of
+%     } {
+%         \sqrt
+%     }
+%         {\MMLcreset\xmlall{#1}{/!(mml:degree\string|mml:root)}}
+% \stopxmlsetups
+
 \startxmlsetups mml:root
     \xmldoifelse {#1} {/mml:degree} {
-        \root
+        \sqrt [
             \doifnot\MMLrootsymbol\v!no{\MMLcreset\xmltext{#1}{/mml:degree}}
-        \of
+        ]
     } {
         \sqrt
     }
@@ -1076,22 +1091,22 @@
 
 \def\mmlforallexistslist{mml:bvar\string|mml:forall\string|mml:exists\string|mml:condition}
 
-\definemathfence
-  [weirdfences]
-  [bar]
-  [\c!right=]
+% \definemathfence
+%   [weirdfences]
+%   [bar]
+%   [\c!right=]
 
-\definemathalignment
-  [weirdforall]
-  [\c!location=\v!packed,
-   \c!fences=weirdfences,
-   \c!m=1,
-   \c!n=1,
-   \c!align=1:\v!left]
+% \definemathalignment
+%   [weirdforall]
+%   [\c!location=\v!packed,
+%    \c!fences=weirdfences,
+%    \c!m=1,
+%    \c!n=1,
+%    \c!align=1:\v!left]
 
-\startxmlsetups mml:forallexists:step
-    \NC \xmlflush{#1} \NR
-\stopxmlsetups
+% \startxmlsetups mml:forallexists:step
+%     \NC \xmlflush{#1} \NR
+% \stopxmlsetups
 
 \startxmlsetups mml:forallexists
     \normalsubscript{\xmlconcat{#1}{/mml:bvar}{\MMLseparator,}}
@@ -1109,9 +1124,12 @@
             \right.
         \else
             % special case
-            \startweirdforall % location=packed,fences=weirdfences,m=1,n=1,align=1:left]
-                \xmlcommand{#1}{/!(\mmlforallexistslist)/}{mml:forallexists:step}
-            \stopweirdforall
+            \left\vert
+                \plainmatrix{\xmlconcat{#1}{/!(\mmlforallexistslist)}{\hfill\crcr}}
+            \right.
+%             \startweirdforall
+%                 \xmlcommand{#1}{/!(\mmlforallexistslist)/}{mml:forallexists:step}
+%             \stopweirdforall
         \fi
     } {
         :\xmlfirst{#1}{/!(\mmlforallexistslist)}
@@ -1624,7 +1642,7 @@
         \doifelse\MMLvectordirection\v!horizontal {
             \left(\xmlconcat{#1}{/*}{\MMLseparator\MMLvectorseparator}\right)
         } {
-            \MMLcreset\left(\matrix{\xmlconcat{#1}{/*}{\MMLseparator\MMLvectorseparator}}\right)
+            \MMLcreset\left(\plainmatrix{\xmlconcat{#1}{/*}{\MMLseparator\MMLvectorseparator}}\right)
         }
     \else
       \overrightarrow{\charhtstrut\mmlfirst{#1}}
@@ -1638,10 +1656,10 @@
     \begingroup
     \MMLcreset
     \ifconditional\MMCdelmatrix
-        \left(\matrix{\xmlcommand{#1}{/mml:matrixrow}{mml:matrixrow:do}}\right)
+        \left(\plainmatrix{\xmlcommand{#1}{/mml:matrixrow}{mml:matrixrow:do}}\right)
     \else
         \MMCdelmatrix\conditionaltrue
-        \matrix{\xmlcommand{#1}{/mml:matrixrow}{mml:matrixrow:do}}
+        \plainmatrix{\xmlcommand{#1}{/mml:matrixrow}{mml:matrixrow:do}}
     \fi
     \endgroup
 \stopxmlsetups

@@ -664,6 +664,9 @@ typedef enum int_codes {
     space_factor_shrink_limit_code,
     space_factor_stretch_limit_code,
     box_limit_mode_code,
+    script_space_before_factor_code,
+    script_space_between_factor_code,
+    script_space_after_factor_code,
     /* those below these are not interfaced via primitives */
     internal_par_state_code,
     internal_dir_state_code,
@@ -693,7 +696,7 @@ typedef enum int_codes {
 } int_codes;
 
 # define first_integer_code pre_tolerance_code
-# define last_integer_code  box_limit_mode_code
+# define last_integer_code  script_space_after_factor_code
 
 typedef enum dimension_codes {
     /* normal ones */
@@ -1553,6 +1556,10 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define pre_short_inline_penalty_par    integer_parameter(pre_short_inline_penalty_code)
 # define post_short_inline_penalty_par   integer_parameter(post_short_inline_penalty_code)
 # define short_inline_orphan_penalty_par integer_parameter(short_inline_orphan_penalty_code)
+
+# define script_space_before_factor_par  integer_parameter(script_space_before_factor_code)
+# define script_space_between_factor_par integer_parameter(script_space_between_factor_code)
+# define script_space_after_factor_par   integer_parameter(script_space_after_factor_code)
 
 # define local_interline_penalty_par     integer_parameter(local_interline_penalty_code)
 # define local_broken_penalty_par        integer_parameter(local_broken_penalty_code)

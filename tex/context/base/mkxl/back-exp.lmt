@@ -191,36 +191,38 @@ local namespaced = {
 }
 
 local namespaces = {
-    msubsup     = "m",
-    msub        = "m",
-    msup        = "m",
-    mn          = "m",
-    mi          = "m",
-    ms          = "m",
-    mo          = "m",
-    mtext       = "m",
-    mrow        = "m",
-    mfrac       = "m",
-    mroot       = "m",
-    msqrt       = "m",
-    munderover  = "m",
-    munder      = "m",
-    mover       = "m",
-    merror      = "m",
-    math        = "m",
-    mrow        = "m",
-    mtable      = "m",
-    mtr         = "m",
-    mtd         = "m",
-    mfenced     = "m",
-    maction     = "m",
-    mspace      = "m",
+    msubsup       = "m",
+    msub          = "m",
+    msup          = "m",
+    mn            = "m",
+    mi            = "m",
+    ms            = "m",
+    mo            = "m",
+    mtext         = "m",
+    mrow          = "m",
+    mfrac         = "m",
+    mroot         = "m",
+    msqrt         = "m",
+    munderover    = "m",
+    munder        = "m",
+    mover         = "m",
+    merror        = "m",
+    math          = "m",
+    mrow          = "m",
+    mtable        = "m",
+    mtr           = "m",
+    mtd           = "m",
+    mfenced       = "m",
+    maction       = "m",
+    mspace        = "m",
+    mmultiscripts = "m",
+    mprescripts   = "m",
     -- only when testing
-    mstacker    = "m",
-    mstackertop = "m",
-    mstackermid = "m",
-    mstackerbot = "m",
-    mextensible = 'm',
+    mstacker      = "m",
+    mstackertop   = "m",
+    mstackermid   = "m",
+    mstackerbot   = "m",
+    mextensible   = 'm',
 }
 
 setmetatableindex(namespaced, function(t,k)
@@ -922,6 +924,8 @@ do
                         emptytag(result,element,nature,di)
                     elseif element == "mspace" then -- todo: use empty flag
                         emptytag(result,element,nature,di)
+                    elseif element == "mprescripts" then -- todo: use empty flag
+                        emptytag(result,element,nature,di) -- -why has nature to be set
                     elseif element == "" or di.skip == "ignore" then
                         -- skip
                     else
@@ -1425,6 +1429,8 @@ local collectresults  do -- too many locals otherwise
 
     local subtypes           = nodes.subtypes
 
+    local userkern_code      = nodes.kerncodes.userkern
+
     local hlist_code         = nodecodes.hlist
     local vlist_code         = nodecodes.vlist
     local glyph_code         = nodecodes.glyph
@@ -1800,45 +1806,47 @@ local collectresults  do -- too many locals otherwise
                     end
                 end
             elseif id == kern_code then
-                local kern = getkern(n)
-                if kern > 0 then
-                    local a = getattr(n,a_tagged) or pat
-                    local t = taglist[a]
-                    if not t or t.tagname ~= "ignore" then -- maybe earlier on top)
-                        local limit = threshold
-                        if p then
-                            local c, f = isglyph(p)
-                            if c then
-                                limit = fontquads[f] / 4
+                if subtype == userkern_code then
+                    local kern = getkern(n)
+                    if kern > 0 then
+                        local a = getattr(n,a_tagged) or pat
+                        local t = taglist[a]
+                        if not t or t.tagname ~= "ignore" then -- maybe earlier on top)
+                            local limit = threshold
+                            if p then
+                                local c, f = isglyph(p)
+                                if c then
+                                    limit = fontquads[f] / 4
+                                end
                             end
-                        end
-                        if kern > limit then
-                            if last and not somespace[currentcontent[nofcurrentcontent]] then
-                             -- local a = getattr(n,a_tagged) or pat
-                                if a == last then
-                                    if not somespace[currentcontent[nofcurrentcontent]] then
+                            if kern > limit then
+                                if last and not somespace[currentcontent[nofcurrentcontent]] then
+                                 -- local a = getattr(n,a_tagged) or pat
+                                    if a == last then
+                                        if not somespace[currentcontent[nofcurrentcontent]] then
+                                            if trace_export then
+                                                report_export("%w<!-- injecting spacing 8 (kern %p) -->",currentdepth,kern)
+                                            end
+                                            nofcurrentcontent = nofcurrentcontent + 1
+                                            currentcontent[nofcurrentcontent] = " "
+                                        end
+                                    elseif a then
+                                        -- e.g LOGO<space>LOGO
                                         if trace_export then
-                                            report_export("%w<!-- injecting spacing 8 (kern %p) -->",currentdepth,kern)
+                                            report_export("%w<!-- processing kern, threshold %p, tag %s => %s -->",currentdepth,limit,last,a)
+                                        end
+                                        last = a
+                                        pushcontent()
+                                        if trace_export then
+                                            report_export("%w<!-- injecting spacing 9 (kern %p) -->",currentdepth,kern)
                                         end
                                         nofcurrentcontent = nofcurrentcontent + 1
                                         currentcontent[nofcurrentcontent] = " "
+                                     -- currentnesting = taglist[last]
+                                        currentnesting = t
+                                        pushentry(currentnesting)
+                                        currentattribute = last
                                     end
-                                elseif a then
-                                    -- e.g LOGO<space>LOGO
-                                    if trace_export then
-                                        report_export("%w<!-- processing kern, threshold %p, tag %s => %s -->",currentdepth,limit,last,a)
-                                    end
-                                    last = a
-                                    pushcontent()
-                                    if trace_export then
-                                        report_export("%w<!-- injecting spacing 9 (kern %p) -->",currentdepth,kern)
-                                    end
-                                    nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = " "
-                                 -- currentnesting = taglist[last]
-                                    currentnesting = t
-                                    pushentry(currentnesting)
-                                    currentattribute = last
                                 end
                             end
                         end

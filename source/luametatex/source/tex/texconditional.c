@@ -1157,6 +1157,10 @@ void tex_conditional_if(halfword code, int unless)
                         tex_get_token();
                         result = cur_cmd == if_test_cmd ? 2 : 1;
                     }          
+                    /*tex Because we only have two values we can actually support |\unless|. */
+                    if (unless) { 
+                        result = result == 1 ? 2 : 1;
+                    }
                 }
                 goto CASE;
             }

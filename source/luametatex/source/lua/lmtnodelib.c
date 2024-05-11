@@ -3974,14 +3974,14 @@ static int nodelib_direct_newmathglyph(lua_State* L)
 static int nodelib_direct_newcontinuationatom(lua_State* L)
 {
     if (lua_type(L, 1) == LUA_TBOOLEAN) {
-        halfword n = tex_new_math_continuation_atom(null);
+        halfword n = tex_new_math_continuation_atom(null, null);
         nodelib_aux_setattributelist(L, n, 2);
         lua_pushinteger(L, n);
         return 1;
     } else {
         halfword n = nodelib_valid_direct_from_index(L, 1);
         if (n) {
-            n = tex_new_math_continuation_atom(n);
+            n = tex_new_math_continuation_atom(n, null);
         }
         return 0;
     }

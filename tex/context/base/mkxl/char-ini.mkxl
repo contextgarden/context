@@ -125,4 +125,11 @@
 \permanent\protected\def\overloaduppercase{\clf_overloaduppercase} % todo: define public at lua end
 \permanent\protected\def\overloadlowercase{\clf_overloadlowercase} % todo: define public at lua end
 
+%D For old times sake (for now), for Thomas Schmitz (\type {\greekdasiavaria} etc):
+
+\permanent\protected\def\addcharacternames{\ctxlua{characters.addcharacternames()}} % we could be granular e.g. 'greek'
+
+\greekdasiavaria
+
+
 \protect \endinput

@@ -7450,6 +7450,12 @@ return {
    ["en"]="alignmentrightwidth",
    ["fr"]="largeurdroitealignement",
   },
+  ["interscriptfactor"]={
+    ["en"]="interscriptfactor",
+  },
+  ["alignscripts"]={
+   ["en"]="alignscripts",
+  },
   ["alignsymbol"]={
    ["en"]="alignsymbol",
    ["fr"]="alignersursymbol",

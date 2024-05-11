@@ -7404,6 +7404,9 @@ void tex_initialize_variables(void)
         post_short_inline_penalty_par = max_integer;
         variable_family_par = -1, 
         ignore_depth_criterion_par = ignore_depth;
+        script_space_before_factor_par = scaling_factor;
+        script_space_between_factor_par = scaling_factor;
+        script_space_after_factor_par = scaling_factor;
         aux_get_date_and_time(&time_par, &day_par, &month_par, &year_par, &lmt_engine_state.utc_time);
     }
 }

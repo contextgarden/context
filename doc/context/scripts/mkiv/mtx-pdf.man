@@ -37,6 +37,9 @@ sign document (assumes signature template)
 .TP
 .B --verify
 verify document
+.TP
+.B --detail
+print detail to the console
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

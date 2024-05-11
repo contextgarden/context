@@ -201,6 +201,8 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
     msqrt                 = { pdf = "Span",       nature = "display", namespace = "mathml" },
     mfenced               = { pdf = "Span",       nature = "display", namespace = "mathml" },
     maction               = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    mmultiscripts         = { pdf = "Span",       nature = "display", namespace = "mathml" },
+    mprescripts           = { pdf = "Span",       nature = "inline",  namespace = "mathml" },
 
     mstacker              = { pdf = "Span",       nature = "display" }, -- these are only internally used
     mstackertop           = { pdf = "Span",       nature = "display" }, -- these are only internally used

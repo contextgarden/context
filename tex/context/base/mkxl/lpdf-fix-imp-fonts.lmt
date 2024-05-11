@@ -111,6 +111,8 @@ end
 
 -- todo: check some more
 
+local cleanname = fonts.names.cleanname
+
 local remap = {
  -- ["helvetica"]            = { target = "file:uhvr8a.afm" },
  -- ["helvetica-bold"]       = { target = "file:uhvb8a.afm" },
@@ -132,11 +134,18 @@ local remap = {
     ["timesromanbolditalic"] = { target = "file:texgyre-termes-bolditalic.otf" },
 }
 
-function backends.codeinjections.registerfont(specification)
+local function registerfont(specification)
     local source = specification.source
     if source then
         remap[cleanfontname(source)] = specification
     end
+end
+
+backends.codeinjections.registerfont = registerfont
+
+function graphics.registerpdffont(...)
+    -- todo: message
+    registerfont(...)
 end
 
 local function isdefinedunknown(fontname)
@@ -438,6 +447,7 @@ local function makemap(fontname,id,state,unicode)
         for k, v in next, state.unicodes do
             local d = chr[v]
             if d then
+-- print(string.formatters["index in pdf %I unicode %C index in font %I"](k,v,d.index))
                 map[k] = d.index
             else
                 -- issue
@@ -634,6 +644,7 @@ do
                     elseif compactor.merge.type0 or compactor.embed.type0 then
                         shared = getstate_OpenType(pdfdoc,v,d,compactor.merge.type0)
                         data[k] = shared
+-- inspect(shared)
                     end
                     if trace_merge then
                         report_sharing(pdfdoc,"type0",v,shared,pagenumber,r and true or false)

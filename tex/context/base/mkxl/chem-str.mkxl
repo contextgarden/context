@@ -862,9 +862,10 @@
 \appendtoks
     \setmathignore\Umathxscale\plustwo
     \setmathignore\Umathyscale\plustwo
-    \setmathignore\Umathspacebeforescript\plusone
-    \setmathignore\Umathspaceafterscript \plusone
-    \mathscriptsmode\plusone
+    \setmathignore\Umathspacebeforescript \plusone % alternatively we can set the factors
+    \setmathignore\Umathspacebetweenscript\plusone
+    \setmathignore\Umathspaceafterscript  \plusone
+    \bitwiseflip\mathscriptsmode\plusone
     \scratchcounter\chemistryparameter\c!scale
     \glyphscriptscale      \numexpr\glyphscriptscale      *\scratchcounter/\plusthousand\relax
     \glyphscriptscriptscale\numexpr\glyphscriptscriptscale*\scratchcounter/\plusthousand\relax

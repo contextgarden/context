@@ -13,6 +13,15 @@
 
 \writestatus{loading}{ConTeXt Math Macros / Initializations}
 
+% Needs checking:
+%
+% \Umathruleheight
+% \Umathruledepth
+% \Umathfractionnumup
+% \Umathfractionnumdown
+% \Umathfractiondelsize
+% \Umathskeweddelimitertolerance
+
 %D This is the \LMTX\ version of math support what evolved over decades. We started
 %D out with native display math, battled for years with the heuristic spacing,
 %D assumptions wrt number locations etc. Advanced alignments were implemented with
@@ -111,6 +120,23 @@
 \delimiterfactor    \plusthousand
 \delimitershortfall \zeropoint
 
+%D Low level only:
+
+% \fixedsuperorsubscriptsmodecode
+% \fixedsuperandsubscriptsmodecode
+%
+% Needed for multiple scripts:
+%
+% \mathscriptsmode\ignoreemptyscriptsmodecode
+
+\integerdef\ignoreemptyscriptsmodecode\numexpr
+    \ignoreemptysuperscriptsmodecode
+  + \ignoreemptysubscriptsmodecode
+  + \ignoreemptyprimescriptsmodecode
+\relax
+
+\mathscriptsmode\ignoreemptyscriptsmodecode % we default to this but in manuals we can set it to zero
+
 % These need to be set because otherwise the engine will not honor some font
 % properties. It also permits tracing. These might become engine defaults. As a
 % consequence we no longer check for traditional fonts but one can use font control
@@ -166,15 +192,16 @@
 \immutable\mugluespecdef\halftinymuskip          1mu minus 0.5mu
 \immutable\mugluespecdef\halfpettymuskip         0.5mu minus 0.25mu
 
-\immutable\mugluespecdef\hairmuskip              .15mu
+\immutable\mugluespecdef\hairmuskip                .15mu
 
 \immutable\integerdef   \defaultrelpenalty       500
 \immutable\integerdef   \defaultbinoppenalty     700
 \immutable\integerdef   \defaultprerelpenalty   -100
 \immutable\integerdef   \defaultprebinoppenalty -100
 
-\newmuskip\thickermuskip \thickermuskip \defaultthickermuskip
-\newmuskip\fencemuskip \fencemuskip \defaultpettymuskip
+\newmuskip\thickermuskip      \thickermuskip      \defaultthickermuskip
+\newmuskip\fencemuskip        \fencemuskip        \defaultpettymuskip
+\newmuskip\continuationmuskip \continuationmuskip \zeromuskip
 
 % Beware: we don't support mathinner any longer. We do have construct, wrapper, ellipsis etc
 % as replacements and all inner spacing is basically unset.
@@ -223,6 +250,7 @@
 \setnewconstant\mathexperimentalcode    \mathclassvalue experimental    % for MS and HH testing purposed only
 \setnewconstant\mathfakecode            \mathclassvalue fake
 \setnewconstant\mathnumbergroupcode     \mathclassvalue numbergroup
+\setnewconstant\mathcontinuationcode    \mathclassvalue continuation
 
 %D \starttyping
 %D \enabletrackers[math.suspicious]
@@ -393,12 +421,6 @@
 %D \stoptyping
 
 % $x ^^1__2 ^3_4 ^5_6 ^7_8 $
-
-\mathdoublescriptmode
-  "03%                         % two digits : inheritclass discardshapekern
-   \tohexadecimal\mathfakecode % > 16 so two digits
-   \tohexadecimal\mathfakecode % idem
-   \tohexadecimal\mathfakecode % idem
 
 \integerdef\defaultmathclassoptions\numexpr
    \zerocount
@@ -857,9 +879,11 @@
    \fi}
 
 \permanent\protected\def\startforceddisplaymath
-  {\Ustartmathmode \displaystyle
+  {\Ustartmathmode\displaystyle
    \begingroup % can go
-   \indisplaymath\conditionaltrue}
+   \indisplaymath\conditionaltrue
+\expand\everyinsidemathematics\relax % check
+}
 
 \permanent\protected\def\stopforceddisplaymath
   {\endgroup % can go
@@ -870,7 +894,7 @@
      \startforceddisplaymath
      \enforced\let\stoppickupmath\stopforceddisplaymath
    \else
-     \startimath
+     \startimath % maybe also forced and conditional etc
      \enforced\let\stoppickupmath\stopimath
    \fi}
 
@@ -939,8 +963,9 @@
    \ifhastok={#1}%
      \setupcurrentmathematics[#1]%
    \else
-     \cdef\currentmathematics{#1}% check for valid
+     \cdef\currentmathematics{#1}% todo: check for valid
    \fi
+   \expand\everysetupmathematics % kind of special here as we append to it/ check
    \usemathematicscolorparameter\c!color
    \ifcstok{\mathematicsparameter\c!openup}\v!yes
      \expandafter\math_m_yes_text_openedup
@@ -1007,10 +1032,14 @@
    \ifmmode
     %\beginmathgroup\forcedisplaymath#1\endmathgroup
     %\mathconstruct{\forcedisplaymath#1}%
-     \mathconstruct{\displaystyle\settrue\indisplaymath#1}%
+     \mathconstruct{\displaystyle\indisplaymath\conditionaltrue#1}%
    \else
     %\startimath\begingroup\forcedisplaymath#1\endgroup\stopimath
-     \Ustartmathmode\displaystyle\settrue\indisplaymath#1\Ustopmathmode % grouping for \aftergroup ?
+     \Ustartmathmode\displaystyle
+       \indisplaymath\conditionaltrue
+\expand\everyinsidemathematics\relax % check
+       #1%
+     \Ustopmathmode % grouping for \aftergroup ?
    \fi}
 
 \permanent\protected\def\im#1%
@@ -1018,10 +1047,14 @@
    \ifmmode
     %\beginmathgroup\forceinlinemath#1\endmathgroup
     %\mathconstruct{\forceinlinemath#1}%
-     \mathconstruct{\textstyle\setfalse\indisplaymath#1}%
+     \mathconstruct{\textstyle\indisplaymath\conditionalfalse#1}%
    \else
     %\startimath#1\stopimath
-     \Ustartmathmode\textstyle\setfalse\indisplaymath#1\Ustopmathmode
+     \Ustartmathmode\textstyle
+       \indisplaymath\conditionalfalse
+\expand\everyinsidemathematics\relax % check
+       #1%
+     \Ustopmathmode
    \fi}
 
 % \aliased\let\m\mathematics % we keep the simple versions
@@ -3403,17 +3436,27 @@
 
 \permanent\def\triggeruncrampedstyle
   {\ifmathstyle
-    \or \displaystyle      \or
-    \or \textstyle         \or
-    \or \scriptstyle       \or
-    \or \scriptscriptstyle \fi}
+     \currentlysetmathstyle\or
+     \displaystyle         \or
+     \currentlysetmathstyle\or
+     \textstyle            \or
+     \currentlysetmathstyle\or
+     \scriptstyle          \or
+     \currentlysetmathstyle\or
+     \scriptscriptstyle
+   \fi}
 
 \permanent\def\triggercrampedstyle
   {\ifmathstyle
-   \crampeddisplaystyle      \or \or
-   \crampedtextstyle         \or \or
-   \crampedscriptstyle       \or \or
-   \crampedscriptscriptstyle \fi}
+     \crampeddisplaystyle     \or
+     \currentlysetmathstyle   \or
+     \crampedtextstyle        \or
+     \currentlysetmathstyle   \or
+     \crampedscriptstyle      \or
+     \currentlysetmathstyle   \or
+     \crampedscriptscriptstyle\or
+     \currentlysetmathstyle
+   \fi}
 
 \permanent\def\triggersmallstyle
   {\ifmathstyle
@@ -4543,9 +4586,11 @@
 
 %D Just in case someone uses it:
 
-\appendtoks
-    \scriptspace.05\Umathquad\textstyle % for Mikael
-\to \everymathematics
+% \appendtoks
+%     \scriptspace.05\Umathquad\textstyle % for Mikael
+% \to \everymathematics
+
+\scriptspace\zeropoint
 
 %D New:
 
@@ -4778,6 +4823,61 @@
 
 \definemathannotation[mathannotation]
 
+%D By default we enable proper tensor multiple script alignment:
+
+\mathdoublescriptmode
+  "\tohexadecimal\numexpr
+     \inheritclassdoublescriptmodecode
+   + \discardshapekerndoublescriptmodecode
+   + \realignscriptsdoublescriptmodecode
+   + \reorderprescriptsdoublescriptmodecode
+   \relax
+   \tohexadecimal\mathcontinuationcode % 2 bytes
+   \tohexadecimal\mathcontinuationcode % 2 bytes
+   \tohexadecimal\mathcontinuationcode % 2 bytes
+
+\immutable\integerdef\c_math_alignscripts_bits\numexpr
+    "1000000 * \realignscriptsdoublescriptmodecode
+\relax
+
+\immutable\integerdef\c_math_obeyempty_bits\numexpr
+    \ignoreemptysuperscriptsmodecode
+   +\ignoreemptysubscriptsmodecode
+   +\ignoreemptyprimescriptsmodecode
+\relax
+
+\letempty\m_math_alignscripts
+
+\def\m_math_update_alignscripts
+   {\ifx\m_alignscripts\v!yes
+      \bitwiseflip\mathdoublescriptmode \c_math_alignscripts_bits  % align
+      \bitwiseflip\mathscriptsmode     -\c_math_obeyempty_bits     % obey empty
+    \orelse\ifx\m_alignscripts\v!always
+      \bitwiseflip\mathdoublescriptmode \c_math_alignscripts_bits  % align
+      \bitwiseflip\mathscriptsmode      \c_math_obeyempty_bits     % ignore empty
+    \orelse\ifx\m_alignscripts\v!empty
+      \bitwiseflip\mathdoublescriptmode-\c_math_alignscripts_bits  % don't align
+      \bitwiseflip\mathscriptsmode      \c_math_obeyempty_bits     % ignore empty
+    \else
+      \bitwiseflip\mathdoublescriptmode-\c_math_alignscripts_bits  % don't align
+      \bitwiseflip\mathscriptsmode     -\c_math_obeyempty_bits     % obey empty
+    \fi
+    \let\m_math_alignscripts\m_alignscripts}
+
+\appendtoks
+    \cdef\m_alignscripts{\mathematicsparameter\c!alignscripts}%
+    \ifx\m_math_alignscripts\m_alignscripts\else
+        \m_math_update_alignscripts
+    \fi
+\to \everysetupmathematics
+
+\appendtoks
+    \scriptspacebetweenfactor\numericscale\mathematicsparameter\c!interscriptfactor\relax
+\to \everysetupmathematics
+
+\setupmathematics
+  [\c!alignscripts=\v!always,
+   \c!interscriptfactor=-.5]
 
 \protect \endinput
 

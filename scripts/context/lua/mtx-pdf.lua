@@ -32,6 +32,7 @@ local helpinfo = [[
     <flag name="links"><short>show links</short></flag>
     <flag name="sign"><short>sign document (assumes signature template)</short></flag>
     <flag name="verify"><short>verify document</short></flag>
+    <flag name="detail"><short>print detail to the console</short></flag>
    </subcategory>
    <subcategory>
     <example><command>mtxrun --script pdf --info foo.pdf</command></example>
@@ -40,6 +41,7 @@ local helpinfo = [[
     <example><command>mtxrun --script pdf --stream=4 foo.pdf</command></example>
     <example><command>mtxrun --script pdf --sign --certificate=somesign.pem --password=test --uselibrary somefile</command></example>
     <example><command>mtxrun --script pdf --verify --certificate=somesign.pem --password=test --uselibrary somefile</command></example>
+    <example><command>mtxrun --script pdf --detail=nofpages somefile</command></example>
    </subcategory>
   </category>
  </flags>
@@ -171,6 +173,13 @@ function scripts.pdf.info(filename)
             end
     --  end
 
+    end
+end
+
+function scripts.pdf.detail(filename,detail)
+    if detail == "pages" or detail == "nofpages" then
+        local pdffile = loadpdffile(filename)
+        print(pdffile and pdffile.nofpages or 0)
     end
 end
 
@@ -726,6 +735,8 @@ elseif environment.argument("signature") then
     scripts.pdf.signature(filename,environment.argument("save"))
 elseif environment.argument("sign") then
     scripts.pdf.sign(filename)
+elseif environment.argument("detail") then
+    scripts.pdf.detail(filename,environment.argument("detail"))
 elseif environment.argument("verify") then
     scripts.pdf.verify(filename)
 elseif environment.argument("exporthelp") then

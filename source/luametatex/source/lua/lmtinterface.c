@@ -411,6 +411,7 @@ void lmt_initialize_interface(void)
     set_math_parameter_value(math_parameter_superscript_subscript_bottom_max, math_dimension_parameter, supsubbottommax);
     set_math_parameter_value(math_parameter_subscript_superscript_vgap,       math_dimension_parameter, subsupvgap);
     set_math_parameter_value(math_parameter_space_before_script,              math_dimension_parameter, spacebeforescript);
+    set_math_parameter_value(math_parameter_space_between_script,             math_dimension_parameter, spacebetweenscript);
     set_math_parameter_value(math_parameter_space_after_script,               math_dimension_parameter, spaceafterscript);
     set_math_parameter_value(math_parameter_connector_overlap_min,            math_dimension_parameter, connectoroverlapmin);
 
@@ -516,6 +517,7 @@ void lmt_initialize_interface(void)
     set_math_font_parameter(SubSuperscriptGapMin,                     math_dimension_parameter);
     set_math_font_parameter(SuperscriptBottomMaxWithSubscript,        math_dimension_parameter);
     set_math_font_parameter(SpaceBeforeScript,                        math_dimension_parameter);
+    set_math_font_parameter(SpaceBetweenScript,                       math_dimension_parameter);
     set_math_font_parameter(SpaceAfterScript,                         math_dimension_parameter);
     set_math_font_parameter(UpperLimitGapMin,                         math_dimension_parameter);
     set_math_font_parameter(UpperLimitBaselineRiseMin,                math_dimension_parameter);

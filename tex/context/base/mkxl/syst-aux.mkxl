@@ -1640,35 +1640,41 @@
 %    \let\m_syst_parameter_s#1%
 %    \expandafterspaces\syst_helpers_grab_parameter#3\ignorearguments\ignorearguments}
 
+% Doesn't work with single entry empty values [foo=]
+%
+% \tolerant\def\syst_get_parameters_n#*#1=#S#2,#M,%
+%   {\ifarguments             \expandafter\gobbleoneargument
+%    \or                      \mult_interfaces_get_parameters_error_indeed\m_syst_parameter{#1}%
+%    \orelse\ifparameter#2\or \defcsname\m_syst_parameter#1\endcsname{#2}%
+%    \else                    \letcsname\m_syst_parameter#1\endcsname\empty
+%    \fi                      \syst_get_parameters_n}
+%
+% so we do this instead (and also silently recover).
+
 \tolerant\def\syst_get_parameters_n#*#1=#S#2,#M,%
-  {\ifarguments             \expandafter\gobbleoneargument
-   \or                      \mult_interfaces_get_parameters_error_indeed\m_syst_parameter{#1}%
-   \orelse\ifparameter#2\or \defcsname\m_syst_parameter#1\endcsname{#2}%
-   \else                    \letcsname\m_syst_parameter#1\endcsname\empty
-   \fi                      \syst_get_parameters_n}
+  {\unless\ifparameter#1\or\expandafter\gobbleoneargument
+   \orelse\ifparameter#2\or\defcsname\m_syst_parameter#1\endcsname{#2}%
+   \else                   \letcsname\m_syst_parameter#1\endcsname\empty
+   \fi                     \syst_get_parameters_n}
 \tolerant\def\syst_get_parameters_e#*#1=#S#2,#M,%
-  {\ifarguments             \expandafter\gobbleoneargument
-   \or                      \mult_interfaces_get_parameters_error_indeed\m_syst_parameter{#1}%
+  {\unless\ifparameter#1\or\expandafter\gobbleoneargument
    \orelse\ifparameter#2\or\edefcsname\m_syst_parameter#1\endcsname{#2}%
-   \else                    \letcsname\m_syst_parameter#1\endcsname\empty
-   \fi                      \syst_get_parameters_e}
+   \else                   \letcsname\m_syst_parameter#1\endcsname\empty
+   \fi                     \syst_get_parameters_e}
 \tolerant\def\syst_get_parameters_g#*#1=#S#2,#M,%
-  {\ifarguments             \expandafter\gobbleoneargument
-   \or                      \mult_interfaces_get_parameters_error_indeed\m_syst_parameter{#1}%
+  {\unless\ifparameter#1\or\expandafter\gobbleoneargument
    \orelse\ifparameter#2\or\gdefcsname\m_syst_parameter#1\endcsname{#2}%
-   \else                    \letcsname\m_syst_parameter#1\endcsname\empty
-   \fi                      \syst_get_parameters_g}
+   \else                   \letcsname\m_syst_parameter#1\endcsname\empty
+   \fi                     \syst_get_parameters_g}
 \tolerant\def\syst_get_parameters_x#*#1=#S#2,#M,%
-  {\ifarguments             \expandafter\gobbleoneargument
-   \or                      \mult_interfaces_get_parameters_error_indeed\m_syst_parameter{#1}%
+  {\unless\ifparameter#1\or\expandafter\gobbleoneargument
    \orelse\ifparameter#2\or\xdefcsname\m_syst_parameter#1\endcsname{#2}%
-   \else                    \letcsname\m_syst_parameter#1\endcsname\empty
-   \fi                      \syst_get_parameters_x}
+   \else                   \letcsname\m_syst_parameter#1\endcsname\empty
+   \fi                     \syst_get_parameters_x}
 \tolerant\def\syst_get_parameters_f#*#1=#S#2,#M,%
-  {\ifarguments             \expandafter\gobbleoneargument
-   \or                      \mult_interfaces_get_parameters_error_indeed\m_syst_parameter{#1}%
-   \else                    \letcsname\m_syst_parameter#1\endcsname\empty
-   \fi                      \syst_get_parameters_f}
+  {\unless\ifparameter#1\or\expandafter\gobbleoneargument
+   \else                   \letcsname\m_syst_parameter#1\endcsname\empty
+   \fi                     \syst_get_parameters_f}
 
 \permanent\protected\def\getparameters   [#1]#*[#S#2]{\cdef\m_syst_parameter{#1}\syst_get_parameters_n#2\ignorearguments\ignorearguments}
 \permanent\protected\def\geteparameters  [#1]#*[#S#2]{\cdef\m_syst_parameter{#1}\syst_get_parameters_e#2\ignorearguments\ignorearguments}

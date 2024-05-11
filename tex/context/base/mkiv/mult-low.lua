@@ -24,7 +24,7 @@ return {
         "pluscxxvii", "pluscxxviii", "pluscclv", "pluscclvi",
         "normalpagebox",
         "binaryshiftedten", "binaryshiftedtwenty", "binaryshiftedthirty",
-        "thickermuskip",
+        "thickermuskip", "continuationmuskip", "fencemuskip", "mathinterwordmuskip",
         "zerofloat",
         --
         "directionlefttoright", "directionrighttoleft",
@@ -127,6 +127,12 @@ return {
         "kernparbegincode", "hskipparbegincode", "unhboxparbegincode", "valignparbegincode",
         "vruleparbegincode",
         --
+        "fixedsuperorsubscriptsmodecode", "fixedsuperandsubscriptsmodecode", "ignoreemptyscriptsmodecode",
+        "ignoreemptysuperscriptsmodecode", "ignoreemptysubscriptsmodecode", "ignoreemptyprimescriptsmodecode",
+        --
+        "inheritclassdoublescriptmodecode", "discardshapekerndoublescriptmodecode",
+        "realignscriptsdoublescriptmodecode", "reorderprescriptsdoublescriptmodecode",
+        --
         "leftoriginlistanchorcode", "leftheightlistanchorcode", "leftdepthlistanchorcode",
         "rightoriginlistanchorcode", "rightheightlistanchorcode", "rightdepthlistanchorcode",
         "centeroriginlistanchorcode", "centerheightlistanchorcode", "centerdepthlistanchorcode",
@@ -174,7 +180,7 @@ return {
         "mathfractioncode", "mathmiddlecode", "mathprimecode", "mathaccentcode", "mathfencedcode", "mathghostcode",
         "mathvariablecode",  "mathactivecode", "mathvcentercode", "mathconstructcode", "mathwrappedcode",
         "mathbegincode", "mathendcode", "mathexplicitcode", "mathdivisioncode", "mathfactorialcode",
-        "mathdimensioncode", "mathexperimentalcode", "mathtextpunctuationcode",
+        "mathdimensioncode", "mathexperimentalcode", "mathtextpunctuationcode", "mathcontinuationcode",
         "mathimaginarycode", "mathdifferentialcode", "mathexponentialcode", "mathintegralcode", "mathellipsiscode", "mathfunctioncode", "mathdigitcode",
      -- "mathtopaccentcode", "mathbottomaccentcode", "mathdelimitercode", "mathrootcode", "mathprintcode",        --
         "mathalphacode", "mathboxcode", "mathchoicecode", "mathnothingcode", "mathlimopcode", "mathnolopcode",

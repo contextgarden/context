@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['back-exp-imp-mth'] = {
 
 local sub = string.sub
 local utfchar, utfvalues = utf.char, utf.values
+local insert = table.insert
 local setmetatableindex, concat = table.setmetatableindex, table.concat
 
 local structurestags = structures.tags
@@ -135,19 +136,19 @@ do
     end
 
     local no_mrow = {
-        mrow     = true,
-        mfenced  = true,
-        mfrac    = true,
-        mroot    = true,
-        msqrt    = true,
-        mtable   = true,
-        mi       = true,
-        mo       = true,
-        mn       = true,
-        mspace   = true,
-
-     -- mstacker    = true,
-     -- mextensible = true,
+        mrow          = true,
+        mfenced       = true,
+        mfrac         = true,
+        mroot         = true,
+        msqrt         = true,
+        mtable        = true,
+        mi            = true,
+        mo            = true,
+        mn            = true,
+        mspace        = true,
+     -- mmultiscripts = true,
+     -- mstacker      = true,
+     -- mextensible   = true,
     }
 
     local function checkmath(root) -- we can provide utf.toentities as an option
@@ -163,40 +164,40 @@ do
                         maxsize = 1
                     }
                 end
-            elseif roottg == "msubsup" then
-                -- kind of tricky: we have a different order in display mode
-                local nucleus, superscript, subscript
-                if ndata > 3 then
-                    -- error
-                else
-                    for i=1,ndata do
-                        local di = data[i]
-                        if not di then
-                            -- weird
-                        elseif di.content then
-                            -- text
-                        else
-                            local s = specifications[di.fulltag]
-                            if s.subscript then
-                                subscript = i
-                            elseif s.superscript then
-                                superscript = i
-                            else
-                                nucleus = i
-                            end
-                        end
-                    end
-                    if superscript or subscript then
-                        -- we probably always have 3 anyway ... needs checking
-                        local nuc = nucleus     and data[nucleus]
-                        local sub = subscript   and data[subscript]
-                        local sup = superscript and data[superscript]
-                        local n = 0 -- play safe
-                        if nuc then n = n + 1 ; data[n] = nuc end
-                        if sub then n = n + 1 ; data[n] = sub end
-                        if sup then n = n + 1 ; data[n] = sup end
-                    end
-                end
+--             elseif roottg == "msubsup" then
+--                 -- kind of tricky: we have a different order in display mode
+--                 local nucleus, superscript, subscript
+--                 if ndata > 3 then
+--                     -- error
+--                 else
+--                     for i=1,ndata do
+--                         local di = data[i]
+--                         if not di then
+--                             -- weird
+--                         elseif di.content then
+--                             -- text
+--                         else
+--                             local s = specifications[di.fulltag]
+--                             if s.subscript then
+--                                 subscript = i
+--                             elseif s.superscript then
+--                                 superscript = i
+--                             else
+--                                 nucleus = i
+--                             end
+--                         end
+--                     end
+--                     if superscript or subscript then
+--                         -- we probably always have 3 anyway ... needs checking
+--                         local nuc = nucleus     and data[nucleus]
+--                         local sub = subscript   and data[subscript]
+--                         local sup = superscript and data[superscript]
+--                         local n = 0 -- play safe
+--                         if nuc then n = n + 1 ; data[n] = nuc end
+--                         if sub then n = n + 1 ; data[n] = sub end
+--                         if sup then n = n + 1 ; data[n] = sup end
+--                     end
+--                 end
          -- elseif roottg == "msup" or roottg == "msub" then
          --     -- m$^2$
          --     if ndata == 1 then
@@ -703,11 +704,157 @@ do
         end
     end
 
+    local mprescripts = {
+        element = "mprescripts",
+        data    = { content = "" },
+        nature  = "inline",
+        fulltag = "mprescripts>0"
+    }
+
+    local function wrapup(d,index,n,prelist,kernel,postlist)
+        local di   = d[index]
+        local post = #postlist
+        local pre  = #prelist
+        local list = { kernel }
+        local size = 1
+        for i=index+1,n do
+            d[i].skip = "ignore"
+        end
+        if post > 0 then
+            for i=1,post do
+                size = size + 1 ; list[size] = postlist[i]
+            end
+        end
+        if pre > 0 then
+            size = size + 1 ; list[size] = mprescripts
+            for i=1,pre do
+                size = size + 1 ; list[size] = prelist[i]
+            end
+        end
+        di.element        = "mmultiscripts"
+     -- di.tg             = "mmultiscripts"
+        di.data           = list
+        di.iscontinuation = true
+        di.__i__          = size
+    end
+
+    local function found(d,what)
+        for i=1,#d do
+            local di = d[i]
+            local sp = specifications[di.fulltag]
+            if sp and sp.script == what then
+                return di
+            end
+        end
+    end
+
     function checks.mrow(di)
-     -- local d = di.data
-     -- if d then
-     --     checked(d)
-     -- end
+        local d = di.data
+        if d then
+            local postlist = nil
+            local prelist  = nil
+            local kernel   = nil
+            local index    = 0
+            for i=1,#d do
+                local di   = d[i]
+                local data = di.data
+                local tg   = di and di.tg
+                local sp   = specifications[di.fulltag]
+                local continuation = sp and sp.continuation
+                if continuation then
+                    -- head kernel next
+                    if postlist and continuation.head then
+                        wrapup(d,index,#d,prelist,kernel,postlist)
+                        postlist = nil
+                        prelist  = nil
+                        kernel   = 0
+                    end
+                    -- play safe as we can have empty ones (so maybe move the extra code here)
+                    local nd = #data
+                    if tg == "msup" then
+                        if not postlist then
+                            index    = i
+                            postlist = { }
+                            prelist  = { }
+                            kernel   = dummy_nucleus
+                        end
+                        local sub = found(data,"sup")
+                        postlist[#postlist+1] = dummy_nucleus
+                        postlist[#postlist+1] = sup
+                        if continuation.kernel then
+                            kernel = data[1] or dummy_nucleus
+                        end
+                    elseif tg == "msub" then
+                        if not postlist then
+                            index    = i
+                            postlist = { }
+                            prelist  = { }
+                            kernel   = dummy_nucleus
+                        end
+                        local sub = found(data,"sub")
+                        postlist[#postlist+1] = sub
+                        postlist[#postlist+1] = dummy_nucleus
+                        if continuation.kernel then
+                            kernel = data[1] or dummy_nucleus
+                        end
+                    elseif tg == "msubsup" then
+                        if not postlist then
+                            index    = i
+                            postlist = { }
+                            prelist  = { }
+                            kernel   = dummy_nucleus
+                        end
+                        local sub = found(data,"sub")
+                        local sup = found(data,"sup")
+                        postlist[#postlist+1] = sub
+                        postlist[#postlist+1] = sup
+                        if continuation.kernel then
+                            kernel = data[1] or dummy_nucleus
+                        end
+                    elseif tg == "mmultiscripts" then
+                        -- we know that we only have one set
+                        if not postlist then
+                            index    = i
+                            postlist = { }
+                            prelist  = { }
+                            kernel   = dummy_nucleus
+                        end
+                        local prime  = found(data,"prime")
+                        local sub    = found(data,"sub")
+                        local sup    = found(data,"sup")
+                        local presub = found(data,"presub")
+                        local presup = found(data,"presup")
+                        if prime then
+                            postlist[#postlist+1] = dummy_nucleus
+                            postlist[#postlist+1] = prime
+                        end
+                        if sub or sup then
+                            postlist[#postlist+1] = sub or dummy_nucleus
+                            postlist[#postlist+1] = sup or dummy_nucleus
+                        end
+                        if presub or presup then
+                            prelist[#prelist+1] = presub or dummy_nucleus
+                            prelist[#prelist+1] = presup or dummy_nucleus
+                        end
+                        if continuation.kernel then
+                            kernel = data[1] or dummy_nucleus
+                        end
+                    else
+                        postlist = nil
+                        prelist  = nil
+                        kernel   = nil
+                    end
+                elseif postlist then
+                    wrapup(d,index,i-1,prelist,kernel,postlist)
+                    postlist = nil
+                    prelist  = nil
+                    kernel   = nil
+                end
+            end
+            if postlist then
+                wrapup(d,index,#d,prelist,kernel,postlist)
+            end
+        end
     end
 
     -- we can move more checks here
@@ -755,39 +902,52 @@ do
         end
     end
 
-    do
-
-        local a, z, A, Z = 0x61, 0x7A, 0x41, 0x5A
-
-        function extras.mi(di,element,n,fulltag) -- check with content
-            local str = di.data[1].content
-            if str and sub(str,1,1) ~= "&" then -- hack but good enough (maybe gsub op eerste)
-                for v in utfvalues(str) do
-                    if (v >= a and v <= z) or (v >= A and v <= Z) then
-                        local a = di.attributes
-                        if a then
-                            a.mathvariant = "normal"
-                        else
-                            di.attributes = { mathvariant = "normal" }
-                        end
-                    end
-                end
+    function extras.mmultiscripts(di,element,n,fulltag)
+        if not di.iscontinuation then
+            local d      = di.data
+            local sup    = found(d,"sup")
+            local sub    = found(d,"sub")
+            local presup = found(d,"presup")
+            local presub = found(d,"presub")
+            local prime  = found(d,"prime")
+            local n = 1
+            if sup or sub then
+                n = n + 1 ; d[n] = sub or dummy_nucleus
+                n = n + 1 ; d[n] = sup or dummy_nucleus
             end
+            if prime then
+                n = n + 1 ; d[n] = dummy_nucleus
+                n = n + 1 ; d[n] = prime
+            end
+            if presup or presub then
+                n = n + 1 ; d[n] = mprescripts
+                n = n + 1 ; d[n] = presub or dummy_nucleus
+                n = n + 1 ; d[n] = presup or dummy_nucleus
+            end
+            d.__i__ = n
         end
-
     end
 
     function extras.msub(di,element,n,fulltag)
-        -- m$^2$
         local data = di.data
         if #data == 1 then
-            local d = data[1]
-            data[2] = d
-            d.__i__ = 2
-            data[1] = dummy_nucleus
+            insert(data,1,dummy_nucleus)
+            data.__i__ = 2
         end
     end
 
     extras.msup = extras.msub
+
+    function extras.msubsup(di,element,n,fulltag)
+        local data = di.data
+        if #data == 2 then
+            insert(data,1,dummy_nucleus)
+            data.__i__ = 3
+        end
+        local sup = found(data,"sup")
+        local sub = found(data,"sub")
+        data[2] = sub
+        data[3] = sup
+    end
 
 end

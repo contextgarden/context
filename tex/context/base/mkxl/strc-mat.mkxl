@@ -1705,7 +1705,7 @@
 \tolerant\protected\def\strc_formulas_nested_formula_start[#S#1]%
   {\begingroup
    \ifparameter#1\or
-      \setupformula[\c!width=\d_strc_formulas_display_width,#1]%
+      \setupformula[\c!width=\d_strc_formulas_ _width,#1]%
       \d_strc_formulas_display_width\formulaparameter\c!width\relax
    \fi
    \vcenter \bgroup

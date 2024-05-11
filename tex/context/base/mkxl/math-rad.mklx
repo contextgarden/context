@@ -302,7 +302,7 @@
 
 \pushoverloadmode
 
-\definemathradical[root][mp=minifun::math:radical:default]
+\definemathradical[root][mp=minifun::math:radical:default] % hm
 \definemathradical[sqrt][root]
 
 \popoverloadmode

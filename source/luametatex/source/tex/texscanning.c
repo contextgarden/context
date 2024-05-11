@@ -5535,7 +5535,7 @@ static long long tex_pop_stack_entry(stack_info *stack)
             stack->tail = node_prev(t);
             node_next(stack->tail) = null;
         }
-        tex_free_node(t, temp_node_size);
+        tex_free_node(t, expression_node_size);
         return v;
     } else {
         return 0;
@@ -5569,7 +5569,7 @@ static void tex_take_stack_entry(stack_info *target, stack_info *source, halfwor
 {
     while (source->head != current) {
         halfword next = node_next(source->head);
-        tex_free_node(source->head, temp_node_size);
+        tex_free_node(source->head, expression_node_size);
         source->head = next;
     }
     if (current == source->tail) {

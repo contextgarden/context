@@ -164,7 +164,7 @@ function lpdf_epdf.objecttype(object)
 end
 
 local function get_value(document,t,key)
-    if not key then
+    if not key or not t then
         return
     end
     local value = t[key]

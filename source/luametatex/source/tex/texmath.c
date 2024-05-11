@@ -462,9 +462,20 @@ void tex_math_copy_char_data(halfword target, halfword source, int wipelist)
 
 inline static void tex_math_set_scripts_options(halfword n)
 {
-    switch (math_scripts_mode_par) { 
-        case 1: noad_options(n) |= noad_option_fixed_super_or_sub_script; break;
-        case 2: noad_options(n) |= noad_option_fixed_super_and_sub_script; break;
+    if (math_scripts_mode_par & fixed_super_or_sub_script_code) {  
+        noad_options(n) |= noad_option_fixed_super_or_sub_script;
+    }
+    if (math_scripts_mode_par & fixed_super_and_sub_script_code) {  
+        noad_options(n) |= noad_option_fixed_super_and_sub_script;
+    }
+    if (math_scripts_mode_par & ignore_empty_super_script_code) {  
+        noad_options(n) |= noad_option_ignore_empty_super_script;
+    }
+    if (math_scripts_mode_par & ignore_empty_sub_script_code) {  
+        noad_options(n) |= noad_option_ignore_empty_sub_script;
+    }
+    if (math_scripts_mode_par & ignore_empty_prime_script_code) {  
+        noad_options(n) |= noad_option_ignore_empty_prime_script;
     }
 }
 
@@ -1188,6 +1199,9 @@ void tex_run_math_style(void) {
                 tex_tail_append(noad);
             }
             break;
+        case currently_set_math_style:
+            /* no node gets injected */
+            break; 
         default: 
             if (is_valid_math_style(cur_chr)) {
                 halfword noad = tex_new_node(style_node, (quarterword) cur_chr);
@@ -1529,7 +1543,7 @@ static void tex_aux_new_save_level_math(quarterword group)
     update_tex_text_direction(direction);
 }
 
-static void tex_aux_push_math(quarterword group, int style)
+static void tex_aux_push_math(quarterword group, int style, int outerstyle)
 {
     halfword main_style = cur_list.math_main_style;
     halfword parent_style = cur_list.math_style;
@@ -1538,13 +1552,11 @@ static void tex_aux_push_math(quarterword group, int style)
     }
     cur_list.math_begin = math_begin_class_par;
     cur_list.math_end = math_end_class_par;
-    if (main_style == -1) { 
-        cur_list.math_main_style = style;
-        main_style = style;
-    }
-    if (parent_style == -1) { 
-        cur_list.math_parent_style = main_style;
-        parent_style = main_style;
+    if (outerstyle >= 0) {
+        cur_list.math_main_style = outerstyle;
+        main_style = outerstyle;
+        cur_list.math_parent_style = outerstyle;
+        parent_style = outerstyle;
     }
     tex_push_nest();
     cur_list.mode = inline_mmode;
@@ -1560,7 +1572,7 @@ static void tex_aux_push_math(quarterword group, int style)
 
 static void tex_aux_enter_inline_math(int style)
 {
-    tex_aux_push_math(math_inline_group, style);
+    tex_aux_push_math(math_inline_group, style, style);
     update_tex_family(0, unused_math_family);
     if (every_math_par) {
         tex_begin_token_list(every_math_par, every_math_text);
@@ -1691,7 +1703,7 @@ static int tex_aux_pre_math_par_direction(void)
 static void tex_aux_enter_display_math(halfword cmd)
 {
     if (math_display_mode_par) {
-        tex_aux_push_math(math_inline_group, display_style);
+        tex_aux_push_math(math_inline_group, display_style, display_style);
         cur_list.math_mode = cmd; 
         cur_list.mode = inline_mmode; /* new */
         update_tex_family(0, unused_math_family);
@@ -1751,7 +1763,7 @@ static void tex_aux_enter_display_math(halfword cmd)
             width = hsize_par;
             indent = 0;
         }
-        tex_aux_push_math(math_display_group, display_style);
+        tex_aux_push_math(math_display_group, display_style, display_style);
         cur_list.mode = mmode;
         update_tex_family(0, unused_math_family);
         update_tex_pre_display_size(size);
@@ -2188,7 +2200,7 @@ static int tex_aux_scan_math(halfword target, halfword style, int usetextfont, h
                 saved_math_group_all_class = unset_noad_class;
                 saved_math_group_pointer = target;
 			    lmt_save_state.save_stack_data.ptr += saved_math_group_n_of_records;
-			    tex_aux_push_math(math_component_group, style);
+			    tex_aux_push_math(math_component_group, style, -1);
                 if (usetextfont) {
                     tex_set_math_text_font(style, usetextfont);
                 }
@@ -2211,7 +2223,7 @@ static int tex_aux_scan_math(halfword target, halfword style, int usetextfont, h
             saved_math_group_all_class = all;
             saved_math_group_pointer = target;
             lmt_save_state.save_stack_data.ptr += saved_math_group_n_of_records;
-            tex_aux_push_math(math_group, style);
+            tex_aux_push_math(math_group, style, -1);
             toks = every_math_atom_par;
             toks_text = every_math_atom_text; 
             if (toks) {
@@ -2272,7 +2284,7 @@ static void tex_aux_append_math_fence(halfword fence, quarterword mathclass)
     switch (mathclass) {
         case open_noad_subtype:
             {
-                tex_aux_push_math(math_fence_group, cur_list.math_style);
+                tex_aux_push_math(math_fence_group, cur_list.math_style, -1);
                 node_subtype(fence) = left_fence_side;
                 node_next(cur_list.head) = fence;
                 cur_list.tail = fence;
@@ -2296,7 +2308,7 @@ static void tex_aux_append_math_fence(halfword fence, quarterword mathclass)
             { 
                 halfword q = tex_aux_finish_math_list(fence);
                 tex_aux_unsave_math();
-                tex_aux_push_math(math_fence_group, cur_list.math_style);
+                tex_aux_push_math(math_fence_group, cur_list.math_style, -1);
                 node_subtype(fence) = middle_fence_side;
                 node_next(cur_list.head) = q;
                 cur_list.tail = fence;
@@ -2326,7 +2338,7 @@ static void tex_aux_append_math_fence_val(mathcodeval mval, mathdictval dval, qu
 }
 
 
-halfword tex_new_math_continuation_atom(halfword node)
+halfword tex_new_math_continuation_atom(halfword node, halfword attr)
 {
     if (! node) {
         /*tex We create a continuation atom. */
@@ -2348,14 +2360,29 @@ halfword tex_new_math_continuation_atom(halfword node)
         if (options & discard_shape_kern_double_atom_option) {
             noad_options(node) |= noad_option_discard_shape_kern; 
         }
+        if (options & realign_scripts_double_atom_option) {
+            noad_options(node) |= noad_option_realign_scripts; 
+        }
+        if (options & reorder_double_pre_script_atom_option) {
+            noad_options(node) |= noad_option_reorder_pre_scripts; 
+        }
     }
     noad_options(node) |= noad_option_continuation;
+    if (attr) {
+        tex_attach_attribute_list_copy(node, attr);
+    }
     return node; 
 }
 
-static halfword tex_math_double_atom(void)
+static halfword tex_math_double_atom(int followup)
 {
-    halfword tail = tex_new_math_continuation_atom(null); /*tex We make a new one. */
+    halfword tail = tex_new_math_continuation_atom(null, cur_list.tail); /*tex We make a new one. */
+    tex_math_set_scripts_options(tail);
+    if (followup && ! has_noad_option_continuation(cur_list.tail)) {
+        noad_options(cur_list.tail) |= noad_option_continuation_head;
+        noad_options(cur_list.tail) |= noad_option_continuation_kernel;
+     // printf("SET DA %i\n",cur_list.tail);
+    }
     tex_tail_append(tail);
     return tail; 
 }
@@ -3118,7 +3145,10 @@ void tex_run_math_radical(void)
                                         case root_radical_subtype:
                                         case rooted_radical_subtype:
                                         case delimited_radical_subtype:
-                                            style = tex_scan_math_style_identifier(1, 0);
+                                            style = tex_scan_math_style_identifier(1, 0); /* tolerant */
+                                            if (style < 0) { 
+                                                style = yet_unset_math_style;
+                                            }
                                             break;
                                         default:
                                             /* ignore */
@@ -3330,7 +3360,7 @@ void tex_run_math_radical(void)
                 saved_radical_degree_done =  0; 
                 saved_radical_style =  style;
                 lmt_save_state.save_stack_data.ptr += saved_radical_n_of_records;
-                tex_aux_push_math(math_radical_group, tex_math_style_variant(style, math_parameter_degree_variant));
+                tex_aux_push_math(math_radical_group, tex_math_style_variant(style, math_parameter_degree_variant), -1);
                 tex_scan_left_brace();
                 break;
             }
@@ -3358,7 +3388,7 @@ void tex_finish_math_radical(void)
                     halfword style = saved_radical_current_style();
                     radical_degree(radical) = whatever;
                     saved_radical_update_component();
-                    tex_aux_push_math(math_radical_group, tex_math_style_variant(style, math_parameter_radical_variant));
+                    tex_aux_push_math(math_radical_group, tex_math_style_variant(style, math_parameter_radical_variant), -1);
                     tex_scan_left_brace();     
                 }
                 break;
@@ -3620,7 +3650,7 @@ void tex_run_math_choice(void) {
                 saved_choice_initialize();
                 saved_choice_count = math_display_choice;
                 lmt_save_state.save_stack_data.ptr += saved_choice_n_of_records;
-                tex_aux_push_math(math_choice_group, display_style);
+                tex_aux_push_math(math_choice_group, display_style, -1);
                 tex_scan_left_brace();
                 break;
             }
@@ -3647,7 +3677,7 @@ void tex_run_math_choice(void) {
                 saved_choice_initialize();
                 saved_choice_count = math_pre_break_choice;
                 lmt_save_state.save_stack_data.ptr += saved_choice_n_of_records;
-                tex_aux_push_math(math_choice_group, cur_list.math_style);
+                tex_aux_push_math(math_choice_group, cur_list.math_style, -1);
                 tex_scan_left_brace();
                 break;
             }
@@ -3665,7 +3695,7 @@ void tex_run_math_choice(void) {
                 saved_math_group_pointer = m;
                 saved_math_group_all_class = unset_noad_class;
                 lmt_save_state.save_stack_data.ptr += saved_math_group_n_of_records;
-                tex_aux_push_math(math_stack_group, s);
+                tex_aux_push_math(math_stack_group, s, -1);
                 break;
             }
     }
@@ -3734,7 +3764,7 @@ void tex_finish_math_choice(void)
                     break;
             }
             saved_choice_update_component();
-            tex_aux_push_math(math_choice_group, style);
+            tex_aux_push_math(math_choice_group, style, -1);
             tex_scan_left_brace();
         } else {
             tex_confusion("scan build choices");
@@ -3763,7 +3793,7 @@ void tex_finish_math_fraction(void)
                     return;
             }
             saved_fraction_update_component();
-            tex_aux_push_math(math_fraction_group, autostyle);
+            tex_aux_push_math(math_fraction_group, autostyle, -1);
             tex_scan_left_brace();
         } else {
             tex_confusion("scan build fraction");
@@ -3789,7 +3819,7 @@ void tex_finish_math_operator(void)
                     return;
             }
             saved_operator_update_component();
-            tex_aux_push_math(math_operator_group, tex_math_style_variant(cur_list.math_style, math_parameter_subscript_variant));
+            tex_aux_push_math(math_operator_group, tex_math_style_variant(cur_list.math_style, math_parameter_subscript_variant), -1);
             tex_scan_left_brace();
         } else { 
             tex_confusion("math operator");
@@ -3873,11 +3903,7 @@ void tex_run_math_script(void)
             break;
     }
     if (tail == cur_list.head || (! tex_math_scripts_allowed(tail))) {
-        tail = tex_math_double_atom();
-     // halfword n = tex_new_node(sub_mlist_node, 0);
-     // tail = tex_new_node(simple_noad, ordinary_noad_subtype);
-     // tex_tail_append(tail);
-     // noad_nucleus(tail) = n;
+        tail = tex_math_double_atom(0);
     }
     switch (code) {
         case math_sub_script_code:
@@ -3885,7 +3911,7 @@ void tex_run_math_script(void)
         case math_shifted_sub_script_code:
             {
                 if (noad_subscr(tail)) {
-                    tail = tex_math_double_atom();
+                    tail = tex_math_double_atom(1);
                     if (math_double_script_mode_par < 0) { 
                         tex_handle_error(
                             normal_error_type,
@@ -3918,7 +3944,7 @@ void tex_run_math_script(void)
             {
                 if (noad_subprescr(tail)) {
                     int limitation = node_type(tail) == fraction_noad; /*tex See remark at node definition. */
-                    tail = tex_math_double_atom();
+                    tail = tex_math_double_atom(1);
                     if (math_double_script_mode_par < 0) { 
                         tex_handle_error(
                             normal_error_type,
@@ -3947,7 +3973,7 @@ void tex_run_math_script(void)
         case math_shifted_super_script_code:
             {
                 if (noad_supscr(tail)) {
-                    tail = tex_math_double_atom();
+                    tail = tex_math_double_atom(1);
                     if (math_double_script_mode_par < 0) { 
                         tex_handle_error(
                             normal_error_type,
@@ -3980,7 +4006,7 @@ void tex_run_math_script(void)
             {
                 if (noad_supprescr(tail)) {
                     int limitation = node_type(tail) == fraction_noad; /*tex See remark at node definition. */
-                    tail = tex_math_double_atom();
+                    tail = tex_math_double_atom(1);
                     if (math_double_script_mode_par < 0) { 
                         tex_handle_error(
                             normal_error_type,
@@ -4007,7 +4033,7 @@ void tex_run_math_script(void)
         case math_prime_script_code:
             {
                 if (noad_prime(tail)) {
-                    tail = tex_math_double_atom();
+                    tail = tex_math_double_atom(1);
                     if (math_double_script_mode_par < 0) { 
                         tex_handle_error(
                             normal_error_type,
@@ -4280,8 +4306,8 @@ void tex_run_math_fraction(void)
                             switch (tex_scan_character("toTO", 0, 0, 0)) {
                                 case 't': case 'T':
                                     if (tex_scan_mandate_keyword("style", 2)) {
-                                        halfword style = tex_scan_math_style_identifier(1, 0);
-                                        if (denominator) {
+                                        halfword style = tex_scan_math_style_identifier(1, 0); /* tolerant */
+                                        if (denominator && style >= 0) {
                                             userstyle = style;
                                         } else {
                                             /* just ignore */
@@ -4335,7 +4361,7 @@ void tex_run_math_fraction(void)
             saved_fraction_userstyle = userstyle; 
             lmt_save_state.save_stack_data.ptr += saved_fraction_n_of_records;
             cur_list.math_flatten = 0;
-            tex_aux_push_math(math_fraction_group, autostyle);
+            tex_aux_push_math(math_fraction_group, autostyle, -1);
             tex_scan_left_brace();
         } else {
             /*tex
@@ -4358,6 +4384,9 @@ void tex_run_math_fraction(void)
 static halfword tex_aux_finish_math_list(halfword p)
 {
     halfword q;
+    /*tex We reorder prescripts here: */
+    cur_list.head = tex_mlist_to_hlist_prepare(cur_list.head);
+    /*tex So now we're ready to proceed. */
     if (cur_list.incomplete_noad) {
         halfword denominator = fraction_denominator(cur_list.incomplete_noad);
         if (denominator) {
@@ -4831,14 +4860,14 @@ void tex_run_math_fence(void)
                     halfword bottom = tex_new_node(sub_mlist_node, 0);
                     fence_delimiter_top(fence) = top;
                     fence_delimiter_bottom(fence) = bottom;
-                    tex_aux_push_math(math_fence_group, style);
+                    tex_aux_push_math(math_fence_group, style, -1);
                     node_next(cur_list.head) = fence;
                     cur_list.tail = fence;
                     cur_list.delimiter = fence;
                     saved_operator_initialize();
                     saved_operator_variant = math_limits_top;
                     lmt_save_state.save_stack_data.ptr += saved_operator_n_of_records;
-                    tex_aux_push_math(math_operator_group, tex_math_style_variant(style, math_parameter_superscript_variant));
+                    tex_aux_push_math(math_operator_group, tex_math_style_variant(style, math_parameter_superscript_variant), -1);
                     tex_scan_left_brace();
                 }
                 break;
@@ -5745,6 +5774,7 @@ void tex_fixup_math_parameters(int fam, int size, int f, int level)
     tex_aux_define_all_math_parameters(size, math_parameter_skewed_fraction_hgap,             tex_aux_get_font_math_parameter(scale, f, SkewedFractionHorizontalGap),       level);
     tex_aux_define_all_math_parameters(size, math_parameter_skewed_fraction_vgap,             tex_aux_get_font_math_parameter(scale, f, SkewedFractionVerticalGap),         level);
     tex_aux_define_all_math_parameters(size, math_parameter_space_before_script,              tex_aux_get_font_math_parameter(scale, f, SpaceBeforeScript),                 level); /* engine, default 0 */
+    tex_aux_define_all_math_parameters(size, math_parameter_space_between_script,             tex_aux_get_font_math_parameter(scale, f, SpaceBetweenScript),                 level); /* engine, default 0 */
     tex_aux_define_all_math_parameters(size, math_parameter_space_after_script,               tex_aux_get_font_math_parameter(scale, f, SpaceAfterScript),                  level);
     tex_aux_define_all_math_parameters(size, math_parameter_connector_overlap_min,            tex_aux_get_font_math_parameter(scale, f, MinConnectorOverlap),               level); /* engine, default 0 */
     tex_aux_define_all_math_parameters(size, math_parameter_superscript_snap,                 tex_aux_get_font_math_parameter(scale, f, SuperscriptSnap),                   level);
@@ -6040,6 +6070,7 @@ void tex_initialize_math_spacing(void)
     tex_set_math_class_default(fenced_noad_subtype,      inner_noad_subtype   ,    no_class_options);
     tex_set_math_class_default(ghost_noad_subtype,       ordinary_noad_subtype,    no_class_options);
     tex_set_math_class_default(vcenter_noad_subtype,     ordinary_noad_subtype,    no_class_options);
+    tex_set_math_class_default(prime_noad_subtype,       ordinary_noad_subtype,    no_class_options);
 
     tex_aux_set_math_atom_rule(math_begin_class,         binary_noad_subtype,      ordinary_noad_subtype,    ordinary_noad_subtype);
     tex_aux_set_math_atom_rule(binary_noad_subtype,      math_end_class,           ordinary_noad_subtype,    ordinary_noad_subtype);

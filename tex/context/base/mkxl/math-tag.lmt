@@ -26,6 +26,7 @@ local nuts              = nodes.nuts
 local tonut             = nuts.tonut
 
 local getchar           = nuts.getchar
+local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getcharspec       = nuts.getcharspec
 local getdata           = nuts.getdata
@@ -36,6 +37,7 @@ local getattr           = nuts.getattr
 local getattrlist       = nuts.getattrlist
 local setattr           = nuts.setattr
 local getwidth          = nuts.getwidth
+local getoptions        = nuts.getoptions
 
 local getnumerator      = nuts.getnumerator
 local getdenominator    = nuts.getdenominator
@@ -127,56 +129,108 @@ local report_tags       = logs.reporter("structure","tags")
 
 local process
 
-local function processnucleus(nucleus,prime)
-    if prime then
-        -- This should work wasn't it that browser handling of primes have an issue with
-        -- "big semi raised text" vs "small supposedly superscripted". So let's play safe
-        -- and use a superscript. Even then we get somewhat different positioning for the
-        -- same primed character in q sqrt and (e.g.) a sequential integral.
-     -- start_tagged("mrow", { prime = true })
-        start_tagged("msup", { prime = true })
-        process(nucleus)
-        process(prime)
-        stop_tagged()
-    else
-        process(nucleus)
-    end
-end
+local processsubsup  do
 
-local function processsubsup(start)
-    -- At some point we might need to add an attribute signaling the
-    -- super- and subscripts because TeX and MathML use a different
-    -- order. The mrows are needed to keep mn's separated.
-    local nucleus, prime, sup, sub, presup, presub = getnucleus(start,true)
-    if sub then
-        if sup then
-            setattr(start,a_tagged,start_tagged("msubsup"))
-            processnucleus(nucleus,prime)
-            start_tagged("mrow", { subscript = true })
-            process(sub)
-            stop_tagged()
-            start_tagged("mrow", { superscript = true })
+    local continuation_code       = tex.noadoptioncodes.continuation
+    local continuationhead_code   = tex.noadoptioncodes.continuationhead
+    local continuationkernel_code = tex.noadoptioncodes.continuationkernel
+
+    local function simple(start, nucleus, prime, sup, sub, continuation)
+        if prime then
+            setattr(start,a_tagged,start_tagged("msup", { prime = true }))
+            start_tagged("mrow")
+        end
+        if sub then
+            if sup then
+                setattr(start,a_tagged,start_tagged("msubsup", continuation))
+                process(nucleus)
+                start_tagged("mrow", { script = "sub" })
+                process(sub)
+                stop_tagged()
+                start_tagged("mrow", { script = "sup"  })
+                process(sup)
+                stop_tagged()
+                stop_tagged()
+            else
+                setattr(start,a_tagged,start_tagged("msub", continuation))
+                process(nucleus)
+                start_tagged("mrow", { script = "sub" })
+                process(sub)
+                stop_tagged()
+                stop_tagged()
+            end
+        elseif sup then
+            setattr(start,a_tagged,start_tagged("msup", continuation))
+            process(nucleus)
+            start_tagged("mrow", { script = "sup" })
             process(sup)
             stop_tagged()
             stop_tagged()
         else
-            setattr(start,a_tagged,start_tagged("msub"))
-            processnucleus(nucleus,prime)
-            start_tagged("mrow")
-            process(sub)
+            process(nucleus)
+        end
+        if prime then
+            stop_tagged()
+            start_tagged("mrow", { script = "prime" })
+            process(prime)
             stop_tagged()
             stop_tagged()
         end
-    elseif sup then
-        setattr(start,a_tagged,start_tagged("msup"))
-        processnucleus(nucleus,prime)
-        start_tagged("mrow")
-        process(sup)
-        stop_tagged()
-        stop_tagged()
-    else
-        processnucleus(nucleus,prime)
     end
+
+    local function complex(start, nucleus, prime, sup, sub, presup, presub, continuation)
+        start_tagged("mmultiscripts", continuation)
+        process(nucleus)
+        if prime then
+            start_tagged("mrow", { script = "prime" })
+            start_tagged("mrow", { script = "prime" })
+            process(prime)
+            stop_tagged()
+        end
+        if sup then
+            start_tagged("mrow", { script = "sup" })
+            process(sup)
+            stop_tagged()
+        end
+        if sub then
+            start_tagged("mrow", { script = "sub" })
+            process(sub)
+            stop_tagged()
+        end
+        if presup then
+            start_tagged("mrow", { script = "presup" })
+            process(presup)
+            stop_tagged()
+        end
+        if presub then
+            start_tagged("mrow", { script = "presub" })
+            process(presub)
+            stop_tagged()
+        end
+        stop_tagged()
+    end
+
+    processsubsup = function(start)
+        -- At some point we might need to add an attribute signaling the
+        -- super- and subscripts because TeX and MathML use a different
+        -- order. The mrows are needed to keep mn's separated.
+        local nucleus, prime, sup, sub, presup, presub = getnucleus(start,true)
+        local options = getoptions(start)
+        local continuation = false
+        local c = (options & continuation_code) > 0
+        local h = (options & continuationhead_code) > 0
+        local k = (options & continuationkernel_code) > 0
+        local continuation = (c or h or k) and {
+            continuation = { next = c, head = h, kernel = k }
+        } or nil
+     -- if presup or presub then
+        if presup or presub or (sup and prime) then
+            complex(start,nucleus,prime,sup,sub,presup,presub,continuation)
+        else
+            simple(start,nucleus,prime,sup,sub,continuation)
+        end
+    end
+
 end
 
 -- todo: check function here and keep attribute the same

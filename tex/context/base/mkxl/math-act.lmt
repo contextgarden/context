@@ -124,7 +124,9 @@ function mathematics.initializeparameters(target,original,nodimensions)
         if not mathparameters.PrimeShiftUpCramped               then mathparameters.PrimeShiftUpCramped               = mathparameters.SuperscriptShiftUpCramped end
         if not mathparameters.PrimeSpaceAfter                   then mathparameters.PrimeSpaceAfter                   = 0 end
         if not mathparameters.PrimeWidthPercent                 then mathparameters.PrimeWidthPercent                 = 50 end
+        if not mathparameters.SpaceAfterScript                  then mathparameters.SpaceAfterScript                  = 0 end
         if not mathparameters.SpaceBeforeScript                 then mathparameters.SpaceBeforeScript                 = mathparameters.SpaceAfterScript end
+        if not mathparameters.SpaceBetweenScript                then mathparameters.SpaceBetweenScript                = mathparameters.SpaceAfterScript end
         if not mathparameters.NoLimitSupFactor                  then mathparameters.NoLimitSupFactor                  = 0 end
         if not mathparameters.NoLimitSubFactor                  then mathparameters.NoLimitSubFactor                  = 0 end
         if not mathparameters.AccentTopShiftUp                  then mathparameters.AccentTopShiftUp                  = 0 end

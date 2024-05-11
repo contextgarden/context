@@ -197,6 +197,8 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_kern, right_margin_kern_subtype,    rightmarginkern)
     set_value_entry_key(subtypes_kern, explicit_math_kern_subtype,   mathkern)
     set_value_entry_key(subtypes_kern, math_shape_kern_subtype,      mathshapekern)
+    set_value_entry_key(subtypes_kern, left_math_slack_kern_subtype, leftmathslackkern);
+    set_value_entry_key(subtypes_kern, right_math_slack_kern_subtype,rightmathslackkern);
     set_value_entry_key(subtypes_kern, horizontal_math_kern_subtype, horizontalmathkern)
     set_value_entry_key(subtypes_kern, vertical_math_kern_subtype,   verticalmathkern)
 
@@ -1639,6 +1641,12 @@ void tex_free_node(halfword p, int size) /* no need to pass size, we can get it 
         tex_formatted_error("nodes", "node number %d of type %d with size %d should not be freed", (int) p, node_type(p), size);
     }
 }
+
+/*tex 
+    Although it is tempting to have dedicated get and free helpers for if and expression nodes it 
+    gives no gain (at least not in the third decimal on millions of tests). So I didn't even bother 
+    to keep the code here. A real dedicated stack might actually be faster. 
+*/
 
 /*tex
 

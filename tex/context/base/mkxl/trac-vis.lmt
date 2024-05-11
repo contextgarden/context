@@ -1773,17 +1773,19 @@ do
     local mathshapekern_code      = kerncodes.mathshapekern
     local horizontalmathkern_code = kerncodes.horizontalmathkern
     local verticalmathkern_code   = kerncodes.verticalmathkern
+    local leftmathslackkern_code  = kerncodes.leftmathslackkern
+    local rightmathslackkern_code = kerncodes.rightmathslackkern
     ----- userkern_code           = kerncodes.userkern
 
-    local skipcodes               = nodes.skipcodes
-    local spaceskip_code          = skipcodes.spaceskip
-    local xspaceskip_code         = skipcodes.xspaceskip
-    local zerospaceskip_code      = skipcodes.zerospaceskip
-    local intermathskip_code      = skipcodes.intermathskip
+ -- local skipcodes               = nodes.skipcodes
+    local spaceskip_code          = nodes.skipcodes.spaceskip
+    local xspaceskip_code         = nodes.skipcodes.xspaceskip
+    local zerospaceskip_code      = nodes.skipcodes.zerospaceskip
+    local intermathskip_code      = nodes.skipcodes.intermathskip
 
-    local listcodes               = nodes.listcodes
-    local linelist_code           = listcodes.line
-    local rowlist_code            = listcodes.alignment
+ -- local listcodes               = nodes.listcodes
+    local linelist_code           = nodes.listcodes.line
+    local rowlist_code            = nodes.listcodes.alignment
 
  -- local vtop_package_state      = 3 -- todo: symbolic
  -- local dbox_package_state      = 4 -- todo: symbolic
@@ -2065,7 +2067,7 @@ do
                 if trace_mathkern or trace_kern then
                     head, current = ruledmathkern(head,current,true)
                 end
-            elseif subtype == horizontalmathkern_code then
+            elseif subtype == horizontalmathkern_code or subtype == leftmathslackkern_code or subtype == rightmathslackkern_code then
                 if trace_mathkern then
                     head, current = mathkern(head,current)
                 elseif trace_kern then

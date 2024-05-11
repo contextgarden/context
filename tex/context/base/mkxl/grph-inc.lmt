@@ -107,7 +107,7 @@ local report            = logs.reporter("graphics")
 local report_inclusion  = logs.reporter("graphics","inclusion")
 
 local f_hash_part       = formatters["%s->%s->%s->%s"]
-local f_hash_full       = formatters["%s->%s->%s->%s->%s->%s->%s->%s->%s"]
+local f_hash_full       = formatters["%s->%s->%s->%s->%s->%s->%s->%s->%s->%s"]
 
 local v_yes             = variables.yes
 local v_always          = variables.always
