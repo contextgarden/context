@@ -342,6 +342,7 @@ end
 local function selective(attribute,head,inheritance,default) -- two attributes
     local check  = false
     local leader = nil
+ -- nuts.checkslide(head,"SELECTIVE")
     for stack, id, subtype, content in nextcontent, head do
         if id == glyph_code or id == disc_code then
             check = true
@@ -379,12 +380,15 @@ local function selective(attribute,head,inheritance,default) -- two attributes
                     end
                 elseif current > 0 then
                     head = insertnodebefore(head,stack,copy_node(nsnone))
-                    current, current_selector = 0, 0
+                    current = 0
+                    current_selector = 0
                 end
             end
-            local list = selective(attribute,content,inheritance,default)
-            if content ~= list then
-                setlist(stack,list)
+            if content then
+                local list = selective(attribute,content,inheritance,default)
+                if content ~= list then
+                    setlist(stack,list)
+                end
             end
         elseif id == rule_code then
             if subtype == virtualrule_code then
@@ -432,7 +436,8 @@ local function selective(attribute,head,inheritance,default) -- two attributes
                 end
             elseif current > 0 then
                 head = insertnodebefore(head,stack,copy_node(nsnone))
-                current, current_selector = 0, 0
+                current = 0
+                current_selector = 0
             end
             check = false
         end
@@ -574,10 +579,12 @@ local function stacker(attribute,head,default) -- no inheritance, but list-wise
                     end
                 end
             else
+-- if content then -- test this !
                 list = stacker(attribute,content,default)
                 if list ~= content then
                     setlist(current,list)
                 end
+-- end
             end
         elseif id == rule_code then
             if subtype == virtualrule_code then

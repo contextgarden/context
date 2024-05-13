@@ -149,14 +149,14 @@ trackers.register("nodes.frequencies",function(v)
     if type(v) == "string" then
         frequencies.filename = v
     end
-    handlers.frequencies_shipouts_before   = register("shipouts",   "begin")
-    handlers.frequencies_shipouts_after    = register("shipouts",   "end")
-    handlers.frequencies_processors_before = register("processors", "begin")
-    handlers.frequencies_processors_after  = register("processors", "end")
-    tasks.prependaction("shipouts",   "before", "nodes.handlers.frequencies_shipouts_before")
-    tasks.appendaction ("shipouts",   "after",  "nodes.handlers.frequencies_shipouts_after")
-    tasks.prependaction("processors", "before", "nodes.handlers.frequencies_processors_before")
-    tasks.appendaction ("processors", "after",  "nodes.handlers.frequencies_processors_after")
+    tracers.frequencies_shipouts_before   = register("shipouts",   "begin")
+    tracers.frequencies_shipouts_after    = register("shipouts",   "end")
+    tracers.frequencies_processors_before = register("processors", "begin")
+    tracers.frequencies_processors_after  = register("processors", "end")
+    tasks.prependaction("shipouts",   "before", "nodes.tracers.frequencies_shipouts_before")
+    tasks.appendaction ("shipouts",   "after",  "nodes.tracers.frequencies_shipouts_after")
+    tasks.prependaction("processors", "before", "nodes.tracers.frequencies_processors_before")
+    tasks.appendaction ("processors", "after",  "nodes.tracers.frequencies_processors_after")
 end)
 
 statistics.register("node frequencies", function()

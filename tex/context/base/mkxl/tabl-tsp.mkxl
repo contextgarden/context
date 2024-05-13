@@ -327,6 +327,7 @@
      \c_tabl_split_head\conditionaltrue % no tablehead
      \global\tabl_split_forced_page\conditionalfalse
    \fi
+   % we get a lot of splittopskips here .. todo: ignore when zero
    \localcontrolledrepeating
      {\setbox\scratchbox\vsplit\b_split_content to \onepoint % \lineheight
       \setbox\scratchbox\vbox % \vpack

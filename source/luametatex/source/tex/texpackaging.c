@@ -3372,8 +3372,9 @@ halfword tex_prune_page_top(halfword p, int s)
                     /*tex Insert glue for |split_top_skip| and set |p| to |null|. */
                     halfword h = node_type(p) == rule_node ? rule_height(p) : box_height(p);
                     halfword q = tex_new_param_glue_node(split_top_skip_code, split_top_skip_glue);
-                    node_next(prev_p) = q;
-                    node_next(q) = p;
+                 // node_next(prev_p) = q; 
+                    tex_couple_nodes(prev_p, q); /* there is no real need to point back to temp */
+                    tex_couple_nodes(q, p);
                     glue_amount(q) = glue_amount(q) > h ? glue_amount(q) - h : 0;
                     p = null;
                 }

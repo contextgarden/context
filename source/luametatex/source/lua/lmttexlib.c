@@ -4966,6 +4966,7 @@ static int texlib_getglyphoptionvalues(lua_State *L)
     lua_set_string_by_index(L, glyph_option_math_discretionary,        "mathdiscretionary");
     lua_set_string_by_index(L, glyph_option_math_italics_too,          "mathsitalicstoo");
     lua_set_string_by_index(L, glyph_option_math_artifact,             "mathartifact");
+    lua_set_string_by_index(L, glyph_option_weight_less,               "weightless");
     lua_set_string_by_index(L, glyph_option_user_first,                "userfirst");
     lua_set_string_by_index(L, glyph_option_user_last,                 "userlast");
     return 1;

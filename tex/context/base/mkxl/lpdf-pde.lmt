@@ -750,8 +750,9 @@ local operator  = C((R("AZ","az")+P("*")+P("'")+P('"'))^1)
 
 local grammar = P { "start",
     start      = (comment + keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
-    keyvalue   = key * optspaces * V("start"),
+    keyvalue   = optspaces * keyword * optspaces * V("start"),
     dictionary = Ct(Cc("dict")  * P("<<") * Ct(V("keyvalue")^0) * P(">>")),
+--     dictionary = Ct(Cc("dict")  * P("<<") * (Ct(V("keyvalue"))^0) * P(">>")),
     array      = Ct(Cc("array") * P("[")  * Ct(V("start")^0) * P("]")),
     hexstring  = p_hex_string,
     decstring  = p_dec_string,
@@ -764,8 +765,9 @@ local number = C(lpegpatterns.number)
 
 local fastgrammar = P { "start",
     start      = (comment + keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
-    keyvalue   = optspaces * key * optspaces * V("start"),
+    keyvalue   = optspaces * keyword * optspaces * V("start"),
     dictionary = Ct(Cc("dict")  * P("<<") * Ct(V("keyvalue")^0) * P(">>")),
+--     dictionary = Ct(Cc("dict")  * P("<<") * (Ct(V("keyvalue"))^0) * P(">>")),
     array      = Ct(Cc("array") * P("[")  * Ct(V("start")^0) * P("]")),
     hexstring  = p_hex_string,
     decstring  = p_dec_string,

@@ -134,37 +134,6 @@
 \newinteger\c_node_rules_up
 \newinteger\c_node_rules_down
 
-% \permanent\protected\def\node_rules_set#1%
-%   {\cdef\currentbar{#1}%
-%    \advanceby\c_node_rules_level\plusone
-%    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
-%    \edef\p_node_color {\barparameter\c!color}% todo
-%    \edef\p_node_text  {\barparameter\c!text}%
-%    \edef\p_node_offset{\barparameter\c!offset}%
-%    % better is a dedicated key: up/down .. todo
-%    \advanceby\ifdim\p_node_offset\onepoint<\zeropoint\c_node_rules_down\else\c_node_rules_up\fi\plusone
-%    \clf_setrule
-%        continue      {\barparameter\c!continue}%
-%        unit          {\barparameter\c!unit}%
-%        order         {\barparameter\c!order}%
-%        level         \c_node_rules_level
-%        stack         \ifdim\p_node_offset\onepoint<\zeropoint\c_node_rules_down\else\c_node_rules_up\fi
-%        rulethickness {\barparameter\c!rulethickness}%
-%        method        \barparameter\c!method
-%        max           \barparameter\c!max\space % number
-%        mp            {\includeMPgraphic{\barparameter\c!mp}}
-%        ma            \c_attr_colormodel
-%        ca            \rawcolorattribute\p_node_color
-%        ta            \rawtransparencyattribute\p_node_color
-%        offset        \p_node_offset\space % number
-%        dy            \barparameter\c!dy\space % number, also fraction
-%        empty         {\barparameter\c!empty}%
-%      \ifempty\p_node_text\else
-%        text          \hbox{\p_node_text}%
-%        repeat        {\barparameter\c!repeat}%
-%      \fi
-%    \relax}
-
 \permanent\protected\def\node_rules_set#1%
   {\cdef\currentbar{#1}%
    \advanceby\c_node_rules_level\plusone
@@ -457,7 +426,11 @@
 \to \everydefineshift
 
 \protected\def\node_shifts_set#1% todo: check parent ! todo: move attr etc to lua
-  {\cdef\currentshift{#1}%
+  {\ifhastok={#1}%
+     \setupcurrentshift[#1]%
+   \else
+     \cdef\currentshift{#1}%
+   \fi
    \useshiftstyleandcolor\c!style\c!color
    \dosetupisolatedalign{\shiftparameter\c!align}% a weird feature that i probably needed once
    \clf_setshift
@@ -624,5 +597,73 @@
 %D Bonus:
 
 % \autorule : defined at the lua end
+
+%D A joke:
+
+%D This will move: (a bit duplicated)
+
+\installcorenamespace{shadow}
+
+\installcommandhandler \??shadow {shadow} \??shadow
+
+\let\setupshadows\setupshadow
+
+\appendtoks
+    \frozen\protected\instance\edefcsname\currentshadow\endcsname{\node_shadows_direct{\currentshadow}}%
+\to \everydefineshadow
+
+\protected\def\node_shadows_set#1% todo: check parent ! todo: move attr etc to lua
+  {\ifhastok={#1}%
+     \setupcurrentshadow[#1]%
+   \else
+     \cdef\currentshadow{#1}%
+   \fi
+   \useshadowstyleandcolor\c!style\c!color
+   \edef\p_node_color{\shadowparameter\c!contrastcolor}% todo
+   \clf_setshadow
+       continue {\shadowparameter\c!continue}%
+       unit     {\shadowparameter\c!unit}%
+       weight    \numexpr\shadowparameter\c!weight\relax
+       method    \shadowparameter\c!method
+       dx        \shadowparameter\c!dx\space % number
+       dy        \shadowparameter\c!dy\space % number
+       %
+       ma        \c_attr_colormodel
+       ca        \rawcolorattribute\p_node_color
+       ta        \rawtransparencyattribute\p_node_color
+   \relax}
+
+\permanent\protected\def\startshadow[#1]%
+  {\begingroup
+   \node_shadows_set{#1}%
+   \ignorespaces}
+
+\permanent\protected\def\stopshadow
+  {\removeunwantedspaces
+   \endgroup}
+
+\protected\def\node_shadows_direct#1%
+  {\groupedcommand
+     {\begingroup\dostartisolation\begingroup\node_shadows_set{#1}\ignorespaces}
+     {\removeunwantedspaces\endgroup\dostopisolation\endgroup}}
+
+\setupshadows
+  [\c!method=0,
+   \c!continue=\v!yes,
+   \c!dx=.04,
+   \c!dy=-.04,
+   \c!unit=ex,
+   \c!style=,
+   \c!color=,
+   \c!weight=100,
+   \c!contrastcolor=middlegray] % otherwise we don't see anything, users should set it anyway
+
+\defineshadow [shadowed]
+
+% \startTEXpage[offset=1ts]
+%     \samplefile{tufte}\removeunwantedspaces\space
+%     \startshadow[contrastcolor=red]\samplefile{tufte}\removeunwantedspaces\stopshadow\space
+%     \samplefile{tufte}
+% \stopTEXpage
 
 \protect \endinput

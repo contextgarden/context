@@ -21,7 +21,7 @@ local formatters         = string.formatters
 local context            = context
 local implement          = interfaces.implement
 
-local trace_javascript   = false  trackers.register("backends.javascript", function(v) trace_javascript = v end)
+local trace_javascript   = false  trackers.register("backend.javascript", function(v) trace_javascript = v end)
 
 local report_javascripts = logs.reporter ("interactions","javascripts")
 local status_javascripts = logs.messenger("interactions","javascripts")

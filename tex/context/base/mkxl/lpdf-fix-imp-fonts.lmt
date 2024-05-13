@@ -772,7 +772,7 @@ do
     -- when using a simple font (including Type 3) or a composite font that defines code 32 as a single-byte
     -- code. It shall not apply to occurrences of the byte value 32 in multiple-byte codes.
 
-    plugin = function(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth,objtag)
+    local mainplugin = function(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth,objtag)
 
         local data    = { }
         local indices = 0
@@ -860,9 +860,9 @@ do
                     end
                 elseif op == "q" then
                     -- This happens seldom but we need to be prepares (one of VS's documents).
-                    insert(stack, { f, d, m, u, r, process_hex }) -- maybe also Tw
+                    insert(stack, { f, d, m, u, r, process_hex, Tw })
                 elseif op == "Q" then
-                    f, d, m, u, r, process_hex  = unpack(remove(stack))
+                    f, d, m, u, r, process_hex, Tw = unpack(remove(stack))
                 elseif op == "Tj" then
                     if f then
                         local ci = ti[1]
@@ -909,8 +909,6 @@ do
                                     getmetatable(object).__call = function() return contents end
                                     object.__fonts_remapped__ = true
                                     status.xobjects = status.xobjects + 1
-                                    r.Font = fonts
-
                                     r.Font           = fonts -- really needed
                                     object.Resources = r     -- really needed
                                     if trace_details then
@@ -930,10 +928,9 @@ do
             end
 
 --             if Tw then -- can be optimized
-            if Tw and Tw ~= 0 then -- can be optimized
+            if f and Tw and Tw ~= 0 then -- can be optimized
                 local value
                 local space
-
                 local hexed = setmetatableindex(function(t,k)
                     local v = { "hex", k }
                     t[k] = v
@@ -1060,7 +1057,7 @@ do
 --                     if adapted[k] then
 --                         -- already done
 --                     else
-local trace_details = true
+-- local trace_details = true
                     if new[k] then
                         local x = fonts.__raw__[k][3]
                         local o = lpdf.getfontobjectnumber(new[k])
@@ -1129,6 +1126,161 @@ local trace_details = true
         return indices ~= 0
     end
 
+    -------------------------------------------------------------------------------------------------------
+
+    local lmtxplugin = function(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth,objtag)
+
+        local data    = { }
+        local indices = 0
+
+        local sharedfonts  = pdfdoc.sharedfonts or { }
+        pdfdoc.sharedfonts = sharedfonts
+        if fonts or xobjects then
+
+            if fonts then
+
+                for k, v in expanded(fonts) do
+                    local subtype = v.Subtype
+                    local handler = subtype and handlers[subtype]
+                    if handler then
+                        handler(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber)
+                    else
+                        -- weird
+                    end
+                end
+
+            end
+
+            local r = false
+            local f = false
+            local n = false
+            local m = false
+            local u = false
+
+            local new = { }
+
+            local process_hex = false
+
+            local function process_hex_hexified(h)
+                local b = hextointeger(h)
+                local i = m[b]
+                if i then
+                    local n = h_hex_4[u[i]]
+                    if h ~= n then
+                        indices = indices + 1
+                    end
+                    return n
+                else
+                    return h_hex_4[b]
+                end
+            end
+
+            local function process_hex_narrow(s) return (gsub(s,"..",  process_hex_hexified)) end
+            local function process_hex_wide  (s) return (gsub(s,"....",process_hex_hexified)) end
+
+            local spaces = { }
+
+            -- if we have Tw then we also have 0x20 as space
+
+            for i=1,#contents do
+                local ti = contents[i]
+                local op = ti[#ti]
+                if op == "Tf" then
+                    -- maybe use /R<N> for replacement
+                    f = ti[1][2]
+                    d = data[f]
+                    if d then
+                        m = d.map
+                        u = d.used
+                        r = i
+                        new[f] = d.streamhash
+                        if d.narrow then
+                            process_hex = process_hex_narrow
+                        else
+                            process_hex = process_hex_wide
+                        end
+                        if not spaces[f] then
+                            spaces[f] = process_hex_wide("0020")
+                        end
+                    else
+                        if d == false then
+                            old[f] = true
+                        end
+                        f = false
+                    end
+                elseif op == "TJ" then
+                     if f then
+                        local c = ti[1][2]
+                        if c then
+                            for i=1,#c do
+                                local ci = c[i]
+                                if type(ci) == "table" then
+                                    local tp = ci[1]
+                                    if tp == "hex" then
+                                        ci[2] = process_hex(ci[2])
+                                    end
+                                end
+                            end
+                        end
+                    end
+                elseif xobjects and op == "Do" then
+                    -- can be recursive
+                    local objtag = ti[1][2]
+                    local object = xobjects[objtag]
+                    if object and object.Subtype == "Form" then
+                        local r = object.Resources
+                        if r then
+                            if not object.__fonts_remapped__ then
+                                local contents = object()
+                                local fonts    = r.Font
+                                local xobjects = r.XObject
+                                contents = parsecontent(contents,true)
+                                if plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth+1,objtag) then
+                                    contents = contenttostring(contents)
+                                    object.__raw__.Length = #contents
+                                    object.__raw__.Filter = nil
+                                    getmetatable(object).__call = function() return contents end
+                                    object.__fonts_remapped__ = true
+                                    status.xobjects = status.xobjects + 1
+                                    r.Font           = fonts -- really needed
+                                    object.Resources = r     -- really needed
+                                    if trace_details then
+                                        for k, v in next, fonts.__raw__ do -- we need the raw values here
+                                            local d = fonts.__raw__[k]
+                                            if d[1] == pdfe.objectcodes.lpdf then
+                                                report_merge("updated font, object %a, font id %a, object %a",objtag,k,d[2][1])
+                                            end
+                                        end
+                                    end
+                                end
+                            else
+                            end
+                        end
+                    end
+                end
+            end
+
+            if fonts then
+                for k, v in next, fonts.__raw__ do -- we need the raw values here
+                    if new[k] then
+                        local x = fonts.__raw__[k][3]
+                        local o = lpdf.getfontobjectnumber(new[k])
+                        fonts.__raw__[k] = { pdfe.objectcodes.lpdf, pdfreference(o) }
+                        adapted[k] = true
+                    end
+                end
+            end
+
+            status.indices = status.indices + indices
+
+        end
+
+        return indices ~= 0
+    end
+
+
+    -------------------------------------------------------------------------------------------------------
+
     local function hasfonts(xobject)
         if xobject then
             for k, v in next, xobject do
@@ -1144,22 +1296,62 @@ local trace_details = true
         end
     end
 
+    local function onlylmtx(compactor)
+        if next(compactor.embed) then
+            return false
+        else
+            local lmtx  = false
+            for k, v in next, compactor.merge do
+                if k == "lmtx" then
+                    lmtx = true
+                else
+                    return false
+                end
+            end
+            return lmtx
+        end
+    end
+
+    local function noregistries(pdfdoc)
+        local statistics = pdfdoc.Catalog.LMTX_Statistics
+        if not statistics then
+            return false
+        end
+        local registries = statistics.FontRegistries
+        if not registries then
+            return false
+        end
+        return registries == 0
+    end
+
+
     function pdfe.fontplugin(pdfdoc,page,pagenumber,resources,compactor)
         if next(compactor.merge) or next(compactor.embed) then
             local fonts    = resources.Font
             local xobjects = resources.XObject
             if fonts or hasfonts(xobjects) then
-                local contents = getpagecontent(pdfdoc,pagenumber,true,true)
-    -- print("before",contenttostring(contents))
-                plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,{},1)
-                resources.Font = fonts -- really needed
-                if contents then
-                    page.Contents = contenttostring(contents)
-    -- print("after",page.Contents)
+                if not onlylmtx(compactor) then
+                    -- we check all fonts
+                    plugin = mainplugin
+                elseif noregistries(pdfdoc) then
+                    -- we don't need to check
+                    plugin = false
+                else
+                    -- we need to check
+                    plugin = lmtxplugin
+                end
+                if plugin then
+                    local contents = getpagecontent(pdfdoc,pagenumber,true,true)
+                    if contents then
+                        plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,{},1)
+                        resources.Font = fonts -- really needed
+                        page.Contents = contenttostring(contents)
+                    end
                 end
                 status.pages = status.pages + 1
                 status.files[pdfdoc.filename] = (status.files[pdfdoc.filename] or 0) + 1
             end
+            plugin = mainplugin -- just to be sure
         end
     end
 

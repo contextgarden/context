@@ -230,11 +230,16 @@ end
     end
 
     local includebackmap = true
+    local nofregistries  = 0
 
     directives.register("backend.pdf.includebackmap", function(v)
  -- directives.register("backend.pdf.lmtxregistry", function(v)
         includebackmap = v
     end)
+
+    function lpdf.noffontregistries()
+        return nofregistries > 0 and nofregistries or nil
+    end
 
     lmtxregistry = function(details,include,blobs,minindex,maxindex)
         if includebackmap and maxindex > 0 then
@@ -285,6 +290,7 @@ end
                             if subfont == 1 then
                                 subfont = nil
                             end
+                            nofregistries = nofregistries + 1
                             return pdfreference(pdfflushobject(pdfdictionary {
                                 IndexMap   = pdfreference(pdfflushobject(backmap)) or nil,
                                 StreamHash = streamhash or nil,

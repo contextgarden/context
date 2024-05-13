@@ -58,7 +58,7 @@ local gmatch, lower, format, formatters = string.gmatch, string.lower, string.fo
 local lpegmatch = lpeg.match
 local bpfactor, todimen = number.dimenfactors.bp, string.todimen
 local sortedhash = table.sortedhash
-local trace_fields = false  trackers.register("backends.fields", function(v) trace_fields = v end)
+local trace_fields = false  trackers.register("backend.fields", function(v) trace_fields = v end)
 
 local report_fields = logs.reporter("backend","fields")
 

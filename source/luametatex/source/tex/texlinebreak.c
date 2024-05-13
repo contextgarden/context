@@ -415,7 +415,7 @@ static scaled tex_aux_checked_shrink(halfword p)
     returns a value greater than~10000.
 
     Up to three passes might be made through the paragraph in an attempt to find at least one set
-    of feasible breakpoints. On the first pass, we have |threshold=pretolerance| and |second_pass
+    of feasible breakpoints. On the first pass, we have |threshold = pretolerance| and |second_pass
     = final_pass = false|. If this pass fails to find a feasible solution, |threshold| is set to
     |tolerance|, |second_pass| is set |true|, and an attempt is made to hyphenate as many words as
     possible. If that fails too, we add |emergency_stretch| to the background stretchability and

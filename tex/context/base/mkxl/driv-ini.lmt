@@ -76,7 +76,7 @@ local installwhatsits  do
     local openout     = backends.openout
     local closeout    = backends.closeout
 
-    trackers.register("backends.whatsits",function(v) trace = v end)
+    trackers.register("backend.whatsits",function(v) trace = v end)
 
     local function pushleaderlevel()
         leaderlevel = leaderlevel + 1

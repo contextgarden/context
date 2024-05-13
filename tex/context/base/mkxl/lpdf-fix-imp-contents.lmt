@@ -745,6 +745,7 @@ do
             local xobjects = resources.XObject
             local contents = getpagecontent(pdfdoc,pagenumber,true,true)
             if contents then
+-- inspect(contents)
                 if g1 then
                     insert(contents,1, { 0, "G" })
                     insert(contents,1, { 0, "g" })

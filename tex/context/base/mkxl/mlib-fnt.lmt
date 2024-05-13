@@ -372,46 +372,48 @@ local function flushcharacter(current, pos_h, pos_v, pod_r, font, char)
             buffer[b] = code
         end
     else
-        logs.report("mlib-fnt","check 'flushcharacter', no current")
+        logs.report("mlib-fnt","check 'flushcharacter', no current, font %i, char %i", font or 0, char or 0)
     end
 end
 
 -- Messy ... todo:
 
--- local function flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,ssx,ssy)
---     local width, height, depth, sx, sy
---     if current then
---         char, font = isglyph(current)
---         width, height, depth, factor, sx, sy = getglyphdimensions(current)
---     else
---         if not data then
---             data = fontcharacters[font][char] or { }
---         end
---         width  = data.width or 0
---         height = data.height or 0
---         depth  = data.depth or 0
---         sx = 1
---         sy = 1
---     end
---     if csx then
---         sx = sx * csx
---     end
---     if csy then
---         sy = sy * csy
---     end
---     if ssx then
---         sx = sx * ssx
---     end
---     if ssy then
---         sy = sy * ssy
---     end
---     local code = glyph(kind,font,char,pos_h*fc,pos_v*fc,factor,s,sx,sy)
---     if code then
---         b = b + 1
---         buffer[b] = code
---     end
---     return width, height, depth
--- end
+local function flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,ssx,ssy)
+    if current then
+        local char, font = isglyph(current)
+        local s, sx, sy = getscales(current)
+        local code = glyph(kind,font,char,pos_h*fc,pos_v*fc,getexpansion(current),s,sx,sy)
+        if code then
+            b = b + 1
+            buffer[b] = code
+        end
+    elseif font and char then
+        if not data then
+            data = fontcharacters[font][char] or { }
+        end
+        if data then
+            local width  = data.width or 0
+            local height = data.height or 0
+            local depth  = data.depth or 0
+            local sx = 1
+            local sy = 1
+            if csx then sx = sx * csx end
+            if csy then sy = sy * csy end
+            if ssx then sx = sx * ssx end
+            if ssy then sy = sy * ssy end
+            local code = glyph(kind,font,char,pos_h*fc,pos_v*fc,factor,s,sx,sy)
+            if code then
+                b = b + 1
+                buffer[b] = code
+            end
+        else
+            logs.report("mlib-fnt","no font %i with char %i", font, char)
+        end
+     -- return width, height, depth
+    else
+        logs.report("mlib-fnt","no current, font, and/or char")
+    end
+end
 
 local function flushrule(current,pos_h,pos_v,pos_r,size_h,size_v,subtype)
     if subtype == normalrule_code then

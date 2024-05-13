@@ -59,7 +59,7 @@ end)
 
 local enabled = "vertical"  directives.register("math.extensibles", function(v) enabled = v end) -- default per 2022-08-25
 
-updaters.register("tagging.state.enable",  function() enabled = "both" end) -- for now
+updaters.register("tagging.state.enable", function() enabled = "both" end) -- for now
 
 local function register_extensible(font,char,style,att,box)
     if enabled then

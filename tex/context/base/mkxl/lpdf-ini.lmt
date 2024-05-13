@@ -991,9 +991,16 @@ do
                 LMTX = pdfdictionary {
                     BaseVersion    = pdfconstant("2.0"),
                     ExtensionLevel = 1,
-
                 }
             }
+            local statistics = pdfdictionary {
+                FontRegistries = lpdf.noffontregistries(),
+            }
+            if next(statistics) then
+                -- we use this as fast way to check if we have to check for fonts
+                -- and can use the fast path
+                catalog.LMTX_Statistics = statistics
+            end
             --
             return pdfreference(pdfimmediateobject(tostring(catalog)))
         end

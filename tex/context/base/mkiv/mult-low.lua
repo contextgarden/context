@@ -243,6 +243,7 @@ return {
         "noleftkernglyphoptioncode",  "norightkernglyphoptioncode",
         "noleftligatureglyphoptioncode", "norightligatureglyphoptioncode",
         "textcheckitalicglyphoptioncode", "mathcheckitalicglyphoptioncode",
+        "weightlessglyphoptioncode",
         --
      -- "noitaliccorrectionmathoptioncode", "noleftpairkernmathoptioncode", "norightpairkernmathoptioncode",
      -- "autodiscretionarymathoptioncode", "fulldiscretionarymathoptioncode",

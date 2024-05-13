@@ -1291,11 +1291,12 @@ typedef enum glyph_option_codes {
     glyph_option_no_zero_italic_correction = 0x00000080,
     /* */
     glyph_option_apply_x_offset            = 0x00000100,
-    glyph_option_apply_y_offset            = 0x00000200,
+    glyph_option_apply_y_offset            = 0x00000200, 
     /* These are only meant for math characters: */
     glyph_option_math_discretionary        = 0x00000400,
     glyph_option_math_italics_too          = 0x00000800,
     glyph_option_math_artifact             = 0x00001000,
+    glyph_option_weight_less               = 0x00002000,
     /*tex We permit user options. */
     glyph_option_user_first                = 0x00010000,
     glyph_option_user_last                 = 0x40000000,

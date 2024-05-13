@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['grph-fil'] = {
 
 local type = type
 
-local trace_run  = false  trackers.register("graphic.runfile",function(v) trace_run = v end)
+local trace_run  = false  trackers.register("graphics.runfile",function(v) trace_run = v end)
 local report_run = logs.reporter("graphics","run")
 
 local isfile        = lfs.isfile

@@ -674,20 +674,22 @@ do
     function jobresolvers.currentstructure()
 -- inspect(namehash)
         local n = namehash[#namehash]
-        if trace_structure and not reported[n] then
-            local namestack = jobstructure.namestack
-            local new = namelist [n]
-            local old = namestack[n]
-            new = new and concat(new," ") or ""
-            old = old and concat(old," ") or ""
-            if old == new then
-                report_structure("%02i : %a",n,old)
-            else
-                report_structure("%02i : %a <> %a",n,old,new)
+        if n then
+            if trace_structure and not reported[n] then
+                local namestack = jobstructure.namestack
+                local new = namelist [n]
+                local old = namestack[n]
+                new = new and concat(new," ") or ""
+                old = old and concat(old," ") or ""
+                if old == new then
+                    report_structure("%02i : %a",n,old)
+                else
+                    report_structure("%02i : %a <> %a",n,old,new)
+                end
+                reported[n] = true
             end
-            reported[n] = true
+            return n, namelist[n]
         end
-        return n, namelist[n]
     end
 
 end

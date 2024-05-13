@@ -397,10 +397,16 @@ static charinfo *tex_aux_char_info(halfword f, int c)
     return &(lmt_font_state.fonts[f]->chardata[0]);
 }
 
-static scaled tex_aux_font_weight_done(halfword f, scaled v)
+// static scaled tex_aux_font_weight_done(halfword f, scaled v)
+// {
+//  // return v ? lround(65.536 * v * (double) lmt_font_state.fonts[f]->design_size / (double) lmt_font_state.fonts[f]->size) : 0;
+//     return v ? lround(v * lmt_font_state.fonts[f]->weight) : 0;
+// }
+
+static scaled tex_aux_glyph_weight_done(halfword g)
 {
- // return v ? lround(65.536 * v * (double) lmt_font_state.fonts[f]->design_size / (double) lmt_font_state.fonts[f]->size) : 0;
-    return v ? lround(v * lmt_font_state.fonts[f]->weight) : 0;
+    return glyph_weight(g) && tex_has_glyph_option(g, glyph_option_weight_less) 
+        ? 0 : lround(glyph_weight(g) * lmt_font_state.fonts[glyph_font(g)]->weight);
 }
 
 void tex_char_process(halfword f, int c) 
@@ -1985,33 +1991,33 @@ scaled tex_char_inner_y_offset_from_font(halfword f, halfword c)
 scaled tex_char_width_from_glyph(halfword g)
 {
     charinfo *ci = tex_aux_char_info(glyph_font(g), glyph_character(g));
-    return tex_aux_glyph_x_scaled(g, ci->width + 2 * tex_aux_font_weight_done(glyph_font(g),glyph_weight(g)));
+    return tex_aux_glyph_x_scaled(g, ci->width + 2 * tex_aux_glyph_weight_done(g));
 }
 
 scaled tex_char_height_from_glyph(halfword g)
 {
     charinfo *ci = tex_aux_char_info(glyph_font(g), glyph_character(g));
-    return tex_aux_glyph_y_scaled(g, ci->height + (has_charinfo_tag(ci,below_baseline_tag) ? 0 : tex_aux_font_weight_done(glyph_font(g),glyph_weight(g))));
+    return tex_aux_glyph_y_scaled(g, ci->height + (has_charinfo_tag(ci,below_baseline_tag) ? 0 : tex_aux_glyph_weight_done(g)));
 }
 
 scaled tex_char_depth_from_glyph(halfword g)
 {
     charinfo *ci = tex_aux_char_info(glyph_font(g), glyph_character(g));
-    return tex_aux_glyph_y_scaled(g, ci->depth + (has_charinfo_tag(ci,above_baseline_tag) ? 0 : tex_aux_font_weight_done(glyph_font(g),glyph_weight(g))));
+    return tex_aux_glyph_y_scaled(g, ci->depth + (has_charinfo_tag(ci,above_baseline_tag) ? 0 : tex_aux_glyph_weight_done(g)));
 }
 
 scaled tex_char_total_from_glyph(halfword g)
 {
     charinfo *ci = tex_aux_char_info(glyph_font(g), glyph_character(g));
-    scaled ht = ci->height + (has_charinfo_tag(ci,below_baseline_tag) ? 0 : tex_aux_font_weight_done(glyph_font(g),glyph_weight(g)));
-    scaled dp = ci->depth + (has_charinfo_tag(ci,above_baseline_tag) ? 0 : tex_aux_font_weight_done(glyph_font(g),glyph_weight(g)));
+    scaled ht = ci->height + (has_charinfo_tag(ci,below_baseline_tag) ? 0 : tex_aux_glyph_weight_done(g));
+    scaled dp = ci->depth + (has_charinfo_tag(ci,above_baseline_tag) ? 0 : tex_aux_glyph_weight_done(g));
     return tex_aux_glyph_y_scaled(g, (ht > 0 ? ht : 0) + (dp > 0 ? dp : 0)); /* so not progression */
 }
 
 scaled tex_char_italic_from_glyph(halfword g)
 {
     charinfo *ci = tex_aux_char_info(glyph_font(g), glyph_character(g));
- // return tex_aux_glyph_x_scaled(g, ci->italic + tex_aux_font_weight_done(glyph_font(g),glyph_weight(g)));
+ // return tex_aux_glyph_x_scaled(g, ci->italic + tex_aux_glyph_weight_done(g));
     return tex_aux_glyph_x_scaled(g, ci->italic);
 }
 
@@ -2019,7 +2025,7 @@ scaledkrn tex_char_corner_kerns_from_glyph(halfword g)
 {
     charinfo *ci = tex_aux_char_info(glyph_font(g), glyph_character(g));
     if (ci->math) { 
-        scaled w = tex_aux_font_weight_done(glyph_font(g),glyph_weight(g));
+        scaled w = tex_aux_glyph_weight_done(g);
         return (scaledkrn) { 
             .bl = ci->math->bottom_left_kern  ? tex_aux_glyph_y_scaled(g, ci->math->bottom_left_kern  + w) : 0,
             .br = ci->math->bottom_right_kern ? tex_aux_glyph_y_scaled(g, ci->math->bottom_right_kern + w) : 0,
@@ -2034,13 +2040,13 @@ scaledkrn tex_char_corner_kerns_from_glyph(halfword g)
 scaled tex_char_left_protrusion_from_glyph(halfword g)
 {
     charinfo *ci = tex_aux_quality_char_info(glyph_font(g), glyph_character(g));
-    return ci ? tex_aux_glyph_x_scaled(g, ci->leftprotrusion + tex_aux_font_weight_done(glyph_font(g),glyph_weight(g))) : 0;
+    return ci ? tex_aux_glyph_x_scaled(g, ci->leftprotrusion + tex_aux_glyph_weight_done(g)) : 0;
 }
 
 scaled tex_char_right_protrusion_from_glyph(halfword g)
 {
     charinfo *ci = tex_aux_quality_char_info(glyph_font(g), glyph_character(g));
-    return ci ? tex_aux_glyph_x_scaled(g, ci->rightprotrusion + tex_aux_font_weight_done(glyph_font(g),glyph_weight(g))) : 0;
+    return ci ? tex_aux_glyph_x_scaled(g, ci->rightprotrusion + tex_aux_glyph_weight_done(g)) : 0;
 }
 
 // halfword tex_char_options_from_glyph(halfword g)
@@ -2062,7 +2068,7 @@ scaled tex_char_right_protrusion_from_glyph(halfword g)
 scaledwhd tex_char_whd_from_glyph(halfword g)
 {
     charinfo *ci = tex_aux_char_info(glyph_font(g), glyph_character(g));
-    scaled w = tex_aux_font_weight_done(glyph_font(g),glyph_weight(g));
+    scaled w = tex_aux_glyph_weight_done(g);
     return (scaledwhd) {
         .wd = tex_aux_glyph_x_scaled(g, ci->width  + w * 2),
         .ht = tex_aux_glyph_y_scaled(g, ci->height + (has_charinfo_tag(ci,below_baseline_tag) ? 0 : w)),
@@ -2090,7 +2096,7 @@ scaled tex_calculated_char_width(halfword f, halfword c, halfword ex)
 scaled tex_calculated_glyph_width(halfword g, halfword ex)
 {
     charinfo *ci = tex_aux_char_info(glyph_font(g), glyph_character(g));
-    scaled wd = tex_aux_glyph_x_scaled(g, ci->width + 2 * tex_aux_font_weight_done(glyph_font(g),glyph_weight(g)));
+    scaled wd = tex_aux_glyph_x_scaled(g, ci->width + 2 * tex_aux_glyph_weight_done(g));
     return ex ? tex_round_xn_over_d(wd, scaling_factor + ex, scaling_factor) : wd;
 }
 

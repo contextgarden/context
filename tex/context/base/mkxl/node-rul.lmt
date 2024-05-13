@@ -43,12 +43,14 @@ local setattr            = nuts.setattr
 local setattrs           = nuts.setattrs
 local getfont            = nuts.getfont
 local getsubtype         = nuts.getsubtype
+local setsubtype         = nuts.setsubtype
 local getlist            = nuts.getlist
 local setwhd             = nuts.setwhd
 local setattrlist        = nuts.setattrlist
 local setshift           = nuts.setshift
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
+local setweight          = nuts.setweight
 local setoffsets         = nuts.setoffsets
 local setfield           = nuts.setfield
 local getruledata        = nuts.getruledata
@@ -68,6 +70,7 @@ local copylist           = nuts.copylist
 
 local nextlist           = nuts.traversers.list
 local nextglue           = nuts.traversers.glue
+local nextglyph          = nuts.traversers.glyph
 
 local nodecodes          = nodes.nodecodes
 local rulecodes          = nodes.rulecodes
@@ -82,6 +85,7 @@ local hlist_code         <const> = nodecodes.hlist
 
 local indentlist_code    <const> = listcodes.indent
 local linelist_code      <const> = listcodes.line
+local container_code     <const> = listcodes.container
 
 local leftskip_code         <const> = gluecodes.leftskip
 local rightskip_code        <const> = gluecodes.rightskip
@@ -406,16 +410,16 @@ do
                     local depth  = d.depth
                     if height > ht then ht = height end
                     if depth  > dp then dp = depth  end
-local of = offset
-ht = ht + of
-dp = dp + of
-wd = wd + 2*of
+                    local of = offset
+                    ht = ht + of
+                    dp = dp + of
+                    wd = wd + 2*of
                     if method == 2 then
                         rule = nodepool.outlinerule(wd,ht,dp,rulethickness)
                     else
                         rule = nodepool.rule(wd,ht,dp)
                     end
-setoffsets(rule,-of,0)
+                    setoffsets(rule,-of,0)
                 else
                     local hd = (offset+(level-1)*dy)*e - m
                     ht =  hd + rulethickness
@@ -506,7 +510,7 @@ do
             setlink(list,next)
         end
         local raise = data.dy * dimenfactor(data.unit,fontdata[getfont(first)])
-        setshift(list,raise)
+        setshift(list,raise) -- is taken into dimensions
         setwhd(list,width,height,depth)
         if trace_shifted then
             report_shifted("width %p, nodes %a, text %a",width,n_tostring(first,last),n_tosequence(first,last,true))
@@ -756,7 +760,86 @@ interfaces.implement {
             t.depth  or runningrule
         )
         setattrlist(n,true)
-        setoffsets(n,t.xoffset,t.yoffset,t.left, t.right,t.on,t.off)
+        setoffsets(n,t.xoffset,t.yoffset,t.left,t.right,t.on,t.off)
         context(tonode(n))
     end
 }
+
+-- joke
+
+do
+
+    local setlistcolor    = nodes.tracers.colors.setlist
+
+    local trace_shadowed  = false  trackers.register("nodes.shadowing", function(v) trace_shifted = v end)
+    local report_shadowed = logs.reporter("nodes","shadowing")
+    local a_shadowed      <const> = privateattribute("shadowed")
+    local enabled         = false
+
+    local shadows         = nodes.shadows or { }
+    nodes.shadows         = shadows
+
+    function shadows.set(settings)
+        if not enabled then
+            -- we could disable when no more found
+            enableaction("shipouts","nodes.shadows.handler")
+            enabled = true
+        end
+        texsetattribute(a_shadowed,registervalue(a_shadowed,settings))
+    end
+
+    local function flush_shadowed(head,first,last,data,level,parent,strip) -- not that fast but acceptable for this purpose
+        if true then
+            first, last = striprange(first,last)
+        end
+        local next  = getnext(last)
+        local copy  = copylist(first,next)
+        local width = getrangedimensions(parent,first,next)
+        local list  = hpack_nodes(copy,width,"exactly") -- we can use a simple pack
+
+        setlistcolor(copy,data.ca,data.ma,data.ta)
+
+        head = insertnodebefore(head,first,list)
+        local xoffset = data.dx * dimenfactor(data.unit,fontdata[getfont(first)])
+        local yoffset = data.dy * dimenfactor(data.unit,fontdata[getfont(first)])
+        local weight  = data.weight or 0
+        setoffsets(list,xoffset,yoffset)
+        setwhd(list,0,0,0)
+        if weight > 0 then
+            for g in nextglyph, copy do
+                setweight(g,weight,true)
+            end
+        end
+     -- if trace_shadowed then
+     --     report_shadowed("width %p, nodes %a, text %a",width,n_tostring(first,last),n_tosequence(first,last,true))
+     -- end
+        return head
+    end
+
+    shadows.handler = function(head)
+        local data = attributes.values[a_shadowed]
+        if data then
+            head = processwords(a_shadowed,data,flush_shadowed,head)
+        end
+        return head
+    end
+
+    implement {
+        name      = "setshadow",
+        actions   = shadows.set,
+        arguments = {
+            {
+                { "continue" },
+                { "unit" },
+                { "weight", "integer" },
+                { "method", "integer" },
+                { "dx", "number" },
+                { "dy", "number" },
+                { "ma", "integer" },
+                { "ca", "integer" },
+                { "ta", "integer" },
+            }
+        }
+    }
+
+end

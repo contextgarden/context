@@ -12831,6 +12831,9 @@ return {
    ["pe"]="عرض",
    ["ro"]="latime",
   },
+  ["weight"]={
+   ["en"]="weight",
+  },
   ["words"]={
    ["en"]="words",
    ["fr"]="mots",

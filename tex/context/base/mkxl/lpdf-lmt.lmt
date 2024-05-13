@@ -736,10 +736,6 @@ need_width = need_width * tmrx
 -- end
         end
 
-        if current_weight > 0 then
---             hshift  = (hshift or 0) + current_weight
-        end
-
     end
 
     local f_width = formatters["%.6N w"]
@@ -3329,7 +3325,7 @@ local openfile, closefile  do
             if encryptstream then
                 objectstream = false
             end
-            local catalog    = lpdf.getcatalog()
+            local catalog = lpdf.getcatalog()
             objectstream = os
             --
             local info       = lpdf.getinfo()

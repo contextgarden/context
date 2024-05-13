@@ -609,13 +609,15 @@ end
 
 function colors.setlist(n,c,s,t)
     local nn = tonut(n)
-    local mc = m_color[c] or unsetvalue
+    local mc = type(c) == "number" and c or m_color[c] or unsetvalue
     local mm = s or texgetattribute(a_colormodel)
     if mm <= 0 then
         mm = 1
     end
     if t then
-        t = m_transparency[t] or unsetvalue
+        if type(t) == "string" then
+            t = m_transparency[t] or unsetvalue
+        end
         while nn do
             setattrs(nn,a_colormodel,mm,a_color,mc,a_transparency,t)
             nn = getnext(nn)

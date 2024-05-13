@@ -15,7 +15,7 @@ local disableaction   = sequencers.disableaction
 
 local texgetdimen     = tex.getdimen
 
-local trace           = trackers.register("structure.sidefloats.pageflush")
+local trace           = trackers.register("structures.sidefloats.pageflush")
 local report          = logs.reporter("structure","floats")
 
 local forcepageflush  = builders.vspacing.forcepageflush

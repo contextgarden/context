@@ -868,6 +868,7 @@
 \protected\def\buff_verbatim_type_buffer_indeed_inline#1#2% category name
   {\cdef\currenttype{#1}%
    \buff_verbatim_initialize_type_one
+   \expand\everyinitializeverbatim % \buff_verbatim_initialize_type_two
    \dostarttaggedchained\t!verbatim\currenttype\??type
    \clf_typebuffer
      name   {#2}%

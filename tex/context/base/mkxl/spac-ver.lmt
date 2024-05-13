@@ -2103,6 +2103,7 @@ do
                         flush("topskip")
                     end
                     current = getnext(current)
+-- we can comment this
                 elseif subtype == abovedisplayskip_code and remove_math_skips then
                     --
                     if trace then
@@ -2135,6 +2136,7 @@ do
                     flush("below display skip (short)")
                     current = getnext(current)
                     --
+-- till here
                 else -- other glue
                     if snap and trace_vsnapping then
                         local w = getwidth(current)

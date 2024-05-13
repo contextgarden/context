@@ -2000,8 +2000,10 @@ static int nodelib_direct_setslant(lua_State *L)
 static int nodelib_direct_getweight(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
-    lua_pushinteger(L, n && node_type(n) == glyph_node ? glyph_weight(n) : 0);
-    return 1;
+    halfword b = n && node_type(n) == glyph_node;
+    lua_pushinteger(L, b ? glyph_weight(n) : 0);
+    lua_pushboolean(L, b ? tex_has_glyph_option(n, glyph_option_weight_less) : 0);
+    return 2;
 }
 
 static int nodelib_direct_setweight(lua_State *L)
@@ -2009,6 +2011,9 @@ static int nodelib_direct_setweight(lua_State *L)
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n && node_type(n) == glyph_node) {
         glyph_weight(n) = lmt_opthalfword(L, 2, 0);
+        if (lua_type(L, 3) == LUA_TBOOLEAN && lua_toboolean(L, 3)) {
+            tex_add_glyph_option(n, glyph_option_weight_less);
+        }
     }
     return 0;
 }
@@ -4360,7 +4365,7 @@ static int nodelib_direct_insertbefore(lua_State *L)
                     return 2;
                 }
             }
-            tex_couple_nodes(n, current); /*  nice but incompatible: tex_couple_nodes(tail_of_list(n),current) */
+            tex_couple_nodes(n, current); /* nice but incompatible: tex_couple_nodes(tail_of_list(n),current) */
             lua_pushinteger(L, (head == current) ? n : head);
             lua_pushinteger(L, n);
         } else {
