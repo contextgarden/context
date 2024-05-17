@@ -40,6 +40,11 @@
     \resetcharacterspacing
     \resetbreakpoints
     \nohyphencollapsing
+    % we figured this out when discussions the math manual:
+    \parpasses\zerocount
+    \noexpansion
+    \noprotrusion
+    % so far
 \to \everyinitializeverbatim
 
 \permanent\protected\def\setverbatimspaceskip % to be checked: must happen after font switch

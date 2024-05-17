@@ -580,12 +580,35 @@ static int lmt_font_from_lua(lua_State *L, int f)
         set_font_mathcontrol(f, j);
         set_numeric_field_by_index(j, textcontrol, 0);
         set_font_textcontrol(f, j);
+        /* */
         set_numeric_field_by_index(j, textscale, 0);
         set_font_textsize(f, j);
         set_numeric_field_by_index(j, scriptscale, 0);
         set_font_scriptsize(f, j);
         set_numeric_field_by_index(j, scriptscriptscale, 0);
         set_font_scriptscriptsize(f, j);
+        /* */
+        set_numeric_field_by_index(j, textxscale, 0);
+        set_font_x_textsize(f, j);
+        set_numeric_field_by_index(j, scriptxscale, 0);
+        set_font_x_scriptsize(f, j);
+        set_numeric_field_by_index(j, scriptscriptxscale, 0);
+        set_font_x_scriptscriptsize(f, j);
+        /* */
+        set_numeric_field_by_index(j, textweight, 0);
+        set_font_textweight(f, j);
+        set_numeric_field_by_index(j, scriptweight, 0);
+        set_font_scriptweight(f, j);
+        set_numeric_field_by_index(j, scriptscriptweight, 0);
+        set_font_scriptscriptweight(f, j);
+        /* */
+        set_numeric_field_by_index(j, textyscale, 0);
+        set_font_y_textsize(f, j);
+        set_numeric_field_by_index(j, scriptyscale, 0);
+        set_font_y_scriptsize(f, j);
+        set_numeric_field_by_index(j, scriptscriptyscale, 0);
+        set_font_y_scriptscriptsize(f, j);
+        /* */
         set_numeric_field_by_index(j, hyphenchar, default_hyphen_char_par);
         set_font_hyphen_char(f, j);
         set_numeric_field_by_index(j, skewchar, default_skew_char_par);

@@ -470,6 +470,21 @@ inline static scaled tex_aux_math_glyph_scale(scaled v)
     return v ? scaledround(0.001 * glyph_scale_par * v) : 0;
 }
 
+inline static scaled tex_aux_math_glyph_x_scale(scaled v)
+{
+    return v ? scaledround(0.001 * glyph_x_scale_par * v) : 0;
+}
+
+inline static scaled tex_aux_math_glyph_y_scale(scaled v)
+{
+    return v ? scaledround(0.001 * glyph_y_scale_par * v) : 0;
+}
+
+inline static scaled tex_aux_math_glyph_weight(scaled v)
+{
+    return glyph_weight_par + v;
+}
+
 inline static scaled tex_aux_math_x_scaled(scaled v, int style)
 {
     scaled scale = tex_get_math_parameter(style, math_parameter_x_scale, NULL);
@@ -514,12 +529,14 @@ inline static scaled tex_aux_math_axis(halfword size)
 
 inline static scaled tex_aux_math_x_size_scaled(halfword f, scaled v, halfword size)
 {
-    return v ? limited_rounded(0.000000001 * tex_get_math_font_scale(f, size) * glyph_scale_par * glyph_x_scale_par * v) : 0;
+ // return v ? limited_rounded(0.000000001 * tex_get_math_font_scale(f, size) * glyph_scale_par * glyph_x_scale_par * v) : 0;
+    return v ? limited_rounded(0.000000000001 * tex_get_math_font_scale(f, size) * tex_get_math_font_y_scale(f, size) * glyph_scale_par * glyph_x_scale_par * v) : 0;
 }
 
 inline static scaled tex_aux_math_y_size_scaled(halfword f, scaled v, halfword size)
 {
-    return v ? limited_rounded(0.000000001 * tex_get_math_font_scale(f, size) * glyph_scale_par * glyph_y_scale_par * v) : 0;
+ // return v ? limited_rounded(0.000000001 * tex_get_math_font_scale(f, size) * glyph_scale_par * glyph_y_scale_par * v) : 0;
+    return v ? limited_rounded(0.000000000001 * tex_get_math_font_scale(f, size) * tex_get_math_font_y_scale(f, size) * glyph_scale_par * glyph_y_scale_par * v) : 0;
 }
 
 halfword tex_math_font_char_ht(halfword fnt, halfword chr, halfword style)
@@ -534,12 +551,18 @@ halfword tex_math_font_char_dp(halfword fnt, halfword chr, halfword style)
 
 inline static halfword tex_aux_new_math_glyph(halfword fnt, halfword chr, quarterword subtype) {
     halfword scale = scaling_factor;
-    halfword glyph = tex_new_glyph_node(subtype, fnt, tex_get_math_char(fnt, chr, lmt_math_state.size, &scale, math_direction_par), null); /* todo: data */;
+    halfword xscale = scaling_factor;
+    halfword yscale = scaling_factor;
+    halfword weight = 0;
+    halfword glyph = tex_new_glyph_node(subtype, fnt, tex_get_math_char(fnt, chr, lmt_math_state.size, &scale, &xscale, &yscale, &weight, math_direction_par), null); /* todo: data */;
     set_glyph_options(glyph, glyph_options_par);
     glyph_scale(glyph) = tex_aux_math_glyph_scale(scale);
-    glyph_x_scale(glyph) = glyph_x_scale_par;
-    glyph_y_scale(glyph) = glyph_y_scale_par;
+ // glyph_x_scale(glyph) = glyph_x_scale_par;
+ // glyph_y_scale(glyph) = glyph_y_scale_par;
+    glyph_x_scale(glyph) = tex_aux_math_glyph_x_scale(xscale);
+    glyph_y_scale(glyph) = tex_aux_math_glyph_y_scale(yscale);
     glyph_protected(glyph) = glyph_protected_math_code;
+glyph_weight(glyph) = tex_aux_math_glyph_weight(weight);
     return glyph;
 }
 
@@ -3101,7 +3124,7 @@ static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *skew,
                 halfword fnt = null;
                 tex_aux_fetch(noad_nucleus(target), "accent", &fnt, &chr);
                 /* We have an unprocessed character, no glyph yet (in compact mode). */
-                chr = tex_get_math_char(fnt, chr, size, NULL, 0);
+                chr = tex_get_math_char(fnt, chr, size, NULL, NULL, NULL, NULL, 0);
                 if (tex_aux_math_engine_control(fnt, math_control_accent_skew_apply)) {
                     /*tex
                         There is no bot_accent so let's assume that the shift also applies
@@ -3833,6 +3856,25 @@ static halfword tex_aux_assemble_fraction(halfword target, int style, int size, 
     return numerator;
 }
 
+/*tex
+
+    Skewed fractions put (normally) a slash between the numerator and denominator. They are 
+    not really supported in traditional \TEX, which means that \MSWORD\ serves as example 
+    implementation when it comes to horizontal and vertical shifting. However, the two font 
+    parameters are shared for all sizes of the shapes. Basically the horizontal skew is the 
+    distance between the two components and the slash is then centered in this gap. The 
+    vertical skew is officially the distance between the bottom of the numerator and the 
+    top of the denominator. 
+    
+    This might work fine for numbers but we decided that in order to also support other
+    components we should not use the horizontal gap specification at all and the vertical 
+    can at best give an indication of how to offset from the axis and/or baseline. These 
+    are examples of useless font variables. In \CONTEXT\ users can influence the rendering
+    with keys like \typ {noaxis}, \typ {center}, \typ {nooverflow}, \type {vfactor}, \typ 
+    {hfactor}, etc. 
+
+*/
+
 static halfword tex_aux_make_skewed_fraction(halfword target, int style, int size, kernset *kerns)
 {
     halfword middle = null;
@@ -3848,29 +3890,30 @@ static halfword tex_aux_make_skewed_fraction(halfword target, int style, int siz
     scaled hgap = 0;
     delimiterextremes extremes = { .tfont = null_font, .tchar = 0, .bfont = null_font, .bchar = 0, .height = 0, .depth = 0 };
     scaled tolerance = tex_get_math_y_parameter_default(style, math_parameter_skewed_delimiter_tolerance, 0);
-    scaled shift_up = 0;
-    scaled shift_down = 0;
+    scaled shift = 0;
     (void) kerns;
-    if (! has_noad_option_center(target)) { 
-        shift_up = tex_get_math_y_parameter_checked(style, math_parameter_skewed_fraction_vgap);
-        shift_down = tex_round_xn_over_d(shift_up, fraction_v_factor(target), scaling_factor);
+    if (has_noad_option_keep_base(target)) { 
+        /*tex We ignore the vgap. */
+    } else { 
+        shift = tex_get_math_y_parameter_checked(style, math_parameter_skewed_fraction_vgap);
+        shift = tex_round_xn_over_d(shift, fraction_v_factor(target), scaling_factor);
     }
     tex_aux_wrap_fraction_parts(target, style, size, &numerator, &denominator, 0);
     /*tex 
         Here we don't share code because we're going horizontal.
     */
-    if (! has_noad_option_noaxis(target)) {
-        shift_up += tex_half_scaled(tex_aux_math_axis(size));
-        shift_down = shift_up;
+    if (has_noad_option_noaxis(target)) {
+        /*tex We ignore the axis. */
+    } else { 
+        shift += tex_aux_math_axis(size);
     }
+    shift = tex_half_scaled(shift);
     /*tex
         Construct a hlist box for the fraction, according to |hgap| and |vgap|.
     */
-    hgap = tex_get_math_x_parameter_checked(style, math_parameter_skewed_fraction_hgap);
-    hgap = tex_round_xn_over_d(hgap, fraction_h_factor(target), scaling_factor);
     {
-        scaled ht = box_height(numerator) + shift_up;
-        scaled dp = box_depth(numerator) - shift_up;
+        scaled ht = box_height(numerator) + shift;
+        scaled dp = box_depth(numerator) - shift;
         if (dp < 0) {
             dp = 0;
         }
@@ -3885,8 +3928,8 @@ static halfword tex_aux_make_skewed_fraction(halfword target, int style, int siz
         }
     }
     {
-        scaled ht = box_height(denominator) - shift_down;
-        scaled dp = box_depth(denominator) + shift_down;
+        scaled ht = box_height(denominator) - shift;
+        scaled dp = box_depth(denominator) + shift;
         if (dp < 0) {
             dp = 0;
         }
@@ -3900,14 +3943,14 @@ static halfword tex_aux_make_skewed_fraction(halfword target, int style, int siz
             maxdepth = dp;
         }
     }
-    box_shift_amount(numerator) = -shift_up;
-    box_shift_amount(denominator) = shift_down;
+    box_shift_amount(numerator) = -shift;
+    box_shift_amount(denominator) = shift;
     delta = maxheight + maxdepth;
     middle = tex_aux_make_delimiter(target, middle_delimiter, size, delta, 0, style, 1, NULL, NULL, tolerance, has_noad_option_nooverflow(target), &extremes, 0, null, 0);
-    if (has_noad_option_center(target)) { 
-       box_shift_amount(middle) -= box_total(middle) - delta;
-    }
     fraction = tex_new_null_box_node(hlist_node, math_fraction_list);
+ /* hgap = tex_get_math_x_parameter_checked(style, math_parameter_skewed_fraction_hgap); */
+    hgap = box_width(middle);
+    hgap = tex_round_xn_over_d(hgap, fraction_h_factor(target), scaling_factor);
     tex_attach_attribute_list_copy(fraction, target);
     box_width(fraction) = box_width(numerator) + box_width(denominator) + box_width(middle) - hgap;
     hgap = -tex_half_scaled(hgap);

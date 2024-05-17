@@ -1756,23 +1756,21 @@
      \math_matrix_check_rule[#2]%
      \divideby\scratchdimen\plustwo
      \ifdim\scratchdimen>\zeropoint
-\attribute\mathalignmenttopattribute\dimexpr\mathmatrixparameter\c!toffset\relax
-\attribute\mathalignmentbotattribute\dimexpr\mathmatrixparameter\c!boffset\relax
+       \attribute\mathalignmenttopattribute\dimexpr\mathmatrixparameter\c!toffset\relax
+       \attribute\mathalignmentbotattribute\dimexpr\mathmatrixparameter\c!boffset\relax
        \scratchdistance\mathmatrixparameter\c!moffset\relax
        \ifdim\scratchdistance>\zeropoint
-\begingroup
-\ifconditional\c_math_matrix_trace_hl
-         \darkred
-         \hrule
-           \s!width \onepoint
-\else
-         \nohrule
-\fi
+         \begingroup
+         \ifconditional\c_math_matrix_trace_hl
+           \darkred \hrule \s!width \onepoint
+         \else
+           \nohrule
+         \fi
            \s!attr  \mathalignmentvruleattribute\plustwo
            \s!height\scratchdistance
            \s!depth \zeropoint
          \relax
-\endgroup
+         \endgroup
        \fi
        \hrule
          \s!attr  \mathalignmentvruleattribute\plusthree
@@ -1793,25 +1791,20 @@
              \advanceby\scratchdimentwo\scratchdimen
              \advanceby\scratchdimentwo\scratchdimen
             }%
-%          \kern-2\scratchdimen
-%          \kern-.125\d_math_eqalign_distance
        \fi
-%        \scratchdistance\mathmatrixparameter\c!moffset\relax
        \ifdim\scratchdistance>\zeropoint
-\begingroup
-\ifconditional\c_math_matrix_trace_hl
-         \darkgreen
-         \hrule
-           \s!width \onepoint
-\else
-         \nohrule
-\fi
+         \begingroup
+         \ifconditional\c_math_matrix_trace_hl
+           \darkgreen \hrule \s!width \onepoint
+         \else
+           \nohrule
+         \fi
            \s!attr  \mathalignmentvruleattribute\plusfour
            \s!attr  \mathalignmentmidattribute\scratchdimentwo
            \s!height\zeropoint
            \s!depth \scratchdistance
          \relax
-\endgroup
+         \endgroup
        \fi
      \else
         % zero dimensions disable the rule
@@ -1917,21 +1910,33 @@
 %    \enforced\let\NR\math_matrix_NL_NR
 %    }
 
+% \def\math_matrix_VL_indeed#1#2%%
+%   {\span\omit
+%    \ifconditional\c_math_matrix_first\else
+%      \kern.5\d_math_eqalign_distance
+%    \fi
+%    \math_matrix_vertical_rule_yes{#2}%
+%    \localcontrolledloop\plustwo#1\plusone
+%      {\kern.125\d_math_eqalign_distance
+%       \math_matrix_vertical_rule_yes{#2}}%
+%    \kern.5\d_math_eqalign_distance
+%    \global\c_math_matrix_first\conditionalfalse
+%    \aligntab
+%    \boundary\c_math_matrix_vl_boundary
+%    \enforced\let\NR\math_matrix_NL_NR
+%    }
+
 \def\math_matrix_VL_indeed#1#2%%
-  {\span\omit
-   \ifconditional\c_math_matrix_first\else
-     \kern.5\d_math_eqalign_distance
-   \fi
+  {\aligntab
    \math_matrix_vertical_rule_yes{#2}%
    \localcontrolledloop\plustwo#1\plusone
      {\kern.125\d_math_eqalign_distance
       \math_matrix_vertical_rule_yes{#2}}%
    \kern.5\d_math_eqalign_distance
    \global\c_math_matrix_first\conditionalfalse
-   \aligntab
    \boundary\c_math_matrix_vl_boundary
    \enforced\let\NR\math_matrix_NL_NR
-   }
+   \aligntab}
 
 \permanent\tolerant\protected\def\math_matrix_VL  [#1]#*{\math_matrix_VL_indeed\plusone{#1}}
 \permanent\tolerant\protected\def\math_matrix_VLVL[#1]#*{\math_matrix_VL_indeed\plustwo{#1}}
@@ -2049,22 +2054,68 @@
 
 \newconditional\c_math_matrix_text_mode
 
+% \def\math_matrix_start_processing
+%   {%
+%    \ifmmode
+%      \setfalse\c_math_matrix_text_mode
+%    \else
+%      \settrue\c_math_matrix_text_mode
+%    \fi
+%    \ifconditional\c_math_matrix_text_mode
+%      \dontleavehmode
+%    \else
+%      \mathmatrixparameter\c!left\relax
+%      \math_fenced_start_wrap{\mathmatrixparameter\c!fences}%
+%      \mathatom \s!class \mathconstructcode
+%    \fi
+%    \bgroup
+%    \d_math_matrix_margin_l\mathmatrixparameter\c!leftmargin \relax
+%    \d_math_matrix_margin_r\mathmatrixparameter\c!rightmargin\relax
+%    \d_math_matrix_margin_t\strutdp
+%    \d_math_matrix_margin_b\strutht
+%    \global\d_math_matrix_max_left \zeropoint
+%    \global\d_math_matrix_max_right\zeropoint
+%   %\tabskip.5\d_math_eqalign_distance
+%    \tabskip\zeroskip
+%    \math_matrix_pickup
+%    \expand\everymathmatrix
+%    %
+%    \setbox\nextbox\vbox\bgroup
+%    \math_matrix_start_table
+%    \halign
+%       \s!callback
+%         \align_callback_mathmatrix
+%    \bgroup
+%      % preamble
+%      \span\math_matrix_preamble
+%      % done
+%      \crcr
+%      \math_matrix_start_row}
+%
+% \def\math_matrix_stop_processing
+%   {%\math_matrix_stop_wrapup % optional
+%    \math_matrix_stop_row
+%    \egroup
+%    \math_matrix_stop_table
+%    \egroup
+%    \mathmatrixleft  % experimental hook
+%    \math_matrix_finish_nextbox
+%    \mathmatrixright % experimental hook
+%    \egroup
+%    \ifconditional\c_math_matrix_text_mode\else
+%      \math_fenced_stop_wrap
+%      \mathmatrixparameter\c!right\relax
+%    \fi}
+
 \def\math_matrix_start_processing
-  {%
+  {\bgroup % outer
    \ifmmode
      \setfalse\c_math_matrix_text_mode
    \else
      \settrue\c_math_matrix_text_mode
-   \fi
-   \ifconditional\c_math_matrix_text_mode
      \dontleavehmode
-   \else
-     \mathmatrixparameter\c!left\relax
-     \math_fenced_start_wrap{\mathmatrixparameter\c!fences}%
-%      \mathatom \s!class \mathwrappedcode
-     \mathatom \s!class \mathconstructcode
+     \startimath
    \fi
-   \bgroup
    \d_math_matrix_margin_l\mathmatrixparameter\c!leftmargin \relax
    \d_math_matrix_margin_r\mathmatrixparameter\c!rightmargin\relax
    \d_math_matrix_margin_t\strutdp
@@ -2076,12 +2127,11 @@
    \math_matrix_pickup
    \expand\everymathmatrix
    %
-   \setbox\nextbox\vbox\bgroup
+   \setbox\nextbox\vbox
+   \bgroup % vbox
    \math_matrix_start_table
-   \halign
-      \s!callback
-        \align_callback_mathmatrix
-   \bgroup
+   \halign \s!callback \align_callback_mathmatrix
+   \bgroup % halign
      % preamble
      \span\math_matrix_preamble
      % done
@@ -2091,17 +2141,16 @@
 \def\math_matrix_stop_processing
   {%\math_matrix_stop_wrapup % optional
    \math_matrix_stop_row
-   \egroup
+   \egroup % halign
    \math_matrix_stop_table
-   \egroup
+   \egroup % vbox
    \mathmatrixleft  % experimental hook
    \math_matrix_finish_nextbox
    \mathmatrixright % experimental hook
-   \egroup
-   \ifconditional\c_math_matrix_text_mode\else
-     \math_fenced_stop_wrap
-     \mathmatrixparameter\c!right\relax
-   \fi}
+   \ifconditional\c_math_matrix_text_mode
+     \stopimath
+   \fi
+   \egroup} % outer
 
 \permanent\protected\def\mathmatrixmaxleftwidth {\d_math_matrix_max_left }
 \permanent\protected\def\mathmatrixmaxrightwidth{\d_math_matrix_max_right}
@@ -2173,28 +2222,105 @@
 \defcsname\??mathmatrixalignlocation\v!bottom\endcsname{\lower\dimexpr(\nextboxdp-\nextboxht)/2 +\mathaxisheight\mathstyle\relax}
 \defcsname\??mathmatrixalignlocation\v!low   \endcsname{\lower\dimexpr(\nextboxdp-\nextboxht)/2\relax}
 
+% \def\math_matrix_finish_nextbox
+%   {\scratchcounter\mathstyle\relax
+%    \scratchwidth\wd\nextbox
+% \setbox\scratchbox\hbox\bgroup
+%    \begincsname\??mathmatrixalignlocation\mathmatrixparameter\c!location\endcsname\hbox\bgroup
+%      \normalstartimath
+%      \givenmathstyle\scratchcounter
+%      \ifzeropt\d_math_matrix_margin_l\else\kern\d_math_matrix_margin_l\fi
+%      \ifconditional\c_math_matrix_text_mode
+%        \mathmatrixparameter\c!left\relax
+%        \math_fenced_start_wrap{\mathmatrixparameter\c!fences}%
+%        \mathatom \s!class \mathconstructcode {\vcenter{\box\nextbox}}% \was \vcenter
+%        \math_fenced_stop_wrap
+%        \mathmatrixparameter\c!right\relax
+%      \else
+%         \vcenter{\box\nextbox}% \was \vcenter
+%      \fi
+%      \ifzeropt\d_math_matrix_margin_r\else\kern\d_math_matrix_margin_r\fi
+%      \normalstopimath
+%    \egroup
+% \egroup
+%    \ifconditional\c_math_matrix_text
+%      \ifempty{\mathmatrixparameter\c!left\mathmatrixparameter\c!right\mathmatrixparameter\c!fences}\else
+%        \scratchdistance\dimexpr(\wd\scratchbox-\scratchwidth)/\plustwo\relax
+%        \advanceby\d_math_matrix_margin_l\scratchdistance
+%        \advanceby\d_math_matrix_margin_r\scratchdistance
+%        \clf_shiftmatrixornaments\scratchbox
+%      \fi
+%    \fi
+%    \ifconditional\c_math_matrix_text_b
+%      \dp\scratchbox\dimexpr\dp\scratchbox+\lineheight\relax
+%    \fi
+%    \ifconditional\c_math_matrix_text_t
+%      \ht\scratchbox\dimexpr\ht\scratchbox+\lineheight\relax
+%    \fi
+%    \edef\p_leftedge {\mathmatrixparameter\c!leftedge }%
+%    \edef\p_rightedge{\mathmatrixparameter\c!rightedge}%
+%    \ifempty\p_leftedge\else
+%      \hskip\dimexpr\d_math_matrix_max_left+\p_leftedge\relax
+%    \fi
+% %    \ifconditional\c_math_matrix_text_mode
+%      \box\scratchbox
+% %    \else
+% %      \mathatom \s!class \mathconstructcode {\box\scratchbox}%
+% %    \fi
+%    \ifempty\p_rightedge\else
+%      \hskip\dimexpr\d_math_matrix_max_right+\p_rightedge\relax
+%    \fi
+%    }
+
+%D \starttyping
+%D \ruledhbox{\im{
+%D     \startmatrix[left=\left(,right=\right)]
+%D       \NC        \TT \ttx 1 \NC       \TT \ttx 2 \NC       \TT \ttx 3 \NC        \NR
+%D       \LT \ttx 1 \NC a      \NC \dots \NC aa     \NC \dots \NC aaa    \RT \ttx 1 \NR
+%D       \LT \ttx 2 \NC b      \NC \dots \NC bb     \NC \dots \NC bbb    \RT \ttx 2 \NR
+%D       \LT \ttx 3 \NC c      \NC \dots \NC cc     \NC \dots \NC ccc    \RT \ttx 3 \NR
+%D       \NC        \BT \ttx 1 \NC       \BT \ttx 2 \NC       \BT \ttx 3 \NC        \NR
+%D     \stopmatrix
+%D }}
+%D \ruledhbox{\im{
+%D     \startmatrix[left=\left(,right=\right),rightedge=none,leftedge=none]
+%D       \NC        \TT \ttx 1 \NC       \TT \ttx 2 \NC       \TT \ttx 3 \NC        \NR
+%D       \LT \ttx 1 \NC a      \NC \dots \NC aa     \NC \dots \NC aaa    \RT \ttx 1 \NR
+%D       \LT \ttx 2 \NC b      \NC \dots \NC bb     \NC \dots \NC bbb    \RT \ttx 2 \NR
+%D       \LT \ttx 3 \NC c      \NC \dots \NC cc     \NC \dots \NC ccc    \RT \ttx 3 \NR
+%D       \NC        \BT \ttx 1 \NC       \BT \ttx 2 \NC       \BT \ttx 3 \NC        \NR
+%D     \stopmatrix
+%D }}
+%D \stoptyping
+
+\newconstant\c_math_last_l_class
+\newconstant\c_math_last_r_class
+
+\setupmathmatrix
+  [\c!rightedge=\zeropoint,
+   \c!leftedge=\zeropoint]
+
 \def\math_matrix_finish_nextbox
   {\scratchcounter\mathstyle\relax
    \scratchwidth\wd\nextbox
-\setbox\scratchbox\hbox\bgroup
-   \begincsname\??mathmatrixalignlocation\mathmatrixparameter\c!location\endcsname\hbox\bgroup
-     \normalstartimath
-     \givenmathstyle\scratchcounter
-     \ifzeropt\d_math_matrix_margin_l\else\kern\d_math_matrix_margin_l\fi
-     \ifconditional\c_math_matrix_text_mode
+   \setbox\scratchbox\hbox\bgroup
+     \begincsname\??mathmatrixalignlocation\mathmatrixparameter\c!location\endcsname\hbox\bgroup
+       \normalstartimath
+       \givenmathstyle\scratchcounter
+       \ifzeropt\d_math_matrix_margin_l\else\kern\d_math_matrix_margin_l\fi
        \mathmatrixparameter\c!left\relax
        \math_fenced_start_wrap{\mathmatrixparameter\c!fences}%
        \mathatom \s!class \mathconstructcode {\vcenter{\box\nextbox}}% \was \vcenter
        \math_fenced_stop_wrap
        \mathmatrixparameter\c!right\relax
-     \else
-        \vcenter{\box\nextbox}% \was \vcenter
-     \fi
-     \ifzeropt\d_math_matrix_margin_r\else\kern\d_math_matrix_margin_r\fi
-     \normalstopimath
+       \ifzeropt\d_math_matrix_margin_r\else\kern\d_math_matrix_margin_r\fi
+       \normalstopimath
+       % or carry over one group
+       \global\c_math_last_l_class\lastleftclass
+       \global\c_math_last_r_class\lastrightclass
+     \egroup
    \egroup
-\egroup
-   \ifconditional\c_math_matrix_text
+   \ifconditional\c_math_matrix_text % not _mode
      \ifempty{\mathmatrixparameter\c!left\mathmatrixparameter\c!right\mathmatrixparameter\c!fences}\else
        \scratchdistance\dimexpr(\wd\scratchbox-\scratchwidth)/\plustwo\relax
        \advanceby\d_math_matrix_margin_l\scratchdistance
@@ -2210,18 +2336,16 @@
    \fi
    \edef\p_leftedge {\mathmatrixparameter\c!leftedge }%
    \edef\p_rightedge{\mathmatrixparameter\c!rightedge}%
-   \ifempty\p_leftedge\else
+   \ifempty\p_leftedge\orelse\ifx\p_leftedge\v!none\else
      \hskip\dimexpr\d_math_matrix_max_left+\p_leftedge\relax
    \fi
-%    \ifconditional\c_math_matrix_text_mode
-     \box\scratchbox
-%    \else
-%      \mathatom \s!class \mathconstructcode {\box\scratchbox}%
-%    \fi
-   \ifempty\p_rightedge\else
+   \mathatom
+     \s!leftclass  \c_math_last_l_class
+     \s!rightclass \c_math_last_r_class
+     {\box\scratchbox}%
+   \ifempty\p_rightedge\orelse\ifx\p_rightedge\v!none\else
      \hskip\dimexpr\d_math_matrix_max_right+\p_rightedge\relax
-   \fi
-   }
+   \fi}
 
 \definemathmatrix[matrix]
 \definemathmatrix[\v!mathmatrix]

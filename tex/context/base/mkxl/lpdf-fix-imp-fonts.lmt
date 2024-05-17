@@ -122,26 +122,7 @@ end
 
 local cleanname = fonts.names.cleanname
 
-local remap = {
- -- ["helvetica"]            = { target = "file:uhvr8a.afm" },
- -- ["helvetica-bold"]       = { target = "file:uhvb8a.afm" },
- -- ["helveticabold"]        = { target = "file:uhvb8a.afm" },
- -- ["courier"]              = { target = "file:ucrr8a.afm" }, -- notdef issues width
- -- ["courier-bold"]         = { target = "file:ucrb8a.afm" },
- -- ["courierbold"]          = { target = "file:ucrb8a.afm" },
---     ["helvetica"]            = { target = "file:texgyre-heros-regular.otf" },
---     ["helveticabold"]        = { target = "file:texgyre-heros-bold.otf" },
---     ["helveticaitalic"]      = { target = "file:texgyre-heros-italic.otf" },
---     ["helveticabolditalic"]  = { target = "file:texgyre-heros-bolditalic.otf" },
---     ["courier"]              = { target = "file:texgyre-cursor-regular.otf" },
---     ["courierbold"]          = { target = "file:texgyre-cursor-bold.otf" },
---     ["courieritalic"]        = { target = "file:texgyre-cursor-italic.otf" },
---     ["courierbolditalic"]    = { target = "file:texgyre-cursor-bolditalic.otf" },
---     ["timesroman"]           = { target = "file:texgyre-termes-regular.otf" },
---     ["timesromanbold"]       = { target = "file:texgyre-termes-bold.otf" },
---     ["timesromanitalic"]     = { target = "file:texgyre-termes-italic.otf" },
---     ["timesromanbolditalic"] = { target = "file:texgyre-termes-bolditalic.otf" },
-}
+local remap = { }
 
 local function registerfont(specification)
     local source = specification.source
@@ -157,7 +138,7 @@ function graphics.registerpdffont(...)
     registerfont(...)
 end
 
-local function isdefinedunknown(fontname)
+local function isdefinedunknown(fontname,remap)
     local c = cleanfontname(fontname)
     local m = remap[c]
     local r = m and m.target
@@ -380,7 +361,7 @@ local getstates, getindexstate_composite, getindexstate_simple  do
         end
     end
 
-    getindexstate_simple = function(pdfdoc,somefont,states,kind)
+    getindexstate_simple = function(pdfdoc,somefont,states,kind,remap)
         local basefont = somefont.BaseFont
         if basefont then
             local fontname = match(basefont,"^[A-Z]+%+(.+)$") or basefont
@@ -424,7 +405,7 @@ local getstates, getindexstate_composite, getindexstate_simple  do
                                 if fontname == fullname then
                                     local encoding = fonts.handlers.pfb.filterencoding(data)
                                     if encoding then
-                                        local name, id = isdefinedunknown(fullname)
+                                        local name, id = isdefinedunknown(fullname,remap)
                                         if id > 0 then
                                             local unicodes = { }
                                             local nametoslot = fonts.helpers.nametoslot
@@ -492,7 +473,7 @@ local function dontembed(basefont,state,embedding)
     end
 end
 
-local function getstate_OpenType(pdfdoc,v,d,embedding)
+local function getstate_OpenType(pdfdoc,v,d,embedding,remap)
     local state = getindexstate_composite(pdfdoc,v,d,getstates(pdfdoc).OpenType)
     if state then
         local basefont = d.BaseFont
@@ -502,7 +483,7 @@ local function getstate_OpenType(pdfdoc,v,d,embedding)
             end
             local fontname = match(basefont,"^[A-Z]+%+(.+)$") or basefont
             local cleanname = cleanfontname(fontname)
-            local streamhash, id = isdefinedunknown(fontname)
+            local streamhash, id = isdefinedunknown(fontname,remap)
             if streamhash then
                 return {
                     id         = id,
@@ -518,8 +499,8 @@ local function getstate_OpenType(pdfdoc,v,d,embedding)
     end
 end
 
-local function getstate_TrueType(pdfdoc,v,embedding)
-    local state = getindexstate_simple(pdfdoc,v,getstates(pdfdoc).TrueType,"truetype")
+local function getstate_TrueType(pdfdoc,v,embedding,remap)
+    local state = getindexstate_simple(pdfdoc,v,getstates(pdfdoc).TrueType,"truetype",remap)
     if state then
      -- needs checking when unicode ... NOT OK
         local basefont = v.BaseFont
@@ -529,7 +510,7 @@ local function getstate_TrueType(pdfdoc,v,embedding)
             end
             local fontname = match(basefont,"^[A-Z]+%+(.+)$") or basefont
             local cleanname = cleanfontname(fontname)
-            local streamhash, id = isdefinedunknown(fontname)
+            local streamhash, id = isdefinedunknown(fontname,remap)
             if streamhash then
                 return {
                     id         = id,
@@ -546,8 +527,8 @@ local function getstate_TrueType(pdfdoc,v,embedding)
     end
 end
 
-local function getstate_Type1(pdfdoc,v,embedding)
-    local state = getindexstate_simple(pdfdoc,v,getstates(pdfdoc).Type1,"type1")
+local function getstate_Type1(pdfdoc,v,embedding,remap)
+    local state = getindexstate_simple(pdfdoc,v,getstates(pdfdoc).Type1,"type1",remap)
     if state then
         local basefont = v.BaseFont
         if basefont then
@@ -556,7 +537,7 @@ local function getstate_Type1(pdfdoc,v,embedding)
             end
             local fontname = match(basefont,"^[A-Z]+%+(.+)$") or basefont
             local cleanname = cleanfontname(fontname)
-            local streamhash, id = isdefinedunknown(fontname)
+            local streamhash, id = isdefinedunknown(fontname,remap)
             if streamhash then
                 local map = makemap(fontname,id,state,true)
                 if next(map) then
@@ -634,7 +615,7 @@ do
         )
     end
 
-    local function plugin_Type0(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber)
+    local function plugin_Type0(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap)
         -- The v table is unique and can be shared
         local shared = sharedfonts[v]
         if type(shared) == "table" then
@@ -652,18 +633,10 @@ do
                             data[k] = shared
                         end
                     elseif find(pdfe.producer(pdfdoc),"^LuaMetaTeX") then
-                        -- todo: check vector by name
                         -- This is a no go because for sure we have a different index order. Older
                         -- versions append the version to the producer string.
---                     elseif compactor.merge.type0 then
---                         shared = getstate_OpenType(pdfdoc,v,d)
---                         data[k] = shared
---                     elseif compactor.embed.type0 then
---                         shared = getstate_OpenType(pdfdoc,v,d,true)
---                         data[k] = shared
---                     end
                     elseif compactor.merge.type0 or compactor.embed.type0 then
-                        shared = getstate_OpenType(pdfdoc,v,d,compactor.merge.type0)
+                        shared = getstate_OpenType(pdfdoc,v,d,compactor.merge.type0,remap)
                         data[k] = shared
                     end
                     if trace_merge then
@@ -678,18 +651,14 @@ do
         end
     end
 
-    local function plugin_TrueType(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber)
+    local function plugin_TrueType(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap)
         local shared = sharedfonts[v]
         if type(shared) == "table" then
             data[k] = shared
         elseif shared == nil then
             shared = false
---             if compactor.merge.truetype then
---                 shared = getstate_TrueType(pdfdoc,v)
---                 data[k] = shared
---             else
             if compactor.embed.truetype or compactor.merge.truetype then
-                shared = getstate_TrueType(pdfdoc,v,compactor.merge.truetype)
+                shared = getstate_TrueType(pdfdoc,v,compactor.merge.truetype,remap)
                 data[k] = shared
             end
             if trace_merge then
@@ -699,21 +668,14 @@ do
         end
     end
 
-    local function plugin_Type1(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber)
+    local function plugin_Type1(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap)
         local shared = sharedfonts[v]
         if type(shared) == "table" then
             data[k] = shared
         elseif shared == nil then
             shared = false
---             if compactor.merge.type1 then
---                 shared = getstate_Type1(pdfdoc,v)
---                 data[k] = shared
---             elseif compactor.embed.type1 then
---                 shared = getstate_Type1(pdfdoc,v,true)
---                 data[k] = shared
---             end
             if compactor.embed.type1 or compactor.merge.type1 then
-                shared = getstate_Type1(pdfdoc,v,compactor.merge.type1)
+                shared = getstate_Type1(pdfdoc,v,compactor.merge.type1,remap)
                 data[k] = shared
             end
             if trace_merge then
@@ -725,7 +687,7 @@ do
 
     local plugin -- defined after the next one
 
-    local function plugin_Type3(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber)
+    local function plugin_Type3(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap)
         local charprocs = v.CharProcs
         if charprocs then
             local resources = v.Resources
@@ -744,9 +706,9 @@ do
                                 getmetatable(object).__call = function() return contents end
                             end
                             object.__fonts_remapped__ = true
--- v.resources = resources
--- resources.Font    = fonts
--- resources.XObject = xobjects
+                         -- v.resources = resources
+                         -- resources.Font    = fonts
+                         -- resources.XObject = xobjects
                             status.charprocs = status.charprocs + 1
                             status.indices   = status.indices + indices
                         end
@@ -776,6 +738,7 @@ do
 
         local data    = { }
         local indices = 0
+        local remap   = compactor.files or remap
 
         local sharedfonts  = pdfdoc.sharedfonts or { }
         pdfdoc.sharedfonts = sharedfonts
@@ -788,7 +751,7 @@ do
                     local subtype = v.Subtype
                     local handler = subtype and handlers[subtype]
                     if handler then
-                        handler(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber)
+                        handler(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap)
                     else
                         -- weird
                     end
@@ -1126,12 +1089,13 @@ do
         return indices ~= 0
     end
 
-    -------------------------------------------------------------------------------------------------------
+    -- faster one, for context files --
 
     local lmtxplugin = function(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,adapted,depth,objtag)
 
         local data    = { }
         local indices = 0
+        local remap   = compactor.files or remap -- not relevant
 
         local sharedfonts  = pdfdoc.sharedfonts or { }
         pdfdoc.sharedfonts = sharedfonts
@@ -1143,7 +1107,7 @@ do
                     local subtype = v.Subtype
                     local handler = subtype and handlers[subtype]
                     if handler then
-                        handler(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber)
+                        handler(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap)
                     else
                         -- weird
                     end
@@ -1278,8 +1242,7 @@ do
         return indices ~= 0
     end
 
-
-    -------------------------------------------------------------------------------------------------------
+    -- done --
 
     local function hasfonts(xobject)
         if xobject then
@@ -1341,11 +1304,10 @@ do
                     plugin = lmtxplugin
                 end
                 if plugin then
-                    local contents = getpagecontent(pdfdoc,pagenumber,true,true)
+                    local contents = pdfdoc.getcontents()
                     if contents then
                         plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,{},1)
                         resources.Font = fonts -- really needed
-                        page.Contents = contenttostring(contents)
                     end
                 end
                 status.pages = status.pages + 1

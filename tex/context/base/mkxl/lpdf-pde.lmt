@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
 
 -- \enabledirectives[graphics.pdf.uselua]
 -- \enabledirectives[graphics.pdf.recompress]
--- \enabledirectives[graphics.pdf.stripmarked]
 
 -- maximum integer : +2^32
 -- maximum real    : +2^15
@@ -136,7 +135,6 @@ local reference_object_code  <const> = objectcodes.reference
 local lpdf_object_code       <const> = objectcodes.lpdf
 
 local recompress  = false
-local stripmarked = false
 
 -- We need to convert the string from utf16 although there is no way to
 -- check if we have a regular string starting with a bom. So, we have
@@ -780,41 +778,6 @@ function lpdf_epdf.parsecontent(str,fast)
     return lpegmatch(fast and fastparser or parser,str)
 end
 
--- this will go as we can better run over the list --
-
-local numchar   = P("\\") * (R("09")^3 + P(1))
-local number    = lpegpatterns.number
-local keyword   = P("/") * R("AZ","az","09","__")^1
-local operator  = (R("AZ","az")+P("*")+P("'")+P('"'))^1
-
-local skipstart = P("BDC") + P("BMC") + P("DP") + P("MP")
-local skipstop  = P("EMC")
-local skipkeep  = P("/ActualText")
-
-local grammar   = P { "skip",
-    start      = keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces,
-    keyvalue   = optspaces * (keyword * optspaces * V("start") * optspaces)^1,
-    xeyvalue   = optspaces * ((keyword - skipkeep) * optspaces * V("start") * optspaces)^1,
-    array      = P("[")  * V("start")^0         * P("]"),
-    dictionary = P("<<") * V("keyvalue")^0      * P(">>"),
-    xictionary = P("<<") * V("xeyvalue")^0      * P(">>"),
-    hexstring  = P("<")  * (        1-P(">"))^0 * P(">"),
-    decstring  = P("(")  * (numchar+1-(P")"))^0 * P(")"),
-    skip       = (optspaces * ( keyword * optspaces * V("xictionary") * optspaces * skipstart + skipstop) / "")
-               + V("start")
-               + operator
-}
-
-local stripper = Cs((grammar + P(1))^1)
-
-function lpdf_epdf.stripcontent(str)
-    if find(str,"EMC") then
-        return lpegmatch(stripper,str)
-    else
-        return str
-    end
-end
-
 ---------------------------------------------------------------------------
 
 -- beginbfrange : <start> <stop> <firstcode>
@@ -1104,10 +1067,24 @@ function lpdf_epdf.contenttostring(contents)
         end
     end
 
-    for i=1,#contents do
-        flatten(contents[i])
+    if true then -- option
+        for i=1,#contents do
+            local c = contents[i]
+            if #c > 0 then
+                flatten(c)
+                r = r + 1 ; result[r] = "\n"
+            end
+        end
+        result[#result] = nil
+        result = concat(result," ")
+        result = string.gsub(result,"\n ","\n")
+        return result
+    else
+        for i=1,#contents do
+            flatten(contents[i])
+        end
+        return concat(result," ")
     end
-    return concat(result," ")
 end
 
 function lpdf_epdf.getstructure(document,list) -- just a test
@@ -1164,7 +1141,6 @@ if images then do
     local createimage          = images.create
 
     directives.register("graphics.pdf.recompress",  function(v) recompress  = v end)
-    directives.register("graphics.pdf.stripmarked", function(v) stripmarked = v end)
 
     local function scaledbbox(b)
         return { b[1]*factor, b[2]*factor, b[3]*factor, b[4]*factor }
@@ -1358,19 +1334,43 @@ if images then do
 
     local variables = interfaces.variables
 
-    local function allcontents(contents)
-        local ctype = contents.__type__
-        if ctype == stream_object_code then
-            return contents()
-        elseif ctype == array_object_code then
-            content = { }
-            for i=1,#contents do
-                content[i] = contents[i]() -- uncompressed
+    local function getinclusion(pdfdoc)
+        local inclusion = pdfdoc.lmtxinclusion
+        if not inclusion then
+            local catalog  = pdfdoc.Catalog
+            local info     = pdfdoc.Info
+            local metadata = nil
+            local function checked(tag,pattern)
+                local str = info[tag]
+                if not str then
+                    if metadata == nil then
+                        metadata = catalog.Metadata or false
+                        if metadata then
+                            metadata = metadata() or false
+                        end
+                        if metadata then
+                            metadata = xml.convert(metadata)
+                        end
+                    end
+                    if metadata then
+                        str = xml.text(metadata,pattern)
+                    end
+                end
+                return str and str ~= "" and str or "unknown"
             end
-            return concat(content," ")
-        else
-            return contents
+            -- We don't want to claim to be the producer so we add this to the
+            -- image.
+            inclusion = pdfreference(pdfflushobject(pdfdictionary {
+             -- Title            = checked("Title",       "Description/title/**/*"),
+             -- Author           = checked("Author",      "Description/author/**/*"),
+                Creator          = checked("Creator",     "Description/CreatorTool"),
+                Producer         = checked("Producer",    "Description/Producer"),
+             -- Creationdate     = checked("CreationDate","Description/CreateDate"),
+             -- Modificationdate = checked("ModDate",     "Description/ModifyDate"),
+            }))
+            pdfdoc.lmtxinclusion = inclusion
         end
+        return inclusion
     end
 
     local function copypage(pdfdoc,pagenumber,attributes,compact,width,height,attr,copymeta)
@@ -1385,7 +1385,7 @@ if images then do
                 local resources = page.Resources
                 if compact and resources and lpdf_epdf.pageplugin then
                     lpdf_epdf.pageplugin(pdfdoc,page,pagenumber,resources,compact)
-                    contents = page.Contents
+                    contents = page.Contents -- can now be a string
                 end
                 local metadata = nil
                 -- page     : only page (default, compatibility)
@@ -1411,6 +1411,7 @@ if images then do
                     Resources      = copyresources(pdfdoc,xref,copied,resources),
                  -- Resources      = copyobject(pdfdoc,xref,copied,page,"Resources"),
                     SeparationInfo = copyobject(pdfdoc,xref,copied,page,"SeparationInfo"),
+                    LMTX_Inclusion = getinclusion(pdfdoc),
                 } + attr
                 if attributes then
                     for k, v in expanded(attributes) do
@@ -1426,14 +1427,7 @@ if images then do
                     -- we always recompress because image object streams can not be
                     -- influenced (yet)
                     if ctype == stream_object_code then
-                        if stripmarked then
-                            content = contents() -- uncompressed
-                            local stripped = lpdf_epdf.stripcontent(content)
-                            if stripped ~= content then
-                             -- report("%i bytes stripped on page %i",#content-#stripped,pagenumber or 1)
-                                content = stripped
-                            end
-                        elseif recompress then
+                        if recompress then
                             content = contents() -- uncompressed
                         else
                             local Filter = copyobject(pdfdoc,xref,copied,contents,"Filter")

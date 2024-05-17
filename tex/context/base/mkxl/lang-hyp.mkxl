@@ -54,7 +54,7 @@
 \automatichyphenpenalty   50 % -
 \explicithyphenpenalty    50 % \-
 \compoundhyphenpenalty    50
-\exceptionpenalty       1000
+\exceptionpenalty          0 % MS dislikes 1000, zero == \hyphenpenalty * factor
 
 %D This command can change! At some point we will keep the setting with the
 %D paragraph and then the \type {\par} can go.

@@ -33,6 +33,33 @@ static int statslib_callbackstate(lua_State *L)
     return 1;
 }
 
+static int statslib_linebreakstate(lua_State *L)
+{
+    lua_createtable(L, n_of_par_context_codes, 0);
+    for (int i = 0; i < n_of_par_context_codes; i++) {
+        lua_push_key_by_index(lmt_interface.par_context_values[i].lua);
+        lua_createtable(L, 0, 4);
+        lua_set_integer_by_key(L, "first",  lmt_linebreak_state.passes[i].n_of_first_passes);
+        lua_set_integer_by_key(L, "second", lmt_linebreak_state.passes[i].n_of_second_passes);
+        lua_set_integer_by_key(L, "third",  lmt_linebreak_state.passes[i].n_of_third_passes);
+        lua_set_integer_by_key(L, "sub",    lmt_linebreak_state.passes[i].n_of_sub_passes);
+        lua_rawset(L, -3);
+    }
+    return 1;
+}
+
+static int statslib_hyphenationstate(lua_State *L)
+{
+    lua_createtable(L, 0, 6);
+    lua_set_integer_by_key(L, "lists",      lmt_language_state.list_count);
+    lua_set_integer_by_key(L, "words",      lmt_language_state.word_count);
+    lua_set_integer_by_key(L, "checked",    lmt_language_state.checked_count);
+    lua_set_integer_by_key(L, "hyphenated", lmt_language_state.hyphenated_count);
+    lua_set_integer_by_key(L, "exceptions", lmt_language_state.exceptions_count);
+    lua_set_integer_by_key(L, "nothing",    lmt_language_state.nothing_count);
+    return 1;
+}
+
 static int statslib_texstate(lua_State *L)
 {
     lua_Integer approximate = 0
@@ -410,6 +437,8 @@ static struct statistic_entry statslib_entries[] = {
     { .name = "texstate",           .value = &statslib_texstate,           .type = 'f' },
     { .name = "luastate",           .value = &statslib_luastate,           .type = 'f' },
     { .name = "callbackstate",      .value = &statslib_callbackstate,      .type = 'f' },
+    { .name = "linebreakstate",     .value = &statslib_linebreakstate,     .type = 'f' },
+    { .name = "hyphenationstate",   .value = &statslib_hyphenationstate,   .type = 'f' },
     { .name = "errorstate",         .value = &statslib_errorstate,         .type = 'f' },
     { .name = "warningstate",       .value = &statslib_warningstate,       .type = 'f' },
     { .name = "readstate",          .value = &statslib_readstate,          .type = 'f' },
@@ -520,6 +549,8 @@ static const struct luaL_Reg statslib_function_list[] = {
     { "getwarningstate",       statslib_warningstate       },
     { "getreadstate",          statslib_readstate          },
     { "getcallbackstate",      statslib_callbackstate      },
+    { "getlinebreakstate",     statslib_linebreakstate     },
+    { "gethyphenationstate",   statslib_hyphenationstate   },
 
     { "geterrorlinestate",     statslib_errorlinestate     },
     { "gethalferrorlinestate", statslib_halferrorlinestate },

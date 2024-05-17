@@ -317,6 +317,8 @@ function statistics.showusage(when)
     local c = status.getcallbackstate() -- status.callbacks
     local m = mplib.getcallbackstate()
     local b = backends.getcallbackstate()
+    local l = status.getlinebreakstate()
+    local h = status.gethyphenationstate()
     --
     local estatus = s.expandstate
     local tstatus = s.texstate
@@ -370,6 +372,27 @@ function statistics.showusage(when)
     report("  mp total callbacks    : %s", m.count)
     report("  backend callbacks     : %s", b.count)
     report("")
+    local done = false
+    for k, v in table.sortedhash(l) do
+        local first, second, third, sub = v.first, v.second, v.third, v.sub
+        if first ~= 0 or second ~= 0 or third ~= 0 or sub ~= 0 then
+            report("  linebreak par context : %-8s  %6i  %6i  %6i  %6i",k,first,second,third,sub)
+            done = true
+        end
+    end
+    if done then
+        report("")
+    end
+    local done = false
+    for k, v in table.sortedhash(h) do
+        if v ~= 0 then
+            report("  hyphenation state     : %-10s  %6i",k,v)
+            done = true
+        end
+    end
+    if done then
+        report("")
+    end
     if pstatus then
         report("  page numbers          : realpage %s, userpage %s, subpage %s",pstatus.page.real,pstatus.page.user,pstatus.page.sub)
         report("  page timing           : total %0.03f, page %0.03f, average %0.03f",pstatus.time.elapsed,pstatus.time.page,pstatus.time.average)

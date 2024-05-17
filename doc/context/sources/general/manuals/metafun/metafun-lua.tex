@@ -600,7 +600,7 @@ these subtables into paths:
 \startMPcode
   for i=1 upto lua("mp.print(mp.n(MP.myset))") :
     draw
-      lua("mp.path(MP.myset[" & decimal i & "])")
+      lua("mp.path(MP.myset[" & decimal i & "],false)")
       xysized (HSize-.25ExHeight,10ExHeight)
       withpen pencircle scaled .25ExHeight
       withcolor basiccolors[i]/2 ;

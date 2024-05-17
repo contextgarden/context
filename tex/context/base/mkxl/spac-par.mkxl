@@ -108,6 +108,12 @@
   + \exhyphenpenaltyfrozenparcode
 \relax
 
+\appendtoks
+    \parpasses\zerocount
+  % \noexpansion
+  % \noprotrusion
+\to \everyforgetall
+
 \permanent\protected\def\freezeparagraphproperties {\snapshotpar\frozenparagraphdefault}
 \permanent\protected\def\defrostparagraphproperties{\snapshotpar\zerocount}
 

@@ -35,7 +35,10 @@ For a while we will keep the W files around because they are also a timestamp bu
 they will be archived. After all, they are still in the GIT repository. By keeping them we 
 can backtrack the documentation but as they are frozen you should not use them! 
 
-There can be fixes in the c files that are not backported to the w files! 
+There can be fixes in the c files that are not backported to the w files! Per version 211.3
+we no longer distribute the W sources and we moved the files one level up. The lua tool file
+that we used for conversion has been removed. It serv4ed us well for five years and is still
+in the history. We keep the comments above. 
 
 Hans Hagen 
 2018-2024+

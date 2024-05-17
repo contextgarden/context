@@ -64,6 +64,13 @@
 
 typedef halfword fitcriterion[n_of_fitness_values] ;
 
+typedef struct break_passes { 
+    int n_of_first_passes;
+    int n_of_second_passes;
+    int n_of_third_passes;
+    int n_of_sub_passes;
+} break_passes;
+
 typedef struct linebreak_state_info {
     /*tex the |hlist_node| for the last line of the new paragraph */
     halfword     just_box;
@@ -118,6 +125,7 @@ typedef struct linebreak_state_info {
     int          saved_threshold; 
     int          checked_expansion; 
     int          line_break_dir;
+    break_passes passes[n_of_par_context_codes];
 } linebreak_state_info;
 
 extern linebreak_state_info lmt_linebreak_state;
@@ -151,7 +159,8 @@ extern halfword tex_default_fitness_demerits(
 
 extern void tex_line_break (
     int d, 
-    int line_break_context
+    int group_context,
+    int par_context
 );
 
 extern void tex_initialize_active (

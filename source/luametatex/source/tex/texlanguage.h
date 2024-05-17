@@ -12,6 +12,12 @@ typedef struct language_state_info {
     memory_data           language_data;
     lua_Integer           handler_table_id;
     int                   handler_count;
+    int                   list_count; 
+    int                   word_count; 
+    int                   checked_count;
+    int                   exceptions_count;
+    int                   hyphenated_count;
+    int                   nothing_count;
 } language_state_info;
 
 extern language_state_info lmt_language_state;

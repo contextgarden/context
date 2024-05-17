@@ -1620,7 +1620,7 @@ featureset.hyphenonly   = hyphenonly == v_yes
 
     local original = hyphenating and
         function(head)
-            return (hyphenating(head))
+             return (hyphenating(head))
         end
     or
         function(head)

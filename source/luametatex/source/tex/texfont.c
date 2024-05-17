@@ -465,7 +465,7 @@ int tex_math_char_exists(halfword f, int c, int size)
     a little.
 */
 
-int tex_get_math_char(halfword f, int c, int size, scaled *scale, int direction)
+int tex_get_math_char(halfword f, int c, int size, scaled *scale, scaled *xscale, scaled *yscale, scaled *weight, int direction)
 {
     int id = aux_find_charinfo_id(f, c);
     texfont *tf = lmt_font_state.fonts[f];
@@ -507,8 +507,17 @@ int tex_get_math_char(halfword f, int c, int size, scaled *scale, int direction)
     }
     if (scale) {
         *scale = tex_get_math_font_scale(f, size);
+        *xscale = tex_get_math_font_x_scale(f, size);
+        *yscale = tex_get_math_font_y_scale(f, size);
+        *weight = tex_get_math_font_weight(f, size);
         if (! *scale) {
             *scale = scaling_factor;
+        }
+        if (! *xscale) {
+            *xscale = scaling_factor;
+        }
+        if (! *yscale) {
+            *yscale = scaling_factor;
         }
     }
     return c;
@@ -2168,17 +2177,6 @@ void tex_set_font_original(halfword f, const char *s)
     set_font_original(f, s ? lmt_memory_strdup(s) : NULL);
 }
 
-// scaled tex_get_math_font_scale(halfword f, halfword size)
-// {
-//     scaled scale = scaling_factor;
-//     switch (size) {
-//         case 2: scale = lmt_font_state.fonts[f]->mathscales[2] ? lmt_font_state.fonts[f]->mathscales[2] : glyph_scriptscript_scale_par; break;
-//         case 1: scale = lmt_font_state.fonts[f]->mathscales[1] ? lmt_font_state.fonts[f]->mathscales[1] : glyph_script_scale_par;       break;
-//         case 0: scale = lmt_font_state.fonts[f]->mathscales[0] ? lmt_font_state.fonts[f]->mathscales[0] : glyph_text_scale_par;         break;
-//     }
-//     return scale ? scale : scaling_factor;
-// 
-
 scaled tex_get_math_font_scale(halfword f, halfword size)
 {
     scaled scale;
@@ -2190,6 +2188,72 @@ scaled tex_get_math_font_scale(halfword f, halfword size)
     scale = scaledround(0.001 * (double) scale);
     return scale ? scale : scaling_factor;
 }
+
+scaled tex_get_math_font_x_scale(halfword f, halfword size)
+{
+    scaled scale;
+    switch (size) {
+        case  2: scale = (lmt_font_state.fonts[f]->mathxscales[2] ? lmt_font_state.fonts[f]->mathxscales[2] : scaling_factor) * glyph_scriptscript_scale_par; break;
+        case  1: scale = (lmt_font_state.fonts[f]->mathxscales[1] ? lmt_font_state.fonts[f]->mathxscales[1] : scaling_factor) * glyph_script_scale_par;       break;
+        default: scale = (lmt_font_state.fonts[f]->mathxscales[0] ? lmt_font_state.fonts[f]->mathxscales[0] : scaling_factor) * glyph_text_scale_par;         break;
+    }
+    scale = scaledround(0.001 * (double) scale);
+    return scale ? scale : scaling_factor;
+}
+
+scaled tex_get_math_font_y_scale(halfword f, halfword size)
+{
+    scaled scale;
+    switch (size) {
+        case  2: scale = (lmt_font_state.fonts[f]->mathyscales[2] ? lmt_font_state.fonts[f]->mathyscales[2] : scaling_factor) * glyph_scriptscript_scale_par; break;
+        case  1: scale = (lmt_font_state.fonts[f]->mathyscales[1] ? lmt_font_state.fonts[f]->mathyscales[1] : scaling_factor) * glyph_script_scale_par;       break;
+        default: scale = (lmt_font_state.fonts[f]->mathyscales[0] ? lmt_font_state.fonts[f]->mathyscales[0] : scaling_factor) * glyph_text_scale_par;         break;
+    }
+    scale = scaledround(0.001 * (double) scale);
+    return scale ? scale : scaling_factor;
+}
+
+scaled tex_get_math_font_weight(halfword f, halfword size)
+{
+    switch (size) {
+        case  2: return lmt_font_state.fonts[f]->mathweights[2] ; break;
+        case  1: return lmt_font_state.fonts[f]->mathweights[1] ; break;
+        default: return lmt_font_state.fonts[f]->mathweights[0] ; break;
+    }
+}
+
+// scaled tex_raw_math_font_scale(halfword f, halfword size)
+// {
+//     scaled scale;
+//     switch (size) {
+//         case  2: scale = (lmt_font_state.fonts[f]->mathscales[2] ? lmt_font_state.fonts[f]->mathscales[2] : scaling_factor) * glyph_scriptscript_scale_par; break;
+//         case  1: scale = (lmt_font_state.fonts[f]->mathscales[1] ? lmt_font_state.fonts[f]->mathscales[1] : scaling_factor) * glyph_script_scale_par;       break;
+//         default: scale = (lmt_font_state.fonts[f]->mathscales[0] ? lmt_font_state.fonts[f]->mathscales[0] : scaling_factor) * glyph_text_scale_par;         break;
+//     }
+//     return scale ? scale : scaling_factor * scaling_factor;
+// }
+// 
+// scaled tex_raw_math_font_x_scale(halfword f, halfword size)
+// {
+//     scaled scale;
+//     switch (size) {
+//         case  2: scale = (lmt_font_state.fonts[f]->mathxscales[2] ? lmt_font_state.fonts[f]->mathxscales[2] : scaling_factor) * glyph_scriptscript_scale_par; break;
+//         case  1: scale = (lmt_font_state.fonts[f]->mathxscales[1] ? lmt_font_state.fonts[f]->mathxscales[1] : scaling_factor) * glyph_script_scale_par;       break;
+//         default: scale = (lmt_font_state.fonts[f]->mathxscales[0] ? lmt_font_state.fonts[f]->mathxscales[0] : scaling_factor) * glyph_text_scale_par;         break;
+//     }
+//     return scale ? scale : scaling_factor * scaling_factor;
+// }
+// 
+// scaled tex_raw_math_font_y_scale(halfword f, halfword size)
+// {
+//     scaled scale;
+//     switch (size) {
+//         case  2: scale = (lmt_font_state.fonts[f]->mathyscales[2] ? lmt_font_state.fonts[f]->mathyscales[2] : scaling_factor) * glyph_scriptscript_scale_par; break;
+//         case  1: scale = (lmt_font_state.fonts[f]->mathyscales[1] ? lmt_font_state.fonts[f]->mathyscales[1] : scaling_factor) * glyph_script_scale_par;       break;
+//         default: scale = (lmt_font_state.fonts[f]->mathyscales[0] ? lmt_font_state.fonts[f]->mathyscales[0] : scaling_factor) * glyph_text_scale_par;         break;
+//     }
+//     return scale ? scale : scaling_factor * scaling_factor;
+// }
 
 scaled tex_get_math_font_factor(halfword size)
 {

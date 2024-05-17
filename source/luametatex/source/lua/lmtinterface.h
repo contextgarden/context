@@ -1165,9 +1165,15 @@ make_lua_key(L, scriptorder);\
 make_lua_key(L, ScriptPercentScaleDown);\
 make_lua_key(L, scripts);\
 make_lua_key(L, scriptscale);\
+make_lua_key(L, scriptxscale);\
+make_lua_key(L, scriptyscale);\
+make_lua_key(L, scriptweight);\
 make_lua_key(L, scriptscript);\
 make_lua_key(L, ScriptScriptPercentScaleDown);\
 make_lua_key(L, scriptscriptscale);\
+make_lua_key(L, scriptscriptxscale);\
+make_lua_key(L, scriptscriptyscale);\
+make_lua_key(L, scriptscriptweight);\
 make_lua_key(L, second);\
 make_lua_key(L, semi_protected_call);\
 make_lua_key(L, semiprotected);\
@@ -1302,6 +1308,9 @@ make_lua_key(L, tex_nest);\
 make_lua_key(L, text);\
 make_lua_key(L, textcontrol);\
 make_lua_key(L, textscale);\
+make_lua_key(L, textxscale);\
+make_lua_key(L, textyscale);\
+make_lua_key(L, textweight);\
 make_lua_key(L, the);\
 make_lua_key(L, thickmuskip);\
 make_lua_key(L, thinmuskip);\

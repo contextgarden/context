@@ -6,33 +6,12 @@ if not modules then modules = { } end modules ['lpdf-fix'] = {
     license   = "see context related readme files"
 }
 
--- todo: keep table representation
+local next, dofile = next, dofile
+local splitup = string.splitup
 
--- local everything = {
---     embed = {
---         type0    = true,
---         truetype = true,
---         type1    = true,
---     },
---     merge = {
---         type0    = true, -- check if a..z A..Z 0..9
---         truetype = true,
---         type1    = true,
---         type3    = true,
---         LMTX     = true,
---     },
---     strip = {
---         transparency = true, -- when zero
---         extgstate    = true,
---         cmyk         = true,
---         marked       = true,
---     },
---     add = {
---         cidset, -- when missing or even fix
---     },
--- }
+-- see compactors-preset.lua for details
 
--- local report = logs.reporter("graphics","compactors")
+local report = logs.reporter("graphics","compactors")
 
 do
 
@@ -40,93 +19,68 @@ do
     local codeinjections    = pdfbackend.codeinjections
     local setmetatableindex = table.setmetatableindex
 
-    local compactors = {
-     -- [interfaces.variables.no]   = false,
-     -- [interfaces.variables.nono] = false,
-     -- [""]             = false,
-    }
-
-    local function registercompactor(name,data)
-        if not data then
-            data = name
-            name = data.name
-            data.name = nil
+    local compactors = setmetatableindex(function(t,prefix)
+        local c = nil
+        local n = "compactors-" .. prefix .. ".lua"
+        local f = resolvers.findfile(n) or ""
+        if f ~= "" then
+            c = table.load(f)
+            if c then
+                c = c.compactors
+                if c then
+                    for name, data in next, c do
+                        data.name = nil
+                        local strip = data.strip
+                        if not strip then
+                            data.strip = { marked = true }
+                        elseif strip.marked == nil then
+                            strip.marked = true
+                        end
+                        for tag, d in next, data do
+                            for k, v in next, d do
+                                if not v then
+                                    d[k] = nil
+                                end
+                            end
+                        end
+                        setmetatableindex(data,"table")
+                    end
+                    report("registered: %s : % | t",prefix,table.sortedkeys(c))
+                end
+            end
         end
-        -- we play safe:
-        local strip = data.strip
-        if not strip then
-            data.strip = { marked = true }
-        elseif strip.marked == nil then
-            strip.marked = true
+        if not c then
+            report("unknown or invalid file: %s",n)
+            c = { }
         end
-        if not data.cleanup then
-            data.cleanup = { }
-        end
-        if not data.merge then
-            data.merge = { }
-        end
-        if not data.embed then
-            data.embed = { }
-        end
-        -- and are done:
-        compactors[name] = setmetatableindex(data,"table")
-    end
-
-    codeinjections.registercompactor = registercompactor
+        t[prefix] = c
+        return c
+    end)
 
     function codeinjections.validcompactor(name)
-        local compactor = name and compactors[name] or false
--- print("compactor",name,tostring(compactor))
-        return compactor
+        if name then
+            local prefix, name = splitup(name,":")
+            if not name then
+                prefix, name = "preset", prefix
+            end
+            local compactor = prefix and compactors[prefix][name] or false
+            if compactor and not compactor.status.reported then
+                report("using: %s : %s",prefix,name)
+                compactor.status.reported = true
+            end
+            return compactor
+        end
     end
 
-    registercompactor ( "preset:default", {
-        strip = {
-            marked    = true,
-            procset   = true,
-            pieceinfo = true,
-        },
-        cleanup = {
-            procset   = true,
-            pieceinfo = true,
-        }
-    } )
+    function graphics.registerpdfcompactor(name,compactor)
+        if type(name )== "string" and type(compactor) == "table" then
+            local prefix, name = splitup(name,":")
+            if not name then
+                prefix, name = "preset", prefix
+            end
+            compactors[prefix][name] = compactor
+        end
 
-    registercompactor ( "preset:yes", {
-        merge = {
-            lmtx = true,
-        },
-        strip = {
-            marked    = true,
-        },
-        cleanup = {
-            procset   = true,
-            pieceinfo = true,
-        }
-    } )
-
-    registercompactor ( "preset:merge", {
-        merge = {
-            type0    = true,
-            truetype = true,
-            type1    = true,
-         -- type3    = true,
-            lmtx     = true,
-        },
-        strip = {
-            marked    = true,
-        },
-        cleanup = {
-            procset   = true,
-            pieceinfo = true,
-        }
-    } )
-
-    compactors[interfaces.variables.yes] = compactors["preset:yes"]
-
-    function graphics.registerpdfcompactor(...)
-        -- todo: message
-        registercompactor(...)
     end
 
 end
@@ -141,9 +95,9 @@ do
         arguments = "pdfdoc,page,pagenumber,resources,compactor",
     }
 
-    appendgroup(pdfcontentmanipulators,"before") -- user
-    appendgroup(pdfcontentmanipulators,"system") -- private
-    appendgroup(pdfcontentmanipulators,"after" ) -- user
+    appendgroup(pdfcontentmanipulators,"before")
+    appendgroup(pdfcontentmanipulators,"system")
+    appendgroup(pdfcontentmanipulators,"after" )
 
     function lpdf.epdf.contentplugin(pdfdoc,page,pagenumber,resources,compactor)
         local runner = pdfcontentmanipulators.runner
@@ -160,20 +114,29 @@ do
         arguments = "pdfdoc,page,pagenumber,resources,compactor",
     }
 
-    appendgroup(pdfpagemanipulators,"before") -- user
-    appendgroup(pdfpagemanipulators,"system") -- private
-    appendgroup(pdfpagemanipulators,"after" ) -- user
+    appendgroup(pdfpagemanipulators,"before")
+    appendgroup(pdfpagemanipulators,"system")
+    appendgroup(pdfpagemanipulators,"after" )
 
     sequencers.appendaction("pdfpagemanipulators","system","lpdf.epdf.contentplugin")
-    sequencers.enableaction("pdfpagemanipulators","lpdf.epdf.contentplugin")
+    sequencers.enableaction("pdfpagemanipulators",         "lpdf.epdf.contentplugin")
+
+    local count = 0
 
     function lpdf.epdf.pageplugin(pdfdoc,page,pagenumber,resources,compactor)
         local runner = pdfpagemanipulators.runner
         if runner then
--- inspect(pdfdoc.Info)
--- inspect(pdfdoc.Info)
+            count = count + 1
+            statistics.starttiming(pdfpagemanipulators)
             runner(pdfdoc,page,pagenumber,resources,compactor)
+            statistics.stoptiming(pdfpagemanipulators)
         end
     end
+
+    statistics.register("pdf compacting", function()
+        if count > 0 then
+            return string.format("%s seconds for %s inclusions",statistics.elapsedtime(pdfpagemanipulators),count)
+        end
+    end)
 
 end

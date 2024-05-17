@@ -47,11 +47,16 @@
 
 % \definesystemattribute[visual][public,global] % already defined
 
-% no, but can become an option:
-%
-% \appendtoks
-%     \c_attr_visual\attributeunsetvalue
-% \to \everybeforepagebody
+\newconditional\c_visual_local
+
+\permanent\protected\def\setlocalshowmakeup  {\settrue \c_visual_local}
+\permanent\protected\def\resetlocalshowmakeup{\setfalse\c_visual_local}
+
+\appendtoks
+    \ifconditional\c_visual_local
+      \c_attr_visual\attributeunsetvalue
+    \fi
+\to \everybeforepagebody
 
 %D We only provide box visualizers as they can come in handy for testing
 %D macros. In due time we will move some of the m-visual code here too.

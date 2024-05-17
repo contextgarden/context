@@ -118,6 +118,7 @@ linebreak_state_info lmt_linebreak_state = {
     .saved_threshold              = 0,
     .line_break_dir               = 0,
     .checked_expansion            = -1,
+    .passes                       = { { 0, 0, 0, 0 } },
 };
 
 /*tex
@@ -213,7 +214,7 @@ void tex_line_break_prepare(
     }
 }
 
-void tex_line_break(int d, int line_break_context)
+void tex_line_break(int d, int group_context, int par_context)
 {
     halfword head = node_next(cur_list.head);
     /*tex There should be a local par node at the beginning! */
@@ -225,7 +226,7 @@ void tex_line_break(int d, int line_break_context)
         /*tex Hyphenate, driven by callback or fallback to normal \TEX. */
         if (tex_list_has_glyph(head)) {
             tex_handle_hyphenation(head, tail);
-            head = tex_handle_glyphrun(head, line_break_context, par_dir(head));
+            head = tex_handle_glyphrun(head, group_context, par_dir(head));
             tail = tex_tail_of_node_list(head);
             tex_try_couple_nodes(cur_list.head, head);
             cur_list.tail = tail;
@@ -259,7 +260,7 @@ void tex_line_break(int d, int line_break_context)
                 We start with a prepared list. If you mess with that the linebreak routine might not
                 work well especially if the pointers are messed up. So be it.
             */
-            lmt_node_filter_callback(pre_linebreak_filter_callback, line_break_context, temp_head, &(cur_list.tail));
+            lmt_node_filter_callback(pre_linebreak_filter_callback, group_context, temp_head, &(cur_list.tail));
             /*tex
                 We assume that the list is still okay.
             */
@@ -353,6 +354,8 @@ void tex_line_break(int d, int line_break_context)
                     .extra_hyphen_penalty         = 0,
                     .optional_found               = 0,
                     .line_break_optional          = line_break_optional_par,
+                    .group_context                = group_context,
+                    .par_context                  = par_context,
                 };
                 tex_do_line_break(&properties);
                 /*tex
@@ -360,7 +363,7 @@ void tex_line_break(int d, int line_break_context)
                 */
             }
             lmt_linebreak_state.calling_back = 0;
-            lmt_node_filter_callback(post_linebreak_filter_callback, line_break_context, start_of_par, &(cur_list.tail));
+            lmt_node_filter_callback(post_linebreak_filter_callback, group_context, start_of_par, &(cur_list.tail));
             lmt_packaging_state.pack_begin_line = 0;
             return;
         }
@@ -2558,17 +2561,17 @@ static void tex_aux_prepare_toddler_penalties(line_break_properties *properties,
                             }
                             break;
                         default: 
-                            count = -1; 
+                            --count; 
                             break;
                     }
                     break;
                 case glyph_node:
                     if (count >= 0 && glyph_node_is_text(current)) { 
-                        count += 1;
+                        ++count;
                     }
                     break;
                 default:
-                    count = -1; 
+                    --count; 
             }
             current = node_next(current);
         }
@@ -3574,6 +3577,7 @@ void tex_do_line_break(line_break_properties *properties)
         }
         lmt_linebreak_state.second_pass = 0;
         lmt_linebreak_state.final_pass = 0;
+        lmt_linebreak_state.passes[properties->par_context].n_of_first_passes++;
     } else {
         lmt_linebreak_state.threshold = properties->tolerance;
         lmt_linebreak_state.second_pass = 1;
@@ -3689,6 +3693,7 @@ void tex_do_line_break(line_break_properties *properties)
                             --pass;
                             lmt_linebreak_state.second_pass = 0;
                             lmt_linebreak_state.final_pass = 0;
+                            lmt_linebreak_state.passes[properties->par_context].n_of_sub_passes++;
                             goto HERE;
                         } else if (found < 0) {
                             goto HERE;
@@ -3744,10 +3749,12 @@ void tex_do_line_break(line_break_properties *properties)
                 lmt_linebreak_state.threshold = properties->tolerance;
                 lmt_linebreak_state.second_pass = 1;
                 lmt_linebreak_state.final_pass = ! tex_aux_emergency(properties); /* then second pass is final pass */
+                lmt_linebreak_state.passes[properties->par_context].n_of_second_passes++;
             } else {
                 /*tex If at first you do not succeed, then: */
                 halfword el = properties->emergency_left_skip;
                 halfword er = properties->emergency_right_skip;
+                lmt_linebreak_state.passes[properties->par_context].n_of_third_passes++;
                 if (properties->tracing_paragraphs > 0) {
                     tex_print_format("%l[linebreak: emergency pass]"); /* @emergencypass */
                 }

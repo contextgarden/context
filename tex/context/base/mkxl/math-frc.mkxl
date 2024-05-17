@@ -294,31 +294,41 @@
                                                                      \Umathchar\zerocount\fam\scratchcounterthree}
 \defcsname\??fractionmethods\v!horizontal          \v!none\endcsname{\Uskewed
                                                                      \Umathchar\zerocount\fam\scratchcounterthree
+                                                                     \s!noaxis \space
                                                                      \s!hfactor \numexpr\mathfractionparameter\c!hfactor\relax}
 \defcsname\??fractionmethods\v!horizontal                 \endcsname{\Uskewedwithdelims
                                                                      \Umathchar\zerocount\fam\scratchcounterone
                                                                      \Umathchar\zerocount\fam\scratchcountertwo
                                                                      \Umathchar\zerocount\fam\scratchcounterthree
+                                                                     \s!noaxis \space
                                                                      \s!hfactor \numexpr\mathfractionparameter\c!hfactor\relax}
 \defcsname\??fractionmethods\v!line                \v!none\endcsname{\Uskewed
                                                                      \Umathchar\zerocount\fam\scratchcounterthree
-                                                                     \s!noaxis \space
+                                                                     \s!noaxis \space \s!keepbase \space
                                                                      \s!hfactor \numexpr\mathfractionparameter\c!hfactor\relax}
 \defcsname\??fractionmethods\v!line                       \endcsname{\Uskewedwithdelims
                                                                      \Umathchar\zerocount\fam\scratchcounterone
                                                                      \Umathchar\zerocount\fam\scratchcountertwo
                                                                      \Umathchar\zerocount\fam\scratchcounterthree
-                                                                     \s!noaxis \space
+                                                                     \s!noaxis \space \s!keepbase \space
                                                                      \s!hfactor \numexpr\mathfractionparameter\c!hfactor\relax}
 \defcsname\??fractionmethods\v!center              \v!none\endcsname{\Uskewed
                                                                      \Umathchar\zerocount\fam\scratchcounterthree
-                                                                     \s!noaxis \space \s!center
                                                                      \s!hfactor \numexpr\mathfractionparameter\c!hfactor\relax}
 \defcsname\??fractionmethods\v!center                     \endcsname{\Uskewedwithdelims
                                                                      \Umathchar\zerocount\fam\scratchcounterone
                                                                      \Umathchar\zerocount\fam\scratchcountertwo
                                                                      \Umathchar\zerocount\fam\scratchcounterthree
-                                                                     \s!noaxis \space \s!center
+                                                                     \s!hfactor \numexpr\mathfractionparameter\c!hfactor\relax}
+\defcsname\??fractionmethods\v!axis                \v!none\endcsname{\Uskewed
+                                                                     \Umathchar\zerocount\fam\scratchcounterthree
+                                                                     \s!keepbase
+                                                                     \s!hfactor \numexpr\mathfractionparameter\c!hfactor\relax}
+\defcsname\??fractionmethods\v!axis                       \endcsname{\Uskewedwithdelims
+                                                                     \Umathchar\zerocount\fam\scratchcounterone
+                                                                     \Umathchar\zerocount\fam\scratchcountertwo
+                                                                     \Umathchar\zerocount\fam\scratchcounterthree
+                                                                     \s!keepbase
                                                                      \s!hfactor \numexpr\mathfractionparameter\c!hfactor\relax}
 
 \setupmathfractions % we now inherit !
@@ -337,6 +347,8 @@
         \mathfractionparameter\c!middle
       \orelse\ifx\p_method\v!line
         \mathfractionparameter\c!middle
+      \orelse\ifx\p_method\v!axis
+        \mathfractionparameter\c!middle
       \orelse\ifx\p_method\v!center
         \mathfractionparameter\c!middle
       \else
@@ -348,6 +360,7 @@
       \p_method
       \ifx\p_method\v!horizontal
       \orelse\ifx\p_method\v!line
+      \orelse\ifx\p_method\v!axis
       \orelse\ifx\p_method\v!center
       \orelse\ifcsname\??fractionmethods\p_method\p_rule\endcsname % \v!vertical
         \p_rule
@@ -361,7 +374,7 @@
       \fi
    \endcsname \lastnamedcs \else \csname\??fractionmethods\v!vertical\v!auto\endcsname \fi
    \usedcolorparameterattributes{\mathfractionparameter\c!rulecolor}% was \c!color so we break compatibility !
-   thickness \ifx\p_thickness\v!font
+   \s!thickness \ifx\p_thickness\v!font
      \zeropoint
      \s!font \space
    \else
@@ -726,28 +739,13 @@
   [\c!mathnumeratorstyle=\v!display,
    \c!mathdenominatorstyle=\v!display]
 
-%D More fracking (for Alan):
-
-% \appendtoks
-%     \Umathskewedfractionhgap\allmathstyles\namedmathfractionparameter\s!vfrac\c!hfactor\fontemwidth \mathstylefont\textstyle
-%     \Umathskewedfractionvgap\allmathstyles\namedmathfractionparameter\s!vfrac\c!vfactor\fontexheight\mathstylefont\textstyle
-% \to \everymathematics
-
-\definemathfraction
-  [\v!horizontal]
-  [\c!method=\v!horizontal]
+%D More fracking:
 
 \definemathfraction
   [\s!vfrac]
-  [\v!horizontal]
-  [\c!hfactor=20, % quite small, as we have 1000 as default
-   \c!vfactor=10] % quite small, as we have 1000 as default
-
-\definemathfraction
-  [hfrac]
   [\c!method=\v!center,
-   \c!hfactor=\zerocount,
-   \c!vfactor=\zerocount]
+   \c!hfactor=500,
+   \c!vfactor=500]
 
 %D And a cheat (for Mikael):
 

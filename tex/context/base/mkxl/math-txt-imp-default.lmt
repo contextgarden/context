@@ -79,7 +79,7 @@ return {
   ["en"]="group",
   ["ua"]="група", -- початкова группа
   ["sv"]="grupp",
-  ["nl"]="groep",
+  ["nl"]="haakje openen", -- AFO aangepast
  },
  ["begin"]={
   ["en"]="begin", -- was begin
@@ -102,7 +102,7 @@ return {
   ["en"]="end group",
   ["ua"]="закриття групи",
   ["sv"]="slut",--"slut grupp",
-  ["nl"]="einde groep",
+  ["nl"]="haakje sluiten", --AFO aangepast
  },
  ["pause"]={
   ["en"]=",", --"TAKE A DEEP BREATH",
@@ -114,7 +114,7 @@ return {
   ["en"]="comma",
   ["ua"]="кома",
   ["sv"]="komma",
-  ["nl"]="comma",
+  ["nl"]="komma",
  },
  ["postscripts"]={
   ["en"]="postscripts",
@@ -138,7 +138,7 @@ return {
   ["en"]="squared",
   ["ua"]="в квадраті",
   ["sv"]="i kvadrat",
-  ["nl"]="kwadraad",
+  ["nl"]="kwadraat",
  },
  ["sub"]={
   ["en"]="with lower index",

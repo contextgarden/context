@@ -1740,7 +1740,7 @@ static void tex_aux_enter_display_math(halfword cmd)
             tex_pop_nest();
             size = - max_dimension;
         } else {
-            tex_line_break(1, math_display_group);
+            tex_line_break(1, math_display_group, math_par_context);
          // size = tex_actual_box_width(lmt_linebreak_state.just_box, tex_x_over_n(tex_get_font_em_width(cur_font_par), scaling_factor) * math_pre_display_gap_factor_par);
             size = tex_actual_box_width(lmt_linebreak_state.just_box, scaledround((tex_get_font_em_width(cur_font_par) / scaling_factor_double) * math_pre_display_gap_factor_par));
         }
@@ -4279,36 +4279,29 @@ void tex_run_math_fraction(void)
                 ruledone = 1;
               OPTIONS:
                 while (1) {
-                    switch (tex_scan_character("acefhnpstvACEFHNPSTV", 0, 1, 0)) {
+                    switch (tex_scan_character("ackefhnpstvACKEFHNPSTV", 0, 1, 0)) {
                         case 'a': case 'A':
                             if (tex_scan_mandate_keyword("attr", 1)) {
                                 attrlist = tex_scan_attribute(attrlist);
                             }
                             break;
                         case 'c': case 'C':
-                            switch (tex_scan_character("leLE", 0, 0, 0)) {
-                                case 'l': case 'L':
-                                    if (tex_scan_mandate_keyword("class", 2)) {
-                                        halfword c = (quarterword) tex_scan_math_class_number(0);
-                                        if (valid_math_class_code(c)) {
-                                            mathclass = c;
-                                        }
-                                    }
-                                    break;
-                                case 'e': case 'E':
-                                    if (tex_scan_mandate_keyword("center", 2)) {
-                                        options |= noad_option_center;
-                                    }
-                                    break;
-                                default:
-                                    tex_aux_show_keyword_error("class|center");
-                                    goto DONE;
+                            if (tex_scan_mandate_keyword("class", 1)) {
+                                halfword c = (quarterword) tex_scan_math_class_number(0);
+                                if (valid_math_class_code(c)) {
+                                    mathclass = c;
+                                }
                             }
                             break;
                         case 'e': case 'E':
                             /* not used */
                             if (tex_scan_mandate_keyword("exact", 1)) {
                                 options |= noad_option_exact;
+                            }
+                            break;
+                        case 'k': case 'K':
+                            if (tex_scan_mandate_keyword("keepbase", 1)) {
+                                options |= noad_option_keep_base;
                             }
                             break;
                         case 'p': case 'P':

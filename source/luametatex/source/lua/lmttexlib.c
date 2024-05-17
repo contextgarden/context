@@ -3967,6 +3967,8 @@ static int texlib_linebreak(lua_State *L)
              }
         }
         lmt_linebreak_state.last_line_fill = properties.parfill_right_skip; /*tex I need to redo this. */
+        properties.group_context = lua_group;
+        properties.par_context = lua_par_context;
         tex_do_line_break(&properties);
         {
             halfword fewest_demerits = 0;

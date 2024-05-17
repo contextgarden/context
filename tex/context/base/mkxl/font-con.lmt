@@ -148,7 +148,7 @@ function constructors.aftercopyingcharacters(target,original)
     -- can be used for additional tweaking
 end
 
-function constructors.beforepassingfonttotex(tfmdata)
+function constructors.beforepassingfonttotex(target,tfmdata)
     -- can be used for additional tweaking
 end
 
@@ -454,7 +454,6 @@ function constructors.scale(tfmdata,specification)
     targetparameters.mode         = mode
     targetparameters.width        = width
     --
-    --
     local hasquality       = parameters.expansion or parameters.protrusion
     local hasitalics       = properties.hasitalics
     local useditalicangle  = properties.useditalicangle or properties.italicangle or 0
@@ -564,18 +563,32 @@ function constructors.scale(tfmdata,specification)
         parameters.scriptscale       = scriptscale
         parameters.scriptscriptscale = scriptscriptscale
 
-        target.textscale         = textscale
-        target.scriptscale       = scriptscale
-        target.scriptscriptscale = scriptscriptscale
+     -- target.textscale         = textscale
+     -- target.scriptscale       = scriptscale
+     -- target.scriptscriptscale = scriptscriptscale
 
         targetparameters.textscale         = textscale
         targetparameters.scriptscale       = scriptscale
         targetparameters.scriptscriptscale = scriptscriptscale
 
+--         local scriptxscale       = parameters.scriptxscale
+--         local scriptyscale       = parameters.scriptyscale
+--         local scriptscriptxscale = parameters.scriptscriptxscale
+--         local scriptscriptyscale = parameters.scriptscriptyscale
+
+--         targetparameters.scriptxscale       = scriptxscale
+--         targetparameters.scriptyscale       = scriptyscale
+--         targetparameters.scriptscriptxscale = scriptscriptxscale
+--         targetparameters.scriptscriptyscale = scriptscriptyscale
+
+--         target.scriptxscale       = scriptxscale
+--         target.scriptyscale       = scriptyscale
+--         target.scriptscriptxscale = scriptscriptxscale
+--         target.scriptscriptyscale = scriptscriptyscale
+
         local mathcontrol = properties.mathcontrol
         targetproperties.mathcontrol = mathcontrol
         target.mathcontrol = mathcontrol
-
     else
         properties.hasmath    = false
         target.nomath         = true
@@ -842,6 +855,8 @@ function constructors.scale(tfmdata,specification)
  -- if hasmath then properties.mode = "none" end -- possible optimization but it needs testing
     --
     constructors.aftercopyingcharacters(target,tfmdata)
+    --
+    constructors.beforepassingfonttotex(target,tfmdata) -- mayeb move into aftercopyingcharacters
     --
     constructors.trytosharefont(target,tfmdata)
     --

@@ -285,7 +285,7 @@
    \orelse\ifcstok{\mathfenceparameter\c!alternative}\v!big
      \s!variant \mathvariantslot\fam \numexpr\p_size\relax
    \orelse\ifcstok{\lastnamedcs}\v!small
-     \s!variant \numexpr\p_size\relax
+     \s!variant \numexpr\p_size+\plusone\relax
    \fi}
 
 \def\math_fenced_left

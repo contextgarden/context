@@ -1,12 +1,12 @@
 set(mp_sources
 
-    source/mp/mpl/mp.c
-    source/mp/mpl/mpstrings.c
-    source/mp/mpl/mpmathscaled.c
-    source/mp/mpl/mpmathdouble.c
-    source/mp/mpl/mpmathbinary.c
-    source/mp/mpl/mpmathdecimal.c
-    source/mp/mpl/mpmathposit.c
+    source/mp/mp.c
+    source/mp/mpstrings.c
+    source/mp/mpmathscaled.c
+    source/mp/mpmathdouble.c
+    source/mp/mpmathbinary.c
+    source/mp/mpmathdecimal.c
+    source/mp/mpmathposit.c
 
     source/libraries/decnumber/decContext.c
     source/libraries/decnumber/decNumber.c
@@ -24,7 +24,7 @@ add_library(mp STATIC ${mp_sources})
 target_include_directories(mp PRIVATE
     .
     source/.
-    source/mp/mpl
+    source/mp
     source/luacore/lua55/src
     source/libraries/avl
     source/libraries/decnumber

@@ -26,7 +26,24 @@ return {
             PrimeBaselineDropMax              = "0.5*SuperscriptBaselineDropMax",
             RadicalDisplayStyleVerticalGap    = "RadicalVerticalGap", --172, 50
         },
+        scales = {
+            scriptxscale       = 1025,
+            scriptyscale       =  950,
+            scriptscriptxscale = 1050,
+            scriptscriptyscale =  925,
+            scriptweight       =   50,
+            scriptscriptweight =   75,
+        },
         tweaks = {
+         -- beforepassing = {
+         --     {
+         --         tweak              = "scales",
+         --         scriptxscale       = 1100,
+         --         scriptyscale       =  900,
+         --         scriptscriptxscale = 1100,
+         --         scriptscriptyscale =  900,
+         --     },
+         -- },
             aftercopying = {
                 {
                     tweak    = "version",
@@ -228,11 +245,11 @@ return {
                     tweak = "addactuarian",
                 },
                 {
-                    tweak = "addfourier",
+                    tweak   = "addfourier",
                     variant = 1,
                 },
                 {
-                    tweak   = "addprimed",
+                    tweak = "addprimed",
                 },
                 {
                     tweak = "addarrows",

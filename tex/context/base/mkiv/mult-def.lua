@@ -14871,6 +14871,9 @@ return {
    ["pe"]="پیشگفتارخودکار",
    ["ro"]="autointro",
   },
+  ["axis"]={
+   ["en"]="axis",
+  },
   ["back"]={
    ["cs"]="zpet",
    ["de"]="zurueck",

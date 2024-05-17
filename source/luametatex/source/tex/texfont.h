@@ -260,6 +260,9 @@ typedef struct texfont {
     int         math_parameter_count;
     /* zero is alignment */
     int         mathscales[3];
+    int         mathxscales[3];
+    int         mathyscales[3];
+    int         mathweights[3];
     /*tex special characters, see \TEX book */
     int         hyphen_char;
     int         skew_char;
@@ -298,6 +301,8 @@ extern font_state_info lmt_font_state;
 # define font_max_stretch(a)            (lmt_font_state.adjust_step > 0 ? lmt_font_state.adjust_stretch : lmt_font_state.fonts[a]->max_stretch)
 # define font_step(a)                   (lmt_font_state.adjust_step > 0 ? lmt_font_state.adjust_step    : lmt_font_state.fonts[a]->step)
 # define font_mathscale(a,b)            lmt_font_state.fonts[a]->mathscales[b]
+# define font_mathxscale(a,b)           lmt_font_state.fonts[a]->mathxscales[b]
+# define font_mathyscale(a,b)           lmt_font_state.fonts[a]->mathyscales[b]
 
 # define set_font_size(a,b)             lmt_font_state.fonts[a]->size = b
 # define set_font_name(a,b)             lmt_font_state.fonts[a]->name = b
@@ -317,6 +322,18 @@ extern font_state_info lmt_font_state;
 # define set_font_textsize(a,b)         lmt_font_state.fonts[a]->mathscales[0] = b
 # define set_font_scriptsize(a,b)       lmt_font_state.fonts[a]->mathscales[1] = b
 # define set_font_scriptscriptsize(a,b) lmt_font_state.fonts[a]->mathscales[2] = b
+
+# define set_font_x_textsize(a,b)         lmt_font_state.fonts[a]->mathxscales[0] = b
+# define set_font_x_scriptsize(a,b)       lmt_font_state.fonts[a]->mathxscales[1] = b
+# define set_font_x_scriptscriptsize(a,b) lmt_font_state.fonts[a]->mathxscales[2] = b
+
+# define set_font_y_textsize(a,b)         lmt_font_state.fonts[a]->mathyscales[0] = b
+# define set_font_y_scriptsize(a,b)       lmt_font_state.fonts[a]->mathyscales[1] = b
+# define set_font_y_scriptscriptsize(a,b) lmt_font_state.fonts[a]->mathyscales[2] = b
+ 
+# define set_font_textweight(a,b)         lmt_font_state.fonts[a]->mathweights[0] = b
+# define set_font_scriptweight(a,b)       lmt_font_state.fonts[a]->mathweights[1] = b
+# define set_font_scriptscriptweight(a,b) lmt_font_state.fonts[a]->mathweights[2] = b
 
 /*tex
     These are bound to a font. There might be a few more in the future. An example is collapsing
@@ -464,7 +481,7 @@ extern charinfo *tex_get_charinfo     (halfword f, int c);
 extern int       tex_char_exists      (halfword f, int c);
 extern void      tex_char_process     (halfword f, int c);
 extern int       tex_math_char_exists (halfword f, int c, int size);
-extern int       tex_get_math_char    (halfword f, int c, int size, scaled *scale, int direction);
+extern int       tex_get_math_char    (halfword f, int c, int size, scaled *scale, scaled *xscale, scaled *ysale, scaled *weight, int direction);
 
 /*tex 
     These used to be small integers, bit 22 upto 31, but now we have a 32 bit set. We actually don't 
@@ -743,6 +760,14 @@ extern void          tex_set_font_name         (halfword f, const char *s);
 extern void          tex_set_font_original     (halfword f, const char *s);
 
 extern scaled        tex_get_math_font_scale   (halfword f, halfword size);
+extern scaled        tex_get_math_font_x_scale (halfword f, halfword size);
+extern scaled        tex_get_math_font_y_scale (halfword f, halfword size);
+extern scaled        tex_get_math_font_weight  (halfword f, halfword size);
+
+//     scaled        tex_raw_math_font_scale   (halfword f, halfword size);
+//     scaled        tex_raw_math_font_x_scale (halfword f, halfword size);
+//     scaled        tex_raw_math_font_y_scale (halfword f, halfword size);
+
 extern scaled        tex_get_math_font_factor  (halfword size);
 
 extern void          tex_run_font_spec         (void);

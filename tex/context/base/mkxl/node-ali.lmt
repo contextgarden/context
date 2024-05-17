@@ -882,11 +882,12 @@ end
                 c = c + 1
                 for bound in nextboundary, list do
                     local ornament = getdata(bound)
-                    if ornament == verticalline then
-                        -- this hack is is beyond ugly as we omit and span
-                        c = c + 1
-                        break
-                    elseif ornament == leftornament then
+                 -- if ornament == verticalline then
+                 --     -- this hack is is beyond ugly as we omit and span
+                 --     c = c + 1
+                 --     break
+                 -- else
+                    if ornament == leftornament then
                         if c == 1 then
                             local w = getwidth(cell)
                             if w > left then
@@ -946,7 +947,7 @@ end
                 setoffsets(lefts[i],-(left+leftmargin),0)
             end
             for i=1,#rights do
-                setoffsets(rights[i], (rightmargin),0)
+                setoffsets(rights[i],rightmargin,0)
             end
             for i=1,#tops do
                 setoffsets(tops[i],0,topmargin)
@@ -954,6 +955,7 @@ end
             for i=1,#bottoms do
                 setoffsets(bottoms[i],0,-bottommargin)
             end
+            found   = false --safeguard
             lefts   = false
             rights  = false
             tops    = false

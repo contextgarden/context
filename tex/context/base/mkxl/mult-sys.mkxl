@@ -420,6 +420,7 @@
 \definesystemconstant {tex}
 \definesystemconstant {tf}
 \definesystemconstant {target}
+\definesystemconstant {thickness}
 \definesystemconstant {third}
 \definesystemconstant {topfloat}
 \definesystemconstant {top}

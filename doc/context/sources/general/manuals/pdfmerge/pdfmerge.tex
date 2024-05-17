@@ -96,48 +96,55 @@
 \stopMPpage
 
 \startluacode
-    backends.registered.pdf.codeinjections.registercompactor {
-        name = "preset:mine",
-        identify = {
-            content   = true,
-            resources = true,
-            page      = true,
-        },
---        embed = {
---            type0    = true,
---            truetype = true,
---            type1    = true,
---        },
-        merge = {
-            type0    = true, -- check if a..z A..Z 0..9
-            truetype = true,
-            type1    = true,
-            LMTX     = true,
-        },
-        strip = {
---         group     = true,
---         extgstate = true,
-         marked    = true,
-        },
---     reduce = {
---         color = true,
---         rgb   = true,
---         cmyk  = true,
---     },
---     convert = {
---         rgb  = true,
---         cmyk = true,
---     },
---     add = {
---         cidset, -- when missing or even fix
---     },
-        recolor = {
-            viagray = { 1, 0, 0 },
---            viagray = { 0, 1, 0 },
---            viagray = { 0, 1, 0, .5 },
---            viagray = { .75 },
+ -- backends.registered.pdf.codeinjections.registercompactor {
+table.save(
+    "compactors-pdfmerge.lua",
+    {
+        compactors = {
+            ["mine"] = {
+                identify = {
+                    content   = true,
+                    resources = true,
+                    page      = true,
+                },
+             -- embed = {
+             --     type0    = true,
+             --     truetype = true,
+             --     type1    = true,
+             -- },
+                merge = {
+                    type0    = true, -- check if a..z A..Z 0..9
+                    truetype = true,
+                    type1    = true,
+                    LMTX     = true,
+                },
+                strip = {
+                 -- group     = true,
+                 -- extgstate = true,
+                    marked    = true,
+                },
+             -- reduce = {
+             --     color = true,
+             --     rgb   = true,
+             --     cmyk  = true,
+             -- },
+             -- convert = {
+             --     rgb  = true,
+             --     cmyk = true,
+             -- },
+             -- add = {
+             --     cidset, -- when missing or even fix
+             -- },
+                recolor = {
+                    viagray = { 1, 0, 0 },
+                 -- viagray = { 0, 1, 0 },
+                 -- viagray = { 0, 1, 0, .5 },
+                 -- viagray = { .75 },
+                },
+            }
         }
     }
+)
 \stopluacode
 
 \starttext
@@ -307,8 +314,8 @@ it determined by the \type {identify} table:
 \starttyping
 identify = {
     content   = true,
-    resources = true,
-    page      = true,
+    resources = true, -- needs checking
+    page      = true, -- needs checking
 }
 \stoptyping
 
@@ -441,7 +448,7 @@ convert = {
 
 and of course one can also remap \CMYK\ to \RGB.
 
-%     \setupexternalfigures[compact=preset:mine]
+%     \setupexternalfigures[compact=pdfmerge:mine]
 
 %     test \type {test}
 
@@ -594,6 +601,77 @@ convert the original into a new one, validate (and check the outcome) and create
 a version for visual comparison. It's just an example of usage and here the focus
 was on fixing existing documents (six digit numbers so the workflow needs to be
 carefully checked) and not so much on single page inclusion.
+
+However, this script and setup is somewhat complex so we also provide an
+alternative in the \quote {extras} namespace:
+
+\starttyping
+context --extra=fixpdf --compactor=mine:test --extrastyle=foo somefile.pdf
+\stoptyping
+
+Additional options are \type {--notracing} and \type {--nocompression}. A
+compactor can be defined in a file with the name \typ {compactors-mine.lua} that
+looks like this. Check out \typ {compactors-preset.lua} for examples.
+
+\starttyping
+local fonts = {
+    { source = "arial",                    target = "file:arial.ttf"   },
+    { source = "arial-bold",               target = "file:arialbd.ttf" },
+    { source = "arial,bold",               target = "file:arialbd.ttf" },
+    { source = "helvetica",                target = "file:arial.ttf"   },
+    { source = "helvetica-bold",           target = "file:arialbd.ttf" },
+    { source = "courier",                  target = "file:cour.ttf"    },
+    { source = "wingdings",                target = "wingding"         },
+    { source = "times-roman",              target = "file:times.ttf"   },
+    { source = "timesnewromanpsmt",        target = "file:times.ttf"   },
+    { source = "timesnewromanpsitalicmt",  target = "file:timesi.ttf"  },
+    { source = "timesnewromanps-italicmt", target = "file:timesi.ttf"  },
+    { source = "timesnewroman,italic",     target = "file:timesi.ttf"  },
+    { source = "timesitalic",              target = "file:timesi.ttf"  },
+    { source = "times-italic",             target = "file:timesi.ttf"  },
+    { source = "timesnewromanpsboldmt",    target = "file:timesbd.ttf" },
+    { source = "timesnewromanps-boldmt",   target = "file:timesbd.ttf" },
+    { source = "timesnewroman,bold",       target = "file:timesbd.ttf" },
+    { source = "timesbold",                target = "file:timesbd.ttf" },
+    { source = "times-bold",               target = "file:timesbd.ttf" },
+}
+
+return {
+    name = "compactors-preset",
+    version = "1.00",
+    comment = "Definitions that complement pdf embedding.",
+    author = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    compactors = {
+        ["test"] = {
+            fonts = fonts,
+            embed = {
+                type0    = true,
+                truetype = true,
+                type1    = true,
+            },
+            merge = {
+                type0    = true,
+                truetype = true,
+                type1    = true,
+                LMTX     = true,
+            },
+            strip = {
+               marked    = true,
+            },
+            cleanup = {
+               pieceinfo = true,
+               procset   = true,
+               cidset    = true,
+            },
+        }
+    },
+}
+\stoptyping
+
+A file like this is easier than registering in a \LUA\ snippet. It's also more
+future proof. The somewhat weird font list is normally build up as we test and
+is often rather specific for a specific set of files.
 
 \startlines
 Hans Hagen

@@ -135,6 +135,8 @@ void lmt_initialize_interface(void)
     set_par_context_value(align_par_context,       align);
     set_par_context_value(no_align_par_context,    noalign);
     set_par_context_value(span_par_context,        span);
+    set_par_context_value(math_par_context,        math);
+    set_par_context_value(lua_par_context,         lua);
     set_par_context_value(reset_par_context,       reset);
 
     lmt_interface.page_context_values = lmt_aux_allocate_value_info(triggered_page_context);

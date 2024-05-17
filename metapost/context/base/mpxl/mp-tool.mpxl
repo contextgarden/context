@@ -1053,17 +1053,19 @@ permanent
 
 %D Shorter
 
-primarydef p xyscaled q = % secundarydef does not work out well
-    begingroup
-    save qq ; pair qq ;
-    qq = paired(q) ;
-    p
-        if xpart qq <> 0 : xscaled (xpart qq) fi
-        if ypart qq <> 0 : yscaled (ypart qq) fi
-    endgroup
-enddef ;
-
-permanent xyscaled ;
+% primarydef p xyscaled q = % secundarydef does not work out well
+%     begingroup
+%     save qq ; pair qq ;
+%     qq = paired(q) ;
+%     p
+%       % if xpart qq <> 0 : xscaled (xpart qq) fi
+%       % if ypart qq <> 0 : yscaled (ypart qq) fi
+%         xscaled (xpart qq)
+%         yscaled (ypart qq)
+%     endgroup
+% enddef ;
+%
+% permanent xyscaled ;
 
 %D Some personal code that might move to another module (todo: save).
 
@@ -3426,10 +3428,15 @@ permanent xstretched, ystretched ;
 
 %D Newer:
 
-vardef area expr p =
-    % we could calculate the boundingbox once
-    (xpart llcorner boundingbox p,0) -- p --
-    (xpart lrcorner boundingbox p,0) -- cycle
+% vardef area expr p =
+%     % we could calculate the boundingbox once
+%     (xpart llcorner boundingbox p,0) -- p --
+%     (xpart lrcorner boundingbox p,0) -- cycle
+% enddef ;
+
+vardef area expr p = % kind of useless so it can be dropped
+    llcorner boundingbox p -- p --
+    lrcorner boundingbox p -- cycle
 enddef ;
 
 vardef basiccolors[] =
@@ -4460,6 +4467,8 @@ vardef selfintersectiontimeslist expr p =
     fi
 enddef ;
 
+permanent selfintersectiontimeslist ;
+
 % I don't want to define this path every time I make a demo:
 
 vardef starring(expr e) =
@@ -4507,14 +4516,16 @@ enddef ;
 %D out (a lot of chatting).
 
 primarydef a crossprod b =
-    (xpart a * ypart b ) - (ypart a * xpart b)
+    (xpart a * ypart b) - (ypart a * xpart b)
 enddef;
+
+permanent crossprod ;
 
 newinternal scrutinizing ; scrutinizing := 3 ;
 newinternal curvarturetolerance ; curvarturetolerance := 5eps ;
 newinternal boolean tracereducedpath ; tracereducedpath := false ;
 
-vardef hasreducedcurvature (expr p,i,tolerance) =
+vardef hasreducedcurvature(expr p,i,tolerance) =
     save ldir, mdir, rdir ; pair ldir, mdir, rdir ;
     ldir := unitvector(direction i + 10eps of p) ;
     mdir := unitvector(direction i + 1/2 of p) ;
@@ -4766,6 +4777,25 @@ primarydef p enveloped q =
     reducedenvelope(envelope q of p)
 enddef ;
 
+permanent hasreducedcurvature, reducedpath, reducedenvelope, enveloped ;
+
 % This is a new one, and for now we keep it small:
 
 jointolerance := 2eps ;
+
+vardef mfun_total_area_step(expr p, c, cc, pp) =
+  (p  crossprod pp)     / 20 +
+  (p  crossprod  c) * 3 / 10 +
+  (p  crossprod cc) * 3 / 20 +
+  (c  crossprod cc) * 3 / 20 +
+  (c  crossprod pp) * 3 / 20 +
+  (cc crossprod pp) * 6 / 20
+enddef ;
+
+vardef totalarea(expr p) =
+    0 for i within p :
+        + mfun_total_area_step(pathpoint,pathpostcontrol,deltaprecontrol 1,deltapoint 1)
+    endfor
+enddef ;
+
+permanent totalarea ;

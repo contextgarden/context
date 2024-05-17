@@ -212,18 +212,6 @@ function mathematics.scaleparameters(target,original)
     end
 end
 
--- AccentBaseHeight vs FlattenedAccentBaseHeight
-
--- function mathematics.checkaccentbaseheight(target,original)
---     local mathparameters = target.mathparameters
---     if mathparameters and mathparameters.AccentBaseHeight == 0 then
---         if trace_defining then
---             report_math("zero AccentBaseHeight corrected %a @ %p",target.properties.fullname,target.parameters.size)
---         end
---         mathparameters.AccentBaseHeight = target.parameters.xheight -- needs checking
---     end
--- end
-
 function mathematics.overloadparameters(target,original)
     if use_math_goodies then
         local mathparameters = target.mathparameters
@@ -236,6 +224,7 @@ function mathematics.overloadparameters(target,original)
                     if mathematics then
                         local parameters = mathematics.parameters
                         local bigslots   = mathematics.bigslots or mathematics.bigs
+                        local scales     = mathematics.scales
                         if parameters then
                             if trace_defining then
                                 report_math("overloading math parameters in %a @ %p",target.properties.fullname,target.parameters.size)
@@ -282,6 +271,18 @@ function mathematics.overloadparameters(target,original)
                         end
                         if bigslots then
                             target.bigslots = bigslots
+                        end
+                        if scales then
+                            local feature  = scales.feature
+                            local features = target.specification.features.normal
+                            if feature == nil or features[feature] then
+                                target.scriptxscale       = scales.scriptxscale
+                                target.scriptyscale       = scales.scriptyscale
+                                target.scriptweight       = scales.scriptweight
+                                target.scriptscriptxscale = scales.scriptscriptxscale
+                                target.scriptscriptyscale = scales.scriptscriptyscale
+                                target.scriptscriptweight = scales.scriptscriptweight
+                            end
                         end
                     end
                 end
@@ -1871,7 +1872,7 @@ do
     function mathtweaks.addrules(target,original,parameters)
         local characters = target.characters
         local thickness  = target.mathparameters.OverbarRuleThickness
-        local width      = target.parameters.emwidth / 3
+        local width      = target.parameters.quad / 3
         local step       = width / 2
         local quarter    = thickness / 4
         local half       = thickness / 2
@@ -4121,6 +4122,24 @@ do
 end
 
 -- do
+
+--     function mathtweaks.scales(target,original,parameters)
+--         local fontparameters = target.parameters
+--         if fontparameters then
+--             fontparameters.scriptxscale       = parameters.scriptxscale
+--             fontparameters.scriptyscale       = parameters.scriptyscale
+--             fontparameters.scriptscriptxscale = parameters.scriptscriptxscale
+--             fontparameters.scriptscriptyscale = parameters.scriptscriptyscale
+--             target.scriptxscale       = parameters.scriptxscale
+--             target.scriptyscale       = parameters.scriptyscale
+--             target.scriptscriptxscale = parameters.scriptscriptxscale
+--             target.scriptscriptyscale = parameters.scriptscriptyscale
+--         end
+--     end
+
+-- end
+
+-- do
 --
 --     function mathtweaks.diagnose(target,original,parameters)
 --         local characters = target.characters
@@ -4620,16 +4639,14 @@ do
 
 end
 
-function mathematics.beforepassingfonttotex(target)
+function mathematics.beforepassingfonttotex(target,original)
     if tweakable(target) then
-        applytweaks("beforepassing",target,target)
+        applytweaks("beforepassing",target,original)
     end
 end
 
 sequencers.appendaction("mathparameters","system","mathematics.overloadparameters")
 sequencers.appendaction("mathparameters","system","mathematics.scaleparameters")
-----------.appendaction("mathparameters","system","mathematics.checkaccentbaseheight")  -- should go in lfg instead
-----------.appendaction("mathparameters","system","mathematics.checkprivateparameters") -- after scaling !
 
 sequencers.appendaction("beforecopyingcharacters","system","mathematics.tweakbeforecopyingfont")
 sequencers.appendaction("aftercopyingcharacters", "system","mathematics.tweakaftercopyingfont")
@@ -4638,7 +4655,7 @@ sequencers.appendaction("beforepassingfonttotex", "system","mathematics.beforepa
 
 -- no, it's a feature now (see good-mth):
 --
--- sequencers.appendaction("aftercopyingcharacters", "system","mathematics.overloaddimensions")
+-- sequencers.appendaction("aftercopyingcharacters","system","mathematics.overloaddimensions")
 
 -- we use numbers at the tex end (otherwise we could stick to chars)
 

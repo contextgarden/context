@@ -730,10 +730,7 @@ do
                 need_mode = 2
             end
             need_width = need_width * 2
-need_width = need_width * tmrx
--- if hshift then
---     hshift = hshift  * tmrx
--- end
+            need_width = need_width * tmrx
         end
 
     end

@@ -277,7 +277,7 @@ statistics.register("scheme handling time", function()
     if n > 0 then
         if nl == 0 then l = { "none" } end
         if nr == 0 then r = { "none" } end
-        return format("%s seconds, %s processed, threshold %s seconds, loaded: %s, reused: %s",
+        return format("%s seconds, %s processed, threshold %s seconds, %s loaded, %s reused",
             statistics.elapsedtime(schemes), n, threshold, concat(l," "), concat(l," "))
     else
         return nil

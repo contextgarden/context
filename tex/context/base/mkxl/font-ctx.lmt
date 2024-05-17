@@ -516,17 +516,17 @@ do
 
     local beforepassingfonttotex = sequencers.new {
         name      = "beforepassingfonttotex",
-        arguments = "tfmdata",
+        arguments = "target,original",
     }
 
     appendgroup(beforepassingfonttotex,"before") -- user
     appendgroup(beforepassingfonttotex,"system") -- private
     appendgroup(beforepassingfonttotex,"after" ) -- user
 
-    function constructors.beforepassingfonttotex(tfmdata)
+    function constructors.beforepassingfonttotex(original,target)
         local runner = beforepassingfonttotex.runner
         if runner then
-            runner(tfmdata)
+            runner(original,target)
         end
     end
 

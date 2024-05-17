@@ -3279,7 +3279,7 @@ void tex_end_paragraph(int group, int context)
          //     }
          //     tex_pop_nest();
         } else {
-            tex_line_break(0, group);
+            tex_line_break(0, group, context);
         }
         if (cur_list.direction_stack) {
             tex_flush_node_list(cur_list.direction_stack);

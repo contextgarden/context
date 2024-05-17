@@ -1,0 +1,83 @@
+%D \module
+%D   [       file=mtx-context-pdffix,
+%D        version=2024.5.12,
+%D          title=\CONTEXT\ Extra Trickry,
+%D       subtitle=Fixing PDF Files,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\continuewhenlmtxmode
+
+% begin help
+%
+% usage: context --extra=fixpdf [options] filename.pdf
+%
+% --sort          : sort filename first
+% --compactor     : =prefix:name (compactors-prefix.lua)
+% --notracing     :
+% --nocompression :
+% --extrastyle    : =filename (overlay logo, set standard etc
+%
+% example: context --extra=fixpdf --compactor=yes filename.pdf
+%          context --extra=fixpdf --compactor=mine:one --extrastyle=foo filename.pdf
+%
+% end help
+
+\setupinteraction
+  [state=start]
+
+\doifelsesomething{\getdocumentargument{compactor}} {
+    \setupexternalfigures
+      [compact=\getdocumentargument{compactor},
+       interaction=data]
+}
+
+\doifnothing {\getdocumentargument{notracing}} {
+    \enabletrackers[graphics.fonts]
+    \enabletrackers[graphics.fixes]
+  % \enabletrackers[graphics.operators]
+}
+
+% \enabledirectives[graphics.pdf.recompress]
+
+\doifsomething {\getdocumentargument{nocompression}} {
+    \nopdfcompression
+}
+
+\doifsomething {\getdocumentargument{extrastyle}} {
+    \environment [\getdocumentargument{extrastyle}]
+}
+
+\starttext
+
+\doifelsenothing {\getdocumentfilename{1}} {
+    \startTEXpage
+        No file given.
+    \stopTEXpage
+} {
+    \setups{extra:before}
+
+    \getfiguredimensions[\getdocumentfilename{1}]
+
+    \dorecurse{\noffigurepages} {
+        \startTEXpage
+            \externalfigure[\getdocumentfilename{1}][page=#1]%
+        \stopTEXpage
+    }
+
+    \setups{extra:after}
+
+    \writestatus{converted}{}
+    \writestatus{converted}{file\space\space\space\space\space\space : \getdocumentfilename{1}}
+    \writestatus{converted}{compactor\space                          : \getdocumentargument{compactor}}
+    \writestatus{converted}{nofpages\space\space                     : \realfolio}
+    \writestatus{converted}{}
+
+}
+
+\stoptext

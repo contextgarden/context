@@ -88,6 +88,13 @@ local function loadpdffile(filename)
     end
 end
 
+-- Looks like we can get (even from programs using the adobe library):
+--
+-- 1 0 obj << /Metadata 3 0 R >> endobj
+-- 3 0 obj << /Subtype /XML /Type /Metadata /Length 9104 >> stream ...
+-- 2 0 obj << /Metadata 4 0 R /Subtype /XML /Type /Metadata >> endobj
+-- 4 0 obj << /Length 9104 >> stream ...
+
 function scripts.pdf.info(filename)
     local pdffile = loadpdffile(filename)
     if pdffile then
@@ -95,20 +102,45 @@ function scripts.pdf.info(filename)
         local info     = pdffile.Info
         local pages    = pdffile.pages
         local nofpages = pdffile.nofpages
+        local metadata = catalog.Metadata
 
         local unset    = "<unset>"
+
+        local title            = info.Title
+        local creator          = info.Creator
+        local producer         = info.Producer
+        local author           = info.Author
+        local creationdate     = info.CreationDate
+        local modificationdate = info.ModDate
+
+        if metadata then
+            metadata = metadata()
+            if metadata then
+                local m = xml.convert(metadata)
+                title            = title            or xml.text(m,"Description/title/**/*")
+                author           = author           or xml.text(m,"Description/author/**/*")
+                creator          = creator          or xml.text(m,"Description/CreatorTool")
+                producer         = producer         or xml.text(m,"Description/Producer")
+                creationdate     = creationdate     or xml.text(m,"Description/CreateDate")
+                modificationdate = modificationdate or xml.text(m,"Description/ModifyDate")
+            end
+        end
+
+        local function checked(str)
+            return str and str ~= "" and str or unset
+        end
 
         report("%-17s > %s","filename",          filename)
         report("%-17s > %s","pdf version",       catalog.Version      or unset)
         report("%-17s > %s","major version",     pdffile.majorversion or unset)
         report("%-17s > %s","minor version",     pdffile.minorversion or unset)
         report("%-17s > %s","number of pages",   nofpages             or 0)
-        report("%-17s > %s","title",             info.Title           or unset)
-        report("%-17s > %s","creator",           info.Creator         or unset)
-        report("%-17s > %s","producer",          info.Producer        or unset)
-        report("%-17s > %s","author",            info.Author          or unset)
-        report("%-17s > %s","creation date",     info.CreationDate    or unset)
-        report("%-17s > %s","modification date", info.ModDate         or unset)
+        report("%-17s > %s","title",             checked(title))
+        report("%-17s > %s","creator",           checked(creator))
+        report("%-17s > %s","producer",          checked(producer))
+        report("%-17s > %s","author",            checked(author))
+        report("%-17s > %s","creation date",     checked(creationdate))
+        report("%-17s > %s","modification date", checked(modificationdate))
 
         local function somebox(what)
             local box = string.lower(what)

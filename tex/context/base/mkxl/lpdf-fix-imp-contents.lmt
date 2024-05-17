@@ -11,6 +11,8 @@ if not modules then modules = { } end modules ['lpdf-fix-imp-contents'] = {
 -- are adapted. It's okay but a nicer interface is on the agenda so that the __raw__
 -- trickery gets hidden.
 
+-- See compactors-preset.lua for examples of compactor specifications.
+
 local trace_fixes      = false  trackers.register("graphics.fixes",    function(v) trace_fixes     = v end)
 local trace_operators  = false  trackers.register("graphics.operators",function(v) trace_operators = v end)
 
@@ -96,7 +98,7 @@ do
                             end
                         end
                         v.Resources = r
-                    else
+                    elseif subtype == "Form" then
                         report_fixes("todo: here we have a test case")
                      -- v.Resources = { lpdf.epdf.objectcodes.lpdf, lpdf.checkedresources() }
                     end
@@ -486,10 +488,40 @@ do
     end
 
     local function removestate(c,op,contents,i)
+        -- can be made more clever
         contents[i] = { }
     end
 
+    local removed = false
+
     local function removetags(c,op,contents,i)
+        local ci  = contents[i]
+        local one = ci[1]
+        if one then
+            local what = one[2]
+            if what == "Artifact" then
+             -- print("keeping artifact")
+                return -- hopefully no indirect references here
+            elseif what == "Span" then
+                -- we need a proper tohash for this
+                local two = ci[2]
+                if two then
+                    if two[1] == "dict" then -- will become "dictionary"
+                        local list = two[2]
+                        for i=1,#list,2 do
+                            local l = list[i]
+                            if l[2] == "ActualText" then
+                             -- print("keeping actualtext")
+                                return
+                            end
+                        end
+                    end
+                end
+            else
+             -- maybe also check when /MCID and then convert to /Span
+            end
+        end
+        removed = true
         contents[i] = { }
     end
 
@@ -498,13 +530,14 @@ do
     local parsecontent    = lpdf.epdf.parsecontent
 
     local function checkbt(c,op,contents,i)
-        if contents[i-1] == "ET" then
+        local c = contents[i-1]
+        if c and c[#c] == "ET" then
             contents[i]   = { }
             contents[i-1] = { }
         end
     end
 
-    local actions = {
+--  local actions = {
 --         rg  = reducergb,
 --         RG  = reducergb,
 --         k   = reducecmyk,
@@ -515,7 +548,10 @@ do
 --         EMC = removetags,
 --         BDC = removetags,
 --      -- BT  = checkbt,
-    }
+--  }
+
+    local passone = { }
+    local passtwo = { }
 
     local function useactions(compactor)
         local used    = { }
@@ -525,35 +561,42 @@ do
         local recolor = compactor.recolor
         cmykmap = false
         rgbmap  = false
-        actions = { }
+        removed = false
+        passone = { }
+        passtwo = { }
         if strip.marked then
-            actions.BMC = removetags
-            actions.EMC = removetags
-            actions.BDC = removetags
+            -- property lists: optional content, tagged content, object metadata, associated files
+            -- if there are direct objects these need to be named in Properties in Resource
+            passone.MP  = removetags -- marked content point
+            passone.DP  = removetags -- marked content point    with properties list
+            passone.BMC = removetags -- marked content sequence
+            passone.BDC = removetags -- marked content sequence with properties list
+            passone.EMC = removetags -- marked content sequence end
+            passtwo.BT  = checkbt    -- with matching ET
         end
         if strip.extgstate then
-            actions.gs = removestate
-            actions.GS = removestate
+            passone.gs = removestate
+            passone.GS = removestate
         end
         if reduce.color then
-            actions.rg = reducergb
-            actions.RG = reducergb
-            actions.k  = reducecmyk
-            actions.K  = reducecmyk
+            passone.rg = reducergb
+            passone.RG = reducergb
+            passone.k  = reducecmyk
+            passone.K  = reducecmyk
         elseif reduce.rgb then
-            actions.rg = reducergb
-            actions.RG = reducergb
+            passone.rg = reducergb
+            passone.RG = reducergb
         elseif reduce.cmyk then
-            actions.k = reducecmyk
-            actions.K = reducecmyk
+            passone.k = reducecmyk
+            passone.K = reducecmyk
         end
         if convert.cmyk then
-            actions.k = convertcmyk
-            actions.K = convertcmyk
+            passone.k = convertcmyk
+            passone.K = convertcmyk
             cmykmap   = type(convert.cmyk) == "table" and convert.cmyk or false
         elseif convert.rgb then
-            actions.rg = convertrgb
-            actions.RG = convertrgb
+            passone.rg = convertrgb
+            passone.RG = convertrgb
             rgbmap     = type(convert.rgb) == "table" and convert.rgb or false
         end
         local viagray = recolor.viagray
@@ -563,26 +606,26 @@ do
             g3 = viagray[3]
             g4 = viagray[4]
             if g4 then
-                actions.k  = recolorcmyk_cmyk
-                actions.K  = recolorcmyk_cmyk
-                actions.rg = recolorrgb_cmyk
-                actions.RG = recolorrgb_cmyk
-                actions.g  = recolorgray_cmyk
-                actions.G  = recolorgray_cmyk
+                passone.k  = recolorcmyk_cmyk
+                passone.K  = recolorcmyk_cmyk
+                passone.rg = recolorrgb_cmyk
+                passone.RG = recolorrgb_cmyk
+                passone.g  = recolorgray_cmyk
+                passone.G  = recolorgray_cmyk
             elseif g3 then
-                actions.k  = recolorcmyk_rgb
-                actions.K  = recolorcmyk_rgb
-                actions.rg = recolorrgb_rgb
-                actions.RG = recolorrgb_rgb
-                actions.g  = recolorgray_rgb
-                actions.G  = recolorgray_rgb
+                passone.k  = recolorcmyk_rgb
+                passone.K  = recolorcmyk_rgb
+                passone.rg = recolorrgb_rgb
+                passone.RG = recolorrgb_rgb
+                passone.g  = recolorgray_rgb
+                passone.G  = recolorgray_rgb
             elseif g1 then
-                actions.k  = recolorcmyk_gray
-                actions.K  = recolorcmyk_gray
-                actions.rg = recolorrgb_gray
-                actions.RG = recolorrgb_gray
-                actions.g  = recolorgray_gray
-                actions.G  = recolorgray_gray
+                passone.k  = recolorcmyk_gray
+                passone.K  = recolorcmyk_gray
+                passone.rg = recolorrgb_gray
+                passone.RG = recolorrgb_gray
+                passone.g  = recolorgray_gray
+                passone.G  = recolorgray_gray
             end
         else
             g1, g2, g3, g4 = nil, nil, nil, nil
@@ -674,12 +717,32 @@ do
         end
     end
 
+    local function collapse(contents)
+        local j = false
+        for i=1,#contents do
+            local c = contents[i]
+            if not c or #c == 0 then
+                if not j then
+                    j = i - 1
+                end
+            elseif j then
+                j = j + 1
+                contents[j] = c
+            end
+        end
+        if j then
+            for i=#contents,j+1,-1 do
+                contents[i] = nil
+            end
+        end
+    end
+
     strip_content = function(pdfdoc,contents,fonts,xobjects,pagenumber,compactor)
         if contents then
             for i=1,#contents do
                 local ci = contents[i]
                 local op = ci[#ci]
-                local action = actions[op]
+                local action = passone[op]
                 if action then
                     action(ci,op,contents,i)
                 elseif xobjects and op == "Do" then
@@ -696,44 +759,82 @@ do
                     end
                 end
             end
+            if next(passtwo) then
+                if removed then
+                    collapse(contents)
+                end
+                for i=1,#contents do
+                    local ci = contents[i]
+                    local op = ci[#ci]
+                    local action = passtwo[op]
+                    if action then
+                        action(ci,op,contents,i)
+                    end
+                end
+             -- collapse(contents)
+            end
             return contents
         end
     end
 
     local function strip_content_needed(pdfdoc,page,pagenumber,resources,compactor)
         compactor = table.fastcopy(compactor)
-        local strip = compactor.strip
-        if strip.marked then
-            if pdfdoc.Catalog.StructTreeRoot then
-                report_fixes("page %i of file %a: %s",pagenumber,pdfdoc.filename,"stripping tags")
+        setmetatableindex(compactor,"table")
+        local strip  = compactor.strip
+        local marked = strip.marked
+        if marked == "force" then
+            -- always
+        elseif marked and pdfdoc.Catalog.StructTreeRoot then
+            report_fixes("page %i of file %a: %s (structure tree %s)",pagenumber,pdfdoc.filename,"stripping tags","found")
+        elseif marked == "page" then
+            local contents = lpdf.epdf.allcontent(page.Contents or "") -- unparsed string
+            if string.find(contents,"/MCID%s%d+*") then
+                report_fixes("page %i of file %a: %s (structure tree %s)",pagenumber,pdfdoc.filename,"stripping tags","missing")
             else
                 strip.marked = nil
-                if not next(strip) then
-                    compactor.strip = nil
-                end
             end
+        else
+            strip.marked = nil
         end
         return
             compactor, (
-                compactor.strip
-             or compactor.reduce
-             or compactor.convert
-             or compactor.recolor
+                next(compactor.strip)
+             or next(compactor.reduce)
+             or next(compactor.convert)
+             or next(compactor.recolor)
             ) and true or false
     end
 
     -- two compactors: one for content, one for resources etc
 
     function document.pdf_identify_content(pdfdoc,page,pagenumber,resources,compactor)
+
+        local function getcontents()
+            local contents = pdfdoc.currentcontents
+            if not contents then
+                contents = getpagecontent(pdfdoc,pagenumber,true,true)
+                pdfdoc.currentcontents = contents
+            end
+            return contents
+        end
+
+        local function setcontents(contents)
+            if contents then
+                pdfdoc.currentcontents = contents
+            end
+        end
+
+        pdfdoc.getcontents = getcontents
+        pdfdoc.setcontents = setcontents
+
         if compactor.identify.content or compactor.identify == "all" then
             local fonts    = resources.Font
             local xobjects = resources.XObject
-            local contents = getpagecontent(pdfdoc,pagenumber,true,true)
+            local contents = pdfdoc.getcontents()
             if contents then
                 if trace_operators then
                     countoperators(pdfdoc,contents,fonts,xobjects,pagenumber,"before")
                 end
-                useactions(compactor)
             end
         end
     end
@@ -741,81 +842,49 @@ do
     function document.pdf_strip_content(pdfdoc,page,pagenumber,resources,compactor)
         local compactor, needed = strip_content_needed(pdfdoc,page,pagenumber,resources,compactor)
         if needed then
-            local fonts    = resources.Font
-            local xobjects = resources.XObject
-            local contents = getpagecontent(pdfdoc,pagenumber,true,true)
+            local contents = pdfdoc.getcontents()
             if contents then
--- inspect(contents)
+                local fonts    = resources.Font
+                local xobjects = resources.XObject
+                useactions(compactor)
                 if g1 then
                     insert(contents,1, { 0, "G" })
                     insert(contents,1, { 0, "g" })
                 end
                 contents = strip_content(pdfdoc,contents,fonts,xobjects,pagenumber,compactor)
                 resources.Font = fonts -- really needed (or maybe not here)
-                if contents then
-                    if trace_operators then
-                        countoperators(pdfdoc,contents,fonts,xobjects,pagenumber,"after")
-                    end
-                    page.Contents = contenttostring(contents)
-                end
+                pdfdoc.setcontents(contents)
             end
+        end
+    end
+
+    function document.pdf_serialize_content(pdfdoc,page,pagenumber,resources,compactor)
+        local contents = pdfdoc.getcontents()
+        if contents then
+            if trace_operators then
+                countoperators(pdfdoc,contents,fonts,xobjects,pagenumber,"after")
+            end
+            page.Contents = contenttostring(contents)
+            pdfdoc.currentcontents = nil
+            pdfdoc.getcontents = nil
+            pdfdoc.setcontents = nil
         end
     end
 
 end
 
 utilities.sequencers.appendaction("pdfcontentmanipulators","before","document.pdf_identify_content")
-utilities.sequencers.appendaction("pdfcontentmanipulators","before","document.pdf_strip_content")
-utilities.sequencers.appendaction("pdfpagemanipulators",   "after", "document.pdf_strip_page")
-utilities.sequencers.appendaction("pdfpagemanipulators",   "after", "document.pdf_cleanup_cidsets")
-utilities.sequencers.appendaction("pdfpagemanipulators",   "after", "document.pdf_cleanup_procsets")
+utilities.sequencers.appendaction("pdfcontentmanipulators","system","document.pdf_strip_content")
+utilities.sequencers.appendaction("pdfcontentmanipulators","after", "document.pdf_serialize_content")
 
 utilities.sequencers.enableaction("pdfcontentmanipulators","document.pdf_identify_content")
 utilities.sequencers.enableaction("pdfcontentmanipulators","document.pdf_strip_content")
-utilities.sequencers.enableaction("pdfpagemanipulators",   "document.pdf_strip_page")
-utilities.sequencers.enableaction("pdfpagemanipulators",   "document.pdf_cleanup_cidsets")
-utilities.sequencers.enableaction("pdfpagemanipulators",   "document.pdf_cleanup_procsets")
+utilities.sequencers.enableaction("pdfcontentmanipulators","document.pdf_serialize_content")
 
--- extreme example, also test case, dedicated to team ramkumar,
+utilities.sequencers.appendaction("pdfpagemanipulators","after","document.pdf_strip_page")
+utilities.sequencers.appendaction("pdfpagemanipulators","after","document.pdf_cleanup_cidsets")
+utilities.sequencers.appendaction("pdfpagemanipulators","after","document.pdf_cleanup_procsets")
 
--- backends.codeinjections.registercompactor("preset:cs", {
---     identify = {
---         content   = true,
---         resources = true,
---         page      = true,
---     },
---     embed = {
---         type0    = true,
---         truetype = true,
---         type1    = true,
---     },
---     merge = {
---         type0    = true, -- check if a..z A..Z 0..9
---         truetype = true,
---         type1    = true,
---         LMTX     = true,
---     },
---     strip = {
---         group     = true,
---         extgstate = true,
---         marked    = true,
---     },
---     reduce = {
---         color = true,
---         rgb   = true,
---         cmyk  = true,
---     },
---     convert = {
---         rgb  = true,
---         cmyk = true,
---         cmyk = {
---           { 100, 100, 55, 0, 57, 0, 22, 40.8 } -- factor, c, m, y, k, r, g, b
---         }
---        },
---     recolor = {
---          gray = { 1, 0, 0 },
---     },
---     add = {
---         cidset, -- when missing or even fix
---     },
--- })
+utilities.sequencers.enableaction("pdfpagemanipulators","document.pdf_strip_page")
+utilities.sequencers.enableaction("pdfpagemanipulators","document.pdf_cleanup_cidsets")
+utilities.sequencers.enableaction("pdfpagemanipulators","document.pdf_cleanup_procsets")

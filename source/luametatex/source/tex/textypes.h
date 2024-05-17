@@ -805,6 +805,8 @@ typedef struct line_break_properties {
     halfword single_line_penalty;
     halfword hyphen_penalty;
     halfword ex_hyphen_penalty;
+    halfword group_context;
+    halfword par_context;
 } line_break_properties;
 
 typedef enum sparse_identifiers {
@@ -824,6 +826,152 @@ typedef enum sparse_identifiers {
     mathparam_sparse_identifier, 
     user_sparse_identifier,
 } sparse_identifiers;
+
+/*tex
+
+    Here are the group codes that are used to discriminate between different kinds of groups. They
+    allow \TEX\ to decide what special actions, if any, should be performed when a group ends.
+
+    Some groups are not supposed to be ended by right braces. For example, the |$| that begins a
+    math formula causes a |math_shift_group| to be started, and this should be terminated by a
+    matching |$|. Similarly, a group that starts with |\left| should end with |\right|, and one
+    that starts with |\begingroup| should end with |\endgroup|.
+
+*/
+
+typedef enum tex_group_codes {
+    bottom_level_group,  /*tex group code for the outside world */
+    simple_group,        /*tex group code for local structure only */
+    hbox_group,          /*tex code for |\hbox| */
+    adjusted_hbox_group, /*tex code for |\hbox| in vertical mode */
+    vbox_group,          /*tex code for |\vbox| */
+    vtop_group,          /*tex code for |\vtop| */
+    dbox_group,          /*tex code for |\dbox| */
+    align_group,         /*tex code for |\halign|, |\valign| */
+    no_align_group,      /*tex code for |\noalign| */
+    output_group,        /*tex code for output routine */
+    math_group,          /*tex code for, e.g., |\char'136| */
+    math_stack_group,
+    math_component_group,
+    discretionary_group, /*tex code for |\discretionary|' */
+    insert_group,        /*tex code for |\insert| */
+    vadjust_group,       /*tex code for |\vadjust| */
+    vcenter_group,       /*tex code for |\vcenter| */
+    math_fraction_group, /*tex code for |\over| and friends */
+    math_operator_group,
+    math_radical_group,
+    math_choice_group,   /*tex code for |\mathchoice| */
+    also_simple_group,   /*tex code for |\begingroup|\unknown|\egroup| */
+    semi_simple_group,   /*tex code for |\begingroup|\unknown|\endgroup| */
+    math_simple_group,   /*tex code for |\beginmathgroup|\unknown|\endmathgroup| */
+    math_fence_group,    /*tex code for fences |\left|\unknown|\right| */
+    math_inline_group,   
+    math_display_group,  
+    math_number_group,     
+    local_box_group,     /*tex code for |\localleftbox|\unknown|localrightbox| */
+    split_off_group,     /*tex box code for the top part of a |\vsplit| */
+    split_keep_group,    /*tex box code for the bottom part of a |\vsplit| */
+    preamble_group,      /*tex box code for the preamble processing  in an alignment */
+    align_set_group,     /*tex box code for the final item pass in an alignment */
+    finish_row_group,    /*tex box code for a provisory line in an alignment */
+    lua_group,
+} tex_group_codes;
+
+/*
+    In the end I decided to split them into context and begin, but maybe some day
+    they all merge into one (easier on tracing and reporting in shared helpers).
+*/
+
+typedef enum tex_par_context_codes {
+    normal_par_context,
+    vmode_par_context,
+    vbox_par_context,
+    vtop_par_context,
+    dbox_par_context,
+    vcenter_par_context,
+    vadjust_par_context,
+    insert_par_context,
+    output_par_context,
+    align_par_context,
+    no_align_par_context,
+    span_par_context,
+    math_par_context,
+    lua_par_context,
+    reset_par_context,
+    n_of_par_context_codes,
+} tex_par_context_codes;
+
+typedef enum tex_alignment_context_codes {
+    preamble_pass_alignment_context,
+    preroll_pass_alignment_context,
+    package_pass_alignment_context,
+    wrapup_pass_alignment_context,
+} tex_alignment_context_codes;
+
+typedef enum tex_breaks_context_codes {
+    initialize_show_breaks_context,
+    start_show_breaks_context,
+    list_show_breaks_context,
+    stop_show_breaks_context,
+    collect_show_breaks_context,
+    line_show_breaks_context,
+    delete_show_breaks_context,
+    report_show_breaks_context,
+    wrapup_show_breaks_context,
+} tex_breaks_context_codes;
+
+typedef enum tex_build_context_codes {
+    initialize_show_build_context,
+    step_show_build_context,
+    check_show_build_context,
+    skip_show_build_context,
+    move_show_build_context,
+    fireup_show_build_context,
+    wrapup_show_build_context,
+} tex_build_context_codes;
+
+typedef enum tex_page_context_codes {
+    box_page_context,
+    end_page_context,
+    vadjust_page_context,
+    penalty_page_context,
+    boundary_page_context,
+    insert_page_context,
+    hmode_par_page_context,
+    vmode_par_page_context,
+    begin_paragraph_page_context,
+    before_display_page_context,
+    after_display_page_context,
+    after_output_page_context,
+    alignment_page_context,
+    triggered_page_context
+} tex_page_context_codes;
+
+typedef enum tex_append_line_context_codes {
+    box_append_line_context,
+    pre_box_append_line_context,
+    pre_adjust_append_line_context,
+    post_adjust_append_line_context,
+    pre_migrate_append_line_context,
+    post_migrate_append_line_context,
+} tex_append_line_context_codes;
+
+typedef enum tex_par_trigger_codes {
+    normal_par_trigger,
+    force_par_trigger,
+    indent_par_trigger,
+    no_indent_par_trigger,
+    math_char_par_trigger,
+    char_par_trigger,
+    boundary_par_trigger,
+    space_par_trigger,
+    math_par_trigger,
+    kern_par_trigger,
+    hskip_par_trigger,
+    un_hbox_char_par_trigger,
+    valign_char_par_trigger,
+    vrule_char_par_trigger,
+} tex_par_trigger_codes;
 
 # endif
 

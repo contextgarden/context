@@ -927,7 +927,7 @@
      \setformulaparameter\c!grid{\v!math:-\v!halfline}%
    \fi}
 
-% when we have 1.0.6 we wil use \mathpenaltiesmode
+% when we have 1.0.6 we will use \mathpenaltiesmode
 %
 % \prebinoppenalty -100
 % \prerelpenalty   -100

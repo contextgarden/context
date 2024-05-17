@@ -42,7 +42,7 @@ return {
         "pathstate", "precontrol", "postcontrol", "direction", "pathpoint", "pathprecontrol",
         "pathpostcontrol", "pathdirection", "penoffset", "arctime", "arcpoint",
         "arcpointlist", "subarclength", "mpversion", "rotated", "slanted",
-        "scaled", "shifted", "transformed", "xscaled", "yscaled", "zscaled",
+        "scaled", "shifted", "transformed", "xscaled", "yscaled", "zscaled", "xyscaled",
         "xrelative", "yrelative", "xyrelative", "xabsolute", "yabsolute", "xyabsolute",
         "intersectiontimes", "intersectiontimeslist", "envelope", "boundingpath",
         "numeric", "string", "boolean", "path", "pen", "nep", "picture",

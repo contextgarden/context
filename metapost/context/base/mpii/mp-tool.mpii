@@ -726,8 +726,10 @@ primarydef p xyscaled q = % secundarydef does not work out well
     save qq ; pair qq ;
     qq = paired(q) ;
     p
-        if xpart qq <> 0 : xscaled (xpart qq) fi
-        if ypart qq <> 0 : yscaled (ypart qq) fi
+%         if xpart qq <> 0 : xscaled (xpart qq) fi
+%         if ypart qq <> 0 : yscaled (ypart qq) fi
+        xscaled (xpart qq)
+        yscaled (ypart qq)
     endgroup
 enddef ;
 

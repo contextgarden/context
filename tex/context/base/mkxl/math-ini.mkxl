@@ -2191,9 +2191,9 @@
    \else
      \expandafter\p_functionstyle
    \fi
-   \ifcase#1\or
+%    \ifcase#1\or % so #1 can go away
      \mathlabeltext{\currentmathfunction}%
-   \fi
+%    \fi
    \egroup
    \dostoptagged
    \endgroup}
@@ -4866,7 +4866,7 @@
 %D
 %D This will align scripts as in: \inlinebuffer.
 
-\setupmathematics
+\setupmathematics % currently not implemented
   [\c!snap=\v!no]
 
 %D Here is a new one (that abstracts the scripts being abused):
