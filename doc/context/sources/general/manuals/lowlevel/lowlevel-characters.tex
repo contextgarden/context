@@ -222,6 +222,30 @@ decomposition for all composed characters.
 
 \stopsectionlevel
 
+\startsectionlevel[title={spaces}]
+
+The engine has no real concept of a space. When the input has one it is turned
+into a glue, likely with some stretch and shrink. When \typ {\nospaces} is set to
+one, no glue will be inserted. A value of two will inject a zero width glue. When
+set to three a glyph will be inserted with the character code set by \typ
+{\spacechar}.
+
+\startbuffer
+\nospaces\plusthree
+\spacechar\underscoreasciicode
+\hccode\underscoreasciicode\underscoreasciicode
+Where are the spaces?
+\stopbuffer
+
+\typebuffer
+
+The \type {hccode} tells the machinery that the underscore is a valid word
+separator (think compound words).
+
+\getbuffer
+
+\stopsectionlevel
+
 \stopdocument
 
 % on an old machine, so consider them just relative measures

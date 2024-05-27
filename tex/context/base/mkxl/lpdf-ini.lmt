@@ -981,6 +981,15 @@ do
         end
     end
 
+    local userdata = nil
+
+    function lpdf.setuserdata(key,value)
+        if not userdata then
+            userdata = pdfdictionary()
+        end
+        userdata[key] = pdfunicode(tostring(value))
+    end
+
     function lpdf.getcatalog()
         if checkcatalog() then
             catalog.Type = pdfconstant("Catalog")
@@ -999,7 +1008,14 @@ do
             if next(statistics) then
                 -- we use this as fast way to check if we have to check for fonts
                 -- and can use the fast path
-                catalog.LMTX_Statistics = statistics
+                statistics.Type = pdfconstant("Statistics")
+                catalog.LMTX_Statistics = pdfreference(pdfimmediateobject(tostring(statistics)))
+            end
+            --
+            if userdata and next(userdata) then
+                -- mtxrun --script pdf --useddata=keylist [--format=lua|json|lines] filename.pdf
+                userdata.Type = pdfconstant("Userdata")
+                catalog.LMTX_Userdata = pdfreference(pdfimmediateobject(tostring(userdata)))
             end
             --
             return pdfreference(pdfimmediateobject(tostring(catalog)))
@@ -1316,6 +1332,13 @@ if implement then
         return setstate("EMC")
     end
 
+    implement {
+        name      = "pdfsetuserdata",
+        arguments = "2 strings",
+        protected = true,
+        public    = true,
+        actions   = lpdf.setuserdata
+    }
 
 end
 

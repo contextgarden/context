@@ -40,6 +40,9 @@ verify document
 .TP
 .B --detail
 print detail to the console
+.TP
+.B --userdata
+print userdata to the console
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

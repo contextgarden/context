@@ -242,8 +242,11 @@
 
 % use \currentmixedcolumns instead of \recurselevel
 
+\lettonothing\page_col_routine_balance
+
 \def\page_col_routine_package
-  {\global\setbox\normalpagebox\hbox to \makeupwidth\bgroup
+  {\page_col_routine_balance
+   \global\setbox\normalpagebox\hbox to \makeupwidth\bgroup
      \edef\p_separator{\pagecolumnsparameter\c!separator}%
      \pagecolumnseparatorwidth\d_page_col_distance
      \ifcstok{\pagecolumnsparameter\c!direction}\v!reverse
@@ -266,6 +269,7 @@
    \resetboxesincache{\s!pagecolumn}%
    \global\initialpageskip\zeroskip
    \global\initialtopskip \zeroskip}
+
 
 \def\page_col_routine_package_step
   {% needs packaging anyway
@@ -885,8 +889,11 @@
   {\nofcolumns\c_page_mix_n_of_columns
    \enforced\let\stoppagecolumns\page_col_stop_nop}
 
+\lettonothing\page_col_routine_balance_check
+
 \protected\def\page_col_stop_yes
   {%\column % \page_otr_eject_page
+   \page_col_routine_balance_check
    \page    % beware for empty pages
    \endgroup
  % \setupoutputroutine[\s!singlecolumn]%
@@ -902,5 +909,101 @@
   {\page
    \endgroup
    \endgroup}
+
+% This is only for me, experimental and subject to changes! The problem is that we're already
+% wrapped so e.g. when we use vz we are toast.
+
+% \def\page_col_routine_balance_check
+%   {\ifcstok{\pagecolumnsparameter\c!balance}\v!yes
+%      \let\page_col_routine_balance\page_col_routine_balance_indeed
+%    \fi}
+%
+% \def\page_col_routine_balance_indeed
+%   {\ifnum\nofcolumns=\plustwo
+%      \setbox\scratchbox\vbox\bgroup
+%         \directboxfromcache{\s!pagecolumn}{1}
+%         \setbox\scratchbox\lastbox\unvbox\scratchbox
+%         \setbox\scratchbox\lastbox\unvbox\scratchbox
+%         \directboxfromcache{\s!pagecolumn}{2}
+%         \setbox\scratchbox\lastbox\unvbox\scratchbox
+%         \setbox\scratchbox\lastbox\unvbox\scratchbox
+%      \egroup
+%      % holdinginserts
+%      \scratchdimen.5\htdp\scratchbox
+%      \splittopskip\topskip
+%      \localcontrolledendless {%
+%        \setbox\scratchboxtwo\copy\scratchbox
+%        \setbox\scratchboxone\vsplit\scratchboxtwo to \scratchdimen
+%        \ifdim\ht\scratchboxone<\ht\scratchboxtwo
+%          \quitloop
+%        \orelse\ifvoid\scratchboxtwo
+%          \quitloop
+%        \orelse\ifdim\scratchdimen>\textheight
+%          \quitloop
+%        \else
+%          \advance\scratchdimen\onepoint
+%        \fi
+%      }%
+%      \setbox\scratchboxone\vtop to \scratchdimen{\unvbox\scratchboxone}%
+%      \setbox\scratchboxtwo\vtop to \scratchdimen{\unvbox\scratchboxtwo}%
+%      \putboxincache{\s!pagecolumn}{1}\scratchboxone
+%      \putboxincache{\s!pagecolumn}{2}\scratchboxtwo
+%    \fi}
+
+% \def\page_col_routine_balance_indeed
+%   {\ifnum\nofcolumns=\plustwo
+%      \setbox\scratchbox\vbox\bgroup
+%         \directboxfromcache{\s!pagecolumn}{1}
+%         \setbox\scratchbox\lastbox\ifvbox\scratchbox\unvbox\scratchbox\fi
+%         \setbox\scratchbox\lastbox\ifvbox\scratchbox\unvbox\scratchbox\fi
+%         \doifelseboxincache{\s!pagecolumn}{2}
+%           {\directboxfromcache{\s!pagecolumn}{2}
+%            \setbox\scratchbox\lastbox\ifvbox\scratchbox\unvbox\scratchbox\fi
+%            \setbox\scratchbox\lastbox\ifvbox\scratchbox\unvbox\scratchbox\fi
+%           }%
+%           {}%
+%      \egroup
+%      % holdinginserts
+%      \scratchdimen.5\htdp\scratchbox
+%      \splittopskip\topskip
+%      \localcontrolledendless {%
+%        \setbox\scratchboxtwo\copy\scratchbox
+%        \setbox\scratchboxone\vsplit\scratchboxtwo upto \scratchdimen
+% % \writestatus{page columns}{  \the\ht\scratchboxone,\the\ht\scratchboxtwo}%
+%        \ifdim\ht\scratchboxone<\ht\scratchboxtwo
+%          \quitloop
+%        \orelse\ifvoid\scratchboxtwo
+%          \quitloop
+%        \orelse\ifdim\scratchdimen>\textheight
+%          \quitloop
+%        \else
+%          \advance\scratchdimen\onepoint
+%        \fi
+%      }%
+% %      \ifdim\ht\scratchboxone<\ht\scratchboxtwo
+% %        \scratchdimen\ht\scratchboxone
+% %        \advance\scratchdimen\onepoint
+% %        \localcontrolledendless {%
+% %          \setbox\scratchboxtwo\copy\scratchbox
+% %          \setbox\scratchboxone\vsplit\scratchboxtwo upto \scratchdimen
+% % \writestatus{page columns}{  \the\ht\scratchboxone,\the\ht\scratchboxtwo}%
+% %          \ifdim\ht\scratchboxone>\ht\scratchboxtwo
+% %            \quitloop
+% %          \orelse\ifdim\ht\scratchboxone=\ht\scratchboxtwo
+% %            \quitloop
+% %          \orelse\ifvoid\scratchboxtwo
+% %            \quitloop
+% %          \orelse\ifdim\scratchdimen>\textheight
+% %            \quitloop
+% %          \else
+% %            \advance\scratchdimen\onepoint
+% %          \fi
+% %        }%
+% %      \fi
+%      \setbox\scratchboxone\vtop to \scratchdimen{\unvbox\scratchboxone}%
+%      \setbox\scratchboxtwo\vtop to \scratchdimen{\unvbox\scratchboxtwo}%
+%      \putboxincache{\s!pagecolumn}{1}\scratchboxone
+%      \putboxincache{\s!pagecolumn}{2}\scratchboxtwo
+%    \fi}
 
 \protect \endinput

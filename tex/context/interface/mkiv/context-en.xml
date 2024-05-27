@@ -42564,30 +42564,6 @@
     </cd:keywords>
    </cd:arguments>
   </cd:command>
-  <cd:command category="strings" file="syst-aux.mkiv" keywords="conditional" level="system" name="doifelsemeaning">
-   <cd:arguments>
-    <cd:csname/>
-    <cd:csname/>
-    <cd:keywords delimiters="braces">
-     <cd:constant type="cd:true"/>
-    </cd:keywords>
-    <cd:keywords delimiters="braces">
-     <cd:constant type="cd:false"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
-  <cd:command category="strings" file="syst-aux.mkiv" keywords="conditional" level="system" name="doifmeaningelse">
-   <cd:arguments>
-    <cd:csname/>
-    <cd:csname/>
-    <cd:keywords delimiters="braces">
-     <cd:constant type="cd:true"/>
-    </cd:keywords>
-    <cd:keywords delimiters="braces">
-     <cd:constant type="cd:false"/>
-    </cd:keywords>
-   </cd:arguments>
-  </cd:command>
   <cd:command category="strings" file="syst-aux.mkiv" keywords="conditional" level="system" name="doifelsesamestring">
    <cd:arguments>
     <cd:keywords delimiters="braces">

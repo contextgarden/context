@@ -8,7 +8,8 @@ if modules then modules = { } end modules ['typo-bld'] = { -- was node-par
 
 -- no need for nuts in the one-line demo (that might move anyway)
 
-local insert, remove = table.insert, table.remove
+local next = next
+local insert, remove, sort = table.insert, table.remove, table.sort
 
 builders                 = builders or { }
 local builders           = builders
@@ -456,3 +457,53 @@ statistics.register("quality reports", function()
         report_quality()
     end
 end)
+
+do
+
+    local loners = { }
+    local report = logs.reporter("loners")
+
+    local texgetcount = tex.getcount
+
+    trackers.register("pages.loners",function(v)
+        callback.register("show_loners",
+            v and function(options,penalty)
+                loners[#loners+1] = { texgetcount("realpageno"), options, penalty }
+            end or nil
+        )
+    end)
+
+    logs.registerfinalactions(function()
+        local n = #loners
+        if n > 0 then
+            local options = tex.getpenaltyoptionvalues()
+            options[0] = nil
+            logs.startfilelogging(report,"page break penalties (loners)")
+            for i=1,n do
+                local l = loners[i]
+                local t = { }
+                local o = l[2]
+                for k, v in next, options do
+                    if o & k == k then t[#t+1] = v end
+                end
+                if #t > 0 then
+                    sort(t)
+                    report("  %4i: penalty %5i, % + t,",l[1],l[3],t)
+                end
+            end
+            logs.stopfilelogging()
+        end
+    end)
+
+    statistics.register("page breaks", function()
+        local n = #loners
+        if n > 0 then
+            local pages = { }
+            for i=1,n do
+                pages[#pages+1] = loners[i][1]
+            end
+            return string.formatters("%i pages have loners reported: % t",n,pages)
+        end
+    end)
+
+end

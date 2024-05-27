@@ -789,6 +789,7 @@ typedef struct line_break_properties {
     halfword toddler_penalty;
     halfword fitness_demerits;
     halfword broken_penalty;
+    halfword broken_penalties;
     halfword baseline_skip;
     halfword line_skip;
     halfword line_skip_limit;
@@ -802,6 +803,7 @@ typedef struct line_break_properties {
     halfword extra_hyphen_penalty; 
     halfword line_break_optional;
     halfword optional_found;
+    halfword math_found;
     halfword single_line_penalty;
     halfword hyphen_penalty;
     halfword ex_hyphen_penalty;

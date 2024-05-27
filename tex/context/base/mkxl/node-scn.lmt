@@ -17,6 +17,7 @@ local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid
 local getattr            = nuts.getattr
+local getattrs           = nuts.getattrs
 local getsubtype         = nuts.getsubtype
 local getlist            = nuts.getlist
 local setlist            = nuts.setlist
@@ -45,7 +46,9 @@ local leaders_code       <const> = gluecodes.leaders
 local rightfillskip_code <const> = gluecodes.rightparfillskip
 local righthangskip_code <const> = gluecodes.righthangskip
 
-local fontkern_code      <const> = kerncodes.fontkern
+local fontkern_code           <const> = kerncodes.fontkern
+local mathshapekern_code      <const> = kerncodes.mathshapekern
+local rightmathslackkern_code <const> = kerncodes.rightmathslackkern
 
 local a_runningtext      <const> = attributes.private('runningtext')
 
@@ -114,6 +117,63 @@ nuts.striprange = striprange
 
 local maxlevel = 1
 
+local ignore = table.setmetatableindex("number")
+
+local function processtricky(attribute,data,flush,head,parent)
+    local n = head
+    if n then
+        local f, l, a, d
+        while n do
+            local id = getid(n)
+            local aa, ra = getattrs(n,attribute,a_runningtext)
+            if id == glyph_code
+             -- or id == disc_code
+             -- or id == rule_code
+             -- or id == boundary_code
+                or id == hlist_code
+                or id == vlist_code
+            then
+                if aa and ignore[aa] > 0 then
+                    aa = nil
+                end
+                if not aa then
+                    if f then
+                        head = flush(head,f,l,data[a],1,parent,false)
+                    end
+                    f, l, a = nil, nil, nil
+                elseif aa == a then
+                    if not f then -- ?
+                        f = n
+                    end
+                    l = n
+                else
+                    if f then
+                        head = flush(head,f,l,data[a],1,parent,false)
+                    end
+                    f, l, a = n, n, aa
+                end
+                if id == hlist_code or id == vlist_code then
+                    local list = getlist(n)
+                    if list then
+                        if a then
+                            ignore[a] = ignore[a] + 1
+                        end
+                        setlist(n,processtricky(attribute,data,flush,list,n))
+                        if a then
+                            ignore[a] = ignore[a] - 1
+                        end
+                    end
+                end
+            end
+            n = getnext(n)
+        end
+        if f then
+            head = flush(head,f,l,data[a],1,parent,false)
+        end
+    end
+    return head
+end
+
 local function processwords(nesting,attribute,data,flush,head,parent,skip) -- we have hlistdir and local dir
     local n = head
     if n then
@@ -121,13 +181,15 @@ local function processwords(nesting,attribute,data,flush,head,parent,skip) -- we
         local continue, leaders, strip, level = false, false, true, -1
         while n do
             local id = getid(n)
-            if id == glyph_code
+            local aa, ra = getattrs(n,attribute,a_runningtext)
+            if ra and ra < 0 then
+                processtricky(attribute,data,flush,head,parent) -- we have hlistdir and local dir
+            elseif id == glyph_code
                 or id == disc_code                                 -- can indeed be a start
                 or id == rule_code                                 -- can be a strut
                 or id == boundary_code                             -- can be between quote and text
-                or (id == hlist_code and getattr(n,a_runningtext)) -- well ...
+                or (ra and id == hlist_code and ra > 0) -- well ...
             then
-                local aa = getattr(n,attribute)
                 -- new approach
                 local dd, ll
                 if aa then
@@ -205,7 +267,9 @@ local function processwords(nesting,attribute,data,flush,head,parent,skip) -- we
          --     end
          --     goto next
             elseif id == kern_code then
-                if getsubtype(n) == fontkern_code then
+                local subtype = getsubtype(n)
+                if subtype == fontkern_code then
+--                 if subtype == fontkern_code or subtype == mathshapekern_code or subtype == rightmathslackkern_code then
                     if f then
                         l = n
                     end

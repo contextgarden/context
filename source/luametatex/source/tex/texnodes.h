@@ -427,9 +427,11 @@ typedef enum attribute_subtypes {
     with arguments.
 */
 
-# define penalty_node_size  3
-# define penalty_amount(a)  vlink(a,2)
-# define penalty_options(a) vinfo(a,2)
+# define penalty_node_size   4
+# define penalty_amount(a)   vlink(a,2)
+# define penalty_options(a)  vinfo(a,2)
+# define penalty_tnuoma(a)   vlink(a,3)
+# define penalty_reserved(a) vinfo(a,3)
 
 static inline void tex_add_penalty_option    (halfword a, halfword r) { penalty_options(a) |= r; }
 static inline void tex_remove_penalty_option (halfword a, halfword r) { penalty_options(a) &= ~(r | penalty_options(a)); }
@@ -443,6 +445,11 @@ typedef enum penalty_option_codes {
     penalty_option_widowed       = 0x0008,
     penalty_option_clubbed       = 0x0010,
     penalty_option_toddlered     = 0x0020,
+    penalty_option_widow         = 0x0040,
+    penalty_option_club          = 0x0080,
+    penalty_option_broken        = 0x0100,
+    penalty_option_shaping       = 0x0200,
+    penalty_option_double        = 0x0400,
 } penalty_option_codes; 
 
 typedef enum penalty_subtypes {
@@ -550,10 +557,12 @@ typedef enum glue_option_codes {
 
 typedef enum math_subtypes {
     begin_inline_math,
-    end_inline_math
+    end_inline_math,
+    begin_broken_math,
+    end_broken_math,
 } math_subtypes;
 
-# define last_math_subtype end_inline_math
+# define last_math_subtype end_broken_math
 
 /*tex
     Math nodes (currently) partially overlap with glue because they also have a glue property.
@@ -1628,12 +1637,14 @@ static inline int tex_same_mathspec(halfword a, halfword b)
 typedef enum specification_options {
     specification_option_repeat = 0x0001,
     specification_option_values = 0x0002,
+    specification_option_double = 0x0004,
 } specifications_options;
 
 # define specification_index(a,n) ((memoryword *) specification_pointer(a))[n - 1]
 
 # define specification_repeat(a)  ((specification_options(a) & specification_option_repeat) == specification_option_repeat)
 # define specification_values(a)  ((specification_options(a) & specification_option_values) == specification_option_values)
+# define specification_double(a)  ((specification_options(a) & specification_option_double) == specification_option_double)
 
 # define specification_n(a,n)     (specification_repeat(a) ? ((n - 1) % specification_count(a) + 1) : (n > specification_count(a) ? specification_count(a) : n))
 
@@ -1658,6 +1669,7 @@ extern void            tex_shift_specification_list    (halfword a, int n, int r
 static inline int      tex_get_specification_count     (halfword a)                         { return a ? specification_count(a) : 0; }
 static inline void     tex_set_specification_option    (halfword a, int o)                  { specification_options(a) |= o; }
 static inline int      tex_has_specification_option    (halfword a, int o)                  { return (specification_options(a) & o) == o; }
+static inline void     tex_reset_specification_option  (halfword a, int o     )             { specification_options(a) &= ~(o | specification_options(a)); }
 
 static inline int      tex_get_specification_decent    (halfword a)                         { return specification_unused(a); }
 static inline void     tex_set_specification_decent    (halfword a, int d)                  { specification_unused(a) = d; }
@@ -1665,10 +1677,12 @@ static inline void     tex_set_specification_decent    (halfword a, int d)      
 static inline halfword tex_get_specification_indent    (halfword a, halfword n)             { return specification_index(a,specification_n(a,n)).half0; }
 static inline halfword tex_get_specification_width     (halfword a, halfword n)             { return specification_index(a,specification_n(a,n)).half1; }
 static inline halfword tex_get_specification_penalty   (halfword a, halfword n)             { return specification_index(a,specification_n(a,n)).half0; }
+static inline halfword tex_get_specification_nepalty   (halfword a, halfword n)             { return specification_index(a,specification_n(a,n)).half1; }
 
 static inline void     tex_set_specification_indent    (halfword a, halfword n, halfword v) { specification_index(a,n).half0 = v; }
 static inline void     tex_set_specification_width     (halfword a, halfword n, halfword v) { specification_index(a,n).half1 = v; }
 static inline void     tex_set_specification_penalty   (halfword a, halfword n, halfword v) { specification_index(a,n).half0 = v; }
+static inline void     tex_set_specification_nepalty   (halfword a, halfword n, halfword v) { specification_index(a,n).half1 = v; }
 
 /* Here come the slot ones: */
 
@@ -2508,6 +2522,7 @@ typedef enum par_codes {                   /* extrahyphenpenalty : in parpass   
     par_club_penalties_code,
     par_widow_penalties_code,
     par_display_widow_penalties_code,
+    par_broken_penalties_code,
     par_orphan_penalties_code,
     par_fitness_demerits_code,             /* parpass */
     par_baseline_skip_code,
@@ -2597,6 +2612,7 @@ static int par_category_to_codes[] = {
     par_club_penalty_category,        // par_club_penalties_code
     par_widow_penalty_category,       // par_widow_penalties_code
     par_display_penalty_category,     // par_display_widow_penalties_code
+    par_broken_penalty_category,      // par_display_widow_penalties_code
     par_orphan_penalty_category,      // par_orphan_penalties_code
     par_demerits_category,            // par_fitness_demerits_code
     par_line_category,                // par_baseline_skip_code
@@ -2617,68 +2633,72 @@ static int par_category_to_codes[] = {
 
 /*tex Make sure that |max_chain_size| is large enough to have this huge node! */
 
-# define par_node_size                  32          
-
-# define par_single_line_penalty(a)     vinfo(a, 2) 
-# define par_prev_graf(a)               vlink(a, 2) /*tex A bit of a joke but maybe handy indeed. */
-# define par_box_left(a)                vinfo(a, 3)
-# define par_box_left_width(a)          vlink(a, 3)
-# define par_box_right(a)               vinfo(a, 4)
-# define par_box_right_width(a)         vlink(a, 4)
-# define par_box_middle(a)              vinfo(a, 5) /* no width here */
-# define par_dir(a)                     vlink(a, 5)
-# define par_state(a)                   vinfo(a, 6)
-# define par_hsize(a)                   vlink(a, 6)
-# define par_left_skip(a)               vinfo(a, 7)
-# define par_right_skip(a)              vlink(a, 7)
-# define par_hang_indent(a)             vinfo(a, 8)
-# define par_hang_after(a)              vlink(a, 8)
-# define par_par_indent(a)              vinfo(a, 9)
-# define par_par_fill_left_skip(a)      vlink(a, 9)
-# define par_par_fill_right_skip(a)     vinfo(a,10)
-# define par_adjust_spacing(a)          vlink(a,10) /* can be single */
-# define par_protrude_chars(a)          vinfo(a,11) /* can be single */
-# define par_pre_tolerance(a)           vlink(a,11)
-# define par_tolerance(a)               vinfo(a,12)
-# define par_emergency_stretch(a)       vlink(a,12)
-# define par_looseness(a)               vinfo(a,13) /* can be less */
-# define par_last_line_fit(a)           vlink(a,13) /* can be less */
-# define par_line_penalty(a)            vinfo(a,14)
-# define par_inter_line_penalty(a)      vlink(a,14)
-# define par_club_penalty(a)            vinfo(a,15)
-# define par_widow_penalty(a)           vlink(a,15)
-# define par_display_widow_penalty(a)   vinfo(a,16)
-# define par_orphan_penalty(a)          vlink(a,16)
-# define par_toddler_penalty(a)         vlink(a,17)
-# define par_broken_penalty(a)          vinfo(a,17)
-# define par_adj_demerits(a)            vlink(a,18)
-# define par_double_hyphen_demerits(a)  vinfo(a,18)
-# define par_final_hyphen_demerits(a)   vlink(a,19)
-# define par_par_shape(a)               vinfo(a,19)
-# define par_inter_line_penalties(a)    vlink(a,20)
-# define par_club_penalties(a)          vinfo(a,20)
-# define par_widow_penalties(a)         vlink(a,21)
-# define par_display_widow_penalties(a) vinfo(a,21)
-# define par_orphan_penalties(a)        vlink(a,22)
-# define par_baseline_skip(a)           vinfo(a,22)
-# define par_line_skip(a)               vlink(a,23)
-# define par_line_skip_limit(a)         vinfo(a,23)
-# define par_adjust_spacing_step(a)     vlink(a,24)
-# define par_adjust_spacing_shrink(a)   vinfo(a,24)
-# define par_adjust_spacing_stretch(a)  vlink(a,25)
-# define par_end_par_tokens(a)          vinfo(a,25)
-# define par_hyphenation_mode(a)        vlink(a,26) /* can be single */
-# define par_shaping_penalties_mode(a)  vinfo(a,26) /* can be single */
-# define par_shaping_penalty(a)         vlink(a,27)
-# define par_par_init_left_skip(a)      vinfo(a,27)
-# define par_par_init_right_skip(a)     vlink(a,28) 
-# define par_emergency_left_skip(a)     vinfo(a,28)
-# define par_emergency_right_skip(a)    vlink(a,29) 
-# define par_emergency_extra_stretch(a) vinfo(a,29) 
-# define par_par_passes(a)              vlink(a,30) 
-# define par_fitness_demerits(a)        vinfo(a,30)
-# define par_hyphen_penalty(a)          vinfo(a,31)
-# define par_ex_hyphen_penalty(a)       vinfo(a,31)
+# define par_node_size                   34 // todo: less because we can pack some           
+                                         
+# define par_dir(a)                      vlink(a, 2)
+# define par_box_left(a)                 vinfo(a, 2)
+# define par_box_left_width(a)           vlink(a, 3)
+# define par_box_right(a)                vinfo(a, 3)
+# define par_box_right_width(a)          vlink(a, 4)
+# define par_box_middle(a)               vinfo(a, 4) 
+# define par_local_inter_line_penalty(a) vlink(a, 5) 
+# define par_local_broken_penalty(a)     vinfo(a, 5) /* no width here */
+# define par_state(a)                    vlink(a, 6)
+# define par_prev_graf(a)                vinfo(a, 6) /*tex A bit of a joke but maybe handy indeed. */
+# define par_hsize(a)                    vlink(a, 7)
+# define par_left_skip(a)                vinfo(a, 7)
+# define par_right_skip(a)               vlink(a, 8)
+# define par_hang_indent(a)              vinfo(a, 8)
+# define par_hang_after(a)               vlink(a, 9)
+# define par_par_indent(a)               vinfo(a, 9)
+# define par_par_fill_left_skip(a)       vlink(a,10)
+# define par_par_fill_right_skip(a)      vinfo(a,10)
+# define par_adjust_spacing(a)           vlink(a,11) /* can be single */
+# define par_protrude_chars(a)           vinfo(a,11) /* can be single */
+# define par_pre_tolerance(a)            vlink(a,12)
+# define par_tolerance(a)                vinfo(a,12)
+# define par_emergency_stretch(a)        vlink(a,13)
+# define par_looseness(a)                vinfo(a,13) /* can be less */
+# define par_last_line_fit(a)            vlink(a,14) /* can be less */
+# define par_line_penalty(a)             vinfo(a,14)
+# define par_inter_line_penalty(a)       vlink(a,15)
+# define par_club_penalty(a)             vinfo(a,15)
+# define par_widow_penalty(a)            vlink(a,16)
+# define par_display_widow_penalty(a)    vinfo(a,16)
+# define par_orphan_penalty(a)           vlink(a,17)
+# define par_toddler_penalty(a)          vinfo(a,17)
+# define par_broken_penalty(a)           vlink(a,18)
+# define par_adj_demerits(a)             vinfo(a,18)
+# define par_double_hyphen_demerits(a)   vlink(a,19)
+# define par_final_hyphen_demerits(a)    vinfo(a,19)
+# define par_par_shape(a)                vlink(a,20)
+# define par_inter_line_penalties(a)     vinfo(a,20)
+# define par_club_penalties(a)           vlink(a,21)
+# define par_widow_penalties(a)          vinfo(a,21)
+# define par_display_widow_penalties(a)  vlink(a,22)
+# define par_broken_penalties(a)         vinfo(a,22)
+# define par_orphan_penalties(a)         vlink(a,23)
+# define par_single_line_penalty(a)      vinfo(a,23) 
+# define par_baseline_skip(a)            vlink(a,24)
+# define par_line_skip(a)                vinfo(a,24)
+# define par_line_skip_limit(a)          vlink(a,25)
+# define par_adjust_spacing_step(a)      vinfo(a,25)
+# define par_adjust_spacing_shrink(a)    vlink(a,26)
+# define par_adjust_spacing_stretch(a)   vinfo(a,26)
+# define par_end_par_tokens(a)           vlink(a,27)
+# define par_hyphenation_mode(a)         vinfo(a,27) /* can be single */
+# define par_shaping_penalties_mode(a)   vlink(a,28) /* can be single */
+# define par_shaping_penalty(a)          vinfo(a,28)
+# define par_par_init_left_skip(a)       vlink(a,29)
+# define par_par_init_right_skip(a)      vinfo(a,29) 
+# define par_emergency_left_skip(a)      vlink(a,30)
+# define par_emergency_right_skip(a)     vinfo(a,30) 
+# define par_emergency_extra_stretch(a)  vlink(a,31) 
+# define par_par_passes(a)               vinfo(a,31) 
+# define par_fitness_demerits(a)         vlink(a,32)
+# define par_hyphen_penalty(a)           vinfo(a,32)
+# define par_ex_hyphen_penalty(a)        vlink(a,33)
+# define par_reserved(a)                 vinfo(a,33)
 
 /*
     At some point we will have this (array with double values), depends on the outcome of an  
@@ -2773,8 +2793,8 @@ static inline int  tex_par_to_be_set        (halfword state, halfword what) { re
 # define passive_node_size                 9 
 # define passive_cur_break(a)              vlink(a,1)   /*tex in passive node, points to position of this breakpoint */
 # define passive_prev_break(a)             vinfo(a,1)   /*tex points to passive node that should precede this one */
-# define passive_pen_inter(a)              vinfo(a,2)
-# define passive_pen_broken(a)             vlink(a,2)
+# define passive_interline_penalty(a)      vinfo(a,2)
+# define passive_broken_penalty(a)         vlink(a,2)
 # define passive_left_box(a)               vlink(a,3)
 # define passive_left_box_width(a)         vinfo(a,3)
 # define passive_last_left_box(a)          vlink(a,4)

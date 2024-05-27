@@ -216,7 +216,7 @@ local function valid_xmp()
             report_xmp("using file %a",xmpfile)
         end
         local xmpdata = xmpfile ~= "" and io.loaddata(xmpfile) or ""
-        xmp = xml.convert(xmpdata)
+        xmp = xml.convert(xmpdata, { strip_cm_and_dt = true })
     end
     return xmp
 end
@@ -260,7 +260,12 @@ function lpdf.injectxmpinfo(pattern,whatever,prepend)
 end
 
 function lpdf.replacexmpinfo(pattern,whatever)
-    xml.replace(xmp or valid_xmp(),pattern,whatever)
+    local xmp = xmp or valid_xmp()
+    if whatever == "" then
+        xml.delete(xmp,pattern)
+    else
+        xml.replace(xmp,pattern,whatever)
+    end
 end
 
 -- flushing
@@ -312,7 +317,7 @@ local function flushxmpinfo()
                 end
             end
         end
-        
+
         local blob = xml.tostring(xml.first(xmp or valid_xmp(),"/x:xmpmeta"))
         local md = pdfdictionary {
             Subtype = pdfconstant("XML"),

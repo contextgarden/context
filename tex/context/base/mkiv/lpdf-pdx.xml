@@ -67,7 +67,6 @@
     <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
       <pdf:Keywords/>
       <pdf:Producer/>
-      <pdf:Trapped>False</pdf:Trapped>
     </rdf:Description>
     <rdf:Description rdf:about="" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/">
       <xmpMM:DocumentID/>

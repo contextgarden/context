@@ -294,9 +294,11 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "discretionaryoptions",           internal_integer_cmd,   discretionary_options_code,               internal_integer_base);
         tex_primitive(tex_command,    "displaywidowpenalty",            internal_integer_cmd,   display_widow_penalty_code,               internal_integer_base);
         tex_primitive(tex_command,    "doublehyphendemerits",           internal_integer_cmd,   double_hyphen_demerits_code,              internal_integer_base);
+        tex_primitive(luatex_command, "doublepenaltymode",              internal_integer_cmd,   double_penalty_mode_code,                 internal_integer_base);
         tex_primitive(tex_command,    "endlinechar",                    internal_integer_cmd,   end_line_char_code,                       internal_integer_base);
         tex_primitive(tex_command,    "errorcontextlines",              internal_integer_cmd,   error_context_lines_code,                 internal_integer_base);
         tex_primitive(tex_command,    "escapechar",                     internal_integer_cmd,   escape_char_code,                         internal_integer_base);
+        tex_primitive(luatex_command, "spacechar",                      internal_integer_cmd,   space_char_code,                          internal_integer_base);
         tex_primitive(luatex_command, "eufactor",                       internal_integer_cmd,   eu_factor_code,                           internal_integer_base);
         tex_primitive(luatex_command, "exceptionpenalty",               internal_integer_cmd,   exception_penalty_code,                   internal_integer_base);
         tex_primitive(tex_command,    "exhyphenchar",                   internal_integer_cmd,   ex_hyphen_char_code,                      internal_integer_base);
@@ -438,6 +440,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "tracinginserts",                 internal_integer_cmd,   tracing_inserts_code,                     internal_integer_base);
         tex_primitive(luatex_command, "tracinglevels",                  internal_integer_cmd,   tracing_levels_code,                      internal_integer_base);
         tex_primitive(luatex_command, "tracinglists",                   internal_integer_cmd,   tracing_lists_code,                       internal_integer_base);
+        tex_primitive(tex_command,    "tracingloners",                  internal_integer_cmd,   tracing_loners_code,                      internal_integer_base);
         tex_primitive(tex_command,    "tracinglostchars",               internal_integer_cmd,   tracing_lost_chars_code,                  internal_integer_base);
         tex_primitive(tex_command,    "tracingmacros",                  internal_integer_cmd,   tracing_macros_code,                      internal_integer_base);
         tex_primitive(luatex_command, "tracingmarks",                   internal_integer_cmd,   tracing_marks_code,                       internal_integer_base);
@@ -665,6 +668,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "parpasses",                      specification_cmd,      par_passes_code,                          internal_specification_base);
         tex_primitive(tex_command,    "parshape",                       specification_cmd,      par_shape_code,                           internal_specification_base);
         tex_primitive(etex_command,   "widowpenalties",                 specification_cmd,      widow_penalties_code,                     internal_specification_base);
+        tex_primitive(luatex_command, "brokenpenalties",                specification_cmd,      broken_penalties_code,                    internal_specification_base);
         tex_primitive(luatex_command, "fitnessdemerits",                specification_cmd,      fitness_demerits_code,                    internal_specification_base);
 
         tex_primitive(etex_command,   "detokenize",                     the_cmd,                detokenize_code,                          0); /* maybe convert_cmd */

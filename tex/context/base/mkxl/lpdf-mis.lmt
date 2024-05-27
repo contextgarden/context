@@ -413,8 +413,8 @@ local function documentspecification()
             HideMenubar       = nomenubar and true                   or nil,
         })
  -- end
-    addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP
-    addtocatalog("Version", pdfconstant(format("1.%s",pdfminorversion())))
+ -- addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP
+    addtocatalog("Version", pdfconstant(format("%s.%s",pdfmajorversion(),pdfminorversion())))
     addtocatalog("Lang",    pdfstring(tokens.getters.macro("currentmainlanguage")))
 end
 
@@ -541,7 +541,7 @@ local function featurecreep()
                 list[#list+1] = i - 1 -- pdf starts numbering at 0
                 list[#list+1] = pdfdictionary {
                     S  = pdfconstant(conversion),
-                    St = number,
+                    St = number > 0 and number or 1, -- there is no 'nonumber' and we need to be >= 1
                     P  = label ~= "" and pdfunicode(label) or nil,
                 }
             end

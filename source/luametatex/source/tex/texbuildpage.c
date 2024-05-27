@@ -591,6 +591,12 @@ inline static int tex_aux_get_penalty_option(halfword current)
  // return 0;
 }
 
+inline static int tex_aux_get_last_penalty(halfword current) 
+{
+    return node_type(current) == penalty_node 
+        ? penalty_options(current) & (penalty_option_widow | penalty_option_club | penalty_option_broken | penalty_option_shaping)
+        : 0;
+}
 
 static void tex_aux_initialize_show_build_node(int callback_id)
 {
@@ -648,6 +654,11 @@ static void tex_aux_fireup_show_build_node(int callback_id, halfword current)
 static void tex_aux_wrapup_show_build_node(int callback_id)
 {
     lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "d->", wrapup_show_build_context);
+}
+
+static void tex_aux_show_loner_penalty(int callback_id, halfword options, scaled penalty)
+{
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dd->", options, penalty);
 }
 
 static int tex_aux_topskip_restart(halfword current, int where, scaled height, scaled depth, int tracing)
@@ -807,6 +818,12 @@ static void tex_aux_contribute_glue(halfword current)
     balancing etc. 
 */
 
+static inline halfword tex_aux_used_penalty(halfword p)
+{
+    return double_penalty_mode_par && tex_has_penalty_option(p, penalty_option_double) ?  
+        penalty_tnuoma(p) : penalty_amount(p);
+} 
+
 void tex_build_page(halfword context, halfword boundary)
 {
     if (! lmt_page_builder_state.output_active) {
@@ -921,7 +938,7 @@ void tex_build_page(halfword context, halfword boundary)
                     if (lmt_page_builder_state.contents < contribute_box) {
                         goto DISCARD;
                     } else {
-                        penalty = penalty_amount(current);
+                        penalty = tex_aux_used_penalty(current);
                         break;
                     }
                 case mark_node:
@@ -1117,8 +1134,29 @@ static void tex_aux_fire_up(halfword c)
     halfword current, previous, lastinsert;
     /*tex Set the value of |output_penalty|. */
     if (node_type(lmt_page_builder_state.best_break) == penalty_node) {
+        int callback_id = lmt_callback_defined(show_loners_callback);
         update_tex_output_penalty(penalty_amount(lmt_page_builder_state.best_break));
+        if (callback_id || tracing_loners_par) { 
+            // this one should return the str 
+            halfword n = tex_aux_get_last_penalty(lmt_page_builder_state.best_break);
+            if (n) {
+                halfword penalty = tex_aux_used_penalty(lmt_page_builder_state.best_break);
+                if (callback_id) { 
+                    tex_aux_show_loner_penalty(callback_id, penalty_options(lmt_page_builder_state.best_break), penalty);
+                } else { 
+                    unsigned char state[5] = { '.', '.', '.', '.', '\0' };
+                    if (tex_has_penalty_option(lmt_page_builder_state.best_break, penalty_option_widow  )) { state[0] = 'W'; }
+                    if (tex_has_penalty_option(lmt_page_builder_state.best_break, penalty_option_club   )) { state[1] = 'C'; }
+                    if (tex_has_penalty_option(lmt_page_builder_state.best_break, penalty_option_broken )) { state[2] = 'B'; }
+                    if (tex_has_penalty_option(lmt_page_builder_state.best_break, penalty_option_shaping)) { state[3] = 'S'; }
+                    tex_begin_diagnostic();
+                    tex_print_format("[page: loner: %s penalty %i]", state, penalty);
+                    tex_end_diagnostic();
+                }
+            }
+        }
         penalty_amount(lmt_page_builder_state.best_break) = infinite_penalty;
+        penalty_tnuoma(lmt_page_builder_state.best_break) = infinite_penalty;
     } else {
         update_tex_output_penalty(infinite_penalty);
     }

@@ -97,8 +97,10 @@
 		<cd:variable name='author' value='auteur'/>
 		<cd:variable name='auto' value='auto'/>
 		<cd:variable name='autointro' value='autointro'/>
+		<cd:variable name='axis' value='axis'/>
 		<cd:variable name='back' value='terug'/>
 		<cd:variable name='background' value='achtergrond'/>
+		<cd:variable name='backgroundbar' value='backgroundbar'/>
 		<cd:variable name='backmatter' value='uitleidingen'/>
 		<cd:variable name='backpart' value='uitleiding'/>
 		<cd:variable name='backspace' value='rugwit'/>
@@ -144,6 +146,7 @@
 		<cd:variable name='chemicals' value='chemicals'/>
 		<cd:variable name='chemistry' value='chemie'/>
 		<cd:variable name='cite' value='cite'/>
+		<cd:variable name='clip' value='clip'/>
 		<cd:variable name='closed' value='gesloten'/>
 		<cd:variable name='collapsed' value='collapsed'/>
 		<cd:variable name='color' value='kleur'/>
@@ -1407,6 +1410,7 @@
 		<cd:constant name='vonsep' value='vonsep'/>
 		<cd:constant name='vz' value='vz'/>
 		<cd:constant name='way' value='wijze'/>
+		<cd:constant name='weight' value='weight'/>
 		<cd:constant name='wfactor' value='bfactor'/>
 		<cd:constant name='white' value='wit'/>
 		<cd:constant name='width' value='breedte'/>

@@ -44,7 +44,7 @@
     \chr {a macron          }  ā  \withmacron          a
     \chr {k line below      }  ḵ  \withlinebelow       k
     \chr {c cedilla         }  ç  \withcedilla         c
-    \chr {s comma below     }  ş  \withcommabelow      s
+    \chr {s comma below     }  ș  \withcommabelow      s
     \chr {z hook below      }  ȥ  \withhookbelow       z
     \chr {a hook            }  ả  \withhook            a
     \chr {a ring            }  å  \withring            a

@@ -229,6 +229,27 @@ static void nodelib_push_attribute_data(lua_State* L, halfword n)
     }
 }
 
+/*tex maybe: Floyd's cycle finding: */
+
+static int nodelib_direct_is_loop(lua_State *L)
+{
+    halfword head = nodelib_valid_direct_from_index(L, 1);
+    if (head) {
+        halfword slow = head;
+        halfword fast = head; 
+        while (slow && fast && node_next(fast)) {
+            slow = node_next(slow);
+            fast = node_next(node_next(fast));
+            if (slow == fast) { 
+                lua_pushboolean(L, 1);
+                return 1;
+            }
+        }
+    }
+    lua_pushboolean(L, 0);
+    return 0;
+}
+
 /*tex Another shortcut: */
 
 inline static singleword nodelib_getdirection(lua_State *L, int i)
@@ -1066,7 +1087,7 @@ static int nodelib_direct_getpenalty(lua_State *L)
     if (n) {
         switch (node_type(n)) {
             case penalty_node:
-                lua_pushinteger(L, penalty_amount(n));
+                lua_pushinteger(L, lua_toboolean(L, 2) ? penalty_tnuoma(n) : penalty_amount(n));
                 break;
             case disc_node:
                 lua_pushinteger(L, disc_penalty(n));
@@ -5360,7 +5381,7 @@ static int nodelib_direct_endofmath(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
-        if (node_type(n) == math_node && node_subtype(n) == end_inline_math) {
+        if (node_type(n) == math_node && (node_subtype(n) == end_inline_math || node_subtype(n) == end_broken_math)) {
             lua_pushinteger(L, n);
             return 1;
         } else {
@@ -5370,9 +5391,11 @@ static int nodelib_direct_endofmath(lua_State *L)
                 if (n && node_type(n) == math_node) { 
                     switch (node_subtype(n)) { 
                         case begin_inline_math:
+                        case begin_broken_math:
                             ++level;
                             break;
                         case end_inline_math:
+                        case end_broken_math:
                             --level;
                             if (level > 0) {
                                 break;
@@ -9590,46 +9613,7 @@ static int nodelib_direct_getnormalizedline(lua_State *L)
             }
             current = node_next(current);
         }
-        /* The next two loops can be integrated in the above but for now we keep this . */
-        current = head;
-        while (current) {
-            if (node_type(current) == glue_node) {
-                switch (node_subtype(current)) {
-                    case left_skip_glue:
-                    case par_fill_left_skip_glue:
-                    case par_init_left_skip_glue:
-                    case indent_skip_glue:
-                    case left_hang_skip_glue:
-                        first = current;
-                        current = node_next(current);
-                        break;
-                    default:
-                        current = null;
-                        break;
-                }
-            } else {
-                current = null;
-            }
-        }
-        current = tail;
-        while (current) {
-            if (node_type(current) == glue_node) {
-                switch (node_subtype(current)) {
-                    case right_skip_glue:
-                    case par_fill_right_skip_glue:
-                    case par_init_right_skip_glue:
-                    case right_hang_skip_glue:
-                        last = current;
-                        current = node_prev(current);
-                        break;
-                    default:
-                        current = null;
-                        break;
-                }
-            } else {
-                current = null;
-            }
-        }
+        tex_get_line_content_range(head, tail, &first, &last); 
         lua_createtable(L, 0, 14); /* we could add some more */
         lua_push_integer_at_key(L, leftskip, ls);
         lua_push_integer_at_key(L, rightskip, rs);
@@ -10512,6 +10496,8 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "getusedattributes",       nodelib_direct_getusedattributes      },
     { "show",                    nodelib_direct_show                   },
     { "serialized",              nodelib_direct_serialized             },
+    /* maybe */
+    { "isloop",                  nodelib_direct_is_loop                },  
     /* dual node and direct */
     { "type",                    nodelib_hybrid_type                   },
     { "types",                   nodelib_shared_types                  },
@@ -11144,6 +11130,7 @@ int lmt_par_pass_callback(
                                     properties->tolerance = v;
                                 }
                                 lmt_linebreak_state.threshold = properties->tolerance;
+                                lmt_linebreak_state.global_threshold = lmt_linebreak_state.threshold;
                                 get_integer_par(v, linepenalty, 0);
                                 if (v) {
                                     properties->line_penalty = v;

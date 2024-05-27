@@ -138,8 +138,9 @@
   {\cdef\currentbar{#1}%
    \advanceby\c_node_rules_level\plusone
    \usebarstyleandcolor\c!foregroundstyle\c!foregroundcolor
-   \edef\p_node_color {\barparameter\c!color}% todo
-   \edef\p_node_offset{\barparameter\c!offset}%
+   \edef\p_node_color   {\barparameter\c!color}% todo
+   \edef\p_node_offset  {\barparameter\c!offset}%
+   \edef\p_node_continue{\barparameter\c!continue}%
    % better is a dedicated key: up/down .. todo
    \scratchcounter\barparameter\c!method\relax
    \ifnum\scratchcounter=\plustwo
@@ -149,9 +150,13 @@
    \else
      \advanceby\ifdim\p_node_offset\onepoint<\zeropoint\c_node_rules_down\else\c_node_rules_up\fi\plusone
    \fi
+   \ifx\p_node_continue\v!always
+      \attribute\runningtextattribute \minusone
+      \let\p_node_continue\v!yes % not needed
+   \fi
    \clf_setrule
          method        \scratchcounter
-         continue      {\barparameter\c!continue}%
+         continue      {\p_node_continue}%
          rulethickness {\barparameter\c!rulethickness}%
          mp            {\includeMPgraphic{\barparameter\c!mp}}
          ma            \c_attr_colormodel
@@ -311,6 +316,14 @@
    \c!continue=\v!yes,
    \c!order=\v!background,
    \c!color=lightgray]
+
+\definebar
+  [mathbackground]
+  [backgroundbar]
+  [\c!continue=\v!always,
+   \c!max=1,
+   \c!height=\strutht,
+   \c!depth=\strutdp]
 
 % \setupbar[\v!overstrike][continue=all]
 

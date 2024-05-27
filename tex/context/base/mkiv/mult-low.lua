@@ -14,6 +14,7 @@ return {
         "zerocount", "minusone", "minustwo", "plusone", "plustwo", "plusthree", "plusfour", "plusfive",
         "plussix", "plusseven", "pluseight", "plusnine", "plusten", "pluseleven", "plustwelve", "plussixteen",
         "plusfifty", "plushundred", "plusonehundred", "plustwohundred", "plusfivehundred",
+        "plusonehundredtwentyfive", "plustwohundredfifty",
         "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard", "maxcardminusone", "maxiterator",
         "plusonethousand", "plustwothousand", "plusthreethousand", "plusfourthousand", "plusfivethousand",
         "plussixthousand", "plusseventhousand", "pluseightthousand", "plusninethousand",
@@ -223,7 +224,7 @@ return {
         --
         "normalizelinenormalizecode", "parindentskipnormalizecode", "swaphangindentnormalizecode", "swapparsshapenormalizecode",
         "breakafterdirnormalizecode", "removemarginkernsnormalizecode", "clipwidthnormalizecode", "flattendiscretionariesnormalizecode",
-        "discardzerotabskipsnormalizecode", "flattenhleadersnormalizecode",
+        "discardzerotabskipsnormalizecode", "flattenhleadersnormalizecode", "balanceinlinemathnormalizecode",
         --
         "normalizeparnormalizeparcode", "flattenvleadersnormalizeparcode", "limitprevgrafnormalizeparcode",
         --
@@ -737,5 +738,7 @@ return {
         "ignorefile",
         --
         "boxwidth", "boxheight", "boxdepth",
+        --
+        "shiftparshape", "rotateparshape",
     }
 }

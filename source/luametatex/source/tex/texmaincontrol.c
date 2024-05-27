@@ -421,6 +421,10 @@ static void tex_aux_run_space(void) {
             tex_tail_append(tex_new_glue_node(zero_glue, zero_space_skip_glue)); /* todo: subtype, zero_space_glue? */
             glue_font(cur_list.tail) = cur_font_par;
             break;
+        case 3:
+            tex_aux_adjust_space_factor(cur_chr);
+            tex_tail_append(tex_new_char_node(glyph_unset_subtype, cur_font_par, space_char_par, 1));
+            break;
         default:
             /*tex
                 The tradional treatment. A difference with other \TEX's is that we store the spacing
@@ -4826,6 +4830,7 @@ static void tex_aux_set_specification(int a)
     quarterword num = (quarterword) internal_specification_number(loc);
     halfword p = null;
     halfword count = tex_scan_integer(1, NULL);
+    int pairs = 0;
     switch (num) { 
         case par_shape_code: 
             if (count > 0) {
@@ -5105,6 +5110,19 @@ static void tex_aux_set_specification(int a)
               DONE:;
             }
             break;
+        case broken_penalties_code: 
+            if (count > 1) {
+                tex_handle_error(
+                    normal_error_type,
+                    "count has to be 1 for \\brokenpenalties",
+                    NULL
+                );
+                count = 1;
+            }
+        case widow_penalties_code: 
+        case display_widow_penalties_code: 
+        case club_penalties_code: 
+            pairs = 1;
         default: 
             if (count > 0) {
                 halfword options = 0;
@@ -5112,7 +5130,13 @@ static void tex_aux_set_specification(int a)
                     options = tex_scan_integer(0, NULL);
                 }
                 p = tex_new_specification_node(count, num, options);
+                if (! pairs) { 
+                    tex_reset_specification_option(p, specification_option_double);
+                }
                 for (int j = 1; j <= count; j++) {
+                    if (specification_double(p)) {
+                        tex_set_specification_nepalty(p, j, tex_scan_integer(0, NULL)); 
+                    }
                     tex_set_specification_penalty(p, j, tex_scan_integer(0, NULL)); /*tex penalty values */
                 }
             }
@@ -6184,7 +6208,7 @@ static int tex_aux_set_some_item(void)
             lmt_page_builder_state.last_glue = tex_scan_glue(glue_val_level, 1, 0);
             return 1;
         case lastboundary_code:
-            lmt_page_builder_state.last_penalty = tex_scan_integer(1, NULL);
+            lmt_page_builder_state.last_boundary = tex_scan_integer(1, NULL);
             return 1;
         case last_node_type_code:
             lmt_page_builder_state.last_node_type = tex_scan_integer(1, NULL);
@@ -7468,6 +7492,7 @@ void tex_initialize_variables(void)
         ex_hyphen_char_par = '-';
         escape_char_par = '\\';
         end_line_char_par = '\r';
+        space_char_par = ' ';
         output_box_par = default_output_box;
         adjust_spacing_step_par = -1;
         adjust_spacing_stretch_par = -1;

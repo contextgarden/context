@@ -1,3 +1,4 @@
+
 % language=us runpath=texruns:manuals/primitives
 
 \setupexternalfigures
@@ -6,14 +7,6 @@
 \enableexperiments[fonts.compact]
 \enableexperiments[fonts.accurate]
 
-\profilemacro\def
-\profilemacro\edef
-\profilemacro\cdef
-\profilemacro\catcodetable
-\profilemacro\catcodetable
-% \profilemacro\multiplyby
-% \profilemacro\divideby
-
 % \tracepositions
 
 % The usual time stamp. This written while listening intermized to Fish (just ran
@@ -21,6 +14,11 @@
 % because this all is boring checking out Sarah Coopers channel for new DT syncs
 % every few hours. (Picking up writing this manual in 2023 makes me realize how
 % time flies.)
+%
+% And now it's 2024, so time for a new time (musical) stamp when adding a few
+% more descriptions after watching Tyler Visser perform Fear Inoculum in one take
+% (think Pneuma): great to discover this in a time of artificial music popping up:
+% an amazing drum only version; there is also an older equally amazing version.
 
 % When you feel unhappy about the lack of detail in this manual, just keep in mind
 % that you cannot really demand anything from volunteers: just hope for more (or
@@ -34,6 +32,57 @@
 % ignorerest
 
 % \enableexperiments[fonts.compact]
+
+% \string\Uabove               \quad:\quad\meaning\mathabove               \par
+% \string\Uabovewithdelims     \quad:\quad\meaning\mathabovewithdelims     \par
+% \string\Uatop                \quad:\quad\meaning\mathatop                \par
+% \string\Uatopwithdelims      \quad:\quad\meaning\mathatopwithdelims      \par
+% \string\Udelcode             \quad:\quad\meaning\mathdelcode             \par
+% \string\Udelimited           \quad:\quad\meaning\mathdelimited           \par
+% \string\Udelimiter           \quad:\quad\meaning\mathdelimiter           \par %
+% \string\Udelimiterover       \quad:\quad\meaning\mathdelimiterover       \par
+% \string\Udelimiterunder      \quad:\quad\meaning\mathdelimiterunder      \par
+% \string\Uhextensible         \quad:\quad\meaning\mathhextensible         \par
+% \string\Uleft                \quad:\quad\meaning\mathleft                \par
+% \string\Umiddle              \quad:\quad\meaning\mathmiddle              \par %
+% \string\Uoperator            \quad:\quad\meaning\mathoperator            \par %
+% \string\Uover                \quad:\quad\meaning\mathover                \par %
+% \string\Uoverdelimiter       \quad:\quad\meaning\mathoverdelimiter       \par
+% \string\Uoverwithdelims      \quad:\quad\meaning\mathoverwithdelims      \par
+% \string\Uradical             \quad:\quad\meaning\mathradical             \par %
+% \string\Uright               \quad:\quad\meaning\mathright               \par
+% \string\Uroot                \quad:\quad\meaning\mathroot                \par
+% \string\Urooted              \quad:\quad\meaning\mathrooted              \par
+% \string\Uskewed              \quad:\quad\meaning\mathskewed              \par
+% \string\Uskewedwithdelims    \quad:\quad\meaning\mathskewedwithdelims    \par
+% \string\Ustartdisplaymath    \quad:\quad\meaning\mathstartdisplaymath    \par
+% \string\Ustartmath           \quad:\quad\meaning\mathstartmath           \par
+% \string\Ustartmathmode       \quad:\quad\meaning\mathstartmathmode       \par
+% \string\Ustopdisplaymath     \quad:\quad\meaning\mathstopdisplaymath     \par
+% \string\Ustopmath            \quad:\quad\meaning\mathstopmath            \par
+% \string\Ustopmathmode        \quad:\quad\meaning\mathstopmathmode        \par
+% \string\Ustretched           \quad:\quad\meaning\mathstretched           \par
+% \string\Ustretchedwithdelims \quad:\quad\meaning\mathstretchedwithdelims \par
+% \string\Uunderdelimiter      \quad:\quad\meaning\mathunderdelimiter      \par
+% \string\Uvextensible         \quad:\quad\meaning\mathvextensible         \par
+
+% Umathaccent
+% Umathchar
+% Umathchardef
+
+% Umathnolimitsubfactor
+% Umathnolimitsupfactor
+% Umathoverbarkern
+% Umathoverbarrule
+% Umathoverbarvgap
+% Umathoverlinevariant
+% Umathspaceafterscript
+% Umathspacebeforescript
+% Umathspacebetweenscript
+% Umathunderbarkern
+% Umathunderbarrule
+% Umathunderbarvgap
+% Umathunderlinevariant
 
 \usemodule[system-syntax]
 \usemodule[system-units]
@@ -87,7 +136,8 @@
 \protected\def\prm#1%
 % {\doifmode{*bodypart}{\index{\tex{#1}}}\tex{#1}}
 % {\ifmode{*bodypart}\index{\tex{#1!\string#1!}}\fi\tex{#1}}
-  {\ifmode{*bodypart}\index{\tex{#1}}\fi\tex{#1}}
+  {\ctxlua{if string.find("#1","^U") then context.writestatus("!!!!!!","#1") end}%
+   \ifmode{*bodypart}\index{\tex{#1}}\fi\tex{#1}}
 
 \protected\def\stx#1%
   {\ctxlua{moduledata.engine.specification("#1")}} % only for checking
@@ -1785,6 +1835,15 @@ Returns or sets the vertical offset of the given box.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {brokenpenalties}}]
+
+Together with \prm {widowpenalties} and \prm {clubpenalties} this one permits
+discriminating left- and right page (doublesided) penalties. For this one needs
+to also specify \prm {options 4} and provide penalty pairs. Where the others
+accept multiple pairs, this primitives expects a count value one.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {brokenpenalty}}]
 
 This penalty is added after a line that ends with a hyphen; it can help to
@@ -2256,6 +2315,9 @@ practice the value only has meaning when you know at what outer level your neste
 loop started.
 
 \stopnewprimitive
+
+% \startnewprimitive[title={\prm {currentlysetmathstyle}}]
+% \stopnewprimitive
 
 \startnewprimitive[title={\prm {currentmarks}}]
 
@@ -2736,20 +2798,21 @@ This is slightly more efficient variant of \prm {divide} that doesn't look for
 
 \stopnewprimitive
 
-\startnewprimitive[title={\prm {doubleadjdemerits}}]
-
-This penalty will be added to the penalty assigned to a breakpoint that results
-in two incompatible lines (in \LUAMETATEX\ we can be more granular with respect
-to compatible lines and this concerns a larger delta).
-
-\stopnewprimitive
-
 \startoldprimitive[title={\prm {doublehyphendemerits}}]
 
 This penalty will be added to the penalty assigned to a breakpoint that results
 in two lines ending with a hyphen.
 
 \stopoldprimitive
+
+\startnewprimitive[title={\prm {doublepenaltymode}}]
+
+When set to one this parameter signals the backend to use the alternative (left
+side) penalties of the pairs set on \prm {widowpenalties}, \prm {clubpenalties}
+and \prm {brokenpenalties}. For more information on this you can consult manuals
+(and articles) that come with \CONTEXT.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {dp}}]
 
@@ -3698,6 +3761,24 @@ Language id's start at zero, which makes it the first valid language. You can se
 this parameter to indicate the first language id that is actually a language. The
 current value is \the \firstvalidlanguage, so lower values will not trigger
 hyphenation.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {fitnessdemerits}}]
+
+We can have more fitness classes than traditional \TEX\ that has \quote {very
+loose}, \quote {loose}, \quote {decent} and \quote {tight}. In \CONTEXT\ we have
+\quote {veryloose}, \quote {loose}, \quote {almostloose}, \quote {barelyloose},
+\quote {decent}, \quote {barelytight}, \quote {almosttight}, \quote {tight} and
+\quote {verytight}. Although we can go up to 31 this is already more than enough.
+The default is the same as in regular \TEX.
+
+The \prm {fitnessdemerits} can be used to set the criteria and like other
+specification primitives (like \prm {parshape} and \prm {widowpenalties}, it
+expects a count. The criteria come in pairs because we can go up or down in the
+chain (getting better or worse). The criterium used when we go from one to
+another is the sum of the given values. The rationale behind this approach is
+explained in articles, presentations and manuals.
 
 \stopnewprimitive
 
@@ -7008,26 +7089,6 @@ because scripts are bound to these elements so looking back just sees the elemen
 
 \stopoldprimitive
 
-\startnewprimitive[title={\prm {linebreakcriterion}}]
-
-The par builder has a concept of \quote {compatible} lines, and has categories
-for that: loose, decent and tight. In \LUAMETATEX\ we also have semi|-|loose and
-semi|-|tight as intermediate categories. This parameter can set the ranges for
-those, using four double bytes:
-
-\starttabulate[|T|l|c|]
-\NC 0x7F000000 \NC semi tight \NC 12 \NC \NR
-\NC 0x007F0000 \NC decent     \NC 12 \NC \NR
-\NC 0x00007F00 \NC semi loose \NC 12 \NC \NR
-\NC 0x0000007F \NC loose      \NC 99 \NC \NR
-\stoptabulate
-
-The (decimal) default values are given in the last column. Don't expect a big
-influence from changing these and this option is mostly a side effect of
-experiments.
-
-\stopnewprimitive
-
 \startnewprimitive[title={\prm {linebreakoptional}}]
 
 This selects the optional text range that is to be used. Optional content is
@@ -8658,6 +8719,9 @@ is: any class). In display mode the location defaults to above and below.
 
 \stopoldprimitive
 
+% \startnewprimitive[title={\prm {nomathchar}}]
+% \stopnewprimitive
+
 \startoldprimitive[title={\prm {nonscript}}]
 
 This prevents \TEX\ from adding inter|-|atom glue at this spot in script or
@@ -8752,12 +8816,21 @@ For now we just mention the few options available. It is also worth mentioning t
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {noscript}}]
+
+In math we can have multiple pre- and postscript. These get typeset in pairs and
+this primitive can be used to skip one. More about multiple scripts (and indices)
+can be found in the \CONTEXT\ math manual.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {nospaces}}]
 
 When \prm {nospaces} is set to~1 no spaces are inserted, when its value is~2 a
 zero space is inserted. The default value is~0 which means that spaces become
 glue with properties depending on the font, specific parameters and|/|or space
-factors determined preceding characters.
+factors determined preceding characters. A value of~3 will inject a glyph node
+with code \prm {spacechar}.
 
 \stopnewprimitive
 
@@ -10006,6 +10079,12 @@ the inter atom spacing variables.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {resetlocalboxes}}]
+
+Its purpose should be clear from the name.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {resetmathspacing}}]
 
 This initializes all parameters to their initial values.
@@ -11090,6 +11169,13 @@ The list of parameters that gets reset after a paragraph is longer than for
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {spacechar}}]
+
+When \prm {nospaces} is set to~3 a glyph node with the character value of
+this parameter is injected.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {spacefactor}}]
 
 The space factor is a somewhat complex feature. When during scanning a character
@@ -11436,6 +11522,13 @@ named \type {\Uchar}.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {toddlerpenalty}}]
+
+This penalty controls line breaks after a single glyph. A high value prevents
+single character at the end of a line.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {todimension}}]
 
 \startbuffer
@@ -11732,6 +11825,13 @@ The extended expression commands like \prm {numexpression} and \prm
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {tracingfitness}}]
+
+Because we have more fitness classes we also have (need) a (bit) more detailed
+tracing.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {tracingfullboxes}}]
 
 When set to a positive value the box will be shown in case of an overfull box.
@@ -11784,6 +11884,14 @@ set:
 
 At various stages the lists being processed can be shown. This is mostly an
 option for developers.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {tracingloners}}]
+
+With loners we mean \quote {widow} and \quote {club} lines. This tracer can be
+handy when \prm {doublepenaltymode} is set and facing pages have different
+penalty values.
 
 \stopnewprimitive
 

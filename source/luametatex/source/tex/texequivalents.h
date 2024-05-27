@@ -389,6 +389,7 @@ typedef enum specification_codes {
     club_penalties_code,          /*tex penalties for creating club lines */
     widow_penalties_code,         /*tex penalties for creating widow lines */
     display_widow_penalties_code, /*tex ditto, just before a display */
+    broken_penalties_code,
     orphan_penalties_code,
     fitness_demerits_code,
     math_forward_penalties_code,
@@ -508,7 +509,8 @@ typedef enum int_codes {
     double_hyphen_demerits_code,        /*tex demerits for double hyphen break */
     final_hyphen_demerits_code,         /*tex demerits for final hyphen break */
     adj_demerits_code,                  /*tex demerits for adjacent incompatible lines with distance > 1 */
- /* mag_code,                        */ /*tex magnification ratio */
+    double_penalty_mode_code,           /*tex force alternative widow, club, broken penalties */
+    /* mag_code,                        */ /*tex magnification ratio */
     delimiter_factor_code,              /*tex ratio for variable-size delimiters */
     looseness_code,                     /*tex change in number of lines for a paragraph */
     time_code,                          /*tex current time of day */
@@ -549,6 +551,7 @@ typedef enum int_codes {
     tracing_lists_code,   
     tracing_passes_code,   
     tracing_fitness_code,   
+    tracing_loners_code,                /*tex show widow and club penalties calculations */
  // uc_hyph_code,                       /*tex hyphenate words beginning with a capital letter */
     output_penalty_code,                /*tex penalty found at current page break */
     max_dead_cycles_code,               /*tex bound on consecutive dead cycles of output */
@@ -557,6 +560,7 @@ typedef enum int_codes {
     global_defs_code,                   /*tex override |\global| specifications */
     family_code,                        /*tex current family */
     escape_char_code,                   /*tex escape character for token output */
+    space_char_code,                    /*tex space character */
     default_hyphen_char_code,           /*tex value of |\hyphenchar| when a font is loaded */
     default_skew_char_code,             /*tex value of |\skewchar| when a font is loaded */
  // end_line_char_code,                 /*tex character placed at the right end of the buffer */
@@ -1367,6 +1371,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define protrude_chars_par               integer_parameter(protrude_chars_code)
 # define line_penalty_par                 integer_parameter(line_penalty_code)
 # define last_line_fit_par                integer_parameter(last_line_fit_code)
+# define double_penalty_mode_par          integer_parameter(double_penalty_mode_code)
 # define double_hyphen_demerits_par       integer_parameter(double_hyphen_demerits_code)
 # define final_hyphen_demerits_par        integer_parameter(final_hyphen_demerits_code)
 # define inter_line_penalty_par           integer_parameter(inter_line_penalty_code)
@@ -1430,6 +1435,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define end_line_char_par                integer_parameter(end_line_char_code)
 # define new_line_char_par                integer_parameter(new_line_char_code)
 # define escape_char_par                  integer_parameter(escape_char_code)
+# define space_char_par                   integer_parameter(space_char_code)
                                           
 # define end_line_char_inactive           ((end_line_char_par < 0) || (end_line_char_par > max_endline_character))
 
@@ -1537,6 +1543,7 @@ typedef enum shaping_penalties_mode_bits {
 # define club_penalties_par              specification_parameter(club_penalties_code)
 # define widow_penalties_par             specification_parameter(widow_penalties_code)
 # define display_widow_penalties_par     specification_parameter(display_widow_penalties_code)
+# define broken_penalties_par            specification_parameter(broken_penalties_code)
 # define orphan_penalties_par            specification_parameter(orphan_penalties_code)
 # define fitness_demerits_par            specification_parameter(fitness_demerits_code)
 # define math_forward_penalties_par      specification_parameter(math_forward_penalties_code)
@@ -1592,6 +1599,7 @@ typedef enum shaping_penalties_mode_bits {
 # define tracing_lists_par               integer_parameter(tracing_lists_code)
 # define tracing_passes_par              integer_parameter(tracing_passes_code)
 # define tracing_fitness_par             integer_parameter(tracing_fitness_code)
+# define tracing_loners_par              integer_parameter(tracing_loners_code)
 
 /*tex 
     This tracer is mostly there for debugging purposes. Therefore what gets traced and how might
@@ -1698,6 +1706,7 @@ typedef enum normalize_line_mode_bits {
     flatten_discretionaries_mode = 0x0080,
     discard_zero_tab_skips_mode  = 0x0100,
     flatten_h_leaders_mode       = 0x0200,
+    balance_inline_math_mode     = 0x0400,
 } normalize_line_mode_bits;
 
 typedef enum normalize_par_mode_bits {
@@ -1855,6 +1864,7 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 # define update_tex_club_penalties(v)          tex_eq_define(internal_specification_location(club_penalties_code),          specification_reference_cmd, v)
 # define update_tex_widow_penalties(v)         tex_eq_define(internal_specification_location(widow_penalties_code),         specification_reference_cmd, v)
 # define update_tex_display_widow_penalties(v) tex_eq_define(internal_specification_location(display_widow_penalties_code), specification_reference_cmd, v)
+# define update_tex_broken_penalties(v)        tex_eq_define(internal_specification_location(broken_penalties_code),        specification_reference_cmd, v)
 # define update_tex_orphan_penalties(v)        tex_eq_define(internal_specification_location(orphan_penalties_code),        specification_reference_cmd, v)
 # define update_tex_fitness_demerits(v)        tex_eq_define(internal_specification_location(fitness_demerits_code),        specification_reference_cmd, v)
 

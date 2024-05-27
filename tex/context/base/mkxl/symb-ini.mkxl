@@ -75,13 +75,29 @@
 %D We don't use the commandhandler as symbols have their own subsystem for resolving
 %D values.
 
+% \permanent\tolerant\protected\def\definesymbol[#1]#*[#2]#*[#3]%
+%   {\ifparameter#3\or
+%      \defcsname\??symbol#1:#2\endcsname{#3}%
+%      \ifempty{#1}\else\addvalue{\??symbolset#1}{#2}\fi
+%    \else
+%      \defcsname\??symbol\m_symb_current_set:#1\endcsname{#2}%
+%      \addvalue{\??symbolset\m_symb_current_set}{#1}%
+%    \fi}
+
 \permanent\tolerant\protected\def\definesymbol[#1]#*[#2]#*[#3]%
   {\ifparameter#3\or
      \defcsname\??symbol#1:#2\endcsname{#3}%
-     \ifempty{#1}\else\addvalue{\??symbolset#1}{#2}\fi
+     \ifempty{#1}\else\symb_register{#1}{#2}\fi
    \else
      \defcsname\??symbol\m_symb_current_set:#1\endcsname{#2}%
-     \addvalue{\??symbolset\m_symb_current_set}{#1}%
+     \symb_register{\m_symb_current_set}{#1}%
+   \fi}
+
+\permanent\tolerant\protected\def\symb_register#1#2%
+  {\ifcsname\??symbolset#1\endcsname
+     \normalexpanded{\addtocommalist{#2}\expandafter\noexpand\lastnamedcs}%
+   \else
+     \edefcsname\??symbolset#1\endcsname{#2}%
    \fi}
 
 \permanent\protected\def\doifelseinsymbolset#1#2{\ifcsname\??symbol#1:#2\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}

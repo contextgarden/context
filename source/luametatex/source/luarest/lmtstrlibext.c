@@ -2,13 +2,6 @@
     See license.txt in the root of this project.
 */
 
-/*tex
-
-    The relative ordering of the header files is important here, otherwise some of the defines that
-    are needed for lua_sdump come out wrong.
-
-*/
-
 /* todo: byteconcat and utf concat (no separator) */
 
 # include "luametatex.h"

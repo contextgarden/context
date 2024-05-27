@@ -835,8 +835,6 @@
 \definesystemattribute[mathfencing]    [public]
 \definesystemattribute[mathintervals]  [public]
 
-\definesystemattribute[displaymath]    [public]
-
 % \mathflattenmode\numexpr
 %     \ordmathflattencode
 %    +\binmathflattencode
@@ -855,7 +853,6 @@
 
 \appendtoks
     \c_attr_mathmode   \plusone
-    \c_attr_displaymath\plusone
 \to \everybeforedisplayformula
 
 % defined at lua end \permanent\protected\def\resetmathattributes{\resetmathattributes}

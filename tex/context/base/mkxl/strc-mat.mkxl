@@ -794,12 +794,69 @@
      \strc_formulas_display_space_before_normal
    \fi}
 
+\lettonothing\strc_math_qed_indeed
+
 \def\strc_formulas_display_space_after
-  {\ifconditional\c_strc_formulas_depth
+  {\par
+   \strc_math_qed_indeed
+   \ifconditional\c_strc_formulas_depth
      \strc_formulas_display_space_after_depth
    \else
      \strc_formulas_display_space_after_normal
    \fi}
+
+% experiment
+
+%D \starttyping
+%D \setmathproofsymbol{\symbol[square]}
+%D
+%D \defineenumeration
+%D   [proof]
+%D   [alternative=serried,
+%D    width=fit,
+%D    distance=1ex,
+%D    text=Proof,
+%D    number=no,
+%D    headstyle=italic,
+%D    headcommand=\groupedcommand{}{.},
+%D    closesymbol=\mathqed]
+%D \stoptyping
+
+\newconditional\c_strc_math_qed
+
+\permanent\protected\def\strc_math_qed
+  {\global\settrue\c_strc_math_qed}
+
+\appendtoks
+    \global\setfalse\c_strc_math_qed
+    \aliased\let\qed\strc_math_qed
+\to \everybeforedisplayformula
+
+\permanent\protected\def\strc_math_qed_indeed
+  {\ifconditional\c_strc_math_qed
+     \ifconditional\csname\??constructionclosesymbol\currentconstruction\endcsname
+        \blank[\v!samepage]%
+        \strut\strc_constructions_close_symbol_place
+        \par
+     \fi
+   \fi}
+
+\permanent\tolerant\protected\def\qedhere[#1]%
+  {\ifconditional\csname\??constructionclosesymbol\currentconstruction\endcsname
+     \global\csname\??constructionclosesymbol\currentconstruction\endcsname\conditionalfalse
+     \edef\p_strc_constructions_closesymbol{\constructionparameter\c!closesymbol}%
+     \ifempty\p_strc_constructions_closesymbol \else
+       \normalexpanded
+         {\texthere[\ifparameter#1\or#1\else\v!right\fi]}%
+         {\p_strc_constructions_closesymbol}%
+     \fi
+   \fi}
+
+\definesymbol[mathqed][\symbol{square}]
+
+\permanent\protected\def\mathqed{\symbol{mathqed}}
+
+% done
 
 % \newtoks\everybeforedisplay
 % \appendtoks\page_sides_check_floats_indeed\to\everybeforedisplay
@@ -1099,7 +1156,7 @@
 
 \def\strc_math_text_here_before#1%
   {\vadjust pre \bgroup
-     \hbox to \displaywidth \bgroup
+     \hbox to \d_strc_formulas_display_width \bgroup
         \strut
         \kern\leftskip
          #1\hss
@@ -1110,7 +1167,7 @@
 
 \def\strc_math_text_here_after#1%
   {\vadjust \bgroup
-     \hbox to \displaywidth \bgroup
+     \hbox to \d_strc_formulas_display_width \bgroup
         \strut
         \kern\leftskip
         #1\hss
@@ -1405,9 +1462,7 @@
    \edef\p_interlinespace{\formulaparameter\c!interlinespace}%
    \ifempty\p_interlinespace\else\baselineskip\p_interlinespace\fi
    \global\c_strc_math_aligned_here\conditionalfalse
-   \hsize\d_strc_formulas_display_width
-   \displaywidth\hsize
-   \displayindent\zeropoint}
+   \hsize\d_strc_formulas_display_width}
 
 \def\strc_math_analyze_box
   {\clf_handlemathhang
@@ -1515,7 +1570,7 @@
 
 \def\strc_formulas_start_side_box
   {\ifzeropt\d_strc_math_side_width\else
-     \advance\displaywidth-\d_strc_math_side_width
+     \advance\d_strc_formulas_display_width-\d_strc_math_side_width
      \ifnum\c_page_sides_checks_done<\plustwo
        % see \strc_formulas_display_space_before_normal
        \vkern-\strutht % quite a hack
@@ -1726,9 +1781,8 @@
       \setupformula[\c!width=\d_strc_formulas_ _width,#1]%
       \d_strc_formulas_display_width\formulaparameter\c!width\relax
    \fi
-   \vcenter \bgroup
-   \hsize \d_strc_formulas_display_width
-   \displaywidth\d_strc_formulas_display_width
+   \vcenter\bgroup
+   \hsize\d_strc_formulas_display_width
    \raggedcenter
    \dostarttaggednodetail\t!formulacontent
    \csname\e!start\formulaparameter\c!alternative\v!formula\endcsname}

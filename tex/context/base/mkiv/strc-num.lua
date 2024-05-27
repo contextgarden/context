@@ -306,29 +306,29 @@ end
 -- depends on when incremented, before or after (driven by d.offset)
 
 function counters.previous(name,n)
-    return allocate(name,n).previous
+    return allocate(name,n or 1).previous
 end
 
 function counters.next(name,n)
-    return allocate(name,n).next
+    return allocate(name,n or 1).next
 end
 
 counters.prev = counters.previous
 
 function counters.currentvalue(name,n)
-    return allocate(name,n).number
+    return allocate(name,n or 1).number
 end
 
 function counters.first(name,n)
-    return allocate(name,n).first
+    return allocate(name,n or 1).first
 end
 
 function counters.last(name,n)
-    return allocate(name,n).last
+    return allocate(name,n or 1).last
 end
 
 function counters.subs(name,n)
-    return counterdata[name].data[n].subs or 0
+    return counterdata[name].data[n or 1].subs or 0
 end
 
 local function setvalue(name,tag,value)
@@ -395,7 +395,7 @@ end
 local function set(name,n,value)
     local cd = counterdata[name]
     if cd then
-        local d = allocate(name,n)
+        local d = allocate(name,n or 1)
         local number = value or 0
         d.number = number
         d.own = nil
@@ -424,7 +424,7 @@ end
 local function setown(name,n,value)
     local cd = counterdata[name]
     if cd then
-        local d = allocate(name,n)
+        local d = allocate(name,n or 1)
         d.own = value
         d.number = (d.number or d.start or 0) + (d.step or 0)
         local level = cd.level
@@ -444,10 +444,10 @@ local function restart(name,n,newstart,noreset)
     if cd then
         newstart = tonumber(newstart)
         if newstart then
-            local d = allocate(name,n)
+            local d = allocate(name,n or 1)
             d.start = newstart
             if not noreset then  -- why / when needed ?
-                reset(name,n) -- hm
+                reset(name,n or 1) -- hm
             end
         end
     end
@@ -480,7 +480,7 @@ local function add(name,n,delta)
     local cd = counterdata[name]
     if cd and (cd.state == v_start or cd.state == "") then
         local data = cd.data
-        local d = allocate(name,n)
+        local d = allocate(name,n or 1)
         d.number = (d.number or d.start or 0) + delta*(d.step or 0)
      -- d.own = nil
         local level = cd.level

@@ -142,8 +142,8 @@
        {\finalizeshipoutbox\shipoutscratchbox
         \box\shipoutscratchbox}%
    \fi
-   \setnextrealpageno       % so this comes before \everyaftershipout so in fact:
-   \expand\everyaftershipout   % at this point we're already on the next realpage
+   \setnextrealpageno         % so this comes before \everyaftershipout so in fact:
+   \expand\everyaftershipout  % at this point we're already on the next realpage
    \ifcase\c_page_boxes_flush_n\else
      \page_boxes_flush_after
    \fi}

@@ -658,7 +658,9 @@
 \immutable\integerdef\plusninetynine            99  % also fitness value
 \immutable\integerdef\plushundred              100
 \immutable\integerdef\plusonehundred           100
+\immutable\integerdef\plusonehundredtwentyfive 125
 \immutable\integerdef\plustwohundred           200
+\immutable\integerdef\plustwohundredfifty      250
 \immutable\integerdef\plusfivehundred          500
 \immutable\integerdef\pluscxxvii               127
 \immutable\integerdef\pluscxxviii              128

@@ -4279,7 +4279,8 @@ void tex_run_math_fraction(void)
                 ruledone = 1;
               OPTIONS:
                 while (1) {
-                    switch (tex_scan_character("ackefhnpstvACKEFHNPSTV", 0, 1, 0)) {
+                 // switch (tex_scan_character("ackefhnpstvACKEFHNPSTV", 0, 1, 0)) {
+                    switch (tex_scan_character("acefhnpstvACEFHNPSTV", 0, 1, 0)) {
                         case 'a': case 'A':
                             if (tex_scan_mandate_keyword("attr", 1)) {
                                 attrlist = tex_scan_attribute(attrlist);
@@ -4299,11 +4300,12 @@ void tex_run_math_fraction(void)
                                 options |= noad_option_exact;
                             }
                             break;
-                        case 'k': case 'K':
-                            if (tex_scan_mandate_keyword("keepbase", 1)) {
-                                options |= noad_option_keep_base;
-                            }
-                            break;
+                     // case 'k': case 'K':
+                     //     /* was used for skewed fractions */
+                     //     if (tex_scan_mandate_keyword("keepbase", 1)) {
+                     //         options |= noad_option_keep_base;
+                     //     }
+                     //     break;
                         case 'p': case 'P':
                             /* not used */
                             if (tex_scan_mandate_keyword("proportional", 1)) {

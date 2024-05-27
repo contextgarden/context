@@ -21,6 +21,14 @@
 
 \starttypescriptcollection[lucida-opentype]
 
+    \pushglobalsetups
+
+        \startsetups[\s!math:lucida]
+            \setupmathradical[\c!leftmargin=.05mq]% mathquad
+        \stopsetups
+
+    \popglobalsetups
+
     \doifunknownfontfeature {lucida-math-bold} {\definefontfeature[lucida-math-bold][boldened][boldmath=yes]}
 
     \starttypescript [lucida,lucidaot,lucidadk,lucidaot-nt,lucida-nt]

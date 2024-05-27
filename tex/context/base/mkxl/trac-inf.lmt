@@ -373,10 +373,14 @@ function statistics.showusage(when)
     report("  backend callbacks     : %s", b.count)
     report("")
     local done = false
+    local round = math.round
     for k, v in table.sortedhash(l) do
         local first, second, third, sub = v.first, v.second, v.third, v.sub
         if first ~= 0 or second ~= 0 or third ~= 0 or sub ~= 0 then
-            report("  linebreak par context : %-8s  %6i  %6i  %6i  %6i",k,first,second,third,sub)
+            local p2 = round(100*second/first)
+            local p3 = round(100*third /first)
+            local p4 = round(100*sub   /first)
+            report("  linebreak par context : %-8s  %6i  %6i (%3i%%)  %6i (%3i%%)  %6i (%3i%%)",k,first,second,p2,third,p3,sub,p4)
             done = true
         end
     end

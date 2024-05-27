@@ -3989,6 +3989,9 @@
 %D
 %D Watch the one level expansion of the second argument.
 
+% This is only used in \spac_lines_between .. pretty ugly. Never change
+% this one!
+
 \permanent\protected\def\doifelsemeaning#1#2%
   {\edef\m_syst_string_one{\normalmeaning#1}%
    \def \m_syst_string_two{#2}%
@@ -6419,7 +6422,7 @@
 \permanent\protected\def\letcsnamecs    {\expandafter\let}
 \permanent\protected\def\letcsnamecsname{\expandafter\expandafter\expandafter\let\expandafter\expandafter}
 
-% another one, add an item to a commalist
+% Another one, add an item to a commalist, was only used in definesymbol
 
 \permanent\protected\def\addvalue#1#2% cs item
   {\ifcsname#1\endcsname\else\letcsname#1\endcsname\empty\fi

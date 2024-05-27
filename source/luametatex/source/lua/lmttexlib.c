@@ -3789,6 +3789,7 @@ static int texlib_linebreak(lua_State *L)
         properties.parinit_right_skip = null;
         properties.extra_hyphen_penalty = 0;
         properties.optional_found = 0;
+        properties.math_found = 0;
         while (tail) { 
             switch (node_type(tail)) { 
                 case glue_node:
@@ -3927,6 +3928,7 @@ static int texlib_linebreak(lua_State *L)
         get_penalties_par(properties.club_penalties,               clubpenalties,             tex_get_par_par(par, par_club_penalties_code), club_penalties_code);
         get_penalties_par(properties.widow_penalties,              widowpenalties,            tex_get_par_par(par, par_widow_penalties_code), widow_penalties_code);
         get_penalties_par(properties.display_widow_penalties,      displaywidowpenalties,     tex_get_par_par(par, par_display_widow_penalties_code), display_widow_penalties_code);
+        get_penalties_par(properties.broken_penalties,             brokenpenalties,           tex_get_par_par(par, par_broken_penalties_code), broken_penalties_code);
         get_penalties_par(properties.orphan_penalties,             orphanpenalties,           tex_get_par_par(par, par_orphan_penalties_code), orphan_penalties_code);
         get_demerits_par (properties.fitness_demerits,             fitnessdemerits,           tex_get_par_par(par, par_fitness_demerits_code), fitness_demerits_code);
         get_penalties_par(properties.par_passes,                   parpasses,                 tex_get_par_par(par, par_par_passes_code), par_passes_code);
@@ -4000,6 +4002,7 @@ static int texlib_linebreak(lua_State *L)
         if (properties.club_penalties          != tex_get_par_par(par, par_club_penalties_code))          { tex_flush_node(properties.club_penalties); }
         if (properties.widow_penalties         != tex_get_par_par(par, par_widow_penalties_code))         { tex_flush_node(properties.widow_penalties); }
         if (properties.display_widow_penalties != tex_get_par_par(par, par_display_widow_penalties_code)) { tex_flush_node(properties.display_widow_penalties); }
+        if (properties.broken_penalties        != tex_get_par_par(par, par_broken_penalties_code))        { tex_flush_node(properties.broken_penalties); }
         if (properties.orphan_penalties        != tex_get_par_par(par, par_orphan_penalties_code))        { tex_flush_node(properties.orphan_penalties); }
         if (properties.fitness_demerits        != tex_get_par_par(par, par_fitness_demerits_code))        { tex_flush_node(properties.fitness_demerits); }
         return 2;
@@ -4996,11 +4999,19 @@ static int texlib_getmathoptionvalues(lua_State *L)
 
 static int texlib_getpenaltyoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 3, 1);
+    lua_createtable(L, 2, 10);
     lua_set_string_by_index(L, penalty_option_normal,        "normal");
-    lua_set_string_by_index(L, penalty_option_math_forward,  "mathforward");;
+    lua_set_string_by_index(L, penalty_option_math_forward,  "mathforward");
     lua_set_string_by_index(L, penalty_option_math_backward, "mathbackward");
     lua_set_string_by_index(L, penalty_option_orphaned,      "orphaned");
+    lua_set_string_by_index(L, penalty_option_widowed,       "widowed");
+    lua_set_string_by_index(L, penalty_option_clubbed,       "clubbed");
+    lua_set_string_by_index(L, penalty_option_toddlered,     "toddlered");
+    lua_set_string_by_index(L, penalty_option_widow,         "widow");
+    lua_set_string_by_index(L, penalty_option_club,          "club");
+    lua_set_string_by_index(L, penalty_option_broken,        "broken");
+    lua_set_string_by_index(L, penalty_option_shaping,       "shaping");
+    lua_set_string_by_index(L, penalty_option_double,        "double");
     return 1;
 }
 
@@ -5272,7 +5283,7 @@ static int texlib_getmathclassoptionvalues(lua_State *L)
 
 static int texlib_getnormalizelinevalues(lua_State *L)
 {
-    lua_createtable(L, 2, 7);
+    lua_createtable(L, 2, 8);
     lua_set_string_by_index(L, normalize_line_mode,          "normalizeline");
     lua_set_string_by_index(L, parindent_skip_mode,          "parindentskip");
     lua_set_string_by_index(L, swap_hangindent_mode,         "swaphangindent");
@@ -5283,6 +5294,7 @@ static int texlib_getnormalizelinevalues(lua_State *L)
     lua_set_string_by_index(L, flatten_discretionaries_mode, "flattendiscretionaries");
     lua_set_string_by_index(L, discard_zero_tab_skips_mode,  "discardzerotabskips");
     lua_set_string_by_index(L, flatten_h_leaders_mode,       "flattenhleaders");
+    lua_set_string_by_index(L, balance_inline_math_mode,     "balanceinlinemath");
     return 1;
 }
 

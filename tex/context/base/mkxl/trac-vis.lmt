@@ -825,12 +825,61 @@ local ruledboundary do
 
 end
 
-local ruleddir, ruledpar do
+local ruledpar do
 
-    local dircodes       = nodes.dircodes
+    local parcodes       = nodes.parcodes
     local directioncodes = tex.directioncodes -- nodes.dirvalues
 
+    local l2r_code       <const> = directioncodes.l2r
+    local r2l_code       <const> = directioncodes.r2l
+
+    local hmodepar_code  <const> = parcodes.hmodepar
+    local vmodepar_code  <const> = parcodes.vmodepar
+    local localbox_code  <const> = parcodes.localbox
+    local parameter_code <const> = parcodes.parameter
+
+    local p_cache        = caches["par"]
+
+    local getdirection   = nuts.getdirection
+
+    ruledpar = function(head,current)
+        local subtype = getsubtype(current)
+        local what
+        if subtype == hmodepar_code or subtype == vmodepar_code then
+            what = getdirection(current) == r2l_code and "RLP" or "LRP"
+        elseif subtype == localbox_code then
+            what = "BOX"
+        elseif subtype == parameter_code then
+            what = "LOC"
+        else
+            what = "???"
+        end
+        local info = p_cache[what]
+        if info then
+            -- print("hit par")
+        else
+            info = sometext(what,usedfont,nil,"trace:w")
+            if use_layers then
+                setattr(info,a_layer,l_dir)
+            end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
+            p_cache[what] = info
+        end
+        head, current = insertnodeafter(head,current,copylist(info))
+        return head, current
+    end
+
+end
+
+local ruleddir do
+
+    local dircodes       = nodes.dircodes
+    local directioncodes = tex.directioncodes
+
     local cancel_code    <const> = dircodes.cancel
+
     local l2r_code       <const> = directioncodes.l2r
     local r2l_code       <const> = directioncodes.r2l
 
@@ -838,46 +887,20 @@ local ruleddir, ruledpar do
 
     local getdirection   = nuts.getdirection
 
-    local tags = {
-        l2r    = "L2R",
-        r2l    = "R2L",
-        cancel = "CAN",
-        par    = "PAR",
-    }
-
-    ruledpar = function(head,current)
-        local what = "par" -- getsubtype(current)
-        local info = d_cache[what]
-        if info then
-            -- print("hit par")
-        else
-            info = sometext(formatters["L:%s"](what),usedfont,nil,"trace:w")
-            if use_layers then
-                setattr(info,a_layer,l_dir)
-            end
-            if crappytaggingmode then
-                setattr(info,a_tagged,0)
-            end
-            d_cache[what] = info
-        end
-        head, current = insertnodeafter(head,current,copylist(info))
-        return head, current
-    end
-
     ruleddir = function(head,current)
         local what = getsubtype(current)
         if what == cancel_code then
-            what = "cancel"
+            what = "CAN"
         elseif getdirection(current) == r2l_code then
-            what = "r2l"
+            what = "R2L"
         else
-            what = "l2r"
+            what = "L2R"
         end
         local info = d_cache[what]
         if info then
             -- print("hit dir")
         else
-            info = sometext(formatters["D:%s"](what),usedfont,nil,"trace:w")
+            info = sometext(what,usedfont,nil,"trace:w")
             if use_layers then
                 setattr(info,a_layer,l_dir)
             end
@@ -1709,7 +1732,9 @@ local ruledpenalty do
         ["MP:%s"] = caches["MP:%s"],
         ["VP:%s"] = caches["VP:%s"],
         ["HP:%s"] = caches["HP:%s"],
---         ["DP:%s"] = caches["DP:%s"], which ones: hyphen exhyphen word ...
+        ["VP!%s"] = caches["VP:%s"],
+        ["HP!%s"] = caches["HP:%s"],
+     -- ["DP:%s"] = caches["DP:%s"], which ones: hyphen exhyphen word ...
     }
 
     local raisepenalties = false
@@ -1724,9 +1749,13 @@ local ruledpenalty do
 
     local mathforward  <const> = tex.penaltyoptioncodes.mathforward
     local mathbackward <const> = tex.penaltyoptioncodes.mathbackward
+    local doubled      <const> = tex.penaltyoptioncodes.double
+
+    local c_realpage   <const> = tex.iscount("realpageno")
 
     ruledpenalty = function(head,current,vertical,subtype)
-        local penalty = getpenalty(current)
+        local double = (getoptions(current) & doubled) ~= 0 and (tex.getcount(c_realpage) % 2) == 0
+        local penalty = getpenalty(current,double)
         local ismath  = subtype == pre_penalty_code or subtype == post_penalty_code or subtype == true
         local amount
         if ismath then
@@ -1745,9 +1774,9 @@ local ruledpenalty do
                 amount = "MP:%s"
             end
         elseif vertical then
-            amount = "VP:%s"
+            amount = double and "VP!%s" or "VP:%s"
         else
-            amount = "HP:%s"
+            amount = double and "HP!%s" or "HP:%s"
         end
         local cache = cachehash[amount]
         local info  = cache[penalty]
@@ -1788,14 +1817,18 @@ local ruledmath do
     local mathcodes = nodes.mathcodes
     local tags      = {
         [true] = {
-            math      = { "SM:?", caches["SM:?"] },
-            beginmath = { "SM:B", caches["SM:B"] },
-            endmath   = { "SM:E", caches["SM:E"] },
+            math            = { "SM:?", caches["SM:?"] },
+            beginmath       = { "SM:B", caches["SM:B"] },
+            endmath         = { "SM:E", caches["SM:E"] },
+            beginbrokenmath = { "SM:>", caches["SB:>"] },
+            endbrokenmath   = { "SM:<", caches["SB:<"] },
         },
         [false] = {
-            math      = { "M:?", caches["M:?"] },
-            beginmath = { "M:B", caches["M:B"] },
-            endmath   = { "M:E", caches["M:E"] },
+            math            = { "M:?", caches["M:?"] },
+            beginmath       = { "M:B", caches["M:B"] },
+            endmath         = { "M:E", caches["M:E"] },
+            beginbrokenmath = { "M:>", caches["M:>"] },
+            endbrokenmath   = { "M:<", caches["M:<"] },
         },
     }
 
@@ -1816,7 +1849,7 @@ local ruledmath do
         else
             local text, width = sometext(ttag,usedfont,nil,"trace:dr")
             local rule = new_rule(skip,-655360/fraction,2*655360/fraction)
-            local dist = mtag == "beginmath" and width or skip
+            local dist = (mtag == "beginmath" or mtag == "beginbrokenmath") and width or skip
             setcolor(rule,"trace:dr")
             settransparency(rule,"trace:dr")
             if use_layers then
@@ -1954,7 +1987,7 @@ do
         local intermathskip_code <const> = nodes.skipcodes.intermathskip
 
         while current do
-            local id = getid(current)
+            local id = getid(current) -- also get subtype
             local a = forced or getattr(current,a_visual) or unsetvalue
             local subtype, content
             if a ~= attr then

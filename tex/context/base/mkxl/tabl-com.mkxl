@@ -134,4 +134,8 @@
 \installmacrostack\NN
 \installmacrostack\NR
 
+% Per 2024-05 (tested for a while):
+
+\bitwiseflip \normalizelinemode \discardzerotabskipsnormalizecode
+
 \protect \endinput

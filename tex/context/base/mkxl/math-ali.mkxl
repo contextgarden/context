@@ -34,32 +34,12 @@
 
 %D The following macros are moved to this module because here we deal mostly with
 %D alignment issues. In principle one should see strc-mat, math-ini and math-ali as
-%D a close operation. The \type {\displaywidth} is only known inside a display
-%D formula, so we need to catch it when still zero.
+%D a close operation. The \type {\displaywidth} and \type {\displayindent} variables
+%D are only known and used inside a display formula, In \MKXL\ we no longer use
+%D display mode at all.
 
-\permanent\def\checkeddisplaywidth % hsize if zero
-  {\dimexpr
-     \ifzeropt\displaywidth
-       \hsize
-     \else
-       \displaywidth
-     \fi
-      -\leftskip
-      -\rightskip
-   \relax}
-
-\permanent\def\maximizeddisplaywidth % larger than zero but within hsize
-  {\dimexpr
-     \ifzeropt\displaywidth
-       \hsize
-     \orelse\ifdim\displaywidth>\hsize
-       \hsize
-     \else
-       \displaywidth
-     \fi
-      -\leftskip
-      -\rightskip
-   \relax}
+% \checkeddisplaywidth   % obsolete
+% \maximizeddisplaywidth % obsolete
 
 %D \macros
 %D   {definemathalignment, setupmathalignment, startmathalignment}
@@ -272,6 +252,17 @@
 
 \newboundary\c_math_align_l_marker
 \newboundary\c_math_align_r_marker
+
+\permanent\def\strc_math_effective_width
+  {\dimexpr
+     \ifzeropt\d_strc_formulas_display_width
+       \hsize
+     \else
+       \d_strc_formulas_display_width
+     \fi
+      -\leftskip
+      -\rightskip
+   \relax}
 
 % formula   : numbermethod        down : default
 % formula   : numberlocation   overlay : option
@@ -574,7 +565,7 @@
        \relax
      \fi
      \ifcase\c_strc_formulas_check_width\else
-        to \checkeddisplaywidth
+        to \strc_math_effective_width
      \fi}
 
 \installcorenamespace {mathalignlocation}
@@ -2334,18 +2325,20 @@
    \ifconditional\c_math_matrix_text_t
      \ht\scratchbox\dimexpr\ht\scratchbox+\lineheight\relax
    \fi
-   \edef\p_leftedge {\mathmatrixparameter\c!leftedge }%
-   \edef\p_rightedge{\mathmatrixparameter\c!rightedge}%
-   \ifempty\p_leftedge\orelse\ifx\p_leftedge\v!none\else
-     \hskip\dimexpr\d_math_matrix_max_left+\p_leftedge\relax
-   \fi
    \mathatom
      \s!leftclass  \c_math_last_l_class
      \s!rightclass \c_math_last_r_class
-     {\box\scratchbox}%
-   \ifempty\p_rightedge\orelse\ifx\p_rightedge\v!none\else
-     \hskip\dimexpr\d_math_matrix_max_right+\p_rightedge\relax
-   \fi}
+     \bgroup
+       \edef\p_leftedge {\mathmatrixparameter\c!leftedge }%
+       \edef\p_rightedge{\mathmatrixparameter\c!rightedge}%
+       \ifempty\p_leftedge\orelse\ifx\p_leftedge\v!none\else
+         \hkern\dimexpr\d_math_matrix_max_left+\p_leftedge\relax
+       \fi
+       \box\scratchbox
+       \ifempty\p_rightedge\orelse\ifx\p_rightedge\v!none\else
+         \hkern\dimexpr\d_math_matrix_max_right+\p_rightedge\relax
+       \fi
+     \egroup}
 
 \definemathmatrix[matrix]
 \definemathmatrix[\v!mathmatrix]
@@ -2791,12 +2784,12 @@
 
 \def\strc_math_flush_aligned_left_number_indeed
   {\ifvoid\b_strc_formulas_number\else
-     \setbox\b_strc_formulas_number\hbox to \displaywidth\bgroup
+     \setbox\b_strc_formulas_number\hbox to \d_strc_formulas_display_width\bgroup
        \hss
        \hbox{\strc_math_flush_number_box}%
      \egroup
      \ifcase\c_strc_math_number_location\or
-       \boxxoffset\b_strc_formulas_number\dimexpr-\displaywidth+\d_strc_formulas_number+\s_strc_formulas_margin_left\relax % brrrrr
+       \boxxoffset\b_strc_formulas_number\dimexpr-\d_strc_formulas_display_width+\d_strc_formulas_number+\s_strc_formulas_margin_left\relax % brrrrr
        \boxyoffset\b_strc_formulas_number-\d_strc_math_first_height
        \htdp\b_strc_formulas_number\zeropoint
        \strc_math_flush_number_box % left
@@ -2805,7 +2798,7 @@
 
 \def\strc_math_flush_aligned_right_number_indeed
   {\ifvoid\b_strc_formulas_number\else
-     \setbox\b_strc_formulas_number\hbox to \displaywidth\bgroup
+     \setbox\b_strc_formulas_number\hbox to \d_strc_formulas_display_width\bgroup
        \hss
        \hbox{\strc_math_flush_number_box}%
      \egroup
@@ -2900,7 +2893,7 @@
      \ifcase\c_strc_math_number_variant\or
        \s_strc_formulas_margin_right\zeroskip
      \fi
-     \setbox\b_strc_formulas_number\hbox to \displaywidth\bgroup
+     \setbox\b_strc_formulas_number\hbox to \d_strc_formulas_display_width\bgroup
        \hss
        \strc_math_flush_number_box
        \kern\s_strc_formulas_margin_right
@@ -2936,7 +2929,7 @@
      \ifcase\c_strc_math_number_variant\or
        \s_strc_formulas_margin_left\zeroskip
      \fi
-     \setbox\b_strc_formulas_number\hbox to \displaywidth\bgroup
+     \setbox\b_strc_formulas_number\hbox to \d_strc_formulas_display_width\bgroup
        \kern\s_strc_formulas_margin_left
        \strc_math_flush_number_box
        \hss
@@ -3009,7 +3002,7 @@
 
 \def\strc_math_flush_box_normal
   {\ifnum\c_strc_math_split_mode=\c_strc_math_line_mode
-     \hbox to \displaywidth\bgroup
+     \hbox to \d_strc_formulas_display_width\bgroup
         \strc_math_flush_aligned
      \egroup
    \else
@@ -3017,7 +3010,7 @@
    \fi}
 
 \def\strc_math_flush_box_framed_common
-  {\d_strc_math_framed_width\displaywidth
+  {\d_strc_math_framed_width\d_strc_formulas_display_width
    \setformulaframedparameter\c!align{\formulaparameter\c!align}%
    \letformulaframedparameter\c!strut\v!no
    \d_framed_formula\ht\b_strc_math_display
@@ -3084,7 +3077,7 @@
    \fi}
 
 \def\strc_math_number_right_normal_inside
-  {\setbox\b_strc_math_display\hpack to \dimexpr\displaywidth-\d_framed_locator_lo-\d_framed_locator_ro\relax\bgroup
+  {\setbox\b_strc_math_display\hpack to \dimexpr\d_strc_formulas_display_width-\d_framed_locator_lo-\d_framed_locator_ro\relax\bgroup
      \strc_math_flush_aligned
      \hss
      \strc_math_flush_number_box
@@ -3092,7 +3085,7 @@
    \strc_math_flush_box_framed_fit_inline}
 
 \def\strc_math_number_left_normal_inside
-  {\setbox\b_strc_math_display\hpack to \dimexpr\displaywidth-\d_framed_locator_lo-\d_framed_locator_ro\relax\bgroup
+  {\setbox\b_strc_math_display\hpack to \dimexpr\d_strc_formulas_display_width-\d_framed_locator_lo-\d_framed_locator_ro\relax\bgroup
      \strc_math_flush_number_box
      \hss
      \strc_math_flush_aligned
@@ -3103,7 +3096,7 @@
   {\vpack\bgroup
      \strc_math_flush_box
      \par
-     \hpack to \displaywidth\bgroup
+     \hpack to \d_strc_formulas_display_width\bgroup
        \hss
        \strc_math_flush_number_box_right
      \egroup
@@ -3111,7 +3104,7 @@
 
 \def\strc_math_number_left_overflow
   {\vpack\bgroup
-     \hpack to \displaywidth\bgroup
+     \hpack to \d_strc_formulas_display_width\bgroup
        \strc_math_flush_number_box_left
        \hss
      \egroup
@@ -3122,7 +3115,7 @@
   {\vpack\bgroup
      \strc_math_flush_box_framed_fit_inline
     %\hskip\zeroskip % nicely breaks the line without introducing funny vertical spacing ... why o why
-     \hpack to \displaywidth\bgroup
+     \hpack to \d_strc_formulas_display_width\bgroup
        \hss
        \strc_math_flush_number_box
      \egroup
@@ -3130,7 +3123,7 @@
 
 \def\strc_math_number_left_overflow_outside
   {\vpack\bgroup
-     \hpack to \dimexpr\displaywidth-\d_framed_locator_lo\relax\bgroup
+     \hpack to \dimexpr\d_strc_formulas_display_width-\d_framed_locator_lo\relax\bgroup
        \strc_math_flush_number_box
        \hss
      \egroup
@@ -3141,7 +3134,7 @@
 \def\strc_math_number_right_overflow_inside
   {\setbox\b_strc_math_display\vpack\bgroup
      \box\b_strc_math_display
-     \hpack to \displaywidth\bgroup
+     \hpack to \d_strc_formulas_display_width\bgroup
        \hss
        \strc_math_flush_number_box
        \kern\d_framed_locator_ro
@@ -3151,7 +3144,7 @@
 
 \def\strc_math_number_left_overflow_inside
   {\setbox\b_strc_math_display\vpack\bgroup
-     \hpack to \displaywidth\bgroup
+     \hpack to \d_strc_formulas_display_width\bgroup
      % \kern\d_framed_locator_lo
        \strc_math_flush_number_box
        \hss
@@ -3176,14 +3169,14 @@
 \def\strc_math_number_check
   {\d_strc_math_display_width\wd\b_strc_math_display
    \ifconditional\c_strc_formulas_tight
-     \ifdim\d_strc_math_total_display_width>\displaywidth
+     \ifdim\d_strc_math_total_display_width>\d_strc_formulas_display_width
        \c_strc_math_display_overflow\conditionaltrue
      \else
-       \displaywidth\d_strc_math_total_display_width
+       \d_strc_formulas_display_width\d_strc_math_total_display_width
        \c_strc_math_display_overflow\conditionalfalse
      \fi
    \else
-     \ifdim\dimexpr\d_strc_math_total_display_width+\formulaparameter\c!numberthreshold\relax>\displaywidth
+     \ifdim\dimexpr\d_strc_math_total_display_width+\formulaparameter\c!numberthreshold\relax>\d_strc_formulas_display_width
        \c_strc_math_display_overflow\conditionaltrue
      \else
        \c_strc_math_display_overflow\conditionalfalse
@@ -3192,16 +3185,16 @@
 
 \def\strc_math_number_check_outside
   {\d_strc_math_display_width\naturalwd\b_strc_math_display
-   \ifdim\dimexpr\d_strc_math_total_display_width+\d_framed_locator_lo+\d_framed_locator_ro\relax>\displaywidth
+   \ifdim\dimexpr\d_strc_math_total_display_width+\d_framed_locator_lo+\d_framed_locator_ro\relax>\d_strc_formulas_display_width
      \c_strc_math_display_overflow\conditionaltrue
    \else
      \c_strc_math_display_overflow\conditionalfalse
    \fi
    % still ok?
    \ifnum\c_strc_math_ragged_status=\plustwo
-     \d_strc_math_framed_width\dimexpr\displaywidth-2\d_strc_formulas_number\relax
+     \d_strc_math_framed_width\dimexpr\d_strc_formulas_display_width-2\d_strc_formulas_number\relax
    \else
-     \d_strc_math_framed_width\dimexpr\displaywidth- \d_strc_formulas_number\relax
+     \d_strc_math_framed_width\dimexpr\d_strc_formulas_display_width- \d_strc_formulas_number\relax
    \fi}
 
 \let\strc_math_number_check_inside\strc_math_number_check_outside
@@ -3295,7 +3288,7 @@
    \strc_math_traced_state
    \ifnum\c_strc_math_split_mode=\c_strc_math_line_mode
      \noindent % \noindentation % not \dontleavehmode
-     \hbox to \displaywidth \bgroup
+     \hbox to \d_strc_formulas_display_width \bgroup
    \else
      \bgroup
    \fi

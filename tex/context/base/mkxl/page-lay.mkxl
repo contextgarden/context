@@ -1347,11 +1347,20 @@
      \expandafter\firstoftwoarguments
    \fi}
 
+% \def\page_layouts_right_or_left_page_action
+%   {\ifsinglesided
+%      \expandafter\firstoftwoarguments
+%    \else
+%      \expandafter\doifelseoddpage
+%    \fi}
+
 \def\page_layouts_right_or_left_page_action
   {\ifsinglesided
      \expandafter\firstoftwoarguments
+   \orelse\ifodd\pagenoshift
+     \expandafter\page_layouts_if_odd_else_yes
    \else
-     \expandafter\doifelseoddpage
+     \expandafter\page_layouts_if_odd_else_nop
    \fi}
 
 % swapping needs frozen

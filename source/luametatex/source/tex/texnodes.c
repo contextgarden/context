@@ -305,10 +305,12 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_list, local_right_list,          right)
     set_value_entry_key(subtypes_list, local_middle_list,         middle)
 
-    subtypes_math = lmt_aux_allocate_value_info(end_inline_math);
+    subtypes_math = lmt_aux_allocate_value_info(end_broken_math);
 
     set_value_entry_key(subtypes_math, begin_inline_math, beginmath)
     set_value_entry_key(subtypes_math, end_inline_math,   endmath)
+    set_value_entry_key(subtypes_math, begin_broken_math, beginbrokenmath)
+    set_value_entry_key(subtypes_math, end_broken_math,   endbrokenmath)
 
     subtypes_adjust = lmt_aux_allocate_value_info(local_adjust_code);
 
@@ -1282,6 +1284,7 @@ halfword tex_copy_node(halfword original)
                     par_club_penalties(copy) = null;
                     par_widow_penalties(copy) = null;
                     par_display_widow_penalties(copy) = null;
+                    par_broken_penalties(copy) = null;
                     par_orphan_penalties(copy) = null;
                     par_fitness_demerits(copy) = null;
                     par_par_passes(copy) = null;
@@ -1391,6 +1394,7 @@ void tex_flush_node(halfword p)
                     tex_flush_node(par_inter_line_penalties(p));
                     tex_flush_node(par_widow_penalties(p));
                     tex_flush_node(par_display_widow_penalties(p));
+                    tex_flush_node(par_broken_penalties(p));
                     tex_flush_node(par_orphan_penalties(p));
                     tex_flush_node(par_fitness_demerits(p));
                     tex_flush_node(par_par_passes(p));
@@ -1597,6 +1601,7 @@ static void tex_aux_check_node(halfword p)
             tex_aux_node_range_test(p, par_inter_line_penalties(p));
             tex_aux_node_range_test(p, par_widow_penalties(p));
             tex_aux_node_range_test(p, par_display_widow_penalties(p));
+            tex_aux_node_range_test(p, par_broken_penalties(p));
             tex_aux_node_range_test(p, par_orphan_penalties(p));
             tex_aux_node_range_test(p, par_fitness_demerits(p));
             tex_aux_node_range_test(p, par_par_fill_left_skip(p));
@@ -2893,6 +2898,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
                             if (tex_par_state_is_set(p, par_club_penalties_code)          ) { v = par_club_penalties(p)          ; if (v)                     { tex_print_str(", clubpenalties * ");         } }
                             if (tex_par_state_is_set(p, par_widow_penalties_code)         ) { v = par_widow_penalties(p)         ; if (v)                     { tex_print_str(", widowpenalties * ");        } }
                             if (tex_par_state_is_set(p, par_display_widow_penalties_code) ) { v = par_display_widow_penalties(p) ; if (v)                     { tex_print_str(", displaywidowpenalties * "); } }
+                            if (tex_par_state_is_set(p, par_broken_penalties_code)        ) { v = par_broken_penalties(p)        ; if (v)                     { tex_print_str(", displaywidowpenalties * "); } }
                             if (tex_par_state_is_set(p, par_orphan_penalties_code)        ) { v = par_orphan_penalties(p)        ; if (v)                     { tex_print_str(", orphanpenalties * ");       } }
                             if (tex_par_state_is_set(p, par_fitness_demerits_code)        ) { v = par_fitness_demerits(p)        ; if (v)                     { tex_print_str(", fitnessdemerits * ");       } }
                             if (tex_par_state_is_set(p, par_hang_indent_code)             ) { v = par_hang_indent(p)             ; if (v)                     { tex_print_str(", hangindent ");              tex_print_dimension(v, pt_unit); } }
@@ -4026,6 +4032,7 @@ halfword tex_get_par_par(halfword p, halfword what)
         case par_club_penalties_code:          return set ? par_club_penalties(p)          : club_penalties_par;
         case par_widow_penalties_code:         return set ? par_widow_penalties(p)         : widow_penalties_par;
         case par_display_widow_penalties_code: return set ? par_display_widow_penalties(p) : display_widow_penalties_par;
+        case par_broken_penalties_code:        return set ? par_broken_penalties(p)        : broken_penalties_par;
         case par_orphan_penalties_code:        return set ? par_orphan_penalties(p)        : orphan_penalties_par;
         case par_fitness_demerits_code:        return set ? par_fitness_demerits(p)        : fitness_demerits_par;
         case par_hang_indent_code:             return set ? par_hang_indent(p)             : hang_indent_par;
@@ -4232,6 +4239,12 @@ void tex_set_par_par(halfword p, halfword what, halfword v, int force)
                     tex_flush_node(par_display_widow_penalties(p));
                 }
                 par_display_widow_penalties(p) = v ? tex_copy_node(v) : null;
+                break;
+            case par_broken_penalties_code:
+                if (par_broken_penalties(p)) {
+                    tex_flush_node(par_broken_penalties(p));
+                }
+                par_broken_penalties(p) = v ? tex_copy_node(v) : null;
                 break;
             case par_orphan_penalties_code:
                 if (par_orphan_penalties(p)) {
@@ -4550,6 +4563,13 @@ void tex_snapshot_par(halfword p, halfword what)
                 tex_flush_node(par_display_widow_penalties(p));
             }
             par_display_widow_penalties(p) = v ? tex_copy_node(v) : null;
+        }
+        if (tex_par_to_be_set(what, par_broken_penalties_code)) { 
+            halfword v = unset ? null : broken_penalties_par; 
+            if (par_broken_penalties(p)) {
+                tex_flush_node(par_broken_penalties(p));
+            }
+            par_broken_penalties(p) = v ? tex_copy_node(v) : null;
         }
         if (tex_par_to_be_set(what, par_orphan_penalties_code)) { 
             halfword v = unset ? null : orphan_penalties_par; 

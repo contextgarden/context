@@ -41,13 +41,10 @@ return {
                 {
                     tweak = "addmirrors",
                 },
-                -- we have a weird middle integral piece
-                {
-                    tweak = "dimensions",
-                    list  = {
-                        [0x23AE] = { xoffset =  -.19 },
-                    },
-                },
+                -- At the moment we do fix integrals
+                -- For this font this means that we do always
+                -- get the extensible in displaystyle
+                -- Disable fixintegrals if that is not wanted
                 {
                     tweak = "fixintegrals",
                 },
@@ -94,8 +91,14 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        [0x302] = { width = 0}, --hat
-                        [0x303] = { width = 0}, --tilde
+                        [0x302] = { width = 0 }, --hat
+                        [0x303] = { width = 0 }, --tilde
+                        -- The middle pice is shifted compared to the larger pieces.
+                        -- And the integral stick out down left.
+                        -- We fix the width and shift.
+                        [0x2320] = { width = 1.2, xoffset = 0.191 },
+                        [0x23AE] = { width = 1.2, }, --  bug
+                        [0x2321] = { width = 1.2, xoffset = 0.191 },
                     },
                 },
                 {

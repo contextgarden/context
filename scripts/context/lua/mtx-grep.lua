@@ -128,7 +128,7 @@ function scripts.grep.find(pattern, files, offset)
                 if count then
                     check = function(line)
                         n = n + 1
-                        if find(line,"^[%%#]") then
+                        if find(line,"^[%%#%-]") then
                             -- skip
                         elseif find(line,pattern) then
                             m = m + 1
@@ -137,7 +137,7 @@ function scripts.grep.find(pattern, files, offset)
                 else
                     check = function(line)
                         n = n + 1
-                        if find(line,"^[%%#]") then
+                        if find(line,"^[%%#%-]") then
                             -- skip
                         elseif find(line,pattern) then
                             m = m + 1

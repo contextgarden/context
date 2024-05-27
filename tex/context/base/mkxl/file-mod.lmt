@@ -234,7 +234,7 @@ end)
 logs.registerfinalactions(function()
     logs.startfilelogging(report,"used modules")
     for k, v in sortedhash(modstatus) do
-        report(v == 0 and "missing: %s" or "loaded : %s",basename(k))
+        report(v == 0 and "  missing: %s" or "  loaded : %s",basename(k))
     end
     logs.stopfilelogging()
     if missing and logs.loggingerrors() then

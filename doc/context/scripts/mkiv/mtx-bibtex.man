@@ -17,6 +17,9 @@ convert bibtex database(s) to xml
 .B --tolua
 convert bibtex database(s) to lua
 .TP
+.B --totxt
+convert bibtex database(s) to text (key = value)
+.TP
 .B --search
 seatch bibtex database(s)
 .SH AUTHOR

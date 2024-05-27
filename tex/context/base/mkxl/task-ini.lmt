@@ -82,7 +82,7 @@ appendaction("shipouts",     "normalizers", "nodes.destinations.handler",       
 appendaction("shipouts",     "normalizers", "nodes.rules.handler",                              nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "nodes.shifts.handler",                             nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "nodes.shadows.handler",                            nil, "nut",    "disabled"  )
--- appendaction("shipouts",     "normalizers", "structures.tags.handler",                          nil, "nut",    "disabled"  )
+------------("shipouts",     "normalizers", "structures.tags.handler",                          nil, "nut",    "disabled"  ) -- moved down
 ------------("shipouts",     "normalizers", "nodes.handlers.accessibility",                     nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds",                       nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "typesetters.rubies.attach",                        nil, "nut",    "disabled"  )

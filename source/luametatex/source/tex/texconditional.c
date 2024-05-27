@@ -461,18 +461,18 @@ inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head) 
 //     }
 // }
 
-//inline static halfword tex_aux_scan_comparison(int code)
-//{
-//    do {
-//        tex_get_x_token();
-//    } while (cur_cmd == spacer_cmd);
-//    if (cur_cmd != other_char_cmd || (cur_chr < '<') || (cur_chr > '>')) {
-//        tex_aux_missing_equal_error(code);
-//        return '=';
-//    } else {
-//        return cur_chr;
-//    }
-//}
+// inline static halfword tex_aux_scan_comparison(int code)
+// {
+//     do {
+//         tex_get_x_token();
+//     } while (cur_cmd == spacer_cmd);
+//     if (cur_cmd != other_char_cmd || (cur_chr < '<') || (cur_chr > '>')) {
+//         tex_aux_missing_equal_error(code);
+//         return '=';
+//     } else {
+//         return cur_chr;
+//     }
+// }
 
 typedef enum comparisons { 
     /* case 0 .. 7 */

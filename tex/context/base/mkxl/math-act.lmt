@@ -2731,6 +2731,14 @@ do
     function mathtweaks.fixintegrals(target,original,parameters)
         local characters = target.characters
         local integral   = characters[0x222B]
+        while integral do
+            local next = integral.next
+            if next then
+                integral = characters[next]
+            else
+                break
+            end
+        end
         if integral and not integral.parts then
             local top = characters[0x2320]
             local mid = characters[0x23AE]

@@ -1,0 +1,50 @@
+% language=us runpath=texruns:manuals/workflows
+
+\environment workflows-style
+
+\startcomponent workflows-userdata
+
+\startchapter[title={Userdata}]
+
+For some workflows it might be handy to put information in the \PDF\ file that
+can be easily queried. Here is an example of embedding:
+
+\starttyping
+\pdfsetuserdata{test1}{123} % \ctxlua{lpdf.setuserdata("test1",123)}
+\pdfsetuserdata{test2}{foo} % \ctxlua{lpdf.setuserdata("test2","foo")}
+\stoptyping
+
+You can filter these fields with:
+
+\starttyping
+>mtxrun --script pdf --userdata=test1 oeps.pdf
+123
+
+>mtxrun --script pdf --userdata=test1,test2 oeps.pdf
+123 foo
+
+>mtxrun --script pdf --userdata=test1,test2 oeps.pdf --format=lines
+test1=123
+test2=foo
+
+>mtxrun --script pdf --userdata=test1,test6,test2 oeps.pdf --format=json
+{
+ "test1" : "123",
+ "test2" : "foo"
+}
+
+>mtxrun --script pdf --userdata=test1,test6,test2 oeps.pdf --format=lua
+userdata={
+ ["test1"]="123",
+ ["test2"]="foo",
+}
+\stoptyping
+
+\stoptext
+
+
+
+
+\stopchapter
+
+\stopcomponent

@@ -293,13 +293,14 @@ stages[2] = function(specification,stage)
             local l = t.leftskip  + t.lefthangskip  + t.parinitleftskip  + t.parfillleftskip  + t.indent
             local r = t.rightskip + t.righthangskip + t.parinitrightskip + t.parfillrightskip
 
-for s in nextboundary, list do
-    local data = getdata(s)
-    if data == b_mathinject then
-        injections[n] = true
-        goto HERE
-    end
-end
+            for s in nextboundary, list do
+                local data = getdata(s)
+                if data == b_mathinject then
+                    injections[n] = true
+                    goto HERE
+                end
+            end
+
             linenumber = linenumber + 1
 
             local w = getwidth(n)
@@ -332,7 +333,7 @@ end
             cnt       = cnt + 1
             lastwidth = m
             lastdepth = getdepth(n)
-::HERE::
+          ::HERE::
         end
     end
 

@@ -42,16 +42,12 @@
    %
    \edef\boxanchorone{\boxanchoringclass:#5}%
    \edef\boxanchortwo{\boxanchoringclass:#6}%
-%    \edef\boxanchorone{#5}%
-%    \edef\boxanchortwo{#6}%
    %
    \doifnotanchorbox{\boxanchorone}{\defineboxanchor[\boxanchorone]}%
    \doifnotanchorbox{\boxanchortwo}{\defineboxanchor[\boxanchortwo]}%
    %
    \edef\boxanchorposone{#1:#2:\namespacedboxanchor{\boxanchorone}}%
    \edef\boxanchorpostwo{#1:#2:\namespacedboxanchor{\boxanchortwo}}%
-% \edef\boxanchorposone{#1:#2:\number\namedboxanchor{\boxanchorone}}%
-% \edef\boxanchorpostwo{#1:#2:\number\namedboxanchor{\boxanchortwo}}%
    %
    \setboxanchor[\boxanchorone][#1][#3]\hpack{\xypos{\boxanchorposone}}%
    \setboxanchor[\boxanchortwo][#2][#4]\hpack{\xypos{\boxanchorpostwo}}%

@@ -530,7 +530,7 @@ inline static scaled tex_aux_math_axis(halfword size)
 inline static scaled tex_aux_math_x_size_scaled(halfword f, scaled v, halfword size)
 {
  // return v ? limited_rounded(0.000000001 * tex_get_math_font_scale(f, size) * glyph_scale_par * glyph_x_scale_par * v) : 0;
-    return v ? limited_rounded(0.000000000001 * tex_get_math_font_scale(f, size) * tex_get_math_font_y_scale(f, size) * glyph_scale_par * glyph_x_scale_par * v) : 0;
+    return v ? limited_rounded(0.000000000001 * tex_get_math_font_scale(f, size) * tex_get_math_font_x_scale(f, size) * glyph_scale_par * glyph_x_scale_par * v) : 0;
 }
 
 inline static scaled tex_aux_math_y_size_scaled(halfword f, scaled v, halfword size)
@@ -2765,7 +2765,7 @@ static void tex_aux_make_root_radical(halfword target, int style, int size, kern
     if (node_type(companion) == vlist_node && node_subtype(companion) == math_v_delimiter_list) {
         halfword after = tex_get_math_x_parameter_default(style, math_parameter_radical_extensible_after, 0); 
         tex_aux_append_hkern_to_box_list(nucleus, after, horizontal_math_kern_subtype, "bad delimiter");
-    }
+    } 
     {
         /* todo bottomdelimiter */
         halfword total = box_total(delimiter);
@@ -3216,7 +3216,8 @@ static void tex_aux_do_make_math_accent(halfword target, halfword source, halfwo
     scaled delta = 0;
     scaled overshoot = 0;
     extinfo *extended = NULL;
-    halfword attrlist = node_attr(source);
+//    halfword attrlist = node_attr(source);
+    halfword attrlist = node_attr(target);
     scaled fraction = accent_fraction(target) > 0 ? accent_fraction(target) : scaling_factor;
     scaled skew = 0;
     scaled offset = 0;
@@ -3864,14 +3865,14 @@ static halfword tex_aux_assemble_fraction(halfword target, int style, int size, 
     parameters are shared for all sizes of the shapes. Basically the horizontal skew is the 
     distance between the two components and the slash is then centered in this gap. The 
     vertical skew is officially the distance between the bottom of the numerator and the 
-    top of the denominator. 
+    top of the denominator. Looking at various fonts didn't make it more clear either. 
     
     This might work fine for numbers but we decided that in order to also support other
     components we should not use the horizontal gap specification at all and the vertical 
     can at best give an indication of how to offset from the axis and/or baseline. These 
-    are examples of useless font variables. In \CONTEXT\ users can influence the rendering
-    with keys like \typ {noaxis}, \typ {center}, \typ {nooverflow}, \type {vfactor}, \typ 
-    {hfactor}, etc. 
+    are examples of useless font variables, so in the end we decided to just ignore both
+    parameters. Anyway, in \CONTEXT\ users can influence the rendering with keys like \typ 
+    {noaxis}, \typ {nooverflow}, \type {vfactor}, \typ {hfactor}, etc. 
 
 */
 
@@ -3890,22 +3891,12 @@ static halfword tex_aux_make_skewed_fraction(halfword target, int style, int siz
     scaled hgap = 0;
     delimiterextremes extremes = { .tfont = null_font, .tchar = 0, .bfont = null_font, .bchar = 0, .height = 0, .depth = 0 };
     scaled tolerance = tex_get_math_y_parameter_default(style, math_parameter_skewed_delimiter_tolerance, 0);
-    scaled shift = 0;
+    scaled axis = tex_aux_math_axis(size);
+    scaled shift = tex_round_xn_over_d(axis, fraction_v_factor(target), scaling_factor);
     (void) kerns;
-    if (has_noad_option_keep_base(target)) { 
-        /*tex We ignore the vgap. */
-    } else { 
-        shift = tex_get_math_y_parameter_checked(style, math_parameter_skewed_fraction_vgap);
-        shift = tex_round_xn_over_d(shift, fraction_v_factor(target), scaling_factor);
-    }
     tex_aux_wrap_fraction_parts(target, style, size, &numerator, &denominator, 0);
-    /*tex 
-        Here we don't share code because we're going horizontal.
-    */
-    if (has_noad_option_noaxis(target)) {
-        /*tex We ignore the axis. */
-    } else { 
-        shift += tex_aux_math_axis(size);
+    if (! has_noad_option_noaxis(target)) {
+        shift += axis;
     }
     shift = tex_half_scaled(shift);
     /*tex

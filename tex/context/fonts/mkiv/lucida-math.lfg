@@ -28,11 +28,11 @@ return {
         },
         scales = {
             scriptxscale       = 1025,
-            scriptyscale       =  950,
+            scriptyscale       =  975,
             scriptscriptxscale = 1050,
-            scriptscriptyscale =  925,
-            scriptweight       =   50,
-            scriptscriptweight =   75,
+            scriptscriptyscale =  950,
+            scriptweight       =   20,
+            scriptscriptweight =   40,
         },
         tweaks = {
          -- beforepassing = {
@@ -229,12 +229,19 @@ return {
                         height  = .2,
                         yoffset = .825,
                     },
-                    radical  = {
-                        height      = .13,
-                        yoffset     = .825,
-                        leftoffset  = .124,
-                        rightoffset = .124,
-                        yscale      = .940,
+--                     radical  = {
+--                         height      = .13,
+--                         yoffset     = .825,
+--                         leftoffset  = .124,
+--                         rightoffset = .124,
+--                         yscale      = .940,
+--                     },
+                    radical  = { -- updated 240521
+                         height      = .140,
+                         yoffset     = .615,
+                         yscale      = .730,
+                         leftoffset  = .124,
+                         rightoffset = .124,
                     },
                     stacker  = {
                         height  = .2,

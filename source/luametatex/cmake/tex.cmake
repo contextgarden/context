@@ -31,6 +31,7 @@ set(tex_sources
     source/luarest/lmtiolibext.c
     source/luarest/lmtoslibext.c
     source/luarest/lmtstrlibext.c
+  # source/luarest/lmttablibext.c
     source/luarest/lmtdecodelib.c
     source/luarest/lmtsha2lib.c
     source/luarest/lmtmd5lib.c

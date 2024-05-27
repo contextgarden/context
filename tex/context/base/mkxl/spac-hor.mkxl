@@ -26,6 +26,7 @@
 \bitwiseflip \normalizelinemode \clipwidthnormalizecode
 \bitwiseflip \normalizelinemode \flattendiscretionariesnormalizecode
 \bitwiseflip \normalizelinemode \flattenhleadersnormalizecode
+\bitwiseflip \normalizelinemode \balanceinlinemathnormalizecode
 %bitwiseflip \normalizelinemode \discardzerotabskipsnormalizecode
 
 \bitwiseflip \normalizeparmode \normalizeparnormalizeparcode
@@ -42,8 +43,20 @@
 %D After a blank or comparable situation (left side floats) we
 %D need to check if the next paragraph has to be indented.
 
+% \permanent\protected\def\presetindentation
+%   {\doifoutervmode{\ifconditional\c_spac_indentation_indent_first\else\spac_indentation_variant_no\fi}}
+
 \permanent\protected\def\presetindentation
-  {\doifoutervmode{\ifconditional\c_spac_indentation_indent_first\else\spac_indentation_variant_no\fi}}
+  {\unless\ifvmode
+     % do nothing
+   \orelse\ifinner
+     % do nothing
+   \orelse\ifconditional\c_spac_indentation_indent_first
+     % do nothing
+   \else
+     \spac_indentation_variant_no
+   \fi}
+
 
 \permanent\protected\def\setupindenting
   {\doifelsenextoptionalcs\spac_indentation_setup_options\spac_indentation_setup_size}
@@ -521,6 +534,22 @@
 \ifdefined\softhyphen \else
     \let\softhyphen\explicitdiscretionary
 \fi
+
+%D We can do this:
+%D
+%D starttyping
+%D \nospaces\plusthree
+%D \spacechar\underscoreasciicode
+%D \hccode\underscoreasciicode\underscoreasciicode
+%D Where are the spaces?
+%D \stoptyping
+%D
+%D But that should not bleed into the page builder or nested constructs, so:
+
+\appendtoks
+    \nospaces \zerocount
+    \spacechar\asciispacechar % not needed as one sets it locally
+\to \everyforgetall
 
 % todo:
 

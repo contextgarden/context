@@ -18,6 +18,7 @@
     <flag name="sign"><short>sign document (assumes signature template)</short></flag>
     <flag name="verify"><short>verify document</short></flag>
     <flag name="detail"><short>print detail to the console</short></flag>
+    <flag name="userdata"><short>print userdata to the console</short></flag>
    </subcategory>
    <subcategory>
     <example><command>mtxrun --script pdf --info foo.pdf</command></example>
@@ -27,6 +28,7 @@
     <example><command>mtxrun --script pdf --sign --certificate=somesign.pem --password=test --uselibrary somefile</command></example>
     <example><command>mtxrun --script pdf --verify --certificate=somesign.pem --password=test --uselibrary somefile</command></example>
     <example><command>mtxrun --script pdf --detail=nofpages somefile</command></example>
+    <example><command>mtxrun --script pdf --userdata=keylist [--format=lua|json|lines] somefile</command></example>
    </subcategory>
   </category>
  </flags>

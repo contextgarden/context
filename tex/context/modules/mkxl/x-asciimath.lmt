@@ -1055,7 +1055,7 @@ local p_onechar     = p_utf_base * P(-1)
 local sign    = P("-")^-1
 local digits  = R("09")^1
 local integer = sign * digits
-local real    = digits * (S(".") * digits)^-1
+local real    = digits * (S(".,") * digits)^-1
 local float   = real * (P("E") * integer)^-1
 
 -- local number  = C(float + integer)
@@ -1391,6 +1391,7 @@ local function collapse_pairs(t)
         elseif current == "," or current == ";" then
          -- t[i] = current .. "\\thinspace" -- look sbad in (a,b)
             i = i + 1
+-- inspect(t)
         else
             i = i + 1
         end
@@ -1760,12 +1761,12 @@ local function collapse_fractions_2(t)
                 -- crap for
 --                 t[m] = s_left .. "\\vfrac{" .. t[i-1] .. "}{" .. t[i+2] .. "}" .. s_right
 --                 t[m] = "\\fenced[asciimath:vfrac]{" .. t[i-1] .. "\\fence" .. t[i+2] .. "}"
-                t[m] = "\\hfrac{" .. t[i-1] .. "}{" .. t[i+2] .. "}"
+                t[m] = "\\vfrac{" .. t[i-1] .. "}{" .. t[i+2] .. "}"
                 i = i + 3
             else
 --                 t[m] = s_left .. "\\vfrac{" .. t[i-1] .. "}{" .. t[i+1] .. "}" .. s_right
 --                 t[m] = "\\fenced[asciimath:vfrac]{" .. t[i-1] .. "\\fence" .. t[i+1] .. "}"
-                t[m] = "\\hfrac{" .. t[i-1] .. "}{" .. t[i+1] .. "}"
+                t[m] = "\\vfrac{" .. t[i-1] .. "}{" .. t[i+1] .. "}"
                 i = i + 2
             end
             if i < n then

@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['mtx-bibtex'] = {
     license   = "see context related readme files"
 }
 
+local sortedhash, sortedkeys = table.sortedhash, table.sortedkeys
+
 local helpinfo = [[
 <?xml version="1.0"?>
 <application>
@@ -19,6 +21,7 @@ local helpinfo = [[
    <subcategory>
     <flag name="toxml"><short>convert bibtex database(s) to xml</short></flag>
     <flag name="tolua"><short>convert bibtex database(s) to lua</short></flag>
+    <flag name="totxt"><short>convert bibtex database(s) to text (key = value)</short></flag>
     <flag name="search"><short>seatch bibtex database(s)</short></flag>
    </subcategory>
   </category>
@@ -29,6 +32,7 @@ local helpinfo = [[
    <subcategory>
     <example><command>mtxrun --script bibtex --tolua bibl-001.bib</command></example>
     <example><command>mtxrun --script bibtex --tolua --simple bibl-001.bib</command></example>
+    <example><command>mtxrun --script bibtex --totxt bibl-003.bib</command></example>
     <example><command>mtxrun --script bibtex --toxml bibl-001.bib bibl-002.bib bibl-003.bib biblio.xml</command></example>
     <example><command>mtxrun --script bibtex --search --list --pattern=match(author:foo) bar.bib</command></example>
    </subcategory>
@@ -53,7 +57,7 @@ scripts        = scripts        or { }
 scripts.bibtex = scripts.bibtex or { }
 
 function scripts.bibtex.toxml(files)
-    local instance = bibtex.new()
+    local instance = publications.new()
     local target   = "mtx-bibtex-output.xml"
     for i=1,#files do
         local filename = files[i]
@@ -61,19 +65,19 @@ function scripts.bibtex.toxml(files)
         if filetype == "xml" then
             target = filename
         elseif filetype == "bib" then
-            bibtex.load { dataset = instance, filename = filename }
+            publications.load { dataset = instance, filename = filename }
         else
             -- not supported
         end
     end
-    bibtex.converttoxml(instance,true)
+    publications.converttoxml(instance,true)
     instance.shortcuts = nil
     instance.luadata   = nil
     xml.save(instance.xmldata,target)
 end
 
 function scripts.bibtex.tolua(files)
-    local instance = bibtex.new()
+    local instance = publications.new()
     local target = "mtx-bibtex-output.lua"
     for i=1,#files do
         local filename = files[i]
@@ -81,7 +85,7 @@ function scripts.bibtex.tolua(files)
         if filetype == "lua" then
             target = filename
         elseif filetype == "bib" then
-            bibtex.load { dataset = instance, filename = filename }
+            publications.load { dataset = instance, filename = filename }
 
         else
             -- not supported
@@ -89,13 +93,43 @@ function scripts.bibtex.tolua(files)
     end
     instance.shortcuts = nil
     instance.xmldata   = nil
-    bibtex.analyze(instance)
+    publications.analyze(instance)
     if environment.arguments.simple then
         table.save(target,instance)
     else
         table.save(target,instance.luadata)
     end
 end
+
+function scripts.bibtex.totxt(files)
+    local instance = publications.new()
+    local target   = "mtx-bibtex-output.txt"
+    for i=1,#files do
+        local filename = files[i]
+        local filetype = file.suffix(filename)
+        if filetype == "txt" then
+            target = filename
+        elseif filetype == "bib" then
+            publications.load { dataset = instance, filename = filename }
+        else
+            -- not supported
+        end
+    end
+    local luadata = instance.luadata
+    local result  = { }
+    local r       = 0
+    local line    = string.formatters["%s = %s"]
+    if luadata then
+        for k, v in sortedhash(luadata) do
+            for k, v in sortedhash(v) do
+                r = r + 1 ; result[r] = line(k,v)
+            end
+            r = r + 1 ; result[r] = ""
+        end
+    end
+    io.savedata(target,table.concat(result,"\n"))
+end
+
 
 function scripts.bibtex.search(files,pattern,list)
     if pattern then
@@ -107,7 +141,7 @@ function scripts.bibtex.search(files,pattern,list)
             end
         end
         local found = publications.search(dataset,pattern)
-        local tags  = table.sortedkeys(found)
+        local tags  = sortedkeys(found)
         if #tags == 0 then
             report("no match")
         elseif list then
@@ -142,6 +176,8 @@ elseif environment.arguments.toxml then
     scripts.bibtex.toxml(environment.files)
 elseif environment.arguments.tolua then
     scripts.bibtex.tolua(environment.files)
+elseif environment.arguments.totxt then
+    scripts.bibtex.totxt(environment.files)
 elseif environment.arguments.exporthelp then
     application.export(environment.arguments.exporthelp,environment.files[1])
 else

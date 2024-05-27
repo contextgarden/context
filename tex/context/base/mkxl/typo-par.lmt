@@ -94,3 +94,21 @@ function builders.checkparcontext(where)
 end
 
 appendaction("paragraphcontext","system","builders.checkparcontext")
+
+interfaces.implement {
+    name      = "shiftparshape",
+    arguments = "integer",
+    protected = true,
+    public    = true,
+    actions   = shiftparshape,
+}
+
+interfaces.implement {
+    name      = "rotateparshape",
+    arguments = "integer", -- { "integer", true }
+    protected = true,
+    public    = true,
+    actions   = function(n)
+        shiftparshape(n,true)
+    end
+}

@@ -1924,23 +1924,23 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsemeaning" level="system" category="strings" keywords="conditional" file="syst-aux.mkiv">
+    <!-- cd:command name="doifelsemeaning" level="system" category="strings" keywords="conditional" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
-    </cd:command>
+    </cd:command -->
 
-    <cd:command name="doifmeaningelse" level="system" category="strings" keywords="conditional" file="syst-aux.mkiv">
+    <!-- cd:command name="doifmeaningelse" level="system" category="strings" keywords="conditional" file="syst-aux.mkiv">
         <cd:arguments>
             <cd:csname/>
             <cd:csname/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
-    </cd:command>
+    </cd:command -->
 
     <cd:command name="doifelsesamestring" level="system" category="strings" keywords="conditional" file="syst-aux.mkiv">
         <cd:arguments>

@@ -47,7 +47,6 @@ local latelua_code       <const> = nodes.whatsitcodes.latelua
 
 local localtexrun        = tex.runlocal
 
------ a_displaymath      <const> = attributes.private('displaymath')
 local a_linenumber       <const> = attributes.private('linenumber')
 local a_linereference    <const> = attributes.private('linereference')
 
@@ -357,11 +356,7 @@ function boxed.addlinenumbers(n,b,nested)
                             report_lines("starting line number range %s: start %s, continue %s",a,da.start,da.continue or v_no)
                         end
                     end
-                 -- if getattr(n,a_displaymath) then
-                 --     check_number(n,b,a,skip)
-                 -- else
-                       check_number(n,b,a,skip)
-                 -- end
+                    check_number(n,b,a,skip)
                     skip = false
                 end
             end

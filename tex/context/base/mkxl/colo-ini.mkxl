@@ -388,13 +388,24 @@
 
 %D Nasty:
 
+% \permanent\def\usedcolorparameterattributes#1%
+%   {\beginlocalcontrol\begingroup
+%    \dousecolorparameter{#1}%
+%    \normalexpanded{\endgroup\noexpand\endlocalcontrol
+%        \noexpand\s!attr \colorattribute        \the\c_attr_color
+%        \noexpand\s!attr \colormodelattribute   \the\c_attr_colormodel
+%        \noexpand\s!attr \transparencyattribute \the\c_attr_transparency}}
+
 \permanent\def\usedcolorparameterattributes#1%
   {\beginlocalcontrol\begingroup
    \dousecolorparameter{#1}%
    \normalexpanded{\endgroup\noexpand\endlocalcontrol
+       % differs a lot
        \noexpand\s!attr \colorattribute        \the\c_attr_color
+       % one token
        \noexpand\s!attr \colormodelattribute   \the\c_attr_colormodel
-       \noexpand\s!attr \transparencyattribute \the\c_attr_transparency}}
+       % often unset
+       \noexpand\s!attr \transparencyattribute \ifnum\c_attr_transparency=\attributeunsetvalue\attributeunsetvalue\else\the\c_attr_transparency\fi}}
 
 %D In this documentation we will not go into too much details on palets. Curious
 %D users can find more information on this topic in \from[use of color].

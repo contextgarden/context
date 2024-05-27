@@ -283,19 +283,19 @@ halfword tex_valid_box_index(halfword n)
     return box_index_in_range(n);
 }
 
-scaled   tex_get_local_left_width        (halfword p) { return par_box_left_width(p);     }
-scaled   tex_get_local_right_width       (halfword p) { return par_box_right_width(p);    }
-halfword tex_get_local_interline_penalty (halfword p) { return par_inter_line_penalty(p); }
-halfword tex_get_local_broken_penalty    (halfword p) { return par_broken_penalty(p);     }
-halfword tex_get_local_tolerance         (halfword p) { return par_tolerance(p);          }
-halfword tex_get_local_pre_tolerance     (halfword p) { return par_pre_tolerance(p);      }
+scaled   tex_get_local_left_width        (halfword p) { return par_box_left_width(p); }
+scaled   tex_get_local_right_width       (halfword p) { return par_box_right_width(p); }
+halfword tex_get_local_interline_penalty (halfword p) { return par_local_inter_line_penalty(p); }
+halfword tex_get_local_broken_penalty    (halfword p) { return par_local_broken_penalty(p); }
+halfword tex_get_local_tolerance         (halfword p) { return par_tolerance(p); }
+halfword tex_get_local_pre_tolerance     (halfword p) { return par_pre_tolerance(p); }
 
-void     tex_set_local_left_width        (halfword p, scaled   width    ) { par_box_left_width(p)     = width;     }
-void     tex_set_local_right_width       (halfword p, scaled   width    ) { par_box_right_width(p)    = width;     }
-void     tex_set_local_interline_penalty (halfword p, halfword penalty  ) { par_inter_line_penalty(p) = penalty;   }
-void     tex_set_local_broken_penalty    (halfword p, halfword penalty  ) { par_broken_penalty(p)     = penalty;   }
-void     tex_set_local_tolerance         (halfword p, halfword tolerance) { par_tolerance(p)          = tolerance; }
-void     tex_set_local_pre_tolerance     (halfword p, halfword tolerance) { par_pre_tolerance(p)      = tolerance; }
+void     tex_set_local_left_width        (halfword p, scaled   width    ) { par_box_left_width(p) = width; }
+void     tex_set_local_right_width       (halfword p, scaled   width    ) { par_box_right_width(p) = width; }
+void     tex_set_local_interline_penalty (halfword p, halfword penalty  ) { par_local_inter_line_penalty(p) = penalty; }
+void     tex_set_local_broken_penalty    (halfword p, halfword penalty  ) { par_local_broken_penalty(p) = penalty; }
+void     tex_set_local_tolerance         (halfword p, halfword tolerance) { par_tolerance(p) = tolerance; }
+void     tex_set_local_pre_tolerance     (halfword p, halfword tolerance) { par_pre_tolerance(p) = tolerance; }
 
 typedef enum saved_localbox_entries {
     saved_localbox_location_entry = 0,

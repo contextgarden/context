@@ -33,6 +33,7 @@ local helpinfo = [[
     <flag name="sign"><short>sign document (assumes signature template)</short></flag>
     <flag name="verify"><short>verify document</short></flag>
     <flag name="detail"><short>print detail to the console</short></flag>
+    <flag name="userdata"><short>print userdata to the console</short></flag>
    </subcategory>
    <subcategory>
     <example><command>mtxrun --script pdf --info foo.pdf</command></example>
@@ -42,6 +43,7 @@ local helpinfo = [[
     <example><command>mtxrun --script pdf --sign --certificate=somesign.pem --password=test --uselibrary somefile</command></example>
     <example><command>mtxrun --script pdf --verify --certificate=somesign.pem --password=test --uselibrary somefile</command></example>
     <example><command>mtxrun --script pdf --detail=nofpages somefile</command></example>
+    <example><command>mtxrun --script pdf --userdata=keylist [--format=lua|json|lines] somefile</command></example>
    </subcategory>
   </category>
  </flags>
@@ -410,6 +412,46 @@ end
 
 local expanded = lpdf.epdf.expanded
 
+function scripts.pdf.userdata(filename,name,format)
+    local pdffile = loadpdffile(filename)
+    if pdffile then
+        local catalog  = pdffile.Catalog
+        local userdata = catalog.LMTX_Userdata
+        if userdata then
+            if type(name) == "string" then
+                local t = { }
+                if type(format) == "string" then
+                    for s in gmatch(name,"([^,]+)") do
+                        t[s] = userdata[s]
+                    end
+                    if format == "lua" then
+                        print(table.serialize(t,"userdata"))
+                    elseif format == "json" then
+                        print(utilities.json.tojson(t))
+                    else
+                        for k, v in sortedhash(t) do
+                            print(k .. "=" .. v)
+                        end
+                    end
+                else
+                    for s in gmatch(name,"([^,]+)") do
+                        t[#t+1] = userdata[s]
+                    end
+                    print(concat(t," "))
+                end
+            else
+                for k, v in expanded(userdata) do
+                    if k ~= "Type" then
+                        report("%s : %s",k,v)
+                    end
+                end
+            end
+        else
+            report("no userdata")
+        end
+    end
+end
+
 local function getfonts(pdffile)
     local usedfonts  = { }
 
@@ -487,7 +529,7 @@ function scripts.pdf.fonts(filename)
         local usedfonts = getfonts(pdffile)
         local found     = { }
         local common    = table.setmetatableindex("table")
-        for k, v in table.sortedhash(usedfonts) do
+        for k, v in sortedhash(usedfonts) do
             local basefont = v.BaseFont
             local encoding = v.Encoding
             local subtype  = v.Subtype
@@ -779,6 +821,8 @@ elseif environment.argument("metadata") then
     scripts.pdf.metadata(filename,environment.argument("pretty"))
 elseif environment.argument("formdata") then
     scripts.pdf.formdata(filename,environment.argument("save"))
+elseif environment.argument("userdata") then
+    scripts.pdf.userdata(filename,environment.argument("userdata"),environment.argument("format"))
 elseif environment.argument("fonts") then
     scripts.pdf.fonts(filename)
 elseif environment.argument("object") then

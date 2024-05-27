@@ -2222,6 +2222,19 @@
    \ifmmode\mr\fi % otherwise \rm not downward compatible ... not adapted yet
    \font_helpers_synchronize_font}
 
+\mutable\let\f_font_rscale_used\plusone
+
+\appendtoks
+   %\aliased\let\f_font_rscale_used\v_font_rscale_default
+    \mutable\let\f_font_rscale_used\plusone
+    \protected\def\font_helpers_set_current_font_style#style%
+      {\cdef\fontstyle{#style}%
+       \font_typescripts_inherit_check\fontstyle
+       \ifmmode\mr\fi % otherwise \rm not downward compatible ... not adapted yet
+       \font_helpers_synchronize_font
+       \edef\f_font_rscale_used{\font_rscale_xx{#style}}}%
+\to \everycompactfontmode
+
 \protected\def\font_helpers_set_current_xsize_alternative#xsize#alternative%
   {\cdef\fontface{#xsize}%
    \cdef\fontalternative{#alternative}%
@@ -2676,19 +2689,25 @@
 
 \appendtoks
     \def\font_scale_defined
-      {\glyphscale\dimexpr\textface*\plushundred/\onepoint\relax
+     %{\glyphscale\dimexpr\textface*\plushundred/\onepoint\relax
+     %{\glyphscale\dimexpr\font_rscale_xx\fontstyle\dimexpr\textface*\plushundred/\onepoint\relax\relax
+      {\glyphscale\dimexpr\f_font_rscale_used\dimexpr\textface*\plushundred/\onepoint\relax\relax
        \ifskipfontcharacteristics \else
          \expand\everyfont % \setfontcharacteristics
          \expand\everyfontswitch
        \fi}%
     \def\font_scale_defined_x
-      {\glyphscale\dimexpr\xtextface*\plushundred/\onepoint\relax
+     %{\glyphscale\dimexpr\xtextface*\plushundred/\onepoint\relax
+     %{\glyphscale\dimexpr\font_rscale_xx\fontstyle\dimexpr\xtextface*\plushundred/\onepoint\relax\relax
+      {\glyphscale\dimexpr\f_font_rscale_used\dimexpr\xtextface*\plushundred/\onepoint\relax\relax
        \ifskipfontcharacteristics \else
          \expand\everyfont % \setfontcharacteristics
          \expand\everyfontswitch
        \fi}%
     \def\font_scale_defined_xx
-      {\glyphscale\dimexpr\xxtextface*\plushundred/\onepoint\relax
+     %{\glyphscale\dimexpr\xxtextface*\plushundred/\onepoint\relax
+     %{\glyphscale\dimexpr\font_rscale_xx\fontstyle\dimexpr\xxtextface*\plushundred/\onepoint\relax\relax
+      {\glyphscale\dimexpr\f_font_rscale_used\dimexpr\xxtextface*\plushundred/\onepoint\relax\relax
        \ifskipfontcharacteristics \else
          \expand\everyfont % \setfontcharacteristics
          \expand\everyfontswitch

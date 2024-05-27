@@ -268,7 +268,7 @@
 % \permanent\overloaded\protected\def\removelastskip
 %   {\ifvmode\ifzeropt\lastskip\else\vskip-\lastskip\fi\fi}
 
-\permanent\def\doifoutervmode
+\permanent\def\doifoutervmode % was only used in \presetindentation
   {\unless\ifvmode
      \expandafter\gobbleoneargument
    \orelse\ifinner
@@ -1419,6 +1419,7 @@
 \startsetups [\systemsetupsprefix\s!reset]
     \resetpenalties\widowpenalties
     \resetpenalties\clubpenalties
+    \resetpenalties\brokenpenalties
     \resetpenalties\interlinepenalties
 \stopsetups
 
@@ -2563,5 +2564,14 @@
 %       \page
 %   }
 % \stoptext
+
+%D New:
+
+% \doublepenaltymode\zerocount
+
+\appendtoks
+    % realpageno is now advanced
+    \global\doublepenaltymode\rightorleftpageaction\zerocount\plusone
+\to \everyaftershipout
 
 \protect \endinput

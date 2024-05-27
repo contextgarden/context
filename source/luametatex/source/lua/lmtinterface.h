@@ -94,6 +94,7 @@ extern int  luaopen_xzip        (lua_State *L);
 extern int  luaextend_io        (lua_State *L);
 extern int  luaextend_os        (lua_State *L);
 extern int  luaextend_string    (lua_State *L);
+extern int  luaextend_table     (lua_State *L);
 extern int  luaextend_xcomplex  (lua_State *L);
 
 /*tex
@@ -501,6 +502,7 @@ make_lua_key(L, begin_group);\
 make_lua_key(L, begin_local);\
 make_lua_key(L, begin_paragraph);\
 make_lua_key(L, beginmath);\
+make_lua_key(L, beginbrokenmath);\
 make_lua_key(L, beginparagraph);\
 make_lua_key(L, belowdisplayshortskip);\
 make_lua_key(L, belowdisplayskip);\
@@ -526,6 +528,7 @@ make_lua_key(L, box_property);\
 make_lua_key(L, broken);\
 make_lua_key(L, brokeninsert);\
 make_lua_key(L, brokenpenalty);\
+make_lua_key(L, brokenpenalties);\
 make_lua_key(L, bytecode);\
 make_lua_key(L, call);\
 make_lua_key(L, callback);\
@@ -648,6 +651,7 @@ make_lua_key(L, end_match);\
 make_lua_key(L, end_paragraph);\
 make_lua_key(L, end_template);\
 make_lua_key(L, endmath);\
+make_lua_key(L, endbrokenmath);\
 make_lua_key(L, equation);\
 make_lua_key(L, equation_number);\
 make_lua_key(L, equationnumber);\

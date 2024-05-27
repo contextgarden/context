@@ -1,0 +1,96 @@
+% language=us runpath=texruns:manuals/ontarget
+
+\startcomponent ontarget-pdf-2
+
+\environment ontarget-style
+
+\logo [TIKZ] {TikZ}
+\logo [SMIL] {SMIL}
+
+\startchapter[title={PDF 2.0}]
+
+% \startsection[title=Introduction]
+
+The \PDF\ file format has evolved over decades and support in \TEX\ macro
+packages has evolved with it. The \PDFTEX\ engine defaults to version 1.4 but
+\CONTEXT\ \MKII\ bumps that to 1.5 by default. The \LUATEX\ engine initializes to
+1.0 but in \CONTEXT\ \MKIV\ we use 1.7 by default, although one can choose some
+standard that uses a different value. A quick check shows that \XETEX, that uses
+\DVIPDFMX\ goes for 1.5 by default. In \LUAMETATEX\ we default to nothing because
+it has no backend built in, but in \MKXL\ we also use 1.7 as default. So, where does
+the latest greatest \PDF\ 2.0 fit in?
+
+It's good to notice that the difference between version 1.7 and 2.0 is not that
+large, especially when we look at a \TEX\ engine. When we talk about text we only
+have to provide page streams with text rendering operators and embed fonts that
+make this possible. We can support color by pushing the right operators and, if
+needed, graphic state objects in the file. While \TEX\ only has rules, we're fine
+with simple drawing operations. We can use other drawing operators when we
+convert from \METAPOST\ or use packages like \TIKZ. Of course adding hyperlinks
+and alike is possible and here we can try to play safe, but we can also introduce
+issues because we rely on the viewer. If we insert graphics we have to make sure
+that the right objects are injected, and here we are dependent of the quality of
+the producer of those graphics. In most aspects an upgrade to 2.0 is no big deal
+if we already can provide 1.7 output.
+
+Because \PDF\ is used for printing, interchange and archiving, some standards have
+evolved that put restrictions on what can go in the \PDF\ file. If we decide to
+go for 2.0 output, we can forget about these standards because \PDF\ 2.0 supports
+the lot. It is somewhat more restricted and features that are deprecates
+sometimes are in fact obsolete and supposed not to be used. This is puzzling
+because there is no real need to drop something that is already supported. The
+main problem here is that validators can be picky. There are also amendments made
+to 2.0, some of which smell like accommodating applications that have issues with
+them. It's not like we have tons of old viewers that are used large scale that
+are not up to 2.0 quality \PDF. Maybe we should just forget about the pre 2.0
+standard profiles.
+
+Tagging has been part of \PDF\ for a while but in the beginning was mostly
+related to applications marking content in a way useful for those applications.
+When embedding a page from a file that information is rather useless. Later
+accessibility became an issue and that kind of tagging was added and later
+adapted a bit in \PDF\ 2.0, but in 2024 it is still pretty much unclear how
+to deal with it, if only because in 15 years no real development has taken
+place in viewers when it comes to using these features. The best we can do
+is to make sure that validators are happy with what \CONTEXT\ produces.
+
+It must be noted that when we talk accessibility, the fact that embedding audio
+and video went from being easy to being complicated, with an intermediate flirt
+with flash (in it self okay \SMIL). In a similar way interactive features are a
+bit unstable, and for instance simple (trivial) viewer control would have made
+live much easier. In order to really be accessible one should just ship dedicated
+versions of documents, its source or, if one considers that more usable, some kind
+of \HTML\ output (of course that's often a short term perspective).
+
+So, what is needed to support 2.0 in \CONTEXT ? The output that we render is
+basically the same. We can leave out some details like so called cidsets and
+procsets and we have to make sure that some demands are met, like mandate
+resources and using registered tags for private entries in dictionaries. All that
+is easy compared to inclusion of third party content: here we often need to do
+some cleanup in order to pass the tests. For that we need not only check some
+specific dictionaries but also parse the page (and form) content streams and if
+needed clean them up. This comes a (runtime) price but it's bearable. More tricky
+is dealing with missing (or bad) fonts but again it can be done, maybe with a
+dedicates configuration to control the process. See the \type {pdfmerge} manual
+for more information about this.
+
+When it comes to tagging the best we can so is play safe and rely on future
+content analysis helped with generic tags. After all that us what these language
+models promise us. It doesn't hurt to be somewhat sceptic with regards to
+standards and the future. Just look at how typesetting, printing and publishing
+evolved. Technology is not that long term stable and with big tech in charge
+commerce drives most of it. It's already a miracle is some application or
+technology survives a few years. So, we really need to restrict ourselves to what
+makes sense.
+
+All that said: we're ready to deal with 2.0 and can always adapt if needed. For
+that purpose we also embed additional \CONTEXT\ specific information so that in
+the future we can, if needed, upgrade a \PDF\ file, although with a \TEX\ tool
+chain one can always regenerate a document. The main question is, when do we
+default to it.
+
+% \stopsection
+
+\stopchapter
+
+\stopcomponent

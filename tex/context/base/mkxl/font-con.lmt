@@ -563,9 +563,9 @@ function constructors.scale(tfmdata,specification)
         parameters.scriptscale       = scriptscale
         parameters.scriptscriptscale = scriptscriptscale
 
-     -- target.textscale         = textscale
-     -- target.scriptscale       = scriptscale
-     -- target.scriptscriptscale = scriptscriptscale
+        target.textscale         = textscale
+        target.scriptscale       = scriptscale
+        target.scriptscriptscale = scriptscriptscale
 
         targetparameters.textscale         = textscale
         targetparameters.scriptscale       = scriptscale

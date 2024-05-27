@@ -1047,6 +1047,7 @@ void lmt_initialize(void)
         luaextend_os(L);
         luaextend_io(L);
         luaextend_string(L);
+     // luaextend_table(L);
         /*tex Loading the socket library is a bit odd (old stuff). */
         enginelib_luaopen_liblist(L, lmt_libs_socket_function_list);
         /*tex This initializes the 'tex' related libraries that have some luaonly functionality */
