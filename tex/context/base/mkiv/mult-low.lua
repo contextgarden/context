@@ -194,6 +194,9 @@ return {
         "mathmaybeordinarycode", "mathmayberelationcode", "mathmaybebinarycode", "mathnumbergroupcode",
         "mathchemicalbondcode", "mathimplicationcode",
         --
+        "mathnormalstylepreset", "mathcrampedstylepreset", "mathsubscriptstylepreset", "mathsuperscriptstylepreset", "mathsmallstylepreset",
+        "mathsmallerstylepreset", "mathnumeratorstylepreset", "mathdenominatorstylepreset", "mathdoublesuperscriptstylepreset",
+        --
         "constantnumber", "constantnumberargument", "constantdimen", "constantdimenargument", "constantemptyargument",
         --
         "luastringsep", "!!bs", "!!es",

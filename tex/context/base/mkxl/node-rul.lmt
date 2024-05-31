@@ -843,3 +843,100 @@ do
     }
 
 end
+
+do
+
+    local insert, concat, sort = table.insert, table.concat, table.sort
+
+    local ctx_latelua = context.latelua
+
+    local bpfactor    = number.dimenfactors.bp
+
+    local s_close     <const> = "h"
+    local s_stroke    <const> = "S"
+
+    local f_linewidth = string.formatters["%N w"]
+    local f_moveto    = string.formatters["%N %N m"]
+    local f_lineto    = string.formatters["%N %N l"]
+
+    local segments    = { }
+
+    -- positions can be used instead of r, c but this tracers better
+
+    -- todo: codeinjections.wrapuplinesegment
+
+    local function wrapup(t,c,x,y)
+        local n = t.n
+        local a = t.a
+        if a == 3 then -- reset
+            segments[n] = nil
+        else
+            local s = segments[n]
+            if not s then
+                s = { d = t.d }
+                segments[n] = s
+            end
+            if a == 0 then -- register
+                insert(s,{ t.r, t.c, x, y })
+            elseif a == 1 or a == 2 then -- end close+end
+                insert(s,{ t.r, t.c, x, y })
+                local l = #s
+                if l > 1 then
+                    -- needs checking
+                    sort(s,function(a,b)
+                       if b[1] < a[1] then
+                            return false
+                       else
+                            return a[2] > b[2]
+                       end
+                    end)
+                    sort(s,function(a,b)
+                       if b[3] < a[3] then
+                            return false
+                       else
+                            return a[4] > b[4]
+                       end
+                    end)
+                    --
+                    local r  = { }
+                    local si = s[1]
+                    local x  = si[3] * bpfactor
+                    local y  = si[4] * bpfactor
+                    local w  = s.d * bpfactor
+                    r[#r+1] = f_linewidth(w)
+                    r[#r+1] = f_moveto(x,y)
+                    for i=2,l do
+                        local s = s[i]
+                        local x = s[3] * bpfactor
+                        local y = s[4] * bpfactor
+                        r[#r+1] = f_lineto(x,y)
+                    end
+                    if a == 2 then
+                        r[#r+1] = s_close
+                    end
+                    r[#r+1] = s_stroke
+                    r = concat(r, " ")
+                    lpdf.print("origin",r)
+                    segments[n] = nil
+                end
+            end
+        end
+    end
+
+    implement {
+        name      = "linesegment",
+        protected = true,
+        arguments = { "string", "integer", "integer", "integer", "dimension" },
+        actions   = function(n,r,c,a,d)
+            ctx_latelua {
+                action = wrapup, -- todo: codeinjections.wrapuplinesegment
+                r = r, -- row
+                c = c, -- column
+                a = a, -- action
+                n = n, -- namespace
+                d = d, -- rulethickness
+            }
+        end
+    }
+
+end

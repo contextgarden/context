@@ -2,6 +2,17 @@
     See license.txt in the root of this project.
 */
 
+/*tex 
+
+On the agenda: 
+
+-- remove italic correction
+-- remove delimiter small/large distinction 
+-- remove old school compatibility
+
+because, after all, we can't test that anyway. 
+
+*/
 
 /*tex 
 
@@ -18,7 +29,7 @@
     on a combination of engine control and patching fonts runtime (aka goodie tweaks). This does
     actually mean that in principle we can remove most of the code related to italic correction 
     and simplify kerning, which makes for cleaner code. We can then also ditch many control 
-    options. It could also make some of the resulting constructs les scomplex (this is something
+    options. It could also make some of the resulting constructs less complex (this is something
     that might happen eventually anyway).
 
     In addition to this, the machinery below also has opened up atoms, fractions, accents, fences, 
@@ -2574,8 +2585,8 @@ static void tex_aux_make_hextension(halfword target, int style, int size)
     }
     delimiter = tex_hpack(delimiter, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
     box_width(delimiter) = delimiterwidth;
-//    tex_attach_attribute_list_copy(delimiter, target); /* yes or no */
-    tex_attach_attribute_list_copy(delimiter, extensible); /* yes or no */
+ // tex_attach_attribute_list_copy(delimiter, target); /* yes or no */
+    tex_attach_attribute_list_copy(delimiter, extensible); /* better */
     kernel_math_list(noad_nucleus(target)) = delimiter;
     radical_left_delimiter(target) = null;
     radical_right_delimiter(target) = null;
@@ -4764,6 +4775,11 @@ static void tex_aux_prepend_hkern_to_box_list(halfword box, scaled delta, halfwo
     case we cheat a bit as there is no relationship with a font (the first |null| parameter that 
     gets passed here). In the archive we can find all the variants. 
 
+    We used to have (four) shifted scripts with associated parameters that set the horizontal 
+    shifts but in the end this was removed because multiscripts can do the same. Instead we 
+    have indexed scripts but these are just flagged normal ones. All traces of the shifted 
+    variants were removed end May 2024. 
+
 */
 
 static halfword tex_aux_analyze_script(halfword init, scriptdata *data)
@@ -5368,6 +5384,17 @@ static int tex_aux_math_empty_script(halfword n)
     return ! n || (node_type(n) == sub_mlist_node && ! kernel_math_list(n));
 }
 
+/*tex
+
+We register if a prime is entered before a superscript so in principle we could act upon that but
+in the end we decided to always put it after the superscript. This happened after we introduced
+multiscript support. At that time we also changed the shifted scripts to behave like normal ones 
+but with a different flag that indicates that they are indices. The backend can then use that 
+information (for what we call meaningful math) and again the shifting has been replaced by the 
+multiscripts (and |noscript|) which is easier to explain and configure. 
+
+*/
+
 static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic, int style, scaled supshift, scaled subshift, scaled supdrop, kernset *kerns, halfword single)
 {
     halfword result = null;
@@ -5377,11 +5404,11 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     scaled shift_up = 0;
     scaled shift_down = 0;
     scaled prime_up = 0;
-    scriptdata postsubdata = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0, .whatever = 0 };
-    scriptdata postsupdata = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0, .whatever = 0 }; 
-    scriptdata presubdata  = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0, .whatever = 0 };
-    scriptdata presupdata  = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0, .whatever = 0 };
-    scriptdata primedata   = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .shifted = 0, .whatever = 0 };
+    scriptdata postsubdata = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .whatever = 0 };
+    scriptdata postsupdata = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .whatever = 0 }; 
+    scriptdata presubdata  = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .whatever = 0 };
+    scriptdata presupdata  = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .whatever = 0 };
+    scriptdata primedata   = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .whatever = 0 };
     halfword maxleftkern = 0;
  // halfword maxrightkern = 0;
     scaled leftslack = 0;
@@ -5390,7 +5417,6 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
  // scaled primewidth = 0;
     scaled topovershoot = 0;
     scaled botovershoot = 0;
-    int italicmultiplier = 1; /* This was a hard coded 2 so it needs more checking! */
     int splitscripts = 0;
     halfword primetarget = target;
     scaled prime_drop = noad_prime(target) ? tex_get_math_y_parameter_default(style, math_parameter_prime_shift_drop, 0) : 0;
@@ -5408,9 +5434,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
 
         It's a mess. By adding more and more and also trying to be a bit like old \TEX\ we now have 
         too many kerns. 
-
     */
-
     if (has_noad_option_ignore_empty_super_script(target) && tex_aux_math_empty_script(noad_supscr(target))) {
         tex_flush_node(noad_supscr(target));
         noad_supscr(target) = null;
@@ -5423,6 +5447,10 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
         tex_flush_node(noad_prime(target));
         noad_prime(target) = null;
     }
+    /*tex 
+        When we have a wide accent that exceeds the base we have what is called an overshoot, for 
+        which we need to compensate. See Pagella for an example (goodie file). 
+    */
     if (node_type(target) == accent_noad) {
         scaled top = tex_get_math_parameter_default(style, math_parameter_accent_top_overshoot, 0);
         scaled bot = tex_get_math_parameter_default(style, math_parameter_accent_bottom_overshoot, 0);
@@ -5503,7 +5531,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
                             an |f| is above and so we get inconsistent positioning. By looking at 
                             the prevous primeshift state we avoid this issue in most cases. 
                         */
-//                       if (has_noad_option_continuation(target)) { 
+                      // if (has_noad_option_continuation(target)) { 
                             halfword prev = node_prev(target);
                             while (prev) {
                                 if (tex_math_scripts_allowed(prev)) {
@@ -5520,7 +5548,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
                                 }    
                                 prev = node_prev(prev);
                             }
-//                       }
+                      // }
                     }
                 } else { 
                     prime_up = 0;
@@ -5528,8 +5556,8 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
             }
     }
     /*tex
-        Next we're doing some analysis, needed because of all these parameters than control horizontal and vertical
-        spacing. We start with primes.  
+        Next we're doing some analysis, needed because of all these parameters than control 
+        horizontal and vertical spacing. We start with primes.  
     */
     if (noad_prime(target)) {
         /* todo extra */
@@ -5540,13 +5568,27 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
         } else { 
             prime_up = tex_get_math_y_parameter_default(style, math_parameter_prime_shift_up, 0);
         }
-     // scaled width = tex_get_math_x_parameter_default(style, math_parameter_prime_width, 0);
         primedata.box = tex_aux_clean_box(noad_prime(target), (has_noad_option_nosupscript(target) ? style : tex_math_style_variant(style, math_parameter_prime_variant)), style, math_prime_list, 0, NULL);
         box_shift_amount(primedata.box) -= prime_up;
         box_shift_amount(primedata.box) -= scaledround(box_height(primedata.box) * raise / 100.0);
         kernel_math_list(noad_prime(target)) = null;
         tex_flush_node(noad_prime(target));
         noad_prime(target) = null;
+        /*tex   
+            We don't use this (any longer) ... was needed for collapsing (at the Lua end). But 
+            maybe some day it can become an option, not that it makes much sense mathematically.
+            Also, we can use |\noscript| after the prime(s) to move forward and then use the 
+            multiscript mechanism to add a superscript. 
+        */
+     // switch (noad_script_order(target)) {
+     //     case script_primescript_first:
+     //         break;
+     //     case script_subscript_first:
+     //         break;
+     //     case script_superscript_first:
+     //         break;
+     // }
+        /*tex ... till here. */
         if (noad_supscr(target)) {
             primestate = prime_at_end_location;
         } else if (noad_subscr(target)) {
@@ -5598,17 +5640,9 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     }
     /*tex 
         Each of the scripts gets treated. Traditionally a super and subscript are looked at and 
-        vertically spaced out together which in turn results in the staricase kerns needing that 
+        vertically spaced out together which in turn results in the staircase kerns needing that 
         information. Prescripts we handle differently: they are always aligned, so there the 
         maximum kern wins. 
-    */
- //  postsupdata.shifted = noad_supscr(target) && has_noad_option_shiftedsupscript(target);
- //  postsubdata.shifted = noad_subscr(target) && has_noad_option_shiftedsubscript(target);
- //  presupdata.shifted = noad_supprescr(target) && has_noad_option_shiftedsupprescript(target);
- //  presubdata.shifted = noad_subprescr(target) && has_noad_option_shiftedsubprescript(target);
-    /* 
-        When we have a shifted super or subscript (stored in the prescripts) we don't need to kern
-        the super and subscripts. What to do with the shifts?  
     */
     if (noad_supscr(target)) {
         halfword extra = tex_get_math_y_parameter_checked(style, math_parameter_extra_superscript_shift);
@@ -5771,31 +5805,6 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
                 presubdata.box = null;
             }
         }
-     // /*tex 
-     //     We want to retain the kern because it is a visual thing but it could be an option to 
-     //     only add the excess over the shift. We're talking tiny here. 
-     //
-     //     We could be clever and deal with combinations of shifted but lets play safe and let
-     //     the user worry about it. The sub index always wins. 
-     // */
-     // if (postsubdata.box && postsupdata.shifted) {
-     //     halfword shift = tex_get_math_x_parameter_checked(style, math_parameter_subscript_shift_distance);
-     //     halfword amount = box_width(postsupdata.box) + shift;
-     //     tex_aux_prepend_hkern_to_box_list(postsubdata.box, amount, horizontal_math_kern_subtype, "post shifted");
-     // } else if (postsupdata.box && postsubdata.shifted) {
-     //     halfword shift = tex_get_math_x_parameter_checked(style, math_parameter_superscript_shift_distance);
-     //     halfword amount = box_width(postsubdata.box) + shift;
-     //     tex_aux_prepend_hkern_to_box_list(postsupdata.box, amount, horizontal_math_kern_subtype, "post shifted");
-     // }
-     // if (presubdata.box && presupdata.shifted) {
-     //     halfword shift = tex_get_math_x_parameter_checked(style, math_parameter_subprescript_shift_distance);
-     //     halfword amount = box_width(presupdata.box) + shift;
-     //     tex_aux_append_hkern_to_box_list(presubdata.box, amount, horizontal_math_kern_subtype, "pre shifted");
-     // } else if (presupdata.box && presubdata.shifted) {
-     //     halfword shift = tex_get_math_x_parameter_checked(style, math_parameter_superprescript_shift_distance);
-     //     halfword amount = box_width(presubdata.box) + shift;
-     //     tex_aux_append_hkern_to_box_list(presupdata.box, amount, horizontal_math_kern_subtype, "pre shifted");
-     // }
         /* */
         if (postsupdata.box) {
             /* Do we still want to chain these sups or should we combine it? */
@@ -5825,8 +5834,8 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
                 }
                 if (presupdata.kern) {
                     /* italic needs checking */
-                    kern_amount(presupdata.kern) += -supkern - italicmultiplier * italic;
-                    kern_amount(postsupdata.kern) += supkern + italicmultiplier * italic;
+                    kern_amount(presupdata.kern) += -supkern - italic;
+                    kern_amount(postsupdata.kern) += supkern + italic;
                 }
                 {
                     halfword kern = tex_new_kern_node((shift_up - box_depth(postsupdata.box)) - (box_height(postsubdata.box) - shift_down), vertical_math_kern_subtype);
@@ -5848,8 +5857,8 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
                 }
                 result = tex_aux_shift_to_kern(target, postsupdata.box, -shift_up);
                 if (presupdata.kern) {
-                    kern_amount(presupdata.kern) += -supkern - subkern - italicmultiplier * italic;
-                    kern_amount(postsupdata.kern) += supkern + subkern + italicmultiplier * italic;
+                    kern_amount(presupdata.kern) += -supkern - subkern - italic;
+                    kern_amount(postsupdata.kern) += supkern + subkern + italic;
                 }
             }
         } else {
@@ -5967,7 +5976,6 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
             result = preresult;
         }
         if (prekern) {
-            /* must become horizontal kern */
             halfword list = tex_aux_prepend_hkern_to_new_hlist(target, prekern, horizontal_math_kern_subtype, "pre compensation");
             tex_couple_nodes(tex_tail_of_node_list(list), result);
         } else if (noad_new_hlist(target)) {
@@ -5976,11 +5984,17 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
             noad_new_hlist(target) = result;
         }
     }
-    if (primestate == prime_at_end_location) {
-        tex_couple_nodes(tex_tail_of_node_list(result), primedata.box);
-        rightslack = primedata.slack;
+    /*tex  We now have prines always at the end (after the superscript): */
+    switch (primestate) { 
+        case prime_at_end_location:
+            tex_couple_nodes(tex_tail_of_node_list(result), primedata.box);
+            rightslack = primedata.slack;
+            break;
+        case prime_at_begin_location:
+            rightslack = primedata.slack;
+            break;
     }
-    if (math_slack_mode_par > 0) {
+    if (math_slack_mode_par > 0) { /* brrr what with multiple scripts .... */
         noad_left_slack(target) = leftslack;
         noad_right_slack(target) = rightslack;
         if (tracing_math_par >= 2) {
@@ -7376,40 +7390,40 @@ static void tex_mlist_aux_realign(halfword first, halfword last)
     scaled up = 0;
     scaled down = 0;
     scaled prime = 0;
-    halfword c = first;
-    halfword k = first;
-    while (c) {
-        if (tex_math_scripts_allowed(c)) { 
-            if (has_noad_option_continuation_kernel(c)) {
-                k = c; /* only one so we can have a check */
+    halfword current = first;
+    halfword kernel = first;
+    while (current) {
+        if (tex_math_scripts_allowed(current)) { 
+            if (has_noad_option_continuation_kernel(current)) {
+                kernel = current; /* only one so we can have a check */
             }
             if (has_noad_option_realign_scripts(last)) { // move out 
                 // printf("> up %i, down %i\n",noad_supshift(c),noad_subshift(c));
-                if (noad_supshift(c) > up) {
-                    up = noad_supshift(c);
+                if (noad_supshift(current) > up) {
+                    up = noad_supshift(current);
                 }
-                if (noad_subshift(c) > down) {
-                    down = noad_subshift(c);
+                if (noad_subshift(current) > down) {
+                    down = noad_subshift(current);
                 }
-                if (noad_primeshift(c) > prime) {
-                    prime = noad_primeshift(c);
+                if (noad_primeshift(current) > prime) {
+                    prime = noad_primeshift(current);
                 }
             }
         }
-        if (c == last) {
+        if (current == last) {
             break;
         } else {
-            c = node_next(c);
+            current = node_next(current);
         }
     }
-    c = first;
-    while (c) {
-        if (tex_math_scripts_allowed(c)) {
-            halfword list = noad_new_hlist(c);
+    current = first;
+    while (current) {
+        if (tex_math_scripts_allowed(current)) {
+            halfword list = noad_new_hlist(current);
             if (list) {
-                scaled u = up - noad_supshift(c);
-                scaled d = down - noad_subshift(c);
-                scaled p = prime - noad_primeshift(c);
+                scaled u = up - noad_supshift(current);
+                scaled d = down - noad_subshift(current);
+                scaled p = prime - noad_primeshift(current);
                 while (list) {
                     switch (node_type(list)) { 
                         case hlist_node:
@@ -7495,21 +7509,22 @@ static void tex_mlist_aux_realign(halfword first, halfword last)
                 }
             }
         }
-        if (c == last) {
+        if (current == last) {
             break;
         } else {
-            halfword next = node_next(c);
-            if (c != last && noad_script_kern(first)) { 
-                halfword kern = tex_new_kern_node(noad_script_kern(first), horizontal_math_kern_subtype);
+            halfword next = node_next(current);
+            scaled amount = noad_script_kern(first) - noad_right_slack(current);
+            if (amount) { 
+                halfword kern = tex_new_kern_node(amount, horizontal_math_kern_subtype);
                 tex_attach_attribute_list_copy(kern, first);
-                tex_couple_nodes(c, kern);
+                tex_couple_nodes(current, kern);
                 tex_couple_nodes(kern, next);
             }
-            c = next;
+            current = next;
         }
     }
     if (has_noad_option_inherit_class(last)) {
-        noad_class_right(last) = tex_mlist_aux_guess_class(k);
+        noad_class_right(last) = tex_mlist_aux_guess_class(kernel);
         noad_class_left(first) = noad_class_right(last);
     }
 }

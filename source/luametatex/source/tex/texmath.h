@@ -146,15 +146,9 @@ typedef enum math_parameters {
     math_parameter_prime_shift_up,
     math_parameter_prime_shift_drop,
     math_parameter_prime_space_after,
-    math_parameter_prime_width,
     /* */
     math_parameter_rule_height,
     math_parameter_rule_depth,
-    /* */
-    math_parameter_superscript_shift_distance,
-    math_parameter_subscript_shift_distance,
-    math_parameter_superprescript_shift_distance,
-    math_parameter_subprescript_shift_distance,
     /* */
     math_parameter_extra_superscript_space,
     math_parameter_extra_subscript_space,
@@ -176,6 +170,8 @@ typedef enum math_parameters {
     math_parameter_delimiter_percent,
     math_parameter_delimiter_shortfall,
     math_parameter_delimiter_extend_margin,
+    /* */
+    /*tex This is overkill as we now set them per style. */
     /* */
     math_parameter_over_line_variant,
     math_parameter_under_line_variant,
@@ -252,6 +248,7 @@ typedef enum math_parameters {
 # define last_math_parameter               math_parameter_stack_variant
 # define math_parameter_first_variant      math_parameter_over_line_variant
 # define math_parameter_last_variant       math_parameter_stack_variant
+# define math_parameter_valid_variant(n)   (n >= math_parameter_over_line_variant && n <= math_parameter_stack_variant)
 # define math_default_spacing_parameter    math_parameter_spacing_pair(ordinary_noad_subtype,ordinary_noad_subtype)
 # define math_default_rules_parameter      0
 
@@ -344,7 +341,11 @@ typedef enum math_style_variants {
 
 # define last_math_style_variant math_double_superscript_variant
 
+# define valid_math_style_variant(n) (n >= 0 && n <= math_double_superscript_variant)
+
 inline static int tex_is_cramped_style(int s) { return (s % 2) != 0; }
+
+extern int tex_get_math_variant_preset(int n);
 
 /*
 
@@ -664,7 +665,8 @@ inline int tex_math_no_more_scripts(halfword node)
 { 
     return (node_type(node) >= simple_noad) && (node_type(node) < fence_noad)
         && has_noad_option_no_more_scripts(node)
-        && ! (noad_supscr(node) || noad_subscr(node) || noad_supprescr(node) || noad_subprescr(node) || noad_prime(node));
+        && (noad_supscr(node) || noad_subscr(node) || noad_supprescr(node) || noad_subprescr(node) || noad_prime(node))
+    ;
 }
 
 extern halfword tex_new_math_continuation_atom   (halfword node, halfword attr);

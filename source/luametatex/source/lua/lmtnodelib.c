@@ -3938,9 +3938,9 @@ static int nodelib_direct_setsplit(lua_State *L)
 
 /*tex Local_par nodes can have frozen properties. */
 
-static int nodelib_direct_getparstate(lua_State *L)
+static halfword nodelib_direct_aux_validpar(lua_State *L, int index)
 {
-    halfword p = nodelib_valid_direct_from_index(L, 1);
+    halfword p = nodelib_valid_direct_from_index(L, index);
     if (! p) {
         p = tex_find_par_par(cur_list.head);
     } else if (node_type(p) != par_node) {
@@ -3948,7 +3948,47 @@ static int nodelib_direct_getparstate(lua_State *L)
             p = node_prev(p);
         }
     }
-    if (p && node_type(p) == par_node) {
+    return (p && node_type(p) == par_node) ? p : null;
+}
+
+static int nodelib_direct_patchparshape(lua_State *L) // maybe also patchparstate 
+{
+    halfword par = nodelib_direct_aux_validpar(L, 1);
+    if (par) {
+        halfword shape = par_par_shape(par);
+        halfword options = shape ? specification_options(shape) : 0;
+        if (shape) { 
+            tex_flush_node(shape);
+            par_par_shape(par) = null;
+        }
+        if (lua_type(L, 2) == LUA_TTABLE) {
+            halfword size = lua_rawlen(L, 2);
+            shape = tex_new_specification_node(size, par_shape_code, options);
+            par_par_shape(par) = shape;
+            for (int i = 1; i <= size; i++) {
+                if (lua_rawgeti(L, 2, i) == LUA_TTABLE) {
+                    if (lua_rawgeti(L, -1, 1) == LUA_TNUMBER) { 
+                        scaled indent = lmt_roundnumber(L, -1);
+                        if (lua_rawgeti(L, -2, 2) == LUA_TNUMBER) { 
+                            scaled width = lmt_roundnumber(L, -1);
+                            tex_set_specification_indent(shape, i, indent);
+                            tex_set_specification_width(shape, i, width);
+                        }
+                        lua_pop(L, 1);
+                    }
+                    lua_pop(L, 1);
+                }
+                lua_pop(L, 1);
+            }
+        }
+    }
+    return 0;
+}
+
+static int nodelib_direct_getparstate(lua_State *L)
+{
+    halfword p = nodelib_direct_aux_validpar(L, 1);
+    if (p) {
         int limited = lua_toboolean(L, 2);
         lua_createtable(L, 0, 24);
         switch (node_subtype(p)) { 
@@ -3997,7 +4037,7 @@ static int nodelib_direct_getparstate(lua_State *L)
                         lua_push_integer_at_key(L, shapingpenaltiesmode,           tex_get_par_par(p, par_shaping_penalties_mode_code));
                         lua_push_integer_at_key(L, shapingpenalty,                 tex_get_par_par(p, par_shaping_penalty_code));
                         lua_push_integer_at_key(L, emergencyextrastretch,          tex_get_par_par(p, par_emergency_extra_stretch_code));
-                    }                                                            
+                    }
                     lua_push_specification_at_key(L, parshape,                     tex_get_par_par(p, par_par_shape_code));
                     if (! limited) {                                             
                         lua_push_specification_at_key(L, interlinepenalties,       tex_get_par_par(p, par_inter_line_penalties_code));
@@ -10336,6 +10376,7 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "getcornerkerns",          nodelib_direct_getcornerkerns         },
     { "getwordrange",            nodelib_direct_getwordrange           },
     { "getparstate",             nodelib_direct_getparstate            },
+    { "patchparshape",           nodelib_direct_patchparshape          },
     { "hasattribute",            nodelib_direct_hasattribute           },
     { "hasdimensions",           nodelib_direct_hasdimensions          },
     { "hasfield",                nodelib_direct_hasfield               },

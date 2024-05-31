@@ -4974,7 +4974,7 @@
 
 \setupmathematics
   [\c!alignscripts=\v!always,
-   \c!interscriptfactor=-.5]
+   \c!interscriptfactor=1]
 
 %D Needed for spacing, tagging, etc.
 

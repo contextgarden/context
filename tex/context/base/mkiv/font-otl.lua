@@ -26,7 +26,7 @@ if not modules then modules = { } end modules ['font-otl'] = {
 local lower = string.lower
 local type, next, tonumber, tostring, unpack = type, next, tonumber, tostring, unpack
 local abs = math.abs
-local derivetable, sortedhash = table.derive, table.sortedhash
+local derivetable, sortedhash, remove = table.derive, table.sortedhash, table.remove
 local formatters = string.formatters
 
 local setmetatableindex   = table.setmetatableindex
@@ -311,7 +311,7 @@ end
 -- instance protruding info and loop over characters; one is not supposed
 -- to change descriptions and if one does so one should make a copy!
 
-local function copytotfm(data,cache_id)
+local function copytotfm(data,cache_id,wipemath)
     if data then
         local metadata       = data.metadata
         local properties     = derivetable(data.properties)
@@ -335,15 +335,70 @@ local function copytotfm(data,cache_id)
             minsize    = 100
             maxsize    = 100
         end
-        if mathspecs then
-            for name, value in next, mathspecs do
-                mathparameters[name] = value
-            end
-        end
+        --
         for unicode in next, data.descriptions do -- use parent table
             characters[unicode] = { }
         end
-        if mathspecs then
+        --
+        -- we need a runtime lookup because of running from cdrom or zip, brrr (shouldn't
+        -- we use the basename then?)
+        --
+        local filename = constructors.checkedfilename(resources)
+        local fontname = metadata.fontname
+        local fullname = metadata.fullname or fontname
+        local psname   = fontname or fullname
+        local subfont  = metadata.subfontindex
+        local units    = metadata.units or 1000
+        --
+        if units == 0 then -- catch bugs in fonts
+            units = 1000 -- maybe 2000 when ttf
+            metadata.units = 1000
+            report_otf("changing %a units to %a",0,units)
+        end
+        --
+        if not mathspecs then
+            -- go on
+        elseif wipemath then
+            -- No way that we let a non (or partial) math font register itself as math and interfere
+            -- in bad ways (apart from unwanted overhead). I've seen some examples and it proofs how
+            -- instable and unpredictable fonts can become.
+            local wiped     = false
+            local features  = resources.features
+            local sequences = resources.sequences
+            if features then
+                local gsub = features.gsub
+                if gsub and gsub.ssty then
+                    gsub.ssty = nil
+                    wiped = true
+                end
+            end
+            if sequences then
+                for i=#sequences,1,-1 do
+                    local sequence = sequences[i]
+                    local features = sequence.features
+                    if features then
+                        if features.ssty then
+                            remove(sequences,i)
+                            wiped = true
+                        end
+                    end
+                end
+            end
+            if resources.mathconstants then
+                resources.mathconstants = nil
+                wiped = true
+            end
+            if resources.math then
+                metadata.math = nil
+                wiped = true
+            end
+            if wiped then
+                report_otf("math data wiped from %a",fullname)
+            end
+        else
+            for name, value in next, mathspecs do
+                mathparameters[name] = value
+            end
             for unicode, character in next, characters do
                 local d = descriptions[unicode] -- we could use parent table here
                 local m = d.math
@@ -403,20 +458,6 @@ local function copytotfm(data,cache_id)
                     end
                 end
             end
-        end
-        -- we need a runtime lookup because of running from cdrom or zip, brrr (shouldn't
-        -- we use the basename then?)
-        local filename = constructors.checkedfilename(resources)
-        local fontname = metadata.fontname
-        local fullname = metadata.fullname or fontname
-        local psname   = fontname or fullname
-        local subfont  = metadata.subfontindex
-        local units    = metadata.units or 1000
-        --
-        if units == 0 then -- catch bugs in fonts
-            units = 1000 -- maybe 2000 when ttf
-            metadata.units = 1000
-            report_otf("changing %a units to %a",0,units)
         end
         --
         local monospaced  = metadata.monospaced
@@ -590,9 +631,7 @@ local function otftotfm(specification)
     local cache_id = specification.hash
     local tfmdata  = containers.read(constructors.cache,cache_id)
     if not tfmdata then
-
         checkconversion(specification) -- for the moment here
-
         local name     = specification.name
         local sub      = specification.sub
         local subindex = specification.subindex
@@ -603,7 +642,7 @@ local function otftotfm(specification)
         if rawdata and next(rawdata) then
             local descriptions = rawdata.descriptions
             rawdata.lookuphash = { } -- to be done
-            tfmdata = copytotfm(rawdata,cache_id)
+            tfmdata = copytotfm(rawdata,cache_id,features and features.wipemath)
             if tfmdata and next(tfmdata) then
                 -- at this moment no characters are assigned yet, only empty slots
                 local features     = constructors.checkedfeatures("otf",features)

@@ -497,12 +497,6 @@ This original \TEX\ primitive is equivalent to the more verbose \prm
 % \startnewprimitive[title={\prm {Umathphantom}}]
 % \stopnewprimitive
 
-% \startnewprimitive[title={\prm {Umathpresubshiftdistance}}]
-% \stopnewprimitive
-
-% \startnewprimitive[title={\prm {Umathpresupshiftdistance}}]
-% \stopnewprimitive
-
 % \startnewprimitive[title={\prm {Umathprimeraise}}]
 % \stopnewprimitive
 
@@ -519,9 +513,6 @@ This original \TEX\ primitive is equivalent to the more verbose \prm
 % \stopnewprimitive
 
 % \startnewprimitive[title={\prm {Umathprimevariant}}]
-% \stopnewprimitive
-
-% \startnewprimitive[title={\prm {Umathprimewidth}}]
 % \stopnewprimitive
 
 % \startnewprimitive[title={\prm {Umathquad}}]
@@ -599,9 +590,6 @@ This original \TEX\ primitive is equivalent to the more verbose \prm
 % \startnewprimitive[title={\prm {Umathsubscriptvariant}}]
 % \stopnewprimitive
 
-% \startnewprimitive[title={\prm {Umathsubshiftdistance}}]
-% \stopnewprimitive
-
 % \startnewprimitive[title={\prm {Umathsubshiftdown}}]
 % \stopnewprimitive
 
@@ -624,9 +612,6 @@ This original \TEX\ primitive is equivalent to the more verbose \prm
 % \stopnewprimitive
 
 % \startnewprimitive[title={\prm {Umathsuperscriptvariant}}]
-% \stopnewprimitive
-
-% \startnewprimitive[title={\prm {Umathsupshiftdistance}}]
 % \stopnewprimitive
 
 % \startnewprimitive[title={\prm {Umathsupshiftdrop}}]
@@ -7835,10 +7820,10 @@ takes the following values:
 \startnewprimitive[title={\prm {mathdoublescriptmode}}]
 
 When this parameter has a negative value double scripts trigger an error, so with
-\prm {superscript}, \prm {nosuperscript}, \prm {shiftedsuperscript}, \prm
-{superprescript}, \prm {nosuperprescript}, \prm {shiftedsuperprescript}, \prm
-{subscript}, \prm {nosubscript}, \prm {shiftedsubscript}, \prm {subprescript},
-\prm {nosubprescript}, \prm {shiftedsubprescript} and \prm {primescript}, as well
+\prm {superscript}, \prm {nosuperscript}, \prm {indexedsuperscript}, \prm
+{superprescript}, \prm {nosuperprescript}, \prm {indexedsuperprescript}, \prm
+{subscript}, \prm {nosubscript}, \prm {indexedsubscript}, \prm {subprescript},
+\prm {nosubprescript}, \prm {indexedsubprescript} and \prm {primescript}, as well
 as their (multiple) \type {_} and \type {^} aliases.
 
 A value of zero does the normal and inserts a dummy atom (basically a \type {{}})
@@ -10840,15 +10825,15 @@ dedicated penalty, specified by this parameter.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\prm {shiftedsubprescript}}]
+\startnewprimitive[title={\prm {indexedsubprescript}}]
 
 This primitive (or \type {____}) puts a flag on the script but renders
 the same:
 
 \startbuffer
 $
-    x \shiftedsuperprescript{2} \subprescript       {2} +
-    x \superprescript       {2} \shiftedsubprescript{2} +
+    x \indexedsuperprescript{2} \subprescript       {2} +
+    x \superprescript       {2} \indexedsubprescript{2} +
     x \superprescript       {2} ____                {2} =
     x \superprescript       {2} \subprescript       {2}
 $
@@ -10860,15 +10845,15 @@ Gives: \inlinebuffer.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\prm {shiftedsubscript}}]
+\startnewprimitive[title={\prm {indexedsubscript}}]
 
 This primitive (or \type {__}) puts a flag on the script but renders
 the same:
 
 \startbuffer
 $
-    x \shiftedsuperscript{2} \subscript       {2} +
-    x \superscript       {2} \shiftedsubscript{2} +
+    x \indexedsuperscript{2} \subscript       {2} +
+    x \superscript       {2} \indexedsubscript{2} +
     x \superscript       {2} __               {2} =
     x \superscript       {2} \subscript       {2}
 $
@@ -10880,16 +10865,16 @@ Gives: \inlinebuffer.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\prm {shiftedsuperprescript}}]
+\startnewprimitive[title={\prm {indexedsuperprescript}}]
 
 This primitive (or \type {^^^^}) puts a flag on the script but renders
 the same:
 
 \startbuffer
 $
-    x \shiftedsuperprescript{2} \subprescript       {2} +
+    x \indexedsuperprescript{2} \subprescript       {2} +
     x ^^^^                  {2} \subprescript       {2} +
-    x \superprescript       {2} \shiftedsubprescript{2} =
+    x \superprescript       {2} \indexedsubprescript{2} =
     x \superprescript       {2} \subprescript       {2}
 $
 \stopbuffer
@@ -10900,16 +10885,16 @@ Gives: \inlinebuffer.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\prm {shiftedsuperscript}}]
+\startnewprimitive[title={\prm {indexedsuperscript}}]
 
 This primitive (or \type {^^}) puts a flag on the script but renders
 the same:
 
 \startbuffer
 $
-    x \shiftedsuperscript{2} \subscript       {2} +
+    x \indexedsuperscript{2} \subscript       {2} +
     x ^^                 {2} \subscript       {2} +
-    x \superscript       {2} \shiftedsubscript{2} =
+    x \superscript       {2} \indexedsubscript{2} =
     x \superscript       {2} \subscript       {2}
 $
 \stopbuffer

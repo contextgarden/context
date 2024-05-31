@@ -1163,6 +1163,11 @@
         180=>\global\c_strc_floats_rotation\commalistelement\relax,%
         270=>\global\c_strc_floats_rotation\commalistelement\relax]%
    \fi
+   \ifinset\v!paragraph\floatlocation
+     \global\settrue\c_page_sides_force_shape
+   \else
+     \global\setfalse\c_page_sides_force_shape
+   \fi
    \ifinset\v!force\floatlocation
      \global\c_page_sides_shape_down\conditionaltrue
    \else
@@ -2218,7 +2223,8 @@
    \next}
 
 \def\strc_floats_build_box_side
-  {\ifconditional\c_strc_floats_par_float
+  {\setfalse\c_page_sides_force_shape
+   \ifconditional\c_strc_floats_par_float
      \let\next\strc_floats_build_box_high
    \else
      \let\next\strc_floats_build_box_middle

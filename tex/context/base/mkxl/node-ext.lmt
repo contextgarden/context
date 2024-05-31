@@ -139,9 +139,9 @@ do
         local kind = type(data)
         noflatelua = noflatelua + 1
         if kind == "table" then
-            data.action(data.specification or data)
+            data.action(data.specification or data,current,pos_h,pos_v)
         elseif kind == "function" then
-            data()
+            data(current,pos_h,pos_v)
         else
             if kind ~= "string" then
                 data = serialize(data)
@@ -149,7 +149,7 @@ do
             if data and #data ~= "" then
                 local code = loadstring(data)
                 if code then
-                    code()
+                    code(current,pos_h,pos_v)
                 end
             end
         end

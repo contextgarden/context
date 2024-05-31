@@ -164,10 +164,10 @@ local process, processsubsup  do
     local continuationhead_code      <const> = noadoptioncodes.continuationhead
     local continuationkernel_code    <const> = noadoptioncodes.continuationkernel
 
-    local shiftedsuperscript_code    <const> = noadoptioncodes.shiftedsuperscript
-    local shiftedsubscript_code      <const> = noadoptioncodes.shiftedsubscript
-    local shiftedsuperprescript_code <const> = noadoptioncodes.shiftedsuperprescript
-    local shiftedsubprescript_code   <const> = noadoptioncodes.shiftedsubprescript
+    local indexedsuperscript_code    <const> = noadoptioncodes.indexedsuperscript
+    local indexedsubscript_code      <const> = noadoptioncodes.indexedsubscript
+    local indexedsuperprescript_code <const> = noadoptioncodes.indexedsuperprescript
+    local indexedsubprescript_code   <const> = noadoptioncodes.indexedsubprescript
 
  -- x[prime + sup]       : <msup>    <msup>    <mi>x</mi> <mi>sup</mi> </msup>              <mi>prime</mi> </msup>
  -- x[prime + sub]       : <msubsup>           <mi>x</mi> <mi>sub</mi> </msubsup>           <mi>prime</mi> </msubsup>
@@ -188,17 +188,15 @@ local process, processsubsup  do
         end
         if sub then
             if sup then
---                 local subshifted = ((options & shiftedsubscript_code  ) > 0) and "true" or nil
---                 local supshifted = ((options & shiftedsuperscript_code) > 0) and "true" or nil
-                local subshifted = ((options & shiftedsubscript_code  ) > 0) or nil
-                local supshifted = ((options & shiftedsuperscript_code) > 0) or nil
+                local subindexed = ((options & indexedsubscript_code  ) > 0) or nil
+                local supindexed = ((options & indexedsuperscript_code) > 0) or nil
                 if continuation then
-                    continuation.subshifted = subshifted
-                    continuation.supshifted = supshifted
+                    continuation.subindexed = subindexed
+                    continuation.supindexed = supindexed
                 else
                     continuation = {
-                        subshifted = subshifted,
-                        supshifted = supshifted,
+                        subindexed = subindexed,
+                        supindexed = supindexed,
                     }
                 end
                 setattr(start,a_tagged,start_tagged("msubsup",continuation))
@@ -211,13 +209,12 @@ local process, processsubsup  do
                 stop_tagged()
                 stop_tagged()
             else
---                 local subshifted = ((options & shiftedsubscript_code  ) > 0) and "true" or nil
-                local subshifted = ((options & shiftedsubscript_code  ) > 0) or nil
+                local subindexed = ((options & indexedsubscript_code) > 0) or nil
                 if continuation then
-                    continuation.subshifted = subshifted
+                    continuation.subindexed = subindexed
                 else
                     continuation = {
-                        subshifted = subshifted,
+                        subindexed = subindexed,
                     }
                 end
                 setattr(start,a_tagged,start_tagged("msub",continuation))
@@ -228,13 +225,12 @@ local process, processsubsup  do
                 stop_tagged()
             end
         elseif sup then
---             local supshifted = ((options & shiftedsuperscript_code  ) > 0) and "true" or nil
-            local supshifted = ((options & shiftedsuperscript_code  ) > 0) or nil
+            local supindexed = ((options & indexedsuperscript_code) > 0) or nil
             if continuation then
-                continuation.supshifted = supshifted
+                continuation.supindexed = supindexed
             else
                 continuation = {
-                    supshifted = supshifted,
+                    supindexed = supindexed,
                 }
             end
             setattr(start,a_tagged,start_tagged("msup",continuation))
@@ -268,22 +264,22 @@ local process, processsubsup  do
 --             stop_tagged()
 --         end
         if sup then
-            start_tagged("mrow", { script = "sup" }) -- , shifted = ((options & shiftedsuperscript_code) > 0) and "true" or nil  })
+            start_tagged("mrow", { script = "sup" }) -- , indexed = ((options & indexedsuperscript_code) > 0) and "true" or nil  })
             process(sup)
             stop_tagged()
         end
         if sub then
-            start_tagged("mrow", { script = "sub" }) -- , shifted = ((options & shiftedsubscript_code) > 0) and "true" or nil  })
+            start_tagged("mrow", { script = "sub" }) -- , indexed = ((options & indexedsubscript_code) > 0) and "true" or nil  })
             process(sub)
             stop_tagged()
         end
         if presup then
-            start_tagged("mrow", { script = "presup" }) -- , shifted = ((options & shiftedsuperprescript_code) > 0) and "true" or nil  })
+            start_tagged("mrow", { script = "presup" }) -- , indexed = ((options & indexedsuperprescript_code) > 0) and "true" or nil  })
             process(presup)
             stop_tagged()
         end
         if presub then
-            start_tagged("mrow", { script = "presub" }) -- , shifted = ((options & shiftedsubprescript_code) > 0) and "true" or nil  })
+            start_tagged("mrow", { script = "presub" }) -- , indexed = ((options & indexedsubprescript_code) > 0) and "true" or nil  })
             process(presub)
             stop_tagged()
         end

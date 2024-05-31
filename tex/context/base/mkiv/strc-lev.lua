@@ -52,31 +52,41 @@ local function startsectionlevel(n,category,current)
     end
     level = level + 1
     if not lc or level > #lc then
-        ctx_nostarthead { f_two_colon(category,level) }
+    level = level - 1
+        local what = f_two_colon(category,level)
+        ctx_nostarthead { what }
+        insert(categories,{ category, n, level, what })
     else
         local lcl = lc[level]
         if n > #lcl then
             n = #lcl
         end
-        ctx_dostarthead { lc[level][n] }
+        ctx_dostarthead { lcl[n] }
+        insert(categories,{ category, n })
     end
-    insert(categories,{ category, n })
 end
 
 local function stopsectionlevel()
     local top = remove(categories)
     if top then
         local category = top[1]
-        local n = top[2]
-        local lc = levels[category]
-        if not lc or level > #lc then
-            ctx_nostophead { f_two_colon(category,level) }
+        local n        = top[2]
+        local bad      = top[3]
+        local what     = top[4]
+        local lc       = levels[category]
+        if not lc or bad then
+            ctx_nostophead { what }
+            level = bad
         else
-            ctx_dostophead { lc[level][n] }
+            local lcl = lc[level]
+            if n > #lcl then
+                n = #lcl
+            end
+            ctx_dostophead { lcl[n] }
+            level = level - 1
         end
-        level = level - 1
     else
-        -- error
+        ctx_nostophead { "?" }
     end
 end
 

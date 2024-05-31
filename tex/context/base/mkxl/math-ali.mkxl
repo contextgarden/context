@@ -62,6 +62,7 @@
 \newgluespec \d_math_eqalign_rulethickness
 \newdimension\d_math_eqalign_number_distance
 \newinteger  \c_math_eqalign_repeat
+\newtoks     \t_math_matrix_NL_NR
 
 \mutable\def\displayopenupvalue{.25\bodyfontsize}
 
@@ -1675,7 +1676,8 @@
 \def\math_matrix_check_rule_step#1%
   {\ifchkdim#1\or
      \scratchdimen#1\relax
-   \orelse\ifchknum#1\or
+ % \orelse\ifchknum#1\or
+   \orelse\ifchkdim#1pt\or
      \scratchdimen#1\d_math_eqalign_rulethickness
    \else
      \edef\p_rulecolor{#1}
@@ -1888,35 +1890,6 @@
    \enforced\let\SL\math_matrix_SL
    \enforced\let\NR\math_matrix_NL_NR}
 
-% \permanent\tolerant\protected\def\math_matrix_VL[#1]#*%
-%   {\span\omit
-%    \ifconditional\c_math_matrix_first\else
-%      \kern.5\d_math_eqalign_distance
-%    \fi
-%    \math_matrix_vertical_rule_yes{#1}%
-%    \kern.5\d_math_eqalign_distance
-%    \global\c_math_matrix_first\conditionalfalse
-%    \aligntab
-%    \boundary\c_math_matrix_vl_boundary
-%    \enforced\let\NR\math_matrix_NL_NR
-%    }
-
-% \def\math_matrix_VL_indeed#1#2%%
-%   {\span\omit
-%    \ifconditional\c_math_matrix_first\else
-%      \kern.5\d_math_eqalign_distance
-%    \fi
-%    \math_matrix_vertical_rule_yes{#2}%
-%    \localcontrolledloop\plustwo#1\plusone
-%      {\kern.125\d_math_eqalign_distance
-%       \math_matrix_vertical_rule_yes{#2}}%
-%    \kern.5\d_math_eqalign_distance
-%    \global\c_math_matrix_first\conditionalfalse
-%    \aligntab
-%    \boundary\c_math_matrix_vl_boundary
-%    \enforced\let\NR\math_matrix_NL_NR
-%    }
-
 \def\math_matrix_VL_indeed#1#2%%
   {\aligntab
    \math_matrix_vertical_rule_yes{#2}%
@@ -1925,9 +1898,16 @@
       \math_matrix_vertical_rule_yes{#2}}%
    \kern.5\d_math_eqalign_distance
    \global\c_math_matrix_first\conditionalfalse
+   \aligntab
    \boundary\c_math_matrix_vl_boundary
-   \enforced\let\NR\math_matrix_NL_NR
-   \aligntab}
+   \enforced\let\NR\math_matrix_NL_NR}
+
+\appendtoks
+    % vl delegated to lua tex rules
+    \ifnum\lastboundary=\c_math_matrix_vl_boundary
+        \kern\ifconditional \c_math_matrix_sl_seen-1.5\else-.5\fi\d_math_eqalign_distance
+    \fi
+\to \t_math_matrix_NL_NR
 
 \permanent\tolerant\protected\def\math_matrix_VL  [#1]#*{\math_matrix_VL_indeed\plusone{#1}}
 \permanent\tolerant\protected\def\math_matrix_VLVL[#1]#*{\math_matrix_VL_indeed\plustwo{#1}}
@@ -1945,13 +1925,7 @@
    \enforced\let\NR\math_matrix_NL_NR}
 
 \permanent\protected\def\math_matrix_NL_NR
-  {\ifnum\lastboundary=\c_math_matrix_vl_boundary
-     \ifconditional \c_math_matrix_sl_seen
-       \kern-1.5\d_math_eqalign_distance
-     \else
-       \kern-.5\d_math_eqalign_distance
-     \fi
-   \fi
+  {\expand\t_math_matrix_NL_NR
    \math_matrix_anchor_last
    \math_matrix_stop_row
    \math_matrix_pickup
@@ -2339,6 +2313,143 @@
          \hkern\dimexpr\d_math_matrix_max_right+\p_rightedge\relax
        \fi
      \egroup}
+
+%D Begin of plugin.
+%D
+%D Fancy:
+%D
+%D \starttyping
+%D \startformula \showstruts
+%D     \startmatrix
+%D         \NC 1         \NC   \NC \GL[2][m,s,h]  \NC 3 \NC \NR
+%D         \NC 1         \NC   \NC               \NC 3 \NC \NR
+%D         \NC 1         \NC   \NC               \NC 3 \NC \NR
+%D         \NC \GL[2][d] \NC 2 \NC \GL[2][s,d,c] \NC 3 \NC \NR
+%D     \stopmatrix
+%D \stopformula
+%D
+%D \startformula \showstruts
+%D     \startmatrix[fences=bracket,rulecolor=red]
+%D         \NC 1 \NC \GL[2][a]      \NC \GL[2][a,e] \NC \NR
+%D         \NC 1 \NC \GL[2][x,blue] \NC \GL[2][x,e] \NC \NR
+%D         \NC 1 \NC 2              \NC 3           \NC \NR
+%D         \NC 1 \NC 2              \NC 3           \NC \NR
+%D         \NC 1 \NC \GL[2][a]      \NC \GL[2][a,e] \NC \NR
+%D     \stopmatrix
+%D \stopformula
+%D
+%D \startformula \showstruts
+%D     \startmatrix[fences=bracket]
+%D         \NC 1 \NC   \NC \GL[2][t] \NC 3 \NC \NR
+%D         \NC 1 \NC   \NC           \NC 3 \NC \NR
+%D         \NC 1 \NC   \NC           \NC 3 \NC \NR
+%D         \NC 1 \NC 2 \NC \GL[2][b] \NC 3 \NC \NR
+%D     \stopmatrix
+%D \stopformula
+%D
+%D \startformula \showstruts
+%D     \startmatrix[fences=bracket,rulecolor=red]
+%D         \NC 1 \NC   \NC \GL[2][T] \NC 3 \NC \NR
+%D         \NC 1 \NC   \NC           \NC 3 \NC \NR
+%D         \NC 1 \NC   \NC           \NC 3 \NC \NR
+%D         \NC 1 \NC 2 \NC \GL[2][B] \NC 3 \NC \NR
+%D     \stopmatrix
+%D \stopformula
+%D
+%D \startformula
+%D     \startmatrix[fences=bracket]
+%D         \NC \GL[2][h] \NC 2 \NC \GL[2][h]   \NC 3 \NC \NR
+%D         \NC           \NC 2 \NC             \NC 3 \NC \NR
+%D         \NC           \NC 2 \NC             \NC 3 \NC \NR
+%D         \NC \GL[2][d] \NC 2 \NC \GL[2][d,c] \NC 3 \NC \NR
+%D     \stopmatrix
+%D \stopformula
+%D
+%D \startformula
+%D     \startmatrix
+%D         \NC \GL[2][h] \NC 2 \NC       \NC \GL[2][h]     \NC             \NC \NR
+%D         \NC \GL[3][d] \NC \GL[3][d,e] \NC \NC \GL[2][d] \NC \GL[2][d]   \NC \NR
+%D         \NC           \NC 2 \NC       \NC 3             \NC \GL[3][d] \hskip1cm \GL[3][d,e] \NC \NR
+%D         \NC \GL[2][d] \NC 2 \NC       \NC 3             \NC \GL[2][d,c] \NC \NR
+%D     \stopmatrix
+%D \stopformula
+%D \stoptyping
+%D
+%D % \graphicline[1][o]\input tufte \removeunwantedspaces\graphicline[1][o,e]
+%D
+%D Easier:
+%D
+%D \starttyping
+%D \startformula
+%D     \startmatrix[fences=bracket,rulecolor=red]
+%D         \NC 1 \NC 2 \VL 3 \NR
+%D         \NC 1 \NC 2 \VL 3 \NR
+%D     \stopmatrix
+%D \stopformula
+%D
+%D \startformula
+%D     \startmatrix[fences=bracket,rulecolor=red]
+%D         \NC 1 \NC 2 \VL 3 \VL \NR
+%D         \NC 1 \NC 2 \VL 3 \VL \NR
+%D     \stopmatrix
+%D \stopformula
+%D
+%D \startformula
+%D     \startmatrix[fences=bracket,rulecolor=red]
+%D         \NC 1 \NC 2 \VLT 3 \VLT[2,blue] 4 \NR
+%D         \NC 1 \NC 2 \NC  3 \NC  4 \NR
+%D         \NC 1 \NC 2 \VLB 3 \VLB 4 \NR
+%D     \stopmatrix
+%D \stopformula
+%D
+%D \startformula
+%D     \startmatrix[fences=bracket,rulecolor=red]
+%D         \NC 1 \NC 2 \VLT 3 \VLT[2pt,blue] 4 \NR
+%D         \NC 1 \NC 2 \NC  3 \NC  4 \NR
+%D         \NC 1 \NC 2 \VLB 3 \VLB 4 \NR
+%D     \stopmatrix
+%D \stopformula
+%D \stoptyping
+
+\installcorenamespace{matrixvl}
+
+\appendtoks
+    \enforced\let\GL\grph_line_inject
+\to \everymathmatrix
+
+\newboundary\c_math_matrix_vlx_boundary
+
+\tolerant\permanent\protected\def\grph_line_inject_VLT[#1]%
+  {\aligntab
+   \grph_line_inject[\??matrixvl:\number\c_math_eqalign_column][T,#1]%
+   \kern.5\d_math_eqalign_distance
+   \global\c_math_matrix_first\conditionalfalse
+   \aligntab
+   \enforced\let\NR\math_matrix_NL_NR
+   \boundary\c_math_matrix_vlx_boundary}
+
+\tolerant\permanent\protected\def\grph_line_inject_VLB[#1]%
+  {\aligntab
+   \grph_line_inject[\??matrixvl:\number\c_math_eqalign_column][B,#1]%
+   \kern.5\d_math_eqalign_distance
+   \global\c_math_matrix_first\conditionalfalse
+   \aligntab
+   \enforced\let\NR\math_matrix_NL_NR
+   \boundary\c_math_matrix_vlx_boundary}
+
+\appendtoks
+    \enforced\let\VLT\grph_line_inject_VLT
+    \enforced\let\VLB\grph_line_inject_VLB
+\to \everymathmatrix
+
+\appendtoks
+    % vl delegated to lua graphiclines
+    \ifnum\lastboundary=\c_math_matrix_vlx_boundary
+        \kern\ifconditional \c_math_matrix_sl_seen-1.5\else-.5\fi\d_math_eqalign_distance
+    \fi
+\to \t_math_matrix_NL_NR
+
+%D End of plugin.
 
 \definemathmatrix[matrix]
 \definemathmatrix[\v!mathmatrix]

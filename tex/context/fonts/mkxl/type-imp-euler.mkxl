@@ -21,10 +21,10 @@
 \definefontfeature[pagellaovereuler][pagellaovereuler=yes]
 \definefontfeature[euleroverpagella][euleroverpagella=yes]
 
-\definefontfeature[eulerregular]   [default][compose=yes]
-\definefontfeature[eulerbold]      [default][compose=yes,weight=.3]
-\definefontfeature[euleritalic]    [default][compose=yes,slant=.2]
-\definefontfeature[eulerbolditalic][default][compose=yes,slant=.2,weight=.3]
+\definefontfeature[eulerregular]   [default][wipemath=no,compose=yes]
+\definefontfeature[eulerbold]      [default][wipemath=no,compose=yes,weight=.3]
+\definefontfeature[euleritalic]    [default][wipemath=no,compose=yes,slant=.2]
+\definefontfeature[eulerbolditalic][default][wipemath=no,compose=yes,slant=.2,weight=.3]
 
 \starttypescriptcollection[pagella-eulernova]
 

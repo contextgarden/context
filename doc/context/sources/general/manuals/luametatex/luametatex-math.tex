@@ -1026,7 +1026,6 @@ undefined will get presets, quite likely zero):
 \NC \prm {Umathprimeshiftup}                   \NC the prime variant of \prm {Umathsupshiftup} \NC \NR
 \NC \prm {Umathprimespaceafter}                \NC the prescript variant of \prm {Umathspaceafterscript} \NC \NR
 \NC \prm {Umathprimeshiftdrop}                 \NC the prime variant of \prm {Umathsupshiftdrop} \NC \NR
-\NC \prm {Umathprimewidth}                     \NC the percentage of width that gets added \NC \NR
 \NC \prm {Umathskeweddelimitertolerance}       \NC \NC \NR
 \NC \prm {Umathaccenttopshiftup}               \NC the amount that a top accent is shifted up \NC \NR
 \NC \prm {Umathaccentbottomshiftdown}          \NC the amount that a bottom accent is shifted down \NC \NR
@@ -1064,7 +1063,6 @@ defaults and tweak them in the goodie files:
 \NC PrimeShiftUpCramped               \NC \prm {Umathprimeshiftup}                   \NC 0         \NC \NR
 \NC PrimeSpaceAfter                   \NC \prm {Umathprimespaceafter}                \NC 0         \NC \NR
 \NC PrimeBaselineDropMax              \NC \prm {Umathprimeshiftdrop}                 \NC 0         \NC \NR
-\NC PrimeWidthPercent                 \NC \prm {Umathprimewidth}                     \NC 0         \NC \NR
 \NC SkewedDelimiterTolerance          \NC \prm {Umathskeweddelimitertolerance}       \NC 0         \NC \NR
 \NC AccentTopShiftUp                  \NC \prm {Umathaccenttopshiftup}               \NC undefined \NC \NR
 \NC AccentBottomShiftDown             \NC \prm {Umathaccentbottomshiftdown}          \NC undefined \NC \NR
@@ -2334,15 +2332,15 @@ results in \inlinebuffer[script].
 
 \stopsubsection
 
-\startsubsection[title={Script commands \prm {shiftedsuperscript}, \prm {shiftedsubscript}, \prm {shiftedsuperprescript} and \prm {shiftedsubprescript}}]
+\startsubsection[title={Script commands \prm {indexedsuperscript}, \prm {indexedsubscript}, \prm {indexedsuperprescript} and \prm {indexedsubprescript}}]
 
 \topicindex {math+styles}
 \topicindex {math+scripts}
 \topicindex {math+indices}
 
-Sometimes a script acts as an index in which case is should be anchored
-differently. For that we have four extra primitives. Here the shifted postscripts
-are shown:
+Sometimes a script acts as an index. For various purposes we can therefore tag
+super and subscripts as such. The rendering is the same. Often indexed scripts
+are used with multi scripts.
 
 \startbuffer[script]
 $
@@ -2659,13 +2657,13 @@ they indicate pre- and postscripts.
 \NC \type {_}    \NC         \NC sub   \NC post \NC \NR
 \NC \type {^^}   \NC         \NC super \NC post \NC \NR
 \NC \type {__}   \NC         \NC sub   \NC post \NC \NR
-\NC \type {^^^}  \NC shifted \NC super \NC pre  \NC \NR
-\NC \type {___}  \NC shifted \NC sub   \NC pre  \NC \NR
-\NC \type {^^^^} \NC shifted \NC super \NC pre  \NC \NR
-\NC \type {____} \NC shifted \NC sub   \NC pre  \NC \NR
+\NC \type {^^^}  \NC indexed \NC super \NC pre  \NC \NR
+\NC \type {___}  \NC indexed \NC sub   \NC pre  \NC \NR
+\NC \type {^^^^} \NC indexed \NC super \NC pre  \NC \NR
+\NC \type {____} \NC indexed \NC sub   \NC pre  \NC \NR
 \stoptabulate
 
-The shifted variants force a script to be marked as index. In versions upto 2.10
+The indexed variants force a script to be marked as index. In versions upto 2.10
 a subscript was moved to after the superscript but when we introduced continued
 scripts that feature was disabled (we might bring it back as configurable
 option). The shifted variants now behave the same but at the \LUA\ end one can

@@ -1256,8 +1256,8 @@ do
     local trace_unstacking  = false  registertracker("math.unstack", function(v) trace_unstacking  = v end)
     local report_unstacking = logreporter("mathematics","unstack")
 
-    local shiftedsubscript_code   <const> = tex.noadoptioncodes.shiftedsubscript
-    local shiftedsuperscript_code <const> = tex.noadoptioncodes.shiftedsuperscript
+    local indexedsubscript_code   <const> = tex.noadoptioncodes.indexedsubscript
+    local indexedsuperscript_code <const> = tex.noadoptioncodes.indexedsuperscript
 
     unstack[noad_code] = function(pointer)
         local a = getattr(pointer,a_unstack)
@@ -1269,9 +1269,9 @@ do
              --     report_unstacking() -- todo ... what to show ...
              -- end
                 if a == 1 then
-                    a = shiftedsubscript_code
+                    a = indexedsubscript_code
                 elseif a == 2 then
-                    a = shiftedsuperscript_code
+                    a = indexedsuperscript_code
                 else
                     a = 0
                 end

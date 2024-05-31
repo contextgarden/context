@@ -121,47 +121,6 @@
 
 % Sometimes users want control over the distances:
 
-\let\math_fraction_set_distance\relax
-
-\appendtoks
-    \math_fraction_set_distance
-\to \everymathematics
-
-% why only displaystyle .. a bit weak .. will become a set
-
-\protected\def\math_fraction_set_distance_top
-  {\Umathfractionnumup\displaystyle\m_math_fraction_distance_top
-   \relax}
-
-\protected\def\math_fraction_set_distance_bot
-  {\Umathfractiondenomdown\displaystyle\m_math_fraction_distance_bot
-   \relax}
-
-\protected\def\math_fraction_set_distance_all
-  {\Umathfractionnumup    \displaystyle\m_math_fraction_distance_top
-   \Umathfractiondenomdown\displaystyle\m_math_fraction_distance_bot
-   \relax}
-
-\appendtoks
-    \ifempty\currentmathfraction
-      \edef\m_math_fraction_distance_top{\mathfractionparameter\c!topdistance}%
-      \edef\m_math_fraction_distance_bot{\mathfractionparameter\c!bottomdistance}%
-      \ifempty\m_math_fraction_distance_top
-        \ifempty\m_math_fraction_distance_bot
-          \let\math_fraction_set_distance\relax
-        \else
-          \let\math_fraction_set_distance\math_fraction_set_distance_bot
-        \fi
-      \else
-        \ifempty\m_math_fraction_distance_bot
-          \let\math_fraction_set_distance\math_fraction_set_distance_top
-        \else
-          \let\math_fraction_set_distance\math_fraction_set_distance_all
-        \fi
-      \fi
-    \fi
-\to \everysetupmathfraction
-
 % So far for control.
 
 % no    : \ruledhbox{\m{\frac[strut=no]   {28}{8\times29}}} \par
@@ -431,27 +390,39 @@
 
 %D Spacing (sensitive for definition of \triggermathstyle:
 
-\permanent\protected\def\nomathfractiongaps     {\normalexpanded{\math_no_fraction_gaps     \allmathstyles}}
-\permanent\protected\def\overlaymathfractiongaps{\normalexpanded{\math_overlay_fraction_gaps\allmathstyles}}
-
-\protected\def\math_no_fraction_gaps#1%
-  {\Umathfractionnumup    #1\zeropoint
-   \Umathfractiondenomdown#1\zeropoint}
-
-\protected\def\math_overlay_fraction_gaps#1%
-  {\Umathfractionnumup    #1\zeropoint
-   \Umathfractionnumvgap  #1\zeropoint
-   \Umathfractiondenomvgap#1\zeropoint
-   \Umathfractiondenomdown#1\zeropoint}
-
 \installcorenamespace{mathfractiondistance}
 
-\letcsname\??mathfractiondistance\v!none   \endcsname\nomathfractiongaps
-\letcsname\??mathfractiondistance\v!no     \endcsname\nomathfractiongaps
-\letcsname\??mathfractiondistance\v!overlay\endcsname\overlaymathfractiongaps
+\defcsname\??mathfractiondistance\v!none\endcsname
+  {\Umathfractionnumup    \allmathstyles\zeropoint
+   \Umathfractiondenomdown\allmathstyles\zeropoint}
+
+\defcsname\??mathfractiondistance\v!no\endcsname
+  {\Umathfractionnumup    \allmathstyles\zeropoint
+   \Umathfractiondenomdown\allmathstyles\zeropoint}
+
+\defcsname\??mathfractiondistance\v!overlay\endcsname
+  {\Umathfractionnumup    \allmathstyles\zeropoint
+   \Umathfractionnumvgap  \allmathstyles\zeropoint
+   \Umathfractiondenomvgap\allmathstyles\zeropoint
+   \Umathfractiondenomdown\allmathstyles\zeropoint}
+
+\defcsname\??mathfractiondistance\v!top\endcsname
+  {\Umathfractionnumvgap  \allmathstyles\mathfractionparameter\c!topdistance
+   \relax}
+
+\defcsname\??mathfractiondistance\v!bottom\endcsname
+  {\Umathfractiondenomvgap\allmathstyles\mathfractionparameter\c!bottomdistance
+   \relax}
+
+\defcsname\??mathfractiondistance\v!both\endcsname
+  {\Umathfractionnumvgap  \allmathstyles\mathfractionparameter\c!topdistance
+   \Umathfractiondenomvgap\allmathstyles\mathfractionparameter\c!bottomdistance
+   \relax}
 
 \setupmathfractions
-  [\c!distance=\v!none]
+  [\c!distance=\v!none,
+   \c!topdistance=\zeropoint,
+   \c!bottomdistance=\zeropoint]
 
 % we need to keep it local, so not everybodyfont
 

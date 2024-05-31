@@ -59,6 +59,7 @@
 \newconditional \c_page_sides_flag
 \newconditional \c_page_sides_shape_down
 \newconditional \c_page_sides_keep_together
+\newconditional \c_page_sides_force_shape    % not default now
 
 \newdimension   \d_page_sides_shift
 \newdimension   \d_page_sides_extrashift
@@ -1065,6 +1066,33 @@
 %     \input ward
 % \stoptext
 
+\protected\def\page_sides_check_floats_set_shape
+  {\privatescratchtoks\emptytoks
+   \privatescratchcounter\c_page_sides_n_of_lines
+   \privatescratchdimen\dimexpr\hsize-\d_page_sides_width\relax
+   \dorecurse\c_page_sides_n_of_lines
+     {\toksapp\privatescratchtoks{\zeropoint\hsize}}%
+   \ifnum\c_page_sides_n_of_hang>\c_page_sides_n_of_lines
+     \advanceby\c_page_sides_n_of_hang -\c_page_sides_n_of_lines\relax
+     \advanceby\privatescratchcounter\c_page_sides_n_of_hang
+     \dorecurse\c_page_sides_n_of_hang % weird, shouldn't that be scratchcounter
+       {\ifnum\c_page_sides_float_type>\plusfour
+          \toksapp\privatescratchtoks{\zeropoint\privatescratchdimen}%
+        \else
+          \toksapp\privatescratchtoks{\d_page_sides_width\privatescratchdimen}%
+        \fi}%
+   \fi
+   \parshape
+     \numexpr\privatescratchcounter+\plusone\relax
+     \the\privatescratchtoks
+     \zeropoint \hsize
+   \relax}
+
+\protected\def\page_sides_check_floats_set_hang
+  {\hangindent \ifnum\c_page_sides_float_type>\plusfour -\fi\d_page_sides_width
+   \hangafter-\c_page_sides_n_of_hang
+   \global\c_page_sides_hangafter\hangafter}
+
 \protected\def\page_sides_check_floats_set
   {\edef\p_sidethreshold{\floatparameter\c!sidethreshold}%
    \ifconditional\c_page_sides_delayed
@@ -1103,30 +1131,11 @@
        \fi
      \fi
      \ifnum\c_page_sides_n_of_lines>\zerocount
-       \privatescratchtoks\emptytoks
-       \privatescratchcounter\c_page_sides_n_of_lines
-       \privatescratchdimen\dimexpr\hsize-\d_page_sides_width\relax
-       \dorecurse\c_page_sides_n_of_lines
-         {\toksapp\privatescratchtoks{\zeropoint\hsize}}%
-       \ifnum\c_page_sides_n_of_hang>\c_page_sides_n_of_lines
-         \advanceby\c_page_sides_n_of_hang -\c_page_sides_n_of_lines\relax
-         \advanceby\privatescratchcounter\c_page_sides_n_of_hang
-         \dorecurse\c_page_sides_n_of_hang % weird, shouldn't that be scratchcounter
-           {\ifnum\c_page_sides_float_type>\plusfour
-              \toksapp\privatescratchtoks{\zeropoint\privatescratchdimen}%
-            \else
-              \toksapp\privatescratchtoks{\d_page_sides_width\privatescratchdimen}%
-            \fi}%
-       \fi
-       \parshape
-         \numexpr\privatescratchcounter+\plusone\relax
-         \the\privatescratchtoks
-         \zeropoint \hsize
-       \relax
+       \page_sides_check_floats_set_shape
+     \orelse\ifconditional\c_page_sides_force_shape
+       \page_sides_check_floats_set_shape
      \else
-       \hangindent \ifnum\c_page_sides_float_type>\plusfour -\fi\d_page_sides_width
-       \hangafter-\c_page_sides_n_of_hang
-       \global\c_page_sides_hangafter\hangafter
+       \page_sides_check_floats_set_hang
      \fi
    \fi
    \global\advanceby\c_page_sides_checks_done \plusone

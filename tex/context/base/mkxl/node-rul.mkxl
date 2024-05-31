@@ -679,4 +679,80 @@
 %     \samplefile{tufte}
 % \stopTEXpage
 
+%D Quick and dirty, but useful in math matrices:
+
+\installcorenamespace{graphiclines}
+\installcorenamespace{graphiccolor}
+
+\newdimen\d_grph_line_width
+\newdimen\d_grph_line_offset
+\newcount\c_grph_line_action
+
+\defcsname\??graphiclines s\endcsname{\strut}
+\defcsname\??graphiclines m\endcsname{\setstrut\strutht.85\strutht\strutdp.85\strutdp}
+\defcsname\??graphiclines a\endcsname{\d_grph_line_offset 1ma}
+\defcsname\??graphiclines x\endcsname{\d_grph_line_offset 1ex}
+\defcsname\??graphiclines h\endcsname{\d_grph_line_offset \strutht}
+\defcsname\??graphiclines d\endcsname{\d_grph_line_offset-\strutdp}
+\defcsname\??graphiclines o\endcsname{\d_grph_line_offset \zeropoint}
+\defcsname\??graphiclines e\endcsname{\c_grph_line_action \plusone}  % end
+\defcsname\??graphiclines c\endcsname{\c_grph_line_action \plustwo}  % close + end
+\defcsname\??graphiclines r\endcsname{\c_grph_line_action \plustree} % reset
+\defcsname\??graphiclines t\endcsname{\d_grph_line_offset \strutht}
+\defcsname\??graphiclines b\endcsname{\d_grph_line_offset-\strutdp\c_grph_line_action\plusone}
+\defcsname\??graphiclines T\endcsname{\d_grph_line_offset .75\strutht}
+\defcsname\??graphiclines B\endcsname{\d_grph_line_offset-.25\strutdp\c_grph_line_action\plusone}
+
+\def\grph_line_inject_step#1%
+  {\ifcsname\??graphiclines#1\endcsname
+     \lastnamedcs
+   \orelse\ifchkdim#1\or
+      \d_grph_line_width#1\relax
+ % \orelse\ifchknum#1\or
+   \orelse\ifchkdim#1pt\or
+      \d_grph_line_width#1\d_grph_line_width % \dimexpr\mathmatrixparameter\c!rulethickness\relax
+   \else
+     \edef\m_rulecolor{#1}%
+   \fi}
+
+% \setupmathmatrix[rulethickness=3pt]
+
+\tolerant\permanent\protected\def\grph_line_inject
+  {\dontleavehmode
+   \iftrialtypesetting
+     \expandafter\gobbletwooptionals
+   \else
+     \expandafter\grph_line_inject_yes
+   \fi}
+
+\def\grph_line_inject_yes[#1]#*[#2]%
+  {\begingroup
+   \edef\m_rulecolor{\mathmatrixparameter\c!rulecolor}%
+   \d_grph_line_width\mathmatrixparameter\c!rulethickness
+   \d_grph_line_offset\zeropoint
+   \c_grph_line_action\zerocount
+   \processcommacommand[#2]\grph_line_inject_step % use fast one
+   \ifcase\c_grph_line_action
+     \ifcstok{\begincsname\??graphiccolor#1\endcsname}\empty
+        \gletcsname\??graphiccolor#1\endcsname\m_rulecolor
+     \fi
+   \orelse\ifempty{#1}%
+     % ignore
+   \else
+     % we have to color the last node
+     \colo_helpers_direct_activate{\begincsname\??graphiccolor#1\endcsname}%
+     \gletcsname\??graphiccolor#1\endcsname\empty
+   \fi
+   \hpack \ifzeropt\d_grph_line_offset\else\s!yoffset\d_grph_line_offset\fi
+     {%\signalcharacter
+      \clf_linesegment
+        {#1}%
+        \c_math_eqalign_row
+        \c_math_eqalign_column
+        \c_grph_line_action
+        \d_grph_line_width}%
+   \endgroup}
+
+\let\graphicline\grph_line_inject
+
 \protect \endinput

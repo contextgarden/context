@@ -2039,10 +2039,10 @@ typedef enum noad_options {
     noad_option_no_limits                  = 0x00080000, /* idem */
     noad_option_prefer_font_thickness      = 0x00100000,
     noad_option_no_ruling                  = 0x00200000,
-    noad_option_shifted_sub_script         = 0x00400000,
-    noad_option_shifted_super_script       = 0x00800000,
-    noad_option_shifted_sub_pre_script     = 0x01000000,
-    noad_option_shifted_super_pre_script   = 0x02000000,
+    noad_option_indexed_sub_script         = 0x00400000,
+    noad_option_indexed_super_script       = 0x00800000,
+    noad_option_indexed_sub_pre_script     = 0x01000000,
+    noad_option_indexed_super_pre_script   = 0x02000000,
     noad_option_unpack_list                = 0x04000000,
     noad_option_no_check                   = 0x08000000, /* don't check for missing end fence */
     noad_option_auto                       = 0x10000000,
@@ -2106,10 +2106,10 @@ static inline int has_noad_no_script_option(halfword n, halfword option)
 # define has_noad_option_nosubprescript(a) has_noad_no_script_option(a, noad_option_no_sub_pre_script)
 # define has_noad_option_nosupprescript(a) has_noad_no_script_option(a, noad_option_no_super_pre_script)
 
-# define has_noad_option_shiftedsubscript(a)           (has_option(noad_options(a), noad_option_shifted_sub_script))
-# define has_noad_option_shiftedsupscript(a)           (has_option(noad_options(a), noad_option_shifted_super_script))
-# define has_noad_option_shiftedsubprescript(a)        (has_option(noad_options(a), noad_option_shifted_sub_pre_script))
-# define has_noad_option_shiftedsupprescript(a)        (has_option(noad_options(a), noad_option_shifted_super_pre_script))
+# define has_noad_option_indexedsubscript(a)           (has_option(noad_options(a), noad_option_indexed_sub_script))
+# define has_noad_option_indexedsupscript(a)           (has_option(noad_options(a), noad_option_indexed_super_script))
+# define has_noad_option_indexedsubprescript(a)        (has_option(noad_options(a), noad_option_indexed_sub_pre_script))
+# define has_noad_option_indexedsupprescript(a)        (has_option(noad_options(a), noad_option_indexed_super_pre_script))
 # define has_noad_option_axis(a)                       (has_option(noad_options(a), noad_option_axis))
 # define has_noad_option_exact(a)                      (has_option(noad_options(a), noad_option_exact))
 # define has_noad_option_noaxis(a)                     (has_option(noad_options(a), noad_option_no_axis))

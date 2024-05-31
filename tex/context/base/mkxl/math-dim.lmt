@@ -140,25 +140,25 @@ function mathematics.dimensions(dimens)  -- beware, dimens get spoiled
         return table.fastcopy(dimens), { }
     elseif dimens.AxisHeight or dimens.axisheight then
         local t = { }
-        local mathxheight = dimens.xheight or 10*65536
-        local mathquad = dimens.quad or 10*65536
+        local mathxheight          = dimens.xheight                                                  or 10*65536
+        local mathquad             = dimens.quad                                                     or 10*65536
         local defaultrulethickness = dimens.FractionDenominatorGapMin or dimens.defaultrulethickness or 0.4*65536
-        dimens["0"] = 0
-        dimens["60"] = 60
-        dimens["0.25*defaultrulethickness"] = defaultrulethickness / 4
-        dimens["3*defaultrulethickness"] = 3 * defaultrulethickness
-        dimens["4*defaultrulethickness"] = 4 * defaultrulethickness
-        dimens["7*defaultrulethickness"] = 7 * defaultrulethickness
-        dimens["(5/18)*quad"] = (mathquad * 5) / 18
-        dimens["(-10/18)*quad"] = - (mathquad * 10) / 18
-        dimens["mathxheight*3"] = mathxheight * 3 -- needs checking
-        dimens["abs(mathxheight*4)/5"] = abs(mathxheight * 4) / 5
+        dimens["0"]                                                  = 0
+        dimens["60"]                                                 = 60
+        dimens["0.25*defaultrulethickness"]                          = defaultrulethickness / 4
+        dimens["3*defaultrulethickness"]                             = 3 * defaultrulethickness
+        dimens["4*defaultrulethickness"]                             = 4 * defaultrulethickness
+        dimens["7*defaultrulethickness"]                             = 7 * defaultrulethickness
+        dimens["(5/18)*quad"]                                        = (mathquad * 5) / 18
+        dimens["(-10/18)*quad"]                                      = - (mathquad * 10) / 18
+        dimens["mathxheight*3"]                                      = mathxheight * 3 -- needs checking
+        dimens["abs(mathxheight*4)/5"]                               = abs(mathxheight * 4) / 5
         dimens["defaultrulethickness+(abs(defaultrulethickness)/4)"] = defaultrulethickness+(abs(defaultrulethickness) / 4)
-        dimens["defaultrulethickness+(abs(mathxheight)/4)"] = defaultrulethickness+(abs(mathxheight) / 4)
-        dimens["abs(mathxheight)/4"] = abs(mathxheight) / 4
-        dimens["abs(mathxheight*4)/5"] = abs(mathxheight * 4) / 5
-        dimens["<not set>"] = false
-        dimens["scriptspace"] = false -- at macro level
+        dimens["defaultrulethickness+(abs(mathxheight)/4)"]          = defaultrulethickness+(abs(mathxheight) / 4)
+        dimens["abs(mathxheight)/4"]                                 = abs(mathxheight) / 4
+        dimens["abs(mathxheight*4)/5"]                               = abs(mathxheight * 4) / 5
+        dimens["<not set>"]                                          = false
+        dimens["scriptspace"]                                        = false -- at macro level
         for variable, styles in next, defaults do
             local tt = { }
             for style, default in next, styles do

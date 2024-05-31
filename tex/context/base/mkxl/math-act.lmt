@@ -110,22 +110,23 @@ function mathematics.initializeparameters(target,original,nodimensions)
             mathparameters = mathematics.dimensions(mathparameters)
         end
         --
+        -- defaults : times unit or fraction
+        --
      -- if not mathparameters.MinConnectorOverlap               then mathparameters.MinConnectorOverlap               = undefined end
         if not mathparameters.SubscriptShiftDownWithSuperscript then mathparameters.SubscriptShiftDownWithSuperscript = mathparameters.SubscriptShiftDown * 1.5 end
      -- if not mathparameters.FractionDelimiterSize             then mathparameters.FractionDelimiterSize             = undefined end
      -- if not mathparameters.FractionDelimiterDisplayStyleSize then mathparameters.FractionDelimiterDisplayStyleSize = undefined end
      -- if not mathparameters.SkewedDelimiterTolerance          then mathparameters.SkewedDelimiterTolerance          = undefined end
         -- some more can be undefined:
+        if not mathparameters.SpaceAfterScript                  then mathparameters.SpaceAfterScript                  = 0 end
+        if not mathparameters.SpaceBeforeScript                 then mathparameters.SpaceBeforeScript                 = mathparameters.SpaceAfterScript end
+        if not mathparameters.SpaceBetweenScript                then mathparameters.SpaceBetweenScript                = mathparameters.SpaceAfterScript end
         if not mathparameters.PrimeRaisePercent                 then mathparameters.PrimeRaisePercent                 = 0 end
         if not mathparameters.PrimeRaiseComposedPercent         then mathparameters.PrimeRaiseComposedPercent         = 0 end
         if not mathparameters.PrimeShiftUp                      then mathparameters.PrimeShiftUp                      = mathparameters.SuperscriptShiftUp end
         if not mathparameters.PrimeBaselineDropMax              then mathparameters.PrimeBaselineDropMax              = mathparameters.SuperscriptBaselineDropMax end
         if not mathparameters.PrimeShiftUpCramped               then mathparameters.PrimeShiftUpCramped               = mathparameters.SuperscriptShiftUpCramped end
-        if not mathparameters.PrimeSpaceAfter                   then mathparameters.PrimeSpaceAfter                   = 0 end
-        if not mathparameters.PrimeWidthPercent                 then mathparameters.PrimeWidthPercent                 = 50 end
-        if not mathparameters.SpaceAfterScript                  then mathparameters.SpaceAfterScript                  = 0 end
-        if not mathparameters.SpaceBeforeScript                 then mathparameters.SpaceBeforeScript                 = mathparameters.SpaceAfterScript end
-        if not mathparameters.SpaceBetweenScript                then mathparameters.SpaceBetweenScript                = mathparameters.SpaceAfterScript end
+        if not mathparameters.PrimeSpaceAfter                   then mathparameters.PrimeSpaceAfter                   = mathparameters.SpaceAfterScript end
         if not mathparameters.NoLimitSupFactor                  then mathparameters.NoLimitSupFactor                  = 0 end
         if not mathparameters.NoLimitSubFactor                  then mathparameters.NoLimitSubFactor                  = 0 end
         if not mathparameters.AccentTopShiftUp                  then mathparameters.AccentTopShiftUp                  = 0 end
@@ -171,7 +172,6 @@ local how = {
     NoLimitSubFactor                = "unscaled",
     PrimeRaisePercent               = "unscaled",
     PrimeRaiseComposedPercent       = "unscaled",
-    PrimeWidthPercent               = "unscaled",
     AccentTopOvershoot              = "unscaled",
     AccentBottomOvershoot           = "unscaled",
     AccentSuperscriptPercent        = "unscaled",

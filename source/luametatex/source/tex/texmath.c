@@ -428,7 +428,9 @@ static void     tex_aux_math_math_component (halfword n, int append);
 # define cramped_style(A) (2 * ((A) / 2) + cramped)                     /*tex cramp the style */
 # define sub_style(A)     (2 * ((A) / 4) + script_style + cramped)      /*tex smaller and cramped */
 # define sup_style(A)     (2 * ((A) / 4) + script_style + ((A) % 2))    /*tex smaller */
+# define small_style      sup_style
 # define num_style(A)     ((A) + 2 - 2 * ((A) / 6))                     /*tex smaller unless already scriptscript */
+# define smaller_style    num_style
 # define denom_style(A)   (2 * ((A) / 2) + cramped + 2 - 2 * ((A) / 6)) /*tex smaller, cramped */
 # define sup_sup_style(A) sup_style(sup_style((A)))                     /*tex smaller */
 
@@ -479,71 +481,149 @@ inline static void tex_math_set_scripts_options(halfword n)
     }
 }
 
-// static const math_styles map_cramped_style[] = { /*tex cramp the style */
-//     cramped_display_style,
-//     cramped_display_style,
-//     cramped_text_style,
-//     cramped_text_style,
-//     cramped_script_style,
-//     cramped_script_style,
-//     cramped_script_script_style,
-//     cramped_script_script_style,
-// };
-//
-// static const math_styles map_subscript_style[] = { /*tex smaller and cramped */
-//     cramped_script_style,
-//     cramped_script_style,
-//     cramped_script_style,
-//     cramped_script_style,
-//     cramped_script_script_style,
-//     cramped_script_script_style,
-//     cramped_script_script_style,
-//     cramped_script_script_style,
-// };
-//
-// static const math_styles map_superscript_style[] = { /*tex smaller */
-//     script_style,
-//     script_style,
-//     script_style,
-//     script_style,
-//     script_script_style,
-//     script_script_style,
-//     script_script_style,
-//     script_script_style,
-// };
-//
-// static const math_styles map_numerator_style[] = {/*tex smaller unless already scriptscript */
-//     script_style,
-//     cramped_script_style,
-//     script_style,
-//     cramped_script_style,
-//     script_script_style,
-//     cramped_script_script_style,
-//     script_script_style,
-//     cramped_script_script_style,
-// };
-//
-// static const math_styles map_denominator_style[] = { /*tex smaller, all cramped */
-//     cramped_script_style,
-//     cramped_script_style,
-//     cramped_script_style,
-//     cramped_script_style,
-//     cramped_script_script_style,
-//     cramped_script_script_style,
-//     cramped_script_script_style,
-//     cramped_script_script_style,
-// };
-//
-// static const math_styles map_double_superscript_style[] = { /*tex smaller, keep cramped */
-//     script_style,
-//     cramped_script_style,
-//     script_style,
-//     cramped_script_style,
-//     script_script_style,
-//     cramped_script_script_style,
-//     script_script_style,
-//     cramped_script_script_style,
-// };
+/*tex identity style */
+
+// # define display_style_nibble(a)               (a <<  0)
+// # define cramped_display_style_nibble(a)       (a <<  4)
+// # define text_style_nibble(a)                  (a <<  8)
+// # define cramped_text_style_nibble(a)          (a << 12)
+// # define script_style_nibble(a)                (a << 16)
+// # define cramped_script_style_nibble(a)        (a << 20)
+// # define script_script_style_nibble(a)         (a << 24)
+// # define cramped_script_script_style_nibble(a) (a << 28)
+
+# define display_style_nibble(a)               (a << 28)
+# define cramped_display_style_nibble(a)       (a << 24)
+# define text_style_nibble(a)                  (a << 20)
+# define cramped_text_style_nibble(a)          (a << 16)
+# define script_style_nibble(a)                (a << 12)
+# define cramped_script_style_nibble(a)        (a <<  8)
+# define script_script_style_nibble(a)         (a <<  4)
+# define cramped_script_script_style_nibble(a) (a <<  0)
+
+const unsigned int math_variant_presets[last_math_style_variant+1] = { 
+    /*tex identity style */ 
+    // math_normal_style_variant_preset
+    (unsigned int) (0
+      + display_style_nibble              (display_style              )
+      + cramped_display_style_nibble      (cramped_display_style      )
+      + text_style_nibble                 (text_style                 )
+      + cramped_text_style_nibble         (cramped_text_style         )
+      + script_style_nibble               (script_style               )
+      + cramped_script_style_nibble       (cramped_script_style       )
+      + script_script_style_nibble        (script_script_style        )
+      + cramped_script_script_style_nibble(cramped_script_script_style)
+    ),
+    /*tex cramp the style */
+    // math_cramped_style_variant_preset 
+    (unsigned int) (0
+      + display_style_nibble              (cramped_display_style      )
+      + cramped_display_style_nibble      (cramped_display_style      )
+      + text_style_nibble                 (cramped_text_style         )
+      + cramped_text_style_nibble         (cramped_text_style         )
+      + script_style_nibble               (cramped_script_style       )
+      + cramped_script_style_nibble       (cramped_script_style       )
+      + script_script_style_nibble        (cramped_script_script_style)
+      + cramped_script_script_style_nibble(cramped_script_script_style)
+    ),
+    /*tex smaller and cramped */
+    // math_subscript_style_variant_preset 
+    (unsigned int) (0
+      + display_style_nibble              (cramped_script_style       )
+      + cramped_display_style_nibble      (cramped_script_style       )
+      + text_style_nibble                 (cramped_script_style       )
+      + cramped_text_style_nibble         (cramped_script_style       )
+      + script_style_nibble               (cramped_script_script_style)
+      + cramped_script_style_nibble       (cramped_script_script_style)
+      + script_script_style_nibble        (cramped_script_script_style)
+      + cramped_script_script_style_nibble(cramped_script_script_style)
+    ),
+    /*tex smaller */  
+    // math_superscript_style_variant_preset 
+    (unsigned int) (0 
+      + display_style_nibble              (script_style               )
+      + cramped_display_style_nibble      (cramped_script_style       )
+      + text_style_nibble                 (script_style               )
+      + cramped_text_style_nibble         (cramped_script_style       )
+      + script_style_nibble               (script_script_style        )
+      + cramped_script_style_nibble       (cramped_script_script_style)
+      + script_script_style_nibble        (script_script_style        )
+      + cramped_script_script_style_nibble(cramped_script_script_style)
+    ),
+    // math_small_style_variant_preset 
+    (unsigned int) (0
+      + display_style_nibble              (script_style               ) 
+      + cramped_display_style_nibble      (cramped_script_style       )
+      + text_style_nibble                 (script_style               )
+      + cramped_text_style_nibble         (cramped_script_style       )
+      + script_style_nibble               (script_script_style        )
+      + cramped_script_style_nibble       (cramped_script_script_style)
+      + script_script_style_nibble        (script_script_style        )
+      + cramped_script_script_style_nibble(cramped_script_script_style)
+    ),
+    /*tex smaller unless already scriptscript */
+    // math_smaller_style_variant_preset 
+    (unsigned int) (0
+      + display_style_nibble              (text_style                 )
+      + cramped_display_style_nibble      (cramped_text_style         )
+      + text_style_nibble                 (script_style               )
+      + cramped_text_style_nibble         (cramped_script_style       )
+      + script_style_nibble               (script_script_style        )
+      + cramped_script_style_nibble       (cramped_script_script_style)
+      + script_script_style_nibble        (script_script_style        )
+      + cramped_script_script_style_nibble(cramped_script_script_style)
+    ),
+    // math_numerator_style_variant_preset 
+    (unsigned int) (0
+      + display_style_nibble              (text_style                 )
+      + cramped_display_style_nibble      (cramped_text_style         )
+      + text_style_nibble                 (script_style               )
+      + cramped_text_style_nibble         (cramped_script_style       )
+      + script_style_nibble               (script_script_style        )
+      + cramped_script_style_nibble       (cramped_script_script_style)
+      + script_script_style_nibble        (script_script_style        )
+      + cramped_script_script_style_nibble(cramped_script_script_style)
+    ),
+    // math_denominator_style_variant_preset 
+    (unsigned int) (0
+      + display_style_nibble              (cramped_text_style         ) 
+      + cramped_display_style_nibble      (cramped_text_style         )
+      + text_style_nibble                 (cramped_script_style       )
+      + cramped_text_style_nibble         (cramped_script_style       )
+      + script_style_nibble               (cramped_script_script_style)
+      + cramped_script_style_nibble       (cramped_script_script_style)
+      + script_script_style_nibble        (cramped_script_script_style)
+      + cramped_script_script_style_nibble(cramped_script_script_style)
+    ),
+    /*tex smaller, keep cramped */
+    // math_double_superscript_style_variant_preset 
+    (unsigned int) (0
+      + display_style_nibble              (script_script_style        )
+      + cramped_display_style_nibble      (cramped_script_script_style)
+      + text_style_nibble                 (script_script_style        )
+      + cramped_text_style_nibble         (cramped_script_script_style)
+      + script_style_nibble               (script_script_style        )
+      + cramped_script_style_nibble       (cramped_script_script_style)
+      + script_script_style_nibble        (script_script_style        )
+      + cramped_script_script_style_nibble(cramped_script_script_style)
+    ),
+};
+
+int tex_get_math_variant_preset(int i)
+{
+    return valid_math_style_variant(i) ? math_variant_presets[i] : 0;
+}
+
+// inline static unsigned int setnibble(unsigned int original, unsigned int position, unsigned int value)
+// {
+//     /* wipe old value and then or the new one */
+//     return (original & ~(0xF << (4 * position))) | ((value & 0xF) << (4 * position));   
+// }
+// 
+// inline static int getnibble(unsigned int original, int position)
+// {
+//     return (original >> (4 * position)) & 0xF;
+// }
 
 /*tex
     This is very \TEX: a variable class influences the family being used.
@@ -563,34 +643,125 @@ halfword tex_size_of_style(halfword style)
     }
 }
 
-halfword tex_math_style_variant(halfword style, halfword param)
+// halfword xxtex_math_style_variant(halfword style, halfword parameter)
+// {
+//     switch (tex_get_math_parameter(style, parameter, NULL)) {
+//         case math_normal_style_variant:
+//             return style;
+//         case math_cramped_style_variant:
+//             return cramped_style(style);
+//         case math_subscript_style_variant:
+//             return sub_style(style);
+//         case math_superscript_style_variant:
+//             return sup_style(style);
+//         case math_small_style_variant:
+//             return small_style(style);
+//         case math_smaller_style_variant:
+//             return smaller_style(style);
+//         case math_numerator_style_variant:
+//             return num_style(style);
+//         case math_denominator_style_variant:
+//             return denom_style(style);
+//         case math_double_superscript_variant:
+//             return sup_sup_style(style);
+//         default:
+//             return style;
+//     }
+// }
+
+// halfword tex_math_style_variant(halfword style, halfword parameter)
+// {
+//     halfword value = tex_get_math_parameter(style, parameter, NULL); 
+//     halfword check;
+//     switch (value) {
+//         case math_normal_style_variant:
+//             check = style;
+//             break;
+//         case math_cramped_style_variant:
+//             check =  cramped_style(style);
+//             break;
+//         case math_subscript_style_variant:
+//             check = sub_style(style);
+//             break;
+//         case math_superscript_style_variant:
+//             check = sup_style(style);
+//             break;
+//         case math_small_style_variant:
+//             check = small_style(style);
+//             break;
+//         case math_smaller_style_variant:
+//             check = smaller_style(style);
+//             break;
+//         case math_numerator_style_variant:
+//             check = num_style(style);
+//             break;
+//         case math_denominator_style_variant:
+//             check = denom_style(style);
+//             break;
+//         case math_double_superscript_variant:
+//             check = sup_sup_style(style);
+//             break;
+//         default:
+//             check = style;
+//             break;
+//     }
+//     printf("PRESETS: %i + %i -> %i\n", value, style, check);
+//     return check;
+// }
+
+// halfword tex_math_style_variant(halfword style, halfword parameter)
+// {
+//     halfword value = tex_get_math_parameter(style, parameter, NULL); 
+//     halfword check1;
+//     halfword check2;
+//     check1 = getnibble(math_variant_presets[value],style);
+//     switch (value) {
+//         case math_normal_style_variant:
+//             check2 = style;
+//             break;
+//         case math_cramped_style_variant:
+//             check2 = cramped_style(style);
+//             break;
+//         case math_subscript_style_variant:
+//             check2 = sub_style(style);
+//             break;
+//         case math_superscript_style_variant:
+//             check2 = sup_style(style);
+//             break;
+//         case math_small_style_variant:
+//             check2 = small_style(style);
+//             break;
+//         case math_smaller_style_variant:
+//             check2 = smaller_style(style);
+//             break;
+//         case math_numerator_style_variant:
+//             check2 = num_style(style);
+//             break;
+//         case math_denominator_style_variant:
+//             check2 = denom_style(style);
+//             break;
+//         case math_double_superscript_variant:
+//             check2 = sup_sup_style(style);
+//             break;
+//         default:
+//             /* error */
+//             check1 = style;
+//             check2 = style;
+//             break;
+//     }
+//     if (check1 != check2) { 
+//         printf("PRESET NEEDS CHECKING: value %i style %i new %i old %i (FROM 0x%08X)\n", value, style, check1, check2,math_variant_presets[value]);
+//     } else { 
+//         printf("PRESETS ARE THE SAME : value %i style %i new %i old %i (FROM 0x%08X)\n", value, style, check1, check2,math_variant_presets[value]);
+//     }
+//     return check2;
+// }
+
+halfword tex_math_style_variant(halfword style, halfword parameter)
 {
-    switch (tex_get_math_parameter(style, param, NULL)) {
-        case math_normal_style_variant:
-            return style;
-        case math_cramped_style_variant:
-         // return map_cramped_style[s];
-            return cramped_style(style);
-        case math_subscript_style_variant:
-         // return map_subscript_style[s];
-            return sub_style(style);
-        case math_superscript_style_variant:
-        case math_small_style_variant:
-         // return map_superscript_style[s];
-            return sup_style(style);
-        case math_smaller_style_variant:
-        case math_numerator_style_variant:
-         // return map_numerator_style[s];
-            return num_style(style);
-        case math_denominator_style_variant:
-         // return map_denominator_style[s];
-            return denom_style(style);
-        case math_double_superscript_variant:
-         // return map_double_superscript_style[s];
-            return sup_sup_style(style);
-        default:
-            return style;
-    }
+ // return getnibble((unsigned int) tex_get_math_parameter(style, parameter, NULL), style);
+ // return ((unsigned int) tex_get_math_parameter(style, parameter, NULL) >> (4 * style)) & 0xF;
+    return ((unsigned int) tex_get_math_parameter(style,parameter,NULL) >> (4 * (7 - style))) & 0xF;
 }
 
 int tex_math_has_class_option(halfword cls, int option)
@@ -3904,16 +4075,14 @@ void tex_run_math_script(void)
                 if (cur_tok == underscore_token || cur_cmd == subscript_cmd) {
                     tex_get_token();
                     if (cur_tok == underscore_token || cur_cmd == subscript_cmd) {
-                        code = math_shifted_sub_pre_script_code; /* ____ */
+                        code = math_indexed_sub_pre_script_code; /* ____ */
                     } else {
                         tex_back_input(cur_tok);
-                     // code = math_shifted_sub_script_code;
                         code = math_sub_pre_script_code; /* ___ */
                     }
                 } else {
                     tex_back_input(cur_tok);
-                 // code = math_sub_pre_script_code;
-                    code = math_shifted_sub_script_code; /* __ */
+                    code = math_indexed_sub_script_code; /* __ */
                 }
             } else {
                 tex_back_input(cur_tok); /* _ */
@@ -3926,28 +4095,24 @@ void tex_run_math_script(void)
                 if (cur_tok == circumflex_token || cur_cmd == superscript_cmd) {
                     tex_get_token();
                     if (cur_tok == circumflex_token || cur_cmd == superscript_cmd) {
-                        code = math_shifted_super_pre_script_code; /* ^^^^ */
+                        code = math_indexed_super_pre_script_code; /* ^^^^ */
                     } else {
                         tex_back_input(cur_tok);
-                     // code = math_shifted_super_script_code;
                         code = math_super_pre_script_code; /* ^^^ */
                     }
                 } else {
                     tex_back_input(cur_tok);
-                 // code = math_super_pre_script_code;
-                    code = math_shifted_super_script_code; /* ^^ */
+                    code = math_indexed_super_script_code; /* ^^ */
                 }
             } else {
                 tex_back_input(cur_tok); /* ^ */
             }
             break;
         case math_no_script_code:
-            {
-                if (tex_math_scripts_allowed(cur_list.tail)) {
-                    noad_options(cur_list.tail) |= noad_option_no_more_scripts;
-                }
-                return; 
+            if (tex_math_scripts_allowed(cur_list.tail)) {
+                noad_options(cur_list.tail) |= noad_option_no_more_scripts;
             }
+            return; 
     }
     if ((tail == cur_list.head) || (! tex_math_scripts_allowed(tail)) || (tex_math_no_more_scripts(tail))) { 
         tail = tex_math_double_atom(0);
@@ -3955,7 +4120,7 @@ void tex_run_math_script(void)
     switch (code) {
         case math_sub_script_code:
         case math_no_sub_script_code:
-        case math_shifted_sub_script_code:
+        case math_indexed_sub_script_code:
             {
                 if (noad_subscr(tail)) {
                     tail = tex_math_double_atom(1);
@@ -3971,8 +4136,8 @@ void tex_run_math_script(void)
                     case math_no_sub_script_code:
                         noad_options(tail) |= noad_option_no_sub_script;
                         break;
-                    case math_shifted_sub_script_code:
-                        noad_options(tail) |= noad_option_shifted_sub_script;
+                    case math_indexed_sub_script_code:
+                        noad_options(tail) |= noad_option_indexed_sub_script;
                         break;
                 }
                 {
@@ -3987,7 +4152,7 @@ void tex_run_math_script(void)
             }
         case math_sub_pre_script_code:
         case math_no_sub_pre_script_code:
-        case math_shifted_sub_pre_script_code:
+        case math_indexed_sub_pre_script_code:
             {
                 if (noad_subprescr(tail)) {
                     int limitation = node_type(tail) == fraction_noad; /*tex See remark at node definition. */
@@ -4004,8 +4169,8 @@ void tex_run_math_script(void)
                     case math_no_sub_pre_script_code:
                         noad_options(tail) |= noad_option_no_sub_pre_script;
                         break;
-                    case math_shifted_sub_pre_script_code:
-                        noad_options(tail) |= noad_option_shifted_sub_pre_script;
+                    case math_indexed_sub_pre_script_code:
+                        noad_options(tail) |= noad_option_indexed_sub_pre_script;
                         break;
                 }
                 {
@@ -4017,7 +4182,7 @@ void tex_run_math_script(void)
             }
         case math_super_script_code:
         case math_no_super_script_code:
-        case math_shifted_super_script_code:
+        case math_indexed_super_script_code:
             {
                 if (noad_supscr(tail)) {
                     tail = tex_math_double_atom(1);
@@ -4033,8 +4198,8 @@ void tex_run_math_script(void)
                     case math_no_super_script_code:
                         noad_options(tail) |= noad_option_no_super_script;
                         break;
-                    case math_shifted_super_script_code:
-                        noad_options(tail) |= noad_option_shifted_super_script;
+                    case math_indexed_super_script_code:
+                        noad_options(tail) |= noad_option_indexed_super_script;
                         break;
                 }
                 {
@@ -4049,7 +4214,7 @@ void tex_run_math_script(void)
             }
         case math_super_pre_script_code:
         case math_no_super_pre_script_code:
-        case math_shifted_super_pre_script_code:
+        case math_indexed_super_pre_script_code:
             {
                 if (noad_supprescr(tail)) {
                     int limitation = node_type(tail) == fraction_noad; /*tex See remark at node definition. */
@@ -4066,8 +4231,8 @@ void tex_run_math_script(void)
                     case math_no_super_script_code:
                         noad_options(tail) |= noad_option_no_super_pre_script;
                         break;
-                    case math_shifted_super_pre_script_code:
-                        noad_options(tail) |= noad_option_shifted_super_pre_script;
+                    case math_indexed_super_pre_script_code:
+                        noad_options(tail) |= noad_option_indexed_super_pre_script;
                         break;
                 }
                 {
@@ -5830,28 +5995,12 @@ void tex_fixup_math_parameters(int fam, int size, int f, int level)
     tex_aux_define_all_math_parameters(size, math_parameter_skewed_fraction_hgap,             tex_aux_get_font_math_parameter(scale, f, SkewedFractionHorizontalGap),       level);
     tex_aux_define_all_math_parameters(size, math_parameter_skewed_fraction_vgap,             tex_aux_get_font_math_parameter(scale, f, SkewedFractionVerticalGap),         level);
     tex_aux_define_all_math_parameters(size, math_parameter_space_before_script,              tex_aux_get_font_math_parameter(scale, f, SpaceBeforeScript),                 level); /* engine, default 0 */
-    tex_aux_define_all_math_parameters(size, math_parameter_space_between_script,             tex_aux_get_font_math_parameter(scale, f, SpaceBetweenScript),                 level); /* engine, default 0 */
+    tex_aux_define_all_math_parameters(size, math_parameter_space_between_script,             tex_aux_get_font_math_parameter(scale, f, SpaceBetweenScript),                level); /* engine, default 0 */
     tex_aux_define_all_math_parameters(size, math_parameter_space_after_script,               tex_aux_get_font_math_parameter(scale, f, SpaceAfterScript),                  level);
     tex_aux_define_all_math_parameters(size, math_parameter_connector_overlap_min,            tex_aux_get_font_math_parameter(scale, f, MinConnectorOverlap),               level); /* engine, default 0 */
     tex_aux_define_all_math_parameters(size, math_parameter_superscript_snap,                 tex_aux_get_font_math_parameter(scale, f, SuperscriptSnap),                   level);
     tex_aux_define_all_math_parameters(size, math_parameter_subscript_snap,                   tex_aux_get_font_math_parameter(scale, f, SubscriptSnap),                     level); /* engine, default 0 */
     tex_aux_define_all_math_parameters(size, math_parameter_fraction_rule,                    tex_aux_get_font_math_parameter(scale, f, FractionRuleThickness),             level); /* engine, default 0 */
-
- // tex_aux_define_all_math_parameters(size, math_parameter_prime_space_after,                  math_parameter(f, PrimeSpaceAfter),                 level); /* engine, default 0 */
- // tex_aux_define_all_math_parameters(size, math_parameter_skewed_delimiter_tolerance,         math_parameter(f, SkewedDelimiterTolerance),        level); /* engine, default 0 */
- // tex_aux_define_all_math_parameters(size, math_parameter_accent_top_shift_up,                math_parameter(f, AccentTopShiftUp),                level); /* engine, undefined */
- // tex_aux_define_all_math_parameters(size, math_parameter_accent_bottom_shift_down,           math_parameter(f, AccentBottomShiftDown),           level); /* engine, undefined */
- // tex_aux_define_all_math_parameters(size, math_parameter_accent_top_overshoot,               math_parameter(f, AccentTopOvershoot),              level); /* engine, default 0 */
- // tex_aux_define_all_math_parameters(size, math_parameter_accent_bottom_overshoot,            math_parameter(f, AccentBottomOvershoot),           level); /* engine, default 0 */
- // tex_aux_define_all_math_parameters(size, math_parameter_accent_superscript_drop,            math_parameter(f, AccentSuperscriptDrop),           level); /* engine, default 0 */
- // tex_aux_define_all_math_parameters(size, math_parameter_accent_superscript_percent,         math_parameter(f, AccentSuperscriptPercent),        level); /* engine, default 0 */
- // tex_aux_define_all_math_parameters(size, math_parameter_accent_extend_margin,               math_parameter(f, AccentExtendMargin),              level); /* engine, undefined */
- // tex_aux_define_all_math_parameters(size, math_parameter_flattened_accent_top_shift_up,      math_parameter(f, FlattenedAccentTopShiftUp),       level); /* engine, undefined */
- // tex_aux_define_all_math_parameters(size, math_parameter_flattened_accent_bottom_shift_down, math_parameter(f, FlattenedAccentBottomShiftDown),  level); /* engine, undefined */
- // tex_aux_define_all_math_parameters(size, math_parameter_delimiter_shortfall,                math_parameter(f, DelimiterShortfall),              level); /* engine, undefined */
- // tex_aux_define_all_math_parameters(size, math_parameter_delimiter_extend_margin,            math_parameter(f, DelimiterExtendMargin),           level); /* engine, undefined */
- // tex_aux_define_all_math_parameters(size, math_parameter_radical_extensible_after,           math_parameter(f, RadicalKernAfterExtensible),      level); /* engine, undefined */
- // tex_aux_define_all_math_parameters(size, math_parameter_radical_extensible_before,          math_parameter(f, RadicalKernBeforeExtensible),     level); /* engine, undefined */
 
     tex_aux_define_all_math_parameters(size, math_parameter_prime_space_after,                  tex_aux_get_font_math_parameter(scale, f, PrimeSpaceAfter),                 level); /* engine, default 0 */
     tex_aux_define_all_math_parameters(size, math_parameter_skewed_delimiter_tolerance,         tex_aux_get_font_math_parameter(scale, f, SkewedDelimiterTolerance),        level); /* engine, default 0 */
@@ -5870,7 +6019,6 @@ void tex_fixup_math_parameters(int fam, int size, int f, int level)
 
     /*tex Percentages: */
 
-    tex_aux_define_all_math_parameters(size, math_parameter_prime_width,          math_parameter(f, PrimeWidthPercent),               level); /* engine, default 0 */
     tex_aux_define_all_math_parameters(size, math_parameter_prime_raise,          math_parameter(f, PrimeRaisePercent),               level); /* engine, default 0 */
     tex_aux_define_all_math_parameters(size, math_parameter_prime_raise_composed, math_parameter(f, PrimeRaiseComposedPercent),       level); /* engine, default 0 */
     tex_aux_define_all_math_parameters(size, math_parameter_radical_degree_raise, math_parameter(f, RadicalDegreeBottomRaisePercent), level);
@@ -5890,10 +6038,6 @@ void tex_fixup_math_parameters(int fam, int size, int f, int level)
     tex_aux_define_all_math_parameters(size, math_parameter_extra_subprescript_shift,      0, level);
     tex_aux_define_all_math_parameters(size, math_parameter_rule_height,                   0, level);
     tex_aux_define_all_math_parameters(size, math_parameter_rule_depth,                    0, level);
-    tex_aux_define_all_math_parameters(size, math_parameter_superscript_shift_distance,    0, level);
-    tex_aux_define_all_math_parameters(size, math_parameter_subscript_shift_distance,      0, level);
-    tex_aux_define_all_math_parameters(size, math_parameter_superprescript_shift_distance, 0, level);
-    tex_aux_define_all_math_parameters(size, math_parameter_subprescript_shift_distance,   0, level);
     tex_aux_define_all_math_parameters(size, math_parameter_extra_superscript_space,       0, level);
     tex_aux_define_all_math_parameters(size, math_parameter_extra_subscript_space,         0, level);
     tex_aux_define_all_math_parameters(size, math_parameter_extra_superprescript_space,    0, level);
@@ -6229,27 +6373,49 @@ void tex_initialize_math_spacing(void)
 
     /* could be initialize_math_defaults */
 
-    tex_set_all_styles   (math_parameter_over_line_variant,       math_cramped_style_variant,      level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_under_line_variant,      math_normal_style_variant,       level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_over_delimiter_variant,  math_small_style_variant,        level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_under_delimiter_variant, math_small_style_variant,        level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_delimiter_over_variant,  math_normal_style_variant,       level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_delimiter_under_variant, math_normal_style_variant,       level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_h_extensible_variant,    math_normal_style_variant,       level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_v_extensible_variant,    math_normal_style_variant,       level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_fraction_variant,        math_cramped_style_variant,      level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_radical_variant,         math_cramped_style_variant,      level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_degree_variant,          math_double_superscript_variant, level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_accent_variant,          math_cramped_style_variant,      level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_top_accent_variant,      math_cramped_style_variant,      level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_bottom_accent_variant,   math_cramped_style_variant,      level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_overlay_accent_variant,  math_cramped_style_variant,      level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_numerator_variant,       math_numerator_style_variant,    level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_denominator_variant,     math_denominator_style_variant,  level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_superscript_variant,     math_superscript_style_variant,  level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_subscript_variant,       math_subscript_style_variant,    level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_prime_variant,           math_superscript_style_variant,  level_one, indirect_math_regular);
-    tex_set_all_styles   (math_parameter_stack_variant,           math_numerator_style_variant,    level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_over_line_variant,       math_cramped_style_variant,      level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_under_line_variant,      math_normal_style_variant,       level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_over_delimiter_variant,  math_small_style_variant,        level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_under_delimiter_variant, math_small_style_variant,        level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_delimiter_over_variant,  math_normal_style_variant,       level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_delimiter_under_variant, math_normal_style_variant,       level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_h_extensible_variant,    math_normal_style_variant,       level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_v_extensible_variant,    math_normal_style_variant,       level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_fraction_variant,        math_cramped_style_variant,      level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_radical_variant,         math_cramped_style_variant,      level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_degree_variant,          math_double_superscript_variant, level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_accent_variant,          math_cramped_style_variant,      level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_top_accent_variant,      math_cramped_style_variant,      level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_bottom_accent_variant,   math_cramped_style_variant,      level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_overlay_accent_variant,  math_cramped_style_variant,      level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_numerator_variant,       math_numerator_style_variant,    level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_denominator_variant,     math_denominator_style_variant,  level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_superscript_variant,     math_superscript_style_variant,  level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_subscript_variant,       math_subscript_style_variant,    level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_prime_variant,           math_superscript_style_variant,  level_one, indirect_math_regular);
+ // tex_set_all_styles   (math_parameter_stack_variant,           math_numerator_style_variant,    level_one, indirect_math_regular);
+
+    tex_set_all_styles   (math_parameter_over_line_variant,       math_variant_presets[math_cramped_style_variant],      level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_under_line_variant,      math_variant_presets[math_normal_style_variant],       level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_over_delimiter_variant,  math_variant_presets[math_small_style_variant],        level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_under_delimiter_variant, math_variant_presets[math_small_style_variant],        level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_delimiter_over_variant,  math_variant_presets[math_normal_style_variant],       level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_delimiter_under_variant, math_variant_presets[math_normal_style_variant],       level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_h_extensible_variant,    math_variant_presets[math_normal_style_variant],       level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_v_extensible_variant,    math_variant_presets[math_normal_style_variant],       level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_fraction_variant,        math_variant_presets[math_cramped_style_variant],      level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_radical_variant,         math_variant_presets[math_cramped_style_variant],      level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_degree_variant,          math_variant_presets[math_double_superscript_variant], level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_accent_variant,          math_variant_presets[math_cramped_style_variant],      level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_top_accent_variant,      math_variant_presets[math_cramped_style_variant],      level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_bottom_accent_variant,   math_variant_presets[math_cramped_style_variant],      level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_overlay_accent_variant,  math_variant_presets[math_cramped_style_variant],      level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_numerator_variant,       math_variant_presets[math_numerator_style_variant],    level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_denominator_variant,     math_variant_presets[math_denominator_style_variant],  level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_superscript_variant,     math_variant_presets[math_superscript_style_variant],  level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_subscript_variant,       math_variant_presets[math_subscript_style_variant],    level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_prime_variant,           math_variant_presets[math_superscript_style_variant],  level_one, indirect_math_regular);
+    tex_set_all_styles   (math_parameter_stack_variant,           math_variant_presets[math_numerator_style_variant],    level_one, indirect_math_regular);
 }
 
 /*tex

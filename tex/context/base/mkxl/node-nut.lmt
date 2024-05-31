@@ -134,6 +134,7 @@ local nuts = {
     getoptions              = direct.getoptions,
     getorientation          = direct.getorientation,
     getparstate             = direct.getparstate,
+    patchparshape           = direct.patchparshape,
     getpenalty              = direct.getpenalty,
     getpost                 = direct.getpost,
     getpre                  = direct.getpre,

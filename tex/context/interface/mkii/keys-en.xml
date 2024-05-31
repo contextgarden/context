@@ -97,6 +97,7 @@
 		<cd:variable name='author' value='author'/>
 		<cd:variable name='auto' value='auto'/>
 		<cd:variable name='autointro' value='autointro'/>
+		<cd:variable name='axis' value='axis'/>
 		<cd:variable name='back' value='back'/>
 		<cd:variable name='background' value='background'/>
 		<cd:variable name='backgroundbar' value='backgroundbar'/>
@@ -1409,6 +1410,7 @@
 		<cd:constant name='vonsep' value='vonsep'/>
 		<cd:constant name='vz' value='vz'/>
 		<cd:constant name='way' value='way'/>
+		<cd:constant name='weight' value='weight'/>
 		<cd:constant name='wfactor' value='wfactor'/>
 		<cd:constant name='white' value='white'/>
 		<cd:constant name='width' value='width'/>

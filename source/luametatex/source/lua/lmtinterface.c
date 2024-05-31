@@ -439,15 +439,9 @@ void lmt_initialize_interface(void)
     set_math_parameter_value(math_parameter_prime_shift_up,                     math_dimension_parameter,  primeshiftup);
     set_math_parameter_value(math_parameter_prime_shift_drop,                   math_dimension_parameter,  primeshiftdrop);
     set_math_parameter_value(math_parameter_prime_space_after,                  math_dimension_parameter,  primespaceafter);
-    set_math_parameter_value(math_parameter_prime_width,                        math_integer_parameter,    primewidth);
 
     set_math_parameter_value(math_parameter_rule_height,                        math_dimension_parameter,  ruleheight);
     set_math_parameter_value(math_parameter_rule_depth,                         math_dimension_parameter,  ruledepth);
-
-    set_math_parameter_value(math_parameter_superscript_shift_distance,         math_dimension_parameter,  superscriptshiftdistance);
-    set_math_parameter_value(math_parameter_subscript_shift_distance,           math_dimension_parameter,  subscriptshiftdistance);
-    set_math_parameter_value(math_parameter_superprescript_shift_distance,      math_dimension_parameter,  presuperscriptshiftdistance);
-    set_math_parameter_value(math_parameter_subprescript_shift_distance,        math_dimension_parameter,  presubscriptshiftdistance);
 
     set_math_parameter_value(math_parameter_extra_superscript_space,            math_dimension_parameter,  extrasuperscriptspace);
     set_math_parameter_value(math_parameter_extra_subscript_space,              math_dimension_parameter,  extrasubscriptspace);

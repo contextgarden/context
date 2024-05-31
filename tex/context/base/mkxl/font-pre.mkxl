@@ -54,12 +54,16 @@
 %D \ruledhbox{0}\par
 %D \stoptyping
 
+%D We wipe math from text fonts, just to be sure, but in some cases like koeieletters and
+%D euler we can't do that, so there we have to disable it (in the typescript).
+
 \definefontfeature
   [always]
   [mode=node,    % we had 'auto', but let's try 'node' for a while and see what the impact is
    script=auto,  % on speed; 'base' just doesn't play well with dynamics; some day we can even
    autoscript=position,
    autolanguage=position,
+   wipemath=yes, % for instance needed for dejavu
    textcontrol=collapsehyphens,
    checkmissing=yes,
    kern=yes,     % consider skipping the base passes when no base mode is used
@@ -423,6 +427,7 @@
    compactmath=yes,
    flattenaccents=yes,
  % mathgaps=yes,
+   wipemath=no,
    mathexpansion=math,
    language=dflt,
    script=math]

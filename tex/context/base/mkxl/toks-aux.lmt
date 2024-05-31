@@ -285,3 +285,9 @@ function tex.stringtocodesbitmap(str,codes)
     end
     return bitmap
 end
+
+if environment.initex then
+    for k, v in next, tex.getmathvariantvalues() do
+        texintegerdef("math"..v.."stylepreset",tex.getmathvariantpresets(k),"immutable")
+    end
+end

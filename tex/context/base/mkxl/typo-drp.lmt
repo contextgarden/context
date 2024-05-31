@@ -50,6 +50,7 @@ local setkern           = nuts.setkern
 local setoffsets        = nuts.setoffsets
 local setglyphdata      = nuts.setglyphdata
 local getparstate       = nuts.getparstate
+local patchparshape     = nuts.patchparshape
 
 local hpack_nodes       = nuts.hpack
 
@@ -139,6 +140,36 @@ interfaces.implement {
 
 -- todo: prevent linebreak .. but normally a initial ends up at the top of
 -- a page so this has a low priority
+
+local function updateshapestate(head,pdata,hangafter,hangindent)
+    local parshape = pdata.parshape
+    if parshape then
+        local size = #parshape
+        if size > 0 then
+            local hang = -hangafter
+            local last = hang >= size and { parshape[size][1], parshape[size][2] } or false
+            for i=1,hang do
+                local p = parshape[i]
+                if p then
+                    p[1] = p[1] + hangindent
+                    p[2] = p[2] - hangindent
+                else
+                    parshape[i] = {
+                        last[1] + hangindent,
+                        last[2] - hangindent,
+                    }
+                end
+            end
+            if last then
+                parshape[hang+1] = last
+            end
+            patchparshape(head,parshape)
+            return
+        end
+    end
+    texset("hangafter",hangafter,true)
+    texset("hangindent",hangindent,true)
+end
 
 actions[v_default] = function(head,settings)
     local skip = false
@@ -342,10 +373,14 @@ actions[v_default] = function(head,settings)
                 }
                 busy = function(head)
                     local lines = state.lines
-                    local done  = getparstate(head,true).prevgraf or lines
+                    local pdata = getparstate(head,true)
+                    local done  = pdata.prevgraf or lines
                     if done < lines then
-                        texset("hangafter",-(lines - done),true)
-                        texset("hangindent",state.hangindent,true)
+                        local hangafter  = -(lines - done)
+                        local hangindent = state.hangindent
+                        updateshapestate(head,pdata,hangafter,hangindent)
+-- texset("hangafter",hangafter,true)
+-- texset("hangindent",hangindent,true)
                         if state.parindent then
                             insertafter(first,first,new_kern(-state.parindent))
                         end
@@ -356,17 +391,8 @@ actions[v_default] = function(head,settings)
                     end
                 end
             end
-            texset("hangafter",hangafter,true)
-            texset("hangindent",hangindent,true)
--- local hsize = texget("hsize",false)
--- local step  = { hangindent, hsize - hangindent }
--- local shape = { ["shift"] = true }
--- for i=1,-hangafter do
---     shape[#shape+1] = step
--- end
--- shape[#shape+1] = { 0, hsize }
--- texset("parshape",shape)
--- tex.snapshotpar(0x20000)
+            local pdata = getparstate(head,true)
+            updateshapestate(head,pdata,hangafter,hangindent)
         end
         if indent then
             insertafter(first,first,new_kern(-parindent))

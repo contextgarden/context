@@ -5051,10 +5051,10 @@ static int texlib_getnoadoptionvalues(lua_State *L)
     lua_set_string_by_index(L, noad_option_openup_depth,               "openupdepth");
     lua_set_string_by_index(L, noad_option_prefer_font_thickness,      "preferfontthickness");
     lua_set_string_by_index(L, noad_option_no_ruling,                  "noruling");
-    lua_set_string_by_index(L, noad_option_shifted_sub_script,         "shiftedsubscript");
-    lua_set_string_by_index(L, noad_option_shifted_super_script,       "shiftedsuperscript");
-    lua_set_string_by_index(L, noad_option_shifted_sub_pre_script,     "shiftedsubprescript");
-    lua_set_string_by_index(L, noad_option_shifted_super_pre_script,   "shiftedsuperprescript");
+    lua_set_string_by_index(L, noad_option_indexed_sub_script,         "indexedsubscript");
+    lua_set_string_by_index(L, noad_option_indexed_super_script,       "indexedsuperscript");
+    lua_set_string_by_index(L, noad_option_indexed_sub_pre_script,     "indexedsubprescript");
+    lua_set_string_by_index(L, noad_option_indexed_super_pre_script,   "indexedsuperprescript");
     lua_set_string_by_index(L, noad_option_unpack_list,                "unpacklist");
     lua_set_string_by_index(L, noad_option_unroll_list,                "unrolllist");
     lua_set_string_by_index(L, noad_option_followed_by_space,          "followedbyspace");
@@ -5646,6 +5646,19 @@ static int texlib_getmathvariantvalues(lua_State *L)
     return lmt_push_info_values(L, lmt_interface.math_style_variant_values);
 }
 
+static int texlib_getmathvariantpresets(lua_State *L)
+{
+    if (lua_type(L, 1) == LUA_TNUMBER) {
+        lua_pushinteger(L, tex_get_math_variant_preset(lmt_tointeger(L, 1)));
+    } else {
+        lua_createtable(L, 8, 1);
+        for (int i = 0; i <= last_math_style_variant; i++) {
+            lua_set_integer_by_index(L, i, tex_get_math_variant_preset(i));
+        }
+    }
+    return 1;
+}
+
 static int texlib_getdiscstatevalues(lua_State *L)
 {
     lua_createtable(L, 4, 1);
@@ -5832,6 +5845,18 @@ static int texlib_popsavelevel(lua_State *L)
  // tex_off_save();
     tex_unsave();
     return 0;
+}
+static int texlib_getmathstylevariant(lua_State *L)
+{
+    halfword style = lmt_tointeger(L, 1);
+    halfword parameter = lmt_tointeger(L, 2);
+    if (is_valid_math_style(style) && math_parameter_valid_variant(parameter)) {
+        lua_pushinteger(L, tex_get_math_parameter(style, parameter, NULL));
+        lua_pushinteger(L, tex_math_style_variant(style, parameter));
+        return 2; 
+    } else {
+        return 0; 
+    }
 }
 
 /*tex 
@@ -6066,6 +6091,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getmathstylenamevalues",      texlib_getmathstylenamevalues      },
     { "getmathstylevalues",          texlib_getmathstylevalues          },
     { "getmathvariantvalues",        texlib_getmathvariantvalues        },
+    { "getmathvariantpresets",       texlib_getmathvariantpresets       },
     { "getmathcontrolvalues",        texlib_getmathcontrolvalues        },
     { "gettextcontrolvalues",        texlib_gettextcontrolvalues        },
     { "getprepoststatevalues",       texlib_getprepoststatevalues       },
@@ -6109,6 +6135,8 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "shiftparshape",               texlib_shiftparshape               },
     { "snapshotpar",                 texlib_snapshotpar                 },
     { "getparstate",                 texlib_getparstate                 },
+    /* */                                                               
+    { "getmathstylevariant",         texlib_getmathstylevariant         },
     /* */                                                               
     { "getinsertdistance",           texlib_getinsertdistance           },
     { "getinsertmultiplier",         texlib_getinsertmultiplier         },

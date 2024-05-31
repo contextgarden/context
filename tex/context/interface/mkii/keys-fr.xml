@@ -97,6 +97,7 @@
 		<cd:variable name='author' value='auteur'/>
 		<cd:variable name='auto' value='auto'/>
 		<cd:variable name='autointro' value='autointro'/>
+		<cd:variable name='axis' value='axis'/>
 		<cd:variable name='back' value='retour'/>
 		<cd:variable name='background' value='arriereplan'/>
 		<cd:variable name='backgroundbar' value='backgroundbar'/>
