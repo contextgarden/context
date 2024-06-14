@@ -1032,25 +1032,29 @@
   {\markblobindexdone{\currentlanguage}\scratchcounter
    \normalexpanded{\csname\v!mathnote\endcsname
      [\v!mathnote:\currentlanguage:\the\scratchcounter]%
-     {\definedfont[\s!MathRoman]\gettextblob{\currentlanguage}\the\currentmathblob}}}
+     {\definedfont[\s!MathRoman]\getmathtextblob{\currentlanguage}\the\currentmathblob}}}
 
 \def\math_trace_blobs_indeed_nop
-  {\note[\v!mathnote:\currentlanguage:\the\scratchcounter]}
+  {\normalexpanded{\note[\v!mathnote:\currentlanguage:\the\scratchcounter]}}
 
 \protected\def\math_trace_blobs_indeed
   {\dontleavehmode
    \hbox to \zeropoint \bgroup
-      \resetinteractionparameter\c!contrastcolor
-      \resetinteractionparameter\c!style
-      \scratchcounter\getblobindex\currentmathblob
+      \resetinteractioncontrastcolor
+      \resetinteractionstyle
+      \scratchcounter\getmathblobindex\currentmathblob
       \bgroup
         \darkgray
         \vrule \s!height .9\strutht \s!depth .9\strutdp \s!width \onepoint \relax
         \hbox to \zeropoint \bgroup
           \smallinfofont
           \the\currentmathblob\hss
-          \hbox to \zeropoint \s!yoffset -.6\strutdp \bgroup
+          \hbox to \zeropoint \s!yoffset -.8\strutdp \bgroup
             \currentlanguage
+            \ifconditional\c_strc_tags_global
+              \space
+              \tohexadecimal\getmathblobmapping\currentmathblob
+            \fi
             \hss
           \egroup
         \egroup
@@ -1066,7 +1070,9 @@
    \egroup}
 
 \protected\def\math_trace_blobs_checked
-  {\ifnum\currentmathblobnesting<\zerocount\else
+  {\iftrialtypesetting
+     % no need for it, not even the note dimensions
+   \orelse\ifnum\currentmathblobnesting<\zerocount\else
      \aftergroup\math_trace_blobs_indeed
    \fi}
 
@@ -2067,6 +2073,12 @@
   {\begingroup
    \currentmathblobnesting\minusone
    \text{\usemathematicsstyleandcolor\c!textstyle\c!textcolor#1}%
+   \endgroup}
+
+\protected\permanent\def\textmathematics#1%
+  {\begingroup
+   \currentmathblobnesting\minusone
+   \mathematics{#1}%
    \endgroup}
 
 %D The next hack is needed needed for sine, cosine etc.
@@ -5015,11 +5027,19 @@
     \math_bump_blob_state
 \to \everymathematics
 
+% \appendtoks
+%    \ifcstok{\taggingparameter\c!state}\v!start
+%        \clf_enablecollectingmath
+%    \fi
+% \to \everysetuptagging
+
 \appendtoks
-   \ifcstok{\taggingparameter\c!state}\v!start
-       \clf_enablecollectingmath
-   \fi
-\to \everysetuptagging
+    \clf_enablecollectingmath
+\to \everyenableelements
+
+\appendtoks
+    \clf_disablecollectingmath
+\to \everydisableelements
 
 % needed for verbose: \im {C \of (a,b) \neq C^2 \of (a,b)}
 

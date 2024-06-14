@@ -212,6 +212,7 @@
 \definesystemconstant {explicitrighthyphenchar}
 \definesystemconstant {extensions}
 \definesystemconstant {external}
+\definesystemconstant {symbolattr}
 \definesystemconstant {ex}
 \definesystemconstant {e}
 \definesystemconstant {factor}
@@ -321,6 +322,7 @@
 \definesystemconstant {nomath}
 \definesystemconstant {none}
 \definesystemconstant {nooverflow}
+\definesystemconstant {norule}
 \definesystemconstant {noskips}
 \definesystemconstant {normal}
 \definesystemconstant {Normal}
@@ -345,6 +347,7 @@
 \definesystemconstant {plus}
 \definesystemconstant {posit}
 %definesystemconstant {pt}
+\definesystemconstant {reflected}
 \definesystemconstant {realpage}
 \definesystemconstant {register}
 \definesystemconstant {Regular}
@@ -438,6 +441,7 @@
 \definesystemconstant {Unicode}
 \definesystemconstant {unroll}
 \definesystemconstant {upright}
+\definesystemconstant {usecallback}
 \definesystemconstant {userdata}
 \definesystemconstant {userpage}
 \definesystemconstant {user}

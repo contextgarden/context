@@ -16,7 +16,7 @@ if not modules then modules = { } end modules ['math-tag'] = {
 -- todo: prime
 -- todo: middle in fraction
 
-local find, match = string.find, string.match
+local find, match, gsub = string.find, string.match, string.gsub
 local insert, remove, concat, setmetatableindex = table.insert, table.remove, table.concat, table.setmetatableindex
 
 local attributes         = attributes
@@ -58,75 +58,81 @@ local getnucleus         = nuts.getnucleus
 local setattributes      = nuts.setattributes
 local nextnode           = nuts.traversers.node
 
-local nodecodes          = nodes.nodecodes
+local nodecodes              = nodes.nodecodes
 
-local accentcodes        <const> = nodes.accentcodes
-local fencecodes         <const> = nodes.fencecodes
-local kerncodes          <const> = nodes.kerncodes
+local accentcodes            <const> = nodes.accentcodes
+local fencecodes             <const> = nodes.fencecodes
+local kerncodes              <const> = nodes.kerncodes
 
-local noad_code          <const> = nodecodes.noad
-local accent_code        <const> = nodecodes.accent
-local radical_code       <const> = nodecodes.radical
-local fraction_code      <const> = nodecodes.fraction
-local subbox_code        <const> = nodecodes.subbox
-local submlist_code      <const> = nodecodes.submlist
-local mathchar_code      <const> = nodecodes.mathchar
-local mathtextchar_code  <const> = nodecodes.mathtextchar
-local delimiter_code     <const> = nodecodes.delimiter
-local style_code         <const> = nodecodes.style
-local choice_code        <const> = nodecodes.choice
-local fence_code         <const> = nodecodes.fence
+local noad_code              <const> = nodecodes.noad
+local accent_code            <const> = nodecodes.accent
+local radical_code           <const> = nodecodes.radical
+local fraction_code          <const> = nodecodes.fraction
+local subbox_code            <const> = nodecodes.subbox
+local submlist_code          <const> = nodecodes.submlist
+local mathchar_code          <const> = nodecodes.mathchar
+local mathtextchar_code      <const> = nodecodes.mathtextchar
+local delimiter_code         <const> = nodecodes.delimiter
+local style_code             <const> = nodecodes.style
+local choice_code            <const> = nodecodes.choice
+local fence_code             <const> = nodecodes.fence
 
-local hlist_code         <const> = nodecodes.hlist
-local vlist_code         <const> = nodecodes.vlist
-local glyph_code         <const> = nodecodes.glyph
-local disc_code          <const> = nodecodes.disc
-local glue_code          <const> = nodecodes.glue
-local kern_code          <const> = nodecodes.kern
-local rule_code          <const> = nodecodes.rule
-local math_code          <const> = nodecodes.math
+local hlist_code             <const> = nodecodes.hlist
+local vlist_code             <const> = nodecodes.vlist
+local glyph_code             <const> = nodecodes.glyph
+local disc_code              <const> = nodecodes.disc
+local glue_code              <const> = nodecodes.glue
+local kern_code              <const> = nodecodes.kern
+local rule_code              <const> = nodecodes.rule
+local math_code              <const> = nodecodes.math
 
 local fixedtopaccent_code    <const> = accentcodes.fixedtop
 local fixedbottomaccent_code <const> = accentcodes.fixedbottom
 local fixedbothaccent_code   <const> = accentcodes.fixedboth
 
-local leftfence_code     <const> = fencecodes.left
-local middlefence_code   <const> = fencecodes.middle
-local rightfence_code    <const> = fencecodes.right
-local operatorfence_code <const> = fencecodes.operator
+local leftfence_code         <const> = fencecodes.left
+local middlefence_code       <const> = fencecodes.middle
+local rightfence_code        <const> = fencecodes.right
+local operatorfence_code     <const> = fencecodes.operator
 
-local fontkern_code      <const> = kerncodes.fontkern
-local italickern_code    <const> = kerncodes.italickern
+local fontkern_code          <const> = kerncodes.fontkern
+local italickern_code        <const> = kerncodes.italickern
 
-local hextensible_code   <const> = nodes.radicalcodes.hextensible
-local lextensible_code   <const> = nodes.listcodes.hextensible
-local gextensible_code   <const> = nodes.glyphcodes.extensible
+local hextensible_code       <const> = nodes.radicalcodes.hextensible
+local delimited_code         <const> = nodes.radicalcodes.delimited
+----- delimiterover_code     <const> = nodes.radicalcodes.delimiterover
+----- delimiterunder_code    <const> = nodes.radicalcodes.delimiterunder
+----- overdelimiter_code     <const> = nodes.radicalcodes.overdelimiter
+----- underdelimiter_code    <const> = nodes.radicalcodes.underdelimiter
 
-local processnoads       = noads.process
+local lextensible_code       <const> = nodes.listcodes.hextensible
+local gextensible_code       <const> = nodes.glyphcodes.extensible
 
-local a_tagged           <const> = attributes.private('tagged')
-local a_mathcategory     <const> = attributes.private('mathcategory')
-local a_mathstack        <const> = attributes.private('mathstack')
-local a_mathmode         <const> = attributes.private('mathmode')
-local a_mathdomain       <const> = attributes.private('mathdomain')
+local processnoads           = noads.process
 
-local c_mathblobnesting  <const> = tex.iscount("currentmathblobnesting")
-local c_mathblob         <const> = tex.iscount("currentmathblob")
+local a_tagged               <const> = attributes.private('tagged')
+local a_mathcategory         <const> = attributes.private('mathcategory')
+local a_mathstack            <const> = attributes.private('mathstack')
+local a_mathmode             <const> = attributes.private('mathmode')
+local a_mathdomain           <const> = attributes.private('mathdomain')
 
-local getintegervalue    = tex.getintegervalue
-local getmacro           = tokens.getters.macro
+local c_mathblobnesting      <const> = tex.iscount("currentmathblobnesting")
+local c_mathblob             <const> = tex.iscount("currentmathblob")
 
-local tags               = structures.tags
+local getintegervalue = tex.getintegervalue
+local getmacro        = tokens.getters.macro
 
-local start_tagged       = tags.start
-local restart_tagged     = tags.restart
-local stop_tagged        = tags.stop
-local taglist            = tags.taglist
+local tags            = structures.tags
 
------ chardata           = characters.data
+local start_tagged    = tags.start
+local restart_tagged  = tags.restart
+local stop_tagged     = tags.stop
+local taglist         = tags.taglist
 
-local getmathcodes       = tex.getmathcodes
-local classes            = mathematics.classes
+----- chardata        = characters.data
+
+local getmathcodes    = tex.getmathcodes
+local classes         = mathematics.classes
 
 local classtotag = {
     [classes.ordinary]     = "mi",
@@ -425,7 +431,6 @@ end
 process = function(start) -- we cannot use the processor as we have no finalizers (yet)
     local mtexttag = nil
     for start, id, subtype in nextnode, start do -- current
---         if id == glyph_code or id == disc_code then
         if id == glyph_code or id == disc_code then
             if not mtexttag then
                 mtexttag = start_tagged("mtext")
@@ -442,7 +447,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                 mtexttag = nil
             end
             if id == mathchar_code then
-                local char = getchar(start) -- not used
+             -- local char = getchar(start) -- not used
                 local properties = getproperties(start,subtype)
                 local tag = classtotag[subtype] or "mo"
                 properties.mathstack = getattr(start,a_mathstack)
@@ -487,6 +492,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                             -- can this happen
                             -- skip
                         elseif tag == "mstacker" then
+                            -- this no longer happens
                             local list = getlist(start)
                             if list then
                                 process(list)
@@ -615,6 +621,13 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                             setattr(start,a_tagged,start_tagged("mrow", {
                                 mathfractionstack = detail,
                              -- mathstack         = getattr(start,a_mathstack),
+                            }))
+                            process(list)
+                            stop_tagged()
+                        elseif tag == "mdelimitedstack" then
+                            setattr(start,a_tagged,start_tagged("mrow", {
+                                mathdelimitedstack = detail,
+                             -- mathstack          = getattr(start,a_mathstack),
                             }))
                             process(list)
                             stop_tagged()
@@ -805,17 +818,33 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     stop_tagged()
                 end
             elseif id == radical_code then
+                local left  = getleftdelimiter(start)
+                local right = getrightdelimiter(start)
                 if subtype == hextensible_code then
                     -- eventually we have no radical but just some box
-                    local left = getleftdelimiter(start)
+-- left ?
                     if left then
                         start_tagged("mo")
                         process(left)
                         stop_tagged()
                     end
+                elseif subtype == delimited_code then
+                    start_tagged("mdelimited",properties)
+                    if left then
+                        local properties = getproperties(left,subtype) or { }
+                        properties.delimiterlocation = "left"
+                        setattr(left,a_tagged,start_tagged("mo", properties))
+                        stop_tagged()
+                    end
+                    if right then
+                        local properties = getproperties(right,subtype) or { }
+                        properties.delimiterlocation = "right"
+                        setattr(right,a_tagged,start_tagged("mo", properties))
+                        stop_tagged()
+                    end
+                    processsubsup(start)
+                    stop_tagged()
                 else
-                    local left   = getleftdelimiter(start)
-                    local right  = getrightdelimiter(start)
                     local degree = getdegree(start)
                     if left then
                         start_tagged("ignore")
@@ -824,7 +853,7 @@ process = function(start) -- we cannot use the processor as we have no finalizer
                     end
                     if right then
                         start_tagged("ignore")
-                        process(lright) -- actuarian symbol, ignored
+                        process(right) -- actuarian symbol, ignored
                         stop_tagged()
                     end
                     if degree and hascontent(degree) then
@@ -912,9 +941,8 @@ local standalone  = false
 directives.register("structures.tags.math.standalone", function(v) standalone = v end)
 
 function noads.handlers.tags(head,style,penalties)
---     if context.trialtypesetting() then
---        print("!!!!!!!!!")
---     else
+    if context.trialtypesetting() then
+    else
         start_tagged("math", {
             mode       = (getattr(head,a_mathmode) == 1) and "display" or "inline",
             standalone = standalone,
@@ -927,7 +955,7 @@ function noads.handlers.tags(head,style,penalties)
         process(head)
         stop_tagged()
         stop_tagged()
---     end
+    end
     mathematics.lastinput= nil
 end
 
@@ -948,19 +976,31 @@ do
     local hashed   = { }
     local blobdone = setmetatableindex("table")
 
+    local trace_blobs = false
+    local report_blob = logs.reporter("math blob")
+
+    directives.register("structures.tags.math.blobs", function(v) trace_blobs = v end)
+
     local function register(order,data)
         if not data then
             data = ""
         end
         local hash  = sha2.HEX256(data) -- maybe direct
         local index = hashed[hash]
-        if not index then
+        if index then
+            if trace_blobs then
+                report_blob("known, order %i, index %i, data: %s",order,index,gsub(shared[index].strip,"%s+",""))
+            end
+        else
             index = #shared + 1
             hashed[hash]  = index
             shared[index] = {
                 data  = data,
                 strip = xml.mml.stripped(data), -- we could delay this as it often only happens once
             }
+            if trace_blobs then
+                report_blob("register, order %i, index %i, data: %s",order,index,gsub(shared[index].strip,"%s+",""))
+            end
         end
         orders[order] = index
         return index
@@ -979,17 +1019,28 @@ do
         end
     end
 
-    local function getmathblob(blob)
-        local index = orders[blob]
-        return index and shared[index].strip
+    function mathematics.disablecollecting()
+        enabled = false
+        export  = false
     end
 
-    local function gettextblob(language,blob)
-        if not blob then
-            blob     = language
+    local function getmathblob(purpose,order)
+        local index = orders[order]
+        if index then
+            local entry = shared[index]
+            if trace_blobs then
+                report_blob("get math data, purpose %a, order %i, index %i, data: %s",purpose,order,index,gsub(entry.strip,"%s+", ""))
+            end
+            return entry.strip
+        end
+    end
+
+    local function gettextblob(purpose,language,order)
+        if not order then
+            order    = language
             language = "en"
         end
-        local index = orders[blob]
+        local index = orders[order]
         if index then
             local entry = shared[index]
             local data  = entry and entry[language]
@@ -1004,12 +1055,29 @@ do
                 end
 
             end
+            if trace_blobs then
+                report_blob("get text data, purpose %a, order %i, index %i, data: %s",purpose,order,index,gsub(entry.strip,"%s+", ""))
+            end
             return data
         end
     end
 
-    local function getblobindex(blob)
-        return orders[blob] or 0
+    local function getblobindex(purpose,order)
+        local index = orders[order] or 0
+        if trace_blobs then
+            report_blob("get math order, purpose %a, order %i, index %i",purpose,order,index)
+        end
+        return index
+    end
+
+    local function getblobmapping(purpose,order)
+        local index   = orders[order] or 0
+        local blobs   = job.variables.collected.mathblobs
+        local mapping = blobs and blobs[index] or 0
+        if trace_blobs then
+            report_blob("get math mapping, purpose %a, order %i, index %i, mapping %04X",purpose,order,index,mapping)
+        end
+        return index
     end
 
     local function markblobindexdone(language,n)
@@ -1029,32 +1097,42 @@ do
     local ctxescaped = context.ctxescaped
 
     implement {
-        name      = "getmathblob",
+        name      = "getmathmathblob",
         protected = true,
         public    = true,
         arguments = "integer",
         actions   = function(n)
-            context(getmathblob(n) or "")
+            context(getmathblob("tex",n) or "")
         end
     }
 
     implement {
-        name      = "gettextblob",
+        name      = "getmathtextblob",
         protected = true,
         public    = true,
         arguments = { "string", "integer" },
         actions   = function(language,n)
-            ctxescaped(gettextblob(language,n) or "")
+            ctxescaped(gettextblob("tex",language,n) or "")
         end
     }
 
     implement {
-        name      = "getblobindex",
+        name      = "getmathblobindex",
         public    = true,
         usage     = "value",
         arguments = "integer",
         actions   = function(n)
-            return integer_value, getblobindex(n)
+            return integer_value, getblobindex("tex",n)
+        end
+    }
+
+    implement {
+        name      = "getmathblobmapping",
+        public    = true,
+        usage     = "value",
+        arguments = "integer",
+        actions   = function(n)
+            return integer_value, getblobmapping("tex",n)
         end
     }
 
@@ -1091,6 +1169,13 @@ do
      -- public    = true,
         protected = true,
         actions   = mathematics.enablecollecting
+    }
+
+    implement {
+        name      = "disablecollectingmath",
+     -- public    = true,
+        protected = true,
+        actions   = mathematics.disablecollecting
     }
 
     implement {
@@ -1140,7 +1225,7 @@ do
         arguments = "4 strings",
         actions   = function(filename,buffername,n,option)
             local blob = n and tonumber(n) or getintegervalue(c_mathblob)
-            local data = getmathblob(blob) or ""
+            local data = getmathblob("collect",blob) or ""
             if option == "ascii" then
                 data = toascii(data)
             end
@@ -1163,7 +1248,7 @@ do
             if what == "value" then
                 return integer_value, current
             else
-                context(getmathblob(tokens.scanners.integer()) or "")
+                context(getmathblob("collect",tokens.scanners.integer()) or "")
             end
         end
     }
@@ -1172,9 +1257,18 @@ do
 
     function noads.handlers.export(head)
         if export then
+-- nuts.show(head)
             local nesting = getintegervalue(c_mathblobnesting)
+            local order   = getintegervalue(c_mathblob)
             if nesting == 1 then
-                register(getintegervalue(c_mathblob),export(head,"math"))
+                if trace_blobs then
+                    report_blob("export blob, order %i, level %i",order,nesting)
+                end
+                register(order,export(head,"math"))
+            else
+                if trace_blobs then
+                    report_blob("nested blob, order %i, level %i",order,nesting)
+                end
             end
         end
         return head

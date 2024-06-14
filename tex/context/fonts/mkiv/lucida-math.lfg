@@ -67,6 +67,9 @@ return {
                 {
                     tweak = "addmirrors",
                 },
+                {
+                    tweak = "addcomposites",
+                },
                 presets.smalldigits          { factor  = 0.90 },
                 presets.scripttocalligraphic { },
                 presets.rsfstoscript         { rscale  = 1    },

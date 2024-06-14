@@ -676,16 +676,20 @@ local makeelement  do
 
         local shared  = { }
         local bindex  = 0
-        local btags   = { }
+        local btags   = false
 
         function blobfunctions.math(tagname,specification)
             local tagindex = specification.tagindex
             local id = f_tagid(tagindex)
             local blob = specification.blob
             if blob then
-                local blobindex = mathematics.getblobindex(blob)
+                local blobindex = mathematics.getblobindex("pdf",blob)
                 if blobindex then
                     local index = shared[blobindex]
+                    if not btags then
+                        btags = { }
+                        job.variables.tobesaved.mathblobs = btags
+                    end
                     if index then
                         af = index[1]
                         btags[blob] = index[2]
@@ -693,8 +697,8 @@ local makeelement  do
                         bindex = bindex + 1
                         local blobname = f_tagid(blobindex)
                         local blobfile = f_tagfn(blobindex)
---                         local blobdata = mathematics.getmathblob(blobindex)
-                        local blobdata = mathematics.getmathblob(blob)
+--                         local blobdata = mathematics.getmathblob("pdf",blobindex)
+                        local blobdata = mathematics.getmathblob("pdf",blob)
                         af = codeinjections.embedfile {
                             force          = true,
                             data           = blobdata,
@@ -711,10 +715,12 @@ local makeelement  do
                         }
                      -- af = pdfarray { af } -- maybe also share this
                         af = pdfreference(pdfflushobject(pdfarray { af })) -- maybe also share this
-                        shared[blobindex] = { af, blobname }
-                        btags[blob] = blobname
+--                         shared[blobindex] = { af, blobname }
+                        shared[blobindex] = { af, blobindex }
+--                         btags[blob] = blobname
+                        btags[blob] = blobindex
                     end
-                    actualtext = mathematics.gettextblob(specification.language or "en",blob)
+                    actualtext = mathematics.gettextblob("pdf",specification.language or "en",blob)
                     if actualtext then
                         if trace_blobs then
                             actualtexts[blob] = { index and true or false, blobindex, actualtext }
@@ -744,7 +750,8 @@ local makeelement  do
             if blob and not blobdone[blob] then
                 local bname = btags[blob]
                 if bname then
-                    bname = "M " .. blob .. " " .. bname
+--                     bname = "M " .. blob .. " " .. bname
+                    bname = "M " .. blob .. " " .. f_tagid(blobname)
                 else
                     bname = "M " .. blob
                 end
@@ -1092,10 +1099,10 @@ end
 
 local EMCliteral = nil
 
-local enabled = true
+-- local enabled = true
 
-updaters.register("tagging.state.disable", function() enabled = false end)
-updaters.register("tagging.state.enable",  function() enabled = true  end)
+-- updaters.register("tagging.state.enable",  function() enabled = true  end)
+-- updaters.register("tagging.state.disable", function() enabled = false end)
 
 local tag_ignore_level    <const> = 1
 local tag_document_level  <const> = 2
@@ -1108,9 +1115,13 @@ local tag_rule_state      <const> = -5
 
 function nodeinjections.addtags(head,ispage)
 
-    if not enabled then
+    if not tex.conditionals.c_strc_tags_global then
         return
     end
+
+--     if not enabled then
+--         return
+--     end
 
     if not EMCliteral then
         EMCliteral = register(setstate("EMC"))
@@ -1201,7 +1212,7 @@ function nodeinjections.addtags(head,ispage)
                             range[4] = n -- stop
                         end
                  -- elseif blob == mblob and at == last then
-                    elseif blob == mblob and last > 0 then
+                    elseif blob == mblob and (last and last > 0) then
                         if range then
                             range[4] = n -- stop
                         end

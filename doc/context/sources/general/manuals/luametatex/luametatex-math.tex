@@ -1312,19 +1312,15 @@ influencing the appearances. Some were added for experimenting.
 
 \starttabulate[|l|l|]
 \DB primitive \BC meaning \NC \NR
-\prm {Umathextrasubpreshift}    \NC \NR
-\prm {Umathextrasubprespace}    \NC \NR
-\prm {Umathextrasubshift}       \NC \NR
-\prm {Umathextrasubspace}       \NC \NR
-\prm {Umathextrasuppreshift}    \NC \NR
-\prm {Umathextrasupprespace}    \NC \NR
-\prm {Umathextrasupshift}       \NC \NR
-\prm {Umathextrasupspace}       \NC \NR
-\prm {Umathsubshiftdistance}    \NC \NR
-\prm {Umathsupshiftdistance}    \NC \NR
-\prm {Umathpresubshiftdistance} \NC \NR
-\prm {Umathpresupshiftdistance} \NC \NR
-\prm {Umathprimeshiftdrop}      \NC \NR
+\prm {Umathextrasubpreshift} \NC \NR
+\prm {Umathextrasubprespace} \NC \NR
+\prm {Umathextrasubshift}    \NC \NR
+\prm {Umathextrasubspace}    \NC \NR
+\prm {Umathextrasuppreshift} \NC \NR
+\prm {Umathextrasupprespace} \NC \NR
+\prm {Umathextrasupshift}    \NC \NR
+\prm {Umathextrasupspace}    \NC \NR
+\prm {Umathprimeshiftdrop}   \NC \NR
 \LL
 \stoptabulate
 
@@ -2345,9 +2341,9 @@ are used with multi scripts.
 \startbuffer[script]
 $
     x\superscript       {1}\subscript       {2} =
-    x\shiftedsuperscript{1}\shiftedsubscript{2} =
-    x\superscript       {1}\shiftedsubscript{2} =
-    x\shiftedsuperscript{1}\subscript       {2}
+    x\indexedsuperscript{1}\indexedsubscript{2} =
+    x\superscript       {1}\indexedsubscript{2} =
+    x\indexedsuperscript{1}\subscript       {2}
 $
 \stopbuffer
 
@@ -2924,7 +2920,7 @@ You'll notice that we apply more severe penalties at the edges:
 
 \stopsubsection
 
-\startsubsection[title={\prm {Umathdiscretionary} and \prm {hmcode}}]
+\startsubsection[title={\prm {mathdiscretionary} and \prm {hmcode}}]
 
 \topicindex {math+discretionaries}
 

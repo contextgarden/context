@@ -1,0 +1,103 @@
+if not modules then modules = { } end modules ['math-mps'] = {
+    version   = 1.001,
+    comment   = "companion to math-frc.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local tostring = tostring
+
+local takebox = tex.takebox
+
+-- In principle we could use the slot number and make more complex left/right driven
+-- shapes but not for now.
+
+local function renderextensible(target,fnt,chr,size,width,height,depth,linewidth,axis,exheight,emwidth)
+    local properties = mathematics.getextensibledata(target)
+    if properties then
+        local mp = properties.mp
+        if mp and mp ~= "" then
+            local uc = properties.unicode
+            if uc then
+                mp = string.formatters["%s:%05X"](mp,uc)
+            end
+            token.expandmacro(
+                "math_extensible_mp",
+                true,mp,
+                true,tostring(width),
+                true,tostring(height),
+                true,tostring(depth),
+                true,tostring(linewidth),
+                true,tostring(axis),
+                true,tostring(exheight),
+                true,tostring(emwidth)
+            )
+            local result = takebox("globalscratchbox")
+            nodes.setattrlist(result,target)
+            return result
+        end
+    end
+end
+
+mathematics.renderextensible = renderextensible
+
+interfaces.implement {
+    name      = "set_extensible_data",
+    arguments = { {
+        { "mp" },
+        { "left", "integer" },
+        { "right", "integer" },
+        { "middle", "integer" },
+        { "unicode", "integer" },
+    } },
+    actions   = mathematics.setextensibledata,
+}
+
+interfaces.implement {
+    name      = "registermpextensible",
+    arguments = "integer",
+    public    = true,
+    protected = true,
+    actions   = function(unicode)
+        mathematics.registerextensible {
+            method  = "mp",
+            action  = renderextensible,
+            unicode = unicode,
+        }
+    end,
+}
+
+local status_mathfun = logs.messenger("mathfun")
+
+local patterns = {
+    "math-mps-imp-%s.mkxl",
+    "meta-mps-imp-%s.tex",
+}
+
+local function action(name,foundname)
+    commands.loadlibrary(name,foundname,false)
+    status_mathfun("library %a is loaded",name)
+end
+
+local function failure(name)
+    report_mathfun("library %a is unknown or invalid",name)
+end
+
+interfaces.implement {
+    name      = "usemathpluginlibrary",
+ -- arguments = "string",
+    arguments = "optional",
+    public    = true,
+    protected = true,
+    actions   = function(name)
+        resolvers.uselibrary {
+            name     = name,
+            patterns = patterns,
+            action   = action,
+            failure  = failure,
+            onlyonce = true,
+        }
+    end
+}
+

@@ -475,16 +475,22 @@
 \newdimension\d_overlay_depth
 \newdimension\d_overlay_offset
 \newdimension\d_overlay_linewidth
+\newdimension\d_overlay_mathaxis
+\newdimension\d_overlay_mathexheight
+\newdimension\d_overlay_mathemwidth
 
 \lettonothing\m_overlay_region
 
 % expandable ... in a future version the space will go (in mp one can use Overlay*)
 
-\mutable  \def\overlaywidth        {\the\d_overlay_width    \space} % We preset the variables
-\mutable  \def\overlayheight       {\the\d_overlay_height   \space} % to some reasonable default
-\mutable  \def\overlaydepth        {\the\d_overlay_depth    \space} % values.
-\mutable  \def\overlayoffset       {\the\d_overlay_offset   \space} % of the frame can be (are)
-\mutable  \def\overlaylinewidth    {\the\d_overlay_linewidth\space} % set somewhere else.
+\mutable  \def\overlaywidth        {\the\d_overlay_width       \space} % We preset the variables
+\mutable  \def\overlayheight       {\the\d_overlay_height      \space} % to some reasonable default
+\mutable  \def\overlaydepth        {\the\d_overlay_depth       \space} % values.
+\mutable  \def\overlayoffset       {\the\d_overlay_offset      \space} % of the frame can be (are)
+\mutable  \def\overlaylinewidth    {\the\d_overlay_linewidth   \space} % set somewhere else.
+\mutable  \def\overlaymathaxis     {\the\d_overlay_mathaxis    \space} % set somewhere else.
+\mutable  \def\overlaymathexheight {\the\d_overlay_mathexheight\space} % set somewhere else.
+\mutable  \def\overlaymathemwidth  {\the\d_overlay_mathemwidth \space} % set somewhere else.
 \mutable  \def\overlayregion       {\m_overlay_region}
 
 \mutable  \def\overlayradius       {\framedparameter\c!frameradius}
@@ -493,11 +499,14 @@
 %mutable  \edef\overlaycorner      {\framedparameter\c!backgroundcorner}
 %mutable  \edef\overlayradius      {\framedparameter\c!backgroundradius}
 
-\aliased\let\usedoverlaywidth    \d_overlay_width
-\aliased\let\usedoverlayheight   \d_overlay_height
-\aliased\let\usedoverlaydepth    \d_overlay_depth
-\aliased\let\usedoverlayoffset   \d_overlay_offset
-\aliased\let\usedoverlaylinewidth\d_overlay_linewidth
+\aliased\let\usedoverlaywidth       \d_overlay_width
+\aliased\let\usedoverlayheight      \d_overlay_height
+\aliased\let\usedoverlaydepth       \d_overlay_depth
+\aliased\let\usedoverlayoffset      \d_overlay_offset
+\aliased\let\usedoverlaylinewidth   \d_overlay_linewidth
+\aliased\let\usedoverlaymathaxis    \d_overlay_mathaxis
+\aliased\let\usedoverlaymathexheight\d_overlay_mathexheight
+\aliased\let\usedoverlaymathemwidth \d_overlay_mathemwidth
 
 %D The next register is used to initialize overlays.
 
@@ -653,11 +662,14 @@
       \egroup}}
 
 \def\pack_framed_overlay_initialize_indeed
-  {\d_overlay_width     \d_framed_target_wd
-   \d_overlay_height    \dimexpr\d_framed_target_ht+\d_framed_target_dp\relax
-   \d_overlay_depth     \d_framed_target_dp
-   \d_overlay_linewidth \d_framed_linewidth
-   \d_overlay_offset    \framedbackgroundoffset\relax
+  {\d_overlay_width       \d_framed_target_wd
+   \d_overlay_height      \dimexpr\d_framed_target_ht+\d_framed_target_dp\relax
+   \d_overlay_depth       \d_framed_target_dp
+   \d_overlay_linewidth   \d_framed_linewidth
+ % \d_overlay_mathaxis    \zeropoint
+ % \d_overlay_mathexheight\zeropoint
+ % \d_overlay_mathemwidth \zeropoint
+   \d_overlay_offset      \framedbackgroundoffset\relax
    % We expand these once:
    \edef\overlaycolor    {\framedparameter\c!backgroundcolor}%
    \edef\overlaylinecolor{\framedparameter\c!framecolor}% only needed for layers

@@ -86,7 +86,7 @@
 \newinteger\tikzinputlevel
 
 \permanent\protected\def\starttikzinput
-  {\advance\tikzinputlevel\plusone
+  {\advanceby\tikzinputlevel\plusone
    \ifcase\tikzinputlevel\or
      \pushoverloadmode
      \pushcatcodetable
@@ -103,7 +103,7 @@
      \popmacro\meaning
      \popoverloadmode
    \fi
-   \advance\tikzinputlevel\minusone}
+   \advanceby\tikzinputlevel\minusone}
 
 \permanent\protected\def\tikzinputfile#1%
   {\starttikzinput

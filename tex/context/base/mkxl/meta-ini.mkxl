@@ -1066,7 +1066,7 @@
 
 %D Loading specific \METAPOST\ related definitions is accomplished by:
 
-\permanent\protected\def\useMPlibrary[#1]{\clf_useMPlibrary{#1}}
+% \permanent\protected\def\useMPlibrary[#1]{\clf_useMPlibrary{#1}}
 
 %D \macros
 %D   {setMPtext, MPtext, MPstring, MPbetex}

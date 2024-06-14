@@ -49,4 +49,7 @@ extern void     lmt_push_cmd_name             (lua_State *L, int cmd);
 
 extern halfword lmt_macro_to_tok              (lua_State* L, int slot, halfword *tail);
 
+extern halfword lmt_get_lua_token_cs          (lua_State *L, int index);
+extern int      lmt_get_lua_token_cmd_chr     (lua_State *L, int index, int *cmd, int *chr);
+
 # endif

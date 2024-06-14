@@ -477,10 +477,25 @@
    \buff_verbatim_setup_keep_together
    \normalexpanded{\buff_verbatim_type_block{\e!start\currenttypingwrapper}{\e!stop \currenttypingwrapper}}}
 
+%D \start \showmakeup[vpenalty]
+%D \starttyping[keeptogether=paragraph]
+%D test test
+%D test test
+%D test test
+%D test test
+%D \stoptyping
+%D \stop
+
 \protected\def\buff_verbatim_setup_keep_together
   {\ifcstok{\typingparameter\c!keeptogether}\v!yes
+     \setfalse\c_buff_lines_as_paragraph
      \c_buff_optimize_linebreaks\conditionaltrue
+  %\orelse\ifcstok{\typingparameter\c!keeptogether}\v!paragraph
+   \orelse\iflastnamedcs\v!paragraph
+     \settrue\c_buff_lines_as_paragraph
+     \c_buff_optimize_linebreaks\conditionalfalse
    \else
+     \setfalse\c_buff_lines_as_paragraph
      \c_buff_optimize_linebreaks\conditionalfalse
    \fi}
 
@@ -628,6 +643,7 @@
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
    \buff_verbatim_initialize_typing_two
+   \buff_verbatim_setup_keep_together
    \dostarttaggedchained\t!verbatimblock\currenttyping\??typing
    \beginofverbatimlines
    \dostarttaggednodetail\t!verbatimlines
@@ -830,6 +846,7 @@
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
    \buff_verbatim_initialize_typing_two
+   \buff_verbatim_setup_keep_together
    \dostarttaggedchained\t!verbatimblock{#1}\??typing
    \beginofverbatimlines
    \dostarttaggednodetail\t!verbatimlines
@@ -937,10 +954,16 @@
    \strut % after starttagged, else break !
    \dostarttaggednodetail\t!verbatimline}
 
+\newconditional\c_buff_lines_as_paragraph
+
 \protected\def\buff_verbatim_end_of_line
   {\dostoptagged
-   \obeyedline % still needed?
-   \par
+  %\obeyedline % is actually \par here
+   \ifconditional\c_buff_lines_as_paragraph
+     \parbreak
+   \else
+     \par
+   \fi
    \ifconditional\verbatimnumberinglines
      \c_attr_verbatimline\attributeunsetvalue
    \fi}
@@ -974,7 +997,7 @@
 \permanent\protected\def\dodisplayverbatimbeginline{\advanceby\c_buff_verbatim_current\plusone
                                                     \buff_verbatim_begin_of_line}
 \permanent\protected\def\dodisplayverbatimnewline  {\buff_verbatim_end_of_line
-                                                    \par
+                                                   %\par % no need, already done anyway
                                                     \ifconditional\c_buff_optimize_linebreaks
                                                       \buff_verbatim_inject_breaks
                                                     \fi}

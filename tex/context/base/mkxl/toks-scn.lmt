@@ -12,7 +12,8 @@ if not modules then modules = { } end modules ['toks-scn'] = {
 
 -- todo: more \let's at the tex end
 
-local type, next, tostring, tonumber = type, next, tostring, tonumber
+local type, next, tostring, tonumber, load = type, next, tostring, tonumber, load
+local dump = string.dump
 
 local formatters          = string.formatters
 local concat              = table.concat
@@ -214,6 +215,15 @@ scanners.bracketedasis   = scanbracketedasis
 scanners.argumentasis    = scanargumentasis
 scanners.csnameunchecked = scancsnameunchecked
 
+local scanlua = function()
+    local s = load("return " .. scanstring())
+    if s then
+        return s()
+    end
+end
+
+scanners.lua = scanlua
+
 --------.detokenize      = function() return scanners.tokenstring(false) end -- needs testing
 
 local shortcuts = {
@@ -264,6 +274,7 @@ local shortcuts = {
     scanintegerargument = scanintegerargument,
     scandimenargument   = scandimenargument,
     scandetokened       = scandetokened,
+    scanlua             = scanlua,
     todimen             = todimen,
     tonumber            = tonumber,
     tostring            = tostring,
@@ -274,9 +285,6 @@ local shortcuts = {
 }
 
 tokens.shortcuts = shortcuts
-
-local load = load
-local dump = string.dump
 
 local function loadstripped(code)
      return load(code,nil,nil,shortcuts)

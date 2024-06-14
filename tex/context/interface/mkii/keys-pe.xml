@@ -97,6 +97,7 @@
 		<cd:variable name='author' value='author'/>
 		<cd:variable name='auto' value='خودکار'/>
 		<cd:variable name='autointro' value='پیشگفتارخودکار'/>
+		<cd:variable name='axis' value='axis'/>
 		<cd:variable name='back' value='پشت'/>
 		<cd:variable name='background' value='پس‌زمینه'/>
 		<cd:variable name='backgroundbar' value='backgroundbar'/>
@@ -1175,6 +1176,7 @@
 		<cd:constant name='placehead' value='بگذارسر'/>
 		<cd:constant name='placeholder' value='placeholder'/>
 		<cd:constant name='placestopper' value='بگذارایست'/>
+		<cd:constant name='plugin' value='plugin'/>
 		<cd:constant name='position' value='موقعیت'/>
 		<cd:constant name='prefix' value='پیشوند'/>
 		<cd:constant name='prefixconnector' value='prefixconnector'/>
@@ -1335,6 +1337,7 @@
 		<cd:constant name='sy' value='sy'/>
 		<cd:constant name='symalign' value='تنظیم‌نماد'/>
 		<cd:constant name='symbol' value='نماد'/>
+		<cd:constant name='symbolcolor' value='symbolcolor'/>
 		<cd:constant name='symbolcommand' value='symbolcommand'/>
 		<cd:constant name='symbolset' value='مجموعه‌نماد'/>
 		<cd:constant name='symcolor' value='رنگ‌نماد'/>
@@ -1409,6 +1412,7 @@
 		<cd:constant name='vonsep' value='vonsep'/>
 		<cd:constant name='vz' value='vz'/>
 		<cd:constant name='way' value='راه'/>
+		<cd:constant name='weight' value='weight'/>
 		<cd:constant name='wfactor' value='wfactor'/>
 		<cd:constant name='white' value='سفید'/>
 		<cd:constant name='width' value='عرض'/>

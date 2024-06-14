@@ -1409,11 +1409,10 @@
    \edef\currentreferenceformatautocase{\referenceformatparameter\c!autocase}%
    \usereferenceformatstyleandcolor\c!style\c!color
    \ifempty\currentstyleparameter \else
-     \resetinteractionparameter\c!style
+     \resetinteractionstyle
    \fi
    \ifempty\currentcolorparameter \else
-     \resetinteractionparameter\c!contrastcolor
-     \resetinteractionparameter\c!color
+     \resetinteractioncolor
    \fi
    \ifx\currentreferenceformatlabel\wildcardsymbol
       \let\currentreferenceformatlabel\autoreferencelabeltext

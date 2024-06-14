@@ -1,0 +1,134 @@
+\defineenumeration
+  [theorem]
+  [alternative=serried,
+   width=fit,
+   distance=\emwidth,
+   text=Theorem,
+   style=italic,
+   title=yes,
+   titlestyle=normal,
+   prefix=yes,
+   headcommand=\groupedcommand{}{.}]
+
+\defineenumeration
+  [lemma]
+  [theorem]
+  [text=Lemma]
+
+\defineenumeration
+  [proof]
+  [alternative=serried,
+   width=fit,
+   distance=\emwidth,
+   text=Proof,
+   number=no,
+   headstyle=italic,
+   headcommand=\groupedcommand{}{.},
+   title=yes,
+   titlestyle=normal]
+
+\starttext
+
+\startalignment[flushleft,tight]
+\bfb\setupinterlinespace  Proving the l'Hospital rule directly from the Lagrange mean value theorem
+\stopalignment
+
+\blank[big]
+
+\startlines
+Anders Holst
+Mikael P. Sundqvist
+\stoplines
+
+\blank[big]
+
+\startnarrower[2*middle]
+  \bold{Abstract.} At our first-year calculus course for engineers we discuss Lagrange's mean value theorem but not Cauchy's mean value theorem, and for this reason we usually give a weak form of l'Hospital's rule on limits. In this note we give a simple proof of the stronger version of l'Hospital's rule, using only Lagrange's mean value theorem and elementary results on limits and derivatives.
+\stopnarrower
+
+\blank[big]
+
+We formulate and prove the l'Hospitals rule for one-sided limits. This in fact
+strengthen the usual formulation slightly.
+
+\starttheorem
+  [title={l'Hospital's rule},
+   reference={thm:lHospital}]
+  Assume that the functions \m{f} and \m{g} are continuous in \m{\rightopeninterval{a,b}} and differentiable in \m{\openinterval{a,b}}. Assume further that \m{f(a) = g(a) = 0} and that \m{g'(x) \neq 0} in \m{\openinterval{a,b}}. If \m{f'(x)/g'(x)\tendsto A} as \m{x \tendsto a^+}, then \m{f(x)/g(x)\tendsto A} as \m{x\tendsto a^+}.
+\stoptheorem
+
+A geometric interpretation of the l'Hospital rule goes as follow. In the \m{uv}-plane, draw the curve parametrized by \m{u=g(x)} and \m{v=f(x)}. Then the direction coefficient \m{f(x)/g(x)} of the secant (dotted in \in{Figure}[fig:lHospital]) connecting \m{(g(x),f(x))} with \m{(g(a),f(a)) = (0,0)} should approach the same value as the direction coefficient \m{f'(x)/g'(x)} of the tangent to the curve at \m{(g(x),f(x))} (dashed in \in{Figure}[fig:lHospital]) as \m{x} approaches \m{a}. Our proof of the theorem uses that we can parametrize this curve locally around the origin as a function graph \m{u=t} and \m{v = f(g^{-1}(t))}.
+
+\startplacefloat
+  [figure]
+  [location=top,
+   reference=fig:lHospital]
+  \startMPcode[offset=1TS]
+  numeric u ; u:=7.5ts ;
+  path p,tangent,sekant ;
+
+  p:=(0,0){dir 10}..(1.5,1){dir 50}..(3,2) ;
+  z0 = point 1 of p ;
+  tangent:=(((-1,0)--(1,0)) rotated 50) shifted z0 ;
+  sekant:=origin--z0 ;
+
+  drawarrow ((-0.25,0)--(3,0)) scaled u ;
+  drawarrow ((0,-0.25)--(0,2)) scaled u ;
+
+  pickup pencircle scaled 1 ;
+  draw p scaled u ;
+  draw tangent scaled u dashed evenly ;
+  draw sekant scaled u dashed withdots ;
+
+  dotlabel.ulft("\m{(g(x),f(x))}", z0 scaled u) ;
+  dotlabel.lrt ("\m{(g(a),f(a))}", origin) ;
+  label.bot("\m{u}", (2.9u,0)) ;
+  label.lft("\m{v}", (0,1.9u)) ;
+  \stopMPcode
+\stopplacefloat
+
+The only place in our proof where Lagrange's mean value theorem occurs is
+in this useful property of right-hand side derivatives.
+
+\startlemma
+  [reference=lemma:rightderivative]
+  Let \m{c > 0}. Assume that \m{\phi\maps \rightopeninterval{0,c} \to \reals} is continuous in \m{\rightopeninterval{0,c}} and differentiable in \m{\openinterval{0,c}}, and that \m{\lim_{t \tendsto 0^+} \phi'(t)} exists and equals \m{A}. Then
+
+  \startformula
+    \lim_{h \tendsto 0^+} \frac{\phi(0 + h) - \phi(0)}{h} = A.
+  \stopformula
+\stoplemma
+
+\startproof
+  For \m{h \in \openinterval{0,c}} the differential quotient \m{(\phi(0 + h) - \phi(0))/h} equals \m{\phi'(\xi_h)} for some \m{\xi_h \in \openinterval{0,h}}, by Lagrange's mean value theorem. As \m{h\tendsto 0^+} we have \m{\xi_h \tendsto 0^+}, and so
+
+  \startformula
+    \lim_{h\tendsto 0^+}\frac{\phi(0+h)-\phi(0)}{h}=\lim_{h\tendsto 0^+}\phi'(\xi_h)=A.
+  \stopformula
+\stopproof
+
+\startproof
+  [title={of \in{Theorem}[thm:lHospital]}]
+  Since \m{g'} is a Darboux function it will not change sign in \m{\openinterval{a,b}}, and for simplicity we assume that \m{g' > 0} in this interval. Lagrange's mean value theorem assures that \m{g} is strictly monotone in the interval \m{\rightopeninterval{a,b}} and thus that it has an inverse \m{g^{-1}\maps \rightopeninterval{0,g(b)} \to \rightopeninterval{a,b}}.
+
+  The composite function \m{\phi \mapsas t\mapsto f(g^{-1}(t))}, \m{t \in \rightopeninterval{0,g(b)}} is continuous at \m{t = 0} and differentiable for \m{t \in \openinterval{0, g(b)}}. By the substitution \m{t = g(x)} in the given limit, together with the chain rule and the rule of derivatives of inverse functions, we get
+
+  \startformula
+    A = \lim_{x\tendsto a^+} \frac{f'(x)}{g'(x)}
+      = \lim_{t\tendsto 0^+} \frac{f'(g^{-1}(t))}{g'(g^{-1}(t))}
+      = \lim_{t\tendsto 0^+} \frac{\dd}{\dd t}f(g^{-1}(t))
+      = \lim_{t\tendsto 0^+} \phi'(t).
+  \stopformula
+
+  By \in{Lemma}[lemma:rightderivative], and by substitution \m{t = g(x)} again, we conclude that
+
+  \startformula
+    A = \lim_{t\tendsto 0^+} \frac{\phi(0+t)-\phi(0)}{t}
+      = \lim_{t\tendsto 0^+} \frac{f(g^{-1}(t))}{t}
+      = \lim_{x\tendsto a^+} \frac{f(x)}{g(x)}.
+  \stopformula
+
+  This completes the proof.
+\stopproof
+
+\stoptext

@@ -421,3 +421,49 @@ function nuts.checkslide(head,banner)
         nuts.slide(head)
     end
 end
+
+-- In the end I moved some older experimental mkiv code here because it was bit cleaner
+-- in math extensions. This is not the best place but the old module was already wiped.
+
+do
+
+    local actions = { }
+
+    callback.register("tail_append", function(n,data,detail)
+        local action = actions[data]
+        if action then
+            return action(n,data,detail)
+        else
+            return n
+        end
+    end)
+
+    -- We don't have that many properties (a few in math where we run into a
+    -- processing order issue, otherwise we could use a node list parser).
+
+    local properties   = { }
+
+    local setproperty  = nodes.setproperty
+    local luaboundary  = nodes.pool.luaboundary
+
+    local a_properties <const> = 1
+
+    actions[a_properties] = function(n,data,detail)
+        local property = properties[detail]
+        if property then
+            setproperty(n,property)
+            property[detail] = false
+        end
+        return n
+    end
+
+   function nodes.upcomingproperties(data)
+       for i=1,#properties+1 do
+           if not properties[i] then
+               properties[i] = data
+               return luaboundary(a_properties,i)
+           end
+       end
+   end
+
+end

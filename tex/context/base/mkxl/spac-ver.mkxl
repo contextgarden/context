@@ -2574,4 +2574,12 @@
     \global\doublepenaltymode\rightorleftpageaction\zerocount\plusone
 \to \everyaftershipout
 
+% Here:
+
+% not \break == -10000 because empty line (maybe we need somthing engine)
+
+\permanent\protected\def\parbreak
+  {\ifhmode \hfill\penalty-9999\relax\fi}
+
+
 \protect \endinput

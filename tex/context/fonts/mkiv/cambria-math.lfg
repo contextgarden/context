@@ -23,6 +23,9 @@ return {
                 {
                     tweak = "addmirrors",
                 },
+                {
+                    tweak = "addcomposites",
+                },
                 presets.scripttocalligraphic { },
                 presets.rsfstoscript         { rscale  = 0.97 },
                 presets.rsfsuprighttoscript  { rscale  = 0.97 },

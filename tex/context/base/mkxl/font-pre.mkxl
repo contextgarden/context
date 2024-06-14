@@ -429,6 +429,7 @@
  % mathgaps=yes,
    wipemath=no,
    mathexpansion=math,
+%    checkmissing=yes,
    language=dflt,
    script=math]
 
@@ -513,6 +514,15 @@
 \definefontfeature
   [boldened]
   [boldened-30]
+
+%D Handy too:
+
+\definefontscriptset % just an example
+  [mixed]
+  [dflt,latn,cyrl,grek]
+
+% \definefontfeature[default][default][script=mixed]
+% \definefontfeature[default][default][kern=always]
 
 %D Emoji etc:
 

@@ -414,6 +414,8 @@
     %\c!beforesection=\directsetup{document:\currenthead:start},  % these might become defaults i.e. acpect document: namespace
     %\c!insidesection=\directsetup{document:\currenthead:inside}, % these might become defaults i.e. acpect document: namespace
     %\c!aftersection=\directsetup{document:\currenthead:stop},    % these might become defaults i.e. acpect document: namespace
+    %\c!beforehead=, % here userdata is known
+    %\c!afterhead=,
    ]
 
 \aliased\let\setupheads\setuphead % will go

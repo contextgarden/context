@@ -120,7 +120,7 @@
    \t_meta_nodes\emptytoks
    #2\removeunwantedspaces
    % for alan, will be commented:
-   \writestatus{metanodes}{\detokenize\expandafter{\the\t_meta_nodes}}%
+ % \writestatus{metanodes}{\detokenize\expandafter{\the\t_meta_nodes}}%
    \clf_grph_nodes_initialize
    \startMPcode
      mfun_node_init(%

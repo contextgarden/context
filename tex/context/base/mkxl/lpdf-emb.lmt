@@ -2123,14 +2123,14 @@ do
                 image.embedded_stream    = stream
                 image.embedded_reference = pdfreference(image.objnum)
                 xforms[name] = image.embedded_reference
-
--- we need width for validation
---                 if image.expose then
+ -- we need width for validation
+                if image.expose then
 --                     -- support color etc
 --                     return stream, width
---                 else
+                    return f_stream_c(width,stream), width
+                else
                     return f_image_w(width,stream), width
---                 end
+                end
             end
             local function wrapup()
             end
@@ -2419,12 +2419,21 @@ do
             for i=1,maxindex-minindex+1 do
                 widths[i] = 0
             end
+            local wd = 0
+            local ht = 0
+            local dp = 0
             for index, data in sortedhash(indices) do
                 local name  = f_index(index)
                 local glyph = glyphs[include[index]]
                 if glyph then
                     local stream, width = glyphtopdf(glyph,data)
                     if stream then
+                        local gwd = glyph.width  or 0
+                        local ght = glyph.height or 0
+                        local gdp = glyph.depth  or 0
+                        if gwd > wd then wd = gwd end
+                        if ght > ht then ht = ght end
+                        if gdp > dp then dp = gdp end
                         if index - 1 ~= lastindex then
                             d = d + 1 differences[d] = index
                         end
@@ -2440,7 +2449,10 @@ do
             if not fontbbox then
                 -- The specification permits zero values and these are actually also more
                 -- robust as then there are no assumptions and no accuracy is needed.
-                fontbbox = pdfarray { 0, 0, 0, 0 }
+             -- fontbbox = pdfarray { 0, 0, 0, 0 }
+                -- This is okay according to the standard but okular (and old printers)
+                -- need a bbox, so let's see where this fails.
+                fontbbox = pdfarray { -10, wd + 10, ht + 10, dp + 10 }
             end
             local encoding = pdfdictionary {
                 Type        = pdfconstant("Encoding"),

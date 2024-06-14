@@ -214,9 +214,9 @@ halfword lmt_check_isdirectornode(lua_State *L, int i, int *isdirect)
     return *isdirect ? nodelib_valid_direct_from_index(L, i) : lmt_check_isnode(L, i);
 }
 
-static void nodelib_push_attribute_data(lua_State* L, halfword n)
+static void nodelib_push_attribute_data(lua_State *L, halfword n)
 {
-    if (node_type(n) == attribute_list_subtype) {
+    if (node_subtype(n) == attribute_list_subtype) {
         lua_newtable(L);
         n = node_next(n);
         while (n) {
@@ -1017,7 +1017,7 @@ static int nodelib_direct_getattributelist(lua_State *L)
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n && tex_nodetype_has_attributes(node_type(n)) && node_attr(n)) {
         if (lua_toboolean(L, 2)) {
-            nodelib_push_attribute_data(L, n);
+            nodelib_push_attribute_data(L, node_attr(n));
         } else {
             lua_pushinteger(L, node_attr(n));
         }
@@ -3280,12 +3280,13 @@ static int nodelib_direct_getdata(lua_State *L)
                 return 1;
             case boundary_node:
                 lua_pushinteger(L, boundary_data(n));
-                return 1;
+                lua_pushinteger(L, boundary_reserved(n));
+                return 2;
             case attribute_node:
                 switch (node_subtype(n)) {
                     case attribute_list_subtype:
                         nodelib_push_attribute_data(L, n);
-                        break;
+                        return 1;
                     case attribute_value_subtype:
                         /*tex Only used for introspection so it's okay to return 2 values. */
                         lua_pushinteger(L, attribute_index(n));
@@ -3295,6 +3296,7 @@ static int nodelib_direct_getdata(lua_State *L)
                         /*tex We just ignore. */
                         break;
                 }
+                break;
             case mark_node:
                 if (lua_toboolean(L, 2)) {
                     lmt_token_list_to_luastring(L, mark_ptr(n), 0, 0, 0);
@@ -3324,6 +3326,7 @@ static int nodelib_direct_setdata(lua_State *L) /* data and value */
                 break;
             case boundary_node:
                 boundary_data(n) = lmt_tohalfword(L, 2);
+                boundary_reserved(n) = lmt_opthalfword(L, 3, 0);
                 break;
             case attribute_node:
                 /*tex Not supported for now! */
@@ -7356,7 +7359,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                     if (lua_key_eq(s, count)) {
                                         lua_pushinteger(L, attribute_count(n));
                                     } else if (lua_key_eq(s, data)) {
-                                        nodelib_push_attribute_data(L, n);
+                                        nodelib_push_attribute_data(L, node_attr(n));
                                     } else {
                                         lua_pushnil(L);
                                     }
@@ -7419,6 +7422,8 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                         case boundary_node:
                             if (lua_key_eq(s, data) || lua_key_eq(s, value)) {
                                 lua_pushinteger(L, boundary_data(n));
+                            } else if (lua_key_eq(s, reserved)) {
+                                lua_pushinteger(L, boundary_reserved(n));
                             } else {
                                 lua_pushnil(L);
                             }
@@ -8100,8 +8105,10 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             }
                             return 0;
                         case boundary_node:
-                            if (lua_key_eq(s, value)) {
+                            if (lua_key_eq(s, value) || lua_key_eq(s, data)) {
                                 boundary_data(n) = lmt_tohalfword(L, 3);
+                            } else if (lua_key_eq(s, reserved)) {
+                                boundary_reserved(n) = lmt_tohalfword(L, 3);
                             } else {
                                 goto CANTSET;
                             }
@@ -9532,6 +9539,11 @@ static int nodelib_direct_getinputfields(lua_State *L)
     }
     return 0;
 }
+
+/*tex 
+    Likely we pas the wrong |chr| here as we're after the analysis phase. Buit we don't use this 
+    helper any longer (it seems).
+*/
 
 static int nodelib_direct_makeextensible(lua_State *L)
 {

@@ -257,11 +257,12 @@ result.beginparagraph = newresult {
 syntax.boundary = newsyntax {
     boundary           = sequence(o_equal,s_integer),
     noboundary         = false,
-    mathboundary       = sequence(o_equal,s_integer),
+    mathboundary       = sequence(o_equal,s_integer,optional(s_integer)),
     optionalboundary   = sequence(o_equal,s_integer), -- linebreak optionals
     pageboundary       = sequence(o_equal,s_integer),
     protrusionboundary = sequence(o_equal,s_integer),
     wordboundary       = false,
+    luaboundary        = sequence(o_equal,s_integer,s_integer),
 }
 
 syntax.caseshift = newsyntax {
@@ -1169,7 +1170,8 @@ do
         optional(sequence(keyword("hfactor"),s_integer)),
         optional(sequence(keyword("vfactor"),s_integer)),
         optional(keyword("font")),
-        optional(sequence(keyword("thickness"),s_dimension))
+        optional(sequence(keyword("thickness"),s_dimension)),
+        optional(keyword("usecallback"))
     )
 
     -- needs checking
@@ -1229,7 +1231,8 @@ do
         optional(keyword("left")),
         optional(keyword("middle")),
         optional(keyword("right")),
-        optional(keyword("nooverflow"))
+        optional(keyword("nooverflow")),
+        optional(keyword("usecallback"))
     )
 
     syntax.mathradical = newsyntax {

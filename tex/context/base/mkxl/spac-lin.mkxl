@@ -63,7 +63,7 @@
    \frozen\instance\letcsname           \e!stop \currentlines\endcsname \spac_lines_stop
 \to \everydefinelines
 
-\lettonothing\p_lines_option
+% \lettonothing\p_lines_option
 
 \let\spac_lines_break            \relax
 \let\spac_after_first_obeyed_line\relax
@@ -105,6 +105,17 @@
    \fi
    \relax}
 
+%D \startbuffer
+%D \startlines[keeptogether=paragraph]
+%D test test
+%D test test
+%D test test
+%D test test
+%D \stoplines
+%D \stopbuffer
+%D
+%D \start \showmakeup[vpenalty] \getbuffer \stop
+
 \permanent\tolerant\protected\def\spac_lines_start[#1]%
   {\bgroup
    \cdef\currentlines{#1}%
@@ -115,11 +126,17 @@
   {\ifarguments\or
      \setupcurrentlines[#1]%
    \fi
-   \edef\p_lines_option{\linesparameter\c!option}%
-   \ifx\p_lines_option\v!packed
+%    \edef\p_lines_option{\linesparameter\c!option}%
+%    \ifx\p_lines_option\v!packed
+   \ifcstok{\linesparameter\c!option}\v!packed
      \let\spac_lines_break\nobreak
+     \setfalse\c_spac_lines_as_paragraph
+   \orelse\ifcstok{\linesparameter\c!keeptogether}\v!paragraph
+     \let\spac_lines_break\relax
+     \settrue\c_spac_lines_as_paragraph
    \else
      \let\spac_lines_break\relax
+     \setfalse\c_spac_lines_as_paragraph
    \fi
    \linesparameter\c!before
    \push_macro_checkindentation
@@ -151,7 +168,6 @@
    \dostarttaggednodetail\t!line
    \ignorepars}
 
-
 % we could have states instead and handle option in there
 
 \def\spac_lines_after_first_obeyed_line_a % tzt two pass, like itemize
@@ -166,10 +182,16 @@
    \spac_lines_indent
    \linesparameter\c!left}
 
+\newconditional \c_spac_lines_as_paragraph
+
 \def\spac_lines_obeyed_line
   {\ifdone\linesparameter\c!right\fi
    \dostoptagged % can be a dummy one as we don't look ahead
-   \par
+   \ifconditional\c_spac_lines_as_paragraph
+     \parbreak
+   \else
+     \par
+   \fi
    \dostarttaggednodetail\t!line
    \futurelet\nexttoken\spac_lines_between}
 

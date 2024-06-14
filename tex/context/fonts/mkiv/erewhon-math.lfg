@@ -38,11 +38,15 @@ return {
                     tweak = "addmirrors",
                 },
                 {
-                    tweak = "dimensions",
-                    list  = {
-                        ["0x222B.variants.*"] = { axis = .15 },
-                    },
+                    tweak = "addcomposites",
                 },
+             -- {
+             --     tweak   = "dimensions",
+             --     comment = "no longer needed",
+             --     list    = {
+             --         ["0x222B.variants.*"] = { axis = .15 },
+             --     },
+             -- },
                 {
                     tweak = "fixintegrals",
                 },

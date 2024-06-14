@@ -112,6 +112,7 @@ function moduledata.math.characters.showlist(specification)
     local gaps         = mathematics.gaps
     local sorted       = { }
     if type(list) == "string" then
+        -- also accept list
         local b = blocks[list]
         if b then
             sorted = { }

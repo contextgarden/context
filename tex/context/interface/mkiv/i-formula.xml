@@ -34,7 +34,9 @@
                 <cd:parameter name="split">
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
-                    <cd:constant type="page"/>
+                    <cd:constant type="page" comment="mkiv"/>
+                    <cd:constant type="line" comment="mkxl"/>
+                    <cd:constant type="cd:name" comment="mkxl"/>
                 </cd:parameter>
                 <cd:parameter name="strut">
                     <cd:constant type="yes"/>

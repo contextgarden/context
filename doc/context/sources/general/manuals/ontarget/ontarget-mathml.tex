@@ -1,0 +1,804 @@
+% language=us runpath=texruns:manuals/ontarget
+
+% \setupbackend
+%   [format=pdf/ua-2]
+
+% \setuptagging
+%   [state=start]
+
+\startcomponent ontarget-mathml
+
+\environment ontarget-style
+
+% \setupbodyfont[plex] % for the maps
+% \setupbodyfont[bonum] % for the maps
+
+%definefontfeature[fixedwidth][fixedwidth=0.30]
+%definefontfeature[fixedwidth][fixedwidth=0.28]
+\definefontfeature[fixedwidth][fixedwidth=0.27]
+
+\definefontfallback
+  [MonoMathMath]
+  [concrete-math.otf*fixedwidth]
+  [0x0100-0x1FFFF]
+
+\definefontsynonym
+  [MonoMathBase]
+  [lmmono10-regular.otf*fixedwidth]
+  [fallbacks=MonoMathMath]
+
+\definefontfallback
+  [MonoTextMath]
+  [concrete-math.otf]
+  [0x0100-0x1FFFF]
+
+\definefontsynonym
+  [MonoTextBase]
+  [lmmono10-regular.otf]
+  [fallbacks=MonoTextMath]
+
+\definefontsynonym
+  [MonoMathBaseBold]
+  [lmmonolt10-bold.otf*fixedwidth]
+  [fallbacks=MonoMathMath]
+
+\definefont[MyMathFont]    [MonoMathBase]
+\definefont[MyMathFontBold][MonoMathBaseBold]
+\definefont[MyTextFont]    [MonoTextBase]
+
+\setuptyping
+  [style=MyMathFont]
+
+\setupinteraction
+  [state=start,
+   color=,
+   contrastcolor=,
+   style=]
+
+\ifdefined\closure \else
+
+    \definemathtopaccent
+       [top:stretch]
+       [closure]
+       ["0305]
+
+\fi
+
+\startchapter[title=Meaningful math]
+
+\startlines
+Hans Hagen
+Mikael Sundqvist
+\stoplines
+
+\startsection[title={Introduction}]
+
+In this article we're going to discuss math in the perspective of accessibility.
+Although \CONTEXT\ already supports tagging in \PDF\ for quite a while, that
+specific kind of accessibility never took off, if only because very few viewers
+did anything useful with it. However, with universities introducing (whatever)
+validating features for documents pushed into the systems used for teaching,
+there was no way around picking up this thread. We start with some reflections
+about how we got here and then move on to some examples of how we deal with this
+in \LMTX. This project is part of a larger effort to get even better typeset math
+out of \TEX\ so we could benefit from some new features in the engine, even if
+they were never added with accessibility in mind.
+
+\stopsection
+
+\startsection[title={How about \MATHML}]
+
+Hans still remembers one of the first \TEX\ conferences that he attended where
+some evangelist from a large, in the meantime extinct, hardware company tried to
+convince the audience that something great had surfaced: \XML. In its wake came
+\MATHML, as far as we understood endorsed by large mainstream scientific
+publishers, some of which also disappeared in the meantime.
+
+He also remembers a user group meeting where, when showing some \MATHML\
+processing, responses were of the kind \quotation {Why do you use \TEX\ at all if
+you want to use \MATHML\ (or \XML)} or even more curious \quotation {Why do you
+use \TEX\ if isn't for math?} Sometimes such comments are a way to put \CONTEXT\
+(users) in their own category. Remarks of a similar kind are \quotation {One
+should not use \CONTEXT\ because it depends on some scripts}. The fact that
+scripts are used to (for instance) sort an index, process a bibliography or just
+manage the multiple run process (also think of \METAPOST\ graphics and position
+tracking in \DVI\ in former times) was seen as bad. Of course in the meantime
+many such features have proven to be useful, which is illustrated by the fact
+that other macro packages also have to deal with \MATHML\ and seem to use
+scripts. We mention this because decades of writing \CONTEXT\ code has taught us
+not to bother too much about what is said or happens outside our scope.
+
+Because we were actually confronted by \XML\ (or its precursor \SGML) it is no
+surprise that in \CONTEXT\ already pretty soon the angle bracket dominated format
+was supported and then of course \MATHML\ support is kind of easy to add to the
+portfolio. Although the way we deal with \XML\ is more sophisticated in \MKIV,
+and therefore the same in \MKXL\ aka \LMTX, the kind of things we do are the
+same.
+
+\stopsection
+
+\startsection[title=Practical use]
+
+At \PRAGMA\ we were never that thrilled by presentation \MATHML\ but content
+\MATHML\ has a certain charm and was actually more reliable when it came to
+rendering, if only because soon the usage pattern of the presentation variant
+became a wildcard. Where dealing with content \MATHML\ is kind of fun, handling
+presentation \MATHML\ is less so. For decades we've been involved in a project
+where the whole spectrum of Dutch secondary math education is covered. The
+content is mostly developed on a voluntary basis so for us it was mainly a way to
+experiment with large scale rendering of \XML\ mixed with math. The target was
+\PDF\ as well as the web, but we were not responsible for that part
+(although we can generate a web site if needed). However, as we often found out,
+the (limitations of) the web (\HTML) influenced the \XML\ coding in a negative
+way but we leave that aside. It just makes the source code less attractive over
+time.
+
+If we use that project as example, we can only conclude that \MATHML\ often looks
+like it failed to mature. We're talking about 30.000 files with over 400.000 math
+formulas but it being secondary school math they differ in complexity. The books
+are generated on demand and can differ in content and detail. There are of course
+also lots of images involved. A single run can involve thousands of files that
+are loaded, combined, filtered and typeset and in spite of what one might expect
+processing speed is quite comfortable (not that much different from the average
+\CONTEXT\ run). Static and (screen optimized) interactive \PDF\ files, are path
+of the package. Some schools even generate their own variants, given that they
+are willing to install th e production system and invest some time in learning
+how to mess with the content and assembly files.
+
+The disappointment with \MATHML\ has a reason. We started very optimistic with
+content \MATHML\ but because that demanded transformations for the \HTML\
+variant we moved to presentation \MATHML. Then there was some involvement from
+\OPENMATH\ participants and all was moved to that format because a related output
+demanded it. At that time \CONTEXT\ was able to process all three variants so
+for book production that was not really a problem. Nevertheless another change
+was needed, this time because browser support was (to put it mildly) fragile and
+with again a flirt with presentation \MATHML\ we finally ended up with
+\ASCIIMATH\ which has its own peculiarities but at least was supported via
+\MATHJAX. So that's where we are now: of the over 400.000 formulas 52.000 are
+presentation \MATHML\ and 360.000 are \ASCIIMATH.
+
+\stopsection
+
+\startsection[title=It comes and goes]
+
+Quite often when it comes to typesetting, the typewriter approach is taken as
+reference. As a consequence plenty of simple source tagging methods and fast
+rendering tools have showed up but it is only a matter of time before one hits
+limitations and coding becomes more complex due to handling border cases and
+exceptions, and rendering becomes slower or maybe even cumbersome because a
+complex layout is well, just complex to realize due to conflicting demands. This
+is why \TEX\ macro packages are large and complex too. So, when discussing for
+instance \PDF\ documents (other than straightforward texts like novels or simple
+reports) in the perspective of the internet, one tends to forget that \HTML\ is
+(at least initially) meant for viewing in browsers where it can reflow and adapt.
+The more one tends to markup there, the less easy it becomes and one only has to
+look at the source and style sheets to see that in the end it all converges to the
+same level of complexity. What matters here is not so much the rendering backend,
+but more the availability of a clean source, one that could be used to satisfy
+different needs, but quite often that is not the case: there is no way to
+control users. If \quote {simple} is the starting point, then \quote {complex}
+can be pretty ugly. The same is true for math: the more complex it gets, the more
+likely it is that the source is a bit of a mess. It is for that reason that in
+\CONTEXT\ we paid a lot of attention to help users keep the source clean. It is
+also why we spent years on upgrading the core \TEX\ math engine.
+
+Anyway, in the meantime \MATHML\ went from version 1 to version 2 and 3 and is now
+a hybrid of presentation, content and \OPENMATH\ with version 4 around the
+corner. Then there's also a light version showing up: \MATHML\ core. We can
+probably safely conclude that in the meantime \MATHJAX\ is mostly used in
+browsers and it's a combination of \JAVASCRIPT, \CSS, \TEX\ fonts that handles
+presentation \MATHML and \ASCIIMATH\ (or maybe even to some extent \LATEX\ math)
+either by element or by parsing the content of elements. One observation is that recent
+versions of \MATHML\ add lots of attributes to get things right. A with \SVG\ as soon
+as markup and styling enters the otherwise reasonable structured input it might get
+worse in the end. Since we delegate a lot to the engine we don't need that level of
+detail so for now we just ignore most of it.
+
+Some browsers did momentarily support \MATHML\ directly, just in order to drop it
+overnight or change the coverage. As we're talking of decades it clearly shows
+that it's a mess. It is therefore surprising (and impressive) that one can
+actually render math in web pages as for instance \WIKIPEDIA\ demonstrates. One
+can wonder what \MATHML\ core brings to this, especially as it expects browser
+support, while browser reputation is not that good. There is no reason to assume
+that the ever changing web landscape with a small number of implementations of
+supposedly generic formats will be better in the future. Maybe the problem is
+just complex. Anyway, it made me somewhat indifferent to the matter: we dealt with
+in the past, probably can deal with it in the future (if only by ignoring what
+never will be generally supported anyway). What is worrying, is that the existing
+already rather limited presentation \MATHML\ standard dropped (according to the
+Mozilla documentation) \type {mfenced}, \type {menclose} and some more, and on
+the other hand kept the redundant \type {sqrt}, didn't add some missing elements
+(there's more than operators, identifiers and numbers), introduced some weird
+replacements for the enclosed content (with school math as excuse -- well there's
+more to it than that).
+
+\stopsection
+
+\startsection[title=Messing up \PDF]
+
+A secondary element in this game is \PDF\ that has some \MATHML\ related tagging
+on board. There we have the fences so that can hardly be dropped from the
+standard. Then there is a reasonable addition in the sense that one can embed the
+whole formula instead. But all this is done in the perspective of accessibility
+and getting that from typeset text is a bit of a challenge unless one renders a
+dedicated version suitable for reading out loud, and there is no reason not to
+have two variants of the same document: it might even make more sense than
+cooking up methods to use the (always suboptimal) tagged content. Within
+reasonable bounds we always supported tagging but we have to admit that we never
+really got much feed back on that and the reason is obvious: there has hardly
+been any support from viewers. It is all one big gamble and likely older tagged
+documents are not that useable anyway because one had to gamble about how to tag
+best. Also, validating applications (part of school platforms) don't know that
+well how to check and report on it anyway. That leaves us with guesswork and just
+trying to do the best we can: using common sense works out best.
+
+One \quote {problem} is that \CONTEXT\ users have never been involved in \MATHML\
+discussions, \PDF\ tagging and (if there ever were) discussions about math in the
+\TEX\ engine, simply because early in \TEX's history \LATEX\ became the de facto
+standard of operating. In that perspective, looking from the \CONTEXT\ end, it's
+not much different from looking at how \MICROSOFT\ word or other ways of coding
+documents influence these standards. We just need to either adapt or ignore what
+happens and the latter is often the best (given the mentioned instable situation).
+
+And so, we just focus on the rendering, not caring much if it can be resembled in
+for instance \MATHML\ or tags. We're pretty sure that hardly any user wants to
+cut and paste a formula from a \PDF\ document and accessibility can often be made
+better by better and|/|or different rendering (maybe combine with some robust
+tagging). The best we can do is to produce a clean output and make sure that
+enough information is in the file to (maybe) help someone who doesn't have access
+to the source.
+
+\stopsection
+
+\startsection[title=What do we want?]
+
+When we talk about accessibility for visually disabled readers, there is not much
+we can say about it simply because we cannot experience the same. The closest we
+can come to it is by listening to a document being read in (say) a podcast. One
+doesn't see the rendered output and depends on some software reader. Now, if
+accessibility has been taken into account, of course a dedicated \PDF\ file with
+a layout that has no fancy rendering is best but what publisher is willing to
+provide two versions for that purpose? In some way we have a binary situation:
+if you can see the document, even when it has to be enlarged, there is little
+need for listening, and otherwise there is need for a nice layout. But in the end
+the single document demand will drive the curious mix of fancy layout and
+straightforward reading. But we fear that as long as big business, politics
+and money are involved we're unlikely to get anywhere close to a nice solution.
+
+That said, the route we've chosen is serialization. When a user is forced to
+validate accessibility in some application and the verdict is negative, the first
+question is: \quotation {So, how should it be done then?} and of course there is
+seldom an answer to this. Adding tags to a \PDF\ document is often enough to get
+into the green, but as said that tells nothing about the useability. We can embed
+the \MATHML\ representation and that actually satisfies some checkers. If we then
+add the serialized (read: spoken) math as actual text property the score can
+become positive there too.
+
+Serialization started as a gimmick when we tried to satisfy demands and at first
+we actually produced a document where all formulas could be replaced by their
+\quote {spoken} variant. But then we realized that if someone has a visual
+handicap that might work out well but that it still is not much different from a
+typeset formula. Real accessibility would be better served with a more dedicated
+rendering of the whole document, not some partial serialization. We therefore
+decided to stick to the combination of embedded \MATHML\ and serialization in
+actual text annotations and just wait till viewers start supporting that. We do
+the best we can at our (rendering) end and leave it at that.
+
+It must be said that when we started with this side track it was actually kind of
+fun. Compared to all we did with math (fonts, engine, additional and upgraded
+macros) this was a relatively simple activity, given that \CONTEXT\ already had
+most on board and we could benefit from recently added features to the engine. It
+also made for a nice experiment with math dictionaries, something we had (and
+have) on the agenda anyway. Also, as with many mechanisms it might evolve over
+time, for instance because languages have different demands and currently we only
+cover English and Swedish. The tests are done with some real math books and the
+upcoming math manual. We're talking of thousands of inline and display formulas
+of different complexity here. For testing we have various tracing options which
+of course adds to the runtime, but generally speaking the overhead is quite
+acceptable, especially given the task at hand.
+
+We started with some reflections on \MATHML\ as input and ended with \MATHML\ as
+output. We already had that for quite a while and could even embed it for tracing
+but now embedding is more integrated. The serialization is a nice addition to
+that so let's now explain a bit more about that.
+
+\stopsection
+
+\startsection[title={What does it mean?}]
+
+In \TEX\ we often focus mainly on how to typeset math formulas and not so much
+about the meaning of those formulas. It should be clear that \im{\sqrt{x}} stands
+for the square root of \im{x}, but many other symbols are used with more than one
+meaning. When we see a formula, we can often guess the intended meaning from the
+context, in particular if the author has used standard notation, introduced new
+notation, not used the same notation to mean several things, and kept the
+notation as simple as possible. There are, however, ambiguous cases.
+
+We give one example where the situation might not be completely clear. If, in a
+manuscript on complex analysis, we meet the formula \im{\bar{z} \in \widebar{U}},
+we will likely interpret the first bar as the complex conjugate of the complex
+number \im{z}. But the meaning of \im{\widebar{U}} is perhaps less clear. The
+\im{\in} hints that it should be a set. One standard notation implies that it
+denotes the closure of the set \im{U}. But it could also, in principle, mean the
+set of complex conjugate of the elements in the set \im{U}. Even if the bars over
+these characters look the same in the pdf file, it would be good if it was
+possible also to carry the meaning somehow.
+
+If somebody copies the formula from the pdf they should get something sensible
+out of it when pasting it elsewhere. It is therefore important to work with the
+symbols predefined in Unicode math, and not to come up with their own weird symbols by
+clipping, rotating, or in other problematic ways combining symbols and perhaps
+also rules.
+
+Unicode math contains a lot of symbols. Many of them are described with a name
+that rather says something about the shape than about how they are supposed to be
+used. Given that we are free to use whatever symbol to denote anything, this is
+perhaps natural. But it is also problematic. Take \im{\char"2297} (its official
+name is CIRCLED TIMES), for example. It comes with two synonyms that tell a bit
+how it can be used as \quotation{tensor product} and as \quotation{vector pointing into
+page}. For the first usage the macro name \tex{otimes} has traditionally in \TEX\
+been attached to the symbol. But, as the synonym says, sometimes it also denotes
+a vector pointing into the page, and then one can question both the macro name
+and the binary operation class that is attached to it. If one wants to use this
+symbol in the latter meaning it is natural to define a new macro that typesets
+the symbol, with a matching class. Observe, however, that such a construct will
+not change the meaning for someone copying the symbol from the pdf. It will still
+be CIRCLED TIMES.
+
+% This looks like a \im{\char"2BBE} (CIRCLED X), with a hat on top. There is also
+% \im{\char"2BBF} (CIRCLED BOLD X).
+
+% \bgroup
+% \switchtobodyfont[newcomputermodern]
+% \startformula
+% \char"2A36 \neq \hat{\char"2297}
+% \stopformula
+% \egroup
+
+\stopsection
+
+\startsection[title={Accessibility, tagging}]
+
+When it comes to accessibility, the situation becomes even more interesting. How
+shall a screen reader read the symbol \im{\char"2297}? As \quotation{CIRCLED
+TIMES}, as \quotation{tensor product} or as \quotation{points into the page}? Or
+perhaps as \quotation{otimes}? \CONTEXT\ has for a long time been able to tag
+documents that include mathematics and also export them to MathML. As of now, the
+formulas are transformed into some core MathML and included as attachments in the
+pdf file. Meaning easily gets lost in this conversion, so one can question how
+accessible the result actually is for a person who needs to have it read aloud.
+Moreover, the MathML itself, or the flavor of it, sometimes changes. For example,
+the \typ{mfenced} element recently got deprecated, leading to compatibility
+issues for a lot of existing documents. This lack of stability makes it both
+difficult and demotivating to support tagging.
+
+It can be useful to have the MathML if one wants to export and show the output on
+a web site. One shall remember, though, that the typeset math from \CONTEXT\ that
+one gets in a pdf file is not in general equivalent (features differ) to the
+MathML produced, so it will not be perfect.
+
+The example \im{\bar{z} \in \widebar{U}}, discussed in the introduction comes out
+like this (we have replaced the math italic z and U so that they show below since
+they are not present in the monotype font we use)
+
+\startbuffer
+<math>
+ <mrow>
+  <mover>
+   <mi>z</mi>
+   <mo>̅</mo>
+  </mover>
+  <mo>∈</mo>
+  <mover>
+   <mi>U</mi>
+   <mo>̅</mo>
+  </mover>
+ </mrow>
+</math>
+\stopbuffer
+
+\typebuffer
+
+Let us also mention that it is not easy to verify that the tagging actually
+works. At Lund university, where Mikael is working, the tool Ally (as a plugin to
+the Canvas LMS) is used to check the tagged pdf files, and it does usually mark
+tagged pdf files from \CONTEXT\ as being perfectly tagged. But even here, things
+do change. At some point it was changed so that formulas was seen as attached
+images, and then it complained about lacking alternative texts. It is also an
+interesting fact that exporting a \PDF\ file, verified as perfectly tagged, into sound
+(also possible in Canvas LMS), it does not read the formulas correctly, if at
+all.
+
+\stopsection
+
+\startsection[title={Dictionaries}]
+
+With the right mark up and choice of notation from the writer, it should be
+possible to have it read different things, depending on the context. We therefore
+came up with dictionaries. They make it possible for symbols to carry a meaning
+and context, in addition to the atom class. In fact, we shall think of it as
+something that is independent of the atom class. A Unicode character can thus
+have several instances, where different instances might belong to different
+groups. Of course the math class can also vary. Thus, for \im{\char"2297} it
+could be like this:
+
+\starttextdisplay
+  \setupalign[middle]\dontleavehmode
+  \starttabulate[||||||]
+    \NC Symbol          \NC Macro                \NC Class           \NC Group            \NC Meaning              \NC \NR
+    \NC \im{\char"2297} \NC \tex{tensorproduct}  \NC binary operator \NC binary operator  \NC tensor product       \NC \NR
+    \NC \im{\char"2297} \NC \tex{pointsintopage} \NC ordinary        \NC unary arithmetic \NC points into the page \NC \NR
+  \stoptabulate
+\stoptextdisplay
+
+The idea is then that the user can specify the groups used in a document. If one
+typesets a document on mathematical logic, one can load the groups that are
+attached to logic, and one will have these macros predefined, likely with the
+intended meaning. One can of course add or change the setup as well.
+
+\stopsection
+
+\startsection[title={Formulas converted into text}]
+
+One reason to introduce dictionaries with groups, in addition to atom classes, is
+that we can now use the label system in \CONTEXT\ to attach to each symbol also a
+label that tells how it could be read out. The same has been done for various
+macros, and as a result we can convert formulas into \quotation{spoken
+mathematics}, something that will be easily read by screen readers, since it is
+only text. Of course, given the amount of symbols and macros, we are not
+complete. In fact, we do not want to be complete either, and the reason is
+simple: We cannot know how various authors want their formulas to be spoken. So,
+what we have is merely a proof of concept, with a set of interpretations that
+covers many basic usages of commonly used symbols.
+
+\setuptagging[state=on] \enabletrackers[math.textblobs]
+
+\setupnote
+  [mathnote]
+  [location=margin]
+
+% \enabledirectives[structures.tags.math.standalone]
+
+To get a hold of it, let us look at a few simple examples, where after each
+formula we show how it is interpreted in text.
+
+\startbuffer
+\startformula
+  1 + 2 = 3
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  3^2 + 4^2 = 5^2
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  \frac{3}{6} = \frac{1}{2} = 1/2
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  \sqrt{9} = 3
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  \sin \left(\frac{\pi}{6}\right) = \frac{1}{2}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  \conjugate{1 + 2\ii} = 1 - 2\ii
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  \frac{1 + 2}{3 + 4} = \frac{3}{7}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\disabletrackers[math.textblobs] \setuptagging[state=off]
+
+\stopsection
+
+\startsection[title={Some difficulties}]
+
+The process has really been trial and error. for sure there is space for
+improvements and variations, but we believe that the main structure is there.
+Different areas of mathematics come with different notations and different ways to
+interpret. So, if for example a logician wants to take this up, there is for sure
+some basic tuning needed before it works as expected.
+
+One of the difficulties we encountered along the way was how to work with
+parentheses. When we write \m {a(b + c)} we likely read it as \quotation {\m {a}
+times \m {b} plus \m {c}}. But we cannot read it like that, since that could
+equally well be interpreted as \m {ab + c}. We need the parentheses to be
+interpreted as some group:
+
+\setuptagging[state=on] \enabletrackers[math.textblobs]
+
+\startbuffer
+\startformula
+  a(b + c)
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\disabletrackers[math.textblobs] \setuptagging[state=off]
+
+On the other hand, when we write \m {f(x)} it is likely that it shall be
+interpreted as \quotation{\m{f} of \m {x}} rather than \quotation {\m {f} times
+\m {x}}.
+
+\setuptagging[state=on] \enabletrackers[math.textblobs]
+
+\startbuffer
+\startformula
+  f(x) \neq f\of(x)
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+In addition to the \tex {of} to handle this case, we also introduced the
+possibility to declare glyphs as being functions. So, it is possible to do
+
+\starttyping
+  \registermathfunction[𝑓]
+\stoptyping
+
+and then leave out the \tex {of}. In fact, one of the main difficulties has been
+to control when the explicit \quotation {times} shall be there and when it shall
+not. There are several special cases; we have likely missed a few.
+
+It is also possible to declare whole alphabets as being for example vectors or
+matrices. We can do
+
+\startbuffer
+  \registermathsymbol[default][en][lowercasebold][the vector]
+\stopbuffer
+
+\typebuffer \getbuffer
+
+and then use them as follows:
+
+\startbuffer
+\startformula
+  (\alpha + \beta) \mathbf{u} = \alpha \mathbf{u} + \beta \mathbf{u}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\stopsection
+
+\startsection[title={A few more examples}]
+
+We give a few  more examples for you to ponder.
+
+\startbuffer
+\startformula
+  a__1(1 + x) + (1 + y)b__1 - a_2(1 + z) - (1 + u)b_2
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  a__{0}.a__{1}\notimes a__{2} \ldots a__{n} \ldots
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  h'\of(x) \neq h'(x)
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  s\of(1) = s\of(\set{0}) = \set{0} \cup \set{\set{0}}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  a\sqrt{x} = ax^{1/2} \neq ax^{1/3} = a\root[3]{x}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  \rationals = \set{\frac{p}{q} \fence p,q \in \integers \land q \neq 0}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  f \mapsas x \mapsto x + \exp(x)
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  \lim_{k \tendsto +\infty} \frac{A__k}{B__k}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  \Gamma__1^^2__3^^4 \neq \Gamma__1^^2^^{}__3^^4
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  \int_{a}^{b} f'(x) \dd x = f(b) - f(a)
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  \int_{\Omega} f \dd \mu = 0
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  \sigma \of (A \transpose{A}) \setminus \set{0}
+  =
+  \sigma \of (\transpose{A} A) \setminus \set{0}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\startbuffer
+\startformula
+  \frac{\partial^3 u}{\partial x^2 \partial y}
+\stopformula
+\stopbuffer
+
+\typebuffer \getbuffer \placenotes[mathnote]
+
+\disabletrackers[math.textblobs] \setuptagging[state=off]
+
+\stopsection
+
+\startsection[title=Development]
+
+Getting all these meanings right was sort of trivial with all the already present
+tools in \CONTEXT. We will not go into details but it basically boils down to the
+following:
+
+\startitemize
+\startitem
+    A user keys in a formula, preferably using the proper, structure related
+    commands, but this comes natural.
+\stopitem
+\startitem
+    A raw formula (noad list) enters a chain of \LUA\ processing, this has always
+    been the approach in \MKIV, so nothing new here.
+\stopitem
+\startitem
+    Although there is some tagging happening at the \TEX\ end, we also intercept some
+    (yet) missing cases in \LUA, again that already happened.
+\stopitem
+\startitem
+    When a formula is typeset, the result is turned into an \MATHML\ representation,
+    and here we just use the existing export facilities of \CONTEXT.
+\stopitem
+\startitem
+    The now \XML\ encoded formula is then used for generating the meaning, which is
+    the new thing in \LMTX.
+\stopitem
+\stopitemize
+
+If tagging is also needed we embed the \MATHML\ as well as the meaning, so contrary
+to \MKIV, we no longer tag the individual components but treat the formula as
+a whole. After all, this sequential tagging made little sense anyway.
+
+When we go from \MATHML\ to meaning, we use information about characters that is
+part of a dictionary subsystem: we put symbols into categories which permits us
+to render with different spacing etc.\ based on the domain we're dealing with but
+it also permits assigning s different meaning. This math sub-project gave us a
+good reason to finally add this dictionary information to the character database
+(which of course gave us some good laughs about how weird math sometimes get
+coded, also in the perspective of \UNICODE).
+
+Right from the start we decided that for real useful accessibility we needed to
+support multiple languages, which is why we started with simultaneous English and
+Swedish. We will add support for Dutch and depending on needs and input other
+languages. Such additions are relatively easy and fit well into the way \CONTEXT\
+is set up. In \in {figure} [fig:meaningexamples:42] \in {and}
+[fig:meaningexamples:10] you see a few pages from a large document with examples
+that we used for development. This document will be in the \CONTEXT\ distribution
+and will be extended when there is need for more. It can also help translators.
+The document can show more details, like dictionary information, if needed.
+
+\startplacefigure[title={The file with examples that we test.},reference=fig:meaningexamples:42]
+    \externalfigure[ontarget-mathml-meanings][page=42,width=\textwidth]
+\stopplacefigure
+
+\startplacefigure[title={The file with examples that we test.},reference=fig:meaningexamples:10]
+    \externalfigure[ontarget-mathml-meanings][page=10,width=\textwidth]
+\stopplacefigure
+
+\startsection[title={A longer example, revisited}]
+
+We show below again the example from the introduction, this time with the math
+interpretations written out. We show this on separate pages in because here we
+have a somewhat complex mixed tracing situation (here we use the \STIX\ font).
+
+\bgroup \page[yes]
+
+\setuptagging[state=on] \enabletrackers[math.textblobs]
+
+% \enabledirectives[structures.tags.math.standalone]
+
+\setupnote
+  [mathnote]
+  [location=page]
+
+\registermathfunction[𝑓]
+\registermathfunction[𝑔]
+\registermathfunction[φ]
+
+\switchtobodyfont[stixtwo,9pt]
+\samplefile{ontarget-mathml-example.tex}
+
+\page[yes] \egroup
+
+% \disabledirectives[structures.tags.math.standalone]
+
+\disabletrackers[math.textblobs] \setuptagging[state=off]
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+

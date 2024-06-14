@@ -116,6 +116,12 @@
       \s!unknown=>\let\scratchstringone\commalistelement,
       \s!default=>\def\scratchstringone{fittingpage}]%
    \normalexpanded{\setuppapersize[fittingpage][\scratchstringone]}%
+   %
+   \edef\p_label{\fittingpageparameter\c!label}%
+   \ifempty\p_label\else
+     \normalexpanded{\setuppagenumber[\c!label=\p_label]}%
+   \fi
+   %
    \startmakeup[fittingpage]%
      \box\b_page_fitting
    \stopmakeup

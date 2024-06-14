@@ -30,7 +30,12 @@
 
 \setupmathoperator
   [\c!left=\zerocount,
-   \c!mathclass=\mathoperatorcode]
+   \c!mathclass=\mathoperatorcode,
+   \c!bottomcolor=\mathoperatorparameter\c!numbercolor,
+   \c!topcolor=\mathoperatorparameter\c!numbercolor,
+   \c!textcolor=\mathoperatorparameter\c!color,
+   \c!numbercolor=\mathoperatorparameter\c!color,
+   \c!symbolcolor=\mathoperatorparameter\c!color]
 
 \aliased\let\setupmathoperators\setupmathoperator
 
@@ -61,12 +66,12 @@
 
 \installlocalcurrenthandler\??mathoperators {mathoperator}
 
-\protected\def\math_operator_operator#1#2%
+\protected\def\math_operator_common#1#2%
   {\setlocalmathoperatorcurrent{#1}% \edef\currentmathoperator{#1}%
    \setupcurrentmathoperator[#2]%
    \scratchclass\mathcodechecked{\mathoperatorparameter\c!mathclass}\relax
    \Uoperator
-     \usedcolorparameterattributes{\mathoperatorparameter\c!color}%
+     \usedcolorparameterattributes{\mathoperatorparameter\c!symbolcolor}%
      \begincsname\??mathoperatormethod\mathoperatorparameter\c!method\endcsname
      \ifchkdimension\mathoperatorparameter\c!size\or
        \s!depth \lastchkdimension
@@ -84,25 +89,26 @@
      {\edef\m_operator_text{\mathoperatorparameter\c!top}%
       \ifempty\m_operator_text\else
          \mathstrut % todo: make option
-         \dousecolorparameter{\mathoperatorparameter\c!topcolor}%
+         \usemathoperatorcolorparameter\c!topcolor
          \m_operator_text
       \fi}%
      {\edef\m_operator_text{\mathoperatorparameter\c!bottom}%
       \ifempty\m_operator_text\else
          \mathstrut % todo: make option
-         \dousecolorparameter{\mathoperatorparameter\c!bottomcolor}%
+         \usemathoperatorcolorparameter\c!bottomcolor
          \m_operator_text
-      \fi}}
+      \fi}%
+    \usemathoperatorcolorparameter\c!textcolor}
 
 \tolerant\protected\def\math_operator#1#*[#S#2]#*#:#=% mandate braces
-  {\math_operator_operator{#1}{#2}#3\Uright.}
+  {\math_operator_common{#1}{#2}#3\Uright \s!rightclass \mathintegralcode .}
 
 \tolerant\protected\def\math_operator_start#1#*[#S#2]%
-  {\math_operator_operator{#1}{#2}}
+  {\math_operator_common{#1}{#2}}
 
 \protected\def\math_operator_stop
-  {\Uright.}
-% {\Uright\Umathchar\zerocount \fam \zerocount }
+  {\Uright \s!rightclass \mathintegralcode .}
+% {\Uright \s!rightclass \mathintegralcode \Umathchar\zerocount \fam \zerocount }
 
 % \def\math_operator_default_size % is now the auto option
 %   {\ifconditional\indisplaymath\ifcase\Umathoperatorsize=\maxdimen\else

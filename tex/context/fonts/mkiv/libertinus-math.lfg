@@ -41,6 +41,9 @@ return {
                 {
                     tweak = "addmirrors",
                 },
+                {
+                    tweak = "addcomposites",
+                },
                 -- At the moment we do fix integrals
                 -- For this font this means that we do always
                 -- get the extensible in displaystyle

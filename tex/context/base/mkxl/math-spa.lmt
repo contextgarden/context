@@ -265,7 +265,8 @@ local function reposition(n,offset)
 end
 
 stages[2] = function(specification,stage)
-    local head        = getlist(getbox(specification.box))
+    local box         = getbox(specification.box)
+    local head        = getlist(box)
     local align       = specification.alignstate
     local cnt         = 0
     local maxwidth    = false
@@ -336,7 +337,15 @@ stages[2] = function(specification,stage)
           ::HERE::
         end
     end
-
+    if not maxwidth then
+        maxwidth   = getwidth(box) -- safeguard
+        firstleft  = 0
+        lastleft   = 0
+        maxleft    = 0
+        firstright = 0
+        lastright  = 0
+        maxright   = 0
+    end
     local position = 0
     if align == 1 then -- flushleft
         if trace then

@@ -1,4 +1,4 @@
-% language=us runpath=texruns:manuals/fonts
+ language=us runpath=texruns:manuals/fonts
 
 \startcomponent fonts-features
 
@@ -2734,6 +2734,46 @@ kerns you need to hook it into for instance the \type {kern} feature:
 \stoptyping
 
 Of course this depends on font properties so one can wonder how useful this is.
+
+\stopsection
+
+\startsection[title=Kerns again]
+
+Kerns are not that bound to scripts but still fonts group them in scripts. When you have a
+mixed document, you might want to enable kerns for multiple scripts. Here is a test you
+can conduct:
+
+\startbuffer
+% \definefontscriptset[mixed][dflt,latn,cyrl,grek] % predefined
+
+\startTEXpage[offset=1ts]
+    \definedfont[cambria*default] \showfontkerns
+
+    {\language[english]All human beings are born free and equal in dignity and
+    rights. They are endowed with reason and conscience and should act towards one
+    another in a spirit of brotherhood.}
+
+    {\language[ukrainian]Всі люди народжуються вільними і рівними у своїй гідності та
+    правах. Вони наділені розумом і совістю і повинні діяти у відношенні один до
+    одного в дусі братерства.}
+
+    {\language[greek]'Ολοι οι άνθρωποι γεννιούνται ελεύθεροι και ίσοι στην
+    αξιοπρέπεια και τα δικαιώματα. Είναι προικισμένοι με λογική και συνείδηση, και
+    οφείλουν να συμπεριφέρονται μεταξύ τους με πνεύμα αδελφοσύνης.}
+\stopTEXpage
+
+\start                                                    \getbuffer \stop
+\start \definefontfeature[default][default][script=mixed] \getbuffer \stop
+\start \definefontfeature[default][default][kern=always]  \getbuffer \stop
+\stopbuffer
+
+\typebuffer
+
+This \quote {mixed} option was made for Noto Serif (per 2024) but for that font
+one has to find a sample that actually has kerns (as there are not that many).
+Cambria shows it. Some fonts have no kerns in cyrillic, others not in greek but
+there are also fonts that just enable all kerns which is good. The \quote
+{always} feature has always been there.
 
 \stopsection
 

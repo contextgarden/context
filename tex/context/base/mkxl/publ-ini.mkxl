@@ -785,9 +785,8 @@
     \fi
     %
     \iflocation
-        \resetinteractionparameter\c!style
-       %\resetinteractionparameter\c!color
-       %\resetinteractionparameter\c!contrastcolor
+        \resetinteractionstyle
+       %\resetinteractioncolor
     \fi
 \to \everybtxlistrendering
 
@@ -1408,7 +1407,7 @@
   {\strictdoifelsenextoptional{\publ_cite_tags_options_indeed{#1}}{\publ_cite_tags_indeed{#1}}}
 
 \protected\def\publ_cite_tags_indeed#1%
-  {\resetinteractionparameter\c!style
+  {\resetinteractionstyle
    \setbtxparametersetroot\s!cite % we need to get the default
    \edef\currentbtxcitealternative{\btxparameter\c!alternative}%
    \setbtxparameterset\s!cite\currentbtxcitealternative
@@ -1421,8 +1420,8 @@
   {\doifelseassignment{#1}\publ_cite_tags_settings_indeed\publ_cite_tags_variants_indeed{#1}}
 
 \def\publ_cite_tags_settings_indeed#1[#2]%
-  {\resetinteractionparameter\c!style
-  %\resetinteractionparameter\c!color
+  {\resetinteractionstyle
+  %\resetinteractioncolor
    \resetdummyparameter\c!reference
    \resetdummyparameter\c!alternative
    \resetdummyparameter\c!before
@@ -1462,7 +1461,7 @@
    \endgroup}
 
 \def\publ_cite_tags_variants_indeed#1[#2]%
-  {\resetinteractionparameter\c!style
+  {\resetinteractionstyle
    \edef\currentbtxcitealternative{#1}%
    \edef\currentbtxcitetag{#2}%
    \setbtxparameterset\s!cite\currentbtxcitealternative

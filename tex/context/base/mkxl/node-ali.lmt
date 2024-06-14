@@ -740,6 +740,11 @@ do
     -- todo  : cache
     -- maybe : change prev pointer of head (is now temp)
 
+    ----- force_vrule  <const> = 1 -- a vrule (also serves a signal)
+    local force_height <const> = 2 -- ht
+    ----- force_both   <const> = 3 -- ht + dp
+    local force_depth  <const> = 4 -- dp
+
     local function vrule_pass(head,attr,preamble)
         for row, id, subtype, list in nextlist, head do
             if id == hlist_code and subtype == row_code then
@@ -751,17 +756,19 @@ do
                         local h = false
                         for n, id, subtype in nextrule, list do
                             local signal = getattr(n,a_mathalignmentvrule)
-                            -- always 1
                             if signal then
+                                -- we found a vrule in row
                                 if not d then
                                     if prv then
-                                        if getattr(prv,a_mathalignmentvrule) == 4 then
+                                        local a = getattr(prv,a_mathalignmentvrule)
+-- print("vrule preceded by force height")
+                                        if a == force_depth then
                                             local p = prv
                                             while p do
-                                                local a = getattr(p,a_mathalignmentvrule)
+                                                a = getattr(p,a_mathalignmentvrule)
                                                 if not a then
                                                     break
-                                                elseif a == 2 then
+                                                elseif a == force_height then
                                                     if not getprev(p) or getid(getprev(p)) == temp_code then
                                                         local h = getattr(p,a_mathalignmenttop) or 0
                                                         nuts.setheight(p,h)
@@ -779,13 +786,15 @@ do
     --                                     end
                                     end
                                     if nxt then
-                                        if getattr(nxt,a_mathalignmentvrule) == 2 then
+                                        local a = getattr(nxt,a_mathalignmentvrule)
+-- print("vrule followed by force depth")
+                                        if a == force_height then
                                             local p = nxt
                                             while p do
-                                                local a = getattr(p,a_mathalignmentvrule)
+                                                a = getattr(p,a_mathalignmentvrule)
                                                 if not a then
                                                     break
-                                                elseif a == 4 then
+                                                elseif a == force_depth then
                                                     if not getnext(p) then
                                                         local d = getattr(p,a_mathalignmentbot) or 0
                                                         nuts.setdepth(p,d)

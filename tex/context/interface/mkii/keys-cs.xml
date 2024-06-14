@@ -97,6 +97,7 @@
 		<cd:variable name='author' value='autor'/>
 		<cd:variable name='auto' value='auto'/>
 		<cd:variable name='autointro' value='autouvod'/>
+		<cd:variable name='axis' value='axis'/>
 		<cd:variable name='back' value='zpet'/>
 		<cd:variable name='background' value='pozadi'/>
 		<cd:variable name='backgroundbar' value='backgroundbar'/>
@@ -1175,6 +1176,7 @@
 		<cd:constant name='placehead' value='umistihlavicku'/>
 		<cd:constant name='placeholder' value='placeholder'/>
 		<cd:constant name='placestopper' value='predelmista'/>
+		<cd:constant name='plugin' value='plugin'/>
 		<cd:constant name='position' value='position'/>
 		<cd:constant name='prefix' value='prefix'/>
 		<cd:constant name='prefixconnector' value='prefixconnector'/>
@@ -1335,6 +1337,7 @@
 		<cd:constant name='sy' value='sy'/>
 		<cd:constant name='symalign' value='symzarovnani'/>
 		<cd:constant name='symbol' value='symbol'/>
+		<cd:constant name='symbolcolor' value='symbolcolor'/>
 		<cd:constant name='symbolcommand' value='symbolcommand'/>
 		<cd:constant name='symbolset' value='sadasymbolu'/>
 		<cd:constant name='symcolor' value='barvasymbolu'/>
@@ -1409,6 +1412,7 @@
 		<cd:constant name='vonsep' value='vonsep'/>
 		<cd:constant name='vz' value='vz'/>
 		<cd:constant name='way' value='zpusob'/>
+		<cd:constant name='weight' value='weight'/>
 		<cd:constant name='wfactor' value='sfaktor'/>
 		<cd:constant name='white' value='bily'/>
 		<cd:constant name='width' value='sirka'/>

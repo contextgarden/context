@@ -1,0 +1,251 @@
+%D \module
+%D   [       file=math-mps-imp-demo,
+%D        version=2024.06.02,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=MathFun Demo,
+%D         author={Hans Hagen & Mikael Sundqvist},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE & \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / MathFun Demo}
+
+\unprotect
+
+\setupmathfraction[\s!vfrac]               [\c!mp=simplefun::math:default:00027]
+\setupmathradical [root]                   [\c!mp=simplefun::math:default:0221A]
+\setupmathaccent  [wideoverleftarrow]      [\c!mp=simplefun::math:default:020D6]
+\setupmathaccent  [wideoverrightarrow]     [\c!mp=simplefun::math:default:020D7]
+\setupmathaccent  [wideoverleftrightarrow] [\c!mp=simplefun::math:default:020E1]
+\setupmathaccent  [wideunderleftarrow]     [\c!mp=simplefun::math:default:020EE]
+\setupmathaccent  [wideunderrightarrow]    [\c!mp=simplefun::math:default:020EF]
+\setupmathaccent  [wideunderleftrightarrow][\c!mp=simplefun::math:default:0034D]
+
+\registermpextensible "00027 % division slash
+\registermpextensible "0221A % radical
+\registermpextensible "020D6 % over  left        arrow
+\registermpextensible "020D7 % over  right       arrow
+\registermpextensible "020E1 % over  left  right arrow
+\registermpextensible "020EE % under left        arrow
+\registermpextensible "020EF % under right       arrow
+\registermpextensible "0034D % under left  right arrow
+
+\setupmathfence   [bracket]                [\c!mp=simplefun::math:default]
+
+\registermpextensible "0005B % left  bracket
+\registermpextensible "0005D % right bracket
+\registermpextensible "0007C % bar
+\registermpextensible "023B4 % overbracket
+
+\startuseMPgraphic{simplefun::math:default:00027}
+    setbackendoption "noplugins" ;
+    picture p ; p := image (
+        draw (
+            (-4OverlayLineWidth,-OverlayDepth +OverlayMathAxis/2-OverlayLineWidth) --
+            ( 4OverlayLineWidth, OverlayHeight+OverlayMathAxis/2-OverlayLineWidth)
+        )
+            withpen pencircle scaled OverlayLineWidth
+        ;
+    ) ;
+    setbounds p to boundingbox p
+        leftenlarged  2OverlayLineWidth
+        rightenlarged 2OverlayLineWidth ;
+    draw p ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{simplefun::math:default:0221A}
+    setbackendoption "noplugins" ;
+    draw (
+        (-OverlayHeight/2,OverlayHeight/2) --
+        (-OverlayHeight/4,-OverlayDepth) --
+        (0,OverlayHeight) --
+        (OverlayWidth,OverlayHeight) --
+        (OverlayWidth,OverlayHeight-OverlayHeight/10)
+    )
+        withpen pencircle scaled OverlayLineWidth
+    ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{simplefun::math:default:020D6}
+    setbackendoption "noplugins" ;
+    drawarrow (OverlayWidth,OverlayHeight) -- (0,OverlayHeight)
+        withpen pencircle scaled OverlayLineWidth
+    ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{simplefun::math:default:020D7}
+    setbackendoption "noplugins" ;
+    drawarrow (0,OverlayHeight) -- (OverlayWidth,OverlayHeight)
+        withpen pencircle scaled OverlayLineWidth
+    ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{simplefun::math:default:020E1}
+    setbackendoption "noplugins" ;
+    drawdblarrow (0,OverlayHeight) -- (OverlayWidth,OverlayHeight)
+        withpen pencircle scaled OverlayLineWidth
+    ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{simplefun::math:default:020EE}
+    setbackendoption "noplugins" ;
+    drawarrow (OverlayWidth,OverlayHeight) -- (0,OverlayHeight)
+        withpen pencircle scaled OverlayLineWidth
+    ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{simplefun::math:default:020EF}
+    setbackendoption "noplugins" ;
+    drawarrow (0,OverlayHeight) -- (OverlayWidth,OverlayHeight)
+        withpen pencircle scaled OverlayLineWidth
+    ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{simplefun::math:default:0034D}
+    setbackendoption "noplugins" ;
+    drawdblarrow (0,OverlayHeight) -- (OverlayWidth,OverlayHeight)
+        withpen pencircle scaled OverlayLineWidth
+    ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{simplefun::math:default:0005B}
+    setbackendoption "noplugins" ;
+    picture p ; p := image (
+        draw (2OverlayLineWidth,-OverlayDepth) -- (0,-OverlayDepth) -- (0,OverlayHeight) -- (2OverlayLineWidth,OverlayHeight)
+            withpen pencircle scaled OverlayLineWidth
+        ;
+    ) ;
+    setbounds p to boundingbox p
+        leftenlarged  2OverlayLineWidth
+        rightenlarged 2OverlayLineWidth ;
+    draw p ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{simplefun::math:default:0005D}
+    setbackendoption "noplugins" ;
+    picture p ; p := image (
+        draw (0,-OverlayDepth) -- (2OverlayLineWidth,-OverlayDepth) -- (2OverlayLineWidth,OverlayHeight) -- (0,OverlayHeight)
+            withpen pencircle scaled OverlayLineWidth
+        ;
+    ) ;
+    setbounds p to boundingbox p
+        leftenlarged  2OverlayLineWidth
+        rightenlarged 2OverlayLineWidth ;
+    draw p ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{simplefun::math:default:0007C}
+    setbackendoption "noplugins" ;
+    picture p ; p := image (
+        draw (0,-OverlayDepth) -- (0,OverlayHeight)
+            withpen pencircle scaled OverlayLineWidth
+        ;
+    ) ;
+    setbounds p to boundingbox p
+        leftenlarged  2OverlayLineWidth
+        rightenlarged 2OverlayLineWidth ;
+    draw p ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{simplefun::math:default:023B4}
+    setbackendoption "noplugins" ;
+    draw ((0,0) -- (0,4OverlayLineWidth) -- (OverlayWidth,4OverlayLineWidth) -- (OverlayWidth,0))
+        shifted (0,2OverlayLineWidth)
+        withpen pencircle scaled OverlayLineWidth
+    ;
+\stopuseMPgraphic
+
+\protect
+
+\continueifinputfile{math-mps-imp-demo.mkxl}
+
+\starttext
+
+% \usemathpluginlibrary[demo]
+
+% \starttyping
+% radical     : color [ symbolcolor | textcolor | numbercolor ]
+% fraction    : color [ symbolcolor | textcolor | [ topcolor | bottomcolor ]
+% accent      : color [ symbolcolor | textcolor ]
+% fence       : color [ symbolcolor | [leftcolor | rightcolor | middlecolor ] textcolor ]
+% operator    : color [ symbolcolor | textcolor | numbercolor [topcolor | bottomcolor ] ]
+% stacker     : color [ symbolcolor ]
+% \stoptyping
+
+\startTEXpage[offset=1TS]
+
+\im {
+    {      \vfrac[color=cyan]                 {1}{2}} +
+    {      \vfrac[symbolcolor=red,color=cyan] {1}{2}} +
+    {\blue \vfrac[symbolcolor=red]            {1}{2}} +
+    {\blue \vfrac[]                           {1}{2}} =
+    {      \vfrac[plugin=mp,symbolcolor=red]  {1}{2}} +
+    {\blue \vfrac[plugin=mp,symbolcolor=red]  {1}{2}} +
+    {\blue \vfrac[plugin=mp]                  {1}{2}}
+}
+
+\im {
+    {      \frac[color=cyan]                 {1}{2}} +
+    {      \frac[symbolcolor=red,color=cyan] {1}{2}} +
+    {\blue \frac[symbolcolor=red]            {1}{2}} +
+    {\blue \frac[]                           {1}{2}} =
+    {      \frac[plugin=mp,symbolcolor=red]  {1}{2}} +
+    {\blue \frac[plugin=mp,symbolcolor=red]  {1}{2}} +
+    {\blue \frac[plugin=mp]                  {1}{2}}
+}
+
+\im {
+    {      \sqrt[symbolcolor=red,color=cyan]        {x}}+
+    {\blue \sqrt[symbolcolor=red]                   {x}} +
+    {\blue \sqrt[]                                  {x}} =
+    {      \sqrt[plugin=mp,symbolcolor=red,color=cyan]{x}} +
+    {\blue \sqrt[plugin=mp,symbolcolor=red]           {x}} +
+    {\blue \sqrt[plugin=mp]                           {x}}
+}
+
+\im {
+    \widetilde[symbolcolor=blue,textcolor=green]{x+1} +
+    \widetilde[symbolcolor=blue,color=red]{x+1} +
+    \widetilde[color=cyan]{x+1}
+}
+
+\setupmathfence[bracket][symbolcolor=cyan,plugin=mp]
+
+\im {
+    \fenced[bracket]{x+1 \fence = 1} +
+    \fenced[bracket][symbolcolor=blue,color=red,middle=|]{x+1 \fence = 1} +
+    \fenced[bracket][symbolcolor=blue,color=red,middle=|,middlecolor=green]{x+1 \fence = 1} =
+    \fenced[bracket][plugin=mp,symbolcolor=blue,color=red,middle=|,middlecolor=green]{x+1 \fence = 1}
+}
+
+\im {
+    \integral[color=green,topcolor=blue,top=3,bottom=2]{x} +
+    \integral[symbolcolor=red,numbercolor=cyan,textcolor=green,bottom=\pi,top=\gamma]{x}
+}
+
+\im {
+    \wideoverleftarrow      [color=red]                  {x+1} +
+    \wideoverrightarrow     [plugin=mp,symbolcolor=red]  {x+1} +
+    \wideoverleftarrow      [plugin=mp,symbolcolor=blue] {x+1} +
+    \wideoverleftrightarrow [plugin=mp,color=red]        {x+1} =
+    \wideunderleftarrow     [color=red]                  {x+1} +
+    \wideunderleftarrow     [plugin=mp,symbolcolor=red]  {x+1} +
+    \wideunderleftarrow     [plugin=mp,symbolcolor=blue] {x+1} +
+    \wideunderleftrightarrow[plugin=mp,color=red]        {x+1}
+}
+
+\im {
+    \implies {x+1} +
+    \overbracket[symbolcolor=blue] {x+1} +
+    \overbracket[plugin=mp,mp=simplefun::math:default:023B4,symbolcolor=red] {x+1} +
+    \overbracket[plugin=mp,symbolcolor=red] {x+1}
+}
+
+% $x + \tupanddownarrows[color=red,leftcolor=green,rightcolor=blue]{left}{right} + x$
+
+\stopTEXpage
+
+\stoptext

@@ -199,6 +199,8 @@ return {
         --
         "constantnumber", "constantnumberargument", "constantdimen", "constantdimenargument", "constantemptyargument",
         --
+        "periodicshrink",
+        --
         "luastringsep", "!!bs", "!!es",
         --
         "lefttorightmark", "righttoleftmark", "lrm", "rlm",
@@ -247,7 +249,7 @@ return {
         "noleftkernglyphoptioncode",  "norightkernglyphoptioncode",
         "noleftligatureglyphoptioncode", "norightligatureglyphoptioncode",
         "textcheckitalicglyphoptioncode", "mathcheckitalicglyphoptioncode",
-        "weightlessglyphoptioncode",
+        "weightlessglyphoptioncode", "spacefactoroverloadglyphoptioncode",
         --
      -- "noitaliccorrectionmathoptioncode", "noleftpairkernmathoptioncode", "norightpairkernmathoptioncode",
      -- "autodiscretionarymathoptioncode", "fulldiscretionarymathoptioncode",
@@ -698,6 +700,7 @@ return {
         --
         "noligaturing", "nokerning", "noexpansion", "noprotrusion",
         "noleftkerning", "noleftligaturing", "norightkerning", "norightligaturing", "noitaliccorrection",
+        "overloadspacefactor",
          --
         "futureletnexttoken", "defbackslashbreak", "letbackslashbreak",
         --

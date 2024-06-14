@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2024.05.31 18:43}
+\immutable\edef\contextversion{2024.06.14 09:14}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -510,6 +510,7 @@
 %loadmkxlfile{math-lan}
 \loadmkxlfile{math-toy}
 \loadmkxlfile{math-twk}
+\loadmkxlfile{math-mps}
 
 \loadmkxlfile{strc-mat}
 

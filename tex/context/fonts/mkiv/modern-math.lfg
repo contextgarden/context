@@ -118,6 +118,9 @@ return {
                 {
                     tweak = "addmirrors", --bidi
                 },
+                {
+                    tweak = "addcomposites",
+                },
                 presets.scripttocalligraphic { },
                 presets.rsfstoscript         { },
                 presets.rsfsuprighttoscript  { },

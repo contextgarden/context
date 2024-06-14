@@ -1586,33 +1586,37 @@ extern lmt_keys_info lmt_keys;
 # define lmt_checklong(L,i)        (long)        luaL_checkinteger(L,i)
 # define lmt_optlong(L,i,j)        (long)        luaL_optinteger(L,i,j)
 
-# define lmt_tointeger(L,i)        (int)         lua_tointeger(L,i)
-# define lmt_checkinteger(L,i)     (int)         luaL_checkinteger(L,i)
-# define lmt_optinteger(L,i,j)     (int)         luaL_optinteger(L,i,j)
+# define lmt_tointeger(L,i)        (int)          lua_tointeger(L,i)
+# define lmt_checkinteger(L,i)     (int)          luaL_checkinteger(L,i)
+# define lmt_optinteger(L,i,j)     (int)          luaL_optinteger(L,i,j)
 
-# define lmt_tosizet(L,i)          (size_t)      lua_tointeger(L,i)
-# define lmt_checksizet(L,i)       (size_t)      luaL_checkinteger(L,i)
-# define lmt_optsizet(L,i,j)       (size_t)      luaL_optinteger(L,i,j)
+# define lmt_tounsigned(L,i)       (unsigned int) lua_tointeger(L,i)
+# define lmt_checkinteger(L,i)     (int)          luaL_checkinteger(L,i)
+# define lmt_optunsigned(L,i,j)    (unsigned int) luaL_optinteger(L,i,j)
 
-# define lmt_tohalfword(L,i)       (halfword)    lua_tointeger(L,i)
-# define lmt_checkhalfword(L,i)    (halfword)    luaL_checkinteger(L,i)
-# define lmt_opthalfword(L,i,j)    (halfword)    luaL_optinteger(L,i,j)
-
-# define lmt_tofullword(L,i)       (fullword)    lua_tointeger(L,i)
-# define lmt_checkfullword(L,i)    (fullword)    luaL_checkinteger(L,i)
-# define lmt_optfullword(L,i,j)    (fullword)    luaL_optinteger(L,i,j)
-
-# define lmt_toscaled(L,i)         (scaled)      lua_tointeger(L,i)
-# define lmt_checkscaled(L,i)      (scaled)      luaL_checkinteger(L,i)
-# define lmt_optscaled(L,i,j)      (scaled)      luaL_optinteger(L,i,j)
-
-# define lmt_toquarterword(L,i)    (quarterword) lua_tointeger(L,i)
-# define lmt_checkquarterword(L,i) (quarterword) luaL_checkinteger(L,i)
-# define lmt_optquarterword(L,i,j) (quarterword) luaL_optinteger(L,i,j)
-
-# define lmt_tosingleword(L,i)     (singleword)  lua_tointeger(L,i)
-# define lmt_checksingleword(L,i)  (singleword)  luaL_checkinteger(L,i)
-# define lmt_optsingleword(L,i,j)  (singleword)  luaL_optinteger(L,i,j)
+# define lmt_tosizet(L,i)          (size_t)       lua_tointeger(L,i)
+# define lmt_checksizet(L,i)       (size_t)       luaL_checkinteger(L,i)
+# define lmt_optsizet(L,i,j)       (size_t)       luaL_optinteger(L,i,j)
+                                                  
+# define lmt_tohalfword(L,i)       (halfword)     lua_tointeger(L,i)
+# define lmt_checkhalfword(L,i)    (halfword)     luaL_checkinteger(L,i)
+# define lmt_opthalfword(L,i,j)    (halfword)     luaL_optinteger(L,i,j)
+                                                  
+# define lmt_tofullword(L,i)       (fullword)     lua_tointeger(L,i)
+# define lmt_checkfullword(L,i)    (fullword)     luaL_checkinteger(L,i)
+# define lmt_optfullword(L,i,j)    (fullword)     luaL_optinteger(L,i,j)
+                                                  
+# define lmt_toscaled(L,i)         (scaled)       lua_tointeger(L,i)
+# define lmt_checkscaled(L,i)      (scaled)       luaL_checkinteger(L,i)
+# define lmt_optscaled(L,i,j)      (scaled)       luaL_optinteger(L,i,j)
+                                                  
+# define lmt_toquarterword(L,i)    (quarterword)  lua_tointeger(L,i)
+# define lmt_checkquarterword(L,i) (quarterword)  luaL_checkinteger(L,i)
+# define lmt_optquarterword(L,i,j) (quarterword)  luaL_optinteger(L,i,j)
+                                                  
+# define lmt_tosingleword(L,i)     (singleword)   lua_tointeger(L,i)
+# define lmt_checksingleword(L,i)  (singleword)   luaL_checkinteger(L,i)
+# define lmt_optsingleword(L,i,j)  (singleword)   luaL_optinteger(L,i,j)
 
 # undef lround
 # include <math.h>

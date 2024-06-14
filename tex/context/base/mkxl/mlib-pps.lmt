@@ -860,7 +860,12 @@ local tx_reset, tx_process  do
         end
     end
 
-    local madetext = nil
+    local madetext  = nil
+    local fasttrack = false -- we loose colors done with withcolor when true
+
+    directives.register("metapost.text.fasttrack", function(v) fasttrack = v end)
+
+    -- We could set trialtypesetting when we don't fasttrac.
 
     local function mf_some_text(index,str,regime)
         mp_target = index
@@ -870,6 +875,9 @@ local tx_reset, tx_process  do
         mp_t      = nil
         top.texstrings[mp_index] = str
         top.texregimes[mp_index] = regime or -1
+        if trace_textexts then
+            report_textexts("running mptextoks, case 1: %s",top.texstrings[mp_index])
+        end
         texrunlocal("mptexttoks")
         local box = textakebox("mptextbox")
         top.textexts[mp_target] = box
@@ -937,6 +945,9 @@ local tx_reset, tx_process  do
             if overload then
                 top.texstrings[mp_index] = map.template or map.label or "error"
                 top.texregimes[mp_index] = regime or -1
+                if trace_textexts then
+                    report_textexts("running mptextoks, case 2",top.texstrings[mp_index])
+                end
                 texrunlocal("mptexttoks")
                 local box = textakebox("mptextbox") or new_hlist()
                 width = bp * box.width
@@ -945,6 +956,9 @@ local tx_reset, tx_process  do
             -- the real text
             top.texstrings[mp_index] = overload and overload.text or text or "error"
             top.texregimes[mp_index] = regime or -1
+            if trace_textexts then
+                report_textexts("running mptextoks, case 3",top.texstrings[mp_index])
+            end
             texrunlocal("mptexttoks")
             local box = textakebox("mptextbox") or new_hlist()
             local twd = bp * box.width
@@ -1036,10 +1050,6 @@ local tx_reset, tx_process  do
         end
     end
 
-    local fasttrack = false -- we loose colors done with withcolor when true
-
-    directives.register("metapost.text.fasttrack", function(v) fasttrack = v end)
-
     tx_process = function(object,prescript,before,after)
         local data  = top.texdata[metapost.properties.number] -- the current figure number, messy
         local index = tonumber(prescript.tx_index)
@@ -1070,6 +1080,9 @@ local tx_reset, tx_process  do
                 if donebox then
                     box = copylist(donebox)
                 else
+                    if trace_textexts then
+                        report_textexts("running mptextoks, case 4",top.texstrings[mp_index])
+                    end
                     texrunlocal("mptexttoks")
                     box = textakebox("mptextbox")
                 end
@@ -1107,6 +1120,9 @@ local tx_reset, tx_process  do
                     if donebox then
                         box = copylist(donebox)
                     else
+                        if trace_textexts then
+                            report_textexts("running mptextoks, case 5",top.texstrings[mp_index])
+                        end
                         texrunlocal("mptexttoks")
                         box = textakebox("mptextbox")
                     end

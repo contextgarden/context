@@ -125,7 +125,9 @@ local usedautoprefixes        = { }
 local crappytaggingmode       = 0
 
 updaters.register("structures.tagging",function(version)
-    crappytaggingmode = tonumber(version) or 0
+    if tex.conditionals.c_strc_tags_global then
+        crappytaggingmode = tonumber(version) or 0
+    end
 end)
 
 function codeinjections.setautoprefix(prefix)

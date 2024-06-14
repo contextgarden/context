@@ -388,15 +388,16 @@ lists.enhance = enhancelist
 local nesting = { }
 
 function lists.pushnesting(i)
-    local parent     = lists.result[i]
+    local result     = lists.result
+    local parent     = result[i]
     local name       = parent.metadata.name
-    local numberdata = parent and parent.numberdata
+    local numberdata = parent.numberdata
     local numbers    = numberdata and numberdata.numbers
     local number     = numbers and numbers[getsectionlevel(name)] or 0
     insert(nesting, {
         number = number,
         name   = name,
-        result = lists.result,
+        result = result,
         parent = parent
     })
 end

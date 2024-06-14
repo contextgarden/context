@@ -88,9 +88,9 @@ function pdfflusher.tocomment(message)
     end
 end
 
-function pdfflusher.startfigure(n,llx,lly,urx,ury,message)
+function pdfflusher.startfigure(n,llx,lly,urx,ury,message,figure,plugmode)
     metapost.n = metapost.n + 1
-    context.startMPLIBtoPDF(f_f(llx),f_f(lly),f_f(urx),f_f(ury))
+    context.startMPLIBtoPDF(f_f(llx),f_f(lly),f_f(urx),f_f(ury),plugmode and "1" or "0")
 end
 
 function pdfflusher.stopfigure(message)
@@ -383,10 +383,11 @@ function metapost.flush(specification,result)
         local figures   = result.fig
         if figures then
             flusher = flusher or pdfflusher
-            local resetplugins       = metapost.resetplugins       or ignore -- before figure
-            local processplugins     = metapost.processplugins     or ignore -- each object
-            local synchronizeplugins = metapost.synchronizeplugins or ignore
-            local pluginactions      = metapost.pluginactions      or ignore -- before / after
+local plugmode = not metapost.getbackendoption(specification.mpx,"noplugins")
+            local resetplugins       = plugmode and metapost.resetplugins       or ignore -- before figure
+            local processplugins     = plugmode and metapost.processplugins     or ignore -- each object
+            local synchronizeplugins = plugmode and metapost.synchronizeplugins or ignore
+            local pluginactions      = plugmode and metapost.pluginactions      or ignore -- before / after
             local startfigure        = flusher.startfigure
             local stopfigure         = flusher.stopfigure
             local flushfigure        = flusher.flushfigure
@@ -418,7 +419,7 @@ function metapost.flush(specification,result)
                     local ury        = properties.ury
                     if urx < llx then
                         -- invalid
-                        startfigure(properties.number,0,0,0,0,"invalid",figure)
+                        startfigure(properties.number,0,0,0,0,"invalid",figure,plugmode)
                         if tocomment then
                             result[#result+1] = tocomment("invalid")
                         end
@@ -522,21 +523,21 @@ function metapost.flush(specification,result)
                                                         -- { [1] = transparency, [2] = color }
                                                         -- { [1] = color }
                                                         --
-                                                        -- It is anyway a rather ugly hack becuase we should keep some kind of state
+                                                        -- It is anyway a rather ugly hack because we should keep some kind of state
                                                         -- but as we mix all kind of features that is also tricky. Maybe if I'd write
                                                         -- this from scratch ... but that doesn't pay off. Also tracking a transstate
                                                         -- is kind of fragile so maybe it should be optional.
                                                         --
-if optimizecolor and after then
-    local r = #result
-    if result[r] == "0 g 0 G" and (after[1] == "0 g 0 G" or after[2] == "0 g 0 G") then
-        result[r] = nil
-        r = r - 1
-    end
-    if result[r] == "/Tr0 gs" and (after[1] == "/Tr0 gs" or after[2] == "/Tr0 gs") then
-        result[r] = nil
-    end
-end
+                                                        if optimizecolor and after then
+                                                            local r = #result
+                                                            if result[r] == "0 g 0 G" and (after[1] == "0 g 0 G" or after[2] == "0 g 0 G") then
+                                                                result[r] = nil
+                                                                r = r - 1
+                                                            end
+                                                            if result[r] == "/Tr0 gs" and (after[1] == "/Tr0 gs" or after[2] == "/Tr0 gs") then
+                                                                result[r] = nil
+                                                            end
+                                                        end
                                                         --
                                                         result = pluginactions(before,result,flushfigure)
                                                     end
@@ -755,7 +756,7 @@ end
                             end
                             flushfigure(result)
                         end
-                        startfigure(properties.number,llx,lly,urx,ury,"begin",figure)
+                        startfigure(properties.number,llx,lly,urx,ury,"begin",figure,plugmode)
                         if incontext then
                             context(function() processfigure() end)
                         else

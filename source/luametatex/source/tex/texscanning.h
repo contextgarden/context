@@ -159,6 +159,7 @@ extern halfword    tex_scan_lua_value                 (int index);
 extern int         tex_scan_tex_value                 (halfword level, halfword *value);
 
 extern halfword    tex_scan_attribute                 (halfword attrlist);
+extern halfword    tex_scan_extra_attribute           (halfword attrlist);
 
 extern int         tex_valid_userunit                 (halfword cmd, halfword chr, halfword cs);
 extern int         tex_get_userunit                   (halfword index, scaled *value);

@@ -944,8 +944,7 @@
 %    % how about style
 %    \ifconditional\c_strc_registers_text_interaction
 %      \ifempty\currentcolorparameter \else
-%        \resetinteractionparameter\c!color
-%        \resetinteractionparameter\c!contrastcolor
+%        \resetinteractioncolor
 %      \fi
 %    \fi}
 %
@@ -1011,8 +1010,7 @@
    % how about style
    \ifconditional\c_strc_registers_text_interaction
      \ifempty\currentcolorparameter \else
-       \resetinteractionparameter\c!color
-       \resetinteractionparameter\c!contrastcolor
+       \resetinteractioncolor
      \fi
    \fi}
 

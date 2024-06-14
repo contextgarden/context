@@ -90,8 +90,7 @@
   {\useliststyleandcolor#style#color%
    % how about style
    \ifempty\currentcolorparameter \else
-     \resetinteractionparameter\c!color
-     \resetinteractionparameter\c!contrastcolor
+     \resetinteractioncolor
    \fi}
 
 \permanent\protected\def\doifelselist#tag% can also move to \installcommandhandler
@@ -383,11 +382,11 @@
 \def\strc_lists_process_pagenumber#1%
   {\begincsname\??listpagenumber#1\endcsname}
 
-\permanent\def\structurelistexternal
-  {\clf_listexternal\numexpr\currentlistindex\relax}
+\permanent\def\strc_lists_structurelistexternal{\clf_listexternal\numexpr\currentlistindex\relax}
+\permanent\def\strc_lists_structurelistlocation{\clf_listlocation\numexpr\currentlistindex\relax}
 
-\permanent\def\structurelistlocation
-  {\clf_listlocation\numexpr\currentlistindex\relax}
+\aliased\let\structurelistexternal\strc_lists_structurelistexternal
+\aliased\let\structurelistlocation\strc_lists_structurelistlocation
 
 \permanent\def\structurelistrawnumber#1%
   {\clf_rawlistnumber\numexpr\currentlistindex\relax{#1}}
@@ -953,6 +952,9 @@
    \c_lists_show_page\conditionalfalse
    \c_lists_show_realpage\conditionalfalse
    \c_lists_show_number\conditionalfalse
+   % these can be reset in publ ini but we need them for e.g. lists in menus
+   \enforced\let\structurelistexternal\strc_lists_structurelistexternal
+   \enforced\let\structurelistlocation\strc_lists_structurelistlocation
 \to \t_lists_every_renderingcleanup
 
 \lettonothing\m_strc_list_alternative % combined
@@ -1274,8 +1276,10 @@
     \typo_injectors_mark_list
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \letlistparameter  \c!depth\zeropoint
+\edef\m_lists_color{\listparameter\c!color}% otherwise we get no color when we have no interaction
         \resetlistparameter\c!color
         \inheritedlistframed {
+\letlistparameter\c!color\m_lists_color
             \letinteractionparameter\c!strut\v!no % still needed?
             \strc_lists_set_style_color\c!style\c!color\v!all
             \expand\t_lists_every_renderingtext
@@ -1601,8 +1605,7 @@
        \setlocationcolor
      \fi
  % \else
- %   \resetinteractionparameter\c!color
- %   \resetinteractionparameter\c!contrastcolor
+ %   \resetinteractioncolor
    \fi}
 
 \let\strc_lists_set_style_color\strc_lists_set_style_color_normal

@@ -422,10 +422,58 @@ void tex_tail_append(halfword p)
     cur_list.tail = p;
 }
 
-void tex_tail_append_list(halfword p)
+/*tex
+
+    In the end this is nicer than the ugly look back and set extensible properties on a last node, 
+    although that is a bit more generic. So we're back at an old \MKIV\ feature that looks ahead 
+    but this time selective and therefore currently only for a few math node types. Math has a 
+    synchronization issue: we can do the same with a node list handler but then we need to plug 
+    into |mlist_to_hlist| which is nto pretty either.  Eventually I might do that anyway and then 
+    this will disappear. This more \quote {immediate} approach also has the benefit that we can 
+    cleanup immediately. (It could be used a bit like runtime captures in \LUA.)
+
+*/
+
+halfword tex_tail_fetch_callback(void)
 {
-    node_next(cur_list.tail) = p;
-    node_prev(p) = cur_list.tail;
-    cur_list.tail = tex_tail_of_node_list(p);
+    halfword tail = cur_list.tail;
+    if (node_type(tail) == boundary_node && node_subtype(tail) == lua_boundary) { 
+        cur_list.tail = node_prev(tail);
+        node_next(cur_list.tail) = null;
+        node_prev(tail) = null;
+        node_next(tail) = null;
+        return tail;
+    } else {
+        return null;
+    }
 }
 
+halfword tex_tail_apply_callback(halfword p, halfword c)
+{
+    if (p && c) { 
+        int callback_id = lmt_callback_defined(tail_append_callback);
+        if (callback_id > 0) {
+            lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "Ndd->N", p, boundary_data(c), boundary_reserved(c), &p);
+        }
+        tex_flush_node(c);
+    }
+    return p;
+}
+
+void tex_tail_append_list(halfword p)
+{
+    if (p) { 
+        node_next(cur_list.tail) = p;
+        node_prev(p) = cur_list.tail;
+        cur_list.tail = tex_tail_of_node_list(p);
+    }
+}
+
+void tex_tail_append_callback(halfword p)
+{
+    halfword c = tex_tail_fetch_callback();
+    if (c) { 
+        p = tex_tail_apply_callback(p, c);
+    }
+    tex_tail_append_list(p);
+}

@@ -39,7 +39,6 @@ local formatters = string.formatters
 local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local loaddata = io.loaddata
-local ceil = math.ceil
 
 local bpfactor       <const> = number.dimenfactors.bp
 
@@ -786,7 +785,7 @@ do
      -- cur_tmrx = tmrx
     end
 
-    ----- f_skip = formatters["%.2N"]
+    local f_skip = formatters["%.2N"]
 
     -- I will redo this mess ... we no longer have the mkiv pdf generator that we used in
     -- luatex (a precursor to lmtx and also for comparison) but only in lmtx now so ...
@@ -876,8 +875,10 @@ do
                     if mode == "char" then
                         end_charmode()
                     end
-                    b = b + 1 ; buffer[b] = round(d) -- or f_skip(d)
--- print(d,buffer[b])
+                    -- ok for text with not too long words where spaces synchronize
+                 -- b = b + 1 ; buffer[b] = round(d) -- or f_skip(d)
+                    -- better for extensibles and incredible long words
+                    b = b + 1 ; buffer[b] = f_skip(d)
                 end
                 tj_position = tj_position - tj_delta
              -- tj_position = tj_position - tj_delta * tmef_f_x_scale
@@ -1318,7 +1319,10 @@ do
         local list      = tonut(type(box) == "number" and tex.takebox(box) or box)
         --
         if resources == true then
-            resources = pdfcollectedresources()
+--             resources = pdfcollectedresources()
+            resources = pdfcollectedresources {
+                serialize = false,
+            }
         end
         --
         local width, height, depth = getwhd(list)
@@ -1472,7 +1476,9 @@ do
                 FormType  = 1,
                 Group     = group,
                 BBox      = pdfarray(bbox),
-                Resources = lpdf.collectedresources { serialize = false }, -- what if empty
+                Resources = lpdf.collectedresources {
+                    serialize = false
+                }, -- what if empty
             }
             local objnum = pdfflushstreamobject(content,wrapper,false) -- why not compressed ?
             groups = groups + 1
@@ -2343,6 +2349,9 @@ end
 
 local finalize  do
 
+    local ceil  = math.ceil
+    local floor = math.floor
+
     local f_font  = formatters["F%d"]
 
     local f_form  = formatters["Fm%d"]
@@ -2488,7 +2497,6 @@ local finalize  do
             local margin     = specification.margin or 0
             local attributes = specification.attributes or ""
             local resources  = specification.resources or ""
-
             local wrapper    = nil
 
             if xformtype == 0 then
@@ -2508,16 +2516,12 @@ local finalize  do
                 }
             end
             if xformtype == 0 or xformtype == 1 or xformtype == 3 then
---                 wrapper.BBox = pdfarray {
---                     -margin * bpfactor,
---                     -margin * bpfactor,
---                     (boundingbox[3] + margin) * bpfactor,
---                     (boundingbox[4] + margin) * bpfactor,
+                margin = 1
                 wrapper.BBox = pdfarray {
-                    -ceil(                  margin  * bpfactor),
-                    -ceil(                  margin  * bpfactor),
-                     ceil((boundingbox[3] + margin) * bpfactor),
-                     ceil((boundingbox[4] + margin) * bpfactor),
+                     floor(boundingbox[1] * bpfactor) - margin,
+                     floor(boundingbox[2] * bpfactor) - margin,
+                     ceil (boundingbox[3] * bpfactor) + margin,
+                     ceil (boundingbox[4] * bpfactor) + margin,
                 }
             end
             if xformtype == 0 or xformtype == 2 or xformtype == 3 then

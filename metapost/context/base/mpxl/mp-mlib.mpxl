@@ -1975,3 +1975,9 @@ newscriptindex mfid_hascurvature ; mfid_hascurvature := scriptindex("hascurvatur
 primarydef p hascurvature c = runscript mfid_hascurvature (p) (c) enddef ;
 
 permanent hascurvature ;
+
+newscriptindex mfid_setbackendoption ; mfid_setbackendoption := scriptindex("setbackendoption") ;
+
+def setbackendoption = runscript mfid_setbackendoption enddef ;
+
+permanent setbackendoption ;

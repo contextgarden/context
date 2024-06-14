@@ -13911,7 +13911,9 @@
      <cd:parameter name="split">
       <cd:constant type="yes"/>
       <cd:constant default="yes" type="no"/>
-      <cd:constant type="page"/>
+      <cd:constant comment="mkiv" type="page"/>
+      <cd:constant comment="mkxl" type="line"/>
+      <cd:constant comment="mkxl" type="cd:name"/>
      </cd:parameter>
      <cd:parameter name="strut">
       <cd:constant type="yes"/>
@@ -21214,6 +21216,10 @@
      <cd:parameter list="yes" name="indentlist">
       <cd:constant type="cd:dimension"/>
       <cd:constant type="*"/>
+     </cd:parameter>
+     <cd:parameter name="keeptogether">
+      <cd:constant type="no"/>
+      <cd:constant type="paragraph"/>
      </cd:parameter>
     </cd:assignments>
    </cd:arguments>
@@ -48168,6 +48174,7 @@
      <cd:parameter name="keeptogether">
       <cd:constant type="yes"/>
       <cd:constant type="no"/>
+      <cd:constant type="paragraph"/>
      </cd:parameter>
      <cd:parameter name="before">
       <cd:constant type="cd:command"/>

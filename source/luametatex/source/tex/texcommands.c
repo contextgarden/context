@@ -421,6 +421,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "spacefactormode",                internal_integer_cmd,   space_factor_mode,                        internal_integer_base);
         tex_primitive(luatex_command, "spacefactorshrinklimit",         internal_integer_cmd,   space_factor_shrink_limit_code,           internal_integer_base);
         tex_primitive(luatex_command, "spacefactorstretchlimit",        internal_integer_cmd,   space_factor_stretch_limit_code,          internal_integer_base);
+        tex_primitive(luatex_command, "spacefactoroverload",            internal_integer_cmd,   space_factor_overload_code,               internal_integer_base);
         tex_primitive(luatex_command, "boxlimitmode",                   internal_integer_cmd,   box_limit_mode_code,                      internal_integer_base);
         tex_primitive(luatex_command, "supmarkmode",                    internal_integer_cmd,   sup_mark_mode_code,                       internal_integer_base);
         tex_primitive(luatex_command, "textdirection",                  internal_integer_cmd,   text_direction_code,                      internal_integer_base);
@@ -528,6 +529,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "beginsimplegroup",               begin_group_cmd,        also_simple_group_code,                   0);
 
         tex_primitive(luatex_command, "boundary",                       boundary_cmd,           user_boundary,                            0);
+        tex_primitive(luatex_command, "luaboundary",                    boundary_cmd,           lua_boundary,                             0);
         tex_primitive(luatex_command, "mathboundary",                   boundary_cmd,           math_boundary,                            0);
         tex_primitive(luatex_command, "noboundary",                     boundary_cmd,           cancel_boundary,                          0);
         tex_primitive(luatex_command, "optionalboundary",               boundary_cmd,           optional_boundary,                        0);

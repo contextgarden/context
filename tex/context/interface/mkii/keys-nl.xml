@@ -1336,6 +1336,7 @@
 		<cd:constant name='sy' value='sy'/>
 		<cd:constant name='symalign' value='symuitlijnen'/>
 		<cd:constant name='symbol' value='symbool'/>
+		<cd:constant name='symbolcolor' value='symbolcolor'/>
 		<cd:constant name='symbolcommand' value='symbolcommand'/>
 		<cd:constant name='symbolset' value='symboolset'/>
 		<cd:constant name='symcolor' value='symkleur'/>

@@ -13,41 +13,13 @@
 
 \writestatus{loading}{ConTeXt Math Macros / Radicals}
 
+\registerctxluafile{math-rad}{autosuffix}
+
 \unprotect
 
 %D \starttyping
 %D $\sqrt[3]{10}$
 %D \stoptyping
-%D
-%D This root command will be overloaded later:
-
-%D Old stuff:
-
-% \def\rootradical{\Uroot    0 "221A } % can be done in char-def
-% \def\surdradical{\Uradical 0 "221A } % can be done in char-def
-
-% \protected\def\sqrt{\doifelsenextoptionalcs\rootwithdegree\rootwithoutdegree} % will be redefined
-
-% \permanent\protected\def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
-%   {\normalexpanded{\math_radical_common
-%      {\normalunexpanded{#1}}%
-%      {\noexpand\triggermathstyle{\number\normalmathstyle}%
-%       \normalunexpanded{#2}}}}
-
-% experimental new keyword: (maybe keywords should come after the symbol)
-%
-% \permanent\protected\def\styledrootradical#1#2% so that \text works ok ... \rootradical behaves somewhat weird
-%   {\Uroot style \normalmathstyle "0 "221A {#1}{#2}}
-
-% \permanent\protected\def\rootwithdegree[#1]{\math_radical_common{#1}}
-% \permanent\protected\def\rootwithoutdegree {\math_radical_common  {}}
-
-%D Even older stuff:
-
-% % is now a ordinary character
-%
-% \let\normalsurd\surd % \Uradical "0 "221A
-% \permanent\protected\def\surd{\normalsurd{}}
 
 %D The real thing. If needed one can control matters with one of the many
 %D \type {\Umath...} parameters.
@@ -109,6 +81,9 @@
    \c!mindepth=.20\exheight, % a reasonable default for: \im { \sqrt{1+x} + \sqrt{1-x} }
    \c!source=\zerocount,
    \c!left="221A,
+   \c!symbolcolor=\mathradicalparameter\c!color,
+   \c!textcolor=\mathradicalparameter\c!color,
+   \c!numbercolor=\mathradicalparameter\c!color,
    \c!mathstyle=\v!normal,
    \c!right=\zerocount,
    \c!leftmargin=\zeropoint,
@@ -151,12 +126,59 @@
    \ifcase\mathradicalparameter\c!right\else
      \let\currentmathradicaldegree\m_math_no_degree
    \fi
-   \math_radical_alternative{%
-     \begincsname\??mathwhateverstrut\mathradicalparameter\c!strut\endcsname
-     \scratchdimen\mathradicalparameter\c!leftmargin \relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi
-     #body%
-     \scratchdimen\mathradicalparameter\c!rightmargin\relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi
-   }%
+   \edef\p_mp{\mathradicalparameter\c!mp}%
+   \ifcstok{\mathradicalparameter\c!plugin}\v!mp
+     \ifempty\p_mp\else
+       \clf_set_extensible_data
+          mp    {\p_mp}
+          left  \numexpr\mathradicalparameter\c!left\relax
+          right \numexpr\mathradicalparameter\c!left\relax
+       \relax
+     \fi
+     \scratchcounter\zerocount
+   \orelse\ifcstok{\mathradicalparameter\c!rule}\v!symbol
+     \lettonothing\p_mp
+     \scratchcounter\mathradicalparameter\c!top\relax
+   \else
+     \lettonothing\p_mp
+     \scratchcounter\zerocount
+   \fi
+   \Urooted
+     \s!height\dimexpr\ifcstok{\mathradicalparameter\c!height}\v!none\scaledpoint\else\mathradicalparameter\c!height\fi\relax
+     \s!depth \dimexpr\ifcstok{\mathradicalparameter\c!depth }\v!none\scaledpoint\else\mathradicalparameter\c!depth \fi\relax
+     \s!source\numexpr\namedboxanchor{\mathradicalparameter\c!source}\relax
+     \s!style \normalmathstyle % not needed
+     \ifzeronum\scratchcounter\else
+       \s!top\space
+     \fi
+     \usedsymbolcolorparameterattributes{\mathradicalparameter\c!symbolcolor}%
+     \ifempty\p_mp\else
+       \s!usecallback\space
+     \fi
+     \ifcstok{\mathradicalparameter\c!rule}\v!no
+       \s!norule\space
+     \orelse\ifcstok{\lastnamedcs}\v!bottom
+       \s!reflected\space
+     \fi
+     \zerocount \mathradicalparameter\c!left
+     \zerocount \mathradicalparameter\c!right
+     \ifzeronum\scratchcounter\else
+        \zerocount\scratchcounter
+     \fi
+     \relax
+   {\usemathradicalcolorparameter\c!numbercolor
+    \mathstrut\currentmathradicaldegree}%
+   {\usemathradicalcolorparameter\c!textcolor
+    % we need to also adapt the strut
+    \expandedmathstyleparameter\mathradicalparameter\c!mathstyle
+    \begincsname\??mathwhateverstrut\mathradicalparameter\c!strut\endcsname
+    \scratchdimen\mathradicalparameter\c!leftmargin \relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi
+    \scratchdepth\mathradicalparameter\c!mindepth\relax
+    \ifzerodim\scratchdepth\else
+      \srule \s!depth\scratchdepth\s!height\zeropoint\s!width\zeropoint\relax % in addition to strut
+    \fi
+    #body%
+    \scratchdimen\mathradicalparameter\c!rightmargin\relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi}%
    \endgroup}
 
 \def\m_math_no_degree{{}}
@@ -166,7 +188,10 @@
 % \appendtoks
 %    \Umathradicaldegreebefore\allmathstyles\zeropoint
 % \to \everymathematics
-
+%
+% We use a strut in the degree because not all fonts have the right gaps set up but
+% as struts are sort of predictable we can now fix all fonts in the lfg file.
+%
 % style width [options: left middle right]
 
 %D \starttyping
@@ -186,123 +211,18 @@
 %D \TestSqrt\ssqrt\blank % squeezed
 %D \stoptyping
 
-\def\math_radical_alternative{\csname\??mathradicalalternative\mathradicalparameter\c!alternative\endcsname}
-
-% We use a strut in the degree because not all fonts have the right gaps set up but
-% as struts are sort of predictable we can now fix all fonts in the lfg file.
-
-\protected\def\math_radical_common#degree#body%
-  {\scratchcounter\ifcstok{\mathradicalparameter\c!rule}\v!symbol
-     \mathradicalparameter\c!top\relax
-   \else
-     \zerocount
-   \fi
-   \Urooted
-     \s!height\dimexpr\ifcstok{\mathradicalparameter\c!height}\v!none\scaledpoint\else\mathradicalparameter\c!height\fi\relax
-     \s!depth \dimexpr\ifcstok{\mathradicalparameter\c!depth }\v!none\scaledpoint\else\mathradicalparameter\c!depth \fi\relax
-     \s!source\numexpr\namedboxanchor{\mathradicalparameter\c!source}\relax
-     \s!style \normalmathstyle % not needed
-     \ifzeronum\scratchcounter\else
-       top % \s!top
-     \fi
-     \ifcstok{\mathradicalparameter\c!rule}\v!no
-        norule
-     \orelse\ifcstok{\lastnamedcs}\v!bottom
-        reflected %
-     \fi
-     \zerocount \mathradicalparameter\c!left
-     \zerocount \mathradicalparameter\c!right
-     \ifzeronum\scratchcounter\else
-        \zerocount\scratchcounter
-     \fi
-     \relax
-   {\mathstrut#degree}%
-   {% we need to also adapt the strut
-    \expandedmathstyleparameter\mathradicalparameter\c!mathstyle
-    #body}}
-
-\protected\def\math_radical_mindepth
-  {\scratchdepth\mathradicalparameter\c!mindepth\relax
-   \ifzerodim\scratchdepth\else
-     \srule \s!depth\scratchdepth\s!height\zeropoint\s!width\zeropoint\relax
-   \fi}
-
-\defcsname\??mathradicalalternative\v!default\endcsname#body%
-  {\math_radical_common{\currentmathradicaldegree}{\math_radical_mindepth#body}}
-
-\defcsname\??mathradicalalternative\v!normal\endcsname#body%
-  {\edef\p_color{\mathradicalparameter\c!color}%
-   \ifempty\p_color
-     \math_radical_common{\currentmathradicaldegree}{\math_radical_mindepth#body}% {} really needed as \rootradical expands first
-   \orelse\ifempty\currentmathradicaldegree
-     \pushcolor[\p_color]%
-     \math_radical_common{}%
-     {\popcolor\math_radical_mindepth#body}%
-   \else
-     \pushcolor[\p_color]%
-     \math_radical_common{\popcolor\currentmathradicaldegree\pushcolor[\p_color]}%
-     {\popcolor\math_radical_mindepth#body}%
-   \fi}
-
-\startMPextensions
-    vardef math_radical_simple(expr w,h,d,o) =
-        (-h/2-o,h/2-o) --
-        (-h/4-o,-d-o)  --
-        (-o,h+o)       --
-        (w+o,h+o)      --
-        (w+o,h-h/10+o)
-    enddef ;
-\stopMPextensions
-
-\startuniqueMPgraphic{minifun::math:radical:default}%{...}
-    draw
-        math_radical_simple(OverlayWidth,OverlayHeight,OverlayDepth,OverlayOffset)
-      % withpen pencircle xscaled (2OverlayLineWidth) yscaled (3OverlayLineWidth/4) rotated 30
-        withpen pencircle scaled OverlayLineWidth
-      % dashed evenly
-        withcolor OverlayLineColor ;
-\stopuniqueMPgraphic
-
 % todo: spacing .. this is just an experiment (article driven)
 
-\defcsname\??mathradicalalternative\v!mp\endcsname#body% we could use dowithnextbox
-  {\begingroup
-   \scratchoffset\mathradicalparameter\c!mpoffset
-   \setbox\nextbox\mathstylehbox{#body}%
-   % we use the \overlay variables as these are passes anyway and
-   % it's more efficient than using parameters
-   \d_overlay_width    \wd\nextbox
-   \d_overlay_height   \ht\nextbox
-   \d_overlay_depth    \dp\nextbox
-   \d_overlay_offset   \scratchoffset
-   \d_overlay_linewidth\the\dimexpr\triggeredmathstyleparameter\Umathfractionrule
-   %
-   \edef\overlaylinecolor{\mathradicalparameter\c!color}%
-   %
-   \edef\p_mp{\mathradicalparameter\c!mp}%
-   %
-   \setbox\scratchbox\hpack\bgroup % todo: tag this box as sqrt
-     \uniqueMPgraphic
-       {\p_mp}%
-      %{...}%
-   \egroup
-   \scratchdimen       \wd\scratchbox
-   \scratchtopoffset   \dimexpr\scratchoffset+\dp\nextbox\relax
-   \scratchbottomoffset\dimexpr\scratchoffset+\ht\nextbox/2\relax
-   \hpack to \scratchdimen{\hss\box\nextbox\kern\scratchoffset}%
-   \kern-\scratchdimen
-   \lower\dimexpr\scratchtopoffset\box\scratchbox%
-   \ifx\currentmathradicaldegree\empty \else
-     \setbox\scratchbox\mathstylehbox{\scriptscriptstyle\currentmathradicaldegree\hss}%
-     \wd\scratchbox\scratchdimen
-     \kern-\scratchdimen
-     \raise\dimexpr\scratchbottomoffset\box\scratchbox
-   \fi
-   \endgroup}
+% We used to look back, but a look ahead avoids picking up arguments.
+%
+%    \clf_set_radical_properties
+%        color {\p_color}
+%        mp    {\mathradicalparameter\c!mp}
+%   \relax}
 
 \pushoverloadmode
 
-\definemathradical[root][mp=minifun::math:radical:default] % hm
+\definemathradical[root]
 \definemathradical[sqrt][root]
 
 \popoverloadmode

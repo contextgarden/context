@@ -11042,6 +11042,9 @@ return {
    ["pe"]="بگذارایست",
    ["ro"]="punestopper",
   },
+  ["plugin"]={
+   ["en"]="plugin",
+  },
   ["position"]={
    ["cs"]="position",
    ["de"]="position",
@@ -12213,6 +12216,9 @@ return {
    ["nl"]="symbool",
    ["pe"]="نماد",
    ["ro"]="simbol",
+  },
+  ["symbolcolor"]={
+   ["en"]="symbolcolor",
   },
   ["symbolcommand"]={
    ["en"]="symbolcommand",

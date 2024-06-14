@@ -27,6 +27,8 @@ local setmetatablenewindex = table.setmetatablenewindex
 local setmetatablecall     = table.setmetatablecall
 
 local createtoken          = token.create
+local expandmacro          = token.expandmacro
+
 local isdefined            = tokens.isdefined
 
 texmodes                   = allocate { }  tex.modes        = texmodes
@@ -163,7 +165,7 @@ do
 
 --     local settings_to_array = utilities.parsers.settings_to_array
 
---     local cache = table.setmetatableindex(function(t,k)
+--     local cache = setmetatableindex(function(t,k)
 --         local v = settings_to_array(k)
 --         if #v < 2 then
 --             v = false
@@ -235,10 +237,12 @@ end
 
 -- also a call method
 
-setmetatablenewindex(texmodes,        function(t,k) report_mode("you cannot set the %s named %a this way","mode",       k) end)
-setmetatablenewindex(texsystemmodes,  function(t,k) report_mode("you cannot set the %s named %a this way","systemmode", k) end)
-setmetatablenewindex(texconstants,    function(t,k) report_mode("you cannot set the %s named %a this way","constant",   k) end)
-setmetatablenewindex(texconditionals, function(t,k) report_mode("you cannot set the %s named %a this way","conditional",k) end)
+local report = logs.reporter("system")
+
+setmetatablenewindex(texmodes,        function(t,k) report("you cannot set the %s named %a this way","mode",       k) end)
+setmetatablenewindex(texsystemmodes,  function(t,k) report("you cannot set the %s named %a this way","systemmode", k) end)
+setmetatablenewindex(texconstants,    function(t,k) report("you cannot set the %s named %a this way","constant",   k) end)
+setmetatablenewindex(texconditionals, function(t,k) report("you cannot set the %s named %a this way","conditional",k) end)
 setmetatablenewindex(texifs,          function(t,k) end)
 
 -- if we really need performance we can have a dedicated cache for each
@@ -248,9 +252,36 @@ setmetatableindex(texconstants, function(t,k)
     return cache[k].command == integercode and texgetintegervalue(k) or 0
 end)
 
-setmetatableindex(texconditionals, function(t,k) -- 0 == true
-    return cache[k].command == integercode and texgetintegervalue(k) == 0
-end)
+do
+
+    setmetatableindex(texconditionals, function(t,k) -- 0 == true
+        return cache[k].command == integercode and texgetintegervalue(k) == 0
+    end)
+
+    -- We can't use tex.setintegervalue because overload protection
+    -- kicks in; we have to use proper assignments.
+
+    local hash = table.setmetatableindex(function(t,k)
+        local v = createtoken(k)
+        t[k] = v
+        return v
+    end)
+
+ -- local settrue  = createtoken("settrue")
+ -- local setfalse = createtoken("setfalse")
+
+ -- function tex.setconditional(name,v)
+ --     expandmacro(v and settrue or setfalse,hash[name])
+ -- end
+
+    local conditionaltrue  = createtoken("conditionaltrue")
+    local conditionalfalse = createtoken("conditionalfalse")
+
+    function tex.setconditional(name,v)
+        expandmacro(hash[name],v and conditionaltrue or conditionalfalse)
+    end
+
+end
 
 setmetatableindex(texifs, function(t,k)
     local c = cache[k]
@@ -312,5 +343,55 @@ do
         actions   = function(str) lpegmatch(pattern,str) end,
         arguments = "string"
     }
+
+end
+
+do
+
+    -- This is a slow variant, no namespace needed.
+
+ -- function tex.getmeasure(name,asdimen)
+ --     local value = token.getexpansion("\\tointeger\\measured{"..name.."}")
+ --     if asdimen then
+ --         return value .. "sp"
+ --     else
+ --         return tonumber(value)
+ --     end
+ -- end
+
+    local getmacro          = tokens.getters.macro
+    local getdimensionvalue = tex.getdimensionvalue
+
+    -- This is not that much needed because one will seldom fetch a measure at the Lua end
+    -- although I will probably use it for availablehsize and a like (for which this value
+    -- getter is meant). Anyway, we save some runtime by using:
+
+    local measures = setmetatableindex(function(t,k)
+        local v = getmacro("??measure") .. k
+        t[k] = v
+        return v
+    end)
+
+    -- A Lua lookup plus extracting the cs from the token is a bit slower than a TeX lookup
+    -- by string whuch directly gives the token. So we don't benefit from:
+
+    -- local measures = table.setmetatableindex(function(t,k)
+    --     local v = token.create(getmacro("??measure") .. k)
+    --     t[k] = v
+    --     return v
+    -- end)
+
+    -- The 'asdimen' feature is not that much needed in Lua but is provided anyway. There
+    -- is no need to use 'pt' here.
+
+    function tex.getmeasure(name,asdimen)
+     -- local value = getdimensionvalue(namespace..name)
+        local value = getdimensionvalue(measures[name])
+        if asdimen then
+            return value .. "sp"
+        else
+            return value
+        end
+    end
 
 end

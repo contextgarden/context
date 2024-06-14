@@ -128,16 +128,19 @@ specifiers.contextsetups  = specifiers.contextsetups  or { }
 specifiers.contextnumbers = specifiers.contextnumbers or { }
 specifiers.contextmerged  = specifiers.contextmerged  or { }
 specifiers.synonyms       = specifiers.synonyms       or { }
+specifiers.scriptsets     = specifiers.scriptsets     or { }
 
-local setups   = specifiers.contextsetups
-local numbers  = specifiers.contextnumbers
-local merged   = specifiers.contextmerged
-local synonyms = specifiers.synonyms
+local setups      = specifiers.contextsetups
+local numbers     = specifiers.contextnumbers
+local merged      = specifiers.contextmerged
+local synonyms    = specifiers.synonyms
+local scriptsets  = specifiers.contextsetups
 
-storage.register("fonts/setups" ,  setups ,  "fonts.specifiers.contextsetups" )
-storage.register("fonts/numbers",  numbers,  "fonts.specifiers.contextnumbers")
-storage.register("fonts/merged",   merged,   "fonts.specifiers.contextmerged")
-storage.register("fonts/synonyms", synonyms, "fonts.specifiers.synonyms")
+storage.register("fonts/setups" ,     setups ,     "fonts.specifiers.contextsetups" )
+storage.register("fonts/numbers",     numbers,     "fonts.specifiers.contextnumbers")
+storage.register("fonts/merged",      merged,      "fonts.specifiers.contextmerged")
+storage.register("fonts/synonyms",    synonyms,    "fonts.specifiers.synonyms")
+storage.register("fonts/scriptsets" , scriptsets , "fonts.specifiers.scriptsets" )
 
 -- inspect(setups)
 
@@ -2558,6 +2561,18 @@ do
         actions = registerlanguagefeatures,
     }
 
+    local function registerscriptset(n,s)
+         scriptsets[n] = settings_to_array(s)
+    end
+
+    constructors.registerscriptset = registerscriptset
+
+    implement {
+        name      = "definefontscriptset",
+        arguments = "2 strings",
+        actions   = registerscriptset
+    }
+
 end
 
 -- a fontkern plug:
@@ -2950,8 +2965,6 @@ end)
 -- new
 
 do
-
-    local settings_to_array = utilities.parsers.settings_to_array
 
     implement {
         name      = "definefontcolorpalette",

@@ -38,10 +38,10 @@
     {inner loop}; the whole program runs efficiently when its inner loop is fast, so this part
     has been written with particular care. (This is no longer true in \LUATEX.)
 
-    We leave the |space_factor| unchanged if |sf_code(cur_chr) = 0|; otherwise we set it equal
-    to |sf_code(cur_chr)|, except that it should never change from a value less than 1000 to a
-    value exceeding 1000. The most common case is |sf_code(cur_chr)=1000|, so we want that case to
-    be fast.
+    We leave the |space_factor| unchanged if |sf_code (cur_chr) = 0|; otherwise we set it equal
+    to |sf_code (cur_chr)|, except that it should never change from a value less than 1000 to a
+    value exceeding 1000. The most common case is |sf_code (cur_chr) = 1000|, so we want that case 
+    to be fast.
 
     All action is done via runners in the function table. Some runners are implemented here,
     others are spread over modules. In due time I will use more prefixes to indicate where they
@@ -137,6 +137,30 @@ static void tex_aux_fixup_math_and_unsave(void)
 
 */
 
+/*tex
+
+    Experiment: 
+
+    (1) preceding glyph has option glyph_option_space_factor_overload set 
+    (2) factor is larger than 0 and below 1000
+    (3) space_factor_overload_par > 0 will force that value to be used 
+
+*/
+
+inline static int tex_aux_use_space_factor_overload(halfword tail, halfword space_factor)
+{
+    return 
+        (space_factor > 0 && space_factor < default_space_factor) &&
+        (node_type(tail) == glyph_node) &&
+        tex_has_glyph_option(tail, glyph_option_space_factor_overload)
+    ;
+}
+
+inline static int tex_aux_used_space_factor_overload(halfword space_factor)
+{
+    return default_space_factor - (space_factor_overload_par ? space_factor_overload_par :  - space_factor);
+}
+
 static void tex_aux_adjust_space_factor(halfword chr)
 {
     halfword s = tex_get_sf_code(chr);
@@ -148,6 +172,8 @@ static void tex_aux_adjust_space_factor(halfword chr)
         } else {
             /* s <= 0 */
         }
+    } else if (tex_aux_use_space_factor_overload(cur_list.tail, cur_list.space_factor)) {
+        /* keep it */
     } else if (cur_list.space_factor < default_space_factor) {
         cur_list.space_factor = default_space_factor;
     } else {
@@ -445,6 +471,10 @@ static void tex_aux_run_space(void) {
                         /* Modify the glue specification in |q| according to the space factor */
                         if (cur_list.space_factor >= space_factor_threshold) {
                             glue_amount(p) += tex_get_scaled_extra_space(font);
+                        } else if (tex_aux_use_space_factor_overload(cur_list.tail, cur_list.space_factor)) {
+                            /* what with stretch and shrink */
+                            cur_list.space_factor = tex_aux_used_space_factor_overload(cur_list.space_factor);
+                            glue_amount(p) = tex_xn_over_d(glue_amount(p), cur_list.space_factor, scaling_factor);
                         }
                         glue_options(p) |= glue_option_has_factor;
                         if (space_factor_stretch_limit_par >= scaling_factor && cur_list.space_factor > scaling_factor) {
@@ -1188,6 +1218,10 @@ static void tex_aux_run_text_boundary(void) {
         case optional_boundary:
             boundary_data(boundary) = tex_scan_integer(0, NULL);
             break;
+        case lua_boundary:
+            boundary_data(boundary) = tex_scan_integer(0, NULL);
+            boundary_reserved(boundary) = tex_scan_integer(0, NULL);
+            break;
         case page_boundary:
             /*tex Maybe we should force vmode? For now we just ignore the value. */
             tex_scan_integer(0, NULL);
@@ -1202,16 +1236,24 @@ static void tex_aux_run_math_boundary(void) {
     switch (cur_chr) {
         case user_boundary:
             {
-                halfword n = tex_new_node(boundary_node, (quarterword) cur_chr);
-                boundary_data(n) = tex_scan_integer(0, NULL);
-                tex_tail_append(n);
+                halfword boundary = tex_new_node(boundary_node, (quarterword) cur_chr);
+                boundary_data(boundary) = tex_scan_integer(0, NULL);
+                tex_tail_append(boundary);
+                break;
+            }
+        case lua_boundary:
+            {
+                halfword boundary = tex_new_node(boundary_node, (quarterword) cur_chr);
+                boundary_data(boundary) = tex_scan_integer(0, NULL);
+                boundary_reserved(boundary) = tex_scan_integer(0, NULL);
+                tex_tail_append(boundary);
                 break;
             }
         case math_boundary:
             {
-                halfword n = tex_new_node(boundary_node, (quarterword) cur_chr);
-                boundary_data(n) = tex_scan_integer(0, NULL);
-                switch (boundary_data(n)) {
+                halfword boundary = tex_new_node(boundary_node, (quarterword) cur_chr);
+                boundary_data(boundary) = tex_scan_integer(0, NULL);
+                switch (boundary_data(boundary)) {
                     case begin_math_implicit_boundary: 
                     case end_math_implicit_boundary: 
                         /* valid */
@@ -1219,10 +1261,10 @@ static void tex_aux_run_math_boundary(void) {
                     case begin_math_explicit_boundary: 
                     case end_math_explicit_boundary: 
                         /* valid, penalty to add */
-                        boundary_reserved(n) = tex_scan_integer(0, NULL);
+                        boundary_reserved(boundary) = tex_scan_integer(0, NULL);
                         break;
                 }
-                tex_tail_append(n);
+                tex_tail_append(boundary);
                 break;
             }
         case protrusion_boundary:
@@ -2007,6 +2049,7 @@ halfword tex_local_scan_box(void)
             tex_local_control_message("entering at end of box scanning");
         }
         tex_local_control(1);
+// tex_cleanup_input_state();
     } else {
         /*tex |\directlua{print(token.scan_list())}\box0| (n-1 n) */
         /*
@@ -3098,6 +3141,7 @@ void tex_begin_paragraph(int doindent, int context)
                 tex_local_control_message("entering local control via \\everybeforepar");
             }
             tex_local_control(1);
+// tex_cleanup_input_state();
         }
         tex_tail_append(tex_new_param_glue_node(par_skip_code, par_skip_glue));
     }

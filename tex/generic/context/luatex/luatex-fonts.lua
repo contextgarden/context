@@ -21,10 +21,23 @@ if not modules then modules = { } end modules ['luatex-fonts'] = {
 -- The following code isolates the generic context code from already defined or to be defined
 -- namespaces. This is the reference loader for plain tex. This generic code is also used in
 -- luaotfload which is a low level lualatex opentype font loader but somehow has gotten a bit
--- too generic name / prefix, originally set up and maintained by Khaled Hosny. Currently that
--- set of derived files is maintained by a larger team lead by Philipp Gesang so when there are
--- issues with this code in latex, you can best contact him. It might make sense then to first
--- check if context has the same issue. We do our best to keep the interface as clean as possible.
+-- too generic name / prefix, originally set up and maintained by Khaled Hosny. Later that
+-- set of derived files was maintained by a larger team lead by Philipp Gesang, but afaik
+-- maintainance moved to latex team and the wrapper code in the meantime likely differs quite
+-- a bit from what was started with. So, issues with luaotfload shoudl be reported to the latex
+-- folk. If you suspect somethign wong in these files, it makes sense then to first check if
+-- context has the same issue:
+--
+-- mtxrun --script context          contextfile  (mkxl aka lmtx)
+--
+-- mtxrun --script context --luatex contextfile  (mkiv)
+--
+-- mtxrun --script plain   --make
+-- mtxrun --script plain            plaintexfile (tex)
+--
+-- We only backport from context lmtx (luametatex) to context mkiv (luatex) if needed and to
+-- this file set (generic) when we think it makes sense. Keep in mind that not all features in
+-- context are supported in generic.
 --
 -- The code base is rather stable now, especially if you stay away from the non generic code. All
 -- relevant data is organized in tables within the main table of a font instance. There are a few
@@ -39,10 +52,10 @@ if not modules then modules = { } end modules ['luatex-fonts'] = {
 -- also add more helper code here, but that depends to what extend metatex (sidetrack of context)
 -- evolves into a low level layer (depends on time, as usual).
 
--- The code here is the same as in context version 2015.09.11 but the rendering in context can be
--- different from generic. This can be a side effect of additional callbacks, additional features
--- and interferences between mechanisms between macro packages. We use the rendering in context
--- and luatex-plain as reference for issues.
+-- The code here is the same as in context version 2015.09.11 (in the meantime 2024.06.14) but the
+-- rendering in context can be different from generic. This can be a side effect of additional
+-- callbacks, additional features and interferences between mechanisms between macro packages. We
+-- use the rendering in context and luatex-plain as reference for issues (see above for running).
 
 -- I might as well remove some code that is not used in generic (or not used by generic users)
 -- like color fonts (emoji etc) and variable fonts thereby making the code base smaller. However
@@ -63,6 +76,13 @@ if not modules then modules = { } end modules ['luatex-fonts'] = {
 -- a bit differently. We anyway have to wait a few years till that callback is omnipresent so I'm
 -- not in that much of a hurry. (There will be a TB article about it first and after that I will
 -- add some examples to the manual.)
+--
+-- Fonts evolve over time. So if something doesn't work one might want to test older or newer
+-- version. We don't implement heuristics with regards to script/language combinations so that is
+-- often the first to test: what langauge, script, features are available and set. When the backend
+-- is involved macro package dependencies creep in. We've seen reports on something not working as
+-- that was just a matter configuration and not a bug. But we're always willing to fix real bugs,
+-- for which we need the font files then.
 
 utf = utf or (unicode and unicode.utf8) or { }
 

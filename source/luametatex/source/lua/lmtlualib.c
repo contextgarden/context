@@ -489,7 +489,8 @@ static int lualib_get_doing_the(lua_State *L)
 /* This makes the (already old and rusty) profiler 2.5 times faster. */
 
 /*
-static lua_State *getthread (lua_State *L, int *arg) {
+static lua_State *getthread (lua_State *L, int *arg) 
+{
     if (lua_isthread(L, 1)) {
         *arg = 1;
         return lua_tothread(L, 1);
@@ -499,7 +500,8 @@ static lua_State *getthread (lua_State *L, int *arg) {
     }
 }
 
-static int lualib_get_debug_info(lua_State *L) {
+static int lualib_get_debug_info(lua_State *L) 
+{
     lua_Debug ar;
     int arg;
     lua_State *L1 = getthread(L, &arg);
@@ -511,7 +513,8 @@ static int lualib_get_debug_info(lua_State *L) {
 */
 
 /*
-static int lualib_get_debug_info(lua_State *L) {
+static int lualib_get_debug_info(lua_State *L) 
+{
     if (! lua_isthread(L, 1)) {
         lua_Debug ar;
         if (lua_getstack(L, 2, &ar) && lua_getinfo(L, "nS", &ar)) {
@@ -540,7 +543,8 @@ static int lualib_get_debug_info(lua_State *L) {
     helpers) which for now doesn't make much sense. This is an undocumented feature.
 */
 
-static int lualib_get_debug_info(lua_State *L) {
+static int lualib_get_debug_info(lua_State *L) 
+{
     if (! lua_isthread(L, 1)) {
         lua_Debug ar;
         if (lua_getstack(L, 2, &ar) && lua_getinfo(L, "nS", &ar)) {
@@ -553,43 +557,129 @@ static int lualib_get_debug_info(lua_State *L) {
     return 0;
 }
 
+/*tex 
+
+    This is just a byproduct of using nibbles for storing math style variant (and presets) so I 
+    decoded to keep it. 
+
+*/
+
+static int lualib_set_nibble(lua_State *L) 
+{
+    unsigned int original = lmt_tounsigned(L, 1);
+    unsigned int position = lmt_tounsigned(L, 2);
+    if (position >= 1 && position <= 8) { 
+        unsigned int nibble = lmt_optunsigned(L, 3, 0);
+        position--;
+        lua_pushinteger(L, (original & ~(0xF << (4 * position))) | ((nibble & 0xF) << (4 * position)));   
+    } else { 
+        lua_pushinteger(L, original);   
+    }
+    return 1;
+}
+
+static int lualib_get_nibble(lua_State *L) 
+{
+    unsigned int position = lmt_tounsigned(L, 2);
+    if (position >= 1 && position <= 8) { 
+        unsigned int original = lmt_tounsigned(L, 1);
+        lua_pushinteger(L, (original >> (4 * --position)) & 0xF);
+    } else {
+        lua_pushinteger(L, 0);
+    }
+    return 1;
+}
+
+static int lualib_add_nibble(lua_State *L) 
+{
+    unsigned int position = lmt_tounsigned(L, 2);
+    unsigned int original = lmt_tounsigned(L, 1);
+    if (position >= 1 && position <= 8) { 
+        unsigned int nibble = ((original >> (4 * --position)) & 0xF);
+        if (nibble < 0xF) {
+            nibble++;
+            lua_pushinteger(L, (original & ~(0xF << (4 * position))) | ((nibble & 0xF) << (4 * position)));   
+            return 1;
+        } 
+    }
+    lua_pushinteger(L, original);   
+    return 1;
+}
+
+static int lualib_sub_nibble(lua_State *L) 
+{
+    unsigned int position = lmt_tounsigned(L, 2) - 1;
+    unsigned int original = lmt_tounsigned(L, 1);
+    if (position >= 0 && position <= 7) { 
+        unsigned int nibble = ((original >> (4 * --position)) & 0xF);
+        if (nibble > 0) {
+            nibble--;
+            lua_pushinteger(L, (original & ~(0xF << (4 * position))) | ((nibble & 0xF) << (4 * position)));   
+            return 1;
+        } 
+    }
+    lua_pushinteger(L, original);   
+    return 1;
+}
+
 /* */
 
 static const struct luaL_Reg lualib_function_list[] = {
-    { "newtable",            lualib_new_table           },
-    { "newindex",            lualib_new_index           },
+    /* lua */
     { "getstacktop",         lualib_get_stack_top       },
+ /* { "gethashchars",        lualib_get_hashchars       }, */
+    { "getdebuginfo",        lualib_get_debug_info      },
+    { "setexitcode",         lualib_set_exitcode        },
+    { "getexitcode",         lualib_get_exitcode        },
+    /* helpers */
     { "getruntime",          lualib_get_runtime         },
     { "getcurrenttime",      lualib_get_currenttime     },
     { "getpreciseticks",     lualib_get_preciseticks    },
     { "getpreciseseconds",   lualib_get_preciseseconds  },
+    /* engine */
+    { "getstartupfile",      lualib_get_startupfile     },
+    { "getversion",          lualib_get_version         },
+    /* bytecode */
     { "getbytecode",         lualib_get_bytecode        },
     { "setbytecode",         lualib_set_bytecode        },
     { "callbytecode",        lualib_call_bytecode       },
     { "getfunctionstable",   lualib_get_functions_table },
-    { "getstartupfile",      lualib_get_startupfile     },
-    { "getversion",          lualib_get_version         },
- /* { "gethashchars",        lualib_get_hashchars       }, */
-    { "setexitcode",         lualib_set_exitcode        },
-    { "getexitcode",         lualib_get_exitcode        },
  /* { "doingthe",            lualib_get_doing_the       }, */
-    { "getdebuginfo",        lualib_get_debug_info      },
+    /* table */
+    { "newtable",            lualib_new_table           },
+    { "newindex",            lualib_new_index           },
+    /* number */
+    { "setnibble",           lualib_set_nibble          },
+    { "getnibble",           lualib_get_nibble          },
+    { "addnibble",           lualib_add_nibble          },
+    { "subnibble",           lualib_sub_nibble          },
+    /* */
     { NULL,                  NULL                       },
 };
 
 static const struct luaL_Reg lualib_function_list_only[] = {
-    { "newtable",            lualib_new_table          },
-    { "newindex",            lualib_new_index          },
+    /* lua */
     { "getstacktop",         lualib_get_stack_top      },
+ /* { "gethashchars",        lualib_get_hashchars      }, */
+    { "setexitcode",         lualib_set_exitcode       },
+    { "getexitcode",         lualib_get_exitcode       },
+    /* helpers */
     { "getruntime",          lualib_get_runtime        },
     { "getcurrenttime",      lualib_get_currenttime    },
     { "getpreciseticks",     lualib_get_preciseticks   },
     { "getpreciseseconds",   lualib_get_preciseseconds },
+    /* engine */
     { "getstartupfile",      lualib_get_startupfile    },
     { "getversion",          lualib_get_version        },
- /* { "gethashchars",        lualib_get_hashchars      }, */
-    { "setexitcode",         lualib_set_exitcode       },
-    { "getexitcode",         lualib_get_exitcode       },
+    /* table */
+    { "newtable",            lualib_new_table          },
+    { "newindex",            lualib_new_index          },
+    /* number */
+    { "setnibble",           lualib_set_nibble         },
+    { "getnibble",           lualib_get_nibble         },
+    { "addnibble",           lualib_add_nibble         },
+    { "subnibble",           lualib_sub_nibble         },
+    /* */
     { NULL,                  NULL                      },
 };
 

@@ -180,6 +180,7 @@
                 <cd:parameter name="keeptogether">
                     <cd:constant type="yes"/>
                     <cd:constant type="no"/>
+                    <cd:constant type="paragraph"/>
                 </cd:parameter>
                 <cd:parameter name="before">
                     <cd:constant type="cd:command"/>

@@ -26,7 +26,7 @@
 \permanent\protected\def\ap[#1]%
   {\ifchknum#1\or
      \dontleavehmode
-     \global\advance\c_align_point_index\plusone
+     \global\advanceby\c_align_point_index\plusone
      \d_align_point_delta\clf_align_point_delta
        \numexpr#1\relax
        \c_align_point_index

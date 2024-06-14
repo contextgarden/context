@@ -76,6 +76,9 @@ return {
                 {
                     tweak = "addmirrors",
                 },
+                {
+                    tweak = "addcomposites",
+                },
                 -- MS: we need to check this, I moved it up
                 {
                     tweak   = "replacealphabets",

@@ -99,7 +99,10 @@ end
 
 implement {
     name      = "useMPlibrary",
-    arguments = "string",
+ -- arguments = "string",
+    arguments = "optional",
+    public    = true,
+    protected = true,
     actions   = function(name)
         resolvers.uselibrary {
             name     = name,

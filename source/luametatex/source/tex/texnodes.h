@@ -1305,13 +1305,15 @@ typedef enum glyph_option_codes {
     glyph_option_math_discretionary        = 0x00000400,
     glyph_option_math_italics_too          = 0x00000800,
     glyph_option_math_artifact             = 0x00001000,
+    /* */
     glyph_option_weight_less               = 0x00002000,
+    glyph_option_space_factor_overload     = 0x00004000,
     /*tex We permit user options. */
     glyph_option_user_first                = 0x00010000,
     glyph_option_user_last                 = 0x40000000,
     /*tex So watch out: these are subsets! */
     glyph_option_all                       = 0x000003FF,
-    glyph_option_valid                     = 0x4FFF0FFF,
+    glyph_option_valid                     = 0x4FFF7FFF,
 } glyph_option_codes;
 
 
@@ -1864,7 +1866,7 @@ typedef enum simple_choice_subtypes {
     \ML                                                                                           
     \NC vlink 11   \NC extra_1    \NC top_character     \NC rule_thickness   \NC degree           \NC delimiter       \NC \NR
     \NC vinfo 11   \NC extra_2    \NC bot_character     \NC left_delimiter   \NC left_delimiter   \NC source          \NC \NR
-    \NC vlink 12   \NC extra_3    \NC overlay_character \NC right_delimiter  \NC right_delimiter  \NC topdelimiter           \NC \NR
+    \NC vlink 12   \NC extra_3    \NC overlay_character \NC right_delimiter  \NC right_delimiter  \NC topdelimiter    \NC \NR
     \NC vinfo 12   \NC extra_4    \NC fraction          \NC middle_delimiter \NC size             \NC bottomdelimiter \NC \NR
     \NC vlink 13   \NC extra_5    \NC topovershoot      \NC h_factor         \NC height           \NC topovershoot    \NC \NR
     \NC vinfo 13   \NC extra_6    \NC botovershoot      \NC v_factor         \NC depth            \NC botovershoot    \NC \NR
@@ -1891,7 +1893,7 @@ typedef enum simple_choice_subtypes {
 //define noad_state_toptotal(a)    vlink(a,5)
 //define noad_state_bottomtotal(a) vinfo(a,5)
 
-# define noad_size            17
+# define noad_size            18
 # define noad_new_hlist(a)    vlink(a,2)    /*tex the translation of an mlist; a bit confusing name */
 # define noad_nucleus(a)      vinfo(a,2)
 # define noad_supscr(a)       vlink(a,3)
@@ -1925,18 +1927,20 @@ typedef enum simple_choice_subtypes {
 # define noad_supshift(a)     vlink(a,11) /* continuation */
 # define noad_primeshift(a)   vlink(a,12) /* continuation */
 # define noad_script_kern(a)  vinfo(a,12) /* continuation */
-# define noad_extra_1(a)      vlink(a,13)
-# define noad_extra_2(a)      vinfo(a,13)
-# define noad_extra_3(a)      vlink(a,14)
-# define noad_extra_4(a)      vinfo(a,14)
-# define noad_extra_5(a)      vlink(a,15)
-# define noad_extra_6(a)      vinfo(a,15)
-# define noad_extra_7(a)      vlink(a,16)
-# define noad_extra_70(a)     vlink0(a,16)
-# define noad_extra_71(a)     vlink1(a,16)
-# define noad_extra_8(a)      vinfo(a,16)
-# define noad_extra_80(a)     vinfo0(a,16)
-# define noad_extra_81(a)     vinfo1(a,16)
+# define noad_extra_attr(a)   vlink(a,13)
+# define noad_reserved(a)     vinfo(a,13)
+# define noad_extra_1(a)      vlink(a,14)
+# define noad_extra_2(a)      vinfo(a,14)
+# define noad_extra_3(a)      vlink(a,15)
+# define noad_extra_4(a)      vinfo(a,15)
+# define noad_extra_5(a)      vlink(a,16)
+# define noad_extra_6(a)      vinfo(a,16)
+# define noad_extra_7(a)      vlink(a,17)
+# define noad_extra_70(a)     vlink0(a,17)
+# define noad_extra_71(a)     vlink1(a,17)
+# define noad_extra_8(a)      vinfo(a,17)
+# define noad_extra_80(a)     vinfo0(a,17)
+# define noad_extra_81(a)     vinfo1(a,17)
 
 # define noad_total(a) (noad_height(a) + noad_depth(a))
 
@@ -2080,6 +2084,7 @@ typedef enum noad_options {
 # define noad_option_ignore                     (uint64_t) 0x0080000000000000 /* whatever fence */
 # define noad_option_no_more_scripts            (uint64_t) 0x0100000000000000 
 # define noad_option_carry_over_classes         (uint64_t) 0x0200000000000000 
+# define noad_option_use_callback               (uint64_t) 0x0400000000000000
 
 # define has_option(a,b)     (((a) & (b)) == (b))
 # define unset_option(a,b)   ((a) & ~(b))
@@ -2160,6 +2165,7 @@ static inline int has_noad_no_script_option(halfword n, halfword option)
 # define has_noad_option_ignore(a)                     (has_option(noad_options(a), noad_option_ignore))
 # define has_noad_option_no_more_scripts(a)            (has_option(noad_options(a), noad_option_no_more_scripts))
 # define has_noad_option_carry_over_classes(a)         (has_option(noad_options(a), noad_option_carry_over_classes))
+# define has_noad_option_use_callback(a)               (has_option(noad_options(a), noad_option_use_callback))
 
 typedef enum double_atom_options {
     inherit_class_double_atom_option      = 0x01,
@@ -2428,6 +2434,7 @@ typedef enum boundary_subtypes {
     page_boundary,
     math_boundary,
     optional_boundary,
+    lua_boundary,
     par_boundary,
 } boundary_subtypes;
 
@@ -2876,6 +2883,7 @@ static inline halfword tex_tail_of_node_list(halfword n)
 extern halfword tex_copy_attribute_list        (halfword attr);
 extern halfword tex_copy_attribute_list_set    (halfword attr, int index, int value);
 extern halfword tex_patch_attribute_list       (halfword attr, int index, int value);
+extern halfword tex_merge_attribute_list       (halfword first, halfword second);
 extern void     tex_dereference_attribute_list (halfword attr);
 extern void     tex_build_attribute_list       (halfword target);
 extern halfword tex_current_attribute_list     (void);

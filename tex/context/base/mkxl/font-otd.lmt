@@ -137,6 +137,10 @@ local P, C, Cc, lpegmatch = lpeg.P, lpeg.C, lpeg.Cc, lpeg.match
 
 local pattern = P("always") * (P(-1) * Cc(true) + P(":") * C((1-P(-1))^1))
 
+local scriptsets = fonts.specifiers.scriptsets
+
+-- also register scriptset
+
 local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr,dynamic,ra,autoscript,autolanguage)
     local features = sequence.features
     if features then
@@ -166,8 +170,21 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                         -- we already checked for e_e
                         local scripts   = features[kind] --
                         local languages = scripts[script] or scripts[wildcard]
+                        -- experiment
+                        if not languages then
+                            local ss = scriptsets[script]
+                            if ss then
+                                for i=1,#ss do
+                                    languages = scripts[ss[i]]
+                                    if languages then
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                        -- till here
                         if not languages and autoscript then
-                            langages = defaultscript(featuretype,autoscript,scripts)
+                            languages = defaultscript(featuretype,autoscript,scripts)
                         end
                         if languages then
                             -- we need detailed control over default because we want to trace
@@ -183,8 +200,8 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                         end
                         if valid then
                             usedattribute = autofeatures[kind] or false
-                            usedlanguage  = script
-                            usedscript    = language
+                            usedlanguage  = language -- was reversed
+                            usedscript    = script   -- was reversed
                             usedlookup    = { valid, usedattribute, sequence, kind }
                         end
                     end
@@ -280,5 +297,4 @@ function otf.dataset(tfmdata,font,attr) -- attr only when explicit (as in specia
         end
     end
     return ra
-
 end

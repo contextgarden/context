@@ -3589,7 +3589,7 @@ halfword lmt_macro_to_tok(lua_State *L, int slot, halfword *tail)
                         }
                     case LUA_TUSERDATA:
                         {
-                            a = tex_store_new_token(a, lmt_token_code_from_lua(L, i));
+                            a = tex_store_new_token(a, token_info(lmt_token_code_from_lua(L, i)));
                             break;
                         }
                 }
@@ -3625,6 +3625,7 @@ static int tokenlib_expand_macro(lua_State *L)
             tex_local_control_message("entering local control via (run) macro");
         }
         tex_local_control(1);
+        tex_cleanup_input_state();
     } else {
         tex_local_control_message("invalid (run) macro");
     }
@@ -4194,4 +4195,35 @@ int lmt_push_specification(lua_State *L, halfword ptr, int onlycount)
     }
     lua_pushnil(L);
     return 1;
+}
+
+halfword lmt_get_lua_token_cs(lua_State *L, int index)
+{
+    lua_token *token = tokenlib_aux_check_istoken(L, index);
+    if (token) { 
+        int info = token_info(token->token);
+        return info > cs_token_flag ? info - cs_token_flag : info;
+    } else { 
+        return null;
+    }
+}
+
+int lmt_get_lua_token_cmd_chr(lua_State *L, int index, int *cmd, int *chr)
+{
+    lua_token *token = tokenlib_aux_check_istoken(L, index);
+    if (token) { 
+        int info = token_info(token->token);
+        if (info >= cs_token_flag) {
+            *cmd = eq_type(info - cs_token_flag);
+            *chr = eq_value(info - cs_token_flag);
+        } else {
+            *cmd = token_cmd(info);
+            *chr = token_chr(info);
+        }
+        return 1;
+    } else { 
+        *cmd = 0;
+        *chr = 0;
+        return 0;
+    }
 }

@@ -57,9 +57,9 @@ local cache = setmetatableindex(function(t,width)
     return v
 end)
 
-local enabled = "vertical"  directives.register("math.extensibles", function(v) enabled = v end) -- default per 2022-08-25
+local enabled = "both"  directives.register("math.extensibles", function(v) enabled = v end) -- default per 2022-08-25
 
-updaters.register("tagging.state.enable", function() enabled = "both" end) -- for now
+-- updaters.register("tagging.state.enable", function() enabled = "both" end) -- for now
 
 local function register_extensible(font,char,style,att,box)
     if enabled then
@@ -72,9 +72,6 @@ local function register_extensible(font,char,style,att,box)
             else
                 return
             end
-if not box then -- pending build bot
-    box = att
-end
             local bx = tonut(box)
             -- actually we don't want colors and such so if we do finalize we
             -- should be more selective:
@@ -83,9 +80,6 @@ end
     --         updaters.apply("tagging.state.enable")
 -- updaters.apply("tagging.state.disable")
             local id = getid(bx)
-if not att then -- pending build bot
-    att = getattrlst(box)
-end
             local al = tonut(att)
             local wd, ht, dp = getwhd(bx)
             local unicode = oldchar.unicode or char
@@ -110,7 +104,9 @@ end
             --
         --  local private = fonts.helpers.setboxdirectly(font,unicode,box) -- maybe cache in setboxdirectly
             local private = cache[wd][ht][dp][font][unicode]
-            if not private then
+            if private then
+nodes.flushlist(box)
+            else
                 private = fonts.helpers.setboxdirectly(font,unicode,box,true) -- expose=true so we get color
                 cache[wd][ht][dp][font][unicode] = private
             end

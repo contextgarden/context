@@ -185,15 +185,19 @@ end
 
 do
 
-    local d_overlay_width     <const> = isdimen("d_overlay_width")     registerdirect("OverlayWidth",     function() return getdimen(d_overlay_width)     * bpfactor end)
-    local d_overlay_height    <const> = isdimen("d_overlay_height")    registerdirect("OverlayHeight",    function() return getdimen(d_overlay_height)    * bpfactor end)
-    local d_overlay_depth     <const> = isdimen("d_overlay_depth")     registerdirect("OverlayDepth",     function() return getdimen(d_overlay_depth)     * bpfactor end)
-    local d_overlay_linewidth <const> = isdimen("d_overlay_linewidth") registerdirect("OverlayLineWidth", function() return getdimen(d_overlay_linewidth) * bpfactor end)
-    local d_overlay_offset    <const> = isdimen("d_overlay_offset")    registerdirect("OverlayOffset",    function() return getdimen(d_overlay_offset)    * bpfactor end)
-                                                                       registerdirect("OverlayRegion",    function() return getmacro("m_overlay_region")             end)
-                                                                       registerdirect("CurrentLayout",    function() return getmacro("currentlayout")                end)
-                                                                       registerdirect("OverlayColor",     function() return getmacro("overlaycolor")                 end)
-                                                                       registerdirect("OverlayLineColor", function() return getmacro("overlaylinecolor")             end)
+    local d_overlay_width        <const> = isdimen("d_overlay_width")        registerdirect("OverlayWidth",        function() return getdimen(d_overlay_width)        * bpfactor end)
+    local d_overlay_height       <const> = isdimen("d_overlay_height")       registerdirect("OverlayHeight",       function() return getdimen(d_overlay_height)       * bpfactor end)
+    local d_overlay_depth        <const> = isdimen("d_overlay_depth")        registerdirect("OverlayDepth",        function() return getdimen(d_overlay_depth)        * bpfactor end)
+    local d_overlay_linewidth    <const> = isdimen("d_overlay_linewidth")    registerdirect("OverlayLineWidth",    function() return getdimen(d_overlay_linewidth)    * bpfactor end)
+    local d_overlay_offset       <const> = isdimen("d_overlay_offset")       registerdirect("OverlayOffset",       function() return getdimen(d_overlay_offset)       * bpfactor end)
+    local d_overlay_mathaxis     <const> = isdimen("d_overlay_mathaxis")     registerdirect("OverlayMathAxis",     function() return getdimen(d_overlay_mathaxis)     * bpfactor end)
+    local d_overlay_mathexheight <const> = isdimen("d_overlay_mathexheight") registerdirect("OverlayMathExHeight", function() return getdimen(d_overlay_mathexheight) * bpfactor end)
+    local d_overlay_mathemwidth  <const> = isdimen("d_overlay_mathemwidth")  registerdirect("OverlayMathEmWidth",  function() return getdimen(d_overlay_mathemwidth)  * bpfactor end)
+
+    registerdirect("OverlayRegion",    function() return getmacro("m_overlay_region") end)
+    registerdirect("CurrentLayout",    function() return getmacro("currentlayout")    end)
+    registerdirect("OverlayColor",     function() return getmacro("overlaycolor")     end)
+    registerdirect("OverlayLineColor", function() return getmacro("overlaylinecolor") end)
 
 end
 

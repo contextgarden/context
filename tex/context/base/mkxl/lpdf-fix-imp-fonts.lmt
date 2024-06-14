@@ -1246,14 +1246,16 @@ do
 
     local function hasfonts(xobject)
         if xobject then
-            for k, v in next, xobject do
+            for k, v in expanded(xobject) do
                 local r = v.Resources
-                if r.Font then
-                    return true
-                end
-                local x = xobject
-                if x then
-                    return hasfonts(x)
+                if r then
+                    if r.Font then
+                        return true
+                    end
+                    local x = r.Xobject
+                    if x then
+                        return hasfonts(x)
+                    end
                 end
             end
         end

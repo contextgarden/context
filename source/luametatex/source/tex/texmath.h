@@ -297,7 +297,7 @@ typedef enum math_atom_font_options {
 
 static inline int math_parameter_value_type(int n)
 {
-    if (n < last_math_parameter) {
+    if (n <= last_math_parameter) {
         return lmt_interface.math_parameter_values[n].type;
     } else if (n >= math_parameter_atom_rules_first && n <= math_parameter_atom_rules_last) {
         return math_pair_parameter;
@@ -599,7 +599,8 @@ extern scaled   tex_get_font_math_y_parameter    (int font, int size, int param)
 extern void     tex_fixup_math_parameters        (int fam, int size, int fnt, int level);
 extern void     tex_finalize_math_parameters     (void);
 extern scaled   tex_get_math_quad_style          (int style);
-extern scaled   tex_math_axis_size               (int size);
+extern scaled   tex_get_math_axis_size           (int size);
+extern scaled   tex_get_math_exheight_size       (int size);
 extern scaled   tex_get_math_quad_size           (int size);
 extern scaled   tex_get_math_quad_size_scaled    (int size);
 extern scaled   tex_get_math_quad_size_unscaled  (int size);
@@ -767,6 +768,7 @@ typedef enum math_control_codes {
 )
 
 /*tex
+
     In the process of improving the math engine several intermediate features have been
     added that were removed later. They were mostly an aid for testing but in the end it
     made no sense to keep them around. To some extend they could enforce compatibility

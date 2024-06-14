@@ -538,11 +538,30 @@ another weird one:
 
 \stopsection
 
+\startsection[title={low level injection}]
+
+You can inject raw \TEX\ commands into the processed result:
+
+\starttyping
+<?xml version='1.0'?>
+<whatever>
+    <p>test 1</p>
+    <?context-tex-directive start ?>
+    <?context-tex-directive red   ?>
+    <p>test 2</p>
+    <?context-tex-directive stop ?>
+    <p>test 3</p>
+</whatever>
+\stoptyping
+
+There are however more structured ways available that are discussed in following
+sections.
+
 \startsection[title={selectors and injectors}]
 
 This section describes a bit special feature, one that we needed for a project
 where we could not touch the original content but could add specific sections for
-our own purpose. Hopefully the example demonstrates its useability.
+our own purpose. Hopefully the example demonstrates its usability.
 
 \enabletrackers[lxml.selectors]
 

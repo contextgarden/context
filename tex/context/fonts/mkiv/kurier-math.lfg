@@ -91,6 +91,9 @@ if common then
             set   = { "ignorekerndimensions" }
         }, -- we have dp > ht fences
         {
+            tweak = "wipeweirdones",
+        },
+        {
             tweak  = "fixprimes",
             factor = 1.0, -- accent base height
             fake   = 0.9, -- replace multiples with this width proportion

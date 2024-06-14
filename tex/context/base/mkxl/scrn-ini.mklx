@@ -138,8 +138,78 @@
 %D When we're dealing with pure page references, contrast
 %D colors are used when we are already at the page mentioned.
 
+% \permanent\protected\def\setlocationcolorspecified#1% not grouped !
+%   {\ifnum#1=\plusone
+%      \edef\p_contrastcolor{\interactionparameter\c!contrastcolor}%
+%      \ifempty\p_contrastcolor
+%        \useinteractioncolorparameter\c!color
+%      \else
+%        \useinteractioncolorparameter\c!contrastcolor
+%      \fi
+%    \else % we could just set and if > 0 set again
+%      \useinteractioncolorparameter\c!color
+%    \fi}
+
+% \permanent\protected\def\setlocationattributesspecified#1% not grouped !
+%   {\ifnum#1=\plusone
+%      \edef\p_contrastcolor{\interactionparameter\c!contrastcolor}%
+%      \ifempty\p_contrastcolor
+%        \useinteractionstyleandcolor\c!style\c!color
+%      \else
+%        \useinteractionstyleandcolor\c!style\c!contrastcolor
+%      \fi
+%    \else % we could just set and if > 0 set again
+%      \useinteractionstyleandcolor\c!style\c!color
+%    \fi}
+
+% \permanent\protected\def\setlocationcolorspecspecified#1#2% \resolver
+%   {\ifnum#1=\plusone
+%      \edef\p_contrastcolor{#2\c!contrastcolor}%
+%      \ifempty\p_contrastcolor
+%        \colo_helpers_activate{#2\c!color}%
+%      \else
+%        \colo_helpers_activate\p_contrastcolor
+%      \fi
+%    \else
+%      \colo_helpers_activate{#2\c!color}%
+%    \fi}
+
+\setfalse\c_scrn_interaction_no_style
+\setfalse\c_scrn_interaction_no_color
+\setfalse\c_scrn_interaction_no_contrastcolor
+
+\permanent\protected\def\resetinteractionstyleandcolor
+  {\settrue\c_scrn_interaction_no_style
+   \settrue\c_scrn_interaction_no_color
+   \settrue\c_scrn_interaction_no_contrastcolor}
+
+\permanent\protected\def\resetinteractionstyle
+  {\settrue\c_scrn_interaction_no_style}
+
+\permanent\protected\def\resetinteractioncolor
+  {\settrue\c_scrn_interaction_no_color
+   \settrue\c_scrn_interaction_no_contrastcolor}
+
+\permanent\protected\def\resetinteractioncontrastcolor
+  {\settrue\c_scrn_interaction_no_contrastcolor}
+
+\permanent\protected\def\restoreinteractionstyleandcolor
+  {\setfalse\c_scrn_interaction_no_style
+   \setfalse\c_scrn_interaction_no_color
+   \setfalse\c_scrn_interaction_no_contrastcolor}
+
+\appendtoks
+    \iflocation
+      \restoreinteractionstyleandcolor
+    \fi
+\to \everybeforepagebody
+
 \permanent\protected\def\setlocationcolorspecified#1% not grouped !
-  {\ifnum#1=\plusone
+  {\ifconditional\c_scrn_interaction_no_color
+    % none of them
+   \orunless\ifconditional\c_scrn_interaction_no_contrastcolor
+     \useinteractioncolorparameter\c!color
+   \orelse\ifnum#1=\plusone
      \edef\p_contrastcolor{\interactionparameter\c!contrastcolor}%
      \ifempty\p_contrastcolor
        \useinteractioncolorparameter\c!color
@@ -151,19 +221,34 @@
    \fi}
 
 \permanent\protected\def\setlocationattributesspecified#1% not grouped !
-  {\ifnum#1=\plusone
+  {\ifconditional\c_scrn_interaction_no_color
+      \ifconditional\c_scrn_interaction_no_style
+      \else
+        \useinteractionstyleparameter\c!style
+      \fi
+   \orelse\ifnum#1=\plusone
      \edef\p_contrastcolor{\interactionparameter\c!contrastcolor}%
      \ifempty\p_contrastcolor
        \useinteractionstyleandcolor\c!style\c!color
      \else
        \useinteractionstyleandcolor\c!style\c!contrastcolor
      \fi
-   \else % we could just set and if > 0 set again
-     \useinteractionstyleandcolor\c!style\c!color
+   \else
+       \ifconditional\c_scrn_interaction_no_color
+         \useinteractionstyleparameter\c!style
+       \orelse\ifconditional\c_scrn_interaction_no_style
+         \useinteractioncolorparameter\c!color
+       \else
+         \useinteractionstyleandcolor\c!style\c!color
+       \fi
    \fi}
 
 \permanent\protected\def\setlocationcolorspecspecified#1#2% \resolver
-  {\ifnum#1=\plusone
+  {\ifconditional\c_scrn_interaction_no_color
+    % none of them
+   \orunless\ifconditional\c_scrn_interaction_no_contrastcolor
+     \colo_helpers_activate{#2\c!color}%
+   \orelse\ifnum#1=\plusone
      \edef\p_contrastcolor{#2\c!contrastcolor}%
      \ifempty\p_contrastcolor
        \colo_helpers_activate{#2\c!color}%

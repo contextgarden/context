@@ -693,13 +693,7 @@
 %D
 %D So, yes has become text
 
-\newconstant\c_strc_math_split_mode
-
-\mutable\lettonothing\m_strc_math_split
-
-\aliased\let\c_strc_math_line_mode\zerocount
-\aliased\let\c_strc_math_flow_mode\plusone
-\aliased\let\c_strc_math_wrap_mode\plusthree
+\newconditional\c_strc_math_split_mode
 
 \newconditional\c_strc_formulas_tight
 \newconditional\c_strc_formulas_packed
@@ -852,9 +846,10 @@
      \fi
    \fi}
 
-\definesymbol[mathqed][\symbol{square}]
+\definesymbol[mathqed][□] % [\symbol{square}]
 
-\permanent\protected\def\mathqed{\symbol{mathqed}}
+%permanent\protected\def\mathqed{\mathematics    {\symbol{mathqed}}}
+\permanent\protected\def\mathqed{\textmathematics{\symbol{mathqed}}}
 
 % done
 
@@ -984,44 +979,11 @@
      \setformulaparameter\c!grid{\v!math:-\v!halfline}%
    \fi}
 
-% when we have 1.0.6 we will use \mathpenaltiesmode
-%
-% \prebinoppenalty -100
-% \prerelpenalty   -100
-
-% \placeformula[eq:a]
-% \startformula[split=text]
-%     m(b-a)\leq\int_a^b f(x)\dd x\leq M(b-a).
-% \stopformula
-%
-% \placeformula[eq:b]
-% \startformula[split=line]
-%     m(b-a)\leq\int_a^b f(x)\dd x\leq M(b-a).
-% \stopformula
-%
-% \placeformula[eq:c]
-% \startformula[split=line,numberlocation=overlay]
-%     m(b-a)\leq\int_a^b f(x)\dd x\leq M(b-a).
-% \stopformula
-
 \def\strc_math_set_split
-  {\edef\m_strc_math_split{\formulaparameter\c!split}%
-   \ifx\m_strc_math_split\v!line
-     \global\c_strc_math_split_mode\c_strc_math_line_mode
-   \orelse\ifx\m_strc_math_split\v!no
-     \global\c_strc_math_split_mode\c_strc_math_line_mode
-   \orelse\ifx\m_strc_math_split\v!box
-     \global\c_strc_math_split_mode\c_strc_math_wrap_mode
- % \orelse\ifx\m_strc_math_split\v!page
- %   \global\c_strc_math_split_mode\c_strc_math_flow_mode
- % \orelse\ifx\m_strc_math_split\v!text
- %   \global\c_strc_math_split_mode\c_strc_math_flow_mode
- % \orelse\ifx\m_strc_math_split\v!yes
- %   \global\c_strc_math_split_mode\c_strc_math_flow_mode
- % \orelse\ifx\m_strc_math_split\v!paragraph
- %   \global\c_strc_math_split_mode\c_strc_math_flow_mode
+  {\ifcstok{\formulaparameter\c!split}\v!line
+     \global\setfalse\c_strc_math_split_mode
    \else
-     \global\c_strc_math_split_mode\c_strc_math_flow_mode
+     \global\settrue\c_strc_math_split_mode
    \fi
    \mathpenaltiesmode\plusone
    \global\d_strc_math_indent\zeropoint}
@@ -1039,8 +1001,7 @@
    \fi}
 
 \setupformula
-% [\c!split=\v!no,
-  [\c!split=\v!yes,
+  [\c!split=\v!yes, % \v!yes | \v!no | \v!line | whatever
    \c!numberlocation=,
    \c!textdistance=\zeropoint,
    \c!interlinespace=1.125\lineheight, % back again, to be tuned
@@ -1391,26 +1352,24 @@
 \letcsname\??mathtextalign\v!right:\v!auto\expandafter\endcsname\csname\??mathtextalign\v!flushleft :\v!auto\endcsname
 \letcsname\??mathtextalign\v!left :\v!auto\expandafter\endcsname\csname\??mathtextalign\v!flushright:\v!auto\endcsname
 
-\startsetups[math:penalties:\v!text]
-    \interlinepenalty \plustenthousand
-    \shapingpenalty   \plustenthousand
+\startsetups[math:penalties:\v!yes]
+    \shapingpenaltiesmode \zerocount
+    \widowpenalties \plustwo \plustwothousand \zerocount
+    \clubpenalties  \plustwo \plustwothousand \zerocount
+  % \interlinepenalty     \plustenthousand
+  % \shapingpenalty       \plustenthousand
 \stopsetups
 
-% or (test):
-%
-% \startsetups[math:penalties:\v!text]
-%     \shapingpenaltiesmode \zerocount
-%     \interlinepenalty     \plustenthousand
-% \stopsetups
-
-\startsetups[math:penalties:\v!page]
+\startsetups[math:penalties:\v!no]
     \shapingpenaltiesmode \zerocount
-    \widowpenalties \plusthree \plustenthousand \plustenthousand \zerocount
-    \clubpenalties  \plusthree \plustenthousand \plustenthousand \zerocount
+    \widowpenalties \plusone \plusfivethousand
+    \clubpenalties  \plusone \plusfivethousand
+  % \interlinepenalty     \plustenthousand
+  % \shapingpenalty       \plustenthousand
 \stopsetups
 
 \setupformula
-  [\c!penalties=math:penalties:\formulaparameter\c!split] % math:penalties:\m_strc_math_split
+  [\c!penalties=math:penalties:\formulaparameter\c!split]
 
 \def\strc_math_setup_penalties
   {\directsetup{\formulaparameter\c!penalties}}
@@ -1462,6 +1421,7 @@
    \edef\p_interlinespace{\formulaparameter\c!interlinespace}%
    \ifempty\p_interlinespace\else\baselineskip\p_interlinespace\fi
    \global\c_strc_math_aligned_here\conditionalfalse
+\strc_math_setup_penalties
    \hsize\d_strc_formulas_display_width}
 
 \def\strc_math_analyze_box
@@ -1488,7 +1448,7 @@
      \fi
    % \strc_math_setup_spacing\formulaparameter
      \strc_math_setup_penalties
-     \unhbox\b_strc_math_display
+     \ifhbox\b_strc_math_display\unhbox\else\box\fi\b_strc_math_display
    \egroup
    \clf_handlemathhang
      stage      \ifconditional\c_strc_math_aligned_here \plustwo \else \plusthree \fi
@@ -1570,7 +1530,7 @@
 
 \def\strc_formulas_start_side_box
   {\ifzeropt\d_strc_math_side_width\else
-     \advance\d_strc_formulas_display_width-\d_strc_math_side_width
+     \advanceby\d_strc_formulas_display_width-\d_strc_math_side_width
      \ifnum\c_page_sides_checks_done<\plustwo
        % see \strc_formulas_display_space_before_normal
        \vkern-\strutht % quite a hack
@@ -1584,7 +1544,7 @@
 
 \def\strc_formulas_trigger_side_box
   {\ifzeropt\d_strc_math_side_width\else
-     \advance\hsize-\d_strc_math_side_width
+     \advanceby\hsize-\d_strc_math_side_width
      \forgeteverypar
      \dontleavehmode
    \fi}

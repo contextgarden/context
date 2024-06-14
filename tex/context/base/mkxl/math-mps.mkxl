@@ -1,0 +1,53 @@
+%D \module
+%D   [       file=math-mps,
+%D        version=2024.06.02,
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=MathFun,
+%D         author={Hans Hagen & Mikael Sundqvist},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE & \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / MathFun}
+
+\unprotect
+
+%D These mp plugins started out as gimmick but might as well evolve into a more
+%D grown up mechanism. It will take a while to have plgins for all the extensibles,
+%D then we will look at the shapes. It makes no sense to have all shapes done this
+%D way.
+%D
+%D You can load some demo plugins with:
+%D
+%D \starttyping
+%D \usemathpluginlibrary[demo]
+%D \stoptyping
+%D
+%D You can process \type {math-mps-imp-demo.mkxl} to get an idea of how this works.
+
+\registerctxluafile{math-mps}{autosuffix}
+
+\protected\def\math_extensible_mp#1#2#3#4#5#6#7#8%
+  {\begingroup
+   \d_overlay_width       #2\scaledpoint
+   \d_overlay_height      #3\scaledpoint
+   \d_overlay_depth       #4\scaledpoint
+   \d_overlay_linewidth   #5\scaledpoint
+   \d_overlay_mathaxis    #6\scaledpoint
+   \d_overlay_mathexheight#7\scaledpoint
+   \d_overlay_mathemwidth #8\scaledpoint
+   %
+   \d_overlay_offset     \zeropoint
+   %
+   \obeyMPboxdepth
+   \global\setbox\globalscratchbox\hpack\bgroup
+      \useMPgraphic{#1}% {...}
+   \egroup
+   \endgroup}
+
+% \permanent\protected\def\usemathpluginlibrary[#1]{\clf_usemathpluginlibrary{#1}}
+
+\protect

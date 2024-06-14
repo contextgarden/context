@@ -167,7 +167,7 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                         local scripts   = features[kind] --
                         local languages = scripts[script] or scripts[wildcard]
                         if not languages and autoscript then
-                            langages = defaultscript(featuretype,autoscript,scripts)
+                            languages = defaultscript(featuretype,autoscript,scripts)
                         end
                         if languages then
                             -- we need detailed control over default because we want to trace
@@ -183,8 +183,8 @@ local function initialize(sequence,script,language,s_enabled,a_enabled,font,attr
                         end
                         if valid then
                             usedattribute = autofeatures[kind] or false
-                            usedlanguage  = script
-                            usedscript    = language
+                            usedlanguage  = language --- was swapped
+                            usedscript    = script   --- was swapped
                             usedlookup    = { valid, usedattribute, sequence, kind }
                         end
                     end

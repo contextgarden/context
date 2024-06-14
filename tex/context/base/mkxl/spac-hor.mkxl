@@ -425,6 +425,44 @@
     \spacefactor\plusthousand
    \fi}
 
+%D Experimental (see periods-001.tex):
+%D
+%D \startbuffer
+%D Watch this            {S.           Bernhard} dog carry a can of drink.
+%D Watch this  \periodic {S.           Bernhard} dog carry a can of drink.
+%D Watch this  \Periodic {S.           Bernhard} dog carry a can of drink.
+%D Watch this            {St.          Bernhard} dog carry a can of drink.
+%D Watch this  \periodic {St.          Bernhard} dog carry a can of drink.
+%D Watch this  \Periodic {St.          Bernhard} dog carry a can of drink.
+%D Watch this            {Prof. Dr. S. Bernhard} dog carry a can of drink.
+%D Watch this  \periodic {Prof. Dr. S. Bernhard} dog carry a can of drink.
+%D Watch this  \Periodic {Prof. Dr. S. Bernhard} dog carry a can of drink.
+%D \stopbuffer
+%D
+%D \typebuffer
+%D
+%D \startlines
+%D \getbuffer
+%D \stoplines
+
+\permanent\protected\def\overloadspacefactor
+  {\bitwiseflip\glyphoptions\spacefactoroverloadglyphoptioncode}
+
+\newinteger\periodicshrink \periodicshrink 250
+
+\permanent\protected\def\Periodic
+  {\groupedcommand
+     {\overloadspacefactor
+      \spacefactoroverload\periodicshrink}%
+     \relax}
+
+\permanent\protected\def\periodic
+  {\groupedcommand
+     {\overloadspacefactor
+      \spacefactoroverload\periodicshrink
+      \sfcode\periodasciicode\periodicshrink}%
+     \relax}
+
 %D Here's a tweak .. if needed one can configure it in the configuration
 %D so that initialization happens more efficient.
 %D

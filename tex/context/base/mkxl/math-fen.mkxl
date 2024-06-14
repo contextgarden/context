@@ -42,6 +42,11 @@
    \c!middle=,
    \c!mathstyle=,
    \c!color=,
+   \c!symbolcolor=\mathfenceparameter\c!color,
+   \c!textcolor=\mathfenceparameter\c!color,
+   \c!leftcolor=\mathfenceparameter\c!symbolcolor,
+   \c!middlecolor=\mathfenceparameter\c!symbolcolor,
+   \c!rightcolor=\mathfenceparameter\c!symbolcolor,
    \c!define=, % was \c!command
    \c!mathclass=,
    \c!leftclass=\mathopencode,
@@ -149,10 +154,10 @@
      #1% \Uleft \Umiddle \Uleft
      \ifx#1\Umiddle
        \ifx\p_overflow\v!auto
-         middle %
-         nooverflow %
+         \s!middle\space
+         \s!nooverflow\space
        \orelse\ifx\p_overflow\v!no
-         nooverflow %
+         \s!nooverflow\space
        \fi
      \fi
    \fi}
@@ -166,10 +171,10 @@
      \math_fenced_set_variant
      \ifx#1\Umiddle
        \ifx\p_overflow\v!auto
-         middle %
-         nooverflow %
+         \s!middle\space
+         \s!nooverflow\space
        \orelse\ifx\p_overflow\v!no
-         nooverflow %
+         \s!nooverflow\space
        \fi
      \fi
    \fi}
@@ -188,7 +193,7 @@
 
 \installglobalmacrostack\c_math_factor_fenced
 
-\protected\def\math_fenced_common#1#2#3#4% \Uwhatever class symbol source
+\protected\def\math_fenced_common#1#2#3#4#5% \Uwhatever class symbol source color
   {\c_math_fenced_class\math_class_by_parameter\mathfenceparameter#2%
    \math_fenced_check_size_mismatch % we need to catch an unbalanced \F as we are sequential
    \ifconditional\c_math_fenced_sized
@@ -205,6 +210,22 @@
    \ifempty\p_fence
      \ifnum\c_math_fenced_class=\mathmiddlecode\else#1.\relax\fi
    \else
+     %
+     \ifx\p_fence\v!none
+       \lettonothing\p_mp
+     \orelse\ifcstok{\mathfenceparameter\c!plugin}\v!mp
+       \edef\p_mp{\mathfenceparameter\c!mp}%
+       \ifempty\p_mp\else
+         \clf_set_extensible_data
+             mp      {\p_mp}
+             unicode \ifchknumber\p_fence\or\lastchknumber\else\expandafter`\p_fence\fi
+         \relax
+         % much of below is not relevant
+       \fi
+     \else
+       \lettonothing\p_mp
+     \fi
+     %
      \edef\p_factor   {\mathfenceparameter\c!factor}%
      \edef\p_overflow {\mathfenceparameter\c!overflow}%
      \edef\p_size     {\mathfenceparameter\c!size}%
@@ -239,19 +260,23 @@
      \else
        \math_fenced_common_factor_unknown
      \fi
-     \usedcolorparameterattributes{\mathfenceparameter\c!color}%
+     \usedsymbolcolorparameterattributes{\mathfenceparameter#5}%
      \ifcase\scratchcounter\else
        \s!attr \mathcategoryattribute \scratchcounter % will change
      \fi
      \s!class
-        \ifx\p_fence\v!none
-          \mathghostcode
-        \orelse\ifempty\p_mathclass
-          \c_math_fenced_class
-        \else
-          \mathcodechecked\p_mathclass
-        \fi
+       \ifx\p_fence\v!none
+         \mathghostcode
+       \orelse\ifempty\p_mathclass
+         \c_math_fenced_class
+       \else
+         \mathcodechecked\p_mathclass
+       \fi
      \s!source \numexpr\namedboxanchor{\mathfenceparameter#4}\relax
+     %
+     \ifempty\p_mp\else
+       \s!usecallback\space
+     \fi
      %
      \s!top    \mathfenceparameter\c!topspace
      \s!bottom \mathfenceparameter\c!bottomspace
@@ -273,7 +298,8 @@
      \else
        \p_fence
      \fi
-   \fi}
+   \fi
+   \usemathfencecolorparameter\c!textcolor}
 
 \def\math_fenced_set_variant
   {\ifconditional\c_math_fenced_level_mode
@@ -290,15 +316,15 @@
 
 \def\math_fenced_left
   {\advanceby\c_math_fence_nesting\plusone
-   \math_fenced_common\Uleft\c!leftclass\math_fenced_p_left\c!leftsource}
+   \math_fenced_common\Uleft\c!leftclass\math_fenced_p_left\c!leftsource\c!leftcolor}
 
 \def\math_fenced_right
-  {\math_fenced_common\Uright\c!rightclass\math_fenced_p_right\c!rightsource
+  {\math_fenced_common\Uright\c!rightclass\math_fenced_p_right\c!rightsource\c!rightcolor
    \advanceby\c_math_fence_nesting\minusone}
 
 \def\math_fenced_middle_normal
   {%\beginmathgroup %doesn't work well with color etc
-   \math_fenced_common\Umiddle\c!middleclass\math_fenced_p_middle\c!middlesource
+   \math_fenced_common\Umiddle\c!middleclass\math_fenced_p_middle\c!middlesource\c!middlecolor
    }%\endmathgroup}
 
 \def\math_fenced_middle_sized
@@ -408,11 +434,11 @@
     \math_fenced_check\c!right
 \to \everydefinemathfence
 
-\protected\def\math_fenced_horizontal_common#1#2#3#4% \Uwhatever class symbol source
+\protected\def\math_fenced_horizontal_common#1#2#3#4#5% \Uwhatever class symbol source color
   {\c_math_fenced_class\math_class_by_parameter\mathfenceparameter#2\relax
    \edef\p_fence{#3}%
    #1% \Uleft \Umiddle \Uleft
-   \usedcolorparameterattributes{\mathfenceparameter\c!color}%
+   \usedcolorparameterattributes{\mathfenceparameter#5}%
    \s!leftclass  \mathunspacedcode
    \s!rightclass \mathunspacedcode
    \s!class      \mathunspacedcode
@@ -776,16 +802,16 @@
 \def\math_fenced_x_left
   {\advanceby\c_math_fence_nesting\plusone
    \ifx\math_fenced_x_p_left\bgroup\let\math_fenced_x_p_left\letterleftbrace\fi
-   \math_fenced_common\Uleft\c!leftclass\math_fenced_x_p_left\c!leftsource}
+   \math_fenced_common\Uleft\c!leftclass\math_fenced_x_p_left\c!leftsource\c!leftcolor}
 
 \def\math_fenced_x_right
   {\ifx\math_fenced_x_p_right\egroup\let\math_fenced_x_p_right\letterrightbrace\fi
-   \math_fenced_common\Uright\c!rightclass\math_fenced_x_p_right\c!rightsource
+   \math_fenced_common\Uright\c!rightclass\math_fenced_x_p_right\c!rightsource\c!rightcolor
    \advanceby\c_math_fence_nesting\minusone}
 
 \def\math_fenced_x_middle
   {%\beginmathgroup %doesn't work well with color etc
-   \math_fenced_common\Umiddle\c!middleclass\math_fenced_x_p_middle\c!middlesource
+   \math_fenced_common\Umiddle\c!middleclass\math_fenced_x_p_middle\c!middlesource\c!middlecolor
    }%\endmathgroup}
 
 % the expandafter permits \left\tocharacter...

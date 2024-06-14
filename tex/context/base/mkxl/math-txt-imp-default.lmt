@@ -375,7 +375,7 @@ return {
  ["mod"]={
   ["en"]="modulo",
   ["ua"]="модуль",
-  ["sv"]="TODO",
+  ["sv"]="modulo",
   ["en"]="modulo",
  },
  ["sup"]={

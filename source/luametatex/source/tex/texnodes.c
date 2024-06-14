@@ -159,7 +159,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_glue, g_leaders,                     gleaders)
     set_value_entry_key(subtypes_glue, u_leaders,                     uleaders)
 
-    subtypes_boundary = lmt_aux_allocate_value_info(math_boundary);
+    subtypes_boundary = lmt_aux_allocate_value_info(par_boundary);
 
     set_value_entry_key(subtypes_boundary, cancel_boundary,     cancel)
     set_value_entry_key(subtypes_boundary, user_boundary,       user)
@@ -167,7 +167,9 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_boundary, word_boundary,       word)
     set_value_entry_key(subtypes_boundary, page_boundary,       page)
     set_value_entry_key(subtypes_boundary, math_boundary,       math)
- /* set_value_entry_key(subtypes_boundary, par_boundary,        par) */
+    set_value_entry_key(subtypes_boundary, optional_boundary,   optional)
+    set_value_entry_key(subtypes_boundary, lua_boundary,        lua) 
+    set_value_entry_key(subtypes_boundary, par_boundary,        par) 
 
     subtypes_penalty = lmt_aux_allocate_value_info(equation_number_penalty_subtype);
 
@@ -1252,12 +1254,18 @@ halfword tex_copy_node(halfword original)
                             copy_sub_list(accent_middle_character(copy), accent_middle_character(original));
                             break;
                     }
+                    if (noad_extra_attr(copy)) {
+                        add_attribute_reference(noad_extra_attr(copy));
+                    }
                     break;
                 case fence_noad:
                     /* in principle also scripts */
                     copy_sub_node(fence_delimiter(copy), fence_delimiter(original));
                     copy_sub_node(fence_delimiter_top(copy), fence_delimiter_top(original));
                     copy_sub_node(fence_delimiter_bottom(copy), fence_delimiter_bottom(original));
+                    if (noad_extra_attr(copy)) {
+                        add_attribute_reference(noad_extra_attr(copy));
+                    }
                     break;
                 case sub_box_node:
                 case sub_mlist_node:
@@ -1410,6 +1418,10 @@ void tex_flush_node(halfword p)
                 case adjust_node:
                     tex_flush_node_list(adjust_list(p));
                     break;
+                /*tex 
+                    Beware: math nodes get freed in |mlist_to_hlist| selectively because some fields 
+                    are reused or migrate. So there we also need to flush attribute fields! 
+                */
                 case choice_node:
                     tex_aux_free_sub_node_list(choice_display_mlist(p));
                     tex_aux_free_sub_node_list(choice_text_mlist(p));
@@ -1448,16 +1460,23 @@ void tex_flush_node(halfword p)
                             tex_aux_free_sub_node_list(accent_middle_character(p));
                             break;
                     }
+                    if (noad_extra_attr(p)) {
+                        delete_attribute_reference(noad_extra_attr(p));
+                    }                    
                     break;
                 case fence_noad:
                     tex_aux_free_sub_node_list(fence_delimiter(p));
                     tex_aux_free_sub_node_list(fence_delimiter_top(p));
                     tex_aux_free_sub_node_list(fence_delimiter_bottom(p));
+                    if (noad_extra_attr(p)) {
+                        delete_attribute_reference(noad_extra_attr(p));
+                    }                    
                     break;
                 case sub_box_node:
                 case sub_mlist_node:
                     tex_aux_free_sub_node_list(kernel_math_list(p));
                     break;
+                /*tex That was the last math node. */
                 case specification_node:
                     tex_dispose_specification_list(p);
                     break;
@@ -1582,11 +1601,13 @@ static void tex_aux_check_node(halfword p)
                     tex_aux_node_range_test(p, accent_middle_character(p));
                     break;
             }
+         // tex_aux_node_range_test(p, noad_extra_attr(p));
             break;
         case fence_noad:
             tex_aux_node_range_test(p, fence_delimiter(p));
             tex_aux_node_range_test(p, fence_delimiter_top(p));
             tex_aux_node_range_test(p, fence_delimiter_bottom(p));
+         // tex_aux_node_range_test(p, noad_extra_attr(p));
             break;
         case par_node:
             tex_aux_node_range_test(p, par_box_left(p));
@@ -2160,6 +2181,32 @@ halfword tex_patch_attribute_list(halfword list, int index, int value)
         node_next(list) = r;
     }
     return list;
+}
+
+halfword tex_merge_attribute_list(halfword first, halfword second)
+{
+    if (first) {
+        if (second) { 
+            halfword list = tex_copy_attribute_list(first);           
+            halfword current = node_next(second);
+            while (current) {
+                list = tex_patch_attribute_list(list, attribute_index(current), attribute_value(current));
+                current = node_next(current);
+            }
+            add_attribute_reference(list);
+            return list;
+        } else { 
+            add_attribute_reference(first);
+            return first; 
+        }
+    } else {
+        if (second) { 
+            add_attribute_reference(second);
+            return second; 
+        } else { 
+            return null;
+        }
+    }
 }
 
 /* todo: combine set and unset */

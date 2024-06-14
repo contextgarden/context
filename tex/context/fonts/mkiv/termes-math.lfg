@@ -40,6 +40,9 @@ return {
                     tweak = "addmirrors",
                 },
                 {
+                    tweak = "addcomposites",
+                },
+                {
                     tweak   = "replacealphabets",
                     list    = {
                         {

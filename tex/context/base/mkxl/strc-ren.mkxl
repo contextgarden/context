@@ -119,15 +119,20 @@
    \setheadmarking
    \strc_sectioning_reset_head_number_content
    \ifconditional\c_strc_sectioning_empty
-     \setbox\b_strc_rendering_head\hpack \headreferenceattributes to \zeropoint{\strut}%
+     \setbox\b_strc_rendering_head\hpack \headreferenceattributes to \zeropoint\bgroup
+\strc_rendering_initialize_interaction % moved here
+       \strut
+     \egroup
    \else
      \docheckheadreference
-     \setbox\b_strc_rendering_head\hbox \headreferenceattributes
-       {\spac_grids_set_local_snapping{\headparameter\c!internalgrid}%
-        \strc_sectioning_reset_head_number_content
-        \useheadstyleparameter\c!style
-        \setinlineheadreferenceattributes
-        \strc_rendering_inject_text}%
+     \setbox\b_strc_rendering_head\hbox \headreferenceattributes\bgroup
+\strc_rendering_initialize_interaction % moved here
+       \spac_grids_set_local_snapping{\headparameter\c!internalgrid}%
+       \strc_sectioning_reset_head_number_content
+       \useheadstyleparameter\c!style
+       \setinlineheadreferenceattributes
+       \strc_rendering_inject_text
+     \egroup
    \fi
    \strc_rendering_stop_placement}
 
@@ -140,14 +145,19 @@
      \strc_sectioning_reset_head_number_content
    \fi
    \ifconditional\c_strc_sectioning_empty
-     \setbox\b_strc_rendering_head\hpack \headreferenceattributes to \zeropoint{\strut}%
+     \setbox\b_strc_rendering_head\hpack \headreferenceattributes to \zeropoint\bgroup
+\strc_rendering_initialize_interaction % moved here
+       \strut
+     \egroup
    \else % = needed
      \docheckheadreference
-     \setbox\b_strc_rendering_head\hbox \headreferenceattributes
-       {\spac_grids_set_local_snapping{\headparameter\c!internalgrid}%
-        \useheadstyleparameter\c!style
-        \setinlineheadreferenceattributes
-        \strc_rendering_inject_number_and_text}%
+     \setbox\b_strc_rendering_head\hbox \headreferenceattributes\bgroup
+\strc_rendering_initialize_interaction % moved here
+       \spac_grids_set_local_snapping{\headparameter\c!internalgrid}%
+       \useheadstyleparameter\c!style
+       \setinlineheadreferenceattributes
+       \strc_rendering_inject_number_and_text
+     \egroup
    \fi
    \strc_rendering_stop_placement}
 
@@ -198,8 +208,11 @@
    \strut
    \ignorespaces}
 
+% maybe more needs to be moved inide the box
+
 \def\strc_rendering_start_placement
-  {\bgroup
+  {\headparameter\c!beforehead
+   \bgroup
    \setsystemmode\currenthead
    \strc_rendering_initialize_alternatives
    \strc_rendering_initialize_dimensions
@@ -219,15 +232,13 @@
    \inhibitmargindata\conditionalfalse % brrrr is set in forgetall
    \dontcomplain
    \postponenotes
-   \strc_rendering_initialize_interaction
+ % \strc_rendering_initialize_interaction % moved (otherwise can interfere with pagebody)
    % delayed:
    \enforced\let\localheadsetup  \strc_rendering_initialize_spacing  % historic name, kept around because some styles use it
    \enforced\let\headsetupspacing\strc_rendering_initialize_spacing} % official name
 
 \def\strc_rendering_initialize_interaction
-  {\resetinteractionparameter\c!style
-   \resetinteractionparameter\c!color
-   \resetinteractionparameter\c!contrastcolor}
+  {\resetinteractionstyleandcolor}
 
 % \setuphead[chapter]         [style=\bfd,after=,hang=line] % fit broad 2
 % \setuphead[section]         [style=\bfc,after=,hang=line]
@@ -396,7 +407,9 @@
    \else
      \ignoreparskip
      \doindentation
-   \fi}
+   \fi
+   % this can interfere with the above but is just there for symmetry
+   \headparameter\c!afterhead}
 
 % nice testcase
 %

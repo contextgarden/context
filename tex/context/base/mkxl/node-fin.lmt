@@ -342,7 +342,7 @@ end
 local function selective(attribute,head,inheritance,default) -- two attributes
     local check  = false
     local leader = nil
- -- nuts.checkslide(head,"SELECTIVE")
+--   nuts.checkslide(head,"SELECTIVE")
     for stack, id, subtype, content in nextcontent, head do
         if id == glyph_code or id == disc_code then
             check = true

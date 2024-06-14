@@ -140,6 +140,7 @@
      }{
         viewerprefix  {\namedcounterparameter\s!userpage\c!viewerprefix}
         state         {\namedcounterparameter\s!userpage\c!state}
+        label         {\namedcounterparameter\s!userpage\c!label}
      }%
    \relax}
 

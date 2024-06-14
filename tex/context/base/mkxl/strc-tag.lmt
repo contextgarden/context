@@ -278,6 +278,8 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
     mstackerbot        = { namespace = "context", nature = "display", pdf = "Span"      },
     mstackermid        = { namespace = "context", nature = "display", pdf = "Span"      },
     mextensible        = { namespace = "context", nature = "display", pdf = "Span"      },
+    mdelimited         = { namespace = "context", nature = "display", pdf = "Span"      },
+    mdelimitedstack    = { namespace = "context", nature = "display", pdf = "Span"      },
     mfunction          = { namespace = "context", nature = "mixed",   pdf = "Span"      },
     mfunctionstack     = { namespace = "context", nature = "display", pdf = "Span"      },
     mfraction          = { namespace = "context", nature = "display", pdf = "Span"      },
@@ -463,9 +465,9 @@ function tags.start(tag,specification)
     --
     local attribute = #taglist + 1
     local tagindex  = (ids[tag] or 0) + 1
-if tag == "ignore" then
-    ignored[attribute] = true
-end
+    if tag == "ignore" then
+        ignored[attribute] = true
+    end
     --
     local completetag = tag .. ">" .. tagindex
     --
@@ -668,9 +670,9 @@ end
 statistics.register("structure elements", function()
     if enabled then
         if stacksize > 0 then
-for i=1,stacksize do
-    if not chain[i] then chain[i] = "ERROR" end
-end
+            for i=1,stacksize do
+                if not chain[i] then chain[i] = "ERROR" end
+            end
             return format("%s element chains identified, open chain: %s ",#taglist,concat(chain," => ",1,stacksize))
         else
             return format("%s element chains identified",#taglist)

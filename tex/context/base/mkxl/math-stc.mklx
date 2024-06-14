@@ -105,9 +105,24 @@
      \hss}}
 
 \def\math_stackers_regular
-  {\mathstylehbox{\usemathstackerscolorparameter\c!color
+  {\mathstylehbox{%
      \hskip\d_math_stackers_offset_l
+     \ifcstok{\mathstackersparameter\c!plugin}\v!mp
+       \edef\p_mp{\mathstackersparameter\c!mp}%
+       \ifempty\p_mp\else
+         \clf_set_extensible_data
+             mp      {\p_mp}
+             unicode \scratchunicode
+          \relax
+       \fi
+     \else
+       \lettonothing\p_mp
+     \fi
      \Uhextensible
+       \usedsymbolcolorparameterattributes{\mathstackersparameter\c!symbolcolor}%
+       \ifempty\p_mp\else
+         \s!usecallback\space
+       \fi
        middle
        \ifcstok{\mathstackersparameter\c!stretch}\v!yes
          stretch
@@ -200,7 +215,8 @@
    \c!minwidth=.25\mathemwidth, % \iota
    \c!order=\v!normal,
    \c!strut=,
-   \c!color=, % todo: when I need it
+   \c!color=,
+   \c!symbolcolor=\mathstackersparameter\c!color,
    \c!topcommand=,
    \c!middlecommand=,
    \c!bottomcommand=,
@@ -267,6 +283,13 @@
    \c!mpheight=\mathcharht\scratchunicode,
    \c!mpdepth=\mathchardp\scratchunicode,
    \c!mpoffset=.25\mathexheight]
+
+% for now we do this:
+
+\setupmathstackers
+  [\c!mp=\ifcstok{\mathstackersparameter\c!plugin}\v!mp simplefun::math:default\else math:stacker:\the\scratchunicode\fi]
+
+% so far
 
 \defcsname\??mathstackersalternative\v!mp\endcsname
   {\normalexpanded{\math_stackers_mp_box
@@ -362,6 +385,7 @@
    \fi}
 
 \protected\def\math_stackers_triplet#method#category#codepoint#toptext#bottomtext%
+ %{\math_stackers_start_group{#category}%
   {\begingroup
    \cdef\currentmathstackers{#category}%
    \mathstackersparameter\c!left\relax
@@ -412,7 +436,9 @@
         \ifempty\m_math_stackers_text_middle
           \setbox\scratchboxthree\emptyhbox
         \else
-          \setmathtextbox\scratchboxthree\hbox{\math_stackers_middletext}%
+          \dostarttaggednodetail\t!mstackermid
+            \setmathtextbox\scratchboxthree\hbox{\math_stackers_middletext}%
+          \dostoptagged
         \fi
         \math_stackers_get_max_width
       \fi
@@ -593,7 +619,9 @@
       \ifempty\math_stackers_middle
         \setbox\scratchboxthree\emptyhbox
       \else
+\dostarttagged\t!mstackermid{\math_stackers_unicode}%
         \setmathtextbox\scratchboxthree\hbox{\math_stackers_middletext}%
+\dostoptagged
       \fi
       \scratchwidth\wd\scratchboxthree
       %
@@ -643,11 +671,11 @@
         \fi
       \fi
       % base
-      \math_stackers_start_tagged_mid
+    % \math_stackers_start_tagged_mid
         \math_stackers_middle\bgroup
           \box\scratchboxthree
         \egroup
-      \math_stackers_stop_tagged
+    % \math_stackers_stop_tagged
       %
       \ifdim\htdp\scratchboxtwo>\zeropoint
         \ifcase\c_math_stackers_bottom\else
@@ -776,7 +804,9 @@
       \ifempty\math_stackers_middle
         \setbox\scratchboxthree\emptyhbox
       \else
+\dostarttagged\t!mstackermid{\math_stackers_unicode}%
         \setmathtextbox\scratchboxthree\hbox{\math_stackers_middletext}%
+\dostoptagged
       \fi
       %
       \ifcase#where\relax
@@ -819,11 +849,11 @@
       % analysis: is this still ok here?
       \dosettagproperty\s!subtype\t!munderover
       % base
-      \math_stackers_start_tagged_mid
+%       \math_stackers_start_tagged_mid
         \math_stackers_middle\bgroup
           \box\scratchboxthree
         \egroup
-      \math_stackers_stop_tagged
+%       \math_stackers_stop_tagged
       %
       \setbox\scratchboxtwo\csname\??mathstackersalternative\p_alternative\endcsname
       \kern-\scratchwidth

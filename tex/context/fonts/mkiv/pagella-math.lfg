@@ -14,7 +14,7 @@ return {
     mathematics = {
         parameters = {
             AccentTopShiftUp                  =   10,
-            FlattenedAccentTopShiftUp         =   10,
+            FlattenedAccentTopShiftUp         =   20,
             AccentBaseDepth                   =   80,
             DelimiterPercent                  =   85,
             DelimiterShortfall                =  400,

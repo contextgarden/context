@@ -73,24 +73,57 @@
         \orelse\ifcstok{#1}{debug}%
             \darkgray
         \fi
-        \gettextblob{#1}\currentmathblob
+        \getmathtextblob{#1}\currentmathblob
     \endgroup
     \blank[medium]
 \stoptexdefinition
 
+% \starttexdefinition protected StartExample
+%     \begingroup
+%     \obeylines
+%     \doifnextcharelse[\StartExampleYES\StartExampleNOP
+% \stoptexdefinition
+
+% \starttexdefinition tolerant protected StartExampleYES[#1]
+%     \doifelsemode {issues} {
+%         \definecolor[issuecolor][darkred]
+%         \doifelse {#1} {issue} {
+%             \dostartbuffer[example][StartExample][StopExample]
+%         } {
+%             \endgroup
+%             \gobbleuntil\StopExample
+%         }
+%     } {
+%         \doif {#1} {issue} {
+%             \definecolor[issuecolor][darkred]
+%         }
+%         \dostartbuffer[example][StartExample][StopExample]
+%     }
+% \stoptexdefinition
+
+% \starttexdefinition tolerant protected StartExampleNOP
+%     \doifelsemode {issues} {
+%         \endgroup
+%         \gobbleuntil\StopExample
+%     } {
+%         \dostartbuffer[example][StartExample][StopExample]
+%     }
+% \stoptexdefinition
+
 \starttexdefinition protected StartExample
+    \begingroup
     \begingroup
     \obeylines
     \doifnextcharelse[\StartExampleYES\StartExampleNOP
 \stoptexdefinition
 
 \starttexdefinition tolerant protected StartExampleYES[#1]
+    \endgroup
     \doifelsemode {issues} {
         \definecolor[issuecolor][darkred]
         \doifelse {#1} {issue} {
             \dostartbuffer[example][StartExample][StopExample]
         } {
-            \endgroup
             \gobbleuntil\StopExample
         }
     } {
@@ -102,6 +135,7 @@
 \stoptexdefinition
 
 \starttexdefinition tolerant protected StartExampleNOP
+    \endgroup
     \doifelsemode {issues} {
         \endgroup
         \gobbleuntil\StopExample

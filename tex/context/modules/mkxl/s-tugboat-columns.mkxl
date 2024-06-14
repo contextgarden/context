@@ -348,7 +348,7 @@
 %
 %      \setupcaptions
 %        [headstyle=\AcroFontBold,
-%         style={\AcroFont\advance\baselineskip by -1pt},
+%         style={\AcroFont\advanceby\baselineskip by -1pt},
 %         align=right]
 %
 %      %D We like a colon after the caption label.

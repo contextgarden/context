@@ -52,7 +52,7 @@
 
 \definemathornament [widerandomhat] [mp=math:ornament:hat]
 
-\continueifinputfile{meta-imp-newnmath.mkxl}
+\continueifinputfile{meta-imp-newmath.mkxl}
 
 \starttext
 

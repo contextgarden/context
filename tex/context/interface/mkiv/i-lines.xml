@@ -94,6 +94,11 @@
                     <cd:constant type="cd:dimension"/>
                     <cd:constant type="*"/>
                 </cd:parameter>
+                <cd:parameter name="keeptogether">
+                    <!-- cd:constant type="yes"/ -->
+                    <cd:constant type="no"/>
+                    <cd:constant type="paragraph"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

@@ -31,8 +31,7 @@ if not modules then modules = { } end modules ['math-noa'] = {
 
 local next, tonumber = next, tonumber
 local formatters, gmatch, match = string.formatters, string.gmatch, string.match
-local sortedhash = table.sortedhash
-local insert, remove = table.insert, table.remove
+local insert, remove, concat, sortedhash = table.insert, table.remove, table.concat, table.sortedhash
 local div, round = math.div, math.round
 
 local fonts              = fonts
@@ -471,10 +470,11 @@ noads.processouter  = process
 
 -- experiment (when not present fall back to fam 0) -- needs documentation
 
-local unknowns = { }
-local checked  = { } -- simple case
-local tracked  = false  trackers.register("fonts.missing", function(v) tracked = v end)
+local unknowns = setmetatableindex("table")
+local checked  = setmetatableindex("table")
 local cached   = setmetatableindex("table") -- complex case
+
+local tracked  = false  trackers.register("fonts.missing", function(v) tracked = v end)
 
 local variantselectors = {
     [0xFE00] = true,
@@ -485,12 +485,8 @@ local function errorchar(font,char)
     if variantselectors[char] then
         return char
     end
-    local done = unknowns[char]
-    if done then
-        unknowns[char] = done  + 1
-    else
-        unknowns[char] = 1
-    end
+    local done = unknowns[font]
+    done[char] = (done[char] or 0) + 1
     if tracked then
         -- slower as we check each font too and we always replace as math has
         -- more demands than text
@@ -509,11 +505,11 @@ local function errorchar(font,char)
         -- only simple checking, report at the end so one should take
         -- action anyway ... we can miss a few checks but that is ok
         -- as there is at least one reported
-        if not checked[char] then
+        if not checked[font][char] then
             if trace_normalizing then
                 report_normalizing("character %C is not available",char)
             end
-            checked[char] = true
+            checked[font][char] = true
         end
         return 0x3F
     end
@@ -1300,14 +1296,24 @@ end
 
 do
 
-    local function collected(list)
-        if list and next(list) then
-            local n, t = 0, { }
-            for k, v in sortedhash(list) do
-                n = n + 1
-                t[n] = formatters["%C"](k)
+    local function collected(fontlist)
+        if fontlist and next(fontlist) then
+            local properties = fonts.hashes.properties
+            local result     = { }
+            for font, list in sortedhash(fontlist) do
+                if list and next(list) then
+                    local n, t = 0, { }
+                    for k, v in sortedhash(list) do
+                        n = n + 1
+                        t[n] = formatters["%C"](k)
+                    end
+                    local p = properties[font]
+                    result[#result+1] = formatters["%s : %i : [ % t ]"](p and p.fontname or "unknown",n,t)
+                end
             end
-            return formatters["% t (n=%s)"](t,n)
+            if #result > 0 then
+                return concat(result, ", ")
+            end
         end
     end
 

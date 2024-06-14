@@ -95,6 +95,9 @@ return {
                     factor = 0.85,
                 },
                 {
+                    tweak = "addcomposites",
+                },
+                {
                     tweak = "checkspacing",
                 },
                 {

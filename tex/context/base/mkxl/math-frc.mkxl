@@ -99,6 +99,11 @@
    \c!left="2E,
    \c!right="2E,
    \c!middle="2F,
+   \c!color=,
+   \c!topcolor=\mathfractionparameter\c!textcolor,
+   \c!bottomcolor=\mathfractionparameter\c!textcolor,
+   \c!textcolor=\mathfractionparameter\c!color,
+   \c!symbolcolor=\mathfractionparameter\c!color,
    \c!strut=\v!yes,
    \c!topdistance=,
    \c!bottomdistance=,
@@ -270,30 +275,43 @@
                                                                      \s!noaxis \space
                                                                      \s!hfactor \numexpr\mathfractionparameter\c!hfactor\relax}
 
-\setupmathfractions % we now inherit !
-  [\c!topcolor=\mathfractionparameter\c!color,
-   \c!bottomcolor=\mathfractionparameter\c!color,
-   \c!rulecolor=\mathfractionparameter\c!color]
-
-\def\math_frac_command_u
-  {\edef\p_method   {\mathfractionparameter\c!method}%
-   \edef\p_rule     {\mathfractionparameter\c!rule}%
-   \edef\p_thickness{\mathfractionparameter\c!rulethickness}%
+\def\math_frac_common
+  {\edef\p_method     {\mathfractionparameter\c!method}%
+   \edef\p_rule       {\mathfractionparameter\c!rule}%
+   \edef\p_thickness  {\mathfractionparameter\c!rulethickness}%
    \scratchcounterone  \mathfractionparameter\c!left  \relax
    \scratchcountertwo  \mathfractionparameter\c!right \relax
    \scratchcounterthree
       \ifx\p_method\v!horizontal
         \mathfractionparameter\c!middle
+    % \orelse\ifx\p_method\v!mp
+    %   \mathfractionparameter\c!middle
       \orelse\ifx\p_method\v!line
         \mathfractionparameter\c!middle
       \else
         \mathfractionparameter\c!symbol
       \fi
    \relax
+   %
+   \ifcstok{\mathfractionparameter\c!plugin}\v!mp
+     \edef\p_mp{\mathfractionparameter\c!mp}%
+     \ifempty\p_mp\else
+       \clf_set_extensible_data
+           mp     {\p_mp}
+           left   \scratchcounterthree
+           right  \scratchcounterthree
+           middle \scratchcounterthree
+        \relax
+     \fi
+   \else
+     \lettonothing\p_mp
+   \fi
+   %
    \ifcsname
       \??fractionmethods
       \p_method
       \ifx\p_method\v!horizontal
+    % \orelse\ifx\p_method\v!mp
       \orelse\ifx\p_method\v!line
       \orelse\ifcsname\??fractionmethods\p_method\p_rule\endcsname % \v!vertical
         \p_rule
@@ -306,16 +324,19 @@
         \fi
       \fi
    \endcsname \lastnamedcs \else \csname\??fractionmethods\v!vertical\v!auto\endcsname \fi
-   \usedcolorparameterattributes{\mathfractionparameter\c!rulecolor}% was \c!color so we break compatibility !
+   \usedsymbolcolorparameterattributes{\mathfractionparameter\c!symbolcolor}%
    \s!thickness \ifx\p_thickness\v!font
      \zeropoint
-     \s!font \space
+     \s!font\space
    \else
      \dimexpr\p_thickness\relax
    \fi
    \s!class   \math_class_by_parameter\mathfractionparameter\c!mathclass
    \s!vfactor \numexpr\mathfractionparameter\c!vfactor\relax
-   \s!source  \number\namedboxanchor{\mathfractionparameter\c!source}}
+   \s!source  \number\namedboxanchor{\mathfractionparameter\c!source}%
+   \ifempty\p_mp\else
+     \s!usecallback\space
+   \fi}
 
 \installcorenamespace{mathalignsimple} % this should move to math-ali
 
@@ -333,13 +354,13 @@
 
 \protected\defcsname\??mathfractionalternative\v!inner\endcsname#1#2%
   {%\beginmathgroup
-   \math_frac_command_u
-     {\dousecolorparameter{\mathfractionparameter\c!topcolor}%
+   \math_frac_common
+     {\usemathfractioncolorparameter\c!topcolor
       \math_fraction_margin_kern
       \usemathstyleparameter\mathfractionparameter\c!mathnumeratorstyle
       \m_fractions_strut_top\math_frac_aligned_top{#1}%
       \math_fraction_margin_kern}%
-     {\dousecolorparameter{\mathfractionparameter\c!bottomcolor}%
+     {\usemathfractioncolorparameter\c!bottomcolor
       \math_fraction_margin_kern
       \usemathstyleparameter\mathfractionparameter\c!mathdenominatorstyle
       \m_fractions_strut_bot\math_frac_aligned_bot{#2}%
@@ -350,12 +371,12 @@
 \protected\defcsname\??mathfractionalternative\v!outer\endcsname#1#2%
   {\beginmathgroup
    \usemathstyleparameter\mathfractionparameter\c!mathstyle
-   \math_frac_command_u
-     {\dousecolorparameter{\mathfractionparameter\c!topcolor}%
+   \math_frac_common
+     {\usemathfractioncolorparameter\c!topcolor
       \math_fraction_margin_kern
       \m_fractions_strut_top\math_frac_aligned_top{#1}%
       \math_fraction_margin_kern}%
-     {\dousecolorparameter{\mathfractionparameter\c!bottomcolor}%
+     {\usemathfractioncolorparameter\c!bottomcolor
       \math_fraction_margin_kern
       \m_fractions_strut_bot\math_frac_aligned_bot{#2}%
       \math_fraction_margin_kern}%
@@ -365,13 +386,13 @@
 \protected\defcsname\??mathfractionalternative\v!both\endcsname#1#2%
   {\beginmathgroup
    \usemathstyleparameter\mathfractionparameter\c!mathstyle
-   \math_frac_command_u
-     {\dousecolorparameter{\mathfractionparameter\c!topcolor}%
+   \math_frac_common
+     {\usemathfractioncolorparameter\c!topcolor
       \math_fraction_margin_kern
       \usemathstyleparameter\mathfractionparameter\c!mathnumeratorstyle
       \m_fractions_strut_top\math_frac_aligned_top{#1}%
       \math_fraction_margin_kern}%
-     {\dousecolorparameter{\mathfractionparameter\c!bottomcolor}%
+     {\usemathfractioncolorparameter\c!bottomcolor
       \math_fraction_margin_kern
       \usemathstyleparameter\mathfractionparameter\c!mathdenominatorstyle
       \m_fractions_strut_bot\math_frac_aligned_bot{#2}%

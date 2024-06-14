@@ -22,6 +22,8 @@
 %D replaced as otherwise normal attributes make more sense. Using this otherwise
 %D is weird but one never knows what users come up with.
 
+%D Todo: compact fonts.
+
 \registerctxluafile{typo-ovl}{autosuffix}
 
 \definesystemattribute[overloads][public,global]

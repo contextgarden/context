@@ -289,6 +289,32 @@ upgrade \LUATEX\ to support this).
 
 \stopsection
 
+\startsection[title=Surrounding color]
+
+Here is an example that shows how to make a graphic listen to the current
+color:
+
+\startbuffer
+\startcolor[blue]
+    blue before
+    \startMPcode
+        setbackendoption "noplugins" ;
+        fill fullcircle xscaled 3EmWidth yscaled 1.5ExHeight ;
+    \stopMPcode\space
+    blue after
+\stopcolor
+\stopbuffer
+
+\typebuffer[option=tex]
+
+This backend option disables {\em all} additional features so it will only work
+for for relative simple graphics. There might be more detailed control in the
+future.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent

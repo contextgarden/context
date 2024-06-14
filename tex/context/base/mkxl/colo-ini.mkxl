@@ -407,6 +407,21 @@
        % often unset
        \noexpand\s!attr \transparencyattribute \ifnum\c_attr_transparency=\attributeunsetvalue\attributeunsetvalue\else\the\c_attr_transparency\fi}}
 
+\permanent\def\usedsymbolcolorparameterattributes#1%
+  {\beginlocalcontrol\begingroup
+%    \iftok{#1}\emptytoks
+%      \expandafter\dousecolorparameter\expandafter{\currentcolorname}%
+%    \else
+     \dousecolorparameter{#1}%
+%    \fi
+   \normalexpanded{\endgroup\noexpand\endlocalcontrol
+       % differs a lot
+       \noexpand\s!symbolattr \colorattribute        \the\c_attr_color
+       % one token
+       \noexpand\s!symbolattr \colormodelattribute   \the\c_attr_colormodel
+       % often unset
+       \noexpand\s!symbolattr \transparencyattribute \ifnum\c_attr_transparency=\attributeunsetvalue\attributeunsetvalue\else\the\c_attr_transparency\fi}}
+
 %D In this documentation we will not go into too much details on palets. Curious
 %D users can find more information on this topic in \from[use of color].
 %D

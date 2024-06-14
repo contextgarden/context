@@ -227,8 +227,8 @@ local f_template = formatters [ [[
 
 %% presets
 
-\startxmlsetup xml:presets:all
-  \xmlsetsetups {#1} {
+\startxmlsetups xml:presets:all
+  \xmlsetsetup {#1} {
     %s
   }
 \stopxmlsetups

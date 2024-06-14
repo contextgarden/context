@@ -1,4 +1,3 @@
-
 % language=us runpath=texruns:manuals/primitives
 
 \setupexternalfigures
@@ -6312,6 +6311,86 @@ normalization). An indentation can be zero'd with \prm {undent}.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {indexedsubprescript}}]
+
+This primitive (or \type {____}) puts a flag on the script but renders
+the same:
+
+\startbuffer
+$
+    x \indexedsuperprescript{2} \subprescript       {2} +
+    x \superprescript       {2} \indexedsubprescript{2} +
+    x \superprescript       {2} ____                {2} =
+    x \superprescript       {2} \subprescript       {2}
+$
+\stopbuffer
+
+\typebuffer
+
+Gives: \inlinebuffer.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {indexedsubscript}}]
+
+This primitive (or \type {__}) puts a flag on the script but renders
+the same:
+
+\startbuffer
+$
+    x \indexedsuperscript{2} \subscript       {2} +
+    x \superscript       {2} \indexedsubscript{2} +
+    x \superscript       {2} __               {2} =
+    x \superscript       {2} \subscript       {2}
+$
+\stopbuffer
+
+\typebuffer
+
+Gives: \inlinebuffer.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {indexedsuperprescript}}]
+
+This primitive (or \type {^^^^}) puts a flag on the script but renders
+the same:
+
+\startbuffer
+$
+    x \indexedsuperprescript{2} \subprescript       {2} +
+    x ^^^^                  {2} \subprescript       {2} +
+    x \superprescript       {2} \indexedsubprescript{2} =
+    x \superprescript       {2} \subprescript       {2}
+$
+\stopbuffer
+
+\typebuffer
+
+Gives: \inlinebuffer.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {indexedsuperscript}}]
+
+This primitive (or \type {^^}) puts a flag on the script but renders
+the same:
+
+\startbuffer
+$
+    x \indexedsuperscript{2} \subscript       {2} +
+    x ^^                 {2} \subscript       {2} +
+    x \superscript       {2} \indexedsubscript{2} =
+    x \superscript       {2} \subscript       {2}
+$
+\stopbuffer
+
+\typebuffer
+
+Gives: \inlinebuffer.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {indexofcharacter}}]
 
 This primitive is more versatile variant of the backward quote operator, so
@@ -7353,6 +7432,15 @@ side effects because it globally adapts the font.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {luaboundary}}]
+
+This primive inserts a boundary that takes two integer values. Some mechanisms
+(like math constructors) can trigger a callback when preceded by such a boundary.
+As we go more mechanisms might do such a check but we don't want a performance
+hit on \CONTEXT\ as we do so (nor unwanted interference).
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {luabytecode}}]
 
 This behaves like \prm {luafunction} but here the number is a byte code register.
@@ -7603,7 +7691,8 @@ possible with \prm {mathboundary}:
 \NC 3 \NC end   \NC given factor \NC \NR
 \stoptabulate
 
-These will be used when the mentioned factors are zero.
+These will be used when the mentioned factors are zero. The last two variants
+expect factor to be given.
 
 \stopnewprimitive
 
@@ -10825,86 +10914,6 @@ dedicated penalty, specified by this parameter.
 
 \stopnewprimitive
 
-\startnewprimitive[title={\prm {indexedsubprescript}}]
-
-This primitive (or \type {____}) puts a flag on the script but renders
-the same:
-
-\startbuffer
-$
-    x \indexedsuperprescript{2} \subprescript       {2} +
-    x \superprescript       {2} \indexedsubprescript{2} +
-    x \superprescript       {2} ____                {2} =
-    x \superprescript       {2} \subprescript       {2}
-$
-\stopbuffer
-
-\typebuffer
-
-Gives: \inlinebuffer.
-
-\stopnewprimitive
-
-\startnewprimitive[title={\prm {indexedsubscript}}]
-
-This primitive (or \type {__}) puts a flag on the script but renders
-the same:
-
-\startbuffer
-$
-    x \indexedsuperscript{2} \subscript       {2} +
-    x \superscript       {2} \indexedsubscript{2} +
-    x \superscript       {2} __               {2} =
-    x \superscript       {2} \subscript       {2}
-$
-\stopbuffer
-
-\typebuffer
-
-Gives: \inlinebuffer.
-
-\stopnewprimitive
-
-\startnewprimitive[title={\prm {indexedsuperprescript}}]
-
-This primitive (or \type {^^^^}) puts a flag on the script but renders
-the same:
-
-\startbuffer
-$
-    x \indexedsuperprescript{2} \subprescript       {2} +
-    x ^^^^                  {2} \subprescript       {2} +
-    x \superprescript       {2} \indexedsubprescript{2} =
-    x \superprescript       {2} \subprescript       {2}
-$
-\stopbuffer
-
-\typebuffer
-
-Gives: \inlinebuffer.
-
-\stopnewprimitive
-
-\startnewprimitive[title={\prm {indexedsuperscript}}]
-
-This primitive (or \type {^^}) puts a flag on the script but renders
-the same:
-
-\startbuffer
-$
-    x \indexedsuperscript{2} \subscript       {2} +
-    x ^^                 {2} \subscript       {2} +
-    x \superscript       {2} \indexedsubscript{2} =
-    x \superscript       {2} \subscript       {2}
-$
-\stopbuffer
-
-\typebuffer
-
-Gives: \inlinebuffer.
-
-\stopnewprimitive
-
 \startoldprimitive[title={\prm {shipout}}][obsolete=yes]
 
 Because there is no backend, this is not supposed to be used. As in traditional
@@ -11206,6 +11215,16 @@ course) The \TEX book and \TEX\ by Topic.
 Its setting determines the way the glue components (currently only shrink) adapts
 itself to the current space factor (determined by by the character preceding a
 space).
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {spacefactoroverload}}]
+
+When set to value between zero and thousand, this value will be used when \TEX\
+encounters a below thousand space factor situation (usually used to suppress
+additional space after a period following an uppercase character which then gets
+(often) a 999 space factor. This feature only kicks in when the overload flag is
+set in the glyph options, so it can be applied selectively.
 
 \stopnewprimitive
 

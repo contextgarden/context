@@ -340,11 +340,11 @@ do -- this will move to its own module
 
                 local preroll = specification.preroll
                 if preroll then
-                    metapost.simple(instance,"begingroup;",true,true)
+                    metapost.simple("simplefun","begingroup;",true,true)
                     metapost.setparameterset("mpsfont",specification)
                     metapost.simple("simplefun",preroll)
                     metapost.setparameterset("mpsfont")
-                    metapost.simple(instance,"endgroup;",true,true)
+                    metapost.simple("simplefun","endgroup;",true,true)
                 end
 
                 for i=1,#categories do

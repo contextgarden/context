@@ -640,8 +640,12 @@ local function add_to_d(t,v)
             t.__extra__ = v
         end
     elseif k == "table" then
-        for k, v in next, v do
-            t[k] = v
+        for kk, vv in next, v do
+            local tkk = rawget(t,kk)
+            if tkk and tostring(tkk) ~= tostring(vv) then
+                report_objects("duplicate key %a with different values",kk)
+            end
+            t[kk] = vv
         end
     end
     return t
@@ -1012,10 +1016,18 @@ do
                 catalog.LMTX_Statistics = pdfreference(pdfimmediateobject(tostring(statistics)))
             end
             --
-            if userdata and next(userdata) then
-                -- mtxrun --script pdf --useddata=keylist [--format=lua|json|lines] filename.pdf
-                userdata.Type = pdfconstant("Userdata")
-                catalog.LMTX_Userdata = pdfreference(pdfimmediateobject(tostring(userdata)))
+            local labels = structures.pages.getlabels()
+            if labels and next(labels) then
+                for k, v in next, labels do
+                    if type(v) == "table" then
+                        labels[k] = pdfarray(v)
+                    end
+                end
+                labels = pdfdictionary {
+                    Type   = pdfconstant("Pages"),
+                    Labels = pdfdictionary(labels),
+                }
+                catalog.LMTX_Pages = pdfreference(pdfimmediateobject(tostring(labels)))
             end
             --
             return pdfreference(pdfimmediateobject(tostring(catalog)))

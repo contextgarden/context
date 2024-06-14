@@ -53,10 +53,10 @@
 \definetagconstant{descriptioncontent}
 \definetagconstant{descriptionsymbol}
 
-\aliastagconstant{construction}       {description}
-\aliastagconstant{constructiontag}    {descriptiontag}
-\aliastagconstant{constructioncontent}{descriptioncontent}
-\aliastagconstant{constructionsymbol} {descriptionsymbol}
+\aliastagconstant {construction}       {description}
+\aliastagconstant {constructiontag}    {descriptiontag}
+\aliastagconstant {constructioncontent}{descriptioncontent}
+\aliastagconstant {constructionsymbol} {descriptionsymbol}
 
 \definetagconstant{verbatimblock}
 \definetagconstant{verbatimlines}
@@ -116,6 +116,9 @@
 
 \definetagconstant{mfunction}
 \definetagconstant{mfunctionstack}
+
+\definetagconstant{mdelimited}
+\definetagconstant{mdelimitedstack}
 
 \definetagconstant{mfraction}
 \definetagconstant{mfractionstack}
@@ -317,6 +320,7 @@
 \def\strc_tags_start_chained_indeed#1#2#3{\strc_tags_start_chained{#1}{#2}{\getcurrentparentchain#3{#2}}}
 
 \newconditional\c_strc_tags_enabled
+\newconditional\c_strc_tags_global
 
 \lettonothing\dotaggedplaceholder
 
@@ -430,11 +434,37 @@
     \strc_tags_disable
 \to \everydisableelements
 
+%D Tagging is kind of tricky because quite a bit happens when we ship out a page and
+%D therefore we can't just enable and disable at will. In some manuals we only need
+%D part of the tagging mechanism so there we can turn it on and off.
+
+% \appendtoks
+%    \ifcstok{\taggingparameter\c!state}\v!start
+%      \setsystemmode\s!tagging
+%      \expand\everyenableelements
+%    \else
+%      \resetsystemmode\s!tagging
+%      \expand\everydisableelements
+%    \fi
+% \to \everysetuptagging
+
 \appendtoks
    \ifcstok{\taggingparameter\c!state}\v!start
+     \settrue\c_strc_tags_global
      \setsystemmode\s!tagging
      \expand\everyenableelements
+   \orelse\iflastnamedcs\v!on
+     \setsystemmode\s!tagging
+     \ifconditional\c_strc_tags_global \else
+       \expand\everyenableelements
+     \fi
+   \orelse\iflastnamedcs\v!off
+     \resetsystemmode\s!tagging
+     \ifconditional\c_strc_tags_global \else
+       \expand\everydisableelements
+     \fi
    \else
+     \setfalse\c_strc_tags_global
      \resetsystemmode\s!tagging
      \expand\everydisableelements
    \fi

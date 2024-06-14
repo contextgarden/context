@@ -178,6 +178,15 @@ do
         end
     end
 
+    local function maybetext(d)
+        if #d.data == 1 and d.data[1].content then
+            d.element = "mtext"
+        else -- maybe also check if d.data[1].content
+            d.element = "mrow"
+        end
+        return d
+    end
+
     local no_mrow = {
         mrow          = true,
         mfenced       = true,
@@ -193,6 +202,7 @@ do
      -- mmultiscripts = true,
      -- mstacker      = true,
      -- mextensible   = true,
+     -- mdelimited    = true,
     }
 
     -- we could make a stupid xml and then just use lpath to clean it up
@@ -218,38 +228,47 @@ do
     local function checked(d,n)
         if n == 1 then
             local di = d[1]
-            local tg = di.tg
-            if tg == "ignore" then
-                -- todo: we can move ignore's data one level up
-                return 1
-            elseif di.content then
-                return 1
-            else
-                local dd = di.data
-                local nn = #dd
-                if nn > 0 and checked(dd,nn) > 0 then
+            if di then
+                local tg = di.tg
+                if tg == "ignore" then
+                    -- todo: we can move ignore's data one level up
+                    return 1
+                elseif di.content then
                     return 1
                 else
-                    return 0
+                    local dd = di.data
+                    local nn = #dd
+                    if nn > 0 and checked(dd,nn) > 0 then
+                        return 1
+                    else
+                        return 0
+                    end
                 end
+            else
+                -- kind of weird
+                return 0
             end
         else
             local m = 0
             for i=1,n do
                 local di = d[i]
-                local tg = di.tg
-                if tg == "ignore" then
-                    -- skip
-                elseif di.content then
-                    m = m + 1
-                    d[m] = di
-                else
-                    local dd = di.data
-                    local nn = #dd
-                    if nn > 0 and checked(dd,nn) > 0 then
+                if di then
+                    local tg = di.tg
+                    if tg == "ignore" then
+                        -- skip
+                    elseif di.content then
                         m = m + 1
                         d[m] = di
+                    else
+                        local dd = di.data
+                        local nn = #dd
+                        if nn > 0 and checked(dd,nn) > 0 then
+                            m = m + 1
+                            d[m] = di
+                        end
                     end
+                else
+                    -- kind of weird
                 end
             end
             if m < n then
@@ -321,7 +340,7 @@ do
                 end
          -- elseif roottg == "mstacker" then
             elseif roottg == "mrow" then
-ndata = checked(data,ndata)
+                ndata = checked(data,ndata)
             end
             if ndata == 0 then
                 root.skip = "comment" -- get rid of weird artefacts
@@ -480,31 +499,30 @@ ndata = checked(data,ndata)
                             m = accentchar(d1) -- or m
                             if t2 == "mstackertop" then
                                 if t3 == "mstackerbot" then
-                                    t = accentchar(d2)
-                                    b = accentchar(d3)
+                                    t = accentchar(d2) or maybetext(d2)
+                                    b = accentchar(d3) or maybetext(d3)
                                     di.element = "munderover"
-                                    di.data    = { m or d1.data[1], b or d3.data[1], t or d2.data[1] }
+                                    di.data    = { m or d1.data[1], b, t }
                                 else
-                                    t = accentchar(d2)
+                                    t = accentchar(d2) or maybetext(d2)
                                     di.element = "mover"
-                                    di.data    = { m or d1.data[1], t or d2.data[1] }
+                                    di.data    = { m or d1.data[1], t }
                                 end
                             elseif t2 == "mstackerbot" then
                                 if t3 == "mstackertop" then
-                                    b = accentchar(d2)
-                                    t = accentchar(d3)
+                                    b = accentchar(d2) or maybetext(d2)
+                                    t = accentchar(d3) or maybetext(d3)
                                     di.element = "munderover"
-                                    di.data    = { m or d1.data[1], t or d3.data[1], m, b or d2.data[1] }
+                                    di.data    = { m or d1.data[1], t, m, b  }
                                 else
-                                    b = accentchar(d2)
+                                    b = accentchar(d2) or maybetext(d2)
                                     di.element = "munder"
-                                    di.data    = { m or d1.data[1], b or d2.data[1] }
+                                    di.data    = { m or d1.data[1], b }
                                 end
                             else
-                                -- can't happen
+                                di.element = "mrow"
+                                di.data    = { m or d1.data[1] }
                             end
-                        else
-                            -- can't happen
                         end
                         if t or b then
                             di.attributes = {
@@ -524,6 +542,25 @@ ndata = checked(data,ndata)
                         elseif size == 2 then
                             data[1], data[2] = data[2], data[1]
                         end
+                        checkmath(di)
+                        i = i + 1
+                    elseif tg == "mdelimited" then
+                        local d = di.data
+                        local n = #d
+                        for i=1,n do
+                            local di = d[i]
+                            local properties = specifications[di.fulltag] or { }
+                            local location = properties.delimiterlocation
+                            if location then
+                                if di.attributes then
+                                    di.attributes.delimiterlocation = location
+                                else
+                                    -- useless and bad anyway
+                                    di.attributes = { delimiterlocation = location }
+                                end
+                            end
+                        end
+                        di.element = "mrow"
                         checkmath(di)
                         i = i + 1
                     elseif tg == "break" then
@@ -637,14 +674,18 @@ ndata = checked(data,ndata)
                             }
                             checkmath(di)
                             i = i + 1
-                            -- maybe fall through
+                        elseif s.mathdelimitedstack then
+                            di.attributes = {
+                                mathdelimitedstack = s.mathdelimitedstack,
+                            }
+                            checkmath(di)
+                            i = i + 1
                         elseif s.mathfractionstack then
                             di.attributes = {
                                 mathfractionstack = s.mathfractionstack,
                             }
                             checkmath(di)
                             i = i + 1
-                            -- maybe fall through
                         else
                             if n > 0 then
                                 local d1 = d[1]
@@ -748,6 +789,7 @@ ndata = checked(data,ndata)
             di.attributes = {
                 ["display"]    = mode,
                 ["domain"]     = domain,
+                ["blob"]       = specification.blob,
                 ["alttext"]    = specification.input, -- bonus
                 ["xmlns:m"]    = mathmlns,
                 ["xmlns:math"] = mathmlns,
@@ -1072,10 +1114,10 @@ ndata = checked(data,ndata)
         end
         local sp = specifications[di.fulltag]
         if attributes then
-            attributes.mathsubindex = sp.subshifted
+            attributes.mathsubindex = sp.subindexed
         else
             di.attributes = {
-                mathsubindex = sp.subshifted,
+                mathsubindex = sp.subindexed,
             }
         end
     end
@@ -1089,10 +1131,10 @@ ndata = checked(data,ndata)
         local sp = specifications[di.fulltag]
         local attributes = di.attributes
         if attributes then
-            attributes.mathsupindex = sp.supshifted
+            attributes.mathsupindex = sp.supindexed
         else
             di.attributes = {
-                mathsupindex = sp.supshifted,
+                mathsupindex = sp.supindexed,
             }
         end
     end
@@ -1108,12 +1150,12 @@ ndata = checked(data,ndata)
         data.__i__ = 3
         local sp = specifications[di.fulltag]
         if attributes then
-            attributes.mathsupindex = sp.supshifted
-            attributes.mathsubindex = sp.subshifted
+            attributes.mathsupindex = sp.supindexed
+            attributes.mathsubindex = sp.subindexed
         else
             di.attributes = {
-                mathsupindex = sp.supshifted,
-                mathsubindex = sp.subshifted,
+                mathsupindex = sp.supindexed,
+                mathsubindex = sp.subindexed,
             }
         end
     end

@@ -1176,6 +1176,7 @@
 		<cd:constant name='placehead' value='setzekopf'/>
 		<cd:constant name='placeholder' value='placeholder'/>
 		<cd:constant name='placestopper' value='setzetrenner'/>
+		<cd:constant name='plugin' value='plugin'/>
 		<cd:constant name='position' value='position'/>
 		<cd:constant name='prefix' value='prefix'/>
 		<cd:constant name='prefixconnector' value='prefixconnector'/>
@@ -1336,6 +1337,7 @@
 		<cd:constant name='sy' value='sy'/>
 		<cd:constant name='symalign' value='symausrichtung'/>
 		<cd:constant name='symbol' value='symbol'/>
+		<cd:constant name='symbolcolor' value='symbolcolor'/>
 		<cd:constant name='symbolcommand' value='symbolcommand'/>
 		<cd:constant name='symbolset' value='symbolset'/>
 		<cd:constant name='symcolor' value='symfarbe'/>

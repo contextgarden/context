@@ -41,7 +41,7 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
 -- PPCRYPT_FAIL                 -2   invalid or unsupported encryption (eg. undocumented in pdf spec)
 
 local setmetatable, type, next = setmetatable, type, next
-local tostring, unpack = tostring, unpack
+local tostring, tonumber, unpack = tostring, tonumber, unpack
 local char, byte, find = string.char, string.byte, string.find
 local abs = math.abs
 local concat, swapped, sortedhash, sortedkeys = table.concat, table.swapped, table.sortedhash, table.sortedkeys
@@ -1289,12 +1289,24 @@ if images then do
         trim  = "TrimBox",
     }
 
-    local function querypdf(pdfdoc,pagenumber,size)
+    local function querypdf(pdfdoc,pagenumber,size,pagelabel)
         if pdfdoc then
+            local root = pdfdoc.Catalog
+            if type(pagelabel) == "string" and pagelabel ~= "" then
+                local pagedata = root.LMTX_Pages
+                if pagedata then
+                    local labels = pagedata.Labels
+                    if labels then
+                        local found = labels[pagelabel]
+                        if found then
+                            pagenumber = tonumber(type(found) == "table" and found[1] or found)
+                        end
+                    end
+                end
+            end
             if not pagenumber then
                 pagenumber = 1
             end
-            local root = pdfdoc.Catalog
             local page = pdfdoc.pages[pagenumber]
             if page then
                 local sizetag  = sizes[size or "crop"] or sizes.crop

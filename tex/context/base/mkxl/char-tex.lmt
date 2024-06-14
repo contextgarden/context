@@ -663,6 +663,11 @@ directives.register("characters.spaceafteruppercase",function(v)
         setuppersfcodes(v,999)
     elseif v == "normal" then
         setuppersfcodes(v,1000)
+    else
+        v = tonumber(v)
+        if v and v > 0 and v < tex.magicconstants.defaultspacefactor then
+            setuppersfcodes(v,v)
+        end
     end
 end)
 

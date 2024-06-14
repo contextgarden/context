@@ -1927,8 +1927,8 @@ do
                 end
             end
         end
-        build(0x305,characters[0x20D6],characters[0x20D7]) -- overbar  accent
-        build(0x332,characters[0x20EE],characters[0x20EF]) -- underbar accent
+        build(0x305,characters[0x20D6],characters[0x20D7]) -- overbar  accent arrows
+        build(0x332,characters[0x20EE],characters[0x20EF]) -- underbar accent arrows
         --
         -- lucida lacks them ...
         --
@@ -3496,7 +3496,8 @@ do
         local characters = target.characters
         for i=1,#list do
             local entry        = list[i]
-            local basecode     = entry[1]
+            local unicode      = entry[1]
+            local basecode     = unicode
             local fouriercode  = entry[2]
             local movecode     = entry[3]
             local reverse      = entry[4]
@@ -3564,7 +3565,7 @@ do
                     width    = basewidth,
                     height   = baseheight, -- somehow no \primed antykwa (unless we double the height)
                     depth    = basedepth,
-                    unicode  = basecode,
+                    unicode  = unicode,
                     commands = {
                         scale == 1 and charcommand[basecode] or { "slot", 0, basecode, scale, scale },
                     },

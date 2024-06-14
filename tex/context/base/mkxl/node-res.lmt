@@ -171,6 +171,7 @@ local choice            = register_nut(new_nut(nodecodes.choice))
 
 local boundary          = register_nut(new_nut(nodecodes.boundary,boundarycodes.user))
 local wordboundary      = register_nut(new_nut(nodecodes.boundary,boundarycodes.word))
+local luaboundary       = register_nut(new_nut(nodecodes.boundary,boundarycodes.lua))
 
 local cleader           = register_nut(copy_nut(glue)) setsubtype(cleader,gluecodes.cleaders) setglue(cleader,0,65536,0,2,0)
 
@@ -227,6 +228,14 @@ function nutpool.wordboundary(v)
     local n = copy_nut(wordboundary)
     if v and v ~= 0 then
         setvalue(n,v)
+    end
+    return n
+end
+
+function nutpool.luaboundary(v,e)
+    local n = copy_nut(luaboundary)
+    if v and v ~= 0 then
+        setvalue(n,v,e or 0)
     end
     return n
 end

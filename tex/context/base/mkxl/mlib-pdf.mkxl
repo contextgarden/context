@@ -98,11 +98,15 @@
 %  % \forgetall % already done elsewhere
 %    \noindent} % forces the proper cm in the backend
 
-\permanent\protected\def\startMPLIBtoPDF#1#2#3#4%
+\permanent\protected\def\startMPLIBtoPDF#1#2#3#4#5% llx lly urx ury plugmode
   {\meta_process_graphic_figure_start
    \dostarttaggednodetail\t!mpgraphic
    \naturalhpack attr \imageattribute \plusone \bgroup
-   \dousecolorparameter\s!black
+   \ifnum#5=\plusone
+     % We're in plugmode so we can have anythign (like color) in the
+     % metapost result.
+     \dousecolorparameter\s!black
+   \fi
    \setMPboundingbox{#1}{#2}{#3}{#4}%
    \setbox\MPbox\vpack\bgroup
    \noindent} % forces the proper cm in the backend

@@ -191,44 +191,46 @@ local namespaced = {
 }
 
 local namespaces = {
-    msubsup        = "m",
-    msub           = "m",
-    msup           = "m",
-    mn             = "m",
-    mi             = "m",
-    ms             = "m",
-    mo             = "m",
-    mc             = "m",
-    mtext          = "m",
-    mrow           = "m",
-    mfrac          = "m",
-    mroot          = "m",
-    msqrt          = "m",
-    munderover     = "m",
-    munder         = "m",
-    mover          = "m",
-    merror         = "m",
-    math           = "m",
-    mrow           = "m",
-    mtable         = "m",
-    mtr            = "m",
-    mtd            = "m",
-    mfenced        = "m",
-    maction        = "m",
- -- munit          = "m",
-    mspace         = "m",
-    mmultiscripts  = "m",
-    mprescripts    = "m",
+    msubsup         = "m",
+    msub            = "m",
+    msup            = "m",
+    mn              = "m",
+    mi              = "m",
+    ms              = "m",
+    mo              = "m",
+    mc              = "m",
+    mtext           = "m",
+    mrow            = "m",
+    mfrac           = "m",
+    mroot           = "m",
+    msqrt           = "m",
+    munderover      = "m",
+    munder          = "m",
+    mover           = "m",
+    merror          = "m",
+    math            = "m",
+    mrow            = "m",
+    mtable          = "m",
+    mtr             = "m",
+    mtd             = "m",
+    mfenced         = "m",
+    maction         = "m",
+ -- munit           = "m",
+    mspace          = "m",
+    mmultiscripts   = "m",
+    mprescripts     = "m",
     -- only when testing
-    mstacker       = "m",
-    mstackertop    = "m",
-    mstackermid    = "m",
-    mstackerbot    = "m",
-    mextensible    = 'm',
-    mfunction      = 'm',
-    mfunctionstack = 'm',
-    mfraction      = 'm',
-    mfractionstack = 'm',
+    mstacker        = "m",
+    mstackertop     = "m",
+    mstackermid     = "m",
+    mstackerbot     = "m",
+    mextensible     = 'm',
+    mdelimited      = 'm',
+    mfunction       = 'm',
+    mfunctionstack  = 'm',
+    mfraction       = 'm',
+    mfractionstack  = 'm',
+    mdelimitedstack = 'm',
 }
 
 setmetatableindex(namespaced, function(t,k)
@@ -943,10 +945,10 @@ do
 
                         local mth, txt
                         if element == "math" then -- can be an option
-                            local n = di.n
-                            if n then
-                                mth = mathematics.getmathblob(n)
-                                txt = mathematics.gettextblob("en",n)
+                            local order = di.blob -- not di.n because that's wrong in mixed on/off
+                            if order then
+                                mth = mathematics.getmathblob("xml",order)
+                                txt = mathematics.gettextblob("xml","en",order)
                                 if txt and txt ~= "" then
                                     local a = di.attributes
                                     if a then

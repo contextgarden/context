@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['mlib-lmp'] = {
 -- path relates stuff ... todo: use a stack (or numeric index to list)
 
 local type, tonumber, tostring = type, tonumber, tostring
+local setmetatable, setmetatableindex = setmetatable, table.setmetatableindex
 local find, match = string.find, string.match
 local insert, remove, sort = table.insert, table.remove, table.sort
 
@@ -263,7 +264,7 @@ end
 
 do
 
-    local hashes = table.setmetatableindex("table")
+    local hashes = setmetatableindex("table")
 
     -- There is no need to 'new' a hash in which case one can use any reasonable
     -- tag. The registry aproach is mkiv compatible and not used in mkxl (lmtx).
@@ -671,4 +672,27 @@ do
         end
     )
 
+end
+
+do
+
+    local defaults = {
+        noplugins = false
+    }
+
+    local backendoptions = setmetatableindex(function(t,k) local v = setmetatable({},defaults) t[k] = v return v end)
+
+    function metapost.resetbackendoptions(mpx)
+        backendoptions[mpx] = setmetatable({},defaults)
+    end
+
+    function metapost.getbackendoption(mpx,name)
+        return backendoptions[mpx][name]
+    end
+
+    registerdirect("setbackendoption",
+        function()
+            backendoptions[metapost.currentmpx()][scanstring()] = true
+        end
+    )
 end

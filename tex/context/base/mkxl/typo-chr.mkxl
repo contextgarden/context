@@ -64,7 +64,7 @@
    \egroup}
 
 \permanent\tolerant\protected\def\removemarkedcontent[#1]%
-  {\clf_pickupmarkedcontent action{remove}mark{#1}\relax}
+  {\clf_pickupmarkedcontent action{remove}mark{#1}\relax} % backtrack true
 
 \permanent\protected\def\doifelsemarkedcontent#1%
   {\clf_doifelsemarkedcontent{#1}}

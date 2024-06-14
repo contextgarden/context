@@ -6929,7 +6929,7 @@ halfword tex_scan_anchors(int optional_equal)
 
 halfword tex_scan_attribute(halfword attrlist)
 {
-    halfword i = tex_scan_toks_register_number();
+    halfword i = tex_scan_attribute_register_number();
     halfword v = tex_scan_integer(1, NULL);
     if (eq_value(register_attribute_location(i)) != v) {
         if (attrlist) {
@@ -6939,4 +6939,17 @@ halfword tex_scan_attribute(halfword attrlist)
         }
     }
     return attrlist;
+}
+
+halfword tex_scan_extra_attribute(halfword attrlist)
+{
+    halfword i = tex_scan_attribute_register_number();
+    halfword v = tex_scan_integer(1, NULL);
+//    return tex_patch_attribute_list(attrlist, i, v);
+        if (attrlist) {
+            attrlist = tex_patch_attribute_list(attrlist, i, v);
+        } else {
+            attrlist = tex_copy_attribute_list_set(null, i, v);
+        }
+        return attrlist; 
 }

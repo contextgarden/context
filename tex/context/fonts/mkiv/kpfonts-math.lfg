@@ -66,6 +66,9 @@ return {
                     tweak = "addmirrors",
                 },
                 {
+                    tweak = "addcomposites",
+                },
+                {
                     -- kpfonts have calligraphic at private slots
                     tweak   = "replacealphabets",
                     list    = {

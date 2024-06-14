@@ -96,9 +96,8 @@
 \protected\def\publ_cite_trace_blob_indeed
   {\dontleavehmode
    \hbox to \zeropoint \bgroup
-      \resetinteractionparameter\c!contrastcolor
-      \resetinteractionparameter\c!style
-%       \scratchcounter\getblobindex\currentmathblob
+      \resetinteractioncontrastcolor
+      \resetinteractionstyle
       \bgroup
         \darkgray
         \vrule \s!height .9\strutht \s!depth .9\strutdp \s!width \onepoint \relax
@@ -111,15 +110,7 @@
           \egroup
         \egroup
       \egroup
-% \btxdoifelsecitedone{default}{\currentbtxreference}%
-%   {\note[publnote:\currentbtxreference]}
-%   {\normalexpanded{\btxentrytostring{publicationnote}{publnote:\currentbtxreference}{\currentbtxreference}}}%
-%       \ifpublblobindexdone{\currentbtxreference}%
-%         \note[publnote:\currentbtxreference]%
-%       \else
-%         \markpublblobindexdone{\currentbtxreference}
-        \normalexpanded{\btxentrytostring{publicationnote}{note}{\currentbtxreference}}%
-%       \fi
+      \normalexpanded{\btxentrytostring{publicationnote}{note}{\currentbtxreference}}%
       \hss
    \egroup}
 
@@ -127,7 +118,5 @@
   {publications.textblobs}
   {\let\publ_cite_trace_blob\publ_cite_trace_blob_indeed}
   {\let\publ_cite_trace_blob\relax}
-
-% \enabletrackers[publications.textblobs]
 
 \protect \endinput

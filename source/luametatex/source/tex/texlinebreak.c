@@ -1762,7 +1762,7 @@ static scaled tex_aux_try_break(
         return shortfall;
     } else if (penalty <= -infinite_penalty) {
         /*tex this breakpoint will be forced */
-        penalty = eject_penalty;
+        penalty = eject_penalty; /* bad name here */
     }
     /* Consider a demerit for two lines with stretch/shrink based on expansion. */
     tex_aux_set_target_to_source(properties->adjust_spacing, current_active_width, lmt_linebreak_state.active_width);

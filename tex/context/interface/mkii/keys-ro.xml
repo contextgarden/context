@@ -97,6 +97,7 @@
 		<cd:variable name='author' value='autor'/>
 		<cd:variable name='auto' value='auto'/>
 		<cd:variable name='autointro' value='autointro'/>
+		<cd:variable name='axis' value='axis'/>
 		<cd:variable name='back' value='inapot'/>
 		<cd:variable name='background' value='fundal'/>
 		<cd:variable name='backgroundbar' value='backgroundbar'/>
@@ -1175,6 +1176,7 @@
 		<cd:constant name='placehead' value='punetitlu'/>
 		<cd:constant name='placeholder' value='placeholder'/>
 		<cd:constant name='placestopper' value='punestopper'/>
+		<cd:constant name='plugin' value='plugin'/>
 		<cd:constant name='position' value='pozitie'/>
 		<cd:constant name='prefix' value='prefix'/>
 		<cd:constant name='prefixconnector' value='prefixconnector'/>
@@ -1335,6 +1337,7 @@
 		<cd:constant name='sy' value='sy'/>
 		<cd:constant name='symalign' value='symaliniere'/>
 		<cd:constant name='symbol' value='simbol'/>
+		<cd:constant name='symbolcolor' value='symbolcolor'/>
 		<cd:constant name='symbolcommand' value='symbolcommand'/>
 		<cd:constant name='symbolset' value='setsimbol'/>
 		<cd:constant name='symcolor' value='culoaresimbol'/>
@@ -1409,6 +1412,7 @@
 		<cd:constant name='vonsep' value='vonsep'/>
 		<cd:constant name='vz' value='vz'/>
 		<cd:constant name='way' value='mod'/>
+		<cd:constant name='weight' value='weight'/>
 		<cd:constant name='wfactor' value='factorw'/>
 		<cd:constant name='white' value='alb'/>
 		<cd:constant name='width' value='latime'/>

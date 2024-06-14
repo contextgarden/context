@@ -40,6 +40,9 @@
    \c!size=\zerocount,
    \c!left=\zerocount,
    \c!right=\zerocount,
+   \c!color=,
+   \c!textcolor=\mathdelimitedparameter\c!color,
+   \c!symbolcolor=\mathdelimitedparameter\c!color,
    \c!leftmargin=\zeropoint,
    \c!rightmargin=\zeropoint]
 
@@ -58,7 +61,10 @@
    \math_delimited_alternative{%
      \begincsname\??mathwhateverstrut\mathdelimitedparameter\c!strut\endcsname
      \scratchdimen\mathdelimitedparameter\c!leftmargin \relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi
+     \begingroup
+     \usemathdelimitedcolorparameter\c!textcolor
      #body%
+     \endgroup
      \scratchdimen\mathdelimitedparameter\c!rightmargin\relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi
    }%
    \endgroup}
@@ -67,6 +73,7 @@
 
 \protected\def\math_delimited_common
   {\Udelimited
+     \usedcolorparameterattributes{\mathdelimitedparameter\c!symbolcolor}%
      \s!height\dimexpr\mathdelimitedparameter\c!height+\mathdelimitedparameter\c!topoffset\relax
      \s!depth \dimexpr\mathdelimitedparameter\c!depth+\mathdelimitedparameter\c!bottomoffset\relax
      \s!source\numexpr\namedboxanchor{\mathdelimitedparameter\c!source}\relax
@@ -80,14 +87,13 @@
   {\math_delimited_common} % {#body}}
 
 \defcsname\??mathdelimitedalternative\v!normal\endcsname#body%
-  {\edef\p_color{\mathdelimitedparameter\c!color}%
-   \ifempty\p_color
-     \math_delimited_common{#body}% {} really needed as \rootdelimited expands first
-   \else
-     \pushcolor[\p_color]%
-     \math_delimited_common
-     {\popcolor#body}%
-   \fi}
+  {\edef\p_mathmeaning{\mathdelimitedparameter\c!mathmeaning}%
+   \ifempty\p_mathmeaning
+     \let\p_mathmeaning\currentmathdelimited
+   \fi
+   \dostarttagged\t!mdelimitedstack\p_mathmeaning
+   \math_delimited_common{#body}%
+   \dostoptagged}
 
 %integerdef\delimitedrightgraveuc    \privatecharactercode{delimited right grave}
 \integerdef\delimitedrightddotuc     \privatecharactercode{delimited right ddot}

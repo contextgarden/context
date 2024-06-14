@@ -941,7 +941,7 @@
 %        \orelse\ifdim\scratchdimen>\textheight
 %          \quitloop
 %        \else
-%          \advance\scratchdimen\onepoint
+%          \advanceby\scratchdimen\onepoint
 %        \fi
 %      }%
 %      \setbox\scratchboxone\vtop to \scratchdimen{\unvbox\scratchboxone}%
@@ -977,12 +977,12 @@
 %        \orelse\ifdim\scratchdimen>\textheight
 %          \quitloop
 %        \else
-%          \advance\scratchdimen\onepoint
+%          \advanceby\scratchdimen\onepoint
 %        \fi
 %      }%
 % %      \ifdim\ht\scratchboxone<\ht\scratchboxtwo
 % %        \scratchdimen\ht\scratchboxone
-% %        \advance\scratchdimen\onepoint
+% %        \advanceby\scratchdimen\onepoint
 % %        \localcontrolledendless {%
 % %          \setbox\scratchboxtwo\copy\scratchbox
 % %          \setbox\scratchboxone\vsplit\scratchboxtwo upto \scratchdimen
@@ -996,7 +996,7 @@
 % %          \orelse\ifdim\scratchdimen>\textheight
 % %            \quitloop
 % %          \else
-% %            \advance\scratchdimen\onepoint
+% %            \advanceby\scratchdimen\onepoint
 % %          \fi
 % %        }%
 % %      \fi

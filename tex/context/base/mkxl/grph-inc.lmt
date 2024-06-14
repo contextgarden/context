@@ -664,10 +664,20 @@ function figures.initialize(request)
         -- can be determined; at some point the handlers might set them to numbers instead
         local w = tonumber(request.width) or 0
         local h = tonumber(request.height) or 0
-        local p = tonumber(request.page) or 0
-        request.width  = w > 0 and w or nil
-        request.height = h > 0 and h or nil
-        --
+        local p = request.page
+        local n = tonumber(p)
+        if n then
+            p = n
+        elseif p then
+            if p ~= "" then
+                request.pagelabel = p
+            end
+            p = 1
+        else
+            p = 1
+        end
+        request.width     = w > 0 and w or nil
+        request.height    = h > 0 and h or nil
         request.page      = p > 0 and p or 1
         request.keepopen  = p > 0
         request.size      = checkimagesize(request.size)
@@ -1533,6 +1543,7 @@ function checkers.generic(data) -- called by checkers.pdf/png/jpg
     local dr, du, ds    = data.request, data.used, data.status
     local name          = du.fullname or "unknown generic"
     local page          = du.page or dr.page
+    local pagelabel     = du.pagelabel or dr.pagelabel
     local size          = dr.size or "crop"
     local color         = dr.color or "natural"
     local mask          = dr.mask or "none"
@@ -1566,7 +1577,8 @@ function checkers.generic(data) -- called by checkers.pdf/png/jpg
         arguments
     )
     --
-    local figure = figures_loaded[hash]
+--     local figure = figures_loaded[hash]
+local figure = not pagelabel and figures_loaded[hash] or nil
     if figure == nil then
         figure = createimage {
             filename        = name,
@@ -1580,21 +1592,26 @@ function checkers.generic(data) -- called by checkers.pdf/png/jpg
         codeinjections.setfigurecolorspace(data,figure)
         codeinjections.setfiguremask(data,figure)
         if figure then
-            -- new, bonus check (a bogus check in lmtx)
-            if page and page > 1 then
-                local f = scanimage {
-                    filename      = name,
-                    userpassword  = userpassword,
-                    ownerpassword = ownerpassword,
-                }
-                if f and f.page and f.pages < page then
-                    report_inclusion("no page %i in %a, using page 1",page,name)
-                    page        = 1
-                    figure.page = page
-                end
-            end
-            -- till here
             local f, comment = checkimage(scanimage(figure))
+            if page and page > 1 and (not f or (f.page and f.pages < page)) then
+                report_inclusion("no page %i in %a, using page 1",page,name)
+                page = 1
+            else
+                page = f and f.page or page
+            end
+            figure.page = page
+hash = f_hash_full(
+    name,
+    page,
+    size,
+    color,
+    mask,
+    range,
+    crop,
+    conversion,
+    resolution,
+    arguments
+)
             if not f then
                 ds.comment = comment
                 ds.found   = false

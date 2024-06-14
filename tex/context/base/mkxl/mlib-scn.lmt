@@ -1064,6 +1064,8 @@ do
         end
     end
 
+    -- newinternal runscript foo ;
+
     function metapost.runinternal(action,index,kind,name)
         if action == 0 then
             -- allocate

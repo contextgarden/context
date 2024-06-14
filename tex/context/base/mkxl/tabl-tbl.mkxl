@@ -1447,6 +1447,9 @@
      \vskip-\struttotal
    \fi}
 
+\newinteger\c_tabl_widow_penalty
+\newinteger\c_tabl_club_penalty
+
 \protected\def\tabl_tabulate_start_building
   {\ifinsidefloat
      \tabl_tabulate_inside_before
@@ -1500,8 +1503,15 @@
      \switchtobodyfont[\p_bodyfont]%
    \fi
    \postponenotes % new, to be tested / will be configurable
-   \widowpenalty\zerocount % otherwise lines are not broken
-   \clubpenalty \zerocount % but overlap in funny ways
+   % otherwise lines are not broken but overlap in funny ways
+   \c_tabl_widow_penalty\widowpenalty
+   \c_tabl_club_penalty \clubpenalty
+   \widowpenalty   \zerocount
+   \clubpenalty    \zerocount
+   \brokenpenalty  \zerocount
+   \widowpenalties \zerocount
+   \clubpenalties  \zerocount
+   \brokenpenalties\zerocount
    \expand\everytabulate
    \usesetupsparameter\tabulationparameter
    \tabulationparameter\c!inner % use setups now
@@ -1810,7 +1820,7 @@
 
 \def\tabl_tabulate_hrule_preset_step#1%
   {\ifchknum#1\or
-     \advance\c_tabl_tabulate_step\plusone
+     \advanceby\c_tabl_tabulate_step\plusone
      \ifcase\c_tabl_tabulate_step\or
        \global\d_tabl_tabulate_hrulethickness_local#1\d_tabl_tabulate_hrulethickness_default
      \else

@@ -668,6 +668,7 @@ typedef enum int_codes {
     space_factor_mode,
     space_factor_shrink_limit_code,
     space_factor_stretch_limit_code,
+    space_factor_overload_code,
     box_limit_mode_code,
     script_space_before_factor_code,
     script_space_between_factor_code,
@@ -1410,6 +1411,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define space_factor_mode_par            integer_parameter(space_factor_mode)
 # define space_factor_shrink_limit_par    integer_parameter(space_factor_shrink_limit_code)
 # define space_factor_stretch_limit_par   integer_parameter(space_factor_stretch_limit_code)
+# define space_factor_overload_par        integer_parameter(space_factor_overload_code)
 # define box_limit_mode_par               integer_parameter(box_limit_mode_code)
 # define pre_display_direction_par        integer_parameter(pre_display_direction_code)
 # define pre_display_penalty_par          integer_parameter(pre_display_penalty_code)

@@ -1204,12 +1204,6 @@ static int tex_aux_hnj_hyphen_hyphenate(
         node_next(begin_period) = first;
         node_next(end_period) = node_next(last);
         node_next(last) = end_period;
-
-     // for (int i = 0; i < hyphen_len; i++) {
-     //     hyphens[i] = '0';
-     // }
-     // hyphens[hyphen_len] = 0;
-
         /*tex Now, run the finite state machine. */
         for (char_num = 0, here = begin_period; here != node_next(end_period); here = node_next(here)) {
             int ch;

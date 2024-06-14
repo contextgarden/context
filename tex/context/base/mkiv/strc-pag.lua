@@ -76,7 +76,8 @@ function pages.save(prefixdata,numberdata,extradata)
             report_pages("saving page %s.%s",realpage,userpage)
         end
         local viewerprefix = extradata.viewerprefix
-        local state = extradata.state
+        local state        = extradata.state
+        local label        = extradata.label
         local data = {
             number       = userpage,
             viewerprefix = viewerprefix ~= "" and viewerprefix or nil,
@@ -85,6 +86,7 @@ function pages.save(prefixdata,numberdata,extradata)
             prefixdata   = prefixdata and helpers.simplify(prefixdata),
             numberdata   = numberdata and helpers.simplify(numberdata),
             marked       = pages.markedlist(realpage), -- not yet defined
+            label        = label and label ~= "" and label,
         }
         tobesaved[realpage] = data
         if not collected[realpage] then
@@ -383,6 +385,33 @@ function sections.prefixedconverted(name,prefixspec,numberspec)
     end
 end
 
+function pages.getlabels()
+    local pages  = structures.pages.tobesaved
+    local labels = false
+    for i=1,#pages do
+        local p = pages[i]
+        if p then
+            local label = p.label
+            if label and label ~= "" then
+                if not labels then
+                    labels = { }
+                end
+                local l = labels[label]
+                local t = type(l)
+                if t == "number" then
+                    l = { l, i }
+                elseif t == "table" then
+                    l[#l+1] = i
+                else
+                    l = i
+                end
+                labels[label] = l
+            end
+        end
+    end
+    return labels
+end
+
 --
 
 implement {
@@ -407,6 +436,7 @@ implement {
         {
             { "viewerprefix" },
             { "state" },
+            { "label" },
         }
     }
 }

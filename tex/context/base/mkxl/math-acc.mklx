@@ -86,6 +86,8 @@
    \c!bottom=,
    \c!mathstyle=,
    \c!color=,
+   \c!symbolcolor=\mathaccentparameter\c!color,
+   \c!textcolor=\mathaccentparameter\c!color,
    \c!scale=\v!no,
    \c!alignsymbol=\v!yes,
   %\c!stretch=\v!no,
@@ -116,28 +118,55 @@
   [\v!bottom]
   [i=]
 
+% \permanent\tolerant\protected\def\definemathtopaccent[#1]#*[#2]#*[#3]% class name top
+%   {\ifparameter#3\or
+%      \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_common                      {#1}{#2}\plusone{\number#3}\zerocount}%
+%    \else
+%      \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_common\noexpand\currentmathaccent{#1}\plusone{\number#2}\zerocount}%
+%    \fi}
+
+% \permanent\tolerant\protected\def\definemathbottomaccent[#1]#*[#2]#*[#3]% class name bottom
+%   {\ifparameter#3\or
+%      \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_common                       {#1}{#2}\plustwo\zerocount{\number#3}}%
+%    \else
+%      \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_common\noexpand\currentmathaccent{#1}\plustwo\zerocount{\number#2}}%
+%    \fi}
+
+% \permanent\tolerant\protected\def\definemathdoubleaccent[#1]#*[#2]#*[#3]#*[#4]% class name top bottom
+%   {\ifparameter#4\or
+%      \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_common                       {#1}{#2}\plusthree{\number#3}{\number#4}}%
+%    \else
+%      \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_common\noexpand\currentmathaccent{#1}\plusthree{\number#2}{\number#3}}%
+%    \fi}
+
+% \installlocalcurrenthandler \??mathaccents {mathaccent}
+
 \permanent\tolerant\protected\def\definemathtopaccent[#1]#*[#2]#*[#3]% class name top
   {\ifparameter#3\or
-     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                       {#1}{#2}\plusone{\number#3}\zerocount}%
+     \definemathaccent[#2][#1]%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_common                       {#1}{#2}\plusone{\number#3}\zerocount}%
    \else
-     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent{#1}\plusone{\number#2}\zerocount}%
+     \definemathaccent[#1]%
+     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_common\noexpand\currentmathaccent{#1}\plusone{\number#2}\zerocount}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathbottomaccent[#1]#*[#2]#*[#3]% class name bottom
   {\ifparameter#3\or
-     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                       {#1}{#2}\plustwo\zerocount{\number#3}}%
+     \definemathaccent[#2][#1]%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_common                       {#1}{#2}\plustwo\zerocount{\number#3}}%
    \else
-     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent{#1}\plustwo\zerocount{\number#2}}%
+     \definemathaccent[#1]%
+     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_common\noexpand\currentmathaccent{#1}\plustwo\zerocount{\number#2}}%
    \fi}
 
 \permanent\tolerant\protected\def\definemathdoubleaccent[#1]#*[#2]#*[#3]#*[#4]% class name top bottom
   {\ifparameter#4\or
-     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_make_double                       {#1}{#2}\plusthree{\number#3}{\number#4}}%
+     \definemathaccent[#2][#1]%
+     \frozen\protected\instance\edefcsname#2\endcsname{\math_accent_common                       {#1}{#2}\plusthree{\number#3}{\number#4}}%
    \else
-     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_make_double\noexpand\currentmathaccent{#1}\plusthree{\number#2}{\number#3}}%
+     \definemathaccent[#1]%
+     \frozen\protected\instance\edefcsname#1\endcsname{\math_accent_common\noexpand\currentmathaccent{#1}\plusthree{\number#2}{\number#3}}%
    \fi}
-
-\installlocalcurrenthandler \??mathaccents {mathaccent}
 
 %D \starttyping
 %D \im { \showboxes \showglyphs
@@ -148,9 +177,10 @@
 %D }
 %D \stoptyping
 
-\tolerant\protected\def\math_accent_make_double#class#name#kind#top#bottom#*[#settings]#:#content%
+\tolerant\protected\def\math_accent_common#class#name#kind#top#bottom#*[#settings]#:#content%
   {\beginmathgroup
-   \setlocalmathaccentcurrent{#class}% \edef\currentmathaccent{#class}%
+ % \setlocalmathaccentcurrent{#class}% \edef\currentmathaccent{#class}%
+   \cdef\currentmathaccent{#name}% \edef\currentmathaccent{#class}%
    \startusemathstyleparameter\mathaccentparameter\c!mathstyle
    \setupcurrentmathaccent[#settings]%
    \edef\p_scale{\mathaccentparameter\c!scale}%
@@ -161,14 +191,38 @@
    \else
      \let\m_fixed\s!fixed
    \fi
+   \ifcstok{\mathaccentparameter\c!plugin}\v!mp
+     \edef\p_mp{\mathaccentparameter\c!mp}%
+     \ifempty\p_mp\else
+       \clf_set_extensible_data
+           mp     {\p_mp}
+           left   \scratchcounterthree
+           right  \scratchcounterthree
+           middle \scratchcounterthree
+        \relax
+     \fi
+   \else
+     \lettonothing\p_mp
+   \fi
    \math_tags_mfunctionlab\plustwo{#name}{\ifcase#kind\or\v!top\or\v!bottom\else\v!both\fi}%
    \Umathaccent
-     \usedcolorparameterattributes{\mathaccentparameter\c!color}%
+     \usedsymbolcolorparameterattributes{\mathaccentparameter\c!symbolcolor}%
  % nooverflow % there is never na overflow anyway but we do accept the key
-   \ifcstok{\mathaccentparameter\c!align  }\v!middle\s!center \space\fi
-   \ifcstok{\mathaccentparameter\c!stretch}\v!yes   \s!stretch\space\fi
-   \ifcstok{\mathaccentparameter\c!shrink }\v!yes   \s!shrink \space\fi
-   \ifcstok{\mathaccentparameter\c!snap   }\v!yes   \s!single \space\fi
+   \ifcstok{\mathaccentparameter\c!align}\v!middle
+     \s!center\space
+   \fi
+   \ifcstok{\mathaccentparameter\c!stretch}\v!yes
+     \s!stretch\space
+   \fi
+   \ifcstok{\mathaccentparameter\c!shrink}\v!yes
+     \s!shrink\space
+   \fi
+   \ifcstok{\mathaccentparameter\c!snap}\v!yes
+     \s!single\space
+   \fi
+   \ifempty\p_mp\else
+     \s!usecallback\space
+   \fi
    \ifx\p_scale\v!keep
      \s!keepbase\space
    \fi
@@ -192,7 +246,8 @@
      \fam\zerocount#bottom
      \fam\zerocount#top
    \fi
-   {\ifcstok{\mathaccentparameter{i}}\v!auto\mathdotless\fi#content}%
+   {\usemathaccentcolorparameter\c!textcolor
+    \ifcstok{\mathaccentparameter{i}}\v!auto\mathdotless\fi#content}%
    \stopusemathstyleparameter
    \endmathgroup}
 
@@ -337,11 +392,13 @@
 
 \permanent\tolerant\protected\def\slashed[#1]#:#2%
   {\Umathaccent
+     \usedcolorparameterattributes{\mathaccentparameter\c!symbolcolor}%
      \s!class  \mathcodechecked{#1}%
      \s!center \space
      \s!overlay\space
      \zerocount \zerocount \forwardslashasciicode
-   {#2}} % exact when =
+   {\usemathaccentcolorparameter\c!textcolor
+    #2}} % exact when =
 
 % \definemathcommand[slashD]{\slashed[ordinary]{D}}
 % \definemathcommand[slashD]{\slashed{D}}

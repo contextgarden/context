@@ -287,7 +287,8 @@ if setinspector then -- can best be true
                     permanent  = t.permanent,
                     noaligned  = t.noaligned,
                     instance   = t.instance,
-                    immutable  = t.imutable,
+                    mutable    = t.mutable,
+                    immutable  = t.immutable,
                     user       = t.user,
                 }
             end

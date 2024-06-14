@@ -25,6 +25,8 @@
 %D we can configure it. Because this symbol is also used in text mode, we make it
 %D a normal text symbol with special behavior.
 
+% THIS IS OLD:
+
 \permanent\protected\def\qedsymbol#1%
   {\ifhmode
      \unskip\nobreakspace\hfill#1\par

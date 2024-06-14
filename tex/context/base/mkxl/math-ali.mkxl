@@ -2893,10 +2893,13 @@
   {\dontleavehmode
    \box\b_strc_math_display}
 
-\def\strc_math_flush_aligned_left_number_indeed
+\def\strc_math_flush_aligned_left_number_indeed#1%
   {\ifvoid\b_strc_formulas_number\else
      \setbox\b_strc_formulas_number\hbox to \d_strc_formulas_display_width\bgroup
        \hss
+% \ifcase#1\orelse\ifdim\dimexpr\d_strc_math_max_left-\d_strc_math_first_left\relax>\zeropoint
+%    \raise\htdp\b_strc_formulas_number % horrible hack
+% \fi
        \hbox{\strc_math_flush_number_box}%
      \egroup
      \ifcase\c_strc_math_number_location\or
@@ -2907,17 +2910,34 @@
      \fi
    \fi}
 
-\def\strc_math_flush_aligned_right_number_indeed
+% \def\strc_math_flush_aligned_right_number_indeed
+%   {\ifvoid\b_strc_formulas_number\else
+%      \setbox\b_strc_formulas_number\hbox to \d_strc_formulas_display_width\bgroup
+%        \hss
+%        \hbox{\strc_math_flush_number_box}%
+%      \egroup
+%      \ifcase\c_strc_math_number_location\or\else
+%        \boxxoffset\b_strc_formulas_number\dimexpr-\s_strc_formulas_margin_right\relax % brrrrr
+%        \boxyoffset\b_strc_formulas_number\d_strc_math_last_depth
+%        \htdp\b_strc_formulas_number\zeropoint
+%        \strc_math_flush_number_box % right
+%      \fi
+%    \fi}
+
+\def\strc_math_flush_aligned_right_number_indeed#1%
   {\ifvoid\b_strc_formulas_number\else
      \setbox\b_strc_formulas_number\hbox to \d_strc_formulas_display_width\bgroup
        \hss
+\ifcase#1\orelse\ifdim\dimexpr\d_strc_math_max_right-\d_strc_math_last_right\relax>\zeropoint
+   \lower\htdp\b_strc_formulas_number % horrible hack
+\fi
        \hbox{\strc_math_flush_number_box}%
      \egroup
      \ifcase\c_strc_math_number_location\or\else
        \boxxoffset\b_strc_formulas_number\dimexpr-\s_strc_formulas_margin_right\relax % brrrrr
        \boxyoffset\b_strc_formulas_number\d_strc_math_last_depth
        \htdp\b_strc_formulas_number\zeropoint
-       \strc_math_flush_number_box % right
+     \strc_math_flush_number_box % right
      \fi
    \fi}
 
@@ -2934,26 +2954,7 @@
    \box\b_strc_math_display
    \ifcase\c_strc_math_ragged_status\or\hfill\or\hfill\or\fi}
 
-% wrap mode
-
-\def\strc_math_flush_wrap_mode
-  {\strc_math_setup_align_auto
-   \bgroup
-     \leftskip \zeroskip
-     \rightskip\zeroskip
-     \global\c_strc_math_positioning\plustwo
-     \dontleavehmode
-     \vbox\bgroup
-       \strc_math_flush_aligned_left_number_indeed
-       \unvbox\b_strc_math_display
-       \strc_math_flush_aligned_right_number_indeed
-     \egroup
-   \egroup
-   \ifvmode
-     \nointerlineskip
-   \fi}
-
-% flow mode
+% wrap/flow mode
 
 \def\strc_math_flush_v_box_bottom
   {\ifdone
@@ -3066,16 +3067,16 @@
 \def\strc_math_flush_h_mode
   {\global\c_strc_math_positioning\plusthree
    \dontleavehmode
-   \strc_math_flush_aligned_left_number_indeed
+   \strc_math_flush_aligned_left_number_indeed\zerocount
    \box\b_strc_math_display
-   \strc_math_flush_aligned_right_number_indeed}
+   \strc_math_flush_aligned_right_number_indeed\zerocount}
 
 \def\strc_math_flush_h_box
   {\global\c_strc_math_positioning\plusfive
    \dontleavehmode
-   \strc_math_flush_aligned_left_number_indeed
+   \strc_math_flush_aligned_left_number_indeed\zerocount
    \box\b_strc_math_display
-   \strc_math_flush_aligned_right_number_indeed}
+   \strc_math_flush_aligned_right_number_indeed\zerocount}
 
 \def\strc_math_flush_text_mode
   {\strc_math_setup_align_auto
@@ -3103,21 +3104,19 @@
 % all modes:
 
 \protected\def\strc_math_flush_aligned
-  {\ifnum\c_strc_math_split_mode=\c_strc_math_line_mode
-     \strc_math_flush_line_mode
-   \orelse\ifnum\c_strc_math_split_mode=\c_strc_math_wrap_mode
-     \strc_math_flush_wrap_mode
-   \else
+  {\ifconditional\c_strc_math_split_mode
      \strc_math_flush_text_mode
+   \else
+     \strc_math_flush_line_mode
    \fi}
 
 \def\strc_math_flush_box_normal
-  {\ifnum\c_strc_math_split_mode=\c_strc_math_line_mode
+  {\ifconditional\c_strc_math_split_mode
+     \strc_math_flush_aligned
+   \else
      \hbox to \d_strc_formulas_display_width\bgroup
         \strc_math_flush_aligned
      \egroup
-   \else
-     \strc_math_flush_aligned
    \fi}
 
 \def\strc_math_flush_box_framed_common
@@ -3397,11 +3396,11 @@
      \strc_math_number_check_inside
    \fi
    \strc_math_traced_state
-   \ifnum\c_strc_math_split_mode=\c_strc_math_line_mode
-     \noindent % \noindentation % not \dontleavehmode
-     \hbox to \d_strc_formulas_display_width \bgroup
-   \else
+   \ifconditional\c_strc_math_split_mode
      \bgroup
+   \else
+     \noindent % \noindentation % not \dontleavehmode
+     \hbox to \strc_math_effective_width \bgroup
    \fi
    \ifcase\c_strc_math_number_location
      \strc_math_flush_box
@@ -3419,7 +3418,7 @@
      \fi
    \fi
    \egroup
-   \ifnum\c_strc_math_split_mode=\c_strc_math_flow_mode
+   \ifconditional\c_strc_math_split_mode
      \ifhmode \else
        \strc_math_show_margins
      \fi
@@ -3435,80 +3434,62 @@
 \defineinnermathhandler\v!atmargin  {\strc_math_box_start\plusfour }{\strc_math_box_stop}
 
 \def\strc_math_flush_number_no
-  {\ifnum\c_strc_math_split_mode=\c_strc_math_line_mode
-     \ifconditional\c_strc_math_display_overflow
-       \ifcase\c_strc_formulas_frame_mode
-         \strc_math_flush_box_normal
-       \else
-         \strc_math_flush_box_framed_fit_inline
-       \fi
-     \else
-       \ifcase\c_strc_formulas_frame_mode
-        %\ifconditional\c_strc_formulas_tight
-        %  \strc_math_flush_box_normal
-        %\else
-           \strc_math_flush_box_normal
-        %\fi
-       \else
-         \ifconditional\c_strc_formulas_tight
-           \strc_math_flush_box_framed_fit_inline
-         \else
-           \strc_math_flush_box_framed_display
-         \fi
-       \fi
-     \fi
-   \else
+  {\ifconditional\c_strc_math_split_mode
      \strc_math_flush_box
+   \orelse\ifconditional\c_strc_math_display_overflow
+     \ifcase\c_strc_formulas_frame_mode
+       \strc_math_flush_box_normal
+     \else
+       \strc_math_flush_box_framed_fit_inline
+     \fi
+   \orelse\ifcase\c_strc_formulas_frame_mode
+     \strc_math_flush_box_normal
+   \orelse\ifconditional\c_strc_formulas_tight
+      \strc_math_flush_box_framed_fit_inline
+   \else
+      \strc_math_flush_box_framed_display
    \fi}
 
 \def\strc_math_flush_number_left
-  {\ifnum\c_strc_math_split_mode=\c_strc_math_line_mode
-     \ifconditional\c_strc_math_display_overflow
-       \ifcase\c_strc_formulas_frame_mode
-         \strc_math_number_left_overflow
-       \or
-         \strc_math_number_left_overflow_outside
-       \or
-         \strc_math_number_left_overflow_inside
-       \fi
-     \else
-       \ifcase\c_strc_formulas_frame_mode
-         \strc_math_number_left_normal
-       \or
-         \strc_math_number_left_normal_outside
-       \or
-         \strc_math_number_left_normal_inside
-       \fi
+  {\ifconditional\c_strc_math_split_mode
+     \strc_math_flush_aligned % we flush in here, otherwise wrong positioning of number (we need to unvbox)
+   \orelse\ifconditional\c_strc_math_display_overflow
+     \ifcase\c_strc_formulas_frame_mode
+       \strc_math_number_left_overflow
+     \or
+       \strc_math_number_left_overflow_outside
+     \or
+       \strc_math_number_left_overflow_inside
      \fi
    \else
-   % \strc_math_flush_number_box
-   % \hfill
-     \strc_math_flush_aligned % we flush in here, otherwise wrong positioning of number (we need to unvbox)
+     \ifcase\c_strc_formulas_frame_mode
+       \strc_math_number_left_normal
+     \or
+       \strc_math_number_left_normal_outside
+     \or
+       \strc_math_number_left_normal_inside
+     \fi
    \fi}
 
 \def\strc_math_flush_number_right
-  {\ifnum\c_strc_math_split_mode=\c_strc_math_line_mode
-     \ifconditional\c_strc_math_display_overflow
-       \ifcase\c_strc_formulas_frame_mode
-         \strc_math_number_right_overflow
-       \or
-         \strc_math_number_right_overflow_outside
-       \or
-         \strc_math_number_right_overflow_inside
-       \fi
-     \else
-       \ifcase\c_strc_formulas_frame_mode
-         \strc_math_number_right_normal
-       \or
-         \strc_math_number_right_normal_outside
-       \or
-         \strc_math_number_right_normal_inside
-       \fi
+  {\ifconditional\c_strc_math_split_mode
+     \strc_math_flush_aligned
+   \orelse\ifconditional\c_strc_math_display_overflow
+     \ifcase\c_strc_formulas_frame_mode
+       \strc_math_number_right_overflow
+     \or
+       \strc_math_number_right_overflow_outside
+     \or
+       \strc_math_number_right_overflow_inside
      \fi
    \else
-     \strc_math_flush_aligned
-   % \hfill
-   % \strc_math_flush_number_box % we flush in here
+     \ifcase\c_strc_formulas_frame_mode
+       \strc_math_number_right_normal
+     \or
+       \strc_math_number_right_normal_outside
+     \or
+       \strc_math_number_right_normal_inside
+     \fi
    \fi}
 
 %D Some inline math tweak.

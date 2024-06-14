@@ -515,8 +515,8 @@ local tomeaning, getlast  do
                         local class1 = at1.mathclass
                         local class2 = at3.mathclass
                         if class1 and class2 and class1 == "open" and class2 == "close" then
-                            at1.mathnogroup = true
-                            at3.mathnogroup = true
+                            at1.mathnogroup = "true"
+                            at3.mathnogroup = "true"
                         end
                     end
                 end
@@ -640,7 +640,7 @@ local tomeaning, getlast  do
                 expandone(ai)
                 local aa = all and all[i+1]
                 if aa then
-                    aa.at.mathnogroup = true
+                    aa.at.mathnogroup = "true"
                 end
             else
                 expandone(ai)
@@ -712,10 +712,10 @@ local tomeaning, getlast  do
                         end
                         if fenced then
                             if na == 3 then
-                                a[2].at.mathnogroup = true
+                                a[2].at.mathnogroup = "true"
                             elseif na == 5 and hasmiddle then
-                                a[2].at.mathnogroup = true
-                                a[3].at.mathnogroup = true
+                                a[2].at.mathnogroup = "true"
+                                a[3].at.mathnogroup = "true"
                             end
                         end
                         --
@@ -1073,7 +1073,7 @@ local tomeaning, getlast  do
                 end
             elseif not c.special then
                 okay = false
-                print("todo: (text) " .. tg)
+                report("todo: %s",tostring(c))
             end
         end
     end

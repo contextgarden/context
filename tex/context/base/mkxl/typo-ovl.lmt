@@ -72,16 +72,17 @@ markasoverload("viewerlayer")
 
 local function tooverloads(n)
     local current = tonut(n)
-    local a = getattrlist(current)
+    local a = getattrlist(current,true)
     local s = { }
-    while a do
-        local index, value = getdata(a)
-        local o = overloaded[n]
-        if o and value ~= unsetvalue then
-            -- It is actually very unlikely that we have unsetvalue.
-            s[index] = value
+    if a then
+        for index, value in next, a do
+            local o = overloaded[index]
+            if o and value ~= unsetvalue then
+                -- It is actually very unlikely that we have unsetvalue.
+                s[index] = value
+            end
+            a = getnext(a)
         end
-        a = getnext(a)
     end
     return s
 end
