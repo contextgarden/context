@@ -1,0 +1,74 @@
+%D \module
+%D   [       file=type-imp-noto,
+%D        version=2024.06.14,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Google Noto Fonts,
+%D         author={Hans Hagen & Mikael Sundqvist},
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+
+%D This font is in development and we will cook up a proper goodie file when the
+%D time is ready for it. We also might need a companion font to deal with the serifs
+%D because after all we lost sans as distinctive shape and now need serif to act as
+%D such.
+%D
+%D In the past one could download a noto zip but in the meantime one is supposed to
+%D get the fonts from github.
+%D
+%D \starttyping
+%D local files = dir.glob([[<path to>/repositories/notofonts.github.io/fonts/**/full/otf/*.otf]])
+%D
+%D for i=1,#files do file.copy(files[i],file.basename(files[i])) end
+%D
+%D os.execute("mtxrun --generate")
+%D os.execute("mtxrun --script font --reload")
+%D \stoptyping
+
+\usetypescriptfile[dejavu]
+
+\starttypescriptcollection[notosans]
+
+    \doifunknownfontfeature {noto-math-bold} {\definefontfeature[noto-math-bold][boldened]}
+
+    \starttypescript [\s!serif] [noto] [\s!name]
+        \definefontsynonym [\s!Serif]           [\s!file:NotoSerif-Regular]    [\s!features=\s!default]
+        \definefontsynonym [\s!SerifItalic]     [\s!file:NotoSerif-Italic]     [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBold]       [\s!file:NotoSerif-Bold]       [\s!features=\s!default]
+        \definefontsynonym [\s!SerifBoldItalic] [\s!file:NotoSerif-BoldItalic] [\s!features=\s!default]
+    \stoptypescript
+
+    \starttypescript [\s!sans] [noto] [\s!name]
+        \setups[\s!font:\s!fallback:\s!sans]
+        \definefontsynonym [\s!Sans]          [\s!file:NotoSans-Regular]       [\s!features=\s!default]
+        \definefontsynonym [\s!SansItalic]    [\s!file:NotoSans-Italic]        [\s!features=\s!default]
+        \definefontsynonym [\s!SansBold]      [\s!file:NotoSans-SemiBold]      [\s!features=\s!default]
+        \definefontsynonym [\s!SansBoldItalic][\s!file:NotoSans-SemiBoldItalic][\s!features=\s!default]
+    \stoptypescript
+
+  % \starttypescript [\s!mono] [noto] [\s!name]
+  %     \setups[\s!font:\s!fallback:\s!mono]
+  %     \definefontsynonym [\s!Mono]          [\s!file:NotoMono-Regular]       [\s!features=\s!none]
+  %     \definefontsynonym [\s!MonoItalic]    [\s!file:NotoMono-Italic]        [\s!features=\s!none]
+  %     \definefontsynonym [\s!MonoBold]      [\s!file:NotoMono-SemiBold]      [\s!features=\s!none]
+  %     \definefontsynonym [\s!MonoBoldItalic][\s!file:NotoMono-SemiBoldItalic][\s!features=\s!none]
+  % \stoptypescript
+
+    \starttypescript [\s!math] [noto][\s!name]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.70]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.55]
+    \stoptypescript
+
+    \starttypescript [\s!math] [noto][\s!name]
+        \definefontsynonym [\s!MathRoman]    [\s!file:NotoSansMath-Regular.otf][\s!features={\s!math\mathsizesuffix,noto:mathextra,mathextra},\s!goodies=notosans-math]
+        \definefontsynonym [\s!MathRomanBold][\s!file:NotoSansMath-Regular.otf][\s!features={\s!math\mathsizesuffix,noto-math-bold,noto:mathextra,mathextra},\s!goodies=notosans-math]
+    \stoptypescript
+
+    \starttypescript [noto]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default] % todo rscale
+        \quittypescriptscanning
+    \stoptypescript
+
+\stoptypescriptcollection

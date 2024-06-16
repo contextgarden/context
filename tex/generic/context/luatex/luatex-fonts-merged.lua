@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2024-06-14 09:14
+-- merge date  : 2024-06-16 18:16
 
 do -- begin closure to overcome local limits and interference
 
@@ -19210,6 +19210,7 @@ local function readmathvariants(f,fontdata,offset)
  local function get(offset,coverage,nofglyphs,construction,kvariants,kparts,kitalic,korientation,orientation)
   if coverage~=0 and nofglyphs>0 then
    local coverage=readcoverage(f,offset+coverage,true)
+   local n=0
    for i=1,nofglyphs do
     local c=construction[i]
     if c~=0 then
@@ -19224,6 +19225,7 @@ local function readmathvariants(f,fontdata,offset)
       for i=1,nofvariants do
        local variant=readushort(f)
        if variant==index then
+        n=n+1
        elseif variants then
         v=v+1
         variants[v]=variant
@@ -19233,7 +19235,7 @@ local function readmathvariants(f,fontdata,offset)
        end
        skipshort(f)
       end
-      if not variants then
+      if not variants or not next(variants) then
       elseif not math then
        math={ [kvariants]=variants }
        glyph.math=math
@@ -19270,21 +19272,57 @@ local function readmathvariants(f,fontdata,offset)
       if italic and italic~=0 then
        math[kitalic]=italic
       end
-      if orientation then
+      if korientation and orientation then
        math[korientation]=orientation
+      end
+     end
+    end
+   end
+   if n>0 then
+    report("discarding %i self referencing %s variant entries",n,orientation)
+   end
+   for index=1,#glyphs do
+    local g=glyphs[index]
+    local m=g.math
+    if m then
+     local v=m[kvariants]
+     if v then
+      local done={ [index]=true }
+      local size=#v
+      local i=1
+      while i<=size do
+       local vi=v[i]
+       if done[vi] then
+        report("discarding %sdirect circular %s variant index 0x%04X for index 0x%04X, %C","",orientation,vi,index,tonumber(g.unicode) or 0xFFFD)
+        table.remove(v,i)
+        size=size-1
+        goto NEXT
+       else
+        local gg=glyphs[vi]
+        if gg then
+         local mm=gg.math
+         if mm then
+          local vv=mm[kvariants]
+          if vv then
+           report("discarding %sdirect circular %s variant index 0x%04X for index 0x%04X, %C","in",orientation,vi,index,tonumber(g.unicode) or 0xFFFD)
+           table.remove(v,i)
+           size=size-1
+           goto NEXT
+          end
+         end
+        end
+        done[vi]=true
+       end
+       i=i+1
+        ::NEXT::
       end
      end
     end
    end
   end
  end
- if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 then
-  get(offset,hcoverage,hnofglyphs,hconstruction,"variants","parts","partsitalic","partsorientation","horizontal")
-  get(offset,vcoverage,vnofglyphs,vconstruction,"variants","parts","partsitalic","partsorientation","vertical")
- else
-  get(offset,vcoverage,vnofglyphs,vconstruction,"vvariants","vparts","vitalic")
-  get(offset,hcoverage,hnofglyphs,hconstruction,"hvariants","hparts","hitalic")
- end
+ get(offset,hcoverage,hnofglyphs,hconstruction,"hvariants","hparts","hitalic",nil,"horizontal")
+ get(offset,vcoverage,vnofglyphs,vconstruction,"vvariants","vparts","vitalic",nil,"vertical")
 end
 function readers.math(f,fontdata,specification)
  local tableoffset=gotodatatable(f,fontdata,"math",specification.glyphs)
@@ -21371,7 +21409,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.143 
+otf.version=3.144 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)

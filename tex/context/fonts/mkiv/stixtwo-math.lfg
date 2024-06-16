@@ -49,19 +49,19 @@ return {
             },
         },
         parameters = {
-            AccentBaseDepth           =   30,
-            FlattenedAccentTopShiftUp =    0,
-            RadicalKernAfterDegree    = -500,
-            DelimiterPercent          =  85,
-            DelimiterShortfall        = 400,
-            DelimiterDisplayPercent   =  90,
-            DelimiterDisplayShortfall = 400,
-            DisplayOperatorMinHeight  = 1800, -- 1800 in font
-            PrimeShiftUp              = "1.3*SuperscriptShiftUp",
-            PrimeShiftUpCramped       = "1.3*SuperscriptShiftUp",
-            RadicalDisplayStyleVerticalGap    = "RadicalVerticalGap", --170, 85
--- SuperscriptSnap = 1000,
--- SubscriptSnap = 500,
+            AccentBaseDepth                =   30,
+            FlattenedAccentTopShiftUp      =    0,
+            RadicalKernAfterDegree         = -500,
+            DelimiterPercent               =   85,
+            DelimiterShortfall             =  400,
+            DelimiterDisplayPercent        =   90,
+            DelimiterDisplayShortfall      =  400,
+            DisplayOperatorMinHeight       = 1800, -- 1800 in font
+            PrimeShiftUp                   = "1.3*SuperscriptShiftUp",
+            PrimeShiftUpCramped            = "1.3*SuperscriptShiftUp",
+            RadicalDisplayStyleVerticalGap = "RadicalVerticalGap", --170, 85
+         -- SuperscriptSnap                = 1000,
+         -- SubscriptSnap                  =  500,
         },
         tweaks = {
             aftercopying = {

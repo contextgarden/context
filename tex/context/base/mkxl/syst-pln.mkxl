@@ -116,4 +116,7 @@
 \vsize                 = 8.9in
 %xspaceskip            =   0pt
 
+\tolerant\def\documentclass[#1]#*#2{}
+\tolerant\def\documentstyle[#1]#*#2{}
+
 \protect \endinput

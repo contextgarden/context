@@ -1917,21 +1917,22 @@ do
 
         local f_glyph      = formatters["G%d"]
         local f_char       = formatters["BT /V%d 1 Tf [<%04X>] TJ ET"]
-        local f_width      = formatters["%.6N 0 d0"]
+        local f_width      = formatters["%N 0 d0"]
         local f_index      = formatters["I%d"]
-        local f_image_xy   = formatters["%.6N 0 d0 1 0 0 1 %.6N %.6N cm /%s Do"]
+        local f_image_xy   = formatters["%N 0 d0 1 0 0 1 %N %N cm /%s Do"]
         local f_image_c    = formatters["/%s Do"]
-        local f_image_c_xy = formatters["%.6N 0 0 %.6N %.6N %.6N cm /%s Do"]
-        local f_image_w    = formatters["%.6N 0 d0 %s"]
-        ----- f_image_d    = formatters["%.6N 0 d0 1 0 0 1 0 %.6N cm /%s Do"]
-        local f_stream     = formatters["%.6N 0 d0 %s"]
-        local f_stream_c   = formatters["%.6N 0 0 0 0 0 d1 %s"] -- last four bbox
-        local f_stream_d   = formatters["%.6N 0 d0 1 0 0 1 0 %.6N cm %s"]
-     -- local f_stream_s   = formatters["%.6N 0 0 %.6N 0 0 cm /%s Do"]
+        local f_image_c_xy = formatters["%N 0 0 %N %N %N cm /%s Do"]
+        local f_image_w    = formatters["%N 0 d0 %s"]
+        ----- f_image_d    = formatters["%N 0 d0 1 0 0 1 0 %N cm /%s Do"]
+        local f_stream     = formatters["%N 0 d0 %s"]
+        local f_stream_c   = formatters["%N 0 0 0 0 0 d1 %s"] -- last four bbox
+local f_stream_cc   = formatters["%N 0 %N %N %N %N d1 %s"] -- last four bbox
+        local f_stream_d   = formatters["%N 0 d0 1 0 0 1 0 %N cm %s"]
+     -- local f_stream_s   = formatters["%N 0 0 %N 0 0 cm /%s Do"]
 
-        local f_image_xy   = formatters["%.6N 0 d0 1 0 0 1 %.6N %.6N cm /Artifact BMC /%s Do EMC"]
+        local f_image_xy   = formatters["%N 0 d0 1 0 0 1 %N %N cm /Artifact BMC /%s Do EMC"]
         local f_image_c    = formatters["/Artifact BMC /%s Do EMC"]
-        local f_image_c_xy = formatters["%.6N 0 0 %.6N %.6N %.6N cm /Artifact BMC /%s Do EMC"]
+        local f_image_c_xy = formatters["%N 0 0 %N %N %N cm /Artifact BMC /%s Do EMC"]
 
         -- A type 3 font has at most 256 characters and Acrobat also wants a zero slot
         -- to be filled. We can share a mandate zero slot character. We also need to
@@ -2126,8 +2127,11 @@ do
  -- we need width for validation
                 if image.expose then
 --                     -- support color etc
---                     return stream, width
-                    return f_stream_c(width,stream), width
+--                     return f_stream_c(width,stream), width
+local wd = (data.width or 0) * bpfactor * scale
+local ht = (data.depth or 0) * bpfactor * scale
+local dp = (data.depth or 0) * bpfactor * scale
+                    return f_stream_cc(width,-10,-dp-10,wd+10,ht+10,stream), width
                 else
                     return f_image_w(width,stream), width
                 end
@@ -2398,6 +2402,7 @@ do
             local differences = pdfarray()
             local charprocs   = pdfdictionary()
             local basefont    = pdfconstant(basefontname)
+            local fontbbox    = nil -- { 0, 0, 0, 0 }
             local d           = 0
             local w           = 0
             local forcenotdef = minindex > 0
@@ -2446,14 +2451,14 @@ do
                     report_fonts("missing glyph %i in type3 font %a",index,basefontname)
                 end
             end
-            if not fontbbox then
+         -- if not fontbbox then
                 -- The specification permits zero values and these are actually also more
                 -- robust as then there are no assumptions and no accuracy is needed.
-             -- fontbbox = pdfarray { 0, 0, 0, 0 }
+                fontbbox = pdfarray { 0, 0, 0, 0 }
                 -- This is okay according to the standard but okular (and old printers)
                 -- need a bbox, so let's see where this fails.
-                fontbbox = pdfarray { -10, wd + 10, ht + 10, dp + 10 }
-            end
+                -- fontbbox = pdfarray { -20, -dp*bpfactor - 20, wd*bpfactor + 20, ht*bpfactor + 20 }
+         -- end
             local encoding = pdfdictionary {
                 Type        = pdfconstant("Encoding"),
                 Differences = differences,
