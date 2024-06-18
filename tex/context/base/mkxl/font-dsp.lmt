@@ -1012,7 +1012,7 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
                                 }
                             end
                         else
-                            report("no coverage")
+                            report(" ge")
                         end
                     else
                         report("no coverage class")

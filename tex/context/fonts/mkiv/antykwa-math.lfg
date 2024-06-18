@@ -155,7 +155,7 @@ if common then
             set   = { "ignorekerndimensions" }
         }, -- we have dp > ht fences
         {
-            tweak = "wipeweirdones",
+            tweak = "wipecues",
         },
         {
             tweak  = "fixprimes",

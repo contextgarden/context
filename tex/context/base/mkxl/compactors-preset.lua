@@ -44,6 +44,23 @@ return {
                 pieceinfo = true,
             }
         },
+        ["tikz"] = {
+            merge = {
+                type0     = true,
+                truetype  = true,
+                type1     = true,
+                lmtx      = true,
+            },
+            strip = {
+                marked     = "force",
+                pollution  = true, -- e.g. in tikz
+                identitycm = true, -- 1 0 0 1 0 0
+            },
+            cleanup = {
+                procset   = true,
+                pieceinfo = true,
+            }
+        },
      -- ["dontuse"] = {
      --     name = "preset:dontuse",
      --     identify = "all",

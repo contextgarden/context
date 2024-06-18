@@ -741,7 +741,9 @@ local comment   = P("%") * (1 - lpegpatterns.newline)^0
 local numchar   = P("\\")/"" * (R("09")^3/function(s) return char(octtointeger(s)) end)
                 + P("\\") * P(1)
 
-local key       = P("/") * C(R("AZ","az","09","__","--")^1)
+----- key       = P("/") * C(R("AZ","az","09","__","--")^1)
+local key       = P("/") * C((1 - lpegpatterns.whitespace - S("<>/[]()"))^1)
+
 local number    = Ct(Cc("number") * (lpegpatterns.number/dectointeger))
 local keyword   = Ct(Cc("name") * key)
 local operator  = C((R("AZ","az")+P("*")+P("'")+P('"'))^1)

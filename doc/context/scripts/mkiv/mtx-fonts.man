@@ -1,4 +1,4 @@
-.TH "mtx-fonts" "1" "01-01-2024" "version 1.00" "ConTeXt Font Database Management"
+.TH "mtx-fonts" "1" "01-01-2024" "version 1.21" "ConTeXt Font Database Management"
 .SH NAME
  mtx-fonts - ConTeXt Font Database Management
 .SH SYNOPSIS
@@ -55,6 +55,12 @@ use name instead of unicodes
 .TP
 .B --cache=str
 use specific cache (otl or otf)
+.TP
+.B --pattern=str
+filter files using pattern
+.TP
+.B --coverage=str
+character list
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

@@ -537,6 +537,14 @@ do
         end
     end
 
+    local function checkQ(c,op,contents,i)
+        local c = contents[i-1]
+        if c and c[#c] == "q" then
+            contents[i]   = { }
+            contents[i-1] = { }
+        end
+    end
+
 --  local actions = {
 --         rg  = reducergb,
 --         RG  = reducergb,
@@ -548,6 +556,7 @@ do
 --         EMC = removetags,
 --         BDC = removetags,
 --      -- BT  = checkbt,
+--      -- Q   = checkQ,
 --  }
 
     local passone = { }
@@ -630,6 +639,9 @@ do
         else
             g1, g2, g3, g4 = nil, nil, nil, nil
         end
+-- if strip.redundant then
+--     passtwo.Q   = checkQ
+-- end
         if compactor.identify == "all" then
             compactor.identify= {
                 content   = true,
@@ -737,6 +749,29 @@ do
         end
     end
 
+    local nocontent = {
+        k   = true, K   = true,
+        g   = true, G   = true,
+        rg  = true, RG  = true,
+        gs  = true,
+        cm  = true,
+        w   = true,
+        q   = true, Q   = true,
+        cs  = true, CS  = true,
+        d   = true,
+        i   = true,
+        j   = true,
+        J   = true,
+        sc  = true, SC  = true,
+        scn = true, SCN = true,
+        Tc  = true,
+        TL  = true,
+        Tr  = true,
+        Ts  = true,
+        Tw  = true,
+        Tz  = true,
+    }
+
     strip_content = function(pdfdoc,contents,fonts,xobjects,pagenumber,compactor)
         if contents then
             for i=1,#contents do
@@ -773,6 +808,56 @@ do
                 end
              -- collapse(contents)
             end
+            --
+            -- not yet done: q q ... Q Q
+            --
+            local strip = compactor.strip
+            if strip and (strip.identitycm or strip.pollution) then
+                local last    = false
+                local removed = false
+                --
+                if strip.pollution then
+                    for i=1,#contents do
+                        local ci = contents[i]
+                        local op = ci[#ci]
+                        if op == "q" then
+                            last = i
+                        elseif op == "Q" then
+                            if last then
+                                if last == i - 1 then
+                                    contents[last] = { }
+                                    contents[i] = { }
+                                else
+                                    for j=last,i do
+                                        contents[j] = { }
+                                    end
+                                end
+                                removed = true
+                                last = false
+                            end
+                        elseif not nocontent[op] then
+                            last = false
+                        end
+                    end
+                end
+                if strip.identitycm then
+                    for i=1,#contents do
+                        local ci = contents[i]
+                        local op = ci[#ci]
+                        if op == "cm" then
+                            if tonumber(ci[1]) == 1 and tonumber(ci[4]) == 1 and tonumber(ci[5]) == 0 and tonumber(ci[6]) == 0 and tonumber(ci[2]) == 0 and tonumber(ci[3]) == 0 then
+                                contents[i] = { }
+                                removed = true
+                            end
+                        end
+                    end
+                end
+                --
+                if removed then
+                    collapse(contents)
+                end
+            end
+            --
             return contents
         end
     end

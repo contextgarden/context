@@ -84,7 +84,7 @@ return {
                     tweak = "checkaccents",
                 },
                 {
-                    tweak = "wipeweirdones",
+                    tweak = "wipecues",
                 },
                 {
                     -- We need to check these, are the tweaks necessary or not?

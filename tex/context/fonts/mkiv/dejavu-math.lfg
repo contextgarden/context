@@ -65,6 +65,9 @@ return {
                     tweak = "checkaccents",
                 },
                 {
+                    tweak = "wipecues",
+                },
+                {
                     tweak = "kerns",
                     list  = {
                         [0x1D453] = { bottomright = -.2 },

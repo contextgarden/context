@@ -117,6 +117,9 @@ return {
                     tweak = "checkaccents",
                 },
                 {
+                    tweak = "wipecues",
+                },
+                {
                     tweak = "kerns",
                     list  = {
                         [0x0002F] = { topleft = -0.2, bottomright = -0.2 }, -- solidus

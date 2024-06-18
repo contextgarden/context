@@ -37,7 +37,8 @@ local function getbyteranges(signature,position,filesize)
     local leftangle  = find(signature,"<0")
     local rightangle = find(signature,"0>")
     local b1 = 0
-    local n1 = position + leftangle  - 2
+ -- local n1 = position + leftangle  - 2
+    local n1 = position + leftangle  - 1
     local b2 = position + rightangle + 1
     local n2 = filesize - b2
     return { b1, n1, b2, n2 }
@@ -255,7 +256,7 @@ else
             return
         end
         if middle ~= signature then
-            report("no prestine signature")
+            report("no pristine signature")
             return
         end
         --
@@ -388,8 +389,11 @@ else
         end
         f:seek("set",byterange[1])
         local before = f:read(byterange[2] + 1)
-     -- f:seek("set",byterange[2] + 2)
-     -- local existing = f:read(byterange[3] - byterange[2] - 3)
+     -- if true then
+     --     f:seek("set",byterange[2] + 2)
+     --     local existing = f:read(byterange[3] - byterange[2] - 3)
+     --     print(#existing,existing)
+     -- end
         f:seek("set",byterange[3])
         local after = f:read(byterange[4])
         -- we could check the size

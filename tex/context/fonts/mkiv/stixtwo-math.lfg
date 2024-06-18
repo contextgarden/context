@@ -146,6 +146,9 @@ return {
                 {
                     tweak = "checkaccents",
                 },
+                {
+                    tweak = "wipecues",
+                },
                 -- Extensibles use .s1 (variant 1), so we cannot wipe all
                 {
                     tweak = "wipevariants",

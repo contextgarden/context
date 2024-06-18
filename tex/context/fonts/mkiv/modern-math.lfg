@@ -137,7 +137,7 @@ return {
                     tweak = "checkaccents",
                 },
                 {
-                    tweak = "wipeweirdones",
+                    tweak = "wipecues",
                 },
                 {
                     tweak = "dimensions",

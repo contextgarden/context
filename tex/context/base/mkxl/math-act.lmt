@@ -2782,6 +2782,9 @@ do
                 height  = 0,
                 depth   = 0,
                 unicode = unicode,
+                commands = {
+                    { "rule" , 0, 0 }
+                }
             }
             done = registerdone(done,unicode)
         end
@@ -4161,31 +4164,6 @@ end
 --     end
 --
 -- end
-
-do
-
-    local placeholder = {
-        width    = 0,
-        height   = 0,
-        depth    = 0,
-        commands = {
-            { "rule" , 0, 0 }
-        }
-    }
-
-    local list = { 0x2061 }
-
-    function mathtweaks.wipeweirdones(target,original,parameters)
-        local characters = target.characters
-        for i=1,#list do
-            local l = list[i]
-         -- if characters[l] then -- applyfunction
-                characters[l] = placeholder
-         -- end
-        end
-    end
-
-end
 
 do
 

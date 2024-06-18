@@ -29,7 +29,7 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtx-fonts</entry>
   <entry name="detail">ConTeXt Font Database Management</entry>
-  <entry name="version">1.00</entry>
+  <entry name="version">1.21</entry>
  </metadata>
  <flags>
   <category name="basic">
@@ -55,6 +55,10 @@ local helpinfo = [[
     <flag name="statistics"><short>some info about the database</short></flag>
     <flag name="names"><short>use name instead of unicodes</short></flag>
     <flag name="cache" value="str"><short>use specific cache (otl or otf)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="pattern" value="str"><short>filter files using pattern</short></flag>
+    <flag name="coverage" value="str"><short>character list</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -90,6 +94,10 @@ local helpinfo = [[
     <example><command>mtxrun --script font --convert texgyrepagella-regular.otf</command></example>
     <example><command>mtxrun --script font --convert --names texgyrepagella-regular.otf</command></example>
    </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script font --coverage="U+123 U+124" --pattern=texgyre*</command></example>
+    <example><command>mtxrun --script font --coverage="✓"</command></example>
+   </subcategory>
   </category>
  </examples>
 </application>
@@ -97,7 +105,7 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtx-fonts",
-    banner   = "ConTeXt Font Database Management 0.21",
+    banner   = "ConTeXt Font Database Management 1.22",
     helpinfo = helpinfo,
 }
 
@@ -478,6 +486,96 @@ function scripts.fonts.list()
 
 end
 
+-- For Mikael S:
+
+function scripts.fonts.coverage()
+
+    local coverage = getargument("coverage")
+    local reload   = getargument("reload")
+    local pattern  = getargument("pattern")
+
+    if type(coverage) ~= "string" or coverage == "" then
+        return
+    end
+
+    coverage = string.gsub(coverage,"0x([0-9A-Fa-f]+)",function(s)
+        return utf.char(tonumber(s,16))
+    end)
+
+    coverage = string.gsub(coverage,"U%+([0-9A-F]+)",function(s)
+        return utf.char(tonumber(s,16))
+    end)
+
+    coverage = string.gsub(coverage,"%s+","")
+
+    local chars = table.unique(utf.split(coverage))
+    local bytes = { }
+
+    for i=1,#chars do
+        bytes[#bytes+1] = utf.byte(chars[i])
+    end
+
+    local f_c = string.formatters["%C"]
+
+    local function okay(data)
+        if data then
+            local descriptions = data.descriptions
+            if descriptions then
+                local f = { }
+                local d = false
+                for i=1,#bytes do
+                    local b = bytes[i]
+                    if descriptions[b] then
+                        f[i] = f_c(b)
+                        d = true
+                    else
+                        f[i] = "[" .. f_c(b) .. "]"
+                    end
+                end
+                return d and f or false
+            end
+        end
+    end
+
+    reloadbase(reload)
+
+    local files = fonts.names.list(pattern and string.topattern(pattern,true) or "",reload,true)
+    local found = { }
+    local done  = { }
+
+--     inspect(files)
+
+    if files then
+        for id, specification in next, files do
+            if specification.format == "otf" or specification.format == "ttf" then
+                if not done[specification.filename] then
+                    local fullname = resolvers.findfile(specification.filename) or ""
+                    if fullname ~= "" then
+                        local data = fonts.handlers.otf.load(fullname)
+                        local list = okay(data)
+                        if list then
+                            found[id] = list
+                        end
+                    end
+                    done[specification.filename] = true
+                end
+            end
+    --     collectgarbage("collect")
+        end
+    end
+
+    if next(found) then
+        report()
+        for id, found in table.sortedhash(found) do
+            local specification = files[id]
+            indeed("filename  : %s",specification.filename)
+            indeed("fontname  : %s",specification.fontname)
+            indeed("coverage  : % t",found)
+            report()
+        end
+    end
+end
+
 function scripts.fonts.unpack()
     local name = removesuffix(basename(givenfiles[1] or ""))
     if name and name ~= "" then
@@ -556,6 +654,8 @@ elseif getargument("reload") then
     scripts.fonts.reload()
 elseif getargument("convert") then
     scripts.fonts.convert()
+elseif getargument("coverage") then
+    scripts.fonts.coverage()
 elseif getargument("unpack") then
     scripts.fonts.unpack()
 elseif getargument("statistics") then
