@@ -562,6 +562,31 @@ do
         return sn and sn[1]
     end
 
+    local describe = true
+
+    directives.register("backends.references.descriptions", function(v) describe = v end)
+
+    local function makedescription(resolved)
+        if describe == "reference" then
+            return resolved.reference
+        elseif describe then
+            local first = resolved[1]
+            if not first then
+                return resolved.reference
+            end
+            local kind = first.kind
+            if kind == "outer" then
+                return "link to file: " .. first.outer
+            elseif kind == "inner" then
+                return "link to: " .. first.inner
+            elseif kind == "special operation" then
+                return first.special .. ": " .. first.operation
+            else
+                return resolved.reference
+            end
+        end
+    end
+
     local function makereference(width,height,depth,reference) -- height and depth are of parent
         local sr = stack[reference]
         if sr then
@@ -579,7 +604,7 @@ do
                 if depth  < dp then depth  = dp end
             end
          -- logs.report("temp","used: ht=%p dp=%p",height,depth)
-            local annot = injectreference(reference,width,height,depth,set,resolved.mesh)
+            local annot = injectreference(reference,width,height,depth,set,resolved.mesh,makedescription(resolved))
             if annot then
                 annot = tonut(annot) -- todo
                 nofreferences = nofreferences + 1

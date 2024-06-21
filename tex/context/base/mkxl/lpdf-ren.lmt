@@ -120,10 +120,10 @@ local function useviewerlayer(name) -- move up so that we can use it as local
             local nn = pdfreserveobject()
             local nr = pdfreference(nn)
             local nd = pdfdictionary {
-                Type  = pdf_ocg,
-                Name  = specification.title or "unknown",
-                Usage = {
-                    Intent = pdf_intent[specification.editable  or v_yes], -- disable layer hiding by user (useless)
+                Type   = pdf_ocg,
+                Name   = specification.title or "unknown",
+                Intent = pdf_intent[specification.editable  or v_yes], -- disable layer hiding by user (useless)
+                Usage  = {
                     Print  = pdf_print [specification.printable or v_yes], -- printable or not
                     Export = pdf_export[specification.export    or v_yes], -- export or not
                 },

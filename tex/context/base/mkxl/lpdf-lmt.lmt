@@ -1319,7 +1319,6 @@ do
         local list      = tonut(type(box) == "number" and tex.takebox(box) or box)
         --
         if resources == true then
---             resources = pdfcollectedresources()
             resources = pdfcollectedresources {
                 serialize = false,
             }
@@ -2373,18 +2372,28 @@ local finalize  do
         return otherbox
     end
 
+    -- The Resources dictionary always was optional but for some reason (maybe because some
+    -- application bark on it not being present, which makes bugs into a feature) it now is
+    -- (per addendum to the standard). First it was only for version 2, but in the end also
+    -- version 1 has been affected. Of course that makes older documents that just omit an
+    -- empty one officially invalid. However, because often the procset was there anyway,
+    -- changes are low, but as that one is also obsolete, one only gets an issue when that
+    -- one is left out too. In the end it means that we always need to add a bogus resource
+    -- in order to satisfy 'strict' checkers (one can argue that deprecated features should
+    -- be reported as such, and not as error).
+
     local dummy = false
 
     local function checkedresources()
         if dummy == false then
-         -- if lpdf.majorversion() > 1 then
-            if majorversion > 1 then
+         -- if majorversion > 1 then
                 dummy = pdfsharedobject(pdfdictionary {
-                    LMTX_Comment = pdfunicode("mandate resource dictionary cf 2.0+ specification")
+                 -- LMTX_Comment = pdfunicode("mandate resource dictionary cf 2.0+ specification")
+                    LMTX_Comment = pdfunicode("mandate resource dictionary cf 'latest' specification")
                 } )
-            else
-                dummy = nil
-            end
+         -- else
+         --     dummy = nil
+         -- end
         end
         return dummy
     end

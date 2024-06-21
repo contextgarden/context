@@ -1366,9 +1366,18 @@
      \frozen#1\minusone
    \fi}
 
+% \permanent\protected\def\setpenalties#1#2#3%
+%   {\ifdefined#1% space before #3 prevents lookahead problems, needed when #3=text
+%      \frozen#1\numexpr#2+\plusone\relax\space\expandedrepeat\numexpr#2\relax{ #3}\zerocount\relax
+%    \fi}
+
 \permanent\protected\def\setpenalties#1#2#3%
   {\ifdefined#1% space before #3 prevents lookahead problems, needed when #3=text
-     \frozen#1\numexpr#2+\plusone\relax\space\expandedrepeat\numexpr#2\relax{ #3}\zerocount\relax
+     \frozen#1\ifx#1\brokenpenalties
+       \plusone#3\relax
+     \else
+       \numexpr#2+\plusone\relax\space\expandedrepeat\numexpr#2\relax{ #3}\zerocount\relax
+     \fi
    \fi}
 
 %D \macros

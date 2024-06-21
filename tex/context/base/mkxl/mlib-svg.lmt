@@ -2324,6 +2324,7 @@ setmetatableindex(res.at,at)
             end
             r = r + 1 ; result[r] = f_done(cpath.path,ctransform or "")
         end
+
     end
 
     do
@@ -2795,7 +2796,6 @@ setmetatableindex(res.at,at)
                 if cpath then
                     r = r + 1 ; result[r] = f_clip_stop(cpath.path,"")
                 end
-
             end
         end
 
@@ -2917,7 +2917,6 @@ setmetatableindex(res.at,at)
             if etransform then
                 r = r + 1 ; result[r] = etransform
             end
-
             if cpath then
                 local f_done = cpath.evenodd
                 if cpath.curve then
@@ -2925,7 +2924,7 @@ setmetatableindex(res.at,at)
                 else
                     f_done = f_done and f_eoclip_stop_l or f_clip_stop_l
                 end
-                r = r + 1 ; result[r] = f_done(cpath,path,ctransform or "")
+                r = r + 1 ; result[r] = f_done(cpath.path,ctransform or "")
             end
             if copacity then
                 r = r + 1 ; result[r] = copacity

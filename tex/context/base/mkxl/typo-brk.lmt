@@ -87,14 +87,14 @@ local is_letter          = characters.is_letter
 
 local typesetters        = typesetters
 
-typesetters.breakpoints  = typesetters.breakpoints or {}
-local breakpoints        = typesetters.breakpoints
+local breakpoints        = typesetters.breakpoints or { }
+typesetters.breakpoints  = breakpoints
 
 breakpoints.mapping      = breakpoints.mapping or { }
 breakpoints.numbers      = breakpoints.numbers or { }
 
-breakpoints.methods      = breakpoints.methods or { }
-local methods            = breakpoints.methods
+local methods            = breakpoints.methods or { }
+breakpoints.methods      = methods
 
 local a_breakpoints      <const> = attributes.private("breakpoint")
 

@@ -207,6 +207,7 @@ local function process(attribute,head,inheritance,default) -- one attribute
                     current = 0
                 end
             end
+            -- what if no content
             local list = process(attribute,content,inheritance,default)
             if content ~= list then
                 setlist(stack,list)

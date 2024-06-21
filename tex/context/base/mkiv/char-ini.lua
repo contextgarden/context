@@ -831,6 +831,11 @@ local is_symbol = allocate ( tohash {
     "sm", "sc", "sk", "so",
 } )
 
+local is_nothing = allocate ( tohash {
+    "pc", "pd", "ps", "pe", "pi", "pf", "po",
+    "zs", "zl","zp",
+} )
+
 local can_have_space = allocate ( tohash {
     "lu", "ll", "lt", "lm", "lo", -- letters
  -- "mn", "mc", "me",             -- marks
@@ -854,6 +859,7 @@ characters.is_mark        = is_mark
 characters.is_punctuation = is_punctuation
 characters.is_hyphenator  = is_hyphenator
 characters.is_symbol      = is_symbol
+characters.is_nothing     = is_nothing
 characters.can_have_space = can_have_space
 
 local mti = function(t,k)

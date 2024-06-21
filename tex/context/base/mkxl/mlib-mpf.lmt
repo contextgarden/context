@@ -27,10 +27,10 @@ local trace_script   = false  trackers.register("metapost.script",function(v) tr
 
 local be_tolerant    = true   directives.register("metapost.lua.tolerant", function(v) be_tolerant = v end)
 
-local set    = mp.set
-local get    = mp.get
-local aux    = mp.aux
-local scan   = mp.scan
+local set  = mp.set
+local get  = mp.get
+local aux  = mp.aux
+local scan = mp.scan
 
 do
 
@@ -77,6 +77,7 @@ do
     local runnames   = { }
     local runmodes   = { }
     local nofscripts = 0
+    local runcodes   = { }
 
     local function registerscript(name,mode,f)
         nofscripts = nofscripts + 1
@@ -90,6 +91,7 @@ do
         else
             runscripts[nofscripts] = name
         end
+        runcodes[nofscripts] = name
         runmodes[nofscripts] = mode
         if trace_script then
             report_script("registering %s script %a as %i",mode,name,nofscripts)
@@ -164,22 +166,22 @@ do
         if index then
             f = runscripts[code]
             if not f then
-                report_luarun("%i: bad index: %s",nesting,code)
+                report_luarun("%i: bad index %s",nesting,code)
             elseif trace_luarun then
-                report_luarun("%i: index: %i",nesting,code)
+                report_luarun("%i: index %i, name %a",nesting,code,runcodes[code])
             end
             local m = runmodes[code]
             if m == "direct" then
                 result = f()
                 if trace_luarun then
-                    report_luarun("%i: direct: %a",nesting,type(result))
+                    report_luarun("%i: direct %a",nesting,type(result))
                 end
                 nesting = nesting - 1
                 return result, true -- string and tables as string and objects
             elseif m == "tokens" then
                 result = f()
                 if trace_luarun then
-                    report_luarun("%i: tokens: %a",nesting,type(result))
+                    report_luarun("%i: tokens %a",nesting,type(result))
                 end
                 nesting = nesting - 1
                 return result       -- string and tables as text to be scanned

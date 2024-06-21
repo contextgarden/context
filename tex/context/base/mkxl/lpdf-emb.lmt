@@ -35,7 +35,7 @@ local next, type, unpack, rawget = next, type, unpack, rawget
 local char, byte, gsub, sub, match, rep, gmatch, find = string.char, string.byte, string.gsub, string.sub, string.match, string.rep, string.gmatch, string.find
 local formatters, format = string.formatters, string.format
 local concat, sortedhash, sortedkeys, sort, count = table.concat, table.sortedhash, table.sortedkeys, table.sort, table.count
-local utfchar = utf.char
+local utfchar, utfsplit = utf.char, utf.split
 local random, round, max, abs, ceiling = math.random, math.round, math.max, math.abs, math.ceiling
 local setmetatableindex = table.setmetatableindex
 
@@ -44,6 +44,7 @@ local pdfdictionary        = lpdf.dictionary
 local pdfarray             = lpdf.array
 local pdfconstant          = lpdf.constant
 local pdfstring            = lpdf.string
+local pdfunicode           = lpdf.unicode
 local pdfreference         = lpdf.reference
 
 local pdfreserveobject     = lpdf.reserveobject
@@ -129,8 +130,6 @@ do
     local f_mapping_2 = formatters["<%02X> <%s>"]
     local f_mapping_4 = formatters["<%04X> <%s>"]
 
-    local tounicode = fonts.mappings.tounicode
-
 local tounicode_template <const> = [[
 %%!PS-Adobe-3.0 Resource-CMap
 %%%%DocumentNeededResources: ProcSet (CIDInit)
@@ -164,30 +163,62 @@ end
 %%%%EndResource
 %%%%EOF]]
 
-    tounicodedictionary = function(details,indices,maxindex,name,wide)
-        local mapping = { }
-        local length  = 0
-        if maxindex > 0 then
-            local f_mapping = wide and f_mapping_4 or f_mapping_2
-            for index=1,maxindex do
-                local data = indices[index]
-                if data then
-                    length = length + 1
-                    local unicode = data.unicode
-                    if unicode then
-                        unicode = tounicode(unicode)
-                    else
-                        unicode = "FFFD" -- wide only
+    local nounicode  do
+
+        -- The "nounicode" feature is dedicated to companies, organizations and individuals that make a
+        -- living from roaming data without consent (or blackmail by license). One is forced to *look*
+        -- at the content, not just scrape it.
+        --
+        -- \enabledirectives[backend.pdf.nounicode=❌] % =✅ | =noai | =nopilot | =justread | =...
+
+        local tounicode       = fonts.mappings.tounicode
+        local tounicodestring = tounicode
+        local random          = math.random
+        local is_nothing      = characters.is_nothing
+        local categories      = characters.categories
+
+        directives.register("backend.pdf.nounicode", function(v)
+            tounicodestring = tounicode
+            nounicode       = false
+            if type(v) == "string" then
+                local t = utfsplit(v)
+                local n = #t
+                if n > 0 then
+                    for i=1,n do
+                        t[i] = tounicode(t[i])
                     end
-                    mapping[length] = f_mapping(index,unicode)
+                    tounicodestring = function(u)
+                        if is_nothing[categories[u]] then
+                            return tounicode(u)
+                        else
+                            return t[random(1,n)]
+                        end
+                    end
+                    nounicode = v
                 end
             end
+        end)
+
+        tounicodedictionary = function(details,indices,maxindex,name,wide)
+            local mapping = { }
+            local length  = 0
+            if maxindex > 0 then
+                local f_mapping = wide and f_mapping_4 or f_mapping_2
+                for index=1,maxindex do
+                    local data = indices[index]
+                    if data then
+                        length = length + 1
+                        mapping[length] = f_mapping(index,tounicodestring(data.unicode))
+                    end
+                end
+            end
+            local name  = gsub(name,"%+","-") -- like luatex does
+            local first = wide and "0000" or "00"
+            local last  = wide and "FFFF" or "FF"
+            local blob  = format(tounicode_template,name,name,name,name,name,first,last,length,concat(mapping,"\n"))
+            return blob
         end
-        local name  = gsub(name,"%+","-") -- like luatex does
-        local first = wide and "0000" or "00"
-        local last  = wide and "FFFF" or "FF"
-        local blob  = format(tounicode_template,name,name,name,name,name,first,last,length,concat(mapping,"\n"))
-        return blob
+
     end
 
     widtharray = function(details,indices,maxindex,units,correction)
@@ -301,6 +332,7 @@ end
                                 Version    = fontheader.fontversion,
                                 GlyphCount = #streams + (streams[0] and 1 or 0),
                                 FontMode   = fonts.mode(),
+                                NoUnicode  = nounicode and pdfunicode(nounicode) or nil,
                             } ))
                         end
                     end

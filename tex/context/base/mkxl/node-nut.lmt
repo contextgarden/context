@@ -65,6 +65,7 @@ local nuts = {
     endofmath               = direct.endofmath,
     exchange                = direct.exchange,
     findattribute           = direct.findattribute,
+    findattributerange      = direct.findattributerange,
     findnode                = direct.findnode,
     firstglyphnode          = direct.firstglyphnode,
     firstglyph              = direct.firstglyph,

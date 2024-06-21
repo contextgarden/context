@@ -1080,7 +1080,7 @@ local function finishreference(specification)
     if crappytaggingmode > 0 then
         local specifier  = nil
         if type(prerolled) ~= "string" then
-            prerolled.Contents     = "link"
+            prerolled.Contents     = specification.description or "link" -- todo: what kind of link
             prerolled.StructParent = codeinjections.getlinkstructureparent(refatt)
             prerolled = prerolled()
         end
@@ -1142,20 +1142,21 @@ local function finishannotation(specification)
     return pdfregisterannotation(objref)
 end
 
-function nodeinjections.reference(reference,width,height,depth,prerolled,mesh)
+function nodeinjections.reference(reference,width,height,depth,prerolled,mesh,description)
     if prerolled then
         if trace_references then
             report_references("link: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
         end
         return new_latelua {
---             kind      = "reference",
-            action    = finishreference,
-            reference = reference,
-            width     = width,
-            height    = height,
-            depth     = depth,
-            prerolled = prerolled,
-            mesh      = mesh,
+         -- kind      = "reference",
+            action      = finishreference,
+            reference   = reference,
+            width       = width,
+            height      = height,
+            depth       = depth,
+            prerolled   = prerolled,
+            mesh        = mesh,
+            description = description,
         }
     end
 end
@@ -1167,7 +1168,7 @@ function nodeinjections.annotation(width,height,depth,prerolled,objref)
                 type(prerolled) == "string" and prerolled or "-")
         end
         return new_latelua {
---             kind      = "annotation",
+         -- kind      = "annotation",
             action    = finishannotation,
             width     = width,
             height    = height,

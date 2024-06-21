@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2024.06.18 22:01}
+\immutable\edef\contextversion{2024.06.21 18:42}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -339,6 +339,7 @@
 \loadmkxlfile{typo-pag}
 \loadmkxlfile{typo-mar}
 \loadmkxlfile{typo-itm}
+\loadmkxlfile{typo-stc}
 
 \loadmkxlfile{buff-ini}
 \loadmkxlfile{buff-ver}
