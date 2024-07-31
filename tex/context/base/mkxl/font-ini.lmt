@@ -19,6 +19,7 @@ fonts.tables      = fonts.tables     or { }
 fonts.helpers     = fonts.helpers    or { }
 fonts.tracers     = fonts.tracers    or { } -- for the moment till we have move to moduledata
 fonts.specifiers  = fonts.specifiers or { } -- in format !
+fonts.callbacks   = fonts.callbacks  or { }
 
 fonts.analyzers   = { } -- not needed here
 fonts.readers     = { }

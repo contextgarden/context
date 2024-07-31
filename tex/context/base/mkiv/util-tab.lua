@@ -225,11 +225,11 @@ local function toxml(t,d,result,step)
         if tv == "table" then
             if tk == "number" then
                 r = r + 1 result[r] = formatters["%s<entry n='%s'>"](s,k)
-                toxml(v,d+step,result,step)
+                r = toxml(v,d+step,result,step)
                 r = r + 1 result[r] = formatters["%s</entry>"](s,k)
             else
                 r = r + 1 result[r] = formatters["%s<%s>"](s,k)
-                toxml(v,d+step,result,step)
+                r = toxml(v,d+step,result,step)
                 r = r + 1 result[r] = formatters["%s</%s>"](s,k)
             end
         elseif tv == "string" then
@@ -244,6 +244,7 @@ local function toxml(t,d,result,step)
             r = r + 1 result[r] = formatters["%s<%s>%S</%s>"](s,k,v,k)
         end
     end
+    return r
 end
 
 -- function table.toxml(t,name,nobanner,indent,spaces)

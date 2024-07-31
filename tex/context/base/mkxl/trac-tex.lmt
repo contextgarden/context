@@ -81,6 +81,8 @@ local function saveusedfilesintrees(format)
     local filename = file.replacesuffix(environment.jobname or "context-job",'jlg')
     if format == "lua" then
         io.savedata(filename,table.serialize(data,true))
+    elseif format == "json" then
+        io.savedata(filename,utilities.json.tojson(data))
     else
         io.savedata(filename,table.toxml(data,"job"))
     end

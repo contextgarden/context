@@ -34,64 +34,56 @@
 \installglobalmacrostack\c_framed_math_last_left
 \installglobalmacrostack\c_framed_math_last_right
 
-\installcorenamespace{mathframed}
+\installcorenamespace{framedmath}
 
-\defineframed[\??mathframed]
+\defineframed[\??framedmath]
 
-\setupframed[\??mathframed][\c!location=\v!middle]
+\setupframed[\??framedmath][\c!location=\v!middle]
 
-\tolerant\permanent\protected\def\definemathframed[#1]#*[#2]#*[#S#3]%
+\tolerant\permanent\protected\def\defineframedmath[#1]#*[#2]#*[#S#3]%
   {\ifarguments\or
-     \defineframed[#1][\??mathframed]%
+     \defineframed[#1][\??framedmath]%
    \or
-     \defineframed[#1][\??mathframed][#2]%
+     \defineframed[#1][\??framedmath][#2]%
    \or
      \defineframed[#1][#2][#3]%
    \fi
    \tolerant\frozen\protected\defcsname#1\endcsname{\math_framed{#1}}}
 
-\definemathframed[mathframed]
+\defineframedmath[framedmath]
 
-\dimensiondef\d_math_framed_offset\zeropoint
-
-\def\math_framed#1#*[#S#2]#:#3%
+\tolerant\def\math_framed#1#*[#S#2]#:#3%
   {\begingroup
    \ifconditional\c_framed_math_framed
      \defineboxanchor[temp]%
    \fi
    \setmathatomrule\mathbegincode\mathbinarycode\allmathstyles\mathbegincode\mathbinarycode % hm
    %
-   \scratchdimen\Umathaxis\givenmathstyle\mathstyle
+   \scratchoffset\Umathaxis\givenmathstyle\mathstyle
    %
    \cdef\currentframed{#1}%
-   \setbox\scratchbox\hbox{\localframedwithsettings[#1][#2]%
-     {\strut\global\dimensiondef\d_math_framed_offset\dimexpr
-         \framedoffset/2
-%          +2\d_framed_linewidth
-      \relax}}%
+   %
+   % how to tag this
    %
    \setbox\scratchbox\hpack\bgroup
      \startimath
      \givenmathstyle\mathstyle
+     \mathboundary\zerocount %
      #3%
+     \mathboundary\plusone   % prevents binary becoming ord
      \stopimath
      \normalexpanded{\aftergrouped{%
-       \integerdef\c_framed_math_last_left \the\lastleftclass
-       \integerdef\c_framed_math_last_right\the\lastrightclass
+       \integerdef\c_framed_math_last_left \the\lastleftclass \relax
+       \integerdef\c_framed_math_last_right\the\lastrightclass\relax
      }}%
    \egroup
-   %
-   \boxymove\scratchbox\dimexpr
-     \scratchdimen
-     -\d_math_framed_offset/2
-   \relax
    %
    \setbox\scratchbox\hpack
      \localframedwithsettings
        [#1][#2]%
        {\box\scratchbox}%
    %
-   \boxymove\scratchbox\scratchdimen
+   \boxymove\scratchbox\scratchoffset
    %
    \ifconditional\c_framed_math_framed
      \boxsource\scratchbox \namedboxanchor{temp}% test
@@ -114,7 +106,7 @@
 
 \defineoverlay[mathstrikeout][\useMPgraphic{\framedparameter{mp}}]
 
-\definemathframed
+\defineframedmath
   [mathstrikeout]
   [\c!offset=\v!overlay,
    \c!mp=mathstrikeout,
@@ -126,7 +118,7 @@
    \c!frame=\v!off,
    \c!arrow=\v!yes]
 
-\definemathframed
+\defineframedmath
   [mathcrossout]
   [mathstrikeout]
   [\c!mp=mathcrossout,
@@ -186,9 +178,9 @@
 %D     \showmakeup[mathglue]
 %D     \def\MyTest#1%
 %D       {$              x #1                          x $\quad
-%D        $              x \mathframed[offset=0pt]{#1} x $\quad
+%D        $              x \framedmath[offset=0pt]{#1} x $\quad
 %D        $\displaystyle x #1                          x $\quad
-%D        $\displaystyle x \mathframed[offset=0pt]{#1} x $}
+%D        $\displaystyle x \framedmath[offset=0pt]{#1} x $}
 %D     \MyTest{>}\blank
 %D     \MyTest{+}\blank
 %D     \MyTest{!}\blank
@@ -259,6 +251,7 @@
    \setupcurrentmathframed[#2]%
    \c_framed_mstyle\normalmathstyle
    \edef\m_framed_location{\mathframedparameter\c!location}%
+\dostarttaggednodetail\t!mrow
    \ifx\m_framed_location\v!mathematics
      \inheritedmathframedframed\bgroup
        \setbox\scratchbox\hbox\bgroup
@@ -283,6 +276,7 @@
        \egroup
      \egroup
    \fi
+\dostoptagged
    \endgroup}
 
 \appendtoks

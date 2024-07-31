@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definetype" level="style" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="definetype" level="style" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptype" level="style" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="setuptype" level="style" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -65,11 +65,14 @@
                     <cd:constant type="fixed"/>
                     <cd:constant type="stretch"/>
                 </cd:parameter>
+                <cd:parameter name="setups" list="yes">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="type" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="type" level="document" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptype"/>
@@ -78,7 +81,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="type" variant="angles" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="type" variant="angles" level="document" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptype"/>
@@ -87,7 +90,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typ" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="typ" level="document" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptype"/>
@@ -96,7 +99,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typ" variant="angles" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="typ" variant="angles" level="document" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptype"/>
@@ -105,7 +108,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="type" generated="yes" variant="example" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="type" generated="yes" variant="example" level="document" category="verbatim" file="buff-ver.mkxl">
         <cd:sequence>
             <cd:variable value="type"/>
         </cd:sequence>
@@ -117,7 +120,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="type" generated="yes" variant="example:angles" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="type" generated="yes" variant="example:angles" level="document" category="verbatim" file="buff-ver.mkxl">
         <cd:sequence>
             <cd:variable value="type"/>
         </cd:sequence>
@@ -129,7 +132,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetyping" level="style" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="definetyping" level="style" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -139,7 +142,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptyping" level="style" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="setuptyping" level="style" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -203,8 +206,8 @@
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
                 <cd:parameter name="paragraph">
-                    <cd:constant type="yes" default="no"/>
-                    <cd:constant type="no"/>
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
                 </cd:parameter>
                 <cd:parameter name="escape">
                     <cd:constant type="yes"/>
@@ -236,11 +239,14 @@
                 <cd:parameter name="blank">
                     <cd:inherit name="blank"/>
                 </cd:parameter>
+                <cd:parameter name="bodyfont">
+                    <cd:inherit name="setupbodyfont"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typing" type="environment" generated="yes" variant="instance" level="document" category="verbatim" keywords="buffer" file="buff-ver.mkiv">
+    <cd:command name="typing" type="environment" generated="yes" variant="instance" level="document" category="verbatim" keywords="buffer" file="buff-ver.mkxl">
         <cd:sequence>
             <cd:instance value="typing"/>
         </cd:sequence>
@@ -254,7 +260,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="typing" type="environment" generated="yes" variant="instance:argument" level="document" category="verbatim" keywords="buffer" file="buff-ver.mkiv">
+    <cd:command name="typing" type="environment" generated="yes" variant="instance:argument" level="document" category="verbatim" keywords="buffer" file="buff-ver.mkxl">
         <cd:sequence>
             <cd:instance value="typing"/>
         </cd:sequence>
@@ -268,55 +274,73 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="tex" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="namedtyping" type="environment" level="document" category="verbatim" keywords="buffer" file="buff-ver.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptyping"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="namedtyping" type="environment" variant="argument" level="document" category="verbatim" keywords="buffer" file="buff-ver.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:keywords list="yes" optional="yes">
+                <cd:constant type="continue"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="tex" level="document" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="arg" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="arg" level="document" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mat" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="mat" level="document" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dis" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="dis" level="document" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="astype" level="system" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="astype" level="system" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="asciistr" level="system" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="asciistr" level="system" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="verbatim" level="system" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="verbatim" level="system" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="filename" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="filename" level="document" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="typefile" level="document" category="verbatim" file="buff-ver.mkiv">
+    <cd:command name="typefile" level="document" category="verbatim" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -326,7 +350,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsetypingfile" level="system" category="verbatim" keywords="conditional" file="buff-ver.mkiv">
+    <cd:command name="doifelsetypingfile" level="system" category="verbatim" keywords="conditional" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -334,7 +358,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiftypingfileelse" level="system" category="verbatim" keywords="conditional" file="buff-ver.mkiv">
+    <cd:command name="doiftypingfileelse" level="system" category="verbatim" keywords="conditional" file="buff-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>

@@ -301,7 +301,7 @@
 \newconditional\c_strc_formulas_referenced
 
 \appendtoks
-    \global\c_strc_formulas_inside_place\conditionalfalse
+    \global\c_strc_formulas_inside_place    \conditionalfalse
     \global\c_strc_formulas_inside_place_sub\conditionalfalse
 \to \everyresetformulas
 
@@ -629,25 +629,6 @@
     \aliased\let\eqno       \normaleqno
 
 \popoverloadmode
-
-%D \macros
-%D   {startsubformulas}
-
-% \placeformula
-% \startsubformulas[Maxwell]
-%     \startformulas
-%      \startformula \startalign
-%        \NC \nabla\cdot\bf E  \NC = \frac{\rho}{\varepsilon_0} \NR[Maxwell 1]
-%        \NC \nabla\times\bf E \NC = - \frac{\partial\bf B}{\partial t} \NR[Maxwell II]
-%        \stopalign \stopformula
-%        \startformula \startalign
-%          \NC \nabla\cdot \bf B \NC = 0 \NR[Maxwell III]
-%          \NC \nabla\times\bf B \NC = \mu_0{\bf j}+\varepsilon_0\mu_0\frac{\partial\bf E}{\partial t} \NR[Maxwell IV]
-%        \stopalign \stopformula
-%    \stopformulas
-% \stopsubformulas
-%
-% Maxwell : \in [Maxwell] and II : \in [Maxwell II]
 
 %D Tricky stuff:
 
@@ -1200,9 +1181,23 @@
      \strc_math_line_here
    \fi}
 
+% \tolerant\protected\def\strc_math_text_here[#1]#:#*#=%
+%   {\ifparameter#2\or
+%      \ifcsname\??mathtexthere#1\endcsname
+%        \expandafter\lastnamedcs
+%      \else
+%        \csname\??mathtexthere\v!after\expandafter\endcsname
+%      \fi{#2}%
+%    \fi}
+
+\def\strc_math_text_here_export#1%
+  {\mtext{\nbsp#1\nbsp}\breakhere}
+
 \tolerant\protected\def\strc_math_text_here[#1]#:#*#=%
   {\ifparameter#2\or
-     \ifcsname\??mathtexthere#1\endcsname
+     \ifexporting
+       \expandafter\strc_math_text_here_export
+     \orelse\ifcsname\??mathtexthere#1\endcsname
        \expandafter\lastnamedcs
      \else
        \csname\??mathtexthere\v!after\expandafter\endcsname
@@ -1304,16 +1299,16 @@
 \def\strc_math_setup_align
   {\ifcsname\??mathtextalign\formulaparameter\c!align\endcsname
      \lastnamedcs\else\begincsname\??mathtextalign\v!middle\endcsname
-     \math_check_limit
+     \math_check_limit_stretch
    \fi}
 
-\def\math_check_limit
-  {\ifcstok{\mathematicsparameter\c!limit}\v!yes
+\def\math_check_limit_stretch
+  {\ifcstok{\mathematicsparameter\c!limitstretch}\v!yes
      \bitwiseflip\mathgluemode\plusfour
    \fi}
 
 \appendtoks
-    \math_check_limit
+    \math_check_limit_stretch
 \to \everymathematics
 
 % split : wrap (box) and flow (yes)
@@ -1352,21 +1347,58 @@
 \letcsname\??mathtextalign\v!right:\v!auto\expandafter\endcsname\csname\??mathtextalign\v!flushleft :\v!auto\endcsname
 \letcsname\??mathtextalign\v!left :\v!auto\expandafter\endcsname\csname\??mathtextalign\v!flushright:\v!auto\endcsname
 
-\startsetups[math:penalties:\v!yes]
+% \startsetups[math:penalties:\v!yes]
+%     \shapingpenaltiesmode \zerocount
+%     \widowpenalties \plustwo \plustwothousand \zerocount
+%     \clubpenalties  \plustwo \plustwothousand \zerocount
+%   % \interlinepenalty     \plustenthousand
+%   % \shapingpenalty       \plustenthousand
+% \stopsetups
+
+% \startsetups[math:penalties:\v!no]
+%     \shapingpenaltiesmode \zerocount
+%     \widowpenalties \plusone \plusfivethousand
+%     \clubpenalties  \plusone \plusfivethousand
+%   % \interlinepenalty     \plustenthousand
+%   % \shapingpenalty       \plustenthousand
+% \stopsetups
+
+\startsetups[math:penalties:\v!yes:\v!both]
+    \shapingpenaltiesmode \zerocount
+    \widowpenalties \plustwo \plustenthousand \plustwothousand
+    \clubpenalties  \plustwo \plustenthousand \plustwothousand
+\stopsetups
+
+\startsetups[math:penalties:\v!yes:\v!first]
+    \shapingpenaltiesmode \zerocount
+    \widowpenalties \plusone \zerocount
+    \clubpenalties  \plustwo \plustenthousand \zerocount
+\stopsetups
+
+\startsetups[math:penalties:\v!yes:\v!last]
+    \shapingpenaltiesmode \zerocount
+    \widowpenalties \plustwo \plustenthousand \zerocount
+    \clubpenalties  \plusone \zerocount
+\stopsetups
+
+\startsetups[math:penalties:\v!yes:]
     \shapingpenaltiesmode \zerocount
     \widowpenalties \plustwo \plustwothousand \zerocount
     \clubpenalties  \plustwo \plustwothousand \zerocount
-  % \interlinepenalty     \plustenthousand
-  % \shapingpenalty       \plustenthousand
+\stopsetups
+
+\startsetups[math:penalties:\v!yes]
+    \directsetup{math:penalties:\v!yes:\formulaparameter\c!splitmethod}
 \stopsetups
 
 \startsetups[math:penalties:\v!no]
     \shapingpenaltiesmode \zerocount
     \widowpenalties \plusone \plusfivethousand
     \clubpenalties  \plusone \plusfivethousand
-  % \interlinepenalty     \plustenthousand
-  % \shapingpenalty       \plustenthousand
 \stopsetups
+
+\def\strc_math_setup_penalties
+  {\directsetup{\formulaparameter\c!penalties}}
 
 \setupformula
   [\c!penalties=math:penalties:\formulaparameter\c!split]
@@ -1389,6 +1421,8 @@
     \global\d_strc_math_max_left    \zeropoint
     \global\d_math_strc_hangindent  \zeropoint
     \global\c_math_strc_hangafter   \zeropoint
+    \global\d_strc_math_left_shift  \zeropoint
+    \global\d_strc_math_right_shift \zeropoint
 \to \everyresetformulas
 
 \newbox\b_strc_math_display % most code is in math-ali (for historical reasons)
@@ -1461,11 +1495,10 @@
      \edef\v_spac_whitespace_current{\formulaparameter\c!spaceinbetween}%
      \spac_whitespace_setup
      \clf_handlemathhang
-       stage       \plusfour
-       inbetween   1\parskip
-       height      \strutht
-       depth       \strutdp
-       splitmethod {\formulaparameter\c!splitmethod}%
+       stage     \plusfour
+       inbetween 1\parskip
+       height    \strutht
+       depth     \strutdp
      \relax
    \endgroup}
 
@@ -1494,25 +1527,6 @@
    \let\strc_math_flush_number_box\strc_math_flush_number_box_normal}
 
 \let\strc_math_show_margins\relax
-
-%D Till here.
-
-\def\strc_math_set_options#1%
-  {\c_strc_formulas_tight\conditionalfalse
-   \c_strc_formulas_packed\conditionalfalse
-   \c_strc_formulas_depth\conditionalfalse
-   \ifempty{#1}%
-     \edef\p_option{\formulaparameter\c!option}%
-   \orelse\ifhastok={#1}% this is new, so that we can also set the grid
-     \setupcurrentformula[#1]%
-     \edef\p_option{\formulaparameter\c!option}%
-   \else
-     \edef\p_option{\formulaparameter\c!option}%
-     \edef\p_option{\ifempty\p_option\else\p_option,\fi#1}%
-   \fi
-   \ifempty\p_option \else
-     \rawprocesscommacommand[\p_option]\strc_formulas_option
-   \fi}
 
 % This is an experiment!
 
@@ -1562,7 +1576,7 @@
    \fi
    \cdef\currentformula{#1}%
    \usesetupsparameter\formulaparameter % new
-   \dostarttaggedchained\t!formula\currentformula\??formula
+   \dostarttaggedchained\t!formula\currentformula\currentformula\??formula
    \strc_math_set_options{#2}%
    \strc_math_set_split
    \strc_math_set_number_location
@@ -1594,13 +1608,13 @@
 
 \newinteger\c_strc_formulas_n
 
-\ifdefined\dotagregisterformula \else \aliased\let\dotagregisterformula\gobbleoneargument \fi
+\ifdefined\dotagregisterformula \else \aliased\let\dotagregisterformula\gobbletwoarguments \fi
 
 \protected\def\strc_formulas_stop_formula
   {\strc_formulas_place_number % in case it hasn't happened yet
    \strc_formulas_flush_number % in case we are in native mode
    \dostarttaggednodetail\t!formulacontent
-   \dotagregisterformula\c_strc_formulas_n
+   \dotagregisterformula{\number\c_strc_formulas_n}\!!zerocount % is the first one still usefull
    \csname\e!stop\formulaparameter\c!alternative\v!formula\endcsname
    \dostoptagged
    \dostoptagged
@@ -1627,7 +1641,7 @@
     \fi
 \to \everybeforedisplayformula
 
-\tolerant\permanent\protected\def\formula[#1]#;#2% todo: tagged
+\tolerant\permanent\protected\def\formula[#1]#:#2% todo: tagged
   {\begingroup
    \ifparameters#1\else
      \rawprocesscommacommand[#1]\strc_formulas_option
@@ -1698,6 +1712,25 @@
 % \placeformula {f} \startspformule \fakespacingformula \stopspformule
 % \placeformula {f} \startspformule \fakespacingformula \stopspformule
 % \fakewords{20}{40}
+
+%D \macros
+%D   {startsubformulas}
+
+% \placeformula
+% \startsubformulas[Maxwell]
+%     \startformulas
+%      \startformula \startalign
+%        \NC \nabla\cdot\bf E  \NC = \frac{\rho}{\varepsilon_0} \NR[Maxwell 1]
+%        \NC \nabla\times\bf E \NC = - \frac{\partial\bf B}{\partial t} \NR[Maxwell II]
+%        \stopalign \stopformula
+%        \startformula \startalign
+%          \NC \nabla\cdot \bf B \NC = 0 \NR[Maxwell III]
+%          \NC \nabla\times\bf B \NC = \mu_0{\bf j}+\varepsilon_0\mu_0\frac{\partial\bf E}{\partial t} \NR[Maxwell IV]
+%        \stopalign \stopformula
+%    \stopformulas
+% \stopsubformulas
+%
+% Maxwell : \in [Maxwell] and II : \in [Maxwell II]
 
 \tolerant\permanent\protected\def\startsubformulas[#1]%
   {\edef\currentsubformulasreference{#1}%

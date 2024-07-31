@@ -91,6 +91,10 @@
                     <cd:constant type="normal" default="yes"/>
                     <cd:constant type="reverse"/>
                 </cd:parameter>
+                <cd:parameter name="define">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
                 <cd:inherit name="setupframed"/>
             </cd:assignments>
         </cd:arguments>

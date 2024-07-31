@@ -15,14 +15,18 @@
         <cd:constant value="underbars"/>
         <cd:constant value="overstrikes"/>
         <cd:constant value="understrikes"/>
+        <cd:constant value="hiddenbar"/>
+        <cd:constant value="outline"/>
+        <cd:constant value="outlined"/>
+        <cd:constant value="backgroundbar"/>
+        <cd:constant value="mathbackground"/>
+        <cd:constant value="undergraphic"/>
         <cd:constant value="underrandom"/>
         <cd:constant value="underrandoms"/>
         <cd:constant value="underdash"/>
         <cd:constant value="underdashes"/>
         <cd:constant value="underdot"/>
         <cd:constant value="underdots"/>
-        <cd:constant value="nobar"/>
-        <cd:constant value="hiddenbar"/>
     </cd:define>
 
     <cd:define name="instance-buffer">
@@ -73,11 +77,41 @@
         <cd:constant value="xfrac"/>
         <cd:constant value="xxfrac"/>
         <cd:constant value="frac"/>
+        <cd:constant value="tfrac"/>
         <cd:constant value="sfrac"/>
         <cd:constant value="dfrac"/>
         <cd:constant value="binom"/>
         <cd:constant value="dbinom"/>
         <cd:constant value="tbinom"/>
+        <cd:constant value="cfrac"/>
+        <cd:constant value="splitfrac"/>
+        <cd:constant value="splitdfrac"/>
+        <cd:constant value="vfrac"/>
+        <cd:constant value="relfraction"/>
+        <cd:constant value="bartext"/>
+        <cd:constant value="leftarrowtext"/>
+        <cd:constant value="rightarrowtext"/>
+        <cd:constant value="twoheadleftarrowtext"/>
+        <cd:constant value="twoheadrightarrowtext"/>
+        <cd:constant value="reltext"/>
+        <cd:constant value="equaltext"/>
+        <cd:constant value="mapstotext"/>
+        <cd:constant value="hookleftarrowtext"/>
+        <cd:constant value="hookrightarrowtext"/>
+        <cd:constant value="leftharpoondowntext"/>
+        <cd:constant value="leftharpoonuptext"/>
+        <cd:constant value="rightharpoondowntext"/>
+        <cd:constant value="rightharpoonuptext"/>
+        <cd:constant value="rightoverleftarrowtext"/>
+        <cd:constant value="leftrightharpoonstext"/>
+        <cd:constant value="rightleftharpoonstext"/>
+        <cd:constant value="triplereltext"/>
+        <cd:constant value="leftrightarrowtext"/>
+        <cd:constant value="rightleftarrowtext"/>
+        <cd:constant value="Leftarrowtext"/>
+        <cd:constant value="Rightarrowtext"/>
+        <cd:constant value="Leftrightarrowtext"/>
+        <cd:constant value="Rightleftarrowtext"/>
     </cd:define>
 
     <cd:define name="instance-mathframed">
@@ -174,6 +208,12 @@
         <cd:constant value="mathalignment"/>
     </cd:define>
 
+    <cd:define name="instance-mathsimplealign">
+        <cd:constant value="equationsystem"/>
+        <cd:constant value="lequationsystem"/>
+        <cd:constant value="requationsystem"/>
+    </cd:define>
+
     <cd:define name="instance-mathcases">
         <cd:constant value="cases"/>
         <cd:constant value="mathcases"/>
@@ -183,9 +223,20 @@
         <cd:constant value="matrix"/>
         <cd:constant value="mathmatrix"/>
         <cd:constant value="thematrix"/>
+        <!--
+            <cd:constant value="xıɹʇɐɯ"/>
+        -->
     </cd:define>
 
     <cd:define name="instance-simplematrix">
+        <cd:constant value="matrix"/>
+        <cd:constant value="bmatrix"/>
+        <cd:constant value="pmatrix"/>
+        <cd:constant value="vmatrix"/>
+        <cd:constant value="vvmatrix"/>
+        <cd:constant value="vvvmatrix"/>
+        <cd:constant value="gmatrix"/>
+        <cd:constant value="bracematrix"/>
         <cd:constant value="thematrix"/>
     </cd:define>
 
@@ -295,6 +346,9 @@
         <cd:constant value="xleftarrow"/>
         <cd:constant value="xrightarrow"/>
         <cd:constant value="xleftrightarrow"/>
+        <cd:constant value="xlongleftarrow"/>
+        <cd:constant value="xlongrightarrow"/>
+        <cd:constant value="xlongleftrightarrow"/>
         <cd:constant value="xLeftarrow"/>
         <cd:constant value="xRightarrow"/>
         <cd:constant value="xLeftrightarrow"/>
@@ -308,6 +362,7 @@
         <cd:constant value="xrightharpoondown"/>
         <cd:constant value="xrightharpoonup"/>
         <cd:constant value="xrightoverleftarrow"/>
+        <cd:constant value="xleftoverrightarrow"/>
         <cd:constant value="xleftrightharpoons"/>
         <cd:constant value="xrightleftharpoons"/>
         <cd:constant value="xtriplerel"/>
@@ -330,25 +385,10 @@
         <cd:constant value="mrightharpoondown"/>
         <cd:constant value="mrightharpoonup"/>
         <cd:constant value="mrightoverleftarrow"/>
+        <cd:constant value="mleftoverrightarrow"/>
         <cd:constant value="mleftrightharpoons"/>
         <cd:constant value="mrightleftharpoons"/>
         <cd:constant value="mtriplerel"/>
-        <cd:constant value="eleftarrowfill"/>
-        <cd:constant value="erightarrowfill"/>
-        <cd:constant value="eleftrightarrowfill"/>
-        <cd:constant value="etwoheadrightarrowfill"/>
-        <cd:constant value="eleftharpoondownfill"/>
-        <cd:constant value="eleftharpoonupfill"/>
-        <cd:constant value="erightharpoondownfill"/>
-        <cd:constant value="erightharpoonupfill"/>
-        <cd:constant value="eoverbarfill"/>
-        <cd:constant value="eunderbarfill"/>
-        <cd:constant value="eoverbracefill"/>
-        <cd:constant value="eunderbracefill"/>
-        <cd:constant value="eoverparentfill"/>
-        <cd:constant value="eunderparentfill"/>
-        <cd:constant value="eoverbracketfill"/>
-        <cd:constant value="eunderbracketfill"/>
         <!-- text -->
         <cd:constant value="trel"/>
         <cd:constant value="tequal"/>
@@ -361,6 +401,7 @@
         <cd:constant value="tLeftrightarrow"/>
         <cd:constant value="ttwoheadleftarrow"/>
         <cd:constant value="ttwoheadrightarrow"/>
+        <cd:constant value="tmapsto"/>
         <cd:constant value="thookleftarrow"/>
         <cd:constant value="thookrightarrow"/>
         <cd:constant value="tleftharpoondown"/>
@@ -368,13 +409,81 @@
         <cd:constant value="trightharpoondown"/>
         <cd:constant value="trightharpoonup"/>
         <cd:constant value="trightoverleftarrow"/>
+        <cd:constant value="tleftoverrightarrow"/>
         <cd:constant value="tleftrightharpoons"/>
         <cd:constant value="trightleftharpoons"/>
         <cd:constant value="ttriplerel"/>
         <!-- chemistry -->
-        <cd:constant value="cleftarrow"/>
-        <cd:constant value="crightarrow"/>
-        <cd:constant value="crightoverleftarrow"/>
+        <cd:constant value="creturns"/>
+        <cd:constant value="cgives"/>
+        <cd:constant value="cmesomeric"/>
+        <cd:constant value="cequilibrium"/>
+        <cd:constant value="cleaningright"/>
+        <cd:constant value="cleaningleft"/>
+        <cd:constant value="clongreturns"/>
+        <cd:constant value="clonggives"/>
+        <cd:constant value="clongmesomeric"/>
+        <cd:constant value="clongequilibrium"/>
+        <cd:constant value="clongleaningright"/>
+        <cd:constant value="clongleaningleft"/>
+    </cd:define>
+
+    <cd:define name="instance-mathoverextensible">
+        <!-- top -->
+        <cd:constant value="overleftarrow"/>
+        <cd:constant value="overrightarrow"/>
+        <cd:constant value="overleftrightarrow"/>
+        <cd:constant value="overtwoheadleftarrow"/>
+        <cd:constant value="overtwoheadrightarrow"/>
+        <cd:constant value="overlefttailarrow"/>
+        <cd:constant value="overrighttailarrow"/>
+        <cd:constant value="overleftbararrow"/>
+        <cd:constant value="overrightbararrow"/>
+        <cd:constant value="overlefthookarrow"/>
+        <cd:constant value="overrighthookarrow"/>
+        <cd:constant value="overleftharpoondown"/>
+        <cd:constant value="overleftharpoonup"/>
+        <cd:constant value="overrightharpoondown"/>
+        <cd:constant value="overrightharpoonup"/>
+        <cd:constant value="overRightarrow"/>
+        <cd:constant value="overLeftarrow"/>
+        <cd:constant value="overLeftrightarrow"/>
+        <cd:constant value="overLeftbararrow"/>
+        <cd:constant value="overRightbararrow"/>
+        <!-- vfenced -->
+        <cd:constant value="overbar"/>
+        <cd:constant value="overbrace"/>
+        <cd:constant value="overparent"/>
+        <cd:constant value="overbracket"/>
+    </cd:define>
+
+    <cd:define name="instance-mathunderextensible">
+        <!-- bottom -->
+        <cd:constant value="underleftarrow"/>
+        <cd:constant value="underrightarrow"/>
+        <cd:constant value="underleftrightarrow"/>
+        <cd:constant value="undertwoheadleftarrow"/>
+        <cd:constant value="undertwoheadrightarrow"/>
+        <cd:constant value="underlefttailarrow"/>
+        <cd:constant value="underrighttailarrow"/>
+        <cd:constant value="underleftbararrow"/>
+        <cd:constant value="underrightbararrow"/>
+        <cd:constant value="underlefthookarrow"/>
+        <cd:constant value="underrighthookarrow"/>
+        <cd:constant value="underleftharpoondown"/>
+        <cd:constant value="underleftharpoonup"/>
+        <cd:constant value="underrightharpoondown"/>
+        <cd:constant value="underrightharpoonup"/>
+        <cd:constant value="underRightarrow"/>
+        <cd:constant value="underLeftarrow"/>
+        <cd:constant value="underLeftrightarrow"/>
+        <cd:constant value="underLeftbararrow"/>
+        <cd:constant value="underRightbararrow"/>
+        <!-- vfenced -->
+        <cd:constant value="underbar"/>
+        <cd:constant value="underbrace"/>
+        <cd:constant value="underparent"/>
+        <cd:constant value="underbracket"/>
     </cd:define>
 
     <cd:define name="instance-mathdoubleextensible">
@@ -391,21 +500,6 @@
     </cd:define>
 
     <cd:define name="instance-mathovertextextensible">
-        <!-- top -->
-        <cd:constant value="overleftarrow"/>
-        <cd:constant value="overrightarrow"/>
-        <cd:constant value="overleftrightarrow"/>
-        <cd:constant value="overtwoheadleftarrow"/>
-        <cd:constant value="overtwoheadrightarrow"/>
-        <cd:constant value="overleftharpoondown"/>
-        <cd:constant value="overleftharpoonup"/>
-        <cd:constant value="overrightharpoondown"/>
-        <cd:constant value="overrightharpoonup"/>
-        <!-- vfenced -->
-        <cd:constant value="overbar"/>
-        <cd:constant value="overbrace"/>
-        <cd:constant value="overparent"/>
-        <cd:constant value="overbracket"/>
         <!-- bothtext -->
         <cd:constant value="overbartext"/>
         <cd:constant value="overbracetext"/>
@@ -414,26 +508,248 @@
     </cd:define>
 
     <cd:define name="instance-mathundertextextensible">
-        <!-- bottom -->
-        <cd:constant value="underleftarrow"/>
-        <cd:constant value="underrightarrow"/>
-        <cd:constant value="underleftrightarrow"/>
-        <cd:constant value="undertwoheadleftarrow"/>
-        <cd:constant value="undertwoheadrightarrow"/>
-        <cd:constant value="underleftharpoondown"/>
-        <cd:constant value="underleftharpoonup"/>
-        <cd:constant value="underrightharpoondown"/>
-        <cd:constant value="underrightharpoonup"/>
-        <!-- vfenced -->
-        <cd:constant value="underbar"/>
-        <cd:constant value="underbrace"/>
-        <cd:constant value="underparent"/>
-        <cd:constant value="underbracket"/>
         <!-- bothtext -->
         <cd:constant value="underbartext"/>
         <cd:constant value="underbracetext"/>
         <cd:constant value="underparenttext"/>
         <cd:constant value="underbrackettext"/>
+    </cd:define>
+
+    <cd:define name="instance-synchronize">
+        <cd:constant value="paralleltext"/>
+    </cd:define>
+
+    <cd:define name="instance-textdisplay">
+        <cd:constant value="textdisplay"/>
+    </cd:define>
+
+    <cd:define name="instance-mathaccent">
+        <!-- mathtopaccent -->
+        <cd:constant value="grave"/>
+        <cd:constant value="acute"/>
+        <cd:constant value="hat"/>
+        <cd:constant value="tilde"/>
+        <cd:constant value="bar"/>
+        <cd:constant value="breve"/>
+        <cd:constant value="dot"/>
+        <cd:constant value="ddot"/>
+        <cd:constant value="overhook"/>
+        <cd:constant value="ring"/>
+        <!--
+            <cd:constant value="mathring"/>
+        -->
+        <cd:constant value="check"/>
+        <cd:constant value="overleftharpoon"/>
+        <cd:constant value="overrightharpoon"/>
+        <cd:constant value="dddot"/>
+        <cd:constant value="ddddot"/>
+        <cd:constant value="widegrave"/>
+        <cd:constant value="wideacute"/>
+        <cd:constant value="widehat"/>
+        <cd:constant value="widetilde"/>
+        <cd:constant value="widebar"/>
+        <cd:constant value="widebreve"/>
+        <cd:constant value="widedot"/>
+        <cd:constant value="wideddot"/>
+        <cd:constant value="widering"/>
+        <cd:constant value="widecheck"/>
+        <cd:constant value="widedddot"/>
+        <cd:constant value="vec"/>
+        <cd:constant value="wideoverleftharpoon"/>
+        <cd:constant value="wideoverrightharpoon"/>
+        <cd:constant value="wideoverleftarrow"/>
+        <cd:constant value="wideoverrightarrow"/>
+        <cd:constant value="wideoverleftrightarrow"/>
+        <cd:constant value="conjugate"/>
+        <cd:constant value="closure"/>
+        <!-- mathbottomaccent -->
+        <cd:constant value="wideundertilde"/>
+        <cd:constant value="wideunderbar"/>
+        <cd:constant value="wideunderleftrightarrow"/>
+        <cd:constant value="wideunderrightharpoon"/>
+        <cd:constant value="wideunderleftharpoon"/>
+        <cd:constant value="wideunderleftarrow"/>
+        <cd:constant value="wideunderrightarrow"/>
+    </cd:define>
+
+    <cd:define name="instance-mathdelimited">
+        <cd:constant value="ddotmarked"/>
+        <cd:constant value="barmarked"/>
+        <cd:constant value="hatmarked"/>
+        <cd:constant value="checkmarked"/>
+        <cd:constant value="brevemarked"/>
+        <!--
+            <cd:constant value="dotmarked"/>
+        -->
+        <cd:constant value="ringmarked"/>
+        <cd:constant value="tildemarked"/>
+        <cd:constant value="dddotmarked"/>
+        <cd:constant value="daggermarked"/>
+        <cd:constant value="ddaggermarked"/>
+        <cd:constant value="astmarked"/>
+        <cd:constant value="starmarked"/>
+        <cd:constant value="primed"/>
+        <cd:constant value="doubleprimed"/>
+        <cd:constant value="tripleprimed"/>
+        <cd:constant value="quadrupleprimed"/>
+        <cd:constant value="reverseprimed"/>
+        <cd:constant value="doublereverseprimed"/>
+        <cd:constant value="triplereverseprimed"/>
+        <!--
+            <cd:constant value="leftuppermarked"/>
+            <cd:constant value="rightuppermarked"/>
+            <cd:constant value="uppermarked"/>
+            <cd:constant value="leftlowermarked"/>
+            <cd:constant value="rightlowermarked"/>
+            <cd:constant value="lowermarked"/>
+        -->
+    </cd:define>
+
+    <cd:define name="instance-mathradical">
+        <cd:constant value="root"/>
+        <cd:constant value="sqrt"/>
+        <cd:constant value="rannuity"/>
+        <cd:constant value="lannuity"/>
+        <cd:constant value="lrannuity"/>
+        <cd:constant value="rlannuity"/>
+        <cd:constant value="annuity"/>
+        <cd:constant value="lbannuity"/>
+        <cd:constant value="rbannuity"/>
+        <cd:constant value="rlbannuity"/>
+        <cd:constant value="lrbannuity"/>
+    </cd:define>
+
+    <cd:define name="instance-mathnesting">
+        <cd:constant value="mathtogether"/>
+        <cd:constant value="mathloose"/>
+    </cd:define>
+
+    <cd:define name="instance-mathoperator">
+        <!-- integrals -->
+        <cd:constant value="integral"/>
+        <cd:constant value="iintegral"/>
+        <cd:constant value="iiintegral"/>
+        <cd:constant value="iiiintegral"/>
+        <cd:constant value="int"/>
+        <cd:constant value="iint"/>
+        <cd:constant value="iiint"/>
+        <cd:constant value="iiiint"/>
+        <cd:constant value="oint"/>
+        <cd:constant value="oiint"/>
+        <cd:constant value="oiiint"/>
+        <cd:constant value="intc"/>
+        <cd:constant value="ointc"/>
+        <cd:constant value="aointc"/>
+        <cd:constant value="sumint"/>
+        <cd:constant value="barint"/>
+        <cd:constant value="doublebarint"/>
+        <cd:constant value="slashint"/>
+        <cd:constant value="aodownintc"/>
+        <cd:constant value="rectangularpoleintc"/>
+        <cd:constant value="semicirclepoleintc"/>
+        <cd:constant value="circlepoleoutsideintc"/>
+        <cd:constant value="circlepoleinsideintc"/>
+        <cd:constant value="squareintc"/>
+        <cd:constant value="hookleftarrowint"/>
+        <cd:constant value="timesint"/>
+        <cd:constant value="capint"/>
+        <cd:constant value="cupint"/>
+        <cd:constant value="upperint"/>
+        <cd:constant value="lowerint"/>
+        <!-- summations -->
+        <cd:constant value="sum"/>
+        <cd:constant value="blackboardsum"/>
+        <cd:constant value="modtwosum"/>
+        <!-- products -->
+        <cd:constant value="prod"/>
+        <cd:constant value="coprod"/>
+        <!-- operators -->
+        <cd:constant value="bigwedge"/>
+        <cd:constant value="bigvee"/>
+        <cd:constant value="bigcap"/>
+        <cd:constant value="bigcup"/>
+        <cd:constant value="bigodot"/>
+        <cd:constant value="bigoplus"/>
+        <cd:constant value="bigotimes"/>
+        <cd:constant value="bigudot"/>
+        <cd:constant value="biguplus"/>
+        <cd:constant value="bigsqcap"/>
+        <cd:constant value="bigsqcup"/>
+        <cd:constant value="bigtimes"/>
+        <cd:constant value="leftouterjoin"/>
+        <cd:constant value="rightouterjoin"/>
+        <cd:constant value="fullouterjoin"/>
+        <cd:constant value="bigbottom"/>
+        <cd:constant value="bigtop"/>
+        <cd:constant value="bigsolidus"/>
+        <cd:constant value="bigreversesolidus"/>
+        <cd:constant value="bigdoublewedge"/>
+        <cd:constant value="bigdoublevee"/>
+    </cd:define>
+
+    <cd:define name="instance-mathfunction">
+        <cd:constant value="arccos"/>
+        <cd:constant value="arcsin"/>
+        <cd:constant value="arctan"/>
+        <cd:constant value="arccosh"/>
+        <cd:constant value="arcsinh"/>
+        <cd:constant value="arctanh"/>
+        <cd:constant value="acos"/>
+        <cd:constant value="asin"/>
+        <cd:constant value="atan"/>
+        <cd:constant value="arg"/>
+        <cd:constant value="cosh"/>
+        <cd:constant value="cos"/>
+        <cd:constant value="coth"/>
+        <cd:constant value="cot"/>
+        <cd:constant value="csc"/>
+        <cd:constant value="deg"/>
+        <cd:constant value="det"/>
+        <cd:constant value="dim"/>
+        <cd:constant value="erf"/>
+        <cd:constant value="erfc"/>
+        <cd:constant value="erfi"/>
+        <cd:constant value="exp"/>
+        <cd:constant value="gcd"/>
+        <cd:constant value="hom"/>
+        <cd:constant value="inf"/>
+        <cd:constant value="inv"/>
+        <cd:constant value="injlim"/>
+        <cd:constant value="ker"/>
+        <cd:constant value="lg"/>
+        <cd:constant value="liminf"/>
+        <cd:constant value="limsup"/>
+        <cd:constant value="lim"/>
+        <cd:constant value="ln"/>
+        <cd:constant value="log"/>
+        <cd:constant value="median"/>
+        <cd:constant value="max"/>
+        <cd:constant value="min"/>
+        <cd:constant value="mod"/>
+        <cd:constant value="projlim"/>
+        <cd:constant value="Pr"/>
+        <cd:constant value="sec"/>
+        <cd:constant value="sinh"/>
+        <cd:constant value="sin"/>
+        <cd:constant value="sup"/>
+        <cd:constant value="tanh"/>
+        <cd:constant value="tan"/>
+        <cd:constant value="diff"/>
+        <cd:constant value="adj"/>
+        <cd:constant value="coker"/>
+        <cd:constant value="neg"/>
+    </cd:define>
+
+    <cd:define name="instance-mathfunction-symbol">
+        <cd:constant value="adjoint"/>
+        <cd:constant value="orthogonalcomplement"/>
+        <cd:constant value="transpose"/>
+        <cd:constant value="derivative"/>
+        <cd:constant value="secondderivative"/>
+        <cd:constant value="thirdderivative"/>
+        <cd:constant value="fourthderivative"/>
+        <cd:constant value="preimage"/>
+        <cd:constant value="inverse"/>
     </cd:define>
 
 </cd:interface>

@@ -57,6 +57,7 @@ local pdfboolean          = lpdf.boolean
 local pdfconstant         = lpdf.constant
 local pdfreference        = lpdf.reference
 local pdfunicode          = lpdf.unicode
+local pdfstring           = lpdf.string
 local pdfmakenametree     = lpdf.makenametree
 
 local addtocatalog        = lpdf.addtocatalog
@@ -73,6 +74,7 @@ local texgetcount         = tex.getcount
 local nodes               = nodes
 local nodecodes           = nodes.nodecodes
 
+local par_code            <const> = nodecodes.par
 local hlist_code          <const> = nodecodes.hlist
 local vlist_code          <const> = nodecodes.vlist
 local glyph_code          <const> = nodecodes.glyph
@@ -86,6 +88,7 @@ local empty_rule_code     <const> = nodes.rulecodes.empty
 local a_tagged            <const> = attributes.private('tagged')
 local a_image             <const> = attributes.private('image')
 local a_mathblob          <const> = attributes.private('mathblob')
+local a_taggedpar         <const> = attributes.private("taggedpar")
 
 local nuts                = nodes.nuts
 
@@ -131,6 +134,7 @@ local taglist             = structurestags.taglist
 local specifications      = structurestags.specifications
 local usedlabels          = structurestags.labels
 local properties          = structurestags.properties
+local overloads           = structurestags.overloads
 local usewithcare         = structurestags.usewithcare
 
 local pushtag             = structurestags.push
@@ -189,12 +193,12 @@ end)
 
 local function setlinkstructureparent(refatt,objref)
     local p = linknumentries[refatt]
--- print("SET",refatt,p,objref)
+ -- print("SET",refatt,p,objref)
     linknumindices[p] = objref
 end
 
 function codeinjections.getlinkstructureparent(refatt)
--- print("GET",refatt, linknumentries[refatt])
+ -- print("GET",refatt, linknumentries[refatt])
     return linknumentries[refatt]
 end
 
@@ -288,6 +292,37 @@ local function concattags(tags)
     return concat(l," ",1,n)
 end
 
+local function checkoverload(tagname,tagnameused,detail,specification)
+    local o = overloads[tagnameused]
+    if o then
+        local d = detail
+        local c = o.criterium
+        if c == "parent" or c == "parents" then
+            local p = specification.taglist[#specification.taglist-1]
+            local s = specifications[p]
+            if c == "parents" then
+                p = s.parents -- special case
+                if p then
+                    d = match(p,"%S+")
+                else
+                    d = s.detail -- just in case
+                end
+            else
+                d = s.detail
+            end
+        end
+        if d then
+            d = o.mapping[d]
+            if d then
+                tagname     = d.tag
+                tagnameused = tagname
+                detail      = nil
+            end
+        end
+    end
+    return tagname, tagnameused, detail
+end
+
 local function finishstructure()
     if root and #structure_kids > 0 then
         local nums   = pdfarray()
@@ -315,6 +350,7 @@ local function finishstructure()
         end
         local usedrolemap    = nil
         local usednamespaces = nil
+        local originals      = { }
         if version == 1 then
             for k, v in next, usedmapping do
                 local k = usedlabels[k] or k
@@ -365,6 +401,20 @@ local function finishstructure()
                         if not usednamespaces then
                             usednamespaces = pdfarray()
                         end
+                        --
+                        local original = p.original
+                        if original then
+                            local o = originals[s]
+                            if not o then
+                                o = pdfdictionary()
+                                originals[s] = o
+                            end
+                            o[k] = pdfdictionary {
+                                S = pdfconstant(original[1]),
+                                T = pdfstring(original[2]),
+                            }
+                        end
+                        --
                     else
                         report_tags("beware: missing namespace %s", s)
                     end
@@ -374,11 +424,16 @@ local function finishstructure()
             end
             if usednamespaces then
                 for k, v in sortedhash(namespaces) do
+                    local o = originals[k]
+                    if o then
+                        o = pdfreference(pdfflushobject(o))
+                    end
                     if v.force then
                         local n = pdfdictionary {
                             Type           = pdfconstant("Namespace"),
                             NS             = pdfunicode(v.url),
                             LMTX_NameSpace = pdfconstant(k),
+                            LMTX_Originals = o,
                         }
                         pdfflushobject(v.num,n)
                         usednamespaces[#usednamespaces+1] = v.ref
@@ -391,6 +446,7 @@ local function finishstructure()
                                 NS             = pdfunicode(v.url),
                                 RoleMapNS      = m,
                                 LMTX_NameSpace = pdfconstant(k),
+                                LMTX_Originals = o,
                             }
                             pdfflushobject(v.num,n)
                             usednamespaces[#usednamespaces+1] = v.ref
@@ -446,7 +502,6 @@ local function finishstructure()
                 if dict then
                     local dnum = element.dnum
                     local kids = element.kids
-
                     if checklinks then
                         local tag = element.tag
                         if tag == "link" then
@@ -521,6 +576,13 @@ local function finishstructure()
             IDTree     = idtree,
             RoleMap    = usedrolemap,
             Namespaces = usednamespaces,
+            -- Experiment with some control (screen readers) but it didn't work out reliable
+            -- so forget about it.
+         -- ClassMap = pdfdictionary {
+         --     Display = pdfdictionary { O = pdfconstant("Layout"), Placement = pdfconstant("Block")  },
+         --     Inline  = pdfdictionary { O = pdfconstant("Layout"), Placement = pdfconstant("Inline") },
+         -- },
+
         }
         pdfflushobject(structure_ref,structuretree)
         addtocatalog("StructTreeRoot",pdfreference(structure_ref))
@@ -697,7 +759,6 @@ local makeelement  do
                         bindex = bindex + 1
                         local blobname = f_tagid(blobindex)
                         local blobfile = f_tagfn(blobindex)
---                         local blobdata = mathematics.getmathblob("pdf",blobindex)
                         local blobdata = mathematics.getmathblob("pdf",blob)
                         af = codeinjections.embedfile {
                             force          = true,
@@ -706,18 +767,13 @@ local makeelement  do
                             file           = blobfile,
                          -- hash           = hash,
                             hash           = id,
---                             index          = bindex,
                             forcereference = true,
                          -- title          = "whatever",
                             mimetype       = "application/mathml+xml",
                             relation       = "Supplement", -- bah
---                             share          = true,
                         }
-                     -- af = pdfarray { af } -- maybe also share this
                         af = pdfreference(pdfflushobject(pdfarray { af })) -- maybe also share this
---                         shared[blobindex] = { af, blobname }
                         shared[blobindex] = { af, blobindex }
---                         btags[blob] = blobname
                         btags[blob] = blobindex
                     end
                     actualtext = mathematics.gettextblob("pdf",specification.language or "en",blob)
@@ -750,8 +806,7 @@ local makeelement  do
             if blob and not blobdone[blob] then
                 local bname = btags[blob]
                 if bname then
---                     bname = "M " .. blob .. " " .. bname
-                    bname = "M " .. blob .. " " .. f_tagid(blobname)
+                    bname = "M " .. blob .. " " .. f_tagid(bname)
                 else
                     bname = "M " .. blob
                 end
@@ -864,6 +919,20 @@ local makeelement  do
     local lastid = 0
     local f_id   = formatters["%X"]
 
+    local symbols = table.setmetatableindex (
+        { -- None
+            ["1"] = "Disc",
+            ["2"] = "Circle",
+            ["3"] = "Square",
+            ["n"] = "Decimal",
+            ["I"] = "UpperRoman",
+            ["i"] = "LowerRoman",
+            ["A"] = "UpperAlpha",
+            ["a"] = "LowerAlpha",
+        },
+        function(t,k) return tonumber(k) and "Unordered" or "Ordered" end
+    )
+
     makeelement = function(fulltag,parent)
         local specification = specifications[fulltag]
         local tagname       = specification and specification.tagname or "ignore"
@@ -894,9 +963,21 @@ local makeelement  do
                 local cols = d.columns or 1
                 if rows > 1 or cols > 1 then
                     attributes = pdfdictionary {
+                        -- The usual inconsistency on short and long keys:
                         O       = pdfconstant("Table"),
                         RowSpan = rows > 1 and rows or nil,
                         ColSpan = cols > 1 and cols or nil,
+                    }
+                end
+            end
+        elseif tagname == "itemgroup" then
+            local d = structurestags.getitemgroup(fulltag)
+            if d then
+                local symbol = d.symbol
+                if symbol then
+                    attributes = pdfdictionary {
+                        ListNumbering = pdfconstant(symbols[symbol] or "None"),
+                        ContinuedList = d.continue and true or nil,
                     }
                 end
             end
@@ -919,6 +1000,13 @@ local makeelement  do
         --
         local detail     = specification.detail
         local userdata   = specification.userdata
+        --
+        if version == 1 then
+            -- not here
+        else
+            -- ugly hack
+            tagname, tagnameused, detail = checkoverload(tagname,tagnameused,detail,specification)
+        end
         --
         usedmapping[tagname] = true
         --
@@ -1041,7 +1129,7 @@ local function makecontent(start,parent,id,specification,range)
     local tag  = parent.tag
     local kids = parent.kids
     local last = index
-index = index + 1
+    index = index + 1
     if id == "image" then
         local list  = specification.taglist
         local data  = usewithcare.images[list[#list]]
@@ -1081,12 +1169,8 @@ index = index + 1
         kids[#kids+1] = d
     end
     --
---     index = index + 1
     list[index] = parent.pref -- page related list
     --
--- if tag == "navigationpage" then
---     print(tag,index)
--- end
     return f_BDC(tag,last)
 end
 
@@ -1115,8 +1199,11 @@ local tag_rule_state      <const> = -5
 
 function nodeinjections.addtags(head,ispage)
 
-    if not tex.conditionals.c_strc_tags_global then
-        return
+    if tex.systemmodes.export then
+        return head
+    elseif not tex.conditionals.c_strc_tags_global then
+        return head
+--         return
     end
 
 --     if not enabled then
@@ -1164,12 +1251,17 @@ function nodeinjections.addtags(head,ispage)
  --     end
  -- end
 
+-- todo: survive across pages
+
+    local lastpar   = 0
+    local lastparat = 0
+
     local function collectranges(head,parent)
         for n, id, subtype in nextnode, head do
          -- check(n,id)
             if id == glyph_code then
              -- if getchar(n) ~= 0 then
-                    local at, blob = getattrs(n,a_tagged,a_mathblob)
+                    local at, blob, ap = getattrs(n,a_tagged,a_mathblob,a_taggedpar)
                     if at == 0 then
                         at = false
                     elseif at == 1 then
@@ -1208,8 +1300,28 @@ function nodeinjections.addtags(head,ispage)
                             nofranges = nofranges + 1
                             ranges[nofranges] = range
                             last = at
+                            lastparat = at
+                            lastpar = ap
                         elseif range then
-                            range[4] = n -- stop
+                            if lastpar ~= ap and at and lastparat == at then
+                            -- local specification = taglist[at]
+                                pushtag(at < tag_document_level and tag_document_level or at)
+                                local ac = starttag("break")
+                                stoptag()
+                                poptag()
+                                range = { ac, "break", n, false }
+                                nofranges = nofranges + 1
+                                ranges[nofranges] = range
+
+                                lastpar = ap
+                                range = { at, "glyph", n, n, parent } -- , false, false, ap } -- attr id start stop list
+                                nofranges = nofranges + 1
+                                ranges[nofranges] = range
+                                last = at
+                                lastparat = at
+                            else
+                                range[4] = n -- stop
+                            end
                         end
                  -- elseif blob == mblob and at == last then
                     elseif blob == mblob and (last and last > 0) then
@@ -1381,20 +1493,45 @@ function nodeinjections.addtags(head,ispage)
             local id    = range[2]
             local start = range[3]
             local stop  = range[4]
+         -- local blob  = range[6]
+         -- local par   = range[8]
+            local pdf   = ""
+
+         -- if trace_tags == "pdf" then
+         --     local specification = taglist[attr]
+         --     if attr then
+         --         local tagname     = specification.tagname
+         --         local tagnameused = specification.tagname
+         --         local detail      = specification.detail
+         --         tagname, tagnameused, detail = checkoverload(tagname,tagname,detail,specification)
+         --         local p = properties[tagnameused]
+         --         if p then
+         --             pdf = p.pdf
+         --         end
+         --         if pdf then
+         --             pdf = " (" .. pdf .. ")"
+         --         else
+         --             pdf = ""
+         --         end
+         --     end
+         -- end
+
             local tags  = taglist[attr]
             if tags then -- not ok ... only first lines
                 local s = concattags(tags)
                 if id == "reference" then
-                    report_tags("R %5i %s",attr,s)
+                    report_tags("R %5i %s%s",attr,s,pdf)
                 elseif id == "link" then
-                    report_tags("L %5i %s",attr,s)
+                    report_tags("L %5i %s%s",attr,s,pdf)
+                elseif id == "break" then
+                    report_tags("B %5i %s%s",attr,s,pdf)
                 elseif id == "navigationpage" then
-                    report_tags("P %5i %s : %i",attr,s,pagenum or 0)
+                    report_tags("P %5i %s : %i%s",attr,s,pagenum or 0,pdf)
                 else
-                    report_tags("T %5i %s : %s",attr,s,nodes.listtoutf(start,false,true,stop))
+                    report_tags("T %5i %s : %s%s",attr,s,nodes.listtoutf(start,false,true,stop),pdf)
                 end
             else
-                report_tags("  -----")
+                report_tags("-------")
             end
         end
         report_tags("")
@@ -1464,6 +1601,8 @@ function nodeinjections.addtags(head,ispage)
         local start = range[3]
         local stop  = range[4]
         local list  = range[5]
+     -- local blob = range[6]
+--         local par   = range[8]
 
 --         print(id,start,stop)
 
@@ -1506,10 +1645,6 @@ function nodeinjections.addtags(head,ispage)
                         prev = prv
                     end
                     -- this is an ugly hack but ok for now -- elements property
--- print(prev.blob,find(tag,"^math>"))
---             if prev.blob then
---                 break
---             end
                     if find(tag,"^math>") then
                         break
                     end
@@ -1595,7 +1730,6 @@ function codeinjections.settaggingsupport(option)
     if option == false then
         if enabled then
             disableaction("shipouts","structures.tags.handler")
-         -- disableaction("shipouts","nodes.handlers.accessibility") -- maybe not this one
             disableaction("math","noads.handlers.tags")
             enabled = false
         end
@@ -1614,7 +1748,9 @@ function codeinjections.enabletags()
         if shipout then
             enableaction("shipouts","structures.tags.handler")
         end
-     -- enableaction("shipouts","nodes.handlers.accessibility")
+        --
+        -- already done when export is set:
+        --
         enableaction("math","noads.handlers.tags")
         --
         if not embeddedtags then
@@ -1632,4 +1768,13 @@ function codeinjections.enabletags()
         updaters.apply("structures.tagging",version)
         structures.references.forceinnermode()
     end
+end
+
+function codeinjections.discardpages(state)
+    if state == true then
+        state = false
+    else
+        state = true
+    end
+    lpdf.setpagestate(state)
 end

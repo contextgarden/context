@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definesidebar" level="style" category="rules" file="anch-bar.mkiv">
+    <cd:command name="definesidebar" level="style" category="rules" file="anch-bar.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupsidebar" level="style" category="rules" file="anch-bar.mkiv">
+    <cd:command name="setupsidebar" level="style" category="rules" file="anch-bar.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -42,13 +42,19 @@
                 <cd:parameter name="level">
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
+                <cd:parameter name="location">
+                    <cd:constant type="left"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="inner"/>
+                    <cd:constant type="outer"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
     <!--
 
-        <cd:command name="setupsidebars" level="style" category="rules" file="anch-bar.mkiv">
+        <cd:command name="setupsidebars" level="style" category="rules" file="anch-bar.mkxl">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -59,7 +65,7 @@
 
     -->
 
-    <cd:command name="sidebar" type="environment" level="document" category="rules" file="anch-bar.mkiv">
+    <cd:command name="sidebar" type="environment" level="document" category="rules" file="anch-bar.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -68,7 +74,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmarginrule" level="style" category="rules" file="anch-bar.mkiv">
+    <cd:command name="setupmarginrule" level="style" category="rules" file="anch-bar.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
             <cd:assignments list="yes">
@@ -77,7 +83,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmarginrules" level="style" category="rules" file="anch-bar.mkiv">
+    <cd:command name="setupmarginrules" level="style" category="rules" file="anch-bar.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
             <cd:assignments list="yes">
@@ -86,13 +92,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="marginrule" type="environment" level="document" category="rules" file="anch-bar.mkiv">
+    <cd:command name="marginrule" type="environment" level="document" category="rules" file="anch-bar.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="marginrule" type="environment" variant="assignment" level="document" category="rules" file="anch-bar.mkiv">
+    <cd:command name="marginrule" type="environment" variant="assignment" level="document" category="rules" file="anch-bar.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupmarginrule"/>

@@ -173,7 +173,7 @@ end
 -- *.tex
 -- *.hyp.txt *.pat.txt *.lic.txt *.chr.txt
 
-function scripts.patterns.load(path,name,mnemonic,ignored, merged)
+function scripts.patterns.load(path,name,mnemonic,ignored,merged)
     local fullname = file.join(path,name)
     local basename = name
     local texfile  = addsuffix(fullname,"tex")
@@ -362,7 +362,6 @@ function scripts.patterns.load(path,name,mnemonic,ignored, merged)
             end
             return result
         end
-
         splitpatternsold = stripped(splitpatternsnew,ignored)
         splithyphenationsold = stripped(splithyphenationsnew,ignored)
 
@@ -530,7 +529,8 @@ function scripts.patterns.check()
     for k, v in next, scripts.patterns.list do
         local mnemonic = v.mnemonic
         local name     = v.name
-        local ignored  = v.comment
+        local comment  = v.comment
+        local ignored  = v.ignored
         local merged   = v.merged
         if not only or only[mnemonic] then
             report("checking language %s, file %s", mnemonic, name)
@@ -560,7 +560,8 @@ function scripts.patterns.convert()
             for k, v in next, scripts.patterns.list do
                 local mnemonic = v.mnemonic
                 local name     = v.name
-                local ignored  = v.comment
+                local comment  = v.comment
+                local ignored  = v.ignored
                 local merged   = v.merged
                 if not only or only[mnemonic] then
                     report("converting language %s, file %s", mnemonic, name)

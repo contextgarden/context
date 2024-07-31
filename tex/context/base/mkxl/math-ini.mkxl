@@ -84,6 +84,9 @@
 \newdimension  \d_strc_math_indent
 \newconditional\c_strc_math_indent
 
+\newdimension  \d_strc_math_left_shift
+\newdimension  \d_strc_math_right_shift
+
 \newinteger    \currentmathblob
 \newinteger    \currentmathblobnesting % could be a primitive
 
@@ -852,7 +855,7 @@
 \to \everydisplay
 
 \appendtoks
-    \c_attr_mathmode   \plusone
+    \c_attr_mathmode\plusone
 \to \everybeforedisplayformula
 
 % defined at lua end \permanent\protected\def\resetmathattributes{\resetmathattributes}
@@ -970,7 +973,8 @@
    \else
      \cdef\currentmathematics{#1}% todo: check for valid
    \fi
-   \expand\everysetupmathematics % kind of special here as we append to it/ check
+%    \expand\everysetupmathematics % kind of special here as we append to it/ check
+   \expand\everyswitchmathematics % kind of special here as we append to it/ check
    \usemathematicscolorparameter\c!color
    \ifcstok{\mathematicsparameter\c!openup}\v!yes
      \expandafter\math_m_yes_text_openedup
@@ -1742,7 +1746,8 @@
       \enforced\let\mathdefault \math_italic
       \enforced\let\math_default\math_italic
     \fi
-\to \everysetupmathematics
+% \to \everysetupmathematics
+\to \everyswitchmathematics
 
 \setupmathematics
   [\c!default=\v!italic]
@@ -1814,7 +1819,8 @@
 
 \appendtoks
     \c_math_renderings_attribute\clf_mathrenderset{\mathematicsparameter\c!symbolset}\relax
-\to \everysetupmathematics % only in mathematics
+% \to \everysetupmathematics % only in mathematics
+\to \everyswitchmathematics
 
 \appendtoks
     \ifcase\c_math_renderings_attribute\else
@@ -1960,7 +1966,7 @@
 
 %definemathcommand [mathstrut]               {\vphantom{(}}
 %definemathcommand [joinrel]                 {\mathrel{\mkern-3mu}}
-\definemathcommand [joinrel]   [\s!relation] {\mkern-3mu}
+%definemathcommand [joinrel]   [\s!relation] {\mkern-3mu}
 
 \immutable\chardef\c_math_strut"28
 
@@ -2072,7 +2078,9 @@
 \permanent\protected\def\mtext#1%
   {\begingroup
    \currentmathblobnesting\minusone
+   \dostarttaggednodetail\t!mtext
    \text{\usemathematicsstyleandcolor\c!textstyle\c!textcolor#1}%
+   \dostoptagged
    \endgroup}
 
 \protected\permanent\def\textmathematics#1%
@@ -2268,14 +2276,14 @@
 \permanent\protected\def\mfunction_yop                 #1#2{\math_function_handle\zerocount{#2}{}}
 
 \appendtoks
-    \edef\p_functionstyle{\formulaparameter\c!functionstyle}%
-    \ifempty\p_functionstyle\else
-        \letmathematicsparameter\c!functionstyle\p_functionstyle
-    \fi
-    \edef\p_functioncolor{\formulaparameter\c!functioncolor}%
-    \ifempty\p_functioncolor\else
-        \letmathematicsparameter\c!functioncolor\p_functioncolor
-    \fi
+%     \edef\p_functionstyle{\formulaparameter\c!functionstyle}%
+%     \ifempty\p_functionstyle\else
+%         \letmathematicsparameter\c!functionstyle\p_functionstyle
+%     \fi
+%     \edef\p_functioncolor{\formulaparameter\c!functioncolor}%
+%     \ifempty\p_functioncolor\else
+%         \letmathematicsparameter\c!functioncolor\p_functioncolor
+%     \fi
 \to \everybeforedisplayformula
 
 \let\math_tags_mfunctionlab         \gobblethreearguments
@@ -2309,7 +2317,6 @@
     \enforced\let\math_tags_mfunctionlab         \clf_tagmfunctionlab
     \enforced\let\math_tags_mfunctionlabattribute\clf_tagmfunctionlabattribute
 \to \everyenableelements
-
 
 \permanent\protected\def\registermathfunction[#1]% experimental
   {\begingroup
@@ -2420,6 +2427,7 @@
 %         \enforced\let\specialmathaligntab\mathampersand
 %     \fi
 % \to \everysetupmathematics
+% \to \everyswitchmathematics
 
 %D A simplified version of this code is:
 %D
@@ -2629,7 +2637,8 @@
     \ifempty\currentmathematics
         \math_basics_check_compact % less tracing
     \fi
-\to \everysetupmathematics
+% \to \everysetupmathematics
+\to \everyswitchmathematics
 
 \setupmathematics
   [\c!compact=\v!no]
@@ -2706,6 +2715,7 @@
 %     \edef\p_bidi{\mathematicsparameter\c!bidi}% still needed ?
 %     \ifcsname\??mathbidi\p_bidi\endcsname\lastnamedcs\else\math_bidi_disable\fi
 % \to \everysetupmathematics
+% \to \everyswitchmathematics
 %
 % \appendtoks
 %     \c_attr_mathbidi\ifconditional\c_math_right_to_left\c_math_bidi\else\attributeunsetvalue\fi
@@ -2733,14 +2743,25 @@
 \defcsname\??mathgreek\v!normal\endcsname{2}
 \defcsname\??mathgreek\v!italic\endcsname{3}
 
+% \appendtoks
+%     \edef\p_sygreek{\mathematicsparameter\s!sygreek}% still needed ?
+%     \edef\p_lcgreek{\mathematicsparameter\s!lcgreek}% still needed ?
+%     \edef\p_ucgreek{\mathematicsparameter\s!ucgreek}% still needed ?
+%     \c_math_greek_attribute"% hex digits
+%       \ifcsname\??mathgreek\p_sygreek\endcsname\lastnamedcs\else1\fi
+%       \ifcsname\??mathgreek\p_lcgreek\endcsname\lastnamedcs\else1\fi
+%       \ifcsname\??mathgreek\p_ucgreek\endcsname\lastnamedcs\else1\fi
+%     \relax
+%     \ifcase\c_math_greek_attribute
+%       \c_math_greek_attribute\attributeunsetvalue
+%     \fi
+% \to \everyswitchmathematics
+
 \appendtoks
-    \edef\p_sygreek{\mathematicsparameter\s!sygreek}% still needed ?
-    \edef\p_lcgreek{\mathematicsparameter\s!lcgreek}% still needed ?
-    \edef\p_ucgreek{\mathematicsparameter\s!ucgreek}% still needed ?
     \c_math_greek_attribute"% hex digits
-      \ifcsname\??mathgreek\p_sygreek\endcsname\lastnamedcs\else1\fi
-      \ifcsname\??mathgreek\p_lcgreek\endcsname\lastnamedcs\else1\fi
-      \ifcsname\??mathgreek\p_ucgreek\endcsname\lastnamedcs\else1\fi
+      \ifcsname\??mathgreek\mathematicsparameter\s!sygreek\endcsname\lastnamedcs\else1\fi
+      \ifcsname\??mathgreek\mathematicsparameter\s!lcgreek\endcsname\lastnamedcs\else1\fi
+      \ifcsname\??mathgreek\mathematicsparameter\s!ucgreek\endcsname\lastnamedcs\else1\fi
     \relax
     \ifcase\c_math_greek_attribute
       \c_math_greek_attribute\attributeunsetvalue
@@ -3071,7 +3092,8 @@
     \ifcsname\??mathautopunctuation\mathematicsparameter\c!autopunctuation\endcsname \else
         \letmathematicsparameter\c!autopunctuation\v!no
     \fi
-\to \everysetupmathematics
+% \to \everysetupmathematics
+\to \everyswitchmathematics
 
 \permanent\protected\def\enablemathpunctuation {\csname\??mathautopunctuation\v!no \endcsname}
 \permanent\protected\def\disablemathpunctuation{\csname\??mathautopunctuation\v!yes\endcsname}
@@ -3121,7 +3143,8 @@
     \else
       \disablemathautospacing
     \fi
-\to \everysetupmathematics
+% \to \everysetupmathematics
+\to \everyswitchmathematics
 
 \setupmathematics
   [\c!autospacing=\v!no]
@@ -3143,7 +3166,8 @@
     \else
       \enablemathautonumbers % default
     \fi
-\to \everysetupmathematics
+% \to \everysetupmathematics
+\to \everyswitchmathematics
 
 \setupmathematics
   [\c!autonumbers=\v!no]
@@ -3160,10 +3184,12 @@
 \appendtoks
     \ifcstok{\mathematicsparameter\c!autofencing}\v!yes
       \enablemathautofencing
+      \autofences
     \else
       \disablemathautofencing
     \fi
-\to \everysetupmathematics
+% \to \everysetupmathematics
+\to \everyswitchmathematics
 
 \setupmathematics
   [\c!autofencing=\v!no]
@@ -3643,7 +3669,7 @@
   \ifcase\c_math_styles_state_size
     \ifcase\c_math_styles_state_style
         \ifcase\c_math_styles_state_cramped
-        \mathstyle            \or
+        \currentlysetmathstyle\or
         \triggeruncrampedstyle\or
         \triggercrampedstyle  \fi
     \or\ifcase\c_math_styles_state_cramped
@@ -3698,7 +3724,7 @@
         \or\scriptstyle\or\crampedscriptstyle\fi
     \fi
   \else
-    \mathstyle
+    \currentlysetmathstyle
   \fi
 }
 
@@ -3710,18 +3736,18 @@
 \def\math_style_collect#1%
   {\csname\??mathstylecommand#1\endcsname}
 
-\defcsname\??mathstylecommand\s!display     \endcsname{\c_math_styles_state_style  \plusone}
-\defcsname\??mathstylecommand\s!text        \endcsname{\c_math_styles_state_style  \plustwo}
-\defcsname\??mathstylecommand\s!script      \endcsname{\c_math_styles_state_style  \plusthree}
-\defcsname\??mathstylecommand\s!scriptscript\endcsname{\c_math_styles_state_style  \plusfour}
+\defcsname\??mathstylecommand\s!display     \endcsname{\indisplaymath\conditionaltrue \c_math_styles_state_style\plusone}
+\defcsname\??mathstylecommand\s!text        \endcsname{\indisplaymath\conditionalfalse\c_math_styles_state_style\plustwo}
+\defcsname\??mathstylecommand\s!script      \endcsname{\indisplaymath\conditionalfalse\c_math_styles_state_style\plusthree}
+\defcsname\??mathstylecommand\s!scriptscript\endcsname{\indisplaymath\conditionalfalse\c_math_styles_state_style\plusfour}
 
 \defcsname\??mathstylecommand\s!uncramped   \endcsname{\c_math_styles_state_cramped\plusone}
 \defcsname\??mathstylecommand\s!cramped     \endcsname{\c_math_styles_state_cramped\plustwo}
 \defcsname\??mathstylecommand\v!normal      \endcsname{\c_math_styles_state_cramped\plusone}
 \defcsname\??mathstylecommand\v!packed      \endcsname{\c_math_styles_state_cramped\plustwo}
 
-\defcsname\??mathstylecommand\v!small       \endcsname{\c_math_styles_state_size   \plusone}
-\defcsname\??mathstylecommand\v!big         \endcsname{\c_math_styles_state_size   \plustwo}
+\defcsname\??mathstylecommand\v!small       \endcsname{\c_math_styles_state_size\plusone}
+\defcsname\??mathstylecommand\v!big         \endcsname{\c_math_styles_state_size\plustwo}
 
 %D A \type {mathstyle} is a set of:
 %D
@@ -3759,6 +3785,11 @@
 \defcsname\??mathstyle\v!normal\endcsname{\givenmathstyle\normalmathstyle}
 \defcsname\??mathstyle         \endcsname{\givenmathstyle\normalmathstyle}
 
+\permanent\def\expandedmathstyleparameter#1#2%
+  {\normalexpanded{\noexpand\math_style_set_expanded{#1#2}}}
+
+\def\math_style_set_main{\indisplaymath\ifcase\mathstyle\conditionaltrue\else\conditionalfalse\fi} % for fractions
+
 \def\math_style_set_indeed
   {\ifcsname\??mathstyle\m_math_style_asked\endcsname
      \lastnamedcs
@@ -3766,10 +3797,8 @@
      \lastnamedcs
    \else
      \math_style_set_mathstyle_mathstylecache\m_math_style_asked
-   \fi}
-
-\permanent\def\expandedmathstyleparameter#1#2%
-  {\normalexpanded{\noexpand\math_style_set_expanded{#1#2}}}
+   \fi
+   \math_style_set_main}
 
 \def\math_style_set_expanded#1%
   {\ifcsname\??mathstyle#1\endcsname
@@ -3778,7 +3807,8 @@
      \lastnamedcs
    \else
      \math_style_set_mathstyle_mathstylecache{#1}%
-   \fi}
+   \fi
+   \math_style_set_main}
 
 \permanent\protected\def\usemathstyleparameter#1#2%
   {\edef\m_math_style_asked{#1#2}%
@@ -3787,7 +3817,7 @@
    \fi}
 
 \permanent\tolerant\protected\def\setmathstyle[#1]#;#=% so we accept [] and {}
-  {\edef\m_math_style_asked{#1\c!mathstyle}%
+  {\edef\m_math_style_asked{#1#2\c!mathstyle}%
    \ifempty\m_math_style_asked \else
      \math_style_set_indeed
    \fi}
@@ -3805,9 +3835,11 @@
    \c_math_styles_state_cramped\zerocount
    \c_math_styles_state_size   \zerocount
    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
-   \gletcsname\ifmmode\??mathstylecachem\the\mathstyle:\else\??mathstylecachet\fi\m_math_style_asked\normalexpanded{\endcsname\math_style_add_to_cache_choice}%
+   \gletcsname\ifmmode\??mathstylecachem\the\mathstyle:\else\??mathstylecachet\fi\m_math_style_asked\normalexpanded
+     {\endcsname\math_style_add_to_cache_choice}%
    \endlocalcontrol
-   \csname\ifmmode\??mathstylecachem\the\mathstyle:\else\??mathstylecachet\fi\m_math_style_asked\endcsname}
+   \csname\ifmmode\??mathstylecachem\the\mathstyle:\else\??mathstylecachet\fi\m_math_style_asked\endcsname
+   \math_style_set_main}
 
 % \letcsname\??mathstyle     \??mathstyle     \endcsname\math_style_set_mathstyle_mathstyle      % still needed?
 % \letcsname\??mathstylecache\??mathstylecache\endcsname\math_style_set_mathstyle_mathstylecache % still needed?
@@ -4635,7 +4667,8 @@
 
 \def\math_italics_initialize
   {\clf_initializemathitalics % one time, so permanent
-   \glettonothing\math_italics_initialize}
+   \gdef\math_italics_initialize{\bitwiseflip\glyphoptions\mathcheckitalicglyphoptioncode}%
+   \math_italics_initialize}
 
 \appendtoks
     \ifcstok{\mathematicsparameter\s!italics}\v!yes
@@ -4978,11 +5011,13 @@
     \ifx\m_math_alignscripts\m_alignscripts\else
         \m_math_update_alignscripts
     \fi
-\to \everysetupmathematics
+% \to \everysetupmathematics
+\to \everyswitchmathematics
 
 \appendtoks
     \scriptspacebetweenfactor\numericscale\mathematicsparameter\c!interscriptfactor\relax
-\to \everysetupmathematics
+% \to \everysetupmathematics
+\to \everyswitchmathematics
 
 \setupmathematics
   [\c!alignscripts=\v!always,
@@ -4998,7 +5033,8 @@
     \else
       \c_math_intervals\attributeunsetvalue
     \fi
-\to \everysetupmathematics
+% \to \everysetupmathematics
+\to \everyswitchmathematics
 
 \appendtoks
     \attribute\mathintervalsattribute\c_math_intervals
@@ -5014,10 +5050,37 @@
 % \newinteger\currentmathblob
 % \newinteger\currentmathblobnesting % could be a primitive
 
+\newconditional\overloadedmathmeaning
+
+\permanent\protected\def\math_start_meaning
+  {\begingroup
+   \let\math_trace_blobs\relax
+   \setbox\scratchbox\hpack\bgroup\startmathexport[math:export]%
+   \startimath}
+
+\permanent\protected\def\math_stop_meaning
+  {\stopimath
+   \stopmathexport
+   \egroup
+   \endgroup
+   \global\overloadedmathmeaning\conditionaltrue}
+
+\appendtoks
+    \enforced\let\startmathmeaning\math_start_meaning
+    \enforced\let\stopmathmeaning \math_stop_meaning
+\to \everyenableelements
+
+\permanent\protected\def\startmathmeaning
+  {\gobbleuntil\stopmathmeaning}
+
 \protected\def\math_bump_blob_state
   {\ifnum\currentmathblobnesting<\zerocount\else
      \ifcase\currentmathblobnesting
-       \global\advanceby\currentmathblob\plusone
+       \ifconditional\overloadedmathmeaning
+         \global\overloadedmathmeaning\conditionalfalse
+       \else
+         \global\advanceby\currentmathblob\plusone
+       \fi
        \attribute\mathblobattribute\currentmathblob
      \fi
      \advanceby\currentmathblobnesting\plusone

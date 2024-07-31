@@ -393,10 +393,66 @@ static int strlib_linetable(lua_State *L)
 
 */
 
-static int strlib_utfcharacter(lua_State *L) /* todo: use tounichar here too */
+static inline void strlib_aux_add_utfchar(luaL_Buffer *b, unsigned u)
+{
+    if (u <= MAXUNICODE) {
+        if (0x80 > u) {
+            luaL_addchar(b, (unsigned char) u);
+        } else {
+            if (0x800 > u)
+                luaL_addchar(b, (unsigned char) (0xC0 | (u >> 6)));
+            else {
+                if (0x10000 > u)
+                    luaL_addchar(b, (unsigned char) (0xE0 | (u >> 12)));
+                else {
+                    luaL_addchar(b, (unsigned char) (0xF0 | (u >> 18)));
+                    luaL_addchar(b, (unsigned char) (0x80 | (0x3F & (u >> 12))));
+                }
+                luaL_addchar(b, 0x80 | (0x3F & (u >> 6)));
+            }
+            luaL_addchar(b, 0x80 | (0x3F & u));
+        }
+    }
+}
+
+static inline void strlib_aux_add_utfnumber(lua_State *L, luaL_Buffer *b, lua_Integer index)
+{
+    strlib_aux_add_utfchar(b, (unsigned) lua_tointeger(L, index));
+}
+
+static inline void strlib_aux_add_utfstring(lua_State *L, luaL_Buffer *b, lua_Integer index)
+{
+    size_t ls = 0;
+    const char *s = lua_tolstring(L, index, &ls);
+    luaL_addlstring(b, s, ls);
+}
+
+static inline void strlib_aux_add_utftable(lua_State *L, luaL_Buffer *b, lua_Integer index)
+{
+    int n = lua_rawlen(L, index);
+    if (n > 0) { 
+        for (lua_Integer i = 1; i <= n; i++) {
+            lua_rawgeti(L, index, i);
+            switch (lua_type(L, -1)) { 
+                case LUA_TNUMBER: 
+                    strlib_aux_add_utfnumber(L, b, -1);
+                    break;
+                case LUA_TTABLE:
+                    strlib_aux_add_utftable(L, b, -1);
+                    break;
+                case LUA_TSTRING: 
+                    strlib_aux_add_utfstring(L, b, -1);
+                    break;
+            }
+            lua_pop(L, 1);
+        }
+    }
+}
+
+static int strlib_utfcharacter(lua_State *L)
 {
     int n = lua_gettop(L);
-    if (n == 1) {
+    if (n == 1 && lua_type(L, 1) == LUA_TNUMBER) {
         char u[6];
         char *c = aux_uni2string(&u[0], (unsigned) lua_tointeger(L, 1));
         *c = '\0';
@@ -404,26 +460,18 @@ static int strlib_utfcharacter(lua_State *L) /* todo: use tounichar here too */
         return 1;
     } else {
         luaL_Buffer b;
-        luaL_buffinitsize(L, &b, (size_t) n * 4);
+        luaL_buffinitsize(L, &b, (size_t) n * 4); 
         for (int i = 1; i <= n; i++) {
-            unsigned u = (unsigned) lua_tointeger(L, i);
-            if (u <= MAXUNICODE) {
-                if (0x80 > u) {
-                    luaL_addchar(&b, (unsigned char) u);
-                } else {
-                    if (0x800 > u)
-                        luaL_addchar(&b, (unsigned char) (0xC0 | (u >> 6)));
-                    else {
-                        if (0x10000 > u)
-                            luaL_addchar(&b, (unsigned char) (0xE0 | (u >> 12)));
-                        else {
-                            luaL_addchar(&b, (unsigned char) (0xF0 | (u >> 18)));
-                            luaL_addchar(&b, (unsigned char) (0x80 | (0x3F & (u >> 12))));
-                        }
-                        luaL_addchar(&b, 0x80 | (0x3F & (u >> 6)));
-                    }
-                    luaL_addchar(&b, 0x80 | (0x3F & u));
-                }
+            switch (lua_type(L, i)) {
+                case LUA_TNUMBER: 
+                    strlib_aux_add_utfnumber(L, &b, i);
+                    break;
+                case LUA_TTABLE: 
+                    strlib_aux_add_utftable(L, &b, i);
+                    break;
+                case LUA_TSTRING: 
+                    strlib_aux_add_utfstring(L, &b, i);
+                    break;
             }
         }
         luaL_pushresult(&b);

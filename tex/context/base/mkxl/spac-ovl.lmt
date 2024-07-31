@@ -1,0 +1,228 @@
+if not modules then modules = { } end modules ['spac-ovl'] = {
+    version   = 1.001,
+    comment   = "companion to spac-brk.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local next, type, tonumber, tostring = next, type, tonumber, tostring
+
+local settings_to_array  = utilities.parsers.settings_to_array
+local settings_to_hash   = utilities.parsers.settings_to_hash
+
+local nuts               = nodes.nuts
+local tonut              = nodes.tonut
+
+local newrule            = nuts.pool.virtualrule
+local insertbefore       = nuts.insertbefore
+local insertafter        = nuts.insertafter
+local hpack_string       = nuts.typesetters.tohpack
+local getwidth           = nuts.getwidth
+local getid              = nuts.getid
+local getprev            = nuts.getprev
+local setwhd             = nuts.setwhd
+local setoffsets         = nuts.setoffsets
+
+local setcolor           = nodes.tracers.colors.set
+local settransparency    = nodes.tracers.transparencies.set
+
+local texgetnest         = tex.getnest
+local texgetcount        = tex.getcount
+local texsetcount        = tex.setcount
+
+local nodecodes          = nodes.nodecodes
+
+local penalty_code       <const> = nodecodes.penalty
+local glue_code          <const> = nodecodes.glue
+local disc_code          <const> = nodecodes.disc
+local kern_code          <const> = nodecodes.kern
+local math_code          <const> = nodecodes.math
+
+local breakcodes         = tex.breakcodes
+
+local report             = logs.reporter("linebreaks")
+
+local c_tracinglousiness <const> = tex.iscount("tracinglousiness")
+local c_linebreakchecks  <const> = tex.iscount("linebreakchecks")
+
+local width      =      65536 / 2
+local height     =  9 * 65536
+local depth      =  3 * 65536
+local xoffset    =  1 * 65536
+local yoffset    = -3 * 65536
+
+local serial     = false
+local usedfont   = false
+local nestlevel  = false
+local overload   = false
+local order      = 0
+local saved      = 0
+
+local actions = {
+    [breakcodes.initialize] = function()
+        if texgetnest("ptr") == nestlevel then
+            usedfont = nodes.visualizers.getusedfont()
+            serial   = false
+            order    = order + 1
+        end
+    end,
+    [breakcodes.start] = function(checks,pass)
+        if texgetnest("ptr") == nestlevel then
+            if pass == 2 then
+                serial = { }
+            end
+        end
+    end,
+    [breakcodes.report] = function(checks,pass,currentserial,previousserial,line,kind,class,demerits,breakpoint,short,glue)
+        if serial and breakpoint and texgetnest("ptr") == nestlevel then
+            local s = {
+                serial     = currentserial,
+                demerits   = demerits,
+                breakpoint = breakpoint,
+            }
+            serial[currentserial] = s
+            local found = overload and overload[currentserial]
+            if found then
+                report("pass %i, overloading serial %i.%i demerits from %i to %i",2,order,currentserial,demerits,found)
+                return found
+            end
+        end
+        return demerits
+    end,
+    [breakcodes.collect] = function()
+        if serial and texgetnest("ptr") == nestlevel and texgetcount(c_tracinglousiness) >= 1 then
+            for currentserial=1,#serial do
+                local data       = serial[currentserial]
+                local breakpoint = data.breakpoint
+                local current    = tonut(breakpoint)
+                while current do
+                    local id = getid(current)
+                    if id == penalty_code or id == glue_code or id == kern_code or id == math_code then
+                        current = getprev(current)
+                    else
+                        break
+                    end
+                end
+                if current then
+                    local rule   = newrule(width,height,depth,currentserial)
+                    data.rule    = rule
+                    insertafter(current,current,rule)
+                end
+            end
+        end
+    end,
+    [breakcodes.wrapup] = function()
+        if serial and texgetnest("ptr") == nestlevel then
+            local n     = #serial
+            local trace = texgetcount(c_tracinglousiness)
+            if trace >= 2 then
+                report("%i demerits in set %i",n,order)
+            end
+            for currentserial=1,n do
+                local data = serial[currentserial]
+                local demerits = data.demerits
+                if trace >= 1 then
+                    local rule = data.rule
+                    if rule then
+                        local tag  = tostring(order).."."..tostring(currentserial)
+                        local text = hpack_string(tag,usedfont)
+                        local size = getwidth(text)
+                        setwhd(text,0,0,0)
+                        setoffsets(text,-size-xoffset,yoffset)
+                        insertafter(rule,rule,text)
+                    end
+                end
+                serial[currentserial] = demerits
+                if trace >= 2 then
+                    report("% 4i : %8i",currentserial,demerits)
+                end
+            end
+            overload = false
+            texsetcount("linebreakchecks",saved)
+        end
+    end,
+}
+
+local function action(what,...)
+    local action = actions[what]
+    if action then
+        return action(...)
+    end
+end
+
+local function show(str)
+    nestlevel = texgetnest("ptr")
+    saved = texgetcount("linebreakchecks")
+    if str and str ~= "" then
+        if type(str) == "table" then
+            overload = str
+        else
+            overload = settings_to_hash(str)
+            for k, v in next, overload do
+                overload[tonumber(k)] = tonumber(v) or -1
+            end
+        end
+    else
+        overload = false
+    end
+    texsetcount("linebreakchecks",3)
+end
+
+local function last()
+    return serial or { }
+end
+
+nodes.handlers.linebreakchecks[3] = action
+
+-- interface
+
+local context     = context
+local scaninteger = tokens.scanners.integer
+
+local function feedback()
+    local l = last()
+    local n = #l
+    if n > 0 then
+        local t = { n }
+        local m = 1
+        for i=1,#l do
+            m = m + 1 ; t[m] = i
+            m = m + 1 ; t[m] = l[i]
+        end
+        context("% t",t)
+    end
+end
+
+interfaces.implement {
+    name      = "lousiness",
+    public    = true,
+    protected = true,
+    usage     = "value",
+    actions   = function(what)
+        if what == "value" then
+            feedback()
+        else
+            local n = scaninteger()
+            local t = { }
+            for i=1,n do
+                t[scaninteger()] = scaninteger()
+            end
+            show(t)
+        end
+    end,
+}
+
+interfaces.implement {
+    name      = "silliness",
+    public    = true,
+    protected = true,
+    usage     = "value",
+    actions   = function(what)
+        if what == "value" then
+            feedback()
+        else
+            show { [scaninteger()] = 0 }
+        end
+    end,
+}

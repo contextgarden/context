@@ -1071,51 +1071,187 @@ local function toquadpoints(paths)
     return concat(t," ")
 end
 
-local function finishreference(specification)
-    local prerolled  = specification.prerolled
-    local quadpoints = specification.mesh
-    local refatt     = specification.reference
-    local llx, lly,
-          urx, ury   = pdfrectangle(specification.width,specification.height,specification.depth)
-    if crappytaggingmode > 0 then
-        local specifier  = nil
-        if type(prerolled) ~= "string" then
-            prerolled.Contents     = specification.description or "link" -- todo: what kind of link
-            prerolled.StructParent = codeinjections.getlinkstructureparent(refatt)
-            prerolled = prerolled()
-        end
-        if quadpoints and #quadpoints > 0 then
-            specifier = f_quadp(prerolled,toquadpoints(quadpoints),llx,lly,urx,ury)
-        else
-            specifier = f_annot(prerolled,llx,lly,urx,ury)
-        end
-        local objref = pdfreserveobject()
-        specification.objref = objref
-     -- nofunique = nofunique + 1
-        nofused = nofused + 1
-        if refatt then
-            refobjects[refatt] = objref
-        end
-        pdfdelayedobject(specifier,objref)
-        return pdfregisterannotation(objref)
-    else
-        local specifier  = nil
-        if type(prerolled) ~= "string" then
-            prerolled = prerolled()
-        end
-        if quadpoints and #quadpoints > 0 then
-            specifier = f_quadp(prerolled,toquadpoints(quadpoints),llx,lly,urx,ury)
-        else
-            specifier = f_annot(prerolled,llx,lly,urx,ury)
-        end
-        local objref = hashed[specifier]
-        specification.objref = objref
-        nofused = nofused + 1
-        if refatt then
-            refobjects[refatt] = objref
-        end
-        return pdfregisterannotation(objref)
+local finishreference  do
+
+    -- Just a gimmick but one that adds runtime and memory usage. it is only needed
+    -- when we have many long references spanning lines.
+
+    local collected = allocate()
+    local tobesaved = allocate()
+
+    local jobmeshedup = {
+        collected = collected,
+        tobesaved = tobesaved,
+    }
+
+    job.meshedup = jobmeshedup
+
+    local function initializer()
+        tobesaved = jobmeshedup.tobesaved
+        collected = jobmeshedup.collected
     end
+
+    job.register('job.meshedup.collected',tobesaved,initializer)
+
+    local checkmesh     = false
+    local lastprerolled = false
+    local lastmeshedup  = false
+    local lastrealpage  = 0
+
+    local count = 0
+    local total = 0
+    local valid = 0
+    local more  = 0
+
+    local function meshup(prerolled,llx,lly,urx,ury)
+        local q = nil
+        local r = texgetcount(c_realpageno)
+        local p = collected[r] and collected[r][prerolled]
+        if r ~= lastrealpage then
+            lastrealpage  = r
+            lastprerolled = false
+            lastmeshedup  = false
+        end
+        if prerolled == lastprerolled then
+            if not more then
+                valid = valid + 1
+                more  = true
+            end
+            total = total + 1
+            if #lastmeshed == 4 then
+                local t = tobesaved[r]
+                if not t then
+                    t = { }
+                    tobesaved[r] = t
+                end
+                t[prerolled] = lastmeshed
+            end
+            lastmeshed[#lastmeshed+1] = llx
+            lastmeshed[#lastmeshed+1] = lly
+            lastmeshed[#lastmeshed+1] = urx
+            lastmeshed[#lastmeshed+1] = ury
+        else
+            lastprerolled = prerolled
+            lastmeshed    = { llx, lly, urx, ury }
+            count         = count + 1
+            more          = false
+        end
+        if p then
+            if p.done then
+                q = true
+            else
+                q = { }
+                for i=1,#p,4 do
+                    local lx = p[i]
+                    local ly = p[i+1]
+                    local ux = p[i+2]
+                    local uy = p[i+3]
+                    if lx < llx then llx = lx end
+                    if ly < lly then lly = ly end
+                    if ux > urx then urx = ux end
+                    if uy > ury then ury = uy end
+                    q[#q+1] = { { lx, ly }, { ux, ly }, { ux, uy }, { lx, uy } }
+                end
+                p.done = true
+            end
+        end
+        return llx, lly, urx, ury, q
+    end
+
+    local function identify(prerolled,llx,lly,urx,ury)
+        local r = texgetcount(c_realpageno)
+        if r ~= lastrealpage then
+            lastrealpage  = r
+            lastprerolled = false
+            lastmeshedup  = false
+        end
+        if prerolled == lastprerolled then
+            if not more then
+                valid = valid + 1
+                more  = true
+            end
+            total = total + 1
+        else
+            lastprerolled = prerolled
+            count         = count + 1
+            more          = false
+        end
+        return llx, lly, urx, ury, nil
+    end
+
+    statistics.register("meshed up references", function()
+        if count > 0 then
+            return format("%i seen, %i valid, %i total",count,valid,total)
+        else
+            return nil
+        end
+    end)
+
+    directives.register("references.meshup", function(v)
+        checkmesh = (v == "identify" and identify) or (v and meshup) or nil
+    end)
+
+    -- End of gimmick.
+
+    local function checked(prerolled,specification)
+        local llx, lly, urx, ury = pdfrectangle(specification.width,specification.height,specification.depth)
+        local quadpoints = specification.mesh
+        if quadpoints then
+            -- this always wins when set (normally only happens with mp graphics)
+        elseif checkmesh then
+            llx, lly, urx, ury, quadpoints = checkmesh(prerolled,llx,lly,urx,ury)
+            if quadpoints == true then
+                return
+            end
+        end
+        if quadpoints and #quadpoints > 0 then
+            return f_quadp(prerolled,toquadpoints(quadpoints),llx,lly,urx,ury)
+        else
+            return f_annot(prerolled,llx,lly,urx,ury)
+        end
+    end
+
+    finishreference = function(specification)
+        local prerolled = specification.prerolled
+        local refatt    = specification.reference
+        if crappytaggingmode > 0 then
+            if type(prerolled) ~= "string" then
+                -- validators want this but what to put in it that is not redundant
+                prerolled.Contents     = pdfunicode(specification.description or "link")
+                prerolled.StructParent = codeinjections.getlinkstructureparent(refatt)
+                prerolled = prerolled()
+            end
+            local specifier = checked(prerolled,specification)
+            if not specifier then
+                return
+            end
+            local objref = pdfreserveobject()
+            specification.objref = objref
+         -- nofunique = nofunique + 1
+            nofused = nofused + 1
+            if refatt then
+                refobjects[refatt] = objref
+            end
+            pdfdelayedobject(specifier,objref)
+            return pdfregisterannotation(objref)
+        else
+            if type(prerolled) ~= "string" then
+                prerolled = prerolled()
+            end
+            local specifier = checked(prerolled,specification)
+            if not specifier then
+                return
+            end
+            local objref = hashed[specifier]
+            specification.objref = objref
+            nofused = nofused + 1
+            if refatt then
+                refobjects[refatt] = objref
+            end
+            return pdfregisterannotation(objref)
+        end
+    end
+
 end
 
 function codeinjections.getrefobj(refatt) -- bad name but experiment anyway

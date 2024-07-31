@@ -27,7 +27,7 @@
 
     <cd:command name="element" type="environment" level="document" category="xml" file="strc-tag.mkiv">
         <cd:arguments>
-            <cd:resolve name="argument-name"/>
+            <cd:resolve name="keyword-name"/>
             <cd:resolve name="assignment-userdata-list-optional"/>
         </cd:arguments>
     </cd:command>
@@ -75,6 +75,50 @@
     <cd:command name="ignoretagsinexport" level="style" category="xml" file="strc-tag.mkiv">
         <cd:arguments>
             <cd:resolve name="keyword-name-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setelementbackendtag" level="system" category="xml" file="strc-tag.lmt">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:keywords>
+                <cd:constant type="BlockQuote"/>
+                <cd:constant type="Caption"/>
+                <cd:constant type="Code"/>
+                <cd:constant type="Div"/>
+                <cd:constant type="Formula"/>
+                <cd:constant type="H"/>
+                <cd:constant type="L"/>
+                <cd:constant type="Lbl"/>
+                <cd:constant type="LBody"/>
+                <cd:constant type="LI"/>
+                <cd:constant type="Link"/>
+                <cd:constant type="P"/>
+                <cd:constant type="Quote"/>
+                <cd:constant type="Reference"/>
+                <cd:constant type="Sect"/>
+                <cd:constant type="Span"/>
+                <cd:constant type="Table"/>
+                <cd:constant type="TBODY"/>
+                <cd:constant type="TD"/>
+                <cd:constant type="TFOOT"/>
+                <cd:constant type="TH"/>
+                <cd:constant type="THEAD"/>
+                <cd:constant type="TOC"/>
+                <cd:constant type="TOCI"/>
+                <cd:constant type="TR"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setelementnature" level="system" category="xml" file="strc-tag.lmt">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:keywords>
+                <cd:constant type="inline"/>
+                <cd:constant type="display"/>
+                <cd:constant type="mixed"/>
+            </cd:keywords>
         </cd:arguments>
     </cd:command>
 

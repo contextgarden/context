@@ -5598,6 +5598,22 @@ void tex_run_math_shift(void)
                     halfword beginmath = tex_new_node(math_node, begin_inline_math);
                     halfword endmath = tex_new_node(math_node, end_inline_math);
                     halfword shortmath = 0;
+                    switch (cur_list.math_main_style) { 
+                        case display_style:       
+                        case cramped_display_style:       
+                            math_options(beginmath) |= math_option_display;
+                            math_options(endmath) |= math_option_display;
+                            break;
+                    }
+                    switch (cur_list.math_main_style) { 
+                        case cramped_display_style:       
+                        case cramped_text_style:          
+                        case cramped_script_style:        
+                        case cramped_script_script_style: 
+                            math_options(beginmath) |= math_option_cramped;
+                            math_options(endmath) |= math_option_cramped;
+                            break;
+                    }
                     if (mathmode) { 
                         switch (cur_cmd) { 
                             case math_shift_cs_cmd: 

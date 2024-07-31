@@ -92,6 +92,23 @@
     <!--        *   -->
     <!-- \... {...} -->
     <!--            -->
+    <!-- * CONTENT  -->
+
+    <cd:define name="argument-content">
+        <cd:keywords delimiters="braces">
+            <cd:constant type="cd:content"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="argument-content-optional">
+        <cd:keywords delimiters="braces" optional="yes">
+            <cd:constant type="cd:content"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *   -->
+    <!-- \... {...} -->
+    <!--            -->
     <!-- * FILE     -->
 
     <cd:define name="argument-file">
@@ -540,6 +557,17 @@
     <cd:define name="argument-leftfence">
         <cd:keywords delimiters="braces">
             <cd:resolve name="value-leftfence"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *      -->
+    <!-- \... {...}    -->
+    <!--               -->
+    <!-- * MIDDLEFENCE -->
+
+    <cd:define name="argument-middlefence">
+        <cd:keywords delimiters="braces">
+            <cd:resolve name="value-middlefence"/>
         </cd:keywords>
     </cd:define>
 

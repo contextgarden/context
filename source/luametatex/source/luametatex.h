@@ -99,7 +99,7 @@
 # define luametatex_release          04
 # define luametatex_version_string   "2.11.04"
 # define luametatex_version_number   211.4
-# define luametatex_development_id   2024014
+# define luametatex_development_id   20240731
 
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"

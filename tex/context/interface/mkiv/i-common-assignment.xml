@@ -24,6 +24,9 @@
             <cd:parameter name="reference">
                 <cd:constant type="cd:reference"/>
             </cd:parameter>
+            <cd:parameter name="referencetext">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
             <cd:parameter name="ownnumber">
                 <cd:constant type="cd:text"/>
             </cd:parameter>
@@ -49,6 +52,9 @@
             </cd:parameter>
             <cd:parameter name="reference">
                 <cd:constant type="cd:reference"/>
+            </cd:parameter>
+            <cd:parameter name="referencetext">
+                <cd:constant type="cd:text"/>
             </cd:parameter>
             <cd:parameter name="ownnumber">
                 <cd:constant type="cd:text"/>
@@ -84,6 +90,9 @@
             <cd:parameter name="reference">
                 <cd:constant type="cd:reference"/>
             </cd:parameter>
+            <cd:parameter name="referencetext">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
         </cd:assignments>
     </cd:define>
 
@@ -107,6 +116,9 @@
             <cd:parameter name="reference">
                 <cd:constant type="cd:reference"/>
             </cd:parameter>
+            <cd:parameter name="referencetext">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
         </cd:assignments>
     </cd:define>
 
@@ -128,6 +140,9 @@
                 <cd:constant type="cd:text"/>
                 <cd:constant type="cd:text" prefix="cd:processor" method="apply"/>
             </cd:parameter>
+            <cd:parameter name="processors">
+                <cd:constant type="cd:processor"/>
+            </cd:parameter>
             <cd:parameter name="keys:1">
                 <cd:constant type="cd:text"/>
             </cd:parameter>
@@ -148,6 +163,15 @@
             </cd:parameter>
             <cd:parameter name="alternative">
                 <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="processors:1">
+                <cd:constant type="cd:processor"/>
+            </cd:parameter>
+            <cd:parameter name="processors:2">
+                <cd:constant type="cd:processor"/>
+            </cd:parameter>
+            <cd:parameter name="processors:3">
+                <cd:constant type="cd:processor"/>
             </cd:parameter>
         </cd:assignments>
     </cd:define>
@@ -208,6 +232,9 @@
             <cd:parameter name="reference">
                 <cd:constant type="cd:reference"/>
             </cd:parameter>
+            <cd:parameter name="referencetext">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
         </cd:assignments>
     </cd:define>
 
@@ -224,6 +251,9 @@
             </cd:parameter>
             <cd:parameter name="reference">
                 <cd:constant type="cd:reference"/>
+            </cd:parameter>
+            <cd:parameter name="referencetext">
+                <cd:constant type="cd:text"/>
             </cd:parameter>
         </cd:assignments>
     </cd:define>
@@ -336,6 +366,51 @@
                 <cd:constant type="cd:command"/>
             </cd:parameter>
             <cd:inherit name="setupbtx"/>
+        </cd:assignments>
+    </cd:define>
+
+    <!--           *      -->
+    <!-- \... [..,.=.,..] -->
+    <!--                  -->
+    <!-- FORMULADATA      -->
+
+    <cd:define name="assignment-formuladata-list">
+        <cd:assignments list="yes">
+            <cd:parameter name="title">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="reference">
+                <cd:resolve name="value-formulareference"/>
+            </cd:parameter>
+            <cd:parameter name="bookmark">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="list">
+                <cd:resolve name="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="suffix">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+        </cd:assignments>
+    </cd:define>
+
+    <cd:define name="assignment-formuladata-list-optional">
+        <cd:assignments list="yes" optional="yes">
+            <cd:parameter name="title">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="reference">
+                <cd:resolve name="value-formulareference"/>
+            </cd:parameter>
+            <cd:parameter name="bookmark">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="list">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
+            <cd:parameter name="suffix">
+                <cd:constant type="cd:text"/>
+            </cd:parameter>
         </cd:assignments>
     </cd:define>
 

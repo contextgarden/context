@@ -283,7 +283,17 @@ end
 -- the shipout handlers acts on boxes so we don't need to return something
 -- and also don't need to keep the state (done)
 
-local templates = {
+tasks.new {
+    name      = "shipouts",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- users
+        "normalizers", -- system
+        "finishers",   -- system
+        "after",       -- users
+        "wrapup",      -- system
+    },
+    templates = {
 
 default = [[
 return function(head,ispage)
@@ -321,24 +331,20 @@ nonut = [[
     %action%(nuthead,ispage)
 ]],
 
-}
-
-tasks.new {
-    name      = "shipouts",
-    processor = nodeprocessor,
-    sequence  = {
-        "before",      -- users
-        "normalizers", -- system
-        "finishers",   -- system
-        "after",       -- users
-        "wrapup",      -- system
-    },
-    templates = templates
+    }
 }
 
 -- -- everypar -- --
 
-local templates = {
+tasks.new {
+    name      = "everypar",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- users
+        "normalizers", -- system
+        "after",       -- users
+    },
+    templates = {
 
 default = [[
 return function(head)
@@ -352,7 +358,7 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
-return function(head)
+return function(head,mode)
     local nuthead = tonut(head)
 
 %actions%
@@ -361,32 +367,22 @@ end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead))))
+    nuthead = tonut((%action%(tonode(nuthead),mode)))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead)
+    nuthead = %action%(nuthead,mode)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead))
+    %action%(tonode(nuthead),mode)
 ]],
 
 nonut = [[
-    %action%(nuthead)
+    %action%(nuthead,mode)
 ]],
 
-}
-
-tasks.new {
-    name      = "everypar",
-    processor = nodeprocessor,
-    sequence  = {
-        "before",      -- users
-        "normalizers", -- system
-        "after",       -- users
-    },
-    templates = templates,
+    }
 }
 
 -- -- alignment -- -- gets temp node ! (currently as that might change)
@@ -1009,7 +1005,7 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
-return function(head,style,penalties,beginclass,endclass,level)
+return function(head,style,penalties,beginclass,endclass,level,style)
     local nuthead = tonut(head)
 
 %actions%
@@ -1018,19 +1014,19 @@ end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),style,penalties,beginclass,endclass,level)))
+    nuthead = tonut((%action%(tonode(nuthead),style,penalties,beginclass,endclass,level,style)))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,style,penalties,beginclass,endclass,level)
+    nuthead = %action%(nuthead,style,penalties,beginclass,endclass,level,style)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),style,penalties,beginclass,endclass,level)
+    %action%(tonode(nuthead),style,penalties,beginclass,endclass,level,style)
 ]],
 
 nonut = [[
-    %action%(nuthead,style,penalties,beginclass,endclass,level)
+    %action%(nuthead,style,penalties,beginclass,endclass,level,style)
 ]],
 
     }
@@ -1105,7 +1101,6 @@ nonut = [[
 ]],
 
     }
-
 }
 
 -- for now quite useless (too fuzzy)

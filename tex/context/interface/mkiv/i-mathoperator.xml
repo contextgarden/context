@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definemathoperator" level="style" category="mathematics" file="math-lop.mkxl"> 
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathoperators"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathoperator" level="style" category="mathematics" file="math-lop.mkxl"> 
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupmathoperators"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathoperators" level="style" category="mathematics" file="math-lop.mkxl"> 
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="mathclass">
+                    <cd:resolve name="value-mathclass"/>
+                </cd:parameter>
+                <cd:parameter name="symbolcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="horizontal"/>
+                    <cd:constant type="vertical"/>
+                    <cd:constant type="auto"/>
+                    <cd:constant type="autolimits"/>
+                    <cd:constant type="limits"/>
+                    <cd:constant type="nolimits"/>
+                </cd:parameter>
+                <cd:parameter name="size">
+                    <cd:constant type="auto"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="top">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="topcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="bottom">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="bottomcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="textcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="numbercolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathoperator" generated="yes" variant="instance" level="document" category="mathematics" file="math-lop.mkxl"> 
+        <cd:sequence>
+            <cd:instance value="mathoperator"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathoperators"/>
+            </cd:assignments>
+            <cd:resolve name="argument-content-optional"/>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathoperator"/>
+        </cd:instances>
+    </cd:command>
+
+    <cd:command name="mathoperator" type="environment" generated="yes" variant="instance" level="document" category="mathematics" file="math-lop.mkxl"> 
+        <cd:sequence>
+            <cd:instance value="mathoperator"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathoperators"/>
+            </cd:assignments>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathoperator"/>
+        </cd:instances>
+    </cd:command>
+
+</cd:interface>

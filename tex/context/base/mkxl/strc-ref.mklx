@@ -11,6 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% \ifexporting\dostarttaggednodetail\t!link\fi
+% \ifexporting\dostoptagged\fi
+
 % todo: (1) configure references, (2) rendering => with presets
 %
 % \defineconversionset[default][Character,number,Romannumerals,Character][number]
@@ -1539,9 +1542,9 @@
      \setstrut % can be option
      \global\lastsavedreferenceattribute\lastreferenceattribute
      \c_attr_reference\lastreferenceattribute
-     %\dostarttaggednodetail\t!link % not here
+     \ifexporting\dostarttaggednodetail\t!link\fi
      #content%
-     %\dostoptagged
+     \ifexporting\dostoptagged\fi
    \else
      #content%
    \fi
@@ -1565,9 +1568,9 @@
      \setlocationattributes
      \c_attr_reference\lastreferenceattribute
      \global\lastsavedreferenceattribute\lastreferenceattribute
-     %dostarttaggednodetail\t!link
+     \ifexporting\dostarttaggednodetail\t!link\fi
      #content%
-     %dostoptagged
+     \ifexporting\dostoptagged\fi
    \else
      #content%
    \fi
@@ -1589,9 +1592,9 @@
         \setstrut % can be option
         \global\lastsavedreferenceattribute\lastreferenceattribute
         \c_attr_reference\lastreferenceattribute
-        %dostarttaggednodetail\t!link
+        \ifexporting\dostarttaggednodetail\t!link\fi
         #content%
-       }%dostoptagged}%
+        \ifexporting\dostoptagged\fi}%
        {#content}%
    \else
      #content%
@@ -1610,9 +1613,9 @@
      \global\lastsavedreferenceattribute\currentreferenceattribute
      \c_attr_reference\currentreferenceattribute
      \setlocationattributes
-     %\dostarttaggednodetail\t!link
+     \ifexporting\dostarttaggednodetail\t!link\fi
      #content%
-     %\dostoptagged
+     \ifexporting\dostoptagged\fi
    \else
      #content%
    \fi
@@ -1646,11 +1649,11 @@
    \setstrut % can be option
    \global\lastsavedreferenceattribute\lastreferenceattribute
    \c_attr_reference\lastreferenceattribute
-   %\dostarttaggednodetail\t!link
+   \ifexporting\dostarttaggednodetail\t!link\fi
    \let\stopgoto\strc_references_stop_goto_yes}
 
 \protected\def\strc_references_stop_goto_yes
-  {%\dostoptagged
+  {\ifexporting\dostoptagged\fi
    \endgroup}
 
 \def\strc_references_goto_htdp#content#dummy[#label]% dummy gobbles spaces
@@ -1667,9 +1670,9 @@
         \setlocationattributes
         \global\lastsavedreferenceattribute\lastreferenceattribute
         \c_attr_reference\lastreferenceattribute
-        %\dostarttaggednodetail\t!link
+        \ifexporting\dostarttaggednodetail\t!link\fi
         #content%
-       }%dostoptagged}%
+        \ifexporting\dostoptagged\fi}%
        {#content}%
    \else
      #content%
@@ -1689,9 +1692,9 @@
      \relax
      \setlocationattributes
      \global\lastsavedreferenceattribute\lastreferenceattribute
-     %dostarttaggednodetail\t!link
+     \ifexporting\dostarttaggednodetail\t!link\fi
      \hbox attr \referenceattribute \lastreferenceattribute {#content}%
-     %dostoptagged
+     \ifexporting\dostoptagged\fi
    \else
      #content%
    \fi
@@ -1710,9 +1713,9 @@
      \relax
      \setlocationcolorspec{#resolver}% no consequence for strut
      \global\lastsavedreferenceattribute\lastreferenceattribute
-     %dostarttaggednodetail\t!link
+     \ifexporting\dostarttaggednodetail\t!link\fi
      \hbox attr \referenceattribute \lastreferenceattribute {#content}%
-     %dostoptagged
+     \ifexporting\dostoptagged\fi
    \else
      #content%
    \fi
@@ -1730,9 +1733,9 @@
        {\extrareferencearguments}%
      \relax
      \global\lastsavedreferenceattribute\lastreferenceattribute
-     %dostarttaggednodetail\t!link
+     \ifexporting\dostarttaggednodetail\t!link\fi
      \hbox attr \referenceattribute \lastreferenceattribute {#content}%
-     %dostoptagged
+     \ifexporting\dostoptagged\fi
    \else
      #content%
    \fi
@@ -1748,9 +1751,9 @@
        {\clf_injectcurrentreference
         \setlocationattributes
         \global\lastsavedreferenceattribute\lastreferenceattribute
-        %dostarttaggednodetail\t!link
+        \ifexporting\dostarttaggednodetail\t!link\fi
         \hbox attr \referenceattribute \lastreferenceattribute {#content}%
-       }%\dostoptagged}%
+        \ifexporting\dostoptagged\fi}%
        {#content}%
    \else
      #content%

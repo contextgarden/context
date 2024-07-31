@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathradical" level="style" category="mathematics" file="math-rad.mkvi">
+    <cd:command name="definemathradical" level="style" category="mathematics" file="math-rad.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,43 +14,94 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathradical" level="style" category="mathematics" file="math-rad.mkvi">
+    <cd:command name="setupmathradical" level="style" category="mathematics" file="math-rad.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
-                <cd:parameter name="alternative">
-                    <cd:constant type="default"/>
-                    <cd:constant type="normal" default="yes"/>
-                    <cd:constant type="mp"/>
-                </cd:parameter>
                 <cd:parameter name="color">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
-                <cd:parameter name="mpoffset">
-                    <cd:constant type="cd:dimension"/>
+                <cd:parameter name="textcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="numbercolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="symbolcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="plugin">
+                    <cd:constant type="mp"/>
                 </cd:parameter>
                 <cd:parameter name="mp">
                     <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="top">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="depth">
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="mindepth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="leftmargin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rightmargin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rule">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="symbol"/>
+                    <cd:constant type="bottom"/>
+                </cd:parameter>
+                <cd:parameter name="source">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="mathstyle">
+                    <cd:resolve name="value-mathstyle"/>
+                </cd:parameter>
+                <cd:parameter name="strut">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="height"/>
+                    <cd:constant type="depth"/>
+                    <cd:constant type="math"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathradical" generated="yes" variant="example" level="document" category="mathematics" file="math-rad.mkvi">
+    <cd:command name="mathradical" generated="yes" variant="instance" level="document" category="mathematics" file="math-rad.mklx">
         <cd:sequence>
-            <cd:variable value="mathradical"/>
+            <cd:instance value="mathradical"/>
         </cd:sequence>
         <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathradical"/>
+            </cd:assignments>
             <cd:resolve name="keyword-text-optional"/>
             <cd:content/>
         </cd:arguments>
-    </cd:command>
-
-    <cd:command name="sqrt" level="document" category="mathematics" file="math-rad.mkvi">
-        <cd:arguments>
-            <cd:resolve name="keyword-text-optional"/>
-            <cd:content/>
-        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathradical"/>
+        </cd:instances>
     </cd:command>
 
 </cd:interface>

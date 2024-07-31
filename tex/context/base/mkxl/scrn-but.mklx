@@ -132,7 +132,7 @@
 
 \permanent\tolerant\protected\def\overlaybutton[#1]#;#=%
   {\iflocation
-     \gotobox{\overlayfakebox}[#1]%
+     \gotobox{\overlayfakebox}[#1#2]%
    \fi}
 
 %D The renderers:

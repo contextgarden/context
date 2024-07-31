@@ -301,9 +301,18 @@
 % At some point we can switch to dedicated markers because there are not
 % that many variants: text, page, textarea, columnarea, free.
 
+\def\d_anch_extra_text_depth
+  {\dimexpr\ifnum\bottomraggednessmode=\plusthree\strutdp\else\zeropoint\fi\relax}
+
 \protected\def\anch_mark_column_box#1#2% box n
   {\global\advanceby\c_anch_column\plusone
-   \clf_markregionboxtaggedn#1{columnarea}\c_anch_column#2\relax} % extra height
+   \clf_markregionboxtaggedn
+     #1%
+     {columnarea}%
+     \c_anch_column
+     \zeropoint
+     #2%
+   \relax} % extra height
 
 \protected\def\anch_mark_region_box % auto region:index
   {\iftrialtypesetting
@@ -320,22 +329,38 @@
 \protected\def\anch_mark_flow_box#1% will be extended / renamed
   {\hpack\bgroup
    \global\advanceby\c_anch_text\plusone
-   \clf_markregionboxtagged#1{textarea}\c_anch_text % will become flow:
+   \clf_markregionboxtagged % will become flow:
+     #1%
+     {textarea}%
+     \c_anch_text
+     \d_anch_extra_text_depth
    \box#1%
    \egroup}
 
 \protected\def\anch_mark_tagged_box#1#2#3%
-  {\clf_markregionboxtagged#1{#2}#3\relax}
+  {\clf_markregionboxtagged#1{#2}#3\zeropoint\relax}
 
 \protected\def\anch_mark_flow_only#1% will be extended / renamed
   {\global\advanceby\c_anch_text\plusone
-   \clf_markregionboxcorrected#1{textarea}\c_anch_text}% will become flow:
+   \clf_markregionboxcorrected % will become flow:
+     #1%
+     {textarea}%
+     \c_anch_text
+     \d_anch_extra_text_depth}
 
 \protected\def\anch_make_page_box#1% maybe like text
-  {\clf_setregionboxtagged#1{page}\realpageno}
+  {\clf_setregionboxtagged
+     #1%
+     {page}%
+     \realpageno
+     \zeropoint}
 
 \protected\def\anch_mark_text_box#1%
-  {\clf_markregionboxtagged#1{text}\realpageno} % needs an hbox
+  {\clf_markregionboxtagged % needs an hbox
+     #1%
+     {text}%
+     \realpageno
+     \d_anch_extra_text_depth}
 
 \protected\def\anch_mark_tagged_box_free
   {\ifpositioning
@@ -352,6 +377,7 @@
      #1%
      {free}%
      \c_anch_free
+     \zeropoint
      #2% kind         % single token value
      #3% leftoffset   % single token value
      #4% rightoffset  % single token value

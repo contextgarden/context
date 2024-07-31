@@ -4,27 +4,27 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="synctexsetfilename" level="system" category="pdf" file="cont-run.mkiv">
+    <cd:command name="synctexsetfilename" level="system" category="pdf" file="cont-run.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="synctexresetfilename" level="system" category="pdf" file="cont-run.mkiv"/>
+    <cd:command name="synctexresetfilename" level="system" category="pdf" file="cont-run.mkxl"/>
 
-    <cd:command name="synctexblockfilename" level="system" category="pdf" file="cont-run.mkiv">
+    <cd:command name="synctexblockfilename" level="system" category="pdf" file="cont-run.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupsynctex" level="style" category="pdf" file="cont-run.mkiv">
+    <cd:command name="setupsynctex" level="style" category="pdf" file="cont-run.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="state">
                     <cd:constant type="start"/>
-                    <cd:constant type="repeat"/>
                     <cd:constant type="stop" default="yes"/>
+                    <cd:constant type="repeat"/>
                 </cd:parameter>
                 <cd:parameter name="method">
                     <cd:constant type="min"/>
@@ -34,7 +34,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blocksynctexfile" level="style" category="pdf" file="cont-run.mkiv">
+    <cd:command name="blocksynctexfile" level="style" category="pdf" file="cont-run.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-file-list"/>
         </cd:arguments>

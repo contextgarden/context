@@ -992,7 +992,7 @@
    \fi
    \page_margin_strc_floats_before % todo: each float handler gets a before
    \global\insidefloattrue
-   \dostarttaggedchained\t!float\currentfloat\??float
+   \dostarttaggedchained\t!float\currentfloat\currentfloat\??float
    \page_margin_strc_floats_set_hsize % todo: each float handler gets a set_hsize
    \expand\everyinsidefloat
    \strc_floats_analyze_variables_one
@@ -1543,7 +1543,6 @@
   {\rightorleftpageaction
      {\let\extrafloatlocation#rightpagelocation}%
      {\let\extrafloatlocation#leftpagelocation}}
-
 
 \installcorenamespace{extrafloataction}
 

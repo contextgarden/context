@@ -1552,8 +1552,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
     int chr = 0;
     int nxtchr = 0;
     /*tex are we trying the large variant? */
-    int large_attempt = 0;
-    int do_parts = 0;
+    int hasparts = 0;
     int isscaled = 0;
     int shrink = flat && has_noad_option_shrink(target);  
     int stretch = flat && has_noad_option_stretch(target);
@@ -1600,6 +1599,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
         } else { 
             /*tex largest height-plus-depth so far */
             scaled besttarget = 0;
+            int large_attempt = 0;
             /*tex |z| runs through font family members */
             int curfam = delimiter_small_family(delimiter);
             int curchr = 0;
@@ -1612,7 +1612,22 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                     The search process is complicated slightly by the facts that some of the characters
                     might not be present in some of the fonts, and they might not be probed in increasing
                     order of height. When we run out of sizes (variants) and end up at an extensible 
-                    pointer (parts) we quit the loop. 
+                    pointer (parts) we quit the loop. For an open type font fam normally is constant but 
+                    for a traditional font we could first follow the small fam font list and next a large 
+                    fam font list, so we can loop twice here. Thsi can be simplified because there are 
+                    no small fonts with lists. 
+                    
+                    In principle we can mix fonts here unless we go for a variant array approach in which 
+                    case we could still add glyphs from another font as virtual characters. We keep the 
+                    linked list approach as long as we support traditional fonts, but when we would ditch 
+                    next pointers we'd also have to adapt code at the Lua end and introduce (1) an 
+                    incompatibility and (2) still sort of support the traditional approach so in the end 
+                    we gain nothing. It does however mean that we need to make sure we have no loops in 
+                    the linked list (as happened with noto sans math), but we can intercept that at load 
+                    time because sanity checks are needed with math fonts anyway.
+
+                    I can clean this excessive goto usage up a bit with a helper function but then we need 
+                    quite some parameters.
                 */
                 if (curfam >= 0 || nxtchr) {
                     halfword curfnt = tex_fam_fnt(curfam, size);
@@ -1650,7 +1665,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                                     if (flat ? tex_char_has_tag_from_font(curfnt, curchr, horizontal_tag) : tex_char_has_tag_from_font(curfnt, curchr, vertical_tag)) {
                                         fnt = curfnt;
                                         chr = curchr;
-                                        do_parts = 1;
+                                        hasparts = 1;
                                     }
                                 }
                                 goto FOUND;
@@ -1667,9 +1682,16 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                     }
                 }
                 if (large_attempt) {
-                    /*tex There were none large enough. */
+                    /*tex 
+                        There were none large enough in the large fam. We already checked if there
+                        were parts available. 
+                    */
                     goto FOUND;
                 } else {
+                    /*tex 
+                        We can out of variants in the small fam so let's consult the larger fam 
+                        now instead. 
+                    */
                     large_attempt = 1;
                     curfam = delimiter_large_family(delimiter);
                     nxtchr = delimiter_large_character(delimiter);
@@ -1693,17 +1715,17 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
  // }
     if (fnt != null_font) {
         /*tex
-            When the following code is executed, |do_parts| will be true if a built-up symbol is
+            When the following code is executed, |hasparts| will be true if a built-up symbol is
             supposed to be returned.
         */
-        extinfo *ext = do_parts ? tex_char_extensible_recipe_from_font(fnt, chr) : NULL;
+        extinfo *ext = hasparts ? tex_char_extensible_recipe_from_font(fnt, chr) : NULL;
         if (ext) {
             scaled minoverlap = flat ? tex_get_math_x_parameter_default(style, math_parameter_connector_overlap_min, 0) : tex_get_math_y_parameter_default(style, math_parameter_connector_overlap_min, 0);
          // result = tex_aux_get_delimiter_box(fnt, chr, targetsize, minoverlap, flat, attr ? attr : att);
             result = tex_make_extensible(fnt, chr, targetsize, minoverlap, flat, attr ? attr : att, lmt_math_state.size);                
             if (stretch && flat && (box_width(result) > targetsize)) { // threshold nooverflow
                 tex_flush_node_list(result);
-                do_parts = 0;
+                hasparts = 0;
                 goto HERE;
             }
             if (delta) {
@@ -1782,7 +1804,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
             *stack = 0 ;
         }
     }
-    if (do_parts) {
+    if (hasparts) {
         if (target && (has_noad_option_phantom(target) || has_noad_option_void(target))) {
             result = tex_aux_make_list_phantom(result, has_noad_option_void(target), attr ? attr : att);
         } else if (reg) {
@@ -1816,7 +1838,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                 box_shift_amount(result) = move;
                 break;
         }
-        if (do_parts && extremes && extremes->height) {
+        if (hasparts && extremes && extremes->height) {
             extremes->height -= box_shift_amount(result);
             extremes->depth += box_shift_amount(result);
         }
@@ -2197,7 +2219,8 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
                 lua_pushinteger(L, beginclass);
                 lua_pushinteger(L, endclass);
                 lua_pushinteger(L, lmt_math_state.level);
-                i = lmt_callback_call(L, 6, 1, top);
+                lua_pushinteger(L, cur_list.math_main_style); /* brr */
+                i = lmt_callback_call(L, 7, 1, top);
                 if (i) {
                     lmt_callback_error(L, top, i);
                     node_next(temp_head) = null;
@@ -2747,7 +2770,7 @@ static void tex_aux_make_root_radical(halfword target, int style, int size, kern
                     scaled exheight = tex_aux_math_exheight(size);
                     scaled emwidth = tex_aux_math_emwidth(size);
                     scaled width = box_width(nucleus)
-                        + tex_get_math_x_parameter_default(style, math_parameter_radical_extensible_before, 0); 
+                        + tex_get_math_x_parameter_default(style, math_parameter_radical_extensible_before, 0)
                         + tex_get_math_x_parameter_default(style, math_parameter_radical_extensible_after, 0); 
                     halfword result = tex_made_extensible(target, fnt, chr, size, width, targetsize, 0, theta, axis, exheight, emwidth);
                     if (result) { 
@@ -2950,8 +2973,8 @@ static halfword tex_aux_radical_delimiter_cb(halfword target, halfword delimiter
             scaled axis = tex_aux_math_axis(size);
             scaled exheight = tex_aux_math_exheight(size);
             scaled emwidth = tex_aux_math_emwidth(size);
-            scaled width = box_width(noad_nucleus(target));
-                + tex_get_math_x_parameter_default(style, math_parameter_radical_extensible_before, 0); 
+            scaled width = box_width(noad_nucleus(target))
+                + tex_get_math_x_parameter_default(style, math_parameter_radical_extensible_before, 0)
                 + tex_get_math_x_parameter_default(style, math_parameter_radical_extensible_after, 0); 
             halfword result = tex_made_extensible(target, fnt, chr, size, width, targetsize, 0, linewidth, axis, exheight, emwidth);
             if (result) { 

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definebar" level="style" category="rules" file="node-rul.mkiv">
+    <cd:command name="definebar" level="style" category="rules" file="node-rul.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbar" level="style" category="rules" file="node-rul.mkiv">
+    <cd:command name="setupbar" level="style" category="rules" file="node-rul.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -25,6 +25,7 @@
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
                     <cd:constant type="all"/>
+                    <cd:constant type="always"/>
                 </cd:parameter>
                 <cd:parameter name="empty">
                     <cd:constant type="yes"/>
@@ -56,6 +57,13 @@
                 </cd:parameter>
                 <cd:parameter name="offset">
                     <cd:constant type="cd:number"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="depth">
+                    <cd:constant type="cd:dimension"/>
                 </cd:parameter>
                 <cd:parameter name="dy">
                     <cd:constant type="cd:number"/>
@@ -82,11 +90,14 @@
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
                 </cd:parameter>
+                <cd:parameter name="text">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbars" level="style" category="rules" file="node-rul.mkiv">
+    <cd:command name="setupbars" level="style" category="rules" file="node-rul.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -95,7 +106,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bar" generated="yes" variant="instance" level="document" category="rules" file="node-rul.mkiv">
+    <cd:command name="inlinebar" level="document" category="rules" file="node-rul.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="bar" generated="yes" variant="instance" level="document" category="rules" file="node-rul.mkxl">
         <cd:sequence>
             <cd:instance value="bar"/>
         </cd:sequence>
@@ -107,30 +125,42 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="bar" type="environment" level="document" category="rules" file="node-rul.mkiv">
+    <cd:command name="bar" type="environment" level="document" category="rules" file="node-rul.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setbar" level="document" category="rules" file="node-rul.mkiv">
+    <cd:command name="setbar" level="document" category="rules" file="node-rul.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directsetbar" level="document" category="rules" file="node-rul.mkiv">
+    <cd:command name="resetbar" level="style" category="rules" file="node-rul.mkxl"/>
+
+    <cd:command name="nobar" level="document" category="rules" file="node-rul.mkxl">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="directsetbar" level="document" category="rules" file="node-rul.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bar" type="environment" begin="push" end="pop" level="system" category="rules" file="node-rul.mkiv">
+    <cd:command name="bar" type="environment" level="document" category="rules" file="node-rul.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetbar" level="style" category="rules" file="node-rul.mkiv"/>
+    <cd:command name="bar" type="environment" begin="push" end="pop" level="system" category="rules" file="node-rul.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
 
 </cd:interface>

@@ -60,6 +60,8 @@
    \c!inbetween={\blank[\v!medium]},
    \c!after=\blank]
 
+% todo: define
+
 \newinteger  \c_typo_items_n
 \newinteger  \c_typo_items_m
 \newdimension\d_typo_items_text_width
@@ -128,7 +130,9 @@
    \dontcomplain
    %
    \itemsparameter\c!before
+   \dostarttagged\t!items\currentitems % currently alternative
    \csname\??itemsalternatives\p_typo_items_alternative\endcsname{#2}%
+   \dostoptagged
    \itemsparameter\c!after
    \egroup}
 
@@ -175,24 +179,40 @@
 \def\typo_items_make_vertical#1%
   {\vbox{#1}}
 
+\def\typo_items_item_text#1%
+  {\dostarttaggednodetail\t!itemtext
+   \typo_items_item{#1}%
+   \dostoptagged}
+
+\def\typo_items_item_symbol#1%
+  {\dostarttaggednodetail\t!itemsymbol
+   \typo_items_item{\strut\m_typo_items_symbol{#1}}%
+   \dostoptagged}
+
 \def\typo_items_construct_items_boxes#1%
-  {\setbox\b_typo_items_texts\hbox
-     {\c_typo_items_m\zerocount
-      \let\m_typo_items_align\p_typo_items_textalign
-      \scratchwidth\d_typo_items_text_width
-      \useitemsstyleandcolor\c!textstyle\c!textcolor
-      \typo_items_make{\processcommalist[#1]\typo_items_item}}%
+  {\dostarttaggednodetail\t!itemtexts
+   \setbox\b_typo_items_texts\hbox\bgroup
+     \c_typo_items_m\zerocount
+     \let\m_typo_items_align\p_typo_items_textalign
+     \scratchwidth\d_typo_items_text_width
+     \useitemsstyleandcolor\c!textstyle\c!textcolor
+     \typo_items_make{\processcommalist[#1]\typo_items_item_text}%
+   \egroup
+   \dostoptagged
+   \dostarttaggednodetail\t!itemsymbols
    \setbox\b_typo_items_symbols
      \ifempty\p_typo_items_symbol
        \emptyhbox
      \else
-       \hbox
-         {\c_typo_items_m\zerocount
-          \let\m_typo_items_align\p_typo_items_align
-          \scratchwidth\d_typo_items_symbol_width
-          \useitemsstyleandcolor\c!style\c!color
-          \typo_items_make{\dorecurse\c_typo_items_n{\typo_items_item{\strut\m_typo_items_symbol{##1}}}}}%
-   \fi}
+       \hbox\bgroup
+         \c_typo_items_m\zerocount
+         \let\m_typo_items_align\p_typo_items_align
+         \scratchwidth\d_typo_items_symbol_width
+         \useitemsstyleandcolor\c!style\c!color
+         \typo_items_make{\dorecurse\c_typo_items_n{\typo_items_item_symbol{##1}}}%
+       \egroup
+     \fi
+   \dostoptagged}
 
 % alternatives:
 

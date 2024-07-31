@@ -11,6 +11,7 @@ local allocate, mark = utilities.storage.allocate, utilities.storage.mark
 local format, sub, match, gsub, find = string.format, string.sub, string.match, string.gsub, string.find
 local unquoted, quoted, optionalquoted = string.unquoted, string.quoted, string.optionalquoted
 local concat, insert, remove = table.concat, table.insert, table.remove
+local globfiles = dir.glob
 
 environment         = environment or { }
 local environment   = environment
@@ -323,4 +324,27 @@ if arg then
 
     arg = { } -- prevent duplicate handling
 
+end
+
+function environment.globfiles(files)
+    if not files then
+        files = environment.files
+    end
+    if files then
+        local globbed = { }
+        for i=1,#files do
+            local f = files[i]
+            if find(f,"%*") then
+                local g = globfiles(f)
+                if g then
+                    for i=1,#g do
+                        globbed[#globbed+1] = g[i]
+                    end
+                end
+            else
+                globbed[#globbed+1] = f
+            end
+        end
+        return globbed
+    end
 end

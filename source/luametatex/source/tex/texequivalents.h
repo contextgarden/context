@@ -651,11 +651,14 @@ typedef enum int_codes {
     orphan_penalty_code,
     toddler_penalty_code, /*tex aka single_char_penalty */
     single_line_penalty_code,
+    left_twin_demerits_code,
+    right_twin_demerits_code,
     alignment_cell_source_code,
     alignment_wrap_source_code,
  /* page_boundary_penalty_code, */
     line_break_passes_code,
     line_break_optional_code,
+    line_break_checks_code,
     /* 
         This one was added as experiment to \LUATEX\ (answer to a forwarded question) but as it 
         didn't get tested it will go away. \CONTEXT\ doesn't need it and we don't need to be 
@@ -1382,6 +1385,8 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define orphan_penalty_par               integer_parameter(orphan_penalty_code)
 # define toddler_penalty_par              integer_parameter(toddler_penalty_code)
 # define single_line_penalty_par          integer_parameter(single_line_penalty_code)
+# define left_twin_demerits_par           integer_parameter(left_twin_demerits_code)
+# define right_twin_demerits_par          integer_parameter(right_twin_demerits_code)
 /*define page_boundary_penalty_par        integer_parameter(page_boundary_penalty_code) */ /* now in |\pageboundary| */
 # define line_break_passes_par            integer_parameter(line_break_passes_code)
 # define line_break_optional_par          integer_parameter(line_break_optional_code)
@@ -1433,7 +1438,9 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define local_left_box_par               box_parameter(local_left_box_code)
 # define local_right_box_par              box_parameter(local_right_box_code)
 # define local_middle_box_par             box_parameter(local_middle_box_code)
-                                          
+
+# define line_break_checks_par            integer_parameter(line_break_checks_code)
+
 # define end_line_char_par                integer_parameter(end_line_char_code)
 # define new_line_char_par                integer_parameter(new_line_char_code)
 # define escape_char_par                  integer_parameter(escape_char_code)
@@ -1839,6 +1846,8 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 # define update_tex_hang_indent(v)             tex_eq_word_define(internal_dimension_location(hang_indent_code), v)
 # define update_tex_looseness(v)               tex_eq_word_define(internal_integer_location(looseness_code), v)
 # define update_tex_single_line_penalty(v)     tex_eq_word_define(internal_integer_location(single_line_penalty_code), v)
+# define update_tex_left_twin_demerits(v)      tex_eq_word_define(internal_integer_location(left_twin_demerits_code), v)
+# define update_tex_right_twin_demerits(v)     tex_eq_word_define(internal_integer_location(right_twin_demerits_code), v)
 # define update_tex_math_direction(v)          tex_eq_word_define(internal_integer_location(math_direction_code), v)
 # define update_tex_internal_par_state(v)      tex_eq_word_define(internal_integer_location(internal_par_state_code), v)
 # define update_tex_internal_dir_state(v)      tex_eq_word_define(internal_integer_location(internal_dir_state_code), v)
@@ -1849,6 +1858,7 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 # define update_tex_pre_display_direction(v)   tex_eq_word_define(internal_integer_location(pre_display_direction_code), v)
 # define update_tex_pre_display_size(v)        tex_eq_word_define(internal_dimension_location(pre_display_size_code), v)
 # define update_tex_text_direction(v)          tex_eq_word_define(internal_integer_location(text_direction_code), v)
+# define update_tex_line_break_checks(v)       tex_eq_word_define(internal_integer_location(line_break_checks_code), v)
 
 # define update_tex_font_identifier(v)         tex_eq_word_define(internal_integer_location(font_code), v)
 # define update_tex_glyph_scale(v)             tex_eq_word_define(internal_integer_location(glyph_scale_code), v)

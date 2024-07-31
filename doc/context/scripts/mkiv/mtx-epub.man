@@ -28,6 +28,9 @@ use given tex style for svg generation (overloads style in specification)
 .TP
 .B --all
 assume: --purge --rename --svgmath (for fast testing)
+.TP
+.B --images
+convert images to svg [--fix]
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

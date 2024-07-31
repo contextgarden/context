@@ -181,7 +181,6 @@
   {\beginmathgroup
  % \setlocalmathaccentcurrent{#class}% \edef\currentmathaccent{#class}%
    \cdef\currentmathaccent{#name}% \edef\currentmathaccent{#class}%
-   \startusemathstyleparameter\mathaccentparameter\c!mathstyle
    \setupcurrentmathaccent[#settings]%
    \edef\p_scale{\mathaccentparameter\c!scale}%
    \ifx\p_scale\v!keep
@@ -236,19 +235,25 @@
      \s!top\space
      \m_fixed
      \fam\zerocount#top
+% \fam\mathaccentcode#top % class is signal
    \or
      \s!bottom\space
      \m_fixed
      \fam\zerocount#bottom
+% \fam\mathaccentcode#bottom % class is signal
    \or
      \s!both\space
      \m_fixed
      \fam\zerocount#bottom
      \fam\zerocount#top
+%      \fam\mathaccentcode#bottom % class is signal
+%      \fam\mathaccentcode#top % class is signal
    \fi
    {\usemathaccentcolorparameter\c!textcolor
-    \ifcstok{\mathaccentparameter{i}}\v!auto\mathdotless\fi#content}%
-   \stopusemathstyleparameter
+    \startusemathstyleparameter\mathaccentparameter\c!mathstyle
+    \ifcstok{\mathaccentparameter{i}}\v!auto\mathdotless\fi
+    #content%
+    \stopusemathstyleparameter}%
    \endmathgroup}
 
 %D Relative new:

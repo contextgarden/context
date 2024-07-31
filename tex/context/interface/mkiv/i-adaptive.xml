@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="defineadaptive" level="style" category="boxes" file="typo-ada.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupadaptive"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupadaptive" level="style" category="boxes" file="typo-ada.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="setups">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="foregroundstyle">
+                    <cd:resolve nale="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="foregroundcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="strut">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="rulethickness">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="margin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="stretch">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="shrink">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="adaptivehbox" level="document" category="boxes" file="typo-ada.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupadaptive"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="adaptivebox" level="document" category="boxes" file="typo-ada.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupadaptive"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="adaptivevbox" level="document" category="boxes" file="typo-ada.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupadaptive"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="adaptive" level="document" category="boxes" file="typo-ada.mkxl">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="usedadaptivewidth" level="style" category="boxes" file="typo-ada.mkxl"/>
+
+    <cd:command name="usedadaptiveheight" level="style" category="boxes" file="typo-ada.mkxl"/>
+
+    <cd:command name="usedadaptivedepth" level="style" category="boxes" file="typo-ada.mkxl"/>
+
+    <cd:command name="usedadaptiveline" level="style" category="boxes" file="typo-ada.mkxl"/>
+
+    <cd:command name="usedadaptivehsize" level="style" category="boxes" file="typo-ada.mkxl"/>
+
+    <cd:command name="usedadaptivebox" level="style" category="boxes" file="typo-ada.mkxl"/>
+
+    <cd:command name="usedadaptivecolor" level="style" category="boxes" file="typo-ada.mkxl"/>
+
+    <cd:command name="usedadaptivealternative" level="style" category="boxes" file="typo-ada.mkxl"/>
+
+    <cd:command name="usedadaptivetotal" level="style" category="boxes" file="typo-ada.mkxl"/>
+
+</cd:interface>

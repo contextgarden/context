@@ -120,6 +120,10 @@ linebreak_state_info lmt_linebreak_state = {
     .line_break_dir               = 0,
     .checked_expansion            = -1,
     .passes                       = { { 0, 0, 0, 0 } },
+    .n_of_left_twins              = 0,
+    .n_of_right_twins             = 0,
+    .n_of_double_twins            = 0,
+    .padding                      = 0,
 };
 
 /*tex
@@ -336,6 +340,8 @@ void tex_line_break(int d, int group_context, int par_context)
                     .broken_penalties             = tex_get_par_par(par, par_broken_penalties_code),
                     .orphan_penalty               = tex_get_par_par(par, par_orphan_penalty_code),
                     .toddler_penalty              = tex_get_par_par(par, par_toddler_penalty_code),
+                    .left_twin_demerits           = tex_get_par_par(par, par_left_twin_demerits_code),
+                    .right_twin_demerits          = tex_get_par_par(par, par_right_twin_demerits_code),
                     .single_line_penalty          = tex_get_par_par(par, par_single_line_penalty_code),
                     .hyphen_penalty               = tex_get_par_par(par, par_hyphen_penalty_code),
                     .ex_hyphen_penalty            = tex_get_par_par(par, par_ex_hyphen_penalty_code),
@@ -353,10 +359,11 @@ void tex_line_break(int d, int group_context, int par_context)
                     .shaping_penalty              = tex_get_par_par(par, par_shaping_penalty_code),
                     .emergency_extra_stretch      = tex_get_par_par(par, par_emergency_extra_stretch_code),
                     .par_passes                   = tex_get_par_par(par, par_par_passes_code),
+                    .line_break_checks            = tex_get_par_par(par, par_line_break_checks_code),
                     .extra_hyphen_penalty         = 0,
                     .optional_found               = 0,
                     .math_found                   = 0,
-                    .line_break_optional          = line_break_optional_par,
+                    .line_break_optional          = line_break_optional_par, /* hm, why different than above */
                     .group_context                = group_context,
                     .par_context                  = par_context,
                 };
@@ -1272,50 +1279,49 @@ static void tex_aux_compute_break_width(int break_type, int adjust_spacing, int 
     }
 }
 
-static void tex_aux_initialize_show_break_node(int callback_id)
+static void tex_aux_line_break_callback_initialize(int callback_id, halfword checks)
 {
-    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "d->", initialize_show_breaks_context);
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dd->", initialize_line_break_context, checks);
 }
 
-static void tex_aux_start_show_break_node(int callback_id, int pass, int classes, int decent)
+static void tex_aux_line_break_callback_start(int callback_id, halfword checks, int pass, int classes, int decent)
 {
-    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dddd->", start_show_breaks_context, pass, classes, decent);
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "ddddd->", start_line_break_context, checks, pass, classes, decent);
 }
 
-static void tex_aux_stop_show_break_node(int callback_id)
+static void tex_aux_line_break_callback_stop(int callback_id, halfword checks)
 {
-    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "d->", stop_show_breaks_context);
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dd->", stop_line_break_context, checks);
 }
 
-static void tex_aux_collect_show_break_node(int callback_id)
+static void tex_aux_line_break_callback_collect(int callback_id, halfword checks)
 {
-    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "d->", collect_show_breaks_context);
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dd->", collect_line_break_context, checks);
 }
 
-static void tex_aux_line_show_break_node(int callback_id)
+static void tex_aux_line_break_callback_line(int callback_id, halfword checks)
 {
-    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dNdddd->", line_show_breaks_context,
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "ddNdddd->", line_line_break_context, checks,
         lmt_linebreak_state.just_box, lmt_packaging_state.last_badness,  lmt_packaging_state.last_overshoot,
         lmt_packaging_state.total_shrink[normal_glue_order], lmt_packaging_state.total_stretch[normal_glue_order]
     );
 }
 
-static void tex_aux_delete_break_node(halfword active, halfword passive, int callback_id)
+static void tex_aux_line_break_callback_delete(halfword active, halfword passive, int callback_id, halfword checks)
 {
     (void) active;
-    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dd->", delete_show_breaks_context,
-        passive_serial(passive)
-    );
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dd->", delete_line_break_context, checks, passive_serial(passive));
 }
 
-static void tex_aux_wrapup_show_break_node(int callback_id)
+static void tex_aux_line_break_callback_wrapup(int callback_id, halfword checks)
 {
-    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "d->", wrapup_show_breaks_context);
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dd->", wrapup_line_break_context, checks);
 }
 
-static void tex_aux_show_break_node(halfword active, halfword passive, int callback_id, int pass, halfword *demerits)
+static void tex_aux_line_break_callback_check(halfword active, halfword passive, int callback_id, halfword checks, int pass, halfword *demerits)
 {
-    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "ddddddddNddd->r", report_show_breaks_context,
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dddddddddNddd->r", report_line_break_context, 
+        checks,
         pass,
         passive_serial(passive),
         passive_prev_break(passive) ? passive_serial(passive_prev_break(passive)) : 0,
@@ -1331,9 +1337,9 @@ static void tex_aux_show_break_node(halfword active, halfword passive, int callb
     );
 }
 
-static void tex_aux_list_break_node(halfword passive, int callback_id)
+static void tex_aux_line_break_callback_list(halfword passive, int callback_id, halfword checks)
 {
-    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dd->", list_show_breaks_context,
+    lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dd->", list_line_break_context, checks, 
         passive_serial(passive)
     );
 }
@@ -1414,7 +1420,7 @@ static void tex_aux_print_feasible_break(halfword current, halfword breakpoint, 
     trickery depending on it.
 */
 
-static void tex_aux_post_line_break(const line_break_properties *properties, halfword line_break_dir, int callback_id, halfword quality);
+static void tex_aux_post_line_break(const line_break_properties *properties, halfword line_break_dir, int callback_id, halfword checks, halfword quality);
 
 /*tex
 
@@ -1704,6 +1710,315 @@ static void tex_aux_set_quality(halfword active, halfword passive, scaled shrt, 
     active_badness(active) = badness;
 }
 
+/*tex
+
+    The twin detection is a follow up on a discussion between Dedier Verna, Mikael Sundqvist and 
+    Hans Hagen. We have been playing with features like this in ConTeXt when we extended the par 
+    builder but that uses a callback that is meant for tracing (read: articles that we write on 
+    this topic). When Dedier wondered if it could be an engine feature we pickup up this thread. 
+
+    In a 2024 article for the TUG meeting Dedier describes some performance measurements with 
+    his (lisp based) framework but we already know that the par builder is not that critical 
+    in the whole picture. Here we distinguish between a left and right edge twin (repeated word) 
+    and we also look into discretionaries because we can assume that more complex opentype 
+    features can give more complex discretionaries than a single hyphen. One can condider a 
+    configurable size of comparison. 
+
+    Using a Lua approach is quite flexible and permits nice tracing but, as said, it abuses a 
+    callback that, due to the many different invocations is not the best candidate for this. We
+    could add another callback but that is overkill. Instead, part of the Lua code has been turned
+    into a native feature so that we can do both: native twin checking as well as tracing of the 
+    break routine (which we need for testing par passes) but also exploring more features using 
+    that callback. 
+    
+    The reference implementation is still done in Lua where we then also have twin tracing. In 
+    principle that one is fast enough. The native C implementation works sligthly different but 
+    is still based on the Lua code. We also have some constraints, like the maximum size of a 
+    snippet.  
+
+    In both cases (Lua and C) the overhead is rather small because we only look at a small set
+    of breakpoints. In Lua we gain performance by caching, in C by limiting the snippet. We 
+    can squeeze out some more performance if needed by immediately comparing the second snippet 
+    with the first one. Contrary to the Lua variant, the C implementation checks for a glyph 
+    option being set. Because it has to fit in the rest we carry the |\lefttwindemerits| and 
+    |\righttwindemerits| in the par node and also can set it in the (optional extra) par passes. 
+
+    Maybe (as in the \LUA) variant, also support |twinslimit|. 
+
+*/
+
+static int tex_aux_get_before(halfword breakpoint, int snippet[])
+{
+    halfword current = null;
+    int count = 0;
+    halfword font = 0;
+    quarterword prop = 0; 
+    switch (node_type(breakpoint)) { 
+        case glue_node: 
+            {
+                current = node_prev(breakpoint);
+                if (node_type(current) == glyph_node && tex_has_glyph_option(current, glyph_option_check_twin)) { 
+                    font = glyph_font(current);
+                    prop = glyph_control(current);
+                    snippet[count++] = font;
+                    snippet[count++] = glyph_character(current);
+                    if (count == max_twin_snippet) { 
+                        return 0; 
+                    }
+                    current = node_prev(current);
+                } else {
+                    return 0;
+                }
+            }
+            break;
+        case disc_node:
+            {
+                current = breakpoint;
+                halfword r = disc_pre_break_tail(current);
+                while (r) {
+                    if (node_type(r) == glyph_node) {
+                        if (! tex_has_glyph_option(r, glyph_option_check_twin)) { 
+                            return 0;
+                        } else if (! font) {
+                            font = glyph_font(r);
+                            prop = glyph_control(r);
+                            snippet[count++] = font;
+                        }
+                        snippet[count++] = glyph_character(r);
+                        if (count == max_twin_snippet) { 
+                            return 0; 
+                        }
+                    }
+                    r = node_prev(r);
+                }
+                current = node_prev(current);
+            }
+            break;
+        default:
+            return 0;
+    }
+    if (current && font) {
+        while (current) {
+            switch (node_type(current)) { 
+                case glyph_node:
+                    if (! tex_has_glyph_option(current, glyph_option_check_twin)) { 
+                        return 0;
+                    } else if (glyph_font(current) == font) {
+                        snippet[count++] = glyph_character(current);
+                        if (count == max_twin_snippet) { 
+                            return 0; 
+                        } else { 
+                            break;
+                        }
+                        break;
+                    } else {
+                        return 0;
+                    }
+                case disc_node:
+                    {
+                        halfword r = disc_no_break_tail(current);
+                        while (r) {
+                            switch (node_type(r)) { 
+                                case glyph_node:
+                                    if (! tex_has_glyph_option(r, glyph_option_check_twin)) { 
+                                        return 0;
+                                    } else if (glyph_font(r) == font) {
+                                        snippet[count++] = glyph_character(r);
+                                        if (count == max_twin_snippet) { 
+                                         // return count; 
+                                            return 0; 
+                                        } else { 
+                                            break;
+                                        }
+                                    } else { 
+                                        return 0;
+                                    }
+                                case kern_node: 
+                                    if (node_subtype(r) == font_kern_subtype) {
+                                        break;
+                                    } else { 
+                                        return 0;
+                                    }
+                                default:
+                                    return 0;
+                            }
+                            r = node_prev(r);
+                        }
+                        break;
+                    }
+                case kern_node: 
+                    if (node_subtype(current) == font_kern_subtype) {
+                        break;
+                    } else {
+                        return 0;
+                    } 
+                case glue_node: 
+                    { 
+                        halfword prev = node_prev(current);
+                        if (prev && ((node_type(prev) == glyph_node && tex_has_glyph_option(prev, glyph_option_check_twin)) || node_type(prev) == disc_node)) {
+                            /* Just a test for an article, we need a field in the glyph node if we go this route. */
+                            if (count > 1 && prop && has_character_control(prop, ignore_twin_character_control_code)) { 
+                                for (int i = 2; i < count; i++) {
+                                    snippet[i-1] = snippet[i];
+                                }
+                                --count; 
+                            }
+                            return count; 
+                        }
+                    }
+                    return 0; 
+                default: 
+                    return 0;
+            }
+            current = node_prev(current);
+        }
+    }
+    return 0;
+}
+
+static int tex_aux_get_after(halfword breakpoint, int snippet[])
+{
+    halfword current = null;
+    int count = 0;
+    halfword font = 0;
+    quarterword prop = 0;
+    switch (node_type(breakpoint)) { 
+        case glue_node: 
+            {
+                current = node_next(breakpoint);
+                if (node_type(current) == glyph_node && tex_has_glyph_option(current, glyph_option_check_twin)) { 
+                    font = glyph_font(current);
+                    prop = glyph_control(current);
+                    snippet[count++] = font;
+                    snippet[count++] = glyph_character(current);
+                    if (count == max_twin_snippet) { 
+                        return 0;
+                    }
+                    current = node_next(current);
+                } else {
+                    return 0;
+                }
+            }
+            break;
+        case disc_node:
+            {
+                current = breakpoint;
+                halfword r = disc_post_break_head(current);
+                while (r) {
+                    if (node_type(r) == glyph_node) {
+                        if (! tex_has_glyph_option(r, glyph_option_check_twin)) { 
+                            return 0;
+                        } else if (! font) {
+                            font = glyph_font(r);
+                            prop = glyph_control(r);
+                            snippet[count++] = font;
+                        }
+                        snippet[count++] = glyph_character(r);
+                        if (count == max_twin_snippet) { 
+                            return 0;
+                        }
+                    }
+                    r = node_next(r);
+                }
+                current = node_next(current);
+            }
+            break;
+        default:
+            return 0;
+    }
+    if (current && font) {
+        while (current) {
+            switch (node_type(current)) { 
+                case glyph_node:
+                    if (! tex_has_glyph_option(current, glyph_option_check_twin)) { 
+                        return 0;
+                    } else if (glyph_font(current) == font) {
+                        snippet[count++] = glyph_character(current);
+                        if (count == max_twin_snippet) { 
+                            return 0;
+                        } else { 
+                            prop = glyph_control(current);
+                            break;
+                        }
+                        break;
+                    } else {
+                        return 0;
+                    }
+                case disc_node:
+                    {
+                        halfword r = disc_no_break_head(current);
+                        while (r) {
+                            switch (node_type(r)) { 
+                                case glyph_node:
+                                    if (! tex_has_glyph_option(r, glyph_option_check_twin)) { 
+                                        return 0;
+                                    } else if (glyph_font(r) == font) {
+                                        snippet[count++] = glyph_character(r);
+                                        if (count == max_twin_snippet) { 
+                                            return 0;
+                                        } else { 
+                                            prop = glyph_control(r);
+                                            break;
+                                        }
+                                    } else { 
+                                        return 0;
+                                    }
+                                case kern_node: 
+                                    if (node_subtype(r) == font_kern_subtype) {
+                                        break;
+                                    } else { 
+                                        return 0;
+                                    }
+                                default:
+                                    return 0;
+                            }
+                            r = node_next(r);
+                        }
+                        break;
+                    }
+                case kern_node: 
+                    if (node_subtype(current) == font_kern_subtype) {
+                        break;
+                    } else {
+                        return 0;
+                    } 
+                case glue_node: 
+                    { 
+                        halfword next = node_prev(current);
+                        if (next && ((node_type(next) == glyph_node && tex_has_glyph_option(next, glyph_option_check_twin)) || node_type(next) == disc_node)) {
+                            /* Just a test for an article, we need a field in the glyph node if we go this route. */
+                            if (count > 1 && has_character_control(prop, ignore_twin_character_control_code)) { 
+                                --count;
+                            }
+                            return count; 
+                        }
+                    }
+                    return 0; 
+                default: 
+                    return 0;
+            }
+            current = node_next(current);
+        }
+    }
+    return 0;
+}
+
+static int tex_aux_same_snippet(int snippetone[], int snippettwo[], int nsone, int nstwo)
+{
+    if (nsone > 0 && nsone == nstwo) { 
+        for (int i = 0; i < nsone; i++) {
+            if (snippetone[i] != snippettwo[i]) { 
+                return 0;
+            }
+        }
+        return 1; 
+    } else {
+        return 0;
+    }
+}
+
+/* */
+
 static scaled tex_aux_try_break(
     const line_break_properties *properties,
     halfword penalty,
@@ -1711,6 +2026,7 @@ static scaled tex_aux_try_break(
     halfword first_p,
     halfword cur_p,
     int callback_id,
+    halfword checks,
     int pass
 )
 {
@@ -1752,6 +2068,8 @@ static scaled tex_aux_try_break(
     scaled line_width = 0;
     /*tex line number of current active node */
     halfword line = 0;
+    /* */
+    int twins = properties->left_twin_demerits > 0 || properties->right_twin_demerits > 0;
     /*tex
         We have added an extra category, just as experiment. In practice there is very little
         to gain here as it becomes kind of fuzzy and DEK values are quite okay.
@@ -1799,6 +2117,10 @@ static scaled tex_aux_try_break(
         if (line > old_line) {
             /*tex Now we are no longer in the inner loop (well ...). */
             if ((lmt_linebreak_state.minimum_demerits < awful_bad) && ((old_line != lmt_linebreak_state.easy_line) || (current == active_head))) {
+                int s_before[max_twin_snippet];
+                int s_after[max_twin_snippet];
+                int n_before = -1;
+                int n_after = -1;
                 /*tex
 
                     Create new active nodes for the best feasible breaks just found. It is not
@@ -1882,10 +2204,66 @@ static scaled tex_aux_try_break(
                         node_next(active) = current;
                         node_next(previous) = active;
                         previous = active;
+                        /*tex                            
+                            Because we have a loop it can be that we have the same |cur_p| a few 
+                            times but it happens not that often. Nevertheless we do cache its 
+                            before and after snippets. 
+                            
+                            We could check the second snippet immediately but the savings can be 
+                            neglected as we seldom enter this branch. It also measn two helpers 
+                            with the checking on also having to track the size. Messy and ugly 
+                            code for no gain so we just grab the whole second snippet and then 
+                            compare fast.
+
+                            Maybe take the largest demerits when we have two? Needs some discussion. 
+                        */ 
+                        if (twins && cur_p && prev_break && passive_cur_break(prev_break)) {
+                            int count = 0;
+                            int snippet[max_twin_snippet];
+                            if (properties->right_twin_demerits) {
+                                if (n_before < 0) {
+                                    n_before = tex_aux_get_before(cur_p, s_before);
+                                }
+                                if (n_before) { 
+                                    int n = tex_aux_get_before(passive_cur_break(prev_break), snippet);
+                                    if (tex_aux_same_snippet(s_before, snippet, n_before, n)) {
+                                        if (properties->tracing_paragraphs > 1) {
+                                            tex_begin_diagnostic();
+                                            tex_print_format("[linebreak: bumping demerits %i by right twin demerits %i]", active_total_demerits(active), properties->right_twin_demerits);
+                                            tex_end_diagnostic();
+                                        }
+                                        active_total_demerits(active) += properties->right_twin_demerits;
+                                        ++lmt_linebreak_state.n_of_right_twins;
+                                        ++count;
+                                    } 
+                                }
+                            }
+                            if (properties->left_twin_demerits) {
+                                if (n_after < 0) {
+                                    n_after = tex_aux_get_after(cur_p, s_after);
+                                }
+                                if (n_after) { 
+                                    int n = tex_aux_get_after(passive_cur_break(prev_break), snippet);
+                                    if (tex_aux_same_snippet(s_after, snippet, n_after, n)) {
+                                        if (properties->tracing_paragraphs > 1) {
+                                            tex_begin_diagnostic();
+                                            tex_print_format("[linebreak: bumping demerits %i by left twin demerits %i]", active_total_demerits(active), properties->left_twin_demerits);
+                                            tex_end_diagnostic();
+                                        }
+                                        active_total_demerits(active) += properties->left_twin_demerits;
+                                        ++lmt_linebreak_state.n_of_left_twins;
+                                        ++count;
+                                    }
+                                }
+                            }
+                            if (count > 1) { 
+                                ++lmt_linebreak_state.n_of_double_twins;
+                            }
+                        }
                         /* */
                         if (callback_id) {
                             halfword demerits = active_total_demerits(active);
-                            tex_aux_show_break_node(active, passive, callback_id, pass, &demerits);
+                            tex_aux_line_break_callback_check(active, passive, callback_id, checks, pass, &demerits);
                             active_total_demerits(active) = demerits;
                         }
                         if (properties->tracing_paragraphs > 0) {
@@ -1937,12 +2315,10 @@ static scaled tex_aux_try_break(
                     line_width = lmt_linebreak_state.first_width;
                 }
             }
-
-if (current == active_head) {
-    shortfall = line_width - current_active_width[total_advance_amount];
-    return shortfall;
-}
-
+            if (current == active_head) {
+                shortfall = line_width - current_active_width[total_advance_amount];
+                return shortfall;
+            }
         }
         /*tex
 
@@ -2242,7 +2618,7 @@ if (current == active_head) {
         */
         node_next(previous) = node_next(current);
         if (callback_id) {
-             tex_aux_delete_break_node(current, active_break_node(current), callback_id);
+             tex_aux_line_break_callback_delete(current, active_break_node(current), callback_id, checks);
         }
         tex_flush_node(current);
         if (previous == active_head) {
@@ -2533,6 +2909,9 @@ static void tex_aux_remove_special_penalties(line_break_properties *properties)
     but then we also need to carry that in glyph options (glyph_option_text or so). One could 
     also argue for uppercase only in which case we shopuld have a uppercase flag in the glyph 
     state. 
+
+    An alternative is to delay this till we check a break and add to the demerits as we do with
+    twins but this is also a bit of a demo of how to do this. 
 */
 
 static void tex_aux_prepare_toddler_penalties(line_break_properties *properties, int toddlered)
@@ -2550,8 +2929,8 @@ static void tex_aux_prepare_toddler_penalties(line_break_properties *properties,
                             if (count == 1) {
                                 /* we have a glue + one glyph + glue */
                                 halfword nxt = node_next(current);
-                                if (nxt && node_type(nxt) == glyph_node && glyph_node_is_text(nxt)) {
-                                    /* we have a glue + one glyph + glue + glyph */
+                                if (nxt && node_type(nxt) == glyph_node && glyph_node_is_text(nxt) && tex_has_glyph_option(nxt, glyph_option_check_toddler)) {
+                                     /* we have a glue + one glyph + glue + glyph */
                                     current = tex_aux_inject_toddler_penalty(current, properties->toddler_penalty, toddlered);
                                 }
                             } else { 
@@ -2564,7 +2943,7 @@ static void tex_aux_prepare_toddler_penalties(line_break_properties *properties,
                     }
                     break;
                 case glyph_node:
-                    if (count >= 0 && glyph_node_is_text(current)) { 
+                    if (count >= 0 && glyph_node_is_text(current) && tex_has_glyph_option(current, glyph_option_check_toddler)) { 
                         ++count;
                     }
                     break;
@@ -2919,6 +3298,14 @@ inline static int tex_aux_check_sub_pass(line_break_properties *properties, half
                         if (v) {
                             properties->toddler_penalty = v;
                         }
+                        v = tex_get_passes_lefttwindemerits(passes, subpass);
+                        if (v) {
+                            properties->left_twin_demerits = v;
+                        }
+                        v = tex_get_passes_righttwindemerits(passes, subpass);
+                        if (v) {
+                            properties->right_twin_demerits = v;
+                        }
                         v = tex_get_passes_extrahyphenpenalty(passes, subpass);
                         if (v) {
                             properties->extra_hyphen_penalty = v;
@@ -2962,6 +3349,10 @@ inline static int tex_aux_check_sub_pass(line_break_properties *properties, half
                         v = tex_get_passes_adjustspacing(passes, subpass);
                         if (v) {
                             properties->adjust_spacing = v;
+                        }
+                        v = tex_get_passes_linebreakchecks(passes, subpass);
+                        if (v) {
+                            properties->line_break_checks = v;
                         }
                         if (features & passes_optional_set) {
                             v = tex_get_passes_optional(passes, subpass);
@@ -3009,8 +3400,11 @@ inline static int tex_aux_check_sub_pass(line_break_properties *properties, half
                             tex_print_format("  linepenalty          %i\n", properties->line_penalty);
                             tex_print_format("  orphanpenalty        %i\n", properties->orphan_penalty);
                             tex_print_format("  toddlerpenalty       %i\n", properties->toddler_penalty);
+                            tex_print_format("  lefttwindemerits     %i\n", properties->left_twin_demerits);
+                            tex_print_format("  righttwindemerits    %i\n", properties->right_twin_demerits);
                             tex_print_format("  extrahyphenpenalty   %i\n", properties->extra_hyphen_penalty);
                             tex_print_format("  linebreakoptional    %i\n", properties->line_break_optional);
+                            tex_print_format("  linebreakchecks      %i\n", properties->line_break_checks);
                             if (properties->adjust_spacing > 0) {
                                 if (properties->adjust_spacing_step >= 0) {
                                     tex_print_format("  adjustspacingstep    %i\n", properties->adjust_spacing_step);
@@ -3138,7 +3532,7 @@ static void tex_aux_show_threshold(const char *what, halfword value)
     tex_end_diagnostic();
 }
 
-inline static halfword tex_aux_break_list(line_break_properties *properties, halfword pass, halfword current, halfword first, int callback_id, int force_check_hyphenation, halfword *quality)
+inline static halfword tex_aux_break_list(line_break_properties *properties, halfword pass, halfword current, halfword first, int callback_id, halfword checks, int force_check_hyphenation, halfword *quality)
 {
     while (current && (node_next(active_head) != active_head)) { /* we check the cycle */
         switch (node_type(current)) {
@@ -3214,7 +3608,7 @@ inline static halfword tex_aux_break_list(line_break_properties *properties, hal
                 } else if (tex_is_par_init_glue(current)) {
                     /*tex Of course we don't break here. */
                 } else if (tex_aux_valid_glue_break(current)) {
-                    tex_aux_try_break(properties, tex_aux_upcoming_penalty(current), unhyphenated_node, first, current, callback_id, pass);
+                    tex_aux_try_break(properties, tex_aux_upcoming_penalty(current), unhyphenated_node, first, current, callback_id, checks, pass);
                 }
                 lmt_linebreak_state.active_width[total_advance_amount] += glue_amount(current);
                 lmt_linebreak_state.active_width[total_stretch_amount + glue_stretch_order(current)] += glue_stretch(current);
@@ -3240,7 +3634,7 @@ inline static halfword tex_aux_break_list(line_break_properties *properties, hal
                             /*tex We catch |\emph{test} $\hat{x}$| aka |test\kern5pt\hskip10pt$\hat{x}$|. */
                             halfword nxt = node_next(current);
                             if (nxt && node_type(nxt) == glue_node && ! tex_aux_upcoming_penalty(nxt) && ! tex_has_glue_option(nxt, glue_option_no_auto_break)) {
-                                tex_aux_try_break(properties, 0, unhyphenated_node, first, current, callback_id, pass);
+                                tex_aux_try_break(properties, 0, unhyphenated_node, first, current, callback_id, checks, pass);
                             }
                         }
                         break;
@@ -3354,11 +3748,11 @@ inline static halfword tex_aux_break_list(line_break_properties *properties, hal
                             }
                             tex_aux_add_to_widths(pre, properties->adjust_spacing, properties->adjust_spacing_step, lmt_linebreak_state.disc_width);
                             tex_aux_add_disc_source_to_target(properties->adjust_spacing, lmt_linebreak_state.active_width, lmt_linebreak_state.disc_width);
-                            tex_aux_try_break(properties, actual_penalty, hyphenated_node, first, current, callback_id, pass);
+                            tex_aux_try_break(properties, actual_penalty, hyphenated_node, first, current, callback_id, checks, pass);
                             tex_aux_sub_disc_target_from_source(properties->adjust_spacing, lmt_linebreak_state.active_width, lmt_linebreak_state.disc_width);
                         } else {
                             /*tex trivial pre-break */
-                            tex_aux_try_break(properties, actual_penalty, hyphenated_node, first, current, callback_id, pass);
+                            tex_aux_try_break(properties, actual_penalty, hyphenated_node, first, current, callback_id, checks, pass);
                         }
                     }
                  REPLACEONLY:
@@ -3369,7 +3763,7 @@ inline static halfword tex_aux_break_list(line_break_properties *properties, hal
                     break;
                 }
             case penalty_node:
-                tex_aux_try_break(properties, penalty_amount(current), unhyphenated_node, first, current, callback_id, pass);
+                tex_aux_try_break(properties, penalty_amount(current), unhyphenated_node, first, current, callback_id, checks, pass);
                 break;
             case math_node:
                 {
@@ -3411,7 +3805,7 @@ inline static halfword tex_aux_break_list(line_break_properties *properties, hal
                             open up. The math specific penalty only kicks in when we break.
                         */
                         if (finishing && node_type(node_next(current)) == glue_node) {
-                            tex_aux_try_break(properties, math_penalty(current), unhyphenated_node, first, current, callback_id, pass);
+                            tex_aux_try_break(properties, math_penalty(current), unhyphenated_node, first, current, callback_id, checks, pass);
                         }
                         lmt_linebreak_state.active_width[total_advance_amount] += math_surround(current);
                     } else {
@@ -3419,7 +3813,7 @@ inline static halfword tex_aux_break_list(line_break_properties *properties, hal
                             This one does quite some testing, is that still needed?
                         */
                         if (finishing && tex_aux_valid_glue_break(current)) {
-                            tex_aux_try_break(properties, math_penalty(current), unhyphenated_node, first, current, callback_id, pass);
+                            tex_aux_try_break(properties, math_penalty(current), unhyphenated_node, first, current, callback_id, checks, pass);
                         }
                         lmt_linebreak_state.active_width[total_advance_amount] += math_amount(current);
                         lmt_linebreak_state.active_width[total_stretch_amount + math_stretch_order(current)] += math_stretch(current);
@@ -3471,7 +3865,8 @@ inline static halfword tex_aux_break_list(line_break_properties *properties, hal
 void tex_do_line_break(line_break_properties *properties)
 {
     /*tex Miscellaneous nodes of temporary interest. */
-    int callback_id = lmt_callback_defined(show_break_callback);
+    halfword checks = properties->line_break_checks; 
+    int callback_id = checks ? lmt_callback_defined(line_break_callback) : 0;
     int force_check_hyphenation = hyphenation_permitted(properties->hyphenation_mode, force_check_hyphenation_mode);
     halfword quality = 0;
     (void) (properties->inter_line_penalties); /* avoid not used message */
@@ -3630,7 +4025,7 @@ void tex_do_line_break(line_break_properties *properties)
         lmt_linebreak_state.final_pass = 1;
     }
     if (callback_id) {
-        tex_aux_initialize_show_break_node(callback_id);
+        tex_aux_line_break_callback_initialize(callback_id, checks);
     }
     {
         halfword passes = properties->par_passes;
@@ -3658,7 +4053,7 @@ void tex_do_line_break(line_break_properties *properties)
                 tex_end_diagnostic();
             }
             if (callback_id) {
-                tex_aux_start_show_break_node(callback_id, pass,
+                tex_aux_line_break_callback_start(callback_id, checks, pass,
                     tex_max_fitness(properties->fitness_demerits),
                     tex_med_fitness(properties->fitness_demerits)
                 );
@@ -3693,7 +4088,7 @@ void tex_do_line_break(line_break_properties *properties)
                 of active width that represents real width as opposed to glue.
 
             */
-            current = tex_aux_break_list(properties, pass, current, first, callback_id, force_check_hyphenation, &quality);
+            current = tex_aux_break_list(properties, pass, current, first, callback_id, checks, force_check_hyphenation, &quality);
             if (! current) {
                 /*tex
 
@@ -3711,7 +4106,7 @@ void tex_do_line_break(line_break_properties *properties)
                     best.
 
                 */
-                scaled shortfall = tex_aux_try_break(properties, eject_penalty, hyphenated_node, first, current, callback_id, pass);
+                scaled shortfall = tex_aux_try_break(properties, eject_penalty, hyphenated_node, first, current, callback_id, checks, pass);
                 if (node_next(active_head) != active_head) {
                     /*tex Find an active node with fewest demerits. */
                     {
@@ -3823,7 +4218,7 @@ void tex_do_line_break(line_break_properties *properties)
                 lmt_linebreak_state.final_pass = 1;
             }
             if (callback_id) {
-                tex_aux_stop_show_break_node(callback_id);
+                tex_aux_line_break_callback_stop(callback_id, checks);
             }
         }
       DONE:
@@ -3862,12 +4257,12 @@ void tex_do_line_break(line_break_properties *properties)
         tex_flush_node_list(lmt_linebreak_state.dir_ptr);
         lmt_linebreak_state.dir_ptr = null;
         /*tex Here we still have a temp node as head. */
-        tex_aux_post_line_break(properties, lmt_linebreak_state.line_break_dir, callback_id, quality);
+        tex_aux_post_line_break(properties, lmt_linebreak_state.line_break_dir, callback_id, checks, quality);
         /*tex Clean up memory by removing the break nodes (maybe: |tex_flush_node_list(cur_p);|). */
         tex_aux_clean_up_the_memory();
     }
     if (callback_id) {
-        tex_aux_wrapup_show_break_node(callback_id);
+        tex_aux_line_break_callback_wrapup(callback_id, checks);
     }
 }
 
@@ -3965,7 +4360,7 @@ static void tex_aux_trace_penalty(const char *what, int line, int index, halfwor
     }
 }
 
-static void tex_aux_post_line_break(const line_break_properties *properties, halfword line_break_dir, int callback_id, halfword quality)
+static void tex_aux_post_line_break(const line_break_properties *properties, halfword line_break_dir, int callback_id, halfword checks, halfword quality)
 {
     /*tex temporary registers for list manipulation */
     halfword q, r;
@@ -4004,7 +4399,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
         stack.
     */
     if (callback_id) {
-        tex_aux_collect_show_break_node(callback_id);
+        tex_aux_line_break_callback_collect(callback_id, checks);
     }
     q = active_break_node(lmt_linebreak_state.best_bet);
     do {
@@ -4016,7 +4411,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
     if (callback_id) {
         halfword p = cur_p;
         while (p) {
-            tex_aux_list_break_node(p, callback_id);
+            tex_aux_line_break_callback_list(p, callback_id, checks);
             p = passive_next_break(p);
         }
     }
@@ -4645,9 +5040,12 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
             box_shift_amount(lmt_linebreak_state.just_box) = cur_indent;
         }
         /*tex Call the packaging subroutine, setting |just_box| to the justified box. */
+        if (has_box_package_state(lmt_linebreak_state.just_box, package_u_leader_found) && ! has_box_package_state(lmt_linebreak_state.just_box, package_u_leader_delayed)) {
+            tex_flatten_leaders(lmt_linebreak_state.just_box, cur_group, 0, "post linebreak", 1);
+        }
         node_subtype(lmt_linebreak_state.just_box) = line_list;
         if (callback_id) {
-            tex_aux_line_show_break_node(callback_id);
+            tex_aux_line_break_callback_line(callback_id, checks);
         }
         /*tex Pending content (callback). */
         if (node_next(contribute_head)) {
@@ -4918,11 +5316,12 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                     if (node_subtype(q) == begin_inline_math) {
                         /*tex We keep it for tracing. */
                         break;
+                    } else {
+                        /*tex begin mathskip code */
+                        math_surround(q) = 0 ;
+                        tex_reset_math_glue_to_zero(q);
+                        /*tex end mathskip code */
                     }
-                    /*tex begin mathskip code */
-                    math_surround(q) = 0 ;
-                    tex_reset_math_glue_to_zero(q);
-                    /*tex end mathskip code */
                 }
                 if (q == passive_cur_break(cur_p)) {
                     break;

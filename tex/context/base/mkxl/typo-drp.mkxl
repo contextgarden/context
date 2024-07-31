@@ -117,7 +117,12 @@
    \else
      \useinitialstyleparameter\c!style
    \fi
-   \useinitialcolorparameter\c!color
+   \ifempty{\initialparameter\c!color}%
+     \c_attr_color       \attributeunsetvalue
+     \c_attr_transparency\attributeunsetvalue
+   \else
+     \useinitialcolorparameter\c!color
+   \fi
    \edef\p_voffset{\initialparameter\c!voffset}%
    \scratchcounter \initialparameter\c!n\relax
    \scratchvoffset\dimexpr\ifx\p_voffset\v!line\scratchcounter\lineheight-\lineheight\else\p_voffset\fi\relax

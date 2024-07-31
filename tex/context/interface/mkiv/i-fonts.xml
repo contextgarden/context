@@ -242,7 +242,7 @@
                 <cd:parameter name="featureset">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
-                <cd:parameter name="colorsheme">
+                <cd:parameter name="colorscheme">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
                 <cd:parameter name="postprocessor">
@@ -490,7 +490,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doresetandafffeature" level="system" category="fonts" file="font-fea.mkvi">
+    <cd:command name="doresetandaddfeature" level="system" category="fonts" file="font-fea.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-name-list"/>
         </cd:arguments>
@@ -604,13 +604,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setfontcolorsheme" level="style" category="fonts" file="font-gds.mkvi">
+    <cd:command name="setfontcolorscheme" level="style" category="fonts" file="font-gds.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetfontcolorsheme" level="style" category="fonts" file="font-gds.mkvi"/>
+    <cd:command name="resetfontcolorscheme" level="style" category="fonts" file="font-gds.mkvi"/>
 
     <cd:command name="definedfont" level="style" category="fonts" file="font-ini.mkvi">
         <cd:arguments>
@@ -1792,5 +1792,39 @@
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
+
+    <cd:command name="setextrafontkerns" level="style" category="fonts" file="typo-fkr.mkxl">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="none"/>
+                <cd:constant type="min"/>
+                <cd:constant type="max"/>
+                <cd:constant type="mixed"/>
+                <cd:constant type="reset" default="yes"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetextrafontkerns" level="style" category="fonts" file="typo-fkr.mkxl"/>
+
+    <cd:command name="unicodenumber" level="document" category="fonts" file="unic-ini.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="unicodehexnumber" level="document" category="fonts" file="unic-ini.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="unicodechar" level="document" category="fonts" file="unic-ini.lmt">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="unknownchar" level="document" category="fonts" file="unic-ini.mkxl"/>
 
 </cd:interface>

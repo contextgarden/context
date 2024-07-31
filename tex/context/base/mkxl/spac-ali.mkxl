@@ -910,14 +910,47 @@
 \immutable\integerdef\defaultdoublehyphendemerits\plustenthousand
 \immutable\integerdef\defaultfinalhyphendemerits \plusfivethousand
 \immutable\integerdef\defaultadjdemerits         \plustenthousand
-\immutable\integerdef\defaultorphanpenalty       \zerocount
+\immutable\integerdef\defaultorphanpenalty       \plusfifty
+\immutable\integerdef\defaulttoddlerpenalty      \plusfifty
+\immutable\integerdef\defaultlefttwindemerits    \plusseventyfivehundred
+\immutable\integerdef\defaultrighttwindemerits   \plusseventyfivehundred
 
 \immutable\integerdef\granularadjdemerits        \plusfivethousand % see accumulation in granular
 
 \frozen\doublehyphendemerits \defaultdoublehyphendemerits
 \frozen\finalhyphendemerits  \defaultfinalhyphendemerits
 \frozen\adjdemerits          \defaultadjdemerits
-\frozen\orphanpenalty        \defaultorphanpenalty
+
+\frozen\orphanpenalty        \zerocount
+\frozen\toddlerpenalty       \zerocount
+\frozen\lefttwindemerits     \zerocount
+\frozen\righttwindemerits    \zerocount
+
+\permanent\protected\def\noorphans   {\orphanpenalty    \defaultorphanpenalty}
+\permanent\protected\def\notoddlers  {\toddlerpenalty   \defaulttoddlerpenalty}
+\permanent\protected\def\notwins     {\lefttwindemerits \defaultlefttwindemerits
+                                      \righttwindemerits\defaultrighttwindemerits}
+
+\permanent\protected\def\keeporphans {\orphanpenalty    \zerocount}
+\permanent\protected\def\keeptoddlers{\toddlerpenalty   \zerocount}
+\permanent\protected\def\keeptwins   {\lefttwindemerits \zerocount
+                                      \righttwindemerits\zerocount}
+
+% for now, not interfaced as these are experiments:
+
+    \immutable\def\s!noorphans   {noorphans}
+    \immutable\def\s!keeporphans {keeporphans}
+    \immutable\def\s!notwins     {notwins}
+    \immutable\def\s!keeptwins   {keeptwins}
+    \immutable\def\s!notoddlers  {notoddlers}
+    \immutable\def\s!keeptoddlers{keeptoddlers}
+
+\defcsname\??aligncommand\s!noorphans   \endcsname{\toksapp\t_spac_align_collected{\noorphans}}
+\defcsname\??aligncommand\s!keeporphans \endcsname{\toksapp\t_spac_align_collected{\keeporphans}}
+\defcsname\??aligncommand\s!notwins     \endcsname{\toksapp\t_spac_align_collected{\notwins}}
+\defcsname\??aligncommand\s!keeptwins   \endcsname{\toksapp\t_spac_align_collected{\keeptwins}}
+\defcsname\??aligncommand\s!notoddlers  \endcsname{\toksapp\t_spac_align_collected{\notoddlers}}
+\defcsname\??aligncommand\s!keeptoddlers\endcsname{\toksapp\t_spac_align_collected{\keeptoddlers}}
 
 % \newconstant\c_spac_align_state_granular
 %
@@ -1183,6 +1216,7 @@
        \hyphenpenalty \exhyphenpenalty \automatichyphenpenalty \explicithyphenpenalty
        \displaywidowpenalty \widowpenalty \clubpenalty \brokenpenalty
        \doublehyphendemerits \finalhyphendemerits \adjdemerits \orphanpenalty
+       \toddlerpenalty \lefttwindemerits \righttwindemerits
 %        \linebreakstretchcriterion \linebreakshrinkcriterion
    \relax}}}}}
 

@@ -28,6 +28,38 @@ if not modules then modules = { } end modules ['font-phb'] = {
 -- one of the most frequently updated optional components in luatex which then sort
 -- of contradicts long term stability and makes it very dependent too, apart from
 -- possible make complications.
+--
+-- Just for the record: there's also LuahbTeX which was not done by the LuaTeX team
+-- but a contribution that came from (and which interface is maintained by) the LaTeX
+-- folk which is (likely) derived from e.g. harftex. We just accepted the patches as
+-- they came and one can consider it to be a derived engine that is maintained in the
+-- same code base. I actually never ran it in ConTeXt, because we have reason nor
+-- interface but we understand and appreciate the effort for LaTeX users.
+--
+-- We have several reason for not using that engine in ConTeXt: (1) we already had
+-- the interface that Kai Eigner made and was optimized a bit later on, (2) we use
+-- external libraries because we don't want to keep checking compatibility in the
+-- perspective of maintainance so one can use frozen libraries instead (HB is a
+-- moving target in the tex live repository), and (3) we don't want to get involved
+-- in the unpleasant politics around this library in the perspective of usage in
+-- TeX: we do what we do for fun. Argument (4) is that we now use LuaMetaTeX which
+-- has a simple optional interface similar to the ffi binding that Kai came up with.
+--
+-- Of course argument (5) is that in TeX it's all about control and less about
+-- fashion (and religous debates about what to wear). And (6) we need the Lua
+-- interface anyway because it made it possible to be an early adopter of new
+-- interesting possibilities, extend math support, come up with special text
+-- solution, fix and patch fonts runtime, and of course play around just for fun. As
+-- (7) I want to mention that we also have to deal with the typical complications of
+-- for instance hyphenation and in the perspective of the Oriental TeX Project (with
+-- Idris Hamid) with advanced linebreaks in combination with fine-tuned Arabic fonts.
+--
+-- So, don't bother us with discussions about the how and why: what is needed and
+-- works well on the web or a word processer doesn't always fit the tex bill. Just
+-- let everyone has its own way and we're fine. And I anyway don't (want to)
+-- understand non context users beef with that macro package doing things its own
+-- way. Also, a standard (opentype, pdf, html, etc) is not a real standard if there
+-- are not multiple implementations using it.
 
 local next, tonumber, pcall, rawget = next, tonumber, pcall, rawget
 

@@ -743,7 +743,7 @@ static void tex_aux_run_end_group(void) {
 
  */
 
-static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, halfword slot, halfword callback)
+static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, halfword slot, halfword callback, halfword leaders)
 {
     /*tex Get the next non-blank non-relax... and optionally skip an equal sign */
     while (1) {
@@ -761,7 +761,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
     switch (cur_cmd) {
         case make_box_cmd:
             {
-                tex_begin_box(boxcontext, shift, slot, callback);
+                tex_begin_box(boxcontext, shift, slot, callback, leaders);
                 return;
             }
         case vcenter_cmd:
@@ -787,7 +787,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
                                 case vlist_node:
                                 case rule_node:
                                 case glyph_node:
-                                    tex_box_end(boxcontext, boxnode, shift, unset_noad_class, slot, callback);
+                                    tex_box_end(boxcontext, boxnode, shift, unset_noad_class, slot, callback, leaders);
                                     return;
                             }
                         }
@@ -803,7 +803,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
                 halfword v = tex_scan_lua_value(cur_chr);
                 switch (v) {
                     case no_val_level:
-                        tex_box_end(boxcontext, null, shift, unset_noad_class, slot, callback);
+                        tex_box_end(boxcontext, null, shift, unset_noad_class, slot, callback, leaders);
                         return;
                     case list_val_level:
                         if (box_leaders_flag(boxcontext)) {
@@ -812,14 +812,14 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
                                 case vlist_node:
                                 case rule_node:
                              // case glyph_node:
-                                    tex_box_end(boxcontext, cur_val, shift, unset_noad_class, slot, callback);
+                                    tex_box_end(boxcontext, cur_val, shift, unset_noad_class, slot, callback, leaders);
                                     return;
                             }
                         } else {
                             switch (node_type(cur_val)) {
                                 case hlist_node:
                                 case vlist_node:
-                                    tex_box_end(boxcontext, cur_val, shift, unset_noad_class, slot, callback);
+                                    tex_box_end(boxcontext, cur_val, shift, unset_noad_class, slot, callback, leaders);
                                     return;
                             }
                         }
@@ -832,7 +832,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
             {
                 if (box_leaders_flag(boxcontext)) {
                     halfword rulenode = tex_aux_scan_rule_spec(cur_cmd == hrule_cmd ? h_rule_type : (cur_cmd == vrule_cmd ? v_rule_type : m_rule_type), cur_chr);
-                    tex_box_end(boxcontext, rulenode, shift, unset_noad_class, slot, callback);
+                    tex_box_end(boxcontext, rulenode, shift, unset_noad_class, slot, callback, leaders);
                     return;
                 } else {
                     break;
@@ -845,7 +845,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
                     halfword boxnode = null;
                     tex_aux_run_text_char_number();
                     boxnode = tex_pop_tail();
-                    tex_box_end(boxcontext, boxnode, shift, unset_noad_class, slot, callback);
+                    tex_box_end(boxcontext, boxnode, shift, unset_noad_class, slot, callback, leaders);
                     return;
                 } else {
                     break;
@@ -860,7 +860,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
         "can fix this later."
     );
     if (boxcontext == lua_scan_flag) { /* hm, why after error */
-        tex_box_end(boxcontext, null, shift, unset_noad_class, slot, callback);
+        tex_box_end(boxcontext, null, shift, unset_noad_class, slot, callback, leaders);
     }
 }
 
@@ -875,7 +875,7 @@ static void tex_aux_run_move(void)
 {
     int code = cur_chr;
     halfword val = tex_scan_dimension(0, 0, 0, 0, NULL);
-    tex_aux_scan_box(direct_box_flag, 0, code == move_forward_code ? val : - val, -1, 0);
+    tex_aux_scan_box(direct_box_flag, 0, code == move_forward_code ? val : - val, -1, 0, 0);
 }
 
 static int leader_flags[] = {
@@ -888,16 +888,44 @@ static int leader_flags[] = {
 
 static void tex_aux_run_leader(void) 
 {
-    int code = cur_chr; 
-    int callback = (code == u_leaders_code && tex_scan_keyword("callback")) ? tex_scan_integer(0, NULL) : 0;
-    tex_aux_scan_box(leader_flags[code], 0, null_flag, -1, callback);
+    halfword code = cur_chr; 
+    halfword callback = 0; 
+    halfword options = 0;
+    if (code == u_leaders_code) { 
+        while (1) {
+            switch (tex_scan_character("clnCLN", 0, 1, 0)) {
+                case 0:
+                    goto DONE;
+                case 'l': case 'L':
+                    if (tex_scan_mandate_keyword("line", 1)) {
+                        options |= glue_option_u_leaders_line;
+                    }
+                    break;
+                case 'n': case 'N':
+                    if (tex_scan_mandate_keyword("nobreak", 1)) {
+                        options |= glue_option_no_auto_break;
+                    }
+                    break;
+                case 'c': case 'C':
+                    if (tex_scan_mandate_keyword("callback", 1)) {
+                        callback = tex_scan_integer(0, NULL);
+                    }
+                    break;
+                default:
+                    tex_aux_show_keyword_error("callback|line|nobreak");
+                    goto DONE;
+            }
+        }
+      DONE: ;
+    }
+    tex_aux_scan_box(leader_flags[code], 0, null_flag, -1, callback, options);
 }
 
 static void tex_aux_run_legacy(void) 
 {
     switch (cur_chr) {
         case shipout_code:
-            tex_aux_scan_box(shipout_flag, 0, null_flag, -1, 0);
+            tex_aux_scan_box(shipout_flag, 0, null_flag, -1, 0, 0);
             break;
         default:
             /* cant_happen */
@@ -919,7 +947,7 @@ static void tex_aux_run_local_box(void)
 
 static void tex_aux_run_make_box(void) 
 {
-    tex_begin_box(direct_box_flag, null_flag, -1, 0);
+    tex_begin_box(direct_box_flag, null_flag, -1, 0, 0);
 }
 
 /*tex
@@ -2042,7 +2070,7 @@ halfword tex_local_scan_box(void)
     int old_mode = cur_list.mode;
     int old_level = lmt_main_control_state.local_level;
     cur_list.mode = restricted_hmode;
-    tex_aux_scan_box(lua_scan_flag, 0, null_flag, -1, 0);
+    tex_aux_scan_box(lua_scan_flag, 0, null_flag, -1, 0, 0);
     if (lmt_main_control_state.local_level == old_level) {
         /*tex |\directlua{print(token.scan_list())}\hbox{!}| (n n) */
         if (tracing_nesting_par > 2) {
@@ -2936,7 +2964,7 @@ void tex_normal_paragraph(int context)
 
 */
 
-static void tex_aux_wrapup_leader_box(halfword boxcontext, halfword boxnode, halfword callback)
+static void tex_aux_wrapup_leader_box(halfword boxcontext, halfword boxnode, halfword callback, halfword leaders)
 {
     /*tex Append a new leader node that uses |box| and get the next non-blank non-relax. */
     do {
@@ -2964,6 +2992,7 @@ static void tex_aux_wrapup_leader_box(halfword boxcontext, halfword boxnode, hal
                             node_subtype(cur_list.tail) = u_leaders;
                             glue_amount(cur_list.tail) += box_width(boxnode);
                             glue_callback(cur_list.tail) = callback;
+                            glue_options(cur_list.tail) = leaders;
                         } else {
                             node_subtype(cur_list.tail) = a_leaders;
                         }
@@ -2973,6 +3002,7 @@ static void tex_aux_wrapup_leader_box(halfword boxcontext, halfword boxnode, hal
                             node_subtype(cur_list.tail) = u_leaders;
                             glue_amount(cur_list.tail) += box_total(boxnode);
                             glue_callback(cur_list.tail) = callback;
+                            glue_options(cur_list.tail) = leaders;
                         } else {
                             node_subtype(cur_list.tail) = a_leaders;
                         }
@@ -2996,7 +3026,7 @@ static void tex_aux_wrapup_leader_box(halfword boxcontext, halfword boxnode, hal
     }
 }
 
-void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword mainclass, halfword slot, halfword callback)
+void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword mainclass, halfword slot, halfword callback, halfword leaders)
 {
     cur_box = boxnode;
     switch (boxcontext) {
@@ -3104,7 +3134,7 @@ void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword maincl
         case x_leaders_flag:
         case g_leaders_flag:
         case u_leaders_flag:
-            tex_aux_wrapup_leader_box(boxcontext, boxnode, callback);
+            tex_aux_wrapup_leader_box(boxcontext, boxnode, callback, leaders);
             break;
         default:
             /* fatal error */
@@ -4638,7 +4668,7 @@ static void tex_aux_set_box(int a)
 {
     halfword slot = tex_scan_box_register_number();
     if (lmt_error_state.set_box_allowed) {
-        tex_aux_scan_box(is_global(a) ? global_box_flag : box_flag, 1, null_flag, slot, 0);
+        tex_aux_scan_box(is_global(a) ? global_box_flag : box_flag, 1, null_flag, slot, 0, 0);
     } else {
         tex_handle_error(
             normal_error_type,
@@ -4918,7 +4948,7 @@ static void tex_aux_set_specification(int a)
                 p = tex_new_specification_node(count, num, 0);
                 halfword j = 1;
                 while (j <= count) {
-                    switch (tex_scan_character("abcdefilnoqstABCDEFILNOQST", 0, 1, 0)) {
+                    switch (tex_scan_character("abcdefilnoqrstABCDEFILNOQRST", 0, 1, 0)) {
                         case 0:
                             goto DONE;
                         case 'a': case 'A':
@@ -5066,7 +5096,13 @@ static void tex_aux_set_specification(int a)
                             }
                             break;
                         case 'l': case 'L':
-                            switch (tex_scan_character("ioIO", 0, 0, 0)) {
+                            switch (tex_scan_character("ioeIOE", 0, 0, 0)) {
+                                case 'e': case 'E':
+                                    if (tex_scan_mandate_keyword("lefttwindemerits", 2)) {
+                                        tex_set_passes_lefttwindemerits(p, j, tex_scan_integer(0, NULL));
+                                        tex_set_passes_features(p, j, passes_twin_demerits_set);
+                                    } 
+                                    break;
                                 case 'o': case 'O':
                                     if (tex_scan_mandate_keyword("looseness", 2)) {
                                         tex_set_passes_looseness(p, j, tex_scan_integer(0, NULL));
@@ -5076,10 +5112,24 @@ static void tex_aux_set_specification(int a)
                                     if (tex_scan_mandate_keyword("line", 2)) {
                                         switch (tex_scan_character("bpBP", 0, 0, 0)) {
                                             case 'b': case 'B':
-                                                if (tex_scan_mandate_keyword("linebreakoptional", 5)) {
-                                                    tex_set_passes_optional(p, j, tex_scan_integer(0, NULL));           
-                                                    tex_set_passes_features(p, j, passes_optional_set);           
-                                                } 
+                                                if (tex_scan_mandate_keyword("linebreak", 5)) {
+                                                    switch (tex_scan_character("coCO", 0, 0, 0)) {
+                                                        case 'c': case 'C':
+                                                            if (tex_scan_mandate_keyword("linebreakchecks", 10)) {
+                                                                tex_set_passes_linebreakchecks(p, j, tex_scan_integer(0, NULL));
+                                                            } 
+                                                            break;
+                                                        case 'o': case 'O':
+                                                            if (tex_scan_mandate_keyword("linebreakoptional", 10)) {
+                                                                tex_set_passes_optional(p, j, tex_scan_integer(0, NULL));           
+                                                                tex_set_passes_features(p, j, passes_optional_set);           
+                                                            } 
+                                                            break;
+                                                        default:
+                                                            tex_aux_show_keyword_error("linebreakoptional|linebreakchecks");
+                                                            goto DONE;
+                                                    }
+                                                }
                                                 break;
                                             case 'p': case 'P':
                                                 if (tex_scan_mandate_keyword("linepenalty", 5)) {
@@ -5087,7 +5137,7 @@ static void tex_aux_set_specification(int a)
                                                 } 
                                                 break;
                                             default:
-                                                tex_aux_show_keyword_error("linebreakoptional|linepenalty");
+                                                tex_aux_show_keyword_error("linebreakoptional|linebreakchecks|linepenalty");
                                                 goto DONE;
                                         }
                                     }
@@ -5109,6 +5159,12 @@ static void tex_aux_set_specification(int a)
                         case 'q': case 'Q':
                             if (tex_scan_mandate_keyword("quit", 1)) {
                                 tex_set_passes_features(p, j, passes_quit_pass);           
+                            }
+                            break;
+                        case 'r': case 'R':
+                            if (tex_scan_mandate_keyword("righttwindemerits", 1)) {
+                                tex_set_passes_righttwindemerits(p, j, tex_scan_integer(0, NULL));           
+                                tex_set_passes_features(p, j, passes_twin_demerits_set);
                             }
                             break;
                         case 's': case 'S':
@@ -5735,6 +5791,13 @@ static void tex_aux_set_define_char_code(int a) /* maybe make |a| already a bool
                 halfword chr = tex_scan_char_number(0);
                 halfword val = tex_scan_category_code(1);
                 tex_set_am_code(chr, val, global_or_local(a));
+            }
+            break;
+        case cccode_charcode:
+            {
+                halfword chr = tex_scan_char_number(0);
+                halfword val = tex_scan_classification_code(1);
+                tex_set_cc_code(chr, val, global_or_local(a));
             }
             break;
         case mathcode_charcode:

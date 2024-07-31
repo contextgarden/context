@@ -331,7 +331,7 @@
    \c_strc_constructions_distance_none\conditionaltrue}
 
 \protected\defcsname\??constructionstarthandler\v!construction\endcsname % this will be redone (reorganized) .. too much boxing
-  {\dostarttaggedchained\t!construction\currentconstruction\currentconstructionhash
+  {\dostarttaggedchained\t!construction\currentconstruction\currentconstruction\currentconstructionhash
 %    \dotagsetconstruction
    \constructionparameter\c!before
    \begingroup
@@ -412,6 +412,7 @@
       \else
         \csname\??constructionmainhandler\currentconstructionhandler\endcsname{\boxedconstructionhead\currentconstructiontext}%
       \fi}%
+   \dostoptagged % tag
    \edef\p_strc_constructions_aligntitle{\constructionparameter\c!aligntitle}%
    \ifx\p_strc_constructions_aligntitle\v!no
      \leftconstructionskip \leftskip
@@ -440,7 +441,6 @@
      \indenting[\p_strc_constructions_indenting]% \use...
    \fi
    %
-   \dostoptagged % tag
    \dostarttaggednodetail\t!constructioncontent
   %\freezeparagraphproperties
    \updateparagraphshapes

@@ -248,6 +248,7 @@
 
     <cd:define name="value-floatlocation">
         <cd:constant type="split"/>
+        <cd:constant type="keeptogether"/>
         <cd:constant type="always"/>
         <cd:constant type="left"/>
         <cd:constant type="right"/>
@@ -277,6 +278,9 @@
         <cd:constant type="high"/>
         <cd:constant type="low"/>
         <cd:constant type="fit"/>
+        <cd:constant type="tight"/>
+        <cd:constant type="tolerant"/>
+        <cd:constant type="verytolerant"/>
         <cd:constant type="90"/>
         <cd:constant type="180"/>
         <cd:constant type="270"/>
@@ -298,6 +302,7 @@
         <cd:constant type="page"/>
         <cd:constant type="leftpage"/>
         <cd:constant type="rightpage"/>
+        <cd:constant type="paragraph"/>
         <cd:constant type="somewhere"/>
         <cd:constant type="effective"/>
         <cd:constant type="header"/>
@@ -636,13 +641,14 @@
         <cd:constant type="packed"/>
         <cd:constant type="tight"/>
         <cd:constant type="middle"/>
-        <cd:constant type="frame"/>
         <cd:constant type="depth"/>
         <cd:constant type="line"/>
         <cd:constant type="halfline"/>
         <cd:constant type="line" prefix="-" method="none"/>
         <cd:constant type="halfline" prefix="-" method="none"/>
-        <cd:inherit name="setupbodyfont"/>
+        <cd:constant type="frame"/>
+        <cd:constant type="small"/>
+        <cd:constant type="cd:dimension"/>
     </cd:define>
 
     <!-- formula = ... -->
@@ -787,120 +793,81 @@
     <!-- leftfence -->
 
     <cd:define name="value-leftfence">
-        <!--
-            <cd:constant type="||"/>
-            <cd:constant type="|||"/>
-        -->
+        <cd:constant type="\{"/>
+        <cd:constant type="\["/>
+        <cd:constant type="\("/>
+        <cd:constant type="\|"/>
         <cd:constant type="\bgroup"/>
-        <cd:constant type="\egroup"/>
-        <cd:constant type="\letteropenbrace"/>
-        <cd:constant type="["/>
-        <cd:constant type="]"/>
-        <cd:constant type="("/>
-        <cd:constant type=")"/>
-        <cd:constant type="<"/>
-        <cd:constant type=">"/>
-        <cd:constant type="/"/>
-        <cd:constant type="|"/>
-        <cd:constant type="⌊"/>
-        <cd:constant type="⌋"/>
-        <cd:constant type="⌈"/>
-        <cd:constant type="⌉"/>
-        <cd:constant type="⟨"/>
-        <cd:constant type="⟩"/>
-        <cd:constant type="⟪"/>
-        <cd:constant type="⟫"/>
-        <cd:constant type="‖"/>
-        <cd:constant type="⦀"/>
-        <cd:constant type="⦗"/>
-        <cd:constant type="\lbrace"/>
+        <cd:constant type="\lparent"/>
+        <cd:constant type="\lparenthesis"/>
+        <cd:constant type="\lparen"/>
         <cd:constant type="\lbracket"/>
         <cd:constant type="\lbrack"/>
-        <cd:constant type="\lparenthesis"/>
-        <cd:constant type="\lparent"/>
-        <cd:constant type="\lparen"/>
-        <cd:constant type="\langle"/>
-        <cd:constant type="\llangle"/>
-        <cd:constant type="\lVert"/>
-        <cd:constant type="\vert"/>
-        <cd:constant type="\solidus"/>
-        <cd:constant type="\lfloor"/>
-        <cd:constant type="\lceiling"/>
+        <cd:constant type="\lbrace"/>
         <cd:constant type="\lceil"/>
+        <cd:constant type="\lceiling"/>
+        <cd:constant type="\lfloor"/>
         <cd:constant type="\ulcorner"/>
         <cd:constant type="\llcorner"/>
         <cd:constant type="\lmoustache"/>
         <cd:constant type="\llbracket"/>
+        <cd:constant type="\langle"/>
+        <cd:constant type="\llangle"/>
         <cd:constant type="\lgroup"/>
+        <cd:constant type="\vert"/>
+        <cd:constant type="\singleverticalbar"/>
+        <cd:constant type="\doubleverticalbar"/>
+        <cd:constant type="\tripleverticalbar"/>
+        <cd:constant type="\lvert"/>
+        <cd:constant type="\lVert"/>
         <cd:constant type="\linterval"/>
-        <cd:constant type="\lointerval"/>
         <cd:constant type="\llointerval"/>
-        <cd:constant type="\lrointerval"/>
-        <cd:constant type="\{"/>
-        <cd:constant type="\["/>
-        <cd:constant type="\("/>
-        <cd:constant type="\<"/>
-        <cd:constant type="\|"/>
         <cd:constant type="cd:character"/>
+    </cd:define>
+
+    <!-- middlefence -->
+
+    <cd:define name="value-middlefence">
+        <cd:constant type="\vert"/>
+        <cd:constant type="\singleverticalbar"/>
+        <cd:constant type="\doubleverticalbar"/>
+        <cd:constant type="\tripleverticalbar"/>
+        <cd:constant type="\mvert"/>
+        <cd:constant type="\mVert"/>
     </cd:define>
 
     <!-- rightfence -->
 
     <cd:define name="value-rightfence">
-        <!--
-            <cd:constant type="||"/>
-            <cd:constant type="|||"/>
-        -->
+        <cd:constant type="\}"/>
+        <cd:constant type="\]"/>
+        <cd:constant type="\)"/>
+        <cd:constant type="\|"/>
         <cd:constant type="\egroup"/>
-        <cd:constant type="\bgroup"/>
-        <cd:constant type="\letterclosebrace"/>
-        <cd:constant type="]"/>
-        <cd:constant type="["/>
-        <cd:constant type=")"/>
-        <cd:constant type="("/>
-        <cd:constant type=">"/>
-        <cd:constant type="<"/>
-        <cd:constant type="/"/>
-        <cd:constant type="|"/>
-        <cd:constant type="⌋"/>
-        <cd:constant type="⌊"/>
-        <cd:constant type="⌉"/>
-        <cd:constant type="⌈"/>
-        <cd:constant type="⟩"/>
-        <cd:constant type="⟨"/>
-        <cd:constant type="⟫"/>
-        <cd:constant type="⟪"/>
-        <cd:constant type="‖"/>
-        <cd:constant type="⦀"/>
-        <cd:constant type="⦘"/>
-        <cd:constant type="\rbrace"/>
-        <cd:constant type="\rbracket"/>
-        <cd:constant type="\rbracket"/>
-        <cd:constant type="\rparenthesis"/>
         <cd:constant type="\rparent"/>
-        <cd:constant type="\rparen"/>
-        <cd:constant type="\rangle"/>
-        <cd:constant type="\rrangle"/>
-        <cd:constant type="\rVert"/>
-        <cd:constant type="\vert"/>
-        <cd:constant type="\solidus"/>
-        <cd:constant type="\rfloor"/>
-        <cd:constant type="\rceiling"/>
+        <cd:constant type="\rparenthesis"/>"
+        <cd:constant type="\rparen"/>"
+        <cd:constant type="\rbracket"/>
+        <cd:constant type="\rbrack"/>"
+        <cd:constant type="\rbrace"/>
         <cd:constant type="\rceil"/>
+        <cd:constant type="\rceiling"/>
+        <cd:constant type="\rfloor"/>
         <cd:constant type="\urcorner"/>
         <cd:constant type="\lrcorner"/>
         <cd:constant type="\rmoustache"/>
         <cd:constant type="\rrbracket"/>
+        <cd:constant type="\rangle"/>
+        <cd:constant type="\rrangle"/>
         <cd:constant type="\rgroup"/>
-        <cd:constant type="\rinterval"/>
+        <cd:constant type="\vert"/>
+        <cd:constant type="\singleverticalbar"/>
+        <cd:constant type="\doubleverticalbar"/>
+        <cd:constant type="\tripleverticalbar"/>
+        <cd:constant type="\rvert"/>
+        <cd:constant type="\rVert"/>
         <cd:constant type="\rointerval"/>
         <cd:constant type="\rlointerval"/>
-        <cd:constant type="\rrointerval"/>
-        <cd:constant type="\}"/>
-        <cd:constant type="\]"/>
-        <cd:constant type="\)"/>
-        <cd:constant type="\>"/>
-        <cd:constant type="\|"/>
         <cd:constant type="cd:character"/>
     </cd:define>
 
@@ -1635,6 +1602,159 @@
         <cd:constant type="vspacing.removemathskips"/>
         <cd:constant type="vspacing.synchronizepage"/>
         <cd:constant type="xml.path.keeplastmatch"/>
+    </cd:define>
+
+    <!-- mathcode/mathclass -->
+
+    <cd:define name="value-mathclass">
+        <cd:constant type="all"/>
+        <cd:constant type="begin"/>
+        <cd:constant type="end"/>
+        <cd:constant type="unset"/>
+        <cd:constant type="ordinary"/>
+        <cd:constant type="operator"/>
+        <cd:constant type="binary"/>
+        <cd:constant type="relation"/>
+        <cd:constant type="open"/>
+        <cd:constant type="close"/>
+        <cd:constant type="punctuation"/>
+        <cd:constant type="variable"/>
+        <cd:constant type="active"/>
+        <cd:constant type="inner"/>
+        <cd:constant type="under"/>
+        <cd:constant type="over"/>
+        <cd:constant type="fraction"/>
+        <cd:constant type="radical"/>
+        <cd:constant type="middle"/>
+        <cd:constant type="prime"/>
+        <cd:constant type="accent"/>
+        <cd:constant type="fenced"/>
+        <cd:constant type="ghost"/>
+        <cd:constant type="vcenter"/>
+        <cd:constant type="explicit"/>
+        <cd:constant type="imaginary"/>
+        <cd:constant type="differential"/>
+        <cd:constant type="exponential"/>
+        <cd:constant type="integral"/>
+        <cd:constant type="ellipsis"/>
+        <cd:constant type="function"/>
+        <cd:constant type="digit"/>
+        <cd:constant type="division"/>
+        <cd:constant type="factorial"/>
+        <cd:constant type="wrapped"/>
+        <cd:constant type="construct"/>
+        <cd:constant type="dimension"/>
+        <cd:constant type="unary"/>
+        <cd:constant type="textpunctuation"/>
+        <cd:constant type="unspaced"/>
+        <cd:constant type="experimental"/>
+        <cd:constant type="fake"/>
+        <cd:constant type="numbergroup"/>
+        <cd:constant type="continuation"/>
+    </cd:define>
+
+    <!-- fences = ... -->
+
+    <cd:define name="value-mathfence">
+        <cd:constant type="cases"/>
+        <cd:constant type="sesac"/>
+        <cd:constant type="tekcarb"/>
+        <cd:constant type="parenthesis"/>
+        <cd:constant type="bracket"/>
+        <cd:constant type="brace"/>
+        <cd:constant type="bar"/>
+        <cd:constant type="doublebar"/>
+        <cd:constant type="triplebar"/>
+        <cd:constant type="angle"/>
+        <cd:constant type="doubleangle"/>
+        <cd:constant type="solidus"/>
+        <cd:constant type="ceiling"/>
+        <cd:constant type="floor"/>
+        <cd:constant type="moustache"/>
+        <cd:constant type="uppercorner"/>
+        <cd:constant type="lowercorner"/>
+        <cd:constant type="group"/>
+        <cd:constant type="openbracket"/>
+        <cd:constant type="mirroredparenthesis"/>
+        <cd:constant type="mirroredbracket"/>
+        <cd:constant type="mirroredbrace"/>
+        <cd:constant type="mirroredbar"/>
+        <cd:constant type="mirroreddoublebar"/>
+        <cd:constant type="mirroredtriplebar"/>
+        <cd:constant type="mirroredangle"/>
+        <cd:constant type="mirroreddoubleangle"/>
+        <cd:constant type="mirroredsolidus"/>
+        <cd:constant type="mirroredceiling"/>
+        <cd:constant type="mirroredfloor"/>
+        <cd:constant type="mirroredmoustache"/>
+        <cd:constant type="mirroreduppercorner"/>
+        <cd:constant type="mirroredlowercorner"/>
+        <cd:constant type="mirroredgroup"/>
+        <cd:constant type="mirroredopenbracket"/>
+        <cd:constant type="interval"/>
+        <cd:constant type="openinterval"/>
+        <cd:constant type="closedinterval"/>
+        <cd:constant type="leftopeninterval"/>
+        <cd:constant type="rightopeninterval"/>
+        <cd:constant type="varopeninterval"/>
+        <cd:constant type="varleftopeninterval"/>
+        <cd:constant type="varrightopeninterval"/>
+        <cd:constant type="integerinterval"/>
+        <cd:constant type="tupanddownarrows"/>
+        <cd:constant type="tupdownarrows"/>
+        <cd:constant type="tdownuparrows"/>
+        <cd:constant type="tuparrow"/>
+        <cd:constant type="tdownarrow"/>
+        <cd:constant type="abs"/>
+        <cd:constant type="innerproduct"/>
+        <cd:constant type="integerpart"/>
+        <cd:constant type="norm"/>
+        <cd:constant type="set"/>
+        <cd:constant type="sequence"/>
+        <cd:constant type="tuple"/>
+    </cd:define>
+
+    <!--  mathmeaning = ... -->
+
+    <cd:define name="value-mathmeaning">
+        <cd:constant type="binom"/>
+        <cd:constant type="limits"/>
+    </cd:define>
+
+    <!-- mathematics -->
+
+    <cd:define name="value-mathematics">
+        <cd:constant type="default"/>
+        <cd:constant type="i:default"/>
+        <cd:constant type="i:half"/>
+        <cd:constant type="i:tight"/>
+        <cd:constant type="i:fixed"/>
+        <cd:constant type="cd:name"/>
+    </cd:define>
+
+    <!-- boxpreset -->
+
+    <cd:define name="value-boxpreset">
+        <cd:constant type="line"/>
+        <cd:constant type="height"/>
+        <cd:constant type="depth"/>
+        <cd:constant type="left"/>
+        <cd:constant type="left,height"/>
+        <cd:constant type="left,top"/>
+        <cd:constant type="left,depth"/>
+        <cd:constant type="left,bottom"/>
+        <cd:constant type="right"/>
+        <cd:constant type="right,height"/>
+        <cd:constant type="right,top"/>
+        <cd:constant type="right,depth"/>
+        <cd:constant type="right,bottom"/>
+        <cd:constant type="middle"/>
+        <cd:constant type="middle,height"/>
+        <cd:constant type="middle,top"/>
+        <cd:constant type="middle,depth"/>
+        <cd:constant type="middle,bottom"/>
+        <cd:constant type="middle,left"/>
+        <cd:constant type="middle,right"/>
     </cd:define>
 
 </cd:interface>

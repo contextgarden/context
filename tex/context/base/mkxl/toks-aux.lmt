@@ -261,6 +261,7 @@ tex.shapingpenaltiescodes   = getthem(tex.getshapingpenaltiesvalues)
 tex.mathscriptordercodes    = getthem(tex.getmathscriptordervalues)
 tex.mathscriptsmodecodes    = getthem(tex.getmathscriptsmodevalues,"scriptsmodecode")
 tex.doublescriptoptioncodes = getthem(tex.getdoublescriptoptionvalues,"doublescriptmodecode")
+tex.charactercontrolcodes   = getthem(tex.getcharactercontrolvalues,"charactercontrolcode")
 
 function tex.stringtocodesbitmap(str,codes)
     local bitmap = 0

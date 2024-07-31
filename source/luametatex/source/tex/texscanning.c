@@ -1285,6 +1285,9 @@ static void tex_aux_set_cur_val_by_define_char_cmd(int code)
         case amcode_charcode:
             code = tex_get_am_code(index);
             break;
+        case cccode_charcode:
+            code = tex_get_cc_code(index);
+            break;
         case mathcode_charcode:
         case extmathcode_charcode:
             code = tex_get_math_code_number(index);
@@ -2100,6 +2103,7 @@ halfword   tex_scan_limited_scale             (int optional_equal) { return tex_
 halfword   tex_scan_positive_scale            (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, min_limited_scale, max_limited_scale, "Limited scale"); }
 halfword   tex_scan_positive_number           (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_integer, "Positive number"); }
 halfword   tex_scan_parameter_index           (void)               { return tex_aux_scan_limited_int(0, 0, 15, "Parameter index"); }
+halfword   tex_scan_classification_code       (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_classification_code,"Classification code"); }
 
 halfword   tex_scan_math_class_number(int optional_equal) 
 { 

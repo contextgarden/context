@@ -318,14 +318,14 @@ do
 
         -- There is no way to detect if musl is used because there is no __MUSL__
         -- and it looks like there never will be. Folks don't care about cases where
-        -- one ships multipe binaries (as with TeX distibutions) and want to select
+        -- one ships multipe binaries (as with TeX distributions) and want to select
         -- the right one. So probably it expects users to compile locally in which
         -- case we don't care to much as they can then sort it out.
 
         architecture = architecture or os.getenv("HOSTTYPE") or resultof("uname -m") or ""
         local musl = find(os.selfdir or "","linuxmusl")
         if find(architecture,"x86_64") then
-            bits, platform = 64, musl and "linuxmusl" or "linux-64"
+            bits, platform = 64, musl and "linuxmusl-64" or "linux-64"
         elseif find(architecture,"ppc") then
             bits, platform = 32, "linux-ppc" -- this will be dropped
         else

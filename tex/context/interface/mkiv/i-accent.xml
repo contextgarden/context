@@ -26,20 +26,6 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathaccent" level="style" category="mathematics" file="enco-ini.mkiv">
-        <cd:arguments>
-            <cd:resolve name="string-name"/>
-            <cd:resolve name="string-character"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="buildmathaccent" level="style" category="mathematics" file="enco-ini.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
-
     <cd:command name="buildtextaccent" level="style" category="language" file="enco-ini.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
@@ -84,78 +70,6 @@
     </cd:command>
 
     <cd:command name="buildtextgrave" level="style" category="language" file="enco-ini.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="acute" level="document" category="mathematics" file="math-acc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="grave" level="document" category="mathematics" file="math-acc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="ddot" level="document" category="mathematics" file="math-acc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="tilde" level="document" category="mathematics" file="math-acc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="bar" level="document" category="mathematics" file="math-acc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="breve" level="document" category="mathematics" file="math-acc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="check" level="document" category="mathematics" file="math-acc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="hat" level="document" category="mathematics" file="math-acc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="vec" level="document" category="mathematics" file="math-acc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="dot" level="document" category="mathematics" file="math-acc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="ring" level="document" category="mathematics" file="math-acc.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="dddot" level="document" category="mathematics" file="math-acc.mkvi">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>

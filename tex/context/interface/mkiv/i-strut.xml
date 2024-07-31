@@ -14,7 +14,7 @@
 
     <cd:command name="strutgap" level="system" category="fonts" keywords="whitespace" file="supp-box.mkiv"/>
 
-    <cd:command name="setupstrut" level="style" category="fonts" keywords="whitespace" file="spac-ver.mkiv">
+    <cd:command name="setupstrut" level="style" category="fonts" keywords="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:resolve name="value-strut"/>
@@ -22,7 +22,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="synchronizestrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkiv">
+    <cd:command name="synchronizestrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-strut"/>
@@ -30,38 +30,40 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="strut" level="style" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="strut" level="style" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="halfstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="halfstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="quarterstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="quarterstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="halflinestrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="halflinestrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="noheightstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="noheightstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="depthstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="nodepthstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="setstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="depthstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="setcharstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkiv">
+    <cd:command name="setstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
+
+    <cd:command name="setcharstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setfontstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="setfontstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="settightstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="settightstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="setcapstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="setcapstrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="setnostrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="setnostrut" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="showstruts" level="document" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="showstruts" level="document" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="showcolorstruts" level="document" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="showcolorstruts" level="document" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="strut" type="environment" begin="beg" end="end" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="strut" type="environment" begin="beg" end="end" level="system" category="fonts" keywords="whitespace" file="spac-ver.mkxl"/>
 
 </cd:interface>

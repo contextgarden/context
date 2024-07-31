@@ -449,7 +449,7 @@
 % \installtexdirective {tabulatesparseskips} {\c_tabl_sparse_skips\conditionaltrue} {\c_tabl_sparse_skips\conditionalfalse}
 
 \def\tabl_tabulate_tag_start
-  {\dostarttaggedchained\t!tabulate\empty\??tabulation}
+  {\dostarttaggedchained\t!tabulate\empty\empty\??tabulation}
 
 \def\tabl_tabulate_tag_start_row
   {\dostarttaggednodetail\t!tabulaterow}
@@ -1554,7 +1554,7 @@
 
 \permanent\protected\def\tabulateEQ
   {\ifconditional\c_tabl_tabulate_firstflushed\else
-     \dostarttaggedchained\t!ignore\empty\empty
+     \dostarttaggedchained\t!ignore\empty\empty\empty
      \dostarttaggednodetail\t!ignore
      \tabulationparameter{EQ}%
      \dostoptagged

@@ -41,18 +41,22 @@
 
 \def\typo_adjusters_line#1% no need for speed
   {\begingroup
+   \dostarttagged\t!linetext{#1}%
    \dowithnextbox
       {\ht\nextbox\strutht
        \dp\nextbox\strutdp
       %\boxattribute\nextbox \adjusterattribute \plusone
        \vadjust #1 index \plusone {\box\nextbox}%
+       \dostoptagged
        \endgroup}%
       \hbox}
 
-\tolerant\def\typo_adjusters_blank#1[#2]% no need for speed
+\tolerant\def\typo_adjusters_blank#1#*[#2]% no need for speed
   {\begingroup
+   \dostarttagged\t!linetext{#1}%
    \setbox\scratchbox\vbox{\blank[#2]}%
    \vadjust #1 index \plustwo {\vskip\htdp\scratchbox}%
+   \dostoptagged
    \endgroup}
 
 \permanent\protected\def\insertlinebefore{\typo_adjusters_line{pre}}

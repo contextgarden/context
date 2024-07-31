@@ -68,4 +68,34 @@
    \stoptext
    \endinput}
 
+%D Control (this might become nicer):
+
+\newtoks\t_syst_every_export_images
+\newtoks\t_syst_every_export_content
+
+\permanent\protected\def\exportimages {\expand\t_syst_every_export_images}
+\permanent\protected\def\exportcontent{\expand\t_syst_every_export_content}
+
+\appendtoks
+    \setupbackend[\c!export=\v!yes]%
+    \enabledirectives[export.images]%
+    \enablemode[exportimages]%
+    \collectexported
+    \usemodule[export-todo]%
+\to \t_syst_every_export_images
+
+\appendtoks
+    \setupbackend[\c!export=\v!yes]%
+    \usemodule[export-todo]%
+\to \t_syst_every_export_content
+
+% \appendtoks
+%     \ifcstok{\backendparameter\c!export}\v!yes
+%       \doifmode {exportimages} {%
+%          \enabledirectives[export.images]%
+%          \collectexported
+%       }%
+%     \fi
+% \to \everysetupbackend
+
 \protect \endinput

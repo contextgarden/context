@@ -664,7 +664,7 @@ local function ranger(first,last,n,action)
             action(i)
         end
     else
-        action(first)
+        action(first) -- can be a string too
     end
 end
 
@@ -672,11 +672,24 @@ local cardinal    = (lpegpatterns.hexadecimal + lpegpatterns.cardinal) / tonumbe
 local spacers     = lpegpatterns.spacer^0
 local endofstring = lpegpatterns.endofstring
 
-local stepper  = spacers * ( cardinal * ( spacers * S(":-") * spacers * ( cardinal + Cc(true) ) + Cc(false) )
-               * Carg(1) * Carg(2) / ranger * S(", ")^0 )^1
+----- stepper  = spacers * ( cardinal * ( spacers * S(":-") * spacers * ( cardinal + Cc(true) ) + Cc(false) )
+-----          * Carg(1) * Carg(2) / ranger * S(", ")^0 )^1
 
-local stepper  = spacers * ( cardinal * ( spacers * S(":-") * spacers * ( cardinal + (P("*") + endofstring) * Cc(true) ) + Cc(false) )
-               * Carg(1) * Carg(2) / ranger * S(", ")^0 )^1 * endofstring -- we're sort of strict (could do without endofstring)
+local stepper  =
+    spacers
+  * (
+        (
+            cardinal
+          * (
+                spacers * S(":-") * spacers * ( cardinal + (P("*") + endofstring) * Cc(true) )
+              + Cc(false)
+            )
+          + Cs((1-S(", "))^1) * Cc(false)
+        )
+      * Carg(1) * Carg(2) / ranger
+      * S(", ")^0
+    )^1
+  * endofstring -- we're sort of strict (could do without endofstring)
 
 function parsers.stepper(str,n,action)
     local ts = type(str)
@@ -696,7 +709,7 @@ function parsers.stepper(str,n,action)
 end
 
 -- parsers.stepper("1,7-",9,function(i) print(">>>",i) end)
--- parsers.stepper("1-3,7,8,9")
+-- parsers.stepper("1-3,7,8,9,one")
 -- parsers.stepper("1-3,6,7",function(i) print(">>>",i) end)
 -- parsers.stepper(" 1 : 3, ,7 ")
 -- parsers.stepper("1:4,9:13,24:*",30)

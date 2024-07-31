@@ -20,7 +20,7 @@
 \ifdefined\dotagsetdelimitedsymbol   \else \aliased\let\dotagsetdelimitedsymbol  \gobbleoneargument \fi
 \ifdefined\dotagsetsubsentencesymbol \else \aliased\let\dotagsetsubsentencesymbol\gobbleoneargument \fi
 
-% THIS IS OBSOLETE:
+% Kind of special ...
 
 \installcorenamespace{hyphenmarksign} % let's not waste a setuphandler (yet)
 
@@ -67,7 +67,23 @@
 \definesymbol[\c!rightcompoundhyphen] [\languageparameter\c!rightcompoundhyphen]
 \definesymbol[\c!compoundhyphen]      [\languageparameter\c!compoundhyphen]
 
-% TILL HERE
+\immutable\integerdef\compoundhyphencode\privatecharactercode{compoundhyphen}
+
+\pushoverloadmode
+
+\permanent\protected\def\compoundhyphen
+  {\hbox\bgroup
+     \iffontchar\font\compoundhyphencode
+       \char\compoundhyphencode
+     \else
+       -\kern-.5\fontcharwd\font\hyphenasciicode -
+     % -\kern-\dimexpr\fontcharwd\font\hyphenasciicode/3\relax -
+     \fi
+   \egroup}
+
+\popoverloadmode
+
+% ... till here.
 
 \setnewconstant\boundarycharactermode\plusone
 
@@ -411,7 +427,7 @@
 \permanent\tolerant\protected\def\startdelimitedtext[#1]#*[#2]%
   {\begingroup
    \typo_delimited_push{#1}{#2}%
-   \dostarttaggedchained\t!delimitedblock\currentdelimitedtext\??delimitedtext
+   \dostarttaggedchained\t!delimitedblock\currentparentdelimitedtext\currentdelimitedtext\??delimitedtext
    \edef\p_method{\delimitedtextparameter\c!method}%
    \ifx\p_method\v!font
      \expandafter\typo_delimited_start_font
@@ -533,7 +549,6 @@
 \def\typo_delimited_stop_par
   {\typo_delimited_stop_content
    \rightdelimitedtextmark
-   \rightdelimitedtextmark
    \carryoverpar\endgroup
    \endgraf
    \endgroup
@@ -649,7 +664,10 @@
    \fi}
 
 \def\typo_delimited_left_symbol#1%
-  {\dostarttaggednodetail\t!delimitedsymbol
+  {% a hack: we need to make sure that the par counter is incremented for tagging / export
+   \dontleavehmode
+   % oterwise we get a break because the symbol has a different par number
+   \dostarttaggednodetail\t!delimitedsymbol
    \dotagsetdelimitedsymbol\s!left
    \setbox\scratchbox\hbox{\usedelimitedtextstyleandcolor\c!symstyle\c!symcolor#1}%
    \dontleavehmode
@@ -657,7 +675,7 @@
    \ifx\p_delimited_margin\v!margin
       \kern-\wd\scratchbox
    \fi
-   \box\scratchbox
+   \unhbox\scratchbox
    \dostoptagged}
 
 \def\typo_delimited_right_symbol#1%
@@ -787,7 +805,7 @@
 
 \protected\def\typo_delimited_par
   {\groupedcommand
-     {\dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext % block?
+     {\dostarttaggedchained\t!delimited\currentparentdelimitedtext\currentdelimitedtext\??delimitedtext % block?
       \usedelimitedtextstyleandcolor\c!style\c!color
       \typo_delimited_handle_left\c!left
       \typo_delimited_start_content}
@@ -808,7 +826,7 @@
 \def\typo_delimited_quoted
   {\dontleavehmode
    \begingroup
-   \dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
+   \dostarttaggedchained\t!delimited\currentparentdelimitedtext\currentdelimitedtext\??delimitedtext
    \typo_delimited_handle_left\c!left
    \usedelimitedtextstyleandcolor\c!style\c!color
    \typo_delimited_start_content
@@ -827,7 +845,7 @@
 \def\typo_delimited_attributed
   {\dontleavehmode
    \begingroup
-   \dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
+   \dostarttaggedchained\t!delimited\currentparentdelimitedtext\currentdelimitedtext\??delimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color
    \typo_delimited_start_content
    \bgroup
@@ -843,7 +861,7 @@
 \def\typo_delimited_fontdriven
   {\dontleavehmode
    \begingroup
-   \dostarttaggedchained\t!delimited\currentdelimitedtext\??delimitedtext
+   \dostarttaggedchained\t!delimited\currentparentdelimitedtext\currentdelimitedtext\??delimitedtext
    \usedlanguageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color
    \typo_delimited_start_content

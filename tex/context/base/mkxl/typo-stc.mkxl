@@ -48,12 +48,14 @@
 
 \installcorenamespace {stacking}
 
-\installcommandhandler \??stacking{stacking} \??stacking
+\installcommandhandler \??stacking {stacking} \??stacking
 
-\definesystemattribute[stacking]
+\definesystemattribute[stacking][global]
 
 \appendtoks
-    \expandafter\setnewconstant\csname\??stacking:\currentstacking\endcsname\clf_newstacking{\currentstacking}\relax
+    \expandafter\setnewconstant\csname\??stacking:\currentstacking\endcsname
+        \clf_newstacking{\currentstacking}{\stackingparameter\c!number}%
+    \relax
     \ifcstok{\stackingparameter\c!define}\v!yes
         \frozen\instance\protected\edefcsname        \currentstacking\endcsname{\typo_stacking{\currentstacking}}%
         \frozen\instance\protected\edefcsname\e!start\currentstacking\endcsname{\typo_stacking_start{\currentstacking}}%
@@ -61,18 +63,31 @@
     \fi
 \to \everydefinestacking
 
+\def\typo_stacking_set
+  {\c_attr_stacking
+     \ifcsname\??stacking:\currentstacking\endcsname
+       \lastnamedcs
+     \orelse\ifchknum\currentstacking\or
+       \currentstacking
+     \else
+       \attributeunsetvalue
+     \fi
+     \relax}
+
+\protected\def\resetstacking
+  {\c_attr_stacking\attributeunsetvalue}
+
 \protected\def\typo_stacking#1#2%
   {\begingroup
    \cdef\currentstacking{#1}%
-   \c_attr_stacking\csname\??stacking:\currentstacking\endcsname\relax
+   \typo_stacking_set
    #2%
    \endgroup}
 
 \protected\def\typo_start_stacking#1%
   {\begingroup
    \cdef\currentstacking{#1}%
-   \c_attr_stacking\csname\??stacking:\currentstacking\endcsname\relax
-   }
+   \typo_stacking_set}
 
 \protected\def\typo_stop_stacking
   {\endgroup}
@@ -103,5 +118,26 @@
   {%\endgroup
    \processcommacommand[\stackingsteplist]\typo_stacking_step
    \endgroup}
+
+%D For Aditya Mahajan: ranges and such.
+%D
+%D \starttyping
+%D \starttext
+%D \startstackingsteps[1,{1:2,201},{1:3,301},{1,2,4},{1-5},{1-6},{1-7}]
+%D     \startTEXpage
+%D         \startstacking[1]   \framed{ONE}    \stopstacking
+%D         \startstacking[2]   \framed{TWO}    \stopstacking
+%D         \startstacking[201] \framed{MORE}   \stopstacking
+%D         \startstacking[3]   \framed{THREE}  \stopstacking
+%D         \startstacking[301] \framed{INDEED} \stopstacking
+%D         \startstacking[4]   \framed{FOUR}   \stopstacking
+%D         \startstacking[5]   \framed{\im {\sqrt {
+%D              \stacking[6] { 1 + x ^ {
+%D              \stacking[7] { 2 } } } } }}
+%D         \stopstacking
+%D     \stopTEXpage
+%D \stopstackingsteps
+%D \stoptext
+%D \stoptyping
 
 \protect \endinput

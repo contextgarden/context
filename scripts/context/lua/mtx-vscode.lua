@@ -170,8 +170,6 @@ local concat = table.concat
 
 local report = application.report
 
-require("util-jsn")
-
 scripts        = scripts        or { }
 scripts.vscode = scripts.vscode or { }
 

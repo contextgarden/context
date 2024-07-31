@@ -14,6 +14,7 @@
     <flag name="svgmath"><short>convert mathml to svg</short></flag>
     <flag name="svgstyle"><short>use given tex style for svg generation (overloads style in specification)</short></flag>
     <flag name="all"><short>assume: --purge --rename --svgmath (for fast testing)</short></flag>
+    <flag name="images"><short>convert images to svg [--fix]</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -22,6 +23,10 @@
    <title>Example</title>
    <subcategory>
     <example><command>mtxrun --script epub --make mydocument</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script epub --images mydocument</command></example>
+    <example><command>mtxrun --script epub --images --fix mydocument</command></example>
    </subcategory>
   </category>
  </examples>

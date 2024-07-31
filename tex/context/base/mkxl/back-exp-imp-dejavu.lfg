@@ -1,0 +1,30 @@
+return {
+    name = "fontfaces-dejavu",
+    version = "1.00",
+    author = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+    fontfaces = {
+        DejavuSerif = {
+            SerifNormal     = { filename = "DejaVuSerif.ttf"            },
+            SerifBold       = { filename = "DejaVuSerif-Bold.ttf"       },
+            SerifItalic     = { filename = "DejaVuSerif-Italic.ttf"     },
+            SerifBoldItalic = { filename = "DejaVuSerif-BoldItalic.ttf" },
+        },
+        DejavuSans = {
+            SansNormal      = { filename = "DejaVuSans.ttf"             },
+            SansBold        = { filename = "DejaVuSans-Bold.ttf"        },
+            SansItalic      = { filename = "DejaVuSans-Oblique.ttf"     },
+            SansBoldItalic  = { filename = "DejaVuSans-BoldOblique.ttf" },
+        },
+        DejavuMono = {
+            MonoNormal      = { filename = "DejaVuSansMono.ttf"             },
+            MonoBold        = { filename = "DejaVuSansMono-Bold.ttf"        },
+            MonoItalic      = { filename = "DejaVuSansMono-Oblique.ttf"     },
+            MonoBoldItalic  = { filename = "DejaVuSansMono-BoldOblique.ttf" },
+        },
+        DejavuMath = {
+            MathNormal      = { filename = "texgyredejavu-math.otf" },
+            MathBold        = { filename = "texgyredejavu-math.otf", weight = 120 },
+        },
+    }
+}

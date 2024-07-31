@@ -99,6 +99,7 @@
          \clf_setadaptive {
            method         \adaptiveparameter\c!method
            setups        {\p_setups}%
+           location      {\adaptiveparameter\c!location}%
            color         {\adaptiveparameter\c!color}%
            alternative   {\adaptiveparameter\c!alternative}%
            rulethickness  \adaptiveparameter\c!rulethickness
@@ -107,6 +108,7 @@
        \scratchdimen\adaptiveparameter\c!margin\relax
        \edef\p_stretch{\adaptiveparameter\c!stretch}%
        \edef\p_shrink {\adaptiveparameter\c!shrink}%
+       % maybe when method == 2 then no \hss
        \uleaders
          \s!callback \numexpr \adaptiveattribute \relax
          \ifcase#1%
@@ -241,5 +243,46 @@
 %D }
 %D
 %D \stoptyping
+
+
+%D This kind of usage for \type {\uluaders} is a bit weird but the fact that we
+%D can put a callback on it combined with it being something with optional glue
+%D has some potential anyway. Consider it a playground for myself. I considered
+%D extending inserts with seomething like this. Very little code is involved.
+%D
+%D \starttyping
+%D \dorecurse {2} {
+%D     \setexcept[left] {\strut\red   EXCEPT L#1.1}%
+%D     \samplefile{tufte}
+%D     \dorecurse{12}{\setexcept[right]{\strut\blue  EXCEPT R#1.##1}}%
+%D     \setexcept[left] {\strut\green EXCEPT L#1.2}%
+%D     \samplefile{tufte}
+%D     \blank
+%D     \samplefile{tufte}
+%D }
+%D \stoptyping
+%D
+%D The ideas to keep the except within the text areas and force a page break
+%D otherwise: the except depth is part of the page total & goal check.
+
+\def\typo_adaptive_except
+  {\finalizeobjectbox\nextbox
+   \setbox\nextbox\hpack{\box\nextbox}%
+   \smashbox\nextbox
+   \clf_setadaptive {method \plustwo location {\currentexceptlocation}}%
+   \uleaders
+     nobreak % no a break in the par builder
+     line    % kick in early (post line break, not in vpackage)
+     \s!callback \numexpr \adaptiveattribute \relax
+     \hpack{\box\nextbox}%
+     \hskip\zeropoint
+   \endgroup}
+
+\permanent\tolerant\protected\def\setexcept[#1]%
+   {\dontleavehmode
+    \begingroup
+    % todo: outer and inner
+    \cdef\currentexceptlocation{#1}%
+    \dowithnextboxcs\typo_adaptive_except\hbox}
 
 \protect

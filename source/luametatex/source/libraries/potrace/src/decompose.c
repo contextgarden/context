@@ -281,7 +281,7 @@ static path_t *findpath(potrace_bitmap_t *bm, int x0, int y0, int sign, int turn
 
   p->priv->pt = pt;
   p->priv->len = len;
-  p->area = area <= INT_MAX ? area : INT_MAX; /* avoid overflow */
+  p->area = (int) area <= INT_MAX ? area : INT_MAX; /* avoid overflow */
   p->sign = sign;
 
   return p;

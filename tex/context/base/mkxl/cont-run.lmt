@@ -209,6 +209,8 @@ directives.register("overloadmode", setoverloadmode)
 
 local function processjob()
 
+    local variables = interfaces.variables
+
     tokens.setters.macro("processjob","","permanent")
 
     environment.initializefilenames() -- todo: check if we really need to pre-prep the filename
@@ -230,18 +232,22 @@ local function processjob()
         experiments.enable(arguments.experiments)
     end
 
+    if arguments.exportimages then
+        arguments.synctex = false
+    end
+
     if arguments.nosynctex then
         luatex.synctex.setup {
-            state  = interfaces.variables.never,
+            state  = variables.never,
         }
     elseif arguments.synctex then
         local state = arguments.synctex
         if state == true then
-            state = interfaces.variables.start
+            state = variables.start
         end
         luatex.synctex.setup {
             state  = state,
-            method = interfaces.variables.max,
+            method = variables.max,
         }
     end
 
@@ -322,6 +328,12 @@ local function processjob()
         context.stoptext()
 
     else
+
+        if arguments.exportimages then
+            context.exportimages() -- maybe direct
+        elseif arguments.exportcontent then
+            context.exportcontent() -- maybe direct
+        end
 
      -- \writestatus{system}{processing as tex}
         -- We have a regular tex file so no \starttext yet as we can

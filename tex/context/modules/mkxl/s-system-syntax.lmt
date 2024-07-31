@@ -948,7 +948,13 @@ syntax.leader = newsyntax {
     cleaders = sequence(choice(s_box,s_rule,s_glyph),s_glue),
     gleaders = sequence(choice(s_box,s_rule,s_glyph),s_glue),
     leaders  = sequence(choice(s_box,s_rule,s_glyph),s_glue),
-    uleaders = sequence(optional(sequence(keyword("callback"), s_integer)),choice(s_box,s_rule,s_glyph),s_glue),
+    uleaders = sequence(
+        optional(sequence(keyword("callback"),s_integer)),
+        optional(keyword("line")),
+        optional(keyword("nobreak")),
+        choice(s_box,s_rule,s_glyph),
+        s_glue
+    ),
     xleaders = sequence(choice(s_box,s_rule,s_glyph),s_glue),
 }
 

@@ -1981,3 +1981,19 @@ newscriptindex mfid_setbackendoption ; mfid_setbackendoption := scriptindex("set
 def setbackendoption = runscript mfid_setbackendoption enddef ;
 
 permanent setbackendoption ;
+
+newscriptindex mfid_namedstacking ; mfid_namedstacking := scriptindex("namedstacking") ;
+
+def namedstacking expr str = runscript mfid_namedstacking str enddef ;
+
+def withnamedstacking expr s  =
+    withstacking if numeric s :
+        s
+    elseif string s :
+        namedstacking s
+    else :
+        0
+    fi
+enddef ;
+
+permanent namedstacking, withnamedstacking ;

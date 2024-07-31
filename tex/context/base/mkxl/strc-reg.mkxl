@@ -926,7 +926,7 @@
   {\endgraf
    \begingroup
    \d_strc_registers_distance\registerparameter\c!distance\relax
-   \dostarttaggedchained\t!register\currentregister\??register
+   \dostarttaggedchained\t!register\currentregister\currentregister\??register
    \forgeteverypar
    \forgetparindent
    \forgetparskip}

@@ -4,63 +4,65 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="letteropenbrace" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letteropenbrace" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterclosebrace" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterclosebrace" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterampersand" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterampersand" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterless" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterless" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="lettermore" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="lettermore" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterhash" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterhash" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterdoublequote" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterdoublequote" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="lettersinglequote" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="lettersinglequote" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterdollar" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterdollar" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterpercent" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterpercent" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterhat" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterhat" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterunderscore" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterunderscore" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterbar" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterbar" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="lettertilde" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="lettertilde" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterbackslash" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterbackslash" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterslash" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterslash" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterquestionmark" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterquestionmark" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterat" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterat" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="lettercolon" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="lettercolon" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterleftparenthesis" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterhyphen" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterrightparenthesis" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterleftparenthesis" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterleftbracket" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterrightparenthesis" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterrightbracket" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterleftbracket" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterescape" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterrightbracket" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterbgroup" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterescape" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letteregroup" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterbgroup" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterleftbrace" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letteregroup" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterrightbrace" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterleftbrace" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="letterexclamationmark" level="document" category="characters" file="catc-sym.mkiv"/>
+    <cd:command name="letterrightbrace" level="document" category="characters" file="catc-sym.mkxl"/>
+
+    <cd:command name="letterexclamationmark" level="document" category="characters" file="catc-sym.mkxl"/>
 
     <cd:command name="utfchar" level="document" category="characters" keywords="fonts" file="char-ini.mkiv">
         <cd:arguments>

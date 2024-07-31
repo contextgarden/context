@@ -67,7 +67,8 @@
 %D \stopcombination
 %D \stoptyping
 
-\ifdefined\dotagcombination \else \aliased\let\dotagcombination\relax \fi
+\ifdefined\dotagcombination     \else \aliased\let\dotagcombination    \relax \fi
+\ifdefined\dotagcombinationpair \else \aliased\let\dotagcombinationpair\relax \fi
 
 \newsystemmode{combination}
 
@@ -77,10 +78,14 @@
 
 \newinteger  \c_pack_combinations_nesting        % local
 
-\newinteger  \c_pack_combinations_x              % global
-\newinteger  \c_pack_combinations_y              % global
+\newinteger  \c_pack_combinations_x              % global (counts down)
+\newinteger  \c_pack_combinations_y              % global (also abused as total)
+\newinteger  \c_pack_combinations_r              % global (row)
+\newinteger  \c_pack_combinations_c              % global (column)
 \newinteger  \c_pack_combinations_x_saved
 \newinteger  \c_pack_combinations_y_saved
+\newinteger  \c_pack_combinations_r_saved
+\newinteger  \c_pack_combinations_c_saved
 \newinteger  \c_pack_combinations_max            % global
 \newinteger  \c_pack_combinations_max_saved
 \newdimension\d_pack_combinations_ht             % global
@@ -103,11 +108,15 @@
 
 \c_strc_constructions_define_commands\conditionalfalse
 
+% use push and pop value
+
 \def\pack_combinations_push
   {\advanceby\c_pack_combinations_nesting\plusone
    \ifnum\c_pack_combinations_nesting>\plusone
      \c_pack_combinations_x_saved  \c_pack_combinations_x
      \c_pack_combinations_y_saved  \c_pack_combinations_y
+     \c_pack_combinations_r_saved  \c_pack_combinations_r
+     \c_pack_combinations_c_saved  \c_pack_combinations_c
      \c_pack_combinations_max_saved\c_pack_combinations_max
      \d_pack_combinations_ht_saved \d_pack_combinations_ht
      \setbox\b_pack_combinations_captions_saved\box\b_pack_combinations_captions
@@ -122,6 +131,8 @@
   {\ifnum\c_pack_combinations_nesting>\plusone
      \global\c_pack_combinations_x  \c_pack_combinations_x_saved
      \global\c_pack_combinations_y  \c_pack_combinations_y_saved
+     \global\c_pack_combinations_r  \c_pack_combinations_r_saved
+     \global\c_pack_combinations_c  \c_pack_combinations_c_saved
      \global\c_pack_combinations_max\c_pack_combinations_max_saved
      \global\d_pack_combinations_ht \d_pack_combinations_ht_saved
      \global\setbox\b_pack_combinations_captions\box\b_pack_combinations_captions_saved
@@ -306,7 +317,7 @@
    \pack_combinations_location_reset
    \rawprocesscommacommand[\p_location]\pack_combinations_location_step
    %
-   \dostarttaggedchained\t!combination\currentcombination\??combination
+   \dostarttaggedchained\t!combination\currentcombination\currentcombination\??combination
 %    \vbox \ifx\p_height\v!fit\else to \p_height \fi \bgroup
    \ifcsname\??combinationmethod\combinationparameter\c!method\endcsname
      \lastnamedcs\else\vbox
@@ -341,6 +352,8 @@
      {\the\dimexpr
         (\hsize-\numexpr\c_pack_combinations_x-\plusone\relax\dimexpr\combinationparameter\c!distance\relax)/\c_pack_combinations_x
       \relax}%
+   \global\c_pack_combinations_r\zerocount
+   \global\c_pack_combinations_c\zerocount
    \halign \ifx\p_width\v!fit\else to \p_width \fi \bgroup % repetitive preamble
  % \halign noskips \ifx\p_width\v!fit\else to \p_width \fi \bgroup % repetitive preamble
    \aligntab
@@ -362,7 +375,14 @@
 \to \everydefinecombination
 
 \def\pack_combinations_pickup
-  {\dostarttaggednodetail\t!combinationpair     % better make this text
+  {\ifnum\c_pack_combinations_x=\c_pack_combinations_max
+      \global\advance\c_pack_combinations_r\plusone
+      \global        \c_pack_combinations_c\plusone
+   \else
+      \global\advance\c_pack_combinations_c\plusone
+   \fi
+   \dostarttaggednodetail\t!combinationpair     % better make this text
+   \dotagcombinationpair\c_pack_combinations_c\c_pack_combinations_r % for tracing
    \dostarttaggednodetail\t!combinationcontent
    \expandafterpars\pack_combinations_pickup_content_indeed}
 

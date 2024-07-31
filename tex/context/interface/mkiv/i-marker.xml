@@ -4,29 +4,35 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemarker" level="system" category="attribute" file="attr-mkr.mkiv">
+    <cd:command name="definemarker" level="system" category="attribute" file="attr-mkr.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setmarker" level="system" category="attribute" file="attr-mkr.mkiv">
+    <cd:command name="setmarker" level="system" category="attribute" file="attr-mkr.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetmarker" level="system" category="attribute" file="attr-mkr.mkiv">
+    <cd:command name="resetmarker" level="system" category="attribute" file="attr-mkr.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="boxmarker" level="system" category="attribute" file="attr-mkr.mkiv">
+    <cd:command name="boxmarker" level="system" category="attribute" file="attr-mkr.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="marker" level="system" category="attribute" file="attr-mkr.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 

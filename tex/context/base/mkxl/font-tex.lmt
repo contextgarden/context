@@ -25,6 +25,7 @@ local newprivateslot = fonts.helpers.newprivateslot
 local currentfont    = font.current
 
 -- hm, seems to gobble the first \char
+-- the tounicode is a bit messy here
 
 local makesetups = formatters["box:%s:%S"]
 
@@ -35,10 +36,10 @@ local function makeglyphbox(char,spec)
     local b = tex.takebox("glyphbox")
 -- b[a_exportstatus] = 0
     spec.code = {
-        width  = b.width,
-        height = b.height,
-        depth  = b.depth,
-        objnum = tex.boxresources.save(b,nil,nil,true),
+        width     = b.width,
+        height    = b.height,
+        depth     = b.depth,
+        objnum    = tex.boxresources.save(b,nil,nil,true),
     }
 end
 
@@ -51,7 +52,7 @@ local function setboxglyphs(category,fontid,unicode,specification)
             width   = box.width  or 0,
             height  = box.height or 0,
             depth   = box.depth  or 0,
-            unicode = unicode,
+            unicode = specification.tounicode or unicode,
         }
         -- pass dimensions to lua
         characters[unicode] = newdata
@@ -158,6 +159,7 @@ interfaces.implement {
     arguments = { {
         { "category" },
         { "unicode", "integer" },
+        { "tounicode", "integer" },
         { "name" },
     } },
 }
@@ -170,6 +172,7 @@ interfaces.implement {
     arguments = { {
         { "category" },
         { "unicode", "integer" },
+        { "tounicode", "integer" },
         { "name" },
         { "*" }
     } },
@@ -210,10 +213,54 @@ local function processcallback(f,c)
         if callback then
             local action = type(callback) == "function" and callback or fontcallbacks[callback]
             if action then
-                action(chardata,f,c)
+                action(chardata,f,c,characters)
             end
         end
     end
+end
+
+do
+
+    local unpack = unpack
+
+    local nuts      = nodes.nuts
+    local new_glyph = nuts.pool.glyph
+    local new_kern  = nuts.pool.kern
+    local tonode    = nuts.tonode
+    local hpack     = nuts.hpack
+    local setlink   = nuts.setlink
+
+    function fontcallbacks.compile(chardata,fnt,chr,characters)
+        -- no need for speed here
+        local c = chardata.commands
+        if c then
+            local t = { }
+            for i=1,#c do
+                local ci = c[i]
+                local c1 = ci[1]
+                local c2 = ci[2]
+                if c1 == "char" then
+                    t[i] = new_glyph(fnt,c2)
+                elseif c1 == "slot" then
+                    t[i] = new_glyph(c2 == 0 and fnt or c2,ci[3])
+                elseif c1 == "left" then
+                    t[i] = new_kern(-c2)
+                elseif c1 == "right" then
+                    t[i] = new_kern(c2)
+                else
+                    print("fcc todo: " .. c1)
+                    goto done
+                end
+            end
+            local box = tonode(hpack(setlink(unpack(t))))
+            local prv = setboxdirectly(fnt,chr,box,true) -- expose
+            chardata.commands = { { "char", prv } }
+            characters[prv].unicode = chardata.unicode
+        end
+      ::done::
+        chardata.callback = false -- redundant
+    end
+
 end
 
 callbacks.register("process_character",processcallback,"apply an action to a character in a font")

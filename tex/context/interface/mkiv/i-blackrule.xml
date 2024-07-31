@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupblackrules" level="style" category="rules" keywords="colors" file="pack-mrl.mkiv">
+    <cd:command name="setupblackrules" level="style" category="rules" keywords="colors" file="pack-mrl.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="width">
@@ -43,11 +43,23 @@
                 <cd:parameter name="mp">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
+                <cd:parameter name="shrink">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="stretch">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="on">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="off">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blackrule" level="document" category="rules" keywords="colors" file="pack-mrl.mkiv">
+    <cd:command name="blackrule" level="document" category="rules" keywords="colors" file="pack-mrl.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupblackrules"/>
@@ -55,7 +67,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blackrules" level="document" category="rules" keywords="colors" file="pack-mrl.mkiv">
+    <cd:command name="blackrules" level="document" category="rules" keywords="colors" file="pack-mrl.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupblackrules"/>
@@ -63,13 +75,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vl" level="document" category="rules" file="pack-mrl.mkiv">
+    <cd:command name="vl" level="document" category="rules" file="pack-mrl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hl" level="document" file="pack-mrl.mkiv">
+    <cd:command name="hl" level="document" file="pack-mrl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
         </cd:arguments>

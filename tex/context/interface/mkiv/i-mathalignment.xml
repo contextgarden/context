@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathalignment" level="style" category="mathematics" keywords="alignment" file="math-ali.mkiv">
+    <cd:command name="definemathalignment" level="style" category="mathematics" keywords="alignment" file="math-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathalignment" level="style" category="mathematics" keywords="alignment" file="math-ali.mkiv">
+    <cd:command name="setupmathalignment" level="style" category="mathematics" keywords="alignment" file="math-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -30,30 +30,89 @@
                 <cd:parameter name="number">
                     <cd:constant type="auto"/>
                 </cd:parameter>
+                <cd:parameter name="numberdistance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
                 <cd:parameter name="separator">
                     <cd:constant type="cd:text"/>
                 </cd:parameter>
-                <cd:parameter name="align">
+                <cd:parameter name="align" list="yes">
                     <cd:constant type="left"/>
                     <cd:constant type="middle"/>
                     <cd:constant type="right"/>
+                    <cd:constant type="flushleft"/>
+                    <cd:constant type="flushright"/>
                     <cd:constant type="normal" default="yes"/>
+                    <cd:constant type="auto"/>
+                    <cd:constant type="left" prefix="cd:number" method="range"/>
+                    <cd:constant type="middle" prefix="cd:number" method="range"/>
+                    <cd:constant type="right" prefix="cd:number" method="range"/>
+                    <cd:constant type="flushleft" prefix="cd:number" method="range"/>
+                    <cd:constant type="flushright" prefix="cd:number" method="range"/>
                 </cd:parameter>
                 <cd:parameter name="location">
                     <cd:constant type="top"/>
                     <cd:constant type="center"/>
                     <cd:constant type="bottom"/>
-                    <cd:constant type="normal" default="yes"/>
+                    <cd:constant type="left"/>
+                    <cd:constant type="middle"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="packed"/>
+                    <cd:constant type="formula" default="yes"/>
                 </cd:parameter>
-                <cd:parameter name="grid">
-                    <cd:constant type="math" default="yes"/>
-                    <cd:constant type="no"/>
+                <!--
+                    <cd:parameter name="grid">
+                        <cd:constant type="math" default="yes"/>
+                        <cd:constant type="no"/>
+                    </cd:parameter>
+                -->
+                <cd:parameter name="mathstyle">
+                    <cd:resolve name="value-mathstyle"/>
+                </cd:parameter>
+                <cd:parameter name="textstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="textstyle:NUMBER">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="textcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="textcolor:NUMBER">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="text">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="text:NUMBER">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="fences">
+                    <cd:resolve name="value-mathfence"/>
+                </cd:parameter>
+                <cd:parameter name="adapative">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="spaceinbetween">
+                    <cd:inherit name="setupwhitespace"/>
+                </cd:parameter>
+                <cd:parameter name="reference">
+                    <cd:constant type="+"/>
+                    <cd:constant type="-"/>
+                    <cd:constant type="cd:reference"/>
+                </cd:parameter>
+                <cd:parameter name="suffix">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="numberthreshold">
+                    <cd:constant type="cd:dimension"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathalignment" type="environment" generated="yes" variant="instance" level="document" category="mathematics" keywords="alignment" file="math-ali.mkiv">
+    <cd:command name="mathalignment" type="environment" generated="yes" variant="instance" level="document" category="mathematics" keywords="alignment" file="math-ali.mkxl">
         <cd:sequence>
             <cd:instance value="mathalignment"/>
         </cd:sequence>
@@ -64,6 +123,120 @@
         </cd:arguments>
         <cd:instances>
             <cd:resolve name="instance-mathalignment"/>
+        </cd:instances>
+    </cd:command>
+
+    <cd:command name="definemathsimplealign" file="math-ali.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathsimplealign"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathsimplealign" file="math-ali.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="strut">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="align">
+                    <cd:constant type="normal"/>
+                    <cd:constant type="flushright"/>
+                    <cd:constant type="left"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="flushleft"/>
+                    <cd:constant type="middle"/>
+                    <cd:constant type="normal" prefix="cd:number" method="range"/>
+                    <cd:constant type="flushright" prefix="cd:number" method="range"/>
+                    <cd:constant type="left" prefix="cd:number" method="range"/>
+                    <cd:constant type="right" prefix="cd:number" method="range"/>
+                    <cd:constant type="flushleft" prefix="cd:number" method="range"/>
+                    <cd:constant type="middle" prefix="cd:number" method="range"/>
+                </cd:parameter>
+                <cd:parameter name="location">
+                    <cd:constant type="top"/>
+                    <cd:constant type="bottom"/>
+                    <cd:constant type="center"/>
+                    <cd:constant type="middle"/>
+                    <cd:constant type="left"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="packed"/>
+                    <cd:constant type="formula"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="math"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="spaceinbetween">
+                    <cd:inherit name="setupwhitespace"/>
+                </cd:parameter>
+                <cd:parameter name="leftmargin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rightmargin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="fences">
+                    <cd:resolve name="value-mathfence"/>
+                </cd:parameter>
+                <cd:parameter name="text">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="textdistance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="equationsystem"/>
+                </cd:parameter>
+                <!--
+                    <cd:parameter name="action">
+                        <cd:constant type=""/>
+                    </cd:parameter>
+                -->
+                <cd:parameter name="simplecommand">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathsimplealign" type="environment" generated="yes" variant="instance" file="math-ali.mkxl">
+        <cd:sequence>
+            <cd:instance value="mathsimplealign"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathsimplealign"/>
+            </cd:assignments>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathsimplealign"/>
+        </cd:instances>
+    </cd:command>
+
+    <cd:command name="mathsimplealign" generated="yes" variant="instance" file="math-ali.mkxl">
+        <cd:sequence>
+            <cd:instance value="mathsimplealign"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathsimplealign"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathsimplealign"/>
         </cd:instances>
     </cd:command>
 

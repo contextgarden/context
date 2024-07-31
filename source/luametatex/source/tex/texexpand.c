@@ -149,336 +149,334 @@ void tex_expand_current_token(void)
             }
             switch (cur_cmd) {
                 case expand_after_cmd:
-                    {
-                        switch (code) {
-                            case expand_after_code:
-                                tex_aux_expand_after();
-                                break;
-                            /*
-                            case expand_after_3_code:
-                                tex_aux_expand_after();
-                                // fall-through
-                            case expand_after_2_code:
-                                tex_aux_expand_after();
-                                tex_aux_expand_after();
-                                break;
+                    switch (code) {
+                        case expand_after_code:
+                            tex_aux_expand_after();
+                            break;
+                        /*
+                        case expand_after_3_code:
+                            tex_aux_expand_after();
+                            // fall-through
+                        case expand_after_2_code:
+                            tex_aux_expand_after();
+                            tex_aux_expand_after();
+                            break;
+                        */
+                        case expand_unless_code:
+                            tex_conditional_unless();
+                            break;
+                        case future_expand_code:
+                            /*tex
+                                This is an experiment: |\futureexpand| (2) which takes |\check \yes
+                                \nop| as arguments. It's not faster, but gives less tracing noise
+                                than a macro. The variant |\futureexpandis| (3) alternative doesn't
+                                inject the gobbles space(s).
                             */
-                            case expand_unless_code:
-                                tex_conditional_unless();
-                                break;
-                            case future_expand_code:
-                                /*tex
-                                    This is an experiment: |\futureexpand| (2) which takes |\check \yes
-                                    \nop| as arguments. It's not faster, but gives less tracing noise
-                                    than a macro. The variant |\futureexpandis| (3) alternative doesn't
-                                    inject the gobbles space(s).
-                                */
-                                tex_get_token();
-                                {
-                                    halfword spa = null;
-                                    halfword chr = cur_chr;
-                                    halfword cmd = cur_cmd;
-                                    halfword yes = tex_get_token(); /* when match */
-                                    halfword nop = tex_get_token(); /* when no match */
-                                    while (1) {
-                                        halfword t = tex_get_token();
-                                        if (cur_cmd == spacer_cmd) {
-                                            spa = t;
-                                        } else {
-                                            tex_back_input(t);
-                                            break;
-                                        }
-                                    }
-                                    /*tex The value 1 means: same input level. */
-                                    if (cur_cmd == cmd && cur_chr == chr) {
-                                        tex_reinsert_token(yes);
+                            tex_get_token();
+                            {
+                                halfword spa = null;
+                                halfword chr = cur_chr;
+                                halfword cmd = cur_cmd;
+                                halfword yes = tex_get_token(); /* when match */
+                                halfword nop = tex_get_token(); /* when no match */
+                                while (1) {
+                                    halfword t = tex_get_token();
+                                    if (cur_cmd == spacer_cmd) {
+                                        spa = t;
                                     } else {
-                                        if (spa) {
-                                            tex_reinsert_token(space_token);
-                                        }
-                                        tex_reinsert_token(nop);
+                                        tex_back_input(t);
+                                        break;
                                     }
                                 }
+                                /*tex The value 1 means: same input level. */
+                                if (cur_cmd == cmd && cur_chr == chr) {
+                                    tex_reinsert_token(yes);
+                                } else {
+                                    if (spa) {
+                                        tex_reinsert_token(space_token);
+                                    }
+                                    tex_reinsert_token(nop);
+                                }
+                            }
+                            break;
+                        case future_expand_is_code:
+                            tex_get_token();
+                            {
+                                halfword chr = cur_chr;
+                                halfword cmd = cur_cmd;
+                                halfword yes = tex_get_token(); /* when match */
+                                halfword nop = tex_get_token(); /* when no match */
+                                while (1) {
+                                    halfword t = tex_get_token();
+                                    if (cur_cmd != spacer_cmd) {
+                                        tex_back_input(t);
+                                        break;
+                                    }
+                                }
+                                tex_reinsert_token((cur_cmd == cmd && cur_chr == chr) ? yes : nop);
+                            }
+                            break;
+                        case future_expand_is_ap_code:
+                            tex_get_token();
+                            {
+                                halfword chr = cur_chr;
+                                halfword cmd = cur_cmd;
+                                halfword yes = tex_get_token(); /* when match */
+                                halfword nop = tex_get_token(); /* when no match */
+                                while (1) {
+                                    halfword t = tex_get_token();
+                                    if (cur_cmd != spacer_cmd && cur_cmd != end_paragraph_cmd) {
+                                        tex_back_input(t);
+                                        break;
+                                    }
+                                }
+                                /*tex We stay at the same input level. */
+                                tex_reinsert_token((cur_cmd == cmd && cur_chr == chr) ? yes : nop);
+                            }
+                            break;
+                        case expand_after_spaces_code:
+                            {
+                                /* maybe two variants: after_spaces and after_par like in the ignores */
+                                halfword t1 = tex_get_token();
+                                while (1) {
+                                    halfword t2 = tex_get_token();
+                                    if (cur_cmd != spacer_cmd) {
+                                        tex_back_input(t2);
+                                        break;
+                                    }
+                                }
+                                tex_reinsert_token(t1);
                                 break;
-                            case future_expand_is_code:
-                                tex_get_token();
-                                {
-                                    halfword chr = cur_chr;
-                                    halfword cmd = cur_cmd;
-                                    halfword yes = tex_get_token(); /* when match */
-                                    halfword nop = tex_get_token(); /* when no match */
-                                    while (1) {
-                                        halfword t = tex_get_token();
-                                        if (cur_cmd != spacer_cmd) {
-                                            tex_back_input(t);
-                                            break;
-                                        }
+                            }
+                        case expand_after_pars_code:
+                            {
+                                halfword t1 = tex_get_token();
+                                while (1) {
+                                    halfword t2 = tex_get_token();
+                                    if (cur_cmd != spacer_cmd && cur_cmd != end_paragraph_cmd) {
+                                        tex_back_input(t2);
+                                        break;
                                     }
-                                    tex_reinsert_token((cur_cmd == cmd && cur_chr == chr) ? yes : nop);
                                 }
+                                tex_reinsert_token(t1);
                                 break;
-                            case future_expand_is_ap_code:
-                                tex_get_token();
-                                {
-                                    halfword chr = cur_chr;
-                                    halfword cmd = cur_cmd;
-                                    halfword yes = tex_get_token(); /* when match */
-                                    halfword nop = tex_get_token(); /* when no match */
-                                    while (1) {
-                                        halfword t = tex_get_token();
-                                        if (cur_cmd != spacer_cmd && cur_cmd != end_paragraph_cmd) {
-                                            tex_back_input(t);
-                                            break;
-                                        }
-                                    }
-                                    /*tex We stay at the same input level. */
-                                    tex_reinsert_token((cur_cmd == cmd && cur_chr == chr) ? yes : nop);
-                                }
-                                break;
-                            case expand_after_spaces_code:
-                                {
-                                    /* maybe two variants: after_spaces and after_par like in the ignores */
-                                    halfword t1 = tex_get_token();
-                                    while (1) {
-                                        halfword t2 = tex_get_token();
-                                        if (cur_cmd != spacer_cmd) {
-                                            tex_back_input(t2);
-                                            break;
-                                        }
-                                    }
-                                    tex_reinsert_token(t1);
-                                    break;
-                                }
-                            case expand_after_pars_code:
-                                {
-                                    halfword t1 = tex_get_token();
-                                    while (1) {
-                                        halfword t2 = tex_get_token();
-                                        if (cur_cmd != spacer_cmd && cur_cmd != end_paragraph_cmd) {
-                                            tex_back_input(t2);
-                                            break;
-                                        }
-                                    }
-                                    tex_reinsert_token(t1);
-                                    break;
-                                }
-                            case expand_token_code:
-                                {
-                                    /* we can share code with lmtokenlib .. todo */
-                                    halfword cat = tex_scan_category_code(0);
-                                    halfword chr = tex_scan_char_number(0);
-                                    /* too fragile: 
-                                        halfword tok = null;
-                                        switch (cat) {
-                                            case letter_cmd:
-                                            case other_char_cmd:
-                                            case ignore_cmd:
-                                            case spacer_cmd:
-                                                tok = token_val(cat, chr);
-                                                break;
-                                            case active_char_cmd:
-                                                {
-                                                    halfword cs = tex_active_to_cs(chr, ! lmt_hash_state.no_new_cs);
-                                                    if (cs) { 
-                                                        chr = eq_value(cs);
-                                                        tok = cs_token_flag + cs;
-                                                        break;
-                                                    }
-                                                }
-                                            default:
-                                                tok = token_val(other_char_cmd, chr);
-                                                break;
-                                        }
-                                    */
+                            }
+                        case expand_token_code:
+                            {
+                                /* we can share code with lmtokenlib .. todo */
+                                halfword cat = tex_scan_category_code(0);
+                                halfword chr = tex_scan_char_number(0);
+                                /* too fragile: 
+                                    halfword tok = null;
                                     switch (cat) {
                                         case letter_cmd:
                                         case other_char_cmd:
                                         case ignore_cmd:
                                         case spacer_cmd:
+                                            tok = token_val(cat, chr);
                                             break;
+                                        case active_char_cmd:
+                                            {
+                                                halfword cs = tex_active_to_cs(chr, ! lmt_hash_state.no_new_cs);
+                                                if (cs) { 
+                                                    chr = eq_value(cs);
+                                                    tok = cs_token_flag + cs;
+                                                    break;
+                                                }
+                                            }
                                         default:
-                                            cat = other_char_cmd;
+                                            tok = token_val(other_char_cmd, chr);
                                             break;
                                     }
-                                    tex_back_input(token_val(cat, chr));
-                                    break;
+                                */
+                                switch (cat) {
+                                    case letter_cmd:
+                                    case other_char_cmd:
+                                    case ignore_cmd:
+                                    case spacer_cmd:
+                                        break;
+                                    default:
+                                        cat = other_char_cmd;
+                                        break;
                                 }
-                            case expand_cs_token_code:
-                                {
-                                    tex_get_token();
-                                    if (cur_tok >= cs_token_flag) {
-                                        halfword cmd = eq_type(cur_cs);
-                                        switch (cmd) {
-                                            case left_brace_cmd:
-                                            case right_brace_cmd:
-                                            case math_shift_cmd:
-                                            case alignment_tab_cmd:
-                                            case superscript_cmd:
-                                            case subscript_cmd:
-                                            case spacer_cmd:
-                                            case letter_cmd:
-                                            case other_char_cmd:
-                                            case active_char_cmd: /* new */
-                                                cur_tok = token_val(cmd, eq_value(cur_cs));
-                                                break;
+                                tex_back_input(token_val(cat, chr));
+                                break;
+                            }
+                        case expand_cs_token_code:
+                            {
+                                tex_get_token();
+                                if (cur_tok >= cs_token_flag) {
+                                    halfword cmd = eq_type(cur_cs);
+                                    switch (cmd) {
+                                        case left_brace_cmd:
+                                        case right_brace_cmd:
+                                        case math_shift_cmd:
+                                        case alignment_tab_cmd:
+                                        case superscript_cmd:
+                                        case subscript_cmd:
+                                        case spacer_cmd:
+                                        case letter_cmd:
+                                        case other_char_cmd:
+                                        case active_char_cmd: /* new */
+                                            cur_tok = token_val(cmd, eq_value(cur_cs));
+                                            break;
+                                    }
+                                }
+                                tex_back_input(cur_tok);
+                                break;
+                            }
+                        case expand_code:
+                            {
+                                /*tex 
+                                    These can be used instead of |\the<tok register [ref]>| but 
+                                    that next token is not expanded so it doesn't accept |\if|. 
+                                */
+                                tex_get_token();
+                                switch (cur_cmd) { 
+                                    case call_cmd:
+                                    case protected_call_cmd:               
+                                    case semi_protected_call_cmd:
+                                    case constant_call_cmd:
+                                    case tolerant_call_cmd:
+                                    case tolerant_protected_call_cmd:
+                                    case tolerant_semi_protected_call_cmd:
+                                        tex_aux_macro_call(cur_cs, cur_cmd, cur_chr);
+                                        break;
+                                    case internal_toks_reference_cmd:
+                                    case register_toks_reference_cmd:
+                                        if (cur_chr) {
+                                            tex_begin_token_list(cur_chr, token_text);
                                         }
-                                    }
-                                    tex_back_input(cur_tok);
-                                    break;
-                                }
-                            case expand_code:
-                                {
-                                    /*tex 
-                                        These can be used instead of |\the<tok register [ref]>| but 
-                                        that next token is not expanded so it doesn't accept |\if|. 
-                                    */
-                                    tex_get_token();
-                                    switch (cur_cmd) { 
-                                        case call_cmd:
-                                        case protected_call_cmd:               
-                                        case semi_protected_call_cmd:
-                                        case constant_call_cmd:
-                                        case tolerant_call_cmd:
-                                        case tolerant_protected_call_cmd:
-                                        case tolerant_semi_protected_call_cmd:
-                                            tex_aux_macro_call(cur_cs, cur_cmd, cur_chr);
-                                            break;
-                                        case internal_toks_reference_cmd:
-                                        case register_toks_reference_cmd:
-                                            if (cur_chr) {
-                                                tex_begin_token_list(cur_chr, token_text);
+                                        break;
+                                    case register_cmd:
+                                        if (cur_chr == token_val_level) {
+                                            halfword n = tex_scan_toks_register_number();
+                                            halfword p = eq_value(register_toks_location(n));
+                                            if (p) {
+                                                tex_begin_token_list(p, token_text);
                                             }
-                                            break;
-                                        case register_cmd:
-                                            if (cur_chr == token_val_level) {
-                                                halfword n = tex_scan_toks_register_number();
-                                                halfword p = eq_value(register_toks_location(n));
-                                                if (p) {
-                                                    tex_begin_token_list(p, token_text);
-                                                }
-                                            } else { 
-                                                tex_back_input(cur_tok);
-                                            }
-                                            break;
-                                        case internal_toks_cmd:
-                                        case register_toks_cmd:
-                                            { 
-                                                halfword p = eq_value(cur_chr);   
-                                                if (p) {
-                                                    tex_begin_token_list(p, token_text);
-                                                }
-                                            }
-                                            break;
-                                        case index_cmd:
-                                            tex_inject_parameter(cur_chr);
-                                            break;
-                                        case case_shift_cmd:
-                                            tex_run_case_shift(cur_chr);
-                                            break;
-                                        default: 
-                                            /* Use expand_current_token so that protected lua call are dealt with too? */
+                                        } else { 
                                             tex_back_input(cur_tok);
-                                            break;
-                                    }                                            
-                                    break;
-                                }
-                            case expand_toks_code:
-                                {
-                                    /*tex 
-                                        These can be used instead of |\the<tok register [ref]>| and 
-                                        contrary to above here the next token is expanded so it works 
-                                        with a following |\if|. 
-                                    */
-                                    tex_get_x_token();
-                                    switch (cur_cmd) { 
-                                        case internal_toks_reference_cmd:
-                                        case register_toks_reference_cmd:
-                                            if (cur_chr) {
-                                                tex_begin_token_list(cur_chr, token_text);
-                                            }
-                                            break;
-                                        case register_cmd:
-                                            if (cur_chr == token_val_level) {
-                                                halfword n = tex_scan_toks_register_number();
-                                                halfword p = eq_value(register_toks_location(n));
-                                                if (p) {
-                                                    tex_begin_token_list(p, token_text);
-                                                }
-                                            } else { 
-                                                tex_back_input(cur_tok);
-                                            }
-                                            break;
-                                        case internal_toks_cmd:
-                                        case register_toks_cmd:
-                                            { 
-                                                halfword p = eq_value(cur_chr);   
-                                                if (p) {
-                                                    tex_begin_token_list(p, token_text);
-                                                }
-                                            }
-                                            break;
-                                        default: 
-                                            /* Issue an error message? */
-                                            tex_back_input(cur_tok);
-                                            break;
-                                    }                                            
-                                    break;
-                                }
-                            case expand_active_code:
-                                {
-                                    tex_get_token();
-                                    if (cur_cmd == active_char_cmd) {
-                                        cur_cs = tex_active_to_cs(cur_chr, ! lmt_hash_state.no_new_cs);
-                                        if (cur_cs) {
-                                            cur_tok = cs_token_flag + cur_cs;
-                                        } else {
-                                            cur_tok = token_val(cur_cmd, cur_chr);
                                         }
-                                    }
-                                    tex_back_input(cur_tok);
-                                    break;
-                                }
-                            case expand_semi_code:
-                                {
-                                    tex_get_token();
-                                    switch (cur_cmd) {
-                                        case semi_protected_call_cmd:
-                                        case tolerant_semi_protected_call_cmd:
-                                            tex_aux_macro_call(cur_cs, cur_cmd, cur_chr);
-                                            break;
-                                        case lua_semi_protected_call_cmd:
-                                            tex_aux_lua_call(cur_cmd, cur_chr);
-                                            break;
-                                        default:
-                                            tex_back_input(cur_tok);
-                                            break;
-                                    }
-                                    break;
-                                }
-                            case expand_after_toks_code:
-                                {
-                                    tex_aux_expand_toks_after();
-                                    break;
-                                }
-                            case expand_parameter_code:
-                                {
-                                    halfword n = tex_scan_integer(0, NULL);
-                                    if (n >= 0 && n < lmt_input_state.parameter_stack_data.ptr) {
-                                        halfword p = lmt_input_state.parameter_stack[n];
-                                        if (p) {
-                                            tex_begin_parameter_list(p);
+                                        break;
+                                    case internal_toks_cmd:
+                                    case register_toks_cmd:
+                                        { 
+                                            halfword p = eq_value(cur_chr);   
+                                            if (p) {
+                                                tex_begin_token_list(p, token_text);
+                                            }
                                         }
+                                        break;
+                                    case index_cmd:
+                                        tex_inject_parameter(cur_chr);
+                                        break;
+                                    case case_shift_cmd:
+                                        tex_run_case_shift(cur_chr);
+                                        break;
+                                    default: 
+                                        /* Use expand_current_token so that protected lua call are dealt with too? */
+                                        tex_back_input(cur_tok);
+                                        break;
+                                }                                            
+                                break;
+                            }
+                        case expand_toks_code:
+                            {
+                                /*tex 
+                                    These can be used instead of |\the<tok register [ref]>| and 
+                                    contrary to above here the next token is expanded so it works 
+                                    with a following |\if|. 
+                                */
+                                tex_get_x_token();
+                                switch (cur_cmd) { 
+                                    case internal_toks_reference_cmd:
+                                    case register_toks_reference_cmd:
+                                        if (cur_chr) {
+                                            tex_begin_token_list(cur_chr, token_text);
+                                        }
+                                        break;
+                                    case register_cmd:
+                                        if (cur_chr == token_val_level) {
+                                            halfword n = tex_scan_toks_register_number();
+                                            halfword p = eq_value(register_toks_location(n));
+                                            if (p) {
+                                                tex_begin_token_list(p, token_text);
+                                            }
+                                        } else { 
+                                            tex_back_input(cur_tok);
+                                        }
+                                        break;
+                                    case internal_toks_cmd:
+                                    case register_toks_cmd:
+                                        { 
+                                            halfword p = eq_value(cur_chr);   
+                                            if (p) {
+                                                tex_begin_token_list(p, token_text);
+                                            }
+                                        }
+                                        break;
+                                    default: 
+                                        /* Issue an error message? */
+                                        tex_back_input(cur_tok);
+                                        break;
+                                }                                            
+                                break;
+                            }
+                        case expand_active_code:
+                            {
+                                tex_get_token();
+                                if (cur_cmd == active_char_cmd) {
+                                    cur_cs = tex_active_to_cs(cur_chr, ! lmt_hash_state.no_new_cs);
+                                    if (cur_cs) {
+                                        cur_tok = cs_token_flag + cur_cs;
+                                    } else {
+                                        cur_tok = token_val(cur_cmd, cur_chr);
                                     }
-                                    break;
                                 }
-                            /* keep as reference */ /*
-                            case expand_after_fi_code:
-                                {
-                                    tex_conditional_after_fi();
-                                    break;
+                                tex_back_input(cur_tok);
+                                break;
+                            }
+                        case expand_semi_code:
+                            {
+                                tex_get_token();
+                                switch (cur_cmd) {
+                                    case semi_protected_call_cmd:
+                                    case tolerant_semi_protected_call_cmd:
+                                        tex_aux_macro_call(cur_cs, cur_cmd, cur_chr);
+                                        break;
+                                    case lua_semi_protected_call_cmd:
+                                        tex_aux_lua_call(cur_cmd, cur_chr);
+                                        break;
+                                    default:
+                                        tex_back_input(cur_tok);
+                                        break;
                                 }
-                            */
-                        }
+                                break;
+                            }
+                        case expand_after_toks_code:
+                            {
+                                tex_aux_expand_toks_after();
+                                break;
+                            }
+                        case expand_parameter_code:
+                            {
+                                halfword n = tex_scan_integer(0, NULL);
+                                if (n >= 0 && n < lmt_input_state.parameter_stack_data.ptr) {
+                                    halfword p = lmt_input_state.parameter_stack[n];
+                                    if (p) {
+                                        tex_begin_parameter_list(p);
+                                    }
+                                }
+                                break;
+                            }
+                        /* keep as reference */ /*
+                        case expand_after_fi_code:
+                            {
+                                tex_conditional_after_fi();
+                                break;
+                            }
+                        */
                     }
                     break;
                 case cs_name_cmd:

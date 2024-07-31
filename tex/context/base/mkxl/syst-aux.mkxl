@@ -2909,7 +2909,7 @@
 \permanent\protected\def\letvalueempty #1{\letcsname #1\endcsname\empty}
 \permanent\protected\def\letgvalueempty#1{\gletcsname#1\endcsname\empty}
 \permanent\protected\def\letvaluerelax #1{\letcsname #1\endcsname\relax}
-\permanent\protected\def\letgvalurelax #1{\gletcsname#1\endcsname\relax}
+\permanent\protected\def\letgvaluerelax#1{\gletcsname#1\endcsname\relax}
 
 \permanent\protected\def\relaxvalueifundefined#1%
   {\ifcsname#1\endcsname \else
@@ -4356,6 +4356,9 @@
 %D \def\BoldRaggedCenter%
 %D   {\groupedcommand{\raggedcenter\bf}{\par}}
 %D \stoptyping
+%D
+%D In \LUAMETATEX\ this is less of an issue as we can save the state (and do so in
+%D \CONTEXT).
 
 %D For math we use this:
 

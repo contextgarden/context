@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setelementexporttag" level="system" category="xml" file="back-exp.mkiv">
+    <cd:command name="setelementexporttag" level="system" category="xml" file="back-exp.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords optional="yes">
@@ -20,7 +20,57 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupexport" level="style" category="xml" file="back-exp.mkiv">
+    <cd:command name="setelementexporttag" variant="nature" level="system" category="xml" file="back-exp.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:keywords>
+                <cd:constant type="nature"/>
+            </cd:keywords>
+            <cd:keywords>
+                <cd:constant type="inline"/>
+                <cd:constant type="display"/>
+                <cd:constant type="mixed"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setelementexporttag" variant="pdf" level="system" category="xml" file="back-exp.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:keywords>
+                <cd:constant type="pdf"/>
+            </cd:keywords>
+            <cd:keywords>
+                <cd:constant type="BlockQuote"/>
+                <cd:constant type="Caption"/>
+                <cd:constant type="Code"/>
+                <cd:constant type="Div"/>
+                <cd:constant type="Formula"/>
+                <cd:constant type="H"/>
+                <cd:constant type="L"/>
+                <cd:constant type="Lbl"/>
+                <cd:constant type="LBody"/>
+                <cd:constant type="LI"/>
+                <cd:constant type="Link"/>
+                <cd:constant type="P"/>
+                <cd:constant type="Quote"/>
+                <cd:constant type="Reference"/>
+                <cd:constant type="Sect"/>
+                <cd:constant type="Span"/>
+                <cd:constant type="Table"/>
+                <cd:constant type="TBODY"/>
+                <cd:constant type="TD"/>
+                <cd:constant type="TFOOT"/>
+                <cd:constant type="TH"/>
+                <cd:constant type="THEAD"/>
+                <cd:constant type="TOC"/>
+                <cd:constant type="TOCI"/>
+                <cd:constant type="TR"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupexport" level="style" category="xml" file="back-exp.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="align">
@@ -73,5 +123,69 @@
             </cd:assignments>
         </cd:arguments>
     </cd:command>
+
+    <cd:command name="setupboxexport" level="style" category="boxes" file="back-exp.mkxl">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="buffer">
+                    <!--
+                        <cd:constant type="yes"/>
+                    -->
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="file">
+                    <cd:constant type="cd:file"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="boxexport" type="environment" level="document" category="boxes" file="back-exp.mkxl">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupboxexport"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathexport" level="style" category="mathematics" file="back-exp.mkxl">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="buffer">
+                    <!--
+                        <cd:constant type="yes"/>
+                    -->
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="file">
+                    <cd:constant type="cd:file"/>
+                </cd:parameter>
+                <cd:parameter name="n">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="option">
+                    <cd:constant type="ascii"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathexport" type="environment" level="document" category="mathematics" file="back-exp.mkxl">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathexport"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="savemathexport" level="document" category="mathematics" file="back-exp.mkxl">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathexport"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="collectedmath" level="style" category="mathematics" file="math-tag.lmt"/>
 
 </cd:interface>

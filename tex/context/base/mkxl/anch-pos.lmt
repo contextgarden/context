@@ -1108,7 +1108,7 @@ jobpositions.e_region = e_region
 
 local lastregion
 
-local function setregionbox(n,tag,index,k,lo,ro,to,bo,column) -- kind
+local function setregionbox(n,tag,index,depth,column,k,lo,ro,to,bo) -- no correct here
     if not tag or tag == "" then
         nofregions = nofregions + 1
         tag   = "region"
@@ -1124,6 +1124,9 @@ local function setregionbox(n,tag,index,k,lo,ro,to,bo,column) -- kind
     -- is direct is is unlikely that we get a gap. We then also need to intecept
     -- these auto regions (comning from framed). Too messy and the split in the
     -- setter is fast enough.
+    if depth then
+        d = d + depth
+    end
     tobesaved[tag] = {
      -- p  = texgetcount(c_realpageno), -- we copy them
         x  = 0,
@@ -1152,8 +1155,8 @@ end
 -- push and pop tags as strings, but it save a little on expansion so we do it
 -- in the interface
 
-local function markregionbox(n,tag,index,correct,...) -- correct needs checking
-    local tag, box = setregionbox(n,tag,index,...)
+local function markregionbox(n,tag,index,depth,column,correct,...) -- correct needs checking
+    local tag, box = setregionbox(n,tag,index,depth,column,...)
      -- todo: check if tostring is needed with formatter
     local push = new_latelua { action = b_region, tag = tag }
     local pop  = new_latelua { action = e_region, correct = correct }
@@ -2278,48 +2281,53 @@ implement {
 }
 
 implement {
-    name      = "markregionbox",
-    arguments = "2 integers",
-    actions   = markregionbox
-}
-
-implement {
     name      = "setregionbox",
     arguments = "2 integers",
     actions   = setregionbox
 }
 
 implement {
-    name      = "markregionboxtagged",
-    arguments = { "integer", "string", "integer" },
+    name      = "setregionboxtagged",
+    arguments = { "integer", "string", "integer", "dimension" },
+    actions   = setregionbox -- n text index depth
+}
+
+implement {
+    name      = "markregionbox",
+--     arguments = "2 integers",
+    arguments = "integer",
     actions   = markregionbox
 }
 
 implement {
-    name      = "markregionboxtaggedn",
-    arguments = { "integer", "string", "integer", "integer" },
-    actions   = function(box,tag,index,n)
-        markregionbox(box,tag,index,nil,nil,nil,nil,nil,nil,n)
+    name      = "markregionboxtagged",
+    arguments = { "integer", "string", "integer", "dimension" },
+    actions   = function(box,tag,index,depth)
+        markregionbox(box,tag,index,depth,false,false)
     end
 }
 
 implement {
-    name      = "setregionboxtagged",
-    arguments = { "integer", "string", "integer" },
-    actions   = setregionbox
+    name      = "markregionboxtaggedn",
+    arguments = { "integer", "string", "integer", "dimension", "integer" },
+    actions   = function(box,tag,index,depth,column)
+        markregionbox(box,tag,index,depth,column,false)
+    end
 }
 
 implement {
     name      = "markregionboxcorrected",
-    arguments = { "integer", "string", "integer", true },
-    actions   = markregionbox
+    arguments = { "integer", "string", "integer", "dimension" },
+    actions   = function(box,tag,index)
+        markregionbox(box,tag,index,depth,false,true)
+    end
 }
 
 implement {
     name      = "markregionboxtaggedkind",
-    arguments = { "integer", "string", "integer", "integer", "dimen", "dimen", "dimen", "dimen" },
-    actions   = function(box,tag,index,n,d1,d2,d3,d4)
-        markregionbox(box,tag,index,nil,n,d1,d2,d3,d4)
+    arguments = { "integer", "string", "integer", "dimension", "integer", "dimen", "dimen", "dimen", "dimen" },
+    actions   = function(box,tag,index,depth,kind,d1,d2,d3,d4)
+        markregionbox(box,tag,index,depth,false,false,kind,d1,d2,d3,d4)
     end
 }
 

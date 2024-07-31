@@ -7,48 +7,65 @@ if not modules then modules = { } end modules ['typo-adj'] = {
     license   = "see context related readme files"
 }
 
-local setdimen        = tex.setdimen
-local isdimen         = tex.isdimen
-local setmacro        = tokens.setters.macro
-local expandmacro     = token.expandmacro
+local setdimen          = tex.setdimen
+local isdimen           = tex.isdimen
+local setmacro          = tokens.setters.macro
+local expandmacro       = token.expandmacro
 
-local nuts            = nodes.nuts
-local tonut           = nodes.tonut
-local getid           = nuts.getid
-local getlist         = nuts.getlist
-local getwhd          = nuts.getwhd
-local getattr         = nuts.getattr
-local getwidth        = nuts.getwidth
-local getleader       = nuts.getleader
-local setlist         = nuts.setlist
-local setlink         = nuts.setlink
-local setstate        = nuts.setstate
-local setattr         = nuts.setattr
+local nuts              = nodes.nuts
+local tonut             = nodes.tonut
+local getattr           = nuts.getattr
+local getdepth          = nuts.getdepth
+local getlistdimensions = nuts.getlistdimensions
+local getexcept         = nuts.getexcept
+local getheight         = nuts.getheight
+local getid             = nuts.getid
+local getleader         = nuts.getleader
+local getlist           = nuts.getlist
+local getnext           = nuts.getnext
+local getprop           = nuts.getprop
+local gettail           = nuts.tail
+local getwhd            = nuts.getwhd
+local getwidth          = nuts.getwidth
+local setattr           = nuts.setattr
+local setdepth          = nuts.setdepth
+local setexcept         = nuts.setexcept
+local setheight         = nuts.setheight
+local setlink           = nuts.setlink
+local setlist           = nuts.setlist
+local setoffsets        = nuts.setoffsets
+local setprop           = nuts.setprop
+local setstate          = nuts.setstate
 
-local hlist_code      <const> = nodes.nodecodes.hlist
-local vlist_code      <const> = nodes.nodecodes.vlist
+local hpacknodes        = nuts.hpack
 
-local getbox          = nuts.getbox
-local takebox         = nuts.takebox
+local hlist_code        <const> = nodes.nodecodes.hlist
+local vlist_code        <const> = nodes.nodecodes.vlist
 
-local new_kern        = nuts.pool.kern
+local getbox            = nuts.getbox
+local takebox           = nuts.takebox
 
-local flattenleaders  = nuts.flattenleaders
-local traverselist    = nuts.traverselist
-local traverseleader  = nuts.traverseleader
+local new_kern          = nuts.pool.kern
+local new_vlist         = nuts.pool.vlist
 
-local a_adaptive      <const> = attributes.private("adaptive")
+local flattenleaders    = nuts.flattenleaders
+local traverselist      = nuts.traverselist
+local traverseleader    = nuts.traverseleader
 
-local registervalue   = attributes.registervalue
-local getvalue        = attributes.getvalue
-local hasvalues       = attributes.hasvalues
-local texsetattribute = tex.setattribute
+local a_adaptive        <const> = attributes.private("adaptive")
 
-local adaptive        = nodes.adaptive or { }
-nodes.adaptive        = adaptive
-local enabled         = false
+local registervalue     = attributes.registervalue
+local getvalue          = attributes.getvalue
+local hasvalues         = attributes.hasvalues
+local texsetattribute   = tex.setattribute
 
------ enableaction    = nodes.tasks.enableaction
+local v_right           <const> = interfaces.variables.right
+
+local adaptive          = nodes.adaptive or { }
+nodes.adaptive          = adaptive
+local enabled           = false
+
+----- enableaction      = nodes.tasks.enableaction
 
 local d_adaptive_width  <const> = isdimen("d_adaptive_width")
 local d_adaptive_height <const> = isdimen("d_adaptive_height")
@@ -66,30 +83,33 @@ end
 
 local methods = {
     -- overlay
-    [1] = function(settings,parent,list)
+    [1] = function(settings,parent,box)
         local setups = settings.setups
         if setups and setups ~= ""  then
-            local w, h, d = getwhd(parent)
+            local w, h, d, s, list = getlistdimensions(parent)
             setadaptive(w,h,d,settings.rulethickness,settings.color,settings.alternative)
             expandmacro("setup",true,setups)
             local l = takebox("b_adaptive_box")
             if l then
-                setlist(parent, setlink(l,new_kern(-getwidth(l)),list))
+                setlist(parent,setlink(l,new_kern(-getwidth(l)),list))
             end
         end
     end
 }
 
-local function handleuleader(n,grp,index)
+adaptive.methods = methods
+--------.set     = setadaptive
+
+local function handleuleader(n,grp,index,box,where)
     local m = tonut(n)
     local a = getattr(m,a_adaptive) or index -- index will become a selector
     if a then
         local settings = getvalue(a_adaptive,a) -- index triggers ...
         if settings then
-            setstate(m,0)
+            setstate(m,0) -- hm ...
             local action = methods[settings.method or 1]
             if action then
-                action(settings,m,getlist(m))
+                action(settings,m,tonut(box))
             end
         end
     end
@@ -116,6 +136,7 @@ interfaces.implement {
             { "setups", "string" },
             { "method", "integer" },
             { "mp", "string" },
+            { "location", "string" },
             { "color", "string" },
             { "rulethickness", "dimension" },
             { "alternative", "string" },
@@ -195,3 +216,60 @@ interfaces.implement {
         end
     end,
 }
+
+-- Excepts:
+--
+-- By using the adaptive uleaders we don't need a callback although we can hook it
+-- into the par node and just look at that one instead. However, now we can do it
+-- anyplace. Of course this only works per line unless we also look back but that is
+-- kind of tricky because then we also need to jump over glue and penalty nodes and
+-- compensate for the glue: a mess.
+
+nodes.adaptive.methods[2] = function(settings,parent,box)
+    local list = getlist(parent)
+    if list then
+        local except,
+              amount  = getexcept(box)
+        local left    = nil
+        local right   = nil
+        local current = except
+        while current do
+            local location = getprop(current,"exceptlocation")
+            if location == "left" then
+                left = current
+            elseif location == "right" then
+                right = current
+            end
+            current = getnext(current)
+        end
+        if not left then
+            left  = new_vlist()
+            right = new_vlist()
+            setprop(left, "exceptlocation","left")
+            setprop(right,"exceptlocation","right")
+            setlink(left,except,right)
+            setexcept(box,left)
+            except = left
+        end
+        -- todo: check for leaks !
+        local target = settings.location == v_right and right or left
+        -- wrapped in phantom
+        local n = getlist(list)
+        local nw, nh, nd = getwhd(n)
+        local h = hpacknodes(n)
+        if getprop(target,"except") then
+            nd = getdepth(target) + nh + nd
+            setlink(gettail(getlist(target)),h)
+        else
+            setheight(target,nh)
+            setlist(target,h)
+            setprop(target,"except",true)
+        end
+        setdepth(target,nd)
+        setexcept(box,except,nd > amount and nd or amount)
+        setoffsets(n,target == right and getwidth(box) or -nw)
+        setlist(list)
+        setlist(real)
+    end
+end
+

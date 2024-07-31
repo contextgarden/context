@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definemathdelimited" file="math-dld.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathdelimited"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathdelimited" file="math-dld.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="define">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="strut">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="height" default="yes"/>
+                    <cd:constant type="depth"/>
+                    <cd:constant type="math"/>
+                </cd:parameter>
+                <cd:parameter name="leftmargin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rightmargin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="default"/>
+                    <cd:constant type="normal" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="symbolcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="depth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="topoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="bottomoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="source">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="size">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="mathmeaning">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="textcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathdelimited" generated="yes" variant="instance" file="math-dld.mkxl">
+        <cd:sequence>
+            <cd:instance value="mathdelimited"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathdelimited"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathdelimited"/>
+        </cd:instances>
+    </cd:command>
+
+</cd:interface>

@@ -437,7 +437,7 @@
 
 \startsetups[\??simplelistrenderings::\v!synonym]
     \begingroup
-    \dostarttaggedchained\t!synonym\currentsynonym\??simplelist
+    \dostarttaggedchained\t!synonym\currentsynonym\currentsynonym\??simplelist
     \dotagsynonym
     \usesimpleliststyleandcolor\c!synonymstyle\c!synonymcolor
     \registercurrentsynonympage
@@ -667,7 +667,7 @@
 
 \startsetups [\??simplelistrenderings::\v!sorting]
     \begingroup
-    \dostarttaggedchained\t!sorting\currentsorting\??simplelist
+    \dostarttaggedchained\t!sorting\currentsorting\currentsorting\??simplelist
     \dotagsorting
     \usesimpleliststyleandcolor\c!style\c!color
     \registercurrentsortingpage

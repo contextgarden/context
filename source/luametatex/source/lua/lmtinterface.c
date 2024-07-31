@@ -178,19 +178,19 @@ void lmt_initialize_interface(void)
     set_alignment_context_value(package_pass_alignment_context,  package);
     set_alignment_context_value(wrapup_pass_alignment_context,   wrapup);
 
-    lmt_interface.break_context_values = lmt_aux_allocate_value_info(wrapup_show_breaks_context);
+    lmt_interface.line_break_context_values = lmt_aux_allocate_value_info(wrapup_line_break_context);
 
-    # define set_break_context_value(n,k) lmt_interface.break_context_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }
+    # define set_break_context_value(n,k) lmt_interface.line_break_context_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }
 
-    set_break_context_value(initialize_show_breaks_context, initialize);
-    set_break_context_value(start_show_breaks_context,      start);
-    set_break_context_value(list_show_breaks_context,       list); 
-    set_break_context_value(stop_show_breaks_context,       stop);
-    set_break_context_value(collect_show_breaks_context,    collect);
-    set_break_context_value(line_show_breaks_context,       line);
-    set_break_context_value(delete_show_breaks_context,     delete);
-    set_break_context_value(report_show_breaks_context,     report); 
-    set_break_context_value(wrapup_show_breaks_context,     wrapup);
+    set_break_context_value(initialize_line_break_context, initialize);
+    set_break_context_value(start_line_break_context,      start);
+    set_break_context_value(list_line_break_context,       list); 
+    set_break_context_value(stop_line_break_context,       stop);
+    set_break_context_value(collect_line_break_context,    collect);
+    set_break_context_value(line_line_break_context,       line);
+    set_break_context_value(delete_line_break_context,     delete);
+    set_break_context_value(report_line_break_context,     report); 
+    set_break_context_value(wrapup_line_break_context,     wrapup);
 
     lmt_interface.build_context_values = lmt_aux_allocate_value_info(wrapup_show_build_context);
 

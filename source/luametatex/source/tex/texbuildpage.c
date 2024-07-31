@@ -224,6 +224,7 @@ static void tex_aux_freeze_page_specs(int s)
     page_depth = 0;
     page_total = 0;
     page_excess = 0;
+    page_except = 0;
     page_last_depth = 0;
     page_last_height = 0;
     if (initial_page_skip_par) {
@@ -365,16 +366,16 @@ static void tex_aux_display_insertion_split_cost(halfword index, scaled height, 
 
 static halfword tex_aux_page_badness(scaled goal)
 {
-    if (page_total < goal) {
+    if (page_total + page_except < goal) {
         if (page_fistretch || page_filstretch || page_fillstretch || page_filllstretch) {
             return 0;
         } else {
             return tex_badness(goal - page_total, page_stretch);
         }
-    } else if (page_total - goal > page_shrink) {
+    } else if (page_total + page_except - goal > page_shrink) {
         return awful_bad;
     } else {
-        return tex_badness(page_total - goal, page_shrink);
+        return tex_badness(page_total + page_except - goal, page_shrink);
     }
 }
 
@@ -661,7 +662,7 @@ static void tex_aux_show_loner_penalty(int callback_id, halfword options, scaled
     lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dd->", options, penalty);
 }
 
-static int tex_aux_topskip_restart(halfword current, int where, scaled height, scaled depth, int tracing)
+static int tex_aux_topskip_restart(halfword current, int where, scaled height, scaled depth, scaled exdepth, int tracing)
 {
     if (lmt_page_builder_state.contents < contribute_box) {
         /*tex
@@ -681,6 +682,14 @@ static int tex_aux_topskip_restart(halfword current, int where, scaled height, s
         /*tex Move a box to the current page, then |goto contribute|. */
         page_total += page_depth + height;
         page_depth = depth;
+page_except -= height;
+page_except -= depth;
+        if (exdepth > page_except) {
+            page_except = exdepth;
+        }
+if (page_except < 0) {
+    page_except = 0; 
+}
         return 0;
     }
 }
@@ -885,13 +894,13 @@ void tex_build_page(halfword context, halfword boundary)
                 case vlist_node:
                     if (tex_aux_migrating_restart(current, tracing)) {
                         continue;
-                    } else if (tex_aux_topskip_restart(current, contribute_box, box_height(current), box_depth(current), tracing)) {
+                    } else if (tex_aux_topskip_restart(current, contribute_box, box_height(current), box_depth(current), box_exdepth(current), tracing)) {
                         continue;
                     } else {
                         goto CONTRIBUTE;
                     }
                 case rule_node:
-                    if (tex_aux_topskip_restart(current, contribute_rule, rule_height(current), rule_depth(current), tracing)) {
+                    if (tex_aux_topskip_restart(current, contribute_rule, rule_height(current), rule_depth(current), 0, tracing)) {
                         continue;
                     } else {
                         goto CONTRIBUTE;
@@ -1051,10 +1060,23 @@ void tex_build_page(halfword context, halfword boundary)
             }
             switch(node_type(current)) {
                 case kern_node:
+                    if (page_except) { 
+                        page_except -= kern_amount(current);
+                        if (page_except < 0) {
+                            page_except = 0;
+                        }
+                    }
                     page_total += page_depth + kern_amount(current);
                     page_depth = 0;
                     goto APPEND;
                 case glue_node:
+                    if (page_except) { 
+                        glue_stretch(current) = 0;
+                        page_except -= glue_amount(current);
+                        if (page_except < 0) {
+                            page_except = 0;
+                        }
+                    }
                     tex_aux_contribute_glue(current);
                     page_total += page_depth + glue_amount(current);
                     page_depth = 0;

@@ -195,9 +195,9 @@
 
 \appendtoks
     \ifcstok{\startstopparameter\c!arguments}\v!yes
-        \frozen\instance\tolerant\protected\edefcsname\e!start\currentstartstop\endcsname{\syst_startstop_start_yes {\currentstartstop}}%
-        \frozen\instance         \protected\edefcsname\e!stop \currentstartstop\endcsname{\syst_startstop_stop_yes  }%
-        \frozen\instance\tolerant\protected\edefcsname        \currentstartstop\endcsname{\syst_startstop_indeed_yes{\currentstartstop}}%
+        \frozen\instance\protected\edefcsname\e!start\currentstartstop\endcsname{\syst_startstop_start_yes {\currentstartstop}}%
+        \frozen\instance\protected\edefcsname\e!stop \currentstartstop\endcsname{\syst_startstop_stop_yes  }%
+        \frozen\instance\protected\edefcsname        \currentstartstop\endcsname{\syst_startstop_indeed_yes{\currentstartstop}}%
     \else
         \frozen\instance\protected\edefcsname\e!start\currentstartstop\endcsname{\syst_startstop_start_nop {\currentstartstop}}%
         \frozen\instance\protected\edefcsname\e!stop \currentstartstop\endcsname{\syst_startstop_stop_nop  {\currentstartstop}}%
@@ -218,23 +218,29 @@
 
 % Here before and after are grouped!
 
-\protected\def\syst_startstop_start_yes#1[#S#2]%
+\tolerant\protected\def\syst_startstop_start_yes#1#*[#S#2]%
   {\begingroup
    \cdef\currentstartstop{#1}%
    \ifparameter#2\or\setupcurrentstartstop[#2]\fi
    \startstopparameter\c!before\relax
    \syst_startstop_start_indeed}
 
-\protected\def\syst_startstop_indeed_yes#1[#S#2]%
+\tolerant\protected\def\syst_startstop_indeed_yes#1#*[#S#2]%
   {\groupedcommand
      {\cdef\currentstartstop{#1}%
       \ifparameter#2\or\setupcurrentstartstop[#2]\fi
       \startstopparameter\c!commands\relax % better: setups so that will show op soon
       \dostarttagged\t!construct\currentstartstop
       \usestartstopstyleandcolor\c!style\c!color
-      \startstopparameter\c!left\relax}
-     {\cdef\currentstartstop{#1}% safeguard, not really needed
+      \dostarttaggednodetail\t!constructleft
+      \startstopparameter\c!left\relax
+      \dostoptagged
+      \dostarttaggednodetail\t!constructcontent}%
+     {\dostoptagged
+      \cdef\currentstartstop{#1}% safeguard, not really needed
+      \dostarttaggednodetail\t!constructright
       \startstopparameter\c!right\relax
+      \dostoptagged
       \dostoptagged
       \startstopparameter\c!inbetween\relax}}
 

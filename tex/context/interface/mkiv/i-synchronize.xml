@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definesynchronize" level="style" category="columns" file="typo-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupsynchronize"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupsynchronize" level="style" category="columns" file="typo-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="list" list="yes">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="split">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="buffer" list="yes">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="text" list="yes">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definesynchronizecontent" level="style" category="columns" file="typo-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupsynchronizecontent"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupsynchronizecontent" level="style" category="columns" file="typo-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="language">
+                    <cd:constant type="cd:language"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placesynchronize" level="document" category="columns" file="typo-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupsynchronize"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="synchronize" generated="yes" variant="instance" level="document" category="columns" file="typo-syn.mkxl">
+        <cd:sequence>
+            <cd:instance value="synchronize"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupsynchronize"/>
+            </cd:assignments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-synchronize"/>
+        </cd:instances>
+    </cd:command>
+
+</cd:interface>

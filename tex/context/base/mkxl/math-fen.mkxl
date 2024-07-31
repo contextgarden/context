@@ -298,8 +298,7 @@
      \else
        \p_fence
      \fi
-   \fi
-   \usemathfencecolorparameter\c!textcolor}
+   \fi}
 
 \def\math_fenced_set_variant
   {\ifconditional\c_math_fenced_level_mode
@@ -388,6 +387,7 @@
 \stopsetups
 
 \mutable\lettonothing\suchthat
+
 % \fastsetup{math:fence:set}
 
 \protected\def\math_fenced_middle_common
@@ -536,7 +536,8 @@
 
 \appendtoks
     \enforced\let\fenced\math_fenced_direct
-\to \everymathematics
+% \to \everysetupmathematics
+\to \everyswitchmathematics
 
 \permanent\tolerant\protected\def\startmathfenced[#1]#*[#S#2]%
   {\begingroup
@@ -655,11 +656,6 @@
    \else
      \c_math_fenced_level\zerocount
    \fi}
-
-% \appendtoks
-%     \enforced\aliased\let|\letterbar
-%    %\enforced\aliased\let\bar\letterbar
-% \to \everymathematics
 
 \definemathfence [parenthesis] [\c!left="0028,\c!right="0029,define=yes]% some kind of meaning
 \definemathfence [bracket]     [\c!left="005B,\c!right="005D,define=yes]% some kind of meaning
@@ -952,7 +948,8 @@
 
 % \appendtoks
 %     \ignorediscretionaries % so $\mtext{a|b}$ works, this is ok because it's an \hbox
-% \to \everymathematics
+% \to \everysetupmathematics
+% \to \everyswitchmathematics
 
 % We unofficial support some synonyms as we need them for some fuzzy web related math.
 
@@ -1182,13 +1179,6 @@
 \aliased\let\middle     \math_fences_used_middle
 \aliased\let\leftorright\math_fences_used_both
 
-% \appendtoks
-%     \enforced\let\left       \math_fences_used_left
-%     \enforced\let\right      \math_fences_used_right
-%     \enforced\let\middle     \math_fences_used_middle
-%     \enforced\let\leftorright\math_fences_used_both
-% \to \everymathematics
-
 % wrappers
 
 \permanent\protected\def\startcheckedfences
@@ -1298,13 +1288,15 @@
 \appendtoks
     \integerdef\c_math_fence_level\minusone
     \c_math_fence_nesting\zerocount
-\to \everymathematics
+% \to \everysetupmathematics
+\to \everyswitchmathematics
 
-%D Experiment:
+%D Experiment (needs an interface i.e. key/value), bars are not middle so are not
+%D affected but \type {\mvert} is.
 
 \permanent\protected\def\autofences
   {\setmathoptions\mathopencode\numexpression
-      \setmathoptions\mathopencode bor \autoinjectclassoptioncode
+     \setmathoptions\mathopencode bor \autoinjectclassoptioncode
    \relax
    \setmathoptions\mathclosecode\numexpression
      \setmathoptions\mathclosecode bor \autoinjectclassoptioncode

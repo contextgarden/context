@@ -20,9 +20,9 @@ do
 
     local actions = nodes.tasks.actions("everypar")
 
-    local function everypar(head)
+    local function everypar(head,mode)
         starttiming(builders)
-        head = actions(head)
+        head = actions(head,mode)
         stoptiming(builders)
         return head
     end

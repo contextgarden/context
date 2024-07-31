@@ -1,0 +1,44 @@
+if not modules then modules = { } end modules ['font-imp-compound'] = {
+    version   = 1.001,
+    comment   = "companion to font-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA ADE",
+    copyright = "ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- we can also make composed characters this way
+
+local compoundhyphen = fonts.helpers.newprivateslot("compoundhyphen")
+
+local function initialize(tfmdata,value)
+    if value then
+        local characters = tfmdata.characters
+        local hyphen     = characters[0x2D]
+        if hyphen then
+            local width = hyphen.width
+            if width then
+                characters[compoundhyphen] = {
+                    width    = 1.5*width,
+                    height   = hyphen.height,
+                    depth    = hyphen.depth,
+                    unicode  = hyphen.unicode,
+                    callback = "compile",
+                    commands = {
+                        { "char", 0x2D },
+                        { "left", width/2 },
+                        { "char", 0x2D }
+                    },
+                }
+            end
+        end
+    end
+end
+
+fonts.handlers.otf.features.register {
+    name         = "compoundhyphen",
+    description  = "compoundhyphen",
+    manipulators = {
+        base = initialize,
+        node = initialize,
+    }
+}

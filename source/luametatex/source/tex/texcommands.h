@@ -1158,6 +1158,7 @@ typedef enum charcode_codes {
     hccode_charcode,
     hmcode_charcode,
     amcode_charcode,
+    cccode_charcode,
     mathcode_charcode,
     extmathcode_charcode,
     delcode_charcode,

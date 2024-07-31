@@ -848,4 +848,44 @@
         </cd:keywords>
     </cd:define>
 
+    <!--        *   -->
+    <!-- \... [...] -->
+    <!--            -->
+    <!-- * CAPITALS -->
+
+    <cd:define name="keyword-capitals">
+        <cd:keywords>
+            <cd:constant type="reset"/>
+            <cd:constant type="WORD"/>
+            <cd:constant type="word"/>
+            <cd:constant type="Word"/>
+            <cd:constant type="Words"/>
+            <cd:constant type="capital"/>
+            <cd:constant type="Capital"/>
+            <cd:constant type="random"/>
+            <cd:constant type="mixed"/>
+            <cd:constant type="camel"/>
+            <cd:constant type="Camel"/>
+            <cd:constant type="cap"/>
+            <cd:constant type="Cap"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--        *      -->
+    <!-- \... [...]    -->
+    <!--               -->
+    <!-- * MATHEMATICS -->
+
+    <cd:define name="keyword-mathematics">
+        <cd:keywords>
+            <cd:resolve name="value-mathematics"/>
+        </cd:keywords>
+    </cd:define>
+
+    <cd:define name="keyword-mathematics-optional">
+        <cd:keywords optional="yes">
+            <cd:resolve name="value-mathematics"/>
+        </cd:keywords>
+    </cd:define>
+
 </cd:interface>

@@ -220,11 +220,11 @@ do
         end
     end
 
---     extras.adddestination = adddestination
---     extras.addreference   = addreference
+    extras.adddestination = adddestination
+    extras.addreference   = addreference
 
---     extras.link           = link
---     extras.reference      = reference
+    extras.link           = link
+    extras.reference      = reference
 
 end
 

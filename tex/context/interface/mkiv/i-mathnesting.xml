@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definemathnesting" level="style" category="mathematics" file="math-ini.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathnesting"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathnesting" level="style" category="mathematics" file="math-ini.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="displayfactor">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="inlinefactor">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathnesting" level="document" category="mathematics" file="math-ini.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-number-optional"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathnesting" generated="yes" variant="instance" level="document" category="mathematics" file="math-ini.mkxl">
+        <cd:sequence>
+            <cd:instance value="mathnesting"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathnesting"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathnesting"/>
+        </cd:instances>
+    </cd:command>
+
+</cd:interface>

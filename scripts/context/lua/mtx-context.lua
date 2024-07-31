@@ -35,6 +35,7 @@ local formatters    = string.formatters
 
 local starttiming   = statistics.starttiming
 local stoptiming    = statistics.stoptiming
+local resettiming   = statistics.resettiming
 local elapsedtime   = statistics.elapsedtime
 
 local application = logs.application {
@@ -1753,42 +1754,116 @@ do
     local f_runner  = formatters['context %s "%s"']
     local f_command = formatters['%s %s']
 
+    local function getline(line,name)
+        if string.find(line,"^context ") then
+            return line
+        elseif string.find(line,"^mtxrun ") then
+            return line
+        end
+    end
+
     function scripts.context.parallel()
         if getargument("pattern") then
             environment.files = dir.glob(getargument("pattern"))
         end
-        local files = environment.files
-        local total = files and #files or 0
-        local list  = nil
-        if getargument("parallellist") then
-            list = { }
+        local files    = environment.files
+        local total    = files and #files or 0
+        local lists    = nil
+        local whattodo = "filename"
+        local terminal = environment.argument("terminal")
+        local parallel = environment.argument("parallel")
+        local runners  = tonumber(parallel) or 8
+
+        if type(parallel) == "string" then
+            local specification = table.load(parallel)
+            if specification then
+                local parallel = specification.parallel
+                if parallel then
+                    specification = parallel
+                end
+                runners  = tonumber(specification.runners) or runners
+                terminal = specification.terminal or terminal
+                sequence = specification.sequence
+                commands = specification.commands
+                if commands then
+                    if sequence then
+                        lists = commands
+                        for i=1,#commands do
+                            total = total + #commands[i]
+                        end
+                    else
+                        local list = commands[1]
+                        for i=2,#commands do
+                            local c = commands[i]
+                            for i=1,#c do
+                                list[#list+1] = c[i]
+                            end
+                            total = total + #c
+                        end
+                        lists = { list }
+                    end
+                    whattodo = "command"
+                else
+                    report("missing commands list in %a",parallel)
+                    return
+                end
+            else
+                report("invalid specification %a",parallel)
+                return
+            end
+        elseif getargument("parallelsequence") then
+            total = 0
             for i=1,#files do
-                -- could be an lpeg
+                local list = { }
                 local name = files[i]
                 local data = splitlines(io.loaddata(name) or "")
-                if data then
-                    for i=1,#data do
-                        local line = data[i]
-                        if string.find(line,"^context ") then
-                            list[#list+1] = line
-                        end
+                for i=1,#data do
+                    local line = getline(data[i],name)
+                    if line then
+                        list[#list+1] = line
+                    end
+                end
+                if #list > 0 then
+                    if not lists then
+                        lists = { list, filename = name }
+                    else
+                        lists[#lists+1] = list
+                    end
+                    total = total + #list
+                end
+            end
+            whattodo = "command"
+        elseif getargument("parallellist") then
+            total = 0
+            local list = { }
+            for i=1,#files do
+                local name = files[i]
+                local data = splitlines(io.loaddata(name) or "")
+                for i=1,#data do
+                    local line = getline(data[i],name)
+                    if line then
+                        list[#list+1] = line
                     end
                 end
             end
-            files = list
-            total = #list
+            if #list > 0 then
+                lists = { list }
+                total = total + #list
+            end
+            whattodo = "command"
+        elseif total > 1 then
+            lists = { files }
         end
-        if not list and total == 1 then
+
+        if not lists and total == 1 then
             -- Beware: "--parallel" and "--terminal" are passed to the single run but this
             -- is normally harmless.
             scripts.context.autoctx()
         elseif total > 0 then
-            local results  = { }
-            local start    = starttiming("parallel")
-            local terminal = environment.argument("terminal")
-            local runners  = tonumber(environment.argument("parallel")) or 8
-            local process  = { }
-            local count    = 0
+            local allresults = { }
+            local start      = starttiming("parallel")
+            local counts     = 0
+            local totals     = 0
             -- a hack
             local passthese = environment.arguments_after
             for i=1,#passthese do
@@ -1800,112 +1875,128 @@ do
             passthese = table.unique(passthese)
             -- end of hack
             local arguments = environment.reconstructcommandline(passthese)
-            local whattodo  = list and "command" or "filename"
-            while true do
-                local done = false
-                for i=1,runners do
-                    local pi = process[i]
-                    if pi then
-                        local s
-                        if terminal then
-                            s = pi.handle:read("l")
-                            if s then
-                                done = true
-                                report("%02i : %s",i,s)
-                                goto done
+            for set=1,#lists do
+                local files   = lists[set]
+                local process = { }
+                local results = { }
+                local count   = 0
+                local total   = #files
+                totals = totals + total
+                allresults[set] = results
+                while true do
+                    local done = false
+                    for i=1,runners do
+                        local pi = process[i]
+                        if pi then
+                            local s
+                            if terminal then
+                                s = pi.handle:read("l")
+                                if s then
+                                    done = true
+                                    report("%02i : %s",i,s)
+                                    goto done
+                                end
+                            else
+                                s = gobble(pi.handle)
+                                if s then
+                                    done = true
+                                    goto done
+                                end
                             end
-                        else
-                            s = gobble(pi.handle)
-                            if s then
-                                done = true
-                                goto done
+                            if not s then
+                                local r, detail, n = close(pi.handle)
+                                stoptiming(pi.timer)
+                                pi.result = (not r or n > 0) and "error" or "done"
+                                pi.time   = elapsedtime(pi.timer)
+                                pi.handle = nil
+                                pi.timer  = nil
+                                if terminal then
+                                    report()
+                                end
+                                report("process %02i, index %02i, %s %a, status %a, runtime %0.3f",i,pi.count,whattodo,pi.filename,pi.result,pi.time)
+                                if terminal then
+                                    report()
+                                end
+                                process[i] = false
+                                results[pi.count] = pi
                             end
                         end
-                        if not s then
-                            local r, detail, n = close(pi.handle)
-                            stoptiming(pi.timer)
-                            pi.result = (not r or n > 0) and "error" or "done"
-                            pi.time   = elapsedtime(pi.timer)
-                            pi.handle = nil
-                            pi.timer  = nil
+                        count  = count + 1
+                        counts = counts + 1
+                        if count > total then
+                            -- we're done
+                        else
+                            local timer    = "parallel:" .. set .. ":" .. i
+                            local filename = files[count]
+                            local dirname  = file.dirname(filename)
+                            local basename = file.basename(filename)
+                            if dirname ~= "." and dirname ~= "./" then
+                                dir.push(dirname)
+                            end
+                            local command  = whattodo == "command" and f_command(basename,arguments) or f_runner(arguments,basename)
+                            resettiming(timer)
+                            starttiming(timer)
+                            local result  = popen(command)
+                            if dirname ~= "." then
+                                dir.pop()
+                            end
+                            local status  = nil
+                            if result then
+                                process[i] = {
+                                    handle   = result,
+                                    result   = "start",
+                                    filename = filename,
+                                    count    = count,
+                                    time     = 0,
+                                    timer    = timer,
+                                }
+                                status = process[i]
+                            else
+                                status = {
+                                    result   = "error",
+                                    count    = count,
+                                    filename = filename,
+                                    time     = 0,
+                                }
+                                stoptiming(timer)
+                            end
+                            results[count] = status
                             if terminal then
                                 report()
                             end
-                            report("process %02i, index %02i, %s %a, status %a, runtime %0.3f",i,pi.count,whattodo,pi.filename,pi.result,pi.time)
+                            report("process %02i, index %02i, %s %a, status %a",i,status.count,whattodo,status.filename,status.result)
                             if terminal then
                                 report()
                             end
-                            process[i] = false
-                            results[pi.count] = pi
+                            done = true
                         end
+                      ::done::
                     end
-                    count = count + 1
-                    if count > total then
-                        -- we're done
-                    else
-                        local timer    = "parallel:" .. i
-                        local filename = files[count]
-                        local dirname  = file.dirname(filename)
-                        local basename = file.basename(filename)
-                        if dirname ~= "." and dirname ~= "./" then
-                            dir.push(dirname)
-                        end
-                        local command  = list and f_command(basename,arguments) or f_runner(arguments,basename)
-                        starttiming(timer)
-                        local result  = popen(command)
-                        if dirname ~= "." then
-                            dir.pop()
-                        end
-                        local status  = nil
-                        if result then
-                            process[i] = {
-                                handle   = result,
-                                result   = "start",
-                                filename = filename,
-                                count    = count,
-                                time     = 0,
-                                timer    = timer,
-                            }
-                            status = process[i]
-                        else
-                            status = {
-                                result   = "error",
-                                count    = count,
-                                filename = filename,
-                                time     = 0,
-                            }
-                            stoptiming(timer)
-                        end
-                        results[count] = status
-                        if terminal then
-                            report()
-                        end
-                        report("process %02i, index %02i, %s %a, status %a",i,status.count,whattodo,status.filename,status.result)
-                        if terminal then
-                            report()
-                        end
-                        done = true
+                    if not done then
+                        break
                     end
-                  ::done::
-                end
-                if not done then
-                    break
                 end
             end
             stoptiming("parallel")
-            results.runtime = elapsedtime("parallel")
             report()
-            report("files: %i, runtime: %s",total,results.runtime)
+            report("files: %i, runtime: %s",totals,elapsedtime("parallel"))
             report()
             local errors = { }
-            for i=1,total do
-                local ri = results[i]
-                local result   = ri.result
-                local filename = ri.filename
-                if result == "error" then
-                    errors[#errors+1] = filename
+            for set=1,#allresults do
+                if set > 1 then
+                    report()
                 end
-                report("index %02i, %s %a, status %a, runtime %0.3f ",ri.count,whattodo,filename,result,ri.time)
+                local results = allresults[set]
+                local total   = #results
+                for i=1,total do
+                    local ri = results[i]
+                    local result   = ri.result
+                    local filename = ri.filename
+                    if result == "error" then
+                        errors[#errors+1] = filename
+                    end
+                    report("index %02i, %s %a, status %a, runtime %0.3f ",ri.count,whattodo,filename,result,ri.time)
+                end
             end
             if #errors > 0 then
                 report()
@@ -1973,6 +2064,10 @@ end
 function scripts.context.timed(action)
     statistics.timed(action,true)
 end
+
+-- We don't want this as we might want to expand later on:
+
+-- environment.files = environment.globfiles()
 
 -- getting it done
 

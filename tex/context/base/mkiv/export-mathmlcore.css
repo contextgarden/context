@@ -1,0 +1,162 @@
+/*
+
+	comment  : local version of the mathml core CSS mapping
+	original : https://www.w3.org/TR/mathml-core/#dfn-user-agent-stylesheet
+
+*/
+
+/*
+
+	We use this for playign with the defaults, for instance when we run into an
+	issue. These definitions are preloaded in the browser as "User Agent Style" and
+	we need to keep an eye on how it evolves.
+
+*/
+
+
+/* wasn't namespace an issue then */
+
+@namespace url(http://www.w3.org/1998/Math/MathML);
+
+/* well */ /*
+
+* {
+	font-size    : math ;
+	display      : block math ;
+	writing-mode : horizontal-tb !important ;
+}
+
+*/
+
+/* wrapper */
+
+math {
+	direction      : ltr ;
+	text-indent    : 0 ;
+	letter-spacing : normal ;
+	line-height    : normal ;
+	word-spacing   : normal ;
+	font-family    : math ;
+	font-size      : inherit ;
+	font-style     : normal ;
+	font-weight    : normal ;
+	display        : inline math ;
+	math-shift     : normal ;
+	math-style     : compact ;
+	math-depth     : 0 ;
+}
+
+math[display="block" i] {
+	display    : block math ;
+	math-style : normal ;
+}
+
+math[display="inline" i] {
+	display    : inline math ;
+	math-style : compact ;
+}
+
+/* whatever */
+
+semantics > :not(:first-child) {
+	display : none ;
+}
+
+maction > :not(:first-child) {
+	display : none ;
+}
+
+merror { /* adapted */
+	color            : rgb(50%,0%,0%) ;
+	background-color : rgb(85%,85%,85%) ;
+}
+
+mphantom {
+	visibility : hidden ;
+}
+
+/* atoms */
+
+mi {
+	text-transform : math-auto ;
+}
+
+/* tables */
+
+mtable {
+	display    : inline-table ;
+	math-style : compact ;
+}
+
+mtr {
+	display    : table-row ;
+}
+
+mtd {
+	display    : table-cell ;
+	text-align : center ;
+	padding    : 0.5ex 0.4em ;
+}
+
+/* fractions */
+
+mfrac {
+	padding-inline-start : 1px ;
+	padding-inline-end   : 1px ;
+}
+
+mfrac > * {
+	math-depth : auto-add ;
+	math-style : compact ;
+}
+mfrac > :nth-child(2) {
+	math-shift : compact ;
+}
+
+/* radicals */
+
+mroot > :not(:first-child) {
+	math-depth : add(2) ;
+	math-style : compact ;
+}
+mroot, msqrt {
+	math-shift : compact ;
+}
+
+/* scripts */
+
+msub          > :not(:first-child),
+msup          > :not(:first-child),
+msubsup       > :not(:first-child),
+mmultiscripts > :not(:first-child),
+munder        > :not(:first-child),
+mover         > :not(:first-child),
+munderover    > :not(:first-child) {
+	math-depth : add(1) ;
+	math-style : compact ;
+}
+
+msub          > :nth-child(2),
+msubsup       > :nth-child(2),
+mmultiscripts > :nth-child(even),
+mmultiscripts > mprescripts ~ :nth-child(odd) {
+	math-shift : compact ;
+}
+
+mmultiscripts > mprescripts ~ :nth-child(even) {
+	math-shift : inherit ;
+}
+
+/* accents */
+
+munder    [accentunder="true" i] > :nth-child(2),
+mover     [accent="true"      i] > :nth-child(2),
+munderover[accentunder="true" i] > :nth-child(2),
+munderover[accent="true"      i] > :nth-child(3) {
+	font-size : inherit ;
+}
+
+mover     [accent="true" i] > :first-child,
+munderover[accent="true" i] > :first-child {
+	math-shift : compact ;
+}

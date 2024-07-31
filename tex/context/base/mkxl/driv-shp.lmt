@@ -850,6 +850,24 @@ local hlist_out, vlist_out  do
 
     local eps <const> = 10
 
+    local function handle_except(except)
+        while except do
+            local h  = pos_h
+            local v  = pos_v
+            local r  = pos_r
+            local id = getid(except)
+         -- if id == vlist_code then
+         --     vlist_out(except,except)
+         -- elseif id == hlist_code then
+                hlist_out(except,except)
+         -- end
+            pos_h  = h
+            pos_v  = v
+            pos_r  = r
+            except = getnext(except)
+        end
+    end
+
     hlist_out = function(this_box,current)
         local ref_h = pos_h
         local ref_v = pos_v
@@ -1051,24 +1069,14 @@ local hlist_out, vlist_out  do
                     else
                         if tospace and (subtype == spaceskip_code or subtype == xspaceskip_code) then
                          -- kind of tricky because because we can have a different sx sy
---                             local xscale = getxscale(current) or 1
---                             flush_character(false,getfont(current),32,false,true,pos_h,pos_v,pos_r,xscale,1)
---                             local xscale = 1
-flush_space(current)
+                            flush_space(current)
                         end
                         cur_h = cur_h + gluewidth
                     end
                 end
             elseif id == hlist_code or id == vlist_code then
---                 local width, height, depth = getwhd(current)
---                 local list = getlist(current)
---                 if list then
---                     local boxdir = getdirection(current) or lefttoright_code
---                     local shift  = getshift(current)
-                local width, height, depth, shift, list = getlistdimensions(current)
+                local width, height, depth, shift, list, except = getlistdimensions(current)
                 if list then
---                     local boxdir = getdirection(current) or lefttoright_code
---                     local geometry, hasoffset, hasorientation, hasanchor = getgeometry(current,true)
                     local geometry, hasoffset, hasorientation, hasanchor, boxdir = getgeometry(current,true)
                     local anchor, source, target, targetdata, s_anchor, t_anchor
                     local anc_h, anc_v
@@ -1193,6 +1201,9 @@ flush_space(current)
                     end
                     if source and stored then
                         flushstored(current,source,true)
+                    end
+                    if except then
+                        handle_except(except)
                     end
                     if id == vlist_code then
                         vlist_out(current,list)
@@ -1480,15 +1491,8 @@ flush_space(current)
                     end
                 end
             elseif id == hlist_code or id == vlist_code then
---                 local width, height, depth = getwhd(current)
---                 local list = getlist(current)
---                 if list then
---                     local boxdir = getdirection(current) or lefttoright_code
---                     local shift = getshift(current)
-                local width, height, depth, shift, list = getlistdimensions(current)
+                local width, height, depth, shift, list, except = getlistdimensions(current)
                 if list then
---                     local boxdir = getdirection(current) or lefttoright_code
---                     local geometry, hasoffset, hasorientation, hasanchor = getgeometry(current,true)
                     local geometry, hasoffset, hasorientation, hasanchor, boxdir = getgeometry(current,true)
                     local anchor, source, target, targetdata, s_anchor, t_anchor
                     local usedorientation = false
@@ -1594,8 +1598,6 @@ flush_space(current)
                     goto process
                   ::posdone::
                     if anchor and anchor > 0 then
---                         pos_h, pos_v = applyanchor(anchor,true,t_anchor,pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
---                         pos_h, pos_v = applyanchor(anchor,false,s_anchor,pos_h,pos_v,width,height,depth)
                         pos_h, pos_v = applyanchor(t_anchor,true, pos_h,pos_v,targetdata[3],targetdata[4],targetdata[5])
                         pos_h, pos_v = applyanchor(s_anchor,false,pos_h,pos_v,width,height,depth)
                     end
@@ -1620,6 +1622,9 @@ flush_space(current)
                     end
                     if source and stored then
                         flushstored(current,source,true)
+                    end
+                    if except then
+                        handle_except(except)
                     end
                     if id == vlist_code then
                         vlist_out(current,list)

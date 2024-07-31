@@ -28,8 +28,7 @@
 
 \def\typo_italic_set#1%
   {\bitwiseflip\glyphoptions        \textcheckitalicglyphoptioncode
-   \bitwiseflip\discretionaryoptions\textcheckitalicdiscoptioncode
-   \clf_setitaliccorrection{#1}}
+   \bitwiseflip\discretionaryoptions\textcheckitalicdiscoptioncode}
 
 \def\typo_italic_reset
   {\bitwiseflip\glyphoptions        -\textcheckitalicglyphoptioncode
@@ -38,10 +37,15 @@
 \permanent\tolerant\protected\def\setitaliccorrection[#1]%
   {\ifcstok{#1}\v!reset
      \typo_italic_reset
+   \orelse\ifcstok{#1}\v!no
+     \typo_italic_reset
    \orelse\ifcsname\??italics#1\endcsname
      \expandafter\typo_italic_set\expandafter{\lastnamedcs}%
+   \orelse\ifchkdimension#1\onepoint\endcsname
+     \expandafter\typo_italic_set{#1}%
    \fi}
 
+\defcsname\??italics         \endcsname{0}
 \defcsname\??italics\v!yes   \endcsname{0}
 \defcsname\??italics\v!small \endcsname{0.1}
 \defcsname\??italics\v!medium\endcsname{0.2}

@@ -128,10 +128,17 @@ extern int lmt_par_pass_callback(
     int                   *repeat
 );
 
+extern void lmt_insert_par_callback(
+    halfword node,
+    halfword mode
+);
+
 extern halfword lmt_uleader_callback(
-    halfword head,
-    halfword index, 
-    int      context
+    halfword    head,
+    halfword    index, 
+    int         context,
+    halfword    box,
+    const char *where
 );
 
 extern scaled lmt_italic_correction_callback(

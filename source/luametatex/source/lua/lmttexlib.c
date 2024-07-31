@@ -50,6 +50,7 @@
 # define TEX_METATABLE_HCCODE    "tex.hccode"
 # define TEX_METATABLE_HMCODE    "tex.hmcode"
 # define TEX_METATABLE_AMCODE    "tex.amcode"
+# define TEX_METATABLE_CCCODE    "tex.cccode"
 # define TEX_METATABLE_CATCODE   "tex.catcode"
 # define TEX_METATABLE_MATHCODE  "tex.mathcode"
 # define TEX_METATABLE_DELCODE   "tex.delcode"
@@ -2253,6 +2254,23 @@ static int texlib_setamcode(lua_State *L)
     return 0;
 }
 
+static int texlib_setcccode(lua_State *L)
+{
+    int top = lua_gettop(L);
+    if (top >= 2) {
+        quarterword level;
+        int slot = lmt_check_for_level(L, 1, &level, cur_level);
+        int ch = lmt_checkinteger(L, slot++);
+        if (character_in_range(ch)) {
+            halfword val = lmt_checkquarterword(L, slot);
+            tex_set_cc_code(ch, val, level);
+        } else {
+            texlib_aux_show_character_error(L, ch);
+        }
+    }
+    return 0;
+}
+
 static int texlib_getlccode(lua_State *L)
 {
     int ch = lmt_checkinteger(L, 1);
@@ -2318,6 +2336,18 @@ static int texlib_getamcode(lua_State *L)
     int ch = lmt_checkinteger(L, 1);
     if (character_in_range(ch)) {
         lua_pushinteger(L, tex_get_am_code(ch));
+    } else {
+        texlib_aux_show_character_error(L, ch);
+        lua_pushinteger(L, 0);
+    }
+    return 1;
+}
+
+static int texlib_getcccode(lua_State *L)
+{
+    int ch = lmt_checkinteger(L, 1);
+    if (character_in_range(ch)) {
+        lua_pushinteger(L, tex_get_cc_code(ch));
     } else {
         texlib_aux_show_character_error(L, ch);
         lua_pushinteger(L, 0);
@@ -3929,6 +3959,8 @@ static int texlib_linebreak(lua_State *L)
         get_integer_par  (properties.display_widow_penalty,        displaywidowpenalty,       tex_get_par_par(par, par_display_widow_penalty_code));
         get_integer_par  (properties.orphan_penalty,               orphanpenalty,             tex_get_par_par(par, par_orphan_penalty_code));
         get_integer_par  (properties.toddler_penalty,              toddlerpenalty,            tex_get_par_par(par, par_toddler_penalty_code));
+        get_integer_par  (properties.left_twin_demerits,           lefttwindemerits,          tex_get_par_par(par, par_left_twin_demerits_code));
+        get_integer_par  (properties.right_twin_demerits,          righttwindemerits,         tex_get_par_par(par, par_right_twin_demerits_code));
         get_integer_par  (properties.single_line_penalty,          singlelinepenalty,         tex_get_par_par(par, par_single_line_penalty_code));
         get_integer_par  (properties.hyphen_penalty,               hyphenpenalty,             tex_get_par_par(par, par_hyphen_penalty_code));
         get_integer_par  (properties.ex_hyphen_penalty,            exhyphenpenalty,           tex_get_par_par(par, par_ex_hyphen_penalty_code));
@@ -3952,7 +3984,8 @@ static int texlib_linebreak(lua_State *L)
         get_penalties_par(properties.orphan_penalties,             orphanpenalties,           tex_get_par_par(par, par_orphan_penalties_code), orphan_penalties_code);
         get_demerits_par (properties.fitness_demerits,             fitnessdemerits,           tex_get_par_par(par, par_fitness_demerits_code), fitness_demerits_code);
         get_penalties_par(properties.par_passes,                   parpasses,                 tex_get_par_par(par, par_par_passes_code), par_passes_code);
-        get_integer_par  (properties.line_break_optional,          linebreakoptional,         line_break_optional_par);
+        get_integer_par  (properties.line_break_checks,            linebreakchecks,           tex_get_par_par(par, par_line_break_checks_code));
+        get_integer_par  (properties.line_break_optional,          linebreakoptional,         line_break_optional_par); /* hm */
         if (! prepared) {
             halfword attr_template = tail;
             halfword final_line_penalty = tex_new_penalty_node(infinite_penalty, line_penalty_subtype);
@@ -5004,7 +5037,7 @@ static int texlib_gethyphenationvalues(lua_State *L)
 
 static int texlib_getglyphoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 3, 13);
+    lua_createtable(L, 3, 15);
     lua_set_string_by_index(L, glyph_option_normal_glyph,              "normal");
     lua_set_string_by_index(L, glyph_option_no_left_ligature,          "noleftligature");
     lua_set_string_by_index(L, glyph_option_no_right_ligature,         "norightligature");
@@ -5021,6 +5054,8 @@ static int texlib_getglyphoptionvalues(lua_State *L)
     lua_set_string_by_index(L, glyph_option_math_artifact,             "mathartifact");
     lua_set_string_by_index(L, glyph_option_weight_less,               "weightless");
     lua_set_string_by_index(L, glyph_option_space_factor_overload,     "spacefactoroverload");
+    lua_set_string_by_index(L, glyph_option_check_toddler,             "checktoddler");
+    lua_set_string_by_index(L, glyph_option_check_twin,                "checktwin");
     lua_set_string_by_index(L, glyph_option_user_first,                "userfirst");
     lua_set_string_by_index(L, glyph_option_user_last,                 "userlast");
     return 1;
@@ -5028,21 +5063,24 @@ static int texlib_getglyphoptionvalues(lua_State *L)
 
 static int texlib_getglueoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 3, 2);
-    lua_set_string_by_index(L, glue_option_normal,        "normal");
-    lua_set_string_by_index(L, glue_option_no_auto_break, "noautobreak");
-    lua_set_string_by_index(L, glue_option_has_factor,    "hasfactor");
-    lua_set_string_by_index(L, glue_option_is_limited,    "islimited");
-    lua_set_string_by_index(L, glue_option_limit,         "limit");
+    lua_createtable(L, 4, 2);
+    lua_set_string_by_index(L, glue_option_normal,         "normal");
+    lua_set_string_by_index(L, glue_option_no_auto_break,  "noautobreak");
+    lua_set_string_by_index(L, glue_option_has_factor,     "hasfactor");
+    lua_set_string_by_index(L, glue_option_is_limited,     "islimited");
+    lua_set_string_by_index(L, glue_option_limit,          "limit");
+    lua_set_string_by_index(L, glue_option_u_leaders_line, "uleadersline");
     return 1;
 }
 
 static int texlib_getmathoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 3, 0);
+    lua_createtable(L, 2, 3);
     lua_set_string_by_index(L, math_option_normal,   "normal");
     lua_set_string_by_index(L, math_option_short,    "short");
     lua_set_string_by_index(L, math_option_orphaned, "orphaned");
+    lua_set_string_by_index(L, math_option_display,  "display");
+    lua_set_string_by_index(L, math_option_cramped,  "cramped");
     return 1;
 }
 
@@ -5397,7 +5435,7 @@ static int texlib_getiovalues(lua_State *L) /* for reporting so we keep spaces *
 
 static int texlib_getfrozenparvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 22);
+    lua_createtable(L, 2, 23);
     lua_set_string_by_index(L, par_hsize_category,               "hsize");
     lua_set_string_by_index(L, par_skip_category,                "skip");
     lua_set_string_by_index(L, par_hang_category,                "hang");
@@ -5426,6 +5464,8 @@ static int texlib_getfrozenparvalues(lua_State *L)
     lua_set_string_by_index(L, par_single_line_penalty_category, "singlelinepenalty");
     lua_set_string_by_index(L, par_hyphen_penalty_category,      "hyphenpenalty");
     lua_set_string_by_index(L, par_ex_hyphen_penalty_category,   "exhyphenpenalty");
+    lua_set_string_by_index(L, par_line_break_checks_category,   "linebreakchecks");
+    lua_set_string_by_index(L, par_twin_demerits_category,       "twindemerits");
  /* lua_set_string_by_index(L, par_all_category,                 "all"); */
     return 1;
 }
@@ -5668,7 +5708,7 @@ static int texlib_getalignmentcontextvalues(lua_State *L)
 
 static int texlib_getbreakcontextvalues(lua_State *L)
 {
-    return lmt_push_info_values(L, lmt_interface.break_context_values);
+    return lmt_push_info_values(L, lmt_interface.line_break_context_values);
 }
 
 static int texlib_getbuildcontextvalues(lua_State *L)
@@ -5788,6 +5828,13 @@ static int texlib_getparametermodevalues(lua_State *L)
 {
     lua_createtable(L, 1, 0);
     lua_set_string_by_index(L, parameter_escape_mode, "escape");
+    return 1;
+}
+
+static int texlib_getcharactercontrolvalues(lua_State *L)
+{
+    lua_createtable(L, 1, 0);
+    lua_set_string_by_index(L, ignore_twin_character_control_code, "ignoretwin");
     return 1;
 }
 
@@ -6030,6 +6077,8 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getnestlevel",                texlib_getnestlevel                },
     { "setcatcode",                  texlib_setcatcode                  },
     { "getcatcode",                  texlib_getcatcode                  },
+    { "setcccode",                   texlib_setcccode                   },
+    { "getcccode",                   texlib_getcccode                   },
     { "setdelcode",                  texlib_setdelcode                  },
     { "getdelcode",                  texlib_getdelcode                  },
     { "getdelcodes",                 texlib_getdelcodes                 },
@@ -6163,6 +6212,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getnormalizeparvalues",       texlib_getnormalizeparvalues       },
     { "getdirectionvalues",          texlib_getdirectionvalues          },
     { "getparametermodevalues",      texlib_getparametermodevalues      },
+    { "getcharactercontrolvalues",   texlib_getcharactercontrolvalues   },
     { "getfillvalues",               texlib_getfillvalues               },
     { "getunitclassvalues",          texlib_getunitclassvalues          },
     { "geterrorvalues",              texlib_geterrorvalues              },
@@ -6231,6 +6281,7 @@ defineindexers(uccode)
 defineindexers(hccode)
 defineindexers(hmcode)
 defineindexers(amcode)
+defineindexers(cccode)
 defineindexers(catcode)
 defineindexers(mathcode)
 defineindexers(delcode)
@@ -6266,6 +6317,7 @@ int luaopen_tex(lua_State *L)
     lmt_make_table(L, "hccode",    TEX_METATABLE_HCCODE,    texlib_index_hccode,    texlib_newindex_hccode);
     lmt_make_table(L, "hmcode",    TEX_METATABLE_HMCODE,    texlib_index_hmcode,    texlib_newindex_hmcode);
     lmt_make_table(L, "amcode",    TEX_METATABLE_AMCODE,    texlib_index_amcode,    texlib_newindex_amcode);
+    lmt_make_table(L, "cccode",    TEX_METATABLE_CCCODE,    texlib_index_cccode,    texlib_newindex_cccode);
     lmt_make_table(L, "catcode",   TEX_METATABLE_CATCODE,   texlib_index_catcode,   texlib_newindex_catcode);
     lmt_make_table(L, "mathcode",  TEX_METATABLE_MATHCODE,  texlib_index_mathcode,  texlib_newindex_mathcode);
     lmt_make_table(L, "delcode",   TEX_METATABLE_DELCODE,   texlib_index_delcode,   texlib_newindex_delcode);

@@ -6,7 +6,7 @@ if not modules then modules = { } end modules ['back-exp-imp-mth'] = {
     license   = "see context related readme files"
 }
 
-local sub = string.sub
+local sub, gsub = string.sub, string.gsub
 local utfchar, utfvalues = utf.char, utf.values
 local insert = table.insert
 local setmetatableindex, concat = table.setmetatableindex, table.concat
@@ -27,6 +27,8 @@ local finalizers     = backend.finalizers
 local f_em           = string.formatters["%.6Nem"]
 
 local implement      = interfaces.implement
+
+local mathmlns       <const> = "http://www.w3.org/1998/Math/MathML"
 
 do
 
@@ -171,6 +173,7 @@ do
                 --
                 d1.element = "mo" -- used
              -- d1.detail = nil
+                d1.attributes = { stretchy = "true" }
                 d1.nature = "mixed"
                 d1.data = { { content = utfchar(detail) } }
                 return d
@@ -188,6 +191,9 @@ do
     end
 
     local no_mrow = {
+
+        math          = true,
+
         mrow          = true,
         mfenced       = true,
         mfrac         = true,
@@ -199,6 +205,7 @@ do
         mn            = true,
         mspace        = true,
         mtext         = true,
+
      -- mmultiscripts = true,
      -- mstacker      = true,
      -- mextensible   = true,
@@ -280,17 +287,43 @@ do
         end
     end
 
+    local stretched = {
+        operator = "false",
+        open     = "false",
+        close    = "false",
+        middle   = "false",
+        integral = "false",
+    }
+
+    local nbsp <const> = utfchar(0x00A0) -- &#0160;
+    local mbsp <const> = utfchar(0x2000) -- after : ; ,
+
+--     ," ",nbsp
+
+    local replacer = lpeg.replacer {
+        [", "] = ",".. mbsp,
+        [". "] = ".".. mbsp,
+        [": "] = ":".. mbsp,
+        ["; "] = ";".. mbsp,
+        [","]  = ",".. mbsp,
+        ["."]  = ".".. mbsp,
+        [":"]  = ":".. mbsp,
+        [";"]  = ";".. mbsp,
+        [" "]  =       nbsp,
+    }
+
+
     local function checkmath(root) -- we can provide utf.toentities as an option
         local data = root.data
         if data then
             local ndata = #data
             local roottg = root.tg
             if roottg == "mo" then
-                local s = specifications[root.fulltag]
-                 -- maybe just via metatable
---                 if s.mathgroup then
-                local class = s.mathclass
-                local group = s.mathgroup
+                local s         = specifications[root.fulltag]
+                local class     = s.mathclass
+                local group     = s.mathgroup
+                local delimiter = s.delimiter
+-- why not print(s.accent)
                 if class or group then
                     root.attributes = {
                         mathclass     = class,
@@ -298,10 +331,15 @@ do
                         mathindex     = s.mathindex,
                         mathcharacter = s.mathcharacter,
                         mathstack     = s.mathstack,
+                        stretchy      = (delimiter == "true" and "true") or stretched[class] or nil,
                     }
                 else
+                    -- todo: stackers, accents etc
+-- we can put an accent class on the char
                     root.attributes = {
                         mathstack = s.mathstack,
+                     -- stretchy  = "false",
+                        stretchy  = delimiter == "true" and "true" or "false", -- too much now
                     }
                 end
             elseif roottg == "mfenced" then
@@ -331,11 +369,13 @@ do
                         open       = l,
                         separators = m,
                         close      = r,
+                        stretchy   = "true",
                     }
                 else
                     root.element    = "mrow"
                     root.attributes = {
-                        mathcategory = s.mathcategory
+                        mathcategory = s.mathcategory,
+                     -- stretchy     = "true", -- not needed, more a signal
                     }
                 end
          -- elseif roottg == "mstacker" then
@@ -496,30 +536,34 @@ do
                         -- only accent when top / bot have stretch
                         -- normally we flush [base under over] which is better for tagged pdf
                         if t1 == "mstackermid" then
-                            m = accentchar(d1) -- or m
                             if t2 == "mstackertop" then
                                 if t3 == "mstackerbot" then
+                                    m = accentchar(d1) or maybetext(d1)-- or m
                                     t = accentchar(d2) or maybetext(d2)
                                     b = accentchar(d3) or maybetext(d3)
                                     di.element = "munderover"
                                     di.data    = { m or d1.data[1], b, t }
                                 else
+                                    m = accentchar(d1) or maybetext(d1)-- or m
                                     t = accentchar(d2) or maybetext(d2)
                                     di.element = "mover"
                                     di.data    = { m or d1.data[1], t }
                                 end
                             elseif t2 == "mstackerbot" then
                                 if t3 == "mstackertop" then
+                                    m = accentchar(d1) or maybetext(d1)-- or m
                                     b = accentchar(d2) or maybetext(d2)
                                     t = accentchar(d3) or maybetext(d3)
                                     di.element = "munderover"
-                                    di.data    = { m or d1.data[1], t, m, b  }
+                                    di.data    = { m or d1.data[1], t, b  }
                                 else
+                                    m = accentchar(d1) or maybetext(d1)-- or m
                                     b = accentchar(d2) or maybetext(d2)
                                     di.element = "munder"
                                     di.data    = { m or d1.data[1], b }
                                 end
                             else
+                                m = accentchar(d1) -- or m
                                 di.element = "mrow"
                                 di.data    = { m or d1.data[1] }
                             end
@@ -563,6 +607,16 @@ do
                         di.element = "mrow"
                         checkmath(di)
                         i = i + 1
+                    elseif tg == "mstack" then
+                        di.element = "mover"
+                        local scriptlevel  = "1" -- "+1"
+                        if di.attributes then
+                            di.attributes.scriptlevel = scriptlevel
+                        else
+                            di.attributes = { scriptlevel = scriptlevel }
+                        end
+                        checkmath(di)
+                        i = i + 1
                     elseif tg == "break" then
                         di.skip = "comment"
                         i = i + 1
@@ -581,8 +635,10 @@ do
                         -- this is only needed for unboxed mtexts ... all kind of special
                         -- tex border cases and optimizations ... trial and error
                         local data = di.data
-                        if #data > 1 then
-                            for i=1,#data do
+                        local size = #data
+-- bmatrix ...
+                        if size > 1 then
+                            for i=1,size do
                                 local di = data[i]
                                 local content = di.content
                                 if content then
@@ -592,6 +648,8 @@ do
                                         data    = { di },
                                         n       = 0,
                                     }
+--                                     di.content = gsub(content," ",nbsp)
+di.content = lpeg.match(replacer,content)
                                 elseif di.tg == "math" then
                                     local di = di.data[1]
                                     if di then
@@ -603,6 +661,13 @@ do
                             di.element = "mrow"
                          -- di.tg = "mrow"
                          -- di.nature  = "inline"
+                        elseif size > 0 then
+                            local di = data[1]
+                            local content = di.content
+                            if content then
+--                                 di.content = gsub(content," ",nbsp)
+di.content = lpeg.match(replacer,content)
+                            end
                         end
                         checkmath(di)
                         i = i + 1
@@ -641,7 +706,9 @@ do
                         local s = specifications[di.fulltag]
                         if s.mathunit then
                             di.attributes = { mathunit = s.mathunit }
+                            i = i + 1
                         elseif s.mathdigits then
+                            -- does this ever happen (if so check)
                             for i=1,n do
                                 d[i] = d[i].data[1].content or ""
                             end
@@ -649,6 +716,7 @@ do
                             di.element = "mn"
                             di.nature  = "mixed"
                             di.data    = { { content = concat(d) } }
+                            i = i + 1
                         elseif s.mathfunction then
                             di.attributes = {
                                 mathfunction = s.mathfunction,
@@ -708,7 +776,38 @@ do
                             checkmath(di)
                             i = i + 1
                         end
+                    elseif tg == "formulacaption" then -- formulanumber
+                        di.tg = "ignore"
+                        i = i + 1
+                    elseif tg == "subformula" then
+                        di.tg = "mrow"
+                        checkmath(di)
+                        i = i + 1
                     else
+                        -- or first check for tg
+                        local s = specifications[di.fulltag]
+                        if not s then
+                            -- whatever
+                        elseif tg == "mfrac" then
+                            if s.mathfractionrule == "no" then
+                                di.attributes = {
+                                    rulethickness = "0"
+                                }
+                            end
+                        elseif tg == "msup" then
+                            if s.limits then
+                                di.element = "mover"
+                            end
+                        elseif tg == "msub" then
+                            if s.limits then
+                                di.element = "munder"
+                            end
+                        elseif tg == "msubsup" then
+                            if s.limits then
+                                di.element = "munderover"
+                            end
+                        end
+                        --
                         checkmath(di)
                         i = i + 1
                     end
@@ -779,20 +878,26 @@ do
     end
 
     function checks.math(di)
+-- inspect(di)
         if di.skip == "comment" then
             -- already done, kind of weird, happens in mathmatrix, maybe some collapse
             -- issue that i need to look into
         else
             local specification = specifications[di.fulltag]
-            local mode   = specification.mode   == "display" and "block" or "inline"
+            local mode   = specification.mode == "display" and "block" or "inline"
             local domain = specification.domain or "default"
+            local family = specification.family or "regular"
+            local style  = specification.style or 2 -- text
             di.attributes = {
-                ["display"]    = mode,
-                ["domain"]     = domain,
-                ["blob"]       = specification.blob,
-                ["alttext"]    = specification.input, -- bonus
-                ["xmlns:m"]    = mathmlns,
-                ["xmlns:math"] = mathmlns,
+             -- ["xmlns:m"]          = mathmlns,
+                ["xmlns"]            = mathmlns,
+                ["display"]          = mode,
+                ["alttext"]          = specification.input, -- bonus, will go
+             -- ["class"]            = style < 2 and ".math_display_style" or ".math_text_style",
+                ["displaystyle"]     = style < 2 and "true" or "false",
+                ["data-lmtx-blob"]   = specification.blob,
+                ["data-lmtx-domain"] = domain ~= "default" and domain or nil,
+                ["data-lmtx-family"] = family ~= "regular" and family or nil,
             }
             -- can be option if needed:
             if specification.standalone then
@@ -1019,7 +1124,7 @@ do
 --         if #d.data < max then
 --             local first = d.data[1]
 --             specifications[first.fulltag].cols = max
---             first.attributes = { colspan = max }
+--             first.attributes = { columnspan = max }
 --         end
 --     end
 -- end
@@ -1057,7 +1162,6 @@ do
 -- --     end
 -- -- end
 -- di.data = main
-
          for i=1,#d do
              local d = d[i]
              if d.tg == "mtr" then
@@ -1108,10 +1212,11 @@ do
 
     function extras.msub(di,element,n,fulltag)
         local data = di.data
-        if #data == 1 then
-            insert(data,1,dummy_nucleus)
-            data.__i__ = 2
-        end
+        local nuc = found(data)
+        local sub = found(data,"sub")
+        data[1] = nuc or dummy_nucleus
+        data[2] = sub or dummy_nucleus
+        data.__i__ = 2
         local sp = specifications[di.fulltag]
         if attributes then
             attributes.mathsubindex = sp.subindexed
@@ -1124,10 +1229,12 @@ do
 
     function extras.msup(di,element,n,fulltag)
         local data = di.data
-        if #data == 1 then
-            insert(data,1,dummy_nucleus)
-            data.__i__ = 2
-        end
+        local nuc = found(data)
+        local sup = found(data,"sup")
+or found(data,"prime")
+        data[1] = nuc or dummy_nucleus
+        data[2] = sup or dummy_nucleus
+        data.__i__ = 2
         local sp = specifications[di.fulltag]
         local attributes = di.attributes
         if attributes then
@@ -1143,6 +1250,7 @@ do
         local data = di.data
         local nuc = found(data)
         local sup = found(data,"sup")
+or found(data,"prime")
         local sub = found(data,"sub")
         data[1] = nuc or dummy_nucleus
         data[2] = sub or dummy_nucleus
@@ -1157,6 +1265,24 @@ do
                 mathsupindex = sp.supindexed,
                 mathsubindex = sp.subindexed,
             }
+        end
+    end
+
+    function extras.munder(di,element,n,fulltag)
+        if di.tg == "msub" then
+            extras.msub(di,element,n,fulltag)
+        end
+    end
+
+    function extras.mover(di,element,n,fulltag)
+        if di.tg == "msup" then
+            extras.msup(di,element,n,fulltag)
+        end
+    end
+
+    function extras.munderover(di,element,n,fulltag)
+        if di.tg == "msubsup" then
+            extras.msubsup(di,element,n,fulltag)
         end
     end
 

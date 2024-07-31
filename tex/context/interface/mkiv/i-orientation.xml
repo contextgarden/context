@@ -26,6 +26,7 @@
                     <cd:constant type="top"/>
                     <cd:constant type="bottom"/>
                     <cd:constant type="normal" default="yes"/>
+                    <cd:constant type="line"/>
                 </cd:parameter>
                 <cd:parameter name="horizontal">
                     <cd:constant type="left"/>

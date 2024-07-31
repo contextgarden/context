@@ -310,7 +310,7 @@
 
 \def\buff_verbatim_type_normal#1%
   {\buff_verbatim_initialize_type_two
-   \dostarttaggedchained\t!verbatim\currenttype\??type
+   \dostarttaggedchained\t!verbatim\currenttype\currenttype\??type
    \clf_type
      data    {\protecteddetokenize{#1}}%
      tab     {\typeparameter\c!tab}%
@@ -325,7 +325,7 @@
 
 \def\buff_verbatim_type_nested#1%
   {\buff_verbatim_initialize_type_two
-   \dostarttaggedchained\t!verbatim\currenttype\??type
+   \dostarttaggedchained\t!verbatim\currenttype\currenttype\??type
    \clf_type
      data   {\detokenize{#1}}%
 %      data    {\protecteddetokenize{#1}}%
@@ -510,7 +510,7 @@
 
 \protected\def\buff_verbatim_type_block_verbatim_indeed#1#2%
   {\buff_verbatim_initialize_typing_two
-   \dostarttaggedchained\t!verbatimblock\currenttyping\??typing
+   \dostarttaggedchained\t!verbatimblock\currenttyping\currenttyping\??typing
    \beginofverbatimlines
    \dostarttaggednodetail\t!verbatimlines
    \clf_typebuffer
@@ -644,7 +644,7 @@
    \buff_verbatim_initialize_typing_one
    \buff_verbatim_initialize_typing_two
    \buff_verbatim_setup_keep_together
-   \dostarttaggedchained\t!verbatimblock\currenttyping\??typing
+   \dostarttaggedchained\t!verbatimblock\currenttyping\currenttyping\??typing
    \beginofverbatimlines
    \dostarttaggednodetail\t!verbatimlines
    \clf_typefile
@@ -847,7 +847,7 @@
    \buff_verbatim_initialize_typing_one
    \buff_verbatim_initialize_typing_two
    \buff_verbatim_setup_keep_together
-   \dostarttaggedchained\t!verbatimblock{#1}\??typing
+   \dostarttaggedchained\t!verbatimblock{#1}{#1}\??typing
    \beginofverbatimlines
    \dostarttaggednodetail\t!verbatimlines
    \clf_typebuffer
@@ -891,7 +891,7 @@
   {\cdef\currenttype{#1}%
    \buff_verbatim_initialize_type_one
    \expand\everyinitializeverbatim % \buff_verbatim_initialize_type_two
-   \dostarttaggedchained\t!verbatim\currenttype\??type
+   \dostarttaggedchained\t!verbatim\currenttype\currenttype\??type
    \clf_typebuffer
      name   {#2}%
      strip  {\v!yes}%
@@ -979,6 +979,16 @@
 
 % hooks (todo: frozen):
 
+% see (1), which is why \par is needed:
+%
+% \starttyping
+% line 01
+% line 02
+% .... (add lines)
+% line 22
+% line 23
+% \stoptyping
+
 \newinteger    \c_buff_verbatim_noflines
 \newinteger    \c_buff_verbatim_current
 \newconditional\c_buff_optimize_linebreaks
@@ -997,19 +1007,21 @@
 \permanent\protected\def\dodisplayverbatimbeginline{\advanceby\c_buff_verbatim_current\plusone
                                                     \buff_verbatim_begin_of_line}
 \permanent\protected\def\dodisplayverbatimnewline  {\buff_verbatim_end_of_line
-                                                   %\par % no need, already done anyway
                                                     \ifconditional\c_buff_optimize_linebreaks
+                                                      \par % needed see (1), if issue then rely on vbreak
                                                       \buff_verbatim_inject_breaks
+                                                    \else
+                                                      % rely on par done by \hbox otherwise no widowpenalties
                                                     \fi}
 \permanent\protected\def\dodisplayverbatimemptyline{\buff_verbatim_empty_line}
 
 \protected\def\buff_verbatim_inject_breaks
   {\ifnum\c_buff_verbatim_current=\plusone
-     \nobreak
+     \nobreak % \novbreak
    \orelse\ifnum\c_buff_verbatim_noflines=\plusthree
-     \nobreak
+     \nobreak % \novbreak
    \orelse\ifnum\c_buff_verbatim_current=\numexpr\c_buff_verbatim_noflines-\plusone\relax
-     \nobreak
+     \nobreak % \novbreak
    \fi}
 
 \permanent\protected\def\dodisplayverbatiminitialize#1%

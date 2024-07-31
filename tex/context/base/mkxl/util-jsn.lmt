@@ -15,7 +15,7 @@ if not modules then modules = { } end modules ['util-jsn'] = {
 -- Reminder for me: check usage in framework and extend when needed. Also document
 -- it in the cld lib documentation.
 --
--- Upgraded for handling the somewhat more fax server templates.
+-- Upgraded for handling the somewhat more tricky fax server templates.
 
 if utilities and utilities.json then
     return json
@@ -444,16 +444,16 @@ do
 
 end
 
-local tmp = [[ { "t\nt t" : "foo bar", "a" : true, "b" : [ 123 , 456E-10, { "a" : true, "b" : [ 123 , 456 ] } ] } ]]
-tmp = json.tolua(tmp)
-inspect(tmp)
-tmp = json.tostring(tmp,true)
-inspect(tmp)
-tmp = json.tolua(tmp)
-inspect(tmp)
-tmp = json.tostring(tmp)
-inspect(tmp)
-inspect(json.tostring(true))
+-- local tmp = [[ { "t\nt t" : "foo bar", "a" : true, "b" : [ 123 , 456E-10, { "a" : true, "b" : [ 123 , 456 ] } ] } ]]
+-- tmp = json.tolua(tmp)
+-- inspect(tmp)
+-- tmp = json.tostring(tmp,true)
+-- inspect(tmp)
+-- tmp = json.tolua(tmp)
+-- inspect(tmp)
+-- tmp = json.tostring(tmp)
+-- inspect(tmp)
+-- inspect(json.tostring(true))
 
 -- local s = [[\foo"bar"]]
 -- local j = json.tostring { s = s }

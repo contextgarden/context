@@ -4,27 +4,33 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="noflines" level="system" category="boxes" keywords="strings" file="supp-box.mkiv"/>
+    <cd:command name="noflines" level="system" category="boxes" keywords="strings" file="supp-box.mkxl"/>
 
-    <cd:command name="getnoflines" level="system" category="boxes" keywords="strings" file="supp-box.mkiv">
+    <cd:command name="getnoflines" level="system" category="boxes" keywords="strings" file="supp-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getroundednoflines" level="system" category="boxes" keywords="strings" file="supp-box.mkiv">
+    <cd:command name="getroundednoflines" level="system" category="boxes" keywords="strings" file="supp-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getrawnoflines" level="system" category="boxes" keywords="strings" file="supp-box.mkiv">
+    <cd:command name="getrawnoflines" level="system" category="boxes" keywords="strings" file="supp-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="determinenoflines" level="system" category="boxes" keywords="strings" file="supp-box.mkiv">
+    <cd:command name="determinenoflines" level="system" category="boxes" keywords="strings" file="supp-box.mkxl">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="determinednoflines" level="system" category="boxes" keywords="strings" file="supp-box.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
@@ -36,7 +42,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelines" level="style" category="structure" file="spac-lin.mkiv">
+    <cd:command name="definelines" level="style" category="structure" file="spac-lin.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -46,7 +52,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplines" level="style" category="structure" file="spac-lin.mkiv">
+    <cd:command name="setuplines" level="style" category="structure" file="spac-lin.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -95,15 +101,13 @@
                     <cd:constant type="*"/>
                 </cd:parameter>
                 <cd:parameter name="keeptogether">
-                    <!-- cd:constant type="yes"/ -->
-                    <cd:constant type="no"/>
                     <cd:constant type="paragraph"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lines" type="environment" generated="yes" variant="instance" level="document" category="structure" file="spac-lin.mkiv">
+    <cd:command name="lines" type="environment" generated="yes" variant="instance" level="document" category="structure" file="spac-lin.mkxl">
         <cd:sequence>
             <cd:instance value="lines"/>
         </cd:sequence>
@@ -117,9 +121,21 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="emptylines" level="document" category="whitespace" file="spac-lin.mkiv">
+    <cd:command name="emptylines" level="document" category="whitespace" file="spac-lin.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-number-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="insertlinebefore" level="document" file="typo-adj.mkxl">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="insertlineafter" level="document" file="typo-adj.mkxl">
+        <cd:arguments>
+            <cd:content/>
         </cd:arguments>
     </cd:command>
 

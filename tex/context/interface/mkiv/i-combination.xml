@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definecombination" level="style" category="tables" file="pack-com.mkiv">
+    <cd:command name="definecombination" level="style" category="tables" file="pack-com.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcombination" level="style" category="tables" file="pack-com.mkiv">
+    <cd:command name="setupcombination" level="style" category="tables" file="pack-com.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -68,13 +68,16 @@
                 <cd:parameter name="color">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="formula"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
     <!--
 
-        <cd:command name="setupcombinations" level="style" category="tables" file="pack-com.mkiv">
+        <cd:command name="setupcombinations" level="style" category="tables" file="pack-com.mkxl">
             <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -85,7 +88,7 @@
 
     -->
 
-    <cd:command name="combination" type="environment" variant="matrix" level="document" category="tables" file="pack-com.mkiv">
+    <cd:command name="combination" type="environment" variant="matrix" level="document" category="tables" file="pack-com.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:keywords optional="yes">
@@ -94,7 +97,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="combination" type="environment" level="document" category="tables" file="pack-com.mkiv">
+    <cd:command name="combination" type="environment" level="document" category="tables" file="pack-com.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -105,13 +108,13 @@
 
     <!--
 
-        <cd:command name="content" type="environment" scope="combination" level="document" category="tables" file="pack-com.mkiv"/>
+        <cd:command name="content" type="environment" scope="combination" level="document" category="tables" file="pack-com.mkxl"/>
 
-        <cd:command name="caption" type="environment" scope="combination" level="document" category="tables" file="pack-com.mkiv"/>
+        <cd:command name="caption" type="environment" scope="combination" level="document" category="tables" file="pack-com.mkxl"/>
 
     -->
 
-    <cd:command name="floatcombination" type="environment" variant="matrix" level="document" category="tables" keywords="float" file="pack-com.mkiv">
+    <cd:command name="floatcombination" type="environment" variant="matrix" level="document" category="tables" keywords="float" file="pack-com.mkxl">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:matrix"/>
@@ -120,7 +123,23 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="floatcombination" type="environment" level="document" category="tables" keywords="float" file="pack-com.mkiv">
+    <cd:command name="floatcombination" type="environment" level="document" category="tables" keywords="float" file="pack-com.mkxl">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupcombination"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="formulacombination" type="environment" variant="matrix" level="document" category="tables" file="math-com.mkxl">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="cd:matrix"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="formulacombination" type="environment" level="document" category="tables" file="math-com.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupcombination"/>

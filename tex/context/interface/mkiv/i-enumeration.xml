@@ -29,6 +29,12 @@
                 <cd:parameter name="numbercommand">
                     <cd:constant type="cd:oneargument"/>
                 </cd:parameter>
+                <cd:parameter name="numberstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="numbercolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
                 <cd:parameter name="titledistance">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
@@ -67,6 +73,10 @@
                 </cd:parameter>
                 <cd:parameter name="counter">
                     <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="define">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
                 </cd:parameter>
                 <!-- begin construction values -->
                 <cd:parameter name="level">
@@ -179,6 +189,10 @@
                 <cd:parameter name="aligntitle">
                     <cd:constant type="yes" default="yes"/>
                     <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="headindenting">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
                 </cd:parameter>
                 <!-- end construction values -->
                 <cd:inherit name="setupcounter"/>

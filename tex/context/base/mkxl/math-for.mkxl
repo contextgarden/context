@@ -37,11 +37,36 @@
     \normalexpanded{\defineformulaframed[\currentformula][\currentformulaparent]}%
 \to \everydefineformula
 
+%D Old stuff:
+
 \def\strc_formulas_option#1%
   {\ifcsname\??formulaoption#1\endcsname
      \lastnamedcs
    \else
      \font_basics_switchtobodyfont{#1}% for old time sake, might go away, only pt so maybe dimension and small test
+   \fi}
+
+\def\strc_math_set_options#1%
+  {\c_strc_formulas_tight \conditionalfalse
+   \c_strc_formulas_packed\conditionalfalse
+   \c_strc_formulas_depth \conditionalfalse
+   \ifempty{#1}%
+     \edef\p_option{\formulaparameter\c!option}%
+   \orelse\ifhastok={#1}% this is new, so that we can also set the grid
+     \setupcurrentformula[#1]%
+     \edef\p_option{\formulaparameter\c!option}%
+     \edef\p_mathematics{\formulaparameter\c!mathematics}%
+     \ifempty\p_mathematics
+     \orelse\ifcsname\??mathematics\p_mathematics:\s!parent\endcsname % \doifcommandhandler\??mathematics\p_mathematics
+       \let\currentmathematics\p_mathematics
+       \expand\everyswitchmathematics
+     \fi
+   \else
+     \edef\p_option{\formulaparameter\c!option}%
+     \edef\p_option{\ifempty\p_option\else\p_option,\fi#1}%
+   \fi
+   \ifempty\p_option \else
+     \rawprocesscommacommand[\p_option]\strc_formulas_option
    \fi}
 
 \protect \endinput

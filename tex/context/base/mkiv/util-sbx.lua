@@ -421,6 +421,15 @@ local runners = {
             return iopopen(command,"w") -- already has flush
         end
     end,
+    command = function(...)
+        local command = validcommand(...)
+        if command then
+            if trace then
+                report("command: %s",command)
+            end
+            return command
+        end
+    end,
 }
 
 function sandbox.registerrunner(specification)

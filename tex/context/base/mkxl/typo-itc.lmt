@@ -28,7 +28,6 @@ local glue_code           <const> = nodecodes.glue
 local disc_code           <const> = nodecodes.disc
 local math_code           <const> = nodecodes.math
 
-local end_math_code       <const> = nodes.mathcodes.endmath
 local font_kern_code      <const> = nodes.kerncodes.fontkern
 local italic_kern_code    <const> = nodes.kerncodes.italiccorrection
 local left_kern_code      <const> = nodes.kerncodes.leftcorrectionkern
@@ -70,6 +69,7 @@ local yscaled             = nuts.yscaled
 
 local insertnodeafter     = nuts.insertafter
 local insertnodebefore    = nuts.insertbefore
+local beginofmath         = nuts.beginofmath
 local endofmath           = nuts.endofmath
 local findnode            = nuts.findnode
 
@@ -97,11 +97,10 @@ local mathokay = false
 local textokay = false
 local kernokay = false
 
--- We don't drive this by attributes because most likely it is a document
--- property.
+-- We don't drive this by attributes because most likely it is a document property.
 
-local exfactormath = 1.25 -- these need checking because not we go unscaled
-local exfactortext = 0.50 -- these need checking because not we go unscaled
+local exfactormath = 1.25 -- this need checking because now we go unscaled
+local exfactortext = 0.50 -- idem
 local spacefactor  = 0
 
 directives.register("typesetters.italics.threshold", function(v)
@@ -328,7 +327,7 @@ end
 ----- function domath(head,last)
 local function domath(head,current)
     if exfactormath and exfactormath > 0 then
-     -- local current = endofmath(last)
+        local current = endofmath(current)
         local next    = getnext(current)
         if not hasglyphoption(next,no_correction_code) then -- check node and id too
             local char, id = isglyph(next)
@@ -357,7 +356,7 @@ end
 local function mathhandler(head)
     local current = head
     while current do
-        current = findnode(current,math_code,begin_math_code)
+        current = beginofmath(current)
         if current then
             current = domath(head,current)
             current = getnext(current)
@@ -612,6 +611,11 @@ function corrections.handler(head)
         end
     end
     return head
+end
+
+local function enable()
+    enableaction("processors","typesetters.italics.handler")
+    enable = false
 end
 
 function italics.handler(head)

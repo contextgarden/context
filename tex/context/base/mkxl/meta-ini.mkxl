@@ -272,11 +272,11 @@
    \global\t_meta_inclusions\emptytoks
    \endgroup}
 
+\let\meta_relocate_graphic\relax % experimental hook
+
 \def\meta_process_graphic_start
   {\pushMPboundingbox
    \setbox\b_meta_graphic\hpack\bgroup}
-
-\let\meta_relocate_graphic\relax % experimental hook
 
 \def\meta_process_graphic_stop
   {\egroup

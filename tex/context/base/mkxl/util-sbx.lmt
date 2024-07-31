@@ -417,7 +417,17 @@ local runners = {
             if trace then
                 report("pipeto: %s",command)
             end
-            return iopopen(command,"w") -- already has flush
+--             return iopopen(command,"w") -- already has flush
+            return iopopen(command) -- already has flush
+        end
+    end,
+    command = function(...)
+        local command = validcommand(...)
+        if command then
+            if trace then
+                report("command: %s",command)
+            end
+            return command
         end
     end,
 }

@@ -324,16 +324,39 @@
 
 \newtoks\everysidedswitch
 
+% \appendtoks
+%    \singlesidedfalse \layoutissinglesided\conditionalfalse
+%    \doublesidedfalse \layoutisdoublesided\conditionalfalse
+%    \resetsystemmode\v!singlesided
+%    \resetsystemmode\v!doublesided
+%    \processallactionsinset
+%      [\directpagenumberingparameter\c!alternative]%
+%      [ \v!singlesided=>\setsystemmode\v!singlesided\singlesidedtrue\layoutissinglesided\conditionaltrue,
+%        \v!doublesided=>\setsystemmode\v!doublesided\doublesidedtrue\layoutisdoublesided\conditionaltrue]%
+%    \expand\everysidedswitch
+% \to \everysetuppagenumbering
+
 \appendtoks
-   \singlesidedfalse \layoutisdoublesided\conditionalfalse
-   \doublesidedfalse \layoutissinglesided\conditionalfalse
-   \resetsystemmode\v!singlesided
+   \doublesidedfalse
+   \layoutisdoublesided\conditionalfalse
    \resetsystemmode\v!doublesided
-   \processallactionsinset
-     [\directpagenumberingparameter\c!alternative]%
-     [ \v!singlesided=>\setsystemmode\v!singlesided\singlesidedtrue\layoutissinglesided\conditionaltrue,
-       \v!doublesided=>\setsystemmode\v!doublesided\doublesidedtrue\layoutisdoublesided\conditionaltrue]%
+   \ifexporting
+      \singlesidedtrue
+      \layoutissinglesided\conditionaltrue
+      \setsystemmode\v!singlesided
+   \else
+     \singlesidedfalse
+     \layoutissinglesided\conditionalfalse
+     \resetsystemmode\v!singlesided
+     \processallactionsinset
+       [\directpagenumberingparameter\c!alternative]%
+       [ \v!singlesided=>\setsystemmode\v!singlesided\singlesidedtrue\layoutissinglesided\conditionaltrue,
+         \v!doublesided=>\setsystemmode\v!doublesided\doublesidedtrue\layoutisdoublesided\conditionaltrue]%
+   \fi
    \expand\everysidedswitch
+\to \everysetuppagenumbering
+
+\appendtoks
    \pageduplexmode
      \ifsinglesided
        \ifdoublesided\plustwo\else\zerocount\fi

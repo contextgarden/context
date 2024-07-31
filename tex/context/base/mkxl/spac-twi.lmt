@@ -1,0 +1,449 @@
+if not modules then modules = { } end modules ['spac-twi'] = {
+    version   = 1.001,
+    comment   = "companion to spac-brk.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- Here we use two demerit parameters and a bit of tracing. In an article Dedier
+-- Verna (that he send to us) discribes some expefiences with looking at similar
+-- words using an introspective tex-alike framework. We had discussed this before so
+-- below is a follow up. The article suggests to quit at a dicretionary but below we
+-- just handle them. In complex opentype features there can be pre, post and replace
+-- parts that have stretches of words so we have to look at them. Here we just
+-- compare the indices and stay within a font, but one can consider variants where
+-- we look at the unicodes, ignore the fonts, but then we also have the danger that
+-- for instance a small capped word matches a normal capsed one. We also distinguish
+-- between left and right collapsed. It's easy to add a 'length' variant but coming
+-- up with a good criterium is hard.
+
+local concat, reverse = table.concat, table.reverse
+local utfchar = utf.char
+
+local nuts                = nodes.nuts
+local tonut               = nodes.tonut
+
+local getid               = nuts.getid
+local getprev             = nuts.getprev
+local getnext             = nuts.getnext
+local getsubtype          = nuts.getsubtype
+local getdisc             = nuts.getdisc
+local getreplace          = nuts.getreplace
+local getpre              = nuts.getpre
+local getpost             = nuts.getpost
+local isprevglyph         = nuts.isprevglyph
+local isnextglyph         = nuts.isnextglyph
+local getnormalizedline   = nuts.getnormalizedline
+
+local setcolor            = nodes.tracers.colors.set
+
+local nodecodes           = nodes.nodecodes
+
+local glyph_code          <const> = nodecodes.glyph
+local glue_code           <const> = nodecodes.glue
+local disc_code           <const> = nodecodes.disc
+local kern_code           <const> = nodecodes.kern
+local math_code           <const> = nodecodes.math
+
+local fontkern_code       = nodes.kerncodes.fontkern
+
+local breakcodes          = tex.breakcodes
+
+local texgetcount         = tex.getcount
+local texget              = tex.get
+local texgetnest          = tex.getnest
+
+local c_twinslimit        = tex.iscount("twinslimit")
+----- c_righttwindemerits = tex.iscount("righttwindemerits")
+----- c_lefttwindemerits  = tex.iscount("lefttwindemerits")
+
+local serials             = false
+local cached              = false
+local traced              = false
+local nestlevel           = 0
+local righttwindemerits   = 0
+local lefttwindemerits    = 0
+local twinslimit          = 100
+local trace               = false
+
+local report              = logs.reporter("twins")
+
+trackers.register("typesetters.twindemerits", function(v) trace = v end)
+
+local unicodes = fonts.hashes.unicodes
+local chars    = fonts.hashes.characters
+
+local function chr(f,c)
+    local d = chars[f][c]
+    return d and d.unicode or c
+end
+
+-- We really have to compare the raw char fields because different shapes can have
+-- the same unicode. But for tracing we need to remap the privates. We can consider
+-- a practical limit in length, say 16. We can also decide to keep the small tables
+-- and delay the unicoding.
+--
+-- A first variant converted to string which is just as fast but using arrays and
+-- comparing them also is efficient and comes closer to how a built-in variant would
+-- look. It needs a bit more code.
+
+local function getbefore(breakpoint)
+    local last = nil
+    local id   = getid(breakpoint)
+    if id == glue_code then
+        last = getprev(breakpoint)
+    elseif id == disc_code then
+        last = breakpoint
+    end
+    if last then
+        local first   = last
+        local font    = false
+        local current = last
+        local snippet = { }
+        local count   = 0
+        if last == breakpoint then
+            local _, r = getpre(current)
+            while r do
+                local prv, char, id = isprevglyph(r)
+                if char then
+                    count = count + 1
+                    if not font then
+                        font = id
+                    end
+                    snippet[count] = char
+                elseif id == kern_code and getsubtype(r) == fontkern_code then
+                    --
+                else
+                    return
+                end
+                r = prv
+            end
+            current = getprev(current)
+        else
+            local prv, char, id = isprevglyph(last)
+            if char then
+                count   = 1
+                current = prv
+                font    = id
+                snippet[count] = char
+            else
+                return
+            end
+        end
+        if font then
+            while current do
+                local prv, char, id = isprevglyph(current)
+                if char then
+                    if id == font then
+                        count = count + 1
+                        snippet[count] = char
+                    else
+                        return
+                    end
+                elseif id == disc_code then
+                    local _, r = getreplace(current,true) -- we go back from tail
+                    while r do
+                        local prv, char, id = isprevglyph(r)
+                        if char and id == font then
+                            count = count + 1
+                            snippet[count] = char
+                        elseif id == kern_code and getsubtype(r) == fontkern_code then
+                            --
+                        else
+                            return
+                        end
+                        r = prv
+                    end
+                elseif id == kern_code and getsubtype(current) == fontkern_code then
+                    -- continue
+                elseif id == glue_code then -- maybe only spaces
+                    if prv and count > 0 then
+                        local id = getid(prv)
+                        if id == glyph_code or id == disc_code then
+if count > 1 then
+    local u = chr(font,snippet[1])
+    if u and characters.is_punctuation[u] then
+        table.remove(snippet,1)
+        count = count - 1
+    end
+end
+                            if count > twinslimit then
+                                count = twinslimit
+                            end
+                            return font, snippet, count, first, last
+                        end
+                    end
+                    break
+                else
+                    break
+                end
+                first   = current
+                current = prv
+            end
+        end
+    end
+end
+
+local function getafter(breakpoint)
+    local first = nil
+    local id    = getid(breakpoint)
+    if id == glue_code then
+        first = getnext(breakpoint)
+    elseif id == disc_code then
+        first = breakpoint
+    end
+    if first then
+        local last    = first
+        local font    = false
+        local current = first
+        local snippet = { }
+        local snuppet = trace and { }
+        local count   = 0
+        if first == breakpoint then
+            local r = getpost(current)
+            while r do
+                local nxt, char, id = isnextglyph(r)
+                if char and (font == false or font == id) then
+                    count = count + 1
+                    if not font then
+                        font = id
+                    end
+                    snippet[count] = char
+                elseif id == kern_code and getsubtype(r) == fontkern_code then
+                    --
+                else
+                    return
+                end
+                r = nxt
+            end
+            current = getnext(current)
+        else
+            local nxt, char, id = isnextglyph(first)
+            if char then
+                count   = 1
+                current = nxt
+                font    = id
+                snippet[count] = char
+            else
+                return
+            end
+        end
+        if font then
+            while current do
+                local nxt, char, id = isnextglyph(current)
+                if char then
+                    if id == font then
+                        count = count + 1
+                        snippet[count] = char
+                    else
+                        break
+                    end
+                elseif id == disc_code then
+                    local r = getreplace(current)
+                    while r do
+                        local nxt, char, id = isnextglyph(r)
+                        if char then
+                            count = count + 1
+                            snippet[count] = char
+                        elseif id == kern_code and getsubtype(r) == fontkern_code then
+                            --
+                        else
+                            return
+                        end
+                        r = nxt
+                    end
+                elseif id == kern_code and getsubtype(current) == fontkern_code then
+                    --
+                elseif id == glue_code then -- maybe only spaces
+                    if nxt and count > 0 then
+                        local id = getid(nxt)
+                        if id == glyph_code or id == disc_code then
+if count > 1 then
+    local u = chr(font,snippet[count])
+    if u and characters.is_punctuation[u] then
+        snippet[count] = nil
+        count = count - 1
+    end
+end                            if count > twinslimit then
+                                count = twinslimit
+                            end
+                            return font, snippet, count, first, last
+                        end
+                    end
+                    break
+                else
+                    break
+                end
+                last    = current
+                current = nxt
+            end
+        end
+    end
+end
+
+local function showa(what,current,previous,pass,line,f,s,n,demerits,extra)
+    local u = { }
+    for i=1,n do
+        u[i] = chr(f,s[i]) or s[i]
+    end
+    if what == "before" then
+        reverse(u)
+    end
+    report("pass %i, line %i, current %i, previous %i, %s %a, demerits %i + %i",
+        pass,line,current,previous,what,utfchar(u),demerits,extra)
+end
+
+local function showb(what,current,previous)
+    if traced[current] == "before" or traced[current] == "after" then
+        traced[current] = "both"
+    else
+        traced[current] = what
+    end
+    if traced[previous] == "before" or traced[previous] == "after" then
+        traced[previous] = "both"
+    else
+        traced[previous] = what
+    end
+end
+
+local function showc(first,last,color,n)
+    if not n then
+        n = 0
+    end
+    while true do
+        local id = getid(first)
+        if id == disc_code then
+            local pre, post, replace, tpre, tpost, treplace = getdisc(first,true)
+            if pre     and n < twinslimit then n = showc(pre,tpre,color,n)         end
+            if post    and n < twinslimit then n = showc(post,tpost,color,n)       end
+            if replace and n < twinslimit then n = showc(replace,treplace,color,n) end
+        elseif id == glyph_code then
+            n = n + 1
+            setcolor(first,color)
+        end
+        if first == last or n >= twinslimit then
+            break
+        else
+            first = getnext(first)
+        end
+    end
+    return n
+end
+
+local function same(a,b,n)
+    for i=1,n do
+        if a[i] ~= b[i] then
+            return false
+        end
+    end
+    return true
+end
+
+local actions = {
+    [breakcodes.initialize] = function()
+        if texgetnest("ptr") == nestlevel then
+            serials = { }
+            cached  = { }
+            traced  = { }
+        end
+    end,
+    [breakcodes.start] = function()
+        if texgetnest("ptr") == nestlevel then
+            serials = { }
+            traced  = { }
+        end
+    end,
+    [breakcodes.report] = function(checks,pass,currentserial,previousserial,line,kind,class,demerits,breakpoint,short,glue,width)
+        if breakpoint and texgetnest("ptr") == nestlevel then
+            local s_before, s_after, f_before, f_after, n_before, n_after
+            breakpoint = tonut(breakpoint)
+            local current = cached[breakpoint]
+            -- we can be selective, no need for left or right when demerits are zero
+            if current then
+             -- f_before, f_after, s_before, s_after, n_before, n_after = unpack(current)
+                f_before = current[1]
+                f_after  = current[2]
+                s_before = current[3]
+                s_after  = current[4]
+                n_before = current[5]
+                n_after  = current[6]
+            elseif trace then
+                local fb, fa, lb, la
+                f_before, s_before, n_before, fb, lb = getbefore(breakpoint)
+                f_after,  s_after,  n_after,  fa, la = getafter(breakpoint)
+                current = { f_before, f_after, s_before, s_after, n_before, n_after, fb, lb, fa, la }
+                cached[breakpoint] = current
+            else
+                f_before, s_before, n_before = getbefore(breakpoint)
+                f_after,  s_after,  n_after  = getafter(breakpoint)
+                current = { f_before, f_after, s_before, s_after, n_before, n_after }
+                cached[breakpoint] = current
+            end
+            serials[currentserial] = current -- successive passes, so we need to set it again
+            local previous = serials[previousserial]
+            if previous then
+                local extra = 0
+                if righttwindemerits > 0 and f_before and f_before == previous[1] and n_before == previous[5] and same(s_before,previous[3],n_before) then
+                    if trace then
+                        showa("before",currentserial,previousserial,pass,line,f_before,s_before,n_before,demerits,righttwindemerits)
+                        showb("before",currentserial,previousserial)
+                    end
+                    extra = righttwindemerits
+                end
+                if lefttwindemerits and f_after and f_after == previous[2] and n_after == previous[6] and same(s_after,previous[4],n_after) then
+                    if trace then
+                        showa("after",currentserial,previousserial,pass,line,f_after,s_after,n_after,demerits,lefttwindemerits)
+                        showb("after",currentserial,previousserial)
+                    end
+                    -- maybe take the max of the two
+                 -- if lefttwindemerits > extra then
+                 --     extra = lefttwindemerits
+                 -- end
+                    extra = extra + lefttwindemerits
+                end
+                if extra > 0 then
+                    return demerits + extra
+                end
+            end
+        end
+        return demerits
+    end,
+    [breakcodes.collect] = function()
+        if texgetnest("ptr") == nestlevel then
+            for k, v in next, traced do
+                local t = serials[k]
+                if v == "before" then
+                    showc(t[7],t[8],"trace:dr")
+                elseif v == "after" then
+                    showc(t[9],t[10],"trace:dg")
+                else
+                    showc(t[7],t[8],"trace:dy")
+                    showc(t[9],t[10],"trace:dy")
+                end
+            end
+        end
+    end,
+    [breakcodes.wrapup] = function()
+        if texgetnest("ptr") == nestlevel then
+            serials = false
+            cached  = false
+            traced  = false
+        end
+    end,
+}
+
+nodes.handlers.linebreakchecks[2] = function(what,checks,...)
+ -- righttwindemerits = texgetcount(c_righttwindemerits)
+ -- lefttwindemerits  = texgetcount(c_lefttwindemerits)
+    righttwindemerits = texget("righttwindemerits")
+    lefttwindemerits  = texget("lefttwindemerits")
+    twinslimit        = texgetcount(c_twinslimit)
+    if righttwindemerits > 0 or lefttwindemerits > 0 and twinslimit > 0 then
+        nestlevel = texgetnest("ptr")
+        local a = actions[what]
+        if a then
+            return a(checks,...)
+        end
+    end
+end

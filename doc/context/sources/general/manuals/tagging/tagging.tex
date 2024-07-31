@@ -5,12 +5,25 @@
 \usemodule
   [abbreviations-logos,scite,math-verbatim]
 
+% \showframe
+
 \setupbackend[format=pdf/ua-2]
 \setuptagging[state=start]
 % \nopdfcompression
 
 \setupbodyfont
-  [pagella,10pt]
+  [pagella,12pt]
+
+\setuplayout
+  [header=0pt,
+   width=middle]
+
+\setupheadertexts
+  []
+
+\setupfootertexts
+  [chapter]
+  [pagenumber]
 
 \setupwhitespace
   [big]
@@ -201,7 +214,11 @@ validate, and what to expect from applications are likely to go on for a while,
 so the best we can do is keep an eye on it and adapt when needed. If we have
 opinions, these will be exposed in other documents (and articles).
 
-{\em This manual is work in progress!}
+We can also notice that the standard is less standard as things change, part as
+side effect of clarification (which tells us something) but also because it looks
+like some applications have problems with it. Working on this is disappointing
+and dissatisfying, but often we have a good laugh about this mess, so we try to
+keep up (adapt) anyway.
 
 \startlines
 Hans Hagen
@@ -247,9 +264,27 @@ Tagging in a document is enabled with:
 The first command ensures that the right data ends up in the \PDF\ file, and the
 second one enables tagging. As long as you're working on a document you can
 comment these commands which saves you some runtime and give way smaller files.
-\footnote {With \type {\enabledirectives [backend.usetags=crap]} you can map to
-old built-in ua-1 tag names but that will fail with version 2 validation because
-it has a simplified (or restricted) model.}
+
+We don't want to cripple proper structure \CONTEXT\ support by the limitations
+introduced in \PDF\ version 2, but we do offer users some control, as long as it
+does not backfire. Due to the fluid situation (around 2024) we delegate some
+choices to the user. By default we use robust mapping (read: not sensitive for
+limitations in nesting \PDF\ specific tags cf.\ checkers) but you can say this:
+
+\starttyping
+\enabledirectives [backend.usetags=crap]
+\stoptyping
+
+and get an you can map to an alternative set. With
+
+\starttyping
+\enabledirectives [backend.usetags=mkiv]
+\stoptyping
+
+you get the mapping used in \MKIV\ but that one fails level 2 validation. The
+\quote {crap} file has some notes on how to define things. The somewhat strange
+section title mapping is due to the fact that nested sections are not really
+supported in a way that permits the title and content to be properly tagged.
 
 \stopchapter
 
@@ -320,16 +355,262 @@ Feel free to contact all those involved in this.
 
 \stopchapter
 
+% time stamp next sections: Rendezvous Point - Presence, mid 2024 (a whow video too)
+
+\startchapter[title=Structure]
+
+Although today all goes to \PDF, that is not what \TEX\ macro packages started
+with. Basically they just use the \TEX\ engine to render something in the
+tradition of printing but using a target format that can be converted to
+something that a printer understands. Nowadays that just happens to be \PDF.
+
+So, although the target is \PDF, that doesn't mean that \PDF\ drives (or should
+drive) the process. If we want what is called tagged \PDF\ where tagging
+represents structure, one could argue that this is then a follow up on whatever
+structure users used in the process. In \CONTEXT\ we start from the \TEX\ input
+end, not from some tagging related \PDF\ wish list which could handicap us. So
+called tagged \PDF\ is not the objective, it is just a possible byproduct.
+
+Keep in mind that tagging related to structure serves a few purposes: reflow,
+conversion, and accessibility. We're not at all interested in reflow of \PDF,
+because is that a which one should just produce \HTML. We're also not interested
+in conversion because, again, one could just use a different workflow, maybe one
+that starts from \XML\ and can target different media. When it comes to
+accessibility this mixed bag contains options like generating different versions,
+each tuned to a specific target audience. Typesetting is about generating some
+visual representation and just like people have different food preferences, one
+can imagine different representations: there is no reason to only produce \PDF.
+And even if there are ways to help something rendered for printing, or reading on
+screen, for instance by providing audio, there is no need to do that for very
+complex documents. Given the often poor quality of simple \TEX\ documents one can
+even wonder if that tool should be used at al then. It's not like \TEX\ is the
+only system that can do math nowadays.
+
+When we look at structure, this is how \CONTEXT\ sees a section:
+
+\starttyping[option=TEX]
+\startchapter[title={This is a chapter.}
+  \startsection[title={This is a section.}
+    Some text here.
+  \stopsection
+\stopchapter
+\stoptyping
+
+In \XML\ that could be something like this with the number being optional as it
+can be generated:
+
+\starttyping[option=XML]
+<section detail="chapter">
+  <sectioncaption>
+    <sectionnumber>1</sectionnumber>
+    <sectiontitle>This is a chapter.</sectiontitle>
+  </sectioncaption>
+  <sectioncontent>
+    <section detail="section">
+      <sectioncaption>
+        <sectionnumber>1.2</sectionnumber>
+        <sectiontitle>This is a section.</sectiontitle>
+      </sectioncaption>
+      <sectioncontent>
+        Some text here.
+      </sectioncontent>
+    </section>
+  </sectioncontent>
+</section>
+\stoptyping
+
+In a \PDF\ there can also be additional rendered material, like headers and
+footers and maybe the section title is rendered in a special way but we ignore
+that for now.
+
+When I comes to the content blob, we have to look at the \TEX\ end. User input
+normally will give this:
+
+\starttyping[option=XML]
+<sectioncontent>
+  A first paragraph.
+
+  A second paragraph.
+</sectioncontent>
+\stoptyping
+
+An empty line starts a paragraph but it can also be explicitly forced (think
+\type {\par}).
+
+\starttyping[option=XML]
+<sectioncontent>
+  A first paragraph.
+  <break/>
+  A second paragraph.
+</sectioncontent>
+\stoptyping
+
+But one can also explicit encode paragraphs and then get:
+
+\starttyping[option=XML]
+<sectioncontent>
+  <paragraph>A first paragraph.</paragraph>
+  <paragraph>A second paragraph.</paragraph>
+</sectioncontent>
+\stoptyping
+
+which in \TEX\ speak is:
+
+\starttyping[option=TEX]
+\startchapter[title={This is a chapter.}
+  \startsection[title={This is a section.}
+    \startparagraph A first paragraph.  \stopparagraph
+    \startparagraph A second paragraph. \stopparagraph
+  \stopsection
+\stopchapter
+\stoptyping
+
+But it will be clear that not all users want to do that, which means that we end
+up with the \type {<break/>} variant. Now you can ask, why not infer this extra
+level of structure and the answer is: it's not how \TEX\ works. The content can
+be anything and the fact that there is no real clear solution is actually
+reflected in how \PDF\ tagging maps onto pseudo \HTML\ elements: not all can
+nest, so for instance a paragraph cannot contain a paragraph. That means that we
+cannot reliable add that level of structure automatically as it limits the
+degrees of freedom that users have. As mentioned: tagging in \PDF\ is not the
+starting point, just a possible byproduct.
+
+Let's look at another structure element:
+
+\starttyping[option=TEX]
+\startitemize
+  \startitem A first item. \stopitem
+  \startitem
+    A second item.
+    \startitemize
+      \startitem Again first item. \stopitem
+      \startitem And a last one. \stopitem
+    \stopitemize
+  \stopitem
+  \startitem A third item. \stopitem
+\stopitemize
+\stoptyping
+
+If we start from input, we can use this kind of \XML:
+
+\starttyping[option=XML]
+<itemize>
+  <item>A first item.</item>
+  <item>
+    A second item.
+    <itemize>
+      <item>Again a first item.</item>
+      <item>And a last one.</item>
+    </itemize>
+  </item>
+  <item>A third item.</item>
+</itemize>
+\stoptyping
+
+But once we're done, we actually have something typeset, so we end up with more detail:
+
+\starttyping[option=XML]
+<itemgroup>
+  <item>
+    <itemtag>1.</itemtag>
+    <itemcontent>
+      <itemhead/>
+      <itembody>A first item.</itembody>
+    </itemcontent>
+  </item>
+  <item>
+    <itemtag>2.</itemtag>
+    <itemcontent>
+      <itemhead/>
+      <itembody>
+        A second item.
+        <itemgroup>
+          <item>
+            <itemtag>a.</itemtag>
+            <itemcontent>
+               <itemhead/>
+               <itembody>Again a first item.</itembody>
+            </itemcontent>
+          </item>
+          <item>
+            <itemtag>b.</itemtag>
+            <itemcontent>
+              <itemhead/>
+              <itembody>And a last one.</itembody>
+            </itemcontent>
+          </item>
+        </itemgroup>
+      </itembody>
+    </itemcontent>
+  </item>
+  <itemtag>3.</itemtag>
+  <itemcontent>
+    <itemhead/>
+    <itembody>
+      A third item.
+    </itembody>
+  </itemcontent>
+</itemgroup>
+\stoptyping
+
+This represents what gets rendered but one can leave out the tag and let whatever
+interprets this deal with that.
+
+So, we have input that can be either explicit (given numbers and tags) or
+implicit (the system generates them) but output can also be explicit or implicit.
+And when output carries structure the question is: do we want to preserve
+abstraction or do we want the rendered results. It only makes sense to invest in
+this when it pays off, also because the resulting \PDF\ file get bloated a lot.
+
+\stopchapter
+
+\startchapter[title=PDF]
+
+The specification (say the second edition of 2020) has a section about tagged
+\PDF\ in the perspective of reflow, conversion and accessibility. As we mentioned
+already the lack of tools using any of this didn't help much in clarifying all
+this. At some point it became possible to verify a \PDF\ file and some
+rudimentary converters popped up but it looks like everyone had to interpret the
+rules laid out in the specification. Mid 2024 we also had numerous errata
+and|/|or clarifications of the specification (not only tagging) but (at least for
+us) it is not clear what criteria for changes (more restrictions) were.
+
+For instance, the ISO 32000-2 specification explicitly mentions the usefulness of
+the \type {H} mapping for classes of documents. But in ISO 14289-2:2024 we can
+read \quotation {The \type {H} structure type requires processors to track
+section depth, which adds an unnecessary burden on processors and can cause
+ambiguity.} This is a quite baffling remark given the complexity of \PDF\ and web
+technologies in general.
+
+It is this, and other vague (and changing) descriptions, take for instance \type
+{Part} and \type {Sect}, that made us decide to draw a line. We tried some in our
+opinion reasonable variants but could never satisfy the validators completely.
+Keep in mind that we started from tagging everything, not just the easy bits and
+pieces and then wrapping whatever left in artifacts or a wildcard paragraph. When
+we looked at tagging with 2024 glasses on we were willing to adapt but in the end
+it makes little sense. We can add a few mappings but in general it is too
+conflicting with our approach to structure, one that goes back decades. So, as
+long as a (audio) reader can do a reasonable job, we're okay. There are more
+interesting challenges on our plates anyway.
+
+\stopchapter
+
 \startchapter[title=Tracing]
 
-{Todo}
+There are a few trackers that relate to tagging but these are more for ourselves
+so we just mention them:
 
-% \enabletrackers[structures.tags]
-% \enabletrackers[structures.tags.showtree]
+\starttyping
+\enabletrackers[structures.tags]
+\enabletrackers[structures.tags.info]
+\enabletrackers[structures.tags.math]
+\enabletrackers[structures.tags.blobs]
+\enabletrackers[structures.tags.internals]
+\enabletrackers[structures.tags.suspects]
+\stoptyping
 
-% \disabledirectives[structures.tags.shipout]
-% \enabledirectives [structures.tags.math.standalone]
-% \disabledirectives[structures.tags.math.strip]
+The first one is probably the most useful as it shows how \CONTEXT\ sees the
+structure of your document.
 
 \stopchapter
 

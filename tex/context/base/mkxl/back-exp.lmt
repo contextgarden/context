@@ -6,7 +6,9 @@ if not modules then modules = { } end modules ['back-exp'] = {
     license   = "see context related readme files"
 }
 
--- Todo: share properties more with tagged pdf (or thge reverse)
+-- See drawinglines.tex for some about the mathmnl namespace.
+
+-- Todo: share properties more with tagged pdf (or the reverse)
 
 -- Because we run into the 200 local limit we quite some do .. end wrappers .. not always
 -- that nice but it has to be.
@@ -33,6 +35,11 @@ if not modules then modules = { } end modules ['back-exp'] = {
 
 -- check setting __i__
 
+-- In 2024 this module got updated a bit as part of the upgraded math features, which makes
+-- sense as at that time it is some 15 years old. This time the musical timestamp is the
+-- CD release of Dream Chaser by Rendezvous Point. (So whenever I got bored by exporting I
+-- watched the Presence video on YT.)
+
 local next, type, tonumber = next, type, tonumber
 local sub, gsub, match = string.sub, string.gsub, string.match
 local validstring = string.valid
@@ -54,6 +61,7 @@ local trace_details = false  trackers.register  ("export.trace.details", functio
 
 local less_state    = false  directives.register("export.lessstate",     function(v) less_state    = v end)
 local show_comment  = true   directives.register("export.comment",       function(v) show_comment  = v end)
+local only_images   = false  directives.register("export.images",        function(v) only_images   = v end)
 
 -- maybe we will also support these:
 --
@@ -99,7 +107,7 @@ local overloads         = fonts.mappings.overloads
 
 -- todo: more locals (and optimize)
 
-local exportversion     <const> = "0.35"
+local exportversion     <const> = "0.36"
 local mathmlns          <const> = "http://www.w3.org/1998/Math/MathML"
 local contextns         <const> = "http://www.contextgarden.net/context/export" -- whatever suits
 local cssnamespaceurl   <const> = "@namespace context url('%namespace%') ;"
@@ -136,6 +144,7 @@ local currentdepth      = 0
 local wrapups           = { }
 
 local tree              = { data = { }, fulltag == "root" } -- root
+local roottree          = tree
 local treehash          = { }
 local extras            = { }
 local checks            = { }
@@ -185,62 +194,37 @@ setmetatableindex(specialspaces, function(t,k)
     return v
 end)
 
+-- We removed (mathml) namespaces but the code can be found in the archive and in the
+-- mkiv lua file. For the independent mathml see the older lmt file.
 
-local namespaced = {
-    -- filled on
+local mathtags = {
+    msubsup       = "mathml",
+    msub          = "mathml",
+    msup          = "mathml",
+    mn            = "mathml",
+    mi            = "mathml",
+    ms            = "mathml",
+    mo            = "mathml",
+    mc            = "mathml",
+    mtext         = "mathml",
+    mrow          = "mathml",
+    mfrac         = "mathml",
+    mroot         = "mathml",
+    msqrt         = "mathml",
+    munderover    = "mathml",
+    munder        = "mathml",
+    mover         = "mathml",
+    merror        = "mathml",
+    math          = "mathml",
+    mrow          = "mathml",
+    mtable        = "mathml",
+    mtr           = "mathml",
+    mtd           = "mathml",
+    mfenced       = "mathml", -- no longer valid
+    maction       = "mathml",
+    mspace        = "mathml",
+    mmultiscripts = "mathml",
 }
-
-local namespaces = {
-    msubsup         = "m",
-    msub            = "m",
-    msup            = "m",
-    mn              = "m",
-    mi              = "m",
-    ms              = "m",
-    mo              = "m",
-    mc              = "m",
-    mtext           = "m",
-    mrow            = "m",
-    mfrac           = "m",
-    mroot           = "m",
-    msqrt           = "m",
-    munderover      = "m",
-    munder          = "m",
-    mover           = "m",
-    merror          = "m",
-    math            = "m",
-    mrow            = "m",
-    mtable          = "m",
-    mtr             = "m",
-    mtd             = "m",
-    mfenced         = "m",
-    maction         = "m",
- -- munit           = "m",
-    mspace          = "m",
-    mmultiscripts   = "m",
-    mprescripts     = "m",
-    -- only when testing
-    mstacker        = "m",
-    mstackertop     = "m",
-    mstackermid     = "m",
-    mstackerbot     = "m",
-    mextensible     = 'm',
-    mdelimited      = 'm',
-    mfunction       = 'm',
-    mfunctionstack  = 'm',
-    mfraction       = 'm',
-    mfractionstack  = 'm',
-    mdelimitedstack = 'm',
-}
-
-setmetatableindex(namespaced, function(t,k)
-    if k then
-        local namespace = namespaces[k]
-        local v = namespace and namespace .. ":" .. k or k
-        t[k] = v
-        return v
-    end
-end)
 
 local function attribute(key,value)
     if value and value ~= "" then
@@ -314,21 +298,30 @@ local namespacetemplate <const> = [[
 
 do
 
-    -- experiment: styles and images
-    --
-    -- officially we should convert to bp but we round anyway
-
-    -- /* padding      : ; */
-    -- /* text-justify : inter-word ; */
-    -- /* text-align : justify ; */
-
 local documenttemplate <const> = [[
+:root {
+	--margin: 2.5em;
+}
+
 document,
 %namespace%div.document {
-    font-size  : %size% !important ;
-    max-width  : %width% !important ;
-    text-align : %align% !important ;
-    hyphens    : %hyphens% !important ;
+    font-family : TextNormal ;
+    font-size   : %size% ;
+    max-width   : calc(var(--margin) + %width%) ;
+    text-align  : %align% ;
+    hyphens     : %hyphens% ;
+    zoom        : %zoom% ;
+}
+
+/* There is no real solution for boldening, 900 is not enough. */
+
+math {
+    font-family : MathNormal ;
+}
+
+math[data-lmtx-family="bold"] {
+    font-family : MathNormal ;
+	font-weight : 900 ;
 }]]
 
 local styletemplate <const> = [[
@@ -342,11 +335,11 @@ local styletemplate <const> = [[
     color        : %color% ;
 }]]
 
-    local numbertoallign = {
-        [0] = "justify", ["0"] = "justify", [variables.normal    ] = "justify",
-              "right",   ["1"] = "right",   [variables.flushright] = "right",
-              "center",  ["2"] = "center",  [variables.middle    ] = "center",
-              "left",    ["3"] = "left",    [variables.flushleft ] = "left",
+    local numbertoallign = { [0] =
+        "justify", ["0"] = "justify", [variables.normal    ] = "justify",
+        "right",   ["1"] = "right",   [variables.flushright] = "right",
+        "center",  ["2"] = "center",  [variables.middle    ] = "center",
+        "left",    ["3"] = "left",    [variables.flushleft ] = "left",
     }
 
     function wrapups.allusedstyles(filename)
@@ -362,7 +355,15 @@ local styletemplate <const> = [[
         local width    = finetuning.width
         local hyphen   = finetuning.hyphen
         local align    = finetuning.align
+        local zoom     = finetuning.zoom
+        local margin   = finetuning.margin
         --
+     -- if not bodyfont then
+     --     bodyfont = tex.getdimen("globalbodyfontsize")
+     -- end
+     -- if not width then
+     --     width = tex.getdimen("textwidth")
+     -- end
         if type(bodyfont) == "number" then
             bodyfont = todimen(bodyfont)
         else
@@ -373,10 +374,15 @@ local styletemplate <const> = [[
         else
             width = "50em"
         end
+        if type(margin) == "number" then
+            margin = todimen(margin) or "2.5em"
+        else
+            margin = "2.5em"
+        end
         if hyphen == v_yes then
             hyphen = "manual"
         else
-            hyphen = "inherited"
+            hyphen = "auto"
         end
         if align then
             align = numbertoallign[align]
@@ -384,30 +390,50 @@ local styletemplate <const> = [[
         if not align then
             align = hyphen and "justify" or "inherited"
         end
+        if not zoom then
+            zoom = tex.sp("12pt")/tex.sp(bodyfont)
+        end
         --
         result[#result+1] = replacetemplate(documenttemplate,{
             size    = bodyfont,
             width   = width,
             align   = align,
-            hyphens = hyphen
+            hyphens = hyphen,
+            zoom    = formatters["%0.3f"](zoom),
         })
         --
         local colorspecification = xml.css.colorspecification
         local fontspecification  = xml.css.fontspecification
         for element, details in sortedhash(usedstyles) do
             for detail, data in sortedhash(details) do
-                local s = fontspecification(data.style)
-                local c = colorspecification(data.color)
+                local color = data.color
+                local style = data.style
+                local c = colorspecification(color)
+                local s = structures.tags.backend.fontfaced(style)
+                if not c then
+                    c = "inherit"
+                end
+                if s and s.family and s.family ~= "" then
+                    if not s.style   then s.style   = "normal" end
+                    if not s.variant then s.variant = "normal" end
+                    if not s.weight  then s.weight  = "normal" end
+                else
+                    s = fontspecification(style)
+                    if not s.style   then s.style   = "inherit" end -- or just normal
+                    if not s.variant then s.variant = "inherit" end -- or just normal
+                    if not s.weight  then s.weight  = "inherit" end -- or just normal
+                    if not s.family  then s.family  = "inherit" end -- or just normal
+                end
                 local detail = gsub(detail,"[^A-Za-z0-9]+","-")
                 result[#result+1] = replacetemplate(styletemplate,{
                     namespace = usecssnamespace and cssnamespace or "",
                     element   = element,
                     detail    = detail,
-                    style     = s.style   or "inherit",
-                    variant   = s.variant or "inherit",
-                    weight    = s.weight  or "inherit",
-                    family    = s.family  or "inherit",
-                    color     = c         or "inherit",
+                    style     = s.style,
+                    variant   = s.variant,
+                    weight    = s.weight,
+                    family    = s.family,
+                    color     = c,
                     display   = s.display and "block" or nil,
                 })
             end
@@ -415,18 +441,44 @@ local styletemplate <const> = [[
         return concat(result,"\n\n")
     end
 
+    function wrapups.allusedfonts(filename)
+        local list, used = structures.tags.backend.tofontface(finetuning.fontfaces)
+        local result = { replacetemplate(namespacetemplate, {
+            what            = "fonts",
+            filename        = filename,
+            namespace       = contextns,
+         -- cssnamespaceurl = usecssnamespace and cssnamespaceurl or cssnamespacenop,
+            cssnamespaceurl = cssnamespaceurl,
+        },false,true) }
+        result[#result+1] = list
+        result = concat(result,"\n\n")
+        for k, v in sortedhash(used) do
+            report_export("font face %s%s : %s",v[1],v[2],v[3])
+        end
+        return result
+    end
+
 end
 
 do
 
-local imagetemplate <const> = [[
-%element%[id="%id%"], %namespace%div.%element%[id="%id%"] {
-    display           : block ;
-    background-image  : url('%url%') ;
-    background-size   : 100%% auto ;
-    background-repeat : no-repeat ;
-    width             : %width% ;
-    height            : %height% ;
+local imagetemplate_1 <const> = [[
+[image="%id%"]%hover% {
+    display : block ;
+    content : url('%url%') ;
+    width   : %width% ;
+    height  : %height% ;
+}]]
+
+local imagetemplate_2 <const> = [[
+[image="%id%"]%hover% {
+    display    : inline ;
+    content    : url('%url%') ;
+    width      : %width% ;
+    height     : %height% ;
+    margin-top : -%drop% ;
+    top        : %drop% ;
+    position   : relative ;
 }]]
 
     local f_svgname = formatters["%s.svg"]
@@ -459,22 +511,30 @@ local imagetemplate <const> = [[
          -- cssnamespaceurl = usecssnamespace and cssnamespaceurl or "",
             cssnamespaceurl = cssnamespaceurl,
         },false,true) }
+        local hover = (finetuning.images) and finetuning.images.hover
         for element, details in sortedhash(usedimages) do
             for detail, data in sortedhash(details) do
-                local name = data.name
-                local page = tonumber(data.page) or 1
+                local name  = data.name
+                local page  = tonumber(data.page) or 1
+                local drop  = data.drop
                 local spec = {
                     element   = element,
-                    id        = data.id,
+--                     id        = data.id,
+id        = filename .. "-" .. data.id,
                     name      = name,
                     page      = page,
                     url       = usedname(name,page),
                     width     = data.width,
                     height    = data.height,
+                    drop      = drop,
                     used      = data.used,
                     namespace = usecssnamespace and cssnamespace or "",
+                    hover     = hover and data.category == "formula" and ":hover" or "",
                 }
-                result[#result+1] = replacetemplate(imagetemplate,spec)
+                result[#result+1] = replacetemplate(
+                    drop and imagetemplate_2 or imagetemplate_1,
+                    spec
+                )
                 collected[detail] = spec
             end
         end
@@ -567,13 +627,14 @@ do
     end
 
     function extras.document(di,element,n,fulltag)
-        setattribute(di,"language",languagenames[texgetcount("mainlanguagenumber")])
+        local language = languagenames[texgetcount("mainlanguagenumber")]
+        setattribute(di,"language",language)
+        setattribute(di,"xml:lang",language)
         if not less_state then
             setattribute(di,"file",tex.jobname)
             setattribute(di,"date",os.fulltime())
             setattribute(di,"context",environment.version)
             setattribute(di,"version",exportversion)
-            setattribute(di,"xmlns:m",mathmlns)
             local identity = interactions.general.getidentity()
             for i=1,#fields do
                 local key   = fields[i]
@@ -677,19 +738,19 @@ do
         local a = di.attributes                       -- we might add detail etc
         if a then -- happens seldom
             if nature == "display" then
-                result[#result+1] = f_empty_display_attr(depth,namespaced[element],attributes(a))
+                result[#result+1] = f_empty_display_attr(depth,element,attributes(a))
             elseif nature == "mixed" then
-                result[#result+1] = f_empty_mixed_attr(depth,namespaced[element],attributes(a))
+                result[#result+1] = f_empty_mixed_attr(depth,element,attributes(a))
             else
-                result[#result+1] = f_empty_inline_attr(namespaced[element],attributes(a))
+                result[#result+1] = f_empty_inline_attr(element,attributes(a))
             end
         else
             if nature == "display" then
-                result[#result+1] = f_empty_display(depth,namespaced[element])
+                result[#result+1] = f_empty_display(depth,element)
             elseif nature == "mixed" then
-                result[#result+1] = f_empty_mixed(depth,namespaced[element])
+                result[#result+1] = f_empty_mixed(depth,element)
             else
-                result[#result+1] = f_empty_inline(namespaced[element])
+                result[#result+1] = f_empty_inline(element)
             end
         end
     end
@@ -731,14 +792,14 @@ do
         if skip == "comment" then
             if show_comment then
                 if nature == "inline" or inline > 0 then
-                    result[#result+1] = f_comment_begin_inline(namespaced[element])
+                    result[#result+1] = f_comment_begin_inline(element)
                     inline = inline + 1
                 elseif nature == "mixed" then
-                    result[#result+1] = f_comment_begin_mixed(depth,namespaced[element])
+                    result[#result+1] = f_comment_begin_mixed(depth,element)
                     depth = depth + 1
                     inline = 1
                 else
-                    result[#result+1] = f_comment_begin_display(depth,namespaced[element])
+                    result[#result+1] = f_comment_begin_display(depth,element)
                     depth = depth + 1
                 end
             end
@@ -801,24 +862,24 @@ do
             if n == 0 then
                 if nature == "inline" or inline > 0 then
                     if show_comment and comment then
-                        result[#result+1] = f_begin_inline_comment(comment,namespaced[element])
+                        result[#result+1] = f_begin_inline_comment(comment,element)
                     else
-                        result[#result+1] = f_begin_inline(namespaced[element])
+                        result[#result+1] = f_begin_inline(element)
                     end
                     inline = inline + 1
                 elseif nature == "mixed" then
                     if show_comment and comment then
-                        result[#result+1] = f_begin_mixed_comment(depth,comment,namespaced[element])
+                        result[#result+1] = f_begin_mixed_comment(depth,comment,element)
                     else
-                        result[#result+1] = f_begin_mixed(depth,namespaced[element])
+                        result[#result+1] = f_begin_mixed(depth,element)
                     end
                     depth = depth + 1
                     inline = 1
                 else
                     if show_comment and comment then
-                        result[#result+1] = f_begin_display_comment(depth,comment,depth,namespaced[element])
+                        result[#result+1] = f_begin_display_comment(depth,comment,depth,element)
                     else
-                        result[#result+1] = f_begin_display(depth,namespaced[element])
+                        result[#result+1] = f_begin_display(depth,element)
                     end
                     depth = depth + 1
                 end
@@ -826,24 +887,24 @@ do
                 r = concat(r,"",1,n)
                 if nature == "inline" or inline > 0 then
                     if show_comment and comment then
-                        result[#result+1] = f_begin_inline_attr_comment(comment,namespaced[element],r)
+                        result[#result+1] = f_begin_inline_attr_comment(comment,element,r)
                     else
-                        result[#result+1] = f_begin_inline_attr(namespaced[element],r)
+                        result[#result+1] = f_begin_inline_attr(element,r)
                     end
                     inline = inline + 1
                 elseif nature == "mixed" then
                     if show_comment and comment then
-                        result[#result+1] = f_begin_mixed_attr_comment(depth,comment,namespaced[element],r)
+                        result[#result+1] = f_begin_mixed_attr_comment(depth,comment,element,r)
                     else
-                        result[#result+1] = f_begin_mixed_attr(depth,namespaced[element],r)
+                        result[#result+1] = f_begin_mixed_attr(depth,element,r)
                     end
                     depth = depth + 1
                     inline = 1
                 else
                     if show_comment and comment then
-                        result[#result+1] = f_begin_display_attr_comment(depth,comment,depth,namespaced[element],r)
+                        result[#result+1] = f_begin_display_attr_comment(depth,comment,depth,element,r)
                     else
-                        result[#result+1] = f_begin_display_attr(depth,namespaced[element],r)
+                        result[#result+1] = f_begin_display_attr(depth,element,r)
                     end
                     depth = depth + 1
                 end
@@ -868,15 +929,15 @@ do
             if show_comment then
                 if nature == "display" and (inline == 0 or inline == 1) then
                     depth = depth - 1
-                    result[#result+1] = f_comment_end_display(depth,namespaced[element])
+                    result[#result+1] = f_comment_end_display(depth,element)
                     inline = 0
                 elseif nature == "mixed" and (inline == 0 or inline == 1) then
                     depth = depth - 1
-                    result[#result+1] = f_comment_end_mixed(namespaced[element])
+                    result[#result+1] = f_comment_end_mixed(element)
                     inline = 0
                 else
                     inline = inline - 1
-                    result[#result+1] = f_comment_end_inline(namespaced[element])
+                    result[#result+1] = f_comment_end_inline(element)
                 end
             end
         elseif skip then
@@ -884,16 +945,41 @@ do
         else
             if nature == "display" and (inline == 0 or inline == 1) then
                 depth = depth - 1
-                result[#result+1] = f_end_display(depth,namespaced[element])
+                result[#result+1] = f_end_display(depth,element)
                 inline = 0
             elseif nature == "mixed" and (inline == 0 or inline == 1) then
                 depth = depth - 1
-                result[#result+1] = f_end_mixed(namespaced[element])
+                result[#result+1] = f_end_mixed(element)
                 inline = 0
             else
                 inline = inline - 1
-                result[#result+1] = f_end_inline(namespaced[element])
+                result[#result+1] = f_end_inline(element)
             end
+        end
+    end
+
+    local function wrapupmath(di)
+        -- We arrive here twice which is a bit waste of time but for now
+        -- we just do it. The first time we have no blob set anyway.
+        local a = di.attributes
+        local order = a and (a["data-lmtx-blob"] or a["blob"])
+        if order then
+            local mth = mathematics.getmathblob("xml",order)
+            local txt = mathematics.gettextblob("xml","en",order)
+            if mth then
+                mth = match(mth,"<math[^>]*>(.*)</math>")
+            end
+            if txt and txt ~= "" then
+             -- local a = di.attributes
+                if a then
+                    a["data-lmtx-meaning"]  = txt
+                else
+                    di.attributes = {
+                        ["data-lmtx-meaning"] = txt,
+                    }
+                end
+            end
+            return mth
         end
     end
 
@@ -939,47 +1025,22 @@ do
                     elseif element == "" or di.skip == "ignore" then --
                         -- skip
                     else
-
-                        -- We arrive here twice which is a bit waste of time but for now
-                        -- we just do it.
-
-                        local mth, txt
-                        if element == "math" then -- can be an option
-                            local order = di.blob -- not di.n because that's wrong in mixed on/off
-                            if order then
-                                mth = mathematics.getmathblob("xml",order)
-                                txt = mathematics.gettextblob("xml","en",order)
-                                if txt and txt ~= "" then
-                                    local a = di.attributes
-                                    if a then
-                                        a.meaning  = txt
-                                     -- a.stripped = mth
-                                    else
-                                        di.attributes = {
-                                         -- stripped = mth,
-                                            meaning  = txt,
-                                        }
-                                    end
-                                end
-                            end
-                        end
-
+                        local mth = element == "math" and wrapupmath(di)
                         if di.before then
                             flushtree(result,di.before,nature)
                         end
                         local natu = di.nature
                         local skip = di.skip
                         if di.breaknode then
+                            -- this never happens as we don seem to set this field
                             emptytag(result,"break","display",di)
                         end
                         begintag(result,element,natu,di,skip)
-
-                        if mth and math ~= "" then
+                        if mth and mth ~= "" then
                             result[#result+1] = mth -- the stripped one
                         else
                             flushtree(result,di.data,natu)
                         end
-
                         endtag(result,element,natu,di,skip)
                         if di.after then
                             flushtree(result,di.after,nature)
@@ -1358,7 +1419,6 @@ local function pushentry(current)
     if trace_export then
         report_export("%w<!-- moving from depth %s to %s (%s) -->",currentdepth,olddepth,newdepth,current[newdepth])
     end
--- inspect(current)
     if olddepth <= 0 then
         for i=1,newdepth do
             push(current[i],i)
@@ -1413,10 +1473,12 @@ local function pushcontent(oldparagraph,newparagraph)
             end
         end
         local content = concat(currentcontent,"",1,nofcurrentcontent)
+-- print(content,currentattribute)
         if content == "" then
             -- omit; when oldparagraph we could push, remove spaces, pop
         elseif somespace[content] and oldparagraph then
             -- omit; when oldparagraph we could push, remove spaces, pop
+-- elseif not tree or not tree.data then
         else
             local olddepth, newdepth
             local list = taglist[currentattribute]
@@ -1505,6 +1567,7 @@ local collectresults  do -- too many locals otherwise
     local userdefinedwhatsit_code  <const> = whatsitcodes.userdefined
 
     local privateattribute = attributes.private
+
     local a_image          <const> = privateattribute('image')
     local a_reference      <const> = privateattribute('reference')
     local a_destination    <const> = privateattribute('destination')
@@ -1535,9 +1598,9 @@ local collectresults  do -- too many locals otherwise
     local nexthlist        = nuts.traversers.hlist
     local nextnode         = nuts.traversers.node
 
-    local function addtomaybe(maybewrong,c,case)
+    local function addtomaybe(maybewrong,c,paragraph,ap,case)
         if trace_export then
-            report_export("%w<!-- possible paragraph mixup at %C case %i -->",currentdepth,c,case)
+            report_export("%w<!-- possible paragraph (%i,%i) mixup at %C case %i -->",currentdepth,paragraph or 0,ap or 0,c,case)
         else
             local s = formatters["%C"](c)
             if maybewrong then
@@ -1578,7 +1641,7 @@ local collectresults  do -- too many locals otherwise
             end
             if id == glyph_code then
                 local c, f = isglyph(n)
-                local at, ap = getattr(n,a_tagged,a_taggedpar)
+                local at, ap = getattrs(n,a_tagged,a_taggedpar)
                 if not at then
                     at = pat
                 end
@@ -1586,15 +1649,19 @@ local collectresults  do -- too many locals otherwise
                  -- we need to tag the pagebody stuff as being valid skippable
                  --
                  -- report_export("skipping character: %C (no attribute)",n.char)
+                elseif at == 0 then
+                    -- skip (needs checking)
+                elseif at < 1 then
+                    -- skip (needs checking)
                 else
                     if last ~= at then
                         local tl = taglist[at]
                         if not ap then
                             ap = pap
                         end
-                        if paragraph and (not ap or ap < paragraph) then
-                            maybewrong = addtomaybe(maybewrong,c,1)
-                        end
+-- if paragraph and (not ap or ap < paragraph) then
+--     maybewrong = addtomaybe(maybewrong,c,paragraph,ap,1)
+-- end
                         tl.class = getclass(n)
                         pushcontent()
                         currentnesting   = tl
@@ -1630,9 +1697,9 @@ local collectresults  do -- too many locals otherwise
                             currentattribute = last
                             currentparagraph = ap
                         end
-                        if paragraph and (not ap or ap < paragraph) then
-                            maybewrong = addtomaybe(maybewrong,c,2)
-                        end
+-- if paragraph and (not ap or ap < paragraph) then
+--     maybewrong = addtomaybe(maybewrong,c,paragraph,ap,2)
+-- end
                         if trace_export then
                             report_export("%w<!-- processing glyph %C tagged %a -->",currentdepth,c,last)
                         end
@@ -1739,21 +1806,6 @@ local collectresults  do -- too many locals otherwise
                         currentcontent[nofcurrentcontent] = c
                     end
                 elseif subtype == userskip_code then
--- local at = getattr(n,a_tagged)
--- local tl = taglist[at]
--- if tl and structurestags.strip(tl.taglist[#tl.taglist]) == "mspace" then
---     if nofcurrentcontent > 0 then
---         pushcontent()
---         pushentry(currentnesting) -- ??
---     end
---     -- in the past we'd push a space here ... check mkiv : otherwise no threshold with mspace
---     pushentry(tl)
---     if trace_export then
---         report_export("%w<!-- processing mspace tagged %a",currentdepth,at)
---     end
---     last = nil
---     currentparagraph = nil
--- else
                     if getwidth(n) > threshold then
                         if last and not somespace[currentcontent[nofcurrentcontent]] then
                             local a = getattr(n,a_tagged) or pat
@@ -1781,7 +1833,6 @@ local collectresults  do -- too many locals otherwise
                             end
                         end
                     end
--- end
                 elseif subtype == spaceskip_code or subtype == xspaceskip_code then
                     if not somespace[currentcontent[nofcurrentcontent]] then
                         local a = getattr(n,a_tagged) or pat
@@ -1844,7 +1895,7 @@ local collectresults  do -- too many locals otherwise
                     if maybewrong then
                         showmaybe(maybewrong)
                     end
-                    return
+--                     return
                 end
             elseif id == hlist_code or id == vlist_code then
                 local ai = getattr(n,a_image)
@@ -1932,8 +1983,10 @@ local collectresults  do -- too many locals otherwise
                     last = nil
                     currentparagraph = nil
                 end
-            elseif not paragraph and id == par_code and startofpar(n) then
-                paragraph = getattr(n,a_taggedpar)
+            elseif id == par_code then
+                if startofpar(n) then
+                    paragraph = getattr(n,a_taggedpar)
+                end
             elseif id == disc_code then
                 -- very unlikely because we stripped them
                 local pre, post, replace = getdisc(n)
@@ -1960,6 +2013,8 @@ local collectresults  do -- too many locals otherwise
     updaters.register("tagging.state.disable",function() enabled = false end)
     updaters.register("tagging.state.enable", function() enabled = true  end)
 
+    -- maybe also some fast enable/disable stack
+
     function nodes.handlers.export(head) -- hooks into the page builder
         if enabled then
             starttiming(treehash)
@@ -1977,8 +2032,10 @@ local collectresults  do -- too many locals otherwise
         return head
     end
 
-    function nodes.handlers.checkparcounter(p)
-        setattr(p,a_taggedpar,texgetcount("tagparcounter") + 1)
+    local c_tagparcounter <const> = tex.iscount("tagparcounter")
+
+    function nodes.handlers.checkparcounter(p,mode)
+        setattr(p,a_taggedpar,texgetcount(c_tagparcounter) + 1)
         return p
     end
 
@@ -2042,7 +2099,8 @@ local cssheadlink = [[
 <link type="text/css" rel="stylesheet" href="%filename%" />
 ]]
 
--- great, these suggested valuess attributes
+-- great, these suggested values attributes ... maybe we should just drop this
+-- mathjax and accept suboptimal rendering
 
 local mathmlheadscript = [[
 <script
@@ -2099,7 +2157,7 @@ local detailtemplate <const> = [[
 local htmltemplate <const> = [[
 %preamble%
 
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:math="http://www.w3.org/1998/Math/MathML">
+<html xmlns="http://www.w3.org/1999/xhtml"%?mathmlns: xmlns:m="%mathmlns%" lang="%language%" xml:lang="language%" ?%>
 
     <head>
 
@@ -2137,7 +2195,7 @@ local htmltemplate <const> = [[
             cssnamespaceurl = cssnamespaceurl,
         },false,true) }
         for element, details in sortedhash(used) do
-            if namespaces[element] then
+            if mathtags[element] then
                 -- skip math
             else
                 for detail, what in sortedhash(details) do
@@ -2166,7 +2224,7 @@ local htmltemplate <const> = [[
         return concat(result,"\n\n")
     end
 
-    local function allcontent(tree,nocheck)
+    local function allcontent(tree,nocheck,final)
         local result = { }
         local data   = tree.data
         if nocheck then
@@ -2190,7 +2248,9 @@ local htmltemplate <const> = [[
                 end
             end
         end
--- inspect(tree.data)
+if final then
+    -- maybe strip 2..#
+end
         flushtree(result,tree.data,"display") -- we need to collect images
         -- no need to lpeg .. fast enough
         local r = result[1]
@@ -2302,10 +2362,10 @@ local htmltemplate <const> = [[
         width       = true,
         height      = true,
         --
+        image       = true,
     }
 
     local addclicks   = true
-    local f_onclick   = formatters[ [[location.href='%s']] ]
     local f_onclick   = formatters[ [[location.href='%s']] ]
 
     local p_cleanid   = lpeg.replacer { [":"] = "-" }
@@ -2377,7 +2437,6 @@ local htmltemplate <const> = [[
     -- will be rediculed.
     --
     -- a table tr td th thead tbody tfoot
-    --
 
     local crappycss = {
         table     = "table", tabulate      = "table",
@@ -2399,19 +2458,13 @@ local htmltemplate <const> = [[
         for c in xmlcollected(source,"*") do
             if not c.special then
                 local tg = c.tg
-                local ns = c.ns
+             -- local ns = c.ns
                 local at = c.at
-                if ns == "m" then
-                    -- should happen elsewhere
-                 -- if false then -- yes or no
-                        c.ns = ""
-                        at["xmlns:m"] = nil
-                        if tg == "math" then
-                            at["xmlns"]   = mathmlns
-                        end
-                 -- end
-             -- elseif tg == "a" then
-             --     c.ns = ""
+                if tg == "math" then
+                    at["xmlns"] = mathmlns
+                    c.ns = ""
+                elseif mathtags[tg] then
+                    -- mathml
                 else
                     local dt = c.dt
                     local nt = #dt
@@ -2425,6 +2478,7 @@ local htmltemplate <const> = [[
                     end
                     local class = nil
                     local label = nil
+local image = at.image
                     if tg == "document" then
                         at.href   = nil
                         at.detail = nil
@@ -2469,6 +2523,9 @@ local htmltemplate <const> = [[
                             }
                         end
                     end
+if image then
+    attr.image = image
+end
                     c.at = attr
                     if label then
                         attr.label = label
@@ -2492,28 +2549,46 @@ local htmltemplate <const> = [[
         wrapups.checktree(tree)
         wrapups.breaktree(tree)
         wrapups.finalizetree(tree)
+        --
+        wrapups.hashlistdata()
+        --
     end
 
-    local notnamespaced = setmetatableindex(function(t,k) t[k] = k return k end)
+    local function locate(tree,simple,level)
+        if tree then
+            if tree.tg == simple then
+                return tree.__p__
+            end
+            local data = tree.data
+            if data then
+                for i=1,#data do
+                    local d = locate(data[i],simple,level+1)
+                    if d then
+                        return d
+                    end
+                end
+            end
+        end
+    end
 
     local function localexport(head,simple)
         starttiming(treehash)
 
-        local saved_treestack    = treestack
-        local saved_nesting      = nesting
-        local saved_currentdepth = currentdepth
-        local saved_tree         = tree
-        local saved_treehash     = treehash
-        local saved_nofbreaks    = nofbreaks
-        local saved_show_comment = show_comment
+        local saved_treestack    = treestack    ; treestack    = { }
+        local saved_nesting      = nesting      ; nesting      = { }
+        local saved_currentdepth = currentdepth ; currentdepth = 0
+        local saved_tree         = tree         ; tree         = { data = { }, fulltag == "root" } -- root
+        local saved_roottree     = roottree     ; roottree     = tree
+        local saved_treehash     = treehash     ; treehash     = { }
+        local saved_nofbreaks    = nofbreaks    ; nofbreaks    = 0
+        local saved_show_comment = show_comment ; show_comment = false
 
-        treestack         = { }
-        nesting           = { }
-        currentdepth      = 0
-        tree              = { data = { }, fulltag == "root" } -- root
-        treehash          = { }
-        nofbreaks         = 0
-        show_comment      = false
+local saved_nofcurrentcontent = nofcurrentcontent ; nofcurrentcontent = 0
+local saved_currentcontent    = currentcontent    ; currentcontent    = { }
+local saved_currentnesting    = currentnesting    ; currentnesting    = nil
+local saved_currentattribute  = currentattribute  ; currentattribute  = nil
+local saved_last              = last              ; last              = nil
+local saved_currentparagraph  = currentparagraph  ; currentparagraph  = nil
 
         justexport(head)
         finishexport()
@@ -2522,24 +2597,9 @@ local htmltemplate <const> = [[
         local result
 
         if simple then
-            while true do
-                local d = tree.data
-                if not d then
-                    return
-                end
-                d = d[1]
-                if not d then
-                    return
-                end
-                if d.tg == simple then
-                    local ns   = namespaced
-                    namespaced = notnamespaced
-                    result = allcontent(tree,true)
-                    namespaced = ns
-                    break
-                else
-                    tree.data = d.data
-                end
+            local d = locate(tree,simple,1)
+            if d then
+                result = allcontent(d,true)
             end
         else
             result = concat {
@@ -2547,13 +2607,22 @@ local htmltemplate <const> = [[
                 allcontent(tree),
             }
         end
+
         treestack    = saved_treestack
         nesting      = saved_nesting
         currentdepth = saved_currentdepth
         tree         = saved_tree
+        roottree     = saved_roottree
         treehash     = saved_treehash
         nofbreaks    = saved_nofbreaks
         show_comment = saved_show_comment
+
+nofcurrentcontent = saved_nofcurrentcontent
+currentcontent    = saved_currentcontent
+currentnesting    = saved_currentnesting
+currentattribute  = saved_currentattribute
+last              = saved_last
+currentparagraph  = saved_currentparagraph
 
         stoptiming(treehash)
 
@@ -2585,6 +2654,10 @@ local htmltemplate <const> = [[
 
     function structurestags.finishexport()
 
+        if only_images then
+            exporting = false
+        end
+
         if exporting then
             exporting = false
         else
@@ -2607,19 +2680,39 @@ local htmltemplate <const> = [[
         --
         wrapuptree(tree)
         --
-        local askedname = finetuning.file
+        local exportxml   = true
+        local exportxhtml = true
+        local exporthtml  = true
+        local useextra    = true -- compatibility for now
         --
-        -- we use a dedicated subpath:
+        if finetuning.output == "xml" then
+            exporthtml  = false
+            exportxhtml = false
+            useextra    = false
+        elseif finetuning.output == "xhtml" then
+            exportxml   = false
+            exporthtml  = false
+            useextra    = false
+        elseif finetuning.output == "html" then
+            exportxml   = false
+            exportxhtml = false
+            useextra    = false
+        end
+        --
+        local askedname = finetuning.file
+        local pathname  = finetuning.path
+        --
+        -- normally we use a dedicated subpath:
         --
         -- ./jobname-export
         -- ./jobname-export/images
-        -- ./jobname-export/styles
         -- ./jobname-export/styles
         -- ./jobname-export/jobname-export.xml
         -- ./jobname-export/jobname-export.xhtml
         -- ./jobname-export/jobname-export.html
         -- ./jobname-export/jobname-specification.lua
         -- ./jobname-export/styles/jobname-defaults.css
+        -- ./jobname-export/styles/jobname-fonts.css
         -- ./jobname-export/styles/jobname-styles.css
         -- ./jobname-export/styles/jobname-images.css
         -- ./jobname-export/styles/jobname-templates.css
@@ -2627,18 +2720,32 @@ local htmltemplate <const> = [[
         if type(askedname) ~= "string" or askedname == "" then
             askedname = tex.jobname
         end
+        if type(pathname) ~= "string" or pathname == "" then
+            pathname = false
+        end
 
         local usedname  = nameonly(askedname)
         local basepath  = usedname .. "-export"
+
+if not useextra then
+    basepath = "."
+end
+
         local imagepath = joinfile(basepath,"images")
         local stylepath = joinfile(basepath,"styles")
+
+        if pathname then
+            basepath  = joinfile(pathname,basepath)
+            imagepath = joinfile(pathname,imagepath)
+            stylepath = joinfile(pathname,stylepath)
+        end
 
         local function validpath(what,pathname)
             if lfs.isdir(pathname) then
                 report_export("using existing %s path %a",what,pathname)
                 return pathname
             end
-            lfs.mkdir(pathname)
+            lfs.mkdirs(pathname)
             if lfs.isdir(pathname) then
                 report_export("using cretated %s path %a",what,basepath)
                 return pathname
@@ -2648,7 +2755,9 @@ local htmltemplate <const> = [[
             end
         end
 
-        if not (validpath("export",basepath) and validpath("images",imagepath) and validpath("styles",stylepath)) then
+        if not (validpath("export",basepath )
+            and validpath("images",imagepath)
+            and validpath("styles",stylepath)) then
             return
         end
 
@@ -2656,10 +2765,10 @@ local htmltemplate <const> = [[
         --
         -- a xhtml suffix no longer seems to be work well with browsers
 
-        local xmlfilebase           = addsuffix(usedname .. "-raw","xml"  )
-        local xhtmlfilebase         = addsuffix(usedname .. "-tag","xhtml")
-        local htmlfilebase          = addsuffix(usedname .. "-div","html")
-        local specificationfilebase = addsuffix(usedname .. "-pub","lua"  )
+        local xmlfilebase           = addsuffix(usedname .. (useextra and "-raw" or ""),"xml"  )
+        local xhtmlfilebase         = addsuffix(usedname .. (useextra and "-tag" or ""),"xhtml")
+        local htmlfilebase          = addsuffix(usedname .. (useextra and "-div" or ""),"html")
+        local specificationfilebase = addsuffix(usedname .. (useextra and "-pub" or ""),"lua"  )
 
         local xmlfilename           = joinfile(basepath, xmlfilebase          )
         local xhtmlfilename         = joinfile(basepath, xhtmlfilebase        )
@@ -2668,12 +2777,14 @@ local htmltemplate <const> = [[
         --
         local defaultfilebase       = addsuffix(usedname .. "-defaults", "css")
         local imagefilebase         = addsuffix(usedname .. "-images",   "css")
+        local fontfilebase          = addsuffix(usedname .. "-fonts",    "css")
         local stylefilebase         = addsuffix(usedname .. "-styles",   "css")
         local templatefilebase      = addsuffix(usedname .. "-templates","css")
         --
         local defaultfilename       = joinfile(stylepath,defaultfilebase )
         local imagefilename         = joinfile(stylepath,imagefilebase   )
         local stylefilename         = joinfile(stylepath,stylefilebase   )
+        local fontfilename          = joinfile(stylepath,fontfilebase    )
         local templatefilename      = joinfile(stylepath,templatefilebase)
 
         local cssfile               = finetuning.cssfile
@@ -2689,6 +2800,7 @@ local htmltemplate <const> = [[
         local cssfiles = {
             defaultfilebase,
             imagefilebase,
+            fontfilebase,
             stylefilebase,
         }
 
@@ -2699,11 +2811,11 @@ local htmltemplate <const> = [[
         -- representation that uses verbose element names and carries information in
         -- attributes
 
-        local result = allcontent(tree)
+        local result = allcontent(tree,false,true)
 
         -- ugly but so be it:
-
         local extradata = structures.tags.getextradata()
+
         if extradata then
             local t = { "" }
             t[#t+1] = "<extradata>"
@@ -2723,9 +2835,10 @@ local htmltemplate <const> = [[
         if onlyxml then
 
             os.remove(defaultfilename)
-            os.remove(imagefilename)
-            os.remove(stylefilename)
-            os.remove(templatefilename)
+         -- os.remove(imagefilename)
+         -- os.remove(fontfilename)
+         -- os.remove(stylefilename)
+         -- os.remove(templatefilename)
 
             for i=1,#cssextra do
                 os.remove(joinfile(stylepath,basename(source)))
@@ -2734,6 +2847,7 @@ local htmltemplate <const> = [[
          -- os.remove(xmlfilename)
 
             os.remove(imagefilename)
+            os.remove(fontfilename)
             os.remove(stylefilename)
             os.remove(templatefilename)
             os.remove(xhtmlfilename)
@@ -2808,11 +2922,18 @@ local htmltemplate <const> = [[
 
         -- we're now ready for saving the result in the xml file
 
-        report_export("saving xml data in %a",xmlfilename)
-        io.savedata(xmlfilename,result)
+        if exportxml then
+
+            report_export("saving xml data in %a",xmlfilename)
+            io.savedata(xmlfilename,result)
+
+        end
 
         report_export("saving css image definitions in %a",imagefilename)
         io.savedata(imagefilename,wrapups.allusedimages(usedname))
+
+        report_export("saving css font definitions in %a",fontfilename)
+        io.savedata(fontfilename,wrapups.allusedfonts(usedname))
 
         report_export("saving css style definitions in %a",stylefilename)
         io.savedata(stylefilename,wrapups.allusedstyles(usedname))
@@ -2822,88 +2943,102 @@ local htmltemplate <const> = [[
 
         -- additionally we save an xhtml file; for that we load the file as xml tree
 
-        report_export("saving xhtml variant in %a",xhtmlfilename)
-
         local xmltree = cleanxhtmltree(xml.convert(result))
 
-     -- local xmltree = xml.convert(result)
-     -- for c in xml.collected(xmltree,"m:mtext[lastindex()=1]/m:mrow") do
-     --     print(c)
-     -- end
-     -- for c in xml.collected(xmltree,"mtext/mrow") do
-     --     print(c)
-     -- end
-     -- local xmltree = cleanxhtmltree(xmltree)
+        if exportxhtml then
 
-        xml.save(xmltree,xhtmlfilename)
+            report_export("saving xhtml variant in %a",xhtmlfilename)
 
-        -- now we save a specification file that can b eused for generating an epub file
+            -- for c in xml.collected(xmltree,"listitem[@href]") do
+            --     local h = c.at.href
+            --     if h then
+            --         local l = xml.first(c,"listtag")
+            --         if l then
+            --             table.insert(l.dt,1,xml.convert("<A href='" .. c.at.href .. "'></A>").dt)
+            --         end
+            --     end
+            -- end
+
+            xml.save(xmltree,xhtmlfilename)
+
+-- remap(specification,xmltree)
+
+        end
+
+        -- now we save a specification file that can be used for generating an epub file
 
         -- looking at identity is somewhat redundant as we also inherit from interaction
         -- at the tex end
 
-        local identity  = interactions.general.getidentity()
-        local metadata  = structures.tags.getmetadata()
+        if exporthtml then
 
-        local specification = {
-            name       = usedname,
-            identifier = os.uuid(),
-            images     = wrapups.uniqueusedimages(),
-            imagefile  = joinfile("styles",imagefilebase),
-            imagepath  = "images",
-            stylepath  = "styles",
-            xmlfiles   = { xmlfilebase },
-            xhtmlfiles = { xhtmlfilebase },
-            htmlfiles  = { htmlfilebase },
-            styles     = cssfiles,
-            htmlroot   = htmlfilebase,
-            language   = languagenames[texgetcount("mainlanguagenumber")],
-            title      = validstring(finetuning.title) or validstring(identity.title),
-            subtitle   = validstring(finetuning.subtitle) or validstring(identity.subtitle),
-            author     = validstring(finetuning.author) or validstring(identity.author),
-            firstpage  = validstring(finetuning.firstpage),
-            lastpage   = validstring(finetuning.lastpage),
-            metadata   = metadata,
-        }
+            local identity  = interactions.general.getidentity()
+            local metadata  = structures.tags.getmetadata()
 
-        report_export("saving specification in %a",specificationfilename,specificationfilename)
+            local specification = {
+                name       = usedname,
+                identifier = os.uuid(),
+                images     = wrapups.uniqueusedimages(),
+                imagefile  = joinfile("styles",imagefilebase),
+                imagepath  = "images",
+                stylepath  = "styles",
+                xmlfiles   = { xmlfilebase },
+                xhtmlfiles = { xhtmlfilebase },
+                htmlfiles  = { htmlfilebase },
+                styles     = cssfiles,
+                htmlroot   = htmlfilebase,
+                language   = languagenames[texgetcount("mainlanguagenumber")],
+                title      = validstring(finetuning.title) or validstring(identity.title),
+                subtitle   = validstring(finetuning.subtitle) or validstring(identity.subtitle),
+                author     = validstring(finetuning.author) or validstring(identity.author),
+                firstpage  = validstring(finetuning.firstpage),
+                lastpage   = validstring(finetuning.lastpage),
+                metadata   = metadata,
+            }
 
-        xml.wipe(xmltree,"metadata") -- maybe optional
+            report_export("saving specification in %a",specificationfilename,specificationfilename)
 
-        io.savedata(specificationfilename,table.serialize(specification,true))
+            xml.wipe(xmltree,"metadata") -- maybe optional
+
+            io.savedata(specificationfilename,table.serialize(specification,true))
 
         -- the html export for epub is different in the sense that it uses div's instead of
         -- specific tags
 
-        report_export("saving div based alternative in %a",htmlfilename)
+            report_export("saving div based alternative in %a",htmlfilename)
 
-        remap(specification,xmltree)
+            remap(specification,xmltree)
 
-        -- believe it or not, but a <title/> can prevent viewing in browsers
+            -- believe it or not, but a <title/> can prevent viewing in browsers
 
-        local title = specification.title
+            local title = specification.title
 
-        if not title or title == "" then
-            title = metadata.title
             if not title or title == "" then
-                title = usedname -- was: "no title"
+                title = metadata.title
+                if not title or title == "" then
+                    title = usedname -- was: "no title"
+                end
             end
+
+            local language = languagenames[texgetcount("mainlanguagenumber")]
+
+            local variables = {
+                style    = h_styles,
+                body     = xml.tostring(xml.first(xmltree,"/div")),
+                preamble = wholepreamble(false),
+                title    = title,
+                language = languagenames[texgetcount("mainlanguagenumber")] or "en",
+            }
+
+            io.savedata(htmlfilename,replacetemplate(htmltemplate,variables,"xml"))
+
+            -- finally we report how an epub file can be made (using the specification)
+
+            report_export("")
+            report_export('create epub with: mtxrun --script epub --make "%s" [--purge --rename --svgmath]',usedname)
+            report_export("")
+
         end
-
-        local variables = {
-            style    = h_styles,
-            body     = xml.tostring(xml.first(xmltree,"/div")),
-            preamble = wholepreamble(false),
-            title    = title,
-        }
-
-        io.savedata(htmlfilename,replacetemplate(htmltemplate,variables,"xml"))
-
-        -- finally we report how an epub file can be made (using the specification)
-
-        report_export("")
-        report_export('create epub with: mtxrun --script epub --make "%s" [--purge --rename --svgmath]',usedname)
-        report_export("")
 
         stoptiming(treehash)
     end

@@ -28,10 +28,17 @@
 
 \definetagconstant{division}
 \definetagconstant{paragraph}
+\definetagconstant{subparagraph}
 \definetagconstant{p}
-\definetagconstant{construct}
 \definetagconstant{highlight}
 \definetagconstant{ornament}
+\definetagconstant{break}
+\definetagconstant{placeholder}
+
+\definetagconstant{construct}
+\definetagconstant{constructleft}
+\definetagconstant{constructright}
+\definetagconstant{constructcontent}
 
 % \definetagconstant{sectionblock}
 
@@ -47,6 +54,12 @@
 \definetagconstant{itemcontent}
 \definetagconstant{itemhead}
 \definetagconstant{itembody}
+
+\definetagconstant{items}
+\definetagconstant{itemtexts}
+\definetagconstant{itemtext}
+\definetagconstant{itemsymbols}
+\definetagconstant{itemsymbol}
 
 \definetagconstant{description}
 \definetagconstant{descriptiontag}
@@ -105,7 +118,10 @@
 \definetagconstant{mtable}
 \definetagconstant{mtr}
 \definetagconstant{mtd}
+
 \definetagconstant{maction}
+
+\definetagconstant{mstack}
 
 \definetagconstant{mstacker}
 \definetagconstant{mstackertop}
@@ -134,6 +150,8 @@
 \definetagconstant{mover}
 \definetagconstant{mtext}
 
+\definetagconstant{mrow}
+
 \definetagconstant{list}
 \definetagconstant{listitem}
 \definetagconstant{listtag}
@@ -142,12 +160,12 @@
 \definetagconstant{listpage}
 \definetagconstant{listtext}
 
+\definetagconstant{delimitedblock}
 \definetagconstant{delimited}
-%definetagconstant{delimited}
 \definetagconstant{delimitedsymbol}
 \definetagconstant{delimitedcontent}
 
-\aliastagconstant {delimitedblock}{delimited}
+%aliastagconstant {delimitedblock}{delimited} % no longer
 
 \definetagconstant{subsentence}
 \definetagconstant{subsentencecontent}
@@ -185,6 +203,8 @@
 \definetagconstant{margintextblock}
 \definetagconstant{marginanchor}
 
+\definetagconstant{linetext}
+
 % we might opt for verbose variants so this is experimental:
 
 \definetagconstant{label}
@@ -214,8 +234,13 @@
 \definetagconstant{citation}
 \definetagconstant{cite}
 
+\definetagconstant{narrower}
+
 \definetagconstant{block}
+
 \definetagconstant{userdata}
+
+\definetagconstant{textdisplay}
 
 \definetagconstant{verse}
 \definetagconstant{versetag}
@@ -298,7 +323,7 @@
 
 \def\strc_tags_enabled_start_chained
   {\iftrialtypesetting
-     \expandafter\gobblethreearguments
+     \expandafter\gobblefourarguments
    \else
      \expandafter\strc_tags_start_chained_indeed
    \fi}
@@ -317,10 +342,15 @@
      \expandafter\strc_tags_stop
   \fi}
 
-\def\strc_tags_start_chained_indeed#1#2#3{\strc_tags_start_chained{#1}{#2}{\getcurrentparentchain#3{#2}}}
+% #2 : parent #3: instance
+
+\def\strc_tags_start_chained_indeed#1#2#3#4{\strc_tags_start_chained{#1}{#2}{\getcurrentparentchain#4{#3}}}
 
 \newconditional\c_strc_tags_enabled
 \newconditional\c_strc_tags_global
+
+\permanent\protected\def\taggingpause % see pack-obj
+  {\setfalse\c_strc_tags_global}
 
 \lettonothing\dotaggedplaceholder
 
@@ -350,14 +380,14 @@
      \enforced\let\dotaggedplaceholder  \strc_tags_placeholder_char
      \enforced\let\dostarttagged        \gobbletwoarguments
      \enforced\let\dostarttaggednodetail\gobbleoneargument
-     \enforced\let\dostarttaggedchained \gobblethreearguments
+     \enforced\let\dostarttaggedchained \gobblefourarguments
      \enforced\let\dostoptagged         \donothing
    \else
      % initial
      \enforced\lettonothing\dotaggedplaceholder
      \enforced\let\dostarttagged        \gobbletwoarguments
      \enforced\let\dostarttaggednodetail\gobbleoneargument
-     \enforced\let\dostarttaggedchained \gobblethreearguments
+     \enforced\let\dostarttaggedchained \gobblefourarguments
      \enforced\let\dostoptagged         \donothing
      \enforced\let\dostartignoretagging \donothing
      \enforced\let\dostopignoretagging  \donothing
@@ -438,18 +468,10 @@
 %D therefore we can't just enable and disable at will. In some manuals we only need
 %D part of the tagging mechanism so there we can turn it on and off.
 
-% \appendtoks
-%    \ifcstok{\taggingparameter\c!state}\v!start
-%      \setsystemmode\s!tagging
-%      \expand\everyenableelements
-%    \else
-%      \resetsystemmode\s!tagging
-%      \expand\everydisableelements
-%    \fi
-% \to \everysetuptagging
-
 \appendtoks
-   \ifcstok{\taggingparameter\c!state}\v!start
+   \ifexporting
+     % already set up
+   \orelse\ifcstok{\taggingparameter\c!state}\v!start
      \settrue\c_strc_tags_global
      \setsystemmode\s!tagging
      \expand\everyenableelements
@@ -626,5 +648,34 @@
      \dostoptagged
      \dostoptagged
    \fi}
+
+%D A byproduct of some tests:
+%D
+%D \starttyping
+%D \startquotation
+%D     \startsubparagraph test 1\stopsubparagraph
+%D     \startsubparagraph test 2\stopsubparagraph
+%D     \startsubparagraph test 3\stopsubparagraph
+%D \stopquotation
+%D \stoptyping
+
+\newboundary\subparagraphboundary
+
+\permanent\protected\def\startsubparagraph
+  {\removeunwantedspaces
+   \ifnum\lastboundary=\subparagraphboundary
+     \unboundary
+     \par
+   \fi
+   \dostarttagged\t!subparagraph\empty
+   \ignorespaces}
+
+\permanent\protected\def\stopsubparagraph
+  {\removeunwantedspaces
+   \dostoptagged
+   \boundary\subparagraphboundary
+   \ignorespaces}
+
+\permanent\protected\def\subparagraph{\stopsubparagraph\startsubparagraph}
 
 \protect

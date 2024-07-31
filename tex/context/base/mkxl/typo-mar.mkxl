@@ -203,7 +203,7 @@
        \strc_references_set_page_only_destination_box_attribute\currentmarginreference\currentmarginreference
      \fi
      \edef\currentmargindatastrut{\margindataparameter\c!strut}%
-     \dostarttaggedchained\t!margintext\currentmargindata\??margindata
+     \dostarttaggedchained\t!margintext\currentmargindata\currentmargindata\??margindata
      \dotagmargintext\c_typo_margins_n
      \ifcsname\currentmarginframedhash\s!parent\endcsname
        \setbox\nextbox\naturalhbox \currentmarginreference \bgroup

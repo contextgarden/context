@@ -89,7 +89,8 @@ return {
         "demeritsfrozenparcode", "shapefrozenparcode", "linefrozenparcode", "hyphenationfrozenparcode",
         "shapingpenaltyfrozenparcode", "orphanpenaltyfrozenparcode", "toddlerpenaltyfrozenparcode",
         "emergencyfrozenparcode", "parpassesfrozenparcode", "singlelinepenaltyfrozenparcode",
-        "hyphenpenaltyfrozenparcode", "exhyphenpenaltyfrozenparcode", "allfrozenparcode",
+        "hyphenpenaltyfrozenparcode", "exhyphenpenaltyfrozenparcode", "linebreakchecksfrozenparcode",
+        "twindemeritsfrozenparcode", "allfrozenparcode",
         --
         "activemathcharcode",
         --
@@ -250,6 +251,9 @@ return {
         "noleftligatureglyphoptioncode", "norightligatureglyphoptioncode",
         "textcheckitalicglyphoptioncode", "mathcheckitalicglyphoptioncode",
         "weightlessglyphoptioncode", "spacefactoroverloadglyphoptioncode",
+        "checktoddlerglyphoptioncode", "checktwinglyphoptioncode",
+        --
+        "ignoretwincharactercontrolcode",
         --
      -- "noitaliccorrectionmathoptioncode", "noleftpairkernmathoptioncode", "norightpairkernmathoptioncode",
      -- "autodiscretionarymathoptioncode", "fulldiscretionarymathoptioncode",

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupthinrules" level="style" category="rules" file="pack-mrl.mkiv">
+    <cd:command name="setupthinrules" level="style" category="rules" file="pack-mrl.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="height">
@@ -65,11 +65,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="thinrule" level="document" category="rules" file="pack-mrl.mkiv"/>
+    <cd:command name="thinrule" level="document" category="rules" file="pack-mrl.mkxl"/>
 
-    <cd:command name="hairline" level="document" category="rules" file="pack-mrl.mkiv"/>
+    <cd:command name="hairline" level="document" category="rules" file="pack-mrl.mkxl"/>
 
-    <cd:command name="thinrules" level="document" category="rules" file="pack-mrl.mkiv">
+    <cd:command name="thinrules" level="document" category="rules" file="pack-mrl.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupthinrules"/>

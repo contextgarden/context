@@ -506,9 +506,9 @@
      \global\headissomewhere\conditionalfalse % global
    \orelse\ifx\currentheadrenderingalternative\v!somewhere
      \global\headisdisplay\conditionalfalse   % global
-     \global\headissomewhere\conditionaltrue % global
+     \global\headissomewhere\conditionaltrue  % global
    \else
-     \global\headisdisplay\conditionaltrue   % global
+     \global\headisdisplay\conditionaltrue    % global
      \global\headissomewhere\conditionalfalse % global
    \fi}
 

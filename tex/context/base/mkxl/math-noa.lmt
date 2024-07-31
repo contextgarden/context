@@ -557,6 +557,10 @@ do
         processnested(pointer,families,n+1)
     end
 
+    function mathematics.familyname(n)
+        return familymap[n] or "regular"
+    end
+
     families[fraction_code] = families[noad_code]
     families[accent_code]   = families[noad_code] -- added 2023-07
     families[radical_code]  = families[noad_code] -- added 2023-07
@@ -2839,9 +2843,9 @@ local actions = tasks.actions("math") -- head, style, penalties
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
-function processors.mlisttohlist(head,style,penalties,beginclass,endclass,level)
+function processors.mlisttohlist(head,style,penalties,beginclass,endclass,level,style)
     starttiming(noads)
-    head = actions(head,style,penalties,beginclass,endclass,level)
+    head = actions(head,style,penalties,beginclass,endclass,level,style)
     stoptiming(noads)
     return head
 end

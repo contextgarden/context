@@ -861,7 +861,9 @@
 \newbox\b_page_layouts_element
 
 \def\page_layouts_insert_elements
-  {\ifcase\pageornamentstate
+  {\ifexporting
+     % forget about it
+   \orelse\ifcase\pageornamentstate
      \page_layouts_place_elements_indeed % we could have a special flag for always ignored
    \fi}
 

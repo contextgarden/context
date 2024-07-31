@@ -36,6 +36,8 @@
   + \singlelinepenaltyfrozenparcode
   + \hyphenpenaltyfrozenparcode
   + \exhyphenpenaltyfrozenparcode
+  + \linebreakchecksfrozenparcode
+  + \twindemeritsfrozenparcode
 \relax
 
 \setnewconstant\paragraphpenaltycodes\numexpr
@@ -49,17 +51,19 @@
   + \singlelinepenaltyfrozenparcode
   + \hyphenpenaltyfrozenparcode
   + \exhyphenpenaltyfrozenparcode
+  + \linebreakchecksfrozenparcode
 \relax
 
 \setnewconstant\paragraphdemeritcodes\numexpr
     \demeritsfrozenparcode
+  + \twindemeritsfrozenparcode
 \relax
 
 \setnewconstant\paragraphshapecodes\numexpr
-   \hangfrozenparcode
- + \skipfrozenparcode
- + \parfillfrozenparcode
- + \shapefrozenparcode
+    \hangfrozenparcode
+  + \skipfrozenparcode
+  + \parfillfrozenparcode
+  + \shapefrozenparcode
 \relax
 
 \setnewconstant\paragraphlinecodes\numexpr
@@ -73,6 +77,9 @@
 \setnewconstant\paragraphpassescodes\numexpr
     \parpassesfrozenparcode
 \relax
+
+\bitwiseflip\glyphoptions\checktoddlerglyphoptioncode
+\bitwiseflip\glyphoptions\checktwinglyphoptioncode
 
 % \linefrozenparcode % lineskip
 
@@ -106,6 +113,8 @@
   + \singlelinepenaltyfrozenparcode
   + \hyphenpenaltyfrozenparcode
   + \exhyphenpenaltyfrozenparcode
+  + \linebreakchecksfrozenparcode
+  + \twindemeritsfrozenparcode
 \relax
 
 \appendtoks

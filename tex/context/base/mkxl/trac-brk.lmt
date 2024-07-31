@@ -39,6 +39,7 @@ local nodecodes         = nodes.nodecodes
 ----- fitnesscodes      = tex.fitnesscodes
 
 local penalty_code      <const> = nodecodes.penalty
+local glyph_code        <const> = nodecodes.glyph
 local glue_code         <const> = nodecodes.glue
 local disc_code         <const> = nodecodes.disc
 local kern_code         <const> = nodecodes.kern
@@ -112,14 +113,14 @@ local marginoffset       = 0
 local showdetails        = false
 local showsimple         = false
 
-local actions = {
+local showactions = {
     [breakcodes.initialize] = function()
         if texgetnest("ptr") == nestlevel then
             report("start registering")
             usedfont = nodes.visualizers.getusedfont()
         end
     end,
-    [breakcodes.start] = function(pass,classes,decent)
+    [breakcodes.start] = function(checks,pass,classes,decent)
         if texgetnest("ptr") == nestlevel then
             report("tracing pass %i",pass)
             if breakpass ~= pass then
@@ -137,7 +138,7 @@ local actions = {
             end
         end
     end,
-    [breakcodes.report] = function(pass,currentserial,previousserial,line,kind,class,demerits,breakpoint,short,glue,width)
+    [breakcodes.report] = function(checks,pass,currentserial,previousserial,line,kind,class,demerits,breakpoint,short,glue,width)
         if texgetnest("ptr") == nestlevel then
             if breakpoint then
                 local s = {
@@ -207,7 +208,7 @@ local actions = {
             end
         end
     end,
-    [breakcodes.line] = function(line,badness,overshoot,shrink,stretch)
+    [breakcodes.line] = function(checks,line,badness,overshoot,shrink,stretch)
         if showdetails and texgetnest("ptr") == nestlevel then
             linenumber = linenumber + 1
             line = tonut(line)
@@ -252,7 +253,7 @@ local actions = {
             insertbefore(head,location,rule)
         end
     end,
-    [breakcodes.list] = function(currentserial)
+    [breakcodes.list] = function(checks,currentserial)
         if texgetnest("ptr") == nestlevel then
             local s = serial[currentserial]
             if s then
@@ -260,7 +261,7 @@ local actions = {
             end
         end
     end,
-    [breakcodes.delete] = function(currentserial)
+    [breakcodes.delete] = function(checks,currentserial)
         -- eventually most are pruned
         if texgetnest("ptr") == nestlevel then
             local s = serial[currentserial]
@@ -352,10 +353,10 @@ local actions = {
 
 -- -- --
 
+-- local enabled = false
+
 function breakpoints.start(specification)
-    callback.register("show_break", function(what,...)
-        return actions[what](...)
-    end)
+--     enabled = true
     --
     local list   = specification.list
     local option = specification.option
@@ -393,7 +394,11 @@ function breakpoints.start(specification)
 end
 
 function breakpoints.stop()
-    callback.register("show_break")
+--     enabled = false
+end
+
+nodes.handlers.linebreakchecks[1] = function(what,...)
+    return showactions[what](...)
 end
 
 function breakpoints.reset()

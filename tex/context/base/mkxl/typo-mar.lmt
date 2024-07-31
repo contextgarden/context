@@ -10,6 +10,9 @@ if not modules then modules = { } end modules ['typo-mar'] = {
 --
 -- * autoleft/right depending on available space (or distance to margin)
 -- * floating margin data, with close-to-call anchoring
+--
+-- Maybe I should redo this one using a few options available in luametatex
+-- but it's easy to break this.
 
 local format, validstring = string.format, string.valid
 local insert, remove, sortedkeys, fastcopy = table.insert, table.remove, table.sortedkeys, table.fastcopy
@@ -80,6 +83,14 @@ local setshift           = nuts.setshift
 local getwidth           = nuts.getwidth
 local setwidth           = nuts.setwidth
 local getheight          = nuts.getheight
+local getexcept          = nuts.getexcept
+local setexcept          = nuts.setexcept
+
+local margin_excepts     = false
+
+directives.register("typesetters.margindata.excepts",function(v)
+    margin_excepts = v
+end)
 
 local setattrlist        = nuts.setattrlist
 local takebox            = nuts.takebox
@@ -506,7 +517,7 @@ local function inject(parent,head,candidate)
         return head, nil, false -- we can have empty texts
     end
     local width, height, depth
-                       = getwhd(box)
+                       = getwhd(box) -- use getlistdimensions instead
     local shift        = getshift(box)
     local stack        = candidate.stack
     local stackname    = candidate.stackname
@@ -616,6 +627,14 @@ local function inject(parent,head,candidate)
         offset = offset + candidate.dy -- always
         shift  = shift + offset
     end
+    --
+    if margin_excepts then
+        -- This is not (yet) ok when continue is used.
+        local except, exdepth = getexcept(parent)
+        exdepth = exdepth + height + depth -- + candidate.dy
+        setexcept(parent,except,exdepth)
+    end
+    --
     -- Maybe we also need to patch offset when we apply methods, but how ...
     -- This needs a bit of playing as it depends on the stack setting of the
     -- following which we don't know yet ... so, consider stacking partially

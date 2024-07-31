@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="markpage" level="style" category="structure" file="page-ini.mkiv">
+    <cd:command name="markpage" level="style" category="structure" file="page-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes" optional="yes">
@@ -13,19 +13,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="markedpages" level="style" category="structure" file="page-ini.mkiv">
+    <cd:command name="markedpages" level="style" category="structure" file="page-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="markpages" type="environment" level="style" category="structure" file="page-ini.mkiv">
+    <cd:command name="markpages" type="environment" level="style" category="structure" file="page-ini.mkxl">
         <cd:arguments>
-            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsemarkedpage" level="style" category="structure" keywords="conditional" file="page-ini.mkiv">
+    <cd:command name="doifelsemarkedpage" level="style" category="structure" keywords="conditional" file="page-ini.lmt">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifmarkedpage" level="style" category="structure" keywords="conditional" file="page-ini.lmt">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>

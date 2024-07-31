@@ -1488,7 +1488,7 @@
    \global\c_tabl_ntb_col\zerocount
    \global\c_tabl_ntb_row\zerocount
    \global\advanceby\c_tabl_ntb_row\minusone
-   \dostarttaggedchained\t!table\empty\??naturaltable
+   \dostarttaggedchained\t!table\empty\empty\??naturaltable
   %\registerparoptions % (*) triggers max hsize
    \expand\t_tabl_ntb
    \dostoptagged}

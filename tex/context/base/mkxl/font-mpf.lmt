@@ -68,7 +68,6 @@ local function setmetaglyphs(category,fontid,unicode,specification)
             characters[unicode] = newdata -- so that we can register commands
             fonts.dropins.swapone("mps",tfmdata,shape,unicode)
             --
-            local olddata = characters[unicode]
             newdata.width   = urx - llx
             newdata.height  = ury
             newdata.depth   = -lly

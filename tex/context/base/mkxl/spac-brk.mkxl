@@ -17,9 +17,40 @@
 
 \newcount\tracinglousiness
 
+\newcount\twinslimit \twinslimit\maxcount
+
 \registerctxluafile{spac-brk}{}
+\registerctxluafile{spac-ovl}{}
+\registerctxluafile{spac-twi}{}
 
 \unprotect
+
+\cccode \periodasciicode          \ignoretwincharactercontrolcode
+\cccode \commaasciicode           \ignoretwincharactercontrolcode
+\cccode \exclamationmarkasciicode \ignoretwincharactercontrolcode
+\cccode \questionmarkasciicode    \ignoretwincharactercontrolcode
+\cccode \colonasciicode           \ignoretwincharactercontrolcode
+\cccode \semicolonasciicode       \ignoretwincharactercontrolcode
+
+\installtexexperiment
+  {parbuilder.twins}
+  {\bitwiseflip\glyphoptions-\checktwinglyphoptioncode
+   \lefttwindemerits 7500
+   \righttwindemerits7500
+   \linebreakchecks\plustwo}
+  {\bitwiseflip\glyphoptions\checktwinglyphoptioncode
+   \lefttwindemerits \zerocount
+   \righttwindemerits\zerocount
+   \linebreakchecks\zerocount}
+
+% \lefttwindemerits 7500
+% \righttwindemerits7500
+%
+% \permanent\protected\def\dopermittwins{\ifnum\linebreakchecks=\plustwo\linebreakchecks\zerocount\fi}
+% \permanent\protected\def\doavoidtwins {\linebreakchecks\plusone}
+%
+% \defcsname\??aligncommand permittwins\endcsname{\toksapp\t_spac_align_collected{\dopermittwins}}
+% \defcsname\??aligncommand  avoidtwins\endcsname{\toksapp\t_spac_align_collected{\doavoidtwins }}
 
 %D This is a very experimental feature and a by product of improving inline math
 %D crossing lines. As it might evolve: use with care.

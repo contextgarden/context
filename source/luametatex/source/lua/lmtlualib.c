@@ -610,7 +610,8 @@ static int lualib_sub_nibble(lua_State *L)
 {
     unsigned int position = lmt_tounsigned(L, 2) - 1;
     unsigned int original = lmt_tounsigned(L, 1);
-    if (position >= 0 && position <= 7) { 
+ // if ((position >= 0) && (position <= 7)) { 
+    if (position <= 7) { 
         unsigned int nibble = ((original >> (4 * --position)) & 0xF);
         if (nibble > 0) {
             nibble--;

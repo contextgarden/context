@@ -34,6 +34,9 @@ extern void     tex_set_am_code                (int n, halfword v, int gl);
 extern halfword tex_get_am_code                (int n);
 extern void     tex_set_hj_code                (int l, int n, halfword v, int gl);
 extern halfword tex_get_hj_code                (int l, int n);
+extern void     tex_set_cc_code                (int n, halfword v, int gl); /* can be always global */
+extern halfword tex_get_cc_code                (int n);
+
 extern void     tex_initialize_xx_codes        (void);
 
 extern void     tex_hj_codes_from_lc_codes     (int h);

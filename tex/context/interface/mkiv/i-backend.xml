@@ -48,6 +48,10 @@
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
                 </cd:parameter>
+                <cd:parameter name="hyphen">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
                 <cd:parameter name="xmpfile">
                     <cd:constant type="cd:file"/>
                 </cd:parameter>

@@ -18,6 +18,12 @@
                 <cd:parameter name="category">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="a" default="yes"/>
+                    <cd:constant type="b"/>
+                    <cd:constant type="default"/>
+                    <cd:constant type="page"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -40,6 +46,12 @@
                 </cd:parameter>
                 <cd:parameter name="category">
                     <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="a" default="yes"/>
+                    <cd:constant type="b"/>
+                    <cd:constant type="default"/>
+                    <cd:constant type="page"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>

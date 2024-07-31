@@ -4,21 +4,30 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathfence" level="style" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="definemathfence" level="style" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupmathfence"/>
+                <cd:inherit name="setupmathfences"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathfence" level="style" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="setupmathfence" level="style" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
-                <cd:parameter name="command">
+                <cd:inherit name="setupmathfences"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathfences" level="style" category="mathematics" file="math-fen.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="define">
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
                 </cd:parameter>
@@ -37,6 +46,18 @@
                 <cd:parameter name="color">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
+                <cd:parameter name="leftcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="middlecolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="rightcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="symbolcolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
                 <cd:parameter name="state">
                     <cd:constant type="auto"/>
                 </cd:parameter>
@@ -44,6 +65,10 @@
                     <cd:constant type="auto"/>
                 </cd:parameter>
                 <cd:parameter name="size">
+                    <cd:constant type="big"/>
+                    <cd:constant type="Big"/>
+                    <cd:constant type="bigg"/>
+                    <cd:constant type="Bigg"/>
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
                 <cd:parameter name="factor">
@@ -51,25 +76,136 @@
                     <cd:constant type="auto"/>
                     <cd:constant type="cd:number"/>
                 </cd:parameter>
+                <cd:parameter name="overflow">
+                    <cd:constant type="no"/>
+                    <cd:constant type="auto" default="yes"/>
+                </cd:parameter>
                 <cd:parameter name="mathclass">
+                    <cd:resolve name="value-mathclass"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="depth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="plugin">
+                    <cd:constant type="mp"/>
+                </cd:parameter>
+                <cd:parameter name="mp">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="displayfactor">
                     <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="inlinefactor">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="mathmeaning">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+                <cd:parameter name="topspace">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="bottomspace">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="snap">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="alternative">
+                    <cd:constant type="small"/>
+                    <cd:constant type="big"/>
+                </cd:parameter>
+                <cd:parameter name="setups">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="source">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="leftsource">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="middlesource">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="rightsource">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="leftstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="rightstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="leftclass">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="middleclass">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="rightclass">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="text">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fence" generated="yes" variant="example" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="fence" generated="yes" variant="instance" level="document" category="mathematics" file="math-fen.mkxl">
+        <cd:sequence>
+            <cd:instance value="fence"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathfences"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+        <cd:instances>
+            <cd:constant value="parenthesis"/>
+            <cd:constant value="bracket"/>
+            <cd:constant value="brace"/>
+            <cd:constant value="ceiling"/>
+            <cd:constant value="floor"/>
+            <cd:constant value="interval"/>
+            <cd:constant value="openinterval"/>
+            <cd:constant value="closedinterval"/>
+            <cd:constant value="leftopeninterval"/>
+            <cd:constant value="rightopeninterval"/>
+            <cd:constant value="varopeninterval"/>
+            <cd:constant value="varleftopeninterval"/>
+            <cd:constant value="varrightopeninterval"/>
+            <cd:constant value="integerinterval"/>
+        </cd:instances>
+    </cd:command>
+
+    <cd:command name="fence" generated="yes" variant="instance:argument" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:sequence>
             <cd:variable value="fence"/>
         </cd:sequence>
         <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathfences"/>
+            </cd:assignments>
+            <cd:content/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fenced" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="fenced" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:keywords>
+                <cd:constant type="cases"/>
+                <cd:constant type="sesac"/>
+                <cd:constant type="tekcarb"/>
                 <cd:constant type="parenthesis"/>
                 <cd:constant type="bracket"/>
                 <cd:constant type="brace"/>
@@ -86,10 +222,7 @@
                 <cd:constant type="lowercorner"/>
                 <cd:constant type="group"/>
                 <cd:constant type="openbracket"/>
-                <!--
-                    <cd:constant type="nothing"/>
-                    <cd:constant type="mirrored"/>
-                -->
+                <cd:constant type="nothing"/>
                 <cd:constant type="mirroredparenthesis"/>
                 <cd:constant type="mirroredbracket"/>
                 <cd:constant type="mirroredbrace"/>
@@ -106,149 +239,336 @@
                 <cd:constant type="mirroredlowercorner"/>
                 <cd:constant type="mirroredgroup"/>
                 <cd:constant type="mirroredopenbracket"/>
-                <!--
-                    <cd:constant type="mirrorednothing"/>
-                -->
+                <cd:constant type="mirrorednothing"/>
+                <cd:constant type="interval"/>
+                <cd:constant type="openinterval"/>
+                <cd:constant type="closedinterval"/>
+                <cd:constant type="leftopeninterval"/>
+                <cd:constant type="rightopeninterval"/>
+                <cd:constant type="varopeninterval"/>
+                <cd:constant type="varleftopeninterval"/>
+                <cd:constant type="varrightopeninterval"/>
+                <cd:constant type="integerinterval"/>
+                <cd:constant type="abs"/>
+                <cd:constant type="innerproduct"/>
+                <cd:constant type="integerpart"/>
+                <cd:constant type="norm"/>
+                <cd:constant type="set"/>
+                <cd:constant type="sequence"/>
+                <cd:constant type="tuple"/>
                 <cd:constant type="cd:name"/>
             </cd:keywords>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathfences"/>
+            </cd:assignments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="fence" level="document" category="mathematics" file="math-fen.mkiv"/>
+    <cd:command name="fenced" variant="argument" level="document" category="mathematics" file="math-fen.mkxl">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="tupanddownarrows"/>
+                <cd:constant type="tupdownarrows"/>
+                <cd:constant type="tdownuparrows"/>
+                <cd:constant type="tuparrow"/>
+                <cd:constant type="tdownarrow"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathfences"/>
+            </cd:assignments>
+            <cd:content/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
 
-    <cd:command name="left" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="mathfenced" type="environment" level="document" category="mathematics" file="math-fen.mkxl">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="parenthesis"/>
+                <cd:constant type="bracket"/>
+                <cd:constant type="brace"/>
+                <cd:constant type="angle"/>
+                <cd:constant type="doubleangle"/>
+                <cd:constant type="bar"/>
+                <cd:constant type="doublebar"/>
+                <cd:constant type="triplebar"/>
+                <cd:constant type="solidus"/>
+                <cd:constant type="floor"/>
+                <cd:constant type="ceiling"/>
+                <cd:constant type="moustache"/>
+                <cd:constant type="uppercorner"/>
+                <cd:constant type="lowercorner"/>
+                <cd:constant type="group"/>
+                <cd:constant type="openbracket"/>
+                <cd:constant type="nothing"/>
+                <cd:constant type="mirroredparenthesis"/>
+                <cd:constant type="mirroredbracket"/>
+                <cd:constant type="mirroredbrace"/>
+                <cd:constant type="mirroredangle"/>
+                <cd:constant type="mirroreddoubleangle"/>
+                <cd:constant type="mirroredbar"/>
+                <cd:constant type="mirroreddoublebar"/>
+                <cd:constant type="mirroredtriplebar"/>
+                <cd:constant type="mirroredsolidus"/>
+                <cd:constant type="mirroredfloor"/>
+                <cd:constant type="mirroredceiling"/>
+                <cd:constant type="mirroredmoustache"/>
+                <cd:constant type="mirroreduppercorner"/>
+                <cd:constant type="mirroredlowercorner"/>
+                <cd:constant type="mirroredgroup"/>
+                <cd:constant type="mirroredopenbracket"/>
+                <cd:constant type="mirrorednothing"/>
+                <cd:constant type="interval"/>
+                <cd:constant type="openinterval"/>
+                <cd:constant type="leftopeninterval"/>
+                <cd:constant type="rightopeninterval"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathfences"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="F" level="document" category="mathematics" file="math-fen.mkxl">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="+"/>
+                <cd:constant type="-"/>
+                <cd:constant type="="/>
+                <cd:constant type="*"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="fence" level="document" category="mathematics" file="math-fen.mkxl"/>
+
+    -->
+
+    <cd:command name="lfence" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-leftfence"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="middle" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="mfence" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
-            <cd:resolve name="string-character"/>
+            <cd:resolve name="string-middlefence"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="right" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="rfence" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-rightfence"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="big" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="left" level="document" category="mathematics" file="math-fen.mkxl">
+        <cd:arguments>
+            <cd:resolve name="string-leftfence"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="middle" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Big" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="right" level="document" category="mathematics" file="math-fen.mkxl">
+        <cd:arguments>
+            <cd:resolve name="string-rightfence"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="big" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bigg" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="Big" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Bigg" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="bigg" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bigl" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="Bigg" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bigm" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="bigl" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bigr" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="bigm" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Bigl" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="bigr" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Bigm" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="Bigl" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Bigr" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="Bigm" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="biggl" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="Bigr" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="biggm" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="biggl" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="biggr" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="biggm" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Biggl" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="biggr" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Biggm" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="Biggl" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="Biggr" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="Biggm" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lfence" level="document" category="mathematics" file="math-fen.mkiv">
+    <cd:command name="Biggr" level="document" category="mathematics" file="math-fen.mkxl">
         <cd:arguments>
-            <cd:resolve name="argument-leftfence"/>
+            <cd:resolve name="string-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mfence" level="document" category="mathematics" file="math-fen.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-character"/>
-        </cd:arguments>
-    </cd:command>
+    <cd:command name="checkedfences" type="environment" level="style" category="mathematics" file="math-fen.mkxl"/>
 
-    <cd:command name="rfence" level="document" category="mathematics" file="math-fen.mkiv">
-        <cd:arguments>
-            <cd:resolve name="argument-rightfence"/>
-        </cd:arguments>
-    </cd:command>
+    <!--
 
-    <cd:command name="checkedfences" type="environment" level="style" category="mathematics" file="math-fen.mkiv"/>
+        <cd:command name="Lparenthesis" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rparenthesis" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lbracket" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rbracket" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lbrace" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rbrace" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Langle" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rangle" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Ldoubleangle" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rdoubleangle" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lbar" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rbar" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Ldoublebar" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rdoublebar" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Ltriplebar" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rtriplebar" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lsolidus" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rsolidus" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lfloor" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rfloor" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lceiling" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rceiling" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lmoustache" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rmoustache" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Luppercorner" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Ruppercorner" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Llowercorner" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rlowercorner" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lgroup" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rgroup" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lopenbracket" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Ropenbracket" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lnothing" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rnothing" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lparenthesismirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rparenthesismirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lbracketmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rbracketmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lbracemirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rbracemirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Langlemirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Ranglemirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Ldoubleanglemirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rdoubleanglemirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lbarmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rbarmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Ldoublebarmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rdoublebarmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Ltriplebarmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rtriplebarmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lsolidusmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rsolidusmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lfloormirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rfloormirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lceilingmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rceilingmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lmoustachemirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rmoustachemirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Luppercornermirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Ruppercornermirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Llowercornermirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rlowercornermirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lgroupmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rgroupmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lopenbracketmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Ropenbracketmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lnothingmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rnothingmirrored" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Linterval" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rinterval" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lointerval" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rointerval" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Llointerval" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rlointerval" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Lrointerval" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="Rrointerval" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="\Lceil" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="\Rceil" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="\Lparent" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="\Rparent" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="\Lparen" level="document" category="mathematics" file="math-fen.mkxl"/>
+        <cd:command name="\Rparen" level="document" category="mathematics" file="math-fen.mkxl"/>
+
+    -->
 
 </cd:interface>

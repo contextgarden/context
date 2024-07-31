@@ -155,7 +155,7 @@
         \pack_layers_preset_box{\v!right\currentlayer}%
     \fi
     \pack_layers_preset_box\currentlayer
-    \normalexpanded{\defineoverlay[\currentlayer][\noexpand\composedlayer{\currentlayer}]}%
+    \normalexpanded{\defineoverlay[\currentlayer][\composedlayer{\currentlayer}]}%
 \to \everydefinelayer
 
 \def\pack_layers_preset_box#1%
@@ -303,7 +303,8 @@
 \mutable\integerdef\b_layers_page\zerocount
 
 \def\pack_layers_set_content#1%
-  {\layerwidth \layerparameter\c!width  % global (local later)
+  {\resetstacking % for Aditya to test and document
+   \layerwidth \layerparameter\c!width  % global (local later)
    \layerheight\layerparameter\c!height % global (local later)
    \d_pack_layers_x_size\layerwidth
    \d_pack_layers_y_size\layerheight

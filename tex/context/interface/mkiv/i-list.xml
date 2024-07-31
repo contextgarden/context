@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definelist" level="style" category="structure" file="strc-lst.mkvi">
+    <cd:command name="definelist" level="style" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-list-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplist" level="style" category="structure" file="strc-lst.mkvi">
+    <cd:command name="setuplist" level="style" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-list-list-optional"/>
             <cd:assignments list="yes">
@@ -198,6 +198,9 @@
                     <cd:constant type="all"/>
                     <cd:constant type="title"/>
                 </cd:parameter>
+                <cd:parameter name="levels">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
                 <cd:parameter name="alternative">
                     <cd:constant type="a"/>
                     <cd:constant type="b" default="yes"/>
@@ -299,7 +302,7 @@
 
     <!--
 
-        <cd:command name="setuplists" level="style" category="structure" file="strc-lst.mkvi">
+        <cd:command name="setuplists" level="style" category="structure" file="strc-lst.mklx">
             <cd:arguments>
                 <cd:resolve name="keyword-list-list-optional"/>
                 <cd:assignments list="yes">
@@ -310,7 +313,16 @@
 
     -->
 
-    <cd:command name="doifelselist" level="system" category="structure" keywords="conditional" file="strc-lst.mkvi">
+    <cd:command name="uselist" level="style" category="structure" file="strc-lst.mklx">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-file"/>
+            <cd:resolve name="keyword-text-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+
+    <cd:command name="doifelselist" level="system" category="structure" keywords="conditional" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="argument-list"/>
             <cd:resolve name="argument-true"/>
@@ -318,7 +330,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflistelse" level="system" category="structure" keywords="conditional" file="strc-lst.mkvi">
+    <cd:command name="doiflistelse" level="system" category="structure" keywords="conditional" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="argument-list"/>
             <cd:resolve name="argument-true"/>
@@ -326,7 +338,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="writebetweenlist" level="document" category="structure" file="strc-lst.mkvi">
+    <cd:command name="writebetweenlist" level="document" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-list"/>
             <cd:assignments list="yes" optional="yes">
@@ -336,7 +348,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="writedatatolist" level="document" category="structure" file="strc-lst.mkvi">
+    <cd:command name="writedatatolist" level="document" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-list"/>
             <cd:assignments list="yes" optional="yes">
@@ -346,7 +358,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="writetolist" level="document" category="structure" file="strc-lst.mkvi">
+    <cd:command name="writetolist" level="document" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-list"/>
             <cd:assignments list="yes" optional="yes">
@@ -357,7 +369,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placelist" level="document" category="structure" file="strc-lst.mkvi">
+    <cd:command name="placelist" level="document" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-list-list"/>
             <cd:assignments list="yes" optional="yes">
@@ -366,7 +378,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placerawlist" level="style" category="structure" file="strc-lst.mkvi">
+    <cd:command name="placerawlist" level="style" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-list"/>
             <cd:assignments list="yes" optional="yes">
@@ -375,7 +387,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="completelist" level="document" category="structure" file="strc-lst.mkvi">
+    <cd:command name="completelist" level="document" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-list"/>
             <cd:assignments list="yes" optional="yes">
@@ -384,7 +396,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecombinedlist" level="style" category="structure" file="strc-lst.mkvi">
+    <cd:command name="definecombinedlist" level="style" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-list-list"/>
@@ -394,7 +406,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcombinedlist" level="style" category="structure" file="strc-lst.mkvi">
+    <cd:command name="setupcombinedlist" level="style" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-list"/>
             <cd:assignments list="yes">
@@ -451,7 +463,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placecombinedlist" level="document" category="structure" file="strc-lst.mkvi">
+    <cd:command name="placecombinedlist" level="document" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-list"/>
             <cd:assignments list="yes" optional="yes">
@@ -460,7 +472,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcombinedlist" generated="yes" variant="instance" level="style" category="structure" file="strc-lst.mkvi">
+    <cd:command name="setupcombinedlist" generated="yes" variant="instance" level="style" category="structure" file="strc-lst.mklx">
         <cd:sequence>
             <cd:string value="setup"/>
             <cd:instance value="combinedlist"/>
@@ -475,7 +487,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="placecombinedlist" generated="yes" variant="instance" level="document" category="structure" file="strc-lst.mkvi">
+    <cd:command name="placecombinedlist" generated="yes" variant="instance" level="document" category="structure" file="strc-lst.mklx">
         <cd:sequence>
             <cd:string value="place"/>
             <cd:instance value="combinedlist"/>
@@ -490,7 +502,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="completecombinedlist" generated="yes" variant="instance" level="document" category="structure" file="strc-lst.mkvi">
+    <cd:command name="completecombinedlist" generated="yes" variant="instance" level="document" category="structure" file="strc-lst.mklx">
         <cd:sequence>
             <cd:string value="complete"/>
             <cd:instance value="combinedlist"/>
@@ -505,47 +517,47 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="structurelistuservariable" level="style" category="structure" file="strc-lst.mkvi">
+    <cd:command name="structurelistuservariable" level="style" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rawstructurelistuservariable" level="system" category="structure" file="strc-lst.mkvi">
+    <cd:command name="rawstructurelistuservariable" level="system" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsestructurelisthaspage" level="system" category="structure" keywords="conditional" file="strc-lst.mkvi">
+    <cd:command name="doifelsestructurelisthaspage" level="system" category="structure" keywords="conditional" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifstructurelisthaspageelse" level="system" category="structure" keywords="conditional" file="strc-lst.mkvi">
+    <cd:command name="doifstructurelisthaspageelse" level="system" category="structure" keywords="conditional" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsestructurelisthasnumber" level="system" category="structure" keywords="conditional" file="strc-lst.mkvi">
+    <cd:command name="doifelsestructurelisthasnumber" level="system" category="structure" keywords="conditional" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifstructurelisthasnumberelse" level="system" category="structure" keywords="conditional" file="strc-lst.mkvi">
+    <cd:command name="doifstructurelisthasnumberelse" level="system" category="structure" keywords="conditional" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelistextra" level="style" category="structure" file="strc-lst.mkvi">
+    <cd:command name="definelistextra" level="style" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -555,7 +567,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplistextra" level="style" category="structure" file="strc-lst.mkvi">
+    <cd:command name="setuplistextra" level="style" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -569,7 +581,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelistalternative" level="style" category="structure" file="strc-lst.mkvi">
+    <cd:command name="definelistalternative" level="style" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -579,7 +591,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplistalternative" level="style" category="structure" file="strc-lst.mkvi">
+    <cd:command name="setuplistalternative" level="style" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -611,7 +623,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="determinelistcharacteristics" level="system" category="structure" file="strc-lst.mkvi">
+    <cd:command name="determinelistcharacteristics" level="system" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-list-list"/>
             <cd:assignments list="yes" optional="yes">
@@ -620,21 +632,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentlistentrynumber" level="style" category="structure" file="strc-lst.mkvi"/>
+    <cd:command name="currentlistentrynumber" level="style" category="structure" file="strc-lst.mklx"/>
 
-    <cd:command name="currentlistentrytitle" level="style" category="structure" file="strc-lst.mkvi"/>
+    <cd:command name="currentlistentrytitle" level="style" category="structure" file="strc-lst.mklx"/>
 
-    <cd:command name="currentlistentrytitlerendered" level="style" category="structure" file="strc-lst.mkvi"/>
+    <cd:command name="currentlistentrytitlerendered" level="style" category="structure" file="strc-lst.mklx"/>
 
-    <cd:command name="currentlistentrypagenumber" level="style" category="structure" file="strc-lst.mkvi"/>
+    <cd:command name="currentlistentrypagenumber" level="style" category="structure" file="strc-lst.mklx"/>
 
-    <cd:command name="currentlistsymbol" level="system" category="structure" file="strc-lst.mkvi"/>
+    <cd:command name="currentlistsymbol" level="system" category="structure" file="strc-lst.mklx"/>
 
-    <cd:command name="listlength" level="system" category="structure" file="strc-lst.mkvi"/>
+    <cd:command name="listlength" level="system" category="structure" file="strc-lst.mklx"/>
 
-    <cd:command name="currentlistentrywrapper" type="environment" level="system" category="structure" file="strc-lst.mkvi"/>
+    <cd:command name="currentlistentrywrapper" type="environment" level="system" category="structure" file="strc-lst.mklx"/>
 
-    <cd:command name="currentlistentryreferenceattribute" level="system" category="structure" file="strc-lst.mkvi">
+    <cd:command name="currentlistentryreferenceattribute" level="system" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="number"/>
@@ -645,9 +657,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentlistentrydestinationattribute" level="system" category="structure" file="strc-lst.mkvi"/>
+    <cd:command name="currentlistentrydestinationattribute" level="system" category="structure" file="strc-lst.mklx"/>
 
-    <cd:command name="currentlistentrylimitedtext" level="system" category="structure" file="strc-lst.mkvi">
+    <cd:command name="currentlistentrylimitedtext" level="system" category="structure" file="strc-lst.mklx">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>

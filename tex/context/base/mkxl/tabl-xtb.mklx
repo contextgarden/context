@@ -221,7 +221,7 @@
   {\bgroup
    \cdef\currentxtable{#tag}%
    \advanceby\c_tabl_x_nesting\plusone
-   \dostarttaggedchained\t!table\empty\??xtable
+   \dostarttaggedchained\t!table\empty\empty\??xtable
    \setupcurrentxtable[#settings]%
    \tabl_x_check_textwidth
   %\forgetall % else whitespace mess
@@ -245,7 +245,7 @@
 
 \protected\def\tabl_x_prepare#settings%
   {\advanceby\c_tabl_x_nesting\plusone
-   \dostarttaggedchained\t!table\empty\??xtable
+   \dostarttaggedchained\t!table\empty\empty\??xtable
    \tabl_x_set_checked{#settings}%
    \tabl_x_check_textwidth
    \expand\everypreparextable

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathmatrix" level="style" category="mathematics" keywords="tables" file="math-ali.mkiv">
+    <cd:command name="definemathmatrix" level="style" category="mathematics" keywords="tables" file="math-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathmatrix" level="style" category="mathematics" keywords="tables" file="math-ali.mkiv">
+    <cd:command name="setupmathmatrix" level="style" category="mathematics" keywords="tables" file="math-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -33,10 +33,18 @@
                     <cd:constant type="left"/>
                     <cd:constant type="middle" default="yes"/>
                     <cd:constant type="right"/>
+                    <cd:constant type="flushleft"/>
+                    <cd:constant type="flushright"/>
                     <cd:constant type="normal"/>
+                    <cd:constant type="auto"/>
+                    <cd:constant type="left" prefix="cd:number" method="range"/>
+                    <cd:constant type="middle" prefix="cd:number" method="range"/>
+                    <cd:constant type="right" prefix="cd:number" method="range"/>
+                    <cd:constant type="flushleft" prefix="cd:number" method="range"/>
+                    <cd:constant type="flushright" prefix="cd:number" method="range"/>
                 </cd:parameter>
-                <cd:parameter name="style">
-                    <cd:resolve name="value-style"/>
+                <cd:parameter name="mathstyle">
+                    <cd:resolve name="value-mathstyle"/>
                 </cd:parameter>
                 <cd:parameter name="distance">
                     <cd:constant type="cd:dimension"/>
@@ -50,13 +58,46 @@
                     <cd:constant type="high"/>
                     <cd:constant type="low"/>
                     <cd:constant type="lohi"/>
+                    <cd:constant type="center"/>
                     <cd:constant type="normal" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="rulethickness">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rulecolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="moffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="toffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="boffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="leftmargin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rightmargin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="fences">
+                    <cd:resolve name="value-mathfence"/>
+                </cd:parameter>
+                <cd:parameter name="leftedge">
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rightedge">
+                    <cd:constant type="none"/>
+                    <cd:constant type="cd:dimension"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathmatrix" type="environment" generated="yes" variant="instance" level="document" category="mathematics" keywords="tables" file="math-ali.mkiv">
+    <cd:command name="mathmatrix" type="environment" generated="yes" variant="instance" level="document" category="mathematics" keywords="tables" file="math-ali.mkxl">
         <cd:sequence>
             <cd:instance value="mathmatrix"/>
         </cd:sequence>
@@ -70,7 +111,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="mathmatrix" generated="yes" variant="instance" level="document" category="mathematics" keywords="tables" file="math-ali.mkiv">
+    <cd:command name="mathmatrix" generated="yes" variant="instance" level="document" category="mathematics" keywords="tables" file="math-ali.mkxl">
         <cd:sequence>
             <cd:instance value="mathmatrix"/>
         </cd:sequence>
@@ -85,7 +126,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="matrices" type="environment" level="document" category="mathematics" keywords="tables" file="math-ali.mkiv">
+    <cd:command name="matrices" type="environment" level="document" category="mathematics" keywords="tables" file="math-ali.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupmathmatrix"/>
@@ -93,24 +134,43 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="intertext" type="environment" level="document" category="mathematics" file="math-ali.mkiv"/>
+    <cd:command name="namedmatrix" type="environment" level="document" category="mathematics" keywords="tables" file="math-ali.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathmatrix"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
 
-    <cd:command name="intertext" level="document" category="mathematics" file="math-ali.mkiv">
+    <cd:command name="setmathmatrixanchoring" file="math-ali.mkxl">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="yes"/>
+                <cd:constant type="both"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="intertext" type="environment" level="document" category="mathematics" file="math-ali.mkxl"/>
+
+    <cd:command name="intertext" level="document" category="mathematics" file="math-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="substack" type="environment" level="document" category="mathematics" file="math-ali.mkiv"/>
+    <cd:command name="substack" type="environment" level="document" category="mathematics" file="math-ali.mkxl"/>
 
-    <cd:command name="overset" level="document" category="mathematics" file="math-ali.mkiv">
+    <cd:command name="overset" level="document" category="mathematics" file="math-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="underset" level="document" category="mathematics" file="math-ali.mkiv">
+    <cd:command name="underset" level="document" category="mathematics" file="math-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text"/>

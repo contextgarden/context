@@ -120,7 +120,9 @@ typedef struct mathinfo {
         we might want to play with a two dimensional extensible some day. 
     */
     extinfo  *extensible_recipe;        
-    scaled    extensible_italic;         
+    scaled    extensible_italic;        
+    /*tex We could have a list or array here too but gain little.: */
+ /* halfword *variant_list; */
     /*tex These are for specific (script) anchoring. */
     scaled    top_left_kern;
     scaled    bottom_left_kern;

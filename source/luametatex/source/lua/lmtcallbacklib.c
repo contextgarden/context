@@ -55,7 +55,7 @@ static const char *callbacklib_names[total_callbacks] = {
     "show_warning_message",
     "hpack_quality",
     "vpack_quality",
-    "show_break",
+    "line_break",
     "show_build",
     "insert_par",
     "append_line_filter",

@@ -506,6 +506,7 @@
 \permanent\def\figurestatus        {\numexpr\clf_figurestatus{status}{0}\relax} % number: 0 = not found
 \permanent\def\figurewidth         {\clf_figurestatus{width}{0}sp}
 \permanent\def\figureheight        {\clf_figurestatus{height}{0}sp}
+\permanent\def\figuredepth         {\clf_figurestatus{depth}{0}sp}
 \permanent\def\figurexscale        {\clf_figurestatus{xscale}{1}}
 \permanent\def\figureyscale        {\clf_figurestatus{yscale}{1}}
 \permanent\def\figurereference     {\clf_figurestatus{reference}{}}
@@ -531,7 +532,6 @@
 \permanent\def\figurexsize         {\clf_figureused{xsize}{0}}
 \permanent\def\figureysize         {\clf_figureused{ysize}{0}}
 \permanent\def\figurecolordepth    {\clf_figureused{colordepth}{0}}
-\permanent\def\figuredepth         {\clf_figureused{depth}{0}}
 
 \permanent\def\figurefullname      {\clf_figureused{fullname}{}}
 \permanent\def\noffigurepages      {\clf_figureused{pages}{0}}

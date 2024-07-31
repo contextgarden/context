@@ -250,6 +250,9 @@
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
                 </cd:parameter>
+                <cd:parameter name="extradata">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

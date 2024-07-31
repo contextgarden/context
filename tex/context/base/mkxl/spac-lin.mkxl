@@ -141,7 +141,7 @@
    \linesparameter\c!before
    \push_macro_checkindentation
    \whitespace
-   \dostarttaggedchained\t!lines\currentlines\??lines
+   \dostarttaggedchained\t!lines\currentlines\currentlines\??lines
    \begingroup
    \uselinesstyleandcolor\c!style\c!color
    \useindentingparameter\linesparameter

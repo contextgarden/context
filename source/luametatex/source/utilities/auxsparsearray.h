@@ -118,10 +118,10 @@ typedef sa_tree_head *sa_tree;
 
 # if (1) 
 
-    extern int     sa_get_item_1    (const sa_tree head, int n);                                     /* these return the value or dflt */
-    extern int     sa_get_item_2    (const sa_tree head, int n);                                     /* these return the value or dflt */
-    extern int     sa_get_item_4    (const sa_tree head, int n, sa_tree_item *v);                    /* these return success */
-    extern int     sa_get_item_8    (const sa_tree head, int n, sa_tree_item *v1, sa_tree_item *v2); /* these return success */
+    extern int sa_get_item_1 (const sa_tree head, int n);                                     /* these return the value or dflt */
+    extern int sa_get_item_2 (const sa_tree head, int n);                                     /* these return the value or dflt */
+    extern int sa_get_item_4 (const sa_tree head, int n, sa_tree_item *v);                    /* these return success */
+    extern int sa_get_item_8 (const sa_tree head, int n, sa_tree_item *v1, sa_tree_item *v2); /* these return success */
 
 # else 
 

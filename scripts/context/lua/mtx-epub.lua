@@ -1,4 +1,4 @@
-if not modules then modules = { } end modules ['mtx-epub'] = {
+ if not modules then modules = { } end modules ['mtx-epub'] = {
     version   = 1.001,
     comment   = "companion to mtxrun.lua",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
@@ -78,6 +78,7 @@ local format, gsub, find = string.format, string.gsub, string.find
 local concat, sortedhash = table.concat, table.sortedhash
 
 local formatters      = string.formatters
+local longtostring    = string.longtostring
 local replacetemplate = utilities.templates.replace
 
 local addsuffix       = file.addsuffix
@@ -119,6 +120,7 @@ local helpinfo = [[
     <flag name="svgmath"><short>convert mathml to svg</short></flag>
     <flag name="svgstyle"><short>use given tex style for svg generation (overloads style in specification)</short></flag>
     <flag name="all"><short>assume: --purge --rename --svgmath (for fast testing)</short></flag>
+    <flag name="images"><short>convert images to svg [--fix]</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -127,6 +129,10 @@ local helpinfo = [[
    <title>Example</title>
    <subcategory>
     <example><command>mtxrun --script epub --make mydocument</command></example>
+   </subcategory>
+   <subcategory>
+    <example><command>mtxrun --script epub --images mydocument</command></example>
+    <example><command>mtxrun --script epub --images --fix mydocument</command></example>
    </subcategory>
   </category>
  </examples>
@@ -890,6 +896,137 @@ function scripts.epub.make(purge,rename,svgmath,svgstyle)
 
 end
 
+do
+
+    local runimages = sandbox.registerrunner {
+        name     = "images",
+        program  = "context",
+     -- method   = "command",
+        template = longtostring [[
+            "%fullname%"
+            "--exportimages"
+            "--result=%nameonly%-images"
+        ]],
+    }
+
+    local runconvert = sandbox.registerrunner {
+        name     = "convert",
+        program  = "mutool",
+     -- method   = "command",
+        template = longtostring [[
+            "convert"
+            "-o%imagepath%/%nameonly%-exported-%%d.svg"
+            "%nameonly%-images.pdf"
+        ]],
+    }
+
+    function scripts.epub.images()
+        local files = environment.globfiles()
+        if files then
+
+            statistics.starttiming("export")
+
+            local fix   = environment.argument("fix")
+            local flat  = environment.argument("flat")
+            local path  = environment.argument("path") or "."
+            local jobs  = { }
+            for i=1,#files do
+                local filename = file.basename(files[i])
+                local fullname = file.addsuffix(filename,"tex")
+                local nameonly = file.nameonly(fullname)
+                local pattern  = nameonly .. "-exported-*.svg"
+                local target   = flat and "." or (nameonly .. "-export")
+                if not lfs.isfile(fullname) then
+                    report("no export file %a",fullname)
+                elseif type(path) == "string" and path ~= "" and not lfs.isdir(path) then
+                    report("no export root %a",path)
+                else
+                    local imagepath = file.join(path,target,"images")
+                    dir.makedirs(imagepath)
+                    if lfs.isdir(imagepath) then
+                        jobs[#jobs+1] = {
+                            filename  = filename,
+                            fullname  = fullname,
+                            nameonly  = nameonly,
+                            path      = path,
+                            target    = target,
+                            imagepath = imagepath,
+                            pattern   = file.join(imagepath,pattern),
+                        }
+                    else
+                        report("invalid image path %a",imagepath)
+                    end
+                end
+            end
+
+            local images = 0
+
+            for index=1,#jobs do
+
+                local job = jobs[index]
+
+                -- cleanup
+
+                local files = dir.glob(job.pattern)
+                for i=1,#files do
+                    os.remove(files[i])
+                end
+
+                -- run context
+
+                runimages {
+                    fullname = job.fullname,
+                    nameonly = job.nameonly,
+                }
+
+                -- convert
+
+                runconvert {
+                    nameonly  = job.nameonly,
+                    imagepath = job.imagepath,
+                }
+
+                -- older mutool doesn't turn < > into entities in attributes and
+                -- browsers etc warn but don't recover so for now we have this option
+
+                if fix then -- will go at some point
+                    local files = dir.glob(job.pattern)
+                    for i=1,#files do
+                        local name = files[i]
+                        local data = io.loaddata(name)
+                        if find(data,'"[<>]"') then
+                            report("fixing %a",name)
+                            data = gsub(data,'"([<>])"', { ["<"] = '"&lt;"', [">"] = '"&gt;"' })
+                            io.savedata(name,data)
+                        end
+                    end
+                end
+
+                -- list images
+
+                local files = dir.glob(job.pattern)
+                if #files > 0 then
+                    images = images + #files
+                    report()
+                end
+                for i=1,#files do
+                    local name = files[i]
+                    report("% 7i : %s",file.size(name),file.basename(name))
+                end
+
+            end
+
+            statistics.stoptiming("export")
+
+            report()
+            report("%i files, %i images, export time: %s",#jobs,images,statistics.elapsedtime("export"))
+
+        end
+
+    end
+
+end
+
 --
 
 local a_exporthelp = environment.argument("exporthelp")
@@ -900,11 +1037,15 @@ local a_rename     = a_all or environment.argument("rename")
 local a_svgmath    = a_all or environment.argument("svgmath")
 local a_svgstyle   = environment.argument("svgstyle")
 
+local a_images     = environment.argument("images")
+
 if a_make and a_svgmath then
     require("x-math-svg")
 end
 
-if a_make then
+if a_images then
+    scripts.epub.images()
+elseif a_make then
     scripts.epub.make(a_purge,a_rename,a_svgmath,a_svgstyle)
 elseif a_exporthelp then
     application.export(a_exporthelp,environment.files[1])

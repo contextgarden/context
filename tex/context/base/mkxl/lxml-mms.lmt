@@ -84,10 +84,22 @@ end
 local function xmlwipeattributes(x)
     local at = { }
     for c in xmlcollected(x,"*") do
-        if c.at.colspan then
-            c.at = { colspan = c.at.colspan } -- Maybe just a property.
+        local at = c.at
+        local colspan       = at.colspan
+        local stretchy      = at.stretchy
+        local scriptlevel   = at.scriptlevel
+        local rulethickness = at.rulethickness
+        if colspan or stretchy or scriptlevel or rulethickness then
+            c.at = {
+                columnspan    = colspan,       -- watch the name, different from tables
+                stretchy      = stretchy,
+                scriptlevel   = scriptlevel,
+                linethickness = rulethickness, -- watch the name
+            }
         else
-            c.at = { } -- Don't set them afterwards because they are shared!
+            c.at = {
+                -- Don't set them afterwards because they are shared!
+            }
         end
     end
 end
@@ -123,7 +135,7 @@ local prepare  do
                             if  at.mathsymbolic
                              or at.mathgroup == "postfix operator"
                             then -- has to come before at.mathfunction check
-                                at.checkfunction = true -- saves a check later
+                                at.checkfunction = "true" -- saves a check later
                                 if closed then
                                     at.mathtimes = 9.1
                                     closed = false
@@ -143,7 +155,7 @@ local prepare  do
                                 or at.mathgroup == "number set"
                              -- or at.mathapplication
                             then
-                                at.checkfunction = true -- saves a check later
+                                at.checkfunction = "true" -- saves a check later
                                 if closed then
                                     at.mathtimes = 1.1
                                     closed = false
@@ -207,9 +219,9 @@ local prepare  do
                                         or fat.mathclass == "differential"
                                     then
                                         if not fat.mathfunction then
-                                            fat.mathfunction = true -- maybe also needed for the stack
+                                            fat.mathfunction = "true" -- maybe also needed for the stack
                                         end
-                                        at.checkfunction = true -- saves a check later
+                                        at.checkfunction = "true" -- saves a check later
                                         expandtimesone(ai,a,i)
                                         block = true
                                         times = false
@@ -302,6 +314,7 @@ local prepare  do
                     -- mark not times
                     c.at.mathplus = 1 -- invisible plus
                 end
+-- inspect(c.at)
             else
                 local a, na = xmlevery(c)
                 if a then
@@ -346,7 +359,7 @@ local prepare  do
                     cat.mathgroup     = ccat.mathgroup     or cat.mathgroup
                     if cc.tg == "mo" then
                         ccat.mathignore  = "true"
---                         ccat.mathmeaning = cat.mathfunctionstack
+                     -- ccat.mathmeaning = cat.mathfunctionstack
                     end
                 end
             end
@@ -1095,7 +1108,7 @@ local tomeaning, getlast  do
         n        = 0
         okay     = true
         language = l or "en"
-        domain   = x.at.domain or "default"
+        domain   = x.at["data-lmtx-domain"] or x.at["domain"] or "default"
         --
         expandone(x)
         if okay then
@@ -1179,6 +1192,7 @@ local verbose  do
             local x = xmlfirst(root,"/math")
             if x then
                 prepare(x)
+-- inspect(x)
                 local meaning = tomeaning(x,l)
              -- if saving then
              --     saved[s][l] = meaning

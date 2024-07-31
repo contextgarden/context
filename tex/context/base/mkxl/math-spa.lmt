@@ -89,6 +89,9 @@ local d_strc_math_first_height <const> = texisdimen("d_strc_math_first_height")
 local d_strc_math_last_depth   <const> = texisdimen("d_strc_math_last_depth")
 local d_strc_math_indent       <const> = texisdimen("d_strc_math_indent")
 
+local d_strc_math_left_shift   <const> = texisdimen("d_strc_math_left_shift")
+local d_strc_math_right_shift  <const> = texisdimen("d_strc_math_right_shift")
+
 local report = logs.reporter("mathalign")
 
 local trace  = false  trackers.register("math.align",function(v) trace = v end )
@@ -377,18 +380,24 @@ stages[2] = function(specification,stage)
     else
         position = 0
     end
-
+    local leftshift  = math.min(firstleft,lastleft,maxleft) - texgetdimen(d_strc_math_indent)
+    local rightshift = false
     for n, id, subtype, list in nextlist, head do
-        if subtype == line_code and injections[n] then
+        if subtype == line_code then
             local t = getnormalizedline(n)
             local l = t.leftskip  + t.lefthangskip  + t.parinitleftskip  + t.parfillleftskip  + t.indent
-            setoffsets(n,-l,nil)
+            local r = t.rightskip + t.righthangskip + t.parinitrightskip + t.parfillrightskip
+            if not rightshift then rightshift = r elseif r < rightshift then rightshift = r end
+            if injections[n] then
+                setoffsets(n,-l,nil)
+            end
             goto DONE
         end
         handlepacked(n,list,position)
       ::DONE::
     end
-
+    rightshift = (rightshift or 0) - position
+    --
     texsetcount("global",c_strc_math_n_of_lines,cnt)
     texsetdimen("global",d_strc_math_first_height,firstheight)
     texsetdimen("global",d_strc_math_last_depth,lastdepth)
@@ -398,6 +407,9 @@ stages[2] = function(specification,stage)
     texsetdimen("global",d_strc_math_last_right,lastright)
     texsetdimen("global",d_strc_math_max_left,maxleft)
     texsetdimen("global",d_strc_math_max_right,maxright)
+    --
+    texsetdimen("global",d_strc_math_left_shift,leftshift or 0)
+    texsetdimen("global",d_strc_math_right_shift,rightshift or 0)
 end
 
 stages[3] = stages[2]
@@ -421,7 +433,6 @@ interfaces.implement {
             { "inbetween", "dimension" },
             { "height", "dimension" },
             { "depth", "dimension" },
-            { "splitmethod" },
             { "leftmargin", "dimension" },
             { "rightmargin", "dimension" },
         }

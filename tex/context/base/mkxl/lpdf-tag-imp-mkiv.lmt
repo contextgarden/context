@@ -1,0 +1,199 @@
+if not modules then modules = { } end modules ['lpdf-tag-imp-mkiv'] = {
+    version   = 1.001,
+    comment   = "companion to lpdf-tag.mkiv",
+    author    = "Hans Hagen",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- This is the mapping used in MkIV and you can enable it by:
+--
+-- \enabledirectives[backend.usetags=mkiv]
+
+return {
+    name      = "old school pdf tagging",
+    version   = "1.00",
+    comment   = "This is the old mapping, more a historic note.",
+    author    = "Hans Hagen",
+    copyright = "ConTeXt development team",
+    mapping   = {
+
+        document           = { pua = "ua1", pdf = "Document"   },
+        documentpart       = { pua = "ua1", pdf = "Div"        },
+
+        division           = { pua = "ua1", pdf = "Div"        },
+        paragraph          = { pua = "ua1", pdf = "P"          },
+        p                  = { pua = "ua1", pdf = "P"          },
+        highlight          = { pua = "ua1", pdf = "Span"       },
+        ornament           = { pua = "ua1", pdf = "Span"       },
+        textdisplay        = { pua = "ua1", pdf = "Div"        },
+        placeholder        = { pua = "ua1", pdf = "Span"       },
+
+     -- ["break"]          = { pua = "ua1", pdf = "Div"        },
+
+        construct          = { pua = "ua1", pdf = "Span"       },
+        constructleft      = { pua = "ua1", pdf = "Span"       },
+        constructright     = { pua = "ua1", pdf = "Span"       },
+        constructcontent   = { pua = "ua1", pdf = "Span"       },
+
+        sectionblock       = { pua = "ua1", pdf = "Div"        },
+
+        section            = { pua = "ua1", pdf = "Sect"       },
+        sectioncaption     = { pua = "ua1", pdf = "H"          },
+        sectiontitle       = { pua = "ua1", pdf = "Span"       },
+        sectionnumber      = { pua = "ua1", pdf = "Span"       },
+        sectioncontent     = { pua = "ua1", pdf = "Div"        },
+
+        itemgroup          = { pua = "ua1", pdf = "L"          },
+        item               = { pua = "ua1", pdf = "LI"         },
+        itemtag            = { pua = "ua1", pdf = "Lbl"        },
+        itemcontent        = { pua = "ua1", pdf = "LBody"      },
+        itemhead           = { pua = "ua1", pdf = "Div"        },
+        itembody           = { pua = "ua1", pdf = "Div"        },
+
+        items              = { pua = "ua1", pdf = "Div"        },
+        itemsymbols        = { pua = "ua1", pdf = "Div"        },
+        itemsymbol         = { pua = "ua1", pdf = "Span"       },
+        itemtexts          = { pua = "ua1", pdf = "Div"        },
+        itemtext           = { pua = "ua1", pdf = "Span"       },
+
+        description        = { pua = "ua1", pdf = "Div"        },
+        descriptiontag     = { pua = "ua1", pdf = "Div"        },
+        descriptioncontent = { pua = "ua1", pdf = "Div"        },
+        descriptionsymbol  = { pua = "ua1", pdf = "Span"       },
+
+        verbatimblock      = { pua = "ua1", pdf = "Div"        },
+        verbatimlines      = { pua = "ua1", pdf = "Div"        },
+        verbatimline       = { pua = "ua1", pdf = "Code"       },
+        verbatim           = { pua = "ua1", pdf = "Code"       },
+
+        lines              = { pua = "ua1", pdf = "Div"        },
+        line               = { pua = "ua1", pdf = "Code"       },
+        linenumber         = { pua = "ua1", pdf = "Span"       },
+
+        synonym            = { pua = "ua1", pdf = "Span"       },
+        sorting            = { pua = "ua1", pdf = "Span"       },
+
+        register           = { pua = "ua1", pdf = "Div"        },
+        registerlocation   = { pua = "ua1", pdf = "Span"       },
+        registersection    = { pua = "ua1", pdf = "Div"        },
+        registertag        = { pua = "ua1", pdf = "Span"       },
+        registerentries    = { pua = "ua1", pdf = "Div"        },
+        registerentry      = { pua = "ua1", pdf = "Div"        },
+        registercontent    = { pua = "ua1", pdf = "Span"       },
+        registersee        = { pua = "ua1", pdf = "Span"       },
+        registerpages      = { pua = "ua1", pdf = "Span"       },
+        registerpage       = { pua = "ua1", pdf = "Span"       },
+        registerseparator  = { pua = "ua1", pdf = "Span"       },
+        registerpagerange  = { pua = "ua1", pdf = "Span"       },
+
+        table              = { pua = "ua1", pdf = "Table"      },
+        tablerow           = { pua = "ua1", pdf = "TR"         },
+        tablecell          = { pua = "ua1", pdf = "TD"         },
+        tableheadcell      = { pua = "ua1", pdf = "TH"         },
+        tablehead          = { pua = "ua1", pdf = "THEAD"      },
+        tablebody          = { pua = "ua1", pdf = "TBODY"      },
+        tablefoot          = { pua = "ua1", pdf = "TFOOT"      },
+
+        tabulate           = { pua = "ua1", pdf = "Table"      },
+        tabulaterow        = { pua = "ua1", pdf = "TR"         },
+        tabulatecell       = { pua = "ua1", pdf = "TD"         },
+        tabulateheadcell   = { pua = "ua1", pdf = "TH"         },
+        tabulatehead       = { pua = "ua1", pdf = "THEAD"      },
+        tabulatebody       = { pua = "ua1", pdf = "TBODY"      },
+        tabulatefoot       = { pua = "ua1", pdf = "TFOOT"      },
+
+        list               = { pua = "ua1", pdf = "TOC"        },
+        listitem           = { pua = "ua1", pdf = "TOCI"       },
+        listtag            = { pua = "ua1", pdf = "Lbl"        },
+        listcontent        = { pua = "ua1", pdf = "P"          },
+        listdata           = { pua = "ua1", pdf = "P"          },
+        listpage           = { pua = "ua1", pdf = "Reference"  },
+        listtext           = { pua = "ua1", pdf = "Span"       },
+
+        delimitedblock     = { pua = "ua1", pdf = "BlockQuote" },
+        delimited          = { pua = "ua1", pdf = "Quote"      },
+        delimitedcontent   = { pua = "ua1", pdf = "Span"       },
+        delimitedsymbol    = { pua = "ua1", pdf = "Span"       },
+
+        subsentence        = { pua = "ua1", pdf = "Span"       },
+        subsentencecontent = { pua = "ua1", pdf = "Span"       },
+        subsentencesymbol  = { pua = "ua1", pdf = "Span"       },
+
+        label              = { pua = "ua1", pdf = "Span"       },
+        number             = { pua = "ua1", pdf = "Span"       },
+
+        float              = { pua = "ua1", pdf = "Div"        },
+        floatcaption       = { pua = "ua1", pdf = "Caption"    },
+        floatlabel         = { pua = "ua1", pdf = "Span"       },
+        floatnumber        = { pua = "ua1", pdf = "Span"       },
+        floattext          = { pua = "ua1", pdf = "Span"       },
+        floatcontent       = { pua = "ua1", pdf = "P"          },
+
+        image              = { pua = "ua1", pdf = "P"          },
+        mpgraphic          = { pua = "ua1", pdf = "P"          },
+
+        formulaset         = { pua = "ua1", pdf = "Div"        },
+        formula            = { pua = "ua1", pdf = "Div"        },
+        formulacaption     = { pua = "ua1", pdf = "Span"       },
+        formulalabel       = { pua = "ua1", pdf = "Span"       },
+        formulanumber      = { pua = "ua1", pdf = "Span"       },
+        formulacontent     = { pua = "ua1", pdf = "P"          },
+        subformula         = { pua = "ua1", pdf = "Div"        },
+
+        link               = { pua = "ua1", pdf = "Link"       },
+        reference          = { pua = "ua1", pdf = "Span"       },
+
+        navigation         = { pua = "ua1", pdf = "Div"        },
+        navigationbutton   = { pua = "ua1", pdf = "Span"       },
+        navigationmenu     = { pua = "ua1", pdf = "Div"        },
+        navigationmenuitem = { pua = "ua1", pdf = "Span"       },
+        navigationaction   = { pua = "ua1", pdf = "Span"       },
+        navigationpage     = { pua = "ua1", pdf = "Span"       },
+
+        margintextblock    = { pua = "ua1", pdf = "Span"       },
+        margintext         = { pua = "ua1", pdf = "Span"       },
+        marginanchor       = { pua = "ua1", pdf = "Span"       },
+
+        linetext           = { pua = "ua1", pdf = "Div"        },
+
+       -- no math here
+
+        ignore             = { pua = "ua1", pdf = "Span"       },
+        private            = { pua = "ua1", pdf = "Span"       },
+        metadata           = { pua = "ua1", pdf = "Div"        },
+        metavariable       = { pua = "ua1", pdf = "Span"       },
+
+        mid                = { pua = "ua1", pdf = "Span"       },
+        sub                = { pua = "ua1", pdf = "Span"       },
+        sup                = { pua = "ua1", pdf = "Span"       },
+        subsup             = { pua = "ua1", pdf = "Span"       },
+
+        combination        = { pua = "ua1", pdf = "Span"       },
+        combinationpair    = { pua = "ua1", pdf = "Span"       },
+        combinationcontent = { pua = "ua1", pdf = "Span"       },
+        combinationcaption = { pua = "ua1", pdf = "Span"       },
+
+        publications       = { pua = "ua1", pdf = "Div"        },
+        publication        = { pua = "ua1", pdf = "Div"        },
+        pubfld             = { pua = "ua1", pdf = "Span"       },
+
+        citation           = { pua = "ua1", pdf = "Span"       },
+        cite               = { pua = "ua1", pdf = "Span"       },
+
+        narrower           = { pua = "ua1", pdf = "Div"        },
+
+        block              = { pua = "ua1", pdf = "Div"        },
+
+        userdata           = { pua = "ua1", pdf = "Div"        },
+
+        quantity           = { pua = "ua1", pdf = "Span"       },
+        unit               = { pua = "ua1", pdf = "Span"       },
+
+        verse              = { pua = "ua1", pdf = "Div"        },
+        versetag           = { pua = "ua1", pdf = "Span"       },
+        verseseparator     = { pua = "ua1", pdf = "Span"       },
+        versecontent       = { pua = "ua1", pdf = "Span"       },
+
+    }
+}

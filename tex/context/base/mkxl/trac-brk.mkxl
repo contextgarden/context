@@ -17,7 +17,16 @@
 
 \registerctxluafile{trac-brk}{}
 
+% \linebreakchecks : currently a bitset but maybe just values
+%
+% 1 : trace
+% 2 : twins
+
+% option : margin simple
+
 \unprotect
+
+\newcount\c_line_break_check
 
 \permanent\tolerant\protected\gdef\startshowbreakpoints[#1]%
   {\begingroup
@@ -27,10 +36,13 @@
         list   = "\dummyparameter\c!list",
         offset = \number\dimexpr\dummyparameter\c!offset\relax,
     }}%
-   \endgroup}
+   \endgroup
+   \c_line_break_check\linebreakchecks
+   \linebreakchecks\plusone}
 
 \permanent\protected\gdef\stopshowbreakpoints
   {\par
+   \linebreakchecks\c_line_break_check
    \ctxlua{tracers.breakpoints.stop()}}
 
 \permanent\tolerant\protected\gdef\showbreakpoints[#1]%

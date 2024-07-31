@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="defineoptimize" level="style" category="alignment" file="spac-par.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupoptimize"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupoptimize" level="style" category="alignment" file="spac-par.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="left">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="lines">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="optimize" level="document" category="alignment" file="spac-par.mkxl">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="+line"/>
+                <cd:constant type="-line"/>
+                <cd:constant type="flushleft"/>
+                <cd:constant type="flushright"/>
+                <cd:constant type="normal"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="optimize" level="document" variant="assignment" category="alignment" file="spac-par.mkxl">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupoptimize"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

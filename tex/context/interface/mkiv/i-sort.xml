@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definesorting" level="style" category="language" file="strc-syn.mkiv">
+    <cd:command name="definesorting" level="style" category="language" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular"/>
             <cd:resolve name="keyword-plural"/>
@@ -15,7 +15,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupsorting" level="style" category="language" file="strc-syn.mkiv">
+    <cd:command name="setupsorting" level="style" category="language" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular-list-optional"/>
             <cd:assignments list="yes">
@@ -84,7 +84,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sorting" generated="yes" variant="instance" level="document" category="language" file="strc-syn.mkiv">
+    <cd:command name="sorting" generated="yes" variant="instance" level="document" category="language" file="strc-syn.mkxl">
         <cd:sequence>
             <cd:instance value="sorting"/>
         </cd:sequence>
@@ -97,7 +97,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="definesort" level="system" category="language" file="strc-syn.mkiv">
+    <cd:command name="definesort" level="system" category="language" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="yes"/>
@@ -109,7 +109,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placelistofsorts" generated="yes" variant="instance" level="document" category="language" file="strc-syn.mkiv">
+    <cd:command name="placelistofsorts" generated="yes" variant="instance" level="document" category="language" file="strc-syn.mkxl">
         <cd:sequence>
             <cd:string value="placelistof"/>
             <cd:instance value="sorts"/>
@@ -124,7 +124,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="completelistofsorts" generated="yes" variant="instance" level="document" category="language" file="strc-syn.mkiv">
+    <cd:command name="completelistofsorts" generated="yes" variant="instance" level="document" category="language" file="strc-syn.mkxl">
         <cd:sequence>
             <cd:string value="completelistof"/>
             <cd:instance value="sorts"/>
@@ -139,27 +139,34 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="doifelsecurrentsortingused" level="system" category="language" keywords="conditional" file="strc-syn.mkiv">
+    <cd:command name="doifelsecurrentsortingused" level="system" category="language" keywords="conditional" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetusedsortings" level="system" category="language" file="strc-syn.mkiv">
+    <cd:command name="resetusedsortings" level="system" category="language" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="registersort" level="system" category="language" file="strc-syn.mkiv">
+    <cd:command name="registersort" level="system" category="language" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placelistofsorts" level="document" category="language" file="strc-syn.mkiv">
+    <cd:command name="registersortpage" level="system" category="language" file="strc-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-singular"/>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placelistofsorts" level="document" category="language" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular"/>
             <cd:assignments list="yes" optional="yes">
@@ -168,7 +175,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="completelistofsorts" level="document" category="language" file="strc-syn.mkiv">
+    <cd:command name="completelistofsorts" level="document" category="language" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular"/>
             <cd:assignments list="yes" optional="yes">

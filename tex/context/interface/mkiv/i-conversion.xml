@@ -691,11 +691,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="actualyear" level="style" category="system" keywords="system" category="counter" file="core-con.lua"/>
+    <cd:command name="actualyear" level="style" category="counter" file="core-con.lua"/>
 
-    <cd:command name="actualmonth" level="style" category="system" keywords="system" category="counter" file="core-con.lua"/>
+    <cd:command name="actualmonth" level="style" category="counter" file="core-con.lua"/>
 
-    <cd:command name="actualday" level="style" category="system" keywords="system" category="counter" file="core-con.lua"/>
+    <cd:command name="actualday" level="style" category="counter" file="core-con.lua"/>
 
     <cd:command name="lchexnumber" level="style" category="counter" file="syst-con.mkxl">
         <cd:arguments>

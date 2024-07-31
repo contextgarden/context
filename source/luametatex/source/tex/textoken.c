@@ -3475,7 +3475,7 @@ strnumber tex_tokens_to_string(halfword p)
 
 // todo: check ret
 
-static void tex_aux_make_room_in_buffer(int a)
+inline static void tex_aux_make_room_in_buffer(int a)
 {
     if (lmt_token_state.bufloc + a + 1 > lmt_token_state.bufmax) {
         char *tmp = aux_reallocate_array(lmt_token_state.buffer, sizeof(unsigned char), lmt_token_state.bufmax + default_buffer_step, 1);
@@ -3666,6 +3666,8 @@ char *tex_tokenlist_to_tstring(int pp, int inhibit_par, int *siz, int skippreamb
                                         h = token_link(h);
                                     }
                                 }
+                                break;
+                            case ignore_cmd:
                                 break;
                             default:
                                 tex_aux_append_str_to_buffer(tex_aux_special_cmd_string(cmd, chr, error_string_bad(33)));

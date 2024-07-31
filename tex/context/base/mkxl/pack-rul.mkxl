@@ -1729,7 +1729,7 @@
 
 \protected\def\pack_framed_finish
   {\ifempty{\framedparameter\c!freezespacing}\else
-     \boxadapt\b_framed_normal\p_freeze\relax
+     \boxadapt\b_framed_normal\lastnamedcs\relax
    \fi
  % \ifcstok{\framedparameter\c!limit}\v!yes
  %   \boxlimit\b_framed_normal % maybe

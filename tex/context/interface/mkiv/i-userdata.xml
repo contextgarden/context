@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineuserdata" level="style" category="structure" file="strc-usr.mkiv">
+    <cd:command name="defineuserdata" level="style" category="structure" file="strc-usr.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupuserdata" level="style" category="structure" file="strc-usr.mkiv">
+    <cd:command name="setupuserdata" level="style" category="structure" file="strc-usr.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -47,14 +47,23 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="userdata" type="environment" level="document" category="structure" keywords="buffer" file="strc-usr.mkiv">
+    <cd:command name="userdata" type="environment" level="document" category="structure" keywords="buffer" file="strc-usr.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="assignment-userdata-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineuserdataalternative" level="style" category="structure" file="strc-usr.mkiv">
+    <cd:command name="userdata" type="environment" generated="yes" variant="example" level="document" category="structure" keywords="buffer" file="strc-usr.mkxl">
+        <cd:sequence>
+            <cd:variable value="userdata"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="assignment-userdata-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="defineuserdataalternative" level="style" category="structure" file="strc-usr.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -64,7 +73,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupuserdataalternative" level="style" category="structure" file="strc-usr.mkiv">
+    <cd:command name="setupuserdataalternative" level="style" category="structure" file="strc-usr.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -78,8 +87,8 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getuserdata" level="style" category="structure" keywords="buffer" file="strc-usr.mkiv"/>
+    <cd:command name="getuserdata" level="style" category="structure" keywords="buffer" file="strc-usr.mkxl"/>
 
-    <cd:command name="getinlineuserdata" level="style" category="structure" keywords="buffer" file="strc-usr.mkiv"/>
+    <cd:command name="getinlineuserdata" level="style" category="structure" keywords="buffer" file="strc-usr.mkxl"/>
 
 </cd:interface>

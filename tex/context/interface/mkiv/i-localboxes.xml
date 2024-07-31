@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definelocalboxes" level="system" category="boxes" file="typo-lbx.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuplocalboxes"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuplocalboxes" level="system" category="boxes" file="typo-lbx.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:parameter name="command">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="repeat">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="location">
+                    <cd:constant type="left" default="yes"/>
+                    <cd:constant type="right"/>
+                    <cd:constant type="middle"/>
+                    <cd:constant type="lefttext"/>
+                    <cd:constant type="righttext"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-color"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="leftparbox" level="system" category="boxes" file="typo-lbx.mkxl">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="global"/>
+            </cd:keywords>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="rightparbox" level="system" category="boxes" file="typo-lbx.mkxl">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="global"/>
+            </cd:keywords>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="middleparbox" level="system" category="boxes" file="typo-lbx.mkxl">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="global"/>
+            </cd:keywords>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetlocalbox" level="system" category="boxes" file="typo-lbx.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="localbox" level="system" category="boxes" file="typo-lbx.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="localbox" type="environment" level="system" category="boxes" file="typo-lbx.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="localboxrange" type="environment" level="system" category="boxes" file="typo-lbx.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="localmargintext" level="system" category="boxes" file="typo-lbx.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

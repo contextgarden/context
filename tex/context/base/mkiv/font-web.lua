@@ -57,6 +57,16 @@ local infotags = {
     ["cmap"] = true,
 }
 
+-- A WOFF font is just a compressed OpenType font so that can be dealt with
+-- efficiently. A WOFF2 on the other hand is compressed using some integer
+-- compression and that means that all data tables needs to be decompressed. Given
+-- the rediculous amount of data that gets transmitted over the web one can wonder
+-- what that saves: if we look at advertisements, useless videos and images,
+-- overdone screen real estate, a few fonts are the least of our worries. So we move
+-- around less bytes but then in memory expand that data which also costs time and
+-- in the end takes as much memory as an original fotn that can be cached on disk
+-- anyway. But well, if it can be done it usually is done, no matter what.
+
 local report = logs.reporter("fonts","woff")
 
 local runner = sandbox.registerrunner {

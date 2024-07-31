@@ -1176,6 +1176,7 @@
 		<cd:constant name='placehead' value='placertete'/>
 		<cd:constant name='placeholder' value='placeholder'/>
 		<cd:constant name='placestopper' value='placerstoppeur'/>
+		<cd:constant name='plugin' value='plugin'/>
 		<cd:constant name='position' value='position'/>
 		<cd:constant name='prefix' value='prefixe'/>
 		<cd:constant name='prefixconnector' value='connecteurprefixe'/>
@@ -1336,6 +1337,7 @@
 		<cd:constant name='sy' value='sy'/>
 		<cd:constant name='symalign' value='alignersym'/>
 		<cd:constant name='symbol' value='symbole'/>
+		<cd:constant name='symbolcolor' value='symbolcolor'/>
 		<cd:constant name='symbolcommand' value='commandesymbole'/>
 		<cd:constant name='symbolset' value='jeusymbole'/>
 		<cd:constant name='symcolor' value='couleursym'/>

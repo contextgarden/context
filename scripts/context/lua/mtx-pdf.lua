@@ -68,7 +68,6 @@ elseif CONTEXTLMTXMODE then
 else
     dofile(resolvers.findfile("lpdf-pde.lua","tex"))
 end
-dofile(resolvers.findfile("util-jsn.lua","tex"))
 
 scripts     = scripts     or { }
 scripts.pdf = scripts.pdf or { }

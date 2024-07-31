@@ -1,0 +1,204 @@
+%D \module
+%D   [       file=meta-imp-riven,
+%D        version=2024.07.07,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Riven Numbers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% http://calyxa.com/pearl/numbers.html
+
+\startluacode
+    local riven      = moduledata.riven or { }
+    moduledata.riven = riven
+
+    local tonumber  = tonumber
+    local reverse   = table.reverse
+    local utfchar   = utf.char
+    local gsub      = string.gsub
+    local concat    = table.concat
+    local lpegmatch = lpeg.match
+
+    local f = string.formatters["%N"]
+
+    local slots = { }
+
+    for i=0,24 do
+        slots[i] = fonts.helpers.newprivateslot("riven digit " .. i)
+    end
+
+    function riven.tostring(n)
+        if n >= 0 and n <= 24 then
+            return utfchar(slots[n])
+        else
+            local result = gsub(f(n),"(%d+)",function(s)
+                local digits = { }
+                local count  = 1
+                local n      = tonumber(s)
+                while true do
+                    digits[count] = utfchar(slots[n % 25])
+                    n = n // 25
+                    if n == 0 then
+                        break;
+                    end
+                    count = count + 1
+                end
+                return concat(reverse(digits))
+            end)
+            return result
+        end
+    end
+
+    interfaces.implement {
+        name      = "rivennumerals",
+        arguments = "integer",
+        actions   = { riven.tostring, context }
+    }
+\stopluacode
+
+\startMPcalculation{simplefun}
+
+    path riven_glyphs[] ; % dni
+
+    def InitializeRiven =
+
+        riven_glyphs[ 0] := (0,0) -- (4,4) ;
+        riven_glyphs[ 1] := (2,0) -- (2,4) ;
+        riven_glyphs[ 2] := (0,0) .. (2,2) .. (0,4) ;
+        riven_glyphs[ 3] := (2,0) -- (0,2) -- (2,4) ;
+        riven_glyphs[ 4] := (2,0) -- (2,3) -- (4,3) ;
+        riven_glyphs[ 5] := (0,2) -- (4,2) ;
+
+        riven_glyphs[10] := (0,0) .. (2,2) .. (4,0) ;
+        riven_glyphs[15] := (0,2) -- (2,0) -- (4,2) ;
+        riven_glyphs[20] := (1,4) -- (1,2) -- (4,2) ;
+
+        riven_glyphs[ 6] := riven_glyphs[ 5] && riven_glyphs[1] ;
+        riven_glyphs[ 7] := riven_glyphs[ 5] && riven_glyphs[2] ;
+        riven_glyphs[ 8] := riven_glyphs[ 5] && riven_glyphs[3] ;
+        riven_glyphs[ 9] := riven_glyphs[ 5] && riven_glyphs[4] ;
+        riven_glyphs[11] := riven_glyphs[10] && riven_glyphs[1] ;
+        riven_glyphs[12] := riven_glyphs[10] && riven_glyphs[2] ;
+        riven_glyphs[13] := riven_glyphs[10] && riven_glyphs[3] ;
+        riven_glyphs[14] := riven_glyphs[10] && riven_glyphs[4] ;
+        riven_glyphs[16] := riven_glyphs[15] && riven_glyphs[1] ;
+        riven_glyphs[17] := riven_glyphs[15] && riven_glyphs[2] ;
+        riven_glyphs[18] := riven_glyphs[15] && riven_glyphs[3] ;
+        riven_glyphs[19] := riven_glyphs[15] && riven_glyphs[4] ;
+        riven_glyphs[21] := riven_glyphs[20] && riven_glyphs[1] ;
+        riven_glyphs[22] := riven_glyphs[20] && riven_glyphs[2] ;
+        riven_glyphs[23] := riven_glyphs[20] && riven_glyphs[3] ;
+        riven_glyphs[24] := riven_glyphs[20] && riven_glyphs[4] ;
+
+        riven_glyphs[-1] := (0,0) -- (4,0) -- (4,4) -- (0,4) -- cycle ;
+
+        for i=0 upto 24 :
+            riven_glyphs[i] := riven_glyphs[i] && riven_glyphs[-1] ;
+        endfor ;
+
+    enddef ;
+
+    vardef Riven(expr i) =
+        numeric u ; u := 1.5 ;
+        draw image (
+            draw riven_glyphs[i]
+                scaled (10u/20 - 1.5u/40)
+                withpen pencircle scaled (3u/20) ;
+            ;
+        ) shifted (1.5u/20,1.5u/20)
+        shifted (4u/20,0)
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "riven",
+        units    = 4,
+        usecolor = true,
+        width    = 3.6,
+        height   = 3,
+        depth    = 0,
+        preamble = "InitializeRiven"
+    ] ;
+
+    for i=0 upto 24 :
+        lmt_registerglyph [
+            category  = "riven",
+            private   = "riven digit " & decimal i,
+            code      = "Riven(" & decimal i & ")"
+            tounicode =
+                if i > 9 :
+                    { (ASCII "0") + (i div 10), (ASCII "0") + (i mod 10) }
+                else :
+                                                (ASCII "0") + (i mod 10)
+                fi,
+        ] ;
+    endfor ;
+
+\stopMPcalculation
+
+\unprotect
+
+\permanent\def\rivennumerals#1{\clf_rivennumerals\numexpr#1\relax}
+
+\defineconversion [rivennumerals] [\rivennumerals]
+\defineconversion [R]             [\rivennumerals]
+
+\definefontfeature
+  [riven]
+  [metapost=riven]
+
+\protect
+
+\continueifinputfile{meta-imp-riven.mkxl}
+
+\startbuffer
+
+\definefontfeature
+  [default]
+  [default]
+  [metapost=riven]
+
+\setupbodyfont[dejavu]
+
+\start
+    \showglyphs
+    RIVEN
+    \dostepwiserecurse{0}{24}{1}{\rivennumerals{#1}\space }
+\stop
+
+riven \start
+    \red\glyphxscale 700
+    \dostepwiserecurse{0}{24}{1}{\rivennumerals{#1}\space }
+\stop
+
+\startitemize[packed,R][color=orange,stopper=]
+    \startitem first  \stopitem
+    \startitem second \stopitem
+    \startitem third  \stopitem
+\stopitemize
+
+RIVEN \start
+    \red  \rivennumerals{2023} --
+    \green\rivennumerals{4}    --
+    \blue \rivennumerals{18}
+\stop
+
+\stopbuffer
+
+\starttext
+
+\startTEXpage[offset=1ts,width=3es]
+    \getbuffer
+\stopTEXpage
+
+\setuplayout[tight]
+
+% \usemodule[scite]
+
+% \typebuffer[option=TEX]
+
+\stoptext

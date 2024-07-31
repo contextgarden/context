@@ -696,3 +696,11 @@ do
         end
     )
 end
+
+do
+
+    registerdirect("namedstacking", function()
+        injectnumeric(typesetters.stacking.getindex(scanstring()))
+    end)
+
+end

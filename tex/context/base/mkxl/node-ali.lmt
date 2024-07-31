@@ -72,14 +72,15 @@ local alignrecord_code   <const> = nodecodes.alignrecord
 local rule_code          <const> = nodecodes.rule
 local temp_code          <const> = nodecodes.temp
 
-local spaceskip_code     <const> = nodes.gluecodes.spaceskip
-local xspaceskip_code    <const> = nodes.gluecodes.xspaceskip
-local intermathskip_code <const> = nodes.gluecodes.intermathskip
-local fontkern_code      <const> = nodes.kerncodes.fontkern
-local row_code           <const> = nodes.listcodes.alignment -- should be row
-local cell_code          <const> = nodes.listcodes.cell
-local line_code          <const> = nodes.listcodes.line
-local linepenalty_code   <const> = nodes.penaltycodes.linepanalty
+local spaceskip_code        <const> = nodes.gluecodes.spaceskip
+local xspaceskip_code       <const> = nodes.gluecodes.xspaceskip
+local intermathskip_code    <const> = nodes.gluecodes.intermathskip
+local fontkern_code         <const> = nodes.kerncodes.fontkern
+local row_code              <const> = nodes.listcodes.alignment -- should be row
+local cell_code             <const> = nodes.listcodes.cell
+local line_code             <const> = nodes.listcodes.line
+local linepenalty_code      <const> = nodes.penaltycodes.linepenalty
+local linebreakpenalty_code <const> = nodes.penaltycodes.linebreakpenalty
 
 -- local preamble_pass <const> = tex.alignmentcontextcodes.preamble
 -- local preroll_pass  <const> = tex.alignmentcontextcodes.preroll
@@ -371,11 +372,10 @@ do
     -- Here:
 
     local function openup(specification,head)
-        local inbetween   = specification.inbetween or 0
-        local height      = specification.height or 0
-        local depth       = specification.depth or 0
-        local splitmethod = specification.splitmethod or ""
-        local lines       = { }
+        local inbetween = specification.inbetween or 0
+        local height    = specification.height or 0
+        local depth     = specification.depth or 0
+        local lines     = { }
         for n, id, subtype, list in nextlist, head do
             lines[#lines+1] = { n, subtype, getwhd(n) }
         end
@@ -414,25 +414,6 @@ do
 -- if currentline > noflines then
 --     break
 -- end
-                end
-            end
-            if splitmethod ~= "" then
-                local currentline = 0
-                for n, subtype in nextpenalty, head do
-                    if subtype == linepenalty_code then
-                        if l == 1 then
-                            if splitmethod == v_both or splitmethod == v_first then
--- print("FIRST")
-                                setpenalty(n, 10000)
-                            end
-                        elseif l == noflines then
-                            if splitmethod == v_both or splitmethod == v_last then
--- print("LAST")
-                                setpenalty(n, 10000)
-                            end
-                        end
-                        curline = currentline
-                    end
                 end
             end
             local firstht = lines[1][4]

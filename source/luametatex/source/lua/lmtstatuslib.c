@@ -38,13 +38,16 @@ static int statslib_linebreakstate(lua_State *L)
     lua_createtable(L, n_of_par_context_codes, 0);
     for (int i = 0; i < n_of_par_context_codes; i++) {
         lua_push_key_by_index(lmt_interface.par_context_values[i].lua);
-        lua_createtable(L, 0, 4);
+        lua_createtable(L, 0, 6);
         lua_set_integer_by_key(L, "first",  lmt_linebreak_state.passes[i].n_of_first_passes);
         lua_set_integer_by_key(L, "second", lmt_linebreak_state.passes[i].n_of_second_passes);
         lua_set_integer_by_key(L, "third",  lmt_linebreak_state.passes[i].n_of_third_passes);
         lua_set_integer_by_key(L, "sub",    lmt_linebreak_state.passes[i].n_of_sub_passes);
         lua_rawset(L, -3);
     }
+    lua_set_integer_by_key(L, "lefttwins",   lmt_linebreak_state.n_of_left_twins);
+    lua_set_integer_by_key(L, "righttwins",  lmt_linebreak_state.n_of_right_twins);
+    lua_set_integer_by_key(L, "doubletwins", lmt_linebreak_state.n_of_double_twins);
     return 1;
 }
 
@@ -344,6 +347,7 @@ static int statslib_getconstants(lua_State *L)
     lua_set_integer_by_key(L, "min_scale_factor",               min_scale_factor);
     lua_set_integer_by_key(L, "max_scale_factor",               max_scale_factor);
     lua_set_integer_by_key(L, "default_space_factor",           default_space_factor);
+    lua_set_integer_by_key(L, "special_space_factor",           special_space_factor);
     lua_set_integer_by_key(L, "default_tolerance",              default_tolerance);
     lua_set_integer_by_key(L, "default_hangafter",              default_hangafter);
     lua_set_integer_by_key(L, "default_deadcycles",             default_deadcycles);
@@ -409,6 +413,10 @@ static int statslib_getconstants(lua_State *L)
     lua_set_integer_by_key(L, "max_font_adjust_step",           max_font_adjust_step);            
     lua_set_integer_by_key(L, "max_font_adjust_stretch_factor", max_font_adjust_stretch_factor);
     lua_set_integer_by_key(L, "max_font_adjust_shrink_factor",  max_font_adjust_shrink_factor);
+
+    lua_set_integer_by_key(L, "max_twin_length",                max_twin_length); 
+
+    lua_set_integer_by_key(L, "default_character_control",      default_character_control); 
 
     return 1;
 }

@@ -619,7 +619,7 @@
    \scriptscriptfont\c_font_fam_mr\scriptscriptfont\c_font_fam_mr}
 
 \def\font_helpers_synchronize_math_parameters_bold
-   {\c_math_last_family_used\mathstylefontid\textstyle\zerocount
+  {\c_math_last_family_used\mathstylefontid\textstyle\zerocount
    \textfont        \c_attr_mathfamily\textfont        \c_attr_mathfamily
    \scriptfont      \c_attr_mathfamily\scriptfont      \c_attr_mathfamily
    \scriptscriptfont\c_attr_mathfamily\scriptscriptfont\c_attr_mathfamily}

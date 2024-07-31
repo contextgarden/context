@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definestartstop" level="style" category="structure" file="core-sys.mkiv">
+    <cd:command name="definestartstop" level="style" category="structure" file="core-sys.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupstartstop" level="style" category="structure" file="core-sys.mkiv">
+    <cd:command name="setupstartstop" level="style" category="structure" file="core-sys.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -47,21 +47,57 @@
                 <cd:parameter name="color">
                     <cd:constant type="cd:color"/>
                 </cd:parameter>
+                <cd:parameter name="arguments">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="startstop" type="environment" generated="yes" variant="example" level="document" category="structure" file="core-sys.mkiv">
+    <cd:command name="startstop" type="environment" generated="yes" variant="example" level="document" category="structure" file="core-sys.mkxl">
         <cd:sequence>
             <cd:variable value="startstop"/>
         </cd:sequence>
+    </cd:command>
+
+    <cd:command name="startstop" type="environment" generated="yes" variant="example:argument" level="document" category="structure" file="core-sys.mkxl">
+        <cd:sequence>
+            <cd:variable value="startstop"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupstartstop"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="startstop" generated="yes" variant="example" level="document" category="structure" file="core-sys.mkxl">
+        <cd:sequence>
+            <cd:variable value="startstop"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="startstop" generated="yes" variant="example:argument" level="document" category="structure" file="core-sys.mkxl">
+        <cd:sequence>
+            <cd:variable value="startstop"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupstartstop"/>
+            </cd:assignments>
+            <cd:content/>
+        </cd:arguments>
     </cd:command>
 
     <!--
 
         Variant 1: <cd:string value="zero width space"/>
 
-        <cd:command name="startstop" type="environment" level="document" category="structure" file="core-sys.mkiv">
+        <cd:command name="startstop" type="environment" level="document" category="structure" file="core-sys.mkxl">
             <cd:sequence>
                 <cd:string value="​"/>
             </cd:sequence>
@@ -72,7 +108,7 @@
 
         Variant 2: <cd:delimiter name="stop"/>
 
-        <cd:command name="start" level="document" category="structure" file="core-sys.mkiv">
+        <cd:command name="start" level="document" category="structure" file="core-sys.mkxl">
             <cd:arguments>
                 <cd:resolve name="keyword-name-optional"/>
                 <cd:resolve name="string-content"/>
@@ -82,18 +118,9 @@
 
     -->
 
-    <cd:command name="" type="environment" level="document" category="structure" file="core-sys.mkiv">
+    <cd:command name="" type="environment" level="document" category="structure" file="core-sys.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="startstop" generated="yes" variant="example" level="document" category="structure" file="core-sys.mkiv">
-        <cd:sequence>
-            <cd:variable value="startstop"/>
-        </cd:sequence>
-        <cd:arguments>
-            <cd:content/>
         </cd:arguments>
     </cd:command>
 

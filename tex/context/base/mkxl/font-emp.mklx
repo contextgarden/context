@@ -155,7 +155,8 @@
 \newconditional\c_font_emphasis_needed
 
 \permanent\protected\def\em
-  {\relax
+  {\dontleavehmode
+  %\relax
    \ifdim\slantperpoint>\zeropoint
      \c_font_emphasis_needed\conditionaltrue
    \else
@@ -291,23 +292,31 @@
 \permanent\protected\def\font_sl{\sl} \permanent\protected\def\font_bs{\bs}
 \permanent\protected\def\font_it{\it} \permanent\protected\def\font_bi{\bi}
 
-\protected\def\font_emphasis_bf{\bf\enforced\aliased\let\emphit\font_bi
-                                   \enforced\aliased\let\emphsl\font_bs}
-\protected\def\font_emphasis_it{\it\enforced\aliased\let\emphbf\font_bi
-                                   \enforced\aliased\let\emphsl\font_sl}
-\protected\def\font_emphasis_sl{\sl\enforced\aliased\let\emphbf\font_bs
-                                   \enforced\aliased\let\emphit\font_it}
-\protected\def\font_emphasis_tf{\tf\enforced\aliased\let\emphbf\font_bf
-                                   \enforced\aliased\let\emphit\font_it
-                                   \enforced\aliased\let\emphsl\font_sl}
+\protected\def\font_emphasis_bf{\bf
+                                \enforced\aliased\let\emphit\font_bi
+                                \enforced\aliased\let\emphsl\font_bs}
+\protected\def\font_emphasis_it{\it
+                                \enforced\aliased\let\emphbf\font_bi
+                                \enforced\aliased\let\emphsl\font_sl}
+\protected\def\font_emphasis_sl{\sl
+                                \enforced\aliased\let\emphbf\font_bs
+                                \enforced\aliased\let\emphit\font_it}
+\protected\def\font_emphasis_tf{\tf
+                                \enforced\aliased\let\emphbf\font_bf
+                                \enforced\aliased\let\emphit\font_it
+                                \enforced\aliased\let\emphsl\font_sl}
 
-\permanent\protected\def\emphbf{\triggergroupedcommandcs\font_emphasis_bf}
-\permanent\protected\def\emphit{\triggergroupedcommandcs\font_emphasis_it}
-\permanent\protected\def\emphsl{\triggergroupedcommandcs\font_emphasis_sl}
-\permanent\protected\def\emphtf{\triggergroupedcommandcs\font_emphasis_tf}
-\permanent\protected\def\emph  {\triggergroupedcommandcs\em}
+\permanent\protected\def\emphbf{\dontleavehmode\triggergroupedcommandcs\font_emphasis_bf}
+\permanent\protected\def\emphit{\dontleavehmode\triggergroupedcommandcs\font_emphasis_it}
+\permanent\protected\def\emphsl{\dontleavehmode\triggergroupedcommandcs\font_emphasis_sl}
+\permanent\protected\def\emphtf{\dontleavehmode\triggergroupedcommandcs\font_emphasis_tf}
+\permanent\protected\def\emph  {\dontleavehmode\triggergroupedcommandcs\em}
 
-\permanent\protected\def\emphasized{\bgroup\em\let\nexttoken}
+\permanent\protected\def\emphasized{\dontleavehmode\bgroup\em\let\nexttoken}
+
+% maybe some day:
+%
+% \definehighlight[\v!emphasize][\c!style=\em]
 
 %D \startbuffer
 %D TEXT {\emphbf text \emphit text  \emphtf text  \emphsl text}  TEXT

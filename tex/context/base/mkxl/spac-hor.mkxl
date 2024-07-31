@@ -830,10 +830,12 @@
      \frozen\advanceby\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
      \frozen\advanceby\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
    \fi
-   \seteffectivehsize}
+   \seteffectivehsize
+   \dostarttagged\t!narrower\currentnarrower}
 
 \permanent\protected\def\spac_narrower_stop
-  {\narrowerparameter\c!after
+  {\dostoptagged
+   \narrowerparameter\c!after
    \normalexpanded{%
       \endgroup
       \s_spac_narrower_left_last \the\leftskip \relax

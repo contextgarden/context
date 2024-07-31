@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definetextdisplay" level="style" category="structure" file="spac-ver.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptextdisplay"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuptextdisplay" level="style" category="structure" file="spac-ver.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="factor">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="textdisplay" type="environment" generated="yes" variant="instance" level="document" category="structure" file="spac-ver.mkxl">
+        <cd:sequence>
+            <cd:instance value="textdisplay"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptextdisplay"/>
+            </cd:assignments>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-textdisplay"/>
+        </cd:instances>
+    </cd:command>
+
+</cd:interface>

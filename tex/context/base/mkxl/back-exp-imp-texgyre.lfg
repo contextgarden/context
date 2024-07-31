@@ -1,0 +1,18 @@
+return {
+    name = "fontfaces-bonum",
+    version = "1.00",
+    author = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+    fontfaces = {
+        Bonum = {
+            SerifNormal     = { filename = "texgyrebonum-regular.otf" },
+            SerifBold       = { filename = "texgyrebonum-bold.otf" },
+            SerifItalic     = { filename = "texgyrebonum-italic.otf" },
+            SerifBoldItalic = { filename = "texgyrebonum-bolditalic.otf" },
+        },
+        BonumMath = {
+            MathNormal      = { filename = "texgyrebonum-math.otf" },
+            MathBold        = { filename = "texgyrebonum-math.otf", weight = 900 },
+        }
+    }
+}

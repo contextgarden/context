@@ -348,7 +348,7 @@ typedef struct lmt_interface_info {
     value_info    *page_context_values;
     value_info    *append_line_context_values;
     value_info    *alignment_context_values;
-    value_info    *break_context_values;
+    value_info    *line_break_context_values;
     value_info    *build_context_values;
     value_info    *par_trigger_values;
     value_info    *par_mode_values;
@@ -482,9 +482,10 @@ make_lua_key(L, alignset);\
 make_lua_key(L, alignstack);\
 make_lua_key(L, alsosimple);\
 make_lua_key(L, anchor);\
-make_lua_key(L, argument);\
 make_lua_key(L, append);\
+make_lua_key(L, argument);\
 make_lua_key(L, arithmic);\
+make_lua_key(L, atop);\
 make_lua_key(L, association);\
 make_lua_key(L, attr);\
 make_lua_key(L, attribute);\
@@ -571,6 +572,7 @@ make_lua_key(L, constant);\
 make_lua_key(L, constant_call);\
 make_lua_key(L, container);\
 make_lua_key(L, contributehead);\
+make_lua_key(L, control);\
 make_lua_key(L, convert);\
 make_lua_key(L, correctionskip);\
 make_lua_key(L, cost);\
@@ -660,6 +662,7 @@ make_lua_key(L, escape);\
 make_lua_key(L, etex);\
 make_lua_key(L, exact);\
 make_lua_key(L, exactly);\
+make_lua_key(L, except);\
 make_lua_key(L, exheight);\
 make_lua_key(L, expand_after);\
 make_lua_key(L, expandable);\
@@ -855,6 +858,7 @@ make_lua_key(L, leftmathslackkern);\
 make_lua_key(L, leftprotrusion);\
 make_lua_key(L, leftskip);\
 make_lua_key(L, lefttoright);\
+make_lua_key(L, lefttwindemerits);\
 make_lua_key(L, legacy);\
 make_lua_key(L, let);\
 make_lua_key(L, letter);\
@@ -870,6 +874,7 @@ make_lua_key(L, limitbelowkern);\
 make_lua_key(L, limitbelowvgap);\
 make_lua_key(L, limits);\
 make_lua_key(L, line);\
+make_lua_key(L, linebreakchecks);\
 make_lua_key(L, linebreakoptional);\
 make_lua_key(L, linebreakpenalty);\
 make_lua_key(L, linepenalty);\
@@ -1155,6 +1160,7 @@ make_lua_key(L, rightmathslackkern);\
 make_lua_key(L, rightprotrusion);\
 make_lua_key(L, rightskip);\
 make_lua_key(L, righttoleft);\
+make_lua_key(L, righttwindemerits);\
 make_lua_key(L, root);\
 make_lua_key(L, rooted);\
 make_lua_key(L, rule);\
@@ -1197,6 +1203,7 @@ make_lua_key(L, single);\
 make_lua_key(L, singlelinepenalty);\
 make_lua_key(L, size);\
 make_lua_key(L, skewchar);\
+make_lua_key(L, skewed);\
 make_lua_key(L, SkewedDelimiterTolerance);\
 make_lua_key(L, skeweddelimitertolerance);\
 make_lua_key(L, skewedfractionhgap);\
@@ -1252,6 +1259,7 @@ make_lua_key(L, state);\
 make_lua_key(L, step);\
 make_lua_key(L, stop);\
 make_lua_key(L, stretch);\
+make_lua_key(L, stretched);\
 make_lua_key(L, stretchorder);\
 make_lua_key(L, StretchStackBottomShiftDown);\
 make_lua_key(L, StretchStackGapAboveMin);\

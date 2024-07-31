@@ -1106,7 +1106,7 @@ local function toutfstring(s)
     end
 end
 
-utf.tostring = toutfstring
+utf.tostring = toutfstring -- in lmtx just utf.tostring = utfchar
 
 local categories = allocate()  characters.categories = categories -- lazy table
 

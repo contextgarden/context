@@ -22,6 +22,10 @@
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
                 </cd:parameter>
+                <cd:parameter name="define">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
                 <!-- begin construction values -->
                 <cd:parameter name="level">
                     <cd:constant type="cd:number"/>
@@ -133,6 +137,10 @@
                 <cd:parameter name="aligntitle">
                     <cd:constant type="yes" default="yes"/>
                     <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="headindenting">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
                 </cd:parameter>
                 <!-- end construction values -->
             </cd:assignments>

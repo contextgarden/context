@@ -183,7 +183,8 @@ local function fieldflag(specification) -- /Ff
     local o, n = specification.option, 0
     if o and o ~= "" then
         for f in gmatch(o,"[^, ]+") do
-            n = n + (flag[f] or 0)
+         -- n = n + (flag[f] or 0)
+            n = n | (flag[f] or 0)
         end
     end
     return n
@@ -193,10 +194,10 @@ local function fieldplus(specification) -- /F
     local o, n = specification.option, 0
     if o and o ~= "" then
         for p in gmatch(o,"[^, ]+") do
-            n = n + (plus[p] or 0)
+         -- n = n + (plus[p] or 0)
+            n = n | (plus[p] or 0)
         end
     end
--- n = n + 4
     return n
 end
 
@@ -931,6 +932,9 @@ local function finishfields()
         local type = field.type
         if not sometext and (type == "text" or type == "line") then
             sometext = true
+        end
+        if type == "signed" then
+            signature = true
         end
     end
     for name, field in sortedhash(radios) do

@@ -66,7 +66,7 @@ local vlist_code      <const> = nodecodes.vlist
 local par_code        <const> = nodecodes.par
 local dir_code        <const> = nodecodes.dir
 
-local fontkern_code   <const> = kerncodes.font
+local fontkern_code   <const> = kerncodes.fontkern
 
 local nodepool        = nuts.pool
 local new_kern        = nodepool.kern

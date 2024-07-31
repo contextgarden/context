@@ -238,7 +238,7 @@ local implement = interfaces.implement
 implement {
     name      = "definecharacterspacing",
     actions   = spacings.define,
-    arguments = "string"
+    arguments = "2 strings"
 }
 
 implement {

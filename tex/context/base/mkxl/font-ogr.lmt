@@ -384,9 +384,13 @@ do -- this will move to its own module
                             local ht = shape.height or defaultheight
                             local dp = shape.depth  or defaultdepth
                             local bb = shape.boundingbox
-                            local uc = shape.tounicode
-                            if uc then
-                                uc = round(uc) -- brrr can be 123.0
+                            local uc = shape.tounicode -- brrr can be 123.0
+                            if type(uc) == "table" then
+                                for i=1,#uc do
+                                    uc[i] = round(uc[i])
+                                end
+                            elseif uc then
+                                uc = round(uc)
                             end
                             if bb then
                                 for i=1,4 do bb[i] = scale * bb[i] end

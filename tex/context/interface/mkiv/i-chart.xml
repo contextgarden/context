@@ -390,10 +390,10 @@
    <cd:command name="FLOWcell" type="environment" level="document" category="graphics" keywords="metapost" file="m-chart.mkvi">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupFLOWshape"/>
+                <cd:inherit name="setupFLOWshapes"/>
             </cd:assignments>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupFLOWline"/>
+                <cd:inherit name="setupFLOWlines"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -402,7 +402,7 @@
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupFLOWchart"/>
+                <cd:inherit name="setupFLOWcharts"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

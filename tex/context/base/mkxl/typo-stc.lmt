@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['typo-stc'] = {
 
 local tonumber, next = tonumber, next
 local gmatch = string.gmatch
+local stepper = utilities.parsers.stepper
 
 -- local trace_stacking = false  trackers.register("typesetters.stacking", function(v) trace_stacking = v end)
 --
@@ -68,34 +69,49 @@ local unblocked =  {
 local stacking       = typesetters.stacking or { }
 typesetters.stacking = stacking
 
-local nofstacking = 0
+local nofstacking = 0xFFFF -- we don't mix with numbers
 local registered  = { }
 local currentset  = { }
 local enabled     = false
 
+local function getselection(str)
+    local t = { }
+    stepper(str,function(s)
+        local r = registered[s] or tonumber(s)
+        if r then
+            t[r] = true
+        end
+    end)
+    return t
+end
+
+local function getindex(str)
+    return registered[str] or tonumber(str) or 0
+end
+
+typesetters.stacking.getselection = getselection
+typesetters.stacking.getindex     = getindex
+
 interfaces.implement {
     name      = "newstacking",
-    arguments = "string",
+    arguments = "2 strings",
     usage     = "value",
-    actions   = function(s)
-        nofstacking = nofstacking + 1
-        registered[s] = nofstacking
-        return tokens.values.integer, nofstacking
+    actions   = function(s,n)
+        n = n and tonumber(n)
+        if not n then
+            nofstacking = nofstacking + 1
+            n = nofstacking
+        end
+        registered[s] = n
+        return tokens.values.integer, n
     end,
 }
 
 interfaces.implement {
     name      = "setstacking",
     arguments = "string",
-    actions   = function(s)
-        -- maybe use range parser
-        currentset = { }
-        for s in gmatch(s,"[^%s,]+") do
-            local r = registered[s]
-            if r then
-                currentset[r] = true
-            end
-        end
+    actions   = function(str)
+        currentset = getselection(str)
         if not enabled and next(currentset) then
             nodes.tasks.enableaction("shipouts", "typesetters.stacking.handler")
             enabled = true

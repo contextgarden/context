@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definestacking" level="style" category="pdf" file="typo-stc.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupstacking"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupstacking" level="style" category="pdf" file="typo-stc.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="define">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="criterium" list="yes">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="stacking" type="environment" level="document" category="pdf" file="typo-stc.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="stacking" type="environment" generated="yes" variant="example" level="document" category="pdf" file="typo-stc.mkxl">
+        <cd:sequence>
+            <cd:variable value="stacking"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="stacking" level="document" category="pdf" file="typo-stc.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="stacking" generated="yes" variant="example" level="document" category="pdf" file="typo-stc.mkxl">
+        <cd:sequence>
+            <cd:variable value="stacking"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="stackingsteps" type="environment" level="document" category="pdf" file="typo-stc.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

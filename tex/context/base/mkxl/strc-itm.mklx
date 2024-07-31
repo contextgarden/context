@@ -646,7 +646,7 @@
 \ifdefined\dotagsetitem      \else \aliased\let\dotagsetitem     \gobbleoneargument \fi
 
 \def\strc_itemgroups_tag_start_group
-  {\dostarttaggedchained\t!itemgroup\currentparentitemgroup\??itemgroup
+  {\dostarttaggedchained\t!itemgroup\currentparentitemgroup\currentitemgroup\??itemgroup
    \dotagsetitemgroup}
 
 \def\strc_itemgroups_tag_stop_group

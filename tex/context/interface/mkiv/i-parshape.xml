@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="setupshapedparagraph" level="style" category="alignment" file="typo-shp.mkxl">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="mp" list="yes">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="repeat">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="list">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="cycle"/>
+                    <cd:constant type="shift"/>
+                </cd:parameter>
+                <cd:parameter name="voffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="hoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="distance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="lines">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="text">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="paragraphshape" type="environment" level="document" category="alignment" file="typo-shp.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="rawparagraphshape" level="document" category="alignment" file="typo-shp.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setparagraphshape" level="document" category="alignment" file="typo-shp.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="shapedparagraph" type="environment" level="document" category="alignment" file="typo-shp.mkxl">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupshapedparagraph"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="shapetext" type="environment" level="document" category="alignment" file="typo-shp.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="getshapetext" level="document" category="alignment" file="typo-shp.mkxl"/>
+
+</cd:interface>

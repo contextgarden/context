@@ -42,12 +42,17 @@ do
 
     local itemgroups = { }
 
-    local function setitemgroup(packed,level,symbol)
+    local function setitemgroup(packed,continue,level,symbol)
         itemgroups[locatedtag("itemgroup")] = {
-            packed = packed,
-            symbol = symbol,
-            level  = level,
+            packed   = packed,
+            continue = continue,
+            symbol   = symbol,
+            level    = level,
         }
+    end
+
+    local function getitemgroup(fulltag)
+        return itemgroups[fulltag]
     end
 
     local function setitem(kind)
@@ -60,6 +65,7 @@ do
         local hash = itemgroups[fulltag]
         if hash then
             setattribute(di,"packed",hash.packed and "yes" or nil)
+            setattribute(di,"continue",hash.continue and "yes" or nil)
             setattribute(di,"symbol",hash.symbol)
             setattribute(di,"level",hash.level)
         end
@@ -78,7 +84,7 @@ do
     implement {
         name      = "settagitemgroup",
         actions   = setitemgroup,
-        arguments = { "boolean", "integer", "string" }
+        arguments = { "boolean", "boolean", "integer", "string" }
     }
 
     implement {
@@ -88,6 +94,7 @@ do
     }
 
     structurestags.setitemgroup = setitemgroup
+    structurestags.getitemgroup = getitemgroup
     structurestags.setitem      = setitem
 
 end
@@ -169,9 +176,10 @@ do
 
     local registered = { }
 
-    local function setformulacontent(n)
+    local function setformulacontent(n,image)
         registered[locatedtag("formulacontent")] = {
-            n = n,
+            n     = n,
+            image = image,
         }
     end
 
@@ -179,13 +187,18 @@ do
         local r = registered[fulltag]
         if r then
             setattribute(di,"n",r.n)
+            if tonumber(r.image) ~= 0 then
+             -- setattribute(di,"data-lmtx-image","image-"..r.image)
+--                 setattribute(di,"image","image-"..r.image)
+                setattribute(di,"image",tex.jobname .. "-" .. "image-"..r.image)
+            end
         end
     end
 
     implement {
         name      = "settagformulacontent",
         actions   = setformulacontent,
-        arguments = "integer",
+        arguments = "2 strings",
     }
 
     structurestags.setformulacontent = setformulacontent
@@ -415,19 +428,24 @@ do
 
     structurestags.usewithcare.images = image
 
-    local function setfigure(name,used,page,width,height,label)
+    local function setfigure(name,used,page,width,height,depth,label,category)
         local fulltag = locatedtag("image")
         local spec    = specifications[fulltag]
         if spec then
             local page = tonumber(page)
+            local id = f_id(spec.tagname,spec.tagindex)
             image[fulltag] = {
-                id     = f_id(spec.tagname,spec.tagindex),
-                name   = name,
-                used   = used,
-                page   = page and page > 1 and page or nil,
-                width  = todimen(width, "cm","%0.3F%s"),
-                height = todimen(height,"cm","%0.3F%s"),
-                label  = label,
+                id       = id,
+  -- ["data-lmtx-image"] = id,
+                image    = id,
+                name     = name,
+                used     = used,
+                page     = page and page > 1 and page or nil,
+                width    = todimen(width,"pt","%0.3F%s"),
+                height   = todimen(height+depth,"pt","%0.3F%s"),
+                drop     = depth ~= 0 and todimen(depth,"pt","%0.3F%s") or nil,
+                label    = label,
+                category = category,
             }
         else
             -- we ignore images in layers in the background / pagebody
@@ -437,19 +455,26 @@ do
     function extras.image(di,element,n,fulltag)
         local data = image[fulltag]
         if data then
+--             local id = data.id
+            local id = tex.jobname .. "-" .. data.id
+            -- can be less
             setattribute(di,"name",data.name)
             setattribute(di,"page",data.page)
-            setattribute(di,"id",data.id)
+            setattribute(di,"id",id)
+         -- setattribute(di,"data-lmtx-image",id)
+            setattribute(di,"image",id)
             setattribute(di,"width",data.width)
             setattribute(di,"height",data.height)
+            setattribute(di,"drop",data.drop)
             setattribute(di,"label",data.label)
+            setattribute(di,"category",data.category)
         end
     end
 
     implement {
         name      = "settagfigure",
         actions   = setfigure,
-        arguments = { "string", "string", "string", "dimen", "dimen", "string" }
+        arguments = { "string", "string", "string", "dimen", "dimen", "dimen", "string", "string" }
     }
 
     structurestags.setfigure = setfigure
@@ -458,12 +483,19 @@ end
 
 do
 
-    local combinations = { }
+    local combinations     = { }
+    local combinationpairs = { }
 
     local function setcombination(nx,ny)
         combinations[locatedtag("combination")] = {
             nx = nx,
             ny = ny,
+        }
+    end
+    local function setcombinationpair(x,y)
+        combinationpairs[locatedtag("combinationpair")] = {
+            x = x,
+            y = y,
         }
     end
 
@@ -474,14 +506,27 @@ do
             setattribute(di,"ny",data.ny)
         end
     end
+    function extras.combinationpair(di,element,n,fulltag)
+        local data = combinationpairs[fulltag]
+        if data then
+            setattribute(di,"x",data.x)
+            setattribute(di,"y",data.y)
+        end
+    end
 
     implement {
         name      = "settagcombination",
         actions   = setcombination,
         arguments = { "integer", "integer" }
     }
+    implement {
+        name      = "settagcombinationpair",
+        actions   = setcombinationpair,
+        arguments = { "integer", "integer" }
+    }
 
-    structurestags.setcombination = setcombination
+    structurestags.setcombination     = setcombination
+    structurestags.setcombinationpair = setcombinationpair
 
 end
 

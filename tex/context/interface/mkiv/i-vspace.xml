@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definevspacingamount" level="system" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="definevspacingamount" level="system" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-dimension-optional"/>
@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definevspacing" level="system" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="definevspacing" level="system" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords>
@@ -21,7 +21,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vspacing" level="system" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="vspacing" level="system" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:resolve name="value-blank"/>
@@ -29,7 +29,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directvspacing" level="system" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="directvspacing" level="system" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces" list="yes">
                 <cd:inherit name="vspacing"/>
@@ -37,7 +37,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupvspacing" level="system" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="setupvspacing" level="system" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:inherit name="vspacing"/>
@@ -47,7 +47,7 @@
 
     <!--
 
-        <cd:command name="setupblank" level="style" category="whitespace" file="spac-ver.mkiv">
+        <cd:command name="setupblank" level="style" category="whitespace" file="spac-ver.mkxl">
             <cd:arguments>
                 <cd:keywords list="yes" optional="yes">
                     <cd:inherit name="vspacing"/>
@@ -55,7 +55,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="blank" level="document" category="whitespace" file="spac-ver.mkiv">
+        <cd:command name="blank" level="document" category="whitespace" file="spac-ver.mkxl">
             <cd:arguments>
                 <cd:keywords list="yes" optional="yes">
                     <cd:inherit name="vspacing"/>
@@ -65,7 +65,7 @@
 
     -->
 
-    <cd:command name="setupblank" level="style" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="setupblank" level="style" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:inherit name="blank"/>
@@ -73,7 +73,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blank" level="document" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="blank" level="document" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                     <cd:resolve name="value-blank"/>
@@ -81,17 +81,17 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="useblankparameter" level="system" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="useblankparameter" level="system" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inhibitblank" level="system" category="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="inhibitblank" level="system" category="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="synchronizeblank" level="system" category="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="synchronizeblank" level="system" category="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="definevspace" level="style" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="definevspace" level="style" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-name"/>
@@ -99,7 +99,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vspace" level="document" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="vspace" level="document" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -118,25 +118,25 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="godown" level="document" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="godown" level="document" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="vglue" level="system" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="vglue" level="system" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="string-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="smallskip" level="system" category="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="smallskip" level="system" category="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="medskip" level="system" category="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="medskip" level="system" category="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="bigskip" level="system" category="whitespace" file="spac-ver.mkiv"/>
+    <cd:command name="bigskip" level="system" category="whitespace" file="spac-ver.mkxl"/>
 
-    <cd:command name="checkedblank" level="system" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="checkedblank" level="system" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:inherit name="blank"/>
@@ -144,7 +144,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="prerollblank" level="system" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="prerollblank" level="system" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:inherit name="blank"/>
@@ -152,10 +152,46 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="crlf" level="document" category="whitespace" file="typo-wrp.mkiv"/>
+    <cd:command name="crlf" level="document" category="whitespace" file="typo-wrp.mkxl"/>
 
-    <cd:command name="settestcrlf" level="document" category="whitespace" file="typo-wrp.mkiv"/>
+    <cd:command name="settestcrlf" level="document" category="whitespace" file="typo-wrp.mkxl"/>
 
-    <cd:command name="crlfplaceholder" level="document" category="whitespace" file="typo-wrp.mkiv"/>
+    <cd:command name="crlfplaceholder" level="document" category="whitespace" file="typo-wrp.mkxl"/>
+
+    <cd:command name="tightfitboundary" level="document" category="whitespace" file="typo-wrp.mkxl"/>
+
+    <cd:command name="tightfitcompensation" level="document" category="whitespace" file="typo-wrp.lmt"/>
+
+    <cd:command name="insertblankbefore" level="document" file="typo-adj.mkxl">
+        <cd:arguments>
+            <cd:keywords list="yes">
+                <cd:inherit name="blank"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="insertblankafter" level="document" file="typo-adj.mkxl">
+        <cd:arguments>
+            <cd:keywords list="yes">
+                <cd:inherit name="blank"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="blankbefore" level="document" file="spac-ver.mkxl">
+        <cd:arguments>
+            <cd:keywords list="yes">
+                <cd:inherit name="blank"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="blankafter" level="document" file="spac-ver.mkxl">
+        <cd:arguments>
+            <cd:keywords list="yes">
+                <cd:inherit name="blank"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
 
 </cd:interface>

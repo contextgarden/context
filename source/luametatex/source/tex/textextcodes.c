@@ -210,8 +210,8 @@ static void tex_aux_free_catcodes(void)
 
 /*tex
 
-    The lowercase mapping codes are also stored in a tree. Let's keep them close for cache hits,
-    maybe also with hjcodes.
+    We have a whole bunch of character related codes. We could consider packign them all in one big
+    character blob but this more fits in teh way \TEX\ is designed.  
 
 */
 
@@ -222,7 +222,7 @@ static void tex_aux_free_catcodes(void)
 # define UCCODEDEFAULT    0
 
 # define SFCODESTACK      8
-# define SFCODEDEFAULT    scaling_factor
+# define SFCODEDEFAULT    default_space_factor
 
 # define HCCODESTACK      8
 # define HCCODEDEFAULT    0
@@ -233,6 +233,9 @@ static void tex_aux_free_catcodes(void)
 # define AMCODESTACK      8
 # define AMCODEDEFAULT    0
 
+# define CCCODESTACK      8 /* no need for stack */
+# define CCCODEDEFAULT    default_character_control
+
 typedef struct luscode_state_info {
     sa_tree uccode_head;
     sa_tree lccode_head;
@@ -240,6 +243,7 @@ typedef struct luscode_state_info {
     sa_tree hccode_head;
     sa_tree hmcode_head;
     sa_tree amcode_head;
+    sa_tree cccode_head;
 } luscode_state_info;
 
 static luscode_state_info lmt_luscode_state = {
@@ -248,8 +252,16 @@ static luscode_state_info lmt_luscode_state = {
     .sfcode_head = NULL,
     .hccode_head = NULL,
     .hmcode_head = NULL,
-    .amcode_head = NULL
+    .amcode_head = NULL,
+    .cccode_head = NULL,
 };
+
+/*tex
+
+    The lowercase mapping codes are also stored in a tree. Let's keep them close for cache hits,
+    maybe also with hjcodes.
+
+*/
 
 void tex_set_lc_code(int n, halfword v, int gl)
 {
@@ -496,6 +508,48 @@ static void tex_aux_free_amcodes(void)
     sa_destroy_tree(lmt_luscode_state.amcode_head);
 }
 
+/*tex 
+
+    This is not yet used. 
+
+*/
+
+void tex_set_cc_code(int n, halfword v, int gl)
+{
+    sa_set_item_2(lmt_luscode_state.cccode_head, n, v, gl);
+}
+
+halfword tex_get_cc_code(int n)
+{
+    return sa_return_item_2(lmt_luscode_state.cccode_head, n);
+}
+
+static void tex_aux_unsave_cccodes(int gl)
+{
+    sa_restore_stack(lmt_luscode_state.cccode_head, gl);
+}
+
+static void tex_aux_initialize_cccodes(void)
+{
+    sa_tree_item item = {.int_value = CCCODEDEFAULT };
+    lmt_luscode_state.cccode_head = sa_new_tree(lccode_sparse_identifier, CCCODESTACK, 2, item);
+}
+
+static void tex_aux_dump_cccodes(dumpstream f)
+{
+    sa_dump_tree(f, lmt_luscode_state.cccode_head);
+}
+
+static void tex_aux_undump_cccodes(dumpstream f)
+{
+    lmt_luscode_state.cccode_head = sa_undump_tree(f);
+}
+
+static void tex_aux_free_cccodes(void)
+{
+    sa_destroy_tree(lmt_luscode_state.cccode_head);
+}
+
 /*tex
 
     The hyphenation codes are indeed stored in a tree and are used instead of lowercase codes when
@@ -596,6 +650,7 @@ void tex_unsave_text_codes(int grouplevel)
     tex_aux_unsave_hccodes(grouplevel);
     tex_aux_unsave_hmcodes(grouplevel);
     tex_aux_unsave_amcodes(grouplevel);
+    tex_aux_unsave_cccodes(grouplevel);
 }
 
 void tex_initialize_text_codes(void)
@@ -607,6 +662,7 @@ void tex_initialize_text_codes(void)
     tex_aux_initialize_hccodes();
     tex_aux_initialize_hmcodes();
     tex_aux_initialize_amcodes();
+    tex_aux_initialize_cccodes();
  /* initializehjcodes(); */
 }
 
@@ -619,6 +675,7 @@ void tex_free_text_codes(void)
     tex_aux_free_hccodes();
     tex_aux_free_hmcodes();
     tex_aux_free_amcodes();
+    tex_aux_free_cccodes();
  /* freehjcodes(); */
 }
 
@@ -631,6 +688,7 @@ void tex_dump_text_codes(dumpstream f)
     tex_aux_dump_hccodes(f);
     tex_aux_dump_hmcodes(f);
     tex_aux_dump_amcodes(f);
+    tex_aux_dump_cccodes(f);
  /* dumphjcodes(f); */
 }
 
@@ -643,6 +701,7 @@ void tex_undump_text_codes(dumpstream f)
     tex_aux_undump_hccodes(f);
     tex_aux_undump_hmcodes(f);
     tex_aux_undump_amcodes(f);
+    tex_aux_undump_cccodes(f);
  /* undumphjcodes(f); */
 }
 
@@ -655,7 +714,7 @@ void tex_initialize_xx_codes(void)
         tex_set_lc_code(l, l, level_one);
         tex_set_uc_code(u, u, level_one);
         tex_set_uc_code(l, u, level_one);
-        tex_set_sf_code(u, 999, level_one);
+        tex_set_sf_code(u, special_space_factor, level_one);
     }
     /*tex A good start but not compatible. */
  /* set_hc_code(0x002D, 0x002D, level_one); */
@@ -704,6 +763,9 @@ void tex_show_code_stack()
             switch (cur_chr) {
                 case amcode_charcode: 
                     head = lmt_luscode_state.amcode_head; 
+                    break;
+                case cccode_charcode: 
+                    head = lmt_luscode_state.cccode_head; 
                     break;
                 case catcode_charcode: 
                     if (cat_code_table_par >= 0 && cat_code_table_par < max_n_of_catcode_tables) {

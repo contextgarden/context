@@ -55,11 +55,11 @@ local report = application.report
 scripts      = scripts      or { }
 scripts.ctan = scripts.ctan or { }
 
-local okay, json = pcall(require,"util-jsn")
+local json       = utilities.json
 local okay, curl = pcall(require,"libs-imp-curl")
                    pcall(require,"char-ini")
 
-local jsontolua = json and json.tolua
+local jsontolua = json.tolua
 local shaped    = characters and characters.shaped or lower
 
 -- local ignore = {

@@ -325,19 +325,25 @@ extern halfword tex_badness(
 # define max_math_style_scale                  2000
 # define max_parameter_index                     15
 
-# define max_mark_index         (max_n_of_marks         - 1)
-# define max_insert_index       (max_n_of_inserts       - 1)
-# define max_box_index          (max_n_of_box_indices   - 1)
-# define max_bytecode_index     (max_n_of_bytecodes     - 1)
-# define max_math_family_index  (max_n_of_math_families - 1)
-# define max_math_class_code    (max_n_of_math_classes  - 1)
-# define max_math_property      0xFFFF
-# define max_math_group         0xFFFF
-# define max_math_index         max_character_code
-# define max_math_discretionary 0xFF
+# define max_mark_index          (max_n_of_marks         - 1)
+# define max_insert_index        (max_n_of_inserts       - 1)
+# define max_box_index           (max_n_of_box_indices   - 1)
+# define max_bytecode_index      (max_n_of_bytecodes     - 1)
 
-# define ascii_space 32
+# define max_math_family_index   (max_n_of_math_families - 1)
+# define max_math_class_code     (max_n_of_math_classes  - 1)
+# define max_math_property       0xFFFF
+# define max_math_group          0xFFFF
+# define max_math_index          max_character_code
+# define max_math_discretionary  0xFF
+
+# define max_classification_code 0xFFFF
+
+# define ascii_space  32
 # define ascii_max   127
+
+# define default_space_factor 1000
+# define special_space_factor  999
 
 /*tex
 
@@ -624,7 +630,6 @@ typedef union tokenword {
     Units. At some point these will be used in texscanning and lmtexlib (3 times replacement).
 */
 
-
 # define bp_numerator   7227  // base point
 # define bp_denonimator 7200
 
@@ -664,6 +669,11 @@ typedef union tokenword {
 # define eu_min_factor     1
 # define eu_max_factor    50
 # define eu_def_factor    10
+
+/*tex 1 font id in slot 0 + 16 characters after that */
+
+# define max_twin_length  16
+# define max_twin_snippet (max_twin_length + 1)
 
 /*tex
 
@@ -787,6 +797,8 @@ typedef struct line_break_properties {
     halfword orphan_penalty;
     halfword orphan_penalties;
     halfword toddler_penalty;
+    halfword left_twin_demerits;
+    halfword right_twin_demerits;
     halfword fitness_demerits;
     halfword broken_penalty;
     halfword broken_penalties;
@@ -800,6 +812,7 @@ typedef struct line_break_properties {
     halfword shaping_penalties_mode;
     halfword shaping_penalty;
     halfword par_passes;
+    halfword line_break_checks;
     halfword extra_hyphen_penalty; 
     halfword line_break_optional;
     halfword optional_found;
@@ -911,15 +924,15 @@ typedef enum tex_alignment_context_codes {
 } tex_alignment_context_codes;
 
 typedef enum tex_breaks_context_codes {
-    initialize_show_breaks_context,
-    start_show_breaks_context,
-    list_show_breaks_context,
-    stop_show_breaks_context,
-    collect_show_breaks_context,
-    line_show_breaks_context,
-    delete_show_breaks_context,
-    report_show_breaks_context,
-    wrapup_show_breaks_context,
+    initialize_line_break_context,
+    start_line_break_context,
+    list_line_break_context,
+    stop_line_break_context,
+    collect_line_break_context,
+    line_line_break_context,
+    delete_line_break_context,
+    report_line_break_context,
+    wrapup_line_break_context,
 } tex_breaks_context_codes;
 
 typedef enum tex_build_context_codes {
@@ -974,6 +987,45 @@ typedef enum tex_par_trigger_codes {
     valign_char_par_trigger,
     vrule_char_par_trigger,
 } tex_par_trigger_codes;
+
+/*tex 
+    In the end we don't go granular because all we need is some control over specific features and 
+    we keep these generic and independent of whatever unicode provides. Otherwise we'd also have to 
+    bloat the format file. 
+*/
+
+// typedef enum tex_character_classification_codes { 
+//     letter_classification_code      = 0x0001,
+//     other_classification_code       = 0x0002,
+//     punctuation_classification_code = 0x0004,
+//     spacing_classification_code     = 0x0008,
+//                                     
+//     lowercase_classification_code   = 0x0010,
+//     uppercase_classification_code   = 0x0020,
+//     titlecase_classification_code   = 0x0030, /* ! */
+//     accent_classification_code      = 0x0040, 
+//     digit_classification_code       = 0x0080,
+//                                     
+//     open_classification_code        = 0x0100,
+//     close_classification_code       = 0x0200, 
+//     middle_classification_code      = 0x0300, /* ! */
+//     quote_classification_code       = 0x0400,
+//     dash_classification_code        = 0x0800,
+//                                     
+//     symbol_classification_code      = 0x1000,
+//     math_classification_code        = 0x2000,
+//     control_classification_code     = 0x4000, 
+//     currency_classification_code    = 0x8000, /* or reserve this one, maybe generic unit */
+// } tex_character_classification_codes;
+
+typedef enum tex_character_control_codes { 
+    ignore_twin_character_control_code = 0x0001,
+} tex_character_control_codes;
+
+# define default_character_control 0
+
+# define has_character_control(a,b) ((a & b) != 0) 
+
 
 # endif
 

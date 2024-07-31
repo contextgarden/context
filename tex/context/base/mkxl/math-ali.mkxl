@@ -870,11 +870,11 @@
 \setupmathalignment
   [\c!n=2,
    \c!m=1,
-\c!leftmargin=\zeropoint,
-\c!rightmargin=\zeropoint,
-\c!fences=,
-\c!left=,
-\c!right=,
+   \c!leftmargin=\zeropoint,
+   \c!rightmargin=\zeropoint,
+   \c!fences=,
+   \c!left=,
+   \c!right=,
    \c!distance=\emwidth,
    \c!location=\v!formula,
    \c!spaceinbetween=\formulaparameter\c!spaceinbetween,
@@ -1279,8 +1279,8 @@
    \dostarttaggednodetail\t!mtablerow
    \dostarttaggednodetail\t!mtablecell
    \hpack{\box\b_strc_formulas_number}%
-   \dostoptagged
-   \dostoptagged
+   \dostoptagged % cell
+   \dostoptagged % row
    \crcr}
 
 \installglobalmacrostack\c_math_cases_nc
@@ -1327,7 +1327,7 @@
      \bgroup % use \indexofregister here
      \dostarttaggednodetail\t!mtablerow
      \ifmmode\else\startimath\fi
-     \mathcasesparameter\c!style
+     \usemathstyleparameter\mathcasesparameter\c!mathstyle
      \dostarttaggednodetail\t!mtablecell
      \aligncontent
      \dostoptagged % cell
@@ -1343,12 +1343,11 @@
      \aligntab
      \kern\mathcasesparameter\c!numberdistance\relax
      \span
-     \math_text_in_eqalign{%
-     \dostarttaggednodetail\t!mtablecell
-     \aligncontent
-     \dostoptagged % cell
-     \dostoptagged % row
-     }%
+     \math_text_in_eqalign
+       {\dostarttaggednodetail\t!mtablecell
+        \aligncontent
+        \dostoptagged % cell
+        \dostoptagged}% row
      \crcr} % todo: number
 
 \noaligned\permanent\protected\def\math_cases_stop
@@ -1488,9 +1487,9 @@
    \dostarttaggednodetail\t!mtablecell
    \hss
    \math_left_of_eqalign
+   \everycr\emptytoks
    \startimath
-   \math_matrix_set_style
-   \everycr\emptytoks}
+   \math_matrix_set_style}
 
 \protected\def\math_matrix_stop_cell
   {\stopimath
@@ -1568,7 +1567,7 @@
 \definefiller
   [matrix:\v!normal]
   [\c!symbol=\textperiod,
-   \c!style=\v!normal,
+  %\c!style=\v!normal,
    \c!method=\v!broad,
    \c!width=\emwidth,
    \c!leftmargin=-.1\emwidth,
@@ -1577,7 +1576,7 @@
 \definefiller
   [matrix:\v!middle]
   [\c!symbol=\textperiod,
-   \c!style=\v!normal,
+  %\c!style=\v!normal,
    \c!method=\v!middle,
    \c!width=\emwidth,
    \c!leftmargin=.5\emwidth,
@@ -1655,8 +1654,19 @@
      \aligncontent
    \math_matrix_stop_cell}
 
+% \permanent\protected\def\math_matrix_NR
+%   {\math_matrix_anchor_last
+%    \math_matrix_stop_row
+%    \math_matrix_pickup
+%    \crcr
+%    \math_matrix_start_row}
+
 \permanent\protected\def\math_matrix_NR
-  {\math_matrix_anchor_last
+  {% we need to make sure we end the cell first (otherwise export looses mtd)
+   \math_matrix_stop_cell
+   \let\math_matrix_stop_cell\relax
+   %
+   \math_matrix_anchor_last
    \math_matrix_stop_row
    \math_matrix_pickup
    \crcr
@@ -2136,7 +2146,7 @@
    \d_math_eqalign_distance\mathmatrixparameter\c!distance\relax
  % \d_math_eqalign_rulethickness\mathmatrixparameter\c!rulethickness\relax
  % \edef\p_rulecolor{\mathmatrixparameter\c!rulecolor}
-   \edef\math_matrix_set_style{\mathmatrixparameter\c!style}}
+   \edef\math_matrix_set_style{\mathmatrixparameter\c!mathstyle}}
 
 \newinteger\c_math_eqalign_column_saved
 \newinteger\c_math_eqalign_row_saved
@@ -2268,6 +2278,7 @@
 \def\math_matrix_finish_nextbox
   {\scratchcounter\mathstyle\relax
    \scratchwidth\wd\nextbox
+   \dostarttagged\t!math\empty % needed !
    \setbox\scratchbox\hbox\bgroup
      \begincsname\??mathmatrixalignlocation\mathmatrixparameter\c!location\endcsname\hbox\bgroup
        \normalstartimath
@@ -2275,7 +2286,11 @@
        \ifzeropt\d_math_matrix_margin_l\else\kern\d_math_matrix_margin_l\fi
        \mathmatrixparameter\c!left\relax
        \math_fenced_start_wrap{\mathmatrixparameter\c!fences}%
-       \mathatom \s!class \mathconstructcode {\vcenter{\box\nextbox}}% \was \vcenter
+       \mathatom \s!class \mathconstructcode {%
+            \vcenter{%
+                \box\nextbox
+            }%
+       }%
        \math_fenced_stop_wrap
        \mathmatrixparameter\c!right\relax
        \ifzeropt\d_math_matrix_margin_r\else\kern\d_math_matrix_margin_r\fi
@@ -2312,7 +2327,8 @@
        \ifempty\p_rightedge\orelse\ifx\p_rightedge\v!none\else
          \hkern\dimexpr\d_math_matrix_max_right+\p_rightedge\relax
        \fi
-     \egroup}
+     \egroup
+   \dostoptagged}
 
 %D Begin of plugin.
 %D
@@ -2795,7 +2811,44 @@
 %D
 %D \typebuffer which gives \getbuffer
 
-% no tagging yet : how is it supposed to be coded?
+% \permanent\protected\def\startsubstack
+%   {\begingroup
+%    \vcenter\bgroup
+%    \currentmathblobnesting\minusone
+%    \baselineskip\mathstacktotal
+%    \lineskip\mathstackvgap
+%    \lineskiplimit\lineskip
+%    \mathsurround\zeropoint
+%    \mathsurroundskip\zeroskip
+%    \everycr\emptytoks
+%    \enforced\let\NC\relax
+%    \enforced\let\MC\relax
+%    \enforced\let\NR\crcr
+%  % \enablemathalignrelocate
+%    \dostarttagged\t!math{substack}% needed, otherwise no mtr
+%    \dostarttaggednodetail\t!mtable
+%    \halign\bgroup
+%     \dostarttaggednodetail\t!mtablerow
+%     \hfil
+%     \dostarttaggednodetail\t!mtablecell
+%     \normalstartimath
+%     \scriptstyle
+%     \aligncontent
+%     \normalstopimath
+%     \dostoptagged
+%     \hfil
+%     \dostoptagged
+%     \crcr}
+%
+% \noaligned\permanent\protected\def\stopsubstack
+%   {\crcr
+%    \egroup
+%    \dostoptagged
+%    \dostoptagged
+%    \egroup
+%    \endgroup}
+
+\newinteger\c_align_substack
 
 \permanent\protected\def\startsubstack
   {\begingroup
@@ -2810,10 +2863,16 @@
    \enforced\let\NC\relax
    \enforced\let\MC\relax
    \enforced\let\NR\crcr
+   \dostarttagged\t!math{substack}% \empty
+   \pushmacro\c_align_substack
+   \global\c_align_substack\plusone
    \halign\bgroup
+    \dostarttaggednodetail\t!mstack
+    \global\advanceby\c_align_substack\plusone
     \hfil
     \normalstartimath
-    \scriptstyle\aligncontent
+    \scriptstyle
+    \aligncontent
     \normalstopimath
     \hfil
     \crcr}
@@ -2821,7 +2880,9 @@
 \noaligned\permanent\protected\def\stopsubstack
   {\crcr
    \egroup
+   \dorecurse\c_align_substack\dostoptagged
    \egroup
+   \popmacro\c_align_substack
    \endgroup}
 
 %D \macros{overset, underset}
@@ -2879,6 +2940,43 @@
      \c_strc_formulas_frame_mode\plusone % outside frame
    \fi}
 
+% The next section is experimental ...
+
+\permanent\protected\def\grph_handle_formula_image_tagged#1#2%
+  {\begingroup
+   \def\figurecategory{formula}%
+   \global\advanceby\nofexportedboxes\plusone
+   \dostarttagged\t!image{\the\nofexportedboxes}%
+   \setbox\b_grph_image\vpack\bgroup
+     \vkern\zeropoint
+     \hpack\bgroup
+       \hkern-\d_strc_math_left_shift
+       \copy#2%
+       \hkern-\d_strc_math_right_shift
+     \egroup
+     \vkern\zeropoint
+   \egroup
+ % \copy\b_grph_image
+   \dotagexported
+   \dostoptagged
+   \dotagregisterformula{\number\c_strc_formulas_n}{\number\nofexportedboxes}%
+   \ifconditional\c_grph_exported % move up
+     \putboxincache\s!exported{\the\nofexportedboxes}\b_grph_image
+   \fi
+   #1#2%
+   \endgroup}
+
+\permanent\protected\def\grph_handle_formula_image_normal#1#2%
+  {#1#2}
+
+\enforced\let\handle_formula_image\grph_handle_formula_image_normal
+
+\appendtoks % this might move
+    \enforced\let\handle_formula_image\grph_handle_formula_image_tagged
+\to \everyenableelements
+
+% ... till here.
+
 % mode: 0=no frame | 1=number inside frame | 2=number outside frame
 
 % it is a bit of a mess because we solve all kind of bordercases but at some
@@ -2886,12 +2984,12 @@
 
 \def\strc_math_flush_aligned_boxed_direct_yes
   {\dontleavehmode
-   \box\b_strc_math_display
+   \handle_formula_image\box\b_strc_math_display
    \llap{\strc_math_flush_number_box}}
 
 \def\strc_math_flush_aligned_boxed_direct_nop
   {\dontleavehmode
-   \box\b_strc_math_display}
+   \handle_formula_image\box\b_strc_math_display}
 
 \def\strc_math_flush_aligned_left_number_indeed#1%
   {\ifvoid\b_strc_formulas_number\else
@@ -2951,7 +3049,7 @@
 
 \def\strc_math_flush_line_mode
   {\ifcase\c_strc_math_ragged_status\or\or\hfill\or\hfill\fi
-   \box\b_strc_math_display
+   \handle_formula_image\box\b_strc_math_display
    \ifcase\c_strc_math_ragged_status\or\hfill\or\hfill\or\fi}
 
 % wrap/flow mode
@@ -2959,11 +3057,11 @@
 \def\strc_math_flush_v_box_bottom
   {\ifdone
      \global\c_strc_math_positioning42\relax
-     \unvbox\b_strc_math_display
+     \handle_formula_image\unvbox\b_strc_math_display
      \strc_math_flush_number_box
    \else
      \global\c_strc_math_positioning43\relax
-     \unvbox\b_strc_math_display
+     \handle_formula_image\unvbox\b_strc_math_display
      \nointerlineskip
      \ht\b_strc_formulas_number\zeropoint
      \dp\b_strc_formulas_number\zeropoint
@@ -2977,7 +3075,7 @@
      \global\c_strc_math_positioning45\relax
      \dontleavehmode
      \strc_math_flush_number_box
-     \unvbox\b_strc_math_display
+     \handle_formula_image\unvbox\b_strc_math_display
    \else
      \scratchdepth\dp\b_strc_formulas_number
      \global\c_strc_math_positioning46\relax
@@ -2989,7 +3087,7 @@
      \nointerlineskip
      \strc_math_flush_number_box % left
      \vkern-\dimexpr\d_strc_math_first_height+\scratchdepth\relax
-     \unvbox\b_strc_math_display
+     \handle_formula_image\unvbox\b_strc_math_display
    \fi}
 
 \def\strc_math_flush_v_box_right
@@ -2999,7 +3097,7 @@
    \strc_formulas_start_side_box
    \ifzeropt\d_strc_formulas_number
      \global\c_strc_math_positioning41\relax
-     \unvbox\b_strc_math_display
+     \handle_formula_image\unvbox\b_strc_math_display
    \else
      % better verbose than compact so some overlap in code here
      \ifcase\c_strc_math_number_variant\or
@@ -3035,7 +3133,7 @@
    \strc_formulas_start_side_box
    \ifzeropt\d_strc_formulas_number
      \global\c_strc_math_positioning44\relax
-     \unvbox\b_strc_math_display
+     \handle_formula_image\unvbox\b_strc_math_display
    \else
      % better verbose than compact so some overlap in code here
      \ifcase\c_strc_math_number_variant\or
@@ -3068,14 +3166,14 @@
   {\global\c_strc_math_positioning\plusthree
    \dontleavehmode
    \strc_math_flush_aligned_left_number_indeed\zerocount
-   \box\b_strc_math_display
+   \handle_formula_image\box\b_strc_math_display
    \strc_math_flush_aligned_right_number_indeed\zerocount}
 
 \def\strc_math_flush_h_box
   {\global\c_strc_math_positioning\plusfive
    \dontleavehmode
    \strc_math_flush_aligned_left_number_indeed\zerocount
-   \box\b_strc_math_display
+   \handle_formula_image\box\b_strc_math_display
    \strc_math_flush_aligned_right_number_indeed\zerocount}
 
 \def\strc_math_flush_text_mode
@@ -3125,7 +3223,7 @@
    \letformulaframedparameter\c!strut\v!no
    \d_framed_formula\ht\b_strc_math_display
    \ifcase\c_strc_math_ragged_status\or      \or\hfill\or\hfill\fi
-   \inheritedformulaframedframed{\box\b_strc_math_display}%
+   \inheritedformulaframedframed{\handle_formula_image\box\b_strc_math_display}%
    \ifcase\c_strc_math_ragged_status\or\hfill\or\hfill         \fi}
 
 \def\strc_math_flush_box_framed_display
@@ -3175,10 +3273,10 @@
      \strc_math_flush_box_framed_display
    \fi
    \hss % hss makes room for number
-   \strc_math_flush_number_box}
+   \rlap{\strc_math_flush_number_box}} % needs checking
 
 \def\strc_math_number_left_normal_outside
-  {\strc_math_flush_number_box
+  {\llap{\strc_math_flush_number_box}% needs checking
    \hss % hss makes room for number
    \ifconditional\c_strc_formulas_tight
      \strc_math_flush_box_framed_fit_display
@@ -3243,7 +3341,7 @@
 
 \def\strc_math_number_right_overflow_inside
   {\setbox\b_strc_math_display\vpack\bgroup
-     \box\b_strc_math_display
+     \handle_formula_image\box\b_strc_math_display
      \hpack to \d_strc_formulas_display_width\bgroup
        \hss
        \strc_math_flush_number_box
@@ -3259,7 +3357,7 @@
        \strc_math_flush_number_box
        \hss
      \egroup
-     \box\b_strc_math_display
+     \handle_formula_image\box\b_strc_math_display
    \egroup
    \strc_math_flush_box_framed_fit_inline}
 
@@ -3520,25 +3618,6 @@
 
 \setupmathematics
   [\c!textdistance=\zeropoint]
-
-%D This is an experiment. No fancy spacing and alignments here. If we ever go that
-%D route it might result in incompatible rendering.
-
-\permanent\protected\def\startsplitformula
-  {\ifhmode
-     \par
-   \fi
-   \begingroup
-   \beforedisplayspace
-   % subset of \everydisplay:
-   \c_attr_mathmode\plusone
-   \indisplaymath\conditionaltrue
-   % end of subset
-   \informulatrue}
-
-\permanent\protected\def\stopsplitformula
-  {\afterdisplayspace
-   \endgroup}
 
 %D Kind of new (February 2022):
 

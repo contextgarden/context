@@ -131,10 +131,13 @@
 %D modules these can be tuned by a setup command. Watch the (maybe) better looking
 %D compound hyphen.
 
-% hm why ex
-
 \ifdefined\compoundhyphen \else
-    \permanent\protected\def\compoundhyphen{\hbox{-\kern-.10775\emwidth-}} % .25\exheight
+
+    % This will be overloaded in typo-del.mkxl for a better variant that
+    % copies like a single hyphen when the right feature is enabled.
+
+    \permanent\protected\def\compoundhyphen{\hbox{-\kern-.10775\emwidth-}}
+
 \fi
 
 %D The last two variables are needed for subsentences |<|like this one|>| which we

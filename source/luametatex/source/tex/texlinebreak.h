@@ -69,6 +69,8 @@ typedef struct break_passes {
     int n_of_second_passes;
     int n_of_third_passes;
     int n_of_sub_passes;
+    int n_of_left_twins; 
+    int n_of_right_twins; 
 } break_passes;
 
 typedef struct linebreak_state_info {
@@ -127,6 +129,10 @@ typedef struct linebreak_state_info {
     int          checked_expansion; 
     int          line_break_dir;
     break_passes passes[n_of_par_context_codes];
+    int          n_of_left_twins;
+    int          n_of_right_twins;
+    int          n_of_double_twins;
+    int          padding;
 } linebreak_state_info;
 
 extern linebreak_state_info lmt_linebreak_state;

@@ -41,7 +41,7 @@ typedef enum callback_callback_types {
     show_warning_message_callback,
     hpack_quality_callback,
     vpack_quality_callback,
-    show_break_callback,
+    line_break_callback,
     show_build_callback,
     insert_par_callback,
     append_line_filter_callback,

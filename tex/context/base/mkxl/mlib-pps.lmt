@@ -596,8 +596,7 @@ function metapost.graphic_base_pass(specification)
     top.initializations   = initializations
     if filtering then
         if #filtering > 0 then
-            local t = { }
-            stepper(filtering,function(k) t[k] = true end)
+            local t = typesetters.stacking.getselection(filtering)
             filtering = next(t) and t or false
         else
             filtering = false

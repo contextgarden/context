@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definemathfunction" level="style" category="mathematics" file="math-ini.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathfunctions"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathfunction" level="style" category="mathematics" file="math-ini.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupmathfunctions"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathfunctions" level="style" category="mathematics" file="math-ini.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="class">
+                    <cd:resolve name="value-mathclass"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="mathlimits">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="auto"/>
+                </cd:parameter>
+                <cd:parameter name="method">
+                    <cd:constant type="limits"/>
+                </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:oneargument"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathfunction" generated="yes" variant="instance" level="document" category="mathematics" file="math-ini.mkxl">
+        <cd:sequence>
+            <cd:instance value="mathfunction"/>
+        </cd:sequence>
+        <cd:instances>
+            <cd:resolve name="instance-mathfunction"/>
+        </cd:instances>
+    </cd:command>
+
+    <cd:command name="mathfunction" generated="yes" variant="instance:argument" level="document" category="mathematics" file="math-ini.mkxl">
+        <cd:sequence>
+            <cd:instance value="mathfunction"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-mathfunction-symbol"/>
+        </cd:instances>
+    </cd:command>
+
+    <cd:command name="mfunction" level="document" category="mathematics" file="math-ini.mkxl">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathfunctions"/>
+            </cd:assignments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mfunction" variant="argument" level="document" category="mathematics" file="math-ini.mkxl">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathfunctions"/>
+            </cd:assignments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mfunctionlabeltext" level="document" category="mathematics" file="math-ini.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

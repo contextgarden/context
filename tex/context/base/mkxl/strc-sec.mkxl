@@ -1179,7 +1179,7 @@
 \def\strc_sectioning_before_yes
   {\strc_sectioning_check_before\strc_sectioning_handle_page_yes
    \headparameter\c!inbetween
-   \dostarttaggedchained\t!section\currenthead\??head
+   \dostarttaggedchained\t!section\currenthead\currenthead\??head
 %    \dotagsectionlevel
    }
 
@@ -1187,7 +1187,7 @@
   {\strc_sectioning_check_before\strc_sectioning_handle_page_nop
    \headparameter\c!inbetween
 %  \dostarttaggednodetail\currenthead} % this is a weird one .. needs checking
-   \dostarttaggedchained\t!section\currenthead\??head}
+   \dostarttaggedchained\t!section\currenthead\currenthead\??head}
 
 \def\strc_sectioning_empty_correction
   {\ifconditional\c_strc_sectioning_empty

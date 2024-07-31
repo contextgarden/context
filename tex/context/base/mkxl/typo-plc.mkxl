@@ -19,12 +19,18 @@
 
 \installcommandhandler \??placeholder {placeholder} \??placeholder
 
-\permanent\protected\def\placeholder[#1]%
+\permanent\tolerant\protected\def\placeholder[#1]%
   {\begingroup
    \cdef\currentplaceholder{#1}%
    \placeholderparameter\c!before
+   \dostarttagged\t!placeholder\currentplaceholder
    \useplaceholderstyleandcolor\c!style\c!color
-   \placeholderparameter\c!text
+   \ifcstok{\placeholderparameter\c!text}\emptytoks
+     \ifempty{#1}\unknown\else#1\fi
+   \else
+     \lastnamedcs
+   \fi
+   \dostoptagged
    \placeholderparameter\c!after
    \endgroup}
 

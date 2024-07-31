@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definesynonyms" level="style" category="symbols" file="strc-syn.mkiv">
+    <cd:command name="definesynonyms" level="style" category="symbols" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular"/>
             <cd:resolve name="keyword-plural"/>
@@ -17,7 +17,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupsynonyms" level="style" category="symbols" file="strc-syn.mkiv">
+    <cd:command name="setupsynonyms" level="style" category="symbols" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular-list-optional"/>
             <cd:assignments list="yes">
@@ -99,12 +99,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="synonym" generated="yes" variant="instance" level="document" category="symbols" file="strc-syn.mkiv">
+    <cd:command name="synonym" generated="yes" variant="instance" level="document" category="symbols" file="strc-syn.mkxl">
         <cd:sequence>
             <cd:instance value="synonym"/>
         </cd:sequence>
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="keyword-text-optional"/>
             <cd:resolve name="argument-text"/>
             <cd:content/>
         </cd:arguments>
@@ -113,7 +114,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="definesynonym" level="style" category="symbols" file="strc-syn.mkiv">
+    <cd:command name="definesynonym" level="style" category="symbols" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="yes"/>
@@ -121,12 +122,13 @@
             </cd:keywords>
             <cd:resolve name="keyword-singular"/>
             <cd:resolve name="keyword-name-optional"/>
+            <cd:resolve name="keyword-text-optional"/>
             <cd:resolve name="argument-text"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placelistofsynonyms" generated="yes" variant="instance" level="document" category="symbols" file="strc-syn.mkiv">
+    <cd:command name="placelistofsynonyms" generated="yes" variant="instance" level="document" category="symbols" file="strc-syn.mkxl">
         <cd:sequence>
             <cd:string value="placelistof"/>
             <cd:instance value="synonyms"/>
@@ -141,7 +143,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="completelistofsynonyms" generated="yes" variant="instance" level="document" category="symbols" file="strc-syn.mkiv">
+    <cd:command name="completelistofsynonyms" generated="yes" variant="instance" level="document" category="symbols" file="strc-syn.mkxl">
         <cd:sequence>
             <cd:string value="completelistof"/>
             <cd:instance value="synonyms"/>
@@ -156,40 +158,58 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="registersynonym" level="system" category="symbols" file="strc-syn.mkiv">
+    <cd:command name="registersynonym" level="system" category="symbols" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular"/>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsecurrentsynonymused" level="system" category="symbols" keywords="conditional" file="strc-syn.mkiv">
+    <cd:command name="doifelsecurrentsynonymused" level="system" category="symbols" keywords="conditional" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsecurrentsynonymshown" level="system" category="symbols" keywords="conditional" file="strc-syn.mkiv">
+    <cd:command name="doifelsecurrentsynonymshown" level="system" category="symbols" keywords="conditional" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetusedsynonyms" level="system" category="symbols" file="strc-syn.mkiv">
+    <cd:command name="resetusedsynonyms" level="system" category="symbols" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetshownsynonyms" level="system" category="symbols" file="strc-syn.mkiv">
+    <cd:command name="resetshownsynonyms" level="system" category="symbols" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placelistofsynonyms" level="document" category="symbols" file="strc-syn.mkiv">
+    <cd:command name="resetlistsynonyms" level="system" category="symbols" file="strc-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-singular"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetsynonyms" level="system" category="symbols" file="strc-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-singular"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resetsynonymsprogress" level="system" category="symbols" file="strc-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-singular"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="placelistofsynonyms" level="document" category="symbols" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular"/>
             <cd:assignments list="yes" optional="yes">
@@ -198,7 +218,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="completelistofsynonyms" level="document" category="symbols" file="strc-syn.mkiv">
+    <cd:command name="completelistofsynonyms" level="document" category="symbols" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular"/>
             <cd:assignments list="yes" optional="yes">
@@ -207,7 +227,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="infull" level="document" category="symbols" file="strc-syn.mkiv">
+    <cd:command name="infull" level="document" category="symbols" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>

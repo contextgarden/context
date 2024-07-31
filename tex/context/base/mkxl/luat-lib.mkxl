@@ -95,6 +95,8 @@
 \registerctxluafile{lxml-aux}{}
 \registerctxluafile{lxml-mis}{}
 
+\registerctxluafile{util-jsn}{autosuffix}
+
 % \pushoverloadmode
 %
 % \ifdefined\writestatus \else \protected\def\writestatus#1#2{\ctxlua{logs.status([==[#1]==],[==[#2]==])}}  \fi

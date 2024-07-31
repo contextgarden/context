@@ -415,7 +415,9 @@
         arguments = { "string" },
     }
 
-    if structures then
+    local trace  = false  trackers.register("setups.trace", function(v) trace = v end)
+
+    if trace and structures then
         local synonyms = structures.synonyms
         if synonyms then
             local collected = synonyms.collected

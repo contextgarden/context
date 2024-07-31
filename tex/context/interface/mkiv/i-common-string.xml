@@ -169,14 +169,25 @@
         </cd:keywords>
     </cd:define>
 
-    <!--       *      -->
-    <!-- \... ...     -->
-    <!--              -->
+    <!--       *     -->
+    <!-- \... ...    -->
+    <!--             -->
     <!-- * LEFTFENCE -->
 
     <cd:define name="string-leftfence">
         <cd:keywords delimiters="none">
             <cd:resolve name="value-leftfence"/>
+        </cd:keywords>
+    </cd:define>
+
+    <!--       *       -->
+    <!-- \... ...      -->
+    <!--               -->
+    <!-- * MIDDLEFENCE -->
+
+    <cd:define name="string-middlefence">
+        <cd:keywords delimiters="none">
+            <cd:resolve name="value-middlefence"/>
         </cd:keywords>
     </cd:define>
 

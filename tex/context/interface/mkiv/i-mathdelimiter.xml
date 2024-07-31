@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="checkdelimiters" file="math-del.mkxl">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="fakeleftdelimiter" file="math-del.mkxl"/>
+
+    <cd:command name="fakerightdelimiter" file="math-del.mkxl"/>
+
+    <cd:command name="enabledelimiter" file="math-del.mkxl"/>
+
+    <cd:command name="disabledelimiter" file="math-del.mkxl"/>
+
+    <cd:command name="enablefiller" file="math-del.mkxl"/>
+
+    <cd:command name="disablefiller" file="math-del.mkxl"/>
+
+    <cd:command name="mathopnolimits" file="math-del.mkxl">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathopdolimits" file="math-del.mkxl">
+        <cd:arguments>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="definemathdelimiter" file="math-del.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathdelimiters"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <!--
+
+        <cd:command name="setupmathdelimiter" file="math-del.mkxl">
+            <cd:arguments>
+                <cd:resolve name="keyword-name-list-optional"/>
+                <cd:assignments list="yes">
+                    <cd:inherit name="setupmathdelimiters"/>
+                </cd:assignments>
+            </cd:arguments>
+        </cd:command>
+
+    -->
+
+    <cd:command name="setupmathdelimiter" file="math-del.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="define">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="factor">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+                <cd:parameter name="leftoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rightoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="exact">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="axis">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="height">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="depth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="symbol">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathdelimiter" file="math-del.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-number-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathdelimiter" variant="assignment" file="math-del.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathdelimiters"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathdelimiter" generated="yes" variant="example" file="math-del.mkxl">
+        <cd:sequence>
+            <cd:string value="mathdelimiter"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:resolve name="keyword-number-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathdelimiter" generated="yes" variant="example:assignment" file="math-del.mkxl">
+        <cd:sequence>
+            <cd:string value="mathdelimiter"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathdelimiters"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

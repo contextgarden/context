@@ -28,7 +28,7 @@
 
     -->
 
-    <cd:command name="setupexternalfigure" level="style" category="graphics" file="grph-inc.mkvi">
+    <cd:command name="setupexternalfigure" level="style" category="graphics" file="grph-inc.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -251,22 +251,27 @@
                 <cd:parameter name="ownerpassword">
                     <cd:constant type="cd:text"/>
                 </cd:parameter>
+                <cd:parameter name="orientation">
+                    <cd:constant type="cd:number"/>
+                </cd:parameter>
                 <cd:parameter name="compact">
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
-                    <cd:constant type="cd:text"/>
+                    <cd:constant type="merge"/>
+                    <cd:constant type="tikz"/>
+                    <cd:constant type="cd:name"/>
                 </cd:parameter>
                 <cd:parameter name="metadata">
-                    <cd:constant type="page" default="yes"/>
-                    <cd:constant type="document"/>
                     <cd:constant type="yes"/>
                     <cd:constant type="no"/>
+                    <cd:constant type="page" default="yes"/>
+                    <cd:constant type="document"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupexternalfigures" level="style" category="graphics" file="grph-inc.mkvi">
+    <cd:command name="setupexternalfigures" level="style" category="graphics" file="grph-inc.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">

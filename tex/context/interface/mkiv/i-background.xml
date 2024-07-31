@@ -128,9 +128,28 @@
                 <cd:parameter name="state">
                     <cd:constant type="start" default="yes"/>
                     <cd:constant type="stop"/>
+                    <cd:constant type="repeat"/>
+                </cd:parameter>
+                <cd:parameter name="offset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="depth">
+                    <cd:constant type="cd:dimension"/>
                 </cd:parameter>
                 <cd:inherit name="setupframed"/>
             </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="prependhiddenbackground" level="system" category="background" file="page-bck.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="appendhiddenbackground" level="system" category="background" file="page-bck.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name-list"/>
         </cd:arguments>
     </cd:command>
 

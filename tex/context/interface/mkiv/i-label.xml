@@ -181,6 +181,10 @@
                     <cd:constant type="yes" default="yes"/>
                     <cd:constant type="no"/>
                 </cd:parameter>
+                <cd:parameter name="headindenting">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
                 <!-- end construction values -->
                 <cd:inherit name="setupcounter"/>
             </cd:assignments>

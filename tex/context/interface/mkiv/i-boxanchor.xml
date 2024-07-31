@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="setupboxanchor" file="pack.box.mkxl">
+        <cd:arguments>
+            <cd:assignments list="yes">
+                <cd:parameter name="xoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="yoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="target">
+                    <cd:resolve name="value-boxpreset"/>
+                </cd:parameter>
+                <cd:parameter name="source">
+                    <cd:resolve name="value-boxpreset"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="defineanchorbox" file="pack.box.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="defineanchorboxoverlay" file="pack.box.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="namedanchorbox" file="pack.box.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="overlayanchorbox" file="pack.box.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setanchorbox" file="pack.box.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupboxanchor"/>
+            </cd:assignments>
+            <cd:csname/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="boxanchorpresetcode" file="pack.box.mkxl">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:resolve name="value-boxpreset"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="boxanchoring" type="environment" file="pack.box.mkxl">
+        <cd:arguments>
+            <cd:keywords>
+                <cd:constant type="+"/>
+                <cd:constant type="cd:name"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

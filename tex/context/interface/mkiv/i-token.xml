@@ -59,4 +59,34 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="wipetokens" level="system" category="strings" file="syst-aux.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="wipedtokens" level="system" category="strings" file="syst-aux.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="similartokens" level="system" category="strings" file="syst-aux.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsesimilartokens" level="system" category="strings" file="syst-aux.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
 </cd:interface>

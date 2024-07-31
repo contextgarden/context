@@ -51,10 +51,14 @@
 %D If I have time I will use the unreferenced variant for e.g. mp reuse. This can be
 %D rewritten in \LUA\ anyway.
 
-\permanent\protected\def\setreferencedobject       #1#2{\begingroup\synctexpause\d_pack_objects_offset\objectoffset\inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}
-\permanent\protected\def\settightreferencedobject  #1#2{\begingroup\synctexpause\d_pack_objects_offset\zeropoint   \inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}
-\permanent\protected\def\setunreferencedobject     #1#2{\begingroup\synctexpause\d_pack_objects_offset\objectoffset\inobjecttrue\dowithnextbox{\pack_objects_set_nop{#1}{#2}}}
-\permanent\protected\def\settightunreferencedobject#1#2{\begingroup\synctexpause\d_pack_objects_offset\zeropoint   \inobjecttrue\dowithnextbox{\pack_objects_set_nop{#1}{#2}}}
+%D Tagging doesn't provide a local structure for an xform so if tagging is needed than one
+%D should not use object reuse with content that demands it. Figuring out a work around is
+%D not worth the trouble.
+
+\permanent\protected\def\setreferencedobject       #1#2{\begingroup\taggingpause\synctexpause\d_pack_objects_offset\objectoffset\inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}
+\permanent\protected\def\settightreferencedobject  #1#2{\begingroup\taggingpause\synctexpause\d_pack_objects_offset\zeropoint   \inobjecttrue\dowithnextbox{\pack_objects_set_yes{#1}{#2}}}
+\permanent\protected\def\setunreferencedobject     #1#2{\begingroup\taggingpause\synctexpause\d_pack_objects_offset\objectoffset\inobjecttrue\dowithnextbox{\pack_objects_set_nop{#1}{#2}}}
+\permanent\protected\def\settightunreferencedobject#1#2{\begingroup\taggingpause\synctexpause\d_pack_objects_offset\zeropoint   \inobjecttrue\dowithnextbox{\pack_objects_set_nop{#1}{#2}}}
 
 \aliased\let\setobject     \setreferencedobject
 \aliased\let\settightobject\settightreferencedobject

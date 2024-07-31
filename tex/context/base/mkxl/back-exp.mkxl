@@ -21,6 +21,7 @@
 \registerctxluafile{back-exp-imp-tag}{autosuffix}
 \registerctxluafile{back-exp-imp-mth}{autosuffix}
 \registerctxluafile{back-exp-imp-ref}{autosuffix}
+\registerctxluafile{back-exp-imp-fnt}{autosuffix}
 
 %D This is an experimental exporter and a logical follow up on tagging. The
 %D exporter assumes a properly tagged document. Some elements get a couple
@@ -53,6 +54,8 @@
 
 \permanent\protected\lettonothing\dotagsetparcounter
 \permanent\protected\lettonothing\doresetparcounter
+
+% Fuzzy:
 
 \appendtoks
     \doresetparcounter
@@ -134,6 +137,8 @@
        \fi}%
 \to \everyenableelements
 
+\mutable\lettonothing\figurecategory
+
 \appendtoks % we can have differently scaled images
     \enforced\permanent\protected\def\dotagfigure
       {\iftrialtypesetting\else
@@ -143,7 +148,9 @@
            {\figurefilepage}%
            \dimexpr\figurewidth\relax
            \dimexpr\figureheight\relax
+           \dimexpr\figuredepth\relax
            {\figurelabel}%
+           {\figurecategory}%
        \fi}%
 \to \everyenableelements
 
@@ -154,9 +161,21 @@
             \numexpr\combinationparameter\c!nx\relax
             \numexpr\combinationparameter\c!ny\relax
        \fi}%
+    \enforced\permanent\protected\def\dotagcombinationpair#1#2%
+      {\iftrialtypesetting\else
+         \clf_settagcombinationpair
+            \numexpr#1\relax
+            \numexpr#2\relax
+       \fi}%
 \to \everyenableelements
 
 \appendtoks
+    % we don't want a zero one
+    \ifcase\tagparcounter
+      \global\tagparcounter\plusone
+      \c_attr_taggedpar\plusone
+    \fi
+    % as it is also a trigger
     \enforced\permanent\protected\def\dotagsetparcounter
       {\global\advanceby\tagparcounter\plusone\c_attr_taggedpar\tagparcounter}%
     \enforced\permanent\protected\def\doresetparcounter
@@ -167,7 +186,8 @@
     \enforced\permanent\protected\def\dotagsetitemgroup
       {\iftrialtypesetting\else
          \clf_settagitemgroup
-           \ifconditional\c_strc_itemgroups_pack true\else false\fi\space
+           \ifconditional\c_strc_itemgroups_pack     true\else false\fi\space
+           \ifconditional\c_strc_itemgroups_continue true\else false\fi\space
            \numexpr\currentitemlevel\relax
            {\currentitemgroupsymbol}%
        \fi}%
@@ -241,9 +261,9 @@
 \to \everyenableelements
 
 \appendtoks
-    \enforced\permanent\protected\def\dotagregisterformula#1%
+    \enforced\permanent\protected\def\dotagregisterformula#1#2%
       {\iftrialtypesetting\else
-         \clf_settagformulacontent#1\relax
+         \clf_settagformulacontent{#1}{#2}%
        \fi}%
 \to \everyenableelements
 
@@ -324,9 +344,11 @@
   {%\glet\dostartexport\relax
    \lettonothing\currentexport
    \clf_setupexport
+       % we catch up later
        align      {\exportparameter\c!align}%
        bodyfont   \dimexpr\exportparameter\c!bodyfont\relax
        width      \dimexpr\exportparameter\c!width\relax
+       % till here
        properties {\exportparameter\c!properties}%
        hyphen     {\exportparameter\c!hyphen}%
        title      {\exportparameter\c!title}%
@@ -343,6 +365,11 @@
 
 \permanent\protected\def\dostopexport
   {\enforced\glet\dostopexport\relax
+   \clf_setupexport
+       align      {\exportparameter\c!align}%
+       bodyfont   \dimexpr\exportparameter\c!bodyfont\relax
+       width      \dimexpr\exportparameter\c!width\relax
+   \relax
    \clf_finishexport}
 
 \appendtoks
@@ -426,7 +453,7 @@
    \ifempty{#1}%
       \letboxexportparameter\c!buffer\v!yes
    \orelse\ifhastok={#1}\relax
-      \setupmathexport[#1]%
+      \setupboxexport[#1]%
    \else
       \setboxexportparameter\c!buffer{#1}%
    \fi
@@ -442,31 +469,31 @@
 \permanent\tolerant\protected\def\startmathexport[#S#1]%
   {\begingroup
    \ifempty{#1}%
-      \letboxexportparameter\c!buffer\v!yes
+      \letmathexportparameter\c!buffer\v!yes
    \orelse\ifhastok={#1}\relax
       \setupmathexport[#1]%
    \else
-      \setboxexportparameter\c!buffer{#1}%
+      \setmathexportparameter\c!buffer{#1}%
    \fi
    \clf_startcollectingmath}
 
 \permanent\protected\def\stopmathexport
   {\clf_stopcollectingmath
    \clf_processcollectedmath
-     {\boxexportparameter\c!file}%
-     {\boxexportparameter\c!buffer}%
-     {\boxexportparameter\c!n}%
-     {\boxexportparameter\c!option}%
+     {\mathexportparameter\c!file}%
+     {\mathexportparameter\c!buffer}%
+     {\mathexportparameter\c!n}%
+     {\mathexportparameter\c!option}%
    \endgroup}
 
 \permanent\tolerant\protected\def\savemathexport[#S#1]%
   {\begingroup
-   \setupboxexport[#1]%
+   \setupmathexport[#1]%
    \clf_processcollectedmath
-     {\boxexportparameter\c!file}%
-     {\boxexportparameter\c!buffer}%
-     {\boxexportparameter\c!n}%
-     {\boxexportparameter\c!option}%
+     {\mathexportparameter\c!file}%
+     {\mathexportparameter\c!buffer}%
+     {\mathexportparameter\c!n}%
+     {\mathexportparameter\c!option}%
    \endgroup}
 
 % Defined at the \LUA\ end:

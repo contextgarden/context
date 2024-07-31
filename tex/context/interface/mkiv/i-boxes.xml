@@ -1016,152 +1016,152 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="righttolefthbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="righttolefthbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rtlhbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="rtlhbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lefttorighthbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="lefttorighthbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ltrhbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="ltrhbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="righttoleftvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="righttoleftvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rtlvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="rtlvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lefttorightvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="lefttorightvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ltrvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="ltrvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="righttoleftvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="righttoleftvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rtlvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="rtlvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lefttorightvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="lefttorightvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ltrvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="ltrvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autodirhbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="autodirhbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autodirvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="autodirvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autodirvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="autodirvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="leftorrighthbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="leftorrighthbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="leftorrightvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="leftorrightvbox" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="leftorrightvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkiv">
+    <cd:command name="leftorrightvtop" level="system" category="boxes" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ibox" level="system" category="boxes" file="spac-ali.mkiv">
+    <cd:command name="ibox" level="system" category="boxes" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="obox" level="system" category="boxes" file="spac-ali.mkiv">
+    <cd:command name="obox" level="system" category="boxes" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definehbox" level="system" category="boxes" file="spac-ali.mkiv">
+    <cd:command name="definehbox" level="system" category="boxes" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-dimension"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hbox" generated="yes" variant="example" level="system" category="boxes" file="spac-ali.mkiv">
+    <cd:command name="hbox" generated="yes" variant="example" level="system" category="boxes" file="spac-ali.mkxl">
         <cd:sequence>
             <cd:string value="hbox"/>
             <cd:variable value="box"/>
@@ -1258,6 +1258,13 @@
 
     <cd:command name="reversevboxcontent" level="system" category="boxes" file="supp-box.lmt">
         <cd:arguments>
+            <cd:resolve name="string-box"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="boxfixstretch" level="system" category="boxes" file="supp-box.mkxl">
+        <cd:arguments>
+            <cd:resolve name="string-boxoptions"/>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>

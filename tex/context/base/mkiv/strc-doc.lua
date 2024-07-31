@@ -449,23 +449,27 @@ end
 
 function sections.reportstructure()
     if sections.verbose then
-        local numbers    = data.numbers
-        local ownnumbers = data.ownnumbers
-        local status     = data.status
-        local depth      = data.depth
-        local d = status[depth]
-        local o = concat(ownnumbers,".",1,depth)
-        local n = (numbers and concat(numbers,".",1,min(depth,#numbers))) or 0
-        local t = d.titledata.title
-        local l = t or ""
-        local t = (l ~= "" and l) or t or "[no title]"
-        local m = d.metadata.name
-        if o and not find(o,"^%.*$") then
-            report_structure("%s @ level %i : (%s) %s -> %s",m,depth,n,o,t)
-        elseif d.directives and d.directives.hidenumber then
-            report_structure("%s @ level %i : (%s) -> %s",m,depth,n,t)
+        local depth  = data.depth
+        local status = data.status
+        local d      = status[depth]
+        if d then
+            local numbers    = data.numbers
+            local ownnumbers = data.ownnumbers
+            local o = concat(ownnumbers,".",1,depth)
+            local n = (numbers and concat(numbers,".",1,min(depth,#numbers))) or 0
+            local t = d.titledata.title
+            local l = t or ""
+            local t = (l ~= "" and l) or t or "[no title]"
+            local m = d.metadata.name
+            if o and not find(o,"^%.*$") then
+                report_structure("%s @ level %i : (%s) %s -> %s",m,depth,n,o,t)
+            elseif d.directives and d.directives.hidenumber then
+                report_structure("%s @ level %i : (%s) -> %s",m,depth,n,t)
+            else
+                report_structure("%s @ level %i : %s -> %s",m,depth,n,t)
+            end
         else
-            report_structure("%s @ level %i : %s -> %s",m,depth,n,t)
+            report_structure("invalid structure @ depth %S",depth)
         end
     end
 end

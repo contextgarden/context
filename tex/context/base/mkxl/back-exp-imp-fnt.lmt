@@ -1,0 +1,193 @@
+if not modules then modules = { } end modules ['back-exp-imp-fnt'] = {
+    version   = 1.001,
+    comment   = "companion to back-exp.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- font-style : oblique 25deg ;
+
+-- After many years of using fonts and also looking at the css spec for dealing with
+-- missing fonts we decided to just go for filenames and putting fonts in a
+-- predictable place. Names are often a mess and all this fallback when can't be
+-- downloaded doesn't serve our purpose. We're not talking fancy websites here but
+-- predictable documents.
+--
+-- We also assume that fonts are taken from the regular set of free fonts that tex
+-- distributions ship.
+
+local sortedhash, concat = table.sortedhash, table.concat
+local formatters = string.formatters
+local addsuffix, replacesuffix = file.addsuffix, file.replacesuffix
+
+local structurestags = structures.tags
+local backend        = structurestags.backend
+
+do
+
+    local s_fontface_b <const> = "@font-face {"
+    local f_fontface_f         = formatters["  font-family: %q ;"]
+    local f_fontface_s         = formatters["  src: %, t ;"]
+    local f_fontface_u         = formatters['url("%s")']
+    local s_fontface_e <const> = "}"
+
+    local mapping = {
+        Serif = {
+            normal         = "SerifNormal",
+            bold           = "SerifBold",
+            italic         = "SerifItalic",
+            bolditalic     = "SerifBoldItalic",
+            TextNormal     = "SerifNormal",
+            TextBold       = "SerifBold",
+            TextItalic     = "SerifItalic",
+            TextBoldItalic = "SerifBoldItalic",
+        },
+        Sans = {
+            normal         = "SansNormal",
+            bold           = "SansBold",
+            italic         = "SansItalic",
+            bolditalic     = "SansBoldItalic",
+            TextNormal     = "SansNormal",
+            TextBold       = "SansBold",
+            TextItalic     = "SansItalic",
+            TextBoldItalic = "SansBoldItalic",
+        },
+        Mono = {
+            normal         = "MonoNormal",
+            bold           = "MonoBold",
+            italic         = "MonoItalic",
+            bolditalic     = "MonoBoldItalic",
+            TextNormal     = "MonoNormal",
+            TextBold       = "MonoBold",
+            TextItalic     = "MonoItalic",
+            TextBoldItalic = "MonoBoldItalic",
+        },
+    }
+
+    -- todo: multiple paths ../tex/texmf/fonts/...
+
+    local defaults = {
+        base    = { "dejavu" },
+        default = "Serif",
+        path    = "../fonts/",
+        woff2   = true,
+        list    = {
+            Serif = { font = "DejavuSerif" },
+            Sans  = { font = "DejavuSans"  },
+            Mono  = { font = "DejavuMono"  },
+            Math  = { font = "DejavuMath"  },
+        },
+    }
+
+ -- structures.tags.setupexport {
+ --     fontfaces = {
+ --         base    = { "dejavu", "bonum" },
+ --         default = "Serif",
+ --         path    = "../fonts/",
+ --         woff2   = true,
+ --         list    = {
+ --             Serif = { font = "Bonum"       },
+ --             Mono  = { font = "DejavuMono"  },
+ --             Sans  = { font = "DejavuSans"  },
+ --             Math  = { font = "BonumMath"   },
+ --         },
+ --     }
+ -- }
+
+    function backend.tofontface(specification)
+        if not specification then
+            specification = defaults
+        end
+        local base = specification.base
+        local list = specification.list
+        if not list then
+            return ""
+        end
+        if type(base) == "string" then
+            base = { base }
+        elseif type(base) ~= "table" then
+            return ""
+        end
+        local known = { }
+        local used  = { }
+        for i=1,#base do
+            local data = dofile(resolvers.findfile("back-exp-imp-"..base[i]..".lfg"))
+            if data then
+                local faces = data.fontfaces
+                if faces then
+                    for k, v in next, faces do
+                        known[k] = v
+                    end
+                end
+            end
+        end
+        if next(known) then
+            local result  = { }
+            local r       = 0
+            local path    = specification.path or ""
+            local woff2   = specification.woff2
+            local default = specification.default or "Serif"
+            local hash    = { }
+    --
+            local function define(alternative,specification,path,woff2)
+                local list = { } -- for now only one
+                --
+                local filename  = addsuffix(specification.filename,"otf")
+                local woffname  = replacesuffix(filename,"woff2")
+                local filefound = resolvers.findfile(filename) or ""
+                local wofffound = resolvers.findfile(woffname) or ""
+                if woff2 and wofffound ~= "" then
+                    local fullname = path .. woffname
+                    list[#list+1] = f_fontface_u(fullname)
+                    used[fullname] = { path, woffname, wofffound }
+                else
+                    local fullname = path .. filename
+                    list[#list+1] = f_fontface_u(fullname)
+                    used[fullname] = { path, filename, filefound }
+                end
+                --
+                r = r + 1 ; result[r] = s_fontface_b
+                r = r + 1 ; result[r] = f_fontface_f(alternative)
+                r = r + 1 ; result[r] = f_fontface_s(list)
+                r = r + 1 ; result[r] = s_fontface_e
+            end
+
+            for set, spec in sortedhash(list) do
+                local font = spec.font
+                if font then
+                    local faces = known[font]
+                    if faces then
+                        for alternative, specification in sortedhash(faces) do
+                            define(alternative,specification,path,woff2)
+                            hash[alternative] = specification
+                        end
+                    end
+                end
+            end
+
+            local dl = mapping[default]
+            if dl then
+                for alternative, spec in sortedhash(dl) do
+                    local valid = hash[spec]
+                    if valid then
+                        define(alternative,valid,path,woff2)
+                    end
+                end
+            end
+            return concat(result,"\n"), used
+        end
+    end
+
+    local direct = {
+        normal     = { family = "normal" },
+        bold       = { family = "bold" },
+        italic     = { family = "italic" },
+        bolditalic = { family = "bolditalic" },
+    }
+
+    function backend.fontfaced(s)
+        return direct[s]
+    end
+
+end

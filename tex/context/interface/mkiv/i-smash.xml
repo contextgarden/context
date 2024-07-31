@@ -74,6 +74,10 @@
                 <cd:constant type="d" default="yes"/>
                 <cd:constant type="t"/>
                 <cd:constant type="b"/>
+                <!--
+                    <cd:constant type="ht"/>
+                    <cd:constant type="whd"/>
+                -->
             </cd:keywords>
             <cd:content/>
         </cd:arguments>

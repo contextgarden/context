@@ -324,9 +324,17 @@
      \bigskip
    \fi\fi}
 
-\permanent\protected\def\break     {\penalty-\plustenthousand} % can be hmode or vmode
-\permanent\protected\def\nobreak   {\penalty \plustenthousand} % can be hmode or vmode
-\permanent\protected\def\allowbreak{\penalty \zerocount}       % can be hmode or vmode
+\permanent\protected\def\break      {\penalty-\plustenthousand}  % can be hmode or vmode
+\permanent\protected\def\nobreak    {\penalty \plustenthousand}
+\permanent\protected\def\allowbreak {\penalty \zerocount}
+
+\permanent\protected\def\vbreak     {\vpenalty-\plustenthousand} % ensures vmode
+\permanent\protected\def\novbreak   {\vpenalty \plustenthousand}
+\permanent\protected\def\allowvbreak{\vpenalty \zerocount}
+
+\permanent\protected\def\hbreak     {\hpenalty-\plustenthousand} % ensures vmode
+\permanent\protected\def\nohbreak   {\hpenalty \plustenthousand}
+\permanent\protected\def\allowhbreak{\hpenalty \zerocount}
 
 \permanent\protected\def\goodbreak {\par\ifvmode\penalty-\plusfivehundred\relax\fi}       % forces vmode
 \permanent\protected\def\filbreak  {\par\ifvmode\vfil\penalty-\plustwohundred\vfilneg\fi} % forces vmode
@@ -2532,6 +2540,7 @@
    \edef\currenttextdisplay{#1}%
    \setupcurrenttextdisplay[#2]%
    \textdisplayparameter\c!before
+   \dostarttagged\t!textdisplay\currenttextdisplay
    \dpack
    \bgroup
    \strut
@@ -2545,6 +2554,7 @@
    \vskip-\lineheight
    \strut
    \egroup
+   \dostoptagged
    \textdisplayparameter\c!after
    \endgroup
    \par}

@@ -4,46 +4,57 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineformula" level="style" category="mathematics" file="math-for.mkiv">
+    <cd:command name="defineformula" level="style" category="mathematics" file="math-for.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
-                <cd:inherit name="setupformula"/>
+                <cd:inherit name="setupformulas"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupformula" level="style" category="mathematics" file="math-for.mkiv">
+    <cd:command name="setupformula" level="style" category="mathematics" file="math-for.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupformulas"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupformulas" level="style" category="mathematics" file="math-for.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
                 <cd:parameter name="location">
                     <cd:constant type="left"/>
                     <cd:constant type="right" default="yes"/>
+                    <cd:constant type="atleftmargin"/>
+                    <cd:constant type="atrightmargin"/>
                 </cd:parameter>
                 <cd:parameter name="align">
                     <cd:constant type="left"/>
                     <cd:constant type="middle"/>
                     <cd:constant type="right"/>
                     <cd:constant type="flushleft"/>
-                    <cd:constant type="center"/>
                     <cd:constant type="flushright"/>
-                    <cd:constant type="normal"/>
+                    <cd:constant type="slanted"/>
                 </cd:parameter>
                 <cd:parameter name="split">
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
-                    <cd:constant type="page" comment="mkiv"/>
-                    <cd:constant type="line" comment="mkxl"/>
-                    <cd:constant type="cd:name" comment="mkxl"/>
+                    <cd:constant type="line"/>
+                    <cd:constant type="cd:name"/>
                 </cd:parameter>
                 <cd:parameter name="strut">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no" default="yes"/>
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
                 </cd:parameter>
-                <cd:parameter name="distance">
-                    <cd:constant type="cd:dimension"/>
+                <cd:parameter name="numberstrut">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                    <cd:constant type="always"/>
                 </cd:parameter>
                 <cd:parameter name="left">
                     <cd:constant type="cd:command"/>
@@ -52,16 +63,18 @@
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
                 <cd:parameter name="spacebefore">
+                    <cd:constant type="none"/>
                     <cd:inherit name="blank"/>
                 </cd:parameter>
                 <cd:parameter name="spaceafter">
+                    <cd:constant type="none"/>
                     <cd:inherit name="blank"/>
+                </cd:parameter>
+                <cd:parameter name="spaceinbetween">
+                    <cd:inherit name="setupwhitespace"/>
                 </cd:parameter>
                 <cd:parameter name="numbercommand">
                     <cd:constant type="cd:oneargument"/>
-                </cd:parameter>
-                <cd:parameter name="color">
-                    <cd:constant type="cd:color"/>
                 </cd:parameter>
                 <cd:parameter name="numberstyle">
                     <cd:resolve name="value-style"/>
@@ -76,12 +89,27 @@
                     <cd:resolve name="value-leftskip"/>
                 </cd:parameter>
                 <cd:parameter name="leftmargin">
-                    <cd:constant type="cd:dimension"/>
+                    <cd:resolve name="value-leftskip"/>
                 </cd:parameter>
                 <cd:parameter name="rightmargin">
+                    <cd:resolve name="value-rightskip"/>
+                </cd:parameter>
+                <cd:parameter name="margindistance">
+                    <cd:constant type="number"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="leftmargindistance">
+                    <cd:constant type="number"/>
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="rightmargidistance">
+                    <cd:constant type="number"/>
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
                 <cd:parameter name="alternative">
+                    <cd:constant type="default" default="yes"/>
+                    <cd:constant type="single"/>
+                    <cd:constant type="multi"/>
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
                 <cd:parameter name="indentnext">
@@ -90,42 +118,79 @@
                 <cd:parameter name="grid">
                     <cd:inherit name="snaptogrid"/>
                 </cd:parameter>
-                <cd:parameter name="frame">
-                    <cd:constant type="number"/>
-                </cd:parameter>
-                <cd:parameter name="hang">
-                    <cd:constant type="none" default="yes"/>
-                    <cd:constant type="auto"/>
-                </cd:parameter>
-                <cd:parameter name="expansion">
-                    <cd:constant type="yes"/>
-                    <cd:constant type="no" default="yes"/>
-                    <cd:constant type="xml"/>
-                </cd:parameter>
                 <cd:parameter name="referenceprefix">
                     <cd:resolve name="value-referenceprefix"/>
                 </cd:parameter>
-                <cd:parameter name="xmlsetup">
+                <cd:parameter name="numberthreshold">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="order">
+                    <cd:constant type="reverse"/>
+                </cd:parameter>
+                <cd:parameter name="numberlocation">
+                    <cd:constant type="overlay"/>
+                </cd:parameter>
+                <cd:parameter name="numbermethod">
+                    <cd:constant type="down"/>
+                </cd:parameter>
+                <cd:parameter name="textmargin">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="penalties">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
-                <cd:parameter name="catcodes">
+                <cd:parameter name="interlinespace">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="textdistance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="splitmethod">
+                    <cd:constant type="first"/>
+                    <cd:constant type="last"/>
+                    <cd:constant type="both"/>
+                </cd:parameter>
+                <cd:parameter name="setups">
                     <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="snap">
+                    <cd:constant type="yes"/>
+                    <cd:constant type="no" default="yes"/>
+                </cd:parameter>
+                <cd:parameter name="snapstep">
+                    <cd:constant type="reset"/>
+                    <cd:constant type="small"/>
+                    <cd:constant type="medium" default="yes"/>
+                    <cd:constant type="big"/>
+                    <cd:constant type="line"/>
+                </cd:parameter>
+                <cd:parameter name="bodyfont">
+                    <cd:inherit name="setupbodyfont"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="functionstyle">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="functioncolor">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="width">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="numberdistance">
+                    <cd:constant type="cd:dimension"/>
                 </cd:parameter>
                 <cd:inherit name="setupcounter"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupformulas" level="style" category="mathematics" file="math-for.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-list-optional"/>
-            <cd:assignments list="yes">
-                <cd:inherit name="setupformula"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="definesubformula" level="style" category="mathematics" file="math-for.mkiv">
+    <cd:command name="definesubformula" level="style" category="mathematics" file="math-for.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -135,7 +200,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupsubformula" level="style" category="mathematics" file="math-for.mkiv">
+    <cd:command name="setupsubformula" level="style" category="mathematics" file="math-for.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:inherit name="setupsubformulas"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupsubformulas" level="style" category="mathematics" file="math-for.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -146,16 +220,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupsubformulas" level="style" category="mathematics" file="math-for.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-name-list-optional"/>
-            <cd:assignments list="yes">
-                <cd:inherit name="setupsubformula"/>
-            </cd:assignments>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="formula" type="environment" generated="yes" variant="instance" level="document" category="mathematics" file="strc-mat.mkiv">
+    <cd:command name="formula" type="environment" generated="yes" variant="instance" level="document" category="mathematics" file="strc-mat.mkxl">
         <cd:sequence>
             <cd:instance value="formula"/>
             <cd:string value="formula"/>
@@ -168,48 +233,80 @@
         </cd:instances>
     </cd:command>
 
-    <!--
+    <cd:command name="formula" type="environment" generated="yes" variant="instance:assignment" level="document" category="mathematics" file="strc-mat.mkxl">
+        <cd:sequence>
+            <cd:instance value="formula"/>
+            <cd:string value="formula"/>
+        </cd:sequence>
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupformulas"/>
+            </cd:assignments>
+        </cd:arguments>
+        <cd:instances>
+            <cd:resolve name="instance-formula"/>
+        </cd:instances>
+    </cd:command>
 
-        <cd:command name="formula" type="environment" generated="yes" variant="instance:assignment" level="document" category="mathematics" file="strc-mat.mkiv">
-            <cd:sequence>
-                <cd:instance value="formula"/>
-                <cd:string value="formula"/>
-            </cd:sequence>
-            <cd:arguments>
-                <cd:assignments list="yes" optional="yes">
-                    <cd:inherit name="setupformula"/>
-                </cd:assignments>
-            </cd:arguments>
-            <cd:instances>
-                <cd:resolve name="instance-formula"/>
-            </cd:instances>
-        </cd:command>
-
-    -->
-
-    <cd:command name="formula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
+    <cd:command name="formula" type="environment" level="document" category="mathematics" file="strc-mat.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-formula-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="formula" type="environment" variant="assignment" level="document" category="mathematics" file="strc-mat.mkiv">
+    <cd:command name="formula" type="environment" variant="assignment" level="document" category="mathematics" file="strc-mat.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="option">
-                    <cd:resolve name="value-formula"/>
-                </cd:parameter>
-                <cd:parameter name="margin">
-                    <cd:resolve name="value-leftskip"/>
-                </cd:parameter>
-                <cd:parameter name="grid">
-                    <cd:inherit name="snaptogrid"/>
-                </cd:parameter>
+                <cd:inherit name="setupformulas"/>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineformulaalternative" level="system" category="mathematics" file="strc-mat.mkiv">
+    <cd:command name="namedformula" type="environment" level="document" category="mathematics" file="strc-mat.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-formula-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="namedformula" type="environment" variant="assignment" level="document" category="mathematics" file="strc-mat.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupformulas"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="formula" level="document" category="mathematics" file="strc-mat.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-formula-list-optional"/>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="formulas" type="environment" level="document" category="mathematics" file="strc-mat.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-formulareference-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="subformulas" type="environment" level="document" category="mathematics" file="strc-mat.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-formulareference-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="namedsubformulas" type="environment" level="document" category="mathematics" file="strc-mat.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-formulareference-list-optional"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="displaymath" type="environment" level="system" category="mathematics" file="strc-mat.mkxl"/>
+
+    <cd:command name="defineformulaalternative" level="system" category="mathematics" file="strc-mat.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-csname"/>
@@ -217,64 +314,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="formula" level="document" category="mathematics" file="strc-mat.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-formula-list-optional"/>
-            <cd:content/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="displaymath" type="environment" level="system" category="mathematics" file="strc-mat.mkiv"/>
-
-    <cd:command name="formulas" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-formulareference-list-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="subformulas" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-formulareference-list-optional"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="namedsubformulas" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
-        <cd:arguments>
-            <cd:resolve name="keyword-formulareference-list-optional"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="placeformula" level="document" category="mathematics" file="strc-mat.mkiv">
+    <cd:command name="placeformula" level="document" category="mathematics" file="strc-mat.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
             <cd:resolve name="argument-text-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placeformula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv">
+    <cd:command name="placeformula" type="environment" level="document" category="mathematics" file="strc-mat.mkxl">
         <cd:arguments>
-            <cd:assignments list="yes" optional="yes">
-                <cd:parameter name="title">
-                    <cd:constant type="cd:text"/>
-                </cd:parameter>
-                <cd:parameter name="suffix">
-                    <cd:constant type="cd:text"/>
-                </cd:parameter>
-                <cd:parameter name="reference">
-                    <cd:resolve name="value-formulareference"/>
-                </cd:parameter>
-            </cd:assignments>
+            <cd:resolve name="assignment-formuladata-list-optional"/>
+            <cd:resolve name="argument-text-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placeformula" type="environment" variant="argument" level="document" category="mathematics" file="strc-mat.mkiv">
+    <cd:command name="placeformula" type="environment" variant="argument" level="document" category="mathematics" file="strc-mat.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placenamedformula" level="document" category="mathematics" file="strc-mat.mkiv">
+    <cd:command name="placenamedformula" level="document" category="mathematics" file="strc-mat.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
             <cd:resolve name="argument-text"/>
@@ -282,25 +342,75 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placesubformula" level="document" category="mathematics" file="strc-mat.mkiv">
+    <cd:command name="placesubformula" level="document" category="mathematics" file="strc-mat.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-formulareference-list-optional"/>
             <cd:resolve name="argument-text-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="formulanumber" level="document" category="mathematics" file="strc-mat">
+    <cd:command name="formulanumber" level="document" category="mathematics" file="strc-mat.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-reference-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="placecurrentformulanumber" level="system" category="mathematics" file="strc-mat"/>
+    <cd:command name="placecurrentformulanumber" level="system" category="mathematics" file="strc-mat.mkxl"/>
 
-    <cd:command name="alignhere" scope="formula" level="document" category="mathematics" file="strc-mat"/>
+    <cd:command name="alignhere" scope="formula" level="document" category="mathematics" file="strc-mat.mkxl"/>
 
-    <cd:command name="breakhere" scope="formula" level="document" category="mathematics" file="strc-mat"/>
+    <cd:command name="breakhere" scope="formula" level="document" category="mathematics" file="strc-mat.mkxl">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="left"/>
+                <cd:constant type="right"/>
+                <cd:constant type="before"/>
+                <cd:constant type="after"/>
+                <cd:constant type="page"/>
+                <cd:constant type="samepage"/>
+            </cd:keywords>
+            <cd:resolve name="argument-text-optional"/>
+        </cd:arguments>
+    </cd:command>
 
-    <cd:command name="splitformula" type="environment" level="document" category="mathematics" file="strc-mat.mkiv"/>
+    <cd:command name="skiphere" scope="formula" level="document" category="mathematics" file="strc-mat.mkxl">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="+"/>
+                <cd:constant type="-"/>
+                <cd:constant type="cd:dimension"/>
+                <cd:constant type="cd:number"/>
+                <cd:constant type="page"/>
+                <cd:constant type="samepage"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="texthere" scope="formula" level="document" category="mathematics" file="strc-mat.mkxl">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="left"/>
+                <cd:constant type="right"/>
+                <cd:constant type="before"/>
+                <cd:constant type="after"/>
+                <cd:constant type="inbetween"/>
+            </cd:keywords>
+            <cd:content/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="subnumberinghere" type="environment" level="document" category="mathematics" file="strc-mat.mkxl"/>
+
+    <cd:command name="numberhere" level="document" category="mathematics" file="strc-mat.mkxl">
+        <cd:arguments>
+            <cd:resolve name="assignment-formuladata-list-optional"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="numberhere" level="document" variant="argument" category="mathematics" file="strc-mat.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-formulareference-list-optional"/>
+        </cd:arguments>
+    </cd:command>
 
 </cd:interface>

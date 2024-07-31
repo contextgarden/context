@@ -638,7 +638,7 @@ local forbidden = tohash {
 
 local csletters = characters.csletters -- also a signal that we have initialized
 local activated = { }
-local sfmode    = "unset" -- unset, traditional, normal
+local sfstate   = "unset" -- unset, traditional, normal
 local block_too = false
 
 directives.register("characters.blockstoo",function(v) block_too = v end)
@@ -661,8 +661,10 @@ end
 directives.register("characters.spaceafteruppercase",function(v)
     if v == "traditional" then
         setuppersfcodes(v,999)
+        sfstate = v
     elseif v == "normal" then
         setuppersfcodes(v,1000)
+        sfstate = v
     else
         v = tonumber(v)
         if v and v > 0 and v < tex.magicconstants.defaultspacefactor then
@@ -683,7 +685,6 @@ if not csletters then
     end
 
     local traditional = sfstate == "traditional"
-
     for u, chr in next, data do -- will move up
         local contextname = chr.contextname
         local category    = chr.category
@@ -718,7 +719,7 @@ if not csletters then
                     end
                     texsetlccode(u,lc,uc)
                     if traditional and category == "lu" then
-                        texsetsfcode(code,999)
+                        texsetsfcode(u,999)
                     end
                 end
             elseif is_command[category] and not forbidden[u] then
@@ -743,7 +744,7 @@ if not csletters then
             end
             texsetlccode(u,lc,uc)
             if traditional and category == "lu" then
-                texsetsfcode(code,999)
+                texsetsfcode(u,999)
             end
         elseif is_mark[category] then
             texsetlccode(u,u,u) -- for hyphenation

@@ -10144,6 +10144,9 @@ return {
   ["mathdenominatorstyle"]={
    ["en"]="mathdenominatorstyle",
   },
+  ["mathematics"]={
+   ["en"]="mathematics",
+  },
   ["max"]={
    ["cs"]="max",
    ["de"]="max",

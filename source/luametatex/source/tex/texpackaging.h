@@ -226,7 +226,7 @@ typedef enum box_flags {
 
 # define box_leaders_flag(f) (f >= a_leaders_flag && f <= u_leaders_flag)
 
-extern void tex_begin_box        (int boxcontext, scaled shift, halfword slot, halfword callback);
+extern void tex_begin_box        (int boxcontext, scaled shift, halfword slot, halfword callback, halfword leaders);
 extern int  tex_ignore_math_skip (halfword p);
 
 static inline scaled tex_aux_checked_dimension1(halfword v)
