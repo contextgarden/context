@@ -6949,11 +6949,10 @@ halfword tex_scan_extra_attribute(halfword attrlist)
 {
     halfword i = tex_scan_attribute_register_number();
     halfword v = tex_scan_integer(1, NULL);
-//    return tex_patch_attribute_list(attrlist, i, v);
-        if (attrlist) {
-            attrlist = tex_patch_attribute_list(attrlist, i, v);
-        } else {
-            attrlist = tex_copy_attribute_list_set(null, i, v);
-        }
-        return attrlist; 
+    if (attrlist) {
+        attrlist = tex_patch_attribute_list(attrlist, i, v);
+    } else {
+        attrlist = tex_copy_attribute_list_set(null, i, v);
+    }
+    return attrlist; 
 }

@@ -301,6 +301,8 @@
 % At some point we can switch to dedicated markers because there are not
 % that many variants: text, page, textarea, columnarea, free.
 
+\newfloat\f_anch_extra_y_scale
+
 \def\d_anch_extra_text_depth
   {\dimexpr\ifnum\bottomraggednessmode=\plusthree\strutdp\else\zeropoint\fi\relax}
 
@@ -311,8 +313,10 @@
      {columnarea}%
      \c_anch_column
      \zeropoint
+     \zerofloat
      #2%
-   \relax} % extra height
+   \relax
+   \f_anch_extra_y_scale\zerofloat}
 
 \protected\def\anch_mark_region_box % auto region:index
   {\iftrialtypesetting
@@ -334,11 +338,13 @@
      {textarea}%
      \c_anch_text
      \d_anch_extra_text_depth
+     \f_anch_extra_y_scale
    \box#1%
-   \egroup}
+   \egroup
+   \f_anch_extra_y_scale\zerofloat}
 
 \protected\def\anch_mark_tagged_box#1#2#3%
-  {\clf_markregionboxtagged#1{#2}#3\zeropoint\relax}
+  {\clf_markregionboxtagged#1{#2}#3\zeropoint\zerofloat\relax}
 
 \protected\def\anch_mark_flow_only#1% will be extended / renamed
   {\global\advanceby\c_anch_text\plusone
@@ -346,21 +352,30 @@
      #1%
      {textarea}%
      \c_anch_text
-     \d_anch_extra_text_depth}
+     \d_anch_extra_text_depth
+     \f_anch_extra_y_scale
+   \relax
+   \f_anch_extra_y_scale\zerofloat}
 
 \protected\def\anch_make_page_box#1% maybe like text
   {\clf_setregionboxtagged
      #1%
      {page}%
      \realpageno
-     \zeropoint}
+     \zeropoint
+     \zerofloat
+   \relax
+   \f_anch_extra_y_scale\zerofloat}
 
 \protected\def\anch_mark_text_box#1%
   {\clf_markregionboxtagged % needs an hbox
      #1%
      {text}%
      \realpageno
-     \d_anch_extra_text_depth}
+     \d_anch_extra_text_depth
+     \f_anch_extra_y_scale
+   \relax
+   \f_anch_extra_y_scale\zerofloat}
 
 \protected\def\anch_mark_tagged_box_free
   {\ifpositioning
@@ -378,12 +393,14 @@
      {free}%
      \c_anch_free
      \zeropoint
+     \zerofloat
      #2% kind         % single token value
      #3% leftoffset   % single token value
      #4% rightoffset  % single token value
      #5% topoffset    % single token value
      #6% bottomoffset % single token value
-   \relax}
+   \relax
+   \f_anch_extra_y_scale\zerofloat}
 
 % \reservedautoregiontag % define at lua end
 

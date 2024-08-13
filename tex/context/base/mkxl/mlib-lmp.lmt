@@ -392,9 +392,11 @@ do
     registerscript("setglobaltoks",  function() settoks ("global",scanwhatever(),scanstring()) end)
 
     local utfnum = utf.byte
+    local utfchr = utf.char
     local utflen = utf.len
     local utfsub = utf.sub
 
+    registerdirect("utfchr", function() return utfchr(scannumeric()) end)
     registerdirect("utfnum", function() return utfnum(scanstring()) end)
     registerdirect("utflen", function() return utflen(scanstring()) end)
 

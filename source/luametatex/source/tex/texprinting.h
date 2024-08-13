@@ -38,6 +38,11 @@ typedef enum spec_units {
     no_unit,
     pt_unit,
     mu_unit,
+ // fi_unit,    /* todo */
+ // fil_unit,
+ // fill_unit,
+ // filll_unit,
+ // filll_unit,
 } spec_units;
 
 /*tex

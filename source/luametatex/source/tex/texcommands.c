@@ -1542,6 +1542,7 @@ void tex_initialize_commands(void)
         tex_primitive(no_command,     "insertedpar",                    end_paragraph_cmd,      inserted_end_paragraph_code,                     0);
         tex_primitive(no_command,     "newlinepar",                     end_paragraph_cmd,      new_line_end_paragraph_code,                     0);
         tex_primitive(tex_command,    "par",                            end_paragraph_cmd,      normal_end_paragraph_code,                       0); /* |too_big_char| */
+        tex_primitive(luatex_command, "localbreakpar",                  end_paragraph_cmd,      local_break_end_paragraph_code,                  0);
 
      /* tex_primitive(luatex_command, "linepar",                        undefined_cs_cmd,       0,                                               0); */ /*tex A user can define this one.*/
 

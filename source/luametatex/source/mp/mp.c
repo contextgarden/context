@@ -316,7 +316,7 @@ settings, representing the math value type that will be used in this run. The ty
 is here because it has to come very early.
 
 Most important memory is kept in a chain so we don't need to allocate that often. We could (at some
-point) decide to use mimalloc.This is an attempt to spend less time in |malloc()|:
+point) decide to use mimalloc. This is an attempt to spend less time in |malloc()|:
 
 */
 

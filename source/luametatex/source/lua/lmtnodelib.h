@@ -49,8 +49,8 @@ extern void lmt_node_filter_callback(
 );
 
 extern int lmt_linebreak_callback(
-    int       isbroken,
     halfword  head,
+    int       isbroken, /* display_math */
     halfword *newhead
 );
 

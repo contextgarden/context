@@ -91,6 +91,9 @@ return {
                     tweak = "flattenaccents",
                 },
                 {
+                    tweak = "accentdimensions",
+                },
+                {
                     tweak   = "radicaldegreeanchors",
                     list = {
                         ["0x221A.parts.bottom"] = { location = "left", hfactor  = .0, vfactor  = 1.075 },

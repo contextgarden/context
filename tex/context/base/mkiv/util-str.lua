@@ -790,7 +790,6 @@ end or function()
     return format("(a%s ~= nil and format('%%q',a%s) or '')",n,n)
 end
 
-
 local format_Q = function() -- fast escaping
     n = n + 1
 --  return format("format('%%q',tostring(a%s))",n)

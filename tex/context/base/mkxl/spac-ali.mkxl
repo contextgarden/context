@@ -573,6 +573,12 @@
    \or
      % 12 hangright
      \spac_align_set_horizontal_hang_right
+   \or
+     % 13 hangleft range, private
+     \spac_align_set_horizontal_hang_left_range
+   \or
+     % 14 hangright range, private
+     \spac_align_set_horizontal_hang_right_range
    \fi
    \relax}
 
@@ -701,11 +707,13 @@
   {\csname\??aligncommand#1\endcsname}
 
 \permanent\protected\tolerant\def\definealign[#1]#*[#2]%
-  {\pushmacro\m_spac_align_named
+  {\pushmacro\raggedcommand
+   \pushmacro\updateraggedskips
    \edef\m_spac_align_named{#1}%
    \edef\m_spac_align_asked{#2}%
    \spac_align_add_to_cache
-   \popmacro\m_spac_align_named}
+   \popmacro\updateraggedskips
+   \popmacro\raggedcommand}
 
 % The local (key driven) setter:
 
@@ -878,6 +886,71 @@
   {\spac_align_set_horizontal_very_right
    \parinitleftskip \s_zero_plus_one_fill
    \relax}
+
+% idem but better: experimental !
+
+\defcsname\??aligncommand\v!hangleft  range\endcsname{\c_spac_align_state_horizontal\plusthirteen}
+\defcsname\??aligncommand\v!hangright range\endcsname{\c_spac_align_state_horizontal\plusfourteen}
+
+\permanent\protected\def\spac_align_set_horizontal_hang_right_range % special purpose
+  {\spac_align_set_horizontal_very_left
+   \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_left
+   \parinitrightskip \s_zero_plus_one_fill
+   \parfillleftskip  \s_zero_plus_zero
+   \relax}
+
+\permanent\protected\def\spac_align_set_horizontal_hang_left_range % special purpose
+  {\spac_align_set_horizontal_very_right
+   \leftskip       \plusone\leftskip \s!plus\spac_align_set_raggedness_left %
+   \parinitleftskip\s_zero_plus_one_fill
+   \relax}
+
+\newconditional\c_spac_align_hang_done
+
+\permanent\protected\def\starthangrange
+  {\setfalse\c_spac_align_hang_done}
+
+\permanent\protected\def\stophangrange
+  {\setfalse\c_spac_align_hang_done
+   \removeunwantedspaces
+  %\localbreakpar
+   \par}
+
+\permanent\protected\def\starthangrangestep
+  {\ifconditional\c_spac_align_hang_done
+     \removeunwantedspaces
+   % \hfillneg
+   % \strut
+   % \parbreak
+     \localbreakpar
+   \fi
+   \ifnum\c_spac_align_state_horizontal=\plusfourteen
+     \ifhmode
+       \strut
+       \penalty\plustenthousand
+       \hskip-\leftskip
+       \penalty\plustenthousand
+     \else
+       \spac_align_set_horizontal_hang_right_range
+       \dontleavehmode
+     \fi
+   \orelse\ifnum\c_spac_align_state_horizontal=\plusthirteen
+     \ifhmode
+       \strut
+       \hfill
+     \else
+       \spac_align_set_horizontal_hang_left_range
+       \dontleavehmode
+     \fi
+   \fi
+  %\luaboundary 123 456
+   \ignorespaces}
+
+\permanent\protected\def\stophangrangestep
+  {\settrue\c_spac_align_hang_done}
+
+\permanent\protected\def\emptyhangrangestep
+  {\strut\localbreakpar}
 
 % experiment
 
@@ -1389,8 +1462,7 @@
   {\registerparwrapper
      {\v!word:\v!right}
      {\begingroup
-      \frozen\parfillrightskip   \zeroskip  % frozen ?
-      \frozen\finalhyphendemerits\zerocount % frozen ?
+      \frozen\parfillrightskip\zeroskip  % frozen ?
       \endgroup}
      {\doifelseparwrapper{\v!word:\v!right}{\unregisterparwrapper{\v!word:\v!right}}\donothing
       \removeunwantedspaces
@@ -1401,10 +1473,12 @@
       \else
         \kern-#1%
       \fi
+      \hfill
+      \strut
+      \kern\emwidth\strut\kern-\emwidth
+      \nobreak
       \hfilll
-      \discretionary{\strut}{\strut}{\strut}% \allowbreak % changed back from \hskip\zeropoint
-      \hfilll
-      \quad % decent spacing
+      \quad
       #2}}
 
 % \dorecurse{5}{something} \wordright{--someone} \endgraf

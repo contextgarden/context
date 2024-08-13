@@ -2461,12 +2461,14 @@ local f_stream_cc   = formatters["%N 0 %N %N %N %N d1 %s"] -- last four bbox
                 if glyph then
                     local stream, width = glyphtopdf(glyph,data)
                     if stream then
-                        local gwd = glyph.width  or 0
-                        local ght = glyph.height or 0
-                        local gdp = glyph.depth  or 0
-                        if gwd > wd then wd = gwd end
-                        if ght > ht then ht = ght end
-                        if gdp > dp then dp = gdp end
+                        if type(glyph) == "table" then
+                            local gwd = glyph.width  or 0
+                            local ght = glyph.height or 0
+                            local gdp = glyph.depth  or 0
+                            if gwd > wd then wd = gwd end
+                            if ght > ht then ht = ght end
+                            if gdp > dp then dp = gdp end
+                        end
                         if index - 1 ~= lastindex then
                             d = d + 1 differences[d] = index
                         end

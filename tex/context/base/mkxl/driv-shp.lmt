@@ -45,7 +45,6 @@ local getshift           = nuts.getshift
 local getreplace         = nuts.getreplace
 local setreplace         = nuts.setreplace
 local getfont            = nuts.getfont
-local getxscale          = nuts.getxscale
 local getboth            = nuts.getboth
 
 local getglyphdimensions = nuts.getglyphdimensions

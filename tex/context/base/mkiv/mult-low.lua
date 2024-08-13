@@ -11,8 +11,9 @@ if not modules then modules = { } end modules ['mult-low'] = {
 return {
     ["constants"] = {
         --
-        "zerocount", "minusone", "minustwo", "plusone", "plustwo", "plusthree", "plusfour", "plusfive",
-        "plussix", "plusseven", "pluseight", "plusnine", "plusten", "pluseleven", "plustwelve", "plussixteen",
+        "zerocount", "minusone", "minustwo",
+        "plusone", "plustwo", "plusthree", "plusfour", "plusfive", "plussix", "plusseven", "pluseight",
+        "plusnine", "plusten", "pluseleven", "plustwelve", "plusthirteen", "plusfourteen", "plusfifteen", "plussixteen",
         "plusfifty", "plushundred", "plusonehundred", "plustwohundred", "plusfivehundred",
         "plusonehundredtwentyfive", "plustwohundredfifty",
         "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard", "maxcardminusone", "maxiterator",
@@ -254,6 +255,8 @@ return {
         "checktoddlerglyphoptioncode", "checktwinglyphoptioncode",
         --
         "ignoretwincharactercontrolcode",
+        --
+        "repeatspecificationoptioncode", "valuesspecificationoptioncode", "doublespecificationoptioncode", "largestspecificationoptioncode",
         --
      -- "noitaliccorrectionmathoptioncode", "noleftpairkernmathoptioncode", "norightpairkernmathoptioncode",
      -- "autodiscretionarymathoptioncode", "fulldiscretionarymathoptioncode",

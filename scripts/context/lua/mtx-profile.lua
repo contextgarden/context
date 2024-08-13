@@ -135,7 +135,9 @@ function scripts.profiler.x_analyze(filename)
             local line = f:read()
             if line then
                 lines = lines + 1
-                local c = match(line,"\\([a-zA-Z%!%?@]+) *%->")
+--                 local c = match(line,"\\([a-zA-Z%!%?@]+) *%->")
+--                 local c = match(line,"\\([a-zA-Z%!%?@]+) .-%->")
+                local c = match(line,"\\([a-zA-Z%!%?@_]+ [^%->]*)%->")
                 if c then
                     local cc = calls[c]
                     if not cc then
@@ -182,7 +184,7 @@ end
 if environment.argument("analyze") then
     scripts.profiler.analyze(environment.files[1] or "luatex-profile.log")
 elseif environment.argument("trace") then
-    scripts.profiler.analyze(environment.files[1] or "temp.log")
+    scripts.profiler.x_analyze(environment.files[1] or "temp.log")
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),environment.files[1])
 else

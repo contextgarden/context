@@ -132,7 +132,7 @@ typedef struct linebreak_state_info {
     int          n_of_left_twins;
     int          n_of_right_twins;
     int          n_of_double_twins;
-    int          padding;
+    halfword     internal_par_node;
 } linebreak_state_info;
 
 extern linebreak_state_info lmt_linebreak_state;
@@ -165,9 +165,9 @@ extern halfword tex_default_fitness_demerits(
 );
 
 extern void tex_line_break (
-    int d, 
     int group_context,
-    int par_context
+    int par_context,
+    int display_math 
 );
 
 extern void tex_initialize_active (

@@ -92,15 +92,6 @@
   \lettonothing\bodyfontinterlinespace
 \fi
 
-% \permanent\protected\def\presetnormallineheight % each bodyfont
-%   {\edef\normallineheight{\interlinespaceparameter\c!line}%
-%    \iflocalinterlinespace \else
-%      \edef\m_spac_normallineheight{\bodyfontinterlinespace}%
-%      \ifempty\m_spac_normallineheight \else
-%        \let\normallineheight\m_spac_normallineheight
-%      \fi
-%    \fi}
-
 \permanent\protected\def\presetnormallineheight % each bodyfont
   {\edef\normallineheight{\interlinespaceparameter\c!line}%
    \iflocalinterlinespace \else
@@ -629,7 +620,7 @@
          \ifdim\d_spac_prevdepth<\strutdp \relax
            \pushlastnode
            \ifdim\d_spac_prevdepth>\zeropoint
-               \kern-\d_spac_prevdepth
+             \kern-\d_spac_prevdepth
            \fi
            \kern\strutdp
            \prevdepth\strutdp
@@ -780,34 +771,6 @@
      \vskip\topskip
      \vskip-\openstrutheight
    \fi}
-
-% \permanent\protected\def\settopskip % the extra test is needed for the lbr family
-%   {\topskip
-%      \ifgridsnapping
-%        \zeropoint
-%      \else
-%        \systemtopskipfactor\globalbodyfontsize
-%        \ifcase\bottomraggednessmode % ragged bottom
-%          \s!plus
-%          \ifnum\ntopskipfactor<\zerocount
-%            5\globalbodyfontsize % old hard coded value
-%          \else
-%             \ntopskipfactor\openlineheight
-%          \fi
-%        \fi
-%    \fi
-%    %\relax
-%    \topskipgap\topskip
-%    \advanceby\topskipgap -\openstrutheight\relax
-%    \ifdim\minimumstrutheight>\zeropoint
-%      \ifdim\topskip<\minimumstrutheight
-%        \topskip\minimumstrutheight\relax
-%      \fi
-%    \else
-%      \ifdim\topskip<\strutheightfactor\openlineheight
-%        \topskip\strutheightfactor\openlineheight\relax
-%      \fi
-%    \fi}
 
 \permanent\protected\def\settopskip % the extra test is needed for the lbr family
   {\topskip
@@ -2598,7 +2561,6 @@
 % not \break == -10000 because empty line (maybe we need somthing engine)
 
 \permanent\protected\def\parbreak
-  {\ifhmode \hfill\penalty-9999\relax\fi}
-
+  {\ifhmode\hfill\penalty-9999\relax\fi}
 
 \protect \endinput

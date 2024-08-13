@@ -483,15 +483,6 @@ inline static void tex_math_set_scripts_options(halfword n)
 
 /*tex identity style */
 
-// # define display_style_nibble(a)               (a <<  0)
-// # define cramped_display_style_nibble(a)       (a <<  4)
-// # define text_style_nibble(a)                  (a <<  8)
-// # define cramped_text_style_nibble(a)          (a << 12)
-// # define script_style_nibble(a)                (a << 16)
-// # define cramped_script_style_nibble(a)        (a << 20)
-// # define script_script_style_nibble(a)         (a << 24)
-// # define cramped_script_script_style_nibble(a) (a << 28)
-
 # define display_style_nibble(a)               (a << 28)
 # define cramped_display_style_nibble(a)       (a << 24)
 # define text_style_nibble(a)                  (a << 20)
@@ -1810,7 +1801,7 @@ static void tex_aux_enter_display_math(halfword cmd)
             tex_pop_nest();
             size = - max_dimension;
         } else {
-            tex_line_break(1, math_display_group, math_par_context);
+            tex_line_break(math_display_group, math_par_context, 1);
          // size = tex_actual_box_width(lmt_linebreak_state.just_box, tex_x_over_n(tex_get_font_em_width(cur_font_par), scaling_factor) * math_pre_display_gap_factor_par);
             size = tex_actual_box_width(lmt_linebreak_state.just_box, scaledround((tex_get_font_em_width(cur_font_par) / scaling_factor_double) * math_pre_display_gap_factor_par));
         }
@@ -2409,7 +2400,7 @@ static void tex_aux_append_math_fence_val(mathcodeval mval, mathdictval dval, qu
     delimiter_small_character(delimiter) = mval.character_value;
     delimiter_large_family(delimiter) = mval.family_value;
     delimiter_large_character(delimiter) = mval.character_value;
-    set_noad_classes(fence, mval.class_value);
+    tex_set_noad_classes(fence, mval.class_value);
     /* todo : share the next three with the regular fences */
     noad_options(fence) |= noad_option_no_check;
     if (mathclass == middle_noad_subtype && cur_group != math_fence_group) { 
@@ -2727,7 +2718,7 @@ static void tex_aux_math_math_component(halfword target, int append)
     quarterword allclass = unset_noad_class;
     halfword style = cur_list.math_style;
     int usetextfont = math_atom_no_font_option;
-    reset_noad_classes(target);
+    tex_reset_noad_classes(target);
     switch (cur_chr) {
         case math_component_ordinary_code:
             subtype = ordinary_noad_subtype;
@@ -3470,7 +3461,7 @@ void tex_run_math_radical(void)
             {
                 /*tex Here the |style| option is not that usefull as we remap anyway. */
                 saved_radical_initialize();
-                saved_radical_degree_done =  0; 
+                saved_radical_degree_done = 0; 
                 saved_radical_style =  style;
                 lmt_save_state.save_stack_data.ptr += saved_radical_n_of_records;
                 tex_aux_push_math(math_radical_group, tex_math_style_variant(style, math_parameter_degree_variant), -1);
@@ -4960,7 +4951,7 @@ void tex_run_math_fence(void)
         noad_height(fence) = ht;
         noad_depth(fence) = dp;
         noad_options(fence) = options;
-        set_noad_classes(fence, mainclass);
+        tex_set_noad_classes(fence, mainclass);
         if (leftclass != unset_noad_class) {
             set_noad_left_class(fence, leftclass);
         }
@@ -5125,7 +5116,10 @@ static void tex_aux_resume_after_display(void)
             tex_push_nest();
             cur_list.mode = hmode;
             cur_list.space_factor = default_space_factor;
-            /*tex This needs to be intercepted in the display math start! Todo! */
+            /*tex 
+                This needs to be intercepted in the display math start! Todo! Why do we have this 
+                anyway. 
+            */
             tex_tail_append(tex_new_par_node(parameter_par_subtype));
             tex_get_x_token();
             if (cur_cmd != spacer_cmd) {
@@ -5416,6 +5410,7 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
         }
         lmt_packaging_state.post_adjust_tail = null;
     }
+    lmt_packaging_state.except = 0;
     /* */
     tex_tail_append(tex_new_penalty_node(post_display_penalty_par, after_display_penalty_subtype));
     tex_aux_inject_display_skip(glue_below, subtype_below);

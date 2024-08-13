@@ -589,9 +589,10 @@ local initializesvg  do
             if not hash then
                 return
             end
-            local shapes  = nil
-            local method  = nil
-            local enforce = attributes.colors.model == "cmyk"
+            local shapes   = nil
+            local method   = nil
+            local fixdepth = value == "fixdepth"
+            local enforce  = attributes.colors.model == "cmyk"
             if cached and not enforce then
              -- we need a different hash than for mkiv, so we append:
                 local pdfhash   = hash .. "-svg"
@@ -608,8 +609,9 @@ local initializesvg  do
                         timestamp = timestamp,
                     })
                 end
-                shapes = pdfshapes
-                method = "pdf"
+                shapes   = pdfshapes
+                method   = "pdf"
+                fixdepth = true -- needed for svg
             else
                 local mpsfile   = containers.read(otf.mpscache,hash)
                 local mpsshapes = mpsfile and mpsfile.mpsshapes
@@ -631,7 +633,7 @@ local initializesvg  do
                 method = "mps"
             end
             if shapes then
-                shapes.fixdepth = value == "fixdepth"
+                shapes.fixdepth = fixdepth
                 fonts.dropins.clone(method,tfmdata,shapes)
             end
             return true

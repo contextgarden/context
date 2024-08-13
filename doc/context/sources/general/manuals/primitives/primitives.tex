@@ -218,6 +218,10 @@ Topic from Victor Eijkhout. I see no need to try to improve on those.
 % {\em Some new primitives in this list might be forgotten or already became
 % obsolete. Let me know if you run into one.}
 
+% How likely is it that an eight bit setup is used? Maybe we should at some point
+% just replace the old math primitives like \tex {above} replace by \tex
+% {Uabove}.
+
 \stopsubject
 
 % When writing this manual I also decided to merge some of the condition related
@@ -1874,6 +1878,15 @@ name indicates the purpose. Here are two examples:
 \startnewprimitive[title={\prm {catcodetable}}]
 
 The catcode table with the given index will become active.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {cccode}}]
+
+This is an experimental feature that can set some processing options. The
+character specific code is stored in the glyph node and consulted later. An
+example of such option is \quote {ignore twin}, bit one, which we set for a few
+punctuation characters.
 
 \stopnewprimitive
 
@@ -6956,6 +6969,13 @@ This skip will be inserted at the left of every line.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {lefttwindemerits}}]
+
+Additional demerits for a glyph sequence at the left edge when a previous line
+also has that sequence.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {leqno}}]
 
 This primitive stores the (typeset) content (presumably a number) and when the
@@ -7152,6 +7172,13 @@ following will work well:
 because scripts are bound to these elements so looking back just sees the element.
 
 \stopoldprimitive
+
+\startnewprimitive[title={\prm {linebreakchecks}}]
+
+The value of this parameter is passed to the linebreak callback so that one can
+act on it if needed.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {linebreakoptional}}]
 
@@ -10396,6 +10423,13 @@ the left of the content in the given box.
 This skip will be inserted at the right of every line.
 
 \stopoldprimitive
+
+\startnewprimitive[title={\prm {righttwindemerits}}]
+
+Additional demerits for a glyph sequence at the right edge when a previous line
+also has that sequence.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {romannumeral}}]
 

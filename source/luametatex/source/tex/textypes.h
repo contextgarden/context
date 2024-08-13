@@ -757,7 +757,8 @@ code in the archive.
 
 typedef struct line_break_properties {
     halfword initial_par;
-    halfword display_math;
+    halfword group_context;
+    halfword par_context;
     halfword tracing_paragraphs;
     halfword tracing_fitness;
     halfword tracing_passes;
@@ -820,8 +821,7 @@ typedef struct line_break_properties {
     halfword single_line_penalty;
     halfword hyphen_penalty;
     halfword ex_hyphen_penalty;
-    halfword group_context;
-    halfword par_context;
+    halfword padding; 
 } line_break_properties;
 
 typedef enum sparse_identifiers {

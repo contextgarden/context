@@ -1,0 +1,159 @@
+% language=us runpath=texruns:manuals/musings
+
+%logo [RISCV]   {Risc-V}
+\logo [XEON]    {XEON}
+\logo [OPENSUSE]{OpenSUSE}
+\logo [QEMU]    {QEMU}
+
+\startcomponent musings-riscv
+
+\environment musings-style
+
+\startchapter[title={Testing \RISCV}]
+
+\startsection[title={Introduction}]
+
+Having played with and being interested in electronics since I was kid, it will
+be no surprise that I also keep an eye on \RISCV. And because of that I already
+wondered for a while how easy it would be to compile \LUAMETATEX\ on that
+architecture. Although there are now some decent small boards that can be used, I
+don't have these, which made me check out if one could emulate it.
+
+\stopsection
+
+\startsection[title={Virtual machines}]
+
+Back in the days I used VMWare to run a \LINUX\ machine on my \WINDOWS\ laptop,
+but nowadays the Linux Subsystem is pretty good for what I want. On the servers
+we always used (OpenSUSE) linux although at some point we switched from bare
+metal to virtual machines on top of Proxmox. So, there is some experience with
+virtual machinery. Of course a question to be asked is \quotation {What does it
+do with performance?} but plenty about that has been said in the past so I stick
+to a summary.
+
+Given enough memory and a decent disk setup, for us running \TEX\ in a virtual
+machine is not that significant slower as on bare metal. For instance, running a
+NAS on the same virtual host is quite efficient, because of the more or less
+direct connection, while using the same NFS setup over different machine comes at
+a higher price. The same is true for compiling in the Linux Subsystem: a single
+core \TEX\ process can benefit from the other core being used by the host for
+file management.
+
+Performance of \TEX\ depends not only on the \CPU. Just compare making a format
+file on a freshly restarted computer with a second make: it's way faster due to
+the operating system caching the many files that get loaded. The same is true for
+making the font database although that happens seldom. The console is actually
+one of the factors that has a high influence.
+
+However, in al these cases we use a real \CPU\ for the task. In the case of this
+test with \RISCV\ I had to use an emulator (QEMU) so I knew that performance
+would be kind of bad. Of course that's relative because even (say) 20 times
+slower would just bring us back to the beginning of this century and it's not
+like performance was a show stopper then.
+
+\stopsection
+
+\startsection[title={Compiling \LUAMETATEX}]
+
+I used my \LINUX\ laptop that has the same specification as the \WINDOWS\ one: a
+refurbished Dell Precision 7520 with plenty memory, a fast large \SSD, and mobile
+\XEON\ \CPU's.
+
+The \LINUX\ machine runs \OPENSUSE\ and I was able to install a \RISCV\ virtual
+machine using \QEMU, once I'd figured out how to boot one. It's a bit of a hassle
+but in the end it works. Compiling \LUAMETATEX\ boils down to:
+
+\startitemize[packed]
+\startitem installing the \GCC\ compiler (in this case version 13) \stopitem
+\startitem installing \CMAKE \stopitem
+\startitem fetching the \LUAMETATEX\ git repository (I used \type {work}) \stopitem
+\startitem running the \type {build.sh} script \stopitem
+\stopitemize
+
+When we had to support the Raspberry Pi and the Apple M* architectures we had to
+adapt a few compiler flags and have some specific platform detection (not that
+dramatic). So I expected that I had to tune for \RISCV\ but in the end the code
+just compiled. It took however quite some time. Later I gave the virtual machine
+four cores and then compilation time was sort of acceptable. So, I had a binary!
+
+\stopsection
+
+\startsection[title={Running \TEX}]
+
+Next comes a challenge: how to test \LMTX\ when there is no installer. I mounted
+my main disk to the virtual machine and just copied the \TEX\ tree from there.
+Then I copied the binary from \type {build/native} to the \typ
+{texmf-linux-64/bin} path and voila, after extending the \type {PATH} variable I
+could make a format. Because \TEX\ is a single core process, one has to be
+patient.
+
+\starttabulate[|l|r|]
+\NC \RISCV   \NC 17.8 s \NC \NR
+\NC \LINUX   \NC  1.0 s \NC \NR
+\NC \WINDOWS \NC  2.0 s \NC \NR
+\stoptabulate
+
+The winner is \LINUX. The \WINDOWS\ binary is a cross compiled \MINGW\ one and I
+think that the difference in performance is mainly due to file handling. In all
+tree cases the log is piped to a file, otherwise these times are quite a bit
+higher.
+
+Next I ran the following file, which results in 223 pages:
+
+\starttyping
+\starttext
+\dorecurse {1000} {
+    \samplefile{tufte}\par
+}
+\stoptext
+\stoptyping
+
+This time we need:
+
+\starttabulate[|l|r|]
+\NC \RISCV   \NC 46.1 s \NC \NR
+\NC \LINUX   \NC  2.9 s \NC \NR
+\NC \WINDOWS \NC  2.8 s \NC \NR
+\stoptabulate
+
+The reason why \LINUX\ and \WINDOWS\ are the same is that there is less file
+access. We load the format file, some fonts, the main file, and output a few
+hundred pages \PDF.
+
+The emulated \RISCV\ machine is about 15 times slower so not really an option for
+production but that was not the objective anyway. Actually, if I remember right,
+the first Raspberry's were not that fast either and those were bare metal and
+currently most \RISCV\ boards are in its version 3 performance range. Also, this
+test is mostly done to see what is needed to support \RISCV: nothing special.
+
+\stopsection
+
+\startsection[title={Conclusion}]
+
+The main conclusion is that it was actually quite easy to support this new
+architecture. Of course I now need to come up with an installer but I delay that
+till I have hardware because buying some just for testing makes little sense. After
+all I don't have an M3 for testing either.
+
+The installation script has been extended with a \type {--native} option (one can
+also set that in the installer file) in which case files will be updated. This
+assumes that the user has compiled a binary and put it in the installations \type
+{bin} path alongside the \type {mtxrun.lua} file there. The user also has to make
+sure that \typ {tex/texmf-native} has the updated binary. It's a bit more work
+but at least one has an updated system.
+
+In the end a 15 time slowdown is not that dramatic. We've made \CONTEXT\ a bit
+faster with \LUAMETATEX\ anyway. My best laptop will be 1.5 times (or more)
+faster and I expect upcoming \RISCV\ boards to catch up too, just like all these
+\ARM\ machines did.
+
+Just for the record: I didn't try to compile \LUATEX. That source tree is much
+larger and there are all kind of dependencies involved. It takes way more time to
+compile anyway. But I expect it to works out well too.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+

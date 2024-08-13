@@ -1151,7 +1151,7 @@
        \ifinset\v!grid    \floatlocation\global\c_page_sides_align\plusfour \fi
        \ifinset\v!halfline\floatlocation\global\c_page_sides_align\plusfive \fi % meant for 'none'
      \fi
-     \ifinset\v!high        \floatlocation\global\c_page_sides_skipmode \plusone  \fi
+     \ifinset\v!high        \floatlocation\global  \plusone  \fi
      \ifinset\v!low         \floatlocation\global\c_page_sides_skipmode \plustwo  \fi
      \ifinset\v!fit         \floatlocation\global\c_page_sides_skipmode \plusthree\fi
      \ifinset\v!tolerant    \floatlocation\global\c_page_sides_tolerance\plusone  \fi
@@ -1164,14 +1164,21 @@
         270=>\global\c_strc_floats_rotation\commalistelement\relax]%
    \fi
    \ifinset\v!paragraph\floatlocation
-     \global\settrue\c_page_sides_force_shape
+     \global\c_page_sides_force_shape\conditionaltrue
    \else
-     \global\setfalse\c_page_sides_force_shape
+     \global\c_page_sides_force_shape\conditionalfalse
+   \fi
+   \ifinset\v!append\floatlocation
+     \global\c_floats_append_to_stored\conditionaltrue
+   \else
+     \global\c_floats_append_to_stored\conditionalfalse
    \fi
    \ifinset\v!force\floatlocation
-     \global\c_page_sides_shape_down\conditionaltrue
+     \global\c_floats_force         \conditionaltrue
+     \global\c_page_sides_shape_down\conditionaltrue  % might be changed later
    \else
-     \global\c_page_sides_shape_down\conditionalfalse
+     \global\c_floats_force         \conditionalfalse
+     \global\c_page_sides_shape_down\conditionalfalse % might be changed later
    \fi
    \ifinset\v!keeptogether\floatlocation
      \global\c_page_sides_keep_together\conditionaltrue
@@ -1849,6 +1856,9 @@
 
 \newconditional\c_floats_adapt_to_caption_width
 \newconditional\c_floats_store_minimal_package
+
+\newconditional\c_floats_append_to_stored
+\newconditional\c_floats_force
 
 \newdimension\d_strc_floats_caption_hsize
 \newdimension\d_strc_floats_caption_min_width
@@ -2789,6 +2799,25 @@
 
 \permanent\protected\def\setfloatmethodvariables#1% \floatmethod \floatlabel \floatrow \floatcolumn
   {\clf_analysefloatmethod{#1}} % move definition to lua end
+
+%D \starttyping
+%D \starttext
+%D
+%D test \placefigure[somewhere:alpha][whatever]{alpha}{}
+%D test \placefigure[somewhere:beta] [whatever]{beta}{}
+%D test \placefigure[somewhere:gamma][whatever]{gamma}{}
+%D test \placefigure[somewhere:delta][whatever]{delta}{}
+%D test \placefigure{}{}
+%D
+%D in \in{figure}[whatever] bla bla
+%D
+%D \placenamedfloat[figure][*l*]
+%D
+%D \placenamedfloat[figure][gamma]
+%D \placenamedfloat[figure][beta]
+%D
+%D \stoptext
+%D \stoptyping
 
 \permanent\protected\def\somesomewherefloat[#1]%
   {\page_floats_save_somewhere_float\s!somewhere{#1}}

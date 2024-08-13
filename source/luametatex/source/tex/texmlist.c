@@ -730,7 +730,7 @@ static halfword tex_aux_fake_nucleus(quarterword cls)
 {
     halfword n = tex_new_node(simple_noad, cls);
     halfword q = tex_new_node(math_char_node, 0);
-    set_noad_classes(n, cls);
+    tex_set_noad_classes(n, cls);
     noad_nucleus(n) = q;
     math_kernel_node_set_option(q, math_kernel_ignored_character);
     return n;
@@ -6504,6 +6504,7 @@ static halfword tex_aux_make_left_right(halfword target, int style, scaled max_d
     /* */
     if (mergedattr) { 
         delete_attribute_reference(mergedattr);
+        delete_attribute_reference(noad_extra_attr(target));
     }
     switch (node_subtype(target)) {
         case left_fence_side:

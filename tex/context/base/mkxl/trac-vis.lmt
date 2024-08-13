@@ -827,20 +827,21 @@ end
 
 local ruledpar do
 
-    local parcodes       = nodes.parcodes
-    local directioncodes = tex.directioncodes -- nodes.dirvalues
+    local parcodes        = nodes.parcodes
+    local directioncodes  = tex.directioncodes -- nodes.dirvalues
 
-    local l2r_code       <const> = directioncodes.l2r
-    local r2l_code       <const> = directioncodes.r2l
+    local l2r_code        <const> = directioncodes.l2r
+    local r2l_code        <const> = directioncodes.r2l
 
-    local hmodepar_code  <const> = parcodes.hmodepar
-    local vmodepar_code  <const> = parcodes.vmodepar
-    local localbox_code  <const> = parcodes.localbox
-    local parameter_code <const> = parcodes.parameter
+    local hmodepar_code   <const> = parcodes.hmodepar
+    local vmodepar_code   <const> = parcodes.vmodepar
+    local localbox_code   <const> = parcodes.localbox
+    local parameter_code  <const> = parcodes.parameter
+    local localbreak_code <const> = parcodes.localbreak
 
-    local p_cache        = caches["par"]
+    local p_cache         = caches["par"]
 
-    local getdirection   = nuts.getdirection
+    local getdirection    = nuts.getdirection
 
     ruledpar = function(head,current)
         local subtype = getsubtype(current)
@@ -851,6 +852,8 @@ local ruledpar do
             what = "BOX"
         elseif subtype == parameter_code then
             what = "LOC"
+        elseif subtype == localbreak_code then
+            what = "BRK"
         else
             what = "???"
         end

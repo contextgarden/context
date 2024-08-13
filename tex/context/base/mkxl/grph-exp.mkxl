@@ -168,4 +168,42 @@
 
 \permanent\protected\lettonothing\stopMPimage
 
+% bonus
+
+\newdimension\justimageoffset
+
+\permanent\protected\def\grph_start_image_only
+  {\begingroup
+   \setbox\b_grph_image\hpack\bgroup
+   \ignorepars
+   \ignorespaces}
+
+\permanent\protected\def\grph_stop_image_only
+  {\removeunwantedspaces
+   \egroup
+   \global\advanceby\nofexportedboxes\plusone
+   \ifzeropt\justimageoffset
+     \setbox\scratchbox\box\b_grph_image
+   \else
+     \setbox\scratchbox\hpack\bgroup
+       \kern\justimageoffset
+       \box\b_grph_image
+       \kern\justimageoffset
+     \egroup
+     \ht\scratchbox\dimexpr\ht\scratchbox+\justimageoffset\relax
+     \dp\scratchbox\dimexpr\dp\scratchbox+\justimageoffset\relax
+   \fi
+   \putboxincache\s!exported{\the\nofexportedboxes}\scratchbox
+   \box\b_grph_image
+   \endgroup}
+
+\permanent\protected\def\justimages
+  {\exportingtrue
+   \ctxlua{backends.codeinjections.discardpages(true)}%
+   \appendtoks
+     \grph_exported_flush
+   \to \everystoptext
+   \enforced\let\startimage\grph_start_image_only
+   \enforced\let\stopimage \grph_stop_image_only}
+
 \protect \endinput

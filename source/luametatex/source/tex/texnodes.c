@@ -111,11 +111,12 @@ void lmt_nodelib_initialize(void) {
 
     subtypes_par = lmt_aux_allocate_value_info(math_par_subtype);
 
-    set_value_entry_key(subtypes_par, vmode_par_par_subtype, vmodepar)
-    set_value_entry_key(subtypes_par, local_box_par_subtype, localbox)
-    set_value_entry_key(subtypes_par, hmode_par_par_subtype, hmodepar)
-    set_value_entry_key(subtypes_par, parameter_par_subtype, parameter)
-    set_value_entry_key(subtypes_par, math_par_subtype,      math)
+    set_value_entry_key(subtypes_par, vmode_par_par_subtype,   vmodepar)
+    set_value_entry_key(subtypes_par, local_box_par_subtype,   localbox)
+    set_value_entry_key(subtypes_par, hmode_par_par_subtype,   hmodepar)
+    set_value_entry_key(subtypes_par, parameter_par_subtype,   parameter)
+    set_value_entry_key(subtypes_par, local_break_par_subtype, localbreak)
+    set_value_entry_key(subtypes_par, math_par_subtype,        math)
 
     subtypes_glue = lmt_aux_allocate_value_info(u_leaders);
 
@@ -159,7 +160,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_glue, g_leaders,                     gleaders)
     set_value_entry_key(subtypes_glue, u_leaders,                     uleaders)
 
-    subtypes_boundary = lmt_aux_allocate_value_info(par_boundary);
+    subtypes_boundary = lmt_aux_allocate_value_info(adjust_boundary);
 
     set_value_entry_key(subtypes_boundary, cancel_boundary,     cancel)
     set_value_entry_key(subtypes_boundary, user_boundary,       user)
@@ -170,6 +171,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_boundary, optional_boundary,   optional)
     set_value_entry_key(subtypes_boundary, lua_boundary,        lua) 
     set_value_entry_key(subtypes_boundary, par_boundary,        par) 
+    set_value_entry_key(subtypes_boundary, adjust_boundary,     adjust) 
 
     subtypes_penalty = lmt_aux_allocate_value_info(equation_number_penalty_subtype);
 
@@ -1009,7 +1011,7 @@ inline static void tex_aux_preset_node(halfword n, quarterword type)
         case fence_noad:
             noad_family(n) = unused_math_family;
             noad_style(n) = unused_math_style;
-            reset_noad_classes(n); /* unsets them */
+            tex_reset_noad_classes(n); /* unsets them */
             break;
     }
 }
@@ -1217,6 +1219,9 @@ halfword tex_copy_node(halfword original)
                     }
                     break;
                 case insert_node:
+                    if (insert_split_top(original)) { 
+                        insert_split_top(copy) = tex_copy_node(insert_split_top(original));
+                    }
                     copy_sub_list(insert_list(copy), insert_list(original));
                     break;
                 case mark_node:
@@ -1354,6 +1359,7 @@ inline static void tex_aux_free_sub_node(halfword source)
 
 /* We don't need the checking for attributes if we make these lists frozen. */
 
+
 void tex_flush_node(halfword p)
 {
     if (! p) {
@@ -1421,6 +1427,9 @@ void tex_flush_node(halfword p)
                     tex_flush_token_list(par_end_par_tokens(p));
                     break;
                 case insert_node:
+                    if (insert_split_top(p)) { 
+                        tex_flush_node(insert_split_top(p));
+                    }
                     tex_flush_node_list(insert_list(p));
                     break;
                 case mark_node:
@@ -1566,6 +1575,7 @@ static void tex_aux_check_node(halfword p)
             tex_aux_node_range_test(p, box_list(p));
             break;
         case insert_node:
+            tex_aux_node_range_test(p, insert_split_top(p));
             tex_aux_node_range_test(p, insert_list(p));
             break;
         case disc_node:
@@ -1890,6 +1900,9 @@ int tex_n_of_used_nodes(int counts[])
         if (lmt_node_memory_state.nodesizes[i] > 0 && (node_type(i) <= max_node_type)) {
             counts[node_type(i)] += 1;
 //printf("%i %i\n",node_type(i),node_subtype(i));
+//if (node_type(i) == glue_spec_node) {
+//    printf("%i %f\n",i,glue_amount(i)/65536.0);
+//}
         }
     }
     for (int i = 0; i < max_node_type; i++) {

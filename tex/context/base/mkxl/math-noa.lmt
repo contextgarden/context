@@ -142,6 +142,9 @@ local setprime           = nuts.setprime
 local getoffsets         = nuts.getoffsets
 local setoffsets         = nuts.setoffsets
 
+local getscripts         = nuts.getscripts
+local setscripts         = nuts.setscripts
+
 local getoptions         = nuts.getoptions
 local setoptions         = nuts.setoptions
 
@@ -196,7 +199,7 @@ local setaction          = tasks.setaction
 
 local nodecodes          = nodes.nodecodes
 ----- noadcodes          = nodes.noadcodes
-local fencecodes         = nodes.fencecodes
+----- fencecodes         = nodes.fencecodes
 local classes            = mathematics.classes -- or nodes.noadcodes
 
 local ordinary_class     <const> = classes.ordinary
@@ -227,10 +230,6 @@ local delimiter_code     <const> = nodecodes.delimiter
 ----- parameter_code     <const> = nodecodes.parameter
 local math_choice        <const> = nodecodes.choice
 local fence_code         <const> = nodecodes.fence
-
-local leftfence_code     <const> = fencecodes.left
-local middlefence_code   <const> = fencecodes.middle
-local rightfence_code    <const> = fencecodes.right
 
 -- this initial stuff is tricky as we can have removed and new nodes with the same address
 -- the only way out is a free-per-page list of nodes (not bad anyway)
@@ -693,23 +692,21 @@ do
     -- text font here.
 
     relocate[mathchar_code] = function(pointer)
-        local g          = getattr(pointer,a_mathgreek) or 0
-        local a          = getattr(pointer,a_mathalphabet) or 0
-     -- local g, a       = getattrs(pointer,a_mathgreek,a_mathalphabet)
-     -- if not a then a = 0 end
-     -- if not g then g = 0 end
+        local greek, alpha = getattrs(pointer,a_mathgreek,a_mathalphabet)
         local char, font, fam = getcharspec(pointer)
         local characters = fontcharacters[font]
-        if a > 0 or g > 0 then
-            if a > 0 then
+        if not alpha then alpha = 0 end
+        if not greek then greek = 0 end
+        if alpha > 0 or greek > 0 then
+            if alpha > 0 then
                 -- not really critital but we could use properties
                 setattr(pointer,a_mathgreek,0)
             end
-            if g > 0 then
+            if greek > 0 then
                 -- not really critital but we could use properties
                 setattr(pointer,a_mathalphabet,0)
             end
-            local newchar = remapalphabets(char,a,g)
+            local newchar = remapalphabets(char,alpha,greek)
             if newchar then
                 local newchardata = characters[newchar]
                 if newchardata then
@@ -722,9 +719,9 @@ do
                     setchar(pointer,newchar)
                     return true
                 else
-                    local fallback = fallbackstyleattr(a)
+                    local fallback = fallbackstyleattr(alpha)
                     if fallback then
-                        local newchar = remapalphabets(char,fallback,g)
+                        local newchar = remapalphabets(char,fallback,greek)
                         if newchar then
                             if characters[newchar] then
                                 if trace_remapping then
@@ -823,11 +820,8 @@ end
 --
 -- do
 --
---     local a_mathsize  <const> = privateattribute("mathsize") -- this might move into other fence code
---     local resize      = { }
---
---     local trace_fences  = false  registertracker("math.fences", function(v) trace_fences = v end)
---     local report_fences = logreporter("mathematics","fences")
+--     local a_mathsize <const> = privateattribute("mathsize") -- this might move into other fence code
+--     local resize     = { }
 --
 --     resize[fence_code] = function(pointer)
 --         local subtype = getsubtype(pointer)
@@ -897,9 +891,17 @@ end
 
 do
 
-    local a_autofence     <const> = privateattribute("mathautofence")
-    local autofences      = { }
-    local dummyfencechar  = 0x2E
+    local trace_fences     = false  registertracker("math.fences", function(v) trace_fences = v end)
+    local report_fences    = logreporter("mathematics","fences")
+
+    local a_autofence      <const> = privateattribute("mathautofence")
+    local autofences       = { }
+    local dummyfencechar   = 0x2E
+
+    local fencecodes       = nodes.fencecodes
+    local leftfence_code   <const> = fencecodes.left
+    local middlefence_code <const> = fencecodes.middle
+    local rightfence_code  <const> = fencecodes.right
 
     local function makefence(what,char,template)
         local d = new_delimiter()
@@ -1047,8 +1049,11 @@ do
                             if trace_fences then
                                 report_fences("%2i: level %i, handling %s, action %s",n,level,"close","both")
                             end
+                            local prime, sup, sub, presup, presub = getscripts(current)
+                            setscripts(current)
                             current = convert_both(open,current,middle)
-                        elseif current == start then
+                            setscripts(current,prime, sup, sub, presup, presub)
+                         elseif current == start then
                             if trace_fences then
                                 report_fences("%2i: level %i, handling %s, action %s",n,level,"close","skip")
                             end
@@ -1056,7 +1061,10 @@ do
                             if trace_fences then
                                 report_fences("%2i: level %i, handling %s, action %s",n,level,"close","close")
                             end
+                            local prime, sup, sub, presup, presub = getscripts(current)
+                            setscripts(current)
                             current = convert_close(initial,current,middle)
+                            setscripts(current,prime, sup, sub, presup, presub)
                             if not parent then
                                 initial = current
                             end

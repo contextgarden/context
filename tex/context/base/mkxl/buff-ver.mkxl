@@ -102,6 +102,27 @@
 \def\buff_verbatim_set_line_margin_indeed
   {\hskip\doifelseoddpage{\typingparameter\c!oddmargin}{\typingparameter\c!evenmargin}\relax}
 
+% \def\buff_verbatim_initialize_typing_one
+%   {\usebodyfontparameter\typingparameter
+%    \ifzerodim\typingparameter\c!oddmargin\else
+%      \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
+%    \fi
+%    \ifzerodim\typingparameter\c!evenmargin\else
+%      \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
+%    \fi
+%    \ifrelax\buff_verbatim_set_line_margin
+%      \doadaptleftskip{\typingparameter\c!margin}%
+%    \fi
+%    \edef\p_buff_option{\typingparameter\c!option}%
+%    \ifx\p_buff_option\v!none
+%      \usetypingstyleandcolor\c!style\c!color
+%    \orelse\ifempty\p_buff_option
+%      \usetypingstyleandcolor\c!style\c!color
+%    \else
+%      \usetypingstyleparameter\c!style % no color !
+%    \fi
+%    \usealignparameter\typingparameter}
+
 \def\buff_verbatim_initialize_typing_one
   {\usebodyfontparameter\typingparameter
    \ifzerodim\typingparameter\c!oddmargin\else
@@ -121,7 +142,17 @@
    \else
      \usetypingstyleparameter\c!style % no color !
    \fi
-   \usealignparameter\typingparameter}
+ % \usealignparameter\typingparameter
+   \edef\p_align{\typingparameter\c!align}%
+   \unless\ifconditional\c_buff_lines_as_paragraph
+     \dousealignparameter\p_align
+   \orelse\ifx\p_align\v!hangleft
+     \dousealignparameter{\v!hangleft range}%
+   \orelse\ifx\p_align\v!hangright
+     \dousealignparameter{\v!hangright range}%
+   \else
+     \dousealignparameter\p_align
+   \fi}
 
 \def\buff_verbatim_initialize_typing_two
   {\spaceskip.5\emwidth\relax
@@ -488,14 +519,14 @@
 
 \protected\def\buff_verbatim_setup_keep_together
   {\ifcstok{\typingparameter\c!keeptogether}\v!yes
-     \setfalse\c_buff_lines_as_paragraph
+     \c_buff_lines_as_paragraph \conditionalfalse
      \c_buff_optimize_linebreaks\conditionaltrue
   %\orelse\ifcstok{\typingparameter\c!keeptogether}\v!paragraph
    \orelse\iflastnamedcs\v!paragraph
-     \settrue\c_buff_lines_as_paragraph
+     \c_buff_lines_as_paragraph \conditionaltrue
      \c_buff_optimize_linebreaks\conditionalfalse
    \else
-     \setfalse\c_buff_lines_as_paragraph
+     \c_buff_lines_as_paragraph \conditionalfalse
      \c_buff_optimize_linebreaks\conditionalfalse
    \fi}
 
@@ -943,6 +974,8 @@
 
 \newinteger\nofverbatimlines
 
+\newconditional\c_buff_lines_as_paragraph
+
 \protected\def\buff_verbatim_begin_of_line
   {\ifconditional\verbatimnumberinglines
      \global\advanceby\nofverbatimlines\plusone
@@ -954,7 +987,17 @@
    \strut % after starttagged, else break !
    \dostarttaggednodetail\t!verbatimline}
 
-\newconditional\c_buff_lines_as_paragraph
+% \protected\def\buff_verbatim_end_of_line
+%   {\dostoptagged
+%   %\obeyedline % is actually \par here
+%    \ifconditional\c_buff_lines_as_paragraph
+%      \parbreak
+%    \else
+%      \par
+%    \fi
+%    \ifconditional\verbatimnumberinglines
+%      \c_attr_verbatimline\attributeunsetvalue
+%    \fi}
 
 \protected\def\buff_verbatim_end_of_line
   {\dostoptagged
@@ -963,6 +1006,7 @@
      \parbreak
    \else
      \par
+     \buff_verbatim_inject_breaks % new because now widowpenalties apply to the par
    \fi
    \ifconditional\verbatimnumberinglines
      \c_attr_verbatimline\attributeunsetvalue
@@ -1001,21 +1045,129 @@
 \permanent\protected\def\doinlineverbatimnewline   {\obeyedspace}
 \permanent\protected\def\doinlineverbatimemptyline {\obeyedspace}
 
-\permanent\protected\def\dodisplayverbatimstart    {\advanceby\c_buff_verbatim_current\plusone
-                                                    \buff_verbatim_begin_of_line}
-\permanent\protected\def\dodisplayverbatimstop     {\buff_verbatim_end_of_line}
-\permanent\protected\def\dodisplayverbatimbeginline{\advanceby\c_buff_verbatim_current\plusone
-                                                    \buff_verbatim_begin_of_line}
-\permanent\protected\def\dodisplayverbatimnewline  {\buff_verbatim_end_of_line
-                                                    \ifconditional\c_buff_optimize_linebreaks
-                                                      \par % needed see (1), if issue then rely on vbreak
-                                                      \buff_verbatim_inject_breaks
-                                                    \else
-                                                      % rely on par done by \hbox otherwise no widowpenalties
-                                                    \fi}
-\permanent\protected\def\dodisplayverbatimemptyline{\buff_verbatim_empty_line}
+% \permanent\protected\def\dodisplayverbatimstart    {\advanceby\c_buff_verbatim_current\plusone
+%                                                     \buff_verbatim_begin_of_line}
+% \permanent\protected\def\dodisplayverbatimstop     {\buff_verbatim_end_of_line}
+% \permanent\protected\def\dodisplayverbatimemptyline{\buff_verbatim_empty_line}
+% \permanent\protected\def\dodisplayverbatimbeginline{\advanceby\c_buff_verbatim_current\plusone
+%                                                     \buff_verbatim_begin_of_line}
+% \permanent\protected\def\dodisplayverbatimnewline  {\buff_verbatim_end_of_line
+%                                                     \ifconditional\c_buff_optimize_linebreaks
+%                                                       \par % needed see (1), if issue then rely on vbreak
+%                                                       \buff_verbatim_inject_breaks
+%                                                     \orelse\ifconditional\c_buff_lines_as_paragraph
+%                                                         % we need to find a bordercase but no crlf here
+%                                                     \else
+%                                                       \parbreak
+%                                                     \fi}
 
-\protected\def\buff_verbatim_inject_breaks
+% \permanent\protected\def\dodisplayverbatimstart    {\starthangrange}
+% \permanent\protected\def\dodisplayverbatimemptyline{\stophangrange
+%                                                     \blank[\typingparameter\c!blank]%
+%                                                     \starthangrange}
+% \permanent\protected\def\dodisplayverbatimstop     {\stophangrange}
+% \permanent\protected\def\dodisplayverbatimbeginline{\starthangrangestep}
+% \permanent\protected\def\dodisplayverbatimnewline  {\stophangrangestep}
+
+%D \starttyping
+%D \showmakeup[vpenalty,line,par]
+%D
+%D \widowpenalties 3 3000 2000 1000
+%D \clubpenalties  3   30   20   10
+%D
+%D % \widowpenalties 3 options \largestspecificationoptioncode 3000 2000 1000
+%D % \clubpenalties  3 options \largestspecificationoptioncode   30   20   10
+%D
+%D \startbuffer
+%D test test test test test test and more test test test test test test test and more test
+%D test test test test test test and more test test test test test test test and more test
+%D
+%D test test test test test test and more test test test test test test test and more test
+%D test test test test test test and more test test test test test test test and more test
+%D \stopbuffer
+%D
+%D \typebuffer[keeptogether=paragraph,align=hangright]
+%D \typebuffer[keeptogether=paragraph,align=hangleft]
+%D \stoptyping
+
+\permanent\protected\def\dodisplayverbatimstart
+  {\advanceby\c_buff_verbatim_current\plusone
+   \ifconditional\verbatimnumberinglines
+     \global\advanceby\nofverbatimlines\plusone
+     \c_attr_verbatimline\nofverbatimlines
+   \fi
+   \ifconditional\c_buff_lines_as_paragraph
+     \buff_verbatim_set_line_margin
+     \expand\everyline % maybe also after starttagged
+     \starthangrange
+   \else
+     \noindent
+     \buff_verbatim_set_line_margin
+     \expand\everyline % maybe also after starttagged
+     \strut % after starttagged, else break !
+   \fi
+   \dostarttaggednodetail\t!verbatimline}
+
+\permanent\protected\def\dodisplayverbatimstop
+  {\dostoptagged
+   \ifconditional\c_buff_lines_as_paragraph
+     \stophangrange
+   \else
+     \par % \parbreak
+     \buff_verbatim_inject_breaks % new because now widowpenalties apply to the par
+   \fi
+   \ifconditional\verbatimnumberinglines
+     \c_attr_verbatimline\attributeunsetvalue
+   \fi}
+
+\permanent\protected\def\dodisplayverbatimemptyline
+  {\dostoptagged
+   \ifconditional\c_buff_lines_as_paragraph
+     \stophangrange
+   \fi
+   \ifconditional\verbatimnumberinglines
+     \par\strut\par % this will be an option where we use a signal instead of a strut
+   \else
+     \blank[\typingparameter\c!blank]%
+   \fi
+   \ifconditional\c_buff_lines_as_paragraph
+     \starthangrange
+   \fi
+   \dostarttaggednodetail\t!verbatimlines}
+
+\permanent\protected\def\dodisplayverbatimbeginline
+  {\advanceby\c_buff_verbatim_current\plusone
+   \ifconditional\verbatimnumberinglines
+     \global\advanceby\nofverbatimlines\plusone
+     \c_attr_verbatimline\nofverbatimlines
+   \fi
+   \ifconditional\c_buff_lines_as_paragraph
+     \starthangrangestep
+     \buff_verbatim_set_line_margin
+     \expand\everyline % maybe also after starttagged
+   \else
+     \noindent
+     \buff_verbatim_set_line_margin
+     \expand\everyline % maybe also after starttagged
+     \strut % after starttagged, else break !
+   \fi
+   \dostarttaggednodetail\t!verbatimline}
+
+\permanent\protected\def\dodisplayverbatimnewline
+  {\dostoptagged
+   \ifconditional\c_buff_lines_as_paragraph
+     \stophangrangestep
+   \orelse\ifconditional\c_buff_optimize_linebreaks
+     \par % needed see (1), if issue then rely on \vbreak or \parbreak
+     \buff_verbatim_inject_breaks
+   \else
+     \parbreak % not \crlf .. bad for numbers
+   \fi
+   \ifconditional\verbatimnumberinglines
+     \c_attr_verbatimline\attributeunsetvalue
+   \fi}
+
+\protected\def\buff_verbatim_inject_breaks % will become obsolete and single widow/club penalty driven
   {\ifnum\c_buff_verbatim_current=\plusone
      \nobreak % \novbreak
    \orelse\ifnum\c_buff_verbatim_noflines=\plusthree

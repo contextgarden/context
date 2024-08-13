@@ -18,7 +18,7 @@ local helpinfo = [[
   <category name="basic">
    <subcategory>
     <flag name="make"><short>generate databases and formats</short></flag>
-    <flag name="erase"><short>completely remove cache</short></flag>
+    <flag name="erase"><short>completely remove cache [--bytecode]</short></flag>
     <flag name="list"><short>show cache</short></flag>
    </subcategory>
    <subcategory>
@@ -46,13 +46,18 @@ local report = application.report
 scripts       = scripts       or { }
 scripts.cache = scripts.cache or { }
 
-local function collect(path)
+local bytecodes = { tmc = true, tmd = true }
+
+local function collect(path,bytecode)
     local all = dir.glob(path .. "/**/*")
     local ext = table.setmetatableindex("table")
     for i=1,#all do
-        local name = all[i]
-        local list = ext[filesuffix(name)]
-        list[#list+1] = name
+        local name   = all[i]
+        local suffix = filesuffix(name)
+        if not bytecode or bytecodes[suffix] then
+            local list = ext[suffix]
+            list[#list+1] = name
+        end
     end
     return ext
 end
@@ -76,6 +81,7 @@ local function erase(banner,path,list)
     for ext, list in table.sortedhash(list) do
         local gone = 0
         local kept = 0
+        local okay = 0
         for i=1,#list do
             local filename = list[i]
          -- if find(filename,"luatex%-cache") then
@@ -99,9 +105,9 @@ function scripts.cache.make()
     os.execute("mtxrun --script font --reload")
 end
 
-function scripts.cache.erase()
+function scripts.cache.erase(bytecode)
     local writable = caches.getwritablepath()
-    local groups   = collect(writable)
+    local groups   = collect(writable,bytecode)
     list("writable path",writable,groups)
     erase("writable path",writable,groups)
     if environment.argument("make") then
@@ -124,7 +130,7 @@ function scripts.cache.list()
 end
 
 if environment.argument("erase") then
-    scripts.cache.erase()
+    scripts.cache.erase(environment.argument("bytecode"))
 elseif environment.argument("list") then
     scripts.cache.list()
 elseif environment.argument("make") then

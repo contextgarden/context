@@ -39,6 +39,8 @@
     Also, the code has been adapted a little in order to fit in the rest (function names etc)
     because it is more exposed. We use the alternative memory allocator.
 
+    I might do a little cleanup like consistent function names etc. 
+
 */
 
 /*tex We need the warning subsystem, so: */

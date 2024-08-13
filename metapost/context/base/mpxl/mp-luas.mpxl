@@ -274,6 +274,7 @@ permanent inpath, pointof, leftof, rightof ;
 
 extra_endfig := extra_endfig & " runscript mfid_path_reset ; " ;
 
+newscriptindex mfid_utfchr ; mfid_utfchr := scriptindex "utfchr" ;
 newscriptindex mfid_utfnum ; mfid_utfnum := scriptindex "utfnum" ;
 newscriptindex mfid_utflen ; mfid_utflen := scriptindex "utflen" ;
 newscriptindex mfid_utfsub ; mfid_utfsub := scriptindex "utfsub" ;
@@ -282,11 +283,12 @@ newscriptindex mfid_utfsub ; mfid_utfsub := scriptindex "utfsub" ;
 % def utflen = runscript mfid_utflen enddef ;
 % def utfsub = runscript mfid_utfsub enddef ;
 
+vardef utfchr(expr s) = runscript mfid_utfchr s enddef ; % number
 vardef utfnum(expr s) = runscript mfid_utfnum s enddef ; % str
 vardef utflen(expr s) = runscript mfid_utflen s enddef ; % str
 vardef utfsub(text t) = runscript mfid_utfsub t enddef ; % str, first, (optional) last
 
-permanent utfnum, utflen, utfsub ;
+permanent utfchr, utfnum, utflen, utfsub ;
 
 newscriptindex mfid_getparameters        ; mfid_getparameters        := scriptindex "getparameters" ;
 newscriptindex mfid_presetparameters     ; mfid_presetparameters     := scriptindex "presetparameters" ;

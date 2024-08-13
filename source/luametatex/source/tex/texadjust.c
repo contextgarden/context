@@ -11,6 +11,8 @@ typedef struct adjust_properties {
     scaled   depthbefore;
     scaled   depthafter;
     halfword attrlist;
+    scaled   except; 
+    halfword padding;
 } adjust_properties;
 
 typedef enum saved_adjust_entries {
@@ -20,6 +22,7 @@ typedef enum saved_adjust_entries {
     saved_adjust_attr_list_entry    = 1,
     saved_adjust_depth_before_entry = 1,
     saved_adjust_depth_after_entry  = 1,
+    saved_adjust_except_entry       = 2,
     saved_adjust_target_entry       = 2,
     saved_adjust_n_of_records       = 3,
 } saved_adjust_entries;
@@ -40,7 +43,8 @@ inline static void saved_adjust_initialize(void)
 # define saved_adjust_attr_list    saved_value_1(saved_adjust_attr_list_entry)
 # define saved_adjust_depth_before saved_value_2(saved_adjust_depth_before_entry)
 # define saved_adjust_depth_after  saved_value_3(saved_adjust_depth_after_entry)
-# define saved_adjust_target       saved_value_1(saved_adjust_target_entry)
+# define saved_adjust_except       saved_value_1(saved_adjust_except_entry)
+# define saved_adjust_target       saved_value_2(saved_adjust_target_entry)
 
 void tex_show_adjust_group(void)
 {
@@ -80,8 +84,9 @@ static void tex_scan_adjust_keys(adjust_properties *properties)
     properties->depthbefore = 0;
     properties->depthafter = 0;
     properties->attrlist = null;
+    properties->except = 0;
     while (1) {
-        switch (tex_scan_character("abdipABDIP", 0, 1, 0)) {
+        switch (tex_scan_character("abdeipABDEIP", 0, 1, 0)) {
             case 'p': case 'P':
                 switch (tex_scan_character("roRO", 0, 0, 0)) {
                     case 'r': case 'R':
@@ -172,6 +177,12 @@ static void tex_scan_adjust_keys(adjust_properties *properties)
                     }
                 }
                 break;
+            case 'e': case 'E':
+                if (tex_scan_mandate_keyword("except", 1)) {
+                    properties->except = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    properties->options |= adjust_option_except;
+                }
+                break;
             default:
                 goto DONE;
         }
@@ -199,6 +210,7 @@ void tex_set_vadjust(halfword target)
     saved_adjust_attr_list = properties.attrlist;
     saved_adjust_depth_before = properties.depthbefore;
     saved_adjust_depth_after = properties.depthafter;
+    saved_adjust_except = properties.except;
     saved_adjust_target = target;
     lmt_save_state.save_stack_data.ptr += saved_adjust_n_of_records;
     tex_new_save_level(vadjust_group);
@@ -230,15 +242,26 @@ void tex_finish_vadjust_group(void)
         adjust_index(adjust) = (halfword) saved_adjust_index;
         adjust_depth_before(adjust) = (halfword) saved_adjust_depth_before;
         adjust_depth_after(adjust) = (halfword) saved_adjust_depth_after;
+        adjust_except(adjust) = (halfword) saved_adjust_except;
         tex_attach_attribute_list_attribute(adjust, (halfword) saved_adjust_attr_list);
         if (target < 1) {
             tex_tail_append(adjust);
         } else { 
             tex_adjust_attach(target, adjust);
         }
+        if (has_adjust_option(adjust, adjust_option_except) && ! adjust_list(adjust)) { 
+            /*tex 
+                We create a simple adjust node. Anything more complex is kind of weird anyway. We 
+                need something in the list in order to make migration work out anyway. 
+            */
+            node_subtype(adjust) = post_adjust_code;
+            adjust_depth_before(adjust) = 0;
+            adjust_depth_after(adjust) = 0;
+            adjust_list(adjust) = tex_new_node(boundary_node, adjust_boundary);
+        }
         box_list(box) = null;
         tex_flush_node(box);
-        /* we never do the callback ... maybe move it outside */
+        /*tex We never do the callback ... maybe move it outside. */
         if (target < 0 && lmt_nest_state.nest_data.ptr == 0) {
             tex_build_page(vadjust_page_context, 0);
         }
@@ -305,66 +328,85 @@ void tex_inject_adjust_list(halfword adjust, int obeyoptions, halfword nextnode,
             tex_end_diagnostic();
         }
         if (list) {
-            if (obeyoptions && has_adjust_option(adjust, adjust_option_baseline)) { 
-                /*tex
-                    Here we attach data to a line. On the todo is to prepend and append to 
-                    the lines (nicer when we number lines). 
+            if (obeyoptions) {
+                /*tex 
+                    We can have an except here which means that we can have a adjust boundary in 
+                    order to get here at all. We need to wipe that one so that it can't interfere
+                    in (for instance) callbacks.
                 */
-                if (node_type(list) == hlist_node || node_type(list) == vlist_node) {
-                    if (nextnode) { 
-                        /*tex 
-                            This is the |pre| case where |nextnode| is the line to be appended 
-                            after the adjust box |list|.
+                if (node_type(list) == boundary_node && node_subtype(list) == adjust_boundary) {
+                    tex_flush_node_list(list);
+                } else { 
+                    if (has_adjust_option(adjust, adjust_option_baseline)) { 
+                        /*tex
+                            Here we attach data to a line. On the todo is to prepend and append to 
+                            the lines (nicer when we number lines). We could also look at rules. 
                         */
-                        if (node_type(nextnode) == hlist_node || node_type(nextnode) == vlist_node) {
-                            if (box_height(nextnode) > box_height(list)) {
-                                box_height(list) = box_height(nextnode);
-                            }
-                            if (box_depth(list) > box_depth(nextnode)) {
-                                box_depth(nextnode) = box_depth(list);
-                            }
-                            /* not ok yet */
-                            box_y_offset(nextnode) += box_height(nextnode);
-                            tex_check_box_geometry(nextnode);
-                            /* till here */
-                            box_height(nextnode) = 0;
-                            box_depth(list) = 0;
+                        switch (node_type(list)) { 
+                            case hlist_node:
+                            case vlist_node:
+                                if (nextnode) { 
+                                    /*tex 
+                                        This is the |pre| case where |nextnode| is the line to be appended 
+                                        after the adjust box |list|.
+                                    */
+                                    if (node_type(nextnode) == hlist_node || node_type(nextnode) == vlist_node) {
+                                        if (box_height(nextnode) > box_height(list)) {
+                                            box_height(list) = box_height(nextnode);
+                                        }
+                                        if (box_depth(list) > box_depth(nextnode)) {
+                                            box_depth(nextnode) = box_depth(list);
+                                        }
+                                        /* not ok yet */
+                                        box_y_offset(nextnode) += box_height(nextnode);
+                                        tex_check_box_geometry(nextnode);
+                                        /* till here */
+                                        box_height(nextnode) = 0;
+                                        box_depth(list) = 0;
+                                    }
+                                } else { 
+                                    /*tex 
+                                        Here we have the |post| case where the line will end up before the 
+                                        adjusted content.
+                                    */
+                                    halfword prevnode = cur_list.tail;
+                                    if (node_type(prevnode) == hlist_node || node_type(prevnode) == vlist_node) {
+                                        if (box_height(prevnode) < box_height(list)) {
+                                            box_height(prevnode) = box_height(list);
+                                        }
+                                        if (box_depth(list) < box_depth(prevnode)) {
+                                            box_depth(list) = box_depth(prevnode);
+                                        }
+                                        box_height(list) = 0;
+                                        box_depth(prevnode) = 0;
+                                    }
+                                }
+                                break;
                         }
+                    }
+                    if (has_adjust_option(adjust, adjust_option_depth_before)) { 
+                        cur_list.prev_depth = adjust_depth_before(adjust);
+                    }
+                    if (has_adjust_option(adjust, adjust_option_depth_check)) { 
+                        tex_append_to_vlist(list, -1, properties);
                     } else { 
-                        /*tex 
-                            Here we have the |post| case where the line will end up before the 
-                            adjusted content.
-                        */
-                        halfword prevnode = cur_list.tail;
-                        if (node_type(prevnode) == hlist_node || node_type(prevnode) == vlist_node) {
-                            if (box_height(prevnode) < box_height(list)) {
-                                box_height(prevnode) = box_height(list);
-                            }
-                            if (box_depth(list) < box_depth(prevnode)) {
-                                box_depth(list) = box_depth(prevnode);
-                            }
-                            box_height(list) = 0;
-                            box_depth(prevnode) = 0;
+                        tex_tail_append_list(list);
+                    }
+                    if (has_adjust_option(adjust, adjust_option_depth_after)) { 
+                        cur_list.prev_depth = adjust_depth_after(adjust);
+                    } else if (has_adjust_option(adjust, adjust_option_depth_last)) { 
+                        /*tex We could also look at rules. */
+                        switch (node_type(list)) { 
+                            case hlist_node:
+                            case vlist_node:
+                                cur_list.prev_depth = box_depth(list);
+                                break;
                         }
                     }
                 }
-            }
-            if (obeyoptions && has_adjust_option(adjust, adjust_option_depth_before)) { 
-                cur_list.prev_depth = adjust_depth_before(adjust);
-            }
-            if (obeyoptions && has_adjust_option(adjust, adjust_option_depth_check)) { 
-                tex_append_to_vlist(list, -1, properties);
             } else { 
                 tex_tail_append_list(list);
-             // tex_couple_nodes(prevnode, list);
-             // cur_list.tail = tex_tail_of_node_list(list);
             }
-            if (obeyoptions && has_adjust_option(adjust, adjust_option_depth_after)) { 
-                cur_list.prev_depth = adjust_depth_after(adjust);
-            } else if (obeyoptions && has_adjust_option(adjust, adjust_option_depth_last)) { 
-                cur_list.prev_depth = box_depth(list);
-            }
-//    cur_list.tail = tex_tail_of_node_list(cur_list.tail);
             if (! lmt_page_builder_state.output_active) {
                 lmt_append_line_filter_callback(post_adjust_append_line_context, adjust_index(adjust));
             }
@@ -374,6 +416,7 @@ void tex_inject_adjust_list(halfword adjust, int obeyoptions, halfword nextnode,
         adjust = next;
     }
 }
+
 
 void tex_adjust_attach(halfword box, halfword adjust)
 {
@@ -438,6 +481,9 @@ void tex_adjust_passon(halfword box, halfword adjust)
                 }
                 break;
             case post_adjust_code:
+                if (has_adjust_option(adjust, adjust_option_except) && adjust_except(adjust) > lmt_packaging_state.except) { 
+                    lmt_packaging_state.except = adjust_except(adjust);
+                }
                 if (lmt_packaging_state.post_adjust_tail) {
                     if (lmt_packaging_state.post_adjust_tail != post_adjust_head && has_adjust_option(adjust, adjust_option_before)) {
                         lmt_packaging_state.post_adjust_tail = tex_prepend_adjust_list(post_adjust_head, lmt_packaging_state.post_adjust_tail, adjust, "passon");

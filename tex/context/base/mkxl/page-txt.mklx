@@ -1067,6 +1067,9 @@
    \scratchdepth \dp#1%
    \scratchwidth \wd#1%
    \scratchfloat \floatexpr\textheight/\scratchdistance\relax
+   %
+   \f_anch_extra_y_scale\scratchfloat % first attempt
+   %
    \setbox#1\vpack\bgroup
      \hpack\bgroup
        \normalexpanded{\scale

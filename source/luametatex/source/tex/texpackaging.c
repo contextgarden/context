@@ -548,7 +548,7 @@ packaging_state_info lmt_packaging_state = {
     .best_height_plus_depth = 0,
     .previous_char_ptr      = null,
     .font_expansion_ratio   = 0,
-    .padding                = 0,
+    .except                 = 0,
     .page_discards_tail     = null,
     .page_discards_head     = null,
     .split_discards_head    = null,
@@ -974,6 +974,9 @@ inline static void tex_aux_promote_post_migrated(halfword r, halfword p)
             box_post_adjusted(r) = pa;
         }
         box_post_adjusted(p) = null;
+    }
+    if (box_except(p)) {
+        lmt_packaging_state.except = box_except(p);
     }
     if (pm) {
         if (lmt_packaging_state.post_migrate_tail) {

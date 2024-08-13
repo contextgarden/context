@@ -17,9 +17,12 @@
 
 \starttypescriptcollection[erewhon]
 
+   % \setupmathradical[\c!leftmargin=.1mq,\c!mindepth=0.1mx]%
+
     \pushglobalsetups
         \startsetups[\s!math:erewhon]
-            \setupmathradical[\c!leftmargin=.1mq,mindepth=0.1mx]%
+            \setmathradicalparameter\c!leftmargin{.1mq}%
+            \setmathradicalparameter\c!mindepth  {.1mx}%
         \stopsetups
     \popglobalsetups
 

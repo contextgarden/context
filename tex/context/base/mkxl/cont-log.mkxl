@@ -66,9 +66,9 @@
      \syst_logos_context
    \or % 2 lowercase
      \resetcharactercasing
-     con\-text
+     con\-text%
    \else
-     Con\-text
+     Con\-text%
    \fi
    \endgroup}
 

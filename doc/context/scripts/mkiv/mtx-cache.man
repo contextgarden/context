@@ -15,7 +15,7 @@
 generate databases and formats
 .TP
 .B --erase
-completely remove cache
+completely remove cache [--bytecode]
 .TP
 .B --list
 show cache

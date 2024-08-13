@@ -652,6 +652,9 @@
 \immutable\integerdef\plusten                   10
 \immutable\integerdef\pluseleven                11
 \immutable\integerdef\plustwelve                12  % also fitness value
+\immutable\integerdef\plusthirteen              13
+\immutable\integerdef\plusfourteen              14
+\immutable\integerdef\plusfifteen               15
 \immutable\integerdef\plussixteen               16
 \immutable\integerdef\plusfourtytwo             42  % also fitness value
 \immutable\integerdef\plusfifty                 50

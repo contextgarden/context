@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2024-07-31 18:56
+-- merge date  : 2024-08-13 14:46
 
 do -- begin closure to overcome local limits and interference
 
@@ -31479,14 +31479,16 @@ local function addfeature(data,feature,specifications,prepareonly)
   data.properties.hasspacekerns=true
   data.resources .spacekerns=nil
  end
- local function prepare_kern(list,featuretype)
+ local function prepare_kern(list,featuretype,nocheck)
   local coverage={}
   local cover=coveractions[featuretype]
   local isspace=false
   for code,replacement in next,list do
    local unicode=tounicode(code)
    local description=descriptions[unicode]
-   if description and type(replacement)=="table" then
+   if not nocheck and not description then
+    skip=skip+1
+   elseif type(replacement)=="table" then
     local r={}
     for k,v in next,replacement do
      local u=tounicode(k)
@@ -31515,14 +31517,16 @@ local function addfeature(data,feature,specifications,prepareonly)
   end
   return coverage
  end
- local function prepare_pair(list,featuretype)
+ local function prepare_pair(list,featuretype,nocheck)
   local coverage={}
   local cover=coveractions[featuretype]
   if cover then
    for code,replacement in next,list do
     local unicode=tounicode(code)
     local description=descriptions[unicode]
-    if description and type(replacement)=="table" then
+    if not nocheck and not description then
+     skip=skip+1
+    elseif type(replacement)=="table" then
      local r={}
      for k,v in next,replacement do
       local u=tounicode(k)
@@ -31837,13 +31841,13 @@ local function addfeature(data,feature,specifications,prepareonly)
         coverage=prepare_multiple(list,featuretype,nocheck)
        elseif featuretype=="kern" or featuretype=="move" then
         format=featuretype
-        coverage=prepare_kern(list,featuretype)
+        coverage=prepare_kern(list,featuretype,nocheck)
        elseif featuretype=="pair" then
         format="pair"
-        coverage=prepare_pair(list,featuretype)
+        coverage=prepare_pair(list,featuretype,nocheck)
        elseif featuretype=="single" then
         format="single"
-        coverage=prepare_single(list,featuretype)
+        coverage=prepare_single(list,featuretype,nocheck)
        end
        if coverage and next(coverage) then
         nofsteps=nofsteps+1
@@ -31865,9 +31869,9 @@ local function addfeature(data,feature,specifications,prepareonly)
      local list=askedsteps[i]
      local coverage=nil
      local format=nil
-if type(list)=="function" then
- list=list(data,specification,list,i) 
-end
+     if type(list)=="function" then
+      list=list(data,specification,list,i) 
+     end
      if not list then
      elseif featuretype=="substitution" then
       category="gsub"
@@ -31884,15 +31888,15 @@ end
      elseif featuretype=="kern" or featuretype=="move" then
       category="gpos"
       format=featuretype
-      coverage=prepare_kern(list,featuretype)
+      coverage=prepare_kern(list,featuretype,nocheck)
      elseif featuretype=="pair" then
       category="gpos"
       format="pair"
-      coverage=prepare_pair(list,featuretype)
+      coverage=prepare_pair(list,featuretype,nocheck)
      elseif featuretype=="single" then
       category="gpos"
       format="single"
-      coverage=prepare_single(list,featuretype)
+      coverage=prepare_single(list,featuretype,nocheck)
      elseif featuretype=="chainsubstitution" then
       category="gsub"
       coverage=prepare_chain(list,featuretype,sublookups,nocheck)

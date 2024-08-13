@@ -300,6 +300,7 @@ void tex_set_insert_width(halfword i, scaled v) {
 }
 
 void tex_set_insert_content(halfword i, halfword v) {
+    /* can have old pointer to list */
     switch (lmt_insert_state.mode) {
         case index_insert_mode: insert_content(i) = v; break;
         case class_insert_mode: if (tex_valid_insert_id(i)) { lmt_insert_state.inserts[i].content = v; } break;
@@ -506,6 +507,10 @@ void tex_finish_insert_group(void)
      // tex_pop_nest();
         p = node_next(cur_list.head);
         tex_pop_nest();
+        /*tex
+            An |\insert| is just a list. We package it because we want to know the height but then 
+            discard the wrapper |vlist| node. So the |insert_list| is not packaged.
+        */
         p = tex_vpack(p, 0, packing_additional, max_dimension, direction_unknown, holding_none_option, NULL);
         {
             halfword index = saved_insert_index;
@@ -517,10 +522,6 @@ void tex_finish_insert_group(void)
             } else {
                 tex_tail_append(insert);
             }
-            /*tex
-                An |\insert| is just a list. We package it because we want to know the height but
-                then discard the wrapper |vlist| node. So the |insert_list| is not packaged.
-            */
             insert_index(insert) = index;
             insert_total_height(insert) = box_total(p);
             insert_list(insert) = box_list(p);
@@ -532,8 +533,8 @@ void tex_finish_insert_group(void)
             if (tracing_inserts_par > 0) {
                 tex_begin_diagnostic();
                 tex_print_levels();
-                tex_print_format("[insert: setting, index %i, height %p, penalty %i]",
-                    index, insert_total_height(insert), insert_float_cost(insert));
+                tex_print_format("[insert: setting, index %i, height %p, depth %p, penalty %i, topskip %Q]",
+                    index, insert_total_height(insert), insert_max_depth(insert), insert_float_cost(insert), q, pt_unit);
                 if (tracing_inserts_par > 1) {
                     tex_print_node_list(insert_list(insert), "insert", show_box_depth_par, show_box_breadth_par);
                 }

@@ -587,7 +587,7 @@ static avl_code_t rebalance_ins(avl_node *a, int dir, avl_tree t)
             p->up = a;
             *r = a;
         }
-        /* The tree rooted at 'a' is now valid.  Finish adjusting ranks */
+        /* The tree rooted at 'a' is now valid. Finish adjusting ranks */
         while ((p = a->up)) {
             incr_rank(p, (rbal_t)(a == sub_left(p)));
             a = p;

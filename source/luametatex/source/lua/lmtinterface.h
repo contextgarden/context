@@ -884,6 +884,7 @@ make_lua_key(L, list);\
 make_lua_key(L, local);\
 make_lua_key(L, local_box);\
 make_lua_key(L, localbox);\
+make_lua_key(L, localbreak);\
 make_lua_key(L, log);\
 make_lua_key(L, logfile);\
 make_lua_key(L, loopstate);\

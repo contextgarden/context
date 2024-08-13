@@ -9,7 +9,7 @@
   <category name="basic">
    <subcategory>
     <flag name="make"><short>generate databases and formats</short></flag>
-    <flag name="erase"><short>completely remove cache</short></flag>
+    <flag name="erase"><short>completely remove cache [--bytecode]</short></flag>
     <flag name="list"><short>show cache</short></flag>
    </subcategory>
    <subcategory>

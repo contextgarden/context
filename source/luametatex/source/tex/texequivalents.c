@@ -1114,7 +1114,11 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
             case unit_reference_cmd:
             case internal_box_reference_cmd:
             case register_box_reference_cmd:
-                /*tex These are also references. */
+                /*tex These are also references. The ! chr is a bit strange. Todo: test without. */
+// if (eq_type(p) == cmd && eq_value(p) == chr && chr) {
+//     printf("SAME\n");
+//     // destoy ?? 
+// }
                 if (eq_type(p) == cmd && eq_value(p) == chr && ! chr) {
              // if (eq_type(p) == cmd && eq_value(p) == chr && ! chr && eq_level(p) == cur_level) {
                     return 1;
@@ -1741,7 +1745,8 @@ void tex_unsave(void)
                             carried out within the group that just ended, the last such definition will
                             therefore survive.
                         */
-                        if (p < internal_integer_base || p > eqtb_size) {
+                     // if (p < internal_integer_base || p > eqtb_size) {
+                        if (p < internal_integer_base || p >= internal_specification_base) {
                             if (eq_level(p) == level_one) {
                                 tex_aux_eq_destroy(save_word(lmt_save_state.save_stack_data.ptr));
                                 if (trace) {

@@ -747,9 +747,10 @@ typedef enum end_paragraph_codes {
     normal_end_paragraph_code,
     inserted_end_paragraph_code,
     new_line_end_paragraph_code,
+    local_break_end_paragraph_code,
 } end_paragraph_codes;
 
-# define last_end_paragraph_code new_line_end_paragraph_code
+# define last_end_paragraph_code local_break_end_paragraph_code
 
 typedef enum shorthand_def_codes {
     char_def_code,        /*tex |\chardef| */

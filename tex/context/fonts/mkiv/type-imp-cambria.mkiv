@@ -17,82 +17,63 @@
 
 \starttypescriptcollection[cambria]
 
+    % \setupmathradical[\c!leftmargin=.05mq,\c!mindepth=.05mx]%
+
     \pushglobalsetups
-
         \startsetups[\s!math:cambria]
-            \setupmathradical[\c!leftmargin=.05mq,\c!mindepth=.05mx]%
+            \setmathradicalparameter\c!leftmargin{.05mq}%
+            \setmathradicalparameter\c!mindepth  {.05mx}%
         \stopsetups
-
     \popglobalsetups
 
-    % microsoft: cambria.ttc cambriab.ttf cambriai.ttf cambriaz.ttf
+    % microsoft: cambria.ttc  cambria.ttc cambriab.ttf cambriai.ttf cambriaz.ttf
     % ascender : cambmath.ttf cambria.ttf cambriab.ttf cambriai.ttf cambriaz.ttf
 
     \doifunknownfontfeature {cambria-math-bold} {\definefontfeature[cambria-math-bold][boldened]}
 
-    \starttypescript [\s!math] [cambria,cambria-x,cambria-y,cambria-nt,cambria-m,cambria-a]
+    \starttypescript [\s!math] [cambria,cambria-nt]
         \checkedmapfontsize[\typescripttwo][\s!script]      [.73]
         \checkedmapfontsize[\typescripttwo][\s!scriptscript][.60]
     \stoptypescript
 
-    \starttypescript [\s!math,\s!serif] [cambria,cambria-x,cambria-y,cambria-nt]
-        % whatever matches
-        \definefontsynonym [CambriaMath]  [\s!name:cambriamath]
-        \definefontsynonym [CambriaSerif] [\s!name:cambria]
-    \stoptypescript
-    \starttypescript [\s!math,\s!serif] [cambria-m]
-        % microsoft cabria
-        \definefontsynonym [CambriaMath]  [\s!file:cambria.ttc(Cambria Math)]
-        \definefontsynonym [CambriaSerif] [\s!file:cambria.ttc(Cambria)]
-    \stoptypescript
-    \starttypescript [\s!math,\s!serif] [cambria-a]
-        % ascender cambria
-        \definefontsynonym [CambriaMath]  [\s!file:cambmath.ttf]
-        \definefontsynonym [CambriaSerif] [\s!file:cambria.ttf]
+    \starttypescript [\s!math,\s!serif] [cambria,cambria-nt]
+        \doifelsefile{cambria.ttc} {
+            % microsoft cabria
+            \definefontsynonym [CambriaMath]  [\s!file:cambria.ttc(Cambria Math)]
+            \definefontsynonym [CambriaSerif] [\s!file:cambria.ttc(Cambria)]
+        } {
+            % ascender cambria
+            \definefontsynonym [CambriaMath]  [\s!file:cambmath.ttf]
+            \definefontsynonym [CambriaSerif] [\s!file:cambria.ttf]
+        }
+        \definefontsynonym [CambriaSerifBold]       [\s!file:cambriab.ttf]
+        \definefontsynonym [CambriaSerifItalic]     [\s!file:cambriai.ttf]
+        \definefontsynonym [CambriaSerifBoldItalic] [\s!file:cambriaz.ttf]
     \stoptypescript
 
-    % We load a goodies file that will apply a patch to the font. As a demonstration
-    % we apply the patch when caching and when scaling which is why we also specify
-    % the goodies file with the name.
-
-    \starttypescript [\s!math] [cambria,cambria-m,cambria-a] [\s!name]
+    \starttypescript [\s!math] [cambria] [\s!name]
         \loadfontgoodies[cambria-math]
         \definefontsynonym [\s!MathRoman]     [CambriaMath] [\s!features={\s!math\mathsizesuffix,cambria:mathextra,mathextra},\s!goodies=cambria-math]
         \definefontsynonym [\s!MathRomanBold] [CambriaMath] [\s!features={\s!math\mathsizesuffix,cambria-math-bold,cambria:mathextra,mathextra},\s!goodies=cambria-math]
     \stoptypescript
+
     \starttypescript [\s!math] [cambria-nt] [\s!name]
         \loadfontgoodies[cambria-math]
         \definefontsynonym [\s!MathRoman]     [CambriaMath] [\s!features={\s!math\mathsizesuffix,cambria:mathextra,mathextra}]
         \definefontsynonym [\s!MathRomanBold] [CambriaMath] [\s!features={\s!math\mathsizesuffix,cambria-math-bold,cambria:mathextra,mathextra}]
     \stoptypescript
-    \starttypescript [\s!math] [cambria-x] [\s!name]
-        \loadfontgoodies[cambria-math]
-        \definefontsynonym [\s!MathRoman]     [CambriaMath] [\s!features={\s!math,cambria:mathextra,mathextra},\s!goodies=cambria-math]
-        \definefontsynonym [\s!MathRomanBold] [CambriaMath] [\s!features={\s!math,cambria-math-bold,cambria:mathextra,mathextra},\s!goodies=cambria-math]
-    \stoptypescript
-    \starttypescript [\s!math] [cambria-y] [\s!name]
-        \loadfontgoodies[cambria-math]
-        \definefontsynonym [\s!MathRoman]     [CambriaMath] [\s!features={\s!math-nostack\mathsizesuffix,cambria:mathextra,mathextra},\s!goodies=cambria-math]
-        \definefontsynonym [\s!MathRomanBold] [CambriaMath] [\s!features={\s!math-nostack\mathsizesuffix,cambria-math-bold,cambria:mathextra,mathextra},\s!goodies=cambria-math]
-    \stoptypescript
 
-    \starttypescript [\s!serif] [cambria,cambria-m,cambria-a,cambria-nt] [\s!name]
+    \starttypescript [\s!serif] [cambria,cambria-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym [\s!Serif]           [CambriaSerif]              [\s!features=\s!default,\s!goodies=cambria]
-        \definefontsynonym [\s!SerifBold]       [\s!name:cambriabold]       [\s!features=\s!default,\s!goodies=cambria]
-        \definefontsynonym [\s!SerifItalic]     [\s!name:cambriaitalic]     [\s!features=\s!default,\s!goodies=cambria]
-        \definefontsynonym [\s!SerifBoldItalic] [\s!name:cambriabolditalic] [\s!features=\s!default,\s!goodies=cambria]
+        \definefontsynonym [\s!Serif]           [CambriaSerif]           [\s!features=\s!default,\s!goodies=cambria]
+        \definefontsynonym [\s!SerifBold]       [CambriaSerifBold]       [\s!features=\s!default,\s!goodies=cambria]
+        \definefontsynonym [\s!SerifItalic]     [CambriaSerifItalic]     [\s!features=\s!default,\s!goodies=cambria]
+        \definefontsynonym [\s!SerifBoldItalic] [CambriaSerifBoldItalic] [\s!features=\s!default,\s!goodies=cambria]
     \stoptypescript
 
-    \starttypescript [cambria,cambria-m,cambria-a]
-        % any
-        \definetypeface [cambria] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
-        \definetypeface [cambria] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
-        \definetypeface [cambria] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
-    \stoptypescript
-    \starttypescript [cambria-x,cambria-y,cambria-nt]
-        % test x
+    \starttypescript [cambria,cambria-nt]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [cambria]        [\s!default]
+        \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [dejavu]         [\s!default]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default]
     \stoptypescript

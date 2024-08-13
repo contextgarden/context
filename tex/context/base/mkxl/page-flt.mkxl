@@ -22,7 +22,7 @@
 
 \defineinsertion[\s!topfloat]
 \defineinsertion[\s!bottomfloat]
-\defineinsertion[\s!pagefloat]
+\defineinsertion[\s!pagefloat]    % not used
 
 \newdimension\d_page_floats_inserted_bottom
 \newdimension\d_page_floats_inserted_top
@@ -132,8 +132,58 @@
 \let\page_floats_column_push_saved\page_floats_push_saved % overloaded in page-mul
 \let\page_floats_column_pop_saved \page_floats_pop_saved  % overloaded in page-mul
 
+%D \starttyping
+%D \starttext
+%D
+%D \samplefile{tufte}
+%D \startplacefigure[location=page] \externalfigure[dummy] \stopplacefigure
+%D \samplefile{tufte}
+%D \dorecurse{6}{
+%D     \startplacefigure[location={page,append}] \externalfigure[dummy] \stopplacefigure
+%D }
+%D \startplacefigure[location=page] \externalfigure[dummy] \stopplacefigure
+%D \samplefile{tufte}
+%D
+%D \page
+%D
+%D \samplefile{tufte}
+%D \startplacefigure[location=page] \externalfigure[dummy] \stopplacefigure
+%D \samplefile{tufte}
+%D \dorecurse{5}{
+%D     \startplacefigure[location={page,append}] \externalfigure[dummy] \stopplacefigure
+%D }
+%D \startplacefigure[location=page] \externalfigure[dummy] \stopplacefigure
+%D \samplefile{tufte}
+%D
+%D \stoptext
+%D \stoptyping
+
 \protected\def\page_floats_save_page_float#1#2%
-  {\clf_savespecificfloat{#1}{specification{#2}}\relax}
+  {\ifconditional\c_floats_append_to_stored
+     \scratchcounter\nofstackedfloatsincategory{#1}\relax
+     \ifcase\scratchcounter\else
+       \setbox\scratchboxtwo\box\floatbox
+       \clf_flushfloat{#1}\scratchcounter
+       \setbox\scratchboxone\box\floatbox
+       \setbox\scratchboxthree\vbox\bgroup
+          \blank[\rootfloatparameter\c!spaceafter ]% a bit of a hack
+          \blank[\rootfloatparameter\c!spacebefore]%
+       \egroup
+       \scratchdimen\ifconditional\c_floats_force\maxdimen\else\textheight\fi
+       \ifdim\dimexpr\htdp\scratchboxone+\htdp\scratchboxtwo+\htdp\scratchboxthree\relax>\scratchdimen
+         \setbox\floatbox\box\scratchboxone
+         \clf_savespecificfloat{#1}{specification{#2}}\relax
+         \setbox\floatbox\box\scratchboxtwo
+       \else
+         \setbox\floatbox\vbox\bgroup
+            \box   \scratchboxone
+            \unvbox\scratchboxthree
+            \box   \scratchboxtwo
+         \egroup
+       \fi
+     \fi
+   \fi
+   \clf_savespecificfloat{#1}{specification{#2}}\relax}
 
 \protected\def\page_floats_save_somewhere_float#1#2% #1=method
   {\clf_savespecificfloat{#1}{specification{#2}label{\floatlabel}}\relax}

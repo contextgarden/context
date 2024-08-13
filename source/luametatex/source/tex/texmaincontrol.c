@@ -1350,12 +1350,15 @@ int tex_wrapped_up_paragraph(int context, int final) {
 }
 
 static void tex_aux_run_paragraph_end_hmode(void) {
-    if (! tex_wrapped_up_paragraph(normal_par_context, 0)) {
+    if (cur_chr == local_break_end_paragraph_code) {
+        /*tex Just for fun: an experiment. */
+        tex_tail_append(tex_new_par_node(local_break_par_subtype));
+    } else if (! tex_wrapped_up_paragraph(normal_par_context, 0)) {
         if (lmt_input_state.align_state < 0) {
             /*tex This tries to recover from an alignment that didn't end properly. */
             tex_off_save();
         }
-        /* This takes us to the enclosing mode, if |mode > 0|. */
+        /*tex This takes us to the enclosing mode, if |mode > 0|. */
         tex_end_paragraph(bottom_level_group, normal_par_context);
         if (cur_list.mode == vmode) {
             tex_build_page(hmode_par_page_context, 0);
@@ -3072,6 +3075,8 @@ void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword maincl
                             }
                             lmt_packaging_state.post_adjust_tail = null;
                         }
+                        /* what to do here */
+                        lmt_packaging_state.except = 0;
                         if (cur_list.mode > nomode) {
                             tex_build_page(box_page_context, 0);
                         }
@@ -3087,7 +3092,7 @@ void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword maincl
                         tex_couple_nodes(cur_list.tail, boxnode);
                         cur_list.tail = boxnode;
                         if (mainclass != unset_noad_class) {
-                            set_noad_classes(boxnode, mainclass);
+                            tex_set_noad_classes(boxnode, mainclass);
                         }
                         break;
                 }
@@ -3357,7 +3362,14 @@ void tex_end_paragraph(int group, int context)
          //     }
          //     tex_pop_nest();
         } else {
-            tex_line_break(0, group, context);
+            halfword tail = cur_list.tail;
+            while (tail != cur_list.head && node_type(tail) == par_node && node_subtype(tail) == local_break_par_subtype) { 
+                cur_list.tail = node_prev(tail);
+                node_next(cur_list.tail) = null;
+                tex_flush_node(tail);
+                tail = cur_list.tail;
+            }
+            tex_line_break(group, context, 0);
         }
         if (cur_list.direction_stack) {
             tex_flush_node_list(cur_list.direction_stack);
@@ -4035,7 +4047,9 @@ inline static void tex_aux_set_register(int a)
     The by-less variant is more efficient as there is no push back of the token when there is not 
     such keyword. It goes unnoticed on an average run but not on the total runtime of 15.000 
     (times 2) runs of a 30 page \CONTEXT\ document with plenty of complex tables. So this is one 
-    of the few obscure optimizations I grand myself (if only to be able to discuss it).
+    of the few obscure optimizations I grand myself (if only to be able to discuss it). The same is
+    true for the zero and one checks, it saves some save stack although we check for that later
+    anyway. 
 */
 
 static void tex_aux_arithmic_register(int a, int code)
@@ -4059,48 +4073,48 @@ static void tex_aux_arithmic_register(int a, int code)
                         case integer_val_level:
                         case attribute_val_level:
                         case dimension_val_level:
-                            if (amount) {
+                            if (is_global(a) || amount) {
                                 value = original + amount;
                                 break;
                             } else { 
+                                /* likely a dimension */
                                 return;
                             }
                         case posit_val_level:
-                            if (tex_posit_eq_zero(amount)) {
-                                return;
-                            } else { 
+                            if (is_global(a) || tex_posit_ne_zero(amount)) {
                                 value = tex_posit_add(original, amount); 
                                 break;
+                            } else { 
+                                return;
                             }
                         case glue_val_level:
                         case muglue_val_level:
-                            if (tex_glue_is_zero(amount)) {
-                                return;
-                            } else {
+                            if (is_global(a) || ! tex_glue_is_zero(amount)) {
                                 /* Compute the sum of two glue specs */
-                                halfword newvalue = tex_new_glue_spec_node(amount);
-                                tex_flush_node(value);
-                                glue_amount(newvalue) += glue_amount(original);
-                                if (glue_stretch(newvalue) == 0) {
-                                    glue_stretch_order(newvalue) = normal_glue_order;
+                                glue_amount(amount) += glue_amount(original);
+                                if (glue_stretch(amount) == 0) {
+                                    glue_stretch_order(amount) = normal_glue_order;
                                 }
-                                if (glue_stretch_order(newvalue) == glue_stretch_order(original)) {
-                                    glue_stretch(newvalue) += glue_stretch(original);
-                                } else if ((glue_stretch_order(newvalue) < glue_stretch_order(original)) && (glue_stretch(original))) {
-                                    glue_stretch(newvalue) = glue_stretch(original);
-                                    glue_stretch_order(newvalue) = glue_stretch_order(original);
+                                if (glue_stretch_order(amount) == glue_stretch_order(original)) {
+                                    glue_stretch(amount) += glue_stretch(original);
+                                } else if ((glue_stretch_order(amount) < glue_stretch_order(original)) && (glue_stretch(original))) {
+                                    glue_stretch(amount) = glue_stretch(original);
+                                    glue_stretch_order(amount) = glue_stretch_order(original);
                                 }
-                                if (glue_shrink(newvalue) == 0) {
-                                    glue_shrink_order(newvalue) = normal_glue_order;
+                                if (glue_shrink(amount) == 0) {
+                                    glue_shrink_order(amount) = normal_glue_order;
                                 }
-                                if (glue_shrink_order(newvalue) == glue_shrink_order(original)) {
-                                    glue_shrink(newvalue) += glue_shrink(original);
-                                } else if ((glue_shrink_order(newvalue) < glue_shrink_order(original)) && (glue_shrink(original))) {
-                                    glue_shrink(newvalue) = glue_shrink(original);
-                                    glue_shrink_order(newvalue) = glue_shrink_order(original);
+                                if (glue_shrink_order(amount) == glue_shrink_order(original)) {
+                                    glue_shrink(amount) += glue_shrink(original);
+                                } else if ((glue_shrink_order(amount) < glue_shrink_order(original)) && (glue_shrink(original))) {
+                                    glue_shrink(amount) = glue_shrink(original);
+                                    glue_shrink_order(amount) = glue_shrink_order(original);
                                 }
-                                value = newvalue;
+                                value = amount;
                                 break;
+                            } else {
+                                tex_flush_node(amount);
+                                return;
                             }
                         default:
                             /* error */
@@ -4120,9 +4134,7 @@ static void tex_aux_arithmic_register(int a, int code)
                 {
                     halfword amount = tex_scan_integer(0, NULL);
                     halfword value = 0;
-                    if (amount == 1) {
-                        return;
-                    } else { 
+                    if (is_global(a) || amount != 1) {
                         lmt_scanner_state.arithmic_error = 0;
                         switch (level) {
                             case integer_val_level:
@@ -4157,6 +4169,8 @@ static void tex_aux_arithmic_register(int a, int code)
                             tex_aux_update_register(a, level, index, value, varcmd);
                         }
                         break;
+                    } else { 
+                        return;
                     }
                 }
             case divide_code:
@@ -4168,9 +4182,7 @@ static void tex_aux_arithmic_register(int a, int code)
             case e_divide_by_code:
                 {
                     halfword amount = tex_scan_integer(0, NULL);
-                    if (amount == 1) {
-                        return;
-                    } else { 
+                    if (is_global(a) || amount != 1) {
                         bool rounded = code == r_divide_code || code == r_divide_by_code;
                         lmt_scanner_state.arithmic_error = 0;
                         switch (level) {
@@ -4219,6 +4231,8 @@ static void tex_aux_arithmic_register(int a, int code)
                             tex_aux_update_register(a, level, index, value, varcmd);
                         }
                         break;
+                    } else { 
+                        return;
                     }
                 }
             /*
@@ -4376,9 +4390,6 @@ static void tex_aux_set_page_property(void)
                 tex_set_insert_width(index, tex_scan_dimension(0, 0, 0, 1, NULL));
             }
             break;
-//        default:
-//          lmt_page_builder_state.page_so_far[page_state_offset(cur_chr)] = tex_scan_dimension(0, 0, 0, 1, NULL);
-//            break;
         case page_stretch_code:                        
             lmt_page_builder_state.stretch = tex_scan_dimension(0, 0, 0, 1, NULL);
             break;
@@ -6312,7 +6323,10 @@ static int tex_aux_set_some_item(void)
             lmt_page_builder_state.last_kern = tex_scan_integer(1, NULL);
             return 1;
         case lastskip_code:
-            lmt_page_builder_state.last_glue = tex_scan_glue(glue_val_level, 1, 0);
+            if (lmt_page_builder_state.last_glue != max_halfword) {
+                tex_flush_node(lmt_page_builder_state.last_glue);
+                lmt_page_builder_state.last_glue = tex_scan_glue(glue_val_level, 1, 0);
+            }
             return 1;
         case lastboundary_code:
             lmt_page_builder_state.last_boundary = tex_scan_integer(1, NULL);
@@ -6795,18 +6809,25 @@ void tex_assign_internal_integer_value(int a, halfword p, int val)
         case local_broken_penalty_code:
         case local_tolerance_code:
         case local_pre_tolerance_code:
-            /*tex
-                If we are defining subparagraph penalty levels while we are in hmode, then we
-                put out a whatsit immediately, otherwise we leave it alone. This mechanism might
-                not be sufficiently powerful, and some other algorithm, searching down the stack,
-                might be necessary. Good first step.
-            */
             if (cur_mode == hmode) {
+                /*tex 
+                    We can check if the last node is a paramrter par node and just patch that 
+                    one but we have a callback on a new one so for now we just add redundant 
+                    nodes. It's a bit inefficient when we have local boxes, so if I really start 
+                    using this feature I might go for efficiency. 
+                */
                 tex_word_define(a, p, val);
                 tex_tail_append(tex_new_par_node(parameter_par_subtype));
                 update_tex_internal_par_state(internal_par_state_par + 1);
             } else { 
-                /* now only in a paragraph */ /* todo: warning */
+                /*tex
+                    Here is an old comment: If we are defining subparagraph penalty levels while 
+                    we are in hmode, then we put out a whatsit (here a par node) immediately, 
+                    otherwise we leave it alone. This mechanism might not be sufficiently powerful,
+                    and some other algorithm, searching down the stack, might be necessary. This 
+                    is a good first step. Well, in \LUAMETATEX\ we no longer do this and silently 
+                    ignore this setting. 
+                */
             }
             break;
         case adjust_spacing_code:

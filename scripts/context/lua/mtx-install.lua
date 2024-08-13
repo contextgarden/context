@@ -619,12 +619,17 @@ function install.update()
     else
      -- report("xbit bad : %s",contextbin)
     end
-
+    -- in case we can't fidn the cache etc
     run("%s --generate",mtxrunbin)
+    -- always wipe bytecodes (we have no way to catch vm updates)
     if environment.argument("erase") then
         run("%s --script cache --erase",mtxrunbin)
-        run("%s --generate",mtxrunbin)
+    else
+        run("%s --script cache --erase --bytecode",mtxrunbin)
     end
+    -- now we really generate the file database
+    run("%s --generate",mtxrunbin)
+    -- and make the format
     run("%s --make en", contextbin)
 
     -- in case we also install luatex:

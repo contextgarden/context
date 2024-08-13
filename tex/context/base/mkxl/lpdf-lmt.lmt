@@ -737,6 +737,7 @@ do
     local f_width = formatters["%.6N w"]
     local f_mode  = formatters["%i Tr"]        -- can be hash
     local f_font  = formatters["/F%i 10 Tf"]
+    local f_skip  = formatters["%.2N"]
 
     local s_width = "0 w"
     local s_mode  = "0 Tr"
@@ -784,8 +785,6 @@ do
         end
      -- cur_tmrx = tmrx
     end
-
-    local f_skip = formatters["%.2N"]
 
     -- I will redo this mess ... we no longer have the mkiv pdf generator that we used in
     -- luatex (a precursor to lmtx and also for comparison) but only in lmtx now so ...

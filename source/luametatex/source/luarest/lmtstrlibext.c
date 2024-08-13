@@ -540,7 +540,7 @@ static int strlib_format_f6(lua_State *L)
     } else {
         char s[128];
         int i, l;
-        /* we should check for max int */
+        /* we could use sprintf here */
         if (fmod(n, 1) == 0) {
             i = snprintf(s, 128, "%i", (int) n);
         } else {
@@ -555,7 +555,7 @@ static int strlib_format_f6(lua_State *L)
                 if (s[l - 1] == '.') {
                     break;
                 } else if (s[l] == '0') {
-                    s[l] = '\0';
+                    s[l] = '\0'; /* redundant */
                     --i;
                 } else {
                     break;

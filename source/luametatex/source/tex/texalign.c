@@ -1053,9 +1053,10 @@ void tex_run_alignment_initialize(void)
         }
     }
     if (tracing_alignments_par > 1) {
-        tex_print_levels();
+        tex_begin_diagnostic();
         tex_print_str("<alignment preamble>");
         tex_show_node_list(preamble, max_integer, max_integer);
+        tex_end_diagnostic();
     }
     if (lmt_alignment_state.options & align_option_callback) {
         lmt_alignment_callback(cur_list.head, preamble_pass_alignment_context, lmt_alignment_state.callback, lmt_alignment_state.attr_list, preamble);
@@ -1421,6 +1422,7 @@ static int tex_aux_finish_column(void)
                     lmt_packaging_state.pre_adjust_tail = null;
                     lmt_packaging_state.post_migrate_tail = null;
                     lmt_packaging_state.pre_migrate_tail = null;
+                    lmt_packaging_state.except = 0;
                 } else {
                     cell = tex_filtered_vpack(node_next(cur_list.head), size, packing, 0, align_set_group, direction_unknown, 0, null, 0, 0, NULL);
                     width = box_height(cell);

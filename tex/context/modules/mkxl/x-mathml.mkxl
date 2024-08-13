@@ -2145,7 +2145,7 @@
 \stopxmlsetups
 
 \startxmlsetups mml:mroot
-   \root{\mmlsecond{#1}}\of{\mmlfirst{#1}}
+   \root[{\mmlsecond{#1}}]{\mmlfirst{#1}}
 \stopxmlsetups
 
 \setupMMLappearance[scripts][\c!alternative=\v!a] % {} rond base

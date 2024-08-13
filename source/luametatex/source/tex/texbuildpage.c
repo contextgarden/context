@@ -1315,7 +1315,7 @@ static void tex_aux_fire_up(halfword c)
                                         split = node_next(split);
                                     }
                                     node_next(split) = null;
-                                    split_top_skip_par = insert_split_top(current);
+                                    split_top_skip_par = insert_split_top(current); /*tex The old value is saved and restored. */
                                     insert_list(current) = tex_prune_page_top(split_broken(insert), 0);
                                     if (insert_list(current)) {
                                         /*tex
@@ -1359,7 +1359,7 @@ static void tex_aux_fire_up(halfword c)
                         if (wait) {
                             tex_couple_nodes(lastinsert, current);
                             lastinsert = current;
-                            ++lmt_page_builder_state.insert_penalties;
+                            ++lmt_page_builder_state.insert_penalties; /* todo: use a proper variable name instead */
                         } else {
                             insert_list(current) = null;
                             tex_flush_node(current);
@@ -1415,8 +1415,9 @@ static void tex_aux_fire_up(halfword c)
     }
     if (lmt_page_builder_state.last_glue != max_halfword) {
         tex_flush_node(lmt_page_builder_state.last_glue);
+        lmt_page_builder_state.last_glue = max_halfword;
     }
-    /*tex Start a new current page. This sets |last_glue := max_halfword|. */
+    /*tex Start a new current page. This sets |last_glue := max_halfword|, well we already did that. */
     tex_aux_start_new_page(); 
     /*tex So depth is now forgotten .. hm. */
     if (lastinsert != hold_head) {

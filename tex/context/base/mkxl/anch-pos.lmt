@@ -46,6 +46,7 @@ local P, R, C, Cc, lpegmatch = lpeg.P, lpeg.R, lpeg.C, lpeg.Cc, lpeg.match
 local insert, remove = table.insert, table.remove
 local allocate = utilities.storage.allocate
 local setmetatableindex, setmetatablenewindex = table.setmetatableindex, table.setmetatablenewindex
+local fromposit = posit.fromposit
 
 local report            = logs.reporter("positions")
 
@@ -893,8 +894,10 @@ local function enhance(data)
     if not data then
         return nil
     end
-    if data.r == true then -- or ""
+    local r = data.r
+    if r == true then -- or ""
         data.r = region
+        r = region
     end
     if data.x == true then
         if data.y == true then
@@ -909,6 +912,24 @@ local function enhance(data)
         local y = getvpos()
         data.y = y ~= 0 and y or nil
     end
+
+    -- This is a quick hack. We also need to handel the other text areas
+    -- end. It has to do with backgrounds (see mathincontext-setups.tex)
+
+    if r then
+        local dr = tobesaved[r]
+        if dr then
+            local sy = dr.sy
+            if sy and sy ~= 1 then
+                data.y = data.y * sy
+                data.h = data.h * sy
+                data.d = data.d * sy
+            end
+        end
+    end
+
+    -- End of hack.
+
     if data.p == true then
         data.p = texgetcount(c_realpageno) -- we should use a variable set in otr
     end
@@ -1108,7 +1129,7 @@ jobpositions.e_region = e_region
 
 local lastregion
 
-local function setregionbox(n,tag,index,depth,column,k,lo,ro,to,bo) -- no correct here
+local function setregionbox(n,tag,index,depth,yscale,column,k,lo,ro,to,bo) -- no correct here
     if not tag or tag == "" then
         nofregions = nofregions + 1
         tag   = "region"
@@ -1127,6 +1148,9 @@ local function setregionbox(n,tag,index,depth,column,k,lo,ro,to,bo) -- no correc
     if depth then
         d = d + depth
     end
+    if yscale and (yscale == 0 or yscale == 1) then
+        yscale = nil
+    end
     tobesaved[tag] = {
      -- p  = texgetcount(c_realpageno), -- we copy them
         x  = 0,
@@ -1140,6 +1164,7 @@ local function setregionbox(n,tag,index,depth,column,k,lo,ro,to,bo) -- no correc
         to = to ~= 0 and to or nil,
         bo = bo ~= 0 and bo or nil,
         c  = column         or nil,
+        sy = yscale
     }
     lastregion = tag
     return tag, box
@@ -1155,8 +1180,8 @@ end
 -- push and pop tags as strings, but it save a little on expansion so we do it
 -- in the interface
 
-local function markregionbox(n,tag,index,depth,column,correct,...) -- correct needs checking
-    local tag, box = setregionbox(n,tag,index,depth,column,...)
+local function markregionbox(n,tag,index,depth,yscale,column,correct,...) -- correct needs checking
+    local tag, box = setregionbox(n,tag,index,depth,yscale,column,...)
      -- todo: check if tostring is needed with formatter
     local push = new_latelua { action = b_region, tag = tag }
     local pop  = new_latelua { action = e_region, correct = correct }
@@ -2288,8 +2313,10 @@ implement {
 
 implement {
     name      = "setregionboxtagged",
-    arguments = { "integer", "string", "integer", "dimension" },
-    actions   = setregionbox -- n text index depth
+    arguments = { "integer", "string", "integer", "dimension", "posit" },
+    actions   = function(box,tag,index,depth,yscale)
+        setregionbox(box,tag,index,depth,fromposit(yscale)) -- n text index depth yscale
+    end
 }
 
 implement {
@@ -2301,33 +2328,33 @@ implement {
 
 implement {
     name      = "markregionboxtagged",
-    arguments = { "integer", "string", "integer", "dimension" },
-    actions   = function(box,tag,index,depth)
-        markregionbox(box,tag,index,depth,false,false)
+    arguments = { "integer", "string", "integer", "dimension", "posit" },
+    actions   = function(box,tag,index,depth,yscale)
+        markregionbox(box,tag,index,depth,fromposit(yscale),false,false)
     end
 }
 
 implement {
     name      = "markregionboxtaggedn",
-    arguments = { "integer", "string", "integer", "dimension", "integer" },
-    actions   = function(box,tag,index,depth,column)
-        markregionbox(box,tag,index,depth,column,false)
+    arguments = { "integer", "string", "integer", "dimension", "posit", "integer" },
+    actions   = function(box,tag,index,depth,yscale,column)
+        markregionbox(box,tag,index,depth,fromposit(yscale),column,false)
     end
 }
 
 implement {
     name      = "markregionboxcorrected",
-    arguments = { "integer", "string", "integer", "dimension" },
-    actions   = function(box,tag,index)
-        markregionbox(box,tag,index,depth,false,true)
+    arguments = { "integer", "string", "integer", "dimension", "posit" },
+    actions   = function(box,tag,index,depth,yscale)
+        markregionbox(box,tag,index,depth,fromposit(yscale),false,true)
     end
 }
 
 implement {
     name      = "markregionboxtaggedkind",
-    arguments = { "integer", "string", "integer", "dimension", "integer", "dimen", "dimen", "dimen", "dimen" },
-    actions   = function(box,tag,index,depth,kind,d1,d2,d3,d4)
-        markregionbox(box,tag,index,depth,false,false,kind,d1,d2,d3,d4)
+    arguments = { "integer", "string", "integer", "dimension", "posit", "integer", "dimen", "dimen", "dimen", "dimen" },
+    actions   = function(box,tag,index,depth,yscale,kind,d1,d2,d3,d4)
+        markregionbox(box,tag,index,depth,fromposit(yscale),false,false,kind,d1,d2,d3,d4)
     end
 }
 

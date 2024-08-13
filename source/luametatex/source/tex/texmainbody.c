@@ -583,6 +583,7 @@ static void final_cleanup(int dump)
             tex_flush_node_list(lmt_packaging_state.split_discards_head);
             if (lmt_page_builder_state.last_glue != max_halfword) {
                 tex_flush_node(lmt_page_builder_state.last_glue);
+                lmt_page_builder_state.last_glue = max_halfword;
             }
             for (int i = 0; i <= lmt_insert_state.insert_data.ptr; i++) {
                 tex_wipe_insert(i);

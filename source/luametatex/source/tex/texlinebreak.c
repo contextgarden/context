@@ -123,7 +123,7 @@ linebreak_state_info lmt_linebreak_state = {
     .n_of_left_twins              = 0,
     .n_of_right_twins             = 0,
     .n_of_double_twins            = 0,
-    .padding                      = 0,
+    .internal_par_node            = null,
 };
 
 /*tex
@@ -219,7 +219,7 @@ void tex_line_break_prepare(
     }
 }
 
-void tex_line_break(int d, int group_context, int par_context)
+void tex_line_break(int group_context, int par_context, int display_math)
 {
     halfword head = node_next(cur_list.head);
     /*tex There should be a local par node at the beginning! */
@@ -273,7 +273,7 @@ void tex_line_break(int d, int group_context, int par_context)
             tex_pop_nest();
             start_of_par = cur_list.tail;
             lmt_linebreak_state.calling_back = 1;
-            if (lmt_linebreak_callback(d, temp_head, &(cur_list.tail))) {
+            if (lmt_linebreak_callback(temp_head, display_math, &(cur_list.tail))) {
                 /*tex
                     When we end up here we have a prepared list so we need to make sure that when
                     the callback usaes that list with the built in break routine we don't do that
@@ -301,7 +301,8 @@ void tex_line_break(int d, int group_context, int par_context)
             } else {
                 line_break_properties properties = {
                     .initial_par                  = par,
-                    .display_math                 = d,
+                    .group_context                = group_context,
+                    .par_context                  = par_context,
                     .tracing_paragraphs           = tracing_paragraphs_par,
                     .tracing_fitness              = tracing_fitness_par,
                     .tracing_passes               = tracing_passes_par,
@@ -364,8 +365,7 @@ void tex_line_break(int d, int group_context, int par_context)
                     .optional_found               = 0,
                     .math_found                   = 0,
                     .line_break_optional          = line_break_optional_par, /* hm, why different than above */
-                    .group_context                = group_context,
-                    .par_context                  = par_context,
+                    .padding                      = 0,
                 };
                 tex_do_line_break(&properties);
                 /*tex
@@ -2179,6 +2179,7 @@ static scaled tex_aux_try_break(
                         passive_prev_break(passive) = prev_break;
                         passive_interline_penalty(passive) = lmt_linebreak_state.internal_interline_penalty;
                         passive_broken_penalty(passive) = lmt_linebreak_state.internal_broken_penalty;
+                        passive_par_node(passive) = lmt_linebreak_state.internal_par_node;
                         passive_last_left_box(passive) = lmt_linebreak_state.internal_left_box;
                         passive_last_left_box_width(passive) = lmt_linebreak_state.internal_left_box_width;
                         if (prev_break) {
@@ -2418,7 +2419,7 @@ static scaled tex_aux_try_break(
                             glue = current_active_width[total_shrink_amount];
                         }
                         if (glue <= 0) {
-                            /*tex No finite stretch resp.\ no shrink. */
+                            /*tex No finite stretch and no shrink. */
                             goto NOT_FOUND;
                         }
                         lmt_scanner_state.arithmic_error = 0;
@@ -3154,6 +3155,7 @@ inline static void tex_aux_set_local_par_state(halfword current)
         /* */
         lmt_linebreak_state.internal_interline_penalty = tex_get_local_interline_penalty(current);
         lmt_linebreak_state.internal_broken_penalty = tex_get_local_broken_penalty(current);
+        lmt_linebreak_state.internal_par_node = current;
         /* */
         lmt_linebreak_state.internal_left_box_init = par_box_left(current);
         lmt_linebreak_state.internal_left_box_width_init = tex_get_local_left_width(current);
@@ -3163,6 +3165,7 @@ inline static void tex_aux_set_local_par_state(halfword current)
     } else {
         lmt_linebreak_state.internal_interline_penalty = 0;
         lmt_linebreak_state.internal_broken_penalty = 0;
+        lmt_linebreak_state.internal_par_node = null;
         lmt_linebreak_state.internal_left_box_init = null;
         lmt_linebreak_state.internal_left_box_width_init = 0;
         lmt_linebreak_state.internal_right_box = null;
@@ -3581,8 +3584,16 @@ inline static halfword tex_aux_break_list(line_break_properties *properties, hal
                             lmt_linebreak_state.threshold = t;
                             lmt_linebreak_state.internal_interline_penalty = tex_get_local_interline_penalty(current);
                             lmt_linebreak_state.internal_broken_penalty = tex_get_local_broken_penalty(current);
+                            lmt_linebreak_state.internal_par_node = current;
                             break;
                         }
+                    case local_break_par_subtype:
+                        /*tex 
+                            This is an experiment. We might at some point use more trickery with 
+                            these nodes. 
+                        */
+                        tex_aux_try_break(properties, -100000, unhyphenated_node, first, current, callback_id, checks, pass);
+                        break;
                 }
                 lmt_linebreak_state.internal_left_box = par_box_left(current);
                 lmt_linebreak_state.internal_left_box_width = tex_get_local_left_width(current);
@@ -4355,7 +4366,7 @@ static void tex_aux_trace_penalty(const char *what, int line, int index, halfwor
 {
     if (tracing_penalties_par > 0) {
         tex_begin_diagnostic();
-        tex_print_format("[linebreak: %s penalty, line %i, index %i, adding %i, total %i]", what, line, index, penalty, total);
+        tex_print_format("[linebreak: %s penalty, line %i, index %i, delta %i, total %i]", what, line, index, penalty, total);
         tex_end_diagnostic();
     }
 }
@@ -5039,6 +5050,8 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
          // attach_attribute_list_copy(linebreak_state.just_box, properties->initial_par);
             box_shift_amount(lmt_linebreak_state.just_box) = cur_indent;
         }
+// if (passive_par_node(cur_p)) {
+// }
         /*tex Call the packaging subroutine, setting |just_box| to the justified box. */
         if (has_box_package_state(lmt_linebreak_state.just_box, package_u_leader_found) && ! has_box_package_state(lmt_linebreak_state.just_box, package_u_leader_delayed)) {
             tex_flatten_leaders(lmt_linebreak_state.just_box, cur_group, 0, "post linebreak", 1);
@@ -5091,7 +5104,11 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
         if (post_adjust_head != lmt_packaging_state.post_adjust_tail) {
             tex_inject_adjust_list(post_adjust_head, 1, null, properties);
         }
+        if (lmt_packaging_state.except) { 
+            box_exdepth(lmt_linebreak_state.just_box) = lmt_packaging_state.except; 
+        }
         lmt_packaging_state.post_adjust_tail = null;
+        lmt_packaging_state.except = 0;
         /*tex
             Append the new box to the current vertical list, followed by the list of special nodes
             taken out of the box by the packager. Append a penalty node, if a nonzero penalty is
@@ -5110,6 +5127,11 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
             halfword nep = 0;
             halfword spm = properties->shaping_penalties_mode;
             halfword option = 0;
+            halfword penclub = 0;
+            halfword penwidow = 0;
+            halfword nepclub = 0;
+            halfword nepwidow = 0;
+            int largest = 0;
             if (! spm) {
                 shaping = 0;
             }
@@ -5166,6 +5188,11 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                     } else { 
                         nepalty = penalty;
                     }
+                    if (specification_largest(specification)) { 
+                        penclub = penalty;
+                        nepclub = nepalty;
+                        largest |= 1;
+                    }
                 } else if (cur_line == cur_list.prev_graf + 1) {
                     /*tex prevgraf */
                     penalty = properties->club_penalty;
@@ -5193,7 +5220,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
             }
             if (! (shaping && is_shaping_penalties_mode(spm, widow_penalty_shaping))) {
                 halfword penalty, nepalty;
-                halfword specification = properties->display_math ? properties->display_widow_penalties : properties->widow_penalties;
+                halfword specification = properties->par_context == math_par_context ? properties->display_widow_penalties : properties->widow_penalties;
                 int index = 0;
                 if (specification) {
                     index = lmt_linebreak_state.best_line - cur_line - 1;
@@ -5209,8 +5236,13 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                     } else { 
                         nepalty = penalty;
                     }
-                } else if (cur_line + 2 == lmt_linebreak_state.best_line) {
-                    penalty = properties->display_math ? properties->display_widow_penalty : properties->widow_penalty;
+                    if (specification_largest(specification)) { 
+                        penwidow = penalty;
+                        nepwidow = nepalty;
+                        largest |= 2;
+                    }
+                    } else if (cur_line + 2 == lmt_linebreak_state.best_line) {
+                    penalty = properties->par_context == math_par_context ? properties->display_widow_penalty : properties->widow_penalty;
                     nepalty = penalty;
                 } else {
                     penalty = 0;
@@ -5275,6 +5307,24 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                 }
             }
             if (pen || nep) {
+                /* experiment: both largest flags have to be set */
+                if (largest == 3) { 
+                    if (penclub > penwidow) { 
+                        pen -= penwidow;
+                        tex_aux_trace_penalty("discard widow r", cur_line, 0, -penwidow, pen);
+                    } else if (penclub < penwidow) {
+                        pen -= penclub;
+                        tex_aux_trace_penalty("discard club r", cur_line, 0, -penclub, pen);
+                    }
+                    if (nepclub > nepwidow) { 
+                        nep -= nepwidow;
+                        tex_aux_trace_penalty("discard window l", cur_line, 0, -nepwidow, nep);
+                    } else if (nepclub < nepwidow) {
+                        nep -= nepclub;
+                        tex_aux_trace_penalty("discard club l", cur_line, 0, -nepclub, nep);
+                    }
+                }
+                /* */
                 r = tex_new_penalty_node(pen, linebreak_penalty_subtype);
                 penalty_tnuoma(r) = nep;
                 tex_add_penalty_option(r, option);

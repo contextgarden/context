@@ -314,7 +314,7 @@
    \fi
    \begingroup
    \edef\currentpagegrid{\currentpagegrid:#1}%
-   \inheritedpagegridframedbox\box\b_page_grd_column
+   \inheritedpagegridframedbox\currentpagegrid\b_page_grd_column
    \endgroup}
 
 \unexpanded\def\page_grd_command_flush_page

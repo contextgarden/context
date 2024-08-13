@@ -8,7 +8,6 @@ return {
         ["default"] = {
             strip = {
                 marked    = "page",  -- check page stream if stripping is needed
-                procset   = true,
                 pieceinfo = true,
             },
             cleanup = {

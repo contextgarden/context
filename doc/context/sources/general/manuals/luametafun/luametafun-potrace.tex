@@ -287,3 +287,31 @@ Indeed we get:
 
 \stopcomponent
 
+
+% border case with messy end point
+
+% \enabletrackers[potrace.results]
+%
+% \starttext
+%
+% \startMPpage
+%
+%     string s ; s := "
+% 000000004444040
+% 100000000004040
+%     ";
+%
+%     path p ;
+%     p := lmt_potraced [ bytes = s, threshold=2, optimize="yes", explode="yes", value = "4" ] ;
+%
+%     fill p withpen pencircle scaled 1.5 withcolor "darkred" ;
+%     draw p withpen pencircle scaled 1.5 withcolor "darkblue" ;
+%
+%     currentpicture := currentpicture xysized (100,100) ;
+%
+%     setbounds currentpicture to (boundingbox currentpicture) enlarged 200 ;
+%
+%     addbackground withcolor "darkgray" ;
+% \stopMPpage
+%
+% \stoptext

@@ -99,7 +99,7 @@ typedef struct packaging_state_info {
     halfword page_discards_tail;
     halfword page_discards_head;
     halfword split_discards_head;
-    halfword padding;
+    halfword except;
 } packaging_state_info;
 
 typedef enum box_limit_modes {
