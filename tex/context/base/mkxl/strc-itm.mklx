@@ -1550,7 +1550,7 @@
 
 \def\strc_itemgroups_optimize_breaks
   {\ifcase\c_strc_itemgroups_column_depth
-     \ifconditional\c_strc_itemgroups_optimize  % loose
+     \ifcase\c_strc_itemgroups_optimize  % loose
      \or \strc_itemgroups_optimize_breaks_both  % tight
      \or \strc_itemgroups_optimize_breaks_both  % verytight
      \or \strc_itemgroups_optimize_breaks_first % tight:first

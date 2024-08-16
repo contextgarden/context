@@ -291,7 +291,8 @@
 %     \raggedonelinerstate\conditionalfalse
 % \to \everyforgetall
 
-\newconstant\raggedstatus % public
+\newconstant\raggedstatus     % public
+\newconstant\raggedhangstatus % public
 
 \newconstant\c_spac_align_state_horizontal
 \newconstant\c_spac_align_state_broad
@@ -315,6 +316,7 @@
 
 \permanent\protected\def\spac_align_set_horizontal_none % should also relax \updateraggedskips
   {\raggedstatus     \zerocount
+   \raggedhangstatus \zerocount
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip
    \rightskip        \plusone\rightskip
@@ -330,6 +332,7 @@
 \permanent\protected\def\spac_align_set_horizontal_left
   {\setraggedness    \spac_align_set_raggedness_left
    \raggedstatus     \plusone
+   \raggedhangstatus \zerocount
    \c_attr_alignstate\plusone
    \leftskip         \plusone\leftskip \s!plus\spac_align_set_raggedness_left
    \rightskip        \plusone\rightskip\s!plus\zeropoint
@@ -348,6 +351,7 @@
 \permanent\protected\def\spac_align_set_horizontal_center
   {\setraggedness    \spac_align_set_raggedness_middle
    \raggedstatus     \plustwo
+   \raggedhangstatus \zerocount
    \c_attr_alignstate\plustwo
    \leftskip         \plusone\leftskip \s!plus\spac_align_set_raggedness_middle
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_middle
@@ -363,6 +367,7 @@
 \permanent\protected\def\spac_align_set_horizontal_right
   {\setraggedness    \spac_align_set_raggedness_right
    \raggedstatus     \plusthree
+   \raggedhangstatus \zerocount
    \c_attr_alignstate\plusthree
    \leftskip         \plusone\leftskip \s!plus\zeropoint
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_right
@@ -377,6 +382,7 @@
 
 \permanent\protected\def\spac_align_set_horizontal_very_left
   {\raggedstatus     \plusone
+   \raggedhangstatus \zerocount
    \c_attr_alignstate\plusone
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount
    \rightskip        \plusone\rightskip\s!plus\zeropoint
@@ -394,6 +400,7 @@
 
 \permanent\protected\def\spac_align_set_horizontal_very_center
   {\raggedstatus     \plustwo
+   \raggedhangstatus \zerocount
    \c_attr_alignstate\plustwo
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount
@@ -408,6 +415,7 @@
 
 \permanent\protected\def\spac_align_set_horizontal_very_right
   {\raggedstatus     \plusthree
+   \raggedhangstatus \zerocount
    \c_attr_alignstate\plusthree
    \leftskip         \plusone\leftskip \s!plus\zeropoint
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount
@@ -423,6 +431,7 @@
 \permanent\protected\def\spac_align_set_horizontal_wide_center
   {\setraggedness    \spac_align_set_raggedness_middle
    \raggedstatus     \plustwo
+   \raggedhangstatus \zerocount
    \c_attr_alignstate\plustwo
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount_half
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_half
@@ -437,6 +446,7 @@
 
 \permanent\protected\def\spac_align_set_horizontal_centered_last_line
   {\raggedstatus     \zerocount
+   \raggedhangstatus \zerocount
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
@@ -451,6 +461,7 @@
 
 \permanent\protected\def\spac_align_set_horizontal_flushedright_last_line
   {\raggedstatus     \zerocount
+   \raggedhangstatus \zerocount
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
@@ -466,6 +477,7 @@
 \permanent\protected\def\spac_align_set_horizontal_right_tt % a plain command
   {\tttf % brrr
    \raggedstatus     \plusthree
+   \raggedhangstatus \zerocount
    \c_attr_alignstate\plusthree
    \leftskip         \plusone\leftskip \s!plus\zeropoint\relax
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_right\relax
@@ -480,6 +492,7 @@
 
 \permanent\protected\def\spac_align_set_horizontal_slanted
   {\raggedstatus     \zerocount
+   \raggedhangstatus \zerocount
   %\c_attr_alignstate\attributeunsetvalue
    \c_attr_alignstate\plustwo
    \leftskip         \plusone\leftskip \s!plus\spac_align_set_raggedness_middle
@@ -880,11 +893,13 @@
 \permanent\protected\def\spac_align_set_horizontal_hang_right
   {\spac_align_set_horizontal_very_left
    \parinitrightskip\s_zero_plus_one_fill
+   \raggedhangstatus \plusone
    \relax}
 
 \permanent\protected\def\spac_align_set_horizontal_hang_left
   {\spac_align_set_horizontal_very_right
    \parinitleftskip \s_zero_plus_one_fill
+   \raggedhangstatus \plustwo
    \relax}
 
 % idem but better: experimental !
@@ -894,15 +909,19 @@
 
 \permanent\protected\def\spac_align_set_horizontal_hang_right_range % special purpose
   {\spac_align_set_horizontal_very_left
-   \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_left
+  %\rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_left
+   \rightskip        \plusone\rightskip\s!plus.5\hsize % if we change this then we need a *_right_range_tt variant
    \parinitrightskip \s_zero_plus_one_fill
    \parfillleftskip  \s_zero_plus_zero
+   \raggedhangstatus \plusthree
    \relax}
 
 \permanent\protected\def\spac_align_set_horizontal_hang_left_range % special purpose
   {\spac_align_set_horizontal_very_right
-   \leftskip       \plusone\leftskip \s!plus\spac_align_set_raggedness_left %
-   \parinitleftskip\s_zero_plus_one_fill
+  %\leftskip        \plusone\leftskip \s!plus\spac_align_set_raggedness_left %
+   \leftskip        \plusone\leftskip \s!plus\s!plus.5\hsize % if we change this then we need a *_right_range_tt variant
+   \parinitleftskip \s_zero_plus_one_fill
+   \raggedhangstatus\plusfour
    \relax}
 
 \newconditional\c_spac_align_hang_done
@@ -924,7 +943,7 @@
    % \parbreak
      \localbreakpar
    \fi
-   \ifnum\c_spac_align_state_horizontal=\plusfourteen
+   \ifnum\raggedhangstatus=\plusthree
      \ifhmode
        \strut
        \penalty\plustenthousand
@@ -934,7 +953,7 @@
        \spac_align_set_horizontal_hang_right_range
        \dontleavehmode
      \fi
-   \orelse\ifnum\c_spac_align_state_horizontal=\plusthirteen
+   \orelse\ifnum\raggedhangstatus=\plusfour
      \ifhmode
        \strut
        \hfill

@@ -1145,7 +1145,7 @@
             stopper       {\constructionparameter\c!numberstopper}
             segments      {\constructionparameter\c!numbersegments}
         }
-    \or
+    \else
        % symbol
     \fi
         userdata {\detokenize{#1}}

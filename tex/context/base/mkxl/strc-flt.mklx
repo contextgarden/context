@@ -1151,7 +1151,7 @@
        \ifinset\v!grid    \floatlocation\global\c_page_sides_align\plusfour \fi
        \ifinset\v!halfline\floatlocation\global\c_page_sides_align\plusfive \fi % meant for 'none'
      \fi
-     \ifinset\v!high        \floatlocation\global  \plusone  \fi
+     \ifinset\v!high        \floatlocation\global\c_page_sides_skipmode \plusone  \fi
      \ifinset\v!low         \floatlocation\global\c_page_sides_skipmode \plustwo  \fi
      \ifinset\v!fit         \floatlocation\global\c_page_sides_skipmode \plusthree\fi
      \ifinset\v!tolerant    \floatlocation\global\c_page_sides_tolerance\plusone  \fi

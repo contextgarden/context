@@ -3947,8 +3947,9 @@ do
                     local prv, char, id = isprevchar(start,font,dynamic,state)
                     if char then
                         local m = merged[char]
+currentscale, currentxscale, currentyscale = getscales(start)
                         if m then
-                            currentscale, currentxscale, currentyscale = getscales(start)
+--                             currentscale, currentxscale, currentyscale = getscales(start)
                             for i=m[1],m[2] do
                                 local step = steps[i]
                                 local lookupcache = step.coverage
@@ -3983,8 +3984,9 @@ do
                         if char then
                             -- no skiphash check here
                             local lookupmatch = lookupcache[char]
+currentscale, currentxscale, currentyscale = getscales(start)
                             if lookupmatch then
-                                currentscale, currentxscale, currentyscale = getscales(start)
+--                                 currentscale, currentxscale, currentyscale = getscales(start)
                                 local ok, df
                                 head, start, ok, df = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
                                 if df then
@@ -4029,8 +4031,9 @@ do
                         if char then
                             -- no skiphash check here
                             local m = merged[char]
+currentscale, currentxscale, currentyscale = getscales(start)
                             if m then
-                                currentscale, currentxscale, currentyscale = getscales(start)
+--                                 currentscale, currentxscale, currentyscale = getscales(start)
                                 local ok, df
                                 for i=m[1],m[2] do
                                     local step = steps[i]
@@ -4160,8 +4163,9 @@ do
                         local step = steps[i]
                         local lookupcache = step.coverage
                         local lookupmatch = lookupcache[char]
+currentscale, currentxscale, currentyscale = getscales(start)
                         if lookupmatch then
-                            currentscale, currentxscale, currentyscale = getscales(start)
+--                             currentscale, currentxscale, currentyscale = getscales(start)
                             local ok
                             head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
                             if ok then

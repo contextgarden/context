@@ -673,7 +673,7 @@ local expand ; do
             setchar(replace,prechar)
         end
         setattrlist(disc,current)
-        setoptions(disc,0x3) -- todo foo_code
+        setoptions(disc,compound_disc_code) -- 0x03
         setdisc(disc,pre,post,replace)
         setlink(prev,disc,current)
         if lh then

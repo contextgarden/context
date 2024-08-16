@@ -384,9 +384,9 @@
      \tabskip\zeroskip
    \or
      \ifconditional\c_strc_formulas_handle_number
-       \tabskip\zeroskip
-\tabskip\stretchingfillskip
-     \or
+      %\tabskip\zeroskip
+       \tabskip\stretchingfillskip
+     \else
        \tabskip\stretchingfillskip
      \fi
    \or

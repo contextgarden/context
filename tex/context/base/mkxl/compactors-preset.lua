@@ -43,6 +43,24 @@ return {
                 pieceinfo = true,
             }
         },
+        ["demo"] = {
+            merge = {
+                type0     = true,
+                truetype  = true,
+                type1     = true,
+             -- type3     = true,
+                lmtx      = true,
+            },
+            strip = {
+                marked    = "force", -- always strip, no checking
+                group     = true,
+-- cm        = true,
+            },
+            cleanup = {
+                procset   = true,
+                pieceinfo = true,
+            }
+        },
         ["tikz"] = {
             merge = {
                 type0     = true,

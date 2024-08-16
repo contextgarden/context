@@ -642,8 +642,8 @@ static char *tex_aux_hyphenation_exception(int exceptions, char *w)
 */
 
 # define zws  0x200B /* zero width space makes no sense */
-# define zwnj 0x200C
-# define zwj  0x200D
+# define zwnj 0x200C /* no ligatures and no kerns */
+# define zwj  0x200D /* no ligatures */
 
 static halfword tex_aux_find_exception_part(unsigned int *j, unsigned int *uword, int len, halfword parent, char final)
 {

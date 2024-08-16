@@ -534,8 +534,8 @@ typedef enum skip_glue_codes_alias {
 # define glue_spec_size        5
 # define glue_options(a)       vinfo(a,2)
 # define glue_amount(a)        vlink(a,2)
-# define glue_shrink(a)        vinfo(a,3)
-# define glue_stretch(a)       vlink(a,3)
+# define glue_stretch(a)       vinfo(a,3)
+# define glue_shrink(a)        vlink(a,3)
 # define glue_stretch_order(a) vinfo(a,4)
 # define glue_shrink_order(a)  vlink(a,4)
 # define glue_font(a)          vinfo(a,5) /* not in spec */ /* when inter_math_skip_glue: parameter */
@@ -572,8 +572,8 @@ typedef enum math_subtypes {
 # define math_node_size        7
 # define math_surround(a)      vinfo(a,2)
 # define math_amount(a)        vlink(a,2)
-# define math_shrink(a)        vinfo(a,3)
-# define math_stretch(a)       vlink(a,3)
+# define math_stretch(a)       vinfo(a,3)
+# define math_shrink(a)        vlink(a,3)
 # define math_stretch_order(a) vinfo(a,4)
 # define math_shrink_order(a)  vlink(a,4)
 # define math_penalty(a)       vinfo(a,5)
@@ -1418,12 +1418,14 @@ typedef enum adjust_options {
     would demand some changes that I'm not willing to make right now (and maybe never).
 */
 
-# define insert_node_size       6          /* can become 1 smaller or we can have insert_index instead of subtype */
-# define insert_index(a)        vinfo(a,2) /* width is not used */
+# define insert_node_size       6          /*tex Can become 1 smaller or we can have insert_index instead of subtype. */
+# define insert_index(a)        vinfo(a,2) /*tex The |width| is not used. */
 # define insert_float_cost(a)   vlink(a,2)
+# define insert_whatever_1(a)   vinfo(a,3) /* */
 # define insert_max_depth(a)    vlink(a,3)
-# define insert_total_height(a) vlink(a,4) /* the sum of height and depth, i.e. total */
-# define insert_list(a)         vinfo(a,5) /* is alias for |node_next|*/
+# define insert_whatever_2(a)   vinfo(a,4) /* */
+# define insert_total_height(a) vlink(a,4) /*tex The sum of height and depth, i.e. total. */
+# define insert_list(a)         vinfo(a,5) /*tex Is alias for |node_next|. */
 # define insert_split_top(a)    vlink(a,5) 
 
 # define insert_first_box(a)    (a + 5)    /*tex A fake node where box_list_ptr becomes a next field. */
@@ -2838,8 +2840,8 @@ static inline int  tex_par_to_be_set        (halfword state, halfword what) { re
 # define passive_node_size                 9 
 # define passive_cur_break(a)              vlink(a,1)   /*tex in passive node, points to position of this breakpoint */
 # define passive_prev_break(a)             vinfo(a,1)   /*tex points to passive node that should precede this one */
-# define passive_interline_penalty(a)      vinfo(a,2)
-# define passive_broken_penalty(a)         vlink(a,2)
+# define passive_interline_penalty(a)      vlink(a,2)
+# define passive_broken_penalty(a)         vinfo(a,2)
 # define passive_left_box(a)               vlink(a,3)
 # define passive_left_box_width(a)         vinfo(a,3)
 # define passive_last_left_box(a)          vlink(a,4)
@@ -2855,14 +2857,14 @@ static inline int  tex_par_to_be_set        (halfword state, halfword what) { re
 
 # define delta_node_size                   6
 # define delta_field_total_glue(d)         vinfo(d,1)
-# define delta_field_total_shrink(d)       vinfo(d,2)
 # define delta_field_total_stretch(d)      vlink(d,2)
-# define delta_field_total_fi_amount(d)    vinfo(d,3)
-# define delta_field_total_fil_amount(d)   vlink(d,3)
-# define delta_field_total_fill_amount(d)  vinfo(d,4)
-# define delta_field_total_filll_amount(d) vlink(d,4)
-# define delta_field_font_shrink(d)        vinfo(d,5)
-# define delta_field_font_stretch(d)       vlink(d,5)
+# define delta_field_total_shrink(d)       vinfo(d,2)
+# define delta_field_total_fi_amount(d)    vlink(d,3)
+# define delta_field_total_fil_amount(d)   vinfo(d,3)
+# define delta_field_total_fill_amount(d)  vlink(d,4)
+# define delta_field_total_filll_amount(d) vinfo(d,4)
+# define delta_field_font_shrink(d)        vlink(d,5)
+# define delta_field_font_stretch(d)       vinfo(d,5)
 
 /*tex
     Again we now have some helpers. We have a double linked list so here we go:

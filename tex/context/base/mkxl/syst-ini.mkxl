@@ -1008,7 +1008,8 @@
 
 
 \aliased\let\newconditional\setfalse
-\aliased\let\ifconditional \ifcase
+%aliased\let\ifconditional \ifcase
+\aliased\let\ifconditional \ifzeronum   % permits \unless\ifconditional
 
 \permanent\protected\lettonothing\then % so that we can say: \ifnum1>2\then -)
 

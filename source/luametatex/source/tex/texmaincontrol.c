@@ -315,17 +315,17 @@ static void tex_aux_run_text_char_number(void)
                 chr = tex_scan_char_number(0);
                 tex_aux_adjust_space_factor(chr);
                 glyph = tex_new_char_node(glyph_unset_subtype, font, chr, 1);
-                set_glyph_x_offset(glyph, xoffset);
-                set_glyph_y_offset(glyph, yoffset);
-                set_glyph_scale(glyph, scale);
+                set_glyph_options(glyph, options);
                 set_glyph_x_scale(glyph, xscale);
                 set_glyph_y_scale(glyph, yscale);
-                set_glyph_slant(glyph, slant);
-                set_glyph_weight(glyph, weight);
+                set_glyph_scale(glyph, scale);
                 set_glyph_left(glyph, left);
                 set_glyph_right(glyph, right);
                 set_glyph_raise(glyph, raise);
-                set_glyph_options(glyph, options);
+                set_glyph_x_offset(glyph, xoffset);
+                set_glyph_y_offset(glyph, yoffset);
+                set_glyph_weight(glyph, weight);
+                set_glyph_slant(glyph, slant);
                 tex_tail_append(glyph);
                 break;
             }

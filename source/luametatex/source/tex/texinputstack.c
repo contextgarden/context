@@ -184,15 +184,15 @@ static bool tex_aux_room_on_parameter_stack(void) /* quite similar to save_stack
 void tex_copy_to_parameter_stack(halfword *pstack, int n)
 {
     if (tex_aux_room_on_parameter_stack()) {
-if (n == 1) { 
-        lmt_input_state.parameter_stack[lmt_input_state.parameter_stack_data.ptr++] = pstack[0];
-//} else if (n == 2) { 
-//        lmt_input_state.parameter_stack[lmt_input_state.parameter_stack_data.ptr++] = pstack[0];
-//        lmt_input_state.parameter_stack[lmt_input_state.parameter_stack_data.ptr++] = pstack[1];
-} else { 
-        memcpy(&lmt_input_state.parameter_stack[lmt_input_state.parameter_stack_data.ptr], pstack, n * sizeof(halfword));
-        lmt_input_state.parameter_stack_data.ptr += n;
-}
+        if (n == 1) { 
+            lmt_input_state.parameter_stack[lmt_input_state.parameter_stack_data.ptr++] = pstack[0];
+     // } else if (n == 2) { 
+     //        lmt_input_state.parameter_stack[lmt_input_state.parameter_stack_data.ptr++] = pstack[0];
+     //        lmt_input_state.parameter_stack[lmt_input_state.parameter_stack_data.ptr++] = pstack[1];
+        } else { 
+            memcpy(&lmt_input_state.parameter_stack[lmt_input_state.parameter_stack_data.ptr], pstack, n * sizeof(halfword));
+            lmt_input_state.parameter_stack_data.ptr += n;
+        }
     }
 }
 
@@ -847,9 +847,9 @@ void tex_end_token_list(void)
                     int ptr = lmt_input_state.parameter_stack_data.ptr;
                     int start = lmt_input_state.cur_input.parameter_start;
                     while (ptr > start) {
-                        --ptr;
-                        if (lmt_input_state.parameter_stack[ptr]) {
+                        if (lmt_input_state.parameter_stack[--ptr]) {
                             tex_flush_token_list(lmt_input_state.parameter_stack[ptr]);
+                         // lmt_input_state.parameter_stack[ptr] = null;
                         }
                     }
                     lmt_input_state.parameter_stack_data.ptr = start;
@@ -912,6 +912,7 @@ void tex_cleanup_input_state(void)
                         while (ptr > start) {
                             if (lmt_input_state.parameter_stack[--ptr]) {
                                 tex_flush_token_list(lmt_input_state.parameter_stack[ptr]);
+                             // lmt_input_state.parameter_stack[ptr] = null;
                             }
                         }
                         lmt_input_state.parameter_stack_data.ptr = start;

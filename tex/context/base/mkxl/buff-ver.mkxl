@@ -494,18 +494,18 @@
    \fi
    \typingparameter\c!before\relax % moved down
    \startpacked[\v!blank]%         % moved down
+   \buff_verbatim_setup_keep_together
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
-   \buff_verbatim_setup_keep_together
    \normalexpanded{\buff_verbatim_type_block{\e!start\currenttypingwrapper}{\e!stop\currenttypingwrapper}}}
 
 \def\buff_verbatim_typing_start_nop
   {\endgroup
    \typingparameter\c!before\relax
    \startpacked[\v!blank]%
+   \buff_verbatim_setup_keep_together
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
-   \buff_verbatim_setup_keep_together
    \normalexpanded{\buff_verbatim_type_block{\e!start\currenttypingwrapper}{\e!stop \currenttypingwrapper}}}
 
 %D \start \showmakeup[vpenalty]
@@ -671,10 +671,10 @@
   {\cdef\currenttyping{#1}%
    \typingparameter\c!before\relax
    \startpacked[\v!blank]
+   \buff_verbatim_setup_keep_together
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
    \buff_verbatim_initialize_typing_two
-   \buff_verbatim_setup_keep_together
    \dostarttaggedchained\t!verbatimblock\currenttyping\currenttyping\??typing
    \beginofverbatimlines
    \dostarttaggednodetail\t!verbatimlines
@@ -874,10 +874,10 @@
   {\cdef\currenttyping{#1}%
    \typingparameter\c!before\relax
    \startpacked[\v!blank]
+   \buff_verbatim_setup_keep_together
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
    \buff_verbatim_initialize_typing_two
-   \buff_verbatim_setup_keep_together
    \dostarttaggedchained\t!verbatimblock{#1}{#1}\??typing
    \beginofverbatimlines
    \dostarttaggednodetail\t!verbatimlines
@@ -999,27 +999,27 @@
 %      \c_attr_verbatimline\attributeunsetvalue
 %    \fi}
 
-\protected\def\buff_verbatim_end_of_line
-  {\dostoptagged
-  %\obeyedline % is actually \par here
-   \ifconditional\c_buff_lines_as_paragraph
-     \parbreak
-   \else
-     \par
-     \buff_verbatim_inject_breaks % new because now widowpenalties apply to the par
-   \fi
-   \ifconditional\verbatimnumberinglines
-     \c_attr_verbatimline\attributeunsetvalue
-   \fi}
+% \protected\def\buff_verbatim_end_of_line
+%   {\dostoptagged
+%   %\obeyedline % is actually \par here
+%    \ifconditional\c_buff_lines_as_paragraph
+%      \parbreak
+%    \else
+%      \par
+%      \buff_verbatim_inject_breaks % new because now widowpenalties apply to the par
+%    \fi
+%    \ifconditional\verbatimnumberinglines
+%      \c_attr_verbatimline\attributeunsetvalue
+%    \fi}
 
-\protected\def\buff_verbatim_empty_line
-  {\dostoptagged
-   \ifconditional\verbatimnumberinglines
-     \par\strut\par % this will be an option where we use a signal instead of a strut
-   \else
-     \blank[\typingparameter\c!blank]%
-   \fi
-   \dostarttaggednodetail\t!verbatimlines}
+% \protected\def\buff_verbatim_empty_line
+%   {\dostoptagged
+%    \ifconditional\verbatimnumberinglines
+%      \par\strut\par % this will be an option where we use a signal instead of a strut
+%    \else
+%      \blank[\typingparameter\c!blank]%
+%    \fi
+%    \dostarttaggednodetail\t!verbatimlines}
 
 % hooks (todo: frozen):
 
@@ -1090,6 +1090,31 @@
 %D \typebuffer[keeptogether=paragraph,align=hangleft]
 %D \stoptyping
 
+
+% test
+%
+% \starttyping
+% first
+% second second
+% third third third
+% fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth
+% fifth
+% sixth
+% \stoptyping
+%
+% test
+%
+% \starttyping
+% first
+% second second
+% third third third
+% fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth fourth
+% fifth
+% sixth sixth sixth sixth sixth sixth sixth sixth sixth sixth sixth sixth sixth sixth sixth sixth sixth sixth sixth sixth sixth
+% \stoptyping
+%
+% test
+
 \permanent\protected\def\dodisplayverbatimstart
   {\advanceby\c_buff_verbatim_current\plusone
    \ifconditional\verbatimnumberinglines
@@ -1111,10 +1136,12 @@
 \permanent\protected\def\dodisplayverbatimstop
   {\dostoptagged
    \ifconditional\c_buff_lines_as_paragraph
-     \stophangrange
+     \stophangrange % new because now widowpenalties apply to the par
+   \orelse\ifconditional\c_buff_optimize_linebreaks
+     \par
+     \buff_verbatim_inject_breaks
    \else
-     \par % \parbreak
-     \buff_verbatim_inject_breaks % new because now widowpenalties apply to the par
+     \par
    \fi
    \ifconditional\verbatimnumberinglines
      \c_attr_verbatimline\attributeunsetvalue
@@ -1161,7 +1188,7 @@
      \par % needed see (1), if issue then rely on \vbreak or \parbreak
      \buff_verbatim_inject_breaks
    \else
-     \parbreak % not \crlf .. bad for numbers
+     \par
    \fi
    \ifconditional\verbatimnumberinglines
      \c_attr_verbatimline\attributeunsetvalue

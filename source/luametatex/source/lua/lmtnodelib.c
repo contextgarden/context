@@ -9106,8 +9106,8 @@ static int nodelib_direct_check_char(lua_State* L, halfword n)
                         break;
                     }
                 case 5:
-                    /* (node,font,data,scale,xscale,yscale) */
-                    if (lua_tointeger(L, 3) == glyph_scale(n) &&  lua_tointeger(L, 4) == glyph_x_scale(n) && lua_tointeger(L, 5) == glyph_y_scale(n)) {
+                    /* (node,scale,xscale,yscale) */
+                    if (lua_tointeger(L, 3) == glyph_scale(n) && lua_tointeger(L, 4) == glyph_x_scale(n) && lua_tointeger(L, 5) == glyph_y_scale(n)) {
                         goto OKAY;
                     } else {
                         break;

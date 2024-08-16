@@ -545,18 +545,27 @@ do
         end
     end
 
+--     local function checkcm(c,op,contents,i)
+--         if c and tonumber(c[1]) == 1 and tonumber(c[4]) == 1
+--              and tonumber(c[5]) == 0 and tonumber(c[6]) == 0
+--              and tonumber(c[2]) == 0 and tonumber(c[3]) == 0 then
+--             contents[i] = { }
+--         end
+--     end
+
 --  local actions = {
---         rg  = reducergb,
---         RG  = reducergb,
---         k   = reducecmyk,
---         K   = reducecmyk,
---         gs  = removestate,
---         GS  = removestate,
---         BMC = removetags,
---         EMC = removetags,
---         BDC = removetags,
---      -- BT  = checkbt,
---      -- Q   = checkQ,
+--      rg  = reducergb,
+--      RG  = reducergb,
+--      k   = reducecmyk,
+--      K   = reducecmyk,
+--      gs  = removestate,
+--      GS  = removestate,
+--      BMC = removetags,
+--      EMC = removetags,
+--      BDC = removetags,
+--   -- BT  = checkbt,
+--   -- Q   = checkQ,
+--      cm  = checkcm,
 --  }
 
     local passone = { }
@@ -587,6 +596,9 @@ do
             passone.gs = removestate
             passone.GS = removestate
         end
+-- if strip.cm then
+--     passone.cm = checkcm
+-- end
         if reduce.color then
             passone.rg = reducergb
             passone.RG = reducergb

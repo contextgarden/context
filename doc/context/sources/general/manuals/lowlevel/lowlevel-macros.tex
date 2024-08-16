@@ -1255,7 +1255,7 @@ but in this perspective we ignore that. The backslash has category \quote
 category \quote {left brace} and \quote {right brace} aka \quote {begin group}
 and \quote {end group} but, no matter what they are called, they begin and end
 something: a group, argument, token list, box, etc. Any character can have those
-categories. Although it would loook strange to a \TEX\ user, this can be made
+categories. Although it would look strange to a \TEX\ user, this can be made
 valid:
 
 \startbuffer
@@ -1377,8 +1377,8 @@ because by that time these references are resolved. All hashes that we encounter
 are just that: hashes. And this is why in \LUAMETATEX\ we disable the duplication
 for those cases where it serves no purpose.
 
-When the engine scans a macro definition it starts with pickin  g up the name of
-the macro. Then it starts scanning the preamble upto the left brace. In the
+When the engine scans a macro definition it starts with picking up the name of
+the macro. Then it starts scanning the preamble up to the left brace. In the
 preamble of a macro the scanner converts hashes followed by another token into
 single match token. Then when the macro body is scanned single hashes followed by
 a number become a reference, while double hashes become one hash and get
@@ -1392,7 +1392,7 @@ a valid specifier like a number). In traditional \TEX\ we basically had this:
 \def\test#1{##1}
 \stoptyping
 
-There can be a traling \type {#} in the preamble for special purposes but we
+There can be a trailing \type {#} in the preamble for special purposes but we
 forget about that now. The first definition is valid, the second definition is
 invalid when the macro is expanded and the third definition triggers an error at
 definition time. The last definition will again trigger an error at expansion
@@ -1471,7 +1471,7 @@ that.
 \NC \type{#G} \NC grandparent iterator \NC \type {\previousloopiterator 2} \NC \NR
 \TB
 \NC \type{#H} \NC hash escape          \NC \type {#}  \NC \NR
-\NC \type{#S} \NC space escape         \NC \ruledhbox to  \interwordspace{\novrule height .8\strutht} \NC \NR
+\NC \type{#S} \NC space escape         \NC \ruledhbox to \interwordspace{\novrule height .8\strutht} \NC \NR
 \NC \type{#T} \NC tab escape           \NC \type {\t} \NC \NR
 \NC \type{#L} \NC newline escape       \NC \type {\n} \NC \NR
 \NC \type{#R} \NC return escape        \NC \type {\r} \NC \NR

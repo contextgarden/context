@@ -21,7 +21,7 @@
 
     Because in \LUATEX\ we can also store \LUA\ bytecodes it made no sense to take that portability
     aspect into account. The format file also got gzipped which at that time sped up loading. Later
-    in the project the endian swappign was removed so we gained a bit more.
+    in the project the endian swapping was removed so we gained a bit more.
 
     Because a format file that doesn't match an engine can actually result in a crash, we decided to
     come up with amore robust approach: we use a magic number to register the version of the format!
@@ -55,7 +55,7 @@
 
 */
 
-# define luametatex_format_fingerprint 705
+# define luametatex_format_fingerprint 706
 
 /* These end up in the string pool. */
 

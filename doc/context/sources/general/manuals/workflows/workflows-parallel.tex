@@ -232,6 +232,83 @@ an error the filename will be reported at the end of the run.
 
 \stopsection
 
+\startsection[title=Alternative]
+
+This trickery was introduced for speeding up processing the test suite. It is
+however also handy for other cases, for example in an export. There we can make
+it part of a workflow where many files are involved. Below is a short summary of
+what we have so far.
+
+We have several shared command line options. With \type {--terminal} you get
+output on the console, which of course slows matters down. With \type {--runners}
+you specify how many jobs run in parallel; we default to eight.
+
+The \type{--parallel} argument specifies a specification file, which has to
+return a \LUA\ table. This can be a top level specification or it can have a sub
+table \typ {parallel}. The parallel specification has the following fields:
+optional \type {runners}, \type {terminal}, \type {sequence} and mandate \type
+{commands}. Here is an example of a file:
+
+\starttyping
+return {
+    author   = "Mikael S and Hans H",
+    comment  = "export control file for the 𝛽1 course",
+    version  = "2025.07.15",
+    parallel = {
+        runners  = 8,
+     -- terminal = true,
+        sequence = true,
+        commands = {
+            {
+                "context --exportcontent file-1",
+                "context --exportcontent file-2",
+                "context --exportcontent file-3",
+            },
+            {
+                "mtxrun --script epub --images --flat --path=foo file-1",
+                "mtxrun --script epub --images --flat --path=foo file-1",
+                "mtxrun --script epub --images --flat --path=foo file-1",
+            }
+        },
+    },
+    -- entries that are used by other helper programs or that drive the
+    -- export (like paths)
+}
+\stoptyping
+
+The \type {commands} table can be flat (one level) or have sub tables as here.
+WHen \type {sequence} is set to \type {true} the sub tables will be processed
+after each other. This is needed when we have dependencies. In our example we
+can only process images when we have exported the content.
+
+Alternatively one can specify a \type {--parallellist} or \type
+{--parallelsequence} that takes the given files and looks for \type {context} or
+\type {mtxrun} commands to process. A sequence will process in batches.
+
+\stopsection
+
 \stopchapter
 
 \stopcomponent
+
+% return {
+%     author   = "Mikael S and Hans H",
+%     comment  = "export control file for the 𝛽1 course",
+%     version  = "2025.07.15",
+%     parallel = {
+%         runners  = 8,
+%      -- terminal = true,
+%         sequence = true,
+%         commands = {
+%             {
+%                 "context --exportcontent file-1",
+%                 "context --exportcontent file-2",
+%                 "context --exportcontent file-3",
+%             },
+%             {
+%                 "mtxrun --script epub --images --flat --path=foo file-1",
+%                 "mtxrun --script epub --images --flat --path=foo file-1",
+%                 "mtxrun --script epub --images --flat --path=foo file-1",
+%             }
+%         },
+%     },

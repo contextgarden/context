@@ -64,9 +64,14 @@ do
                 prefix, name = "preset", prefix
             end
             local compactor = prefix and compactors[prefix][name] or false
-            if compactor and not compactor.status.reported then
-                report("using: %s : %s",prefix,name)
-                compactor.status.reported = true
+            if compactor then
+                if not compactor.status then
+                    compactor.status = { }
+                end
+                if not compactor.status.reported then
+                    report("using: %s : %s",prefix,name)
+                    compactor.status.reported = true
+                end
             end
             return compactor
         end

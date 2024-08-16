@@ -528,6 +528,7 @@ return {
   "linebreakoptional",
   "linebreakpasses",
   "linedirection",
+  "localbreakpar",
   "localbrokenpenalty",
   "localcontrol",
   "localcontrolled",

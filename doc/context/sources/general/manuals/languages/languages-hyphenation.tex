@@ -365,6 +365,36 @@ We get:
 \setupindenting[no]\hsize 1mm \lefthyphenmin 1 \righthyphenmin 1 \getbuffer
 \stophyphenation
 
+Some languages are a bit picky with respect to ligatures and hyphenation so we
+have ways to control this.
+
+% \zwj  : no ligatures
+% \zwnj : no kerns either
+
+\startbuffer
+\startexceptions[de]
+begri{ff-}{l}{ffl}(f\zwj fl)ich
+xegri{ff-}{l}{ffl}(ff\zwj l)ich
+zegri{ff-}{l}{ffl}(ffl)ich
+wegri{ff-}{l}{ffl}(f\zwj f\zwj l)ich
+\stopexceptions
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Here \type {\zwj} prevents a ligature and \type {\zwnj} prevents a ligature as
+well as a font kern (in for instance Latin Modern ligatures are a bit more
+distinctive).
+
+\startlinecorrection
+    \showglyphs \showfontkerns
+    \startcombination[2*2]
+        {\de\glyphscale\numexpr4*\glyphscale\relax begrifflich} {}
+        {\de\glyphscale\numexpr4*\glyphscale\relax xegrifflich} {}
+        {\de\glyphscale\numexpr4*\glyphscale\relax zegrifflich} {}
+        {\de\glyphscale\numexpr4*\glyphscale\relax wegrifflich} {}
+    \stopcombination
+\stoplinecorrection
 
 \stopsection
 
