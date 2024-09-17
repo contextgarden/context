@@ -400,6 +400,7 @@
 		<cd:variable name='nogrid' value='nogrid'/>
 		<cd:variable name='noheight' value='noheight'/>
 		<cd:variable name='nohz' value='nohz'/>
+		<cd:variable name='nointro' value='nointro'/>
 		<cd:variable name='noline' value='noline'/>
 		<cd:variable name='nomarking' value='faramarcare'/>
 		<cd:variable name='nomenubar' value='nomenubar'/>

@@ -893,13 +893,13 @@ function constructors.finalize(tfmdata)
         return nil
     end
     --
-    if not parameters.expansion then
-        parameters.expansion = {
-            stretch = tfmdata.stretch or 0,
-            shrink  = tfmdata.shrink  or 0,
-            step    = tfmdata.step    or 0,
-        }
-    end
+ -- if not parameters.expansion then
+ --     parameters.expansion = {
+ --         stretch = tfmdata.stretch or 0,
+ --         shrink  = tfmdata.shrink  or 0,
+ --         step    = tfmdata.step    or 0,
+ --     }
+ -- end
     --
     if not parameters.size then
         parameters.size = tfmdata.size
@@ -994,9 +994,9 @@ function constructors.finalize(tfmdata)
     tfmdata.designsize       = nil
     --
     tfmdata.size             = nil
-    tfmdata.stretch          = nil
-    tfmdata.shrink           = nil
-    tfmdata.step             = nil
+ -- tfmdata.stretch          = nil
+ -- tfmdata.shrink           = nil
+ -- tfmdata.step             = nil
     tfmdata.slant            = nil
     tfmdata.extend           = nil
     tfmdata.squeeze          = nil

@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2024.08.16 15:44}
+\immutable\edef\contextversion{2024.09.17 13:11}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -363,6 +363,7 @@
 \loadmklxfile{scrn-wid}
 \loadmklxfile{scrn-but}
 \loadmklxfile{scrn-bar}
+\loadmkxlfile{scrn-hlt}
 
 \loadmkxlfile{page-com} % optional (after scrn-pag)
 

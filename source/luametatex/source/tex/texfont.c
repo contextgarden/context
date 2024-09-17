@@ -872,32 +872,6 @@ halfword tex_checked_font_adjust(halfword adjust_spacing, halfword adjust_spacin
     return adjust_spacing;
 }
 
-/*tex This returns the multiple of |font_step(f)| that is nearest to |e|. */
-
-int tex_fix_expand_value(halfword f, int e)
-{
-    int max_expand, neg;
-    if (e == 0) {
-        return 0;
-    } else if (e < 0) {
-        e = -e;
-        neg = 1;
-        max_expand = font_max_shrink(f);
-    } else {
-        neg = 0;
-        max_expand = font_max_stretch(f);
-    }
-    if (e > max_expand) {
-        e = max_expand;
-    } else {
-        int step = font_step(f);
-        if (e % step > 0) {
-            e = step * tex_round_xn_over_d(e, 1, step);
-        }
-    }
-    return neg ? -e : e;
-}
-
 int tex_read_font_info(char *cnom, scaled s)
 {
     int callback_id = lmt_callback_defined(define_font_callback);

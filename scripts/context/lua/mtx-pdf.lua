@@ -30,6 +30,7 @@ local helpinfo = [[
     <flag name="fonts"><short>show used fonts (<ref name="detail"/>)</short></flag>
     <flag name="object"><short>show object</short></flag>
     <flag name="links"><short>show links</short></flag>
+    <flag name="highlights"><short>show highlights</short></flag>
     <flag name="sign"><short>sign document (assumes signature template)</short></flag>
     <flag name="verify"><short>verify document</short></flag>
     <flag name="detail"><short>print detail to the console</short></flag>
@@ -80,7 +81,15 @@ local function loadpdffile(filename)
     elseif not lfs.isfile(filename) then
         report("unknown file %a",filename)
     else
-        local pdffile = lpdf.epdf.load(filename)
+        local ownerpassword = environment.arguments.ownerpassword
+        local userpassword  = environment.arguments.userpassword
+        if not ownerpassword then
+            ownerpassword = userpassword
+        end
+        if not userpassword then
+            userpassword = ownerpassword
+        end
+        local pdffile = lpdf.epdf.load(filename,userpassword,ownerpassword)
         if pdffile then
             return pdffile
         else
@@ -142,6 +151,27 @@ function scripts.pdf.info(filename)
         report("%-17s > %s","author",            checked(author))
         report("%-17s > %s","creation date",     checked(creationdate))
         report("%-17s > %s","modification date", checked(modificationdate))
+
+        local function checked(what,str)
+            if str ~= nil and str ~= "" then
+                report("%-17s > %S",what,str)
+            end
+        end
+
+        local viewerpreferences = catalog.ViewerPreferences
+        local pagelayout        = catalog.PageLayout
+        local pagemode          = catalog.PageMode
+        local encrypted         = pdffile.encrypted
+        local permissions       = pdffile.permissions
+
+        checked("duplex",      viewerpreferences and viewerpreferences.Duplex)
+        checked("page layout", pagelayout)
+        checked("page mode",   pagemode)
+        checked("encrypted",   encrypted and "yes" or nil)
+
+        if permissions then
+            report("%-17s > % t","permissions",table.sortedkeys(permissions))
+        end
 
         local function somebox(what)
             local box = string.lower(what)
@@ -783,6 +813,62 @@ function scripts.pdf.links(filename,asked)
     end
 end
 
+function scripts.pdf.highlights(filename,asked)
+    local pdffile = loadpdffile(filename)
+    if pdffile then
+
+        local pages    = pdffile.pages
+        local nofpages = pdffile.nofpages
+
+        if asked and (asked < 1 or asked > nofpages) then
+            report("")
+            report("no page %i, last page %i",asked,nofpages)
+            report("")
+            return
+        end
+
+        local function banner(pagenumber)
+            report("")
+            report("highlights @ page %i",pagenumber)
+            report("")
+        end
+
+        local function show(pagenumber)
+            local page   = pages[pagenumber]
+            local annots = page.Annots
+            if annots then
+                local done = false
+                for i=1,#annots do
+                    local annotation = annots[i]
+                    local S = annotation.Subtype
+                    if S == "Highlight" then
+                        local author   = annotation.T or "unknown"
+                        local contents = annotation.Contents or "empty"
+                        local rect     = annotation.Rect()
+                        local name     = annotation.NM or "unset"
+                        if not done then
+                            banner(pagenumber)
+                            done = true
+                        end
+                        local x = rect[4] - rect[1]
+                        local y = rect[3] - rect[2]
+                        report("position (%N,%N), name %a, author %a, contents %a",x,y,name,author,contents)
+                    end
+                end
+            end
+        end
+
+        if asked then
+            show(asked)
+        else
+            for pagenumber=1,nofpages do
+                show(pagenumber)
+            end
+        end
+
+    end
+end
+
 local template = [[
 \startTEXpage
 \externalfigure[%s][page=%i]
@@ -828,6 +914,8 @@ elseif environment.argument("object") then
     scripts.pdf.object(filename,tonumber(environment.argument("object")))
 elseif environment.argument("links") then
     scripts.pdf.links(filename,tonumber(environment.argument("page")))
+elseif environment.argument("highlights") then
+    scripts.pdf.highlights(filename,tonumber(environment.argument("page")))
 elseif environment.argument("signature") then
     scripts.pdf.signature(filename,environment.argument("save"))
 elseif environment.argument("sign") then

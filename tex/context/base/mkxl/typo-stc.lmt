@@ -92,6 +92,9 @@ end
 typesetters.stacking.getselection = getselection
 typesetters.stacking.getindex     = getindex
 
+local report = logs.reporter("stacking")
+local trace  = false
+
 interfaces.implement {
     name      = "newstacking",
     arguments = "2 strings",
@@ -103,7 +106,20 @@ interfaces.implement {
             n = nofstacking
         end
         registered[s] = n
+        if trace then
+            report("define %a as index %i",s,n)
+        end
         return tokens.values.integer, n
+    end,
+}
+
+interfaces.implement {
+    name      = "enablestacking",
+    actions   = function()
+        if not enabled then
+            nodes.tasks.enableaction("shipouts", "typesetters.stacking.handler")
+            enabled = true
+        end
     end,
 }
 
@@ -113,13 +129,14 @@ interfaces.implement {
     actions   = function(str)
         currentset = getselection(str)
         if not enabled and next(currentset) then
+            if trace then
+                report("selecting %a",str)
+            end
             nodes.tasks.enableaction("shipouts", "typesetters.stacking.handler")
             enabled = true
         end
     end,
 }
-
--- todo: range
 
 local function process(head)
     local current = head
@@ -127,19 +144,19 @@ local function process(head)
         local nxt, chr, id = isnextglyph(current)
         if chr then
             local a = getattr(current,a_stacking)
-            if a and not currentset[a] then
+            if a and (a == 0 or not currentset[a]) then
                 local w, h, d = getwhd(current)
                 local r = new_emptyrule(w,h,d)
                 head, current = replace_node(head,current,r)
             end
         elseif id == glue_code then
             local a = getattr(current,a_stacking)
-            if a and not currentset[a] then
+            if a and (a == 0 or not currentset[a]) then
                 setleader(current)
             end
         elseif id == hlist_code or id == vlist_code then
             local a = getattr(current,a_stacking)
-            if a and not currentset[a] then
+            if a and (a == 0 or not currentset[a]) then
                 setlist(current)
             else
                 local list = getlist(current)
@@ -157,13 +174,13 @@ local function process(head)
             end
         elseif id == whatsit_code then
             local a = getattr(current,a_stacking)
-            if a and not currentset[a] and not unblocked[getsubtype(current)] then
+            if a and (a == 0 or not currentset[a]) and not unblocked[getsubtype(current)] then
                 head, current = remove_node(head,current,true)
             end
         elseif id == disc_code then
             -- doesn't happen
             local a = getattr(current,a_stacking)
-            if a and not currentset[a] then
+            if a and (a == 0 or not currentset[a]) then
                 local w, h, d = getwhd(current)
                 local r = new_emptyrule(w,h,d)
                 head, current = replace_node(head,current,r)

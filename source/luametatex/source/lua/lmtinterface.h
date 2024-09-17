@@ -933,6 +933,7 @@ make_lua_key(L, MathLeading);\
 make_lua_key(L, mathnumber);\
 make_lua_key(L, mathoperator);\
 make_lua_key(L, mathpack);\
+make_lua_key(L, mathpenaltyfactor);\
 make_lua_key(L, mathpostpenalty);\
 make_lua_key(L, mathprepenalty);\
 make_lua_key(L, mathradical);\
@@ -1235,6 +1236,7 @@ make_lua_key(L, spacestretch);\
 make_lua_key(L, span);\
 make_lua_key(L, spec);\
 make_lua_key(L, specification);\
+make_lua_key(L, specificationspec);\
 make_lua_key(L, specification_reference);\
 make_lua_key(L, split);\
 make_lua_key(L, split_insert);\

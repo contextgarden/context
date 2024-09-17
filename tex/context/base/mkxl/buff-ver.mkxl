@@ -976,16 +976,16 @@
 
 \newconditional\c_buff_lines_as_paragraph
 
-\protected\def\buff_verbatim_begin_of_line
-  {\ifconditional\verbatimnumberinglines
-     \global\advanceby\nofverbatimlines\plusone
-     \c_attr_verbatimline\nofverbatimlines
-   \fi
-   \noindent
-   \buff_verbatim_set_line_margin
-   \expand\everyline % maybe also after starttagged
-   \strut % after starttagged, else break !
-   \dostarttaggednodetail\t!verbatimline}
+% \protected\def\buff_verbatim_begin_of_line
+%   {\ifconditional\verbatimnumberinglines
+%      \global\advanceby\nofverbatimlines\plusone
+%      \c_attr_verbatimline\nofverbatimlines
+%    \fi
+%    \noindent
+%    \buff_verbatim_set_line_margin
+%    \expand\everyline % maybe also after starttagged
+%    \strut % after starttagged, else break !
+%    \dostarttaggednodetail\t!verbatimline}
 
 % \protected\def\buff_verbatim_end_of_line
 %   {\dostoptagged
@@ -1123,15 +1123,14 @@
    \fi
    \ifconditional\c_buff_lines_as_paragraph
      \buff_verbatim_set_line_margin
-     \expand\everyline % maybe also after starttagged
      \starthangrange
    \else
      \noindent
      \buff_verbatim_set_line_margin
-     \expand\everyline % maybe also after starttagged
-     \strut % after starttagged, else break !
    \fi
-   \dostarttaggednodetail\t!verbatimline}
+   \expand\everyline % maybe also after starttagged
+   \dostarttaggednodetail\t!verbatimline
+   \strut}
 
 \permanent\protected\def\dodisplayverbatimstop
   {\dostoptagged
@@ -1171,14 +1170,13 @@
    \ifconditional\c_buff_lines_as_paragraph
      \starthangrangestep
      \buff_verbatim_set_line_margin
-     \expand\everyline % maybe also after starttagged
    \else
      \noindent
      \buff_verbatim_set_line_margin
-     \expand\everyline % maybe also after starttagged
-     \strut % after starttagged, else break !
    \fi
-   \dostarttaggednodetail\t!verbatimline}
+   \expand\everyline
+   \dostarttaggednodetail\t!verbatimline
+   \strut}
 
 \permanent\protected\def\dodisplayverbatimnewline
   {\dostoptagged

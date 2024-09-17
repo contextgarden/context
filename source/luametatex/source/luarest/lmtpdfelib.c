@@ -470,9 +470,14 @@ static int pdfelib_aux_pushvalue(lua_State *L, ppobj *object)
                 return 1;
             }
         case PPSTRING:
-            lua_pushlstring(L, ppstring_data(object->string), ppstring_size(object->string));
-            lua_pushboolean(L, ppstring_hex(object->string));
-            return 2;
+             // lua_pushlstring(L, ppstring_data(object->string), ppstring_size(object->string));
+             // lua_pushboolean(L, ppstring_hex(object->string));
+            {        
+                ppstring *s = ppstring_decoded(object->string);
+                lua_pushlstring(L, ppstring_data(s), ppstring_size(s));
+                lua_pushinteger(L, (s)->flags);
+                return 2;
+            }
         case PPARRAY:
             return pdfelib_aux_pusharray(L, object->array);
         case PPDICT:
@@ -525,6 +530,17 @@ static int pdfelib_getinfo(lua_State *L)
     } else {
         return 0;
     }
+}
+
+static int pdfelib_getpermissions(lua_State *L)
+{
+    pdfe_document *p = pdfelib_aux_check_isdocument(L, 1, get_info_error);
+    if (p) {
+        lua_pushinteger(L, ppdoc_permissions(p->document));
+    } else {
+        lua_pushnil(L);
+    }
+    return 1;
 }
 
 /*tex
@@ -1493,7 +1509,7 @@ static int pdfelib_getstring(lua_State *L)
         okay = pdfelib_get_value_direct(L, (void *) &value, (void *) &ppdict_rget_string, (void *) &pparray_rget_string);
         if (okay && value) {
             if (how == 1) {
-                value = ppstring_decoded(value);
+                value = ppstring_decoded(value); /* we probably always need that */
             }
             /*tex This used to return one value but we made it \LUATEX\ compatible. */
             lua_pushlstring(L, ppstring_data(value), ppstring_size(value));
@@ -1772,6 +1788,20 @@ static int pdfelib_stream_size(lua_State *L)
 
 */
 
+static int pdfelib_getencodingvalues(lua_State *L)
+{
+    lua_createtable(L, 2, 6);
+    lua_set_string_by_index(L, PPSTRING_PLAIN,    "plain"  );    /*  0 */
+    lua_set_string_by_index(L, PPSTRING_ENCODED,  "encoded");    /*  1 */ 
+    lua_set_string_by_index(L, PPSTRING_DECODED,  "decoded");    /*  2  */
+ /* lua_set_string_by_index(L, PPSTRING_EXEC,     "exec"   ); */ /*  4 */
+    lua_set_string_by_index(L, PPSTRING_BASE16,   "base16" );    /*  8 */
+    lua_set_string_by_index(L, PPSTRING_BASE85,   "base85" );    /* 16 */
+    lua_set_string_by_index(L, PPSTRING_UTF16BE,  "utf16be");    /* 32 */
+    lua_set_string_by_index(L, PPSTRING_UTF16LE,  "utf16le");    /* 64 */
+    return 1;
+}
+
 static const struct luaL_Reg pdfelib_function_list[] = {
     /* management */
     { "type",               pdfelib_type              },
@@ -1780,6 +1810,7 @@ static const struct luaL_Reg pdfelib_function_list[] = {
     { "new",                pdfelib_new               },
     { "close",              pdfelib_close             },
     { "unencrypt",          pdfelib_unencrypt         },
+    { "getencodingvalues",  pdfelib_getencodingvalues },
     /* statistics */
     { "getversion",         pdfelib_getversion        },
     { "getstatus",          pdfelib_getstatus         },
@@ -1791,6 +1822,7 @@ static const struct luaL_Reg pdfelib_function_list[] = {
     { "getcatalog",         pdfelib_getcatalog        },
     { "gettrailer",         pdfelib_gettrailer        },
     { "getinfo",            pdfelib_getinfo           },
+    { "getpermissions",     pdfelib_getpermissions    },
     { "getpage",            pdfelib_getpage           },
     { "getpages",           pdfelib_getpages          },
     { "getbox",             pdfelib_getbox            },

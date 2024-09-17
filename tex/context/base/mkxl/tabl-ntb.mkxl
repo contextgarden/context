@@ -490,60 +490,50 @@
 
 \permanent\tolerant\protected\def\setupTABLE[#S#1]#*[#S#2]#*[#S#3]%
   {\ifarguments
-     \expandafter\gobblethreeoptionals
+     \expandafter\gobblethreearguments
    \or
      \expandafter\tabl_ntb_setup_one
    \or
      \expandafter\tabl_ntb_setup_two
    \or
      \expandafter\tabl_ntb_setup_three
-   \fi[#1][#2][#3]}
+   \fi{#1}{#2}{#3}}
 
-\def\tabl_ntb_setup_one[#S#1][#2][#3]%
+\def\tabl_ntb_setup_one#1#2#3%
   {\setupcurrentnaturaltablelocal[#1]}
 
-\def\tabl_ntb_setup_xy[#1][#2][#S#3]%
-  {\def\tabl_ntb_setup_step##1{\tabl_ntb_parameters_set[#1##1][#3]}%
+\def\tabl_ntb_setup_xy#1#2#3%
+  {\def\tabl_ntb_setup_step##1{\tabl_ntb_parameters_set{#1##1}{#3}}%
    \processcommalist[#2]\tabl_ntb_setup_step}
 
-\def\tabl_ntb_setup_un[#1][#2][#S#3]%
+\def\tabl_ntb_setup_un#1#2#3%
   {\def\tabl_ntb_setup_step##1%
-     {\def\tabl_ntb_setup_step_step####1{\tabl_ntb_parameters_set[\c!x##1\c!y####1][#3]}%
+     {\def\tabl_ntb_setup_step_step####1{\tabl_ntb_parameters_set{\c!x##1\c!y####1}{#3}}%
       \processcommalist[#2]\tabl_ntb_setup_step_step}%
    \processcommalist[#1]\tabl_ntb_setup_step}
 
-\def\tabl_ntb_setup_each[#1][#S#2][#3]% ignores #3
-  {\tabl_ntb_parameters_set[#1\v!each][#2]}
+\def\tabl_ntb_setup_each#1#2#3% ignores #3
+  {\tabl_ntb_parameters_set{#1\v!each}{#2}}
 
-\def\tabl_ntb_setup_ux[#1][#S#2][#3]% ignores #3
-  {\def\tabl_ntb_setup_step##1{\tabl_ntb_parameters_set[\c!x##1][#2]}%
+\def\tabl_ntb_setup_ux#1#2#3% ignores #3
+  {\def\tabl_ntb_setup_step##1{\tabl_ntb_parameters_set{\c!x##1}{#2}}%
    \processcommalist[#1]\tabl_ntb_setup_step}
 
-\def\tabl_ntb_setup_three[#S#1]{\ifcsname\??naturaltablesetupthree#1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_un\fi[#1]}
-\def\tabl_ntb_setup_two  [#S#1]{\ifcsname\??naturaltablesetuptwo  #1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_ux\fi[#1]}
+\def\tabl_ntb_setup_three#1{\ifcsname\??naturaltablesetupthree#1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_un\fi{#1}}
+\def\tabl_ntb_setup_two  #1{\ifcsname\??naturaltablesetuptwo  #1\endcsname\expandafter\lastnamedcs\else\expandafter\tabl_ntb_setup_ux\fi{#1}}
 
-\defcsname\??naturaltablesetupthree    \v!row\endcsname[#1]{\tabl_ntb_setup_xy  [\c!y]}
-\defcsname\??naturaltablesetupthree \v!column\endcsname[#1]{\tabl_ntb_setup_xy  [\c!x]}
-\defcsname\??naturaltablesetupthree  \v!start\endcsname[#1]{\tabl_ntb_setup_xy  [\v!start]}
-\defcsname\??naturaltablesetupthree \v!header\endcsname[#1]{\tabl_ntb_setup_xy  [\v!header]}
+\defcsname\??naturaltablesetupthree    \v!row\endcsname#-{\tabl_ntb_setup_xy  \c!y}
+\defcsname\??naturaltablesetupthree \v!column\endcsname#-{\tabl_ntb_setup_xy  \c!x}
+\defcsname\??naturaltablesetupthree  \v!start\endcsname#-{\tabl_ntb_setup_xy  \v!start}
+\defcsname\??naturaltablesetupthree \v!header\endcsname#-{\tabl_ntb_setup_xy  \v!header}
 
-\defcsname\??naturaltablesetuptwo      \v!row\endcsname[#1]{\tabl_ntb_setup_each[\c!y]}
-\defcsname\??naturaltablesetuptwo   \v!column\endcsname[#1]{\tabl_ntb_setup_each[\c!x]}
-\defcsname\??naturaltablesetuptwo    \v!start\endcsname[#1]{\tabl_ntb_setup_each[\v!start]}
-\defcsname\??naturaltablesetuptwo   \v!header\endcsname[#1]{\tabl_ntb_setup_each[\v!header]}
+\defcsname\??naturaltablesetuptwo      \v!row\endcsname#-{\tabl_ntb_setup_each\c!y}
+\defcsname\??naturaltablesetuptwo   \v!column\endcsname#-{\tabl_ntb_setup_each\c!x}
+\defcsname\??naturaltablesetuptwo    \v!start\endcsname#-{\tabl_ntb_setup_each\v!start}
+\defcsname\??naturaltablesetuptwo   \v!header\endcsname#-{\tabl_ntb_setup_each\v!header}
 
 \letcsname\??naturaltablesetupthree\s!unknown\endcsname\tabl_ntb_setup_un
 \letcsname\??naturaltablesetuptwo  \s!unknown\endcsname\tabl_ntb_setup_ux
-
-% \letcsnamecsname\csname\??naturaltablesetupthree r\endcsname\csname\??naturaltablesetupthree   \v!row\endcsname
-% \letcsnamecsname\csname\??naturaltablesetupthree c\endcsname\csname\??naturaltablesetupthree\v!column\endcsname
-% \letcsnamecsname\csname\??naturaltablesetupthree y\endcsname\csname\??naturaltablesetupthree   \v!row\endcsname
-% \letcsnamecsname\csname\??naturaltablesetupthree x\endcsname\csname\??naturaltablesetupthree\v!column\endcsname
-
-% \letcsnamecsname\csname\??naturaltablesetuptwo   r\endcsname\csname\??naturaltablesetuptwo     \v!row\endcsname
-% \letcsnamecsname\csname\??naturaltablesetuptwo   c\endcsname\csname\??naturaltablesetuptwo  \v!column\endcsname
-% \letcsnamecsname\csname\??naturaltablesetuptwo   y\endcsname\csname\??naturaltablesetuptwo     \v!row\endcsname
-% \letcsnamecsname\csname\??naturaltablesetuptwo   x\endcsname\csname\??naturaltablesetuptwo  \v!column\endcsname
 
 \letcsname\??naturaltablesetupthree r\expandafter\endcsname\csname\??naturaltablesetupthree   \v!row\endcsname
 \letcsname\??naturaltablesetupthree c\expandafter\endcsname\csname\??naturaltablesetupthree\v!column\endcsname
@@ -555,10 +545,10 @@
 \letcsname\??naturaltablesetuptwo   y\expandafter\endcsname\csname\??naturaltablesetuptwo     \v!row\endcsname
 \letcsname\??naturaltablesetuptwo   x\expandafter\endcsname\csname\??naturaltablesetuptwo  \v!column\endcsname
 
-\def\tabl_ntb_parameters_set[#1][#S#2]%
+\def\tabl_ntb_parameters_set#1#2%
   {\ifappendTBLsetups
      \ifcsname\??naturaltableset\m_tabl_tbl_level:#1\endcsname
-       \enforced\def\tabl_ntb_parameters_get[##1]%
+       \enforced\def\tabl_ntb_parameters_get[##S##1]%
          {\defcsname\??naturaltableset\m_tabl_tbl_level:#1\endcsname{\tabl_ntb_parameters_get[##1,#2]}}%
        \csname\??naturaltableset\m_tabl_tbl_level:#1\endcsname
        \enforced\let\tabl_ntb_parameters_get\setupcurrentnaturaltablelocal

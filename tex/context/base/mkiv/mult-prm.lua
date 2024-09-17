@@ -752,6 +752,7 @@ return {
   "spacefactoroverload",
   "spacefactorshrinklimit",
   "spacefactorstretchlimit",
+  "specificationdef",
   "srule",
   "subprescript",
   "subscript",

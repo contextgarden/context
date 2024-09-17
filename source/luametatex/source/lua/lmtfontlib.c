@@ -290,9 +290,15 @@ static void fontlib_aux_font_char_from_lua(lua_State *L, halfword f, int i, int 
         set_numeric_field_by_index(target, italic, 0);
         set_charinfo_italic(co, target);
         set_numeric_field_by_index(target, expansion, scaling_factor);
-        set_charinfo_expansion(co, target);
+        if (target) { 
+            set_font_text_control(f, text_control_expansion);
+            set_charinfo_expansion(co, target);
+        }
         set_numeric_field_by_index(target, compression, target);
-        set_charinfo_compression(co, target);
+        if (target) { 
+            set_font_text_control(f, text_control_expansion);
+            set_charinfo_compression(co, target);
+        }
         set_numeric_field_by_index(target, leftprotrusion, 0);
         if (target) { 
             set_font_text_control(f, text_control_left_protrusion);
@@ -647,7 +653,6 @@ static int lmt_font_from_lua(lua_State *L, int f)
                 lua_pop(L, 1);
             }
             if (num > 0) {
-                int fstep = 0;
                 tex_font_malloc_charinfo(f, num);
                 set_font_first_character(f, first);
                 set_font_last_character(f, last);
@@ -677,44 +682,6 @@ static int lmt_font_from_lua(lua_State *L, int f)
                     lua_pop(L, 1);
                 }
                 lua_pop(L, 1);
-                /*tex
-
-                    Handle font expansion last: We permits virtual fonts to use expansion as one
-                    can always turn it off.
-
-                */
-                set_numeric_field_by_index(fstep, step, 0);
-                if (fstep > 0) {
-                    int fstretch = 0;
-                    int fshrink = 0;
-                    if (fstep > max_font_adjust_step) {
-                        fstep = max_font_adjust_step;
-                    }
-                    set_numeric_field_by_index(fshrink, shrink, 0);
-                    set_numeric_field_by_index(fstretch, stretch, 0);
-                    if (fshrink < 0) {
-                        fshrink = 0;
-                    } else if (fshrink > max_font_adjust_shrink_factor) {
-                        fshrink = max_font_adjust_shrink_factor;
-                    }
-                    fshrink -= (fshrink % fstep);
-                    if (fshrink < 0) {
-                        fshrink = 0;
-                    }
-                    if (fstretch < 0) {
-                        fstretch = 0;
-                    } else if (fstretch > max_font_adjust_stretch_factor) {
-                        fstretch = max_font_adjust_stretch_factor;
-                    }
-                    fstretch -= (fstretch % fstep);
-                    if (fstretch < 0) {
-                        fstretch = 0;
-                    }
-                    set_font_step(f, fstep);
-                    set_font_max_stretch(f, fstretch);
-                    set_font_max_shrink(f, fshrink);
-                    set_font_text_control(f, text_control_expansion);
-                }
             } else {
                 tex_formatted_warning("font", "lua-loaded font '%d' with name '%s' has no characters", f, font_name(f));
             }

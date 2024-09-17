@@ -366,9 +366,11 @@ static void tex_aux_show_if_state(halfword code, halfword case_value)
     tex_begin_diagnostic();
     switch (code) {
         case if_chk_int_code       : tex_print_format("{chknum %i}",        case_value); break;
+        case if_chk_integer_code   : tex_print_format("{chknumber %i}",     case_value); break;
         case if_val_int_code       : tex_print_format("{numval %i}",        case_value); break;
         case if_cmp_int_code       : tex_print_format("{cmpnum %i}",        case_value); break;
         case if_chk_dim_code       : tex_print_format("{chkdim %i}",        case_value); break;
+        case if_chk_dimension_code : tex_print_format("{chkdimension %i}",  case_value); break;
         case if_val_dim_code       : tex_print_format("{dimval %i}",        case_value); break;
         case if_cmp_dim_code       : tex_print_format("{cmpdim %i}",        case_value); break;
         case if_case_code          : tex_print_format("{case %i}",          case_value); break;
@@ -775,7 +777,7 @@ void tex_conditional_if(halfword code, int unless)
                     }
                     result = (! p) && (! q);
                 }
-             IFTOKDONE:
+              IFTOKDONE:
                 if (pp) {
                     tex_flush_token_list(pp);
                 }
@@ -879,7 +881,8 @@ void tex_conditional_if(halfword code, int unless)
                 result = lmt_error_state.last_intercept ? check_error : check_okay;
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
-                goto CASE;
+             /* goto CASE; */
+                goto CASECHECK;
             }
         case if_chk_integer_code:
             {
@@ -892,7 +895,8 @@ void tex_conditional_if(halfword code, int unless)
                 }
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
-                goto CASE;
+             /* goto CASE; */
+                goto CASECHECK;
             }
         case if_val_int_code:
             {
@@ -920,7 +924,8 @@ void tex_conditional_if(halfword code, int unless)
                 result = lmt_error_state.last_intercept ? check_error : check_okay;
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
-                goto CASE;
+             /* goto CASE; */
+                goto CASECHECK;
             }
         case if_chk_dimension_code:
             {
@@ -933,7 +938,8 @@ void tex_conditional_if(halfword code, int unless)
                 }
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
-                goto CASE;
+             /* goto CASE; */
+                goto CASECHECK;
             }
         case if_val_dim_code:
             {
@@ -953,7 +959,11 @@ void tex_conditional_if(halfword code, int unless)
                 goto CASE;
             }
         case if_case_code:
-            /*tex Select the appropriate case and |return| or |goto common_ending|. */
+            /*tex 
+                Select the appropriate case and |return| or |goto common_ending|. We could 
+                support |\unless| for a limited case but let's not mess around to much; after 
+                all it is an original \TEX\ primitive. 
+            */
             result = tex_scan_integer(0, NULL);
             goto CASE;
         case if_defined_code:
@@ -1158,11 +1168,14 @@ void tex_conditional_if(halfword code, int unless)
                         result = cur_cmd == if_test_cmd ? 2 : 1;
                     }          
                     /*tex Because we only have two values we can actually support |\unless|. */
-                    if (unless) { 
-                        result = result == 1 ? 2 : 1;
-                    }
+                 // if (unless) { 
+                 //     result = result == 1 ? 2 : 1;
+                 // }
+                 // goto CASEWITHUNLESS;
+                    goto CASECHECK;
+                } else { 
+                    goto CASE;
                 }
-                goto CASE;
             }
         case if_has_tok_code:
             {
@@ -1276,16 +1289,12 @@ void tex_conditional_if(halfword code, int unless)
                 goto RESULT;
             }
         case if_insert_code:
-            {
-                /* beware: it tests */
-                result = ! tex_insert_is_void(tex_scan_integer(0, NULL));
-                goto RESULT;
-            }
+            /* beware: it tests */
+            result = ! tex_insert_is_void(tex_scan_integer(0, NULL));
+            goto RESULT;
         case if_in_alignment_code:
-            {
-                result = tex_in_alignment();
-                goto RESULT;
-            }
+            result = tex_in_alignment();
+            goto RESULT;
         case if_cramped_code:
             result = tex_is_cramped_style(tex_scan_math_style_identifier(0, 0));
             goto RESULT;
@@ -1313,6 +1322,7 @@ void tex_conditional_if(halfword code, int unless)
                     case lua_value_integer_code:
                     case lua_value_cardinal_code:
                     case lua_value_dimension_code:
+                        /* unless: we could swap 1 and 3 */
                         goto CASE;
                     case lua_value_boolean_code:
                         goto RESULT;
@@ -1327,11 +1337,28 @@ void tex_conditional_if(halfword code, int unless)
                 }
             }
     }
+  CASECHECK:
+    if (unless) { 
+        result = result == check_okay ? check_error : check_okay;
+        goto CASEWITHUNLESS;
+    } else { 
+        goto CASE;
+    }
   CASE:
     /*tex
-       To be considered: |if (unless) { result = max_integer - result; }| so that we hit |\else|
-       and can do |\unless \ifcase \zero... \else \fi|.
+       It is too messy to support |\unless| for case variants although for |\ifparameter| we do 
+       support it (there are only a few outcomes there).
     */
+    if (unless) {
+        /*tex This could be a helper as we do this a few more times. */
+        halfword online = tracing_online_par;
+        tracing_online_par = 1;
+        tex_begin_diagnostic();
+        tex_print_format( "ignoring \\unless in %C test", if_test_cmd, code);
+        tex_end_diagnostic();
+        tracing_online_par = online;
+    }
+  CASEWITHUNLESS:
     if (tracing_commands > 1) {
         tex_aux_show_if_state(code, result);
     }

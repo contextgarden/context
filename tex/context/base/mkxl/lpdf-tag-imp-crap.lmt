@@ -28,7 +28,7 @@ return {
         -- Sub       : line with lbl numbers
 
         document           = { pua = "ua1", pdf = "Document"   },
-        documentpart       = { pua = "ua2", pdf = "DocumentFragment" },
+        documentpart       = { pua = "ua1", pdf = "NonStruct"  },
 
         division           = { pua = "ua1", pdf = "Part"       },
         paragraph          = { pua = "ua1", pdf = "P"          },

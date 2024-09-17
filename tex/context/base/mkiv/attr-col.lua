@@ -143,7 +143,7 @@ local models = {
 
 local function rgbtocmyk(r,g,b) -- we could reduce
     if not r then
-        return 0, 0, 0
+        return 0, 0, 0, 1
     else
         return 1-r, 1-g, 1-b, 0
     end
@@ -151,7 +151,7 @@ end
 
 local function cmyktorgb(c,m,y,k)
     if not c then
-        return 0, 0, 0, 1
+        return 0, 0, 0
     elseif cmykrgbmode == 1 then
         local d = 1.0 - k
         return 1.0 - min(1.0,c*d+k), 1.0 - min(1.0,m*d+k), 1.0 - min(1.0,y*d+k)

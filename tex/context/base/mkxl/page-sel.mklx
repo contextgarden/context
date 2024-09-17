@@ -138,8 +138,13 @@
        {\ifnum#page>\c_page_selectors_n\else
           \page_selectors_filter_alternative{#filename}{#page}%
         \fi}%
+     % todo: use the context lua slicer
      \def\page_selectors_filter_step#step%
-       {\dowithminmaxrange{1}{\noffigurepages}{#step}\page_selectors_filter_step_indeed}%
+       {\dowithminmaxrangeslice
+          {1}{\noffigurepages}% where we take from
+          {1}{\noffigurepages}% what we want
+          {#step}%              the set
+          \page_selectors_filter_step_indeed}%
      \processcommacommand[\p_selection]\page_selectors_filter_step
    \fi
    \egroup}
@@ -164,7 +169,12 @@
 
 \defcsname\??filterpagesalternative\v!b\endcsname#filename#page%
   {\startTEXpage
-     \externalfigure[#filename][\c!page=#page]%
+     \scratchcounter#page\relax
+     \ifnum\scratchcounter<\zerocount
+        \getfiguredimensions[#filename]%
+        \scratchcounter\numexpr\noffigurepages-\scratchcounter+\plusone\relax
+     \fi
+     \normalexpanded{\externalfigure[#filename][\c!page=\the\scratchcounter]}%
    \stopTEXpage}
 
 \letcsname\??filterpagesalternative\v!default\expandafter\endcsname\csname\??filterpagesalternative\v!a\endcsname

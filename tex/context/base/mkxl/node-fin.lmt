@@ -588,10 +588,11 @@ local function stacker(attribute,head,default) -- no inheritance, but list-wise
 -- end
             end
         elseif id == rule_code then
+            check = hasdimensions(current)
             if subtype == virtualrule_code then
                 check = true
-            elseif subtype == boxrule_code or subtype == imagerule_code or subtype == emptyrule_code then
-                -- so no redundant color stuff (only here, layers for instance should obey)
+         -- elseif subtype == boxrule_code or subtype == imagerule_code or subtype == emptyrule_code then
+            elseif subtype == emptyrule_code then
                 check = false
             else
                 check = hasdimensions(current)

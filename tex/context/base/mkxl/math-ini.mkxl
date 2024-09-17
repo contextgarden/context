@@ -872,6 +872,10 @@
     \indisplaymath\conditionaltrue % actually we don't use display math
 \to \everydisplay
 
+% \appendtoks
+%     \linebreakpasses\zerocount
+% \to \everymathematics
+
 \permanent\def\inlineordisplaymath{\ifconditional\indisplaymath\expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments\fi}
 
 \permanent\protected\def\forcedisplaymath
@@ -1284,7 +1288,8 @@
     \inherited\setmathspacing \mathoperatorcode        \mathconstructcode       \allunsplitstyles \pettymuskip
     \inherited\setmathspacing \mathoperatorcode        \mathellipsiscode        \allsplitstyles   \thinmuskip
     \inherited\setmathspacing \mathoperatorcode        \mathellipsiscode        \allunsplitstyles \pettymuskip
-    \inherited\setmathspacing \mathoperatorcode        \mathfractioncode        \allmathstyles    \thinmuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathfractioncode        \allsplitstyles   \medmuskip
+    \inherited\setmathspacing \mathoperatorcode        \mathfractioncode        \allunsplitstyles \pettymuskip
     \inherited\setmathspacing \mathoperatorcode        \mathradicalcode         \allmathstyles    \thinmuskip
     %
     \inherited\setmathspacing \mathbinarycode          \mathordinarycode        \allsplitstyles   \medmuskip
@@ -5132,3 +5137,39 @@
 %   {\startimath#1\stopimath}
 %
 % \let\math_m_stay\firstofoneargument
+
+% Maybe
+%
+% % \showmakeup[mathglue] \mathspacingmode1
+% % \im{x \not< M}
+% % \im{x + x \not+ M + M}
+% % \im{x + x \not+ M + M}
+% % \im{x + x \not [\not ] M}
+%
+% \protected\def\abnormalnot#1%
+%   {\ifcsname\csstring\not\csstring#1\endcsname
+%      \lastnamedcs
+%    \else
+%      \begingroup
+%      \aliased\let\not\normalnot % else weird recursion and even a crash (stack probably)
+%      % we need to block look_ahead_for_end_class_option (todo: via boundary
+%      \setbox\scratchboxone\mathstylehbox{\normalnot}%
+%      \setbox\scratchboxtwo\mathstylehbox{\hbox{}#1\hbox{}}% fool the bin
+%      \scratchcounterone\the\lastleftclass
+%      \scratchcountertwo\the\lastrightclass
+%       \mathatom leftclass \scratchcounterone rightclass \scratchcountertwo
+%     {\hpack{%
+%        \scratchdimenone\wd\scratchboxone
+%        \scratchdimentwo\wd\scratchboxtwo
+%        \kern.5\dimexpr\scratchdimentwo-\scratchdimenone\relax
+%        \unhbox\scratchboxone
+%        \kern-.5\dimexpr\scratchdimenone+\scratchdimentwo\relax
+%        \unhbox\scratchboxtwo
+%      }}%
+%      \endgroup
+%   \fi}
+%
+% \appendtoks
+%   \aliased\let\normalnot\not
+%   \aliased\let\not\abnormalnot
+% \to \everymathematics

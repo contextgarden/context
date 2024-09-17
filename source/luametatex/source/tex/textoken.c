@@ -238,7 +238,6 @@ void tex_compact_tokens(void)
     }
 }
 
-
 /*tex
 
     The function |get_avail| returns a pointer (index) to a new one word node whose |link| field is

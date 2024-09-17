@@ -243,10 +243,6 @@ typedef struct texfont {
     /*tex this controls the engine */
     int         mathcontrol;
     int         textcontrol;
-    /*tex expansion */
-    int         max_shrink;
-    int         max_stretch;
-    int         step;
     /*tex for experimental new thingies */
     int         compactmath;  /* This can go away, just always test. */ 
     /*tex saves calculations */
@@ -299,9 +295,6 @@ extern font_state_info lmt_font_state;
 # define font_textcontrol(a)            lmt_font_state.fonts[a]->textcontrol
 # define font_hyphen_char(a)            lmt_font_state.fonts[a]->hyphen_char
 # define font_skew_char(a)              lmt_font_state.fonts[a]->skew_char
-# define font_max_shrink(a)             (lmt_font_state.adjust_step > 0 ? lmt_font_state.adjust_shrink  : lmt_font_state.fonts[a]->max_shrink)
-# define font_max_stretch(a)            (lmt_font_state.adjust_step > 0 ? lmt_font_state.adjust_stretch : lmt_font_state.fonts[a]->max_stretch)
-# define font_step(a)                   (lmt_font_state.adjust_step > 0 ? lmt_font_state.adjust_step    : lmt_font_state.fonts[a]->step)
 # define font_mathscale(a,b)            lmt_font_state.fonts[a]->mathscales[b]
 # define font_mathxscale(a,b)           lmt_font_state.fonts[a]->mathxscales[b]
 # define font_mathyscale(a,b)           lmt_font_state.fonts[a]->mathyscales[b]

@@ -137,11 +137,13 @@
 % {\setupformula[location=right] \getbuffer[all] \page}
 % {\setupformula[location=left]  \getbuffer[all] \page}
 
+\newcount\c_math_eqalign_slots
+
 \def\math_build_eqalign
   {\scratchtoks\emptytoks
    \d_math_eqalign_distance\mathalignmentparameter\c!distance\relax
    \ifcstok{\mathalignmentparameter\c!align}\v!auto
-     \d_math_eqalign_number_distance\mathalignmentparameter\c!numberdistance\relax
+     \d_math_eqalign_number_distance\mathalignment parameter\c!numberdistance\relax
      \letmathalignmentparameter\c!align\v!middle
    \else
      \d_math_eqalign_number_distance\zeropoint
@@ -164,6 +166,7 @@
       \fi
       \etoksapp\scratchtoks\t_math_align_b}%
    \etoksapp\scratchtoks\t_math_align_c
+   \c_math_eqalign_slots\numexpr\scratchcounterone*\scratchcountertwo\relax
    \toksapp\scratchtoks{\global\c_math_eqalign_repeat\zerocount}}
 
 \def\math_eqalign_set_defaults
@@ -186,11 +189,13 @@
 %    \usemathstyleparameter\mathalignmentparameter\c!mathstyle
 %    \tabskip\zeroskip
 %    \everycr\emptytoks
+%    \everycr\emptytoks
 %    #1%
 %    \stopforceddisplaymath
 %    \ifnum\lastrightclass<\mathunsetcode
 %      \global\expandafter\integerdef\csname\??mathalignendclass\the\c_math_eqalign_column\endcsname\lastrightclass
 %    \fi}
+
 \protected\def\math_math_in_eqalign_start
   {\mathbeginclass
      \ifconditional\c_math_eqalign_force_text
@@ -203,6 +208,7 @@
      \else
        \mathunsetcode
      \fi
+   \mathendclass\mathordinarycode % added
    \ifconditional\c_math_eqalign_force_text
      \usemathstyleparameter\mathalignmentparameter\c!textstyle
    \else
@@ -244,6 +250,103 @@
    \dostarttaggednodetail\t!mtext
      \strc_formulas_place_number_nested{#1}{#2}%
    \dostoptagged}
+
+%D There was a request for rules on the list when we had the 2024 meeting:
+%D
+%D \starttyping
+%D \startformula
+%D \startalign[n=7,align=*:middle,rulecolor=red,rulethickness=.25ex]
+%D \NC 1   \NC + \NC 222 \NC + \NC  33  \NC + \NC  44  \NR
+%D \HL
+%D \NC 11  \NC + \NC 22  \NC + \NC  3   \NC + \NC  4   \NR
+%D \HL[1,green,3mm,3,reset,5,blue,7]
+%D \NC 111 \NC + \NC 2   \NC + \NC  333 \NC + \NC  444 \NR
+%D \stopalign
+%D \stopformula
+%D \stoptyping
+
+% musical timestamp, listening to Anna Von Hausswolff on pipe organ (ctx 2024 after
+% party with Mikael S)
+
+% % simple version
+%
+% \def\math_alignment_HL % todo: arguments
+%   {\noalign{\nointerlineskip}%
+%    \omit\aligntab
+%    \usemathalignmentcolorparameter\c!rulecolor
+%    \scratchdimen\dimexpr\mathalignmentparameter\c!rulethickness/2\relax
+%    \novrule
+%      \s!height \dimexpr\mathalignmentparameter\c!toffset-\scratchdimen\relax
+%      \s!depth  \dimexpr\mathalignmentparameter\c!boffset-\scratchdimen\relax
+%    \leaders
+%      \hrule
+%        \s!height \scratchdimen
+%        \s!depth  \scratchdimen
+%      \relax
+%      \hfill
+%    \expandedrepeat
+%      \numexpr\c_math_eqalign_slots+\minusone\relax
+%      {\span\omit}%
+%    \crcr
+%    \noalign{\nointerlineskip}}
+
+\lettonothing\p_math_alignment_HL_color
+\newdimension\d_math_alignment_HL_width
+
+\protected\def\math_alignment_HL_rule
+  {\leaders
+     \hrule
+       \s!height \d_math_alignment_HL_width
+       \s!depth  \d_math_alignment_HL_width
+     \relax
+     \hfill}
+
+\def\math_alignment_HL_reset
+  {\d_math_alignment_HL_width\dimexpr\mathalignmentparameter\c!rulethickness/2\relax
+   \edef\p_math_alignment_HL_color{\mathalignmentparameter\c!rulecolor}}
+
+\def\math_alignment_HL_step_add#1%
+  {\ifcase\scratchcounter\else
+     \expandedrepeat\numexpr#1-\scratchcounter\relax{\toksapp\scratchtoks{\aligntab\omit}}%
+   \fi
+   \scratchcounter#1\relax
+   \etoksapp\scratchtoks{%
+   % \noexpand\def\noexpand\p_math_alignment_HL_color{\p_math_alignment_HL_color}%
+     \colo_helpers_activate{\p_math_alignment_HL_color}%
+     \d_math_alignment_HL_width\the\d_math_alignment_HL_width\relax
+     \math_alignment_HL_rule}}
+
+\def\math_alignment_HL_step#1%
+  {\ifcstok{#1}\v!reset
+     \math_alignment_HL_reset
+   \orelse\ifchkdim#1\or
+     \d_math_alignment_HL_width#1\relax
+   \orelse\ifchknum#1\or
+     \math_alignment_HL_step_add{#1}%
+   \else
+     \def\p_math_alignment_HL_color{#1}%
+   \fi}
+
+\tolerant\def\math_alignment_HL[#1]%
+  {\noalign{\nointerlineskip}%
+   \omit\aligntab\omit
+   \math_alignment_HL_reset
+   \novrule
+     \s!height \dimexpr\mathalignmentparameter\c!toffset\relax
+     \s!depth  \dimexpr\mathalignmentparameter\c!boffset\relax
+   \relax
+   \ifparameter#1\or
+     \global\scratchcounter\zerocount
+     \scratchtoks{\aligntab\omit}%
+     \processcommalist[#1]\math_alignment_HL_step
+     \expand\scratchtoks
+   \else
+     \colo_helpers_activate\p_math_alignment_HL_color
+     \math_alignment_HL_rule
+     \expandedrepeat\numexpr\c_math_eqalign_slots+\minusone\relax{\span\omit}%
+   \fi
+   \crcr
+   \noalign{\nointerlineskip}}
 
 % the preamble is scanned for tabskips so we need the span to prevent an error
 % message but we can probably do without that hack now .. best not change this
@@ -706,13 +809,14 @@
   {\noalign{\blank[#1]}}
 
 \installmacrostack\NC % maybe more to shared table definitions
-\installmacrostack\TC % maybe more to shared table definitions
-\installmacrostack\NN % maybe more to shared table definitions
-\installmacrostack\EQ % maybe more to shared table definitions
-\installmacrostack\NR % maybe more to shared table definitions
-\installmacrostack\BC % maybe more to shared table definitions
-\installmacrostack\EC % maybe more to shared table definitions
-\installmacrostack\TB % maybe more to shared table definitions
+\installmacrostack\TC % idem
+\installmacrostack\NN % idem
+\installmacrostack\EQ % idem
+\installmacrostack\NR % idem
+\installmacrostack\BC % idem
+\installmacrostack\EC % idem
+\installmacrostack\HL % idem
+\installmacrostack\TB % idem
 
 \appendtoks
     \push_macro_NC
@@ -720,12 +824,14 @@
     \push_macro_NN
     \push_macro_EQ
     \push_macro_NR
+    \push_macro_HL
     \push_macro_TB
     \enforced\let\NC\math_alignment_NC
     \enforced\let\TC\math_alignment_TC
     \enforced\let\NN\math_alignment_NN
     \enforced\let\EQ\math_alignment_EQ
     \enforced\let\NR\math_alignment_NR
+    \enforced\let\HL\math_alignment_HL
     \enforced\let\TB\math_common_TB
     \global\c_math_eqalign_first\conditionaltrue
     \global\s_strc_math_alignment_inbetween\zeroskip
@@ -733,6 +839,7 @@
 
 \appendtoks
     \pop_macro_TB
+    \pop_macro_HL
     \pop_macro_NR
     \pop_macro_EQ
     \pop_macro_NN
@@ -879,7 +986,12 @@
    \c!location=\v!formula,
    \c!spaceinbetween=\formulaparameter\c!spaceinbetween,
    \c!numberthreshold=\zeropoint,
-   \c!grid=\v!math]
+   \c!grid=\v!math,
+  %\c!rulecolor=red,
+   \c!moffset=.25\exheight,
+   \c!toffset=\mathalignmentparameter\c!moffset,
+   \c!boffset=\mathalignmentparameter\c!moffset,
+   \c!rulethickness=\linewidth]
 
 \definemathalignment[align]            % default case (this is what amstex users expect)
 \definemathalignment[\v!mathalignment] % prefered case (this is cleaner, less clashing)
@@ -1306,6 +1418,7 @@
    \math_fenced_start_wrap{\mathcasesparameter\c!fences}%
    \mathatom \s!class \mathconstructcode \bgroup
    \vcenter\bgroup
+   \mathbeginclass\zerocount % added, cases can be in an alignment cell
    \enforced\let\MC\math_cases_NC
    \enforced\let\NC\math_cases_NC
    \enforced\let\NR\math_cases_NR

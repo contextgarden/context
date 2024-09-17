@@ -3612,7 +3612,7 @@ static void tex_aux_run_text_italic_correction(void)
     }
     /*tex 
         When we end up here the decision has been made to inject a kern, it being zero or 
-        otherwise. 
+        otherwise. What to do with multiple corrections. Best not mess with heuristics here. 
     */
     tex_tail_append(tex_new_kern_node(kern, subtype));
     /*tex 
@@ -4690,6 +4690,587 @@ static void tex_aux_set_box(int a)
     }
 }
 
+static int tex_aux_first_with_criterium(halfword passes, int subpasses) 
+{
+    for (halfword subpass = 1; subpass <= subpasses; subpass++) {
+        if (tex_get_passes_features(passes, subpass) & passes_criterium_set) {
+            return subpass; 
+        }
+    }
+    return 0;
+}
+
+static int tex_aux_first_with_quit(halfword passes, int subpasses) 
+{
+    for (halfword subpass = 1; subpass <= subpasses; subpass++) {
+        if (tex_get_passes_features(passes, subpass) & passes_quit_pass) {
+            return subpass; 
+        }
+    }
+    return 0;
+}
+
+static halfword tex_aux_scan_specification(quarterword code)
+{
+    do {
+        tex_get_x_token();
+    } while (cur_cmd == spacer_cmd);
+    if (cur_cmd == specificationspec_cmd) {
+          return tex_copy_node(eq_value(cur_cs));
+    } else {
+        tex_back_input(cur_tok);
+    } 
+    {
+        halfword p = null;
+        halfword count = tex_scan_integer(1, NULL);
+        int pairs = 0;
+        switch (code) { 
+            case par_shape_code: 
+                if (count > 0) {
+                    halfword options = 0;
+                    if (tex_scan_keyword("options")) {
+                        options = tex_scan_integer(0, NULL);
+                    }
+                    p = tex_new_specification_node(count, code, options);
+                    for (int n = 1; n <= count; n++) {
+                        tex_set_specification_indent(p, n, tex_scan_dimension(0, 0, 0, 0, NULL));
+                        tex_set_specification_width(p, n, tex_scan_dimension(0, 0, 0, 0, NULL)); 
+                    }
+                }
+                break;
+           case fitness_demerits_code: 
+                {
+                    if (count > n_of_fitness_values) {
+                        /*tex Todo: warning. */
+                        count = n_of_fitness_values;
+                    }
+                    if (count) {
+                        p = tex_new_specification_node(count, code, 0);
+                        for (int n = 1; n <= count; n++) {
+                            tex_set_specification_fitness(p, n, tex_scan_integer(0, NULL));   
+                            tex_set_specification_demerits_u(p, n, tex_scan_integer(0, NULL));  
+                            tex_set_specification_demerits_d(p, n, tex_scan_integer(0, NULL));  
+                        }
+                    } else { 
+                        p = tex_default_fitness_demerits();
+                    }
+                    tex_check_fitness_demerits(p);
+                }
+                break;
+            case par_passes_code: 
+                /*tex 
+                    This scanner is a bit over the top but making a different one does not make sense not does simple 
+                    scan_keyword and plenty pushback. We just have these long keywords. On a test that scans al keywords 
+                    the tree based variant is more than three times faster than the sequential push back one. 
+                */
+                if (count > 0) {
+                    halfword options = 0;
+                    halfword n = 1;
+                    if (count > 0xFF) {
+                        /* todo: message */
+                        count = 0xFF;
+                    }
+                    if (tex_scan_keyword("options")) {
+                        options = tex_scan_integer(0, NULL);
+                    }
+                    p = tex_new_specification_node(count, code, options);
+                    while (n <= count) {
+                        switch (tex_scan_character("abcdefhilmnoqrstuABCDEFHILMNOQRSTU", 0, 1, 0)) {
+                            case 0:
+                                goto DONE;
+                            case 'a': case 'A':
+                                if (tex_scan_mandate_keyword("adj", 1)) {
+                                    switch (tex_scan_character("duDU", 0, 0, 0)) {
+                                        case 'd': case 'D' :                                     
+                                            if (tex_scan_mandate_keyword("adjdemerits", 4)) {
+                                                tex_set_passes_adjdemerits(p, n, tex_scan_integer(0, NULL));
+                                                tex_set_passes_okay(p, n, passes_adjdemerits_okay);
+                                            } break;
+                                        case 'u': case 'U': 
+                                            if (tex_scan_mandate_keyword("adjustspacing", 4)) {
+                                                if (tex_scan_character("sS", 0, 0, 0)) {
+                                                    switch (tex_scan_character("thTH", 0, 0, 0)) {
+                                                        case 't': case 'T':
+                                                            switch (tex_scan_character("erER", 0, 0, 0)) {
+                                                                case 'e': case 'E':
+                                                                    if (tex_scan_mandate_keyword("adjustspacingstep", 16)) {
+                                                                        tex_set_passes_adjustspacingstep(p, n, tex_scan_integer(0, NULL));   
+                                                                        tex_set_passes_okay(p, n, passes_adjustspacingstep_okay);
+                                                                    }
+                                                                    break;
+                                                                case 'r': case 'R':
+                                                                    if (tex_scan_mandate_keyword("adjustspacingstretch", 16)) {
+                                                                        tex_set_passes_adjustspacingstretch(p, n, tex_scan_integer(0, NULL));
+                                                                        tex_set_passes_okay(p, n, passes_adjustspacingstretch_okay);
+                                                                    }
+                                                                    break;
+                                                                default:
+                                                                    tex_aux_show_keyword_error("adjustspacingsstep|adjustspacingstretch");
+                                                                    goto DONE;
+                                                            }
+                                                            break;
+                                                        case 'h': case 'H':
+                                                            if (tex_scan_mandate_keyword("adjustspacingshrink", 15)) {
+                                                                tex_set_passes_adjustspacingshrink(p, n, tex_scan_integer(0, NULL)); 
+                                                                tex_set_passes_okay(p, n, passes_adjustspacingshrink_okay);
+                                                            }
+                                                            break;
+                                                        default:
+                                                            tex_aux_show_keyword_error("adjustspacingsstep|adjustspacingshrink|adjustspacingstretch");
+                                                            goto DONE;
+                                                    }
+                                                } else {
+                                                    tex_set_passes_adjustspacing(p, n, tex_scan_integer(0, NULL));   
+                                                    tex_set_passes_okay(p, n, passes_adjustspacing_okay);
+                                                } 
+                                            }
+                                            break;
+                                        default:
+                                            goto NOTDONE1;
+                                    }
+                                } else { 
+                                    NOTDONE1:
+                                    tex_aux_show_keyword_error("adjdemerits|adjustspacing|adjustspacingstep|adjustspacingshrink|adjustspacingstretch");
+                                    goto DONE;
+                                }
+                                break;
+                            case 'b': case 'B':
+                                if (tex_scan_mandate_keyword("badness", 1)) {
+                                    /*tex 
+                                        This one is currently silently ignored as it makes no sense 
+                                        beause we have not enough information and because using 
+                                        |demerits| is more acurate (but also a bit more difficult). 
+                                    */
+                                    tex_scan_integer(0, NULL);           
+                                }
+                                break;
+                            case 'c': case 'C':
+                                switch (tex_scan_character("alAL", 0, 0, 0)) {
+                                    case 'a': case 'A':
+                                        if (tex_scan_mandate_keyword("callback", 2)) {
+                                            tex_set_passes_callback(p, n, tex_scan_integer(0, NULL));
+                                            tex_set_passes_features(p, n, passes_callback_set);
+                                            tex_set_passes_okay(p, n, passes_callback_okay);
+                                        }
+                                        break;
+                                    case 'l': case 'L': 
+                                        if (tex_scan_mandate_keyword("classes", 2)) {
+                                            tex_set_passes_classes(p, n, tex_scan_integer(0, NULL));
+                                            tex_set_passes_features(p, n, passes_criterium_set);
+                                            tex_set_passes_okay(p, n, passes_classes_okay);
+                                        }
+                                        break;
+                                    default:
+                                        tex_aux_show_keyword_error("classes|callback");
+                                        goto DONE;
+                                }
+                                break;
+                            case 'd': case 'D':
+                                switch (tex_scan_character("oeOE", 0, 0, 0)) {
+                                    case 'e': case 'E':
+                                        if (tex_scan_mandate_keyword("demerits", 2)) {
+                                            tex_set_passes_demerits(p, n, tex_scan_integer(0, NULL));
+                                            tex_set_passes_features(p, n, passes_criterium_set);
+                                            tex_set_passes_okay(p, n, passes_demerits_okay);
+                                        }
+                                        break;
+                                    case 'o': case 'O':
+                                        if (tex_scan_mandate_keyword("doublehyphendemerits", 2)) {
+                                            tex_set_passes_doublehyphendemerits(p, n, tex_scan_integer(0, NULL));
+                                            tex_set_passes_okay(p, n, passes_doublehyphendemerits_okay);
+                                        }
+                                        break;
+                                    default:
+                                        tex_aux_show_keyword_error("demerits|doublehyphendemerits");
+                                        goto DONE;
+                                }
+                                break;
+                            case 'e': case 'E':
+                                switch (tex_scan_character("mxMX", 0, 0, 0)) {
+                                    case 'm': case 'M':
+                                        if (tex_scan_mandate_keyword("emergency", 2)) {
+                                            switch (tex_scan_character("flsprwFLSPRW", 0, 0, 0)) {
+                                                case 'f': case 'F':
+                                                    /* tex 
+                                                        Using a factor is better from the perspective 
+                                                        of |\specificationdef| usage because we don't 
+                                                        want hardcoded dimensions then. 
+                                                    */
+                                                    if (tex_scan_mandate_keyword("emergencyfactor", 10)) {
+                                                        tex_set_passes_emergencyfactor(p, n, tex_scan_integer(0, NULL));
+                                                        tex_set_passes_okay(p, n, passes_emergencyfactor_okay);
+                                                    }
+                                                    break;
+                                                case 'l': case 'L':
+                                                    if (tex_scan_mandate_keyword("emergencyleftextra", 10)) {
+                                                        tex_set_passes_emergencyleftextra(p, n, tex_scan_integer(0, NULL));
+                                                        tex_set_passes_okay(p, n, passes_emergencyleftextra_okay);
+                                                    }
+                                                    break;
+                                                case 'p': case 'P':
+                                                    if (tex_scan_mandate_keyword("emergencypercentage", 10)) {
+                                                        tex_set_passes_emergencypercentage(p, n, tex_scan_integer(0, NULL));
+                                                        tex_set_passes_okay(p, n, passes_emergencypercentage_okay);
+                                                    }
+                                                    break;
+                                                case 'r': case 'R':
+                                                    if (tex_scan_mandate_keyword("emergencyrightextra", 10)) {
+                                                        tex_set_passes_emergencyrightextra(p, n, tex_scan_integer(0, NULL));
+                                                        tex_set_passes_okay(p, n, passes_emergencyrightextra_okay);
+                                                    }
+                                                    break;
+                                                case 's': case 'S':
+                                                    if (tex_scan_mandate_keyword("emergencystretch", 10)) {
+                                                        tex_set_passes_emergencystretch(p, n, tex_scan_dimension(0, 0, 0, 0, NULL));
+                                                        tex_set_passes_okay(p, n, passes_emergencystretch_okay);
+                                                    }
+                                                    break;
+                                                case 'w': case 'W':
+                                                    if (tex_scan_mandate_keyword("emergencywidthextra", 10)) {
+                                                        tex_set_passes_emergencywidthextra(p, n, tex_scan_integer(0, NULL));
+                                                        tex_set_passes_okay(p, n, passes_emergencywidthextra_okay);
+                                                    }
+                                                    break;
+                                                default:
+                                                    goto NOTDONE4;
+                                            }
+                                        } else { 
+                                          NOTDONE4:
+                                            tex_aux_show_keyword_error("emergencyfactor|emergencystretch|emergencypercentage|emergencyleftextra|emergencyrightextra");
+                                            goto DONE;
+                                        }
+                                        break;
+                                    case 'x': case 'X':
+                                        if (tex_scan_mandate_keyword("extrahyphenpenalty", 2)) {
+                                            tex_set_passes_extrahyphenpenalty(p, n, tex_scan_integer(0, NULL));
+                                            tex_set_passes_okay(p, n, passes_extrahyphenpenalty_okay);
+                                        }
+                                        break;
+                                    default:
+                                        tex_aux_show_keyword_error("emergencyfactor|extrahyphenpenalty");
+                                        goto DONE;
+                                }
+                                break;
+                            case 'f': case 'F':
+                                if (tex_scan_mandate_keyword("fi", 1)) {
+                                    switch (tex_scan_character("ntNT", 0, 0, 0)) {
+                                        case 'n': case 'N':
+                                            if (tex_scan_mandate_keyword("finalhyphendemerits", 3)) {
+                                                tex_set_passes_finalhyphendemerits(p, n, tex_scan_integer(0, NULL));
+                                                tex_set_passes_okay(p, n, passes_finalhyphendemerits_okay);
+                                            }
+                                            break;
+                                        case 't': case 'T':
+                                            if (tex_scan_mandate_keyword("fitnessdemerits", 3)) {
+                                                tex_set_passes_fitnessdemerits(p, n, tex_aux_scan_specification(fitness_demerits_code));
+                                                tex_set_passes_okay(p, n, passes_fitnessdemerits_okay);
+                                            }
+                                            break;
+                                        default:
+                                            goto NOTDONE2;
+                                    }
+                                } else { 
+                                  NOTDONE2:
+                                    tex_aux_show_keyword_error("finalhyphendemetits|fitnessdemerits");
+                                    goto DONE;
+                                }
+                                break;
+                            case 'h': case 'H':
+                                if (tex_scan_mandate_keyword("hyphenation", 1)) {
+                                    tex_set_passes_hyphenation(p, n, tex_scan_integer(0, NULL));           
+                                    tex_set_passes_okay(p, n, passes_hyphenation_okay);
+                                }
+                                break;
+                            case 'i': case 'I':
+                                switch (tex_scan_character("dfDF", 0, 0, 0)) {
+                                    case 'd': case 'D':
+                                        if (tex_scan_mandate_keyword("identifier", 2)) {
+                                            passes_identifier(p) = tex_scan_integer(0, NULL);
+                                        }
+                                        break;
+                                    case 'f': case 'F':
+                                        switch (tex_scan_character("aegtAEGT", 0, 0, 0)) {
+                                            case 'a': case 'A':
+                                                if (tex_scan_mandate_keyword("ifadjustspacing", 3)) {
+                                                    tex_set_passes_features(p, n, passes_if_adjust_spacing);
+                                                    tex_set_passes_features(p, n, passes_test_set);
+                                                } 
+                                                break;
+                                            case 'e': case 'E':
+                                                if (tex_scan_mandate_keyword("ifemergencystretch", 3)) {
+                                                    tex_set_passes_features(p, n, passes_if_emergency_stretch);
+                                                    tex_set_passes_features(p, n, passes_test_set);
+                                                } 
+                                                break;
+                                            case 'g': case 'G':
+                                                if (tex_scan_mandate_keyword("ifglue", 3)) {
+                                                    tex_set_passes_features(p, n, passes_if_glue);
+                                                    tex_set_passes_features(p, n, passes_test_set);
+                                                } 
+                                                break;
+                                            case 'm': case 'M':
+                                                if (tex_scan_mandate_keyword("ifmath", 3)) {
+                                                    tex_set_passes_features(p, n, passes_if_math);
+                                                    tex_set_passes_features(p, n, passes_test_set);
+                                                } 
+                                                break;
+                                            case 't': case 'T':
+                                                if (tex_scan_mandate_keyword("iftext", 3)) {
+                                                    tex_set_passes_features(p, n, passes_if_text);
+                                                    tex_set_passes_features(p, n, passes_test_set);
+                                                } 
+                                                break;
+                                            default:
+                                                tex_aux_show_keyword_error("ifadjustspacing|ifemergencystretch|ifglue|ifmath|iftext");
+                                                goto DONE;
+                                        }
+                                        break;
+                                    default:
+                                        tex_aux_show_keyword_error("identifier|ifadjustspacing|ifemergencystretch|ifglue|iftext");
+                                        goto DONE;
+                                }
+                                break;
+                            case 'l': case 'L':
+                                switch (tex_scan_character("ieIE", 0, 0, 0)) {
+                                    case 'e': case 'E':
+                                        if (tex_scan_mandate_keyword("lefttwindemerits", 2)) {
+                                            tex_set_passes_lefttwindemerits(p, n, tex_scan_integer(0, NULL));
+                                            tex_set_passes_okay(p, n, passes_lefttwindemerits_okay);
+                                        } 
+                                        break;
+                                    case 'i': case 'I':
+                                        if (tex_scan_mandate_keyword("line", 2)) {
+                                            switch (tex_scan_character("bpBP", 0, 0, 0)) {
+                                                case 'b': case 'B':
+                                                    if (tex_scan_mandate_keyword("linebreak", 5)) {
+                                                        switch (tex_scan_character("coCO", 0, 0, 0)) {
+                                                            case 'c': case 'C':
+                                                                if (tex_scan_mandate_keyword("linebreakchecks", 10)) {
+                                                                    tex_set_passes_linebreakchecks(p, n, tex_scan_integer(0, NULL));
+                                                                    tex_set_passes_okay(p, n, passes_linebreakchecks_okay);
+                                                                } 
+                                                                break;
+                                                            case 'o': case 'O':
+                                                                if (tex_scan_mandate_keyword("linebreakoptional", 10)) {
+                                                                    tex_set_passes_linebreakoptional(p, n, tex_scan_integer(0, NULL));
+                                                                    tex_set_passes_okay(p, n, passes_linebreakoptional_okay);
+                                                                } 
+                                                                break;
+                                                            default:
+                                                                tex_aux_show_keyword_error("linebreakoptional|linebreakchecks");
+                                                                goto DONE;
+                                                        }
+                                                    }
+                                                    break;
+                                                case 'p': case 'P':
+                                                    if (tex_scan_mandate_keyword("linepenalty", 5)) {
+                                                        tex_set_passes_linepenalty(p, n, tex_scan_integer(0, NULL));
+                                                        tex_set_passes_okay(p, n, passes_linepenalty_okay);
+                                                    } 
+                                                    break;
+                                                default:
+                                                    tex_aux_show_keyword_error("linebreakoptional|linebreakchecks|linepenalty");
+                                                    goto DONE;
+                                            }
+                                        }
+                                        break;
+                                }
+                                break;
+                            case 'm': case 'M':
+                                if (tex_scan_mandate_keyword("mathpenaltyfactor", 1)) {
+                                    halfword v = tex_scan_integer(0, NULL);
+                                    if (v < 0) {
+                                        v = 0;
+                                    } else if (v == scaling_factor) { 
+                                        v = 0;
+                                    }
+                                    tex_set_passes_mathpenaltyfactor(p, n, v);
+                                    tex_set_passes_okay(p, n, passes_mathpenaltyfactor_okay);
+                                }
+                                break;
+                            case 'n': case 'N':
+                                if (tex_scan_mandate_keyword("next", 1)) {
+                                    n++;
+                                }
+                                break;
+                            case 'o': case 'O':
+                                if (tex_scan_mandate_keyword("orphanpenalty", 1)) {
+                                    tex_set_passes_orphanpenalty(p, n, tex_scan_integer(0, NULL));
+                                    tex_set_passes_okay(p, n, passes_orphanpenalty_okay);
+                                }
+                                break;
+                            case 'q': case 'Q':
+                                if (tex_scan_mandate_keyword("quit", 1)) {
+                                    tex_set_passes_features(p, n, passes_quit_pass);
+                                }
+                                break;
+                            case 'r': case 'R':
+                                if (tex_scan_mandate_keyword("righttwindemerits", 1)) {
+                                    tex_set_passes_righttwindemerits(p, n, tex_scan_integer(0, NULL));
+                                    tex_set_passes_okay(p, n, passes_righttwindemerits_okay);
+                                }
+                                break;
+                            case 's': case 'S':
+                                // also step stretch shrink 
+                                if (tex_scan_mandate_keyword("skip", 1)) {
+                                    tex_set_passes_features(p, n, passes_skip_pass);
+                                }
+                                break;
+                            case 't': case 'T':
+                                switch (tex_scan_character("hoHO", 0, 0, 0)) {
+                                    case 'h': case 'H':
+                                        if (tex_scan_mandate_keyword("threshold", 2)) {
+                                            tex_set_passes_threshold(p, n, tex_scan_dimension(0, 0, 0, 0, NULL));
+                                            tex_set_passes_features(p, n, passes_criterium_set);
+                                            tex_set_passes_okay(p, n, passes_threshold_okay);
+                                        }
+                                        break;
+                                    case 'o': case 'O':
+                                        switch (tex_scan_character("dlDL", 0, 0, 0)) {
+                                            case 'd': case 'D':
+                                                if (tex_scan_mandate_keyword("toddlerpenalty", 3)) {
+                                                    tex_set_passes_toddlerpenalty(p, n, tex_scan_integer(0, NULL));
+                                                    tex_set_passes_okay(p, n, passes_toddlerpenalty_okay);
+                                                }
+                                                break;
+                                            case 'l': case 'L':
+                                                if (tex_scan_mandate_keyword("tolerance", 3)) {
+                                                    tex_set_passes_tolerance(p, n, tex_scan_integer(0, NULL));
+                                                    tex_set_passes_okay(p, n, passes_tolerance_okay);
+                                                }
+                                                break;
+                                            default:
+                                                goto NOTDONE3;
+                                        }
+                                        break;
+                                    default:
+                                      NOTDONE3:
+                                        tex_aux_show_keyword_error("threshold|tolerance|toddlerpenalty");
+                                        goto DONE;
+                                }
+                                break;
+                            case 'u': case 'U':
+                                if (tex_scan_mandate_keyword("unlessmath", 1)) {
+                                    tex_set_passes_features(p, n, passes_unless_math);
+                                    tex_set_passes_features(p, n, passes_test_set);
+                                } 
+                                break;
+                            default:
+                                goto DONE;
+                        }
+                    }
+                  DONE:
+                    if (n < count) {
+                        tex_handle_error(
+                            normal_error_type,
+                            "there %s only %i of %i %s specified for \\parpasses",
+                            n == 1 ? "is" : "are", n, count, count == 1 ? "pass" : "passes",
+                            NULL
+                        );
+                    }
+                    {
+                        halfword first = tex_aux_first_with_criterium(p, count);
+                        halfword quit = tex_aux_first_with_quit(p, count);
+                        if (first == 0) { 
+                            tex_add_specification_option(p, specification_option_presets);
+                            passes_first_final(p) = count;
+                        } else if (first == 1) { 
+                            tex_remove_specification_option(p, specification_option_presets);
+                            passes_first_final(p) = 2;
+                        } else { 
+                            tex_add_specification_option(p, specification_option_presets);
+                            passes_first_final(p) = first - 1;
+                        }
+                        if (quit) { 
+                            /*tex We always want a result. */
+                            passes_first_final(p) = quit == 1 ? 1 : quit - 1;
+                        }
+                  }
+                }
+                break;
+            case broken_penalties_code: 
+                if (count > 1) {
+                    tex_handle_error(
+                        normal_error_type,
+                        "count has to be 1 for \\brokenpenalties",
+                        NULL
+                    );
+                    count = 1;
+                }
+            case widow_penalties_code: 
+            case display_widow_penalties_code: 
+            case club_penalties_code: 
+                pairs = 1;
+            default: 
+                if (count > 0) {
+                    halfword options = 0;
+                    if (tex_scan_keyword("options")) {
+                        options = tex_scan_integer(0, NULL);
+                    }
+                    p = tex_new_specification_node(count, code, options);
+                    if (! pairs) { 
+                        tex_reset_specification_option(p, specification_option_double);
+                    }
+                    for (int n = 1; n <= count; n++) {
+                        if (specification_double(p)) {
+                            tex_set_specification_nepalty(p, n, tex_scan_integer(0, NULL)); 
+                        }
+                        tex_set_specification_penalty(p, n, tex_scan_integer(0, NULL)); /*tex penalty values */
+                    }
+                }
+                break;
+        }
+        return p; 
+    }
+}
+
+static void tex_aux_set_specification(int a, halfword target)
+{
+    quarterword code = (quarterword) internal_specification_number(target);
+    halfword p = tex_aux_scan_specification(code);
+    tex_define(a, target, specification_reference_cmd, p);
+    if (is_frozen(a) && cur_mode == hmode) {
+        tex_update_par_par(specification_reference_cmd, code);
+    }
+}
+
+static void tex_run_specification_spec(void)
+{
+    if (cur_chr) { 
+        quarterword code = node_subtype(cur_chr);
+        halfword target = internal_specification_location(code);
+        halfword a = 0; /* local */
+        halfword p = tex_get_specification_count(cur_chr) ? tex_copy_node(cur_chr) : null;
+        tex_define(a, target, specification_reference_cmd, p);
+        if (is_frozen(a) && cur_mode == hmode) {
+            tex_update_par_par(specification_reference_cmd, code);
+        }
+    }
+}
+
+static halfword tex_scan_specifier(void) /* might move */
+{
+    do {
+        tex_get_x_token();
+    } while (cur_cmd == spacer_cmd);
+    if (cur_cmd == specification_cmd) {
+        halfword c = internal_specification_number(cur_chr);
+        halfword p = tex_aux_scan_specification(c);
+        if (! p) { 
+            /* We want to be able to reset. */
+            p = tex_new_specification_node(0, c, 0);
+        }
+        return p; 
+    } else {
+        tex_handle_error(
+            back_error_type,
+            "Missing or invalid specification",
+            "I expect to see classification command like \\widowpenalties."
+        );
+    }
+    return null;
+}
+
 /*tex
     We temporarily define |p| to be |relax|, so that an occurrence of |p| while scanning the
     definition will simply stop the scanning instead of producing an \quote {undefined control
@@ -4845,6 +5426,12 @@ static void tex_aux_set_shorthand_def(int a, int force)
                     tex_define(a, p, fontspec_cmd, v);
                     break;
                 }
+            case specification_def_code:
+                {
+                    halfword v = tex_scan_specifier();
+                    tex_define(a, p, specificationspec_cmd, v);
+                    break;
+                }
             default:
                 tex_confusion("shorthand definition");
                 break;
@@ -4879,383 +5466,6 @@ static void tex_aux_set_association(int flags, int force)
                 }
                 break;
             }
-    }
-}
-
-/*tex This deals with the shapes and penalty lists: */
-
-static halfword tex_aux_scan_fitness_demerits(void)
-{
- // quarterword num = (quarterword) internal_specification_number(fitness_demerits_code);
-    halfword count = tex_scan_integer(1, NULL);
-    halfword p = null;
-    if (count > n_of_fitness_values) {
-        /*tex Todo: warning. */
-        count = n_of_fitness_values;
-    }
-    if (count) {
-        p = tex_new_specification_node(count, fitness_demerits_code, 0);
-        for (int j = 1; j <= count; j++) {
-            tex_set_specification_fitness   (p, j, tex_scan_integer(0, NULL));   
-            tex_set_specification_demerits_u(p, j, tex_scan_integer(0, NULL));  
-            tex_set_specification_demerits_d(p, j, tex_scan_integer(0, NULL));  
-        }
-    } else { 
-        p = tex_default_fitness_demerits();
-    }
-    tex_check_fitness_demerits(p);
-    return p; 
-}
-
-/* to be used in: */
-
-static void tex_aux_set_specification(int a)
-{
-    halfword loc = cur_chr;
-    quarterword num = (quarterword) internal_specification_number(loc);
-    halfword p = null;
-    halfword count = tex_scan_integer(1, NULL);
-    int pairs = 0;
-    switch (num) { 
-        case par_shape_code: 
-            if (count > 0) {
-                halfword options = 0;
-                if (tex_scan_keyword("options")) {
-                    options = tex_scan_integer(0, NULL);
-                }
-                p = tex_new_specification_node(count, num, options);
-                for (int j = 1; j <= count; j++) {
-                    tex_set_specification_indent(p, j, tex_scan_dimension(0, 0, 0, 0, NULL));
-                    tex_set_specification_width(p, j, tex_scan_dimension(0, 0, 0, 0, NULL)); 
-                }
-            }
-            break;
-       case fitness_demerits_code: 
-            {
-                if (count > n_of_fitness_values) {
-                    /*tex Todo: warning. */
-                    count = n_of_fitness_values;
-                }
-                if (count) {
-                    p = tex_new_specification_node(count, num, 0);
-                    for (int j = 1; j <= count; j++) {
-                        tex_set_specification_fitness(p, j, tex_scan_integer(0, NULL));   
-                        tex_set_specification_demerits_u(p, j, tex_scan_integer(0, NULL));  
-                        tex_set_specification_demerits_d(p, j, tex_scan_integer(0, NULL));  
-                    }
-                } else { 
-                    p = tex_default_fitness_demerits();
-                }
-                tex_check_fitness_demerits(p);
-            }
-            break;
-        case par_passes_code: 
-            /*tex 
-                This scanner is a bit over the top but making a different one does not make sense not does simple 
-                scan_keyword and plenty pushback. We just have these long keywords. On a test that scans al keywords 
-                the tree based variant is more than three times faster than the sequential push back one. 
-            */
-            if (count > 0) {
-                p = tex_new_specification_node(count, num, 0);
-                halfword j = 1;
-                while (j <= count) {
-                    switch (tex_scan_character("abcdefilnoqrstABCDEFILNOQRST", 0, 1, 0)) {
-                        case 0:
-                            goto DONE;
-                        case 'a': case 'A':
-                            if (tex_scan_mandate_keyword("adj", 1)) {
-                                switch (tex_scan_character("duDU", 0, 0, 0)) {
-                                    case 'd': case 'D' :                                     
-                                        if (tex_scan_mandate_keyword("adjdemerits", 4)) {
-                                            tex_set_passes_adjdemerits(p, j, tex_scan_integer(0, NULL));
-                                        } break;
-                                    case 'u': case 'U': 
-                                        if (tex_scan_mandate_keyword("adjustspacing", 4)) {
-                                            if (tex_scan_character("sS", 0, 0, 0)) {
-                                                switch (tex_scan_character("thTH", 0, 0, 0)) {
-                                                    case 't': case 'T':
-                                                        switch (tex_scan_character("erER", 0, 0, 0)) {
-                                                            case 'e': case 'E':
-                                                                if (tex_scan_mandate_keyword("adjustspacingstep", 16)) {
-                                                                    tex_set_passes_adjustspacingstep(p, j, tex_scan_integer(0, NULL));              
-                                                                }
-                                                                break;
-                                                            case 'r': case 'R':
-                                                                if (tex_scan_mandate_keyword("adjustspacingstretch", 16)) {
-                                                                    tex_set_passes_adjustspacingstretch(p, j, tex_scan_integer(0, NULL));           
-                                                                }
-                                                                break;
-                                                            default:
-                                                                tex_aux_show_keyword_error("adjustspacingsstep|adjustspacingstretch");
-                                                                goto DONE;
-                                                        }
-                                                        break;
-                                                    case 'h': case 'H':
-                                                        if (tex_scan_mandate_keyword("adjustspacingshrink", 15)) {
-                                                            tex_set_passes_adjustspacingshrink(p, j, tex_scan_integer(0, NULL));            
-                                                        }
-                                                        break;
-                                                    default:
-                                                        tex_aux_show_keyword_error("adjustspacingsstep|adjustspacingshrink|adjustspacingstretch");
-                                                        goto DONE;
-                                                }
-                                            } else {
-                                                tex_set_passes_adjustspacing(p, j, tex_scan_integer(0, NULL));   
-                                            } 
-                                        }
-                                        break;
-                                    default:
-                                        goto NOTDONE1;
-                                }
-                            } else { 
-                                NOTDONE1:
-                                tex_aux_show_keyword_error("adjdemerits|adjustspacing|adjustspacingstep|adjustspacingshrink|adjustspacingstretch");
-                                goto DONE;
-                            }
-                            break;
-                        case 'b': case 'B':
-                            if (tex_scan_mandate_keyword("badness", 1)) {
-                                tex_set_passes_badness(p, j, tex_scan_integer(0, NULL));           
-                            }
-                            break;
-                        case 'c': case 'C':
-                            switch (tex_scan_character("alAL", 0, 0, 0)) {
-                                case 'a': case 'A':
-                                    if (tex_scan_mandate_keyword("callback", 2)) {
-                                        tex_set_passes_callback(p, j, tex_scan_integer(0, NULL));           
-                                        tex_set_passes_features(p, j, passes_callback_set);           
-                                    }
-                                    break;
-                                case 'l': case 'L': 
-                                    if (tex_scan_mandate_keyword("classes", 2)) {
-                                        tex_set_passes_classes(p, j, tex_scan_integer(0, NULL));           
-                                    }
-                                    break;
-                                default:
-                                    tex_aux_show_keyword_error("classes|callback");
-                                    goto DONE;
-                            }
-                            break;
-                        case 'd': case 'D':
-                            if (tex_scan_mandate_keyword("double", 1)) {
-                                switch (tex_scan_character("hH", 0, 0, 0)) {
-                                    case 'h': case 'H': 
-                                        if (tex_scan_mandate_keyword("doublehyphendemerits", 7)) {
-                                            tex_set_passes_doublehyphendemerits(p, j, tex_scan_integer(0, NULL));
-                                        }
-                                        break;
-                                    default:
-                                        tex_aux_show_keyword_error("doubleadjdemerits|doublehyphendemerits");
-                                        goto DONE;
-                                }
-                            }
-                            break;
-                        case 'e': case 'E':
-                            switch (tex_scan_character("mxMX", 0, 0, 0)) {
-                                case 'm': case 'M':
-                                    if (tex_scan_mandate_keyword("emergencystretch", 2)) {
-                                        tex_set_passes_emergencystretch(p, j, tex_scan_dimension(0, 0, 0, 0, NULL));
-                                    }
-                                    break;
-                                case 'x': case 'X':
-                                    if (tex_scan_mandate_keyword("extrahyphenpenalty", 2)) {
-                                        tex_set_passes_extrahyphenpenalty(p, j, tex_scan_integer(0, NULL));
-                                    }
-                                    break;
-                                default:
-                                    tex_aux_show_keyword_error("emergencystretch|extrahyphenpenalty");
-                                    goto DONE;
-                            }
-                            break;
-                        case 'f': case 'F':
-                            if (tex_scan_mandate_keyword("fi", 1)) {
-                                switch (tex_scan_character("ntNT", 0, 0, 0)) {
-                                    case 'n': case 'N':
-                                        if (tex_scan_mandate_keyword("finalhyphendemerits", 3)) {
-                                            tex_set_passes_finalhyphendemerits(p, j, tex_scan_integer(0, NULL));
-                                        }
-                                        break;
-                                    case 't': case 'T':
-                                        if (tex_scan_mandate_keyword("fitnessdemerits", 3)) {
-                                            tex_set_passes_fitnessdemerits(p, j, tex_aux_scan_fitness_demerits());
-                                        }
-                                        break;
-                                    default:
-                                        goto NOTDONE2;
-                                }
-                            } else { 
-                                NOTDONE2:
-                                tex_aux_show_keyword_error("finalhyphendemetits|fitnessdemerits");
-                                goto DONE;
-                            }
-                            break;
-                        case 'i': case 'I':
-                            switch (tex_scan_character("dfDF", 0, 0, 0)) {
-                                case 'd': case 'D':
-                                    if (tex_scan_mandate_keyword("identifier", 2)) {
-                                        tex_set_passes_identifier(p, j, tex_scan_integer(0, NULL));           
-                                    }
-                                    break;
-                                case 'f': case 'F':
-                                    if (tex_scan_mandate_keyword("ifadjustspacing", 2)) {
-                                        tex_set_passes_features(p, j, passes_if_adjust_spacing);           
-                                    } 
-                                    break;
-                                default:
-                                    tex_aux_show_keyword_error("identifier|ifadjustspacing");
-                                    goto DONE;
-                            }
-                            break;
-                        case 'l': case 'L':
-                            switch (tex_scan_character("ioeIOE", 0, 0, 0)) {
-                                case 'e': case 'E':
-                                    if (tex_scan_mandate_keyword("lefttwindemerits", 2)) {
-                                        tex_set_passes_lefttwindemerits(p, j, tex_scan_integer(0, NULL));
-                                        tex_set_passes_features(p, j, passes_twin_demerits_set);
-                                    } 
-                                    break;
-                                case 'o': case 'O':
-                                    if (tex_scan_mandate_keyword("looseness", 2)) {
-                                        tex_set_passes_looseness(p, j, tex_scan_integer(0, NULL));
-                                    } 
-                                    break;
-                                case 'i': case 'I':
-                                    if (tex_scan_mandate_keyword("line", 2)) {
-                                        switch (tex_scan_character("bpBP", 0, 0, 0)) {
-                                            case 'b': case 'B':
-                                                if (tex_scan_mandate_keyword("linebreak", 5)) {
-                                                    switch (tex_scan_character("coCO", 0, 0, 0)) {
-                                                        case 'c': case 'C':
-                                                            if (tex_scan_mandate_keyword("linebreakchecks", 10)) {
-                                                                tex_set_passes_linebreakchecks(p, j, tex_scan_integer(0, NULL));
-                                                            } 
-                                                            break;
-                                                        case 'o': case 'O':
-                                                            if (tex_scan_mandate_keyword("linebreakoptional", 10)) {
-                                                                tex_set_passes_optional(p, j, tex_scan_integer(0, NULL));           
-                                                                tex_set_passes_features(p, j, passes_optional_set);           
-                                                            } 
-                                                            break;
-                                                        default:
-                                                            tex_aux_show_keyword_error("linebreakoptional|linebreakchecks");
-                                                            goto DONE;
-                                                    }
-                                                }
-                                                break;
-                                            case 'p': case 'P':
-                                                if (tex_scan_mandate_keyword("linepenalty", 5)) {
-                                                    tex_set_passes_linepenalty(p, j, tex_scan_integer(0, NULL));           
-                                                } 
-                                                break;
-                                            default:
-                                                tex_aux_show_keyword_error("linebreakoptional|linebreakchecks|linepenalty");
-                                                goto DONE;
-                                        }
-                                    }
-                                    break;
-                            }
-                            break;
-                        case 'n': case 'N':
-                            if (tex_scan_mandate_keyword("next", 1)) {
-                                j++;
-                            }
-                            break;
-                        case 'o': case 'O':
-                            // also optional 
-                            if (tex_scan_mandate_keyword("orphanpenalty", 1)) {
-                                tex_set_passes_orphanpenalty(p, j, tex_scan_integer(0, NULL));           
-                                tex_set_passes_features(p, j, passes_orphan_penalty_set);
-                            }
-                            break;
-                        case 'q': case 'Q':
-                            if (tex_scan_mandate_keyword("quit", 1)) {
-                                tex_set_passes_features(p, j, passes_quit_pass);           
-                            }
-                            break;
-                        case 'r': case 'R':
-                            if (tex_scan_mandate_keyword("righttwindemerits", 1)) {
-                                tex_set_passes_righttwindemerits(p, j, tex_scan_integer(0, NULL));           
-                                tex_set_passes_features(p, j, passes_twin_demerits_set);
-                            }
-                            break;
-                        case 's': case 'S':
-                            // also step stretch shrink 
-                            if (tex_scan_mandate_keyword("skip", 1)) {
-                                tex_set_passes_features(p, j, passes_skip_pass);           
-                            }
-                            break;
-                        case 't': case 'T':
-                            switch (tex_scan_character("hoHO", 0, 0, 0)) {
-                                case 'h': case 'H':
-                                    if (tex_scan_mandate_keyword("threshold", 2)) {
-                                        tex_set_passes_threshold(p, j, tex_scan_dimension(0, 0, 0, 0, NULL));
-                                    }
-                                    break;
-                                case 'o': case 'O':
-                                    switch (tex_scan_character("dlDL", 0, 0, 0)) {
-                                        case 'd': case 'D':
-                                            if (tex_scan_mandate_keyword("toddlerpenalty", 3)) {
-                                                tex_set_passes_toddlerpenalty(p, j, tex_scan_integer(0, NULL));
-                                                tex_set_passes_features(p, j, passes_toddler_penalty_set);
-                                            }
-                                            break;
-                                        case 'l': case 'L':
-                                            if (tex_scan_mandate_keyword("tolerance", 3)) {
-                                                tex_set_passes_tolerance(p, j, tex_scan_integer(0, NULL));
-                                            }
-                                            break;
-                                        default:
-                                            goto NOTDONE3;
-                                    }
-                                    break;
-                                default:
-                                  NOTDONE3:
-                                    tex_aux_show_keyword_error("threshold|tolerance|toddlerpenalty");
-                                    goto DONE;
-                            }
-                            break;
-                        default:
-                            goto DONE;
-                    }
-                }
-              DONE:;
-            }
-            break;
-        case broken_penalties_code: 
-            if (count > 1) {
-                tex_handle_error(
-                    normal_error_type,
-                    "count has to be 1 for \\brokenpenalties",
-                    NULL
-                );
-                count = 1;
-            }
-        case widow_penalties_code: 
-        case display_widow_penalties_code: 
-        case club_penalties_code: 
-            pairs = 1;
-        default: 
-            if (count > 0) {
-                halfword options = 0;
-                if (tex_scan_keyword("options")) {
-                    options = tex_scan_integer(0, NULL);
-                }
-                p = tex_new_specification_node(count, num, options);
-                if (! pairs) { 
-                    tex_reset_specification_option(p, specification_option_double);
-                }
-                for (int j = 1; j <= count; j++) {
-                    if (specification_double(p)) {
-                        tex_set_specification_nepalty(p, j, tex_scan_integer(0, NULL)); 
-                    }
-                    tex_set_specification_penalty(p, j, tex_scan_integer(0, NULL)); /*tex penalty values */
-                }
-            }
-            break;
-    }
-    tex_define(a, loc, specification_reference_cmd, p);
-    if (is_frozen(a) && cur_mode == hmode) {
-        tex_update_par_par(specification_reference_cmd, num);
     }
 }
 
@@ -6521,7 +6731,7 @@ static void tex_run_prefixed_command(void)
             tex_aux_set_box_property();
             break;
         case specification_cmd:
-            tex_aux_set_specification(flags);
+            tex_aux_set_specification(flags, cur_chr);
             break;
         case hyphenation_cmd:
             tex_aux_set_hyph_data();
@@ -6554,7 +6764,7 @@ static void tex_run_prefixed_command(void)
             This one is special because in this usage scenario it is not set but does something. 
         */
         case index_cmd: 
-            tex_inject_parameter(cur_chr);            
+            tex_inject_parameter(cur_chr); 
             break;
         default:
             if (lastprefix < 0) {
@@ -7388,6 +7598,7 @@ inline static void tex_aux_big_switch(int mode, int cmd)
         case combine_toks_cmd:
         case some_item_cmd:               tex_run_prefixed_command();       break;
         case fontspec_cmd:                tex_run_font_spec();              break;
+        case specificationspec_cmd:       tex_run_specification_spec();     break;
         case parameter_cmd:               tex_aux_run_parameter();          break;
         case iterator_value_cmd:          tex_aux_run_illegal_case();       break;
         case after_something_cmd:         tex_aux_run_after_something();    break;
@@ -7448,7 +7659,7 @@ inline static void tex_aux_big_switch(int mode, int cmd)
         case explicit_space_cmd:   mode == vmode ? tex_aux_run_new_paragraph() : tex_aux_run_space();         break;
         case hmove_cmd:            mode == vmode ? tex_aux_run_move()          : tex_aux_run_illegal_case();  break;
         case vmove_cmd:            mode == vmode ? tex_aux_run_illegal_case()  : tex_aux_run_move();          break;    
-        case hskip_cmd:            mode == vmode ? tex_aux_run_new_paragraph() : tex_aux_run_glue();          break;                  
+        case hskip_cmd:            mode == vmode ? tex_aux_run_new_paragraph() : tex_aux_run_glue();          break;       
         case un_hbox_cmd:          mode == vmode ? tex_aux_run_new_paragraph() : tex_run_unpackage();         break;   
 
         /* */
@@ -7523,7 +7734,7 @@ inline static void tex_aux_big_switch(int mode, int cmd)
         case spacer_cmd:             
             switch (mode) { 
                 case vmode: tex_aux_run_relax();      break;
-                case hmode: tex_aux_run_space();      break;               
+                case hmode: tex_aux_run_space();      break;    
                 case mmode: tex_aux_run_math_space(); break;
             } 
             break;

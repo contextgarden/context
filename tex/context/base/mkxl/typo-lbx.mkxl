@@ -33,10 +33,12 @@
 % Local boxes are a real mess and although we already mnade it behave better it's
 % still a trouble maker.
 
-\def\typo_localboxes_reset
-  {\localleftbox  {}% no index here, works grouped
-   \localrightbox {}%
-   \localmiddlebox{}}
+% \def\typo_localboxes_reset
+%   {\localleftbox  {}% no index here, works grouped
+%    \localrightbox {}%
+%    \localmiddlebox{}}
+
+\aliased\let\typo_localboxes_reset\resetlocalboxes
 
 \appendtoks
     \typo_localboxes_reset

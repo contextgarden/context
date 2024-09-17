@@ -37,6 +37,7 @@ local trace_destinations   = false  trackers.register("nodes.destinations",     
 local trace_areas          = false  trackers.register("nodes.areas",             function(v) trace_areas        = v end)
 local show_references      = false  trackers.register("nodes.references.show",   function(v) show_references    = tonumber(v) or (v and 2.25 or false) end)
 local show_destinations    = false  trackers.register("nodes.destinations.show", function(v) show_destinations  = tonumber(v) or (v and 2.00 or false) end)
+local visualizer_offset    = 65536  trackers.register("nodes.visualizer.offset", function(v) visualizer_offset  = tonumber(v) or 65536 end)
 
 local report_reference     = logs.reporter("backend","references")
 local report_destination   = logs.reporter("backend","destinations")
@@ -81,6 +82,7 @@ local getwhd               = nuts.getwhd
 local getdirection         = nuts.getdirection
 local setshift             = nuts.setshift
 local getboxglue           = nuts.getboxglue
+local gettail              = nuts.tail
 
 local hpack_list           = nuts.hpack
 local vpack_list           = nuts.vpack
@@ -105,6 +107,7 @@ local glyph_code           <const> = nodecodes.glyph
 local rule_code            <const> = nodecodes.rule
 local dir_code             <const> = nodecodes.dir
 local par_code             <const> = nodecodes.par
+local whatsit_code         <const> = nodecodes.whatsit
 
 local leftskip_code        <const> = gluecodes.leftskip
 local lefthang_code        <const> = gluecodes.lefthangskip
@@ -112,6 +115,9 @@ local rightskip_code       <const> = gluecodes.rightskip
 local righthang_code       <const> = gluecodes.righthangskip
 local parfillleftskip_code <const> = gluecodes.parfillleftskip
 local parfillskip_code     <const> = gluecodes.parfillskip
+
+local startrotation_code   <const> = nodes.whatsitcodes.startrotation
+local stoprotation_code    <const> = nodes.whatsitcodes.stoprotation
 
 ----- linelist_code        <const> = listcodes.line
 
@@ -256,6 +262,8 @@ local inject_areas do
 
     local attribute, make, stack, done
 
+    local rotationlevel = 0
+
     local function inject_range(head,first,last,reference,parent,pardir,txtdir)
         local width, height, depth, line = dimensions(parent,first,last)
         if txtdir == righttoleft_code then
@@ -265,7 +273,7 @@ local inject_areas do
         elseif pardir == righttoleft_code then
             width = - width
         end
-        local result, resolved = make(width,height,depth,reference)
+        local result, resolved = make(width,height,depth,reference,rotationlevel > 0)
         if result and resolved then
             setattrlist(result,first) -- so that we can pick it up when tagging
             if line then
@@ -310,10 +318,7 @@ local inject_areas do
         end
     end
 
-    -- Somehow this one no longer got used. See node-ref.lua for the implementation.
-    --
-    -- local function inject_list(id,current,reference,pardir,txtdir)
-    -- end
+    -- todo: intercept rotated as a whole, no need for lines
 
     local function inject(head,skip,parent,pardir,txtdir)
         local first, last, firstdir, reference
@@ -384,6 +389,13 @@ local inject_areas do
                         firstdir  = nil
                     end
                     goto NEXT
+                end
+            elseif id == whatsit_code then
+                local subtype = getsubtype(current)
+                if subtype == startrotation_code then
+                    rotationlevel = rotationlevel + 1
+                elseif subtype == stoprotation_code then
+                    rotationlevel = rotationlevel - 1
                 end
             end
             do
@@ -587,7 +599,7 @@ do
         end
     end
 
-    local function makereference(width,height,depth,reference) -- height and depth are of parent
+    local function makereference(width,height,depth,reference,rotated) -- height and depth are of parent
         local sr = stack[reference]
         if sr then
             if trace_references then
@@ -604,7 +616,7 @@ do
                 if depth  < dp then depth  = dp end
             end
          -- logs.report("temp","used: ht=%p dp=%p",height,depth)
-            local annot = injectreference(reference,width,height,depth,set,resolved.mesh,makedescription(resolved))
+            local annot = injectreference(reference,width,height,depth,set,resolved.mesh,makedescription(resolved),resolved.forcemesh,rotated)
             if annot then
                 annot = tonut(annot) -- todo
                 nofreferences = nofreferences + 1
@@ -626,8 +638,7 @@ do
                     end
                 end
                 if trace_references then
-                    local step = 65536
-                    result = new_hlist(colorize(width,height-step,depth-step,2,reference,"reference",texts,show_references)) -- step subtracted so that we can see seperate links
+                    result = new_hlist(colorize(width,height-visualizer_offset,depth-visualizer_offset,2,reference,"reference",texts,show_references)) -- step subtracted so that we can see seperate links
                     current = result
                 elseif texts then
                     texts = justadd("reference",texts,show_references,current)
@@ -722,7 +733,7 @@ do
         return topofstack
     end
 
-    local function makedestination(width,height,depth,reference)
+    local function makedestination(width,height,depth,reference,rotated)
         local sr = stack[reference]
         if sr then
             if trace_destinations then

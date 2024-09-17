@@ -248,6 +248,7 @@ typedef enum tex_command_code {
     mugluespec_cmd,                   /*tex the equivalent is a halfword reference to glue with math units */
     mathspec_cmd,
     fontspec_cmd,
+    specificationspec_cmd,
     association_cmd,
     interaction_cmd,                  /*tex define level of interaction (|\batchmode|, etc.) */ /* valid after |\the|, see ** */
     register_cmd,                     /*tex internal register (|\count|, |\dimen|, etc.) */
@@ -359,7 +360,7 @@ typedef enum tex_command_code {
 # define is_tolerant_cmd(cmd)       (cmd == tolerant_call_cmd || cmd == tolerant_protected_call_cmd || cmd == tolerant_semi_protected_call_cmd)
 
 # define is_referenced_cmd(cmd)     (cmd >= call_cmd)
-# define is_nodebased_cmd(cmd)      (cmd >= gluespec_cmd && cmd <= fontspec_cmd)
+# define is_nodebased_cmd(cmd)      (cmd >= gluespec_cmd && cmd <= specificationspec_cmd)
 # define is_constant_cmd(cmd)       ((cmd >= integer_cmd && cmd <= gluespec_cmd) || cmd == constant_call_cmd)
 
 /*tex Once these were different numbers, no series (see archive): */
@@ -773,11 +774,12 @@ typedef enum shorthand_def_codes {
     mugluespec_def_code,
  /* mathspec_def_code, */
     fontspec_def_code,
+    specification_def_code,
  /* integer_def_csname_code,   */
  /* dimension_def_csname_code, */
 } shorthand_def_codes;
 
-# define last_shorthand_def_code fontspec_def_code
+# define last_shorthand_def_code specification_def_code
 
 typedef enum association_codes { 
     unit_association_code,

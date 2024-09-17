@@ -264,6 +264,12 @@ tex.doublescriptoptioncodes  = getthem(tex.getdoublescriptoptionvalues,"doublesc
 tex.charactercontrolcodes    = getthem(tex.getcharactercontrolvalues,"charactercontrolcode")
 tex.specificationoptioncodes = getthem(tex.getspecificationoptionvalues,"specificationoptioncode")
 
+local linebreakstatecodes    = getthem(tex.getlinebreakstatevalues)
+tex.linebreakstatecodes      = linebreakstatecodes
+
+linebreakstatecodes.text     = linebreakstatecodes.glyph | linebreakstatecodes.disc
+linebreakstatecodes.content  = linebreakstatecodes.text  | linebreakstatecodes.math
+
 function tex.stringtocodesbitmap(str,codes)
     local bitmap = 0
     if codes then

@@ -1166,6 +1166,32 @@
 %D $$\ifvmode M1\fi x \ifvmode M2\fi$$\par
 %D \stoptyping
 
+% We had:
+%
+% \def\spac_struts_beg
+%   {\boundary\plusone
+%    \strut
+%    \penalty\plustenthousand
+%    \hskip\zeroskip}
+%
+% \def\spac_struts_end
+%   {\penalty\plustenthousand
+%    \hskip\zeroskip
+%    \strut
+%    \boundary\plustwo}
+%
+% We now have (tested for quite a while in cont-exp):
+
+\def\spac_struts_beg
+  {\boundary\plusone % user
+   \strut
+   \wordboundary}
+
+\def\spac_struts_end
+  {\wordboundary
+   \strut
+   \boundary\plustwo} % user
+
 \permanent\protected\def\begstrut
   {\ifmmode
      \strut
@@ -1176,14 +1202,6 @@
      \fi
    \fi
    \ignorespaces}
-
-\def\spac_struts_beg
-  {\boundary\plusone
-   \strut
-  %\boundary\plusone
-   \penalty\plustenthousand
-  %\boundary\plusone
-   \hskip\zeroskip}
 
 \permanent\protected\def\endstrut
   {% \ifmmode M\fi
@@ -1199,14 +1217,6 @@
      \spac_helpers_remove_unwantedspace
      \strut
    \fi}
-
-\def\spac_struts_end
-  {\penalty\plustenthousand
-  %\boundary\plustwo
-   \hskip\zeroskip
-  %\boundary\plustwo
-   \strut
-   \boundary\plustwo}
 
 % unsave:
 %

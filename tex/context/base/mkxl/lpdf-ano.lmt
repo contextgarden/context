@@ -23,7 +23,7 @@ if not modules then modules = { } end modules ['lpdf-ano'] = {
 
 local next, tostring, tonumber, rawget, type = next, tostring, tonumber, rawget, type
 local rep, format, find, match = string.rep, string.format, string.find, string.match
-local min = math.min
+local min, max = math.min, math.max
 local lpegmatch = lpeg.match
 local formatters = string.formatters
 local sortedkeys, concat, swapped = table.sortedkeys, table.concat, table.swapped
@@ -87,12 +87,14 @@ local pdfdictionary           = lpdf.dictionary
 local pdfarray                = lpdf.array
 local pdfreference            = lpdf.reference
 local pdfunicode              = lpdf.unicode
+local pdfstring               = lpdf.string
 local pdfconstant             = lpdf.constant
 local pdfnull                 = lpdf.null
 local pdfaddtocatalog         = lpdf.addtocatalog
 local pdfaddtonames           = lpdf.addtonames
 local pdfaddtopageattributes  = lpdf.addtopageattributes
 local pdfrectangle            = lpdf.rectangle
+local pdfquads                = lpdf.quads
 
 local pdfflushobject          = lpdf.flushobject
 local pdfshareobjectreference = lpdf.shareobjectreference
@@ -113,6 +115,7 @@ local pdf_gotor               = pdfconstant("GoToR")
 local pdf_goto                = pdfconstant("GoTo")
 local pdf_launch              = pdfconstant("Launch")
 local pdf_javascript          = pdfconstant("JavaScript")
+local pdf_highlight           = pdfconstant("Highlight")
 local pdf_link                = pdfconstant("Link")
 local pdf_n                   = pdfconstant("N")
 local pdf_t                   = pdfconstant("T")
@@ -305,24 +308,41 @@ end
 
 lpdf.border = pdfborder
 
+-- This can be a more generic lpdf helper:
+
+local pdfcolorarray do
+
+    local colorlist  = attributes.list[attributes.private('color')]
+    local colorvalue = attributes.colors.value
+
+    pdfcolorarray = function(v)
+        if v then
+            v = colorlist and colorlist[v]
+            if v then
+                v = colorvalue(v)
+                if v then
+                    v = pdfarray { v[3], v[4], v[5] } -- always rgb
+                end
+            end
+        end
+        if not v then
+            v = pdfarray { .8, .8, .8 }
+        end
+        return v
+    end
+
+end
+
 directives.register("references.border",function(v)
     if v and not set_border then
         if type(v) == "string" then
-            local function f(v)
-                local m = attributes.list[attributes.private('color')] or { }
-                local c = m and m[v]
-                local v = c and attributes.colors.value(c)
-                if v then
-                    return pdfarray { v[3], v[4], v[5] } -- always rgb
-                end
-            end
             if find(v,":") then
                 if not use_borders then
                     use_borders = { }
                 end
                 local kind, special, color = match(v,"^([a-z%s]+)+*([a-z%s]*):(.+)$")
                 if kind then
-                    local c = f(color)
+                    local c = pdfcolorarray(color)
                     if c then
                         local k = use_borders[kind]
                         if k then
@@ -333,7 +353,7 @@ directives.register("references.border",function(v)
                     end
                 end
             else
-                pdf_border_color = f(v)
+                pdf_border_color = pdfcolorarray(v)
             end
         end
         if not pdf_border_color then
@@ -952,6 +972,15 @@ local function pdfjavascript(name,arguments)
     end
 end
 
+-- local function pdfhighlight(name,arguments)
+--     return pdfdictionary {
+--         S       = pdf_highlight,
+--         C       = pdfarray { 1, 1, 0 },
+--         Title   = name and pdfunicode(name) or nil,
+--         Content = arguments and pdfunicode(arguments) or nil
+--     }
+-- end
+
 local function pdfaction(actions)
     local nofactions = #actions
     if nofactions > 0 then
@@ -985,22 +1014,54 @@ end
 
 lpdf.action = pdfaction
 
+-- Because a highlight annotation is actually an area we cheat a bit and implement it here instead
+-- of in the widget module (like text and attachments).
+
+local nofhighlights = 0
+local fixhighlight  = false
+
+directives.register("backend.pdf.fixhighlight", function(v)
+    fixhighlight = v
+end)
+
 function codeinjections.prerollreference(actions,index) -- share can become option
     if actions then
-        local main, n = pdfaction(actions)
-        if main then
-            local bs, bc = pdfborder(actions)
-            main = pdfdictionary {
-                Subtype = pdf_link,
-             -- Border  = bs,
-                Border  = pdfshareobjectreference(bs),
-                C       = bc,
-                H       = (not actions.highlight and pdf_n) or nil,
-                A       = pdfshareobjectreference(main),
-                F       = 4, -- print (mandate in pdf/a)
+        local action = actions[1]
+        if action and action.special == "highlight" then
+            nofhighlights = nofhighlights + 1
+         -- local creation = lpdf.pdftimestamp(os.date("%Y-%m-%dT%H:%M:%S") .. os.timezone())
+            local author   = action.operation
+            local contents = action.arguments
+            local color    = pdfcolorarray(author and "pdfhighlight:" .. author or nil)
+            local bs, bc   = pdfborder(actions)
+
+            local main = pdfdictionary {
+                Subtype     = pdf_highlight,
+                Border      = pdfshareobjectreference(bs),
+                C           = color or pdfarray { .8, .8, .8 },
+                T           = author and pdfunicode(author) or nil,
+                Contents    = contents and contents ~= "" and pdfunicode(contents) or nil,
+                F           = 4, -- print (mandate in pdf/a)
+             -- M           = pdfstring(creation),
+                NM          = pdfstring("LMTX:" .. nofhighlights), -- also makes for a unique mesh reference
+                LMTX_QP1243 = fixhighlight and true or nil,
             }
---             return main(), n
-            return main, n
+            actions.forcemesh = true
+            return main, 1
+        else
+            local main, n = pdfaction(actions)
+            if main then
+                local bs, bc = pdfborder(actions)
+                main = pdfdictionary {
+                    Subtype = pdf_link,
+                    Border  = pdfshareobjectreference(bs),
+                    C       = bc,
+                    H       = (not actions.highlight and pdf_n) or nil,
+                    A       = pdfshareobjectreference(main),
+                    F       = 4, -- print (mandate in pdf/a)
+                }
+                return main, n
+            end
         end
     end
 end
@@ -1049,8 +1110,21 @@ setmetatableindex(hashed,function(t,k)
     return v
 end)
 
-local function toquadpoints(paths)
+local function toquadpoints(paths,bugged)
     local t, n = { }, 0
+    if bugged then
+        -- According to the specification we go ll lr ur ul. This seems to be okay for links but not for e.g.
+        -- highlights. In links the viewer looks at the areas as links and that's a different code path than
+        -- rendering the highlight and obviously that code expects a different order: tl tr bl br otherwise
+        -- (2024) Acrobat, Sumatra, Okular etc. give weird results (also depending on them drawing straiht
+        -- lines or curves. It looks like an acrobat bug became a viewer specification but the specification
+        -- doesn't mention it.
+        for i=1,#paths do
+            local p = paths[i]
+            p[3], p[4] = p[4], p[3]
+        end
+    end
+    --
     for i=1,#paths do
         local path = paths[i]
         local size = #path
@@ -1141,22 +1215,108 @@ local finishreference  do
                 q = true
             else
                 q = { }
-                for i=1,#p,4 do
-                    local lx = p[i]
-                    local ly = p[i+1]
-                    local ux = p[i+2]
-                    local uy = p[i+3]
-                    if lx < llx then llx = lx end
-                    if ly < lly then lly = ly end
-                    if ux > urx then urx = ux end
-                    if uy > ury then ury = uy end
-                    q[#q+1] = { { lx, ly }, { ux, ly }, { ux, uy }, { lx, uy } }
+                if #p > 0 then
+                    for i=1,#p,4 do
+                        local lx = p[i]
+                        local ly = p[i+1]
+                        local ux = p[i+2]
+                        local uy = p[i+3]
+                        if i == 1 then
+                            llx = min(lx,ux)
+                            lly = min(ly,uy)
+                            urx = max(lx,ux)
+                            ury = max(ly,uy)
+                        else
+                            llx = min(llx,lx,ux)
+                            lly = min(lly,ly,uy)
+                            urx = max(urx,lx,ux)
+                            ury = max(ury,ly,uy)
+                        end
+                        q[#q+1] = { { lx, ly }, { ux, ly }, { ux, uy }, { lx, uy } }
+                    end
                 end
                 p.done = true
             end
         end
         return llx, lly, urx, ury, q
     end
+
+    -- Maybe some day: when we want a mesh then we need to move the lines according to
+    -- the transformation which means that we need to keep track of the vertical
+    -- progression in a paragraph and that is something I don't want to do right now.
+    -- After all, these features are often somwehat fragile in viewers anyway.
+
+ -- local function qmeshup(prerolled,x1,y1,x2,y2,x3,y3,x4,y4)
+ --     local q = nil
+ --     local r = texgetcount(c_realpageno)
+ --     local p = collected[r] and collected[r][prerolled]
+ --     if r ~= lastrealpage then
+ --         lastrealpage  = r
+ --         lastprerolled = false
+ --         lastmeshedup  = false
+ --     end
+ --     if prerolled == lastprerolled then
+ --         if not more then
+ --             valid = valid + 1
+ --             more  = true
+ --         end
+ --         total = total + 1
+ --         if #lastmeshed == 8 then
+ --             local t = tobesaved[r]
+ --             if not t then
+ --                 t = { }
+ --                 tobesaved[r] = t
+ --             end
+ --             t[prerolled] = lastmeshed
+ --         end
+ --         lastmeshed[#lastmeshed+1] = x1
+ --         lastmeshed[#lastmeshed+1] = y1
+ --         lastmeshed[#lastmeshed+1] = x2
+ --         lastmeshed[#lastmeshed+1] = y2
+ --         lastmeshed[#lastmeshed+1] = x3
+ --         lastmeshed[#lastmeshed+1] = y3
+ --         lastmeshed[#lastmeshed+1] = x4
+ --         lastmeshed[#lastmeshed+1] = y4
+ --     else
+ --         lastprerolled = prerolled
+ --         lastmeshed    = { x1, y1, x2, y2, x3, y3, x4, y4 }
+ --         count         = count + 1
+ --         more          = false
+ --     end
+ --     if p then
+ --         if p.done then
+ --             q = true
+ --         else
+ --             q = { }
+ --             if #p > 0 then
+ --                 for i=1,#p,8 do
+ --                     local x1 = p[i]
+ --                     local y1 = p[i+1]
+ --                     local x2 = p[i+2]
+ --                     local y2 = p[i+3]
+ --                     local x3 = p[i+4]
+ --                     local y3 = p[i+5]
+ --                     local x4 = p[i+6]
+ --                     local y4 = p[i+7]
+ --                     if i == 1 then
+ --                         llx = min(x1,x2,x3,x4)
+ --                         lly = min(y1,y2,y3,y4)
+ --                         urx = max(x1,x2,x3,x4)
+ --                         ury = max(y1,y2,y3,y4)
+ --                     else
+ --                         llx = min(llx,x1,x2,x3,x4)
+ --                         lly = min(lly,y1,y2,y3,y4)
+ --                         urx = max(urx,x1,x2,x3,x4)
+ --                         ury = max(ury,y1,y2,y3,y4)
+ --                     end
+ --                     q[#q+1] = { { x1, y1 }, { x2, y2 }, { x3, y3 }, { x4, y4 } }
+ --                 end
+ --             end
+ --             p.done = true
+ --         end
+ --     end
+ --     return llx, lly, urx, ury, q
+ -- end
 
     local function identify(prerolled,llx,lly,urx,ury)
         local r = texgetcount(c_realpageno)
@@ -1196,6 +1356,8 @@ local finishreference  do
     local function checked(prerolled,specification)
         local llx, lly, urx, ury = pdfrectangle(specification.width,specification.height,specification.depth)
         local quadpoints = specification.mesh
+        local forcemesh = specification.forcemesh
+        local rotated = specification.rotated
         if quadpoints then
             -- this always wins when set (normally only happens with mp graphics)
         elseif checkmesh then
@@ -1203,12 +1365,29 @@ local finishreference  do
             if quadpoints == true then
                 return
             end
+        elseif forcemesh then
+            llx, lly, urx, ury, quadpoints = meshup(prerolled,llx,lly,urx,ury)
+            if quadpoints == true then
+                return
+            end
+        end
+        if forcemesh then
+            if fixhighlight and specification.prerolled and tostring(specification.prerolled.Subtype) == "/Highlight" then
+                bugged = true
+            end
+            if rotated or not quadpoints then
+                quadpoints = { { { llx, lly }, { urx, lly }, { urx, ury }, { llx, ury } } }
+            end
+        elseif rotated then
+            local x1, y1, x2, y2, x3, y3, x4, y4, llx, lly, urx, ury = pdfquads(0,llx/factor,urx/factor,ury/factor)
+            quadpoints = { { { x1, y1 }, { x2, y2 }, { x3, y3 }, { x4, y4 } } }
         end
         if quadpoints and #quadpoints > 0 then
-            return f_quadp(prerolled,toquadpoints(quadpoints),llx,lly,urx,ury)
+            prerolled = f_quadp(prerolled,toquadpoints(quadpoints,bugged),llx,lly,urx,ury)
         else
-            return f_annot(prerolled,llx,lly,urx,ury)
+            prerolled = f_annot(prerolled,llx,lly,urx,ury)
         end
+        return prerolled
     end
 
     finishreference = function(specification)
@@ -1278,7 +1457,7 @@ local function finishannotation(specification)
     return pdfregisterannotation(objref)
 end
 
-function nodeinjections.reference(reference,width,height,depth,prerolled,mesh,description)
+function nodeinjections.reference(reference,width,height,depth,prerolled,mesh,description,forcemesh,rotated)
     if prerolled then
         if trace_references then
             report_references("link: width %p, height %p, depth %p, prerolled %a",width,height,depth,prerolled)
@@ -1293,6 +1472,8 @@ function nodeinjections.reference(reference,width,height,depth,prerolled,mesh,de
             prerolled   = prerolled,
             mesh        = mesh,
             description = description,
+            forcemesh   = forcemesh,
+            rotated     = rotated,
         }
     end
 end
@@ -1601,6 +1782,11 @@ function specials.javascript(var)
 end
 
 specials.JS = specials.javascript
+
+function specials.highlight(var)
+    -- this is just a signal (for now as we piggy back on normal references)
+ -- return pdfhighlight(var.operation,var.arguments)
+end
 
 executers.importform  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroForm:ImportFDF") }
 executers.exportform  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroForm:ExportFDF") }

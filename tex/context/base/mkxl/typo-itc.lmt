@@ -255,6 +255,10 @@ end
 --     return kern
 -- end)
 
+-- This means that we need to make sure that we have the sub type set so that we
+-- handle it later. We keep the zero value because that way we ignore successive
+-- corrections.
+
 callback.register("italic_correction", function(node,kern,subtype)
     if not kernokay then
         enableaction("processors","typesetters.corrections.handler")

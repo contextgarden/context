@@ -456,8 +456,11 @@
 \defcsname\??itemgroupkeyword\v!unpacked\endcsname
   {\strc_itemgroups_process_set_option_unpack}
 
+\defcsname\??itemgroupkeyword\v!nointro\endcsname
+  {\c_strc_itemgroups_intro\conditionalfalse}
+
 \defcsname\??itemgroupkeyword\v!intro\endcsname
-  {\c_strc_itemgroups_intro\conditionaltrue} % here? not set to false
+  {\c_strc_itemgroups_intro\conditionaltrue}
 
 \defcsname\??itemgroupkeyword\v!autointro\endcsname
   {\c_strc_itemgroups_auto_intro\conditionaltrue}

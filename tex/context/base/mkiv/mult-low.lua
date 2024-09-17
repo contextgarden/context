@@ -257,6 +257,7 @@ return {
         "ignoretwincharactercontrolcode",
         --
         "repeatspecificationoptioncode", "valuesspecificationoptioncode", "doublespecificationoptioncode", "largestspecificationoptioncode",
+        "presetsspecificationoptioncode",
         --
      -- "noitaliccorrectionmathoptioncode", "noleftpairkernmathoptioncode", "norightpairkernmathoptioncode",
      -- "autodiscretionarymathoptioncode", "fulldiscretionarymathoptioncode",
@@ -753,5 +754,7 @@ return {
         "boxwidth", "boxheight", "boxdepth",
         --
         "shiftparshape", "rotateparshape",
+        --
+        "granularfitnessdemerits",
     }
 }

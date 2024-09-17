@@ -68,6 +68,7 @@
      \ifcsname\??stacking:\currentstacking\endcsname
        \lastnamedcs
      \orelse\ifchknum\currentstacking\or
+   % \orelse\ifchknumber\currentstacking\or
        \currentstacking
      \else
        \attributeunsetvalue
@@ -137,6 +138,70 @@
 %D         \stopstacking
 %D     \stopTEXpage
 %D \stopstackingsteps
+%D \stoptext
+%D \stoptyping
+
+\lettonothing\currenthidestacking
+\lettonothing\currentvidestacking
+
+\def\hidestacking[#1]%
+  {\lettonothing\currentvidestacking
+   \cdef\currenthidestacking{#1}}
+
+\def\videstacking[#1]%
+  {\lettonothing\currenthidestacking
+   \cdef\currentvidestacking{#1}}
+
+% slow, we need a doifinrange
+
+\def\typo_stacking_hide#1{\ifnum#1=\scratchcounter     \c_attr_stacking\zerocount\fi}
+\def\typo_stacking_vide#1{\ifnum#1=\scratchcounter\else\c_attr_stacking\zerocount\fi}
+
+\def\typo_stacking_unstack_hide
+  {\clf_enablestacking
+   \dowithrange\currenthidestacking\typo_stacking_hide}
+
+\def\typo_stacking_unstack_vide
+  {\clf_enablestacking
+   \dowithrange\currentvidestacking\typo_stacking_vide}
+
+\protected\def\typo_stacking_unstack
+  {\ifcase\scratchcounter
+     \c_attr_stacking\attributeunsetvalue % or -1
+   \orunless\ifempty\currenthidestacking
+     \typo_stacking_unstack_hide
+   \orunless\ifempty\currentvidestacking
+     \typo_stacking_unstack_vide
+  %\else
+     % nothing
+   \fi}
+
+\permanent\tolerant\protected\def\unstacking[#1]% empty resets
+  {\groupedcommand
+     {\scratchcounter\ifparameter#1\or#1\else\zerocount\fi\typo_stacking_unstack}
+     \donothing}
+
+%D For Mikael Sundqvist: just hiding
+%D
+%D \starttyping
+%D \starttext
+%D \startbuffer
+%D \startformula
+%D   4 \alignhere = 2 \unstacking[1]{+}                2 \breakhere
+%D   4 \alignhere = 2 \unstacking[2]{+\unstacking{!}}  2 \breakhere
+%D   4 \alignhere = 2 \unstacking[2]{+\unstacking{!}+} 2
+%D \stopformula
+%D \stopbuffer
+%D
+%D                    \getbuffer \blank[2*big]
+%D \hidestacking[1]   \getbuffer \blank[2*big]
+%D \hidestacking[2]   \getbuffer \blank[2*big]
+%D \hidestacking[1:2] \getbuffer \page
+%D
+%D                    \getbuffer \blank[2*big]
+%D \videstacking[1]   \getbuffer \blank[2*big]
+%D \videstacking[2]   \getbuffer \blank[2*big]
+%D \videstacking[1:2] \getbuffer \page
 %D \stoptext
 %D \stoptyping
 

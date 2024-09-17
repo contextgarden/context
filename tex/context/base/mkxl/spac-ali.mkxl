@@ -919,7 +919,7 @@
 \permanent\protected\def\spac_align_set_horizontal_hang_left_range % special purpose
   {\spac_align_set_horizontal_very_right
   %\leftskip        \plusone\leftskip \s!plus\spac_align_set_raggedness_left %
-   \leftskip        \plusone\leftskip \s!plus\s!plus.5\hsize % if we change this then we need a *_right_range_tt variant
+   \leftskip        \plusone\leftskip \s!plus.5\hsize % if we change this then we need a *_right_range_tt variant
    \parinitleftskip \s_zero_plus_one_fill
    \raggedhangstatus\plusfour
    \relax}
@@ -1044,50 +1044,6 @@
 \defcsname\??aligncommand\s!notoddlers  \endcsname{\toksapp\t_spac_align_collected{\notoddlers}}
 \defcsname\??aligncommand\s!keeptoddlers\endcsname{\toksapp\t_spac_align_collected{\keeptoddlers}}
 
-% \newconstant\c_spac_align_state_granular
-%
-% \defcsname\??aligncommand\v!granular\endcsname % no way to reset it .. todo: \everyresetalign
-%   {\c_spac_align_state_granular\plusone}
-%
-% \appendtoks
-%    \c_spac_align_state_granular\zerocount
-% \to \t_spac_align_presets
-%
-% \def\spac_fitness_demerits_granular
-%   {\fitnessdemerits \plusnine
-%       \plusninetynine \plusfivethousand  \plusfourthousand
-%       \plusfourtytwo  \plusfourthousand  \plusthreethousand % .75
-%       \plustwelve     \plusthreethousand \plustwothousand   % .50
-%       \plustwo        \plustwothousand   \plusonethousand   % .25
-%       \zerocount      \zerocount         \zerocount         % .00 \adjdemerits baseline is 5000
-%       \plustwo        \plustwothousand   \plusonethousand   % .25
-%       \plustwelve     \plusthreethousand \plustwothousand   % .50
-%       \plusfourtytwo  \plusfourthousand  \plusthreethousand % .75
-%       \plusninetynine \plusfivethousand  \plusfourthousand
-%    \relax}
-%
-% % \def\spac_fitness_demerits_default
-% %   {\fitnessdemerits \plusfive
-% %       \plusninetynine \zerocount \zerocount
-% %       \plustwelve     \zerocount \zerocount % .50
-% %       \zerocount      \zerocount \zerocount % .00 \adjdemerits baseline is 10000
-% %       \plustwelve     \zerocount \zerocount % .50
-% %       \plusninetynine \zerocount \zerocount
-% %    \relax}
-%
-% \def\spac_fitness_demerits_default
-%   {\fitnessdemerits \zerocount}
-%
-% \appendtoks
-%   \ifcase\c_spac_align_state_granular
-%      \adjdemerits\defaultadjdemerits
-%      \spac_fitness_demerits_default
-%    \else
-%      \adjdemerits\granularadjdemerits
-%      \spac_fitness_demerits_granular
-%    \fi
-% \to \t_spac_align_applied
-
 \appendtoks
     \fitnessdemerits \zerocount
 \to \t_spac_align_presets
@@ -1098,44 +1054,31 @@
 % \installaligncommand
 %   {\v!granular}
 %   {\fitnessdemerits \plusnine
-%       \plusninetynine \plusfivethousand    \plusfourthousand
-%       \plusfourtytwo  \plusfourthousand    \plusthreethousand   % .75
-%       \plustwelve     \plusthreethousand   \plustwothousand     % .50
-%       \plustwo        \plustwothousand     \plusonethousand     % .25
-%       \zerocount      \granularadjdemerits \granularadjdemerits % .00 \adjdemerits baseline is 5000
-%       \plustwo        \plustwothousand     \plusonethousand     % .25
-%       \plustwelve     \plusthreethousand   \plustwothousand     % .50
-%       \plusfourtytwo  \plusfourthousand    \plusthreethousand   % .75
-%       \plusninetynine \plusfivethousand    \plusfourthousand
+%       \plusninetynine \plusninethousand     \zerocount
+%       \plusfourtytwo  \plussixthousand      \plusfivehundred      % .75
+%       \plustwelve     \plusfortyfivehundred \plusthousand         % .50
+%       \plustwo        \plusthreethousand    \plusthousand         % .25
+%       \zerocount      \plusfifteenhundred   \plusfifteenhundred   % .00 \adjdemerits baseline is 5000
+%       \plustwo        \plusthousand         \plusthreethousand    % .25
+%       \plustwelve     \plusthousand         \plusfortyfivehundred % .50
+%       \plusfourtytwo  \plusfivehundred      \plussixthousand      % .75
+%       \plusninetynine \zerocount            \plusninethousand
 %    \relax}
+
+\permanent \specificationdef \granularfitnessdemerits \fitnessdemerits \plusnine
+    \plusninetynine \plusninethousand     \zerocount
+    \plusfourtytwo  \plussixthousand      \plusfivehundred      % .75
+    \plustwelve     \plusfortyfivehundred \plusthousand         % .50
+    \plustwo        \plusthreethousand    \plusthousand         % .25
+    \zerocount      \plusfifteenhundred   \plusfifteenhundred   % .00 \adjdemerits baseline is 5000
+    \plustwo        \plusthousand         \plusthreethousand    % .25
+    \plustwelve     \plusthousand         \plusfortyfivehundred % .50
+    \plusfourtytwo  \plusfivehundred      \plussixthousand      % .75
+    \plusninetynine \zerocount            \plusninethousand
 
 \installaligncommand
   {\v!granular}
-  {\fitnessdemerits \plusnine
-      \plusninetynine \plusninethousand     \zerocount
-      \plusfourtytwo  \plussixthousand      \plusfivehundred      % .75
-      \plustwelve     \plusfortyfivehundred \plusthousand         % .50
-      \plustwo        \plusthreethousand    \plusthousand         % .25
-      \zerocount      \plusfifteenhundred   \plusfifteenhundred   % .00 \adjdemerits baseline is 5000
-      \plustwo        \plusthousand         \plusthreethousand    % .25
-      \plustwelve     \plusthousand         \plusfortyfivehundred % .50
-      \plusfourtytwo  \plusfivehundred      \plussixthousand      % .75
-      \plusninetynine \zerocount            \plusninethousand
-   \relax}
-
-% \installaligncommand
-%   {\v!granular:x}
-%   {\fitnessdemerits \plusnine
-%       \plusninetynine \plusfivethousand    \plusfivethousand
-%       \plusfourtytwo  \plusfourthousand    \plusfourthousand    % .75
-%       \plustwelve     \plusthreethousand   \plusthreethousand   % .50
-%       \plustwo        \plustwothousand     \plustwothousand     % .25
-%       \zerocount      \granularadjdemerits \granularadjdemerits % .00 \adjdemerits baseline is 5000
-%       \plustwo        \plustwothousand     \plustwothousand     % .25
-%       \plustwelve     \plusthreethousand   \plusthreethousand   % .50
-%       \plusfourtytwo  \plusfourthousand    \plusfourthousand    % .75
-%       \plusninetynine \plusfivethousand    \plusfivethousand
-%    \relax}
+  {\granularfitnessdemerits}
 
 % end of definitions
 
@@ -1411,11 +1354,14 @@
 
 \installcorenamespace{alignline}
 
+% Here left and flushleft as well as right and flushright are the same, as it's
+% not used with % the aligh key.
+
 \letcsname\??alignline\v!left      \endcsname\leftaligned
 \letcsname\??alignline\v!right     \endcsname\rightaligned
 \letcsname\??alignline\v!middle    \endcsname\midaligned
-\letcsname\??alignline\v!flushleft \endcsname\rightaligned % beware, makes no sense in locations / we will have a special locations handler
-\letcsname\??alignline\v!flushright\endcsname\leftaligned  % beware, makes no sense in locations / we will have a special locations handler
+\letcsname\??alignline\v!flushleft \endcsname\leftaligned  % beware, makes no sense in locations / we will have a special locations handler
+\letcsname\??alignline\v!flushright\endcsname\rightaligned % beware, makes no sense in locations / we will have a special locations handler
 \letcsname\??alignline\v!center    \endcsname\midaligned
 \letcsname\??alignline\v!max       \endcsname\maxaligned
 

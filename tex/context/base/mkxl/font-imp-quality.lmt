@@ -64,16 +64,16 @@ expansions.classes = classes
 expansions.vectors = vectors
 
 classes.preset = {
-    stretch = 2,
-    shrink  = 2,
-    step    = .5,
+ -- stretch = 2,
+ -- shrink  = 2,
+ -- step    = .5,
     factor  = 1,
 }
 
 classes['quality'] = {
-    stretch = 2,
-    shrink  = 2,
-    step    = .5,
+ -- stretch = 2,
+ -- shrink  = 2,
+ -- step    = .5,
     vector  = 'default',
     factor  = 1,
 }
@@ -132,18 +132,18 @@ local function initialize(tfmdata,value)
         local class, vector = get_class_and_vector(tfmdata,value,"expansions")
         if class then
             if vector then
-                local stretch = class.stretch or 0
-                local shrink  = class.shrink  or 0
-                local step    = class.step    or 0
+             -- local stretch = class.stretch or 0
+             -- local shrink  = class.shrink  or 0
+             -- local step    = class.step    or 0
                 local factor  = class.factor  or 1
                 if trace_expansion then
-                    report_expansions("setting class %a, vector %a, factor %a, stretch %a, shrink %a, step %a",
-                        value,class.vector,factor,stretch,shrink,step)
+                 -- report_expansions("setting class %a, vector %a, factor %a, stretch %a, shrink %a, step %a",value,class.vector,factor,stretch,shrink,step)
+                    report_expansions("setting class %a, vector %a, factor %a",value,class.vector,factor)
                 end
                 tfmdata.parameters.expansion = {
-                    stretch = 10 * stretch,
-                    shrink  = 10 * shrink,
-                    step    = 10 * step,
+                 -- stretch = 10 * stretch,
+                 -- shrink  = 10 * shrink,
+                 -- step    = 10 * step,
                     factor  = factor,
                     class   = class,
                     vector  = vector,
@@ -216,9 +216,9 @@ implement {
 -- special version for math 7/11/22
 
 classes.math = {
-    stretch = 2,
-    shrink  = 2,
-    step    = .5,
+ -- stretch = 2,
+ -- shrink  = 2,
+ -- step    = .5,
     vector  = 'math',
     factor  = 1,
 }
@@ -241,20 +241,21 @@ local function initialize(tfmdata,value)
         local class, vector = get_class_and_vector(tfmdata,value,"expansions")
         if class then
             if vector then
-                local stretch = class.stretch or 0
-                local shrink  = class.shrink  or 0
-                local step    = class.step    or 0
+             -- local stretch = class.stretch or 0
+             -- local shrink  = class.shrink  or 0
+             -- local step    = class.step    or 0
                 local factor  = class.factor  or 1
                 if trace_expansion then
-                    report_expansions("setting class %a, vector %a, factor %a, stretch %a, shrink %a, step %a",
-                        value,class.vector,factor,stretch,shrink,step)
+                 -- report_expansions("setting class %a, vector %a, factor %a, stretch %a, shrink %a, step %a",value,class.vector,factor,stretch,shrink,step)
+                    report_expansions("setting class %a, vector %a, factor %a",value,class.vector,factor)
                 end
                 tfmdata.parameters.expansion = {
-                    stretch = 10 * stretch,
-                    shrink  = 10 * shrink,
-                    step    = 10 * step,
+                 -- stretch = 10 * stretch,
+                 -- shrink  = 10 * shrink,
+                 -- step    = 10 * step,
                     factor  = factor,
                 }
+                --
                 local characters = tfmdata.characters
                 for u, v in next, vector do
                     local chr = characters[u]
@@ -693,9 +694,9 @@ local function addquality(id)
             local class  = expansion.class
             local vector = expansion.vector
             if class and vector then
-                local stretch = class.stretch or 0
-                local shrink  = class.shrink  or 0
-                local step    = class.step    or 0
+             -- local stretch = class.stretch or 0
+             -- local shrink  = class.shrink  or 0
+             -- local step    = class.step    or 0
                 local factor  = class.factor  or 1
                 local data    = characters and characters.data
                 for i, chr in next, tfmdata.characters do -- todo unicode

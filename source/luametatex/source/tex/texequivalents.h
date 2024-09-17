@@ -900,7 +900,7 @@ extern void tex_undump_equivalents_mem  (dumpstream f);
 # define eq_value_field(A) (A).half1
 
 # define eq_level(A)       lmt_hash_state.eqtb[(A)].quart01  /*tex level of definition */
-# define eq_full(A)        lmt_hash_state.eqtb[(A)].quart00  /*tex command code for equivalent */
+# define eq_full(A)        lmt_hash_state.eqtb[(A)].quart00  
 # define eq_type(A)        lmt_hash_state.eqtb[(A)].single00 /*tex command code for equivalent */
 # define eq_flag(A)        lmt_hash_state.eqtb[(A)].single01
 # define eq_value(A)       lmt_hash_state.eqtb[(A)].half1
@@ -916,6 +916,12 @@ extern void tex_undump_equivalents_mem  (dumpstream f);
     (lmt_hash_state.eqtb[(A)].half0 == lmt_hash_state.eqtb[(B)].half0) \
  && (lmt_hash_state.eqtb[(A)].half1 == lmt_hash_state.eqtb[(B)].half1) \
 )
+
+/* or: 
+# define equal_eqtb_entries(A,B) ( \
+    (lmt_hash_state.eqtb[(A)].long0 == lmt_hash_state.eqtb[(B)].long0) \
+)
+*/
 
 typedef enum eq_destructors { 
     eq_none, 

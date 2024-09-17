@@ -2166,15 +2166,16 @@ static int tex_aux_scan_active_math_char(mathcodeval *mval, int where)
                     gets invoked has to set the amcode again if needed. 
                 */
                 tex_set_am_code(character, other_char_cmd, cur_level);
-                cur_cs = tex_active_to_cs(cur_chr, 1);
-                cur_cmd = eq_type(cur_cs);
-                cur_chr = eq_value(cur_cs);
-                tex_x_token();
-                tex_back_input(cur_tok);
-                if (tracing_commands_par >= 4) {
-                    tex_aux_report_active(where, "active", code, character);
-                }
-                return 1;
+                goto COMMON;
+            //  cur_cs = tex_active_to_cs(character, 1);
+            //  cur_cmd = eq_type(cur_cs);
+            //  cur_chr = eq_value(cur_cs);
+            //  tex_x_token();
+            //  tex_back_input(cur_tok);
+            //  if (tracing_commands_par >= 4) {
+            //      tex_aux_report_active(where, "active", code, character);
+            //  }
+            //  return 1;
             default: 
                 if (tracing_commands_par >= 4) {
                     tex_aux_report_active(where, "ignore", code, character);
@@ -2183,7 +2184,8 @@ static int tex_aux_scan_active_math_char(mathcodeval *mval, int where)
         }
     } else if (mval->class_value == active_math_class_value) {
         /*tex We might eventually drop this feature in favor of the amcode. */
-        cur_cs = tex_active_to_cs(cur_chr, 1);
+      COMMON:
+        cur_cs = tex_active_to_cs(character, 1);
         cur_cmd = eq_type(cur_cs);
         cur_chr = eq_value(cur_cs);
         tex_x_token();

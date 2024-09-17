@@ -87,23 +87,34 @@
 \installcommandhandler \??expansion {expansion} \??expansion
 
 \appendtoks
-    \protected\instance\edefcsname\??expansion:\currentexpansion\endcsname
-      {\adjustspacingstep   \expansionparameter\c!step\relax
-       \adjustspacingstretch\expansionparameter\c!stretch\relax
-       \adjustspacingshrink \expansionparameter\c!shrink\relax}%
+    \protected\instance\edefcsname\??expansion:\currentexpansion\endcsname{\do_set_expansion{\currentexpansion}}%
 \to \everydefineexpansion
+
+\protected\def\do_set_expansion#1%
+  {\edef\currentexpansion{#1}%
+   \adjustspacingstep   \expansionparameter\c!step   \relax
+   \adjustspacingstretch\expansionparameter\c!stretch\relax
+   \adjustspacingshrink \expansionparameter\c!shrink \relax}
+
+\permanent\tolerant\protected\def\setexpansion[#1]{\begincsname\??expansion:\ifparameter#1\or#1\else\currentexpansion\fi\endcsname}
+
+\permanent\protected\def\resetexpansion
+  {\adjustspacingstep   \zerocount
+   \adjustspacingstretch\zerocount
+   \adjustspacingshrink \zerocount}
+
+\protected\instance\letcsname\??expansion:\v!reset\endcsname\resetexpansion
+\protected\instance\defcsname\??expansion:\endcsname{\do_set_expansion\empty}%
 
 \setupexpansion
   [\c!step=1,
    \c!stretch=40,
    \c!shrink=20]
 
-% \defineexpansion
-%   [myexpansion]
-%   [\c!stretch=50,
-%    \c!shrink=20]
+% \defineexpansion % the default
+% \defineexpansion[\v!default]
 
-\permanent\tolerant\protected\def\setexpansion[#1]{\begincsname\??expansion:#1\endcsname}
+\setexpansion
 
 %D New in \LMTX: can be used grouped.
 

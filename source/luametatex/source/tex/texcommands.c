@@ -1298,6 +1298,7 @@ void tex_initialize_commands(void)
      /* tex_primitive(luatex_command, "dimensiondefcsname",             shorthand_def_cmd,      dimension_def_csname_code,                       0); */
         tex_primitive(luatex_command, "floatdef",                       shorthand_def_cmd,      float_def_code,                                  0);
         tex_primitive(luatex_command, "fontspecdef",                    shorthand_def_cmd,      fontspec_def_code,                               0);
+        tex_primitive(luatex_command, "specificationdef",               shorthand_def_cmd,      specification_def_code,                          0);
         tex_primitive(luatex_command, "gluespecdef",                    shorthand_def_cmd,      gluespec_def_code,                               0);
         tex_primitive(luatex_command, "integerdef",                     shorthand_def_cmd,      integer_def_code,                                0);
      /* tex_primitive(luatex_command, "integerdefcsname",               shorthand_def_cmd,      integer_def_csname_code,                         0); */

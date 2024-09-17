@@ -1397,14 +1397,12 @@
     \clubpenalties  \plusone \plusfivethousand
 \stopsetups
 
-\def\strc_math_setup_penalties
-  {\directsetup{\formulaparameter\c!penalties}}
-
 \setupformula
   [\c!penalties=math:penalties:\formulaparameter\c!split]
 
 \def\strc_math_setup_penalties
-  {\directsetup{\formulaparameter\c!penalties}}
+  {\linebreakpasses\zerocount % for the moment here
+   \directsetup{\formulaparameter\c!penalties}}
 
 % a limitation is that this only works in a regular setting, so no shapes
 

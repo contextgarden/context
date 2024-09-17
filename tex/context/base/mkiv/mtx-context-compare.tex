@@ -24,6 +24,11 @@
 
 \starttext
 
+% \setupinteraction
+%   [state=start]
+
+% \showmakeup
+
 \definecolor[colorred]    [r=1,a=1,t=.5]
 \definecolor[colorgreen]  [g=1,a=1,t=.5]
 \definecolor[colorblue]   [b=1,a=1,t=.5]
@@ -32,39 +37,44 @@
 \definecolor[colormagenta][r=1,b=1,a=1,t=.5]
 \definecolor[coloryellow] [r=1,g=1,a=1,t=.5]
 
+% \definecolor[colorone][black] % no, keep undefined !
+% \definecolor[colortwo][black] % no, keep undefined !
+
+% \defineviewerlayer[one] % we use filename as title
+% \defineviewerlayer[two] % we use filename as title
+
 \starttexdefinition unexpanded ShowBoth #1#2#3
     \startTEXpage[width=21cm]
-        \doifelsecolor {colorone} {
-            \startoverlay
-                {{\char0\externalfigure[#1][page=#3,width=21cm,foregroundcolor=colorone]}}
-                {{\char0\externalfigure[#2][page=#3,width=21cm,foregroundcolor=colortwo]}}
-            \stopoverlay
-        } {
-            \startoverlay
-                {\externalfigure[#1][page=#3,width=21cm]}
-                {\externalfigure[#2][page=#3,width=21cm]}
-            \stopoverlay
-        }
+        \startoverlay
+            {
+                \startviewerlayer[one]
+                    \signalcharacter\externalfigure[#1][page=#3,width=21cm,foregroundcolor=colorone]
+                \stopviewerlayer
+            }
+            {
+                \startviewerlayer[two]
+                    \signalcharacter\externalfigure[#2][page=#3,width=21cm,foregroundcolor=colortwo]
+                \stopviewerlayer
+            }
+        \stopoverlay
     \stopTEXpage
 \stoptexdefinition
 
 \starttexdefinition unexpanded ShowOne #1#2
     \startTEXpage[width=21cm]
-        \doifelsecolor {colorone} {
-            \color[colorone]{\char0\externalfigure[#1][page=#2,width=21cm]}
-        } {
-            \externalfigure[#1][page=#2,width=21cm]
-        }
+        \startviewerlayer[one]
+            \signalcharacter
+            \externalfigure[#1][page=#2,width=21cm,foregroundcolor=colorone]
+        \stopviewerlayer
     \stopTEXpage
 \stoptexdefinition
 
 \starttexdefinition unexpanded ShowTwo #1#2
     \startTEXpage[width=21cm]
-        \doifelsecolor {colorone} {
-            \color[colortwo]{\char0\externalfigure[#1][page=#2,width=21cm]}
-        } {
-            \externalfigure[#1][page=#2,width=21cm]
-        }
+        \startviewerlayer[two]
+            \signalcharacter
+            \externalfigure[#1][page=#2,width=21cm,foregroundcolor=colortwo]
+        \stopviewerlayer
     \stopTEXpage
 \stoptexdefinition
 
@@ -95,11 +105,6 @@ local valid = {
     grey    = "colorgray",
 }
 
-if valid[colorone] and valid[colortwo] then
-    context.definecolor({ "colorone" }, { valid[colorone] })
-    context.definecolor({ "colortwo" }, { valid[colortwo] })
-end
-
 if fileone == "" or filetwo == "" then
     report("provide two filenames")
     os.exit()
@@ -114,6 +119,14 @@ if not lfs.isfile(filetwo) then
     report("unknown file %a",filetwo)
     os.exit()
 end
+
+if valid[colorone] and valid[colortwo] then
+    context.definecolor({ "colorone" }, { valid[colorone] })
+    context.definecolor({ "colortwo" }, { valid[colortwo] })
+end
+
+context.defineviewerlayer({ "one" }, { state = "start", title = file.nameonly(fileone) })
+context.defineviewerlayer({ "two" }, { state = "start", title = file.nameonly(filetwo) })
 
 local function check(name)
     local fig = figures.push { name = name }
@@ -137,10 +150,10 @@ if not two then
     os.exit()
 end
 
-local n_one = tonumber(one.pages)
-local n_two = tonumber(two.pages)
+local n_one = tonumber(one.pages) or 0
+local n_two = tonumber(two.pages) or 0
 
-if not n_one or n_one ~= n_two then
+if n_one == 0 or n_two == 0 or n_one ~= n_two then
     report("files have different nofpages (%s vs %s)",n_one or "?",n_two or "?")
 end
 

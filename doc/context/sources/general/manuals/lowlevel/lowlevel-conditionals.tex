@@ -847,6 +847,31 @@ by:
 \fi
 \stoptyping
 
+An \type {\unless} makes little sense when used with \type {\ifcase} but contrary
+to the other engines we don't error or it; we just give a warning. Some
+conditionals internally use a case so there we can actually provide a variant:
+
+\startbuffer
+\ifcase 1 \relax zero \or one \or two \else else \fi = one \par
+\ifcase 2 \relax zero \or one \or two \else else \fi = two \par
+
+\unless\ifcase 1 \relax zero \or one \or two \else else \fi % warning
+\unless\ifcase 2 \relax zero \or one \or two \else else \fi % warning
+
+\ifchkdim1pt\or yes \else nop \fi = yes \par
+\ifchkdim2  \or nop \else yes \fi = yes \par
+
+\unless\ifchkdim1pt\or nop \else yes \fi = yes \par
+\unless\ifchkdim2  \or yes \else nop \fi = yes \par
+\stopbuffer
+
+\typebuffer
+
+The \typ {\ifchkdim}, \typ {\ifchkdimension}, \typ {\ifchknum}, \typ
+{\ifchknumber} and \typ {\ifparameter} are supported.
+
+\startpacked \getbuffer \stoppacked
+
 \stopsectionlevel
 
 \stopsectionlevel

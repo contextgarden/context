@@ -26,40 +26,33 @@
 
 \installcorenamespace{italics}
 
-\def\typo_italic_set#1%
+\permanent\protected\def\typo_italic_set
   {\bitwiseflip\glyphoptions        \textcheckitalicglyphoptioncode
    \bitwiseflip\discretionaryoptions\textcheckitalicdiscoptioncode}
 
-\def\typo_italic_reset
+\permanent\protected\def\typo_italic_reset
   {\bitwiseflip\glyphoptions        -\textcheckitalicglyphoptioncode
    \bitwiseflip\discretionaryoptions-\textcheckitalicdiscoptioncode}
 
+\letcsname\??italics\v!no    \endcsname\typo_italic_reset
+\letcsname\??italics\v!reset \endcsname\typo_italic_reset
+%letcsname\??italics\v!yes   \endcsname\typo_italic_set
+%letcsname\??italics\v!big   \endcsname\typo_italic_set
+%letcsname\??italics\v!medium\endcsname\typo_italic_set
+%letcsname\??italics\v!small \endcsname\typo_italic_set
+
 \permanent\tolerant\protected\def\setitaliccorrection[#1]%
-  {\ifcstok{#1}\v!reset
-     \typo_italic_reset
-   \orelse\ifcstok{#1}\v!no
-     \typo_italic_reset
-   \orelse\ifcsname\??italics#1\endcsname
-     \expandafter\typo_italic_set\expandafter{\lastnamedcs}%
-   \orelse\ifchkdimension#1\onepoint\endcsname
-     \expandafter\typo_italic_set{#1}%
-   \fi}
+  {\ifcsname\??italics#1\endcsname\lastnamedcs\else\typo_italic_set\fi}
 
-\defcsname\??italics         \endcsname{0}
-\defcsname\??italics\v!yes   \endcsname{0}
-\defcsname\??italics\v!small \endcsname{0.1}
-\defcsname\??italics\v!medium\endcsname{0.2}
-\defcsname\??italics\v!big   \endcsname{0.3}
-
-\permanent\protected\def\resetitaliccorrection
-  {\typo_italic_reset}
-
-\permanent\protected\def\setupitaliccorrection% kind of obsolete
-  {\setitaliccorrection}
+\aliased\let\resetitaliccorrection\typo_italic_reset
+\aliased\let\setupitaliccorrection\setitaliccorrection
 
 \permanent\protected\def\italiccorrection
   {\ifbitwiseand\glyphoptions\textcheckitalicglyphoptioncode\else
-     \normalitaliccorrection
+     % This doesn't do anything due to the way we set up the callback ...
+     % \normalitaliccorrection
+     % ... so we do this instead:
+     \forcedrightcorrection
    \fi}
 
 \pushoverloadmode

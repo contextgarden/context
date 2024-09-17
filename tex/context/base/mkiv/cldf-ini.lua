@@ -281,7 +281,7 @@ local registerfunction = function(f,direct,slot) -- either f=code or f=namespace
     end
     if direct then
         if initex then
-            func = function(...) expose(slot,f,...) end
+            func = function(...) return expose(slot,f,...) end
             storedfunctions[slot] = f
         else
             func = resolvestoredfunction(f)

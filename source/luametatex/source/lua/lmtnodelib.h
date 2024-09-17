@@ -116,6 +116,7 @@ extern int lmt_par_pass_callback(
     halfword               head,
     line_break_properties *properties, 
     halfword               identifier, 
+    halfword               subpass, 
     halfword               callback, 
     halfword               features, 
     scaled                 overfull, 

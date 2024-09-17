@@ -1,0 +1,351 @@
+%D \module
+%D   [       file=m-dirtree,
+%D        version=2024.08.31,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Rendering Directory Trees,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This module is triggered by a question that Hraban posted to the mailing list. I
+%D played abit with \LUA, then foudn that the fonts were not up to it which is
+%D mostly due to the fact that it needs to fit into a baseline (lineheight) model so
+%D then I made a \METAPOST\ font. Eventually a bit of interfacing was added.
+
+%D Tha basic \LUA\ handler might move to a utility module (util-dtr.lua) once I feel
+%D the need for that.
+
+%  U+2500  right      ─
+%  U+2502  down       │
+%  U+2514  corner     └
+%  U+251C  downright  ├
+%  U+252C  rightdown  ┬
+
+\startluacode
+    local newprivateslot = fonts.helpers.newprivateslot
+
+    newprivateslot("dirtree one yes")    -- 1 "└─┬──"
+    newprivateslot("dirtree one nop")    -- 2         "└────"
+    newprivateslot("dirtree first yes")  -- 3 "├─┬──"
+    newprivateslot("dirtree first nop")  -- 4         "├────"
+    newprivateslot("dirtree last yes")   -- 2 "└────"
+    newprivateslot("dirtree last nop")   -- 2         "└────"
+    newprivateslot("dirtree middle yes") -- 3 "├─┬──"
+    newprivateslot("dirtree middle nop") -- 5         "├────"
+    newprivateslot("dirtree down yes")   -- 6 "│ "
+    newprivateslot("dirtree down nop")   --           "  "
+    newprivateslot("dirtree space yes")  --   " "
+    newprivateslot("dirtree space nop")  --           " "
+\stopluacode
+
+\startMPcalculation{simplefun}
+
+    path dirtree_glyphs[] ;
+
+    def InitializeDirTree =
+        dirtree_glyphs[1] := (1,2) -- (1,1) -- (5,1) && (3,1) -- (3,0)          ; % "└─┬──"
+        dirtree_glyphs[2] := (1,2) -- (1,1) -- (5,1)                            ; %         "└────"
+        dirtree_glyphs[3] := (1,0) -- (1,2) && (1,1) -- (5,1) && (3,1) -- (3,0) ; % "├─┬──"
+        dirtree_glyphs[4] := (1,0) -- (1,2) && (1,1) -- (5,1)                   ; %         "├────"
+        dirtree_glyphs[5] := (1,2) -- (1,0) && (1,1) -- (5,1)                   ; % "├────"
+        dirtree_glyphs[6] := (1,2) -- (1,0)                                     ; %         "│ "
+    enddef ;
+
+
+    vardef DirTree(expr i, w, h) =
+        numeric u ; u := 1 ;
+        picture p ; p := image (
+            if i > 0 :
+                draw dirtree_glyphs[i]
+                    xyscaled(u,3u/2)
+                    shifted (-u/2,-u)
+                    withpen pencircle scaled (u/10)
+                ;
+            fi
+        ) ;
+        setbounds p to unitsquare xyscaled(w*u,h*u) ;
+        draw p ;
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "dirtree",
+        units    = 2,
+        usecolor = true,
+        width    = 1,
+        height   = 2,
+        depth    = 1,
+        preamble = "InitializeDirTree"
+    ] ;
+
+    lmt_registerglyph [ category  = "dirtree", private = "dirtree one yes"   , code = "DirTree(1,5,3)", width = 5 ] ;
+    lmt_registerglyph [ category  = "dirtree", private = "dirtree one nop"   , code = "DirTree(2,5,3)", width = 5 ] ;
+    lmt_registerglyph [ category  = "dirtree", private = "dirtree first yes" , code = "DirTree(3,5,3)", width = 5 ] ;
+    lmt_registerglyph [ category  = "dirtree", private = "dirtree first nop" , code = "DirTree(4,5,3)", width = 5 ] ;
+    lmt_registerglyph [ category  = "dirtree", private = "dirtree last yes"  , code = "DirTree(1,5,3)", width = 5 ] ;
+    lmt_registerglyph [ category  = "dirtree", private = "dirtree last nop"  , code = "DirTree(2,5,3)", width = 5 ] ;
+    lmt_registerglyph [ category  = "dirtree", private = "dirtree middle yes", code = "DirTree(3,5,3)", width = 5 ] ;
+    lmt_registerglyph [ category  = "dirtree", private = "dirtree middle nop", code = "DirTree(5,5,3)", width = 5 ] ;
+    lmt_registerglyph [ category  = "dirtree", private = "dirtree down yes"  , code = "DirTree(6,2,3)", width = 2 ] ;
+    lmt_registerglyph [ category  = "dirtree", private = "dirtree down nop"  , code = "DirTree(0,2,3)", width = 2 ] ;
+    lmt_registerglyph [ category  = "dirtree", private = "dirtree space yes" , code = "DirTree(0,1,3)", width = 1 ] ;
+    lmt_registerglyph [ category  = "dirtree", private = "dirtree space nop" , code = "DirTree(0,1,3)", width = 1 ] ;
+
+\stopMPcalculation
+
+\definefontfeature
+  [default]
+  [default]
+  [metapost={category=dirtree,weight=2.0}]
+
+\definefontfeature
+  [none]
+  [none]
+  [metapost={category=dirtree,weight=2.0}]
+
+\startluacode
+    local gmatch     = string.gmatch
+    local concat     = table.concat
+    local insert     = table.insert
+    local remove     = table.remove
+    local sortedkeys = table.sortedkeys
+
+    local dirtree     = utilities.dirtree or { }
+    utilities.dirtree = dirtree
+
+    local default = {
+        one    = { "     ", "     " },
+        first  = { "     ", "     " },
+        last   = { "     ", "     " },
+        middle = { "     ", "     " },
+        down   = { "  ",    "  "    },
+        space  = { " ",     " "     },
+    }
+
+    local unicode = {
+        one    = { "└─┬──", "└────" },
+        first  = { "├─┬──", "├────" },
+        last   = { "└─┬──", "└────" },
+        middle = { "├────", "├────" },
+        down   = { "│ "   , "  "    },
+        space  = { " "    , " "     },
+    }
+
+    local simple = {
+        one    = { "    +", "    +" },
+        first  = { "    +", "     " },
+        last   = { "    +", "     " },
+        middle = { "    +", "     " },
+        down   = { "  "   , "  "    },
+        space  = { " "    , " "     },
+    }
+
+    local private ; if buffers then
+
+        local ps = fonts.helpers.privateslot
+        local uc = utf.char
+
+        private = {
+            one    = { uc(ps("dirtree one yes"   )), uc(ps("dirtree one nop"   )) },
+            first  = { uc(ps("dirtree first yes" )), uc(ps("dirtree first nop" )) },
+            last   = { uc(ps("dirtree last yes"  )), uc(ps("dirtree last nop"  )) },
+            middle = { uc(ps("dirtree middle yes")), uc(ps("dirtree middle nop")) },
+            down   = { uc(ps("dirtree down yes"  )), uc(ps("dirtree down nop"  )) },
+            space  = { uc(ps("dirtree space yes" )), uc(ps("dirtree space nop" )) },
+        }
+
+    end
+
+    dirtree.symbols = {
+        default  = default,
+        unicode  = unicode,
+        simple   = simple,
+        private  = private,
+    }
+
+    -- Performance is okay, otherwise we would reuse the con table and do a selective
+    -- concat here.
+
+    local nameonly, suffix = file.nameonly, file.suffix
+
+    dirtree.entries = {
+        default = function(str)
+            return str
+        end,
+        split = function(str)
+            return "\\dirtreeentry{" .. nameonly(str) .. "}{" .. suffix(str) .. "}"
+        end,
+    }
+
+    function dirtree.show(tree,symbolset,direntry)
+
+        if type(tree) == "string" then
+            tree = dir.glob(tree)
+        end
+
+        if type(tree) ~= "table" then
+            return
+        end
+
+        if not direntry then
+            direntry = "default"
+        end
+        direntry = dirtree.entries[direntry] or dirtree.entries.default
+
+        local result = { }
+        local output = { }
+
+        if not symbolset then
+            symbolset = "default"
+        end
+
+        local used = dirtree.symbols[symbolset] or dirtree.symbols.default
+
+        table.setmetatableindex(used,dirtree.symbols.default)
+
+        local yes_one   = used.one   [1] local nop_one   = used.one   [2]
+        local yes_first = used.first [1] local nop_first = used.first [2]
+        local yes_last  = used.last  [1] local nop_last  = used.last  [2]
+        local yes_else  = used.middle[1] local nop_else  = used.middle[2]
+        local yes_down  = used.down  [1] local nop_down  = used.down  [2]
+        local yes_space = used.space [1] local nop_space = used.space [2]
+
+        if #tree > 0 then
+            for i=1,#tree do
+                local d = false
+                local r = result
+                for s in gmatch(tree[i],"[^/]+") do
+                    if d then
+                        local rs = r[s]
+                        if not rs then
+                            rs = { }
+                            r[s] = { }
+                        end
+                        r = rs
+                    else
+                        d = true
+                    end
+                end
+            end
+        else
+            -- assume a hash
+        end
+
+        local level  = 0
+        local con    = { }
+
+        local function show(result,level)
+            local list = sortedkeys(result)
+            local size = #list
+            for i=1,size do
+                local l = list[i]
+                local r = result[l]
+                local sub = next(r)
+                if level == 1 then
+                    -- nothing special to do
+                elseif size == 1 then
+                    insert(con,sub and yes_one or nop_one)
+                elseif i == 1 then
+                    insert(con,sub and yes_first or nop_first)
+                elseif i == size then
+                    insert(con,sub and yes_last or nop_last)
+                else
+                    insert(con,sub and yes_else or nop_else)
+                end
+                if level == 1 then
+                    output[#output+1] = direntry(l)
+                else
+                    output[#output+1] = concat(con) .. (sub and yes_space or nop_space) .. direntry(l)
+                end
+                if sub then
+                    if size == 1 then
+                        con[#con] = nop_down
+                    elseif i == size then
+                        con[#con] = nop_down
+                    else
+                        con[#con] = yes_down
+                    end
+                    show(r,level+1)
+                end
+                if level > 1 then
+                    remove(con)
+                end
+            end
+        end
+
+        show(result,1)
+
+        output = concat(output,"\r")
+
+        if buffers then
+            buffers.assign("dirtree",output)
+        end
+
+        return output
+
+    end
+
+\stopluacode
+
+% \protected\def\ShowTree[#1]%
+%   {\begingroup
+%      \ctxlua{document.showtree(dir.glob("#1"))}
+%      \setbox\scratchbox\hbox{\tttf │}
+%      \normalexpanded{
+%           \setupinterlinespace
+%            [line=\the\dimexpr\htdp\scratchbox\relax]
+%      }
+%      \lineskip-1pt
+%      \typebuffer[dirtree]
+%    \endgroup}
+
+\let\dirtreeentry\firstofoneargument
+
+\permanent\protected\def\showdirtree[#1]%
+  {\begingroup
+     \ctxlua{utilities.dirtree.show("#1","private","split")}
+     \startlines
+     \getbuffer[dirtree]
+     \stoplines
+   \endgroup}
+
+\continueifinputfile{m-dirtree.mkxl}
+
+\usemodule[article-basic]
+
+\setuplayout[tight]
+
+\starttext
+
+    \definecolor[dirtree:lua] [darkred]
+    \definecolor[dirtree:lmt] [darkred]
+    \definecolor[dirtree:lfg] [darkblue]
+    \definecolor[dirtree:llg] [darkblue]
+
+  % \protected\def\dirtreeentry#1#2%
+  %   {\doifelsesomething{#2}{\color[dirtree:#2]{#1.#2}}{#1}}
+
+    \protected\def\dirtreeentry#1#2%
+      {\ifparameter#2\or
+         \color[dirtree:#2]{#1.#2}%
+       \else
+         #1%
+       \fi}
+
+    \startcolumns
+       % \showdirtree[t:/texmf/tex/context/base/**]
+         \showdirtree[./**]
+    \stopcolumns
+
+    \startluacode
+     -- local list   = dir.glob("t:/texmf/tex/context/base/**")
+        local list   = dir.glob("./**")
+        local output = utilities.dirtree.show(list,"unicode","default")
+
+        inspect(output)
+    \stopluacode
+
+\stoptext

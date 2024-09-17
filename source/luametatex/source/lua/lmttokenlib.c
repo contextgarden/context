@@ -191,8 +191,9 @@ void lmt_tokenlib_initialize(void)
     lmt_interface.command_names[dimension_cmd]                        = (command_item) { .id = dimension_cmd,                      .lua = lua_key_index(dimension),                    .name = lua_key(dimension),                    .kind = data_command_item,      .min = min_dimension,             .max = max_dimension,                .base = direct_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[gluespec_cmd]                         = (command_item) { .id = gluespec_cmd,                       .lua = lua_key_index(gluespec),                     .name = lua_key(gluespec),                     .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[mugluespec_cmd]                       = (command_item) { .id = mugluespec_cmd,                     .lua = lua_key_index(mugluespec),                   .name = lua_key(mugluespec),                   .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
-    lmt_interface.command_names[mathspec_cmd]                         = (command_item) { .id = mathspec_cmd,                       .lua = lua_key_index(mathspec),                     .name = lua_key(fontspec),                     .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
+    lmt_interface.command_names[mathspec_cmd]                         = (command_item) { .id = mathspec_cmd,                       .lua = lua_key_index(mathspec),                     .name = lua_key(mathspec),                     .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[fontspec_cmd]                         = (command_item) { .id = fontspec_cmd,                       .lua = lua_key_index(fontspec),                     .name = lua_key(fontspec),                     .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
+    lmt_interface.command_names[specificationspec_cmd]                = (command_item) { .id = specificationspec_cmd,              .lua = lua_key_index(specificationspec),            .name = lua_key(specificationspec),            .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[register_cmd]                         = (command_item) { .id = register_cmd,                       .lua = lua_key_index(register),                     .name = lua_key(register),                     .kind = regular_command_item,   .min = first_value_level,         .max = last_value_level,             .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[combine_toks_cmd]                     = (command_item) { .id = combine_toks_cmd,                   .lua = lua_key_index(combine_toks),                 .name = lua_key(combine_toks),                 .kind = regular_command_item,   .min = 0,                         .max = last_combine_toks_code,       .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[arithmic_cmd]                         = (command_item) { .id = arithmic_cmd,                       .lua = lua_key_index(arithmic),                     .name = lua_key(arithmic),                     .kind = regular_command_item,   .min = 0,                         .max = last_arithmic_code,           .base = 0,                       .fixedvalue = 0            };
@@ -4013,7 +4014,7 @@ int lmt_function_call_by_category(int slot, int property, halfword *value)
         /*tex function index */
         lua_pushinteger(L, slot);
         if (property) {
-            lua_pushinteger(L, property);
+            lua_pushinteger(L, property); /* gets this ever passed ? */
         } else {
             lua_push_key(value);
         }
@@ -4078,14 +4079,14 @@ int lmt_function_call_by_category(int slot, int property, halfword *value)
                         }
                         break;
                     }
+                case lua_value_boolean_code:
+                    *value = lua_toboolean(L, -1);
+                    break;
                 case lua_value_float_code:
                     *value = tex_double_to_posit(lua_tonumber(L, -1)).v;
                     break;
                 case lua_value_string_code:
                     category = lua_value_none_code;
-                    break;
-                case lua_value_boolean_code:
-                    *value = lua_toboolean(L, -1);
                     break;
                 case lua_value_node_code:
                     *value = lmt_check_isnode(L, -1);

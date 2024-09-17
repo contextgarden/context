@@ -1342,11 +1342,11 @@ static void tex_aux_set_cur_val_by_math_style_cmd(halfword code)
 
 /*tex Fetch an internal parameter: */
 
-static void tex_aux_missing_number_error(void)
+static void tex_aux_missing_number_error(int where)
 {
     tex_handle_error(
         back_error_type,
-        "Missing number, treated as zero",
+        "Missing number, case %i, treated as zero", where,
         "A number should have been here; I inserted '0'. (If you can't figure out why I\n"
         "needed to see a number, look up 'weird error' in the index to The TeXbook.)"
     );
@@ -2167,7 +2167,7 @@ static void tex_aux_improper_constant_error(void)
 */
 
  
-static void tex_aux_scan_integer_no_number() 
+static void tex_aux_scan_integer_no_number(int where) 
 {
     /*tex Express astonishment that no number was here. */
     if (lmt_error_state.intercept) {
@@ -2176,7 +2176,7 @@ static void tex_aux_scan_integer_no_number()
             tex_back_input(cur_tok);
         }
     } else {
-        tex_aux_missing_number_error();
+        tex_aux_missing_number_error(where);
     }
 }
 
@@ -2249,7 +2249,7 @@ halfword tex_scan_integer(int optional_equal, int *radix)
     } else if ((cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) || cur_cmd == parameter_cmd) {
         result = tex_aux_scan_something_internal(cur_cmd, cur_chr, integer_val_level, 0, 0);
         if (cur_val_level != integer_val_level) {
-            tex_aux_scan_integer_no_number();
+            tex_aux_scan_integer_no_number(6);
             return 0;
         }
     } else {
@@ -2355,7 +2355,7 @@ halfword tex_scan_integer(int optional_equal, int *radix)
         }
       DONE:
         if (vacuous) {
-            tex_aux_scan_integer_no_number();
+            tex_aux_scan_integer_no_number(7);
         } else {
             tex_push_back(cur_tok, cur_cmd, cur_chr);
         }
@@ -2412,7 +2412,7 @@ void tex_scan_integer_validate(void)
     } else if ((cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) || cur_cmd == parameter_cmd) {
         tex_aux_scan_something_internal(cur_cmd, cur_chr, integer_val_level, 0, 0);
         if (cur_val_level != integer_val_level) {
-            tex_aux_scan_integer_no_number();
+            tex_aux_scan_integer_no_number(8);
         }
     } else {
         bool vacuous = true;
@@ -2446,7 +2446,7 @@ void tex_scan_integer_validate(void)
         }
       DONE:
         if (vacuous) {
-            tex_aux_scan_integer_no_number();
+            tex_aux_scan_integer_no_number(9);
         } else {
             tex_push_back(cur_tok, cur_cmd, cur_chr);
         }
@@ -2538,7 +2538,7 @@ int tex_scan_cardinal(int optional_equal, unsigned *value, int dontbark)
             if (dontbark) {
                 return 0;
             } else {
-                tex_aux_missing_number_error();
+                tex_aux_missing_number_error(1);
             }
         } else {
             tex_push_back(cur_tok, cur_cmd, cur_chr);
@@ -5860,7 +5860,7 @@ static halfword tex_scan_bit_int(int *radix)
     } else if ((cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) || cur_cmd == parameter_cmd) {
         result = tex_aux_scan_something_internal(cur_cmd, cur_chr, integer_val_level, 0, 0);
         if (cur_val_level != integer_val_level) {
-            tex_aux_missing_number_error();
+            tex_aux_missing_number_error(2);
             return 0;
         }
     } else {
@@ -5949,7 +5949,7 @@ static halfword tex_scan_bit_int(int *radix)
         }
       DONE:
         if (vacuous) {
-            tex_aux_missing_number_error();
+            tex_aux_missing_number_error(3);
         } else {
             tex_push_back(cur_tok, cur_cmd, cur_chr);
         }
@@ -6883,7 +6883,7 @@ halfword tex_scan_posit(int optional_equal)
             cur_val = tex_double_to_posit(d).v;
             return cur_val;
         } else { 
-            tex_aux_missing_number_error();
+            tex_aux_missing_number_error(4);
         }
       TOOBIG:
         cur_val = tex_integer_to_posit(0).v;

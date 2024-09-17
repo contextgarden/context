@@ -3839,8 +3839,8 @@ static int texlib_linebreak(lua_State *L)
         properties.parinit_left_skip = null;
         properties.parinit_right_skip = null;
         properties.extra_hyphen_penalty = 0;
-        properties.optional_found = 0;
-        properties.math_found = 0;
+        properties.emergency_original = 0;
+        properties.math_penalty_factor = 0;
         while (tail) { 
             switch (node_type(tail)) { 
                 case glue_node:
@@ -3984,7 +3984,7 @@ static int texlib_linebreak(lua_State *L)
         get_penalties_par(properties.broken_penalties,             brokenpenalties,           tex_get_par_par(par, par_broken_penalties_code), broken_penalties_code);
         get_penalties_par(properties.orphan_penalties,             orphanpenalties,           tex_get_par_par(par, par_orphan_penalties_code), orphan_penalties_code);
         get_demerits_par (properties.fitness_demerits,             fitnessdemerits,           tex_get_par_par(par, par_fitness_demerits_code), fitness_demerits_code);
-        get_penalties_par(properties.par_passes,                   parpasses,                 tex_get_par_par(par, par_par_passes_code), par_passes_code);
+        get_penalties_par(properties.par_passes,                   parpasses,                 line_break_passes_par > 0 ? tex_get_par_par(par, par_par_passes_code) : null, par_passes_code);
         get_integer_par  (properties.line_break_checks,            linebreakchecks,           tex_get_par_par(par, par_line_break_checks_code));
         get_integer_par  (properties.line_break_optional,          linebreakoptional,         line_break_optional_par); /* hm */
         if (! prepared) {
@@ -5275,6 +5275,22 @@ static int texlib_getprotrusionboundaryvalues(lua_State *L)
     return 1;
 }
 
+
+static int texlib_getlinebreakstatevalues(lua_State *L)
+{
+    lua_createtable(L, 2, 7);
+    lua_set_string_by_index(L, par_has_glyph,    "glyph"); 
+    lua_set_string_by_index(L, par_has_disc,     "disc"); 
+    lua_set_string_by_index(L, par_has_math,     "math");
+    lua_set_string_by_index(L, par_has_space,    "space");
+    lua_set_string_by_index(L, par_has_glue,     "glue");
+    lua_set_string_by_index(L, par_has_uleader,  "uleader");
+    lua_set_string_by_index(L, par_has_optional, "optional");
+    lua_set_string_by_index(L, par_is_overfull,  "overfull");
+    lua_set_string_by_index(L, par_is_underfull, "underfull");
+    return 1;
+}
+
 static int texlib_getflagvalues(lua_State *L)
 {
     lua_createtable(L, 2, 18); 
@@ -5755,6 +5771,7 @@ static int texlib_getspecificationoptionvalues(lua_State *L)
     lua_set_string_by_index(L, specification_option_values,  "values");
     lua_set_string_by_index(L, specification_option_double,  "double");
     lua_set_string_by_index(L, specification_option_largest, "largest");
+    lua_set_string_by_index(L, specification_option_presets, "presets");
     return 1;
 }
 
@@ -6217,6 +6234,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getautomigrationvalues",       texlib_getautomigrationvalues       },
     { "getflagvalues",                texlib_getflagvalues                },
     { "getprotrusionboundaryvalues",  texlib_getprotrusionboundaryvalues  },
+    { "getlinebreakstatevalues",      texlib_getlinebreakstatevalues      },
     { "getmathclassoptionvalues",     texlib_getmathclassoptionvalues     },
     { "getnormalizelinevalues",       texlib_getnormalizelinevalues       },
     { "getnormalizeparvalues",        texlib_getnormalizeparvalues        },

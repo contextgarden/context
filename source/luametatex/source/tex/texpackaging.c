@@ -591,12 +591,19 @@ packaging_state_info lmt_packaging_state = {
 
 */
 
+static inline int tex_has_glyph_expansion(halfword a) 
+{ 
+    return 
+        ! ((glyph_options(a) & glyph_option_no_expansion) == glyph_option_no_expansion) 
+        && has_font_text_control(glyph_font(a), text_control_expansion);
+}
+
 scaled tex_char_stretch(halfword p) /* todo: move this to texfont.c and make it more efficient */
 {
-    if (! tex_has_glyph_option(p, glyph_option_no_expansion)) {
-        halfword f = glyph_font(p);
-        halfword m = font_max_stretch(f);
+    if (tex_has_glyph_expansion(p)) {
+        halfword m = lmt_font_state.adjust_stretch;
         if (m > 0) {
+            halfword f = glyph_font(p);
             halfword c = glyph_character(p);
             scaled e = tex_char_ef_from_font(f, c);
             if (e > 0) {
@@ -612,10 +619,10 @@ scaled tex_char_stretch(halfword p) /* todo: move this to texfont.c and make it 
 
 scaled tex_char_shrink(halfword p) /* todo: move this to texfont.c and make it more efficient */
 {
-    if (! tex_has_glyph_option(p, glyph_option_no_expansion)) {
-        halfword f = glyph_font(p);
-        halfword m = font_max_shrink(f);
+    if (tex_has_glyph_expansion(p)) {
+        halfword m = lmt_font_state.adjust_shrink;
         if (m > 0) {
+            halfword f = glyph_font(p);
             halfword c = glyph_character(p);
             scaled e = tex_char_cf_from_font(f, c);
             if (e > 0) {
@@ -634,8 +641,8 @@ scaled tex_kern_stretch(halfword p)
     scaled w = kern_amount(p);
     if (w)  {
         halfword l = lmt_packaging_state.previous_char_ptr;
-        if (l && node_type(l) == glyph_node && ! tex_has_glyph_option(l, glyph_option_no_expansion)) {
-            scaled m = font_max_stretch(glyph_font(l));
+        if (l && node_type(l) == glyph_node && tex_has_glyph_expansion(l)) {
+            scaled m = lmt_font_state.adjust_stretch;
             if (m > 0) {
                 scaled e = tex_char_ef_from_font(glyph_font(l), glyph_character(l));
                 if (e > 0) {
@@ -655,8 +662,8 @@ scaled tex_kern_shrink(halfword p)
     scaled w = kern_amount(p) ;
     if (w)  {
         halfword l = lmt_packaging_state.previous_char_ptr;
-        if (l && node_type(l) == glyph_node && ! tex_has_glyph_option(l, glyph_option_no_expansion)) {
-            halfword m = font_max_shrink(glyph_font(l));
+        if (l && node_type(l) == glyph_node && tex_has_glyph_expansion(l)) {
+            halfword m = lmt_font_state.adjust_shrink;
             if (m > 0) {
                 scaled e = tex_char_cf_from_font(glyph_font(l), glyph_character(l));
                 if (e > 0) {
@@ -682,25 +689,23 @@ static void tex_aux_set_kern_expansion(halfword p, halfword ratio)
 {
     if (kern_amount(p))  {
         halfword glyph = lmt_packaging_state.previous_char_ptr;
-        if (glyph && node_type(glyph) == glyph_node && ! tex_has_glyph_option(glyph, glyph_option_no_expansion)) {
+        if (glyph && node_type(glyph) == glyph_node && tex_has_glyph_expansion(glyph)) {
             halfword fnt = glyph_font(glyph);
             halfword chr = glyph_character(glyph);
             if (ratio > 0) {
                 scaled expansion = tex_char_ef_from_font(fnt, chr);
                 if (expansion > 0) { 
-                    halfword stretch = font_max_stretch(fnt);
+                    halfword stretch = lmt_font_state.adjust_stretch;
                     if (stretch > 0) {
-                        expansion = tex_ext_xn_over_d(ratio * expansion, stretch, scaling_factor_squared);
-                        kern_expansion(p) = tex_fix_expand_value(fnt, expansion) * scaling_factor;
+                        kern_expansion(p) = tex_ext_xn_over_d(ratio * expansion, stretch, scaling_factor);
                     }
                 }
             } else if (ratio < 0) {
                 scaled compression = tex_char_cf_from_font(fnt, chr);
                 if (compression > 0) { 
-                    halfword shrink = font_max_shrink(fnt);
+                    halfword shrink = lmt_font_state.adjust_shrink;
                     if (shrink > 0) {
-                        compression = tex_ext_xn_over_d(ratio * compression, shrink, scaling_factor_squared);
-                        kern_expansion(p) = tex_fix_expand_value(fnt, compression) * scaling_factor;
+                        kern_expansion(p) = tex_ext_xn_over_d(ratio * compression, shrink, scaling_factor);
                     }
                 }
             } else { 
@@ -714,16 +719,15 @@ static void tex_aux_set_glyph_expansion(halfword p, int ratio)
 {
     switch (node_type(p)) {
         case glyph_node:
-            if (! tex_has_glyph_option(p, glyph_option_no_expansion)) {
+            if (tex_has_glyph_expansion(p)) {
                 if (ratio > 0) {
                     halfword fnt = glyph_font(p);
                     halfword chr = glyph_character(p);
                     scaled expansion = tex_char_ef_from_font(fnt, chr);
                     if (expansion > 0) { 
-                        halfword stretch = font_max_stretch(fnt);
+                        halfword stretch = lmt_font_state.adjust_stretch;
                         if (stretch > 0) {
-                            expansion = tex_ext_xn_over_d(ratio * expansion, stretch, scaling_factor_squared);
-                            glyph_expansion(p) = tex_fix_expand_value(fnt, expansion) * scaling_factor;
+                            glyph_expansion(p) = tex_ext_xn_over_d(ratio * expansion, stretch, scaling_factor);
                         }
                     }
                 } else if (ratio < 0) {
@@ -731,10 +735,9 @@ static void tex_aux_set_glyph_expansion(halfword p, int ratio)
                     halfword chr = glyph_character(p);
                     scaled compression = tex_char_cf_from_font(fnt, chr);
                     if (compression > 0) { 
-                        halfword shrink = font_max_shrink(fnt);
+                        halfword shrink = lmt_font_state.adjust_shrink;
                         if (shrink > 0) {
-                            compression = tex_ext_xn_over_d(ratio * compression, shrink, scaling_factor_squared);
-                            glyph_expansion(p) = tex_fix_expand_value(fnt, compression) * scaling_factor;
+                            glyph_expansion(p) = tex_ext_xn_over_d(ratio * compression, shrink, scaling_factor);
                         }
                     }
                 }
@@ -1936,7 +1939,6 @@ halfword tex_filtered_hpack(halfword p, halfword qt, scaled w, int m, int grp, h
 {
     halfword head;
     singleword direction = (singleword) checked_direction_value(d);
-//    (void) state; /*tex Why do we pass it? Probably a left-over from an experiment. */
     if (just_pack) {
         head = node_next(p);
     } else if (node_type(p) == temp_node && ! node_next(p)) {

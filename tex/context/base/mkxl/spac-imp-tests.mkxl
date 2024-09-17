@@ -47,15 +47,20 @@
   % \linebreakpasses\plusone
 \stopsetups
 
+% todo: just store the parpass
+%
+\setnewconstant\c_parpass_quality\parpassidentifier{quality}
+\setnewconstant\c_parpass_decent \parpassidentifier{decent}
+
 \startsetups align:pass:decent
     \pretolerance 50
     \tolerance    150
     \parpasses    2
-        identifier           \parpassidentifier{decent}
-        threshold            0.05pt
+        identifier             \c_parpass_decent
+        threshold              0.05pt
         tolerance            200
       next
-        threshold            0.05pt
+        threshold              0.05pt
         tolerance            500
         adjustspacing          3
         adjustspacingstep      1
@@ -69,18 +74,18 @@
     \pretolerance 50
     \tolerance    150
     \parpasses    4
-        identifier           \parpassidentifier{quality}
-      % classes              \indecentparpassclasses
-        threshold            0.025pt
+        identifier             \c_parpass_quality
+      % classes                \indecentparpassclasses
+        threshold              0.025pt
         tolerance            175
       next
-        threshold            0.025pt
+        threshold              0.025pt
         tolerance            200
       next
-        threshold            0.025pt
+        threshold              0.025pt
         tolerance            250
       next
-        threshold            0.025pt
+        threshold              0.025pt
         tolerance            250
         adjustspacing          3
         adjustspacingstep      1
@@ -96,16 +101,17 @@
 %     \pretolerance 100
 %     \tolerance    200
 %     \parpasses      2
-%         classes              \indecentparpassclasses
+%         classes                \indecentparpassclasses
 %         tolerance            400
 %       next
-%         classes              \indecentparpassclasses
+%         classes                \indecentparpassclasses
 %         tolerance            400
 %         adjustspacing          3
 %         adjustspacingstep      1
 %         adjustspacingshrink   15
 %         adjustspacingstretch  30
-%         emergencystretch     .25\bodyfontsize
+%       % emergencystretch       0.25\bodyfontsize
+%         emergencyfactor      250
 %     \relax
 %     \linebreakpasses\plusone
 % \stopsetups
@@ -120,7 +126,8 @@
         adjustspacingstep      1
         adjustspacingshrink   15
         adjustspacingstretch  30
-        emergencystretch     .25\bodyfontsize
+      % emergencystretch       0.25\bodyfontsize
+        emergencyfactor      250
     \relax
 %     \linebreakpasses\plusone
 \stopsetups
@@ -132,25 +139,26 @@
     \pretolerance 100
     \tolerance    200
     \parpasses      3
-        classes              \indecentparpassclasses
-        threshold            0.025pt
+        classes                \indecentparpassclasses
+        threshold              0.025pt
         tolerance            250
         extrahyphenpenalty    50
       next
-        threshold            0.025pt
+        threshold              0.025pt
         tolerance            300
         adjustspacing          3
         adjustspacingstep      1
         adjustspacingshrink   10
         adjustspacingstretch  15
       next
-        threshold            0.025pt
+        threshold              0.025pt
         tolerance            350
         adjustspacing          3
         adjustspacingstep      1
         adjustspacingshrink   20
         adjustspacingstretch  40
-        emergencystretch     .25\bodyfontsize
+      % emergencystretch       0.25\bodyfontsize
+        emergencyfactor      250
     \relax
 %     \linebreakpasses\plusone
 \stopsetups
@@ -162,19 +170,20 @@
     \pretolerance  50
     \tolerance    100
     \parpasses      2
-        classes              \indecentparpassclasses
-        threshold            0.025pt
+        classes                \indecentparpassclasses
+        threshold              0.025pt
         tolerance            200
         extrahyphenpenalty    50
       next
-        threshold            0.025pt
+        threshold              0.025pt
         tolerance            200
         extrahyphenpenalty    25
         adjustspacing          3
         adjustspacingstep      1
         adjustspacingshrink   20
         adjustspacingstretch  40
-        emergencystretch     .25\bodyfontsize
+      % emergencystretch       0.25\bodyfontsize
+        emergencyfactor      250
     \relax
 %     \linebreakpasses\plusone
 \stopsetups
@@ -186,29 +195,29 @@
     \pretolerance 100
     \tolerance    200
     \parpasses      4
-        classes              \indecentparpassclasses
-        threshold            0.025pt
+        classes               \indecentparpassclasses
+        threshold             0.025pt
         adjustspacing         3
         adjustspacingstep     1
         adjustspacingshrink   5
         adjustspacingstretch 10
       next
-        classes              \indecentparpassclasses
-        threshold            0.025pt
+        classes               \indecentparpassclasses
+        threshold             0.025pt
         adjustspacing         3
         adjustspacingstep     1
         adjustspacingshrink  10
         adjustspacingstretch 20
       next
-        classes              \indecentparpassclasses
-        threshold            0.025pt
+        classes               \indecentparpassclasses
+        threshold             0.025pt
         adjustspacing         3
         adjustspacingstep     1
         adjustspacingshrink  20
         adjustspacingstretch 40
       next
-        classes              \indecentparpassclasses
-        threshold            0.025pt
+        classes               \indecentparpassclasses
+        threshold             0.025pt
         adjustspacing         3
         adjustspacingstep     1
         adjustspacingshrink  40
@@ -225,23 +234,25 @@
     \pretolerance  50
     \tolerance    100
     \parpasses      4
-        threshold          0.025pt
-        tolerance          200
-        extrahyphenpenalty 100
+        threshold             0.025pt
+        tolerance           200
+        extrahyphenpenalty  100
       next
-        threshold          0.025pt
-        tolerance          400
-        extrahyphenpenalty  50
+        threshold             0.025pt
+        tolerance           400
+        extrahyphenpenalty   50
       next
-        threshold          0.025pt
-        tolerance          500
-        extrahyphenpenalty  25
-        emergencystretch   .25\bodyfontsize
+        threshold             0.025pt
+        tolerance           500
+        extrahyphenpenalty   25
+      % emergencystretch      0.25\bodyfontsize
+        emergencyfactor     250
       next
-        threshold          1pt
+        threshold             1pt
         tolerance          1000
-        extrahyphenpenalty 0
-        emergencystretch   .5\bodyfontsize
+        extrahyphenpenalty    0
+      % emergencystretch      0.5\bodyfontsize
+        emergencyfactor     500
     \relax
 %     \linebreakpasses\plusone
 \stopsetups
@@ -255,21 +266,23 @@
     \pretolerance  75
     \tolerance    150
     \parpasses      3
-        classes              \indecentparpassclasses
-        linebreakoptional    0
-        tolerance            150
+        classes             \indecentparpassclasses
+        linebreakoptional   0
+        tolerance         150
     next
-%         callback             \parpasscallback{experiment}
-        classes              \indecentparpassclasses
-        tolerance            200
-        linebreakoptional    0
-        emergencystretch     .25\bodyfontsize
+%         callback          \parpasscallback{experiment}
+        classes             \indecentparpassclasses
+        tolerance         200
+        linebreakoptional   0
+      % emergencystretch  .25\bodyfontsize
+        emergencyfactor   250
     next
-%         threshold            0.025pt
-        classes              \indecentparpassclasses
-        tolerance            200
-        linebreakoptional    0
-        emergencystretch     .5\bodyfontsize
+%       threshold           0.025pt
+        classes            \indecentparpassclasses
+        tolerance         200
+        linebreakoptional   0
+      % emergencystretch    0.5\bodyfontsize
+        emergencyfactor   500
     \relax
 %     \linebreakpasses\plusone
 \stopsetups

@@ -84,8 +84,8 @@ do
                 prefix, name = "preset", prefix
             end
             compactors[prefix][name] = compactor
+            setmetatableindex(compactor,"table")
         end
-
     end
 
 end

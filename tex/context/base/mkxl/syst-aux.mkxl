@@ -6677,8 +6677,10 @@
 
 %D We have a better splitter at the \LUA\ end.
 
-\integerdef\c_helpers_range_min\zerocount
-\integerdef\c_helpers_range_max\zerocount
+\integerdef\c_helpers_range_min    \zerocount
+\integerdef\c_helpers_range_max    \zerocount
+\integerdef\c_helpers_range_abs_min\zerocount
+\integerdef\c_helpers_range_abs_max\zerocount
 
 \lettonothing\m_helpers_range_action
 
@@ -6712,6 +6714,43 @@
    \integerdef\c_helpers_range_min#1\relax
    \integerdef\c_helpers_range_max#2\relax
    \processcommacommand[#3]\syst_helpers_with_range}
+
+% todo: use the helper that we made in lua (sets)
+
+\def\syst_helpers_with_range_slice#1%
+  {\splitstring#1\at:\to\m_syst_helpers_range_from\and\m_syst_helpers_range_to
+   \ifx\m_syst_helpers_range_from\wildcardsymbol
+     \edef\m_syst_helpers_range_from{\number\c_helpers_range_min}%
+   \fi
+   \ifx\m_syst_helpers_range_to\wildcardsymbol
+     \edef\m_syst_helpers_range_to{\number\c_helpers_range_max}%
+   \fi
+   \ifempty\m_syst_helpers_range_to
+     \let\m_syst_helpers_range_to\m_syst_helpers_range_from
+   \fi
+   \ifnum\m_syst_helpers_range_from<\zerocount
+     \dostepwiserecurse
+       \m_syst_helpers_range_from
+       \m_syst_helpers_range_to
+       {\ifnum\m_syst_helpers_range_from>\m_syst_helpers_range_to\minusone\else\plusone\fi}
+       {%(\the\numexpr\c_helpers_range_abs_max+##1+\plusone\relax)
+        \m_helpers_range_action{\numexpr\c_helpers_range_abs_max+##1+\plusone\relax}}%
+   \else
+     \dostepwiserecurse
+       \m_syst_helpers_range_from
+       \m_syst_helpers_range_to
+       {\ifnum\m_syst_helpers_range_from>\m_syst_helpers_range_to\minusone\else\plusone\fi}
+       {%(\the\numexpr\c_helpers_range_abs_min+##1-\plusone\relax)
+        \m_helpers_range_action{\numexpr\c_helpers_range_abs_min+##1+\plusone\relax}}%
+   \fi}%
+
+\permanent\protected\def\dowithminmaxrangeslice#1#2#3#4#5#6% absmin absmax min max set action
+  {\def\m_helpers_range_action{#6}%
+   \integerdef\c_helpers_range_abs_min#1\relax
+   \integerdef\c_helpers_range_abs_max#2\relax
+   \integerdef\c_helpers_range_min    #3\relax
+   \integerdef\c_helpers_range_max    #4\relax
+   \processcommacommand[#5]\syst_helpers_with_range_slice}
 
 % \def\DoSomething#1{ [item #1] }
 % \dowithrange[1,4:5]\DoSomething
@@ -7085,9 +7124,15 @@
      \expandafter\secondoftwoarguments
    \fi}
 
-%D THi soen is used in math-frc so don't change it
+%D This one is used in math-frc so don't change it
 
 \untraced\permanent\protected\def\glyphscaled#1% name will change
   {\dimexpr#1*\plusthousand/\glyphscale\relax}
+
+%D \macros {nologbuffering, linebuffering}
+%D
+%D This saves one sec on luametatex manual in console. And in the case of an error
+%D no buffering will make sure what is cached gets flushed too. We define these two
+%D at the LUA end: \typ {\nologbuffering} and \typ {\linebuffering}.
 
 \protect \endinput

@@ -280,6 +280,10 @@
    \orelse\ifhastok={#1}%
      \cdef\currentsimulatewords{math}%
      \setupcurrentsimulatewords[#1]%
+   \orelse\ifchknum#1\or
+     \cdef\currentsimulatewords{math}%
+     \setsimulatewordsparameter\c!n{#1}%
+     \setsimulatewordsparameter\c!m{#1}%
    \else
      \cdef\currentsimulatewords{math}%
    \fi
@@ -346,12 +350,7 @@
 
     \im { \fakemath[m=1]^{\fakemath} }
 
-    \tolerant\permanent\protected\def\Snip[#1]%
-      {\ifchknum#1\or
-         \fakeinlinemath[n=#1,m=#1]%
-       \else
-         \fakeinlinemath
-       \fi}
+    \def\Snip{\fakeinlinemath}
 
     \im { \Snip[1]^{\Snip[1]} + \Snip[2] = \Snip[2] + \int \Snip[2]}
 

@@ -1640,7 +1640,7 @@ do
     local function handleclippath(at)
         local clippath = at["clip-path"]
 
-        if not clippath then
+        if not clippath or clippath == "none" then
             return
         end
 
@@ -1680,7 +1680,8 @@ do
                                 local p = grabpath(d)
                                 p.evenodd = sa["clip-rule"] == "evenodd"
                                 p.close = true
-                                return p, clippath
+-- local transform = rawget(ca,"transform")
+                                return p, clippath, transform
                             else
                                 return
                             end
@@ -1701,6 +1702,19 @@ do
                     if transform then
                         transform = handletransformstring(transform)
                     end
+
+local tr = rawget(at,"transform")
+if tr then
+    tr = handletransformstring(tr)
+    if tr then
+        if transform then
+            transform = transform .. " " .. tr
+        else
+            transform = tr
+        end
+    end
+end
+
                     return p, clippath, transform
                 else
                     return
@@ -2110,21 +2124,21 @@ do
     local function fillproperties(fill,at,opacity)
      -- local o = at["fill-opacity"] or (opacity and at["opacity"])
         local o = at["fill-opacity"] or (opacity and rawget(at,"opacity")) -- opacity not inherited as it can be on the group
--- what a mess ... examples and suggestions are not consistent
-local o = at["fill-opacity"]
-if tonumber(o) == 1 then
-    -- so kind of unset
-    o = rawget(at,"opacity") or o
-end
-
+        -- what a mess ... examples and suggestions are not consistent
+        local o = at["fill-opacity"]
+        if tonumber(o) == 1 then
+            -- so kind of unset
+            o = rawget(at,"opacity") or o
+        end
+        --
         local c   = nil
         local t   = nil
         local ops = nil
         if c ~= "none" then
             c, ops, t = gradient(fill)
-if ops then
-    return c, ops, t
-end
+            if ops then
+                return c, ops, t
+            end
             if not c then
                 c = pattern(fill)
                 if c then
@@ -2246,14 +2260,14 @@ end
             at["transform"] = false
          -- at["clip-path"] = false
 
-setmetatableindex(res.at,at)
+            setmetatableindex(res.at,at)
 
             local tg = res.tg
---             if usetags[tg] then
+         -- if usetags[tg] then
                 process(res,".")
---             else
---                 process(res,"/*")
---             end
+         -- else
+         --     process(res,"/*")
+         -- end
 
             at["transform"] = _transform
          -- at["clip-path"] = _clippath
@@ -2325,6 +2339,9 @@ setmetatableindex(res.at,at)
             r = r + 1 ; result[r] = f_done(cpath.path,ctransform or "")
         end
 
+        if etransform then
+            r = r + 1 ; result[r] = etransform
+        end
     end
 
     do
@@ -2421,7 +2438,9 @@ setmetatableindex(res.at,at)
             r = r + 1 ; result[r] = s_offset_start
 
             local wrapupviewport
--- todo : better viewbox code
+
+            -- todo : better viewbox code
+
             local xpct, ypct, rpct
             if view then
                 x, y, w, h = handleviewbox(view)
@@ -2729,7 +2748,7 @@ setmetatableindex(res.at,at)
                 local fill   = at["fill"] or "black"
                 local stroke = at["stroke"] or "none"
                 local btransform, etransform = handletransform(at)
-                local cpath = handleclippath(at)
+                local cpath, _, ctransform = handleclippath(at)
                 if cpath then
                     r = r + 1 ; result[r] = s_clip_start
                 end
@@ -2794,7 +2813,7 @@ setmetatableindex(res.at,at)
                 end
 
                 if cpath then
-                    r = r + 1 ; result[r] = f_clip_stop(cpath.path,"")
+                    r = r + 1 ; result[r] = f_clip_stop(cpath.path,ctransform)
                 end
             end
         end
@@ -2891,7 +2910,6 @@ setmetatableindex(res.at,at)
             local btransform, etransform, transform = handletransform(at)
             local cpath, clippath, ctransform = handleclippath(at)
             local bopacity, copacity, eopacity = sharedopacity(at)
-
             if copacity then
                 r = r + 1 ; result[r] = bopacity
             end
@@ -2903,7 +2921,6 @@ setmetatableindex(res.at,at)
             if btransform then
                 r = r + 1 result[r] = btransform
             end
-
             local _transform = transform
             local _clippath  = clippath
             at["transform"] = false
@@ -2914,7 +2931,7 @@ setmetatableindex(res.at,at)
             at["transform"] = _transform
             at["clip-path"] = _clippath
 
-            if etransform then
+            if etransform then -- maybe move after cpath
                 r = r + 1 ; result[r] = etransform
             end
             if cpath then

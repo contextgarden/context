@@ -7,10 +7,11 @@
     <cd:define name="keyword-setupitemgroup">
         <cd:keywords list="yes" optional="yes">
             <cd:constant type="intro"/>
+            <cd:constant type="nointro"/>
+            <cd:constant type="autointro"/>
             <cd:constant type="random"/>
             <cd:constant type="continue"/>
             <cd:constant type="packed"/>
-            <cd:constant type="autointro"/>
             <cd:constant type="broad"/>
             <cd:constant type="text"/>
             <cd:constant type="before"/>

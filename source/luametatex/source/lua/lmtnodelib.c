@@ -264,13 +264,13 @@ inline static singleword nodelib_getdirection(lua_State *L, int i)
 
 */
 
-static quarterword nodelib_aux_get_node_type_id_from_name(lua_State *L, int n, node_info *data)
+static quarterword nodelib_aux_get_node_type_id_from_name(lua_State *L, int n, node_info *data, int all)
 {
     if (data) {
         const char *s = lua_tostring(L, n);
         for (int j = 0; data[j].id != -1; j++) {
             if (s == data[j].name) {
-                if (data[j].visible) {
+                if (all || data[j].visible) {
                     return (quarterword) j;
                 } else {
                     break;
@@ -312,7 +312,7 @@ static quarterword nodelib_aux_get_valid_node_type_id(lua_State *L, int n)
     quarterword i = unknown_node;
     switch (lua_type(L, n)) {
         case LUA_TSTRING:
-            i = nodelib_aux_get_node_type_id_from_name(L, n, lmt_interface.node_data);
+            i = nodelib_aux_get_node_type_id_from_name(L, n, lmt_interface.node_data, 0);
             if (i == unknown_node) {
                 luaL_error(L, "invalid node type id: %s", lua_tostring(L, n));
             }
@@ -450,7 +450,7 @@ static int nodelib_getlist(lua_State *L, int n)
 static int nodelib_shared_id(lua_State *L)
 {
     if (lua_type(L, 1) == LUA_TSTRING) {
-        int i = nodelib_aux_get_node_type_id_from_name(L, 1, lmt_interface.node_data);
+        int i = nodelib_aux_get_node_type_id_from_name(L, 1, lmt_interface.node_data, 0);
         if (i >= 0) {
             lua_pushinteger(L, i);
         } else {
@@ -4248,12 +4248,12 @@ static halfword nodelib_new_node(lua_State *L)
     switch (lua_type(L, 1)) {
         case LUA_TNUMBER:
             i = lmt_toquarterword(L, 1);
-            if (! tex_nodetype_is_visible(i)) {
-                i = unknown_node;
-            }
+         // if (! tex_nodetype_is_visible(i)) {
+         //     i = unknown_node;
+         // }
             break;
         case LUA_TSTRING:
-            i = nodelib_aux_get_node_type_id_from_name(L, 1, lmt_interface.node_data);
+            i = nodelib_aux_get_node_type_id_from_name(L, 1, lmt_interface.node_data, 0);
             break;
     }
     if (tex_nodetype_is_visible(i)) {
@@ -4275,6 +4275,27 @@ static halfword nodelib_new_node(lua_State *L)
 static int nodelib_userdata_new(lua_State *L)
 {
     lmt_push_node_fast(L, nodelib_new_node(L));
+    return 1;
+}
+
+/* node.size (kind of private, needed for manuals) */
+
+static halfword nodelib_shared_size(lua_State *L)
+{
+    quarterword i = unknown_node;
+    switch (lua_type(L, 1)) {
+        case LUA_TNUMBER:
+            i = lmt_toquarterword(L, 1);
+            break;
+        case LUA_TSTRING:
+            i = nodelib_aux_get_node_type_id_from_name(L, 1, lmt_interface.node_data, 1);
+            break;
+    }
+    if (tex_nodetype_is_valid(i)) {
+        lua_pushinteger(L, lmt_interface.node_data[i].size * 8);
+    } else { 
+        lua_pushnil(L);
+    }
     return 1;
 }
 
@@ -10774,6 +10795,7 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "types",                   nodelib_shared_types                  },
     { "fields",                  nodelib_shared_fields                 },
     { "subtypes",                nodelib_shared_subtypes               },
+    { "size",                    nodelib_shared_size                   },
  /* { "values",                  nodelib_shared_values                 }, */ /* finally all are now in tex. */
     { "id",                      nodelib_shared_id                     },
     { "getcachestate",           nodelib_shared_getcachestate          },
@@ -10824,6 +10846,7 @@ static const struct luaL_Reg nodelib_function_list[] = {
     { "types",                    nodelib_shared_types                  },
     { "fields",                   nodelib_shared_fields                 },
     { "subtypes",                 nodelib_shared_subtypes               },
+    { "size",                     nodelib_shared_size                   },
  /* { "values",                   nodelib_shared_values                 }, */ /* finally all are now in tex. */
     { "id",                       nodelib_shared_id                     },
     { "getcachestate",            nodelib_shared_getcachestate          },
@@ -11353,6 +11376,7 @@ int lmt_par_pass_callback(
     halfword               head,
     line_break_properties *properties, 
     halfword               identifier, 
+    halfword               subpass, 
     halfword               callback, 
     halfword               features, 
     scaled                 overfull, 
@@ -11360,7 +11384,7 @@ int lmt_par_pass_callback(
     halfword               verdict, 
     halfword               classified,
     scaled                 threshold, 
-    halfword               badness, 
+    halfword               demerits, 
     halfword               classes,
     int                   *repeat
 )
@@ -11375,13 +11399,14 @@ int lmt_par_pass_callback(
                 int i;
                 lmt_node_list_to_lua(L, head);
                 lua_push_integer(L, identifier);
+                lua_push_integer(L, subpass);
                 lua_push_integer(L, callback);
                 lua_push_integer(L, overfull);
                 lua_push_integer(L, underfull);
                 lua_push_integer(L, verdict);
                 lua_push_integer(L, classified);
                 lua_push_integer(L, threshold);
-                lua_push_integer(L, badness);
+                lua_push_integer(L, demerits);
                 lua_push_integer(L, classes);
                 i = lmt_callback_call(L, 10, 2, top);
                 if (i) {
@@ -11395,85 +11420,44 @@ int lmt_par_pass_callback(
                             }
                         case LUA_TTABLE:
                             {
-                                halfword v; 
-                                get_integer_par(v, tolerance, 0);
-                                if (v) { 
-                                    properties->tolerance = v;
-                                }
+                                /*tex 
+                                    This is untested and might go away at some point.
+                                */
+                                get_integer_par(properties->tolerance, tolerance, properties->tolerance);
                                 lmt_linebreak_state.threshold = properties->tolerance;
                                 lmt_linebreak_state.global_threshold = lmt_linebreak_state.threshold;
-                                get_integer_par(v, linepenalty, 0);
-                                if (v) {
-                                    properties->line_penalty = v;
-                                }
-                                get_integer_par(v, orphanpenalty, 0);
-                                if (v) {
-                                    properties->orphan_penalty = v;
-                                }
-                                if (v) {
-                                    properties->toddler_penalty = v;
-                                }
-                                get_integer_par(v, lefttwindemerits, 0);
-                                if (v) {
-                                    properties->left_twin_demerits = v;
-                                }
-                                get_integer_par(v, righttwindemerits, 0);
-                                if (v) {
-                                    properties->right_twin_demerits = v;
-                                }
-                                get_integer_par(v, singlelinepenalty, 0);
-                                if (v) {
-                                    properties->single_line_penalty = v;
-                                }
-                                get_integer_par(v, extrahyphenpenalty, 0);
-                                if (v) { 
-                                    properties->extra_hyphen_penalty = v;
-                                }
-                                get_integer_par(v, doublehyphendemerits, 0);
-                                if (v) { 
-                                    properties->double_hyphen_demerits = v;
-                                }
-                                get_integer_par(v, finalhyphendemerits, 0);
-                                if (v) { 
-                                    properties->final_hyphen_demerits = v;
-                                }
-                                get_integer_par(v, adjdemerits, 0);
-                                if (v) { 
-                                    properties->adj_demerits = v;
-                                }
-                                get_dimension_par(v, emergencystretch, 0);
-                                if (v) {
-                                    properties->emergency_stretch = v; // emergency_extra_stretch
-                                }
-                                get_integer_par(v, looseness, 0);
-                                if (v) {
-                                    properties->looseness = v;
-                                }
-                                get_integer_par(v, adjustspacingstep, 0);
-                                if (v) {
-                                    properties->adjust_spacing_step = v;
-                                }
-                                get_integer_par(v, adjustspacingshrink, 0);
-                                if (v) {
-                                    properties->adjust_spacing_shrink = v;
-                                }
-                                get_integer_par(v, adjustspacingstretch, 0);
-                                if (v) {
-                                    properties->adjust_spacing_stretch = v;
-                                }
-                                get_integer_par(v, adjustspacing, 0);
-                                if (v) {
-                                    properties->adjust_spacing = v;
-                                }
-                                if (features & passes_optional_set) {           
-                                    get_integer_par(v, optional, 0);
-                                    properties->line_break_optional = v;
-                                }
-                                get_integer_par(v, linebreakchecks, 0);
-                                if (v) {
-                                    properties->line_break_checks = v;
-                                }
-                                /* */
+                                get_integer_par(properties->line_penalty, linepenalty, properties->line_penalty);
+                                get_integer_par(properties->orphan_penalty, orphanpenalty, properties->orphan_penalty);
+                                get_integer_par(properties->toddler_penalty, toddlerpenalty, properties->toddler_penalty);
+                                get_integer_par(properties->left_twin_demerits, lefttwindemerits, properties->left_twin_demerits);
+                                get_integer_par(properties->right_twin_demerits, righttwindemerits, properties->right_twin_demerits);
+                                get_integer_par(properties->extra_hyphen_penalty, extrahyphenpenalty, properties->extra_hyphen_penalty);
+                                get_integer_par(properties->double_hyphen_demerits, doublehyphendemerits, properties->double_hyphen_demerits);
+                                get_integer_par(properties->final_hyphen_demerits, finalhyphendemerits, properties->final_hyphen_demerits);
+                                get_integer_par(properties->adj_demerits, adjdemerits, properties->adj_demerits);
+                                get_dimension_par(properties->emergency_stretch, emergencystretch, properties->emergency_stretch);
+                                get_integer_par(properties->adjust_spacing_step, adjustspacingstep, properties->adjust_spacing_step);
+                                get_integer_par(properties->adjust_spacing_shrink, adjustspacingshrink, properties->adjust_spacing_shrink);
+                                get_integer_par(properties->adjust_spacing_stretch, adjustspacingstretch, properties->adjust_spacing_stretch);
+                                get_integer_par(properties->adjust_spacing, adjustspacing, properties->adjust_spacing);
+                                get_integer_par(properties->line_break_optional, optional, properties->line_break_optional);
+                                get_integer_par(properties->line_break_checks, linebreakchecks, properties->line_break_checks);
+                                get_integer_par(properties->math_penalty_factor, mathpenaltyfactor, properties->math_penalty_factor);
+                                /*tex 
+                                    These are not properties (yet, but we could just add these as hidden fields):
+
+                                    emergencyfactor
+                                    emergencypercentage
+                                    emergencyleftextra
+                                    emergencyrightextra
+                                    emergencywidthextra
+
+                                    These make no sense here: 
+
+                                    fitnessdemerits
+                                    hyphenation          
+
+                                */
                                 result = 1;
                                 break;
                             }

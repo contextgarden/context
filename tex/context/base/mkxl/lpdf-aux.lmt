@@ -129,7 +129,7 @@ local x_pattern = P { "start",
                 )^1 ) * P(-1)
 }
 
-function lpdf.frombytes(s,hex)
+function lpdf.frombytes(s,hex,utf)
     if not s or s == "" then
         return ""
     end

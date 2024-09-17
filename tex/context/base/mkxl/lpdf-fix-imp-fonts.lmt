@@ -872,7 +872,7 @@ do
                                     getmetatable(object).__call = function() return contents end
                                     object.__fonts_remapped__ = true
                                     status.xobjects = status.xobjects + 1
-                                    r.Font           = fonts -- really needed
+                                    r.Font = fonts -- really needed
                                     object.Resources = r     -- really needed
                                     if trace_details then
                                         for k, v in next, fonts.__raw__ do -- we need the raw values here

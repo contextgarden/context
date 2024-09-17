@@ -1,0 +1,171 @@
+
+% language=us runpath=texruns:manuals/musings
+
+\startcomponent musings-viewers
+
+\environment musings-style
+
+\defineexternalfigure[default][width=.75tw]
+
+\startchapter[title={Viewers}]
+
+\startsection[title={Introduction}]
+
+In this musing I show some images that give an impression of how a few viewers
+that I have on my machine deal with indicating that some area in the text has a
+special meaning. The screen dumps were made in September 2024 when I added
+support for highlights (per user request).
+
+\stopsection
+
+\startsection[title={Highlights}]
+
+A highlight is an annotation. Normally annotations are bounded by a rectangle
+made by $llx$, $lly$, $urx$, and $ury$, so basically a bounding box. Highlights
+on the other hand need both a bounding box and list of quad points: $(x_1, y_1)$,
+$(x_2, y_2)$, $(x_3, y_3)$ and $(x_4, y_4)$ that represent the corners of a
+(possibly rotated) area. If you implement this according the the official
+standard you get in Acrobat Reader \in {figure} [fig:hl-acrobat], in Okular \in
+{figure} [fig:hl-okular] and in Sumatra (which uses muPDF) \in {figure}
+[fig:hl-sumatra]. \footnote {Quad points were already in \CONTEXT\ but mainly for
+supporting interactive features in \METAFUN\ with more fancy shapes. For multi
+line hyperlinks one could also turn in on in regular text but this was never
+advocated, if only because I couldn't test all these viewers.}
+
+\startplacefigure[reference=fig:hl-acrobat,title=Highlight in Acrobat.]
+    \externalfigure[musings-highlight-acrobat.png][default]
+\stopplacefigure
+
+\startplacefigure[reference=fig:hl-okular,title=Highlight in Okular.]
+    \externalfigure[musings-highlight-okular.png][default]
+\stopplacefigure
+
+\startplacefigure[reference=fig:hl-sumatra,title=Highlight in Sumatra.]
+    \externalfigure[musings-highlight-sumatra.png][default]
+\stopplacefigure
+
+However, this doesn't look that good. It happens that we need to swap the third and
+fourth coordinates, which we can do with:
+
+\starttyping
+\enabledirectives[backend.pdf.fixhighlight]
+\stoptyping
+
+The result is shown in \in {figure} [fig:hl-okular-fixed]. We don't make this
+feature default because the specification doesn't explain what viewers are
+supposed to do. The fact that Acrobat also suffers from this indicates that a bug
+has become a feature (creating and viewing has to match here). In regular links
+the active area conforms to the specification.
+
+\startplacefigure[reference=fig:hl-okular-fixed,title=Highlight in Okular with swapped coordinates.]
+    \externalfigure[musings-highlight-fixed-okular.png][default]
+\stopplacefigure
+
+All viewers apply some form of transparency so when this is used in a workflow
+you need to keep in mind that rendering of the highlighted area can differ per
+viewer, so choose colors wisely, especially when the text itself also has a
+color. Also test the viewers that your authors use and make sure that they don't
+see garbage. Here are some tested that we (Mikael & Hans) did September 14, 2024:
+
+\starttabulate
+\NC Firefox    \NC follows standard but also works with swapping \NC \NR
+\NC EBookDroid \NC follows standard but does something when swapping \NC \NR
+\NC Google     \NC show nothing \NC \NR
+\NC okular     \NC swap 3 and 4 \NC \NR
+\NC evince     \NC swap 3 and 4 \NC \NR
+\NC zathura    \NC swap 3 and 4 \NC \NR
+\NC qpdf       \NC swap 3 and 4 \NC \NR
+\NC acrobat    \NC swap 3 and 4 \NC \NR
+\NC sumatra    \NC swap 3 and 4, more curved \NC \NR
+\stoptabulate
+
+Hraban did some tests on his Apple machine and most viewers expected the fix
+while some didn't show anything at all. Because normally highlights are a temporary
+(editorial) trick it's not that important in the end.
+
+\stopsection
+
+\startsection[title={Rotation}]
+
+Out of curiosity I decided to look at how viewers handled a rotated highlight.
+Getting the quad points right is possible but in the end it is more reliable to
+use a generous bounding area instead. It's not like users will turn their head
+when commenting on your proposal. \in {Figures} [fig:hr-acrobat], \in
+[fig:hr-okular] \in {and} [fig:hr-sumatra] show the outcome.
+
+\startplacefigure[reference=fig:hr-acrobat,title=Highlight in Acrobat with rotated text.]
+    \externalfigure[musings-highlight-rotated-acrobat.png][default]
+\stopplacefigure
+
+\startplacefigure[reference=fig:hr-okular,title=Highlight in Okular with rotated text.]
+    \externalfigure[musings-highlight-rotated-okular.png][default]
+\stopplacefigure
+
+\startplacefigure[reference=fig:hr-sumatra,title=Highlight in Sumatra with rotated text.]
+    \externalfigure[musings-highlight-rotated-sumatra.png][default]
+\stopplacefigure
+
+It looks like Okular and Sumatra use the same algorithm for rendering the shape:
+both have rather ugly corners, maybe emulating some kind of pen. Acrobat might have
+an issue with the bounding box here but I'm not going to waste time on investigating
+this.
+
+\stopsection
+
+\startsection[title={Selection}]
+
+Talking of rotation, I was also curious how normal selection works out. Here
+Acrobat is a clear winner: compare \in {figures} [fig:rs-acrobat], \in
+[fig:rs-okular] \in {and} [fig:rs-sumatra]. It must be said: Okular makes for a
+nice image and uses transparency wisely. \footnote {Selecting an unrotated text
+also can give interesting effects especially when a viewer decided not to use the
+characters bounding box but font specific ascender and descender properties.}
+
+\startplacefigure[reference=fig:rs-acrobat,title=Selection in Acrobat with rotated text.]
+    \externalfigure[musings-selection-rotated-acrobat.png][default]
+\stopplacefigure
+
+\startplacefigure[reference=fig:rs-okular,title=Selection in Okular with rotated text.]
+    \externalfigure[musings-selection-rotated-okular.png][default]
+\stopplacefigure
+
+\startplacefigure[reference=fig:rs-sumatra,title=Selection in Sumatra with rotated text.]
+    \externalfigure[musings-selection-rotated-sumatra.png][default]
+\stopplacefigure
+
+\stopsection
+
+\startsection[title={Post scriptum}]
+
+Just to be complete I show how one can use highlights in \CONTEXT. This feature was
+made for Hraban who has a need for it.
+
+\starttyping
+\enabledirectives[backend.pdf.fixhighlight]
+
+\definecolor[pdfhighlight:Rhaban][r=.8,g=1,b=1]
+\definecolor[pdfhighlight:Hans]  [r=1,g=.5,b=.5]
+\definecolor[pdfhighlight:Ton]   [r=1,g=1,b=.8]
+
+test \PDFhighlight[Rhaban]        {\samplefile{tufte}} test \blank
+test \PDFhighlight[Hans]          {what a mess}        test \blank
+test \PDFhighlight[Ton]           {\samplefile{ward}}  test \blank
+test \PDFhighlight[Hans][whatever]{\samplefile{knuth}} test \blank
+\stoptyping
+
+The first argument indicates the author and you can define a color specific to
+one. The second optional argument specifies some content and it depends on the
+viewer how all gets represented: in a side menu, as roll over, or by point and
+click. There is also a \typ {\startPDFhighlight} with matching \typ
+{\stopPDFhighlight} command. We deliberately use a \type {PDF} name space and
+simple color setup (no instances) because this is a fragile feature from the
+perspective of viewers. One can also wonder how it impacts validation because
+conforming to the standard doesn't give the best results.
+
+You can use this command to see what highlights are in a file:
+
+\starttyping
+mtxrun --script pdf --highlights demo.pdf
+\stoptyping
+
+\stoptext

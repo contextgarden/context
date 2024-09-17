@@ -7,6 +7,10 @@ if not modules then modules = { } end modules ['lpdf-epd'] = {
     history   = "this one replaces the poppler/pdfe binding",
 }
 
+-- This was never designed as a manipulative interface so that bit is kind of messy. I will
+-- provide a beter interface for changing values. We need to keep in mind that pass through
+-- is meant to be fast so we mighe have to sacrifice some there.
+
 -- \enabledirectives[graphics.pdf.uselua]
 -- \enabledirectives[graphics.pdf.recompress]
 
@@ -72,6 +76,7 @@ local pdfnew            = pdfe.new
 local pdfclose          = pdfe.close
 
 local getcatalog        = pdfe.getcatalog
+local getpermissions    = pdfe.getpermissions
 local getinfo           = pdfe.getinfo
 local gettrailer        = pdfe.gettrailer
 local getnofpages       = pdfe.getnofpages
@@ -222,7 +227,7 @@ if lpdf.dictionary then
         if kind == name_object_code then
             return pdfconstant(value[2])
         elseif kind == string_object_code then
-            return pdfliteral(value[2],value[3])
+            return pdfliteral(value[2],false)
         elseif kind == array_object_code then
             return copyarray(document,object[key])
         elseif kind == dictionary_object_code then
@@ -343,8 +348,15 @@ some_stream = function(s,d,document)
                 return get_flagged(document,t,f)
          -- elseif how == false and not recompress then
             elseif how == false then
+-- print(">>>>> ? ",readwholestream(s,true))
+--                 local s = readwholestream(s,false) -- original
+-- print(">>>>> F ",s)
+--                 return s
                 return readwholestream(s,false) -- original
             else
+--                 local s = readwholestream(s,true)  -- uncompressed
+-- print(">>>>> T ",s)
+--                 return s
                 return readwholestream(s,true)  -- uncompressed
             end
         end,
@@ -582,9 +594,16 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
                     __copied__ = { },
                     __data__   = __data__,
                 }
-                document.Catalog = some_dictionary(getcatalog(__data__),document)
-                document.Info    = some_dictionary(getinfo(__data__),document)
-                document.Trailer = some_dictionary(gettrailer(__data__),document)
+                document.Catalog     = some_dictionary(getcatalog(__data__),document)
+                document.Info        = some_dictionary(getinfo(__data__),document)
+                document.Trailer     = some_dictionary(gettrailer(__data__),document)
+                document.catalog     = document.Catalog
+                document.info        = document.Info
+                document.trailer     = document.Trailer
+                --
+                document.encrypted   = document.Trailer.Encrypt and true or false
+                local permissions    = getpermissions(__data__)
+                document.permissions = permissions and permissions >= 0 and lpdf.topermissions(permissions) or nil
                 --
                 setmetatableindex(document,resolve)
                 --
@@ -1200,7 +1219,7 @@ if images then do
                         if kind == name_object_code then
                             value = pdfconstant(entry)
                         elseif kind == string_object_code then
-                            value = pdfliteral(entry,value[3])
+                            value = pdfliteral(entry,false)
                         elseif kind == null_object_code then
                             value = pdfnull()
                         elseif kind == reference_object_code then
@@ -1239,7 +1258,7 @@ if images then do
         if kind == name_object_code then
             return pdfconstant(value[2])
         elseif kind == string_object_code then
-            return pdfliteral(value[2],value[3])
+            return pdfliteral(value[2],false)
         elseif kind == array_object_code then
             return copyarray(pdfdoc,xref,copied,object[key])
         elseif kind == dictionary_object_code then

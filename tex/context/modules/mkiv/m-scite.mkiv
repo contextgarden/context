@@ -95,6 +95,7 @@ local replacer = lpeg.replacer {
 }
 
 local colors = nil
+local escape = false
 
 local function exportcolors()
     if not colors then
@@ -144,7 +145,25 @@ local function exportwhites()
     end)
 end
 
-local function exportstyled(lexer,text)
+local commenthandlers = {
+    tex = function(txt)
+        if find(txt,"^%%tex ") then
+            return "{" .. gsub(txt,"^%%tex ","") .. "}"
+        end
+    end,
+    mps = function(txt)
+        if find(txt,"^%%tex ") then
+            return "{" .. gsub(txt,"^%%tex ","") .. "}"
+        end
+    end,
+    lua = function(txt)
+        if find(txt,"^%-%-tex ") then
+            return "{" .. gsub(txt,"^%-%-tex ","") .. "}"
+        end
+    end,
+}
+
+local function exportstyled(lexer,text,commenthandler)
     local result = lexers.lex(lexer,text,0)
     local start = 1
     local whites = exportwhites()
@@ -153,7 +172,7 @@ local function exportstyled(lexer,text)
         local style = result[i]
         local position = result[i+1]
         local txt = sub(text,start,position-1)
-        txt = lpegmatch(replacer,txt)
+        txt = commenthandler and style == "comment" and commenthandler(txt) or lpegmatch(replacer,txt)
         if txt == "" then
             -- skip
         elseif whites[style] then
@@ -211,7 +230,7 @@ local getcontent   = buffers.getcontent
 local loaddata     = io.loaddata
 local loadedlexers = scite.loadedlexers
 
-local function lexdata(data,lexname)
+local function lexdata(data,lexname,handlecomment)
     if not data then
         data = ""
     elseif data ~= "" then
@@ -219,11 +238,12 @@ local function lexdata(data,lexname)
             -- fix for lexbyline
             data = data .. "\r"
         end
+        local commenthandler = (escape or handlecomment) and commenthandlers[lexname]
         if lexname == v_none then
---             data = string.formatters["%!tex!"](data)
-            data = exportstyled(loadedlexers["dummy"] or loadedlexers.tex,data)
+         -- data = string.formatters["%!tex!"](data)
+            data = exportstyled(loadedlexers["dummy"] or loadedlexers.tex,data,commenthandler)
         else
-            data = exportstyled(loadedlexers[lexname] or loadedlexers.tex,data)
+            data = exportstyled(loadedlexers[lexname] or loadedlexers.tex,data,commenthandler)
         end
         data = indent(data)
     end
@@ -233,12 +253,12 @@ end
 
 scite.lexdata = lexdata
 
-function scite.lexbuffer(name,lexname)
-    lexdata(getcontent(name) or "",lexname or "tex")
+function scite.lexbuffer(name,lexname,options)
+    lexdata(getcontent(name) or "",lexname or "tex",options == "escape" and handlecomment)
 end
 
-function scite.lexfile(filename,lexname)
-    lexdata(loaddata(filename) or "",lexname or file.suffix(filename))
+function scite.lexfile(filename,lexname,options)
+    lexdata(loaddata(filename) or "",lexname or file.suffix(filename),options == "escape" and handlecomment)
 end
 
 interfaces.implement {
@@ -249,7 +269,7 @@ interfaces.implement {
 
 interfaces.implement {
     name      = "scitelexbuffer",
-    arguments = { "string", "string" },
+    arguments = "2 strings",
     actions   = scite.lexbuffer,
 }
 
@@ -266,10 +286,20 @@ local stopDisplayScite  = context.stopDisplayScite
 local lexdata           = buffers.scite.lexdata
 
 local handler = visualizers.newhandler {
-    startinline  = function(settings) startInlineScite(settings.name or "") end,
-    stopinline   = function(settings) stopInlineScite() end,
-    startdisplay = function(settings) startDisplayScite(settings.name or "") end,
-    stopdisplay  = function(settings) stopDisplayScite() end,
+    startinline  = function(settings)
+        startInlineScite(settings.name or "")
+    end,
+    stopinline   = function(settings)
+        stopInlineScite()
+    end,
+    startdisplay = function(settings)
+        escape = settings.escape == interfaces.variables.yes and true or false
+        startDisplayScite(settings.name or "")
+    end,
+    stopdisplay  = function(settings)
+        stopDisplayScite()
+        escape = false
+    end,
     noescape     = true,
 }
 
@@ -548,17 +578,37 @@ moduledata.scite = scite
 % \scitefile[t:/sources/strc-sec.mkiv]           \page
 % \scitefile[e:/tmp/mp.w]                        \page
 % \scitefile[t:/manuals/hybrid/tugboat.bib]        \page
-\scitefile[e:/tmp/test.bib]        \page
+% \scitefile[e:/tmp/test.bib]        \page
 
 % \getbuffer[demo] \scitebuffer[demo]
 
-\startbuffer[foo]
-This is text. % line 1
-This is text. % line 2
-\stopbuffer
+% \startbuffer[foo]
+% This is text. % line 1
+% This is text. % line 2
+% \stopbuffer
 
-\scitebuffer[none][foo]
+% \scitebuffer[none][foo]
 
-\sciteinlinebuffer[none][foo]
+% \sciteinlinebuffer[none][foo]
+
+\starttyping[option=TEX,escape=yes]
+\framed
+  [width=4cm] % options
+  {some text}
+
+\framed
+  [width=4cm] % \letterpercent\ \rm\bf these are options
+  {some text}
+
+\framed
+  [width=4cm] %tex \letterpercent\ \rm\bf these are options
+  {some text}
+\stoptyping
+
+\starttyping[option=LUA,escape=yes]
+function test(x)
+    return x * x  --tex -- \rm\bf these are options
+end
+\stoptyping
 
 \stoptext

@@ -610,13 +610,13 @@ void tex_handle_error_message_only(
 
 */
 
-extern void tex_handle_error(error_types type, const char *format, ...)
+extern void tex_handle_error(error_types type, const char *fmt, ...)
 {
     const char *str = NULL;
     va_list args;
-    va_start(args, format); /* hm, weird, no number */
+    va_start(args, fmt); /* hm, weird, no number */
     tex_aux_start_error();
-    str = tex_print_format_args(format, args);
+    str = tex_print_format_args(fmt, args);
     tex_aux_update_help_text(str);
     tex_aux_do_handle_error_type(type);
     va_end(args);

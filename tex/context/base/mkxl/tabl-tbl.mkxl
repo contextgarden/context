@@ -1067,20 +1067,46 @@
      \global\c_tabl_tabulate_height_p_max_lines\scratchcounter
    \fi}
 
+% \def\tabl_tabulate_pbreak_inject
+%   {\ifconditional\c_tabl_tabulate_handlepbreak
+%      \ifconditional\c_tabl_tabulate_nopbreak
+%        \tabl_tabulate_nobreak_inject
+%      \orelse\ifnum\c_tabl_tabulate_plines_max>\plusone
+%        \ifnum\c_tabl_tabulate_plines_min=\plusone
+%          \tabl_tabulate_nobreak_inject
+%        \fi
+%        \global\advanceby\c_tabl_tabulate_plines_min\plusone
+%        \ifnum\c_tabl_tabulate_plines_min=\c_tabl_tabulate_plines_max\relax
+%          \tabl_tabulate_nobreak_inject
+%        \fi
+%      \fi
+%    \fi}
+
 \def\tabl_tabulate_pbreak_inject
   {\ifconditional\c_tabl_tabulate_handlepbreak
      \ifconditional\c_tabl_tabulate_nopbreak
-       \tabl_tabulate_nobreak_inject
+      %\tabl_tabulate_nobreak_inject
+       \tabl_tabulate_nobreak_inject_indeed
      \orelse\ifnum\c_tabl_tabulate_plines_max>\plusone
        \ifnum\c_tabl_tabulate_plines_min=\plusone
-         \tabl_tabulate_nobreak_inject
+        %\tabl_tabulate_nobreak_inject
+         \directvpenalty\c_tabl_club_penalty
        \fi
        \global\advanceby\c_tabl_tabulate_plines_min\plusone
        \ifnum\c_tabl_tabulate_plines_min=\c_tabl_tabulate_plines_max\relax
-         \tabl_tabulate_nobreak_inject
+        %\tabl_tabulate_nobreak_inject
+         \directvpenalty\c_tabl_widow_penalty
        \fi
      \fi
    \fi}
+
+\def\tabl_tabulate_nobreak_inject_indeed
+  {\ifnum\c_tabl_tabulate_plines_max=\plusone
+     \tabl_tabulate_break_no
+   \else
+     \tabl_tabulate_break_allow
+   \fi
+   \tabl_tabulate_break_no_tracer}
 
 \def\tabl_tabulate_pbreak_check
   {\noalign\bgroup
@@ -2266,6 +2292,49 @@
    % can we omit the next one in the first run? probably
    % todo: move \ignorepars ourside so no alignment error then
    \noalign{\expand\t_tabl_tabulate_every_after_row#2\ignorepars}}
+
+%D \starttyping
+%D \showmakeup[vpenalty]
+%D
+%D \starttabulate
+%D \NC one \NC \samplefile{ward} \NC \NR
+%D \NC one \NC \samplefile{ward} \NC \NR
+%D \NC one \NC \samplefile{ward} \NC \NR
+%D \stoptabulate
+%D
+%D \starttabulate
+%D \NC one \NC ward \NC \NR
+%D \NC one \NC ward \NC \NR
+%D \NC one \NC ward \NC \NR
+%D \stoptabulate
+%D \stoptyping
+
+% \def\tabl_tabulate_check_penalties
+%   {\ifconditional\c_tabl_tabulate_tolerant_break\else
+%      \ifnum\c_tabl_tabulate_totalnoflines=\plusone
+%      %  \tabl_tabulate_break_allow
+%      \else
+%        \ifconditional\c_tabl_tabulate_someamble \ifcase\c_tabl_tabulate_repeathead \else
+%          \tabl_tabulate_break_allow
+%        \fi \fi
+%        \ifnum\c_tabl_tabulate_noflines=\plusone
+%          \tabl_tabulate_nobreak_inject
+%        \orelse\ifnum\c_tabl_tabulate_noflines=\c_tabl_tabulate_minusnoflines
+%          \ifnum\c_tabl_tabulate_plines_max<\plustwo
+%            \tabl_tabulate_nobreak_inject
+%          \else
+%            \tabl_tabulate_break_allow % needed with pbreak prevention
+%          \fi
+%        \else
+%          \tabl_tabulate_break_state_allowbreak
+%        \fi
+%      \fi
+%    \fi
+%    \global\c_tabl_tabulate_firstflushed\conditionalfalse
+%    \ifconditional\c_tabl_tabulate_no_interline_space
+%      \nointerlineskip
+%      \injectzerobaselineskip
+%    \fi}
 
 \def\tabl_tabulate_check_penalties
   {\ifconditional\c_tabl_tabulate_tolerant_break\else

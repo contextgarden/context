@@ -386,10 +386,10 @@ void tex_load_tex_patterns(halfword curlang, halfword head)
 const char *tex_clean_hyphenation(halfword id, const char *buff, char **cleaned)
 {
     int items = 0;
-    /*tex Work buffer for bytes: */
-    unsigned char word[max_size_of_word + 1];
-    /*tex Work buffer for \UNICODE: */
-    unsigned uword[max_size_of_word + 1] = { 0 };
+    /*tex Work buffer for bytes (can be \UTF8): */
+    unsigned char word[max_size_of_word_buffer];
+    /*tex Work buffer for \UNICODE\ (often too large): */
+    unsigned uword[max_size_of_word_buffer];
     /*tex The \UNICODE\ buffer value: */
     int i = 0;
     char *uindex = (char *) word;
@@ -397,8 +397,8 @@ const char *tex_clean_hyphenation(halfword id, const char *buff, char **cleaned)
     while (*s && ! tex_isspace((unsigned char)*s)) {
         word[i++] = (unsigned char) *s;
         s++;
-        if ((s-buff) > max_size_of_word) {
-            /*tex Todo: this is too strict, should count \UNICODE, not bytes. */
+        if ((s - buff) > max_size_of_word) {
+            /*tex We count utf characters so \quote {size of word} is somewhat misleading. */
             *cleaned = NULL;
             tex_handle_error(
                 normal_error_type,
@@ -410,6 +410,7 @@ const char *tex_clean_hyphenation(halfword id, const char *buff, char **cleaned)
     }
     /*tex Now convert the input to \UNICODE. */
     word[i] = '\0';
+    /*tex We append a zero value as sentinal. */
     aux_splitutf2uni(uword, (const char *)word);
     /*tex
         Build the new word string. The hjcode values < 32 indicate a length, so that
@@ -729,7 +730,7 @@ static void tex_aux_do_exception(halfword wordstart, halfword r, char *replaceme
 {
     halfword t = wordstart;
     lang_variables langdata;
-    unsigned uword[max_size_of_word + 1] = { 0 };
+    unsigned uword[max_size_of_word_buffer]; //  = { 0 };
     unsigned len = aux_splitutf2uni(uword, replacement);
     int clang = get_glyph_language(wordstart);
     langdata.pre_hyphen_char = tex_get_pre_hyphen_char(clang);
@@ -1192,7 +1193,11 @@ static int tex_aux_hnj_hyphen_hyphenate(
     /*tex +2 for dots at each end, +1 for points outside characters. */
     int ext_word_len = length + 2;
     int hyphen_len = ext_word_len + 1;
-    /*tex Because we have a limit of 64 characters we could just use a static array here: */
+    /*tex 
+        Because we have a limit we could just use a static array here but then we 
+        need to either zero the (large) array or do some more testing in order to 
+        make the compiler happy for this |hyphens[char_num]| later on. 
+    */
     char *hyphens = lmt_memory_calloc(hyphen_len, sizeof(unsigned char));
     if (hyphens) {
         halfword here;
@@ -1427,8 +1432,8 @@ void tex_hyphenate_list(halfword head, halfword tail)
             r = tex_aux_find_next_wordstart(r, first_language);
             if (r) {
                 lang_variables langdata;
-                char utf8word[(4 * max_size_of_word) + 1] = { 0 };
-                char utf8original[(4 * max_size_of_word) + 1] = { 0 };
+                char utf8word[max_size_of_word_buffer];
+                char utf8original[max_size_of_word_buffer];
                 char *utf8ptr = utf8word;
                 char *utf8ori = utf8original;
                 int word_length = 0;
@@ -1583,8 +1588,8 @@ void tex_hyphenate_list(halfword head, halfword tail)
                                     char *replacement = NULL;
                                     halfword start = explicit_start ? explicit_start : word_start;
                                     int okay = word_length >= lhmin + rhmin && (hmin <= 0 || word_length >= hmin) && hyphenation_permitted(glyph_hyphenate(start), syllable_hyphenation_mode);
-                                    *utf8ptr = 0;
-                                    *utf8ori = 0;
+                                    *utf8ptr = '\0';
+                                    *utf8ori = '\0';
                                     if (lang->wordhandler && hyphenation_permitted(glyph_hyphenate(start), force_handler_hyphenation_mode)) {
                                         halfword restart = node_prev(start); /*tex before the word. */
                                         int done = lmt_handle_word(lang, utf8original, utf8word, word_length, start, word_end, &replacement);

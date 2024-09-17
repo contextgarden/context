@@ -1041,6 +1041,7 @@
 		<cd:constant name='mask' value='mask'/>
 		<cd:constant name='mathclass' value='mathclass'/>
 		<cd:constant name='mathdenominatorstyle' value='mathdenominatorstyle'/>
+		<cd:constant name='mathematics' value='mathematics'/>
 		<cd:constant name='mathlimits' value='mathlimits'/>
 		<cd:constant name='mathmeaning' value='mathmeaning'/>
 		<cd:constant name='mathnumeratorstyle' value='mathnumeratorstyle'/>

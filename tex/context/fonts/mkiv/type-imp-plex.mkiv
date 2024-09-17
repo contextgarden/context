@@ -130,13 +130,13 @@
     \stoptypescript
 
     \starttypescript [\s!math] [plex] [\s!name]
-        \definefontsynonym [\s!MathRoman]    [\s!file:IBMPlexMath.otf][\s!features={\s!math\mathsizesuffix,plex:mathextra,mathextra},\s!goodies=plex-math]
-        \definefontsynonym [\s!MathRomanBold][\s!file:IBMPlexMath.otf][\s!features={\s!math\mathsizesuffix,plex-math-bold,plex:mathextra,mathextra},\s!goodies=plex-math]
+        \definefontsynonym [\s!MathRoman]    [\s!file:IBMPlexMath-Regular.otf][\s!features={\s!math\mathsizesuffix,plex:mathextra,mathextra},\s!goodies=plex-math]
+        \definefontsynonym [\s!MathRomanBold][\s!file:IBMPlexMath-Regular.otf][\s!features={\s!math\mathsizesuffix,plex-math-bold,plex:mathextra,mathextra},\s!goodies=plex-math]
     \stoptypescript
 
     \starttypescript [\s!math] [plex-nt] [\s!name]
-        \definefontsynonym [\s!MathRoman]    [\s!file:IBMPlexMath.otf][\s!features={\s!math\mathsizesuffix,plex:mathextra,mathextra}]
-        \definefontsynonym [\s!MathRomanBold][\s!file:IBMPlexMath.otf][\s!features={\s!math\mathsizesuffix,plex-math-bold,plex:mathextra,mathextra}]
+        \definefontsynonym [\s!MathRoman]    [\s!file:IBMPlexMath-Regular.otf][\s!features={\s!math\mathsizesuffix,plex:mathextra,mathextra}]
+        \definefontsynonym [\s!MathRomanBold][\s!file:IBMPlexMath-Regular.otf][\s!features={\s!math\mathsizesuffix,plex-math-bold,plex:mathextra,mathextra}]
     \stoptypescript
 
     % done
@@ -386,22 +386,14 @@
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [\typescriptone] [\s!default]
-\doifelsefileexists{IBMPlexMath.otf} {
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [plex]           [\s!default]
-} {
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [bookman]        [\s!default] [\s!rscale=1.03]
-}
     \stoptypescript
 
     \starttypescript[ibmplexnarrow,ibmplexnarrow-thin,ibmplexnarrow-extralight,ibmplexnarrow-light]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [\typescriptone] [\s!default]
-\doifelsefileexists{IBMPlexMath.otf} {
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [plex]           [\s!default]
-} {
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [bookman]        [\s!default] [\s!rscale=1.03]
-}
     \stoptypescript
 
 \stoptypescriptcollection

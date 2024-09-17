@@ -4783,19 +4783,6 @@ halfword tex_new_specification_node(halfword n, quarterword s, halfword options)
     return p;
 }
 
-void tex_dispose_specification_nodes(void) {
-    if (par_shape_par)               { tex_flush_node(par_shape_par);               par_shape_par               = null; }
-    if (par_passes_par)              { tex_flush_node(par_passes_par);              par_passes_par              = null; }
-    if (inter_line_penalties_par)    { tex_flush_node(inter_line_penalties_par);    inter_line_penalties_par    = null; }
-    if (club_penalties_par)          { tex_flush_node(club_penalties_par);          club_penalties_par          = null; }
-    if (widow_penalties_par)         { tex_flush_node(widow_penalties_par);         widow_penalties_par         = null; }
-    if (display_widow_penalties_par) { tex_flush_node(display_widow_penalties_par); display_widow_penalties_par = null; }
-    if (math_forward_penalties_par)  { tex_flush_node(math_forward_penalties_par);  math_forward_penalties_par  = null; }
-    if (math_backward_penalties_par) { tex_flush_node(math_backward_penalties_par); math_backward_penalties_par = null; }
-    if (orphan_penalties_par)        { tex_flush_node(orphan_penalties_par);        orphan_penalties_par        = null; }
-    if (fitness_demerits_par)        { tex_flush_node(fitness_demerits_par);        fitness_demerits_par        = null; }
-}
-
 void tex_null_specification_list(halfword a)
 {
     specification_pointer(a) = NULL;
@@ -4837,24 +4824,23 @@ static void tex_aux_deallocate_specification(void *p, int n)
 void tex_new_specification_list(halfword a, halfword n, halfword o)
 {
     size_t size = 0;
-    halfword subtype = node_subtype(a);
+ // halfword subtype = node_subtype(a);
     specification_pointer(a) = tex_aux_allocate_specification(a, n, &size);
     specification_count(a) = specification_pointer(a) ? n : 0;
     specification_options(a) = o;
-    switch (subtype) { 
-        case par_passes_code:
-            {   
-                for (int i = 1; i <= n; i++) { 
-                    tex_set_passes_threshold(a, i, max_dimension);
-                    tex_set_passes_badness(a, i, infinite_bad);        
-                    tex_set_passes_optional(a, i, 0x1000000);        
-                }
-                break;
-            }
-        default: 
-            /*tex Currently nothing more here. */
-            break;
-    }
+    specification_size(a) = size;
+ // switch (subtype) { 
+ //     case par_passes_code:
+ //         {   
+ //             for (int i = 1; i <= n; i++) { 
+ //                 tex_set_passes_linebreakoptional(a, i, 0x1000000);        
+ //             }
+ //             break;
+ //         }
+ //     default: 
+ //         /*tex Currently nothing more here. */
+ //         break;
+ // }
 }
 
 void tex_dispose_specification_list(halfword a)
@@ -4899,6 +4885,113 @@ void tex_copy_specification_list(halfword a, halfword b) {
             specification_count(a) = 0;
             specification_options(a) = 0;
         }
+    }
+}
+
+void tex_dispose_specification_nodes(void) 
+{
+    if (par_shape_par)               { tex_flush_node(par_shape_par);               par_shape_par               = null; }
+ // if (par_passes_par)              { tex_flush_node(par_passes_par);              par_passes_par              = null; }
+ // if (inter_line_penalties_par)    { tex_flush_node(inter_line_penalties_par);    inter_line_penalties_par    = null; }
+ // if (club_penalties_par)          { tex_flush_node(club_penalties_par);          club_penalties_par          = null; }
+ // if (widow_penalties_par)         { tex_flush_node(widow_penalties_par);         widow_penalties_par         = null; }
+ // if (display_widow_penalties_par) { tex_flush_node(display_widow_penalties_par); display_widow_penalties_par = null; }
+ // if (math_forward_penalties_par)  { tex_flush_node(math_forward_penalties_par);  math_forward_penalties_par  = null; }
+ // if (math_backward_penalties_par) { tex_flush_node(math_backward_penalties_par); math_backward_penalties_par = null; }
+ // if (orphan_penalties_par)        { tex_flush_node(orphan_penalties_par);        orphan_penalties_par        = null; }
+ // if (fitness_demerits_par)        { tex_flush_node(fitness_demerits_par);        fitness_demerits_par        = null; }
+ // if (broken_penalties_par)        { tex_flush_node(broken_penalties_par);        broken_penalties_par        = null; }
+}
+
+# define specification_version (specificationspec_cmd * 1000000 + specification_reference_cmd * 1000 + 1)
+
+void tex_dump_specification_data(dumpstream f) {
+    int total = 0; 
+    dump_via_int(f, specification_version);
+    for (int cs = 0; cs < (eqtb_size + lmt_hash_state.hash_data.ptr + 1); cs++) {
+        int code = eq_type(cs);
+        switch (code) {
+            case specificationspec_cmd:
+            case specification_reference_cmd:
+                {
+                    halfword v = eq_value(cs);
+                    if (v) {
+                        int subtype = node_subtype(v);
+                        dump_via_int(f, code);
+                        dump_int(f, cs);
+                        dump_int(f, subtype);
+                        dump_int(f, specification_count(v));
+                        dump_int(f, specification_options(v));
+                        dump_int(f, specification_size(v));
+                        dump_int(f, specification_anything_1(v));
+                        dump_int(f, specification_anything_2(v));
+                        dump_things(f, specification_pointer(v), specification_size(v)/sizeof(memoryword));
+                        specification_pointer(v) = NULL;
+                        ++total;
+                    }
+                    eq_value(cs) = null;
+                    break;
+                }
+        }
+    }
+    dump_via_int(f, 0);
+    dump_int(f, total);
+}
+
+void tex_undump_specification_data(dumpstream f) {
+    int version = 0;
+    undump_int(f, version);
+    if (version == specification_version) { 
+        int total = 0;
+        int check = 0;
+        while (1) {
+            int code;
+            undump_int(f, code);
+            switch (code) { 
+                case specificationspec_cmd: 
+                case specification_reference_cmd: 
+                    {
+                        int cs;
+                        undump_int(f, cs);
+                        if (cs) {
+                            halfword subtype, count, options, size, unused_1, unused_2;
+                            halfword v; 
+                            undump_int(f, subtype);
+                            undump_int(f, count);
+                            undump_int(f, options);
+                            undump_int(f, size);
+                            undump_int(f, unused_1);
+                            undump_int(f, unused_2);
+                            v = tex_new_specification_node(count, subtype, options);
+                            if (v) { 
+                                eq_value(cs) = v;
+                                if (specification_size(v) == size) {
+                                    specification_anything_1(v) = unused_1;
+                                    specification_anything_2(v) = unused_2;
+                                    undump_things(f, specification_pointer(v), specification_size(v)/sizeof(memoryword));
+                                    ++total;
+                                } else {
+                                    tex_fatal_undump_error("specifications (size)");
+                                }
+                            } else { 
+                                tex_fatal_undump_error("specifications (memory)");
+                            }
+                        } else { 
+                            tex_fatal_undump_error("specifications (csname)");
+                        }
+                    }
+                    break;
+                default: 
+                    goto DONE;
+            }
+        }
+      DONE:
+        undump_int(f, check);
+        if (check != total) {
+            tex_fatal_undump_error("specifications (total)");
+        }
+    } else { 
+        tex_fatal_undump_error("specifications (version)");
     }
 }
 

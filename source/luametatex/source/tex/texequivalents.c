@@ -1095,6 +1095,14 @@ inline static int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
                 } else {
                     return 0;
                 }
+            /*  
+            case specificationspec_cmd:
+                if (eq_type(p) == cmd && eq_value(p) == chr) {
+                    return 1;
+                } else { 
+                    return 0;
+                }
+            */
             case call_cmd:
             case protected_call_cmd:
             case semi_protected_call_cmd:
@@ -2219,6 +2227,7 @@ void tex_initialize_destructors(void)
     lmt_hash_state.destructors[mugluespec_cmd]                   = eq_node;
     lmt_hash_state.destructors[mathspec_cmd]                     = eq_node;
     lmt_hash_state.destructors[fontspec_cmd]                     = eq_node;
+    lmt_hash_state.destructors[specificationspec_cmd]            = eq_node;
     lmt_hash_state.destructors[specification_reference_cmd]      = eq_node;
     lmt_hash_state.destructors[internal_box_reference_cmd]       = eq_node_list; 
     lmt_hash_state.destructors[register_box_reference_cmd]       = eq_node_list; 

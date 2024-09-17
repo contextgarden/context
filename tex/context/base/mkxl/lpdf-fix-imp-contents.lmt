@@ -22,10 +22,11 @@ local type, tonumber = type, tonumber
 local char = string.char
 local setmetatableindex, setmetatablecall, sortedhash, concat, insert = table.setmetatableindex, table.setmetatablecall, table.sortedhash, table.concat, table.insert
 local round = math.round
+local numbertostring = string.f6
 
 local expanded = lpdf.epdf.expanded
 
-local function fix_colorspace(v)
+local function fix_image_colorspace(v)
     if not v.__content_remapped__ then
         local objref = false
         local space  = v.__raw__.ColorSpace
@@ -41,6 +42,36 @@ local function fix_colorspace(v)
         end
         if objref then
             v.__raw__.ColorSpace = { lpdf.epdf.objectcodes.lpdf, lpdf.reference(objref) }
+            v.__content_remapped__ = true
+            return true
+        end
+    end
+end
+
+-- compactor.strip.colorspace = "cmyk"
+
+local function fix_form_colorspace(v,newspace)
+    if newspace == "cmyk" then
+        newspace = "DeviceCMYK"
+    elseif newspace == "rgb" then
+        newspace ="DeviceRGB"
+    elseif newspace == "gray" then
+        newspace = "DeviceGray"
+    else
+        return
+    end
+    local space = v.__raw__.ColorSpace
+    if space then
+        v.__raw__.ColorSpace = newspace
+        v.__content_remapped__ = true
+        return true
+    end
+    local group = v.Group
+    if group then
+        space = group.CS
+        if space ~= newspace then
+            group.__raw__.CS = newspace
+            v.Group = group
             v.__content_remapped__ = true
             return true
         end
@@ -82,9 +113,17 @@ do
                     if pieceinfo_done and v.__raw__.PieceInfo then v.__raw__.PieceInfo = nil pieceinfo_done = pieceinfo_done + 1 end
                     --
                     local subtype = v.__raw__.Subtype
-                    if colorspace_done and subtype == "Image" then
-                        if fix_colorspace(v) then
-                           colorspace_done = colorspace_done + 1
+                    if subtype == "Image" then
+                        if colorspace_done then
+                            if fix_image_colorspace(v) then
+                               colorspace_done = colorspace_done + 1
+                            end
+                        end
+                    elseif subtype == "Form" then
+                        if colorspace_done then
+                            if fix_form_colorspace(v,compactor.strip.colorspace) then
+                               colorspace_done = colorspace_done + 1
+                            end
                         end
                     end
                     --
@@ -290,13 +329,13 @@ do
         if cc then
             if c1 == 0 then
                 -- no color, only black
-                c[1] = tostring(1 - c4)
+                c[1] = numbertostring(1 - c4)
             elseif c1 == 1 then
                 -- brownish, so assume black
                 c[1] = "0"
             else
                 c4 = c4 + c1
-                c[1] = c4 > 1 and "0" or tostring(1 - c4)
+                c[1] = c4 > 1 and "0" or numbertostring(1 - c4)
             end
             c[2] = op == "K" and "G" or "g"
             c[3] = nil
@@ -304,9 +343,9 @@ do
             c[5] = nil
      -- else -- can be an option
      --     local r, g, b = cmyktorgb(c1,c2,c3,c4)
-     --     c[1] = tostring(r)
-     --     c[2] = tostring(g)
-     --     c[3] = tostring(b)
+     --     c[1] = numbertostring(r)
+     --     c[2] = numbertostring(g)
+     --     c[3] = numbertostring(b)
      --     c[4] = op == "K" and "RG" or "rg"
      --     c[5] = nil
         end
@@ -336,13 +375,13 @@ do
         if cc then
             if c1 == 0 then
                 -- no color, only black
-                c[1] = tostring(1 - c4)
+                c[1] = numbertostring(1 - c4)
             elseif c1 == 1 then
                 -- brownish, so assume black
                 c[1] = "0"
             else
                 c4 = c4 + c1
-                c[1] = c4 > 1 and "0" or tostring(1 - c4)
+                c[1] = c4 > 1 and "0" or numbertostring(1 - c4)
             end
             c[2] = op == "K" and "G" or "g"
             c[3] = nil
@@ -371,15 +410,15 @@ do
             end
             r, g, b = cmyktorgb(c1,c2,c3,c4)
          ::DONE::
-            c[1] = tostring(r)
-            c[2] = tostring(g)
-            c[3] = tostring(b)
+            c[1] = numbertostring(r)
+            c[2] = numbertostring(g)
+            c[3] = numbertostring(b)
             c[4] = op == "K" and "RG" or "rg"
             c[5] = nil
         end
     end
 
-    local function convertgb(c,op)
+    local function convertrgb(c,op)
         local c1 = c[1]
         local c2 = c[2]
         local c3 = c[3]
@@ -408,10 +447,10 @@ do
             end
             c, m, y, k = rgbtocmyk(c1,c2,c3)
           ::DONE::
-            c[1] = tostring(c)
-            c[2] = tostring(m)
-            c[3] = tostring(y)
-            c[4] = tostring(k)
+            c[1] = numbertostring(c)
+            c[2] = numbertostring(m)
+            c[3] = numbertostring(y)
+            c[4] = numbertostring(k)
             c[5] = op == "RG" and "K" or "k"
         end
     end
@@ -419,71 +458,77 @@ do
     local g1, g2, g3, g4
 
     local function recolorcmyk_gray(c,op)
-        local s = cmyktogray(c)
-        c[1] = s
+        local s = 1 - cmyktogray(c[1],c[2],c[3],c[4])
+        c[1] = numbertostring(s)
         c[2] = op == "K" and "G" or "g"
         c[3] = nil
         c[4] = nil
         c[5] = nil
     end
     local function recolorcmyk_rgb(c,op)
-        local s = cmyktogray(c)
-        c[1] = g1 * s
-        c[2] = g2 * s
-        c[3] = g3 * s
+        local s = 1 - cmyktogray(c[1],c[2],c[3],c[4])
+        c[1] = numbertostring(g1*s)
+        c[2] = numbertostring(g2*s)
+        c[3] = numbertostring(g3*s)
         c[4] = op == "K" and "RG" or "rg"
         c[5] = nil
     end
     local function recolorcmyk_cmyk(c,op)
-        local s = cmyktogray(c)
-        c[1] = g1 * s
-        c[2] = g2 * s
-        c[3] = g3 * s
-        c[3] = g4 * s
-        c[4] = op
-        c[5] = nil
+        local s = 1 - cmyktogray(c[1],c[2],c[3],c[4])
+        c[1] = numbertostring(g1*s)
+        c[2] = numbertostring(g2*s)
+        c[3] = numbertostring(g3*s)
+        c[4] = numbertostring(g4*s)
+        c[5] = op
     end
 
     local function recolorrgb_gray(c,op)
-        local s = rgbtogray(c)
-        c[1] = s
+        local s = 1 - rgbtogray(c[1],c[2],c[3])
+        c[1] = numbertostring(s)
         c[2] = op == "RG" and "G" or "g"
         c[3] = nil
         c[4] = nil
+        c[5] = nil
     end
     local function recolorrgb_rgb(c,op)
-        local s = rgbtogray(c)
-        c[1] = g1 * s
-        c[2] = g2 * s
-        c[3] = g3 * s
+        local s = 1 - rgbtogray(c[1],c[2],c[3])
+        c[1] = numbertostring(g1*s)
+        c[2] = numbertostring(g2*s)
+        c[3] = numbertostring(g3*s)
         c[4] = op
+        c[5] = nil
     end
     local function recolorrgb_cmyk(c,op)
-        local s = rgbtogray(c)
-        c[1] = g1 * s
-        c[2] = g2 * s
-        c[3] = g3 * s
-        c[4] = g4 * s
+        local s = 1 - rgbtogray(c[1],c[2],c[3])
+        c[1] = numbertostring(g1*s)
+        c[2] = numbertostring(g2*s)
+        c[3] = numbertostring(g3*s)
+        c[4] = numbertostring(g4*s)
         c[5] = op == "RG" and "K" or "k"
     end
 
     local function recolorgray_gray(c,op)
         local s = 1 - tonumber(c[1])
-        c[1] = g1 * s
+        c[1] = numbertostring(g1*s)
+        c[2] = op
+        c[3] = nil
+        c[4] = nil
+        c[5] = nil
     end
     local function recolorgray_rgb(c,op)
         local s = 1 - tonumber(c[1])
-        c[1] = g1 * s
-        c[2] = g2 * s
-        c[3] = g3 * s
+        c[1] = numbertostring(g1*s)
+        c[2] = numbertostring(g2*s)
+        c[3] = numbertostring(g3*s)
         c[4] = op == "G" and "RG" or "rg"
+        c[5] = nil
     end
     local function recolorgray_cmyk(c,op)
         local s = 1 - tonumber(c[1])
-        c[1] = g1 * s
-        c[2] = g2 * s
-        c[3] = g3 * s
-        c[4] = g4 * s
+        c[1] = numbertostring(g1*s)
+        c[2] = numbertostring(g2*s)
+        c[3] = numbertostring(g3*s)
+        c[4] = numbertostring(g4*s)
         c[5] = op == "G" and "K" or "k"
     end
 
@@ -736,7 +781,7 @@ do
     end
 
     local function image(pdfdoc,object,pagenumber,compactor)
-        if compactor.strip.colorspace and fix_colorspace(object) then
+        if compactor.strip.colorspace and fix_image_colorspace(object) then
          -- c_done = c_done + 1
         end
     end

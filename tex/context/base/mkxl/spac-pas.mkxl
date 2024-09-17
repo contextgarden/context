@@ -34,6 +34,8 @@
 \integerdef\tightparpassclass       "080
 \integerdef\verytightparpassclass   "100
 
+%  \fitnessdemerits \numexpr \verylooseparpassclass + \almostlooseparpassclass \relax % 5 default
+
 % \integerdef\indecentparpassclasses\numexpr
 %       \verylooseparpassclass
 %     + \looseparpassclass
@@ -82,6 +84,7 @@
 \appendtoks
     \ifcase\linebreakpasses\else
         \linebreakpasses\zerocount
+        % maybe always:
         \pretolerance   \plushundred
         \tolerance      \plustwohundred
     \fi

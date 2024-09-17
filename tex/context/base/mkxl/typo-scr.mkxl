@@ -128,6 +128,9 @@
 \permanent\protected\def\low {\typo_scripts_low []}
 \permanent\protected\def\high{\typo_scripts_high[]}
 
+\setuplow [\c!distance=\v!tight] % tested for a while in cont-exp
+\setuphigh[\c!distance=\v!tight] % idem
+
 %D \macros
 %D   {lohi, hilo, definelohi, setuplohi}
 %D

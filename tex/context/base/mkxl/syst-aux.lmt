@@ -585,3 +585,23 @@ implement {
        end
     end
 }
+
+local output = io.output
+
+implement {
+    name      = "nologbuffering",
+    public    = true,
+    protected = true,
+    actions   = function()
+        output():setvbuf("no")
+    end,
+}
+
+implement {
+    name      = "linebuffering",
+    public    = true,
+    protected = true,
+    actions   = function()
+        output():setvbuf("line")
+    end,
+}

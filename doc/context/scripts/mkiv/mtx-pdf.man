@@ -32,6 +32,9 @@ show object
 .B --links
 show links
 .TP
+.B --highlights
+show highlights
+.TP
 .B --sign
 sign document (assumes signature template)
 .TP

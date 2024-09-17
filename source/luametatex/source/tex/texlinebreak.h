@@ -65,9 +65,11 @@
 typedef halfword fitcriterion[n_of_fitness_values] ;
 
 typedef struct break_passes { 
+    int n_of_break_calls;
     int n_of_first_passes;
     int n_of_second_passes;
-    int n_of_third_passes;
+    int n_of_final_passes;
+    int n_of_specification_passes;
     int n_of_sub_passes;
     int n_of_left_twins; 
     int n_of_right_twins; 
@@ -78,21 +80,20 @@ typedef struct linebreak_state_info {
     halfword     just_box;
     halfword     last_line_fill;
     int          no_shrink_error_yet;
-    int          second_pass;
-    int          final_pass;
     int          threshold;
+    halfword     quality;
+    int          callback_id; 
+    int          obey_hyphenation;
+    int          force_check_hyphenation;
     halfword     adjust_spacing;
     halfword     adjust_spacing_step;
     halfword     adjust_spacing_shrink;
     halfword     adjust_spacing_stretch;
-    int          max_stretch_ratio;
-    int          max_shrink_ratio;
     halfword     current_font_step;
+    scaled       extra_background_stretch;
     halfword     passive;
     halfword     printed_node;
-    halfword     pass_number;
- /* int          auto_breaking; */ /* is gone */
- /* int          math_level;    */ /* was never used */
+    halfword     serial_number;
     scaled       active_width[n_of_glue_amounts];
     scaled       background[n_of_glue_amounts];
     scaled       break_width[n_of_glue_amounts];
@@ -115,6 +116,14 @@ typedef struct linebreak_state_info {
     scaled       second_width;
     scaled       first_indent;
     scaled       second_indent;
+    scaled       emergency_amount;
+    halfword     emergency_percentage;
+    scaled       emergency_width_amount;
+    halfword     emergency_width_extra;
+    scaled       emergency_left_amount;
+    halfword     emergency_left_extra;
+    scaled       emergency_right_amount;
+    halfword     emergency_right_extra;
     halfword     best_bet;
     halfword     fewest_demerits;
     halfword     best_line;
@@ -133,18 +142,30 @@ typedef struct linebreak_state_info {
     int          n_of_right_twins;
     int          n_of_double_twins;
     halfword     internal_par_node;
+    halfword     emergency_left_skip;
+    halfword     emergency_right_skip;
+    int          artificial_encountered; 
+    halfword     inject_after_par;
 } linebreak_state_info;
 
 extern linebreak_state_info lmt_linebreak_state;
 
-typedef enum linebreak_quality { 
+typedef enum linebreak_quality_states { 
     par_has_glyph    = 0x0001, 
     par_has_disc     = 0x0002, 
-    par_has_space    = 0x0004,
-    par_has_uleader  = 0x0008,
-    par_is_overfull  = 0x0010,
-    par_is_underfull = 0x0020,
-} linebreak_quality;
+    par_has_math     = 0x0004,
+    par_has_space    = 0x0008,
+    par_has_glue     = 0x0010,
+    par_has_uleader  = 0x0020,
+    par_has_optional = 0x0100,
+    par_is_overfull  = 0x0200,
+    par_is_underfull = 0x0400,
+} linebreak_quality_states;
+
+# define paragraph_has_text(state)     ((state & par_has_glyph) || (state & par_has_disc))
+# define paragraph_has_math(state)     (state & par_has_math)
+# define paragraph_has_glue(state)     (state & par_has_glue)
+# define paragraph_has_optional(state) (state & par_has_optional)
 
 extern void tex_line_break_prepare (
     halfword par, 

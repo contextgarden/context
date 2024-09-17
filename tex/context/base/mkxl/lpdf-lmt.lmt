@@ -34,7 +34,7 @@ if not modules then modules = { } end modules ['lpdf-lmt'] = {
 -- also optimize and extend.
 
 local type, next, unpack, tonumber, rawget = type, next, unpack, tonumber, rawget
-local char, rep, find = string.char, string.rep, string.find
+local char, rep, find, gsub = string.char, string.rep, string.find, string.gsub
 local formatters = string.formatters
 local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
@@ -1287,8 +1287,8 @@ do
     local f_x   = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S"]
     local f_y   = formatters["[] 0 d 0 J %.6N w %.6N %.6N %.6N %.6N re S %.6N 0 m %.6N 0 l S"]
 
-    local f_v_d = formatters["[%.6N %.6N] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
-    local f_h_d = formatters["[%.6N %.6N] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
+ -- local f_v_d = formatters["[%.6N %.6N] 0 d 0 J %.6N w 0 0 m %.6N 0 l S"]
+ -- local f_h_d = formatters["[%.6N %.6N] 0 d 0 J %.6N w 0 0 m 0 %.6N l S"]
 
     local f_d_h = formatters["[%.6N %.6N] 0 d 0 J %.6N w 0 %.6N m %.6N %.6N l S"]
     local f_d_v = formatters["[%.6N %.6N] 0 d 0 J %.6N w %.6N 0 m %.6N %.6N l S"]
@@ -1722,8 +1722,8 @@ do
             end
         elseif on ~= 0 and off ~= 0 then -- and subtype ~= strutrule_code
             local options    = getoptions(current)
-            local horizontal = (options & horizontal_rule) == 1
-            local vertical   = (options & vertical_rule  ) == 1
+            local horizontal = (options & horizontal_rule) ~= 0
+            local vertical   = (options & vertical_rule  ) ~= 0
             if not horizontal and not vertical then
                 horizontal = true -- and no check for running, see autorule in tabulate
             elseif not running then
@@ -2134,24 +2134,7 @@ do
         return sub(k,1,32)
     end
 
-    local options = {
-     -- unknown  = 0x0001, -- bit  1
-     -- unknown  = 0x0002, -- bit  2
-        print    = 0x0004, -- bit  3
-        modify   = 0x0008, -- bit  4
-        extract  = 0x0010, -- bit  5
-        add      = 0x0020, -- bit  6
-     -- unknown  = 0x0040, -- bit  7
-     -- unknown  = 0x0080, -- bit  8
-        fillin   = 0x0100, -- bit  9
-        access   = 0x0200, -- bit 10
-        assemble = 0x0400, -- bit 11
-        quality  = 0x0800, -- bit 12
-     -- unknown  = 0x1000, -- bit 13
-     -- unknown  = 0x2000, -- bit 14
-     -- unknown  = 0x4000, -- bit 15
-     -- unknown  = 0x8000, -- bit 16
-    }
+    local options = lpdf.permissions
 
     -- 1111 0000 1100 0011
 
@@ -2257,6 +2240,9 @@ do
                 encryptobject = function(obj)
                     if obj then
                         if type(obj) == "table" then
+                            -- We could just loop over the table and encrypt strings
+                            -- before we serialize but we gain little and we can get
+                            -- already serialized objects anyway (mostly anyway).
                             obj = obj()
                         end
                         return lpegmatch(objectparser,obj) or obj
@@ -2648,9 +2634,13 @@ do
 
     function lpdf.setcompression(level,objectlevel,freeze)
         if not frozen then
-            compress     = level       and level       ~= 0 and true or false
-            objectstream = objectlevel and objectlevel ~= 0 and true or false
-            frozen       = freeze
+            compress = level and level ~= 0 and true or false
+            if next(objects) or next(streams) or nofobjects > 0 then
+                -- no way
+            else
+                objectstream = objectlevel and objectlevel ~= 0 and true or false
+            end
+            frozen = freeze
         end
     end
 
@@ -3007,6 +2997,14 @@ local flushstreamobj, streamstatus do
         }
     end
 
+    local function updatelength(d,size)
+        -- qpdf wants + 1 but acrobat crashes
+        d = gsub(d,"/Length %s*%d+%s*",        "/Length " .. size .. " ")
+        -- this can happen when we copy
+        d = gsub(d,"(/Length %d+ )%d+ R%s*", "%1")
+        return d
+    end
+
     flushstreamobj = function(data,n,dict,comp,nolength)
         if not data then
             report("no data for %S",dict)
@@ -3026,17 +3024,18 @@ local flushstreamobj, streamstatus do
         if dict == "" then
             dict = nil
         end
+        -- level is output nesting level
         if level == 0 then
             local b = nil
             local e = s_stream_e
             if nolength then
-                -- probleem: we need to adapt length!
                 b = f_stream_b_d_r(n,dict) -- raw object, already treated
                 if encryptstream then
-                    print("check length")
+                 -- print("check length, case 2")
                     data = encryptstream(data)
                     size = #data
                 end
+                b = updatelength(b,size)
                 uncompressed = uncompressed + 1
             else
                 if comp then
@@ -3073,9 +3072,11 @@ local flushstreamobj, streamstatus do
         else
             if nolength then
                 if encryptstream then
-                    print("check length")
+                 -- print("check length, case 1")
                     data = encryptstream(data)
+                    size = #data
                 end
+                dict = updatelength(dict,size)
                 data = f_stream_d_r(n,dict,data) -- raw object, already treated
                 uncompressed = uncompressed + 1
             else
@@ -3530,7 +3531,10 @@ local openfile, closefile  do
                 for i=1,nofobjects do
                     local o = objects[i]
                     if o then
-                        objects[i] = f_used(o)
+-- if o < 0 then
+--     o = -o
+-- end
+                       objects[i] = f_used(o)
                     end
                 end
                 for i=nofobjects,1,-1 do
@@ -3767,7 +3771,7 @@ do
             statistics.register("result saved in file", function()
                 local status = streamstatus()
                 local outputfilename = environment.outputfilename or environment.jobname or tex.jobname or "<unset>"
-                outputfilename = string.gsub(outputfilename,"^%./+","") -- todo: make/use a helper
+                outputfilename = gsub(outputfilename,"^%./+","") -- todo: make/use a helper
                 return string.format(
                     "%s.pdf, compresslevel %s, objectcompresslevel %s, %i streams, %i uncompressed, %i compressed, %i not compressed, threshold %i",
                     outputfilename,

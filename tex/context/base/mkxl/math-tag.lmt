@@ -99,7 +99,7 @@ local atop_code              <const> = fractioncodes.atop
 local above_code             <const> = fractioncodes.above
 
 local fontkern_code          <const> = kerncodes.fontkern
-local italickern_code        <const> = kerncodes.italickern
+local italickern_code        <const> = kerncodes.italickern -- aka: italiccorrection
 
 local hextensible_code       <const> = nodes.radicalcodes.hextensible
 local delimited_code         <const> = nodes.radicalcodes.delimited

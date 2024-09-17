@@ -1640,6 +1640,9 @@ end
 
 local ruledmarginkern do
 
+    local leftmarginkern_code  <const> = nodes.kerncodes.leftmarginkern
+    local rightmarginkern_code <const> = nodes.kerncodes.rightmarginkern
+
     local l_cache = caches["leftmarginkern"]
     local r_cache = caches["rightmarginkern"]
 
@@ -2438,7 +2441,7 @@ end
 
 do
 
-    local function make(str,forecolor,rulecolor,layer,delta,extra)
+    local function make(str,textcolor,rulecolor,layer,delta,extra)
      -- if initialize then
      --     initialize()
      -- end

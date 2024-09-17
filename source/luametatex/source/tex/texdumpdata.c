@@ -111,7 +111,7 @@ static void tex_aux_create_fmt_name(void)
     lmt_print_state.selector = new_string_selector_code;
 //    lmt_dump_state.format_identifier = tex_make_string();
 //    lmt_dump_state.format_name = tex_make_string();
-    tex_print_format("%s %i.%i.%i %s",lmt_fileio_state.fmt_name, year_par, month_par, day_par, lmt_fileio_state.job_name);
+    tex_print_format("%s %i.%i.%i %s", lmt_fileio_state.fmt_name, year_par, month_par, day_par, lmt_fileio_state.job_name);
     lmt_print_state.selector = terminal_and_logfile_selector_code;
 }
 
@@ -214,26 +214,27 @@ void tex_store_fmt_file(void)
     tex_compact_tokens();
     tex_compact_string_pool();
 
-    tex_aux_dump_fingerprint(f); pos = tex_aux_report_dump_state(f, pos, "fingerprint + ");
-    lmt_dump_engine_info(f);     pos = tex_aux_report_dump_state(f, pos, "engine + ");
-    tex_aux_dump_preamble(f);    pos = tex_aux_report_dump_state(f, pos, "preamble + ");
-    tex_dump_constants(f);       pos = tex_aux_report_dump_state(f, pos, "constants + ");
-    tex_dump_string_pool(f);     pos = tex_aux_report_dump_state(f, pos, "stringpool + ");
+    tex_aux_dump_fingerprint(f);    pos = tex_aux_report_dump_state(f, pos, "fingerprint + ");
+    lmt_dump_engine_info(f);        pos = tex_aux_report_dump_state(f, pos, "engine + ");
+    tex_aux_dump_preamble(f);       pos = tex_aux_report_dump_state(f, pos, "preamble + ");
+    tex_dump_constants(f);          pos = tex_aux_report_dump_state(f, pos, "constants + ");
+    tex_dump_string_pool(f);        pos = tex_aux_report_dump_state(f, pos, "stringpool + ");
  // tex_print_format("(%i used and %i free) ", tex_used_node_count(), tex_free_node_count());
-    tex_dump_node_mem(f);        pos = tex_aux_report_dump_state(f, pos, "nodes + ");
+    tex_dump_node_mem(f);           pos = tex_aux_report_dump_state(f, pos, "nodes + ");
  // tex_print_format("(%i used and free) ", tex_used_token_count());
-    tex_dump_token_mem(f);       pos = tex_aux_report_dump_state(f, pos, "tokens + ");
-    tex_dump_equivalents_mem(f); pos = tex_aux_report_dump_state(f, pos, "equivalents + ");
-    tex_dump_math_codes(f);      pos = tex_aux_report_dump_state(f, pos, "math codes + ");
-    tex_dump_text_codes(f);      pos = tex_aux_report_dump_state(f, pos, "text codes + ");
-    tex_dump_primitives(f);      pos = tex_aux_report_dump_state(f, pos, "primitives + ");
-    tex_dump_hashtable(f);       pos = tex_aux_report_dump_state(f, pos, "hashtable + ");
-    tex_dump_font_data(f);       pos = tex_aux_report_dump_state(f, pos, "fonts + ");
-    tex_dump_math_data(f);       pos = tex_aux_report_dump_state(f, pos, "math + ");
-    tex_dump_language_data(f);   pos = tex_aux_report_dump_state(f, pos, "language + ");
-    tex_dump_insert_data(f);     pos = tex_aux_report_dump_state(f, pos, "insert + ");
-    lmt_dump_registers(f);       pos = tex_aux_report_dump_state(f, pos, "bytecodes + ");
-    tex_aux_dump_final_check(f); pos = tex_aux_report_dump_state(f, pos, "housekeeping = ");
+    tex_dump_token_mem(f);          pos = tex_aux_report_dump_state(f, pos, "tokens + ");
+    tex_dump_specification_data(f); pos = tex_aux_report_dump_state(f, pos, "specifications + ");
+    tex_dump_equivalents_mem(f);    pos = tex_aux_report_dump_state(f, pos, "equivalents + ");
+    tex_dump_math_codes(f);         pos = tex_aux_report_dump_state(f, pos, "math codes + ");
+    tex_dump_text_codes(f);         pos = tex_aux_report_dump_state(f, pos, "text codes + ");
+    tex_dump_primitives(f);         pos = tex_aux_report_dump_state(f, pos, "primitives + ");
+    tex_dump_hashtable(f);          pos = tex_aux_report_dump_state(f, pos, "hashtable + ");
+    tex_dump_font_data(f);          pos = tex_aux_report_dump_state(f, pos, "fonts + ");
+    tex_dump_math_data(f);          pos = tex_aux_report_dump_state(f, pos, "math + ");
+    tex_dump_language_data(f);      pos = tex_aux_report_dump_state(f, pos, "language + ");
+    tex_dump_insert_data(f);        pos = tex_aux_report_dump_state(f, pos, "insert + ");
+    lmt_dump_registers(f);          pos = tex_aux_report_dump_state(f, pos, "bytecodes + ");
+    tex_aux_dump_final_check(f);    pos = tex_aux_report_dump_state(f, pos, "housekeeping = ");
 
     tex_aux_report_dump_state(f, 0, "total.");
     tex_close_fmt_file(f);
@@ -266,24 +267,25 @@ static void tex_aux_undump_fmt_data(dumpstream f)
 {
     undumping("warmingup")
 
-    undumping("fingerprint") tex_aux_undump_fingerprint(f);
-    undumping("engineinfo")  lmt_undump_engine_info(f);
-    undumping("preamble")    tex_aux_undump_preamble(f);
-    undumping("constants")   tex_undump_constants(f);
-    undumping("strings")     tex_undump_string_pool(f);
-    undumping("nodes")       tex_undump_node_mem(f);
-    undumping("tokens")      tex_undump_token_mem(f);
-    undumping("equivalents") tex_undump_equivalents_mem(f);
-    undumping("mathcodes")   tex_undump_math_codes(f);
-    undumping("textcodes")   tex_undump_text_codes(f);
-    undumping("primitives")  tex_undump_primitives(f);
-    undumping("hashtable")   tex_undump_hashtable(f);
-    undumping("fonts")       tex_undump_font_data(f);
-    undumping("math")        tex_undump_math_data(f);
-    undumping("languages")   tex_undump_language_data(f);
-    undumping("inserts")     tex_undump_insert_data(f);
-    undumping("bytecodes")   lmt_undump_registers(f);
-    undumping("finalcheck")  tex_aux_undump_final_check(f);
+    undumping("fingerprint")    tex_aux_undump_fingerprint(f);
+    undumping("engineinfo")     lmt_undump_engine_info(f);
+    undumping("preamble")       tex_aux_undump_preamble(f);
+    undumping("constants")      tex_undump_constants(f);
+    undumping("strings")        tex_undump_string_pool(f);
+    undumping("nodes")          tex_undump_node_mem(f);
+    undumping("tokens")         tex_undump_token_mem(f);
+    undumping("specifications") tex_undump_specification_data(f);
+    undumping("equivalents")    tex_undump_equivalents_mem(f);
+    undumping("mathcodes")      tex_undump_math_codes(f);
+    undumping("textcodes")      tex_undump_text_codes(f);
+    undumping("primitives")     tex_undump_primitives(f);
+    undumping("hashtable")      tex_undump_hashtable(f);
+    undumping("fonts")          tex_undump_font_data(f);
+    undumping("math")           tex_undump_math_data(f);
+    undumping("languages")      tex_undump_language_data(f);
+    undumping("inserts")        tex_undump_insert_data(f);
+    undumping("bytecodes")      lmt_undump_registers(f);
+    undumping("finalcheck")     tex_aux_undump_final_check(f);
 
     undumping("done")
 

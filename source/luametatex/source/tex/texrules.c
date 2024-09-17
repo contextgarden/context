@@ -13,8 +13,11 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
         case h_rule_type:
             rule_height(rule) = default_rule;
             rule_depth(rule) = 0;
+            rule_options(rule) |= rule_option_horizontal;
             break;
         case v_rule_type:
+            rule_options(rule) |= rule_option_vertical;
+            /* fall through */
         case m_rule_type:
             if (code == strut_rule_code) {
                 rule_width(rule) = 0;

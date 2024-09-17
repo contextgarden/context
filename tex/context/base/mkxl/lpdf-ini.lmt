@@ -183,57 +183,93 @@ do
 
     function lpdf.getpos() return pdfgetpos() end
 
-    -- local function transform(llx,lly,urx,ury,rx,sx,sy,ry)
-    --     local x1 = llx * rx + lly * sy
-    --     local y1 = llx * sx + lly * ry
-    --     local x2 = llx * rx + ury * sy
-    --     local y2 = llx * sx + ury * ry
-    --     local x3 = urx * rx + lly * sy
-    --     local y3 = urx * sx + lly * ry
-    --     local x4 = urx * rx + ury * sy
-    --     local y4 = urx * sx + ury * ry
-    --     llx = min(x1,x2,x3,x4);
-    --     lly = min(y1,y2,y3,y4);
-    --     urx = max(x1,x2,x3,x4);
-    --     ury = max(y1,y2,y3,y4);
-    --     return llx, lly, urx, ury
-    -- end
-    --
-    -- function lpdf.transform(llx,lly,urx,ury) -- not yet used so unchecked
-    --     if pdfhasmatrix() then
-    --         local sx, rx, ry, sy = pdfgetmatrix()
-    --         local w, h = urx - llx, ury - lly
-    --         return llx, lly, llx + sy*w - ry*h, lly + sx*h - rx*w
-    --      -- return transform(llx,lly,urx,ury,sx,rx,ry,sy)
-    --     else
-    --         return llx, lly, urx, ury
-    --     end
-    -- end
+    local function corners(llx,lly,urx,ury,rx,sx,sy,ry)
+        return
+            llx * rx + lly * sy, llx * sx + lly * ry,
+            urx * rx + lly * sy, urx * sx + lly * ry,
+            urx * rx + ury * sy, urx * sx + ury * ry,
+            llx * rx + ury * sy, llx * sx + ury * ry
+    end
 
-    -- funny values for tx and ty
+    local function bounds(llx,lly,urx,ury,rx,sx,sy,ry)
+        local x1 = llx * rx + lly * sy
+        local y1 = llx * sx + lly * ry
+        local x2 = urx * rx + lly * sy
+        local y2 = urx * sx + lly * ry
+        local x3 = urx * rx + ury * sy
+        local y3 = urx * sx + ury * ry
+        local x4 = llx * rx + ury * sy
+        local y4 = llx * sx + ury * ry
+        llx = min(x1,x2,x3,x4)
+        lly = min(y1,y2,y3,y4)
+        urx = max(x1,x2,x3,x4)
+        ury = max(y1,y2,y3,y4)
+        return llx, lly, urx, ury
+    end
+
+ -- function lpdf.transform(llx,lly,urx,ury) -- not yet used so unchecked
+ --     if pdfhasmatrix() then
+ --         local sx, rx, ry, sy = pdfgetmatrix()
+ --         return bounds(llx,lly,urx,ury,sx,rx,ry,sy)
+ --     else
+ --         return llx, lly, urx, ury
+ --     end
+ -- end
 
     function lpdf.rectangle(width,height,depth,offset)
         local tx, ty = pdfgetpos()
         if offset then
-            tx     = tx     -   offset
-            ty     = ty     +   offset
+            tx     = tx     -   offset -- hm, not transformed
+            ty     = ty     +   offset -- hm, not transformed
             width  = width  + 2*offset
             height = height +   offset
             depth  = depth  +   offset
         end
         if pdfhasmatrix() then
             local rx, sx, sy, ry = pdfgetmatrix()
+            local llx, lly, urx, ury = bounds(0,-depth,width,height,rx,sx,sy,ry)
+            tx = tx + sx * height
+            ty = ty - rx * height + height
             return
-                factor *  tx,
-                factor * (ty - ry*depth  + sx*width),
-                factor * (tx + rx*width  - sy*height),
-                factor * (ty + ry*height - sx*width)
+                factor * (tx + llx),
+                factor * (ty + lly),
+                factor * (tx + urx),
+                factor * (ty + ury)
         else
             return
-                factor *  tx,
-                factor * (ty - depth),
-                factor * (tx + width),
-                factor * (ty + height)
+                factor *  tx,          -- llx
+                factor * (ty - depth), -- lly
+                factor * (tx + width), -- urx
+                factor * (ty + height) -- ury
+        end
+    end
+
+    function lpdf.quads(zero,width,height,depth,offset,noscale)
+        local tx, ty = pdfgetpos()
+        if offset then
+            tx     = tx     -   offset -- hm, not transformed
+            ty     = ty     +   offset -- hm, not transformed
+            width  = width  + 2*offset
+            height = height +   offset
+            depth  = depth  +   offset
+        end
+        if pdfhasmatrix() then
+            local rx, sx, sy, ry = pdfgetmatrix()
+            local x1, y1, x2, y2, x3, y3, x4, y4 = corners(zero,-depth,width,height,rx,sx,sy,ry)
+            tx = tx + sx * height
+            ty = ty - rx * height + height
+            return
+                factor * (tx + x1), factor * (ty + y1),
+                factor * (tx + x2), factor * (ty + y2),
+                factor * (tx + x3), factor * (ty + y3),
+                factor * (tx + x4), factor * (ty + y4),
+                zero
+        else
+            local llx = factor *  tx
+            local lly = factor * (ty - depth)
+            local urx = factor * (tx + width)
+            local ury = factor * (ty + height)
+            return llx, lly, urx, lly, urx, ury, llx, ury, 0
         end
     end
 
@@ -356,53 +392,86 @@ do
 
     lpegpatterns.pdffromeight = unescape
 
-    local u_pattern = lpegpatterns.utfbom_16_be * lpegpatterns.utf16_to_utf8_be -- official
-                    + lpegpatterns.utfbom_16_le * lpegpatterns.utf16_to_utf8_le -- we've seen these
+--     local u_pattern = lpegpatterns.utfbom_16_be * lpegpatterns.utf16_to_utf8_be -- official
+--                     + lpegpatterns.utfbom_16_le * lpegpatterns.utf16_to_utf8_le -- we've seen these
 
-    local h_pattern = lpegpatterns.hextobytes
+--     local h_pattern = lpegpatterns.hextobytes
 
-    local zero = S(" \n\r\t") + P("\\ ")
-    local one  = C(4)
-    local two  = P("d") * R("89","af") * C(2) * C(4)
+--     local zero = S(" \n\r\t") + P("\\ ")
+--     local one  = C(4)
+--     local two  = P("d") * R("89","af") * C(2) * C(4)
 
-    local x_pattern = P { "start",
-        start     = V("wrapped") + V("unwrapped") + V("original"),
-        original  = Cs(P(1)^0),
-        wrapped   = P("<") * V("unwrapped") * P(">") * P(-1),
-        unwrapped = P("feff")
-                  * Cs( (
-                        zero  / ""
-                      + two   / function(a,b)
-                                    a = (hextointeger(a) - 0xD800) * 1024
-                                    b = (hextointeger(b) - 0xDC00)
-                                    return utfchar(a+b)
-                                end
-                      + one   / function(a)
-                                    return utfchar(hextointeger(a))
-                                end
-                    )^1 ) * P(-1)
-    }
+--     local x_pattern = P { "start",
+--         start     = V("wrapped") + V("unwrapped") + V("original"),
+--         original  = Cs(P(1)^0),
+--         wrapped   = P("<") * V("unwrapped") * P(">") * P(-1),
+--         unwrapped = P("feff")
+--                   * Cs( (
+--                         zero  / ""
+--                       + two   / function(a,b)
+--                                     a = (hextointeger(a) - 0xD800) * 1024
+--                                     b = (hextointeger(b) - 0xDC00)
+--                                     return utfchar(a+b)
+--                                 end
+--                       + one   / function(a)
+--                                     return utfchar(hextointeger(a))
+--                                 end
+--                     )^1 ) * P(-1)
+--                   + P("fffe")
+--                   * Cs( (
+--                         zero  / ""
+--                       + two   / function(b,a)
+--                                     a = (hextointeger(a) - 0xD800) * 1024
+--                                     b = (hextointeger(b) - 0xDC00)
+--                                     return utfchar(a+b)
+--                                 end
+--                       + one   / function(a)
+--                                     return utfchar(hextointeger(a))
+--                                 end
+--                     )^1 ) * P(-1)
+--     }
 
-    function lpdf.frombytes(s,hex)
+--     function lpdf.frombytes(s,ishex,isutf)
+--         if not s or s == "" then
+--             return ""
+--         elseif ishex then
+--             local x = lpegmatch(x_pattern,s)
+--             if x then
+--                 return x
+--             end
+--             local h = lpegmatch(h_pattern,s)
+--             if h then
+--                 return h
+--             end
+--         else
+--             local u = lpegmatch(u_pattern,s)
+--             if u then
+--                 return u
+--             end
+--         end
+--         return lpegmatch(unescape,s)
+--     end
+
+    local encodingvalues = pdfe.getencodingvalues()
+
+    encodingvalues = table.swapped(encodingvalues,encodingvalues)
+
+    lpdf.encodingvalues = encodingvalues
+
+    local utf16flags  = encodingvalues.utf16be | encodingvalues.utf16le
+    local utf16toutf8 = string.utf16toutf8
+
+    function lpdf.frombytes(s,flags)
         if not s or s == "" then
             return ""
-        end
-        if hex then
-            local x = lpegmatch(x_pattern,s)
-            if x then
-                return x
-            end
-            local h = lpegmatch(h_pattern,s)
-            if h then
-                return h
-            end
+        elseif flags & utf16flags ~= 0 then
+-- print("original",s)
+-- print("utf8    ",utf16toutf8(s))
+            return utf16toutf8(s)
         else
-            local u = lpegmatch(u_pattern,s)
-            if u then
-                return u
-            end
+-- print("original",s)
+            return s
         end
-        return lpegmatch(unescape,s)
     end
 
     lpdf.tosixteen   = tosixteen
@@ -612,7 +681,8 @@ local tostring_l = function(t)
     elseif t[2] then
         return "<" .. s .. ">"
     else
-        return "(" .. s .. ")"
+        -- we could convert to hex
+        return toeight(s)
     end
 end
 
@@ -829,6 +899,44 @@ lpdf.boolean     = pdfboolean
 lpdf.reference   = pdfreference
 lpdf.verbose     = pdfverbose
 lpdf.literal     = pdfliteral
+
+
+do
+
+    local options = {
+     -- unknown  = 0x0001, -- bit  1
+     -- unknown  = 0x0002, -- bit  2
+        print    = 0x0004, -- bit  3
+        modify   = 0x0008, -- bit  4
+        extract  = 0x0010, -- bit  5
+        add      = 0x0020, -- bit  6
+     -- unknown  = 0x0040, -- bit  7
+     -- unknown  = 0x0080, -- bit  8
+        fillin   = 0x0100, -- bit  9
+        access   = 0x0200, -- bit 10
+        assemble = 0x0400, -- bit 11
+        quality  = 0x0800, -- bit 12
+     -- unknown  = 0x1000, -- bit 13
+     -- unknown  = 0x2000, -- bit 14
+     -- unknown  = 0x4000, -- bit 15
+     -- unknown  = 0x8000, -- bit 16
+    }
+
+    lpdf.permissions = options
+
+    function lpdf.topermissions(permissions)
+        if permissions and permissions > 0 then
+            local t = { }
+            for k, v in next, options do
+                if permissions & v ~= 0 then
+                    t[k] = true
+                end
+            end
+            return t
+        end
+    end
+
+end
 
 if not callbacks then return lpdf end
 

@@ -43,7 +43,7 @@ end)
 interfaces.implement {
     name      = "setpdfcompression",
     arguments = { "integer", "integer" },
-    actions   = lpdf.setcompression,
+    actions   = function(...) lpdf.setcompression(...) end, -- this one gets overloaded
 }
 
 -- The pdf driver itself is installed in lpdf-lmt.lmt!
