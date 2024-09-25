@@ -539,8 +539,48 @@
     \let\softhyphen\explicitdiscretionary
 \fi
 
-\cldcontext{"\string\\unexpanded\string\\def\string\\\string\n{\string\\space}"}
-%cldcontext{"\string\\let\string\\\string\n=\string\\space"}
+%D This is a rubish approach vbecause it redefines \typ {\csname \endcsname} to
+%D \type {\space} so we need to fix that.
+
+\expandafter\let\expandafter\next\csname\endcsname
+\cldcontext{"\string\\protected\string\\def\string\\\string\n{\string\\space}"}
+\expandafter\let\csname\endcsname\next
+
+%D Here is an example from \type {newlines-001.tex}:
+%D
+%D \starttyping
+%D \def\TestA#1%
+%D   {\writestatus{Test A}{#1}%
+%D    \ctxlua{str = [[#1]] print(str) context(str) io.savedata("temp.tmp",str)}}
+%D
+%D \def\TestB#1%
+%D   {\writestatus{Test B}{#1}%
+%D    \ctxlua{str = [[\detokenize{#1}]] print(str) context(str) io.savedata("temp.tmp",str)}}
+%D
+%D \def\TestC#1%
+%D   {\writestatus{Test C}{#1}%
+%D    \edef\temp{#1}%
+%D    \ctxlua{str = [[\detokenize\expandafter{\temp}]] print(str) context(str) io.savedata("temp.tmp",str)}%
+%D    \typefile{temp.tmp}}
+%D
+%D \TestA{Test\
+%D A}
+%D
+%D \TestB{Test\
+%D B}
+%D
+%D \TestC{Test\
+%D C}
+%D
+%D Test\
+%D D
+%D
+%D \section{Test\
+%D E}
+%D
+%D Test F\footnote{Note\
+%D F}
+%D \stoptyping
 
 % in tables we need:
 %

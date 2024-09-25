@@ -316,7 +316,7 @@ end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead)),ispage))
+    nuthead = tonut((%action%(tonode(nuthead),ispage)))
 ]],
 
 nut  = [[
@@ -324,7 +324,7 @@ nut  = [[
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead,ispage))
+    %action%(tonode(nuthead),ispage)
 ]],
 
 nonut = [[

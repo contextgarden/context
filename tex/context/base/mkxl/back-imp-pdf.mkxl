@@ -1,3 +1,4 @@
+
 %D \module
 %D   [       file=back-imp-pdf,
 %D        version=2009.04.15,
@@ -96,9 +97,11 @@
 %D Here are quick and dirty compression flippers, mostly used when testing something
 %D as one can best stick to the defaults that also adapt to specific standards.
 
+% level objectlevel
+
 \untraced\permanent\protected\def\nopdfcompression        {\clf_setpdfcompression\zerocount\zerocount}
-\untraced\permanent\protected\def\nopdfobjectcompression  {\clf_setpdfcompression\zerocount\plusthree}
-\untraced\permanent\protected\def\onlypdfobjectcompression{\clf_setpdfcompression\plusthree\zerocount}
+\untraced\permanent\protected\def\nopdfobjectcompression  {\clf_setpdfcompression\plusthree\zerocount}
+\untraced\permanent\protected\def\onlypdfobjectcompression{\clf_setpdfcompression\zerocount\plusthree}
 \untraced\permanent\protected\def\maximumpdfcompression   {\clf_setpdfcompression\plusnine \plusnine }
 \untraced\permanent\protected\def\normalpdfcompression    {\clf_setpdfcompression\plusthree\plusthree}
 
@@ -163,5 +166,15 @@
    \clf_stopactualtext}
 
 \aliased\let\pdfactualtext\pdfbackendactualtext
+
+\untraced\permanent\protected\def\pdfbackendalternativetext#1#2% not interfaced
+  {\clf_startalternativetext{#2}%
+   #1%
+   \clf_stopalternativetext}
+
+\aliased\let\pdfalternativetext\pdfbackendalternativetext
+
+\permanent\protected\def\startPDFalternativetext{\clf_startalternativetext}
+\permanent\protected\def\stopPDFalternativetext {\clf_stopalternativetext}
 
 \protect \endinput

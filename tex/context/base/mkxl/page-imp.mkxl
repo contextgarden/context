@@ -1425,8 +1425,6 @@
        \setuppageshift[\v!page][#1][#2]%
      \fi
    \or
-     %edef\page_boxes_h_shifts{\ifcsname\??pageshift\v!horizontal:#2\endcsname\csname\??pageshift\v!horizontal:#2\endcsname\fi}%
-     %edef\page_boxes_v_shifts{\ifcsname\??pageshift\v!vertical  :#3\endcsname\csname\??pageshift\v!vertical  :#3\endcsname\fi}%
      \edef\page_boxes_h_shifts{\begincsname\??pageshift\v!horizontal:#2\endcsname}%
      \edef\page_boxes_v_shifts{\begincsname\??pageshift\v!vertical  :#3\endcsname}%
      \ifcstok{#1}\v!page \let\page_boxes_apply_shift_print\page_boxes_apply_shift\else\let\page_boxes_apply_shift_print\gobbleoneargument\fi

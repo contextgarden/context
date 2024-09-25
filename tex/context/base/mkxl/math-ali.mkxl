@@ -643,6 +643,8 @@
    \tabskip\zeroskip}
 
 % done
+%
+% if we have an issue then we need to check the unless case below
 
 \def\math_halign_checked
   {\enablemathalignrelocate
@@ -652,7 +654,8 @@
          \align_callback_mathalign
        \s!attr
          \mathnumberlocationattribute \numexpr % on whole, different on l/rbox
-            \unless\ifcase\c_strc_formulas_align_alignment
+            %\unless
+            \ifcase\c_strc_formulas_align_alignment
               \plustwo
             \orelse\ifconditional\c_math_align_reformat_mode
               \plusfour

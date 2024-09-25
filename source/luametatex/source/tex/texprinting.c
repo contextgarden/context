@@ -962,39 +962,7 @@ void tex_print_font_identifier(halfword f)
 {
     /*tex |< >| is less likely to clash with text parenthesis */
     if (tex_is_valid_font(f)) {
-     // switch (tracing_fonts_par) {
-     //    case 0:
-     //    case 1:
-     //        if (font_original(f)) {
-     //            tex_print_format(font_original(f));
-     //        } else {
-     //            tex_print_format("font: %i", f);
-     //        }
-     //        if (tracing_fonts_par == 0) {
-     //            break;
-     //        } else if (font_size(f) == font_design_size(f)) {
-     //            tex_print_format(" (%s)", font_name(f));
-     //        } else {
-     //            tex_print_format(" (%s @ %D)", font_name(f), font_size(f), pt_unit);
-     //        }
-     //        break;
-     //    case 2:
-     //        tex_print_format("<%s>", font_name(f));
-     //        break;
-     //    case 3:
-     //        tex_print_format("<%s @ %D>", font_name(f), font_size(f), pt_unit);
-     //        break;
-     //    case 4:
-     //        tex_print_format("<%i>", f);
-     //        break;
-     //    case 5:
-     //        tex_print_format("<%i: %s>", f, font_name(f));
-     //        break;
-     // /* case 6: */
-     //    default:
-                tex_print_format("<%i: %s @ %p>", f, font_name(f), font_size(f));
-     //         break;
-     // }
+        tex_print_format("<%i: %s @ %p>", f, font_name(f), font_size(f));
     } else {
         tex_print_str("<*>");
     }

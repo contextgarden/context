@@ -305,6 +305,7 @@ return {
   "crampedscriptstyle",
   "crampedtextstyle",
   "csactive",
+  "csnamestring",
   "csstring",
   "currentloopiterator",
   "currentloopnesting",

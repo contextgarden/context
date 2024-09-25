@@ -25,6 +25,10 @@
 
 */
 
+# if (0) 
+
+/* HHHHHHHMMMMMMMLLLLLLL */
+
 # define LMT_SA_HIGHPART 128
 # define LMT_SA_MIDPART  128
 # define LMT_SA_LOWPART  128
@@ -33,15 +37,22 @@
 # define LMT_SA_M_PART(a) (((a)>> 7)&127)
 # define LMT_SA_L_PART(a) ( (a)     &127)
 
-/* 40K less in 2023 */
+# else 
 
-// # define LMT_SA_HIGHPART 128
-// # define LMT_SA_MIDPART  256
-// # define LMT_SA_LOWPART   64
-// 
-// # define LMT_SA_H_PART(a) (((a)>>14)&127)
-// # define LMT_SA_M_PART(a) (((a)>> 6)&255)
-// # define LMT_SA_L_PART(a) ( (a)      &63)
+/* 40K less in 2023 */
+/* 90K less in 2024 */
+
+/* HHHHHHHMMMMMMMMLLLLLL */ /* This is about as small as we can go. */
+
+# define LMT_SA_HIGHPART 128
+# define LMT_SA_MIDPART  256
+# define LMT_SA_LOWPART   64
+
+# define LMT_SA_H_PART(a) (((a)>>14)&127)
+# define LMT_SA_M_PART(a) (((a)>> 6)&255)
+# define LMT_SA_L_PART(a) ( (a)      &63)
+
+# endif
 
 /*tex
 

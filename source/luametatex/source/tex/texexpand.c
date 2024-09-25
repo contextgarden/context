@@ -745,6 +745,12 @@ static void tex_aux_complain_missing_csname(void)
 //     return m;
 // }
 
+inline static int tex_aux_chr_to_buffer(unsigned char *b, int m, int c)
+{
+    b[m++] = (unsigned char) c;
+    return m;
+}
+
 inline static int tex_aux_uni_to_buffer(unsigned char *b, int m, int c)
 {
     if (c <= 0x7F) {
@@ -803,27 +809,38 @@ static int tex_aux_collect_cs_tokens(halfword *p, int *n)
                 break;
             case constant_call_cmd:
                 {
-                  halfword h = token_link(cur_chr);
-                  if (h) { 
-                      if (token_link(h)) { 
-                          if (cur_chr > max_data_value) {
-                               while (h) {
-                                   *p = tex_store_new_token(*p, token_info(h));
-                                   *n += 1;
-                                   h = token_link(h);
-                               }
-                          } else {
-                              *p = tex_store_new_token(*p, token_val(deep_frozen_keep_constant_cmd, cur_chr));
-                          }
-                      } else { 
-                          *p = tex_store_new_token(*p, token_info(h));
-                      }
-                      *n += 1;
-                  }
+                    halfword h = token_link(cur_chr);
+                    if (h) { 
+                        if (token_link(h)) { 
+                            if (cur_chr > max_data_value) {
+                                 while (h) {
+                                     *p = tex_store_new_token(*p, token_info(h));
+                                     h = token_link(h);
+                                     *n += 1;
+                                 }
+                            } else {
+                                *p = tex_store_new_token(*p, token_val(deep_frozen_keep_constant_cmd, cur_chr));
+                                *n += 1;
+                            }
+                        } else { 
+                            *p = tex_store_new_token(*p, token_info(h));
+                            *n += 1;
+                        }
+                    }
                 }
                 break;
             case end_cs_name_cmd:
                 return 1;
+            case convert_cmd:
+                if (cur_chr == cs_lastname_code) { 
+                    if (lmt_scanner_state.last_cs_name != null_cs) {
+                        /*tex We cheat and abuse the |convert_cmd| as carrier for the current string. */
+                        *n += str_length(cs_text(lmt_scanner_state.last_cs_name));
+                        cur_chr = cs_text(lmt_scanner_state.last_cs_name) - cs_offset_value + 0xFF;
+                        *p = tex_store_new_token(*p, token_val(cur_cmd, cur_chr));
+                    }
+                    break;
+                }
             default:
                 if (cur_cmd > max_command_cmd && cur_cmd < first_call_cmd) {
                     tex_expand_current_token();
@@ -834,40 +851,79 @@ static int tex_aux_collect_cs_tokens(halfword *p, int *n)
      }
 }
 
+/* why do we use different methods here */
+
+inline static halfword tex_aux_cs_tokens_to_string(halfword h, halfword f)
+{
+    int m = f;
+    halfword l = token_link(h);
+    while (l) {
+        halfword info = token_info(l);
+        if (token_cmd(info) == deep_frozen_keep_constant_cmd) {
+            halfword h = token_link(token_chr(info));
+            while (h) {
+                m = tex_aux_uni_to_buffer(lmt_fileio_state.io_buffer, m, token_chr(token_info(h)));
+                h = token_link(h);
+            }
+        } else if (token_cmd(info) == convert_cmd) { 
+         // if (token_chr(info) >= 0xFF) { 
+                /*tex We know that we have something here. */
+                strnumber t = token_chr(info) + cs_offset_value - 0xFF;
+                memcpy(lmt_fileio_state.io_buffer + m,  str_string(t), str_length(t));
+                m += str_length(t);
+         // }
+        } else {
+            m = tex_aux_uni_to_buffer(lmt_fileio_state.io_buffer, m, token_chr(info));
+        }
+        l = token_link(l);
+    }
+    return m;
+}
+
 int tex_is_valid_csname(void)
 {
     halfword cs = null_cs;
-    int b = 0;
-    int n = 0;
     halfword h = tex_get_available_token(null);
     halfword p = h;
+    int b = 0;
+    int n = 0;
     lmt_expand_state.cs_name_level += 1;
     if (! tex_aux_collect_cs_tokens(&p, &n)) {
-        /*tex We seldom end up here so there is no gain in optimizing. */
-        do {
-            tex_get_x_or_protected(); /* we skip unprotected ! */
-        } while (cur_cmd != end_cs_name_cmd);
+         /*tex We seldom end up here so there is no gain in optimizing. */
+     //  if (1) {
+     //      int level = 1;
+     //      while (level) {
+     //          tex_get_next();
+     //          switch (cur_cmd) {
+     //              case end_cs_name_cmd:
+     //                  level--;
+     //                  break;
+     //              case cs_name_cmd:
+     //                  level++;
+     //                  break;
+     //              case if_test_cmd:
+     //                  if (cur_chr == if_csname_code) { 
+     //                      level++;
+     //                  }
+     //                  break;
+     //          }
+     //      }
+     //  } else { 
+            do {
+                tex_get_x_or_protected(); /* we skip unprotected ! */
+            } while (cur_cmd != end_cs_name_cmd);
+     // }
     } else if (n) {
         /*tex Look up the characters of list |n| in the hash table, and set |cur_cs|. */
         int f = lmt_fileio_state.io_first;
         if (tex_room_in_buffer(f + n * 4)) {
-            int m = f;
-            halfword l = token_link(h);
-            while (l) {
-                if (token_cmd(token_info(l)) == deep_frozen_keep_constant_cmd) {
-                    halfword h = token_link(token_chr(token_info(l)));
-                    while (h) {
-                        m = tex_aux_uni_to_buffer(lmt_fileio_state.io_buffer, m, token_chr(token_info(h)));
-                        h = token_link(h);
-                    }
-                } else {
-                    m = tex_aux_uni_to_buffer(lmt_fileio_state.io_buffer, m, token_chr(token_info(l)));
-                }
-                l = token_link(l);
-            }
+            int m = tex_aux_cs_tokens_to_string(h, f);
             cs = tex_id_locate_only(f, m - f); 
             b = (cs != undefined_control_sequence) && (eq_type(cs) != undefined_cs_cmd);
         }
+    } else { 
+        /*tex Safeguard in case we accidentally redefined |null_cs|. */
+     // copy_eqtb_entry(null_cs, undefined_control_sequence);
     }
     tex_flush_token_list_head_tail(h, p, n + 1);
     lmt_scanner_state.last_cs_name = cs;
@@ -891,13 +947,13 @@ inline static halfword tex_aux_get_cs_name(void)
             weird control sequences are less likely to happen than embedded hashes (with 
             catcode parameter) so single is then more natural. 
         */
-        int siz;
-        char *s = tex_tokenlist_to_tstring(h, 1, &siz, 0, 0, 0, 0, 1); /* single hashes */
-        /*tex 
-            Now we can look up the characters of list |h| in the hash table, and set |cur_cs| 
-            accordingly. 
-        */
-        cur_cs = (siz > 0) ? tex_string_locate((char *) s, siz, 1) : null_cs;
+        int f = lmt_fileio_state.io_first;
+        if (n && tex_room_in_buffer(f + n * 4)) {
+            int m = tex_aux_cs_tokens_to_string(h, f);
+            cur_cs = tex_id_locate(f, m - f, 1); 
+        } else { 
+            cur_cs = null_cs;
+        }
     } else {
         tex_aux_complain_missing_csname();
     }
@@ -911,10 +967,9 @@ inline static void tex_aux_manufacture_csname(void)
 {
     halfword cs = tex_aux_get_cs_name();
     if (eq_type(cs) == undefined_cs_cmd) {
-        /*tex The |save_stack| might change! */
+        /*tex The control sequence will now match |\relax|. The savestack might change. */
         tex_eq_define(cs, relax_cmd, relax_code);
     }
-    /*tex The control sequence will now match |\relax| */
     tex_back_input(cs + cs_token_flag);
 }
 
@@ -1834,6 +1889,8 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
             Feed the macro body and its parameters to the scanner Before we put a new token list on the
             input stack, it is wise to clean off all token lists that have recently been depleted. Then
             a user macro that ends with a call to itself will not require unbounded stack space.
+        
+            We could ignore this when |lmt_expand_state.cs_name_level > 0| but there is no gain. 
         */
         tex_cleanup_input_state();
         /*tex

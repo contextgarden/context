@@ -410,9 +410,6 @@
     \letcsname\??layoutcurrent\currentlayouttarget\endcsname\relax
 \to \everydefinelayouttarget
 
-%def\page_paper_the_paper_size#1{\ifcsname\??layoutpaper#1\endcsname\csname\??layoutpaper#1\endcsname\else#1\fi}
-%def\page_paper_the_print_size#1{\ifcsname\??layoutprint#1\endcsname\csname\??layoutprint#1\endcsname\else#1\fi}
-
 \def\page_paper_the_paper_size#1{\ifcsname\??layoutpaper#1\endcsname\lastnamedcs\else#1\fi}
 \def\page_paper_the_print_size#1{\ifcsname\??layoutprint#1\endcsname\lastnamedcs\else#1\fi}
 

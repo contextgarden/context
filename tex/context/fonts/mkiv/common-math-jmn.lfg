@@ -180,11 +180,11 @@ return {
                 builders.extension(main,0x27F9,dfl,dfm,dar,ffactor,mfactor,lfactor)
                 builders.extension(main,0x27FA,dal,dfm,dar,ffactor,mfactor,lfactor)
 
-                local tfactor = antykwa and -0.8 or -1.1  -- move up check MS
-                local bfactor = antykwa and  0.1 or  0.2
+             -- local tfactor = antykwa and -0.8 or -1.1  -- move up check MS
+             -- local bfactor = antykwa and  0.1 or  0.2
 
-local tfactor = antykwa and -0.6 or -.6  -- move up check MS
-local bfactor = antykwa and  0.1 or  0.2
+                local tfactor = antykwa and -0.6 or -.6  -- move up check MS
+                local bfactor = antykwa and  0.1 or  0.2
 
                 local left  = characters[0x27F5]
                 local right = characters[0x27F6]

@@ -384,6 +384,7 @@
 %D Do, we only interface the assignment definition:
 
 \protected\def\mult_interfaces_adef#1#2{\defcsname#1\ifcsname\k!prefix!#2\endcsname\csname\k!prefix!#2\endcsname\else#2\fi\endcsname}
+%protected\def\mult_interfaces_adef#1#2{\defcsname#1\ifcsname\k!prefix!#2\endcsname\csname\csnamestring\endcsname\else#2\fi\endcsname}
 
 \startinterface english
     \protected\def\mult_interfaces_adef#1#2{\defcsname#1#2\endcsname}
@@ -405,16 +406,27 @@
 
 %def\mult_interfaces_detokenize{\expandafter\expandafter\expandafter\detokenize\expandafter\expandafter\expandafter}
 
+% \protected\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9%
+%   {\frozen\def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
+%    \frozen\def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
+%    \frozen\edef#5##1##2{\noexpand\ifrelax##1\??empty\noexpand\else\noexpand#4##1{##2}\noexpand\fi}% is {} needed around ##1 ?
+%    \frozen\def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
+%   %\frozen\def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
+%    \frozen\def#7##1{\expandafter\detokened\csname#1#2:##1\endcsname}% always root, no backtrack
+%    \frozen\def#8##1{\begincsname#1#2:##1\endcsname}%
+%    % TODO
+%    \frozen\def#9##1##2{\expandafter\let\expandafter##1\csname\ifcsname#1#2:##2\endcsname#1#2:##2\else\expandafter#5\csname#1#2:\s!parent\endcsname{##2}\fi\endcsname}}
+
 \protected\def\mult_interfaces_install_parameter_handler#1#2#3#4#5#6#7#8#9%
-  {\frozen\def#3##1{\csname\ifcsname#1#2:##1\endcsname#1#2:##1\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
-   \frozen\def#4##1##2{\ifcsname##1:##2\endcsname##1:##2\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
+  {\frozen\def#3##1{\csname\ifcsname#1#2:##1\endcsname\csnamestring\else\expandafter#5\csname#1#2:\s!parent\endcsname{##1}\fi\endcsname}%
+   \frozen\def#4##1##2{\ifcsname##1:##2\endcsname\csnamestring\else\expandafter#5\csname##1:\s!parent\endcsname{##2}\fi}%
    \frozen\edef#5##1##2{\noexpand\ifrelax##1\??empty\noexpand\else\noexpand#4##1{##2}\noexpand\fi}% is {} needed around ##1 ?
-   \frozen\def#6##1##2{\csname\ifcsname#1##1:##2\endcsname#1##1:##2\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
+   \frozen\def#6##1##2{\csname\ifcsname#1##1:##2\endcsname\csnamestring\else\expandafter#5\csname#1##1:\s!parent\endcsname{##2}\fi\endcsname}%
   %\frozen\def#7##1{\detokenize\expandafter\expandafter\expandafter{\csname#1#2:##1\endcsname}}% always root, no backtrack
    \frozen\def#7##1{\expandafter\detokened\csname#1#2:##1\endcsname}% always root, no backtrack
    \frozen\def#8##1{\begincsname#1#2:##1\endcsname}%
    % TODO
-   \frozen\def#9##1##2{\expandafter\let\expandafter##1\csname\ifcsname#1#2:##2\endcsname#1#2:##2\else\expandafter#5\csname#1#2:\s!parent\endcsname{##2}\fi\endcsname}}
+   \frozen\def#9##1##2{\expandafter\let\expandafter##1\csname\ifcsname#1#2:##2\endcsname\csnamestring\else\expandafter#5\csname#1#2:\s!parent\endcsname{##2}\fi\endcsname}}
 
 \permanent\protected\def\installparameterhandler#1#2%
   {\mutable\constant\letcsname current#2\endcsname\empty
@@ -448,6 +460,8 @@
    \frozen\def#5##1##2{\ifrelax##1\else#4##1{##2}\fi}%
    \frozen\def#6{#1#2:}%
    \frozen\def#7##1{#1##1:}%
+% won't work unless we also save the name of an undefined but called seldom (so no \else for now)
+%  \frozen\def#8{\ifempty#2\orelse\ifcsname#1#2:\s!parent\endcsname\else\letcsname\csnamestring\endcsname#1\fi}%
    \frozen\def#8{\ifempty#2\orelse\ifcsname#1#2:\s!parent\endcsname\else\letcsname#1#2:\s!parent\endcsname#1\fi}%
    \frozen\protected\def#9##1{\edefcsname#1##1:\s!parent\endcsname{#1#2}}}
 
@@ -1024,11 +1038,7 @@
 
 \newinteger\c_mult_interfaces_n_of_namespaces
 
-% \def\v_interfaces_prefix_template
-%   {\the\c_mult_interfaces_n_of_namespaces>}
-
-\def\v_interfaces_prefix_template
-  {\tohexadecimal\c_mult_interfaces_n_of_namespaces>}
+\def\v_interfaces_prefix_template{\the\c_mult_interfaces_n_of_namespaces>}
 
 \permanent\protected\def\installnamespace#1% for modules and users
   {\ifcsname ????#1\endcsname
@@ -1046,6 +1056,24 @@
      \global\immutable\cdefcsname ??#1\endcsname{\v_interfaces_prefix_template}%
      \clf_registernamespace\c_mult_interfaces_n_of_namespaces{#1}%
    \fi}
+
+% \permanent\protected\def\installnamespace#1% for modules and users
+%   {\ifcsname ????#1\endcsname
+%      \writestatus\m!system{duplicate user namespace '#1'}\wait
+%    \else
+%      \global\advanceby\c_mult_interfaces_n_of_namespaces\plusone
+%      \global\immutable\expandafter\stringdef\csname ????#1\endcsname\c_mult_interfaces_n_of_namespaces
+%      \clf_registernamespace\c_mult_interfaces_n_of_namespaces{#1}%
+%    \fi}
+
+% \permanent\protected\def\installcorenamespace#1%
+%   {\ifcsname ??#1\endcsname
+%      \writestatus\m!system{duplicate core namespace '#1'}\wait
+%    \else
+%      \global\advanceby\c_mult_interfaces_n_of_namespaces\plusone
+%      \global\immutable\expandafter\stringdef\csname ??#1\endcsname\c_mult_interfaces_n_of_namespaces
+%      \clf_registernamespace\c_mult_interfaces_n_of_namespaces{#1}%
+%    \fi}
 
 \def\mult_interfaces_get_parameters_error_indeed#1#2%
   {\clf_showassignerror{#1}{#2}\inputlineno}

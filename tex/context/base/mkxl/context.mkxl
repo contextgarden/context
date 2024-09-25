@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2024.09.17 13:11}
+\immutable\edef\contextversion{2024.09.25 11:47}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -649,6 +649,8 @@
 \to \everydump
 
 % \overloadmode\zerocount % for now
+
+% \ifcsname\endcsname\fi % make sure that we reset it
 
 \errorstopmode \dump \endinput
 

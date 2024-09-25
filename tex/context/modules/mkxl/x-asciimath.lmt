@@ -170,8 +170,14 @@ local reserved = {
     ["vvv"]       = { true,  "⋁" },
     ["nnn"]       = { true,  "⋂" },
     ["uuu"]       = { true,  "⋃" },
-    ["int"]       = { true,  "∫" },
-    ["oint"]      = { true,  "∮" },
+--     ["int"]       = { true,  "∫" },
+--     ["oint"]      = { true,  "∮" },
+["∫"] = { true, "int"  },
+["∮"] = { true, "oint" },
+["∏"] = { true, "prod" },
+["∑"] = { true, "sum"  },
+
+-- todo sum
 
     -- brackets
 

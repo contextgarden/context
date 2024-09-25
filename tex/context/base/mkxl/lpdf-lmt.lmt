@@ -2635,7 +2635,8 @@ do
     function lpdf.setcompression(level,objectlevel,freeze)
         if not frozen then
             compress = level and level ~= 0 and true or false
-            if next(objects) or next(streams) or nofobjects > 0 then
+         -- if next(objects) or next(streams) or nofobjects > 0 then -- too strict as we have one alreay
+            if next(streams) then
                 -- no way
             else
                 objectstream = objectlevel and objectlevel ~= 0 and true or false

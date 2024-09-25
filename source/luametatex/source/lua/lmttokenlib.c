@@ -186,11 +186,11 @@ void lmt_tokenlib_initialize(void)
     lmt_interface.command_names[set_font_cmd]                         = (command_item) { .id = set_font_cmd,                       .lua = lua_key_index(set_font),                     .name = lua_key(set_font),                     .kind = data_command_item,      .min = 0,                         .max = max_font_size,                .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[define_font_cmd]                      = (command_item) { .id = define_font_cmd,                    .lua = lua_key_index(define_font),                  .name = lua_key(define_font),                  .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[integer_cmd]                          = (command_item) { .id = integer_cmd,                        .lua = lua_key_index(integer),                      .name = lua_key(integer),                      .kind = data_command_item,      .min = min_integer,               .max = max_integer,                  .base = direct_entry,            .fixedvalue = 0            };
-    lmt_interface.command_names[index_cmd]                            = (command_item) { .id = index_cmd,                          .lua = lua_key_index(index),                        .name = lua_key(index),                        .kind = data_command_item,      .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[posit_cmd]                            = (command_item) { .id = posit_cmd,                          .lua = lua_key_index(posit),                        .name = lua_key(posit),                        .kind = data_command_item,      .min = min_posit,                 .max = max_posit,                    .base = direct_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[dimension_cmd]                        = (command_item) { .id = dimension_cmd,                      .lua = lua_key_index(dimension),                    .name = lua_key(dimension),                    .kind = data_command_item,      .min = min_dimension,             .max = max_dimension,                .base = direct_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[gluespec_cmd]                         = (command_item) { .id = gluespec_cmd,                       .lua = lua_key_index(gluespec),                     .name = lua_key(gluespec),                     .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[mugluespec_cmd]                       = (command_item) { .id = mugluespec_cmd,                     .lua = lua_key_index(mugluespec),                   .name = lua_key(mugluespec),                   .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
+    lmt_interface.command_names[index_cmd]                            = (command_item) { .id = index_cmd,                          .lua = lua_key_index(index),                        .name = lua_key(index),                        .kind = data_command_item,      .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[mathspec_cmd]                         = (command_item) { .id = mathspec_cmd,                       .lua = lua_key_index(mathspec),                     .name = lua_key(mathspec),                     .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[fontspec_cmd]                         = (command_item) { .id = fontspec_cmd,                       .lua = lua_key_index(fontspec),                     .name = lua_key(fontspec),                     .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[specificationspec_cmd]                = (command_item) { .id = specificationspec_cmd,              .lua = lua_key_index(specificationspec),            .name = lua_key(specificationspec),            .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
@@ -914,7 +914,7 @@ static int tokenlib_scan_cstoken(lua_State *L)
     {
         int t = cur_cs ? cs_token_flag + cur_cs : token_val(cur_cmd, cur_chr);
         if (t >= cs_token_flag) {
-            lua_pushinteger(L, t-cs_token_flag);
+            lua_pushinteger(L, t - cs_token_flag);
         } else {
             lua_pushnil(L);
         }
@@ -1774,6 +1774,7 @@ static int tokenlib_scan_delimited(lua_State *L)
                     case call_cmd:
                     case tolerant_call_cmd:
                     case constant_call_cmd:
+                        /* overkill for constant */
                         tex_expand_current_token();
                         goto PICKUP;
                     case protected_call_cmd:
@@ -3461,6 +3462,12 @@ static int tokenlib_set_lua(lua_State *L)
 
 /* [catcodes,]name,data[,global,frozen,protected]* */
 
+static int tokenlib_locate_macro(lua_State *L)
+{
+    lua_push_integer(L, tex_id_locate_steps(lua_tostring(L, 1)));
+    return 1; 
+}
+
 static int tokenlib_undefine_macro(lua_State *L) /* todo: protected */
 {
     size_t lname = 0;
@@ -3860,6 +3867,7 @@ static const struct luaL_Reg tokenlib_function_list[] = {
     { "getcstoken",            tokenlib_get_cstoken             },
     { "getfields",             tokenlib_get_fields              },
     /* setters */                                               
+    { "locatemacro",           tokenlib_locate_macro            },
     { "setmacro",              tokenlib_set_macro               },
     { "undefinemacro",         tokenlib_undefine_macro          },
     { "expandmacro",           tokenlib_expand_macro            },

@@ -4571,12 +4571,11 @@ static scaled tex_aux_op_do_limits(halfword target, int style, int size, int ita
             if (fnt && chr) { 
                 scaled topanchor = tex_aux_math_x_size_scaled(fnt, tex_char_top_anchor_from_font(fnt, chr), size);
                 scaled bottomanchor = tex_aux_math_x_size_scaled(fnt, tex_char_bottom_anchor_from_font(fnt, chr), size);
-                /* kind of weird ... see context .. might change in proper anchor */
                 if (topanchor) { 
-                    topshift = topanchor - boxwidth;
+                    topshift = topanchor - boxwidth/2;
                 }
                 if (bottomanchor) {    
-                    bottomshift = boxwidth - bottomanchor;
+                    bottomshift = boxwidth/2 - bottomanchor;
                 }
             }
         }

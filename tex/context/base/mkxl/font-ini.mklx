@@ -1353,26 +1353,48 @@
      \somefontsize
    \fi}
 
+% \permanent\def\currentfontbodyscale % gets character (x xx a etc)
+%   {\csname\??fontenvironments
+%      \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\fontsize\endcsname\fontclass:\fontstyle\s!default\fontsize\orelse
+%      \ifcsname\??fontenvironments\fontclass           \s!default\fontsize\endcsname\fontclass           \s!default\fontsize\orelse
+%      \ifcsname\??fontenvironments                     \s!default\fontsize\endcsname                     \s!default\fontsize\orelse
+%      \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\s!text  \endcsname\fontclass:\fontstyle\s!default\s!text  \orelse
+%      \ifcsname\??fontenvironments\fontclass           \s!default\s!text  \endcsname\fontclass           \s!default\s!text  \orelse
+%      \ifcsname\??fontenvironments                     \s!default\s!text  \endcsname                     \s!default\s!text  \else
+%                                                                                                         \s!default         \fi
+%    \endcsname}
+
+% \permanent\def\currentfontscale % used in default definition
+%   {\csname\??fontenvironments
+%      \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\wildcardfontsize\endcsname\fontclass:\fontstyle\s!default\fontsize\orelse
+%      \ifcsname\??fontenvironments\fontclass           \s!default\wildcardfontsize\endcsname\fontclass           \s!default\fontsize\orelse
+%      \ifcsname\??fontenvironments                     \s!default\wildcardfontsize\endcsname                     \s!default\fontsize\orelse
+%      \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\s!text          \endcsname\fontclass:\fontstyle\s!default\s!text  \orelse
+%      \ifcsname\??fontenvironments\fontclass           \s!default\s!text          \endcsname\fontclass           \s!default\s!text  \orelse
+%      \ifcsname\??fontenvironments                     \s!default\s!text          \endcsname                     \s!default\s!text  \else
+%                                                                                                                 \s!default         \fi
+%    \endcsname}
+
 \permanent\def\currentfontbodyscale % gets character (x xx a etc)
-  {\csname\??fontenvironments
-     \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\fontsize\endcsname\fontclass:\fontstyle\s!default\fontsize\orelse
-     \ifcsname\??fontenvironments\fontclass           \s!default\fontsize\endcsname\fontclass           \s!default\fontsize\orelse
-     \ifcsname\??fontenvironments                     \s!default\fontsize\endcsname                     \s!default\fontsize\orelse
-     \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\s!text  \endcsname\fontclass:\fontstyle\s!default\s!text  \orelse
-     \ifcsname\??fontenvironments\fontclass           \s!default\s!text  \endcsname\fontclass           \s!default\s!text  \orelse
-     \ifcsname\??fontenvironments                     \s!default\s!text  \endcsname                     \s!default\s!text  \else
-                                                                                                        \s!default         \fi
+  {\csname
+     \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\fontsize\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass           \s!default\fontsize\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments                     \s!default\fontsize\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\s!text  \endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass           \s!default\s!text  \endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments                     \s!default\s!text  \endcsname\csnamestring\else
+              \??fontenvironments                     \s!default                                \fi
    \endcsname}
 
 \permanent\def\currentfontscale % used in default definition
-  {\csname\??fontenvironments
-     \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\wildcardfontsize\endcsname\fontclass:\fontstyle\s!default\fontsize\orelse
-     \ifcsname\??fontenvironments\fontclass           \s!default\wildcardfontsize\endcsname\fontclass           \s!default\fontsize\orelse
-     \ifcsname\??fontenvironments                     \s!default\wildcardfontsize\endcsname                     \s!default\fontsize\orelse
-     \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\s!text          \endcsname\fontclass:\fontstyle\s!default\s!text  \orelse
-     \ifcsname\??fontenvironments\fontclass           \s!default\s!text          \endcsname\fontclass           \s!default\s!text  \orelse
-     \ifcsname\??fontenvironments                     \s!default\s!text          \endcsname                     \s!default\s!text  \else
-                                                                                                                \s!default         \fi
+  {\csname
+     \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\wildcardfontsize\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass           \s!default\wildcardfontsize\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments                     \s!default\wildcardfontsize\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\s!text          \endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass           \s!default\s!text          \endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments                     \s!default\s!text          \endcsname\csnamestring\else
+              \??fontenvironments                     \s!default                                        \fi
    \endcsname}
 
 % \def\font_currentfontbodyscale % gets character (x xx a etc)
@@ -1489,27 +1511,53 @@
 
 \letcsname\??fontenvironments\endcsname\empty % so we default to empty
 
+% \permanent\def\bodyfontvariable#parameter%
+%   {\begincsname\??fontenvironments
+%             \ifcsname\??fontenvironments\fontclass:\fontstyle\normalizedbodyfontsize#parameter\endcsname\fontclass:\fontstyle\normalizedbodyfontsize#parameter%
+%      \orelse\ifcsname\??fontenvironments\fontclass           \normalizedbodyfontsize#parameter\endcsname\fontclass           \normalizedbodyfontsize#parameter%
+%      \orelse\ifcsname\??fontenvironments\fontclass:\fontstyle                       #parameter\endcsname\fontclass:\fontstyle                       #parameter%
+%      \orelse\ifcsname\??fontenvironments\fontclass                                  #parameter\endcsname\fontclass                                  #parameter%
+%      \orelse\ifcsname\??fontenvironments\fontclass \s!default                        \s!parent\endcsname\lastnamedcs                                #parameter%
+%      \orelse\ifcsname\??fontenvironments                     \normalizedbodyfontsize#parameter\endcsname                     \normalizedbodyfontsize#parameter%
+%      \orelse\ifcsname\??fontenvironments           \s!default                       #parameter\endcsname\s!default                                  #parameter\fi
+%    \endcsname}
+
+% \permanent\def\bodyfontsizevariable#size#parameter% used in s-fonts-show
+%   {\begincsname\??fontenvironments
+%             \ifcsname\??fontenvironments\fontclass:\fontstyle#size#parameter\endcsname\fontclass:\fontstyle#size#parameter%
+%      \orelse\ifcsname\??fontenvironments\fontclass           #size#parameter\endcsname\fontclass           #size#parameter%
+%      \orelse\ifcsname\??fontenvironments\fontclass:\fontstyle     #parameter\endcsname\fontclass:\fontstyle#parameter%
+%      \orelse\ifcsname\??fontenvironments\fontclass                #parameter\endcsname\fontclass           #parameter%
+%      \orelse\ifcsname\??fontenvironments\fontclass \s!default      \s!parent\endcsname\lastnamedcs         #parameter%
+%      \orelse\ifcsname\??fontenvironments                     #size#parameter\endcsname                #size#parameter%
+%      \orelse\ifcsname\??fontenvironments           \s!default     #parameter\endcsname\s!default           #parameter\fi
+%    \endcsname}
+
 \permanent\def\bodyfontvariable#parameter%
-  {\begincsname\??fontenvironments
-            \ifcsname\??fontenvironments\fontclass:\fontstyle\normalizedbodyfontsize#parameter\endcsname\fontclass:\fontstyle\normalizedbodyfontsize#parameter%
-     \orelse\ifcsname\??fontenvironments\fontclass           \normalizedbodyfontsize#parameter\endcsname\fontclass           \normalizedbodyfontsize#parameter%
-     \orelse\ifcsname\??fontenvironments\fontclass:\fontstyle                       #parameter\endcsname\fontclass:\fontstyle                       #parameter%
-     \orelse\ifcsname\??fontenvironments\fontclass                                  #parameter\endcsname\fontclass                                  #parameter%
-     \orelse\ifcsname\??fontenvironments\fontclass \s!default                        \s!parent\endcsname\lastnamedcs                                #parameter%
-     \orelse\ifcsname\??fontenvironments                     \normalizedbodyfontsize#parameter\endcsname                     \normalizedbodyfontsize#parameter%
-     \orelse\ifcsname\??fontenvironments           \s!default                       #parameter\endcsname\s!default                                  #parameter\fi
+  {\begincsname
+     \ifcsname\??fontenvironments\fontclass:\fontstyle\normalizedbodyfontsize#parameter\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass           \normalizedbodyfontsize#parameter\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass:\fontstyle                       #parameter\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass                                  #parameter\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass \s!default                        \s!parent\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments                     \normalizedbodyfontsize#parameter\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments           \s!default                       #parameter\endcsname\csnamestring\else
+              \??fontenvironments                                                                             \fi
    \endcsname}
 
 \permanent\def\bodyfontsizevariable#size#parameter% used in s-fonts-show
-  {\begincsname\??fontenvironments
-            \ifcsname\??fontenvironments\fontclass:\fontstyle#size#parameter\endcsname\fontclass:\fontstyle#size#parameter%
-     \orelse\ifcsname\??fontenvironments\fontclass           #size#parameter\endcsname\fontclass           #size#parameter%
-     \orelse\ifcsname\??fontenvironments\fontclass:\fontstyle     #parameter\endcsname\fontclass:\fontstyle#parameter%
-     \orelse\ifcsname\??fontenvironments\fontclass                #parameter\endcsname\fontclass           #parameter%
-     \orelse\ifcsname\??fontenvironments\fontclass \s!default      \s!parent\endcsname\lastnamedcs         #parameter%
-     \orelse\ifcsname\??fontenvironments                     #size#parameter\endcsname                #size#parameter%
-     \orelse\ifcsname\??fontenvironments           \s!default     #parameter\endcsname\s!default           #parameter\fi
+  {\begincsname
+     \ifcsname\??fontenvironments\fontclass:\fontstyle#size#parameter\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass           #size#parameter\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass:\fontstyle     #parameter\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass                #parameter\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments\fontclass \s!default      \s!parent\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments                     #size#parameter\endcsname\csnamestring\orelse
+     \ifcsname\??fontenvironments           \s!default     #parameter\endcsname\csnamestring\else
+              \??fontenvironments                                                           \fi
    \endcsname}
+
+%
 
 \def\font_bodyfontvariable#parameter%
          {\ifcsname\??fontenvironments\fontclass:\fontstyle\normalizedbodyfontsize#parameter\endcsname\lastnamedcs

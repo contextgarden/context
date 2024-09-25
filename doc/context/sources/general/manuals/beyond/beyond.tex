@@ -1,0 +1,25 @@
+
+% language=us runpath=texruns:manuals/beyond
+
+\environment beyond-style
+
+\dontcomplain
+
+\startdocument
+
+    \component beyond-titlepage
+
+    \startfrontmatter
+        \component beyond-contents
+    \stopfrontmatter
+
+    \startbodymatter
+        \component beyond-introduction
+      % \component beyond-parpasses
+        \startchapter[title=Paragraphs] {\em Appears first in TUGboat.} \stopchapter
+      % \component beyond-twins
+        \startchapter[title=Twins]      {\em Appears first in TUGboat.} \stopchapter
+        \component beyond-namespaces
+    \stopbodymatter
+
+\stopdocument

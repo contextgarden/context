@@ -161,6 +161,7 @@
 \definefilesynonym [type-imp-modern-nt.mkiv]              [type-imp-latinmodern.mkiv]
 \definefilesynonym [type-imp-stix-nt.mkiv]                [type-imp-stix.mkiv]
 \definefilesynonym [type-imp-stixtwo-nt.mkiv]             [type-imp-stix.mkiv]
+\definefilesynonym [type-imp-lato-nt.mkiv]                [type-imp-lato.mkiv]
 \definefilesynonym [type-imp-libertinus-nt.mkiv]          [type-imp-libertinus.mkiv]
 \definefilesynonym [type-imp-ebgaramond-nt.mkiv]          [type-imp-ebgaramond.mkiv]
 \definefilesynonym [type-imp-erewhon-nt.mkiv]             [type-imp-erewhon.mkiv]

@@ -248,13 +248,13 @@
 //define hash_size  65536
 //define hash_prime 65497
 
-# define hash_size  131072                               /*tex 128K */
-# define hash_prime 131041                               /*tex not the 85% prime */
+//define hash_size  131072                               /*tex 128K */
+//define hash_prime 131041                               /*tex not the 85% prime */
 
-//define hash_size  262144                               /*tex 256K */
-//define hash_prime 262103                               /*tex not the 85% prime */
+# define hash_size  262144                               /*tex 256K */
+# define hash_prime 262103                               /*tex not the 85% prime */
 
-# define null_cs                 1                       /*tex equivalent of |\csname\| |\endcsname| */
+# define null_cs                 1                       /*tex equivalent of |\csname\endcsname| */
 # define hash_base               (null_cs   + 1)         /*tex beginning of region 2, for the hash table */
 # define frozen_control_sequence (hash_base + hash_size) /*tex for error recovery */
 

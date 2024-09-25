@@ -275,7 +275,7 @@
    \ifempty\p_text \else
       \p_text
       \removeunwantedspaces
-      \nobreakspace
+      \nobreakspace % should be a option
    \fi}
 
 \protected\def\strc_enumerations_inject_extra_text
@@ -287,7 +287,7 @@
 
 \protected\def\strc_enumerations_inject_text
   {\constructionparameter\c!numbercommand
-    {\constructionparameter\c!text}}
+     {\constructionparameter\c!text}}
 
 % head ( number title )
 

@@ -1400,6 +1400,8 @@ if implement then
     local f_actual_text_b_not = formatters["/Span << /ActualText <feff%s> >> BDC"]
     local f_actual_text       = formatters["/Span <</ActualText %s >> BDC"]
 
+    local f_alternative_text  = formatters["/Span <</AltText %s >> BDC"]
+
     local s_actual_text_e     <const> = "EMC ET"
     local s_actual_text_e_not <const> = "EMC"
 
@@ -1437,6 +1439,21 @@ if implement then
 
     implement {
         name      = "stopactualtext",
+        actions   = function()
+            context(pdfdirect("EMC"))
+        end
+    }
+
+    implement {
+        name      = "startalternativetext",
+        arguments = "string",
+        actions   = function(str)
+            context(pdfdirect(f_alternative_text(tosixteen(str))))
+        end
+    }
+
+    implement {
+        name      = "stopalternativetext",
         actions   = function()
             context(pdfdirect("EMC"))
         end

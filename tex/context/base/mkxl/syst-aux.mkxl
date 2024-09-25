@@ -6734,15 +6734,15 @@
        \m_syst_helpers_range_to
        {\ifnum\m_syst_helpers_range_from>\m_syst_helpers_range_to\minusone\else\plusone\fi}
        {%(\the\numexpr\c_helpers_range_abs_max+##1+\plusone\relax)
-        \m_helpers_range_action{\numexpr\c_helpers_range_abs_max+##1+\plusone\relax}}%
+        \m_helpers_range_action{\number\numexpr\c_helpers_range_abs_max+##1+\plusone\relax}}%
    \else
      \dostepwiserecurse
        \m_syst_helpers_range_from
        \m_syst_helpers_range_to
        {\ifnum\m_syst_helpers_range_from>\m_syst_helpers_range_to\minusone\else\plusone\fi}
        {%(\the\numexpr\c_helpers_range_abs_min+##1-\plusone\relax)
-        \m_helpers_range_action{\numexpr\c_helpers_range_abs_min+##1+\plusone\relax}}%
-   \fi}%
+        \m_helpers_range_action{\number\numexpr\c_helpers_range_abs_min+##1-\plusone\relax}}%
+   \fi}
 
 \permanent\protected\def\dowithminmaxrangeslice#1#2#3#4#5#6% absmin absmax min max set action
   {\def\m_helpers_range_action{#6}%

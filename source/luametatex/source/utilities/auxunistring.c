@@ -74,7 +74,6 @@ unsigned aux_str2uni_len(const unsigned char *text, int *len)
     return 0xFFFD;
 }
 
-
 unsigned char *aux_uni2str(unsigned unic)
 {
     unsigned char *buf = lmt_memory_malloc(5);

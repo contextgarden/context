@@ -200,4 +200,77 @@
 \definemathoperator [bigdoublewedge]    [operators]  [\c!left="2A07] % big double wedge
 \definemathoperator [bigdoublevee]      [operators]  [\c!left="2A08] % big double vee
 
+
+%D \im{∫_ 2 \neq ∑_3 \neq ∑^3 \neq ∏_4^5 \neq ∏_4}\blank
+%D \dm{∫_ 2 \neq ∑_3 \neq ∑^3 \neq ∏_4^5 \neq ∏_4}\blank
+
+% \amcode`∫ \activecatcode \letcharcode`∫ \int
+% \amcode`∑ \activecatcode \letcharcode`∑ \sum
+% \amcode`∏ \activecatcode \letcharcode`∏ \prod
+
+\permanent\protected\def\registermathsymbolcommand
+  {\afterassignment\math_register_symbol_command\scratchcounter}
+
+\def\math_register_symbol_command
+  {\amcode\scratchcounter\activecatcode
+   \letcharcode\scratchcounter}
+
+\registermathsymbolcommand "222B \int
+\registermathsymbolcommand "222C \iint
+\registermathsymbolcommand "222D \iiint
+\registermathsymbolcommand "2A0C \iiiint
+\registermathsymbolcommand "222E \oint
+\registermathsymbolcommand "222F \oiint
+\registermathsymbolcommand "2230 \oiiint
+\registermathsymbolcommand "2231 \intc
+\registermathsymbolcommand "2232 \ointc
+\registermathsymbolcommand "2233 \aointc
+
+\registermathsymbolcommand "2A0B \sumint
+\registermathsymbolcommand "2A0D \barint
+\registermathsymbolcommand "2A0E \doublebarint
+\registermathsymbolcommand "2A0F \slashint
+\registermathsymbolcommand "2A11 \aodownintc
+\registermathsymbolcommand "2A12 \rectangularpoleintc
+\registermathsymbolcommand "2A13 \semicirclepoleintc
+\registermathsymbolcommand "2A14 \circlepoleoutsideintc
+\registermathsymbolcommand "2A15 \circlepoleinsideintc
+\registermathsymbolcommand "2A16 \squareintc
+\registermathsymbolcommand "2A17 \hookleftarrowint
+\registermathsymbolcommand "2A18 \timesint
+\registermathsymbolcommand "2A19 \capint
+\registermathsymbolcommand "2A1A \cupint
+\registermathsymbolcommand "2A1B \upperint
+\registermathsymbolcommand "2A1C \lowerint
+
+\registermathsymbolcommand "2211 \sum
+\registermathsymbolcommand "2140 \blackboardsum
+\registermathsymbolcommand "2A0A \modtwosum
+
+\registermathsymbolcommand "220F \prod
+\registermathsymbolcommand "2210 \coprod
+
+\registermathsymbolcommand "22C0 \bigwedge
+\registermathsymbolcommand "22C1 \bigvee
+\registermathsymbolcommand "22C2 \bigcap
+\registermathsymbolcommand "22C3 \bigcup
+\registermathsymbolcommand "2A00 \bigodot
+\registermathsymbolcommand "2A01 \bigoplus
+\registermathsymbolcommand "2A02 \bigotimes
+\registermathsymbolcommand "2A03 \bigudot
+\registermathsymbolcommand "2A04 \biguplus
+\registermathsymbolcommand "2A05 \bigsqcap
+\registermathsymbolcommand "2A06 \bigsqcup
+\registermathsymbolcommand "2A09 \bigtimes
+
+\registermathsymbolcommand "27D5 \leftouterjoin
+\registermathsymbolcommand "27D6 \rightouterjoin
+\registermathsymbolcommand "27D7 \fullouterjoin
+\registermathsymbolcommand "27D8 \bigbottom
+\registermathsymbolcommand "27D9 \bigtop
+\registermathsymbolcommand "29F8 \bigsolidus
+\registermathsymbolcommand "29F9 \bigreversesolidus
+\registermathsymbolcommand "2A07 \bigdoublewedge
+\registermathsymbolcommand "2A08 \bigdoublevee
+
 \protect \endinput

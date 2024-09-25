@@ -977,7 +977,6 @@
    \else
      \cdef\currentmathematics{#1}% todo: check for valid
    \fi
-%    \expand\everysetupmathematics % kind of special here as we append to it/ check
    \expand\everyswitchmathematics % kind of special here as we append to it/ check
    \usemathematicscolorparameter\c!color
    \ifcstok{\mathematicsparameter\c!openup}\v!yes
@@ -990,6 +989,7 @@
   {\setbox\scratchbox\hbox\bgroup
       \expand\everyswitchmathematics\relax
       \Ustartmathmode\expandedmathstyleparameter\mathematicsparameter\c!mathstyle
+      \math_style_set_main % here
       \expand\everyinsidemathematics\relax
       #1%
       \Ustopmathmode
@@ -1008,6 +1008,7 @@
 \def\math_m_yes_text_normal#1%
   {\expand\everyswitchmathematics\relax
    \Ustartmathmode\expandedmathstyleparameter\mathematicsparameter\c!mathstyle
+   \math_style_set_main % here
    \expand\everyinsidemathematics\relax
    \begingroup#1\endgroup % grouping permits aftergroups trickery
    \Ustopmathmode
@@ -3787,11 +3788,40 @@
 %letcsname\??mathstylecachem\endcsname\empty
 %letcsname\??mathstylecachet\endcsname\empty
 
-\defcsname\??mathstyle\v!normal\endcsname{\givenmathstyle\normalmathstyle}
-\defcsname\??mathstyle         \endcsname{\givenmathstyle\normalmathstyle}
+%D test case:
+%D
+%D \starttyping
+%D \startformula
+%D \frac{1}{2} + \sqrt{\frac{1}{2} + 1}
+%D \stopformula%
+%D \stoptyping
+
+% \permanent\def\expandedmathstyleparameter#1#2%
+%   {\beginlocalcontrol
+%    \edef\m_math_style_asked{#1#2}%
+%    \edef\m_math_style_asked{\math_style_set_expanded\m_math_style_asked}%
+%    \endlocalcontrol
+%    \ifempty\m_math_style_asked
+%      \mathstyle
+%    \else
+%      \m_math_style_asked
+%    \fi}
 
 \permanent\def\expandedmathstyleparameter#1#2%
-  {\normalexpanded{\noexpand\math_style_set_expanded{#1#2}}}
+  {\ifcstok{#1#2}\emptytoks
+     \mathstyle
+   \else
+     \expandafter\math_style_set_expanded\expandafter{\lastnamedcs}%
+   \fi}
+
+\def\math_style_set_expanded#1% in caller: \math_style_set_main
+  {\ifcsname\??mathstyle#1\endcsname
+     \lastnamedcs
+   \orelse\ifcsname\ifmmode\??mathstylecachem\the\mathstyle:\else\??mathstylecachet\fi#1\endcsname
+     \lastnamedcs
+   \else
+     \math_style_set_mathstyle_mathstylecache{#1}%
+   \fi}
 
 \def\math_style_set_main{\indisplaymath\ifcase\mathstyle\conditionaltrue\else\conditionalfalse\fi} % for fractions
 
@@ -3802,16 +3832,6 @@
      \lastnamedcs
    \else
      \math_style_set_mathstyle_mathstylecache\m_math_style_asked
-   \fi
-   \math_style_set_main}
-
-\def\math_style_set_expanded#1%
-  {\ifcsname\??mathstyle#1\endcsname
-     \lastnamedcs
-   \orelse\ifcsname\ifmmode\??mathstylecachem\the\mathstyle:\else\??mathstylecachet\fi#1\endcsname
-     \lastnamedcs
-   \else
-     \math_style_set_mathstyle_mathstylecache{#1}%
    \fi
    \math_style_set_main}
 

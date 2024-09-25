@@ -97,6 +97,7 @@ extern halfword tex_located_string        (const char *s);
 /*     halfword tex_id_lookup             (int j, int l); */
 extern halfword tex_id_locate             (int j, int l, int create);
 extern halfword tex_id_locate_only        (int j, int l);
+extern int      tex_id_locate_steps       (const char *s);
 extern void     tex_print_cmd_flags       (halfword cs, halfword cmd, int flags, int escape);
 
 # endif

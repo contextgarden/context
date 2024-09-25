@@ -119,6 +119,14 @@ local o_replacements = { -- in main table
     [" "]              = "",
     ["°"]              = "^\\circ", -- hack
 
+    -- todo: take these and more from char-def
+
+    ["∫"] = "\\int",
+    ["∮"] = "\\oint",
+    ["∏"] = "\\prod",
+    ["∑"] = "\\sum",
+
+
  -- [utfchar(0xF103C)] = "\\mmlleftdelimiter<",
     [utfchar(0xF1026)] = "\\mmlchar{38}",
     [utfchar(0x02061)]  = "", -- function applicator sometimes shows up in font
@@ -525,6 +533,16 @@ function mathml.mo(id)
     local str = lpegmatch(p_strip,xmlcontent(getid(id)) or "")
     context(simpleoperatorremapper(str) or str)
 end
+
+interfaces.implement {
+    name      = "remapmathoperator",
+    public    = true,
+    protected = true,
+    arguments = "string",
+    actions   = function(str)
+        context(simpleoperatorremapper(str) or str)
+    end
+}
 
 function mathml.mi(id)
     -- we need to strip comments etc .. todo when reading in tree

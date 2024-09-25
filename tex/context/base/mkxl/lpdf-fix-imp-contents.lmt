@@ -568,6 +568,22 @@ do
         end
         removed = true
         contents[i] = { }
+        if op == "BMC" or op == "BDC" then
+            local level = 1
+            for ii=i+1,#contents do
+                local c = contents[ii]
+                local o = c[#c]
+                if o == "BMC" or o == "BDC" then
+                    level = level + 1
+                elseif o == "EMC" then
+                    level = level - 1
+                    if level <= 0 then
+                        contents[ii] = { }
+                        break
+                    end
+                end
+            end
+        end
     end
 
     local contenttostring = lpdf.epdf.contenttostring
@@ -575,8 +591,9 @@ do
     local parsecontent    = lpdf.epdf.parsecontent
 
     local function checkbt(c,op,contents,i)
+        -- ET followed by BT
         local c = contents[i-1]
-        if c and c[#c] == "ET" then
+        if c and c[i] == "ET" then
             contents[i]   = { }
             contents[i-1] = { }
         end
@@ -634,16 +651,16 @@ do
             passone.DP  = removetags -- marked content point    with properties list
             passone.BMC = removetags -- marked content sequence
             passone.BDC = removetags -- marked content sequence with properties list
-            passone.EMC = removetags -- marked content sequence end
+        --  passone.EMC = removetags -- marked content sequence end, handled in BMC BDC
             passtwo.BT  = checkbt    -- with matching ET
         end
         if strip.extgstate then
             passone.gs = removestate
             passone.GS = removestate
         end
--- if strip.cm then
---     passone.cm = checkcm
--- end
+     -- if strip.cm then
+     --     passone.cm = checkcm
+     -- end
         if reduce.color then
             passone.rg = reducergb
             passone.RG = reducergb
@@ -696,9 +713,9 @@ do
         else
             g1, g2, g3, g4 = nil, nil, nil, nil
         end
--- if strip.redundant then
---     passtwo.Q   = checkQ
--- end
+     -- if strip.redundant then
+     --     passtwo.Q   = checkQ
+     -- end
         if compactor.identify == "all" then
             compactor.identify= {
                 content   = true,

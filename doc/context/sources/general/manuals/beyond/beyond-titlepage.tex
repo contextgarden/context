@@ -1,0 +1,51 @@
+% language=us runpath=texruns:manuals/beyond
+
+\startcomponent beyond-titlepage
+
+\environment beyond-style
+
+\startMPpage[pagestate=stop]
+
+StartPage ;
+
+    picture p ; p := image (
+
+        path Door ; Door :=
+            fullsquare xyscaled (10,20)
+         && fullsquare xyscaled (6,8)   shifted (0, 4.5)
+         && fullsquare xyscaled (6,8)   shifted (0,-4.5)
+         && fullsquare xyscaled (1/2,2) shifted (-5.25,6.5)
+         && fullsquare xyscaled (1/2,2) shifted (-5.25,-6.5)
+         && fullsquare xyscaled (3,1/4) shifted (2.75,1)
+        ;
+
+        Door := Door xysized (PaperWidth/10,PaperHeight/10) ;
+
+        % how to open these doors randomized
+
+        for i=1 upto 8 :
+            for j=1 upto 8 :
+                draw Door shifted ((i-.5)*(PaperWidth/8),(j-.5)*(PaperHeight/8)) ;
+            endfor
+        endfor ;
+
+    ) ;
+
+    fill Page withcolor "maincolor" ;
+
+    draw p withpen pencircle scaled 2 withcolor .6white ;
+
+    draw image (draw textext ("\glyphweight 300 BEYOND") xsized (16cm) withcolor "white")
+        shifted center bottomboundary Page
+        shifted (0mm,45mm) ;
+
+    draw image (draw textext ("\glyphweight 200 luametatex & context lmtx") xsized (13cm) withcolor "white")
+        shifted center bottomboundary Page
+        shifted (0mm,20mm) ;
+
+StopPage ;
+
+\stopMPpage
+
+\stopcomponent
+

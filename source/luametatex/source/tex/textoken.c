@@ -171,7 +171,6 @@ void tex_compact_tokens(void)
     if (target && mapper) {
         memoryword *tokens = lmt_token_memory_state.tokens;
         memset((void *) mapper, -1, ((size_t) lmt_token_memory_state.tokens_data.allocated) * sizeof(halfword));
-        /* also reset available */
         for (int cs = 0; cs < (eqtb_size + lmt_hash_state.hash_data.ptr + 1); cs++) {
             switch (eq_type(cs)) {
                 case call_cmd:
@@ -196,9 +195,9 @@ void tex_compact_tokens(void)
                                     t = tokens[t].half0;
                                     if (t) {
                                         nc++;
-                                        target[nc-1].half0 = nc;        /* link to next */
+                                        target[nc-1].half0 = nc; /* link to next */
                                     } else {
-                                        target[nc].half0 = null;        /* link to next */
+                                        target[nc].half0 = null; /* link to next */
                                         break;
                                     }
                                 }
@@ -794,7 +793,7 @@ void tex_show_token_list_context(halfword p, halfword q)
                         tex_print_str_esc("par ");
                         break;
                     default:
-                        tex_print_str(tex_aux_special_cmd_string(cmd, chr, error_string_bad(43)));
+                        tex_print_str(tex_aux_special_cmd_string(cmd, chr, error_string_bad(53)));
                         break;
                 }
          // } else if (token_info(p) == 0) {
@@ -1773,16 +1772,17 @@ static int tex_aux_scan_control_sequence(void)
                 }
             } else {
                 state = skip_blanks_state;
-//                do {
-//                    chr = get_unichar_from_buffer(&loc);
-//                    cat = tex_aux_the_cat_code(chr);
-//                } while (cat == letter_cmd && loc <= lmt_input_state.cur_input.limit);
-
+# if 0
+                do {
+                    chr = get_unichar_from_buffer(&loc);
+                    cat = tex_aux_the_cat_code(chr);
+                } while (cat == letter_cmd && loc <= lmt_input_state.cur_input.limit);
+# else 
                 while (cat == letter_cmd && loc <= lmt_input_state.cur_input.limit) {
                     chr = get_unichar_from_buffer(&loc);
                     cat = tex_aux_the_cat_code(chr);
                 }
-
+# endif
                 /*tex If an expanded \unknown */
                 if (cat == superscript_cmd && tex_aux_check_expanded_code(&loc, &chr)) {
                     continue;
@@ -2026,7 +2026,7 @@ inline static next_line_retval tex_aux_next_line(void)
                     }
                 case io_tex_macro_code:
                     /* this can't happen and will fail with the next line check */
-             // case io_file_input_code:
+             /* case io_file_input_code: */
                 default:
                     if (tex_lua_input_ln()) {
                         /*tex Not end of file, set |ilimit|. */
@@ -3160,7 +3160,6 @@ void tex_run_convert_tokens(halfword code)
 //                pop_selector;
 //                break;
 //            }
-        /*
         case cs_lastname_code:
             if (lmt_scanner_state.last_cs_name != null_cs) {
                 int saved_selector;
@@ -3169,7 +3168,6 @@ void tex_run_convert_tokens(halfword code)
                 pop_selector;
             }
             break;
-        */
         case detokenized_code:
             /*tex Sort of like |\meaningles| but without the explanationary text. */
             {
@@ -3299,7 +3297,7 @@ void tex_run_convert_tokens(halfword code)
              /* halfword result = tex_scan_toks_expand(0, NULL, code == lua_token_string_code); */
              /* lmt_token_state.in_lua_escape = 1; */
                 escape_char_par = '\\';
-                str.s = (unsigned char *) tex_tokenlist_to_tstring(result, 0, &length, 0, 0, 0, 0, 1); /* sinmgle hashes */
+                str.s = (unsigned char *) tex_tokenlist_to_tstring(result, 0, &length, 0, 0, 0, 0, 1); /* single hashes */
                 str.l = (unsigned) length;
              /* lmt_token_state.in_lua_escape = saved_in_lua_escape; */
                 escape_char_par = saved_escape_char; 

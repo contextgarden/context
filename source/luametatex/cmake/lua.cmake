@@ -67,7 +67,6 @@ target_compile_definitions(lua PUBLIC
   # LUAI_ASSERT
   # LUA_STRFTIMEOPTIONS="aAbBcCdDeFgGhHIjmMnprRStTuUVwWxXyYzZ%" 
   # MINSTRTABSIZE=65536
-  # LUA_USE_JUMPTABLE=0
     NDEBUG=0
 )
 

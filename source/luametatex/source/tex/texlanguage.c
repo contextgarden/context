@@ -208,7 +208,7 @@ void tex_dump_language_data(dumpstream f)
         for (int i = 0; i < lmt_language_state.language_data.top; i++) {
             tex_language *lang = lmt_language_state.languages[i];
             if (lang) {
-                dump_via_int(f, 1);
+                dump_via_uchar(f, 1);
                 dump_int(f, lang->id);
                 dump_int(f, lang->pre_hyphen_char);
                 dump_int(f, lang->post_hyphen_char);
@@ -217,7 +217,7 @@ void tex_dump_language_data(dumpstream f)
                 dump_int(f, lang->hyphenation_min);
                 tex_dump_language_hj_codes(f, i);
             } else {
-                dump_via_int(f, 0);
+                dump_via_uchar(f, 0);
             }
         }
     }
@@ -235,9 +235,9 @@ void tex_undump_language_data(dumpstream f)
             lmt_language_state.language_data.ptr = ptr;
             lmt_language_state.languages = tmp;
             for (int i = 0; i < top; i++) {
-                int x;
-                undump_int(f, x);
-                if (x == 1) {
+                unsigned char marker;
+                undump_uchar(f, marker);
+                if (marker == 1) {
                     tex_language *lang = lmt_memory_malloc(sizeof(struct tex_language));
                     if (lang) {
                         lmt_language_state.languages[i] = lang;

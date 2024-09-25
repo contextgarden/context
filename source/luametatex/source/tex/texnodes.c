@@ -1945,6 +1945,10 @@ halfword tex_list_node_mem_usage(void)
 
 extern void tex_change_attribute_register(halfword a, halfword id, halfword value)
 {
+    /* actually global should also kick in when we're not global yet */
+
+ // if ((eq_value(id) != value) || (eq_level(id) != level_one && is_global(a))) { 
+
     if (eq_value(id) != value) { 
         if (is_global(a)) { 
          // for (int i = (lmt_save_state.save_stack_data.ptr - 1); i >= 0; i--) { 
@@ -4925,6 +4929,7 @@ void tex_dump_specification_data(dumpstream f) {
                         dump_int(f, specification_size(v));
                         dump_int(f, specification_anything_1(v));
                         dump_int(f, specification_anything_2(v));
+                        /* dump_mem */
                         dump_things(f, specification_pointer(v), specification_size(v)/sizeof(memoryword));
                         specification_pointer(v) = NULL;
                         ++total;
@@ -4968,6 +4973,7 @@ void tex_undump_specification_data(dumpstream f) {
                                 if (specification_size(v) == size) {
                                     specification_anything_1(v) = unused_1;
                                     specification_anything_2(v) = unused_2;
+                                    /* undump mem */
                                     undump_things(f, specification_pointer(v), specification_size(v)/sizeof(memoryword));
                                     ++total;
                                 } else {

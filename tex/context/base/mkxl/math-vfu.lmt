@@ -24,7 +24,7 @@ if not modules then modules = { } end modules ['math-vfu'] = {
 
 local type, next, tonumber = type, next, tonumber
 local max = math.max
-local fastcopy, sortedhash = table.copy, table.sortedhash
+local fastcopy, sortedhash, tohash = table.copy, table.sortedhash, table.tohash
 
 local fonts, mathematics = fonts, mathematics
 
@@ -737,17 +737,18 @@ local function copy_glyph(main,target,original,unicode,slot)
     local olddata = original[unicode]
     if olddata then
         local newdata = {
-            width     = olddata.width,
-            height    = olddata.height,
-            depth     = olddata.depth,
-            italic    = olddata.italic,
-            topanchor = olddata.topanchor,
-            kerns     = olddata.kerns,
-            mathkerns = olddata.mathkerns,
-            tounicode = olddata.tounicode,
-            unicode   = olddata.unicode,
-         -- smaller   = olddata.smaller,
-            commands  = { slotcommand[slot][unicode] },
+            width        = olddata.width,
+            height       = olddata.height,
+            depth        = olddata.depth,
+            italic       = olddata.italic,
+            topanchor    = olddata.topanchor,
+            bottomanchor = olddata.bottomanchor,
+            kerns        = olddata.kerns,
+            mathkerns    = olddata.mathkerns,
+            tounicode    = olddata.tounicode,
+            unicode      = olddata.unicode,
+         -- smaller      = olddata.smaller,
+            commands     = { slotcommand[slot][unicode] },
         }
         local glyphdata = newdata
         local nextglyph = olddata.next
@@ -755,17 +756,18 @@ local function copy_glyph(main,target,original,unicode,slot)
             local oldnextdata = original[nextglyph]
             if oldnextdata then
                 local newnextdata = {
-                    width     = oldnextdata.width,
-                    height    = oldnextdata.height,
-                    depth     = oldnextdata.depth,
-                    italic    = oldnextdata.italic,
-                    topanchor = oldnextdata.topanchor,
-                    kerns     = olddata.kerns,
-                    mathkerns = olddata.mathkerns,
-                    tounicode = olddata.tounicode,
-                    unicode   = olddata.unicode,
-                    smaller   = olddata.smaller,
-                    commands  = { slotcommand[slot][nextglyph] },
+                    width        = oldnextdata.width,
+                    height       = oldnextdata.height,
+                    depth        = oldnextdata.depth,
+                    italic       = oldnextdata.italic,
+                    topanchor    = oldnextdata.topanchor,
+                    bottomanchor = oldnextdata.bottomanchor,
+                    kerns        = olddata.kerns,
+                    mathkerns    = olddata.mathkerns,
+                    tounicode    = olddata.tounicode,
+                    unicode      = olddata.unicode,
+                    smaller      = olddata.smaller,
+                    commands     = { slotcommand[slot][nextglyph] },
                 }
                 local newnextglyph = addprivate(main,formatters["M-N-%H"](nextglyph),newnextdata)
                 newdata.next = newnextglyph
@@ -829,16 +831,23 @@ local noitalics = true -- false can be used to test the engine
 -- The following code is now only used for iwona and antykwa, so I simplified it a
 -- bit to suit that purpose. It might get even simpler.
 
-local function virtualize(s,uni,fci,skewchar,move,mathparameters,unicode,parameters)
+local integrals = setmetatableindex(function(t,k)
+    integrals = tohash(mathematics.tweaks.subsets.integrals)
+    return integrals[k]
+end)
+
+local function virtualize(s,uni,fci,skewchar,move,mathparameters,unicode,parameters,characters)
     if fci then
-        local kerns   = fci.kerns
-        local width   = fci.width
-        local height  = fci.height
-        local depth   = fci.depth
-        local italic  = fci.italic
-        local advance = width
-        local bottomright
-        local topanchor
+        local kerns        = fci.kerns
+        local width        = fci.width
+        local height       = fci.height
+        local depth        = fci.depth
+        local italic       = fci.italic
+        local topanchor    = fci.topanchor
+        local bottomanchor = fci.bottomanchor
+        local bottomright  = fci.bottomright
+        local advance      = width
+        local nextone      = fci.next
         local yoffset
         if kerns and skewchar then
             local k = kerns[skewchar]
@@ -846,11 +855,32 @@ local function virtualize(s,uni,fci,skewchar,move,mathparameters,unicode,paramet
                 topanchor = width/2 + k
             end
         end
-        if italic and noitalics then
-            width       = width + italic
-            bottomright = - italic
-            italic      = nil
-        end
+--         if italic and noitalics then
+--             width = width + italic
+--             bottomright = - italic
+--             if not fci.anchored and integrals[unicode] then
+--                 topanchor    = (width + italic) / 2
+--                 bottomanchor = (width - italic) / 2
+--                         inspect(fci)
+--                 if nextone then
+--                     local n = nextone
+--                     while n do
+--                         local c = characters[n]
+--                         if c and not c.anchored and integrals[c.unicode] then
+--                             local italic = c.italic
+--                             local width  = c.width + italic
+--                             c.bottomright  = - italic
+--                             c.topanchor    = (width + italic) / 2
+--                             c.bottomanchor = (width - italic) / 2
+--                             c.anchored     = true
+--                             c.italic       = nil
+--                         end
+--                         n = c.next
+--                     end
+--                 end
+--             end
+--             italic = nil
+--         end
         if move then  -- 0x222B
             local axis = move * mathparameters.axisheight
             local half = (height + depth ) / 2
@@ -859,7 +889,6 @@ local function virtualize(s,uni,fci,skewchar,move,mathparameters,unicode,paramet
             depth  = half - axis
         end
         --
-        local next = fci.next
         return {
             advance          = advance,
             width            = width,
@@ -868,15 +897,17 @@ local function virtualize(s,uni,fci,skewchar,move,mathparameters,unicode,paramet
             italic           = italic,
             bottomright      = bottomright,
             topanchor        = topanchor,
+            bottomanchor     = bottomanchor,
             yoffset          = yoffset,
             commands         = { slotcommand[s][uni] },
          -- keepvirtual      = true,
-            next             = fci.next,
+            next             = nextone,
             parts            = fci.parts,
             partsorientation = fci.partsorientation,
             partsitalic      = fci.partsitalic,
             unicode          = unicode,
             name             = fci.name,
+--             anchored         = true,
         }
     else
         -- error
@@ -1137,23 +1168,23 @@ function vfmath.define(specification,virtual,goodies)
                                 -- get rid of ugly slanted antykwa { }
                                 else
                                     local u = mathematics.gaps[unicode] or unicode
-                                    local t = virtualize(s,uni,fci,skewchar,tonumber(badones and badones[name]),mathparameters,u,fp)
+                                    local t = virtualize(s,uni,fci,skewchar,tonumber(badones and badones[name]),mathparameters,u,fp,characters)
                                     done[uni] = t
                                     characters[unicode] = t
                                     fci.unicode = u
                                 end
                             end
                         end
---                         if ss.jmn then
---                             local extension = mathencodings["extensible-jmn-private"]
---                             for unicode, index in sortedhash(extension) do
---                                 if not characters[unicode] then
---                                     local uni = backmap and backmap[index] or index
---                                     local fci = fc[uni]
---                                     characters[unicode] = virtualize(s,uni,fci,skewchar,false,mathparameters,unicode,fp)
---                                 end
---                             end
---                         end
+                     -- if ss.jmn then
+                     --     local extension = mathencodings["extensible-jmn-private"]
+                     --     for unicode, index in sortedhash(extension) do
+                     --         if not characters[unicode] then
+                     --             local uni = backmap and backmap[index] or index
+                     --             local fci = fc[uni]
+                     --             characters[unicode] = virtualize(s,uni,fci,skewchar,false,mathparameters,unicode,fp,characters)
+                     --         end
+                     --     end
+                     -- end
                         if isextension then
                             local extension = mathencodings["large-to-small"]
                             for uni, fci in sortedhash(fc) do
@@ -1161,7 +1192,7 @@ function vfmath.define(specification,virtual,goodies)
                                 if ignore and ignore[name] then
                                     -- get rid of ugly antykwa bar
                                 elseif not done[uni] then
-                                    local t = virtualize(s,uni,fci,skewchar,tonumber(badones and badones[name]),mathparameters,nil,fp)
+                                    local t = virtualize(s,uni,fci,skewchar,tonumber(badones and badones[name]),mathparameters,nil,fp,characters)
                                     local o = addprivate(main,f_extra(offset))
                                     extras[uni] = o
                                     characters[o] = t
@@ -1199,7 +1230,7 @@ function vfmath.define(specification,virtual,goodies)
                                 if not characters[unicode] then
                                     local uni = backmap and backmap[index] or index
                                     local fci = fc[uni]
-                                    characters[unicode] = virtualize(s,uni,fci,skewchar,false,mathparameters,unicode,fp)
+                                    characters[unicode] = virtualize(s,uni,fci,skewchar,false,mathparameters,unicode,fp,characters)
                                 end
                             end
                         end
@@ -1209,6 +1240,34 @@ function vfmath.define(specification,virtual,goodies)
                 end
             end
          -- mathematics.extras.copy(main) -- Not needed here (yet) ... might go.
+        end
+    end
+    for unicode, data in next, characters do
+        local n = data.next
+        while n do
+            local c = characters[n]
+            if c then
+                c.unicode = unicode
+                n = c.next
+            else
+                break
+            end
+        end
+    end
+    if noitalics then
+        for unicode, data in next, characters do
+            local italic = data.italic
+            if italic and italic ~= 0 then
+                local width = data.width + italic
+                if integrals[data.unicode] then -- and not data.anchored then
+                    data.topanchor    = (width + italic) / 2
+                    data.bottomanchor = (width - italic) / 2
+                 -- data.anchored     = true
+                end
+                data.width       = width
+                data.italic      = nil
+                data.bottomright = - italic
+            end
         end
     end
     --

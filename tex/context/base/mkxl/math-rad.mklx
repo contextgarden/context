@@ -170,7 +170,7 @@
     \mathstrut\currentmathradicaldegree}%
    {\usemathradicalcolorparameter\c!textcolor
     % we need to also adapt the strut
-    \expandedmathstyleparameter\mathradicalparameter\c!mathstyle
+    \usemathstyleparameter\mathradicalparameter\c!mathstyle
     \begincsname\??mathwhateverstrut\mathradicalparameter\c!strut\endcsname
     \scratchdimen\mathradicalparameter\c!leftmargin \relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi
     \scratchdepth\mathradicalparameter\c!mindepth\relax

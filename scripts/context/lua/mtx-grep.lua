@@ -22,6 +22,7 @@ local helpinfo = [[
    <subcategory>
     <flag name="pattern"><short>search for pattern (optional)</short></flag>
     <flag name="count"><short>count matches only</short></flag>
+    <flag name="all"><short>count all occurences in a line</short></flag>
     <flag name="nocomment"><short>skip lines that start with %% or #</short></flag>
     <flag name="noattic"><short>skip files that hh considers irrelevant</short></flag>
     <flag name="n"><short>show at most n matches</short></flag>
@@ -87,6 +88,7 @@ function scripts.grep.find(pattern, files, offset)
         local nocomment = environment.argument("nocomment")
         local max = tonumber(environment.argument("n")) or (environment.argument("first") and 1) or false
         local domatch = environment.argument("match")
+        local all = environment.argument("all")
         -- for me:
         local function skip(name)
             return noattic and (find(name,"attic") or find(name,"backup") or find(name,"old") or find(name,"keep") or find(name,"install") or find(name,"texmf"))
@@ -126,12 +128,31 @@ function scripts.grep.find(pattern, files, offset)
         else
             if nocomment then
                 if count then
-                    check = function(line)
-                        n = n + 1
-                        if find(line,"^[%%#%-]") then
-                            -- skip
-                        elseif find(line,pattern) then
-                            m = m + 1
+                    if all then
+                        check = function(line)
+                            n = n + 1
+                            if find(line,"^[%%#%-]") then
+                                -- skip
+                            else
+                                local p = 0
+                                while true do
+                                    p = find(line,pattern,p+1)
+                                    if p then
+                                        m = m + 1
+                                    else
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                    else
+                        check = function(line)
+                            n = n + 1
+                            if find(line,"^[%%#%-]") then
+                                -- skip
+                            elseif find(line,pattern) then
+                                m = m + 1
+                            end
                         end
                     end
                 else
@@ -154,10 +175,25 @@ function scripts.grep.find(pattern, files, offset)
                 end
             else
                 if count then
-                    check = function(line)
-                        n = n + 1
-                        if find(line,pattern) then
-                            m = m + 1
+                    if all then
+                        check = function(line)
+                            n = n + 1
+                            local p = 0
+                            while true do
+                                p = find(line,pattern,p+1)
+                                if p then
+                                    m = m + 1
+                                else
+                                    break
+                                end
+                            end
+                        end
+                    else
+                        check = function(line)
+                            n = n + 1
+                            if find(line,pattern) then
+                                m = m + 1
+                            end
                         end
                     end
                 else

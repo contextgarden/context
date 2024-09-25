@@ -397,7 +397,6 @@
   {\gdefcsname\??typescriptprefix#name\endcsname{#prefix}} % made global
 
 \permanent\def\typescriptprefix#name%
- %{\ifcsname\??typescriptprefix#name\endcsname\csname\??typescriptprefix#name\endcsname\else#name\fi}
   {\ifcsname\??typescriptprefix#name\endcsname\lastnamedcs\else#name\fi}
 
 % defining typefaces:

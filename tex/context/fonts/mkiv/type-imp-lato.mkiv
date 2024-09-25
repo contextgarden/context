@@ -30,12 +30,11 @@
 % Lato-Thin.ttf
 % Lato-ThinItalic.ttf
 
-\loadtypescriptfile[dejavu]
-\loadtypescriptfile[xits]
-
 \starttypescriptcollection[lato]
 
-    \starttypescript [\s!sans] [lato] [\s!name]
+    \doifunknownfontfeature {lato-math-bold} {\definefontfeature[lato-math-bold][boldened-10]}
+
+    \starttypescript [\s!sans] [lato,lato-nt] [\s!name]
         \setups[\s!font:\s!fallback:\s!sans]
         \definefontsynonym [\s!Sans]           [\s!file:lato-regular]    [\s!features=\s!default]
         \definefontsynonym [\s!SansBold]       [\s!file:lato-bold]       [\s!features=\s!default]
@@ -99,11 +98,27 @@
         \definefontsynonym [\s!SansBoldItalic] [\s!file:lato-semibolditalic] [\s!features=\s!default]
     \stoptypescript
 
-    \starttypescript[lato,lato-light,lato-dark,lato-black,lato-hairline,lato-thin,lato-medium,lato-semibold]
+    \starttypescript [\s!math] [lato,lato-nt]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.70]
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.55]
+    \stoptypescript
+
+    \starttypescript [\s!math] [lato] [\s!name]
+        \definefontsynonym [\s!MathRoman]    [\s!file:LeteSansMath.otf][\s!features={\s!math\mathsizesuffix,lato:mathextra,mathextra},\s!goodies=lato-math]
+        \definefontsynonym [\s!MathRomanBold][\s!file:LeteSansMath.otf][\s!features={\s!math\mathsizesuffix,lato-math-bold,lato:mathextra,mathextra},\s!goodies=lato-math]
+    \stoptypescript
+
+    \starttypescript [\s!math] [lato-nt] [\s!name]
+        \definefontsynonym [\s!MathRoman]    [\s!file:LeteSansMath.otf][\s!features={\s!math\mathsizesuffix,lato:mathextra,mathextra}]
+        \definefontsynonym [\s!MathRomanBold][\s!file:LeteSansMath.otf][\s!features={\s!math\mathsizesuffix,lato-math-bold,lato:mathextra,mathextra}]
+    \stoptypescript
+
+
+    \starttypescript[lato,lato-nt,lato-light,lato-dark,lato-black,lato-hairline,lato-thin,lato-medium,lato-semibold]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [dejavu]         [\s!default]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default]
-        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [xits]           [\s!default] [\s!rscale=1.2]
+        \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone] [\s!default] %[\s!rscale=1.2]
     \stoptypescript
 
 \stoptypescriptcollection

@@ -1,4 +1,7 @@
+
 % language=us runpath=texruns:manuals/primitives
+
+% run locally!
 
 \setupexternalfigures
   [location={default,global}]
@@ -2141,6 +2144,19 @@ create a hash entry and defaults its meaning to \prm {relax}.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {csnamestring}}]
+
+This is a companion of \prm {lastnamedcs} that injects the name of the found
+control sequence. When used inside a \type {csname} constructor it is more
+efficient than repeating a token list, compare:
+
+\starttyping
+\csname\ifcsname whatever\endcsname\csnamestring\endcsname % referenced
+\csname\ifcsname whatever\endcsname     whatever\endcsname % scanned
+\stoptyping
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {csstring}}]
 
 This primitive returns the name of the control sequence given without the leading
@@ -2313,8 +2329,9 @@ loop started.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {currentlysetmathstyle}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {currentlysetmathstyle}}]
+    TODO
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {currentmarks}}]
 
@@ -5026,8 +5043,9 @@ length of a word that gets hyphenated.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {hyphenationmode}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {hyphenationmode}}]
+    TODO
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {hyphenchar}}]
 
@@ -7241,8 +7259,17 @@ so we get two times a 3pt glue injected.
 
 \stopoldprimitive
 
-% \startnewprimitive[title={\prm {localbrokenpenalty}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {localbreakpar}}]
+
+This forces a newline in a paragraph without side effects so that for instance
+\prm {widowpenalties} work as expected in scenarios where using a \prm {\par}
+would have been the solution. This is an experimental primitive!
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {localbrokenpenalty}}]
+    TODO
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {localcontrol}}]
 
@@ -7352,8 +7379,9 @@ in simple looping.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {localinterlinepenalty}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {localinterlinepenalty}}]
+    TODO
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {localleftbox}}]
 
@@ -7380,8 +7408,9 @@ This returns the box set with \prm {localmiddlebox}.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {localpretolerance}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {localpretolerance}}]
+    TODO
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {localrightbox}}]
 
@@ -7395,8 +7424,9 @@ This returns the box set with \prm {localrightbox}.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {localtolerance}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {localtolerance}}]
+    TODO
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {long}}][obsolete=yes]
 
@@ -7893,8 +7923,9 @@ you then also need to set up math accordingly (which is the case in \CONTEXT).
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {mathdiscretionary}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {mathdiscretionary}}]
+    TODO
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {mathdisplaymode}}]
 
@@ -8820,8 +8851,11 @@ is: any class). In display mode the location defaults to above and below.
 
 \stopoldprimitive
 
-% \startnewprimitive[title={\prm {nomathchar}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {nomathchar}}]
+
+This can be used when a math character is expected but not available (or needed).
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {nonscript}}]
 
@@ -11292,6 +11326,32 @@ are seen.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {specificationdef}}]
+
+There are some datastructures that are like arrays: \prm {brokenpenalties}, \prm
+{clubpenalties}, \prm {displaywidowpenalties}, \prm {fitnessdemerits}, \prm
+{interlinepenalties}, \prm {mathbackwardpenalties}, \prm {mathforwardpenalties},
+\prm {orphanpenalties}, \prm {parpasses}, \prm {parshape} and \prm
+{widowpenalties}. They accept a counter than tells how many entries follow and
+depending in the specification options, keywords and|/|or just values are
+expected.
+
+With \prm {specificationdef} you can define a command that holds such an array
+and that can be used afterwards as a fast way to enable that specification. The
+way it work is as follows:
+
+\starttyping
+\specificationdef\MyWidowPenalties
+    \widowpenalties 4 2000 1000 500 250
+\relax
+\stoptyping
+
+where the relax is optional but a reasonabel way to make sure we end the
+definition (when keywords are used, as in \prm {parpasses} it prevents running
+into unexpected keywords.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {splitbotmark}}][obsolete=yes]
 
 This is a reference to the last mark on the currently split off box, it gives
@@ -12677,7 +12737,6 @@ sort of used the same trick so there isn't much to gain and it was less generic
 \stopsubject
 
 \page
-
 
 \definehead
   [Syntax]

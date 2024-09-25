@@ -2262,7 +2262,7 @@
 \stopxmlsetups
 
 \starttexdefinition mmllimopover #1
-    \mmlbasetoken\normalsuperscript{\mmlfencedsecond{#1}}
+    \remapmathoperator{\mmlbasetoken}\normalsuperscript{\mmlfencedsecond{#1}}
 \stoptexdefinition
 
 % munder
@@ -2296,7 +2296,7 @@
 \stopxmlsetups
 
 \starttexdefinition mmllimopunder #1
-    \mmlbasetoken\normalsubscript{\mmlfencedsecond{#1}}
+    \remapmathoperator{\mmlbasetoken}\normalsubscript{\mmlfencedsecond{#1}}
 \stoptexdefinition
 
 % munderover
@@ -2366,7 +2366,7 @@
 \stopxmlsetups
 
 \starttexdefinition mmllimopunderover #1
-    \mmlbasetoken\normalsuperscript{\mmlfencedthird{#1}}\normalsubscript{\mmlfencedsecond{#1}}
+    \remapmathoperator{\mmlbasetoken}\normalsuperscript{\mmlfencedthird{#1}}\normalsubscript{\mmlfencedsecond{#1}}
 \stoptexdefinition
 
 % tables (mml:mtable, mml:mtr, mml:mlabledtr, mml:mtd)

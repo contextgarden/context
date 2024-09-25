@@ -111,7 +111,7 @@ local s_family        = "family"
 local s_rule          = "rule"
 local s_glyph         = "glyph"
 local s_todo          = "TODO"
-
+local s_specification = [==[tokens\relax]==]
 local s_expression    = [==[tokens\relax]==]
 local s_conditional   = [==[\if...]==]
 local s_tokens_or     = [==[tokens\or]==]
@@ -272,6 +272,7 @@ syntax.caseshift = newsyntax {
 
 syntax.catcodetable = newsyntax {
     initcatcodetable = s_integer,
+    restorecatcodetable = s_integer,
     savecatcodetable = s_integer,
 }
 
@@ -309,6 +310,7 @@ syntax.combinetoks = newsyntax {
 result.convert = newresult {
     tocharacter       = { s_integer, c_tokens },
     csactive          = { s_token, c_tokens },
+    csnamestring      = { "", c_tokens },
     csstring          = { s_token, c_tokens },
     detokened         = { choice(s_cs,s_tokens,s_toks,s_tok), c_tokens },
     detokenized       = { s_tokens, c_tokens },
@@ -331,8 +333,6 @@ result.convert = newresult {
     number            = { s_integer, c_tokens },
     romannumeral      = { s_integer, c_tokens },
     semiexpanded      = { s_tokens, c_tokens },
-    futureexpandis    = { s_todo },
-    futureexpandisap  = { s_todo },
     string            = { s_token, c_tokens },
     todimension       = { s_dimension, c_tokens },
     tohexadecimal     = { s_integer, c_tokens },
@@ -370,6 +370,7 @@ result.definecharcode = newresult {
     Umathcode = { s_integer, s_integer }, -- todo
     amcode    = { s_integer, s_integer },
     catcode   = { s_integer, s_integer },
+    cccode    = { s_integer, s_integer },
     delcode   = { s_integer, s_integer }, -- todo
     hccode    = { s_integer, s_integer },
     hmcode    = { s_integer, s_integer },
@@ -438,7 +439,8 @@ syntax.endlocal = newsyntax {
 }
 
 syntax.endparagraph = newsyntax {
-    par = false,
+    par           = false,
+    localbreakpar = false,
 }
 
 syntax.endtemplate = newsyntax {
@@ -447,6 +449,7 @@ syntax.endtemplate = newsyntax {
     crcr         = false,
     noalign      = s_tokens,
     omit         = false,
+    realign      = sequence(s_tokens,s_tokens),
     span         = false,
 }
 
@@ -469,12 +472,16 @@ syntax.expandafter = newsyntax {
     futureexpand            = sequence(s_token,s_token,s_token),
     futureexpandafterspaces = sequence(s_token,s_token,s_token),
     futureexpandafterpars   = sequence(s_token,s_token,s_token),
+    futureexpandis          = s_todo,
+    futureexpandisap        = s_todo,
     semiexpand              = s_token,
     unless                  = false,
 }
 
 syntax.explicitspace = newsyntax {
-    [" "] = false,
+    [" "]         = false,
+    explicitspace = false,
+
 }
 
 syntax.getmark = newsyntax {
@@ -585,6 +592,7 @@ syntax.iftest = newsyntax {
     ifcmpdim        = sequence(s_dimension,s_dimension),
     ifcmpnum        = sequence(s_integer,s_integer),
     ifcondition     = s_conditional,
+    ifcramped       = false,
     ifcsname        = s_tokens_endcs,
     ifcstok         = s_tokens_relax,
     ifdefined       = s_token,
@@ -738,6 +746,7 @@ result.internalinteger = {
     automigrationmode        = r_integer,
     autoparagraphmode        = r_integer,
     binoppenalty             = r_integer,
+    boxlimitmode             = r_integer,
     brokenpenalty            = r_integer,
     catcodetable             = r_integer,
     clubpenalty              = r_integer,
@@ -749,6 +758,7 @@ result.internalinteger = {
     displaywidowpenalty      = r_integer,
     doubleadjdemerits        = r_integer,
     doublehyphendemerits     = r_integer,
+    doublepenaltymode        = r_integer,
     endlinechar              = r_integer,
     errorcontextlines        = r_integer,
     escapechar               = r_integer,
@@ -784,6 +794,8 @@ result.internalinteger = {
     language                 = r_integer,
     lastlinefit              = r_integer,
     lefthyphenmin            = r_integer,
+    lefttwindemerits         = r_integer,
+    linebreakchecks          = r_integer,
     linebreakcriterion       = r_integer,
     linebreakoptional        = r_integer,
     linebreakpasses          = r_integer,
@@ -850,8 +862,12 @@ result.internalinteger = {
     protrudechars            = r_integer,
     relpenalty               = r_integer,
     righthyphenmin           = r_integer,
+    righttwindemerits        = r_integer,
     savinghyphcodes          = r_integer,
     savingvdiscards          = r_integer,
+    scriptspaceafterfactor   = r_integer,
+    scriptspacebeforefactor  = r_integer,
+    scriptspacebetweenfactor = r_integer,
     setfontid                = r_integer,
     setlanguage              = r_integer,
     shapingpenaltiesmode     = r_integer,
@@ -861,18 +877,22 @@ result.internalinteger = {
     showboxdepth             = r_integer,
     shownodedetails          = r_integer,
     singlelinepenalty        = r_integer,
+    spacechar                = r_integer,
     spacefactormode          = r_integer,
+    spacefactoroverload      = r_integer,
     spacefactorshrinklimit   = r_integer,
     spacefactorstretchlimit  = r_integer,
     supmarkmode              = r_integer,
     textdirection            = r_integer,
     time                     = r_integer,
+    toddlerpenalty           = r_integer,
     tolerance                = r_integer,
     tracingadjusts           = r_integer,
     tracingalignments        = r_integer,
     tracingassigns           = r_integer,
     tracingcommands          = r_integer,
     tracingexpressions       = r_integer,
+    tracingfitness           = r_integer,
     tracingfullboxes         = r_integer,
     tracinggroups            = r_integer,
     tracinghyphenation       = r_integer,
@@ -880,6 +900,7 @@ result.internalinteger = {
     tracinginserts           = r_integer,
     tracinglevels            = r_integer,
     tracinglists             = r_integer,
+    tracingloners            = r_integer,
     tracinglostchars         = r_integer,
     tracingmacros            = r_integer,
     tracingmarks             = r_integer,
@@ -932,10 +953,11 @@ result.internaltoks = {
 syntax.internaltoks = setsyntaxfromresult(result.internaltoks)
 
 syntax.italiccorrection = newsyntax {
-    ["/"]            = false,
-    italiccorrection = false,
-    leftcorrection   = false,
-    rightcorrection  = false,
+    ["/"]                    = false,
+    explicititaliccorrection = false,
+    forcedleftcorrection     = false,
+    forcedrightcorrection    = false,
+    italiccorrection         = false,
 }
 
 syntax.kern = newsyntax {
@@ -981,9 +1003,10 @@ syntax.let = newsyntax {
 }
 
 syntax.localbox = newsyntax {
-    localleftbox   = s_box,
-    localmiddlebox = s_box,
-    localrightbox  = s_box,
+    localleftbox    = s_box,
+    localmiddlebox  = s_box,
+    localrightbox   = s_box,
+    resetlocalboxes = false,
 }
 
 syntax.luafunctioncall = newsyntax {
@@ -1079,6 +1102,7 @@ syntax.mathcharnumber = newsyntax {
     mathclass      = s_integer,
     mathdictionary = sequence(s_integer,s_mathchar),
     mathchar       = s_integer,
+    nomathchar     = false,
 }
 
 syntax.mathchoice = newsyntax {
@@ -1257,21 +1281,22 @@ do
 end
 
 syntax.mathscript = newsyntax {
+    indexedsubprescript   = s_mathtokens,
+    indexedsubscript      = s_mathtokens,
+    indexedsuperprescript = s_mathtokens,
+    indexedsuperscript    = s_mathtokens,
+    noatomruling          = false,
+    nonscript             = false,
+    noscript              = false,
     nosubprescript        = false,
     nosubscript           = false,
     nosuperprescript      = false,
     nosuperscript         = false,
     primescript           = s_mathtokens,
-    indexedsubprescript   = s_mathtokens,
-    indexedsubscript      = s_mathtokens,
-    indexedsuperprescript = s_mathtokens,
-    indexedsuperscript    = s_mathtokens,
     subprescript          = s_mathtokens,
     subscript             = s_mathtokens,
     superprescript        = s_mathtokens,
     superscript           = s_mathtokens,
-    noatomruling          = false,
-    nonscript             = false,
 }
 
 syntax.mathshiftcs = newsyntax {
@@ -1299,6 +1324,7 @@ syntax.mathstyle = newsyntax {
     crampedscriptscriptstyle = false,
     crampedscriptstyle       = false,
     crampedtextstyle         = false,
+    currentlysetmathstyle    = false,
     displaystyle             = false,
     scaledmathstyle          = s_integer,
     scriptscriptstyle        = false,
@@ -1426,6 +1452,7 @@ syntax.boxproperty = newsyntax {
     boxfreeze      = sequence(s_boxreference,o_equal,s_integer),
     boxfinalize    = sequence(s_boxreference,o_equal,s_integer),
     boxgeometry    = sequence(s_boxreference,o_equal,s_integer),
+    boxlimit       = s_boxreference,
     boxlimitate    = sequence(s_boxreference,o_equal,s_integer),
     boxorientation = sequence(s_boxreference,o_equal,s_integer),
     boxrepack      = s_boxreference,
@@ -1614,10 +1641,12 @@ do
         Umathskewedfractionvgap             = dimension,
         Umathspaceafterscript               = dimension,
         Umathspacebeforescript              = dimension,
+        Umathspacebetweenscript             = dimension,
         Umathstackdenomdown                 = dimension,
         Umathstacknumup                     = dimension,
         Umathstackvariant                   = variant,
         Umathstackvgap                      = dimension,
+        Umathsubscriptsnap                  = dimension,
         Umathsubscriptvariant               = variant,
         Umathsubshiftdown                   = dimension,
         Umathsubshiftdrop                   = dimension,
@@ -1625,6 +1654,7 @@ do
         Umathsubsupvgap                     = dimension,
         Umathsubtopmax                      = dimension,
         Umathsupbottommin                   = dimension,
+        Umathsuperscriptsnap                = dimension,
         Umathsuperscriptvariant             = dimension,
         Umathsupshiftdrop                   = dimension,
         Umathsupshiftup                     = dimension,
@@ -1709,6 +1739,7 @@ do
         pagelastfilllstretch = r_dimension,
         pagelastfillstretch  = r_dimension,
         pagelastfilstretch   = r_dimension,
+        pagelastfistretch    = r_dimension,
         pagelastheight       = r_dimension,
         pagelastshrink       = r_dimension,
         pagelaststretch      = r_dimension,
@@ -1723,8 +1754,10 @@ do
 end
 
 syntax.specification = newsyntax {
+    brokenpenalties       = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     clubpenalties         = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     displaywidowpenalties = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+    fitnessdemerits       = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     interlinepenalties    = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     mathbackwardpenalties = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     mathforwardpenalties  = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
@@ -1732,35 +1765,50 @@ syntax.specification = newsyntax {
     parpasses             = sequence(
                                 optional(keyword("options"),s_integer),
                                 repeated(
+                                    optional(keyword("next")),
+                                    optional(keyword("quit")),
+                                    optional(keyword("skip")),
                                     optional(sequence(keyword("adjdemerits"),s_integer)),
                                     optional(sequence(keyword("adjustspacing"),s_integer)),
-                                    optional(sequence(keyword("adjustspacingstep"),s_integer)),
                                     optional(sequence(keyword("adjustspacingshrink"),s_integer)),
+                                    optional(sequence(keyword("adjustspacingstep"),s_integer)),
                                     optional(sequence(keyword("adjustspacingstretch"),s_integer)),
-                                    optional(sequence(keyword("badness"),s_integer)),
-                                    optional(sequence(keyword("classes"),s_integer)),
+                                 -- optional(sequence(keyword("badness"),s_integer)),
                                     optional(sequence(keyword("callback"),s_integer)),
+                                    optional(sequence(keyword("classes"),s_integer)),
+                                    optional(sequence(keyword("demerits"),s_integer)),
                                     optional(sequence(keyword("doubleadjdemerits"),s_integer)),
                                     optional(sequence(keyword("doublehyphendemerits"),s_integer)),
+                                    optional(sequence(keyword("emergencyleftextra"),s_integer)),
+                                    optional(sequence(keyword("emergencypercentage"),s_dimension)),
+                                    optional(sequence(keyword("emergencyrightextra"),s_integer)),
                                     optional(sequence(keyword("emergencystretch"),s_dimension)),
+                                    optional(sequence(keyword("emergencywidthextra"),s_integer)),
                                     optional(sequence(keyword("extrahyphenpenalty"),s_integer)),
                                     optional(sequence(keyword("finalhyphendemerits"),s_integer)),
+                                    optional(sequence(keyword("fitnessdemerits"),s_integer)),
+                                    optional(sequence(keyword("hyphenation"),s_integer)),
                                     optional(sequence(keyword("identifier"),s_integer)),
                                     optional(sequence(keyword("ifadjustspacing"),s_integer)),
+                                    optional(sequence(keyword("ifemergencystretch"),s_integer)),
+                                    optional(sequence(keyword("ifglue"),s_integer)),
+                                    optional(sequence(keyword("ifmath"),s_integer)),
+                                    optional(sequence(keyword("iftext"),s_integer)),
                                     optional(sequence(keyword("lefttwindemerits"),s_integer)),
-                                    optional(sequence(keyword("looseness"),s_integer)),
                                     optional(sequence(keyword("linebreakchecks"),s_integer)),
                                     optional(sequence(keyword("linebreakcriterium"),s_integer)),
                                     optional(sequence(keyword("linebreakoptional"),s_integer)),
                                     optional(sequence(keyword("linepenalty"),s_integer)),
-                                    optional(sequence(keyword("righttwindemerits"),s_integer)),
-                                    optional(keyword("next")),
+                                    optional(sequence(keyword("looseness"),s_integer)),
+                                    optional(sequence(keyword("mathpenaltyfactor"),s_integer)),
                                     optional(sequence(keyword("orphanpenalty"),s_integer)),
-                                    optional(keyword("quit")),
-                                    optional(keyword("skip")),
+                                    optional(sequence(keyword("righttwindemerits"),s_integer)),
                                     optional(sequence(keyword("threshold"),s_dimension)),
-                                    optional(sequence(keyword("tolerance"),s_integer))
+                                    optional(sequence(keyword("toddlerpenalty"),s_integer)),
+                                    optional(sequence(keyword("tolerance"),s_integer)),
+                                    optional(sequence(keyword("unlessmath"),s_integer))
                                 )
+
                             ),
     parshape              = sequence(optional(keyword("options"),s_integer),s_integer,repeated(sequence(s_dimension,s_dimension))),
     widowpenalties        = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
@@ -1769,25 +1817,26 @@ syntax.specification = newsyntax {
 result.specification = setdefaultresult(syntax.specification, r_integer)
 
 syntax.shorthanddef = newsyntax {
-    Umathchardef  = sequence(s_cs,s_integer),
-    Umathdictdef  = sequence(s_cs,s_integer,s_integer),
-    attributedef  = sequence(s_cs,s_integer),
-    chardef       = sequence(s_cs,s_integer),
-    countdef      = sequence(s_cs,s_integer),
-    dimendef      = sequence(s_cs,s_integer),
-    dimensiondef  = sequence(s_cs,s_integer),
-    floatdef      = sequence(s_cs,s_integer),
-    fontspecdef   = sequence(s_cs,s_font),
-    gluespecdef   = sequence(s_cs,s_integer),
-    integerdef    = sequence(s_cs,s_integer),
-    luadef        = sequence(s_cs,s_integer),
-    mathchardef   = sequence(s_cs,s_integer),
-    mugluespecdef = sequence(s_cs,s_integer),
-    muskipdef     = sequence(s_cs,s_integer),
-    parameterdef  = sequence(s_cs,s_integer),
-    positdef      = sequence(s_cs,s_integer),
-    skipdef       = sequence(s_cs,s_integer),
-    toksdef       = sequence(s_cs,s_integer),
+    Umathchardef     = sequence(s_cs,s_integer),
+    Umathdictdef     = sequence(s_cs,s_integer,s_integer),
+    attributedef     = sequence(s_cs,s_integer),
+    chardef          = sequence(s_cs,s_integer),
+    countdef         = sequence(s_cs,s_integer),
+    dimendef         = sequence(s_cs,s_integer),
+    dimensiondef     = sequence(s_cs,s_integer),
+    floatdef         = sequence(s_cs,s_integer),
+    fontspecdef      = sequence(s_cs,s_font),
+    gluespecdef      = sequence(s_cs,s_integer),
+    integerdef       = sequence(s_cs,s_integer),
+    luadef           = sequence(s_cs,s_integer),
+    mathchardef      = sequence(s_cs,s_integer),
+    mugluespecdef    = sequence(s_cs,s_integer),
+    muskipdef        = sequence(s_cs,s_integer),
+    parameterdef     = sequence(s_cs,s_integer),
+    positdef         = sequence(s_cs,s_integer),
+    skipdef          = sequence(s_cs,s_integer),
+    specificationdef = sequence(s_cs,s_specification),
+    toksdef          = sequence(s_cs,s_integer),
 }
 
 result.someitem = newresult {
@@ -1846,6 +1895,7 @@ result.someitem = newresult {
     lastnodetype           = { "", s_integer },
     lastpageextra          = { "", s_dimension },
     lastparcontext         = { "", s_integer },
+    lastpartrigger         = { "", s_integer },
     lastpenalty            = { "", s_integer },
     lastrightclass         = { "", s_integer },
     lastskip               = { "", s_glue },
@@ -1854,6 +1904,7 @@ result.someitem = newresult {
     luatexversion          = { "", s_tokens },
     mathatomglue           = { "", s_glue },
     mathmainstyle          = { "", s_integer },
+    mathparentstyle        = { "", s_integer },
     mathscale              = { "", s_integer },
     mathstackstyle         = { "", s_integer },
     mathstyle              = { "", s_integer },
@@ -1871,6 +1922,7 @@ result.someitem = newresult {
     parshapedimen          = { s_integer, s_dimension },
     parshapeindent         = { s_integer, s_dimension },
     parshapelength         = { "", s_dimension },
+    parshapewidth          = { "", s_dimension },
     previousloopiterator   = { "", s_integer },
     rightmarginkern        = { "", s_dimension }, -- check
     scaledemwidth          = { s_font, s_dimension },
@@ -1962,14 +2014,15 @@ syntax.vskip = newsyntax {
 }
 
 syntax.xray = newsyntax {
-    show       = s_token,
-    showbox    = s_boxreference,
-    showgroups = false,
-    showifs    = false,
-    showlists  = false,
-    showstack  = false,
-    showthe    = s_quantity,
-    showtokens = s_tokens,
+    show          = s_token,
+    showbox       = s_boxreference,
+    showcodestack = false,
+    showgroups    = false,
+    showifs       = false,
+    showlists     = false,
+    showstack     = false,
+    showthe       = s_quantity,
+    showtokens    = s_tokens,
 }
 
 -- so far

@@ -55,7 +55,7 @@
 
 */
 
-# define luametatex_format_fingerprint 708
+# define luametatex_format_fingerprint 710
 
 /* These end up in the string pool. */
 
@@ -80,8 +80,23 @@ extern void tex_initialize_dump_state  (void);
 # define   dump_things(f,base,len)   dump_items(f, (char *) &(base), sizeof (base), (int) (len))
 # define undump_things(f,base,len) undump_items(f, (char *) &(base), sizeof (base), (int) (len))
 
+# define   dump_mem(f,x)   dump_things(f,x,1)
+# define undump_mem(f,x) undump_things(f,x,1)
+
 # define   dump_int(f,x)   dump_things(f,x,1)
 # define undump_int(f,x) undump_things(f,x,1)
+
+# define   dump_char(f,x)   dump_things(f,x,1)
+# define undump_char(f,x) undump_things(f,x,1)
+
+# define   dump_uchar(f,x)   dump_things(f,x,1)
+# define undump_uchar(f,x) undump_things(f,x,1)
+
+# define   dump_short(f,x)   dump_things(f,x,1)
+# define undump_short(f,x) undump_things(f,x,1)
+
+# define   dump_ushort(f,x)   dump_things(f,x,1)
+# define undump_ushort(f,x) undump_things(f,x,1)
 
 /*tex
 
@@ -89,10 +104,26 @@ extern void tex_initialize_dump_state  (void);
     that puts the number into a variable first. Most integers come from structs and arrays.
     Performance wise there is not that much gain.
 
+    At some point I decided to store small integers in one byte which saved some 250K on a 
+    \CONTEXT\ format and with another related improvement (different slice size plus even more 
+    sparse storage and a different equivalent packing just over 2.5% was gained (19.403.342 down 
+    to 18.899.986, not that impressive but it's kind of fun playing with this as I have this stay 
+    below 20M format file size criterium).
+
 */
 
 # define dump_via_int(f,x) do { \
     int x_val = (x); \
+    dump_int(f,x_val); \
+} while (0)
+
+# define dump_via_char(f,x) do { \
+    char x_val = (x); \
+    dump_int(f,x_val); \
+} while (0)
+
+# define dump_via_uchar(f,x) do { \
+    unsigned char x_val = (x); \
     dump_int(f,x_val); \
 } while (0)
 

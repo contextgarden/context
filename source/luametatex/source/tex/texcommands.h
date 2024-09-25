@@ -241,11 +241,11 @@ typedef enum tex_command_code {
     set_font_cmd,                     /*tex set current font (font identifiers) */
     define_font_cmd,                  /*tex define a font file (|\font|) */
     integer_cmd,                      /*tex the equivalent is a halfword number */
-    index_cmd,
     posit_cmd,                        
     dimension_cmd,                    /*tex the equivalent is a halfword number representing a dimension */
     gluespec_cmd,                     /*tex the equivalent is a halfword reference to glue */
     mugluespec_cmd,                   /*tex the equivalent is a halfword reference to glue with math units */
+    index_cmd,                        /*tex references a parameter, works with (|\parameterdef|) */
     mathspec_cmd,
     fontspec_cmd,
     specificationspec_cmd,
@@ -487,7 +487,7 @@ typedef enum convert_codes {
     string_code,              /*tex command code for |\string| */
     cs_string_code,           /*tex command code for |\csstring| */
     cs_active_code,           /*tex command code for |\csactive| */
- /* cs_lastname_code,      */ /*tex command code for |\cslastname| */
+    cs_lastname_code,         /*tex command code for |\cslastname| */
     detokenized_code,         /*tex command code for |\detokenized| */
     detokened_code,           /*tex command code for |\detokened| */
     roman_numeral_code,       /*tex command code for |\romannumeral| */

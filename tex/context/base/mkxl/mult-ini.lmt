@@ -343,7 +343,6 @@ implement {
     actions   = gss,
 }
 
-
 local function showassignerror(namespace,key,line)
  -- if key and key ~= "" and key ~= "," then
      -- local ns, instance = match(namespace,"^(%d+)[^%a]+(%a*)")

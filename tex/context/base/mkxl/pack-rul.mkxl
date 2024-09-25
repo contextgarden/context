@@ -90,7 +90,8 @@
 
 \protected\def\mult_interfaces_install_inherited_framed#1#2#3#4#5#6#7#8#9%
   {\enforced\frozen\def#5##1##2{\ifrelax##1#6{##2}\else#4{##1}{##2}\fi}%
-   \enforced\frozen\def#6##1{\ifcsname\??framed:##1\endcsname\??framed:##1\else\??empty\fi}% root
+%    \enforced\frozen\def#6##1{\ifcsname\??framed:##1\endcsname\??framed:##1\else\??empty\fi}% root
+\enforced\frozen\def#6##1{\ifcsname\??framed:##1\endcsname\csnamestring\else\??empty\fi}% root
    \frozen\instance\protected\def#8%
      {\bgroup
       \bgroup

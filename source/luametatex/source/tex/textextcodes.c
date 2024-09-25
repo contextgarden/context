@@ -602,10 +602,10 @@ void tex_dump_language_hj_codes(dumpstream f, int h)
     if (h >= 0 && h <= lmt_language_state.language_data.top) {
         sa_tree tree = lmt_language_state.languages[h]->hjcode_head;
         if (tree) {
-            dump_via_int(f, 1);
+            dump_via_uchar(f, 1);
             sa_dump_tree(f, tree);
         } else {
-            dump_via_int(f, 0);
+            dump_via_uchar(f, 0);
         }
     } else {
        /* error */
@@ -615,9 +615,9 @@ void tex_dump_language_hj_codes(dumpstream f, int h)
 void tex_undump_language_hj_codes(dumpstream f, int h)
 {
     if (h >= 0 && h <= lmt_language_state.language_data.top) {
-        int x;
-        undump_int(f, x);
-        if (x) {
+        unsigned char marker;
+        undump_uchar(f, marker);
+        if (marker) {
             sa_free_array(lmt_language_state.languages[h]->hjcode_head);
             lmt_language_state.languages[h]->hjcode_head = sa_undump_tree(f);
         } else {
