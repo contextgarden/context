@@ -181,7 +181,6 @@ listcodes.column           = listcodes.alignment
 
 kerncodes.kerning          = kerncodes.fontkern
 kerncodes.italiccorrection = kerncodes.italiccorrection or 1
-kerncodes.italickern       = kerncodes.italiccorrection
 
 -- We use the real node code numbers.
 
