@@ -1678,6 +1678,7 @@
 \def\strc_itemgroups_check_indenting
   {\c_strc_itemgroups_indented_first\conditionalfalse
    \ifempty\m_strc_itemgroups_indenting \else
+     % we'd like to use \useindentingparameter\itemgroupparameter but ...
      \normalexpanded{\setupindenting[\v!reset,\v!yes,\m_strc_itemgroups_indenting]}%
      \ifconditional\c_spac_indentation_indent_first % better is to have a mode
        \ifcstok{\itemgroupparameter\c!alignsymbol}\v!yes\else

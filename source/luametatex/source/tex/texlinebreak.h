@@ -62,7 +62,7 @@
 
 */
 
-typedef halfword fitcriterion[n_of_fitness_values] ;
+typedef halfword fitcriterion[max_n_of_fitness_values] ;
 
 typedef struct break_passes { 
     int n_of_break_calls;
@@ -118,6 +118,7 @@ typedef struct linebreak_state_info {
     scaled       second_indent;
     scaled       emergency_amount;
     halfword     emergency_percentage;
+    halfword     emergency_factor;
     scaled       emergency_width_amount;
     halfword     emergency_width_extra;
     scaled       emergency_left_amount;
@@ -128,7 +129,6 @@ typedef struct linebreak_state_info {
     halfword     fewest_demerits;
     halfword     best_line;
     halfword     actual_looseness;
-    halfword     line_difference;
     int          do_last_line_fit;
     halfword     dir_ptr;
     halfword     warned;
@@ -146,6 +146,9 @@ typedef struct linebreak_state_info {
     halfword     emergency_right_skip;
     int          artificial_encountered; 
     halfword     inject_after_par;
+    int          current_line_number; 
+    int          has_orphans;
+    int          has_toddlers; /* < 0: not found, == 0: tobechecked, > 0: #found */
 } linebreak_state_info;
 
 extern linebreak_state_info lmt_linebreak_state;
@@ -157,6 +160,7 @@ typedef enum linebreak_quality_states {
     par_has_space    = 0x0008,
     par_has_glue     = 0x0010,
     par_has_uleader  = 0x0020,
+    par_has_factor   = 0x0040,
     par_has_optional = 0x0100,
     par_is_overfull  = 0x0200,
     par_is_underfull = 0x0400,
@@ -165,6 +169,7 @@ typedef enum linebreak_quality_states {
 # define paragraph_has_text(state)     ((state & par_has_glyph) || (state & par_has_disc))
 # define paragraph_has_math(state)     (state & par_has_math)
 # define paragraph_has_glue(state)     (state & par_has_glue)
+# define paragraph_has_factor(state)   (state & par_has_factor)
 # define paragraph_has_optional(state) (state & par_has_optional)
 
 extern void tex_line_break_prepare (
@@ -177,11 +182,11 @@ extern void tex_line_break_prepare (
     halfword *final_line_penalty
 );
 
-extern void tex_check_fitness_demerits(
-    halfword fitnessdemerits
+extern void tex_check_fitness_classes(
+    halfword fitnessclasses
 );
 
-extern halfword tex_default_fitness_demerits(
+extern halfword tex_default_fitness_classes(
     void
 );
 

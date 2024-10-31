@@ -184,6 +184,7 @@ extern halfword tex_badness(
 # define decent_criterion                          12 
 # define tight_criterion                           12 /* same as |decent_criterion| */
 # define max_calculated_badness                  8189
+# define emergency_adj_demerits                 10000
 
 # define default_rule                           26214 /*tex 0.4pt */
 # define ignore_depth                       -65536000 /*tex The magic dimension value to mean \quote {ignore me}: -1000pt */
@@ -346,6 +347,17 @@ extern halfword tex_badness(
 
 # define default_space_factor 1000
 # define special_space_factor  999
+
+/*tex 
+    We started out with 32 but it makes no sense to initialize that many every time we need to do
+    that. In \CONTEXT\ we have a granular setup with nine values. The maximum practical value is 
+    actually 99 and one needs step sizes that are reasonable. 
+*/
+
+# define default_fitness              0
+# define min_n_of_fitness_values      5
+# define max_n_of_fitness_values     15 
+# define all_fitness_values        0xFF
 
 /*tex
 
@@ -770,6 +782,8 @@ typedef struct line_break_properties {
     halfword par_context;
     halfword tracing_paragraphs;
     halfword tracing_fitness;
+    halfword tracing_toddlers;
+    halfword tracing_orphans;
     halfword tracing_passes;
     halfword paragraph_dir;
     halfword parfill_left_skip;
@@ -787,6 +801,7 @@ typedef struct line_break_properties {
     halfword adjust_spacing;
     halfword protrude_chars;
     halfword adj_demerits;
+    halfword max_adj_demerits;
     halfword line_penalty;
     halfword last_line_fit;
     halfword double_hyphen_demerits;
@@ -805,12 +820,13 @@ typedef struct line_break_properties {
     halfword widow_penalties;
     halfword display_widow_penalty;
     halfword display_widow_penalties;
-    halfword orphan_penalty;
     halfword orphan_penalties;
-    halfword toddler_penalty;
+    halfword toddler_penalties;
     halfword left_twin_demerits;
     halfword right_twin_demerits;
-    halfword fitness_demerits;
+    halfword fitness_classes;
+    halfword adjacent_demerits;
+    halfword orphan_line_factors;
     halfword broken_penalty;
     halfword broken_penalties;
     halfword baseline_skip;
@@ -831,7 +847,8 @@ typedef struct line_break_properties {
     halfword ex_hyphen_penalty;
     /*tex Only in par passes (for now). */
     halfword math_penalty_factor;
-    halfword padding;
+    halfword sf_factor;
+    halfword sf_stretch_factor;
 } line_break_properties;
 
 typedef enum sparse_identifiers {

@@ -1,0 +1,735 @@
+% language=us runpath=texruns:manuals/luametatex
+
+\environment luametatex-style
+
+\startdocument[title=Constructions]
+
+\startluacode
+local styles     = tex.getmathstylevalues    () styles     = table.swapped(styles,styles)
+local parameters = tex.getmathparametervalues() parameters = table.swapped(parameters,parameters)
+local variants   = tex.getmathvariantvalues  () variants   = table.swapped(variants,variants)
+local presets    = tex.getmathvariantpresets () presets    = table.swapped(presets,presets)
+
+-- inspect(presets)
+-- inspect(presets)
+
+function document.printmathpresets()
+    context.starttabulate { "||||" }
+    context.FL()
+    context.BC() context("construct")
+    context.BC() context("value")
+    context.BC() context("preset name")
+    context.BC() context.NR()
+    context.TL()
+    for parameter=parameters.overlinevariant,parameters.stackvariant do
+        local value  = tex.getmath(parameter,"display")
+        local preset = variants[presets[value]]
+        context.NC() context.type("\\Umath"..parameters[parameter])
+        context.NC() context("0x%08X",value)
+        context.NC() context(preset)
+        context.NC() context.NR()
+    end
+    context.LL()
+    context.stoptabulate()
+end
+
+function document.printmathvariants()
+    for parameter=parameters.overlinevariant,parameters.stackvariant do
+        for style=styles.display,styles.crampedscriptscript do
+            local p, s = tex.getmathstylevariant(style,parameter)
+            if p and s then
+                 logs.report("mathvariants","%-24s %-20s %-18s %-20s",parameters[parameter],styles[style],variants[p],styles[s])
+            end
+        end
+    end
+end
+
+function document.showmathvariant(variant)
+    local parameter = type(variant) == "string" and parameters[variant] or variant
+    context.startsubsubsubject { title = variant }
+    context.starttabulate { "||T||" }
+    context.BC() context("current style")
+    context.BC() context("mapping")
+    context.BC() context("used style")
+    context.BC() context.NR()
+    context.ML()
+    for style=styles.display,styles.crampedscriptscript do
+        local p, s = tex.getmathstylevariant(style,parameter)
+        if p and s then
+            context.NC() context(styles[style])
+            context.NC() context("0x%08X",p)
+            context.NC() context(styles[s])
+            context.NC() context.NR()
+        end
+    end
+    context.stoptabulate()
+    context.stopsubsubsubject()
+end
+\stopluacode
+
+\startsection[title={Introduction}]
+
+This is more a discussion of the way some constructs in for instance math work.
+It will never be exhausting and mostly is for our own usage. We don't discuss all
+the options bit many are interfaced in higher level macros in \CONTEXT. This
+chapter will gradually grow, depending on time and mood.
+
+\stopsection
+
+\startsection[title=Boxes]
+
+Boxes are very important in \TEX. We have horizontal boxes and vertical boxes.
+When you look at a page of text, the page itself is a vertical box, and among
+other things it packs lines that are themselves horizontal boxes. The lines that
+make a paragraph are the result of breaking a long horizontal box in smaller
+pieces.
+
+\startlinecorrection
+\ruledvbox \bgroup \hsize 20em \showmakeup[line] \showboxes
+    This is a vertical box. It has a few lines of text that started out as
+    one long line but has been broken in pieces. Doing this as good as possible
+    is one of \TEX's virtues.
+\egroup
+\stoplinecorrection
+
+There is a low level manual on boxes so here we can limit the discussion to
+basics. A box is in \TEX\ speak a node. In traditional \TEX\ it has a
+width, height, depth and shift.
+
+\startlinecorrection
+\startMPcode
+    numeric wd ; wd := 24 ;
+    numeric ht ; ht :=  7 ;
+    numeric dp ; dp :=  3 ;
+
+    path body ; body := unitsquare xyscaled (wd, ht+dp) shifted (0,-dp) ;
+    path line ; line := (0,0) -- (wd,0) ;
+
+    draw line withcolor "middlegray" ;
+    draw body withcolor "darkred" ;
+
+    currentpicture := currentpicture scaled 5 ;
+\stopMPcode
+\stoplinecorrection
+
+Here we see a box and the gray line is called the baseline, the height goes up
+and the depth goes down. Normally the height and depth are determined by what
+goes in the box but they can be changed as we like.
+
+\startbuffer
+\setbox\scratchboxone\ruledhpack{SHIFT 1}
+\setbox\scratchboxtwo\ruledhpack{SHIFT 2}
+
+\boxshift\scratchboxtwo 1ex \dontleavehmode \box\scratchboxone\box\scratchboxtwo
+
+\setbox\scratchboxone\ruledvpack{SHIFT 3}
+\setbox\scratchboxtwo\ruledvpack{SHIFT 4}
+
+\boxshift\scratchboxtwo 1ex \box\scratchboxone\box\scratchboxtwo
+\stopbuffer
+
+\typebuffer
+
+In this example you'll notice that the shift depends on the box being horizontal
+or vertical. The primitives \type {\raise}, \type {\lower}, \type {\moveleft} and
+\type {\moveright} can be used to shift a box.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+The reason why we have the shift property is that it is more efficient than
+wrapping a box in another box and shifting with kerns. In that case we also have
+to go via a box register so that we can manipulate the final dimensions. Another
+advantage is that the engine can use shifts to position for instance elements in
+a math formula and even the par builder used shifts to deal with positioning the
+lines according to shape and margin. In \LUAMETATEX\ the later is no longer the
+case.
+
+Inside a box there can be mark (think running headers), insert (think footnotes)
+and adjust (think injecting something before or after the current line) nodes. The
+par builder will move this from inside the box to between the lines but when boxes
+are nested too deeply this won't happen and they get lost. In \LUAMETATEX\ these
+objects do bubble up because we make them box properties. So, in addition to
+the dimensions and shift a box also has migration fields.
+
+In the low level manuals you can find examples of accessing various properties of
+boxes so here we stick to a short description. The reason for mentioning them is
+that it gives you an idea of what goes on in the engine.
+
+\starttabulate
+\FL
+\BC field                 \BC usage \NC \NR
+\TL
+\NC \type {width}         \NC the (used) width \NC \NR
+\NC \type {height}        \NC the (used) height \NC \NR
+\NC \type {depth}         \NC the (used) depth \NC \NR
+\NC \type {shift_amount}  \NC the shift (right or down) \NC \NR
+\ML
+\NC \type {list}          \NC pointer to the content \NC \NR
+\ML
+\NC \type {glue_order}    \NC the calculated order of glue stretch of shrink \NC \NR
+\NC \type {glue_sign}     \NC the determined sign of glue stretch of shrink \NC \NR
+\NC \type {glue_set}      \NC the calculated multiplier for glue stretch or shrink \NC \NR
+\ML
+\NC \type {geometry}      \NC a bit set registering manipulations \NC \NR
+\NC \type {orientation}   \NC positional manipulations \NC \NR
+\NC \type {w_offset}      \NC used in horizontal movement calculations \NC \NR
+\NC \type {h_offset}      \NC used in vertical movement calculations \NC \NR
+\NC \type {d_offset}      \NC used in vertical movement calculations \NC \NR
+\NC \type {x_offset}      \NC a horizontal shift independent of dimensions \NC \NR
+\NC \type {y_offset}      \NC a vertical shift independent of dimensions  \NC \NR
+\NC \type {axis}          \NC the math axis \NC \NR
+\ML
+\NC \type {dir}           \NC the direction the box goes to (l2r or r2l) \NC \NR
+\NC \type {package_state} \NC a bitset indicating how the box came to be as it is \NC \NR
+\NC \type {index}         \NC a (system dependent) identifier \NC \NR
+\ML
+\NC \type {pre_migrated}  \NC content bound to the box that eventually will be injected \NC \NR
+\NC \type {post_migrated} \NC idem \NC \NR
+\NC \type {pre_adjusted}  \NC idem \NC \NR
+\NC \type {post_adjusted} \NC idem \NC \NR
+\ML
+\NC \type {source_anchor} \NC an identifier bound to the box \NC \NR
+\NC \type {target_anchor} \NC idem \NC \NR
+\NC \type {anchor}        \NC a bitset indicating where and how to anchor \NC \NR
+\ML
+\NC \type {except}        \NC carried information about additional virtual depth \NC \NR
+\NC \type {exdepth}       \NC additional virtual depth taken into account in the page builder \NC \NR
+\LL
+\stoptabulate
+
+We have the usual dimension but also extra ones that relate to \typ {\boxxoffset}
+and \typ {\boxyoffset} (these are virtual) as well as \typ {\boxxmove} and \typ
+{\boxymove} (these influence dimensions). The \typ {\boxorientation} also gets
+registered. The state fields carry information that is used in various places,
+the pre and post fields relate to the mentioned embedded content. Anchors are
+just there so that a macro package can play with this and excepts refer to an
+additional dimensions that is looked at in the page builder, for instance in
+order to prevent a page break at an unlucky spot. It all gives an indication of
+what we are dealing with.
+
+\stopsection
+
+\startsection[title=Math style variants]
+
+The \LUAMETATEX\ math engine is a follow up on the one in \LUATEX. That one
+gradually became more configurable in order to deal with both traditional fonts
+and \OPENTYPE\ fonts. In \LUAMETATEX\ much has been redone, opened up and
+extended. New mechanisms and constructs have been added. In the process hard
+coded heuristics with regards to math styles inside constructions were made
+configurable, a feature that is probably not used much, apart from experimenting.
+A side effect is that we can show how the engine is set up, so we do that when
+applicable.
+
+% \starttabulate
+% \NC normal            \NC \tohexa8 \mathnormalstylepreset            \NC \NR
+% \NC cramped           \NC \tohexa8 \mathcrampedstylepreset           \NC \NR
+% \NC subscript         \NC \tohexa8 \mathsubscriptstylepreset         \NC \NR
+% \NC superscript       \NC \tohexa8 \mathsuperscriptstylepreset       \NC \NR
+% \NC small             \NC \tohexa8 \mathsmallstylepreset             \NC \NR
+% \NC smaller           \NC \tohexa8 \mathsmallerstylepreset           \NC \NR
+% \NC numerator         \NC \tohexa8 \mathnumeratorstylepreset         \NC \NR
+% \NC denominator       \NC \tohexa8 \mathdenominatorstylepreset       \NC \NR
+% \NC doublesuperscript \NC \tohexa8 \mathdoublesuperscriptstylepreset \NC \NR
+% \stoptabulate
+
+\ctxlua{document.printmathpresets()}
+
+\stopsection
+
+\startsection[title=Math scripts]
+
+The basic components in a math formula are characters, accents, fractions,
+radicals and fences. They are represented in the to be processed node list as
+noads and eventually are converted in glyph, kern, glue and list nodes. Each noad
+carries similar but also specific information about its purpose and intended
+rendering. In \LUAMETATEX\ that is quite a bit more than in traditional \TEX.
+
+These noads are often called atoms. The center piece in a noad is called the
+nucleus. The fact that these noads also can have scripts attached makes them more
+like molecules. Scripts can be attached to the left and right, high or low. That
+makes fours of them: pre|/|post super|/|sub scripts. In \LUAMETATEX\ we also have
+a prime script, which comes on its own, above a post subscript or after the post
+superscript, if given.
+
+\startlinecorrection
+\startMPcode
+    numeric wd ; wd := 10 ;
+    numeric ht ; ht :=  8 ;
+    numeric dp ; dp :=  2 ;
+
+    path nucleus         ; nucleus         := fullsquare xyscaled (2wd,  ht  +dp  ) shifted (0,-dp  ) ;
+    path follower        ; follower        := fullsquare xyscaled ( wd/3,ht/6+dp/4) shifted (0,-dp  ) ;
+    path presubscript    ; presubscript    := fullsquare xyscaled ( wd,  ht/2+dp/2) shifted (0,-dp/2) ;
+    path presuperscript  ; presuperscript  := fullsquare xyscaled ( wd,  ht/2+dp/2) shifted (0,-dp/2) ;
+    path postsubscript   ; postsubscript   := fullsquare xyscaled ( wd,  ht/2+dp/2) shifted (0,-dp/2) ;
+    path postsuperscript ; postsuperscript := fullsquare xyscaled ( wd,  ht/2+dp/2) shifted (0,-dp/2) ;
+    path primescript     ; primescript     := fullsquare xyscaled ( wd/2,ht/2+dp/2) shifted (0,-dp/2) ;
+
+    presubscript    := anchored.lrt  (presubscript,    llcorner nucleus) shifted (-1,0) ;
+    presuperscript  := anchored.lrt  (presuperscript,  ulcorner nucleus) shifted (-1,0) ;
+    postsubscript   := anchored.llft (postsubscript,   lrcorner nucleus) shifted ( 1,0) ;
+    postsuperscript := anchored.llft (postsuperscript, urcorner nucleus) shifted ( 1,0) ;
+    primescript     := anchored.llft (primescript,     urcorner nucleus) shifted (bbwidth postsuperscript + 2,0) ;
+
+    draw nucleus         withcolor "darkgray"   ;
+    draw presubscript    withcolor "darkred"    ;
+    draw presuperscript  withcolor "darkgreen"  ;
+    draw postsubscript   withcolor "darkblue"   ;
+    draw postsuperscript withcolor "darkyellow" ;
+    draw primescript     withcolor "darkorange" ;
+
+    draw follower        shifted (  .5bbwidth nucleus + bbwidth postsuperscript + bbwidth primescript + 3,0) withcolor "darkgray"   ;
+    draw follower        shifted (- .5bbwidth nucleus - bbwidth presuperscript                        - 1,0) withcolor "darkgray"   ;
+    draw presubscript    shifted (                    - bbwidth presubscript                          - 1,0) withcolor "darkred"    ;
+    draw presuperscript  shifted (                    - bbwidth presuperscript                        - 1,0) withcolor "darkgreen"  ;
+    draw postsubscript   shifted (                      bbwidth postsubscript   + bbwidth primescript + 2,0) withcolor "darkblue"   ;
+    draw postsuperscript shifted (                      bbwidth postsuperscript + bbwidth primescript + 2,0) withcolor "darkyellow" ;
+
+    currentpicture := currentpicture scaled 5 ;
+\stopMPcode
+\stoplinecorrection
+
+Here the raised rectangle represents the prime. The large center piece is the
+nucleus. Four scripts are attached to the nucleus. The two smaller center pieces
+indicate follow up atoms. They make it possible to have multiple pre- and
+postscripts. For single scripts we get combinations like these:
+
+\startlinecorrection
+\startcombination[nx=3,ny=2,distance=4em]
+    {\scale [s=3] {\showglyphs\im { X   ^{\tt a} _{\tt b} ^^^{\tt c} ___{\tt d} \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { X            _{\tt b}            ___{\tt d} \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { X   ^{\tt a}          ^^^{\tt c}            \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { X ' ^{\tt a} _{\tt b} ^^^{\tt c} ___{\tt d} \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { X '          _{\tt b}            ___{\tt d} \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { X ' ^{\tt a}          ^^^{\tt c}            \mathaxisbelow }}} {}
+\stopcombination
+\stoplinecorrection
+
+And for multiple (there can be more that two) we get this assembly:
+
+\startlinecorrection
+\startcombination[nx=3,ny=2,distance=4em]
+    {\scale [s=3] {\showglyphs\im { X   ^{\tt a} _{\tt b} ^^^{\tt c} ___{\tt d}  ^{\tt A} _{\tt B} ^^^{\tt C} ___{\tt D} \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { X            _{\tt b}            ___{\tt d}           _{\tt B}            ___{\tt D} \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { X   ^{\tt a}          ^^^{\tt c}             ^{\tt A}          ^^^{\tt C}            \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { X ' ^{\tt a} _{\tt b} ^^^{\tt c} ___{\tt d}  ^{\tt A} _{\tt B} ^^^{\tt C} ___{\tt D} \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { X '          _{\tt b}            ___{\tt d}           _{\tt B}            ___{\tt D} \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { X ' ^{\tt a}          ^^^{\tt c}             ^{\tt A}          ^^^{\tt C}            \mathaxisbelow }}} {}
+\stopcombination
+\stoplinecorrection
+
+It will be clear that there is quite a bit of code involved in dealing with this
+because these scripts are not only to be anchored relative to the nucleus but
+also to each other. The dimensions of the scripts determine for instance how
+close a combined super and subscript are positioned.
+
+\startlinecorrection
+\startcombination[nx=3,ny=1,distance=2em]
+    {\scale [s=5] {\showglyphs\im { X          _{\tt p} \mathaxisbelow }}} {}
+    {\scale [s=5] {\showglyphs\im { X ^{\tt p} _{\tt p} \mathaxisbelow }}} {}
+    {\scale [s=5] {\showglyphs\im { X ^{\tt p}          \mathaxisbelow }}} {}
+\stopcombination
+\stoplinecorrection
+
+The rendering of scripts involves several parameters, of which some relate to
+font parameters. In \LUAMETATEX\ we have a few more variables and we also
+overload font parameters, if only because only a few make sense and it looks like
+font designers just copy values from the first available fonts so in the end we
+can as well use our own preferred values.
+
+The following parameters play a role in rendering the shown assembly, The
+traditional \TEX\ engine expects a math font to set quite some parameters for
+positioning the scripts but has no concept of prescripts and neither has
+\OPENTYPE. This is why we have extra parameters (and for completeness we also
+have them for the post scripts). One can wonder of font parameters make sense
+here because in the end we can decide for a better visual result with different
+ones. After all, assembling scripts is not really what fonts are about.
+
+\starttabulate[||||||]
+\FL
+\BC engine parameter                                \BC target \BC open type font                      \BC tex font            \BC \NR
+\TL
+\NC                   subscriptshiftdrop            \NC post   \NC SubscriptBaselineDropMin            \NC subdrop             \NC \NR
+\NC                   subscriptshiftdown            \NC post   \NC SubscriptShiftDown                  \NC sub1                \NC \NR
+\NC                   subscriptsuperscriptshiftdown \NC post   \NC SubscriptShiftDown[WithSuperscript] \NC sub2                \NC \NR
+\NC                   subscriptsuperscriptvgap      \NC post   \NC SubSuperscriptGapMin                \NC 4   rulethickness   \NC \NR
+\NC                   subscripttopmax               \NC post   \NC SubscriptTopMax                     \NC 4/5 xheight         \NC \NR
+
+\NC                   superscriptshiftdrop          \NC post   \NC SuperscriptBaselineDropMax          \NC supdrop             \NC \NR
+\NC                   superscriptbottommin          \NC post   \NC SuperscriptBottomMin                \NC 1/4 xheight         \NC \NR
+\NC                   superscriptshiftup            \NC post   \NC SuperscriptShiftUp[Cramped]         \NC sup1 sup2 sup3      \NC \NR
+\NC                   superscriptsubscriptbottommax \NC post   \NC SuperscriptBottomMaxWithSubscript   \NC 4/5 xheight         \NC \NR
+
+\NC \llap{\star\space}primeraise                    \NC prime  \NC PrimeRaisePercent                   \NC                     \NC \NR
+\NC \llap{\star\space}primeraisecomposed            \NC prime  \NC PrimeRaiseComposedPercent           \NC                     \NC \NR
+\NC \llap{\star\space}primeshiftup                  \NC prime  \NC PrimeShiftUp[Cramped]               \NC                     \NC \NR
+\NC \llap{\star\space}primeshiftdrop                \NC prime  \NC PrimeBaselineDropMax                \NC                     \NC \NR
+\NC \llap{\star\space}primespaceafter               \NC prime  \NC PrimeSpaceAfter                     \NC                     \NC \NR
+
+\NC                   spaceafterscript              \NC post   \NC SpaceAfterScript                    \NC \typ {\scriptspace} \NC \NR
+\NC \llap{\star\space}spacebeforescript             \NC post   \NC SpaceBeforeScript                   \NC                     \NC \NR
+\NC \llap{\star\space}spacebetweenscript            \NC multi  \NC SpaceBetweenScript                  \NC                     \NC \NR
+
+\NC \llap{\star\space}extrasuperscriptshift         \NC pre    \NC                                     \NC                     \NC \NR
+\NC \llap{\star\space}extrasuperprescriptshift      \NC pre    \NC                                     \NC                     \NC \NR
+\NC \llap{\star\space}extrasubscriptshift           \NC pre    \NC                                     \NC                     \NC \NR
+\NC \llap{\star\space}extrasubprescriptshift        \NC pre    \NC                                     \NC                     \NC \NR
+
+\NC \llap{\star\space}extrasuperscriptspace         \NC post   \NC                                     \NC                     \NC \NR
+\NC \llap{\star\space}extrasubscriptspace           \NC post   \NC                                     \NC                     \NC \NR
+\NC \llap{\star\space}extrasuperprescriptspace      \NC pre    \NC                                     \NC                     \NC \NR
+\NC \llap{\star\space}extrasubprescriptspace        \NC pre    \NC                                     \NC                     \NC \NR
+\LL
+\stoptabulate
+
+The parameters marked by a \star\ are \LUAMETATEX\ specific. Some have an
+associated font parameter but that is not official \OPENTYPE. For a very long
+time we had only a few math fonts but even today most of these fonts seem to
+use values that are similar to the ones \TEX\ uses. In that respect one can
+as well turn them into rendering specific ones. After all, changes are slim that
+a formula rendered by \TEX\ or e.g.\ \MSWORD\ are metric compatible and with
+the advanced spacing options in \LUAMETATEX\ we're even further off. Also keep
+in mind that the \TEX\ font parameters could be overloaded at the \TEX\ end.
+
+The spacing after a (combination of) postscript(s) is determined by \quote {space
+after script} and the spacing before a (combination of) prescript(s) by \quote
+{space before script}. If we have multi-scripts the \quote {space between script}
+kicks in and the space after the script is subtracted from it. The given space
+between is scaled with the \type {\scriptspacebetweenfactor} parameter.
+
+The default style mapping that we use are the same as those (hard coded) in
+regular \TEX\ and those for prime scripts are the same as for superscripts.
+
+\startluacode
+document.showmathvariant("subscriptvariant")
+document.showmathvariant("superscriptvariant")
+document.showmathvariant("primevariant")
+\stopluacode
+
+\stopsection
+
+\startsection[title=Skewed fractions]
+
+Skewed fractions are native in \LUAMETATEX. Such a fraction is a horizontal
+construct with the numerator and denominator shifted up and down a bit. It looks
+like this:
+
+\startlinecorrection
+\startMPcode
+    vardef baseline expr p =
+        (xpart llcorner p, 0) -- (xpart lrcorner p,0)
+    enddef ;
+
+    numeric wd ; wd := 12 ;
+    numeric ht ; ht :=  7 ;
+    numeric dp ; dp :=  3 ;
+
+    numeric ax ; ax :=  4 ;
+    numeric ws ; ws :=  5 ;
+    numeric hs ; hs :=  6 ;
+    numeric ds ; ds :=  3 ;
+
+    path slash       ; slash       := (-ws,-(hs+ds)) -- (ws,(hs+ds))  ;
+    path numerator   ; numerator   := unitsquare xyscaled ( wd, ht+dp) shifted (0,-dp) && ((0,0) -- (wd,0)) ;
+    path denominator ; denominator := numerator ;
+
+    numerator   := numerator   shifted - center numerator ;
+    denominator := denominator shifted - center denominator ;
+
+    numerator   := anchored.lft (numerator,   center slash) shifted (-3.5ws, ax/2) ;
+    denominator := anchored.rt  (denominator, center slash) shifted ( 3.5ws,-ax/2) ;
+
+    draw slash       withcolor "darkgray" withpen pencircle scaled 1 ;
+    draw numerator   withcolor "darkred"  ;
+    draw denominator withcolor "darkblue" ;
+
+    path line ; line := (baseline currentpicture) leftenlarged 1 rightenlarged 1 ;
+
+    draw line                withstacking -1 withcolor "middlegray" ;
+    draw line shifted (0,ax) withstacking -1 withcolor "darkgreen"  ; % axis
+
+    currentpicture := currentpicture scaled 5 ;
+\stopMPcode
+\stoplinecorrection
+
+The rendering is driven by some parameters that determine the horizontal and
+vertically shifts but we found that the ones given by the font make no sense (and
+are not that well defined in the standard either). The horizontal shift relates
+to the width (and angle) of the slash and the vertical relates to the math axis.
+We don't listen to \quote {skewed fraction hgap} nor to \quote {skewed fraction
+vgap} but use the width of the middle character, normally a slash, that can grow
+on demand and multiply that with a \type {hfactor} that can be passed with the
+fraction command. A \type {vfactor} is used a multiplier for the vertical shift
+over the axis. Examples of (more)) control can be found in the \CONTEXT\ math
+manual. Here we just show a few examples that use \type {\vfrac} with its
+default values.
+
+\startlinecorrection
+\startcombination[nx=3,ny=2,distance=4em]
+    {\scale [s=3] {\showglyphs\im { \vfrac{1}    {2}     \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { \vfrac{a}    {b}     \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { \vfrac{b}    {a}     \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { \vfrac{x^2}  {x^3}   \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { \vfrac{(x+1)}{(x+2)} \mathaxisbelow }}} {}
+    {\scale [s=3] {\showglyphs\im { \vfrac{x+1}  {x+2}   \mathaxisbelow }}} {}
+\stopcombination
+\stoplinecorrection
+
+The quality of the slashes differs per font, some lack granularity in sizes,
+others have inconsistent angles between the base character and larger variants.
+
+The following commands are used:
+
+\starttyping
+\Uskewed
+\Uskewedwithdelims
+\stoptyping
+
+There are some parameter involved:
+
+\starttyping
+\Umathskeweddelimitertolerance
+\Umathskewedfractionhgap
+\Umathskewedfractionvgap
+\stoptyping
+
+\stopsection
+
+\startsection[title=Math fractions]
+
+todo
+
+\stopsection
+
+\startsection[title=Math radicals]
+
+Radicals indeed look like roots. But the radical mechanism basically is a
+wrapping construct: there's something at the left that in traditional \TEX\ gets
+a rule appended. The left piece is an extensible, so it first grow with variant
+glyphs and when we run out if these we get an upward extensible with a repeated
+upward rule like symbol that then connect with the horizontal rule. In
+\LUAMETATEX\ the horizontal rule can be an extensible (repeated symbol) and we
+can also have a symbol at the right, which indeed can be a vertical extensible
+too.
+
+\startlinecorrection
+\startMPcode
+    vardef baseline expr p =
+        (xpart llcorner p, 0) -- (xpart lrcorner p,0)
+    enddef ;
+
+    numeric wd ; wd := 24 ;
+    numeric ht ; ht :=  7 ;
+    numeric dp ; dp :=  3 ;
+
+    numeric dw ; dw :=  3 ;
+    numeric dh ; dh :=  3 ;
+    numeric dd ; dd :=  1 ;
+
+    numeric rw ; rw :=  2 ;
+    numeric rh ; rh :=  2 + ht ;
+    numeric rd ; rd :=  2 + dp ;
+
+    path rleft   ; rleft   := (-3rw,rh/3) -- (-2rw,-rd) -- (-rw,rh) ;
+    path rright  ; rright  := (wd+2,rh) -- (wd+2,rh-2);
+    path rmiddle ; rmiddle := (-rw,rh) -- (wd+2,rh);
+    path body    ; body    := unitsquare xyscaled ( wd, ht+dp) shifted (0,-dp) && ((0,0) -- (wd,0)) ;
+    path degree  ; degree  := unitsquare xyscaled ( dw, dh+dd) shifted (0,-dd) && ((0,0) -- (dw,0)) ;
+
+    degree := degree shifted (-3rw-2,rh/3+dd+2) ;
+
+    draw rleft   withcolor "darkblue"  ;
+    draw rmiddle withcolor "darkgray"  ;
+    draw rright  withcolor "darkblue"  ;
+    draw body    withcolor "darkred"  ;
+    draw degree  withcolor "darkgreen"  ;
+
+    path line ; line := (baseline currentpicture) leftenlarged 1 rightenlarged 1 ;
+
+    draw line withstacking -1 withcolor "middlegray" ;
+
+    currentpicture := currentpicture scaled 5 ;
+\stopMPcode
+\stoplinecorrection
+
+Here are some aspects to take care of when rendering a radical like this:
+
+\startitemize[packed]
+\startitem The radical symbol goes below the baseline of what it contains. \stopitem
+\startitem There is some distance between the left symbol and the body. \stopitem
+\startitem There is some distance between the top symbol and the body. \stopitem
+\startitem There is some distance between the right symbol and the body. \stopitem
+\startitem The degree has to be anchored properly and possibly can stick out left. \stopitem
+\startitem The (upto) three elements have to overlap a little to avoid artifacts. \stopitem
+\startitem Multiple radicals might have to be made consistent with respect to heights and depths. \stopitem
+\stopitemize
+
+Involved commands:
+
+\starttyping
+\Uradical
+\Uroot
+\Urooted
+\stoptyping
+
+Relevant parameters:
+
+\starttyping
+\Umathradicaldegreeafter
+\Umathradicaldegreebefore
+\Umathradicaldegreeraise
+\Umathradicalextensibleafter
+\Umathradicalextensiblebefore
+\Umathradicalkern
+\Umathradicalrule
+\Umathradicalvariant
+\Umathradicalvgap
+\stoptyping
+
+\stopsection
+
+\startsection[title=Math accents]
+
+todo
+
+\stopsection
+
+\startsection[title=Math fences]
+
+todo
+
+\stopsection
+
+\stopdocument
+
+% \tohexa8 \mathnormalstylepreset            \par
+% \tohexa8 \mathcrampedstylepreset           \par
+% \tohexa8 \mathsubscriptstylepreset         \par
+% \tohexa8 \mathsuperscriptstylepreset       \par
+% \tohexa8 \mathsmallstylepreset             \par
+% \tohexa8 \mathsmallerstylepreset           \par
+% \tohexa8 \mathnumeratorstylepreset         \par
+% \tohexa8 \mathdenominatorstylepreset       \par
+% \tohexa8 \mathdoublesuperscriptstylepreset \par
+
+% \tohexa8 \Umathoverlayaccentvariant \displaystyle\par
+% \tohexa8 \Umathradicalvariant       \displaystyle\par
+% \tohexa8 \Umathradicalvariant       \textstyle   \par
+% \tohexa8 \Umathunderlinevariant     \displaystyle\par
+
+% $2x^{2^2}$
+% $\sqrt{x-\frac{1}{\sqrt{2}}}$
+% $\Umathradicalvariant \allmathstyles 0 \sqrt{x-\frac{1}{\sqrt{2}}}$
+% $2\frac{1}{2}$
+
+% An alternative description:
+%
+% \def\blob#1{\mathord{\ruledhbox{\strut\tttf #1}}}
+%
+% The most common cases of scripts attached to a nucleus are the following where
+% vertical spacing depends on the dimensions and combinations:
+%
+% \startlinecorrection
+% \im { \blob{nuc}
+%     \superscript   {\blob{sup 1}}
+% }
+% \quad
+% \im { \blob{nuc}
+%     \subscript     {\blob{sub 1}}
+% }
+% \quad
+% \im { \blob{nuc}
+%     \superscript   {\blob{sup 1}}
+%     \subscript     {\blob{sub 1}}
+% }
+% \stoplinecorrection
+%
+% We also have primes. These have always been somewhat messy in \TEX\ (macro
+% packages) because they are on the one hand already raised (in text they also
+% serve as minutes) but because they are supposed to be anchored as super script
+% the non raised variant us used. Another complication is that, especially in
+% \UNICODE\ the multiple primes are single characters. In \LUAMETATEX\ primes are
+% an additional script which makes for better positioning, definitely when we also
+% have a superscript. Multiple primes are collected and can be collapsed into a
+% single character. \footnote {In \CONTEXT\ \MKIV\ primes are handles at the \LUA\
+% end and become scripts. In \MKIV\ as well as in \MKXL\ collapsing is still a
+% \LUA\ task, but it is much simpler in \MKXL.}
+%
+% \startlinecorrection
+% \im { \blob{nuc}
+%     \primescript   {\blob{pri}}
+% }
+% \quad
+% \im { \blob{nuc}
+%     \primescript   {\blob{pri}}
+%     \subscript     {\blob{sub 1}}
+% }
+% \quad
+% \im { \blob{nuc}
+%     \primescript   {\blob{pri}}
+%     \superscript   {\blob{sup 1}}
+% }
+% \quad
+% \im { \blob{nuc}
+%     \primescript   {\blob{pri}}
+%     \superscript   {\blob{sup 1}}
+%     \subscript     {\blob{sub 1}}
+% }
+% \stoplinecorrection
+%
+% We also have prescripts and these have to align properly with postscripts
+% when present. Combinations of super- and subscripts make for different spacing
+% compared to single scripts and you can imagine that looking at four possible
+% scripts in various combinations have to obey to the same rules.
+%
+% \startlinecorrection
+% \im { \blob{nuc}
+%     \superscript   {\blob{sup 1}}
+%     \superprescript{\blob{sup 1}}
+% }
+% \quad
+% \im { \blob{nuc}
+%     \subscript   {\blob{sup 1}}
+%     \subprescript{\blob{sup 1}}
+% }
+% \quad
+% \im { \blob{nuc}
+%     \superscript {\blob{sup 1}}
+%     \subprescript{\blob{sup 1}}
+% }
+% \stoplinecorrection
+%
+% Finally there can be multiscripts and often we then talk in terms of index. One
+% can explicitly mark an index. A single \type {^} means super (post) script (or
+% more verbose \typ {\superscript}), while \type {^^} means indexed super (post)
+% script (\typ {\indexedsuperscript}). The threesome \type {^^^} makes a super pre
+% script and likewise the quadruple \type {^^^^} is an indexed super pre script.
+%
+% \startlinecorrection
+% \im { \blob{nuc}
+%     \primescript   {\blob{pri}}
+%     \superscript   {\blob{sup 1}}
+%     \subscript     {\blob{sub 1}}
+%     \superprescript{\blob{presup 1}}
+%     \subprescript  {\blob{presub 1}}
+%     \superscript   {\blob{sup 2}}
+%     \subscript     {\blob{sub 2}}
+%     \superprescript{\blob{presup 2}}
+%     \subprescript  {\blob{presub 2}}
+% }
+% \stoplinecorrection
+%
+% We can move to the next multiscript assembly with \typ {\noscript} so we have some
+% control over positioning.
+%
+% \startlinecorrection
+% \im { \blob{nuc}
+%     \superscript   {\blob{sup 1}}
+%     \noscript
+%     \subscript     {\blob{sub 1}}
+%     \noscript
+%     \superscript   {\blob{sup 2}}
+% }
+% \stoplinecorrection

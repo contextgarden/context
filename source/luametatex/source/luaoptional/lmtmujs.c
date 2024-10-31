@@ -311,8 +311,8 @@ static void mujslib_aux_report(js_State *J, const char *s)
 }
 
 /*tex
-    The interfaces: for loading files a finder callback is mandate so that
-    we keep control over what gets read from where.
+    The interfaces: for loading files a finder callback is mandate so that we keep control over 
+    what gets read from where.
 */
 
 static int mujslib_execute(lua_State *L)
@@ -370,9 +370,8 @@ static int mujslib_reset(lua_State *L)
 }
 
 /*tex
-    File handling: we go via the \LUA\ interface so that we have control
-    over what happens. Another benefit is that we don't need memory
-    management when fetching data from files.
+    File handling: we go via the \LUA\ interface so that we have control over what happens. Another
+    benefit is that we don't need memory management when fetching data from files.
 */
 
 static void mujslib_file_finalize(js_State *J, void *p)
@@ -589,14 +588,14 @@ static int mujslib_initialize(lua_State *L)
 }
 
 static struct luaL_Reg mujslib_function_list[] = {
-    { "initialize",   mujslib_initialize     }, /* mandate */
+    { "initialize",   mujslib_initialize     }, 
     { "reset",        mujslib_reset          },
     { "execute",      mujslib_execute        },
     { "dofile",       mujslib_dofile         },
-    { "setfindfile",  mujslib_set_find_file  }, /* mandate */
-    { "setopenfile",  mujslib_set_open_file  }, /* mandate */
-    { "setclosefile", mujslib_set_close_file }, /* mandate */
-    { "setreadfile",  mujslib_set_read_file  }, /* mandate */
+    { "setfindfile",  mujslib_set_find_file  },
+    { "setopenfile",  mujslib_set_open_file  },
+    { "setclosefile", mujslib_set_close_file },
+    { "setreadfile",  mujslib_set_read_file  },
     { "setseekfile",  mujslib_set_seek_file  },
     { "setconsole",   mujslib_set_console    },
     { NULL,           NULL                   },

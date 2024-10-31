@@ -210,7 +210,7 @@ static int mysqllib_close(lua_State * L)
     return 0;
 }
 
-/* execute(database,querystring,callback) : callback(nofcolumns,values,fields)  */
+/* execute(database,querystring,callback) : x  */
 
 static int mysqllib_execute(lua_State * L)
 {

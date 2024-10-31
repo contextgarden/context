@@ -141,6 +141,30 @@ static const char *mplib_no_fields[] = {
     NULL
 };
 
+// static const char *mplib_scan_codes[] = {
+//     "expression", // mp_expression_scan_code
+//     "primary",    // mp_primary_scan_code
+//     "secondary",  // mp_secondary_scan_code
+//     "tertiary",   // mp_tertiary_scan_code
+//     NULL
+// };
+
+// static const char *mplib_internal_actions_codes[] = {
+//    "initialize", // mp_initialize_internal_code
+//    "save",       // mp_save_internal_code
+//    "restore",    // mp_restore_internal_code
+//     NULL
+// };
+
+static const char *mplib_log_targets[] = {
+    "void",
+    "terminal",
+    "file",
+    "both",
+    "error",
+    NULL
+};
+
 static const char *mplib_codes[] = {
     "undefined",
     "btex",            /* mp_btex_command                */ /* btex verbatimtex */
@@ -239,6 +263,14 @@ static const char *mplib_states[] = {
     "op_defining",
     "loop_defining",
     NULL
+};
+
+static const char *mplib_knot_states[] = {
+    "regular",
+    "begin",
+    "end",
+    "single",
+    NULL,
 };
 
 static const char *mplib_types[] = {
@@ -367,7 +399,7 @@ static void mplib_aux_set_move_tolerance(lua_State *L, lua_Number tolerance)
     lua_setiuservalue(L, -2, mp_move_tolerance);
 }
 
-inline static char *lmt_string_from_index(lua_State *L, int n)
+static inline char *lmt_string_from_index(lua_State *L, int n)
 {
     size_t l;
     const char *x = lua_tolstring(L, n, &l);
@@ -375,7 +407,7 @@ inline static char *lmt_string_from_index(lua_State *L, int n)
     return  (x && l > 0) ? lmt_memory_strdup(x) : NULL;
 }
 
-inline static char *lmt_lstring_from_index(lua_State *L, int n, size_t *l)
+static inline char *lmt_lstring_from_index(lua_State *L, int n, size_t *l)
 {
     const char *x = lua_tolstring(L, n, l);
  // return  (x && l > 0) ? lmt_generic_strdup(x) : NULL;
@@ -392,7 +424,7 @@ static void mplib_aux_invalid_object_error(const char * detail)
     tex_formatted_error("mp lib","lua <mp %s> expected", detail);
 }
 
-inline static MP *mplib_aux_is_mpud(lua_State *L, int n)
+static inline MP *mplib_aux_is_mpud(lua_State *L, int n)
 {
     MP *p = (MP *) lua_touserdata(L, n);
     if (p && lua_getmetatable(L, n)) {
@@ -409,7 +441,7 @@ inline static MP *mplib_aux_is_mpud(lua_State *L, int n)
     return NULL;
 }
 
-inline static MP mplib_aux_is_mp(lua_State *L, int n)
+static inline MP mplib_aux_is_mp(lua_State *L, int n)
 {
     MP *p = (MP *) lua_touserdata(L, n);
     if (p && lua_getmetatable(L, n)) {
@@ -426,7 +458,7 @@ inline static MP mplib_aux_is_mp(lua_State *L, int n)
     return NULL;
 }
 
-inline static mp_edge_object **mplib_aux_is_figure(lua_State *L, int n)
+static inline mp_edge_object **mplib_aux_is_figure(lua_State *L, int n)
 {
     mp_edge_object **p = (mp_edge_object **) lua_touserdata(L, n);
     if (p && lua_getmetatable(L, n)) {
@@ -443,7 +475,7 @@ inline static mp_edge_object **mplib_aux_is_figure(lua_State *L, int n)
     return NULL;
 }
 
-inline static mp_graphic_object **mplib_aux_is_graphic_object(lua_State *L, int n)
+static inline mp_graphic_object **mplib_aux_is_graphic_object(lua_State *L, int n)
 {
     mp_graphic_object **p = (mp_graphic_object **) lua_touserdata(L, n);
     if (p && lua_getmetatable(L, n)) {
@@ -596,8 +628,10 @@ static char *mplib_aux_find_file(MP mp, const char *fname, const char *fmode, in
         int stacktop = lua_gettop(L);
         char *s = NULL;
         lua_rawgeti(L, LUA_REGISTRYINDEX, mp->find_file_id);
+        /*tex For use at the \METAPOST\ end: */
         lua_pushstring(L, fname);
-        lua_pushstring(L, fmode);
+        lua_pushstring(L, fmode); /* "r" "w" */
+        /*tex For use at the \LUA\ end: */
         if (ftype > mp_filetype_text) {
             lua_pushinteger(L, (lua_Integer) ftype - mp_filetype_text);
         } else {
@@ -872,7 +906,9 @@ static void mplib_aux_run_error(MP mp, const char *str, const char *help, int in
 
 */
 
-/* index needs checking, no need for pointer (was old) */
+/* 
+    Are all these files kept open? 
+*/
 
 static void *mplib_aux_open_file(MP mp, const char *fname, const char *fmode, int ftype)
 {
@@ -1666,22 +1702,21 @@ static int mplib_new(lua_State *L)
         lua_Number movetolerance = default_move_tolerance;
         options->userdata        = (void *) L;
         options->job_name        = NULL;
-        options->extensions      = 0 ;
         options->utf8_mode       = 0;
         options->text_mode       = 0;
         options->show_mode       = 0;
         options->halt_on_error   = 0;
         options->find_file       = mplib_aux_find_file;
+        options->open_file       = mplib_aux_open_file;
+        options->close_file      = mplib_aux_close_file;
+        options->read_file       = mplib_aux_read_file;
+        options->write_file      = mplib_aux_write_file;
         options->run_script      = mplib_aux_run_script;
         options->run_internal    = mplib_aux_run_internal;
         options->run_logger      = mplib_aux_run_logger;
         options->run_overload    = mplib_aux_run_overload;
         options->run_error       = mplib_aux_run_error;
         options->make_text       = mplib_aux_make_text;
-        options->open_file       = mplib_aux_open_file;
-        options->close_file      = mplib_aux_close_file;
-        options->read_file       = mplib_aux_read_file;
-        options->write_file      = mplib_aux_write_file;
         options->shipout_backend = mplib_shipout_backend;
         if (lua_type(L, 1) == LUA_TTABLE) {
             lua_pushnil(L);
@@ -1711,8 +1746,6 @@ static int mplib_new(lua_State *L)
                         if (mplib_aux_make_text_function(L, options)) {
                             tex_normal_warning("mplib", "make text: function expected");
                         }
-                    } else if (lua_key_eq(s, extensions)) {
-                        options->extensions = (int) lua_tointeger(L, -1);
                     } else if (lua_key_eq(s, math_mode)) {
                         options->math_mode = luaL_checkoption(L, -1, "scaled", mplib_math_options);
                     } else if (lua_key_eq(s, utf8_mode)) {
@@ -1811,6 +1844,9 @@ static int mplib_aux_wrapresults(lua_State *L, mp_run_data *res, int status, lua
 {
     lua_newtable(L);
     if (res->edges) {
+        /*tex 
+            In needed, we could add some more to this table, like status info. 
+        */
         struct mp_edge_object *p = res->edges;
         int i = 1;
         lua_push_key(fig);
@@ -1894,6 +1930,9 @@ static int mplib_gethashentry(lua_State *L)
                 lua_pushinteger(L, s->property);
                 if (q) {
                     lua_pushinteger(L, q->type);
+                    return 3;
+                } else if (s->property == 0x1) {
+                    lua_pushinteger(L, s->v.data.indep.serial);
                     return 3;
                 } else {
                     return 2;
@@ -2326,9 +2365,9 @@ static int mplib_aux_with_path(lua_State *L, MP mp, int index, int inject, int m
             } else {
                 /*tex Here we have a list of tables with |path| and |append| keys. */
                 for (int i = 1; i <= numpoints; i++) {
-cyclic = 0;
-f = NULL;
-l = NULL;
+                    cyclic = 0;
+                    f = NULL;
+                    l = NULL;
                     switch (lua_rawgeti(L, index, i)) { 
                         case LUA_TTABLE: 
                             {
@@ -2816,37 +2855,83 @@ static int mplib_getobjecttypes(lua_State* L)
     return 1;
 }
 
+static int mplib_getscantypes(lua_State* L)
+{
+    lua_createtable(L, 3, 1);
+    lua_push_key_at_index(L, expression, mp_expression_scan_code);
+    lua_push_key_at_index(L, primary,    mp_primary_scan_code);
+    lua_push_key_at_index(L, secondary,  mp_secondary_scan_code);
+    lua_push_key_at_index(L, tertiary,   mp_tertiary_scan_code);
+    return 1;
+}
+
+// static int mplib_getscantypes(lua_State* L)
+// {
+//     return mplib_push_values(L, mplib_scan_codes);
+// }
+
+static int mplib_getinternalactions(lua_State* L)
+{
+    lua_createtable(L, 2, 1);
+    lua_push_key_at_index(L, initialize, mp_initialize_internal_code);
+    lua_push_key_at_index(L, save,       mp_save_internal_code);
+    lua_push_key_at_index(L, restore,    mp_restore_internal_code); 
+ // lua_push_key_at_index(L, tracing,    mp_tracing_internal_code); 
+    return 1;
+}
+
+// static int getinternalactions(lua_State* L)
+// {
+//     return mplib_push_values(L, mplib_internal_sction_codes);
+// }
+
 static int mplib_getfields(lua_State *L)
 {
-    if (lua_type(L, 1) == LUA_TUSERDATA) {
-        struct mp_graphic_object **hh = mplib_aux_is_graphic_object(L, 1);
-        if (*hh) {
-            const char **fields;
-            switch ((*hh)->type) {
-                case mp_fill_code        : fields = mplib_fill_fields;         break;
-                case mp_stroked_code     : fields = mplib_stroked_fields;      break;
-                case mp_start_clip_code  : fields = mplib_start_clip_fields;   break;
-                case mp_start_group_code : fields = mplib_start_group_fields;  break;
-                case mp_start_bounds_code: fields = mplib_start_bounds_fields; break;
-                case mp_stop_clip_code   : fields = mplib_stop_clip_fields;    break;
-                case mp_stop_group_code  : fields = mplib_stop_group_fields;   break;
-                case mp_stop_bounds_code : fields = mplib_stop_bounds_fields;  break;
-                default                  : fields = mplib_no_fields;           break;
+    int n = -1; 
+    switch (lua_type(L, 1)) { 
+        case LUA_TUSERDATA: 
+            {
+                struct mp_graphic_object **hh = mplib_aux_is_graphic_object(L, 1);
+                if (*hh) {
+                    n = (*hh)->type;
+                }
+                break;
             }
-            mplib_aux_mplib_push_fields(L, fields);
-        } else {
-            lua_pushnil(L);
+        case LUA_TNUMBER: 
+            {
+                n = lua_tointeger(L, 1);
+                break;
+            }
+        default:
+            {
+                lua_createtable(L, 8, 0);
+                mplib_aux_mplib_push_fields(L, mplib_fill_fields);         lua_rawseti(L, -2, mp_fill_code);
+                mplib_aux_mplib_push_fields(L, mplib_stroked_fields);      lua_rawseti(L, -2, mp_stroked_code);
+                mplib_aux_mplib_push_fields(L, mplib_start_clip_fields);   lua_rawseti(L, -2, mp_start_clip_code);
+                mplib_aux_mplib_push_fields(L, mplib_start_group_fields);  lua_rawseti(L, -2, mp_start_group_code);
+                mplib_aux_mplib_push_fields(L, mplib_start_bounds_fields); lua_rawseti(L, -2, mp_start_bounds_code);
+                mplib_aux_mplib_push_fields(L, mplib_stop_clip_fields);    lua_rawseti(L, -2, mp_stop_clip_code);
+                mplib_aux_mplib_push_fields(L, mplib_stop_group_fields);   lua_rawseti(L, -2, mp_stop_group_code);
+                mplib_aux_mplib_push_fields(L, mplib_stop_bounds_fields);  lua_rawseti(L, -2, mp_stop_bounds_code);
+                return 1;
+            }
+    }
+    if (n >= mp_fill_code && n <= mp_stop_bounds_code) { 
+        const char **fields;
+        switch (n) {
+            case mp_fill_code        : fields = mplib_fill_fields;         break;
+            case mp_stroked_code     : fields = mplib_stroked_fields;      break;
+            case mp_start_clip_code  : fields = mplib_start_clip_fields;   break;
+            case mp_start_group_code : fields = mplib_start_group_fields;  break;
+            case mp_start_bounds_code: fields = mplib_start_bounds_fields; break;
+            case mp_stop_clip_code   : fields = mplib_stop_clip_fields;    break;
+            case mp_stop_group_code  : fields = mplib_stop_group_fields;   break;
+            case mp_stop_bounds_code : fields = mplib_stop_bounds_fields;  break;
+            default                  : fields = mplib_no_fields;           break;
         }
+        mplib_aux_mplib_push_fields(L, fields);
     } else {
-        lua_createtable(L, 8, 0);
-        mplib_aux_mplib_push_fields(L, mplib_fill_fields);         lua_rawseti(L, -2, mp_fill_code);
-        mplib_aux_mplib_push_fields(L, mplib_stroked_fields);      lua_rawseti(L, -2, mp_stroked_code);
-        mplib_aux_mplib_push_fields(L, mplib_start_clip_fields);   lua_rawseti(L, -2, mp_start_clip_code);
-        mplib_aux_mplib_push_fields(L, mplib_start_group_fields);  lua_rawseti(L, -2, mp_start_group_code);
-        mplib_aux_mplib_push_fields(L, mplib_start_bounds_fields); lua_rawseti(L, -2, mp_start_bounds_code);
-        mplib_aux_mplib_push_fields(L, mplib_stop_clip_fields);    lua_rawseti(L, -2, mp_stop_clip_code);
-        mplib_aux_mplib_push_fields(L, mplib_stop_group_fields);   lua_rawseti(L, -2, mp_stop_group_code);
-        mplib_aux_mplib_push_fields(L, mplib_stop_bounds_fields);  lua_rawseti(L, -2, mp_stop_bounds_code);
+        lua_pushnil(L);
     }
     return 1;
 }
@@ -2881,9 +2966,19 @@ static int mplib_getstates(lua_State *L)
     return mplib_push_values(L, mplib_states);
 }
 
+static int mplib_getknotstates(lua_State *L)
+{
+    return mplib_push_values(L, mplib_knot_states);
+}
+
+static int mplib_getlogtargets(lua_State* L)
+{
+    return mplib_push_values(L, mplib_log_targets);
+}
+
 static int mplib_getcallbackstate(lua_State *L)
 {
-    lua_createtable(L, 0, 5);
+    lua_createtable(L, 0, 8);
     lua_push_integer_at_key(L, file,       mplib_state.file_callbacks);
     lua_push_integer_at_key(L, text,       mplib_state.text_callbacks);
     lua_push_integer_at_key(L, script,     mplib_state.script_callbacks);
@@ -3200,66 +3295,70 @@ static const struct luaL_Reg mplib_instance_functions_list[] = {
 };
 
 static const struct luaL_Reg mplib_functions_list[] = {
-    { "new",              mplib_new              },
-    { "version",          mplib_version          },
-    /* */
-    { "getfields",        mplib_getfields        },
-    { "gettype",          mplib_gettype          },
-    { "gettypes",         mplib_gettypes         },
-    { "getcolormodels",   mplib_getcolormodels   },
-    { "getcodes",         mplib_getcodes         },
-    { "getstates",        mplib_getstates        },
-    { "getobjecttypes",   mplib_getobjecttypes   },
-    { "getcallbackstate", mplib_getcallbackstate },
-    /* */
-    { "settolerance",     mplib_set_tolerance    },
-    { "gettolerance",     mplib_get_tolerance    },
-    /* indirect */
-    { "execute",          mplib_execute          },
-    { "finish",           mplib_finish           },
-    { "showcontext",      mplib_showcontext      },
-    { "gethashentries",   mplib_gethashentries   },
-    { "gethashentry",     mplib_gethashentry     },
-    { "getstatistics",    mplib_getstatistics    },
-    { "getstatus",        mplib_getstatus        },
-    { "solvepath",        mplib_solvepath        },
-    /* helpers */
-    { "peninfo",          mplib_object_peninfo   },
-    /* scanners */
-    { "scannext",         mplib_scan_next        },
-    { "scanexpression",   mplib_scan_expression  },
-    { "scantoken",        mplib_scan_token       },
-    { "scansymbol",       mplib_scan_symbol      },
-    { "scanproperty",     mplib_scan_property    },
-    { "scannumeric",      mplib_scan_numeric     },
-    { "scannumber",       mplib_scan_numeric     }, /* bonus */
-    { "scaninteger",      mplib_scan_integer     },
-    { "scanboolean",      mplib_scan_boolean     },
-    { "scanstring",       mplib_scan_string      },
-    { "scanpair",         mplib_scan_pair        },
-    { "scancolor",        mplib_scan_color       },
-    { "scancmykcolor",    mplib_scan_cmykcolor   },
-    { "scantransform",    mplib_scan_transform   },
-    { "scanpath",         mplib_scan_path        },
-    { "scanpen",          mplib_scan_pen         },
-    /* skippers */
-    { "skiptoken",        mplib_skip_token       },
-    /* injectors */
-    { "injectnumeric",    mplib_inject_numeric   },
-    { "injectnumber",     mplib_inject_numeric   }, /* bonus */
-    { "injectinteger",    mplib_inject_integer   },
-    { "injectboolean",    mplib_inject_boolean   },
-    { "injectstring",     mplib_inject_string    },
-    { "injectpair",       mplib_inject_pair      },
-    { "injectcolor",      mplib_inject_color     },
-    { "injectcmykcolor",  mplib_inject_cmykcolor },
-    { "injecttransform",  mplib_inject_transform },
-    { "injectpath",       mplib_inject_path      },
-    { "injectwhatever",   mplib_inject_whatever  },
-    /* */
-    { "expandtex",        mplib_expand_tex       },
-    /* */
-    { NULL,               NULL                   },
+    { "new",                mplib_new                },
+    { "version",            mplib_version            },
+    /* */                                            
+    { "getfields",          mplib_getfields          },
+    { "gettype",            mplib_gettype            },
+    { "gettypes",           mplib_gettypes           },
+    { "getcolormodels",     mplib_getcolormodels     },
+    { "getcodes",           mplib_getcodes           },
+    { "getstates",          mplib_getstates          },
+    { "getknotstates",      mplib_getknotstates      },
+    { "getobjecttypes",     mplib_getobjecttypes     },
+    { "getscantypes",       mplib_getscantypes       },
+    { "getlogtargets",      mplib_getlogtargets      },
+    { "getinternalactions", mplib_getinternalactions },
+    { "getcallbackstate",   mplib_getcallbackstate   },
+    /* */                                            
+    { "settolerance",       mplib_set_tolerance      },
+    { "gettolerance",       mplib_get_tolerance      },
+    /* indirect */                                   
+    { "execute",            mplib_execute            },
+    { "finish",             mplib_finish             },
+    { "showcontext",        mplib_showcontext        },
+    { "gethashentries",     mplib_gethashentries     },
+    { "gethashentry",       mplib_gethashentry       },
+    { "getstatistics",      mplib_getstatistics      },
+    { "getstatus",          mplib_getstatus          },
+    { "solvepath",          mplib_solvepath          },
+    /* helpers */                                    
+    { "peninfo",            mplib_object_peninfo     },
+    /* scanners */                                   
+    { "scannext",           mplib_scan_next          },
+    { "scanexpression",     mplib_scan_expression    },
+    { "scantoken",          mplib_scan_token         },
+    { "scansymbol",         mplib_scan_symbol        },
+    { "scanproperty",       mplib_scan_property      },
+    { "scannumeric",        mplib_scan_numeric       },
+    { "scannumber",         mplib_scan_numeric       }, /* bonus */
+    { "scaninteger",        mplib_scan_integer       },
+    { "scanboolean",        mplib_scan_boolean       },
+    { "scanstring",         mplib_scan_string        },
+    { "scanpair",           mplib_scan_pair          },
+    { "scancolor",          mplib_scan_color         },
+    { "scancmykcolor",      mplib_scan_cmykcolor     },
+    { "scantransform",      mplib_scan_transform     },
+    { "scanpath",           mplib_scan_path          },
+    { "scanpen",            mplib_scan_pen           },
+    /* skippers */                                   
+    { "skiptoken",          mplib_skip_token         },
+    /* injectors */                                  
+    { "injectnumeric",      mplib_inject_numeric     },
+    { "injectnumber",       mplib_inject_numeric     }, /* bonus */
+    { "injectinteger",      mplib_inject_integer     },
+    { "injectboolean",      mplib_inject_boolean     },
+    { "injectstring",       mplib_inject_string      },
+    { "injectpair",         mplib_inject_pair        },
+    { "injectcolor",        mplib_inject_color       },
+    { "injectcmykcolor",    mplib_inject_cmykcolor   },
+    { "injecttransform",    mplib_inject_transform   },
+    { "injectpath",         mplib_inject_path        },
+    { "injectwhatever",     mplib_inject_whatever    },
+    /* */                                            
+    { "expandtex",          mplib_expand_tex         },
+    /* */                                            
+    { NULL,                 NULL                     },
 };
 
 int luaopen_mplib(lua_State *L)

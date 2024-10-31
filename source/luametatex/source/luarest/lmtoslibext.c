@@ -43,6 +43,27 @@
 #   define OSLIB_PLATTYPE "unix"
 # endif
 
+static int oslib_gettypevalues(lua_State *L)
+{
+    lua_createtable(L, 2, 0);
+    lua_set_string_by_index(L, 1, "windows");
+    lua_set_string_by_index(L, 2, "unix");
+    return 1;
+}
+
+static int oslib_getnamevalues(lua_State *L)
+{
+    lua_createtable(L, 7, 0);
+    lua_set_string_by_index(L, 1, "windows");
+    lua_set_string_by_index(L, 2, "linux");
+    lua_set_string_by_index(L, 3, "macosx");
+    lua_set_string_by_index(L, 4, "freebsd");
+    lua_set_string_by_index(L, 5, "bsd");
+    lua_set_string_by_index(L, 6, "gnu");
+    lua_set_string_by_index(L, 7, "generic");
+    return 1;
+}
+
 /*tex
 
     There could be more platforms that don't have these two, but win32 and sunos are for sure.
@@ -152,6 +173,17 @@ static int oslib_sleep(lua_State *L)
     }
 
 # endif
+
+static int oslib_getunamefields(lua_State *L)
+{
+    lua_createtable(L, 5, 0);
+    lua_set_string_by_index(L, 1, "sysname");
+    lua_set_string_by_index(L, 2, "machine");
+    lua_set_string_by_index(L, 3, "release");
+    lua_set_string_by_index(L, 4, "version");
+    lua_set_string_by_index(L, 5, "nodename");
+    return 1;
+}
 
 static int oslib_uname(lua_State *L)
 {
@@ -361,21 +393,23 @@ static int oslib_execute(lua_State *L)
 # endif
 
 static const luaL_Reg oslib_function_list[] = {
-    { "sleep",        oslib_sleep        },
-    { "uname",        oslib_uname        },
-    { "gettimeofday", oslib_gettimeofday },
-    { "setenv",       oslib_setenv       },
-    { "execute",      oslib_execute      },
+    { "sleep",          oslib_sleep          },
+    { "uname",          oslib_uname          },
+    { "gettimeofday",   oslib_gettimeofday   },
+    { "setenv",         oslib_setenv         },
+    { "execute",        oslib_execute        },
 # ifdef _WIN32
-    { "rename",       oslib_rename       },
-    { "remove",       oslib_remove       },
-    { "getenv",       oslib_getenv       },
+    { "rename",         oslib_rename         },
+    { "remove",         oslib_remove         },
+    { "getenv",         oslib_getenv         },
 # endif
-    { "enableansi",   oslib_enableansi   },
-    { "getcodepage",  oslib_getcodepage  },
-    { NULL,           NULL               },
+    { "enableansi",     oslib_enableansi     },
+    { "getcodepage",    oslib_getcodepage    },
+    { "getnamevalues",  oslib_getnamevalues  },
+    { "gettypevalues",  oslib_gettypevalues  },
+    { "getunamefields", oslib_getunamefields },
+    { NULL,             NULL                 },
 };
-
 
 /*tex
     The |environ| variable is depricated on windows so it made sense to just drop this old \LUATEX\

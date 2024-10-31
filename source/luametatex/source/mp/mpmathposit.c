@@ -86,9 +86,9 @@ static mp_posit_info mp_posit_data = {
     .initialized = 0,
 };
 
-inline static posit_t mp_posit_aux_make_fraction (posit_t p, posit_t q) { return posit_mul(posit_div(p,q), mp_posit_data.fraction_multiplier); }
-inline static posit_t mp_posit_aux_take_fraction (posit_t p, posit_t q) { return posit_div(posit_mul(p,q), mp_posit_data.fraction_multiplier); }
-inline static posit_t mp_posit_aux_make_scaled   (posit_t p, posit_t q) { return posit_div(p,q); }
+static inline posit_t mp_posit_aux_make_fraction (posit_t p, posit_t q) { return posit_mul(posit_div(p,q), mp_posit_data.fraction_multiplier); }
+static inline posit_t mp_posit_aux_take_fraction (posit_t p, posit_t q) { return posit_div(posit_mul(p,q), mp_posit_data.fraction_multiplier); }
+static inline posit_t mp_posit_aux_make_scaled   (posit_t p, posit_t q) { return posit_div(p,q); }
 
 /*tex
     All functions execpt the initializer are static as they are not used elsewhere. See |mpmath| and     

@@ -1,185 +1,9 @@
+
 % language=us runpath=texruns:manuals/luametatex
-\profilemacro\resetallattributes
-
-%     \definefontfeature
-%       [default]
-%       [default]
-%       [expansion=quality]
-
-%    %     \setupalignpass[none]
-%     \setupalignpass[decent]
-%    %     \setupalignpass[quality]
-
-% \pushoverloadmode \let\cdef\edef \let\cdefcsname\edefcsname \popoverloadmode
-
-% \enabledirectives[backend.pdf.inmemory]
-
-% \setupalign[profile]
-% \enabletrackers[profiling.lines.show]
-
-% ------------------------   ------ ------------------   ------------------------
-% 2019-12-17  32bit  64bit   2020-01-10  32bit  64bit   2020-11-30  32bit  64bit
-% ------------------------   ------------------------   ------------------------
-% freebsd     2270k  2662k   freebsd     2186k  2558k   freebsd     2108k  2436k
-% openbsd6.6  2569k  2824k   openbsd6.6  2472k  2722k   openbsd6.8  2411k  2782k
-% linux-armhf 2134k          linux-armhf 2063k          linux-armhf 2138k  2860k
-% linux       2927k  2728k   linux       2804k  2613k   linux   (?) 3314k  2762k
-%                                                       linux-musl  2532k  2686k
-% osx                2821k   osx                2732k   osx                2711k
-% ms mingw    2562k  2555k   ms mingw    2481k  2471k   ms mingw    2754k  2760k
-%                                                       ms intel           2448k
-%                                                       ms arm             3894k
-%                                                       ms clang           2159k
-% ------------------------   ------------------------   ------------------------
-%
-% performance of mingw and native are getting close (small win for mingw) but
-% clang bins are still slower .. quite inconsistent differences between 32 and
-% 64 bit (not all compilers are the same version)
-
-% \enableautoglyphscaling % saves only a few instances ... no gain .. a few pages more
-
-% \enabletexdirective{vspacing.experimental}
-
-% \nopdfcompression
-
-% 20200509 : 258 pages
-%
-% my 2013 i7 laptop with windows : 11.8 sec mingw64
-% raspberry pi 64 bit with ssd   : 39.5 sec gcc 9.2
-% idem with native bin           : 38.5 sec
-% idem overclocked f=2000/v=6    : 31.5 sec
-%
-% 20200526 : 258 pages
-% mingw all in: 10.9 / rpi 32 bit: 33.1
-
-% 20200610 : 258 pages
-% mingw all in: 10.6
-
-% 20201204 : 260 pages
-% mingw all in: 10.0
-
-% 20201204 : 262 pages
-% mingw all in: 9.9
-
-% 20200720      : 258 pages / all in
-%
-% mingw         : 10.6 (sometimes less)
-% rpi 32        : 32.3
-% rpi 64        : 26.0 (overclocked)
-% amd 10 fitlet : 28.2
-
-% 20210812      : 298 pages
-% mingw         :  9.7
-
-% 20210903      : 300 pages
-% mingw         :  9.6
-
-% 20210916      : 300 pages
-% mingw         :  9.4 (9.25 with LTO, 9.75 native)
-
-% But speed can differ a bit per compilation (upto .5 seconds maybe due to how
-% compiled code is organized which might influence caching. Who knows ... (or
-% cares). For instance at 20200407 I measured 10.9 seconds after some new low level
-% metapost magic was added but who knows if that was the reason, because mp
-% processing is already fast. A week later, at 20200415, a by then 254 page file
-% took 10.5 seconds, that is, we were at exactly 24 pages per second but after
-% switching to gcc9 it dropped again. In december 2020, with IPO enabled I crossed
-% the 26 pps barrier and went below 10 seconds but that was also after some further
-% cleanup in \LMTX. Mid August 2021 I measured over 30 pps but not all is due to
-% the engine I guess. End august we were are over 31 pps so it's not getting worse.
-
-% (This means that on a modern desktop we probably can get around 100 pps on a
-% manual like this but, always using laptops, I don't have access to machines like
-% that. A modern laptop probably could perform over 50 pps.)
-
-% msvc           1899k (2% slower than mingw)
-% msvc /GL       2297k (similar to mingw)
-% msvc /GL /Ob3  2847k (not faster than /GL)
-% msvc /Ob3      2052k (slower than /Ob2)
-% msvc /Ob1      1763k (slower than /Ob2)
-% clang          2460k (15% slower than mingw)
-
-% Thanks to sebastian.miele@gmail.com for close reading the manual and sending
-% fixes.
-
-% \listcallbackmode0
-
-% 290 pages, 10.8 sec, 292M lua, 99M tex, 158 instances
-% 290 pages,  9.5 sec, 149M lua, 35M tex,  30 instances
-
-% On the 2018 Dell 7520 Precission Xeon laptop runtime for 322 pages is now exactly
-% 8 seconds (just below 40 pages per second), we talking July 16, 2022.
-%
-% At the first of August 2022 the (slightly reorganized and updated) manual counted
-% 350 pages and took 8.6 seconds to process (some 41 pages per second), so we're
-% rather stable. End of 2022 processing that amount of pages dropped somewhat
-% (occasionally under 8.3 seconds for 356 pages with little other system load). In
-% means that 43 pages per seconds is now the new normal but that might of course
-% become less again as we evolve.
-
-% End Feburari 2023 I observed 8.2 seconds for 360 pages and making a format needed
-% 1.9 seconds instead if the usual 2.1 but that can be a side effect of the terminal
-% because the amount of output which is sensitive for refresh delays set. The new
-% target is now 50 pages per second for this manual but on this laptop that is
-% unlikely to happen any time soon. With tabulateusesize and tabulatesparseskips
-% experiments enabled we needed 8.1 second and 44.3 pps.% 368 pages may/june 2023:
-%
-% no constant definitions : 8.55
-% constant \*!whatever    : 8.47
-% also constant \current* : 8.36
-
-% \enableexperiments [tabulateusesize]
-% \enableexperiments [tabulatesparseskips]
-
-% 2023-07-10: context --make > temp.log (after a few times so with cached files)
-%
-% 1.90 sec including mtxrun
-% 1.65 sec tex only
-% 1.45 sec without saving format
-
-% 20230714      : 368 pages
-%
-% mingw         :  8.4 (we gained more that for the amd ... more cache and faster mem)
-% rpi 64        :      (hdd, not overclocked)
-% amd 10 fitlet : 30.9 12pps (we gained over 25% compared to the 268 page manual)
-
-% \ifdefined\linebuffering \linebuffering \fi
-
-% 2024-09-25: 9.2 seconds
-
-% \linebuffering
-
-\enableexperiments[fonts.compact]
-% \enableexperiments[fonts.accurate]
-
-% \enabledirectives[fonts.injections.method=advance] % tricky ... not all xoffsets are advance robust
-
-% This is only for testing, use the command line (or banner line) instead.
-%
-% \startluacode
-%     lpdf.setencryption {
-%         ownerpassword = "password",
-%         userpassword  = " ",
-%         permissions   = "print,quality"
-%     }
-% \stopluacode
-
-\pushoverloadmode \unprotect
-    % test code
-\protect \popoverloadmode
-
-\enabletrackers[system.usage=summary]
 
 \environment luametatex-style
-\environment luametatex-private
 
-\startdocument
-  [manual=LuaMeta\TeX,
-  %status=experimental,
-   version=\cldcontext{status.luatex_verbose}]
-
-\component luametatex-titlepage
-\component luametatex-firstpage
+\startdocument[title=luametatex,alternative=manual]
 
 \startfrontmatter
     \component luametatex-contents
@@ -187,29 +11,23 @@
 \stopfrontmatter
 
 \startbodymatter
-    \component luametatex-modifications
-    \component luametatex-lua
-    \component luametatex-enhancements
+    \component luametatex-engines
+    \component luametatex-constructions
+    \component luametatex-assumptions
+    \component luametatex-internals
+    \component luametatex-primitives
+    \component luametatex-callbacks
     \component luametatex-fonts
     \component luametatex-languages
-    \component luametatex-math
-    \component luametatex-building
-    \component luametatex-nodes
-    \component luametatex-callbacks
-    \component luametatex-tex
+    \component luametatex-lua
     \component luametatex-metapost
+    \component luametatex-tex
+    \component luametatex-math
     \component luametatex-pdf
+    \component luametatex-nodes
+    \component luametatex-tokens
     \component luametatex-libraries
-    \component luametatex-primitives % this generates a list
-  % \component luametatex-rejected % local file
 \stopbodymatter
-
-\startbackmatter
-    \component luametatex-codes
-    \component luametatex-registers
-    \component luametatex-statistics
-    \component luametatex-remarks
-\stopbackmatter
 
 \stopdocument
 

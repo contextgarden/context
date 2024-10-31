@@ -119,6 +119,18 @@ static int fontlib_aux_count_hash_items(lua_State *L)
 
 */
 
+static int fontlib_getparameterfields(lua_State *L)
+{
+    lua_createtable(L, 6, 0);
+    lua_push_key_at_index(L, slant,        1);
+    lua_push_key_at_index(L, space,        2);
+    lua_push_key_at_index(L, spacestretch, 3);
+    lua_push_key_at_index(L, spaceshrink,  4);
+    lua_push_key_at_index(L, quad,         5);
+    lua_push_key_at_index(L, extraspace,   6);
+    return 1;
+}
+
 static void fontlib_aux_read_lua_parameters(lua_State *L, int f)
 {
     lua_push_key(parameters);
@@ -268,6 +280,52 @@ static void fontlib_aux_store_math_kerns(lua_State *L, int index, charinfo *co, 
         }
     }
     lua_pop(L, 1);
+}
+
+static int fontlib_gettextcharacterfields(lua_State *L)
+{
+    lua_createtable(L, 12, 0);
+    lua_push_key_at_index(L, tag,              1);
+    lua_push_key_at_index(L, callback,         2);
+    lua_push_key_at_index(L, width,            3);
+    lua_push_key_at_index(L, height,           4);
+    lua_push_key_at_index(L, depth,            5);
+    lua_push_key_at_index(L, italic,           6);
+    lua_push_key_at_index(L, expansion,        7);
+    lua_push_key_at_index(L, compression,      8);
+    lua_push_key_at_index(L, leftprotrusion,   9);
+    lua_push_key_at_index(L, rightprotrusion, 10);
+    lua_push_key_at_index(L, kerns,           11); /* table */   
+    lua_push_key_at_index(L, ligatures,       12); /* table */   
+    return 1;
+}
+
+static int fontlib_getmathcharacterfields(lua_State *L)
+{
+    lua_createtable(L, 22, 0);
+    lua_push_key_at_index(L, smaller,          1);
+    lua_push_key_at_index(L, mirror,           2);
+    lua_push_key_at_index(L, flataccent,       3);
+    lua_push_key_at_index(L, topleft,          4);
+    lua_push_key_at_index(L, topright,         5);
+    lua_push_key_at_index(L, bottomleft,       6);
+    lua_push_key_at_index(L, bottomright,      7);
+    lua_push_key_at_index(L, leftmargin,       8);
+    lua_push_key_at_index(L, rightmargin,      9);
+    lua_push_key_at_index(L, topmargin,       10);
+    lua_push_key_at_index(L, bottommargin,    11);
+    lua_push_key_at_index(L, topovershoot,    12);
+    lua_push_key_at_index(L, bottomovershoot, 13);
+    lua_push_key_at_index(L, topanchor,       14);
+    lua_push_key_at_index(L, bottomanchor,    15);
+    lua_push_key_at_index(L, innerlocation,   16); /* string: left right top bottom */
+    lua_push_key_at_index(L, innerxoffset,    17); 
+    lua_push_key_at_index(L, inneryoffset,    18); 
+    lua_push_key_at_index(L, extensible,      19); /* boolean */
+    lua_push_key_at_index(L, keepbase,        20); /* boolean */
+    lua_push_key_at_index(L, parts,           21); /* table : { glyph extender advance start end } partsitalic partsorientation (horizontal vertical) */ 
+    lua_push_key_at_index(L, mathkerns,       22); /* table : topleft topright bottomleft bottomright */ 
+    return 1;
 }
 
 static void fontlib_aux_font_char_from_lua(lua_State *L, halfword f, int i, int has_math)
@@ -564,6 +622,33 @@ static void fontlib_aux_font_char_from_lua(lua_State *L, halfword f, int i, int 
 
 */
 
+static int fontlib_getfontfields(lua_State *L)
+{
+    lua_createtable(L, 21, 0);
+    lua_push_key_at_index(L, name,                 1);
+    lua_push_key_at_index(L, designsize,           2);
+    lua_push_key_at_index(L, size,                 3);
+    lua_push_key_at_index(L, compactmath,          4);
+    lua_push_key_at_index(L, mathcontrol,          5);
+    lua_push_key_at_index(L, textcontrol,          6);
+    lua_push_key_at_index(L, textscale,            7);
+    lua_push_key_at_index(L, textxscale,           8);
+    lua_push_key_at_index(L, textyscale,           9);
+    lua_push_key_at_index(L, scriptscale,         10);
+    lua_push_key_at_index(L, scriptxscale,        11);
+    lua_push_key_at_index(L, scriptyscale,        12);
+    lua_push_key_at_index(L, scriptscriptscale,   13);
+    lua_push_key_at_index(L, scriptscriptxscale,  14);
+    lua_push_key_at_index(L, scriptscriptyscale,  15);
+    lua_push_key_at_index(L, hyphenchar,          16);
+    lua_push_key_at_index(L, skewchar,            17);
+    lua_push_key_at_index(L, nomath,              18);
+    lua_push_key_at_index(L, characters,          19);
+    lua_push_key_at_index(L, parameters,          20);
+    lua_push_key_at_index(L, MathConstants,       21);
+    return 1;
+}
+
 static int lmt_font_from_lua(lua_State *L, int f)
 {
     /*tex The table is at stack |index -1| */
@@ -761,7 +846,7 @@ static int lmt_characters_from_lua(lua_State *L, int f)
     return 1;
 }
 
-static int lmt_quality_from_lua(lua_State *L, int f)
+static void lmt_quality_from_lua(lua_State *L, int f)
 {
     lua_push_key(characters);
     if (lua_rawget(L, -2) == LUA_TTABLE) {
@@ -800,7 +885,6 @@ static int lmt_quality_from_lua(lua_State *L, int f)
         }
         lua_pop(L, 1);
     }
-    return 1;
 }
 
 /*tex
@@ -1057,22 +1141,26 @@ static int fontlib_yscaled(lua_State *L)
 }
 
 static const struct luaL_Reg fontlib_function_list[] = {
-    { "current",       fontlib_current       },
-    { "max",           fontlib_max           },
-    { "setfont",       fontlib_setfont       },
-    { "addcharacters", fontlib_addcharacters },
-    { "addquality",    fontlib_addquality    },
-    { "define",        fontlib_define        },
-    { "nextid",        fontlib_nextid        },
-    { "id",            fontlib_id            },
-    { "getfontdimen",  fontlib_getfontdimen  },
-    { "setfontdimen",  fontlib_setfontdimen  },
-    { "getfontspec",   fontlib_getfontspec   },
-    { "getmathspec",   fontlib_getmathspec   },
-    { "getmathindex",  fontlib_getmathindex  },
-    { "xscaled",       fontlib_xscaled       },
-    { "yscaled",       fontlib_yscaled       },
-    { NULL,            NULL                  },
+    { "current",                fontlib_current                },
+    { "max",                    fontlib_max                    },
+    { "setfont",                fontlib_setfont                },
+    { "addcharacters",          fontlib_addcharacters          },
+    { "addquality",             fontlib_addquality             },
+    { "define",                 fontlib_define                 },
+    { "nextid",                 fontlib_nextid                 },
+    { "id",                     fontlib_id                     },
+    { "getfontdimen",           fontlib_getfontdimen           },
+    { "setfontdimen",           fontlib_setfontdimen           },
+    { "getfontspec",            fontlib_getfontspec            },
+    { "getmathspec",            fontlib_getmathspec            },
+    { "getmathindex",           fontlib_getmathindex           },
+    { "xscaled",                fontlib_xscaled                },
+    { "yscaled",                fontlib_yscaled                },
+    { "getparameterfields",     fontlib_getparameterfields     },
+    { "getfontfields",          fontlib_getfontfields          },
+    { "gettextcharacterfields", fontlib_gettextcharacterfields },
+    { "getmathcharacterfields", fontlib_getmathcharacterfields },
+    { NULL,                     NULL                           },
 };
 
 int luaopen_font(lua_State *L)

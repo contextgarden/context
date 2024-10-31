@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2024-09-25 11:47
+-- merge date  : 2024-10-31 11:51
 
 do -- begin closure to overcome local limits and interference
 
@@ -16,6 +16,7 @@ LUAMAJORVERSION,LUAMINORVERSION=string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$")
 LUAMAJORVERSION=tonumber(LUAMAJORVERSION) or 5
 LUAMINORVERSION=tonumber(LUAMINORVERSION) or 1
 LUAVERSION=LUAMAJORVERSION+LUAMINORVERSION/10
+LUAFORMAT=status and status.lua_format or 0
 if LUAVERSION<5.2 and jit then
  MINORVERSION=2
  LUAVERSION=5.2
@@ -19348,11 +19349,14 @@ function readers.colr(f,fontdata,specification)
  local tableoffset=gotodatatable(f,fontdata,"colr",specification.glyphs)
  if tableoffset then
   local version=readushort(f)
-  if version==0 or version==1 then
-   report("table version %a of %a is not supported (yet), maybe font %s is bad",version,"colr",fontdata.filename)
-   return
-  else
-  end
+		if version==0 then
+			
+		elseif version==1 then
+			report("table version %a of %a is %s supported for font %s",version,"colr","partially",fontdata.filename)
+		else
+			report("table version %a of %a is %s supported for font %s",version,"colr","not",fontdata.filename)
+			return
+		end
   if not fontdata.tables.cpal then
    report("color table %a in font %a has no mandate %a table","colr",fontdata.filename,"cpal")
    fontdata.colorpalettes={}

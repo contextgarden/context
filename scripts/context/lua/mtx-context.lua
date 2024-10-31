@@ -2065,6 +2065,18 @@ function scripts.context.timed(action)
     statistics.timed(action,true)
 end
 
+function scripts.context.runlua(filename)
+    if filename and filesuffix(filename) == "lua" then
+        local chunk = io.loadchunk(filename) -- 1024
+        if chunk and find(chunk,"^%-%- +runner=mtxrun") then
+            local result = os.execute("luametatex --luaonly " .. filename)
+            os.exit(result)
+            return true
+        end
+    end
+    return false
+end
+
 -- We don't want this as we might want to expand later on:
 
 -- environment.files = environment.globfiles()
@@ -2184,7 +2196,11 @@ elseif environment.filenames[1] or getargument("nofile") then
  --  -- setargument("pattern",dir.glob(environment.filenames[1]))
  -- end
  --
-    scripts.context.timed(scripts.context.autoctx)
+    if scripts.context.runlua(environment.filenames[1]) then
+        os.exit()
+    else
+        scripts.context.timed(scripts.context.autoctx)
+    end
 elseif getargument("pipe") then
     scripts.context.timed(scripts.context.pipe)
 elseif getargument("purge") then

@@ -5852,7 +5852,7 @@
 %D
 %D But, as we run a recent version of \TEX, we can use the new primitive:
 
-\aliased\let\dontleavehmode\quitvmode
+% \untraced\aliased\let\dontleavehmode\quitvmode % defined in syst-ini.mkxl
 
 %D \macros
 %D   {utfupper, utflower, uppercasestring, lowercasestring}

@@ -263,6 +263,9 @@ tex.mathscriptsmodecodes     = getthem(tex.getmathscriptsmodevalues,"scriptsmode
 tex.doublescriptoptioncodes  = getthem(tex.getdoublescriptoptionvalues,"doublescriptmodecode")
 tex.charactercontrolcodes    = getthem(tex.getcharactercontrolvalues,"charactercontrolcode")
 tex.specificationoptioncodes = getthem(tex.getspecificationoptionvalues,"specificationoptioncode")
+tex.discpartcodes            = getthem(tex.getdiscpartvalues)
+tex.glyphdisccodes           = getthem(tex.getglyphdiscvalues)
+tex.runstatecodes            = getthem(tex.getrunstatevalues)
 
 local linebreakstatecodes    = getthem(tex.getlinebreakstatevalues)
 tex.linebreakstatecodes      = linebreakstatecodes

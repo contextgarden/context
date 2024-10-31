@@ -161,10 +161,6 @@ function metapost.runscript(code)
     return ""
 end
 
-function metapost.scripterror(str)
-    report_metapost("script error: %s",str)
-end
-
 -- todo: random_seed
 
 local seed = nil
@@ -214,7 +210,6 @@ function metapost.load(name,method)
         mathmode        = method,
         runscript       = metapost.runscript,
         runinternal     = metapost.runinternal,
-        scripterror     = metapost.scripterror,
         maketext        = metapost.maketext,
         handlers        = {
             log         = metapost.newlogger(),
@@ -667,6 +662,10 @@ local gethashtokens = mplib.gethashtokens
 
 function metapost.getinstancenames()
     return sortedkeys(mpxformats)
+end
+
+function metapost.getinstancebyname(name)
+    return mpxformats[name]
 end
 
 -- This used to be in mlib-pdf but is also used elsewhere so we need to

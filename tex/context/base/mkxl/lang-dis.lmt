@@ -46,15 +46,15 @@ local new_disc           = nuts.pool.disc
 
 local nodecodes          = nodes.nodecodes
 local disccodes          = nodes.disccodes
-local discoptioncodes    = tex.discoptioncodes
+local discpartcodes      = tex.discpartcodes
 
 local disc_code          <const> = nodecodes.disc
 local glyph_code         <const> = nodecodes.glyph
 
-local pre_part_code      <const> = discoptioncodes.pre
-local post_part_code     <const> = discoptioncodes.post
-local replace_part_code  <const> = discoptioncodes.replace
-local always_part_code   <const> = discoptioncodes.always
+local pre_part_code      <const> = discpartcodes.pre
+local post_part_code     <const> = discpartcodes.post
+local replace_part_code  <const> = discpartcodes.replace
+local always_part_code   <const> = discpartcodes.always
 
 local explicitdisc_code  <const> = disccodes.explicit
 

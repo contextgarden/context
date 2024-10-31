@@ -41,6 +41,8 @@ language_state_info lmt_language_state = {
     .exceptions_count = 0,
     .hyphenated_count = 0,
     .nothing_count    = 0,
+    .word_buffer      = { 0 },
+    .uword_buffer     = { 0 }, 
 };
 
 /*tex
@@ -383,19 +385,20 @@ void tex_load_tex_patterns(halfword curlang, halfword head)
 /* define tex_isspace(c) (c == ' ' || c == '\t') */
 #  define tex_isspace(c) (c == ' ')
 
+# define word_buffer  lmt_language_state.word_buffer
+# define uword_buffer lmt_language_state.uword_buffer
+
 const char *tex_clean_hyphenation(halfword id, const char *buff, char **cleaned)
 {
     int items = 0;
-    /*tex Work buffer for bytes (can be \UTF8): */
-    unsigned char word[max_size_of_word_buffer];
-    /*tex Work buffer for \UNICODE\ (often too large): */
-    unsigned uword[max_size_of_word_buffer];
+ // unsigned char word_buffer[max_size_of_word_buffer]; /*tex Work buffer for bytes (can be \UTF8): */
+ // unsigned uword_buffer[max_size_of_word_buffer];     /*tex Work buffer for \UNICODE\ (often too large): */
     /*tex The \UNICODE\ buffer value: */
     int i = 0;
-    char *uindex = (char *) word;
+    char *uindex = (char *) word_buffer;
     const char *s = buff;
     while (*s && ! tex_isspace((unsigned char)*s)) {
-        word[i++] = (unsigned char) *s;
+        word_buffer[i++] = (unsigned char) *s;
         s++;
         if ((s - buff) > max_size_of_word) {
             /*tex We count utf characters so \quote {size of word} is somewhat misleading. */
@@ -409,45 +412,45 @@ const char *tex_clean_hyphenation(halfword id, const char *buff, char **cleaned)
         }
     }
     /*tex Now convert the input to \UNICODE. */
-    word[i] = '\0';
+    word_buffer[i] = '\0';
     /*tex We append a zero value as sentinal. */
-    aux_splitutf2uni(uword, (const char *)word);
+    aux_splitutf2uni(uword_buffer, (const char *) word_buffer);
     /*tex
         Build the new word string. The hjcode values < 32 indicate a length, so that
         for instance \|hjcode`ܽ2| makes that ligature count okay.
     */
     i = 0;
-    while (uword[i] > 0) {
-        int u = uword[i++];
+    while (uword_buffer[i] > 0) {
+        int u = uword_buffer[i++];
         if (u == '-') {
             /*tex Skip. */
         } else if (u == '=') {
             unsigned c = tex_get_hj_code(id, '-');
             uindex = aux_uni2string(uindex, (! c || c <= 32) ? '-' : c);
         } else if (u == '{') {
-            u = uword[i++];
+            u = uword_buffer[i++];
             items = 0;
             while (u && u != '}') {
-                u = uword[i++];
+                u = uword_buffer[i++];
             }
             if (u == '}') {
                 items++;
-                u = uword[i++];
+                u = uword_buffer[i++];
             }
             while (u && u != '}') {
-                u = uword[i++];
+                u = uword_buffer[i++];
             }
             if (u == '}') {
                 items++;
-                u = uword[i++];
+                u = uword_buffer[i++];
             }
             if (u == '{') {
-                u = uword[i++];
+                u = uword_buffer[i++];
             }
             while (u && u != '}') {
                 unsigned c = tex_get_hj_code(id, u);
                 uindex = aux_uni2string(uindex, (! c || c <= 32) ? u : c);
-                u = uword[i++];
+                u = uword_buffer[i++];
             }
             if (u == '}') {
                 items++;
@@ -463,22 +466,22 @@ const char *tex_clean_hyphenation(halfword id, const char *buff, char **cleaned)
                 return s;
             } else {
                 /* skip replacement (chars) */
-                if (uword[i] == '(') {
-                    while (uword[++i] && uword[i] != ')') { };
-                    if (uword[i] != ')') {
+                if (uword_buffer[i] == '(') {
+                    while (uword_buffer[++i] && uword_buffer[i] != ')') { };
+                    if (uword_buffer[i] != ')') {
                         tex_handle_error(
                             normal_error_type,
                             "Exception syntax error, an alternative replacement is defined as (text).",
                             NULL
                         );
                         return s;
-                    } else if (uword[i]) {
+                    } else if (uword_buffer[i]) {
                         i++;
                    }
                 }
                 /* skip penalty: [digit] but we intercept multiple digits */
-                if (uword[i] == '[') {
-                    if (uword[i+1] && uword[i+1] >= '0' && uword[i+1] <= '9' && uword[i+2] && uword[i+2] == ']') {
+                if (uword_buffer[i] == '[') {
+                    if (uword_buffer[i+1] && uword_buffer[i+1] >= '0' && uword_buffer[i+1] <= '9' && uword_buffer[i+2] && uword_buffer[i+2] == ']') {
                         i += 3;
                     } else {
                         tex_handle_error(
@@ -496,7 +499,7 @@ const char *tex_clean_hyphenation(halfword id, const char *buff, char **cleaned)
         }
     }
     *uindex = '\0';
-    *cleaned = lmt_memory_strdup((char *) word);
+    *cleaned = lmt_memory_strdup((char *) word_buffer);
     return s;
 }
 
@@ -969,7 +972,7 @@ static void tex_aux_do_exception(halfword wordstart, halfword r, char *replaceme
 
 */
 
-inline static halfword tex_aux_is_hyphen_char(halfword chr)
+static inline halfword tex_aux_is_hyphen_char(halfword chr)
 {
     if (tex_get_hc_code(chr)) {
         return tex_get_hc_code(chr);
@@ -1320,7 +1323,7 @@ static void tex_aux_hyphenate_show(halfword beg, halfword end)
 
 /* maybe split: first a processing run */
 
-inline static int is_traditional_hyphen(halfword n)
+static inline int is_traditional_hyphen(halfword n)
 {
     return (
         (glyph_character(n) == ex_hyphen_char_par)                             /*tex parameter */

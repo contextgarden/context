@@ -3992,7 +3992,11 @@ do
             local next = data.next
             if next then
                 if next == unicode then
-                    report_tweak("skipping cyclic %U (%s)",target,original,unicode,"next")
+                    if unicode == 0xFDFFF then
+                        -- can happen when we add privates
+                    else
+                        report_tweak("skipping cyclic %U (%s)",target,original,unicode,"next")
+                    end
                 else
                     add(target,original,characters,next,"next")
                 end

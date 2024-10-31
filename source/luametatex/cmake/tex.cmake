@@ -76,6 +76,7 @@ set(tex_sources
     source/tex/texfileio.c
     source/tex/texmath.c
     source/tex/texnodes.c
+    source/tex/texspecifications.c
     source/tex/textextcodes.c
     source/tex/textoken.c
     source/tex/texrules.c

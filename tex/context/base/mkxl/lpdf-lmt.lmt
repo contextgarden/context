@@ -648,6 +648,9 @@ do
             else
              -- we could check if effects have changed but effects use unique tables; for
              -- now they win over font effects (only used in math)
+tmrx             = 1
+tmry             = 1
+-- tmsy             = effect.slant   or fontparameters.slantfactor   or slant or 0
             end
         else
             -- These are the font specific effects and the scales are part of the main
@@ -812,7 +815,7 @@ do
             csy = 1
         end
         if     sx ~= current_sx -- was: f_x_scale
-            or sy ~= current_sy -- was: f_x_scale
+            or sy ~= current_sy -- was: f_y_scale
             or need_tf
             or font ~= current_font
          -- or current_pdf ~= f_pdf_cur
@@ -827,9 +830,7 @@ do
      -- elseif mode == "page" then
      --     pdf_goto_textmode()
      --     set_font()
-        elseif current_factor ~= factor
-         -- or cur_tmrx ~= tmrx
-        then
+        elseif current_factor ~= factor then -- or cur_tmrx ~= tmrx
             -- check if this happens and when
             setup_fontparameters(font,factor,sx,sy,slant,weight,effect)
             need_tm = true

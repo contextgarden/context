@@ -58,7 +58,7 @@ static void xdecimallib_initialize(void)
     a metatable.
 */
 
-inline static decimal xdecimallib_push(lua_State *L)
+static inline decimal xdecimallib_push(lua_State *L)
 {
     decimal p = lua_newuserdatauv(L, sizeof(decNumber), 0);
     luaL_setmetatable(L, DECIMAL_METATABLE);
@@ -80,7 +80,7 @@ static void decNumberFromDouble(decNumber *A, double B, decContext *C) /* from m
     decNumberFromString(A, buf, C);
 }
 
-inline static int xdecimallib_new(lua_State *L)
+static inline int xdecimallib_new(lua_State *L)
 {
     decimal p = xdecimallib_push(L);
     switch (lua_type(L, 1)) {

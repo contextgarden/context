@@ -105,9 +105,9 @@ function fonts.helpers.mathscriptslots(tfmdata,textcode)
     end
 end
 
-local function manipulate(tfmdata,value)
+local function manipulate(tfmdata,key,value)
  -- if texconditionals["c_font_compact"] then
-    if value then -- so basically always
+    if key and value then -- so basically always
         local rawdata           = tfmdata.shared.rawdata
         local rawresources      = rawdata and rawdata.resources
         local rawfeatures       = rawresources and rawresources.features
@@ -200,12 +200,20 @@ end
 --     }
 -- }
 
+local function bah(tfmdata,value,features)
+    -- has to come first
+    manipulate(tfmdata,"compactmath",features.compactmath)
+    -- so we might eventually merge these
+    initialize(tfmdata,value,features)
+end
+
 registerotffeature {
     name         = "compactmath",
     description  = "use one math font",
     initializers = {
-        base = function(...) manipulate(...) initialize(...) end,
-        node = function(...) manipulate(...) initialize(...) end,
+        -- hm, different arguments
+        base = bah,
+        node = bah,
     }
 }
 

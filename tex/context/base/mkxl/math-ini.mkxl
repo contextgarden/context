@@ -561,6 +561,7 @@
    +\checkkernpairclassoptioncode
  % +\flattenclassoptioncode
    +\obeynestingclassoptioncode
+   +\shortinlineclassoptioncode
 \relax
 
 \setmathoptions\mathrelationcode\numexpr
@@ -573,6 +574,7 @@
  % +\flattenclassoptioncode
  % +\omitpenaltyclassoptioncode
    +\obeynestingclassoptioncode
+   +\shortinlineclassoptioncode
 \relax
 
 \setmathoptions\mathimplicationcode\numexpr
@@ -585,6 +587,7 @@
  % +\flattenclassoptioncode
  % +\omitpenaltyclassoptioncode
    +\obeynestingclassoptioncode
+   +\shortinlineclassoptioncode
 \relax
 
 \setmathoptions\mathopencode\numexpr
@@ -596,6 +599,7 @@
  % +\checkligatureclassoptioncode
    +\checkkernpairclassoptioncode
    +\pushnestingclassoptioncode
+   +\shortinlineclassoptioncode
 \relax
 
 \setmathoptions\mathclosecode\numexpr
@@ -608,6 +612,7 @@
    +\checkkernpairclassoptioncode
    +\raiseprimeclassoptioncode
    +\popnestingclassoptioncode
+   +\shortinlineclassoptioncode
 \relax
 
 \setmathoptions\mathpunctuationcode\numexpr
@@ -620,6 +625,7 @@
    +\checkkernpairclassoptioncode
    +\removeitaliccorrectionclassoptioncode
    +\obeynestingclassoptioncode
+   +\shortinlineclassoptioncode
 \relax
 
 \setmathoptions\mathvariablecode\numexpr
@@ -698,6 +704,7 @@
  % +\righttopkernclassoptioncode
  % +\leftbottomkernclassoptioncode
    +\rightbottomkernclassoptioncode
+   +\shortinlineclassoptioncode
 \relax
 
 \setmathoptions\mathbegincode\numexpr
@@ -1992,16 +1999,19 @@
     \Umathruledepth \allscriptscriptstyles\strutdepthfactor \fontspecifiedsize\scriptscriptfont\zerocount
 \to \everybodyfont
 
+% The unset height and depth default to this sig    nal that then tells
+% the engine what to apply from the char dimensions.
+
 \protected\def\math_strut
   {\normalsrule
-     \s!width \zeropoint
+     %s!width \zeropoint
      \s!fam   \fam
      \s!char  \c_math_strut
    \relax}
 
 \permanent\protected\def\math_strut_height
   {\normalsrule
-     \s!width \zeropoint
+     %s!width \zeropoint
      \s!depth \zeropoint
      \s!fam   \fam
      \s!char  \c_math_strut
@@ -2009,7 +2019,7 @@
 
 \permanent\protected\def\math_strut_depth
   {\normalsrule
-     \s!width \zeropoint
+     %s!width \zeropoint
      \s!height\zeropoint
      \s!fam   \fam
      \s!char  \c_math_strut
@@ -2024,8 +2034,11 @@
     \permanent\protected\def\mathdepthstrut {\math_strut_depth}
 \popoverloadmode
 
-\permanent\protected\def\topstrut{\normalsrule\s!width\zeropoint\s!height\strutht  \s!depth\zeropoint\relax}
-\permanent\protected\def\botstrut{\normalsrule\s!width\zeropoint\s!height\zeropoint\s!depth\strutdp  \relax}
+% \permanent\protected\def\topstrut{\normalsrule\s!width\zeropoint\s!height\strutht  \s!depth\zeropoint\relax}
+% \permanent\protected\def\botstrut{\normalsrule\s!width\zeropoint\s!height\zeropoint\s!depth\strutdp  \relax}
+
+\permanent\protected\def\topstrut{\normalsrule\s!height\strutht\relax}
+\permanent\protected\def\botstrut{\normalsrule\s!depth \strutdp\relax}
 
 % \newdimension\mathstrutht % see top
 % \newdimension\mathstrutdp % see top

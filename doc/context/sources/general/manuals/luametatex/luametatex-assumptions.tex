@@ -1,0 +1,90 @@
+% language=us runpath=texruns:manuals/luametatex
+
+\environment luametatex-style
+
+\startdocument[title=Assumptions]
+
+\startsection[title={Introduction}]
+
+Because the engine provides no backend there is also no need to document it.
+However, in \CONTEXT\ we assume some features to be supported by its own backend.
+These will be collected here. This chapter is rather \CONTEXT\ specific, for
+instance we have extended what can be done with characters and that is pretty
+much up to a macro package to decide.
+
+\stopsection
+
+\startsection[title=Virtual fonts]
+
+Virtual fonts are a nice extension to traditional \TEX\ fonts that originally was
+independent from the engine, which only needs dimensions from a \TFM\ file. In
+\LUATEX, because it has a backend built in, virtual fonts are handled by the
+engine but here we also can construct such fonts at runtime. The original set of
+commands is:
+
+\starttabulate[|w(4em)||||]
+\NC char    \NC \textplus  \NC chr sx sy \NC \NC \NR
+\NC right   \NC \textplus  \NC amount    \NC \NC \NR
+\NC down    \NC \textplus  \NC amount    \NC \NC \NR
+\NC push    \NC \textplus  \NC           \NC \NC \NR
+\NC pop     \NC \textplus  \NC           \NC \NC \NR
+\NC font    \NC \textplus  \NC index     \NC \NC \NR
+\NC nop     \NC \textplus  \NC           \NC \NC \NR
+\NC special \NC \textminus \NC str       \NC \NC \NR
+\NC rule    \NC \textplus  \NC v h       \NC \NC \NR
+\stoptabulate
+
+The \PDFTEX\ engine added two more but these are not supported in \CONTEXT:
+
+\starttabulate[|w(4em)||||]
+\NC pdf     \NC \textminus \NC str \NC \NC \NR
+\NC pdfmode \NC \textminus \NC n   \NC \NC \NR
+\stoptabulate
+
+The \LUATEX\ engine also added some but these are never found in loaded fonts,
+only in those constructed at runtime. Two are not supported in \CONTEXT.
+
+\starttabulate[|w(4em)||||]
+\NC lua     \NC \textplus  \NC code  \NC f(font,char,posh,posv,sx,sy) \NC \NR
+\NC image   \NC \textminus \NC n     \NC                              \NC \NR
+\NC node    \NC \textplus  \NC n     \NC                              \NC \NR
+\NC scale   \NC \textminus \NC sx sy \NC                              \NC \NR
+\stoptabulate
+
+The \LUAMETATEX\ engine has nothing on board and doesn't even carry the virtual
+commands around. The backend can just fetch them from the \LUA\ end. An advantage is
+that we can easily extend the repertoire of commands:
+
+\starttabulate[|w(4em)||||]
+\NC slot     \NC \textplus  \NC index chr csx csy                            \NC \NC \NR
+\NC use      \NC \textplus  \NC index chr ... chr                            \NC \NC \NR
+\NC left     \NC \textplus  \NC amount                                       \NC \NC \NR
+\NC up       \NC \textplus  \NC amount                                       \NC \NC \NR
+\NC offset   \NC \textplus  \NC h v chr [csx [csy]]                          \NC \NC \NR
+\NC stay     \NC \textplus  \NC chr (push/pop)                               \NC \NC \NR
+\NC compose  \NC \textplus  \NC h v chr                                      \NC \NC \NR
+\NC frame    \NC \textplus  \NC wd jt dp line outline advance baseline color \NC \NC \NR
+\NC line     \NC \textplus  \NC wd ht dp color                               \NC \NC \NR
+\NC inspect  \NC \textplus  \NC                                              \NC \NC \NR
+\NC trace    \NC \textplus  \NC                                              \NC \NC \NR
+\NC <plugin> \NC \textplus  \NC                                              \NC f(posh,posv,packet) \NC \NR
+\stoptabulate
+
+There are some manipulations that don't need the virtual mechanism. In addition to the
+character properties like \type {width}, \type {height} and \type {depth} we also have:
+
+\starttabulate[||||]
+\NC advance \NC         \NC the width used in the backend \NC \NR
+\NC scale   \NC         \NC an additional scale factor    \NC \NR
+\NC xoffset \NC         \NC horizontal shift              \NC \NR
+\NC yoffset \NC         \NC vertical shift                \NC \NR
+\NC effect  \NC slant   \NC factor used for tilting       \NC \NR
+\NC         \NC extend  \NC horizontal scale              \NC \NR
+\NC         \NC squeeze \NC vertical scale               \NC \NR
+\NC         \NC mode    \NC special effects like outline \NC \NR
+\NC         \NC weight  \NC pen stroke width             \NC \NR
+\stoptabulate
+
+\stopsection
+
+\stopdocument

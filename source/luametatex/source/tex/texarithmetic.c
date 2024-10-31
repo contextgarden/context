@@ -63,7 +63,7 @@
 
 */
 
-inline static scaled tex_aux_m_and_a(int n, scaled x, scaled y, scaled max_answer)
+static inline scaled tex_aux_m_and_a(int n, scaled x, scaled y, scaled max_answer)
 {
     if (n == 0) {
         return y;

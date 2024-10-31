@@ -883,7 +883,7 @@ implement {
             elseif what and (what & global_code) ~= 0 then
                 texsetcount("global",t,c)
             else
-                texsetcount(t,c)
+               texsetcount(t,c)
             end
         end
     end

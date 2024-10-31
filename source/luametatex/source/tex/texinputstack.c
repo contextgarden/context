@@ -486,7 +486,10 @@ void tex_set_trick_count(void)
 
     We don't care too much if we stay a bit too much below the max error_line even if we have more
     room on the line. If length is really an issue then any length is. After all one can set the
-    length larger.
+    length larger. 
+
+    This is not the nicest looking output so at some day I might spend some time on a variant that 
+    is a bit more helpful. 
 
 */
 
@@ -518,7 +521,7 @@ static void tex_aux_print_valid_utf8(int q)
 void tex_show_context(void)
 {
     int context_lines = -1; /*tex Number of contexts shown so far, less one: */
-    bool bottom_line = false;    /*tex Have we reached the final context to be shown? */
+    bool bottom_line = false; /*tex Have we reached the final context to be shown? */
     lmt_input_state.base_ptr = lmt_input_state.input_stack_data.ptr;
     lmt_input_state.input_stack[lmt_input_state.base_ptr] = lmt_input_state.cur_input;
     while (1) {
@@ -655,7 +658,7 @@ void tex_show_context(void)
 
 */
 
-inline static void tex_aux_push_input(void)
+static inline void tex_aux_push_input(void)
 {
     if (tex_aux_room_on_input_stack()) {
         lmt_input_state.input_stack[lmt_input_state.input_stack_data.ptr] = lmt_input_state.cur_input;
@@ -665,7 +668,7 @@ inline static void tex_aux_push_input(void)
     }
 }
 
-inline static void tex_aux_pop_input(void)
+static inline void tex_aux_pop_input(void)
 {
     lmt_input_state.cur_input = lmt_input_state.input_stack[--lmt_input_state.input_stack_data.ptr];
 }

@@ -55,7 +55,7 @@ even.
 
 */
 
-inline static double mp_double_make_fraction (double p, double q) { 
+static inline double mp_double_make_fraction (double p, double q) { 
  // return (p / q) * fraction_multiplier; 
     return p == 0.0 ? 0.0 : (p / q) * fraction_multiplier; 
 }
@@ -63,12 +63,12 @@ inline static double mp_double_make_fraction (double p, double q) {
 // printf("%f %f %f %f\n",p,q,p*q,(p * q) / fraction_multiplier);
 // -4096.000000 0.000000 -0.000000 -0.000000
 
-inline static double mp_double_take_fraction(double p, double q) { 
+static inline double mp_double_take_fraction(double p, double q) { 
  // return (p * q) / fraction_multiplier; 
     return p == 0.0 ? 0.0 : q == 0.0 ? 0.0 : (p * q) / fraction_multiplier; 
 }
 
-inline static double mp_double_make_scaled(double p, double q) { 
+static inline double mp_double_make_scaled(double p, double q) { 
  // return p / q; 
     return p == 0.0 ? 0.0 : p / q; 
 }

@@ -71,7 +71,12 @@ local cache = table.setmetatableindex(function(t,w)
     return v
 end)
 
-local function initialize(tfmdata,value)
+-- should be (test first)
+--
+-- local function initialize(tfmdata,feature,value)
+--     if feature == "braille" and value then
+
+local function initialize(tfmdata,key,value)
     if value then
         if not braille then
             require("char-brl.lmt")

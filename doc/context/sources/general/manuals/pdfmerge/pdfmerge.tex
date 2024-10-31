@@ -3,7 +3,8 @@
 % The font merge feature is also availble in \MKIV\ where it is an experiment and
 % some cleanup is also there. In \LMTX\ it's more mature. Thanks to the competent
 % Team Ramkumar (including Syabil and Fish) for providing input, testing this
-% extensively, and feed back.
+% extensively, and feed back. Massimiliano Farinella did extensive tests with
+% complex files originating in InDesign and InkScape.
 
 % \nopdfcompression
 
@@ -149,6 +150,8 @@ table.save(
 
 \starttext
 
+\startsubject[title={Introduction}]
+
 The three graphic formats that make most sense for inclusion in \PDF\ are \PNG,
 \JPG, and \PDF. The easiest if these is \JPG\ because basically the binary blob
 get transferred to the result file. A \PNG\ graphic might need more work because
@@ -159,7 +162,25 @@ copy the used objects to the result, so when those object are for instance \PNG\
 encoded images, we gain runtime, but when we're talking pages of documents it
 might take some more. Nevertheless, in practice it is still quite efficient.
 
-Here we focus on \PDF\ inclusion where we have sereral scenarios to deal with:
+This manual describes how to manipulate \PDF\ files that are not behaving well
+or from which pages are to be embedded another \PDF\ file within constraints. We
+discuss how to cleanup and|/|or embed fonts, fix colors, get rid of interfering
+resources and fix the page stream.
+
+Many thanks to Massimiliano Farinella for teaming up to make this all work better
+and conducting extensive test on complex documents.
+
+\startlines
+Hans Hagen
+Hasselt NL
+January 2024\high{++}
+\stoplines
+
+\stopsubject
+
+\startsubject[title={Embedding \PDF\ files}]
+
+Here we focus on \PDF\ inclusion where we have several scenarios to deal with:
 
 \startitemize[packed]
     \startitem
@@ -182,9 +203,30 @@ To this we can add:
     \startitem
         Inclusion of one or more pages from \PDF\ files that are generated
         independently (subruns) for instance in the process of writing a manual
-        about something \CONTEXT. Think of externaly processed buffers.
+        about something \CONTEXT. Think of externally processed buffers.
     \stopitem
 \stopitemize
+
+The most natural way to include pages is to use the \typ {\externalfigure}
+command but later we will see that there are more ways to manipulate \PDF\ files.
+
+\starttyping
+\externalfigure[myfile.pdf][page=4]
+\stoptyping
+
+If you have problems with the inclusion that originate in the compact features
+discussed here you can say:
+
+\starttyping
+\externalfigure[myfile.pdf][page=4,compact=]
+\stoptyping
+
+but also make sure to tell us what goes wrong so that we can fix it. We can't
+predict what \PDF\ is fed into the machinery.
+
+\stopsubject
+
+\startsubject[title={Embedding multiple \PDF\ files and sharing common content}]
 
 When we include more than one page from a file, we only need to embed shared
 objects once. Of course it demands some object management but that has to be done
@@ -199,6 +241,10 @@ can think of errors in the page stream, color spaces that don't match, missing
 properties, invalid metadata, etc. Often there's not much we can do about it, but
 sometimes we can. However, it has to happen under user control and the outcome
 has to be checked, although often a visual check is good enough.
+
+\stopsubject
+
+\startsubject[title={The \type {compact} parameter and fonts merging}]
 
 The \type {compact} parameter of \type {\externalfigure} controls the embedding
 of \PDF\ content. When set to \quote {yes} it will merge fonts but only when the
@@ -252,7 +298,7 @@ embed = {
 \stoptyping
 
 References to glyphs in the page stream use an eight bit string encoding or an
-hexadecimal byte pairs. Depending on the font type we have upto 256 references
+hexadecimal byte pairs. Depending on the font type we have up to 256 references
 (using one character or two hex bytes) or at most 65536 references (using two
 characters or 4 hex bytes). We normalize everything to hex encoding. That way we
 get rid of the ugly escapes and exceptions in page stream glyph string.
@@ -301,11 +347,15 @@ graphics.registerpdffont {
 }
 \stoptyping
 
-The \type {unicode} key needed when you get rubish due to the indices in the page
-stream being different from glyph indices in the used font. In that case we go
-via the \type {tounicode} vector which works ok for the average simple document
-not using special font features. There is some trial and error involved but that
-is probably worth the effort when you have to manipulate many documents.
+The \type {unicode} key needed when you get rubbish due to the indices in the
+page stream being different from glyph indices in the used font. In that case we
+go via the \type {tounicode} vector which works ok for the average simple
+document not using special font features. There is some trial and error involved
+but that is probably worth the effort when you have to manipulate many documents.
+
+\stopsubject
+
+\startsubject[title={Manipulating properties other than fonts}]
 
 There are two activities when we compact: fonts and content. When content is
 handled additional parsing of the page stream has to happen. What gets processed
@@ -399,7 +449,7 @@ and
 
 are typeset with \PDFTEX\ and \MKII\ so they have the \TYPEONE\ instead of the
 \OPENTYPE\ Latin Modern file embedded (in fact, the \MKII\ and \MKIV\ files use
-the twelve point variant and \LMTX\ the upscaled ten point, so if those were the
+the twelve point variant and \LMTX\ the upscaled ten point), so if those were the
 same we would have an even smaller final file.
 
 \startplacefigure[title={An example of content manipulation.},reference=fig:compact-1]
@@ -408,7 +458,7 @@ same we would have an even smaller final file.
 
 A useful manipulation is removing tags. The fact that the content is tagged
 doesn't mean that tagging has any use, certainly not if it relates to editing
-specific for some application. Maybe at some point I'll add a retagging option
+specific for some application. Maybe at some point I'll add a re-tagging option
 but for now we just strip:
 
 \starttyping
@@ -433,6 +483,16 @@ reduce = {
     cmyk  = true,
 }
 \stoptyping
+
+\type {reduce} converts to gray scale all the \RGB\ colors that have the same
+values for \type {r}, \type {g} and \type {b} and \typ {rgb = true} or \typ
+{color = true}).
+
+The same goes for every \CMYK\ color where \type {c}, \type {m}, \type {m} are
+the same and when \typ {cmyk = true} or \typ {color = true}. In this case the
+common component component is added to the \type {k} component. For example, \typ
+{.2 .2 .2 .5 K} becomes \typ {.2 + .5 = .7 G}, while \typ {.5 .5 .5 .7 K} becomes
+\typ {1 G}, because the sum is limited to 1.
 
 Using a gray scale is more efficient and in the case of \CMYK\ a sloppy \typ {.5
 .5 .5 0 K} quite likely is meant to be \typ {0 0 0 0.5 K} or just \typ {.5 G}.
@@ -576,9 +636,72 @@ In \in {figure} [fig:compact-3] we show an example. The file used looks like:
 
 \typefile{test-006.tex}
 
-\startplacefigure[title={An example of remapping colors.},reference=fig:compact-3]
+\startplacefigure[title={An example of remapping \CMYK\ colors.},reference=fig:compact-3]
     \typesetbuffer[demo-3][compact=yes]
 \stopplacefigure
+
+In case we wanted to map single \RGB\ values to \CMYK,
+we would define an analogous map:
+
+\starttyping
+local rgbmap = {
+    { 100, 0, 22, 40.8, 100, 55, 0, 57 } -- factor, r, g, b, c, m, y, k
+}
+graphics.registerpdfcompactor ( "preset:demo-8", {
+    identify =  "all",
+    merge    = { lmtx = true },
+    convert  = { rgb = rgbmap },
+} )
+\stoptyping
+
+Here the entries in a \RGB\ map are:
+
+\starttyping
+    { factor, r, g, b, c, m, y, k }
+\stoptyping
+
+\startbuffer[demo-6]
+\startluacode
+    local cmykmap = {
+        { 100, 0, 22, 40.8, 100, 55, 0, 57 } -- factor, r, g, b, c, m, y, k
+    }
+    graphics.registerpdfcompactor ( "preset:demo-6", {
+        identify =  "all",
+        merge    = { lmtx = true },
+        convert  = { rgb = true },
+    } )
+    graphics.registerpdfcompactor ( "preset:demo-7", {
+        identify =  "all",
+        merge    = { lmtx = true },
+        convert  = { rgb = rgbmap },
+    } )
+\stopluacode
+
+\setupexternalfigures[compact=preset:demo-1]
+
+\startTEXpage
+    \startcombination[nx=2,ny=1]
+        {\externalfigure
+            [test-006.pdf]
+            [frame=on,compact=preset:demo-6,width=6cm,object=no,arguments=5]}
+        {demo-6}
+        {\externalfigure
+            [test-006.pdf]
+            [frame=on,compact=preset:demo-7,width=6cm,object=no,arguments=6]}
+        {demo-7}
+    \stopcombination
+\stopTEXpage
+\stopbuffer
+
+In \in {figure} [fig:compact-6] we show an example.
+
+\startplacefigure[title={An example of remapping \RGB\ colors.},reference=fig:compact-6]
+    \typesetbuffer[demo-6][compact=yes]
+\stopplacefigure
+
+\stopsubject
+
+\startsubject[title={The \type {fixpdf} script}]
 
 I want to stress that you need to check the outcome. Often a visual check is
 enough. Extending the compactor beyond what \MKIV\ provided was to a large extend
@@ -586,7 +709,10 @@ facilitated by a cooperation with Tan, Syabil M. and Ser, Zheng Y. of \quote
 {Team Ramkumar} who did extensive testing and gave enjoyable feedback. In the
 process a test script was made that can help with experiments. We assume that
 \type {qpdf}, \type {mutool} and \type {graphicmagic} abd \type {verapdf} are
-installed.
+installed. Massimiliano Farinella applied these mechanism to large complex
+files from InDesign and InkScape that needed fixing and in the process the code
+got extended and improved. \footnote {Feel free to send us files that give
+problems so that we can look into it.}
 
 \starttyping
 mtxrun --script fixpdf --uncompress                         foo
@@ -670,13 +796,9 @@ return {
 \stoptyping
 
 A file like this is easier than registering in a \LUA\ snippet. It's also more
-future proof. The somewhat weird font list is normally build up as we test and
-is often rather specific for a specific set of files.
+future proof. The somewhat weird font list is normally build up as we test and is
+often rather specific for a specific set of files.
 
-\startlines
-Hans Hagen
-Hasselt NL
-January 2024
-\stoplines
+\stopsubject
 
 \stopdocument

@@ -70,7 +70,7 @@ detailed feedback from the engine, less code and memory usage, the size of the
 format file. Trying to get lower numbers is also kind of fun.
 
 Back to the user interface, we now introduce some abstraction (the \type {test}
-in the names avoids cashes with existing definitions):
+in the names avoids clashes with existing definitions):
 
 \starttyping
 \def\??testfoo    {999>}
@@ -149,7 +149,7 @@ especially because we also need to handle nested csnames.
 As an aside I also played a bit with \quote {compiling} regular csname commands
 followed by a namespace into one token but that was even more messier. \footnote
 {Occasionally I consider some compilation of tokens lists into more efficient
-ones but do far I could resist.} So in the end I removed all that experimental
+ones but so far I could resist.} So in the end I removed all that experimental
 namespace code and happily accept the fact that there's nothing to gain, but it
 was a fun experiment.
 

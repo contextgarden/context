@@ -14,11 +14,16 @@
 % \futureexpandis
 % \futureexpandisap
 
+\startmodule[system-syntax]
+
+% \permanent\def\foo{}
+% \def\OEPS{\enforced\def\foo{}} \OEPS
+
 \registerctxluafile{s-system-syntax}{}
 
 \definehead
   [Syntax]
-  [subsubsubsection]
+  [subsubsubsubsection]
   [style=\tta\bf,
    numberwidth=2fs,
    after=\blank\startpacked,
@@ -175,6 +180,10 @@
     \ctxlua{moduledata.engine.codes("shapingpenaltiescodes")}
 \stopbuffer
 
+\startbuffer[engine:syntax:penaltyoptioncodes]
+    \ctxlua{moduledata.engine.codes("penaltyoptioncodes")}
+\stopbuffer
+
 \startbuffer[engine:syntax:automigrationcodes]
     \ctxlua{moduledata.engine.codes("automigrationcodes")}
 \stopbuffer
@@ -194,6 +203,76 @@
 \startbuffer[engine:syntax:mathgluecodes]
     \ctxlua{moduledata.engine.codes(tex.getmathgluevalues())}
 \stopbuffer
+
+\startbuffer[engine:syntax:linebreakcontextcodes]
+    \ctxlua{moduledata.engine.codes(tex.getbreakcontextvalues())}
+\stopbuffer
+
+\startbuffer[engine:syntax:hyphenationcodes]
+    \ctxlua{moduledata.engine.codes(tex.gethyphenationvalues())}
+\stopbuffer
+
+\startbuffer[engine:syntax:functioncodes]
+    \ctxlua{moduledata.engine.codes(token.getfunctionvalues())}
+\stopbuffer
+
+\startbuffer[engine:syntax:flagcodes]
+    \ctxlua{moduledata.engine.codes(tex.getflagvalues())}
+\stopbuffer
+
+\startbuffer[engine:syntax:directioncodes]
+    \ctxlua{moduledata.engine.codes(tex.getdirectionvalues())}
+\stopbuffer
+
+\startbuffer[engine:syntax:primitiveorigins]
+    \ctxlua{moduledata.engine.codes(tex.getprimitiveorigins())}
+\stopbuffer
+
+\startbuffer[engine:syntax:commandcodes]
+    \ctxlua{moduledata.engine.codes(token.getcommandvalues())}
+\stopbuffer
+
+\startbuffer[engine:syntax:runstates]
+    \ctxlua{moduledata.engine.codes(tex.getrunstatevalues())}
+\stopbuffer
+
+\startbuffer[engine:syntax:modes]
+    \ctxlua{moduledata.engine.codes(tex.getmodevalues())}
+\stopbuffer
+
+\startbuffer[engine:syntax:mathstyles]
+    \ctxlua{moduledata.engine.codes(tex.getmathstylevalues())}
+\stopbuffer
+
+\startbuffer[engine:syntax:mathclasses]
+    \ctxlua{moduledata.engine.codes(mathematics.classes)}
+\stopbuffer
+
+\startbuffer[engine:syntax:marknames]
+    \ctxlua{moduledata.engine.codes(tex.getmarknames())}
+\stopbuffer
+
+\startbuffer[engine:syntax:pagestatecodes]
+    \ctxlua{moduledata.engine.codes(tex.getpagestatevalues())}
+\stopbuffer
+
+\startbuffer[engine:syntax:localboxlocations]
+    \ctxlua{moduledata.engine.codes(tex.getlocalboxlocations())}
+\stopbuffer
+
+\startbuffer[engine:syntax:interactionmodes]
+    \ctxlua{moduledata.engine.codes(tex.getinteractionmodes())}
+\stopbuffer
+
+\startbuffer[engine:syntax:selectorvalues]
+    \ctxlua{moduledata.engine.codes(texio.getselectorvalues())}
+\stopbuffer
+
+\startbuffer[engine:syntax:frozenparcodes]
+    \ctxlua{moduledata.engine.codes(tex.getfrozenparvalues())}
+\stopbuffer
+
+\stopmodule
 
 \continueifinputfile{s-system-syntax.mkxl}
 

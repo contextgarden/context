@@ -218,7 +218,7 @@ enddef ;
 vardef flow_i_point (expr x, y, p, t) =
     begingroup ;
         save q, ok ; pair q ; boolean ok ;
-        q := flow_xypath[x][y] intersection_point ((p) shifted flow_xy_offset(x,y)) ;
+        q := flow_xypath[x][y] intersectionpoint ((p) shifted flow_xy_offset(x,y)) ;
         ok := true ;
         if not ok :
             message (t & " of shape (" & decimal x & "," & decimal y & ") limited") ;
@@ -323,14 +323,20 @@ def flow_collapse_points = % this can become a core macro
         save n ; numeric n ;
         n := 1 ;
         for i=2 upto flow_xypoint :
-            if not (flow_xypoints[i] = flow_xypoints[n]) :
+% message(flow_xypoints[i]);
+% message(flow_xypoints[n]);
+          % if not (flow_xypoints[i] = flow_xypoints[n]) :
+            if abs(flow_xypoints[i] - flow_xypoints[n]) > eps :
                 n := n + 1 ;
                 flow_xypoints[n] := flow_xypoints[i]
             fi ;
         endfor ;
         flow_xypoint := n ;
         % make straight lines
-        if flow_xypoints[2] = flow_xypoints[flow_xypoint-1] :
+% message(flow_xypoints[2]);
+% message(flow_xypoints[flow_xypoint-1]);
+      % if flow_xypoints[2] = flow_xypoints[flow_xypoint-1] :
+        if abs(flow_xypoints[2] - flow_xypoints[flow_xypoint-1]) < eps :
             flow_xypoints[3] := flow_xypoints[flow_xypoint] ;
             flow_xypoint := 3 ;
         fi ;
@@ -345,35 +351,35 @@ vardef flow_smooth_connection(expr a,b) =
     fi
 enddef ;
 
-vardef flow_trim_points =
-    begingroup
-        save p, a, b, d, i ; numeric a, b ; path p ; pair d ;
-        p := for i=1 upto flow_xypoint-1 : flow_xypoints[i]-- endfor flow_xypoints[flow_xypoint] ;
-        if flow_touchshape :
-            a := flow_shape_line_width/flow_grid_width ;
-            b := flow_shape_line_width/flow_grid_height ;
-        else :
-            a := epsilon ;
-            b := epsilon ;
-        fi ;
-        d := direction infinity of p ;
-        flow_xypoints[flow_xypoint] := flow_xypoints[flow_xypoint] shifted
-        if     xpart d < 0 : (+a,0) ;
-        elseif xpart d > 0 : (-a,0) ;
-        elseif ypart d < 0 : (0,+b) ;
-        elseif ypart d > 0 : (0,-b) ;
-        else               : origin ;
-        fi ;
-        d := direction 0 of p ;
-        flow_xypoints[1] := flow_xypoints[1] shifted
-        if     xpart d < 0 : (-a,0) ;
-        elseif xpart d > 0 : (+a,0) ;
-        elseif ypart d < 0 : (0,-b) ;
-        elseif ypart d > 0 : (0,+b) ;
-        else               : origin ;
-        fi ;
-    endgroup
-enddef ;
+% vardef flow_trim_points =
+%     begingroup
+%         save p, a, b, d, i ; numeric a, b ; path p ; pair d ;
+%         p := for i=1 upto flow_xypoint-1 : flow_xypoints[i]-- endfor flow_xypoints[flow_xypoint] ;
+%         if flow_touchshape :
+%             a := flow_shape_line_width/flow_grid_width ;
+%             b := flow_shape_line_width/flow_grid_height ;
+%         else :
+%             a := epsilon ;
+%             b := epsilon ;
+%         fi ;
+%         d := direction infinity of p ;
+%         flow_xypoints[flow_xypoint] := flow_xypoints[flow_xypoint] shifted
+%         if     xpart d < 0 : (+a,0) ;
+%         elseif xpart d > 0 : (-a,0) ;
+%         elseif ypart d < 0 : (0,+b) ;
+%         elseif ypart d > 0 : (0,-b) ;
+%         else               : origin ;
+%         fi ;
+%         d := direction 0 of p ;
+%         flow_xypoints[1] := flow_xypoints[1] shifted
+%         if     xpart d < 0 : (-a,0) ;
+%         elseif xpart d > 0 : (+a,0) ;
+%         elseif ypart d < 0 : (0,-b) ;
+%         elseif ypart d > 0 : (0,+b) ;
+%         else               : origin ;
+%         fi ;
+%     endgroup
+% enddef ;
 
 vardef flow_trim_points = enddef ;
 
@@ -422,7 +428,7 @@ def flow_flush_connections = % protect locals
         if flow_ccross[i] :
             crossing := false ;
             for j=1 upto i :
-                if not  (point infinity of flow_cpaths[i] = point infinity of flow_cpaths[j]) :
+                if not (point infinity of flow_cpaths[i] = point infinity of flow_cpaths[j]) :
                     ip := flow_cpaths[i] intersection_point flow_cpaths[j] ;
                     if intersection_found : crossing := true fi ;
                 fi ;
@@ -697,6 +703,7 @@ vardef flow_valid_connection (expr xfrom, yfrom, xto, yto) =
 enddef ;
 
 def flow_connect_top_bottom (expr n) (expr xfrom, yyfrom, zfrom) (expr xto, yyto, zto) =
+    begingroup ; save yfrom, yto ;
     yfrom := flow_y_pos(yyfrom) ;
     yto := flow_y_pos(yyto) ;
     if flow_points_initialized(xfrom,yfrom,xto,yto,6) :
@@ -723,9 +730,11 @@ def flow_connect_top_bottom (expr n) (expr xfrom, yyfrom, zfrom) (expr xto, yyto
         %%%% end experiment
         flow_draw_connection(n,xfrom,yyfrom,xto,yyto) ;
     fi ;
+    endgroup ;
 enddef ;
 
 def flow_connect_left_right (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
+    begingroup ; save yfrom, yto ;
     yfrom := flow_y_pos(yyfrom) ;
     yto := flow_y_pos(yyto) ;
     if flow_points_initialized(xfrom,yfrom,xto,yto,6) :
@@ -747,9 +756,11 @@ def flow_connect_left_right (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zt
         %%%% end experiment
         flow_draw_connection(n,xfrom,yyfrom,xto,yyto) ;
     fi ;
+    endgroup ;
 enddef ;
 
 def flow_connect_left_top (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
+    begingroup ; save yfrom, yto ;
     yfrom := flow_y_pos(yyfrom) ;
     yto := flow_y_pos(yyto) ;
     if flow_points_initialized(xfrom,yfrom,xto,yto,5) :
@@ -763,9 +774,11 @@ def flow_connect_left_top (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto)
         fi ;
         flow_draw_connection(n,xfrom,yyfrom,xto,yyto) ;
     fi ;
+    endgroup ;
 enddef ;
 
 def flow_connect_left_bottom (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
+    begingroup ; save yfrom, yto ;
     yfrom := flow_y_pos(yyfrom) ;
     yto := flow_y_pos(yyto) ;
     if flow_points_initialized(xfrom,yfrom,xto,yto,5) :
@@ -779,9 +792,11 @@ def flow_connect_left_bottom (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,z
         fi ;
         flow_draw_connection(n,xfrom,yyfrom,xto,yyto) ;
     fi ;
+    endgroup
 enddef ;
 
 def flow_connect_right_top (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
+    begingroup ; save yfrom, yto ;
     yfrom := flow_y_pos(yyfrom) ;
     yto := flow_y_pos(yyto) ;
     if flow_points_initialized(xfrom,yfrom,xto,yto,5) :
@@ -795,9 +810,11 @@ def flow_connect_right_top (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto
         fi ;
         flow_draw_connection(n,xfrom,yyfrom,xto,yyto) ;
     fi ;
+    endgroup
 enddef ;
 
 def flow_connect_right_bottom (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
+    begingroup ; save yfrom, yto ;
     yfrom := flow_y_pos(yyfrom) ;
     yto := flow_y_pos(yyto) ;
     if flow_points_initialized(xfrom,yfrom,xto,yto,5) :
@@ -822,9 +839,11 @@ def flow_connect_right_bottom (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,
         %%%% end experiment
         flow_draw_connection(n,xfrom,yyfrom,xto,yyto) ;
     fi ;
+    endgroup
 enddef ;
 
 def flow_connect_left_left (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
+    begingroup ; save yfrom, yto ;
     yfrom := flow_y_pos(yyfrom) ;
     yto := flow_y_pos(yyto) ;
     if flow_points_initialized(xfrom,yfrom,xto,yto,6) :
@@ -840,9 +859,11 @@ def flow_connect_left_left (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto
         fi ;
         flow_draw_connection(n,xfrom,yyfrom,xto,yyto) ;
     fi ;
+    endgroup
 enddef ;
 
 def flow_connect_right_right (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
+    begingroup ; save yfrom, yto ;
     yfrom := flow_y_pos(yyfrom) ;
     yto := flow_y_pos(yyto) ;
     if flow_points_initialized(xfrom,yfrom,xto,yto,6) :
@@ -858,9 +879,11 @@ def flow_connect_right_right (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,z
         fi ;
         flow_draw_connection(n,xfrom,yyfrom,xto,yyto) ;
     fi ;
+    endgroup
 enddef ;
 
 def flow_connect_top_top (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
+    begingroup ; save yfrom, yto ;
     yfrom := flow_y_pos(yyfrom) ;
     yto := flow_y_pos(yyto) ;
     if flow_points_initialized(xfrom,yfrom,xto,yto,6) :
@@ -884,9 +907,11 @@ def flow_connect_top_top (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) 
         %%%% end experiment
         flow_draw_connection(n,xfrom,yyfrom,xto,yyto) ;
     fi ;
+    endgroup
 enddef ;
 
 def flow_connect_bottom_bottom (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto,zto) =
+    begingroup ; save yfrom, yto ;
     yfrom := flow_y_pos(yyfrom) ;
     yto := flow_y_pos(yyto) ;
     if flow_points_initialized(xfrom,yfrom,xto,yto,6) :
@@ -913,6 +938,7 @@ def flow_connect_bottom_bottom (expr n) (expr xfrom,yyfrom,zfrom) (expr xto,yyto
         %%%% end experiment
         flow_draw_connection(n,xfrom,yyfrom,xto,yyto) ;
     fi ;
+    endgroup
 enddef ;
 
 def flow_connect_bottom_top (expr n) (expr xfrom,yfrom,zfrom) (expr xto,yto,zto) =

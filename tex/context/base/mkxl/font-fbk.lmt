@@ -60,8 +60,8 @@ local missing = {
     --
 }
 
-local function fakecharacters(tfmdata,value)
-    if value then
+local function fakecharacters(tfmdata,key,value)
+    if key and value then
         local characters   = tfmdata.characters
         local descriptions = tfmdata.descriptions
         for unicode, detail in next, missing do

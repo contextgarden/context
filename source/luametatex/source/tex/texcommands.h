@@ -91,20 +91,20 @@
     course the principles are the same, but there can be slight differences in the way errors are
     reported).
 
-    Comment: experimental |string_cmd| has been removed, as we now have |\constant| flagged macros. 
+    Comment: experimental |string_cmd| has been removed, as we now have |\constant| flagged macros.
 */
 
 
-/*tex 
-    In the future we can add classifications that tell what to pick up in which case we can also 
-    have generic handlers that take arguments but I need to check first what that does with 
-    performance at the \TEX\ end. 
+/*tex
+    In the future we can add classifications that tell what to pick up in which case we can also
+    have generic handlers that take arguments but I need to check first what that does with
+    performance at the \TEX\ end.
 */
 
 typedef enum code_classifications {
-    classification_no_arguments = 0, 
-    classification_unknown      = 1, 
-    classification_integer      = 2, 
+    classification_no_arguments = 0,
+    classification_unknown      = 1,
+    classification_integer      = 2,
 } code_classifications;
 
 typedef enum tex_command_code {
@@ -191,7 +191,7 @@ typedef enum tex_command_code {
     end_local_cmd,                    /*tex finishes a |local_cmd| */
     lua_function_call_cmd,            /*tex an expandable function call */
     lua_protected_call_cmd,           /*tex a function call that doesn's expand in edef like situations */
-    lua_semi_protected_call_cmd,  
+    lua_semi_protected_call_cmd,
     begin_group_cmd,                  /*tex begin local grouping (|\begingroup|) */
     end_group_cmd,                    /*tex end local grouping (|\endgroup|) */
     explicit_space_cmd,               /*tex explicit space (|\ |) */
@@ -218,8 +218,8 @@ typedef enum tex_command_code {
     register_integer_cmd,             /*tex user-defined integers */
     internal_attribute_cmd,           /*tex */
     register_attribute_cmd,           /*tex user-defined attributes */
-    internal_posit_cmd,    
-    register_posit_cmd,    
+    internal_posit_cmd,
+    register_posit_cmd,
     internal_dimension_cmd,           /*tex length (|\hsize|, etc.) */
     register_dimension_cmd,           /*tex user-defined dimensions */
     internal_glue_cmd,                /*tex glue (|\baselineskip|, etc.) */
@@ -241,7 +241,7 @@ typedef enum tex_command_code {
     set_font_cmd,                     /*tex set current font (font identifiers) */
     define_font_cmd,                  /*tex define a font file (|\font|) */
     integer_cmd,                      /*tex the equivalent is a halfword number */
-    posit_cmd,                        
+    posit_cmd,
     dimension_cmd,                    /*tex the equivalent is a halfword number representing a dimension */
     gluespec_cmd,                     /*tex the equivalent is a halfword reference to glue */
     mugluespec_cmd,                   /*tex the equivalent is a halfword reference to glue with math units */
@@ -321,7 +321,7 @@ typedef enum tex_command_code {
     internal_toks_reference_cmd,      /*tex the equivalent points to internal token list */
     register_toks_reference_cmd,      /*tex the equivalent points to register token list */
     specification_reference_cmd,      /*tex the equivalent points to parshape or penalties specification */
-    unit_reference_cmd,              
+    unit_reference_cmd,
     /*
         We don't really need these but they are used to flag the registers eq entries properly. They
         are not really references because the values are included but we want to be consistent here.
@@ -379,13 +379,13 @@ static inline int is_v_mode(halfword mode) { return mode == vmode || mode == int
 static inline int is_h_mode(halfword mode) { return mode == hmode || mode == restricted_hmode; }
 static inline int is_m_mode(halfword mode) { return mode == mmode || mode == inline_mmode; }
 
-static inline int tex_normalized_mode(halfword mode) 
+static inline int tex_normalized_mode(halfword mode)
 {
-    switch (mode) { 
+    switch (mode) {
         case internal_vmode  : return vmode;
         case restricted_hmode: return hmode;
         case inline_mmode    : return mmode;
-        default              : return mode; 
+        default              : return mode;
     }
 }
 
@@ -413,7 +413,7 @@ typedef enum arithmic_codes {
 typedef enum math_script_codes {
     /* It's a bit strange to have this here but both inject a control glue. */
     math_no_script_space_code,
-    math_no_ruling_space_code,   
+    math_no_ruling_space_code,
     /* */
     math_sub_script_code,
     math_super_script_code,
@@ -492,7 +492,7 @@ typedef enum convert_codes {
     detokened_code,           /*tex command code for |\detokened| */
     roman_numeral_code,       /*tex command code for |\romannumeral| */
     meaning_code,             /*tex command code for |\meaning| */
-    meaning_full_code,        /*tex command code for |\meaningfull| */ 
+    meaning_full_code,        /*tex command code for |\meaningfull| */
     meaning_less_code,        /*tex command code for |\meaningless| */
     meaning_asis_code,        /*tex command code for |\meaningasis| */
     meaning_ful_code,         /*tex command code for |\meaningful| */
@@ -513,9 +513,9 @@ extern const unsigned char some_convert_classification[font_identifier_code+1];
 # define first_convert_code number_code
 # define last_convert_code  luatex_banner_code
 
-/*tex 
+/*tex
     At some point we might make |token_input_code| behave like |tex_token_input_code| and get rid
-    of |\everyeof| which is a quite useless feature that does more harm than good. 
+    of |\everyeof| which is a quite useless feature that does more harm than good.
 */
 
 typedef enum input_codes {
@@ -531,7 +531,7 @@ typedef enum input_codes {
     quit_loop_now_code,
 } input_codes;
 
-# define last_input_code quit_loop_now_code 
+# define last_input_code quit_loop_now_code
 
 typedef enum some_item_codes {
     lastpenalty_code,           /*tex |\lastpenalty| */
@@ -605,13 +605,13 @@ typedef enum some_item_codes {
     right_margin_kern_code,     /*tex |\rightmarginkern| */
     par_shape_length_code,      /*tex |\parshapelength| */
     par_shape_indent_code,      /*tex |\parshapeindent| */
-    par_shape_dimension_code,   /*tex |\parshapedimen| */
+    par_shape_width_code,       /*tex |\parshapewidth| */
     glue_stretch_code,          /*tex |\gluestretch| */
     glue_shrink_code,           /*tex |\glueshrink| */
     mu_to_glue_code,            /*tex |\mutoglue| */
     glue_to_mu_code,            /*tex |\gluetomu| */
     numexpr_code,               /*tex |\numexpr| */
-    posexpr_code,               
+    posexpr_code,
  /* attrexpr_code, */           /*tex not used */
     dimexpr_code,               /*tex |\dimexpr| */
     glueexpr_code,              /*tex |\glueexpr| */
@@ -758,7 +758,7 @@ typedef enum shorthand_def_codes {
     math_char_def_code,   /*tex |\mathchardef| */
     math_uchar_def_code,  /*tex |\Umathchardef| */
     math_dchar_def_code,  /*tex |\Umathdictdef| */
-    float_def_code,  
+    float_def_code,
     count_def_code,       /*tex |\countdef| */
     attribute_def_code,   /*tex |\attributedef| */
     dimen_def_code,       /*tex |\dimendef| */
@@ -781,7 +781,7 @@ typedef enum shorthand_def_codes {
 
 # define last_shorthand_def_code specification_def_code
 
-typedef enum association_codes { 
+typedef enum association_codes {
     unit_association_code,
 } association_codes;
 
@@ -906,10 +906,10 @@ typedef enum local_control_codes {
     bits for this but we don't have enough. Now, because frozen macros can be unfrozen we can
     indeed have a prefix that bypasses the check. Explicit (re)definitions are then up to the user.
 
-    Constant macros are special in the sense that we set the reference count to the maximum. This is 
-    then a signal that we have an expanded macro with a meaning that we can immediately copy into 
-    the expanded token list, as in csname construction. This saves some memory access and token 
-    allocation. 
+    Constant macros are special in the sense that we set the reference count to the maximum. This is
+    then a signal that we have an expanded macro with a meaning that we can immediately copy into
+    the expanded token list, as in csname construction. This saves some memory access and token
+    allocation.
 
 */
 
@@ -1295,8 +1295,8 @@ typedef enum remove_item_codes {
 
 typedef enum kern_codes {
     normal_kern_code,
-    h_kern_code,            
-    v_kern_code,            
+    h_kern_code,
+    v_kern_code,
     non_zero_width_kern_code, /* maybe */
 } kern_codes;
 
@@ -1304,8 +1304,8 @@ typedef enum kern_codes {
 
 typedef enum penalty_codes {
     normal_penalty_code,
-    h_penalty_code,            
-    v_penalty_code,            
+    h_penalty_code,
+    v_penalty_code,
 } penalty_codes;
 
 # define last_penalty_code normal_penalty_code

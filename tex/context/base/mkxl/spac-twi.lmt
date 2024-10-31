@@ -282,7 +282,7 @@ end                            if count > twinslimit then
     end
 end
 
-local function showa(what,current,previous,pass,line,f,s,n,demerits,extra)
+local function showa(what,current,previous,pass,subpass,line,f,s,n,demerits,extra)
     local u = { }
     for i=1,n do
         u[i] = chr(f,s[i]) or s[i]
@@ -290,8 +290,8 @@ local function showa(what,current,previous,pass,line,f,s,n,demerits,extra)
     if what == "before" then
         reverse(u)
     end
-    report("pass %i, line %i, current %i, previous %i, %s %a, demerits %i + %i",
-        pass,line,current,previous,what,utfchar(u),demerits,extra)
+    report("pass %i, subpass %i, line %i, current %i, previous %i, %s %a, demerits %i + %i",
+        pass,subpass,line,current,previous,what,utfchar(u),demerits,extra)
 end
 
 local function showb(what,current,previous)
@@ -354,7 +354,7 @@ local actions = {
             traced  = { }
         end
     end,
-    [breakcodes.report] = function(checks,pass,currentserial,previousserial,line,kind,class,demerits,breakpoint,short,glue,width)
+    [breakcodes.report] = function(checks,pass,subpass,currentserial,previousserial,line,kind,class,classes,badness,demerits,breakpoint,short,glue,width)
         if breakpoint and texgetnest("ptr") == nestlevel then
             local s_before, s_after, f_before, f_after, n_before, n_after
             breakpoint = tonut(breakpoint)
@@ -386,14 +386,14 @@ local actions = {
                 local extra = 0
                 if righttwindemerits > 0 and f_before and f_before == previous[1] and n_before == previous[5] and same(s_before,previous[3],n_before) then
                     if trace then
-                        showa("before",currentserial,previousserial,pass,line,f_before,s_before,n_before,demerits,righttwindemerits)
+                        showa("before",currentserial,previousserial,pass,subpass,line,f_before,s_before,n_before,demerits,righttwindemerits)
                         showb("before",currentserial,previousserial)
                     end
                     extra = righttwindemerits
                 end
                 if lefttwindemerits and f_after and f_after == previous[2] and n_after == previous[6] and same(s_after,previous[4],n_after) then
                     if trace then
-                        showa("after",currentserial,previousserial,pass,line,f_after,s_after,n_after,demerits,lefttwindemerits)
+                        showa("after",currentserial,previousserial,pass,subpass,line,f_after,s_after,n_after,demerits,lefttwindemerits)
                         showb("after",currentserial,previousserial)
                     end
                     -- maybe take the max of the two

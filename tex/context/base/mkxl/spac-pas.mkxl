@@ -138,4 +138,29 @@
 % \dorecurse{41}{line #1\par}
 % here \singlelinepenalty20000 \updateparagraphpenalties here here
 
+%D Todo:
+
+% \specificationdef \parpassonemoreline \parpasses 3
+%     looseness    1
+%     tolerance  100
+% next
+%     tolerance 200
+%     hyphenation  1
+% next
+%     demerits 1
+%     emergencystretch 4em
+%
+% \specificationdef \parpasstwomorelines \parpasses 3
+%     looseness    2
+%     tolerance  100
+% next
+%     tolerance  200
+%     hyphenation  1
+% next
+%     demerits 1
+%     emergencystretch 8em
+%
+% \permanent\protected\def\onemoreline {\parpassesexception\parpassonemoreline }
+% \permanent\protected\def\twomorelines{\parpassesexception\parpasstwomorelines}
+
 \protect

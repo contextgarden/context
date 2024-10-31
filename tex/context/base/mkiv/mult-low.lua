@@ -20,7 +20,7 @@ return {
         "plusonethousand", "plustwothousand", "plusthreethousand", "plusfourthousand", "plusfivethousand",
         "plussixthousand", "plusseventhousand", "pluseightthousand", "plusninethousand",
         "plusfifteenhundred", "plustwentyfivehundred", "plusfortyfivehundred", "plusseventyfivehundred",
-        "plusninetynine", "plusfourtytwo",
+        "plusninetynine", "plusfourtytwo", "plustwentyfive",
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxcount", "maxdimen", "scaledpoint", "thousandpoint",
         "points", "halfpoint",
         "zeroskip", "centeringskip", "stretchingskip", "shrinkingskip",
@@ -256,8 +256,8 @@ return {
         --
         "ignoretwincharactercontrolcode",
         --
-        "repeatspecificationoptioncode", "valuesspecificationoptioncode", "doublespecificationoptioncode", "largestspecificationoptioncode",
-        "presetsspecificationoptioncode",
+        "repeatspecificationoptioncode", "doublespecificationoptioncode", "largestspecificationoptioncode",
+        "presetsspecificationoptioncode", "integerspecificationoptioncode", "finalspecificationoptioncode",
         --
      -- "noitaliccorrectionmathoptioncode", "noleftpairkernmathoptioncode", "norightpairkernmathoptioncode",
      -- "autodiscretionarymathoptioncode", "fulldiscretionarymathoptioncode",
@@ -283,7 +283,10 @@ return {
         --
         "continueifinputfile", "continuewhenlmtxmode", "continuewhenmkivmode",
         --
-        "uunit"
+        "uunit",
+        --
+        "defaultdisplaywidowpenalty", "defaultwidowpenalty", "defaultclubpenalty", "defaultbrokenpenalty",
+        "defaultgriddisplaywidowpenalty", "defaultgridwidowpenalty", "defaultgridclubpenalty", "defaultgridbrokenpenalty",
     },
     ["helpers"] = {
         --
@@ -755,6 +758,19 @@ return {
         --
         "shiftparshape", "rotateparshape",
         --
-        "granularfitnessdemerits",
+        "granularfitnessclasses", "granularadjacentdemerits",
+        "matchallfitnessclasses",
+        --
+        "defaultmathforwardpenalties", "defaultmathbackwardpenalties",
+        "optimalmathforwardpenalties", "optimalmathbackwardpenalties",
+        "lesswidowpenalties", "lessclubpenalties", "lessbrokenpenalties",
+        "strictwidowpenalties", "strictwidowpenaltiestwo", "strictwidowpenaltiesthree", "strictwidowpenaltiesfour",
+        "strictclubpenalties", "strictclubpenaltiestwo", "strictclubpenaltiesthree", "strictclubpenaltiesfour",
+        "strictbrokenpenalties",
+        "lessorphanpenalties", "lessorphanpenaltiestwo", "lessorphanpenaltiesthree","lessorphanpenaltiesfour",
+        --
+        "nohpenalties", "novpenalties",
+        --
+        "toddlerpenalty", "orphanpenalty",
     }
 }

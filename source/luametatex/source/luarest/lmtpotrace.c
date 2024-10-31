@@ -186,6 +186,46 @@ static void potracelib_get_bitmap(potracer *p, unsigned char match)
 
 # define max_explode 4
 
+static int potracelib_getnewfields(lua_State *L)
+{
+    lua_createtable(L, 0, 8);
+    lua_set_string_by_key(L, "bytes",  "string");
+    lua_set_string_by_key(L, "width",  "integer");
+    lua_set_string_by_key(L, "height", "integer");
+    lua_set_string_by_key(L, "nx",     "integer");
+    lua_set_string_by_key(L, "ny",     "integer");
+    lua_set_string_by_key(L, "swap",   "boolean");
+    lua_set_string_by_key(L, "value",  "character");
+    lua_set_string_by_key(L, "negate", "boolean");
+    return 1;
+}
+
+static int potracelib_getprocessfields(lua_State *L)
+{
+    lua_createtable(L, 0, 8);
+    lua_set_string_by_key(L, "size",      "integer");
+    lua_set_string_by_key(L, "threshold", "number");
+    lua_set_string_by_key(L, "tolerance", "number");
+    lua_set_string_by_key(L, "optimize",  "boolean");
+    lua_set_string_by_key(L, "value",     "characetr");
+    lua_set_string_by_key(L, "negate",    "boolean");
+    lua_set_string_by_key(L, "policy",    "string");
+    return 1;
+}
+
+static int potracelib_getpolicyvalues(lua_State *L)
+{
+    lua_createtable(L, 7, 0);
+    lua_set_string_by_index(L, 1, "black");
+    lua_set_string_by_index(L, 2, "white");
+    lua_set_string_by_index(L, 3, "left");
+    lua_set_string_by_index(L, 4, "right"); 
+    lua_set_string_by_index(L, 5, "minority");
+    lua_set_string_by_index(L, 6, "majority"); 
+    lua_set_string_by_index(L, 7, "random");
+    return 1;
+}
+
 static int potracelib_new(lua_State *L) 
 {
     if (lua_type(L, 1) == LUA_TTABLE) {
@@ -509,14 +549,15 @@ static const struct luaL_Reg potracelib_instance_metatable[] = {
     { NULL,         NULL                },
 };
 
-static const luaL_Reg potracelib_function_list[] =
-{
-    { "new",        potracelib_new     },
-    { "free",       potracelib_free    },
-    { "process",    potracelib_process },
-    { "totable",    potracelib_totable },
-    /* */
-    { NULL,    NULL             },
+static const luaL_Reg potracelib_function_list[] = {
+    { "new",              potracelib_new              },
+    { "free",             potracelib_free             },
+    { "process",          potracelib_process          },
+    { "totable",          potracelib_totable          },
+    { "getnewfields",     potracelib_getnewfields     },
+    { "getprocessfields", potracelib_getprocessfields },
+    { "getpolicyvalues",  potracelib_getpolicyvalues  },
+    { NULL,               NULL                        },
 };
 
 int luaopen_potrace(lua_State *L)

@@ -184,7 +184,7 @@ static int tex_aux_room_in_hash(void)
 
 */
 
-inline static halfword tex_aux_compute_hash(const char *j, unsigned l)
+static inline halfword tex_aux_compute_hash(const char *j, unsigned l)
 {
     halfword h = (unsigned const char) j[0];
     for (unsigned k = 1; k < l; k++) {
@@ -193,7 +193,7 @@ inline static halfword tex_aux_compute_hash(const char *j, unsigned l)
     return h;
 }
 
-inline static halfword tex_aux_compute_prim(const char *j, unsigned l)
+static inline halfword tex_aux_compute_prim(const char *j, unsigned l)
 {
     halfword h = (unsigned const char) j[0];
     for (unsigned k = 1; k < l; k++) {

@@ -211,6 +211,14 @@
 ** 'condchangemem' is used only for heavy tests (forcing a full
 ** GC cycle on every opportunity)
 */
+
+#if !defined(HARDMEMTESTS)
+#define condchangemem(L,pre,pos)	((void)0)
+#else
+#define condchangemem(L,pre,pos)  \
+	{ if (gcrunning(G(L))) { pre; luaC_fullgc(L, 0); pos; } }
+#endif
+
 #define luaC_condGC(L,pre,pos) \
 	{ if (G(L)->GCdebt <= 0) { pre; luaC_step(L); pos;}; \
 	  condchangemem(L,pre,pos); }
@@ -237,8 +245,8 @@ LUAI_FUNC void luaC_freeallobjects (lua_State *L);
 LUAI_FUNC void luaC_step (lua_State *L);
 LUAI_FUNC void luaC_runtilstate (lua_State *L, int state, int fast);
 LUAI_FUNC void luaC_fullgc (lua_State *L, int isemergency);
-LUAI_FUNC GCObject *luaC_newobj (lua_State *L, int tt, size_t sz);
-LUAI_FUNC GCObject *luaC_newobjdt (lua_State *L, int tt, size_t sz,
+LUAI_FUNC GCObject *luaC_newobj (lua_State *L, lu_byte tt, size_t sz);
+LUAI_FUNC GCObject *luaC_newobjdt (lua_State *L, lu_byte tt, size_t sz,
                                                  size_t offset);
 LUAI_FUNC void luaC_barrier_ (lua_State *L, GCObject *o, GCObject *v);
 LUAI_FUNC void luaC_barrierback_ (lua_State *L, GCObject *o);

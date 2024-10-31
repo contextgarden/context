@@ -1,0 +1,260 @@
+% language=us runpath=texruns:manuals/luametatex
+
+\environment luametatex-style
+
+\startdocument[title=Engines]
+
+\startsection[title={Introduction}]
+
+There are good reasons why we started the \LUATEX\ and later \LUAMETATEX\
+projects. Here I will go into some of them. It is just short wrap up of how it
+started, how other engines influenced the process and how we see usage. There are
+plenty of documents out there that go into more detail. The main objective of
+this section is to put documentation into perspective.
+
+\stopsection
+
+\startsection[title={How it started}]
+
+When we started with \CONTEXT, hardware was rather limited compared to what we
+have today. A personal computer had some 640kB memory, possibly bumped to 1MB
+with help from a memory extender. This put some restrictions to how macro
+packages could be defined, also because that memory had to be shared with the
+baseline operating system. However, over time memory and runtime became less of
+an issue and the \TEX\ engine could be configured to use whatever was available.
+Extending the program other than increasing the available memory became more
+feasible.
+
+As with any program, there is always something to wish for which is why the
+\ETEX\ variant came into view. Before those extensions could be used, \PDFTEX\
+showed up. That variant simplified the \quote {\TEX\ plus separate backend
+driver} model to a one-step process. Eventually \ETEX\ was merged into \PDFTEX,
+and that became the de facto standard engine. There was never a follow up on
+\ETEX, and more drastic deviations like \OMEGA\ were never ready for production.
+At some point \XETEX\ came around but that was mostly a font specific extension.
+We were kind of stuck with a wish-list that never would be fulfilled but we
+occasionally pondered a follow up. We drafted an extended \ETEX\ proposal, played
+with some features related to \PDF, improved a few things but that was it.
+
+Having some experiences with \LUA\ as extension language in \SCITE, I wondered
+what something like that would bring to \TEX\ and after discussing this with
+Hartmut he made variant of \PDFTEX\ that has some basic interfaces: we could
+access properties of registers and print something to \TEX\ as if it came from
+file. As is common with some variant, a new name was coined and \LUATEX\ came
+into existence. We're talking 2005.
+
+Because Idris wanted to typeset high quality scholar manuscripts mixing Arabic
+and Latin we discussed how to do that in \CONTEXT\ and his experiences with
+\OMEGA\ were such that alternatives had to be considered: the Oriental \TEX\
+project was started and \LUATEX\ was the starting point. Taco merged some parts
+of \ALEPH\ (a somewhat stable variant of \OMEGA) into the code base and stepwise
+some primitives were added. It was overall a rather large and serious project
+that took a lot of our time. It was not commercially driven, mostly for \CONTEXT\
+users and therefore also a lot of fun to do. As often with such projects, early
+adapters keep things going.
+
+It took a while before \LUATEX\ was stable in the sense that nothing more was
+added. Because the engine was developed alongside what is called \CONTEXT\ \MKIV,
+we could easily adapt both to each other. Even better: users could use both in
+production. However, in order for other macro packages to use \LUATEX\ (per
+request) it had to be frozen, and that happened around 2015, some 10 years after
+we started. However, we were not done yet and in order not to violate this stability
+principle the follow up was called \LUAMETATEX. Because it was a more drastic
+extension project, and also a somewhat drastic separation of the code base from
+the complex \LUATEX\ one, the related \CONTEXT\ code was also separated, this time
+tagged \MKXL, or \LMTX\ when we talk about the combination. The project started
+around 2019 and soon again entered a state of combined development and use in
+production and most users switched to this variant.
+
+There are more complete wrap ups of these developments and we systematically
+reported on them in various documents that are available in the distribution
+and|/|or published in user group journals.
+
+\stopsection
+
+\startsection[title={The engines}]
+
+Of course all starts with original \TEX. We want to be compatible so we keep that
+functionality. However, for practical reasons \LUAMETATEX\ omits two core
+components. Font loading is not present in the frontend and there is no backend.
+Both are supposed to be provided via \LUA\ plugins. This makes sense because in
+the meantime font technologies have changed and keep changing and backend also
+are a moving target. In \CONTEXT\ we already did all that in \LUA, so there was
+no need to keep that font and \PDF\ generation code around in the engine. There
+are a few more deviations, like dropping some system specific features (terminal
+related) and in former times practical features like outer and long macros that
+no longer made sense and complicated integrating new features unnecessarily.
+
+As mentioned in the introduction \PDFTEX\ is the basis for \LUATEX\ and \LUATEX\ is
+where we started with \LUAMETATEX. If we compare \PDFTEX\ with traditional \TEX\
+the main additions are:
+
+\startitemize[packed]
+\startitem
+    There is an integrated \PDF\ backend that also supports for instance hyperlinks and
+    various annotations.
+\stopitem
+\startitem
+    Expansion of glyphs (aka hz) has been added to the engine and integrated in the
+    par builder. The same is true for character protrusion (in the margin).
+\stopitem
+\startitem
+    There is, to some extend, support for inter-character kerning.
+\stopitem
+\startitem
+    There are some handy helpers, for instance for calculating hashes,
+    randomization, etc.
+\stopitem
+\startitem
+    There is an extension to injection between lines (adjust).
+\stopitem
+\startitem
+    We have few more conditionals (like testing for a csname and absolute values).
+\stopitem
+\startitem
+    A few helpers like \type {\quitvmode} (that we liked to have in \CONTEXT)
+    were added.
+\stopitem
+\stopitemize
+
+Because \PDFTEX\ was actively developed and maintained over many years,
+extensions showed up stepwise, also depending on usage and needs. That is also
+why the \ETEX\ extensions were included:
+
+\startitemize[packed]
+\startitem
+    More that 256 registers, including marks.
+\stopitem
+\startitem
+    Access to discarded material in the vertical splitting code.
+\stopitem
+\startitem
+    Protection against expansion of macros (the \type {\protected} prefix).
+\stopitem
+\startitem
+    A simple right to left typesetting mechanism.
+\stopitem
+\startitem
+    Access to some states, a limited set of last nodes, etc.
+\stopitem
+\startitem
+    There are some additional tracing features.
+\stopitem
+\startitem
+    One can reprocess tokens and produce detokenized lists.
+\stopitem
+\stopitemize
+
+In \LUATEX\ we also looked at what \OMEGA\ could bring:
+
+\startitemize[packed]
+\startitem
+    More that 256 registers.
+\stopitem
+\startitem
+    Multi-directional typesetting.
+\stopitem
+\startitem
+    Local boxes (in lines).
+\stopitem
+\startitem
+    Input processing.
+\stopitem
+\stopitemize
+
+If we combine these lists, we see font expansion and protrusion coming back in
+\LUAMETATEX. However, already in \LUATEX\ expansion and protrusion were dealt
+with a bit differently and even more so in \LUAMETATEX, while protection in
+\LUAMETATEX\ is implemented differently. We also kept injection of vertical
+material but in \LUAMETATEX\ that done quite differently. Most if \ETEX\ is there
+but not right to left typesetting and the register approach. Of course we kept
+the additional conditionals but implemented them a bit different.
+
+In \LUATEX\ we took the \OMEGA\ enlarged register approach and directional
+typesetting although that has been stripped down and redone to right to left
+only. Local boxes are there but redone in \LUAMETATEX. There was no need for
+input processing because we have \LUA. In the end there is little that we kept
+from the other engines which also means that one cannot take the manuals that
+come with these engines and simply assume that it is there.
+
+We should of course mention \METAPOST. That graphical subsystem was integrated in
+\LUATEX\ and on the one hand stripped down (less backend) and extended (remove
+bottlenecks and add some functionality) in \LUAMETATEX. With respect to \LUA\
+we moved to more recent versions and dropped support for just in time compilation.
+
+There is of course a lot in \LUATEX\ that can be found also in \LUAMETATEX\ but
+the later one goes way beyond its predecessor. It actually provides what we always
+wanted (as \CONTEXT\ developers) but never showed up. And this brings us to a next
+topic.
+
+\stopsection
+
+\startsection[title=Usage]
+
+Why is it that there has been little fundamental development around \TEX\
+engines? One of the reasons is that macro packages have to be stable. New
+features can be added but if they are only available in one engine (and there are
+a few more around now, like \XETEX\ and the \CJK\ specific ones) a macro package
+has to provide ways around them when they are not available. Risking some
+criticism I dare to say that in order to use \LUATEX\ to its full potential,
+macro package has to be set up such that this is possible and \CONTEXT\ does just
+that. When we talk backends it's relatively easy, and when we talk fonts it's
+doable. But if you are not willing to adapt the core of your code dramatically
+(and conceptually) all you get from \LUATEX\ is a built-in scripting language and
+some occasional messing around with node lists. In \CONTEXT\ we could transition
+rather well because the user interfaces permitted to do so without users
+noticing. Of course there were changes, for instance because encodings matter
+less, which is also true for e.g.\ \XETEX, and font technologies changed. But for
+macro packages other than \CONTEXT\ just the availability of \LUA\ might be
+enough reasons to use that engine. That also means that documentation of the more
+intricate features is less important: one can just learn by example and \CONTEXT\
+is that example.
+
+With \LUAMETATEX\ we go further because here one really has to make some
+fundamental choices. Again this could be done within the existing user
+interfaces, but here we are not only talking of fundamental improvements, like
+rendering math or breaking paragraphs into lines, but also of more flexible
+handling of alignments, inserts, adjusts, marks, par and page building, etc.\
+Basically all mechanism got extended and opened up. In order to profit from this
+you have to be able to throw away existing solution and use these extensions to
+come up with better ones. If one can put sentiments aside, this also takes quite
+some time.
+
+A very important aspect (at least for me) is that I want the macro code to look
+nice and in that respect stick to the \TEX\ syntax as much as possible. That
+means that we have more programming related primitives, enhanced macro argument
+parsing, more (flexible) conditionals, additional registers, extra expansion
+related features and so on. Instead of some intermediate layer (like the helpers
+in \CONTEXT) we can stick closer to the language itself. Of course this is not
+something that most users will notice. What users might notice, is that on the
+average \CONTEXT\ with \LUAMETATEX\ performs better than with \LUATEX\ or even
+\LUAMETATEX. Even with more performance critical components delegated to \LUA\
+(like the backend \PDF\ generation) we gain and often can compete performance
+wise well with the faster eight bit \PDFTEX\ engine.
+
+The fact that one has to make (and cannot make) drastic choices has a consequence
+for documentation. Most of what is new and interesting is discussed in articles
+and low level manuals. However, it is often discussed in the perspective of
+\CONTEXT. Although we do discuss and show generic solutions it makes little sense
+to go into details there simply because in the end only \CONTEXT\ will use them
+as intended. It's just a waste of time to implement variants that are more
+generic because they will never be used elsewhere, especially in situations where
+the solutions are considered \quote {standard} and will not change. In \CONTEXT\
+we always followed the principle that if we can do better, we will do better, and
+interfaces are such that this can be done.
+
+Of course that brings up the question \quotation {How do you know that these are
+the best solutions} and the answer is that we don't. However, we're not talking
+of quick and dirty solutions. For instance it took years to enhance math support:
+experiments, discussion, reconsideration, documenting, writing articles, looking
+at usage, fonts, etc. A wider discussion would not have brought better solutions,
+if at all. If that were the case, there would already have been successors. The
+same is true for most extensions: there was little need for them outside the
+\CONTEXT\ community. So in the end that's what those interested should look at:
+how is \LUAMETATEX\ used in \CONTEXT. It is the combined development together with
+acceptance by users that makes this possible,
+
+\stopsection
+
+\stopdocument
+

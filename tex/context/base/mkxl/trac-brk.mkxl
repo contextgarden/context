@@ -22,7 +22,11 @@
 % 1 : trace
 % 2 : twins
 
-% option : margin simple
+% option (list of):
+%
+% margin
+% simple   (only badness)
+% compact  (no ref counts)
 
 \unprotect
 
@@ -47,13 +51,37 @@
 
 \permanent\tolerant\protected\gdef\showbreakpoints[#1]%
   {\begingroup
-   \switchtobodyfont[7pt]%
+   \getdummyparameters[\c!option=,#1]%
+   \switchtobodyfont[6pt]%
    \dorecurse{\cldcontext{tracers.breakpoints.nofresults()}} {
-     \startcolumns[n=3,notes=no,#1]%
-       \ctxlua{tracers.breakpoints.typesetresult(##1)}%
+     \startcolumns[n=3,notes=no,#1,option=]%
+       \ctxlua{tracers.breakpoints.typesetresult(##1,"\dummyparameter\c!option")}%
      \stopcolumns
    }%
-   \ctxlua{tracers.breakpoints.reset()}%
+  %\ctxlua{tracers.breakpoints.reset()}%
+   \endgroup}
+
+% \permanent\tolerant\protected\gdef\resetbreakpoints[#1]%
+%   {\ctxlua{tracers.breakpoints.reset()}}
+
+\permanent\tolerant\protected\gdef\drawbreakpoints[#1]%
+  {\begingroup
+   \getdummyparameters[%
+     \c!dx=3fs,%
+     \c!dy=2fs,%
+     \c!sx=1.5fs,%
+     \c!sy=1.125fs,%
+     \c!rulethickness=0.15fs,%
+     #1]%
+   \startMPcode
+        lua.mp.show_breakpoints(
+            \the\dimexpr\dummyparameter\c!dx\relax,
+            \the\dimexpr\dummyparameter\c!dy\relax,
+            \the\dimexpr\dummyparameter\c!sx\relax,
+            \the\dimexpr\dummyparameter\c!sy\relax,
+            \the\dimexpr\dummyparameter\c!rulethickness\relax
+        ) ;
+   \stopMPcode
    \endgroup}
 
 \protect \endinput

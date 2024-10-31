@@ -8,7 +8,7 @@
 
 /*tex Helpers */
 
-inline static int strlib_aux_tounicode(const char *s, size_t l, size_t *p)
+static inline int strlib_aux_tounicode(const char *s, size_t l, size_t *p)
 {
     unsigned char i = s[*p];
     *p += 1;
@@ -45,7 +45,7 @@ inline static int strlib_aux_tounicode(const char *s, size_t l, size_t *p)
     return 0xFFFD;
 }
 
-inline static int strlib_aux_tounichar(const char *s, size_t l, size_t p)
+static inline int strlib_aux_tounichar(const char *s, size_t l, size_t p)
 {
     unsigned char i = s[p++];
     if (i < 0x80) {
@@ -78,7 +78,7 @@ inline static int strlib_aux_tounichar(const char *s, size_t l, size_t p)
     return 0;
 }
 
-inline static size_t strlib_aux_toline(const char *s, size_t l, size_t p, size_t *b)
+static inline size_t strlib_aux_toline(const char *s, size_t l, size_t p, size_t *b)
 {
     size_t i = p;
     while (i < l) {
@@ -417,7 +417,7 @@ static inline void strlib_aux_add_utfchar(luaL_Buffer *b, unsigned u)
 
 static inline void strlib_aux_add_utfnumber(lua_State *L, luaL_Buffer *b, lua_Integer index)
 {
-    strlib_aux_add_utfchar(b, (unsigned) lua_tointeger(L, index));
+    strlib_aux_add_utfchar(b, (unsigned) lmt_tounsigned(L, index));
 }
 
 static inline void strlib_aux_add_utfstring(lua_State *L, luaL_Buffer *b, lua_Integer index)
@@ -429,7 +429,7 @@ static inline void strlib_aux_add_utfstring(lua_State *L, luaL_Buffer *b, lua_In
 
 static inline void strlib_aux_add_utftable(lua_State *L, luaL_Buffer *b, lua_Integer index)
 {
-    int n = lua_rawlen(L, index);
+    lua_Unsigned n = lua_rawlen(L, index);
     if (n > 0) { 
         for (lua_Integer i = 1; i <= n; i++) {
             lua_rawgeti(L, index, i);
@@ -575,7 +575,7 @@ static int strlib_format_f6(lua_State *L)
     wrapping around and such.
 */
 
-inline static unsigned char strlib_aux_hexdigit(unsigned char n) {
+static inline unsigned char strlib_aux_hexdigit(unsigned char n) {
     return (n < 10 ? '0' : 'A' - 10) + n;
 }
 
@@ -754,8 +754,8 @@ static int strlib_utf16toutf8(lua_State *L)
         luaL_Buffer b;
         int more = 0;
         int be = 1;
-        int i = 0;
-        luaL_buffinitsize(L, &b, (size_t) ls); /* unlikely to be larger if we have latin */ 
+        size_t i = 0;
+        luaL_buffinitsize(L, &b, ls); /* unlikely to be larger if we have latin */ 
         if (lua_type(L, 2) == LUA_TBOOLEAN) {
             be = lua_toboolean(L, 2);
         } else if (s[0] == '\xFE' && s[1] == '\xFF') {
@@ -867,7 +867,7 @@ static int strlib_pack_rows_columns(lua_State* L)
 
 /*tex 
     This converts a hex string to characters. Spacing is ignored and invalid characters result in 
-    a false result. EMpty strings are okay. 
+    a false result. Empty strings are okay. 
 */
 
 static int strlib_hextocharacters(lua_State *L)

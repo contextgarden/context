@@ -130,7 +130,7 @@ actions[v_line] = function(head,setting)
     local ta         = setting.ta
     local hangafter  = texget("hangafter")
     local hangindent = texget("hangindent")
-    local parindent  = texget("parindent")
+--     local parindent  = texget("parindent")
     local nofchars   = 0
     local n          = 0
     local temp       = copy_node_list(head)
@@ -165,9 +165,9 @@ actions[v_line] = function(head,setting)
     local prev  = temp
     for i=1,noflines do
         local hsize = texget("hsize") - texget("leftskip",false) - texget("rightskip",false)
-        if i == 1 then
-            hsize = hsize - parindent
-        end
+--         if i == 1 then
+--             hsize = hsize - parindent
+--         end
         if i <= - hangafter then
             hsize = hsize - hangindent
         end

@@ -149,7 +149,7 @@ function pages.number(realdata,pagespec)
         stopapplyprocessor()
     end
     if stopper ~= "" then
-        applyprocessors(stopper)
+        applyprocessor(stopper)
     end
 end
 

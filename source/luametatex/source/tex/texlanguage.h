@@ -18,6 +18,9 @@ typedef struct language_state_info {
     int                   exceptions_count;
     int                   hyphenated_count;
     int                   nothing_count;
+    /*tex We keep thse in the heap instead of on stack: */
+    unsigned char         word_buffer[max_size_of_word_buffer];  /*tex Work buffer for bytes (can be \UTF8): */
+    unsigned              uword_buffer[max_size_of_word_buffer]; /*tex Work buffer for \UNICODE\ (often too large): */
 } language_state_info;
 
 extern language_state_info lmt_language_state;

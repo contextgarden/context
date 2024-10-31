@@ -1,0 +1,109 @@
+%D \module
+%D   [       file=m-electrons,
+%D        version=2024.10.30,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=messing with electrons,
+%D         author={Hans Hagen & Wolfgang Schuster},
+%D           date=\currentdate,
+%D      copyright={\CONTEXT\ Development Team}]
+
+% This is a follow up on mails to the list by Jorge and Bruce.
+
+\startmodule [m-electrons]
+
+\unprotect
+
+\installcorenamespace {electrons}
+
+\installframedcommandhandler \??electrons {electrons} \??electrons
+
+\setupelectrons
+  [\c!textstyle=\tfxx,
+   \c!distance=.5\strutdp,
+   \c!voffset=.5\strutdp,
+   \c!strut=\v!no,
+   \c!width=\lineheight,
+   \c!height=\lineheight,
+   \c!foregroundstyle=\electronsparameter\c!style,
+   \c!foregroundcolor=\electronsparameter\c!color]
+
+\starttexdefinition tolerant protected electrons[#1]#*#:#=#=
+    \dontleavehmode
+    \begingroup
+    \ifparameter#1\or
+      \cdef\currentelectrons{#1}%
+    \fi
+    \setbox\scratchboxone\hpack\bgroup
+      \doloopovermatch {.} {#2} {
+        \doifsymboldefinedelse{electron:##1}
+          {\inheritedelectronsframed{\symbol[electron:##1]}}
+          {\inheritedelectronsframed{\symbol[\v!none]}}
+        \hskip-\linewidth
+      }
+      \unskip
+    \egroup
+    \ifparameter#3\or
+      \setbox\scratchboxtwo\hbox to \wd\scratchboxone\bgroup
+         \useelectronsstyleandcolor\c!textstyle\c!textcolor
+         \setstrut\strut
+         \hss#3\hss
+      \egroup
+      \setbox\scratchboxone\hpack \bgroup
+        \box\scratchboxone
+        \hkern-\wd\scratchboxtwo
+        \boxymove\scratchboxtwo\dimexpr
+           -\htdp\scratchboxtwo
+           +\electronsparameter\c!distance
+        \relax
+        \box\scratchboxtwo
+       \egroup
+    \fi
+    \boxymove\scratchboxone-\electronsparameter\c!voffset
+    \box\scratchboxone
+    \endgroup
+\stoptexdefinition
+
+\definesymbol[electron:u][\m{\upharpoonleft}]
+\definesymbol[electron:d][\m{\downharpoonright}]
+\definesymbol[electron:b][\m{\upharpoonleft\downharpoonright}]
+
+\definesymbol[electron:B][\m{\darkred \symbol[electron:b]}]
+\definesymbol[electron:D][\m{\darkblue\symbol[electron:d]}]
+
+\stopmodule
+
+\protect
+
+\continueifinputfile{m-electrons.mkxl}
+
+\usemodule[scite]
+
+\starttext
+
+\startTEXpage[offset=1cm,width=17cm]
+
+\startbuffer[b]
+Nitrogen: \electrons{b}{1s} \electrons{b}{2s} \electrons{uuu}{2p}
+
+Nitrogen: \electrons{b}{} \electrons{B}{} \electrons{uDu}{}
+
+\defineelectrons [nitrogen]
+\setupelectrons  [nitrogen] [color=darkgreen]
+
+Nitrogen:
+    \electrons[nitrogen]{b}{}
+    \electrons[nitrogen]{B}{}
+    \electrons[nitrogen]{uDu}{2p}
+\stopbuffer
+
+\typebuffer[b][option=TEX]
+
+\getbuffer[b]
+
+\stopTEXpage
+
+\setuplayout[tight]
+
+\typefile[option=TEX]{m-electrons.mkxl}
+
+\stoptext

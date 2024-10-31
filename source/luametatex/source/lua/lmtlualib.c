@@ -6,7 +6,7 @@
 
 /*tex
 
-    Some code here originates from the beginning of \LUATEX\ developmentm like the bytecode
+    Some code here originates from the beginning of \LUATEX\ development, like the bytecode
     registers. They provide a way to store (compiled) \LUA\ code in the format file. In the
     meantime there are plenty of ways to use \LUA\ code in the frontend so an interface at the
     \TEX\ end makes no longer much sense.
@@ -420,7 +420,7 @@ static int lualib_get_exitcode(lua_State *L)
         {
             mach_timebase_info_data_t timebase;
             mach_timebase_info(&timebase);
-            conversion_factor = (double)timebase.numer / (double)timebase.denom;
+            conversion_factor = (double) timebase.numer / (double) timebase.denom;
         }
 
         static int clock_gettime(int clk_id, struct timespec *t)
@@ -429,8 +429,8 @@ static int lualib_get_exitcode(lua_State *L)
             double nseconds, seconds;
             (void) clk_id; /* please the compiler */
             time = mach_absolute_time();
-            nseconds = ((double)time * conversion_factor);
-            seconds  = ((double)time * conversion_factor / 1e9);
+            nseconds = ((double) time * conversion_factor);
+            seconds  = ((double) time * conversion_factor / 1e9);
             t->tv_sec = seconds;
             t->tv_nsec = nseconds;
             return 0;
@@ -608,10 +608,9 @@ static int lualib_add_nibble(lua_State *L)
 
 static int lualib_sub_nibble(lua_State *L) 
 {
-    unsigned int position = lmt_tounsigned(L, 2) - 1;
+    unsigned int position = lmt_tounsigned(L, 2);
     unsigned int original = lmt_tounsigned(L, 1);
- // if ((position >= 0) && (position <= 7)) { 
-    if (position <= 7) { 
+    if ((position >= 1) && (position <= 7)) { 
         unsigned int nibble = ((original >> (4 * --position)) & 0xF);
         if (nibble > 0) {
             nibble--;

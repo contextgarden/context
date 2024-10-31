@@ -961,6 +961,9 @@ void tex_print_char_identifier(halfword c) // todo: use string_print_format
 void tex_print_font_identifier(halfword f)
 {
     /*tex |< >| is less likely to clash with text parenthesis */
+    if (f < 0) { 
+        f = cur_font_par; /* bonus */
+    }
     if (tex_is_valid_font(f)) {
         tex_print_format("<%i: %s @ %p>", f, font_name(f), font_size(f));
     } else {
@@ -979,6 +982,9 @@ void tex_print_font_specifier(halfword e)
 
 void tex_print_font(halfword f)
 {
+    if (f < 0) { 
+        f = cur_font_par; /* bonus */
+    }
     if (! f) {
         tex_print_str("nullfont");
     } else if (tex_is_valid_font(f)) {

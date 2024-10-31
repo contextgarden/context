@@ -10,7 +10,7 @@ if not modules then modules = { } end modules ['font-imp-compound'] = {
 
 local compoundhyphen = fonts.helpers.newprivateslot("compoundhyphen")
 
-local function initialize(tfmdata,value)
+local function initialize(tfmdata,key,value)
     if value then
         local characters = tfmdata.characters
         local hyphen     = characters[0x2D]
@@ -22,7 +22,7 @@ local function initialize(tfmdata,value)
                     height   = hyphen.height,
                     depth    = hyphen.depth,
                     unicode  = hyphen.unicode,
-                    callback = "compile",
+                    callback = "compile", -- needs documentation
                     commands = {
                         { "char", 0x2D },
                         { "left", width/2 },

@@ -727,6 +727,39 @@ end
 
 -- readers
 
+-- todo: maybe keep the cache in resources so that we can also (nicer) use this from
+-- addfeature (mail on list):
+--
+-- local getsubstitution = fonts.handlers.otf.getsubstitution
+--
+-- fonts.handlers.otf.addfeature {
+--     name = "kern",
+--     type = "kern",
+--     data = function(data,specification,list,i)
+--         -- maybe intercept this cheat in a next version
+--         data = { shared = { rawdata = { resources = data.resources } } }
+--         --
+--         local char_a = getsubstitution(data,utf.byte("a"),"smcp",1,"latn","dflt")
+--         local char_s = getsubstitution(data,utf.byte("s"),"smcp",1,"latn","dflt")
+--         return {
+--             ["A"]    = { ["V"]    = 1500 },
+--             ["P"]    = { ["Æ"]    = 1500 },
+--             [char_a] = { [char_s] = 1500 },
+--         }
+--     end,
+-- }
+-- \stopluacode
+--
+-- \definefontfamily [mainface] [serif]  [Palatino Linotype]
+-- \definefontfamily [mainface] [math]   [TeX Gyre Pagella]
+--
+-- \setupbodyfont [mainface]
+--
+-- \starttext
+--     AVAPÆV þýðask {\smallcaps þýðask} 123
+-- \stoptext
+
+
 function otf.collectlookups(rawdata,kind,script,language)
     if not kind then
         return
@@ -794,10 +827,23 @@ end
 -- moved from font-oth.lua, todo: also afm
 
 local function getgsub(tfmdata,k,kind,value,script,language)
+    local resources = nil
+    -- first we check this:
     local shared  = tfmdata.shared
     local rawdata = shared and shared.rawdata
     if rawdata then
-        local sequences = rawdata.resources.sequences
+        resources = rawdata.resources
+    else
+        -- when we use a function in add features
+        resources = tfmdata.resources
+        if resources then
+            -- this is real dirty ... we need rawdata for caching
+            rawdata = { resources = resources }
+        end
+    end
+    -- then we check this
+    if resources then
+        local sequences = resources.sequences
         if sequences then
             local properties = tfmdata.properties
             local validlookups, lookuplist = otf.collectlookups(rawdata,kind,script or properties.script,language or properties.language)

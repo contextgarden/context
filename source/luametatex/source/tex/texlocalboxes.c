@@ -26,7 +26,7 @@
     not that useful. 
 */
 
-inline static scaled tex_aux_local_boxes_width(halfword n)
+static inline scaled tex_aux_local_boxes_width(halfword n)
 {
     scaled width = 0;
     while (n) {
@@ -309,13 +309,13 @@ typedef enum saved_localbox_entries {
     saved_localbox_n_of_records   = 1,
 } saved_localbox_entries;
 
-inline static void saved_localbox_initialize(void)
+static inline void saved_localbox_initialize(void)
 {
     saved_type(0) = saved_record_0;
     saved_record(0) = local_box_save_type;
 }
 
-inline static int saved_localbox_okay(void)
+static inline int saved_localbox_okay(void)
 {
     return saved_type(0) == saved_record_0 && saved_record(0) == local_box_save_type;
 }

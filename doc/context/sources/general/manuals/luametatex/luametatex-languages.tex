@@ -2,13 +2,33 @@
 
 \environment luametatex-style
 
-\startcomponent luametatex-languages
-
-\startchapter[reference=languages,title={Languages, characters, fonts and glyphs}]
+\startdocument[title=Languages]
 
 \startsection[title={Introduction}]
 
-\topicindex {languages}
+Although languages play an important role in a macro package that doesn't mean
+that \TEX\ is busy with it. The engine only needs to know how to hyphenate and
+for that a number that identifies what patterns to use is sufficient. All the
+action happens in the hyphenator: what characters make words, how many characters
+are kept at the left and right, which symbols end up at the end or beginning of a
+line, what input combine into (normally) dashes, how do we penalize a hyphenation
+point, etc.
+
+Where in regular \TEX\ we have special nodes that signal a language switch, and
+some shared variables that determine mentioned details, in \LUATEX\ every glyph
+carries the language information, including those minima. In \LUAMETATEX\ we put
+even more in a glyph by using a bitset of options. We also have some more
+character code bound properties. The \LUATEX\ engines store the current state in
+the glyph and discretionary nodes.
+
+You can find more practical information about languages in \CONTEXT\ manuals than
+in this document because users seldom go low level. Before we discuss these low
+level aspect anyway, we discuss how we came thus far; for that we borrow from the
+\LUATEX\ and \LUAMETATEX\ manuals.
+
+\stopsection
+
+\startsection[title={Evolution}]
 
 \LUATEX's internal handling of the characters and glyphs that eventually become
 typeset is quite different from the way \TEX82 handles those same objects. The
@@ -21,7 +41,7 @@ when they are encountered by the main control loop. \TEX\ attaches and processes
 the font information while creating those records, so that the resulting \quote
 {horizontal list} contains the final forms of ligatures and implicit kerning.
 This packaging is needed because we may want to get the effective width of for
-instance a horizontal box.
+instance a horizontal box. No hyphenation is needed in that case.
 
 When it becomes necessary to hyphenate words in a paragraph, \TEX\ converts (one
 word at time) the \type {char} node records into a string by replacing ligatures
@@ -32,47 +52,60 @@ Keep in mind that the paragraph may contain unboxed horizontal material, which
 then already contains ligatures and kerns and the words therein are part of the
 hyphenation process.
 
+Lets stress this: before \LUATEX\ ligaturing and kerning took place during input,
+and hyphenation, combined with temporarily juggling ligatures and kerns, took
+place while building the paragraph. It's a selective process where hyphenation
+only takes place where it is expected to influence the line breaks.
+
 Those \type {char} node records are somewhat misnamed, as they are glyph
 positions in specific fonts, and therefore not really \quote {characters} in the
-linguistic sense. There is no language information inside the \type {char} node
-records at all. Instead, language information is passed along using \type
-{language whatsit} nodes inside the horizontal list.
+linguistic sense. In \TEX82 there is no language information inside the \type
+{char} node records at all. Instead, language information is passed along using
+\type {language whatsit} nodes inside the horizontal list.
 
-In \LUATEX, the situation is quite different. The characters you type are always
-converted into \nod {glyph} node records with a special subtype to identify them
-as being intended as linguistic characters. \LUATEX\ stores the needed language
-information in those records, but does not do any font|-|related processing at
-the time of node creation. It only stores the index of the current font and a
-reference to a character in that font.
+In \LUATEX\ and thereby \LUAMETATEX\ the situation is quite different. The
+characters you type are always converted into \type {glyph} node records with a
+special subtype to identify them as being intended as linguistic characters.
+\LUATEX\ stores the needed language information in those records, but does not do
+any font|-|related processing at the time of node creation. It only stores the
+index of the current font and a reference to a character in that font.
 
 When it becomes necessary to typeset a paragraph, \LUATEX\ first inserts all
 hyphenation points right into the whole node list. Next, it processes all the
-font information in the whole list (creating ligatures and adjusting kerning),
-and finally it adjusts all the subtype identifiers so that the records are \quote
-{glyph nodes} from now on.
+font information in the whole list, creating ligatures and adjusting kerning, and
+finally it adjusts all the subtype identifiers so that the records are \quote
+{glyph nodes} from now on. Actually in \LUAMETATEX\ the subtype is no longer used
+to store the state but that is not relevant here.
+
+In \LUAMETATEX\ we also have this separation but there is more control over when
+hyphenation is applied, what becomes en- and em-dashes, hoe penalties kick in,
+etc. There are some additional callbacks that can manipulate words as they are
+encountered and exceptions can be handled differently.
 
 \stopsection
 
 \startsection[title={Characters, glyphs and discretionaries},reference=charsandglyphs]
-
-\topicindex {characters}
-\topicindex {glyphs}
-\topicindex {hyphenation}
 
 \TEX82 (including \PDFTEX) differentiates between \type {char} nodes and \type
 {lig} nodes. The former are simple items that contained nothing but a \quote
 {character} and a \quote {font} field, and they lived in the same memory as
 tokens did. The latter also contained a list of components, and a subtype
 indicating whether this ligature was the result of a word boundary, and it was
-stored in the same place as other nodes like boxes and kerns and glues. In
-\LUAMETATEX\ we no longer keep the list of components with the glyph node.
+stored in the same place as other nodes like boxes and kerns and glues.
+
+In \LUAMETATEX\ we no longer keep the list of components with the glyph node
+because we have to deal with more advanced scenarios in \quote {node mode}, for
+instance in attaching vowels to stepwise constructed ligatures. Also, in
+\OPENTYPE\ ligatures are just a many to one mapping and the kind of ligatures
+that we see \TEX\ fonts in \OPENTYPE\ often are achieved by kerning substituted
+single glyphs.
 
 In \LUATEX, these two types are merged into one, somewhat larger structure called
-a \nod {glyph} node. Besides having the old character, font, and component
-fields there are a few more, like \quote {attr} that we will see in \in {section}
-[glyphnodes], these nodes also contain a subtype, that codes four main types and
-two additional ghost types. For ligatures, multiple bits can be set at the same
-time (in case of a single|-|glyph word).
+a \type {glyph} node. Besides having the old character, font, and component
+fields there are a few more, like \quote {attr}, these nodes also contain a
+subtype, that codes four main types and two additional ghost types. For
+ligatures, multiple bits can be set at the same time (in case of a single|-|glyph
+word).
 
 \startitemize
     \startitem
@@ -80,7 +113,7 @@ time (in case of a single|-|glyph word).
         (bit 0) is set to 1.
     \stopitem
     \startitem
-        \nod {glyph}, for specific font glyphs: the lowest bit (bit 0) is
+        \type {glyph}, for specific font glyphs: the lowest bit (bit 0) is
         not set.
     \stopitem
     \startitem
@@ -88,38 +121,49 @@ time (in case of a single|-|glyph word).
     \stopitem
 \stopitemize
 
-The \nod {glyph} nodes also contain language data, split into four items that
-were current when the node was created: the \prm {setlanguage} (15~bits), \prm
-{lefthyphenmin} (8~bits), \prm {righthyphenmin} (8~bits), and \prm {uchyph}
-(1~bit).
+But while \TEX86\ has this construct, deconstruct and reconstruct model in \LUATEX\
+we don't do that so in the end this made little sense do we dropped it. We still
+have a (small) protection field that fulfills the job of signaling that we're done
+with processing glyphs.
+
+We now arrive at languages. The \type {glyph} nodes also contain language data,
+split into four items that were current when the node was created: the \type
+{\setlanguage} (15~bits), \type {\lefthyphenmin} (8~bits), \type {\righthyphenmin}
+(8~bits), and \type {\uchyph} (1~bit). In \LUAMETATEX\ we just use small
+dedicated fields instead.
 
 Incidentally, \LUATEX\ allows 16383 separate languages, and words can be 256
 characters long. The language is stored with each character. You can set
-\prm {firstvalidlanguage} to for instance~1 and make thereby language~0
-an ignored hyphenation language.
+\type {\firstvalidlanguage} to for instance~1 and make thereby language~0
+an ignored hyphenation language. In \LUAMETATEX\ we have a more reasonable
+allowance because we don't expect that many languages in one document, but we do
+permits longer words.
 
-The new primitive \prm {hyphenationmin} can be used to signal the minimal length
+The new primitive \type {\hyphenationmin} can be used to signal the minimal length
 of a word. This value is stored with the (current) language.
 
-Because the \prm {uchyph} value is saved in the actual nodes, its handling is
-subtly different from \TEX82: changes to \prm {uchyph} become effective
-immediately, not at the end of the current partial paragraph.
+Because the \type {\uchyph} value is saved in the actual nodes, its handling is
+subtly different from \TEX82: changes to \type {\uchyph} become effective
+immediately, not at the end of the current partial paragraph. But this is true
+for more properties: for instance we store a penalty in a discretionary node and
+freeze glue in spaces, of course all at the price of using more memory.
 
 Typeset boxes now always have their language information embedded in the nodes
 themselves, so there is no longer a possible dependency on the surrounding
 language settings. In \TEX82, a mid|-|paragraph statement like \type {\unhbox0}
 would process the box using the current paragraph language unless there was a
-\prm {setlanguage} issued inside the box. In \LUATEX, all language variables
-are already frozen.
+\type {\setlanguage} issued inside the box. In \LUATEX, all language variables
+are already frozen. Also, every list is hyphenated so that the font handler can
+do it's job taking that into account.
 
-In traditional \TEX\ the process of hyphenation is driven by \type {lccode}s. In
+In traditional \TEX\ the process of hyphenation is driven by \type {\lccode}s. In
 \LUATEX\ we made this dependency less strong. There are several strategies
-possible. When you do nothing, the currently used \type {lccode}s are used, when
+possible. When you do nothing, the currently used \type {\lccode}s are used, when
 loading patterns, setting exceptions or hyphenating a list.
 
-When you set \prm {savinghyphcodes} to a value greater than zero the current set
-of \type {lccode}s will be saved with the language. In that case changing a \type
-{lccode} afterwards has no effect. However, you can adapt the set with:
+When you set \type {\savinghyphcodes} to a value greater than zero the current set
+of \type {\lccode}s will be saved with the language. In that case changing a \type
+{\lccode} afterwards has no effect. However, you can adapt the set with:
 
 \starttyping
 \hjcode`a=`a
@@ -127,10 +171,10 @@ of \type {lccode}s will be saved with the language. In that case changing a \typ
 
 This change is global which makes sense if you keep in mind that the moment that
 hyphenation happens is (normally) when the paragraph or a horizontal box is
-constructed. When \prm {savinghyphcodes} was zero when the language got
+constructed. When \type {\savinghyphcodes} was zero when the language got
 initialized you start out with nothing, otherwise you already have a set.
 
-When a \prm {hjcode} is greater than 0 but less than 32 the value indicates the
+When a \type {\hjcode} is greater than 0 but less than 32 the value indicates the
 to be used length. In the following example we map a character (\type {x}) onto
 another one in the patterns and tell the engine that \type {œ} counts as two
 characters. Because traditionally zero itself is reserved for inhibiting
@@ -150,34 +194,59 @@ Here are some examples (we assume that French patterns are used):
 
 Carrying all this information with each glyph would give too much overhead and
 also make the process of setting up these codes more complex. A solution with
-\type {hjcode} sets was considered but rejected because in practice the current
+\type {\hjcode} sets was considered but rejected because in practice the current
 approach is sufficient and it would not be compatible anyway.
 
 Beware: the values are always saved in the format, independent of the setting
-of \prm {savinghyphcodes} at the moment the format is dumped.
+of \type {\savinghyphcodes} at the moment the format is dumped.
+
+We also have \type {\hccode} or hyphen code. A character can be set to non zero
+to indicate that it should be regarded as value visible hyphenation point. These
+examples show how that works (it is the second bit in \type {\hyphenationmode}
+that does the magic but we set them all here):
+
+\startbuffer
+{\hsize 1mm \hccode"2014 \zerocount  \hyphenationmode "0000000 xxx\emdash xxx \par}
+{\hsize 1mm \hccode"2014 "2014\relax \hyphenationmode "0000000 xxx\emdash xxx \par}
+
+{\hsize 1mm \hccode"2014 \zerocount  \hyphenationmode "FFFFFFF xxx\emdash xxx \par}
+{\hsize 1mm \hccode"2014 "2014\relax \hyphenationmode "FFFFFFF xxx\emdash xxx \par}
+
+{\hyphenationmode "0000000 xxx--xxx---xxx \par}
+{\hyphenationmode "FFFFFFF xxx--xxx---xxx \par}
+\stopbuffer
+
+\typebuffer
+
+Here we assign the code point because who knows what future extensions will
+bring. As with the other codes you can also set them from \LUA. The feature is
+experimental and might evolve when \CONTEXT\ users come up with reasonable
+demands.
+
+\startpacked \getbuffer \stoppacked
 
 A boundary node normally would mark the end of a word which interferes with for
-instance discretionary injection. For this you can use the \prm {wordboundary}
+instance discretionary injection. For this you can use the \type {\wordboundary}
 as a trigger. Here are a few examples of usage:
 
 \startbuffer
-    discrete---discrete
+discrete---discrete
 \stopbuffer
 \typebuffer \startnarrower \dontcomplain \hsize 1pt \getbuffer \par \stopnarrower
 \startbuffer
-    discrete\discretionary{}{}{---}discrete
+discrete\discretionary{}{}{---}discrete
 \stopbuffer
 \typebuffer \startnarrower \dontcomplain \hsize 1pt \getbuffer \par \stopnarrower
 \startbuffer
-    discrete\wordboundary\discretionary{}{}{---}discrete
+discrete\wordboundary\discretionary{}{}{---}discrete
 \stopbuffer
 \typebuffer \startnarrower \dontcomplain \hsize 1pt \getbuffer \par \stopnarrower
 \startbuffer
-    discrete\wordboundary\discretionary{}{}{---}\wordboundary discrete
+discrete\wordboundary\discretionary{}{}{---}\wordboundary discrete
 \stopbuffer
 \typebuffer \startnarrower \dontcomplain \hsize 1pt \getbuffer \par \stopnarrower
 \startbuffer
-    discrete\wordboundary\discretionary{---}{}{}\wordboundary discrete
+discrete\wordboundary\discretionary{---}{}{}\wordboundary discrete
 \stopbuffer
 \typebuffer \startnarrower \dontcomplain \hsize 1pt \getbuffer \par \stopnarrower
 
@@ -188,27 +257,22 @@ later on due to messed up ligature building as these dashes are ligatures in bas
 fonts. This is a side effect of separating the hyphenation, ligaturing and
 kerning steps.
 
-The start and end of a sequence of characters is signalled by a \nod {glue}, \nod
-{penalty}, \nod {kern} or \nod {boundary} node. But by default also a \nod
-{hlist}, \nod {vlist}, \nod {rule}, \nod {dir}, \nod {whatsit}, \nod {insert}, and
-\nod {adjust} node indicate a start or end. You can omit the last set from the
-test by setting flags in \prm {hyphenationmode}:
+The start and end of a sequence of characters is signalled by a \type {glue}, \type
+{penalty}, \type {kern} or \type {boundary} node. But by default also a \type
+{hlist}, \type {vlist}, \type {rule}, \type {dir}, \type {whatsit}, \type {insert}, and
+\type {adjust} node indicate a start or end. You can omit the last set from the
+test by setting flags in \type {\hyphenationmode}:
 
-\starttabulate[|c|l|]
-\DB value      \BC behaviour \NC \NR
-\TB
-\NC            \NC not strict \NC \NR
-\NC \type{64}  \NC strict start \NC \NR
-\NC \type{128} \NC strict end \NC \NR
-\NC \type{192} \NC strict start and strict end \NC \NR
-\LL
-\stoptabulate
+\startcolumns[n=2]
+\getbuffer[engine:syntax:hyphenationcodes]
+\stopcolumns
 
 The word start is determined as follows:
 
 \starttabulate[|l|l|]
-\DB node      \BC behaviour \NC \NR
-\TB
+\FL
+\BC node      \BC behaviour \NC \NR
+\TL
 \BC boundary  \NC yes when wordboundary \NC \NR
 \BC hlist     \NC when the start bit is set \NC \NR
 \BC vlist     \NC when the start bit is set \NC \NR
@@ -225,8 +289,9 @@ The word start is determined as follows:
 The word end is determined as follows:
 
 \starttabulate[|l|l|]
-\DB node      \BC behaviour \NC \NR
-\TB
+\FL
+\BC node      \BC behaviour \NC \NR
+\TL
 \BC boundary  \NC yes \NC \NR
 \BC glyph     \NC yes when different language \NC \NR
 \BC glue      \NC yes \NC \NR
@@ -315,51 +380,48 @@ Hyphenation and discretionary injection is driven by a mode parameter which is
 a bitset made from the following values, some of which we saw in the previous
 examples.
 
-\starttabulate[|l|p|]
-\NC \number \normalhyphenationcode            \NC honour (normal) \prm{discretionary}'s \NC \NR
-\NC \number \automatichyphenationcode         \NC turn \type {-} into (automatic) discretionaries \NC \NR
-\NC \number \explicithyphenationcode          \NC turn \type {\-} into (explicit) discretionaries \NC \NR
-\NC \number \syllablehyphenationcode          \NC hyphenate (syllable) according to language \NC \NR
-\NC \number \uppercasehyphenationcode         \NC hyphenate uppercase characters too (replaces \prm {uchyph} \NC \NR
-\NC \number \compoundhyphenationcode          \NC permit break at an explicit hyphen (border cases) \NC \NR
-\NC \number \strictstarthyphenationcode       \NC traditional \TEX\ compatibility wrt the start of a word \NC \NR
-\NC \number \strictendhyphenationcode         \NC traditional \TEX\ compatibility wrt the end of a word \NC \NR
-\NC \number \automaticpenaltyhyphenationcode  \NC use \prm {automatichyphenpenalty} \NC \NR
-\NC \number \explicitpenaltyhyphenationcode   \NC use \prm {explicithyphenpenalty} \NC \NR
-\NC \number \permitgluehyphenationcode        \NC turn glue in discretionaries into kerns \NC \NR
-\NC \number \permitallhyphenationcode         \NC okay, let's be even more tolerant in discretionaries \NC \NR
-\NC \number \permitmathreplacehyphenationcode \NC and again we're more permissive \NC \NR
-\NC \number \lazyligatureshyphenationcode     \NC controls how successive explicit discretionaries are handled in base mode \NC \NR
-\NC \number \forcecheckhyphenationcode        \NC treat all discretionaries equal when breaking lines (in all three passes) \NC \NR
-\NC \number \forcehandlerhyphenationcode      \NC kick in the handler (experiment) \NC \NR
-\NC \number \feedbackcompoundhyphenationcode  \NC feedback compound snippets \NC \NR
+\starttabulate[|rT|p|]
+\NC \tohexadecimal \normalhyphenationcode            \NC honour (normal) \type{\discretionary}'s \NC \NR
+\NC \tohexadecimal \automatichyphenationcode         \NC turn \type {-} into (automatic) discretionaries \NC \NR
+\NC \tohexadecimal \explicithyphenationcode          \NC turn \type {\-} into (explicit) discretionaries \NC \NR
+\NC \tohexadecimal \syllablehyphenationcode          \NC hyphenate (syllable) according to language \NC \NR
+\NC \tohexadecimal \uppercasehyphenationcode         \NC hyphenate uppercase characters too (replaces \type {\uchyph} \NC \NR
+\NC \tohexadecimal \compoundhyphenationcode          \NC permit break at an explicit hyphen (border cases) \NC \NR
+\NC \tohexadecimal \strictstarthyphenationcode       \NC traditional \TEX\ compatibility wrt the start of a word \NC \NR
+\NC \tohexadecimal \strictendhyphenationcode         \NC traditional \TEX\ compatibility wrt the end of a word \NC \NR
+\NC \tohexadecimal \automaticpenaltyhyphenationcode  \NC use \type {\automatichyphenpenalty} \NC \NR
+\NC \tohexadecimal \explicitpenaltyhyphenationcode   \NC use \type {\explicithyphenpenalty} \NC \NR
+\NC \tohexadecimal \permitgluehyphenationcode        \NC turn glue in discretionaries into kerns \NC \NR
+\NC \tohexadecimal \permitallhyphenationcode         \NC okay, let's be even more tolerant in discretionaries \NC \NR
+\NC \tohexadecimal \permitmathreplacehyphenationcode \NC and again we're more permissive \NC \NR
+\NC \tohexadecimal \lazyligatureshyphenationcode     \NC controls how successive explicit discretionaries are handled in base mode \NC \NR
+\NC \tohexadecimal \forcecheckhyphenationcode        \NC treat all discretionaries equal when breaking lines (in all three passes) \NC \NR
+\NC \tohexadecimal \forcehandlerhyphenationcode      \NC kick in the handler (experiment) \NC \NR
+\NC \tohexadecimal \feedbackcompoundhyphenationcode  \NC feedback compound snippets \NC \NR
 \stoptabulate
 
 Some of these options are still experimental, simply because not all aspects and
 side effects have been explored. You can find some experimental use cases in
 \CONTEXT.
 
+There are also \type {\discretionaryoptions}. Some are set by the engine:
+
+\startcolumns
+\getbuffer[engine:syntax:discoptioncodes]
+\stopcolumns
+
 \stopsection
 
 \startsection[title={Controlling hyphenation}]
 
-\startsubsection[title={\prm {hyphenationmin}}]
+The \typ {\hyphenationmin} parameter can be used to set the minimal word length,
+so setting it to a value of~$5$ means that only words of 6 characters and more
+will be hyphenated, of course within the constraints of the \typ {\lefthyphenmin}
+and \typ {\righthyphenmin} values (as stored in the glyph node). This primitive
+accepts a number and stores the value with the language.
 
-\topicindex {languages}
-\topicindex {hyphenation}
-
-This primitive can be used to set the minimal word length, so setting it to a value
-of~$5$ means that only words of 6 characters and more will be hyphenated, of course
-within the constraints of the \prm {lefthyphenmin} and \prm {righthyphenmin}
-values (as stored in the glyph node). This primitive accepts a number and stores
-the value with the language.
-
-\stopsubsection
-
-\startsubsection[title={\prm {boundary}, \prm {noboundary}, \prm {protrusionboundary} and \prm {wordboundary}}]
-
-The \prm {noboundary} command is used to inject a whatsit node but now injects a normal
-node with type \nod {boundary} and subtype~0. In addition you can say:
+The \type {\noboundary} command is used to inject a whatsit node but now injects
+a normal node with type \type {boundary} and subtype~0. In addition you can say:
 
 \starttyping
 x\boundary 123\relax y
@@ -372,36 +434,30 @@ passing this value is a side effect of the generalization. The subtypes~2 and~3
 are used to control protrusion and word boundaries in hyphenation and have
 related primitives.
 
-\stopsubsection
-
 \stopsection
 
 \startsection[title={The main control loop}]
 
-\topicindex {main loop}
-\topicindex {hyphenation}
-\topicindex {hyphenation+tracing}
-
 In \LUATEX's main loop, almost all input characters that are to be typeset are
-converted into \nod {glyph} node records with subtype \quote {character}, but
+converted into \type {glyph} node records with subtype \quote {character}, but
 there are a few exceptions.
 
 \startitemize[n]
 
 \startitem
-    The \prm {accent} primitive creates nodes with subtype \quote {glyph}
+    The \type {\accent} primitive creates nodes with subtype \quote {glyph}
     instead of \quote {character}: one for the actual accent and one for the
-    accentee. The primary reason for this is that \prm {accent} in \TEX82 is
+    accentee. The primary reason for this is that \type {\accent} in \TEX82 is
     explicitly dependent on the current font encoding, so it would not make much
     sense to attach a new meaning to the primitive's name, as that would
     invalidate many old documents and macro packages. A secondary reason is that
-    in \TEX82, \prm {accent} prohibits hyphenation of the current word. Since
+    in \TEX82, \type {\accent} prohibits hyphenation of the current word. Since
     in \LUATEX\ hyphenation only takes place on \quote {character} nodes, it is
     possible to achieve the same effect. Of course, modern \UNICODE\ aware macro
-    packages will not use the \prm {accent} primitive at all but try to map
+    packages will not use the \type {\accent} primitive at all but try to map
     directly on composed characters.
 
-    This change of meaning did happen with \prm {char}, that now generates
+    This change of meaning did happen with \type {\char}, that now generates
     \quote {glyph} nodes with a character subtype. In traditional \TEX\ there was
     a strong relationship between the 8|-|bit input encoding, hyphenation and
     glyphs taken from a font. In \LUATEX\ we have \UTF\ input, and in most cases
@@ -419,27 +475,30 @@ there are a few exceptions.
 
 \startitem
     Automatic discretionaries are handled differently. \TEX82 inserts an empty
-    discretionary after sensing an input character that matches the \prm
-    {hyphenchar} in the current font. This test is wrong in our opinion: whether
+    discretionary after sensing an input character that matches the \type
+    {\hyphenchar} in the current font. This test is wrong in our opinion: whether
     or not hyphenation takes place should not depend on the current font, it is a
     language property. \footnote {When \TEX\ showed up we didn't have \UNICODE\
     yet and being limited to eight bits meant that one sometimes had to
     compromise between supporting character input, glyph rendering, hyphenation.}
 
-    In \LUATEX, it works like this: if \LUATEX\ senses a string of input
-    characters that matches the value of the new integer parameter \prm
-    {exhyphenchar}, it will insert an explicit discretionary after that series of
-    nodes. Initially \TEX\ sets the \type {\exhyphenchar=`\-}. Incidentally, this
-    is a global parameter instead of a language-specific one because it may be
-    useful to change the value depending on the document structure instead of the
-    text language.
+    The \type {\defaulthyphenchar} parameter is used as fallback when defining a
+    font where that one is not explicitly set.
+
+    In \LUATEX, it works like this: if it senses a string of input characters
+    that matches the value of the new integer parameter \type {\exhyphenchar}, it
+    will insert an explicit discretionary after that series of nodes. Initially
+    \TEX\ sets the \type {\exhyphenchar=`\-}. Incidentally, this is a global
+    parameter instead of a language-specific one because it may be useful to
+    change the value depending on the document structure instead of the text
+    language.
 
     The insertion of discretionaries after a sequence of explicit hyphens happens
     at the same time as the other hyphenation processing, {\it not\/} inside the
     main control loop.
 
-    The only use \LUATEX\ has for \prm {hyphenchar} is at the check whether a
-    word should be considered for hyphenation at all. If the \prm {hyphenchar}
+    The only use \LUATEX\ has for \type {\hyphenchar} is at the check whether a
+    word should be considered for hyphenation at all. If the \type {\hyphenchar}
     of the font attached to the first character node in a word is negative, then
     hyphenation of that word is abandoned immediately. This behaviour is added
     for backward compatibility only, and the use of \type {\hyphenchar=-1} as a
@@ -447,18 +506,18 @@ there are a few exceptions.
 \stopitem
 
 \startitem
-    The \prm {setlanguage} command no longer creates whatsits. The meaning of
-    \prm {setlanguage} is changed so that it is now an integer parameter like all
-    others. That integer parameter is used in \type {\glyph_node} creation to add
-    language information to the glyph nodes. In conjunction, the \prm {language}
-    primitive is extended so that it always also updates the value of \prm
-    {setlanguage}.
+    The \type {\setlanguage} command no longer creates whatsits. The meaning of
+    \type {\setlanguage} is changed so that it is now an integer parameter like all
+    others. That integer parameter is used in \type {glyph} node creation to add
+    language information to the glyph nodes. In conjunction, the \type {\language}
+    primitive is extended so that it always also updates the value of \type
+    {\setlanguage}.
 \stopitem
 
 \startitem
-    The \prm {noboundary} command (that prohibits word boundary processing
+    The \type {\noboundary} command (that prohibits word boundary processing
     where that would normally take place) now does create nodes. These nodes are
-    needed because the exact place of the \prm {noboundary} command in the
+    needed because the exact place of the \type {\noboundary} command in the
     input stream has to be retained until after the ligature and font processing
     stages.
 \stopitem
@@ -471,32 +530,39 @@ there are a few exceptions.
     {word} was handled by that \quote {main control} loop. In \LUATEX, there is
     no longer a need for that (all hard work is done later), and the (now very
     small) bits of character|-|handling code have been moved back inline. When
-    \prm {tracingcommands} is on, this is visible because the full word is
+    \type {\tracingcommands} is on, this is visible because the full word is
     reported, instead of just the initial character.
 \stopitem
 
 \stopitemize
 
-Because we tend to make hard coded behaviour configurable a few new primitives
+Because we tend to make hard coded behavior configurable a few new primitives
 have been added:
 
 \starttyping
-\hyphenpenaltymode
 \automatichyphenpenalty
 \explicithyphenpenalty
 \stoptyping
 
-The usage of these penalties is controlled by the \prm {hyphenationmode} flags
-\number\automaticpenaltyhyphenationcode\space and
-\number\explicitpenaltyhyphenationcode\space and when these are not set \prm
-{exhyphenpenalty} is used.
+These relate to:
 
-You can use the \prm {tracinghyphenation} variable to get a bit more information
+\starttyping
+\automaticdiscretionary % -
+\explicitdiscretionary  % \-
+\stoptyping
+
+The usage of these penalties is controlled by the \type {\hyphenationmode} flags
+{\tt0x\tohexadecimal\automaticpenaltyhyphenationcode } and
+{\tt0x\tohexadecimal\explicitpenaltyhyphenationcode} and when these are not set \typ
+{\exhyphenpenalty} is used.
+
+You can use the \type {\tracinghyphenation} variable to get a bit more information
 about what happens.
 
 \starttabulate[|lT|l|]
-\DB value \BC effect \NC\NR
-\TB
+\FL
+\BC value \BC effect \NC\NR
+\TL
 \NC 1     \NC report redundant pattern (happens by default in \LUATEX) \NC\NR
 \NC 2     \NC report words that reach the hyphenator and got treated \NC\NR
 \NC 3     \NC show the result of a hyphenated word (a node list) \NC\NR
@@ -507,27 +573,21 @@ about what happens.
 
 \startsection[title={Loading patterns and exceptions},reference=patternsexceptions]
 
-\topicindex {hyphenation}
-\topicindex {hyphenation+patterns}
-\topicindex {hyphenation+exceptions}
-\topicindex {patterns}
-\topicindex {exceptions}
-
 Although we keep the traditional approach towards hyphenation (which is still
 superior) the implementation of the hyphenation algorithm in \LUATEX\ is quite
 different from the one in \TEX82.
 
-After expansion, the argument for \prm {patterns} has to be proper \UTF8 with
-individual patterns separated by spaces, no \prm {char} or \prm {chardef}d
+After expansion, the argument for \type {\patterns} has to be proper \UTF8 with
+individual patterns separated by spaces, no \type {\char} or \type {\chardef}d
 commands are allowed. The current implementation is quite strict and will reject
-all non|-|\UNICODE\ characters. Likewise, the expanded argument for \prm
-{hyphenation} also has to be proper \UTF8, but here a bit of extra syntax is
+all non|-|\UNICODE\ characters. Likewise, the expanded argument for \type
+{\hyphenation} also has to be proper \UTF8, but here a bit of extra syntax is
 provided:
 
 \startitemize[n]
 \startitem
     Three sets of arguments in curly braces (\type {{}{}{}}) indicate a desired
-    complex discretionary, with arguments as in \prm {discretionary}'s command in
+    complex discretionary, with arguments as in \type {\discretionary}'s command in
     normal document input.
 \stopitem
 \startitem
@@ -535,8 +595,8 @@ provided:
     \type {\discretionary{-}{}{}} in normal document input.
 \stopitem
 \startitem
-    Internal command names are ignored. This rule is provided especially for \prm
-    {discretionary}, but it also helps to deal with \prm {relax} commands that
+    Internal command names are ignored. This rule is provided especially for \type
+    {\discretionary}, but it also helps to deal with \type {\relax} commands that
     may sneak in.
 \stopitem
 \startitem
@@ -551,17 +611,18 @@ listed items. It is important to note that the keys in an exception dictionary
 can always be generated from the values. Here are a few examples:
 
 \starttabulate[|l|l|l|]
-\DB value                  \BC implied key (input) \BC effect \NC\NR
-\TB
+\FL
+\BC value                  \BC implied key (input) \BC effect \NC\NR
+\TL
 \NC \type {ta-ble}         \NC table               \NC \type {ta\-ble} ($=$ \type {ta\discretionary{-}{}{}ble}) \NC\NR
 \NC \type {ba{k-}{}{c}ken} \NC backen              \NC \type {ba\discretionary{k-}{}{c}ken} \NC\NR
 \LL
 \stoptabulate
 
 The resultant patterns and exception dictionary will be stored under the language
-code that is the present value of \prm {language}.
+code that is the present value of \type {\language}.
 
-In the last line of the table, you see there is no \prm {discretionary} command
+In the last line of the table, you see there is no \type {\discretionary} command
 in the value: the command is optional in the \TEX-based input syntax. The
 underlying reason for that is that it is conceivable that a whole dictionary of
 words is stored as a plain text file and loaded into \LUATEX\ using one of the
@@ -579,11 +640,11 @@ actual explicit hyphen character if needed). For example, this matches the word
 \hyphenation{multi{-}{}{-}word{-}{}{-}boun-daries}
 \stoptyping
 
-The motivation behind the \ETEX\ extension \prm {savinghyphcodes} was that
+The motivation behind the \ETEX\ extension \type {\savinghyphcodes} was that
 hyphenation heavily depended on font encodings. This is no longer true in
 \LUATEX, and the corresponding primitive is basically ignored. Because we now
-have \prm {hjcode}, the case related codes can be used exclusively for \prm
-{uppercase} and \prm {lowercase}.
+have \type {\hjcode}, the case related codes can be used exclusively for \type
+{\uppercase} and \type {\lowercase}.
 
 The three curly brace pair pattern in an exception can be somewhat unexpected so
 we will try to explain it by example. The pattern \type {foo{}{}{x}bar} pattern
@@ -591,7 +652,7 @@ creates a lookup \type {fooxbar} and the pattern \type {foo{}{}{}bar} creates
 \type {foobar}. Then, when a hit happens there is a replacement text (\type {x})
 or none. Because we introduced penalties in discretionary nodes, the exception
 syntax now also can take a penalty specification. The value between square brackets
-is a multiplier for \prm {exceptionpenalty}. Here we have set it to 10000 so
+is a multiplier for \type {\exceptionpenalty}. Here we have set it to 10000 so
 effectively we get 30000 in the example.
 
 \def\ShowSample#1#2%
@@ -627,10 +688,6 @@ effectively we get 30000 in the example.
 
 \startsection[title={Applying hyphenation}]
 
-\topicindex {hyphenation+how it works}
-\topicindex {hyphenation+discretionaries}
-\topicindex {discretionaries}
-
 The internal structures \LUATEX\ uses for the insertion of discretionaries in
 words is very different from the ones in \TEX82, and that means there are some
 noticeable differences in handling as well.
@@ -655,12 +712,12 @@ of the implementation:
 \stopitem
 \startitem
     Because there is no \quote {trie preparation} stage, language patterns never
-    become frozen. This means that the primitive \prm {patterns} (and its \LUA\
+    become frozen. This means that the primitive \type {\patterns} (and its \LUA\
     counterpart \type {language.patterns}) can be used at any time, not only in
     ini\TEX.
 \stopitem
 \startitem
-    Only the string representation of \prm {patterns} and \prm {hyphenation} is
+    Only the string representation of \type {\patterns} and \type {\hyphenation} is
     stored in the format file. At format load time, they are simply
     re|-|evaluated. It follows that there is no real reason to preload languages
     in the format file. In fact, it is usually not a good idea to do so. It is
@@ -668,16 +725,16 @@ of the implementation:
     needed.
 \stopitem
 \startitem
-    \LUATEX\ uses the language-specific variables \prm {prehyphenchar} and \prm
-    {posthyphenchar} in the creation of implicit discretionaries, instead of
-    \TEX82's \prm {hyphenchar}, and the values of the language|-|specific
-    variables \prm {preexhyphenchar} and \prm {postexhyphenchar} for explicit
+    \LUATEX\ uses the language-specific variables \type {\prehyphenchar} and \type
+    {\posthyphenchar} in the creation of implicit discretionaries, instead of
+    \TEX82's \type {\hyphenchar}, and the values of the language|-|specific
+    variables \type {\preexhyphenchar} and \type {\postexhyphenchar} for explicit
     discretionaries (instead of \TEX82's empty discretionary).
 \stopitem
 \startitem
-    The value of the two counters related to hyphenation, \prm {hyphenpenalty}
-    and \prm {exhyphenpenalty}, are now stored in the discretionary nodes. This
-    permits a local overload for explicit \prm {discretionary} commands. The
+    The value of the two counters related to hyphenation, \type {\hyphenpenalty}
+    and \type {\exhyphenpenalty}, are now stored in the discretionary nodes. This
+    permits a local overload for explicit \type {\discretionary} commands. The
     value current when the hyphenation pass is applied is used. When no callbacks
     are used this is compatible with traditional \TEX. When you apply the \LUA\
     \type {language.hyphenate} function the current values are used.
@@ -688,7 +745,7 @@ of the implementation:
 \stopitem
 \stopitemize
 
-Because we store penalties in the disc node the \prm {discretionary} command has
+Because we store penalties in the disc node the \type {\discretionary} command has
 been extended to accept an optional penalty specification, so you can do the
 following:
 
@@ -711,14 +768,14 @@ inserted at the left-hand side of a word).
 
 Word boundaries are no longer implied by font switches, but by language switches.
 One word can have two separate fonts and still be hyphenated correctly (but it
-can not have two different languages, the \prm {setlanguage} command forces a
+can not have two different languages, the \type {\setlanguage} command forces a
 word boundary).
 
 All languages start out with \type {\prehyphenchar=`\-}, \type {\posthyphenchar=0},
 \type {\preexhyphenchar=0} and \type {\postexhyphenchar=0}. When you assign the
 values of one of these four parameters, you are actually changing the settings
-for the current \prm {language}, this behaviour is compatible with \prm {patterns}
-and \prm {hyphenation}.
+for the current \type {\language}, this behaviour is compatible with \type {\patterns}
+and \type {\hyphenation}.
 
 \LUATEX\ also hyphenates the first word in a paragraph. Words can be up to 256
 characters long (up from 64 in \TEX82). Longer words are ignored right now, but
@@ -735,20 +792,19 @@ not operate properly in the presence of \quote {glyph}, \quote {ligature}, or
 
 \startsection[title={Applying ligatures and kerning}]
 
-\topicindex {ligatures}
-\topicindex {kerning}
-
-After all possible hyphenation points have been inserted in the list, \LUATEX\
-will process the list to convert the \quote {character} nodes into \quote {glyph}
-and \quote {ligature} nodes. This is actually done in two stages: first all
-ligatures are processed, then all kerning information is applied to the result
-list. But those two stages are somewhat dependent on each other: If the used font
-makes it possible to do so, the ligaturing stage adds virtual \quote {character}
-nodes to the word boundaries in the list. While doing so, it removes and
-interprets \prm {noboundary} nodes. The kerning stage deletes those word
-boundary items after it is done with them, and it does the same for \quote
-{ghost} nodes. Finally, at the end of the kerning stage, all remaining \quote
-{character} nodes are converted to \quote {glyph} nodes.
+We discuss this base mode aspect here because in traditional \TEX\ the process is
+interwoven with hyphenation. After all possible hyphenation points have been
+inserted in the list, \LUATEX\ will process the list to convert the \quote
+{character} nodes into \quote {glyph} and \quote {ligature} nodes. This is
+actually done in two stages: first all ligatures are processed, then all kerning
+information is applied to the result list. But those two stages are somewhat
+dependent on each other: If the used font makes it possible to do so, the
+ligaturing stage adds virtual \quote {character} nodes to the word boundaries in
+the list. While doing so, it removes and interprets \type {\noboundary} nodes.
+The kerning stage deletes those word boundary items after it is done with them,
+and it does the same for \quote {ghost} nodes. Finally, at the end of the kerning
+stage, all remaining \quote {character} nodes are converted to \quote {glyph}
+nodes.
 
 This separation is worth mentioning because, if you overrule from \LUA\ only one
 of the two callbacks related to font handling, then you have to make sure you
@@ -769,18 +825,14 @@ In so called base mode, where \TEX\ does the work, the ligature construction
 \type {ff} ligatures and that one followed by an \type {i} can become a \type
 {ffi} ligature. The situation can be complicated by hyphenation points between
 these characters. When there are several in a ligature collapsing happens. Flag
-{\tttf "\uchexnumbers {\lazyligatureshyphenationcode}} in the \prm
-{hyphenationmode} variable determines if this happens lazy or greedy, i.e.\ the
+{\tt 0x\tohexadecimal \lazyligatureshyphenationcode} in the \typ
+{\hyphenationmode} variable determines if this happens lazy or greedy, i.e.\ the
 first hyphen wins or the last one does. In practice a \CONTEXT\ user won't have
 to deal with this because most fonts are processed in node mode.
 
 \stopsection
 
 \startsection[title={Breaking paragraphs into lines}]
-
-\topicindex {linebreaks}
-\topicindex {paragraphs}
-\topicindex {discretionaries}
 
 This code is almost unchanged, but because of the above|-|mentioned changes with
 respect to discretionaries and ligatures, line breaking will potentially be
@@ -800,225 +852,294 @@ and replace text in the discretionary node.
 
 The combined effect of these two differences is that \LUATEX\ does not always use
 all of the potential breakpoints in a paragraph, especially when fonts with many
-ligatures are used. Of course kerning also complicates matters here.
+ligatures are used. Of course kerning also complicates matters here. In practice
+that doesn't matter much because the par builder has enough solution space due to
+spaces; it's not like out of a sudden we wonder why paragraphs look worse.
+
+The \typ {\doublehyphendemerits} and \typ {\finalhyphendemerits} parameters play
+a role in the par builder: they discourage a page break when there are two or
+more hyphens in a row and if there's one in the pre-last line. These are not
+bound to a language.
 
 \stopsection
 
+% in retrospect set/get
+
 \startsection[title={The \type {language} library}][library=lang]
 
-\startsubsection[title={\type {new} and \type {id}}]
-
-\topicindex {languages+library}
-
-\libindex {new}
-\libindex {id}
-
-This library provides the interface to \LUATEX's structure representing a
+This library provides the interface to the internal structure representing a
 language, and the associated functions.
 
-\startfunctioncall
-<language> l = language.new()
-<language> l = language.new(<number> id)
-\stopfunctioncall
+\starttyping [option=LUA]
+function language.new ( <t:nil> | <t:integer> identifier )
+    return <t:userdata> -- language
+end
+\stoptyping
 
 This function creates a new userdata object. An object of type \type {<language>}
 is the first argument to most of the other functions in the \type {language}
 library. These functions can also be used as if they were object methods, using
 the colon syntax. Without an argument, the next available internal id number will
 be assigned to this object. With argument, an object will be created that links
-to the internal language with that id number.
+to the internal language with that id number. The number returned is the internal
+\type {\language} id number this object refers to.
 
-\startfunctioncall
-<number> n = language.id(<language> l)
-\stopfunctioncall
-
-The number returned is the internal \prm {language} id number this object refers
-to.
-
-\stopsubsection
-
-\startsubsection[title={\type {hyphenation}}]
-
-\libindex {hyphenation}
+\starttyping [option=LUA]
+function language.id ( <t:userdata> language )
+    return <t:integer> -- identifier
+end
+\stoptyping
 
 You can load exceptions with:
 
-\startfunctioncall
-<string> n = language.hyphenation(<language> l)
-language.hyphenation(<language> l, <string> n)
-\stopfunctioncall
+\starttyping [option=LUA]
+function language.hyphenation( <t:userdata> language, <t:string> list)
+    -- no return value
+end
+\stoptyping
 
 When no string is given (the first example) a string with all exceptions is
 returned.
 
-\stopsubsection
-
-\startsubsection[title={\type {clearhyphenation} and \type {clean}}]
-
-\libindex {clearhyphenation}
-\libindex {clean}
+\starttyping [option=LUA]
+function language.hyphenation ( <t:userdata> language )
+    return <t:string> list
+end
+\stoptyping
 
 This either returns the current hyphenation exceptions for this language, or adds
 new ones. The syntax of the string is explained in~\in {section}
 [patternsexceptions].
 
-\startfunctioncall
-language.clearhyphenation(<language> l)
-\stopfunctioncall
+This call clears the exception dictionary (string) for this language:
 
-This call clears the exception dictionary (string) for this language.
-
-\startfunctioncall
-<string> n = language.clean(<language> l, <string> o)
-<string> n = language.clean(<string> o)
-\stopfunctioncall
+\starttyping [option=LUA]
+function language.clearhyphenation( <t:userdata> language )
+    --- no return value
+end
+\stoptyping
 
 This function creates a hyphenation key from the supplied hyphenation value. The
 syntax of the argument string is explained in \in {section} [patternsexceptions].
-This function is useful if you want to do something else based on the words in a
+The function is useful if you want to do something else based on the words in a
 dictionary file, like spell|-|checking.
 
-\stopsubsection
+\starttyping [option=LUA]
+function language.clean(<t:userdata> language, <t:string> str)
+    return <t:string> cln
+end
 
-\startsubsection[title={\type {patterns} and \type {clearpatterns}}]
-
-\libindex {patterns}
-\libindex {clearpatterns}
-
-\startfunctioncall
-<string> n = language.patterns(<language> l)
-language.patterns(<language> l, <string> n)
-\stopfunctioncall
+function language.clean(<t:string> str)
+    return <t:string> cln
+end
+\stoptyping
 
 This adds additional patterns for this language object, or returns the current
 set. The syntax of this string is explained in \in {section}
 [patternsexceptions].
 
-\startfunctioncall
-language.clearpatterns(<language> l)
-\stopfunctioncall
+\starttyping [option=LUA]
+function language.patterns( <t:userdata> language, <string> list )
+    -- no return value
+end
+\stoptyping
+
+The registered list can be fetched with:
+
+\starttyping [option=LUA]
+function language.patterns( <t:userdata> language )
+    return <t:string> -- list
+end
+\stoptyping
 
 This can be used to clear the pattern dictionary for a language.
 
-\stopsubsection
+\starttyping [option=LUA]
+function language.clearpatterns ( <t:userdata> language )
+    -- no return value
+end
+\stoptyping
 
-\startsubsection[title={\type {hyphenationmin}}]
-
-\libindex {hyphenationmin}
 
 This function sets (or gets) the value of the \TEX\ parameter
 \type {\hyphenationmin}.
 
-\startfunctioncall
-n = language.hyphenationmin(<language> l)
-language.hyphenationmin(<language> l, <number> n)
-\stopfunctioncall
+\starttyping [option=LUA]
+function language.hyphenationmin ( <t:userdata> language, <t:number> n )
+    -- no return value
+end
+\stoptyping
 
-\stopsubsection
-
-\startsubsection[title={\type {[pre|post][ex|]hyphenchar}}]
-
-\libindex {prehyphenchar}
-\libindex {posthyphenchar}
-\libindex {preexhyphenchar}
-\libindex {postexhyphenchar}
-
-\startfunctioncall
-<number> n = language.prehyphenchar(<language> l)
-language.prehyphenchar(<language> l, <number> n)
-
-<number> n = language.posthyphenchar(<language> l)
-language.posthyphenchar(<language> l, <number> n)
-\stopfunctioncall
+\starttyping [option=LUA]
+function language.hyphenationmin ( <t:userdata> language )
+    return <t:integer> n
+end
+\stoptyping
 
 These two are used to get or set the \quote {pre|-|break} and \quote
 {post|-|break} hyphen characters for implicit hyphenation in this language. The
-intial values are decimal 45 (hyphen) and decimal~0 (indicating emptiness).
+initial values are decimal 45 (hyphen) and decimal~0 (indicating emptiness).
 
-\startfunctioncall
-<number> n = language.preexhyphenchar(<language> l)
-language.preexhyphenchar(<language> l, <number> n)
+\starttyping [option=LUA]
+function language.prehyphenchar  ( <t:userdata> language, <t:integer> n) end
+function language.posthyphenchar ( <t:userdata> language, <t:integer> n) end
 
-<number> n = language.postexhyphenchar(<language> l)
-language.postexhyphenchar(<language> l, <number> n)
-\stopfunctioncall
+function language.prehyphenchar  ( <t:userdata> language) return <t:integer> n end
+function language.posthyphenchar ( <t:userdata> language) return <t:integer> n end
+\stoptyping
 
 These gets or set the \quote {pre|-|break} and \quote {post|-|break} hyphen
 characters for explicit hyphenation in this language. Both are initially
 decimal~0 (indicating emptiness).
 
-\stopsubsection
+\starttyping [option=LUA]
+function language.preexhyphenchar  ( <t:userdata> language, <t:integer> n) end
+function language.postexhyphenchar ( <t:userdata> language, <t:integer> n) end
 
-\startsubsection[title={\type {hyphenate}}]
-
-\libindex {hyphenate}
+function language.preexhyphenchar  ( <t:userdata> language) return <t:integer> n end
+function language.postexhyphenchar ( <t:userdata> language) return <t:integer> n end
+\stoptyping
 
 The next call inserts hyphenation points (discretionary nodes) in a node list. If
 \type {tail} is given as argument, processing stops on that node. Currently,
-\type {success} is always true if \type {head} (and \type {tail}, if specified)
-are proper nodes, regardless of possible other errors.
+\type {success} is always true if \type {head} (and optionally \type {tail}) are
+proper nodes, regardless of possible other errors.
 
-\startfunctioncall
-<boolean> success = language.hyphenate(<node> head)
-<boolean> success = language.hyphenate(<node> head, <node> tail)
-\stopfunctioncall
+\starttyping [option=LUA]
+function language.hyphenate( <t:node> head, <t:node> tail)
+    return <t:boolean> success
+end
+\stoptyping
 
 Hyphenation works only on \quote {characters}, a special subtype of all the glyph
 nodes with the node subtype having the value \type {1}. Glyph modes with
-different subtypes are not processed. See \in {section} [charsandglyphs] for
-more details.
+different subtypes are not processed. See \in {section} [charsandglyphs] for more
+details.
 
-\stopsubsection
+The following two commands can be used to set or query a \type {\hjcode}:
 
-\startsubsection[title={\type {[set|get]hjcode}}]
+\starttyping [option=LUA]
+function language.sethjcode (
+    <t:userdata> language,
+    <t:number>   character,
+    <t:number>   usedchar
+)
+    -- no return value
+end
 
-\libindex {sethjcode}
-\libindex {gethjcode}
+function language.gethjcode (
+    <t:userdata> language,
+    <t:number>   character
+)
+    return <t:number> -- usedchar
+end
+\stoptyping
 
-The following two commands can be used to set or query hj codes:
+There are similar function for \type {\hccode}:
 
-\startfunctioncall
-language.sethjcode(<language> l, <number> char, <number> usedchar)
-<number> usedchar = language.gethjcode(<language> l, <number> char)
-\stopfunctioncall
+\starttyping [option=LUA]
+function language.sethccode (
+    <t:userdata> language,
+    <t:number>   character,
+    <t:number>   usedchar
+)
+    -- no return value
+end
 
-When you set a hjcode the current sets get initialized unless the set was already
-initialized due to \prm {savinghyphcodes} being larger than zero.
+function language.gethccode (
+    <t:userdata> language,
+    <t:number>   character
+)
+    return <t:number> -- usedchar
+end
+\stoptyping
 
-\subsection{\prm {hccode} and \type {[set|get]hccode}}
+\stopsection
 
-A character can be set to non zero to indicate that it should be regarded as
-value visible hyphenation point. These examples show how that works (it si the
-second bit in \prm {hyphenationmode} that does the magic but we set them all
-here):
+\startsection[title=Math]
+
+For the record we mention that in math you can also have discretionaries:
+
+\starttyping
+$ 2x \mathdiscretionary{+}{+}{+} 1 = 3y $
+\stoptyping
+
+these actually do relate to languages but are not stored in the language data but
+have to be handled by the macro package. It will be clear that there is a bit
+involved because we have spacing and penalties driven by math classes.
+
+\stopsection
+
+\startsection[title=Tracing]
+
+There are several trackers in \CONTEXT\ that can show where hyphenation was considered and
+where it got applied, but this is really macro package dependent. There is also a built in
+tracing command: \typ {\tracinghyphenation}. When you say:
+
+\starttyping
+\tracinghyphenation2
+\tracingonline     2
+\stoptyping
+
+You get something like this:
+
+\starttyping[option=]
+1:3: [language: not hyphenated There]
+1:3: [language: hyphenated several at 1 positions]
+1:3: [language: hyphenated trackers at 1 positions]
+1:3: [language: not hyphenated where]
+1:3: [language: hyphenated hyphenation at 2 positions]
+1:3: [language: hyphenated considered at 2 positions]
+1:3: [language: not hyphenated where]
+1:3: [language: hyphenated applied at 1 positions]
+1:3: [language: hyphenated really at 1 positions]
+1:3: [language: not hyphenated macro]
+1:3: [language: hyphenated package at 1 positions]
+1:3: [language: hyphenated dependent at 2 positions]
+1:3: [language: not hyphenated There]
+1:3: [language: not hyphenated built]
+1:3: [language: hyphenated tracing at 1 positions]
+1:3: [language: hyphenated command at 1 positions]
+1:3: [language: hyphenated tracinghyphenation at 3 positions]
+\stoptyping
+
+% \tracinghyphenation2
+% \tracingonline     2
 
 \startbuffer
-{\hsize 1mm \hccode"2014 \zerocount  \hyphenationmode "0000000 xxx\emdash xxx \par}
-{\hsize 1mm \hccode"2014 "2014\relax \hyphenationmode "0000000 xxx\emdash xxx \par}
-
-{\hsize 1mm \hccode"2014 \zerocount  \hyphenationmode "FFFFFFF xxx\emdash xxx \par}
-{\hsize 1mm \hccode"2014 "2014\relax \hyphenationmode "FFFFFFF xxx\emdash xxx \par}
-
-{\hyphenationmode "0000000 xxx--xxx---xxx \par}
-{\hyphenationmode "FFFFFFF xxx--xxx---xxx \par}
+Higher values give more details, like the pre, post and replace lists so that
+output is rather noisy. Contrary to \type {\tracinghyphenation} is verbatim we do
+permit it \type {\tracinghyphenation} to be hyphenated.
 \stopbuffer
 
 \typebuffer
 
-Here we assign the code point because who knows what future extensions will
-bring. As with the other codes you can also set them from \LUA. The feature is
-experimental and might evolve when \CONTEXT\ users come up with reasonable
-demands.
+renders as:
 
-\startpacked \getbuffer \stoppacked
+\getbuffer
 
-\stopsubsection
+and traces as:
+
+\starttyping[option=]
+1:3: [language: hyphenated renders at 1 positions]
+1:4: [language: not hyphenated Higher]
+1:4: [language: hyphenated values at 1 positions]
+1:4: [language: hyphenated details at 1 positions]
+1:4: [language: hyphenated replace at 1 positions]
+1:4: [language: not hyphenated lists]
+1:4: [language: hyphenated output at 1 positions]
+1:4: [language: not hyphenated rather]
+1:4: [language: not hyphenated noisy]
+1:4: [language: hyphenated Contrary at 1 positions]
+1:4: [language: hyphenated verbatim at 2 positions]
+1:4: [language: hyphenated permit at 1 positions]
+1:4: [language: hyphenated hyphenated at 2 positions]
+1:3: [language: not hyphenated traces]
+\stoptyping
 
 \stopsection
 
-\stopchapter
-
-\stopcomponent
+\stopdocument
 
 % \parindent0pt \hsize=1.1cm
 % 12-34-56 \par
@@ -1032,4 +1153,3 @@ demands.
 % 12-34-\vrule width 1em height 1.5ex \par
 % 12-\hbox{34}-56 \par
 % 12-\vrule width 1em height 1.5ex-56 \par
-

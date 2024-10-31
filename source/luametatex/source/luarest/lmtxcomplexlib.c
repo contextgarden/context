@@ -34,7 +34,7 @@
 
     # define Complex _Dcomplex
 
-    inline static Complex xcomplexlib_get(lua_State *L, int i)
+    static inline Complex xcomplexlib_get(lua_State *L, int i)
     {
         switch (lua_type(L, i)) {
             case LUA_TUSERDATA:
@@ -55,7 +55,7 @@
 
     # define Complex double complex
 
-    inline static Complex xcomplexlib_get(lua_State *L, int i)
+    static inline Complex xcomplexlib_get(lua_State *L, int i)
     {
         switch (lua_type(L, i)) {
             case LUA_TUSERDATA:
@@ -70,7 +70,7 @@
 
 # endif
 
-inline static int xcomplexlib_push(lua_State *L, Complex z)
+static inline int xcomplexlib_push(lua_State *L, Complex z)
 {
     Complex *p = lua_newuserdatauv(L, sizeof(Complex), 0);
     luaL_setmetatable(L, COMPLEX_METATABLE);

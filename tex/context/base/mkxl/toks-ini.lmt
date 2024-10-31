@@ -66,7 +66,6 @@ local scannumber          = token.scannumber
 local scanboolean         = token.scanboolean
 
 local setmacro     = token.setmacro
-local setchar      = token.setchar
 local setlua       = token.setlua
 
 local createtoken  = token.create
@@ -229,7 +228,7 @@ tokens.getters = { -- these don't expand
 
 tokens.setters = {
     macro = setmacro,
-    char  = setchar,
+    char  = tex.chardef,
     lua   = setlua,
     count = tex.setcount,
     dimen = tex.setdimen,
@@ -385,14 +384,13 @@ token.get_fields            = token.getfields
 token.set_macro             = token.setmacro
 token.undefine_macro        = token.undefinemacro
 token.expand_macro          = token.expandmacro
-token.set_char              = token.setchar
 token.set_lua               = token.setlua
 token.set_integer           = token.setinteger
 token.get_integer           = token.getinteger
 token.set_dimension         = token.setdimension
 token.get_dimension         = token.getdimension
 token.gobble_integer        = token.gobbleinteger
-token.gobble_dimen          = token.gobbledimen
+token.gobble_dimension      = token.gobbledimension
 token.future_expand         = token.futureexpand
 token.push_macro            = token.pushmacro
 token.pop_macro             = token.popmacro

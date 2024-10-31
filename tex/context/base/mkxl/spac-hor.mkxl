@@ -268,7 +268,7 @@
      % was : \hskip\parindent
      % can be: \indent
      % but we test:
-     \noindent\hskip\parindent % hm, we cannot undent this one
+     \noindent\hskip\parindent % hm, we cannot undent this one % TODO: indent skip
    \fi \fi}
 
 % public:

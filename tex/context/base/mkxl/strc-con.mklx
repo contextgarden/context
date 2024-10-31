@@ -436,15 +436,35 @@
    %
    \directsetup\p_strc_constructions_renderingsetup\relax
    % moved to here 2014-07-03
+   % we'd like to use \useindentingparameter\constructionparameter but ...
    \edef\p_strc_constructions_indenting{\constructionparameter\c!indenting}%
    \ifempty\p_strc_constructions_indenting \else
-     \indenting[\p_strc_constructions_indenting]% \use...
+     \c_spac_indentation_indent_first\conditionaltrue % recently added, better no v!reset
+     \indenting[\v!first,\p_strc_constructions_indenting]% Wolfgang needs to check this
    \fi
    %
    \dostarttaggednodetail\t!constructioncontent
   %\freezeparagraphproperties
    \updateparagraphshapes
    \ignorespaces} % args not needed
+
+% This is why we need the \v!first in indentation above
+%
+% \defineenumeration
+%   [foo]
+%   [alternative=serried,
+%    indenting={yes,medium}]
+%
+% \startitemize
+%     \startitem
+%         \startfoo
+%             AAA\par
+%             BBB\par
+%             CCC\par
+%             DDD\par
+%         \stopfoo
+%     \stopitem
+% \stopitemize
 
 \protected\defcsname\??constructionstophandler\v!construction\endcsname
   {\strc_constructions_close_symbol_place

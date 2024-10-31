@@ -37,10 +37,10 @@ expand_state_info lmt_expand_state = {
 };
 
        static void tex_aux_macro_call                (halfword cs, halfword cmd, halfword chr);
-inline static void tex_aux_manufacture_csname        (void);
-inline static void tex_aux_manufacture_csname_use    (void);
-inline static void tex_aux_manufacture_csname_future (void);
-inline static void tex_aux_inject_last_tested_cs     (void);
+static inline void tex_aux_manufacture_csname        (void);
+static inline void tex_aux_manufacture_csname_use    (void);
+static inline void tex_aux_manufacture_csname_future (void);
+static inline void tex_aux_inject_last_tested_cs     (void);
 
 /*tex
 
@@ -77,7 +77,7 @@ halfword tex_expand_match_token_head(void)
 
 */
 
-inline static void tex_aux_expand_after(void)
+static inline void tex_aux_expand_after(void)
 {
     /*tex
         Expand the token after the next token. It takes only a little shuffling to do what \TEX\
@@ -94,7 +94,7 @@ inline static void tex_aux_expand_after(void)
     tex_back_input(t1);
 }
 
-inline static void tex_aux_expand_toks_after(void)
+static inline void tex_aux_expand_toks_after(void)
 {
     halfword t1 = tex_scan_toks_normal(0, NULL);
     halfword l1 = token_link(t1);
@@ -266,7 +266,7 @@ void tex_expand_current_token(void)
                                 /* we can share code with lmtokenlib .. todo */
                                 halfword cat = tex_scan_category_code(0);
                                 halfword chr = tex_scan_char_number(0);
-                                /* too fragile: 
+                                /* too fragile:
                                     halfword tok = null;
                                     switch (cat) {
                                         case letter_cmd:
@@ -278,7 +278,7 @@ void tex_expand_current_token(void)
                                         case active_char_cmd:
                                             {
                                                 halfword cs = tex_active_to_cs(chr, ! lmt_hash_state.no_new_cs);
-                                                if (cs) { 
+                                                if (cs) {
                                                     chr = eq_value(cs);
                                                     tok = cs_token_flag + cs;
                                                     break;
@@ -327,14 +327,14 @@ void tex_expand_current_token(void)
                             }
                         case expand_code:
                             {
-                                /*tex 
-                                    These can be used instead of |\the<tok register [ref]>| but 
-                                    that next token is not expanded so it doesn't accept |\if|. 
+                                /*tex
+                                    These can be used instead of |\the<tok register [ref]>| but
+                                    that next token is not expanded so it doesn't accept |\if|.
                                 */
                                 tex_get_token();
-                                switch (cur_cmd) { 
+                                switch (cur_cmd) {
                                     case call_cmd:
-                                    case protected_call_cmd:               
+                                    case protected_call_cmd:
                                     case semi_protected_call_cmd:
                                     case constant_call_cmd:
                                     case tolerant_call_cmd:
@@ -355,14 +355,14 @@ void tex_expand_current_token(void)
                                             if (p) {
                                                 tex_begin_token_list(p, token_text);
                                             }
-                                        } else { 
+                                        } else {
                                             tex_back_input(cur_tok);
                                         }
                                         break;
                                     case internal_toks_cmd:
                                     case register_toks_cmd:
-                                        { 
-                                            halfword p = eq_value(cur_chr);   
+                                        {
+                                            halfword p = eq_value(cur_chr);
                                             if (p) {
                                                 tex_begin_token_list(p, token_text);
                                             }
@@ -374,22 +374,22 @@ void tex_expand_current_token(void)
                                     case case_shift_cmd:
                                         tex_run_case_shift(cur_chr);
                                         break;
-                                    default: 
+                                    default:
                                         /* Use expand_current_token so that protected lua call are dealt with too? */
                                         tex_back_input(cur_tok);
                                         break;
-                                }                                            
+                                }
                                 break;
                             }
                         case expand_toks_code:
                             {
-                                /*tex 
-                                    These can be used instead of |\the<tok register [ref]>| and 
-                                    contrary to above here the next token is expanded so it works 
-                                    with a following |\if|. 
+                                /*tex
+                                    These can be used instead of |\the<tok register [ref]>| and
+                                    contrary to above here the next token is expanded so it works
+                                    with a following |\if|.
                                 */
                                 tex_get_x_token();
-                                switch (cur_cmd) { 
+                                switch (cur_cmd) {
                                     case internal_toks_reference_cmd:
                                     case register_toks_reference_cmd:
                                         if (cur_chr) {
@@ -403,24 +403,24 @@ void tex_expand_current_token(void)
                                             if (p) {
                                                 tex_begin_token_list(p, token_text);
                                             }
-                                        } else { 
+                                        } else {
                                             tex_back_input(cur_tok);
                                         }
                                         break;
                                     case internal_toks_cmd:
                                     case register_toks_cmd:
-                                        { 
-                                            halfword p = eq_value(cur_chr);   
+                                        {
+                                            halfword p = eq_value(cur_chr);
                                             if (p) {
                                                 tex_begin_token_list(p, token_text);
                                             }
                                         }
                                         break;
-                                    default: 
+                                    default:
                                         /* Issue an error message? */
                                         tex_back_input(cur_tok);
                                         break;
-                                }                                            
+                                }
                                 break;
                             }
                         case expand_active_code:
@@ -534,7 +534,7 @@ void tex_expand_current_token(void)
                 case the_cmd:
                     {
                         halfword h = tex_the_toks(code, NULL);
-                        if (h) { 
+                        if (h) {
                             tex_begin_inserted_list(h);
                         }
                         break;
@@ -586,7 +586,7 @@ void tex_expand_current_token(void)
                                 tex_insert_relax_and_cur_cs();
                             } else if (code == normal_input_code) {
                                 tex_start_input(tex_read_file_name(0, NULL, texinput_extension), null);
-                            } else { 
+                            } else {
                                 halfword t = tex_scan_toks_normal(0, NULL);
                                 tex_start_input(tex_read_file_name(0, NULL, texinput_extension), t);
                             }
@@ -598,8 +598,8 @@ void tex_expand_current_token(void)
                             lmt_main_control_state.quit_loop = 1;
                             break;
                         case quit_loop_now_code:
-                            if (lmt_main_control_state.loop_nesting) { 
-                                while (1) { 
+                            if (lmt_main_control_state.loop_nesting) {
+                                while (1) {
                                     tex_get_token();
                                     if (cur_cmd == end_local_cmd) {
                                         lmt_main_control_state.quit_loop = 1;
@@ -607,10 +607,10 @@ void tex_expand_current_token(void)
                                         break;
                                     }
                                 }
-                            } else { 
+                            } else {
                                 /*tex We're not in a loop and end up at some fuzzy error. */
                             }
-                            break;                            
+                            break;
                      /* case quit_fi_now_code: */ /*tex |\if ... \quitfinow\ignorerest \else .. \fi| */
                      /*     tex_quit_fi();     */
                      /*     break;             */
@@ -631,7 +631,7 @@ void tex_expand_current_token(void)
                                     so we don't need to optimize. If needed we can make a version
                                     where this is mandate.
                                 */
-                                int cattable = (code == retokenized_code || tex_scan_optional_keyword("catcodetable")) ? tex_scan_integer(0, NULL) : cat_code_table_par;
+                                int cattable = (code == retokenized_code || tex_scan_optional_keyword("catcodetable")) ? tex_scan_integer(0, NULL) : cat_code_table_par; /* no _optional_ here ? */
                                 full_scanner_status saved_full_status = tex_save_full_scanner_status();
                                 strnumber u = tex_save_cur_string();
                                 halfword s = tex_scan_toks_expand(0, NULL, 0, 0);
@@ -671,12 +671,12 @@ void tex_expand_current_token(void)
                         break;
                     }
                 case index_cmd: /* not needed here */
-                    tex_inject_parameter(code); 
+                    tex_inject_parameter(code);
                     break;
                 default:
                     /* Maybe ... or maybe an option */
                  // if (lmt_expand_state.cs_name_level == 0) {
-                        if (tex_cs_state(cur_cs) == cs_undefined_error) { 
+                        if (tex_cs_state(cur_cs) == cs_undefined_error) {
                             /*tex Complain about an undefined macro */
                             tex_handle_error(
                                 normal_error_type,
@@ -685,7 +685,7 @@ void tex_expand_current_token(void)
                                 "The control sequence at the end of the top line of your error message was never\n"
                                 "\\def'ed. You can just continue as I'll forget about whatever was undefined."
                             );
-                        } else { 
+                        } else {
                             /*tex We ended up in a situation that is unlikely to happen in traditional \TEX. */
                             tex_handle_error(
                                 normal_error_type,
@@ -725,7 +725,7 @@ static void tex_aux_complain_missing_csname(void)
     );
 }
 
-// inline static int tex_aux_uni_to_buffer(unsigned char *b, int m, int c)
+// static inline int tex_aux_uni_to_buffer(unsigned char *b, int m, int c)
 // {
 //     if (c <= 0x7F) {
 //         b[m++] = (unsigned char) c;
@@ -745,13 +745,13 @@ static void tex_aux_complain_missing_csname(void)
 //     return m;
 // }
 
-inline static int tex_aux_chr_to_buffer(unsigned char *b, int m, int c)
+static inline int tex_aux_chr_to_buffer(unsigned char *b, int m, int c)
 {
     b[m++] = (unsigned char) c;
     return m;
 }
 
-inline static int tex_aux_uni_to_buffer(unsigned char *b, int m, int c)
+static inline int tex_aux_uni_to_buffer(unsigned char *b, int m, int c)
 {
     if (c <= 0x7F) {
         b[m++] = (unsigned char) c;
@@ -763,7 +763,7 @@ inline static int tex_aux_uni_to_buffer(unsigned char *b, int m, int c)
         b[m++] = (unsigned char) (0x80 | ((c >> 6) & 0x3F));
         b[m++] = (unsigned char) (0x80 | (c & 0x3F));
     } else {
-        int u; 
+        int u;
         c -= 0x10000;
         u = (int) (((c & 0xf0000) >> 16) + 1);
         b[m++] = (unsigned char) (0xF0 | (u >> 2));
@@ -810,8 +810,8 @@ static int tex_aux_collect_cs_tokens(halfword *p, int *n)
             case constant_call_cmd:
                 {
                     halfword h = token_link(cur_chr);
-                    if (h) { 
-                        if (token_link(h)) { 
+                    if (h) {
+                        if (token_link(h)) {
                             if (cur_chr > max_data_value) {
                                  while (h) {
                                      *p = tex_store_new_token(*p, token_info(h));
@@ -822,7 +822,7 @@ static int tex_aux_collect_cs_tokens(halfword *p, int *n)
                                 *p = tex_store_new_token(*p, token_val(deep_frozen_keep_constant_cmd, cur_chr));
                                 *n += 1;
                             }
-                        } else { 
+                        } else {
                             *p = tex_store_new_token(*p, token_info(h));
                             *n += 1;
                         }
@@ -832,10 +832,10 @@ static int tex_aux_collect_cs_tokens(halfword *p, int *n)
             case end_cs_name_cmd:
                 return 1;
             case convert_cmd:
-                if (cur_chr == cs_lastname_code) { 
+                if (cur_chr == cs_lastname_code) {
                     if (lmt_scanner_state.last_cs_name != null_cs) {
                         /*tex We cheat and abuse the |convert_cmd| as carrier for the current string. */
-                        *n += str_length(cs_text(lmt_scanner_state.last_cs_name));
+                        *n += (int) str_length(cs_text(lmt_scanner_state.last_cs_name));
                         cur_chr = cs_text(lmt_scanner_state.last_cs_name) - cs_offset_value + 0xFF;
                         *p = tex_store_new_token(*p, token_val(cur_cmd, cur_chr));
                     }
@@ -853,7 +853,7 @@ static int tex_aux_collect_cs_tokens(halfword *p, int *n)
 
 /* why do we use different methods here */
 
-inline static halfword tex_aux_cs_tokens_to_string(halfword h, halfword f)
+static inline halfword tex_aux_cs_tokens_to_string(halfword h, halfword f)
 {
     int m = f;
     halfword l = token_link(h);
@@ -865,12 +865,12 @@ inline static halfword tex_aux_cs_tokens_to_string(halfword h, halfword f)
                 m = tex_aux_uni_to_buffer(lmt_fileio_state.io_buffer, m, token_chr(token_info(h)));
                 h = token_link(h);
             }
-        } else if (token_cmd(info) == convert_cmd) { 
-         // if (token_chr(info) >= 0xFF) { 
+        } else if (token_cmd(info) == convert_cmd) {
+         // if (token_chr(info) >= 0xFF) {
                 /*tex We know that we have something here. */
                 strnumber t = token_chr(info) + cs_offset_value - 0xFF;
                 memcpy(lmt_fileio_state.io_buffer + m,  str_string(t), str_length(t));
-                m += str_length(t);
+                m += (int) str_length(t);
          // }
         } else {
             m = tex_aux_uni_to_buffer(lmt_fileio_state.io_buffer, m, token_chr(info));
@@ -902,13 +902,13 @@ int tex_is_valid_csname(void)
      //                  level++;
      //                  break;
      //              case if_test_cmd:
-     //                  if (cur_chr == if_csname_code) { 
+     //                  if (cur_chr == if_csname_code) {
      //                      level++;
      //                  }
      //                  break;
      //          }
      //      }
-     //  } else { 
+     //  } else {
             do {
                 tex_get_x_or_protected(); /* we skip unprotected ! */
             } while (cur_cmd != end_cs_name_cmd);
@@ -918,10 +918,10 @@ int tex_is_valid_csname(void)
         int f = lmt_fileio_state.io_first;
         if (tex_room_in_buffer(f + n * 4)) {
             int m = tex_aux_cs_tokens_to_string(h, f);
-            cs = tex_id_locate_only(f, m - f); 
+            cs = tex_id_locate_only(f, m - f);
             b = (cs != undefined_control_sequence) && (eq_type(cs) != undefined_cs_cmd);
         }
-    } else { 
+    } else {
         /*tex Safeguard in case we accidentally redefined |null_cs|. */
      // copy_eqtb_entry(null_cs, undefined_control_sequence);
     }
@@ -932,26 +932,26 @@ int tex_is_valid_csname(void)
     return b;
 }
 
-inline static halfword tex_aux_get_cs_name(void)
+static inline halfword tex_aux_get_cs_name(void)
 {
     halfword h = tex_get_available_token(null); /* hm */
     halfword p = h;
     int n = 0;
     lmt_expand_state.cs_name_level += 1;
     if (tex_aux_collect_cs_tokens(&p, &n)) {
-        /*tex 
-            Here we have to make a choice wrt duplicating hashes. In pdftex the hashes are 
-            duplicated when we csname a meaning of a macro with |#1| and |##1| or just |##| 
-            but in the token list these are actually references of single hashes. Therefore 
-            we do as in luatex: we go single hash. In the end it doesn't matter much as such 
-            weird control sequences are less likely to happen than embedded hashes (with 
-            catcode parameter) so single is then more natural. 
+        /*tex
+            Here we have to make a choice wrt duplicating hashes. In pdftex the hashes are
+            duplicated when we csname a meaning of a macro with |#1| and |##1| or just |##|
+            but in the token list these are actually references of single hashes. Therefore
+            we do as in luatex: we go single hash. In the end it doesn't matter much as such
+            weird control sequences are less likely to happen than embedded hashes (with
+            catcode parameter) so single is then more natural.
         */
         int f = lmt_fileio_state.io_first;
         if (n && tex_room_in_buffer(f + n * 4)) {
             int m = tex_aux_cs_tokens_to_string(h, f);
-            cur_cs = tex_id_locate(f, m - f, 1); 
-        } else { 
+            cur_cs = tex_id_locate(f, m - f, 1);
+        } else {
             cur_cs = null_cs;
         }
     } else {
@@ -963,7 +963,7 @@ inline static halfword tex_aux_get_cs_name(void)
     return cur_cs;
 }
 
-inline static void tex_aux_manufacture_csname(void)
+static inline void tex_aux_manufacture_csname(void)
 {
     halfword cs = tex_aux_get_cs_name();
     if (eq_type(cs) == undefined_cs_cmd) {
@@ -973,7 +973,7 @@ inline static void tex_aux_manufacture_csname(void)
     tex_back_input(cs + cs_token_flag);
 }
 
-inline static void tex_aux_manufacture_csname_use(void)
+static inline void tex_aux_manufacture_csname_use(void)
 {
     if (tex_is_valid_csname()) {
         tex_back_input(cur_cs + cs_token_flag);
@@ -982,7 +982,7 @@ inline static void tex_aux_manufacture_csname_use(void)
     }
 }
 
-inline static void tex_aux_manufacture_csname_future(void)
+static inline void tex_aux_manufacture_csname_future(void)
 {
     halfword t = tex_get_token();
     if (tex_is_valid_csname()) {
@@ -1002,7 +1002,7 @@ halfword tex_create_csname(void)
     return cs; // cs + cs_token_flag;
 }
 
-inline static void tex_aux_inject_last_tested_cs(void)
+static inline void tex_aux_inject_last_tested_cs(void)
 {
     if (lmt_scanner_state.last_cs_name != null_cs) {
         tex_back_input(lmt_scanner_state.last_cs_name + cs_token_flag);
@@ -1175,21 +1175,21 @@ int tex_get_parameter_index(int n)
 {
     n = lmt_input_state.cur_input.parameter_start + n - 1;
     if (n < lmt_input_state.parameter_stack_data.ptr) {
-        return n; 
+        return n;
     }
     return -1;
 }
 
-/*tex 
-    We can avoid the copy of parameters to the stack but it complicates the code because we also need 
-    to clean up the previous set of parameters etc. It's not worth the effort. However, there are 
+/*tex
+    We can avoid the copy of parameters to the stack but it complicates the code because we also need
+    to clean up the previous set of parameters etc. It's not worth the effort. However, there are
     plenty of optimizations compared to the original. Some are measurable on an average run, others
-    are more likely to increase performance when thousands of successive runs happen in e.g. a virtual 
-    environment where threads fight for memory access and cpu cache. And because \CONTEXT\ is us used 
-    that way we keep looking into ways to gain performance, but not at the cost of dirty hacks (that 
-    I tried out of curiosity but rejected in the end). 
+    are more likely to increase performance when thousands of successive runs happen in e.g. a virtual
+    environment where threads fight for memory access and cpu cache. And because \CONTEXT\ is us used
+    that way we keep looking into ways to gain performance, but not at the cost of dirty hacks (that
+    I tried out of curiosity but rejected in the end).
 
-    The arguments counter is a bit fuzzy and might disappear. I might rewrite this again using states. 
+    The arguments counter is a bit fuzzy and might disappear. I might rewrite this again using states.
 */
 
 // halfword tex_get_token(void)
@@ -1201,7 +1201,7 @@ int tex_get_parameter_index(int n)
 //     return cur_tok;
 // }
 
-inline static void tex_aux_macro_grab_left_right(halfword lefttoken, halfword righttoken, int match)
+static inline void tex_aux_macro_grab_left_right(halfword lefttoken, halfword righttoken, int match)
 {
     halfword tail = lmt_expand_state.match_token_head;
     int unbalance = 0;
@@ -1217,20 +1217,20 @@ inline static void tex_aux_macro_grab_left_right(halfword lefttoken, halfword ri
         } else if (unbalance) {
             /* just add */
         } else if (t == lefttoken) {
-            ++nesting;  
+            ++nesting;
         } else if (t == righttoken) {
             --nesting;
-            if (! nesting) { 
+            if (! nesting) {
                 break;
             }
         }
-        if (match) { 
+        if (match) {
             tail = tex_store_new_token(tail, t);
         }
     }
 }
 
-inline static void tex_aux_macro_grab_upto_par(int match)
+static inline void tex_aux_macro_grab_upto_par(int match)
 {
     halfword tail = lmt_expand_state.match_token_head;
     int unbalance = 0;
@@ -1247,22 +1247,22 @@ inline static void tex_aux_macro_grab_upto_par(int match)
         } else if (cur_cmd == end_paragraph_cmd) {
             break;
         }
-        if (match) { 
+        if (match) {
             tail = tex_store_new_token(tail, t);
         }
     }
 }
 
-inline static void tex_aux_macro_gobble_upto(halfword gobbletoken, bool gobblemore)
+static inline void tex_aux_macro_gobble_upto(halfword gobbletoken, bool gobblemore)
 {
-    if (gobblemore) { 
-        while (1) { 
+    if (gobblemore) {
+        while (1) {
             halfword t = tex_get_token();
             if (! (t == gobbletoken || cur_cmd == spacer_cmd)) {
                 break;
             }
         }
-    } else { 
+    } else {
         do {
         } while (tex_get_token() == gobbletoken);
     }
@@ -1299,7 +1299,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
             lmt_expand_state.arguments = 0;
             lmt_input_state.cur_input.name = lmt_input_state.warning_index;
             lmt_input_state.cur_input.loc = token_link(chr);
-        } else { 
+        } else {
             /* We ignore empty bodies. */
         }
     } else {
@@ -1309,7 +1309,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
         halfword save_warning_index = lmt_input_state.warning_index;
         int nofscanned = 0;
         int nofarguments = 0;
-        halfword pstack[max_match_count] = { null }; 
+        halfword pstack[max_match_count] = { null };
         /*tex
             Scan the parameters and make |link(r)| point to the macro body; but |return| if an
             illegal |\par| is detected.
@@ -1517,13 +1517,13 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                 p = lmt_expand_state.match_token_head;
                 count = 0;
             }
-            /*tex 
-                Scan an argument delimited by two tokens that can be nested. The right only case is 
-                basically just a simple delimited variant but a bit faster. 
+            /*tex
+                Scan an argument delimited by two tokens that can be nested. The right only case is
+                basically just a simple delimited variant but a bit faster.
 
-                todo: when gobble ... 
+                todo: when gobble ...
             */
-            if (lefttoken && righttoken) { 
+            if (lefttoken && righttoken) {
                 tex_aux_macro_grab_left_right(lefttoken, righttoken, match);
                 lefttoken = null;
                 righttoken = null;
@@ -1537,16 +1537,16 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                     nested = false;
                 }
                 goto FOUND;
-            } else if (gobbletoken) { 
+            } else if (gobbletoken) {
                 tex_aux_macro_gobble_upto(gobbletoken, gobblemore);
-                last = true; 
+                last = true;
                 gobbletoken = null;
                 gobblemore = false;
             } else if (matchtoken == par_command_match_token) {
                 tex_aux_macro_grab_upto_par(match);
-                cur_tok = matchtoken; 
+                cur_tok = matchtoken;
                 goto DELIMITER;
-            } 
+            }
             /*tex
                 Scan a parameter until its delimiter string has been found; or, if |s = null|,
                 simply scan the delimiter string. If |info(r)| is a |match| or |end_match|
@@ -1724,7 +1724,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                 if (nested && (cur_tok == leftbracket || cur_tok == leftparent || cur_tok == leftangle)) {
                     int unbalance = 0;
                     int pairing = 1;
-                    if (match) { 
+                    if (match) {
                         p = tex_store_new_token(p, cur_tok);
                     }
                     while (1) {
@@ -1739,10 +1739,10 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                             /* just add */
                         } else if (t == leftbracket || t == leftparent || t == leftangle) {
                             ++pairing;
-                        } else if (pairing && (t == rightbracket || t == rightparent || t == rightangle)) { 
+                        } else if (pairing && (t == rightbracket || t == rightparent || t == rightangle)) {
                             --pairing;
-                            if (! pairing && ! righttoken) { 
-                                if (match) { 
+                            if (! pairing && ! righttoken) {
+                                if (match) {
                                     p = tex_store_new_token(p, t);
                                 }
                                 break;
@@ -1755,13 +1755,13 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                         }
                         /* align stuff */
                     }
-                } else { 
+                } else {
                     if (match) {
                         p = tex_store_new_token(p, cur_tok);
                     }
                 }
             }
-            ++count; 
+            ++count;
             if (matchtoken > end_match_token || matchtoken < match_token) {
                 goto CONTINUE;
             }
@@ -1800,7 +1800,7 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                 }
                 lefttoken = null;
                 righttoken = null;
-                if (nested) { 
+                if (nested) {
                     leftparent = null;
                     rightparent = null;
                     leftbracket = null;
@@ -1889,8 +1889,8 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
             Feed the macro body and its parameters to the scanner Before we put a new token list on the
             input stack, it is wise to clean off all token lists that have recently been depleted. Then
             a user macro that ends with a call to itself will not require unbounded stack space.
-        
-            We could ignore this when |lmt_expand_state.cs_name_level > 0| but there is no gain. 
+
+            We could ignore this when |lmt_expand_state.cs_name_level > 0| but there is no gain.
         */
         tex_cleanup_input_state();
         /*tex

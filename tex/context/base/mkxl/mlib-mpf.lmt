@@ -162,7 +162,6 @@ do
         local index = type(code) == "number"
         local f
         local result
-
         if index then
             f = runscripts[code]
             if not f then

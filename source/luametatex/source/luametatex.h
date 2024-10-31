@@ -98,12 +98,14 @@
 
 # include "tex/textypes.h"
 
+/*tex Currently LUAC_FORMAT is set to 2 awaiting an official version bump. */
+
 # define luametatex_version          2
 # define luametatex_revision         11
-# define luametatex_release          05
-# define luametatex_version_string   "2.11.05"
-# define luametatex_version_number   211.5
-# define luametatex_development_id   20240924
+# define luametatex_release          06
+# define luametatex_version_string   "2.11.06"
+# define luametatex_version_number   211.6
+# define luametatex_development_id   20241031
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
 # define luametatex_copyright_holder "Taco Hoekwater, Hans Hagen, Wolfgang Schuster & Mikael Sundqvist"
@@ -134,6 +136,7 @@ typedef struct version_state_info {
     int         luaversionmajor;
     int         luaversionminor;
     int         luaversionrelease;
+    int         luaformat;
     double      luatexversion;
     double      luaversion;
 } version_state_info;
@@ -142,7 +145,7 @@ extern version_state_info lmt_version_state;
 
 /*tex
 
-    This is actually the main headere file. Of course we could split it up and be more explicit in
+    This is actually the main header file. Of course we could split it up and be more explicit in
     other files but this is simple and just works. There is of course some overhead in loading
     headers that are not used, but because compilation is simple and fast I don't care.
 
@@ -193,6 +196,7 @@ extern version_state_info lmt_version_state;
 
 # include "lua.h"
 # include "lauxlib.h"
+# include "lundump.h"
 
 # define LUA_VERSION_STRING ("Lua " LUA_VERSION_MAJOR "." LUA_VERSION_MINOR "." LUA_VERSION_RELEASE)
 
@@ -320,6 +324,7 @@ extern version_state_info lmt_version_state;
 # include "tex/texdumpdata.h"
 # include "tex/texmainbody.h"
 # include "tex/texnodes.h"
+# include "tex/texspecifications.h"
 # include "tex/texdirections.h"
 # include "tex/texlinebreak.h"
 # include "tex/texmath.h"

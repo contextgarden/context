@@ -663,7 +663,7 @@ static int hblib_shape_string(lua_State * L)
                     lua_pushinteger(L, positions[i].y_advance);
                     lua_rawseti(L, -2, 6);
                     lua_rawseti(L, -2, (lua_Integer) i + 1);
-               }
+                }
             }
             /* 
                 We have a crash after many runs but why ... a printf("!") actually solves it. Do we need to free 

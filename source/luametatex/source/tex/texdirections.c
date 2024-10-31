@@ -30,14 +30,14 @@ dir_state_info lmt_dir_state = {
 
 /*tex The next two are used by the linebreak routine; they could be macros. */
 
-inline static halfword tex_aux_push_dir_node(halfword p, halfword d)
+static inline halfword tex_aux_push_dir_node(halfword p, halfword d)
 {
     halfword n = tex_copy_node(d);
     node_next(n) = p;
     return n;
 }
 
-inline static halfword tex_aux_pop_dir_node(halfword p)
+static inline halfword tex_aux_pop_dir_node(halfword p)
 {
     halfword n = node_next(p);
     tex_flush_node(p);
