@@ -343,9 +343,8 @@ typedef enum math_style_variants {
 
 # define valid_math_style_variant(n) (n >= 0 && n <= math_double_superscript_variant)
 
-inline static int tex_is_cramped_style(int s) { return (s % 2) != 0; }
-
-extern int tex_get_math_variant_preset(int n);
+static inline int tex_is_cramped_style       (int s) { return (s % 2) != 0; }
+extern        int tex_get_math_variant_preset(int n);
 
 /*
 
@@ -657,12 +656,12 @@ extern void     tex_set_default_math_codes       (void);
 extern int      tex_check_active_math_char       (int character);
 extern int      tex_pass_active_math_char        (int character);
 
-inline int tex_math_scripts_allowed(halfword node) 
+static inline int tex_math_scripts_allowed(halfword node) 
 { 
     return (node_type(node) >= simple_noad) && (node_type(node) < fence_noad); 
 }
 
-inline int tex_math_no_more_scripts(halfword node) 
+static inline int tex_math_no_more_scripts(halfword node) 
 { 
     return (node_type(node) >= simple_noad) && (node_type(node) < fence_noad)
         && has_noad_option_no_more_scripts(node)

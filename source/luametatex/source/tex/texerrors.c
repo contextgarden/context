@@ -74,7 +74,7 @@ error_state_info lmt_error_state = {
     really needed but there are seldom errors anyway so we can neglect this duplication of data.
 */
 
-inline static void tex_aux_update_help_text(const char* str)
+static inline void tex_aux_update_help_text(const char* str)
 {
     if (lmt_error_state.help_text) {
         lmt_memory_free(lmt_error_state.help_text);

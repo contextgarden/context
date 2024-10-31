@@ -59,7 +59,7 @@ typedef enum saved_insert_entries {
 
 # define saved_insert_index saved_value_1(saved_insert_index_entry)
 
-inline static void saved_inserts_initialize(void)
+static inline void saved_inserts_initialize(void)
 {
     saved_type(0) = saved_record_0;
     saved_record(0) = insert_save_type;
@@ -187,7 +187,7 @@ halfword tex_get_insert_distance(halfword i)
     }
 }
 
-inline static halfword tex_aux_insert_box(halfword i)
+static inline halfword tex_aux_insert_box(halfword i)
 {
     if (tex_valid_insert_id(i)) {
         return lmt_insert_state.mode == index_insert_mode ? insert_content(i) : lmt_insert_state.inserts[i].content;

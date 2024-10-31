@@ -26,6 +26,21 @@ local numbertostring = string.f6
 
 local expanded = lpdf.epdf.expanded
 
+local function invalid_rgb(r, g, b)
+    return
+        type(r) ~= "number" or r < 0 or r > 1 or
+        type(g) ~= "number" or g < 0 or g > 1 or
+        type(b) ~= "number" or b < 0 or b > 1
+end
+
+local function invalid_cmyk(c, m, y, k)
+    return
+        type(c) ~= "number" or c < 0 or c > 1 or
+        type(m) ~= "number" or m < 0 or m > 1 or
+        type(y) ~= "number" or y < 0 or y > 1 or
+        type(k) ~= "number" or k < 0 or k > 1
+end
+
 local function fix_image_colorspace(v)
     if not v.__content_remapped__ then
         local objref = false
@@ -364,7 +379,9 @@ do
     end
 
     local cmykmap = false
-    local rgbmap  = false
+    local cmykfun = false
+    local rgbmap = false
+    local rgbfun = false
 
     local function convertcmyk(c,op)
         local c1 = tonumber(c[1])
@@ -407,6 +424,13 @@ do
                         goto DONE
                     end
                 end
+            elseif cmykfun then
+                r, g, b = cmykfun(c1,c2,c3,c4)
+                if invalid_rgb(r,g,b) then
+                    -- todo: report failed conversion
+                else
+                    goto DONE
+                end
             end
             r, g, b = cmyktorgb(c1,c2,c3,c4)
          ::DONE::
@@ -418,15 +442,15 @@ do
         end
     end
 
-    local function convertrgb(c,op)
-        local c1 = c[1]
-        local c2 = c[2]
-        local c3 = c[3]
+    local function convertrgb(z,op)
+        local c1 = z[1]
+        local c2 = z[2]
+        local c3 = z[3]
         if c1 == c2 and c2 == c3 then
-            c[1] = c1
-            c[2] = op == "rg" and g or "G"
-            c[3] = nil
-            c[4] = nil
+            z[1] = c1
+            z[2] = op == "rg" and "g" or "G"
+            z[3] = nil
+            z[4] = nil
         else
             local c, m, y, k
             if rgbmap then
@@ -444,14 +468,21 @@ do
                         goto DONE
                     end
                 end
+            elseif rgbfun then
+                c, m, y, k = rgbfun(c1,c2,c3)
+                if invalid_cmyk(c, m, y, k) then
+                    -- todo: report failed conversion
+                else
+                    goto DONE
+                end
             end
             c, m, y, k = rgbtocmyk(c1,c2,c3)
           ::DONE::
-            c[1] = numbertostring(c)
-            c[2] = numbertostring(m)
-            c[3] = numbertostring(y)
-            c[4] = numbertostring(k)
-            c[5] = op == "RG" and "K" or "k"
+            z[1] = numbertostring(c)
+            z[2] = numbertostring(m)
+            z[3] = numbertostring(y)
+            z[4] = numbertostring(k)
+            z[5] = op == "RG" and "K" or "k"
         end
     end
 
@@ -641,6 +672,8 @@ do
         local recolor = compactor.recolor
         cmykmap = false
         rgbmap  = false
+        cmykfun = false
+        rgbfun  = false
         removed = false
         passone = { }
         passtwo = { }
@@ -676,11 +709,13 @@ do
         if convert.cmyk then
             passone.k = convertcmyk
             passone.K = convertcmyk
-            cmykmap   = type(convert.cmyk) == "table" and convert.cmyk or false
+            cmykmap   = type(convert.cmyk) == "table"    and convert.cmyk or false
+            cmykfun   = type(convert.cmyk) == "function" and convert.cmyk or false
         elseif convert.rgb then
             passone.rg = convertrgb
             passone.RG = convertrgb
-            rgbmap     = type(convert.rgb) == "table" and convert.rgb or false
+            rgbmap     = type(convert.rgb) == "table"    and convert.rgb or false
+            rgbfun     = type(convert.rgb) == "function" and convert.rgb or false
         end
         local viagray = recolor.viagray
         if viagray then

@@ -338,6 +338,7 @@
 \definesystemconstant {overlay}
 \definesystemconstant {pagefloat}
 \definesystemconstant {page}
+\definesystemconstant {pair}
 \definesystemconstant {paragraph}
 \definesystemconstant {parent}
 \definesystemconstant {patterns}

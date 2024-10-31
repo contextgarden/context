@@ -28,3 +28,10 @@ callback.register("line_break", function(what,checks,...)
         -- invalid one, waste of overhead
     end
 end)
+
+local report      = logs.reporter("linebreaks")
+local breakcodes  = tex.breakcodes
+
+checklist[-1] = function(what)
+    report("callback %i : %s",what,breakcodes[what])
+end

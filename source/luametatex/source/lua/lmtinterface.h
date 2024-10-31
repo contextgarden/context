@@ -459,6 +459,7 @@ make_lua_key(L, active);\
 make_lua_key(L, active_char);\
 make_lua_key(L, adapted);\
 make_lua_key(L, additional);\
+make_lua_key(L, adjacentdemerits);\
 make_lua_key(L, adjdemerits);\
 make_lua_key(L, adjust);\
 make_lua_key(L, adjustedhbox);\
@@ -481,6 +482,7 @@ make_lua_key(L, alignrecord);\
 make_lua_key(L, alignset);\
 make_lua_key(L, alignstack);\
 make_lua_key(L, alsosimple);\
+make_lua_key(L, analyzed);\
 make_lua_key(L, anchor);\
 make_lua_key(L, append);\
 make_lua_key(L, argument);\
@@ -620,6 +622,8 @@ make_lua_key(L, demerits);\
 make_lua_key(L, denominator);\
 make_lua_key(L, denominatorvariant);\
 make_lua_key(L, depth);\
+make_lua_key(L, depthbefore);\
+make_lua_key(L, depthafter);\
 make_lua_key(L, designsize);\
 make_lua_key(L, dimension);\
 make_lua_key(L, dir);\
@@ -643,6 +647,7 @@ make_lua_key(L, emergencyrightskip);\
 make_lua_key(L, emergencystretch);\
 make_lua_key(L, empty);\
 make_lua_key(L, end);\
+make_lua_key(L, endpartokens);\
 make_lua_key(L, end_cs_name);\
 make_lua_key(L, end_file);\
 make_lua_key(L, end_group);\
@@ -663,6 +668,7 @@ make_lua_key(L, etex);\
 make_lua_key(L, exact);\
 make_lua_key(L, exactly);\
 make_lua_key(L, except);\
+make_lua_key(L, exdepth);\
 make_lua_key(L, exheight);\
 make_lua_key(L, expand_after);\
 make_lua_key(L, expandable);\
@@ -675,6 +681,7 @@ make_lua_key(L, expression);\
 make_lua_key(L, extender);\
 make_lua_key(L, extensible);\
 make_lua_key(L, extrahyphenpenalty);\
+make_lua_key(L, extraattr);\
 make_lua_key(L, extraspace);\
 make_lua_key(L, extrasubprescriptshift);\
 make_lua_key(L, extrasubprescriptspace);\
@@ -697,7 +704,7 @@ make_lua_key(L, finalpenalty);\
 make_lua_key(L, finishrow);\
 make_lua_key(L, fireup);\
 make_lua_key(L, first);\
-make_lua_key(L, fitnessdemerits);\
+make_lua_key(L, fitnessclasses);\
 make_lua_key(L, fixedboth);\
 make_lua_key(L, fixedbottom);\
 make_lua_key(L, fixedsuperandsubscript);\
@@ -764,6 +771,7 @@ make_lua_key(L, height);\
 make_lua_key(L, hextensible);\
 make_lua_key(L, hextensiblevariant);\
 make_lua_key(L, hlist);\
+make_lua_key(L, hfactor);\
 make_lua_key(L, hmodepar);\
 make_lua_key(L, hmove);\
 make_lua_key(L, hoffset);\
@@ -856,10 +864,12 @@ make_lua_key(L, leftmargin);\
 make_lua_key(L, leftmarginkern);\
 make_lua_key(L, leftmathslackkern);\
 make_lua_key(L, leftprotrusion);\
+make_lua_key(L, leftslack);\
 make_lua_key(L, leftskip);\
 make_lua_key(L, lefttoright);\
 make_lua_key(L, lefttwindemerits);\
 make_lua_key(L, legacy);\
+make_lua_key(L, leftclass);\
 make_lua_key(L, let);\
 make_lua_key(L, letter);\
 make_lua_key(L, level);\
@@ -900,6 +910,7 @@ make_lua_key(L, lua_semiprotected_call);\
 make_lua_key(L, lua_value);\
 make_lua_key(L, luatex);\
 make_lua_key(L, macro);\
+make_lua_key(L, mainclass);\
 make_lua_key(L, make_box);\
 make_lua_key(L, mark);\
 make_lua_key(L, match);\
@@ -943,6 +954,13 @@ make_lua_key(L, mathskip);\
 make_lua_key(L, mathspec);\
 make_lua_key(L, mathstack);\
 make_lua_key(L, mathstyle);\
+make_lua_key(L, mathscale);\
+make_lua_key(L, mathbegin);\
+make_lua_key(L, mathend);\
+make_lua_key(L, mathmode);\
+make_lua_key(L, mathflatten);\
+make_lua_key(L, mathmainstyle);\
+make_lua_key(L, mathparentstyle);\
 make_lua_key(L, mathsubformula);\
 make_lua_key(L, mathtext);\
 make_lua_key(L, mathtextchar);\
@@ -964,7 +982,9 @@ make_lua_key(L, muglue);\
 make_lua_key(L, mugluespec);\
 make_lua_key(L, mutable);\
 make_lua_key(L, name);\
+make_lua_key(L, nepalty);\
 make_lua_key(L, nestedlist);\
+make_lua_key(L, nestingfactor);\
 make_lua_key(L, new);\
 make_lua_key(L, next);\
 make_lua_key(L, nil);\
@@ -999,6 +1019,7 @@ make_lua_key(L, options);\
 make_lua_key(L, ordinary);\
 make_lua_key(L, orientation);\
 make_lua_key(L, original);\
+make_lua_key(L, orphanlinefactors);\
 make_lua_key(L, orphanpenalties);\
 make_lua_key(L, orphanpenalty);\
 make_lua_key(L, other_char);\
@@ -1080,6 +1101,7 @@ make_lua_key(L, primeraise);\
 make_lua_key(L, primeraisecomposed);\
 make_lua_key(L, PrimeRaiseComposedPercent);\
 make_lua_key(L, PrimeRaisePercent);\
+make_lua_key(L, primeshift);\
 make_lua_key(L, primeshiftdrop);\
 make_lua_key(L, primeshiftup);\
 make_lua_key(L, PrimeShiftUp);\
@@ -1117,6 +1139,7 @@ make_lua_key(L, RadicalRuleThickness);\
 make_lua_key(L, radicalvariant);\
 make_lua_key(L, RadicalVerticalGap);\
 make_lua_key(L, radicalvgap);\
+make_lua_key(L, raise);\
 make_lua_key(L, reader);\
 make_lua_key(L, register);\
 make_lua_key(L, register_attribute);\
@@ -1154,12 +1177,14 @@ make_lua_key(L, right_brace);\
 make_lua_key(L, rightboundary);\
 make_lua_key(L, rightbox);\
 make_lua_key(L, rightboxwidth);\
+make_lua_key(L, rightclass);\
 make_lua_key(L, rightcorrectionkern);\
 make_lua_key(L, righthangskip);\
 make_lua_key(L, rightmargin);\
 make_lua_key(L, rightmarginkern);\
 make_lua_key(L, rightmathslackkern);\
 make_lua_key(L, rightprotrusion);\
+make_lua_key(L, rightslack);\
 make_lua_key(L, rightskip);\
 make_lua_key(L, righttoleft);\
 make_lua_key(L, righttwindemerits);\
@@ -1173,10 +1198,12 @@ make_lua_key(L, same);\
 make_lua_key(L, saved);\
 make_lua_key(L, scale);\
 make_lua_key(L, script);\
+make_lua_key(L, scriptkern);\
 make_lua_key(L, scriptorder);\
 make_lua_key(L, ScriptPercentScaleDown);\
 make_lua_key(L, scripts);\
 make_lua_key(L, scriptscale);\
+make_lua_key(L, scriptstate);\
 make_lua_key(L, scriptxscale);\
 make_lua_key(L, scriptyscale);\
 make_lua_key(L, scriptweight);\
@@ -1193,6 +1220,8 @@ make_lua_key(L, semisimple);\
 make_lua_key(L, set);\
 make_lua_key(L, set_box);\
 make_lua_key(L, set_font);\
+make_lua_key(L, sffactor);\
+make_lua_key(L, sfstretchfactor);\
 make_lua_key(L, shapingpenaltiesmode);\
 make_lua_key(L, shapingpenalty);\
 make_lua_key(L, shift);\
@@ -1276,6 +1305,7 @@ make_lua_key(L, subbox);\
 make_lua_key(L, submlist);\
 make_lua_key(L, subpre);\
 make_lua_key(L, subscript);\
+make_lua_key(L, subshift);\
 make_lua_key(L, SubscriptBaselineDropMin);\
 make_lua_key(L, subscriptshiftdistance);\
 make_lua_key(L, SubscriptShiftDown);\
@@ -1305,6 +1335,7 @@ make_lua_key(L, SuperscriptSnap);\
 make_lua_key(L, superscriptsnap);\
 make_lua_key(L, superscriptvariant);\
 make_lua_key(L, suppre);\
+make_lua_key(L, supshift);\
 make_lua_key(L, supshiftdrop);\
 make_lua_key(L, supshiftup);\
 make_lua_key(L, supsubbottommax);\
@@ -1328,8 +1359,10 @@ make_lua_key(L, textyscale);\
 make_lua_key(L, textweight);\
 make_lua_key(L, the);\
 make_lua_key(L, thickmuskip);\
+make_lua_key(L, thickness);\
 make_lua_key(L, thinmuskip);\
 make_lua_key(L, toddlerpenalty);\
+make_lua_key(L, toddlerpenalties);\
 make_lua_key(L, tok);\
 make_lua_key(L, token);\
 make_lua_key(L, tokenlist);\
@@ -1399,6 +1432,7 @@ make_lua_key(L, vertical);\
 make_lua_key(L, verticalmathkern);\
 make_lua_key(L, vextensible);\
 make_lua_key(L, vextensiblevariant);\
+make_lua_key(L, vfactor);\
 make_lua_key(L, virtual);\
 make_lua_key(L, vlist);\
 make_lua_key(L, vmode);\
@@ -1466,7 +1500,6 @@ make_lua_key(L, endpoint);\
 make_lua_key(L, error);\
 make_lua_key(L, error_line);\
 /*          (L, explicit); */\
-make_lua_key(L, extensions);\
 make_lua_key(L, fig);\
 /*          (L, fill); */\
 make_lua_key(L, find_file);\
@@ -1501,9 +1534,11 @@ make_lua_key(L, path);\
 make_lua_key(L, pen);\
 make_lua_key(L, postscript);\
 make_lua_key(L, prescript);\
+make_lua_key(L, primary);\
 make_lua_key(L, print_line);\
 make_lua_key(L, random_seed);\
 /*          (L, reader); */\
+make_lua_key(L, restore);\
 make_lua_key(L, right_curl);\
 make_lua_key(L, right_tension);\
 make_lua_key(L, right_type);\
@@ -1517,6 +1552,8 @@ make_lua_key(L, run_script);\
 make_lua_key(L, run_warning);\
 make_lua_key(L, rx);\
 make_lua_key(L, ry);\
+make_lua_key(L, save);\
+make_lua_key(L, secondary);\
 make_lua_key(L, show_mode);\
 make_lua_key(L, stacking);\
 make_lua_key(L, start_bounds);\
@@ -1530,6 +1567,7 @@ make_lua_key(L, strings);\
 make_lua_key(L, sx);\
 make_lua_key(L, sy);\
 make_lua_key(L, symbols);\
+make_lua_key(L, tertiary);\
 /*          (L, text); */\
 make_lua_key(L, text_mode);\
 make_lua_key(L, tokens);\

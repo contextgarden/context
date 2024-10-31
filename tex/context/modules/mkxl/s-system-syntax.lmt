@@ -4,8 +4,11 @@ local lpegmatch = lpeg.match
 
 local context = context
 
-local moduledata   = moduledata or { }
+local moduledata   = moduledata        or { }
 moduledata.engine  = moduledata.engine or { }
+moduledata.mplib   = moduledata.mplib  or { }
+moduledata.pdfe    = moduledata.pdfe   or { }
+moduledata.node    = moduledata.node   or { }
 
 local primitives   = token.getprimitives()
 local commandnames = tokens.commands
@@ -128,6 +131,8 @@ local r_integer       = { "", s_integer }
 local r_muglue        = { "", s_muglue }
 local r_toks          = { "", s_toks }
 local r_tokens        = { "", c_tokens }
+
+local f_see           = string.formatters["see \\type{\\%s}"]
 
 local function setdefaultresult(syntax, value)
     local default = { }
@@ -531,34 +536,33 @@ result.hyphenation = newresult {
     -- TODO
 }
 
-do
+local common_rule = sequence(
+    optional(sequence(keyword("attr"),s_integer,o_equal,s_integer)),
+    optional(sequence(keyword("width"),s_dimension)),
+    optional(sequence(keyword("height"),s_dimension)),
+    optional(sequence(keyword("depth"),s_dimension)),
+    optional(sequence(keyword("xoffset"),s_dimension)),
+    optional(sequence(keyword("yoffset"),s_dimension))
+)
 
-    local vrule = sequence(
-        optional(sequence(keyword("attr"),s_integer,o_equal,s_integer)),
-        optional(sequence(keyword("width"),s_dimension)),
-        optional(sequence(keyword("height"),s_dimension)),
-        optional(sequence(keyword("depth"),s_dimension)),
-        optional(sequence(keyword("left"),s_dimension)),
-        optional(sequence(keyword("right"),s_dimension)),
-        optional(sequence(keyword("top"),s_dimension)),
-        optional(sequence(keyword("bottom"),s_dimension)),
-        optional(sequence(keyword("xoffset"),s_dimension)),
-        optional(sequence(keyword("yoffset"),s_dimension))
-    )
+local normal_rule = sequence(common_rule,
+    optional(sequence(keyword("left"),s_dimension)),
+    optional(sequence(keyword("right"),s_dimension)),
+    optional(sequence(keyword("top"),s_dimension)),
+    optional(sequence(keyword("bottom"),s_dimension))
+)
 
-    local rule = sequence(vrule,sequence(
-        optional(sequence(keyword("font"),s_integer)),
-        optional(sequence(keyword("fam"),s_integer)),
-        optional(sequence(keyword("char"),s_integer))
-    ))
+local strut_rule = sequence(common_rule,sequence(
+    optional(sequence(keyword("font"),s_integer)),
+    optional(sequence(keyword("fam"),s_integer)),
+    optional(sequence(keyword("char"),s_integer))
+))
 
-    syntax.hrule = newsyntax {
-        nohrule      = rule,
-        virtualhrule = vrule,
-        hrule        = rule,
-    }
-
-end
+syntax.hrule = newsyntax {
+    nohrule      = normal_rule,
+    virtualhrule = normal_rule,
+    hrule        = normal_rule,
+}
 
 syntax.hskip = newsyntax {
     hfil    = false,
@@ -841,7 +845,6 @@ result.internalinteger = {
     normalizelinemode        = r_integer,
     normalizeparmode         = r_integer,
     nospaces                 = r_integer,
-    orphanpenalty            = r_integer,
     outputbox                = r_integer,
     outputpenalty            = r_integer,
     overloadmode             = r_integer,
@@ -885,7 +888,6 @@ result.internalinteger = {
     supmarkmode              = r_integer,
     textdirection            = r_integer,
     time                     = r_integer,
-    toddlerpenalty           = r_integer,
     tolerance                = r_integer,
     tracingadjusts           = r_integer,
     tracingalignments        = r_integer,
@@ -901,6 +903,7 @@ result.internalinteger = {
     tracinglevels            = r_integer,
     tracinglists             = r_integer,
     tracingloners            = r_integer,
+    tracinglooseness         = r_integer,
     tracinglostchars         = r_integer,
     tracingmacros            = r_integer,
     tracingmarks             = r_integer,
@@ -1753,15 +1756,22 @@ do
 
 end
 
+local s_adjacentdemerits <const> = "<adjacentdemerits>"
+local s_fitnessclasses   <const> = "<fitnessclasses>"
+local s_orphanclasses    <const> = "<orphanpenalties>"
+local s_toddlerpenalties <const> = "<toddlerpenalties>"
+
 syntax.specification = newsyntax {
+    adjacentdemerits      = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     brokenpenalties       = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     clubpenalties         = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     displaywidowpenalties = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
-    fitnessdemerits       = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+    fitnessclasses        = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     interlinepenalties    = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     mathbackwardpenalties = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     mathforwardpenalties  = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     orphanpenalties       = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+    toddlerpenalties      = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     parpasses             = sequence(
                                 optional(keyword("options"),s_integer),
                                 repeated(
@@ -1769,6 +1779,7 @@ syntax.specification = newsyntax {
                                     optional(keyword("quit")),
                                     optional(keyword("skip")),
                                     optional(sequence(keyword("adjdemerits"),s_integer)),
+                                    optional(sequence(keyword("adjacentdemerits"),s_adjacentdemerits)),
                                     optional(sequence(keyword("adjustspacing"),s_integer)),
                                     optional(sequence(keyword("adjustspacingshrink"),s_integer)),
                                     optional(sequence(keyword("adjustspacingstep"),s_integer)),
@@ -1786,12 +1797,13 @@ syntax.specification = newsyntax {
                                     optional(sequence(keyword("emergencywidthextra"),s_integer)),
                                     optional(sequence(keyword("extrahyphenpenalty"),s_integer)),
                                     optional(sequence(keyword("finalhyphendemerits"),s_integer)),
-                                    optional(sequence(keyword("fitnessdemerits"),s_integer)),
+                                    optional(sequence(keyword("fitnessclasses"),s_fitnessclasses)),
                                     optional(sequence(keyword("hyphenation"),s_integer)),
                                     optional(sequence(keyword("identifier"),s_integer)),
                                     optional(sequence(keyword("ifadjustspacing"),s_integer)),
                                     optional(sequence(keyword("ifemergencystretch"),s_integer)),
                                     optional(sequence(keyword("ifglue"),s_integer)),
+                                    optional(sequence(keyword("iflooseness"),s_integer)),
                                     optional(sequence(keyword("ifmath"),s_integer)),
                                     optional(sequence(keyword("iftext"),s_integer)),
                                     optional(sequence(keyword("lefttwindemerits"),s_integer)),
@@ -1801,17 +1813,21 @@ syntax.specification = newsyntax {
                                     optional(sequence(keyword("linepenalty"),s_integer)),
                                     optional(sequence(keyword("looseness"),s_integer)),
                                     optional(sequence(keyword("mathpenaltyfactor"),s_integer)),
-                                    optional(sequence(keyword("orphanpenalty"),s_integer)),
+                                    optional(sequence(keyword("orphanpenalties"),s_orphanpenalties)),
+                                    optional(sequence(keyword("toddlerpenalties"),s_toddlerpenalties)),
                                     optional(sequence(keyword("righttwindemerits"),s_integer)),
                                     optional(sequence(keyword("threshold"),s_dimension)),
-                                    optional(sequence(keyword("toddlerpenalty"),s_integer)),
                                     optional(sequence(keyword("tolerance"),s_integer)),
                                     optional(sequence(keyword("unlessmath"),s_integer))
                                 )
-
                             ),
+    parpassesexception    = f_see("parpasses"),
     parshape              = sequence(optional(keyword("options"),s_integer),s_integer,repeated(sequence(s_dimension,s_dimension))),
     widowpenalties        = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+
+ -- dimen                 = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+ -- count                 = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_dimension)),
+ -- float                 = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_float)),
 }
 
 result.specification = setdefaultresult(syntax.specification, r_integer)
@@ -1999,10 +2015,10 @@ syntax.vmove = newsyntax {
 }
 
 syntax.vrule = newsyntax {
-    novrule      = syntax.hrule.hrule,
-    srule        = syntax.hrule.hrule,
-    virtualvrule = syntax.hrule.virtualhrule,
-    vrule        = syntax.hrule.hrule,
+    novrule      = normal_rule,
+    srule        = strut_rule,
+    virtualvrule = normal_rule,
+    vrule        = normal_rule,
 }
 
 syntax.vskip = newsyntax {
@@ -2208,8 +2224,16 @@ end
 
 do
 
-    function moduledata.engine.codes(name)
-        local t = type(name) == "table" and name or tex[name]
+    local context = context
+
+    local ctx_NC, ctx_NR = context.NC, context.NR
+    local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stoptabulate
+
+    function moduledata.engine.codes(name,...)
+        local t = (type(name) == "table" and name) or tex[name]
+        if type(t) == "function" then
+            t = t(...)
+        end
         if t then
             local l = { }
             for k, v in table.sortedhash(t) do
@@ -2218,18 +2242,79 @@ do
                 end
             end
             local m = l[#l]
-            local f = (m > 0xFFFF and "0x%08X") or (m > 0x00FF and "0x%04X") or "0x%02X"
-            context.starttabulate { "|lT|l|" }
+            local f = (m > 0x00FFFFFF and "0x%08X") or (m > 0x000FFFF and "0x%06X") or (m > 0x00FF and "0x%04X") or "0x%02X"
+            ctx_starttabulate { "|lT|l|" }
             for i=1,#l do
                 local li = l[i]
-                context.NC()
-                context(f,li)
-                context.NC()
-                context(t[li])
-                context.NC()
-                context.NR()
+                ctx_NC() context(f,li)
+                ctx_NC() context(t[li])
+                ctx_NC() ctx_NR()
             end
-            context.stoptabulate()
+            ctx_stoptabulate()
+        else
+            context("there is no function tex.%s",name)
+        end
+    end
+
+    function moduledata.mplib.codes(what)
+        local f = mplib[what]
+        if f then
+            local t = f()
+            if t then
+                ctx_starttabulate { "|lT|l|" }
+                if #t > 0 then
+                    for i=0,#t do
+                        ctx_NC() context(i)
+                        ctx_NC() context(t[i])
+                        ctx_NC() ctx_NR()
+                    end
+                else
+                    for k, v in table.sortedhash(t) do
+                        ctx_NC() context(k)
+                        ctx_NC() context(v)
+                        ctx_NC() ctx_NR()
+                    end
+                end
+                ctx_stoptabulate()
+            end
+        else
+            context("there is no function mplib.%s",what)
+        end
+    end
+
+    function moduledata.pdfe.codes(what)
+        local f = pdfe[what]
+        if f then
+            local t = f()
+            if t then
+                ctx_starttabulate { "|lT|l|" }
+                for k, v in table.sortedhash(t) do
+                    ctx_NC() context(k)
+                    ctx_NC() context(v)
+                    ctx_NC() ctx_NR()
+                end
+                ctx_stoptabulate()
+            end
+        else
+            context("there is no function pdfe.%s",what)
+        end
+    end
+
+    function moduledata.node.codes(what,...)
+        local f = node[what]
+        if f then
+            local t = f(...)
+            if t then
+                ctx_starttabulate { "|lT|l|" }
+                for k, v in table.sortedhash(t) do
+                    ctx_NC() context(k)
+                    ctx_NC() context(v)
+                    ctx_NC() ctx_NR()
+                end
+                ctx_stoptabulate()
+            end
+        else
+            context("there is no function node.%s",what)
         end
     end
 

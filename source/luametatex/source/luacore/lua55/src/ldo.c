@@ -39,6 +39,19 @@
 
 
 /*
+** these macros allow user-specific actions when a thread is
+** resumed/yielded.
+*/
+#if !defined(luai_userstateresume)
+#define luai_userstateresume(L,n)	((void)L)
+#endif
+
+#if !defined(luai_userstateyield)
+#define luai_userstateyield(L,n)	((void)L)
+#endif
+
+
+/*
 ** {======================================================
 ** Error-recovery functions
 ** =======================================================
@@ -158,7 +171,35 @@ int luaD_rawrunprotected (lua_State *L, Pfunc f, void *ud) {
 ** ===================================================================
 */
 
+/* some stack space for error handling */
+#define STACKERRSPACE	200
 
+
+/* maximum stack size that respects size_t */
+#define MAXSTACK_BYSIZET  ((MAX_SIZET / sizeof(StackValue)) - STACKERRSPACE)
+
+/*
+** Minimum between LUAI_MAXSTACK and MAXSTACK_BYSIZET
+** (Maximum size for the stack must respect size_t.)
+*/
+#define MAXSTACK	cast_int(LUAI_MAXSTACK < MAXSTACK_BYSIZET  \
+			        ? LUAI_MAXSTACK : MAXSTACK_BYSIZET)
+
+
+/* stack size with extra space for error handling */
+#define ERRORSTACKSIZE	(MAXSTACK + STACKERRSPACE)
+
+
+/*
+** In ISO C, any pointer use after the pointer has been deallocated is
+** undefined behavior. So, before a stack reallocation, all pointers are
+** changed to offsets, and after the reallocation they are changed back
+** to pointers. As during the reallocation the pointers are invalid, the
+** reallocation cannot run emergency collections.
+**
+*/
+
+#if 1
 /*
 ** Change all pointers to the stack into offsets.
 */
@@ -179,9 +220,10 @@ static void relstack (lua_State *L) {
 /*
 ** Change back all offsets into pointers.
 */
-static void correctstack (lua_State *L) {
+static void correctstack (lua_State *L, StkId oldstack) {
   CallInfo *ci;
   UpVal *up;
+  UNUSED(oldstack);
   L->top.p = restorestack(L, L->top.offset);
   L->tbclist.p = restorestack(L, L->tbclist.offset);
   for (up = L->openupval; up != NULL; up = up->u.open.next)
@@ -194,18 +236,37 @@ static void correctstack (lua_State *L) {
   }
 }
 
+#else
+/*
+** Alternatively, we can use the old address after the dealocation.
+** That is not strict ISO C, but seems to work fine everywhere.
+*/
 
-/* some space for error handling */
-#define ERRORSTACKSIZE	(LUAI_MAXSTACK + 200)
+static void relstack (lua_State *L) { UNUSED(L); }
+
+static void correctstack (lua_State *L, StkId oldstack) {
+  CallInfo *ci;
+  UpVal *up;
+  StkId newstack = L->stack.p;
+  if (oldstack == newstack)
+    return;
+  L->top.p = L->top.p - oldstack + newstack;
+  L->tbclist.p = L->tbclist.p - oldstack + newstack;
+  for (up = L->openupval; up != NULL; up = up->u.open.next)
+    up->v.p = s2v(uplevel(up) - oldstack + newstack);
+  for (ci = L->ci; ci != NULL; ci = ci->previous) {
+    ci->top.p = ci->top.p - oldstack + newstack;
+    ci->func.p = ci->func.p - oldstack + newstack;
+    if (isLua(ci))
+      ci->u.l.trap = 1;  /* signal to update 'trap' in 'luaV_execute' */
+  }
+}
+
+#endif
+
 
 /*
 ** Reallocate the stack to a new size, correcting all pointers into it.
-** In ISO C, any pointer use after the pointer has been deallocated is
-** undefined behavior. So, before the reallocation, all pointers are
-** changed to offsets, and after the reallocation they are changed back
-** to pointers. As during the reallocation the pointers are invalid, the
-** reallocation cannot run emergency collections.
-**
 ** In case of allocation error, raise an error or return false according
 ** to 'raiseerror'.
 */
@@ -213,21 +274,22 @@ int luaD_reallocstack (lua_State *L, int newsize, int raiseerror) {
   int oldsize = stacksize(L);
   int i;
   StkId newstack;
-  int oldgcstop = G(L)->gcstopem;
-  lua_assert(newsize <= LUAI_MAXSTACK || newsize == ERRORSTACKSIZE);
+  StkId oldstack = L->stack.p;
+  lu_byte oldgcstop = G(L)->gcstopem;
+  lua_assert(newsize <= MAXSTACK || newsize == ERRORSTACKSIZE);
   relstack(L);  /* change pointers to offsets */
   G(L)->gcstopem = 1;  /* stop emergency collection */
-  newstack = luaM_reallocvector(L, L->stack.p, oldsize + EXTRA_STACK,
+  newstack = luaM_reallocvector(L, oldstack, oldsize + EXTRA_STACK,
                                    newsize + EXTRA_STACK, StackValue);
   G(L)->gcstopem = oldgcstop;  /* restore emergency collection */
   if (l_unlikely(newstack == NULL)) {  /* reallocation failed? */
-    correctstack(L);  /* change offsets back to pointers */
+    correctstack(L, oldstack);  /* change offsets back to pointers */
     if (raiseerror)
       luaM_error(L);
     else return 0;  /* do not raise an error */
   }
   L->stack.p = newstack;
-  correctstack(L);  /* change offsets back to pointers */
+  correctstack(L, oldstack);  /* change offsets back to pointers */
   L->stack_last.p = L->stack.p + newsize;
   for (i = oldsize + EXTRA_STACK; i < newsize + EXTRA_STACK; i++)
     setnilvalue(s2v(newstack + i)); /* erase new segment */
@@ -241,7 +303,7 @@ int luaD_reallocstack (lua_State *L, int newsize, int raiseerror) {
 */
 int luaD_growstack (lua_State *L, int n, int raiseerror) {
   int size = stacksize(L);
-  if (l_unlikely(size > LUAI_MAXSTACK)) {
+  if (l_unlikely(size > MAXSTACK)) {
     /* if stack is larger than maximum, thread is already using the
        extra space reserved for errors, that is, thread is handling
        a stack error; cannot grow further than that. */
@@ -250,14 +312,14 @@ int luaD_growstack (lua_State *L, int n, int raiseerror) {
       luaD_throw(L, LUA_ERRERR);  /* error inside message handler */
     return 0;  /* if not 'raiseerror', just signal it */
   }
-  else if (n < LUAI_MAXSTACK) {  /* avoids arithmetic overflows */
+  else if (n < MAXSTACK) {  /* avoids arithmetic overflows */
     int newsize = 2 * size;  /* tentative new size */
     int needed = cast_int(L->top.p - L->stack.p) + n;
-    if (newsize > LUAI_MAXSTACK)  /* cannot cross the limit */
-      newsize = LUAI_MAXSTACK;
+    if (newsize > MAXSTACK)  /* cannot cross the limit */
+      newsize = MAXSTACK;
     if (newsize < needed)  /* but must respect what was asked for */
       newsize = needed;
-    if (l_likely(newsize <= LUAI_MAXSTACK))
+    if (l_likely(newsize <= MAXSTACK))
       return luaD_reallocstack(L, newsize, raiseerror);
   }
   /* else stack overflow */
@@ -293,17 +355,17 @@ static int stackinuse (lua_State *L) {
 ** to twice the current use. (So, the final stack size is at most 2/3 the
 ** previous size, and half of its entries are empty.)
 ** As a particular case, if stack was handling a stack overflow and now
-** it is not, 'max' (limited by LUAI_MAXSTACK) will be smaller than
+** it is not, 'max' (limited by MAXSTACK) will be smaller than
 ** stacksize (equal to ERRORSTACKSIZE in this case), and so the stack
 ** will be reduced to a "regular" size.
 */
 void luaD_shrinkstack (lua_State *L) {
   int inuse = stackinuse(L);
-  int max = (inuse > LUAI_MAXSTACK / 3) ? LUAI_MAXSTACK : inuse * 3;
+  int max = (inuse > MAXSTACK / 3) ? MAXSTACK : inuse * 3;
   /* if thread is currently not handling a stack overflow and its
      size is larger than maximum "reasonable" size, shrink it */
-  if (inuse <= LUAI_MAXSTACK && stacksize(L) > max) {
-    int nsize = (inuse > LUAI_MAXSTACK / 2) ? LUAI_MAXSTACK : inuse * 2;
+  if (inuse <= MAXSTACK && stacksize(L) > max) {
+    int nsize = (inuse > MAXSTACK / 2) ? MAXSTACK : inuse * 2;
     luaD_reallocstack(L, nsize, 0);  /* ok if that fails */
   }
   else  /* don't change stack */
@@ -329,7 +391,6 @@ void luaD_hook (lua_State *L, int event, int line,
                               int ftransfer, int ntransfer) {
   lua_Hook hook = L->hook;
   if (hook && L->allowhook) {  /* make sure there is a hook */
-    int mask = CIST_HOOKED;
     CallInfo *ci = L->ci;
     ptrdiff_t top = savestack(L, L->top.p);  /* preserve original 'top' */
     ptrdiff_t ci_top = savestack(L, ci->top.p);  /* idem for 'ci->top' */
@@ -337,18 +398,15 @@ void luaD_hook (lua_State *L, int event, int line,
     ar.event = event;
     ar.currentline = line;
     ar.i_ci = ci;
-    if (ntransfer != 0) {
-      mask |= CIST_TRAN;  /* 'ci' has transfer information */
-      ci->u2.transferinfo.ftransfer = ftransfer;
-      ci->u2.transferinfo.ntransfer = ntransfer;
-    }
+    L->transferinfo.ftransfer = ftransfer;
+    L->transferinfo.ntransfer = ntransfer;
     if (isLua(ci) && L->top.p < ci->top.p)
       L->top.p = ci->top.p;  /* protect entire activation register */
     luaD_checkstack(L, LUA_MINSTACK);  /* ensure minimum stack size */
     if (ci->top.p < L->top.p + LUA_MINSTACK)
       ci->top.p = L->top.p + LUA_MINSTACK;
     L->allowhook = 0;  /* cannot call hooks inside a hook */
-    ci->callstatus |= mask;
+    ci->callstatus |= CIST_HOOKED;
     lua_unlock(L);
     (*hook)(L, &ar);
     lua_lock(L);
@@ -356,7 +414,7 @@ void luaD_hook (lua_State *L, int event, int line,
     L->allowhook = 1;
     ci->top.p = restorestack(L, ci_top);
     L->top.p = restorestack(L, top);
-    ci->callstatus &= ~mask;
+    ci->callstatus &= ~CIST_HOOKED;
   }
 }
 
@@ -395,7 +453,7 @@ static void rethook (lua_State *L, CallInfo *ci, int nres) {
         delta = ci->u.l.nextraargs + p->numparams + 1;
     }
     ci->func.p += delta;  /* if vararg, back to virtual 'func' */
-    ftransfer = cast(unsigned short, firstres - ci->func.p);
+    ftransfer = cast_int(firstres - ci->func.p);
     luaD_hook(L, LUA_HOOKRET, -1, ftransfer, nres);  /* call it */
     ci->func.p -= delta;
   }
@@ -424,48 +482,11 @@ static StkId tryfuncTM (lua_State *L, StkId func) {
 }
 
 
-/*
-** Given 'nres' results at 'firstResult', move 'wanted' of them to 'res'.
-** Handle most typical cases (zero results for commands, one result for
-** expressions, multiple results for tail calls/single parameters)
-** separated.
-*/
-l_sinline void moveresults (lua_State *L, StkId res, int nres, int wanted) {
-  StkId firstresult;
+/* Generic case for 'moveresult */
+l_sinline void genmoveresults (lua_State *L, StkId res, int nres,
+                                             int wanted) {
+  StkId firstresult = L->top.p - nres;  /* index of first result */
   int i;
-  switch (wanted) {  /* handle typical cases separately */
-    case 0:  /* no values needed */
-      L->top.p = res;
-      return;
-    case 1:  /* one value needed */
-      if (nres == 0)   /* no results? */
-        setnilvalue(s2v(res));  /* adjust with nil */
-      else  /* at least one result */
-        setobjs2s(L, res, L->top.p - nres);  /* move it to proper place */
-      L->top.p = res + 1;
-      return;
-    case LUA_MULTRET:
-      wanted = nres;  /* we want all results */
-      break;
-    default:  /* two/more results and/or to-be-closed variables */
-      if (hastocloseCfunc(wanted)) {  /* to-be-closed variables? */
-        L->ci->callstatus |= CIST_CLSRET;  /* in case of yields */
-        L->ci->u2.nres = nres;
-        res = luaF_close(L, res, CLOSEKTOP, 1);
-        L->ci->callstatus &= ~CIST_CLSRET;
-        if (L->hookmask) {  /* if needed, call hook after '__close's */
-          ptrdiff_t savedres = savestack(L, res);
-          rethook(L, L->ci, nres);
-          res = restorestack(L, savedres);  /* hook can move stack */
-        }
-        wanted = decodeNresults(wanted);
-        if (wanted == LUA_MULTRET)
-          wanted = nres;  /* we want all results */
-      }
-      break;
-  }
-  /* generic case */
-  firstresult = L->top.p - nres;  /* index of first result */
   if (nres > wanted)  /* extra results? */
     nres = wanted;  /* don't need them */
   for (i = 0; i < nres; i++)  /* move all results to correct place */
@@ -477,20 +498,64 @@ l_sinline void moveresults (lua_State *L, StkId res, int nres, int wanted) {
 
 
 /*
+** Given 'nres' results at 'firstResult', move 'fwanted-1' of them
+** to 'res'.  Handle most typical cases (zero results for commands,
+** one result for expressions, multiple results for tail calls/single
+** parameters) separated. The flag CIST_CLSRET in 'fwanted', if set,
+** forces the swicth to go to the default case.
+*/
+l_sinline void moveresults (lua_State *L, StkId res, int nres,
+                                          l_uint32 fwanted) {
+  switch (fwanted) {  /* handle typical cases separately */
+    case 0 + 1:  /* no values needed */
+      L->top.p = res;
+      return;
+    case 1 + 1:  /* one value needed */
+      if (nres == 0)   /* no results? */
+        setnilvalue(s2v(res));  /* adjust with nil */
+      else  /* at least one result */
+        setobjs2s(L, res, L->top.p - nres);  /* move it to proper place */
+      L->top.p = res + 1;
+      return;
+    case LUA_MULTRET + 1:
+      genmoveresults(L, res, nres, nres);  /* we want all results */
+      break;
+    default: {  /* two/more results and/or to-be-closed variables */
+      int wanted = get_nresults(fwanted);
+      if (fwanted & CIST_CLSRET) {  /* to-be-closed variables? */
+        L->ci->u2.nres = nres;
+        res = luaF_close(L, res, CLOSEKTOP, 1);
+        L->ci->callstatus &= ~CIST_CLSRET;
+        if (L->hookmask) {  /* if needed, call hook after '__close's */
+          ptrdiff_t savedres = savestack(L, res);
+          rethook(L, L->ci, nres);
+          res = restorestack(L, savedres);  /* hook can move stack */
+        }
+        if (wanted == LUA_MULTRET)
+          wanted = nres;  /* we want all results */
+      }
+      genmoveresults(L, res, nres, wanted);
+      break;
+    }
+  }
+}
+
+
+/*
 ** Finishes a function call: calls hook if necessary, moves current
 ** number of results to proper place, and returns to previous call
 ** info. If function has to close variables, hook must be called after
 ** that.
 */
 void luaD_poscall (lua_State *L, CallInfo *ci, int nres) {
-  int wanted = ci->nresults;
-  if (l_unlikely(L->hookmask && !hastocloseCfunc(wanted)))
+  l_uint32 fwanted = ci->callstatus & (CIST_CLSRET | CIST_NRESULTS);
+  if (l_unlikely(L->hookmask) && !(fwanted & CIST_CLSRET))
     rethook(L, ci, nres);
   /* move results to proper place */
-  moveresults(L, ci->func.p, nres, wanted);
+  moveresults(L, ci->func.p, nres, fwanted);
   /* function cannot be in any of these cases when returning */
   lua_assert(!(ci->callstatus &
-        (CIST_HOOKED | CIST_YPCALL | CIST_FIN | CIST_TRAN | CIST_CLSRET)));
+        (CIST_HOOKED | CIST_YPCALL | CIST_FIN | CIST_CLSRET)));
   L->ci = ci->previous;  /* back to caller (after closing variables) */
 }
 
@@ -499,12 +564,12 @@ void luaD_poscall (lua_State *L, CallInfo *ci, int nres) {
 #define next_ci(L)  (L->ci->next ? L->ci->next : luaE_extendCI(L))
 
 
-l_sinline CallInfo *prepCallInfo (lua_State *L, StkId func, int nret,
-                                                int mask, StkId top) {
+l_sinline CallInfo *prepCallInfo (lua_State *L, StkId func, int nresults,
+                                                l_uint32 mask, StkId top) {
   CallInfo *ci = L->ci = next_ci(L);  /* new frame */
   ci->func.p = func;
-  ci->nresults = nret;
-  ci->callstatus = mask;
+  lua_assert(((nresults + 1) & ~CIST_NRESULTS) == 0);
+  ci->callstatus = mask | cast(l_uint32, nresults + 1);
   ci->top.p = top;
   return ci;
 }
@@ -633,7 +698,7 @@ l_sinline void ccall (lua_State *L, StkId func, int nResults, l_uint32 inc) {
     luaE_checkcstack(L);
   }
   if ((ci = luaD_precall(L, func, nResults)) != NULL) {  /* Lua function? */
-    ci->callstatus = CIST_FRESH;  /* mark that it is a "fresh" execute */
+    ci->callstatus |= CIST_FRESH;  /* mark that it is a "fresh" execute */
     luaV_execute(L, ci);  /* call it */
   }
   L->nCcalls -= inc;
@@ -678,7 +743,7 @@ static int finishpcallk (lua_State *L,  CallInfo *ci) {
     status = LUA_YIELD;  /* was interrupted by an yield */
   else {  /* error */
     StkId func = restorestack(L, ci->u2.funcidx);
-    L->allowhook = getoah(ci->callstatus);  /* restore 'allowhook' */
+    L->allowhook = getoah(ci);  /* restore 'allowhook' */
     func = luaF_close(L, func, status, 1);  /* can yield or raise an error */
     luaD_seterrorobj(L, status, func);
     luaD_shrinkstack(L);   /* restore stack size in case of overflow */
@@ -708,7 +773,6 @@ static int finishpcallk (lua_State *L,  CallInfo *ci) {
 static void finishCcall (lua_State *L, CallInfo *ci) {
   int n;  /* actual number of results from C function */
   if (ci->callstatus & CIST_CLSRET) {  /* was returning? */
-    lua_assert(hastocloseCfunc(ci->nresults));
     n = ci->u2.nres;  /* just redo 'luaD_poscall' */
     /* don't need to reset CIST_CLSRET, as it will be set again anyway */
   }
@@ -1024,9 +1088,9 @@ int luaD_protectedparser (lua_State *L, ZIO *z, const char *name,
   luaZ_initbuffer(L, &p.buff);
   status = luaD_pcall(L, f_parser, &p, savestack(L, L->top.p), L->errfunc);
   luaZ_freebuffer(L, &p.buff);
-  luaM_freearray(L, p.dyd.actvar.arr, p.dyd.actvar.size);
-  luaM_freearray(L, p.dyd.gt.arr, p.dyd.gt.size);
-  luaM_freearray(L, p.dyd.label.arr, p.dyd.label.size);
+  luaM_freearray(L, p.dyd.actvar.arr, cast_sizet(p.dyd.actvar.size));
+  luaM_freearray(L, p.dyd.gt.arr, cast_sizet(p.dyd.gt.size));
+  luaM_freearray(L, p.dyd.label.arr, cast_sizet(p.dyd.label.size));
   decnny(L);
   return status;
 }

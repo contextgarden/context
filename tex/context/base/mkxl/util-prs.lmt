@@ -890,6 +890,10 @@ local pattern = Ct("") * (
         ) +
         (             (Cc("month") * cardinal) % rawset
           * S("-/") * (Cc("year")  * p_year  ) % rawset
+        ) +
+        (             (Cc("year")  * (C(4)/tonumber)) % rawset
+          *           (Cc("month") * (C(2)/tonumber)) % rawset
+          *           (Cc("day")   * (C(2)/tonumber)) % rawset
         )
     )
       *  (
@@ -905,7 +909,9 @@ function parsers.totime(str)
     return lpegmatch(pattern,str)
 end
 
+-- inspect(parsers.totime("20190305"))
 -- inspect(parsers.totime("2019-03-05"))
+-- inspect(parsers.totime("05-03-2019"))
 -- inspect(parsers.totime("2019-03-05 12:12:12"))
 -- print(os.time(parsers.totime("2019-03-05 12:12:12")))
 -- print(os.time(parsers.totime("2019/03/05 12:12:12")))

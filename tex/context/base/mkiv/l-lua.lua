@@ -26,6 +26,8 @@ LUAMAJORVERSION, LUAMINORVERSION = string.match(_VERSION,"^[^%d]+(%d+)%.(%d+).*$
 LUAMAJORVERSION = tonumber(LUAMAJORVERSION) or 5
 LUAMINORVERSION = tonumber(LUAMINORVERSION) or 1
 LUAVERSION      = LUAMAJORVERSION + LUAMINORVERSION/10
+---VERSION      = status and status.lua_format or (LUAMAJORVERSION + LUAMINORVERSION/10)
+LUAFORMAT       = status and status.lua_format or 0
 
 if LUAVERSION < 5.2 and jit then
     --

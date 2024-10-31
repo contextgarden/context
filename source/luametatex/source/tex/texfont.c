@@ -36,7 +36,7 @@
     have the |text_control_base_ligaturing| and |text_control_base_kerning| bits set. 
 */
 
-inline static halfword tex_aux_discretionary_node(halfword target, int location)
+static inline halfword tex_aux_discretionary_node(halfword target, int location)
 {
     switch (location) {
         case pre_break_code : return disc_pre_break_node(target); 
@@ -46,7 +46,7 @@ inline static halfword tex_aux_discretionary_node(halfword target, int location)
     }
 }
 
-inline static int tex_aux_same_font_properties(halfword a, halfword b) // also in kern 
+static inline int tex_aux_same_font_properties(halfword a, halfword b) // also in kern 
 {
     return node_type(a) == glyph_node && node_type(b) == glyph_node 
      && glyph_font(a)    == glyph_font(b)
@@ -55,7 +55,7 @@ inline static int tex_aux_same_font_properties(halfword a, halfword b) // also i
      && glyph_scale(a)   == glyph_scale(b);
 }
 
-inline static int tex_aux_apply_base_kerning(halfword n)
+static inline int tex_aux_apply_base_kerning(halfword n)
 {
     if (glyph_protected(n)) {
         return 0;
@@ -69,7 +69,7 @@ inline static int tex_aux_apply_base_kerning(halfword n)
     }
 }
 
-inline static int tex_aux_apply_base_ligaturing(halfword n)
+static inline int tex_aux_apply_base_ligaturing(halfword n)
 {
     if (glyph_protected(n)) {
         return 0;
@@ -85,22 +85,22 @@ inline static int tex_aux_apply_base_ligaturing(halfword n)
 
 /* */
 
-inline static scaled tex_aux_font_x_scaled(scaled v)
+static inline scaled tex_aux_font_x_scaled(scaled v)
 {
     return v ? scaledround(0.000001 * (glyph_scale_par ? glyph_scale_par : 1000) * (glyph_x_scale_par ? glyph_x_scale_par : 1000) * v) : 0;
 }
 
-inline static scaled tex_aux_font_y_scaled(scaled v)
+static inline scaled tex_aux_font_y_scaled(scaled v)
 {
     return v ? scaledround(0.000001 * (glyph_scale_par ? glyph_scale_par : 1000) * (glyph_y_scale_par ? glyph_y_scale_par : 1000) * v) : 0;
 }
 
-inline static scaled tex_aux_glyph_x_scaled(halfword g, scaled v)
+static inline scaled tex_aux_glyph_x_scaled(halfword g, scaled v)
 {
     return v ? scaledround(0.000001 * (glyph_scale(g) ? glyph_scale(g) : 1000) * (glyph_x_scale(g) ? glyph_x_scale(g) : 1000) * v) : 0;
 }
 
-inline static scaled tex_aux_glyph_y_scaled(halfword g, scaled v)
+static inline scaled tex_aux_glyph_y_scaled(halfword g, scaled v)
 {
     return v ? scaledround(0.000001 * (glyph_scale(g) ? glyph_scale(g) : 1000) * (glyph_y_scale(g) ? glyph_y_scale(g) : 1000) * v) : 0;
 }
@@ -324,7 +324,7 @@ void tex_char_malloc_mathinfo(charinfo *ci)
     }
 }
 
-inline int aux_find_charinfo_id(halfword f, int c) 
+static inline int aux_find_charinfo_id(halfword f, int c) 
 {
     sa_tree_item item; 
     sa_get_item_4(lmt_font_state.fonts[f]->characters, c, &item);

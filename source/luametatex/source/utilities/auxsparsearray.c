@@ -13,11 +13,25 @@
 
 */
 
-/*  We could do this: 
+/*  
+    
+    We could do this: 
 
-      v // 4  v % 4  =>  v >> 2  v & 3
+        v // 4  v % 4  =>  v >> 2  v & 3
 
     but let's just assume that the compiler optimzes it. 
+
+    We could also pack the catcodes in single bytes but then we need to work with 
+    
+        nn = odd(n) ? n + 1 : n; 
+
+    and things like:
+
+        >> 1 
+        & 0xF
+
+    and for the setter that is more work because we need to overwrite the existing byte that now has
+    two values and we also have the stack to deal with. We would save some memory but not that much. 
 
 */
 

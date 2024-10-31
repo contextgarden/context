@@ -188,8 +188,8 @@ function statistics.show()
          -- local hash = lua.gethashchars()
             local mask = load([[τεχ = 1]]) and "utf" or "ascii"
          -- return format("engine: %s %s, used memory: %s, hash chars: min(%i,40), symbol mask: %s (%s)",
-            return format("engine: %s %s, used memory: %s, symbol mask: %s (%s)",
-                "lua", LUAVERSION, statistics.memused(), mask, mask == "utf" and "τεχ" or "tex")
+            return format("engine: lua %s, format %s, used memory: %s, symbol mask: %s (%s)",
+                LUAVERSION, LUAFORMAT, statistics.memused(), mask, mask == "utf" and "τεχ" or "tex")
         end)
         register("runtime",statistics.runtime)
         logs.newline() -- initial newline

@@ -400,16 +400,24 @@
 \permanent\protected\tolerant\def\setups[#1]#;#2{\processcommacommand[#1#2]\syst_setups} % {..} or [..]
 \permanent\protected\tolerant\def\setup [#1]#;#2{\syst_setups{#1#2}} % {..} or [..]
 
-\letcsname\??setup:\??empty\endcsname\gobbleoneargument
+% \letcsname\??setup:\??empty\endcsname\gobbleoneargument
+%
+% \permanent\def\syst_setups#1% the grid option will be extended to other main modes
+%   {\begincsname\??setup
+%      \ifgridsnapping
+%        \ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else:\ifcsname\??setup:#1\endcsname#1\else\??empty\fi\fi
+%      \else
+%                                                            :\ifcsname\??setup:#1\endcsname#1\else\??empty\fi
+%      \fi
+%    \endcsname\empty} % takes one argument
 
-\permanent\def\syst_setups#1% the grid option will be extended to other main modes
-  {\begincsname\??setup
-     \ifgridsnapping
-       \ifcsname\??setup\v!grid:#1\endcsname\v!grid:#1\else:\ifcsname\??setup:#1\endcsname#1\else\??empty\fi\fi
-     \else
-                                                           :\ifcsname\??setup:#1\endcsname#1\else\??empty\fi
-     \fi
-   \endcsname\empty} % takes one argument
+% We drop the grid option here:
+
+\letcsname\??setup\endcsname\gobbleoneargument
+
+\permanent\def\syst_setups#1% takes one argument
+ %{\begincsname\ifcsname\??setup:#1\endcsname\csnamestring\else\??setup:\??empty\fi\endcsname\empty}
+  {\begincsname\ifcsname\??setup:#1\endcsname\csnamestring\else\??setup\fi\endcsname\empty}
 
 % no checking and we assume it being defined:
 
@@ -463,7 +471,7 @@
 \aliased\let\directsetup\syst_setups
 \aliased\let\texsetup   \syst_setups % nicer than \directsetup and more en par with xmlsetup and luasetup
 
-\permanent\protected\def\doifelsesetups#1% to be done: grid
+\permanent\protected\def\doifelsesetups#1%
   {\ifcsname\??setup:#1\endcsname
      \expandafter\firstoftwoarguments
    \else
@@ -472,14 +480,14 @@
 
 \aliased\let\doifsetupselse\doifelsesetups
 
-\permanent\protected\def\doifsetups#1% to be done: grid
+\permanent\protected\def\doifsetups#1%
   {\ifcsname\??setup:#1\endcsname
      \expandafter\firstofoneargument
    \else
      \expandafter\gobbleoneargument
    \fi}
 
-\permanent\protected\def\doifnotsetups#1% to be done: grid
+\permanent\protected\def\doifnotsetups#1%
   {\ifcsname\??setup:#1\endcsname
      \expandafter\gobbleoneargument
    \else
@@ -643,12 +651,15 @@
 
 \permanent\def\systemsetups#1{\syst_setups{\systemsetupsprefix#1}}
 
+% \permanent\tolerant\protected\def\resetsetups[#1]#;#2%
+%   {\ifcsname\??setup\ifgridsnapping\v!grid\fi:#1#2\endcsname
+%      \dodoglobal\undefinevalue{\??setup\ifgridsnapping\v!grid\fi:#1#2}%
+%    \else
+%      \dodoglobal\undefinevalue{\??setup:#1#2}%
+%    \fi}
+
 \permanent\tolerant\protected\def\resetsetups[#1]#;#2%
-  {\ifcsname\??setup\ifgridsnapping\v!grid\fi:#1#2\endcsname
-     \dodoglobal\undefinevalue{\??setup\ifgridsnapping\v!grid\fi:#1#2}%
-   \else
-     \dodoglobal\undefinevalue{\??setup:#1#2}%
-   \fi}
+  {\dodoglobal\undefinevalue{\??setup:#1#2}}
 
 \permanent\tolerant\protected\def\copysetups[#1]#*[#2]%
   {\ifcsname\??setup:#2\endcsname

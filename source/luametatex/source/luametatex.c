@@ -51,6 +51,7 @@ version_state_info lmt_version_state = {
     .luaversionrelease = LUA_VERSION_RELEASE_N,
     .luatexversion     = (double) luametatex_version_number,
     .luaversion        = (double) LUA_VERSION_MAJOR_N + (double) LUA_VERSION_MINOR_N / 10,
+    .luaformat         = LUAC_FORMAT,
 };
 
 int main(int ac, char* *av)

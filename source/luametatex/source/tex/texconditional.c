@@ -282,7 +282,7 @@ static void tex_aux_pop_condition_stack(void)
     |cond_ptr|.
 */
 
-inline static void tex_aux_change_if_limit(int l, halfword p)
+static inline void tex_aux_change_if_limit(int l, halfword p)
 {
     if (p == lmt_condition_state.cond_ptr) {
         lmt_condition_state.if_limit = l;
@@ -386,7 +386,7 @@ static void tex_aux_show_if_state(halfword code, halfword case_value)
 
 /*tex Why do we skip over relax? */
 
-inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head) // todo: tail 
+static inline halfword tex_aux_grab_toks(int expand, int expandlist, int *head) // todo: tail 
 {
     halfword p = null;
     if (expand) {
@@ -448,7 +448,7 @@ inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head) 
     return p ? token_link(p) : null;
 }
 
-// inline static halfword tex_aux_scan_comparison(int code)
+// static inline halfword tex_aux_scan_comparison(int code)
 // {
 //     halfword r;
 //     do {
@@ -463,7 +463,7 @@ inline static halfword tex_aux_grab_toks(int expand, int expandlist, int *head) 
 //     }
 // }
 
-// inline static halfword tex_aux_scan_comparison(int code)
+// static inline halfword tex_aux_scan_comparison(int code)
 // {
 //     do {
 //         tex_get_x_token();
@@ -508,7 +508,7 @@ typedef enum parameterstates {
     parameter_unset = 2,
 } parameterstates;
 
-inline static halfword tex_aux_scan_comparison(int code)
+static inline halfword tex_aux_scan_comparison(int code)
 {
     bool negate = false;
     while (1) {
@@ -541,7 +541,7 @@ inline static halfword tex_aux_scan_comparison(int code)
     } 
 }
 
-inline static void tex_aux_check_strict(int *result)
+static inline void tex_aux_check_strict(int *result)
 {
     tex_get_x_token();
     switch (cur_cmd) { 

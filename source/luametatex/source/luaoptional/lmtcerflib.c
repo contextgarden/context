@@ -36,7 +36,7 @@
             case LUA_TSTRING:
                 return _Cbuild(luaL_checknumber(L, i), 0);
             default:
-                return *((Complex*)luaL_checkudata(L, i, COMPLEX_METATABLE));
+                return *((Complex*) luaL_checkudata(L, i, COMPLEX_METATABLE));
         }
     }
 
@@ -51,7 +51,7 @@
             case LUA_TSTRING:
                 return luaL_checknumber(L, i);
             default:
-                return *((Complex*)luaL_checkudata(L, i, COMPLEX_METATABLE));
+                return *((Complex*) luaL_checkudata(L, i, COMPLEX_METATABLE));
         }
     }
 
@@ -121,9 +121,14 @@ static struct luaL_Reg xcomplexlib_cerf_function_list[] = {
     { NULL,         NULL                        },
 };
 
+/*tex 
+    We has the wrong library name here so I bet cerf is never used after the initial need for it 
+    (by Alan). So do we need to keep it around? 
+*/
+
 int luaextend_xcomplex(lua_State *L)
 {
-    lua_getglobal(L, "string");
+    lua_getglobal(L, "xcomplex");
     for (const luaL_Reg *lib = xcomplexlib_cerf_function_list; lib->name; lib++) {
         lua_pushcfunction(L, lib->func);
         lua_setfield(L, -2, lib->name);

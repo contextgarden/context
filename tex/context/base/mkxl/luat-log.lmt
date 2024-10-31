@@ -105,6 +105,8 @@ do
     local report_yes, subreport_yes, direct_yes, subdirect_yes, status_yes
     local report_nop, subreport_nop, direct_nop, subdirect_nop, status_nop
 
+    -- texio.getselectorvalues()
+
     local variants = {
         default = {
             formats = {

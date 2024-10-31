@@ -30,8 +30,6 @@ typedef struct list_state_record {
     halfword math_mode;            // singleword 
     halfword delimiter;            // todo: get rid of these and use the stack 
     halfword incomplete_noad;      // todo: get rid of these and use the stack 
-    halfword tolerance;
-    halfword pretolerance;
     int      padding; 
 } list_state_record;
 

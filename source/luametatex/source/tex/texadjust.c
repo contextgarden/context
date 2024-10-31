@@ -39,7 +39,7 @@ typedef enum saved_adjust_entries {
     saved_adjust_n_of_records       = 3,
 } saved_adjust_entries;
 
-inline static void saved_adjust_initialize(void)
+static inline void saved_adjust_initialize(void)
 {
     saved_type(0) = saved_record_0;
     saved_type(1) = saved_record_1;

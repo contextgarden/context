@@ -171,6 +171,10 @@
 % bonus
 
 \newdimension\justimageoffset
+\newdimension\justimagetopoffset
+\newdimension\justimagebottomoffset
+\newdimension\justimageleftoffset
+\newdimension\justimagerightoffset
 
 \permanent\protected\def\grph_start_image_only
   {\begingroup
@@ -182,16 +186,23 @@
   {\removeunwantedspaces
    \egroup
    \global\advanceby\nofexportedboxes\plusone
-   \ifzeropt\justimageoffset
+   \ifzeropt
+       \dimexpr
+          \justimageoffset
+         +\justimageleftoffset
+         +\justimagerightoffset
+         +\justimagetopoffset
+         +\justimagebottomoffset
+       \relax
      \setbox\scratchbox\box\b_grph_image
    \else
      \setbox\scratchbox\hpack\bgroup
-       \kern\justimageoffset
+       \kern\dimexpr\justimageoffset+\justimageleftoffset\relax
        \box\b_grph_image
-       \kern\justimageoffset
+       \kern\dimexpr\justimageoffset+\justimagerightoffset\relax
      \egroup
-     \ht\scratchbox\dimexpr\ht\scratchbox+\justimageoffset\relax
-     \dp\scratchbox\dimexpr\dp\scratchbox+\justimageoffset\relax
+     \ht\scratchbox\dimexpr\ht\scratchbox+\justimageoffset+\justimagetopoffset\relax
+     \dp\scratchbox\dimexpr\dp\scratchbox+\justimageoffset+\justimagebottomoffset\relax
    \fi
    \putboxincache\s!exported{\the\nofexportedboxes}\scratchbox
    \box\b_grph_image

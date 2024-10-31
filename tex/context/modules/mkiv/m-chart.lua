@@ -932,10 +932,20 @@ local function makechart_indeed(chart)
     local settings      = chart.settings
     local chartsettings = settings.chart
     --
+ -- local g = ctx_startgraphic {
+ --     instance    = "metafun",
+ --     format      = "metafun",
+ --     method      = "scaled",
+ --     definitions = "",
+ --     wrapped     = true,
+ -- }
     local g = ctx_startgraphic {
-        instance    = "metafun",
+        instance    = "chart",
         format      = "metafun",
-        method      = "scaled",
+--         method      = "scaled",
+--         method      = "decimal",
+        method      = "double",
+--         method      = "posit",
         definitions = "",
         wrapped     = true,
     }

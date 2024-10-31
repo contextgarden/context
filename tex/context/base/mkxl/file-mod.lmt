@@ -64,32 +64,60 @@ local suffixes = CONTEXTLMTXMODE > 0 and
 -- tree but on the other hand we don't need to be that strict. It is just an extra level
 -- of protection.
 
-local setrunstate = tex.setrunstate
-local level       = 0
+-- todo: tex.getrunstatevalues
+--
+-- enforced : when state != production
+--
+-- 0 : initializing
+-- 1 : updating
+-- 2 : production
 
-local function pushrunstate()
-    level = level + 1
-    if level == 1 then
-        setrunstate(1)
+local pushrunstate, poprunstate  do
+
+    local runstatecodes = tex.runstatecodes
+    local runstate      = tex.getrunstate()
+    local setrunstate   = tex.setrunstate
+
+    local initializing <const> = runstatecodes.initializing
+    local updating     <const> = runstatecodes.updating
+    ----- production   <const> = runstatecodes.production
+
+    if runstate == initializing then
+
+        pushrunstate = function() end
+        poprunstate  = function() end
+
+    else
+
+        local level = 0
+
+        pushrunstate = function()
+            level = level + 1
+            if level == 1 then
+                setrunstate(updating)
+            end
+        end
+
+        poprunstate = function()
+            if level == 1 then
+                setrunstate(runstate)
+            end
+            if level > 0 then
+                level = level - 1
+            end
+        end
+
     end
+
+    luatex.pushrunstate = pushrunstate
+    luatex.poprunstate  = poprunstate
+
+    tex.setrunstate     = function() end
+
+    implement { name = "pushrunstate", public = true, protected = true, actions = pushrunstate }
+    implement { name = "poprunstate",  public = true, protected = true, actions = poprunstate  }
+
 end
-
-local function poprunstate()
-    if level == 1 then
-        setrunstate(3)
-    end
-    if level > 0 then
-        level = level - 1
-    end
-end
-
-luatex.pushrunstate = pushrunstate
-luatex.poprunstate  = poprunstate
-
-tex.setrunstate     = function() end
-
-implement { name = "pushrunstate", public = true, protected = true, actions = pushrunstate }
-implement { name = "poprunstate",  public = true, protected = true, actions = poprunstate  }
 
 -- Till here.
 

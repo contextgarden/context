@@ -29,12 +29,12 @@ extern int        mp_str_vs_str             (MP mp, mp_string s, mp_string t);
 extern mp_string  mp_cat                    (MP mp, mp_string a, mp_string b);
 extern mp_string  mp_chop_string            (MP mp, mp_string s, int a, int b);
 
-inline char *mp_str (MP mp, mp_string ss) { 
+static inline char *mp_str (MP mp, mp_string ss) { 
     (void) mp; 
     return (char *) ss->str; 
 }
 
-inline int mp_strcmp (const char *a, const char *b) 
+static inline int mp_strcmp (const char *a, const char *b) 
 { 
     return a == NULL ? (b == NULL ? 0 : -1) : (b == NULL ? 1 : strcmp(a, b));
 }

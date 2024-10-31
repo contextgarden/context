@@ -656,6 +656,7 @@
 \immutable\integerdef\plusfourteen              14
 \immutable\integerdef\plusfifteen               15
 \immutable\integerdef\plussixteen               16
+\immutable\integerdef\plustwentyfive            25
 \immutable\integerdef\plusfourtytwo             42  % also fitness value
 \immutable\integerdef\plusfifty                 50
 \immutable\integerdef\plusninetynine            99  % also fitness value
@@ -714,7 +715,9 @@
 \permanent\def\emptyvbox{\normalvpack{}}   % no copy as we need to set attributes
 \permanent\def\emptyhbox{\normalhpack{}}   % no copy as we need to set attributes
 
-\aliased\let\leavevmode\unvoidbox % we prefer to use \dontleavehmode
+\aliased\let\dontleavehmode\quitvmode
+
+\aliased\let\leavevmode\unvoidbox % we prefer to use \dontleavehmode and never use this one
 
 %D \macros
 %D   {dontcomplain,lessboxtracing}
@@ -1708,6 +1711,24 @@
 %     \zerocount  \plusone
 %     12          \plusone
 %     99          \plusone
+
+
+\pushoverloadmode
+
+%D We now group these penalties in specification sets. For practical purposes we no longer
+%D use the built in single penalties but map them onto the plurals. We also redefine the
+%D display math penalties but we never use these.
+
+\permanent\protected\untraced\def\widowpenalty       {\widowpenalties       \minusone} % once
+\permanent\protected\untraced\def\clubpenalty        {\clubpenalties        \minusone} % once
+\permanent\protected\untraced\def\displaywidowpenalty{\displaywidowpenalties\minusone} % once
+\permanent\protected\untraced\def\brokenpenalty      {\brokenpenalties      \minusone} % singular anyway
+\permanent\protected\untraced\def\orphanpenalty      {\orphanpenalties      \minusone} % once
+\permanent\protected\untraced\def\toddlerpenalty     {\toddlerpenalties     \minusone} % once
+\permanent\protected\untraced\def\interlinepenalty   {\interlinepenalties   \plusone } % repeats
+%permanent\protected\untraced\def\adjdemerits        {\adjacentdemerits     \minusone}
+
+\popoverloadmode
 
 \protect \endinput
 

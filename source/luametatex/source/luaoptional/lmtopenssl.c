@@ -357,8 +357,8 @@ static int openssllib_sign(lua_State * L)
                 if (input)       { openssllib_state.BIO_free(input);       }
                 if (output)      { openssllib_state.BIO_free(output);      }
                 if (okay) {
+                    lua_pushboolean(L, 1);
                     if (resultdata && resultsize > 0) {
-                        lua_pushboolean(L, 1);
                         lua_pushlstring(L, (const char *) resultdata, resultsize);
                         return 2;
                     } else { 

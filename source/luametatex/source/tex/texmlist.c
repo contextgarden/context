@@ -291,7 +291,7 @@ typedef enum limits_modes {
     limits_horizontal_mode, // no limits 
 } limits_modes;
 
-inline static void tex_math_wipe_kerns(kernset *kerns) {
+static inline void tex_math_wipe_kerns(kernset *kerns) {
     if (kerns) { 
         kerns->topright = 0;
         kerns->topleft = 0;
@@ -308,7 +308,7 @@ inline static void tex_math_wipe_kerns(kernset *kerns) {
     }
 }
 
-inline static void tex_math_copy_kerns(kernset *kerns, kernset *parent) {
+static inline void tex_math_copy_kerns(kernset *kerns, kernset *parent) {
     if (kerns && parent) { 
         kerns->topright = parent->topright;
         kerns->topleft = parent->topleft;
@@ -328,7 +328,7 @@ inline static void tex_math_copy_kerns(kernset *kerns, kernset *parent) {
     When the style changes, the following piece of program computes associated information:
 */
 
-inline static halfword tex_aux_set_style_to_size(halfword style)
+static inline halfword tex_aux_set_style_to_size(halfword style)
 {
     switch (style) {
         case script_style:
@@ -342,18 +342,18 @@ inline static halfword tex_aux_set_style_to_size(halfword style)
     }
 }
 
-inline static void tex_aux_set_current_math_scale(halfword scale)
+static inline void tex_aux_set_current_math_scale(halfword scale)
 {
     glyph_scale_par = scale;   
     lmt_math_state.scale = glyph_scale_par;    
 }
 
-inline static void tex_aux_set_current_math_size(halfword style)
+static inline void tex_aux_set_current_math_size(halfword style)
 {
     lmt_math_state.size = tex_aux_set_style_to_size(style);
 }
 
-inline static void tex_aux_make_style(halfword current, halfword *current_style, halfword *current_mu)
+static inline void tex_aux_make_style(halfword current, halfword *current_style, halfword *current_mu)
 { 
     halfword style = node_subtype(current);
     switch (style) {
@@ -382,7 +382,7 @@ inline static void tex_aux_make_style(halfword current, halfword *current_style,
     synchronization problem because the next atom is likely outside the group anyway. 
 */
 
-inline static void tex_aux_set_parameter(halfword current, halfword style)
+static inline void tex_aux_set_parameter(halfword current, halfword style)
 { 
     if (is_valid_math_style(node_subtype(current))) { 
         style = node_subtype(current);
@@ -437,7 +437,7 @@ static halfword tex_aux_math_penalty(int main_style, int pre, halfword cls)
     return tex_aux_math_penalty_what(pre, cls, first_math_pre_penalty_code, first_math_post_penalty_code);
 }
 
-inline static scaled limited_scaled(long l) {
+static inline scaled limited_scaled(long l) {
     if (l > max_dimension) {
         return max_dimension;
     } else if (l < -max_dimension) {
@@ -447,7 +447,7 @@ inline static scaled limited_scaled(long l) {
     }
 }
 
-inline static scaled limited_rounded(double d) {
+static inline scaled limited_rounded(double d) {
     long l = scaledround(d);
     if (l > max_dimension) {
         return max_dimension;
@@ -458,7 +458,7 @@ inline static scaled limited_rounded(double d) {
     }
 }
 
-inline static int tex_aux_math_engine_control(halfword fnt, halfword control)
+static inline int tex_aux_math_engine_control(halfword fnt, halfword control)
 {
  // if (fnt && (math_font_control_par & math_control_use_font_control) == math_control_use_font_control) {
     if (fnt && (font_mathcontrol(fnt) & math_control_use_font_control) == math_control_use_font_control) {
@@ -479,49 +479,49 @@ inline static int tex_aux_math_engine_control(halfword fnt, halfword control)
 
 */
 
-inline static scaled tex_aux_math_math_scale(scaled v)
+static inline scaled tex_aux_math_math_scale(scaled v)
 {
     return v ? scaledround(0.001 * lmt_math_state.scale * v) : 0;
 }
 
-inline static scaled tex_aux_math_glyph_scale(scaled v)
+static inline scaled tex_aux_math_glyph_scale(scaled v)
 {
     return v ? scaledround(0.001 * glyph_scale_par * v) : 0;
 }
 
-inline static scaled tex_aux_math_glyph_x_scale(scaled v)
+static inline scaled tex_aux_math_glyph_x_scale(scaled v)
 {
     return v ? scaledround(0.001 * glyph_x_scale_par * v) : 0;
 }
 
-inline static scaled tex_aux_math_glyph_y_scale(scaled v)
+static inline scaled tex_aux_math_glyph_y_scale(scaled v)
 {
     return v ? scaledround(0.001 * glyph_y_scale_par * v) : 0;
 }
 
-inline static scaled tex_aux_math_glyph_weight(scaled v)
+static inline scaled tex_aux_math_glyph_weight(scaled v)
 {
     return glyph_weight_par + v;
 }
 
-inline static scaled tex_aux_math_x_scaled(scaled v, int style)
+static inline scaled tex_aux_math_x_scaled(scaled v, int style)
 {
     scaled scale = tex_get_math_parameter(style, math_parameter_x_scale, NULL);
     return v ? limited_rounded(0.000000001 * glyph_scale_par * glyph_x_scale_par * v * scale) : 0;
 }
 
-inline static scaled tex_aux_math_given_x_scaled(scaled v)
+static inline scaled tex_aux_math_given_x_scaled(scaled v)
 {
     return v;
 }
 
-inline static scaled tex_aux_math_y_scaled(scaled v, int style)
+static inline scaled tex_aux_math_y_scaled(scaled v, int style)
 {
     scaled scale = tex_get_math_parameter(style, math_parameter_y_scale, NULL);
     return v ? limited_rounded(0.000000001 * glyph_scale_par * glyph_y_scale_par * v * scale) : 0;
 }
 
-inline static scaled tex_aux_math_given_y_scaled(scaled v)
+static inline scaled tex_aux_math_given_y_scaled(scaled v)
 {
     return v;
 }
@@ -540,31 +540,31 @@ scaled tex_math_parameter_y_scaled(int style, int param)
     return value ? limited_rounded(0.000000001 * glyph_scale_par * glyph_y_scale_par * value * scale) : 0;
 }
 
-inline static scaled tex_aux_math_axis(halfword size)
+static inline scaled tex_aux_math_axis(halfword size)
 {
     scaled v = tex_get_math_axis_size(size); /* already scaled to size and x_scale */
     return v ? limited_rounded(0.000001 * glyph_scale_par * glyph_y_scale_par * v) : 0;
 }
 
-inline static scaled tex_aux_math_exheight(halfword size)
+static inline scaled tex_aux_math_exheight(halfword size)
 {
     scaled v = tex_get_math_exheight_size(size); /* already scaled to size and x_scale */
     return v ? limited_rounded(0.000001 * glyph_scale_par * glyph_y_scale_par * v) : 0;
 }
 
-inline static scaled tex_aux_math_emwidth(halfword size)
+static inline scaled tex_aux_math_emwidth(halfword size)
 {
     scaled v = tex_get_math_quad_size(size); /* already scaled to size and x_scale */
     return v ? limited_rounded(0.000001 * glyph_scale_par * glyph_y_scale_par * v) : 0;
 }
 
-inline static scaled tex_aux_math_x_size_scaled(halfword f, scaled v, halfword size)
+static inline scaled tex_aux_math_x_size_scaled(halfword f, scaled v, halfword size)
 {
  // return v ? limited_rounded(0.000000001 * tex_get_math_font_scale(f, size) * glyph_scale_par * glyph_x_scale_par * v) : 0;
     return v ? limited_rounded(0.000000000001 * tex_get_math_font_scale(f, size) * tex_get_math_font_x_scale(f, size) * glyph_scale_par * glyph_x_scale_par * v) : 0;
 }
 
-inline static scaled tex_aux_math_y_size_scaled(halfword f, scaled v, halfword size)
+static inline scaled tex_aux_math_y_size_scaled(halfword f, scaled v, halfword size)
 {
  // return v ? limited_rounded(0.000000001 * tex_get_math_font_scale(f, size) * glyph_scale_par * glyph_y_scale_par * v) : 0;
     return v ? limited_rounded(0.000000000001 * tex_get_math_font_scale(f, size) * tex_get_math_font_y_scale(f, size) * glyph_scale_par * glyph_y_scale_par * v) : 0;
@@ -580,7 +580,7 @@ halfword tex_math_font_char_dp(halfword fnt, halfword chr, halfword style)
     return tex_aux_math_y_size_scaled(fnt, tex_char_depth_from_font(fnt, chr), tex_aux_set_style_to_size(style));
 }
 
-inline static halfword tex_aux_new_math_glyph(halfword fnt, halfword chr, quarterword subtype) {
+static inline halfword tex_aux_new_math_glyph(halfword fnt, halfword chr, quarterword subtype) {
     halfword scale = scaling_factor;
     halfword xscale = scaling_factor;
     halfword yscale = scaling_factor;
@@ -648,7 +648,7 @@ static int tex_aux_math_followed_by_italic_kern(halfword current, const char *tr
     return 0;
 }
 
-inline static int tex_aux_checked_left_kern_fnt_chr(halfword fnt, halfword chr, halfword state, halfword subtype, halfword size)
+static inline int tex_aux_checked_left_kern_fnt_chr(halfword fnt, halfword chr, halfword state, halfword subtype, halfword size)
 {
     halfword top = 0;
     halfword bot = 0;
@@ -669,7 +669,7 @@ inline static int tex_aux_checked_left_kern_fnt_chr(halfword fnt, halfword chr, 
     }
 }
 
-inline static int tex_aux_checked_left_kern(halfword list, halfword state, halfword subtype, halfword size)
+static inline int tex_aux_checked_left_kern(halfword list, halfword state, halfword subtype, halfword size)
 {
     if (list && node_type(list) == glyph_node) { 
         return tex_aux_checked_left_kern_fnt_chr(glyph_font(list), glyph_character(list), state, subtype, size);
@@ -678,7 +678,7 @@ inline static int tex_aux_checked_left_kern(halfword list, halfword state, halfw
     }
 }
 
-inline static int tex_aux_checked_right_kern_fnt_chr(halfword fnt, halfword chr, halfword state, halfword subtype, halfword size)
+static inline int tex_aux_checked_right_kern_fnt_chr(halfword fnt, halfword chr, halfword state, halfword subtype, halfword size)
 {
     halfword top = 0;
     halfword bot = 0;
@@ -699,7 +699,7 @@ inline static int tex_aux_checked_right_kern_fnt_chr(halfword fnt, halfword chr,
     }
 }
 
-inline static int tex_aux_checked_right_kern(halfword list, halfword state, halfword subtype, halfword size)
+static inline int tex_aux_checked_right_kern(halfword list, halfword state, halfword subtype, halfword size)
 {
     if (list && node_type(list) == glyph_node) { 
         return tex_aux_checked_right_kern_fnt_chr(glyph_font(list), glyph_character(list), state, subtype, size);
@@ -752,7 +752,7 @@ static void tex_aux_fake_delimiter(halfword result)
     A few helpers: 
 */
 
-inline static int tex_aux_has_delimiter(halfword delimiter, halfword size) 
+static inline int tex_aux_has_delimiter(halfword delimiter, halfword size) 
 {
     return (
         delimiter && (
@@ -762,7 +762,7 @@ inline static int tex_aux_has_delimiter(halfword delimiter, halfword size)
     );
 }
 
-inline static int tex_aux_has_extensible(halfword delimiter, halfword size)
+static inline int tex_aux_has_extensible(halfword delimiter, halfword size)
 {
     if (delimiter && delimiter_small_character(delimiter)) {
         halfword curfnt = tex_fam_fnt(delimiter_small_family(delimiter), size);
@@ -1521,7 +1521,7 @@ static halfword register_extensible(halfword fnt, halfword chr, int size, halfwo
     int callback_id = lmt_callback_defined(register_extensible_callback);
     if (callback_id > 0) {
         halfword boxed = null;
-        lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "ddddN->N", fnt, chr, size, att, result, &boxed);
+        lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dddNN->N", fnt, chr, size, att, result, &boxed);
         if (boxed) {
             switch (node_type(boxed)) {
                 case hlist_node:
@@ -1930,12 +1930,12 @@ static halfword tex_aux_rebox(halfword box, scaled width, halfword size)
 
 */
 
-inline static scaled tex_aux_mu_mult(scaled a, scaled n, scaled f)
+static inline scaled tex_aux_mu_mult(scaled a, scaled n, scaled f)
 {
     return tex_multiply_and_add(n, a, tex_xn_over_d(a, f, unity), max_dimension);
 }
 
-inline static void tex_aux_calculate_glue(scaled m, scaled *f, scaled *n)
+static inline void tex_aux_calculate_glue(scaled m, scaled *f, scaled *n)
 {
     /*tex fraction part of |m| */
     *f = 0;
@@ -2096,7 +2096,7 @@ static void tex_aux_make_glue(halfword current, scaled mu, int style)
 
 */
 
-inline static int tex_aux_is_math_penalty(halfword n)
+static inline int tex_aux_is_math_penalty(halfword n)
 {
     return node_type(n) == penalty_node && (node_subtype(n) == math_pre_penalty_subtype || node_subtype(n) == math_post_penalty_subtype);
 }
@@ -2339,7 +2339,7 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
 
 */
 
-inline static void tex_aux_remove_italic_after_first_glyph(halfword box)
+static inline void tex_aux_remove_italic_after_first_glyph(halfword box)
 {
     halfword list = box_list(box);
     if (list && node_type(list) == glyph_node) {
@@ -3088,7 +3088,7 @@ static halfword tex_aux_wrapup_over_under_delimiter(halfword target, halfword x,
 
 /*tex When |exact| use radicalwidth (|y| is delimiter). */
 
-inline static halfword tex_aux_check_radical(halfword target, int stack, halfword r, halfword t)
+static inline halfword tex_aux_check_radical(halfword target, int stack, halfword r, halfword t)
 {
     if (! stack && (box_width(r) >= box_width(t))) {
         scaled width = tex_aux_math_given_x_scaled(noad_width(target));
@@ -3117,7 +3117,7 @@ inline static halfword tex_aux_check_radical(halfword target, int stack, halfwor
     return r;
 }
 
-inline static void tex_aux_fixup_radical_width(halfword target, halfword x, halfword y)
+static inline void tex_aux_fixup_radical_width(halfword target, halfword x, halfword y)
 {
     if (box_width(y) >= box_width(x)) {
         if (noad_width(target)) {
@@ -3132,7 +3132,7 @@ inline static void tex_aux_fixup_radical_width(halfword target, halfword x, half
     }
 }
 
-inline static halfword tex_aux_get_radical_width(halfword target, halfword p)
+static inline halfword tex_aux_get_radical_width(halfword target, halfword p)
 {
     return noad_width(target) ? noad_width(target) : box_width(p);
 }
@@ -5361,7 +5361,7 @@ static scaled tex_aux_find_math_kern_simple(halfword f, int c, int cmd, int *fou
     }
 }
 
-inline static scaled tex_aux_max_left_kern_value(scaled *kerns, int n)
+static inline scaled tex_aux_max_left_kern_value(scaled *kerns, int n)
 {
     if (kerns && n > 0) {
         scaled kern = 0;
@@ -5409,7 +5409,7 @@ static scaled tex_aux_math_left_kern(halfword fnt, int chr)
 
 /*
 
-inline static scaled tex_aux_max_right_kern_value(scaled *kerns, int n)
+static inline scaled tex_aux_max_right_kern_value(scaled *kerns, int n)
 {
     if (kerns && n > 0) {
         scaled kern = 0;
@@ -5601,7 +5601,7 @@ static int tex_aux_get_sub_kern(halfword kernel, scriptdata *sub, scaled shift_d
 
 */
 
-inline static scaled tex_aux_insert_italic_now(halfword target, halfword kernel, scaled italic)
+static inline scaled tex_aux_insert_italic_now(halfword target, halfword kernel, scaled italic)
 {
     switch (node_type(noad_nucleus(target))) {
         case math_char_node:
@@ -5630,7 +5630,7 @@ inline static scaled tex_aux_insert_italic_now(halfword target, halfword kernel,
     return italic;
 }
 
-inline static int tex_aux_raise_prime_composed(halfword target)
+static inline int tex_aux_raise_prime_composed(halfword target)
 {
     int mainclass = -1 ; 
     /* maybe also mainclass */
@@ -6546,7 +6546,7 @@ static halfword tex_aux_make_left_right(halfword target, int style, scaled max_d
     }
 }
 
-inline static int tex_aux_fallback_math_spacing_class(halfword style, halfword mathclass)
+static inline int tex_aux_fallback_math_spacing_class(halfword style, halfword mathclass)
 {
     unsigned parent = (unsigned) count_parameter(first_math_class_code + mathclass);
     switch (style) {
@@ -6679,7 +6679,7 @@ static halfword tex_aux_math_spacing_glue(halfword ltype, halfword rtype, halfwo
     }
 }
 
-inline static int tex_aux_fallback_math_ruling_class(halfword style, halfword mathclass)
+static inline int tex_aux_fallback_math_ruling_class(halfword style, halfword mathclass)
 {
     unsigned parent = (unsigned) count_parameter(first_math_atom_code + mathclass);
     switch (style) {
@@ -7208,7 +7208,7 @@ static halfword tex_aux_unroll_list(halfword tail, halfword l)
     return tail;
 }
 
-inline static void tex_aux_wipe_noad(halfword n)
+static inline void tex_aux_wipe_noad(halfword n)
 {
     if (tex_nodetype_has_attributes(node_type(n))) {
         remove_attribute_list(n);

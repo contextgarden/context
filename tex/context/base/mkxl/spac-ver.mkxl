@@ -913,7 +913,12 @@
 
 \permanent\protected\def\strutbox % not to be used but this is sort of an alias
   {\beginlocalcontrol
-   \setbox\b_strut_tmp\hpack{\normalsrule\s!height\strutht\s!depth\strutdp}% just a start
+   \setbox\b_strut_tmp\hpack{%
+     \normalsrule
+        %s!height\strutht
+        %s!depth \strutdp
+        \s!pair  \strutht \strutdp
+   }
    \endlocalcontrol
    \b_strut_tmp}
 
@@ -985,16 +990,18 @@
   {\begingroup
    \setcharstrut{GJY}%
    \normalsrule
-     \s!depth \zeropoint
-     \s!height\strutht
+     %s!height\strutht
+     %s!depth \zeropoint
+     \s!pair  \strutht \zeropoint
    \endgroup}
 
 \permanent\protected\def\chardpstrut
   {\begingroup
    \setcharstrut{gjy}%
    \normalsrule
-     \s!depth \strutdp
-     \s!height\zeropoint
+     %s!height\zeropoint
+     %s!depth \strutdp
+     \s!pair  \zeropoint \strutdp
    \endgroup}
 
 %D Because of all the callbacks in mkiv, we avoid unnecessary boxes ... maybe use an
@@ -1027,8 +1034,9 @@
   {\relax
    \dontleavehmode
    \normalsrule
-      \s!height\strutht
-      \s!depth \strutdp
+      %s!height\strutht
+      %s!depth \strutdp
+      \s!pair  \strutht \strutdp
    \relax}
 
 \aliased\let\normalstrut\strut
@@ -1037,48 +1045,54 @@
   {\relax
    \dontleavehmode
    \normalsrule
-      \s!height.5\strutht
-      \s!depth .5\strutdp
+      %s!height.5\strutht
+      %s!depth .5\strutdp
+      \s!pair  .5\strutht .5\strutdp
    \relax}
 
 \permanent\protected\def\quarterstrut
   {\relax
    \dontleavehmode
    \normalsrule
-      \s!height.25\strutht
-      \s!depth .25\strutdp
+      %s!height.25\strutht
+      %s!depth .25\strutdp
+      \s!pair  .25\strutht .25\strutdp
    \relax}
 
 \permanent\protected\def\depthstrut
   {\relax
    \dontleavehmode
    \normalsrule
-      \s!height\dimexpr\strutht-\struthtdp/\plustwo\relax
-      \s!depth \strutdp
+      %s!height\dimexpr\strutht-\struthtdp/\plustwo\relax
+      %s!depth \strutdp
+      \s!pair  \dimexpr\strutht-\struthtdp/\plustwo\relax \strutdp
    \relax}
 
 \permanent\protected\def\halflinestrut
   {\relax
    \dontleavehmode
    \normalsrule
-      \s!height\dimexpr\strutht-.5\struthtdp\relax
-      \s!depth \strutdp
+      %s!height\dimexpr\strutht-.5\struthtdp\relax
+      %s!depth \strutdp
+      \s!pair  \dimexpr\strutht-.5\struthtdp\relax \strutdp
    \relax}
 
 \permanent\protected\def\noheightstrut
   {\relax
    \dontleavehmode
    \normalsrule
-      \s!height\zeropoint
-      \s!depth \strutdp
+      %s!height\zeropoint
+      %s!depth \strutdp
+      \s!pair  \zeropoint \strutdp
    \relax}
 
 \permanent\protected\def\nodepthstrut
   {\relax
    \dontleavehmode
    \normalsrule
-      \s!height\strutht
-      \s!depth \zeropoint
+      %s!height\strutht
+      %s!depth \zeropoint
+      \s!pair  \strutht \zeropoint
    \relax}
 
 %D Sometimes a capstrut comes in handy
@@ -1344,7 +1358,7 @@
 
 \permanent\protected\def\resetpenalties#1%
   {\ifdefined#1%
-     \frozen#1\minusone
+     \frozen#1\zerocount
    \fi}
 
 % \permanent\protected\def\setpenalties#1#2#3%
@@ -1413,42 +1427,236 @@
     \resetpenalties\interlinepenalties
 \stopsetups
 
-%D We use \directsetup because it's faster and we know there is no csl:
+% %D We use \directsetup because it's faster and we know there is no csl:
+%
+% \startsetups [\systemsetupsprefix\s!default]
+%
+%     \directsetup{\systemsetupsprefix\s!reset}
+%
+%     \frozen\widowpenalty        \defaultwidowpenalty
+%     \frozen\clubpenalty         \defaultclubpenalty
+%     \frozen\displaywidowpenalty \defaultdisplaywidowpenalty
+%     \frozen\brokenpenalty       \defaultbrokenpenalty
+%
+% \stopsetups
+%
+% \startsetups [\v!grid] [\systemsetupsprefix\s!default]
+%
+%     \directsetup{\systemsetupsprefix\s!reset}
+%
+%     \frozen\widowpenalty        \defaultgridwidowpenalty
+%     \frozen\clubpenalty         \defaultgridclubpenalty
+%     \frozen\displaywidowpenalty \defaultgriddisplaywidowpenalty
+%     \frozen\brokenpenalty       \defaultgridbrokenpenalty
+%
+% \stopsetups
+%
+% %D As an illustration:
+%
+% \startsetups [\systemsetupsprefix\v!strict]
+%
+%     \directsetup{\systemsetupsprefix\s!reset}
+%
+%     \setpenalties \widowpenalties      \plustwo  \maxdimen
+%     \setpenalties \clubpenalties       \plustwo  \maxdimen
+%     \setpenalties \orphanpenalties     \zerocount
+%           \frozen \brokenpenalty                 \maxdimen
+%
+% \stopsetups
+
+%D We need to to set the new ones to the old values (if set) and wipe the old ones so that
+%D they don't kick in.
+
+\widowpenalty       \normalwidowpenalty        \normalwidowpenalty       \zerocount
+\clubpenalty        \normalclubpenalty         \normalclubpenalty        \zerocount
+\displaywidowpenalty\normaldisplaywidowpenalty \normaldisplaywidowpenalty\zerocount
+\brokenpenalty      \normalbrokenpenalty       \normalbrokenpenalty      \zerocount
+\interlinepenalty   \normalinterlinepenalty    \normalinterlinepenalty   \zerocount
+
+%D Next we define the lot. They can be set with the normal align commands and keys.
+
+\permanent \specificationdef \lesswidowpenalties \widowpenalties
+    \plusthree options \numexpr\largestspecificationoptioncode+\doublespecificationoptioncode\relax
+    \plusfivethousand    \plusseventyfivehundred
+    \plustwohundredfifty \plusfivehundred
+    \zerocount           \zerocount
+\relax
+
+\permanent \specificationdef \lessclubpenalties \clubpenalties
+    \plusthree options \numexpr\largestspecificationoptioncode+\doublespecificationoptioncode\relax
+    \plusfivethousand    \plusseventyfivehundred
+    \plustwohundredfifty \plusfivehundred
+    \zerocount           \zerocount
+\relax
+
+\permanent \specificationdef \lessbrokenpenalties \brokenpenalties
+    \plusone options \doublespecificationoptioncode
+    \plusfifty \plusfivehundred
+\relax
+
+\specificationdef\strictwidowpenalties      \widowpenalties  \plusthree \maxcount \maxcount           \zerocount \relax
+\specificationdef\strictwidowpenaltiestwo   \widowpenalties  \plustwo   \maxcount                     \zerocount \relax
+\specificationdef\strictwidowpenaltiesthree \widowpenalties  \plusthree \maxcount \maxcount           \zerocount \relax
+\specificationdef\strictwidowpenaltiesfour  \widowpenalties  \plusfour  \maxcount \maxcount \maxcount \zerocount \relax
+
+\specificationdef\strictclubpenalties       \clubpenalties   \plusthree \maxcount \maxcount           \zerocount \relax
+\specificationdef\strictclubpenaltiestwo    \clubpenalties   \plustwo   \maxcount                     \zerocount \relax
+\specificationdef\strictclubpenaltiesthree  \clubpenalties   \plusthree \maxcount \maxcount           \zerocount \relax
+\specificationdef\strictclubpenaltiesfour   \clubpenalties   \plusfour  \maxcount \maxcount \maxcount \zerocount \relax
+
+\specificationdef\strictbrokenpenalties     \brokenpenalties \plusone   \maxcount                                \relax
+
+\specificationdef\lessorphanpenalties       \orphanpenalties \plustwo   \plusthreethousand \plusonehundred            \relax
+\specificationdef\lessorphanpenaltiestwo    \orphanpenalties \plusone   \plusthreethousand                            \relax
+\specificationdef\lessorphanpenaltiesthree  \orphanpenalties \plustwo   \plusthreethousand \plusonehundred            \relax
+\specificationdef\lessorphanpenaltiesfour   \orphanpenalties \plusthree \plusthreethousand \plusonehundred \plusfifty \relax
+
+\installaligncommand{lesswidows}    {\lesswidowpenalties }
+\installaligncommand{lessclubs}     {\lessclubpenalties  }
+\installaligncommand{lessbroken}    {\lessbrokenpenalties}
+
+\installaligncommand{lessorphans}   {\lessorphanpenalties     } % == 3
+\installaligncommand{lessorphans:2} {\lessorphanpenaltiestwo  }
+\installaligncommand{lessorphans:3} {\lessorphanpenaltiesthree}
+\installaligncommand{lessorphans:4} {\lessorphanpenaltiesfour }
+
+\installaligncommand{defaultwidows} {\widowpenalty \defaultwidowpenalty }
+\installaligncommand{defaultclubs}  {\clubpenalty  \defaultclubpenalty  }
+\installaligncommand{defaultbroken} {\brokenpenalty\defaultbrokenpenalty}
+
+\installaligncommand{strictwidows}  {\strictwidowpenalties     }
+\installaligncommand{strictwidows:2}{\strictwidowpenaltiestwo  }
+\installaligncommand{strictwidows:3}{\strictwidowpenaltiesthree}
+\installaligncommand{strictwidows:4}{\strictwidowpenaltiesfour }
+
+\installaligncommand{strictclubs}   {\strictclubpenalties      }
+\installaligncommand{strictclubs:2} {\strictclubpenaltiestwo   }
+\installaligncommand{strictclubs:3} {\strictclubpenaltiesthree }
+\installaligncommand{strictclubs:4} {\strictclubpenaltiesfour  }
+
+\installaligncommand{strictbroken}  {\strictbrokenpenalties    }
+
+%D We also define some math penalty sets. The align commands are more extensive here
+%D and we don't want to reste all of them every time we go back to the defaults.
+%D This is no real problem because most are not blocking and we will fall through to
+%D a next par pass.
+
+\specificationdef\defaultmathforwardpenalties  \mathforwardpenalties \zerocount
+\specificationdef\defaultmathbackwardpenalties \mathforwardpenalties \zerocount
+
+\specificationdef\optimalmathforwardpenalties  \mathforwardpenalties  \plusthree \plustwohundred \plusonehundred \plusfifty
+\specificationdef\optimalmathbackwardpenalties \mathbackwardpenalties \plusthree \plustwohundred \plusonehundred \plusfifty
+
+% align={defaultmath,nonstrictmath}
+
+\startinstallaligncommand[defaultmath]
+    \defaultmathforwardpenalties
+    \defaultmathbackwardpenalties
+    %
+    \preshortinlinepenalty    \zerocount
+    \postshortinlinepenalty   \zerocount
+    \preinlinepenalty         \zerocount
+  % \shortinlinemaththreshold \emwidth   % todo
+    \mathinlinepenaltyfactor  \zerocount
+    \mathdisplaypenaltyfactor \zerocount
+\stopinstallaligncommand
+
+%D These are used in the math book that we use for testign all these new paragraph related
+%D features.
+
+\startinstallaligncommand[strictmath]
+    \optimalmathforwardpenalties
+    \optimalmathbackwardpenalties
+    %
+    \preshortinlinepenalty    \plusthreethousand
+  % \postshortinlinepenalty   \plusthreethousand
+  % \preinlinepenalty         \zerocount % todo
+  % \shortinlinemaththreshold \emwidth   % todo
+    \setmathpostpenalty       \mathbinarycode   850\relax
+    \setmathpostpenalty       \mathrelationcode 650\relax
+  % \mathinlinepenaltyfactor  \zerocount
+  % \mathdisplaypenaltyfactor \zerocount
+\stopinstallaligncommand
+
+\startinstallaligncommand[nonstrictmath]
+    \defaultmathforwardpenalties
+    \defaultmathbackwardpenalties
+    \preshortinlinepenalty    \zerocount
+    \setmathpostpenalty       \mathbinarycode   700
+    \setmathpostpenalty       \mathrelationcode 500
+\stopinstallaligncommand
+
+% Maybe we need:
+%
+% \appendtoks
+%     \defaultmathforwardpenalties
+%     \defaultmathbackwardpenalties
+%     \preshortinlinepenalty    \zerocount
+%     \postshortinlinepenalty   \zerocount
+%     \preinlinepenalty         \zerocount
+%     \mathinlinepenaltyfactor  \zerocount
+%     \mathdisplaypenaltyfactor \zerocount
+% \to \everyforgetall
+
+\startinstallaligncommand[default]
+    \widowpenalty \defaultwidowpenalty
+    \clubpenalty  \defaultclubpenalty
+    \brokenpenalty\defaultbrokenpenalty
+\stopinstallaligncommand
+
+\widowpenalty \defaultwidowpenalty
+\clubpenalty  \defaultclubpenalty
+\brokenpenalty\defaultbrokenpenalty
+
+%D This will be reconsidered:
 
 \startsetups [\systemsetupsprefix\s!default]
-
-    \directsetup{\systemsetupsprefix\s!reset}
-
-    \frozen\widowpenalty        \defaultwidowpenalty
-    \frozen\clubpenalty         \defaultclubpenalty
-    \frozen\displaywidowpenalty \defaultdisplaywidowpenalty
-    \frozen\brokenpenalty       \defaultbrokenpenalty
-
+    \ifgridsnapping
+        \frozen\widowpenalty \defaultgridwidowpenalty
+        \frozen\clubpenalty  \defaultgridclubpenalty
+        \frozen\brokenpenalty\defaultgridbrokenpenalty
+    \else
+      % We keep the values that are current and assume no mixed grid / non grid usage.
+      %
+      % \frozen\widowpenalty \defaultwidowpenalty
+      % \frozen\clubpenalty  \defaultclubpenalty
+      % \frozen\brokenpenalty\defaultbrokenpenalty
+    \fi
 \stopsetups
 
-\startsetups [\v!grid] [\systemsetupsprefix\s!default]
+%D This example is now obsolete:
+%D
+%D \starttyping
+%D \startsetups [\systemsetupsprefix\v!strict]
+%D     \strictwidowpenalties
+%D     \strictclubpenalties
+%D     \strictbrokenpenalties
+%D \stopsetups
+%D \stoptyping
 
-    \directsetup{\systemsetupsprefix\s!reset}
+%D For testing:
 
-    \frozen\widowpenalty        \defaultgridwidowpenalty
-    \frozen\clubpenalty         \defaultgridclubpenalty
-    \frozen\displaywidowpenalty \defaultgriddisplaywidowpenalty
-    \frozen\brokenpenalty       \defaultgridbrokenpenalty
+\permanent\protected\def\nohpenalties{%
+    \adjdemerits         \zerocount
+    \doublehyphendemerits\zerocount
+    \exhyphenpenalty     \zerocount
+    \finalhyphendemerits \zerocount
+    \hyphenpenalty       \zerocount
+    \lefttwindemerits    \zerocount
+    \orphanpenalty       \zerocount
+    \righttwindemerits   \zerocount
+}
 
-\stopsetups
-
-%D As an illustration:
-
-\startsetups [\systemsetupsprefix\v!strict]
-
-    \directsetup{\systemsetupsprefix\s!reset}
-
-    \setpenalties \widowpenalties      \plustwo  \maxdimen
-    \setpenalties \clubpenalties       \plustwo  \maxdimen
-    \setpenalties \orphanpenalties     \zerocount
-          \frozen \brokenpenalty                 \maxdimen
-
-\stopsetups
+\permanent\protected\def\novpenalties{%
+    \brokenpenalty        \zerocount
+    \clubpenalty          \zerocount
+    \interlinepenalty     \zerocount
+    \linepenalty          \zerocount
+    \shapingpenalty       \zerocount
+    %singlelinepenalty    \zerocount
+    \toddlerpenalty       \zerocount
+    \widowpenalty         \zerocount
+}
 
 %D To be checked:
 

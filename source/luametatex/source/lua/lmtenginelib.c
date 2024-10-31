@@ -351,6 +351,8 @@ static void enginelib_show_credits(void)
 # ifdef LMT_COMPILER_USED
         "compiler  : " LMT_COMPILER_USED "\n"
 # endif
+        "lua       : " LMT_TOSTRING(LUA_VERSION) "\n"
+        "luaformat : " LMT_TOSTRING(LUAC_FORMAT) "\n"
     );
     printf("own path  : %s\n", lmt_environment_state.ownpath);
     printf("own base  : %s\n", lmt_environment_state.ownbase);

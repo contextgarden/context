@@ -1308,7 +1308,7 @@
 
 % NEEDS TESTING:
 
-\tolerant\def\strc_references_pickup_goto#=#=#:#*[#3]%
+\tolerant\def\strc_references_pickup_goto#=#*#=#:#*[#3]% #* added so that we can do \in {} {} []
   {\leftreferencetoks
      \ifparameter#1\or
        {#1}%

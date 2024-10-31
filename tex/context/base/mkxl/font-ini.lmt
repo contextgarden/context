@@ -84,7 +84,7 @@ function fonts.toeffect(t)
     local squeeze = t.squeeze or 1
     local extend  = t.extend  or 1
     local mode    = t.mode    or 0
-    local line    = t.line    or 0
+    local line    = t.weight  or t.line or 0 -- I need to check this .line!
     if slant or squeeze or extend or mode or line then
         local effect = effects[slant][squeeze][extend][mode][line]
         if effect then

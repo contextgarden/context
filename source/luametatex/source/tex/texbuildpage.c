@@ -379,7 +379,7 @@ static halfword tex_aux_page_badness(scaled goal)
     }
 }
 
-inline static halfword tex_aux_page_costs(halfword badness, halfword penalty)
+static inline halfword tex_aux_page_costs(halfword badness, halfword penalty)
 {
     if (lmt_page_builder_state.insert_penalties >= infinite_penalty) {
         return awful_bad;
@@ -555,7 +555,7 @@ static void tex_aux_append_insert(halfword current)
     }
 }
 
-inline static int tex_aux_get_penalty_option(halfword current) 
+static inline int tex_aux_get_penalty_option(halfword current) 
 {
     while (1) { 
         current = node_prev(current);
@@ -592,7 +592,7 @@ inline static int tex_aux_get_penalty_option(halfword current)
  // return 0;
 }
 
-inline static int tex_aux_get_last_penalty(halfword current) 
+static inline int tex_aux_get_last_penalty(halfword current) 
 {
     return node_type(current) == penalty_node 
         ? penalty_options(current) & (penalty_option_widow | penalty_option_club | penalty_option_broken | penalty_option_shaping)
@@ -829,9 +829,15 @@ static void tex_aux_contribute_glue(halfword current)
 
 static inline halfword tex_aux_used_penalty(halfword p)
 {
-    return double_penalty_mode_par && tex_has_penalty_option(p, penalty_option_double) ?  
-        penalty_tnuoma(p) : penalty_amount(p);
-} 
+    if (double_penalty_mode_par && tex_has_penalty_option(p, penalty_option_double)) { 
+        tex_add_penalty_option(p, penalty_option_double_used);
+        return penalty_tnuoma(p);
+    } else { 
+        tex_remove_penalty_option(p, penalty_option_double_used);
+        return penalty_amount(p);
+    }
+}
+
 
 void tex_build_page(halfword context, halfword boundary)
 {
@@ -1156,9 +1162,9 @@ static void tex_aux_fire_up(halfword c)
     halfword current, previous, lastinsert;
     /*tex Set the value of |output_penalty|. */
     if (node_type(lmt_page_builder_state.best_break) == penalty_node) {
-        int callback_id = lmt_callback_defined(show_loners_callback);
         update_tex_output_penalty(penalty_amount(lmt_page_builder_state.best_break));
-        if (callback_id || tracing_loners_par) { 
+        if (tracing_loners_par) { 
+            int callback_id = lmt_callback_defined(show_loners_callback);
             // this one should return the str 
             halfword n = tex_aux_get_last_penalty(lmt_page_builder_state.best_break);
             if (n) {

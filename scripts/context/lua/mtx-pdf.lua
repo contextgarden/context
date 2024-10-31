@@ -31,6 +31,7 @@ local helpinfo = [[
     <flag name="object"><short>show object</short></flag>
     <flag name="links"><short>show links</short></flag>
     <flag name="highlights"><short>show highlights</short></flag>
+    <flag name="comments"><short>show comments</short></flag>
     <flag name="sign"><short>sign document (assumes signature template)</short></flag>
     <flag name="verify"><short>verify document</short></flag>
     <flag name="detail"><short>print detail to the console</short></flag>
@@ -813,7 +814,7 @@ function scripts.pdf.links(filename,asked)
     end
 end
 
-function scripts.pdf.highlights(filename,asked)
+local function whatever(filename,asked,what,subtype)
     local pdffile = loadpdffile(filename)
     if pdffile then
 
@@ -829,7 +830,7 @@ function scripts.pdf.highlights(filename,asked)
 
         local function banner(pagenumber)
             report("")
-            report("highlights @ page %i",pagenumber)
+            report("%s @ page %i",what,pagenumber)
             report("")
         end
 
@@ -841,7 +842,7 @@ function scripts.pdf.highlights(filename,asked)
                 for i=1,#annots do
                     local annotation = annots[i]
                     local S = annotation.Subtype
-                    if S == "Highlight" then
+                    if S == subtype then
                         local author   = annotation.T or "unknown"
                         local contents = annotation.Contents or "empty"
                         local rect     = annotation.Rect()
@@ -850,9 +851,12 @@ function scripts.pdf.highlights(filename,asked)
                             banner(pagenumber)
                             done = true
                         end
-                        local x = rect[4] - rect[1]
-                        local y = rect[3] - rect[2]
-                        report("position (%N,%N), name %a, author %a, contents %a",x,y,name,author,contents)
+                        local x = rect[1]
+                        local y = rect[2]
+                        local w = rect[3] - rect[1]
+                        local h = rect[4] - rect[2]
+                        report("position (%N,%N), dimensions (%N,%N), name %a, author %a, contents %a",
+                            x,y,w,h,name,author,contents)
                     end
                 end
             end
@@ -867,6 +871,15 @@ function scripts.pdf.highlights(filename,asked)
         end
 
     end
+end
+
+
+function scripts.pdf.highlights(filename,asked)
+    whatever(filename,asked,"highlights","Highlight")
+end
+
+function scripts.pdf.comments(filename,asked)
+    whatever(filename,asked,"comments","Text")
 end
 
 local template = [[
@@ -916,6 +929,8 @@ elseif environment.argument("links") then
     scripts.pdf.links(filename,tonumber(environment.argument("page")))
 elseif environment.argument("highlights") then
     scripts.pdf.highlights(filename,tonumber(environment.argument("page")))
+elseif environment.argument("comments") then
+    scripts.pdf.comments(filename,tonumber(environment.argument("page")))
 elseif environment.argument("signature") then
     scripts.pdf.signature(filename,environment.argument("save"))
 elseif environment.argument("sign") then

@@ -93,14 +93,14 @@ static int gslib_initialize(lua_State * L)
 
 static int gslib_stdout(void * caller_handle, const char *str, int len)
 {
-    (void)caller_handle;
+    (void) caller_handle;
     luaL_addlstring(&gslib_state.outbuffer, str, len);
     return len;
 }
 
 static int gslib_stderr(void * caller_handle, const char *str, int len)
 {
-    (void)caller_handle;
+    (void) caller_handle;
     luaL_addlstring(&gslib_state.errbuffer, str, len);
     return len;
 }
@@ -130,17 +130,17 @@ static int gslib_execute(lua_State * L)
                         for (size_t i = 1; i <= n; i++) {
                             lua_rawgeti(L, 1, i);
                             switch (lua_type(L, -1)) {
-                            case LUA_TSTRING:
-                            case LUA_TNUMBER:
-                            {
-                                size_t l = 0;
-                                const char *s = lua_tolstring(L, -1, &l);
-                                if (l > 0) {
-                                    arguments[m] = s;
-                                    m += 1;
+                                case LUA_TSTRING:
+                                case LUA_TNUMBER:
+                                {
+                                    size_t l = 0;
+                                    const char *s = lua_tolstring(L, -1, &l);
+                                    if (l > 0) {
+                                        arguments[m] = s;
+                                        m += 1;
+                                    }
                                 }
-                            }
-                            break;
+                                break;
                             }
                             lua_pop(L, 1);
                         }

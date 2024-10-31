@@ -32,7 +32,17 @@ FILE *lmt_valid_file(lua_State *L) {
 
 typedef void (*texio_printer) (const char *);
 
-inline static int texiolib_aux_get_selector_value(lua_State *L, int i, int *l, int dflt)
+
+static int texiolib_getselectorvalues(lua_State *L)
+{
+    lua_createtable(L, 3, 0);
+    lua_push_key_at_index(L, logfile,              terminal_selector_code            );
+    lua_push_key_at_index(L, terminal,             logfile_selector_code             );
+    lua_push_key_at_index(L, terminal_and_logfile, terminal_and_logfile_selector_code);
+    return 1;
+}
+
+static inline int texiolib_aux_get_selector_value(lua_State *L, int i, int *l, int dflt)
 {
     switch (lua_type(L, i)) {
         case LUA_TSTRING:
@@ -309,6 +319,7 @@ static const struct luaL_Reg texiolib_function_list[] = {
     { "getinputindex",     texiolib_getinputindex     }, /*tex temporary, testing only */
     { "getsourcefilename", texiolib_getsourcefilename }, /*tex temporary, testing only */
     { "forceendoffile",    texiolib_forceendoffile    }, /*tex temporary, testing only */
+    { "getselectorvalues", texiolib_getselectorvalues },
     { NULL,                NULL                       },
 };
 

@@ -1,0 +1,1056 @@
+% language=us runpath=texruns:manuals/luametatex
+
+\environment luametatex-style
+
+\startdocument[title=Internals]
+
+\defineframed
+  [mymemory]
+  [frame=off,
+   align=normal,
+   strut=no,
+ % rulethickness=.2uu,
+ % framecolor=maincolor,
+   rulethickness=0uu,
+   offset=1uu,
+   background=color,
+ % backgroundcolor=maincolor,
+   backgroundcolor=darkgray,
+   foregroundstyle=bold,
+   foregroundcolor=white]
+
+\defineframed
+  [myslot]
+  [framecolor=maincolor]
+
+\startsection[title={Introduction}]
+
+If you look at \TEX\ as a programming language and are familiar with other
+languages, a natural question to ask is what data types there are and how is all
+managed. Here I will give a general overview of some concepts. The explanation
+below is not entirely accurate because it tries to avoid the sometimes messy
+details. More can be found in the other low level manuals. I assume that one
+knows at least how to process a simple document with a few commands.
+
+It is not natural to start an explanation with how memory is laid out but by
+doing this it is easier to introduce the concepts. I will focus on what is called
+hash table, the stack, node memory and token memory. We leave fonts, languages,
+character properties, math, etc.\ out of the picture. There are details that we
+skip because it's the general picture that matters here.
+
+{\em I might add some more to this manual, depending on questions by users at
+meetings or on the mailing list. Some details might change over time but the
+principles remain the same.}
+
+\stopsection
+
+\startsection[title={A few basics}]
+
+This is a reference manual and not a tutorial. This means that we discuss changes
+relative to traditional \TEX\ and also present new (or extended) functionality.
+As a consequence we will refer to concepts that we assume to be known or that
+might be explained later. Because the \LUATEX\ and \LUAMETATEX\ engines open up
+\TEX\ there's suddenly quite some more to explain, especially about the way a (to
+be) typeset stream moves through the machinery. However, discussing all that in
+detail makes not much sense, because deep knowledge is only relevant for those
+who write code not possible with regular \TEX\ and who are already familiar with
+these internals (or willing to spend time on figuring it out).
+
+So, the average user doesn't need to know much about what is in this manual. For
+instance fonts and languages are normally dealt with in the macro package that
+you use. Messing around with node lists is also often not really needed at the
+user level. If you do mess around, you'd better know what you're dealing with.
+Reading \quotation {The \TEX\ Book} by Donald Knuth is a good investment of time
+then also because it's good to know where it all started. A more summarizing
+overview is given by \quotation {\TEX\ by Topic} by Victor Eijkhout. You might
+want to peek in \quotation {The \ETEX\ manual} too.
+
+But \unknown\ if you're here because of \LUA, then all you need to know is that
+you can call it from within a run. If you want to learn the language, just read
+the well written \LUA\ book. The macro package that you use probably will provide
+a few wrapper mechanisms but the basic \type {\directlua} command that does the job
+is:
+
+\starttyping
+\directlua{tex.print("Hi there")}
+\stoptyping
+
+You can put code between curly braces but if it's a lot you can also put it in a
+file and load that file with the usual \LUA\ commands. If you don't know what
+this means, you definitely need to have a look at the \LUA\ book first.
+
+If you still decide to read on, then it's good to know what nodes are, so we do a
+quick introduction here. If you input this text:
+
+\starttyping
+Hi There ...
+\stoptyping
+
+eventually we will get a linked lists of nodes, which in \ASCII\ art looks like:
+
+\starttyping
+H <=> i <=> [glue] <=> T <=> h <=> e <=> r <=> e ...
+\stoptyping
+
+When we have a paragraph, we actually get something like this, where a \type
+{par} node stores some metadata and is followed by a \type {hlist} flagged as
+indent box:
+
+\starttyping
+[par] <=> [hlist] <=> H <=> i <=> [glue] <=> T <=> h <=> e <=> r <=> e ...
+\stoptyping
+
+Each character becomes a so called glyph node, a record with properties like the
+current font, the character code and the current language. Spaces become glue
+nodes. There are many node types and nodes can have many properties but that will
+be discussed later. Each node points back to a previous node or next node, given
+that these exist. Sometimes multiple characters are represented by one glyph
+(shape), so one can also get:
+
+\starttyping
+[par] <=> [hlist] <=> H <=> i <=> [glue] <=> Th <=> e <=> r <=> e ...
+\stoptyping
+
+And maybe some characters get positioned relative to each other, so we might
+see:
+
+\starttyping
+[par] <=> [hlist] <=> H <=> [kern] <=> i <=> [glue] <=> Th <=> e <=> r <=> e ...
+\stoptyping
+
+Actually, the above representation is one view, because in \LUAMETATEX\ we can
+choose for this:
+
+\starttyping
+[par] <=> [glue] <=> H <=> [kern] <=> i <=> [glue] <=> Th <=> e <=> r <=> e ...
+\stoptyping
+
+where glue (currently fixed) is used instead of an empty hlist (think of a \type
+{\hbox}). Options like this are available because want a certain view on these
+lists from the \LUA\ end and the result being predicable is part of that.
+
+It's also good to know beforehand that \TEX\ is basically centered around
+creating paragraphs and pages. The par builder takes a list and breaks it into
+lines. At some point horizontal blobs are wrapped into vertical ones. Lines are
+so called boxes and can be separated by glue, penalties and more. The page
+builder accumulates lines and when feasible triggers an output routine that will
+take the list so far. Constructing the actual page is not part of \TEX\ but done
+using primitives that permit manipulation of boxes. The result is handled back to
+\TEX\ and flushed to a (often \PDF) file.
+
+\starttyping
+\setbox\scratchbox\vbox\bgroup
+    line 1\par line 2
+\egroup
+
+\showbox\scratchbox
+\stoptyping
+
+The above code produces the next log lines that reveal how the engines sees a
+paragraph (wrapped in a \type {\vbox}):
+
+\starttyping[style=small]
+1:4: > \box257=
+1:4: \vbox[normal][16=1,17=1,47=1], width 483.69687, height 27.58083, depth 0.1416, direction l2r
+1:4: .\list
+1:4: ..\hbox[line][16=1,17=1,47=1], width 483.69687, height 7.59766, depth 0.1416, glue 455.40097fil, direction l2r
+1:4: ...\list
+1:4: ....\glue[left hang][16=1,17=1,47=1] 0.0pt
+1:4: ....\glue[left][16=1,17=1,47=1] 0.0pt
+1:4: ....\glue[parfillleft][16=1,17=1,47=1] 0.0pt
+1:4: ....\par[newgraf][16=1,17=1,47=1], hangafter 1, hsize 483.69687, pretolerance 100, tolerance 3000, adjdemerits 10000, linepenalty 10, doublehyphendemerits 10000, finalhyphendemerits 5000, clubpenalty 2000, widowpenalty 2000, brokenpenalty 100, emergencystretch 12.0, parfillskip 0.0pt plus 1.0fil, hyphenationmode 499519
+1:4: ....\glue[indent][16=1,17=1,47=1] 0.0pt
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+00006C l
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+000069 i
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+00006E n
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+000065 e
+1:4: ....\glue[space][16=1,17=1,47=1] 3.17871pt plus 1.58936pt minus 1.05957pt, font 30
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+000031 1
+1:4: ....\penalty[line][16=1,17=1,47=1] 10000
+1:4: ....\glue[parfill][16=1,17=1,47=1] 0.0pt plus 1.0fil
+1:4: ....\glue[right][16=1,17=1,47=1] 0.0pt
+1:4: ....\glue[right hang][16=1,17=1,47=1] 0.0pt
+1:4: ..\glue[par][16=1,17=1,47=1] 5.44995pt plus 1.81665pt minus 1.81665pt
+1:4: ..\glue[baseline][16=1,17=1,47=1] 6.79396pt
+1:4: ..\hbox[line][16=1,17=1,47=1], width 483.69687, height 7.59766, depth 0.1416, glue 455.40097fil, direction l2r
+1:4: ...\list
+1:4: ....\glue[left hang][16=1,17=1,47=1] 0.0pt
+1:4: ....\glue[left][16=1,17=1,47=1] 0.0pt
+1:4: ....\glue[parfillleft][16=1,17=1,47=1] 0.0pt
+1:4: ....\par[newgraf][16=1,17=1,47=1], hangafter 1, hsize 483.69687, pretolerance 100, tolerance 3000, adjdemerits 10000, linepenalty 10, doublehyphendemerits 10000, finalhyphendemerits 5000, clubpenalty 2000, widowpenalty 2000, brokenpenalty 100, emergencystretch 12.0, parfillskip 0.0pt plus 1.0fil, hyphenationmode 499519
+1:4: ....\glue[indent][16=1,17=1,47=1] 0.0pt
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+00006C l
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+000069 i
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+00006E n
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+000065 e
+1:4: ....\glue[space][16=1,17=1,47=1] 3.17871pt plus 1.58936pt minus 1.05957pt, font 30
+1:4: ....\glyph[32768][16=1,17=1,47=1], language (n=1,l=2,r=3), hyphenationmode 499519, options 128 , font <30: DejaVuSerif @ 10.0pt>, glyph U+000032 2
+1:4: ....\penalty[line][16=1,17=1,47=1] 10000
+1:4: ....\glue[parfill][16=1,17=1,47=1] 0.0pt plus 1.0fil
+1:4: ....\glue[right][16=1,17=1,47=1] 0.0pt
+1:4: ....\glue[right hang][16=1,17=1,47=1] 0.0pt
+\stoptyping
+
+The \LUAMETATEX\ engine provides hooks for \LUA\ code at nearly every reasonable
+point in the process: collecting content, hyphenating, applying font features,
+breaking into lines, etc. This means that you can overload \TEX's natural
+behavior, which still is the benchmark. When we refer to \quote {callbacks} we
+means these hooks. The \TEX\ engine itself is pretty well optimized but when you
+kick in much \LUA\ code, you will notices that performance drops. Don't blame and
+bother the authors with performance issues. In \CONTEXT\ over 50\% of the time
+can be spent in \LUA, but so far we didn't get many complaints about efficiency.
+Adding more callbacks makes no sense, also because at some point the performance
+hit gets too large. There are plenty of ways to achieve goals. For that reason:
+take remarks about \LUAMETATEX, features, potential, performance etc.\ with a natural
+grain of salt.
+
+Where plain \TEX\ is basically a basic framework for writing a specific style,
+macro packages like \CONTEXT\ and \LATEX\ provide the user a whole lot of
+additional tools to make documents look good. They hide the dirty details of font
+management, language support, turning structure into typeset results, wrapping
+pages, including images, and so on. You should be aware of the fact that when you
+hook in your own code to manipulate lists, this can interfere with the macro
+package that you use. Each successive step expects a certain result and if you
+mess around to much, the engine eventually might bark and quit. It can even
+crash, because testing everywhere for what users can do wrong is no real option.
+
+When you read about nodes in the following chapters it's good to keep in mind
+what commands relate to them. Here are a few:
+
+\starttabulate[|l|l|p|]
+\FL
+\BC command                \BC node           \BC explanation \NC \NR
+\TL
+\NC \type {\hbox}          \NC \type {hlist} \NC horizontal box \NC \NR
+\NC \type {\vbox}          \NC \type {vlist} \NC vertical box with the baseline at the bottom \NC \NR
+\NC \type {\vtop}          \NC \type {vlist} \NC vertical box with the baseline at the top \NC \NR
+\NC \type {\hskip}         \NC \type {glue}  \NC horizontal skip with optional stretch and shrink \NC \NR
+\NC \type {\vskip}         \NC \type {glue}  \NC vertical skip with optional stretch and shrink \NC \NR
+\NC \type {\kern}          \NC \type {kern}  \NC horizontal or vertical fixed skip \NC \NR
+\NC \type {\discretionary} \NC \type {disc}  \NC hyphenation point (pre, post, replace) \NC \NR
+\NC \type {\char}          \NC \type {glyph} \NC a character \NC \NR
+\NC \type {\hrule}         \NC \type {rule}  \NC a horizontal rule \NC \NR
+\NC \type {\vrule}         \NC \type {rule}  \NC a vertical rule \NC \NR
+\NC \type {\textdirection} \NC \type {dir}   \NC a change in text direction \NC \NR
+\LL
+\stoptabulate
+
+Whatever we feed into \TEX\ at some point becomes a token which is either
+interpreted directly or stored in a linked list. A token is just a number that
+encodes a specific command (operator) and some value (operand) that further
+specifies what that command is supposed to do. In addition to an interface to
+nodes, there is an interface to tokens, as later chapters will demonstrate.
+
+Text (interspersed with macros) comes from an input medium. This can be a file,
+token list, macro body cq.\ arguments, some internal quantity (like a number),
+\LUA, etc. Macros get expanded. In the process \TEX\ can enter a group. Inside
+the group, changes to registers get saved on a stack, and restored after leaving
+the group. When conditionals are encountered, another kind of nesting happens,
+and again there is a stack involved. Tokens, expansion, stacks, input levels are
+all terms used in the next chapters. Don't worry, they loose their magic once you
+use \TEX\ a lot. You have access to most of the internals and when not, at least
+it is possible to query some state we're in or level we're at.
+
+When we talk about pack(ag)ing it can mean two things. When \TEX\ has consumed
+some tokens that represent text they are added to the current list. When the text
+is put into a so called \type {\hbox} (for instance a line in a paragraph) it
+(normally) first gets hyphenated, next ligatures are build, and finally kerns are
+added. Each of these stages can be overloaded using \LUA\ code. When these three
+stages are finished, the dimension of the content is calculated and the box gets
+its width, height and depth. What happens with the box depends on what macros do
+with it.
+
+The other thing that can happen is that the text starts a new paragraph. In that
+case some information is stored in a leading \type {par} node. Then indentation
+is appended and the paragraph ends with some glue. Again the three stages are
+applied but this time afterwards, the long line is broken into lines and the
+result is either added to the content of a box or to the main vertical list (the
+running text so to say). This is called par building. At some point \TEX\ decides
+that enough is enough and it will trigger the page builder. So, building is
+another concept we will encounter. Another example of a builder is the one that
+turns an intermediate math list into something typeset.
+
+Wrapping something in a box is called packing. Adding something to a list is
+described in terms of contributing. The more complicated processes are wrapped
+into builders. For now this should be enough to enable you to understand the next
+chapters. The text is not as enlightening and entertaining as Don Knuths books,
+sorry.
+
+\stopsection
+
+\startsection[title={Memory words}]
+
+Before we come to know that \TEX\ manages most of it memory itself. It allocates
+arrays of (pairs of) 32 bit integers because that is what \TEX\ uses all over the
+place: integers. They store integer numbers of various ranges values, fixed point
+floats, pointers (indices in arrays), states, commands, and often groups of them
+travel around the system.
+
+\starttabulate
+\NC integer           \EQ mostly 8, 16, 24, 32 but we have odd packing too \NC \NR
+\NC fixed point float \EQ 16.16 used to represent dimensions \NC \NR
+\NC boolean           \EQ simple state variables \NC \NR
+\NC enumerations      \EQ a choice from a set, like operators and operands \NC \NR
+\NC strings           \EQ an index in a string pool (character array) \NC \NR
+\stoptabulate
+
+The main memory areas in \TEX\ are therefore arrays integers or pairs of integers
+as we want to handle linked lists where in an element one integer has some data
+and the other points to another element. Keep in mind that when \TEX\ showed up
+efficient memory management was best done by the application, especially when it
+had to be portable. This might seem odd now but is actually not that bad
+performance wise. One just has to get accustomed to the way \TEX\ handles data.
+
+\startsetups memory:halfword
+    \startframed[mymemory]
+        \offinterlineskip
+        \dontleavehmode
+        \myslot[width=4uu]{1}\hkern 1uu
+        \myslot[width=4uu]{1}\hkern 1uu
+        \myslot[width=4uu]{1}\hkern 1uu
+        \myslot[width=4uu]{1}\vkern 1uu
+        \dontleavehmode
+        \myslot[width=9uu]{2}\hkern 1uu
+        \myslot[width=9uu]{2}\vkern 1uu
+        \dontleavehmode
+        \myslot[width=19uu]{4}
+    \stopframed
+\stopsetups
+
+\startsetups memory:token
+    \startframed[mymemory]
+        \offinterlineskip
+        \dontleavehmode
+        \myslot[width=4uu]{1}\hkern 1uu
+        \myslot[width=14uu]{3}\vkern 1uu
+        \dontleavehmode
+        \myslot[width=19uu]{4}
+    \stopframed
+\stopsetups
+
+\startlinecorrection
+    \forgetall
+    \uunit=.5em
+    \setups[memory:halfword]
+\stoplinecorrection
+
+Depending on usage we use four, two or one byte. Often a pair is used:
+
+\startlinecorrection
+    \forgetall
+    \uunit=.5em
+    \offinterlineskip
+    \dontleavehmode
+    \setups[memory:halfword]\hkern 1uu
+    \setups[memory:halfword]
+\stoplinecorrection
+
+Such a pair is called a (memory) word and each component is a halfword that
+itself can have two quarterwords and four singlewords. In \LUAMETATEX\ we also
+can combine them:
+
+\startlinecorrection
+    \forgetall
+    \uunit=.5em
+    \offinterlineskip
+    \dontleavehmode
+    \setups[memory:halfword]\hkern 1uu
+    \setups[memory:halfword]\vkern 1uu
+    \dontleavehmode
+    \startframed[mymemory]
+        \myslot[width=41uu]{8}
+    \stopframed
+\stoplinecorrection
+
+The eight byte field is used for pointers (to more dynamic structures) and double
+floats but that can only happen when multiple words are used as a combined data
+structure (as in a so called node, explained below). Quite often the second field
+is used as pointer to another pair. We could have changed that model in \LUATEX\
+and \LUAMETATEX\ but there is little gain in that and we want to stay close to
+the well documented original as much as possible. It also has the side effect of
+simplifying the code and retain performance. \footnote {In the source this is
+reflected in the names used: \type {vinfo} and \type {vlink} in these pairs but
+in \LUAMETATEX\ we often use more symbolic names.}
+
+\stopsection
+
+\startsection[title={Tokens}]
+
+A token is a halfword, so a 32 bit integer as mentioned before. Here we use a one
+plus three model, not mentioned in the previous section. Sometimes we just look
+at the whole number, but quite often we look at the two smaller ones. The single
+byte is the so called command identifier (cmd), the second one traditionally is
+called character (chr), but what we're really talking about is an operator and
+operand kind of model. In a \TEX\ engine source you can find variable names like
+\typ {cur_cmd}, \typ {cur_chr} and \typ {cur_tok} were the third one combines the
+first two.
+
+\startlinecorrection
+    \forgetall
+    \uunit=.5em
+    \offinterlineskip
+    \dontleavehmode
+    \setups[memory:token]
+\stoplinecorrection
+
+Tokens travel through the system as integers and when some action is required the
+command part is consulted which then triggers some action further defined by the
+character part. The combination can either directly trigger some action but often
+that action has to look ahead in order to get some more details.
+
+Consider the following input:
+
+\starttyping[option=TEX]
+\starttext
+Hi there!
+
+This is a \hbox{box}.
+\stoptext
+\stoptyping
+
+Every character falls in a category, and there are 16 of them. The \type {H} is a
+\quote {letter}, the empty line a {newline}. The backslash is an \quote {escape}
+that tells the parser to scan for a command where the name is from letters. That
+command is then looked up and a token is created: in this case a \quote {call}
+command with as operand the memory address (an index in the to be discussed hash)
+where the start of a list of stored tokens can be found.
+
+The characters in the text also become tokens and here we get two \quote {letter}
+commands (with the \UNICODE\ slots as operand), one \quote {space} command, five
+more letter commands and an \quote {other} command, and so on.
+
+Here every token is fed into the interpreter. The \type {\starttext} is a macro
+(control sequence) so it gets expanded and its stored tokens get interpreted. The
+letters become (to be discussed) nodes in a linked list of content. In this case
+the tokens are not stored and discarded as we read on.
+
+The \type {\hbox} is also a control sequence but a built in primitive. The
+operator is \typ {make_box} and the operand is \typ {hbox}. It will trigger
+making a box of the given kind by reading an optional specification, the left
+curly brace (begin group) collects content, and when the right curly brace (end
+group) is seen wraps up by packaging the result. Al that is hard coded, contrary
+to a macro, but one can of course define \type {\hbox} as macro, which normally
+is a bad idea.
+
+As a side note: quite often \TEX\ reads a token, and then puts if back into the
+input. For instance, when it expects a number or keyword it keeps reading till it
+is satisfied and when it ends up in the unexpected it has to wrap up and go one
+step back. However, when we read from file we can't go back, which is why \TEX\
+has a model of \quote {input levels}. Pushing back boils down to creating a token
+list with this one token and then starts reading from that list. It is beyond
+this explanation to go into details but all you need to know is that \TEX\ has
+various input sources, for instance files, token lists, arguments to commands
+(also token lists) and \LUA\ output, but in the end all provide tokens. \footnote
+{We could use a double linked list in which case we would have a three integer
+element which is odd for \TEX\ and has no real benefits as it would change the
+model completely.}
+
+\startlinecorrection
+    \forgetall
+    \uunit=.5em
+    \offinterlineskip
+    \startframed[mymemory]
+        \dontleavehmode
+        \myslot[width=2uu,frame=off]{1}\hkern1uu
+        \myslot[width=19uu]{info}\hkern1uu
+        \myslot[width=19uu]{link}\vkern1uu
+        \dontleavehmode
+        \myslot[width=2uu,frame=off]{}\hkern1uu
+        \myslot[width=19uu,frame=dash]{}\hkern1uu
+        \myslot[width=19uu,frame=dash]{}\vkern1uu
+        \dontleavehmode
+        \myslot[width=2uu,frame=off]{n}\hkern1uu
+        \myslot[width=19uu]{info}\hkern1uu
+        \myslot[width=19uu]{link}
+    \stopframed
+\stoplinecorrection
+
+So to wrap up tokens, we have either singular ones (just 32 bit integers encoding
+a command and value aka operator and operand) or a pair where the second one is a
+link. A token list starts at some index and the link is zero (end of list) or
+another index. Token memory is huge array of memory words like these. When token
+lists are constructed we take from this pool so there is an index indicating the
+first available token. When a list is discarded it gets appended to a list of
+free tokens. So in practice we first try to get a free token from this pool. In
+\LUAMETATEX\ it the token array will grow on demand with a configurable chunk size.
+
+\startsection[title=Nodes]
+
+We already mentioned nodes. These are slices from an array that hold some values
+that belong together. So again we have a large array of memory words but where a
+token is one pair a node is multiple. Nodes have different size. The first node
+starts at index~1 and when it needs four memory words the second node starts at
+index~5.
+
+A character in the input that is typeset will become a glyph node of \cldcontext
+{node.size ("glyph")} bytes and a paragraph starts with a par node of \cldcontext
+{node.size ("par")} bytes. A space becomes a glue node of \cldcontext {node.size
+("glue")} bytes and every box that you (or \TEX) make is \cldcontext {node.size
+("hlist")} bytes. Most nodes are way larger in \LUAMETATEX\ than in traditional
+\TEX\ but we don't have the memory constraints of those times.
+
+Here it is worth noticing that where \TEX\ has a dedicated subsystem for glue
+which make sharing space related glue efficient: the so called glue
+specifications are reference counted. In \LUATEX\ we made these normal nodes
+which is slightly less efficient but fits better in the opened up (\LUA)
+interface and also has some other advantages (we leave it to reader to guess
+what).
+
+For instance, a kern node at the time of this writing needs three memory words
+(as with other nodes we might add some more fields, like \type {options}).
+
+\startlinecorrection
+    \forgetall
+    \uunit=.5em
+    \offinterlineskip
+    \startframed[mymemory]
+        \offinterlineskip
+        \dontleavehmode
+        \myslot[width=6uu,frame=off]{3128}\hkern1uu
+        \myslot[width=10uu]{type}\hkern 1uu
+        \myslot[width=10uu]{subtype}\hkern 1uu
+        \myslot[width=21uu]{next}\vkern 1uu
+        \dontleavehmode
+        \myslot[width=6uu,frame=off]{3129}\hkern1uu
+        \myslot[width=21uu]{previous}\hkern 1uu
+        \myslot[width=21uu]{attribute}\vkern 1uu
+        \dontleavehmode
+        \myslot[width=6uu,frame=off]{3130}\hkern1uu
+        \myslot[width=21uu]{amount}\hkern 1uu
+        \myslot[width=21uu]{expansion}
+    \stopframed
+\stoplinecorrection
+
+So here we take a slice of three memory words from the node array starting at
+index 3128. We mention this detail because sometimes (when tracing) you see these
+numbers. This doesn't mean that at that point we had 3128 nodes, because the next
+node taken from this pool will have number 3131. The numbers are indices!
+
+In the source code we access thes enumber like this:
+
+\starttyping[option=LUA]
+# define kern_amount(a)    vlink(a,2)
+# define kern_expansion(a) vinfo(a,2)
+\stoptyping
+
+So when $a = 3128$ the amount is found in the link field $a = 3128 + 2 = 3130$.
+The name link is somewhat weird here but that's the way these fields are called:
+\type {vlink} and \type {vinfo}. It could as well be \type {first} and \type
+{second} but by using macros we get away by abstraction. So now you can figure
+out what these references do: \footnote {In what order these two fields end up in
+memory depends on the \CPU\ being little or big endian.}
+
+\starttyping[option=LUA]
+# define node_type(a)    vinfo0(a,0)
+# define node_subtype(a) vinfo1(a,0)
+
+# define node_next(a)    vlink(a,0)
+# define node_prev(a)    vlink(a,1)
+# define node_attr(a)    vinfo(a,1)
+\stoptyping
+
+Not all nodes end up in a list that results in output, like paragraphs and pages.
+For instance \typ {\parshape} and \typ {\widowpenalties} also use nodes as
+storage container. Their common node is a specification node of \cldcontext
+{node.size ("specification")} but with a pointer to a dynamically memory array.
+
+\protected\def\SnapNow % we need to fetch both at the same time
+  {\edef\SnapUsage{\cldcontext{nodes.pool.usage().glyph}}\relax
+   \edef\SnapStock{\cldcontext{nodes.pool.stock().glyph}}\relax}
+
+Because the sizes differ one cannot simply have a list of free nodes (as with
+tokens) without some lookup mechanism that combines nodes when needed (they need
+to be next to each other) or split larger ones when we run out of nodes. In
+\LUATEX\ and \LUAMETATEX\ we keep a list of free nodes per size which in practice
+is more efficient and one seldom runs out of nodes because on the average a page
+has a similar distribution and when a page is flushed (or any box for that
+matter) nodes get freed. For instance right at \SnapNow this moment, we have
+\SnapUsage\ nodes in use and \SnapStock\ glyphs in stock. \footnote {And a while
+later (that is: \SnapNow here) these numbers are \SnapUsage\ and \SnapStock.
+These numbers can handly be called dramatic as a page can only have so many glyph
+nodes: \SnapNow \SnapUsage\ and \SnapStock\ were the numbers after the colon.}
+
+\stopsection
+
+\startsection[title=The hash table]
+
+The engine has a lot of built-in commands and users can define additional ones.
+An example is macros, like the mentioned \typ {\starttext} that refers to a token
+list that starts the typesetting process. When reading the input from file these
+commands and macros are looked up in a hash table. There are also built-in
+commands that generate a hash entry. For instance when you define a counter or a
+font, the given name becomes a hash entry that points to a memory location (again
+an index).
+
+Here it gets more complex. A hash table is used to lookup primitive commands like
+\type {\hbox} and \type {\font} as well as \type {\starttext}. The string is
+converted into an integer within a specific range. That integer is then an index
+into a table like we saw before, with two halfwords per slot.
+
+\startlinecorrection
+    \forgetall
+    \uunit=.5em
+    \offinterlineskip
+    \startframed[mymemory]
+        \dontleavehmode
+        \myslot[width=2uu,frame=off]{1}\hkern1uu
+        \myslot[width=19uu]{next}\hkern1uu
+        \myslot[width=19uu]{string}\vkern1uu
+        \dontleavehmode
+        \myslot[width=2uu,frame=off]{}\hkern1uu
+        \myslot[width=19uu,frame=dash]{}\hkern1uu
+        \myslot[width=19uu,frame=dash]{}\vkern1uu
+        \dontleavehmode
+        \myslot[width=2uu,frame=off]{n}\hkern1uu
+        \myslot[width=19uu]{next}\hkern1uu
+        \myslot[width=19uu]{string}
+    \stopframed
+\stoplinecorrection
+
+The hash value (integer calculated from string) point to a slot and the string
+is compared with the stored string. When the string is different, the next field
+points to a different slot (outside the hash range in the same table) and again
+the string is checked. When there is no next value set (zero), the index is used to
+determine what to do.
+
+\startlinecorrection
+    \forgetall
+    \uunit=.5em
+    \offinterlineskip
+    \startframed[mymemory]
+        \dontleavehmode
+        \myslot[width=2uu,frame=off]{1}\hkern1uu
+        \myslot[width=8uu]{type}\hkern1uu
+        \myslot[width=8uu]{flags}\hkern1uu
+        \myslot[width=16uu]{level}\hkern1uu
+        \myslot[width=32uu]{value}\vkern1uu
+        \dontleavehmode
+        \myslot[width=2uu,frame=off]{}\hkern1uu
+        \myslot[width=8uu,frame=dash]{}\hkern1uu
+        \myslot[width=8uu,frame=dash]{}\hkern1uu
+        \myslot[width=16uu,frame=dash]{}\hkern1uu
+        \myslot[width=32uu,frame=dash]{}\vkern1uu
+        \dontleavehmode
+        \myslot[width=2uu,frame=off]{n}\hkern1uu
+        \myslot[width=8uu]{type}\hkern1uu
+        \myslot[width=8uu]{flags}\hkern1uu
+        \myslot[width=16uu]{level}\hkern1uu
+        \myslot[width=32uu]{value}\vkern1uu
+    \stopframed
+\stoplinecorrection
+
+This table is called the table of equivalents. In \LUAMETATEX\ this is
+implemented a bit different than in the other engines because we combine tables.
+The fields that you see here keep track of the type (so that we can optimize some
+bits and pieces), flags (so that we can implement overload protection), a level
+(so that we can restore values after the group ends and of course a value.
+
+That value can be a a pointer to (index of) a token list, or a pointer to (index
+of) a node. It can also be just some value, like a dimension, character reference
+or register entry.
+
+Although there are similarities, the memory mapping in \LUAMETATEX\ differs from
+\LUATEX\ and that one differs from \PDFTEX\ which again differs from original \TEX.
+
+In original \TEX\ table of equivalents is organized in six regions.
+
+\startitemize[n,packed,broad,columns,two]
+\startitem active characters \stopitem
+\startitem hash table\\ font identifiers \stopitem
+\startitem glue \\ muglue \stopitem
+\startitem token lists\\ boxes\\ font names\\ math codes\\ category codes\\ lowercase codes\\ uppercase codes\\ space factors \stopitem
+\startitem integers\\ delimiter codes \stopitem
+\startitem dimensions \stopitem
+\stopitemize
+
+The internal dimension, integer, skip, muskip, token and box registers are part
+of this and for users there are 256 registers of each category. There are 256
+active characters, and the mentioned codes and factors also have 256 entries.
+
+In \LUAMETATEX\ (like in \LUATEX) we use \UNICODE, so there it makes no sense to
+store values in the table of equivalents. We use dedicates hashes instead. So
+there we have different regions. In \LUATEX\ we roughly have this:
+
+\startitemize[n,packed,broad,columns,two]
+\startitem hash table \stopitem
+\startitem frozen control sequences \stopitem
+\startitem font identifiers \stopitem
+\startitem glue \stopitem
+\startitem muglue \stopitem
+\startitem tokens \stopitem
+\startitem boxes \stopitem
+\startitem integers \stopitem
+\startitem attributes \stopitem
+\startitem dimensions \stopitem
+\stopitemize
+
+As we moved forward, \LUAMETATEX\ has some more:
+
+\startitemize[n,packed,broad,columns,two]
+\startitem hash table \stopitem
+\startitem frozen control sequences \stopitem
+\startitem glue \stopitem
+\startitem muglue \stopitem
+\startitem tokens \stopitem
+\startitem boxes \stopitem
+\startitem integers \stopitem
+\startitem attributes \stopitem
+\startitem dimensions \stopitem
+\startitem posits \stopitem
+\startitem units \stopitem
+\startitem specifications \stopitem
+\stopitemize
+
+In case one wonders, on top of built-in units users can define their own.
+Specifications are for instance shape and penalty arrays. Fonts are not
+in here because we manage them in \LUA.
+
+In traditional \TEX\ a delimiter code needs two integers so there it uses
+both fields in a memory word and saves the state in a parallel array with
+quarterwords. We don't need this in \LUAMETATEX\ because we store delimiters
+in a separate hash table (and actually don't need them at all, because we use
+\OPENTYPE\ fonts).
+
+We need to keep some save|/|restore related state in the table but for integers
+and delimiter codes we need all four bytes of the value. Therefore original \TEX\
+has a separate parallel table for this, which as side effect spoils some memory. In
+\LUATEX\ we have way more registers so there the waste is larger.
+
+In \LUAMETATEX\ we got rid of this. We could also use less space for the type and
+store some extra data. A side effect is that we keep the type information which
+is handy for tracing, sparse dumping, and optimizing save and restore. This is
+why with more functionality we don't need less more memory than one would expect.
+
+The hash table in original \TEX\ is a bit too small for larger macro packages
+which is why in practice engines took more than the default couple of thousands
+slots. But going too large makes no sense because one ends up with many misses
+and unused hash and equivalent space. That is why soon after \TEX\ showed up
+support for extra hash space was introduced. That space is allocated at the end of
+normal hash space and can be configured when the format file is made. This means that
+the hash table also grows to the size of the equivalents table:
+
+\startlinecorrection
+    \forgetall
+    \uunit=.5em
+    \offinterlineskip
+    \dontleavehmode
+    \startframed[mymemory]
+        \dontleavehmode
+        \myslot[width=16uu,frame=off,foregroundcolor=maincolor]{hash table}\vkern1uu
+        \dontleavehmode
+        \myslot[width=16uu]{hash entries}\vkern1uu
+        \dontleavehmode
+        \myslot[width=16uu,frame=off]{}\vkern1uu
+        \dontleavehmode
+        \myslot[width=16uu,frame=off]{}
+    \stopframed
+    \hskip1uu
+    \startframed[mymemory]
+        \dontleavehmode
+        \myslot[width=16uu,frame=off,foregroundcolor=maincolor]{equivalents}\vkern1uu
+        \dontleavehmode
+        \myslot[width=16uu]{hash data}\vkern1uu
+        \dontleavehmode
+        \myslot[width=16uu]{other data}\vkern1uu
+        \dontleavehmode
+        \myslot[width=16uu]{}
+    \stopframed
+    \hskip4uu
+    \startframed[mymemory]
+        \dontleavehmode
+        \myslot[width=16uu,frame=off,foregroundcolor=maincolor]{hash table}\vkern1uu
+        \dontleavehmode
+        \myslot[width=16uu]{hash entries}\vkern1uu
+        \dontleavehmode
+        \myslot[width=16uu,frame=off]{}\vkern1uu
+        \dontleavehmode
+        \myslot[width=16uu]{extra entries}
+    \stopframed
+    \hskip1uu
+    \startframed[mymemory]
+        \dontleavehmode
+        \myslot[width=16uu,frame=off,foregroundcolor=maincolor]{equivalents}\vkern1uu
+        \dontleavehmode
+        \myslot[width=16uu]{hash data}\vkern1uu
+        \dontleavehmode
+        \myslot[width=16uu]{other data}\vkern1uu
+        \dontleavehmode
+        \myslot[width=16uu]{extra data}
+    \stopframed
+\stoplinecorrection
+
+Too much extra hash space also means too much equivalent space as these arrays
+run in parallel. In \LUAMETATEX\ we can let hash memory grow on demand so there
+the penalty is less.
+
+{\em It makes sense to move the \quote {other data} to the beginning so that we
+can use a smaller hash but. That could potentially save 4MB memory, but when we
+decide to limit the maximum number of registers to 8K (instead of 64K) we are at
+512KB so that might be easier as it avoids using offsets. And who knows how we
+can use the yet unused space later. Compared to \LUATEX\ we already save much
+memory elsewhere.}
+
+\stopsection
+
+\startsection[title=Save stack]
+
+I only mention this here because it relates to the table of equivalents. Whenever
+a quantity (register, parameter, macro, you name it) changes the engine registers
+the old value on the save stack when the assignment is local. The equivalent is
+replaced and when found in the save stack restored afterwards. In order to let
+the save stack not grow too much we try to only save a state when there is a real
+change. We can do that because we have a bit more information available and
+otherwise do a bit more testing. This is specific for \LUAMETATEX.
+
+\stopsection
+
+\startsection[title=Data types]
+
+The long winding explanation explanation in the previous section shows that we
+have a curious mix of data to manage. We already saw tokens and nodes but here we
+also saw registers. However, integers, dimensions and attributes are all
+basically just 32 bit numbers. Even a posit (float) fits into that space. So if
+you enter \type {10pt} internally it becomes a so called scaled (dimension). The
+skip registers point to a glue node and the token and box registers to a node
+list and those pointers are also numbers. So, what the user sees as a data type
+internally is just a number and its type (the command field in a token) tells
+what to do with it.
+
+When tracing is turned on there can be mentioning of save stack, input levels,
+fonts, languages, hyphenation, various character related properties and so on.
+Here we have specialized data structures that have their own memory layout and
+management. Where terms like token, node, integer (count), dimension and glue
+indicate something that the user should grasp, the entries in a save stack are
+never presented other than in an message.
+
+Manipulating data types is explained in various low level manuals, some relate to
+programming, and some to typesetting. It makes no sense to repeat that here. Take
+for instance macros: then come in variants (think of \typ {\protected} and|/|or
+\type {\tolerant} ones) can take arguments (which effectively are token lists)
+and the flags in the mentioned table of equivalents control take care of that.
+
+One aspect of token lists is worth mentioning: they start with a so called head
+token. So a list of length one actually has two tokens. The head keeps track of
+the fact that a list is a copy. Because a macro is also a token list, in \LUAMETATEX\
+the head also has some information that permits a more efficient code path. Because
+token lists are used all over the place in the engine, sharing makes sense.
+
+Attributes attached to a node are node lists themselves and these are also shared
+which not only saves memory but also is more performing. There are many places
+where \LUAMETATEX\ differs from its predecessors: there are more primitives,
+there is more data moved around but it got compensated by optimizing mechanisms.
+But as much as possible we stayed within the same paradigms.
+
+\stopsection
+
+\startsection[title=Time flies]
+
+For those curious about how different the engines are when it comes to memory usage,
+here is a quote from \TEX\ the program:
+
+\startnarrower
+
+Since we are assuming 32-bit integers, a halfword must contain at least 16 bits,
+and a quarterword must contain at least 8 bits. But it doesn't hurt to have more
+bits; for example, with enough 36-bit words you might be able to have \type {mem_max}
+as large as 262142, which is eight times as much memory as anybody had during the
+first four years of \TEX's existence.
+
+N.B.: Valuable memory space will be dreadfully wasted unless \TeX\ is compiled by
+a \PASCAL\ that packs all of the \typ {memory_word} variants into the space of a
+single integer. This means, for example, that \typ {glue_ratio} words should be
+\typ {short_real} instead of \type {real} on some computers. Some \PASCAL\
+compilers will pack an integer whose subrange is \typ {0 .. 255} into an
+eight-bit field, but others insist on allocating space for an additional sign
+bit; on such systems you can get 256 values into a quarterword only if the
+subrange is \typ {128 .. 127}.
+
+The present implementation tries to accommodate as many variations as possible,
+so it makes few assumptions. If integers having the subrange \typ
+{min_quarterword .. max_quarterword} can be packed into a quarterword, and if
+integers having the subrange \typ {min_halfword .. max_halfword} can be packed
+into a halfword, everything should work satisfactorily.
+
+It is usually most efficient to have \typ {min_quarterword = min_halfword = 0},
+so one should try to achieve this unless it causes a severe problem. The values
+defined here are recommended for most 32-bit computers.
+
+\stopnarrower
+
+This still applies to \PDFTEX\ although there a memory word is two 32 bit
+integer, so each halfword in there spans 32 bits, and a quarterword 16 bits. So
+what does that mean for nodes? Here is what the original code says about char
+nodes.
+
+\startnarrower
+
+A \typ {char_node}, which represents a single character, is the most important
+kind of node because it accounts for the vast majority of all boxes. Special
+precautions are therefore taken to ensure that a \typ {char_node} does not take
+up much memory space. Every such node is one word long, and in fact it is
+identifiable by this property, since other kinds of nodes have at least two
+words, and they appear in \typ {mem} locations less than \typ {hi_mem_min}. This
+makes it possible to omit the \typ {type} field in a \typ {char_node}, leaving us
+room for two bytes that identify a \typ {font} and a \typ {character} within that
+font.
+
+Note that the format of a \typ {char_node} allows for up to 256 different fonts
+and up to 256 characters per font; but most implementations will probably limit
+the total number of fonts to fewer than 75 per job, and most fonts will stick to
+characters whose codes are less than 128 (since higher codes are more difficult
+to access on most keyboards).
+
+\stopnarrower
+
+So, in order to save space these single size nodes use little memory. Even more
+interesting is the follow up on that explanation:
+
+\startnarrower
+
+Extensions of \TEX\ intended for oriental languages will need even more than $256
+\times 256$ possible characters, when we consider different sizes and styles of
+type. It is suggested that Chinese and Japanese fonts be handled by representing
+such characters in two consecutive \typ {char_node} entries: The first of these
+has \typ {font = font_base}, and its \typ {link} points to the second; the second
+identifies the font and the character dimensions. The saving feature about
+oriental characters is that most of them have the same box dimensions. The \typ
+{character} field of the first \typ {char_node} is a \typ {charext} that
+distinguishes between graphic symbols whose dimensions are identical for
+typesetting purposes. (See the \METAFONT\ manual.) Such an extension of \TEX\ would not
+be difficult; further details are left to the reader.
+
+In order to make sure that the \typ {character} code fits in a quarterword, \TEX\
+adds the quantity \typ {min_quarterword} to the actual code.
+
+\stopnarrower
+
+What if that had been implemented right from the start? What if \UTF8\ had been
+around at that time? Of course when 32 bit integers are used we can use these
+extra bit for a larger code range anyway.
+
+When we flash forward to \LUATEX\ we don't see that optimization and there are
+reasons for it. First of all content related nodes have an attribute list pointer
+as well as a \type {prev} field; lists are double linked. That means we don't reuse
+the \type {type} and \type {subtype} fields. The macros that define a glyph are:
+
+\starttyping[option=CPP]
+# define glyph_node_size       7
+# define character(a)          vinfo((a)+2)
+# define font(a)               vlink((a)+2)
+# define lang_data(a)          vinfo((a)+3)
+# define lig_ptr(a)            vlink((a)+3)
+# define x_displace(a)         vinfo((a)+4)
+# define y_displace(a)         vlink((a)+4)
+# define ex_glyph(a)           vinfo((a)+5)  /* expansion factor (hz) */
+# define glyph_node_data(a)    vlink((a)+5)
+# define synctex_tag_glyph(a)  vinfo((a)+6)
+# define synctex_line_glyph(a) vlink((a)+6)
+\stoptyping
+
+Instead of one memory word we use seven, and given the amount of characters
+on a page that adds quite a bit compared to the original. Of course it is
+irrelevant on todays machines. So how about \LUAMETATEX ?
+
+\starttyping[option=CPP]
+# define glyph_node_size     14
+# define glyph_character(a)  vinfo(a,2)
+# define glyph_font(a)       vlink(a,2)   /*tex can be quarterword */
+# define glyph_data(a)       vinfo(a,3)   /*tex handy in context */
+# define glyph_state(a)      vlink(a,3)   /*tex handy in context */
+# define glyph_language(a)   vinfo0(a,4)
+# define glyph_script(a)     vinfo1(a,4)
+# define glyph_control(a)    vlink0(a,4)  /*tex we store 0xXXXX in the |\cccode| */
+# define glyph_reserved(a)   vlink1(a,4)
+# define glyph_options(a)    vinfo(a,5)
+# define glyph_hyphenate(a)  vlink(a,5)
+# define glyph_protected(a)  vinfo00(a,6)
+# define glyph_lhmin(a)      vinfo01(a,6)
+# define glyph_rhmin(a)      vinfo02(a,6)
+# define glyph_discpart(a)   vinfo03(a,6)
+# define glyph_expansion(a)  vlink(a,6)
+# define glyph_x_scale(a)    vinfo(a,7)
+# define glyph_y_scale(a)    vlink(a,7)
+# define glyph_scale(a)      vinfo(a,8)
+# define glyph_raise(a)      vlink(a,8)
+# define glyph_left(a)       vinfo(a,9)
+# define glyph_right(a)      vlink(a,9)
+# define glyph_x_offset(a)   vinfo(a,10)
+# define glyph_y_offset(a)   vlink(a,10)
+# define glyph_weight(a)     vinfo(a,11)
+# define glyph_slant(a)      vlink(a,11)
+# define glyph_properties(a) vinfo0(a,12)  /*tex for math */
+# define glyph_group(a)      vinfo1(a,12)  /*tex for math */
+# define glyph_index(a)      vlink(a,12)   /*tex for math */
+# define glyph_input_file(a) vinfo(a,13)
+# define glyph_input_line(a) vlink(a,13)
+\stoptyping
+
+We carry scaled, offsets, status information and various data around and consume
+twice what \LUATEX\ needs. In both cases there are the common fields:
+
+\starttyping[option=CPP]
+# define node_type(a)    vinfo0(a,0)
+# define node_subtype(a) vinfo1(a,0)
+# define node_next(a)    vlink(a,0)
+# define node_prev(a)    vlink(a,1)
+# define node_attr(a)    vinfo(a,1)
+\stoptyping
+
+As you see, we still use the original \TEX\ \type {vinfo} and \type {vlink}
+identifications but in \LUAMETATEX\ we have node specific verbose accessors
+because we no longer use the same slots for (for instance) width, height and
+depth. This of course has impact on the code base because now \typ {width(n)}
+becomes a different accessor per node it applies to. We get less compact code
+but gain readability and we often need to distinguish anyway. Where \LUATEX\
+and predecessors we see:
+
+\starttyping[option=CPP]
+w += width(n)
+\stoptyping
+
+that covers boxes, glue and kerns. For glyphs we need to get the width from the
+font using the \type {font} and \type {char} fields. Actually, in \TEX82\ that
+can be done directly because we know that these values are okay. In \LUATEX\
+however these values can be set in \LUA\ and therefore we do need to check if
+they reference a loaded font and valid character slot. So in \LUATEX\ we do need
+a dedicated function to get the glyph width.
+
+In \LUAMETATEX\ we have to be more granular and deal with each node type that has
+width independently:
+
+\starttyping[option=CPP]
+switch (subtype(n) {
+    case glyph_node:
+        w += tex_glyph_width(s);
+        break;
+    case hlist_node:
+    case vlist_node:
+        w += box_width(n);
+        break;
+    case rule_node:
+        w += rule_width(n);
+        break;
+    case glue_node:
+        w += glue_amount(n);
+        break;
+    case kern_node:
+        w += kern_amount(s);
+        break;
+    case math_node:
+        if (tex_math_glue_is_zero(s)) {
+            w += math_surround(s);
+        } else {
+            w -= math_amount(s);
+        }
+        break;
+
+}
+\stoptyping
+
+Because a glyph can have scaled set and similar features exist for glue we need to
+distinguish need to distinguish anyway. Watch the math node: we have to deal with
+either kern or glue.
+
+\stopsection
+
+\stopdocument

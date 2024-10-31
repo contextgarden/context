@@ -240,8 +240,8 @@
     n= 65496 cs=46426 indirect=14512
     \stoptyping
 
-    We don't use the 85% prime (and we % the accumulated hash. Somehow this also performs better, 
-    but of course I migbe be wrong. 
+    We don't use the 85% prime (and we % the accumulated hash. Somehow this also performs better,
+    but of course I migbe be wrong.
 
 */
 
@@ -280,10 +280,10 @@ typedef enum deep_frozen_cs_codes {
 
 typedef enum glue_codes {
     /* special ones */
-    additional_page_skip_code, 
+    additional_page_skip_code,
     /* normal ones */
-    initial_page_skip_code, 
-    initial_top_skip_code, 
+    initial_page_skip_code,
+    initial_top_skip_code,
     line_skip_code,                /*tex interline glue if |baseline_skip| is infeasible */
     baseline_skip_code,            /*tex desired glue between baselines */
     par_skip_code,                 /*tex extra glue just above a paragraph */
@@ -302,7 +302,7 @@ typedef enum glue_codes {
     par_fill_right_skip_code,      /*tex glue on last line of paragraph */
     par_init_left_skip_code,
     par_init_right_skip_code,
-    emergency_left_skip_code, 
+    emergency_left_skip_code,
     emergency_right_skip_code,
  /* indent_skip_code,           */ /*tex internal, might go away here */
  /* left_hang_skip_code,        */ /*tex internal, might go away here */
@@ -318,29 +318,29 @@ typedef enum glue_codes {
 # define first_glue_code line_skip_code
 # define last_glue_code  math_threshold_code
 
-/*tex 
+/*tex
 
-    In addition to the three original predefined muskip registers we have two more. These muskips 
-    are used in a symbolic way: by using a reference we can change their values on the fly and the 
-    engine will pick up the value set at the end of the formula (and use it in the second pass). 
-    In the other engines the threesome are hard coded into the atom pair spacing. 
+    In addition to the three original predefined muskip registers we have two more. These muskips
+    are used in a symbolic way: by using a reference we can change their values on the fly and the
+    engine will pick up the value set at the end of the formula (and use it in the second pass).
+    In the other engines the threesome are hard coded into the atom pair spacing.
 
-    In \LUAMETATEX\ we have a configurable system so these three registers are only used in the 
-    initialization, can be overloaded in the macro package, and are saved in the format file (as 
-    any other register). But there can be more than these. Before we had a way to link spacing to 
-    arbitrary registers (in the user's register space) we added |\tinymuskip| because we needed it. 
-    It is not used in initializations in the engine but is applied in the \CONTEXT\ format. We 
-    could throw it out and use just a user register now but we consider it part of the (updated) 
-    concept so it will stick around. Even more: we decided that a smaller one makes sense so end 
-    June 2022 Mikael and I decided to also provide |\pettymuskip| for which Mikael saw a good use 
-    case in the spacing in scripts between ordinary symbols and binary as well as relational ones. 
+    In \LUAMETATEX\ we have a configurable system so these three registers are only used in the
+    initialization, can be overloaded in the macro package, and are saved in the format file (as
+    any other register). But there can be more than these. Before we had a way to link spacing to
+    arbitrary registers (in the user's register space) we added |\tinymuskip| because we needed it.
+    It is not used in initializations in the engine but is applied in the \CONTEXT\ format. We
+    could throw it out and use just a user register now but we consider it part of the (updated)
+    concept so it will stick around. Even more: we decided that a smaller one makes sense so end
+    June 2022 Mikael and I decided to also provide |\pettymuskip| for which Mikael saw a good use
+    case in the spacing in scripts between ordinary symbols and binary as well as relational ones.
 
-    The Cambridge dictionary describes \quote {petty} as \quotation {not important and not worth 
-    giving attention to}, but of course we do! It's just that till not we never saw any request 
-    for an upgrade of the math (sub) engine, let alone that \TEX\ users bothered about the tiny 
-    and petty spacing artifacts (and posibilities) of the engine. Both internal registers are 
-    dedicated to Don Knuth who {\em does} pay a lot attentions to details but who of course will 
-    not use this engine and thereby not spoiled. So, they are there and at the same time they 
+    The Cambridge dictionary describes \quote {petty} as \quotation {not important and not worth
+    giving attention to}, but of course we do! It's just that till not we never saw any request
+    for an upgrade of the math (sub) engine, let alone that \TEX\ users bothered about the tiny
+    and petty spacing artifacts (and posibilities) of the engine. Both internal registers are
+    dedicated to Don Knuth who {\em does} pay a lot attentions to details but who of course will
+    not use this engine and thereby not spoiled. So, they are there and at the same time they
     are not. But: in \CONTEXT\ they {\em are} definitely used!
 
 */
@@ -384,21 +384,30 @@ typedef enum tok_codes {
 
 typedef enum specification_codes {
     par_shape_code,               /*tex specifies paragraph shape, internal register */
-    par_passes_code,      
+    par_passes_code,
+    par_passes_exception_code,
     inter_line_penalties_code,    /*tex additional penalties between lines */
     club_penalties_code,          /*tex penalties for creating club lines */
     widow_penalties_code,         /*tex penalties for creating widow lines */
     display_widow_penalties_code, /*tex ditto, just before a display */
     broken_penalties_code,
     orphan_penalties_code,
-    fitness_demerits_code,
+    toddler_penalties_code,
+    fitness_classes_code,
+    adjacent_demerits_code,
+    orphan_line_factors_code,
     math_forward_penalties_code,
     math_backward_penalties_code,
+    integer_list_code,
+    dimension_list_code,
+    posit_list_code,
     number_specification_pars,
 } specification_codes;
 
-# define first_specification_code par_shape_code
-# define last_specification_code  math_backward_penalties_code
+# define first_specification_code       par_shape_code
+# define last_specification_code        math_backward_penalties_code
+# define first_specification_list_code  integer_list_code
+# define last_specification_list_code   posit_list_code
 
 /*tex Beware: these are indices into |page_builder_state.page_so_far| array! */
 
@@ -532,7 +541,7 @@ typedef enum int_codes {
     tracing_lost_chars_code,            /*tex show characters that aren't in the font */
     tracing_commands_code,              /*tex show command codes at |big_switch| */
     tracing_restores_code,              /*tex show equivalents when they are restored */
- // tracing_fonts_code,                   
+ // tracing_fonts_code,
     tracing_assigns_code,               /*tex show assignments */
     tracing_groups_code,                /*tex show save/restore groups */
     tracing_ifs_code,                   /*tex show conditionals */
@@ -547,10 +556,13 @@ typedef enum int_codes {
     tracing_expressions_code,           /*tex show some info regarding expressions */
     tracing_nodes_code,                 /*tex show node numbers too */
     tracing_full_boxes_code,            /*tex show [over/under]full boxes in the log */
-    tracing_penalties_code,   
-    tracing_lists_code,   
-    tracing_passes_code,   
-    tracing_fitness_code,   
+    tracing_penalties_code,
+    tracing_looseness_code,
+    tracing_lists_code,
+    tracing_passes_code,
+    tracing_fitness_code,
+    tracing_toddlers_code,
+    tracing_orphans_code,
     tracing_loners_code,                /*tex show widow and club penalties calculations */
  // uc_hyph_code,                       /*tex hyphenate words beginning with a capital letter */
     output_penalty_code,                /*tex penalty found at current page break */
@@ -571,7 +583,7 @@ typedef enum int_codes {
     left_hyphen_min_code,               /*tex minimum left hyphenation fragment size */
     right_hyphen_min_code,              /*tex minimum right hyphenation fragment size */
     holding_inserts_code,               /*tex do not remove insertion nodes from |\box255| */
-    holding_migrations_code, 
+    holding_migrations_code,
     error_context_lines_code,           /*tex maximum intermediate line pairs shown */
  // local_interline_penalty_code,       /*tex local |\interlinepenalty| */
  // local_broken_penalty_code,          /*tex local |\brokenpenalty| */
@@ -648,8 +660,6 @@ typedef enum int_codes {
     auto_paragraph_mode_code,
     shaping_penalties_mode_code,
     shaping_penalty_code,
-    orphan_penalty_code,
-    toddler_penalty_code, /*tex aka single_char_penalty */
     single_line_penalty_code,
     left_twin_demerits_code,
     right_twin_demerits_code,
@@ -659,15 +669,16 @@ typedef enum int_codes {
     line_break_passes_code,
     line_break_optional_code,
     line_break_checks_code,
-    /* 
-        This one was added as experiment to \LUATEX\ (answer to a forwarded question) but as it 
-        didn't get tested it will go away. \CONTEXT\ doesn't need it and we don't need to be 
+ // etex_expr_mode_code,
+    /*
+        This one was added as experiment to \LUATEX\ (answer to a forwarded question) but as it
+        didn't get tested it will go away. \CONTEXT\ doesn't need it and we don't need to be
         compatible anyway. Lesson learned.
     */
     variable_family_code,
  // eu_factor_code,
-    math_pre_tolerance_code,                
-    math_tolerance_code,                    
+    math_pre_tolerance_code,
+    math_tolerance_code,
     space_factor_mode,
     space_factor_shrink_limit_code,
     space_factor_stretch_limit_code,
@@ -730,10 +741,10 @@ typedef enum dimension_codes {
  /* h_offset_code,          */     /*tex amount of horizontal offset when shipping pages out */
  /* v_offset_code,          */     /*tex amount of vertical offset when shipping pages out */
     emergency_stretch_code,        /*tex reduces badnesses on final pass of line-breaking */
-    emergency_extra_stretch_code,  
+    emergency_extra_stretch_code,
     glyph_x_offset_code,
     glyph_y_offset_code,
-    px_dimension_code,             /*tex This is a historic one, not used but we keep it. */  
+    px_dimension_code,             /*tex This is a historic one, not used but we keep it. */
     tab_size_code,
     page_extra_goal_code,
     ignore_depth_criterion_code,
@@ -900,9 +911,10 @@ extern void tex_undump_equivalents_mem  (dumpstream f);
 # define eq_value_field(A) (A).half1
 
 # define eq_level(A)       lmt_hash_state.eqtb[(A)].quart01  /*tex level of definition */
-# define eq_full(A)        lmt_hash_state.eqtb[(A)].quart00  
+# define eq_full(A)        lmt_hash_state.eqtb[(A)].quart00
 # define eq_type(A)        lmt_hash_state.eqtb[(A)].single00 /*tex command code for equivalent */
 # define eq_flag(A)        lmt_hash_state.eqtb[(A)].single01
+# define eq_details(A)     lmt_hash_state.eqtb[(A)].half0
 # define eq_value(A)       lmt_hash_state.eqtb[(A)].half1
 
 # define set_eq_level(A,B) lmt_hash_state.eqtb[(A)].quart01  = (quarterword) (B)
@@ -917,18 +929,18 @@ extern void tex_undump_equivalents_mem  (dumpstream f);
  && (lmt_hash_state.eqtb[(A)].half1 == lmt_hash_state.eqtb[(B)].half1) \
 )
 
-/* or: 
+/* or:
 # define equal_eqtb_entries(A,B) ( \
     (lmt_hash_state.eqtb[(A)].long0 == lmt_hash_state.eqtb[(B)].long0) \
 )
 */
 
-typedef enum eq_destructors { 
-    eq_none, 
+typedef enum eq_destructors {
+    eq_none,
     eq_token_list,
     eq_node,
     eq_node_list,
-} eq_destructors; 
+} eq_destructors;
 
 /*tex
 
@@ -940,19 +952,19 @@ typedef enum eq_destructors {
 */
 
 typedef struct save_record {
-    union { 
-        quarterword saved_level; 
-        quarterword saved_group; 
-        quarterword saved_record; 
+    union {
+        quarterword saved_level;
+        quarterword saved_group;
+        quarterword saved_record;
     };
-    quarterword saved_type;    
-    union { 
-        halfword saved_value;  
-        halfword saved_value_1; 
+    quarterword saved_type;
+    union {
+        halfword saved_value;
+        halfword saved_value_1;
     };
-    union { 
+    union {
         memoryword saved_word;
-        struct { 
+        struct {
             halfword saved_value_2;
             halfword saved_value_3;
         };
@@ -977,7 +989,7 @@ extern save_state_info lmt_save_state;
 /*tex
 
     We use the notation |saved(k)| to stand for an item that appears in location |save_ptr + k| of
-    the save stack. The level field is also available for other purposes, so we have |extra| as an 
+    the save stack. The level field is also available for other purposes, so we have |extra| as an
     more generic alias.
 
 */
@@ -985,7 +997,7 @@ extern save_state_info lmt_save_state;
 # define save_type(A)    lmt_save_state.save_stack[A].saved_type     /*tex classifies a |save_stack| entry */
 # define save_record(A)  lmt_save_state.save_stack[A].saved_record
 # define save_level(A)   lmt_save_state.save_stack[A].saved_level    /*tex saved level for regions 5 and 6, or group code, or ...  */
-# define save_group(A)   lmt_save_state.save_stack[A].saved_group 
+# define save_group(A)   lmt_save_state.save_stack[A].saved_group
 
 # define save_value(A)   lmt_save_state.save_stack[A].saved_value    /*tex |eqtb| location or token or |save_stack| location or ... */
 # define save_word(A)    lmt_save_state.save_stack[A].saved_word     /*tex |eqtb| entry */
@@ -1011,7 +1023,7 @@ extern save_state_info lmt_save_state;
     field (when tracing).
 
     The save stack is now a bit more hybrid because we use |memoryword| for |value_2| and |value_3|
-    so this will be cleaned up a bit.  
+    so this will be cleaned up a bit.
 
 */
 
@@ -1075,22 +1087,22 @@ typedef enum save_record_types {
 # define unit_parameter_hash(l,r)   (26 * (l - 'a') + (r - 'a'))
 
 typedef enum unit_classes {
-    unset_unit_class      = 0, 
-    tex_unit_class        = 1, 
-    pdftex_unit_class     = 2, 
-    luametatex_unit_class = 3, 
-    user_unit_class       = 4, 
+    unset_unit_class      = 0,
+    tex_unit_class        = 1,
+    pdftex_unit_class     = 2,
+    luametatex_unit_class = 3,
+    user_unit_class       = 4,
 } unit_classes;
 
-inline static int unit_parameter_index(int l, int r) {
-    if (l >= 'a' && l <= 'z' && r >= 'a' && r <= 'z') { 
+static inline int unit_parameter_index(int l, int r) {
+    if (l >= 'a' && l <= 'z' && r >= 'a' && r <= 'z') {
         return unit_parameter_hash(l,r);
-    } else { 
+    } else {
         l |= 0x60;
         r |= 0x60;
-        if (l >= 'a' && l <= 'z' && r >= 'a' && r <= 'z') { 
+        if (l >= 'a' && l <= 'z' && r >= 'a' && r <= 'z') {
             return unit_parameter_hash(l,r);
-        } else { 
+        } else {
             return -1;
         }
     }
@@ -1329,28 +1341,28 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define initial_page_skip_par            glue_parameter(initial_page_skip_code)
 # define initial_top_skip_par             glue_parameter(initial_top_skip_code)
 # define additional_page_skip_par         glue_parameter(additional_page_skip_code)
-                                          
+
 # define pre_display_size_par             dimension_parameter(pre_display_size_code)
 # define display_width_par                dimension_parameter(display_width_code)
 # define display_indent_par               dimension_parameter(display_indent_code)
 # define math_surround_par                dimension_parameter(math_surround_code)
-                                          
+
 # define display_skip_mode_par            integer_parameter(math_display_skip_mode_code)
 # define math_eqno_gap_step_par           integer_parameter(math_eqno_gap_step_code)
-                                          
+
 # define par_direction_par                integer_parameter(par_direction_code)
 # define text_direction_par               integer_parameter(text_direction_code)
 # define math_direction_par               integer_parameter(math_direction_code)
-                                          
+
 # define first_valid_language_par         integer_parameter(first_valid_language_code)
-                                          
+
 # define hsize_par                        dimension_parameter(hsize_code)
 # define vsize_par                        dimension_parameter(vsize_code)
 # define hfuzz_par                        dimension_parameter(hfuzz_code)
 # define vfuzz_par                        dimension_parameter(vfuzz_code)
 # define hbadness_par                     integer_parameter(hbadness_code)
 # define vbadness_par                     integer_parameter(vbadness_code)
-                                          
+
 # define baseline_skip_par                glue_parameter(baseline_skip_code)
 # define line_skip_par                    glue_parameter(line_skip_code)
 # define par_indent_par                   dimension_parameter(par_indent_code)
@@ -1365,7 +1377,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define emergency_left_skip_par          glue_parameter(emergency_left_skip_code)
 # define emergency_right_skip_par         glue_parameter(emergency_right_skip_code)
 # define tab_skip_par                     glue_parameter(tab_skip_code)
-                                          
+
 # define emergency_stretch_par            dimension_parameter(emergency_stretch_code)
 # define emergency_extra_stretch_par      dimension_parameter(emergency_extra_stretch_code)
 # define pre_tolerance_par                integer_parameter(pre_tolerance_code)
@@ -1388,8 +1400,6 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define club_penalty_par                 integer_parameter(club_penalty_code)
 # define widow_penalty_par                integer_parameter(widow_penalty_code)
 # define display_widow_penalty_par        integer_parameter(display_widow_penalty_code)
-# define orphan_penalty_par               integer_parameter(orphan_penalty_code)
-# define toddler_penalty_par              integer_parameter(toddler_penalty_code)
 # define single_line_penalty_par          integer_parameter(single_line_penalty_code)
 # define left_twin_demerits_par           integer_parameter(left_twin_demerits_code)
 # define right_twin_demerits_par          integer_parameter(right_twin_demerits_code)
@@ -1398,10 +1408,10 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define line_break_optional_par          integer_parameter(line_break_optional_code)
 # define broken_penalty_par               integer_parameter(broken_penalty_code)
 # define line_skip_limit_par              dimension_parameter(line_skip_limit_code)
-                                          
+
 # define alignment_cell_source_par        integer_parameter(alignment_cell_source_code)
 # define alignment_wrap_source_par        integer_parameter(alignment_wrap_source_code)
-                                          
+
 # define delimiter_shortfall_par          dimension_parameter(delimiter_shortfall_code)
 # define null_delimiter_space_par         dimension_parameter(null_delimiter_space_code)
 # define script_space_par                 dimension_parameter(script_space_code)
@@ -1412,10 +1422,10 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define box_max_depth_par                dimension_parameter(box_max_depth_code)
 # define ignore_depth_criterion_par       dimension_parameter(ignore_depth_criterion_code)
 # define short_inline_math_threshold_par  dimension_parameter(short_inline_math_threshold_code)
-                                          
+
 # define top_skip_par                     glue_parameter(top_skip_code)
 # define split_top_skip_par               glue_parameter(split_top_skip_code)
-                                          
+
 # define cur_fam_par                      integer_parameter(family_code)
 # define variable_family_par              integer_parameter(variable_family_code)
 # define eu_factor_par                    integer_parameter(eu_factor_code)
@@ -1432,11 +1442,11 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define pre_short_inline_penalty_par     integer_parameter(pre_short_inline_penalty_code)
 # define post_short_inline_penalty_par    integer_parameter(post_short_inline_penalty_code)
 # define short_inline_orphan_penalty_par  integer_parameter(short_inline_orphan_penalty_code)
-                                          
+
 # define script_space_before_factor_par   integer_parameter(script_space_before_factor_code)
 # define script_space_between_factor_par  integer_parameter(script_space_between_factor_code)
 # define script_space_after_factor_par    integer_parameter(script_space_after_factor_code)
-                                          
+
 # define local_interline_penalty_par      integer_parameter(local_interline_penalty_code)
 # define local_broken_penalty_par         integer_parameter(local_broken_penalty_code)
 # define local_tolerance_par              integer_parameter(local_tolerance_code)
@@ -1451,7 +1461,9 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define new_line_char_par                integer_parameter(new_line_char_code)
 # define escape_char_par                  integer_parameter(escape_char_code)
 # define space_char_par                   integer_parameter(space_char_code)
-                                          
+
+//define etex_expr_mode_par               integer_parameter(etex_expr_mode_code)
+
 # define end_line_char_inactive           ((end_line_char_par < 0) || (end_line_char_par > max_endline_character))
 
 /*tex
@@ -1463,7 +1475,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 /*define post_relation_penalty_par        integer_parameter(post_relation_penalty_code) */
 /*define pre_binary_penalty_par           integer_parameter(pre_binary_penalty_code)    */
 /*define pre_relation_penalty_par         integer_parameter(pre_relation_penalty_code)  */
-                                          
+
 # define delimiter_factor_par             integer_parameter(delimiter_factor_code)
 # define math_penalties_mode_par          integer_parameter(math_penalties_mode_code)
 # define math_check_fences_par            integer_parameter(math_check_fences_mode_code)
@@ -1488,24 +1500,24 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define math_rules_mode_par              integer_parameter(math_rules_mode_code)
 # define math_rules_fam_par               integer_parameter(math_rules_fam_code)
 # define math_glue_mode_par               integer_parameter(math_glue_mode_code)
-                                          
-typedef enum math_glue_modes {            
-    math_glue_stretch_code = 0x01,        
-    math_glue_shrink_code  = 0x02,        
-    math_glue_limit_code   = 0x04,        
-} math_glue_modes;                        
-                                          
+
+typedef enum math_glue_modes {
+    math_glue_stretch_code = 0x01,
+    math_glue_shrink_code  = 0x02,
+    math_glue_limit_code   = 0x04,
+} math_glue_modes;
+
 # define math_glue_stretch_enabled        ((math_glue_mode_par & math_glue_stretch_code) == math_glue_stretch_code)
 # define math_glue_shrink_enabled         ((math_glue_mode_par & math_glue_shrink_code) == math_glue_shrink_code)
 # define math_glue_limit_enabled          ((math_glue_mode_par & math_glue_limit_code) == math_glue_limit_code)
 # define default_math_glue_mode           (math_glue_stretch_code | math_glue_shrink_code)
-                                          
+
 # define petty_muskip_par                 muglue_parameter(petty_muskip_code)
 # define tiny_muskip_par                  muglue_parameter(tiny_muskip_code)
 # define thin_muskip_par                  muglue_parameter(thin_muskip_code)
 # define med_muskip_par                   muglue_parameter(med_muskip_code)
 # define thick_muskip_par                 muglue_parameter(thick_muskip_code)
-                                          
+
 # define every_math_par                   toks_parameter(every_math_code)
 # define every_display_par                toks_parameter(every_display_code)
 # define every_cr_par                     toks_parameter(every_cr_code)
@@ -1520,14 +1532,14 @@ typedef enum math_glue_modes {
 # define error_help_par                   toks_parameter(error_help_code)
 # define end_of_group_par                 toks_parameter(end_of_group_code)
 /*define end_of_par_par                   toks_parameter(end_of_par_code) */
-                                          
+
 # define internal_par_state_par           integer_parameter(internal_par_state_code)
 # define internal_dir_state_par           integer_parameter(internal_dir_state_code)
 # define internal_math_style_par          integer_parameter(internal_math_style_code)
 # define internal_math_scale_par          integer_parameter(internal_math_scale_code)
-                                          
+
 # define overload_mode_par                integer_parameter(overload_mode_code)
-                                          
+
 # define auto_paragraph_mode_par          integer_parameter(auto_paragraph_mode_code)
 
 typedef enum auto_paragraph_modes {
@@ -1554,19 +1566,23 @@ typedef enum shaping_penalties_mode_bits {
 
 # define par_shape_par                   specification_parameter(par_shape_code)
 # define par_passes_par                  specification_parameter(par_passes_code)
+# define par_passes_exception_par        specification_parameter(par_passes_exception_code)
 # define inter_line_penalties_par        specification_parameter(inter_line_penalties_code)
 # define club_penalties_par              specification_parameter(club_penalties_code)
 # define widow_penalties_par             specification_parameter(widow_penalties_code)
 # define display_widow_penalties_par     specification_parameter(display_widow_penalties_code)
 # define broken_penalties_par            specification_parameter(broken_penalties_code)
 # define orphan_penalties_par            specification_parameter(orphan_penalties_code)
-# define fitness_demerits_par            specification_parameter(fitness_demerits_code)
+# define toddler_penalties_par           specification_parameter(toddler_penalties_code)
+# define fitness_classes_par             specification_parameter(fitness_classes_code)
+# define adjacent_demerits_par           specification_parameter(adjacent_demerits_code)
+# define orphan_line_factors_par         specification_parameter(orphan_line_factors_code)
 # define math_forward_penalties_par      specification_parameter(math_forward_penalties_code)
 # define math_backward_penalties_par     specification_parameter(math_backward_penalties_code)
 
-/*tex 
-    We keep these three as reference but because they are backend related they are basically 
-    no-ops and ignored. 
+/*tex
+    We keep these three as reference but because they are backend related they are basically
+    no-ops and ignored.
 */
 
 /*define h_offset_par                    dimension_parameter(h_offset_code) */
@@ -1611,20 +1627,23 @@ typedef enum shaping_penalties_mode_bits {
 # define tracing_nodes_par               integer_parameter(tracing_nodes_code)
 # define tracing_full_boxes_par          integer_parameter(tracing_full_boxes_code)
 # define tracing_penalties_par           integer_parameter(tracing_penalties_code)
+# define tracing_looseness_par           integer_parameter(tracing_looseness_code)
 # define tracing_lists_par               integer_parameter(tracing_lists_code)
 # define tracing_passes_par              integer_parameter(tracing_passes_code)
 # define tracing_fitness_par             integer_parameter(tracing_fitness_code)
+# define tracing_toddlers_par            integer_parameter(tracing_toddlers_code)
+# define tracing_orphans_par             integer_parameter(tracing_orphans_code)
 # define tracing_loners_par              integer_parameter(tracing_loners_code)
 
-/*tex 
+/*tex
     This tracer is mostly there for debugging purposes. Therefore what gets traced and how might
-    change depending on my needs. 
+    change depending on my needs.
 */
 
 typedef enum tracing_lists_codes {
-    trace_direction_list_code = 0x0001, 
-    trace_paragraph_list_code = 0x0002, 
-    trace_linebreak_list_code = 0x0004, 
+    trace_direction_list_code = 0x0001,
+    trace_paragraph_list_code = 0x0002,
+    trace_linebreak_list_code = 0x0004,
 } tracing_lists_codes;
 
 # define tracing_direction_lists         ((tracing_lists_par & trace_direction_list_code) == trace_direction_list_code)
@@ -1730,7 +1749,7 @@ typedef enum normalize_par_mode_bits {
     limit_prev_graf_mode          = 0x0004,
     /*tex Conform etex we reset but one can wonder (ms mail/discussion) so we now have a flag. */
     keep_interline_penalties_mode = 0x0008,
-    /*tex Maybe add some more control over the resets. */    
+    /*tex Maybe add some more control over the resets. */
 } normalize_par_mode_bits;
 
 typedef enum parameter_mode_bits {
@@ -1741,7 +1760,7 @@ typedef enum parameter_mode_bits {
 # define normalize_par_mode_par   integer_parameter(normalize_par_mode_code)
 # define auto_migration_mode_par  integer_parameter(auto_migration_mode_code)
 
-# define parameter_mode_par       integer_parameter(parameter_mode_code)  
+# define parameter_mode_par       integer_parameter(parameter_mode_code)
 
 # define normalize_line_mode_option(a) ((normalize_line_mode_par & a) == a)
 # define normalize_par_mode_option(a)  ((normalize_par_mode_par  & a) == a)
@@ -1876,15 +1895,19 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 # define update_tex_math_left_class(v)         tex_eq_word_define(internal_integer_location(math_left_class_code), v)
 # define update_tex_math_right_class(v)        tex_eq_word_define(internal_integer_location(math_right_class_code), v)
 
-# define update_tex_par_shape(v)               tex_eq_define(internal_specification_location(par_shape_code),               specification_reference_cmd, v)
-# define update_tex_par_passes(v)              tex_eq_define(internal_specification_location(par_passes_code),              specification_reference_cmd, v)
-# define update_tex_inter_line_penalties(v)    tex_eq_define(internal_specification_location(inter_line_penalties_code),    specification_reference_cmd, v)
-# define update_tex_club_penalties(v)          tex_eq_define(internal_specification_location(club_penalties_code),          specification_reference_cmd, v)
-# define update_tex_widow_penalties(v)         tex_eq_define(internal_specification_location(widow_penalties_code),         specification_reference_cmd, v)
-# define update_tex_display_widow_penalties(v) tex_eq_define(internal_specification_location(display_widow_penalties_code), specification_reference_cmd, v)
-# define update_tex_broken_penalties(v)        tex_eq_define(internal_specification_location(broken_penalties_code),        specification_reference_cmd, v)
-# define update_tex_orphan_penalties(v)        tex_eq_define(internal_specification_location(orphan_penalties_code),        specification_reference_cmd, v)
-# define update_tex_fitness_demerits(v)        tex_eq_define(internal_specification_location(fitness_demerits_code),        specification_reference_cmd, v)
+# define update_tex_par_shape(v)                tex_eq_define(internal_specification_location(par_shape_code),               specification_reference_cmd, v)
+# define update_tex_par_passes(v)               tex_eq_define(internal_specification_location(par_passes_code),              specification_reference_cmd, v)
+# define update_tex_par_passes_exception(v)     tex_eq_define(internal_specification_location(par_passes_exception_code),    specification_reference_cmd, v)
+# define update_tex_inter_line_penalties(v)     tex_eq_define(internal_specification_location(inter_line_penalties_code),    specification_reference_cmd, v)
+# define update_tex_club_penalties(v)           tex_eq_define(internal_specification_location(club_penalties_code),          specification_reference_cmd, v)
+# define update_tex_widow_penalties(v)          tex_eq_define(internal_specification_location(widow_penalties_code),         specification_reference_cmd, v)
+# define update_tex_display_widow_penalties(v)  tex_eq_define(internal_specification_location(display_widow_penalties_code), specification_reference_cmd, v)
+# define update_tex_broken_penalties(v)         tex_eq_define(internal_specification_location(broken_penalties_code),        specification_reference_cmd, v)
+# define update_tex_orphan_penalties(v)         tex_eq_define(internal_specification_location(orphan_penalties_code),        specification_reference_cmd, v)
+# define update_tex_toddler_penalties(v)        tex_eq_define(internal_specification_location(toddler_penalties_code),       specification_reference_cmd, v)
+# define update_tex_fitness_classes(v)          tex_eq_define(internal_specification_location(fitness_classes_code),         specification_reference_cmd, v)
+# define update_tex_adjacent_demerits(v)        tex_eq_define(internal_specification_location(adjacent_demerits_code),       specification_reference_cmd, v)
+# define update_tex_orphan_line_factors_code(v) tex_eq_define(internal_specification_location(orphan_line_factors_code),     specification_reference_cmd, v)
 
 # define update_tex_end_of_group(v)            tex_eq_define(internal_toks_location(end_of_group_code), internal_toks_reference_cmd, v)
 /*define update_tex_end_of_par(v)              eq_define(internal_toks_location(end_of_par_code), internal_toks_cmd, v) */
@@ -1929,7 +1952,7 @@ typedef enum cs_errors {
     cs_no_error,
     cs_null_error,
     cs_below_base_error,
-    cs_undefined_error, 
+    cs_undefined_error,
     cs_out_of_range_error,
 } cs_errors;
 

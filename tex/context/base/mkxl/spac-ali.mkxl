@@ -1044,41 +1044,48 @@
 \defcsname\??aligncommand\s!notoddlers  \endcsname{\toksapp\t_spac_align_collected{\notoddlers}}
 \defcsname\??aligncommand\s!keeptoddlers\endcsname{\toksapp\t_spac_align_collected{\keeptoddlers}}
 
+\newconstant \matchallfitnessclasses \setconstant \matchallfitnessclasses "FF
+
 \appendtoks
-    \fitnessdemerits \zerocount
+    \fitnessclasses \zerocount
 \to \t_spac_align_presets
 
 \permanent\protected\def\installaligncommand#1#2%
   {\defcsname\??aligncommand#1\endcsname{\appendtoks#2\to\t_spac_align_applied}}
 
-% \installaligncommand
-%   {\v!granular}
-%   {\fitnessdemerits \plusnine
-%       \plusninetynine \plusninethousand     \zerocount
-%       \plusfourtytwo  \plussixthousand      \plusfivehundred      % .75
-%       \plustwelve     \plusfortyfivehundred \plusthousand         % .50
-%       \plustwo        \plusthreethousand    \plusthousand         % .25
-%       \zerocount      \plusfifteenhundred   \plusfifteenhundred   % .00 \adjdemerits baseline is 5000
-%       \plustwo        \plusthousand         \plusthreethousand    % .25
-%       \plustwelve     \plusthousand         \plusfortyfivehundred % .50
-%       \plusfourtytwo  \plusfivehundred      \plussixthousand      % .75
-%       \plusninetynine \zerocount            \plusninethousand
-%    \relax}
+\aliased\let\stopinstallaligncommand\relax
 
-\permanent \specificationdef \granularfitnessdemerits \fitnessdemerits \plusnine
-    \plusninetynine \plusninethousand     \zerocount
-    \plusfourtytwo  \plussixthousand      \plusfivehundred      % .75
-    \plustwelve     \plusfortyfivehundred \plusthousand         % .50
-    \plustwo        \plusthreethousand    \plusthousand         % .25
-    \zerocount      \plusfifteenhundred   \plusfifteenhundred   % .00 \adjdemerits baseline is 5000
-    \plustwo        \plusthousand         \plusthreethousand    % .25
-    \plustwelve     \plusthousand         \plusfortyfivehundred % .50
-    \plusfourtytwo  \plusfivehundred      \plussixthousand      % .75
-    \plusninetynine \zerocount            \plusninethousand
+\permanent\protected\def\startinstallaligncommand[#1]#S#/\stopinstallaligncommand
+  {\defcsname\??aligncommand#1\endcsname{\appendtoks#2\to\t_spac_align_applied}}
+
+\permanent \specificationdef \granularfitnessclasses \fitnessclasses \plusnine
+    \plusninetynine
+    \plusfourtytwo  % .75
+    \plustwelve     % .50
+    \plustwo        % .25
+    \zerocount      % .00
+    \plustwo        % .25
+    \plustwelve     % .50
+    \plusfourtytwo  % .75
+    \plusninetynine
+
+% \permanent \specificationdef \defaultadjacentdemerits \adjacentdemerits \minusone \plustenthousand
+
+\permanent \specificationdef \granularadjacentdemerits \adjacentdemerits \pluseight
+    \zerocount
+    \plustwentyfivehundred
+    \plusfivethousand
+    \plusseventyfivehundred
+    \plustenthousand
+    \numexpr\plustenthousand+\plustwentyfivehundred \relax
+    \numexpr\plustenthousand+\plusfivethousand      \relax
+   %\numexpr\plustenthousand+\plusseventyfivehundred\relax
+    \numexpr\plustenthousand+\plustenthousand       \relax
 
 \installaligncommand
   {\v!granular}
-  {\granularfitnessdemerits}
+  {\granularfitnessclasses
+   \granularadjacentdemerits}
 
 % end of definitions
 
@@ -1249,10 +1256,11 @@
        \spaceskip \xspaceskip
        \parindent \parfillleftskip \parinitrightskip \parinitleftskip \parfillrightskip
        \hyphenpenalty \exhyphenpenalty \automatichyphenpenalty \explicithyphenpenalty
-       \displaywidowpenalty \widowpenalty \clubpenalty \brokenpenalty
+     % \displaywidowpenalty
+       \widowpenalty \clubpenalty \brokenpenalty
        \doublehyphendemerits \finalhyphendemerits \adjdemerits \orphanpenalty
        \toddlerpenalty \lefttwindemerits \righttwindemerits
-%        \linebreakstretchcriterion \linebreakshrinkcriterion
+     % \linebreakstretchcriterion \linebreakshrinkcriterion
    \relax}}}}}
 
 \permanent\protected\def\startshowpardata

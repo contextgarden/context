@@ -227,7 +227,7 @@ typedef enum saved_align_entries {
 # define saved_align_amount   saved_value_2(saved_align_amount_entry)
 # define saved_align_callback saved_value_3(saved_align_amount_entry)
 
-inline static void saved_alignment_initialize(void)
+static inline void saved_alignment_initialize(void)
 {
     saved_type(0) = saved_record_0;
     saved_record(0) = alignment_save_type;
@@ -359,7 +359,7 @@ static void tex_aux_finish_align      (void);
     we need to be more careful because we expose fields.
 */
 
-inline static void tex_aux_change_list_type(halfword n, quarterword type)
+static inline void tex_aux_change_list_type(halfword n, quarterword type)
 {
     node_type(n) = type;
     box_w_offset(n) = 0;    /* box_glue_stretch    align_record_span_ptr   */
@@ -1143,7 +1143,7 @@ static void tex_aux_initialize_row(void)
 
 */
 
-inline static void tex_alignment_aux_flush_local_template(halfword record)
+static inline void tex_alignment_aux_flush_local_template(halfword record)
 {
     if (record) { 
         if (align_record_pre_local(record)) { 
@@ -1157,7 +1157,7 @@ inline static void tex_alignment_aux_flush_local_template(halfword record)
     }
 }
 
-inline static void tex_alignment_aux_scan_local_template(halfword record)
+static inline void tex_alignment_aux_scan_local_template(halfword record)
 {
     halfword prehead = null;
     halfword posthead = null;
@@ -1266,7 +1266,7 @@ void tex_insert_alignment_template(void)
 
 /*tex Determine the stretch or shrink order */
 
-inline static halfword tex_aux_determine_order(scaled *total)
+static inline halfword tex_aux_determine_order(scaled *total)
 {
     if      (total[filll_glue_order]) return filll_glue_order;
     else if (total[fill_glue_order])  return fill_glue_order;

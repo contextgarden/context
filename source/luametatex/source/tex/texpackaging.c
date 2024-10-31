@@ -105,7 +105,7 @@ typedef enum saved_box_options {
     saved_box_mathtext_option  = 0x08,
 } saved_box_options;
 
-inline static void saved_box_initialize(void)
+static inline void saved_box_initialize(void)
 {
     saved_type(0) = saved_record_0;
     saved_type(1) = saved_record_1;
@@ -889,7 +889,7 @@ int tex_ignore_math_skip(halfword p)
 
 # define fix_int(val,min,max) (val < min ? min : (val > max ? max : val))
 
-inline static halfword tex_aux_used_order(halfword *total)
+static inline halfword tex_aux_used_order(halfword *total)
 {
     if (total[filll_glue_order]) {
         return filll_glue_order;
@@ -934,7 +934,7 @@ inline static halfword tex_aux_used_order(halfword *total)
     module (tracing and such). It's a bit fyzzy code anyway. 
 */
 
-inline static void tex_aux_promote_pre_migrated(halfword r, halfword p)
+static inline void tex_aux_promote_pre_migrated(halfword r, halfword p)
 {
     halfword pa = box_pre_adjusted(p);
     halfword pm = box_pre_migrated(p);
@@ -964,7 +964,7 @@ inline static void tex_aux_promote_pre_migrated(halfword r, halfword p)
     }
 }
 
-inline static void tex_aux_promote_post_migrated(halfword r, halfword p)
+static inline void tex_aux_promote_post_migrated(halfword r, halfword p)
 {
     halfword pa = box_post_adjusted(p);
     halfword pm = box_post_migrated(p);
@@ -998,7 +998,7 @@ inline static void tex_aux_promote_post_migrated(halfword r, halfword p)
     }
 }
 
-inline static halfword tex_aux_post_migrate(halfword r, halfword p)
+static inline halfword tex_aux_post_migrate(halfword r, halfword p)
 {
     halfword n = p;
     halfword nn = node_next(p);
@@ -1021,7 +1021,7 @@ inline static halfword tex_aux_post_migrate(halfword r, halfword p)
     return p;
 }
 
-inline static halfword tex_aux_normal_migrate(halfword r, halfword p)
+static inline halfword tex_aux_normal_migrate(halfword r, halfword p)
 {
     halfword n = p;
     halfword nn = node_next(p);
@@ -1962,7 +1962,7 @@ halfword tex_filtered_hpack(halfword p, halfword qt, scaled w, int m, int grp, h
     if (has_box_package_state(head, package_u_leader_found)) {
         if (head && normalize_line_mode_option(flatten_h_leaders_mode)) { 
             if (! is_box_package_state(state, package_u_leader_delayed)) {
-                tex_flatten_leaders(head, grp, just_pack, "filtered hpack", 0);
+                tex_flatten_leaders(head, grp, just_pack, uleader_filtered_hpack, 0);
             }
         }
     }
@@ -2807,7 +2807,7 @@ halfword tex_filtered_vpack(halfword p, scaled h, int m, scaled maxdepth, int gr
                     case hlist_node:
                     case vlist_node:
                         if (has_box_package_state(c, package_u_leader_found) && ! is_box_package_state(state, package_u_leader_delayed)) {
-                            tex_flatten_leaders(c, grp, just_pack, "before vpack", 0);
+                            tex_flatten_leaders(c, grp, just_pack, uleader_before_vpack, 0);
                         }
                         break;
                 }
@@ -2818,7 +2818,7 @@ halfword tex_filtered_vpack(halfword p, scaled h, int m, scaled maxdepth, int gr
     }
     result = tex_vpack(result, h, m, maxdepth, (singleword) checked_direction_value(direction), retain, excess);
     if (result && normalize_par_mode_option(flatten_v_leaders_mode) && ! is_box_package_state(state, package_u_leader_delayed)) {
-        tex_flatten_leaders(result, grp, just_pack, "after vpack", 0);
+        tex_flatten_leaders(result, grp, just_pack, uleader_after_vpack, 0);
     }
     if (! just_pack) {
         result = lmt_packed_vbox_filter_callback(result, grp);

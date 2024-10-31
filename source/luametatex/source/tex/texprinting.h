@@ -118,7 +118,7 @@ static inline int tex_is_active_cs(strnumber s)
     }
 }
 
-inline static void tex_aux_show_group_count(int n)
+static inline void tex_aux_show_group_count(int n)
 {
     for (int i = 1; i <= n; i++) {
         tex_print_str("{}");

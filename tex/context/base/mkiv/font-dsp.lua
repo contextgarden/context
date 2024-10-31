@@ -3157,12 +3157,14 @@ function readers.colr(f,fontdata,specification)
     local tableoffset = gotodatatable(f,fontdata,"colr",specification.glyphs)
     if tableoffset then
         local version = readushort(f)
-        if version == 0 or version == 1 then
-            report("table version %a of %a is not supported (yet), maybe font %s is bad",version,"colr",fontdata.filename)
-            return
-        else
-            -- both versions have this in common
-        end
+		if version == 0 then
+			-- we're okay
+		elseif version == 1 then
+			report("table version %a of %a is %s supported for font %s",version,"colr","partially",fontdata.filename)
+		else
+			report("table version %a of %a is %s supported for font %s",version,"colr","not",fontdata.filename)
+			return
+		end
         if not fontdata.tables.cpal then
             report("color table %a in font %a has no mandate %a table","colr",fontdata.filename,"cpal")
             fontdata.colorpalettes = { }

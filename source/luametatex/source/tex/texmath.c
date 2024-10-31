@@ -134,7 +134,7 @@ typedef enum saved_math_entries {
 
 # define saved_math_direction saved_value_1(saved_math_direction_entry)
 
-inline static void saved_math_initialize(void)
+static inline void saved_math_initialize(void)
 {
     saved_type(0) = saved_record_0;
     saved_record(0) = math_save_type;
@@ -162,7 +162,7 @@ typedef enum saved_equation_number_entries {
 
 # define saved_equation_number_location saved_value_1(saved_equation_number_location_entry)
 
-inline static void saved_equation_number_initialize(void)
+static inline void saved_equation_number_initialize(void)
 {
     saved_type(0) = saved_record_0;
     saved_record(0) = number_save_type;
@@ -195,19 +195,19 @@ typedef enum saved_choice_entries {
 
 # define saved_choice_count saved_value_1(saved_choice_count_entry)
 
-inline static void saved_choice_initialize(void)
+static inline void saved_choice_initialize(void)
 {
     saved_type(0) = saved_record_0;
     saved_record(0) = choice_save_type;
 }
 
-inline static int saved_choice_current_component(void)
+static inline int saved_choice_current_component(void)
 {
     return saved_type(saved_choice_count_entry - saved_choice_n_of_records) == saved_record_0 
         ? saved_value_1(saved_choice_count_entry - saved_choice_n_of_records) : -1 ;
 }
 
-inline static void saved_choice_update_component(void)
+static inline void saved_choice_update_component(void)
 {
     saved_value_1(saved_choice_count_entry - saved_choice_n_of_records) += 1;
 }
@@ -244,29 +244,29 @@ typedef enum saved_fraction_entries {
 # define saved_fraction_userstyle saved_value_2(saved_fraction_userstyle_entry)
 # define saved_fraction_autostyle saved_value_3(saved_fraction_autostyle_entry)
 
-inline static void saved_fraction_initialize(void)
+static inline void saved_fraction_initialize(void)
 {
     saved_type(0) = saved_record_0;
     saved_record(0) = fraction_save_type;
 }
 
-inline static int saved_fraction_current_component(void)
+static inline int saved_fraction_current_component(void)
 {
     return saved_type(saved_fraction_variant_entry - saved_fraction_n_of_records) == saved_record_0 
         ? saved_value_1(saved_fraction_variant_entry - saved_fraction_n_of_records) : -1 ;
 }
 
-inline static void saved_fraction_update_component(void)
+static inline void saved_fraction_update_component(void)
 {
     saved_value_1(saved_fraction_variant_entry - saved_fraction_n_of_records) += 1;
 }
 
-inline static int saved_fraction_current_userstyle(void)
+static inline int saved_fraction_current_userstyle(void)
 {
     return saved_value_2(saved_fraction_userstyle_entry - saved_fraction_n_of_records);
 }
 
-inline static int saved_fraction_current_autostyle(void)
+static inline int saved_fraction_current_autostyle(void)
 {
     return saved_value_3(saved_fraction_autostyle_entry - saved_fraction_n_of_records);
 }
@@ -301,24 +301,24 @@ typedef enum saved_radical_entries {
 # define saved_radical_degree_done saved_value_1(saved_radical_degree_done_entry)
 # define saved_radical_style       saved_value_2(saved_radical_style_entry)
 
-inline static void saved_radical_initialize(void)
+static inline void saved_radical_initialize(void)
 {
     saved_type(0) = saved_record_0;
     saved_record(0) = radical_save_type;
 }
 
-inline static int saved_radical_current_component(void)
+static inline int saved_radical_current_component(void)
 {
     return saved_type(saved_radical_degree_done_entry - saved_radical_n_of_records) == saved_record_0 
         ? saved_value_1(saved_radical_degree_done_entry - saved_radical_n_of_records) : -1 ;
 }
 
-inline static int saved_radical_current_style(void)
+static inline int saved_radical_current_style(void)
 {
     return saved_value_2(saved_radical_style_entry - saved_radical_n_of_records);
 }
 
-inline static void saved_radical_update_component(void)
+static inline void saved_radical_update_component(void)
 {
     saved_value_1(saved_radical_degree_done_entry - saved_radical_n_of_records) += 1;
 }
@@ -351,19 +351,19 @@ typedef enum saved_operator_entries {
 
 # define saved_operator_variant saved_value_1(saved_operator_variant_entry)
 
-inline static void saved_operator_initialize(void)
+static inline void saved_operator_initialize(void)
 {
     saved_type(0) = saved_record_0;
     saved_record(0) = operator_save_type;
 }
 
-inline static int saved_operator_current_component(void)
+static inline int saved_operator_current_component(void)
 {
     return saved_type(saved_operator_variant_entry - saved_operator_n_of_records) == saved_record_0 
         ? saved_value_1(saved_operator_variant_entry - saved_operator_n_of_records) : -1 ;
 }
 
-inline static void saved_operator_update_component(void)
+static inline void saved_operator_update_component(void)
 {
     saved_value_1(saved_operator_variant_entry - saved_operator_n_of_records) += 1;
 }
@@ -398,7 +398,7 @@ typedef enum saved_math_group_entries {
 # define saved_math_group_pointer   saved_value_1(saved_math_group_pointer_entry)
 # define saved_math_group_all_class saved_value_2(saved_math_group_all_class_entry)
 
-inline static void saved_math_group_initialize(void)
+static inline void saved_math_group_initialize(void)
 {
     saved_type(0) = saved_record_0;
     saved_record(0) = math_group_save_type;
@@ -434,7 +434,7 @@ static void     tex_aux_math_math_component (halfword n, int append);
 # define denom_style(A)   (2 * ((A) / 2) + cramped + 2 - 2 * ((A) / 6)) /*tex smaller, cramped */
 # define sup_sup_style(A) sup_style(sup_style((A)))                     /*tex smaller */
 
-inline static mathdictval tex_fake_math_dict(halfword chr) 
+static inline mathdictval tex_fake_math_dict(halfword chr) 
 {
     mathdictval d = tex_no_dict_code();
     if (math_dict_properties_par || math_dict_group_par) {
@@ -462,7 +462,7 @@ void tex_math_copy_char_data(halfword target, halfword source, int wipelist)
     }
 }
 
-inline static void tex_math_set_scripts_options(halfword n)
+static inline void tex_math_set_scripts_options(halfword n)
 {
     if (math_scripts_mode_par & fixed_super_or_sub_script_code) {  
         noad_options(n) |= noad_option_fixed_super_or_sub_script;
@@ -1357,7 +1357,7 @@ int tex_show_math_node(halfword n, int threshold, int max)
     return 1;
 }
 
-inline static halfword tex_aux_valid_delimiter(halfword d)
+static inline halfword tex_aux_valid_delimiter(halfword d)
 {
     return (d && (delimiter_small_family(d) || delimiter_small_character(d) || delimiter_large_family(d) || delimiter_large_character(d))) ? d : null;
 }
@@ -5433,12 +5433,12 @@ static void tex_aux_finish_displayed_math(int atleft, halfword eqnumber, halfwor
 
 /* make proper mappers (see 5967 in texmlist) */
 
-inline static int tex_aux_class_from_glyph(halfword n) 
+static inline int tex_aux_class_from_glyph(halfword n) 
 {
     return node_subtype(n) - (node_subtype(n) > glyph_math_extra_subtype ? glyph_math_extra_subtype : glyph_math_ordinary_subtype);
 }
 
-inline static int tex_aux_class_from_list(halfword n) 
+static inline int tex_aux_class_from_list(halfword n) 
 {
     switch (node_subtype(n)) { 
         case math_fraction_list: 
@@ -5894,7 +5894,7 @@ static void tex_aux_define_all_math_parameters(int size, int param, scaled value
 
 # define math_parameter(a,b) ((font_math_parameter_count(a) >= b) ? font_math_parameter(a,b) : undefined_math_parameter)
 
-inline static scaled tex_aux_get_font_math_parameter(scaled scale, halfword f, int id)
+static inline scaled tex_aux_get_font_math_parameter(scaled scale, halfword f, int id)
 {
     scaled v = math_parameter(f, id);
     if (v == undefined_math_parameter) {
@@ -5904,7 +5904,7 @@ inline static scaled tex_aux_get_font_math_parameter(scaled scale, halfword f, i
     }
 }
 
-inline static scaled tex_aux_get_font_math_quantity(scaled scale, halfword v)
+static inline scaled tex_aux_get_font_math_quantity(scaled scale, halfword v)
 {
     return v ? scaledround(0.001 * scale * v) : 0;
 }
@@ -6161,11 +6161,11 @@ void tex_reset_all_styles(halfword level)
     }
 }
 
-inline static halfword tex_aux_math_class_default(halfword mathclass) {
+static inline halfword tex_aux_math_class_default(halfword mathclass) {
     return (mathclass << 24) + (mathclass << 16) + (mathclass << 8) + mathclass;
 }
 
-inline static void tex_set_math_class_default(halfword mathclass, halfword parent, halfword options)
+static inline void tex_set_math_class_default(halfword mathclass, halfword parent, halfword options)
 {
     tex_word_define(0, internal_integer_location(first_math_class_code   + mathclass), tex_aux_math_class_default(parent));
     tex_word_define(0, internal_integer_location(first_math_atom_code    + mathclass), tex_aux_math_class_default(mathclass));
@@ -6434,7 +6434,7 @@ static void tex_aux_math_parameter_error(int style, int param, const char *name)
     For the moment this is experimental.
 */
 
-inline static scaled tex_aux_max_scale(int style, int param)
+static inline scaled tex_aux_max_scale(int style, int param)
 {
     scaled scale = tex_get_math_parameter(style, param, NULL);
     if (scale > max_math_scaling_factor) {

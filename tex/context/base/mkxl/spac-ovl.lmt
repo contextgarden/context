@@ -67,17 +67,18 @@ local actions = {
             order    = order + 1
         end
     end,
-    [breakcodes.start] = function(checks,pass)
+    [breakcodes.start] = function(checks,pass,subpass)
         if texgetnest("ptr") == nestlevel then
             if pass == 2 then
                 serial = { }
             end
         end
     end,
-    [breakcodes.report] = function(checks,pass,currentserial,previousserial,line,kind,class,demerits,breakpoint,short,glue)
+    [breakcodes.report] = function(checks,pass,subpass,currentserial,previousserial,line,kind,class,classes,badness,demerits,breakpoint,short,glue)
         if serial and breakpoint and texgetnest("ptr") == nestlevel then
             local s = {
                 serial     = currentserial,
+                badness    = badness,
                 demerits   = demerits,
                 breakpoint = breakpoint,
             }

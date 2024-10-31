@@ -16,16 +16,16 @@ typedef enum {
 } lzma_reserved_enum;
 
 typedef enum {
-    LZMA_OK                = 0,
-    LZMA_STREAM_END        = 1,
-    LZMA_NO_CHECK          = 2,
-    LZMA_UNSUPPORTED_CHECK = 3,
-    LZMA_GET_CHECK         = 4,
-    LZMA_MEM_ERROR         = 5,
-    LZMA_MEMLIMIT_ERROR    = 6,
-    LZMA_FORMAT_ERROR      = 7,
-    LZMA_OPTIONS_ERROR     = 8,
-    LZMA_DATA_ERROR        = 9,
+    LZMA_OK                =  0,
+    LZMA_STREAM_END        =  1,
+    LZMA_NO_CHECK          =  2,
+    LZMA_UNSUPPORTED_CHECK =  3,
+    LZMA_GET_CHECK         =  4,
+    LZMA_MEM_ERROR         =  5,
+    LZMA_MEMLIMIT_ERROR    =  6,
+    LZMA_FORMAT_ERROR      =  7,
+    LZMA_OPTIONS_ERROR     =  8,
+    LZMA_DATA_ERROR        =  9,
     LZMA_BUF_ERROR         = 10,
     LZMA_PROG_ERROR        = 11,
 } lzma_ret;
@@ -39,9 +39,9 @@ typedef enum {
 } lzma_action;
 
 typedef enum {
-    LZMA_CHECK_NONE   = 0,
-    LZMA_CHECK_CRC32  = 1,
-    LZMA_CHECK_CRC64  = 4,
+    LZMA_CHECK_NONE   =  0,
+    LZMA_CHECK_CRC32  =  1,
+    LZMA_CHECK_CRC64  =  4,
     LZMA_CHECK_SHA256 = 10
 } lzma_check;
 

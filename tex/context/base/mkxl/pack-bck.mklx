@@ -52,7 +52,7 @@
 
 \installframedcommandhandler \??background {background} \??background
 
-% The mode is not that public an dmostlu an initial mode:
+% The mode is not that public and mostly an initial mode:
 %
 % 0 : no split
 % 1 : no split, honoring leftskip (messy)

@@ -100,7 +100,7 @@ local methods = {
 adaptive.methods = methods
 --------.set     = setadaptive
 
-local function handleuleader(n,grp,index,box,where)
+local function handleuleader(n,grp,index,box,location)
     local m = tonut(n)
     local a = getattr(m,a_adaptive) or index -- index will become a selector
     if a then

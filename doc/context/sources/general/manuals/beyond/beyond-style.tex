@@ -9,7 +9,12 @@
 
 \logo [LUAMETATEX] {LuaMeta\TeXsuffix}
 
-\setupbodyfont[plex,10pt] % not that ok for titling
+\definefontfeature
+  [default]
+  [default]
+  [expansion=quality]
+
+\setupbodyfont[plex,12pt]
 
 \setuplayout
   [width=middle,
@@ -17,8 +22,8 @@
    header=0pt,
    footer=1cm,
    footerdistance=5mm,
-   backspace=2cm,
-   cutspace=15mm,
+   backspace=20mm,
+   cutspace=25mm,
    topspace=2cm,
    bottomspace=1cm,
    style=bold,
@@ -38,23 +43,30 @@
   [maincolor]
   [darkblue]
 
+\definecolor
+  [bgcolor]
+  [s=0.95]
+
+\protected\def\startexample{\startimage\backgroundvtop[bgcolor]\bgroup}
+\protected\def\stopexample {\egroup\stopimage}
+
 \setuphead
   [chapter]
-  [style=\bfc,
+  [style=\ss\bfc,
    color=maincolor]
 
 \setuphead
   [section]
-  [style=\bfa,
+  [style=\ss\bfa,
    color=maincolor]
 
 \setuphead
   [subsection]
-  [style=\bf,
+  [style=\ss\bf,
    color=maincolor]
 
 \setupalign
-  [tolerant,stretch]
+  [tolerant,xstretch]
 
 \setuptyping
   [color=maincolor,
@@ -65,5 +77,15 @@
 
 \setupitemize
   [color=maincolor]
+
+\setupcaption
+  [figure]
+  [headstyle=sans,
+   style=small,
+   headcolor=maincolor,
+   maxwidth=.9\textwidth]
+
+\setupcombination
+  [style=small]
 
 \stopenvironment

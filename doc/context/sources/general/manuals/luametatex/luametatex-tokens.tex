@@ -1,0 +1,1468 @@
+% language=us runpath=texruns:manuals/luametatex
+
+\environment luametatex-style
+
+\startdocument[title=Tokens]
+
+\startsection[title={Introduction}]
+
+If a \TEX\ programmer talks tokens (and nodes) the average user can safely ignore
+it. Often it is enough to now that your input is tokenized which means that one
+or more characters in the input got converted into some efficient internal
+representation that then travels through the system and triggers actions. When
+you see an error message with \TEX\ code, the reverse happened: tokens were
+converted back into commands that resemble the (often expanded) input.
+
+There are not that many examples here because the functions discusses here are
+often not used directly but instead integrated in a bit more convenient
+interfaces. However, in due time more examples might show up here.
+
+\stopsection
+
+\startsection[title={\LUA\ token representation}]
+
+A token is an 32 bit integer that encodes a command and a value, index, reference
+or whatever goes with a command. The input is converted into a token and the body
+of macros are stored as linked list of tokens. In the later case we combine a
+token and a next pointer in what is called a memory word. If we see tokens in
+\LUA\ we don't get the integer but a userdata object that comes with accessors.
+
+Unless you're into very low level programming the likelihood of encountering
+tokens is low. But related to tokens is scanning so that is what we cover here in
+more detail.
+
+\stopsection
+
+\startsection[title={Helpers}]
+
+\startsubsection[title={Basics}]
+
+References to macros are stored in a table along with some extra properties but
+in the end they travel around as tokens. The same is true for characters, they
+are also encoded in a token. We have three ways to create a token:
+
+\starttyping[option=LUA]
+function token.create ( <t:integer> value )
+    return <t:token> -- userdata
+end
+
+function token.create ( <t:integer> value, <t:integer> command)
+    return <t:token> -- userdata
+end
+
+function token.create ( <t:string> csname )
+    return <t:token> -- userdata
+end
+\stoptyping
+
+An example of the first variant is \type {token.create(65)}. When we
+print (inspect) this in \CONTEXT\ we get:
+
+\starttyping[option=LUA]
+<lua token : 476151 == letter 65>={
+ ["category"]="letter",
+ ["character"]="A",
+ ["id"]=476151,
+}
+\stoptyping
+
+If we say \type {token.create(65,12)} instead we get:
+
+\starttyping[option=LUA]
+<lua token : 476151 == other_char 65>={
+ ["category"]="other",
+ ["character"]="A",
+ ["id"]=476151,
+}
+\stoptyping
+
+An example of the third call is \type {token.create("relax")}. This time get:
+
+\starttyping[option=LUA]
+<lua token : 580111 == relax : relax 0>={
+ ["active"]=false,
+ ["cmdname"]="relax",
+ ["command"]=16,
+ ["csname"]="relax",
+ ["expandable"]=false,
+ ["frozen"]=false,
+ ["id"]=580111,
+ ["immutable"]=false,
+ ["index"]=0,
+ ["instance"]=false,
+ ["mutable"]=false,
+ ["noaligned"]=false,
+ ["permanent"]=false,
+ ["primitive"]=true,
+ ["protected"]=false,
+ ["tolerant"]=false,
+}
+\stoptyping
+
+Another example is \type {token.create("dimen")}:
+
+\starttyping[option=LUA]
+<lua token : 467905 == dimen : register 3>={
+ ["active"]=false,
+ ["cmdname"]="register",
+ ["command"]=121,
+ ["csname"]="dimen",
+ ["expandable"]=false,
+ ["frozen"]=false,
+ ["id"]=467905,
+ ["immutable"]=false,
+ ["index"]=3,
+ ["instance"]=false,
+ ["mutable"]=false,
+ ["noaligned"]=false,
+ ["permanent"]=false,
+ ["primitive"]=true,
+ ["protected"]=false,
+ ["tolerant"]=false,
+}
+\stoptyping
+
+The most important properties are \type {command} and \type {index} because the
+combination determines what it does. The macros (here primitives) have a lot of extra
+properties. These are discusses in the low level manuals.
+
+You can check if something is a token with the next function; when a token is
+passed the return value is the string literal \type {token}.
+
+\starttyping[option=LUA]
+function token.type ( <t:whatever> )
+    return <t:string> "token" | <t:nil>
+end
+\stoptyping
+
+A maybe more natural test is:
+
+\starttyping[option=LUA]
+function token.istoken ( <t:whatever> )
+    return <t:boolean> -- success
+end
+\stoptyping
+
+Internally we can see variables like \type {cmd}, \type {chr}, \type {tok} and
+such, where the later is a combination of the first two. The \type {create}
+variant that take two integers relate to this. Of course you need to know what
+the magic numbers are. Passing weird numbers can give side effects so don't
+expect too much help with that. You need to know what you're doing. The best way
+to explore the way these internals work is to just look at how primitives or
+macros or \type {\chardef}'d commands are tokenized. Just create a known one and
+inspect its fields. A variant that ignores the current catcode table is:
+
+\startbuffer
+\protected\def\MyMacro#1{\dimen 0 = \numexpr #1 + 10 \relax}
+\stopbuffer
+
+\typebuffer % \showluatokens\MyMacro
+
+A macro like this is actually a little program:
+
+\starttyping
+467922   19   49  match                argument 1
+580083   20    0  end match
+--------------
+467931  121    3  register             dimen
+580013   12   48  other char           0 (U+00030)
+582314   10   32  spacer
+582312   12   61  other char           = (U+0003D)
+580193   10   32  spacer
+582783   81   75  some item            numexpr
+582310   21    1  parameter reference
+190952   10   32  spacer
+582785   12   43  other char           + (U+0002B)
+476151   10   32  spacer
+580190   12   49  other char           1 (U+00031)
+582265   12   48  other char           0 (U+00030)
+467939   10   32  spacer
+580045   16    0  relax                relax
+\stoptyping
+
+The first column shows indices in token memory where we have a token combined
+with a next pointer. So, in slot \type {467931} we have both a token and a
+pointer to slot \type {580013}.
+
+There is another way to create a token.
+
+\starttyping[option=LUA]
+function token.new ( <t:string> command, <t:integer> value )
+    return <t:token>
+end
+
+function token.new ( <t:integer> value, <t:integer> command )
+    return <t:token>
+end
+\stoptyping
+
+Watch the order of arguments. We not have four ways to create a token
+
+\starttyping[option=LUA]
+<lua token : 580087 == letter 65>={
+ ["category"]="letter",
+ ["character"]="A",
+ ["id"]=580087,
+}
+\stoptyping
+
+namely:
+
+\starttyping[option=LUA]
+token.new("letter",65)
+token.new(65,11)
+token.create(65,11)
+token.create(65)
+\stoptyping
+
+You can test if a control sequence is defined with:
+
+\starttyping[option=LUA]
+function token.isdefined ( <t:string> t )
+    return <t:boolean> -- success
+end
+\stoptyping
+
+The engine was never meant to be this open which means that in various places the
+assumption is that tokens are valid. However, it is possible to create tokens that
+make little sense in some context and can even make the system crash. When
+possible we catch this but checking everywhere would bloat the code and harm
+performance. Compare this to changing a few bytes in a binary that at some point
+create can havoc.
+
+\stopsubsection
+
+\startsubsection[title={Getters}]
+
+The userdata objects have a virtual interface that permits access by fieldname.
+Instead you can use one of the getters.
+
+% function token.gettok ( ) -- obsolete end
+
+\starttyping[option=LUA]
+function token.getcommand ( <t:token> t ) return <t:integer> end
+function token.getindex   ( <t:token> t ) return <t:integer> end
+function token.getcmdname ( <t:token> t ) return <t:string>  end
+function token.getcsname  ( <t:token> t ) return <t:string>  end
+function token.getid      ( <t:token> t ) return <t:integer> end
+function token.getactive  ( <t:token> t ) return <t:boolean> end
+\stoptyping
+
+If you want to know what the possible values are, you can use:
+
+\starttyping[option=LUA]
+function token.getrange (
+    <t:token> | <t:integer>
+)
+return
+    <t:integer>, -- first
+    <t:integer>  -- last
+end
+\stoptyping
+
+We can also ask for the macro properties but instead you can just fetch the bit
+set that describes them.
+
+\starttyping[option=LUA]
+function token.getexpandable ( <t:token> t ) return <t:boolean> end
+function token.getprotected  ( <t:token> t ) return <t:boolean> end
+function token.getfrozen     ( <t:token> t ) return <t:boolean> end
+function token.gettolerant   ( <t:token> t ) return <t:boolean> end
+function token.getnoaligned  ( <t:token> t ) return <t:boolean> end
+function token.getprimitive  ( <t:token> t ) return <t:boolean> end
+function token.getpermanent  ( <t:token> t ) return <t:boolean> end
+function token.getimmutable  ( <t:token> t ) return <t:boolean> end
+function token.getinstance   ( <t:token> t ) return <t:boolean> end
+function token.getconstant   ( <t:token> t ) return <t:boolean> end
+\stoptyping
+
+The bit set can be fetched with:
+
+\starttyping[option=LUA]
+function token.getflags ( <t:token> t )
+    return <t:integer> -- bit set
+end
+\stoptyping
+
+The possible flags are:
+
+\startcolumns[n=3]
+\getbuffer[engine:syntax:flagcodes]
+\stopcolumns
+
+The number of parameters of a macro can be queried with:
+
+\starttyping[option=LUA]
+function token.getparameters ( <t:token> t )
+    return <t:integer>
+end
+\stoptyping
+
+The three properties that are used to identify a token can be fetched with:
+
+\starttyping[option=LUA]
+function token.getcmdchrcs ( <t:token> t )
+    return
+        <t:integer>, -- command (cmd)
+        <t:integer>, -- value   (chr)
+        <t:integer>  -- index   (cs)
+end
+\stoptyping
+
+A simpler call is:
+
+\starttyping[option=LUA]
+function token.getcstoken ( <t:string> csname )
+    return <t:integer> -- token number
+end
+\stoptyping
+
+A table with relevant properties of a token (or control sequence) can be fetched
+with:
+
+\starttyping[option=LUA]
+function token.getfields ( <t:token> token )
+    return <t:table> -- fields
+end
+
+function token.getfields ( <t:string> csname )
+    return <t:table> -- fields
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={Setters}]
+
+The \type {setmacro} function can be called with a different amount of arguments,
+where the prefix list comes last. Examples of prefixes are \type {global} and \type
+{protected}.
+
+\starttyping[option=LUA]
+function token.setmacro (
+    <t:string> csname
+)
+
+function token.setmacro (
+    <t:integer> catcodetable,
+    <t:string>  csname
+)
+    -- no return values
+end
+
+function token.setmacro (
+    <t:string> csname,
+    <t:string> content
+)
+    -- no return values
+end
+
+function token.setmacro (
+    <t:integer> catcodetable,
+    <t:string>  csname,
+    <t:string>  content
+)
+    -- no return values
+end
+
+function token.setmacro (
+    <t:string> csname,
+    <t:string> content,
+    <t:string> prefix
+ -- there can be more prefixes
+)
+    -- no return values
+end
+
+function token.setmacro (
+    <t:integer> catcodetable,
+    <t:string>  csname,
+    <t:string>  content,
+    <t:string>  prefix
+ -- there can be more prefixes
+)
+    -- no return values
+end
+\stoptyping
+
+A macro can also be queried:
+
+\starttyping[option=LUA]
+function token.getmacro (
+    <t:string>  csname,
+    <t:boolean> preamble,
+    <t:boolean> onlypreamble
+)
+    return <t:string>
+end
+\stoptyping
+
+The various arguments determine what you get:
+
+\startbuffer
+\def\foo#1{foo: #1}
+
+\ctxlua{context.type(token.getmacro("foo"))}
+\ctxlua{context.type(token.getmacro("foo",true))}
+\ctxlua{context.type(token.getmacro("foo",false,true))}
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\startlines
+\getbuffer
+\stoplines
+
+The meaning can be fetched as string or table:
+
+\starttyping[option=LUA]
+function token.getmeaning (
+    <t:string>  csname,
+)
+    return <t:string>
+end
+
+function token.getmeaning (
+    <t:string>  csname,
+    <t:true>    astable,
+    <t:boolean> subtables,
+    <t:boolean> originalindices -- special usage
+)
+    return <t:table>
+end
+\stoptyping
+
+The name says it:
+
+\starttyping[option=LUA]
+function token.undefinemacro ( <t:string> csname)
+    -- no return values
+end
+\stoptyping
+
+Expanding a macro happens in a \quote {local control} context which makes it
+immediate, that is, while running \LUA\ code.
+
+\starttyping[option=LUA]
+function token.expandmacro ( <t:string> csname)
+    -- no return values
+end
+\stoptyping
+
+This means that:
+
+\startbuffer
+\def\foo{\scratchdimen100pt \edef\oof{\the\scratchdimen}}
+% used in:
+\startluacode
+token.expandmacro("foo")
+context(token.getmacro("oof"))
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+gives:\inlinebuffer, because when \typ {getmacro} is called the expansion has
+been performed. You can consider this a sort of subrun (local to the main control
+loop).
+
+The next helper creates a token that refers to a \LUA\ function with an entry in
+the table that you can access with \typ {lua.getfunctionstable}. It is the
+companion to \type {\luadef}. When the first (and only) argument is true the size
+will preset to the value of \typ {texconfig.functionsize}.
+
+\starttyping[option=LUA]
+function token.setlua (
+    <t:string>  csname,
+    <t:integer> id,
+    <t:string>  prefix
+ -- there can be more prefixes
+)
+    return <t:token>
+end
+\stoptyping
+
+%   function token.setinteger   -- can go ... also in texlib
+%   function token.getinteger   -- can go ... also in texlib
+%   function token.setdimension -- can go ... also in texlib
+%   function token.getdimension -- can go ... also in texlib
+
+\stopsubsection
+
+\startsubsection[title={Writers}]
+
+In the \type {tex} library we have various ways to print something back to the
+input and the these print helpers in most cases also accept tokens. The \type
+{token.putnext} function is rather tolerant with respect to its arguments and
+there can be multiple. As with most prints, a new input level is created.
+
+\starttyping[option=LUA]
+function token.putnext ( <t:string> | <t:number> | <t:token> | <t:table> )
+    -- no return values
+end
+\stoptyping
+
+Here are some examples. We save some scanned tokens and flush them
+
+\starttyping
+local t1 = token.scannext()
+local t2 = token.scannext()
+local t3 = token.scannext()
+local t4 = token.scannext()
+-- watch out, we flush in sequence
+token.putnext { t1, t2 }
+-- but this one gets pushed in front
+token.putnext ( t3, t4 )
+\stoptyping
+
+When we scan \type {wxyz!} we get \type {yzwx!} back. The argument is either a
+table with tokens or a list of tokens. The \type {token.expand} function will
+trigger expansion but what happens really depends on what you're doing where.
+
+This putter is actually a bit more flexible because the following input also
+works out okay:
+
+\startbuffer
+\def\foo#1{[#1]}
+
+\directlua {
+    local list = { 101, 102, 103, token.create("foo"), "{abracadabra}" }
+    token.putnext("(the)")
+    token.putnext(list)
+    token.putnext("(order)")
+    token.putnext(unpack(list))
+    token.putnext("(is reversed)")
+}
+\stopbuffer
+
+\typebuffer
+
+We get this: \blank {\tt \inlinebuffer} \blank So, strings get converted to
+individual tokens according to the current catcode regime and numbers become
+characters also according to this regime. A more low level, single token push
+back is the next one, it does the same as when \TEX\ itself puts a token back into
+the input, something that for instance happens when an integer is scanned and the
+last scanned token is not a digit.
+
+\starttyping[option=LUA]
+function token.putback ( <t:token> )
+    -- no return values
+end
+\stoptyping
+
+You can force an \quote {expand step} with the following function. What happens
+depends on the input and scanner states \TEX\ is.
+
+\starttyping[option=LUA]
+function token.expand ( )
+    -- no return values
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={Scanning}]
+
+The token library provides means to intercept the input and deal with it at the
+\LUA\ level. The library provides a basic scanner infrastructure that can be used
+to write macros that accept a wide range of arguments. This interface is on
+purpose kept general and as performance is quite okay so one can build additional
+parsers without too much overhead. It's up to macro package writers to see how
+they can benefit from this as the main principle behind \LUAMETATEX\ is to
+provide a minimal set of tools and no solutions. The scanner functions are
+probably the most intriguing.
+
+We start with token scanners. The first one just reads the next token from the
+current input (file, token list, \LUA\ output) while the second variant expands
+the next token, which can push back results and make us enter a new input level,
+and then reads a token from what is then the input.
+
+\starttyping[option=LUA]
+function token.scannext ( )
+    return <t:token>
+end
+
+function token.scannextexpanded ( )
+    return <t:token>
+end
+\stoptyping
+
+This is a simple scanner that picks up a character:
+
+\starttyping[option=LUA]
+function token.scannextchar ( )
+    return <t:string>
+end
+\stoptyping
+
+We can look ahead, that is: pick up a token and push a copy back into the input.
+The second helper first expands the upcoming token and the third one is the peek
+variant of \type {scannextchar}.
+
+\starttyping[option=LUA]
+function token.peeknext ( )
+    return <t:token>
+end
+
+function token.peeknextexpanded ( )
+    return <t:token>
+end
+
+function token.peeknextchar ( )
+    return <t:token>
+end
+\stoptyping
+
+We can skip tokens with the following two helpers where the second one first
+expands the upcoming token
+
+\starttyping[option=LUA]
+function token.skipnext ( )
+    -- no return values
+end
+
+function token.skipnextexpanded ( )
+    -- no return values
+end
+\stoptyping
+
+The next token can be converted into a combination of command and value. The
+second variant shown below first expands the upcoming token.
+
+\starttyping[option=LUA]
+function token.scancmdchr ( )
+    return
+        <t:integer>, -- command a.k.a cmd
+        <t:integer>, -- value   a.k.a chr
+end
+
+function token.scancmdchrexpanded ( )
+    return
+        <t:integer>, -- command a.k.a cmd
+        <t:integer>, -- value   a.k.a chr
+end
+\stoptyping
+
+We have two keywords scanners. The first scans how \TEX\ does it: a mixture of
+lower- and uppercase. The second is case sensitive.
+
+\starttyping[option=LUA]
+function token.scankeyword ( <t:string> keyword )
+    return <t:boolean> -- success
+end
+
+function token.scankeywordcs ( <t:string> keyword )
+    return <t:boolean> -- success
+end
+\stoptyping
+
+The integer, dimension and glue scanners take an extra optional argument that
+signals that en optional equal is permitted. The next function errors when
+the integer exceeds the maximum that \TEX\ likes: \number \maxcount .
+
+\starttyping[option=LUA]
+function token.scaninteger ( <t:boolean> optionalequal )
+    return <t:integer>
+end
+\stoptyping
+
+Cardinals are unsigned integers:
+
+\starttyping[option=LUA]
+function token.scancardinal ( <t:boolean> optionalequal )
+    return <t:cardinal>
+end
+\stoptyping
+
+When an integer or dimension is wrapped in curly braces, like \type {{123}} and
+\type {{4.5pt}}, you can use one of the next two. Of course unwrapped integers
+and dimensions are also read.
+
+\starttyping[option=LUA]
+function token.scanintegerargument ( <t:boolean> optionalequal )
+    return <t:integer>
+end
+
+function token.scandimensionargument (
+    <t:boolean> infinity,
+    <t:boolean> mu,
+    <t:boolean> optionalequal
+)
+    return <t:integer>
+end
+\stoptyping
+
+When we scan for a float, we also accept an exponent, so \type {123.45} and
+\type {-1.23e45} are valid:
+
+% \cldcontext{type(token.scanfloat())} 1.23
+% \cldcontext{type(token.scanfloat())} 1.23e100
+
+\starttyping[option=LUA]
+function token.scanfloat ( )
+    return <t:number>
+end
+\stoptyping
+
+Contrary to the previous scanner here we don't handle the exponent:
+
+\starttyping[option=LUA]
+function token.scanreal ( )
+    return <t:number>
+end
+\stoptyping
+
+In \LUA\ a very precise representation of a float is the hexadecimal notation. In
+addition to regular floating point, optionally with an exponent, you can also
+have \type {0x1.23p45}.
+
+% \cldcontext{"\letterpercent q",token.scanluanumber()} 0x1.23p45
+
+\starttyping[option=LUA]
+function token.scanluanumber ( )
+    return <t:number>
+end
+\stoptyping
+
+Integers can be signed:
+
+\starttyping[option=LUA]
+function token.scanluainteger ( )
+    return <t:integer>
+end
+\stoptyping
+
+while cardinals (\MODULA2 speak) are unsigned:
+unsigned
+
+\starttyping[option=LUA]
+function token.scanluacardinal ( )
+    return <t:cardinal>
+end
+\stoptyping
+
+\cldcontext{token.scanscale()} 122.345
+
+\starttyping[option=LUA]
+function token.scanscale ( )
+    return <t:integer>
+end
+\stoptyping
+
+A posit is (in \LUAMETATEX) a float packed into an integer, but contrary to a
+scaled value it can have exponents. Here \type {12.34} gives {\tttf
+\cldcontext{token.scanposit()} 12.34} and Here \type {12.34e5} gives {\tttf
+\cldcontext{token.scanposit()}12.34e5}. Because we have integers we can store
+them in \LUAMETATEX\ float registers. Optionally you can return a float instead
+of the integer that encodes the posit.
+
+\starttyping[option=LUA]
+function token.scanposit (
+    <t:boolean> optionalqual,
+    <t:boolean> float
+)
+    return <t:integer> | <t:float>
+end
+\stoptyping
+
+In (traditional) \TEX\ we don't really have floats. If we enter for instance a
+dimension in point units, we actually scan for two 16 bit integers that will be
+packed into a 32 bit integer. The next scanner expects a number plus a unit, like
+\type {pt}, \type {cm} and \type {em}, but also handles user defined units, like
+in \CONTEXT\ \type {tw}.
+
+\starttyping[option=LUA]
+function token.scandimension (
+    <t:boolean> infinity,
+    <t:boolean> mu,
+    <t:boolean> optionalequal
+)
+    return <t:integer>
+end
+\stoptyping
+
+A glue (spec) is a dimension with optional stretch and|/|or shrink, like \typ {12pt plus
+4pt minus 2pt} or \typ {10pt plus 1 fill}. The glue scanner returns five values:
+
+\starttyping[option=LUA]
+function token.scanglue (
+    <t:boolean> mu,
+    <t:boolean> optionalequal
+)
+    return
+        <t:integer>, -- amount
+        <t:integer>, -- stretch
+        <t:integer>, -- shrink
+        <t:integer>, -- stretchorder
+        <t:integer>  -- shrinkorder
+end
+
+function token.scanglue (
+    <t:boolean> mu,
+    <t:boolean> optionalequal,
+    <t:true>
+)
+    return {
+        <t:integer>, -- amount
+        <t:integer>, -- stretch
+        <t:integer>, -- shrink
+        <t:integer>, -- stretchorder
+        <t:integer>  -- shrinkorder
+    }
+end
+\stoptyping
+
+The skip scanner does the same but returns a \type {gluespec} node:
+
+\starttyping[option=LUA]
+function token.scanskip (
+    <t:boolean> mu,
+    <t:boolean> optionalequal
+)
+    return <t:node> -- gluespec
+end
+\stoptyping
+
+There are several token scanners, for instance one that returns a table:
+
+\starttyping[option=LUA]
+function token.scantoks (
+    <t:boolean> macro,
+    <t:boolean> expand
+)
+    -- return <t:table> -- tokens
+end
+\stoptyping
+
+Here \type {token.scantoks()} will return \type {{123}} as
+
+\starttyping[option=LUA]
+{
+ "<lua token : 589866 == other_char 49>",
+ "<lua token : 589867 == other_char 50>",
+ "<lua token : 589870 == other_char 51>",
+}
+\stoptyping
+
+The next variant returns a token list:
+
+\starttyping[option=LUA]
+function token.scantokenlist (
+    <t:boolean> macro,
+    <t:boolean> expand
+)
+    return <t:token> -- tokenlist
+end
+\stoptyping
+
+Here we get the head of a token list:
+
+\starttyping[option=LUA]
+<lua token : 590083 => 169324 : refcount>={
+ ["active"]=false,
+ ["cmdname"]="escape",
+ ["command"]=0,
+ ["expandable"]=false,
+ ["frozen"]=false,
+ ["id"]=590083,
+ ["immutable"]=false,
+ ["index"]=0,
+}
+\stoptyping
+
+This scans a single character token with specified catcode (bit) sets:
+
+\starttyping[option=LUA]
+function token.scancode ( <t:integer> catcodes )
+    return <t:string> -- character
+end
+\stoptyping
+
+This scans a single character token with catcode letter or other:
+
+\starttyping[option=LUA]
+function token.scantokencode ( )
+    -- return <t:token>
+end
+\stoptyping
+
+The difference between \typ {scanstring} and \typ {scanargument} is that the
+first returns a string given between \type {{}}, as \type {\macro} or as sequence
+of characters with catcode 11 or 12 while the second also accepts a \type {\cs}
+which then get expanded one level unless we force further expansion.
+
+\starttyping[option=LUA]
+function token.scanstring ( <t:boolean> expand )
+    return <t:string>
+end
+
+function token.scanargument ( <t:boolean> expand )
+    return <t:string>
+end
+\stoptyping
+
+So the \type {scanargument} function expands the given argument. When a braced
+argument is scanned, expansion can be prohibited by passing \type {false}
+(default is \type {true}). In case of a control sequence passing \type {false}
+will result in a one|-|level expansion (the meaning of the macro).
+
+The string scanner scans for something between curly braces and expands on the
+way, or when it sees a control sequence it will return its meaning. Otherwise it
+will scan characters with catcode \type {letter} or \type {other}. So, given the
+following definition:
+
+\startbuffer
+\def\oof{oof}
+\def\foo{foo-\oof}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+we get:
+
+\starttabulate[|l|Tl|l|]
+\FL
+\BC name \BC result \NC \NR
+\TL
+\NC \type {\directlua{token.scanstring()}{foo}} \NC \directlua{context("{\\red\\type {"..token.scanstring().."}}")} {foo} \NC full expansion \NC \NR
+\NC \type {\directlua{token.scanstring()}foo}   \NC \directlua{context("{\\red\\type {"..token.scanstring().."}}")} foo   \NC letters and others \NC \NR
+\NC \type {\directlua{token.scanstring()}\foo}  \NC \directlua{context("{\\red\\type {"..token.scanstring().."}}")}\foo   \NC meaning \NC \NR
+\LL
+\stoptabulate
+
+The \type {\foo} case only gives the meaning, but one can pass an already
+expanded definition (\type {\edef}'d). In the case of the braced variant one can
+of course use the \type {\detokenize} and \prm {unexpanded} primitives since
+there we do expand.
+
+A variant is the following which give a bit more control over what doesn't get
+expanded:
+
+\starttyping[option=LUA]
+function token.scantokenstring (
+    <t:boolean> noexpand,
+    <t:boolean> noexpandconstant,
+    <t:boolean> noexpandparameters
+)
+    return <t:string>
+end
+\stoptyping
+
+Here's one that can scan a delimited argument:
+
+\starttyping[option=LUA]
+function token.scandelimited (
+    <t:integer> leftdelimiter,
+    <t:integer> rightdelimiter,
+    <t:boolean> expand
+)
+    return <t:string>
+end
+\stoptyping
+
+A word is a sequence of what \TEX\ calls letters and other characters. The
+optional \type {keep} argument endures that trailing space and \type {\relax}
+tokens are pushed back into the input.
+
+\starttyping[option=LUA]
+function token.scanword ( <t:boolean> keep )
+    return <t:string>
+end
+\stoptyping
+
+Here we do the same but only accept letters:
+
+\starttyping[option=LUA]
+function token.scanletters ( <t:boolean> keep )
+    return <t:string>
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function token.scankey ( )
+    return <t:string>
+end
+\stoptyping
+
+We can pick up a string that stops at a specific character with the next
+function, which accepts two such sentinels (think of a comma and closing
+bracket).
+
+\starttyping[option=LUA]
+function token.scanvalue ( <t:integer> one, <t:integer> two )
+    return <t:string>
+end
+\stoptyping
+
+This returns a single (\UTF) character. Special input like back slashes, hashes,
+etc.\ are interpreted as characters.
+
+\starttyping[option=LUA]
+function token.scanchar ( )
+    return <t:string>
+end
+\stoptyping
+
+This scanner looks for a control sequence and if found returns the name.
+Optionally leading spaces can be skipped.
+
+\starttyping[option=LUA]
+function token.scancsname ( <t:boolean> skipspaces )
+    return <t:string> | <t:nil>
+end
+\stoptyping
+
+The next one returns an integer instead:
+
+\starttyping[option=LUA]
+function token.scancstoken ( <t:boolean> skipspaces )
+    return <t:integer> | <t:nil>
+end
+\stoptyping
+
+This is a straightforward simple scanner that expands next token if needed:
+
+\starttyping[option=LUA]
+function token.scantoken ( )
+    return <t:token>
+end
+\stoptyping
+
+Then next scanner picks up a box specification and returns a \type {[h|v]list}
+node. There are two possible calls. The first variant expects a \type {\hbox}, \type
+{\vbox} etc. The second variant scans for an explicitly passed box type: \type
+{hbox}, \type {vbox}, \type {vbox} or \type {dbox}.
+
+\starttyping[option=LUA]
+function token.scanbox ( )
+    return <t:node> -- box
+end
+
+function token.scanbox ( <t:string> boxtype )
+    return <t:node> -- box
+end
+\stoptyping
+
+This scans and returns a so called \quote {detokenized} string:
+
+\starttyping[option=LUA]
+function token.scandetokened ( <t:boolean> expand )
+    return <t:string>
+end
+\stoptyping
+
+In the next function we check if a specific character with catcode
+letter or other is picked up.
+
+\starttyping[option=LUA]
+function token.isnextchar ( <t:integer> charactercode  )
+    return <t:boolean>
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={Gobbling}]
+
+You can gobble up an integer or dimension with the following helpers. An error is silently
+ignored.
+
+\starttyping[option=LUA]
+function token.gobbleinteger ( <t:boolean> optionalequal )
+    -- no return values
+end
+
+function token.gobbledimension ( <t:boolean> optionalequal )
+    -- no return values
+end
+\stoptyping
+
+This is a nested gobbler:
+
+\starttyping[option=LUA]
+function token.gobble ( <t:token> left, <t:token> right )
+    -- no return values
+end
+\stoptyping
+
+and this a nested grabber that returns a string:
+
+\starttyping[option=LUA]
+function token.grab ( <t:token> left, <t:token> right )
+    return <t:string>
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={Macros}]
+
+This is a nasty one. It pick up two tokens. Then it checks if the next character
+matches the argument and if so, it pushes the first token back into the input,
+otherwise the second.
+
+\starttyping[option=LUA]
+function token.futureexpand ( <t:integer> charactercode )
+    -- no return values
+end
+\stoptyping
+
+The \type {pushmacro} and \type {popmacro} function are still experimental and
+can be used to get and set an existing macro. The push call returns a user data
+object and the pop takes such a userdata object. These object have no accessors
+and are to be seen as abstractions.
+
+\starttyping[option=LUA]
+function token.pushmacro ( <t:string> csname )
+    return <t:userdata>
+end
+
+function token.pushmacro ( <t:integer> token )
+    return <t:userdata> -- entry
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function token.popmacro ( <t:userdata> entry )
+    -- return todo
+end
+\stoptyping
+
+This saves a \LUA\ function index on the save stack. When a group is closes the
+function will be called.
+
+\starttyping[option=LUA]
+function token.savelua ( <t:integer> functionindex, <t:boolean> backtrack )
+    -- no return values
+end
+\stoptyping
+
+The next function serializes a token list:
+
+\starttyping[option=LUA]
+function token.serialize ( )
+    return <t:string>
+end
+\stoptyping
+
+The function is somewhat picky so give van example in \CONTEXT\ speak:
+
+\startbuffer
+\startluacode
+    local t = token.scantokenlist()
+    local s = token.serialize(t)
+    context.type(tostring(t)) context.par()
+    context.type(s)           context.par()
+    context(s)                context.par()
+\stopluacode {before\hskip10pt after}
+\stopbuffer
+
+\typebuffer
+
+The serialize expects a token list as scanned by \typ {scantokenlist} which
+starts with token that points to the list and maintains a reference count, which
+in this context is irrelevant but is used in the engine to prevent duplicates;
+for instance the \type {\let} primitive just points to the original and bumps the
+count.
+
+\startlines
+\getbuffer
+\stoplines
+
+You can interpret a string as \TEX\ input with embedded macros expanded, unless
+they are unexpandable.
+
+\starttyping[option=LUA]
+function token.getexpansion ( <t:string> code )
+    return <t:string> -- result
+end
+\stoptyping
+
+Here is an example:
+
+\startbuffer
+          \def\foo{foo}
+\protected\def\oof{oof}
+
+\startluacode
+context.type(token.getexpansion("test \relax"))
+context.par()
+context.type(token.getexpansion("test \\relax{!} \\foo\\oof"))
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+Watch how the single backslash actually is a \LUA\ escape that results in
+a newline:
+
+\startlines
+\getbuffer
+\stoplines
+
+You can also specify a catcode table identifier:
+
+\starttyping[option=LUA]
+function token.getexpansion (
+    <t:integer> catcodetable,
+    <t:string>  code
+)
+    return <t:string> -- result
+end
+\stoptyping
+
+
+\stopsubsection
+
+\startsubsection[title={Information}]
+
+In some cases you signal to \LUA\ what data type is involved. The list of known
+types are available with:
+
+\starttyping[option=LUA]
+function token.getfunctionvalues ( )
+    return <t:table>
+end
+\stoptyping
+
+\startcolumns[n=3]
+\getbuffer[engine:syntax:functioncodes]
+\stopcolumns
+
+The names of command is made available with:
+
+\starttyping[option=LUA]
+function token.getcommandvalues ( )
+    return <t:table>
+end
+\stoptyping
+
+\startcolumns[n=2]
+\getbuffer[engine:syntax:commandcodes]
+\stopcolumns
+
+The complete list of primitives can be fetched with the next one:
+
+\starttyping[option=LUA]
+function token.getprimitives ( )
+    return {
+        { <t:integer>, <t:integer>, <t:string> }, -- command, value, name
+        ...
+    }
+end
+\stoptyping
+
+The numbers shown below can change if we add or reorganize primitives, although
+this seldom happens. The list gives an impression how primitives are grouped.
+
+\showengineprimitives[2]
+
+This is a curious one: it returns the number of steps that a hash lookup took:
+
+\starttyping[option=LUA]
+function token.locatemacro ( <t:string> name )
+    return <t:integer> - steps
+end
+\stoptyping
+
+We used this helper when deciding on a reasonable hash size. Of the many
+primitives there are a few that need more than one lookup step:
+
+\startluacode
+local p = token.getprimitives()
+local d = { { }, { }, { }, { } }
+local n = {  0 ,  0 ,  0 ,  0  }
+table.sort(p,function(a,b) return a[3] < b[3] end)
+for i=1,#p do
+    local m = p[i][3]
+    local s = token.locatemacro(m)
+    if s > 1 then
+        table.insert(d[s],m)
+    end
+    n[s] = n[s] + 1
+end
+context.starttabulate { "|c|r|lpT|" }
+context.FL()
+context.BC() context("steps")
+context.BC() context("total")
+context.BC() context("macros")
+context.NC() context.NR()
+context.TL()
+for i=1,4 do
+    local di = d[i]
+    local ni = n[i]
+    if ni > 0 then
+        context.NC() context(i)
+        context.NC() context(ni)
+        context.NC() if ni > 20 then context.unknown() else context("% t",di) end
+        context.NC() context.NR()
+    end
+end
+context.LL()
+context.stoptabulate()
+\stopluacode
+
+\stopsubsection
+
+\stopsection
+
+\stopdocument
+
+
+% The \type {scanword} scanner can be used to implement for instance a number
+% scanner. An optional boolean argument can signal that a trailing space or \type
+% {\relax} should be gobbled:
+%
+% \starttyping
+% function token.scannumber(base)
+%     return tonumber(token.scanword(),base)
+% end
+% \stoptyping
+%
+% This scanner accepts any valid \LUA\ number so it is a way to pick up floats
+% in the input.
+%
+% You can use the \LUA\ interface as follows:
+%
+% \starttyping
+% \directlua {
+%     function mymacro(n)
+%         ...
+%     end
+% }
+%
+% \def\mymacro#1{%
+%     \directlua {
+%         mymacro(\number\dimexpr#1)
+%     }%
+% }
+%
+% \mymacro{12pt}
+% \mymacro{\dimen0}
+% \stoptyping
+%
+% You can also do this:
+%
+% \starttyping
+% \directlua {
+%     function mymacro()
+%         local d = token.scandimen()
+%         ...
+%     end
+% }
+%
+% \def\mymacro{%
+%     \directlua {
+%         mymacro()
+%     }%
+% }
+%
+% \mymacro 12pt
+% \mymacro \dimen0
+% \stoptyping
+%
+% It is quite clear from looking at the code what the first method needs as
+% argument(s). For the second method you need to look at the \LUA\ code to see what
+% gets picked up. Instead of passing from \TEX\ to \LUA\ we let \LUA\ fetch from
+% the input stream.
+%
+% In the first case the input is tokenized and then turned into a string, then it
+% is passed to \LUA\ where it gets interpreted. In the second case only a function
+% call gets interpreted but then the input is picked up by explicitly calling the
+% scanner functions. These return proper \LUA\ variables so no further conversion
+% has to be done. This is more efficient but in practice (given what \TEX\ has to
+% do) this effect should not be overestimated. For numbers and dimensions it saves
+% a bit but for passing strings conversion to and from tokens has to be done anyway
+% (although we can probably speed up the process in later versions if needed).
+
+% When scanning for the next token you need to keep in mind that we're not scanning
+% like \TEX\ does: expanding, changing modes and doing things as it goes. When we
+% scan with \LUA\ we just pick up tokens. Say that we have:
+%
+% \pushmacro\oof \let\oof\undefined
+%
+% \starttyping
+% \oof
+% \stoptyping
+%
+% but \type {\oof} is undefined. Normally \TEX\ will then issue an error message.
+% However, when we have:
+%
+% \starttyping
+% \def\foo{\oof}
+% \stoptyping
+%
+% We get no error, unless we expand \type {\foo} while \type {\oof} is still
+% undefined. What happens is that as soon as \TEX\ sees an undefined macro it will
+% create a hash entry and when later it gets defined that entry will be reused. So,
+% \type {\oof} really exists but can be in an undefined state.
+%
+% \startbuffer[demo]
+% oof        : \directlua{tex.print(token.scancsname())}\oof
+% foo        : \directlua{tex.print(token.scancsname())}\foo
+% myfirstoof : \directlua{tex.print(token.scancsname())}\myfirstoof
+% \stopbuffer
+%
+% \startlines
+% \getbuffer[demo]
+% \stoplines
+%
+% This was entered as:
+%
+% \typebuffer[demo]
+%
+% The reason that you see \type {oof} reported and not \type {myfirstoof} is that
+% \type {\oof} was already used in a previous paragraph.
+%
+% If we now say:
+%
+% \startbuffer
+% \def\foo{}
+% \stopbuffer
+%
+% \typebuffer \getbuffer
+%
+% we get:
+%
+% \startlines
+% \getbuffer[demo]
+% \stoplines
+%
+% And if we say
+%
+% \startbuffer
+% \def\foo{\oof}
+% \stopbuffer
+%
+% \typebuffer \getbuffer
+%
+% we get:
+%
+% \startlines
+% \getbuffer[demo]
+% \stoplines
+%
+% When scanning from \LUA\ we are not in a mode that defines (undefined) macros at
+% all. There we just get the real primitive undefined macro token.
+%
+% \startbuffer
+% \directlua{local t = token.scannext() tex.print(t.id.." "..t.tok)}\myfirstoof
+% \directlua{local t = token.scannext() tex.print(t.id.." "..t.tok)}\mysecondoof
+% \directlua{local t = token.scannext() tex.print(t.id.." "..t.tok)}\mythirdoof
+% \stopbuffer
+%
+% \startlines
+% \getbuffer
+% \stoplines
+%
+% This was generated with:
+%
+% \typebuffer
+%
+% So, we do get a unique token because after all we need some kind of \LUA\ object
+% that can be used and garbage collected, but it is basically the same one,
+% representing an undefined control sequence.
+%
+% \popmacro\oof

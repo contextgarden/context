@@ -2,7 +2,6 @@
     See license.txt in the root of this project.
 */
 
-
 /*tex
 
     There is not much here. We only implement a mechanism for storing optional libraries. The
@@ -11,7 +10,6 @@
     |optional| namespace.
 
 */
-
 # include "luametatex.h"
 
 void lmt_library_initialize(lua_State *L)

@@ -4,41 +4,66 @@
 
 # include "luametatex.h"
 
+/*tex 
+
+    We have a a limited set of codes (normal, empty, strut and virtual) but at the \LUA\ end one
+    can have more subtypes, like outline or image. The four common ones have the same numbers but 
+    the codes are (as usual) used in the primitive commands. 
+
+    In theory we could win some on also supporting shorter keywords but in the current setup there 
+    is little gain (e.g. 50K times nothing 0.004, one 0.007, two 0.010 and three 0.013, and in 
+    practice scanning the dimension takes much of that). 
+
+    \starttabulate[|Tl|Tl|]
+    \NC wd  \NC dimen \NC \NR
+    \NC ht  \NC dimen \NC \NR 
+    \NC dp  \NC dimen  \NC \NR
+    \NC hd  \NC dimen dimen \NC \NR
+    \NC whd \NC dimen dimen dimen \NC \NR
+    \stoptabulate 
+
+    Virtual rules don't accept |left|, |right|,  |top|, |bottom|, |char|, |font| and |fam| keys
+    because they use these fields for other purposes. 
+
+    The default nullflags also serve as a signal, for instance un strut rules combined with char 
+    keys. Because a strut is meant for vertical purposes we set the width to zero. 
+
+*/
+
 halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
 {
     /*tex |width|, |depth|, and |height| all equal |null_flag| now */
-    halfword rule = tex_new_rule_node((quarterword) code);
+    halfword rule = tex_new_rule_node((quarterword) code); /* here code == subtype */
     halfword attr = node_attr(rule);
-    switch (type) {
-        case h_rule_type:
-            rule_height(rule) = default_rule;
-            rule_depth(rule) = 0;
-            rule_options(rule) |= rule_option_horizontal;
-            break;
-        case v_rule_type:
-            rule_options(rule) |= rule_option_vertical;
-            /* fall through */
-        case m_rule_type:
-            if (code == strut_rule_code) {
-                rule_width(rule) = 0;
-                node_subtype(rule) = strut_rule_subtype;
-            } else {
+    if (code == strut_rule_code) { 
+        rule_width(rule) = 0;
+        switch (type) {
+            case h_rule_type:
+                rule_options(rule) |= rule_option_horizontal;
+                break;
+            case v_rule_type:
+                rule_options(rule) |= rule_option_vertical;
+                break;
+            default: 
+                break;
+        }
+    } else { 
+        switch (type) {
+            case h_rule_type:
+                rule_height(rule) = default_rule;
+                rule_depth(rule) = 0;
+                rule_options(rule) |= rule_option_horizontal;
+                break;
+            case v_rule_type:
+                rule_options(rule) |= rule_option_vertical;
+                /* fall through */
+            case m_rule_type:
                 rule_width(rule) = default_rule;
-            }
-            break;
+                break;
+        }
     }
     while (1) {
-        /*tex
-            Maybe:
-
-               h : "whdxylrWHDXYLR"
-               v : "whdxytbWHDXYTB"
-               m : "whdxylrtbWHDXYLRTB"
-
-            but for now we are tolerant because internally it's left/right anyway.
-
-        */
-        switch (tex_scan_character("awhdxylrtbcfoAWHDXYLRTBCFO", 0, 1, 0)) {
+        switch (tex_scan_character("awhdpxylrtbcfoAWHDPXYLRTBCFO", 0, 1, 0)) {
             case 0:
                 goto DONE;
             case 'a': case 'A':
@@ -61,17 +86,23 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                     rule_depth(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
                 }
                 break;
+            case 'p': case 'P':
+                if (tex_scan_mandate_keyword("pair", 1)) {
+                    rule_height(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    rule_depth(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                }
+                break;
             case 'l': case 'L':
-                if (node_subtype(rule) != virtual_rule_subtype) { 
+                if (code != virtual_rule_code) { 
                     if (tex_scan_mandate_keyword("left", 1)) {
                         rule_left(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
                     }
-                    break;
-                } else {
+                } else { 
                     goto DONE;
                 }
+                break;
             case 'r': case 'R':
-                if (node_subtype(rule) != virtual_rule_subtype) { 
+                if (code != virtual_rule_code) { 
                     switch (tex_scan_character("uiUI", 0, 0, 0)) {
                         case 'u': case 'U':
                             if (tex_scan_mandate_keyword("running", 2)) {
@@ -93,11 +124,10 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                     if (tex_scan_mandate_keyword("running", 1)) {
                         tex_set_rule_font(rule, tex_scan_font_identifier(NULL));
                     }
-                    goto DONE;
                 }
                 break;
             case 't': case 'T': /* just because it's nicer */
-                if (node_subtype(rule) != virtual_rule_subtype) { 
+                if (code != virtual_rule_code) { 
                     if (tex_scan_mandate_keyword("top", 1)) {
                         rule_left(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
                     }
@@ -106,7 +136,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                     goto DONE;
                 }
             case 'b': case 'B': /* just because it's nicer */
-                if (node_subtype(rule) != virtual_rule_subtype) { 
+                if (code != virtual_rule_code) { 
                     if (tex_scan_mandate_keyword("bottom", 1)) {
                         rule_right(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
                     }
@@ -125,7 +155,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                 }
                 break;
             case 'f': case 'F':
-                if (node_subtype(rule) != virtual_rule_subtype) { 
+                if (code != virtual_rule_code) { 
                     switch (tex_scan_character("aoAO", 0, 0, 0)) {
                         case 'o': case 'O':
                             if (tex_scan_mandate_keyword("font", 2)) {
@@ -146,7 +176,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                     goto DONE;
                 }
             case 'o': case 'O':
-                if (node_subtype(rule) == normal_rule_subtype) { 
+                if (code == normal_rule_code) { 
                     switch (tex_scan_character("nfNF", 0, 0, 0)) {
                         case 'n': case 'N':
                             rule_line_on(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
@@ -165,7 +195,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                     goto DONE;
                 }
             case 'c': case 'C':
-                if (node_subtype(rule) != virtual_rule_subtype) { 
+                if (code == strut_rule_code) { 
                     if (tex_scan_mandate_keyword("char", 1)) {
                         rule_strut_character(rule) = tex_scan_char_number(0);
                     }
@@ -196,7 +226,6 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
             rule_width(rule) = 0;
             rule_height(rule) = 0;
             rule_depth(rule) = 0;
-            node_subtype(rule) = virtual_rule_subtype;
             break;
     }
     if (type == h_rule_type) { 
@@ -251,7 +280,7 @@ void tex_aux_check_math_strut_rule(halfword rule, halfword style)
                     dp = tex_get_math_y_parameter(style, math_parameter_rule_depth);
                 }
             }
-            rule_height(rule) = ht;
+                rule_height(rule) = ht;
             rule_depth(rule) = dp;
         }
     }

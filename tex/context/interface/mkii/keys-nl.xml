@@ -400,6 +400,7 @@
 		<cd:variable name='nogrid' value='geengrid'/>
 		<cd:variable name='noheight' value='noheight'/>
 		<cd:variable name='nohz' value='geenhz'/>
+		<cd:variable name='nointro' value='nointro'/>
 		<cd:variable name='noline' value='noline'/>
 		<cd:variable name='nomarking' value='geenmarkering'/>
 		<cd:variable name='nomenubar' value='geenmenubalk'/>

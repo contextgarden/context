@@ -1,215 +1,282 @@
 % language=us runpath=texruns:manuals/luametatex
 
-% lua.newtable
-
 \environment luametatex-style
 
-\startcomponent luametatex-pdf
+\startdocument[title=PDF]
 
-\startchapter[reference=pdf,title={The \PDF\ related libraries}]
+\startsection[title={Introduction}]
 
-\startsection[title={The \type {pdfe} library}][library=pdfe]
-
-\startsubsection[title={Introduction}]
-
-\topicindex{\PDF+objects}
-
-\topicindex{\PDF+analyze}
-\topicindex{\PDF+\type{pdfe}}
-
-The \type {pdfe} library replaces the \type {epdf} library and provides an
-interface to \PDF\ files. It uses the same code as is used for \PDF\ image
-inclusion. The \type {pplib} library by Paweł Jackowski replaces the \type
-{poppler} (derived from \type {xpdf}) library.
+There is no backend, not even a \DVI\ one. In \CONTEXT\ the main backend is a
+\PDF\ backend and it is written in \LUA. The \PDF\ format makes it possible to
+embed \JPEG\ and \PNG\ encoded images as well as \PDF\ images. All these have to
+be dealt with in \LUA. Although we can parse \PDF\ files with \LUA, the engine
+has a dedicated \PDF\ library on board written by Paweł Jackowski.
 
 A \PDF\ file is basically a tree of objects and one descends into the tree via
-dictionaries (key/value) and arrays (index/value). There are a few topmost
-dictionaries that start at root that are accessed more directly.
+dictionaries (key|/|value) and arrays (index|/|value). There are a few topmost
+dictionaries that start at the document root and those are accessed more
+directly.
 
-Although everything in \PDF\ is basically an object we only wrap a few in so
+Although everything in \PDF\ is basically an object we have to wrap a few in so
 called userdata \LUA\ objects.
 
 \starttabulate[|l|l|]
-\DB type          \BC mapping \NC \NR
-\TB
-\BC \PDF          \BC \LUA \NC \NR
-\NC null          \NC nil \NC \NR
-\NC boolean       \NC boolean \NC \NR
-\NC integer       \NC integer \NC \NR
-\NC float         \NC number \NC \NR
-\NC name          \NC string \NC \NR
-\NC string        \NC string \NC \NR
-\NC array         \NC array userdatum \NC \NR
-\NC dictionary    \NC dictionary userdatum \NC \NR
-\NC stream        \NC stream userdatum (with related dictionary) \NC \NR
-\NC reference     \NC reference userdatum \NC \NR
+\FL
+\BC PDF        \BC \LUA         \NC \NR
+\TL
+\NC null       \NC <t:nil>      \NC \NR
+\NC boolean    \NC <t:boolean>  \NC \NR
+\NC integer    \NC <t:integer>  \NC \NR
+\NC float      \NC <t:number>   \NC \NR
+\NC name       \NC <t:string>   \NC \NR
+\NC string     \NC <t:string>   \NC \NR
+\NC array      \NC <t:userdata> \NC \NR
+\NC dictionary \NC <t:userdata> \NC \NR
+\NC stream     \NC <t:userdata> \NC \NR
+\NC reference  \NC <t:userdata> \NC \NR
 \LL
 \stoptabulate
 
-The regular getters return these \LUA\ data types but one can also get more
-detailed information.
+The interface is rather limited to creating an instance and getting objects and
+values. Aspects like compression and encryption are mostly dealt with
+automatically. In \CONTEXT\ users use an interface layer around these, if they
+use this kind of low level code at all as it assumes familiarity with how \PDF\
+is constructed.
+
+\stopsection
+
+\startsection[title={\LUA\ interfaces}]
+
+\startsubsection[title={Opening and closing}]
+
+There are two ways to open a \PDF\ file:
+
+\starttyping[option=LUA]
+function pdfe.open ( <t:string> filename )
+    return <t:pdf>  -- pdffile
+end
+
+function pdfe.openfile( <t:file> filehandle )
+    return <t:pdf> -- pdffile
+end
+\stoptyping
+
+Instead of from file, we can read from a string:
+
+\starttyping[option=LUA]
+function pdfe.new ( <t:string>  somestring, <t:integer> somelength )
+    return <t:pdf> -- pdffile
+end
+\stoptyping
+
+Closing the instance is done with:
+
+\starttyping[option=LUA]
+function pdfe.close ( <t:pdf> pdffile )
+    -- no return values
+end
+\stoptyping
+
+When we used \type {pdfe.open} the library manages the file and closes it when
+done. You can check if a document opened as expected by calling:
+
+\starttyping[option=LUA]
+function pdfe.getstatus ( <t:pdf> pdffile )
+    return <t:integer> -- status
+end
+\stoptyping
+
+A table of possible return codes can be queried with:
+
+\starttyping[option=LUA]
+function pdfe.getstatusvalues ( )
+    return <t:table> -- values
+end
+\stoptyping
+
+Currently we have these:
+
+\ctxlua{moduledata.pdfe.codes("getstatusvalues")}
+
+An encrypted document can be decrypted by the next command where instead of
+either password you can give \type {nil} and hope for the best:
+
+\starttyping[option=LUA]
+function pdfe.unencrypt (
+    <t:pdf>    pdffile,
+    <t:string> userpassword,
+    <t:string> ownerpassword
+)
+    return <t:integer> -- status
+end
+\stoptyping
 
 \stopsubsection
 
-\startsubsection[title={\type {open}, \type {openfile}, \type {new}, \type {getstatus}, \type {close}, \type {unencrypt}}]
-
-\libindex {open}
-\libindex {new}
-\libindex {new}
-\libindex {getstatus}
-\libindex {close}
-\libindex {unencrypt}
-
-A document is loaded from a file (by name or handle) or string:
-
-\starttyping
-<pdfe document> = pdfe.open(filename)
-<pdfe document> = pdfe.openfile(filehandle)
-<pdfe document> = pdfe.new(somestring,somelength)
-\stoptyping
-
-Such a document is closed with:
-
-\starttyping
-pdfe.close(<pdfe document>)
-\stoptyping
-
-You can check if a document opened well by:
-
-\starttyping
-pdfe.getstatus(<pdfe document>)
-\stoptyping
-
-The returned codes are:
-
-\starttabulate[|c|l|]
-\DB value      \BC explanation \NC \NR
-\TB
-\NC \type {-2} \NC the document is (still) protected \NC \NR
-\NC \type {-1} \NC the document failed to open \NC \NR
-\NC \type  {0} \NC the document is not encrypted \NC \NR
-\NC \type  {1} \NC the document has been unencrypted \NC \NR
-\LL
-\stoptabulate
-
-An encrypted document can be unencrypted by the next command where instead of
-either password you can give \type {nil}:
-
-\starttyping
-pdfe.unencrypt(<pdfe document>,userpassword,ownerpassword)
-\stoptyping
-
-\stopsubsection
-
-\startsubsection[title={\type {getsize}, \type {getversion}, \type {getnofobjects}, \type {getnofpages}}]
-
-\libindex {getsize}
-\libindex {getversion}
-\libindex {getnofobjects}
-\libindex {getnofpages}
+\startsubsection[title=Getting basic information]
 
 A successfully opened document can provide some information:
 
-\starttyping
-bytes = getsize(<pdfe document>)
-major, minor = getversion(<pdfe document>)
-n = getnofobjects(<pdfe document>)
-n = getnofpages(<pdfe document>)
-bytes, waste = getnofpages(<pdfe document>)
+\starttyping[option=LUA]
+function pdfe.getsize( <t:pdf> pdffile )
+    return <t:integer> -- nofbytes
+end
+
+function pdfe.getversion( <t:pdf> pdffile )
+    return
+        <t:integer>, -- major
+        <t:integer>  -- minor
+end
+
+function pdfe.getnofobjects ( <t:pdf> pdffile )
+    return <t:integer> -- nofobjects
+end
+
+function pdfe.getnofpages ( <t:pdf> pdffile )
+    return <t:integer> -- nofpages
+end
+
+function pdfe.memoryusage ( <t:pdf> pdffile )
+    return
+        <t:integer>, -- bytes
+        <t:integer>  -- waste
+end
 \stoptyping
 
 \stopsubsection
 
-\startsubsection[title={\type {get[catalog|trailer|info]}}]
-
-\libindex {getcatalog}
-\libindex {gettrailer}
-\libindex {getinfo}
+\startsubsection[title={The main structure}]
 
 For accessing the document structure you start with the so called catalog, a
 dictionary:
 
-\starttyping
-<pdfe dictionary> = pdfe.getcatalog(<pdfe document>)
+\starttyping[option=LUA]
+function pdfe.getcatalog( <t:pdf> pdffile )
+    return <t:userdata> -- dictionary
+end
 \stoptyping
 
 The other two root dictionaries are accessed with:
 
-\starttyping
-<pdfe dictionary> = pdfe.gettrailer(<pdfe document>)
-<pdfe dictionary> = pdfe.getinfo(<pdfe document>)
+\starttyping[option=LUA]
+function pdfe.gettrailer ( <t:pdf> pdffile )
+    return <t:userdata> -- dictionary
+end
+
+function pdfe.getinfo ( <t:pdf> pdffile )
+    return <t:userdata> -- dictionary
+end
 \stoptyping
 
 \stopsubsection
 
-\startsubsection[title={\type {getpage}, \type {getbox}}]
+\startsubsection[title={Getting content}]
 
-\libindex {getpage}
-\libindex {getbox}
+A specific page can conveniently be reached with the next command, which returns
+a dictionary.
 
-A specific page can conveniently be reached with the next command, which
-returns a dictionary.
-
-\starttyping
-<pdfe dictionary> = pdfe.getpage(<pdfe document>,pagenumber)
+\starttyping[option=LUA]
+function pdfe.getpage ( <t:pdf> pdffile, <t:integer> pagenumber )
+    return <t:userdata> -- dictionary
+end
 \stoptyping
 
 Another convenience command gives you the (bounding) box of a (normally page)
 which can be inherited from the document itself. An example of a valid box name
 is \type {MediaBox}.
 
-\starttyping
-pages = pdfe.getbox(<pdfe dictionary>,boxname)
+\starttyping[option=LUA]
+function pdfe.getbox ( <t:pdf> pdffile, <t:string> boxname )
+    return <t:table> -- boundingbox
+end
 \stoptyping
 
 \stopsubsection
 
-\startsubsection[title={\type {get[string|integer|number|boolean|name]}}]
-
-\libindex {getstring}
-\libindex {getinteger}
-\libindex {getnumber}
-\libindex {getboolean}
-\libindex {getname}
+\startsubsection[title={Getters}]
 
 Common values in dictionaries and arrays are strings, integers, floats, booleans
-and names (which are also strings) and these are also normal \LUA\ objects:
+and names (which are also strings) and these are also normal \LUA\ objects. In
+some cases a value is a userdata object and you can use this helper to get some
+more information:
 
-\starttyping
-s = getstring (<pdfe array|dictionary>,index|key)
-i = getinteger(<pdfe array|dictionary>,index|key)
-n = getnumber (<pdfe array|dictionary>,index|key)
-b = getboolean(<pdfe array|dictionary>,index|key)
-n = getname   (<pdfe array|dictionary>,index|key)
+\starttyping[option=LUA]
+function pdfe.type ( <t:whatever> value )
+    return type -- string
+end
 \stoptyping
 
-The \type {getstring} function has two extra variants:
+Stings are special because internally they are delimited by parenthesis (often
+\typ {pdfdoc} encoding) or angle brackets (hexadecimal or 16 bit \UNICODE).
 
-\starttyping
-s, h = getstring (<pdfe array|dictionary>,index|key,false)
-s    = getstring (<pdfe array|dictionary>,index|key,true)
+\starttyping[option=LUA]
+function pdfe.getstring (
+    <t:userdata> object,
+    <t:string>   key | <t:integer> index
+)
+    return
+        <t:string>  -- decoded value
+end
 \stoptyping
 
-The first call returns the original string plus a boolean indicating if the
-string is hex encoded. The second call returns the unencoded string.
+When you ask for more you get more:
 
-\stopsubsection
+\starttyping[option=LUA]
+function pdfe.getstring (
+    <t:userdata> object,
+    <t:string>   key | <t:integer> index,
+    <t:boolean>  more
+)
+    return
+        <t:string>, -- original
+        <t:boolean>  -- hexencoded
+end
+\stoptyping
 
-\startsubsection[title={\type {get[dictionary|array|stream]}}]
+Basic types are fetched with:
 
-\libindex {getdictionary} \libindex {getfromdictionary}
-\libindex {getarray}      \libindex {getfromarray}
-\libindex {getstream}     \libindex {getfromstream}
+\starttyping[option=LUA]
+function pdfe.getinteger ( <t:userdata>, <t:string> key | <t:integer> index )
+    return <t:integer> -- value
+end
+
+function pdfe.getnumber ( <t:userdata>, <t:string> key | <t:integer> index )
+    return <t:number> -- value
+end
+
+function pdfe.getboolean ( <t:userdata>, <t:string> key | <t:integer> index )
+    return <t:boolean> -- value
+end
+\stoptyping
+
+A name is (in the \PDF\ file) a string prefixed by a slash, like \typ
+[option=PDF] {<< /Type /Foo >>}, for instance keys in a dictionary or keywords in
+an array or constant values.
+
+\starttyping[option=LUA]
+function pdfe.getname ( <t:userdata>, <t:string> key | <t:integer> index )
+    return <t:string> -- value
+end
+\stoptyping
 
 Normally you will use an index in an array and key in a dictionary but dictionaries
 also accept an index. The size of an array or dictionary is available with the
 usual \type {#} operator.
 
-\starttyping
-<pdfe dictionary>   = getdictionary(<pdfe array|dictionary>,index|key)
-<pdfe array>        = getarray     (<pdfe array|dictionary>,index|key)
-<pdfe stream>,
-<pdfe dictionary>   = getstream    (<pdfe array|dictionary>,index|key)
+\starttyping[option=LUA]
+function pdfe.getdictionary ( <t:userdata>, <t:string> key | <t:integer> index )
+    return <t:userdata> -- dictionary
+end
+
+function pdfe.getarray ( <t:userdata>, <t:string> key | <t:integer> index )
+    return <t:userdata> -- array
+end
+
+function pdfe.getstream ( <t:userdata>, <t:string> key | <t:integer> index )
+    return
+        <t:userdata> -- stream
+        <t:userdata> -- dictionary
+end
 \stoptyping
 
 These commands return dictionaries, arrays and streams, which are dictionaries
@@ -218,357 +285,160 @@ with a blob of data attached.
 Before we come to an alternative access mode, we mention that the objects provide
 access in a different way too, for instance this is valid:
 
-\starttyping
+\starttyping[option=LUA]
 print(pdfe.open("foo.pdf").Catalog.Type)
 \stoptyping
 
 At the topmost level there are \type {Catalog}, \type {Info}, \type {Trailer}
 and \type {Pages}, so this is also okay:
 
-\starttyping
+\starttyping[option=LUA]
 print(pdfe.open("foo.pdf").Pages[1])
 \stoptyping
 
 \stopsubsection
 
-\startsubsection[title={\type {[open|close|readfrom|whole|]stream}}]
-
-\libindex {openstream}
-\libindex {closestream}
-\libindex {readfromstream}
-\libindex {readfromwholestream}
+\startsubsection[title={Streams}]
 
 Streams are sort of special. When your index or key hits a stream you get back a
 stream object and dictionary object. The dictionary you can access in the usual
 way and for the stream there are the following methods:
 
-\starttyping
-okay   = openstream(<pdfe stream>,[decode])
-         closestream(<pdfe stream>)
-str, n = readfromstream(<pdfe stream>)
-str, n = readwholestream(<pdfe stream>,[decode])
+\starttyping[option=LUA]
+function pdfe.openstream ( <t:userdata> stream, <t:boolean> decode)
+    return <t:boolean> okay
+end
+
+function pdfe.closestream ( <t:userdata> stream )
+    -- no return values
+end
+
+function pdfe.readfromstream ( <t:userdata> stream )
+    return
+        <t:string>  str,
+        <t:integer> size
+end
+
+function pdfe.readwholestream ( <t:userdata> stream, <t:boolean> decode)
+    return
+        <t:string>  str,
+        <t:integer> size
+end
 \stoptyping
 
 You either read in chunks, or you ask for the whole. When reading in chunks, you
-need to open and close the stream yourself. The \type {n} value indicates the
-length read. The \type {decode} parameter controls if the stream data gets
-uncompressed.
+need to open and close the stream yourself. The \type {decode} parameter controls
+if the stream data gets uncompressed.
 
 As with dictionaries, you can access fields in a stream dictionary in the usual
 \LUA\ way too. You get the content when you \quote {call} the stream. You can
 pass a boolean that indicates if the stream has to be decompressed.
 
-% pdfe.objectcodes      = objectcodes
-% pdfe.stringcodes      = stringcodes
-% pdfe.encryptioncodes  = encryptioncodes
-
 \stopsubsection
 
-\startsubsection[title={\type {getfrom[dictionary|array]}}]
+\startsubsection[title={Low level getters}]
 
-\libindex {getfromdictionary}
-\libindex {getfromarray}
-
-In addition to the interface described before, there is also a bit lower level
+In addition to the getters described before, there is also a bit lower level
 interface available.
 
-\starttyping
-key, type, value, detail = getfromdictionary(<pdfe dictionary>,index)
-type, value, detail = getfromarray(<pdfe array>,index)
+\starttyping[option=LUA]
+function pdfe.getfromdictionary ( <t:userdata>, <t:integer> index )
+    return
+        <t:string>   key,
+        <t:string>   type,
+        <t:whatever> value,
+        <t:whatever> detail
+end
+
+function pdfe.getfromarray ( <t:userdata>, <t:integer> index )
+    return
+        <t:integer>  type,
+        <t:whatever> value,
+        <t:integerr> detail
+end
 \stoptyping
 
-\starttabulate[|c|l|l|l|]
-\DB type       \BC meaning    \BC value            \BC detail \NC \NR
-\NC \type {0}  \NC none       \NC nil              \NC \NC \NR
-\NC \type {1}  \NC null       \NC nil              \NC \NC \NR
-\NC \type {2}  \NC boolean    \NC boolean          \NC \NC \NR
-\NC \type {3}  \NC integer    \NC integer          \NC \NC \NR
-\NC \type {4}  \NC number     \NC float            \NC \NC \NR
-\NC \type {5}  \NC name       \NC string           \NC \NC \NR
-\NC \type {6}  \NC string     \NC string           \NC hex \NC \NR
-\NC \type {7}  \NC array      \NC arrayobject      \NC size \NC \NR
-\NC \type {8}  \NC dictionary \NC dictionaryobject \NC size \NC \NR
-\NC \type {9}  \NC stream     \NC streamobject     \NC dictionary size \NC \NR
-\NC \type {10} \NC reference  \NC integer          \NC \NC \NR
-\LL
-\stoptabulate
+The \type {type} is one of the following:
 
-A \type {hex} string is (in the \PDF\ file) surrounded by \type {<>} while plain
-strings are bounded by \type {<>}.
+\startcolumns[n=4]
+\ctxlua{moduledata.pdfe.codes("getfieldtypes")}
+\stopcolumns
+
+This list was acquired with:
+
+\starttyping[option=LUA]
+function pdfe.getfieldtypes ( )
+    return <t:table> -- types
+end
+\stoptyping
+
+Here \type {detail} is a bitset with possible bits:
+
+\startcolumns[n=4]
+\ctxlua{moduledata.pdfe.codes("getencodingvalues")}
+\stopcolumns
+
+This time we used:
+
+\starttyping[option=LUA]
+function pdfe.getencodingvalues ( )
+    return <t:table> -- values
+end
+\stoptyping
 
 \stopsubsection
 
-\startsubsection[title={\type {[dictionary|array]totable}}]
-
-\libindex {dictionarytotable}
-\libindex {arraytotable}
+\startsubsection[title={Getting tables}]
 
 All entries in a dictionary or table can be fetched with the following commands
 where the return values are a hashed or indexed table.
 
-\starttyping
-hash = dictionarytotable(<pdfe dictionary>)
-list = arraytotable(<pdfe array>)
+\starttyping[option=LUA]
+function pdfe.dictionarytotable ( <t:userdata> )
+    return <t:table> -- hash
+end
+
+function pdfe.arraytotable ( <t:userdata> )
+    return <t:table> -- array
+end
 \stoptyping
 
 You can get a list of pages with:
 
-\starttyping
-{ { <pdfe dictionary>, size, objnum }, ... } = pagestotable(<pdfe document>)
+\starttyping[option=LUA]
+function pdfe.pagestotable(<t:pdf> pdffile)
+    return {
+        {
+            <t:userdata>, -- dictionary
+            <t:integer>,  -- size
+            <t:integer>,  -- objectnumber
+        },
+        ...
+    }
+end
 \stoptyping
 
 \stopsubsection
 
-\startsubsection[title={\type {getfromreference}}]
+\startsubsection[title={References}]
 
-\libindex {getfromreference}
-
-Because you can have unresolved references, a reference object can be resolved
-with:
+In order to access a \PDF\ file efficiently there is lazy evaluation of
+references so when you run into a reference as value or array entry you have to
+resolve it explicitly. An unresolved references object can be resolved with:
 
 \starttyping
-type, <pdfe dictionary|array|stream>, detail = getfromreference(<pdfe reference>)
+function pdfe.getfromreference( <t:integer> reference ) -- NEEDS CHECKING
+    return
+        <t:integer>,  -- type
+        <t:whatever>, -- value
+        <t:whatever>  -- detail
 \stoptyping
 
-So, as second value you get back a new \type {pdfe} userdata object that you can
-query.
+So, as second value you can get back a new \type {pdfe} userdata object that you
+can query.
 
 \stopsubsection
 
 \stopsection
 
-\startsection[title={Memory streams}][library=pdfe]
-
-\topicindex{\PDF+memory streams}
-
-\libindex {new}
-
-The \type {pdfe.new} function takes three arguments:
-
-\starttabulate
-\DB value           \BC explanation      \NC \NR
-\TB
-\NC \type {stream}  \NC this is a (in low level \LUA\ speak) light userdata
-                        object, i.e.\ a pointer to a sequence of bytes \NC \NR
-\NC \type {length}  \NC this is the length of the stream in bytes (the stream can
-                        have embedded zeros) \NC \NR
-\NC \type {name}    \NC optional, this is a unique identifier that is used for
-                        hashing the stream \NC \NR
-\LL
-\stoptabulate
-
-The third argument is optional. When it is not given the function will return a
-\type {pdfe} document object as with a regular file, otherwise it will return a
-filename that can be used elsewhere (e.g.\ in the image library) to reference the
-stream as pseudo file.
-
-Instead of a light userdata stream (which is actually fragile but handy when you
-come from a library) you can also pass a \LUA\ string, in which case the given
-length is (at most) the string length.
-
-The function returns a \type {pdfe} object and a string. The string can be used in
-the \type {img} library instead of a filename. You need to prevent garbage
-collection of the object when you use it as image (for instance by storing it
-somewhere).
-
-Both the memory stream and it's use in the image library is experimental and can
-change. In case you wonder where this can be used: when you use the swiglib
-library for \type {graphicmagick}, it can return such a userdata object. This
-permits conversion in memory and passing the result directly to the backend. This
-might save some runtime in one|-|pass workflows. This feature is currently not
-meant for production and we might come up with a better implementation.
-
-\stopsection
-
-\startsection[title={The \type {pdfscanner} library}][library=pdfscanner]
-
-This library is not available in \LUAMETATEX.
-
-\stopsection
-
-% \startsection[title={The \type {pdfscanner} library}][library=pdfscanner]
-%
-% \topicindex{\PDF+scanner}
-%
-% \libindex {scan}
-%
-% The \type {pdfscanner} library allows interpretation of \PDF\ content streams and
-% \type {/ToUnicode} (cmap) streams. You can get those streams from the \type
-% {pdfe} library, as explained in an earlier section. There is only a single
-% top|-|level function in this library:
-%
-% \startfunctioncall
-% pdfscanner.scan (<pdfe stream>, <table> operatortable, <table> info)
-% pdfscanner.scan (<pdfe array>, <table> operatortable, <table> info)
-% pdfscanner.scan (<string>, <table> operatortable, <table> info)
-% \stopfunctioncall
-%
-% The first argument should be a \LUA\ string or a stream or array onject coming
-% from the \type {pdfe} library. The second argument, \type {operatortable}, should
-% be a \LUA\ table where the keys are \PDF\ operator name strings and the values
-% are \LUA\ functions (defined by you) that are used to process those operators.
-% The functions are called whenever the scanner finds one of these \PDF\ operators
-% in the content stream(s). The functions are called with two arguments: the \type
-% {scanner} object itself, and the \type {info} table that was passed are the third
-% argument to \type {pdfscanner.scan}.
-%
-% Internally, \type {pdfscanner.scan} loops over the \PDF\ operators in the
-% stream(s), collecting operands on an internal stack until it finds a \PDF\
-% operator. If that \PDF\ operator's name exists in \type {operatortable}, then the
-% associated function is executed. After the function has run (or when there is no
-% function to execute) the internal operand stack is cleared in preparation for the
-% next operator, and processing continues.
-%
-% The \type {scanner} argument to the processing functions is needed because it
-% offers various methods to get the actual operands from the internal operand
-% stack.
-%
-% A simple example of processing a \PDF's document stream could look like this:
-%
-% \starttyping
-% local operatortable = { }
-%
-% operatortable.Do = function(scanner,info)
-%     local resources = info.resources
-%     if resources then
-%         local val     = scanner:pop()
-%         local name    = val[2]
-%         local xobject = resources.XObject
-%         print(info.space .. "Uses XObject " .. name)
-%         local resources = xobject.Resources
-%         if resources then
-%             local newinfo =  {
-%                 space     = info.space .. "  ",
-%                 resources = resources,
-%             }
-%             pdfscanner.scan(entry, operatortable, newinfo)
-%         end
-%     end
-% end
-%
-% local function Analyze(filename)
-%     local doc = pdfe.open(filename)
-%     if doc then
-%         local pages = doc.Pages
-%         for i=1,#pages do
-%             local page = pages[i]
-%             local info = {
-%               space     = "  " ,
-%               resources = page.Resources,
-%             }
-%             print("Page " .. i)
-%          -- pdfscanner.scan(page.Contents,operatortable,info)
-%             pdfscanner.scan(page.Contents(),operatortable,info)
-%         end
-%     end
-% end
-%
-% Analyze("foo.pdf")
-% \stoptyping
-%
-% This example iterates over all the actual content in the \PDF, and prints out the
-% found \type {XObject} names. While the code demonstrates quite some of the \type
-% {pdfe} functions, let's focus on the type \type {pdfscanner} specific code
-% instead.
-%
-% From the bottom up, the following line runs the scanner with the \PDF\ page's
-% top|-|level content given in the first argument.
-%
-% The third argument, \type {info}, contains two entries: \type {space} is used to
-% indent the printed output, and \type {resources} is needed so that embedded \type
-% {XForms} can find their own content.
-%
-% The second argument, \type {operatortable} defines a processing function for a
-% single \PDF\ operator, \type {Do}.
-%
-% The function \type {Do} prints the name of the current \type {XObject}, and then
-% starts a new scanner for that object's content stream, under the condition that
-% the \type {XObject} is in fact a \type {/Form}. That nested scanner is called
-% with new \type {info} argument with an updated \type {space} value so that the
-% indentation of the output nicely nests, and with a new \type {resources} field
-% to help the next iteration down to properly process any other, embedded \type
-% {XObject}s.
-%
-% Of course, this is not a very useful example in practice, but for the purpose of
-% demonstrating \type {pdfscanner}, it is just long enough. It makes use of only
-% one \type {scanner} method: \type {scanner:pop()}. That function pops the top
-% operand of the internal stack, and returns a \LUA\ table where the object at index
-% one is a string representing the type of the operand, and object two is its
-% value.
-%
-% The list of possible operand types and associated \LUA\ value types is:
-%
-% \starttabulate[|l|l|]
-% \DB types           \BC type      \NC \NR
-% \TB
-% \NC \type{integer}  \NC <number>  \NC \NR
-% \NC \type{real}     \NC <number>  \NC \NR
-% \NC \type{boolean}  \NC <boolean> \NC \NR
-% \NC \type{name}     \NC <string>  \NC \NR
-% \NC \type{operator} \NC <string>  \NC \NR
-% \NC \type{string}   \NC <string>  \NC \NR
-% \NC \type{array}    \NC <table>   \NC \NR
-% \NC \type{dict}     \NC <table>   \NC \NR
-% \LL
-% \stoptabulate
-%
-% In case of \type {integer} or \type {real}, the value is always a \LUA\ (floating
-% point) number. In case of \type {name}, the leading slash is always stripped.
-%
-% In case of \type {string}, please bear in mind that \PDF\ actually supports
-% different types of strings (with different encodings) in different parts of the
-% \PDF\ document, so you may need to reencode some of the results; \type {pdfscanner}
-% always outputs the byte stream without reencoding anything. \type {pdfscanner}
-% does not differentiate between literal strings and hexadecimal strings (the
-% hexadecimal values are decoded), and it treats the stream data for inline images
-% as a string that is the single operand for \type {EI}.
-%
-% In case of \type {array}, the table content is a list of \type {pop} return
-% values and in case of \type {dict}, the table keys are \PDF\ name strings and the
-% values are \type {pop} return values.
-%
-% \libindex{pop}
-% \libindex{popnumber}
-% \libindex{popname}
-% \libindex{popstring}
-% \libindex{poparray}
-% \libindex{popdictionary}
-% \libindex{popboolean}
-% \libindex{done}
-%
-% There are a few more methods defined that you can ask \type {scanner}:
-%
-% \starttabulate[|l|p|]
-% \DB method               \BC explanation \NC \NR
-% \TB
-% \NC \type{pop}           \NC see above \NC \NR
-% \NC \type{popnumber}     \NC return only the value of a \type {real} or \type {integer} \NC \NR
-% \NC \type{popname}       \NC return only the value of a \type {name} \NC \NR
-% \NC \type{popstring}     \NC return only the value of a \type {string} \NC \NR
-% \NC \type{poparray}      \NC return only the value of a \type {array} \NC \NR
-% \NC \type{popdictionary} \NC return only the value of a \type {dict} \NC \NR
-% \NC \type{popboolean}    \NC return only the value of a \type {boolean} \NC \NR
-% \NC \type{done}          \NC abort further processing of this \type {scan()} call \NC \NR
-% \LL
-% \stoptabulate
-%
-% The \type {pop*} are convenience functions, and come in handy when you know the
-% type of the operands beforehand (which you usually do, in \PDF). For example, the
-% \type {Do} function could have used \type {local name = scanner:popname()}
-% instead, because the single operand to the \type {Do} operator is always a \PDF\
-% name object.
-%
-% The \type {done} function allows you to abort processing of a stream once you
-% have learned everything you want to learn. This comes in handy while parsing
-% \type {/ToUnicode}, because there usually is trailing garbage that you are not
-% interested in. Without \type {done}, processing only ends at the end of the
-% stream, possibly wasting \CPU\ cycles.
-%
-% {\em We keep the older names \type {popNumber}, \type {popName}, \type
-% {popString}, \type {popArray}, \type {popDict} and \type {popBool} around.}
-%
-% \stopsection
-
-\stopchapter
-
-\stopcomponent
+\stopdocument

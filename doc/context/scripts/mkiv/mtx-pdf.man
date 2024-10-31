@@ -35,6 +35,9 @@ show links
 .B --highlights
 show highlights
 .TP
+.B --comments
+show comments
+.TP
 .B --sign
 sign document (assumes signature template)
 .TP

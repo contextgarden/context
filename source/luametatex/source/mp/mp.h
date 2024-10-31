@@ -327,7 +327,6 @@ typedef struct MP_options {
     int                make_text_id;
     int                open_file_id;
     int                interaction;
-    int                extensions;
     int                random_seed;
     int                math_mode;
     char              *job_name;
@@ -1211,7 +1210,6 @@ typedef struct MP_instance {
     /*  */
     int                 less_digits; 
     int                 interaction;
-    int                 extensions;
     int                 random_seed;
     int                 math_mode;
     /*  */
@@ -1755,10 +1753,24 @@ typedef struct mp_if_node_data {
 
 typedef struct mp_if_node_data *mp_if_node;
 
+typedef enum mp_expression_scan_types {
+    mp_expression_scan_code,
+    mp_primary_scan_code,
+    mp_secondary_scan_code,
+    mp_tertiary_scan_code,
+} mp_expression_scan_types;
+
+typedef enum mp_internal_action_types {
+    mp_initialize_internal_code,
+    mp_save_internal_code, 
+    mp_restore_internal_code, 
+ // mp_tracing_internal_code, 
+} mp_internal_action_types; 
+
 /* mp header stuff */
 
 extern void             mp_print_e_str                (MP mp, const char *s);
-//extern void             mp_print_e_chr                (MP mp, unsigned char k);
+//     void             mp_print_e_chr                (MP mp, unsigned char k);
 extern void             mp_show_context               (MP mp);
 extern void             mp_error                      (MP mp, const char *msg, const char *hlp);
 extern void             mp_warn                       (MP mp, const char *msg);

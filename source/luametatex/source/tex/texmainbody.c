@@ -62,7 +62,7 @@
     % Version 3.14159 allowed fontmemsize to change; bulletproofing (March 1995).
     % Version 3.141592 fixed \xleaders, glueset, weird alignments (December 2002).
     % Version 3.1415926 was a general cleanup with minor fixes (February 2008).
-    % Succesive versions have been checked and if needed fixes havebeen applied.
+    % Succesive versions have been checked and if needed fixes have been applied.
     \stoptyping
 
     Although considerable effort has been expended to make the \LUATEX\ program correct and
@@ -360,8 +360,11 @@ void tex_main_body(void)
 
     tex_initialize_directions();
 
-    fitness_demerits_par = tex_default_fitness_demerits(); /* can be in format */
-    par_passes_par = null;                                 /* can be in format */
+    if (! fitness_classes_par) {
+        fitness_classes_par = tex_default_fitness_classes(); 
+    }
+    par_passes_par = null;
+    par_passes_exception_par = null;
 
     {
         char *ptr = tex_engine_input_filename();

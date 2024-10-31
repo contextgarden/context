@@ -186,10 +186,25 @@ static int gmlib_execute(lua_State * L)
     return 2;
 }
 
+static int gmlib_noisetypes(lua_State * L) 
+{
+    lua_createtable(L, 6, 2);
+    lua_set_string_by_index(L, UniformNoise,                "uniform");
+    lua_set_string_by_index(L, GaussianNoise,               "gaussian");
+    lua_set_string_by_index(L, MultiplicativeGaussianNoise, "multiplicative");
+    lua_set_string_by_index(L, ImpulseNoise,                "impulse");
+    lua_set_string_by_index(L, LaplacianNoise,              "laplacian");
+    lua_set_string_by_index(L, PoissonNoise,                "poisson");
+    lua_set_string_by_index(L, RandomNoise,                 "random");
+    lua_set_string_by_index(L, UndefinedNoise,              "undefined");
+    return 1;
+}
+
 static struct luaL_Reg gmlib_function_list[] = {
-    { "initialize", gmlib_initialize },
-    { "execute",    gmlib_execute    },
-    { NULL,         NULL             },
+    { "initialize",    gmlib_initialize },
+    { "execute",       gmlib_execute    },
+    { "getnoisetypes", gmlib_noisetypes },
+    { NULL,            NULL             },
 };
 
 int luaopen_graphicsmagick(lua_State * L)

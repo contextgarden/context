@@ -29,10 +29,15 @@ local handlelog  do
 
     local l, nl, dl = { }, 0, false
 
+    local to_terminal <const> = 1
+    local to_file     <const> = 2
+    local to_both     <const> = 3
+    local to_error    <const> = 4
+
     handlelog = function(instance,target,str)
-        if target == 1 then
+        if target == to_terminal then
             -- log
-        elseif target == 2 or target == 3 then
+        elseif target == to_file or target == to_both then
             -- term
             if str == "\n" then
                 mplib.realtimelogging = true
@@ -47,7 +52,7 @@ local handlelog  do
                 nl = nl + 1
                 l[nl] = str
             end
-        elseif target == 4 then
+        elseif target == to_error then
             report_error(str)
         end
     end
@@ -260,6 +265,7 @@ local propertycodes = {
     [ 1] = "primitive",
     [ 2] = "permanent",
     [ 3] = "immutable",
+    [ 4] = "frozen",
 }
 
 mplib.propertycodes = propertycodes
@@ -308,24 +314,16 @@ function mplib.new(specification)
     local handlers = specification.handlers
     local instance
     instance = mplibnew {
-        -- used
         bend_tolerance = specification.bendtolerance,
         move_tolerance = specification.movetolerance,
         math_mode      = specification.mathmode,
         run_script     = specification.runscript,
         run_internal   = specification.runinternal,
-        script_error   = specification.scripterror,
         make_text      = specification.maketext,
-        -- always
-        extensions     = 1,
      -- random_seed    = specification.seed,
         utf8_mode      = true,
         text_mode      = true,
         show_mode      = true,
-        -- not used
-     -- noninteractive = true;
-     -- ini_version    = true,
-        -- always
         find_file      = finder,
         run_overload   = overload,
         open_file      = openfile,

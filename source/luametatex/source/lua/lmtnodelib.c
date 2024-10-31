@@ -84,6 +84,44 @@
 /* # define NODE_PROPERTIES_INDIRECT  "node.properties.indirect" */
 /* # define NODE_PROPERTIES_INSTANCE  "node.properties.instance" */
 
+
+# define hlist_usage          ((lua_Integer) 1 << (hlist_node          + 1))
+# define vlist_usage          ((lua_Integer) 1 << (vlist_node          + 1))
+# define rule_usage           ((lua_Integer) 1 << (rule_node           + 1))
+# define insert_usage         ((lua_Integer) 1 << (insert_node         + 1))
+# define mark_usage           ((lua_Integer) 1 << (mark_node           + 1))
+# define adjust_usage         ((lua_Integer) 1 << (adjust_node         + 1))
+# define boundary_usage       ((lua_Integer) 1 << (boundary_node       + 1))
+# define disc_usage           ((lua_Integer) 1 << (disc_node           + 1))
+# define whatsit_usage        ((lua_Integer) 1 << (whatsit_node        + 1))
+# define par_usage            ((lua_Integer) 1 << (par_node            + 1))
+# define dir_usage            ((lua_Integer) 1 << (dir_node            + 1))
+# define math_usage           ((lua_Integer) 1 << (math_node           + 1))
+# define glue_usage           ((lua_Integer) 1 << (glue_node           + 1))
+# define kern_usage           ((lua_Integer) 1 << (kern_node           + 1))
+# define penalty_usage        ((lua_Integer) 1 << (penalty_node        + 1))
+# define style_usage          ((lua_Integer) 1 << (style_node          + 1))
+# define choice_usage         ((lua_Integer) 1 << (choice_node         + 1))
+# define parameter_usage      ((lua_Integer) 1 << (parameter_node      + 1))
+# define simple_usage         ((lua_Integer) 1 << (simple_noad         + 1))
+# define radical_usage        ((lua_Integer) 1 << (radical_noad        + 1))
+# define fraction_usage       ((lua_Integer) 1 << (fraction_noad       + 1))
+# define accent_usage         ((lua_Integer) 1 << (accent_noad         + 1))
+# define fence_usage          ((lua_Integer) 1 << (fence_noad          + 1))
+# define math_char_usage      ((lua_Integer) 1 << (math_char_node      + 1))
+# define math_text_char_usage ((lua_Integer) 1 << (math_text_char_node + 1))
+# define sub_box_usage        ((lua_Integer) 1 << (sub_box_node        + 1))
+# define sub_mlist_usage      ((lua_Integer) 1 << (sub_mlist_node      + 1))
+# define delimiter_usage      ((lua_Integer) 1 << (delimiter_node      + 1))
+# define glyph_usage          ((lua_Integer) 1 << (glyph_node          + 1))
+# define unset_usage          ((lua_Integer) 1 << (unset_node          + 1))
+# define align_record_usage   ((lua_Integer) 1 << (align_record_node   + 1))
+# define attribute_usage      ((lua_Integer) 1 << (attribute_node      + 1))
+# define glue_spec_usage      ((lua_Integer) 1 << (glue_spec_node      + 1))
+
+# define common_usage         ((lua_Integer) 1 << (last_nodetype       + 2))
+# define generic_usage        ((lua_Integer) 1 << (last_nodetype       + 3))
+
 /*tex
 
     There is a bit of checking for validity of direct nodes but of course one can still create
@@ -101,13 +139,13 @@ halfword lmt_check_isdirect(lua_State *L, int i)
     return n && _valid_node_(n) ? n : null;
 }
 
-inline static halfword nodelib_valid_direct_from_index(lua_State *L, int i)
+static inline halfword nodelib_valid_direct_from_index(lua_State *L, int i)
 {
     halfword n = lmt_tohalfword(L, i);
     return n && _valid_node_(n) ? n : null;
 }
 
-inline static void nodelib_push_direct_or_nil(lua_State *L, halfword n)
+static inline void nodelib_push_direct_or_nil(lua_State *L, halfword n)
 {
     if (n) {
         lua_pushinteger(L, n);
@@ -116,7 +154,7 @@ inline static void nodelib_push_direct_or_nil(lua_State *L, halfword n)
     }
 }
 
-inline static void nodelib_push_direct_or_nil_node_prev(lua_State *L, halfword n)
+static inline void nodelib_push_direct_or_nil_node_prev(lua_State *L, halfword n)
 {
     if (n) {
         node_prev(n) = null;
@@ -126,7 +164,7 @@ inline static void nodelib_push_direct_or_nil_node_prev(lua_State *L, halfword n
     }
 }
 
-inline static void nodelib_push_node_on_top(lua_State *L, halfword n)
+static inline void nodelib_push_node_on_top(lua_State *L, halfword n)
 {
      *(halfword *) lua_newuserdatauv(L, sizeof(halfword), 0) = n;
      lua_getmetatable(L, -2);
@@ -231,16 +269,18 @@ static void nodelib_push_attribute_data(lua_State *L, halfword n)
 
 /*tex maybe: Floyd's cycle finding: */
 
-static int nodelib_direct_is_loop(lua_State *L)
+# define isloop_usage common_usage
+
+static int nodelib_direct_isloop(lua_State *L)
 {
     halfword head = nodelib_valid_direct_from_index(L, 1);
     if (head) {
         halfword slow = head;
-        halfword fast = head; 
+        halfword fast = head;
         while (slow && fast && node_next(fast)) {
             slow = node_next(slow);
             fast = node_next(node_next(fast));
-            if (slow == fast) { 
+            if (slow == fast) {
                 lua_pushboolean(L, 1);
                 return 1;
             }
@@ -252,7 +292,7 @@ static int nodelib_direct_is_loop(lua_State *L)
 
 /*tex Another shortcut: */
 
-inline static singleword nodelib_getdirection(lua_State *L, int i)
+static inline singleword nodelib_getdirection(lua_State *L, int i)
 {
     return ((lua_type(L, i) == LUA_TNUMBER) ? (singleword) checked_direction_value(lmt_tohalfword(L, i)) : direction_def_value);
 }
@@ -357,7 +397,7 @@ int lmt_get_math_parameter(lua_State *L, int n, int dflt)
         case LUA_TSTRING:
             i = nodelib_aux_get_field_index_from_name(L, n, lmt_interface.math_parameter_values);
             break;
-        default: 
+        default:
             i = -1;
             break;
     }
@@ -427,7 +467,7 @@ void lmt_push_directornode(lua_State *L, halfword n, int isdirect)
 {
     if (! n) {
         lua_pushnil(L);
-    } else if (isdirect) { 
+    } else if (isdirect) {
         lua_push_integer(L, n);
     } else {
         lmt_push_node_fast(L, n);
@@ -447,6 +487,8 @@ static int nodelib_getlist(lua_State *L, int n)
 
 /*tex converts type strings to type ids */
 
+# define id_usage common_usage
+
 static int nodelib_shared_id(lua_State *L)
 {
     if (lua_type(L, 1) == LUA_TSTRING) {
@@ -464,6 +506,8 @@ static int nodelib_shared_id(lua_State *L)
 
 /* node.direct.getid */
 
+# define getid_usage common_usage
+
 static int nodelib_direct_getid(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -477,6 +521,9 @@ static int nodelib_direct_getid(lua_State *L)
 
 /* node.direct.getsubtype */
 /* node.direct.setsubtype */
+
+# define getsubtype_usage common_usage
+# define setsubtype_usage common_usage
 
 static int nodelib_direct_getsubtype(lua_State *L)
 {
@@ -500,6 +547,9 @@ static int nodelib_direct_setsubtype(lua_State *L)
 
 /* node.direct.getexpansion */
 /* node.direct.setexpansion */
+
+# define getexpansion_usage (glyph_usage | kern_usage)
+# define setexpansion_usage getexpansion_usage
 
 static int nodelib_direct_getexpansion(lua_State *L)
 {
@@ -544,6 +594,9 @@ static int nodelib_direct_setexpansion(lua_State *L)
 
 /* node.direct.getfont */
 /* node.direct.setfont */
+
+# define getfont_usage (glyph_usage | glue_usage | math_char_usage | math_text_char_usage | delimiter_usage)
+# define setfont_usage (glyph_usage | rule_usage | glue_usage)
 
 static int nodelib_direct_getfont(lua_State *L)
 {
@@ -598,6 +651,9 @@ static int nodelib_direct_setfont(lua_State *L)
     return 0;
 }
 
+# define getchardict_usage (glyph_usage | math_char_usage | math_text_char_usage | delimiter_usage)
+# define setchardict_usage getchardict_usage
+
 static int nodelib_direct_getchardict(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -619,14 +675,12 @@ static int nodelib_direct_getchardict(lua_State *L)
                 lua_pushinteger(L, kernel_math_character(n));
                 return 5;
             case delimiter_node:
-                { 
-                    lua_pushinteger(L, delimiter_math_properties(n));
-                    lua_pushinteger(L, delimiter_math_group(n));
-                    lua_pushinteger(L, delimiter_math_index(n));
-                    lua_pushinteger(L, tex_fam_fnt(delimiter_small_family(n),0));
-                    lua_pushinteger(L, delimiter_small_character(n));
-                    return 5;
-                }
+                lua_pushinteger(L, delimiter_math_properties(n));
+                lua_pushinteger(L, delimiter_math_group(n));
+                lua_pushinteger(L, delimiter_math_index(n));
+                lua_pushinteger(L, tex_fam_fnt(delimiter_small_family(n),0));
+                lua_pushinteger(L, delimiter_small_character(n));
+                return 5;
         }
     }
     return 0;
@@ -648,6 +702,11 @@ static int nodelib_direct_setchardict(lua_State *L)
                 kernel_math_group(n) = lmt_optquarterword(L, 3, 0);
                 kernel_math_index(n) = lmt_opthalfword(L, 4, 0);
                 break;
+            case delimiter_node:
+                delimiter_math_properties(n) = lmt_optquarterword(L, 2, 0);
+                delimiter_math_group(n) = lmt_optquarterword(L, 3, 0);
+                delimiter_math_index(n) = lmt_opthalfword(L, 4, 0);
+                break;
         }
     }
     return 0;
@@ -655,6 +714,9 @@ static int nodelib_direct_setchardict(lua_State *L)
 
 /* node.direct.getchar */
 /* node.direct.setchar */
+
+# define getchar_usage (glyph_usage | rule_usage | math_char_usage | math_text_char_usage | delimiter_usage)
+# define setchar_usage getchar_usage
 
 static int nodelib_direct_getchar(lua_State *L)
 {
@@ -711,6 +773,9 @@ static int nodelib_direct_setchar(lua_State *L)
 
 /* bonus */
 
+# define getcharspec_usage (glyph_usage | rule_usage | simple_usage | math_char_usage | math_text_char_usage | delimiter_usage)
+# define setcharspec_usage getcharspec_usage
+
 static int nodelib_direct_getcharspec(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -725,11 +790,11 @@ static int nodelib_direct_getcharspec(lua_State *L)
                 lua_pushinteger(L, rule_strut_character(n));
                 lua_pushinteger(L, tex_get_rule_font(n, text_style));
                 break;
-            case simple_noad: 
+            case simple_noad:
                 n = noad_nucleus(n);
-                if (n) { 
+                if (n) {
                     goto AGAIN;
-                } else { 
+                } else {
                     break;
                 }
             case math_char_node:
@@ -750,6 +815,9 @@ static int nodelib_direct_getcharspec(lua_State *L)
 
 /* node.direct.getfam */
 /* node.direct.setfam */
+
+# define getfam_usage (math_char_usage | math_text_char_usage | simple_usage | radical_usage | fraction_usage | accent_usage | fence_usage | rule_usage)
+# define setfam_usage getfam_usage
 
 static int nodelib_direct_getfam(lua_State *L)
 {
@@ -823,6 +891,9 @@ static int nodelib_direct_setfam(lua_State *L)
     we have a lua/lmt split.)
 */
 
+# define getstate_usage (glyph_usage | hlist_usage | vlist_usage)
+# define setstate_usage getstate_usage
+
 static int nodelib_direct_getstate(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -874,27 +945,30 @@ static int nodelib_direct_setstate(lua_State *L)
 /* node.direct.getclass(n,main,left,right) */
 /* node.direct.setclass(n,main,left,right) */
 
+# define getclass_usage (simple_usage | radical_usage | fraction_usage | accent_usage | fence_usage | glyph_usage | disc_usage | hlist_usage | vlist_usage | delimiter_usage)
+# define setclass_usage getclass_usage
+
 static int nodelib_direct_getclass(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
-        switch (node_type(n)) { 
+        switch (node_type(n)) {
             case simple_noad:
             case radical_noad:
             case fraction_noad:
             case accent_noad:
             case fence_noad:
-                lua_push_integer(L, get_noad_main_class(n)); 
-                lua_push_integer(L, get_noad_left_class(n)); 
+                lua_push_integer(L, get_noad_main_class(n));
+                lua_push_integer(L, get_noad_left_class(n));
                 lua_push_integer(L, get_noad_right_class(n));
                 return 3;
             case glyph_node:
-                { 
+                {
                     singleword mathclass = node_subtype(n) - glyph_math_ordinary_subtype;
-                    if (mathclass >= 0) { 
+                    if (mathclass >= 0) {
                         lua_push_integer(L, mathclass);
                         return 1;
-                    } else { 
+                    } else {
                         break;
                     }
                 }
@@ -903,12 +977,12 @@ static int nodelib_direct_getclass(lua_State *L)
                 return 1;
             case hlist_node:
             case vlist_node:
-                { 
+                {
                     singleword mathclass = node_subtype(n) - noad_class_list_base;
-                    if (mathclass >= 0) { 
+                    if (mathclass >= 0) {
                         lua_push_integer(L, mathclass);
                         return 1;
-                    } else { 
+                    } else {
                         break;
                     }
                 }
@@ -924,21 +998,21 @@ static int nodelib_direct_getclass(lua_State *L)
 static int nodelib_direct_setclass(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
-    if (n) { 
-        switch (node_type(n)) { 
+    if (n) {
+        switch (node_type(n)) {
             case simple_noad:
             case radical_noad:
             case fraction_noad:
             case accent_noad:
             case fence_noad:
                 if (lua_type(L, 2) == LUA_TNUMBER) {
-                    set_noad_main_class(n, lmt_tosingleword(L, 2)); 
+                    set_noad_main_class(n, lmt_tosingleword(L, 2));
                 }
                 if (lua_type(L, 3) == LUA_TNUMBER) {
-                    set_noad_left_class(n, lmt_tosingleword(L, 3)); 
+                    set_noad_left_class(n, lmt_tosingleword(L, 3));
                 }
                 if (lua_type(L, 4) == LUA_TNUMBER) {
-                    set_noad_right_class(n, lmt_tosingleword(L, 4)); 
+                    set_noad_right_class(n, lmt_tosingleword(L, 4));
                 }
                 break;
             case glyph_node:
@@ -961,6 +1035,9 @@ static int nodelib_direct_setclass(lua_State *L)
 
 /* node.direct.getscript(n) */
 /* node.direct.setscript(n) */
+
+# define getscript_usage (glyph_usage)
+# define setscript_usage getscript_usage
 
 static int nodelib_direct_getscript(lua_State *L)
 {
@@ -989,6 +1066,9 @@ static int nodelib_direct_setscript(lua_State *L)
 /* node.direct.getlanguage */
 /* node.direct.setlanguage */
 
+# define getlanguage_usage (glyph_usage)
+# define setlanguage_usage getlanguage_usage
+
 static int nodelib_direct_getlanguage(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -1012,6 +1092,9 @@ static int nodelib_direct_setlanguage(lua_State *L)
 /* node.direct.getcontrol */
 /* node.direct.setcontrol */
 
+# define getcontrol_usage (glyph_usage)
+# define setcontrol_usage getcontrol_usage
+
 static int nodelib_direct_getcontrol(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -1034,6 +1117,9 @@ static int nodelib_direct_setcontrol(lua_State *L)
 
 /* node.direct.getattributelist */
 /* node.direct.setattributelist */
+
+# define getattributelist_usage common_usage
+# define setattributelist_usage getattributelist_usage
 
 static int nodelib_direct_getattributelist(lua_State *L)
 {
@@ -1104,6 +1190,9 @@ static int nodelib_direct_setattributelist(lua_State *L)
 /* node.direct.getpenalty */
 /* node.direct.setpenalty */
 
+# define getpenalty_usage (penalty_usage | disc_usage | math_node)
+# define setpenalty_usage getpenalty_usage
+
 static int nodelib_direct_getpenalty(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -1150,6 +1239,11 @@ static int nodelib_direct_setpenalty(lua_State *L)
 /* node.direct.getnucleus */
 /* node.direct.setnucleus */
 
+# define atomlike_usage (simple_usage | accent_usage | radical_usage)
+
+# define getnucleus_usage atomlike_usage
+# define setnucleus_usage atomlike_usage
+
 static int nodelib_direct_getnucleus(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -1170,7 +1264,7 @@ static int nodelib_direct_getnucleus(lua_State *L)
                     return 1;
                 }
         }
-    } 
+    }
     lua_pushnil(L);
     return 1;
 }
@@ -1193,6 +1287,9 @@ static int nodelib_direct_setnucleus(lua_State *L)
 /* node.direct.getscripts */
 /* node.direct.setscripts */
 
+# define getscripts_usage atomlike_usage
+# define setscripts_usage atomlike_usage
+
 static int nodelib_direct_getscripts(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -1208,7 +1305,7 @@ static int nodelib_direct_getscripts(lua_State *L)
                 nodelib_push_direct_or_nil(L, noad_subprescr(n));
                 return 5;
         }
-    } 
+    }
     return 0;
 }
 
@@ -1233,6 +1330,9 @@ static int nodelib_direct_setscripts(lua_State *L)
 
 /* node.direct.getsub */
 /* node.direct.setsub */
+
+# define getsub_usage atomlike_usage
+# define setsub_usage atomlike_usage
 
 static int nodelib_direct_getsub(lua_State *L)
 {
@@ -1271,6 +1371,9 @@ static int nodelib_direct_setsub(lua_State *L)
 /* node.direct.getsubpre */
 /* node.direct.setsubpre */
 
+# define getsubpre_usage atomlike_usage
+# define setsubpre_usage atomlike_usage
+
 static int nodelib_direct_getsubpre(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -1304,6 +1407,9 @@ static int nodelib_direct_setsubpre(lua_State *L)
 
 /* node.direct.getsup */
 /* node.direct.setsup */
+
+# define getsup_usage atomlike_usage
+# define setsup_usage atomlike_usage
 
 static int nodelib_direct_getsup(lua_State *L)
 {
@@ -1342,6 +1448,9 @@ static int nodelib_direct_setsup(lua_State *L)
 /* node.direct.getsuppre */
 /* node.direct.setsuppre */
 
+# define getsuppre_usage atomlike_usage
+# define setsuppre_usage atomlike_usage
+
 static int nodelib_direct_getsuppre(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -1376,6 +1485,9 @@ static int nodelib_direct_setsuppre(lua_State *L)
 /* node.direct.getprime */
 /* node.direct.setprime */
 
+# define getprime_usage atomlike_usage
+# define setprime_usage atomlike_usage
+
 static int nodelib_direct_getprime(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -1409,6 +1521,9 @@ static int nodelib_direct_setprime(lua_State *L)
 
 /* node.direct.getkern (overlaps with getwidth) */
 /* node.direct.setkern (overlaps with getwidth) */
+
+# define getkern_usage (kern_usage | math_usage)
+# define setkern_usage getkern_usage
 
 static int nodelib_direct_getkern(lua_State *L)
 {
@@ -1457,6 +1572,9 @@ static int nodelib_direct_setkern(lua_State *L)
 
 /* node.direct.getdirection */
 /* node.direct.setdirection */
+
+# define getdirection_usage (dir_usage | hlist_usage | vlist_usage | par_usage)
+# define setdirection_usage getdirection_usage
 
 static int nodelib_direct_getdirection(lua_State *L)
 {
@@ -1511,6 +1629,9 @@ static int nodelib_direct_setdirection(lua_State *L)
 
 /* node.direct.getanchors */
 /* node.direct.setanchors */
+
+# define getanchors_usage (hlist_usage | vlist_usage | simple_usage | radical_usage | fraction_usage | accent_usage | fence_usage)
+# define setanchors_usage getanchors_usage
 
 static int nodelib_direct_getanchors(lua_State *L)
 {
@@ -1632,6 +1753,9 @@ static int nodelib_direct_setanchors(lua_State *L)
 /* node.direct.getoffsets */
 /* node.direct.getoffsets */
 
+# define getoffsets_usage (glyph_usage | hlist_usage | vlist_usage | rule_usage)
+# define setoffsets_usage getoffsets_usage
+
 static int nodelib_direct_getoffsets(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -1722,6 +1846,9 @@ static int nodelib_direct_setoffsets(lua_State *L)
 /* node.direct.addxoffset */
 /* node.direct.addyoffset */
 
+# define addxoffset_usage (glyph_usage | hlist_usage | vlist_usage | rule_usage)
+# define addyoffset_usage addxoffset_usage
+
 static int nodelib_direct_addxoffset(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -1766,6 +1893,9 @@ static int nodelib_direct_addyoffset(lua_State *L)
 
 /* node.direct.addmargins */
 /* node.direct.addxymargins */
+
+# define addmargins_usage   (glyph_usage | rule_usage)
+# define addxymargins_usage glyph_usage
 
 static int nodelib_direct_addmargins(lua_State *L)
 {
@@ -1842,6 +1972,9 @@ static int nodelib_direct_addxymargins(lua_State *L)
 
 /* node.direct.getscale   */
 
+# define getscale_usage glyph_usage
+# define setscale_usage getscale_usage
+
 static int nodelib_direct_getscale(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -1852,8 +1985,25 @@ static int nodelib_direct_getscale(lua_State *L)
     return 0;
 }
 
+static int nodelib_direct_setscale(lua_State *L)
+{
+    halfword n = nodelib_valid_direct_from_index(L, 1);
+    if (n && node_type(n) == glyph_node) {
+        if (lua_type(L, 2) == LUA_TNUMBER) {
+            glyph_scale(n) = (halfword) lmt_roundnumber(L, 2);
+            if (! glyph_scale(n)) {
+                glyph_scale(n) = scaling_factor;
+            }
+        }
+    }
+    return 0;
+}
+
 /* node.direct.getscales  */
 /* node.direct.setscales  */
+
+# define getscales_usage glyph_usage
+# define setscales_usage getscales_usage
 
 static int nodelib_direct_getscales(lua_State *L)
 {
@@ -1897,11 +2047,14 @@ static int nodelib_direct_setscales(lua_State *L)
 /* node.direct.getxscale  */
 /* node.direct.getyscale  */
 
+# define getxscale_usage (glue_usage | glyph_usage)
+# define getyscale_usage getxscale_usage
+
 static int nodelib_direct_getxscale(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
-    if (n) { 
-        switch (node_type(n)) { 
+    if (n) {
+        switch (node_type(n)) {
             case glue_node:
                 {
                     switch (node_subtype(n)) {
@@ -1910,7 +2063,7 @@ static int nodelib_direct_getxscale(lua_State *L)
                             if (tex_char_exists(glue_font(n), 0x20)) {
                                 halfword prv = node_prev(n);
                                 halfword nxt = node_next(n);
-                                if (prv) { 
+                                if (prv) {
                                     if (node_type(prv) == kern_node && font_related_kern(node_subtype(prv))) {
                                         prv = node_prev(prv);
                                     }
@@ -1919,7 +2072,7 @@ static int nodelib_direct_getxscale(lua_State *L)
                                         goto COMMON;
                                     }
                                 }
-                                if (nxt) { 
+                                if (nxt) {
                                     if (node_type(nxt) == kern_node && font_related_kern(node_subtype(nxt))) {
                                         prv = node_prev(nxt);
                                     }
@@ -1988,6 +2141,9 @@ static int nodelib_direct_getyscale(lua_State *L)
 
 /* node.direct.xscaled  */
 /* node.direct.yscaled  */
+
+# define xscaled_usage glyph_usage
+# define yscaled_usage xscaled_usage
 
 static int nodelib_direct_xscaled(lua_State *L)
 {
@@ -2066,6 +2222,9 @@ static void nodelib_aux_pushxyscales(lua_State *L, halfword n)
 
 /* node.direct.getxyscales */
 
+# define getxyscales_usage glyph_usage
+# define setxyscales_usage getxyscales_usage
+
 static int nodelib_direct_getxyscales(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -2080,6 +2239,9 @@ static int nodelib_direct_getxyscales(lua_State *L)
 
 /* node.direct.getslant */
 /* node.direct.setslant */
+
+# define getslant_usage glyph_usage
+# define setslant_usage getslant_usage
 
 static int nodelib_direct_getslant(lua_State *L)
 {
@@ -2099,6 +2261,9 @@ static int nodelib_direct_setslant(lua_State *L)
 
 /* node.direct.getweight */
 /* node.direct.setweight */
+
+# define getweight_usage glyph_usage
+# define setweight_usage getweight_usage
 
 static int nodelib_direct_getweight(lua_State *L)
 {
@@ -2121,20 +2286,23 @@ static int nodelib_direct_setweight(lua_State *L)
     return 0;
 }
 
-/*tex 
+/*tex
     For the moment we don't provide setters for math discretionaries, mainly because these are
     special and I don't want to waste time on checking and intercepting errors. They are not that
-    widely used anyway. 
+    widely used anyway.
 */
 
 /* node.direct.getdisc */
 /* node.direct.setdisc */
 
+# define getdisc_usage (disc_usage | choice_usage)
+# define setdisc_usage getdisc_usage
+
 static int nodelib_direct_getdisc(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
-    if (n) { 
-        switch (node_type(n)) { 
+    if (n) {
+        switch (node_type(n)) {
             case disc_node:
                 nodelib_push_direct_or_nil(L, disc_pre_break_head(n));
                 nodelib_push_direct_or_nil(L, disc_post_break_head(n));
@@ -2160,7 +2328,7 @@ static int nodelib_direct_getdisc(lua_State *L)
                     } else {
                         return 3;
                     }
-                } else { 
+                } else {
                     break;
                 }
         }
@@ -2204,12 +2372,16 @@ static int nodelib_direct_setdisc(lua_State *L)
 /* node.direct.getdiscpart */
 /* node.direct.setdiscpart */
 
+# define getdiscpart_usage glyph_node
+# define setdiscpart_usage getdiscpart_usage
+
 static int nodelib_direct_getdiscpart(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n && node_type(n) == glyph_node) {
         lua_pushinteger(L, get_glyph_discpart(n));
-        return 1;
+        lua_pushinteger(L, get_glyph_discafter(n));
+        return 2;
     } else {
         return 0;
     }
@@ -2219,7 +2391,8 @@ static int nodelib_direct_setdiscpart(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n && node_type(n) == glyph_node) {
-        set_glyph_discpart(n, luaL_optinteger(L, 2, glyph_discpart_unset));
+        set_glyph_discpart(n, luaL_optinteger(L, 2, 0));
+        set_glyph_discafter(n, luaL_optinteger(L, 3, 0));
         return 1;
     } else {
         return 0;
@@ -2229,6 +2402,10 @@ static int nodelib_direct_setdiscpart(lua_State *L)
 /* node.direct.getpre */
 /* node.direct.getpost */
 /* node.direct.getreplace */
+
+# define getpre_usage     (disc_usage | hlist_usage | vlist_usage | choice_usage)
+# define getpost_usage    getpre_usage
+# define getreplace_usage (disc_usage | choice_usage)
 
 static int nodelib_direct_getpre(lua_State *L)
 {
@@ -2252,7 +2429,7 @@ static int nodelib_direct_getpre(lua_State *L)
                 if (node_subtype(n) == discretionary_choice_subtype) {
                     nodelib_push_direct_or_nil(L, choice_pre_break(n));
                     return 1;
-                } else { 
+                } else {
                     break;
                 }
         }
@@ -2282,7 +2459,7 @@ static int nodelib_direct_getpost(lua_State *L)
                 if (node_subtype(n) == discretionary_choice_subtype) {
                     nodelib_push_direct_or_nil(L, choice_post_break(n));
                     return 1;
-                } else { 
+                } else {
                     break;
                 }
         }
@@ -2293,8 +2470,8 @@ static int nodelib_direct_getpost(lua_State *L)
 static int nodelib_direct_getreplace(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
-    if (n) { 
-        switch (node_type(n)) { 
+    if (n) {
+        switch (node_type(n)) {
             case disc_node:
                 nodelib_push_direct_or_nil(L, disc_no_break_head(n));
                 nodelib_push_direct_or_nil(L, disc_no_break_tail(n));
@@ -2303,7 +2480,7 @@ static int nodelib_direct_getreplace(lua_State *L)
                 if (node_subtype(n) == discretionary_choice_subtype) {
                     nodelib_push_direct_or_nil(L, choice_no_break(n));
                     return 1;
-                } else { 
+                } else {
                     break;
                 }
         }
@@ -2314,6 +2491,10 @@ static int nodelib_direct_getreplace(lua_State *L)
 /* node.direct.setpre */
 /* node.direct.setpost */
 /* node.direct.setreplace */
+
+# define setpre_usage     (disc_usage | hlist_usage | vlist_usage)
+# define setpost_usage    setpre_usage
+# define setreplace_usage (disc_usage)
 
 static int nodelib_direct_setpre(lua_State *L)
 {
@@ -2366,6 +2547,8 @@ static int nodelib_direct_setreplace(lua_State *L)
 
 /* split ifs for clearity .. compiler will optimize */
 
+# define getwidth_usage (hlist_usage | vlist_usage | unset_usage | align_record_usage | rule_usage | glue_usage | glue_spec_usage | glyph_usage | kern_usage | math_usage)
+
 static int nodelib_direct_getwidth(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -2417,6 +2600,8 @@ static int nodelib_direct_getwidth(lua_State *L)
     return 1;
 }
 
+# define setwidth_usage (hlist_usage | vlist_usage | unset_usage | align_record_usage | rule_usage | glue_usage | glue_spec_usage | kern_usage | math_usage)
+
 static int nodelib_direct_setwidth(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -2453,6 +2638,8 @@ static int nodelib_direct_setwidth(lua_State *L)
 /* node.direct.getheight */
 /* node.direct.setheight */
 
+# define getheight_usage (hlist_usage | vlist_usage | unset_usage | rule_usage | insert_usage | glyph_usage | fence_usage)
+
 static int nodelib_direct_getheight(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -2485,6 +2672,8 @@ static int nodelib_direct_getheight(lua_State *L)
     return 1;
 }
 
+# define setheight_usage (hlist_usage | vlist_usage | unset_usage | rule_usage | insert_usage | fence_usage)
+
 static int nodelib_direct_setheight(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -2515,6 +2704,8 @@ static int nodelib_direct_setheight(lua_State *L)
 
 /* node.direct.getdepth */
 /* node.direct.setdepth */
+
+# define getdepth_usage getheight_usage
 
 static int nodelib_direct_getdepth(lua_State *L)
 {
@@ -2548,6 +2739,8 @@ static int nodelib_direct_getdepth(lua_State *L)
     return 1;
 }
 
+# define setdepth_usage setheight_usage
+
 static int nodelib_direct_setdepth(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -2578,6 +2771,9 @@ static int nodelib_direct_setdepth(lua_State *L)
 
 /* node.direct.gettotal */
 /* node.direct.settotal */
+
+# define gettotal_usage (hlist_usage | vlist_usage | unset_usage | rule_usage | insert_usage | glyph_usage | fence_usage)
+# define settotal_usage insert_usage
 
 static int nodelib_direct_gettotal(lua_State *L)
 {
@@ -2627,6 +2823,9 @@ static int nodelib_direct_settotal(lua_State *L)
 /* node.direct.getshift */
 /* node.direct.setshift */
 
+# define getshift_usage (hlist_usage | vlist_usage)
+# define setshift_usage getshift_usage
+
 static int nodelib_direct_getshift(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -2661,6 +2860,9 @@ static int nodelib_direct_setshift(lua_State *L)
 
 /* node.direct.getindex */
 /* node.direct.setindex */
+
+# define getindex_usage (hlist_usage | vlist_usage | insert_usage | mark_usage | adjust_usage)
+# define setindex_usage getindex_usage
 
 static int nodelib_direct_getindex(lua_State* L)
 {
@@ -2740,6 +2942,10 @@ static int nodelib_direct_setindex(lua_State* L)
 /* node.direct.getgeometry */
 /* node.direct.setgeometry */
 
+# define hasgeometry_usage (hlist_usage | vlist_usage)
+# define getgeometry_usage hasgeometry_usage
+# define setgeometry_usage hasgeometry_usage
+
 static int nodelib_direct_hasgeometry(lua_State* L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -2806,6 +3012,9 @@ static int nodelib_direct_setgeometry(lua_State* L)
 
 /* node.direct.getorientation */
 /* node.direct.setorientation */
+
+# define getorientation_usage (hlist_usage |vlist_usage)
+# define setorientation_usage getorientation_usage
 
 static int nodelib_direct_getorientation(lua_State *L)
 {
@@ -2915,6 +3124,9 @@ static int nodelib_direct_setorientation(lua_State *L)
 /* node.direct.setoptions */
 /* node.direct.getoptions */
 
+# define setoptions_usage (glyph_usage | disc_usage | glue_usage | rule_usage | math_usage | penalty_usage | simple_usage | radical_usage | fraction_usage | accent_usage | math_char_usage | math_text_char_usage)
+# define getoptions_usage setoptions_usage
+
 static int nodelib_direct_getoptions(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -2995,6 +3207,9 @@ static int nodelib_direct_setoptions(lua_State *L)
 
 /* node.direct.getwhd */
 /* node.direct.setwhd */
+
+# define getwhd_usage (hlist_usage | vlist_usage | unset_usage | rule_usage | glyph_usage | glue_usage )
+# define setwhd_usage getwhd_usage
 
 static int nodelib_direct_getwhd(lua_State *L)
 {
@@ -3111,6 +3326,8 @@ static int nodelib_direct_setwhd(lua_State *L)
 
 /* node.direct.getcornerkerns */
 
+# define getcornerkerns_usage glyph_usage
+
 static int nodelib_direct_getcornerkerns(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -3126,6 +3343,8 @@ static int nodelib_direct_getcornerkerns(lua_State *L)
 }
 
 /* node.direct.hasdimensions */
+
+# define hasdimensions_usage (hlist_usage | vlist_usage | unset_usage | rule_usage | glyph_usage | glue_usage)
 
 static int nodelib_direct_hasdimensions(lua_State *L)
 {
@@ -3177,6 +3396,8 @@ static int nodelib_direct_hasdimensions(lua_State *L)
 
 /* node.direct.getglyphdimensions */
 
+# define getglyphdimensions_usage glyph_usage
+
 static int nodelib_direct_getglyphdimensions(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -3196,7 +3417,9 @@ static int nodelib_direct_getglyphdimensions(lua_State *L)
     }
 }
 
-/* node.direct.getkerndimensions */
+/* node.direct.getkerndimension */
+
+# define getkerndimension_usage kern_usage
 
 static int nodelib_direct_getkerndimension(lua_State *L)
 {
@@ -3211,11 +3434,13 @@ static int nodelib_direct_getkerndimension(lua_State *L)
 
 /* node.direct.getlistdimensions */
 
+# define getlistdimensions_usage (hlist_usage | vlist_usage)
+
 static int nodelib_direct_getlistdimensions(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
-        switch (node_type(n)) { 
+        switch (node_type(n)) {
             /* when we need it more node types will be handled */
             case hlist_node:
             case vlist_node:
@@ -3234,6 +3459,9 @@ static int nodelib_direct_getlistdimensions(lua_State *L)
 /* node.direct.getruledimensions */
 /* node.direct.setruledimensions */
 
+# define getruledimensions_usage rule_usage
+# define setruledimensions_usage rule_usage
+
 static int nodelib_direct_getruledimensions(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -3250,7 +3478,7 @@ static int nodelib_direct_getruledimensions(lua_State *L)
             lua_pushboolean(L, 0);
         }
         return 4;
-    } else { 
+    } else {
         return 0;
     }
 }
@@ -3283,6 +3511,9 @@ static int nodelib_direct_setruledimensions(lua_State *L)
 
 /* node.direct.getlist */
 /* node.direct.setlist */
+
+# define getlist_usage (hlist_usage | vlist_usage | unset_usage | sub_box_usage | sub_mlist_usage | insert_usage | adjust_usage)
+# define setlist_usage getlist_usage
 
 static int nodelib_direct_getlist(lua_State *L)
 {
@@ -3345,6 +3576,9 @@ static int nodelib_direct_setlist(lua_State *L)
 /* node.direct.getexcept */
 /* node.direct.setexcept */
 
+# define getexcept_usage (hlist_usage | vlist_usage | unset_usage)
+# define setexcept_usage getexcept_usage
+
 static int nodelib_direct_getexcept(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -3383,6 +3617,9 @@ static int nodelib_direct_setexcept(lua_State *L)
 /* node.direct.getleader */
 /* node.direct.setleader */
 
+# define getleader_usage glue_usage
+# define setleader_usage getleader_usage
+
 static int nodelib_direct_getleader(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -3412,6 +3649,9 @@ static int nodelib_direct_setleader(lua_State *L)
     |getvalue| and |setvalue| if needed.
 
 */
+
+# define getdata_usage (glyph_usage | rule_usage | glue_usage | boundary_usage | attribute_usage | mark_usage)
+# define setdata_usage getdata_usage
 
 static int nodelib_direct_getdata(lua_State *L)
 {
@@ -3491,6 +3731,21 @@ static int nodelib_direct_setdata(lua_State *L) /* data and value */
 
 /* node.direct.get[left|right|top|bottom|]delimiter */
 /* node.direct.set[left|right|top|bottom|]delimiter */
+
+# define getdelimiter_usage       (fraction_usage | fence_usage | radical_usage | accent_usage)
+# define setdelimiter_usage       getdelimiter_usage
+
+# define getleftdelimiter_usage   (fraction_usage | radical_usage)
+# define setleftdelimiter_usage   getleftdelimiter_usage
+
+# define getrightdelimiter_usage  getleftdelimiter_usage
+# define setrightdelimiter_usage  setleftdelimiter_usage
+
+# define gettopdelimiter_usage    (fence_usage | radical_usage)
+# define settopdelimiter_usage    gettopdelimiter_usage
+
+# define getbottomdelimiter_usage gettopdelimiter_usage
+# define setbottomdelimiter_usage settopdelimiter_usage
 
 static int nodelib_direct_getleftdelimiter(lua_State *L)
 {
@@ -3588,10 +3843,10 @@ static int nodelib_direct_setleftdelimiter(lua_State *L)
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
         switch (node_type(n)) {
-            case fraction_noad:                  
+            case fraction_noad:
                 fraction_left_delimiter(n) = nodelib_valid_direct_from_index(L, 2);
                 break;
-            case radical_noad:                  
+            case radical_noad:
                 radical_left_delimiter(n) = nodelib_valid_direct_from_index(L, 2);
                 break;
         }
@@ -3604,10 +3859,10 @@ static int nodelib_direct_setrightdelimiter(lua_State *L)
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
         switch (node_type(n)) {
-            case fraction_noad:                  
+            case fraction_noad:
                 fraction_right_delimiter(n) = nodelib_valid_direct_from_index(L, 2);
                 break;
-            case radical_noad:                  
+            case radical_noad:
                 radical_right_delimiter(n) = nodelib_valid_direct_from_index(L, 2);
                 break;
         }
@@ -3652,7 +3907,7 @@ static int nodelib_direct_setdelimiter(lua_State *L)
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
         switch (node_type(n)) {
-            case fraction_noad:                  
+            case fraction_noad:
                 fraction_middle_delimiter(n) = nodelib_valid_direct_from_index(L, 2);
                 break;
             case fence_noad:
@@ -3671,6 +3926,11 @@ static int nodelib_direct_setdelimiter(lua_State *L)
 
 /* node.direct.get[top|bottom] */
 /* node.direct.set[top|bottom] */
+
+# define gettop_usage    (accent_usage | fence_usage)
+# define settop_usage    gettop_usage
+# define getbottom_usage gettop_usage
+# define setbottom_usage getbottom_usage
 
 static int nodelib_direct_gettop(lua_State *L)
 {
@@ -3743,12 +4003,17 @@ static int nodelib_direct_setbottom(lua_State *L)
 /* node.direct.get[numerator|denominator] */
 /* node.direct.set[numerator|denominator] */
 
+# define getdenominator_usage fraction_usage
+# define setdenominator_usage fraction_usage
+# define getnumerator_usage   fraction_usage
+# define setnumerator_usage   fraction_usage
+
 static int nodelib_direct_getnumerator(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
         switch (node_type(n)) {
-            case fraction_noad:                  
+            case fraction_noad:
                 nodelib_push_direct_or_nil(L, fraction_numerator(n));
                 return 1;
         }
@@ -3762,7 +4027,7 @@ static int nodelib_direct_getdenominator(lua_State *L)
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
         switch (node_type(n)) {
-            case fraction_noad:                  
+            case fraction_noad:
                 nodelib_push_direct_or_nil(L, fraction_denominator(n));
                 return 1;
         }
@@ -3776,7 +4041,7 @@ static int nodelib_direct_setnumerator(lua_State *L)
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
         switch (node_type(n)) {
-            case fraction_noad:                  
+            case fraction_noad:
                 fraction_numerator(n) = nodelib_valid_direct_from_index(L, 2);
                 break;
         }
@@ -3789,7 +4054,7 @@ static int nodelib_direct_setdenominator(lua_State *L)
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
         switch (node_type(n)) {
-            case fraction_noad:                  
+            case fraction_noad:
                 fraction_denominator(n) = nodelib_valid_direct_from_index(L, 2);
                 break;
         }
@@ -3800,12 +4065,15 @@ static int nodelib_direct_setdenominator(lua_State *L)
 /* node.direct.getdegree */
 /* node.direct.setdegree */
 
+# define getdegree_usage radical_usage
+# define setdegree_usage getdegree_usage
+
 static int nodelib_direct_getdegree(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
         switch (node_type(n)) {
-            case radical_noad:                  
+            case radical_noad:
                 nodelib_push_direct_or_nil(L, radical_degree(n));
                 return 1;
         }
@@ -3819,7 +4087,7 @@ static int nodelib_direct_setdegree(lua_State *L)
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
         switch (node_type(n)) {
-            case radical_noad:                  
+            case radical_noad:
                 radical_degree(n) = nodelib_valid_direct_from_index(L, 2);
                 break;
         }
@@ -3830,23 +4098,26 @@ static int nodelib_direct_setdegree(lua_State *L)
 /* node.direct.getchoice */
 /* node.direct.setchoice */
 
+# define getchoice_usage choice_usage
+# define setchoice_usage getchoice_usage
+
 static int nodelib_direct_getchoice(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     halfword c = null;
     if (n && node_type(n) == choice_node) {
         switch (lmt_tointeger(L, 2)) {
-            case 1: c = 
-                choice_display_mlist(n); 
+            case 1: c =
+                choice_display_mlist(n);
                 break;
-            case 2: c = 
-                choice_text_mlist(n); 
+            case 2: c =
+                choice_text_mlist(n);
                 break;
-            case 3: 
-                c = choice_script_mlist(n); 
+            case 3:
+                c = choice_script_mlist(n);
                 break;
-            case 4: 
-                c = choice_script_script_mlist(n); 
+            case 4:
+                c = choice_script_script_mlist(n);
                 break;
         }
     }
@@ -3860,17 +4131,17 @@ static int nodelib_direct_setchoice(lua_State *L)
     if (n && node_type(n) == choice_node) {
         halfword c = nodelib_valid_direct_from_index(L, 2);
         switch (lmt_tointeger(L, 2)) {
-            case 1: 
-                choice_display_mlist(n) = c; 
+            case 1:
+                choice_display_mlist(n) = c;
                 break;
-            case 2: 
-                choice_text_mlist(n) = c; 
+            case 2:
+                choice_text_mlist(n) = c;
                 break;
-            case 3: 
-                choice_script_mlist(n) = c; 
+            case 3:
+                choice_script_mlist(n) = c;
                 break;
-            case 4: 
-                choice_script_script_mlist(n) = c; 
+            case 4:
+                choice_script_script_mlist(n) = c;
                 break;
         }
     }
@@ -3879,6 +4150,9 @@ static int nodelib_direct_setchoice(lua_State *L)
 
 /* node.direct.getglyphdata */
 /* node.direct.setglyphdata */
+
+# define getglyphdata_usage glyph_usage
+# define setglyphdata_usage getglyphdata_usage
 
 static int nodelib_direct_getglyphdata(lua_State *L)
 {
@@ -3903,6 +4177,9 @@ static int nodelib_direct_setglyphdata(lua_State *L)
 /* node.direct.getnext */
 /* node.direct.setnext */
 
+# define getnext_usage common_usage
+# define setnext_usage common_usage
+
 static int nodelib_direct_getnext(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -3926,6 +4203,9 @@ static int nodelib_direct_setnext(lua_State *L)
 /* node.direct.getprev */
 /* node.direct.setprev */
 
+# define getprev_usage common_usage
+# define setprev_usage common_usage
+
 static int nodelib_direct_getprev(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -3948,6 +4228,9 @@ static int nodelib_direct_setprev(lua_State *L)
 
 /* node.direct.getboth */
 /* node.direct.setboth */
+
+# define getboth_usage common_usage
+# define setboth_usage common_usage
 
 static int nodelib_direct_getboth(lua_State *L)
 {
@@ -3975,6 +4258,10 @@ static int nodelib_direct_setboth(lua_State *L)
 /* node.direct.isnext */
 /* node.direct.isprev */
 /* node.direct.isboth */
+
+# define isnext_usage common_usage
+# define isprev_usage common_usage
+# define isboth_usage common_usage
 
 static int nodelib_direct_isnext(lua_State *L)
 {
@@ -4021,6 +4308,8 @@ static int nodelib_direct_isboth(lua_State *L)
     nil a b b nil c d nil : nil-a-b-c-d-nil
 */
 
+# define setlink_usage common_usage
+
 static int nodelib_direct_setlink(lua_State *L)
 {
     int n = lua_gettop(L);
@@ -4032,7 +4321,7 @@ static int nodelib_direct_setlink(lua_State *L)
             and the nodes themselves can have old values for prev and next, so ... only single nodes
             are looked at!
         */
-        switch (lua_type(L, i)) { 
+        switch (lua_type(L, i)) {
             case LUA_TNUMBER:
                 {
                     halfword c = nodelib_valid_direct_from_index(L, i); /* current node */
@@ -4061,14 +4350,14 @@ static int nodelib_direct_setlink(lua_State *L)
                 if (lua_toboolean(L, i)) {
                     /*tex Just skip this one. */
                     break;
-                } else { 
+                } else {
                     /* fall through */
                 }
             default:
                 if (t) {
                     /* safeguard: a nil in the list can be meant as end so we nil the next of tail */
                     node_next(t) = null;
-                } else { 
+                } else {
                     /* we just ignore nil nodes and have no tail yet */
                 }
         }
@@ -4078,6 +4367,8 @@ static int nodelib_direct_setlink(lua_State *L)
 }
 
 /* node.direct.setsplit */
+
+# define setsplit_usage common_usage
 
 static int nodelib_direct_setsplit(lua_State *L)
 {
@@ -4096,6 +4387,14 @@ static int nodelib_direct_setsplit(lua_State *L)
 
 /*tex Local_par nodes can have frozen properties. */
 
+/* node.direct.validpar */
+/* node.direct.patchparshape */
+/* node.direct.getparstate */
+
+# define validpar_usage      par_usage
+# define patchparshape_usage par_usage
+# define getparstate_usage   par_usage
+
 static halfword nodelib_direct_aux_validpar(lua_State *L, int index)
 {
     halfword p = nodelib_valid_direct_from_index(L, index);
@@ -4109,13 +4408,13 @@ static halfword nodelib_direct_aux_validpar(lua_State *L, int index)
     return (p && node_type(p) == par_node) ? p : null;
 }
 
-static int nodelib_direct_patchparshape(lua_State *L) // maybe also patchparstate 
+static int nodelib_direct_patchparshape(lua_State *L) // maybe also patchparstate
 {
     halfword par = nodelib_direct_aux_validpar(L, 1);
     if (par) {
         halfword shape = par_par_shape(par);
         halfword options = shape ? specification_options(shape) : 0;
-        if (shape) { 
+        if (shape) {
             tex_flush_node(shape);
             par_par_shape(par) = null;
         }
@@ -4125,9 +4424,9 @@ static int nodelib_direct_patchparshape(lua_State *L) // maybe also patchparstat
             par_par_shape(par) = shape;
             for (int i = 1; i <= size; i++) {
                 if (lua_rawgeti(L, 2, i) == LUA_TTABLE) {
-                    if (lua_rawgeti(L, -1, 1) == LUA_TNUMBER) { 
+                    if (lua_rawgeti(L, -1, 1) == LUA_TNUMBER) {
                         scaled indent = lmt_roundnumber(L, -1);
-                        if (lua_rawgeti(L, -2, 2) == LUA_TNUMBER) { 
+                        if (lua_rawgeti(L, -2, 2) == LUA_TNUMBER) {
                             scaled width = lmt_roundnumber(L, -1);
                             tex_set_specification_indent(shape, i, indent);
                             tex_set_specification_width(shape, i, width);
@@ -4143,15 +4442,13 @@ static int nodelib_direct_patchparshape(lua_State *L) // maybe also patchparstat
     return 0;
 }
 
-/* node.direct.getparstate */
-
 static int nodelib_direct_getparstate(lua_State *L)
 {
     halfword p = nodelib_direct_aux_validpar(L, 1);
     if (p) {
         int limited = lua_toboolean(L, 2);
         lua_createtable(L, 0, 24);
-        switch (node_subtype(p)) { 
+        switch (node_subtype(p)) {
             case vmode_par_par_subtype:
             case hmode_par_par_subtype:
                 {
@@ -4163,7 +4460,7 @@ static int nodelib_direct_getparstate(lua_State *L)
                     lua_push_integer_at_key(L, hangafter,                          tex_get_par_par(p, par_hang_after_code));
                     lua_push_integer_at_key(L, parindent,                          tex_get_par_par(p, par_par_indent_code));
                     lua_push_integer_at_key(L, prevgraf,                           par_prev_graf(p));
-                    if (! limited) {                                   
+                    if (! limited) {
                         lua_push_integer_at_key(L, parfillleftskip,    glue_amount(tex_get_par_par(p, par_par_fill_left_skip_code)));
                         lua_push_integer_at_key(L, parfillskip,        glue_amount(tex_get_par_par(p, par_par_fill_right_skip_code)));
                         lua_push_integer_at_key(L, parinitleftskip,    glue_amount(tex_get_par_par(p, par_par_init_left_skip_code)));
@@ -4182,8 +4479,6 @@ static int nodelib_direct_getparstate(lua_State *L)
                         lua_push_integer_at_key(L, clubpenalty,                    tex_get_par_par(p, par_club_penalty_code));
                         lua_push_integer_at_key(L, widowpenalty,                   tex_get_par_par(p, par_widow_penalty_code));
                         lua_push_integer_at_key(L, displaywidowpenalty,            tex_get_par_par(p, par_display_widow_penalty_code));
-                        lua_push_integer_at_key(L, orphanpenalty,                  tex_get_par_par(p, par_orphan_penalty_code));
-                        lua_push_integer_at_key(L, toddlerpenalty,                 tex_get_par_par(p, par_toddler_penalty_code));
                         lua_push_integer_at_key(L, lefttwindemerits,               tex_get_par_par(p, par_left_twin_demerits_code));
                         lua_push_integer_at_key(L, righttwindemerits,              tex_get_par_par(p, par_right_twin_demerits_code));
                         lua_push_integer_at_key(L, singlelinepenalty,              tex_get_par_par(p, par_single_line_penalty_code));
@@ -4201,14 +4496,17 @@ static int nodelib_direct_getparstate(lua_State *L)
                         lua_push_integer_at_key(L, emergencyextrastretch,          tex_get_par_par(p, par_emergency_extra_stretch_code));
                     }
                     lua_push_specification_at_key(L, parshape,                     tex_get_par_par(p, par_par_shape_code));
-                    if (! limited) {                                             
+                    if (! limited) {
                         lua_push_specification_at_key(L, interlinepenalties,       tex_get_par_par(p, par_inter_line_penalties_code));
                         lua_push_specification_at_key(L, clubpenalties,            tex_get_par_par(p, par_club_penalties_code));
                         lua_push_specification_at_key(L, widowpenalties,           tex_get_par_par(p, par_widow_penalties_code));
                         lua_push_specification_at_key(L, displaywidowpenalties,    tex_get_par_par(p, par_display_widow_penalties_code));
                         lua_push_specification_at_key(L, orphanpenalties,          tex_get_par_par(p, par_orphan_penalties_code));
+                        lua_push_specification_at_key(L, toddlerpenalties,         tex_get_par_par(p, par_toddler_penalties_code));
                         lua_push_specification_at_key(L, parpasses,                tex_get_par_par(p, par_par_passes_code));
                         lua_push_specification_at_key(L, linebreakchecks,          tex_get_par_par(p, par_line_break_checks_code));
+                        lua_push_specification_at_key(L, adjacentdemerits,         tex_get_par_par(p, par_adjacent_demerits_code));
+                        lua_push_specification_at_key(L, fitnessclasses,           tex_get_par_par(p, par_fitness_classes_code));
                     }
                     break;
                 }
@@ -4223,6 +4521,8 @@ static int nodelib_direct_getparstate(lua_State *L)
 }
 
 /* node.type (converts id numbers to type names) */
+
+# define type_usage common_usage
 
 static int nodelib_hybrid_type(lua_State *L)
 {
@@ -4278,7 +4578,19 @@ static int nodelib_userdata_new(lua_State *L)
     return 1;
 }
 
+/* node.direct.new */
+
+# define new_usage common_usage
+
+static int nodelib_direct_new(lua_State *L)
+{
+    lua_pushinteger(L, nodelib_new_node(L));
+    return 1;
+}
+
 /* node.size (kind of private, needed for manuals) */
+
+# define size_usage common_usage
 
 static halfword nodelib_shared_size(lua_State *L)
 {
@@ -4293,17 +4605,9 @@ static halfword nodelib_shared_size(lua_State *L)
     }
     if (tex_nodetype_is_valid(i)) {
         lua_pushinteger(L, lmt_interface.node_data[i].size * 8);
-    } else { 
+    } else {
         lua_pushnil(L);
     }
-    return 1;
-}
-
-/* node.direct.new */
-
-static int nodelib_direct_new(lua_State *L)
-{
-    lua_pushinteger(L, nodelib_new_node(L));
     return 1;
 }
 
@@ -4314,6 +4618,10 @@ static int nodelib_direct_newtextglyph(lua_State* L)
     lua_pushinteger(L, glyph);
     return 1;
 }
+
+# define newmathglyph_usage        common_usage
+# define newtextglyph_usage        common_usage
+# define newcontinuationatom_usage common_usage
 
 static int nodelib_direct_newmathglyph(lua_State* L)
 {
@@ -4357,6 +4665,8 @@ static int nodelib_userdata_free(lua_State *L)
 
 /* node.direct.free */
 
+# define free_usage common_usage
+
 static int nodelib_direct_free(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -4382,7 +4692,9 @@ static int nodelib_userdata_flushnode(lua_State *L)
     return 0;
 }
 
-/* node.direct.flush_node */
+/* node.direct.flushnode */
+
+# define flushnode_usage common_usage
 
 static int nodelib_direct_flushnode(lua_State *L)
 {
@@ -4404,7 +4716,9 @@ static int nodelib_userdata_flushlist(lua_State *L)
     return 0;
 }
 
-/* node.direct.flush_list */
+/* node.direct.flushlist */
+
+# define flushlist_usage common_usage
 
 static int nodelib_direct_flushlist(lua_State *L)
 {
@@ -4467,6 +4781,8 @@ static int nodelib_userdata_remove(lua_State *L)
 
 /* node.direct.remove */
 
+# define remove_usage common_usage
+
 static int nodelib_direct_remove(lua_State *L)
 {
     halfword head = nodelib_valid_direct_from_index(L, 1);
@@ -4521,7 +4837,9 @@ static int nodelib_direct_remove(lua_State *L)
     return 2;
 }
 
-static int nodelib_direct_remove_from_list(lua_State *L)
+# define removefromlist_usage common_usage
+
+static int nodelib_direct_removefromlist(lua_State *L)
 {
     halfword head = nodelib_valid_direct_from_index(L, 1);
     int count = 0;
@@ -4529,11 +4847,11 @@ static int nodelib_direct_remove_from_list(lua_State *L)
         halfword id = lmt_tohalfword(L, 2);
         halfword subtype = lmt_opthalfword(L, 3, -1);
         halfword current = head;
-        while (current) { 
+        while (current) {
             halfword next = node_next(current);
             if (node_type(current) == id && (subtype < 0 || node_subtype(current) == subtype)) {
                 if (current == head) {
-                    head = next; 
+                    head = next;
                     node_prev(next) = null;
                 } else {
                     tex_try_couple_nodes(node_prev(current), next);
@@ -4589,6 +4907,8 @@ static int nodelib_userdata_insertbefore(lua_State *L)
 }
 
 /* node.direct.insertbefore */
+
+# define insertbefore_usage common_usage
 
 static int nodelib_direct_insertbefore(lua_State *L)
 {
@@ -4663,6 +4983,8 @@ static int nodelib_userdata_insertafter(lua_State *L)
 
 /* node.direct.insertafter */
 
+# define insertafter_usage common_usage
+
 static int nodelib_direct_insertafter(lua_State *L)
 {
     /*[head][current][new]*/
@@ -4696,6 +5018,9 @@ static int nodelib_direct_insertafter(lua_State *L)
 }
 
 /* */
+
+# define appendaftertail_usage   common_usage
+# define prependbeforehead_usage common_usage
 
 static int nodelib_direct_appendaftertail(lua_State *L)
 {
@@ -4747,6 +5072,8 @@ static int nodelib_userdata_copylist(lua_State *L)
 
 /* node.direct.copylist */
 
+# define copylist_usage common_usage
+
 static int nodelib_direct_copylist(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -4772,6 +5099,8 @@ static int nodelib_userdata_show(lua_State *L)
     return 0;
 }
 
+# define show_usage common_usage
+
 static int nodelib_direct_show(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -4783,6 +5112,8 @@ static int nodelib_direct_show(lua_State *L)
 
 /* node.serialize(node, details, threshold, max) */
 /* node.direct.serialize */
+
+# define showlist_usage common_usage
 
 static int nodelib_aux_showlist(lua_State* L, halfword box)
 {
@@ -4853,13 +5184,12 @@ static int nodelib_userdata_serialized(lua_State *L)
     return nodelib_common_serialized(L, lmt_check_isnode(L, 1));
 }
 
-/* node.direct.show */
+# define serialized_usage common_usage
 
 static int nodelib_direct_serialized(lua_State *L)
 {
     return nodelib_common_serialized(L, nodelib_valid_direct_from_index(L, 1));
 }
-
 
 /* node.copy (deep copy) */
 
@@ -4874,6 +5204,8 @@ static int nodelib_userdata_copy(lua_State *L)
 }
 
 /* node.direct.copy (deep copy) */
+
+# define copy_usage common_usage
 
 static int nodelib_direct_copy(lua_State *L)
 {
@@ -4891,6 +5223,8 @@ static int nodelib_direct_copy(lua_State *L)
 }
 
 /* node.direct.copyonly (use with care) */
+
+# define copyonly_usage common_usage
 
 static int nodelib_direct_copyonly(lua_State *L)
 {
@@ -4954,6 +5288,8 @@ static int nodelib_userdata_append(lua_State *L)
 /* node.direct.write (output a node to tex's processor) */
 /* node.direct.append (idem no attributes) */
 
+# define write_usage common_usage
+
 static int nodelib_direct_write(lua_State *L)
 {
     int j = lua_gettop(L);
@@ -4998,6 +5334,8 @@ static int nodelib_direct_appendtocurrentlist(lua_State *L)
 
 /* node.direct.last */
 
+# define lastnode_usage common_usage
+
 static int nodelib_direct_lastnode(lua_State *L)
 {
     halfword m = tex_pop_tail();
@@ -5007,7 +5345,7 @@ static int nodelib_direct_lastnode(lua_State *L)
 
 /* node.direct.hpack */
 
-static int nodelib_aux_packing(lua_State *L, int slot) 
+static int nodelib_aux_packing(lua_State *L, int slot)
 {
     switch (lua_type(L, slot)) {
         case LUA_TSTRING:
@@ -5038,6 +5376,8 @@ static int nodelib_aux_packing(lua_State *L, int slot)
     return packing_additional;
 }
 
+# define hpack_usage common_usage
+
 static int nodelib_direct_hpack(lua_State *L)
 {
     halfword p;
@@ -5066,6 +5406,8 @@ static int nodelib_direct_hpack(lua_State *L)
     return 3;
 }
 
+# define repack_usage common_usage
+
 static int nodelib_direct_repack(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -5085,6 +5427,8 @@ static int nodelib_direct_repack(lua_State *L)
     return 0;
 }
 
+# define freeze_usage common_usage
+
 static int nodelib_direct_freeze(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -5099,8 +5443,11 @@ static int nodelib_direct_freeze(lua_State *L)
     return 0;
 }
 
-
+/* node.direct.verticalbreak */
 /* node.direct.vpack */
+
+# define verticalbreak_usage common_usage
+# define vpack_usage         common_usage
 
 static int nodelib_direct_verticalbreak(lua_State *L)
 {
@@ -5169,6 +5516,8 @@ static int nodelib_direct_vpack(lua_State *L)
 /*                 firstnode          verticalbool */
 /*                 firstnode lastnode verticalbool */
 
+# define dimensions_usage common_usage
+
 static int nodelib_direct_dimensions(lua_State *L)
 {
     int top = lua_gettop(L);
@@ -5210,6 +5559,8 @@ static int nodelib_direct_dimensions(lua_State *L)
 /* parentnode firstnode lastnode vertical nsizetoo */
 /* parentnode firstnode          vertical nsizetoo */
 
+# define rangedimensions_usage common_usage
+
 static int nodelib_direct_rangedimensions(lua_State *L)
 {
     int top = lua_gettop(L);
@@ -5234,10 +5585,10 @@ static int nodelib_direct_rangedimensions(lua_State *L)
         lua_pushinteger(L, siz.wd);
         lua_pushinteger(L, siz.ht);
         lua_pushinteger(L, siz.dp);
-        if (nsizetoo) { 
+        if (nsizetoo) {
             lua_pushinteger(L, siz.ns);
             return 4;
-        } else { 
+        } else {
             return 3;
         }
     } else {
@@ -5246,6 +5597,8 @@ static int nodelib_direct_rangedimensions(lua_State *L)
 }
 
 /* parentnode firstnode [last] */
+
+# define naturalwidth_usage common_usage
 
 static int nodelib_direct_naturalwidth(lua_State *L)
 {
@@ -5265,6 +5618,8 @@ static int nodelib_direct_naturalwidth(lua_State *L)
     }
 }
 
+# define naturalhsize_usage common_usage
+
 static int nodelib_direct_naturalhsize(lua_State *L)
 {
     scaled wd = 0;
@@ -5278,6 +5633,8 @@ static int nodelib_direct_naturalhsize(lua_State *L)
     nodelib_push_direct_or_nil(L, c);
     return 3;
 }
+
+# define mlisttohlist_usage common_usage
 
 static int nodelib_direct_mlisttohlist(lua_State *L)
 {
@@ -5365,6 +5722,8 @@ static int nodelib_userdata_hasfield(lua_State *L)
 
 /* node.direct.hasfield */
 
+# define hasfield_usage common_usage
+
 static int nodelib_direct_hasfield(lua_State *L)
 {
     int i = -2;
@@ -5392,9 +5751,10 @@ static int nodelib_shared_types(lua_State *L)
 
 /* node.fields (fetch the list of valid fields) */
 
+# define fields_usage common_usage
+
 static int nodelib_shared_fields(lua_State *L)
 {
-    int offset = 2;
     int t = nodelib_aux_get_valid_node_type_id(L, 1);
     int f = lua_toboolean(L, 2);
     value_info *fields = lmt_interface.node_data[t].fields;
@@ -5410,7 +5770,6 @@ static int nodelib_shared_fields(lua_State *L)
             lua_push_key(subtype);
             lua_push_key(integer);
             lua_rawset(L, -3);
-            offset++;
         }
         if (tex_nodetype_has_prev(t)) {
             lua_push_key(prev);
@@ -5427,24 +5786,24 @@ static int nodelib_shared_fields(lua_State *L)
             }
         }
     } else {
-        lua_push_key(next);
-        lua_rawseti(L, -2, 0);
+        int offset = 0;
         lua_push_key(id);
-        lua_rawseti(L, -2, 1);
+        lua_rawseti(L, -2, offset++);
         if (tex_nodetype_has_subtype(t)) {
             lua_push_key(subtype);
-            lua_rawseti(L, -2, 2);
-            offset++;
+            lua_rawseti(L, -2, offset++);
         }
+        lua_push_key(next);
+        lua_rawseti(L, -2, offset++);
         if (tex_nodetype_has_prev(t)) {
             lua_push_key(prev);
-            lua_rawseti(L, -2, -1);
+            lua_rawseti(L, -2, offset++);
         }
         if (fields) {
             for (lua_Integer i = 0; fields[i].lua != 0; i++) {
              // lua_push_key_by_index(L, fields[i].lua);
                 lua_rawgeti(L, LUA_REGISTRYINDEX, fields[i].lua);
-                lua_rawseti(L, -2, i + offset);
+                lua_rawseti(L, -2, offset++);
             }
         }
     }
@@ -5487,8 +5846,20 @@ static int nodelib_shared_subtypes(lua_State *L)
     switch (lua_type(L, 1)) {
         case LUA_TSTRING:
             {
-                /* official accessors */
                 const char *s = lua_tostring(L,1);
+                /* */
+                if  (lua_key_eq(s, list)) {
+                    subtypes = lmt_interface.node_data[hlist_node].subtypes;
+                } else {
+                    for (int id = first_nodetype; id <= last_nodetype; id++) {
+                        if (lmt_interface.node_data[id].name && ! strcmp(lmt_interface.node_data[id].name, s)) {
+                            subtypes = lmt_interface.node_data[id].subtypes;
+                            break;
+                        }
+                    }
+                }
+                /* no need for speed for more popular types: */
+                /*
                      if (lua_key_eq(s, glyph))     subtypes = lmt_interface.node_data[glyph_node]    .subtypes;
                 else if (lua_key_eq(s, glue))      subtypes = lmt_interface.node_data[glue_node]     .subtypes;
                 else if (lua_key_eq(s, dir))       subtypes = lmt_interface.node_data[dir_node]      .subtypes;
@@ -5499,7 +5870,7 @@ static int nodelib_shared_subtypes(lua_State *L)
                 else if (lua_key_eq(s, rule))      subtypes = lmt_interface.node_data[rule_node]     .subtypes;
                 else if (lua_key_eq(s, list)
                      ||  lua_key_eq(s, hlist)
-                     ||  lua_key_eq(s, vlist))     subtypes = lmt_interface.node_data[hlist_node]    .subtypes; /* too many but ok as reserved */
+                     ||  lua_key_eq(s, vlist))     subtypes = lmt_interface.node_data[hlist_node]    .subtypes;
                 else if (lua_key_eq(s, adjust))    subtypes = lmt_interface.node_data[adjust_node]   .subtypes;
                 else if (lua_key_eq(s, disc))      subtypes = lmt_interface.node_data[disc_node]     .subtypes;
                 else if (lua_key_eq(s, math))      subtypes = lmt_interface.node_data[math_node]     .subtypes;
@@ -5511,30 +5882,15 @@ static int nodelib_shared_subtypes(lua_State *L)
                 else if (lua_key_eq(s, choice))    subtypes = lmt_interface.node_data[choice_node]   .subtypes;
                 else if (lua_key_eq(s, par))       subtypes = lmt_interface.node_data[par_node]      .subtypes;
                 else if (lua_key_eq(s, attribute)) subtypes = lmt_interface.node_data[attribute_node].subtypes;
+                */
             }
             break;
         case LUA_TNUMBER:
-            switch (lua_tointeger(L, 1)) {
-                case glyph_node:     subtypes = lmt_interface.node_data[glyph_node]    .subtypes; break;
-                case glue_node:      subtypes = lmt_interface.node_data[glue_node]     .subtypes; break;
-                case dir_node:       subtypes = lmt_interface.node_data[dir_node]      .subtypes; break;
-                case boundary_node:  subtypes = lmt_interface.node_data[boundary_node] .subtypes; break;
-                case penalty_node:   subtypes = lmt_interface.node_data[penalty_node]  .subtypes; break;
-                case kern_node:      subtypes = lmt_interface.node_data[kern_node]     .subtypes; break;
-                case rule_node:      subtypes = lmt_interface.node_data[rule_node]     .subtypes; break;
-                case hlist_node:     subtypes = lmt_interface.node_data[hlist_node]    .subtypes; break;
-                case vlist_node:     subtypes = lmt_interface.node_data[vlist_node]    .subtypes; break;
-                case adjust_node:    subtypes = lmt_interface.node_data[adjust_node]   .subtypes; break;
-                case disc_node:      subtypes = lmt_interface.node_data[disc_node]     .subtypes; break;
-                case math_node:      subtypes = lmt_interface.node_data[math_node]     .subtypes; break;
-                case simple_noad:    subtypes = lmt_interface.node_data[simple_noad]   .subtypes; break;
-                case radical_noad:   subtypes = lmt_interface.node_data[radical_noad]  .subtypes; break;
-                case accent_noad:    subtypes = lmt_interface.node_data[accent_noad]   .subtypes; break;
-                case fence_noad:     subtypes = lmt_interface.node_data[fence_noad]    .subtypes; break;
-                case fraction_noad:  subtypes = lmt_interface.node_data[fraction_noad] .subtypes; break;
-                case choice_node:    subtypes = lmt_interface.node_data[choice_node]   .subtypes; break;
-                case par_node:       subtypes = lmt_interface.node_data[par_node]      .subtypes; break;
-                case attribute_node: subtypes = lmt_interface.node_data[attribute_node].subtypes; break;
+            {
+                int id = lua_tointeger(L, 1);
+                if (id >= first_nodetype && id <= last_nodetype) {
+                    subtypes = lmt_interface.node_data[id].subtypes;
+                }
             }
             break;
     }
@@ -5551,6 +5907,8 @@ static int nodelib_shared_subtypes(lua_State *L)
 }
 
 /* node.direct.slide */
+
+# define slide_usage common_usage
 
 static int nodelib_direct_slide(lua_State *L)
 {
@@ -5587,6 +5945,8 @@ static int nodelib_userdata_tail(lua_State *L)
 
 /* node.direct.tail */
 
+# define tail_usage common_usage
+
 static int nodelib_direct_tail(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -5604,6 +5964,9 @@ static int nodelib_direct_tail(lua_State *L)
 /* node.direct.beginofmath */
 /* node.direct.endofmath */
 
+# define beginofmath_usage common_usage
+# define endofmath_usage   common_usage
+
 static int nodelib_direct_beginofmath(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -5615,9 +5978,9 @@ static int nodelib_direct_beginofmath(lua_State *L)
             int level = 1;
             while (node_next(n)) {
                 n = node_next(n);
-                if (n && node_type(n) == math_node) { 
+                if (n && node_type(n) == math_node) {
                     /*tex We can't really have nested math but we can be at the end so: */
-                    switch (node_subtype(n)) { 
+                    switch (node_subtype(n)) {
                         case begin_inline_math:
                         case begin_broken_math:
                             ++level;
@@ -5626,7 +5989,7 @@ static int nodelib_direct_beginofmath(lua_State *L)
                                 return 1;
                             } else {
                                 break;
-                            }                        
+                            }
                         case end_inline_math:
                         case end_broken_math:
                             --level;
@@ -5650,9 +6013,9 @@ static int nodelib_direct_endofmath(lua_State *L)
             int level = 1;
             while (node_next(n)) {
                 n = node_next(n);
-                if (n && node_type(n) == math_node) { 
+                if (n && node_type(n) == math_node) {
                     /*tex We can't really have nested math but we can be at a begin so: */
-                    switch (node_subtype(n)) { 
+                    switch (node_subtype(n)) {
                         case begin_inline_math:
                         case begin_broken_math:
                             ++level;
@@ -5665,7 +6028,7 @@ static int nodelib_direct_endofmath(lua_State *L)
                             } else {
                                 lua_pushinteger(L, n);
                                 return 1;
-                            }                        
+                            }
                     }
                 }
             }
@@ -5692,6 +6055,8 @@ static int nodelib_userdata_hasattribute(lua_State *L)
 }
 
 /* node.direct.has_attribute */
+
+# define hasattribute_usage common_usage
 
 static int nodelib_direct_hasattribute(lua_State *L)
 {
@@ -5739,6 +6104,8 @@ static int nodelib_userdata_getattribute(lua_State *L)
     lua_pushnil(L);
     return 1;
 }
+
+# define findattributerange_usage common_usage
 
 static int nodelib_direct_findattributerange(lua_State *L)
 {
@@ -5804,6 +6171,9 @@ static int nodelib_direct_findattributerange(lua_State *L)
 /* node.direct.findattribute */
 
 /* maybe: getsplitattribute(n,a,24,8) => (v & ~(~0 << 24)) (v & ~(~0 << 8)) */
+
+# define getattribute_usage  common_usage
+# define getattributes_usage common_usage
 
 static int nodelib_direct_getattribute(lua_State *L)
 {
@@ -5881,6 +6251,9 @@ static int nodelib_direct_getattributes(lua_State *L)
     return 0;
 }
 
+# define setattribute_usage  common_usage
+# define setattributes_usage common_usage
+
 static int nodelib_direct_setattribute(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -5923,6 +6296,8 @@ static int nodelib_direct_setattributes(lua_State *L)
     return 0;
 }
 
+# define patchattributes_usage common_usage
+
 static int nodelib_direct_patchattributes(lua_State *L)
 {
     halfword p = nodelib_valid_direct_from_index(L, 1);
@@ -5944,6 +6319,8 @@ static int nodelib_direct_patchattributes(lua_State *L)
 }
 
 /* firstnode attributeid [nodetype] */
+
+# define findattribute_usage common_usage
 
 static int nodelib_direct_findattribute(lua_State *L) /* returns attr value and node */
 {
@@ -5981,6 +6358,9 @@ static int nodelib_direct_findattribute(lua_State *L) /* returns attr value and 
     }
     return 0;
 }
+
+# define unsetattribute_usage  common_usage
+# define unsetattributes_usage common_usage
 
 static int nodelib_direct_unsetattribute(lua_State *L)
 {
@@ -6049,6 +6429,10 @@ static int nodelib_userdata_unsetattribute(lua_State *L)
 /* node.direct.getglue */
 /* node.direct.setglue */
 /* node.direct.iszeroglue */
+
+# define getglue_usage    (glue_usage | glue_spec_usage | hlist_usage | vlist_usage | unset_usage | math_usage)
+# define setglue_usage    getglue_usage
+# define iszeroglue_usage getglue_usage
 
 static int nodelib_direct_getglue(lua_State *L)
 {
@@ -6138,6 +6522,8 @@ static int nodelib_direct_iszeroglue(lua_State *L)
 
 /* direct.startofpar */
 
+# define startofpar_usage common_usage
+
 static int nodelib_direct_startofpar(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -6154,11 +6540,22 @@ static int nodelib_aux_nil(lua_State *L)
 }
 
 /* node.direct.traverse */
-/* node.direct.traverse_id */
-/* node.direct.traverse_char */
-/* node.direct.traverse_glyph */
-/* node.direct.traverse_list */
-/* node.direct.traverse_leader */
+/* node.direct.traverseid */
+/* node.direct.traversechar */
+/* node.direct.traverseglyph */
+/* node.direct.traverselist */
+/* node.direct.traverseleader */
+/* node.direct.traverseitalic */
+/* node.direct.traversecontent */
+
+# define traverse_usage        common_usage
+# define traverseid_usage      common_usage
+# define traversechar_usage    common_usage
+# define traverseglyph_usage   common_usage
+# define traverselist_usage    common_usage
+# define traverseleader_usage  common_usage
+# define traverseitalic_usage  common_usage
+# define traversecontent_usage common_usage
 
 static int nodelib_direct_aux_next(lua_State *L)
 {
@@ -6666,8 +7063,6 @@ static int nodelib_direct_traverseitalic(lua_State *L)
     }
 }
 
-/*tex This is an experiment. */
-
 static int nodelib_direct_aux_next_content(lua_State *L)
 {
     halfword t;
@@ -6787,10 +7182,10 @@ static int nodelib_direct_traversecontent(lua_State *L)
 }
 
 /* node.traverse */
-/* node.traverse_id */
-/* node.traverse_char */
-/* node.traverse_glyph */
-/* node.traverse_list */
+/* node.traverseid */
+/* node.traversechar */
+/* node.traverseglyph */
+/* node.traverselist */
 
 static int nodelib_aux_next(lua_State *L)
 {
@@ -6937,6 +7332,9 @@ static int nodelib_userdata_traverse_id(lua_State *L)
 
 /*tex As with some other function that have a |last| we don't take that one into account. */
 
+# define length_usage common_usage
+# define count_usage  common_usage
+
 static int nodelib_direct_length(lua_State *L)
 {
     halfword first = nodelib_valid_direct_from_index(L, 1);
@@ -6972,7 +7370,7 @@ static int nodelib_direct_count(lua_State *L)
 
 /*tex A few helpers for later usage: */
 
-inline static int nodelib_getattribute_value(lua_State *L, halfword n, int index)
+static inline int nodelib_getattribute_value(lua_State *L, halfword n, int index)
 {
     halfword key = (halfword) lua_tointeger(L, index);
     halfword val = tex_has_attribute(n, key, unused_attribute_value);
@@ -6984,7 +7382,7 @@ inline static int nodelib_getattribute_value(lua_State *L, halfword n, int index
     return 1;
 }
 
-inline static void nodelib_setattribute_value(lua_State *L, halfword n, int kindex, int vindex)
+static inline void nodelib_setattribute_value(lua_State *L, halfword n, int kindex, int vindex)
 {
     if (lua_gettop(L) >= kindex) {
         halfword key = lmt_tohalfword(L, kindex);
@@ -7018,8 +7416,18 @@ inline static void nodelib_setattribute_value(lua_State *L, halfword n, int kind
 
 */
 
+typedef enum lua_field_errors {
+    lua_no_field_error,
+    lua_set_field_error,
+    lua_get_field_error,
+} lua_field_errors ;
+
+static int last_field_error   = lua_no_field_error;
+static int ignore_field_error = 0;
+
 static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
 {
+    last_field_error = lua_no_field_error;
     switch (lua_type(L, 2)) {
         case LUA_TNUMBER:
             {
@@ -7035,29 +7443,25 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                     if (tex_nodetype_has_next(t)) {
                         nodelib_push_direct_or_node(L, direct, node_next(n));
                     } else {
-                     /* nodelib_invalid_field_error(L, s, n); */
-                        lua_pushnil(L);
+                         goto CANTGET;
                     }
                 } else if (lua_key_eq(s, prev)) {
                     if (tex_nodetype_has_prev(t)) {
                         nodelib_push_direct_or_node(L, direct, node_prev(n));
                     } else {
-                     /* nodelib_invalid_field_error(L, s, n); */
-                        lua_pushnil(L);
+                         goto CANTGET;
                     }
                 } else if (lua_key_eq(s, attr)) {
                     if (tex_nodetype_has_attributes(t)) {
                         nodelib_push_direct_or_node(L, direct, node_attr(n));
                     } else {
-                     /* nodelib_invalid_field_error(L, s, n); */
-                        lua_pushnil(L);
+                         goto CANTGET;
                     }
                 } else if (lua_key_eq(s, subtype)) {
                     if (tex_nodetype_has_subtype(t)) {
                         lua_pushinteger(L, node_subtype(n));
                     } else {
-                     /* nodelib_invalid_field_error(L, s, n); */
-                        lua_pushnil(L);
+                         goto CANTGET;
                     }
                 } else {
                     switch(t) {
@@ -7127,7 +7531,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, control)) {
                                 lua_pushinteger(L, get_glyph_control(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case hlist_node:
@@ -7182,9 +7586,9 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, index)) {
                                 lua_pushinteger(L, box_index(n));
                             } else if (lua_key_eq(s, except)) {
-                                lua_pushinteger(L, box_except(n));
+                                nodelib_push_direct_or_node(L, direct, box_except(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case disc_node:
@@ -7201,7 +7605,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, class)) {
                                 lua_pushinteger(L, disc_class(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case glue_node:
@@ -7224,7 +7628,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, options)) {
                                 lua_pushinteger(L, glue_options(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case kern_node:
@@ -7233,7 +7637,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, expansion)) {
                                 lua_pushinteger(L, kern_expansion(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case penalty_node:
@@ -7242,7 +7646,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, options)) {
                                 lua_pushinteger(L, penalty_options(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case rule_node:
@@ -7278,7 +7682,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, char)) {
                                 lua_pushinteger(L, rule_strut_character(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case dir_node:
@@ -7287,12 +7691,11 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, level)) {
                                 lua_pushinteger(L, dir_level(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case whatsit_node:
-                            lua_pushnil(L);
-                            break;
+                            goto CANTGET;
                         case par_node:
                             /* not all of them here */
                             if (lua_key_eq(s, interlinepenalty)) {
@@ -7316,7 +7719,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, middlebox)) {
                                 nodelib_push_direct_or_node(L, direct, par_box_middle(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case math_char_node:
@@ -7336,7 +7739,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, index)) {
                                 lua_pushinteger(L, kernel_math_index(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case mark_node:
@@ -7349,7 +7752,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                     lmt_token_list_to_lua(L, mark_ptr(n));
                                 }
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case insert_node:
@@ -7364,7 +7767,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, list) || lua_key_eq(s, head)) {
                                 nodelib_push_direct_or_node_node_prev(L, direct, insert_list(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case math_node:
@@ -7385,14 +7788,14 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, options)) {
                                 lua_pushinteger(L, math_options(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case style_node:
                             if (lua_key_eq(s, style)) {
                                 lmt_push_math_style_name(L, style_style(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case parameter_node:
@@ -7412,7 +7815,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                     lua_pushinteger(L, parameter_value(n));
                                 }
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case simple_noad:
@@ -7448,8 +7851,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else {
                                 switch(t) {
                                     case simple_noad:
-                                        lua_pushnil(L);
-                                        break;
+                                         goto CANTGET;
                                     case radical_noad:
                                         if (lua_key_eq(s, left) || lua_key_eq(s, delimiter)) {
                                             nodelib_push_direct_or_node(L, direct, radical_left_delimiter(n));
@@ -7464,7 +7866,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                         } else if (lua_key_eq(s, width)) {
                                             lua_pushinteger(L, noad_width(n));
                                         } else {
-                                            lua_pushnil(L);
+                                             goto CANTGET;
                                         }
                                         break;
                                     case fraction_noad:
@@ -7481,7 +7883,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                         } else if (lua_key_eq(s, middle)) {
                                             nodelib_push_direct_or_nil(L, fraction_middle_delimiter(n));
                                         } else {
-                                            lua_pushnil(L);
+                                             goto CANTGET;
                                         }
                                         break;
                                     case accent_noad:
@@ -7494,7 +7896,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                         } else if (lua_key_eq(s, fraction)) {
                                             lua_pushinteger(L, accent_fraction(n));
                                         } else {
-                                            lua_pushnil(L);
+                                             goto CANTGET;
                                         }
                                         break;
                                     case fence_noad:
@@ -7515,7 +7917,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                         } else if (lua_key_eq(s, variant)) {
                                             lua_pushinteger(L, fence_delimiter_variant(n));
                                         } else {
-                                            lua_pushnil(L);
+                                             goto CANTGET;
                                         }
                                         break;
                                 }
@@ -7531,7 +7933,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, largechar)) {
                                 lua_pushinteger(L, delimiter_large_character(n));
                             } else {
-                                lua_pushnil(L);
+                                 goto CANTGET;
                             }
                             break;
                         case sub_box_node:
@@ -7539,7 +7941,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             if (lua_key_eq(s, list) || lua_key_eq(s, head)) {
                                 nodelib_push_direct_or_node_node_prev(L, direct,  kernel_math_list(n));
                             } else {
-                                lua_pushnil(L);
+                                 goto CANTGET;
                             }
                             break;
                         case split_node:
@@ -7554,7 +7956,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, brokeninsert)) {
                                 nodelib_push_direct_or_node(L, direct, split_broken_insert(n));
                             } else {
-                                lua_pushnil(L);
+                                 goto CANTGET;
                             }
                             break;
                         case choice_node:
@@ -7574,7 +7976,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, replace)) {
                                 nodelib_push_direct_or_node(L, direct, choice_no_break(n));
                             } else {
-                                lua_pushnil(L);
+                                 goto CANTGET;
                             }
                             break;
                         case attribute_node:
@@ -7585,7 +7987,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                     } else if (lua_key_eq(s, data)) {
                                         nodelib_push_attribute_data(L, node_attr(n));
                                     } else {
-                                        lua_pushnil(L);
+                                        goto CANTGET;
                                     }
                                     break;
                                 case attribute_value_subtype:
@@ -7594,12 +7996,11 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                     } else if (lua_key_eq(s, value)) {
                                         lua_pushinteger(L, attribute_value(n));
                                     } else {
-                                        lua_pushnil(L);
+                                        goto CANTGET;
                                     }
                                     break;
                                 default:
-                                    lua_pushnil(L);
-                                    break;
+                                    goto CANTGET;
                             }
                             break;
                         case adjust_node:
@@ -7608,7 +8009,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, index) || lua_key_eq(s, class)) {
                                 lua_pushinteger(L, adjust_index(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case unset_node:
@@ -7635,7 +8036,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, list) || lua_key_eq(s, head)) {
                                 nodelib_push_direct_or_node_node_prev(L, direct, box_list(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         /*
@@ -7649,7 +8050,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, reserved)) {
                                 lua_pushinteger(L, boundary_reserved(n));
                             } else {
-                                lua_pushnil(L);
+                                goto CANTGET;
                             }
                             break;
                         case glue_spec_node:
@@ -7664,24 +8065,28 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, shrinkorder)) {
                                 lua_pushinteger(L, glue_shrink_order(n));
                             } else {
+                                last_field_error = lua_get_field_error;
                                 lua_pushnil(L);
                             }
                             break;
                         default:
-                            lua_pushnil(L);
-                            break;
+                            goto CANTGET;
                     }
                 }
                 break;
             }
         default:
             {
+              CANTGET:
+                last_field_error = lua_get_field_error;
                 lua_pushnil(L);
                 break;
             }
     }
     return 1;
 }
+
+# define getfield_usage common_usage
 
 static int nodelib_direct_getfield(lua_State *L)
 {
@@ -7726,6 +8131,7 @@ static int nodelib_userdata_getfield(lua_State *L)
 
 static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
 {
+    last_field_error = lua_no_field_error;
     switch (lua_type(L, 2)) {
         case LUA_TNUMBER:
             {
@@ -7894,7 +8300,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, index)) {
                                 box_index(n) = lmt_tohalfword(L, 3);
                             } else if (lua_key_eq(s, except)) {
-                                box_except(n) = lmt_tohalfword(L, 3);;
+                                box_except(n) = nodelib_direct_or_node_from_index(L, direct, 3);;
                             } else {
                                 goto CANTSET;
                             }
@@ -8047,7 +8453,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             return 0;
                         case mark_node:
                             if (lua_key_eq(s, index) || lua_key_eq(s, class)) {
-                                halfword m = lmt_tohalfword(L, 3);
+                                halfword m = ignore_field_error ? lmt_opthalfword(L, 3, 1) : lmt_tohalfword(L, 3);
                                 if (tex_valid_mark(m)) {
                                     mark_index(n) = m;
                                 }
@@ -8060,7 +8466,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             return 0;
                         case insert_node:
                             if (lua_key_eq(s, index)) {
-                                halfword index = lmt_tohalfword(L, 3);
+                                halfword index = ignore_field_error ? lmt_opthalfword(L, 3, 1) : lmt_tohalfword(L, 3);
                                 if (tex_valid_insert_id(index)) {
                                     insert_index(n) = index;
                                 }
@@ -8296,7 +8702,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                     return 0;
                                 default:
                                     /* just ignored */
-                                    return 0; 
+                                    return 0;
                             }
                          // break;
                         case adjust_node:
@@ -8361,16 +8767,34 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             }
                             return 0;
                         default:
-                            return luaL_error(L, "you can't assign to a %s node (%d)\n", lmt_interface.node_data[t].name, n);
+                            last_field_error = lua_set_field_error;
+                            return ignore_field_error ? 0 : luaL_error(L, "you can't assign to a %s node (%d)\n", lmt_interface.node_data[t].name, n);
                     }
                   CANTSET:
-                    return luaL_error(L,"you can't set field %s in a %s node (%d)", s, lmt_interface.node_data[t].name, n);
+                    last_field_error = lua_set_field_error;
+                    return ignore_field_error ? 0 : luaL_error(L,"you can't set field %s in a %s node (%d)", s, lmt_interface.node_data[t].name, n);
                 }
                 return 0;
             }
     }
     return 0;
 }
+
+static int nodelib_shared_setfielderror(lua_State *L)
+{
+    ignore_field_error = lua_toboolean(L, 1);
+    last_field_error = lua_no_field_error;
+    return 1;
+}
+
+static int nodelib_shared_getfielderror(lua_State *L)
+{
+    lua_pushinteger(L, last_field_error);
+    return 1;
+}
+
+
+# define setfield_usage common_usage
 
 static int nodelib_direct_setfield(lua_State *L)
 {
@@ -8489,6 +8913,8 @@ static int nodelib_userdata_equal(lua_State *L)
 
 /* node.ligaturing */
 
+# define ligaturing_usage common_usage
+
 static int nodelib_direct_ligaturing(lua_State *L)
 {
     if (lua_gettop(L) >= 1) {
@@ -8517,6 +8943,8 @@ static int nodelib_direct_ligaturing(lua_State *L)
 }
 
 /* node.kerning */
+
+# define kerning_usage common_usage
 
 static int nodelib_direct_kerning(lua_State *L)
 {
@@ -8553,6 +8981,9 @@ static int nodelib_direct_kerning(lua_State *L)
     It's more consistent to have it here (so we will alias in lang later). Todo: if no glyph then
     quit.
 */
+
+# define hyphenating_usage common_usage
+# define collapsing_usage  common_usage
 
 static int nodelib_direct_hyphenating(lua_State *L)
 {
@@ -8591,7 +9022,7 @@ static int nodelib_direct_collapsing(lua_State *L)
 /* node.protect_glyphs */
 /* node.unprotect_glyphs */
 
-inline static void nodelib_aux_protect_all(halfword h)
+static inline void nodelib_aux_protect_all(halfword h)
 {
     while (h) {
         if (node_type(h) == glyph_node) {
@@ -8600,7 +9031,7 @@ inline static void nodelib_aux_protect_all(halfword h)
         h = node_next(h);
     }
 }
-inline static void nodelib_aux_unprotect_all(halfword h)
+static inline void nodelib_aux_unprotect_all(halfword h)
 {
     while (h) {
         if (node_type(h) == glyph_node) {
@@ -8610,7 +9041,7 @@ inline static void nodelib_aux_unprotect_all(halfword h)
     }
 }
 
-inline static void nodelib_aux_protect_node(halfword n)
+static inline void nodelib_aux_protect_node(halfword n)
 {
     switch (node_type(n)) {
         case glyph_node:
@@ -8624,7 +9055,7 @@ inline static void nodelib_aux_protect_node(halfword n)
     }
 }
 
-inline static void nodelib_aux_unprotect_node(halfword n)
+static inline void nodelib_aux_unprotect_node(halfword n)
 {
     switch (node_type(n)) {
         case glyph_node:
@@ -8640,6 +9071,15 @@ inline static void nodelib_aux_unprotect_node(halfword n)
 
 /* node.direct.protect_glyphs */
 /* node.direct.unprotect_glyphs */
+
+# define protectglyph_usage        (glyph_usage | disc_usage)
+# define unprotectglyph_usage      (glyph_usage | disc_usage)
+
+# define protectglyphs_usage       common_usage
+# define unprotectglyphs_usage     common_usage
+
+# define protectglyphsnone_usage   common_usage
+# define unprotectglyphsnone_usage common_usage
 
 static int nodelib_direct_protectglyph(lua_State *L)
 {
@@ -8695,12 +9135,12 @@ static int nodelib_direct_unprotectglyphs(lua_State *L)
 
 /*tex This is an experiment. */
 
-inline static void nodelib_aux_protect_all_none(halfword h)
+static inline void nodelib_aux_protect_all_none(halfword h)
 {
     while (h) {
         if (node_type(h) == glyph_node) {
             halfword f =  glyph_font(h);
-            if (f >= 0 && f <= lmt_font_state.font_data.ptr && lmt_font_state.fonts[f] && has_font_text_control(f, text_control_none_protected)) { 
+            if (f >= 0 && f <= lmt_font_state.font_data.ptr && lmt_font_state.fonts[f] && has_font_text_control(f, text_control_none_protected)) {
                 glyph_protected(h) = glyph_protected_text_code;
             }
         }
@@ -8708,13 +9148,13 @@ inline static void nodelib_aux_protect_all_none(halfword h)
     }
 }
 
-inline static void nodelib_aux_protect_node_none(halfword n)
+static inline void nodelib_aux_protect_node_none(halfword n)
 {
     switch (node_type(n)) {
         case glyph_node:
             {
                 halfword f =  glyph_font(n);
-                if (f >= 0 && f <= lmt_font_state.font_data.ptr && lmt_font_state.fonts[f] && has_font_text_control(f, text_control_none_protected)) { 
+                if (f >= 0 && f <= lmt_font_state.font_data.ptr && lmt_font_state.fonts[f] && has_font_text_control(f, text_control_none_protected)) {
                     glyph_protected(n) = glyph_protected_text_code;
                 }
             }
@@ -8727,7 +9167,7 @@ inline static void nodelib_aux_protect_node_none(halfword n)
     }
 }
 
-static int nodelib_direct_protectglyphs_none(lua_State *L)
+static int nodelib_direct_protectglyphsnone(lua_State *L)
 {
     halfword head = nodelib_valid_direct_from_index(L, 1);
     halfword tail = nodelib_valid_direct_from_index(L, 2);
@@ -8748,6 +9188,10 @@ static int nodelib_direct_protectglyphs_none(lua_State *L)
 /* node.direct.first_glyph */
 /* node.direct.first_char */
 
+# define firstglyphnode_usage common_usage
+# define firstglyph_usage     common_usage
+# define firstchar_usage      common_usage
+
 static int nodelib_direct_firstglyphnode(lua_State *L)
 {
     halfword h = nodelib_valid_direct_from_index(L, 1);
@@ -8766,8 +9210,8 @@ static int nodelib_direct_firstglyphnode(lua_State *L)
         }
     }
     if (h) {
-        lua_pushinteger(L, h);  
-    } else { 
+        lua_pushinteger(L, h);
+    } else {
         lua_pushnil(L);
     }
     return 1;
@@ -8796,8 +9240,8 @@ static int nodelib_direct_firstglyph(lua_State *L)
         }
     }
     if (h) {
-        lua_pushinteger(L, h);  
-    } else { 
+        lua_pushinteger(L, h);
+    } else {
         lua_pushnil(L);
     }
     return 1;
@@ -8825,8 +9269,8 @@ static int nodelib_direct_firstchar(lua_State *L)
         }
     }
     if (h) {
-        lua_pushinteger(L, h);  
-    } else { 
+        lua_pushinteger(L, h);
+    } else {
         lua_pushnil(L);
     }
     return 1;
@@ -8834,6 +9278,8 @@ static int nodelib_direct_firstchar(lua_State *L)
 
 /* node.direct.find_node(head)         : node, subtype*/
 /* node.direct.find_node(head,subtype) : node */
+
+# define findnode_usage common_usage
 
 static int nodelib_direct_findnode(lua_State *L)
 {
@@ -8868,6 +9314,8 @@ static int nodelib_direct_findnode(lua_State *L)
 
 /* node.direct.has_glyph */
 
+# define hasglyph_usage common_usage
+
 static int nodelib_direct_hasglyph(lua_State *L)
 {
     halfword h = nodelib_valid_direct_from_index(L, 1);
@@ -8888,7 +9336,7 @@ static int nodelib_direct_hasglyph(lua_State *L)
 
 /* node.getword */
 
-inline static int nodelib_aux_in_word(halfword n)
+static inline int nodelib_aux_in_word(halfword n)
 {
     switch (node_type(n)) {
         case glyph_node:
@@ -8900,6 +9348,8 @@ inline static int nodelib_aux_in_word(halfword n)
             return 0;
     }
 }
+
+# define getwordrange_usage common_usage
 
 static int nodelib_direct_getwordrange(lua_State *L)
 {
@@ -8979,6 +9429,8 @@ static int nodelib_userdata_usedlist(lua_State *L)
 
 /* node.direct.usedlist */
 
+# define usedlist_usage common_usage
+
 static int nodelib_direct_usedlist(lua_State *L)
 {
     lua_pushinteger(L, tex_list_node_mem_usage());
@@ -8986,6 +9438,8 @@ static int nodelib_direct_usedlist(lua_State *L)
 }
 
 /* node.direct.protrusionskipable(node m) */
+
+# define protrusionskippable_usage common_usage
 
 static int nodelib_direct_protrusionskipable(lua_State *L)
 {
@@ -9013,6 +9467,8 @@ static int nodelib_userdata_currentattributes(lua_State* L)
 
 /* node.direct.currentattributes(node m) */
 
+# define currentattributes_usage common_usage
+
 static int nodelib_direct_currentattributes(lua_State* L)
 {
     halfword n = tex_current_attribute_list();
@@ -9025,6 +9481,9 @@ static int nodelib_direct_currentattributes(lua_State* L)
 }
 
 /* node.direct.todirect */
+
+# define todirect_usage      common_usage
+# define tovaliddirect_usage common_usage
 
 static int nodelib_shared_todirect(lua_State* L)
 {
@@ -9053,6 +9512,8 @@ static int nodelib_direct_tovaliddirect(lua_State* L)
 }
 
 /* node.direct.tonode */
+
+# define tonode_usage common_usage
 
 static int nodelib_shared_tonode(lua_State* L)
 {
@@ -9141,7 +9602,7 @@ static int nodelib_direct_check_char(lua_State* L, halfword n)
                         break;
                     }
                 /* case 7: */
-                    /* (node,font,data,scale,scale,xscale,yscale)*/
+                    /* (node,font,data,state,scale,xscale,yscale)*/
             }
         }
     }
@@ -9149,6 +9610,10 @@ static int nodelib_direct_check_char(lua_State* L, halfword n)
   OKAY:
     return glyph_character(n);
 }
+
+# define ischar_usage         common_usage
+# define isnextchar_usage     common_usage
+# define isprevchar_usage     common_usage
 
 static int nodelib_direct_ischar(lua_State *L)
 {
@@ -9196,7 +9661,7 @@ static int nodelib_direct_ischar(lua_State *L)
 
 */
 
-inline static int nodelib_aux_similar_glyph(halfword first, halfword second)
+static inline int nodelib_aux_similar_glyph(halfword first, halfword second)
 {
     return
         node_type(second)     == glyph_node
@@ -9210,6 +9675,8 @@ inline static int nodelib_aux_similar_glyph(halfword first, halfword second)
      && glyph_weight(second)  == glyph_weight(first)
     ;
 }
+
+# define issimilarglyph_usage common_usage
 
 static int nodelib_direct_issimilarglyph(lua_State *L)
 {
@@ -9279,6 +9746,10 @@ static int nodelib_direct_isprevchar(lua_State *L)
     }
 }
 
+# define isglyph_usage     common_usage
+# define isnextglyph_usage common_usage
+# define isprevglyph_usage common_usage
+
 static int nodelib_direct_isglyph(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -9338,9 +9809,9 @@ static int nodelib_direct_isprevglyph(lua_State *L)
 
 /* direct.usesfont */
 
-inline static int nodelib_aux_uses_font_disc(lua_State *L, halfword n, halfword font)
+static inline int nodelib_aux_uses_font_disc(lua_State *L, halfword n, halfword font)
 {
-    if (font) { 
+    if (font) {
         while (n) {
             if ((node_type(n) == glyph_node) && (glyph_font(n) == font)) {
                 lua_pushboolean(L, 1);
@@ -9348,7 +9819,7 @@ inline static int nodelib_aux_uses_font_disc(lua_State *L, halfword n, halfword 
             }
             n = node_next(n);
         }
-    } else { 
+    } else {
         while (n) {
             if (node_type(n) == glyph_node) {
                 lua_pushinteger(L, glyph_font(n));
@@ -9360,6 +9831,8 @@ inline static int nodelib_aux_uses_font_disc(lua_State *L, halfword n, halfword 
     return 0;
 }
 
+# define usesfont_usage common_usage
+
 static int nodelib_direct_usesfont(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -9367,9 +9840,9 @@ static int nodelib_direct_usesfont(lua_State *L)
         halfword f = lmt_opthalfword(L, 2, 0);
         switch (node_type(n)) {
             case glyph_node:
-                if (f) { 
+                if (f) {
                     lua_pushboolean(L, glyph_font(n) == f);
-                } else { 
+                } else {
                     lua_pushinteger(L, glyph_font(n));
                 }
                 return 1;
@@ -9424,6 +9897,9 @@ static int nodelib_direct_usesfont(lua_State *L)
 
 /* node.direct.getbox */
 /* node.direct.setbox */
+
+# define getbox_usage common_usage
+# define setbox_usage common_usage
 
 static int nodelib_direct_getbox(lua_State *L)
 {
@@ -9496,6 +9972,9 @@ static int nodelib_userdata_isnode(lua_State *L)
 
 /* node.direct.isdirect(n) (handy for mixed usage testing) */
 
+# define isdirect_usage common_usage
+# define isnode_usage   common_usage
+
 static int nodelib_direct_isdirect(lua_State *L)
 {
     if (lua_type(L, 1) != LUA_TNUMBER) {
@@ -9530,6 +10009,9 @@ static int nodelib_userdata_getproperty(lua_State *L)
     }
     return 1;
 }
+
+# define getproperty_usage common_usage
+# define setproperty_usage common_usage
 
 static int nodelib_direct_getproperty(lua_State *L)
 {   /* <direct> */
@@ -9603,7 +10085,7 @@ static void nodelib_direct_effect_done(lua_State *L, halfword amount, halfword s
     halfword parent = nodelib_valid_direct_from_index(L, 2);
     if (parent) {
         halfword sign = box_glue_sign(parent);
-        if (sign != normal_glue_sign) { 
+        if (sign != normal_glue_sign) {
             switch (node_type(parent)) {
                 case hlist_node:
                 case vlist_node:
@@ -9633,6 +10115,8 @@ static void nodelib_direct_effect_done(lua_State *L, halfword amount, halfword s
     }
     lua_pushinteger(L, amount);
 }
+
+# define effectiveglue_usage (glue_usage | math_usage)
 
 static int nodelib_direct_effectiveglue(lua_State *L)
 {
@@ -9670,6 +10154,9 @@ static int nodelib_direct_effectiveglue(lua_State *L)
 
 */
 
+# define checkdiscretionaries_usage common_usage
+# define checkdiscretionary_usage   disc_usage
+
 static int nodelib_direct_checkdiscretionaries(lua_State *L) {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
@@ -9696,6 +10183,8 @@ static int nodelib_direct_checkdiscretionary(lua_State *L) {
     return 0;
 }
 
+# define flattendiscretionaries_usage common_usage
+
 static int nodelib_direct_flattendiscretionaries(lua_State *L)
 {
     int count = 0;
@@ -9709,6 +10198,8 @@ static int nodelib_direct_flattendiscretionaries(lua_State *L)
     lua_pushinteger(L, count);
     return 2;
 }
+
+# define softenhyphens_usage common_usage
 
 static int nodelib_direct_softenhyphens(lua_State *L)
 {
@@ -9726,28 +10217,8 @@ static int nodelib_direct_softenhyphens(lua_State *L)
 
 /*tex The fields related to input tracking: */
 
-static int nodelib_direct_setinputfields(lua_State *L)
-{
-    halfword n = nodelib_valid_direct_from_index(L, 1);
-    if (n) {
-        /* there is no need to test for tag and line as two arguments are mandate */
-        halfword tag = lmt_tohalfword(L, 2);
-        halfword line = lmt_tohalfword(L, 3);
-        switch (node_type(n)) {
-            case glyph_node:
-                glyph_input_file(n)  = tag;
-                glyph_input_line(n) = line;
-                break;
-            case hlist_node:
-            case vlist_node:
-            case unset_node:
-                box_input_file(n)  = tag;
-                box_input_line(n) = line;
-                break;
-        }
-    }
-    return 0;
-}
+# define getinputfields_usage (glyph_usage | hlist_usage | vlist_usage | unset_usage)
+# define setinputfields_usage getinputfields_usage
 
 static int nodelib_direct_getinputfields(lua_State *L)
 {
@@ -9772,8 +10243,31 @@ static int nodelib_direct_getinputfields(lua_State *L)
     return 0;
 }
 
-/*tex 
-    Likely we pas the wrong |chr| here as we're after the analysis phase. Buit we don't use this 
+static int nodelib_direct_setinputfields(lua_State *L)
+{
+    halfword n = nodelib_valid_direct_from_index(L, 1);
+    if (n) {
+        /* there is no need to test for tag and line as two arguments are mandate */
+        halfword tag = lmt_tohalfword(L, 2);
+        halfword line = lmt_tohalfword(L, 3);
+        switch (node_type(n)) {
+            case glyph_node:
+                glyph_input_file(n)  = tag;
+                glyph_input_line(n) = line;
+                break;
+            case hlist_node:
+            case vlist_node:
+            case unset_node:
+                box_input_file(n)  = tag;
+                box_input_line(n) = line;
+                break;
+        }
+    }
+    return 0;
+}
+
+/*tex
+    Likely we pas the wrong |chr| here as we're after the analysis phase. Buit we don't use this
     helper any longer (it seems).
 */
 
@@ -9806,7 +10300,7 @@ static int nodelib_direct_makeextensible(lua_State *L)
     return 1;
 }
 
-/*tex experiment, this might go away */
+# define flattenleaders_usage common_usage
 
 static int nodelib_direct_flattenleaders(lua_State *L)
 {
@@ -9815,10 +10309,10 @@ static int nodelib_direct_flattenleaders(lua_State *L)
     if (n) {
         switch (node_type(n)) {
             case hlist_node:
-                count = tex_flatten_leaders(n, hbox_group, 0, "lua direct", 0);
+                count = tex_flatten_leaders(n, hbox_group, 0, uleader_lua, 0);
                 break;
             case vlist_node:
-                count = tex_flatten_leaders(n, vbox_group, 0, "lua direct", 0);
+                count = tex_flatten_leaders(n, vbox_group, 0, uleader_lua, 0);
                 break;
         }
     }
@@ -9828,6 +10322,8 @@ static int nodelib_direct_flattenleaders(lua_State *L)
 
 /*tex test */
 
+# define isvalid_usage common_usage
+
 static int nodelib_direct_isvalid(lua_State *L)
 {
     lua_pushboolean(L, nodelib_valid_direct_from_index(L, 1));
@@ -9836,7 +10332,7 @@ static int nodelib_direct_isvalid(lua_State *L)
 
 /* getlinestuff : LS RS LH RH ID PF FIRST LAST */
 
-inline static scaled set_effective_width(halfword source, halfword sign, halfword order, double glue)
+static inline scaled set_effective_width(halfword source, halfword sign, halfword order, double glue)
 {
     scaled amount = glue_amount(source);
     switch (sign) {
@@ -9855,6 +10351,8 @@ inline static scaled set_effective_width(halfword source, halfword sign, halfwor
     }
     return amount;
 }
+
+# define getnormalizedline_usage hlist_usage
 
 static int nodelib_direct_getnormalizedline(lua_State *L)
 {
@@ -9897,7 +10395,7 @@ static int nodelib_direct_getnormalizedline(lua_State *L)
             }
             current = node_next(current);
         }
-        tex_get_line_content_range(head, tail, &first, &last); 
+        tex_get_line_content_range(head, tail, &first, &last);
         lua_createtable(L, 0, 14); /* we could add some more */
         lua_push_integer_at_key(L, leftskip, ls);
         lua_push_integer_at_key(L, rightskip, rs);
@@ -9913,7 +10411,7 @@ static int nodelib_direct_getnormalizedline(lua_State *L)
         lua_push_integer_at_key(L, last, last);   /* points to a skip */
         lua_push_integer_at_key(L, head, head);
         lua_push_integer_at_key(L, tail, tail);
-        if (details) { 
+        if (details) {
             scaled ns = tex_natural_hsize(box_list(n), &cs); /* todo: check if cs is the same */
             lua_push_integer_at_key(L, width, box_width(n));
             lua_push_integer_at_key(L, height, box_height(n));
@@ -9929,6 +10427,8 @@ static int nodelib_direct_getnormalizedline(lua_State *L)
 
 /*tex new */
 
+# define ignoremathskip_usage math_usage
+
 static int nodelib_direct_ignoremathskip(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -9940,6 +10440,8 @@ static int nodelib_direct_ignoremathskip(lua_State *L)
     return 1;
 }
 
+# define reverse_usage common_usage
+
 static int nodelib_direct_reverse(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
@@ -9949,6 +10451,8 @@ static int nodelib_direct_reverse(lua_State *L)
     nodelib_push_direct_or_nil(L, n);
     return 1;
 }
+
+# define exchange_usage common_usage
 
 static int nodelib_direct_exchange(lua_State *L)
 {
@@ -10000,7 +10504,7 @@ static int nodelib_direct_exchange(lua_State *L)
 
 /*tex experiment */
 
-inline static halfword nodelib_aux_migrate_decouple(halfword head, halfword current, halfword next, halfword *first, halfword *last)
+static inline halfword nodelib_aux_migrate_decouple(halfword head, halfword current, halfword next, halfword *first, halfword *last)
 {
     halfword prev = node_prev(current);
     tex_uncouple_node(current);
@@ -10037,7 +10541,7 @@ static halfword lmt_direct_migrate_locate(halfword head, halfword *first, halfwo
             case insert_node:
                 {
                     if (inserts) {
-                        halfword list; 
+                        halfword list;
                         head = nodelib_aux_migrate_decouple(head, current, next, first, last);
                         list = insert_list(current);
                         if (list) {
@@ -10061,6 +10565,8 @@ static halfword lmt_direct_migrate_locate(halfword head, halfword *first, halfwo
     return head;
 }
 
+# define migrate_usage (hlist_usage | vlist_usage | insert_usage)
+
 static int nodelib_direct_migrate(lua_State *L)
 {
     halfword head = nodelib_valid_direct_from_index(L, 1);
@@ -10072,8 +10578,8 @@ static int nodelib_direct_migrate(lua_State *L)
         halfword current = head;
         while (current) {
             switch (node_type(current)) {
-                case vlist_node:
                 case hlist_node:
+                case vlist_node:
                     {
                         halfword list = box_list(current);
                         if (list) {
@@ -10138,6 +10644,8 @@ static int nodelib_aux_no_right(halfword n, halfword r, halfword l)
 
 /*tex This one also checks is we have a glyph. */
 
+# define hasglyphoption_usage glyph_usage
+
 static int nodelib_direct_hasglyphoption(lua_State *L)
 {
     halfword current = nodelib_valid_direct_from_index(L, 1);
@@ -10145,22 +10653,22 @@ static int nodelib_direct_hasglyphoption(lua_State *L)
     if (current && node_type(current) == glyph_node) {
         int option = lmt_tointeger(L, 2);
         switch (option) {
-            case glyph_option_normal_glyph:      
+            case glyph_option_normal_glyph:
                 break;
-            case glyph_option_no_left_ligature:  
+            case glyph_option_no_left_ligature:
                 result = nodelib_aux_no_left(current, glyph_option_no_left_ligature, glyph_option_no_right_ligature);
                 break;
-            case glyph_option_no_right_ligature: 
+            case glyph_option_no_right_ligature:
                 result = nodelib_aux_no_right(current, glyph_option_no_right_ligature, glyph_option_no_left_ligature);
                 break;
-            case glyph_option_no_left_kern:      
+            case glyph_option_no_left_kern:
                 result = nodelib_aux_no_left(current, glyph_option_no_left_kern, glyph_option_no_right_kern);
                 break;
-            case glyph_option_no_right_kern:     
+            case glyph_option_no_right_kern:
                 result = nodelib_aux_no_right(current, glyph_option_no_right_kern, glyph_option_no_left_kern);
                 break;
-            case glyph_option_no_expansion:      
-            case glyph_option_no_protrusion:     
+            case glyph_option_no_expansion:
+            case glyph_option_no_protrusion:
             case glyph_option_apply_x_offset:
             case glyph_option_apply_y_offset:
                 /* todo */
@@ -10171,7 +10679,7 @@ static int nodelib_direct_hasglyphoption(lua_State *L)
             case glyph_option_math_italics_too:
                 result = tex_has_glyph_option(current, option);
                 break;
-            default: 
+            default:
                 /* user options */
                 result = tex_has_glyph_option(current, option);
         }
@@ -10179,6 +10687,8 @@ static int nodelib_direct_hasglyphoption(lua_State *L)
     lua_pushboolean(L, result);
     return 1;
 }
+
+# define hasdiscoption_usage disc_usage
 
 static int nodelib_direct_hasdiscoption(lua_State *L)
 {
@@ -10192,10 +10702,12 @@ static int nodelib_direct_hasdiscoption(lua_State *L)
     return 1;
 }
 
+# define isitalicglyph_usage glyph_usage
+
 static int nodelib_direct_isitalicglyph(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
-    lua_pushboolean(L, 
+    lua_pushboolean(L,
         n && node_type(n) == glyph_node && ! tex_has_glyph_option(n, glyph_option_no_italic_correction) && (
             glyph_slant(n)
          || has_font_text_control(glyph_font(n), text_control_has_italics)
@@ -10205,12 +10717,14 @@ static int nodelib_direct_isitalicglyph(lua_State *L)
     return 1;
 }
 
+# define firstitalicglyph_usage common_usage
+
 static int nodelib_direct_firstitalicglyph(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     int kerntoo = lua_toboolean(L, 2);
-    while (n) { 
-        switch (node_type(n)) { 
+    while (n) {
+        switch (node_type(n)) {
             case glyph_node:
                 if (! tex_has_glyph_option(n, glyph_option_no_italic_correction) && (glyph_slant(n)
                      || has_font_text_control(glyph_font(n), text_control_has_italics)
@@ -10219,9 +10733,9 @@ static int nodelib_direct_firstitalicglyph(lua_State *L)
                     goto DONE;
                 }
                 break;
-            case kern_node: 
-                if (kerntoo) { 
-                    switch (node_subtype(n)) { 
+            case kern_node:
+                if (kerntoo) {
+                    switch (node_subtype(n)) {
                         case italic_kern_subtype:
                         case left_correction_kern_subtype:
                         case right_correction_kern_subtype:
@@ -10236,6 +10750,10 @@ static int nodelib_direct_firstitalicglyph(lua_State *L)
     nodelib_push_direct_or_nil(L, n);
     return 1;
 }
+
+# define isspeciallist_usage  common_usage
+# define getspeciallist_usage common_usage
+# define setspeciallist_usage common_usage
 
 static int nodelib_direct_getspeciallist(lua_State *L)
 {
@@ -10325,12 +10843,14 @@ static int nodelib_direct_setspeciallist(lua_State *L)
     return 0;
 }
 
-/*tex 
+/*tex
     This is just an experiment, so it might go away. Using a list can be a bit faster that traverse
-    (2-4 times) but you only see a difference on very last lists and even then one need some 10K 
-    loops to notice it. If that gain is needed, I bet that the document takes a while to process 
-    anyway. 
+    (2-4 times) but you only see a difference on very last lists and even then one need some 10K
+    loops to notice it. If that gain is needed, I bet that the document takes a while to process
+    anyway.
 */
+
+# define getnodes_usage common_usage
 
 static int nodelib_direct_getnodes(lua_State *L)
 {
@@ -10359,7 +10879,7 @@ static int nodelib_direct_getnodes(lua_State *L)
                     n = node_next(n);
                 }
             }
-        } else { 
+        } else {
             while (n) {
                 lua_pushinteger(L, n);
                 lua_rawseti(L, -2, ++i);
@@ -10368,7 +10888,7 @@ static int nodelib_direct_getnodes(lua_State *L)
         }
         if (i) {
             return 1;
-        } else { 
+        } else {
             lua_pop(L, 1);
         }
     }
@@ -10442,13 +10962,15 @@ static int nodelib_set_property_t(lua_State *L)
 
 /* */
 
+# define gluetostring_usage (glue_usage | glue_spec_usage)
+
 static int nodelib_hybrid_gluetostring(lua_State *L)
 {
     halfword glue = lua_type(L, 1) == LUA_TNUMBER ? nodelib_valid_direct_from_index(L, 1): lmt_maybe_isnode(L, 1);
-    if (glue) { 
+    if (glue) {
         switch (node_type(glue)) {
-            case glue_node: 
-            case glue_spec_node: 
+            case glue_node:
+            case glue_spec_node:
                 {
                     int saved_selector = lmt_print_state.selector;
                     char *str = NULL;
@@ -10458,7 +10980,7 @@ static int nodelib_hybrid_gluetostring(lua_State *L)
                     lmt_print_state.selector = saved_selector;
                     lua_pushstring(L, str);
                     return 1;
-            }
+                }
         }
     }
     return 0;
@@ -10515,11 +11037,395 @@ void lmt_initialize_properties(int set_size)
     /* */
 }
 
+/*tex This is an experiment: */
+
+typedef enum usage_targets {
+    no_usage_target       = 0,
+    direct_usage_target   = 1, /* only available for direct nodes */
+    userdata_usage_target = 2, /* only available for userdata nodes */
+    separate_usage_target = 3, /* dedicated versions for direct and userdata nodes */
+    hybrid_usage_target   = 4, /* shared version for direct and userdata nodes */
+    general_usage_target  = 5, /* no direct or userdata arguments */
+} usage_targets;
+
+typedef struct usage_record {
+    const char  *name;
+    lua_Integer  usage;
+    int          target;
+} usage_record;
+
+static const usage_record usage_data[] = {
+    { .name = "addmargins",             .target = direct_usage_target,   .usage = addmargins_usage             },
+    { .name = "addxoffset",             .target = direct_usage_target,   .usage = addxoffset_usage             },
+    { .name = "addxymargins",           .target = direct_usage_target,   .usage = addxymargins_usage           },
+    { .name = "addyoffset",             .target = direct_usage_target,   .usage = addyoffset_usage             },
+    { .name = "appendaftertail",        .target = direct_usage_target,   .usage = appendaftertail_usage        },
+    { .name = "beginofmath",            .target = direct_usage_target,   .usage = beginofmath_usage            },
+    { .name = "checkdiscretionaries",   .target = direct_usage_target,   .usage = checkdiscretionaries_usage   },
+    { .name = "checkdiscretionary",     .target = direct_usage_target,   .usage = checkdiscretionary_usage     },
+    { .name = "collapsing",             .target = direct_usage_target,   .usage = collapsing_usage             },
+    { .name = "copy",                   .target = separate_usage_target, .usage = copy_usage                   },
+    { .name = "copylist",               .target = separate_usage_target, .usage = copylist_usage               },
+    { .name = "copyonly",               .target = direct_usage_target,   .usage = copyonly_usage               },
+    { .name = "count",                  .target = direct_usage_target,   .usage = count_usage                  },
+    { .name = "currentattributes",      .target = separate_usage_target, .usage = currentattributes_usage      },
+    { .name = "dimensions",             .target = direct_usage_target,   .usage = dimensions_usage             },
+    { .name = "effectiveglue",          .target = direct_usage_target,   .usage = effectiveglue_usage          },
+    { .name = "endofmath",              .target = direct_usage_target,   .usage = endofmath_usage              },
+    { .name = "exchange",               .target = direct_usage_target,   .usage = exchange_usage               },
+    { .name = "fields",                 .target = general_usage_target,  .usage = fields_usage                 },
+    { .name = "findattribute",          .target = direct_usage_target,   .usage = findattribute_usage          },
+    { .name = "findattributerange",     .target = direct_usage_target,   .usage = findattributerange_usage     },
+    { .name = "findnode",               .target = direct_usage_target,   .usage = findnode_usage               },
+    { .name = "firstchar",              .target = direct_usage_target,   .usage = firstchar_usage              },
+    { .name = "firstglyph",             .target = direct_usage_target,   .usage = firstglyph_usage             },
+    { .name = "firstglyphnode",         .target = direct_usage_target,   .usage = firstglyphnode_usage         },
+    { .name = "firstitalicglyph",       .target = direct_usage_target,   .usage = firstitalicglyph_usage       },
+    { .name = "flattendiscretionaries", .target = direct_usage_target,   .usage = flattendiscretionaries_usage },
+    { .name = "flattenleaders",         .target = direct_usage_target,   .usage = flattenleaders_usage         },
+    { .name = "flushlist",              .target = separate_usage_target, .usage = flushlist_usage              },
+    { .name = "flushnode",              .target = separate_usage_target, .usage = flushnode_usage              },
+    { .name = "free",                   .target = separate_usage_target, .usage = free_usage                   },
+    { .name = "freeze",                 .target = direct_usage_target,   .usage = freeze_usage                 },
+    { .name = "getanchors",             .target = direct_usage_target,   .usage = getanchors_usage             },
+    { .name = "getattribute",           .target = separate_usage_target, .usage = getattribute_usage           },
+    { .name = "getattributelist",       .target = direct_usage_target,   .usage = getattributelist_usage       },
+    { .name = "getattributes",          .target = direct_usage_target,   .usage = getattributes_usage          },
+    { .name = "getboth",                .target = direct_usage_target,   .usage = getboth_usage                },
+    { .name = "getbottom",              .target = direct_usage_target,   .usage = getbottom_usage              },
+    { .name = "getbottomdelimiter",     .target = direct_usage_target,   .usage = getbottomdelimiter_usage     },
+    { .name = "getbox",                 .target = direct_usage_target,   .usage = getbox_usage                 },
+    { .name = "getcachestate",          .target = general_usage_target,  .usage = common_usage                 }, /* todo */
+    { .name = "getchar",                .target = direct_usage_target,   .usage = getchar_usage                },
+    { .name = "getchardict",            .target = direct_usage_target,   .usage = getchardict_usage            },
+    { .name = "getcharspec",            .target = direct_usage_target,   .usage = getcharspec_usage            },
+    { .name = "getchoice",              .target = direct_usage_target,   .usage = getchoice_usage              },
+    { .name = "getclass",               .target = direct_usage_target,   .usage = getclass_usage               },
+    { .name = "getcontrol",             .target = direct_usage_target,   .usage = getcontrol_usage             },
+    { .name = "getcornerkerns",         .target = direct_usage_target,   .usage = getcornerkerns_usage         },
+    { .name = "getdata",                .target = direct_usage_target,   .usage = getdata_usage                },
+    { .name = "getdegree",              .target = direct_usage_target,   .usage = getdegree_usage              },
+    { .name = "getdelimiter",           .target = direct_usage_target,   .usage = getdelimiter_usage           },
+    { .name = "getdenominator",         .target = direct_usage_target,   .usage = getdenominator_usage         },
+    { .name = "getdepth",               .target = direct_usage_target,   .usage = getdepth_usage               },
+    { .name = "getdirection",           .target = direct_usage_target,   .usage = getdirection_usage           },
+    { .name = "getdisc",                .target = direct_usage_target,   .usage = getdisc_usage                },
+    { .name = "getdiscpart",            .target = direct_usage_target,   .usage = getdiscpart_usage            },
+    { .name = "getexcept",              .target = direct_usage_target,   .usage = getexcept_usage              },
+    { .name = "getexpansion",           .target = direct_usage_target,   .usage = getexpansion_usage           },
+    { .name = "getfam",                 .target = direct_usage_target,   .usage = getfam_usage                 },
+    { .name = "getfield",               .target = separate_usage_target, .usage = getfield_usage               },
+    { .name = "getfont",                .target = direct_usage_target,   .usage = getfont_usage                },
+    { .name = "getgeometry",            .target = direct_usage_target,   .usage = getgeometry_usage            },
+    { .name = "getglue",                .target = direct_usage_target,   .usage = getglue_usage                },
+    { .name = "getglyphdata",           .target = direct_usage_target,   .usage = getglyphdata_usage           },
+    { .name = "getglyphdimensions",     .target = direct_usage_target,   .usage = getglyphdimensions_usage     },
+    { .name = "getheight",              .target = direct_usage_target,   .usage = getheight_usage              },
+    { .name = "getid",                  .target = direct_usage_target,   .usage = getid_usage                  },
+    { .name = "getindex",               .target = direct_usage_target,   .usage = getindex_usage               },
+    { .name = "getinputfields",         .target = direct_usage_target,   .usage = getinputfields_usage         },
+    { .name = "getkern",                .target = direct_usage_target,   .usage = getkern_usage                },
+    { .name = "getkerndimension",       .target = direct_usage_target,   .usage = getkerndimension_usage       },
+    { .name = "getlanguage",            .target = direct_usage_target,   .usage = getlanguage_usage            },
+    { .name = "getleader",              .target = direct_usage_target,   .usage = getleader_usage              },
+    { .name = "getleftdelimiter",       .target = direct_usage_target,   .usage = getleftdelimiter_usage       },
+    { .name = "getlist",                .target = direct_usage_target,   .usage = getlist_usage                },
+    { .name = "getlistdimensions",      .target = direct_usage_target,   .usage = getlistdimensions_usage      },
+    { .name = "getnext",                .target = direct_usage_target,   .usage = getnext_usage                },
+    { .name = "getnodes",               .target = direct_usage_target,   .usage = getnodes_usage               },
+    { .name = "getnormalizedline",      .target = direct_usage_target,   .usage = getnormalizedline_usage      },
+    { .name = "getnucleus",             .target = direct_usage_target,   .usage = getnucleus_usage             },
+    { .name = "getnumerator",           .target = direct_usage_target,   .usage = getnumerator_usage           },
+    { .name = "getoffsets",             .target = direct_usage_target,   .usage = getoffsets_usage             },
+    { .name = "getoptions",             .target = direct_usage_target,   .usage = getoptions_usage             },
+    { .name = "getorientation",         .target = direct_usage_target,   .usage = getorientation_usage         },
+    { .name = "getparstate",            .target = direct_usage_target,   .usage = getparstate_usage            },
+    { .name = "getpenalty",             .target = direct_usage_target,   .usage = getpenalty_usage             },
+    { .name = "getpost",                .target = direct_usage_target,   .usage = getpost_usage                },
+    { .name = "getpre",                 .target = direct_usage_target,   .usage = getpre_usage                 },
+    { .name = "getprev",                .target = direct_usage_target,   .usage = getprev_usage                },
+    { .name = "getprime",               .target = direct_usage_target,   .usage = getprime_usage               },
+    { .name = "getpropertiestable",     .target = separate_usage_target, .usage = common_usage                 }, /* todo */
+    { .name = "getproperty",            .target = separate_usage_target, .usage = getproperty_usage            },
+    { .name = "getreplace",             .target = direct_usage_target,   .usage = getreplace_usage             },
+    { .name = "getrightdelimiter",      .target = direct_usage_target,   .usage = getrightdelimiter_usage      },
+    { .name = "getruledimensions",      .target = direct_usage_target,   .usage = getruledimensions_usage      },
+    { .name = "getscale",               .target = direct_usage_target,   .usage = getscale_usage               },
+    { .name = "getscales",              .target = direct_usage_target,   .usage = getscales_usage              },
+    { .name = "getscript",              .target = direct_usage_target,   .usage = getscript_usage              },
+    { .name = "getscripts",             .target = direct_usage_target,   .usage = getscripts_usage             },
+    { .name = "getshift",               .target = direct_usage_target,   .usage = getshift_usage               },
+    { .name = "getslant",               .target = direct_usage_target,   .usage = getslant_usage               },
+    { .name = "getspeciallist",         .target = direct_usage_target,   .usage = getspeciallist_usage         },
+    { .name = "getstate",               .target = direct_usage_target,   .usage = getstate_usage               },
+    { .name = "getsub",                 .target = direct_usage_target,   .usage = getsub_usage                 },
+    { .name = "getsubpre",              .target = direct_usage_target,   .usage = getsubpre_usage              },
+    { .name = "getsubtype",             .target = direct_usage_target,   .usage = getsubtype_usage             },
+    { .name = "getsup",                 .target = direct_usage_target,   .usage = getsup_usage                 },
+    { .name = "getsuppre",              .target = direct_usage_target,   .usage = getsuppre_usage              },
+    { .name = "gettop",                 .target = direct_usage_target,   .usage = gettop_usage                 },
+    { .name = "gettopdelimiter",        .target = direct_usage_target,   .usage = gettopdelimiter_usage        },
+    { .name = "gettotal",               .target = direct_usage_target,   .usage = gettotal_usage               },
+    { .name = "getweight",              .target = direct_usage_target,   .usage = getweight_usage              },
+    { .name = "getwhd",                 .target = direct_usage_target,   .usage = getwhd_usage                 },
+    { .name = "getwidth",               .target = direct_usage_target,   .usage = getwidth_usage               },
+    { .name = "getwordrange",           .target = direct_usage_target,   .usage = getwordrange_usage           },
+    { .name = "getxscale",              .target = direct_usage_target,   .usage = getxscale_usage              },
+    { .name = "getxyscales",            .target = direct_usage_target,   .usage = getxyscales_usage            },
+    { .name = "getyscale",              .target = direct_usage_target,   .usage = getyscale_usage              },
+    { .name = "gluetostring" ,          .target = hybrid_usage_target,   .usage = gluetostring_usage           },
+    { .name = "hasattribute",           .target = separate_usage_target, .usage = hasattribute_usage           },
+    { .name = "hasdimensions",          .target = direct_usage_target,   .usage = hasdimensions_usage          },
+    { .name = "hasdiscoption",          .target = direct_usage_target,   .usage = hasdiscoption_usage          },
+    { .name = "hasfield",               .target = separate_usage_target, .usage = hasfield_usage               },
+    { .name = "hasgeometry",            .target = direct_usage_target,   .usage = hasgeometry_usage            },
+    { .name = "hasglyph",               .target = direct_usage_target,   .usage = hasglyph_usage               },
+    { .name = "hasglyphoption",         .target = direct_usage_target,   .usage = hasglyphoption_usage         },
+    { .name = "hpack",                  .target = direct_usage_target,   .usage = hpack_usage                  },
+    { .name = "hyphenating",            .target = direct_usage_target,   .usage = hyphenating_usage            },
+    { .name = "id",                     .target = general_usage_target,  .usage = id_usage                     },
+    { .name = "ignoremathskip",         .target = direct_usage_target,   .usage = ignoremathskip_usage         },
+    { .name = "insertafter",            .target = separate_usage_target, .usage = insertafter_usage            },
+    { .name = "insertbefore",           .target = separate_usage_target, .usage = insertbefore_usage           },
+    { .name = "instock",                .target = userdata_usage_target, .usage = common_usage                 }, /* todo */
+    { .name = "inuse",                  .target = userdata_usage_target, .usage = common_usage                 }, /* todo */
+    { .name = "isboth",                 .target = direct_usage_target,   .usage = isboth_usage                 },
+    { .name = "ischar",                 .target = direct_usage_target,   .usage = ischar_usage                 },
+    { .name = "isdirect",               .target = direct_usage_target,   .usage = isdirect_usage               },
+    { .name = "isglyph",                .target = direct_usage_target,   .usage = isglyph_usage                },
+    { .name = "isitalicglyph",          .target = direct_usage_target,   .usage = isitalicglyph_usage          },
+    { .name = "isloop",                 .target = direct_usage_target,   .usage = isloop_usage                 },
+    { .name = "isnext",                 .target = direct_usage_target,   .usage = isnext_usage                 },
+    { .name = "isnextchar",             .target = direct_usage_target,   .usage = isnextchar_usage             },
+    { .name = "isnextglyph",            .target = direct_usage_target,   .usage = isnextglyph_usage            },
+    { .name = "isnode",                 .target = separate_usage_target, .usage = isnode_usage                 },
+    { .name = "isprev",                 .target = direct_usage_target,   .usage = isprev_usage                 },
+    { .name = "isprevchar",             .target = direct_usage_target,   .usage = isnextchar_usage             },
+    { .name = "isprevglyph",            .target = direct_usage_target,   .usage = isprevglyph_usage            },
+    { .name = "issimilarglyph",         .target = direct_usage_target,   .usage = issimilarglyph_usage         },
+    { .name = "isspeciallist",          .target = direct_usage_target,   .usage = isspeciallist_usage          },
+    { .name = "isvalid",                .target = direct_usage_target,   .usage = isvalid_usage                },
+    { .name = "iszeroglue",             .target = direct_usage_target,   .usage = iszeroglue_usage             },
+    { .name = "kerning",                .target = direct_usage_target,   .usage = kerning_usage                },
+    { .name = "lastnode",               .target = direct_usage_target,   .usage = lastnode_usage               },
+    { .name = "length",                 .target = direct_usage_target,   .usage = length_usage                 },
+    { .name = "ligaturing",             .target = direct_usage_target,   .usage = ligaturing_usage             },
+    { .name = "migrate",                .target = direct_usage_target,   .usage = migrate_usage                },
+    { .name = "mlisttohlist",           .target = direct_usage_target,   .usage = mlisttohlist_usage           },
+    { .name = "naturalhsize",           .target = direct_usage_target,   .usage = naturalhsize_usage           },
+    { .name = "naturalwidth",           .target = direct_usage_target,   .usage = naturalwidth_usage           },
+    { .name = "new",                    .target = separate_usage_target, .usage = new_usage                    },
+    { .name = "newcontinuationatom",    .target = direct_usage_target,   .usage = newcontinuationatom_usage    },
+    { .name = "newmathglyph",           .target = direct_usage_target,   .usage = newmathglyph_usage           },
+    { .name = "newtextglyph",           .target = direct_usage_target,   .usage = newtextglyph_usage           },
+    { .name = "patchattributes",        .target = direct_usage_target,   .usage = patchattributes_usage        },
+    { .name = "patchparshape",          .target = direct_usage_target,   .usage = patchparshape_usage          },
+    { .name = "prependbeforehead",      .target = direct_usage_target,   .usage = prependbeforehead_usage      },
+    { .name = "protectglyph",           .target = direct_usage_target,   .usage = protectglyph_usage           },
+    { .name = "protectglyphs",          .target = direct_usage_target,   .usage = protectglyphs_usage          },
+    { .name = "protectglyphsnone",      .target = direct_usage_target,   .usage = protectglyphsnone_usage      },
+    { .name = "protrusionskippable",    .target = direct_usage_target,   .usage = protrusionskippable_usage    },
+    { .name = "rangedimensions",        .target = direct_usage_target,   .usage = rangedimensions_usage        },
+    { .name = "remove",                 .target = separate_usage_target, .usage = remove_usage                 },
+    { .name = "removefromlist",         .target = direct_usage_target,   .usage = removefromlist_usage         },
+    { .name = "repack",                 .target = direct_usage_target,   .usage = repack_usage                 },
+    { .name = "reverse",                .target = direct_usage_target,   .usage = reverse_usage                },
+    { .name = "serialized",             .target = separate_usage_target, .usage = serialized_usage             },
+    { .name = "setanchors",             .target = direct_usage_target,   .usage = setanchors_usage             },
+    { .name = "setattribute",           .target = separate_usage_target, .usage = setattribute_usage           },
+    { .name = "setattributelist",       .target = direct_usage_target,   .usage = setattributelist_usage       },
+    { .name = "setattributes",          .target = direct_usage_target,   .usage = setattributes_usage          },
+    { .name = "setboth",                .target = direct_usage_target,   .usage = setboth_usage                },
+    { .name = "setbottom",              .target = direct_usage_target,   .usage = setbottom_usage              },
+    { .name = "setbottomdelimiter",     .target = direct_usage_target,   .usage = setbottomdelimiter_usage     },
+    { .name = "setbox",                 .target = direct_usage_target,   .usage = setbox_usage                 },
+    { .name = "setchar",                .target = direct_usage_target,   .usage = setchar_usage                },
+    { .name = "setchardict",            .target = direct_usage_target,   .usage = setchardict_usage            },
+    { .name = "setcharspec",            .target = direct_usage_target,   .usage = setcharspec_usage            },
+    { .name = "setchoice",              .target = direct_usage_target,   .usage = setchoice_usage              },
+    { .name = "setclass",               .target = direct_usage_target,   .usage = setclass_usage               },
+    { .name = "setcontrol",             .target = direct_usage_target,   .usage = setcontrol_usage             },
+    { .name = "setdata",                .target = direct_usage_target,   .usage = setdata_usage                },
+    { .name = "setdegree",              .target = direct_usage_target,   .usage = setdegree_usage              },
+    { .name = "setdelimiter",           .target = direct_usage_target,   .usage = setdelimiter_usage           },
+    { .name = "setdenominator",         .target = direct_usage_target,   .usage = setdenominator_usage         },
+    { .name = "setdepth",               .target = direct_usage_target,   .usage = setdepth_usage               },
+    { .name = "setdirection",           .target = direct_usage_target,   .usage = setdirection_usage           },
+    { .name = "setdisc",                .target = direct_usage_target,   .usage = setdisc_usage                },
+    { .name = "setdiscpart",            .target = direct_usage_target,   .usage = setdiscpart_usage            },
+    { .name = "setexcept",              .target = direct_usage_target,   .usage = setexcept_usage              },
+    { .name = "setexpansion",           .target = direct_usage_target,   .usage = setexpansion_usage           },
+    { .name = "setfam",                 .target = direct_usage_target,   .usage = setfam_usage                 },
+    { .name = "setfield",               .target = separate_usage_target, .usage = setfield_usage               },
+    { .name = "setfont",                .target = direct_usage_target,   .usage = setfont_usage                },
+    { .name = "setgeometry",            .target = direct_usage_target,   .usage = setgeometry_usage            },
+    { .name = "setglue",                .target = direct_usage_target,   .usage = setglue_usage                },
+    { .name = "setglyphdata",           .target = direct_usage_target,   .usage = setglyphdata_usage           },
+    { .name = "setheight",              .target = direct_usage_target,   .usage = setheight_usage              },
+    { .name = "setindex",               .target = direct_usage_target,   .usage = setindex_usage               },
+    { .name = "setinputfields",         .target = direct_usage_target,   .usage = setinputfields_usage         },
+    { .name = "setkern",                .target = direct_usage_target,   .usage = setkern_usage                },
+    { .name = "setlanguage",            .target = direct_usage_target,   .usage = setlanguage_usage            },
+    { .name = "setleader",              .target = direct_usage_target,   .usage = setleader_usage              },
+    { .name = "setleftdelimiter",       .target = direct_usage_target,   .usage = setleftdelimiter_usage       },
+    { .name = "setlink",                .target = direct_usage_target,   .usage = setlink_usage                },
+    { .name = "setlist",                .target = direct_usage_target,   .usage = setlist_usage                },
+    { .name = "setnext",                .target = direct_usage_target,   .usage = setnext_usage                },
+    { .name = "setnucleus",             .target = direct_usage_target,   .usage = setnucleus_usage             },
+    { .name = "setnumerator",           .target = direct_usage_target,   .usage = setnumerator_usage           },
+    { .name = "setoffsets",             .target = direct_usage_target,   .usage = setoffsets_usage             },
+    { .name = "setoptions",             .target = direct_usage_target,   .usage = setoptions_usage             },
+    { .name = "setorientation",         .target = direct_usage_target,   .usage = setorientation_usage         },
+    { .name = "setpenalty",             .target = direct_usage_target,   .usage = setpenalty_usage             },
+    { .name = "setpost",                .target = direct_usage_target,   .usage = setpost_usage                },
+    { .name = "setpre",                 .target = direct_usage_target,   .usage = setpre_usage                 },
+    { .name = "setprev",                .target = direct_usage_target,   .usage = setprev_usage                },
+    { .name = "setprime",               .target = direct_usage_target,   .usage = setprime_usage               },
+    { .name = "setproperty",            .target = separate_usage_target, .usage = setproperty_usage            },
+    { .name = "setreplace",             .target = direct_usage_target,   .usage = setreplace_usage             },
+    { .name = "setrightdelimiter",      .target = direct_usage_target,   .usage = setrightdelimiter_usage      },
+    { .name = "setruledimensions",      .target = direct_usage_target,   .usage = setruledimensions_usage      },
+    { .name = "setruledimensions",      .target = direct_usage_target,   .usage = setruledimensions_usage      },
+    { .name = "setscale",               .target = direct_usage_target,   .usage = setscale_usage               },
+    { .name = "setscales",              .target = direct_usage_target,   .usage = setscales_usage              },
+    { .name = "setscript",              .target = direct_usage_target,   .usage = setscript_usage              },
+    { .name = "setscripts",             .target = direct_usage_target,   .usage = setscripts_usage             },
+    { .name = "setshift",               .target = direct_usage_target,   .usage = setshift_usage               },
+    { .name = "setslant",               .target = direct_usage_target,   .usage = setslant_usage               },
+    { .name = "setspeciallist",         .target = direct_usage_target,   .usage = setspeciallist_usage         },
+    { .name = "setsplit",               .target = direct_usage_target,   .usage = setsplit_usage               },
+    { .name = "setstate",               .target = direct_usage_target,   .usage = setstate_usage               },
+    { .name = "setsub",                 .target = direct_usage_target,   .usage = setsub_usage                 },
+    { .name = "setsubpre",              .target = direct_usage_target,   .usage = setsubpre_usage              },
+    { .name = "setsubtype",             .target = direct_usage_target,   .usage = setsubtype_usage             },
+    { .name = "setsup",                 .target = direct_usage_target,   .usage = setsup_usage                 },
+    { .name = "setsuppre",              .target = direct_usage_target,   .usage = setsuppre_usage              },
+    { .name = "settop",                 .target = direct_usage_target,   .usage = settop_usage                 },
+    { .name = "settopdelimiter",        .target = direct_usage_target,   .usage = settopdelimiter_usage        },
+    { .name = "settotal",               .target = direct_usage_target,   .usage = settotal_usage               },
+    { .name = "setweight",              .target = direct_usage_target,   .usage = setweight_usage              },
+    { .name = "setwhd",                 .target = direct_usage_target,   .usage = setwhd_usage                 },
+    { .name = "setwidth",               .target = direct_usage_target,   .usage = setwidth_usage               },
+    { .name = "setxyscales",            .target = direct_usage_target,   .usage = setxyscales_usage            },
+    { .name = "show",                   .target = separate_usage_target, .usage = show_usage                   },
+    { .name = "showlist",               .target = direct_usage_target,   .usage = showlist_usage               },
+    { .name = "size",                   .target = direct_usage_target,   .usage = size_usage                   },
+    { .name = "size",                   .target = general_usage_target,  .usage = common_usage                 }, /* todo */
+    { .name = "slide",                  .target = direct_usage_target,   .usage = slide_usage                  },
+    { .name = "softenhyphens",          .target = direct_usage_target,   .usage = softenhyphens_usage          },
+    { .name = "startofpar",             .target = direct_usage_target,   .usage = startofpar_usage             },
+    { .name = "subtypes",               .target = general_usage_target,  .usage = common_usage                 }, /* todo */
+    { .name = "tail",                   .target = separate_usage_target, .usage = tail_usage                   },
+    { .name = "todirect",               .target = userdata_usage_target, .usage = todirect_usage               },
+    { .name = "tonode",                 .target = direct_usage_target,   .usage = tonode_usage                 },
+    { .name = "tostring",               .target = separate_usage_target, .usage = common_usage                 }, /* todo */
+    { .name = "tovaliddirect",          .target = direct_usage_target,   .usage = tovaliddirect_usage          },
+    { .name = "traverse",               .target = separate_usage_target, .usage = traverse_usage               },
+    { .name = "traversechar",           .target = direct_usage_target,   .usage = traversechar_usage           },
+    { .name = "traversecontent",        .target = direct_usage_target,   .usage = traversecontent_usage        },
+    { .name = "traverseglyph",          .target = direct_usage_target,   .usage = traverseglyph_usage          },
+    { .name = "traverseid",             .target = separate_usage_target, .usage = traverseid_usage             },
+    { .name = "traverseitalic",         .target = direct_usage_target,   .usage = traverseitalic_usage         },
+    { .name = "traverseleader",         .target = direct_usage_target,   .usage = traverseleader_usage         },
+    { .name = "traverselist",           .target = direct_usage_target,   .usage = traverselist_usage           },
+    { .name = "type",                   .target = hybrid_usage_target,   .usage = type_usage                   },
+    { .name = "types",                  .target = general_usage_target,  .usage = common_usage                 }, /* todo */
+    { .name = "unprotectglyph",         .target = direct_usage_target,   .usage = unprotectglyph_usage         },
+    { .name = "unprotectglyphs",        .target = direct_usage_target,   .usage = unprotectglyphs_usage        },
+    { .name = "unprotectglyphsnone",    .target = direct_usage_target,   .usage = unprotectglyphsnone_usage    },
+    { .name = "unsetattribute",         .target = separate_usage_target, .usage = unsetattribute_usage         },
+    { .name = "unsetattributes",        .target = direct_usage_target,   .usage = unsetattributes_usage        },
+    { .name = "usedlist",               .target = separate_usage_target, .usage = usedlist_usage               },
+    { .name = "usesfont",               .target = direct_usage_target,   .usage = usesfont_usage               },
+    { .name = "validpar",               .target = direct_usage_target,   .usage = validpar_usage               },
+    { .name = "verticalbreak",          .target = direct_usage_target,   .usage = verticalbreak_usage          },
+    { .name = "vpack",                  .target = direct_usage_target,   .usage = vpack_usage                  },
+    { .name = "write",                  .target = separate_usage_target, .usage = write_usage                  },
+    { .name = "xscaled",                .target = direct_usage_target,   .usage = xscaled_usage                },
+    { .name = "yscaled",                .target = direct_usage_target,   .usage = yscaled_usage                },
+    { .name = NULL,                     .target = no_usage_target,       .usage = 0                            },
+} ;
+
+static int nodelib_direct_hasusage(lua_State *L)
+{
+    const char *str = lua_tostring(L, 1);
+    if (str) {
+        int target = lmt_optinteger(L, 2, 0);
+        for (int i = 0; usage_data[i].name != NULL; i++) {
+            if ((! target || usage_data[i].target == target) && ! strcmp(usage_data[i].name, str)) {
+                lua_pushboolean(L, 1);
+                return 1;
+            }
+        }
+    }
+    lua_pushboolean(L, 0);
+    return 1;
+}
+
+static int nodelib_direct_getusage(lua_State *L)
+{
+    switch (lua_type(L, 1)) {
+        case LUA_TSTRING:
+            {
+                const char *str = lua_tostring(L, 1);
+                if (str) {
+                    int target = lmt_optinteger(L, 2, 0);
+                    for (int i = 0; usage_data[i].name != NULL; i++) {
+                        if ((! target || usage_data[i].target == target) && ! strcmp(usage_data[i].name, str)) {
+                            if (usage_data[i].usage & common_usage) {
+                                lua_pushboolean(L, 1);
+                            } else {
+                                int n = 0;
+                                lua_newtable(L);
+                                for (int id = 0; id <= passive_node; id++) {
+                                    lua_Integer bit = (lua_Integer) 1 << (id + 1);
+                                    if (usage_data[i].usage & bit) {
+                                        lua_pushinteger(L, id);
+                                        lua_rawseti(L, -2, ++n);
+                                    }
+                                }
+                            }
+                            return 1;
+                        }
+                    }
+                }
+            }
+            break;
+        case LUA_TNUMBER:
+            {
+                int id = lua_tointeger(L, 1);
+                if (id >= 0 && id <= passive_node) {
+                    int target = lmt_optinteger(L, 2, 0);
+                    lua_Integer bit = (lua_Integer) 1 << (id + 1);
+                    int n = 0;
+                    lua_newtable(L);
+                    for (int i = 0; usage_data[i].name != NULL; i++) {
+                        if ((! target || usage_data[i].target == target) && ((usage_data[i].usage & bit) || (usage_data[i].usage & common_usage))) {
+                            lua_pushstring(L, usage_data[i].name);
+                            lua_rawseti(L, -2, ++n);
+                        }
+                    }
+                    return 1;
+                }
+            }
+            break;
+    }
+    return 0;
+}
+
 /* node.direct.* */
 
 static const struct luaL_Reg nodelib_direct_function_list[] = {
+
+    { "addmargins",              nodelib_direct_addmargins             },
+    { "addxoffset",              nodelib_direct_addxoffset             },
+    { "addxymargins",            nodelib_direct_addxymargins           },
+    { "addyoffset",              nodelib_direct_addyoffset             },
+    { "appendaftertail",         nodelib_direct_appendaftertail        },
+    { "beginofmath",             nodelib_direct_beginofmath            },
     { "checkdiscretionaries",    nodelib_direct_checkdiscretionaries   },
     { "checkdiscretionary",      nodelib_direct_checkdiscretionary     },
+    { "collapsing",              nodelib_direct_collapsing             }, /*tex A funny name but like |ligaturing| and |hyphenating|. */
     { "copy",                    nodelib_direct_copy                   },
     { "copylist",                nodelib_direct_copylist               },
     { "copyonly",                nodelib_direct_copyonly               },
@@ -10527,44 +11433,40 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "currentattributes",       nodelib_direct_currentattributes      },
     { "dimensions",              nodelib_direct_dimensions             },
     { "effectiveglue",           nodelib_direct_effectiveglue          },
-    { "beginofmath",             nodelib_direct_beginofmath            },
     { "endofmath",               nodelib_direct_endofmath              },
+    { "exchange",                nodelib_direct_exchange               },
     { "findattribute",           nodelib_direct_findattribute          },
     { "findattributerange",      nodelib_direct_findattributerange     },
     { "findnode",                nodelib_direct_findnode               },
-    { "firstglyphnode",          nodelib_direct_firstglyphnode         },
-    { "firstglyph",              nodelib_direct_firstglyph             },
     { "firstchar",               nodelib_direct_firstchar              },
+    { "firstglyph",              nodelib_direct_firstglyph             },
+    { "firstglyphnode",          nodelib_direct_firstglyphnode         },
+    { "firstitalicglyph",        nodelib_direct_firstitalicglyph       },
     { "flattendiscretionaries",  nodelib_direct_flattendiscretionaries },
-    { "softenhyphens",           nodelib_direct_softenhyphens          },
+    { "flattenleaders",          nodelib_direct_flattenleaders         },
     { "flushlist",               nodelib_direct_flushlist              },
     { "flushnode",               nodelib_direct_flushnode              },
     { "free",                    nodelib_direct_free                   },
-    { "getattribute",            nodelib_direct_getattribute           },
-    { "getattributes",           nodelib_direct_getattributes          },
-    { "getpropertiestable",      nodelib_direct_getpropertiestable     },
-    { "getinputfields",          nodelib_direct_getinputfields         },
+    { "freeze",                  nodelib_direct_freeze                 },
     { "getanchors",              nodelib_direct_getanchors             },
+    { "getattribute",            nodelib_direct_getattribute           },
     { "getattributelist",        nodelib_direct_getattributelist       },
+    { "getattributes",           nodelib_direct_getattributes          },
     { "getboth",                 nodelib_direct_getboth                },
     { "getbottom",               nodelib_direct_getbottom              },
+    { "getbottomdelimiter",      nodelib_direct_getbottomdelimiter     },
     { "getbox",                  nodelib_direct_getbox                 },
     { "getchar",                 nodelib_direct_getchar                },
-    { "getcontrol",              nodelib_direct_getcontrol             },
     { "getchardict",             nodelib_direct_getchardict            },
     { "getcharspec",             nodelib_direct_getcharspec            },
     { "getchoice",               nodelib_direct_getchoice              },
     { "getclass",                nodelib_direct_getclass               },
-    { "getstate",                nodelib_direct_getstate               },
-    { "getscript",               nodelib_direct_getscript              },
+    { "getcontrol",              nodelib_direct_getcontrol             },
+    { "getcornerkerns",          nodelib_direct_getcornerkerns         },
     { "getdata",                 nodelib_direct_getdata                },
-    { "getleftdelimiter",        nodelib_direct_getleftdelimiter       },
-    { "getrightdelimiter",       nodelib_direct_getrightdelimiter      },
-    { "gettopdelimiter",         nodelib_direct_gettopdelimiter        },
-    { "getbottomdelimiter",      nodelib_direct_getbottomdelimiter     },
+    { "getdegree",               nodelib_direct_getdegree              },
     { "getdelimiter",            nodelib_direct_getdelimiter           },
     { "getdenominator",          nodelib_direct_getdenominator         },
-    { "getdegree",               nodelib_direct_getdegree              },
     { "getdepth",                nodelib_direct_getdepth               },
     { "getdirection",            nodelib_direct_getdirection           },
     { "getdisc",                 nodelib_direct_getdisc                },
@@ -10574,136 +11476,138 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "getfam",                  nodelib_direct_getfam                 },
     { "getfield",                nodelib_direct_getfield               },
     { "getfont",                 nodelib_direct_getfont                },
+    { "getgeometry",             nodelib_direct_getgeometry            },
     { "getglue",                 nodelib_direct_getglue                },
     { "getglyphdata",            nodelib_direct_getglyphdata           },
+    { "getglyphdimensions",      nodelib_direct_getglyphdimensions     },
     { "getheight",               nodelib_direct_getheight              },
-    { "getindex",                nodelib_direct_getindex               },
     { "getid",                   nodelib_direct_getid                  },
+    { "getindex",                nodelib_direct_getindex               },
+    { "getinputfields",          nodelib_direct_getinputfields         },
     { "getkern",                 nodelib_direct_getkern                },
+    { "getkerndimension",        nodelib_direct_getkerndimension       },
     { "getlanguage",             nodelib_direct_getlanguage            },
     { "getleader",               nodelib_direct_getleader              },
+    { "getleftdelimiter",        nodelib_direct_getleftdelimiter       },
     { "getlist",                 nodelib_direct_getlist                },
+    { "getlistdimensions",       nodelib_direct_getlistdimensions      },
     { "getnext",                 nodelib_direct_getnext                },
+    { "getnodes",                nodelib_direct_getnodes               },
     { "getnormalizedline",       nodelib_direct_getnormalizedline      },
-    { "getnodes",                nodelib_direct_getnodes               }, 
     { "getnucleus",              nodelib_direct_getnucleus             },
     { "getnumerator",            nodelib_direct_getnumerator           },
     { "getoffsets",              nodelib_direct_getoffsets             },
-    { "gettop",                  nodelib_direct_gettop                 },
-    { "getscales",               nodelib_direct_getscales              },
-    { "getscale",                nodelib_direct_getscale               },
-    { "getslant",                nodelib_direct_getslant               },
-    { "getxscale",               nodelib_direct_getxscale              },
-    { "getyscale",               nodelib_direct_getyscale              },
-    { "xscaled",                 nodelib_direct_xscaled                },
-    { "yscaled",                 nodelib_direct_yscaled                },
-    { "getxyscales",             nodelib_direct_getxyscales            },
     { "getoptions",              nodelib_direct_getoptions             },
-    { "hasgeometry",             nodelib_direct_hasgeometry            },
-    { "getgeometry",             nodelib_direct_getgeometry            },
-    { "setgeometry",             nodelib_direct_setgeometry            },
     { "getorientation",          nodelib_direct_getorientation         },
+    { "getparstate",             nodelib_direct_getparstate            },
     { "getpenalty",              nodelib_direct_getpenalty             },
     { "getpost",                 nodelib_direct_getpost                },
     { "getpre",                  nodelib_direct_getpre                 },
     { "getprev",                 nodelib_direct_getprev                },
+    { "getprime",                nodelib_direct_getprime               },
+    { "getpropertiestable",      nodelib_direct_getpropertiestable     },
     { "getproperty",             nodelib_direct_getproperty            },
     { "getreplace",              nodelib_direct_getreplace             },
+    { "getrightdelimiter",       nodelib_direct_getrightdelimiter      },
+    { "getruledimensions",       nodelib_direct_getruledimensions      },
+    { "getscale",                nodelib_direct_getscale               },
+    { "getscales",               nodelib_direct_getscales              },
+    { "getscript",               nodelib_direct_getscript              },
     { "getscripts",              nodelib_direct_getscripts             },
     { "getshift",                nodelib_direct_getshift               },
+    { "getslant",                nodelib_direct_getslant               },
+    { "getspeciallist",          nodelib_direct_getspeciallist         },
+    { "getstate",                nodelib_direct_getstate               },
     { "getsub",                  nodelib_direct_getsub                 },
     { "getsubpre",               nodelib_direct_getsubpre              },
     { "getsubtype",              nodelib_direct_getsubtype             },
     { "getsup",                  nodelib_direct_getsup                 },
     { "getsuppre",               nodelib_direct_getsuppre              },
-    { "getprime",                nodelib_direct_getprime               },
+    { "gettop",                  nodelib_direct_gettop                 },
+    { "gettopdelimiter",         nodelib_direct_gettopdelimiter        },
     { "gettotal" ,               nodelib_direct_gettotal               },
+    { "getusage",                nodelib_direct_getusage               },
+    { "getusedattributes",       nodelib_direct_getusedattributes      },
+    { "getweight",               nodelib_direct_getweight              },
     { "getwhd",                  nodelib_direct_getwhd                 },
     { "getwidth",                nodelib_direct_getwidth               },
-    { "getweight",               nodelib_direct_getweight              },
-    { "getcornerkerns",          nodelib_direct_getcornerkerns         },
     { "getwordrange",            nodelib_direct_getwordrange           },
-    { "getparstate",             nodelib_direct_getparstate            },
-    { "patchparshape",           nodelib_direct_patchparshape          },
+    { "getxscale",               nodelib_direct_getxscale              },
+    { "getxyscales",             nodelib_direct_getxyscales            },
+    { "getyscale",               nodelib_direct_getyscale              },
     { "hasattribute",            nodelib_direct_hasattribute           },
     { "hasdimensions",           nodelib_direct_hasdimensions          },
+    { "hasdiscoption",           nodelib_direct_hasdiscoption          },
     { "hasfield",                nodelib_direct_hasfield               },
+    { "hasgeometry",             nodelib_direct_hasgeometry            },
     { "hasglyph",                nodelib_direct_hasglyph               },
     { "hasglyphoption",          nodelib_direct_hasglyphoption         },
-    { "hasdiscoption",           nodelib_direct_hasdiscoption          },
-    { "isitalicglyph",           nodelib_direct_isitalicglyph          },
-    { "firstitalicglyph",        nodelib_direct_firstitalicglyph       },
+    { "hasusage",                nodelib_direct_hasusage               },
     { "hpack",                   nodelib_direct_hpack                  },
     { "hyphenating",             nodelib_direct_hyphenating            },
-    { "collapsing",              nodelib_direct_collapsing             }, /*tex A funny name but like |ligaturing| and |hyphenating|. */
     { "ignoremathskip",          nodelib_direct_ignoremathskip         },
     { "insertafter",             nodelib_direct_insertafter            },
     { "insertbefore",            nodelib_direct_insertbefore           },
-    { "appendaftertail",         nodelib_direct_appendaftertail        },
-    { "prependbeforehead",       nodelib_direct_prependbeforehead      },
+    { "isboth",                  nodelib_direct_isboth                 },
     { "ischar",                  nodelib_direct_ischar                 },
-    { "isnextchar",              nodelib_direct_isnextchar             },
-    { "isprevchar",              nodelib_direct_isprevchar             },
-    { "isnextglyph",             nodelib_direct_isnextglyph            },
-    { "isprevglyph",             nodelib_direct_isprevglyph            },
     { "isdirect",                nodelib_direct_isdirect               },
     { "isglyph",                 nodelib_direct_isglyph                },
+    { "isitalicglyph",           nodelib_direct_isitalicglyph          },
+    { "isloop",                  nodelib_direct_isloop                 },
+    { "isnext",                  nodelib_direct_isnext                 },
+    { "isnextchar",              nodelib_direct_isnextchar             },
+    { "isnextglyph",             nodelib_direct_isnextglyph            },
     { "isnode",                  nodelib_direct_isnode                 },
+    { "isprev",                  nodelib_direct_isprev                 },
+    { "isprevchar",              nodelib_direct_isprevchar             },
+    { "isprevglyph",             nodelib_direct_isprevglyph            },
+    { "issimilarglyph",          nodelib_direct_issimilarglyph         },
+    { "isspeciallist",           nodelib_direct_isspeciallist          },
     { "isvalid",                 nodelib_direct_isvalid                },
     { "iszeroglue",              nodelib_direct_iszeroglue             },
-    { "isnext",                  nodelib_direct_isnext                 },
-    { "isprev",                  nodelib_direct_isprev                 },
-    { "isboth",                  nodelib_direct_isboth                 },
-    { "issimilarglyph",          nodelib_direct_issimilarglyph         },
     { "kerning",                 nodelib_direct_kerning                },
     { "lastnode",                nodelib_direct_lastnode               },
     { "length",                  nodelib_direct_length                 },
     { "ligaturing",              nodelib_direct_ligaturing             },
     { "makeextensible",          nodelib_direct_makeextensible         },
+    { "migrate",                 nodelib_direct_migrate                },
     { "mlisttohlist",            nodelib_direct_mlisttohlist           },
-    { "naturalwidth",            nodelib_direct_naturalwidth           },
     { "naturalhsize",            nodelib_direct_naturalhsize           },
+    { "naturalwidth",            nodelib_direct_naturalwidth           },
     { "new",                     nodelib_direct_new                    },
-    { "newtextglyph",            nodelib_direct_newtextglyph           },
-    { "newmathglyph",            nodelib_direct_newmathglyph           },
     { "newcontinuationatom",     nodelib_direct_newcontinuationatom    },
+    { "newmathglyph",            nodelib_direct_newmathglyph           },
+    { "newtextglyph",            nodelib_direct_newtextglyph           },
+    { "patchattributes",         nodelib_direct_patchattributes        },
+    { "patchparshape",           nodelib_direct_patchparshape          },
+    { "prependbeforehead",       nodelib_direct_prependbeforehead      },
     { "protectglyph",            nodelib_direct_protectglyph           },
     { "protectglyphs",           nodelib_direct_protectglyphs          },
-    { "protectglyphsnone",       nodelib_direct_protectglyphs_none     },
+    { "protectglyphsnone",       nodelib_direct_protectglyphsnone      },
     { "protrusionskippable",     nodelib_direct_protrusionskipable     },
     { "rangedimensions",         nodelib_direct_rangedimensions        }, /* maybe get... */
-    { "getglyphdimensions",      nodelib_direct_getglyphdimensions     },
-    { "getkerndimension",        nodelib_direct_getkerndimension       },
-    { "getlistdimensions",       nodelib_direct_getlistdimensions      },
-    { "getruledimensions",       nodelib_direct_getruledimensions      },
-    { "setruledimensions",       nodelib_direct_setruledimensions      },
-    { "patchattributes",         nodelib_direct_patchattributes        },
     { "remove",                  nodelib_direct_remove                 },
-    { "removefromlist",          nodelib_direct_remove_from_list       },
+    { "removefromlist",          nodelib_direct_removefromlist         },
     { "repack",                  nodelib_direct_repack                 },
-    { "freeze",                  nodelib_direct_freeze                 },
+    { "reverse",                 nodelib_direct_reverse                },
+    { "serialized",              nodelib_direct_serialized             },
+    { "setanchors",              nodelib_direct_setanchors             },
     { "setattribute",            nodelib_direct_setattribute           },
-    { "setattributes",           nodelib_direct_setattributes          },
-    { "setinputfields",          nodelib_direct_setinputfields         },
     { "setattributelist",        nodelib_direct_setattributelist       },
+    { "setattributes",           nodelib_direct_setattributes          },
     { "setboth",                 nodelib_direct_setboth                },
     { "setbottom",               nodelib_direct_setbottom              },
+    { "setbottomdelimiter",      nodelib_direct_setbottomdelimiter     },
     { "setbox",                  nodelib_direct_setbox                 },
     { "setchar",                 nodelib_direct_setchar                },
-    { "setcontrol",              nodelib_direct_setcontrol             },
     { "setchardict",             nodelib_direct_setchardict            },
     { "setchoice",               nodelib_direct_setchoice              },
     { "setclass",                nodelib_direct_setclass               },
-    { "setstate",                nodelib_direct_setstate               },
-    { "setscript",               nodelib_direct_setscript              },
+    { "setcontrol",              nodelib_direct_setcontrol             },
     { "setdata",                 nodelib_direct_setdata                },
-    { "setleftdelimiter",        nodelib_direct_setleftdelimiter       },
-    { "setrightdelimiter",       nodelib_direct_setrightdelimiter      },
-    { "settopdelimiter",         nodelib_direct_settopdelimiter        },
-    { "setbottomdelimiter",      nodelib_direct_setbottomdelimiter     },
+    { "setdegree",               nodelib_direct_setdegree              },
     { "setdelimiter",            nodelib_direct_setdelimiter           },
     { "setdenominator",          nodelib_direct_setdenominator         },
-    { "setdegree",               nodelib_direct_setdegree              },
     { "setdepth",                nodelib_direct_setdepth               },
     { "setdirection",            nodelib_direct_setdirection           },
     { "setdisc",                 nodelib_direct_setdisc                },
@@ -10713,147 +11617,156 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "setfam",                  nodelib_direct_setfam                 },
     { "setfield",                nodelib_direct_setfield               },
     { "setfont",                 nodelib_direct_setfont                },
+    { "setgeometry",             nodelib_direct_setgeometry            },
     { "setglue",                 nodelib_direct_setglue                },
     { "setglyphdata",            nodelib_direct_setglyphdata           },
     { "setheight",               nodelib_direct_setheight              },
     { "setindex",                nodelib_direct_setindex               },
+    { "setinputfields",          nodelib_direct_setinputfields         },
     { "setkern",                 nodelib_direct_setkern                },
     { "setlanguage",             nodelib_direct_setlanguage            },
     { "setleader",               nodelib_direct_setleader              },
+    { "setleftdelimiter",        nodelib_direct_setleftdelimiter       },
     { "setlink",                 nodelib_direct_setlink                },
     { "setlist",                 nodelib_direct_setlist                },
     { "setnext",                 nodelib_direct_setnext                },
     { "setnucleus",              nodelib_direct_setnucleus             },
     { "setnumerator",            nodelib_direct_setnumerator           },
     { "setoffsets",              nodelib_direct_setoffsets             },
-    { "addxoffset",              nodelib_direct_addxoffset             },
-    { "addyoffset",              nodelib_direct_addyoffset             },
-    { "addmargins",              nodelib_direct_addmargins             },
-    { "addxymargins",            nodelib_direct_addxymargins           },
-    { "setscales",               nodelib_direct_setscales              },
-    { "setanchors",              nodelib_direct_setanchors             },
-    { "setorientation",          nodelib_direct_setorientation         },
     { "setoptions",              nodelib_direct_setoptions             },
+    { "setorientation",          nodelib_direct_setorientation         },
     { "setpenalty",              nodelib_direct_setpenalty             },
     { "setpost",                 nodelib_direct_setpost                },
     { "setpre",                  nodelib_direct_setpre                 },
     { "setprev",                 nodelib_direct_setprev                },
+    { "setprime" ,               nodelib_direct_setprime               },
     { "setproperty",             nodelib_direct_setproperty            },
     { "setreplace",              nodelib_direct_setreplace             },
+    { "setrightdelimiter",       nodelib_direct_setrightdelimiter      },
+    { "setruledimensions",       nodelib_direct_setruledimensions      },
+    { "setscale",                nodelib_direct_setscale               },
+    { "setscales",               nodelib_direct_setscales              },
+    { "setscript",               nodelib_direct_setscript              },
     { "setscripts",              nodelib_direct_setscripts             },
     { "setshift",                nodelib_direct_setshift               },
     { "setslant",                nodelib_direct_setslant               },
+    { "setspeciallist",          nodelib_direct_setspeciallist         },
     { "setsplit",                nodelib_direct_setsplit               },
+    { "setstate",                nodelib_direct_setstate               },
     { "setsub",                  nodelib_direct_setsub                 },
     { "setsubpre",               nodelib_direct_setsubpre              },
     { "setsubtype",              nodelib_direct_setsubtype             },
     { "setsup",                  nodelib_direct_setsup                 },
     { "setsuppre",               nodelib_direct_setsuppre              },
-    { "setprime" ,               nodelib_direct_setprime               },
-    { "settotal" ,               nodelib_direct_settotal               },
     { "settop" ,                 nodelib_direct_settop                 },
+    { "settopdelimiter",         nodelib_direct_settopdelimiter        },
+    { "settotal" ,               nodelib_direct_settotal               },
+    { "setweight",               nodelib_direct_setweight              },
     { "setwhd",                  nodelib_direct_setwhd                 },
     { "setwidth",                nodelib_direct_setwidth               },
-    { "setweight",               nodelib_direct_setweight              },
+    { "show",                    nodelib_direct_show                   },
     { "slide",                   nodelib_direct_slide                  },
+    { "softenhyphens",           nodelib_direct_softenhyphens          },
     { "startofpar",              nodelib_direct_startofpar             },
     { "tail",                    nodelib_direct_tail                   },
     { "tostring",                nodelib_direct_tostring               },
     { "tovaliddirect",           nodelib_direct_tovaliddirect          },
     { "traverse",                nodelib_direct_traverse               },
     { "traversechar",            nodelib_direct_traversechar           },
+    { "traversecontent",         nodelib_direct_traversecontent        },
     { "traverseglyph",           nodelib_direct_traverseglyph          },
     { "traverseid",              nodelib_direct_traverseid             },
-    { "traverselist",            nodelib_direct_traverselist           },
-    { "traversecontent",         nodelib_direct_traversecontent        },
-    { "traverseleader",          nodelib_direct_traverseleader         },
     { "traverseitalic",          nodelib_direct_traverseitalic         },
+    { "traverseleader",          nodelib_direct_traverseleader         },
+    { "traverselist",            nodelib_direct_traverselist           },
     { "unprotectglyph",          nodelib_direct_unprotectglyph         },
     { "unprotectglyphs",         nodelib_direct_unprotectglyphs        },
     { "unsetattribute",          nodelib_direct_unsetattribute         },
     { "unsetattributes",         nodelib_direct_unsetattributes        },
     { "usedlist",                nodelib_direct_usedlist               },
     { "usesfont",                nodelib_direct_usesfont               },
-    { "vpack",                   nodelib_direct_vpack                  },
-    { "flattenleaders",          nodelib_direct_flattenleaders         },
-    { "write",                   nodelib_direct_write                  },
- /* { "appendtocurrentlist",     nodelib_direct_appendtocurrentlist    }, */ /* beware, we conflict in ctx */
     { "verticalbreak",           nodelib_direct_verticalbreak          },
-    { "reverse",                 nodelib_direct_reverse                },
-    { "exchange",                nodelib_direct_exchange               },
-    { "migrate",                 nodelib_direct_migrate                },
-    { "getspeciallist",          nodelib_direct_getspeciallist         },
-    { "setspeciallist",          nodelib_direct_setspeciallist         },
-    { "isspeciallist",           nodelib_direct_isspeciallist          },
-    { "getusedattributes",       nodelib_direct_getusedattributes      },
-    { "show",                    nodelib_direct_show                   },
-    { "serialized",              nodelib_direct_serialized             },
-    /* maybe */
-    { "isloop",                  nodelib_direct_is_loop                },  
-    /* dual node and direct */
+    { "vpack",                   nodelib_direct_vpack                  },
+    { "write",                   nodelib_direct_write                  },
+    { "xscaled",                 nodelib_direct_xscaled                },
+    { "yscaled",                 nodelib_direct_yscaled                },
+ /* { "appendtocurrentlist",     nodelib_direct_appendtocurrentlist    }, */ /* beware, we conflict in ctx */
+
+    { "gluetostring",            nodelib_hybrid_gluetostring           },
     { "type",                    nodelib_hybrid_type                   },
-    { "types",                   nodelib_shared_types                  },
+
     { "fields",                  nodelib_shared_fields                 },
-    { "subtypes",                nodelib_shared_subtypes               },
-    { "size",                    nodelib_shared_size                   },
- /* { "values",                  nodelib_shared_values                 }, */ /* finally all are now in tex. */
-    { "id",                      nodelib_shared_id                     },
     { "getcachestate",           nodelib_shared_getcachestate          },
+    { "id",                      nodelib_shared_id                     },
+    { "size",                    nodelib_shared_size                   },
+    { "subtypes",                nodelib_shared_subtypes               },
     { "todirect",                nodelib_shared_todirect               },
     { "tonode",                  nodelib_shared_tonode                 },
-    { "gluetostring",            nodelib_hybrid_gluetostring           },
+    { "types",                   nodelib_shared_types                  },
+ /* { "values",                  nodelib_shared_values                 }, */ /* finally all are now in tex. */
+
+    { "setfielderror",            nodelib_shared_setfielderror         }, /* private */
+    { "getfielderror",            nodelib_shared_getfielderror         }, /* private */
+
     { NULL,                      NULL                                  },
+
 };
 
 /* node.* */
 
 static const struct luaL_Reg nodelib_function_list[] = {
-    /* the bare minimum for reasonable performance */
+
     { "copy",                     nodelib_userdata_copy                 },
     { "copylist",                 nodelib_userdata_copylist             },
-    { "new",                      nodelib_userdata_new                  },
+    { "currentattributes",        nodelib_userdata_currentattributes    },
     { "flushlist",                nodelib_userdata_flushlist            },
     { "flushnode",                nodelib_userdata_flushnode            },
     { "free",                     nodelib_userdata_free                 },
-    { "currentattributes",        nodelib_userdata_currentattributes    },
-    { "hasattribute",             nodelib_userdata_hasattribute         },
     { "getattribute",             nodelib_userdata_getattribute         },
-    { "setattribute",             nodelib_userdata_setattribute         },
-    { "unsetattribute",           nodelib_userdata_unsetattribute       },
+    { "getfield",                 nodelib_userdata_getfield             },
     { "getpropertiestable",       nodelib_userdata_getpropertiestable   },
     { "getproperty",              nodelib_userdata_getproperty          },
-    { "setproperty",              nodelib_userdata_setproperty          },
-    { "getfield",                 nodelib_userdata_getfield             },
-    { "setfield",                 nodelib_userdata_setfield             },
+    { "hasattribute",             nodelib_userdata_hasattribute         },
     { "hasfield",                 nodelib_userdata_hasfield             },
-    { "tail",                     nodelib_userdata_tail                 },
-    { "write",                    nodelib_userdata_write                },
- /* { "appendtocurrentlist",      nodelib_userdata_append               }, */ /* beware, we conflict in ctx */
-    { "isnode",                   nodelib_userdata_isnode               },
-    { "tostring",                 nodelib_userdata_tostring             },
-    { "usedlist",                 nodelib_userdata_usedlist             },
-    { "inuse",                    nodelib_userdata_inuse                },
-    { "instock",                  nodelib_userdata_instock              },
-    { "traverse",                 nodelib_userdata_traverse             },
-    { "traverseid",               nodelib_userdata_traverse_id          },
     { "insertafter",              nodelib_userdata_insertafter          },
     { "insertbefore",             nodelib_userdata_insertbefore         },
+    { "instock",                  nodelib_userdata_instock              },
+    { "inuse",                    nodelib_userdata_inuse                },
+    { "isnode",                   nodelib_userdata_isnode               },
+    { "new",                      nodelib_userdata_new                  },
     { "remove",                   nodelib_userdata_remove               },
-    { "show",                     nodelib_userdata_show                 },
     { "serialized",               nodelib_userdata_serialized           },
-    /* shared between userdata and direct */
+    { "setattribute",             nodelib_userdata_setattribute         },
+    { "setfield",                 nodelib_userdata_setfield             },
+    { "setproperty",              nodelib_userdata_setproperty          },
+    { "show",                     nodelib_userdata_show                 },
+    { "tail",                     nodelib_userdata_tail                 },
+    { "tostring",                 nodelib_userdata_tostring             },
+    { "traverse",                 nodelib_userdata_traverse             },
+    { "traverseid",               nodelib_userdata_traverse_id          },
+    { "unsetattribute",           nodelib_userdata_unsetattribute       },
+    { "usedlist",                 nodelib_userdata_usedlist             },
+    { "write",                    nodelib_userdata_write                },
+ /* { "appendtocurrentlist",      nodelib_userdata_append               }, */ /* beware, we conflict in ctx */
+
+    { "gluetostring",             nodelib_hybrid_gluetostring           },
     { "type",                     nodelib_hybrid_type                   },
-    { "types",                    nodelib_shared_types                  },
+
     { "fields",                   nodelib_shared_fields                 },
-    { "subtypes",                 nodelib_shared_subtypes               },
-    { "size",                     nodelib_shared_size                   },
- /* { "values",                   nodelib_shared_values                 }, */ /* finally all are now in tex. */
-    { "id",                       nodelib_shared_id                     },
     { "getcachestate",            nodelib_shared_getcachestate          },
+    { "id",                       nodelib_shared_id                     },
+    { "size",                     nodelib_shared_size                   },
+    { "subtypes",                 nodelib_shared_subtypes               },
     { "todirect",                 nodelib_shared_todirect               },
     { "tonode",                   nodelib_shared_tonode                 },
-    { "gluetostring",             nodelib_hybrid_gluetostring           },
+    { "types",                    nodelib_shared_types                  },
+ /* { "values",                   nodelib_shared_values                 }, */ /* finally all are now in tex. */
+
+    { "setfielderror",            nodelib_shared_setfielderror          }, /* private */
+    { "getfielderror",            nodelib_shared_getfielderror          }, /* private */
+
     { NULL,                       NULL                                  },
+
 };
 
 static const struct luaL_Reg nodelib_metatable[] = {
@@ -11374,17 +12287,17 @@ halfword lmt_vpack_filter_callback(
 
 int lmt_par_pass_callback(
     halfword               head,
-    line_break_properties *properties, 
-    halfword               identifier, 
-    halfword               subpass, 
-    halfword               callback, 
-    halfword               features, 
-    scaled                 overfull, 
-    scaled                 underfull, 
-    halfword               verdict, 
+    line_break_properties *properties,
+    halfword               identifier,
+    halfword               subpass,
+    halfword               callback,
+    halfword               features,
+    scaled                 overfull,
+    scaled                 underfull,
+    halfword               verdict,
     halfword               classified,
-    scaled                 threshold, 
-    halfword               demerits, 
+    scaled                 threshold,
+    halfword               demerits,
     halfword               classes,
     int                   *repeat
 )
@@ -11412,7 +12325,7 @@ int lmt_par_pass_callback(
                 if (i) {
                     lmt_callback_error(L, top, i);
                 } else {
-                    switch (lua_type(L, -2)) { 
+                    switch (lua_type(L, -2)) {
                         case LUA_TBOOLEAN:
                             {
                                 result = lua_toboolean(L, -2);
@@ -11420,15 +12333,13 @@ int lmt_par_pass_callback(
                             }
                         case LUA_TTABLE:
                             {
-                                /*tex 
+                                /*tex
                                     This is untested and might go away at some point.
                                 */
                                 get_integer_par(properties->tolerance, tolerance, properties->tolerance);
                                 lmt_linebreak_state.threshold = properties->tolerance;
                                 lmt_linebreak_state.global_threshold = lmt_linebreak_state.threshold;
                                 get_integer_par(properties->line_penalty, linepenalty, properties->line_penalty);
-                                get_integer_par(properties->orphan_penalty, orphanpenalty, properties->orphan_penalty);
-                                get_integer_par(properties->toddler_penalty, toddlerpenalty, properties->toddler_penalty);
                                 get_integer_par(properties->left_twin_demerits, lefttwindemerits, properties->left_twin_demerits);
                                 get_integer_par(properties->right_twin_demerits, righttwindemerits, properties->right_twin_demerits);
                                 get_integer_par(properties->extra_hyphen_penalty, extrahyphenpenalty, properties->extra_hyphen_penalty);
@@ -11443,7 +12354,9 @@ int lmt_par_pass_callback(
                                 get_integer_par(properties->line_break_optional, optional, properties->line_break_optional);
                                 get_integer_par(properties->line_break_checks, linebreakchecks, properties->line_break_checks);
                                 get_integer_par(properties->math_penalty_factor, mathpenaltyfactor, properties->math_penalty_factor);
-                                /*tex 
+                                get_integer_par(properties->sf_factor, sffactor, properties->sf_factor);
+                                get_integer_par(properties->sf_stretch_factor, sfstretchfactor, properties->sf_stretch_factor);
+                                /*tex
                                     These are not properties (yet, but we could just add these as hidden fields):
 
                                     emergencyfactor
@@ -11452,16 +12365,16 @@ int lmt_par_pass_callback(
                                     emergencyrightextra
                                     emergencywidthextra
 
-                                    These make no sense here: 
+                                    These make no sense here:
 
                                     fitnessdemerits
-                                    hyphenation          
+                                    hyphenation
 
                                 */
                                 result = 1;
                                 break;
                             }
-                        default: 
+                        default:
                             {
                                 /* just quit */
                                 break;
@@ -11481,10 +12394,10 @@ int lmt_par_pass_callback(
 
 halfword lmt_uleader_callback(
     halfword    head,
-    halfword    index, 
+    halfword    index,
     int         context,
-    halfword    box, 
-    const char *where
+    halfword    box,
+    int         location
 )
 {
     if (head) {
@@ -11495,10 +12408,11 @@ halfword lmt_uleader_callback(
             if (lmt_callback_okay(L, callback_id, &top)) {
                 int i;
                 lmt_node_list_to_lua(L, head);
-                lua_pushinteger(L, context);
+             // lua_pushinteger(L, context);
+                lmt_push_group_code(L, context);
                 lua_pushinteger(L, index);
                 lmt_node_list_to_lua(L, box);
-                lua_pushstring(L, where);
+                lua_pushinteger(L, location); /* maybe also string */
                 i = lmt_callback_call(L, 5, 1, top);
                 if (i) {
                     lmt_callback_error(L, top, i);

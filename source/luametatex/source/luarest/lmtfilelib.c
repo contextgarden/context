@@ -435,7 +435,7 @@ static int filelib_rmdir(lua_State *L)
 
 # ifdef _WIN32
 
-    inline static int push_entry(lua_State *L, struct _wfinddata_t file_data, int details)
+    static inline int push_entry(lua_State *L, struct _wfinddata_t file_data, int details)
     {
         char *s = aux_utf8_from_wide(file_data.name);
         lua_pushstring(L, s);

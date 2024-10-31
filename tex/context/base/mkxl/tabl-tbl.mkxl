@@ -310,26 +310,11 @@
 % [|lg{.}|] => \NG 12.34 \NC % old
 % [|lG{.}|] => \NG 12.34 \NC % new
 
-\def\tabl_tabulate_nobreak_inject_tracer
-  {\red % maybe use the fast color switcher here
-   \hrule\s!height.5\linewidth\s!depth.5\linewidth
-   \par
-   \kern-\linewidth
-   \tabl_tabulate_break_no}
-
-\installtextracker
-  {tables.tabulate.breaks}
-  {\let\tabl_tabulate_break_no_tracer\tabl_tabulate_nobreak_inject_tracer}
-  {\let\tabl_tabulate_break_no_tracer\donothing}
-
-\let\tabl_tabulate_break_no_tracer\donothing
-
-\def\tabl_tabulate_nobreak_inject_indeed
-  {\tabl_tabulate_break_no
-   \tabl_tabulate_break_no_tracer}
+% The tracer is gone as if interfered and I never used it anyway. After all,
+% we can use \showmakleup[vpenalty].
 
 \def\tabl_tabulate_nobreak_inject
-  {\noalign{\tabl_tabulate_nobreak_inject_indeed}}
+  {\noalign{\tabl_tabulate_break_no}}
 
 \protected\def\tabl_tabulate_hook_check
   {\ifnum\c_tabl_tabulate_type<\plustwo
@@ -1085,28 +1070,21 @@
 \def\tabl_tabulate_pbreak_inject
   {\ifconditional\c_tabl_tabulate_handlepbreak
      \ifconditional\c_tabl_tabulate_nopbreak
-      %\tabl_tabulate_nobreak_inject
-       \tabl_tabulate_nobreak_inject_indeed
+       \ifnum\c_tabl_tabulate_plines_max=\plusone
+         \tabl_tabulate_break_no
+       \else
+         \tabl_tabulate_break_allow
+       \fi
      \orelse\ifnum\c_tabl_tabulate_plines_max>\plusone
        \ifnum\c_tabl_tabulate_plines_min=\plusone
-        %\tabl_tabulate_nobreak_inject
          \directvpenalty\c_tabl_club_penalty
        \fi
        \global\advanceby\c_tabl_tabulate_plines_min\plusone
        \ifnum\c_tabl_tabulate_plines_min=\c_tabl_tabulate_plines_max\relax
-        %\tabl_tabulate_nobreak_inject
          \directvpenalty\c_tabl_widow_penalty
        \fi
      \fi
    \fi}
-
-\def\tabl_tabulate_nobreak_inject_indeed
-  {\ifnum\c_tabl_tabulate_plines_max=\plusone
-     \tabl_tabulate_break_no
-   \else
-     \tabl_tabulate_break_allow
-   \fi
-   \tabl_tabulate_break_no_tracer}
 
 \def\tabl_tabulate_pbreak_check
   {\noalign\bgroup
@@ -2503,10 +2481,10 @@
      \tabl_tabulate_baselinecorrection
    \fi
    \tabl_tabulate_hrule_inject
-   \tabl_tabulate_nobreak_inject
+   \tabl_tabulate_break_no
    \tabl_tabulate_column_rule_separator_inject
    \prevdepth\strutdp
-   \tabl_tabulate_nobreak_inject}
+   \tabl_tabulate_break_no}
 
 \def\spac_vspacing_no_topskip % use grouped
   {\c_attr_skipcategory\plusten}
@@ -2534,9 +2512,9 @@
    \tabl_tabulate_break_no}
 
 \protected\def\tabl_tabulate_LL_second_indeed
-  {\tabl_tabulate_nobreak_inject
+  {\tabl_tabulate_break_no
    \tabl_tabulate_column_rule_separator_inject
-   \tabl_tabulate_nobreak_inject
+   \tabl_tabulate_break_no
    \tabl_tabulate_hrule_inject
    \ifinsidefloat
      \tabl_tabulate_inside_inbetween
@@ -2545,14 +2523,14 @@
    \fi}
 
 \protected\def\tabl_tabulate_TL_second_indeed
-  {\tabl_tabulate_nobreak_inject
+  {\tabl_tabulate_break_no
    \tabl_tabulate_column_rule_separator_inject
-   \tabl_tabulate_nobreak_inject
+   \tabl_tabulate_break_no
    \tabl_tabulate_hrule_inject
-   \tabl_tabulate_nobreak_inject
+   \tabl_tabulate_break_no
    \tabl_tabulate_column_rule_separator_inject
   %\prevdepth\strutdp % todo, might differ between TL and BL
-   \tabl_tabulate_nobreak_inject}
+   \tabl_tabulate_break_no}
 
 \let\tabl_tabulate_BL_second_indeed\tabl_tabulate_TL_second_indeed
 

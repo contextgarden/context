@@ -1064,22 +1064,23 @@ do
         end
     end
 
-    -- newinternal runscript foo ;
+    local initialize_code <const> = 0 -- mlib.getinternalactions()
+    local save_code       <const> = 1
+    local restore_code    <const> = 2
+    ----- tracing_code    <const> = 3
 
     function metapost.runinternal(action,index,kind,name)
-        if action == 0 then
-            -- allocate
+        if action == initialize_code then
             names[name] = index
          -- types[index] = kind
-        elseif action == 1 then
-            -- save
+        elseif action == save_code then
             insert(stack[index],records[index])
             interim = index
-        elseif action == 2 then
-            -- restore
+        elseif action == restore_code then
             records[index] = remove(stack[index]) or records[index]
-        elseif action == 3 then
-            metapost.checktracingonline(kind)
+     -- elseif action == tracing_code then
+     --     -- not enabled in the engine
+     --     metapost.checktracingonline(kind)
         end
     end
 

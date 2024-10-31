@@ -420,6 +420,10 @@ static int statslib_getconstants(lua_State *L)
 
     lua_set_integer_by_key(L, "default_character_control",      default_character_control); 
 
+    lua_set_integer_by_key(L, "min_n_of_fitness_values",        min_n_of_fitness_values);
+    lua_set_integer_by_key(L, "max_n_of_fitness_values",        max_n_of_fitness_values);
+    lua_set_integer_by_key(L, "all_fitness_values",             all_fitness_values);
+
     return 1;
 }
 
@@ -464,6 +468,7 @@ static struct statistic_entry statslib_entries[] = {
     { .name = "lua_version_minor",   .value = (void *) &lmt_version_state.luaversionminor,   .type = 'g' },
     { .name = "lua_version_release", .value = (void *) &lmt_version_state.luaversionrelease, .type = 'g' },
     { .name = "lua_version",         .value = (void *) &lmt_version_state.luaversion,        .type = 'd' },
+    { .name = "lua_format",          .value = (void *) &lmt_version_state.luaformat,         .type = 'g' },
 
     /*tex We keep these as direct accessible keys: */
 
@@ -499,6 +504,12 @@ static struct statistic_entry statslib_entries_only[] = {
     { .name = "development_id",     .value = (void *) &lmt_version_state.developmentid, .type = 'g' },
     { .name = "format_id",          .value = (void *) &lmt_version_state.formatid,      .type = 'g' },
     { .name = "used_compiler",      .value = (void *) &lmt_version_state.compiler,      .type = 'c' },
+
+    { .name = "lua_version_major",   .value = (void *) &lmt_version_state.luaversionmajor,   .type = 'g' },
+    { .name = "lua_version_minor",   .value = (void *) &lmt_version_state.luaversionminor,   .type = 'g' },
+    { .name = "lua_version_release", .value = (void *) &lmt_version_state.luaversionrelease, .type = 'g' },
+    { .name = "lua_version",         .value = (void *) &lmt_version_state.luaversion,        .type = 'd' },
+    { .name = "lua_format",          .value = (void *) &lmt_version_state.luaformat,         .type = 'g' },
 
     { .name = NULL,                 .value = NULL,                                      .type = 0   },
 };

@@ -9,6 +9,12 @@
 
 */
 
+/*tex
+
+    Maybe also make a string reader with a user data string, after all we can now store a position
+    in the userdata directly. 
+
+*/
 # include "luametatex.h"
 
 # ifdef _WIN32
@@ -1545,7 +1551,8 @@ static int io_gobble(lua_State *L)
 
     static int l_checkmode(const char *mode) {
         return (
-            *mode != '\0'
+             mode 
+         && *mode != '\0'
          && strchr("rwa", *(mode++))
          && (*mode != '+' || ((void)(++mode), 1))
          && (strspn(mode, "b") == strlen(mode))

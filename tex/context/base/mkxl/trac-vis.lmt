@@ -7,9 +7,11 @@ if not modules then modules = { } end modules ['trac-vis'] = {
     license   = "see context related readme files"
 }
 
+-- We no longer have 'user' so we can use that flag.
+
 local node, nodes, attributes, tex = node, nodes, attributes, tex
 local type, tonumber, next, rawget = type, tonumber, next, rawget
-local gmatch, gsub = string.gmatch, string.gsub
+local gmatch, gsub, sub = string.gmatch, string.gsub, string.sub
 local formatters = string.formatters
 local round = math.round
 
@@ -60,6 +62,7 @@ local getexpansion        = nuts.getexpansion
 local getoffsets          = nuts.getoffsets
 local getindex            = nuts.getindex
 local getprop             = nuts.getprop
+local getdiscpart         = nuts.getdiscpart
 
 local hpack_nodes         = nuts.hpack
 local vpack_nodes         = nuts.vpack
@@ -153,26 +156,29 @@ local modes = {
     hglue         = 0x0000010,
     vpenalty      = 0x0000020,
     hpenalty      = 0x0000020,
+
+    toddler       = 0x0000200,
 }
 
 local filters = {
-    vglue    = 0x001,
-    hglue    = 0x002,
- -- mglue    = 0x004,
-    vkern    = 0x010,
-    hkern    = 0x020,
- -- mkern    = 0x040,
-    vpenalty = 0x100,
-    hpenalty = 0x200,
- -- mpenalty = 0x400,
+    vglue    = 0x0001,
+    hglue    = 0x0002,
+ -- mglue    = 0x0004,
+    vkern    = 0x0010,
+    hkern    = 0x0020,
+ -- mkern    = 0x0040,
+    vpenalty = 0x0100,
+    hpenalty = 0x0200,
+ -- mpenalty = 0x0400,
+    toddler  = 0x1000,
 }
 
 visualizers.modes   = modes
 visualizers.filters = filters
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_user, l_math, l_marginkern, l_mathkern, l_mathshape, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth,
-    l_dir, l_whatsit, l_mark, l_insert, l_boundary
+local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_math, l_marginkern, l_mathkern, l_mathshape, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth,
+    l_dir, l_whatsit, l_mark, l_insert, l_boundary -- , l_user
 
 local enabled = false
 local layers  = { }
@@ -241,7 +247,7 @@ local function initialize()
     l_strut         = layers.strut
     l_whatsit       = layers.whatsit
     l_glyph         = layers.glyph
-    l_user          = layers.user
+ -- l_user          = layers.user
     l_math          = layers.math
     l_italic        = layers.italic
     l_marginkern    = layers.marginkern
@@ -609,8 +615,8 @@ local ruledglyphexpansion do
 
     local f_cache = caches["glyphexpansion"]
 
-    ruledglyphexpansion = function(head,current)
-        local extra = getexpansion(current)
+    ruledglyphexpansion = function(head,current,glyph)
+        local extra = getexpansion(glyph)
         if extra and extra ~= 0 then
             extra = extra / 1000
             local info = f_cache[extra]
@@ -687,33 +693,37 @@ local ruledmark do
 
     local set_code <const> = nodes.markcodes.set
 
-    local sm_cache = setmetatableindex(caches["setmark"], function(t,index)
-        local info = sometext(formatters["SM:%i"](index),usedfont,nil,"trace:w") -- whatsit
-        if use_layers then
-            setattr(info,a_layer,l_mark)
-        end
-        if crappytaggingmode then
-            setattr(info,a_tagged,0)
-        end
-        t[index] = info
-        return info
-    end)
-
-    local rm_cache = setmetatableindex(caches["resetmark"], function(t,index)
-        local info = sometext(formatters["RM:%i"](index),usedfont,nil,"trace:w") -- whatsit
-        if use_layers then
-            setattr(info,a_layer,l_mark)
-        end
-        if crappytaggingmode then
-            setattr(info,a_tagged,0)
-        end
-        t[index] = info
-        return info
-    end)
+    local sm_cache = caches["setmark"]
+    local rm_cache = caches["resetmark"]
 
     ruledmark = function(head,current)
         local index = getindex(current)
-        local info  = getsubtype(current) == set_code and sm_cache[index] or rm_cache[index]
+        local info  = getsubtype(current)
+        if info == set_code then
+            info = sm_cache[index]
+            if not info then
+                info = sometext(formatters["SM:%i"](index),usedfont,nil,"trace:w") -- whatsit
+                if use_layers then
+                    setattr(info,a_layer,l_mark)
+                end
+                if crappytaggingmode then
+                    setattr(info,a_tagged,0)
+                end
+                sm_cache[index] = info
+            end
+        else
+            info = rm_cache[index]
+            if not info then
+                info = sometext(formatters["RM:%i"](index),usedfont,nil,"trace:w") -- whatsit
+                if use_layers then
+                    setattr(info,a_layer,l_mark)
+                end
+                if crappytaggingmode then
+                    setattr(info,a_tagged,0)
+                end
+                rm_cache[index] = info
+            end
+        end
         head, current = insertnodeafter(head,current,copylist(info))
         return head, current
     end
@@ -722,19 +732,21 @@ end
 
 local ruledinsert do
 
-    local si_cache = setmetatableindex(caches["insert"], function(f,index)
-        local info = sometext(formatters["SI:%i"](index),usedfont,nil,"trace:w") -- whatsit
-        if use_layers then
-            setattr(info,a_layer,l_insert)
-        end
-        if crappytaggingmode then
-            setattr(info,a_tagged,0)
-        end
-        si_cache[index] = info
-    end)
+    local si_cache = caches["insert"]
 
     ruledinsert = function(head,current)
-        local info = si_cache[getindex(current)]
+        local index = getindex(current)
+        local info  = si_cache[index]
+        if not info then
+                info = sometext(formatters["SI:%i"](index),usedfont,nil,"trace:w") -- whatsit
+            if use_layers then
+                setattr(info,a_layer,l_insert)
+            end
+            if crappytaggingmode then
+                setattr(info,a_tagged,0)
+            end
+            si_cache[index] = info
+        end
         head, current = insertnodeafter(head,current,copylist(info))
         return head, current
     end
@@ -918,30 +930,30 @@ local ruleddir do
 
 end
 
-local ruleduser do
-
-    local u_cache = caches["user"]
-
-    ruleduser = function(head,current)
-        local what = getsubtype(current)
-        local info = u_cache[what]
-        if info then
-            -- print("hit user")
-        else
-            info = sometext(formatters["U:%s"](what),usedfont)
-            if use_layers then
-                setattr(info,a_layer,l_user)
-            end
-            if crappytaggingmode then
-                setattr(info,a_tagged,0)
-            end
-            u_cache[what] = info
-        end
-        head, current = insertnodeafter(head,current,copylist(info))
-        return head, current
-    end
-
-end
+-- local ruleduser do
+--
+--     local u_cache = caches["user"]
+--
+--     ruleduser = function(head,current)
+--         local what = getsubtype(current)
+--         local info = u_cache[what]
+--         if info then
+--             -- print("hit user")
+--         else
+--             info = sometext(formatters["U:%s"](what),usedfont)
+--             if use_layers then
+--                 setattr(info,a_layer,l_user)
+--             end
+--             if crappytaggingmode then
+--                 setattr(info,a_tagged,0)
+--             end
+--             u_cache[what] = info
+--         end
+--         head, current = insertnodeafter(head,current,copylist(info))
+--         return head, current
+--     end
+--
+-- end
 
 local ruleddepth do
 
@@ -1136,16 +1148,28 @@ local ruledglyph do
 
     local getglyphdimensions  = nuts.getglyphdimensions
     local isglyph             = nuts.isglyph
+    local getoptions          = nuts.getoptions
 
-    ruledglyph = function(head,current,previous) -- wrong for vertical glyphs
-        local wd, ht, dp = getglyphdimensions(current)
+    local istoddler_code <const> = tex.glyphoptioncodes.istoddler
+
+    ruledglyph = function(head,current,previous,glyph,toddler) -- wrong for vertical glyphs
+        if not glyph then
+            glyph = current
+        end
+        if toddler then
+            local options = getoptions(glyph)
+            if (options & istoddler_code) ~= istoddler_code then
+                return head, current
+            end
+        end
+        local wd, ht, dp = getglyphdimensions(glyph)
         if wd ~= 0 then
             local next = getnext(current)
             local prev = previous
             setboth(current)
             local linewidth = emwidth/(2*fraction)
          -- local x_offset, y_offset, l_margin, r_margin, raise = getoffsets(current)
-            local c, f = isglyph(current)
+            local c, f = isglyph(glyph)
             local char = chardata[f][c]
             local info = (dp == 0 and outlinerule and outlinerule(wd,ht,dp,linewidth)) or userrule {
                 width  = wd,
@@ -1154,10 +1178,15 @@ local ruledglyph do
                 line   = linewidth,
                 type   = "box",
             }
-            if char and type(char.unicode) == "table" then -- hackery test
+            if toddler then
+                setlistcolor(info,"trace:g")
+                setlisttransparency(info,"trace:dg")
+            elseif char and type(char.unicode) == "table" then -- hackery test
+                -- ligature
                 setlistcolor(info,"trace:s")
                 setlisttransparency(info,"trace:ds")
             else
+                -- regular
                 setlistcolor(info,"trace:o")
                 setlisttransparency(info,"trace:do")
             end
@@ -1445,7 +1474,7 @@ local ruledglue, ruledmathglue do
 
     local morehack = setmetatableindex(function(t,k)
         local v = mathematics.classnames[k] -- yet unknown
-        v = v and string.sub(v,1,3) or string.formatters["x%02x"](k)
+        v = v and sub(v,1,3) or formatters["x%02x"](k)
         t[k] = v
         return v
     end)
@@ -1702,28 +1731,59 @@ local ruledmathkern do
 
 end
 
-local ruleddiscretionary do
+local ruleddiscretionary, ruledglyphdiscretionary do
 
     local d_cache = caches["discretionary"]
+    local g_cache = caches["glyphdiscretionary"]
 
-    ruleddiscretionary = function(head,current)
+    local glyphdisccodes = tex.glyphdisccodes
+
+    ruleddiscretionary = function(head,current) -- untested as we wipe
         local info = d_cache[true]
-        if not the_discretionary then
+        if not info then
             local rule = new_rule(4*emwidth/fraction,4*exheight,exheight)
             local kern = new_kern(-2*emwidth/fraction)
             setlink(kern,rule)
             setcolor(rule,"trace:dd")
             settransparency(rule,"trace:dd")
-            if use_layers then
-                setattr(rule,a_layer,l_discretionary)
-            end
             info = new_hlist(kern)
+            if use_layers then
+                setattr(info,a_layer,l_discretionary)
+            end
             if crappytaggingmode then
                 setattr(info,a_tagged,0)
             end
             d_cache[true] = info
         end
         insertnodeafter(head,current,copylist(info))
+     -- maybe: return head, getnext(current)
+        return head, current
+    end
+
+    ruledglyphdiscretionary = function(head,current,glyph)
+        local _, a = getdiscpart(glyph)
+        if a ~= 0 then
+            local info = g_cache[a]
+            if not info then
+                local code = glyphdisccodes[a] or "?"
+                local kern = new_kern(-2*emwidth/fraction)
+                local rule = new_rule(4*emwidth/fraction,4*exheight,exheight)
+                local text, width = sometext(sub(code,1,1),l_discretionary,"trace:dd","trace:w",false,-2)
+                local back = new_kern(-width/2-2*emwidth/fraction)
+                setlink(kern,rule,back,text)
+                setcolor(rule,"trace:dd")
+                settransparency(rule,"trace:dd")
+                info = new_hlist(kern)
+                if use_layers then
+                    setattr(info,a_layer,l_discretionary)
+                end
+                if crappytaggingmode then
+                    setattr(info,a_tagged,0)
+                end
+                g_cache[true] = info
+            end
+            head = insertnodebefore(head,current,copylist(info))
+        end
         return head, current
     end
 
@@ -1753,31 +1813,35 @@ local ruledpenalty do
 
     local getoptions   = nuts.getoptions
 
-    local mathforward  <const> = tex.penaltyoptioncodes.mathforward
-    local mathbackward <const> = tex.penaltyoptioncodes.mathbackward
-    local doubled      <const> = tex.penaltyoptioncodes.double
+    local mathforward   <const> = tex.penaltyoptioncodes.mathforward
+    local mathbackward  <const> = tex.penaltyoptioncodes.mathbackward
+    local doubled       <const> = tex.penaltyoptioncodes.doubleused
 
-    local c_realpage   <const> = tex.iscount("realpageno")
+    local vpenalty_code <const> = filters.vpenalty
 
-    ruledpenalty = function(head,current,vertical,subtype)
-        local double = (getoptions(current) & doubled) ~= 0 and (tex.getcount(c_realpage) % 2) == 0
+    ruledpenalty = function(head,current,vertical,subtype,f)
+        local double  = (getoptions(current) & doubled) ~= 0
         local penalty = getpenalty(current,double)
         local ismath  = subtype == pre_penalty_code or subtype == post_penalty_code or subtype == true
         local amount
         if ismath then
-            local options  = getoptions(current)
-            local forward  = (options & mathforward) ~= 0
-            local backward = (options & mathbackward) ~= 0
-            if forward then
-                if backward then
-                    amount = "MP=%s"
-                else
-                    amount = "MP>%s"
-                end
-            elseif backward then
-                amount = "MP<%s"
+            if f and (f & vpenalty_code) == vpenalty_code then
+                return head, getnext(current)
             else
-                amount = "MP:%s"
+                local options  = getoptions(current)
+                local forward  = (options & mathforward) ~= 0
+                local backward = (options & mathbackward) ~= 0
+                if forward then
+                    if backward then
+                        amount = "MP=%s"
+                    else
+                        amount = "MP>%s"
+                    end
+                elseif backward then
+                    amount = "MP<%s"
+                else
+                    amount = "MP:%s"
+                end
             end
         elseif vertical then
             amount = double and "VP!%s" or "VP:%s"
@@ -1876,7 +1940,7 @@ local ruledmath do
         local saved = current
         head, current = insertnodeafter(head,current,copylist(info))
         if getpenalty(saved) ~= 0 then
-            head, current = ruledpenalty(head,saved,false,true)
+            head, current = ruledpenalty(head,saved,false,true,getattr(saved,a_filter))
         end
         return head, current
     end
@@ -1892,7 +1956,7 @@ do
     local glue_code               <const> = nodecodes.glue
     local penalty_code            <const> = nodecodes.penalty
     local whatsit_code            <const> = nodecodes.whatsit
-    local user_code               <const> = nodecodes.user
+ -- local user_code               <const> = nodecodes.user
     local math_code               <const> = nodecodes.math
     local hlist_code              <const> = nodecodes.hlist
     local vlist_code              <const> = nodecodes.vlist
@@ -1954,7 +2018,7 @@ do
         local trace_whatsit         = false
         local trace_glyph           = false
         local trace_simple          = false
-        local trace_user            = false
+     -- local trace_user            = false
         local trace_math            = false
         local trace_mathkern        = false
         local trace_marginkern      = false
@@ -1986,6 +2050,7 @@ do
         local hkern_code         <const> = filters.hkern
         local vpenalty_code      <const> = filters.vpenalty
         local hpenalty_code      <const> = filters.hpenalty
+        local toddler_code       <const> = filters.toddler
 
         local spaceskip_code     <const> = nodes.skipcodes.spaceskip
         local xspaceskip_code    <const> = nodes.skipcodes.xspaceskip
@@ -2013,7 +2078,7 @@ do
                     trace_whatsit       = false
                     trace_glyph         = false
                     trace_simple        = false
-                    trace_user          = false
+                 -- trace_user          = false
                     trace_math          = false
                     trace_italic        = false
                     trace_origin        = false
@@ -2048,7 +2113,7 @@ do
                     trace_whatsit       = a & 0x0000100 ~= 0
                     trace_glyph         = a & 0x0000200 ~= 0
                     trace_simple        = a & 0x0000400 ~= 0
-                    trace_user          = a & 0x0000800 ~= 0
+                 -- trace_user          = a & 0x0000800 ~= 0
                     trace_math          = a & 0x0001000 ~= 0
                     trace_italic        = a & 0x0002000 ~= 0
                     trace_origin        = a & 0x0004000 ~= 0
@@ -2073,11 +2138,17 @@ do
          --     setattr(current,a_layer,l_strut)
          -- else
             if id == glyph_code then
+                local glyph = current
                 if trace_glyph then
-                    head, current = ruledglyph(head,current,previous)
+                    local f = getattr(current,a_filter)
+                    local t = f and (f & toddler_code) == toddler_code
+                    head, current = ruledglyph(head,current,previous,glyph,t)
                 end
                 if trace_expansion then
-                    head, current = ruledglyphexpansion(head,current)
+                    head, current = ruledglyphexpansion(head,current,glyph)
+                end
+                if trace_discretionary then
+                    head, current = ruledglyphdiscretionary(head,current,glyph)
                 end
             elseif id == disc_code then
                 -- these are gone already when we display them.
@@ -2113,16 +2184,16 @@ do
                 if trace_whatsit then
                     head, current = ruledwhatsit(head,current)
                 end
-            elseif id == user_code then
-                if trace_user then
-                    head, current = ruleduser(head,current)
-                end
+         -- elseif id == user_code then
+         --     if trace_user then
+         --         head, current = ruleduser(head,current)
+         --     end
             elseif id == math_code then
                 local saved = current
                 if trace_math then
                     head, current = ruledmath(head,current)
                 elseif trace_penalty then
-                    head, current = ruledpenalty(head,current,false,true)
+                    head, current = ruledpenalty(head,current,false,true,getattr(saved,a_filter))
                 end
             elseif id == dir_code then
                 if trace_dir then
@@ -2148,7 +2219,6 @@ do
             goto next
           ::penalty::
             if trace_penalty then
--- print(subtype,getpenalty(current))
                 local f = getattr(current,a_filter)
                 if f then
                     if vertical then
@@ -2163,7 +2233,7 @@ do
                 end
                 -- todo: discretionary
                 subtype = getsubtype(current)
-                head, current = ruledpenalty(head,current,vertical,subtype)
+                head, current = ruledpenalty(head,current,vertical,subtype,f)
             end
           ::glue::
             content = getleader(current)

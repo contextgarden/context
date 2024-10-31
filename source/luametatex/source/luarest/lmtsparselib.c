@@ -214,7 +214,7 @@ typedef enum concat_options {
     concat_as_msb  = 2,
 } concat_options;
 
-inline static char sparselib_aux_concat(sa_tree t, int i)
+static inline char sparselib_aux_concat(sa_tree t, int i)
 {
     int h = LMT_SA_H_PART(i);
     if (t->tree[h]) {
@@ -321,8 +321,7 @@ static const struct luaL_Reg sparselib_instance[] = {
     { NULL,         NULL               },
 };
 
-static const luaL_Reg sparselib_function_list[] =
-{
+static const luaL_Reg sparselib_function_list[] = {
     { "new",      sparselib_new      },
     { "set",      sparselib_set      },
     { "get",      sparselib_get      },

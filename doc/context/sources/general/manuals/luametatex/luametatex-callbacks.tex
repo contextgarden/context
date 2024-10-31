@@ -2,49 +2,42 @@
 
 \environment luametatex-style
 
-\startcomponent luametatex-callbacks
+\startdocument[title=Callbacks]
 
-\startchapter[reference=callbacks,title={\LUA\ callbacks}]
+\startsection[title={Introduction}]
 
-\startsection[title={Registering callbacks}][library=callback]
+Right from the start of the \LUATEX\ project callbacks were the way to extend the
+engine. At various places in processing the document source and typesetting the
+text the engine checks if there is a callback set and if so, calls out to \LUA.
+Here we collect the various callbacks. For examples you can consult the \CONTEXT\
+code base.
 
-\topicindex{callbacks}
+The \type {callback} library has functions that register, find and list
+callbacks. Callbacks are \LUA\ functions that are called in well defined places.
+There are two kinds of callbacks: those that mix with existing functionality, and
+those that (when enabled) replace functionality. In most cases the second
+category is expected to behave similar to the built in functionality because in a
+next step specific data is expected. For instance, you can replace the
+hyphenation routine. The function gets a list that can be hyphenated (or not).
+The final list should be valid and is (normally) used for constructing a
+paragraph. Another function can replace the ligature builder and|/|or kern
+routine. Doing something else is possible but in the end might not give the user
+the expected outcome.
 
-\libindex{register}
-\libindex{list}
-\libindex{find}
-\libindex{known}
+In order for a callback to kick in you need register it. This can be permanent or
+temporarily.
 
-{\em The callbacks are a moving target. Don't bother me with questions about
-them. Some are new and/or experimental and therefore not yet documented. In
-\CONTEXT\ we can easily adapt interfaces so changes in these have no real effect
-on users. Of course in due time all will be official and documented.}
+\starttyping[option=LUA]
+id = callback.register(<t:string> callback_name, <function> func)
+id = callback.register(<t:string> callback_name, nil)
+id = callback.register(<t:string> callback_name, false)
+\stoptyping
 
-This library has functions that register, find and list callbacks. Callbacks are
-\LUA\ functions that are called in well defined places. There are two kinds of
-callbacks: those that mix with existing functionality, and those that (when
-enabled) replace functionality. In most cases the second category is expected to
-behave similar to the built in functionality because in a next step specific data
-is expected. For instance, you can replace the hyphenation routine. The function
-gets a list that can be hyphenated (or not). The final list should be valid and
-is (normally) used for constructing a paragraph. Another function can replace the
-ligature builder and|/|or kern routine. Doing something else is possible but in
-the end might not give the user the expected outcome.
-
-The first thing you need to do is registering a callback:
-
-\startfunctioncall
-id = callback.register(<string> callback_name, <function> func)
-id = callback.register(<string> callback_name, nil)
-id = callback.register(<string> callback_name, false)
-\stopfunctioncall
-
-Here the \syntax {callback_name} is a predefined callback name, see below. The
-function returns the internal \type {id} of the callback or \type {nil}, if the
-callback could not be registered.
-
-\LUATEX\ internalizes the callback function in such a way that it does not matter
-if you redefine a function accidentally.
+Here the \type {callback_name} is a predefined callback name as discusses in
+following sections. The function returns the internal \type {id} of the callback
+or \type {nil}, if the callback could not be registered. \LUAMETATEX\
+internalizes the callback function in such a way that it does not matter if you
+redefine a function accidentally.
 
 Callback assignments are always global. You can use the special value \type {nil}
 instead of a function for clearing the callback.
@@ -52,525 +45,691 @@ instead of a function for clearing the callback.
 For some minor speed gain, you can assign the boolean \type {false} to the
 non|-|file related callbacks, doing so will prevent \LUATEX\ from executing
 whatever it would execute by default (when no callback function is registered at
-all). Be warned: this may cause all sorts of grief unless you know \notabene
-{exactly} what you are doing!
+all). {\em This needs checking.}
 
-\startfunctioncall
-<table> info =
-    callback.list()
-\stopfunctioncall
+\starttyping[option=LUA]
+<table> info = callback.list()
+\stoptyping
 
 The keys in the table are the known callback names, the value is a boolean where
 \type {true} means that the callback is currently set (active).
 
-\startfunctioncall
+\starttyping[option=LUA]
 <function> f = callback.find(callback_name)
-\stopfunctioncall
+\stoptyping
 
 If the callback is not set, \type {find} returns \type {nil}. The \type {known}
 function can be used to check if a callback is supported.
 
-\startfunctioncall
-if callback.known("foo") then ... end
-\stopfunctioncall
+\starttyping[option=LUA]
+if callback.known("foo") then
+    -- do what is needed
+end
+\stoptyping
 
 \stopsection
 
-\startsection[title={File related callbacks},reference=iocallback][library=callback]
+\startsection[title=Files]
 
-\startsubsection[title={\cbk {find_format_file} and \cbk {find_log_file}}]
+\startsubsection[title=find_log_file]
 
-\topicindex{callbacks+format file}
-\topicindex{callbacks+log file}
+This is one of the callbacks that has to be set in order for the engine to work
+at all.
 
-These callbacks are called as:
-
-\startfunctioncall
-<string> actualname =
-    function (<string> askedname)
-\stopfunctioncall
-
-The \type {askedname} is a format file for reading (the format file for writing
-is always opened in the current directory) or a log file for writing.
+\starttyping[option=LUA]
+function (
+    <t:string> askedname
+)
+    return <t:string> foundname
+end
+\stoptyping
 
 \stopsubsection
 
-\startsubsection[title={\cbk {open_data_file}}]
+\startsubsection[title=find_format_file]
 
-\topicindex{callbacks+opening files}
+A format file is an efficient memory dump of the (in our case \CONTEXT) macro
+package. In \LUATEX\ it can have a mix of \TEX and \LUA\ code but one should be
+aware that storing the \LUA\ state is not up to the engine.
 
-This callback function gets a filename passed:
+\starttyping[option=LUA]
+function (<t:string> askedname)
+    return <t:string> foundname
+end
+\stoptyping
 
-\startfunctioncall
-<table> env = function (<string> filename)
-\stopfunctioncall
+A format file can be read from any valid location but is always written in the
+current directory. When written the number of bytes for each section is reported.
+When read all kind of checks take place ijn order to intercept corruption or
+incompatibilities. Contrary to \LUATEX, the \LUAMETATEX\ is not (zip) compressed so,
+in spite of more aggressive compression of data otherwise the file is a bit larger.
 
-The return value is either the boolean value false or a table with two functions.
-A mandate \type {reader} function fill be called once for each new line to be
-read, the optional \type {close} function will be called once \LUATEX\ is done
-with the file.
+\stopsubsection
 
-\LUATEX\ never looks at the rest of the table, so you can use it to store your
-private per|-|file data. Both the callback functions will receive the table as
+\startsubsection[title=open_data_file]
+
+This callback function gets a filename passed. The return value is either the boolean
+value false or a table with two functions. A mandate \type {reader} function fill be
+called once for each new line to be read, the optional \type {close} function will
+be called once \LUATEX\ is done with the file.
+
+\starttyping[option=LUA]
+function (
+    <t:string> filename
+)
+    return <table> {
+        <function> reader(<table> environment) end,
+        <function> close (<table> environment) end,
+    }
+end
+\stoptyping
+
+\LUAMETATEX\ never looks at the rest of the table, so we can use it to store
+additional per|-|file data. Both the callback functions will receive the table as
 their only argument.
 
-% No longer needed anyway.
-%
-% \subsection{\cbk {if_end_of_file}}
-%
-% \topicindex{callbacks+checking files}
-%
-% This callback has no arguments and your function should return true or false. The
-% callback is triggered by \type {\ifeof}. It's up to the macro package to come up
-% with a reasonable implementation. By default the test is always true.
-%
-% \startfunctioncall
-% <boolean> eof =
-%     function ()
-% \stopfunctioncall
+\stopsubsection
+
+\startsubsection[title=start_file]
+
+This callback replaces the code that \LUAMETATEX\ prints when a file is opened like
+\type {(filename} for regular files. The category is a number:
+
+\starttyping[option=LUA]
+function (
+    <t:integer> category,
+    <t:string>  filename
+)
+    -- no return values
+end
+\stoptyping
+
+The following categories can occur:
+
+\starttabulate[|c|l|]
+% \DB value  \BC meaning \NC \NR
+% \TB
+\FL
+\BC value  \BC meaning \NC \NR
+\ML
+\NC 1 \NC a normal data file, like a \TEX\ source \NC \NR
+\NC 2 \NC a font map coupling font names to resources \NC \NR
+\NC 3 \NC an image file (\type {png}, \type {pdf}, etc) \NC \NR
+\NC 4 \NC an embedded font subset \NC \NR
+\NC 5 \NC a fully embedded font \NC \NR
+\LL
+\stoptabulate
+
+\stopsubsection
+
+\startsubsection[title=stop_file]
+
+This callback replaces the code that \LUAMETATEX\ prints when a file is closed like
+the \type {)} for regular files.
+
+\starttyping[option=LUA]
+function (
+    <t:integer> category
+)
+    -- no return values
+end
+\stoptyping
 
 \stopsubsection
 
 \stopsection
 
-\startsection[title={Data processing callbacks}][library=callback]
+\startsection[title=Running]
 
-\startsubsection[title={\cbk {process_jobname}}]
+\startsubsection[title=process_jobname]
 
-\topicindex{callbacks+jobname}
-
-This callback allows you to change the jobname given by \prm {jobname} in \TEX\
-and \type {tex.jobname} in Lua. It does not affect the internal job name or the
+This callback allows you to change the jobname given by \type {\jobname} in \TEX\
+and \type {tex.jobname} in \LUA. It does not affect the internal job name or the
 name of the output or log files.
 
-\startfunctioncall
-function(<string> jobname)
-    return <string> adjusted_jobname
+\starttyping[option=LUA]
+function (
+    <t:string> jobname
+)
+    return <t:string> adjusted_jobname
 end
-\stopfunctioncall
+\stoptyping
 
 The only argument is the actual job name; you should not use \type {tex.jobname}
 inside this function or infinite recursion may occur. If you return \type {nil},
-\LUATEX\ will pretend your callback never happened. This callback does not
+\LUAMETATEX\ will pretend your callback never happened. This callback does not
 replace any internal code.
 
 \stopsubsection
 
+\startsubsection[title=pre_dump]
+
+This function is called just before dumping to a format file starts. It does not
+replace any code and there are neither arguments nor return values. It can be used to do some
+cleanup and other housekeeping.
+
+\starttyping[option=LUA]
+function (
+    -- no arguments
+)
+    -- no return values
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=start_run]
+
+\starttyping[option=LUA]
+function(
+    -- no arguments
+)
+    -- no return values
+end
+\stoptyping
+
+This callback replaces the code that prints \LUATEX's banner. Note that for
+successful use, this callback has to be set in the \LUA\ initialization script,
+otherwise it will be seen only after the run has already started.
+
+\stopsubsection
+
+\startsubsection[title=stop_run]
+
+\starttyping[option=LUA]
+function(
+    -- no arguments
+)
+    -- no return values
+end
+\stoptyping
+
+This callback replaces the code that prints \LUATEX's statistics and \quote
+{output written to} messages. The engine can still do housekeeping and therefore
+you should not rely on this hook for postprocessing the \PDF\ or log file.
+
+\stopsubsection
+
+\startsubsection[title=intercept_tex_error]
+
+This callback is run from inside the \TEX\ error function, and the idea is to
+allow you to do some extra reporting on top of what \TEX\ already does (none of
+the normal actions are removed). You may find some of the values in the \type
+{status} table useful. The \TEX\ related callback gets two arguments: the current
+processing mode and a boolean indicating if there was a runaway.
+
+
+\starttyping[option=LUA]
+function (
+    -- no arguments
+)
+    -- no return values
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=intercept_lua_error]
+
+This callback is similar to the one discussed in the previous section but for
+\LUA. Of course we should in a recoverable state for this to work well.
+
+\starttyping[option=LUA]
+function (
+    -- no arguments
+)
+    -- no return values
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=show_error_message]
+
+This callback replaces the code that prints the error message. The usual
+interaction after the message is not affected but it is best to quit the run
+after reporting.
+
+\starttyping[option=LUA]
+function (
+    -- no arguments
+)
+    -- no return values
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=show_warning_message]
+
+This callback replaces the code that prints a (non fatal) warning message. The
+usual interaction after the message is not affected.
+
+\starttyping[option=LUA]
+function (
+    -- no arguments
+)
+    -- no return values
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=wrapup_run]
+
+
+This callback is called after the \PDF\ and log files are closed. Use it at your own
+risk. efine_f
+risk.
+
+\starttyping[option=LUA]
+function (
+    -- no arguments
+)
+    -- no return values
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=handle_overload]
+
+One characteristic of \TEX\ is that you have quite some control over what a
+control sequence triggers. For instance, \type {\hbox} normally starts a
+horizontal box but a user can redefine this primitive as macro to do whatever is
+required. This means that when other macros use this primitive their behavior
+will change. One way out of this is using aliases, for instance:
+
+\starttyping
+\normalsetbox0\normalhbox{test}
+\normalifdim\normalwd0>10pt \normalbox0 \normalfi
+\stoptyping
+
+But even these normal aliases can be redefined. Of course you can use special
+characters like \type {_} in names but once you start doing this:
+
+\starttyping
+\p_setbox0\p_hbox{test}
+\p_ifdim\p_wd0>10pt \p_box0 \p_fi
+\stoptyping
+
+you should wonder if you still offer the user \TEX\ as a programming language.
+It's not the route that \CONTEXT\ takes.
+
+In \LUAMETATEX\ every macro (including primitives) can be flagged and that happens
+with so called prefixes. Traditional \TEX\ offers:
+
+\starttyping
+\global\def\foo{...}
+\long  \def\foo{...} % no-op
+\outer \def\foo{...} % no-op
+\stoptyping
+
+The \type {\long} and \type {\outer} made sense at that time but are no-ops in
+\LUAMETATEX: every macro can take \type {\par} equivalents as arguments and can
+be \ defined at every level. The \ETEX\ extensions introduced this prefix:
+
+\starttyping
+\protected\def\foo{...}
+\stoptyping
+
+which prevents expansion unless the value is really expected (needed). The
+\LUAMETATEX\ engine added:
+
+\starttyping
+\semiprotected\def\foo{...}
+\stoptyping
+
+but when eventually I see no reason to use it in \CONTEXT\ it might be dropped. A
+special prefix is:
+
+\starttyping
+\constant\def\foo{...}
+\stoptyping
+
+This effectively is equivalent to \type {\edef} but signals that in some
+scenarios (like an \type {\csname} equivalent situation) no expansion and
+checking has to happen which improves performance.
+
+These two prefixes are just signals to \LUA\ driven functionality:
+
+\starttyping
+\deferred  \foo
+\immediate \foo
+\stoptyping
+
+The prefixes do nothing except when \type {\foo} are \LUA\ calls that can use
+this information to adapt behavior. Because we have no backend the macro package
+has to come up with equivalents for e.g.\ \type {\write} than can be immediate or
+deferred (default) operations.
+
+Another prefix relates to alignments:
+
+\starttyping
+\noaligned\protected\def\foo{...}
+\stoptyping
+
+Which makes a macro accepted between alignment rows where otherwise protected
+macros will trigger an error due to look ahead.
+
+A definition with \type {\def} or \type {\gdef} can take arguments and these can be
+made optional with:
+
+\starttyping
+\def\tolerant[#1]{...}
+\stoptyping
+
+but there are more features related to tolerant:
+
+\starttyping
+\def\tolerant[#1]#*[#2]{...}
+\stoptyping
+
+that are discusses in low level manuals. Users can define macros that are
+reported (in tracing) as if they were primitives:
+
+\starttyping
+\untraced\protected\def\foo{...}
+\stoptyping
+
+The prefixes \type {\constrained} and \type {\retained} relate to register values
+being saved and restored in groups. The \type {\inherited} is used in for
+instance math spacing assignments where we need dynamic binding to for instance
+\type {\muskip} registers (instead of values).
+
+Although not related to the callback discussed here we mentioned these prefixes because
+they belong to the \type {prefixed_cmd} operator|/|operand pair. So to come back to
+users being able to use primitives instead of funny unreadable aliases. It's good to
+keep in  mind that one can combine prefixes like the following:
+
+\starttyping
+\frozen    \foo{...}
+\immutable \foo{...}
+\instance  \foo{...}
+\mutable   \foo{...}
+\overloaded\foo{...}
+\permanent \foo{...}
+\stoptyping
+
+so this is valid too:
+
+\starttyping
+\global\permanent\untraced\tolerant\protected\def\foo[#1]#*[#2]{...}
+\stoptyping
+
+So what do these prefixes do? It depends on the value of an internal
+integer \type {\overloadmode} where the following values have meaning:
+
+\starttabulate[|c|l|c|c|c|c|c|]
+% \DB   \BC         \BC immutable \BC permanent \BC primitive \BC frozen \BC instance \NC \NR
+% \TB
+\FL
+\BC   \BC         \BC immutable \BC permanent \BC primitive \BC frozen \BC instance \NC \NR
+\ML
+\NC 1 \NC warning \NC \star     \NC \star     \NC \star     \NC        \NC          \NC \NR
+\NC 2 \NC error   \NC \star     \NC \star     \NC \star     \NC        \NC          \NC \NR
+\NC 3 \NC warning \NC \star     \NC \star     \NC \star     \NC \star  \NC          \NC \NR
+\NC 4 \NC error   \NC \star     \NC \star     \NC \star     \NC \star  \NC          \NC \NR
+\NC 5 \NC warning \NC \star     \NC \star     \NC \star     \NC \star  \NC \star    \NC \NR
+\NC 6 \NC error   \NC \star     \NC \star     \NC \star     \NC \star  \NC \star    \NC \NR
+\LL
+\stoptabulate
+
+The \type {\enforced} prefix can be used to bypass this mechanism:
+
+\starttyping
+\permanent\protected\def\foo{...}
+
+\protected\def\oof{\enforced\def\foo{...}}
+\stoptyping
+
+But only in so called quote {ini} mode, that is when the format file is created. In order to
+save work we also have:
+
+\starttyping
+\aliased\let\foo\relax
+\stoptyping
+
+This makes \type {\foo} a copy (or more precise, a reference) including all
+flags, so in this case it will be flagged a a primitive which is \type
+{\permanent} too. You cannot define primitives yourself but when reported in a
+trace you see it being a primitive indeed.
+
+Of course this all means that one has to define basically all relevant macros
+with a combination of prefixes and that happens to be the case in \CONTEXT, which
+in the end makes this callback a rather \CONTEXT\ specific one.
+
+\starttyping[option=LUA]
+function (
+    <t:boolean> error,
+    <t:integer> overload,
+    <t:string>  csname,
+    <t:integer> flags
+)
+    -- no return values
+end
+\stoptyping
+
+\stopsubsection
+
 \stopsection
 
-\startsection[title={Node list processing callbacks}][library=callback]
+\startsection[title=Fonts]
 
-The description of nodes and node lists is in~\in{chapter}[nodes].
+\startsubsection[title=define_font]
 
-\startsubsection[title={\cbk {contribute_filter}}]
+The engine has no font loader but it does need some information about the glyphs
+that are uses like width, height and depth, possibly italic correction, kerns,
+and ligatures. And for math some more information is needed. Keep in mind that
+for instance italic correction is something specific for \TEX\ and that kerns and
+ligatures only are needed when you leave them to the engine. For modern \OPENTYPE\ fonts
+we let \LUA\ deal with this.
 
-\topicindex{callbacks+contributions}
-
-This callback is called when \LUATEX\ adds contents to list:
-
-\startfunctioncall
-function(<string> extrainfo)
+\starttyping[option=LUA]
+function (
+    <t:string>  name,
+    <t:integer> size
+)
+    return <t:integer> id
 end
-\stopfunctioncall
+\stoptyping
 
-The string reports the group code. From this you can deduce from
-what list you can give a treat.
+The string \type {name} is the filename part of the font specification, as given
+by the user, for instance when \type {\font} is used for defining an instance.
+The number \type {size} is a bit special:
 
-\starttabulate[|l|p|]
-\DB value             \BC explanation                                  \NC \NR
-\TB
-\NC \type{pre_box}    \NC interline material is being added            \NC \NR
-\NC \type{pre_adjust} \NC \prm {vadjust} material is being added       \NC \NR
-\NC \type{box}        \NC a typeset box is being added (always called) \NC \NR
-\NC \type{adjust}     \NC \prm {vadjust} material is being added       \NC \NR
-\LL
-\stoptabulate
-
-\stopsubsection
-
-\startsubsection[title={\cbk {buildpage_filter}}]
-
-\topicindex{callbacks+building pages}
-
-This callback is called whenever \LUATEX\ is ready to move stuff to the main
-vertical list. You can use this callback to do specialized manipulation of the
-page building stage like imposition or column balancing.
-
-\startfunctioncall
-function(<string> extrainfo)
-end
-\stopfunctioncall
-
-The string \type {extrainfo} gives some additional information about what \TEX's
-state is with respect to the \quote {current page}. The possible values for the
-\cbk {buildpage_filter} callback are:
-
-\starttabulate[|l|p|]
-\DB value                  \BC explanation                             \NC \NR
-\TB
-\NC \type{alignment}       \NC a (partial) alignment is being added    \NC \NR
-\NC \type{after_output}    \NC an output routine has just finished     \NC \NR
-\NC \type{new_graf}        \NC the beginning of a new paragraph        \NC \NR
-\NC \type{vmode_par}       \NC \prm {par} was found in vertical mode   \NC \NR
-\NC \type{hmode_par}       \NC \prm {par} was found in horizontal mode \NC \NR
-\NC \type{insert}          \NC an insert is added                      \NC \NR
-\NC \type{penalty}         \NC a penalty (in vertical mode)            \NC \NR
-\NC \type{before_display}  \NC immediately before a display starts     \NC \NR
-\NC \type{after_display}   \NC a display is finished                   \NC \NR
-\NC \type{end}             \NC \LUATEX\ is terminating (it's all over) \NC \NR
-\LL
-\stoptabulate
-
-\stopsubsection
-
-\startsubsection[title={\cbk {insert_distance}}]
-
-\topicindex{callbacks+inserts}
-
-This callback is called when the page builder adds an insert. There is not much
-control over this mechanism but this callback permits some last minute
-manipulations of the spacing before an insert, something that might be handy when
-for instance multiple inserts (types) are appended in a row.
-
-\startfunctioncall
-function(<number> n, <number> i)
-    return <number> register
-end
-\stopfunctioncall
-
-with
-
-\starttabulate[|l|p|]
-\DB value    \BC explanation             \NC \NR
-\TB
-\NC \type{n} \NC the insert class        \NC \NR
-\NC \type{i} \NC the order of the insert \NC \NR
-\LL
-\stoptabulate
-
-The return value is a number indicating the skip register to use for the
-prepended spacing. This permits for instance a different top space (when \type
-{i} equals one) and intermediate space (when \type {i} is larger than one). Of
-course you can mess with the insert box but you need to make sure that \LUATEX\
-is happy afterwards.
-
-\stopsubsection
-
-\startsubsection[title={\cbk {pre_linebreak_filter}}]
-
-\topicindex{callbacks+linebreaks}
-
-This callback is called just before \LUATEX\ starts converting a list of nodes
-into a stack of \prm {hbox}es, after the addition of \prm {parfillskip}.
-
-\startfunctioncall
-function(<node> head, <string> groupcode)
-    return <node> newhead
-end
-\stopfunctioncall
-
-The string called \type {groupcode} identifies the nodelist's context within
-\TEX's processing. The range of possibilities is given in the table below, but
-not all of those can actually appear in \cbk {pre_linebreak_filter}, some are
-for the \cbk {hpack_filter} and \cbk {vpack_filter} callbacks that will be
-explained in the next two paragraphs.
-
-\starttabulate[|l|p|]
-\DB value                \BC explanation                                 \NC \NR
-\TB
-\NC \type{<empty>}       \NC main vertical list                          \NC \NR
-\NC \type{hbox}          \NC \prm {hbox} in horizontal mode              \NC \NR
-\NC \type{adjusted_hbox} \NC \prm {hbox} in vertical mode                \NC \NR
-\NC \type{vbox}          \NC \prm {vbox}                                 \NC \NR
-\NC \type{vtop}          \NC \prm {vtop}                                 \NC \NR
-\NC \type{align}         \NC \prm {halign} or \prm {valign}              \NC \NR
-\NC \type{disc}          \NC discretionaries                             \NC \NR
-\NC \type{insert}        \NC packaging an insert                         \NC \NR
-\NC \type{vcenter}       \NC \prm {vcenter}                              \NC \NR
-\NC \type{local_box}     \NC \prm {localleftbox} or \prm {localrightbox} \NC \NR
-\NC \type{split_off}     \NC top of a \prm {vsplit}                      \NC \NR
-\NC \type{split_keep}    \NC remainder of a \prm {vsplit}                \NC \NR
-\NC \type{align_set}     \NC alignment cell                              \NC \NR
-\NC \type{fin_row}       \NC alignment row                               \NC \NR
-\LL
-\stoptabulate
-
-As for all the callbacks that deal with nodes, the return value can be one of
-three things:
-
-\startitemize
+\startitemize[packed]
 \startitem
-    boolean \type {true} signals successful processing
+    If it is positive, it specifies an \quote{at size} in scaled points.
 \stopitem
 \startitem
-    \type {<node>} signals that the \quote {head} node should be replaced by the
-    returned node
-\stopitem
-\startitem
-    boolean \type {false} signals that the \quote {head} node list should be
-    ignored and flushed from memory
+    If it is negative, its absolute value represents a \quote {scaled} setting
+    relative to the design size of the font.
 \stopitem
 \stopitemize
 
-This callback does not replace any internal code.
+The font can be defined with \type {font.define} which returns a font identifier
+that can be returned in the callback. Contrary to \LUATEX, in \LUAMETATEX\
+we only accept a number.
+
+The internal structure of the \type {font} table that is passed to \type
+{font.define} is explained elsewhere but there can be much more in that table.
+Likely the macro package will keep the passes table around for other usage, for
+instance for usage in the backend.
+
+Setting this callback to \type {false} is pointless because it will prevent font
+loading completely because without fonts there is little to do for the engine.
 
 \stopsubsection
 
-\startsubsection[title={\cbk {linebreak_filter}}]
+\startsubsection[title=quality_font]
 
-\topicindex{callbacks+linebreaks}
+When you use font expansion you will normally pass the glyph specific expansion and
+compression values along with the dimensions. However, this can be delayed. When we
+use par passes (or otherwise set one of the adjust parameters) and a font has not
+yet bee setup for expansion this callback will kick in but only once per font.
 
-This callback replaces \LUATEX's line breaking algorithm.
-
-\startfunctioncall
-function(<node> head, <boolean> is_display)
-    return <node> newhead
+\starttyping[option=LUA]
+function (
+    <t:integer> id
+)
+    -- no return values
 end
-\stopfunctioncall
+\stoptyping
 
-The returned node is the head of the list that will be added to the main vertical
-list, the boolean argument is true if this paragraph is interrupted by a
-following math display.
-
-If you return something that is not a \type {<node>}, \LUATEX\ will apply the
-internal linebreak algorithm on the list that starts at \type {<head>}.
-Otherwise, the \type {<node>} you return is supposed to be the head of a list of
-nodes that are all allowed in vertical mode, and at least one of those has to
-represent an \prm {hbox}. Failure to do so will result in a fatal error.
-
-Setting this callback to \type {false} is possible, but dangerous, because it is
-possible you will end up in an unfixable \quote {deadcycles loop}.
+The function can set additional parameters in the font and pass them to \TEX\ using
+helpers from the font library.
 
 \stopsubsection
 
-\startsubsection[title={\type {append_to_vlist_filter}}]
+\stopsection
 
-\topicindex{callbacks+contributions}
+\startsection[title=Typesetting]
 
-This callback is called whenever \LUATEX\ adds a box to a vertical list (the
-\type {mirrored} argument is obsolete):
+\startsubsection[title=pre_output_filter]
 
-\startfunctioncall
-function(<node> box, <string> locationcode, <number> prevdepth)
-    return list [, prevdepth [, checkdepth ] ]
+This callback is called when \TEX\ is ready to start boxing the box 255 for \prm
+{output}. The callback does not replace any internal code.
+
+\starttyping[option=LUA]
+function (
+    <t:node>    head,
+    <t:string>  groupcode,
+    <t:integer> size,
+    <t:string>  packtype,
+    <t:integer> maxdepth,
+    <t:integer> direction
+)
+    return <t:node> newhead
 end
-\stopfunctioncall
-
-It is ok to return nothing or \type {nil} in which case you also need to flush
-the box or deal with it yourself. The prevdepth is also optional. Locations are
-\type {box}, \type {alignment}, \type {equation}, \type {equation_number} and
-\type {post_linebreak}. When the third argument returned is \type {true} the
-normal prevdepth correction will be applied, based on the first node.
+\stoptyping
 
 \stopsubsection
 
-\startsubsection[title={\cbk {post_linebreak_filter}}]
+\startsubsection[title=buildpage_filter]
 
-\topicindex{callbacks+linebreaks}
+This callback is called whenever \LUAMETATEX\ is ready to move stuff to the main
+vertical list. You can use this callback to do specialized manipulation of the
+page building stage like imposition or column balancing.
 
-This callback is called just after \LUATEX\ has converted a list of nodes into a
-stack of \prm {hbox}es.
-
-\startfunctioncall
-function(<node> head, <string> groupcode)
-    return <node> newhead
+\starttyping[option=LUA]
+function (
+    <t:string> extrainfo
+)
+    -- no return values
 end
-\stopfunctioncall
+\stoptyping
 
-This callback does not replace any internal code.
+The string \type {extrainfo} gives some additional information about what \TEX's
+state is with respect to the \quote {current page}. The possible values for this
+callback are:
 
-\stopsubsection
+\starttabulate[|l|p|]
+% \DB value                 \BC explanation                                 \NC \NR
+% \TB
+\FL
+\BC value                 \BC explanation                                 \NC \NR
+\ML
+\NC \type{alignment}      \NC a (partial) alignment is being added        \NC \NR
+\NC \type{after_output}   \NC an output routine has just finished         \NC \NR
+\NC \type{new_graf}       \NC the beginning of a new paragraph            \NC \NR
+\NC \type{vmode_par}      \NC \type {\par} was found in vertical mode     \NC \NR
+\NC \type{hmode_par}      \NC \type {\par} was found in horizontal mode   \NC \NR
+\NC \type{insert}         \NC an insert is added                          \NC \NR
+\NC \type{penalty}        \NC a penalty (in vertical mode)                \NC \NR
+\NC \type{before_display} \NC immediately before a display starts         \NC \NR
+\NC \type{after_display}  \NC a display is finished                       \NC \NR
+\NC \type{end}            \NC \LUAMETATEX\ is terminating (it's all over) \NC \NR
+\LL
+\stoptabulate
 
-\startsubsection[title={\cbk {glyph_run}}]
-
-\topicindex{callbacks+fonts}
-\topicindex{callbacks+hyphenation}
-\topicindex{callbacks+kerning}
-\topicindex{callbacks+ligature building}
-
-When set this callback is triggered when \TEX\ normally handles the ligaturing
-and kerning. In \LUATEX\ you use the \typ {hpack_filter} and \typ
-{per_linebreak_filter} callbacks for that (where each passes different
-arguments). This callback doesn't get triggered when there are no glyphs (in
-\LUATEX\ this optimization is controlled by a a variable).
-
-\startfunctioncall
-function(<node> head, <string> groupcode, <number> direction])
-    return <node> newhead
-end
-\stopfunctioncall
-
-The traditional \TEX\ font processing is bypassed so you need to take care of that
-with the helpers. (For the moment we keep the ligaturing and kerning callbacks but
-they are kind of obsolete.)
 
 \stopsubsection
 
-\startsubsection[title={\cbk {hpack_filter}}]
-
-\topicindex{callbacks+packing}
+\startsubsection[title=hpack_filter]
 
 This callback is called when \TEX\ is ready to start boxing some horizontal mode
-material. Math items and line boxes are ignored at the moment.
+material. Math items and line boxes are ignored at the moment. The callback does
+not replace any internal code.
 
-\startfunctioncall
-function(<node> head, <string> groupcode, <number> size,
-         <string> packtype [, <number> direction] [, <node> attributelist])
-    return <node> newhead
+\starttyping[option=LUA]
+function (
+    <t:node>    head,
+    <t:string>  groupcode,
+    <t:integer> size,
+    <t:string>  packtype
+    <t:integer> direction,
+    <t:node>    attributelist
+)
+    return <t:node> newhead
 end
-\stopfunctioncall
+\stoptyping
 
 The \type {packtype} is either \type {additional} or \type {exactly}. If \type
 {additional}, then the \type {size} is a \type {\hbox spread ...} argument. If
 \type {exactly}, then the \type {size} is a \type {\hbox to ...}. In both cases,
 the number is in scaled points.
 
-This callback does not replace any internal code.
-
 \stopsubsection
 
-\startsubsection[title={\cbk {vpack_filter}}]
-
-\topicindex{callbacks+packing}
+\startsubsection[title=vpack_filter]
 
 This callback is called when \TEX\ is ready to start boxing some vertical mode
-material. Math displays are ignored at the moment.
+material. Math displays are ignored at the moment. The callback does not replace
+any internal code.
 
-This function is very similar to the \cbk {hpack_filter}. Besides the fact
+This function is very similar to \type {hpack_filter}. Besides the fact
 that it is called at different moments, there is an extra variable that matches
-\TEX's \prm {maxdepth} setting.
+\TEX's \type {\maxdepth} setting.
 
-\startfunctioncall
-function(<node> head, <string> groupcode, <number> size, <string> packtype,
-        <number> maxdepth [, <number> direction] [, <node> attributelist]))
-    return <node> newhead
+\starttyping[option=LUA]
+function (
+    <t:node>    head,
+    <t:string>  groupcode,
+    <t:integer> size,
+    <t:string>  packtype,
+    <t:integer> maxdepth,
+    <t:integer> direction,
+    <t:node>    attributelist
+}
+    return <t:node> newhead
 end
-\stopfunctioncall
-
-This callback does not replace any internal code.
+\stoptyping
 
 \stopsubsection
 
-\startsubsection[title={\cbk {packed_vbox_filter}}]
-
-\topicindex{callbacks+packing}
-
-After the \cbk {vpack_filter} callback (see previous section) is triggered the
-box get packed and after that this callback can be configured to kick in.
-
-\startfunctioncall
-function(<node> head, <string> groupcode)
-    return <node> newhead
-end
-\stopfunctioncall
-
-This callback does not replace any internal code.
-
-\stopsubsection
-
-\startsubsection[title={\cbk {alignment_filter}}]
-
-\topicindex{callbacks+alignments}
-
-This is an experimental callback that when set is called several times during the
-construction of an alignment. The context values are available in \typ
-{tex.getalignmentcontextvalues()}.
-
-\startfunctioncall
-function(<node> head, <string> context, <node> attributes, <node> preamble)
-    -- no return values
-end
-\stopfunctioncall
-
-There are no sanity checks so if a user messes up the passed node lists the results
-can be unpredictable and, as with other node related callbacks, crash the engine.
-
-\stopsubsection
-
-\startsubsection[title={\cbk {localbox_filter}}]
-
-\topicindex{callbacks+local boxes}
-
-Local boxes are a somewhat tricky and error prone feature so use this callback
-with care because the paragraph is easily messed up. A line can have a left,
-right and middle box where the middle one has no width. The callback gets quite
-some parameters passed:
-
-\startfunctioncall
-function(<node> linebox, <node> leftbox, <node> rightbox, <node> middlebox,
-    <number> linenumber,
-    <number> leftskip, <number> rightskip, <number> lefthang, <number> righthang,
-    <number> indentation, <number> parinitleftskip, <number> parinitrightskip,
-    <number> parfillleftskip, <number> parfillrightskip,
-    <number> overshoot)
-    -- no return values
-end
-\stopfunctioncall
-
-This is an experimental callback that will be tested in different \CONTEXT\
-mechanisms before it will be declared stable.
-
-\stopsubsection
-
-\startsubsection[title={\cbk {process_rule}}]
-
-\topicindex{callbacks+rules}
-
-This is an experimental callback. It can be used with rules of subtype~4
-(user). The callback gets three arguments: the node, the width and the
-height. The callback can use \type {pdf.print} to write code to the \PDF\
-file but beware of not messing up the final result. No checking is done.
-
-\stopsubsection
-
-\startsubsection[title={\type {pre_output_filter}}]
-
-\topicindex{callbacks+output}
-
-This callback is called when \TEX\ is ready to start boxing the box 255 for \prm
-{output}.
-
-\startfunctioncall
-function(<node> head, <string> groupcode, <number> size, <string> packtype,
-        <number> maxdepth [, <number> direction])
-    return <node> newhead
-end
-\stopfunctioncall
-
-This callback does not replace any internal code.
-
-\stopsubsection
-
-\startsubsection[title={\cbk {hyphenate}}]
-
-\topicindex{callbacks+hyphenation}
+\startsubsection[title=hyphenate]
 
 This callback is supposed to insert discretionary nodes in the node list it
 receives.
 
-\startfunctioncall
-function(<node> head, <node> tail)
+\starttyping[option=LUA]
+function (
+    <t:node> head,
+    <t:node> tail
+)
     -- no return values
 end
-\stopfunctioncall
+\stoptyping
 
 Setting this callback to \type {false} will prevent the internal discretionary
 insertion pass.
 
 \stopsubsection
 
-\startsubsection[title={\cbk {ligaturing}}]
-
-\topicindex{callbacks+ligature building}
+\startsubsection[title=ligaturing]
 
 This callback, which expects no return values, has to apply ligaturing to the
 node list it receives.
 
-\startfunctioncall
-function(<node> head, <node> tail)
+\starttyping[option=LUA]
+function (
+    <t:node> head,
+    <t:node> tail
+)
     -- no return values
 end
-\stopfunctioncall
+\stoptyping
 
 You don't have to worry about return values because the \type {head} node that is
 passed on to the callback is guaranteed not to be a glyph_node (if need be, a
@@ -590,18 +749,19 @@ panic mode.
 
 \stopsubsection
 
-\startsubsection[title={\cbk {kerning}}]
-
-\topicindex{callbacks+kerning}
+\startsubsection[title=kerning]
 
 This callback has to apply kerning between the nodes in the node list it
-receives. See \cbk {ligaturing} for calling conventions.
+receives. See \type {ligaturing} for calling conventions.
 
-\startfunctioncall
-function(<node> head, <node> tail)
+\starttyping[option=LUA]
+function (
+    <t:node> head,
+    <t:node> tail
+)
     -- no return values
 end
-\stopfunctioncall
+\stoptyping
 
 Setting this callback to \type {false} will prevent the internal kern insertion
 pass. You must not ruin the node list. For instance, the head normally is a local
@@ -610,76 +770,898 @@ mode.
 
 \stopsubsection
 
-\startsubsection[title={\cbk {append_line_filter}}]
+\startsubsection[title=glyph_run]
 
-\topicindex{callbacks+lines}
+When set this callback is triggered when \TEX\ normally handles the ligaturing
+and kerning. In \LUATEX\ you use the \typ {hpack_filter} and \typ
+{per_linebreak_filter} callbacks for that (where each passes different
+arguments). This callback doesn't get triggered when there are no glyphs (in
+\LUATEX\ this optimization is controlled by a a variable).
 
-Every time a line is added this callback is triggered, when set. migrated
-material and adjusts also qualify as such and the detail relates to the adjust
-index.
-
-\startfunctioncall
-function(<node> head, <node> tail, <string> context, <number> detail)
-    return <node> newhead
+\starttyping[option=LUA]
+function (
+    <t:node>    head,
+    <t:string>  groupcode,
+    <t:integer> direction
+)
+    return <t:node> newhead
 end
-\stopfunctioncall
+\stoptyping
 
-A list of possible context values can be queried with \typ
-{tex.getappendlinecontextvalues()}.
+The traditional \TEX\ font processing is bypassed so you need to take care of that
+with the helpers. (For the moment we keep the ligaturing and kerning callbacks but
+they are kind of obsolete.)
 
 \stopsubsection
 
-\stopsection
+\startsubsection[title=pre_linebreak_filter]
 
-\startsection[title={Paragraph callbacks}]
+This callback is called just before \LUATEX\ starts converting a list of nodes
+into a stack of \type {\hbox}es, after the addition of \type {\parfillskip}. The
+callback does not replace any internal code.
 
-\startsubsection[title={\type {insert_par}}]
+\starttyping[option=LUA]
+function (
+    <t:node>   head,
+    <t:string> groupcode
+)
+    return <t:node> newhead
+end
+\stoptyping
 
-\topicindex{callbacks+paragraphs}
+The string called \type {groupcode} identifies the nodelist's context within
+\TEX's processing. The range of possibilities is given in the table below, but
+not all of those can actually appear here, some are for the \type {hpack_filter}
+and \type {vpack_filter} callbacks.
+
+\starttabulate[|l|p|]
+% \DB value                \BC explanation                                     \NC \NR
+% \TB
+\FL
+\BC value                \BC explanation                                     \NC \NR
+\ML
+\NC \type{<empty>}       \NC main vertical list                              \NC \NR
+\NC \type{hbox}          \NC \type {\hbox} in horizontal mode                \NC \NR
+\NC \type{adjusted_hbox} \NC \type {\hbox} in vertical mode                  \NC \NR
+\NC \type{vbox}          \NC \type {\vbox}                                   \NC \NR
+\NC \type{vtop}          \NC \type {\vtop}                                   \NC \NR
+\NC \type{align}         \NC \type {\halign} or \type {\valign}              \NC \NR
+\NC \type{disc}          \NC discretionaries                                 \NC \NR
+\NC \type{insert}        \NC packaging an insert                             \NC \NR
+\NC \type{vcenter}       \NC \type {\vcenter}                                \NC \NR
+\NC \type{local_box}     \NC \type {\localleftbox} or \type {\localrightbox} \NC \NR
+\NC \type{split_off}     \NC top of a \type {\vsplit}                        \NC \NR
+\NC \type{split_keep}    \NC remainder of a \type {\vsplit}                  \NC \NR
+\NC \type{align_set}     \NC alignment cell                                  \NC \NR
+\NC \type{fin_row}       \NC alignment row                                   \NC \NR
+\LL
+\stoptabulate
+
+As for all the callbacks that deal with nodes, the return value can be one of
+three things:
+
+\startitemize
+\startitem
+    boolean \type {true} signals successful processing
+\stopitem
+\startitem
+    \type {<t:node>} signals that the \quote {head} node should be replaced by the
+    returned node
+\stopitem
+\startitem
+    boolean \type {false} signals that the \quote {head} node list should be
+    ignored and flushed from memory
+\stopitem
+\stopitemize
+
+\stopsubsection
+
+\startsubsection[title=linebreak_filter]
+
+This callback replaces \LUATEX's line breaking algorithm. The callback does not
+replace any internal code.
+
+\starttyping[option=LUA]
+function (
+    <t:node>    head,
+    <t:boolean> is_display
+)
+    return <t:node> newhead
+end
+\stoptyping
+
+The returned node is the head of the list that will be added to the main vertical
+list, the boolean argument is true if this paragraph is interrupted by a
+following math display.
+
+If you return something that is not a \type {<t:node>}, \LUATEX\ will apply the
+internal linebreak algorithm on the list that starts at \type {<head>}.
+Otherwise, the \type {<t:node>} you return is supposed to be the head of a list of
+nodes that are all allowed in vertical mode, and at least one of those has to
+represent an \type {\hbox}. Failure to do so will result in a fatal error.
+
+Setting this callback to \type {false} is possible, but dangerous, because it is
+possible you will end up in an unfixable \quote {deadcycles loop}.
+
+\stopsubsection
+
+\startsubsection[title=post_linebreak_filter]
+
+This callback is called just after \LUATEX\ has converted a list of nodes into a
+stack of \type {\hbox}es.
+
+\starttyping[option=LUA]
+function (
+    <t:node>   head,
+    <t:string> groupcode
+)
+    return <t:node> newhead
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=append_to_vlist_filter]
+
+This callback is called whenever \LUATEX\ adds a box to a vertical list (the
+\type {mirrored} argument is obsolete):
+
+\starttyping[option=LUA]
+function (
+    <t:node>    box,
+    <t:string>  locationcode,
+    <t:integer> prevdepth
+)
+    return <t:node> list [, <t:integer> prevdepth [, <t:boolean> checkdepth ] ]
+end
+\stoptyping
+
+It is ok to return nothing or \type {nil} in which case you also need to flush
+the box or deal with it yourself. The prevdepth is also optional. Locations are
+\type {box}, \type {alignment}, \type {equation}, \type {equation_number} and
+\type {post_linebreak}. When the third argument returned is \type {true} the
+normal prevdepth correction will be applied, based on the first node.
+
+\stopsubsection
+
+\startsubsection[title=alignment_filter]
+
+This is an experimental callback that when set is called several times during the
+construction of an alignment. The context values are available in \typ
+{tex.getalignmentcontextvalues()}.
+
+\starttyping[option=LUA]
+function (
+    <t:node>   head,
+    <t:string> context,
+    <t:node>   attributes,
+    <t:node>   preamble
+)
+    -- no return values
+end
+\stoptyping
+
+There are no sanity checks so if a user messes up the passed node lists the results
+can be unpredictable and, as with other node related callbacks, crash the engine.
+
+\stopsubsection
+
+\startsubsection[title=local_box_filter]
+
+Local boxes are a somewhat tricky and error prone feature so use this callback
+with care because the paragraph is easily messed up. A line can have a left,
+right and middle box where the middle one has no width. This callback does not
+replace any internal code. The callback gets quite some parameters passed:
+
+\starttyping[option=LUA]
+function (
+    <t:node>    linebox,
+    <t:node>    leftbox,
+    <t:node>    rightbox,
+    <t:node>    middlebox,
+    <t:integer> linenumber,
+    <t:integer> leftskip,
+    <t:integer> rightskip,
+    <t:integer> lefthang,
+    <t:integer> righthang,
+    <t:integer> indentation,
+    <t:integer> parinitleftskip,
+    <t:integer> parinitrightskip,
+    <t:integer> parfillleftskip,
+    <t:integer> parfillrightskip,
+    <t:integer> overshoot
+)
+    -- no return values
+end
+\stoptyping
+
+This is an experimental callback that will be tested in different \CONTEXT\
+mechanisms before it will be declared stable.
+
+\stopsubsection
+
+\startsubsection[title=packed_vbox_filter]
+
+After the \type {vpack_filter} callback (see previous section) is triggered the
+box get packed and after that this callback can be configured to kick in.
+
+\starttyping[option=LUA]
+function (
+    <t:node>   head,
+    <t:string> groupcode
+)
+    return <t:node> newhead
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=handle_uleader]
+
+The \typ {\uleaders} command inserts a user leader into the list. When a list get packed
+and has such leaders, a run over the list happens after packing so that it can be
+finalized.
+
+\starttyping[option=LUA]
+function (
+    <t:node>    head,
+    <t:string>  context,
+    <t:integer> index,
+    <t:node>    box,
+    <t:integer> location
+)
+    return <t:node> head
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=italic_correction]
+
+The concept of italic correction is very much related to traditional \TEX\ fonts.
+At least in 2024 it is absent from \OPENTYPE\ although it has some meaning in
+\OPENTYPE\ math. In \TEX\ this correction is normally inserted by \type {\/}
+although in \LUAMETATEX\ we also have \typ {\explicititaliccorrection} as well as
+\typ {\forcedleftcorrection} and \typ {\forcedrightcorrection}.
+
+When this callback is enabled it gets triggered when one of left or right
+correction commands is given and the returned kern is then used as correction.
+
+\starttyping[option=LUA]
+function (
+    <t:node>    glyph,
+    <t:integer> kern,
+    <t:integer> subtype,
+)
+    return <t:integer> kern
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=insert_par]
 
 Each paragraph starts with a local par node that keeps track of for instance
 the direction. You can hook a callback into the creator:
 
-\startfunctioncall
-function(<node> par, <string> location)
+\starttyping[option=LUA]
+function (
+    <t:node>   par,
+    <t:string> location
+)
     -- no return values
 end
-\stopfunctioncall
+\stoptyping
 
 There is no return value and you should make sure that the node stays valid
 as otherwise \TEX\ can get confused.
 
 \stopsubsection
 
-\startsubsection[title={\cbk {begin_paragraph}}]
+\startsubsection[title=append_line_filter]
 
-\topicindex{callbacks+paragraphs}
+Every time a line is added this callback is triggered, when set. migrated
+material and adjusts also qualify as such and the detail relates to the adjust
+index.
 
-{\em todo}
+\starttyping[option=LUA]
+function (
+    <t:node>    head,
+    <t:node>    tail,
+    <t:string>  context,
+    <t:integer> detail
+)
+    return <t:node> newhead
+end
+\stoptyping
+
+A list of possible context values can be queried with \typ
+{tex.getappendlinecontextvalues()}.
 
 \stopsubsection
 
-\startsubsection[title={\cbk {paragraph_context}}]
+\startsubsection[title=insert_distance]
 
-\topicindex{callbacks+paragraphs}
+This callback is called when the page builder adds an insert. There is not much
+control over this mechanism but this callback permits some last minute
+manipulations of the spacing before an insert, something that might be handy when
+for instance multiple inserts (types) are appended in a row.
 
-{\em todo}
+\starttyping[option=LUA]
+function (
+    <t:integer> class,
+    <t:integer> order
+)
+    return <t:integer> register
+end
+\stoptyping
+
+The return value is a number indicating the skip register to use for the
+prepended spacing. This permits for instance a different top space (when \type
+{class} equals one) and intermediate space (when \type {class} is larger than
+one). Of course you can mess with the insert box but you need to make sure that
+\LUATEX\ is happy afterwards.
 
 \stopsubsection
 
-\startsection[title={Math related callbacks}]
+\startsubsection[title=begin_paragraph]
 
-\startsubsection[title={\cbk {mlist_to_hlist}}]
+Every time a paragraph starts this callback, when configured, will kick in:
 
-\topicindex{callbacks+math}
+\starttyping[option=LUA]
+function (
+    <t:boolean> invmode,
+    <t:boolean> indented,
+    <t:string>  context
+)
+    return <t:boolean> indented
+end
+\stoptyping
+
+There are many places where a new paragraph can be triggered:
+
+\startcolumns[n=4]
+\getbuffer[engine:syntax:parcontextcodes]
+\stopcolumns
+
+\stopsubsection
+
+\startsubsection[title=paragraph_context]
+
+When the return value of this callback is \typ {false} the paragraph related
+settings, when they have been updated, will not be updated.
+
+\starttyping[option=LUA]
+function (
+    <t:string> context
+)
+    return <t:boolean> ignore
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=missing_character]
+
+This callback is triggered when a character node is created and the font doesn't
+have the requested character.
+
+\starttyping[option=LUA]
+function (
+    <t:node>    glyph,
+    <t:integer> font,
+    <t:integer> character
+)
+    -- no return value
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=process_character]
+
+This callback is experimental and gets called when a glyph node is created and
+the callback field in a character is set.
+
+\starttyping[option=LUA]
+function (
+    <t:integer> font,
+    <t:integer> character
+)
+    -- no return value
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=tail_append]
+
+%         This callback is called when \LUATEX\ adds contents to list:
+
+%         \starttyping[option=LUA]
+%         function (
+%             <t:string> extrainfo
+%         )
+%         end
+%         \stoptyping
+
+%         The string reports the group code. From this you can deduce from
+%         what list you can give a treat.
+
+%         \starttabulate[|l|p|]
+%         \DB value             \BC explanation                                  \NC \NR
+%         \TB
+%         \NC \type{pre_box}    \NC interline material is being added            \NC \NR
+%         \NC \type{pre_adjust} \NC \type {\vadjust} material is being added     \NC \NR
+%         \NC \type{box}        \NC a typeset box is being added (always called) \NC \NR
+%         \NC \type{adjust}     \NC \type {\vadjust} material is being added     \NC \NR
+%         \LL
+%         \stoptabulate
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Tracing]
+
+\startsubsection[title=hpack_quality]
+
+This callback can be used to intercept the overfull messages that can result from
+packing a horizontal list (as happens in the par builder). The function takes a
+few arguments:
+
+\starttyping[option=LUA]
+function (
+    <t:string>  incident,
+    <t:integer> detail,
+    <t:node>    head,
+    <t:integer> first,
+    <t:integer> last
+ )
+    return <t:node> whatever
+end
+\stoptyping
+
+The incident is one of \type {overfull}, \type {underfull}, \type {loose} or
+\type {tight}. The detail is either the amount of overflow in case of \type
+{overfull}, or the badness otherwise. The head is the list that is constructed
+(when protrusion or expansion is enabled, this is an intermediate list).
+Optionally you can return a node, for instance an overfull rule indicator. That
+node will be appended to the list (just like \TEX's own rule would).
+
+\stopsubsection
+
+\startsubsection[title=vpack_quality]
+
+This callback can be used to intercept the overfull messages that can result from
+packing a vertical list (as happens in the page builder). The function takes a
+few arguments:
+
+\starttyping[option=LUA]
+function (
+    <t:string>  incident,
+    <t:integer> detail,
+    <t:node>    head,
+    <t:integer> first,
+    <t:integer> last
+)
+    -- no return values
+end
+\stoptyping
+
+The incident is one of \type {overfull}, \type {underfull}, \type {loose} or
+\type {tight}. The detail is either the amount of overflow in case of \type
+{overfull}, or the badness otherwise. The head is the list that is constructed.
+
+\stopsubsection
+
+\startsubsection[title=line_break]
+
+This callback is actually a set of callbacks that has to be deals with as a
+whole. The main reason why we have this callback is that we wanted to be able to
+see what the par builder is doing, especially when we implement multiple
+paragraph building passes. This makes the callback pretty much a rather \CONTEXT\
+specific one.
+
+{\em We can also consider fetching the passive and active lists because we now keep
+much more info around.}
+
+\starttyping[option=LUA]
+function(
+    <t:integer> context,
+    <t:integer> checks,
+    ...
+)
+    -- no return values
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function initialize (
+    <t:integer> context,
+    <t:integer> checks,
+    <t:integer> subpasses
+)
+    -- no return values
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function start (
+    <t:integer> context,
+    <t:integer> checks,
+    <t:integer> pass,
+    <t:integer> subpass,
+    <t:integer> classes,
+    <t:integer> decent
+)
+    -- no return values
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function stop (
+    <t:integer> context,
+    <t:integer> checks,
+    <t:integer> demerits
+)
+    -- no return values
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function collect (
+    <t:integer> context,
+    <t:integer> checks
+)
+    -- no return values
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function line (
+    <t:integer> context,
+    <t:integer> checks,
+    <t:integer> box,
+    <t:integer> badness,
+    <t:integer> overshoot,
+    <t:integer> shrink,
+    <t:integer> stretch,
+    <t:integer> line,
+    <t:integer> serial
+)
+    -- no return values
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function delete (
+    <t:integer> context,
+    <t:integer> checks,
+    <t:integer> serial
+)
+    -- no return values
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function wrapup (
+    <t:integer> context,
+    <t:integer> checks,
+    <t:integer> demerits,
+    <t:integer> looseness
+)
+    -- no return values
+end
+\stoptyping
+\starttyping[option=LUA]
+function check (
+    <t:integer> context,
+    <t:integer> checks,
+    <t:integer> pass,
+    <t:integer> subpass,
+    <t:integer> serial,
+    <t:integer> prevserial,
+    <t:integer> linenumber,
+    <t:integer> nodetype,
+    <t:integer> fitness,,
+    <t:integer> demerits,
+    <t:integer> classes,
+    <t:integer> badness,
+    <t:integer> demerits,
+    <t:node>    breakpoint,
+    <t:integer> short,
+    <t:integer> glue,
+    <t:integer> linewidth
+)
+    return <t:integer> demerits  -- optional
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function list (
+    <t:integer> context,
+    <t:integer> checks,
+    <t:integer> serial
+)
+    -- no return values
+end
+\stoptyping
+
+Every one of these gets a \type {context} and \type {checks} passes. Possible
+contexts are:
+
+\startcolumns[n=4]
+\getbuffer[engine:syntax:linebreakcontextcodes]
+\stopcolumns
+
+The \type {checks} parameters is the value of \type {\linebreakchecks} which
+makes it possible to plug in actions depending on that number. To give an idea if
+what gets called, this is what you get when typesetting \type {tufte.tex}:
+initialize, start, report, delete, delete, stop, start, report, report, delete,
+report, report, report, delete, delete, report, report, report, delete, report,
+delete, delete, report, report, report, delete, report, delete, delete, report,
+report, delete, report, report, delete, delete, delete, report, delete, report,
+delete, delete, report, report, report, delete, delete, report, delete, report,
+report, delete, report, delete, delete, delete, report, report, delete, report,
+report, delete, report, delete, report, delete, report, delete, delete, report,
+report, report, report, delete, delete, delete, delete, delete, delete, delete,
+delete, delete, report, stop, collect, list, list, list, list, list, list, list,
+list, list, line, line, line, line, line, line, line, line, line, wrapup.
+
+\stopsubsection
+
+\startsubsection[title=show_build]
+
+You can trace (and even influence) the page builder with this callback. It comes in
+several variants that are called during the process. Callbacks like these assume that
+one knows what is going on in the engine.
+
+\starttyping[option=LUA]
+function initialize (
+    <t:integer> context
+)
+    -- no return values
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function step (
+    <t:integer> context,
+    <t:node>    current,
+    <t:integer> pagegoal,
+    <t:integer> pagetotal
+)
+    -- no return values
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function check (
+    <t:integer> context,
+    <t:node>    current,
+    <t:boolean> moveon,
+    <t:boolean> fireup,
+    <t:integer> badness,
+    <t:integer> costs,
+    <t:integer> penalty
+)
+    return <t:boolean> moveon, <t:boolean> fireup
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function skip (
+    <t:integer> context,
+    <t:node>    current,
+)
+    -- no return values
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function move (
+    <t:integer> context,
+        <t:node>    current,
+        <t:integer> lastheight,
+        <t:integer> lastdepth,
+        <t:integer> laststretch,
+        <t:integer> lastshrink,
+        <t:boolean> hasstretch
+)
+    -- no return values
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function fireup (
+    <t:integer> context,
+    <t:node> current
+)
+    -- no return values
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function wrapup (
+    <t:integer> context
+)
+    -- no return values
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=show_whatsit]
+
+Because we only have a generic whatsit it is up to the macro package to provide
+details when tracing them.
+
+\starttyping[option=LUA]
+function (
+    <t:node>    whatsit,
+    <t:integer> indentation,
+    <t:integer> tracinglevel,
+    <t:integer> currentlevel,
+    <t:integer> inputlevel
+)
+    -- no return value
+end
+\stoptyping
+
+Here \type {indentation} tells how many periods are to be typeset if you want to
+be compatible with the rest of tracing. The \type {tracinglevel} indicates if the
+current level and|/|or input level are shown cf. \type {\tracinglevels}. Of
+course one is free to show whatever in whatever way suits the whatsit best.
+
+\stopsubsection
+
+\startsubsection[title=linebreak_quality]
+
+\starttyping[option=LUA]
+function (
+    <t:node>    par,
+    <t:integer> id,
+    <t:integer> pass,
+    <t:integer> subpass,
+    <t:integer> subpasses,
+    <t:integer> state,
+    <t:integer> overfull,
+    <t:integer> underfull,
+    <t:integer> verdict,
+    <t:integer> classified,
+    <t:integer> line
+)
+    return <t:node> result
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=show_loners]
+
+In spite of widow, club, broken and shaping penalties we can have single lines in the
+result. When set, this callback replaces the output that normally \typ {\tracingloners}
+produces.
+
+\starttyping[option=LUA]
+function (
+    <t:integer> options,
+    <t:integer> penalty
+)
+    return <t:node> result
+end
+\stoptyping
+
+The options are those set on the encountered penalty:
+
+\startcolumns[n=3]
+\getbuffer[engine:syntax:penaltyoptioncodes]
+\stopcolumns
+
+\stopsubsection
+
+\startsubsection[title=get_attribute]
+
+Because attributes are abstract pairs of indices and values the reported
+properties makes not much sense and are very macro package (and user) dependent.
+This callback permits more verbose reporting by the engine when tracing is
+enabled.
+
+\starttyping[option=LUA]
+function (
+    <t:integer> index,
+    <t:integer> value
+)
+    return <t:string>, <t:string>
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=get_noad_class]
+
+We have built|-|in math classes but there can also be user defined ones. This
+callback can be used to report more meaningful strings instead of numbers when
+tracing.
+
+\starttyping[option=LUA]
+function (
+    <t:integer> class
+)
+    return <t:string>
+end
+\stoptyping
+
+
+\stopsubsection
+
+\startsubsection[title=get_math_dictionary]
+    todo
+\stopsubsection
+
+\startsubsection[title=show_lua_call]
+
+When the engine traces something that involves a \LUA\ call it makes sense to report something
+more meaningful than just that. This callback can be used provide a meaningful string (like the
+name of a function).
+
+\starttyping[option=LUA]
+function (
+    <t:string>  name,
+    <t:integer> index
+)
+    return <t:string>
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=trace_memory]
+
+When the engine starts all kind of memory is pre|-|allocated> depending on the
+configuration more gets allocated when a category runs out of memory. The
+\LUAMETATEX\ engine is more dynamic than \LUATEX. If this callback is set it will
+get called as follows:
+
+\starttyping[option=LUA]
+function (
+    <t:string>  category,
+    <t:boolean> success
+)
+    -- no return value
+end
+\stoptyping
+
+The boolean indicates if the allocation has been successful. One can best quit
+the run when this one is \type {false} which the engine is likely to do that
+anyway, be in in a less graceful way that you might like.
+
+\stopsubsection
+
+\startsubsection[title=paragraph_pass]
+
+{\em This callback is not yet stable.}
+
+\stopsubsection
+
+\stopsection
+
+\startsection[title=Math]
+
+\startsubsection[title=mlist_to_hlist]
 
 This callback replaces \LUATEX's math list to node list conversion algorithm.
 
-\startfunctioncall
-function(<node> head, <string> display_type, <boolean> need_penalties)
-    return <node> newhead
+\starttyping[option=LUA]
+function (
+    <t:node>    head,
+    <t:string>  display_type,
+    <t:boolean> need_penalties
+)
+    return <t:node> newhead
 end
-\stopfunctioncall
+\stoptyping
 
 The returned node is the head of the list that will be added to the vertical or
 horizontal list, the string argument is either \quote {text} or \quote {display}
@@ -691,405 +1673,76 @@ an endless loop.
 
 \stopsubsection
 
-\startsubsection[title={\cbk {math_rule}}]
+\startsubsection[title=math_rule]
 
-\topicindex{callbacks+math}
-\topicindex{callbacks+ruled}
+In math rules are used for fractions, radicals and accents. In the case of
+radicals rules mix with glyphs to build the symbol. In \CONTEXT\ we can enable an
+alternate approach that uses glyphs instead of rules so that we can have more
+consistent shapes, for instance with slopes or non square endings. This callback
+takes care of that.
 
-{\em todo}
+\starttyping[option=LUA]
+function (
+    <t:integer> subtype,
+    <t:integer> font,
+    <t:integer> width,
+    <t:integer> height,
+    <t:node>    attributes
+)
+    return <t:node> rule
+end
+\stoptyping
 
 \stopsubsection
 
-\startsubsection[title={\cbk {make_extensible}}]
+\startsubsection[title=make_extensible]
 
-\topicindex{callbacks+math}
-\topicindex{callbacks+fonts}
+Like \typ {math_rule} this callback is used to construct nicer extensibles in \CONTEXT\
+math support. It can optionally be followed by \typ {register_extensible}.
 
-{\em todo}
+\starttyping[option=LUA]
+function (
+    <t:node>    extensible,
+    <t:integer> fnt,
+    <t:integer> chr,
+    <t:integer> size,
+    <t:integer> width,
+    <t:integer> height,
+    <t:integer> depth,
+    <t:integer> linewidth,
+    <t:integer> axis,
+    <t:integer> exheight,
+    <t:integer> emwidth
+)
+    return <t:node> boxed extensible
+end
+\stoptyping
 
 \stopsubsection
 
-\startsubsection[title={\cbk {register_extensible}}]
+\startsubsection[title=register_extensible]
 
-\topicindex{callbacks+math}
-\topicindex{callbacks+fonts}
+This callback is a possible follow up on \typ {make_extensible} and it can be
+used to share pre-build extensibles or package them otherwise (for instance as
+\TYPETHREE\ glyph).
 
-{\em todo}
+\starttyping[option=LUA]
+function (
+    <t:integer> fnt,
+    <t:integer> chr,
+    <t:integer> size,
+    <t:node>    attributes,
+    <t:node>    extensible
+)
+    return <t:node> boxed
+end
+\stoptyping
 
 \stopsubsection
 
 \stopsection
 
-\startsection[title={Information reporting callbacks}][library=callback]
+\stopdocument
 
-\startsubsection[title={\cbk {pre_dump}}]
-
-\topicindex{callbacks+dump}
-
-\startfunctioncall
-function()
-    -- no return values
-end
-\stopfunctioncall
-
-This function is called just before dumping to a format file starts. It does not
-replace any code and there are neither arguments nor return values.
-
-\stopsubsection
-
-\startsubsection[title={\cbk {start_run}}]
-
-\topicindex{callbacks+job run}
-
-\startfunctioncall
-function()
-    -- no return values
-end
-\stopfunctioncall
-
-This callback replaces the code that prints \LUATEX's banner. Note that for
-successful use, this callback has to be set in the \LUA\ initialization script,
-otherwise it will be seen only after the run has already started.
-
-\stopsubsection
-
-\startsubsection[title={\cbk {stop_run}}]
-
-\topicindex{callbacks+job run}
-
-\startfunctioncall
-function()
-end
-\stopfunctioncall
-
-This callback replaces the code that prints \LUATEX's statistics and \quote
-{output written to} messages. The engine can still do housekeeping and therefore
-you should not rely on this hook for postprocessing the \PDF\ or log file.
-
-\stopsubsection
-
-\startsubsection[title={\cbk {intercept_tex_error}, \cbk {intercept_lua_error}}]
-
-\topicindex{callbacks+errors}
-
-\startfunctioncall
-function()
-    -- no return values
-end
-\stopfunctioncall
-
-This callback is run from inside the \TEX\ error function, and the idea is to
-allow you to do some extra reporting on top of what \TEX\ already does (none of
-the normal actions are removed). You may find some of the values in the \type
-{status} table useful. The \TEX\ related callback gets two arguments: the current
-processing mode and a boolean indicating if there was a runaway.
-
-\stopsubsection
-
-\startsubsection[title={\cbk {show_error_message} and \cbk {show_warning_message}}]
-
-\topicindex{callbacks+errors}
-\topicindex{callbacks+warnings}
-
-\startfunctioncall
-function()
-    -- no return values
-end
-\stopfunctioncall
-
-These callback replaces the code that prints the error message. The usual
-interaction after the message is not affected.
-
-\stopsubsection
-
-\startsubsection[title={\cbk {start_file}}]
-
-\topicindex{callbacks+files}
-
-\startfunctioncall
-function(category,filename)
-    -- no return values
-end
-\stopfunctioncall
-
-This callback replaces the code that \LUATEX\ prints when a file is opened like
-\type {(filename} for regular files. The category is a number:
-
-\starttabulate[|c|l|]
-\DB value  \BC meaning \NC \NR
-\TB
-\NC 1 \NC a normal data file, like a \TEX\ source \NC \NR
-\NC 2 \NC a font map coupling font names to resources \NC \NR
-\NC 3 \NC an image file (\type {png}, \type {pdf}, etc) \NC \NR
-\NC 4 \NC an embedded font subset \NC \NR
-\NC 5 \NC a fully embedded font \NC \NR
-\LL
-\stoptabulate
-
-\stopsubsection
-
-\startsubsection[title={\cbk {stop_file}}]
-
-\topicindex{callbacks+files}
-
-\startfunctioncall
-function(category)
-    -- no return values
-end
-\stopfunctioncall
-
-This callback replaces the code that \LUATEX\ prints when a file is closed like
-the \type {)} for regular files.
-
-\stopsubsection
-
-\startsubsection[title={\cbk {wrapup_run}}]
-
-\topicindex{callbacks+wrapping up}
-
-This callback is called after the \PDF\ and log files are closed. Use it at your own
-risk.
-
-\stopsubsection
-
-\stopsection
-
-\startsection[title={Font-related callbacks}][library=callback]
-
-\startsubsection[title={\cbk {define_font}}]
-
-\topicindex{callbacks+fonts}
-
-\startfunctioncall
-function(<string> name, <number> size)
-    return <number> id
-end
-\stopfunctioncall
-
-The string \type {name} is the filename part of the font specification, as given
-by the user.
-
-The number \type {size} is a bit special:
-
-\startitemize[packed]
-\startitem
-    If it is positive, it specifies an \quote{at size} in scaled points.
-\stopitem
-\startitem
-    If it is negative, its absolute value represents a \quote {scaled} setting
-    relative to the design size of the font.
-\stopitem
-\stopitemize
-
-The font can be defined with \type {font.define} which returns a font identifier
-that can be returned in the callback. So, contrary to \LUATEX, in \LUAMETATEX\
-we only accept a number.
-
-The internal structure of the \type {font} table that is passed to \type
-{font.define} is explained in \in {chapter} [fonts]. That table is saved
-internally, so you can put extra fields in the table for your later \LUA\ code to
-use. In alternative, \type {retval} can be a previously defined fontid. This is
-useful if a previous definition can be reused instead of creating a whole new
-font structure.
-
-Setting this callback to \type {false} is pointless as it will prevent font
-loading completely but will nevertheless generate errors.
-
-\stopsubsection
-
-\startsubsection[title={\cbk {missing_character} and \cbk {process_character}}]
-
-\topicindex{callbacks+fonts}
-\topicindex{callbacks+characters}
-
-This callback is triggered when a character node is created and the font doesn't
-have the requested character.
-
-\startfunctioncall
-function(<node> glyph, <number> font, <number> character)
-    -- no return value
-end
-\stopfunctioncall
-
-The \type {process_character} callback is experimental and gets called when a
-glyph node is created and the callback field in a character is set.
-
-\startfunctioncall
-function(<number> font, <number> character)
-    -- no return value
-end
-\stopfunctioncall
-
-\stopsubsection
-
-\stopsection
-
-\startsection[title=Reporting]
-
-\startsubsection[title={\cbk {show_whatsit}}]
-
-\topicindex{callbacks+whatsits}
-
-Because we only have a generic whatsit it is up to the macro package to provide
-details when tracing them.
-
-\startfunctioncall
-function(<node> whatsit, <number> indentation,
-    <number> tracinglevel, <number> currentlevel, <number> inputlevel)
-    -- no return value
-end
-\stopfunctioncall
-
-The indentation tells how many periods are to be typeset if you want to be
-compatible with the rest of tracing. The tracinglevels indicates if the current
-level and\|/or input level are shown cf. \prm {tracinglevels}. Of course one
-is free to show whatever in whatever way suits the whatsit best.
-
-\stopsubsection
-
-\startsubsection[title={\cbk {get_attribute}}]
-
-\topicindex{callbacks+attributes}
-
-Because attributes are abstract pairs of indices and values the reported
-properties makes not much sense and are very macro package (and user) dependent.
-This callback permits more verbose reporting by the engine when tracing is
-enabled.
-
-\startfunctioncall
-function(<number> index, <number> value)
-    return <string>, <string>
-end
-\stopfunctioncall
-
-\stopsubsection
-
-\startsubsection[title={\cbk {get_noad_class}}]
-
-\topicindex{callbacks+classes}
-
-We have built|-|in math classes but there can also be user defined ones. This
-callback can be used to report more meaningful strings instead of numbers when
-tracing.
-
-\startfunctioncall
-function(<number> class)
-    return <string>
-end
-\stopfunctioncall
-
-\stopsubsection
-
-\startsubsection[title={\cbk {trace_memory}}]
-
-When the engine starts all kind of memory is pre|-|allocated> depending on the
-configuration more gets allocated when a category runs out of memory. The
-\LUAMETATEX\ engine is more dynamic than \LUATEX. If this callback is set it will
-get called as follows:
-
-\startfunctioncall
-function(<string> category, <boolean> success)
-    -- no return value
-end
-\stopfunctioncall
-
-The boolean indicates if the allocation has been successful. One can best quit
-the run when this one is \type {false}, if the engine doesn't already do that.
-
-\stopsubsection
-
-\startsubsection[title={\type {hpack_quality}}]
-
-\topicindex{callbacks+packing}
-
-This callback can be used to intercept the overfull messages that can result from
-packing a horizontal list (as happens in the par builder). The function takes a
-few arguments:
-
-\startfunctioncall
-function(<string> incident, <number> detail, <node> head, <number> first,
-         <number> last)
-    return <node> whatever
-end
-\stopfunctioncall
-
-The incident is one of \type {overfull}, \type {underfull}, \type {loose} or
-\type {tight}. The detail is either the amount of overflow in case of \type
-{overfull}, or the badness otherwise. The head is the list that is constructed
-(when protrusion or expansion is enabled, this is an intermediate list).
-Optionally you can return a node, for instance an overfull rule indicator. That
-node will be appended to the list (just like \TEX's own rule would).
-
-\stopsubsection
-
-\startsubsection[title={\type {vpack_quality}}]
-
-\topicindex{callbacks+packing}
-
-This callback can be used to intercept the overfull messages that can result from
-packing a vertical list (as happens in the page builder). The function takes a
-few arguments:
-
-\startfunctioncall
-function(<string> incident, <number> detail, <node> head, <number> first,
-    <number> last)
-end
-\stopfunctioncall
-
-The incident is one of \type {overfull}, \type {underfull}, \type {loose} or
-\type {tight}. The detail is either the amount of overflow in case of \type
-{overfull}, or the badness otherwise. The head is the list that is constructed.
-
-\stopsubsection
-
-\startsubsection[title={\type {show_lua_call}}]
-
-\topicindex{callbacks+lua}
-
-This one can be used to help reporting definitions that relate to \LUA\ calls to
-be more meaningful when tracing.
-
-\startfunctioncall
-function(<string> name, <number> index)
-    return <string>
-end
-\stopfunctioncall
-
-\stopsubsection
-
-\startsubsection[title={\type {handle_overload}}]
-
-\topicindex{callbacks+overload}
-
-This is one of the few callbacks that is aimed at \CONTEXT: it relates to overload
-protection of macros and other variables.
-
-\startfunctioncall
-function(<boolean> error, <number> overload, <string> csname, <number> flags)
-    -- no return values
-end
-\stopfunctioncall
-
-The overload is determined by:
-
-\starttabulate[|c|l|c|c|c|c|c|]
-\DB   \BC         \BC immutable \BC permanent \BC primitive \BC frozen \BC instance \NC \NR
-\TB
-\NC 1 \NC warning \NC \star     \NC \star     \NC \star     \NC        \NC          \NC \NR
-\NC 2 \NC error   \NC \star     \NC \star     \NC \star     \NC        \NC          \NC \NR
-\NC 3 \NC warning \NC \star     \NC \star     \NC \star     \NC \star  \NC          \NC \NR
-\NC 4 \NC error   \NC \star     \NC \star     \NC \star     \NC \star  \NC          \NC \NR
-\NC 5 \NC warning \NC \star     \NC \star     \NC \star     \NC \star  \NC \star    \NC \NR
-\NC 6 \NC error   \NC \star     \NC \star     \NC \star     \NC \star  \NC \star    \NC \NR
-\LL
-\stoptabulate
-
-This relates to the optional prefixed that can be used when defining and setting
-quantities and is therefore also a bit of a playground. All macros and aliases in
-\CONTEXT\ are classified this way.
-
-\stopsection
-
-\stopchapter
-
-\stopcomponent
+% timestamp october 2024, after running into Anna von Hausswolff's "All Thoughts
+% Fly" live at Basilica di Santa Maria dei Servi 29.11.2021

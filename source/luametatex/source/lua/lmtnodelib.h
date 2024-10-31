@@ -139,7 +139,7 @@ extern halfword lmt_uleader_callback(
     halfword    index, 
     int         context,
     halfword    box,
-    const char *where
+    int         location
 );
 
 extern scaled lmt_italic_correction_callback(
